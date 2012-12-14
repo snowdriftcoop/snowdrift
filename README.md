@@ -14,4 +14,4 @@ but we appreciate that Gitorious itself is FLOSS whereas GitHub is propriety.
 The infrastructure here includes the wiki system for the site,
 but the contents of the wiki are held in the site database.
 
-The Snowdrift.coop site itself is invitation-only as it is not ready for public presentation yet.
+The Snowdrift.coop site itself is invitation-only as it is not ready for public presentation yet, but contact us if you're interested.
