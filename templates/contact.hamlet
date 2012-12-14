@@ -1,0 +1,12 @@
+<div .row>
+    <div .span8>
+        <strong>Contact us
+
+        <form method=POST target=@{ContactR}>
+            ^{contact_form}
+            <br>
+            <input type=submit value="send">
+
+    <div .span3 .offset1>
+        ^{sidebar}
+

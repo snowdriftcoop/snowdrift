@@ -1,0 +1,7 @@
+
+td
+    padding : 1em
+
+p
+    padding : 0
+    margin : 0

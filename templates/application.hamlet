@@ -1,0 +1,64 @@
+
+<div .row>
+    <div .span9>
+        <table .table>
+            <tr>
+                <td>
+                    Account:
+                <td>
+                    <a href="@{UserR (committeeApplicationUser application)}">
+                        #{userPrintName user}
+
+            <tr>
+                <td>
+                    Name:
+                <td>
+                    #{committeeApplicationName application}
+
+            <tr>
+                <td>
+                    Email:
+                <td>
+                    #{committeeApplicationEmail application}
+
+            $maybe contactInfo <- committeeApplicationOtherContactInfo application
+                <tr>
+                    <td>
+                        Other Contact Info:
+                    <td>
+                        #{contactInfo}
+
+            <tr>
+                <td>
+                    Occupation:
+                <td>
+                    #{committeeApplicationOccupation application}
+
+            <tr>
+                <td>
+                    Location:
+                <td>
+                    #{committeeApplicationLocation application}
+
+            $maybe expertise <- committeeApplicationExpertise application
+                <tr>
+                    <td>
+                        Expertise:
+                    <td>
+                        #{expertise}
+
+            <tr>
+                <td>
+                    Statement:
+                <td>
+                    #{committeeApplicationStatement application}
+
+            $maybe comments <- committeeApplicationComments application
+                <tr>
+                    <td>
+                        Comments:
+                    <td>
+                        #{comments}
+
+    <div .span3>
+        ^{sidebar}

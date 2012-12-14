@@ -1,0 +1,31 @@
+<div .row>
+    <div .span4>
+        <div .row>
+            <div .span4>
+                <h1>
+                    #{userPrintName user_entity}
+
+                $maybe avatar <- userAvatar user
+                            <img .headshot_large src="#{avatar}">
+
+        $if user_id == viewer_id
+            <a href="@{EditUserR user_id}">
+                edit profile
+    <div .span5>
+        $maybe blurb <- userBlurb user
+            #{markdownToHtml blurb}
+        $nothing
+            &nbsp;
+
+    <div .span3>
+        ^{sidebar}
+
+<div .row>
+    <h4>Personal Statement
+    <div .span6 .well .well-small .scroll .capped>
+        $maybe statement <- userStatement user
+            #{markdownToHtml statement}
+
+    <div .span4 .well .well-small>
+        ^{project_pledges user_id}
+

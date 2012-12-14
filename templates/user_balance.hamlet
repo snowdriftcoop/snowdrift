@@ -1,0 +1,35 @@
+<div .row>
+    <div .span8>
+        <div .row>
+            <div .span3>
+                Account balance:
+            <div .span5>
+                #{show (accountBalance account)}
+        <div .row>
+            <div .span8>
+                $#^{add_funds_form}
+
+        <div .row>
+            $if null transactions
+                no transactions recorded
+            $else
+                <table .table>
+                    <th>
+                        <td>
+
+                    $forall Entity _ transaction <- transactions
+                        $with is_credit <- transactionCredit transaction == Just (userAccount user)
+                            <tr>
+                                <td>
+                                    ^{renderTime (transactionTs transaction)}
+
+                                <td>
+                                    ^{renderOtherAccount is_credit transaction user_accounts project_accounts}
+
+                                <td>
+                                    $if is_credit
+                                        #{show (transactionAmount transaction)}
+                                    $else
+                                        (#{show (transactionAmount transaction)})
+    <div .span3>
+        ^{sidebar}

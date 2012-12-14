@@ -1,0 +1,133 @@
+Account
+    balance Milray
+
+
+Transaction
+    ts UTCTime
+
+    credit AccountId Maybe
+    debit AccountId Maybe
+
+    amount Milray
+
+    reason Text
+    info Text Maybe
+
+
+User
+    ident Text
+    name Text Maybe
+    account AccountId
+    role Role
+    avatar Text Maybe
+    blurb Markdown Maybe
+    statement Markdown Maybe
+    readMessages UTCTime Maybe
+    readApplications UTCTime Maybe
+    UniqueUser ident
+    UniqueUserAccount account
+
+
+Project
+    createdTs UTCTime
+    name Text
+    description Markdown
+    account AccountId
+    shareValue Milray
+    UniqueProjectAccount account
+
+
+ProjectUpdate
+    updatedTs UTCTime
+    project ProjectId
+    author UserId
+    description MarkdownDiff
+
+
+ProjectLastUpdate
+    project ProjectId
+    update ProjectUpdateId
+    UniqueProjectLastUpdate project
+
+
+ProjectUser
+    project ProjectId
+    user UserId
+    canEdit Bool
+
+
+Pledge
+    user UserId
+    project ProjectId
+    shares Int64
+    fundedShares Int64
+    UniquePledge user project
+
+
+Invite
+    createdTs UTCTime
+    code Text
+    user UserId
+    role Role
+    tag Text
+    redeemed Bool
+    redeemedTs UTCTime Maybe
+    redeemedBy UserId Maybe
+    UniqueInvite code
+
+
+CommitteeApplication
+    createdTs UTCTime
+    user UserId
+    name Text
+    email Text
+    otherContactInfo Text Maybe
+    occupation Text
+    location Text
+    expertise Textarea Maybe
+    statement Textarea
+    comments Textarea Maybe
+
+
+CommitteeUser
+    createdTs UTCTime
+    user UserId
+    UniqueCommitteeMember user
+
+
+Message
+    createdTs UTCTime
+    from UserId
+    to UserId Maybe
+    content Textarea
+
+
+WikiPage
+    target Text
+    content Markdown
+    canView Role
+    canViewMeta Role
+    canEdit Role
+    UniqueWikiTarget target
+
+WikiEdit
+    ts UTCTime
+    user UserId
+    page WikiPageId
+    diff MarkdownDiff
+
+WikiLastEdit
+    page WikiPageId
+    edit WikiEditId
+    UniqueWikiLastEdit page
+
+WikiComment
+    createdTs UTCTime
+    retractedTs UTCTime Maybe
+    page WikiPageId
+    parent WikiCommentId Maybe
+    user UserId
+    text Markdown
+    retractedReason Markdown Maybe
+
+ -- This file is used in Model.hs (which is imported by Foundation.hs)

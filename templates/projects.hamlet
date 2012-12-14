@@ -1,0 +1,17 @@
+<div .row>
+    <div .span8>
+        $if null projects
+            no projects to display
+        $else
+            <table .table>
+                $forall Entity project_id project <- projects
+                    <tr>
+                        <td>
+                            <a href=@{ProjectR project_id}>
+                                #{projectName project}
+                        <td>
+                            #{show (projectShareValue project)}/pledge
+
+    <div .span3 .offset1>
+        ^{sidebar}
+

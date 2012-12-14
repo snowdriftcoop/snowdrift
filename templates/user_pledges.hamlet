@@ -1,0 +1,6 @@
+<div .row>
+    <div .span8>
+        ^{project_pledges user_id}
+
+    <div .span3>
+        ^{sidebar}

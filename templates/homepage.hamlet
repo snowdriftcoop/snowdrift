@@ -1,0 +1,10 @@
+<div .row>
+    <div .span8>
+        This is the Snowdrift.coop homepage.
+        <br>
+        We are in the early development stage.
+        <br>
+        There will be much here, eventually.
+
+    <div .span3 .offset1>
+        ^{sidebar}

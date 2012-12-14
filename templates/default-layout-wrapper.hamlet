@@ -1,0 +1,113 @@
+$newline never
+\<!doctype html>
+\<!--[if lt IE 7]> <html class="no-js ie6 oldie" lang="en"> <![endif]-->
+\<!--[if IE 7]>    <html class="no-js ie7 oldie" lang="en"> <![endif]-->
+\<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="en"> <![endif]-->
+\<!--[if gt IE 8]><!-->
+<html class="no-js" lang="en"> <!--<![endif]-->
+    <head>
+        <link rel="shortcut icon" href="@{FaviconR}">
+        <meta charset="UTF-8">
+
+        <script>
+            /*
+            @licstart  The following is the entire license notice for the JavaScript code in this page.
+
+            Copyright (C) 2012  Snowdrift.coop
+
+            The JavaScript code in this page is free software: you can
+            redistribute it and/or modify it under the terms of the GNU
+            General Public License (GNU GPL) as published by the Free Software
+            Foundation, either version 3 of the License, or (at your option)
+            any later version.  The code is distributed WITHOUT ANY WARRANTY;
+            without even the implied warranty of MERCHANTABILITY or FITNESS
+            FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+            As additional permission under GNU GPL version 3 section 7, you
+            may distribute non-source (e.g., minimized or compacted) forms of
+            that code without the copy of the GNU GPL normally required by
+            section 4, provided you include this license notice and a URL
+            through which recipients can access the Corresponding Source.
+
+
+            @licend  The above is the entire license notice for the JavaScript code in this page.
+            */
+
+        <title>#{pageTitle pc}
+        <meta name="description" content="">
+        <meta name="author" content="">
+
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+
+        ^{pageHead pc}
+
+        \<!--[if lt IE 9]>
+        \<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+        \<![endif]-->
+
+        <script src=@{StaticR js_modernizr_js}>
+        <script>
+          document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/,'js');
+
+          function fixup_logo() {
+              var head = document.getElementById("head");
+              var logo = document.createElement("img");
+
+              logo.id = "logo";
+              logo.className = "span10 offset1";
+
+              if(Modernizr.svg) {
+                  logo.src = "@{StaticR img_logo_svg}";
+              } else {
+                  logo.src = "@{StaticR img_logo_png}";
+              }
+
+              head.replaceChild(logo, head.firstChild);
+          }
+    <body>
+        <div class="container">
+            <header>
+                <a href="@{HomeR}">
+                    <div #head .row>
+                        <noscript>
+                            <img #logo .span10 .offset1 src=@{StaticR img_logo_png}>
+                        <script>
+                            fixup_logo()
+                    <div .row>
+                        <div .note .span2 .offset10>
+                            a work in progress
+            <div id="main" role="main">
+              ^{pageBody pc}
+            <footer>
+                <div .row>
+                    <div .span3>
+                        &copy; #{extraCopyright $ appExtra $ settings master}
+                    <div .span3>
+                        <a href="/license/javascript" rel="jslicense">JavaScript licenses
+                    <div .span3>
+                        Distributed under #
+                        <a href="https://www.gnu.org/licenses/agpl">
+                            AGPL
+                        \ and #
+                        <a href="https://creativecommons.org/licenses/by-sa/3.0">
+                            CC&nbsp;BY-SA
+                        .
+                    <div .span3>
+                        <a href="#{extraSourceRepo $ appExtra $ settings master}">Check out the source.
+
+        $maybe analytics <- extraAnalytics $ appExtra $ settings master
+            <script>
+              if(!window.location.href.match(/localhost/)){
+                window._gaq = [['_setAccount','#{analytics}'],['_trackPageview'],['_trackPageLoadTime']];
+                (function() {
+                \  var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+                \  ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+                \  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+                })();
+              }
+        \<!-- Prompt IE 6 users to install Chrome Frame. Remove this if you want to support IE 6.  chromium.org/developers/how-tos/chrome-frame-getting-started -->
+        \<!--[if lt IE 7 ]>
+            <script src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.3/CFInstall.min.js">
+            <script>
+                window.attachEvent('onload',function(){CFInstall.check({mode:'overlay'})})
+        \<![endif]-->

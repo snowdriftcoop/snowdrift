@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   version="1.2"
+   width="300"
+   height="200"
+   viewbox="0 0 30 20"><defs><filter id="shadowFilter"><feGaussianBlur in="SourceGraphic" stdDeviation="0.1"></feGaussianBlur>
+</filter>
+</defs>
+<path d="M16.334152 3.1434653A9.35 9.35 0 0 1 4.3160443 17.466469L4.945344 16.689306A8.35 8.35 0 0 0 15.678093 3.8981748 Z" fill="gray" filter="url(#shadowFilter)" stroke="none"></path>
+<path d="M4.1901236 17.362673A9.35 9.35 0 0 1 4.167629 17.343739L4.812802 16.579702A8.35 8.35 0 0 0 4.832891 16.596613 Z" fill="gray" filter="url(#shadowFilter)" stroke="none"></path>
+<path d="M4.043873 17.237371A9.35 9.35 0 0 1 16.08415 2.9336884L15.454829 3.710834A8.35 8.35 0 0 0 4.702282 16.484713 Z" fill="gray" filter="url(#shadowFilter)" stroke="none"></path>
+
+<path d="M16.134153 2.9434655A9.35 9.35 0 0 1 4.1160445 17.26647L4.745344 16.489307A8.35 8.35 0 0 0 15.478093 3.698175 Z" title="With 1000 donors, the new donor contributes $0.0999, and the project gets $99.9000 / month." fill="#4bb2c5" stroke="none"></path>
+<path d="M3.9901237 17.162674A9.35 9.35 0 0 1 3.9676287 17.14374L4.612802 16.379704A8.35 8.35 0 0 0 4.632891 16.396612 Z" title="With 1000 donors, a single earlier donor contributes an additional $0.0001, and the project gets $0.1000 / month." fill="#EAA228" stroke="none"></path>
+<path d="M3.8438728 17.037373A9.35 9.35 0 0 1 15.8841505 2.7336886L15.254829 3.5108342A8.35 8.35 0 0 0 4.502282 16.284712 Z" title="With 1000 donors, the remaining donors together contribute an additional $0.0998, and the project gets $99.8017 / month." fill="#c5b47f" stroke="none"></path>
+<path d="M15.514078 4.086852A8.1 8.1 0 0 1 5.1026692 16.495016L5.7319694 15.717853A7.1 7.1 0 0 0 14.858019 4.8415623 Z" fill="gray" filter="url(#shadowFilter)" stroke="none"></path>
+<path d="M4.993583 16.405096A8.1 8.1 0 0 1 4.9546194 16.372194L5.6021976 15.610195A7.1 7.1 0 0 0 5.6363506 15.639035 Z" fill="gray" filter="url(#shadowFilter)" stroke="none"></path>
+<path d="M4.8476996 16.27971A8.1 8.1 0 0 1 15.297499 3.9051204L14.668178 4.682266A7.1 7.1 0 0 0 5.5084777 15.529129 Z" fill="gray" filter="url(#shadowFilter)" stroke="none"></path>
+
+<path d="M15.314078 3.8868525A8.1 8.1 0 0 1 4.9026694 16.295015L5.5319695 15.517853A7.1 7.1 0 0 0 14.658019 4.6415625 Z" title="With 500 donors, the new donor contributes $0.0499, and the project gets $24.9500 / month." fill="#4bb2c5" stroke="none"></path>
+<path d="M4.7935834 16.205097A8.1 8.1 0 0 1 4.7546196 16.172195L5.402198 15.410195A7.1 7.1 0 0 0 5.436351 15.439035 Z" title="With 500 donors, a single earlier donor contributes an additional $0.0001, and the project gets $0.0500 / month." fill="#EAA228" stroke="none"></path>
+<path d="M4.6477 16.079712A8.1 8.1 0 0 1 15.097499 3.7051206L14.468178 4.4822664A7.1 7.1 0 0 0 5.308478 15.329129 Z" title="With 500 donors, the remaining donors together contribute an additional $0.0498, and the project gets $24.9004 / month." fill="#c5b47f" stroke="none"></path>
+
+<path d="M14.694004 5.0302396A6.85 6.85 0 0 1 5.8891397 15.5234375L6.518462 14.746293A5.85 5.85 0 0 0 14.037946 5.7849493 Z" fill="gray" filter="url(#shadowFilter)" stroke="none"></path>
+<path d="M5.79689 15.4473915A6.85 6.85 0 0 1 5.632618 15.305048L6.299389 14.559786A5.85 5.85 0 0 0 6.4396796 14.681349 Z" fill="gray" filter="url(#shadowFilter)" stroke="none"></path>
+<path d="M5.5442185 15.22456A6.85 6.85 0 0 1 14.510848 4.8765526L13.881527 5.6536984A5.85 5.85 0 0 0 6.2238946 14.491047 Z" fill="gray" filter="url(#shadowFilter)" stroke="none"></path>
+
+<path d="M14.494004 4.83024A6.85 6.85 0 0 1 5.68914 15.323438L6.3184624 14.546293A5.85 5.85 0 0 0 13.837946 5.5849495 Z" title="With 100 donors, the new donor contributes $0.0099, and the project gets $0.9900 / month." fill="#4bb2c5" stroke="none"></path>
+<path d="M5.59689 15.247392A6.85 6.85 0 0 1 5.432618 15.105048L6.099389 14.359786A5.85 5.85 0 0 0 6.23968 14.481349 Z" title="With 100 donors, a single earlier donor contributes an additional $0.0001, and the project gets $0.0100 / month." fill="#EAA228" stroke="none"></path>
+<path d="M5.3442187 15.02456A6.85 6.85 0 0 1 14.310848 4.676553L13.681527 5.4536986A5.85 5.85 0 0 0 6.023895 14.291047 Z" title="With 100 donors, the remaining donors together contribute an additional $0.0098, and the project gets $0.9800 / month." fill="#c5b47f" stroke="none"></path>
+<path d="M13.873931 5.9736266A5.6 5.6 0 0 1 6.675825 14.552032L7.305142 13.774884A4.6 4.6 0 0 0 13.217872 6.728336 Z" fill="gray" filter="url(#shadowFilter)" stroke="none"></path>
+<path d="M6.526089 14.426391A5.6 5.6 0 0 1 6.4042296 14.317296L7.0820456 13.582065A4.6 4.6 0 0 0 7.1821446 13.671678 Z" fill="gray" filter="url(#shadowFilter)" stroke="none"></path>
+<path d="M6.2628508 14.182318A5.6 5.6 0 0 1 13.724195 5.847983L13.094874 6.6251287A4.6 4.6 0 0 0 6.9659133 13.4711895 Z" fill="gray" filter="url(#shadowFilter)" stroke="none"></path>
+
+<path d="M13.673931 5.773627A5.6 5.6 0 0 1 6.4758253 14.352033L7.105142 13.574884A4.6 4.6 0 0 0 13.017872 6.528336 Z" title="With 50 donors, the new donor contributes $0.0049, and the project gets $0.2450 / month." fill="#4bb2c5" stroke="none"></path>
+<path d="M6.3260894 14.226391A5.6 5.6 0 0 1 6.20423 14.117296L6.8820457 13.382065A4.6 4.6 0 0 0 6.982145 13.471678 Z" title="With 50 donors, a single earlier donor contributes an additional $0.0001, and the project gets $0.0050 / month." fill="#EAA228" stroke="none"></path>
+<path d="M6.062851 13.982318A5.6 5.6 0 0 1 13.524195 5.647983L12.894875 6.425129A4.6 4.6 0 0 0 6.7659135 13.27119 Z" title="With 50 donors, the remaining donors together contribute an additional $0.0048, and the project gets $0.2400 / month." fill="#c5b47f" stroke="none"></path>
+<path d="M13.053857 6.917013A4.35 4.35 0 0 1 7.4624553 13.580584L8.091776 12.803438A3.35 3.35 0 0 0 12.397798 7.671723 Z" fill="gray" filter="url(#shadowFilter)" stroke="none"></path>
+<path d="M7.346143 13.482986A4.35 4.35 0 0 1 6.4713216 12.440414L7.328489 11.925377A3.35 3.35 0 0 0 8.002202 12.728276 Z" fill="gray" filter="url(#shadowFilter)" stroke="none"></path>
+<path d="M6.3954043 12.308922A4.35 4.35 0 0 1 12.937546 6.8194165L12.308225 7.5965624A3.35 3.35 0 0 0 7.270024 11.824112 Z" fill="gray" filter="url(#shadowFilter)" stroke="none"></path>
+
+<path d="M12.853857 6.7170134A4.35 4.35 0 0 1 7.2624555 13.380584L7.891776 12.603438A3.35 3.35 0 0 0 12.197798 7.471723 Z" title="With 10 donors, the new donor contributes $0.0009, and the project gets $0.0090 / month." fill="#4bb2c5" stroke="none"></path>
+<path d="M7.146143 13.282987A4.35 4.35 0 0 1 6.271322 12.240415L7.128489 11.725377A3.35 3.35 0 0 0 7.802202 12.528276 Z" title="With 10 donors, a single earlier donor contributes an additional $0.0001, and the project gets $0.0010 / month." fill="#EAA228" stroke="none"></path>
+<path d="M6.1954045 12.108922A4.35 4.35 0 0 1 12.737546 6.6194167L12.108225 7.3965626A3.35 3.35 0 0 0 7.070024 11.624112 Z" title="With 10 donors, the remaining donors together contribute an additional $0.0008, and the project gets $0.0080 / month." fill="#c5b47f" stroke="none"></path>
+<path d="M12.233783 7.8604A3.1 3.1 0 0 1 8.249106 12.609152L8.878427 11.8320055A2.1 2.1 0 0 0 11.5777235 8.615109 Z" fill="gray" filter="url(#shadowFilter)" stroke="none"></path>
+<path d="M8.166217 12.539599A3.1 3.1 0 0 1 7.116982 10.524037L8.111504 10.419509A2.1 2.1 0 0 0 8.822276 11.78489 Z" fill="gray" filter="url(#shadowFilter)" stroke="none"></path>
+<path d="M7.1075516 10.416245A3.1 3.1 0 0 1 12.150893 7.790848L11.521573 8.567993A2.1 2.1 0 0 0 8.105115 10.346489 Z" fill="gray" filter="url(#shadowFilter)" stroke="none"></path>
+
+<path d="M12.033783 7.6604004A3.1 3.1 0 0 1 8.049107 12.409152L8.678427 11.632006A2.1 2.1 0 0 0 11.377724 8.41511 Z" title="With 5 donors, the new donor contributes $0.0004, and the project gets $0.0020 / month." fill="#4bb2c5" stroke="none"></path>
+<path d="M7.966217 12.3396A3.1 3.1 0 0 1 6.916982 10.324038L7.9115043 10.219509A2.1 2.1 0 0 0 8.622276 11.58489 Z" title="With 5 donors, a single earlier donor contributes an additional $0.0001, and the project gets $0.0005 / month." fill="#EAA228" stroke="none"></path>
+<path d="M6.907552 10.216246A3.1 3.1 0 0 1 11.950893 7.590848L11.321573 8.367993A2.1 2.1 0 0 0 7.9051156 10.146489 Z" title="With 5 donors, the remaining donors together contribute an additional $0.0003, and the project gets $0.0015 / month." fill="#c5b47f" stroke="none"></path>
+<path d="M11.413709 8.803787A1.85 1.85 0 0 1 9.035757 11.637719L9.665077 10.860574A0.85 0.85 0 0 0 10.75765 9.558496 Z" fill="gray" filter="url(#shadowFilter)" stroke="none"></path>
+<path d="M8.986291 11.596212A1.85 1.85 0 0 1 11.3642435 8.76228L10.734922 9.539426A0.85 0.85 0 0 0 9.642349 10.841503 Z" fill="gray" filter="url(#shadowFilter)" stroke="none"></path>
+
+<path d="M11.213709 8.603787A1.85 1.85 0 0 1 8.835757 11.437719L9.465077 10.660574A0.85 0.85 0 0 0 10.557651 9.358497 Z" title="With 2 donors, the new donor contributes $0.0001, and the project gets $0.0002 / month." fill="#4bb2c5" stroke="none"></path>
+<path d="M8.786291 11.396213A1.85 1.85 0 0 1 11.164244 8.562281L10.534923 9.339426A0.85 0.85 0 0 0 9.442349 10.641503 Z" title="With 2 donors, a single earlier donor contributes an additional $0.0001, and the project gets $0.0002 / month." fill="#EAA228" stroke="none"></path>
+</svg>

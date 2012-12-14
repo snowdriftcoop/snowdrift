@@ -1,0 +1,40 @@
+<div #sidebar>
+    ^{log_in_or_out}
+    <br>
+
+    $maybe Entity user_id _ <- maybe_user
+        $maybe (balance, pledged) <- money_info
+            <a title="Current total monthly pledge" href="@{UserR user_id}">
+                #{show pledged}
+            /
+            <a title="Current balance" href="@{UserBalanceR user_id}">
+                #{show balance}
+
+            <br>
+            (not real money)
+            <br>
+
+    $if not (null messages)
+        <strong>
+            <a href="@{MessagesR}">
+                _{MsgNewMessages (length messages)}
+    $else
+        ^{sb_link MessagesR "View Messages"}
+
+    $if not (null applications)
+        <strong>
+            <a href="@{ApplicationsR}">
+                _{MsgNewApplications (length applications)}
+    $else
+        ^{sb_link ApplicationsR "View Applications"}
+
+    <hr>
+    ^{sb_link AboutR "About Snowdrift.coop"}
+    ^{sb_link WhoR "Who We Are"}
+    ^{sb_link ProjectsR "See Projects"}
+    ^{sb_link CommitteeR "Join the steering committee"}
+    ^{sb_link (WikiR "next") "Next steps for Snowdrift"}
+    ^{sb_link InviteR "Invite others"}
+    ^{sb_link ContactR "Contact Us"}
+    <br>
+

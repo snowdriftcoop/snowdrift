@@ -1,0 +1,46 @@
+/static StaticR Static getStatic
+/auth   AuthR   Auth   getAuth
+
+/favicon.ico FaviconR GET
+/robots.txt RobotsR GET
+
+/ HomeR GET
+
+/user/#UserId UserR GET POST
+/user/#UserId/edit EditUserR GET
+/user/#UserId/balance UserBalanceR GET POST
+/user/#UserId/pledges UserPledgesR GET
+
+/projects ProjectsR GET
+/project/#ProjectId ProjectR GET POST
+/project/#ProjectId/edit EditProjectR GET
+/project/#ProjectId/widget WidgetR GET
+/project/#ProjectId/shares UpdateSharesR GET POST
+
+/invitation/#Text InvitationR GET POST
+/invite InviteR GET POST
+
+/about AboutR GET
+/faq FaqR GET
+/committee CommitteeR GET POST
+/contact ContactR GET POST
+/who WhoR GET
+
+/messages MessagesR GET
+
+/application/#CommitteeApplicationId ApplicationR GET
+/applications ApplicationsR GET
+
+/tutorial/markdown MarkdownTutorialR GET
+
+/dest PostLoginR GET
+
+/tos TosR GET
+/priv PrivacyR GET
+/license/javascript JsLicenseR GET
+
+/w/#Text WikiR GET POST
+/w/#Text/edit EditWikiR GET
+/w/#Text/new NewWikiR GET POST
+/w/#Text/discuss DiscussWikiR GET POST
+/w/#Text/comment/#WikiCommentId DiscussWikiCommentR GET

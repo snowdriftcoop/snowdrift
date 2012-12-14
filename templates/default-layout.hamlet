@@ -1,0 +1,7 @@
+<div #body .span12>
+    $maybe msg <- mmsg
+        <div .alert #message>
+            #{msg}
+
+    ^{widget}
+

@@ -1,0 +1,21 @@
+<div .row>
+    <div .span9>
+        $forall Entity user_id user <- members
+            <hr>
+            <div .row>
+                <div .bio_name .span2>
+                    <a href=@{UserR user_id}>
+                        #{userShortName user}
+                        <br>
+                        $maybe avatar <- userAvatar user
+                            <img .headshot src="#{avatar}">
+                        $nothing
+                            <img .headshot src="@{StaticR img_placeholder_png}">
+                <div .span7>
+                    <p>
+                        $maybe blurb <- userBlurb user
+                            #{markdownToHtml blurb}
+                        $nothing
+                            &nbsp;
+    <div .span3>
+        ^{sidebar}

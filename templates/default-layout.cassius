@@ -1,0 +1,159 @@
+
+body
+    background-color : white
+    font-size : normal
+
+header
+    padding-bottom : 1em
+
+td.container
+    vertical-align : top
+
+form
+    padding : 0.4em
+    margin : 0.6em
+
+input, textarea
+    font-size : 0.9em
+
+
+input[type=submit]
+    border : none
+    color : aliceblue
+    background-color : #74BBFB
+    font-weight : bold
+    width : auto
+
+input[type=text], input[type=email]
+    width : 30em
+
+textarea
+    width : 40em
+    height : 8em
+
+a
+    color : #74BBFB
+
+a:visited
+    color : #1E90FF
+
+.math
+    font-family : serif
+    word-spacing : -0.07em
+
+div.math
+    font-size : 1.1em
+    text-align : center
+    padding : 1em
+
+.variable
+    font-style : italic
+    padding-right: 0.122em
+    margin-right: 0
+
+.note
+    color : blue
+
+footer
+    text-align : center
+    font-size : 0.8em
+
+ul, ol
+    margin : 0.3em
+    margin-top : 0.1em
+    margin-bottom : 0.1em
+    margin-left : 1em
+    padding : 0.3em
+    padding-top : 0em
+    padding-left : 1em
+
+li, p
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif
+
+li
+    line-height : 1.4em
+    margin: 0.4em
+    padding : 0.2em
+
+li.toc_li
+    font-size : medium
+
+p
+    padding : 0.1em
+    padding-top : 0em
+    line-height : 1.5em
+
+p.footnote
+    font-size : 0.9em
+    line-height : 1.2em
+    padding : 0.2em
+
+
+strong
+    font-weight : bold
+
+em
+    font-style : italic
+
+dd
+    padding : 0.7em
+    padding-bottom : 1.5em
+
+div#message
+    font-size : 0.9em
+    font-style : italic
+    color : blue
+
+div.row
+    padding-bottom : 1em
+
+figcaption
+    font-size : 0.9em
+    padding : 0.4em
+    margin : 0.6em
+
+#sidebar
+    border : solid black 1px
+    border-radius : 0.7em
+    padding : 0.7em
+    padding-bottom : 2em
+    text-align : right
+    line-height : 1.5em
+    font-size : 0.9em
+
+span.title
+    font-size : large
+
+.scroll
+    overflow : auto
+
+.capped
+    max-height : 30em
+
+h1
+    font-size : large
+
+.headshot
+    padding-top : 0.5em
+    width : 8em
+
+.headshot_large
+    padding-top : 0.5em
+    width : 12em
+
+.bio_name
+    vertical-align : top
+    text-align : right
+    font-weight : bold
+
+.comment
+    padding : .7em
+    padding : .7em
+    margin : .5em
+    margin-top : 1em
+    border-left : solid grey 0.2em
+
+.small_avatar
+    width : 2em
+    height : 2em
+    padding-right : 0.7em

@@ -1,0 +1,18 @@
+<div .row>
+    <div .span9>
+        $if can_edit
+            <div .row>
+                <div .span3>
+                    <a href="@{EditWikiR target}">edit this page
+                <div .span3>
+                    <a href="@{DiscussWikiR target}">discuss this page
+        $else
+            $if can_view_meta
+                <div .row>
+                    <div .span3>
+                        <a href="@{DiscussWikiR target}">view discussion
+        <div .row>
+            <div .span9>
+                #{markdownToHtml (wikiPageContent page)}
+    <div .span3>
+        ^{sidebar}
