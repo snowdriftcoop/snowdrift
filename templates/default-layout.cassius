@@ -130,9 +130,6 @@ span.title
 .capped
     max-height : 30em
 
-h1
-    font-size : large
-
 .headshot
     padding-top : 0.5em
     width : 8em
