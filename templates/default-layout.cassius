@@ -54,6 +54,9 @@ div.math
 .note
     color : blue
 
+hr
+    color : #CCCCCC
+
 footer
     text-align : center
     font-size : 0.8em
