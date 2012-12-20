@@ -17,7 +17,7 @@ sidebar = do
     maybe_user <- lift maybeAuth
     maybe_route <- lift getCurrentRoute
 
-    lift $ cacheSeconds 10
+    lift alreadyExpired
 
     let role = fromMaybe Uninvited (userRole . entityVal <$> maybe_user)
         log_in_or_out = do
