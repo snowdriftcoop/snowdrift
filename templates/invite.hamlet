@@ -51,7 +51,7 @@
 
                 <p>
                     <strong>
-                        Use this link to redeem your private invitation:
+                        Use this link to redeem your invitation:
                         <br>
                         @{link}
             <hr>
