@@ -4,7 +4,7 @@
             This code has been redeemed.
         $else
             $maybe _ <- maybe_user_id
-                Click redeem to access the content to which you've been invited.
+                Click redeem to update your account to the level to which you've been invited.
                 <br>
                 You will be asked to log in with an account if you are not already logged in.
                 <br>
