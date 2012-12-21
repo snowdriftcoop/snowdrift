@@ -2,9 +2,9 @@
     <div .span8>
         <p>
             Markdown is a simple text-formatting system.
-            You can also use full inline HTML tags alongside Markdown.
             Below are the most basic Markdown tags.
             Simply use the symbols that are around the text.
+            <strong>You can also use full inline HTML tags alongside Markdown.
             <br>
             <br>
             <em>*italic or emphasis*
@@ -14,25 +14,28 @@
             <strong>
                 <em>***bold-italic***
             <br>
-            [weblink-text](http://URL)
+            <br>
+            [weblink-text](URL)
+            <br>
+            or <URL> or <e-mail>
             <br>
             <br>
             blank lines separate paragraphs
             <ul>
-                <li>* bullet (* + - symbols all work)
+                <li>* bullets (can use any of * + - symbols)
                 <ul>
                     <li> * indent four spaces to create sub-levels
                         <p>indent to match bullet text for new paragraph within bullet
-            1. use numbers like this for ordered lists
-            <h1># Title
-            <h2>## subheader
-            <h3>### third level (and so on)
+            1. numbers like this for ordered lists (actual numbers don't matter, it auto-calculates)
+            <h1># h1 Title
+            <h2>## h2 subheader
+            <h3>### h3 third level (and so on)
             <blockquote>
-                > blockquote (start line with >)
+                > blockquote
             <hr>
             horizontal rule is *** or --- (3 or more) on a line with nothing else
             <br>
             <br>
-            for footnotes, use [^1] to mark the inline link and [^1]: for the footnote
+            for footnotes, use [^1] to mark the inline link and [^1]: for the footnote (again, numbers will auto-calculate)
     <div .span3>
         ^{sidebar}
