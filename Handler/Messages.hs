@@ -23,7 +23,7 @@ getMessagesR = do
             ) [ Desc MessageCreatedTs ]
          else runDB $ selectList [ MessageTo ==. Just viewer_id ] [ Desc MessageCreatedTs ]
 
-    users <- runDB $ selectList [ UserId <-. map (messageFrom . entityVal) messages ] []
+    users <- runDB $ selectList [ UserId <-. mapMaybe (messageFrom . entityVal) messages ] []
     let user_map = M.fromList $ map (entityKey &&& entityVal) users
         getUserName user_id =
             let user = user_map M.! user_id

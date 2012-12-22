@@ -16,14 +16,14 @@ getContactR = do
 
 postContactR :: Handler RepHtml
 postContactR = do
-    user_id <- requireAuthId
+    maybe_user_id <- maybeAuthId
     now <- liftIO getCurrentTime
 
     ((result, _), _) <- runFormPost contactForm
 
     case result of
         FormSuccess content -> do
-            _ <- runDB $ insert $ Message now user_id Nothing content
+            _ <- runDB $ insert $ Message now maybe_user_id Nothing content
             setMessage "Comment submitted.  Thank you for your input!"
 
         _ -> do

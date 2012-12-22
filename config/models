@@ -97,7 +97,7 @@ CommitteeUser
 
 Message
     createdTs UTCTime
-    from UserId
+    from UserId Maybe
     to UserId Maybe
     content Textarea
 

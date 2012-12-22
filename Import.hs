@@ -20,7 +20,7 @@ import           Settings.Development as Import
 import           Settings.StaticFiles as Import
 
 import           Data.Function        as Import (on)
-import           Data.Maybe           as Import (fromMaybe, listToMaybe)
+import           Data.Maybe           as Import (fromMaybe, listToMaybe, mapMaybe)
 
 import           Data.Int             as Import (Int64)
 
