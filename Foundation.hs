@@ -31,6 +31,8 @@ import Data.Text (Text)
 
 import Data.Char (isSpace)
 
+import Data.Maybe (fromMaybe)
+
 import Web.Authenticate.BrowserId (browserIdJs)
 
 import Blaze.ByteString.Builder.Char.Utf8 (fromText)
@@ -174,6 +176,7 @@ instance Yesod App where
         development || level == LevelWarn || level == LevelError
 
     isAuthorized HomeR _ = return Authorized
+    isAuthorized ContactR _ = return Authorized
     isAuthorized TosR _ = return Authorized
     isAuthorized PostLoginR _ = return Authorized
     isAuthorized JsLicenseR _ = return Authorized
@@ -184,7 +187,7 @@ instance Yesod App where
     isAuthorized (InvitationR _) _ = return Authorized
 
     isAuthorized (WikiR target) write = do
-        role <- userRole . entityVal <$> requireAuth
+        role <- fromMaybe Uninvited . (fmap (userRole . entityVal)) <$> maybeAuth
         page <- fmap entityVal $ runDB $ getBy404 $ UniqueWikiTarget target
 
         let authorized = if write
@@ -194,7 +197,7 @@ instance Yesod App where
         return $ if authorized then Authorized else Unauthorized "You do not have sufficient permissions."
 
     isAuthorized (DiscussWikiR target) write = do
-        role <- userRole . entityVal <$> requireAuth
+        role <- fromMaybe Uninvited . (fmap (userRole . entityVal)) <$> maybeAuth
         page <- fmap entityVal $ runDB $ getBy404 $ UniqueWikiTarget target
 
         let authorized = if write
@@ -204,7 +207,7 @@ instance Yesod App where
         return $ if authorized then Authorized else Unauthorized "You do not have sufficient permissions."
 
     isAuthorized (DiscussWikiCommentR target _) write = do
-        role <- userRole . entityVal <$> requireAuth
+        role <- fromMaybe Uninvited . (fmap (userRole . entityVal)) <$> maybeAuth
         page <- fmap entityVal $ runDB $ getBy404 $ UniqueWikiTarget target
 
         let authorized = if write
@@ -214,7 +217,7 @@ instance Yesod App where
         return $ if authorized then Authorized else Unauthorized "You do not have sufficient permissions."
 
     isAuthorized route write = do
-        role <- userRole . entityVal <$> requireAuth
+        role <- fromMaybe Uninvited . (fmap (userRole . entityVal)) <$> maybeAuth
         return $ roleCanView role write route
 
 roleCanView :: Role -> Bool -> Route App -> AuthResult

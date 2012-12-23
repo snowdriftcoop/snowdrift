@@ -6,7 +6,10 @@
                     <div .span3 .well .well-small>
                         <div .row>
                             <div .span3>
-                                from #{getUserName (messageFrom message)}
+                                $maybe from <- messageFrom message
+                                    from #{getUserName from}
+                                $nothing
+                                    from unregistered user
                         <div .row>
                             <div .span3>
                                 $maybe to <- messageTo message
