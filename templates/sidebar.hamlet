@@ -29,7 +29,7 @@
         ^{sb_link ApplicationsR "View Applications"}
 
     <hr>
-    ^{sb_link AboutR "About Snowdrift.coop"}
+    ^{sb_link (WikiR "about") "About Snowdrift.coop"}
     ^{sb_link WhoR "Who We Are"}
     ^{sb_link ProjectsR "See Projects"}
     ^{sb_link CommitteeR "Join the steering committee"}
