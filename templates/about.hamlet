@@ -2,6 +2,10 @@
     <div .span8>
          <div .row>
             <div .span8>
+                <p>
+                    <em>This page is now outdated.
+                    <strong><a href={@WikiR "about"}>Click here to see the updated content</a>
+                <hr>
                 <h3>Summary
                 <p>
                     <strong>Snowdrift.coop is a new fundraising system dedicated to Free digital works.
