@@ -1,0 +1,7 @@
+<div .row>
+    <div .span9>
+        <div .row>
+            ^{rendered_comments}
+
+    <div .span3>
+        ^{sidebar}
