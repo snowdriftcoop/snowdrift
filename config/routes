@@ -20,7 +20,6 @@
 /invitation/#Text InvitationR GET POST
 /invite InviteR GET POST
 
-/about AboutR GET
 /faq FaqR GET
 /committee CommitteeR GET POST
 /contact ContactR GET POST

@@ -22,11 +22,11 @@ roleCanInvite a b = a >= b
 
 roleDefaultTarget :: Role -> Route App
 roleDefaultTarget Uninvited = HomeR
-roleDefaultTarget GeneralPublic = AboutR
+roleDefaultTarget GeneralPublic = WikiR "about"
 roleDefaultTarget CommitteeCandidate = CommitteeR
 roleDefaultTarget CommitteeMember = CommitteeR
-roleDefaultTarget Admin = AboutR
-roleDefaultTarget Editor = AboutR
+roleDefaultTarget Admin = WikiR "about"
+roleDefaultTarget Editor = WikiR "about"
 
 roleLabel :: Role -> Text
 roleLabel Uninvited = "Uninvited"
