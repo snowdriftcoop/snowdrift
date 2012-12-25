@@ -18,9 +18,15 @@ $# used by renderComment function
 
     $if not (maybe_route == Just (DiscussWikiCommentR target comment_id))
         <a href="@{DiscussWikiCommentR target comment_id}">
-            reply
+            reply #
+
+    $maybe parent_id <- wikiCommentParent comment
+        <a href="@{DiscussWikiCommentR target parent_id}">
+            parent #
+
 
     $if depth > max_depth
+        <br>
         #{countReplies children} more replies
 
     $else
