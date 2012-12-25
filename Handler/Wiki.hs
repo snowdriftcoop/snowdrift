@@ -191,7 +191,7 @@ getDiscussWikiCommentR target comment_id = do
 
     let Node parent children = buildCommentTree root rest
         comment = renderComment target users 1 0 $ Node parent []
-        child_comments = sequence_ $ map (renderComment target users 10 0) children
+        child_comments = mapM_ (renderComment target users 10 0) children
 
     (comment_form, _) <- generateFormPost $ commentForm $ Just comment_id
 
@@ -216,6 +216,28 @@ postDiscussWikiR target = do
         FormFailure msgs -> error $ "Error submitting form: " ++ T.unpack (T.concat msgs)
 
     redirect $ DiscussWikiR target
+
+getDiscussWikiNewR :: Handler RepHtml
+getDiscussWikiNewR = do
+    Entity _ user <- requireAuth
+    now <- liftIO getCurrentTime
+
+    (comments, pages, users) :: ([Entity WikiComment], M.Map WikiPageId (Entity WikiPage), M.Map UserId (Entity User)) <- runDB $ do
+        unfiltered_pages :: [Entity WikiPage] <- selectList [] []
+        let pages = M.fromList $ map (entityKey &&& id) $ filter ((userRole user >=) . wikiPageCanViewMeta . entityVal) unfiltered_pages
+        comments <- selectList [ WikiCommentPage <-. M.keys pages ] [ Desc WikiCommentId, LimitTo 50 ]
+        let user_ids = S.toList $ S.fromList $ map (wikiCommentUser . entityVal) comments
+        users <- fmap M.fromList $ fmap (map (entityKey &&& id)) $ selectList [ UserId <-. user_ids ] []
+        return (comments, pages, users)
+
+    let rendered_comments =
+            if null comments
+             then [whamlet|no new comments|]
+             else mapM_ (\ comment -> renderComment (wikiPageTarget $ entityVal $ pages M.! wikiCommentPage (entityVal comment)) users 1 0 $ Node comment []) comments
+
+    defaultLayout $(widgetFile "wiki_new_comments")
+    
+        
 
 
 renderComment :: Text -> M.Map UserId (Entity User) -> Int -> Int -> Tree (Entity WikiComment) -> Widget
