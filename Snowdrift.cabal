@@ -117,7 +117,7 @@ library
                  , conduit
                  , random
                  , yesod-markdown
-                 , Diff
+                 , Diff                          >= 0.1        && < 0.2
                  , path-pieces
                  , containers
                  , authenticate
