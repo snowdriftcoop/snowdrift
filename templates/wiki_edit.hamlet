@@ -1,0 +1,16 @@
+<div .row>
+    <div .span9>
+        <div .row>
+            <div .span3>
+                <a href="@{DiscussWikiR target}">view discussion
+            <div .span3>
+                <a href="@{WikiR target}">current version
+        <div .row>
+                <div .span9>
+                    Page as of ^{renderTime (wikiEditTs edit)}
+        <hr .wikitop>
+        <div .row>
+                <div .span9>
+                    #{markdownToHtml (markdownDiffSecond (wikiEditDiff edit))}
+    <div .span3>
+        ^{sidebar}

@@ -216,6 +216,22 @@ instance Yesod App where
 
         return $ if authorized then Authorized else Unauthorized "You do not have sufficient permissions."
 
+    isAuthorized (WikiHistoryR target) _ = do
+        role <- fromMaybe Uninvited . (fmap (userRole . entityVal)) <$> maybeAuth
+        page <- fmap entityVal $ runDB $ getBy404 $ UniqueWikiTarget target
+
+        let authorized = role >= wikiPageCanViewMeta page
+
+        return $ if authorized then Authorized else Unauthorized "You do not have sufficient permissions."
+
+    isAuthorized (WikiEditR target _) _ = do
+        role <- fromMaybe Uninvited . (fmap (userRole . entityVal)) <$> maybeAuth
+        page <- fmap entityVal $ runDB $ getBy404 $ UniqueWikiTarget target
+
+        let authorized = role >= wikiPageCanViewMeta page
+
+        return $ if authorized then Authorized else Unauthorized "You do not have sufficient permissions."
+
     isAuthorized route write = do
         role <- fromMaybe Uninvited . (fmap (userRole . entityVal)) <$> maybeAuth
         return $ roleCanView role write route

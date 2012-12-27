@@ -7,7 +7,7 @@ import Import
 import Widgets.Sidebar
 import Widgets.Time
 
-import Model.Markdown.Diff (diffMarkdown)
+import Model.Markdown.Diff (diffMarkdown, markdownDiffSecond)
 import Model.Role (Role (..), roleField)
 import Model.User
 
@@ -238,6 +238,31 @@ getDiscussWikiNewR = do
     defaultLayout $(widgetFile "wiki_new_comments")
     
         
+getWikiHistoryR :: Text -> Handler RepHtml
+getWikiHistoryR target = do
+    (edits, users) <- runDB $ do
+        Entity page_id _ <- getBy404 $ UniqueWikiTarget target
+        edits <- selectList [ WikiEditPage ==. page_id ] [ Desc WikiEditId ]
+
+        let user_id_list = S.toList $ S.fromList $ map (wikiEditUser . entityVal) $ edits
+
+        users <- fmap M.fromList $ fmap (map (entityKey &&& id)) $ selectList [ UserId <-. user_id_list ] []
+
+        return (edits, users)
+
+    defaultLayout $(widgetFile "wiki_history")
+
+getWikiEditR :: Text -> WikiEditId -> Handler RepHtml
+getWikiEditR target edit_id = do
+    edit <- runDB $ do
+        Entity page_id _ <- getBy404 $ UniqueWikiTarget target
+        edit <- get404 edit_id
+
+        when (page_id /= wikiEditPage edit) $ error "selected edit is not an edit of selected page"
+
+        return edit
+
+    defaultLayout $(widgetFile "wiki_edit")
 
 
 renderComment :: Text -> M.Map UserId (Entity User) -> Int -> Int -> Tree (Entity WikiComment) -> Widget

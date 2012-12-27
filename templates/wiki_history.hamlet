@@ -1,0 +1,17 @@
+<div .row>
+    <div .span9>
+        <div .row>
+            <table .table>
+                $forall Entity edit_id edit <- edits
+                    <tr>
+                        <td>
+                            <a href="@{WikiEditR target edit_id}">
+                                ^{renderTime (wikiEditTs edit)}
+                        <td>
+                            $with user_id <- wikiEditUser edit
+                                $maybe user <- M.lookup user_id users
+                                    <a href="@{UserR user_id}">
+                                        #{userPrintName user}
+
+    <div .span3>
+        ^{sidebar}

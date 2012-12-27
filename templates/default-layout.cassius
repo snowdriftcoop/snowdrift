@@ -57,6 +57,12 @@ div.math
 hr
     color : #CCCCCC
 
+hr.wikitop
+    padding-top : 0em
+    margin-top : 0em
+    padding-bottom : 0.1em
+    margin-bottom : 0.1em
+
 footer
     text-align : center
     font-size : 0.8em
