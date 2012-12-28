@@ -11,6 +11,6 @@
         <hr .wikitop>
         <div .row>
                 <div .span9>
-                    #{markdownToHtml (markdownDiffSecond (wikiEditDiff edit))}
+                    #{markdownToHtml (wikiEditContent edit)}
     <div .span3>
         ^{sidebar}

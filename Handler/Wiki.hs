@@ -7,11 +7,10 @@ import Import
 import Widgets.Sidebar
 import Widgets.Time
 
-import Model.Markdown.Diff (diffMarkdown, markdownDiffSecond)
 import Model.Role (Role (..), roleField)
 import Model.User
 
-import Yesod.Markdown
+-- import Yesod.Markdown
 
 import qualified Data.Text as T
 
@@ -61,7 +60,7 @@ postWikiR target = do
                 if last_edit_id == wikiLastEditEdit (entityVal last_edit_entity)
                  then do
                     update page_id [WikiPageContent =. content]
-                    edit_id <- insert $ WikiEdit now user_id page_id $ diffMarkdown (wikiPageContent page) content
+                    edit_id <- insert $ WikiEdit now user_id page_id content
                     either_last_edit <- insertBy $ WikiLastEdit page_id edit_id
                     case either_last_edit of
                         Left (Entity to_update _) -> update to_update [WikiLastEditEdit =. edit_id]
@@ -116,7 +115,7 @@ postNewWikiR target = do
         FormSuccess (content, can_view, can_view_meta, can_edit) -> do
             _ <- runDB $ do
                 page_id <- insert $ WikiPage target content can_view can_view_meta can_edit
-                edit_id <- insert $ WikiEdit now user_id page_id $ diffMarkdown (Markdown "") content
+                edit_id <- insert $ WikiEdit now user_id page_id content
                 insert $ WikiLastEdit page_id edit_id
 
             setMessage "Created."

@@ -114,7 +114,7 @@ WikiEdit
     ts UTCTime
     user UserId
     page WikiPageId
-    diff MarkdownDiff
+    content Markdown
 
 WikiLastEdit
     page WikiPageId
