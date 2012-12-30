@@ -23,8 +23,8 @@ roleCanInvite a b = a >= b
 roleDefaultTarget :: Role -> Route App
 roleDefaultTarget Uninvited = HomeR
 roleDefaultTarget GeneralPublic = WikiR "about"
-roleDefaultTarget CommitteeCandidate = CommitteeR
-roleDefaultTarget CommitteeMember = CommitteeR
+roleDefaultTarget CommitteeCandidate = WikiR "joincommittee"
+roleDefaultTarget CommitteeMember = WikiR "committee"
 roleDefaultTarget Admin = WikiR "about"
 roleDefaultTarget Editor = WikiR "about"
 
