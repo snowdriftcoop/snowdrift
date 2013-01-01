@@ -17,8 +17,6 @@
             <br>
             [weblink-text](URL)
             <br>
-            or <URL> or <e-mail>
-            <br>
             <br>
             blank lines separate paragraphs
             <ul>
@@ -33,9 +31,18 @@
             <blockquote>
                 > blockquote
             <hr>
-            horizontal rule is *** or --- (3 or more) on a line with nothing else
+            horizontal rule is *** or --- (3 or more) and nothing else with empty lines above and below
+            <br>
+            <br>
+            ![optional Alt text](image URL "Optional title")
+            <br>
+            example: ![](http://www.adfreeblog.org/adfreesite_buttonsm.jpg) shows
+            <img src="http://www.adfreeblog.org/adfreesite_buttonsm.jpg">
             <br>
             <br>
             for footnotes, use [^1] to mark the inline link and [^1]: for the footnote (again, numbers will auto-calculate)
+            <br>
+            <br>
+            use \ backslash before characters to make them show up normally if they would otherwise be markdown commands (such as for *)
     <div .span3>
         ^{sidebar}
