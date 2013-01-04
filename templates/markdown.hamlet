@@ -2,8 +2,8 @@
     <div .span8>
         <p>
             Markdown is a simple text-formatting system.
-            Below are the basic tags.
-            You can also use full inline HTML alongside Markdown.
+            Below are some basics.
+            You can also use full inline HTML.
             See the complete details at
             <a href="http://www.johnmacfarlane.net/pandoc/README#pandocs-markdown"> Pandoc's Markdown
         <p>
@@ -19,17 +19,17 @@
             <br>
             use blank lines to separate paragraphs
             <br>
-            (put two or more spaces at the end of a line to make a single line-break)
+            use two or more spaces at the end of a line for a single line-break
         <p>
             <em>lists, headers, and blockquotes must start with a blank line above (aside from the document's very first line)
             <ul>
                 <li>* bulleted list item (any of * + - symbols)
                 <ul>
                     <li> * indent four spaces to create sub-levels
-                        <p>for a new paragraph within a list item, add a blank line and then indent four spaces in place of the bullet symbol
+                        <p>for a new paragraph within a list item, add a blank line, then indent four spaces in place of the bullet symbol
             1. ordered list
             <br>
-            2. specific numbers don't matter, it auto-calculates after the starting #
+            2. after the first number, it auto-calculates so specific numbers aren't needed
             <br>
             A. lists can also use letters or Roman numberals like i. ii. iii. iv.
         <p>
@@ -39,12 +39,14 @@
         <p>
             <blockquote>
                 > blockquote
-                <blockquote> use multiple > symbols to make nested levels;
-                <em>*most formatting is nestable*</em>)
+                <blockquote>
+                    >> use multiple > symbols to make nested levels;
+                    <em>*most Markdown formatting is nestable*</em>)
             horizontal rule is *** or --- (3 or more) and nothing else with empty lines above and below
             <hr>
-            <strong>images:
-            ![Alt text](image URL "optional title")
+            for
+            <strong>images
+            use ![Alt text](image URL "optional title")
             <br>
             example: ![](http://www.adfreeblog.org/adfreesite_buttonsm.jpg) shows
             <img src="http://www.adfreeblog.org/adfreesite_buttonsm.jpg">
@@ -59,12 +61,13 @@
             Specific numbers don't matter, they will auto-calculate.
             Footnotes can use any alphanumeric markers such as
             <strong> [^projectA]
-            as long as the link and note match. <strong>^[</strong>
-            This format is used to make inline text be a footnote. No specified marker is then required.<strong>]</strong>
+            as long as the link and note match. <strong>^[</strong>This format is used to make inline text be a footnote.
+            No specified marker is then required.<strong>]</strong>
+            <br>
             Footnotes can be placed anywhere and will be put at the end when rendered.
         <p>
             use
-            <strong> \
-            backslash before characters to make them show up normally if they would otherwise be markdown commands
+            <strong>\
+            backslash before characters to make them show normally if they would otherwise be markdown commands
     <div .span3>
         ^{sidebar}
