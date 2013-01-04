@@ -27,23 +27,23 @@
                 <ul>
                     <li> * indent four spaces to create sub-levels
                         <p>for a new paragraph within a list item, add a blank line and then indent four spaces in place of the bullet symbol
+            1. ordered list
             <br>
-            1. numbers make ordered lists (specific numbers don't matter, it auto-calculates after the starting #)
+            2. specific numbers don't matter, it auto-calculates after the starting #
             <br>
-            2) or like this
-            <br>
-            A. letters work too and so do Roman numberals like i. ii. iii. iv.
+            A. lists can also use letters or Roman numberals like i. ii. iii. iv.
         <p>
-            <h1># h1 Title
-            <h2>## h2 subheader
-            <h3>### h3 third level (and so on)
+            <h1># header
+            <h2>## subheader
+            <h3>### third level (and so on)
         <p>
             <blockquote>
-                > blockquote (use multiple > symbols to make nested levels; <em>*most formatting is nestable*</em>)
-            <hr>
+                > blockquote
+                <blockquote> use multiple > symbols to make nested levels;
+                <em>*most formatting is nestable*</em>)
             horizontal rule is *** or --- (3 or more) and nothing else with empty lines above and below
-            <br>
-            <br>
+            <hr>
+            <strong>images:
             ![Alt text](image URL "optional title")
             <br>
             example: ![](http://www.adfreeblog.org/adfreesite_buttonsm.jpg) shows
@@ -57,11 +57,14 @@
             for the footnote
             <br>
             Specific numbers don't matter, they will auto-calculate.
-            Footnotes can use any alphanumeric markers such as [^projectA] as long as the link and note match.
-            <br>
-            ^[This format is used to make inline text be a footnote. No specified marker is then required.]
+            Footnotes can use any alphanumeric markers such as
+            <strong> [^projectA]
+            as long as the link and note match. <strong>^[</strong>
+            This format is used to make inline text be a footnote. No specified marker is then required.<strong>]</strong>
             Footnotes can be placed anywhere and will be put at the end when rendered.
         <p>
-            use \ backslash before characters to make them show up normally if they would otherwise be markdown commands (such as for *)
+            use
+            <strong> \
+            backslash before characters to make them show up normally if they would otherwise be markdown commands
     <div .span3>
         ^{sidebar}
