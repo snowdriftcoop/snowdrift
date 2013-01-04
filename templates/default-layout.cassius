@@ -29,7 +29,7 @@ input[type=text], input[type=email]
 
 textarea
     width : 40em
-    height : 8em
+    height : 14em
 
 a
     color : #74BBFB
