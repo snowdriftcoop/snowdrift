@@ -41,10 +41,15 @@
             <blockquote>
                 > blockquote
                 <blockquote>
-                    >> use multiple > symbols to make nested levels;
-                    <em>*most Markdown formatting is nestable*</em>)
-            horizontal rule is *** or --- (3 or more) and nothing else with empty lines above and below
+                    >> use multiple > symbols to make nested levels
+                    <br>
+                    <em>*most Markdown formatting is nestable*</em>
+            a horizontal rule is 3 or hyphens with empty lines above and below:
+            <br>
+            <br>
+            ---
             <hr>
+            <br>
             for
             <strong>images
             use ![Alt text](image URL "optional title")
