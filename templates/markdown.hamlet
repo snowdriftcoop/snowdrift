@@ -1,5 +1,6 @@
 <div .row>
     <div .span8>
+        <h1>Summary of Markdown syntax
         <p>
             Markdown is a simple text-formatting system.
             Below are some basics.
