@@ -44,7 +44,7 @@
                     >> use multiple > symbols to make nested levels
                     <br>
                     <em>*most Markdown formatting is nestable*</em>
-            a horizontal rule is 3 or hyphens with empty lines above and below:
+            a horizontal rule is 3 or more hyphens with empty lines above and below:
             <br>
             <br>
             ---
