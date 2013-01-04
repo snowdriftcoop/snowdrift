@@ -62,7 +62,7 @@
             <strong>[^1]
             to mark the inline link and
             <strong>[^1]:
-            for the footnote
+            for the footnote.
             <br>
             Specific numbers don't matter, they will auto-calculate.
             Footnotes can use any alphanumeric markers such as
