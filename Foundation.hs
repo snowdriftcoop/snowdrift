@@ -152,6 +152,22 @@ instance Yesod App where
     -- The page to be redirected to when authentication is required.
     authRoute _ = Just $ AuthR LoginR
 
+    errorHandler (PermissionDenied _) = fmap chooseRep $ defaultLayout $ do
+        setTitle "Permission Denied"
+        toWidget [hamlet|$newline never
+            <h1>Permission Denied
+            <p>
+                You do not have permission to view this page at this time.
+                If you think you should, #
+                <a href="@{ContactR}">let us know #
+                and we'll fix it for you or everyone.
+                Otherwise, you can always go to our #
+                <a href="@{HomeR}">main page
+                .
+        |]
+
+    errorHandler other_error = defaultErrorHandler other_error
+
     -- This function creates static content files in the static folder
     -- and names them based on a hash of their content. This allows
     -- expiration dates to be set far in the future without worry of
