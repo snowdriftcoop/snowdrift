@@ -219,10 +219,9 @@ postDiscussWikiR target = do
 
     redirect $ DiscussWikiR target
 
-getDiscussWikiNewR :: Handler RepHtml
-getDiscussWikiNewR = do
+getWikiNewCommentsR :: Handler RepHtml
+getWikiNewCommentsR = do
     Entity _ user <- requireAuth
-    now <- liftIO getCurrentTime
 
     maybe_from <- fmap (Key . PersistInt64 . read . T.unpack) <$> lookupGetParam "from"
 
@@ -273,6 +272,45 @@ getWikiEditR target edit_id = do
 
     defaultLayout $(widgetFile "wiki_edit")
 
+getWikiNewEditsR :: Handler RepHtml
+getWikiNewEditsR = do
+    Entity _ user <- requireAuth
+
+    maybe_from <- fmap (Key . PersistInt64 . read . T.unpack) <$> lookupGetParam "from"
+
+    (edits, pages, users) :: ([Entity WikiEdit], M.Map WikiPageId (Entity WikiPage), M.Map UserId (Entity User)) <- runDB $ do
+        unfiltered_pages :: [Entity WikiPage] <- selectList [] []
+        let pages = M.fromList $ map (entityKey &&& id) $ filter ((userRole user >=) . wikiPageCanViewMeta . entityVal) unfiltered_pages
+            filters = case maybe_from of
+                        Nothing -> [ WikiEditPage <-. M.keys pages ]
+                        Just from -> [ WikiEditPage <-. M.keys pages, WikiEditId <=. from ]
+        edits <- selectList filters [ Desc WikiEditId, LimitTo 50 ]
+
+        let user_ids = S.toList $ S.fromList $ map (wikiEditUser . entityVal) edits
+        users <- fmap M.fromList $ fmap (map (entityKey &&& id)) $ selectList [ UserId <-. user_ids ] []
+        return (edits, pages, users)
+
+    let PersistInt64 to = unKey $ minimum (map entityKey edits)
+        renderEdit (Entity edit_id edit) =
+            let editor = users M.! wikiEditUser edit
+                page = pages M.! wikiEditPage edit
+             in [whamlet|
+                    <tr>
+                        <td>
+                            <a href="@{WikiEditR (wikiPageTarget (entityVal page)) edit_id}">
+                                #{wikiPageTarget (entityVal page)}
+
+                        <td>
+                            ^{renderTime (wikiEditTs edit)}
+
+                        <td>
+                            <a href="@{UserR (entityKey editor)}">
+                                #{userPrintName editor}
+
+                |]
+
+    defaultLayout $(widgetFile "wiki_new_edits")
+    
 
 renderComment :: Text -> M.Map UserId (Entity User) -> Int -> Int -> Tree (Entity WikiComment) -> Widget
 renderComment target users max_depth depth tree = do

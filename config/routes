@@ -45,5 +45,6 @@
 /w/#Text/comment/#WikiCommentId DiscussWikiCommentR GET
 /w/#Text/history WikiHistoryR GET
 /w/#Text/history/#WikiEditId WikiEditR GET
-/newcomments DiscussWikiNewR GET
+/newcomments WikiNewCommentsR GET
+/newedits WikiNewEditsR GET
 
