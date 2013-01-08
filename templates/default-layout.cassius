@@ -163,3 +163,9 @@ span.title
     width : 2em
     height : 2em
     padding-right : 0.7em
+
+q:before
+    content : '"'
+
+q:after
+    content : '"'
