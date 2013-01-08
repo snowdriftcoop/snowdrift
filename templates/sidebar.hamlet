@@ -32,7 +32,12 @@
     ^{sb_link (WikiR "about") "About Snowdrift.coop"}
     ^{sb_link WhoR "Who We Are"}
     ^{sb_link ProjectsR "See Projects"}
-    ^{sb_link (WikiR "joincommittee") "Join the steering committee"}
+    $maybe Entity _ user <- maybe_user
+        $case userRole user
+            $of CommitteeCandidate
+                ^{sb_link (WikiR "joincommittee") "Join the steering committee"}
+            $of _
+                ^{sb_link (WikiR "committee") "Committee"}
     ^{sb_link (WikiR "next") "Next steps for Snowdrift"}
     ^{sb_link InviteR "Invite others"}
     ^{sb_link ContactR "Contact Us"}
