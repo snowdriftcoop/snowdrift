@@ -158,10 +158,10 @@ instance Yesod App where
         toWidget [hamlet|$newline never
             <h1>Permission Denied
             <p>
-                You do not have permission to view this page at this time.
+                You do not have permission to view this page at this time. #
                 If you think you should, #
                 <a href="@{ContactR}">let us know #
-                and we'll fix it for you or everyone.
+                and we'll fix it for you or everyone. #
                 Otherwise, you can always go to our #
                 <a href="@{HomeR}">main page
                 .
