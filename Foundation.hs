@@ -155,16 +155,24 @@ instance Yesod App where
 
     errorHandler (PermissionDenied _) = fmap chooseRep $ defaultLayout $ do
         setTitle "Permission Denied"
+        maybe_user <- lift maybeAuth
         toWidget [hamlet|$newline never
             <h1>Permission Denied
             <p>
-                You do not have permission to view this page at this time. #
-                If you think you should, #
-                <a href="@{ContactR}">let us know #
-                and we'll fix it for you or everyone. #
-                Otherwise, you can always go to our #
-                <a href="@{HomeR}">main page
-                .
+                $maybe _ <- maybe_user
+                    You do not have permission to view this page at this time. #
+                    If you think you should, #
+                    <a href="@{ContactR}">let us know #
+                    and we'll fix it for you or everyone. #
+                    Otherwise, you can always go to our #
+                    <a href="@{HomeR}">main page
+                    .
+                $nothing
+                    You are not logged in, and this page is not publically visible. #
+                    <a href="@{AuthR LoginR}">Log in #
+                    or return to our #
+                    <a href="@{HomeR}">main page
+                    .
         |]
 
     errorHandler other_error = defaultErrorHandler other_error
