@@ -6,9 +6,12 @@ import System.Random
 import Text.Printf
 import Data.Text (pack, unpack)
 import qualified Data.Map as M
-import Data.Maybe (fromJust)
+import qualified Data.Set as S
+
+import Control.Arrow
 
 import Model.Role
+import Model.User
 
 import Widgets.Sidebar
 
@@ -29,29 +32,33 @@ getInviteR = do
     let maybe_link = InvitationR <$> maybe_invite_code
     (invite_form, _) <- generateFormPost $ inviteForm (userRole viewer)
 
-    let outstanding_invite_filter =
-            (case userRole viewer of
-                CommitteeMember -> []
-                Admin -> []
-                _ -> [ InviteUser ==. viewer_id ]
-            ) ++ [ InviteRedeemed ==. False ]
-        redeemed_invite_filter =
-            (case userRole viewer of
-                CommitteeMember -> []
-                Admin -> []
-                _ -> [ InviteUser ==. viewer_id ]
-            ) ++ [ InviteRedeemed ==. True ]
+    let can_view_all =
+            case userRole viewer of
+                CommitteeMember -> True
+                Admin -> True
+                _ -> False
+
+        outstanding_invite_filter = (if can_view_all then [] else [ InviteUser ==. viewer_id ]) ++ [ InviteRedeemed ==. False ]
+        redeemed_invite_filter = (if can_view_all then [] else [ InviteUser ==. viewer_id ]) ++ [ InviteRedeemed ==. True ]
 
     outstanding_invites <- runDB $ selectList outstanding_invite_filter [ Desc InviteCreatedTs ]
     redeemed_invites <- runDB $ selectList redeemed_invite_filter [ Desc InviteRedeemedTs, LimitTo 20 ]
-    redeemed_users <- runDB $ selectList [ UserId <-. map (fromJust . inviteRedeemedBy . entityVal) redeemed_invites ] []
+    let redeemed_users = S.fromList $ mapMaybe (inviteRedeemedBy . entityVal) redeemed_invites
+        redeemed_inviters = S.fromList $ map (inviteUser . entityVal) redeemed_invites
+        outstanding_inviters = S.fromList $ map (inviteUser . entityVal) outstanding_invites
+        user_ids = S.toList $ redeemed_users `S.union` redeemed_inviters `S.union` outstanding_inviters
 
-    let redeemed_users_map = M.fromList $ map (\ (Entity a b) -> (a, b)) redeemed_users
+    user_entities <- runDB $ selectList [ UserId <-. user_ids ] []
+
+    let users = M.fromList $ map (entityKey &&& id) user_entities
 
     let format_user Nothing = "NULL"
         format_user (Just user_id) =
-            let user = redeemed_users_map M.! user_id
+            let Entity _ user = users M.! user_id
              in fromMaybe (userIdent user) $ userName user
+
+        format_inviter user_id =
+            userPrintName $ users M.! user_id
 
     defaultLayout $(widgetFile "invite")
 

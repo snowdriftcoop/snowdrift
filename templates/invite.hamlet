@@ -98,12 +98,19 @@
             <table .table>
                 <tr>
                     <th .text>Created
+                    $if can_view_all
+                        <th .text>Invited By
                     <th .text>Info
                     <th .text>Role
                     <th .text>Code
                 $forall Entity _ invite <- outstanding_invites
                     <tr>
                         <td .text>#{age now (inviteCreatedTs invite)} ago
+                        $if can_view_all
+                            $with user_id <- inviteUser invite
+                                <th .text>
+                                    <a href="@{UserR user_id}">
+                                        #{format_inviter user_id}
                         <td .text>#{inviteTag invite}
                         <td .text>#{roleAbbrev (inviteRole invite)}
                         <td .text>@{InvitationR (inviteCode invite)}
@@ -119,6 +126,8 @@
                 <tr>
                     <th .text>Redeemed
                     <th .text>Redeemed By
+                    $if can_view_all
+                        <th .text>Invited By
                     <th .text>Info
                     <th .text>Role
                     <th .text>Code
@@ -126,6 +135,12 @@
                     <tr>
                         <td .text>#{age now (fromMaybe now (inviteRedeemedTs invite))} ago
                         <td .text>#{format_user (inviteRedeemedBy invite)}
+                        $if can_view_all
+                            $with user_id <- inviteUser invite
+                                <th .text>
+                                    <a href="@{UserR user_id}">
+                                        #{format_inviter user_id}
+
                         <td .text>#{inviteTag invite}
                         <td .text>#{roleAbbrev (inviteRole invite)}
                         <td .text>@{InvitationR (inviteCode invite)}
