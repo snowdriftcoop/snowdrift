@@ -115,6 +115,7 @@ WikiEdit
     user UserId
     page WikiPageId
     content Markdown
+    comment Text Maybe
 
 WikiLastEdit
     page WikiPageId

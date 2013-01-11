@@ -59,11 +59,11 @@ postWikiR target = do
         ((result, _), _) <- lift $ runFormPost $ editWikiForm (wikiLastEditEdit $ entityVal last_edit_entity) (wikiPageContent page)
 
         case result of
-            FormSuccess (last_edit_id, content) -> do
+            FormSuccess (last_edit_id, content, comment) -> do
                 if last_edit_id == wikiLastEditEdit (entityVal last_edit_entity)
                  then do
                     update page_id [WikiPageContent =. content]
-                    edit_id <- insert $ WikiEdit now user_id page_id content
+                    edit_id <- insert $ WikiEdit now user_id page_id content comment
                     either_last_edit <- insertBy $ WikiLastEdit page_id edit_id
                     case either_last_edit of
                         Left (Entity to_update _) -> update to_update [WikiLastEditEdit =. edit_id]
@@ -118,7 +118,7 @@ postNewWikiR target = do
         FormSuccess (content, can_view, can_view_meta, can_edit) -> do
             _ <- runDB $ do
                 page_id <- insert $ WikiPage target content can_view can_view_meta can_edit
-                edit_id <- insert $ WikiEdit now user_id page_id content
+                edit_id <- insert $ WikiEdit now user_id page_id content $ Just "Page created."
                 insert $ WikiLastEdit page_id edit_id
 
             setMessage "Created."
@@ -330,11 +330,12 @@ countReplies :: [Tree a] -> Int
 countReplies = sum . map (F.sum . fmap (const 1))
 
 
-editWikiForm :: WikiEditId -> Markdown -> Form (WikiEditId, Markdown)
+editWikiForm :: WikiEditId -> Markdown -> Form (WikiEditId, Markdown, Maybe Text)
 editWikiForm last_edit_id content = renderDivs
-    $ (,)
+    $ (,,)
         <$> areq hiddenField "" (Just last_edit_id)
         <*> areq markdownField "Page Content" (Just content)
+        <*> aopt textField "Comment" Nothing
 
 newWikiForm :: Form (Markdown, Role, Role, Role)
 newWikiForm = renderDivs $ (,,,)

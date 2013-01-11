@@ -12,6 +12,9 @@
                                 $maybe user <- M.lookup user_id users
                                     <a href="@{UserR user_id}">
                                         #{userPrintName user}
+                        $maybe comment <- wikiEditComment edit
+                            <td>
+                                #{comment}
 
     <div .span3>
         ^{sidebar}

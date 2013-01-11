@@ -8,6 +8,10 @@
         <div .row>
                 <div .span9>
                     Page as of ^{renderTime (wikiEditTs edit)}
+        $maybe comment <- wikiEditComment edit
+            <div .row>
+                <div .span9>
+                    #{comment}
         <hr .wikitop>
         <div .row>
                 <div .span9>
