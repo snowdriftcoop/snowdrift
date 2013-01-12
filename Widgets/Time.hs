@@ -15,7 +15,7 @@ import Text.Blaze
 renderTime :: UTCTime -> Widget
 renderTime time = do
     now <- liftIO getCurrentTime
-    let render = preEscapedToMarkup . intercalate "&nbsp;" . words . formatTime defaultTimeLocale "%c %Z"
+    let render = preEscapedToMarkup . intercalate "&nbsp;" . words . formatTime defaultTimeLocale "%c"
     toWidget [hamlet|
         <span title="#{age now time} ago">
             #{render time}
