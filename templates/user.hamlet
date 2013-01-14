@@ -26,6 +26,6 @@
         $maybe statement <- userStatement user
             #{markdownToHtml statement}
 
-    <div .span4 .well .well-small>
+    <div .span5 .well .well-small>
         ^{project_pledges user_id}
 

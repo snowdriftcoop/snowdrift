@@ -4,6 +4,7 @@ module Widgets.ProjectPledges where
 import Import
 
 import Model.Project
+import Model.Currency
 
 import Database.Persist.Query.Join.Sql (runJoin)
 import Database.Persist.Query.Join (selectOneMany, SelectOneMany (..))
@@ -14,6 +15,10 @@ project_pledges user_id = do
     project_summaries <- lift $ runDB $ do
         projects <- runJoin $ (selectOneMany (PledgeProject <-.) pledgeProject) { somFilterMany = [ PledgeUser ==. user_id ] }
         mapM summarizeProject projects
+
+    let cost = summaryShareCost
+        shares = getCount . summaryShares
+        total x = cost x $* fromIntegral (shares x)
 
     toWidget [hamlet|
         $if null project_summaries
@@ -27,6 +32,7 @@ project_pledges user_id = do
                         <td>
                             <a href="@{ProjectR (summaryProjectId summary)}">
                                 #{summaryName summary}
-                        <td>#{(show (summaryShareCost summary))}/share
-                        <td>#{(show (getCount (summaryShares summary)))} shares
+                        <td>#{show (cost summary)}/share
+                        <td>#{show (shares summary)}&nbsp;shares
+                        <td>#{show (total summary)}
     |]
