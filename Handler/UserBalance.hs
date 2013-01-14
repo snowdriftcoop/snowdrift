@@ -8,6 +8,7 @@ import qualified Data.Text as T
 
 import Model.Role
 import Model.Transaction
+import Model.Currency
 
 import Widgets.Sidebar
 import Widgets.Time
@@ -26,9 +27,9 @@ lookupParamDefault name def = do
 
 getUserBalanceR :: UserId -> Handler RepHtml
 getUserBalanceR user_id = do
+    Entity viewer_id viewer <- requireAuth
     user <- runDB $ get404 user_id
 
-    Entity viewer_id viewer <- requireAuth
     when (userRole viewer /= Admin && user_id /= viewer_id) $ permissionDenied "You can only view your own account balance history."
 
     Just account <- runDB $ get $ userAccount user
@@ -53,10 +54,36 @@ getUserBalanceR user_id = do
             , mkMapBy (projectAccount . entityVal) projects
             )
         
+    (add_funds_form, _) <- generateFormPost addTestCashForm
+
     defaultLayout $(widgetFile "user_balance")
 
 
 
 postUserBalanceR :: UserId -> Handler RepHtml
-postUserBalanceR _ = do
-    error "Not implemented yet." -- TODO
+postUserBalanceR user_id = do
+    Entity viewer_id viewer <- requireAuth
+    user <- runDB $ get404 user_id
+
+    when (userRole viewer /= Admin && user_id /= viewer_id) $ permissionDenied "You can only add money to your own account."
+
+    ((result, _), _) <- runFormPost addTestCashForm
+
+    now <- liftIO getCurrentTime
+
+    case result of
+        FormSuccess amount -> do
+            if amount < 10
+             then setMessage "Must load money in increments of at least $10."
+             else do
+                runDB $ do
+                    _ <- insert $ Transaction now (Just $ userAccount user) Nothing amount "Test Load" Nothing
+                    update (userAccount user) [ AccountBalance +=. amount ]
+                setMessage "Balance updated."
+            redirect $ UserBalanceR user_id
+
+        _ -> error "Error processing form."
+
+
+addTestCashForm :: Form Milray
+addTestCashForm = renderDivs $ fromInteger . (10000 *) <$> areq intField "Add (fake) money to your account" (Just 10)
