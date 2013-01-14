@@ -86,4 +86,4 @@ postUserBalanceR user_id = do
 
 
 addTestCashForm :: Form Milray
-addTestCashForm = renderDivs $ fromInteger . (10000 *) <$> areq intField "Add (fake) money to your account" (Just 10)
+addTestCashForm = renderDivs $ fromInteger . (10000 *) <$> areq intField "Add (fake) money to your account (dollars)" (Just 10)
