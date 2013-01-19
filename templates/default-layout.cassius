@@ -27,6 +27,9 @@ input[type=submit]
 input[type=text], input[type=email]
     width : 30em
 
+input.inline_shares
+    width : 2.5em
+
 textarea
     width : 40em
     height : 14em
