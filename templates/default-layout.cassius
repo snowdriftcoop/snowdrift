@@ -58,7 +58,9 @@ div.math
     color : blue
 
 hr
-    color : #CCCCCC
+    border-color : #CCCCDD
+    color : #CCCCDD
+    background-color : #CCCCDD
 
 hr.wikitop
     padding-top : 0em
