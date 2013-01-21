@@ -14,7 +14,8 @@
                     <hr>
             <tr>
                 <td>
-                    _{MsgMembers users}
+                    <a href="@{ProjectDonorsR project_id}">
+                        _{MsgDonors users}
             <tr>
                 <td>
                     _{MsgShares shares}

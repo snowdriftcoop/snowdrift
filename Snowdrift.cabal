@@ -108,6 +108,7 @@ library
                  , http-conduit                  >= 1.8        && < 1.9
                  , directory                     >= 1.1        && < 1.3
                  , warp                          >= 1.3        && < 1.4
+                 , esqueleto
                  , vector
                  , data-default
                  , time
@@ -174,6 +175,7 @@ executable         SnowdriftProcessPayments
                      , http-conduit                  >= 1.8        && < 1.9
                      , directory                     >= 1.1        && < 1.3
                      , warp                          >= 1.3        && < 1.4
+                     , esqueleto
                      , vector
                      , data-default
                      , time

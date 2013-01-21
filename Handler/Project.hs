@@ -1,17 +1,19 @@
 module Handler.Project where
 
-import Import
+import Import hiding ((=.), (==.), update)
 
 import Model.Currency
 import Model.Project
 import Model.Shares
 import Model.Markdown.Diff
 import Model.Role
+import Model.User
 
 import qualified Data.Text as T
 
 import Widgets.Sidebar
 
+import Database.Esqueleto
 
 lookupGetParamDefault :: Read a => Text -> a -> Handler a
 lookupGetParamDefault name def = do
@@ -54,7 +56,11 @@ getProjectR project_id = do
 guardCanEdit :: ProjectId -> Entity User -> Handler ()
 guardCanEdit project_id (Entity user_id user) =
     when (userRole user /= Admin) $ do
-        match <- runDB $ selectList [ ProjectUserUser ==. user_id, ProjectUserProject ==. project_id, ProjectUserCanEdit ==. True ] [ LimitTo 1 ]
+        match <- runDB $ select $ from $ \( project_user ) -> do
+            where_ ( project_user ^. ProjectUserUser ==. val user_id &&. project_user ^. ProjectUserProject ==. val project_id &&. project_user ^. ProjectUserCanEdit ==. val True )
+            limit 1
+            return project_user
+
         when (null match) $
             permissionDenied "You do not have permission to edit this project."
 
@@ -102,7 +108,9 @@ postProjectR project_id = do
                                 Just (Entity key _) -> repsert key $ ProjectLastUpdate project_id project_update
                                 Nothing -> (insert $ ProjectLastUpdate project_id project_update) >> return ()
 
-                        update project_id [ ProjectName =. name, ProjectDescription =. description ]
+                        update $ \ p -> do
+                            set p [ ProjectName =. val name, ProjectDescription =. val description ]
+                            where_ (p ^. ProjectId ==. val project_id)
 
                         return True
 
@@ -114,3 +122,22 @@ postProjectR project_id = do
 
     redirect $ ProjectR project_id
 
+
+getProjectDonorsR :: ProjectId -> Handler RepHtml
+getProjectDonorsR project_id = do
+    page <- lookupGetParamDefault "page" 0
+    per_page <- lookupGetParamDefault "count" 20
+
+    (project, pledges) <- runDB $ do
+        project <- get404 project_id
+        pledges <- select $ from $ \(pledge `InnerJoin` user) -> do
+            on (pledge ^. PledgeUser ==. user ^. UserId)
+            where_ (pledge ^. PledgeProject ==. val project_id)
+            orderBy [ desc (pledge ^. PledgeShares), asc (user ^. UserName), asc (user ^. UserId)]
+            offset page
+            limit per_page
+            return (pledge, user)
+
+        return (project, pledges)
+
+    defaultLayout $(widgetFile "project_donors")

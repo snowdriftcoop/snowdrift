@@ -13,6 +13,7 @@
 
 /projects ProjectsR GET
 /project/#ProjectId ProjectR GET POST
+/project/#ProjectId/donors ProjectDonorsR GET
 /project/#ProjectId/edit EditProjectR GET
 /project/#ProjectId/widget WidgetR GET
 /project/#ProjectId/shares UpdateSharesR GET POST

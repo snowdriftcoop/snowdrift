@@ -9,6 +9,8 @@ import Data.List (sortBy)
 import Database.Persist.Query.Join (selectOneMany)
 import Database.Persist.Query.Join.Sql (runJoin)
 
+import Data.Function (on)
+
 import qualified Data.Text as T
 
 userShortName :: User -> Text
