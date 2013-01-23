@@ -131,4 +131,13 @@ WikiComment
     text Markdown
     retractedReason Markdown Maybe
 
+Tag
+    name Text
+    UniqueTag name
+
+ProjectTag
+    project ProjectId
+    tag TagId
+    UniqueProjectTag project tag
+
  -- This file is used in Model.hs (which is imported by Foundation.hs)

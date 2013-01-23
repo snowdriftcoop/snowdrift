@@ -1,6 +1,8 @@
+{-# LANGUAGE TupleSections #-}
+
 module Handler.Project where
 
-import Import hiding ((=.), (==.), update)
+import Import hiding ((=.), (==.), update, delete)
 
 import Model.Currency
 import Model.Project
@@ -10,10 +12,13 @@ import Model.Role
 import Model.User
 
 import qualified Data.Text as T
+import qualified Data.Set as S
 
 import Widgets.Sidebar
 
 import Database.Esqueleto
+
+import Control.Monad (forM, forM_)
 
 lookupGetParamDefault :: Read a => Text -> a -> Handler a
 lookupGetParamDefault name def = do
@@ -25,7 +30,18 @@ getProjectsR :: Handler RepHtml
 getProjectsR = do
     page <- lookupGetParamDefault "page" 0
     per_page <- lookupGetParamDefault "count" 20
-    projects <- runDB $ selectList [] [ Asc ProjectCreatedTs, LimitTo per_page, OffsetBy page ]
+    tags <- maybe [] (map T.strip . T.splitOn ",") <$> lookupGetParam "tags"
+    projects <- runDB $ if null tags
+        then selectList [] [ Asc ProjectCreatedTs, LimitTo per_page, OffsetBy page ]
+        else do
+            tagged_projects <- forM tags $ \ name -> select $ from $ \ (t `InnerJoin` p_t) -> do
+                on (t ^. TagId ==. p_t ^. ProjectTagTag)
+                where_ ( t ^. TagName ==. val name )
+                return p_t
+
+            let project_ids = if null tagged_projects then S.empty else foldl1 S.intersection $ map (S.fromList . map (projectTagProject . entityVal)) tagged_projects
+            selectList [ ProjectId <-. S.toList project_ids ] [ Asc ProjectCreatedTs, LimitTo per_page, OffsetBy page ]
+
     defaultLayout $(widgetFile "projects")
 
 
@@ -65,14 +81,15 @@ guardCanEdit project_id (Entity user_id user) =
             permissionDenied "You do not have permission to edit this project."
 
 
-data UpdateProject = UpdateProject { updateProjectName :: Text, updateDescription :: Markdown }
+data UpdateProject = UpdateProject { updateProjectName :: Text, updateProjectDescription :: Markdown, updateProjectTags :: [Text] }
 
 
-editProjectForm :: Maybe Project -> Form UpdateProject
+editProjectForm :: Maybe (Project, [Text]) -> Form UpdateProject
 editProjectForm project =
     renderDivs $ UpdateProject
-        <$> areq textField "Project Name" (projectName <$> project)
-        <*> areq markdownField "Description" (projectDescription <$> project)
+        <$> areq textField "Project Name" (projectName . fst <$> project)
+        <*> areq markdownField "Description" (projectDescription . fst <$> project)
+        <*> (map T.strip . T.splitOn "," <$> areq textField "Tags" (T.intercalate ", " . snd <$> project))
 
 
 getEditProjectR :: ProjectId -> Handler RepHtml
@@ -80,8 +97,12 @@ getEditProjectR project_id = do
     requireAuth >>= guardCanEdit project_id
 
     project <- runDB $ get project_id
+    tags <- runDB $ select $ from $ \ (p_t `InnerJoin` tag) -> do
+        on (p_t ^. ProjectTagTag ==. tag ^. TagId)
+        where_ (p_t ^. ProjectTagProject ==. val project_id)
+        return tag
 
-    (project_form, _) <- generateFormPost $ editProjectForm project
+    (project_form, _) <- generateFormPost $ editProjectForm ((, map (tagName . entityVal) tags) <$> project)
 
     defaultLayout $(widgetFile "edit_project")
 
@@ -95,7 +116,7 @@ postProjectR project_id = do
     now <- liftIO getCurrentTime
 
     case result of
-        FormSuccess (UpdateProject name description) -> do
+        FormSuccess (UpdateProject name description tags) -> do
             processed <- runDB $ do
                 maybe_project <- get project_id
                 case maybe_project of
@@ -111,6 +132,21 @@ postProjectR project_id = do
                         update $ \ p -> do
                             set p [ ProjectName =. val name, ProjectDescription =. val description ]
                             where_ (p ^. ProjectId ==. val project_id)
+
+                        tag_ids <- forM tags $ \ tag_name -> do
+                            tag_entity_list <- select $ from $ \ tag -> do
+                                where_ (tag ^. TagName ==. val tag_name)
+                                return tag
+
+                            case tag_entity_list of
+                                [] -> insert $ Tag tag_name
+                                (Entity tag_id _) : _ -> return tag_id
+
+
+                        delete $ from $ \ project_tag -> do
+                            where_ (project_tag ^. ProjectTagProject ==. val project_id)
+
+                        forM_ tag_ids $ \ tag_id -> insert $ ProjectTag project_id tag_id
 
                         return True
 
