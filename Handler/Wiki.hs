@@ -10,7 +10,7 @@ import Widgets.Time
 import Model.Role (Role (..), roleField)
 import Model.User
 
--- import Yesod.Markdown
+import Yesod.Markdown
 
 import qualified Data.Text as T
 
@@ -28,12 +28,11 @@ import Control.Arrow ((&&&))
 import Database.Persist.Store
 
 
-
 getWikiR :: Text -> Handler RepHtml
 getWikiR target = do
-    Entity user_id user <- requireAuth
+    Entity _ user <- requireAuth
 
-    (Entity page_id page, Entity _ last_edit) <- runDB $ do
+    (Entity _ page, Entity _ _) <- runDB $ do
         page_entity <- getBy404 $ UniqueWikiTarget target
         last_edit_entity <- getBy404 $ UniqueWikiLastEdit $ entityKey page_entity
         return (page_entity, last_edit_entity)
@@ -44,40 +43,65 @@ getWikiR target = do
     let can_edit = userRole user >= wikiPageCanEdit page
         can_view_meta = userRole user >= wikiPageCanViewMeta page
 
-    defaultLayout $(widgetFile "wiki")
+    defaultLayout $ renderWiki target can_edit can_view_meta page
+
+
+renderWiki :: Text -> Bool -> Bool -> WikiPage -> Widget
+renderWiki target can_edit can_view_meta page = $(widgetFile "wiki")
 
 
 postWikiR :: Text -> Handler RepHtml
 postWikiR target = do
     Entity user_id user <- requireAuth
     now <- liftIO getCurrentTime
-    runDB $ do
-        Entity page_id page <- getBy404 $ UniqueWikiTarget target
-        lift $ when (userRole user < wikiPageCanEdit page) $ permissionDenied "You do not have sufficient privileges to edit this page."
-        last_edit_entity <- getBy404 $ UniqueWikiLastEdit page_id
 
-        ((result, _), _) <- lift $ runFormPost $ editWikiForm (wikiLastEditEdit $ entityVal last_edit_entity) (wikiPageContent page)
+    (Entity page_id page, Entity _ last_edit) <- runDB $ do
+        page_entity <- getBy404 $ UniqueWikiTarget target
+        last_edit_entity <- getBy404 $ UniqueWikiLastEdit $ entityKey page_entity
+        return (page_entity, last_edit_entity)
 
-        case result of
-            FormSuccess (last_edit_id, content, comment) -> do
-                if last_edit_id == wikiLastEditEdit (entityVal last_edit_entity)
-                 then do
-                    update page_id [WikiPageContent =. content]
-                    edit_id <- insert $ WikiEdit now user_id page_id content comment
-                    either_last_edit <- insertBy $ WikiLastEdit page_id edit_id
-                    case either_last_edit of
-                        Left (Entity to_update _) -> update to_update [WikiLastEditEdit =. edit_id]
-                        Right _ -> return ()
+    when (userRole user < wikiPageCanEdit page) $ permissionDenied "You do not have sufficient privileges to edit this page."
 
-                    lift $ setMessage "Updated."
+    ((result, _), _) <- runFormPost $ editWikiForm (wikiLastEditEdit last_edit) (wikiPageContent page)
 
-                 else
-                    error "Error submitting form - page was updated since you last saw it" -- TODO: something better here
+    case result of
+        FormSuccess (last_edit_id, content, comment) -> do
+            if last_edit_id == wikiLastEditEdit last_edit
+             then do
+                mode <- lookupPostParam "mode"
+                case mode of
+                    Just "preview" -> do
+                        (hidden_form, _) <- generateFormPost $ previewWikiForm (wikiLastEditEdit last_edit) content comment
+                        let rendered_wiki = renderWiki target False False $ WikiPage target content Uninvited Uninvited Uninvited
+                        defaultLayout [whamlet|
+                            <div .row>
+                                <div .span9>
+                                    <form method="POST" action="@{WikiR target}">
+                                        ^{hidden_form}
+                                        This is a preview. #
+                                        <input type=submit name=mode value=update>
+                            ^{rendered_wiki}
+                        |]
 
-            FormMissing -> error "Form missing."
-            FormFailure msgs -> error $ "Error submitting form: " ++ T.unpack (T.concat msgs)
+                    Just "update" -> do
+                        runDB $ do
+                            update page_id [WikiPageContent =. content]
+                            edit_id <- insert $ WikiEdit now user_id page_id content comment
+                            either_last_edit <- insertBy $ WikiLastEdit page_id edit_id
+                            case either_last_edit of
+                                Left (Entity to_update _) -> update to_update [WikiLastEditEdit =. edit_id]
+                                Right _ -> return ()
 
-    redirect $ WikiR target
+                        setMessage "Updated."
+                        redirect $ WikiR target
+
+                    _ -> error "Error: unrecognized mode"
+
+             else
+                error "Error submitting form - page was updated since you last saw it" -- TODO: something better here
+
+        FormMissing -> error "Form missing."
+        FormFailure msgs -> error $ "Error submitting form: " ++ T.unpack (T.concat msgs)
 
 
 getEditWikiR :: Text -> Handler RepHtml
@@ -331,11 +355,17 @@ countReplies = sum . map (F.sum . fmap (const 1))
 
 
 editWikiForm :: WikiEditId -> Markdown -> Form (WikiEditId, Markdown, Maybe Text)
-editWikiForm last_edit_id content = renderDivs
-    $ (,,)
+editWikiForm last_edit_id content = renderDivs $ (,,)
         <$> areq hiddenField "" (Just last_edit_id)
         <*> areq markdownField "Page Content" (Just content)
         <*> aopt textField "Comment" Nothing
+
+previewWikiForm :: WikiEditId -> Markdown -> Maybe Text -> Form (WikiEditId, Markdown, Maybe Text)
+previewWikiForm last_edit_id content comment = renderDivs $ (,,)
+        <$> areq hiddenField "" (Just last_edit_id)
+        <*> (Markdown <$> areq hiddenField "" (Just $ (\(Markdown str) -> str) content))
+        <*> aopt hiddenField "" (Just comment)
+
 
 newWikiForm :: Form (Markdown, Role, Role, Role)
 newWikiForm = renderDivs $ (,,,)

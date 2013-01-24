@@ -198,7 +198,7 @@ instance Yesod App where
     -- What messages should be logged. The following includes all messages when
     -- in development, and warnings and errors in production.
     shouldLog _ _source level =
-        development || level == LevelWarn || level == LevelError
+        development || level == LevelDebug || level == LevelError
 
     isAuthorized HomeR _ = return Authorized
     isAuthorized ContactR _ = return Authorized
