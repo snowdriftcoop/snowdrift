@@ -140,17 +140,36 @@ postNewWikiR target = do
 
     case result of
         FormSuccess (content, can_view, can_view_meta, can_edit) -> do
-            _ <- runDB $ do
-                page_id <- insert $ WikiPage target content can_view can_view_meta can_edit
-                edit_id <- insert $ WikiEdit now user_id page_id content $ Just "Page created."
-                insert $ WikiLastEdit page_id edit_id
+            mode <- lookupPostParam "mode"
+            case mode of
+                Just "preview" -> do
+                        (hidden_form, _) <- generateFormPost $ previewNewWikiForm content can_view can_view_meta can_edit
+                        let rendered_wiki = renderWiki target False False $ WikiPage target content Uninvited Uninvited Uninvited
+                        defaultLayout [whamlet|
+                            <div .row>
+                                <div .span9>
+                                    <form method="POST" action="@{WikiR target}">
+                                        ^{hidden_form}
+                                        This is a preview. #
+                                        <input type=submit name=mode value=create>
+                            ^{rendered_wiki}
+                        |]
 
-            setMessage "Created."
+                Just "create" -> do
+                    _ <- runDB $ do
+                        page_id <- insert $ WikiPage target content can_view can_view_meta can_edit
+                        edit_id <- insert $ WikiEdit now user_id page_id content $ Just "Page created."
+                        insert $ WikiLastEdit page_id edit_id
+
+                    setMessage "Created."
+                    redirect $ WikiR target
+
+                _ -> error "unrecognized mode"
+            
 
         FormMissing -> error "Form missing."
         FormFailure msgs -> error $ "Error submitting form: " ++ T.unpack (T.concat msgs)
 
-    redirect $ WikiR target
 
 buildCommentTree :: Entity WikiComment -> [ Entity WikiComment ] -> Tree (Entity WikiComment)
 buildCommentTree root rest =
@@ -373,6 +392,13 @@ newWikiForm = renderDivs $ (,,,)
         <*> areq (roleField Admin) "Minimum Role to View" (Just GeneralPublic)
         <*> areq (roleField Admin) "Minimum Role to View Metadata" (Just CommitteeCandidate)
         <*> areq (roleField Admin) "Minimum Role to Edit" (Just CommitteeMember)
+
+previewNewWikiForm :: Markdown -> Role -> Role -> Role -> Form (Markdown, Role, Role, Role)
+previewNewWikiForm content can_view can_view_meta can_edit = renderDivs $ (,,,)
+        <$> (Markdown <$> areq hiddenField "" (Just $ (\(Markdown str) -> str) content))
+        <*> (read <$> areq hiddenField "" (Just $ show can_view))
+        <*> (read <$> areq hiddenField "" (Just $ show can_view_meta))
+        <*> (read <$> areq hiddenField "" (Just $ show can_edit))
 
 commentForm :: Maybe WikiCommentId -> Form (Maybe WikiCommentId, Markdown)
 commentForm parent = renderDivs
