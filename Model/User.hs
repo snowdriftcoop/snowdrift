@@ -5,6 +5,8 @@ import Import
 
 import qualified Data.Text as T
 
+import Data.Maybe
+
 data UserUpdate =
     UserUpdate
         { userUpdateName :: Maybe Text
@@ -14,11 +16,20 @@ data UserUpdate =
         }
 
 updateUser :: PersistQuery backend m => Key backend (UserGeneric backend1) -> UserUpdate -> backend m ()
-updateUser user_id user_update = update user_id $
-        (maybe [] (return . (UserName =.) . Just) (userUpdateName user_update))
-        ++ (maybe [] (return . (UserStatement =.) . Just) (userUpdateStatement user_update))
-        ++ (maybe [] (return . (UserBlurb =.) . Just) (userUpdateBlurb user_update))
-        ++ (maybe [] (return . (UserAvatar =.) . Just) (userUpdateAvatar user_update))
+updateUser user_id user_update = update user_id $ catMaybes
+        [ (UserName =.) . Just <$> userUpdateName user_update
+        , (UserStatement =.) . Just <$> userUpdateStatement user_update
+        , (UserBlurb =.) . Just <$> userUpdateBlurb user_update
+        , (UserAvatar =.) . Just <$> userUpdateAvatar user_update
+        ]
+
+applyUserUpdate :: User -> UserUpdate -> User
+applyUserUpdate user user_update = user
+        { userName = fromMaybe (userName user) $ Just <$> userUpdateName user_update
+        , userStatement = fromMaybe (userStatement user) $ Just <$> userUpdateStatement user_update
+        , userBlurb = fromMaybe (userBlurb user) $ Just <$> userUpdateBlurb user_update
+        , userAvatar = fromMaybe (userAvatar user) $ Just <$> userUpdateAvatar user_update
+        }
 
 
 userPrintName :: Entity User -> Text
