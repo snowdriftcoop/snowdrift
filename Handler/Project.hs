@@ -20,6 +20,8 @@ import Database.Esqueleto
 
 import Control.Monad (forM, forM_)
 
+import Yesod.Markdown
+
 lookupGetParamDefault :: Read a => Text -> a -> Handler a
 lookupGetParamDefault name def = do
     maybe_value <- lookupGetParam name
@@ -58,15 +60,20 @@ getProjectR project_id = do
 
         return (project, pledges, pledge)
 
+    defaultLayout $ renderProject (Just project_id) project pledges pledge
+
+
+renderProject :: Maybe ProjectId -> ProjectGeneric SqlPersist -> [Int64] -> Maybe (Entity (PledgeGeneric SqlPersist)) -> Widget
+renderProject maybe_project_id project pledges pledge = do
     let share_value = projectShareValue project
         users = fromIntegral $ length pledges
         shares = sum pledges
         project_value = share_value $* (fromIntegral shares)
         description = markdownToHtml $ projectDescription project
 
-    ((_, update_shares), _) <- generateFormGet $ buySharesForm $ fromMaybe 0 $ pledgeShares . entityVal <$> pledge
+    ((_, update_shares), _) <- lift $ generateFormGet $ buySharesForm $ fromMaybe 0 $ pledgeShares . entityVal <$> pledge
 
-    defaultLayout $(widgetFile "project")
+    $(widgetFile "project")
 
 
 guardCanEdit :: ProjectId -> Entity User -> Handler ()
@@ -90,6 +97,13 @@ editProjectForm project =
         <$> areq textField "Project Name" (projectName . fst <$> project)
         <*> areq markdownField "Description" (projectDescription . fst <$> project)
         <*> (map T.strip . T.splitOn "," <$> areq textField "Tags" (T.intercalate ", " . snd <$> project))
+
+previewProjectForm :: Maybe (Project, [Text]) -> Form UpdateProject
+previewProjectForm project =
+    renderDivs $ UpdateProject
+        <$> areq hiddenField "" (projectName . fst <$> project)
+        <*> (Markdown <$> areq hiddenField "" ((\ (Markdown str) -> str) . projectDescription . fst <$> project))
+        <*> (map T.strip . T.splitOn "," <$> areq hiddenField "" (T.intercalate ", " . snd <$> project))
 
 
 getEditProjectR :: ProjectId -> Handler RepHtml
@@ -117,46 +131,69 @@ postProjectR project_id = do
 
     case result of
         FormSuccess (UpdateProject name description tags) -> do
-            processed <- runDB $ do
-                maybe_project <- get project_id
-                case maybe_project of
-                    Nothing -> return False
-                    Just project -> do
-                        when (projectDescription project /= description) $ do
-                            project_update <- insert $ ProjectUpdate now project_id (entityKey viewer) $ diffMarkdown (projectDescription project) description
-                            last_update <- getBy $ UniqueProjectLastUpdate project_id
-                            case last_update of
-                                Just (Entity key _) -> repsert key $ ProjectLastUpdate project_id project_update
-                                Nothing -> (insert $ ProjectLastUpdate project_id project_update) >> return ()
+            mode <- lookupPostParam "mode"
+            case mode of
+                Just "preview" -> do
+                    project <- runDB $ get404 project_id
+                    let preview_project = project { projectName = name, projectDescription = description }
+                    (hidden_form, _) <- generateFormPost $ previewProjectForm $ Just (preview_project, tags)
+                    let rendered_project = renderProject (Just project_id) preview_project [] Nothing
+                    defaultLayout $ [whamlet|
+                        <div .row>
+                            <div .span9>
+                                <form method="POST" action="@{ProjectR project_id}">
+                                    ^{hidden_form}
+                                    This is a preview. #
+                                    <input type=submit name=mode value=update>
+                        ^{rendered_project}
+                    |]
 
-                        update $ \ p -> do
-                            set p [ ProjectName =. val name, ProjectDescription =. val description ]
-                            where_ (p ^. ProjectId ==. val project_id)
+                Just "update" -> do
+                    processed <- runDB $ do
+                        maybe_project <- get project_id
+                        case maybe_project of
+                            Nothing -> return False
+                            Just project -> do
+                                when (projectDescription project /= description) $ do
+                                    project_update <- insert $ ProjectUpdate now project_id (entityKey viewer) $ diffMarkdown (projectDescription project) description
+                                    last_update <- getBy $ UniqueProjectLastUpdate project_id
+                                    case last_update of
+                                        Just (Entity key _) -> repsert key $ ProjectLastUpdate project_id project_update
+                                        Nothing -> (insert $ ProjectLastUpdate project_id project_update) >> return ()
 
-                        tag_ids <- forM tags $ \ tag_name -> do
-                            tag_entity_list <- select $ from $ \ tag -> do
-                                where_ (tag ^. TagName ==. val tag_name)
-                                return tag
+                                update $ \ p -> do
+                                    set p [ ProjectName =. val name, ProjectDescription =. val description ]
+                                    where_ (p ^. ProjectId ==. val project_id)
 
-                            case tag_entity_list of
-                                [] -> insert $ Tag tag_name
-                                (Entity tag_id _) : _ -> return tag_id
+                                tag_ids <- forM tags $ \ tag_name -> do
+                                    tag_entity_list <- select $ from $ \ tag -> do
+                                        where_ (tag ^. TagName ==. val tag_name)
+                                        return tag
+
+                                    case tag_entity_list of
+                                        [] -> insert $ Tag tag_name
+                                        (Entity tag_id _) : _ -> return tag_id
 
 
-                        delete $ from $ \ project_tag -> do
-                            where_ (project_tag ^. ProjectTagProject ==. val project_id)
+                                delete $ from $ \ project_tag -> do
+                                    where_ (project_tag ^. ProjectTagProject ==. val project_id)
 
-                        forM_ tag_ids $ \ tag_id -> insert $ ProjectTag project_id tag_id
+                                forM_ tag_ids $ \ tag_id -> insert $ ProjectTag project_id tag_id
 
-                        return True
+                                return True
 
-            if processed
-             then setMessage "project updated"
-             else notFound
+                    if processed
+                     then do
+                         setMessage "project updated"
+                         redirect $ ProjectR project_id
+                     else notFound
 
-        _ -> setMessage "error"
-
-    redirect $ ProjectR project_id
+                _ -> do
+                    setMessage "error: unrecognized mode"
+                    redirect $ ProjectR project_id
+        _ -> do
+            setMessage "error"
+            redirect $ ProjectR project_id
 
 
 getProjectDonorsR :: ProjectId -> Handler RepHtml

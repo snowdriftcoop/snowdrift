@@ -14,7 +14,10 @@
                     <hr>
             <tr>
                 <td>
-                    <a href="@{ProjectDonorsR project_id}">
+                    $maybe project_id <- maybe_project_id
+                        <a href="@{ProjectDonorsR project_id}">
+                            _{MsgDonors users}
+                    $nothing
                         _{MsgDonors users}
             <tr>
                 <td>
@@ -24,9 +27,14 @@
                     #{show share_value}/share
         <hr>
 
-        <form method=GET action=@{UpdateSharesR project_id}>
-            ^{update_shares}
-            <input type=submit value="enter pledge">
+        $maybe project_id <- maybe_project_id
+            <form method=GET action=@{UpdateSharesR project_id}>
+                ^{update_shares}
+                <input type=submit value="enter pledge">
+        $nothing
+            <form>
+                ^{update_shares}
+                <button value="enter pledge">
 
     <div .span3 .offset1>
         ^{sidebar}
