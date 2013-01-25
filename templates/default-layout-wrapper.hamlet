@@ -83,10 +83,10 @@ $newline never
                     <div .span3>
                         &copy; #{extraCopyright $ appExtra $ settings master}
                     <div .span3>
-                        Released under #
+                        Released&nbsp;under&nbsp;
                         <a title="Affero GPL version 3.0 or newer" href="https://www.gnu.org/licenses/agpl">
                             AGPLv3+
-                        \ and #
+                        &nbsp;and&nbsp;
                         <a href="https://creativecommons.org/licenses/by-sa/3.0">
                             CC&nbsp;BY-SA
 
