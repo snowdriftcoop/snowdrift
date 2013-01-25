@@ -27,7 +27,6 @@ import Control.Arrow ((&&&))
 
 import Database.Persist.Store
 
-
 getWikiR :: Text -> Handler RepHtml
 getWikiR target = do
     Entity _ user <- requireAuth
@@ -213,7 +212,7 @@ getDiscussWikiR target = do
 
 getDiscussWikiCommentR :: Text -> WikiCommentId -> Handler RepHtml
 getDiscussWikiCommentR target comment_id = do
-    Entity user_id user <- requireAuth
+    Entity _ user <- requireAuth
     Entity page_id page  <- runDB $ getBy404 $ UniqueWikiTarget target
 
     let can_edit = userRole user >= wikiPageCanEdit page
@@ -234,18 +233,24 @@ getDiscussWikiCommentR target comment_id = do
 
         return $ (Entity comment_id root, rest, users)
 
+    (comment_form, _) <- generateFormPost $ commentForm $ Just comment_id
+
+    defaultLayout $ renderDiscussWikiComment target can_edit comment_form root rest users
+
+
+renderDiscussWikiComment :: Text -> Bool -> Widget -> Entity WikiComment -> [Entity WikiComment] -> M.Map UserId (Entity User) -> Widget
+renderDiscussWikiComment target can_edit comment_form root rest users = do
     let Node parent children = buildCommentTree root rest
         comment = renderComment target users 1 0 $ Node parent []
         child_comments = mapM_ (renderComment target users 10 0) children
 
-    (comment_form, _) <- generateFormPost $ commentForm $ Just comment_id
+    $(widgetFile "wiki_comment")
 
-    defaultLayout $(widgetFile "wiki_comment")
 
 
 postDiscussWikiR :: Text -> Handler RepHtml
 postDiscussWikiR target = do
-    Entity user_id _ <- requireAuth
+    Entity user_id user <- requireAuth
     Entity page_id _ <- runDB $ getBy404 $ UniqueWikiTarget target
 
     now <- liftIO getCurrentTime
@@ -254,13 +259,32 @@ postDiscussWikiR target = do
 
     case result of
         FormSuccess (parent, text) -> do
-            _ <- runDB $ insert $ WikiComment now Nothing page_id parent user_id text Nothing
-            setMessage "comment posted"
+            mode <- lookupPostParam "mode"
+            case mode of
+                Just "preview" -> do
+                    (hidden_form, _) <- generateFormPost $ previewCommentForm parent text
+                    (comment_form, _) <- generateFormPost $ disabledCommentForm
+                    let rendered_comment = renderDiscussWikiComment target True comment_form (Entity (Key $ PersistInt64 0) $ WikiComment now Nothing page_id parent user_id text Nothing) [] (M.singleton user_id $ Entity user_id user)
+                    defaultLayout [whamlet|
+                        <div .row>
+                            <div .span9>
+                                <form method="POST" action="@{DiscussWikiR target}">
+                                    ^{hidden_form}
+                                    This is a preview. #
+                                    <input type=submit name=mode value=post>
+                        ^{rendered_comment}
+                    |]
+
+                Just "post" -> do
+                    _ <- runDB $ insert $ WikiComment now Nothing page_id parent user_id text Nothing
+                    setMessage "comment posted"
+                    redirect $ DiscussWikiR target
+
+                _ -> error "unrecognized mode"
 
         FormMissing -> error "Form missing."
         FormFailure msgs -> error $ "Error submitting form: " ++ T.unpack (T.concat msgs)
 
-    redirect $ DiscussWikiR target
 
 getWikiNewCommentsR :: Handler RepHtml
 getWikiNewCommentsR = do
@@ -400,8 +424,18 @@ previewNewWikiForm content can_view can_view_meta can_edit = renderDivs $ (,,,)
         <*> (read <$> areq hiddenField "" (Just $ show can_view_meta))
         <*> (read <$> areq hiddenField "" (Just $ show can_edit))
 
+disabledCommentForm :: Form Markdown
+disabledCommentForm = renderDivs $ areq markdownField ("Reply" { fsAttrs = [("disabled","")] }) Nothing
+
 commentForm :: Maybe WikiCommentId -> Form (Maybe WikiCommentId, Markdown)
 commentForm parent = renderDivs
     $ (,)
         <$> aopt hiddenField "" (Just parent)
         <*> areq markdownField (if parent == Nothing then "Comment" else "Reply") Nothing
+
+previewCommentForm :: Maybe WikiCommentId -> Markdown -> Form (Maybe WikiCommentId, Markdown)
+previewCommentForm parent comment = renderDivs
+    $ (,)
+        <$> aopt hiddenField "" (Just parent)
+        <*> (Markdown <$> areq hiddenField "" (Just $ (\(Markdown str) -> str) comment))
+

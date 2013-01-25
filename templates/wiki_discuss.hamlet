@@ -4,7 +4,8 @@
             <div .row>
                 <form action="@{DiscussWikiR target}" method="POST">
                     ^{comment_form}
-                    <input type="submit" value="Post">
+                    <input type="submit" name="mode" value="preview">
+                    <input type="submit" name="mode" value="post">
         <div .row>
             ^{comments}
 
