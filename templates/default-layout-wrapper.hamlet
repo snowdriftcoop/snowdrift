@@ -89,11 +89,11 @@ $newline never
                         \ and #
                         <a href="https://creativecommons.org/licenses/by-sa/3.0">
                             CC&nbsp;BY-SA
-                        .
+
                     <div .span3>
                         <a href="/license/javascript" rel="jslicense">JavaScript licenses
                     <div .span3>
-                        <a href="#{extraSourceRepo $ appExtra $ settings master}">Check out the source.
+                        <a href="#{extraSourceRepo $ appExtra $ settings master}">Check out the source!
 
         $maybe analytics <- extraAnalytics $ appExtra $ settings master
             <script>
