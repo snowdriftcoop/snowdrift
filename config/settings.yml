@@ -2,7 +2,7 @@ Default: &defaults
   host: "*4" # any IPv4 host
   port: 3000
   approot: "http://localhost:3000"
-  copyright: "2012 Snowdrift.coop"
+  copyright: "2013 Snowdrift.coop"
   source: "https://gitorious.org/snowdrift/snowdrift"
   #analytics: UA-YOURCODE
 
