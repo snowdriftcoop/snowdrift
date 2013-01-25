@@ -83,15 +83,15 @@ $newline never
                     <div .span3>
                         &copy; #{extraCopyright $ appExtra $ settings master}
                     <div .span3>
-                        <a href="/license/javascript" rel="jslicense">JavaScript licenses
-                    <div .span3>
-                        Distributed under #
-                        <a href="https://www.gnu.org/licenses/agpl">
-                            AGPL
+                        Released under #
+                        <a title="Affero GPL version 3.0 or newer" href="https://www.gnu.org/licenses/agpl">
+                            AGPLv3+
                         \ and #
                         <a href="https://creativecommons.org/licenses/by-sa/3.0">
                             CC&nbsp;BY-SA
                         .
+                    <div .span3>
+                        <a href="/license/javascript" rel="jslicense">JavaScript licenses
                     <div .span3>
                         <a href="#{extraSourceRepo $ appExtra $ settings master}">Check out the source.
 
