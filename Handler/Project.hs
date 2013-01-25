@@ -145,6 +145,8 @@ postProjectR project_id = do
                                     ^{hidden_form}
                                     This is a preview. #
                                     <input type=submit name=mode value=update>
+                                    <script>
+                                        document.write('<input type="submit" value="edit" onclick="history.go(-1);return false;" />')
                         ^{rendered_project}
                     |]
 

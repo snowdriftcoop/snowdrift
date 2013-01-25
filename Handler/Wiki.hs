@@ -79,6 +79,8 @@ postWikiR target = do
                                         ^{hidden_form}
                                         This is a preview. #
                                         <input type=submit name=mode value=update>
+                                        <script>
+                                            document.write('<input type="submit" value="edit" onclick="history.go(-1);return false;" />')
                             ^{rendered_wiki}
                         |]
 
@@ -151,6 +153,8 @@ postNewWikiR target = do
                                         ^{hidden_form}
                                         This is a preview. #
                                         <input type=submit name=mode value=create>
+                                        <script>
+                                            document.write('<input type="submit" value="edit" onclick="history.go(-1);return false;" />')
                             ^{rendered_wiki}
                         |]
 
@@ -272,6 +276,8 @@ postDiscussWikiR target = do
                                     ^{hidden_form}
                                     This is a preview. #
                                     <input type=submit name=mode value=post>
+                                    <script>
+                                        document.write('<input type="submit" value="edit" onclick="history.go(-1);return false;" />')
                         ^{rendered_comment}
                     |]
 
