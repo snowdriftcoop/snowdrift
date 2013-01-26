@@ -16,7 +16,7 @@ getApplicationsR = do
          then runDB $ selectList [] [ Desc CommitteeApplicationCreatedTs ]
          else return []
 
-    _ <- runDB $ update viewer_id [ UserReadApplications =. Just now ]
+    _ <- runDB $ update viewer_id [ UserReadApplications =. now ]
 
 
     defaultLayout $(widgetFile "applications")

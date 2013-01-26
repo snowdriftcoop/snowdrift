@@ -22,8 +22,10 @@ User
     avatar Text Maybe
     blurb Markdown Maybe
     statement Markdown Maybe
-    readMessages UTCTime Maybe
-    readApplications UTCTime Maybe
+    readMessages UTCTime default=now()
+    readApplications UTCTime default=now()
+    readComments UTCTime default=now()
+    readEdits UTCTime default=now()
     UniqueUser ident
     UniqueUserAccount account
 
