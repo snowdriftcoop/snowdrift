@@ -316,7 +316,18 @@ getWikiNewCommentsR = do
         rendered_comments =
             if null comments
              then [whamlet|no new comments|]
-             else mapM_ (\ comment -> renderComment (wikiPageTarget $ entityVal $ pages M.! wikiCommentPage (entityVal comment)) users 1 0 $ Node comment []) comments
+             else forM_ comments $ \ comment -> do
+                let target = wikiPageTarget $ entityVal $ pages M.! wikiCommentPage (entityVal comment)
+                    rendered_comment = renderComment target users 1 0 $ Node comment []
+                [whamlet|$newline never
+                    <div .row>
+                        <div .span9>
+                            On #
+                            <a href="@{WikiR target}">
+                                #{target}
+                            :
+                            ^{rendered_comment}
+                |]
 
     runDB $ update user_id [ UserReadComments =. now ]
 
