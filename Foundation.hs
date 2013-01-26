@@ -43,6 +43,8 @@ import qualified Data.ByteString.Lazy.Char8 as LB
 import qualified Data.Text.Lazy.Encoding as E
 import qualified Data.Text as T
 
+import Data.Time
+
 -- | The site argument for your application. This can be a good place to
 -- keep settings and values requiring initialization before your application
 -- starts running, such as database connections. Every handler will have
@@ -339,12 +341,13 @@ instance YesodAuth App where
     logoutDest _ = HomeR
 
     getAuthId creds = runDB $ do
+        now <- liftIO getCurrentTime
         x <- getBy $ UniqueUser $ credsIdent creds
         case x of
             Just (Entity uid _) -> return $ Just uid
             Nothing -> do
                 account_id <- insert $ Account $ Milray 0
-                fmap Just $ insert $ User (credsIdent creds) Nothing account_id Uninvited Nothing Nothing Nothing Nothing Nothing
+                fmap Just $ insert $ User (credsIdent creds) Nothing account_id Uninvited Nothing Nothing Nothing now now now now
 
     -- You can add other plugins like BrowserID, email or OAuth here
     authPlugins _ = [authBrowserIdFixed, authGoogleEmail]

@@ -10,6 +10,7 @@ import Data.Conduit (MonadUnsafeIO, MonadThrow)
 import Control.Monad.IO.Class (MonadIO)
 import Control.Monad.Logger (MonadLogger)
 
+
 data ProjectSummary =
     ProjectSummary
         { summaryName :: Text
@@ -55,3 +56,4 @@ updateShareValue project_id = do
  -  Unfund shares
  -  Fix algorithm
  -}
+

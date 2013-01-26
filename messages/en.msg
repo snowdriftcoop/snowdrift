@@ -5,3 +5,5 @@ Donors users@Int64: #{show users} #{plural users "donor" "donors"}
 Shares shares@Int64: #{show shares} #{plural shares "share" "shares"}
 NewMessages messages@Int: #{show messages} New #{plural messages "Message" "Messages"}
 NewApplications applications@Int: #{show applications} New #{plural applications "Application" "Applications"}
+NewComments comments@Int: #{show comments} New #{plural comments "Comments" "Comments"}
+NewWikiEdits edits@Int: #{show edits} New #{plural edits "Wiki Edits" "Wiki Edits"}

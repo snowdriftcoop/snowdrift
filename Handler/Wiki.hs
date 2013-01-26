@@ -294,9 +294,11 @@ postDiscussWikiR target = do
 
 getWikiNewCommentsR :: Handler RepHtml
 getWikiNewCommentsR = do
-    Entity _ user <- requireAuth
+    Entity user_id user <- requireAuth
 
     maybe_from <- fmap (Key . PersistInt64 . read . T.unpack) <$> lookupGetParam "from"
+
+    now <- liftIO getCurrentTime
 
     (comments, pages, users) :: ([Entity WikiComment], M.Map WikiPageId (Entity WikiPage), M.Map UserId (Entity User)) <- runDB $ do
         unfiltered_pages :: [Entity WikiPage] <- selectList [] []
@@ -315,6 +317,8 @@ getWikiNewCommentsR = do
             if null comments
              then [whamlet|no new comments|]
              else mapM_ (\ comment -> renderComment (wikiPageTarget $ entityVal $ pages M.! wikiCommentPage (entityVal comment)) users 1 0 $ Node comment []) comments
+
+    runDB $ update user_id [ UserReadComments =. now ]
 
     defaultLayout $(widgetFile "wiki_new_comments")
     
@@ -347,10 +351,11 @@ getWikiEditR target edit_id = do
 
 getWikiNewEditsR :: Handler RepHtml
 getWikiNewEditsR = do
-    Entity _ user <- requireAuth
+    Entity user_id user <- requireAuth
 
     maybe_from <- fmap (Key . PersistInt64 . read . T.unpack) <$> lookupGetParam "from"
 
+    now <- liftIO getCurrentTime
     (edits, pages, users) :: ([Entity WikiEdit], M.Map WikiPageId (Entity WikiPage), M.Map UserId (Entity User)) <- runDB $ do
         unfiltered_pages :: [Entity WikiPage] <- selectList [] []
         let pages = M.fromList $ map (entityKey &&& id) $ filter ((userRole user >=) . wikiPageCanViewMeta . entityVal) unfiltered_pages
@@ -381,6 +386,8 @@ getWikiNewEditsR = do
                                 #{userPrintName editor}
 
                 |]
+
+    runDB $ update user_id [ UserReadEdits =. now ]
 
     defaultLayout $(widgetFile "wiki_new_edits")
     

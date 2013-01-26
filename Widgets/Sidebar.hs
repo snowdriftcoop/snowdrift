@@ -6,8 +6,7 @@ import Import
 import Model.Role
 import Model.Currency
 
-import Data.Time.Calendar
-import Data.Time.Clock
+import qualified Data.Set as S
 
 import Database.Persist.Query.Join (selectOneMany, SelectOneMany (..))
 import Database.Persist.Query.Join.Sql (runJoin)
@@ -20,6 +19,7 @@ sidebar = do
     lift alreadyExpired
 
     let role = fromMaybe Uninvited (userRole . entityVal <$> maybe_user)
+        is_committee_member = role == CommitteeMember || role == Admin
         log_in_or_out = do
             case maybe_user of
                 Nothing ->
@@ -34,6 +34,7 @@ sidebar = do
                         <br>
                         <a href=@{AuthR LogoutR}>Sign Out
                     |]
+
 
         string :: String -> String
         string = id
@@ -51,9 +52,6 @@ sidebar = do
 
              _ -> return ()
 
-        readMessages = fromMaybe (UTCTime (ModifiedJulianDay 0) 0) . userReadMessages
-        readApplications = fromMaybe (UTCTime (ModifiedJulianDay 0) 0) . userReadApplications
-
     money_info <- case maybe_user of
         Nothing -> return Nothing
         Just (Entity user_id user) -> do
@@ -64,22 +62,38 @@ sidebar = do
             let pledged = sum $ map (\ (project, pledge) -> maybe 0 ((projectShareValue (entityVal project) $*) . fromIntegral . pledgeFundedShares . entityVal) $ listToMaybe pledge) pledges
             return $ Just (balance, pledged)
 
-    messages <- case maybe_user of
-        Just (Entity user_id user) -> lift $ runDB $
-            if role == CommitteeMember || role == Admin
-             then selectList
-                    (   [ MessageCreatedTs >=. readMessages user, MessageTo ==. Just user_id ]
-                    ||. [ MessageCreatedTs >=. readMessages user, MessageTo ==. Nothing ]
-                    ) []
-             else selectList [ MessageCreatedTs >=. readMessages user, MessageTo ==. Just user_id ] []
-        Nothing -> return []
 
-    applications <- case maybe_user of
-        Just (Entity _ user) -> lift $ runDB $
-            if role == CommitteeMember || role == Admin
-             then selectList [ CommitteeApplicationCreatedTs >=. readApplications user ] []
-             else return []
-        Nothing -> return []
+
+    (messages, applications, edits, comments) <- case maybe_user of
+        Nothing -> return mempty
+        Just (Entity user_id user) -> lift $ runDB $ do
+            messages :: [Entity Message] <- if is_committee_member
+                         then selectList ([ MessageCreatedTs >=. userReadMessages user, MessageTo ==. Just user_id ] ||. [ MessageCreatedTs >=. userReadMessages user, MessageTo ==. Nothing ]) []
+                         else selectList [ MessageCreatedTs >=. userReadMessages user, MessageTo ==. Just user_id ] []
+
+            applications :: [Entity CommitteeApplication] <- if is_committee_member
+                             then selectList [ CommitteeApplicationCreatedTs >=. userReadApplications user ] []
+                             else return []
+
+            edits :: [Entity WikiEdit] <- do
+                edits <- selectList [ WikiEditTs >=. userReadEdits user ] []
+                if null edits
+                 then return []
+                 else do
+                    pages <- selectList [ WikiPageId <-. map (wikiEditPage . entityVal) edits ] []
+                    let filtered_pages = map entityKey $ filter (\ (Entity _ page) -> userRole user >= wikiPageCanView page) pages
+                    return $ filter (flip S.member (S.fromList filtered_pages) . wikiEditPage . entityVal) edits
+
+            comments :: [Entity WikiComment] <- do
+                comments <- selectList [ WikiCommentCreatedTs >=. userReadComments user ] []
+                if null comments
+                 then return []
+                 else do
+                    pages <- selectList [ WikiPageId <-. map (wikiCommentPage . entityVal) comments ] []
+                    let filtered_pages = map entityKey $ filter (\ (Entity _ page) -> userRole user >= wikiPageCanViewMeta page) pages
+                    return $ filter (flip S.member (S.fromList filtered_pages) . wikiCommentPage . entityVal) comments
+
+            return (messages, applications, edits, comments)
 
     $(widgetFile "sidebar")
 

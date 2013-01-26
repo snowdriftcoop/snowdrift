@@ -29,7 +29,7 @@ getMessagesR = do
             let user = user_map M.! user_id
              in fromMaybe (userIdent user) (userName user)
 
-    _ <- runDB $ update viewer_id [ UserReadMessages =. Just now ]
+    _ <- runDB $ update viewer_id [ UserReadMessages =. now ]
 
 
     defaultLayout $(widgetFile "messages")
