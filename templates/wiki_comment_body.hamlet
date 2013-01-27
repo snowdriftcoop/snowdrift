@@ -1,7 +1,7 @@
 $newline never
 $# used by renderComment function
 
-<div .comment>
+<div .comment :top_level:.top_level :even_depth:.even_depth :odd_depth:.odd_depth>
     <p>
         $maybe author_avatar <- userAvatar user
             <a href="@{UserR user_id}">

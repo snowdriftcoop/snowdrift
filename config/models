@@ -132,6 +132,7 @@ WikiComment
     user UserId
     text Markdown
     retractedReason Markdown Maybe
+    depth Int Maybe
 
 Tag
     name Text
