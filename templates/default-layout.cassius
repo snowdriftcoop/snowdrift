@@ -162,7 +162,16 @@ span.title
     padding : .7em
     margin : .5em
     margin-top : 1em
-    border-left : solid grey 0.2em
+
+.top_level
+    border-left : solid black 0.2em
+
+.even_depth
+    border-left : solid lightblue 0.2em
+
+.odd_depth
+    border-left : solid lightgrey 0.2em
+
 
 .small_avatar
     width : 2em
