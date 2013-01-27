@@ -76,7 +76,7 @@ sidebar = do
                              else return []
 
             edits :: [Entity WikiEdit] <- do
-                edits <- selectList [ WikiEditTs >=. userReadEdits user ] []
+                edits <- selectList [ WikiEditTs >=. userReadEdits user, WikiEditUser !=. user_id ] []
                 if null edits
                  then return []
                  else do
@@ -85,7 +85,7 @@ sidebar = do
                     return $ filter (flip S.member (S.fromList filtered_pages) . wikiEditPage . entityVal) edits
 
             comments :: [Entity WikiComment] <- do
-                comments <- selectList [ WikiCommentCreatedTs >=. userReadComments user ] []
+                comments <- selectList [ WikiCommentCreatedTs >=. userReadComments user, WikiCommentUser !=. user_id ] []
                 if null comments
                  then return []
                  else do
