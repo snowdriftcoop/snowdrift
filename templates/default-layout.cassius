@@ -174,8 +174,8 @@ span.title
 
 
 .small_avatar
-    width : 2em
-    height : 2em
+    width : 2.5em
+    height : 2.5em
     padding-right : 0.7em
 
 q:before
