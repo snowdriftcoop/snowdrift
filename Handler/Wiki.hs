@@ -402,7 +402,9 @@ getWikiNewEditsR = do
                         <td>
                             <a href="@{UserR (entityKey editor)}">
                                 #{userPrintName editor}
-
+                        $maybe comment <- wikiEditComment edit
+                            <td>
+                                #{comment}
                 |]
 
     runDB $ update user_id [ UserReadEdits =. now ]
