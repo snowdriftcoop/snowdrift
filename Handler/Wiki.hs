@@ -274,8 +274,7 @@ postDiscussWikiR target = do
             case mode of
                 Just "preview" -> do
                     (hidden_form, _) <- generateFormPost $ previewCommentForm maybe_parent_id text
-                    (comment_form, _) <- generateFormPost disabledCommentForm
-                    let rendered_comment = renderDiscussWikiComment target True comment_form (Entity (Key $ PersistInt64 0) $ WikiComment now Nothing page_id maybe_parent_id user_id text Nothing depth) [] (M.singleton user_id $ Entity user_id user)
+                    let rendered_comment = renderDiscussWikiComment target False (return ()) (Entity (Key $ PersistInt64 0) $ WikiComment now Nothing page_id maybe_parent_id user_id text Nothing depth) [] (M.singleton user_id $ Entity user_id user)
                     defaultLayout [whamlet|
                         <div .row>
                             <div .span9>
