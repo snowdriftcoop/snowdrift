@@ -149,7 +149,7 @@ postNewWikiR target = do
                         defaultLayout [whamlet|
                             <div .row>
                                 <div .span9>
-                                    <form method="POST" action="@{WikiR target}">
+                                    <form method="POST" action="@{NewWikiR target}">
                                         ^{hidden_form}
                                         This is a preview. #
                                         <script>
@@ -274,7 +274,7 @@ postDiscussWikiR target = do
             case mode of
                 Just "preview" -> do
                     (hidden_form, _) <- generateFormPost $ previewCommentForm maybe_parent_id text
-                    (comment_form, _) <- generateFormPost $ disabledCommentForm
+                    (comment_form, _) <- generateFormPost disabledCommentForm
                     let rendered_comment = renderDiscussWikiComment target True comment_form (Entity (Key $ PersistInt64 0) $ WikiComment now Nothing page_id maybe_parent_id user_id text Nothing depth) [] (M.singleton user_id $ Entity user_id user)
                     defaultLayout [whamlet|
                         <div .row>
@@ -296,7 +296,7 @@ postDiscussWikiR target = do
                 _ -> error "unrecognized mode"
 
         FormMissing -> error "Form missing."
-        FormFailure msgs -> error $ "Error submitting form: " ++ T.unpack (T.concat msgs)
+        FormFailure msgs -> error $ "Error submitting form: " ++ T.unpack (T.intercalate "\n" msgs)
 
 
 getWikiNewCommentsR :: Handler RepHtml
@@ -454,12 +454,13 @@ newWikiForm = renderDivs $ (,,,)
         <*> areq (roleField Admin) "Minimum Role to View Metadata" (Just CommitteeCandidate)
         <*> areq (roleField Admin) "Minimum Role to Edit" (Just CommitteeMember)
 
+
 previewNewWikiForm :: Markdown -> Role -> Role -> Role -> Form (Markdown, Role, Role, Role)
 previewNewWikiForm content can_view can_view_meta can_edit = renderDivs $ (,,,)
         <$> (Markdown <$> areq hiddenField "" (Just $ (\(Markdown str) -> str) content))
-        <*> (read <$> areq hiddenField "" (Just $ show can_view))
-        <*> (read <$> areq hiddenField "" (Just $ show can_view_meta))
-        <*> (read <$> areq hiddenField "" (Just $ show can_edit))
+        <*> (toEnum <$> areq hiddenField "" (Just $ fromEnum can_view))
+        <*> (toEnum <$> areq hiddenField "" (Just $ fromEnum can_view_meta))
+        <*> (toEnum <$> areq hiddenField "" (Just $ fromEnum can_edit))
 
 disabledCommentForm :: Form Markdown
 disabledCommentForm = renderDivs $ areq markdownField ("Reply" { fsAttrs = [("disabled","")] }) Nothing
