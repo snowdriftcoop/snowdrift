@@ -149,7 +149,7 @@ postNewWikiR target = do
                         defaultLayout [whamlet|
                             <div .row>
                                 <div .span9>
-                                    <form method="POST" action="@{WikiR target}">
+                                    <form method="POST" action="@{NewWikiR target}">
                                         ^{hidden_form}
                                         This is a preview. #
                                         <script>
@@ -266,7 +266,7 @@ postDiscussWikiR target = do
             depth <- case maybe_parent_id of
                 Just parent_id -> do
                     Just parent <- runDB $ get parent_id
-                    return $ (+1) $ fromMaybe 0 $ wikiCommentDepth $ parent
+                    return $ (+1) $ wikiCommentDepth $ parent
                 _ -> return 0
 
             mode <- lookupPostParam "mode"
@@ -274,8 +274,8 @@ postDiscussWikiR target = do
             case mode of
                 Just "preview" -> do
                     (hidden_form, _) <- generateFormPost $ previewCommentForm maybe_parent_id text
-                    (comment_form, _) <- generateFormPost $ disabledCommentForm
-                    let rendered_comment = renderDiscussWikiComment target True comment_form (Entity (Key $ PersistInt64 0) $ WikiComment now Nothing page_id maybe_parent_id user_id text Nothing (Just depth)) [] (M.singleton user_id $ Entity user_id user)
+                    (comment_form, _) <- generateFormPost disabledCommentForm
+                    let rendered_comment = renderDiscussWikiComment target True comment_form (Entity (Key $ PersistInt64 0) $ WikiComment now Nothing page_id maybe_parent_id user_id text Nothing depth) [] (M.singleton user_id $ Entity user_id user)
                     defaultLayout [whamlet|
                         <div .row>
                             <div .span9>
@@ -289,14 +289,14 @@ postDiscussWikiR target = do
                     |]
 
                 Just "post" -> do
-                    _ <- runDB $ insert $ WikiComment now Nothing page_id maybe_parent_id user_id text Nothing (Just depth)
+                    _ <- runDB $ insert $ WikiComment now Nothing page_id maybe_parent_id user_id text Nothing depth
                     setMessage "comment posted"
                     redirect $ DiscussWikiR target
 
                 _ -> error "unrecognized mode"
 
         FormMissing -> error "Form missing."
-        FormFailure msgs -> error $ "Error submitting form: " ++ T.unpack (T.concat msgs)
+        FormFailure msgs -> error $ "Error submitting form: " ++ T.unpack (T.intercalate "\n" msgs)
 
 
 getWikiNewCommentsR :: Handler RepHtml
@@ -423,8 +423,8 @@ renderComment target users max_depth depth tree = do
         author_name = userPrintName (Entity user_id user)
         comment_time = renderTime (wikiCommentCreatedTs comment)
 
-        top_level = (wikiCommentDepth comment == Just 0)
-        even_depth = not top_level && (fromMaybe 0 (wikiCommentDepth comment) `mod` 2 == 1)
+        top_level = (wikiCommentDepth comment == 0)
+        even_depth = not top_level && wikiCommentDepth comment `mod` 2 == 1
         odd_depth = not top_level && not even_depth
 
      in $(widgetFile "wiki_comment_body")
@@ -454,12 +454,13 @@ newWikiForm = renderDivs $ (,,,)
         <*> areq (roleField Admin) "Minimum Role to View Metadata" (Just CommitteeCandidate)
         <*> areq (roleField Admin) "Minimum Role to Edit" (Just CommitteeMember)
 
+
 previewNewWikiForm :: Markdown -> Role -> Role -> Role -> Form (Markdown, Role, Role, Role)
 previewNewWikiForm content can_view can_view_meta can_edit = renderDivs $ (,,,)
         <$> (Markdown <$> areq hiddenField "" (Just $ (\(Markdown str) -> str) content))
-        <*> (read <$> areq hiddenField "" (Just $ show can_view))
-        <*> (read <$> areq hiddenField "" (Just $ show can_view_meta))
-        <*> (read <$> areq hiddenField "" (Just $ show can_edit))
+        <*> (toEnum <$> areq hiddenField "" (Just $ fromEnum can_view))
+        <*> (toEnum <$> areq hiddenField "" (Just $ fromEnum can_view_meta))
+        <*> (toEnum <$> areq hiddenField "" (Just $ fromEnum can_edit))
 
 disabledCommentForm :: Form Markdown
 disabledCommentForm = renderDivs $ areq markdownField ("Reply" { fsAttrs = [("disabled","")] }) Nothing
