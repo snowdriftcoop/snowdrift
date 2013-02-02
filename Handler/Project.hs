@@ -143,11 +143,23 @@ postProjectR project_id = do
                             <div .span9>
                                 <form method="POST" action="@{ProjectR project_id}">
                                     ^{hidden_form}
-                                    This is a preview. #
+                                    <em>
+                                        This is a preview.
+                                    <br>
                                     <script>
                                         document.write('<input type="submit" value="edit" onclick="history.go(-1);return false;" />')
                                     <input type=submit name=mode value=update>
                         ^{rendered_project}
+                        <div .row>
+                            <div .span9>
+                                <form method="POST" action="@{ProjectR project_id}">
+                                    ^{hidden_form}
+                                    <em>
+                                        This is a preview.
+                                    <br>
+                                    <script>
+                                        document.write('<input type="submit" value="edit" onclick="history.go(-1);return false;" />')
+                                    <input type=submit name=mode value=update>
                     |]
 
                 Just "update" -> do

@@ -77,11 +77,23 @@ postWikiR target = do
                                 <div .span9>
                                     <form method="POST" action="@{WikiR target}">
                                         ^{hidden_form}
-                                        This is a preview. #
+                                        <em>
+                                            This is a preview.
+                                        <br>
                                         <script>
                                             document.write('<input type="submit" value="edit" onclick="history.go(-1);return false;" />')
                                         <input type=submit name=mode value=update>
                             ^{rendered_wiki}
+                            <div .row>
+                                <div .span9>
+                                    <form method="POST" action="@{WikiR target}">
+                                        ^{hidden_form}
+                                        <em>
+                                            This is a preview.
+                                        <br>
+                                        <script>
+                                            document.write('<input type="submit" value="edit" onclick="history.go(-1);return false;" />')
+                                        <input type=submit name=mode value=update>
                         |]
 
                     Just "update" -> do
@@ -151,11 +163,23 @@ postNewWikiR target = do
                                 <div .span9>
                                     <form method="POST" action="@{NewWikiR target}">
                                         ^{hidden_form}
-                                        This is a preview. #
+                                        <em>
+                                            This is a preview.
+                                        <br>
                                         <script>
                                             document.write('<input type="submit" value="edit" onclick="history.go(-1);return false;" />')
                                         <input type=submit name=mode value=create>
                             ^{rendered_wiki}
+                            <div .row>
+                                <div .span9>
+                                    <form method="POST" action="@{WikiR target}">
+                                        ^{hidden_form}
+                                        <em>
+                                            This is a preview.
+                                        <br>
+                                        <script>
+                                            document.write('<input type="submit" value="edit" onclick="history.go(-1);return false;" />')
+                                        <input type=submit name=mode value=update>
                         |]
 
                 Just "create" -> do
@@ -280,11 +304,23 @@ postDiscussWikiR target = do
                             <div .span9>
                                 <form method="POST" action="@{DiscussWikiR target}">
                                     ^{hidden_form}
-                                    This is a preview. #
+                                    <em>
+                                        This is a preview.
+                                    <br>
                                     <script>
                                         document.write('<input type="submit" value="edit" onclick="history.go(-1);return false;" />')
                                     <input type=submit name=mode value=post>
                         ^{rendered_comment}
+                        <div .row>
+                            <div .span9>
+                                <form method="POST" action="@{WikiR target}">
+                                    ^{hidden_form}
+                                    <em>
+                                        This is a preview.
+                                    <br>
+                                    <script>
+                                        document.write('<input type="submit" value="edit" onclick="history.go(-1);return false;" />')
+                                    <input type=submit name=mode value=update>
                     |]
 
                 Just "post" -> do
