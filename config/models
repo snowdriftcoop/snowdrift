@@ -134,6 +134,11 @@ WikiComment
     retractedReason Markdown Maybe
     depth Int
 
+WikiCommentAncestor
+    comment WikiCommentId
+    ancestor WikiCommentId
+    UniqueWikiCommentAncestor comment ancestor
+
 Tag
     name Text
     UniqueTag name
