@@ -68,6 +68,7 @@ postUserR user_id = do
         case result of
             FormSuccess user_update -> do
                 mode <- lookupPostParam "mode"
+                let action :: Text = "update"
                 case mode of
                     Just "preview" -> do
                         user <- runDB $ get404 user_id
@@ -76,7 +77,7 @@ postUserR user_id = do
 
                         (hidden_form, _) <- generateFormPost $ previewUserForm updated_user
 
-                        defaultLayout [whamlet|
+                        let preview_controls = [whamlet|
                             <div .row>
                                 <div .span9>
                                     <form method="POST" action="@{UserR user_id}">
@@ -86,21 +87,16 @@ postUserR user_id = do
                                         <br>
                                         <script>
                                             document.write('<input type="submit" value="edit" onclick="history.go(-1);return false;" />')
-                                        <input type=submit name=mode value=update>
-                            ^{rendered_user}
-                            <div .row>
-                                <div .span9>
-                                    <form method="POST" action="@{UserR user_id}">
-                                        ^{hidden_form}
-                                        <em>
-                                            This is a preview.
-                                        <br>
-                                        <script>
-                                            document.write('<input type="submit" value="edit" onclick="history.go(-1);return false;" />')
-                                        <input type=submit name=mode value=update>
+                                        <input type=submit name=mode value=#{action}>
                         |]
 
-                    Just "update" -> do
+                        defaultLayout [whamlet|
+                            ^{preview_controls}
+                            ^{rendered_user}
+                            ^{preview_controls}
+                        |]
+
+                    Just x | x == action -> do
                         runDB $ updateUser user_id user_update
                         redirect $ UserR user_id
 

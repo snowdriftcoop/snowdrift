@@ -63,40 +63,39 @@ postWikiR target = do
 
     ((result, _), _) <- runFormPost $ editWikiForm (wikiLastEditEdit last_edit) (wikiPageContent page)
 
+
     case result of
         FormSuccess (last_edit_id, content, comment) -> do
             if last_edit_id == wikiLastEditEdit last_edit
              then do
                 mode <- lookupPostParam "mode"
+
+                let action :: Text = "update"
+
                 case mode of
                     Just "preview" -> do
                         (hidden_form, _) <- generateFormPost $ previewWikiForm (wikiLastEditEdit last_edit) content comment
                         let rendered_wiki = renderWiki target False False $ WikiPage target content Uninvited Uninvited Uninvited
+                            preview_controls = [whamlet|
+                                <div .row>
+                                    <div .span9>
+                                        <form method="POST" action="@{WikiR target}">
+                                            ^{hidden_form}
+                                            <em>
+                                                This is a preview.
+                                            <br>
+                                            <script>
+                                                document.write('<input type="submit" value="edit" onclick="history.go(-1);return false;" />')
+                                            <input type=submit name=mode value=#{action}>
+                            |]
+
                         defaultLayout [whamlet|
-                            <div .row>
-                                <div .span9>
-                                    <form method="POST" action="@{WikiR target}">
-                                        ^{hidden_form}
-                                        <em>
-                                            This is a preview.
-                                        <br>
-                                        <script>
-                                            document.write('<input type="submit" value="edit" onclick="history.go(-1);return false;" />')
-                                        <input type=submit name=mode value=update>
+                            ^{preview_controls}
                             ^{rendered_wiki}
-                            <div .row>
-                                <div .span9>
-                                    <form method="POST" action="@{WikiR target}">
-                                        ^{hidden_form}
-                                        <em>
-                                            This is a preview.
-                                        <br>
-                                        <script>
-                                            document.write('<input type="submit" value="edit" onclick="history.go(-1);return false;" />')
-                                        <input type=submit name=mode value=update>
+                            ^{preview_controls}
                         |]
 
-                    Just "update" -> do
+                    Just x | x == action -> do
                         runDB $ do
                             update page_id [WikiPageContent =. content]
                             edit_id <- insert $ WikiEdit now user_id page_id content comment
@@ -154,11 +153,12 @@ postNewWikiR target = do
     case result of
         FormSuccess (content, can_view, can_view_meta, can_edit) -> do
             mode <- lookupPostParam "mode"
+            let action :: Text = "create"
             case mode of
                 Just "preview" -> do
                         (hidden_form, _) <- generateFormPost $ previewNewWikiForm content can_view can_view_meta can_edit
                         let rendered_wiki = renderWiki target False False $ WikiPage target content Uninvited Uninvited Uninvited
-                        defaultLayout [whamlet|
+                            preview_controls = [whamlet|
                             <div .row>
                                 <div .span9>
                                     <form method="POST" action="@{NewWikiR target}">
@@ -168,21 +168,15 @@ postNewWikiR target = do
                                         <br>
                                         <script>
                                             document.write('<input type="submit" value="edit" onclick="history.go(-1);return false;" />')
-                                        <input type=submit name=mode value=create>
+                                        <input type=submit name=mode value=#{action}>
+                            |]
+                        defaultLayout [whamlet|
+                            ^{preview_controls}
                             ^{rendered_wiki}
-                            <div .row>
-                                <div .span9>
-                                    <form method="POST" action="@{WikiR target}">
-                                        ^{hidden_form}
-                                        <em>
-                                            This is a preview.
-                                        <br>
-                                        <script>
-                                            document.write('<input type="submit" value="edit" onclick="history.go(-1);return false;" />')
-                                        <input type=submit name=mode value=update>
+                            ^{preview_controls}
                         |]
 
-                Just "create" -> do
+                Just x | x == action -> do
                     _ <- runDB $ do
                         page_id <- insert $ WikiPage target content can_view can_view_meta can_edit
                         edit_id <- insert $ WikiEdit now user_id page_id content $ Just "Page created."
@@ -295,35 +289,31 @@ postDiscussWikiR target = do
 
             mode <- lookupPostParam "mode"
 
+            let action :: Text = "post"
+
             case mode of
                 Just "preview" -> do
                     (hidden_form, _) <- generateFormPost $ previewCommentForm maybe_parent_id text
                     let rendered_comment = renderDiscussWikiComment target False (return ()) (Entity (Key $ PersistInt64 0) $ WikiComment now Nothing page_id maybe_parent_id user_id text Nothing depth) [] (M.singleton user_id $ Entity user_id user)
+                        preview_controls = [whamlet|
+                            <div .row>
+                                <div .span9>
+                                    <form method="POST" action="@{DiscussWikiR target}">
+                                        ^{hidden_form}
+                                        <em>
+                                            This is a preview.
+                                        <br>
+                                        <script>
+                                            document.write('<input type="submit" value="edit" onclick="history.go(-1);return false;" />')
+                                        <input type=submit name=mode value=#{action}>
+                        |]
                     defaultLayout [whamlet|
-                        <div .row>
-                            <div .span9>
-                                <form method="POST" action="@{DiscussWikiR target}">
-                                    ^{hidden_form}
-                                    <em>
-                                        This is a preview.
-                                    <br>
-                                    <script>
-                                        document.write('<input type="submit" value="edit" onclick="history.go(-1);return false;" />')
-                                    <input type=submit name=mode value=post>
+                        ^{preview_controls}
                         ^{rendered_comment}
-                        <div .row>
-                            <div .span9>
-                                <form method="POST" action="@{WikiR target}">
-                                    ^{hidden_form}
-                                    <em>
-                                        This is a preview.
-                                    <br>
-                                    <script>
-                                        document.write('<input type="submit" value="edit" onclick="history.go(-1);return false;" />')
-                                    <input type=submit name=mode value=update>
+                        ^{preview_controls}
                     |]
 
-                Just "post" -> do
+                Just x | x == action -> do
                     _ <- runDB $ insert $ WikiComment now Nothing page_id maybe_parent_id user_id text Nothing depth
                     setMessage "comment posted"
                     redirect $ DiscussWikiR target

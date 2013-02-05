@@ -132,37 +132,33 @@ postProjectR project_id = do
     case result of
         FormSuccess (UpdateProject name description tags) -> do
             mode <- lookupPostParam "mode"
+            let action :: Text = "update"
             case mode of
                 Just "preview" -> do
                     project <- runDB $ get404 project_id
                     let preview_project = project { projectName = name, projectDescription = description }
                     (hidden_form, _) <- generateFormPost $ previewProjectForm $ Just (preview_project, tags)
                     let rendered_project = renderProject (Just project_id) preview_project [] Nothing
+                        preview_controls = [whamlet|
+                            <div .row>
+                                <div .span9>
+                                    <form method="POST" action="@{ProjectR project_id}">
+                                        ^{hidden_form}
+                                        <em>
+                                            This is a preview.
+                                        <br>
+                                        <script>
+                                            document.write('<input type="submit" value="edit" onclick="history.go(-1);return false;" />')
+                                        <input type=submit name=mode value=#{action}>
+                        |]
+
                     defaultLayout $ [whamlet|
-                        <div .row>
-                            <div .span9>
-                                <form method="POST" action="@{ProjectR project_id}">
-                                    ^{hidden_form}
-                                    <em>
-                                        This is a preview.
-                                    <br>
-                                    <script>
-                                        document.write('<input type="submit" value="edit" onclick="history.go(-1);return false;" />')
-                                    <input type=submit name=mode value=update>
+                        ^{preview_controls}
                         ^{rendered_project}
-                        <div .row>
-                            <div .span9>
-                                <form method="POST" action="@{ProjectR project_id}">
-                                    ^{hidden_form}
-                                    <em>
-                                        This is a preview.
-                                    <br>
-                                    <script>
-                                        document.write('<input type="submit" value="edit" onclick="history.go(-1);return false;" />')
-                                    <input type=submit name=mode value=update>
+                        ^{preview_controls}
                     |]
 
-                Just "update" -> do
+                Just x | x == action -> do
                     processed <- runDB $ do
                         maybe_project <- get project_id
                         case maybe_project of
