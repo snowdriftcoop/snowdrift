@@ -178,6 +178,12 @@ span.title
     height : 2.5em
     padding-right : 0.7em
 
+.retraction
+    color : darkred
+    border-left : solid darkred 0.25em
+    padding-left : 0.5em
+    margin : 0.2em
+
 q:before
     content : '"'
 
