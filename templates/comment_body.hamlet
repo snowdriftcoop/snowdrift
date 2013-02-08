@@ -9,8 +9,7 @@ $# used by renderComment function
         <a href="@{UserR user_id}">
             #{author_name}
         , #
-        <a href="@{DiscussCommentR target comment_id}">
-            ^{comment_time}
+        ^{comment_time}
 
 
     $forall retraction <- earlier_retractions
@@ -38,6 +37,9 @@ $# used by renderComment function
     $if user_id == viewer_id
         <a href="@{RetractCommentR target comment_id}">
             retract #
+
+    <a href="@{DiscussCommentR target comment_id}">
+        permalink #
 
     $if depth > max_depth
         <br>
