@@ -1,0 +1,49 @@
+$newline never
+$# used by renderComment function
+
+<div .comment :top_level:.top_level :even_depth:.even_depth :odd_depth:.odd_depth>
+    <p>
+        $maybe author_avatar <- userAvatar user
+            <a href="@{UserR user_id}">
+                <img .small_avatar src="#{author_avatar}">
+        <a href="@{UserR user_id}">
+            #{author_name}
+        , #
+        <a href="@{DiscussCommentR target comment_id}">
+            ^{comment_time}
+
+
+    $forall retraction <- earlier_retractions
+        <div .retraction>
+            A comment above this one was retracted ^{renderTime (commentRetractionTs retraction)}
+            #{markdownToHtml (commentRetractionReason retraction)}
+
+    $maybe retraction <- maybe_retraction
+        <div .retraction>
+            The author retracted this comment ^{renderTime (commentRetractionTs retraction)}
+            #{markdownToHtml (commentRetractionReason retraction)}
+
+    #{markdownToHtml (commentText comment)}
+
+    <p>
+
+    $if not (maybe_route == Just (DiscussCommentR target comment_id))
+        <a href="@{DiscussCommentR target comment_id}">
+            reply #
+
+    $maybe parent_id <- commentParent comment
+        <a href="@{DiscussCommentR target parent_id}">
+            parent #
+
+    $if user_id == viewer_id
+        <a href="@{RetractCommentR target comment_id}">
+            retract #
+
+    $if depth > max_depth
+        <br>
+        #{countReplies children} more replies
+
+    $else
+        $forall child <- children
+            ^{renderComment viewer_id target users max_depth (depth + 1) empty_list retraction_map child}
+

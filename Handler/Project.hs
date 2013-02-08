@@ -145,7 +145,7 @@ postProjectR project_id = do
                                     <form method="POST" action="@{ProjectR project_id}">
                                         ^{hidden_form}
                                         <em>
-                                            This is a preview.
+                                            This is a preview; your changes are not yet saved!
                                         <br>
                                         <script>
                                             document.write('<input type="submit" value="edit" onclick="history.go(-1);return false;" />')

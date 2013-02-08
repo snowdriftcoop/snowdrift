@@ -124,20 +124,23 @@ WikiLastEdit
     edit WikiEditId
     UniqueWikiLastEdit page
 
-WikiComment
+Comment
     createdTs UTCTime
-    retractedTs UTCTime Maybe
     page WikiPageId
-    parent WikiCommentId Maybe
+    parent CommentId Maybe
     user UserId
     text Markdown
-    retractedReason Markdown Maybe
     depth Int
 
-WikiCommentAncestor
-    comment WikiCommentId
-    ancestor WikiCommentId
-    UniqueWikiCommentAncestor comment ancestor
+CommentAncestor
+    comment CommentId
+    ancestor CommentId
+    UniqueCommentAncestor comment ancestor
+
+CommentRetraction
+    ts UTCTime
+    reason Markdown
+    comment CommentId
 
 Tag
     name Text

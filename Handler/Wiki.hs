@@ -27,6 +27,8 @@ import Control.Arrow ((&&&))
 
 import Database.Persist.Store
 
+import Data.Time
+
 getWikiR :: Text -> Handler RepHtml
 getWikiR target = do
     Entity _ user <- requireAuth
@@ -82,7 +84,7 @@ postWikiR target = do
                                         <form method="POST" action="@{WikiR target}">
                                             ^{hidden_form}
                                             <em>
-                                                This is a preview.
+                                                This is a preview; your changes have not been saved!
                                             <br>
                                             <script>
                                                 document.write('<input type="submit" value="edit" onclick="history.go(-1);return false;" />')
@@ -164,7 +166,7 @@ postNewWikiR target = do
                                     <form method="POST" action="@{NewWikiR target}">
                                         ^{hidden_form}
                                         <em>
-                                            This is a preview.
+                                            This is a preview; this page has not yet been created!
                                         <br>
                                         <script>
                                             document.write('<input type="submit" value="edit" onclick="history.go(-1);return false;" />')
@@ -192,10 +194,10 @@ postNewWikiR target = do
         FormFailure msgs -> error $ "Error submitting form: " ++ T.unpack (T.concat msgs)
 
 
-buildCommentTree :: Entity WikiComment -> [ Entity WikiComment ] -> Tree (Entity WikiComment)
+buildCommentTree :: Entity Comment -> [ Entity Comment ] -> Tree (Entity Comment)
 buildCommentTree root rest =
     let treeOfList (node, items) =
-            let has_parent p = (== Just (entityKey p)) . wikiCommentParent . entityVal
+            let has_parent p = (== Just (entityKey p)) . commentParent . entityVal
                 list = dropWhile (not . has_parent node) items
                 (children, rest') = break (not . has_parent node) list
                 items' = map (, rest') children
@@ -211,62 +213,68 @@ getDiscussWikiR target = do
 
     let can_edit = userRole user >= wikiPageCanEdit page
 
-    (roots, rest, users) <- runDB $ do
-        roots <- selectList [ WikiCommentPage ==. page_id, WikiCommentParent ==. Nothing ] [Asc WikiCommentCreatedTs]
-        rest <- selectList [ WikiCommentPage ==. page_id, WikiCommentParent !=. Nothing ] [Asc WikiCommentParent, Asc WikiCommentCreatedTs]
+    (roots, rest, users, retraction_map) <- runDB $ do
+        roots <- selectList [ CommentPage ==. page_id, CommentParent ==. Nothing ] [Asc CommentCreatedTs]
+        rest <- selectList [ CommentPage ==. page_id, CommentParent !=. Nothing ] [Asc CommentParent, Asc CommentCreatedTs]
 
-        let get_user_ids = S.fromList . map (wikiCommentUser . entityVal) . F.toList
+        let get_user_ids = S.fromList . map (commentUser . entityVal) . F.toList
             user_id_list = S.toList $ get_user_ids roots `S.union` get_user_ids rest
 
         user_entities <- selectList [ UserId <-. user_id_list ] []
 
         let users = M.fromList $ map (entityKey &&& id) user_entities
 
-        return $ (roots, rest, users)
+        retraction_map <- M.fromList . map ((commentRetractionComment &&& id) . entityVal) <$> selectList [ CommentRetractionComment <-. map entityKey (roots ++ rest) ] []
+        return $ (roots, rest, users, retraction_map)
 
     let comments = forM_ roots $ \ root -> do
-        renderComment target users 10 0 $ buildCommentTree root rest
+        renderComment user_id target users 10 0 [] retraction_map $ buildCommentTree root rest
 
     (comment_form, _) <- generateFormPost $ commentForm Nothing
 
     defaultLayout $(widgetFile "wiki_discuss")
 
 
-getDiscussWikiCommentR :: Text -> WikiCommentId -> Handler RepHtml
-getDiscussWikiCommentR target comment_id = do
-    Entity _ user <- requireAuth
+getDiscussCommentR :: Text -> CommentId -> Handler RepHtml
+getDiscussCommentR target comment_id = do
+    Entity user_id user <- requireAuth
     Entity page_id page  <- runDB $ getBy404 $ UniqueWikiTarget target
 
     let can_edit = userRole user >= wikiPageCanEdit page
 
-    (root, rest, users) <- runDB $ do
+    (root, rest, users, earlier_retractions, retraction_map) <- runDB $ do
         root <- get404 comment_id
 
-        when (wikiCommentPage root /= page_id) $ error "Selected comment does not match selected page"
+        when (commentPage root /= page_id) $ error "Selected comment does not match selected page"
 
-        rest <- selectList [WikiCommentPage ==. page_id, WikiCommentParent !=. Nothing, WikiCommentId >. comment_id] [Asc WikiCommentParent, Asc WikiCommentCreatedTs]
+        subtree <- selectList [CommentAncestorAncestor ==. comment_id] []
+        rest <- selectList [CommentPage ==. page_id, CommentParent !=. Nothing, CommentId >. comment_id, CommentId <-. map (commentAncestorComment . entityVal) subtree] [Asc CommentParent, Asc CommentCreatedTs]
 
-        let get_user_ids = S.fromList . map (wikiCommentUser . entityVal) . F.toList
-            user_id_list = S.toList $ S.insert (wikiCommentUser root) $ get_user_ids rest
+        let get_user_ids = S.fromList . map (commentUser . entityVal) . F.toList
+            user_id_list = S.toList $ S.insert (commentUser root) $ get_user_ids rest
 
         user_entities <- selectList [ UserId <-. user_id_list ] []
 
         let users = M.fromList $ map (entityKey &&& id) user_entities
 
-        return $ (Entity comment_id root, rest, users)
+        ancestors <- selectList [ CommentAncestorComment ==. comment_id ] []
+        earlier_retractions <- map entityVal <$> selectList [ CommentRetractionComment <-. map (commentAncestorAncestor . entityVal) ancestors ] []
+        retraction_map <- M.fromList . map ((commentRetractionComment &&& id) . entityVal) <$> selectList [ CommentRetractionComment <-. comment_id : map entityKey rest ] []
+        
+        return $ (root, rest, users, earlier_retractions, retraction_map)
 
     (comment_form, _) <- generateFormPost $ commentForm $ Just comment_id
 
-    defaultLayout $ renderDiscussWikiComment target can_edit comment_form root rest users
+    defaultLayout $ renderDiscussComment user_id target can_edit comment_form (Entity comment_id root) rest users earlier_retractions retraction_map
 
 
-renderDiscussWikiComment :: Text -> Bool -> Widget -> Entity WikiComment -> [Entity WikiComment] -> M.Map UserId (Entity User) -> Widget
-renderDiscussWikiComment target can_edit comment_form root rest users = do
+renderDiscussComment :: UserId -> Text -> Bool -> Widget -> Entity Comment -> [Entity Comment] -> M.Map UserId (Entity User) -> [CommentRetraction] -> M.Map CommentId CommentRetraction -> Widget
+renderDiscussComment viewer_id target can_edit comment_form root rest users earlier_retractions retraction_map = do
     let Node parent children = buildCommentTree root rest
-        comment = renderComment target users 1 0 $ Node parent []
-        child_comments = mapM_ (renderComment target users 10 0) children
+        comment = renderComment viewer_id target users 1 0 earlier_retractions retraction_map $ Node parent []
+        child_comments = mapM_ (renderComment viewer_id target users 10 0 [] retraction_map) children
 
-    $(widgetFile "wiki_comment")
+    $(widgetFile "comment")
 
 
 
@@ -284,7 +292,7 @@ postDiscussWikiR target = do
             depth <- case maybe_parent_id of
                 Just parent_id -> do
                     Just parent <- runDB $ get parent_id
-                    return $ (+1) $ wikiCommentDepth $ parent
+                    return $ (+1) $ commentDepth $ parent
                 _ -> return 0
 
             mode <- lookupPostParam "mode"
@@ -293,28 +301,38 @@ postDiscussWikiR target = do
 
             case mode of
                 Just "preview" -> do
+                    earlier_retractions <- runDB $ do
+                        case maybe_parent_id of
+                            Just parent_id -> do
+                                ancestors <- (parent_id :) . map (commentAncestorAncestor . entityVal) <$> selectList [ CommentAncestorComment ==. parent_id ] []
+                                map entityVal <$> selectList [ CommentRetractionComment <-. ancestors ] []
+
+                            Nothing -> return []
+
+
                     (hidden_form, _) <- generateFormPost $ previewCommentForm maybe_parent_id text
-                    let rendered_comment = renderDiscussWikiComment target False (return ()) (Entity (Key $ PersistInt64 0) $ WikiComment now Nothing page_id maybe_parent_id user_id text Nothing depth) [] (M.singleton user_id $ Entity user_id user)
+                    let rendered_comment = renderDiscussComment user_id target False (return ()) (Entity (Key $ PersistInt64 0) $ Comment now page_id maybe_parent_id user_id text depth) [] (M.singleton user_id $ Entity user_id user) earlier_retractions M.empty
                         preview_controls = [whamlet|
                             <div .row>
                                 <div .span9>
                                     <form method="POST" action="@{DiscussWikiR target}">
                                         ^{hidden_form}
                                         <em>
-                                            This is a preview.
+                                            This is a preview; your comment is not posted yet!
                                         <br>
                                         <script>
                                             document.write('<input type="submit" value="edit" onclick="history.go(-1);return false;" />')
                                         <input type=submit name=mode value=#{action}>
                         |]
-                    defaultLayout [whamlet|
+
+                    defaultLayout [whamlet|$newline never
                         ^{preview_controls}
                         ^{rendered_comment}
                         ^{preview_controls}
                     |]
 
                 Just x | x == action -> do
-                    _ <- runDB $ insert $ WikiComment now Nothing page_id maybe_parent_id user_id text Nothing depth
+                    _ <- runDB $ insert $ Comment now page_id maybe_parent_id user_id text depth
                     setMessage "comment posted"
                     redirect $ DiscussWikiR target
 
@@ -332,25 +350,36 @@ getWikiNewCommentsR = do
 
     now <- liftIO getCurrentTime
 
-    (comments, pages, users) :: ([Entity WikiComment], M.Map WikiPageId (Entity WikiPage), M.Map UserId (Entity User)) <- runDB $ do
+    (comments, pages, users, retraction_map) <- runDB $ do
         unfiltered_pages :: [Entity WikiPage] <- selectList [] []
+
         let pages = M.fromList $ map (entityKey &&& id) $ filter ((userRole user >=) . wikiPageCanViewMeta . entityVal) unfiltered_pages
             filters = case maybe_from of
-                        Nothing -> [ WikiCommentPage <-. M.keys pages ]
-                        Just from -> [ WikiCommentPage <-. M.keys pages, WikiCommentId <=. from ]
-        comments <- selectList filters [ Desc WikiCommentId, LimitTo 50 ]
+                        Nothing -> [ CommentPage <-. M.keys pages ]
+                        Just from -> [ CommentPage <-. M.keys pages, CommentId <=. from ]
 
-        let user_ids = S.toList $ S.fromList $ map (wikiCommentUser . entityVal) comments
+        comments <- selectList filters [ Desc CommentId, LimitTo 50 ]
+
+        let user_ids = S.toList $ S.fromList $ map (commentUser . entityVal) comments
         users <- fmap M.fromList $ fmap (map (entityKey &&& id)) $ selectList [ UserId <-. user_ids ] []
-        return (comments, pages, users)
+
+        retraction_map <- M.fromList . map ((commentRetractionComment &&& id) . entityVal) <$> selectList [ CommentRetractionComment <-. map entityKey comments ] []
+
+        return (comments, pages, users, retraction_map)
 
     let PersistInt64 to = unKey $ minimum (map entityKey comments)
         rendered_comments =
             if null comments
              then [whamlet|no new comments|]
-             else forM_ comments $ \ comment -> do
-                let target = wikiPageTarget $ entityVal $ pages M.! wikiCommentPage (entityVal comment)
-                    rendered_comment = renderComment target users 1 0 $ Node comment []
+             else forM_ comments $ \ (Entity comment_id comment) -> do
+                earlier_retractions <- lift $ runDB $ do
+                    ancestors <- selectList [ CommentAncestorComment ==. comment_id ] []
+                    map entityVal <$> selectList [ CommentRetractionComment <-. map (commentAncestorAncestor . entityVal) ancestors ] [ Asc CommentRetractionComment ]
+
+                let target = wikiPageTarget $ entityVal $ pages M.! commentPage comment
+                    rendered_comment = renderComment user_id target users 1 0 earlier_retractions retraction_map $ Node (Entity comment_id comment) []
+
+
                 [whamlet|$newline never
                     <div .row>
                         <div .span9>
@@ -364,8 +393,8 @@ getWikiNewCommentsR = do
     runDB $ update user_id [ UserReadComments =. now ]
 
     defaultLayout $(widgetFile "wiki_new_comments")
-    
-        
+
+
 getWikiHistoryR :: Text -> Handler RepHtml
 getWikiHistoryR target = do
     (edits, users) <- runDB $ do
@@ -435,24 +464,112 @@ getWikiNewEditsR = do
     runDB $ update user_id [ UserReadEdits =. now ]
 
     defaultLayout $(widgetFile "wiki_new_edits")
-    
 
-renderComment :: Text -> M.Map UserId (Entity User) -> Int -> Int -> Tree (Entity WikiComment) -> Widget
-renderComment target users max_depth depth tree = do
+
+getRetractCommentR :: Text -> CommentId -> Handler RepHtml
+getRetractCommentR target comment_id = do
+    Entity user_id user <- requireAuth
+    comment <- runDB $ get404 comment_id
+    when (commentUser comment /= user_id) $ permissionDenied "You can only retract your own comments."
+
+    earlier_retractions <- runDB $ do
+        case commentParent comment of
+            Just parent_id -> do
+                ancestors <- (parent_id :) . map (commentAncestorAncestor . entityVal) <$> selectList [ CommentAncestorComment ==. parent_id ] []
+                map entityVal <$> selectList [ CommentRetractionComment <-. ancestors ] []
+
+            Nothing -> return []
+
+
+    (retract_form, _) <- generateFormPost retractForm
+    let rendered_comment = renderDiscussComment user_id target False (return ()) (Entity comment_id comment) [] (M.singleton user_id $ Entity user_id user) earlier_retractions M.empty
+
+    defaultLayout $ [whamlet|
+        ^{rendered_comment}
+        <form method="POST">
+            ^{retract_form}
+            <input type="submit" name="mode" value="preview retraction">
+    |]
+
+postRetractCommentR :: Text -> CommentId -> Handler RepHtml
+postRetractCommentR target comment_id = do
+    Entity user_id user <- requireAuth
+    comment <- runDB $ get404 comment_id
+    when (commentUser comment /= user_id) $ permissionDenied "You can only retract your own comments."
+
+    ((result, _), _) <- runFormPost retractForm
+
+    case result of
+        FormSuccess reason -> do
+            earlier_retractions <- runDB $ do
+                case commentParent comment of
+                    Just parent_id -> do
+                        ancestors <- (parent_id :) . map (commentAncestorAncestor . entityVal) <$> selectList [ CommentAncestorComment ==. parent_id ] []
+                        map entityVal <$> selectList [ CommentRetractionComment <-. ancestors ] []
+
+                    Nothing -> return []
+
+            let action :: Text = "retract"
+            mode <- lookupPostParam "mode"
+            case mode of
+                Just "preview retraction" -> do
+                    (hidden_form, _) <- generateFormPost $ previewRetractForm reason
+                    let soon = UTCTime (ModifiedJulianDay 0) 0
+                        retraction = CommentRetraction soon reason comment_id
+                        rendered_comment = renderDiscussComment user_id target False (return ()) (Entity comment_id comment) [] (M.singleton user_id $ Entity user_id user) earlier_retractions $ M.singleton comment_id retraction
+                        preview_controls = [whamlet|
+                            <div .row>
+                                <div .span9>
+                                    <form method="POST" action="@{RetractCommentR target comment_id}">
+                                        ^{hidden_form}
+                                        <em>
+                                            This is a preview; your comment has not been retracted yet!
+                                        <br>
+                                        <script>
+                                            document.write('<input type="submit" value="edit" onclick="history.go(-1);return false;" />')
+                                        <input type="submit" name="mode" value="#{action}">
+                        |]
+
+                    defaultLayout [whamlet|
+                        ^{preview_controls}
+                        ^{rendered_comment}
+                        ^{preview_controls}
+                    |]
+
+                Just a | a == action -> do
+                    now <- liftIO getCurrentTime
+                    _ <- runDB $ insert $ CommentRetraction now reason comment_id
+
+                    redirect $ DiscussCommentR target comment_id
+
+                _ -> error "Error: unrecognized mode."
+        _ -> error "Error when submitting form."
+
+retractForm :: Form Markdown
+retractForm = renderDivs $ areq markdownField "Retraction reason:" Nothing
+    
+previewRetractForm :: Markdown -> Form Markdown
+previewRetractForm reason = renderDivs $ (Markdown <$> areq hiddenField "" (Just $ (\(Markdown str) -> str) reason))
+
+renderComment :: UserId -> Text -> M.Map UserId (Entity User) -> Int -> Int -> [CommentRetraction] -> M.Map CommentId CommentRetraction -> Tree (Entity Comment) -> Widget
+renderComment viewer_id target users max_depth depth earlier_retractions retraction_map tree = do
     maybe_route <- lift getCurrentRoute
 
     let Entity comment_id comment = rootLabel tree
         children = subForest tree
 
-        Entity user_id user = users M.! wikiCommentUser comment
+        Entity user_id user = users M.! commentUser comment
         author_name = userPrintName (Entity user_id user)
-        comment_time = renderTime (wikiCommentCreatedTs comment)
+        comment_time = renderTime (commentCreatedTs comment)
 
-        top_level = (wikiCommentDepth comment == 0)
-        even_depth = not top_level && wikiCommentDepth comment `mod` 2 == 1
+        top_level = (commentDepth comment == 0)
+        even_depth = not top_level && commentDepth comment `mod` 2 == 1
         odd_depth = not top_level && not even_depth
 
-     in $(widgetFile "wiki_comment_body")
+        maybe_retraction = M.lookup comment_id retraction_map
+        empty_list = []
+
+     in $(widgetFile "comment_body")
 
 
 countReplies :: [Tree a] -> Int
@@ -490,13 +607,13 @@ previewNewWikiForm content can_view can_view_meta can_edit = renderDivs $ (,,,)
 disabledCommentForm :: Form Markdown
 disabledCommentForm = renderDivs $ areq markdownField ("Reply" { fsAttrs = [("disabled","")] }) Nothing
 
-commentForm :: Maybe WikiCommentId -> Form (Maybe WikiCommentId, Markdown)
+commentForm :: Maybe CommentId -> Form (Maybe CommentId, Markdown)
 commentForm parent = renderDivs
     $ (,)
         <$> aopt hiddenField "" (Just parent)
         <*> areq markdownField (if parent == Nothing then "Comment" else "Reply") Nothing
 
-previewCommentForm :: Maybe WikiCommentId -> Markdown -> Form (Maybe WikiCommentId, Markdown)
+previewCommentForm :: Maybe CommentId -> Markdown -> Form (Maybe CommentId, Markdown)
 previewCommentForm parent comment = renderDivs
     $ (,)
         <$> aopt hiddenField "" (Just parent)

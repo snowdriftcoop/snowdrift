@@ -233,7 +233,7 @@ instance Yesod App where
 
         return $ if authorized then Authorized else Unauthorized "You do not have sufficient permissions."
 
-    isAuthorized (DiscussWikiCommentR target _) write = do
+    isAuthorized (DiscussCommentR target _) write = do
         role <- fromMaybe Uninvited . (fmap (userRole . entityVal)) <$> maybeAuth
         page <- fmap entityVal $ runDB $ getBy404 $ UniqueWikiTarget target
 
