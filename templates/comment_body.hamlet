@@ -15,12 +15,12 @@ $# used by renderComment function
 
     $forall retraction <- earlier_retractions
         <div .retraction>
-            A comment above this one was retracted at ^{renderTime (commentRetractionTs retraction)}
+            A comment above this one was retracted ^{renderTime (commentRetractionTs retraction)}
             #{markdownToHtml (commentRetractionReason retraction)}
 
     $maybe retraction <- maybe_retraction
         <div .retraction>
-            This comment was retracted at ^{renderTime (commentRetractionTs retraction)}
+            The author retracted this comment ^{renderTime (commentRetractionTs retraction)}
             #{markdownToHtml (commentRetractionReason retraction)}
 
     #{markdownToHtml (commentText comment)}
@@ -35,6 +35,9 @@ $# used by renderComment function
         <a href="@{DiscussCommentR target parent_id}">
             parent #
 
+    $if user_id == viewer_id
+        <a href="@{RetractCommentR target comment_id}">
+            retract #
 
     $if depth > max_depth
         <br>
@@ -42,5 +45,5 @@ $# used by renderComment function
 
     $else
         $forall child <- children
-            ^{renderComment target users max_depth (depth + 1) empty_list retraction_map child}
+            ^{renderComment viewer_id target users max_depth (depth + 1) empty_list retraction_map child}
 

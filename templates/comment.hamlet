@@ -1,11 +1,6 @@
 <div .row>
     <div .span9>
         <div .row>
-            $forall retraction <- earlier_retractions
-                <div .row>
-                    <div .span9>
-                        A comment above this one was retracted at ^{renderTime (commentRetractionTs retraction)}: #{markdownToHtml (commentRetractionReason retraction)}
-
             ^{comment}
         $if can_edit
             <div .row>
