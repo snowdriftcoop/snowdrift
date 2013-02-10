@@ -1,0 +1,17 @@
+<div .row>
+    <div .span8>
+        $if null users
+            no users to display
+        $else
+            <table .table>
+                $forall Entity user_id user <- users
+                    <tr>
+                        <td>
+                            <a href=@{UserR user_id}>
+                                #{userIdent user}
+                        <td>
+                            #{userPrintName (Entity user_id user)}
+
+    <div .span3 .offset1>
+        ^{sidebar}
+

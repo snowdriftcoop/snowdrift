@@ -6,6 +6,7 @@
 
 / HomeR GET
 
+/users UsersR GET
 /user/#UserId UserR GET POST
 /user/#UserId/edit EditUserR GET
 /user/#UserId/balance UserBalanceR GET POST

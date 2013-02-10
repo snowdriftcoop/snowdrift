@@ -3,6 +3,7 @@ module Handler.User where
 import Import
 
 import Model.User
+import Model.Role
 
 import Widgets.Sidebar
 import Widgets.ProjectPledges
@@ -107,3 +108,14 @@ postUserR user_id = do
             _ -> do
                 setMessage "Failed to update user."
                 redirect $ UserR user_id
+
+getUsersR :: Handler RepHtml
+getUsersR = do
+    Entity _ viewer <- requireAuth
+
+    when (userRole viewer /= Admin) $ permissionDenied "Only admins can view all users."
+
+    users <- runDB $ selectList [] [ Asc UserId ]
+
+    defaultLayout $(widgetFile "users")
+
