@@ -42,8 +42,10 @@ $# used by renderComment function
         permalink #
 
     $if depth > max_depth
-        <br>
-        #{countReplies children} more replies
+        $with replies <- countReplies children
+            $if replies > 0
+                <br>
+                #{replies} more #{plural replies "reply" "replies"}
 
     $else
         $forall child <- children
