@@ -19,6 +19,6 @@ renderTime time = do
         render t = preEscapedToMarkup . intercalate "&nbsp;" . words . formatTime defaultTimeLocale "%c" $ t
 
     toWidget [hamlet|
-        <span title="#{age now time} ago">
-            #{render time}
+        <span title="#{render time}">
+            #{age now time} ago
     |]
