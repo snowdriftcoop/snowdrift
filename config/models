@@ -151,4 +151,15 @@ ProjectTag
     tag TagId
     UniqueProjectTag project tag
 
+CommentTag
+    comment CommentId
+    tag TagId
+    user UserId
+    UniqueCommentTag comment tag user
+
+Ticket
+    createdTs UTCTime
+    name Text
+    comment CommentId
+
  -- This file is used in Model.hs (which is imported by Foundation.hs)
