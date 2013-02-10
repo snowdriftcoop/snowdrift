@@ -12,6 +12,8 @@ import Model.User
 
 import Yesod.Markdown
 
+import Data.Maybe
+
 import qualified Data.Text as T
 
 import qualified Data.Foldable as F
@@ -22,7 +24,6 @@ import qualified Data.Map as M
 import Data.Tree
 
 import Control.Monad
-
 import Control.Arrow ((&&&))
 
 import Database.Persist.Store
@@ -332,7 +333,18 @@ postDiscussWikiR target = do
                     |]
 
                 Just x | x == action -> do
-                    _ <- runDB $ insert $ Comment now page_id maybe_parent_id user_id text depth
+                    runDB $ do
+                        comment_id <- insert $ Comment now page_id maybe_parent_id user_id text depth
+                        
+                        let content = T.lines $ T.pack $ (\ (Markdown str) -> str) text
+                            tickets = map T.strip $ catMaybes $ map (T.stripPrefix "ticket:") content
+                            tags = map T.strip $ mconcat $ map (T.splitOn ",") $ catMaybes $ map (T.stripPrefix "tags:") content
+
+                        forM_ tickets $ \ ticket -> insert $ Ticket now ticket comment_id
+                        forM_ tags $ \ tag -> do
+                            tag_id <- fmap (either entityKey id) $ insertBy $ Tag tag
+                            insert $ CommentTag comment_id tag_id user_id
+
                     setMessage "comment posted"
                     redirect $ DiscussWikiR target
 
