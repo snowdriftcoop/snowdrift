@@ -48,6 +48,17 @@ getWikiR target = do
     defaultLayout $ renderWiki target can_edit can_view_meta page
 
 
+getWikiPagesR :: Handler RepHtml
+getWikiPagesR = do
+    Entity _ user <- requireAuth
+
+    pages <- runDB $ selectList [] [Asc WikiPageTarget]
+
+    when (userRole user < Admin) $ permissionDenied "You do not have sufficient privileges to view this page."
+
+    defaultLayout $ $(widgetFile "wiki_pages")
+
+
 renderWiki :: Text -> Bool -> Bool -> WikiPage -> Widget
 renderWiki target can_edit can_view_meta page = $(widgetFile "wiki")
 
