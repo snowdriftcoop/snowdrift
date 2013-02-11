@@ -11,6 +11,8 @@
                                 #{userIdent user}
                         <td>
                             #{userPrintName (Entity user_id user)}
+                        <td>
+                            #{show (userRole user)}
 
     <div .span3 .offset1>
         ^{sidebar}
