@@ -40,6 +40,7 @@
 /priv PrivacyR GET
 /license/javascript JsLicenseR GET
 
+/w WikiPagesR GET
 /w/#Text WikiR GET POST
 /w/#Text/edit EditWikiR GET
 /w/#Text/new NewWikiR GET POST
@@ -48,6 +49,7 @@
 /w/#Text/comment/#CommentId/retract RetractCommentR GET POST
 /w/#Text/history WikiHistoryR GET
 /w/#Text/history/#WikiEditId WikiEditR GET
+
 /newcomments WikiNewCommentsR GET
 /newedits WikiNewEditsR GET
 
