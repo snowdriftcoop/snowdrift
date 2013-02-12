@@ -271,6 +271,8 @@ roleCanView CommitteeCandidate _ _ = Authorized
 
 roleCanView GeneralPublic _ CommitteeR = Unauthorized "This page requires a special invite, sorry."
 roleCanView GeneralPublic _ InviteR = Unauthorized "This page requires a special invite, sorry."
+roleCanView GeneralPublic _ (ApplicationR _) = Unauthorized "This page requires a special invite, sorry."
+roleCanView GeneralPublic _ ApplicationsR = Unauthorized "This page requires a special invite, sorry."
 roleCanView GeneralPublic _ _ = Authorized
 
 roleCanView Uninvited _ _ = Unauthorized "Snowdrift is presently invite-only."
