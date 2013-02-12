@@ -1,0 +1,22 @@
+<div .row>
+    <div .span8>
+        $if null tickets
+            no tickets to display
+        $else
+            <table .table>
+                $forall Entity ticket_id ticket <- tickets
+                    <tr>
+                        <td>
+                            #{show (unKey ticket_id)}
+                        $maybe page <- M.lookup ticket_id pages_by_ticket_id
+                            <td>
+                                #{wikiPageTarget page}:
+                            <td>
+                                <a href=@{DiscussCommentR (wikiPageTarget page) (ticketComment ticket)}>
+                                    #{ticketName ticket}
+                        $nothing
+                                #{ticketName ticket}
+
+    <div .span3 .offset1>
+        ^{sidebar}
+
