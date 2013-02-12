@@ -4,7 +4,7 @@
             <p>
                 Your invitation code has been generated.
             <p>
-                <strong>We suggest that you select and copy the content below and send it (perhaps with your own modifications) to the invitee along with a personal note.
+                <strong>We suggest that you copy the content below, add your own notes and modifications, and send it to the invitee.
                 Note: each code can only be used once.
                 You must generate a new code for each invitation.
             <blockquote>
@@ -15,6 +15,8 @@
                             $of CommitteeCandidate
                                 <p>
                                     You are invited to be a candidate for the steering committee!
+                                    To change your account status: make sure you are logged in, then redeem the code below.
+                                <p>
                                     Please review the proposals on the web site.
                                     If you are interested in being involved, fill out the form on the  "Join the steering committee" page.
                                     Either way, we appreciate any feedback and any referrals to other potential supporters.
@@ -22,13 +24,16 @@
                             $of CommitteeMember
                                 <p>
                                     You have been selected to be a member of the steering committee!
+                                    To change your account status: make sure you are logged in, then redeem the code below.
+                                <p>
                                     Please let us know if you cannot accept the position.
                                     Otherwise, welcome, we are so glad to have you join us.
-                                    The code below will change your account status so you will have access to committee-only parts of the site.
 
                             $of Editor
                                 <p>
                                     You are invited to be an editor.
+                                    To change your account status: make sure you are logged in, then redeem the code below.
+                                <p>
                                     This means you will have access to the entire site.
                                     You will not be an official member of the steering committee or have any other commitments,
                                     but we are asking for your critical feedback and other editorial comments to make the site better.
@@ -37,10 +42,13 @@
                             $of Admin
                                 <p>
                                     You are invited to be a site administrator.
+                                    To change your account status: make sure you are logged in, then redeem the code below.
+                                <p>
 
                             $of GeneralPublic
                                 <p>
                                     You are invited access the preliminary site, review the proposals, and test the system.
+                                    To access the content, first log in and then redeem the code below.
 
                             $of Uninvited
                                 <p>
