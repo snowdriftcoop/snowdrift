@@ -10,11 +10,14 @@ import Control.Arrow ((&&&))
 getTicketsR :: Handler RepHtml
 getTicketsR = do
     (tickets, pages_by_ticket_id) <- runDB $ do
-        tickets <- selectList [] [Desc TicketId]
-        comments <- selectList [ CommentId <-. map (ticketComment . entityVal) tickets ] []
+        unfiltered_tickets <- selectList [] [Desc TicketId]
+        comments <- selectList [ CommentId <-. map (ticketComment . entityVal) unfiltered_tickets ] []
+        retractions <- map (commentRetractionComment . entityVal) <$> selectList [ CommentRetractionComment <-. map entityKey comments ] []
+
         pages <- selectList [ WikiPageId <-. map (commentPage . entityVal) comments ] []
 
-        let tickets_map = M.fromList . map (entityKey &&& entityVal) $ tickets
+        let tickets = filter ((`notElem` retractions) . ticketComment . entityVal) unfiltered_tickets
+            tickets_map = M.fromList . map (entityKey &&& entityVal) $ tickets
             comments_map = M.fromList . map (entityKey &&& entityVal) $ comments
             pages_map = M.fromList . map (entityKey &&& entityVal) $ pages
 

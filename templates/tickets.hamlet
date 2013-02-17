@@ -7,7 +7,7 @@
                 $forall Entity ticket_id ticket <- tickets
                     <tr>
                         <td>
-                            #{show (unKey ticket_id)}
+                            #{either id id (fromPersistValue (unKey ticket_id))}
                         $maybe page <- M.lookup ticket_id pages_by_ticket_id
                             <td>
                                 #{wikiPageTarget page}:
