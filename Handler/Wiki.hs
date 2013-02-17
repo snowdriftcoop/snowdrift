@@ -356,6 +356,12 @@ postDiscussWikiR target = do
                             tag_id <- fmap (either entityKey id) $ insertBy $ Tag tag
                             insert $ CommentTag comment_id tag_id user_id
 
+                        let getParentAncestors parent_id = (parent_id :) . map (commentAncestorAncestor . entityVal) <$> selectList [ CommentAncestorComment ==. parent_id ] []
+
+                        ancestors <- maybe (return []) (getParentAncestors) maybe_parent_id
+
+                        forM_ ancestors $ \ ancestor_id -> insert $ CommentAncestor comment_id ancestor_id
+
                     setMessage "comment posted"
                     redirect $ DiscussWikiR target
 
