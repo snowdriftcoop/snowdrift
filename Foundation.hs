@@ -31,8 +31,6 @@ import Data.Text (Text)
 
 import Data.Char (isSpace)
 
-import Data.Maybe (fromMaybe)
-
 import Web.Authenticate.BrowserId (browserIdJs)
 
 import Blaze.ByteString.Builder.Char.Utf8 (fromText)
@@ -213,55 +211,29 @@ instance Yesod App where
     isAuthorized (AuthR _) _ = return Authorized
     isAuthorized (InvitationR _) _ = return Authorized
 
-    isAuthorized (WikiR target) write = do
-        role <- fromMaybe Uninvited . (fmap (userRole . entityVal)) <$> maybeAuth
-        page <- fmap entityVal $ runDB $ getBy404 $ UniqueWikiTarget target
+    isAuthorized (WikiR target) True = require wikiPageCanEdit target
+    isAuthorized (WikiR target) False = require wikiPageCanView target
 
-        let authorized = if write
-                          then role >= wikiPageCanEdit page
-                          else role >= wikiPageCanView page
+    isAuthorized (DiscussWikiR target) True = require wikiPageCanEdit target
+    isAuthorized (DiscussWikiR target) False = require wikiPageCanViewMeta target
 
-        return $ if authorized then Authorized else Unauthorized "You do not have sufficient permissions."
+    isAuthorized (DiscussCommentR target _) True = require wikiPageCanEdit target
+    isAuthorized (DiscussCommentR target _) False = require wikiPageCanViewMeta target
 
-    isAuthorized (DiscussWikiR target) write = do
-        role <- fromMaybe Uninvited . (fmap (userRole . entityVal)) <$> maybeAuth
-        page <- fmap entityVal $ runDB $ getBy404 $ UniqueWikiTarget target
-
-        let authorized = if write
-                          then role >= wikiPageCanEdit page
-                          else role >= wikiPageCanViewMeta page
-
-        return $ if authorized then Authorized else Unauthorized "You do not have sufficient permissions."
-
-    isAuthorized (DiscussCommentR target _) write = do
-        role <- fromMaybe Uninvited . (fmap (userRole . entityVal)) <$> maybeAuth
-        page <- fmap entityVal $ runDB $ getBy404 $ UniqueWikiTarget target
-
-        let authorized = if write
-                          then role >= wikiPageCanEdit page
-                          else role >= wikiPageCanViewMeta page
-
-        return $ if authorized then Authorized else Unauthorized "You do not have sufficient permissions."
-
-    isAuthorized (WikiHistoryR target) _ = do
-        role <- fromMaybe Uninvited . (fmap (userRole . entityVal)) <$> maybeAuth
-        page <- fmap entityVal $ runDB $ getBy404 $ UniqueWikiTarget target
-
-        let authorized = role >= wikiPageCanViewMeta page
-
-        return $ if authorized then Authorized else Unauthorized "You do not have sufficient permissions."
-
-    isAuthorized (WikiEditR target _) _ = do
-        role <- fromMaybe Uninvited . (fmap (userRole . entityVal)) <$> maybeAuth
-        page <- fmap entityVal $ runDB $ getBy404 $ UniqueWikiTarget target
-
-        let authorized = role >= wikiPageCanViewMeta page
-
-        return $ if authorized then Authorized else Unauthorized "You do not have sufficient permissions."
+    isAuthorized (WikiHistoryR target) _ = require wikiPageCanViewMeta target
+    isAuthorized (WikiEditR target _) _ = require wikiPageCanViewMeta target
 
     isAuthorized route write = do
-        role <- fromMaybe Uninvited . (fmap (userRole . entityVal)) <$> maybeAuth
+        role <- maybe Uninvited (userRole . entityVal) <$> maybeAuth
         return $ roleCanView role write route
+
+require :: (WikiPage -> Role) -> Text -> GHandler sub App AuthResult
+require permission target = do
+    role <- maybe Uninvited (userRole . entityVal) <$> maybeAuth
+    page <- fmap entityVal $ runDB $ getBy404 $ UniqueWikiTarget target
+
+    return $ if role >= permission page then Authorized else Unauthorized "You do not have sufficient permissions."
+
 
 roleCanView :: Role -> Bool -> Route App -> AuthResult
 roleCanView Admin _ _ = Authorized

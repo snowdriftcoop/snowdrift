@@ -23,7 +23,7 @@ data ProjectSummary =
 summarizeProject :: (MonadIO m, MonadBaseControl IO m, MonadLogger m, MonadUnsafeIO m, MonadThrow m) => (Entity Project, [Entity Pledge]) -> SqlPersist m ProjectSummary
 summarizeProject (project, pledges) = do
     let share_value = projectShareValue $ entityVal project
-        share_count = ShareCount $ sum . map pledgeFundedShares . map entityVal $ pledges
+        share_count = ShareCount $ sum . map (pledgeFundedShares . entityVal) $ pledges
         user_count = UserCount $ fromIntegral $ length pledges
 
     return $ ProjectSummary (projectName $ entityVal project) (entityKey project) user_count share_count share_value
@@ -37,10 +37,10 @@ getProjectShares project_id = do
 
 projectComputeShareValue :: [Int64] -> Milray
 projectComputeShareValue pledges =
-    let lg x = log x / log 2 :: Double
+    let lg x = logBase 2 x :: Double
         num_users = fromIntegral $ length pledges
         geomean :: [Double] -> Double
-        geomean xs = exp $ (sum $ map log xs) / fromIntegral (length xs)
+        geomean xs = exp $ sum (map log xs) / fromIntegral (length xs)
         multiplier = lg (geomean (map fromIntegral pledges) + 1)
      in Milray 1 $* (multiplier * (num_users - 1))
 

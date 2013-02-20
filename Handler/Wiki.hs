@@ -12,8 +12,6 @@ import Model.User
 
 import Yesod.Markdown
 
-import Data.Maybe
-
 import qualified Data.Text as T
 
 import qualified Data.Foldable as F
@@ -79,7 +77,7 @@ postWikiR target = do
 
 
     case result of
-        FormSuccess (last_edit_id, content, comment) -> do
+        FormSuccess (last_edit_id, content, comment) ->
             if last_edit_id == wikiLastEditEdit last_edit
              then do
                 mode <- lookupPostParam "mode"
@@ -211,7 +209,7 @@ buildCommentTree root rest =
     let treeOfList (node, items) =
             let has_parent p = (== Just (entityKey p)) . commentParent . entityVal
                 list = dropWhile (not . has_parent node) items
-                (children, rest') = break (not . has_parent node) list
+                (children, rest') = span (has_parent node) list
                 items' = map (, rest') children
              in (node, items')
 
@@ -237,10 +235,9 @@ getDiscussWikiR target = do
         let users = M.fromList $ map (entityKey &&& id) user_entities
 
         retraction_map <- M.fromList . map ((commentRetractionComment &&& id) . entityVal) <$> selectList [ CommentRetractionComment <-. map entityKey (roots ++ rest) ] []
-        return $ (roots, rest, users, retraction_map)
+        return (roots, rest, users, retraction_map)
 
-    let comments = forM_ roots $ \ root -> do
-        renderComment user_id target users 10 0 [] retraction_map $ buildCommentTree root rest
+    let comments = forM_ roots $ \ root -> renderComment user_id target users 10 0 [] retraction_map $ buildCommentTree root rest
 
     (comment_form, _) <- generateFormPost $ commentForm Nothing
 
@@ -273,7 +270,7 @@ getDiscussCommentR target comment_id = do
         earlier_retractions <- map entityVal <$> selectList [ CommentRetractionComment <-. map (commentAncestorAncestor . entityVal) ancestors ] []
         retraction_map <- M.fromList . map ((commentRetractionComment &&& id) . entityVal) <$> selectList [ CommentRetractionComment <-. comment_id : map entityKey rest ] []
         
-        return $ (root, rest, users, earlier_retractions, retraction_map)
+        return (root, rest, users, earlier_retractions, retraction_map)
 
     (comment_form, _) <- generateFormPost $ commentForm $ Just comment_id
 
@@ -304,7 +301,7 @@ postDiscussWikiR target = do
             depth <- case maybe_parent_id of
                 Just parent_id -> do
                     Just parent <- runDB $ get parent_id
-                    return $ (+1) $ commentDepth $ parent
+                    return $ (+1) $ commentDepth parent
                 _ -> return 0
 
             mode <- lookupPostParam "mode"
@@ -313,7 +310,7 @@ postDiscussWikiR target = do
 
             case mode of
                 Just "preview" -> do
-                    earlier_retractions <- runDB $ do
+                    earlier_retractions <- runDB $
                         case maybe_parent_id of
                             Just parent_id -> do
                                 ancestors <- (parent_id :) . map (commentAncestorAncestor . entityVal) <$> selectList [ CommentAncestorComment ==. parent_id ] []
@@ -348,8 +345,8 @@ postDiscussWikiR target = do
                         comment_id <- insert $ Comment now page_id maybe_parent_id user_id text depth
                         
                         let content = T.lines $ T.pack $ (\ (Markdown str) -> str) text
-                            tickets = map T.strip $ catMaybes $ map (T.stripPrefix "ticket:") content
-                            tags = map T.strip $ mconcat $ map (T.splitOn ",") $ catMaybes $ map (T.stripPrefix "tags:") content
+                            tickets = map T.strip $ mapMaybe (T.stripPrefix "ticket:") content
+                            tags = map T.strip $ mconcat $ map (T.splitOn ",") $ mapMaybe (T.stripPrefix "tags:") content
 
                         forM_ tickets $ \ ticket -> insert $ Ticket now ticket comment_id
                         forM_ tags $ \ tag -> do
@@ -358,7 +355,7 @@ postDiscussWikiR target = do
 
                         let getParentAncestors parent_id = (parent_id :) . map (commentAncestorAncestor . entityVal) <$> selectList [ CommentAncestorComment ==. parent_id ] []
 
-                        ancestors <- maybe (return []) (getParentAncestors) maybe_parent_id
+                        ancestors <- maybe (return []) getParentAncestors maybe_parent_id
 
                         forM_ ancestors $ \ ancestor_id -> insert $ CommentAncestor comment_id ancestor_id
 
@@ -390,7 +387,7 @@ getWikiNewCommentsR = do
         comments <- selectList filters [ Desc CommentId, LimitTo 50 ]
 
         let user_ids = S.toList $ S.fromList $ map (commentUser . entityVal) comments
-        users <- fmap M.fromList $ fmap (map (entityKey &&& id)) $ selectList [ UserId <-. user_ids ] []
+        users <- fmap (M.fromList . map (entityKey &&& id)) $ selectList [ UserId <-. user_ids ] []
 
         retraction_map <- M.fromList . map ((commentRetractionComment &&& id) . entityVal) <$> selectList [ CommentRetractionComment <-. map entityKey comments ] []
 
@@ -430,9 +427,9 @@ getWikiHistoryR target = do
         Entity page_id _ <- getBy404 $ UniqueWikiTarget target
         edits <- selectList [ WikiEditPage ==. page_id ] [ Desc WikiEditId ]
 
-        let user_id_list = S.toList $ S.fromList $ map (wikiEditUser . entityVal) $ edits
+        let user_id_list = S.toList $ S.fromList $ map (wikiEditUser . entityVal) edits
 
-        users <- fmap M.fromList $ fmap (map (entityKey &&& id)) $ selectList [ UserId <-. user_id_list ] []
+        users <- fmap (M.fromList . map (entityKey &&& id)) $ selectList [ UserId <-. user_id_list ] []
 
         return (edits, users)
 
@@ -466,7 +463,7 @@ getWikiNewEditsR = do
         edits <- selectList filters [ Desc WikiEditId, LimitTo 50 ]
 
         let user_ids = S.toList $ S.fromList $ map (wikiEditUser . entityVal) edits
-        users <- fmap M.fromList $ fmap (map (entityKey &&& id)) $ selectList [ UserId <-. user_ids ] []
+        users <- fmap (M.fromList . map (entityKey &&& id)) $ selectList [ UserId <-. user_ids ] []
         return (edits, pages, users)
 
     let PersistInt64 to = unKey $ minimum (map entityKey edits)
@@ -501,7 +498,7 @@ getRetractCommentR target comment_id = do
     comment <- runDB $ get404 comment_id
     when (commentUser comment /= user_id) $ permissionDenied "You can only retract your own comments."
 
-    earlier_retractions <- runDB $ do
+    earlier_retractions <- runDB $
         case commentParent comment of
             Just parent_id -> do
                 ancestors <- (parent_id :) . map (commentAncestorAncestor . entityVal) <$> selectList [ CommentAncestorComment ==. parent_id ] []
@@ -530,7 +527,7 @@ postRetractCommentR target comment_id = do
 
     case result of
         FormSuccess reason -> do
-            earlier_retractions <- runDB $ do
+            earlier_retractions <- runDB $
                 case commentParent comment of
                     Just parent_id -> do
                         ancestors <- (parent_id :) . map (commentAncestorAncestor . entityVal) <$> selectList [ CommentAncestorComment ==. parent_id ] []
@@ -578,7 +575,7 @@ retractForm :: Form Markdown
 retractForm = renderDivs $ areq markdownField "Retraction reason:" Nothing
     
 previewRetractForm :: Markdown -> Form Markdown
-previewRetractForm reason = renderDivs $ (Markdown <$> areq hiddenField "" (Just $ (\(Markdown str) -> str) reason))
+previewRetractForm reason = renderDivs $ Markdown <$> areq hiddenField "" (Just $ (\(Markdown str) -> str) reason)
 
 renderComment :: UserId -> Text -> M.Map UserId (Entity User) -> Int -> Int -> [CommentRetraction] -> M.Map CommentId CommentRetraction -> Tree (Entity Comment) -> Widget
 renderComment viewer_id target users max_depth depth earlier_retractions retraction_map tree = do
@@ -640,7 +637,7 @@ commentForm :: Maybe CommentId -> Form (Maybe CommentId, Markdown)
 commentForm parent = renderDivs
     $ (,)
         <$> aopt hiddenField "" (Just parent)
-        <*> areq markdownField (if parent == Nothing then "Comment" else "Reply") Nothing
+        <*> areq markdownField (if isNothing parent then "Comment" else "Reply") Nothing
 
 previewCommentForm :: Maybe CommentId -> Markdown -> Form (Maybe CommentId, Markdown)
 previewCommentForm parent comment = renderDivs

@@ -19,11 +19,11 @@ import           Settings             as Import
 import           Settings.Development as Import
 import           Settings.StaticFiles as Import
 
-import           Data.Maybe           as Import (fromMaybe, listToMaybe, mapMaybe)
+import           Data.Maybe           as Import (fromMaybe, listToMaybe, mapMaybe, isNothing, isJust)
 
 import           Data.Int             as Import (Int64)
 
-import           Control.Monad        as Import (when)
+import           Control.Monad        as Import (when, void)
 
 import           Data.Time.Clock      as Import (UTCTime, diffUTCTime, getCurrentTime)
 import           Data.Time.Units
@@ -61,11 +61,11 @@ readMaybe s      =  case [x | (x,t) <- reads s, ("","") <- lex t] of
 age :: UTCTime -> UTCTime -> String
 age a b = let s = round $ toRational $ diffUTCTime a b
               f (t :: Second)
-                 | t > convertUnit (1 :: Fortnight) = show $ (convertUnit t :: Fortnight)
-                 | t > convertUnit (1 :: Week) = show $ (convertUnit t :: Week)
-                 | t > convertUnit (1 :: Day) = show $ (convertUnit t :: Day)
-                 | t > convertUnit (1 :: Hour) = show $ (convertUnit t :: Hour)
-                 | otherwise = show $ (convertUnit t :: Minute)
+                 | t > convertUnit (1 :: Fortnight) = show (convertUnit t :: Fortnight)
+                 | t > convertUnit (1 :: Week) = show (convertUnit t :: Week)
+                 | t > convertUnit (1 :: Day) = show (convertUnit t :: Day)
+                 | t > convertUnit (1 :: Hour) = show (convertUnit t :: Hour)
+                 | otherwise = show (convertUnit t :: Minute)
            in f s
 
 footnote :: Integer -> Widget

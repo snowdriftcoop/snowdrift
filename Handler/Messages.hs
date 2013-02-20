@@ -16,12 +16,12 @@ getMessagesR = do
     now <- liftIO getCurrentTime
 
     messages <-
-        if userRole viewer == CommitteeMember || userRole viewer == Admin
-         then runDB $ selectList
+        runDB $ if userRole viewer == CommitteeMember || userRole viewer == Admin
+         then selectList
             ( [ MessageTo ==. Just viewer_id ]
             ||. [ MessageTo ==. Nothing ]
             ) [ Desc MessageCreatedTs ]
-         else runDB $ selectList [ MessageTo ==. Just viewer_id ] [ Desc MessageCreatedTs ]
+         else selectList [ MessageTo ==. Just viewer_id ] [ Desc MessageCreatedTs ]
 
     users <- runDB $ selectList [ UserId <-. mapMaybe (messageFrom . entityVal) messages ] []
     let user_map = M.fromList $ map (entityKey &&& entityVal) users

@@ -21,7 +21,7 @@ getJsLicenseR = do
     render <- getUrlRender
 
     let jqueryUrl = either render id $ urlJqueryJs app
-        unMin lib = fromMaybe lib $ fmap (`T.append` "js") $ T.stripSuffix "min.js" $ fst $ T.breakOnEnd "?" lib
+        unMin lib = maybe lib (`T.append` "js") $ T.stripSuffix "min.js" . fst . T.breakOnEnd "?" $ lib
 
         libs :: [Lib]
         libs =

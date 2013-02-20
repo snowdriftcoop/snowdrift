@@ -20,7 +20,7 @@ sidebar = do
 
     let role = fromMaybe Uninvited (userRole . entityVal <$> maybe_user)
         is_committee_member = role == CommitteeMember || role == Admin
-        log_in_or_out = do
+        log_in_or_out =
             case maybe_user of
                 Nothing ->
                     toWidget [hamlet|

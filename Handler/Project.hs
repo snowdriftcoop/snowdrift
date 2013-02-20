@@ -68,7 +68,7 @@ renderProject maybe_project_id project pledges pledge = do
     let share_value = projectShareValue project
         users = fromIntegral $ length pledges
         shares = sum pledges
-        project_value = share_value $* (fromIntegral shares)
+        project_value = share_value $* fromIntegral shares
         description = markdownToHtml $ projectDescription project
 
     ((_, update_shares), _) <- lift $ generateFormGet $ buySharesForm $ fromMaybe 0 $ pledgeShares . entityVal <$> pledge
@@ -169,7 +169,7 @@ postProjectR project_id = do
                                     last_update <- getBy $ UniqueProjectLastUpdate project_id
                                     case last_update of
                                         Just (Entity key _) -> repsert key $ ProjectLastUpdate project_id project_update
-                                        Nothing -> (insert $ ProjectLastUpdate project_id project_update) >> return ()
+                                        Nothing -> void $ insert $ ProjectLastUpdate project_id project_update
 
                                 update $ \ p -> do
                                     set p [ ProjectName =. val name, ProjectDescription =. val description ]
@@ -182,11 +182,10 @@ postProjectR project_id = do
 
                                     case tag_entity_list of
                                         [] -> insert $ Tag tag_name
-                                        (Entity tag_id _) : _ -> return tag_id
+                                        Entity tag_id _ : _ -> return tag_id
 
 
-                                delete $ from $ \ project_tag -> do
-                                    where_ (project_tag ^. ProjectTagProject ==. val project_id)
+                                delete $ from $ \ project_tag -> where_ (project_tag ^. ProjectTagProject ==. val project_id)
 
                                 forM_ tag_ids $ \ tag_id -> insert $ ProjectTag project_id tag_id
 

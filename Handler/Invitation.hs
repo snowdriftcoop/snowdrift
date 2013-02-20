@@ -12,12 +12,12 @@ getInvitationR code = do
     Entity invite_id invite <- runDB $ getBy404 $ UniqueInvite code
     maybe_user_id <- maybeAuthId
 
-    when (maybe_user_id == Nothing)
+    when (isNothing maybe_user_id)
         setUltDestCurrent
 
     alreadyExpired
 
-    let redeemed = inviteRedeemed invite || inviteRedeemedBy invite /= Nothing
+    let redeemed = inviteRedeemed invite || isJust (inviteRedeemedBy invite)
 
     defaultLayout $ $(widgetFile "invitation")
     

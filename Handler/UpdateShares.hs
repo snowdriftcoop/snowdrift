@@ -68,9 +68,9 @@ postUpdateSharesR project_id = do
                     return False
                  else return True
 
-            if success
-             then setMessage "you are now contributing to this project"
-             else setMessage "you must have at least 3 months worth in your account to pledge additional shares"
+            setMessage $ if success
+             then "you are now contributing to this project"
+             else "you must have at least 3 months worth in your account to pledge additional shares"
             redirect $ ProjectR project_id
 
         _ -> do

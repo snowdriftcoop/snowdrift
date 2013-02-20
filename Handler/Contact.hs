@@ -23,11 +23,10 @@ postContactR = do
 
     case result of
         FormSuccess content -> do
-            _ <- runDB $ insert $ Message now maybe_user_id Nothing content
+            void $ runDB $ insert $ Message now maybe_user_id Nothing content
             setMessage "Comment submitted.  Thank you for your input!"
 
-        _ -> do
-            setMessage "Error occurred when submitting form."
+        _ -> setMessage "Error occurred when submitting form."
 
     redirect ContactR
 
