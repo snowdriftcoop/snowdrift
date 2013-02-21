@@ -1,10 +1,19 @@
 <div .row>
     <div .span8>
-        This is the Snowdrift.coop homepage.
-        <br>
-        We are in the early development stage.
-        <br>
-        There will be much here, eventually.
+        <p>
+            Snowdrift is building a new way of crowdfunding free/libre/open projects, significantly different (and we believe better) than anything else out there. We're in semi-stealth mode, but if this intrigues you, we'd really like you to get involved. You're a:
+            <ul>
+                <li>
+                    patron of free/libre/open projects on existing crowdfunding sites that might be interested in participating in snowdrift as a beta user?
+                <li>
+                    lead of an established free/libre/open project or organization that might be interested in participating in snowdrift as a beta project or partner? Inquire!
+                <li>
+                    web developer, any combination of HTML/CSS/JS/Haskell/Yesod (or eagerness to learn), that might be interested in helping us enable a free world? Inquire, but you can look at #
+                    <a href="https://gitorious.org/snowdrift/snowdrift">
+                        our source
+                    \ (AGPL) right now! (for developers, we're serious about semi-stealth!)
+                <li>
+                    long-time free/libre/open advocate, deeply involved in the movement, committed to seeing free/libre/open in general succeed way beyond anything before seen? Request an invitation to be considered for the steering committee.
 
     <div .span3 .offset1>
         ^{sidebar}
