@@ -8,14 +8,14 @@
         <table>
             <tr>
                 <td>
-                    #{show project_value}
+                    Total&nbsp;of&nbsp;current&nbsp;pledges: #{show project_value}&nbsp;per&nbsp;month
             <tr>
                 <td>
                     <hr>
             <tr>
                 <td>
                     $maybe project_id <- maybe_project_id
-                        <a href="@{ProjectDonorsR project_id}">
+                        <a href="@{ProjectPatronsR project_id}">
                             _{MsgPatrons users}
                     $nothing
                         _{MsgPatrons users}
@@ -24,7 +24,7 @@
                     _{MsgShares shares}
             <tr>
                 <td>
-                    #{show share_value}/share
+                    #{show share_value}&nbsp;per&nbsp;share
         <hr>
 
         $maybe project_id <- maybe_project_id

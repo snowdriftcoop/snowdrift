@@ -8,7 +8,7 @@
         <div .row>
             <div .span8>
                 $if null pledges
-                    no donors yet
+                    no patrons yet
                 $else
                     <table .table>
                         $forall (pledge, user) <- pledges
@@ -17,7 +17,7 @@
                                     <a href="@{UserR (entityKey user)}">
                                         #{userPrintName user}
                                 <td>
-                                    #{show (pledgeShares (entityVal pledge))}&cent;/100&nbsp;donors
+                                    #{show (pledgeShares (entityVal pledge))}&cent;&nbsp;per&nbsp;100&nbsp;patrons
 
     <div .span3 .offset1>
         ^{sidebar}

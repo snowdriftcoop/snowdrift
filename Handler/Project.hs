@@ -207,8 +207,8 @@ postProjectR project_id = do
             redirect $ ProjectR project_id
 
 
-getProjectDonorsR :: ProjectId -> Handler RepHtml
-getProjectDonorsR project_id = do
+getProjectPatronsR :: ProjectId -> Handler RepHtml
+getProjectPatronsR project_id = do
     page <- lookupGetParamDefault "page" 0
     per_page <- lookupGetParamDefault "count" 20
 
