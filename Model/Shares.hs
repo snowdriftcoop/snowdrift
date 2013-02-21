@@ -9,7 +9,7 @@ data SharesPurchaseOrder = SharesPurchaseOrder Int64
 
 buySharesForm :: Int64 -> Form SharesPurchaseOrder
 buySharesForm shares extra = do
-    (pledge_res, pledge_view) <- mreq intField ("" { fsAttrs = [("placeholder", "shares"), ("class", "inline_shares")] }) (Just shares)
+    (pledge_res, pledge_view) <- mreq intField ("" { fsAttrs = [("placeholder", "10"), ("class", "inline_shares")] }) (if shares > 0 then Just shares else Nothing)
 
     let result = SharesPurchaseOrder <$> pledge_res
         view =  [whamlet|

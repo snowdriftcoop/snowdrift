@@ -71,7 +71,9 @@ renderProject maybe_project_id project pledges pledge = do
         project_value = share_value $* fromIntegral shares
         description = markdownToHtml $ projectDescription project
 
-    ((_, update_shares), _) <- lift $ generateFormGet $ buySharesForm $ fromMaybe 0 $ pledgeShares . entityVal <$> pledge
+        maybe_shares = pledgeShares . entityVal <$> pledge
+
+    ((_, update_shares), _) <- lift $ generateFormGet $ buySharesForm $ fromMaybe 0 maybe_shares
 
     $(widgetFile "project")
 
