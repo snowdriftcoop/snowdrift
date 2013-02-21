@@ -1,19 +1,21 @@
 <div .row>
     <div .span8>
         <p>
-            Snowdrift is building a new way of crowdfunding free/libre/open projects, significantly different (and we believe better) than anything else out there. We're in semi-stealth mode, but if this intrigues you, we'd really like you to get involved. You're a:
-            <ul>
-                <li>
-                    patron of free/libre/open projects on existing crowdfunding sites that might be interested in participating in Snowdrift as a beta user? Get in touch!
-                <li>
-                    lead of an established free/libre/open project or organization that might be interested in participating in Snowdrift as a beta project or partner? Inquire!
-                <li>
-                    web developer, any combination of HTML/CSS/JS/Haskell/Yesod (or eagerness to learn), that might be interested in helping us enable a free world? Inquire, but you can look at #
-                    <a href="https://gitorious.org/snowdrift/snowdrift">
-                        our source
-                    \ (AGPL) right now! (for developers, we're serious about semi-stealth!)
-                <li>
-                    long-time free/libre/open advocate, deeply involved in the movement, committed to seeing free/libre/open in general succeed way beyond anything seen before? Request an invitation to be considered for the steering committee.
+            Snowdrift is building a new system for supporting free/libre/open projects, significantly different (and we believe better) than anything else out there.
+            We will support projects ranging from software to art and music to science to educational resources and more.
+        <p>
+            Our approach to crowdfunding focuses on long-term, ongoing community patronage instead of glitzy, short-term fund drives.
+            \ We combine this with a holistic platform for community engagement.
+            \ We ensure that projects respect free/libre/open ideals, and the entire system will be run as a cooperative.
+        <p>
+            We're in semi-stealth mode, still working out early development, but if this intrigues you, we'd really like you to get involved. You're a:
+        <ul>
+            <li> patron of free/libre/open projects who might be interested in participating in snowdrift as a beta user? Get in touch.
+            <li> head of an established free/libre/open project or organization and might be interested in participating in snowdrift as a beta project or partner? Inquire&hellip;
+            <li> web developer, any combination of HTML/CSS/JS/Haskell/Yesod (or eagerness to learn), who might be interested in helping us achieve our vision? Inquire&hellip; (but you can look at our source already! see footer below)
+            <li> long-time free/libre/open advocate, committed to seeing free/libre/open in general succeed way beyond anything seen? Request an invitation to be considered for the steering committee.
+        <p>
+            Use the Contact Us link in the sidebar to request an invitation to see more. Please tell us a little about who you are and how you'd like to be involved. Cheers!
 
     <div .span3 .offset1>
         ^{sidebar}
