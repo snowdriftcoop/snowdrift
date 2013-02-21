@@ -16,12 +16,13 @@ buySharesForm shares extra = do
             #{extra}
             <p>
                 <strong>
-                    I pledge ^{fvInput pledge_view}&nbsp;&cent;/month for every 100 people who join me in pledging!
+                    I pledge ^{fvInput pledge_view}&nbsp;&cent;/month for every 100 others who join me in pledging!
             <p>
-                ... and I'll add just a little extra if others increase their base pledge beyond the minimum, knowing that they will do the same if I increase my pledge level.
+                &hellip; and I'll add just a little extra if others increase their base pledge beyond the minimum, knowing that they will do the same if I increase my pledge level.
             <p>
                 <a href=@{WikiR "mechanism"}>
-                    read the precise details about pledging
+                    <em>
+                        read the details&hellip;
         |]
     return (result, view)
 

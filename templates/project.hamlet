@@ -16,9 +16,9 @@
                 <td>
                     $maybe project_id <- maybe_project_id
                         <a href="@{ProjectDonorsR project_id}">
-                            _{MsgDonors users}
+                            _{MsgPatrons users}
                     $nothing
-                        _{MsgDonors users}
+                        _{MsgPatrons users}
             <tr>
                 <td>
                     _{MsgShares shares}
