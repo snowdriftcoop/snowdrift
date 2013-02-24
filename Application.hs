@@ -15,6 +15,8 @@ import qualified Database.Persist.Store
 import Database.Persist.GenericSql (printMigration, runMigration)
 import Network.HTTP.Conduit (newManager, def)
 
+import Control.Monad.Logger
+
 -- Import all relevant handler modules here.
 -- Don't forget to add new modules to your cabal file!
 import Handler.Home
@@ -67,7 +69,7 @@ makeFoundation conf = do
               Database.Persist.Store.loadConfig >>=
               Database.Persist.Store.applyEnv
     p <- Database.Persist.Store.createPoolConfig (dbconf :: Settings.PersistConfig)
-    Database.Persist.Store.runPool dbconf (printMigration migrateAll >> runMigration migrateAll) p
+    runStderrLoggingT $ Database.Persist.Store.runPool dbconf (printMigration migrateAll >> runMigration migrateAll) p
     return $ App conf s p manager dbconf
 
 -- for yesod devel
