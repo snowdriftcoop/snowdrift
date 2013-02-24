@@ -94,8 +94,8 @@ library
                  , clientsession                 >= 0.8        && < 0.9
                  , bytestring                    >= 0.9        && < 0.11
                  , text                          >= 0.11       && < 0.12
-                 , persistent                    >= 1.0        && < 1.1
-                 , persistent-postgresql         >= 1.0        && < 1.1
+                 , persistent                    >= 1.1        && < 1.2
+                 , persistent-postgresql         >= 1.1        && < 1.2
                  , persistent-template
                  , template-haskell
                  , hamlet                        >= 1.1        && < 1.2
@@ -128,6 +128,7 @@ library
                  , blaze-markup
                  , attoparsec
                  , old-locale
+                 , resourcet
 
 
 executable         Snowdrift

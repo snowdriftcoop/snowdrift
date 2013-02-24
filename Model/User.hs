@@ -15,7 +15,9 @@ data UserUpdate =
         , userUpdateStatement :: Maybe Markdown
         }
 
-updateUser :: PersistQuery backend m => Key backend (UserGeneric backend1) -> UserUpdate -> backend m ()
+updateUser :: forall (m :: * -> *).
+                             PersistQuery m =>
+                             Key (UserGeneric (PersistMonadBackend m)) -> UserUpdate -> m ()
 updateUser user_id user_update = update user_id $ catMaybes
         [ (UserName =.) . Just <$> userUpdateName user_update
         , (UserStatement =.) . Just <$> userUpdateStatement user_update

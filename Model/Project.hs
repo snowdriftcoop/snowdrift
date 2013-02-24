@@ -6,10 +6,10 @@ import Model.Currency
 
 import Database.Persist.GenericSql
 
-import Data.Conduit (MonadUnsafeIO, MonadThrow)
 import Control.Monad.IO.Class (MonadIO)
 import Control.Monad.Logger (MonadLogger)
 
+import Control.Monad.Trans.Resource
 
 data ProjectSummary =
     ProjectSummary
@@ -20,7 +20,7 @@ data ProjectSummary =
         , summaryShareCost :: Milray
         }
 
-summarizeProject :: (MonadIO m, MonadBaseControl IO m, MonadLogger m, MonadUnsafeIO m, MonadThrow m) => (Entity Project, [Entity Pledge]) -> SqlPersist m ProjectSummary
+summarizeProject :: (MonadIO m, MonadBaseControl IO m, MonadLogger m, MonadUnsafeIO m, MonadThrow m, MonadResource m) => (Entity Project, [Entity Pledge]) -> SqlPersist m ProjectSummary
 summarizeProject (project, pledges) = do
     let share_value = projectShareValue $ entityVal project
         share_count = ShareCount $ sum . map (pledgeFundedShares . entityVal) $ pledges
@@ -29,7 +29,7 @@ summarizeProject (project, pledges) = do
     return $ ProjectSummary (projectName $ entityVal project) (entityKey project) user_count share_count share_value
 
 
-getProjectShares :: (MonadUnsafeIO m, MonadThrow m, MonadIO m, MonadBaseControl IO m, MonadLogger m) => ProjectId -> SqlPersist m [Int64]
+getProjectShares :: (MonadUnsafeIO m, MonadThrow m, MonadIO m, MonadBaseControl IO m, MonadLogger m, MonadResource m) => ProjectId -> SqlPersist m [Int64]
 getProjectShares project_id = do
     pledges <- selectList [ PledgeProject ==. project_id, PledgeFundedShares >. 0 ] []
     return $ map (pledgeFundedShares . entityVal) pledges
@@ -45,7 +45,7 @@ projectComputeShareValue pledges =
      in Milray 1 $* (multiplier * (num_users - 1))
 
 
-updateShareValue :: (MonadUnsafeIO m, MonadThrow m, MonadIO m, MonadBaseControl IO m, MonadLogger m) => ProjectId -> SqlPersist m ()
+updateShareValue :: (MonadUnsafeIO m, MonadThrow m, MonadIO m, MonadBaseControl IO m, MonadLogger m, MonadResource m) => ProjectId -> SqlPersist m ()
 updateShareValue project_id = do
     pledges <- getProjectShares project_id
     

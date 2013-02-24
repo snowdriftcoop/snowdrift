@@ -17,6 +17,7 @@ import qualified Data.Set as S
 import Widgets.Sidebar
 
 import Database.Esqueleto
+import Database.Persist.GenericSql.Raw
 
 import Control.Monad (forM, forM_)
 
@@ -63,7 +64,11 @@ getProjectR project_id = do
     defaultLayout $ renderProject (Just project_id) project pledges pledge
 
 
-renderProject :: Maybe ProjectId -> ProjectGeneric SqlPersist -> [Int64] -> Maybe (Entity (PledgeGeneric SqlPersist)) -> Widget
+renderProject :: Maybe ProjectId
+                 -> ProjectGeneric SqlBackend
+                 -> [Int64]
+                 -> Maybe (Entity (PledgeGeneric SqlBackend))
+                 -> GWidget App App ()
 renderProject maybe_project_id project pledges pledge = do
     let share_value = projectShareValue project
         users = fromIntegral $ length pledges
