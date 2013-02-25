@@ -230,9 +230,11 @@ instance Yesod App where
 require :: (WikiPage -> Role) -> Text -> GHandler sub App AuthResult
 require permission target = do
     role <- maybe Uninvited (userRole . entityVal) <$> maybeAuth
-    page <- fmap entityVal $ runDB $ getBy404 $ UniqueWikiTarget target
+    maybe_page <- runDB $ getBy $ UniqueWikiTarget target
 
-    return $ if role >= permission page then Authorized else Unauthorized "You do not have sufficient permissions."
+    return $ case maybe_page of
+        Nothing -> Unauthorized "Page does not exist."
+        Just (Entity _ page) -> if role >= permission page then Authorized else Unauthorized "You do not have sufficient permissions."
 
 
 roleCanView :: Role -> Bool -> Route App -> AuthResult
