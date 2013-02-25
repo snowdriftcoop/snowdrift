@@ -5,6 +5,7 @@ module Handler.Wiki where
 import Import
 
 import Widgets.Sidebar
+import Widgets.Markdown
 import Widgets.Time
 
 import Model.Role (Role (..), roleField)
@@ -344,7 +345,7 @@ postDiscussWikiR target = do
                     runDB $ do
                         comment_id <- insert $ Comment now page_id maybe_parent_id user_id text depth
                         
-                        let content = T.lines $ T.pack $ (\ (Markdown str) -> str) text
+                        let content = T.lines $ (\ (Markdown str) -> str) text
                             tickets = map T.strip $ mapMaybe (T.stripPrefix "ticket:") content
                             tags = map T.strip $ mconcat $ map (T.splitOn ",") $ mapMaybe (T.stripPrefix "tags:") content
 
@@ -572,7 +573,7 @@ postRetractCommentR target comment_id = do
         _ -> error "Error when submitting form."
 
 retractForm :: Form Markdown
-retractForm = renderDivs $ areq markdownField "Retraction reason:" Nothing
+retractForm = renderDivs $ areq snowdriftMarkdownField "Retraction reason:" Nothing
     
 previewRetractForm :: Markdown -> Form Markdown
 previewRetractForm reason = renderDivs $ Markdown <$> areq hiddenField "" (Just $ (\(Markdown str) -> str) reason)
@@ -605,7 +606,7 @@ countReplies = sum . map (F.sum . fmap (const 1))
 editWikiForm :: WikiEditId -> Markdown -> Form (WikiEditId, Markdown, Maybe Text)
 editWikiForm last_edit_id content = renderDivs $ (,,)
         <$> areq hiddenField "" (Just last_edit_id)
-        <*> areq markdownField "Page Content" (Just content)
+        <*> areq snowdriftMarkdownField "Page Content" (Just content)
         <*> aopt textField "Comment" Nothing
 
 previewWikiForm :: WikiEditId -> Markdown -> Maybe Text -> Form (WikiEditId, Markdown, Maybe Text)
@@ -617,7 +618,7 @@ previewWikiForm last_edit_id content comment = renderDivs $ (,,)
 
 newWikiForm :: Form (Markdown, Role, Role, Role)
 newWikiForm = renderDivs $ (,,,)
-        <$> areq markdownField "Page Content" Nothing
+        <$> areq snowdriftMarkdownField "Page Content" Nothing
         <*> areq (roleField Admin) "Minimum Role to View" (Just GeneralPublic)
         <*> areq (roleField Admin) "Minimum Role to View Metadata" (Just CommitteeCandidate)
         <*> areq (roleField Admin) "Minimum Role to Edit" (Just CommitteeMember)
@@ -631,13 +632,13 @@ previewNewWikiForm content can_view can_view_meta can_edit = renderDivs $ (,,,)
         <*> (toEnum <$> areq hiddenField "" (Just $ fromEnum can_edit))
 
 disabledCommentForm :: Form Markdown
-disabledCommentForm = renderDivs $ areq markdownField ("Reply" { fsAttrs = [("disabled","")] }) Nothing
+disabledCommentForm = renderDivs $ areq snowdriftMarkdownField ("Reply" { fsAttrs = [("disabled","")] }) Nothing
 
 commentForm :: Maybe CommentId -> Form (Maybe CommentId, Markdown)
 commentForm parent = renderDivs
     $ (,)
         <$> aopt hiddenField "" (Just parent)
-        <*> areq markdownField (if isNothing parent then "Comment" else "Reply") Nothing
+        <*> areq snowdriftMarkdownField (if isNothing parent then "Comment" else "Reply") Nothing
 
 previewCommentForm :: Maybe CommentId -> Markdown -> Form (Maybe CommentId, Markdown)
 previewCommentForm parent comment = renderDivs

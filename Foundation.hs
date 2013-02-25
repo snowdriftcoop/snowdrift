@@ -8,7 +8,6 @@ import Yesod.Auth.BrowserId
 import Yesod.Auth.GoogleEmail
 import Yesod.Default.Config
 import Yesod.Default.Util (addStaticContentExternal)
-import Yesod.Markdown
 import Network.HTTP.Conduit (Manager)
 import qualified Settings
 import Settings.Development (development)
@@ -260,11 +259,6 @@ instance YesodPersist App where
             (persistConfig master)
             f
             (connPool master)
-
-
-
-instance YesodMarkdown App where
-    markdownTutorial = Left MarkdownTutorialR
 
 
 authBrowserIdFixed :: AuthPlugin App

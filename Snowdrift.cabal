@@ -57,6 +57,7 @@ library
                      Handler.UserPledges
                      Handler.Wiki
                      Handler.Tickets
+                     Widgets.Markdown
                      Widgets.Sidebar
                      Widgets.Time
                      Widgets.ProjectPledges
@@ -118,7 +119,7 @@ library
                  , transformers
                  , conduit
                  , random
-                 , yesod-markdown
+                 , yesod-markdown                >= 0.7
                  , Diff                          >= 0.1        && < 0.2
                  , path-pieces
                  , containers

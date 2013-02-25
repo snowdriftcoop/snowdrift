@@ -6,6 +6,7 @@ import Model.User
 import Model.Role
 
 import Widgets.Sidebar
+import Widgets.Markdown
 import Widgets.ProjectPledges
 
 import Yesod.Markdown
@@ -19,8 +20,8 @@ editUserForm user = renderDivs $
     UserUpdate
         <$> aopt textField "Name" (Just $ userName user)
         <*> aopt textField "Avatar (link)" (Just $ userAvatar user)
-        <*> aopt markdownField "Blurb" (Just $ userBlurb user)
-        <*> aopt markdownField "Personal Statement" (Just $ userStatement user)
+        <*> aopt snowdriftMarkdownField "Blurb" (Just $ userBlurb user)
+        <*> aopt snowdriftMarkdownField "Personal Statement" (Just $ userStatement user)
 
 previewUserForm :: User -> Form UserUpdate
 previewUserForm user = renderDivs $

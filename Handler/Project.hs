@@ -15,6 +15,7 @@ import qualified Data.Text as T
 import qualified Data.Set as S
 
 import Widgets.Sidebar
+import Widgets.Markdown
 
 import Database.Esqueleto
 import Database.Persist.GenericSql.Raw
@@ -102,7 +103,7 @@ editProjectForm :: Maybe (Project, [Text]) -> Form UpdateProject
 editProjectForm project =
     renderDivs $ UpdateProject
         <$> areq textField "Project Name" (projectName . fst <$> project)
-        <*> areq markdownField "Description" (projectDescription . fst <$> project)
+        <*> areq snowdriftMarkdownField "Description" (projectDescription . fst <$> project)
         <*> (map T.strip . T.splitOn "," <$> areq textField "Tags" (T.intercalate ", " . snd <$> project))
 
 previewProjectForm :: Maybe (Project, [Text]) -> Form UpdateProject

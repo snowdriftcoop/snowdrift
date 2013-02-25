@@ -14,6 +14,8 @@ import Control.Arrow
 
 import Data.Maybe
 
+import qualified Data.Text as T
+
 newtype DiffInfo = DiffInfo DI deriving (Eq)
 
 instance Read DiffInfo where
@@ -37,7 +39,7 @@ instance Show DiffInfo where
     show (DiffInfo x) = show x
 
 
-data MarkdownDiff = MarkdownDiff [(DiffInfo, String)] deriving (Show, Read, Eq, Ord)
+data MarkdownDiff = MarkdownDiff [(DiffInfo, T.Text)] deriving (Show, Read, Eq, Ord)
 
 derivePersistField "MarkdownDiff"
 
@@ -49,7 +51,7 @@ diffSecond =
      in mapMaybe not_first
 
 markdownDiffSecond :: MarkdownDiff -> Markdown
-markdownDiffSecond (MarkdownDiff diff) = Markdown . concat . diffSecond $ diff
+markdownDiffSecond (MarkdownDiff diff) = Markdown . T.concat . diffSecond $ diff
 
 diffMarkdown :: Markdown -> Markdown -> MarkdownDiff
-diffMarkdown (Markdown m1) (Markdown m2) = MarkdownDiff $ map (first DiffInfo) $ getDiff (lines m1) (lines m2) 
+diffMarkdown (Markdown m1) (Markdown m2) = MarkdownDiff $ map (first DiffInfo) $ getDiff (T.lines m1) (T.lines m2) 
