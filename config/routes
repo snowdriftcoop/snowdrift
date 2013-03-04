@@ -12,12 +12,12 @@
 /user/#UserId/balance UserBalanceR GET POST
 /user/#UserId/pledges UserPledgesR GET
 
-/projects ProjectsR GET
-/project/#ProjectId ProjectR GET POST
-/project/#ProjectId/patrons ProjectPatronsR GET
-/project/#ProjectId/edit EditProjectR GET
-/project/#ProjectId/widget WidgetR GET
-/project/#ProjectId/shares UpdateSharesR GET POST
+/p ProjectsR GET
+/p/#Text ProjectR GET POST
+/p/#Text/patrons ProjectPatronsR GET
+/p/#Text/edit EditProjectR GET
+/p/#Text/widget WidgetR GET
+/p/#Text/shares UpdateSharesR GET POST
 
 /invitation/#Text InvitationR GET POST
 /invite InviteR GET POST

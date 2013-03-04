@@ -49,12 +49,12 @@ getProjectsR = do
     defaultLayout $(widgetFile "projects")
 
 
-getProjectR :: ProjectId -> Handler RepHtml
-getProjectR project_id = do
+getProjectR :: Text -> Handler RepHtml
+getProjectR project_handle = do
     maybe_viewer_id <- maybeAuthId
 
     (project, pledges, pledge) <- runDB $ do
-        project <- get404 project_id
+        Entity project_id project <- getBy404 $ UniqueProjectHandle project_handle
         pledges <- getProjectShares project_id
         pledge <- case maybe_viewer_id of
             Nothing -> return Nothing
@@ -62,15 +62,15 @@ getProjectR project_id = do
 
         return (project, pledges, pledge)
 
-    defaultLayout $ renderProject (Just project_id) project pledges pledge
+    defaultLayout $ renderProject (Just project_handle) project pledges pledge
 
 
-renderProject :: Maybe ProjectId
+renderProject :: Maybe Text
                  -> ProjectGeneric SqlBackend
                  -> [Int64]
                  -> Maybe (Entity (PledgeGeneric SqlBackend))
                  -> GWidget App App ()
-renderProject maybe_project_id project pledges pledge = do
+renderProject maybe_project_handle project pledges pledge = do
     let share_value = projectShareValue project
         users = fromIntegral $ length pledges
         shares = sum pledges
@@ -114,24 +114,28 @@ previewProjectForm project =
         <*> (map T.strip . T.splitOn "," <$> areq hiddenField "" (T.intercalate ", " . snd <$> project))
 
 
-getEditProjectR :: ProjectId -> Handler RepHtml
-getEditProjectR project_id = do
+getEditProjectR :: Text -> Handler RepHtml
+getEditProjectR project_handle = do
+    Entity project_id project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
+
     requireAuth >>= guardCanEdit project_id
 
-    project <- runDB $ get project_id
     tags <- runDB $ select $ from $ \ (p_t `InnerJoin` tag) -> do
         on (p_t ^. ProjectTagTag ==. tag ^. TagId)
         where_ (p_t ^. ProjectTagProject ==. val project_id)
         return tag
 
-    (project_form, _) <- generateFormPost $ editProjectForm ((, map (tagName . entityVal) tags) <$> project)
+    (project_form, _) <- generateFormPost $ editProjectForm (Just (project, map (tagName . entityVal) tags))
 
     defaultLayout $(widgetFile "edit_project")
 
 
-postProjectR :: ProjectId -> Handler RepHtml
-postProjectR project_id = do
+postProjectR :: Text -> Handler RepHtml
+postProjectR project_handle = do
     viewer <- requireAuth
+
+    Entity project_id project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
+
     guardCanEdit project_id viewer
     ((result, _), _) <- runFormPost $ editProjectForm Nothing
 
@@ -143,14 +147,13 @@ postProjectR project_id = do
             let action :: Text = "update"
             case mode of
                 Just "preview" -> do
-                    project <- runDB $ get404 project_id
                     let preview_project = project { projectName = name, projectDescription = description }
                     (hidden_form, _) <- generateFormPost $ previewProjectForm $ Just (preview_project, tags)
-                    let rendered_project = renderProject (Just project_id) preview_project [] Nothing
+                    let rendered_project = renderProject (Just project_handle) preview_project [] Nothing
                         preview_controls = [whamlet|
                             <div .row>
                                 <div .span9>
-                                    <form method="POST" action="@{ProjectR project_id}">
+                                    <form method="POST" action="@{ProjectR project_handle}">
                                         ^{hidden_form}
                                         <em>
                                             This is a preview; your changes are not yet saved!
@@ -167,59 +170,50 @@ postProjectR project_id = do
                     |]
 
                 Just x | x == action -> do
-                    processed <- runDB $ do
-                        maybe_project <- get project_id
-                        case maybe_project of
-                            Nothing -> return False
-                            Just project -> do
-                                when (projectDescription project /= description) $ do
-                                    project_update <- insert $ ProjectUpdate now project_id (entityKey viewer) $ diffMarkdown (projectDescription project) description
-                                    last_update <- getBy $ UniqueProjectLastUpdate project_id
-                                    case last_update of
-                                        Just (Entity key _) -> repsert key $ ProjectLastUpdate project_id project_update
-                                        Nothing -> void $ insert $ ProjectLastUpdate project_id project_update
+                    runDB $ do
+                        when (projectDescription project /= description) $ do
+                            project_update <- insert $ ProjectUpdate now project_id (entityKey viewer) $ diffMarkdown (projectDescription project) description
+                            last_update <- getBy $ UniqueProjectLastUpdate project_id
+                            case last_update of
+                                Just (Entity key _) -> repsert key $ ProjectLastUpdate project_id project_update
+                                Nothing -> void $ insert $ ProjectLastUpdate project_id project_update
 
-                                update $ \ p -> do
-                                    set p [ ProjectName =. val name, ProjectDescription =. val description ]
-                                    where_ (p ^. ProjectId ==. val project_id)
+                        update $ \ p -> do
+                            set p [ ProjectName =. val name, ProjectDescription =. val description ]
+                            where_ (p ^. ProjectId ==. val project_id)
 
-                                tag_ids <- forM tags $ \ tag_name -> do
-                                    tag_entity_list <- select $ from $ \ tag -> do
-                                        where_ (tag ^. TagName ==. val tag_name)
-                                        return tag
+                        tag_ids <- forM tags $ \ tag_name -> do
+                            tag_entity_list <- select $ from $ \ tag -> do
+                                where_ (tag ^. TagName ==. val tag_name)
+                                return tag
 
-                                    case tag_entity_list of
-                                        [] -> insert $ Tag tag_name
-                                        Entity tag_id _ : _ -> return tag_id
+                            case tag_entity_list of
+                                [] -> insert $ Tag tag_name
+                                Entity tag_id _ : _ -> return tag_id
 
 
-                                delete $ from $ \ project_tag -> where_ (project_tag ^. ProjectTagProject ==. val project_id)
+                        delete $ from $ \ project_tag -> where_ (project_tag ^. ProjectTagProject ==. val project_id)
 
-                                forM_ tag_ids $ \ tag_id -> insert $ ProjectTag project_id tag_id
+                        forM_ tag_ids $ \ tag_id -> insert $ ProjectTag project_id tag_id
 
-                                return True
-
-                    if processed
-                     then do
-                         setMessage "project updated"
-                         redirect $ ProjectR project_id
-                     else notFound
+                    setMessage "project updated"
+                    redirect $ ProjectR project_handle
 
                 _ -> do
                     setMessage "error: unrecognized mode"
-                    redirect $ ProjectR project_id
+                    redirect $ ProjectR project_handle
         _ -> do
             setMessage "error"
-            redirect $ ProjectR project_id
+            redirect $ ProjectR project_handle
 
 
-getProjectPatronsR :: ProjectId -> Handler RepHtml
-getProjectPatronsR project_id = do
+getProjectPatronsR :: Text -> Handler RepHtml
+getProjectPatronsR project_handle = do
     page <- lookupGetParamDefault "page" 0
     per_page <- lookupGetParamDefault "count" 20
 
     (project, pledges) <- runDB $ do
-        project <- get404 project_id
+        Entity project_id project <- getBy404 $ UniqueProjectHandle project_handle
         pledges <- select $ from $ \(pledge `InnerJoin` user) -> do
             on (pledge ^. PledgeUser ==. user ^. UserId)
             where_ (pledge ^. PledgeProject ==. val project_id)

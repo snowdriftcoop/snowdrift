@@ -10,7 +10,7 @@
                     <p>
                         Would you like to pledge an additional _{MsgShares (shares - pledgeShares pledge)}, raising the total to #{show shares}?
 
-                    <form method=POST action=@{UpdateSharesR project_id}>
+                    <form method=POST action=@{UpdateSharesR project_handle}>
                         ^{confirm_form}
                         <input type=submit value="Yes!">
 
@@ -25,7 +25,7 @@
                         $else
                             Would you like to drop _{MsgShares (pledgeShares pledge - shares)}, reducing your support to _{MsgShares shares}?
 
-                    <form method=POST action=@{UpdateSharesR project_id}>
+                    <form method=POST action=@{UpdateSharesR project_handle}>
                         ^{confirm_form}
                         <input type=submit value="Yes.">
 
@@ -33,7 +33,7 @@
                     <p>
                         You have already pledged _{MsgShares shares} for this project.
 
-                    <form method=POST action=@{ProjectR project_id}>
+                    <form method=POST action=@{ProjectR project_handle}>
                         ^{confirm_form}
                         <input type=submit value="... right.">
 
@@ -41,7 +41,7 @@
             <p>
                 Pledge to contribute _{MsgShares shares} to #{projectName project}?
 
-            <form method=POST action=@{UpdateSharesR project_id}>
+            <form method=POST action=@{UpdateSharesR project_handle}>
                 ^{confirm_form}
                 <input type=submit value="Yes!">
 

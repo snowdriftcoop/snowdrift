@@ -30,7 +30,7 @@ project_pledges user_id = do
                 $forall summary <- project_summaries
                     <tr>
                         <td>
-                            <a href="@{ProjectR (summaryProjectId summary)}">
+                            <a href="@{ProjectR (summaryProjectHandle summary)}">
                                 #{summaryName summary}
                         <td>#{show (cost summary)}/share
                         <td>#{show (shares summary)}&nbsp;shares

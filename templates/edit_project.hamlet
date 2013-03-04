@@ -1,6 +1,6 @@
 <div .row>
     <div .span8>
-        <form method=POST action=@{ProjectR project_id}>
+        <form method=POST action=@{ProjectR project_handle}>
             ^{project_form}
             <input name=mode type=submit value=preview>
             <input name=mode type=submit value=update>
