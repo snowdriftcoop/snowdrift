@@ -8,7 +8,7 @@ Note: code is mirrored at both:
 and
 [Gitorious](https://gitorious.org/snowdrift/snowdrift)
 
-At this point, we're using the Issues tickets at GitHub,
+At this point, we're using the Issues tickets at GitHub (although we are developing our own internal ticketing which will be ready soon)
 but we appreciate that Gitorious is itself FLOSS whereas GitHub is propriety.
 
 The infrastructure here includes the wiki system for the site,
@@ -76,5 +76,13 @@ Once snowdrift is built, you can start the server by running the following from 
 
 It will print a bunch of text about creating tables, and then sit waiting for connections.  You can access it by directing your web browser to localhost:3000.
 
+development guidelines
+======================
+
+All JavaScript should be recognized as acceptable by the FSF's [LibreJS plugin](https://www.gnu.org/software/librejs/)
+
+No JavaScript should be used in a way that results in a broken experience with NoScript.
+In other words, JS is fine for all amplification and beautification of the site, but no function should be impossible and no page should look clearly off or broken without the JS.
+When in doubt, make sure things work well enough without JS. Otherwise, JS is welcome where it helps improve the site experience.
 
 Happy hacking!
