@@ -51,9 +51,9 @@ getWikiPagesR :: Handler RepHtml
 getWikiPagesR = do
     Entity _ user <- requireAuth
 
-    pages <- runDB $ selectList [] [Asc WikiPageTarget]
+    unfiltered_pages <- runDB $ selectList [] [Asc WikiPageTarget]
 
-    when (userRole user < Admin) $ permissionDenied "You do not have sufficient privileges to view this page."
+    let pages = filter (\ page -> wikiPageCanView (entityVal page) <= userRole user) unfiltered_pages
 
     defaultLayout $ $(widgetFile "wiki_pages")
 
