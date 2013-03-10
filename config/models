@@ -55,10 +55,10 @@ ProjectLastUpdate
     UniqueProjectLastUpdate project
 
 
-ProjectUser
+ProjectUserRole
     project ProjectId
     user UserId
-    canEdit Bool
+    role Role
 
 
 Pledge
@@ -72,13 +72,14 @@ Pledge
 Invite
     createdTs UTCTime
     code Text
+    project ProjectId default=1
     user UserId
     role Role
     tag Text
     redeemed Bool
     redeemedTs UTCTime Maybe
     redeemedBy UserId Maybe
-    UniqueInvite code
+    UniqueInvite project code
 
 
 CommitteeApplication

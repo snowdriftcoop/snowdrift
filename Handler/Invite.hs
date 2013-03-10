@@ -4,7 +4,7 @@ import Import
 
 import System.Random
 import Text.Printf
-import Data.Text (pack, unpack)
+import Data.Text (pack)
 import qualified Data.Map as M
 import qualified Data.Set as S
 
@@ -21,15 +21,16 @@ inviteForm role = renderBootstrap $ (,)
     <$> areq textField "About this invitation:" Nothing
     <*> areq (roleField role) "Type of Invite:" (Just GeneralPublic)
 
-getInviteR :: Handler RepHtml
-getInviteR = do
+getInviteR :: Text -> Handler RepHtml
+getInviteR project_handle = do
+    Entity project_id _ <- runDB $ getBy404 $ UniqueProjectHandle project_handle
     Entity viewer_id viewer <- requireAuth
     now <- liftIO getCurrentTime
     maybe_invite_code <- lookupSession "InviteCode"
-    maybe_invite_role <- fmap (read . unpack) <$> lookupSession "InviteRole"
+    -- maybe_invite_role <- fmap (read . unpack) <$> lookupSession "InviteRole"
     deleteSession "InviteCode"
     deleteSession "InviteRole"
-    let maybe_link = InvitationR <$> maybe_invite_code
+    let maybe_link = InvitationR project_handle <$> maybe_invite_code
     (invite_form, _) <- generateFormPost $ inviteForm (userRole viewer)
 
     let can_view_all =
@@ -63,8 +64,9 @@ getInviteR = do
     defaultLayout $(widgetFile "invite")
 
 
-postInviteR :: Handler RepHtml
-postInviteR = do
+postInviteR :: Text -> Handler RepHtml
+postInviteR project_handle = do
+    Entity project_id _ <- runDB $ getBy404 $ UniqueProjectHandle project_handle
     Entity user_id user <- requireAuth
     now <- liftIO getCurrentTime
     invite <- liftIO randomIO
@@ -72,11 +74,11 @@ postInviteR = do
     case result of
         FormSuccess (tag, role) -> do
             let invite_code = pack $ printf "%016x" (invite :: Int64)
-            _ <- runDB $ insert $ Invite now invite_code user_id role tag False Nothing Nothing
+            void $ runDB $ insert $ Invite now invite_code project_id user_id role tag False Nothing Nothing
             setSession "InviteCode" invite_code
             setSession "InviteRole" (pack $ show role)
 
         _ -> setMessage "Error in submitting form."
 
-    redirect InviteR
+    redirect $ InviteR project_handle
 

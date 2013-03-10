@@ -199,17 +199,6 @@ instance Yesod App where
     shouldLog _ _source level =
         development || level == LevelWarn || level == LevelError
 
-    isAuthorized HomeR _ = return Authorized
-    isAuthorized ContactR _ = return Authorized
-    isAuthorized TosR _ = return Authorized
-    isAuthorized PostLoginR _ = return Authorized
-    isAuthorized JsLicenseR _ = return Authorized
-    isAuthorized PrivacyR _ = return Authorized
-    isAuthorized FaviconR _ = return Authorized
-    isAuthorized RobotsR _ = return Authorized
-    isAuthorized (AuthR _) _ = return Authorized
-    isAuthorized (InvitationR _) _ = return Authorized
-
     isAuthorized (WikiR target) True = require wikiPageCanEdit target
     isAuthorized (WikiR target) False = require wikiPageCanView target
 
@@ -222,9 +211,8 @@ instance Yesod App where
     isAuthorized (WikiHistoryR target) _ = require wikiPageCanViewMeta target
     isAuthorized (WikiEditR target _) _ = require wikiPageCanViewMeta target
 
-    isAuthorized route write = do
-        role <- maybe Uninvited (userRole . entityVal) <$> maybeAuth
-        return $ roleCanView role write route
+    isAuthorized _ _ = return Authorized
+
 
 require :: (WikiPage -> Role) -> Text -> GHandler sub App AuthResult
 require permission target = do
@@ -234,21 +222,6 @@ require permission target = do
     return $ case maybe_page of
         Nothing -> Unauthorized "Page does not exist."
         Just (Entity _ page) -> if role >= permission page then Authorized else Unauthorized "You do not have sufficient permissions."
-
-
-roleCanView :: Role -> Bool -> Route App -> AuthResult
-roleCanView Admin _ _ = Authorized
-roleCanView Editor _ _ = Authorized
-roleCanView CommitteeMember _ _ = Authorized
-roleCanView CommitteeCandidate _ _ = Authorized
-
-roleCanView GeneralPublic _ CommitteeR = Unauthorized "This page requires a special invite, sorry."
-roleCanView GeneralPublic _ InviteR = Unauthorized "This page requires a special invite, sorry."
-roleCanView GeneralPublic _ (ApplicationR _) = Unauthorized "This page requires a special invite, sorry."
-roleCanView GeneralPublic _ ApplicationsR = Unauthorized "This page requires a special invite, sorry."
-roleCanView GeneralPublic _ _ = Authorized
-
-roleCanView Uninvited _ _ = Unauthorized "Snowdrift is presently invite-only."
 
 -- How to run database actions.
 instance YesodPersist App where

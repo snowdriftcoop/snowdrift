@@ -2,7 +2,6 @@
 module Model.Role 
     ( Role (..)
     , roleCanInvite
-    , roleDefaultTarget
     , roleLabel
     , roleAbbrev
     , roleField
@@ -20,27 +19,23 @@ roleCanInvite Editor GeneralPublic = True
 roleCanInvite Editor _ = False
 roleCanInvite a b = a >= b
 
-roleDefaultTarget :: Role -> Route App
-roleDefaultTarget Uninvited = HomeR
-roleDefaultTarget GeneralPublic = WikiR "about"
-roleDefaultTarget CommitteeCandidate = WikiR "joincommittee"
-roleDefaultTarget CommitteeMember = WikiR "committee"
-roleDefaultTarget Admin = WikiR "about"
-roleDefaultTarget Editor = WikiR "about"
-
 roleLabel :: Role -> Text
 roleLabel Uninvited = "Uninvited"
 roleLabel GeneralPublic = "General Interest"
+roleLabel TeamMember = "Team Member"
 roleLabel CommitteeCandidate = "Steering Committee Candidate"
 roleLabel CommitteeMember = "Steering Committee Member"
+roleLabel BoardMember = "Board Member"
 roleLabel Editor = "Editor"
 roleLabel Admin = "Admin"
 
 roleAbbrev :: Role -> Text
 roleAbbrev Uninvited = "U"
 roleAbbrev GeneralPublic = "G"
+roleAbbrev TeamMember = "T"
 roleAbbrev CommitteeCandidate = "C"
 roleAbbrev CommitteeMember = "M"
+roleAbbrev BoardMember = "B"
 roleAbbrev Editor = "E"
 roleAbbrev Admin = "A"
 

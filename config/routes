@@ -19,8 +19,9 @@
 /p/#Text/widget WidgetR GET
 /p/#Text/shares UpdateSharesR GET POST
 
-/invitation/#Text InvitationR GET POST
-/invite InviteR GET POST
+/invitation/#Text OldInvitationR GET POST
+/p/#Text/invitation/#Text InvitationR GET POST
+/p/#Text/invite InviteR GET POST
 
 /faq FaqR GET
 /committee CommitteeR GET POST

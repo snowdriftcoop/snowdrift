@@ -89,7 +89,7 @@ guardCanEdit :: ProjectId -> Entity User -> Handler ()
 guardCanEdit project_id (Entity user_id user) =
     when (userRole user /= Admin) $ do
         match <- runDB $ select $ from $ \( project_user ) -> do
-            where_ ( project_user ^. ProjectUserUser ==. val user_id &&. project_user ^. ProjectUserProject ==. val project_id &&. project_user ^. ProjectUserCanEdit ==. val True )
+            where_ ( project_user ^. ProjectUserRoleUser ==. val user_id &&. project_user ^. ProjectUserRoleProject ==. val project_id &&. project_user ^. ProjectUserRoleRole ==. val Admin )
             limit 1
             return project_user
 

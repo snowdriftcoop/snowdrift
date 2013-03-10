@@ -58,7 +58,6 @@
             $of _
                 ^{sb_link (WikiR "committee") "Committee"}
     ^{sb_link (WikiR "next") "Next steps for Snowdrift"}
-    ^{sb_link InviteR "Invite others"}
     ^{sb_link ContactR "Contact Us"}
     <br>
 
