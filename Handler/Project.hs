@@ -19,6 +19,7 @@ import Widgets.Markdown
 
 import Database.Esqueleto
 import Database.Persist.GenericSql.Raw
+import qualified Database.Persist.Query as Q
 
 import Control.Monad (forM, forM_)
 
@@ -36,7 +37,7 @@ getProjectsR = do
     per_page <- lookupGetParamDefault "count" 20
     tags <- maybe [] (map T.strip . T.splitOn ",") <$> lookupGetParam "tags"
     projects <- runDB $ if null tags
-        then selectList [] [ Asc ProjectCreatedTs, LimitTo per_page, OffsetBy page ]
+        then selectList [ ProjectPublished Q.==. True ] [ Asc ProjectCreatedTs, LimitTo per_page, OffsetBy page ]
         else do
             tagged_projects <- forM tags $ \ name -> select $ from $ \ (t `InnerJoin` p_t) -> do
                 on (t ^. TagId ==. p_t ^. ProjectTagTag)
@@ -44,7 +45,7 @@ getProjectsR = do
                 return p_t
 
             let project_ids = if null tagged_projects then S.empty else foldl1 S.intersection $ map (S.fromList . map (projectTagProject . entityVal)) tagged_projects
-            selectList [ ProjectId <-. S.toList project_ids ] [ Asc ProjectCreatedTs, LimitTo per_page, OffsetBy page ]
+            selectList [ ProjectId <-. S.toList project_ids, ProjectPublished Q.==. True ] [ Asc ProjectCreatedTs, LimitTo per_page, OffsetBy page ]
 
     defaultLayout $(widgetFile "projects")
 

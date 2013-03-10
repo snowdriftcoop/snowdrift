@@ -37,6 +37,7 @@ Project
     description Markdown
     account AccountId
     shareValue Milray
+    published Bool default=False
     UniqueProjectAccount account
     UniqueProjectHandle handle
 
