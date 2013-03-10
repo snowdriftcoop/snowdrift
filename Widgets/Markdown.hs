@@ -1,25 +1,25 @@
-
 module Widgets.Markdown where
 
 import Import
 
 import Yesod.Markdown
 
+import qualified Data.Text as T
 
-snowdriftMarkdownField :: (RenderMessage App FormMessage) => Field App App Markdown
-snowdriftMarkdownField = do
-    let view_func ident name attr result req = do
+
+snowdriftMarkdownField :: RenderMessage App FormMessage => Field sub App Markdown
+snowdriftMarkdownField = Field
+    { fieldParse = parseHelper $ Right . Markdown . T.filter (/= '\r')
+    , fieldView  = \theId name attrs val _isReq -> do
             render <- lift getUrlRender
-            let view :: Widget
-                view = (fieldView markdownField) ident name (("class", "markdown_field"):attr) result req
-                tutorial = render MarkdownTutorialR
+            let tutorial = render MarkdownTutorialR
              in do
                 [whamlet|
                     <div .markdown_wrapper>
-                        ^{view}
-                        <div .markdown_label>
-                            <a href="#{tutorial}">
-                                Markdown syntax
+                        <textarea id="#{theId}" name="#{name}" *{attrs}>#{either id unMarkdown val}
+                    <div .markdown_label>
+                        <a href="#{tutorial}">
+                            Markdown syntax
                 |]
 
                 toWidget $ [cassius|
@@ -34,6 +34,5 @@ snowdriftMarkdownField = do
                                 padding : 0
                                 margin : 0
                            |]
-
-     in markdownField { fieldView = view_func }
-
+    , fieldEnctype = UrlEncoded
+    }
