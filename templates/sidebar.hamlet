@@ -33,31 +33,25 @@
     $if is_committee_member
         $if not (null comments)
             <strong>
-                <a href="@{WikiNewCommentsR}">
+                <a href="@{OldWikiNewCommentsR}">
                     _{MsgNewComments (length comments)}
             <br>
         $else
-            ^{sb_link WikiNewCommentsR "View Recent Comments"}
+            ^{sb_link OldWikiNewCommentsR "View Recent Comments"}
 
         $if not (null edits)
             <strong>
-                <a href="@{WikiNewEditsR}">
+                <a href="@{OldWikiNewEditsR}">
                     _{MsgNewWikiEdits (length edits)}
             <br>
         $else
-            ^{sb_link WikiNewEditsR "View Recent Wiki Edits"}
+            ^{sb_link OldWikiNewEditsR "View Recent Wiki Edits"}
 
     <hr>
-    ^{sb_link (WikiR "about") "About Snowdrift.coop"}
+    ^{sb_link (OldWikiR "about") "About Snowdrift.coop"}
     ^{sb_link WhoR "Who We Are"}
     ^{sb_link ProjectsR "See Projects"}
-    $maybe Entity _ user <- maybe_user
-        $case userRole user
-            $of CommitteeCandidate
-                ^{sb_link (WikiR "joincommittee") "Join the steering committee"}
-            $of _
-                ^{sb_link (WikiR "committee") "Committee"}
-    ^{sb_link (WikiR "next") "Next steps for Snowdrift"}
+    ^{sb_link (OldWikiR "next") "Next steps for Snowdrift"}
     ^{sb_link ContactR "Contact Us"}
     <br>
 

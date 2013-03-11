@@ -4,7 +4,7 @@
             <div .span8>
                 <p>
                     <em>This page is now outdated.
-                    <strong><a href={@WikiR "about"}>Click here to see the updated content</a>
+                    <strong><a href={@OldWikiR "about"}>Click here to see the updated content</a>
                 <hr>
                 <h3>Summary
                 <p>

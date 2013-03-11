@@ -26,19 +26,19 @@ $# used by renderComment function
 
     <p>
 
-    $if not (maybe_route == Just (DiscussCommentR target comment_id))
-        <a href="@{DiscussCommentR target comment_id}">
+    $if not (maybe_route == Just (DiscussCommentR project_handle target comment_id))
+        <a href="@{DiscussCommentR project_handle target comment_id}">
             reply #
 
     $maybe parent_id <- commentParent comment
-        <a href="@{DiscussCommentR target parent_id}">
+        <a href="@{DiscussCommentR project_handle target parent_id}">
             parent #
 
     $if user_id == viewer_id
-        <a href="@{RetractCommentR target comment_id}">
+        <a href="@{RetractCommentR project_handle target comment_id}">
             retract #
 
-    <a href="@{DiscussCommentR target comment_id}">
+    <a href="@{DiscussCommentR project_handle target comment_id}">
         permalink #
 
     $if depth > max_depth
@@ -49,5 +49,5 @@ $# used by renderComment function
 
     $else
         $forall child <- children
-            ^{renderComment viewer_id target users max_depth (depth + 1) empty_list retraction_map child}
+            ^{renderComment project_handle viewer_id target users max_depth (depth + 1) empty_list retraction_map child}
 

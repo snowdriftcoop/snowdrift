@@ -10,7 +10,7 @@
 
         $if not (null edits)
             <div .row>
-                <a href="@{WikiNewEditsR}?from=#{show (to + 1)}">
+                <a href="@{WikiNewEditsR project_handle}?from=#{show (to + 1)}">
                     older edits
 
 

@@ -20,7 +20,7 @@ buySharesForm shares extra = do
             <p>
                 &hellip; and I'll add just a little extra if others increase their base pledge beyond the minimum, knowing that they will do the same if I increase my pledge level.
             <p>
-                <a href=@{WikiR "mechanism"}>
+                <a href=@{WikiR "old_snowdrift" "mechanism"}>
                     <em>
                         read the details&hellip;
         |]

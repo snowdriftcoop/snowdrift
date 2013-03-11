@@ -12,7 +12,7 @@
                             <td>
                                 #{wikiPageTarget page}:
                             <td>
-                                <a href=@{DiscussCommentR (wikiPageTarget page) (ticketComment ticket)}>
+                                <a href=@{DiscussCommentR project_handle (wikiPageTarget page) (ticketComment ticket)}>
                                     #{ticketName ticket}
                         $nothing
                                 #{ticketName ticket}

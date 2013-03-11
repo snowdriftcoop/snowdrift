@@ -4,7 +4,7 @@
         <p>
             Welcome!
             Please read the
-            <a href=@{WikiR "joincommittee"}>committee intro.
+            <a href=@{OldWikiR "joincommittee"}>committee intro.
         <p>
             To express interest in joining, fill out the form below:
         <p>

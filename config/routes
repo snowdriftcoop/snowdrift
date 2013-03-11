@@ -23,6 +23,21 @@
 /p/#Text/invitation/#Text InvitationR GET POST
 /p/#Text/invite InviteR GET POST
 
+/p/#Text/w WikiPagesR GET
+/p/#Text/w/#Text WikiR GET POST
+/p/#Text/w/#Text/edit EditWikiR GET
+/p/#Text/w/#Text/new NewWikiR GET POST
+/p/#Text/w/#Text/discuss DiscussWikiR GET POST
+/p/#Text/w/#Text/comment/#CommentId DiscussCommentR GET
+/p/#Text/w/#Text/comment/#CommentId/retract RetractCommentR GET POST
+/p/#Text/w/#Text/history WikiHistoryR GET
+/p/#Text/w/#Text/history/#WikiEditId WikiEditR GET
+
+/p/#Text/newcomments WikiNewCommentsR GET
+/p/#Text/newedits WikiNewEditsR GET
+
+/p/#Text/t TicketsR GET
+
 /faq FaqR GET
 /committee CommitteeR GET POST
 /contact ContactR GET POST
@@ -41,16 +56,17 @@
 /priv PrivacyR GET
 /license/javascript JsLicenseR GET
 
-/w WikiPagesR GET
-/w/#Text WikiR GET POST
-/w/#Text/edit EditWikiR GET
-/w/#Text/new NewWikiR GET POST
-/w/#Text/discuss DiscussWikiR GET POST
-/w/#Text/comment/#CommentId DiscussCommentR GET
-/w/#Text/comment/#CommentId/retract RetractCommentR GET POST
-/w/#Text/history WikiHistoryR GET
-/w/#Text/history/#WikiEditId WikiEditR GET
+/w OldWikiPagesR GET
+/w/#Text OldWikiR GET POST
+/w/#Text/edit OldEditWikiR GET
+/w/#Text/new OldNewWikiR GET POST
+/w/#Text/discuss OldDiscussWikiR GET POST
+/w/#Text/comment/#CommentId OldDiscussCommentR GET
+/w/#Text/comment/#CommentId/retract OldRetractCommentR GET POST
+/w/#Text/history OldWikiHistoryR GET
+/w/#Text/history/#WikiEditId OldWikiEditR GET
 
-/newcomments WikiNewCommentsR GET
-/newedits WikiNewEditsR GET
-/t TicketsR GET
+/newcomments OldWikiNewCommentsR GET
+/newedits OldWikiNewEditsR GET
+
+/t OldTicketsR GET

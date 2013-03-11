@@ -22,6 +22,7 @@ import Text.Hamlet (hamletFile)
 
 import Model.Currency
 import Model.Role.Internal
+import Model.Permission.Internal
 
 import Control.Applicative
 
@@ -199,29 +200,34 @@ instance Yesod App where
     shouldLog _ _source level =
         development || level == LevelWarn || level == LevelError
 
-    isAuthorized (WikiR target) True = require wikiPageCanEdit target
-    isAuthorized (WikiR target) False = require wikiPageCanView target
+    isAuthorized (WikiR project_handle target) True = require CanEdit project_handle target
+    isAuthorized (WikiR project_handle target) False = require CanView project_handle target
 
-    isAuthorized (DiscussWikiR target) True = require wikiPageCanEdit target
-    isAuthorized (DiscussWikiR target) False = require wikiPageCanViewMeta target
+    isAuthorized (DiscussWikiR project_handle target) True = require CanEdit project_handle target
+    isAuthorized (DiscussWikiR project_handle target) False = require CanView project_handle target
 
-    isAuthorized (DiscussCommentR target _) True = require wikiPageCanEdit target
-    isAuthorized (DiscussCommentR target _) False = require wikiPageCanViewMeta target
+    isAuthorized (DiscussCommentR project_handle target _) True = require CanEdit project_handle target
+    isAuthorized (DiscussCommentR project_handle target _) False = require CanView project_handle target
 
-    isAuthorized (WikiHistoryR target) _ = require wikiPageCanViewMeta target
-    isAuthorized (WikiEditR target _) _ = require wikiPageCanViewMeta target
+    isAuthorized (WikiHistoryR project_handle target) _ = require CanView project_handle target
+    isAuthorized (WikiEditR project_handle target _) _ = require CanView project_handle target
 
     isAuthorized _ _ = return Authorized
 
 
-require :: (WikiPage -> Role) -> Text -> GHandler sub App AuthResult
-require permission target = do
-    role <- maybe Uninvited (userRole . entityVal) <$> maybeAuth
-    maybe_page <- runDB $ getBy $ UniqueWikiTarget target
+require :: Permission -> Text -> Text -> GHandler sub App AuthResult
+require permission project_handle target = do
+    maybe_project_id <- fmap (fmap entityKey) $ runDB $ getBy $ UniqueProjectHandle project_handle
+    maybe_user_id <- maybeAuthId
+    maybe_page_id <- maybe (return Nothing) (\ project_id -> fmap (fmap entityKey) $ runDB $ getBy $ UniqueWikiTarget project_id target) maybe_project_id
 
-    return $ case maybe_page of
-        Nothing -> Unauthorized "Page does not exist."
-        Just (Entity _ page) -> if role >= permission page then Authorized else Unauthorized "You do not have sufficient permissions."
+    let getPermission project_id page_id user_id = do
+            roles <- map (projectUserRoleRole . entityVal) <$> selectList [ProjectUserRoleProject ==. project_id, ProjectUserRoleUser ==. user_id] []
+            maximum . (Can't :) . map (wikiPermissionPermission . entityVal) <$> selectList [WikiPermissionPage ==. page_id, WikiPermissionRole <-. roles] []
+
+    user_permission <- maybe (return Can't) runDB $ getPermission <$> maybe_project_id <*> maybe_page_id <*> maybe_user_id
+
+    return $ if user_permission >= permission then Authorized else Unauthorized "You do not have sufficient permissions."
 
 -- How to run database actions.
 instance YesodPersist App where

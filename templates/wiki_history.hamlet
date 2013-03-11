@@ -5,7 +5,7 @@
                 $forall Entity edit_id edit <- edits
                     <tr>
                         <td>
-                            <a href="@{WikiEditR target edit_id}">
+                            <a href="@{WikiEditR project_handle target edit_id}">
                                 ^{renderTime (wikiEditTs edit)}
                         <td>
                             $with user_id <- wikiEditUser edit

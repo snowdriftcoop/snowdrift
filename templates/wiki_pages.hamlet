@@ -17,7 +17,7 @@
                 $forall Entity _ page <- pages
                     <tr>
                         <td>
-                            <a href=@{WikiR (wikiPageTarget page)}>
+                            <a href=@{WikiR project_handle (wikiPageTarget page)}>
                                 #{wikiPageTarget page}
                         <td>
                             #{show (wikiPageCanView page)}

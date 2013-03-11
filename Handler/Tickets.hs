@@ -7,11 +7,15 @@ import Widgets.Sidebar
 import qualified Data.Map as M
 import Control.Arrow ((&&&))
 
-getTicketsR :: Handler RepHtml
-getTicketsR = do
+getOldTicketsR :: Handler RepHtml
+getOldTicketsR = getTicketsR "old_snowdrift"
+
+getTicketsR :: Text -> Handler RepHtml
+getTicketsR project_handle = do
     (tickets, pages_by_ticket_id) <- runDB $ do
+        Entity project_id _ <- getBy404 $ UniqueProjectHandle project_handle
         unfiltered_tickets <- selectList [] [Desc TicketId]
-        comments <- selectList [ CommentId <-. map (ticketComment . entityVal) unfiltered_tickets ] []
+        comments <- selectList [ CommentId <-. map (ticketComment . entityVal) unfiltered_tickets, CommentProject ==. project_id ] []
         retractions <- map (commentRetractionComment . entityVal) <$> selectList [ CommentRetractionComment <-. map entityKey comments ] []
 
         pages <- selectList [ WikiPageId <-. map (commentPage . entityVal) comments ] []

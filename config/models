@@ -110,11 +110,17 @@ Message
 
 WikiPage
     target Text
+    project ProjectId default=1
     content Markdown
     canView Role
     canViewMeta Role
     canEdit Role
-    UniqueWikiTarget target
+    UniqueWikiTarget project target
+
+WikiPermission
+    page WikiPageId
+    role Role
+    permission Permission
 
 WikiEdit
     ts UTCTime
@@ -132,6 +138,7 @@ Comment
     createdTs UTCTime
     page WikiPageId
     parent CommentId Maybe
+    project ProjectId default=1
     user UserId
     text Markdown
     depth Int

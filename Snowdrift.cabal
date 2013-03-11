@@ -28,6 +28,7 @@ library
                      Model.Currency
                      Model.Project
                      Model.Role
+                     Model.Permission
                      Model.Shares
                      Model.Transaction
                      Model.User
@@ -63,6 +64,7 @@ library
                      Widgets.ProjectPledges
 
     other-modules: Model.Role.Internal
+                   Model.Permission.Internal
 
     if flag(dev) || flag(library-only)
         cpp-options:   -DDEVELOPMENT
