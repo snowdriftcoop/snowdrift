@@ -15,24 +15,22 @@ snowdriftMarkdownField = Field
             let tutorial = render MarkdownTutorialR
              in do
                 [whamlet|
-                    <div .markdown_wrapper>
-                        <textarea id="#{theId}" name="#{name}" *{attrs}>#{either id unMarkdown val}
                     <div .markdown_label>
                         <a href="#{tutorial}">
                             Markdown syntax
+                    <div .markdown_wrapper>
+                        <textarea id="#{theId}" name="#{name}" *{attrs}>#{either id unMarkdown val}
                 |]
 
                 toWidget $ [cassius|
-                            .markdown_field
+                            .markdown_wrapper
                                 padding-bottom : 1.2em
 
                             .markdown_label
-                                position : relative
-                                left : 0.8em
-                                top : -2em
                                 font-size : x-small
                                 padding : 0
-                                margin : 0
+                                margin-top : -0.7em
+                                margin-bottom : -0.4em
                            |]
     , fieldEnctype = UrlEncoded
     }
