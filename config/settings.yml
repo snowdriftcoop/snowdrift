@@ -4,6 +4,7 @@ Default: &defaults
   approot: "http://localhost:3000"
   copyright: "2013 Snowdrift.coop"
   source: "https://gitorious.org/snowdrift/snowdrift"
+  githubrepo: "dlthomas/snowdrift"
   #analytics: UA-YOURCODE
 
 Development:

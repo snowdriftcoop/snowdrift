@@ -4,8 +4,6 @@ import Settings
 import Application
 import Yesod.Default.Config
 
-import Control.Monad
-
 import Database.Persist.Store
 import Database.Persist.GenericSql
 

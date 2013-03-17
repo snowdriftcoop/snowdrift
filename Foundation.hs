@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleInstances #-}
 module Foundation where
 
 import Prelude
@@ -207,6 +208,7 @@ instance Yesod App where
     isAuthorized PrivacyR _ = return Authorized
     isAuthorized FaviconR _ = return Authorized
     isAuthorized RobotsR _ = return Authorized
+    isAuthorized RepoFeedR _ = return Authorized
     isAuthorized (AuthR _) _ = return Authorized
     isAuthorized (InvitationR _) _ = return Authorized
 
@@ -333,6 +335,11 @@ instance YesodAuth App where
 
 instance YesodJquery App
 
+class HasGithubRepo a where
+    getGithubRepo :: a (Maybe Text)
+
+instance HasGithubRepo (GHandler App App) where
+    getGithubRepo = extraGithubRepo . appExtra . settings <$> getYesod
 
 -- This instance is required to use forms. You can modify renderMessage to
 -- achieve customized and internationalized form validation messages.

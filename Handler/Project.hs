@@ -20,8 +20,6 @@ import Widgets.Markdown
 import Database.Esqueleto
 import Database.Persist.GenericSql.Raw
 
-import Control.Monad (forM, forM_)
-
 import Yesod.Markdown
 
 lookupGetParamDefault :: Read a => Text -> a -> Handler a

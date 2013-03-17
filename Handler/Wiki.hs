@@ -22,7 +22,6 @@ import qualified Data.Map as M
 
 import Data.Tree
 
-import Control.Monad
 import Control.Arrow ((&&&))
 
 import Database.Persist.Store
@@ -33,10 +32,9 @@ getWikiR :: Text -> Handler RepHtml
 getWikiR target = do
     Entity _ user <- requireAuth
 
-    (Entity _ page, Entity _ _) <- runDB $ do
+    Entity _ page <- runDB $ do
         page_entity <- getBy404 $ UniqueWikiTarget target
-        last_edit_entity <- getBy404 $ UniqueWikiLastEdit $ entityKey page_entity
-        return (page_entity, last_edit_entity)
+        return page_entity
 
 
     when (userRole user < wikiPageCanView page) $ permissionDenied "You do not have sufficient privileges to view this page."

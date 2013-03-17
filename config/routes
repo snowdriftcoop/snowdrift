@@ -53,3 +53,4 @@
 /newcomments WikiNewCommentsR GET
 /newedits WikiNewEditsR GET
 /t TicketsR GET
+/dev/repo RepoFeedR GET

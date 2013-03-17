@@ -23,7 +23,7 @@ import           Data.Maybe           as Import (fromMaybe, listToMaybe, mapMayb
 
 import           Data.Int             as Import (Int64)
 
-import           Control.Monad        as Import (when, void)
+import           Control.Monad        as Import
 
 import           Data.Time.Clock      as Import (UTCTime, diffUTCTime, getCurrentTime)
 import           Data.Time.Units
