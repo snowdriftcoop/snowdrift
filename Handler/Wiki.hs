@@ -8,6 +8,8 @@ import Widgets.Sidebar
 import Widgets.Markdown
 import Widgets.Time
 
+import Control.Applicative ((<|>))
+
 import Model.Role (Role (..), roleField)
 import Model.User
 
@@ -60,6 +62,7 @@ renderWiki :: Text -> Bool -> Bool -> WikiPage -> Widget
 renderWiki target can_edit can_view_meta page = $(widgetFile "wiki")
 
 
+
 postWikiR :: Text -> Handler RepHtml
 postWikiR target = do
     Entity user_id user <- requireAuth
@@ -72,7 +75,7 @@ postWikiR target = do
 
     when (userRole user < wikiPageCanEdit page) $ permissionDenied "You do not have sufficient privileges to edit this page."
 
-    ((result, _), _) <- runFormPost $ editWikiForm (wikiLastEditEdit last_edit) (wikiPageContent page)
+    ((result, _), _) <- runFormPost $ editWikiForm (wikiLastEditEdit last_edit) (wikiPageContent page) Nothing
 
 
     case result of
@@ -85,26 +88,8 @@ postWikiR target = do
 
                 case mode of
                     Just "preview" -> do
-                        (hidden_form, _) <- generateFormPost $ previewWikiForm (wikiLastEditEdit last_edit) content comment
-                        let rendered_wiki = renderWiki target False False $ WikiPage target content Uninvited Uninvited Uninvited
-                            preview_controls = [whamlet|
-                                <div .row>
-                                    <div .span9>
-                                        <form method="POST" action="@{WikiR target}">
-                                            ^{hidden_form}
-                                            <em>
-                                                This is a preview; your changes have not been saved!
-                                            <br>
-                                            <script>
-                                                document.write('<input type="submit" value="edit" onclick="history.go(-1);return false;" />')
-                                            <input type=submit name=mode value=#{action}>
-                            |]
-
-                        defaultLayout [whamlet|
-                            ^{preview_controls}
-                            ^{rendered_wiki}
-                            ^{preview_controls}
-                        |]
+                        (form, _) <- generateFormPost $ editWikiForm (wikiLastEditEdit last_edit) content comment
+                        defaultLayout $ renderPreview form action $ renderWiki target False False $ WikiPage target content Uninvited Uninvited Uninvited
 
                     Just x | x == action -> do
                         runDB $ do
@@ -137,7 +122,7 @@ getEditWikiR target = do
 
     when (userRole user < wikiPageCanEdit page) $ permissionDenied "You do not have sufficient privileges to edit this page."
 
-    (wiki_form, _) <- generateFormPost $ editWikiForm (wikiLastEditEdit last_edit) (wikiPageContent page)
+    (wiki_form, _) <- generateFormPost $ editWikiForm (wikiLastEditEdit last_edit) (wikiPageContent page) Nothing
 
     defaultLayout $(widgetFile "edit_wiki")
 
@@ -148,7 +133,7 @@ getNewWikiR target = do
 
     when (userRole user < CommitteeMember) $ permissionDenied "You do not have sufficient privileges to create a new page."
 
-    (wiki_form, _) <- generateFormPost newWikiForm
+    (wiki_form, _) <- generateFormPost $ newWikiForm Nothing Nothing Nothing Nothing
 
     defaultLayout $(widgetFile "new_wiki")
 
@@ -159,7 +144,7 @@ postNewWikiR target = do
     when (userRole user < CommitteeMember) $ permissionDenied "You do not have sufficient privileges to create a new page."
     now <- liftIO getCurrentTime
 
-    ((result, _), _) <- runFormPost newWikiForm
+    ((result, _), _) <- runFormPost $ newWikiForm Nothing Nothing Nothing Nothing
 
     case result of
         FormSuccess (content, can_view, can_view_meta, can_edit) -> do
@@ -167,25 +152,9 @@ postNewWikiR target = do
             let action :: Text = "create"
             case mode of
                 Just "preview" -> do
-                        (hidden_form, _) <- generateFormPost $ previewNewWikiForm content can_view can_view_meta can_edit
-                        let rendered_wiki = renderWiki target False False $ WikiPage target content Uninvited Uninvited Uninvited
-                            preview_controls = [whamlet|
-                            <div .row>
-                                <div .span9>
-                                    <form method="POST" action="@{NewWikiR target}">
-                                        ^{hidden_form}
-                                        <em>
-                                            This is a preview; this page has not yet been created!
-                                        <br>
-                                        <script>
-                                            document.write('<input type="submit" value="edit" onclick="history.go(-1);return false;" />')
-                                        <input type=submit name=mode value=#{action}>
-                            |]
-                        defaultLayout [whamlet|
-                            ^{preview_controls}
-                            ^{rendered_wiki}
-                            ^{preview_controls}
-                        |]
+                        (form, _) <- generateFormPost $ newWikiForm (Just content) (Just can_view) (Just can_view_meta) (Just can_edit)
+                        defaultLayout $ renderPreview form action $ renderWiki target False False $ WikiPage target content Uninvited Uninvited Uninvited
+
 
                 Just x | x == action -> do
                     _ <- runDB $ do
@@ -238,7 +207,7 @@ getDiscussWikiR target = do
 
     let comments = forM_ roots $ \ root -> renderComment user_id target users 10 0 [] retraction_map $ buildCommentTree root rest
 
-    (comment_form, _) <- generateFormPost $ commentForm Nothing
+    (comment_form, _) <- generateFormPost $ commentForm Nothing Nothing
 
     defaultLayout $(widgetFile "wiki_discuss")
 
@@ -271,7 +240,7 @@ getDiscussCommentR target comment_id = do
         
         return (root, rest, users, earlier_retractions, retraction_map)
 
-    (comment_form, _) <- generateFormPost $ commentForm $ Just comment_id
+    (comment_form, _) <- generateFormPost $ commentForm (Just comment_id) Nothing
 
     defaultLayout $ renderDiscussComment user_id target can_edit comment_form (Entity comment_id root) rest users earlier_retractions retraction_map
 
@@ -293,7 +262,7 @@ postDiscussWikiR target = do
 
     now <- liftIO getCurrentTime
 
-    ((result, _), _) <- runFormPost $ commentForm Nothing
+    ((result, _), _) <- runFormPost $ commentForm Nothing Nothing
 
     case result of
         FormSuccess (maybe_parent_id, text) -> do
@@ -318,26 +287,9 @@ postDiscussWikiR target = do
                             Nothing -> return []
 
 
-                    (hidden_form, _) <- generateFormPost $ previewCommentForm maybe_parent_id text
-                    let rendered_comment = renderDiscussComment user_id target False (return ()) (Entity (Key $ PersistInt64 0) $ Comment now page_id maybe_parent_id user_id text depth) [] (M.singleton user_id $ Entity user_id user) earlier_retractions M.empty
-                        preview_controls = [whamlet|
-                            <div .row>
-                                <div .span9>
-                                    <form method="POST" action="@{DiscussWikiR target}">
-                                        ^{hidden_form}
-                                        <em>
-                                            This is a preview; your comment is not posted yet!
-                                        <br>
-                                        <script>
-                                            document.write('<input type="submit" value="edit" onclick="history.go(-1);return false;" />')
-                                        <input type=submit name=mode value=#{action}>
-                        |]
+                    (form, _) <- generateFormPost $ commentForm maybe_parent_id (Just text)
+                    defaultLayout $ renderPreview form action $ renderDiscussComment user_id target False (return ()) (Entity (Key $ PersistInt64 0) $ Comment now page_id maybe_parent_id user_id text depth) [] (M.singleton user_id $ Entity user_id user) earlier_retractions M.empty
 
-                    defaultLayout [whamlet|$newline never
-                        ^{preview_controls}
-                        ^{rendered_comment}
-                        ^{preview_controls}
-                    |]
 
                 Just x | x == action -> do
                     runDB $ do
@@ -506,7 +458,7 @@ getRetractCommentR target comment_id = do
             Nothing -> return []
 
 
-    (retract_form, _) <- generateFormPost retractForm
+    (retract_form, _) <- generateFormPost $ retractForm Nothing
     let rendered_comment = renderDiscussComment user_id target False (return ()) (Entity comment_id comment) [] (M.singleton user_id $ Entity user_id user) earlier_retractions M.empty
 
     defaultLayout $ [whamlet|
@@ -522,7 +474,7 @@ postRetractCommentR target comment_id = do
     comment <- runDB $ get404 comment_id
     when (commentUser comment /= user_id) $ permissionDenied "You can only retract your own comments."
 
-    ((result, _), _) <- runFormPost retractForm
+    ((result, _), _) <- runFormPost $ retractForm Nothing
 
     case result of
         FormSuccess reason -> do
@@ -538,28 +490,12 @@ postRetractCommentR target comment_id = do
             mode <- lookupPostParam "mode"
             case mode of
                 Just "preview retraction" -> do
-                    (hidden_form, _) <- generateFormPost $ previewRetractForm reason
+                    (form, _) <- generateFormPost $ retractForm (Just reason)
                     let soon = UTCTime (ModifiedJulianDay 0) 0
                         retraction = CommentRetraction soon reason comment_id
-                        rendered_comment = renderDiscussComment user_id target False (return ()) (Entity comment_id comment) [] (M.singleton user_id $ Entity user_id user) earlier_retractions $ M.singleton comment_id retraction
-                        preview_controls = [whamlet|
-                            <div .row>
-                                <div .span9>
-                                    <form method="POST" action="@{RetractCommentR target comment_id}">
-                                        ^{hidden_form}
-                                        <em>
-                                            This is a preview; your comment has not been retracted yet!
-                                        <br>
-                                        <script>
-                                            document.write('<input type="submit" value="edit" onclick="history.go(-1);return false;" />')
-                                        <input type="submit" name="mode" value="#{action}">
-                        |]
+                        
+                    defaultLayout $ renderPreview form action $ renderDiscussComment user_id target False (return ()) (Entity comment_id comment) [] (M.singleton user_id $ Entity user_id user) earlier_retractions $ M.singleton comment_id retraction
 
-                    defaultLayout [whamlet|
-                        ^{preview_controls}
-                        ^{rendered_comment}
-                        ^{preview_controls}
-                    |]
 
                 Just a | a == action -> do
                     now <- liftIO getCurrentTime
@@ -570,12 +506,9 @@ postRetractCommentR target comment_id = do
                 _ -> error "Error: unrecognized mode."
         _ -> error "Error when submitting form."
 
-retractForm :: Form Markdown
-retractForm = renderDivs $ areq snowdriftMarkdownField "Retraction reason:" Nothing
+retractForm :: Maybe Markdown -> Form Markdown
+retractForm reason = renderDivs $ areq snowdriftMarkdownField "Retraction reason:" reason
     
-previewRetractForm :: Markdown -> Form Markdown
-previewRetractForm reason = renderDivs $ Markdown <$> areq hiddenField "" (Just $ (\(Markdown str) -> str) reason)
-
 renderComment :: UserId -> Text -> M.Map UserId (Entity User) -> Int -> Int -> [CommentRetraction] -> M.Map CommentId CommentRetraction -> Tree (Entity Comment) -> Widget
 renderComment viewer_id target users max_depth depth earlier_retractions retraction_map tree = do
     maybe_route <- lift getCurrentRoute
@@ -601,46 +534,54 @@ countReplies :: [Tree a] -> Int
 countReplies = sum . map (F.sum . fmap (const 1))
 
 
-editWikiForm :: WikiEditId -> Markdown -> Form (WikiEditId, Markdown, Maybe Text)
-editWikiForm last_edit_id content = renderDivs $ (,,)
+editWikiForm :: WikiEditId -> Markdown -> Maybe Text -> Form (WikiEditId, Markdown, Maybe Text)
+editWikiForm last_edit_id content comment = renderDivs $ (,,)
         <$> areq hiddenField "" (Just last_edit_id)
         <*> areq snowdriftMarkdownField "Page Content" (Just content)
-        <*> aopt textField "Comment" Nothing
-
-previewWikiForm :: WikiEditId -> Markdown -> Maybe Text -> Form (WikiEditId, Markdown, Maybe Text)
-previewWikiForm last_edit_id content comment = renderDivs $ (,,)
-        <$> areq hiddenField "" (Just last_edit_id)
-        <*> (Markdown <$> areq hiddenField "" (Just $ (\(Markdown str) -> str) content))
-        <*> aopt hiddenField "" (Just comment)
+        <*> aopt textField "Comment" (Just comment)
 
 
-newWikiForm :: Form (Markdown, Role, Role, Role)
-newWikiForm = renderDivs $ (,,,)
-        <$> areq snowdriftMarkdownField "Page Content" Nothing
-        <*> areq (roleField Admin) "Minimum Role to View" (Just GeneralPublic)
-        <*> areq (roleField Admin) "Minimum Role to View Metadata" (Just CommitteeCandidate)
-        <*> areq (roleField Admin) "Minimum Role to Edit" (Just CommitteeMember)
+newWikiForm :: Maybe Markdown -> Maybe Role -> Maybe Role -> Maybe Role -> Form (Markdown, Role, Role, Role)
+newWikiForm content can_view can_view_meta can_edit = renderDivs $ (,,,)
+        <$> areq snowdriftMarkdownField "Page Content" content
+        <*> areq (roleField Admin) "Minimum Role to View" (can_view <|> Just GeneralPublic)
+        <*> areq (roleField Admin) "Minimum Role to View Metadata" (can_view_meta <|> Just CommitteeCandidate)
+        <*> areq (roleField Admin) "Minimum Role to Edit" (can_edit <|> Just CommitteeMember)
 
-
-previewNewWikiForm :: Markdown -> Role -> Role -> Role -> Form (Markdown, Role, Role, Role)
-previewNewWikiForm content can_view can_view_meta can_edit = renderDivs $ (,,,)
-        <$> (Markdown <$> areq hiddenField "" (Just $ (\(Markdown str) -> str) content))
-        <*> (toEnum <$> areq hiddenField "" (Just $ fromEnum can_view))
-        <*> (toEnum <$> areq hiddenField "" (Just $ fromEnum can_view_meta))
-        <*> (toEnum <$> areq hiddenField "" (Just $ fromEnum can_edit))
 
 disabledCommentForm :: Form Markdown
 disabledCommentForm = renderDivs $ areq snowdriftMarkdownField ("Reply" { fsAttrs = [("disabled","")] }) Nothing
 
-commentForm :: Maybe CommentId -> Form (Maybe CommentId, Markdown)
-commentForm parent = renderDivs
+commentForm :: Maybe CommentId -> Maybe Markdown -> Form (Maybe CommentId, Markdown)
+commentForm parent content = renderDivs
     $ (,)
         <$> aopt hiddenField "" (Just parent)
-        <*> areq snowdriftMarkdownField (if isNothing parent then "Comment" else "Reply") Nothing
+        <*> areq snowdriftMarkdownField (if isNothing parent then "Comment" else "Reply") content
 
-previewCommentForm :: Maybe CommentId -> Markdown -> Form (Maybe CommentId, Markdown)
-previewCommentForm parent comment = renderDivs
-    $ (,)
-        <$> aopt hiddenField "" (Just parent)
-        <*> (Markdown <$> areq hiddenField "" (Just $ (\(Markdown str) -> str) comment))
+renderPreview :: Widget -> Text -> Widget -> Widget
+renderPreview form action widget =
+    [whamlet|
+        <form method="POST" style="padding : 0em; margin : 0em">
+            <div .row>
+                <div .span9>
+                    <em>
+                        This is a preview; your changes have not been saved!
+                        You can edit it below.
+                    <br>
+                    <input type=submit name=mode value="#{action}">
+
+            ^{widget}
+
+            <div .row>
+                <div .span9>
+                    <em>
+                        This is a preview; your changes have not been saved!
+                    <br>
+                    <input type=submit name=mode value="preview">
+                    <input type=submit name=mode value="#{action}">
+                    ^{form}
+                    <br>
+                    <input type=submit name=mode value="preview">
+                    <input type=submit name=mode value="#{action}">
+    |]
 
