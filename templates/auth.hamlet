@@ -1,17 +1,16 @@
-<p>
-    Unfortunately, we have not yet implemented HTTPS and our own log-in system.
-    <br>
-    For now, you must log in (or register) using one of the options below.
-    <br>
-    We prefer Mozilla Persona because it is fully Free/Libre/Open and privacy-respecting, but note that it requires JavaScript.
+$newline never
 
 <p>
-    If you have an invitation code to access a restricted part of the site, you will be asked to redeem that after you have completed logging into the system.
+    If you have an invitation code to access a restricted part of the site, you will be able to redeem that after you have completed logging into the system.
+
+<br>
 
 $forall auth <- authPlugins app
     <div>
         ^{apLogin auth rtm}
-    $#  This "works" but displays ugly:
-    $#  $if apName auth == "browserid"
-    $#      (if this is your first time using Persona, leave this window open while you follow the confirmation link emailed to you)
 
+<h2>
+    or #
+    <a href="@{UserCreateR}">
+        create an account
+    .

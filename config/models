@@ -16,6 +16,8 @@ Transaction
 
 User
     ident Text
+    hash Text Maybe
+    salt Text Maybe
     name Text Maybe
     account AccountId
     role Role

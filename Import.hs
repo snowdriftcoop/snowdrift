@@ -1,4 +1,4 @@
-{-# LANGUAGE CPP #-}
+{-# LANGUAGE CPP, DeriveDataTypeable #-}
 
 module Import
     ( module Import
@@ -29,18 +29,22 @@ import           Data.Time.Clock      as Import (UTCTime, diffUTCTime, getCurren
 import           Data.Time.Units
 
 #if __GLASGOW_HASKELL__ >= 704
-import           Data.Monoid          as Import
-                                                 (Monoid (mappend, mempty, mconcat),
-                                                 (<>))
+import           Data.Monoid          as Import (Monoid (mappend, mempty, mconcat), (<>))
 #else
-import           Data.Monoid          as Import
-                                                 (Monoid (mappend, mempty, mconcat))
+import           Data.Monoid          as Import (Monoid (mappend, mempty, mconcat))
 
 infixr 5 <>
 (<>) :: Monoid m => m -> m -> m
 (<>) = mappend
 #endif
 
+import Control.Exception (Exception)
+import Data.Typeable (Typeable)
+
+
+data DBException = DBException deriving (Typeable, Show)
+
+instance Exception DBException where
 
 class Count a where
     getCount :: a -> Int64

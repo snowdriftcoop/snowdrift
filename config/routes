@@ -11,6 +11,7 @@
 /user/#UserId/edit EditUserR GET
 /user/#UserId/balance UserBalanceR GET POST
 /user/#UserId/pledges UserPledgesR GET
+/user/!new UserCreateR GET POST
 
 /p ProjectsR GET
 /p/#Text ProjectR GET POST

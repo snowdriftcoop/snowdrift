@@ -6,7 +6,7 @@ import Yesod
 import Yesod.Static
 import Yesod.Auth
 import Yesod.Auth.BrowserId
-import Yesod.Auth.GoogleEmail
+import Yesod.Auth.HashDB (authHashDB)
 import Yesod.Default.Config
 import Yesod.Default.Util (addStaticContentExternal)
 import Network.HTTP.Conduit (Manager)
@@ -210,6 +210,7 @@ instance Yesod App where
     isAuthorized RobotsR _ = return Authorized
     isAuthorized RepoFeedR _ = return Authorized
     isAuthorized (AuthR _) _ = return Authorized
+    isAuthorized UserCreateR _ = return Authorized
     isAuthorized (InvitationR _) _ = return Authorized
 
     isAuthorized (WikiR target) True = require wikiPageCanEdit target
@@ -319,10 +320,10 @@ instance YesodAuth App where
             Just (Entity uid _) -> return $ Just uid
             Nothing -> do
                 account_id <- insert $ Account $ Milray 0
-                fmap Just $ insert $ User (credsIdent creds) Nothing account_id Uninvited Nothing Nothing Nothing now now now now
+                fmap Just $ insert $ User (credsIdent creds) Nothing Nothing Nothing account_id Uninvited Nothing Nothing Nothing now now now now
 
     -- You can add other plugins like BrowserID, email or OAuth here
-    authPlugins _ = [authBrowserIdFixed, authGoogleEmail]
+    authPlugins _ = [ authBrowserIdFixed, authHashDB (Just . UniqueUser) ]
 
     authHttpManager = httpManager
 
@@ -331,6 +332,7 @@ instance YesodAuth App where
         rtm <- getRouteToMaster
 
         defaultLayout $(widgetFile "auth")
+
 
 
 instance YesodJquery App
@@ -350,9 +352,3 @@ instance RenderMessage App FormMessage where
 getExtra :: Handler Extra
 getExtra = fmap (appExtra . settings) getYesod
 
--- Note: previous versions of the scaffolding included a deliver function to
--- send emails. Unfortunately, there are too many different options for us to
--- give a reasonable default. Instead, the information is available on the
--- wiki:
---
--- https://github.com/yesodweb/yesod/wiki/Sending-email

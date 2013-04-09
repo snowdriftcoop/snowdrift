@@ -11,6 +11,10 @@ import Widgets.ProjectPledges
 
 import Yesod.Markdown
 
+import Yesod.Auth.HashDB (setPassword)
+
+import Control.Exception.Lifted (throwIO, handle)
+
 hiddenMarkdown :: RenderMessage master FormMessage => Maybe Markdown -> AForm sub master (Maybe Markdown)
 hiddenMarkdown Nothing = fmap (fmap Markdown) $ aopt hiddenField "" Nothing
 hiddenMarkdown (Just (Markdown str)) = fmap (fmap Markdown) $ aopt hiddenField "" $ Just $ Just str
@@ -120,3 +124,94 @@ getUsersR = do
 
     defaultLayout $(widgetFile "users")
 
+
+getUserCreateR :: Handler RepHtml
+getUserCreateR = do
+    (form, _) <- generateFormPost $ userCreateForm Nothing
+    defaultLayout $ [whamlet|
+        <form method=POST>
+            ^{form}
+            <input type=submit>
+    |]
+
+
+postUserCreateR :: Handler RepHtml
+postUserCreateR = do
+    ((result, form), _) <- runFormPost $ userCreateForm Nothing
+
+    case result of
+        FormSuccess (ident, passwd, name, avatar) -> do
+            now <- liftIO getCurrentTime
+            success <- handle (\ DBException -> return False) $ runDB $ do
+                account_id <- insert $ Account 0
+                user <- setPassword passwd $ User ident Nothing Nothing name account_id GeneralPublic avatar Nothing Nothing now now now now
+                uid_maybe <- insertUnique user
+                lift $ case uid_maybe of
+                    Just uid -> do
+                        setMessage $ toHtml $ "created user; welcome! (" ++ show account_id ++ ", " ++ show uid ++ ")"
+                        return True
+
+                    Nothing -> do
+                        setMessage "E-mail or handle already in use."
+                        throwIO DBException
+
+            when success $ do
+                setCreds True $ Creds "HashDB" ident []
+                redirectUltDest HomeR
+
+        FormMissing -> setMessage "missing field"
+        FormFailure strings -> setMessage (toHtml $ mconcat strings)
+
+    defaultLayout $ [whamlet|
+        <form method=POST>
+            ^{form}
+            <input type=submit>
+    |]
+    
+
+userCreateForm :: Maybe Text -> Form (Text, Text, Maybe Text, Maybe Text)
+userCreateForm ident extra = do
+    (identRes, identView) <- mreq textField "" ident
+    (passwd1Res, passwd1View) <- mreq passwordField "" Nothing
+    (passwd2Res, passwd2View) <- mreq passwordField "" Nothing
+    (nameRes, nameView) <- mopt textField "" Nothing
+    (avatarRes, avatarView) <- mopt textField "" Nothing
+
+    let view = [whamlet|
+        ^{extra}
+        <table .table>
+            <tr>
+                <td>
+                    E-mail or handle (private):
+                <td>
+                    ^{fvInput identView}
+            <tr>
+                <td>
+                    Password:
+                <td>
+                    ^{fvInput passwd1View}
+            <tr>
+                <td>
+                    Repeat Password:
+                <td>
+                    ^{fvInput passwd2View}
+            <tr>
+                <td>
+                    Name (public, optional):
+                <td>
+                    ^{fvInput nameView}
+            <tr>
+                <td>
+                    Avatar (link, optional):
+                <td>
+                    ^{fvInput avatarView}
+    |]
+
+        passwdRes = case (passwd1Res, passwd2Res) of
+            (FormSuccess a, FormSuccess b) -> if a == b then FormSuccess a else FormFailure ["passwords do not match"]
+            (FormSuccess _, x) -> x
+            (x, _) -> x
+
+        result = (,,,) <$> identRes <*> passwdRes <*> nameRes <*> avatarRes
+
+    return (result, view)
