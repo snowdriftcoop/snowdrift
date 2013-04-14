@@ -95,7 +95,7 @@ li.toc_li
 
 p
     padding : 0.1em
-    padding-top : 0em
+    padding-top : 0.4em
     line-height : 1.5em
 
 p.footnote
