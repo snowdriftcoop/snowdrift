@@ -7,7 +7,10 @@
             <em> Why is this needed?
         <p>
             Let's look at the status quo. Projects are generally sustained by either of two virtuous cycles:
+        <p>
         <img src="@{StaticR img_cycles_png}" width="610" height="120" alt="consumers pay or community contributes creatively">
+        <br>
+        <br>
         <p>
             Non-scarce creative works rely on the community as they are incompatible with the consumer model.
             Why pay if you already have unrestricted access?
