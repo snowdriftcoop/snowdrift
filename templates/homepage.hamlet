@@ -1,54 +1,34 @@
 <div .row>
     <div .span8>
         <h3>Welcome!
-        <h4>
-            We are creating a new system to support free/libre/open software, scientific research, educational materials, art, music, and more.
-
+        <h5>
+            We are creating a new system to support free software, free cultural works (art, music, etc.), open science, open educational resources, and more&hellip;
         <p>
             <em> Why is this needed?
         <p>
             Let's look at the status quo. Projects are generally sustained by either of two virtuous cycles:
         <img src="@{StaticR img_cycles_png}" width="610" height="120" alt="consumers pay or community contributes creatively">
         <p>
-            The community can achieve some things that are not possible in a strictly producer-consumer system;
-            but the community cycle struggles to achieve high quality otherwise &mdash; primarily because of lack of funding.
+            Non-scarce creative works rely on the community as they are incompatible with the consumer model.
+            Why pay if you already have unrestricted access?
         <p>
-            <em> So there are advantages to each model. Can we combine them?
+            If we monetize by adding artificial restrictions to access, that <em>hampers and discourages</em> community participation and creative contributions.
+            Such restrictions also impinge on users' freedoms, lead to abuses of power, and amplify economic inequities,
+            taking things that could be open to everyone and giving access only to those who can afford it.
         <p>
-            Well, there are some issues.
-            First, putting prices on everything favors a market-oriented cost-benefit-analysis mindset over the social norms that sustain rich communities.
-            More importantly,
-            <strong>the consumer model fails for non-scarce creative works. Why pay if you already have unrestricted access?
-        <p>
-            <em> So restrict access until people pay!
-        <p>
-            &hellip; but that <em>further discourages</em> community participation and creative contributions!
-        <p>
-            Artificial restrictions also lead to abuses of power, and amplify economic inequities,
-            taking things that could be open to everyone and giving access only to those who can afford it!
-        <p>
-            <em> Well, is the community cycle enough on its own?
-        <p>
-            Maybe to just keep things going, but it can be tough. Great projects need dedicated teams and people have to eat and pay bills.
-        <p>
-            <em> So ask for donations&hellip;
-        <p>
-            Although some people chip in, it is rarely enough.
-            The problem is, my one donation doesn't make much difference,
-            and it's better for me personally to use my limited resources to pay for scarce goods.
-        <hr>
+            While community projects may get by without much funding, they struggle to achieve their potential.
+            Asking for donations helps but is often not enough.
+            While some people donate, most of us put our limited resources toward scarce goods.
         <h5>
-            Consider a metaphor from economic game theory: the <a href="/w/snowdrift"> Snowdrift Dilemma</a>.
+            The problem is best explained with a metaphor from economic game theory: the <a href="/w/snowdrift"> Snowdrift Dilemma</a>.
         <p>
             Summary: A huge drift of snow blocks the road. Who will clear it? We all have other things to do.
-            I want to be responsible, but I hesitate because I worry that everyone else will freeload.
-            Ironically, most everyone is the same. We're willing to do our part but don't want to be the sucker who does all the work.
-            Often someone who can't wait any more just does the work, but it would be so much better if everyone had helped.
+            I want to be help, but I hesitate because I worry that everyone else will freeload.
+            Ironically, everyone else may be thinking the same thing&hellip;
         <p>
-            <strong>Thankfully, the solution is easy! We all agree to do our part if everyone else does theirs.
-            In a long-term community, we have incentive to follow through and build trust.
+            <strong>Thankfully, the solution is easy! We agree to do our part if everyone else does theirs.
+            And in a long-term community, there's incentive to follow through and build trust.
         <p>
-            By cooperating, we solve the Snowdrift Dilemma!
             Hence, Snowdrift.coop: a community-based platform to pledge your support to Free/Libre/Open projects.
             Instead of just donating and then wishing others would do the same, each patron says:
         <div align=center>
@@ -59,8 +39,7 @@
             There are, of course,
             <a href="/w/mechanism"> many additional details&hellip;
         <p>
-            As a <strong> non-profit cooperative</strong>, Snowdrift.coop will be responsive to the community and have no conflicts of interest.
-            Our only mission is to support Free/Libre/Open projects for the benefit of everyone worldwide.
+            And as a <strong> non-profit cooperative</strong>, Snowdrift.coop will be responsive to the community and have no conflicts of interest.
         <hr>
         <p>
             <em> Q. What projects will there be?
@@ -71,8 +50,8 @@
         <p>
             A. "Crowdfunding" generally means investing or start-up funding.
             Yes, these sites typically assure that your donation only goes through if enough others join you.
-            But this is done through one-time hyped-up fund drives with artificial deadlines, artificial cut-off points, and various problems.
-            Running a crowdfunding campaign is usually a costly endeavor in itself,
+            But this is done through one-time fund drives with arbitrary deadlines and cut-off points.
+            Running a crowdfunding campaign is usually a costly endeavor,
             and projects are then expected to become self-sustaining or be complete.
             For more details, read our
             <a href="@{WikiR "threshold-systems"}">discussion of threshold systems
@@ -85,11 +64,11 @@
             <a href="@{WikiR "existingmechanisms"}">discussion of existing funding mechanisms
         <p>
             <strong>
-                Snowdrift.coop is unlike anything else we know of. It is a system for long-term community patronage.
-                Beyond only fundraising, we will be a holistic platform with tools for community engagement,
+                Snowdrift.coop is a holistic system for long-term community patronage.
+                Beyond fundraising, we will offer tools for community engagement,
                 thanking users for creative contributions, handling feature requests, discussions, support, and more.
         <hr>
-        <h4> Want to help out or learn more?
+        <h4> Want to learn more or help out or learn more?
         <ul>
             <li>
                 <a href="/user/new"> Register a new account
