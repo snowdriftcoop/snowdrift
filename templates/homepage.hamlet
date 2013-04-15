@@ -72,19 +72,23 @@
         <h4> Want to learn more or help out or learn more?
         <ul>
             <li>
-                <a href="/user/new"> Register a new account
-                to read more details and/or participate as a beta user! And contact us for access to further internal drafts and discussions&hellip;
+                <strong>
+                    <a href="/user/new"> Register a new account
+                    to read more details and/or participate as a beta user!
+                And
+                <a href="/contact"> contact us
+		to request access to further internal drafts and discussions&hellip;
             <li>
                 Are you the head of an established free/libre/open project or organization, especially U.S. based, and interested in participating as a beta project or partnering with us?
                 <a href="/contact"> Inquire&hellip;
             <li>
                 Are you web developer or designer (any combination of HTML/CSS/JS/Haskell/Yesod or eagerness to learn) who might be interested in helping us achieve our vision?
                 <a href="/contact"> Inquire&hellip;
-                (but you can look at our <a hred="https://gitorious.org/snowdrift/snowdrift"> source</a> already!)
+                (but you can look at our <a href="https://gitorious.org/snowdrift/snowdrift"> source</a> already!)
             <li>
                 Are you a long-time free/libre/open advocate interested in helping us solidify our vision?
                 <a href="/contact">Contact us
-                to request an invitation to be considered for the steering committee.
+                and request an invitation to be considered for the steering committee.
     <div .span3 .offset1>
         ^{sidebar}
 
