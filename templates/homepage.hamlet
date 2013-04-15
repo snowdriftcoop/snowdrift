@@ -12,9 +12,9 @@
             Non-scarce creative works rely on the community as they are incompatible with the consumer model.
             Why pay if you already have unrestricted access?
         <p>
-            If we monetize by adding artificial restrictions to access, that <em>hampers and discourages</em> community participation and creative contributions.
+            If we monetize by adding artificial restrictions, that <em>hampers and discourages</em> community participation and creative contributions.
             Such restrictions also impinge on users' freedoms, lead to abuses of power, and amplify economic inequities,
-            taking things that could be open to everyone and giving access only to those who can afford it.
+            taking things that should be open to everyone and giving access only to those who can afford it.
         <p>
             While community projects may get by without much funding, they struggle to achieve their potential.
             Asking for donations helps but is often not enough.
@@ -29,28 +29,25 @@
             <strong>Thankfully, the solution is easy! We agree to do our part if everyone else does theirs.
             And in a long-term community, there's incentive to follow through and build trust.
         <p>
-            Hence, Snowdrift.coop: a community-based platform to pledge your support to Free/Libre/Open projects.
+            Hence, Snowdrift.coop: a non-profit community-based platform to pledge your support to Free/Libre/Open projects.
             Instead of just donating and then wishing others would do the same, each patron says:
         <div align=center>
             <em> "I pledge X cents per month for every 100 others who join me."
         <p>
-            To facilitate this, each patron will fund a private account.
-            Then payouts to their selected projects are are calculated each month based on the current number of patrons.
+            To facilitate this, each patron will fund a private account from which their donations are drawn.
             There are, of course,
             <a href="/w/mechanism"> many additional details&hellip;
-        <p>
-            And as a <strong> non-profit cooperative</strong>, Snowdrift.coop will be responsive to the community and have no conflicts of interest.
         <hr>
         <p>
             <em> Q. What projects will there be?
         <p>
-            A. Any project that wants to sign up, as long as they meet our requirements for Free/Libre/Open licensing (and a few other details)
+            A. Any project that wants to sign up, as long as they meet our requirements for Free/Libre/Open licensing and a few other details
         <p>
-            <em> Q. Don't the hundreds of <strong>crowdfunding</strong> sites like Kickstarter already solve the dilemmas?
+            <em> Q. Don't the hundreds of <strong>crowdfunding</strong> sites like Kickstarter already solve this dilemma?
         <p>
             A. "Crowdfunding" generally means investing or start-up funding.
-            Yes, these sites typically assure that your donation only goes through if enough others join you.
-            But this is done through one-time fund drives with arbitrary deadlines and cut-off points.
+            Yes, these sites typically assure that your donation only goes through if enough others join you;
+            but this is done through one-time fund drives with arbitrary deadlines and cut-off points.
             Running a crowdfunding campaign is usually a costly endeavor,
             and projects are then expected to become self-sustaining or be complete.
             For more details, read our
@@ -59,12 +56,12 @@
             <em> Q. What about other existing funding options?
         <p>
             A. Snowdrift.coop can work alongside other systems,
-            but we will require that all projects are transparent and reveal all funding sources.
-            For our thoughts on other funding sources see our
-            <a href="@{WikiR "existingmechanisms"}">discussion of existing funding mechanisms
+            but we will require that all projects be transparent and reveal all funding sources.
+            See also our article on
+            <a href="@{WikiR "existingmechanisms"}">issues with existing funding mechanisms
         <p>
             <strong>
-                Snowdrift.coop is a holistic system for long-term community patronage.
+                Snowdrift.coop will be a holistic system for long-term community patronage.
                 Beyond fundraising, we will offer tools for community engagement,
                 thanking users for creative contributions, handling feature requests, discussions, support, and more.
         <hr>
