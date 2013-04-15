@@ -7,8 +7,8 @@
         <p>
             <em> Why is this needed?
         <p>
-            Let's look at the status quo. Projects are generally sustained by either:
-        <img src="@{StaticR img_cycles_png}" width="548" height="193" alt="consumers pay or community contributes creatively">
+            Let's look at the status quo. Projects are generally sustained by either of two virtuous cycles:
+        <img src="@{StaticR img_cycles_png}" width="610" height="120" alt="consumers pay or community contributes creatively">
         <p>
             The community can achieve some things that are not possible in a strictly producer-consumer system;
             but the community cycle struggles to achieve high quality otherwise &mdash; primarily because of lack of funding.
