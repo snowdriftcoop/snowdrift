@@ -4,8 +4,8 @@
         <h5>
             We are creating a new system to support free software, free cultural works (art, music, etc.), open science, open educational resources, and more&hellip;
         <p>
-            <em> Why is this needed?
-        <p>
+            Why is this needed?
+            <br>
             Let's look at the status quo. Projects are generally sustained by either of two virtuous cycles:
         <p>
         <img src="@{StaticR img_cycles_png}" width="610" height="120" alt="consumers pay or community contributes creatively">
