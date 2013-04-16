@@ -12,12 +12,16 @@
         <br>
         <br>
         <p>
-            Non-scarce creative works rely on the community as they are incompatible with the consumer model.
+            <a href="/w/free-libre-open">Free/Libre/Open
+            works are incompatible with the consumer model.
             Why pay if you already have unrestricted access?
         <p>
             If we monetize by adding artificial restrictions, that <em>hampers and discourages</em> community participation and creative contributions.
             Such restrictions also impinge on users' freedoms, lead to abuses of power, and amplify economic inequities,
             taking things that should be open to everyone and giving access only to those who can afford it.
+            <em>
+                Read more about the
+                <a href="/w/economics">economics of non-scarce works&hellip;
         <p>
             While community projects may get by without much funding, they struggle to achieve their potential.
             Asking for donations helps but is often not enough.
@@ -27,12 +31,13 @@
         <p>
             Summary: A huge drift of snow blocks the road. Who will clear it? We all have other things to do.
             I worry that if I start working, then everyone else will freeload.
-            Ironically, everyone else may be thinking the same thing!
+            Ironically, everyone else may be thinking the same thing! 
             <em>
-                <a href="/w/snowdrift">click to read more in-depth&hellip;
+               That's the basic dilemma, although
+               <a href="/w/snowdrift">there are additional details&hellip;
         <p>
-            <strong>Thankfully, there's a solution! We agree to do our part if everyone else does theirs.
-            In a long-term community, there's incentive to follow through and build trust.
+            <strong>Thankfully, there's a solution! We agree to do our part if everyone else does theirs,
+            and in a long-term community, there's incentive to follow through and build trust.
         <p>
             That's the inspiration behind Snowdrift.coop.
             In our system, instead of just donating and then wishing others would do the same, each patron says:
@@ -40,28 +45,31 @@
             <em> "I pledge X cents per month for every 100 others who join me."
         <p>
             To facilitate this, each patron will fund a private account from which their donations are drawn.
-            There are, of course,
-            <a href="/w/mechanism"> many additional details&hellip;
+            <em>
+                There are, of course,
+                <a href="/w/mechanism"> many additional details&hellip;
         <p>
             <strong>
                 At Snowdrift.coop we envision a holistic system for long-term community patronage.
-                Beyond fundraising, we will offer tools for community engagement,
-                thanking users for creative contributions, handling feature requests, discussions, support, and more.
-                And as non-profit cooperative, we have no conflicts of interest and are focused entirely
-                on our mission of supporting free/libre/open projects for the benefit of everyone worldwide.
+            Beyond fundraising, we will offer tools for community engagement,
+            thanking users for creative contributions, handling feature requests, discussions, support, and more.
+            And as non-profit cooperative, we have no conflicts of interest and are focused entirely
+            on our mission of supporting free/libre/open projects for the benefit of everyone worldwide.
         <hr>
         <p>
             <em> Q. What projects will there be?
         <p>
-            A. Any project that wants to sign up, as long as they meet our requirements for Free/Libre/Open licensing and a few other details
+            A. Any project that wants to sign up, as long as they meet our requirements for
+            <a href="/w/licenses"> Free/Libre/Open licensing
+            and a few other details
         <p>
             <em> Q. Don't the hundreds of <strong>crowdfunding</strong> sites like Kickstarter already solve this dilemma?
         <p>
-            A. "Crowdfunding" generally means investing or start-up funding.
+            A. "Crowdfunding" usually means investing or start-up funding.
             Yes, these sites typically assure that your donation goes through only if enough others join you;
-            but this is done through one-time fund drives with arbitrary deadlines and cut-off points.
-            Running a crowdfunding campaign is usually a costly endeavor,
-            and projects are then expected to become self-sustaining or be complete.
+            but this is done through one-time fund-drives with arbitrary deadlines and cut-off points.
+            Running a crowdfunding campaign is often a costly endeavor,
+            and projects are then expected to become self-sustaining or to be complete.
             <em>
                 For more details, read our
                 <a href="@{WikiR "threshold-systems"}">discussion of threshold systems
