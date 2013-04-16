@@ -34,14 +34,21 @@
             <strong>Thankfully, there's a solution! We agree to do our part if everyone else does theirs.
             In a long-term community, there's incentive to follow through and build trust.
         <p>
-            Hence, Snowdrift.coop: a non-profit community-based platform to pledge your support to Free/Libre/Open projects.
-            Instead of just donating and then wishing others would do the same, each patron says:
+            That's the inspiration behind Snowdrift.coop.
+            In our system, instead of just donating and then wishing others would do the same, each patron says:
         <div align=center>
             <em> "I pledge X cents per month for every 100 others who join me."
         <p>
             To facilitate this, each patron will fund a private account from which their donations are drawn.
             There are, of course,
             <a href="/w/mechanism"> many additional details&hellip;
+        <p>
+            <strong>
+                At Snowdrift.coop we envision a holistic system for long-term community patronage.
+                Beyond fundraising, we will offer tools for community engagement,
+                thanking users for creative contributions, handling feature requests, discussions, support, and more.
+                And as non-profit cooperative, we have no conflicts of interest and are focused entirely
+                on our mission of supporting free/libre/open projects for the benefit of everyone worldwide.
         <hr>
         <p>
             <em> Q. What projects will there be?
@@ -66,11 +73,6 @@
             <em>
                 See also our article on
                 <a href="@{WikiR "existingmechanisms"}">existing funding mechanisms
-        <p>
-            <strong>
-                Snowdrift.coop will be a holistic system for long-term community patronage.
-                Beyond fundraising, we will offer tools for community engagement,
-                thanking users for creative contributions, handling feature requests, discussions, support, and more.
         <hr>
         <h4> Want to learn more or help out or learn more?
         <ul>
@@ -80,7 +82,7 @@
                     to read more details and/or participate as a beta user!
                 And
                 <a href="/contact"> contact us
-        to request access to further internal drafts and discussions&hellip;
+                to request access to further internal drafts and discussions&hellip;
             <li>
                 Are you the head of an established free/libre/open project or organization, especially U.S. based, and interested in participating as a beta project or partnering with us?
                 <a href="/contact"> Inquire&hellip;
