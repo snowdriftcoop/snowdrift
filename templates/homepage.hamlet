@@ -32,7 +32,7 @@
         <p>
             Summary: A huge drift of snow blocks the road. Who will clear it? We all have other things to do.
             I worry that if I start working, then everyone else will freeload.
-            Ironically, everyone else may be thinking the same thing! 
+            Ironically, everyone else may be thinking the same thing!
             <em>
                That's the basic dilemma, although
                <a href="@{WikiR "snowdrift"}">there are additional details&hellip;
@@ -72,7 +72,7 @@
             but their solution is to hold one-time fund-drives with arbitrary deadlines and cut-off points.
             Running a crowdfunding campaign can be a costly endeavor which may still fail,
             and successful projects are then expected to become self-sustaining or to be complete.
-            Snowdrift.coop, on the other hand, offers a different solution that is flexible, ongoing, and tailored specifically to the needs of free/libre/open projects. 
+            Snowdrift.coop, on the other hand, offers a different solution that is flexible, ongoing, and tailored specifically to the needs of free/libre/open projects.
             <em>
                 For more details, read our
                 <a href="@{WikiR "threshold-systems"}">discussion of threshold systems
