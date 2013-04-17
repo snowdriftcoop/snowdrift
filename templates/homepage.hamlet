@@ -12,9 +12,9 @@
         <br>
         <br>
         <p>
-            These two models encourage different mindsets which <a href="/w/psychology"> do not mix well</a>,
+            These two models encourage different mindsets which <a href="@{WikiR "psychology"}"> do not mix well</a>,
             and the consumer mindset fails for
-            <a href="/w/free-libre-open">Free/Libre/Open works.
+            <a href="@{WikiR "free-libre-open"}">Free/Libre/Open works.
             Why pay if you already have unrestricted access?
         <p>
             If we monetize by adding artificial restrictions, that <em>further hampers and discourages</em> community participation and creative contributions.
@@ -22,7 +22,7 @@
             taking things that should be open to everyone and giving access only to those who can afford it.
             <em>
                 Read more about the
-                <a href="/w/economics">economics of non-scarce works&hellip;
+                <a href="@{WikiR "economics"}">economics of non-scarce works&hellip;
         <p>
             So free/libre/open projects must get by with just the community cycle. Without much funding, however, many struggle to achieve their potential.
             Asking for donations helps but is often not enough.
@@ -35,7 +35,7 @@
             Ironically, everyone else may be thinking the same thing! 
             <em>
                That's the basic dilemma, although
-               <a href="/w/snowdrift">there are additional details&hellip;
+               <a href="@{WikiR "snowdrift"}">there are additional details&hellip;
         <p>
             <strong>Thankfully, there's a solution! We agree to do our part if everyone else does theirs,
             and in a long-term community, there's incentive to follow through and build trust.
@@ -48,7 +48,7 @@
             To facilitate this, each patron will fund a private account from which their donations are drawn.
             <em>
                 There are, of course,
-                <a href="/w/mechanism"> many additional details&hellip;
+                <a href="@{WikiR "mechanism"}"> many additional details&hellip;
         <p>
             <strong>
                 At Snowdrift.coop we envision a holistic system for long-term community patronage.
@@ -61,7 +61,7 @@
             <em> Q. What projects will there be?
         <p>
             A. Any project that wants to sign up, as long as they meet our requirements for
-            <a href="/w/licenses"> Free/Libre/Open licensing
+            <a href="@{WikiR "licenses"}"> Free/Libre/Open licensing
             and a few other details
         <p>
             <em> Q. Don't the hundreds of <strong>crowdfunding</strong> sites like Kickstarter already solve this dilemma?
