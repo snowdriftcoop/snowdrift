@@ -68,11 +68,11 @@
         <p>
             A. "Crowdfunding" usually means investing or start-up funding.
             Yes, these systems offer a mechanism to address the freeloading dilemmas,
-            and that is why they are often more successful than simple donations,
-            but their solution is to hold one-time fund-drives with arbitrary deadlines and cut-off points.
+            and that is why they are often more successful than simple donations.
+            Their solution is to hold one-time fund-drives with arbitrary deadlines and cut-off points.
             Running a crowdfunding campaign can be a costly endeavor which may still fail,
             and successful projects are then expected to become self-sustaining or to be complete.
-            Snowdrift.coop, on the other hand, offers a different solution that is flexible, ongoing, and tailored specifically to the needs of free/libre/open projects.
+            Snowdrift.coop offers a different solution that is flexible, ongoing, and tailored specifically to the needs of free/libre/open projects.
             <em>
                 For more details, read our
                 <a href="@{WikiR "threshold-systems"}">discussion of threshold systems
