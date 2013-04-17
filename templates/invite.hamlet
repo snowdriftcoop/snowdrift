@@ -53,6 +53,10 @@
                             $of Uninvited
                                 <p>
                                     Why are you creating an invite for uninvited? That shouldn't even be possible...
+
+                            $of Public
+                                <p>
+                                    Why are you creating an invite for public? That shouldn't even be possible...
                     $nothing
                         <strong>
                             No role selected?  This is almost certainly an error!

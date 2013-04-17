@@ -253,6 +253,8 @@ roleCanView GeneralPublic _ _ = Authorized
 
 roleCanView Uninvited _ _ = Unauthorized "Snowdrift is presently invite-only."
 
+roleCanView Public _ _ = error "No user should actually have the role 'Public'"
+
 -- How to run database actions.
 instance YesodPersist App where
     type YesodPersistBackend App = SqlPersist

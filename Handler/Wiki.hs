@@ -32,17 +32,25 @@ import Data.Time
 
 getWikiR :: Text -> Handler RepHtml
 getWikiR target = do
-    Entity _ user <- requireAuth
-
     Entity _ page <- runDB $ do
         page_entity <- getBy404 $ UniqueWikiTarget target
         return page_entity
 
+    let can_view = wikiPageCanView page
 
-    when (userRole user < wikiPageCanView page) $ permissionDenied "You do not have sufficient privileges to view this page."
+    (can_edit, can_view_meta) <- if can_view == Public
+         then do
+            maybe_user <- maybeAuth
+            case maybe_user of
+                Nothing -> return (False, False)
+                Just (Entity _ user) -> return (userRole user >= wikiPageCanEdit page, userRole user >= wikiPageCanViewMeta page)
+                    
+        
+         else do
+            Entity _ user <- requireAuth
+            when (userRole user < can_view) $ permissionDenied "You do not have sufficient privileges to view this page."
 
-    let can_edit = userRole user >= wikiPageCanEdit page
-        can_view_meta = userRole user >= wikiPageCanViewMeta page
+            return (userRole user >= wikiPageCanEdit page, userRole user >= wikiPageCanViewMeta page)
 
     defaultLayout $ renderWiki target can_edit can_view_meta page
 

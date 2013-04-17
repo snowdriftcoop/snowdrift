@@ -21,6 +21,7 @@ roleCanInvite Editor _ = False
 roleCanInvite a b = a >= b
 
 roleDefaultTarget :: Role -> Route App
+roleDefaultTarget Public = error "Public should never be a user's role"
 roleDefaultTarget Uninvited = HomeR
 roleDefaultTarget GeneralPublic = WikiR "about"
 roleDefaultTarget CommitteeCandidate = WikiR "joincommittee"
@@ -29,6 +30,7 @@ roleDefaultTarget Admin = WikiR "about"
 roleDefaultTarget Editor = WikiR "about"
 
 roleLabel :: Role -> Text
+roleLabel Public = "Public"
 roleLabel Uninvited = "Uninvited"
 roleLabel GeneralPublic = "General Interest"
 roleLabel CommitteeCandidate = "Steering Committee Candidate"
@@ -37,6 +39,7 @@ roleLabel Editor = "Editor"
 roleLabel Admin = "Admin"
 
 roleAbbrev :: Role -> Text
+roleAbbrev Public = "P"
 roleAbbrev Uninvited = "U"
 roleAbbrev GeneralPublic = "G"
 roleAbbrev CommitteeCandidate = "C"
