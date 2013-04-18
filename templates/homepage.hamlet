@@ -14,8 +14,8 @@
         <p>
             These two models encourage different mindsets which <a href="@{WikiR "psychology"}"> do not mix well</a>,
             and the consumer mindset fails for
-            <a href="@{WikiR "free-libre-open"}">Free/Libre/Open works.
-            Why pay if you already have unrestricted access?
+            <a href="@{WikiR "free-libre-open"}">free/libre/open
+            works. Why pay if you already have unrestricted access?
         <p>
             If we monetize by adding artificial restrictions, that <em>further hampers and discourages</em> community participation and creative contributions.
             Such restrictions also impinge on users' freedoms, lead to abuses of power, and amplify economic inequities,
@@ -64,18 +64,19 @@
             <a href="@{WikiR "licenses"}"> Free/Libre/Open licensing
             and a few other details
         <p>
-            <em> Q. Don't the hundreds of <strong>crowdfunding</strong> sites like Kickstarter already solve this dilemma?
+            <em> Q. Don't Kickstarter and the hundreds of other crowdfunding sites already solve this dilemma?
         <p>
-            A. "Crowdfunding" usually means investing or start-up funding.
+            A. "Crowdfunding" usually refers to investing or start-up funding.
             Yes, these systems offer a mechanism to address the freeloading dilemmas,
             and that is why they are often more successful than simple donations.
             Their solution is to hold one-time fund-drives with arbitrary deadlines and cut-off points.
-            Running a crowdfunding campaign can be a costly endeavor which may still fail,
+            Running a crowdfunding campaign can be costly and still fail,
             and successful projects are then expected to become self-sustaining or to be complete.
-            Snowdrift.coop offers a different solution that is flexible, ongoing, and tailored specifically to the needs of free/libre/open projects.
             <em>
                 For more details, read our
                 <a href="@{WikiR "threshold-systems"}">discussion of threshold systems
+            <br>
+            Snowdrift.coop offers a different solution that is flexible, ongoing, and tailored specifically to the needs of free/libre/open projects.
         <p>
             <em> Q. What about other existing funding options?
         <p>
