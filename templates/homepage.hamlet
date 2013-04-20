@@ -12,7 +12,7 @@
         <br>
         <br>
         <p>
-            These two models encourage different mindsets which <a href="@{WikiR "psychology"}"> do not mix well</a>,
+            These two models encourage different mindsets which already <a href="@{WikiR "psychology"}"> do not mix well</a>,
             and the consumer mindset fails for
             <a href="@{WikiR "free-libre-open"}">free/libre/open
             works. Why pay if you already have unrestricted access?
@@ -34,8 +34,8 @@
             I worry that if I start working, then everyone else will freeload.
             Ironically, everyone else may be thinking the same thing!
             <em>
-               That's the basic dilemma, although
-               <a href="@{WikiR "snowdrift"}">there are additional details&hellip;
+               For more details, read
+               <a href="@{WikiR "snowdrift"}">our discussion of the Snowdrift Dilemma&hellip;
         <p>
             <strong>Thankfully, there's a solution! We agree to do our part if everyone else does theirs,
             and in a long-term community, there's incentive to follow through and build trust.
@@ -47,8 +47,8 @@
         <p>
             To facilitate this, each patron will fund a private account from which their donations are drawn.
             <em>
-                There are, of course,
-                <a href="@{WikiR "mechanism"}"> many additional details&hellip;
+                Of course, there are many more details to
+                <a href="@{WikiR "mechanism"}">the Snowdrift.coop system&hellip;
         <p>
             <strong>
                 At Snowdrift.coop we envision a holistic system for long-term community patronage.
