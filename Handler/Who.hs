@@ -11,12 +11,8 @@ import Database.Persist.Query.Join.Sql (runJoin)
 
 import Data.Function (on)
 
-import qualified Data.Text as T
-
 userShortName :: User -> Text
-userShortName user = fromMaybe (userIdent user) $ do
-    name <- userName user
-    listToMaybe $ T.words name
+userShortName user = fromMaybe (userIdent user) $ userName user
 
 getWhoR :: Handler RepHtml
 getWhoR = do
