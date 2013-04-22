@@ -18,24 +18,22 @@
             works. Why pay if you already have unrestricted access?
         <p>
             If we monetize by adding artificial restrictions, that <em>further hampers and discourages</em> community participation and creative contributions.
-            Such restrictions also impinge on users' freedoms, lead to abuses of power, and amplify economic inequities,
+            Such restrictions also impinge on freedoms; lead to abuses of power; and amplify economic inequities,
             taking things that should be open to everyone and giving access only to those who can afford it.
             <em>
                 Read more about the
                 <a href="@{WikiR "economics"}">economics of non-scarce works&hellip;
         <p>
-            So free/libre/open projects must get by with just the community cycle. Without much funding, however, many struggle to achieve their potential.
+            So free/libre/open works must get by with just the community cycle. Without much funding, however, projects struggle to achieve their potential.
             Asking for donations helps but is often not enough.
             While some people donate, most of us put our limited resources toward scarce goods.
         <p>
-            Consider a metaphor from economic game theory:<strong> the Snowdrift Dilemma</strong>.
+            Consider a metaphor from economic game theory:
+            <a href="@{WikiR "snowdrift"}"><strong> the Snowdrift Dilemma</strong>.
         <p>
             Summary: A huge drift of snow blocks the road. Who will clear it? We all have other things to do.
             I worry that if I start working, then everyone else will freeload.
             Ironically, everyone else may be thinking the same thing!
-            <em>
-               For more details, read
-               <a href="@{WikiR "snowdrift"}">our discussion of the Snowdrift Dilemma&hellip;
         <p>
             <strong>Thankfully, there's a solution! We agree to do our part if everyone else does theirs,
             and in a long-term community, there's incentive to follow through and build trust.
@@ -76,7 +74,8 @@
                 For more details, read our
                 <a href="@{WikiR "threshold-systems"}">discussion of threshold systems
             <br>
-            Snowdrift.coop offers a different solution that is flexible, ongoing, and tailored specifically to the needs of free/libre/open projects.
+            <br>
+            In contrast, the Snowdrift.coop system provides ongoing, flexible support tailored to free/libre/open projects.
         <p>
             <em> Q. What about other existing funding options?
         <p>
@@ -89,9 +88,8 @@
         <h4> Want to learn more or help out?
         <ul>
             <li>
-                <strong>
-                    <a href="/user/new"> Register a new account
-                    to read more details and/or participate as a beta user!
+                <a href="/user/new"> Register a new account
+                to read more details and/or participate as a beta user!
                 And
                 <a href="/contact"> contact us
                 to request access to further internal drafts and discussions&hellip;
