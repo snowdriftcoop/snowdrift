@@ -2,7 +2,7 @@
     <div .span8>
         <h1>Welcome!
         <strong>
-            We are creating a new non-profit cooperative system to support
+            We are creating a non-profit cooperative system to support
             <a href="@{WikiR "free-libre-open"}">free/libre/open
             software, cultural works (art, music, etc.), science, educational resources, and more&hellip;
         <h2>
@@ -40,13 +40,13 @@
             <strong>Thankfully, there's a solution! We agree to do our part if everyone else does theirs,
             and in a long-term community, there's incentive to follow through and build trust.
         <p>
-            Hence, the Snowdrift.coop system where, instead of just donating and wishing others would do the same,
-            each patron funds a private account from which donations will be drawn.
+            Hence, the Snowdrift.coop system. Instead of just donating and wishing others would do the same,
+            each patron funds a private account from which donations will later be drawn.
             They then choose projects to support and say:
         <div align=center>
             <em> "I pledge X cents per month for every 100 others who join me."
         <p>
-            This basic idea is amplified by
+            There are some
             <a href="@{WikiR "mechanism"}"> further details
             designed to maximize reliability, flexibility, and fairness; and to keep projects honorable and accountable.
         <p>
@@ -66,12 +66,10 @@
         <p>
             A. The standard crowdfunding mechanism involves one-time fund-drives with arbitrary deadlines and cut-off points.
             Because this addresses the freeloading dilemma, it is often more successful than simple donations.
-            However, there are various
-            <a href="@{WikiR "threshold-systems"}"> problems
-            with this approach.
+            There are, however, various <a href="@{WikiR "threshold-systems"}"> problems with this approach</a>.
             Running this type of campaign can be costly and still fail,
             and successful projects are expected to become self-sustaining or to be complete.
-            In contrast, our system provides ongoing support with greater flexibility and is specifically tailored to free/libre/open projects.
+            In contrast, our system provides ongoing support with greater flexibility tailored to free/libre/open projects.
         <p>
             <em> Q. What about other other funding options?
         <p>
@@ -86,7 +84,7 @@
                 <a href="@{WikiR "about"}">Read more details
                 and
                 <a href="/user/new"> register a new account
-                to see more details and/or participate as a beta user!
+                to participate as a beta user!
                 <a href="/contact"> Contact us
                 to request access to further internal drafts and discussions&hellip;
             <li>
