@@ -48,7 +48,7 @@
         <p>
             This basic idea is amplified by
             <a href="@{WikiR "mechanism"}"> further details
-            designed to maximize reliability, flexibility, and fairness; and to keep projects honorable and accountable. 
+            designed to maximize reliability, flexibility, and fairness; and to keep projects honorable and accountable.
         <p>
             <strong>
                 At Snowdrift.coop we envision a holistic system for long-term community patronage.
@@ -68,7 +68,7 @@
             Because this addresses the freeloading dilemma, it is often more successful than simple donations.
             However, there are various
             <a href="@{WikiR "threshold-systems"}"> problems
-            with this approach. 
+            with this approach.
             Running this type of campaign can be costly and still fail,
             and successful projects are expected to become self-sustaining or to be complete.
             In contrast, our system provides ongoing support with greater flexibility and is specifically tailored to free/libre/open projects.
