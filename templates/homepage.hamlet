@@ -78,11 +78,11 @@
             A. Snowdrift.coop can work alongside
             <a href="@{WikiR "existingmechanisms"}">existing funding mechanisms
             but we require that projects be transparent and reveal all funding sources.
-        <h4> 
+        <h4>
             Want to learn more or help out?
         <ul>
             <li>
-                <a href="@{WikiR "about"}"Read more details
+                <a href="@{WikiR "about"}">Read more details
                 about Snowdrift.coop and
                 <a href="/user/new"> register a new account
                 to see more details and/or participate as a beta user!
