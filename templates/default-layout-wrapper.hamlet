@@ -70,7 +70,7 @@ $newline never
                 <a href="@{HomeR}">
                     <div #head .row>
                         <noscript>
-                            <img #logo .span10 .offset1 src=@{StaticR img_logo_png}>
+                            <img #logo .span10 .offset1 src=@{StaticR img_logo_png} alt="Snowdrift.coop: clearing the path to a free, libre, open world">
                         <script>
                             fixup_logo()
                     <div .row>
