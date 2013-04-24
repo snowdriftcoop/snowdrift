@@ -9,8 +9,7 @@
             Why is this needed?
         <p>
             Generally, projects are sustained in one of two ways:
-            <br>
-            <img src="@{StaticR img_cycles_png}" width="610" height="120" alt="consumers pay or community contributes creatively">
+        <img src="@{StaticR img_cycles_png}" width="610" height="120" alt="consumers pay or community contributes creatively">
         <p>
             The internet enables the community model on a greater scale than ever
             but works against the producer-consumer model.
