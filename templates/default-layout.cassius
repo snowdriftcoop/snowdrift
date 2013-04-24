@@ -189,11 +189,11 @@ span.title
     margin : 0.2em
 
 h1, h2, h3, h4, h5
-    padding-above : 2em
     line-height : 1em
 
-h1:first-of-type
-    padding-above : 0.2em
+
+h2, h3, h4, h5
+    padding-above : 2em
 
 h1
     font-size : xx-large
