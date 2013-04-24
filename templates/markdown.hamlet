@@ -54,7 +54,7 @@
             <strong>images
             use ![Alt text](image URL "optional title")
             <br>
-            example: ![](http://www.adfreeblog.org/adfreesite_buttonsm.jpg) shows
+            example: ![This is an ad-free site](http://www.adfreeblog.org/adfreesite_buttonsm.jpg) shows
             <img src="http://www.adfreeblog.org/adfreesite_buttonsm.jpg">
         <p>
             <strong>Footnotes
