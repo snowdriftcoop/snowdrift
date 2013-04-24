@@ -13,6 +13,9 @@ form
     padding : 0.4em
     margin : 0.6em
 
+img
+    padding : 0.8em
+
 input, textarea
     font-size : 0.9em
 
@@ -78,7 +81,7 @@ ul, ol
     margin-top : 0.1em
     margin-bottom : 0.1em
     margin-left : 1em
-    padding : 0.3em
+    padding : 0.2em
     padding-top : 0em
     padding-left : 1em
 
@@ -87,7 +90,7 @@ li, p
 
 li
     line-height : 1.4em
-    margin: 0.4em
+    margin: 0.3em
     padding : 0.2em
 
 li.toc_li
@@ -186,7 +189,22 @@ span.title
     margin : 0.2em
 
 h1, h2, h3, h4, h5
+    padding-above : 1.5em
+
+h1:first-of-type
     padding-above : 0.2em
+
+h1
+    font-size : xx-large
+
+h2
+    font-size : x-large
+
+h3
+    font-size : large
+
+h4
+    font-size : large
 
 q:before
     content : '"'
