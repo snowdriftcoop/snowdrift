@@ -8,23 +8,24 @@
                 Note: each code can only be used once.
                 You must generate a new code for each invitation.
             <blockquote>
-                Snowdrift.coop is a new fundraising system dedicated to Free Software, Free Cultural Works, Open Educational Resources, Open Science, and similar projects.
+                Snowdrift.coop is a new non-profit cooperative system to support free/libre/open software, cultural works (art, music, etc.), science, educational resources, and more&hellip;
                 <p>
                     $maybe invite_role <- maybe_invite_role
                         $case invite_role
                             $of CommitteeCandidate
                                 <p>
                                     You are invited to be a candidate for the steering committee!
-                                    To change your account status: make sure you are logged in, then redeem the code below.
+                                    The code below will give you access to committee specific information.
                                 <p>
                                     Please review the proposals on the web site.
-                                    If you are interested in being involved, fill out the form on the  "Join the steering committee" page.
-                                    Either way, we appreciate any feedback and any referrals to other potential supporters.
+                                    If you are interested in joining the committee, fill out the form on the "Join the steering committee" page.
+                                    Otherwise, we appreciate any feedback and any referrals to other potential supporters.
 
                             $of CommitteeMember
                                 <p>
                                     You have been selected to be a member of the steering committee!
-                                    To change your account status: make sure you are logged in, then redeem the code below.
+                                    To change your account status, redeem the code below.
+                                    Then, visit the "Committee" link in the sidebar for more.
                                 <p>
                                     Please let us know if you cannot accept the position.
                                     Otherwise, welcome, we are so glad to have you join us.
@@ -32,23 +33,24 @@
                             $of Editor
                                 <p>
                                     You are invited to be an editor.
-                                    To change your account status: make sure you are logged in, then redeem the code below.
+                                    To change your account status, redeem the code below.
                                 <p>
                                     This means you will have access to the entire site.
-                                    You will not be an official member of the steering committee or have any other commitments,
+                                    You will not be an official member of the steering committee or have any other obligations,
                                     but we are asking for your critical feedback and other editorial comments to make the site better.
                                     Thank you for your help!
 
                             $of Admin
                                 <p>
                                     You are invited to be a site administrator.
-                                    To change your account status: make sure you are logged in, then redeem the code below.
+                                    To change your account status, redeem the code below.
                                 <p>
 
                             $of GeneralPublic
                                 <p>
-                                    You are invited access the preliminary site, review the proposals, and test the system.
-                                    To access the content, first log in and then redeem the code below.
+                                    You are invited access some drafts that are not yet published.
+                                    We encourage you to test the system, give us feedback, and let us know if you want to be involved further.
+                                    To change your account status, redeem the code below.
 
                             $of Uninvited
                                 <p>
@@ -69,16 +71,14 @@
             <hr>
         $nothing
             <p>
-                You may invite others to view the Snowdrift site in progress, but
-                <strong> please read all of the instructions here before inviting anyone.
+                Our invitation system generates private codes which users can redeem to gain further permissions on the site.
             <p>
-                We are interested in networking with people who may provide valuable feedback,
-                join the official steering committee,
-                and/or help us find and recruit other people for the committee.
-                We are not yet opening to the general public.
+                Permissions will soon be project-specific, so users can have different level of access for different projects.
+                At this time, invitations are for the system as a whole.
+                Your own permission level controls what level of invitations you can generate.
             <p>
-                Please do not invite people who may have a conflict of interest
-                (such as those with a current business interest in other crowdfunding systems or anyone known to be opposed to Free/Libre Open Source Software).
+                At this time, please avoid inviting people who may have a conflict of interest
+                (such as those with a business interest in other crowdfunding systems or known to be opposed to our free/libre/open ideals.
             <p>
                 To invite others:
             <ul>
