@@ -30,22 +30,21 @@
     $else
         ^{sb_link ApplicationsR "View Applications"}
 
-    $if is_committee_member
-        $if not (null comments)
-            <strong>
-                <a href="@{WikiNewCommentsR}">
-                    _{MsgNewComments (length comments)}
-            <br>
-        $else
-            ^{sb_link WikiNewCommentsR "View Recent Comments"}
+    $if not (null comments)
+        <strong>
+            <a href="@{WikiNewCommentsR}">
+                _{MsgNewComments (length comments)}
+        <br>
+    $else
+        ^{sb_link WikiNewCommentsR "View Recent Comments"}
 
-        $if not (null edits)
-            <strong>
-                <a href="@{WikiNewEditsR}">
-                    _{MsgNewWikiEdits (length edits)}
-            <br>
-        $else
-            ^{sb_link WikiNewEditsR "View Recent Wiki Edits"}
+    $if not (null edits)
+        <strong>
+            <a href="@{WikiNewEditsR}">
+                _{MsgNewWikiEdits (length edits)}
+        <br>
+    $else
+        ^{sb_link WikiNewEditsR "View Recent Wiki Edits"}
 
     <hr>
     ^{sb_link (WikiR "about") "About Snowdrift.coop"}
