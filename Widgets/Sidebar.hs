@@ -24,7 +24,7 @@ sidebar = do
             case maybe_user of
                 Nothing ->
                     toWidget [hamlet|
-                        <a href=@{AuthR LoginR}>Sign In
+                        <a href=@{AuthR LoginR}>Sign In / Create Account
                     |]
 
                 Just (Entity user_id user) -> do

@@ -169,7 +169,7 @@ instance Yesod App where
                     .
                 $nothing
                     You are not logged in, and this page is not publically visible. #
-                    <a href="@{AuthR LoginR}">Log in #
+                    <a href="@{AuthR LoginR}">Log in or create an account #
                     or return to our #
                     <a href="@{HomeR}">main page
                     .
