@@ -131,7 +131,7 @@ library
                  , blaze-builder
                  , blaze-html
                  , blaze-markup
-                 , attoparsec
+                 , attoparsec                    >= 0.10.3.0    && < 0.11.0.0
                  , old-locale
                  , resourcet
                  , hit                           >= 0.5         && < 1.0
