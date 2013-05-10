@@ -66,21 +66,32 @@ It will take a long time, but should ultimately tell you it installed Snowdrift.
 While it goes, create a snowdrift database and user in postgresql:
 
 create database user
+
 	sudo -u postgres createuser
+
 add name snowdrift
 do not make super user
 do not allow role to create databases
 do not allow role to be allowed to create more new roles
 
 create snowdrift database
+
 	sudo -u postgres createdb snowdrift
+
 run postgrespsql
+
 	sudo -u postgrespsql
+
 you should see a line that looks like
-postgres=# 
+
+	postgres=# 
+
 add password to user. 
+
 	postgres=# alter user snowdrift with encrypted password 'somepassword';
+
 then to add user to database
+
 	postgres=# grant all privileges on database snowdrift to snowdrift;
 
 Edit config/postgresql.yml and update the credentials to match the user you created.
