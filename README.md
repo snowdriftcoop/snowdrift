@@ -80,7 +80,7 @@ create snowdrift database
 
 run postgrespsql
 
-	sudo -u postgrespsql
+	sudo -u postgres psql
 
 you should see a line that looks like
 
@@ -101,6 +101,8 @@ Once snowdrift is built, you can start the server by running the following from 
     ./dist/build/Snowdrift/Snowdrift Development
 
 It will print a bunch of text about creating tables, and then sit waiting for connections.  You can access it by directing your web browser to localhost:3000.
+
+
 
 development guidelines
 ======================
