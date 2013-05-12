@@ -23,16 +23,20 @@
             <strong>images
             use ![Alt text](image URL "optional title")
             <br>
-            example: ![This is an ad-free site](http://www.adfreeblog.org/adfreesite_buttonsm.jpg) shows
+            example: ![Ad-free site](http://www.adfreeblog.org/adfreesite_buttonsm.jpg) shows
             <img src="http://www.adfreeblog.org/adfreesite_buttonsm.jpg">
             <br>
-            <em>to make an image a clickable link, nest the whole image markdown inside a link
+            <em>to make an image a clickable link, nest the whole image markdown as the text part of a weblink
         <p>
             use blank lines to separate paragraphs
             <br>
             use two or more spaces at the end of a line for a single line-break
         <p>
             <em>lists, headers, and blockquotes must start with a blank line above (aside from the document's very first line)
+        <p>
+            <h1># header
+            <h2>## subheader
+            <h3>### third level (and so on)
             <ul>
                 <li>* bulleted list item (any of * + - symbols)
                 <ul>
@@ -44,21 +48,18 @@
             <br>
             a. lists can also use letters or Roman numberals like i. ii. iii. iv.
         <p>
-            <h1># header
-            <h2>## subheader
-            <h3>### third level (and so on)
-        <p>
             <blockquote>
                 > blockquote
                 <blockquote>
                     >> use multiple > symbols to make nested levels
         <p>
-            <hr>
             a horizontal rule is 3 or more hyphens with empty lines above and below:
             <br>
             <br>
             ---
             <br>
+            <br>
+            <hr>
         <p>
             <strong>Footnotes
             use
