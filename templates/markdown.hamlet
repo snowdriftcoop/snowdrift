@@ -4,9 +4,11 @@
         <p>
             Markdown is a simple text-formatting system.
             Below are some basics.
-            You can also use full inline HTML.
+            You can also use HTML tags within Markdown.
             See the complete details at
             <a href="http://www.johnmacfarlane.net/pandoc/README#pandocs-markdown"> Pandoc's Markdown
+        <p>
+            <em>Note: most Markdown formatting is nestable</em>
         <p>
             <em>*italic*
             <br>
@@ -14,10 +16,18 @@
             <br>
             <strong>
                 <em>***bold-italic***
-            <br>
+        <p>
             [weblink-text](URL)
+        <p>
+            for
+            <strong>images
+            use ![Alt text](image URL "optional title")
             <br>
+            example: ![This is an ad-free site](http://www.adfreeblog.org/adfreesite_buttonsm.jpg) shows
+            <img src="http://www.adfreeblog.org/adfreesite_buttonsm.jpg">
             <br>
+            <em>to make an image a clickable link, nest the whole image markdown inside a link
+        <p>
             use blank lines to separate paragraphs
             <br>
             use two or more spaces at the end of a line for a single line-break
@@ -27,7 +37,7 @@
                 <li>* bulleted list item (any of * + - symbols)
                 <ul>
                     <li> * indent four spaces to create sub-levels
-                        <p>for a new paragraph within a list item, add a blank line, then indent four spaces in place of the bullet symbol
+                        <p>for a new paragraph within a list item, add a blank line, then indent four spaces but use no bullet
             1. ordered list
             <br>
             2. after the first number, it auto-calculates so specific numbers aren't needed
@@ -42,20 +52,13 @@
                 > blockquote
                 <blockquote>
                     >> use multiple > symbols to make nested levels
-                    <br>
-                    <em>*most Markdown formatting is nestable*</em>
+        <p>
+            <hr>
             a horizontal rule is 3 or more hyphens with empty lines above and below:
             <br>
             <br>
             ---
-            <hr>
             <br>
-            for
-            <strong>images
-            use ![Alt text](image URL "optional title")
-            <br>
-            example: ![This is an ad-free site](http://www.adfreeblog.org/adfreesite_buttonsm.jpg) shows
-            <img src="http://www.adfreeblog.org/adfreesite_buttonsm.jpg">
         <p>
             <strong>Footnotes
             use
