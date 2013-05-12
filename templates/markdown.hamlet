@@ -5,10 +5,10 @@
             Markdown is a simple text-formatting system.
             Below are some basics.
             You can also use HTML tags within Markdown.
-            There are options beyond what we've highlighted. See details at
+            For more options beyond what we've highlighted, see 
             <a href="http://www.johnmacfarlane.net/pandoc/README#pandocs-markdown"> Pandoc's Markdown
         <p>
-            <em>Note: most Markdown formatting is nestable</em>
+            <em> Note: most Markdown formatting is nestable</em>
         <p>
             <em>*italic*
             <br>
@@ -19,14 +19,14 @@
         <p>
             [weblink-text](URL)
         <p>
-            for
-            <strong>images
-            use ![Alt text](image URL "optional title")
+            images:
             <br>
-            example: ![Ad-free site](http://www.adfreeblog.org/adfreesite_buttonsm.jpg) shows
+            ![Alt text](image URL "optional title")
+            <br>
+            example: ![Ad-free site](http://adfreeblog.org/adfreesite_buttonsm.jpg) shows
             <img src="http://www.adfreeblog.org/adfreesite_buttonsm.jpg">
             <br>
-            <em>to make an image a clickable link, nest the whole image markdown as the text part of a weblink
+            <em>for an image as clickable link, nest the image markdown as the text part of a weblink
         <p>
             use blank lines to separate paragraphs
             <br>
@@ -38,15 +38,16 @@
             <h2>## subheader
             <h3>### third level (and so on)
             <ul>
-                <li>* bulleted list item (any of * + - symbols)
+                <li>* bulleted lists use any of these symbols:
+                    <strong> * + -
                 <ul>
                     <li> * indent four spaces to create sub-levels
-                        <p>for a new paragraph within a list item, add a blank line, then indent four spaces but use no bullet
+                        <p>for a new paragraph under a list item, add a blank line, then indent four extra spaces but use no bullet
             1. ordered list
             <br>
             2. after the first number, it auto-calculates so specific numbers aren't needed
             <br>
-            a. lists can also use letters or Roman numberals like i. ii. iii. iv.
+            a. lists can also use letters like a. b. c. or Roman numberals like i. ii. iii. iv. (these also auto-calculate)
         <p>
             <blockquote>
                 > blockquote
@@ -76,8 +77,7 @@
             <br>
             Footnotes can be placed anywhere and will be put at the end when rendered.
         <p>
-            use
             <strong>\
-            backslash before characters to make them show normally if they would otherwise be markdown commands
+            backslash before characters makes them show normally if they would otherwise be markdown commands
     <div .span3>
         ^{sidebar}
