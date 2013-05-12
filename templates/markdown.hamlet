@@ -5,7 +5,7 @@
             Markdown is a simple text-formatting system.
             Below are some basics.
             You can also use HTML tags within Markdown.
-            See the complete details at
+            There are options beyond what we've highlighted. See details at
             <a href="http://www.johnmacfarlane.net/pandoc/README#pandocs-markdown"> Pandoc's Markdown
         <p>
             <em>Note: most Markdown formatting is nestable</em>
