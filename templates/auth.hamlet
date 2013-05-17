@@ -10,7 +10,9 @@ $forall auth <- authPlugins app
         ^{apLogin auth rtm}
 
 <h2>
+    The same Persona button can also make a new Persona account
+<h2>
     or #
     <a href="@{UserCreateR}">
-        create an account
+        create an account with our built-in system
     .
