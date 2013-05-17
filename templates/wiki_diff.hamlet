@@ -1,0 +1,16 @@
+<div .row>
+    <div .span9>
+        <div .row>
+            <div .span3>
+                <a href="@{DiscussWikiR target}">view discussion
+            <div .span3>
+                <a href="@{WikiR target}">current version
+
+        $# TODO - info from compared versions
+
+        <hr .wikitop>
+        <div .row>
+                <div .span9>
+                    #{renderDiff (diffEdits start_edit end_edit)}
+    <div .span3>
+        ^{sidebar}
