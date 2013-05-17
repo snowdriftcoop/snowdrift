@@ -43,14 +43,22 @@ Update cabal's package list:
 
     cabal update
 
-Install happy:
-
-    cabal install happy
-
 
 Add ~/.cabal to your PATH; in bash this is:
 
     PATH=~/.cabal:$PATH
+
+
+If your distro doesn't have an up-to-date cabal (likely), it'll recommend
+you install one. It's probably not strictly necessary, but it won't hurt.
+If you've not updated your path like above, you can wind up running the
+distro-installed cabal again and getting the same message about updating,
+which can be confusing.
+
+
+Install happy:
+
+    cabal install happy
 
 You may well want to add this to your .bashrc or equivalent.
 

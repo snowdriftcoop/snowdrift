@@ -50,6 +50,7 @@
 /w/#Text/comment/#CommentId/retract RetractCommentR GET POST
 /w/#Text/history WikiHistoryR GET
 /w/#Text/history/#WikiEditId WikiEditR GET
+/w/#Text/diff/#WikiEditId/#WikiEditId WikiDiffR GET
 
 /newcomments WikiNewCommentsR GET
 /newedits WikiNewEditsR GET

@@ -24,12 +24,12 @@ library
                      Foundation
                      Import
                      Model
-                     Model.Markdown.Diff
                      Model.Currency
                      Model.Project
                      Model.Role
                      Model.Shares
                      Model.Transaction
+                     Model.Markdown.Diff
                      Model.User
                      Settings
                      Settings.StaticFiles
@@ -68,9 +68,9 @@ library
 
     if flag(dev) || flag(library-only)
         cpp-options:   -DDEVELOPMENT
-        ghc-options:   -Wall -Werror -O0
+        ghc-options:   -Wall -O0
     else
-        ghc-options:   -Wall -Werror -O2
+        ghc-options:   -Wall -O2
 
     extensions: TemplateHaskell
                 QuasiQuotes
@@ -113,7 +113,7 @@ library
                  , http-conduit                  >= 1.8        && < 1.9
                  , directory                     >= 1.1        && < 1.3
                  , warp                          >= 1.3        && < 1.4
-                 , esqueleto
+                 , esqueleto                     >= 1.0        && < 1.1
                  , lifted-base
                  , vector
                  , data-default
@@ -124,7 +124,7 @@ library
                  , conduit
                  , random
                  , yesod-markdown                >= 0.7
-                 , Diff                          >= 0.1        && < 0.2
+                 , Diff                          >= 0.3        && < 0.4
                  , path-pieces
                  , containers
                  , authenticate

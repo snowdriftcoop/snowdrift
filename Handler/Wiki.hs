@@ -30,6 +30,12 @@ import Database.Persist.Store
 
 import Data.Time
 
+import Data.Algorithm.Diff (getDiff, Diff (..))
+
+import Data.Function (on)
+
+import Text.Blaze.Html5 (ins, del, br)
+
 getWikiR :: Text -> Handler RepHtml
 getWikiR target = do
     Entity _ page <- runDB $ do
@@ -393,6 +399,23 @@ getWikiHistoryR target = do
         return (edits, users)
 
     defaultLayout $(widgetFile "wiki_history")
+
+getWikiDiffR :: Text -> WikiEditId -> WikiEditId -> Handler RepHtml
+getWikiDiffR target start_edit_id end_edit_id = do
+    (start_edit, end_edit) <- runDB $ do
+        Entity page_id _ <- getBy404 $ UniqueWikiTarget target
+        start_edit <- get404 start_edit_id
+        end_edit <- get404 end_edit_id
+
+        when (page_id /= wikiEditPage start_edit) $ error "selected 'start' edit is not an edit of selected page"
+        when (page_id /= wikiEditPage end_edit) $ error "selected 'end' edit is not an edit of selected page"
+
+        return (start_edit, end_edit)
+
+    let diffEdits = getDiff `on` ((\ (Markdown text) -> T.lines text) . wikiEditContent)
+        renderDiff = mconcat . map (\ a -> (case a of Both x _ -> toHtml x; First x -> del (toHtml x); Second x -> ins (toHtml x)) >> br)
+
+    defaultLayout $(widgetFile "wiki_diff")
 
 getWikiEditR :: Text -> WikiEditId -> Handler RepHtml
 getWikiEditR target edit_id = do
