@@ -25,7 +25,7 @@ Install ghc, cabal, and postgresql, however you do that on your system.
 
 On Debian-based Linux distros, that's:
 
-    sudo apt-get install ghc cabal-install postgresql
+    sudo apt-get install ghc cabal-install haskell-platform postgresql zlib1g-dev libpq-dev
 
 
 (There are a few non-Haskell libraries that some dependencies which you may
@@ -74,8 +74,34 @@ It will take a long time, but should ultimately tell you it installed Snowdrift.
 
 While it goes, create a snowdrift database and user in postgresql:
 
-    sudo -u postgresql psql <<<"create database snowdrift; create user snowdrift password 'somepassword';"
+create database user
 
+	sudo -u postgres createuser
+
+add name snowdrift
+do not make super user
+do not allow role to create databases
+do not allow role to be allowed to create more new roles
+
+create snowdrift database
+
+	sudo -u postgres createdb snowdrift
+
+run postgrespsql
+
+	sudo -u postgres psql
+
+you should see a line that looks like
+
+	postgres=# 
+
+add password to user. 
+
+	postgres=# alter user snowdrift with encrypted password 'somepassword';
+
+then to add user to database
+
+	postgres=# grant all privileges on database snowdrift to snowdrift;
 
 Edit config/postgresql.yml and update the credentials to match the user you created.
 
@@ -84,6 +110,8 @@ Once snowdrift is built, you can start the server by running the following from 
     ./dist/build/Snowdrift/Snowdrift Development
 
 It will print a bunch of text about creating tables, and then sit waiting for connections.  You can access it by directing your web browser to localhost:3000.
+
+
 
 development guidelines
 ======================
