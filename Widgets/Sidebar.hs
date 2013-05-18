@@ -81,7 +81,7 @@ sidebar = do
                  then return []
                  else do
                     pages <- selectList [ WikiPageId <-. map (wikiEditPage . entityVal) edits ] []
-                    let filtered_pages = map entityKey $ filter (\ (Entity _ page) -> userRole user >= wikiPageCanView page) pages
+                    let filtered_pages = map entityKey $ filter (\ (Entity _ page) -> userRole user >= wikiPageCanViewMeta page) pages
                     return $ filter (flip S.member (S.fromList filtered_pages) . wikiEditPage . entityVal) edits
 
             comments :: [Entity Comment] <- do
