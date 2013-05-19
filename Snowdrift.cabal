@@ -113,7 +113,7 @@ library
                  , http-conduit                  >= 1.8        && < 1.9
                  , directory                     >= 1.1        && < 1.3
                  , warp                          >= 1.3        && < 1.4
-                 , esqueleto                     >= 1.0        && < 1.1
+                 , esqueleto                     >= 1.0
                  , lifted-base
                  , vector
                  , data-default

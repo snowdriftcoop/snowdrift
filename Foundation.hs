@@ -269,6 +269,7 @@ instance YesodPersist App where
 authBrowserIdFixed :: AuthPlugin App
 authBrowserIdFixed =
     let complete = PluginR "browserid" []
+	login :: (Route Auth -> Route App) -> GWidget sub App ()
         login toMaster = do
             addScriptRemote browserIdJs
 
