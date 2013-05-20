@@ -70,7 +70,7 @@ postUpdateSharesR project_handle = do
                  else return True
 
             setMessage $ if success
-             then "you are now contributing to this project"
+             then "you are now pledged to support this project"
              else "you must have at least 3 months worth in your account to pledge additional shares"
             redirect $ ProjectR project_handle
 
