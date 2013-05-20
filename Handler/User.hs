@@ -24,8 +24,8 @@ editUserForm user = renderDivs $
     UserUpdate
         <$> aopt textField "Public Name" (Just $ userName user)
         <*> aopt textField "Avatar (link)" (Just $ userAvatar user)
-        <*> aopt snowdriftMarkdownField "Blurb" (Just $ userBlurb user)
-        <*> aopt snowdriftMarkdownField "Personal Statement" (Just $ userStatement user)
+        <*> aopt snowdriftMarkdownField "Blurb (used on listings of many people)" (Just $ userBlurb user)
+        <*> aopt snowdriftMarkdownField "Personal Statement (visible only on this page)" (Just $ userStatement user)
 
 previewUserForm :: User -> Form UserUpdate
 previewUserForm user = renderDivs $
