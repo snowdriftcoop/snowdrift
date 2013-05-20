@@ -22,7 +22,7 @@ project_pledges user_id = do
 
     toWidget [hamlet|
         $if null project_summaries
-            not contributing to any projects
+            not supporting any projects
         $else
             <p>
                 note: this is for testing purposes only, no real money is changing hands yet
