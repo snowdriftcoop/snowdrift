@@ -22,7 +22,7 @@ hiddenMarkdown (Just (Markdown str)) = fmap (fmap Markdown) $ aopt hiddenField "
 editUserForm :: User -> Form UserUpdate
 editUserForm user = renderDivs $
     UserUpdate
-        <$> aopt textField "Name" (Just $ userName user)
+        <$> aopt textField "Public Name" (Just $ userName user)
         <*> aopt textField "Avatar (link)" (Just $ userAvatar user)
         <*> aopt snowdriftMarkdownField "Blurb" (Just $ userBlurb user)
         <*> aopt snowdriftMarkdownField "Personal Statement" (Just $ userStatement user)
