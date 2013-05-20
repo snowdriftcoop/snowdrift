@@ -117,7 +117,7 @@
                     <th .text>Code
                 $forall Entity _ invite <- outstanding_invites
                     <tr>
-                        <td .text>#{age now (inviteCreatedTs invite)} &nbsp ago
+                        <td .text>#{age now (inviteCreatedTs invite)} &nbsp; ago
                         $if can_view_all
                             $with user_id <- inviteUser invite
                                 <th .text>
@@ -145,7 +145,7 @@
                     <th .text>Code
                 $forall Entity _ invite <- redeemed_invites
                     <tr>
-                        <td .text>#{age now (fromMaybe now (inviteRedeemedTs invite))} &nbsp ago
+                        <td .text>#{age now (fromMaybe now (inviteRedeemedTs invite))} &nbsp; ago
                         <td .text>#{format_user (inviteRedeemedBy invite)}
                         $if can_view_all
                             $with user_id <- inviteUser invite
