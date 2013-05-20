@@ -20,5 +20,5 @@ renderTime time = do
 
     toWidget [hamlet|
         <span title="#{render time}">
-            #{age now time} ago
+            #{age now time} &nbsp; ago
     |]
