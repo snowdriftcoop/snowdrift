@@ -4,7 +4,9 @@
             <div .span3>
                 <a href="@{DiscussWikiR target}">view discussion
             <div .span3>
-                <a href="@{WikiR target}">current version
+                <a href="@{WikiR target}">current page
+            <div .span3>
+                <a href="@{WikiHistoryR target}">back to history
         <div .row>
                 <div .span9>
                     Page as of ^{renderTime (wikiEditTs edit)}
