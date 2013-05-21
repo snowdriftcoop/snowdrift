@@ -12,9 +12,9 @@
             $if can_view_meta
                 <div .row>
                     <div .span3>
-                        <a href="@{DiscussWikiR target}">view discussion
-                    <div .span3>
                         <a href="@{WikiHistoryR target}">view history
+                    <div .span3>
+                        <a href="@{DiscussWikiR target}">view discussion
         <hr .wikitop>
         <div .row>
             <div .span9>
