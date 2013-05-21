@@ -1,3 +1,5 @@
+<div .span3>
+    <a href="@{WikiR target}"> back to wiki page
 <div .row>
     <div .span9>
         <div .row>
