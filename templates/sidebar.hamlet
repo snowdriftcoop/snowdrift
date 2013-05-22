@@ -48,6 +48,7 @@
 
     <hr>
     ^{sb_link (WikiR "about") "About Snowdrift.coop"}
+    ^{sb_link (WikiR "press") "info for press"}
     ^{sb_link WhoR "Who We Are"}
     ^{sb_link ProjectsR "See Projects"}
     $maybe Entity _ user <- maybe_user
@@ -60,4 +61,3 @@
     ^{sb_link InviteR "Invite others"}
     ^{sb_link ContactR "Contact Us"}
     <br>
-
