@@ -46,8 +46,9 @@
         <div align=center>
             <em> "I pledge X cents per month for every 100 others who join me."
         <p>
-            There are some
-            <a href="@{WikiR "mechanism"}"> further details
+            This is not actually the whole story. There are 
+            <strong>
+                <a href="@{WikiR "mechanism"}"> further details
             designed to maximize reliability, flexibility, and fairness; and to keep projects honorable and accountable.
         <p>
             <strong>
