@@ -18,7 +18,7 @@ buySharesForm shares extra = do
                 <strong>
                     I pledge ^{fvInput pledge_view}&nbsp;shares starting at 1&nbsp;&cent;/month for every 100 other patrons.
             <p>
-                &hellip; share value also increases just a little whenever patrons pledge extra shares beyond the minimum, although this increase tapers off.
+                &hellip; share value also increases just a little whenever patrons pledge extra shares beyond the minimum, although this increase tapers off with higher share numbers.
             <p>
                 <a href=@{WikiR "mechanism"}>
                     <em>
