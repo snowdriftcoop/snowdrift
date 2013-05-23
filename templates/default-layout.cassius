@@ -202,9 +202,6 @@ h2
 h3
     font-size : large
 
-h4
-    font-size : normal
-
 q:before
     content : '"'
 
