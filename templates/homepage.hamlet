@@ -44,11 +44,10 @@
             each patron funds a private account from which donations will later be drawn.
             They then choose projects to support and say:
         <div align=center>
-            <em> "I pledge X cents per month for every 100 others who join me."
+            <em> "I pledge X shares starting at 1 cent per month for every 100 others who join me."
         <p>
             If nobody joins you, it costs you nothing. If many join, then everyone together will make a great impact.
-        <p>
-            This version of the pledge is actually simplified from the full pledge. There are
+            Our full pledge system has
             <strong>
                 <a href="@{WikiR "mechanism"}"> further details
             designed to maximize reliability, flexibility, and fairness; and to keep projects honorable and accountable.
