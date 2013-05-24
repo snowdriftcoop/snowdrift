@@ -17,7 +17,7 @@
                                     <a href="@{UserR (entityKey user)}">
                                         #{userPrintName user}
                                 <td>
-                                    #{show (pledgeShares (entityVal pledge))}&cent;&nbsp;per&nbsp;100&nbsp;patrons
+                                    #{show (pledgeShares (entityVal pledge))}&nbsp;shares
 
     <div .span3 .offset1>
         ^{sidebar}
