@@ -1,5 +1,8 @@
 <div .span3>
+    <a href="@{DiscussWikiR target}"> back to full discussion page
+<div .span3>
     <a href="@{WikiR target}"> back to wiki page
+<hr>
 <div .row>
     <div .span9>
         <div .row>
