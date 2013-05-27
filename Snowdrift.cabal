@@ -58,6 +58,8 @@ library
                      Handler.Wiki
                      Handler.Tickets
                      Handler.RepoFeed
+                     Handler.BuildFeed
+                     Version
                      Widgets.Markdown
                      Widgets.Sidebar
                      Widgets.Time
@@ -135,6 +137,8 @@ library
                  , old-locale
                  , resourcet
                  , hit                           >= 0.5         && < 1.0
+                 , process
+                 , temporary
 
 
 executable         Snowdrift

@@ -14,6 +14,8 @@ import Network.Wai.Middleware.RequestLogger (logStdout, logStdoutDev)
 import qualified Database.Persist.Store
 import Database.Persist.GenericSql (printMigration, runMigration)
 import Network.HTTP.Conduit (newManager, def)
+import Version
+import Control.Monad.Trans.Resource
 
 import Control.Monad.Logger
 
@@ -43,6 +45,11 @@ import Handler.UserPledges
 import Handler.Wiki
 import Handler.Tickets
 import Handler.RepoFeed
+import Handler.BuildFeed
+
+
+version :: (Text, Text)
+version = $(mkVersion)
 
 -- This line actually creates our YesodDispatch instance. It is the second half
 -- of the call to mkYesodData which occurs in Foundation.hs. Please see the
@@ -71,6 +78,11 @@ makeFoundation conf = do
               Database.Persist.Store.applyEnv
     p <- Database.Persist.Store.createPoolConfig (dbconf :: Settings.PersistConfig)
     runStderrLoggingT $ Database.Persist.Store.runPool dbconf (printMigration migrateAll >> runMigration migrateAll) p
+
+    now <- getCurrentTime
+    let (base, diff) = version
+    runStderrLoggingT $ runResourceT $ Database.Persist.Store.runPool dbconf (insert_ $ Build now base diff) p
+
     return $ App conf s p manager dbconf
 
 -- for yesod devel

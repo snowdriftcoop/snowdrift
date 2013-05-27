@@ -56,3 +56,4 @@
 /newedits WikiNewEditsR GET
 /t TicketsR GET
 /dev/repo RepoFeedR GET
+/dev/build BuildFeedR GET

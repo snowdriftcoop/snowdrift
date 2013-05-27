@@ -209,6 +209,7 @@ instance Yesod App where
     isAuthorized FaviconR _ = return Authorized
     isAuthorized RobotsR _ = return Authorized
     isAuthorized RepoFeedR _ = return Authorized
+    isAuthorized BuildFeedR _ = return Authorized
     isAuthorized (AuthR _) _ = return Authorized
     isAuthorized UserCreateR _ = return Authorized
     isAuthorized (InvitationR _) _ = return Authorized

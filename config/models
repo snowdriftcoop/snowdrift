@@ -166,4 +166,9 @@ Ticket
     name Text
     comment CommentId
 
+Build
+    bootTime UTCTime
+    base Text
+    diff Text
+
  -- This file is used in Model.hs (which is imported by Foundation.hs)
