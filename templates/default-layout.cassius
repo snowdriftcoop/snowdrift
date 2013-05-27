@@ -26,6 +26,9 @@ input[type=submit]
     background-color : #74BBFB
     font-weight : bold
     width : auto
+    margin-right : 1.5em
+    height : 2em
+    border-radius: 5px
 
 input[type=text], input[type=email]
     width : 30em
