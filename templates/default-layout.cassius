@@ -21,14 +21,25 @@ input, textarea
 
 
 input[type=submit]
-    border : none
-    color : aliceblue
-    background-color : #74BBFB
+    color : white
     font-weight : bold
-    width : auto
+    padding: .5em 1em
     margin-right : 1em
-    height : 2em
     border-radius: 5px
+    border : solid thin #65A5E5
+    text-shadow : 0 1px 0px rgba(0,0,0,.2)
+    box-shadow : 0 1px 2px rgba(0,0,0,.2)
+    background : #74BBFB
+    background-image : linear-gradient(#92D9FF, #62AAEA)
+
+input:hover
+    background : #62AAEA
+    background-image : linear-gradient(#78BFDD, #6097D9)
+
+input:active
+    background : #62AAEA
+    background-image : linear-gradient(#78BFDD, #6097D9)
+    box-shadow : 0 3px 5px rgba(0, 0, 0, 0.15) inset
 
 input[type=text], input[type=email]
     width : 30em
