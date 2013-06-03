@@ -2,21 +2,25 @@ $newline never
 $# used by renderComment function
 
 <div .comment :top_level:.top_level :even_depth:.even_depth :odd_depth:.odd_depth>
-    <div .comment-head>
-        $maybe author_avatar <- userAvatar user
+    <div>
+        <span .comment-head>
+            $maybe author_avatar <- userAvatar user
+                <a href="@{UserR user_id}">
+                    <img .small_avatar src="#{author_avatar}">
+        <span .comment-head>
             <a href="@{UserR user_id}">
-                <img .small_avatar src="#{author_avatar}">
-        <a href="@{UserR user_id}">
-            #{author_name}
-        , #
-        ^{comment_time}
+                #{author_name}
+        <span .comment-head>
+            ^{comment_time}
         |
-        <a href="@{DiscussCommentR target comment_id}">
-            permalink #
+        <span .comment-head>
+            <a href="@{DiscussCommentR target comment_id}">
+                permalink #
         |
-        $maybe parent_id <- commentParent comment
-            <a href="@{DiscussCommentR target parent_id}">
-                parent #
+        <span .comment-head>
+            $maybe parent_id <- commentParent comment
+                <a href="@{DiscussCommentR target parent_id}">
+                    parent #
         
 
     $forall retraction <- earlier_retractions
