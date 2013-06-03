@@ -2,7 +2,7 @@ $newline never
 $# used by renderComment function
 
 <div .comment :top_level:.top_level :even_depth:.even_depth :odd_depth:.odd_depth>
-    <p>
+    <div .comment-head>
         $maybe author_avatar <- userAvatar user
             <a href="@{UserR user_id}">
                 <img .small_avatar src="#{author_avatar}">
@@ -10,7 +10,14 @@ $# used by renderComment function
             #{author_name}
         , #
         ^{comment_time}
-
+        |
+        <a href="@{DiscussCommentR target comment_id}">
+            permalink #
+        |
+        $maybe parent_id <- commentParent comment
+            <a href="@{DiscussCommentR target parent_id}">
+                parent #
+        
 
     $forall retraction <- earlier_retractions
         <div .retraction>
@@ -30,16 +37,11 @@ $# used by renderComment function
         <a href="@{DiscussCommentR target comment_id}">
             reply #
 
-    $maybe parent_id <- commentParent comment
-        <a href="@{DiscussCommentR target parent_id}">
-            parent #
 
     $if user_id == viewer_id
         <a href="@{RetractCommentR target comment_id}">
             retract #
 
-    <a href="@{DiscussCommentR target comment_id}">
-        permalink #
 
     $if depth > max_depth
         $with replies <- countReplies children
