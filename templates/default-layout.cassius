@@ -205,9 +205,9 @@ span.title
     margin : 0.2em
 
 h1, h2, h3, h4, h5
-    line-height : 1.1em
+    line-height : 1.2em
     padding-bottom : 0.3em
-    padding-top : 1em
+    margin-top : 1em
 
 h1
     font-size : xx-large
