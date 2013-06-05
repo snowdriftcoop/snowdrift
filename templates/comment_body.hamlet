@@ -45,7 +45,7 @@ $# used by renderComment function
 
     $if user_id == viewer_id
         <span .comment-action>
-            <a href="@{RetractCommentR target comment_id}">
+            <a href="@{RetractCommentR target comment_id}" style="color: darkred">
                 retract
 
 
