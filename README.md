@@ -18,6 +18,19 @@ The live Snowdrift.coop site has some public sections but other invitation-only 
 Contact us if you're interested in checking out the unpublished sections, including our next-steps wiki page, or if you're interested in joining the steering committee.
 
 
+haskell resources
+=================
+
+If you don't already know your way around Haskell or Yesod, here are some quality (FLO- or nearly) resources:
+
+* [Learn You A Haskell](http://learnyouahaskell.com/)
+* [Real World Haskell](http://book.realworldhaskell.org/)
+* [Yesod Website](http://www.yesodweb.com/)
+    * [Yesod Book](http://www.yesodweb.com/book)
+    * [Yesod Wiki](https://github.com/yesodweb/yesod/wiki)
+    * [Yesod Cookbook](https://github.com/yesodweb/yesod/wiki/Cookbook)
+
+
 building
 ========
 
