@@ -62,20 +62,19 @@
             <br>
             <hr>
         <p>
-            <strong>Footnotes
-            use
+            <strong>Footnotes:
             <strong>[^1]
-            to mark the inline link and
+            marks the inline link and
             <strong>[^1]:
-            for the footnote.
+            the footnote itself
             <br>
-            Specific numbers don't matter, they will auto-calculate.
             Footnotes can use any alphanumeric markers such as
             <strong> [^projectA]
-            as long as the link and note match. <strong>^[</strong>This format is used to make inline text be a footnote.
-            No specified marker is then required.<strong>]</strong>
+            as long as the link and note match. 
             <br>
-            Footnotes can be placed anywhere and will be put at the end when rendered.
+            Footnotes themselves can be placed anywhere and will be put at the end when rendered.
+            Footnotes can even be written in-line with no specified marker like this: <strong>^[</strong>Footnote text<strong>]</strong>
+            Footnote numbers will auto-calculate based on the placement of the links.
         <p>
             <strong>\
             backslash before characters makes them show normally if they would otherwise be markdown commands
