@@ -181,7 +181,7 @@ span.title
     border-bottom-left-radius: 0.8em
 
 .comment-head, .comment-action
-    margin-right : 1.2em
+    margin-right : 1em
 
 .top_level
     border-left : solid black 0.2em
