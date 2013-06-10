@@ -74,6 +74,7 @@
             <br>
             Footnotes themselves can be placed anywhere and will be put at the end when rendered.
             Footnotes can even be written in-line with no specified marker like this: <strong>^[</strong>Footnote text<strong>]</strong>
+            <br>
             Footnote numbers will auto-calculate based on the placement of the links.
         <p>
             <strong>\
