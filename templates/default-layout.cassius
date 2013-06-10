@@ -81,10 +81,8 @@ hr
     background-color : #CCCCDD
 
 hr.wikitop
-    padding-top : 0em
     margin-top : 0em
     padding-bottom : 0.1em
-    margin-bottom : 0.1em
 
 footer
     text-align : center
@@ -207,6 +205,8 @@ span.title
 h1, h2, h3, h4, h5
     line-height : 1.2em
     padding-bottom : 0.3em
+
+h2, h3, h4, h5
     margin-top : 1em
 
 h1
