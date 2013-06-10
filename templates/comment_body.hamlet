@@ -22,7 +22,6 @@ $# used by renderComment function
             <span .comment-head>
                 <a href="@{DiscussCommentR target parent_id}">
                     parent
-        
 
     $forall retraction <- earlier_retractions
         <div .retraction>
@@ -42,12 +41,10 @@ $# used by renderComment function
             <a href="@{DiscussCommentR target comment_id}">
                 reply
 
-
     $if user_id == viewer_id
         <span .comment-action>
             <a href="@{RetractCommentR target comment_id}" style="color: darkred">
                 retract
-
 
     $if depth > max_depth
         $with replies <- countReplies children
