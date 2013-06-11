@@ -1,7 +1,9 @@
-<div .span3>
-    <a href="@{WikiR target}"> back to wiki page
 <div .row>
     <div .span9>
+        <div . row>
+            <div .span3>
+                <a href="@{WikiR target}"> back to wiki page
+        <hr .wikitop>
         <div .row>
             ^{comments}
         $if can_edit
