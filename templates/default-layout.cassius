@@ -81,7 +81,7 @@ hr
     background-color : #CCCCDD
 
 hr.wikitop
-    margin-top : 0em
+    margin-top : -0.8em
     padding-bottom : 0.1em
 
 footer
