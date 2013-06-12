@@ -3,7 +3,6 @@
         <form method=POST action=@{ProjectR project_handle}>
             ^{project_form}
             <input name=mode type=submit value=preview>
-            <input name=mode type=submit value=update>
 
     <div .span3 .offset1>
         ^{sidebar}
