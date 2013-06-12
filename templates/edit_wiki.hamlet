@@ -3,7 +3,6 @@
         <form method=POST action=@{WikiR target}>
             ^{wiki_form}
             <input type=submit name=mode value=preview>
-            <input type=submit name=mode value=update>
 
     <div .span3 .offset1>
         ^{sidebar}
