@@ -599,6 +599,7 @@ renderPreview form action widget =
                         This is a preview; your changes have not been saved!
                         You can edit it below.
                     <br>
+                    <br>
                     <input type=submit name=mode value="#{action}">
 
             ^{widget}
@@ -607,6 +608,7 @@ renderPreview form action widget =
                 <div .span9>
                     <em>
                         This is a preview; your changes have not been saved!
+                    <br>
                     <br>
                     <input type=submit name=mode value="preview">
                     <input type=submit name=mode value="#{action}">
