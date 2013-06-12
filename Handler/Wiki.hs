@@ -613,7 +613,6 @@ renderPreview form action widget =
                     <input type=submit name=mode value="preview">
                     <input type=submit name=mode value="#{action}">
                     ^{form}
-                    <br>
                     <input type=submit name=mode value="preview">
                     <input type=submit name=mode value="#{action}">
     |]
