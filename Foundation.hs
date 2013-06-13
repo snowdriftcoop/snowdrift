@@ -224,6 +224,8 @@ instance Yesod App where
     isAuthorized (DiscussCommentR target _) False = require wikiPageCanViewMeta target
 
     isAuthorized (WikiHistoryR target) _ = require wikiPageCanViewMeta target
+    isAuthorized (WikiDiffR target _ _) _ = require wikiPageCanViewMeta target
+    isAuthorized (WikiDiffProxyR target) _ = require wikiPageCanViewMeta target
     isAuthorized (WikiEditR target _) _ = require wikiPageCanViewMeta target
 
     isAuthorized route write = do
