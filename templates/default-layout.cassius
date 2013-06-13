@@ -221,7 +221,7 @@ h3
     font-size : large
 
 h4
-    font-size : 1em
+    font-size : medium
 
 q:before
     content : '"'
