@@ -81,7 +81,7 @@ hr
     background-color : #CCCCDD
 
 hr.wikitop
-    margin-top : 0em
+    margin-top : -0.8em
     padding-bottom : 0.1em
 
 footer
@@ -113,7 +113,7 @@ p
     padding-top : 0.4em
     line-height : 1.5em
 
-p.footnote
+.footnote, .footnotes
     font-size : 0.9em
     line-height : 1.2em
     padding : 0.2em
@@ -195,6 +195,8 @@ span.title
     width : 2.5em
     height : 2.5em
     padding : 0em
+    margin-right : 0.3em
+    border-radius : 5px
 
 .retraction
     color : darkred

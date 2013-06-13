@@ -3,7 +3,6 @@
         <form method=POST action=@{NewWikiR target}>
             ^{wiki_form}
             <input name="mode" type="submit" value="preview">
-            <input name="mode" type="submit" value="create">
 
     <div .span3 .offset1>
         ^{sidebar}

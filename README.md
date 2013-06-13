@@ -18,7 +18,30 @@ The live Snowdrift.coop site has some public sections but other invitation-only 
 Contact us if you're interested in checking out the unpublished sections, including our next-steps wiki page, or if you're interested in joining the steering committee.
 
 
-haskell resources
+development guidelines
+======================
+
+Overall, we strive to follow universal standards, be fully accessible, and avoid any browser-specific items.
+
+HTML and CSS
+------------
+
+Yesod uses a simpler, indendation based variant of HTML and CSS called [Shakespearean Templates](http://www.yesodweb.com/book/shakespearean-templates).
+
+We also include the [Twitter Bootstrap](http://twitter.github.io/bootstrap/index.html) CSS stuff, so feel free to use any of that as appropriate.
+
+
+Javascript
+----------
+
+All JavaScript should be recognized as acceptable by the FSF's [LibreJS plugin](https://www.gnu.org/software/librejs/)
+
+**When in doubt, first make sure things work well enough without JS.**
+There should not be a broken experience with NoScript.
+JS is fine for amplification and beautification, but no essential function should require JS.
+
+
+Haskell and Yesod resources
 =================
 
 If you don't already know your way around Haskell or Yesod, here are some quality (FLO- or nearly) resources:
@@ -123,16 +146,5 @@ Once snowdrift is built, you can start the server by running the following from 
     ./dist/build/Snowdrift/Snowdrift Development
 
 It will print a bunch of text about creating tables, and then sit waiting for connections.  You can access it by directing your web browser to localhost:3000.
-
-
-
-development guidelines
-======================
-
-All JavaScript should be recognized as acceptable by the FSF's [LibreJS plugin](https://www.gnu.org/software/librejs/)
-
-No JavaScript should be used in a way that results in a broken experience with NoScript.
-In other words, JS is fine for all amplification and beautification of the site, but no function should be impossible and no page should look clearly off or broken without the JS.
-When in doubt, make sure things work well enough without JS. Otherwise, JS is welcome where it helps improve the site experience.
 
 Happy hacking!

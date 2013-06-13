@@ -84,8 +84,9 @@
             Want to learn more or help out?
         <ul>
             <li>
-                <a href="@{WikiR "about"}">Read more details
-                and
+                Learn more on our
+                <a href="@{WikiR "about"}">About pages
+                and 
                 <a href="/user/new"> register a new account
                 to participate as a beta user!
                 <a href="/contact"> Contact us
@@ -99,9 +100,9 @@
                 <a href="/contact"> Inquire&hellip;
                 (but you can look at our <a href="https://gitorious.org/snowdrift/snowdrift"> source</a> already!)
             <li>
-                Are you a long-time free/libre/open advocate interested in helping us solidify our vision?
+                Are you an advocate for free/libre/open and/or cooperative ideals interested in helping us solidify our vision?
                 <a href="/contact">Contact us
-                and request an invitation to be considered for the steering committee.
+                about how to get involved, and mention if you'd like to consider joining our steering committee.
     <div .span3 .offset1>
         ^{sidebar}
 

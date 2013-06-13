@@ -5,7 +5,6 @@
         <form method=POST action=@{UserR user_id}>
             ^{form}
             <input type=submit name=mode value=preview>
-            <input type=submit name=mode value=update>
 
     <div .span3 .offset1>
         ^{sidebar}
