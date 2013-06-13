@@ -220,6 +220,9 @@ h2
 h3
     font-size : large
 
+h4
+    font-size : 1em
+
 q:before
     content : '"'
 
