@@ -1,20 +1,27 @@
 <div .row>
     <div .span9>
         <div .row>
-            <table .table>
-                $forall Entity edit_id edit <- edits
-                    <tr>
-                        <td>
-                            <a href="@{WikiEditR target edit_id}">
-                                ^{renderTime (wikiEditTs edit)}
-                        <td>
-                            $with user_id <- wikiEditUser edit
-                                $maybe user <- M.lookup user_id users
-                                    <a href="@{UserR user_id}">
-                                        #{userPrintName user}
-                        $maybe comment <- wikiEditComment edit
+            <form action="@{WikiDiffProxyR target}" method="GET">
+                <table .table>
+                    $forall Entity edit_id edit <- edits
+                        <tr>
                             <td>
-                                #{comment}
-
+                                <a href="@{WikiEditR target edit_id}">
+                                    ^{renderTime (wikiEditTs edit)}
+                            <td>
+                                $with user_id <- wikiEditUser edit
+                                    $maybe user <- M.lookup user_id users
+                                        <a href="@{UserR user_id}">
+                                            #{userPrintName user}
+                            <td>
+                                $maybe comment <- wikiEditComment edit
+                                    #{comment}
+                            <td>
+                                <input type="radio" name="start" value="#{toPathPiece edit_id}">
+                                <input type="radio" name="end" value="#{toPathPiece edit_id}">
+                    <tr>
+                        <td colspan="3">
+                        <td>
+                            <input type="submit" value="diff">
     <div .span3>
         ^{sidebar}

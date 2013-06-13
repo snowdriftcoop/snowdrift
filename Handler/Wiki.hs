@@ -400,6 +400,22 @@ getWikiHistoryR target = do
 
     defaultLayout $(widgetFile "wiki_history")
 
+-- | A proxy handler that redirects "ugly" to "pretty" diff URLs,
+-- e.g. /w/diff?from=a&to=b to /w/diff/a/b
+getWikiDiffProxyR :: Text -> Handler RepHtml
+getWikiDiffProxyR target = do
+    (start_edit_id_t, end_edit_id_t) <- runInputGet $ (,)
+                                        <$> ireq textField "start"
+                                        <*> ireq textField "end"
+    let pairMay = do
+        s <- fromPathPiece start_edit_id_t
+        e <- fromPathPiece end_edit_id_t
+        return (s, e)
+    maybe
+        (invalidArgs ["revision IDs"])
+        (\(s, e) -> redirect $ WikiDiffR target s e)
+        pairMay
+
 getWikiDiffR :: Text -> WikiEditId -> WikiEditId -> Handler RepHtml
 getWikiDiffR target start_edit_id end_edit_id = do
     (start_edit, end_edit) <- runDB $ do
