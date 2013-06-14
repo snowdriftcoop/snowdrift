@@ -39,9 +39,10 @@
         <p>
             <em>lists, headers, and blockquotes must start with a blank line above (aside from the very first line)
         <p>
-            <h1># header
-            <h2>## subheader
-            <h3>### third level (and so on)
+            <h1># h1 header
+            <h2>## h2 subheader
+            <h3>### h3 third level (and so on)
+            alternate option: any number of ===== on a new line under h1 heading text and ----- under h2 subheader
             <ul>
                 <li>* bulleted lists use any of these symbols:
                     <strong> * + -
@@ -82,9 +83,9 @@
             <br>
             Footnotes themselves can be placed anywhere and will be rendered at the end.
             <br>
-            Footnotes can also be written in-line with no specified marker like this: <strong>^[</strong>Footnote text<strong>]</strong>
+            Footnotes can also be written in-line with no specified tag: <strong>^[</strong>Footnote text<strong>]</strong>
             <br>
-            Footnote numbers will auto-calculate based on the placement of the links.
+            Footnote numbers auto-calculate based on the placement of the links.
         <p>
             <strong> \
             backslash before characters makes them show normally if they would otherwise be markdown commands
