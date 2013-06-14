@@ -75,16 +75,15 @@
             <strong>[^tag]:
             the footnote itself
             <br>
-            Footnotes can use any alphanumeric markers such as
-            <strong> [^projectA]
-            as long as the link and note match. 
+            Tags can use any alphanumeric characters.
             <br>
-            Footnotes themselves can be placed anywhere and will be put at the end when rendered.
+            Footnotes themselves can be placed anywhere and will be rendered at the end.
+            <br>
             Footnotes can also be written in-line with no specified marker like this: <strong>^[</strong>Footnote text<strong>]</strong>
             <br>
             Footnote numbers will auto-calculate based on the placement of the links.
         <p>
-            <strong>\
+            <strong> \
             backslash before characters makes them show normally if they would otherwise be markdown commands
     <div .span3>
         ^{sidebar}
