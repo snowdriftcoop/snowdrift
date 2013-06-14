@@ -3,9 +3,9 @@
         <h1>Summary of Markdown syntax
         <p>
             Markdown is a simple text-formatting system.
-            Below are some basics.
+            Below are the basics.
             You can also use HTML tags within Markdown.
-            For more options beyond what we've highlighted, see 
+            For more options and details, see 
             <a href="http://www.johnmacfarlane.net/pandoc/README#pandocs-markdown"> Pandoc's Markdown
         <p>
             <em> Note: most Markdown formatting is nestable
@@ -35,7 +35,7 @@
         <p>
             separate paragraphs with blank lines
             <br>
-            use two or more spaces at the end of a line for a single line-break
+            add two or more spaces at the end of a line for a single line-break
         <p>
             <em>lists, headers, and blockquotes must start with a blank line above (aside from the very first line)
         <p>
@@ -52,9 +52,12 @@
             <br>
             2. after the first number, it auto-calculates so specific numbers aren't needed
             <br>
-            a. lists can also use letters like a. b. c. or Roman numberals like i. ii. iii. iv. (these also auto-calculate)
-        term
-        &nbsp;&nbsp; ~ definition/description
+            a. lists can also use letters a. b. c. or Roman numerals i. ii. iii. iv. (these also auto-calculate)
+            <br>
+            A.&nbsp;&nbsp;For <em>capital</em> letters or Roman numerals, include two spaces after the dot or use A) or (A) format (which also work for lower-case)
+        <strong> term
+        <br>
+        &nbsp;&nbsp; ~ definition/description indent two spaces before ~ or : then one more space before text
         <p>
             <blockquote>
                 > blockquote
