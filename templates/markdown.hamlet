@@ -8,7 +8,7 @@
             For more options beyond what we've highlighted, see 
             <a href="http://www.johnmacfarlane.net/pandoc/README#pandocs-markdown"> Pandoc's Markdown
         <p>
-            <em> Note: most Markdown formatting is nestable</em>
+            <em> Note: most Markdown formatting is nestable
         <p>
             <em>*italic*
             <br>
@@ -16,8 +16,13 @@
             <br>
             <strong>
                 <em>***bold-italic***
+            ~~<del>deleted/strikethrough</del>~~
         <p>
             [weblink-text](URL)
+            <br>
+            note: internal links do not require full URL, see
+            <a href="http://snowdrift.coop/w/wiki">
+            /w/wiki
         <p>
             images:
             <br>
@@ -28,11 +33,11 @@
             <br>
             <em>for an image as clickable link, nest the image markdown as the text part of a weblink
         <p>
-            use blank lines to separate paragraphs
+            separate paragraphs with blank lines
             <br>
             use two or more spaces at the end of a line for a single line-break
         <p>
-            <em>lists, headers, and blockquotes must start with a blank line above (aside from the document's very first line)
+            <em>lists, headers, and blockquotes must start with a blank line above (aside from the very first line)
         <p>
             <h1># header
             <h2>## subheader
@@ -48,6 +53,8 @@
             2. after the first number, it auto-calculates so specific numbers aren't needed
             <br>
             a. lists can also use letters like a. b. c. or Roman numberals like i. ii. iii. iv. (these also auto-calculate)
+        term
+        &nbsp;&nbsp; ~ definition/description
         <p>
             <blockquote>
                 > blockquote
