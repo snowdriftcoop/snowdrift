@@ -8,46 +8,55 @@ Note: code is mirrored at both:
 and
 [Gitorious](https://gitorious.org/snowdrift/snowdrift)
 
-At this point, we're using the Issues tickets at GitHub (although we are developing our own internal ticketing which will be ready soon)
-but we appreciate that Gitorious is itself FLOSS whereas GitHub is propriety.
+We are developing our own internal ticketing, but at this point we still have most issues ticketed at the GitHub site.
 
-The infrastructure here includes the wiki system for the site,
-but the contents of the wiki are held in the site database.
+The infrastructure here includes the site's wiki backend,
+but the contents of the wiki are held separately in the site database.
 
-The live Snowdrift.coop site has some public sections but other invitation-only sections. As work continues, more will be published.
-Contact us if you're interested in checking out the unpublished sections, including our next-steps wiki page, or if you're interested in joining the steering committee.
+The live Snowdrift.coop site has some public sections and other invitation-only sections. As work continues, more will be published.
+Contact us if you're interested in checking out the unpublished sections, including our overall next-steps page, or if you're interested in joining the steering committee.
 
 
-development guidelines
-======================
+development guidelines and notes
+================================
 
 Overall, we strive to follow universal standards, be fully accessible, and avoid any browser-specific items.
-
-HTML and CSS
-------------
-
-Yesod uses a simpler, indendation based variant of HTML and CSS called [Shakespearean Templates](http://www.yesodweb.com/book/shakespearean-templates).
-
-We also include the [Twitter Bootstrap](http://twitter.github.io/bootstrap/index.html) CSS stuff, so feel free to use any of that as appropriate.
-
-
-Javascript
-----------
 
 All JavaScript should be recognized as acceptable by the FSF's [LibreJS plugin](https://www.gnu.org/software/librejs/)
 
 **When in doubt, first make sure things work well enough without JS.**
 There should not be a broken experience with NoScript.
-JS is fine for amplification and beautification, but no essential function should require JS.
+JS is fine for amplification and beautification, but no essential function should require JS
 
 
-Haskell and Yesod resources
-=================
+About the frameworks and tools we use
+=====================================
 
-If you don't already know your way around Haskell or Yesod, here are some quality (FLO- or nearly) resources:
+The Snowdridt.coop site uses the Yesod web framework which uses the Haskell programming language alongside HTML/CSS/JavaScript elements.
+
+We also include the [Twitter Bootstrap](http://twitter.github.io/bootstrap/index.html) CSS stuff, so feel free to use any of that as appropriate (within the guidelines mentioned above).
+
+Yesod uses a simpler, indendation-based variant of HTML/CSS/JS formats called [Shakespearean Templates](http://www.yesodweb.com/book/shakespearean-templates).
+
+Essentially, the mostly the same HTML tags as normal, but there is no need to add the closing tag.
+Instead, items within a tag are placed on new lines underneath and indented an extra four spaces.
+See the link above to understand the many other shortcuts and additional features this system offers.
+
+We recommend setting your text editor to have the TAB key do indentation of four spaces.
+For VIM, for example, the config file .vimrc should have these three lines:
+set expandtab
+set shiftwidth=4
+set tabstop=4 
+
+VIM users should also install [Syntax Highlighting Files for Haskell](https://github.com/pbrisbin/html-template-syntax)
+
+
+If you are just learning Haskell or Yesod, here are some quality (FLO- or nearly) resources:
 
 * [Learn You A Haskell](http://learnyouahaskell.com/)
 * [Real World Haskell](http://book.realworldhaskell.org/)
+* [Haskel Wikibook](https://en.wikibooks.org/wiki/Haskell)
+
 * [Yesod Website](http://www.yesodweb.com/)
     * [Yesod Book](http://www.yesodweb.com/book)
     * [Yesod Wiki](https://github.com/yesodweb/yesod/wiki)
