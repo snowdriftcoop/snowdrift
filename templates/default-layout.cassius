@@ -24,7 +24,7 @@ input[type=submit]
     color : white
     font-weight : bold
     padding: .5em 1em
-    margin-right : 1em
+    margin : 0.5em 1em 0.5em 0
     border-radius: 5px
     border : solid thin #65A5E5
     text-shadow : 0 1px 0px rgba(0,0,0,.2)
@@ -190,7 +190,6 @@ span.title
 .odd_depth
     border-left : solid lightgrey 0.2em
 
-
 .small_avatar
     width : 2.5em
     height : 2.5em
@@ -203,6 +202,12 @@ span.title
     border-left : solid darkred 0.25em
     padding-left : 0.5em
     margin : 0.2em
+
+.alert
+    color : red
+    font-style : italic
+    text-align : center 
+    
 
 h1, h2, h3, h4, h5
     line-height : 1.2em
@@ -219,6 +224,9 @@ h2
 
 h3
     font-size : large
+
+h4
+    font-size : medium
 
 q:before
     content : '"'

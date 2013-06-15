@@ -90,9 +90,8 @@ postUserR user_id = do
                                 <div .span9>
                                     <form method="POST" action="@{UserR user_id}">
                                         ^{hidden_form}
-                                        <em>
+                                        <div .alert>
                                             This is a preview; your changes have not been saved!
-                                        <br>
                                         <script>
                                             document.write('<input type="submit" value="edit" onclick="history.go(-1);return false;" />')
                                         <input type=submit name=mode value=#{action}>

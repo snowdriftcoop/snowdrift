@@ -3,12 +3,12 @@
         <h1>Summary of Markdown syntax
         <p>
             Markdown is a simple text-formatting system.
-            Below are some basics.
+            Below are the basics.
             You can also use HTML tags within Markdown.
-            For more options beyond what we've highlighted, see 
+            For more options and details, see 
             <a href="http://www.johnmacfarlane.net/pandoc/README#pandocs-markdown"> Pandoc's Markdown
         <p>
-            <em> Note: most Markdown formatting is nestable</em>
+            <em> Note: most Markdown formatting is nestable
         <p>
             <em>*italic*
             <br>
@@ -16,8 +16,13 @@
             <br>
             <strong>
                 <em>***bold-italic***
+            ~~<del>deleted/strikethrough</del>~~
         <p>
             [weblink-text](URL)
+            <br>
+            note: internal links do not require full URL, see
+            <a href="http://snowdrift.coop/w/wiki">
+            /w/wiki
         <p>
             images:
             <br>
@@ -28,15 +33,16 @@
             <br>
             <em>for an image as clickable link, nest the image markdown as the text part of a weblink
         <p>
-            use blank lines to separate paragraphs
+            separate paragraphs with blank lines
             <br>
-            use two or more spaces at the end of a line for a single line-break
+            add two or more spaces at the end of a line for a single line-break
         <p>
-            <em>lists, headers, and blockquotes must start with a blank line above (aside from the document's very first line)
+            <em>lists, headers, and blockquotes must start with a blank line above (aside from the very first line)
         <p>
-            <h1># header
-            <h2>## subheader
-            <h3>### third level (and so on)
+            <h1># h1 header
+            <h2>## h2 subheader
+            <h3>### h3 third level (and so on)
+            alternate option: any number of ===== on a new line under h1 heading text and ----- under h2 subheader
             <ul>
                 <li>* bulleted lists use any of these symbols:
                     <strong> * + -
@@ -47,7 +53,12 @@
             <br>
             2. after the first number, it auto-calculates so specific numbers aren't needed
             <br>
-            a. lists can also use letters like a. b. c. or Roman numberals like i. ii. iii. iv. (these also auto-calculate)
+            a. lists can also use letters a. b. c. or Roman numerals i. ii. iii. iv. (these also auto-calculate)
+            <br>
+            A.&nbsp;&nbsp;For <em>capital</em> letters or Roman numerals, include two spaces after the dot or use A) or (A) format (which also work for lower-case)
+        <strong> term
+        <br>
+        &nbsp;&nbsp; ~ definition/description indent two spaces before ~ or : then one more space before text
         <p>
             <blockquote>
                 > blockquote
@@ -68,16 +79,15 @@
             <strong>[^tag]:
             the footnote itself
             <br>
-            Footnotes can use any alphanumeric markers such as
-            <strong> [^projectA]
-            as long as the link and note match. 
+            Tags can use any alphanumeric characters.
             <br>
-            Footnotes themselves can be placed anywhere and will be put at the end when rendered.
-            Footnotes can also be written in-line with no specified marker like this: <strong>^[</strong>Footnote text<strong>]</strong>
+            Footnotes themselves can be placed anywhere and will be rendered at the end.
             <br>
-            Footnote numbers will auto-calculate based on the placement of the links.
+            Footnotes can also be written in-line with no specified tag: <strong>^[</strong>Footnote text<strong>]</strong>
+            <br>
+            Footnote numbers auto-calculate based on the placement of the links.
         <p>
-            <strong>\
+            <strong> \
             backslash before characters makes them show normally if they would otherwise be markdown commands
     <div .span3>
         ^{sidebar}
