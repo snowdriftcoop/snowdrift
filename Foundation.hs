@@ -228,6 +228,25 @@ instance Yesod App where
     isAuthorized (WikiDiffProxyR target) _ = require wikiPageCanViewMeta target
     isAuthorized (WikiEditR target _) _ = require wikiPageCanViewMeta target
 
+    isAuthorized (UserR user_id) _  = do
+        Entity viewer_id viewer <- requireAuth
+        return $ if user_id == viewer_id
+                  then Authorized
+                  else if userRole viewer >= GeneralPublic
+                        then Authorized
+                        else Unauthorized "You must be invited to view other users"
+
+    isAuthorized (EditUserR _) _ = return Authorized
+
+{-
+    isAuthorized (UserR user_id) write = do
+        Entity viewer_id viewer <- requireAuth
+        return $ case (user_id == viewer_id, write) of
+                    (True, _) -> Authorized
+                    (False, True) -> Unauthorized "You cannot edit info of other users"
+                    _ -> if userRole viewer >= GeneralPublic then Authorized else Unauthorized "You must be invited to view other users"
+-}
+
     isAuthorized route write = do
         role <- maybe Uninvited (userRole . entityVal) <$> maybeAuth
         return $ roleCanView role write route
