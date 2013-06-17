@@ -11,7 +11,7 @@ committeeForm now (Entity user_id user) = renderBootstrap $
         <$> areq textField "Full name:" Nothing
         <*> areq emailField "E-mail:" (Just . userIdent $ user)
         <*> aopt textField "Other contact info (website URL, phone, chat ID, etc):" Nothing
-        <*> areq textField "Occupation:" Nothing
+        <*> areq textField "Occupation(s):" Nothing
         <*> areq textField "Location:" Nothing
         <*> aopt textareaField "Relevant expertise:" Nothing
         <*> areq textareaField "Personal statement (why you want to join the committee):" Nothing

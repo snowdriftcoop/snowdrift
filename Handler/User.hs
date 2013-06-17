@@ -24,6 +24,7 @@ editUserForm user = renderDivs $
     UserUpdate
         <$> aopt textField "Public Name" (Just $ userName user)
         <*> aopt textField "Avatar (link)" (Just $ userAvatar user)
+        <*> aopt textField "IRC Nick (irc.freenode.net)" (Just $ userIrcNick user)
         <*> aopt snowdriftMarkdownField "Blurb (used on listings of many people)" (Just $ userBlurb user)
         <*> aopt snowdriftMarkdownField "Personal Statement (visible only on this page)" (Just $ userStatement user)
 
@@ -32,6 +33,7 @@ previewUserForm user = renderDivs $
     UserUpdate
         <$> aopt hiddenField "" (Just $ userName user)
         <*> aopt hiddenField "" (Just $ userAvatar user)
+        <*> aopt hiddenField "" (Just $ userIrcNick user)
         <*> hiddenMarkdown (userBlurb user)
         <*> hiddenMarkdown (userStatement user)
 
@@ -88,9 +90,8 @@ postUserR user_id = do
                                 <div .span9>
                                     <form method="POST" action="@{UserR user_id}">
                                         ^{hidden_form}
-                                        <em>
+                                        <div .alert>
                                             This is a preview; your changes have not been saved!
-                                        <br>
                                         <script>
                                             document.write('<input type="submit" value="edit" onclick="history.go(-1);return false;" />')
                                         <input type=submit name=mode value=#{action}>
@@ -140,11 +141,11 @@ postUserCreateR = do
     ((result, form), _) <- runFormPost $ userCreateForm Nothing
 
     case result of
-        FormSuccess (ident, passwd, name, avatar) -> do
+        FormSuccess (ident, passwd, name, avatar, nick) -> do
             now <- liftIO getCurrentTime
             success <- handle (\ DBException -> return False) $ runDB $ do
                 account_id <- insert $ Account 0
-                user <- setPassword passwd $ User ident Nothing Nothing name account_id Uninvited avatar Nothing Nothing now now now now
+                user <- setPassword passwd $ User ident Nothing Nothing name account_id Uninvited avatar Nothing Nothing nick now now now now
                 uid_maybe <- insertUnique user
                 lift $ case uid_maybe of
                     Just uid -> do
@@ -169,13 +170,14 @@ postUserCreateR = do
     |]
     
 
-userCreateForm :: Maybe Text -> Form (Text, Text, Maybe Text, Maybe Text)
+userCreateForm :: Maybe Text -> Form (Text, Text, Maybe Text, Maybe Text, Maybe Text)
 userCreateForm ident extra = do
     (identRes, identView) <- mreq textField "" ident
     (passwd1Res, passwd1View) <- mreq passwordField "" Nothing
     (passwd2Res, passwd2View) <- mreq passwordField "" Nothing
     (nameRes, nameView) <- mopt textField "" Nothing
     (avatarRes, avatarView) <- mopt textField "" Nothing
+    (nickRes, nickView) <- mopt textField "" Nothing
 
     let view = [whamlet|
         ^{extra}
@@ -205,6 +207,11 @@ userCreateForm ident extra = do
                     Avatar (link, optional):
                 <td>
                     ^{fvInput avatarView}
+            <tr>
+                <td>
+                    IRC Nick (irc.freenode.net, optional):
+                <td>
+                    ^{fvInput nickView}
     |]
 
         passwdRes = case (passwd1Res, passwd2Res) of
@@ -212,6 +219,6 @@ userCreateForm ident extra = do
             (FormSuccess _, x) -> x
             (x, _) -> x
 
-        result = (,,,) <$> identRes <*> passwdRes <*> nameRes <*> avatarRes
+        result = (,,,,) <$> identRes <*> passwdRes <*> nameRes <*> avatarRes <*> nickRes
 
     return (result, view)

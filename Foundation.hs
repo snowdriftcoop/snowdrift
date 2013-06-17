@@ -228,6 +228,25 @@ instance Yesod App where
     isAuthorized (WikiDiffProxyR target) _ = require wikiPageCanViewMeta target
     isAuthorized (WikiEditR target _) _ = require wikiPageCanViewMeta target
 
+    isAuthorized (UserR user_id) _  = do
+        Entity viewer_id viewer <- requireAuth
+        return $ if user_id == viewer_id
+                  then Authorized
+                  else if userRole viewer >= GeneralPublic
+                        then Authorized
+                        else Unauthorized "You must be invited to view other users"
+
+    isAuthorized (EditUserR _) _ = return Authorized
+
+{-
+    isAuthorized (UserR user_id) write = do
+        Entity viewer_id viewer <- requireAuth
+        return $ case (user_id == viewer_id, write) of
+                    (True, _) -> Authorized
+                    (False, True) -> Unauthorized "You cannot edit info of other users"
+                    _ -> if userRole viewer >= GeneralPublic then Authorized else Unauthorized "You must be invited to view other users"
+-}
+
     isAuthorized route write = do
         role <- maybe Uninvited (userRole . entityVal) <$> maybeAuth
         return $ roleCanView role write route
@@ -326,7 +345,7 @@ instance YesodAuth App where
             Just (Entity uid _) -> return $ Just uid
             Nothing -> do
                 account_id <- insert $ Account $ Milray 0
-                fmap Just $ insert $ User (credsIdent creds) Nothing Nothing Nothing account_id Uninvited Nothing Nothing Nothing now now now now
+                fmap Just $ insert $ User (credsIdent creds) Nothing Nothing Nothing account_id Uninvited Nothing Nothing Nothing Nothing now now now now
 
     -- You can add other plugins like BrowserID, email or OAuth here
     authPlugins _ = [ authBrowserIdFixed, authHashDB (Just . UniqueUser) ]

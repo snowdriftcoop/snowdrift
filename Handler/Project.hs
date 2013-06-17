@@ -153,9 +153,8 @@ postProjectR project_handle = do
                                 <div .span9>
                                     <form method="POST" action="@{ProjectR project_handle}">
                                         ^{hidden_form}
-                                        <em>
+                                        <div .alert>
                                             This is a preview; your changes are not yet saved!
-                                        <br>
                                         <script>
                                             document.write('<input type="submit" value="edit" onclick="history.go(-1);return false;" />')
                                         <input type=submit name=mode value=#{action}>

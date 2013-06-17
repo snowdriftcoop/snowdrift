@@ -16,7 +16,7 @@ snowdriftMarkdownField = Field
              in do
                 [whamlet|
                     <div .markdown_label>
-                        <a href="#{tutorial}">
+                        <a href="#{tutorial}" target="_blank">
                             Markdown syntax
                     <div .markdown_wrapper>
                         <textarea id="#{theId}" name="#{name}" *{attrs}>#{either id unMarkdown val}

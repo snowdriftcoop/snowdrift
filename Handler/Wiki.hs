@@ -612,21 +612,17 @@ renderPreview form action widget =
         <form method="POST" style="padding : 0em; margin : 0em">
             <div .row>
                 <div .span9>
-                    <em>
+                    <div .alert>
                         This is a preview; your changes have not been saved!
                         You can edit it below.
-                    <br>
-                    <br>
                     <input type=submit name=mode value="#{action}">
 
             ^{widget}
 
             <div .row>
                 <div .span9>
-                    <em>
+                    <div .alert>
                         This is a preview; your changes have not been saved!
-                    <br>
-                    <br>
                     <input type=submit name=mode value="preview">
                     <input type=submit name=mode value="#{action}">
                     ^{form}
