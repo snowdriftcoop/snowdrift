@@ -1,6 +1,10 @@
 <div .row>
     <div .span9>
         <div .row>
+            <div .span3>
+                <a href="@{WikiR target}"> back to current page
+        <hr .wikitop>
+        <div .row>
             <form action="@{WikiDiffProxyR target}" method="GET">
                 <table .table>
                     $forall Entity edit_id edit <- edits
