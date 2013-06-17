@@ -50,6 +50,9 @@ set tabstop=4
 
 VIM users should also install [Syntax Highlighting Files for Haskell](https://github.com/pbrisbin/html-template-syntax)
 
+Of course, the live site is rendered in standard HTML/CSS etc.
+
+Try the superb [Firebug](https://getfirebug.com) tool to explore and test things on the live site.
 
 If you are just learning Haskell or Yesod, here are some quality (FLO- or nearly) resources:
 
