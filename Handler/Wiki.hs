@@ -398,6 +398,7 @@ getWikiHistoryR target = do
 
         return (edits, users)
 
+    let editsIndexed = zip ([0..] :: [Int]) edits
     defaultLayout $(widgetFile "wiki_history")
 
 -- | A proxy handler that redirects "ugly" to "pretty" diff URLs,
