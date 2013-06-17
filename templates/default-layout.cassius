@@ -178,6 +178,12 @@ span.title
     margin-top : 1.8em
     border-bottom-left-radius: 0.8em
 
+.comment h1
+    font-size : large
+
+.comment h2
+    font-size : medium
+
 .comment-head, .comment-action
     margin-right : 1em
 
