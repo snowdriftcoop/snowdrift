@@ -13,7 +13,7 @@ $newline never
             /*
             @licstart  The following is the entire license notice for the JavaScript code in this page.
 
-            Copyright (C) 2012  Snowdrift.coop
+            Copyright (C) 2013  Snowdrift.coop
 
             The JavaScript code in this page is free software: you can
             redistribute it and/or modify it under the terms of the GNU
@@ -70,7 +70,7 @@ $newline never
                 <a href="@{HomeR}">
                     <div #head .row>
                         <noscript>
-                            <img #logo .span10 .offset1 src=@{StaticR img_logo_png} alt="Snowdrift.coop: clearing the path to a free, libre, open world">
+                            <img #logo .span10 .offset1 src=@{StaticR img_logo_png} alt="Snowdrift.coop: clearing the path to a Free/Libre/Open World">
                         <script>
                             fixup_logo()
                     <div .row>
