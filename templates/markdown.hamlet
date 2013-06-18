@@ -7,11 +7,12 @@
             <br>
             You can also use HTML tags within Markdown.
         <p>
-            For more options and details,
-            including <a href="www.johnmacfarlane.net/pandoc/README#verbatim-code-blocks"> code blocks</a>,
-            <a href="http://www.johnmacfarlane.net/pandoc/README#pipe-tables"> tables
-            (note: our site requires the "pipe" table format), and more, see
+            See
             <a href="http://www.johnmacfarlane.net/pandoc/README#pandocs-markdown"> Pandoc's Markdown
+            for more options and details,
+            including <a href="http://www.johnmacfarlane.net/pandoc/README#verbatim-code-blocks"> code blocks</a>,
+            <a href="http://www.johnmacfarlane.net/pandoc/README#pipe-tables"> tables
+            (note: our site requires the "pipe" table format), and more.
         <p>
             <em> Note: most Markdown formatting is nestable
         <p>
@@ -65,14 +66,15 @@
             a. lists can also use letters a. b. c. or Roman numerals i. ii. iii. iv. (these also auto-calculate)
             <br>
             A.&nbsp;&nbsp;For <em>capital</em> letters or Roman numerals, include two spaces after the dot or use A) or (A) format (which also work for lower-case)
-        <strong> term
-        <br>
-        &nbsp;&nbsp; ~ description (indent two spaces before ~ or : and another space before text
         <p>
             <blockquote>
                 > blockquote
                 <blockquote>
                     >> use multiple > symbols to make nested levels
+        <br>
+        <strong> term
+        <br>
+        &nbsp;&nbsp; ~ description (indent two spaces before ~ or : and another space before text
         <p>
             a horizontal rule is 3 or more hyphens with empty lines above and below:
             <br>
