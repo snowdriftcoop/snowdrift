@@ -89,9 +89,9 @@ Update cabal's package list:
     cabal update
 
 
-Add ~/.cabal to your PATH; in bash this is:
+Add ~/.cabal/bin to your PATH; in bash this is:
 
-    PATH=~/.cabal:$PATH
+    PATH=$PATH:~/.cabal/bin
 
 
 If your distro doesn't have an up-to-date cabal (likely), it'll recommend
