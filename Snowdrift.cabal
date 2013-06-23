@@ -126,6 +126,7 @@ library
                  , conduit
                  , random
                  , yesod-markdown                >= 0.7
+                 , regex-pcre-builtin            <= 0.94.4.5.8.31
                  , Diff                          >= 0.3        && < 0.4
                  , path-pieces
                  , containers
