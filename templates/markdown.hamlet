@@ -5,14 +5,14 @@
             Markdown is a simple text-formatting system.
             Below are the basics.
             <br>
-            You can also use HTML tags within Markdown.
+            You can also use standard HTML within Markdown.
         <p>
             See
             <a href="http://www.johnmacfarlane.net/pandoc/README#pandocs-markdown"> Pandoc's Markdown
             for more options and details,
             including <a href="http://www.johnmacfarlane.net/pandoc/README#verbatim-code-blocks"> code blocks</a>,
             <a href="http://www.johnmacfarlane.net/pandoc/README#pipe-tables"> tables
-            (note: our site requires the "pipe" table format), and more.
+            (note: our site requires the "pipe" table format), and much more.
         <p>
             <em> Note: most Markdown formatting is nestable
         <p>
@@ -25,7 +25,7 @@
             <br>
             ~~<del>deleted/strikethrough</del>~~
         <p>
-            [weblink-text](URL) or just <URL>
+            [weblink-text](URL) or &lt;URL&gt;
             <br>
             note: internal links do not require full URL, see
             <a href="http://snowdrift.coop/w/wiki">
@@ -49,7 +49,7 @@
         <h1># h1 header
         <h2>## h2 subheader
         <h3>### h3 third level (and so on)
-        alternate: any number of ===== on line under h1 text or ----- under h2
+        alternate option: any number of === on line under h1 text or --- under h2
         <br>
         <br>
         <ul>
@@ -74,7 +74,9 @@
         <br>
         <strong> term
         <br>
-        &nbsp;&nbsp; ~ description (indent two spaces before ~ or : and another space before text
+        &nbsp;&nbsp; ~ description (indent two spaces before ~ or : and another space before text)
+        <br>
+        <br>
         <p>
             a horizontal rule is 3 or more hyphens with empty lines above and below:
             <br>
