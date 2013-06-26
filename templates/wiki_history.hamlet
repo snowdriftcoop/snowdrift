@@ -7,7 +7,7 @@
         <div .row>
             <form action="@{WikiDiffProxyR target}" method="GET">
                 <table .table>
-                    $forall Entity edit_id edit <- edits
+                    $forall (index, Entity edit_id edit) <- editsIndexed
                         <tr>
                             <td>
                                 <a href="@{WikiEditR target edit_id}">
@@ -21,8 +21,8 @@
                                 $maybe comment <- wikiEditComment edit
                                     #{comment}
                             <td>
-                                <input type="radio" name="start" value="#{toPathPiece edit_id}">
-                                <input type="radio" name="end" value="#{toPathPiece edit_id}">
+                                <input type="radio" name="start" value="#{toPathPiece edit_id}" :(index == 0):checked>
+                                <input type="radio" name="end" value="#{toPathPiece edit_id}" :(index == 1):checked>
                     <tr>
                         <td colspan="3">
                         <td>
