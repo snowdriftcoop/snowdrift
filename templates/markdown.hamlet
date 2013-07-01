@@ -61,11 +61,21 @@
         <p>
             1. ordered list
             <br>
-            2. after the first number, it auto-calculates so specific numbers aren't needed
+            2. after the first entry, numbers auto-calculate so specific numbers aren't needed,
+            <strong> #.
+            syntax works too
             <br>
-            a. lists can also use letters a. b. c. or Roman numerals i. ii. iii. iv. (these also auto-calculate)
+            a. lists can also use letters or Roman numerals i. ii. iii. iv. (these also auto-calculate)
             <br>
-            A.&nbsp;&nbsp;For <em>capital</em> letters or Roman numerals, include two spaces after the dot or use A) or (A) format (which also work for lower-case)
+            A.&nbsp;&nbsp;For
+            <em>capital
+            letters or Roman numerals, include
+            <em> two
+            spaces after the dot or use
+            <strong> A)
+            or
+            <strong> (A)
+            format (which also work for lower-case)
         <p>
             <blockquote>
                 > blockquote
