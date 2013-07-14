@@ -5,6 +5,9 @@
             We are creating a non-profit cooperative system to support
             <a href="@{WikiR "free-libre-open"}">free/libre/open
             software, cultural works (art, music, etc.), science, educational resources, and more&hellip;
+        <p>
+            When we become operational, Snowdrift.coop will offer a new way for creative projects
+            to engage with widespread communities of supporters to secure reliable ongoing funding and engagement.
         <h2>
             Why is this needed?
         <p>
@@ -28,7 +31,7 @@
         <h2>
             How can we better fund free/libre/open projects?
         <p>
-            Asking for donations helps but is rarely enough.
+            Simply asking for donations helps but is rarely enough.
             While some people donate, most of us put our limited resources toward scarce goods.
         <p>
             Consider a metaphor:
@@ -40,14 +43,15 @@
             <strong>Thankfully, there's a solution: We agree to do our part if everyone else does theirs.
             And in a long-term community, there's incentive to follow through and build trust.
         <p>
-            Hence, the Snowdrift.coop system. Instead of just donating and wishing others would do the same,
-            each patron funds a private account from which donations will later be drawn.
-            They then choose projects to support and make a pledge:
+            Hence, the Snowdrift.coop system:
+            Each patron first puts funds in a private account.
+            Then, instead of donating unilaterally, they make a pledge for each project they wish to support:
         <div align=center>
-            <em> "I will donate one cent per month for every 100 others who join me."
+            <em> "For every 100 others who join me, I will donate one cent per month."
         <p>
             If nobody joins you, it costs you nothing. If many join, then everyone together will make a great impact.
-            Our full pledge system has
+            If you are wealthier, you may pledge multiple shares.
+            Our full pledge system has many
             <strong>
                 <a href="@{WikiR "mechanism"}"> further details
             designed to maximize reliability, flexibility, and fairness; and to keep projects honorable and accountable.
@@ -71,8 +75,7 @@
             There are, however, several <a href="@{WikiR "threshold-systems"}"> problems with this approach</a>.
             Running this type of campaign can be costly and still fail,
             and successful projects are expected to become self-sustaining or to be complete.
-            Snowdrift.coop is a completely different system.
-            We provide long-term ongoing support, greater flexibility, and community engagement &mdash; all tailored to free/libre/open projects.
+            Snowdrift.coop is a completely different system providing long-term ongoing support, greater flexibility, and community engagement &mdash; all tailored to free/libre/open projects.
         <p>
             <em> Q. What about other other funding options?
         <p>
