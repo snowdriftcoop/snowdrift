@@ -4,7 +4,6 @@ module Model.Role.Internal where
 import Prelude
 
 import Database.Persist.TH
-import Database.Persist.Store
 
 import Web.PathPieces
 

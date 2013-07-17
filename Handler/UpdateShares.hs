@@ -7,14 +7,12 @@ import Model.Currency
 import Model.Shares
 import Model.Project
 
-import Database.Persist.GenericSql
-
 import Widgets.Sidebar
 
 confirmForm :: Int64 -> Form SharesPurchaseOrder
 confirmForm shares = renderDivs $ SharesPurchaseOrder <$> areq hiddenField "" (Just shares)
 
-getUpdateSharesR :: Text -> Handler RepHtml
+getUpdateSharesR :: Text -> Handler Html
 getUpdateSharesR project_handle = do
     ((result, _), _) <- runFormGet $ buySharesForm 0
     case result of
@@ -32,7 +30,7 @@ getUpdateSharesR project_handle = do
         FormFailure _ -> defaultLayout [whamlet| form failure |]
 
 
-postUpdateSharesR :: Text -> Handler RepHtml
+postUpdateSharesR :: Text -> Handler Html
 postUpdateSharesR project_handle = do
     user_id <- requireAuthId
     ((result, _), _) <- runFormPost $ confirmForm 1
@@ -52,10 +50,13 @@ postUpdateSharesR project_handle = do
                     Right _ -> return ()
                     Left (Entity pledge_id _) ->
                         if shares == 0
-                         then delete pledge_id
-                         else update pledge_id [ PledgeShares =. shares
-                                               , PledgeFundedShares =. shares
-                                               ]
+                         then delete $ from $ \ pledge -> do
+                            where_ (pledge ^. PledgeId ==. val pledge_id)
+                         else update $ \ pledge -> do
+                            set pledge [ PledgeShares =. val shares
+                                       , PledgeFundedShares =. val shares
+                                       ]
+                            where_ (pledge ^. PledgeId ==. val pledge_id)
 
                 updateShareValue project_id
 
@@ -65,7 +66,7 @@ postUpdateSharesR project_handle = do
 
                 if accountBalance account < user_outlay $* 3
                  then do
-                    rollback
+                    transactionUndo
                     return False
                  else return True
 

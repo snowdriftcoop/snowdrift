@@ -8,13 +8,13 @@ import Widgets.Sidebar
 contactForm :: Form Textarea
 contactForm = renderDivs $ areq textareaField "" Nothing
 
-getContactR :: Handler RepHtml
+getContactR :: Handler Html
 getContactR = do
     (contact_form, _) <- generateFormPost contactForm
     defaultLayout $(widgetFile "contact")
 
 
-postContactR :: Handler RepHtml
+postContactR :: Handler Html
 postContactR = do
     maybe_user_id <- maybeAuthId
     now <- liftIO getCurrentTime

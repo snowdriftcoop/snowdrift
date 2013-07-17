@@ -15,7 +15,7 @@ import Yesod.Auth.HashDB (setPassword)
 
 import Control.Exception.Lifted (throwIO, handle)
 
-hiddenMarkdown :: RenderMessage master FormMessage => Maybe Markdown -> AForm sub master (Maybe Markdown)
+hiddenMarkdown :: (RenderMessage (HandlerSite m) FormMessage, MonadHandler m) => Maybe Markdown -> AForm m (Maybe Markdown)
 hiddenMarkdown Nothing = fmap (fmap Markdown) $ aopt hiddenField "" Nothing
 hiddenMarkdown (Just (Markdown str)) = fmap (fmap Markdown) $ aopt hiddenField "" $ Just $ Just str
 
@@ -37,7 +37,7 @@ previewUserForm user = renderDivs $
         <*> hiddenMarkdown (userBlurb user)
         <*> hiddenMarkdown (userStatement user)
 
-getUserR :: UserId -> Handler RepHtml
+getUserR :: UserId -> Handler Html
 getUserR user_id = do
     viewer_id <- requireAuthId
     user <- runDB $ get404 user_id
@@ -54,7 +54,7 @@ renderUser viewer_id user_id user = do
             
 
 
-getEditUserR :: UserId -> Handler RepHtml
+getEditUserR :: UserId -> Handler Html
 getEditUserR user_id = do
     viewer_id <- requireAuthId
     when (user_id /= viewer_id) $ permissionDenied "You can only modify your own profile!"
@@ -65,7 +65,7 @@ getEditUserR user_id = do
     defaultLayout $(widgetFile "edit_user")
 
 
-postUserR :: UserId -> Handler RepHtml
+postUserR :: UserId -> Handler Html
 postUserR user_id = do
     viewer_id <- requireAuthId
     if user_id /= viewer_id
@@ -115,7 +115,7 @@ postUserR user_id = do
                 setMessage "Failed to update user."
                 redirect $ UserR user_id
 
-getUsersR :: Handler RepHtml
+getUsersR :: Handler Html
 getUsersR = do
     Entity _ viewer <- requireAuth
 
@@ -126,7 +126,7 @@ getUsersR = do
     defaultLayout $(widgetFile "users")
 
 
-getUserCreateR :: Handler RepHtml
+getUserCreateR :: Handler Html
 getUserCreateR = do
     (form, _) <- generateFormPost $ userCreateForm Nothing
     defaultLayout $ [whamlet|
@@ -136,7 +136,7 @@ getUserCreateR = do
     |]
 
 
-postUserCreateR :: Handler RepHtml
+postUserCreateR :: Handler Html
 postUserCreateR = do
     ((result, form), _) <- runFormPost $ userCreateForm Nothing
 

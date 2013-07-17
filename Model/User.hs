@@ -7,6 +7,8 @@ import qualified Data.Text as T
 
 import Data.Maybe
 
+import Control.Monad.Trans.Resource
+
 data UserUpdate =
     UserUpdate
         { userUpdateName :: Maybe Text
@@ -16,16 +18,16 @@ data UserUpdate =
         , userUpdateStatement :: Maybe Markdown
         }
 
-updateUser :: forall (m :: * -> *).
-                             PersistQuery m =>
-                             Key (UserGeneric (PersistMonadBackend m)) -> UserUpdate -> m ()
-updateUser user_id user_update = update user_id $ catMaybes
-        [ (UserName =.) . Just <$> userUpdateName user_update
-        , (UserAvatar =.) . Just <$> userUpdateAvatar user_update
-        , (UserIrcNick =.) . Just <$> userUpdateIrcNick user_update
-        , (UserStatement =.) . Just <$> userUpdateStatement user_update
-        , (UserBlurb =.) . Just <$> userUpdateBlurb user_update
-        ]
+updateUser :: (MonadLogger m, MonadIO m, MonadBaseControl IO m, MonadThrow m, MonadUnsafeIO m) => Key User -> UserUpdate -> SqlPersistT m ()
+updateUser user_id user_update = update $ \ user -> do
+        set user $ catMaybes
+            [ (UserName =.) . val . Just <$> userUpdateName user_update
+            , (UserAvatar =.) . val . Just <$> userUpdateAvatar user_update
+            , (UserIrcNick =.) . val . Just <$> userUpdateIrcNick user_update
+            , (UserStatement =.) . val . Just <$> userUpdateStatement user_update
+            , (UserBlurb =.) . val . Just <$> userUpdateBlurb user_update
+            ]
+        where_ ( user ^. UserId ==. val user_id )
 
 applyUserUpdate :: User -> UserUpdate -> User
 applyUserUpdate user user_update = user

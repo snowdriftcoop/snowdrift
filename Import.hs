@@ -4,11 +4,15 @@ module Import
     ( module Import
     ) where
 
+
 import           Prelude              as Import hiding (head, init, last,
                                                  readFile, tail, writeFile)
-import           Yesod                as Import hiding (Route (..))
+import           Yesod                as Import hiding (Route (..), (||.), (==.), (!=.), (<.), (<=.), (>.), (>=.), (=.), (+=.), (-=.), (*=.), (/=.), selectSource, delete, update, count, Value)
 import           Yesod.Auth           as Import
 import           Yesod.Markdown       as Import (markdownToHtml, Markdown)
+
+-- import           Database.Esqueleto   as Import (val, select, from, on, where_, InnerJoin (..), (^.))
+import           Database.Esqueleto   as Import
 
 import           Control.Applicative  as Import (pure, (<$>), (<*>))
 import           Data.Text            as Import (Text)
@@ -19,7 +23,7 @@ import           Settings             as Import
 import           Settings.Development as Import
 import           Settings.StaticFiles as Import
 
-import           Data.Maybe           as Import (fromMaybe, listToMaybe, mapMaybe, isNothing, isJust)
+import           Data.Maybe           as Import (fromMaybe, listToMaybe, mapMaybe, isJust)
 
 import           Data.Int             as Import (Int64)
 

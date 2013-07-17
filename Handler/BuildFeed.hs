@@ -8,7 +8,7 @@ import qualified Data.Text as T
 
 import Text.Blaze.Html5 (br)
 
-getBuildFeedR :: Handler RepAtomRss
+getBuildFeedR :: Handler TypedContent
 getBuildFeedR = do
     builds :: [Build] <- fmap (map entityVal) $ runDB $ selectList [] [Desc BuildBootTime]
 
@@ -16,7 +16,7 @@ getBuildFeedR = do
         feed_url = BuildFeedR
         home_url = HomeR
         author = "Snowdrift Team"
-        desc = "Deployments of the Snowdrift site"
+        description = "Deployments of the Snowdrift site"
         lang = "en"
         time :: UTCTime
         (time:_) = map buildBootTime builds
@@ -33,4 +33,4 @@ getBuildFeedR = do
 
         return entry
 
-    newsFeed $ Feed title feed_url home_url author desc lang time entries
+    newsFeed $ Feed title feed_url home_url author description lang time entries

@@ -4,11 +4,6 @@ import Import
 
 import Model.Currency
 
-import Database.Persist.GenericSql
-
-import Control.Monad.IO.Class (MonadIO)
-import Control.Monad.Logger (MonadLogger)
-
 import Control.Monad.Trans.Resource
 
 data ProjectSummary =
@@ -20,8 +15,12 @@ data ProjectSummary =
         , summaryShareCost :: Milray
         }
 
-summarizeProject :: (MonadIO m, MonadBaseControl IO m, MonadLogger m, MonadUnsafeIO m, MonadThrow m, MonadResource m) => (Entity Project, [Entity Pledge]) -> SqlPersist m ProjectSummary
-summarizeProject (project, pledges) = do
+summarizeProject :: (MonadIO m, MonadBaseControl IO m, MonadLogger m, MonadUnsafeIO m, MonadThrow m, MonadResource m) => Entity Project -> SqlPersistT m ProjectSummary
+summarizeProject project = do
+    pledges <- select $ from $ \ pledge -> do
+        where_ ( pledge ^. PledgeProject ==. val (entityKey project) )
+        return pledge
+
     let share_value = projectShareValue $ entityVal project
         share_count = ShareCount $ sum . map (pledgeFundedShares . entityVal) $ pledges
         user_count = UserCount $ fromIntegral $ length pledges
@@ -29,9 +28,12 @@ summarizeProject (project, pledges) = do
     return $ ProjectSummary (projectName $ entityVal project) (projectHandle $ entityVal project) user_count share_count share_value
 
 
-getProjectShares :: (MonadUnsafeIO m, MonadThrow m, MonadIO m, MonadBaseControl IO m, MonadLogger m, MonadResource m) => ProjectId -> SqlPersist m [Int64]
+getProjectShares :: (MonadUnsafeIO m, MonadThrow m, MonadIO m, MonadBaseControl IO m, MonadLogger m, MonadResource m) => ProjectId -> SqlPersistT m [Int64]
 getProjectShares project_id = do
-    pledges <- selectList [ PledgeProject ==. project_id, PledgeFundedShares >. 0 ] []
+    pledges <- select $ from $ \ pledge -> do
+        where_ ( pledge ^. PledgeProject ==. val project_id &&. pledge ^. PledgeFundedShares >. val 0)
+        return pledge
+
     return $ map (pledgeFundedShares . entityVal) pledges
 
 
@@ -45,11 +47,13 @@ projectComputeShareValue pledges =
      in Milray 1 $* (multiplier * (num_users - 1))
 
 
-updateShareValue :: (MonadUnsafeIO m, MonadThrow m, MonadIO m, MonadBaseControl IO m, MonadLogger m, MonadResource m) => ProjectId -> SqlPersist m ()
+updateShareValue :: (MonadUnsafeIO m, MonadThrow m, MonadIO m, MonadBaseControl IO m, MonadLogger m, MonadResource m) => ProjectId -> SqlPersistT m ()
 updateShareValue project_id = do
     pledges <- getProjectShares project_id
     
-    update project_id [ ProjectShareValue =. projectComputeShareValue pledges ]
+    update $ \ project -> do
+        set project  [ ProjectShareValue =. val (projectComputeShareValue pledges) ]
+        where_ (project ^. ProjectId ==. val project_id)
 
 {-
  - TODO

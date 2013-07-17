@@ -18,7 +18,7 @@ import Widgets.Sidebar
 import Widgets.Markdown
 
 import Database.Esqueleto
-import Database.Persist.GenericSql.Raw
+-- import Database.Persist.Sql.Raw
 
 import Yesod.Markdown
 
@@ -28,7 +28,7 @@ lookupGetParamDefault name def = do
     return $ fromMaybe def $ maybe_value >>= readMaybe . T.unpack
 
 
-getProjectsR :: Handler RepHtml
+getProjectsR :: Handler Html
 getProjectsR = do
     page <- lookupGetParamDefault "page" 0
     per_page <- lookupGetParamDefault "count" 20
@@ -47,7 +47,7 @@ getProjectsR = do
     defaultLayout $(widgetFile "projects")
 
 
-getProjectR :: Text -> Handler RepHtml
+getProjectR :: Text -> Handler Html
 getProjectR project_handle = do
     maybe_viewer_id <- maybeAuthId
 
@@ -64,10 +64,10 @@ getProjectR project_handle = do
 
 
 renderProject :: Maybe Text
-                 -> ProjectGeneric SqlBackend
+                 -> Project
                  -> [Int64]
-                 -> Maybe (Entity (PledgeGeneric SqlBackend))
-                 -> GWidget App App ()
+                 -> Maybe (Entity Pledge)
+                 -> WidgetT App IO ()
 renderProject maybe_project_handle project pledges pledge = do
     let share_value = projectShareValue project
         users = fromIntegral $ length pledges
@@ -77,7 +77,7 @@ renderProject maybe_project_handle project pledges pledge = do
 
         maybe_shares = pledgeShares . entityVal <$> pledge
 
-    ((_, update_shares), _) <- lift $ generateFormGet $ buySharesForm $ fromMaybe 0 maybe_shares
+    ((_, update_shares), _) <- handlerToWidget $ generateFormGet $ buySharesForm $ fromMaybe 0 maybe_shares
 
     $(widgetFile "project")
 
@@ -112,7 +112,7 @@ previewProjectForm project =
         <*> (map T.strip . T.splitOn "," <$> areq hiddenField "" (T.intercalate ", " . snd <$> project))
 
 
-getEditProjectR :: Text -> Handler RepHtml
+getEditProjectR :: Text -> Handler Html
 getEditProjectR project_handle = do
     Entity project_id project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
 
@@ -128,7 +128,7 @@ getEditProjectR project_handle = do
     defaultLayout $(widgetFile "edit_project")
 
 
-postProjectR :: Text -> Handler RepHtml
+postProjectR :: Text -> Handler Html
 postProjectR project_handle = do
     viewer <- requireAuth
 
@@ -204,7 +204,7 @@ postProjectR project_handle = do
             redirect $ ProjectR project_handle
 
 
-getProjectPatronsR :: Text -> Handler RepHtml
+getProjectPatronsR :: Text -> Handler Html
 getProjectPatronsR project_handle = do
     page <- lookupGetParamDefault "page" 0
     per_page <- lookupGetParamDefault "count" 20

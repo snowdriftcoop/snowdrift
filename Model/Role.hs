@@ -47,7 +47,7 @@ roleAbbrev CommitteeMember = "M"
 roleAbbrev Editor = "E"
 roleAbbrev Admin = "A"
 
-roleField :: RenderMessage master FormMessage => Role -> Field sub master Role
+roleField :: (RenderMessage (HandlerSite m) FormMessage, m ~ HandlerT site IO) => Role -> Field m Role
 roleField role =
     let roles = filter (roleCanInvite role) [GeneralPublic .. Admin]
      in case roles of

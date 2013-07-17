@@ -8,7 +8,6 @@ import Data.Algorithm.Diff
 import Yesod.Markdown
 
 import Database.Persist.TH
-import Database.Persist.Store (PersistField (..))
 
 import Data.Maybe
 

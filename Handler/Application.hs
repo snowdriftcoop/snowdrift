@@ -6,7 +6,7 @@ import Model.User
 
 import Widgets.Sidebar
 
-getApplicationR :: CommitteeApplicationId -> Handler RepHtml
+getApplicationR :: CommitteeApplicationId -> Handler Html
 getApplicationR application_id = do
     (application, user) <- runDB $ do
         application <- get404 application_id

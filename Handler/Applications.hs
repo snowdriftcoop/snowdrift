@@ -6,7 +6,7 @@ import Model.Role
 
 import Widgets.Sidebar
 
-getApplicationsR :: Handler RepHtml
+getApplicationsR :: Handler Html
 getApplicationsR = do
     Entity viewer_id viewer <- requireAuth
     now <- liftIO getCurrentTime
@@ -16,7 +16,9 @@ getApplicationsR = do
          then runDB $ selectList [] [ Desc CommitteeApplicationCreatedTs ]
          else return []
 
-    _ <- runDB $ update viewer_id [ UserReadApplications =. now ]
+    _ <- runDB $ update $ \ user -> do
+            set user [ UserReadApplications =. val now ]
+            where_ (user ^. UserId ==. val viewer_id)
 
 
     defaultLayout $(widgetFile "applications")

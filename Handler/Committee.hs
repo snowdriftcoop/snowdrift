@@ -17,7 +17,7 @@ committeeForm now (Entity user_id user) = renderBootstrap $
         <*> areq textareaField "Personal statement (why you want to join the committee):" Nothing
         <*> aopt textareaField "Any other comments:" Nothing
 
-getCommitteeR :: Handler RepHtml
+getCommitteeR :: Handler Html
 getCommitteeR = do
     user <- requireAuth
     now <- liftIO getCurrentTime
@@ -25,7 +25,7 @@ getCommitteeR = do
     defaultLayout $(widgetFile "committee")
 
 
-postCommitteeR :: Handler RepHtml
+postCommitteeR :: Handler Html
 postCommitteeR = do
     user <- requireAuth
     now <- liftIO getCurrentTime

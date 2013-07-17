@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleInstances #-}
+
 module Foundation where
 
 import Prelude
@@ -12,19 +13,20 @@ import Yesod.Default.Util (addStaticContentExternal)
 import Network.HTTP.Conduit (Manager)
 import qualified Settings
 import Settings.Development (development)
-import qualified Database.Persist.Store
+import qualified Database.Persist
+import Database.Persist.Sql (SqlPersistT)
 import Settings.StaticFiles
-import Database.Persist.GenericSql
 import Settings (widgetFile, Extra (..))
 import Model
 import Text.Jasmine (minifym)
-import Web.ClientSession (getKey)
 import Text.Hamlet (hamletFile)
+import System.Log.FastLogger (Logger)
 
 import Model.Currency
 import Model.Role.Internal
 
 import Control.Applicative
+import Control.Monad.Trans.Resource
 
 import Data.Int (Int64)
 import Data.Text (Text)
@@ -50,9 +52,10 @@ import Data.Time
 data App = App
     { settings :: AppConfig DefaultEnv Extra
     , getStatic :: Static -- ^ Settings for static file serving.
-    , connPool :: Database.Persist.Store.PersistConfigPool Settings.PersistConfig -- ^ Database connection pool.
+    , connPool :: Database.Persist.PersistConfigPool Settings.PersistConf -- ^ Database connection pool.
     , httpManager :: Manager
-    , persistConfig :: Settings.PersistConfig
+    , persistConfig :: Settings.PersistConf
+    , appLogger :: Logger
     }
 
 
@@ -84,7 +87,7 @@ mkMessage "App" "messages" "en"
 -- split these actions into two functions and place them in separate files.
 mkYesodData "App" $(parseRoutesFile "config/routes")
 
-type Form x = Html -> MForm App App (FormResult x, Widget)
+type Form x = Html -> MForm (HandlerT App IO) (FormResult x, Widget)
 
 licenseText :: LB.ByteString
 licenseText = E.encodeUtf8 $ renderJavascriptUrl (\ _ _ -> T.empty) [julius|
@@ -118,10 +121,9 @@ instance Yesod App where
 
     -- Store session data on the client in encrypted cookies,
     -- default session idle timeout is 120 minutes
-    makeSessionBackend _ = do
-        key <- getKey "config/client_session_key.aes"
-        (getCachedDate, _closeDateCacher) <- clientSessionDateCacher (48 * 60 * 60)
-        return . Just $ clientSessionBackend2 key getCachedDate
+    makeSessionBackend _ = fmap Just $ defaultClientSessionBackend
+        (48 * 60 * 60)
+        "config/client_session_key.aes"
 
     defaultLayout widget = do
         master <- getYesod
@@ -138,7 +140,7 @@ instance Yesod App where
             addStylesheet $ StaticR css_bootstrap_min_css
             addScript $ StaticR js_bootstrap_min_js
             $(widgetFile "default-layout")
-        hamletToRepHtml $(hamletFile "templates/default-layout-wrapper.hamlet")
+        giveUrlRenderer $(hamletFile "templates/default-layout-wrapper.hamlet")
 
     -- This is done to provide an optimization for serving static files from
     -- a separate domain. Please see the staticRoot setting in Settings.hs
@@ -153,27 +155,29 @@ instance Yesod App where
     -- The page to be redirected to when authentication is required.
     authRoute _ = Just $ AuthR LoginR
 
-    errorHandler (PermissionDenied _) = fmap chooseRep $ defaultLayout $ do
-        setTitle "Permission Denied"
-        maybe_user <- lift maybeAuth
-        toWidget [hamlet|$newline never
-            <h1>Permission Denied
-            <p>
-                $maybe _ <- maybe_user
-                    You do not have permission to view this page at this time. #
-                    If you think you should, #
-                    <a href="@{ContactR}">let us know #
-                    and we'll fix it for you or everyone. #
-                    Otherwise, you can always go to our #
-                    <a href="@{HomeR}">main page
-                    .
-                $nothing
-                    You are not logged in, and this page is not publically visible. #
-                    <a href="@{AuthR LoginR}">Log in or create an account #
-                    or return to our #
-                    <a href="@{HomeR}">main page
-                    .
-        |]
+    errorHandler (PermissionDenied _) = do
+        maybe_user <- maybeAuth
+        selectRep $ do
+        provideRep $ defaultLayout $ do
+            setTitle "Permission Denied"
+            toWidget [hamlet|$newline never
+                <h1>Permission Denied
+                <p>
+                    $maybe _ <- maybe_user
+                        You do not have permission to view this page at this time. #
+                        If you think you should, #
+                        <a href="@{ContactR}">let us know #
+                        and we'll fix it for you or everyone. #
+                        Otherwise, you can always go to our #
+                        <a href="@{HomeR}">main page
+                        .
+                    $nothing
+                        You are not logged in, and this page is not publically visible. #
+                        <a href="@{AuthR LoginR}">Log in or create an account #
+                        or return to our #
+                        <a href="@{HomeR}">main page
+                        .
+            |]
 
     errorHandler other_error = defaultErrorHandler other_error
 
@@ -251,7 +255,7 @@ instance Yesod App where
         role <- maybe Uninvited (userRole . entityVal) <$> maybeAuth
         return $ roleCanView role write route
 
-require :: (WikiPage -> Role) -> Text -> GHandler sub App AuthResult
+require :: (WikiPage -> Role) -> Text -> HandlerT App IO AuthResult
 require permission target = do
     role <- maybe Uninvited (userRole . entityVal) <$> maybeAuth
     maybe_page <- runDB $ getBy $ UniqueWikiTarget target
@@ -279,19 +283,15 @@ roleCanView Public _ _ = error "No user should actually have the role 'Public'"
 
 -- How to run database actions.
 instance YesodPersist App where
-    type YesodPersistBackend App = SqlPersist
-    runDB f = do
-        master <- getYesod
-        Database.Persist.Store.runPool
-            (persistConfig master)
-            f
-            (connPool master)
-
+    type YesodPersistBackend App = SqlPersistT
+    runDB = defaultRunDB persistConfig connPool
+instance YesodPersistRunner App where
+    getDBRunner = defaultGetDBRunner connPool
 
 authBrowserIdFixed :: AuthPlugin App
 authBrowserIdFixed =
     let complete = PluginR "browserid" []
-	login :: (Route Auth -> Route App) -> GWidget sub App ()
+	login :: (Route Auth -> Route App) -> WidgetT App IO ()
         login toMaster = do
             addScriptRemote browserIdJs
 
@@ -327,7 +327,7 @@ authBrowserIdFixed =
                         <img src="https://browserid.org/i/persona_sign_in_blue.png">
             |]
 
-     in authBrowserId { apLogin = login }
+     in (authBrowserId def) { apLogin = login }
 
 
 instance YesodAuth App where
@@ -353,10 +353,10 @@ instance YesodAuth App where
     authHttpManager = httpManager
 
     loginHandler = do
-        app <- getYesod
-        rtm <- getRouteToMaster
+        app <- lift getYesod
+        toParent <- getRouteToParent
 
-        defaultLayout $(widgetFile "auth")
+        lift $ defaultLayout $(widgetFile "auth")
 
 
 
@@ -365,7 +365,7 @@ instance YesodJquery App
 class HasGithubRepo a where
     getGithubRepo :: a (Maybe Text)
 
-instance HasGithubRepo (GHandler App App) where
+instance (MonadBaseControl IO m, MonadUnsafeIO m, MonadIO m, MonadThrow m) => HasGithubRepo (HandlerT App m) where
     getGithubRepo = extraGithubRepo . appExtra . settings <$> getYesod
 
 -- This instance is required to use forms. You can modify renderMessage to

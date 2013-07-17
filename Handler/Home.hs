@@ -5,6 +5,6 @@ import Import
 
 import Widgets.Sidebar
 
-getHomeR :: Handler RepHtml
+getHomeR :: Handler Html
 getHomeR = defaultLayout $(widgetFile "homepage")
 

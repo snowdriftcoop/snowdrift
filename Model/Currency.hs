@@ -6,7 +6,8 @@ import qualified Data.Text as T
 
 import Prelude
 
-import Database.Persist.Store
+import Database.Persist
+import Database.Persist.Sql
 
 
 class Currency a where
@@ -24,6 +25,8 @@ instance PersistField Milray where
     toPersistValue (Milray i) = PersistInt64 i
     fromPersistValue (PersistInt64 i) = Right $ Milray i
     fromPersistValue x = Left $ T.pack $ "Expected Integer, received: " ++ show x
+
+instance PersistFieldSql Milray where
     sqlType _ = SqlInt64
 
 instance Currency Milray where

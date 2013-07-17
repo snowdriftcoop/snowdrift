@@ -15,7 +15,7 @@ data Lib =
         , libOrigRoute :: Text
         }
 
-getJsLicenseR :: Handler RepHtml
+getJsLicenseR :: Handler Html
 getJsLicenseR = do
     app <- getYesod
     render <- getUrlRender

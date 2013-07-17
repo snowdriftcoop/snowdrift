@@ -18,16 +18,16 @@ import Data.Text.PrettyHtml
 
 import Prelude (head)
 
-import Data.Time (addUTCTime)
+import Data.Time (addUTCTime) 
 import Data.List (sortBy)
 
 import Data.Tree (unfoldTreeM_BF, levels)
 
-import Data.Function (on)
+import qualified Data.Function as FUN
 
 
 
-getRepoFeedR :: HasGithubRepo Handler => Handler RepAtomRss
+getRepoFeedR :: HasGithubRepo Handler => Handler TypedContent
 getRepoFeedR = do
     now <- liftIO getCurrentTime
     let bound = addUTCTime (-2000000) now
@@ -44,7 +44,7 @@ getRepoFeedR = do
         feed_url = RepoFeedR
         home_url = HomeR
         author = "Snowdrift Team"
-        desc = "Commits to the Snowdrift repository."
+        description = "Commits to the Snowdrift repository."
         lang = "en"
         -- commitTime = toUTCTime . personTime . commitAuthor
         time = commitTime $ head commits
@@ -54,7 +54,7 @@ getRepoFeedR = do
             html <- unlinesHtml <$> mapM (prettyHtml prettyThings) ls
             return $ FeedEntry (ProjectR "snowdrift") (commitTime commit) (fromMaybe "empty commit message" $ listToMaybe ls) html
 
-    newsFeed $ Feed title feed_url home_url author desc lang time entries
+    newsFeed $ Feed title feed_url home_url author description lang time entries
 
 
 commitTime :: Commit -> UTCTime
@@ -68,5 +68,5 @@ getCommits repo ref bound = do
                       then (commit, [])
                       else (commit, commitParents commit)
 
-        return $ sortBy (flip compare `on` commitTime) $ filter (\ a -> length (commitParents a) <= 1) $ concat $ levels tree
+        return $ sortBy (flip compare `FUN.on` commitTime) $ filter (\ a -> length (commitParents a) <= 1) $ concat $ levels tree
 

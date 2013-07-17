@@ -6,14 +6,18 @@ import Import
 import Model.Project
 import Model.Currency
 
-import Database.Persist.Query.Join.Sql (runJoin)
-import Database.Persist.Query.Join (selectOneMany, SelectOneMany (..))
+-- import Database.Persist.Query.Join.Sql (runJoin)
+-- import Database.Persist.Query.Join (selectOneMany, SelectOneMany (..))
 
 
 project_pledges :: UserId -> Widget
 project_pledges user_id = do
-    project_summaries <- lift $ runDB $ do
-        projects <- runJoin $ (selectOneMany (PledgeProject <-.) pledgeProject) { somFilterMany = [ PledgeUser ==. user_id ] }
+    project_summaries :: [ProjectSummary] <- handlerToWidget $ runDB $ do
+        projects :: [Entity Project] <- select $ from $ \ (project `InnerJoin` pledge) -> do
+            on (project ^. ProjectId ==. pledge ^. PledgeProject)
+            where_ ( pledge ^. PledgeUser ==. val user_id )
+            return project
+
         mapM summarizeProject projects
 
     let cost = summaryShareCost

@@ -26,17 +26,15 @@ import Data.Tree
 
 import Control.Arrow ((&&&))
 
-import Database.Persist.Store
-
 import Data.Time
 
 import Data.Algorithm.Diff (getDiff, Diff (..))
 
-import Data.Function (on)
+import qualified Data.Function as FUN
 
 import Text.Blaze.Html5 (ins, del, br)
 
-getWikiR :: Text -> Handler RepHtml
+getWikiR :: Text -> Handler Html
 getWikiR target = do
     Entity _ page <- runDB $ do
         page_entity <- getBy404 $ UniqueWikiTarget target
@@ -61,7 +59,7 @@ getWikiR target = do
     defaultLayout $ renderWiki target can_edit can_view_meta page
 
 
-getWikiPagesR :: Handler RepHtml
+getWikiPagesR :: Handler Html
 getWikiPagesR = do
     Entity _ user <- requireAuth
 
@@ -77,7 +75,7 @@ renderWiki target can_edit can_view_meta page = $(widgetFile "wiki")
 
 
 
-postWikiR :: Text -> Handler RepHtml
+postWikiR :: Text -> Handler Html
 postWikiR target = do
     Entity user_id user <- requireAuth
     now <- liftIO getCurrentTime
@@ -107,11 +105,17 @@ postWikiR target = do
 
                     Just x | x == action -> do
                         runDB $ do
-                            update page_id [WikiPageContent =. content]
+                            update $ \ wiki_page -> do
+                                where_ ( wiki_page ^. WikiPageId ==. val page_id )
+                                set wiki_page [WikiPageContent =. val content]
+
                             edit_id <- insert $ WikiEdit now user_id page_id content comment
                             either_last_edit <- insertBy $ WikiLastEdit page_id edit_id
                             case either_last_edit of
-                                Left (Entity to_update _) -> update to_update [WikiLastEditEdit =. edit_id]
+                                Left (Entity to_update _) -> update $ \ wiki_last_edit -> do
+                                    set wiki_last_edit [WikiLastEditEdit =. val edit_id]
+                                    where_ ( wiki_last_edit ^. WikiLastEditId ==. val to_update )
+
                                 Right _ -> return ()
 
                         setMessage "Updated."
@@ -126,7 +130,7 @@ postWikiR target = do
         FormFailure msgs -> error $ "Error submitting form: " ++ T.unpack (T.concat msgs)
 
 
-getEditWikiR :: Text -> Handler RepHtml
+getEditWikiR :: Text -> Handler Html
 getEditWikiR target = do
     Entity user_id user <- requireAuth
     (Entity page_id page, Entity _ last_edit) <- runDB $ do
@@ -141,7 +145,7 @@ getEditWikiR target = do
     defaultLayout $(widgetFile "edit_wiki")
 
 
-getNewWikiR :: Text -> Handler RepHtml
+getNewWikiR :: Text -> Handler Html
 getNewWikiR target = do
     Entity user_id user <- requireAuth
 
@@ -152,7 +156,7 @@ getNewWikiR target = do
     defaultLayout $(widgetFile "new_wiki")
 
 
-postNewWikiR :: Text -> Handler RepHtml
+postNewWikiR :: Text -> Handler Html
 postNewWikiR target = do
     Entity user_id user <- requireAuth
     when (userRole user < CommitteeMember) $ permissionDenied "You do not have sufficient privileges to create a new page."
@@ -198,7 +202,7 @@ buildCommentTree root rest =
      in unfoldTree treeOfList (root, rest)
 
 
-getDiscussWikiR :: Text -> Handler RepHtml
+getDiscussWikiR :: Text -> Handler Html
 getDiscussWikiR target = do
     Entity user_id user <- requireAuth
     Entity page_id page  <- runDB $ getBy404 $ UniqueWikiTarget target
@@ -206,8 +210,15 @@ getDiscussWikiR target = do
     let can_edit = userRole user >= wikiPageCanEdit page
 
     (roots, rest, users, retraction_map) <- runDB $ do
-        roots <- selectList [ CommentPage ==. page_id, CommentParent ==. Nothing ] [Asc CommentCreatedTs]
-        rest <- selectList [ CommentPage ==. page_id, CommentParent !=. Nothing ] [Asc CommentParent, Asc CommentCreatedTs]
+        roots <- select $ from $ \ comment -> do
+            where_ ( comment ^. CommentPage ==. val page_id &&. comment ^. CommentParent ==. val Nothing )
+            orderBy [asc (comment ^. CommentCreatedTs)]
+            return comment
+
+        rest <- select $ from $ \ comment -> do
+            where_ ( comment ^. CommentPage ==. val page_id &&. comment ^. CommentParent !=. val Nothing )
+            orderBy [asc (comment ^. CommentParent), asc (comment ^. CommentCreatedTs)]
+            return comment
 
         let get_user_ids = S.fromList . map (commentUser . entityVal) . F.toList
             user_id_list = S.toList $ get_user_ids roots `S.union` get_user_ids rest
@@ -226,37 +237,53 @@ getDiscussWikiR target = do
     defaultLayout $(widgetFile "wiki_discuss")
 
 
-getDiscussCommentR :: Text -> CommentId -> Handler RepHtml
+getDiscussCommentR :: Text -> CommentId -> Handler Html
 getDiscussCommentR target comment_id = do
-    Entity user_id user <- requireAuth
+    Entity viewer_id viewer <- requireAuth
     Entity page_id page  <- runDB $ getBy404 $ UniqueWikiTarget target
 
-    let can_edit = userRole user >= wikiPageCanEdit page
+    let can_edit = userRole viewer >= wikiPageCanEdit page
 
     (root, rest, users, earlier_retractions, retraction_map) <- runDB $ do
         root <- get404 comment_id
 
         when (commentPage root /= page_id) $ error "Selected comment does not match selected page"
 
-        subtree <- selectList [CommentAncestorAncestor ==. comment_id] []
-        rest <- selectList [CommentPage ==. page_id, CommentParent !=. Nothing, CommentId >. comment_id, CommentId <-. map (commentAncestorComment . entityVal) subtree] [Asc CommentParent, Asc CommentCreatedTs]
+        subtree <- select $ from $ \ comment -> do
+            where_ ( comment ^. CommentAncestorAncestor ==. val comment_id )
+            return comment
+    
+        rest <- select $ from $ \ comment -> do
+            where_ ( comment ^. CommentPage ==. val page_id
+                    &&. comment ^. CommentParent !=. val Nothing
+                    &&. comment ^. CommentId >. val comment_id
+                    &&. comment ^. CommentId `in_` valList (map (commentAncestorComment . entityVal) subtree))
+            orderBy [asc (comment ^. CommentParent), asc (comment ^. CommentCreatedTs)]
+            return comment
 
         let get_user_ids = S.fromList . map (commentUser . entityVal) . F.toList
             user_id_list = S.toList $ S.insert (commentUser root) $ get_user_ids rest
 
-        user_entities <- selectList [ UserId <-. user_id_list ] []
+        user_entities <- select $ from $ \ user -> do
+            where_ ( user ^. UserId `in_` valList user_id_list )
+            return user
 
         let users = M.fromList $ map (entityKey &&& id) user_entities
 
-        ancestors <- selectList [ CommentAncestorComment ==. comment_id ] []
-        earlier_retractions <- map entityVal <$> selectList [ CommentRetractionComment <-. map (commentAncestorAncestor . entityVal) ancestors ] []
-        retraction_map <- M.fromList . map ((commentRetractionComment &&& id) . entityVal) <$> selectList [ CommentRetractionComment <-. comment_id : map entityKey rest ] []
+        earlier_retractions <- fmap (map entityVal) $ select $ from $ \ (comment_ancestor `InnerJoin` retraction) -> do
+            on (comment_ancestor ^. CommentAncestorAncestor ==. retraction ^. CommentRetractionComment)
+            where_ ( comment_ancestor ^. CommentAncestorComment ==. val comment_id )
+            return retraction
+
+        retraction_map <- fmap (M.fromList . map ((commentRetractionComment &&& id) . entityVal)) $ select $ from $ \ retraction -> do
+            where_ ( retraction ^. CommentRetractionComment `in_` valList (comment_id : map entityKey rest) )
+            return retraction
         
         return (root, rest, users, earlier_retractions, retraction_map)
 
     (comment_form, _) <- generateFormPost $ commentForm (Just comment_id) Nothing
 
-    defaultLayout $ renderDiscussComment user_id target can_edit comment_form (Entity comment_id root) rest users earlier_retractions retraction_map
+    defaultLayout $ renderDiscussComment viewer_id target can_edit comment_form (Entity comment_id root) rest users earlier_retractions retraction_map
 
 
 renderDiscussComment :: UserId -> Text -> Bool -> Widget -> Entity Comment -> [Entity Comment] -> M.Map UserId (Entity User) -> [CommentRetraction] -> M.Map CommentId CommentRetraction -> Widget
@@ -269,7 +296,7 @@ renderDiscussComment viewer_id target can_edit comment_form root rest users earl
 
 
 
-postDiscussWikiR :: Text -> Handler RepHtml
+postDiscussWikiR :: Text -> Handler Html
 postDiscussWikiR target = do
     Entity user_id user <- requireAuth
     Entity page_id _ <- runDB $ getBy404 $ UniqueWikiTarget target
@@ -295,8 +322,13 @@ postDiscussWikiR target = do
                     earlier_retractions <- runDB $
                         case maybe_parent_id of
                             Just parent_id -> do
-                                ancestors <- (parent_id :) . map (commentAncestorAncestor . entityVal) <$> selectList [ CommentAncestorComment ==. parent_id ] []
-                                map entityVal <$> selectList [ CommentRetractionComment <-. ancestors ] []
+                                ancestors <- fmap ((parent_id :) . map (commentAncestorAncestor . entityVal)) $ select $ from $ \ ancestor -> do
+                                    where_ ( ancestor ^. CommentAncestorComment ==. val parent_id )
+                                    return ancestor
+
+                                fmap (map entityVal) $ select $ from $ \ retraction -> do
+                                    where_ ( retraction ^. CommentRetractionComment `in_` valList ancestors )
+                                    return retraction
 
                             Nothing -> return []
 
@@ -318,7 +350,13 @@ postDiscussWikiR target = do
                             tag_id <- fmap (either entityKey id) $ insertBy $ Tag tag
                             insert $ CommentTag comment_id tag_id user_id
 
-                        let getParentAncestors parent_id = (parent_id :) . map (commentAncestorAncestor . entityVal) <$> selectList [ CommentAncestorComment ==. parent_id ] []
+                        let getParentAncestors parent_id = do 
+                                comment_ancestor_entities <- select $ from $ \ comment_ancestor -> do
+                                    where_ ( comment_ancestor ^. CommentAncestorComment ==. val parent_id )
+                                    return comment_ancestor
+
+                                let ancestors = map (commentAncestorAncestor . entityVal) comment_ancestor_entities
+                                return $ parent_id : ancestors
 
                         ancestors <- maybe (return []) getParentAncestors maybe_parent_id
 
@@ -333,28 +371,39 @@ postDiscussWikiR target = do
         FormFailure msgs -> error $ "Error submitting form: " ++ T.unpack (T.intercalate "\n" msgs)
 
 
-getWikiNewCommentsR :: Handler RepHtml
+getWikiNewCommentsR :: Handler Html
 getWikiNewCommentsR = do
-    Entity user_id user <- requireAuth
+    Entity viewer_id viewer <- requireAuth
 
     maybe_from <- fmap (Key . PersistInt64 . read . T.unpack) <$> lookupGetParam "from"
 
     now <- liftIO getCurrentTime
 
     (comments, pages, users, retraction_map) <- runDB $ do
-        unfiltered_pages :: [Entity WikiPage] <- selectList [] []
+        unfiltered_pages :: [Entity WikiPage] <- select $ from $ \ page -> return page
 
-        let pages = M.fromList $ map (entityKey &&& id) $ filter ((userRole user >=) . wikiPageCanViewMeta . entityVal) unfiltered_pages
-            filters = case maybe_from of
-                        Nothing -> [ CommentPage <-. M.keys pages ]
-                        Just from -> [ CommentPage <-. M.keys pages, CommentId <=. from ]
+        let pages = M.fromList $ map (entityKey &&& id) $ filter ((userRole viewer >=) . wikiPageCanViewMeta . entityVal) unfiltered_pages
 
-        comments <- selectList filters [ Desc CommentId, LimitTo 50 ]
+        comments <- select $ from $ \ comment -> do
+            where_ $ case maybe_from of
+                Nothing -> ( comment ^. CommentPage `in_` valList (M.keys pages) )
+                Just from_comment -> ( comment ^. CommentPage `in_` valList (M.keys pages)
+                                &&. comment ^. CommentId <=. val from_comment )
+            orderBy [ desc (comment ^. CommentId) ]
+            limit 50
+            return comment
 
         let user_ids = S.toList $ S.fromList $ map (commentUser . entityVal) comments
-        users <- fmap (M.fromList . map (entityKey &&& id)) $ selectList [ UserId <-. user_ids ] []
+        users <- fmap (M.fromList . map (entityKey &&& id)) $ select $ from $ \ user -> do
+            where_ ( user ^. UserId `in_` valList user_ids )
+            return user
 
-        retraction_map <- M.fromList . map ((commentRetractionComment &&& id) . entityVal) <$> selectList [ CommentRetractionComment <-. map entityKey comments ] []
+        retraction_map <- do
+            retractions <- select $ from $ \ comment_retraction -> do
+                where_ ( comment_retraction ^. CommentRetractionComment `in_` valList (map entityKey comments) )
+                return comment_retraction
+
+            return . M.fromList . map ((commentRetractionComment &&& id) . entityVal) $ retractions
 
         return (comments, pages, users, retraction_map)
 
@@ -363,13 +412,18 @@ getWikiNewCommentsR = do
             if null comments
              then [whamlet|no new comments|]
              else forM_ comments $ \ (Entity comment_id comment) -> do
-                earlier_retractions <- lift $ runDB $ do
-                    ancestors <- selectList [ CommentAncestorComment ==. comment_id ] []
-                    map entityVal <$> selectList [ CommentRetractionComment <-. map (commentAncestorAncestor . entityVal) ancestors ] [ Asc CommentRetractionComment ]
+                earlier_retractions <- handlerToWidget $ runDB $ do
+                    ancestors <- select $ from $ \ comment_ancestor -> do
+                        where_ ( comment_ancestor ^. CommentAncestorComment ==. val comment_id )
+                        return comment_ancestor
+
+                    fmap (map entityVal) $ select $ from $ \ comment_retraction -> do
+                        where_ ( comment_retraction ^. CommentRetractionComment `in_` valList (map (commentAncestorAncestor . entityVal) ancestors))
+                        orderBy [ asc (comment_retraction ^. CommentRetractionComment) ]
+                        return comment_retraction
 
                 let target = wikiPageTarget $ entityVal $ pages M.! commentPage comment
-                    rendered_comment = renderComment user_id target users 1 0 earlier_retractions retraction_map $ Node (Entity comment_id comment) []
-
+                    rendered_comment = renderComment viewer_id target users 1 0 earlier_retractions retraction_map $ Node (Entity comment_id comment) []
 
                 [whamlet|$newline never
                     <div .row>
@@ -381,21 +435,28 @@ getWikiNewCommentsR = do
                             ^{rendered_comment}
                 |]
 
-    runDB $ update user_id [ UserReadComments =. now ]
+    runDB $ update $ \ user -> do
+        set user [ UserReadComments =. val now ]
+        where_ ( user ^. UserId ==. val viewer_id )
 
     defaultLayout $(widgetFile "wiki_new_comments")
 
 
-getWikiHistoryR :: Text -> Handler RepHtml
+getWikiHistoryR :: Text -> Handler Html
 getWikiHistoryR target = do
     (edits, users) <- runDB $ do
         Entity page_id _ <- getBy404 $ UniqueWikiTarget target
-        edits <- selectList [ WikiEditPage ==. page_id ] [ Desc WikiEditId ]
+        edits <- select $ from $ \ edit -> do
+            where_ ( edit ^. WikiEditPage ==. val page_id )
+            orderBy [ desc (edit ^. WikiEditId) ]
+            return edit
 
         let user_id_list = S.toList $ S.fromList $ map (wikiEditUser . entityVal) edits
 
-        users <- fmap (M.fromList . map (entityKey &&& id)) $ selectList [ UserId <-. user_id_list ] []
-
+        users <- fmap (M.fromList . map (entityKey &&& id)) $ select $ from $ \ user -> do
+            where_ ( user ^. UserId `in_` valList user_id_list )
+            return user
+            
         return (edits, users)
 
     let editsIndexed = zip ([0..] :: [Int]) edits
@@ -403,7 +464,7 @@ getWikiHistoryR target = do
 
 -- | A proxy handler that redirects "ugly" to "pretty" diff URLs,
 -- e.g. /w/diff?from=a&to=b to /w/diff/a/b
-getWikiDiffProxyR :: Text -> Handler RepHtml
+getWikiDiffProxyR :: Text -> Handler Html
 getWikiDiffProxyR target = do
     (start_edit_id_t, end_edit_id_t) <- runInputGet $ (,)
                                         <$> ireq textField "start"
@@ -417,7 +478,7 @@ getWikiDiffProxyR target = do
         (\(s, e) -> redirect $ WikiDiffR target s e)
         pairMay
 
-getWikiDiffR :: Text -> WikiEditId -> WikiEditId -> Handler RepHtml
+getWikiDiffR :: Text -> WikiEditId -> WikiEditId -> Handler Html
 getWikiDiffR target start_edit_id end_edit_id = do
     (start_edit, end_edit) <- runDB $ do
         Entity page_id _ <- getBy404 $ UniqueWikiTarget target
@@ -429,12 +490,12 @@ getWikiDiffR target start_edit_id end_edit_id = do
 
         return (start_edit, end_edit)
 
-    let diffEdits = getDiff `on` ((\ (Markdown text) -> T.lines text) . wikiEditContent)
+    let diffEdits = getDiff `FUN.on` ((\ (Markdown text) -> T.lines text) . wikiEditContent)
         renderDiff = mconcat . map (\ a -> (case a of Both x _ -> toHtml x; First x -> del (toHtml x); Second x -> ins (toHtml x)) >> br)
 
     defaultLayout $(widgetFile "wiki_diff")
 
-getWikiEditR :: Text -> WikiEditId -> Handler RepHtml
+getWikiEditR :: Text -> WikiEditId -> Handler Html
 getWikiEditR target edit_id = do
     edit <- runDB $ do
         Entity page_id _ <- getBy404 $ UniqueWikiTarget target
@@ -446,20 +507,23 @@ getWikiEditR target edit_id = do
 
     defaultLayout $(widgetFile "wiki_edit")
 
-getWikiNewEditsR :: Handler RepHtml
+getWikiNewEditsR :: Handler Html
 getWikiNewEditsR = do
-    Entity user_id user <- requireAuth
+    Entity viewer_id viewer <- requireAuth
 
     maybe_from <- fmap (Key . PersistInt64 . read . T.unpack) <$> lookupGetParam "from"
 
     now <- liftIO getCurrentTime
     (edits, pages, users) :: ([Entity WikiEdit], M.Map WikiPageId (Entity WikiPage), M.Map UserId (Entity User)) <- runDB $ do
-        unfiltered_pages :: [Entity WikiPage] <- selectList [] []
-        let pages = M.fromList $ map (entityKey &&& id) $ filter ((userRole user >=) . wikiPageCanViewMeta . entityVal) unfiltered_pages
-            filters = case maybe_from of
-                        Nothing -> [ WikiEditPage <-. M.keys pages ]
-                        Just from -> [ WikiEditPage <-. M.keys pages, WikiEditId <=. from ]
-        edits <- selectList filters [ Desc WikiEditId, LimitTo 50 ]
+        unfiltered_pages :: [Entity WikiPage] <- select $ from $ \ page -> return page
+        let pages = M.fromList $ map (entityKey &&& id) $ filter ((userRole viewer >=) . wikiPageCanViewMeta . entityVal) unfiltered_pages
+        edits <- select $ from $ \ edit -> do
+            where_ $ case maybe_from of
+                Nothing -> ( edit ^. WikiEditPage `in_` valList (M.keys pages) )
+                Just from_edit -> ( edit ^. WikiEditPage `in_` valList (M.keys pages) &&. edit ^. WikiEditId <=. val from_edit )
+            orderBy [ desc (edit ^. WikiEditId) ]
+            limit 50
+            return edit
 
         let user_ids = S.toList $ S.fromList $ map (wikiEditUser . entityVal) edits
         users <- fmap (M.fromList . map (entityKey &&& id)) $ selectList [ UserId <-. user_ids ] []
@@ -486,12 +550,14 @@ getWikiNewEditsR = do
                                 #{comment}
                 |]
 
-    runDB $ update user_id [ UserReadEdits =. now ]
+    runDB $ update $ \ user -> do
+        set user [ UserReadEdits =. val now ]
+        where_ ( user ^. UserId ==. val viewer_id )
 
     defaultLayout $(widgetFile "wiki_new_edits")
 
 
-getRetractCommentR :: Text -> CommentId -> Handler RepHtml
+getRetractCommentR :: Text -> CommentId -> Handler Html
 getRetractCommentR target comment_id = do
     Entity user_id user <- requireAuth
     comment <- runDB $ get404 comment_id
@@ -500,8 +566,16 @@ getRetractCommentR target comment_id = do
     earlier_retractions <- runDB $
         case commentParent comment of
             Just parent_id -> do
-                ancestors <- (parent_id :) . map (commentAncestorAncestor . entityVal) <$> selectList [ CommentAncestorComment ==. parent_id ] []
-                map entityVal <$> selectList [ CommentRetractionComment <-. ancestors ] []
+                ancestors <- do
+                    comment_ancestor_entities <- select $ from $ \ comment_ancestor -> do
+                        where_ ( comment_ancestor ^. CommentAncestorComment ==. val parent_id )
+                        return comment_ancestor
+
+                    return . (parent_id :) . map (commentAncestorAncestor . entityVal) $ comment_ancestor_entities
+
+                fmap (map entityVal) $ select $ from $ \ comment_retraction -> do
+                    where_ ( comment_retraction ^. CommentRetractionComment `in_` valList ancestors )
+                    return comment_retraction
 
             Nothing -> return []
 
@@ -516,7 +590,7 @@ getRetractCommentR target comment_id = do
             <input type="submit" name="mode" value="preview retraction">
     |]
 
-postRetractCommentR :: Text -> CommentId -> Handler RepHtml
+postRetractCommentR :: Text -> CommentId -> Handler Html
 postRetractCommentR target comment_id = do
     Entity user_id user <- requireAuth
     comment <- runDB $ get404 comment_id
@@ -529,7 +603,12 @@ postRetractCommentR target comment_id = do
             earlier_retractions <- runDB $
                 case commentParent comment of
                     Just parent_id -> do
-                        ancestors <- (parent_id :) . map (commentAncestorAncestor . entityVal) <$> selectList [ CommentAncestorComment ==. parent_id ] []
+                        ancestors <- do
+                            comment_ancestor_entities <- select $ from $ \ comment_ancestor -> do
+                                where_ ( comment_ancestor ^. CommentAncestorComment ==. val parent_id )
+                                return comment_ancestor
+
+                            return . (parent_id :) . map (commentAncestorAncestor . entityVal) $ comment_ancestor_entities
                         map entityVal <$> selectList [ CommentRetractionComment <-. ancestors ] []
 
                     Nothing -> return []
@@ -559,7 +638,7 @@ retractForm reason = renderDivs $ areq snowdriftMarkdownField "Retraction reason
     
 renderComment :: UserId -> Text -> M.Map UserId (Entity User) -> Int -> Int -> [CommentRetraction] -> M.Map CommentId CommentRetraction -> Tree (Entity Comment) -> Widget
 renderComment viewer_id target users max_depth depth earlier_retractions retraction_map tree = do
-    maybe_route <- lift getCurrentRoute
+    maybe_route <- handlerToWidget getCurrentRoute
 
     let Entity comment_id comment = rootLabel tree
         children = subForest tree
@@ -604,7 +683,7 @@ commentForm :: Maybe CommentId -> Maybe Markdown -> Form (Maybe CommentId, Markd
 commentForm parent content = renderDivs
     $ (,)
         <$> aopt hiddenField "" (Just parent)
-        <*> areq snowdriftMarkdownField (if isNothing parent then "Comment" else "Reply") content
+        <*> areq snowdriftMarkdownField (if parent == Nothing then "Comment" else "Reply") content
 
 renderPreview :: Widget -> Text -> Widget -> Widget
 renderPreview form action widget =

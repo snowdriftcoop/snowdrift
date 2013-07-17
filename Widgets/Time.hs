@@ -10,8 +10,6 @@ import System.Locale
 
 import Data.List
 
-import Text.Blaze
-
 renderTime :: UTCTime -> Widget
 renderTime time = do
     now <- liftIO getCurrentTime

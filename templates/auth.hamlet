@@ -7,7 +7,7 @@ $newline never
 
 $forall auth <- authPlugins app
     <div>
-        ^{apLogin auth rtm}
+        ^{apLogin auth toParent}
 
 <h2>
     The same Persona button can also make a new Persona account

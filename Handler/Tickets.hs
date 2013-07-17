@@ -7,7 +7,7 @@ import Widgets.Sidebar
 import qualified Data.Map as M
 import Control.Arrow ((&&&))
 
-getTicketsR :: Handler RepHtml
+getTicketsR :: Handler Html
 getTicketsR = do
     (tickets, pages_by_ticket_id) <- runDB $ do
         unfiltered_tickets <- selectList [] [Desc TicketId]

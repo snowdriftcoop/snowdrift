@@ -25,7 +25,7 @@ lookupParamDefault name def = do
         
     
 
-getUserBalanceR :: UserId -> Handler RepHtml
+getUserBalanceR :: UserId -> Handler Html
 getUserBalanceR user_id = do
     Entity viewer_id viewer <- requireAuth
     user <- runDB $ get404 user_id
@@ -34,11 +34,17 @@ getUserBalanceR user_id = do
 
     Just account <- runDB $ get $ userAccount user
 
-    offset <- lookupParamDefault "offset" 0
-    limit <- lookupParamDefault "count" 20
+    offset' <- lookupParamDefault "offset" 0
+    limit' <- lookupParamDefault "count" 20
 
     (transactions, user_accounts, project_accounts) <- runDB $ do
-        transactions <- selectList ([ TransactionCredit ==. Just (userAccount user) ] ||. [ TransactionDebit ==. Just (userAccount user) ]) [ Desc TransactionTs, LimitTo limit, OffsetBy offset ]
+        transactions <- select $ from $ \ transaction -> do
+            where_ ( transaction ^. TransactionCredit ==. val (Just (userAccount user))
+                    ||. transaction ^. TransactionDebit ==. val (Just (userAccount user)))
+            orderBy [ desc (transaction ^. TransactionTs) ]
+            limit limit'
+            offset offset'
+            return transaction
 
         let accounts = catMaybes $ S.toList $ S.fromList $ map (transactionCredit . entityVal) transactions ++ map (transactionDebit . entityVal) transactions 
 
@@ -60,7 +66,7 @@ getUserBalanceR user_id = do
 
 
 
-postUserBalanceR :: UserId -> Handler RepHtml
+postUserBalanceR :: UserId -> Handler Html
 postUserBalanceR user_id = do
     Entity viewer_id viewer <- requireAuth
     user <- runDB $ get404 user_id
@@ -78,7 +84,10 @@ postUserBalanceR user_id = do
              else do
                 runDB $ do
                     _ <- insert $ Transaction now (Just $ userAccount user) Nothing amount "Test Load" Nothing
-                    update (userAccount user) [ AccountBalance +=. amount ]
+                    update $ \ account -> do
+                        set account [ AccountBalance +=. val amount ]
+                        where_ ( account ^. AccountId ==. val (userAccount user) )
+
                 setMessage "Balance updated."
             redirect $ UserBalanceR user_id
 

@@ -21,7 +21,7 @@ inviteForm role = renderBootstrap $ (,)
     <$> areq textField "About this invitation:" Nothing
     <*> areq (roleField role) "Type of Invite:" (Just GeneralPublic)
 
-getInviteR :: Handler RepHtml
+getInviteR :: Handler Html
 getInviteR = do
     Entity viewer_id viewer <- requireAuth
     now <- liftIO getCurrentTime
@@ -38,11 +38,22 @@ getInviteR = do
                 Admin -> True
                 _ -> False
 
-        outstanding_invite_filter = (if can_view_all then [] else [ InviteUser ==. viewer_id ]) ++ [ InviteRedeemed ==. False ]
-        redeemed_invite_filter = (if can_view_all then [] else [ InviteUser ==. viewer_id ]) ++ [ InviteRedeemed ==. True ]
+        restrict_view = 
+                 if can_view_all
+                    then const id
+                    else (\ invite -> ((invite ^. InviteUser ==. val viewer_id) ||.))
 
-    outstanding_invites <- runDB $ selectList outstanding_invite_filter [ Desc InviteCreatedTs ]
-    redeemed_invites <- runDB $ selectList redeemed_invite_filter [ Desc InviteRedeemedTs, LimitTo 20 ]
+    outstanding_invites <- runDB $ select $ from $ \ invite -> do
+            where_ ( restrict_view invite $ invite ^. InviteRedeemed ==. val False )
+            orderBy [ desc (invite ^. InviteCreatedTs) ]
+            return invite
+
+    redeemed_invites <- runDB $ select $ from $ \ invite -> do
+            where_ ( restrict_view invite $ invite ^. InviteRedeemed ==. val True )
+            orderBy [ desc (invite ^. InviteCreatedTs) ]
+            limit 20
+            return invite
+
     let redeemed_users = S.fromList $ mapMaybe (inviteRedeemedBy . entityVal) redeemed_invites
         redeemed_inviters = S.fromList $ map (inviteUser . entityVal) redeemed_invites
         outstanding_inviters = S.fromList $ map (inviteUser . entityVal) outstanding_invites
@@ -63,7 +74,7 @@ getInviteR = do
     defaultLayout $(widgetFile "invite")
 
 
-postInviteR :: Handler RepHtml
+postInviteR :: Handler Html
 postInviteR = do
     Entity user_id user <- requireAuth
     now <- liftIO getCurrentTime

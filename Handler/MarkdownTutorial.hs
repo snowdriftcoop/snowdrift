@@ -4,5 +4,5 @@ import Import
 
 import Widgets.Sidebar
 
-getMarkdownTutorialR :: Handler RepHtml
+getMarkdownTutorialR :: Handler Html
 getMarkdownTutorialR = defaultLayout $(widgetFile "markdown")
