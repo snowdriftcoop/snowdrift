@@ -2,110 +2,37 @@
     <div .span8>
         <h1>Welcome!
         <strong>
-            We are creating a non-profit cooperative system to support
+            We are creating a marketplace for independent
             <a href="@{WikiR "free-libre-open"}">free/libre/open
-            software, cultural works (art, music, etc.), science, educational resources, and more&hellip;
+            projects.
         <p>
-            When we become operational, Snowdrift.coop will help creative projects
-            secure ongoing funding and community engagement.
+            We envision a world where software, cultural works (art, music, etc.), research, and educational resources
+            are available to everyone without restictions on access, use, modification, or sharing.
+        <p>
+            To achieve this vision, we need core project teams with livable salaries
+            supported by engaged and empowered communities.
+        <p>
+            Snowdrift.coop proposes a new kind of patronage system
+            based on ongoing community-wide matching of small donations.
+            We aim to involve as many people as possible,
+            agreeing together to support the most deserving projects and hold them to the highest
+            standards. Our system will be non-profit and governed as a community-owned cooperative.
+        <p>
+            We are not operational yet, but you can
+            <a href="@{WikiR "about"}"> read more
+            to understand all the details we have worked out so far.
         <h2>
-            Why is this needed?
+            Join us!
         <p>
-            Two different systems can sustain creative projects:
-        <img src="@{StaticR img_cycles_png}" width="610" height="120" alt="consumers pay or community contributes creatively">
+            We need help to make this successful, so if you might even 
+            <em>consider
+            getting involved, let us know!
+            We have
+            <a href="@{WikiR "how-to-help"}"> volunteer opportunities
+            for everyone, regardless of your background.
+            If you share our vision, you can help us realize it!
         <p>
-            The internet enables the community model on a greater scale than ever
-            but works against the producer-consumer model.
-            <a href="@{WikiR "economics"}">Non-scarce
-            digital works can be shared freely, so there's no need to pay for access.
-        <p>
-            Artificial scarcity via technical and/or legal restrictions can enable the consumer model for digital works,
-            but this hampers the community's ability to freely use, modify, and share things.
-            Such restrictions also lead to abuses of power, and amplify economic inequities,
-            taking things that could be open to everyone and giving access only to those who can afford it.
-        <p>
-            Free/libre/open projects reject such restrictions and instead celebrate the virtues of the community cycle.
-            Yet without much funding, projects struggle to achieve their potential.
-            Community volunteers can do a lot, but robust projects need leadership from dedicated teams,
-            and people need to eat and pay their bills.
-        <h2>
-            How can we better fund free/libre/open projects?
-        <p>
-            Simply asking for donations helps but is rarely enough.
-            While some people donate, most of us put our limited resources toward scarce goods.
-        <p>
-            Consider a metaphor:
-            <a href="@{WikiR "snowdrift"}"><strong> the Snowdrift Dilemma</strong>.
-            A huge drift of snow blocks the road. Who will clear it? We all have other things to do.
-            I worry that if I start working, then everyone else will freeload.
-            Ironically, everyone else may be thinking the same thing!
-        <p>
-            <strong>Thankfully, there's a solution: We agree to do our part if everyone else does theirs.
-            And in a long-term community, there's incentive to follow through and build trust.
-        <p>
-            Hence, the Snowdrift.coop system:
-            Each patron first puts funds in a private account.
-            Then, instead of donating unilaterally, they make a pledge for each project they wish to support:
-        <div align=center>
-            <em> "For every 100 others who join me, I will donate one cent per month."
-        <p>
-            If nobody joins you, it costs you nothing. If many join, then everyone together will make a great impact.
-            If you are wealthier, you may pledge multiple shares.
-            Our full pledge system has many
-            <strong>
-                <a href="@{WikiR "mechanism"}"> further details
-            designed to maximize reliability, flexibility, and fairness; and to keep projects honorable and accountable.
-        <p>
-            <strong>
-                At Snowdrift.coop we envision a holistic system for long-term community patronage.
-            Beyond fundraising, we will offer tools for community engagement,
-            showing thanks for creative contributions, handling feature requests, discussions, support, and more.
-        <hr>
-        <p>
-            <em> Q. What projects will there be?
-        <p>
-            A. Any project may sign up as long as they meet our requirements for
-            <a href="@{WikiR "licenses"}"> Free/Libre/Open licensing
-            and a few other details
-        <p>
-            <em> Q. Don't Kickstarter and the <em>hundreds</em> of other crowdfunding sites already solve this dilemma?
-        <p>
-            A. The standard crowdfunding mechanism involves one-time fund-drives with arbitrary deadlines and cut-off points.
-            Because this addresses the freeloading dilemma, it is often more successful than simple donations.
-            There are, however, several <a href="@{WikiR "threshold-systems"}"> problems with this approach</a>.
-            Running this type of campaign can be costly and still fail,
-            and successful projects are expected to become self-sustaining or to be complete.
-            Snowdrift.coop is a completely different system providing long-term ongoing support, greater flexibility, and community engagement &mdash; all tailored to free/libre/open projects.
-        <p>
-            <em> Q. What about other other funding options?
-        <p>
-            A. Snowdrift.coop can work alongside
-            <a href="@{WikiR "existingmechanisms"}">existing funding mechanisms
-            but we require that projects be transparent and reveal all funding sources.
-        <hr>
-        <h2>
-            Want to learn more or help out?
-        <ul>
-            <li>
-                Learn more on our
-                <a href="@{WikiR "about"}">About pages
-                and 
-                <a href="/user/new"> register a new account
-                to participate as a beta user!
-                <a href="/contact"> Contact us
-                to request access to further internal drafts and discussions&hellip;
-            <li>
-                Are you the head of an established free/libre/open project or organization, especially U.S. based, and interested in participating as a beta project or partnering with us?
-                <a href="/contact"> Inquire&hellip;
-            <li>
-                Are you a web developer or designer experienced with (or eager to learn) any combination of HTML/CSS/JS/Haskell/Yesod
-                who might be interested in helping us achieve our vision?
-                <a href="/contact"> Inquire&hellip;
-                (but you can look at our <a href="https://gitorious.org/snowdrift/snowdrift"> source</a> already!)
-            <li>
-                Are you an advocate for free/libre/open and/or cooperative ideals interested in helping us solidify our vision?
-                <a href="/contact">Contact us
-                about how to get involved, and mention if you'd like to consider joining our steering committee.
+            Thanks for your interest!
     <div .span3 .offset1>
         ^{sidebar}
 
