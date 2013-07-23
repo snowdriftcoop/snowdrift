@@ -13,7 +13,7 @@
                 <div .span4>
                     #{nick} on irc.freenode.net
 
-        $if user_id == viewer_id
+        $if Just user_id == viewer_id
             <a href="@{EditUserR user_id}">
                 edit profile
 
