@@ -5,19 +5,21 @@ module Application
     , makeFoundation
     ) where
 
-import Import
+import Import hiding ((==.), (=.), update, delete)
 import Settings
 import Yesod.Default.Config
 import Yesod.Default.Main
 import Yesod.Default.Handlers
 import Network.Wai.Middleware.RequestLogger (logStdout, logStdoutDev)
 import qualified Database.Persist.Store
-import Database.Persist.GenericSql (printMigration, runMigration)
+import Database.Esqueleto hiding (loadConfig)
 import Network.HTTP.Conduit (newManager, def)
 import Version
 import Control.Monad.Trans.Resource
-
+import Control.Monad.IO.Class
 import Control.Monad.Logger
+
+import Data.Text
 
 -- Import all relevant handler modules here.
 -- Don't forget to add new modules to your cabal file!
@@ -77,7 +79,7 @@ makeFoundation conf = do
               Database.Persist.Store.loadConfig >>=
               Database.Persist.Store.applyEnv
     p <- Database.Persist.Store.createPoolConfig (dbconf :: Settings.PersistConfig)
-    runStderrLoggingT $ Database.Persist.Store.runPool dbconf (printMigration migrateAll >> runMigration migrateAll) p
+    runStderrLoggingT $ Database.Persist.Store.runPool dbconf (printMigration migrateAll >> runMigration migrateAll >> rolloutStagingWikiPages) p
 
     now <- getCurrentTime
     let (base, diff) = version
@@ -93,3 +95,39 @@ getApplicationDev =
     loader = loadConfig (configSettings Development)
         { csParseExtra = parseExtra
         }
+
+rolloutStagingWikiPages :: (MonadBaseControl IO m, MonadIO m, MonadLogger m, MonadUnsafeIO m, MonadThrow m) => SqlPersist m ()
+rolloutStagingWikiPages = do
+    pages <- select $ from $ \ page -> do
+        where_ ( page ^. WikiPageTarget `like` val "_staging_%" )
+        return page
+
+    forM_ pages $ \ (Entity staged_page_id staged_page) -> do
+        let (Just target) = stripPrefix "_staging_" $ wikiPageTarget staged_page
+        [ Value page_id ] <- select $ from $ \ page -> do
+            where_ ( page ^. WikiPageTarget ==. val target )
+            return $ page ^. WikiPageId
+
+        update $ \ edit -> do
+            set edit [ WikiEditPage =. val page_id ]
+            where_ ( edit ^. WikiEditPage ==. val staged_page_id )
+    
+        update $ \ page -> do
+            set page [ WikiPageContent =. val (wikiPageContent staged_page) ]
+            where_ ( page ^. WikiPageId ==. val page_id )
+
+        [ Value last_staged_edit_edit ] <- select $ from $ \ last_staged_edit -> do
+            where_ ( last_staged_edit ^. WikiLastEditPage ==. val staged_page_id )
+            return $ last_staged_edit ^. WikiLastEditEdit
+                    
+        update $ \ last_edit -> do
+            set last_edit [ WikiLastEditEdit =. val last_staged_edit_edit ]
+            where_ ( last_edit ^. WikiLastEditPage ==. val page_id )
+
+        delete $ from $ \ last_edit -> do
+            where_ ( last_edit ^. WikiLastEditPage ==. val staged_page_id )
+
+        delete $ from $ \ page -> do
+            where_ ( page ^. WikiPageId ==. val staged_page_id )
+
+        
