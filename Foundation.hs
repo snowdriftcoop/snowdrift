@@ -208,6 +208,7 @@ instance Yesod App where
     isAuthorized PrivacyR _ = return Authorized
     isAuthorized FaviconR _ = return Authorized
     isAuthorized RobotsR _ = return Authorized
+    isAuthorized WhoR _ = return Authorized
     isAuthorized RepoFeedR _ = return Authorized
     isAuthorized BuildFeedR _ = return Authorized
     isAuthorized (AuthR _) _ = return Authorized
@@ -229,10 +230,14 @@ instance Yesod App where
     isAuthorized (WikiEditR target _) _ = require wikiPageCanViewMeta target
 
     isAuthorized (UserR user_id) _  = do
-        Entity viewer_id viewer <- requireAuth
-        return $ if user_id == viewer_id
-                  then Authorized
-                  else if userRole viewer >= GeneralPublic
+        committee_user <- runDB $ getBy $ UniqueCommitteeMember user_id
+        case committee_user of
+            Just _ -> return Authorized
+            Nothing -> do
+                Entity viewer_id viewer <- requireAuth
+                return $ if user_id == viewer_id
+                    then Authorized
+                    else if userRole viewer >= GeneralPublic
                         then Authorized
                         else Unauthorized "You must be invited to view other users"
 
