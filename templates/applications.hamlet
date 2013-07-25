@@ -5,11 +5,11 @@
                 $forall Entity application_id application <- applications
                     <tr>
                         <td>
-                            <a href="@{ApplicationR application_id}">#{committeeApplicationName application}
+                            <a href="@{ApplicationR application_id}">#{volunteerApplicationName application}
                         <td>
-                            #{committeeApplicationOccupation application}
+                            #{volunteerApplicationOccupation application}
                         <td>
-                            #{committeeApplicationLocation application}
+                            #{volunteerApplicationLocation application}
 
     <div .span3>
         ^{sidebar}

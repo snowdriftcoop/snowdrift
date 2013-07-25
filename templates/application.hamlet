@@ -6,22 +6,22 @@
                 <td>
                     Account:
                 <td>
-                    <a href="@{UserR (committeeApplicationUser application)}">
+                    <a href="@{UserR (volunteerApplicationUser application)}">
                         #{userPrintName user}
 
             <tr>
                 <td>
                     Name:
                 <td>
-                    #{committeeApplicationName application}
+                    #{volunteerApplicationName application}
 
             <tr>
                 <td>
                     Email:
                 <td>
-                    #{committeeApplicationEmail application}
+                    #{volunteerApplicationEmail application}
 
-            $maybe contactInfo <- committeeApplicationOtherContactInfo application
+            $maybe contactInfo <- volunteerApplicationOtherContactInfo application
                 <tr>
                     <td>
                         Other Contact Info:
@@ -32,15 +32,15 @@
                 <td>
                     Occupation:
                 <td>
-                    #{committeeApplicationOccupation application}
+                    #{volunteerApplicationOccupation application}
 
             <tr>
                 <td>
                     Location:
                 <td>
-                    #{committeeApplicationLocation application}
+                    #{volunteerApplicationLocation application}
 
-            $maybe expertise <- committeeApplicationExpertise application
+            $maybe expertise <- volunteerApplicationExpertise application
                 <tr>
                     <td>
                         Expertise:
@@ -51,9 +51,9 @@
                 <td>
                     Statement:
                 <td>
-                    #{committeeApplicationStatement application}
+                    #{volunteerApplicationStatement application}
 
-            $maybe comments <- committeeApplicationComments application
+            $maybe comments <- volunteerApplicationComments application
                 <tr>
                     <td>
                         Comments:

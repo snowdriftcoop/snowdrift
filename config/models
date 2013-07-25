@@ -83,7 +83,7 @@ Invite
     UniqueInvite code
 
 
-CommitteeApplication
+VolunteerApplication
     createdTs UTCTime
     user UserId
     name Text

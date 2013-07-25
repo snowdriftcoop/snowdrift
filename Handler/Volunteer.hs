@@ -1,13 +1,13 @@
-module Handler.Committee where
+module Handler.Volunteer where
 
 import Import
 
 import Widgets.Sidebar
 
 
-committeeForm :: UTCTime -> Entity User -> Form CommitteeApplication
-committeeForm now (Entity user_id user) = renderBootstrap $
-    CommitteeApplication now user_id
+volunteerForm :: UTCTime -> Entity User -> Form VolunteerApplication
+volunteerForm now (Entity user_id user) = renderBootstrap $
+    VolunteerApplication now user_id
         <$> areq textField "Full name:" Nothing
         <*> areq emailField "E-mail:" (Just . userIdent $ user)
         <*> aopt textField "Other contact info (website URL, phone, chat ID, etc):" Nothing
@@ -17,27 +17,27 @@ committeeForm now (Entity user_id user) = renderBootstrap $
         <*> areq textareaField "Personal statement (why you want to join the committee):" Nothing
         <*> aopt textareaField "Any other comments:" Nothing
 
-getCommitteeR :: Handler RepHtml
-getCommitteeR = do
+getVolunteerR :: Handler RepHtml
+getVolunteerR = do
     user <- requireAuth
     now <- liftIO getCurrentTime
-    (committee_form, _) <- generateFormPost $ committeeForm now user
-    defaultLayout $(widgetFile "committee")
+    (volunteer_form, _) <- generateFormPost $ volunteerForm now user
+    defaultLayout $(widgetFile "volunteer")
 
 
-postCommitteeR :: Handler RepHtml
-postCommitteeR = do
+postVolunteerR :: Handler RepHtml
+postVolunteerR = do
     user <- requireAuth
     now <- liftIO getCurrentTime
-    ((result, _), _) <- runFormPost $ committeeForm now user
+    ((result, _), _) <- runFormPost $ volunteerForm now user
 
     case result of
         FormSuccess application -> do
             _ <- runDB $ insert application
             setMessage "application submitted"
-            redirect CommitteeR
+            redirect VolunteerR
 
         _ -> do
             setMessage "error submitting application"
-            redirect CommitteeR
+            redirect VolunteerR
 
