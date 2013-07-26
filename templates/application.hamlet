@@ -28,30 +28,32 @@
                     <td>
                         #{contactInfo}
 
-            <tr>
-                <td>
-                    Occupation:
-                <td>
-                    #{volunteerApplicationOccupation application}
+            $maybe website <- volunteerApplicationWebsite application
+               <tr>
+                   <td>
+                       Website URL:
+                   <td>
+                       #{website}
 
-            <tr>
-                <td>
-                    Location:
-                <td>
-                    #{volunteerApplicationLocation application}
+            $maybe location <- volunteerApplicationLocation application 
+               <tr>
+                   <td>
+                       Location:
+                   <td>
+                       #{location}
 
-            $maybe expertise <- volunteerApplicationExpertise application
+            $maybe experience <- volunteerApplicationExperience application
                 <tr>
                     <td>
-                        Expertise:
+                        Experience:
                     <td>
-                        #{expertise}
+                        #{experience}
 
             <tr>
                 <td>
-                    Statement:
+                    Interest:
                 <td>
-                    #{volunteerApplicationStatement application}
+                    #{volunteerApplicationInterest application}
 
             $maybe comments <- volunteerApplicationComments application
                 <tr>

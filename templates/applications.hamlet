@@ -7,9 +7,11 @@
                         <td>
                             <a href="@{ApplicationR application_id}">#{volunteerApplicationName application}
                         <td>
-                            #{volunteerApplicationOccupation application}
+                           $maybe website <- volunteerApplicationWebsite application
+                               #{website}
                         <td>
-                            #{volunteerApplicationLocation application}
+                           $maybe location <- volunteerApplicationLocation application
+                               #{location}
 
     <div .span3>
         ^{sidebar}

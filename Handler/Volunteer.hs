@@ -8,14 +8,16 @@ import Widgets.Sidebar
 volunteerForm :: UTCTime -> Entity User -> Form VolunteerApplication
 volunteerForm now (Entity user_id user) = renderBootstrap $
     VolunteerApplication now user_id
-        <$> areq textField "Full name:" Nothing
+        <$> areq textField "Name or Internet Handle:" Nothing
         <*> areq emailField "E-mail:" (Just . userIdent $ user)
-        <*> aopt textField "Other contact info (website URL, phone, chat ID, etc):" Nothing
-        <*> areq textField "Occupation(s):" Nothing
-        <*> areq textField "Location:" Nothing
-        <*> aopt textareaField "Relevant expertise:" Nothing
-        <*> areq textareaField "Personal statement (why you want to join the committee):" Nothing
-        <*> aopt textareaField "Any other comments:" Nothing
+        <*> aopt textField "Other contact info (phone, IRC handle, chat ID, etc):" Nothing
+        <*> aopt textField "Website URL:" Nothing
+        <*> aopt textField "Location:" Nothing
+        <*> aopt textareaField "Relevant work/training/volunteer experience:" Nothing
+        <*> areq (selectFieldList interest) "Area of interest:" Nothing
+        <*> aopt textareaField "Anything else you'd like us to know:" Nothing 
+      where
+        interest = (\ a -> zip a a) $ ["Programming/Debugging", "FLO Culture/Journalism", "Web Development", "Cooperative Development", "Legal Matters", "Crowdfunding/Microfinance", "Illustration/Graphic Design", "Education/Research", "Marketing/Recruitment"] 
 
 getVolunteerR :: Handler RepHtml
 getVolunteerR = do

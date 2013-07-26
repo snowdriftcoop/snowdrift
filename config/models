@@ -89,10 +89,10 @@ VolunteerApplication
     name Text
     email Text
     otherContactInfo Text Maybe
-    occupation Text
-    location Text
-    expertise Textarea Maybe
-    statement Textarea
+    website Text Maybe
+    location Text Maybe
+    experience Textarea Maybe
+    interest Text
     comments Textarea Maybe
 
 
