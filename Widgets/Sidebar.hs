@@ -71,8 +71,8 @@ sidebar = do
                          then selectList ([ MessageCreatedTs >=. userReadMessages user, MessageTo ==. Just user_id ] ||. [ MessageCreatedTs >=. userReadMessages user, MessageTo ==. Nothing ]) []
                          else selectList [ MessageCreatedTs >=. userReadMessages user, MessageTo ==. Just user_id ] []
 
-            applications :: [Entity CommitteeApplication] <- if is_committee_member
-                             then selectList [ CommitteeApplicationCreatedTs >=. userReadApplications user ] []
+            applications :: [Entity VolunteerApplication] <- if is_committee_member
+                             then selectList [ VolunteerApplicationCreatedTs >=. userReadApplications user ] []
                              else return []
 
             edits :: [Entity WikiEdit] <- do

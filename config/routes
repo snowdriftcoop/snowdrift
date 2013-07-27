@@ -24,13 +24,13 @@
 /invite InviteR GET POST
 
 /faq FaqR GET
-/committee CommitteeR GET POST
+/volunteer VolunteerR GET POST
 /contact ContactR GET POST
 /who WhoR GET
 
 /messages MessagesR GET
 
-/application/#CommitteeApplicationId ApplicationR GET
+/application/#VolunteerApplicationId ApplicationR GET
 /applications ApplicationsR GET
 
 /tutorial/markdown MarkdownTutorialR GET

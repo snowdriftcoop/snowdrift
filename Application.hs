@@ -31,7 +31,7 @@ import Handler.Project
 import Handler.Invitation
 import Handler.Invite
 import Handler.UpdateShares
-import Handler.Committee
+import Handler.Volunteer
 import Handler.Contact
 import Handler.Who
 import Handler.PostLogin

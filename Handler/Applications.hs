@@ -13,7 +13,7 @@ getApplicationsR = do
 
     applications <- 
         if userRole viewer == CommitteeMember || userRole viewer == Admin
-         then runDB $ selectList [] [ Desc CommitteeApplicationCreatedTs ]
+         then runDB $ selectList [] [ Desc VolunteerApplicationCreatedTs ]
          else return []
 
     _ <- runDB $ update viewer_id [ UserReadApplications =. now ]

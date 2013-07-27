@@ -1,0 +1,21 @@
+<div .row>
+    <div .span9>
+        <h1>Get involved in building the Snowdrift.coop community!
+        <p>
+            Welcome!
+            Please read the 
+            <a href=@{WikiR "how-to-help"}>How to Help
+             wiki page to find out more about our particular needs at this time.
+        <p>
+            Let us know how to contact you p:
+        <p>
+            To provide general feedback or request assistance, go to the
+            <a href=@{ContactR}>Contact page
+
+        <div .container>
+            <form action=@{VolunteerR} method="POST">
+                ^{volunteer_form}
+                <input type="submit" value="apply">
+    <div .span3>
+        ^{sidebar}
+
