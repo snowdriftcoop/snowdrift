@@ -49,11 +49,12 @@
                     <td>
                         #{experience}
 
-            <tr>
-                <td>
-                    Interest:
-                <td>
-                    #{volunteerApplicationInterest application}
+            $if not (null interests)
+                <tr>
+                    <td>
+                        #{plural (length interests) "Interest" "Interests"}:
+                    <td>
+                        #{rendered_interests}
 
             $maybe comments <- volunteerApplicationComments application
                 <tr>

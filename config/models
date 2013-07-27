@@ -92,9 +92,14 @@ VolunteerApplication
     website Text Maybe
     location Text Maybe
     experience Textarea Maybe
-    interest Text
     comments Textarea Maybe
 
+Interest
+    description Text
+
+VolunteerInterest
+    volunteer VolunteerApplicationId
+    interest InterestId
 
 CommitteeUser
     createdTs UTCTime
