@@ -4,14 +4,14 @@
         <p>
             Welcome!
             Please read the 
-            <a href=@{WikiR "how-to-help"}>How to Help
-             wiki page to find out more about our particular needs at this time.
-        <p>
-            Let us know how to contact you p:
+            <a href=@{WikiR "how-to-help"}>How-to-help page
+            to find out more about our particular needs at this time.
         <p>
             To provide general feedback or request assistance, go to the
             <a href=@{ContactR}>Contact page
 
+        <p>
+            To express interest in potentially volunteering, fill out this form:
         <div .container>
             <form action=@{VolunteerR} method="POST">
                 ^{volunteer_form}
