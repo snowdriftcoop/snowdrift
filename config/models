@@ -83,18 +83,23 @@ Invite
     UniqueInvite code
 
 
-CommitteeApplication
+VolunteerApplication
     createdTs UTCTime
     user UserId
     name Text
     email Text
     otherContactInfo Text Maybe
-    occupation Text
-    location Text
-    expertise Textarea Maybe
-    statement Textarea
+    website Text Maybe
+    location Text Maybe
+    experience Textarea Maybe
     comments Textarea Maybe
 
+Interest
+    description Text
+
+VolunteerInterest
+    volunteer VolunteerApplicationId
+    interest InterestId
 
 CommitteeUser
     createdTs UTCTime
