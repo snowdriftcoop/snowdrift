@@ -272,7 +272,7 @@ roleCanView Editor _ _ = Authorized
 roleCanView CommitteeMember _ _ = Authorized
 roleCanView CommitteeCandidate _ _ = Authorized
 
-roleCanView GeneralPublic _ VolunteerR = Unauthorized "This page requires a special invite, sorry."
+roleCanView _ _ VolunteerR = Authorized
 roleCanView GeneralPublic _ InviteR = Unauthorized "This page requires a special invite, sorry."
 roleCanView GeneralPublic _ (ApplicationR _) = Unauthorized "This page requires a special invite, sorry."
 roleCanView GeneralPublic _ ApplicationsR = Unauthorized "This page requires a special invite, sorry."
