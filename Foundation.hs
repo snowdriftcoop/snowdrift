@@ -327,7 +327,6 @@ authBrowserIdFixed =
 
             toWidget [hamlet|
                 $newline never
-                <p> Log-in or create an account with Mozilla Persona:
                 <p>
                     <a href="javascript:persona_login()">
                         <img src="https://browserid.org/i/persona_sign_in_blue.png">
@@ -335,13 +334,29 @@ authBrowserIdFixed =
 
      in authBrowserId { apLogin = login }
 
-snowdriftAuthHashDB = authHashDB { apLogin = login } where login toMaster = do
-    let parentLogin = apLogin authHashDB toMaster
-    [whamlet|
-        <a href="@{UserCreateR}">
-            click here to create an account with our built-in system
-        ^{parentLogin}
-        |]
+snowdriftAuthBrowserId :: AuthPlugin App
+snowdriftAuthBrowserId =
+    let auth = authBrowserIdFixed
+        login toMaster = do
+            let parentLogin = apLogin auth toMaster
+            [whamlet|
+                <p> Log-in or create an account with Mozilla Persona:
+                ^{parentLogin}
+            |]
+     in auth { apLogin = login }
+
+snowdriftAuthHashDB :: AuthPlugin App
+snowdriftAuthHashDB =
+    let auth = authHashDB (Just . UniqueUser)
+        login toMaster = do
+            let parentLogin = apLogin auth toMaster
+            [whamlet|
+                <p>
+                    <a href="@{UserCreateR}">
+                       click here to create an account with our built-in system
+                ^{parentLogin}
+            |]
+     in auth { apLogin = login }
 
 instance YesodAuth App where
     type AuthId App = UserId
@@ -361,7 +376,7 @@ instance YesodAuth App where
                 fmap Just $ insert $ User (credsIdent creds) Nothing Nothing Nothing account_id Uninvited Nothing Nothing Nothing Nothing now now now now
 
     -- You can add other plugins like BrowserID, email or OAuth here
-    authPlugins _ = [ authBrowserIdFixed, authHashDB (Just . UniqueUser) ]
+    authPlugins _ = [ snowdriftAuthBrowserId, snowdriftAuthHashDB ]
 
     authHttpManager = httpManager
 
