@@ -278,7 +278,7 @@ roleCanView GeneralPublic _ (ApplicationR _) = Unauthorized "This page requires 
 roleCanView GeneralPublic _ ApplicationsR = Unauthorized "This page requires a special invite, sorry."
 roleCanView GeneralPublic _ _ = Authorized
 
-roleCanView Uninvited _ _ = Unauthorized "Snowdrift is presently invite-only."
+roleCanView Uninvited _ _ = Unauthorized "This page requires a special invite, sorry."
 
 roleCanView Public _ _ = error "No user should actually have the role 'Public'"
 
@@ -327,6 +327,7 @@ authBrowserIdFixed =
 
             toWidget [hamlet|
                 $newline never
+                <p> Log-in or create an account with Mozilla Persona:
                 <p>
                     <a href="javascript:persona_login()">
                         <img src="https://browserid.org/i/persona_sign_in_blue.png">
@@ -334,6 +335,13 @@ authBrowserIdFixed =
 
      in authBrowserId { apLogin = login }
 
+snowdriftAuthHashDB = authHashDB { apLogin = login } where login toMaster = do
+    let parentLogin = apLogin authHashDB toMaster
+    [whamlet|
+        <a href="@{UserCreateR}">
+            click here to create an account with our built-in system
+        ^{parentLogin}
+        |]
 
 instance YesodAuth App where
     type AuthId App = UserId
