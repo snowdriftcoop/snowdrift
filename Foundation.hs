@@ -351,9 +351,11 @@ snowdriftAuthHashDB =
         login toMaster = do
             let parentLogin = apLogin auth toMaster
             [whamlet|
+                <p> or use our built-in system:
                 <p>
                     <a href="@{UserCreateR}">
-                       click here to create an account with our built-in system
+                       click here to create an account
+                <p> or
                 ^{parentLogin}
             |]
      in auth { apLogin = login }
