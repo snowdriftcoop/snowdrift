@@ -14,13 +14,13 @@ $# used by renderComment function
         <span .comment-head>
             |
         <span .comment-head>
-            <a href="@{DiscussCommentR target comment_id}">
+            <a href="@{DiscussCommentR project_handle target comment_id}">
                 permalink
         $maybe parent_id <- commentParent comment
             <span .comment-head>
                 |
             <span .comment-head>
-                <a href="@{DiscussCommentR target parent_id}">
+                <a href="@{DiscussCommentR project_handle target parent_id}">
                     parent
 
     $forall retraction <- earlier_retractions
@@ -36,14 +36,14 @@ $# used by renderComment function
     #{markdownToHtml (commentText comment)}
 
     <div>
-    $if not (maybe_route == Just (DiscussCommentR target comment_id))
+    $if not (maybe_route == Just (DiscussCommentR project_handle target comment_id))
         <span .comment-action>
-            <a href="@{DiscussCommentR target comment_id}">
+            <a href="@{DiscussCommentR project_handle target comment_id}">
                 reply
 
     $if user_id == viewer_id
         <span .comment-action>
-            <a href="@{RetractCommentR target comment_id}" style="color: darkred">
+            <a href="@{RetractCommentR project_handle target comment_id}" style="color: darkred">
                 retract
 
     $if depth > max_depth
@@ -52,10 +52,10 @@ $# used by renderComment function
                 <br>
                 <br>
                 <em>
-                    <a href="@{DiscussCommentR target comment_id}">
+                    <a href="@{DiscussCommentR project_handle target comment_id}">
                         #{replies} more #{plural replies "reply" "replies"}
 
     $else
         $forall child <- children
-            ^{renderComment viewer_id target users max_depth (depth + 1) empty_list retraction_map child}
+            ^{renderComment viewer_id project_handle target users max_depth (depth + 1) empty_list retraction_map child}
 

@@ -15,8 +15,17 @@ sidebar = do
 
     alreadyExpired
 
-    let role = fromMaybe Uninvited (userRole . entityVal <$> maybe_user)
-        is_committee_member = role == CommitteeMember || role == Admin
+    role_values <- case maybe_user of
+        Nothing -> return []
+        Just (Entity user_id _) -> handlerToWidget $ runDB $ select $ from $ \ project_user_role -> do
+            where_ $ project_user_role ^. UserProjectRoleUser ==. val user_id
+            return $ project_user_role ^. UserProjectRoleRole
+
+    let role = case role_values of
+            [] -> Public
+            rs -> let Value r = maximum rs in r
+
+    let is_committee_member = role == CommitteeMember || role == Admin
         log_in_or_out =
             case maybe_user of
                 Nothing ->
@@ -101,7 +110,7 @@ sidebar = do
                         where_ ( wiki_page ^. WikiPageId `in_` valList (map (wikiEditPage . entityVal) edits) )
                         return wiki_page
 
-                    let filtered_pages = map entityKey $ filter (\ (Entity _ page) -> userRole user >= wikiPageCanViewMeta page) pages
+                    let filtered_pages = map entityKey $ filter (\ (Entity _ page) -> role >= wikiPageCanViewMeta page) pages
                     return $ filter (flip S.member (S.fromList filtered_pages) . wikiEditPage . entityVal) edits
 
             comments :: [Entity Comment] <- do
@@ -115,7 +124,7 @@ sidebar = do
                         where_ ( wiki_page ^. WikiPageId `in_` valList (map (commentPage . entityVal) comments) )
                         return wiki_page
 
-                    let filtered_pages = map entityKey $ filter (\ (Entity _ page) -> userRole user >= wikiPageCanViewMeta page) pages
+                    let filtered_pages = map entityKey $ filter (\ (Entity _ page) -> role >= wikiPageCanViewMeta page) pages
                     return $ filter (flip S.member (S.fromList filtered_pages) . commentPage . entityVal) comments
 
             return (messages, applications, edits, comments)

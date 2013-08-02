@@ -3,7 +3,7 @@
         <h1>Welcome!
         <strong>
             We are creating a non-profit cooperative system to support
-            <a href="@{WikiR "free-libre-open"}">free/libre/open
+            <a href="@{WikiR "snowdrift" "free-libre-open"}">free/libre/open
             software, cultural works (art, music, etc.), science, educational resources, and more&hellip;
         <h2>
             Why is this needed?
@@ -13,7 +13,7 @@
         <p>
             The internet enables the community model on a greater scale than ever
             but works against the producer-consumer model.
-            <a href="@{WikiR "economics"}">Non-scarce
+            <a href="@{WikiR "snowdrift" "economics"}">Non-scarce
             digital works can be shared freely, so there's no need to pay for access.
         <p>
             Artificial scarcity via technical and/or legal restrictions can enable the consumer model for digital works,
@@ -32,7 +32,7 @@
             While some people donate, most of us put our limited resources toward scarce goods.
         <p>
             Consider a metaphor:
-            <a href="@{WikiR "snowdrift"}"><strong> the Snowdrift Dilemma</strong>.
+            <a href="@{WikiR "snowdrift" "snowdrift"}"><strong> the Snowdrift Dilemma</strong>.
             A huge drift of snow blocks the road. Who will clear it? We all have other things to do.
             I worry that if I start working, then everyone else will freeload.
             Ironically, everyone else may be thinking the same thing!
@@ -49,7 +49,7 @@
             If nobody joins you, it costs you nothing. If many join, then everyone together will make a great impact.
             Our full pledge system has
             <strong>
-                <a href="@{WikiR "mechanism"}"> further details
+                <a href="@{WikiR "snowdrift" "mechanism"}"> further details
             designed to maximize reliability, flexibility, and fairness; and to keep projects honorable and accountable.
         <p>
             <strong>
@@ -61,14 +61,14 @@
             <em> Q. What projects will there be?
         <p>
             A. Any project may sign up as long as they meet our requirements for
-            <a href="@{WikiR "licenses"}"> Free/Libre/Open licensing
+            <a href="@{WikiR "snowdrift" "licenses"}"> Free/Libre/Open licensing
             and a few other details
         <p>
             <em> Q. Don't Kickstarter and the <em>hundreds</em> of other crowdfunding sites already solve this dilemma?
         <p>
             A. The standard crowdfunding mechanism involves one-time fund-drives with arbitrary deadlines and cut-off points.
             Because this addresses the freeloading dilemma, it is often more successful than simple donations.
-            There are, however, several <a href="@{WikiR "threshold-systems"}"> problems with this approach</a>.
+            There are, however, several <a href="@{WikiR "snowdrift" "threshold-systems"}"> problems with this approach</a>.
             Running this type of campaign can be costly and still fail,
             and successful projects are expected to become self-sustaining or to be complete.
             Snowdrift.coop is a completely different system.
@@ -77,7 +77,7 @@
             <em> Q. What about other other funding options?
         <p>
             A. Snowdrift.coop can work alongside
-            <a href="@{WikiR "existingmechanisms"}">existing funding mechanisms
+            <a href="@{WikiR "snowdrift" "existingmechanisms"}">existing funding mechanisms
             but we require that projects be transparent and reveal all funding sources.
         <hr>
         <h2>
@@ -85,7 +85,7 @@
         <ul>
             <li>
                 Learn more on our
-                <a href="@{WikiR "about"}">About pages
+                <a href="@{WikiR "snowdrift" "about"}">About pages
                 and 
                 <a href="/user/new"> register a new account
                 to participate as a beta user!

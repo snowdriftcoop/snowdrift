@@ -3,7 +3,7 @@
 module Foundation where
 
 import Prelude
-import Yesod
+import Yesod hiding ((==.), count, Value)
 import Yesod.Static
 import Yesod.Auth
 import Yesod.Auth.BrowserId
@@ -14,7 +14,6 @@ import Network.HTTP.Conduit (Manager)
 import qualified Settings
 import Settings.Development (development)
 import qualified Database.Persist
-import Database.Persist.Sql (SqlPersistT)
 import Settings.StaticFiles
 import Settings (widgetFile, Extra (..))
 import Model
@@ -44,6 +43,8 @@ import qualified Data.Text.Lazy.Encoding as E
 import qualified Data.Text as T
 
 import Data.Time
+
+import Database.Esqueleto
 
 -- | The site argument for your application. This can be a good place to
 -- keep settings and values requiring initialization before your application
@@ -204,65 +205,25 @@ instance Yesod App where
     shouldLog _ _source level =
         development || level == LevelWarn || level == LevelError
 
-    isAuthorized HomeR _ = return Authorized
-    isAuthorized ContactR _ = return Authorized
-    isAuthorized TosR _ = return Authorized
-    isAuthorized PostLoginR _ = return Authorized
-    isAuthorized JsLicenseR _ = return Authorized
-    isAuthorized PrivacyR _ = return Authorized
-    isAuthorized FaviconR _ = return Authorized
-    isAuthorized RobotsR _ = return Authorized
-    isAuthorized RepoFeedR _ = return Authorized
-    isAuthorized BuildFeedR _ = return Authorized
-    isAuthorized (AuthR _) _ = return Authorized
-    isAuthorized UserCreateR _ = return Authorized
-    isAuthorized (InvitationR _) _ = return Authorized
+    isAuthorized _ _ = return Authorized -- TODO
 
-    isAuthorized (WikiR target) True = require wikiPageCanEdit target
-    isAuthorized (WikiR target) False = require wikiPageCanView target
+require :: (WikiPage -> Role) -> Text -> Text -> HandlerT App IO AuthResult
+require permission project target = do
+    maybe_project_id <- fmap (fmap entityKey) $ runDB $ getBy $ UniqueProjectHandle project
 
-    isAuthorized (DiscussWikiR target) True = require wikiPageCanEdit target
-    isAuthorized (DiscussWikiR target) False = require wikiPageCanViewMeta target
+    case maybe_project_id of
+        Nothing -> return $ Unauthorized "Project does not exist."
+        Just project_id -> do
+            maybe_user_id <- maybeAuthId
+            role <- case maybe_user_id of
+                Nothing -> return Public
+                Just user_id -> fmap (maybe Public (userProjectRoleRole . entityVal)) $ runDB $ getBy $ UniqueProjectUser project_id user_id
 
-    isAuthorized (DiscussCommentR target _) True = require wikiPageCanEdit target
-    isAuthorized (DiscussCommentR target _) False = require wikiPageCanViewMeta target
+            maybe_page <- runDB $ getBy $ UniqueWikiTarget project_id target
 
-    isAuthorized (WikiHistoryR target) _ = require wikiPageCanViewMeta target
-    isAuthorized (WikiDiffR target _ _) _ = require wikiPageCanViewMeta target
-    isAuthorized (WikiDiffProxyR target) _ = require wikiPageCanViewMeta target
-    isAuthorized (WikiEditR target _) _ = require wikiPageCanViewMeta target
-
-    isAuthorized (UserR user_id) _  = do
-        Entity viewer_id viewer <- requireAuth
-        return $ if user_id == viewer_id
-                  then Authorized
-                  else if userRole viewer >= GeneralPublic
-                        then Authorized
-                        else Unauthorized "You must be invited to view other users"
-
-    isAuthorized (EditUserR _) _ = return Authorized
-
-{-
-    isAuthorized (UserR user_id) write = do
-        Entity viewer_id viewer <- requireAuth
-        return $ case (user_id == viewer_id, write) of
-                    (True, _) -> Authorized
-                    (False, True) -> Unauthorized "You cannot edit info of other users"
-                    _ -> if userRole viewer >= GeneralPublic then Authorized else Unauthorized "You must be invited to view other users"
--}
-
-    isAuthorized route write = do
-        role <- maybe Uninvited (userRole . entityVal) <$> maybeAuth
-        return $ roleCanView role write route
-
-require :: (WikiPage -> Role) -> Text -> HandlerT App IO AuthResult
-require permission target = do
-    role <- maybe Uninvited (userRole . entityVal) <$> maybeAuth
-    maybe_page <- runDB $ getBy $ UniqueWikiTarget target
-
-    return $ case maybe_page of
-        Nothing -> Unauthorized "Page does not exist."
-        Just (Entity _ page) -> if role >= permission page then Authorized else Unauthorized "You do not have sufficient permissions."
+            return $ case maybe_page of
+                Nothing -> Unauthorized "Page does not exist."
+                Just (Entity _ page) -> if role >= permission page then Authorized else Unauthorized "You do not have sufficient permissions."
 
 
 roleCanView :: Role -> Bool -> Route App -> AuthResult
@@ -272,7 +233,7 @@ roleCanView CommitteeMember _ _ = Authorized
 roleCanView CommitteeCandidate _ _ = Authorized
 
 roleCanView GeneralPublic _ CommitteeR = Unauthorized "This page requires a special invite, sorry."
-roleCanView GeneralPublic _ InviteR = Unauthorized "This page requires a special invite, sorry."
+roleCanView GeneralPublic _ (InviteR _) = Unauthorized "This page requires a special invite, sorry."
 roleCanView GeneralPublic _ (ApplicationR _) = Unauthorized "This page requires a special invite, sorry."
 roleCanView GeneralPublic _ ApplicationsR = Unauthorized "This page requires a special invite, sorry."
 roleCanView GeneralPublic _ _ = Authorized
@@ -345,7 +306,7 @@ instance YesodAuth App where
             Just (Entity uid _) -> return $ Just uid
             Nothing -> do
                 account_id <- insert $ Account $ Milray 0
-                fmap Just $ insert $ User (credsIdent creds) Nothing Nothing Nothing account_id Uninvited Nothing Nothing Nothing Nothing now now now now
+                fmap Just $ insert $ User (credsIdent creds) Nothing Nothing Nothing account_id Nothing Nothing Nothing Nothing now now now now
 
     -- You can add other plugins like BrowserID, email or OAuth here
     authPlugins _ = [ authBrowserIdFixed, authHashDB (Just . UniqueUser) ]

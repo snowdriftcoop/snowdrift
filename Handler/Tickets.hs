@@ -7,8 +7,8 @@ import Widgets.Sidebar
 import qualified Data.Map as M
 import Control.Arrow ((&&&))
 
-getTicketsR :: Handler Html
-getTicketsR = do
+getTicketsR :: Text -> Handler Html
+getTicketsR project_handle = do
     (tickets, pages_by_ticket_id) <- runDB $ do
         unfiltered_tickets <- selectList [] [Desc TicketId]
         comments <- selectList [ CommentId <-. map (ticketComment . entityVal) unfiltered_tickets ] []
@@ -25,5 +25,5 @@ getTicketsR = do
             pages_by_ticket_id = M.mapMaybe (flip M.lookup pages_map . commentPage) comments_by_ticket_id
         return (tickets, pages_by_ticket_id)
 
-    defaultLayout $ $(widgetFile "tickets")
+    defaultLayout $(widgetFile "tickets")
         

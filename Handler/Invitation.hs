@@ -2,13 +2,13 @@ module Handler.Invitation where
 
 import Import
 
-import Model.Role
+-- import Model.Role
 
 import Widgets.Sidebar
 
 
-getInvitationR :: Text -> Handler Html
-getInvitationR code = do
+getInvitationR :: Text -> Text -> Handler Html
+getInvitationR project_handle code = do
     Entity invite_id invite <- runDB $ getBy404 $ UniqueInvite code
     maybe_user_id <- maybeAuthId
 
@@ -19,19 +19,20 @@ getInvitationR code = do
 
     let redeemed = inviteRedeemed invite || isJust (inviteRedeemedBy invite)
 
-    defaultLayout $ $(widgetFile "invitation")
+    defaultLayout $(widgetFile "invitation")
     
 
-postInvitationR :: Text -> Handler Html
-postInvitationR code = do
+postInvitationR :: Text -> Text -> Handler Html
+postInvitationR _ code = do
     viewer_id :: UserId <- requireAuthId
     now <- liftIO getCurrentTime
-    role <- runDB $ do
+    _ <- runDB $ do
         Entity invite_id invite <- getBy404 $ UniqueInvite code
 
         if inviteRedeemed invite
          then return Nothing
          else do
+            -- TODO make sure project handle matches invite
             update $ \ i -> do
                 set i [ InviteRedeemed =. val True
                       , InviteRedeemedTs =. val (Just now)
@@ -39,12 +40,11 @@ postInvitationR code = do
                       ]
                 where_ ( i ^. InviteId ==. val invite_id )
 
-            update $ \ user -> do
-                where_ (user ^. UserId ==. val viewer_id)
-                set user [ UserRole =. val (inviteRole invite) ]
+            _ <- insertUnique $ UserProjectRole viewer_id (inviteProject invite) (inviteRole invite)
+            -- TODO: update
 
             return $ Just $ inviteRole invite
 
-    redirect $ maybe (InvitationR code) roleDefaultTarget role
+    redirectUltDest HomeR
     
     

@@ -12,7 +12,7 @@
                         <td>
                             #{userPrintName (Entity user_id user)}
                         <td>
-                            #{show (userRole user)}
+                            -- TODO
 
     <div .span3 .offset1>
         ^{sidebar}

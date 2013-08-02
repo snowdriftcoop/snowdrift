@@ -93,7 +93,7 @@
                 <a href=@{ContactR}>contact us
                 and we can give you guidance or reach out to them ourselves.
 
-        <form method=post action=@{InviteR}>
+        <form method=post action=@{InviteR project_handle}>
             ^{invite_form}
             <input type=submit value="generate invitation">
 
@@ -125,7 +125,7 @@
                                         #{format_inviter user_id}
                         <td .text>#{inviteTag invite}
                         <td .text>#{roleAbbrev (inviteRole invite)}
-                        <td .text>@{InvitationR (inviteCode invite)}
+                        <td .text>@{InvitationR project_handle (inviteCode invite)}
 
 <br>
 <div .row>
@@ -155,4 +155,4 @@
 
                         <td .text>#{inviteTag invite}
                         <td .text>#{roleAbbrev (inviteRole invite)}
-                        <td .text>@{InvitationR (inviteCode invite)}
+                        <td .text>@{InvitationR project_handle (inviteCode invite)}

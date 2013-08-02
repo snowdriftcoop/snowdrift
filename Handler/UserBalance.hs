@@ -6,7 +6,7 @@ import qualified Data.Set as S
 import qualified Data.Map as M
 import qualified Data.Text as T
 
-import Model.Role
+-- import Model.Role
 import Model.Transaction
 import Model.Currency
 
@@ -30,7 +30,9 @@ getUserBalanceR user_id = do
     Entity viewer_id viewer <- requireAuth
     user <- runDB $ get404 user_id
 
+    {- TODO
     when (userRole viewer /= Admin && user_id /= viewer_id) $ permissionDenied "You can only view your own account balance history."
+    -}
 
     Just account <- runDB $ get $ userAccount user
 
@@ -68,10 +70,10 @@ getUserBalanceR user_id = do
 
 postUserBalanceR :: UserId -> Handler Html
 postUserBalanceR user_id = do
-    Entity viewer_id viewer <- requireAuth
+    -- Entity viewer_id viewer <- requireAuth
     user <- runDB $ get404 user_id
 
-    when (userRole viewer /= Admin && user_id /= viewer_id) $ permissionDenied "You can only add money to your own account."
+    -- TODO when (userRole viewer /= Admin && user_id /= viewer_id) $ permissionDenied "You can only add money to your own account."
 
     ((result, _), _) <- runFormPost addTestCashForm
 

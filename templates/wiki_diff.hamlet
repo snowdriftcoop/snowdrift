@@ -2,11 +2,11 @@
     <div .span9>
         <div .row>
             <div .span3> 
-                <a href="@{WikiHistoryR target}">back to history 
+                <a href="@{WikiHistoryR project_handle target}">back to history 
             <div .span3>
-                <a href="@{WikiR target}">current version
+                <a href="@{WikiR project_handle target}">current version
             <div .span3>
-                <a href="@{DiscussWikiR target}">view discussion
+                <a href="@{DiscussWikiR project_handle target}">view discussion
 
         $# TODO - info from compared versions
 

@@ -2,15 +2,15 @@
     <div .span9>
         <div .row>
             <div .span3>
-                <a href="@{WikiR target}"> back to current page
+                <a href="@{WikiR project_handle target}"> back to current page
         <hr .wikitop>
         <div .row>
-            <form action="@{WikiDiffProxyR target}" method="GET">
+            <form action="@{WikiDiffProxyR project_handle target}" method="GET">
                 <table .table>
                     $forall (index, Entity edit_id edit) <- editsIndexed
                         <tr>
                             <td>
-                                <a href="@{WikiEditR target edit_id}">
+                                <a href="@{WikiEditR project_handle target edit_id}">
                                     ^{renderTime (wikiEditTs edit)}
                             <td>
                                 $with user_id <- wikiEditUser edit

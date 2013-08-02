@@ -34,10 +34,12 @@ import qualified Data.Function as FUN
 
 import Text.Blaze.Html5 (ins, del, br)
 
-getWikiR :: Text -> Handler Html
-getWikiR target = do
+getWikiR :: Text -> Text -> Handler Html
+getWikiR project_handle target = do
     Entity _ page <- runDB $ do
-        page_entity <- getBy404 $ UniqueWikiTarget target
+        Entity project_id _ <- getBy404 $ UniqueProjectHandle project_handle
+        page_entity <- getBy404 $ UniqueWikiTarget project_id target
+
         return page_entity
 
     let can_view = wikiPageCanView page
@@ -47,45 +49,50 @@ getWikiR target = do
             maybe_user <- maybeAuth
             case maybe_user of
                 Nothing -> return (False, False)
-                Just (Entity _ user) -> return (userRole user >= wikiPageCanEdit page, userRole user >= wikiPageCanViewMeta page)
+                Just _ -> return (True, True) -- TODO (userRole user >= wikiPageCanEdit page, userRole user >= wikiPageCanViewMeta page)
                     
-        
          else do
-            Entity _ user <- requireAuth
-            when (userRole user < can_view) $ permissionDenied "You do not have sufficient privileges to view this page."
+            Entity _ _ <- requireAuth
+            -- TODO when (userRole user < can_view) $ permissionDenied "You do not have sufficient privileges to view this page."
 
-            return (userRole user >= wikiPageCanEdit page, userRole user >= wikiPageCanViewMeta page)
+            return (True, True) -- TODO (userRole user >= wikiPageCanEdit page, userRole user >= wikiPageCanViewMeta page)
 
-    defaultLayout $ renderWiki target can_edit can_view_meta page
+    defaultLayout $ renderWiki project_handle target can_edit can_view_meta page
 
 
-getWikiPagesR :: Handler Html
-getWikiPagesR = do
+getWikiPagesR :: Text -> Handler Html
+getWikiPagesR project_handle = do
     Entity _ user <- requireAuth
 
-    unfiltered_pages <- runDB $ selectList [] [Asc WikiPageTarget]
+    unfiltered_pages <- runDB $ select $ from $ \ (project `InnerJoin` wiki_page) -> do
+        on $ project ^. ProjectId ==. wiki_page ^. WikiPageProject
+        where_ $ project ^. ProjectHandle ==. val project_handle
+        orderBy [asc $ wiki_page ^. WikiPageTarget]
+        return wiki_page
 
-    let pages = filter (\ page -> wikiPageCanView (entityVal page) <= userRole user) unfiltered_pages
+    let pages = {- TODO filter (\ page -> wikiPageCanView (entityVal page) <= userRole user) -} unfiltered_pages
 
-    defaultLayout $ $(widgetFile "wiki_pages")
-
-
-renderWiki :: Text -> Bool -> Bool -> WikiPage -> Widget
-renderWiki target can_edit can_view_meta page = $(widgetFile "wiki")
+    defaultLayout $(widgetFile "wiki_pages")
 
 
+renderWiki :: Text -> Text -> Bool -> Bool -> WikiPage -> Widget
+renderWiki project_handle target can_edit can_view_meta page = $(widgetFile "wiki")
 
-postWikiR :: Text -> Handler Html
-postWikiR target = do
-    Entity user_id user <- requireAuth
+
+
+postWikiR :: Text -> Text -> Handler Html
+postWikiR project_handle target = do
+    Entity user_id _ <- requireAuth
     now <- liftIO getCurrentTime
 
-    (Entity page_id page, Entity _ last_edit) <- runDB $ do
-        page_entity <- getBy404 $ UniqueWikiTarget target
-        last_edit_entity <- getBy404 $ UniqueWikiLastEdit $ entityKey page_entity
-        return (page_entity, last_edit_entity)
 
-    when (userRole user < wikiPageCanEdit page) $ permissionDenied "You do not have sufficient privileges to edit this page."
+    (project_id, Entity page_id page, Entity _ last_edit) <- runDB $ do
+        Entity project_id _ <- getBy404 $ UniqueProjectHandle project_handle
+        page_entity <- getBy404 $ UniqueWikiTarget project_id target
+        last_edit_entity <- getBy404 $ UniqueWikiLastEdit $ entityKey page_entity
+        return (project_id, page_entity, last_edit_entity)
+
+    -- TODO when (userRole user < wikiPageCanEdit page) $ permissionDenied "You do not have sufficient privileges to edit this page."
 
     ((result, _), _) <- runFormPost $ editWikiForm (wikiLastEditEdit last_edit) (wikiPageContent page) Nothing
 
@@ -101,7 +108,8 @@ postWikiR target = do
                 case mode of
                     Just "preview" -> do
                         (form, _) <- generateFormPost $ editWikiForm (wikiLastEditEdit last_edit) content comment
-                        defaultLayout $ renderPreview form action $ renderWiki target False False $ WikiPage target content Uninvited Uninvited Uninvited
+                        defaultLayout $ renderPreview form action $ renderWiki project_handle target False False new_page
+                            where new_page = WikiPage target project_id content Uninvited Uninvited Uninvited
 
                     Just x | x == action -> do
                         runDB $ do
@@ -119,7 +127,7 @@ postWikiR target = do
                                 Right _ -> return ()
 
                         setMessage "Updated."
-                        redirect $ WikiR target
+                        redirect $ WikiR project_handle target
 
                     _ -> error "Error: unrecognized mode"
 
@@ -130,37 +138,40 @@ postWikiR target = do
         FormFailure msgs -> error $ "Error submitting form: " ++ T.unpack (T.concat msgs)
 
 
-getEditWikiR :: Text -> Handler Html
-getEditWikiR target = do
+getEditWikiR :: Text -> Text -> Handler Html
+getEditWikiR project_handle target = do
     Entity user_id user <- requireAuth
     (Entity page_id page, Entity _ last_edit) <- runDB $ do
-        page_entity <- getBy404 $ UniqueWikiTarget target
+        Entity project_id _ <- getBy404 $ UniqueProjectHandle project_handle
+        page_entity <- getBy404 $ UniqueWikiTarget project_id target
         last_edit_entity <- getBy404 $ UniqueWikiLastEdit $ entityKey page_entity
         return (page_entity, last_edit_entity)
 
-    when (userRole user < wikiPageCanEdit page) $ permissionDenied "You do not have sufficient privileges to edit this page."
+    -- TODO when (userRole user < wikiPageCanEdit page) $ permissionDenied "You do not have sufficient privileges to edit this page."
 
     (wiki_form, _) <- generateFormPost $ editWikiForm (wikiLastEditEdit last_edit) (wikiPageContent page) Nothing
 
     defaultLayout $(widgetFile "edit_wiki")
 
 
-getNewWikiR :: Text -> Handler Html
-getNewWikiR target = do
+getNewWikiR :: Text -> Text -> Handler Html
+getNewWikiR project_handle target = do
     Entity user_id user <- requireAuth
 
-    when (userRole user < CommitteeMember) $ permissionDenied "You do not have sufficient privileges to create a new page."
+    -- TODO when (userRole user < CommitteeMember) $ permissionDenied "You do not have sufficient privileges to create a new page."
 
     (wiki_form, _) <- generateFormPost $ newWikiForm Nothing Nothing Nothing Nothing
 
     defaultLayout $(widgetFile "new_wiki")
 
 
-postNewWikiR :: Text -> Handler Html
-postNewWikiR target = do
-    Entity user_id user <- requireAuth
-    when (userRole user < CommitteeMember) $ permissionDenied "You do not have sufficient privileges to create a new page."
+postNewWikiR :: Text -> Text -> Handler Html
+postNewWikiR project_handle target = do
+    Entity user_id _ <- requireAuth
+    -- TODO when (userRole user < CommitteeMember) $ permissionDenied "You do not have sufficient privileges to create a new page."
     now <- liftIO getCurrentTime
+
+    Entity project_id _ <- runDB $ getBy404 $ UniqueProjectHandle project_handle
 
     ((result, _), _) <- runFormPost $ newWikiForm Nothing Nothing Nothing Nothing
 
@@ -171,17 +182,18 @@ postNewWikiR target = do
             case mode of
                 Just "preview" -> do
                         (form, _) <- generateFormPost $ newWikiForm (Just content) (Just can_view) (Just can_view_meta) (Just can_edit)
-                        defaultLayout $ renderPreview form action $ renderWiki target False False $ WikiPage target content Uninvited Uninvited Uninvited
+                        defaultLayout $ renderPreview form action $ renderWiki project_handle target False False page
+                            where page = WikiPage target project_id content Uninvited Uninvited Uninvited
 
 
                 Just x | x == action -> do
                     _ <- runDB $ do
-                        page_id <- insert $ WikiPage target content can_view can_view_meta can_edit
+                        page_id <- insert $ WikiPage target project_id content can_view can_view_meta can_edit
                         edit_id <- insert $ WikiEdit now user_id page_id content $ Just "Page created."
                         insert $ WikiLastEdit page_id edit_id
 
                     setMessage "Created."
-                    redirect $ WikiR target
+                    redirect $ WikiR project_handle target
 
                 _ -> error "unrecognized mode"
             
@@ -202,12 +214,14 @@ buildCommentTree root rest =
      in unfoldTree treeOfList (root, rest)
 
 
-getDiscussWikiR :: Text -> Handler Html
-getDiscussWikiR target = do
+getDiscussWikiR :: Text -> Text -> Handler Html
+getDiscussWikiR project_handle target = do
     Entity user_id user <- requireAuth
-    Entity page_id page  <- runDB $ getBy404 $ UniqueWikiTarget target
+    Entity page_id page  <- runDB $ do
+        Entity project_id _ <- getBy404 $ UniqueProjectHandle project_handle
+        getBy404 $ UniqueWikiTarget project_id target
 
-    let can_edit = userRole user >= wikiPageCanEdit page
+    let can_edit = True -- TODO userRole user >= wikiPageCanEdit page
 
     (roots, rest, users, retraction_map) <- runDB $ do
         roots <- select $ from $ \ comment -> do
@@ -230,19 +244,21 @@ getDiscussWikiR target = do
         retraction_map <- M.fromList . map ((commentRetractionComment &&& id) . entityVal) <$> selectList [ CommentRetractionComment <-. map entityKey (roots ++ rest) ] []
         return (roots, rest, users, retraction_map)
 
-    let comments = forM_ roots $ \ root -> renderComment user_id target users 10 0 [] retraction_map $ buildCommentTree root rest
+    let comments = forM_ roots $ \ root -> renderComment user_id project_handle target users 10 0 [] retraction_map $ buildCommentTree root rest
 
     (comment_form, _) <- generateFormPost $ commentForm Nothing Nothing
 
     defaultLayout $(widgetFile "wiki_discuss")
 
 
-getDiscussCommentR :: Text -> CommentId -> Handler Html
-getDiscussCommentR target comment_id = do
-    Entity viewer_id viewer <- requireAuth
-    Entity page_id page  <- runDB $ getBy404 $ UniqueWikiTarget target
+getDiscussCommentR :: Text -> Text -> CommentId -> Handler Html
+getDiscussCommentR project_handle target comment_id = do
+    Entity viewer_id _ <- requireAuth
+    Entity page_id _  <- runDB $ do
+        Entity project_id _ <- getBy404 $ UniqueProjectHandle project_handle
+        getBy404 $ UniqueWikiTarget project_id target
 
-    let can_edit = userRole viewer >= wikiPageCanEdit page
+    let can_edit = True -- TODO userRole viewer >= wikiPageCanEdit page
 
     (root, rest, users, earlier_retractions, retraction_map) <- runDB $ do
         root <- get404 comment_id
@@ -283,23 +299,30 @@ getDiscussCommentR target comment_id = do
 
     (comment_form, _) <- generateFormPost $ commentForm (Just comment_id) Nothing
 
-    defaultLayout $ renderDiscussComment viewer_id target can_edit comment_form (Entity comment_id root) rest users earlier_retractions retraction_map
+    defaultLayout $ renderDiscussComment viewer_id project_handle target can_edit comment_form (Entity comment_id root) rest users earlier_retractions retraction_map
 
 
-renderDiscussComment :: UserId -> Text -> Bool -> Widget -> Entity Comment -> [Entity Comment] -> M.Map UserId (Entity User) -> [CommentRetraction] -> M.Map CommentId CommentRetraction -> Widget
-renderDiscussComment viewer_id target can_edit comment_form root rest users earlier_retractions retraction_map = do
+renderDiscussComment :: UserId -> Text -> Text -> Bool -> Widget
+    -> Entity Comment -> [Entity Comment]
+    -> M.Map UserId (Entity User)
+    -> [CommentRetraction]
+    -> M.Map CommentId CommentRetraction -> Widget
+
+renderDiscussComment viewer_id project_handle target can_edit comment_form root rest users earlier_retractions retraction_map = do
     let Node parent children = buildCommentTree root rest
-        comment = renderComment viewer_id target users 1 0 earlier_retractions retraction_map $ Node parent []
-        child_comments = mapM_ (renderComment viewer_id target users 10 0 [] retraction_map) children
+        comment = renderComment viewer_id project_handle target users 1 0 earlier_retractions retraction_map $ Node parent []
+        child_comments = mapM_ (renderComment viewer_id project_handle target users 10 0 [] retraction_map) children
 
     $(widgetFile "comment")
 
 
 
-postDiscussWikiR :: Text -> Handler Html
-postDiscussWikiR target = do
+postDiscussWikiR :: Text -> Text -> Handler Html
+postDiscussWikiR project_handle target = do
     Entity user_id user <- requireAuth
-    Entity page_id _ <- runDB $ getBy404 $ UniqueWikiTarget target
+    Entity page_id _ <- runDB $ do
+        Entity project_id _ <- getBy404 $ UniqueProjectHandle project_handle
+        getBy404 $ UniqueWikiTarget project_id target
 
     now <- liftIO getCurrentTime
 
@@ -334,7 +357,7 @@ postDiscussWikiR target = do
 
 
                     (form, _) <- generateFormPost $ commentForm maybe_parent_id (Just text)
-                    defaultLayout $ renderPreview form action $ renderDiscussComment user_id target False (return ()) (Entity (Key $ PersistInt64 0) $ Comment now page_id maybe_parent_id user_id text depth) [] (M.singleton user_id $ Entity user_id user) earlier_retractions M.empty
+                    defaultLayout $ renderPreview form action $ renderDiscussComment user_id project_handle target False (return ()) (Entity (Key $ PersistInt64 0) $ Comment now page_id maybe_parent_id user_id text depth) [] (M.singleton user_id $ Entity user_id user) earlier_retractions M.empty
 
 
                 Just x | x == action -> do
@@ -363,7 +386,7 @@ postDiscussWikiR target = do
                         forM_ ancestors $ \ ancestor_id -> insert $ CommentAncestor comment_id ancestor_id
 
                     setMessage "comment posted"
-                    redirect $ DiscussWikiR target
+                    redirect $ DiscussWikiR project_handle target
 
                 _ -> error "unrecognized mode"
 
@@ -371,8 +394,8 @@ postDiscussWikiR target = do
         FormFailure msgs -> error $ "Error submitting form: " ++ T.unpack (T.intercalate "\n" msgs)
 
 
-getWikiNewCommentsR :: Handler Html
-getWikiNewCommentsR = do
+getWikiNewCommentsR :: Text -> Handler Html
+getWikiNewCommentsR project_handle = do
     Entity viewer_id viewer <- requireAuth
 
     maybe_from <- fmap (Key . PersistInt64 . read . T.unpack) <$> lookupGetParam "from"
@@ -382,7 +405,7 @@ getWikiNewCommentsR = do
     (comments, pages, users, retraction_map) <- runDB $ do
         unfiltered_pages :: [Entity WikiPage] <- select $ from $ \ page -> return page
 
-        let pages = M.fromList $ map (entityKey &&& id) $ filter ((userRole viewer >=) . wikiPageCanViewMeta . entityVal) unfiltered_pages
+        let pages = M.fromList $ map (entityKey &&& id) $ {- TODO filter ((userRole viewer >=) . wikiPageCanViewMeta . entityVal) -} unfiltered_pages
 
         comments <- select $ from $ \ comment -> do
             where_ $ case maybe_from of
@@ -423,13 +446,13 @@ getWikiNewCommentsR = do
                         return comment_retraction
 
                 let target = wikiPageTarget $ entityVal $ pages M.! commentPage comment
-                    rendered_comment = renderComment viewer_id target users 1 0 earlier_retractions retraction_map $ Node (Entity comment_id comment) []
+                    rendered_comment = renderComment viewer_id project_handle target users 1 0 earlier_retractions retraction_map $ Node (Entity comment_id comment) []
 
                 [whamlet|$newline never
                     <div .row>
                         <div .span9>
                             On #
-                            <a href="@{WikiR target}">
+                            <a href="@{WikiR project_handle target}">
                                 #{target}
                             :
                             ^{rendered_comment}
@@ -442,10 +465,11 @@ getWikiNewCommentsR = do
     defaultLayout $(widgetFile "wiki_new_comments")
 
 
-getWikiHistoryR :: Text -> Handler Html
-getWikiHistoryR target = do
+getWikiHistoryR :: Text -> Text -> Handler Html
+getWikiHistoryR project_handle target = do
     (edits, users) <- runDB $ do
-        Entity page_id _ <- getBy404 $ UniqueWikiTarget target
+        Entity project_id _ <- getBy404 $ UniqueProjectHandle project_handle
+        Entity page_id _ <- getBy404 $ UniqueWikiTarget project_id target
         edits <- select $ from $ \ edit -> do
             where_ ( edit ^. WikiEditPage ==. val page_id )
             orderBy [ desc (edit ^. WikiEditId) ]
@@ -464,8 +488,8 @@ getWikiHistoryR target = do
 
 -- | A proxy handler that redirects "ugly" to "pretty" diff URLs,
 -- e.g. /w/diff?from=a&to=b to /w/diff/a/b
-getWikiDiffProxyR :: Text -> Handler Html
-getWikiDiffProxyR target = do
+getWikiDiffProxyR :: Text -> Text -> Handler Html
+getWikiDiffProxyR project_handle target = do
     (start_edit_id_t, end_edit_id_t) <- runInputGet $ (,)
                                         <$> ireq textField "start"
                                         <*> ireq textField "end"
@@ -475,13 +499,14 @@ getWikiDiffProxyR target = do
         return (s, e)
     maybe
         (invalidArgs ["revision IDs"])
-        (\(s, e) -> redirect $ WikiDiffR target s e)
+        (\(s, e) -> redirect $ WikiDiffR project_handle target s e)
         pairMay
 
-getWikiDiffR :: Text -> WikiEditId -> WikiEditId -> Handler Html
-getWikiDiffR target start_edit_id end_edit_id = do
+getWikiDiffR :: Text -> Text -> WikiEditId -> WikiEditId -> Handler Html
+getWikiDiffR project_handle target start_edit_id end_edit_id = do
     (start_edit, end_edit) <- runDB $ do
-        Entity page_id _ <- getBy404 $ UniqueWikiTarget target
+        Entity project_id _ <- getBy404 $ UniqueProjectHandle project_handle
+        Entity page_id _ <- getBy404 $ UniqueWikiTarget project_id target
         start_edit <- get404 start_edit_id
         end_edit <- get404 end_edit_id
 
@@ -495,10 +520,11 @@ getWikiDiffR target start_edit_id end_edit_id = do
 
     defaultLayout $(widgetFile "wiki_diff")
 
-getWikiEditR :: Text -> WikiEditId -> Handler Html
-getWikiEditR target edit_id = do
+getWikiEditR :: Text -> Text -> WikiEditId -> Handler Html
+getWikiEditR project_handle target edit_id = do
     edit <- runDB $ do
-        Entity page_id _ <- getBy404 $ UniqueWikiTarget target
+        Entity project_id _ <- getBy404 $ UniqueProjectHandle project_handle
+        Entity page_id _ <- getBy404 $ UniqueWikiTarget project_id target
         edit <- get404 edit_id
 
         when (page_id /= wikiEditPage edit) $ error "selected edit is not an edit of selected page"
@@ -507,8 +533,8 @@ getWikiEditR target edit_id = do
 
     defaultLayout $(widgetFile "wiki_edit")
 
-getWikiNewEditsR :: Handler Html
-getWikiNewEditsR = do
+getWikiNewEditsR :: Text -> Handler Html
+getWikiNewEditsR project_handle = do
     Entity viewer_id viewer <- requireAuth
 
     maybe_from <- fmap (Key . PersistInt64 . read . T.unpack) <$> lookupGetParam "from"
@@ -516,7 +542,7 @@ getWikiNewEditsR = do
     now <- liftIO getCurrentTime
     (edits, pages, users) :: ([Entity WikiEdit], M.Map WikiPageId (Entity WikiPage), M.Map UserId (Entity User)) <- runDB $ do
         unfiltered_pages :: [Entity WikiPage] <- select $ from $ \ page -> return page
-        let pages = M.fromList $ map (entityKey &&& id) $ filter ((userRole viewer >=) . wikiPageCanViewMeta . entityVal) unfiltered_pages
+        let pages = M.fromList $ map (entityKey &&& id) $ {- TODO filter ((userRole viewer >=) . wikiPageCanViewMeta . entityVal) -} unfiltered_pages
         edits <- select $ from $ \ edit -> do
             where_ $ case maybe_from of
                 Nothing -> ( edit ^. WikiEditPage `in_` valList (M.keys pages) )
@@ -536,7 +562,7 @@ getWikiNewEditsR = do
              in [whamlet|
                     <tr>
                         <td>
-                            <a href="@{WikiEditR (wikiPageTarget (entityVal page)) edit_id}">
+                            <a href="@{WikiEditR project_handle (wikiPageTarget (entityVal page)) edit_id}">
                                 #{wikiPageTarget (entityVal page)}
 
                         <td>
@@ -557,8 +583,8 @@ getWikiNewEditsR = do
     defaultLayout $(widgetFile "wiki_new_edits")
 
 
-getRetractCommentR :: Text -> CommentId -> Handler Html
-getRetractCommentR target comment_id = do
+getRetractCommentR :: Text -> Text -> CommentId -> Handler Html
+getRetractCommentR project_handle target comment_id = do
     Entity user_id user <- requireAuth
     comment <- runDB $ get404 comment_id
     when (commentUser comment /= user_id) $ permissionDenied "You can only retract your own comments."
@@ -581,7 +607,7 @@ getRetractCommentR target comment_id = do
 
 
     (retract_form, _) <- generateFormPost $ retractForm Nothing
-    let rendered_comment = renderDiscussComment user_id target False (return ()) (Entity comment_id comment) [] (M.singleton user_id $ Entity user_id user) earlier_retractions M.empty
+    let rendered_comment = renderDiscussComment user_id project_handle target False (return ()) (Entity comment_id comment) [] (M.singleton user_id $ Entity user_id user) earlier_retractions M.empty
 
     defaultLayout $ [whamlet|
         ^{rendered_comment}
@@ -590,8 +616,8 @@ getRetractCommentR target comment_id = do
             <input type="submit" name="mode" value="preview retraction">
     |]
 
-postRetractCommentR :: Text -> CommentId -> Handler Html
-postRetractCommentR target comment_id = do
+postRetractCommentR :: Text -> Text -> CommentId -> Handler Html
+postRetractCommentR project_handle target comment_id = do
     Entity user_id user <- requireAuth
     comment <- runDB $ get404 comment_id
     when (commentUser comment /= user_id) $ permissionDenied "You can only retract your own comments."
@@ -621,14 +647,14 @@ postRetractCommentR target comment_id = do
                     let soon = UTCTime (ModifiedJulianDay 0) 0
                         retraction = CommentRetraction soon reason comment_id
                         
-                    defaultLayout $ renderPreview form action $ renderDiscussComment user_id target False (return ()) (Entity comment_id comment) [] (M.singleton user_id $ Entity user_id user) earlier_retractions $ M.singleton comment_id retraction
+                    defaultLayout $ renderPreview form action $ renderDiscussComment user_id project_handle target False (return ()) (Entity comment_id comment) [] (M.singleton user_id $ Entity user_id user) earlier_retractions $ M.singleton comment_id retraction
 
 
                 Just a | a == action -> do
                     now <- liftIO getCurrentTime
                     _ <- runDB $ insert $ CommentRetraction now reason comment_id
 
-                    redirect $ DiscussCommentR target comment_id
+                    redirect $ DiscussCommentR project_handle target comment_id
 
                 _ -> error "Error: unrecognized mode."
         _ -> error "Error when submitting form."
@@ -636,8 +662,11 @@ postRetractCommentR target comment_id = do
 retractForm :: Maybe Markdown -> Form Markdown
 retractForm reason = renderDivs $ areq snowdriftMarkdownField "Retraction reason:" reason
     
-renderComment :: UserId -> Text -> M.Map UserId (Entity User) -> Int -> Int -> [CommentRetraction] -> M.Map CommentId CommentRetraction -> Tree (Entity Comment) -> Widget
-renderComment viewer_id target users max_depth depth earlier_retractions retraction_map tree = do
+
+renderComment :: UserId -> Text -> Text -> M.Map UserId (Entity User) -> Int -> Int
+    -> [CommentRetraction] -> M.Map CommentId CommentRetraction -> Tree (Entity Comment) -> Widget
+
+renderComment viewer_id project_handle target users max_depth depth earlier_retractions retraction_map tree = do
     maybe_route <- handlerToWidget getCurrentRoute
 
     let Entity comment_id comment = rootLabel tree

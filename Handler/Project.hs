@@ -8,7 +8,6 @@ import Model.Currency
 import Model.Project
 import Model.Shares
 import Model.Markdown.Diff
-import Model.Role
 import Model.User
 
 import qualified Data.Text as T
@@ -83,7 +82,9 @@ renderProject maybe_project_handle project pledges pledge = do
 
 
 guardCanEdit :: ProjectId -> Entity User -> Handler ()
-guardCanEdit project_id (Entity user_id user) =
+guardCanEdit _ _ = return ()
+{- TODO
+guardCanEdit project_id (Entity user_id user) = return ()
     when (userRole user /= Admin) $ do
         match <- runDB $ select $ from $ \( project_user ) -> do
             where_ ( project_user ^. ProjectUserUser ==. val user_id &&. project_user ^. ProjectUserProject ==. val project_id &&. project_user ^. ProjectUserCanEdit ==. val True )
@@ -92,6 +93,7 @@ guardCanEdit project_id (Entity user_id user) =
 
         when (null match) $
             permissionDenied "You do not have permission to edit this project."
+-}
 
 
 data UpdateProject = UpdateProject { updateProjectName :: Text, updateProjectDescription :: Markdown, updateProjectTags :: [Text] }

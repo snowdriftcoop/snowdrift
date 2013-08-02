@@ -5,7 +5,7 @@
 
         $if not (null comments)
             <div .row>
-                <a href="@{WikiNewCommentsR}?from=#{show (to + 1)}">
+                <a href="@{WikiNewCommentsR project_handle}?from=#{show (to + 1)}">
                     older comments
 
 

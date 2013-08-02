@@ -3,7 +3,6 @@ module Handler.User where
 import Import
 
 import Model.User
-import Model.Role
 
 import Widgets.Sidebar
 import Widgets.Markdown
@@ -119,7 +118,9 @@ getUsersR :: Handler Html
 getUsersR = do
     Entity _ viewer <- requireAuth
 
+    {- TODO
     when (userRole viewer /= Admin) $ permissionDenied "Only admins can view all users."
+    -}
 
     users <- runDB $ selectList [] [ Asc UserId ]
 
@@ -145,7 +146,7 @@ postUserCreateR = do
             now <- liftIO getCurrentTime
             success <- handle (\ DBException -> return False) $ runDB $ do
                 account_id <- insert $ Account 0
-                user <- setPassword passwd $ User ident Nothing Nothing name account_id Uninvited avatar Nothing Nothing nick now now now now
+                user <- setPassword passwd $ User ident Nothing Nothing name account_id avatar Nothing Nothing nick now now now now
                 uid_maybe <- insertUnique user
                 lift $ case uid_maybe of
                     Just uid -> do

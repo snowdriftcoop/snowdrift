@@ -2,9 +2,9 @@
     <div .span9>
         <div .row>
             <div .span3>
-                <a href="@{DiscussWikiR target}"> back to full discussion page
+                <a href="@{DiscussWikiR project_handle target}"> back to full discussion page
             <div .span3>
-                <a href="@{WikiR target}"> back to wiki page
+                <a href="@{WikiR project_handle target}"> back to wiki page
         <hr .wikitop>
         <div .row>
             <div .span9>
@@ -12,7 +12,7 @@
                     ^{comment}
                 $if can_edit
                     <div .row>
-                        <form action="@{DiscussWikiR target}" method="POST">
+                        <form action="@{DiscussWikiR project_handle target}" method="POST">
                             ^{comment_form}
                             <input type="submit" name="mode" value="preview">
                 <div .row>

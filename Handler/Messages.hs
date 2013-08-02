@@ -2,7 +2,7 @@ module Handler.Messages where
 
 import Import
 
-import Model.Role
+-- import Model.Role
 
 import Control.Arrow
 
@@ -15,6 +15,8 @@ getMessagesR = do
     Entity viewer_id viewer <- requireAuth
     now <- liftIO getCurrentTime
 
+    let messages = []
+    {- TODO
     messages <-
         runDB $ let view_all = if userRole viewer == CommitteeMember || userRole viewer == Admin
                         then (\ message -> (||. message ^. MessageTo ==. val Nothing))
@@ -23,6 +25,7 @@ getMessagesR = do
                         where_ $ view_all message ( message ^. MessageTo ==. val (Just viewer_id) )
                         orderBy [ desc (message ^. MessageCreatedTs) ]
                         return message
+    -}
 
     users <- runDB $ select $ from $ \ user -> do
         where_ (user ^. UserId `in_` valList (mapMaybe (messageFrom . entityVal) messages))

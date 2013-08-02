@@ -20,7 +20,6 @@ User
     salt Text Maybe
     name Text Maybe
     account AccountId
-    role Role
     avatar Text Maybe
     blurb Markdown Maybe
     statement Markdown Maybe
@@ -44,6 +43,11 @@ Project
     UniqueProjectAccount account
     UniqueProjectHandle handle
 
+UserProjectRole
+    user UserId
+    project ProjectId
+    role Role
+    UniqueProjectUser project user
 
 ProjectUpdate
     updatedTs UTCTime
@@ -74,6 +78,7 @@ Pledge
 
 Invite
     createdTs UTCTime
+    project ProjectId
     code Text
     user UserId
     role Role
@@ -112,11 +117,12 @@ Message
 
 WikiPage
     target Text
+    project ProjectId
     content Markdown
     canView Role
     canViewMeta Role
     canEdit Role
-    UniqueWikiTarget target
+    UniqueWikiTarget project target
 
 WikiEdit
     ts UTCTime

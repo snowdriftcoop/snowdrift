@@ -21,19 +21,28 @@ inviteForm role = renderBootstrap $ (,)
     <$> areq textField "About this invitation:" Nothing
     <*> areq (roleField role) "Type of Invite:" (Just GeneralPublic)
 
-getInviteR :: Handler Html
-getInviteR = do
+getInviteR :: Text -> Handler Html
+getInviteR project_handle = do
     Entity viewer_id viewer <- requireAuth
+    [ Value project_id ] <- runDB $ select $ from $ \ project -> do
+        where_ $ project ^. ProjectHandle ==. val project_handle
+        return $ project ^. ProjectId
+
+    [ Value role ] <- runDB $ select $ from $ \ project_user_role -> do
+        where_ $ project_user_role ^. UserProjectRoleUser ==. val viewer_id
+                &&.  project_user_role ^. UserProjectRoleProject ==. val project_id
+        return $ project_user_role ^. UserProjectRoleRole
+
     now <- liftIO getCurrentTime
     maybe_invite_code <- lookupSession "InviteCode"
     maybe_invite_role <- fmap (read . unpack) <$> lookupSession "InviteRole"
     deleteSession "InviteCode"
     deleteSession "InviteRole"
-    let maybe_link = InvitationR <$> maybe_invite_code
-    (invite_form, _) <- generateFormPost $ inviteForm (userRole viewer)
+    let maybe_link = InvitationR project_handle <$> maybe_invite_code
+    (invite_form, _) <- generateFormPost $ inviteForm role
 
     let can_view_all =
-            case userRole viewer of
+            case role of
                 CommitteeMember -> True
                 Admin -> True
                 _ -> False
@@ -74,20 +83,26 @@ getInviteR = do
     defaultLayout $(widgetFile "invite")
 
 
-postInviteR :: Handler Html
-postInviteR = do
-    Entity user_id user <- requireAuth
+postInviteR :: Text -> Handler Html
+postInviteR project_handle = do
+    user_id <- requireAuthId
     now <- liftIO getCurrentTime
     invite <- liftIO randomIO
-    ((result, _), _) <- runFormPost $ inviteForm (userRole user)
+    [ (Value project_id, Value user_role) ] :: [(Value ProjectId, Value Role)] <- runDB $ select $ from $ \ (project `InnerJoin` project_user_role) -> do
+        on $ project ^. ProjectId ==. project_user_role ^. UserProjectRoleProject
+        where_ $ project ^. ProjectHandle ==. val project_handle
+                &&. project_user_role ^. UserProjectRoleUser ==. val user_id
+        return (project ^. ProjectId, project_user_role ^. UserProjectRoleRole)
+
+    ((result, _), _) <- runFormPost $ inviteForm user_role
     case result of
         FormSuccess (tag, role) -> do
             let invite_code = pack $ printf "%016x" (invite :: Int64)
-            _ <- runDB $ insert $ Invite now invite_code user_id role tag False Nothing Nothing
+            _ <- runDB $ insert $ Invite now project_id invite_code user_id role tag False Nothing Nothing
             setSession "InviteCode" invite_code
             setSession "InviteRole" (pack $ show role)
 
         _ -> setMessage "Error in submitting form."
 
-    redirect InviteR
+    redirect $ InviteR project_handle
 

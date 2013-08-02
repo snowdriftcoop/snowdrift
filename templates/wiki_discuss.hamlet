@@ -2,13 +2,13 @@
     <div .span9>
         <div .row>
             <div .span3>
-                <a href="@{WikiR target}"> back to wiki page
+                <a href="@{WikiR project_handle target}"> back to wiki page
         <hr .wikitop>
         <div .row>
             ^{comments}
         $if can_edit
             <div .row>
-                <form action="@{DiscussWikiR target}" method="POST">
+                <form action="@{DiscussWikiR project_handle target}" method="POST">
                     ^{comment_form}
                     <input type="submit" name="mode" value="preview">
 

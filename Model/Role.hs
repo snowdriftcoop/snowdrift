@@ -2,7 +2,6 @@
 module Model.Role 
     ( Role (..)
     , roleCanInvite
-    , roleDefaultTarget
     , roleLabel
     , roleAbbrev
     , roleField
@@ -11,7 +10,6 @@ module Model.Role
 import Import
 
 import Model.Role.Internal
---import Yesod.Routes.Class (Route)
 
 
 roleCanInvite :: Role -> Role -> Bool
@@ -19,15 +17,6 @@ roleCanInvite CommitteeMember CommitteeMember = False
 roleCanInvite Editor GeneralPublic = True
 roleCanInvite Editor _ = False
 roleCanInvite a b = a >= b
-
-roleDefaultTarget :: Role -> Route App
-roleDefaultTarget Public = error "Public should never be a user's role"
-roleDefaultTarget Uninvited = HomeR
-roleDefaultTarget GeneralPublic = WikiR "about"
-roleDefaultTarget CommitteeCandidate = WikiR "joincommittee"
-roleDefaultTarget CommitteeMember = WikiR "committee"
-roleDefaultTarget Admin = WikiR "about"
-roleDefaultTarget Editor = WikiR "about"
 
 roleLabel :: Role -> Text
 roleLabel Public = "Public"

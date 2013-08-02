@@ -20,7 +20,7 @@ buySharesForm shares extra = do
             <p>
                 &hellip; share value also increases just a little whenever patrons pledge extra shares beyond the minimum, although this increase tapers off with higher share numbers.
             <p>
-                <a href=@{WikiR "mechanism"}>
+                <a href=@{WikiR "snowdrift" "mechanism"}>
                     <em>
                         read the details&hellip;
         |]
