@@ -4,11 +4,17 @@
             <p>
                 Your invitation code has been generated.
             <p>
-                <strong>We suggest that you copy the content below, add your own notes and modifications, and send it to the invitee.
-                Note: each code can only be used once.
-                You must generate a new code for each invitation.
+                <strong>Send the invite below to the invitee along with a personal note.
+                <em>
+                    Note: each code can only be used once.
+                    You must generate a new code for each invitation.
             <blockquote>
                 Snowdrift.coop is a new non-profit cooperative system to support free/libre/open software, cultural works (art, music, etc.), science, educational resources, and more&hellip;
+                The invite below adds new access permissions.
+                If you do not have an account yet, please
+                <a href="https://snowdrift.coop/auth/login">
+                    create a new account
+                before redeeming the code here.
                 <p>
                     $maybe invite_role <- maybe_invite_role
                         $case invite_role
@@ -24,8 +30,7 @@
                             $of CommitteeMember
                                 <p>
                                     You have been selected to be a member of the steering committee!
-                                    To change your account status, redeem the code below.
-                                    Then, visit the "Committee" link in the sidebar for more.
+                                    Visit the "Join The Committee" link in the site sidebar for more.
                                 <p>
                                     Please let us know if you cannot accept the position.
                                     Otherwise, welcome, we are so glad to have you join us.
@@ -33,7 +38,6 @@
                             $of Editor
                                 <p>
                                     You are invited to be an editor.
-                                    To change your account status, redeem the code below.
                                 <p>
                                     This means you will have access to the entire site.
                                     You will not be an official member of the steering committee or have any other obligations,
@@ -43,14 +47,12 @@
                             $of Admin
                                 <p>
                                     You are invited to be a site administrator.
-                                    To change your account status, redeem the code below.
                                 <p>
 
                             $of GeneralPublic
                                 <p>
                                     You are invited access some drafts that are not yet published.
                                     We encourage you to test the system, give us feedback, and let us know if you want to be involved further.
-                                    To change your account status, redeem the code below.
 
                             $of Uninvited
                                 <p>
