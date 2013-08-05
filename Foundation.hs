@@ -166,8 +166,8 @@ instance Yesod App where
                 <p>
                     $maybe _ <- maybe_user
                         You do not have permission to view this page at this time. #
-                        If you think you should, #
-                        <a href="@{ContactR}">let us know #
+                        If you think you should, let us know #
+                        $# TODO
                         and we'll fix it for you or everyone. #
                         Otherwise, you can always go to our #
                         <a href="@{HomeR}">main page
@@ -226,21 +226,8 @@ require permission project target = do
                 Just (Entity _ page) -> if role >= permission page then Authorized else Unauthorized "You do not have sufficient permissions."
 
 
-roleCanView :: Role -> Bool -> Route App -> AuthResult
-roleCanView Admin _ _ = Authorized
-roleCanView Editor _ _ = Authorized
-roleCanView CommitteeMember _ _ = Authorized
-roleCanView CommitteeCandidate _ _ = Authorized
-
-roleCanView GeneralPublic _ CommitteeR = Unauthorized "This page requires a special invite, sorry."
-roleCanView GeneralPublic _ (InviteR _) = Unauthorized "This page requires a special invite, sorry."
-roleCanView GeneralPublic _ (ApplicationR _) = Unauthorized "This page requires a special invite, sorry."
-roleCanView GeneralPublic _ ApplicationsR = Unauthorized "This page requires a special invite, sorry."
-roleCanView GeneralPublic _ _ = Authorized
-
-roleCanView Uninvited _ _ = Unauthorized "Snowdrift is presently invite-only."
-
-roleCanView Public _ _ = error "No user should actually have the role 'Public'"
+roleCanView :: t -> t1 -> t2 -> AuthResult
+roleCanView _ _ _ = Authorized -- TODO
 
 -- How to run database actions.
 instance YesodPersist App where
@@ -290,6 +277,29 @@ authBrowserIdFixed =
 
      in (authBrowserId def) { apLogin = login }
 
+snowdriftAuthBrowserId :: AuthPlugin App
+snowdriftAuthBrowserId =
+    let auth = authBrowserIdFixed
+        login toMaster = do
+            let parentLogin = apLogin auth toMaster
+            [whamlet|
+                <p> Log-in or create an account with Mozilla Persona:
+                ^{parentLogin}
+            |]
+     in auth { apLogin = login }
+
+snowdriftAuthHashDB :: AuthPlugin App
+snowdriftAuthHashDB =
+    let auth = authHashDB (Just . UniqueUser)
+        login toMaster = do
+            let parentLogin = apLogin auth toMaster
+            [whamlet|
+                <p>
+                    <a href="@{UserCreateR}">
+                       click here to create an account with our built-in system
+                ^{parentLogin}
+            |]
+     in auth { apLogin = login }
 
 instance YesodAuth App where
     type AuthId App = UserId
@@ -309,7 +319,7 @@ instance YesodAuth App where
                 fmap Just $ insert $ User (credsIdent creds) Nothing Nothing Nothing account_id Nothing Nothing Nothing Nothing now now now now
 
     -- You can add other plugins like BrowserID, email or OAuth here
-    authPlugins _ = [ authBrowserIdFixed, authHashDB (Just . UniqueUser) ]
+    authPlugins _ = [ snowdriftAuthBrowserId, snowdriftAuthHashDB ]
 
     authHttpManager = httpManager
 

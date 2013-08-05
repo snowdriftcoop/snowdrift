@@ -42,7 +42,7 @@ library
                      Handler.Invite
                      Handler.Invitation
                      Handler.UpdateShares
-                     Handler.Committee
+                     Handler.Volunteer
                      Handler.Contact
                      Handler.Who
                      Handler.PostLogin

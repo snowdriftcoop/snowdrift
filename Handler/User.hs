@@ -38,15 +38,15 @@ previewUserForm user = renderDivs $
 
 getUserR :: UserId -> Handler Html
 getUserR user_id = do
-    viewer_id <- requireAuthId
+    viewer_id <- maybeAuthId
     user <- runDB $ get404 user_id
 
     defaultLayout $ renderUser viewer_id user_id user
 
 
-renderUser :: UserId -> UserId -> User -> Widget
+renderUser :: Maybe UserId -> UserId -> User -> Widget
 renderUser viewer_id user_id user = do
-    let is_owner = user_id == viewer_id
+    let is_owner = Just user_id == viewer_id
         user_entity = Entity user_id user
 
     $(widgetFile "user")
@@ -80,7 +80,7 @@ postUserR user_id = do
                     Just "preview" -> do
                         user <- runDB $ get404 user_id
                         let updated_user = applyUserUpdate user user_update
-                            rendered_user = renderUser viewer_id user_id updated_user
+                            rendered_user = renderUser (Just viewer_id) user_id updated_user
 
                         (hidden_form, _) <- generateFormPost $ previewUserForm updated_user
 

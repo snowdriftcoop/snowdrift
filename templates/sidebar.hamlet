@@ -22,13 +22,14 @@
     $else
         ^{sb_link MessagesR "View Messages"}
 
-    $if not (null applications)
-        <strong>
-            <a href="@{ApplicationsR}">
-                _{MsgNewApplications (length applications)}
-        <br>
-    $else
-        ^{sb_link ApplicationsR "View Applications"}
+    $# TODO
+    $# $if not (null applications)
+    $#     <strong>
+    $#         <a href="@{ApplicationsR}">
+    $#             _{MsgNewApplications (length applications)}
+    $#     <br>
+    $# $else
+    $#     ^{sb_link ApplicationsR "View Applications"}
 
 $#    $if not (null comments)
 $#        <strong>
@@ -49,9 +50,9 @@ $#        ^{sb_link WikiNewEditsR "View Recent Wiki Edits"}
     <hr>
     ^{sb_link (WikiR "snowdrift" "about") "About Snowdrift.coop"}
     ^{sb_link (WikiR "snowdrift" "press") "info for press"}
-    ^{sb_link WhoR "Who We Are"}
+    ^{sb_link (WhoR "snowdrift") "Who We Are"}
     ^{sb_link ProjectsR "See Projects"}
-    -- TODO
+    $# TODO
     $case role
         $of CommitteeCandidate
             ^{sb_link (WikiR "snowdrift" "joincommittee") "Join the steering committee"}
@@ -59,5 +60,5 @@ $#        ^{sb_link WikiNewEditsR "View Recent Wiki Edits"}
             ^{sb_link (WikiR "snowdrift" "committee") "Committee"}
     ^{sb_link (WikiR "snowdrift" "next") "Next steps for Snowdrift"}
     $# TODO ^{sb_link InviteR "Invite others"}
-    ^{sb_link ContactR "Contact Us"}
+    $# TODO ^{sb_link ContactR "Contact Us"}
     <br>

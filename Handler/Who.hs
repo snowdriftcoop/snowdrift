@@ -11,8 +11,8 @@ import qualified Data.Function as FUN
 userShortName :: User -> Text
 userShortName user = fromMaybe (userIdent user) $ userName user
 
-getWhoR :: Handler Html
-getWhoR = do
+getWhoR :: Text -> Handler Html
+getWhoR project_handle = do
     committee_members <- runDB $ select $ from $ \ (user `InnerJoin` committee_user) -> do
         on (user ^. UserId ==. committee_user ^. CommitteeUserUser)
         return (user, committee_user)

@@ -1,18 +1,11 @@
 $newline never
 
 <p>
-    If you have an invitation code to access a restricted part of the site, you will be able to redeem that after you have completed logging into the system.
+    If you have an invitation code, you will be able to redeem that after you have completed logging in.
 
 <br>
 
 $forall auth <- authPlugins app
-    <div>
+    <div class="span5">
         ^{apLogin auth toParent}
 
-<h2>
-    The same Persona button can also make a new Persona account
-<h2>
-    or #
-    <a href="@{UserCreateR}">
-        create an account with our built-in system
-    .

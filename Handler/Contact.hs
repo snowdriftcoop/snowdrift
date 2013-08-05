@@ -8,14 +8,14 @@ import Widgets.Sidebar
 contactForm :: Form Textarea
 contactForm = renderDivs $ areq textareaField "" Nothing
 
-getContactR :: Handler Html
-getContactR = do
+getContactR :: Text -> Handler Html
+getContactR project_handle = do
     (contact_form, _) <- generateFormPost contactForm
     defaultLayout $(widgetFile "contact")
 
 
-postContactR :: Handler Html
-postContactR = do
+postContactR :: Text -> Handler Html
+postContactR project_handle = do
     maybe_user_id <- maybeAuthId
     now <- liftIO getCurrentTime
 
@@ -28,5 +28,5 @@ postContactR = do
 
         _ -> setMessage "Error occurred when submitting form."
 
-    redirect ContactR
+    redirect $ ContactR project_handle
 

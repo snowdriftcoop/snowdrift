@@ -92,9 +92,9 @@ sidebar = do
                             return message
 
 
-            applications :: [Entity CommitteeApplication] <- if is_committee_member
+            applications :: [Entity VolunteerApplication] <- if is_committee_member
                              then select $ from $ \ application -> do
-                                where_ ( application ^. CommitteeApplicationCreatedTs >=. val (userReadApplications user) )
+                                where_ ( application ^. VolunteerApplicationCreatedTs >=. val (userReadApplications user) )
                                 return application
                              else return []
 

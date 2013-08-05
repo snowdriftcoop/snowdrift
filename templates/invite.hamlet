@@ -90,7 +90,7 @@
                     Note: each invitation can only be used once, so you must generate a new link for each person you wish to invite
             <p>
                 If you aren't sure whether to invite someone,
-                <a href=@{ContactR}>contact us
+                <a href=@{ContactR project_handle}>contact us
                 and we can give you guidance or reach out to them ourselves.
 
         <form method=post action=@{InviteR project_handle}>
