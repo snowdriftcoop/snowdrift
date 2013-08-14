@@ -48,6 +48,7 @@ import Handler.Wiki
 import Handler.Tickets
 import Handler.RepoFeed
 import Handler.BuildFeed
+import Handler.ProjectApplication
 
 
 version :: (Text, Text)

@@ -9,8 +9,8 @@ import Control.Arrow ((&&&))
 
 volunteerForm :: UTCTime -> [Entity Interest] -> Entity User -> Form (VolunteerApplication, [InterestId])
 volunteerForm now interests (Entity user_id user) = renderBootstrap $
-    (\ name email contact website location experience interest_ids other ->
-        (VolunteerApplication now user_id name email contact website location experience other, interest_ids)
+    (\ name email contact website location experience interest_ids referral other ->
+        (VolunteerApplication now user_id name email contact website location experience referral other, interest_ids)
     )   <$> areq textField "Name or Internet Handle:" Nothing
         <*> areq emailField "E-mail:" (Just . userIdent $ user)
         <*> aopt textField "Other contact info (phone, IRC handle, chat ID, etc):" Nothing
@@ -18,7 +18,11 @@ volunteerForm now interests (Entity user_id user) = renderBootstrap $
         <*> aopt textField "Location:" Nothing
         <*> aopt textareaField "Relevant work/training/volunteer experience:" Nothing
         <*> areq (multiSelectFieldList $ (interestDescription . entityVal &&& entityKey) <$> interests) "Areas of interest (use ctrl to select multiple):" Nothing
+        <*> aopt (selectFieldList source) "How did you hear about Snowdrift.coop?" Nothing
         <*> aopt textareaField "Anything else you'd like us to know:" Nothing 
+   where
+        source = (\ a -> zip a a) $ ["Article", "Weblink", "Conference", "Search engine", "Personal recommendation"]
+
 
 getVolunteerR :: Handler RepHtml
 getVolunteerR = do
