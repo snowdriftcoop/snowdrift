@@ -59,6 +59,7 @@ library
                      Handler.Tickets
                      Handler.RepoFeed
                      Handler.BuildFeed
+                     Handler.ProjectApplication
                      Version
                      Widgets.Markdown
                      Widgets.Sidebar

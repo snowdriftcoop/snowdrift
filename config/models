@@ -43,6 +43,75 @@ Project
     UniqueProjectAccount account
     UniqueProjectHandle handle
 
+ProjectQuestionnaire
+    createdTs UTCTime
+    primaryContactUser UserId
+    projectName Text
+    projectWebsite Text Maybe
+    primaryContactRealName Text
+    primaryContactEmail Text
+    primaryContactInfoOther Text Maybe
+    primaryContactRole Text Maybe
+    projectPaidMembersRealName Textarea Maybe
+    projectPaidMembersEmail Textarea Maybe
+    projectPaidMembersRole Textarea Maybe
+    projectUnpaidMembersEmail Textarea Maybe
+    projectUnpaidMembersRole Textarea Maybe
+    projectType Text
+    projectDescription Textarea
+    projectGoals Textarea
+    projectBudgeting Textarea
+    projectOrganization Textarea
+    projectLicense Text
+    projectLicenseOther Text Maybe
+    projectFormatRepository Text
+    projectAffiliations Textarea Maybe
+    projectProfitStatus Text
+    projectCooperativeStatus Bool
+    projectProfitCooperativeStatusOther Text Maybe
+    comments Textarea Maybe
+
+HonorQuestionnaireAll
+    honorDecisionMaking Text
+    honorDecisionMakingOther Textarea Maybe
+    honorConflictOfInterest Text
+    honorConflictOfInterestOther Textarea Maybe
+    honorSourceRelease Text
+    honorSourceReleaseOther Textarea Maybe
+    honorAdvertising Text
+    honorAdvertisingOther Text Maybe
+    honorOpenStandards Bool
+    honorOpenStandardsOther Textarea Maybe
+    honorDisabilityAccess Bool
+    honorDisabilityAccessOther Textarea Maybe
+
+HonorQuestionnaireWebsite
+    honorDataCollectionAll Textarea
+    honorDataCollectionOptOut Textarea
+    honorDataCollectionOptIn Textarea
+    honorThirdPartySharing Textarea
+    honorUserDataRemoval Bool
+    honorUserDataRemovalOther Textarea Maybe
+    honorUserNotification Textarea
+    honorWaiverOfRights Text
+    honorWaiverOfRightsOther Text Maybe
+    honorSocialMedia Text
+    honorSocialMediaOther Text Maybe
+    honorSiteAnalytics Text
+    honorSiteAnalyticsOther Text Maybe
+
+HonorQuestionnaireTech
+    honorBackwardsCompatibility Textarea
+    honorSupportServices Text
+    honorSupportServicesOther Text Maybe
+    honorProprietaryElements Textarea
+    honorFLOCompatibility Bool
+    honorFLOCompatibilityOther Textarea Maybe
+    honorFLOdevelopment Bool
+    honorFLOtools Textarea
+    honorSaaS Text
+    honorSaaSOther Text Maybe
+
 
 ProjectUpdate
     updatedTs UTCTime
@@ -92,6 +161,7 @@ VolunteerApplication
     website Text Maybe
     location Text Maybe
     experience Textarea Maybe
+    referral Text Maybe
     comments Textarea Maybe
 
 Interest
