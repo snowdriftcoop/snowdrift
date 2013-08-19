@@ -43,11 +43,15 @@ Project
     UniqueProjectAccount account
     UniqueProjectHandle handle
 
-UserProjectRole
-    user UserId
+ProjectUserRole
     project ProjectId
+    user UserId
     role Role
     UniqueProjectUser project user
+
+    
+
+
 
 ProjectUpdate
     updatedTs UTCTime
@@ -130,6 +134,11 @@ WikiPage
     canEdit Role
     UniqueWikiTarget project target
 
+WikiPagePermission
+    page WikiPageId
+    role Role
+    permission Permission
+
 WikiEdit
     ts UTCTime
     user UserId
@@ -144,6 +153,8 @@ WikiLastEdit
 
 Comment
     createdTs UTCTime
+    moderatedTs UTCTime Maybe
+    moderatedUser UserId Maybe
     page WikiPageId
     parent CommentId Maybe
     user UserId

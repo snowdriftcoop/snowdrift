@@ -19,7 +19,7 @@
 
     <div .span5>
         $maybe blurb <- userBlurb user
-            #{markdownToHtml blurb}
+            #{renderMarkdown project_handle blurb}
         $nothing
             &nbsp;
 
@@ -30,7 +30,7 @@
     <h4>Personal Statement
     <div .span6 .well .well-small .scroll .capped>
         $maybe statement <- userStatement user
-            #{markdownToHtml statement}
+            #{renderMarkdown project_handle statement}
 
     <div .span5 .well .well-small>
         ^{project_pledges user_id}

@@ -18,8 +18,8 @@ sidebar = do
     role_values <- case maybe_user of
         Nothing -> return []
         Just (Entity user_id _) -> handlerToWidget $ runDB $ select $ from $ \ project_user_role -> do
-            where_ $ project_user_role ^. UserProjectRoleUser ==. val user_id
-            return $ project_user_role ^. UserProjectRoleRole
+            where_ $ project_user_role ^. ProjectUserRoleUser ==. val user_id
+            return $ project_user_role ^. ProjectUserRoleRole
 
     let role = case role_values of
             [] -> Public

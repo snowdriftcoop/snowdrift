@@ -40,7 +40,7 @@ postInvitationR _ code = do
                       ]
                 where_ ( i ^. InviteId ==. val invite_id )
 
-            _ <- insertUnique $ UserProjectRole viewer_id (inviteProject invite) (inviteRole invite)
+            _ <- insertUnique $ ProjectUserRole (inviteProject invite) viewer_id (inviteRole invite)
             -- TODO: update
 
             return $ Just $ inviteRole invite

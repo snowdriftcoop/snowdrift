@@ -14,6 +14,7 @@ import Model.Role (Role (..), roleField)
 import Model.User
 
 import Yesod.Markdown
+import Model.Markdown
 
 import qualified Data.Text as T
 
@@ -77,7 +78,6 @@ getWikiPagesR project_handle = do
 
 renderWiki :: Text -> Text -> Bool -> Bool -> WikiPage -> Widget
 renderWiki project_handle target can_edit can_view_meta page = $(widgetFile "wiki")
-
 
 
 postWikiR :: Text -> Text -> Handler Html
@@ -357,12 +357,16 @@ postDiscussWikiR project_handle target = do
 
 
                     (form, _) <- generateFormPost $ commentForm maybe_parent_id (Just text)
-                    defaultLayout $ renderPreview form action $ renderDiscussComment user_id project_handle target False (return ()) (Entity (Key $ PersistInt64 0) $ Comment now page_id maybe_parent_id user_id text depth) [] (M.singleton user_id $ Entity user_id user) earlier_retractions M.empty
+
+                    let comment = Entity (Key $ PersistInt64 0) $ Comment now Nothing Nothing page_id maybe_parent_id user_id text depth
+                        user_map = M.singleton user_id $ Entity user_id user
+                        rendered_comment = renderDiscussComment user_id project_handle target False (return ()) comment [] user_map earlier_retractions M.empty
+                    defaultLayout $ renderPreview form action rendered_comment
 
 
                 Just x | x == action -> do
                     runDB $ do
-                        comment_id <- insert $ Comment now page_id maybe_parent_id user_id text depth
+                        comment_id <- insert $ Comment now Nothing Nothing page_id maybe_parent_id user_id text depth
                         
                         let content = T.lines $ (\ (Markdown str) -> str) text
                             tickets = map T.strip $ mapMaybe (T.stripPrefix "ticket:") content

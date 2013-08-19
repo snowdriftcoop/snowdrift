@@ -29,9 +29,9 @@ getInviteR project_handle = do
         return $ project ^. ProjectId
 
     [ Value role ] <- runDB $ select $ from $ \ project_user_role -> do
-        where_ $ project_user_role ^. UserProjectRoleUser ==. val viewer_id
-                &&.  project_user_role ^. UserProjectRoleProject ==. val project_id
-        return $ project_user_role ^. UserProjectRoleRole
+        where_ $ project_user_role ^. ProjectUserRoleUser ==. val viewer_id
+                &&.  project_user_role ^. ProjectUserRoleProject ==. val project_id
+        return $ project_user_role ^. ProjectUserRoleRole
 
     now <- liftIO getCurrentTime
     maybe_invite_code <- lookupSession "InviteCode"
@@ -89,10 +89,10 @@ postInviteR project_handle = do
     now <- liftIO getCurrentTime
     invite <- liftIO randomIO
     [ (Value project_id, Value user_role) ] :: [(Value ProjectId, Value Role)] <- runDB $ select $ from $ \ (project `InnerJoin` project_user_role) -> do
-        on $ project ^. ProjectId ==. project_user_role ^. UserProjectRoleProject
+        on $ project ^. ProjectId ==. project_user_role ^. ProjectUserRoleProject
         where_ $ project ^. ProjectHandle ==. val project_handle
-                &&. project_user_role ^. UserProjectRoleUser ==. val user_id
-        return (project ^. ProjectId, project_user_role ^. UserProjectRoleRole)
+                &&. project_user_role ^. ProjectUserRoleUser ==. val user_id
+        return (project ^. ProjectId, project_user_role ^. ProjectUserRoleRole)
 
     ((result, _), _) <- runFormPost $ inviteForm user_role
     case result of

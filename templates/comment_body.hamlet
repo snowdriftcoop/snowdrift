@@ -26,14 +26,14 @@ $# used by renderComment function
     $forall retraction <- earlier_retractions
         <div .retraction>
             A comment above this one was retracted ^{renderTime (commentRetractionTs retraction)}
-            #{markdownToHtml (commentRetractionReason retraction)}
+            #{renderMarkdown project_handle (commentRetractionReason retraction)}
 
     $maybe retraction <- maybe_retraction
         <div .retraction>
             The author retracted this comment ^{renderTime (commentRetractionTs retraction)}
-            #{markdownToHtml (commentRetractionReason retraction)}
+            #{renderMarkdown project_handle (commentRetractionReason retraction)}
 
-    #{markdownToHtml (commentText comment)}
+    #{renderMarkdown project_handle (commentText comment)}
 
     <div>
     $if not (maybe_route == Just (DiscussCommentR project_handle target comment_id))

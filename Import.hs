@@ -9,7 +9,7 @@ import           Prelude              as Import hiding (head, init, last,
                                                  readFile, tail, writeFile)
 import           Yesod                as Import hiding (Route (..), (||.), (==.), (!=.), (<.), (<=.), (>.), (>=.), (=.), (+=.), (-=.), (*=.), (/=.), selectSource, delete, update, count, Value)
 import           Yesod.Auth           as Import
-import           Yesod.Markdown       as Import (markdownToHtml, Markdown)
+import           Yesod.Markdown       as Import (Markdown)
 
 -- import           Database.Esqueleto   as Import (val, select, from, on, where_, InnerJoin (..), (^.))
 import           Database.Esqueleto   as Import

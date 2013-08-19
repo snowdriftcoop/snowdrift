@@ -17,6 +17,6 @@
         <hr .wikitop>
         <div .row>
                 <div .span9>
-                    #{markdownToHtml (wikiEditContent edit)}
+                    #{renderMarkdown project_handle (wikiEditContent edit)}
     <div .span3>
         ^{sidebar}

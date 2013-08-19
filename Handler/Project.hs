@@ -20,6 +20,7 @@ import Database.Esqueleto
 -- import Database.Persist.Sql.Raw
 
 import Yesod.Markdown
+import Model.Markdown
 
 lookupGetParamDefault :: Read a => Text -> a -> Handler a
 lookupGetParamDefault name def = do
@@ -72,7 +73,7 @@ renderProject maybe_project_handle project pledges pledge = do
         users = fromIntegral $ length pledges
         shares = sum pledges
         project_value = share_value $* fromIntegral shares
-        description = markdownToHtml $ projectDescription project
+        description = renderMarkdown (fromMaybe "???" maybe_project_handle) $ projectDescription project
 
         maybe_shares = pledgeShares . entityVal <$> pledge
 

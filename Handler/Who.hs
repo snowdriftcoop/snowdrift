@@ -8,6 +8,8 @@ import Data.List (sortBy)
 
 import qualified Data.Function as FUN
 
+import Model.Markdown
+
 userShortName :: User -> Text
 userShortName user = fromMaybe (userIdent user) $ userName user
 

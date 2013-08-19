@@ -27,8 +27,10 @@ library
                      Model.Currency
                      Model.Project
                      Model.Role
+                     Model.Permission
                      Model.Shares
                      Model.Transaction
+                     Model.Markdown
                      Model.Markdown.Diff
                      Model.User
                      Settings
@@ -67,6 +69,7 @@ library
                      Data.Text.PrettyHtml
 
     other-modules: Model.Role.Internal
+                   Model.Permission.Internal
 
     if flag(dev) || flag(library-only)
         cpp-options:   -DDEVELOPMENT
@@ -140,6 +143,7 @@ library
                  , hit                           >= 0.5         && < 1.0
                  , process
                  , temporary
+                 , regex-tdfa                    >= 1.1 && < 1.2
 
 
 executable         Snowdrift
@@ -171,3 +175,4 @@ test-suite test
                  , monad-logger
                  , transformers
                  , hspec
+                 , regex-tdfa >= 1.1 && < 1.2

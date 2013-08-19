@@ -22,7 +22,7 @@ import Text.Hamlet (hamletFile)
 import System.Log.FastLogger (Logger)
 
 import Model.Currency
-import Model.Role.Internal
+-- import Model.Role.Internal
 
 import Control.Applicative
 import Control.Monad.Trans.Resource
@@ -206,24 +206,6 @@ instance Yesod App where
         development || level == LevelWarn || level == LevelError
 
     isAuthorized _ _ = return Authorized -- TODO
-
-require :: (WikiPage -> Role) -> Text -> Text -> HandlerT App IO AuthResult
-require permission project target = do
-    maybe_project_id <- fmap (fmap entityKey) $ runDB $ getBy $ UniqueProjectHandle project
-
-    case maybe_project_id of
-        Nothing -> return $ Unauthorized "Project does not exist."
-        Just project_id -> do
-            maybe_user_id <- maybeAuthId
-            role <- case maybe_user_id of
-                Nothing -> return Public
-                Just user_id -> fmap (maybe Public (userProjectRoleRole . entityVal)) $ runDB $ getBy $ UniqueProjectUser project_id user_id
-
-            maybe_page <- runDB $ getBy $ UniqueWikiTarget project_id target
-
-            return $ case maybe_page of
-                Nothing -> Unauthorized "Page does not exist."
-                Just (Entity _ page) -> if role >= permission page then Authorized else Unauthorized "You do not have sufficient permissions."
 
 
 roleCanView :: t -> t1 -> t2 -> AuthResult

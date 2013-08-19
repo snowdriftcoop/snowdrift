@@ -9,6 +9,7 @@ import Widgets.Markdown
 import Widgets.ProjectPledges
 
 import Yesod.Markdown
+import Model.Markdown
 
 import Yesod.Auth.HashDB (setPassword)
 
@@ -48,6 +49,7 @@ renderUser :: Maybe UserId -> UserId -> User -> Widget
 renderUser viewer_id user_id user = do
     let is_owner = Just user_id == viewer_id
         user_entity = Entity user_id user
+        project_handle = error "bad link - no default project on user pages" -- TODO turn this into a caught exception
 
     $(widgetFile "user")
             
