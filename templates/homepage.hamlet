@@ -1,22 +1,26 @@
 <div .row>
     <div .span8>
         <h1>Welcome!
+        We are creating a marketplace for independent
+        <a href="@{WikiR "free-libre-open"}">free/libre/open
+        projects.
+        <br>
+        <br>
         <strong>
-            We are creating a marketplace for independent
-            <a href="@{WikiR "free-libre-open"}">free/libre/open
-            projects.
-        <p>
             We envision a world where software, cultural works (art, music, etc.), research, and educational resources
             are available to everyone without restrictions on access, use, modification, or sharing.
         <p>
             To achieve this vision, we need core project teams with livable salaries
             supported by engaged and empowered communities.
         <p>
-            Snowdrift.coop proposes a new kind of patronage system
-            based on ongoing community-wide matching of small donations.
+            Snowdrift.coop proposes a 
+            <strong>new kind of patronage system based on ongoing community-wide matching of small donations.
             We aim to involve as many people as possible,
             agreeing together to support the most deserving projects and hold them to the highest
-            standards. Our system will be non-profit and governed as a community-owned cooperative.
+            standards. Our system will be
+            <strong> non-profit
+            and governed as a community-owned
+            <strong> cooperative.
         <p>
             We are not operational yet, but you can
             <a href="@{WikiR "about"}"> read more
