@@ -28,13 +28,9 @@
             We can use
             <em> your
             help!
-            If you want to get involved, let us know!
-            We have
+            If you want to get involved, 
+            we have
             <a href="@{WikiR "how-to-help"}"> volunteer opportunities
             for everyone, regardless of your background.
-        <p>
-            Thanks for your interest!
     <div .span3 .offset1>
         ^{sidebar}
-
-        <a href="@{WikiR "free-libre-open"}">free/libre/open
