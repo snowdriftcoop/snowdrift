@@ -1,42 +1,40 @@
 <div .row>
     <div .span8>
-        <h1>Welcome!
-        We are creating a marketplace for independent
-        <a href="@{WikiR "free-libre-open"}">free/libre/open
-        projects.
-        <br>
-        <br>
+        A Free/Libre/Open World is one where software, art, music, journalism, research, and educational resources
+        are available to everyone without restrictions on access, use, modification, or sharing.
         <strong>
-            We envision a world where software, cultural works (art, music, etc.), research, and educational resources
-            are available to everyone without restrictions on access, use, modification, or sharing.
+            Yet when resources are unrestricted, funding becomes difficult.
+            Snowdrift.coop is the solution!
         <p>
-            To achieve this vision, we need core project teams with livable salaries
-            supported by engaged and empowered communities.
+            There are many fundraising systems, but we are different. 
+            Snowdrift.coop is a new kind of patronage based on
+            <strong> ongoing community-wide matching of small donations.
+            This system invites widespread participation &mdash;
+            everyone working together to support the most deserving projects and hold them to the highest
+            standards.
         <p>
-            Snowdrift.coop proposes a 
-            <strong>new kind of patronage system based on ongoing community-wide matching of small donations.
-            We aim to involve as many people as possible,
-            agreeing together to support the most deserving projects and hold them to the highest
-            standards. Our system will be
+            Our system will be
             <strong> non-profit
             and governed as a community-owned
             <strong> cooperative.
         <p>
             We are not operational yet, but you can
-            <a href="@{WikiR "about"}"> read more
-            to understand all the details we have worked out so far.
+            <strong>
+                <a href="@{WikiR "about"}"> read more
+            to understand all the details worked out so far.
         <h2>
             Join us!
         <p>
-            We need help to make this successful, so if you might even 
-            <em>consider
-            getting involved, let us know!
+            We can use
+            <em> your
+            help!
+            If you want to get involved, let us know!
             We have
             <a href="@{WikiR "how-to-help"}"> volunteer opportunities
             for everyone, regardless of your background.
-            If you share our vision, you can help us realize it!
         <p>
             Thanks for your interest!
     <div .span3 .offset1>
         ^{sidebar}
 
+        <a href="@{WikiR "free-libre-open"}">free/libre/open
