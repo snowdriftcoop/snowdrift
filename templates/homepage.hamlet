@@ -2,26 +2,29 @@
     <div .span8>
         A Free/Libre/Open World is one where software, art, music, journalism, research, and educational resources
         are available to everyone without restrictions on access, use, modification, or sharing.
+        <br>
+        <br>
         <strong>
             Yet when resources are unrestricted, funding becomes difficult.
             Snowdrift.coop is the solution!
+        <hr>
         <p>
             There are many fundraising systems, but we are different. 
             Snowdrift.coop is a new kind of patronage based on
             <strong> ongoing community-wide matching of small donations.
-            This system invites widespread participation &mdash;
+            Our system invites widespread participation &mdash;
             everyone working together to support the most deserving projects and hold them to the highest
             standards.
         <p>
-            Our system will be
+            We are
             <strong> non-profit
-            and governed as a community-owned
+            and will be governed as a community-owned
             <strong> cooperative.
         <p>
             We are not operational yet, but you can
             <strong>
-                <a href="@{WikiR "about"}"> read more
-            to understand all the details worked out so far.
+                <a href="@{WikiR "about"}"> read the details
+            worked out so far.
         <h2>
             Join us!
         <p>
