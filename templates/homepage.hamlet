@@ -1,39 +1,36 @@
 <div .row>
     <div .span8>
-        A Free/Libre/Open World is one where software, art, music, journalism, research, and educational resources
-        are available to everyone without restrictions on access, use, modification, or sharing.
-        <br>
-        <br>
-        <strong>
-            Yet when resources are unrestricted, funding becomes difficult.
-            Snowdrift.coop is the solution!
-        <hr>
         <p>
-            There are many fundraising systems, but we are different. 
-            Snowdrift.coop is a new kind of patronage based on
-            <strong> ongoing community-wide matching of small donations.
+            Imagine a world where everything from art, music, and software to educational resources, journalism, and research
+            is available for everyone to freely access, use, modify, and share.
+        <p>
+            The problem is:
+            <br>
+            If access is free of charge, getting funding is hard&hellip;
+        <p>
+            Snowdrift.coop is the answer!
+            <br>
+            We are building a new
+            <a href="@{WikiR "about"}">
+                <strong> sustainable patronage system
+            based on
+            <strong> community-wide matching of small, regular donations.
             Our system invites widespread participation &mdash;
             everyone working together to support the most deserving projects and hold them to the highest
             standards.
         <p>
-            We are
+            We are also
             <strong> non-profit
             and will be governed as a community-owned
             <strong> cooperative.
-        <p>
-            We are not operational yet, but you can
-            <strong>
-                <a href="@{WikiR "about"}"> read the details
-            worked out so far.
         <h2>
             Join us!
         <p>
-            We can use
+            We are not yet operational, and we can use
             <em> your
-            help!
-            If you want to get involved, 
-            we have
+            help in getting there!
+            We have
             <a href="@{WikiR "how-to-help"}"> volunteer opportunities
-            for everyone, regardless of your background.
+            for everyone, regardless of background.
     <div .span3 .offset1>
         ^{sidebar}
