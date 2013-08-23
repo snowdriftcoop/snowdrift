@@ -10,11 +10,10 @@
         <p>
             Snowdrift.coop is the answer!
             <br>
-            We are building a new
-            <a href="@{WikiR "about"}">
-                <strong> sustainable patronage system
-            based on
-            <strong> community-wide matching of small, regular donations.
+            <strong>
+                We are building a new
+                <a href="@{WikiR "about"}"> sustainable patronage system
+                based on community-wide matching of small, regular donations.
             Our system invites widespread participation &mdash;
             everyone working together to support the most deserving projects and hold them to the highest
             standards.
