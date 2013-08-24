@@ -82,45 +82,81 @@ postWikiR target = do
     Entity user_id user <- requireAuth
     now <- liftIO getCurrentTime
 
-    (Entity page_id page, Entity _ last_edit) <- runDB $ do
-        page_entity <- getBy404 $ UniqueWikiTarget target
-        last_edit_entity <- getBy404 $ UniqueWikiLastEdit $ entityKey page_entity
-        return (page_entity, last_edit_entity)
+    Entity page_id page <- runDB $ getBy404 $ UniqueWikiTarget target
 
     when (userRole user < wikiPageCanEdit page) $ permissionDenied "You do not have sufficient privileges to edit this page."
 
-    ((result, _), _) <- runFormPost $ editWikiForm (wikiLastEditEdit last_edit) (wikiPageContent page) Nothing
+    ((result, _), _) <- runFormPost $ editWikiForm undefined (wikiPageContent page) Nothing
 
 
     case result of
-        FormSuccess (last_edit_id, content, comment) ->
-            if last_edit_id == wikiLastEditEdit last_edit
-             then do
-                mode <- lookupPostParam "mode"
+        FormSuccess (last_edit_id, content, comment) -> do
+            mode <- lookupPostParam "mode"
 
-                let action :: Text = "update"
+            let action :: Text = "update"
 
-                case mode of
-                    Just "preview" -> do
-                        (form, _) <- generateFormPost $ editWikiForm (wikiLastEditEdit last_edit) content comment
-                        defaultLayout $ renderPreview form action $ renderWiki target False False $ WikiPage target content Uninvited Uninvited Uninvited
+            case mode of
+                Just "preview" -> do
+                    (form, _) <- generateFormPost $ editWikiForm last_edit_id content comment
+                    defaultLayout $ renderPreview form action $ renderWiki target False False $ WikiPage target content Uninvited Uninvited Uninvited
 
-                    Just x | x == action -> do
-                        runDB $ do
-                            update page_id [WikiPageContent =. content]
-                            edit_id <- insert $ WikiEdit now user_id page_id content comment
-                            either_last_edit <- insertBy $ WikiLastEdit page_id edit_id
-                            case either_last_edit of
-                                Left (Entity to_update _) -> update to_update [WikiLastEditEdit =. edit_id]
-                                Right _ -> return ()
+                Just x | x == action -> do
+                    runDB $ do
+                        Entity _ last_edit <- getBy404 $ UniqueWikiLastEdit page_id
 
-                        setMessage "Updated."
-                        redirect $ WikiR target
+                        update page_id [WikiPageContent =. content]
+                        edit_id <- insert $ WikiEdit now user_id page_id content comment
+                        -- TODO - I think there might be a race condition here...
+                        either_last_edit <- insertBy $ WikiLastEdit page_id edit_id
 
-                    _ -> error "Error: unrecognized mode"
+                        if last_edit_id == wikiLastEditEdit last_edit
+                         then lift $ setMessage "Updated."
+                         else do
+                            [ last_editor ] <- map (wikiEditUser . entityVal) <$> selectList [ WikiEditId ==. wikiLastEditEdit last_edit ] []
 
-             else
-                error "Error submitting form - page was updated since you last saw it" -- TODO: something better here
+                            let comment_body = Markdown $ T.unlines 
+                                    [ "ticket: edit conflict"
+                                    , ""
+                                    , "[original version](/w/" <> target <> "/history/" <> toPathPiece last_edit_id <> ")"
+                                    , ""
+                                    , "[my version](/w/" <> target <> "/history/" <> toPathPiece edit_id <> ")"
+                                    , ""
+                                    , "[their version](/w/" <> target <> "/history/" <> (toPathPiece $ wikiLastEditEdit last_edit) <> ")"
+                                    , ""
+                                    , "(this ticket was automatically generated)"
+                                    ]
+
+                            comment_id <- insert $ Comment now page_id Nothing user_id comment_body 0
+
+                            void $ insert $ Ticket now "edit conflict" comment_id
+
+                            render <- lift getUrlRenderParams
+
+                            let message_text = Textarea $ T.unlines
+                                    [ "Edit conflict for wiki page \"" <> target <> "\"."
+                                    , "Ticket created: " <> render (DiscussCommentR target comment_id) []
+                                    , "(this message was automatically generated)"
+                                    ]
+
+                            void $ insert $ Message now (Just last_editor) (Just user_id) message_text
+                            void $ insert $ Message now (Just user_id) (Just last_editor) message_text
+
+                            lift $ setMessage $ flip ($) render
+                                    [hamlet|
+                                        <em .error>
+                                            conflicting edits (ticket created, messages sent)
+                                    |]
+                            
+
+                        case either_last_edit of
+                            Left (Entity to_update _) -> update to_update [WikiLastEditEdit =. edit_id]
+                            Right _ -> return ()
+
+                    redirect $ WikiR target
+
+                _ -> error "Error: unrecognized mode"
+
+                
 
         FormMissing -> error "Form missing."
         FormFailure msgs -> error $ "Error submitting form: " ++ T.unpack (T.concat msgs)

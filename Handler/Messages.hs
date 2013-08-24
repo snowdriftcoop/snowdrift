@@ -24,7 +24,8 @@ getMessagesR = do
          else selectList [ MessageTo ==. Just viewer_id ] [ Desc MessageCreatedTs ]
 
     users <- runDB $ selectList [ UserId <-. mapMaybe (messageFrom . entityVal) messages ] []
-    let user_map = M.fromList $ map (entityKey &&& entityVal) users
+
+    let user_map = M.fromList $ ((viewer_id, viewer):) $ map (entityKey &&& entityVal) users
         getUserName user_id =
             let user = user_map M.! user_id
              in fromMaybe (userIdent user) (userName user)
@@ -33,3 +34,4 @@ getMessagesR = do
 
 
     defaultLayout $(widgetFile "messages")
+
