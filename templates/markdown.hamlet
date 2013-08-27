@@ -98,10 +98,11 @@
         <p>
             <strong>Footnotes:
             <strong>[^tag]
-            marks the inline link and
+            marks the inline link
+        <p>
             <strong>[^tag]:
-            the footnote itself
-            <br>
+            marks the footnote itself (and must start on a new line with a blank line above)
+        <p>
             Footnotes themselves can be placed anywhere and will be rendered at the end.
             <br>
             Footnotes can also be in-line with no tag: <strong>^[</strong>Footnote text<strong>]</strong>
