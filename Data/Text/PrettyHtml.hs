@@ -10,7 +10,6 @@ import qualified Text.Blaze.Html5.Attributes as Attr
 import qualified Text.Blaze.Html5 as Html
 
 import Data.Either
-import qualified Data.Function as FUN
 
 import Data.List as L
 import Data.String
@@ -30,7 +29,7 @@ prettyHtml :: (Monad m, HasGithubRepo (HandlerT site m)) => [Parser Pretty] -> T
 prettyHtml filters text = do
     case parseOnly (many $ (Left <$> choice filters) <|> (Right . T.singleton <$> anyChar)) text of
         Right result -> do
-            let pieces = L.concatMap (\(a, b) -> L.map Left a ++ if T.length b > 0 then [Right b] else []) $ fmap (fmap T.concat) $ fmap partitionEithers $ L.groupBy ((==) `FUN.on` isRight) result
+            let pieces = L.concatMap (\(a, b) -> L.map Left a ++ if T.length b > 0 then [Right b] else []) $ fmap (fmap T.concat) $ fmap partitionEithers $ L.groupBy ((==) `on` isRight) result
             fmap sequence_ $ forM pieces $ either renderPretty (return . toHtml)
         Left err -> error err
 

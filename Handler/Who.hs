@@ -6,8 +6,6 @@ import Widgets.Sidebar
 
 import Data.List (sortBy)
 
-import qualified Data.Function as FUN
-
 import Model.Markdown
 
 userShortName :: User -> Text
@@ -19,7 +17,7 @@ getWhoR project_handle = do
         on_ $ user ^. UserId ==. committee_user ^. CommitteeUserUser
         return (user, committee_user)
 
-    let sorted = sortBy (compare `FUN.on` (committeeUserCreatedTs . entityVal . snd)) committee_members
+    let sorted = sortBy (compare `on` (committeeUserCreatedTs . entityVal . snd)) committee_members
         members :: [Entity User] = map fst sorted
 
     defaultLayout $(widgetFile "who")

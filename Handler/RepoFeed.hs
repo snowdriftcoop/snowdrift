@@ -23,9 +23,6 @@ import Data.List (sortBy)
 
 import Data.Tree (unfoldTreeM_BF, levels)
 
-import qualified Data.Function as FUN
-
-
 
 getRepoFeedR :: HasGithubRepo Handler => Handler TypedContent
 getRepoFeedR = do
@@ -68,5 +65,5 @@ getCommits repo ref bound = do
                       then (commit, [])
                       else (commit, commitParents commit)
 
-        return $ sortBy (flip compare `FUN.on` commitTime) $ filter (\ a -> length (commitParents a) <= 1) $ concat $ levels tree
+        return $ sortBy (flip compare `on` commitTime) $ filter (\ a -> length (commitParents a) <= 1) $ concat $ levels tree
 

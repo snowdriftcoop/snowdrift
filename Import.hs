@@ -9,12 +9,13 @@ import           Yesod                as Import hiding (Route (..), (||.), (==.)
 import           Yesod.Auth           as Import
 import           Yesod.Markdown       as Import (Markdown)
 
--- import           Database.Esqueleto   as Import (val, select, from, on, where_, InnerJoin (..), (^.))
 import           Database.Esqueleto   as Import hiding (on)
 import qualified Database.Esqueleto
 
 import           Control.Applicative  as Import (pure, (<$>), (<*>))
 import           Data.Text            as Import (Text)
+
+import           Data.Function        as Import (on)
 
 import           Data.Map             as Import (Map)
 import           Data.Set             as Import (Set)

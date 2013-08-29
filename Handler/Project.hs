@@ -2,7 +2,7 @@
 
 module Handler.Project where
 
-import Import hiding ((=.), (==.), update, delete)
+import Import
 
 import Model.Currency
 import Model.Project
@@ -15,9 +15,6 @@ import qualified Data.Set as S
 
 import Widgets.Sidebar
 import Widgets.Markdown
-
-import Database.Esqueleto
--- import Database.Persist.Sql.Raw
 
 import Yesod.Markdown
 import Model.Markdown
@@ -37,7 +34,7 @@ getProjectsR = do
         then selectList [] [ Asc ProjectCreatedTs, LimitTo per_page, OffsetBy page ]
         else do
             tagged_projects <- forM tags $ \ name -> select $ from $ \ (t `InnerJoin` p_t) -> do
-                on (t ^. TagId ==. p_t ^. ProjectTagTag)
+                on_ (t ^. TagId ==. p_t ^. ProjectTagTag)
                 where_ ( t ^. TagName ==. val name )
                 return p_t
 
@@ -122,7 +119,7 @@ getEditProjectR project_handle = do
     requireAuth >>= guardCanEdit project_id
 
     tags <- runDB $ select $ from $ \ (p_t `InnerJoin` tag) -> do
-        on (p_t ^. ProjectTagTag ==. tag ^. TagId)
+        on_ (p_t ^. ProjectTagTag ==. tag ^. TagId)
         where_ (p_t ^. ProjectTagProject ==. val project_id)
         return tag
 
@@ -215,7 +212,7 @@ getProjectPatronsR project_handle = do
     (project, pledges) <- runDB $ do
         Entity project_id project <- getBy404 $ UniqueProjectHandle project_handle
         pledges <- select $ from $ \(pledge `InnerJoin` user) -> do
-            on (pledge ^. PledgeUser ==. user ^. UserId)
+            on_ (pledge ^. PledgeUser ==. user ^. UserId)
             where_ (pledge ^. PledgeProject ==. val project_id)
             orderBy [ desc (pledge ^. PledgeShares), asc (user ^. UserName), asc (user ^. UserId)]
             offset page

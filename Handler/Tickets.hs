@@ -9,7 +9,8 @@ import qualified Data.Map as M
 import Control.Arrow ((&&&))
 
 import Data.Filter
-import Data.List (sort)
+import Data.Order
+import Data.List (sort, sortBy)
 
 import qualified Github.Issues as GH
 
@@ -41,9 +42,30 @@ githubIssueToFilterable i = Filterable has_tag get_named_ts search_literal
             (null $ T.breakOnAll str $ T.pack $ GH.issueTitle i)
             || fromMaybe False (null . T.breakOnAll str . T.pack <$> GH.issueBody i)
 
+ticketToOrderable :: AnnotatedTicket -> Orderable
+ticketToOrderable (AnnotatedTicket _ ticket _ _ comment tags) = Orderable has_tag get_named_ts search_literal
+    where
+        has_tag t = elem t $ map tagName tags
+        get_named_ts "CREATED" = S.singleton $ ticketCreatedTs ticket
+        get_named_ts name = error $ "Unrecognized time name " ++ T.unpack name
+        search_literal str =
+            (null $ T.breakOnAll str $ ticketName ticket)
+            || (null . T.breakOnAll str $ unMarkdown $ commentText comment)
+
+githubIssueToOrderable :: GH.Issue -> Orderable
+githubIssueToOrderable i = Orderable has_tag get_named_ts search_literal
+    where
+        has_tag t = elem (T.unpack t) $ map GH.labelName $ GH.issueLabels i
+        get_named_ts "CREATED" = S.singleton $ GH.fromGithubDate $ GH.issueCreatedAt i
+        get_named_ts name = error $ "Unrecognized time name " ++ T.unpack name
+        search_literal str =
+            (null $ T.breakOnAll str $ T.pack $ GH.issueTitle i)
+            || fromMaybe False (null . T.breakOnAll str . T.pack <$> GH.issueBody i)
+
 data Issue = Issue
     { issueWidget :: Widget
     , issueFilterable :: Filterable
+    , issueOrderable :: Orderable
     }
 
 getTicketsR :: Text -> Handler Html
@@ -51,13 +73,7 @@ getTicketsR project_id = do
     Right github_issues <- liftIO $ GH.issuesForRepo "dlthomas" "snowdrift" [] -- TODO: make this a project-specific (optional) setting
 
     filter_expression <- either error id . parseFilterExpression . fromMaybe "" <$> lookupGetParam "filter"
-
-    {-
-        orderings x y = map ( \ f -> f x y )
-            [ flip compare `on` elem "bug" . map GH.labelName . GH.issueLabels
-            , flip compare `on` GH.issueCreatedAt
-            ]
-    -}
+    order_expression <- either error id . parseOrderExpression . fromMaybe "" <$> lookupGetParam "sort"
 
     tickets :: [AnnotatedTicket] <- runDB $ do
         tickets'comments :: [(Entity Ticket, Entity Comment)] <- select $ from $ \ (comment `InnerJoin` ticket) -> do
@@ -99,7 +115,7 @@ getTicketsR project_id = do
 
     render <- getUrlRenderParams
 
-    let ticketToIssue (AnnotatedTicket ticket_id ticket page project comment tags) = Issue widget filterable
+    let ticketToIssue (AnnotatedTicket ticket_id ticket page project comment tags) = Issue widget filterable orderable
                 where
                     page_target = wikiPageTarget page
                     project_handle = projectHandle project
@@ -116,8 +132,9 @@ getTicketsR project_id = do
                                             #{tag}
                         |]
                     filterable = ticketToFilterable $ AnnotatedTicket ticket_id ticket page project comment tags
+                    orderable = ticketToOrderable $ AnnotatedTicket ticket_id ticket page project comment tags
 
-        githubIssueToIssue github_issue = Issue widget filterable
+        githubIssueToIssue github_issue = Issue widget filterable orderable
             where
                 widget = [whamlet|
                         <tr>
@@ -136,8 +153,9 @@ getTicketsR project_id = do
                                     
                     |]
                 filterable = githubIssueToFilterable github_issue
+                orderable = githubIssueToOrderable github_issue
 
-        issues = filter (filter_expression . issueFilterable) $ map ticketToIssue tickets ++ map githubIssueToIssue github_issues
+        issues = sortBy (compare `on` (order_expression . issueOrderable)) $ filter (filter_expression . issueFilterable) $ map ticketToIssue tickets ++ map githubIssueToIssue github_issues
 
     defaultLayout $(widgetFile "tickets")
         

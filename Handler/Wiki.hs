@@ -31,8 +31,6 @@ import Data.Time
 
 import Data.Algorithm.Diff (getDiff, Diff (..))
 
-import qualified Data.Function as FUN
-
 import Text.Blaze.Html5 (ins, del, br)
 
 getWikiR :: Text -> Text -> Handler Html
@@ -519,7 +517,7 @@ getWikiDiffR project_handle target start_edit_id end_edit_id = do
 
         return (start_edit, end_edit)
 
-    let diffEdits = getDiff `FUN.on` ((\ (Markdown text) -> T.lines text) . wikiEditContent)
+    let diffEdits = getDiff `on` ((\ (Markdown text) -> T.lines text) . wikiEditContent)
         renderDiff = mconcat . map (\ a -> (case a of Both x _ -> toHtml x; First x -> del (toHtml x); Second x -> ins (toHtml x)) >> br)
 
     defaultLayout $(widgetFile "wiki_diff")

@@ -22,6 +22,7 @@ Flag library-only
 library
     exposed-modules: Application
                      Data.Filter
+                     Data.Order
                      Data.Text.PrettyHtml
                      Foundation
                      Import
