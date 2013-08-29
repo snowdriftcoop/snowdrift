@@ -17,8 +17,8 @@ getApplicationR project_handle application_id = do
         return (application, Entity user_id user)
 
     interests :: [Value Text] <- runDB $ select $ from $ \ (volunteer_interest `InnerJoin` interest) -> do
-        on (interest ^. InterestId ==. volunteer_interest ^. VolunteerInterestInterest)
-        where_ (volunteer_interest ^. VolunteerInterestVolunteer ==. val application_id)
+        on_ $ interest ^. InterestId ==. volunteer_interest ^. VolunteerInterestInterest
+        where_ $ volunteer_interest ^. VolunteerInterestVolunteer ==. val application_id
         return (interest ^. InterestDescription)
 
     let rendered_interests = T.intercalate ", " $ map (\ (Value x) -> x) interests

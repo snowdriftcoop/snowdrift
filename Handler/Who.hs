@@ -16,7 +16,7 @@ userShortName user = fromMaybe (userIdent user) $ userName user
 getWhoR :: Text -> Handler Html
 getWhoR project_handle = do
     committee_members <- runDB $ select $ from $ \ (user `InnerJoin` committee_user) -> do
-        on (user ^. UserId ==. committee_user ^. CommitteeUserUser)
+        on_ $ user ^. UserId ==. committee_user ^. CommitteeUserUser
         return (user, committee_user)
 
     let sorted = sortBy (compare `FUN.on` (committeeUserCreatedTs . entityVal . snd)) committee_members

@@ -89,7 +89,7 @@ postInviteR project_handle = do
     now <- liftIO getCurrentTime
     invite <- liftIO randomIO
     [ (Value project_id, Value user_role) ] :: [(Value ProjectId, Value Role)] <- runDB $ select $ from $ \ (project `InnerJoin` project_user_role) -> do
-        on $ project ^. ProjectId ==. project_user_role ^. ProjectUserRoleProject
+        on_ $ project ^. ProjectId ==. project_user_role ^. ProjectUserRoleProject
         where_ $ project ^. ProjectHandle ==. val project_handle
                 &&. project_user_role ^. ProjectUserRoleUser ==. val user_id
         return (project ^. ProjectId, project_user_role ^. ProjectUserRoleRole)

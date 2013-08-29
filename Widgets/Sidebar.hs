@@ -63,8 +63,8 @@ sidebar = do
         Just (Entity user_id user) -> do
             (pledges, balance) <- handlerToWidget $ runDB $ do
                 pledges :: [(Entity Project, Entity Pledge)] <- select $ from $ \ (project `InnerJoin` pledge) -> do
-                    on (pledge ^. PledgeProject ==. project ^. ProjectId)
-                    where_ (pledge ^. PledgeUser ==. val user_id)
+                    on_ $ pledge ^. PledgeProject ==. project ^. ProjectId
+                    where_ $ pledge ^. PledgeUser ==. val user_id
                     return (project, pledge)
 
                 Just account <- get (userAccount user)

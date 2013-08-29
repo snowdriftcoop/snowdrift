@@ -1,8 +1,6 @@
 {-# LANGUAGE CPP, DeriveDataTypeable #-}
 
-module Import
-    ( module Import
-    ) where
+module Import ( module Import ) where
 
 
 import           Prelude              as Import hiding (head, init, last,
@@ -12,10 +10,14 @@ import           Yesod.Auth           as Import
 import           Yesod.Markdown       as Import (Markdown)
 
 -- import           Database.Esqueleto   as Import (val, select, from, on, where_, InnerJoin (..), (^.))
-import           Database.Esqueleto   as Import
+import           Database.Esqueleto   as Import hiding (on)
+import qualified Database.Esqueleto
 
 import           Control.Applicative  as Import (pure, (<$>), (<*>))
 import           Data.Text            as Import (Text)
+
+import           Data.Map             as Import (Map)
+import           Data.Set             as Import (Set)
 
 import           Foundation           as Import
 import           Model                as Import
@@ -44,6 +46,9 @@ infixr 5 <>
 
 import Control.Exception (Exception)
 import Data.Typeable (Typeable)
+
+on_ :: Esqueleto query expr backend => expr (Value Bool) -> query ()
+on_ = Database.Esqueleto.on
 
 
 data DBException = DBException deriving (Typeable, Show)

@@ -21,6 +21,8 @@ Flag library-only
 
 library
     exposed-modules: Application
+                     Data.Filter
+                     Data.Text.PrettyHtml
                      Foundation
                      Import
                      Model
@@ -66,7 +68,6 @@ library
                      Widgets.Sidebar
                      Widgets.Time
                      Widgets.ProjectPledges
-                     Data.Text.PrettyHtml
 
     other-modules: Model.Role.Internal
                    Model.Permission.Internal
@@ -144,6 +145,7 @@ library
                  , process
                  , temporary
                  , regex-tdfa                    >= 1.1 && < 1.2
+                 , github                        < 0.8
 
 
 executable         Snowdrift
@@ -175,4 +177,3 @@ test-suite test
                  , monad-logger
                  , transformers
                  , hspec
-                 , regex-tdfa >= 1.1 && < 1.2

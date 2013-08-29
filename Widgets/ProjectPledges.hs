@@ -14,8 +14,8 @@ project_pledges :: UserId -> Widget
 project_pledges user_id = do
     project_summaries :: [ProjectSummary] <- handlerToWidget $ runDB $ do
         projects :: [Entity Project] <- select $ from $ \ (project `InnerJoin` pledge) -> do
-            on (project ^. ProjectId ==. pledge ^. PledgeProject)
-            where_ ( pledge ^. PledgeUser ==. val user_id )
+            on_ $ project ^. ProjectId ==. pledge ^. PledgeProject
+            where_ $ pledge ^. PledgeUser ==. val user_id
             return project
 
         mapM summarizeProject projects

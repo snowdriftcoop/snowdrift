@@ -66,7 +66,7 @@ getWikiPagesR project_handle = do
     Entity _ user <- requireAuth
 
     unfiltered_pages <- runDB $ select $ from $ \ (project `InnerJoin` wiki_page) -> do
-        on $ project ^. ProjectId ==. wiki_page ^. WikiPageProject
+        on_ $ project ^. ProjectId ==. wiki_page ^. WikiPageProject
         where_ $ project ^. ProjectHandle ==. val project_handle
         orderBy [asc $ wiki_page ^. WikiPageTarget]
         return wiki_page
@@ -287,7 +287,7 @@ getDiscussCommentR project_handle target comment_id = do
         let users = M.fromList $ map (entityKey &&& id) user_entities
 
         earlier_retractions <- fmap (map entityVal) $ select $ from $ \ (comment_ancestor `InnerJoin` retraction) -> do
-            on (comment_ancestor ^. CommentAncestorAncestor ==. retraction ^. CommentRetractionComment)
+            on_ (comment_ancestor ^. CommentAncestorAncestor ==. retraction ^. CommentRetractionComment)
             where_ ( comment_ancestor ^. CommentAncestorComment ==. val comment_id )
             return retraction
 
