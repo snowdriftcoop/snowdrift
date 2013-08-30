@@ -20,10 +20,10 @@ import qualified Data.Text as T
 
 import Yesod.Markdown (unMarkdown)
 
-data AnnotatedTicket = AnnotatedTicket TicketId Ticket WikiPage Project Comment [Tag]
+data AnnotatedTicket = AnnotatedTicket TicketId Ticket WikiPage Comment [Tag]
 
 ticketToFilterable :: AnnotatedTicket -> Filterable
-ticketToFilterable (AnnotatedTicket _ ticket _ _ comment tags) = Filterable has_tag get_named_ts search_literal
+ticketToFilterable (AnnotatedTicket _ ticket _ comment tags) = Filterable has_tag get_named_ts search_literal
     where
         has_tag t = elem t $ map tagName tags
         get_named_ts "CREATED" = S.singleton $ ticketCreatedTs ticket
@@ -43,7 +43,7 @@ githubIssueToFilterable i = Filterable has_tag get_named_ts search_literal
             || fromMaybe False (null . T.breakOnAll str . T.pack <$> GH.issueBody i)
 
 ticketToOrderable :: AnnotatedTicket -> Orderable
-ticketToOrderable (AnnotatedTicket _ ticket _ _ comment tags) = Orderable has_tag get_named_ts search_literal
+ticketToOrderable (AnnotatedTicket _ ticket _ comment tags) = Orderable has_tag get_named_ts search_literal
     where
         has_tag t = elem t $ map tagName tags
         get_named_ts "CREATED" = S.singleton $ ticketCreatedTs ticket
@@ -68,16 +68,42 @@ data Issue = Issue
     , issueOrderable :: Orderable
     }
 
-getTicketsR :: Text -> Handler Html
-getTicketsR project_id = do
-    Right github_issues <- liftIO $ GH.issuesForRepo "dlthomas" "snowdrift" [] -- TODO: make this a project-specific (optional) setting
+    
+defaultFilter :: Filterable -> Bool
+defaultFilter = const True
 
-    filter_expression <- either error id . parseFilterExpression . fromMaybe "" <$> lookupGetParam "filter"
-    order_expression <- either error id . parseOrderExpression . fromMaybe "" <$> lookupGetParam "sort"
+defaultOrder :: Orderable -> [Double]
+defaultOrder = const [0]
+
+viewForm :: Form (Filterable -> Bool, Orderable -> [Double])
+viewForm = renderDivs $ (,)
+    <$> (either (const defaultFilter) id . parseFilterExpression . fromMaybe "" <$> aopt textField "filter" Nothing)
+    <*> (either (const defaultOrder) id . parseOrderExpression . fromMaybe "" <$> aopt textField "sort" Nothing)
+
+
+getTicketsR :: Text -> Handler Html
+getTicketsR project_handle = do
+    github_issues' <- liftIO $ GH.issuesForRepo "dlthomas" "snowdrift" [] -- TODO: make this a project-specific (optional) setting
+
+    github_issues <- case github_issues' of
+        Right x -> return x
+        Left _ -> setMessage "failed to fetch github tickets\n" >> return []
+
+    ((result, formWidget), encType) <- runFormGet viewForm
+
+    let (filter_expression, order_expression) = case result of
+            FormSuccess x -> x
+            _ -> (defaultFilter, defaultOrder)
 
     tickets :: [AnnotatedTicket] <- runDB $ do
         tickets'comments :: [(Entity Ticket, Entity Comment)] <- select $ from $ \ (comment `InnerJoin` ticket) -> do
             on_ $ comment ^. CommentId ==. ticket ^. TicketComment
+            let pages = subList_select $ from $ \ (page `InnerJoin` project) -> do
+                    on_ $ page ^. WikiPageProject ==. project ^. ProjectId
+                    where_ $ project ^. ProjectHandle ==. val project_handle
+                    return $ page ^. WikiPageId
+             in where_ $ comment ^. CommentPage `in_` pages
+
             where_ $ comment ^. CommentId `notIn` subList_select (from $ \ retraction -> return $ retraction ^. CommentRetractionComment)
             return (ticket, comment)
 
@@ -85,25 +111,19 @@ getTicketsR project_id = do
             where_ $ page ^. WikiPageId `in_` valList (map (commentPage . entityVal . snd) tickets'comments)
             return page
 
-        projects :: [Entity Project] <- select $ from $ \ project -> do
-            where_ $ project ^. ProjectId `in_` valList (map (wikiPageProject . entityVal) pages)
-            return project
-
         -- TODO Permissions: only show tickets on pages where I can view comments
         -- TODO Restrict pages to this project
             
         let pages_map = M.fromList . map (entityKey &&& entityVal) $ pages
-            projects_map :: Map ProjectId Project = M.fromList . map (entityKey &&& entityVal) $ projects
 
         used_tags'tickets <- forM tickets'comments $ \ (Entity ticket_id ticket, Entity comment_id comment) -> do
             let page = pages_map M.! commentPage comment
-                project = projects_map M.! wikiPageProject page
 
             used_tags <- fmap (map $ \ (Value v) -> v) $ select $ from $ \ comment_tag -> do
                 where_ $ comment_tag ^. CommentTagComment ==. val comment_id
                 return $ comment_tag ^. CommentTagTag
 
-            return $ (S.fromList used_tags, \ tags_map -> AnnotatedTicket ticket_id ticket page project comment (map (tags_map M.!) used_tags))
+            return $ (S.fromList used_tags, \ tags_map -> AnnotatedTicket ticket_id ticket page comment (map (tags_map M.!) used_tags))
             
         tags <- select $ from $ \ tag -> do
             where_ $ tag ^. TagId `in_` valList (S.toList $ mconcat $ map fst $ used_tags'tickets)
@@ -115,10 +135,9 @@ getTicketsR project_id = do
 
     render <- getUrlRenderParams
 
-    let ticketToIssue (AnnotatedTicket ticket_id ticket page project comment tags) = Issue widget filterable orderable
+    let ticketToIssue (AnnotatedTicket ticket_id ticket page comment tags) = Issue widget filterable orderable
                 where
                     page_target = wikiPageTarget page
-                    project_handle = projectHandle project
                     widget = [whamlet|
                             <tr>
                                 <td>
@@ -131,8 +150,8 @@ getTicketsR project_id = do
                                         <span .tag style="background-color:teal;font-size:xx-small">
                                             #{tag}
                         |]
-                    filterable = ticketToFilterable $ AnnotatedTicket ticket_id ticket page project comment tags
-                    orderable = ticketToOrderable $ AnnotatedTicket ticket_id ticket page project comment tags
+                    filterable = ticketToFilterable $ AnnotatedTicket ticket_id ticket page comment tags
+                    orderable = ticketToOrderable $ AnnotatedTicket ticket_id ticket page comment tags
 
         githubIssueToIssue github_issue = Issue widget filterable orderable
             where
@@ -155,7 +174,7 @@ getTicketsR project_id = do
                 filterable = githubIssueToFilterable github_issue
                 orderable = githubIssueToOrderable github_issue
 
-        issues = sortBy (compare `on` (order_expression . issueOrderable)) $ filter (filter_expression . issueFilterable) $ map ticketToIssue tickets ++ map githubIssueToIssue github_issues
+        issues = sortBy (flip compare `on` order_expression . issueOrderable) $ filter (filter_expression . issueFilterable) $ map ticketToIssue tickets ++ map githubIssueToIssue github_issues
 
     defaultLayout $(widgetFile "tickets")
         

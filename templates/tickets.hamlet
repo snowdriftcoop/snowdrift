@@ -1,5 +1,10 @@
 <div .row>
     <div .span8>
+        <form>
+            ^{formWidget}
+            <input type=submit value="update view">
+
+    <div .span8>
         $if null tickets
             no tickets to display
         $else
