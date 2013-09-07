@@ -9,6 +9,8 @@ import Data.Maybe
 
 import Control.Monad.Trans.Resource
 
+import Model.Role
+
 data UserUpdate =
     UserUpdate
         { userUpdateName :: Maybe Text
@@ -41,3 +43,22 @@ applyUserUpdate user user_update = user
 
 userPrintName :: Entity User -> Text
 userPrintName (Entity user_id user) = fromMaybe (either (error . T.unpack) (T.append "user") $ fromPersistValue $ unKey user_id) (userName user)
+
+isProjectAdmin :: (MonadIO m, MonadLogger m, MonadBaseControl IO m, MonadUnsafeIO m, MonadThrow m)
+    => Text -> UserId -> SqlPersistT m Bool
+isProjectAdmin project_handle user_id = fmap (not . null) $ select $ from $ \ (pur `InnerJoin` p) -> do
+    on_ $ pur ^. ProjectUserRoleProject ==. p ^. ProjectId
+    where_ $ p ^. ProjectHandle ==. val project_handle
+        &&. pur ^. ProjectUserRoleUser ==. val user_id
+        &&. pur ^. ProjectUserRoleRole ==. val Admin
+    limit 1
+    return ()
+    
+isProjectAffiliated :: (MonadIO m, MonadLogger m, MonadBaseControl IO m, MonadUnsafeIO m, MonadThrow m)
+    => Text -> UserId -> SqlPersistT m Bool
+isProjectAffiliated project_handle user_id = fmap (not . null) $ select $ from $ \ (pur `InnerJoin` p) -> do
+    on_ $ pur ^. ProjectUserRoleProject ==. p ^. ProjectId
+    where_ $ p ^. ProjectHandle ==. val project_handle
+        &&. pur ^. ProjectUserRoleUser ==. val user_id
+    limit 1
+    return ()

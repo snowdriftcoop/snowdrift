@@ -208,9 +208,6 @@ instance Yesod App where
     isAuthorized _ _ = return Authorized -- TODO
 
 
-roleCanView :: t -> t1 -> t2 -> AuthResult
-roleCanView _ _ _ = Authorized -- TODO
-
 -- How to run database actions.
 instance YesodPersist App where
     type YesodPersistBackend App = SqlPersistT
@@ -276,9 +273,11 @@ snowdriftAuthHashDB =
         login toMaster = do
             let parentLogin = apLogin auth toMaster
             [whamlet|
+                <p> or use our built-in system:
                 <p>
                     <a href="@{UserCreateR}">
-                       click here to create an account with our built-in system
+                       click here to create an account
+                <p> or
                 ^{parentLogin}
             |]
      in auth { apLogin = login }

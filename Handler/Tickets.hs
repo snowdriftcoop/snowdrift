@@ -6,7 +6,6 @@ import Import
 import Widgets.Sidebar
 
 import qualified Data.Map as M
-import Control.Arrow ((&&&))
 
 import Data.Filter
 import Data.Order
@@ -83,7 +82,10 @@ viewForm = renderDivs $ (,)
 
 getTicketsR :: Text -> Handler Html
 getTicketsR project_handle = do
-    github_issues' <- liftIO $ GH.issuesForRepo "dlthomas" "snowdrift" [] -- TODO: make this a project-specific (optional) setting
+    _ <- requireAuthId
+
+    -- TODO: make this a project-specific (optional) setting
+    github_issues' <- liftIO $ GH.issuesForRepo "dlthomas" (T.unpack project_handle) []
 
     github_issues <- case github_issues' of
         Right x -> return x

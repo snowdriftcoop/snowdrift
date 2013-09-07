@@ -79,21 +79,6 @@ renderProject maybe_project_handle project pledges pledge = do
     $(widgetFile "project")
 
 
-guardCanEdit :: ProjectId -> Entity User -> Handler ()
-guardCanEdit _ _ = return ()
-{- TODO
-guardCanEdit project_id (Entity user_id user) = return ()
-    when (userRole user /= Admin) $ do
-        match <- runDB $ select $ from $ \( project_user ) -> do
-            where_ ( project_user ^. ProjectUserUser ==. val user_id &&. project_user ^. ProjectUserProject ==. val project_id &&. project_user ^. ProjectUserCanEdit ==. val True )
-            limit 1
-            return project_user
-
-        when (null match) $
-            permissionDenied "You do not have permission to edit this project."
--}
-
-
 data UpdateProject = UpdateProject { updateProjectName :: Text, updateProjectDescription :: Markdown, updateProjectTags :: [Text] }
 
 
@@ -114,9 +99,13 @@ previewProjectForm project =
 
 getEditProjectR :: Text -> Handler Html
 getEditProjectR project_handle = do
-    Entity project_id project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
+    viewer_id <- requireAuthId 
 
-    requireAuth >>= guardCanEdit project_id
+    Entity project_id project <- runDB $ do
+        can_edit <- (||) <$> isProjectAdmin project_handle viewer_id <*> isProjectAdmin "snowdrift" viewer_id
+        if can_edit
+         then getBy404 $ UniqueProjectHandle project_handle
+         else permissionDenied "You do not have permission to edit this project."
 
     tags <- runDB $ select $ from $ \ (p_t `InnerJoin` tag) -> do
         on_ (p_t ^. ProjectTagTag ==. tag ^. TagId)
@@ -130,11 +119,14 @@ getEditProjectR project_handle = do
 
 postProjectR :: Text -> Handler Html
 postProjectR project_handle = do
-    viewer <- requireAuth
+    viewer_id <- requireAuthId
 
-    Entity project_id project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
+    Entity project_id project <- runDB $ do
+        can_edit <- (||) <$> isProjectAdmin project_handle viewer_id <*> isProjectAdmin "snowdrift" viewer_id
+        if can_edit
+         then getBy404 $ UniqueProjectHandle project_handle
+         else permissionDenied "You do not have permission to edit this project."
 
-    guardCanEdit project_id viewer
     ((result, _), _) <- runFormPost $ editProjectForm Nothing
 
     now <- liftIO getCurrentTime
@@ -169,7 +161,7 @@ postProjectR project_handle = do
                 Just x | x == action -> do
                     runDB $ do
                         when (projectDescription project /= description) $ do
-                            project_update <- insert $ ProjectUpdate now project_id (entityKey viewer) $ diffMarkdown (projectDescription project) description
+                            project_update <- insert $ ProjectUpdate now project_id viewer_id $ diffMarkdown (projectDescription project) description
                             last_update <- getBy $ UniqueProjectLastUpdate project_id
                             case last_update of
                                 Just (Entity key _) -> repsert key $ ProjectLastUpdate project_id project_update
@@ -206,6 +198,8 @@ postProjectR project_handle = do
 
 getProjectPatronsR :: Text -> Handler Html
 getProjectPatronsR project_handle = do
+    _ <- requireAuthId
+
     page <- lookupGetParamDefault "page" 0
     per_page <- lookupGetParamDefault "count" 20
 

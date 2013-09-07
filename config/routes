@@ -49,7 +49,7 @@
 
 /p/#Text/application/#VolunteerApplicationId ApplicationR GET
 
-/applications ApplicationsR GET
+p/#Text/applications ApplicationsR GET
 
 /tutorial/markdown MarkdownTutorialR GET
 

@@ -1,5 +1,5 @@
 
-module Model.Permission (Permission (..)) where
+module Model.Permission (PermissionLevel (..)) where
 
 -- import Import
 

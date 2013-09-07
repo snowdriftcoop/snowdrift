@@ -7,6 +7,10 @@
         <div .row>
             <form action="@{WikiDiffProxyR project_handle target}" method="GET">
                 <table .table>
+                    <tr>
+                        <td colspan="3">
+                        <td>
+                            <input type="submit" value="diff">
                     $forall (index, Entity edit_id edit) <- editsIndexed
                         <tr>
                             <td>

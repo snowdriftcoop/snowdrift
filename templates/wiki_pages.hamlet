@@ -19,12 +19,6 @@
                         <td>
                             <a href=@{WikiR project_handle (wikiPageTarget page)}>
                                 #{wikiPageTarget page}
-                        <td>
-                            #{show (wikiPageCanView page)}
-                        <td>
-                            #{show (wikiPageCanEdit page)}
-                        <td>
-                            #{show (wikiPageCanViewMeta page)}
 
     <div .span3 .offset1>
         ^{sidebar}

@@ -1,18 +1,17 @@
 <div .row>
     <div .span9>
-        $forall (project_handle, applications) <- M.toAscList applications_map
-            $if not (null applications)
-                <table .table>
-                    $forall Entity application_id application <- applications
-                        <tr>
-                            <td>
-                                <a href="@{ApplicationR project_handle application_id}">#{volunteerApplicationName application}
-                            <td>
-                               $maybe website <- volunteerApplicationWebsite application
-                                   #{website}
-                            <td>
-                               $maybe location <- volunteerApplicationLocation application
-                                   #{location}
+        $if not (null applications)
+            <table .table>
+                $forall Entity application_id application <- applications
+                    <tr>
+                        <td>
+                            <a href="@{ApplicationR project_handle application_id}">#{volunteerApplicationName application}
+                        <td>
+                           $maybe website <- volunteerApplicationWebsite application
+                               #{website}
+                        <td>
+                           $maybe location <- volunteerApplicationLocation application
+                               #{location}
 
     <div .span3>
         ^{sidebar}

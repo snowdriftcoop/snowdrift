@@ -3,7 +3,6 @@ module Widgets.Sidebar where
 
 import Import
 
-import Model.Role
 import Model.Currency
 
 import qualified Data.Set as S
@@ -21,11 +20,7 @@ sidebar = do
             where_ $ project_user_role ^. ProjectUserRoleUser ==. val user_id
             return $ project_user_role ^. ProjectUserRoleRole
 
-    let role = case role_values of
-            [] -> Public
-            rs -> let Value r = maximum rs in r
-
-    let is_committee_member = role == CommitteeMember || role == Admin
+    let is_committee_member = False -- TODO
         log_in_or_out =
             case maybe_user of
                 Nothing ->
@@ -110,7 +105,7 @@ sidebar = do
                         where_ ( wiki_page ^. WikiPageId `in_` valList (map (wikiEditPage . entityVal) edits) )
                         return wiki_page
 
-                    let filtered_pages = map entityKey $ filter (\ (Entity _ page) -> role >= wikiPageCanViewMeta page) pages
+                    let filtered_pages = map entityKey pages -- TODO $ filter (\ (Entity _ page) -> role >= wikiPageCanViewMeta page) pages
                     return $ filter (flip S.member (S.fromList filtered_pages) . wikiEditPage . entityVal) edits
 
             comments :: [Entity Comment] <- do
@@ -124,7 +119,7 @@ sidebar = do
                         where_ ( wiki_page ^. WikiPageId `in_` valList (map (commentPage . entityVal) comments) )
                         return wiki_page
 
-                    let filtered_pages = map entityKey $ filter (\ (Entity _ page) -> role >= wikiPageCanViewMeta page) pages
+                    let filtered_pages = map entityKey pages -- TODO $ filter (\ (Entity _ page) -> role >= wikiPageCanViewMeta page) pages
                     return $ filter (flip S.member (S.fromList filtered_pages) . commentPage . entityVal) comments
 
             return (messages, applications, edits, comments)

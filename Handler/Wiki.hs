@@ -8,9 +8,8 @@ import Widgets.Sidebar
 import Widgets.Markdown
 import Widgets.Time
 
-import Control.Applicative ((<|>))
-
-import Model.Role (Role (..), roleField)
+import Model.Role (Role (..))
+import Model.Permission
 import Model.User
 
 import Yesod.Markdown
@@ -25,8 +24,6 @@ import qualified Data.Map as M
 
 import Data.Tree
 
-import Control.Arrow ((&&&))
-
 import Data.Time
 
 import Data.Algorithm.Diff (getDiff, Diff (..))
@@ -35,41 +32,37 @@ import Text.Blaze.Html5 (ins, del, br)
 
 getWikiR :: Text -> Text -> Handler Html
 getWikiR project_handle target = do
-    Entity _ page <- runDB $ do
+    maybe_user_id <- maybeAuthId
+
+    let can_view_meta = isJust maybe_user_id
+
+    (page, can_edit) <- runDB $ do
         Entity project_id _ <- getBy404 $ UniqueProjectHandle project_handle
-        page_entity <- getBy404 $ UniqueWikiTarget project_id target
+        Entity _ page <- getBy404 $ UniqueWikiTarget project_id target
 
-        return page_entity
+        -- TODO this should be changed when we add moderation
+        can_edit <-
+            let getCanEdit user_id = do
+                    fmap (not . null) $ select $ from $ \ pur -> do
+                        where_ $ pur ^. ProjectUserRoleUser ==. val user_id
+                            &&. pur ^. ProjectUserRoleProject ==. val project_id
+                            &&. pur ^. ProjectUserRoleRole ==. val Admin
+                        limit 1
+                        return ()
+             in maybe (return False) getCanEdit maybe_user_id
 
-    let can_view = wikiPageCanView page
-
-    (can_edit, can_view_meta) <- if can_view == Public
-         then do
-            maybe_user <- maybeAuth
-            case maybe_user of
-                Nothing -> return (False, False)
-                Just _ -> return (True, True) -- TODO (userRole user >= wikiPageCanEdit page, userRole user >= wikiPageCanViewMeta page)
-                    
-         else do
-            Entity _ _ <- requireAuth
-            -- TODO when (userRole user < can_view) $ permissionDenied "You do not have sufficient privileges to view this page."
-
-            return (True, True) -- TODO (userRole user >= wikiPageCanEdit page, userRole user >= wikiPageCanViewMeta page)
+        return (page, can_edit)
 
     defaultLayout $ renderWiki project_handle target can_edit can_view_meta page
 
 
 getWikiPagesR :: Text -> Handler Html
 getWikiPagesR project_handle = do
-    Entity _ user <- requireAuth
-
-    unfiltered_pages <- runDB $ select $ from $ \ (project `InnerJoin` wiki_page) -> do
+    pages <- runDB $ select $ from $ \ (project `InnerJoin` wiki_page) -> do
         on_ $ project ^. ProjectId ==. wiki_page ^. WikiPageProject
         where_ $ project ^. ProjectHandle ==. val project_handle
         orderBy [asc $ wiki_page ^. WikiPageTarget]
         return wiki_page
-
-    let pages = {- TODO filter (\ page -> wikiPageCanView (entityVal page) <= userRole user) -} unfiltered_pages
 
     defaultLayout $(widgetFile "wiki_pages")
 
@@ -83,6 +76,11 @@ postWikiR project_handle target = do
     Entity user_id _ <- requireAuth
     now <- liftIO getCurrentTime
 
+    affiliated <- runDB $ (||)
+            <$> isProjectAffiliated project_handle user_id
+            <*> isProjectAdmin "snowdrift" user_id
+
+    when (not affiliated) $ permissionDenied "you do not have permission to edit this page"
 
     (project_id, Entity page_id page, Entity _ last_edit) <- runDB $ do
         Entity project_id _ <- getBy404 $ UniqueProjectHandle project_handle
@@ -90,47 +88,83 @@ postWikiR project_handle target = do
         last_edit_entity <- getBy404 $ UniqueWikiLastEdit $ entityKey page_entity
         return (project_id, page_entity, last_edit_entity)
 
-    -- TODO when (userRole user < wikiPageCanEdit page) $ permissionDenied "You do not have sufficient privileges to edit this page."
-
-    ((result, _), _) <- runFormPost $ editWikiForm (wikiLastEditEdit last_edit) (wikiPageContent page) Nothing
+    ((result, _), _) <- runFormPost $ editWikiForm undefined (wikiPageContent page) Nothing
 
 
     case result of
-        FormSuccess (last_edit_id, content, comment) ->
-            if last_edit_id == wikiLastEditEdit last_edit
-             then do
-                mode <- lookupPostParam "mode"
+        FormSuccess (last_edit_id, content, comment) -> do
+            mode <- lookupPostParam "mode"
 
-                let action :: Text = "update"
+            let action :: Text = "update"
 
-                case mode of
-                    Just "preview" -> do
-                        (form, _) <- generateFormPost $ editWikiForm (wikiLastEditEdit last_edit) content comment
-                        defaultLayout $ renderPreview form action $ renderWiki project_handle target False False new_page
-                            where new_page = WikiPage target project_id content Uninvited Uninvited Uninvited
+            case mode of
+                Just "preview" -> do
+                    (form, _) <- generateFormPost $ editWikiForm last_edit_id content comment
+                    defaultLayout $ renderPreview form action $ renderWiki project_handle target False False $ WikiPage target project_id content NormalPermissions
 
-                    Just x | x == action -> do
-                        runDB $ do
-                            update $ \ wiki_page -> do
-                                where_ ( wiki_page ^. WikiPageId ==. val page_id )
-                                set wiki_page [WikiPageContent =. val content]
+                Just x | x == action -> do
+                    runDB $ do
+                        update $ \ p -> do
+                            set p [WikiPageContent =. val content]
+                            where_ $ p ^. WikiPageId ==. val page_id
 
-                            edit_id <- insert $ WikiEdit now user_id page_id content comment
-                            either_last_edit <- insertBy $ WikiLastEdit page_id edit_id
-                            case either_last_edit of
-                                Left (Entity to_update _) -> update $ \ wiki_last_edit -> do
-                                    set wiki_last_edit [WikiLastEditEdit =. val edit_id]
-                                    where_ ( wiki_last_edit ^. WikiLastEditId ==. val to_update )
+                        edit_id <- insert $ WikiEdit now user_id page_id content comment
+                        -- TODO - I think there might be a race condition here...
+                        either_last_edit <- insertBy $ WikiLastEdit page_id edit_id
 
-                                Right _ -> return ()
+                        if last_edit_id == wikiLastEditEdit last_edit
+                         then lift $ setMessage "Updated."
+                         else do
+                            [ Value last_editor ] <- select $ from $ \ edit -> do
+                                where_ $ edit ^. WikiEditId ==. val (wikiLastEditEdit last_edit)
+                                return $ edit ^. WikiEditUser
 
-                        setMessage "Updated."
-                        redirect $ WikiR project_handle target
+                            let comment_body = Markdown $ T.unlines 
+                                    [ "ticket: edit conflict"
+                                    , ""
+                                    , "[original version](/w/" <> target <> "/history/" <> toPathPiece last_edit_id <> ")"
+                                    , ""
+                                    , "[my version](/w/" <> target <> "/history/" <> toPathPiece edit_id <> ")"
+                                    , ""
+                                    , "[their version](/w/" <> target <> "/history/" <> (toPathPiece $ wikiLastEditEdit last_edit) <> ")"
+                                    , ""
+                                    , "(this ticket was automatically generated)"
+                                    ]
 
-                    _ -> error "Error: unrecognized mode"
+                            comment_id <- insert $ Comment now (Just now) (Just user_id) page_id Nothing user_id comment_body 0
 
-             else
-                error "Error submitting form - page was updated since you last saw it" -- TODO: something better here
+                            void $ insert $ Ticket now "edit conflict" comment_id
+
+                            render <- lift getUrlRenderParams
+
+                            let message_text = Textarea $ T.unlines
+                                    [ "Edit conflict for wiki page \"" <> target <> "\"."
+                                    , "Ticket created: " <> render (DiscussCommentR project_handle target comment_id) []
+                                    , "(this message was automatically generated)"
+                                    ]
+
+                            void $ insert $ Message now (Just last_editor) (Just user_id) message_text
+                            void $ insert $ Message now (Just user_id) (Just last_editor) message_text
+
+                            lift $ setMessage $ flip ($) render
+                                    [hamlet|
+                                        <em .error>
+                                            conflicting edits (ticket created, messages sent)
+                                    |]
+                            
+
+                        case either_last_edit of
+                            Left (Entity to_update _) -> update $ \ l -> do
+                                set l [WikiLastEditEdit =. val edit_id]
+                                where_ $ l ^. WikiLastEditId ==. val to_update
+
+                            Right _ -> return ()
+
+                    redirect $ WikiR project_handle target
+
+                _ -> error "Error: unrecognized mode"
+
+                
 
         FormMissing -> error "Form missing."
         FormFailure msgs -> error $ "Error submitting form: " ++ T.unpack (T.concat msgs)
@@ -145,7 +179,11 @@ getEditWikiR project_handle target = do
         last_edit_entity <- getBy404 $ UniqueWikiLastEdit $ entityKey page_entity
         return (page_entity, last_edit_entity)
 
-    -- TODO when (userRole user < wikiPageCanEdit page) $ permissionDenied "You do not have sufficient privileges to edit this page."
+    affiliated <- runDB $ (||)
+            <$> isProjectAffiliated project_handle user_id
+            <*> isProjectAdmin "snowdrift" user_id
+
+    when (not affiliated) $ permissionDenied "you do not have permission to edit this page"
 
     (wiki_form, _) <- generateFormPost $ editWikiForm (wikiLastEditEdit last_edit) (wikiPageContent page) Nothing
 
@@ -156,9 +194,13 @@ getNewWikiR :: Text -> Text -> Handler Html
 getNewWikiR project_handle target = do
     Entity user_id user <- requireAuth
 
-    -- TODO when (userRole user < CommitteeMember) $ permissionDenied "You do not have sufficient privileges to create a new page."
+    affiliated <- runDB $ (||)
+            <$> isProjectAffiliated project_handle user_id
+            <*> isProjectAdmin "snowdrift" user_id
 
-    (wiki_form, _) <- generateFormPost $ newWikiForm Nothing Nothing Nothing Nothing
+    when (not affiliated) $ permissionDenied "you do not have permission to edit this page"
+
+    (wiki_form, _) <- generateFormPost $ newWikiForm Nothing
 
     defaultLayout $(widgetFile "new_wiki")
 
@@ -166,27 +208,33 @@ getNewWikiR project_handle target = do
 postNewWikiR :: Text -> Text -> Handler Html
 postNewWikiR project_handle target = do
     Entity user_id _ <- requireAuth
-    -- TODO when (userRole user < CommitteeMember) $ permissionDenied "You do not have sufficient privileges to create a new page."
+
+    affiliated <- runDB $ (||)
+            <$> isProjectAffiliated project_handle user_id
+            <*> isProjectAdmin "snowdrift" user_id
+
+    when (not affiliated) $ permissionDenied "you do not have permission to edit this page"
+
     now <- liftIO getCurrentTime
 
     Entity project_id _ <- runDB $ getBy404 $ UniqueProjectHandle project_handle
 
-    ((result, _), _) <- runFormPost $ newWikiForm Nothing Nothing Nothing Nothing
+    ((result, _), _) <- runFormPost $ newWikiForm Nothing
 
     case result of
-        FormSuccess (content, can_view, can_view_meta, can_edit) -> do
+        FormSuccess content -> do
             mode <- lookupPostParam "mode"
             let action :: Text = "create"
             case mode of
                 Just "preview" -> do
-                        (form, _) <- generateFormPost $ newWikiForm (Just content) (Just can_view) (Just can_view_meta) (Just can_edit)
+                        (form, _) <- generateFormPost $ newWikiForm (Just content)
                         defaultLayout $ renderPreview form action $ renderWiki project_handle target False False page
-                            where page = WikiPage target project_id content Uninvited Uninvited Uninvited
+                            where page = WikiPage target project_id content NormalPermissions
 
 
                 Just x | x == action -> do
                     _ <- runDB $ do
-                        page_id <- insert $ WikiPage target project_id content can_view can_view_meta can_edit
+                        page_id <- insert $ WikiPage target project_id content NormalPermissions
                         edit_id <- insert $ WikiEdit now user_id page_id content $ Just "Page created."
                         insert $ WikiLastEdit page_id edit_id
 
@@ -219,7 +267,9 @@ getDiscussWikiR project_handle target = do
         Entity project_id _ <- getBy404 $ UniqueProjectHandle project_handle
         getBy404 $ UniqueWikiTarget project_id target
 
-    let can_edit = True -- TODO userRole user >= wikiPageCanEdit page
+    affiliated <- runDB $ (||)
+            <$> isProjectAffiliated project_handle user_id
+            <*> isProjectAdmin "snowdrift" user_id
 
     (roots, rest, users, retraction_map) <- runDB $ do
         roots <- select $ from $ \ comment -> do
@@ -321,6 +371,12 @@ postDiscussWikiR project_handle target = do
     Entity page_id _ <- runDB $ do
         Entity project_id _ <- getBy404 $ UniqueProjectHandle project_handle
         getBy404 $ UniqueWikiTarget project_id target
+
+    affiliated <- runDB $ (||)
+            <$> isProjectAffiliated project_handle user_id
+            <*> isProjectAdmin "snowdrift" user_id
+
+    when (not affiliated) $ permissionDenied "you do not have permission to post comments here"
 
     now <- liftIO getCurrentTime
 
@@ -469,6 +525,7 @@ getWikiNewCommentsR project_handle = do
 
 getWikiHistoryR :: Text -> Text -> Handler Html
 getWikiHistoryR project_handle target = do
+    _ <- requireAuthId
     (edits, users) <- runDB $ do
         Entity project_id _ <- getBy404 $ UniqueProjectHandle project_handle
         Entity page_id _ <- getBy404 $ UniqueWikiTarget project_id target
@@ -492,6 +549,8 @@ getWikiHistoryR project_handle target = do
 -- e.g. /w/diff?from=a&to=b to /w/diff/a/b
 getWikiDiffProxyR :: Text -> Text -> Handler Html
 getWikiDiffProxyR project_handle target = do
+    _ <- requireAuthId
+
     (start_edit_id_t, end_edit_id_t) <- runInputGet $ (,)
                                         <$> ireq textField "start"
                                         <*> ireq textField "end"
@@ -506,6 +565,8 @@ getWikiDiffProxyR project_handle target = do
 
 getWikiDiffR :: Text -> Text -> WikiEditId -> WikiEditId -> Handler Html
 getWikiDiffR project_handle target start_edit_id end_edit_id = do
+    _ <- requireAuthId
+
     (start_edit, end_edit) <- runDB $ do
         Entity project_id _ <- getBy404 $ UniqueProjectHandle project_handle
         Entity page_id _ <- getBy404 $ UniqueWikiTarget project_id target
@@ -524,6 +585,8 @@ getWikiDiffR project_handle target start_edit_id end_edit_id = do
 
 getWikiEditR :: Text -> Text -> WikiEditId -> Handler Html
 getWikiEditR project_handle target edit_id = do
+    _ <- requireAuthId
+
     edit <- runDB $ do
         Entity project_id _ <- getBy404 $ UniqueProjectHandle project_handle
         Entity page_id _ <- getBy404 $ UniqueWikiTarget project_id target
@@ -543,8 +606,7 @@ getWikiNewEditsR project_handle = do
 
     now <- liftIO getCurrentTime
     (edits, pages, users) :: ([Entity WikiEdit], M.Map WikiPageId (Entity WikiPage), M.Map UserId (Entity User)) <- runDB $ do
-        unfiltered_pages :: [Entity WikiPage] <- select $ from $ \ page -> return page
-        let pages = M.fromList $ map (entityKey &&& id) $ {- TODO filter ((userRole viewer >=) . wikiPageCanViewMeta . entityVal) -} unfiltered_pages
+        pages <- fmap (M.fromList . map (entityKey &&& id)) $ select $ from $ \ page -> return page
         edits <- select $ from $ \ edit -> do
             where_ $ case maybe_from of
                 Nothing -> ( edit ^. WikiEditPage `in_` valList (M.keys pages) )
@@ -699,12 +761,8 @@ editWikiForm last_edit_id content comment = renderDivs $ (,,)
         <*> aopt textField "Comment" (Just comment)
 
 
-newWikiForm :: Maybe Markdown -> Maybe Role -> Maybe Role -> Maybe Role -> Form (Markdown, Role, Role, Role)
-newWikiForm content can_view can_view_meta can_edit = renderDivs $ (,,,)
-        <$> areq snowdriftMarkdownField "Page Content" content
-        <*> areq (roleField Admin) "Minimum Role to View" (can_view <|> Just GeneralPublic)
-        <*> areq (roleField Admin) "Minimum Role to View Metadata" (can_view_meta <|> Just CommitteeCandidate)
-        <*> areq (roleField Admin) "Minimum Role to Edit" (can_edit <|> Just CommitteeMember)
+newWikiForm :: Maybe Markdown -> Form Markdown
+newWikiForm content = renderDivs $ areq snowdriftMarkdownField "Page Content" content
 
 
 disabledCommentForm :: Form Markdown

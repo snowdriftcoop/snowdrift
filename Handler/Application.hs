@@ -10,6 +10,14 @@ import qualified Data.Text as T
 
 getApplicationR :: Text -> VolunteerApplicationId -> Handler Html
 getApplicationR project_handle application_id = do
+    Entity viewer_id viewer <- requireAuth
+
+    affiliated <- runDB $ (||)
+        <$> isProjectAffiliated project_handle viewer_id
+        <*> isProjectAdmin "snowdrift" viewer_id
+
+    when (not affiliated) $ permissionDenied "you must be affiliated with this project to view applications"
+
     (application, user) <- runDB $ do
         application <- get404 application_id
         let user_id = volunteerApplicationUser application

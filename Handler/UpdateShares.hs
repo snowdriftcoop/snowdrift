@@ -14,6 +14,8 @@ confirmForm shares = renderDivs $ SharesPurchaseOrder <$> areq hiddenField "" (J
 
 getUpdateSharesR :: Text -> Handler Html
 getUpdateSharesR project_handle = do
+    _ <- requireAuthId
+
     ((result, _), _) <- runFormGet $ buySharesForm 0
     case result of
         FormSuccess (SharesPurchaseOrder shares) -> do

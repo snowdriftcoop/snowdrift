@@ -14,7 +14,7 @@ import Data.Int (Int64)
 
 import Model.Currency (Milray)
 import Model.Role.Internal (Role)
-import Model.Permission.Internal (Permission)
+import Model.Permission.Internal (PermissionLevel)
 import Model.Markdown.Diff (MarkdownDiff)
 
 import Yesod.Markdown (Markdown)

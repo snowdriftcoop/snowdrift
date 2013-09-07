@@ -49,9 +49,6 @@ ProjectUserRole
     role Role
     UniqueProjectUser project user
 
-    
-
-
 
 ProjectUpdate
     updatedTs UTCTime
@@ -64,12 +61,6 @@ ProjectLastUpdate
     project ProjectId
     update ProjectUpdateId
     UniqueProjectLastUpdate project
-
-
-ProjectUser
-    project ProjectId
-    user UserId
-    canEdit Bool
 
 
 Pledge
@@ -129,15 +120,8 @@ WikiPage
     target Text
     project ProjectId
     content Markdown
-    canView Role
-    canViewMeta Role
-    canEdit Role
+    permissionLevel PermissionLevel
     UniqueWikiTarget project target
-
-WikiPagePermission
-    page WikiPageId
-    role Role
-    permission Permission
 
 WikiEdit
     ts UTCTime

@@ -53,8 +53,8 @@ $#        ^{sb_link WikiNewEditsR "View Recent Wiki Edits"}
     ^{sb_link (WhoR "snowdrift") "Who We Are"}
     ^{sb_link ProjectsR "See Projects"}
     $# TODO
-    $case role
-        $of CommitteeCandidate
+    $case True
+        $of False
             ^{sb_link (WikiR "snowdrift" "joincommittee") "Join the steering committee"}
         $of _
             ^{sb_link (WikiR "snowdrift" "committee") "Committee"}

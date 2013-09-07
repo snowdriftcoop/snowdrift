@@ -39,10 +39,15 @@ previewUserForm user = renderDivs $
 
 getUserR :: UserId -> Handler Html
 getUserR user_id = do
-    viewer_id <- maybeAuthId
-    user <- runDB $ get404 user_id
+    maybe_viewer_id <- maybeAuthId
+    user <- runDB $ do
+        (\ f -> maybe (get404 user_id) f maybe_viewer_id) $ \ _ -> do
+            on_committee <- fmap isJust $ getBy $ UniqueCommitteeMember user_id
+            if on_committee
+             then get404 user_id
+             else permissionDenied "You must be logged in to view this user"
 
-    defaultLayout $ renderUser viewer_id user_id user
+    defaultLayout $ renderUser maybe_viewer_id user_id user
 
 
 renderUser :: Maybe UserId -> UserId -> User -> Widget
@@ -58,7 +63,9 @@ renderUser viewer_id user_id user = do
 getEditUserR :: UserId -> Handler Html
 getEditUserR user_id = do
     viewer_id <- requireAuthId
-    when (user_id /= viewer_id) $ permissionDenied "You can only modify your own profile!"
+    when (user_id /= viewer_id) $ runDB $ do
+        is_admin <- isProjectAdmin "snowdrift" viewer_id
+        when (not $ is_admin) $ lift $ permissionDenied "You can only modify your own profile!"
 
     user <- runDB $ get404 user_id
 
@@ -69,60 +76,58 @@ getEditUserR user_id = do
 postUserR :: UserId -> Handler Html
 postUserR user_id = do
     viewer_id <- requireAuthId
-    if user_id /= viewer_id
-     then permissionDenied "You can only modify your own profile!"
-     else do
-        ((result, _), _) <- runFormPost $ editUserForm undefined
 
-        case result of
-            FormSuccess user_update -> do
-                mode <- lookupPostParam "mode"
-                let action :: Text = "update"
-                case mode of
-                    Just "preview" -> do
-                        user <- runDB $ get404 user_id
-                        let updated_user = applyUserUpdate user user_update
-                            rendered_user = renderUser (Just viewer_id) user_id updated_user
+    when (user_id /= viewer_id) $ runDB $ do
+        is_admin <- isProjectAdmin "snowdrift" viewer_id
+        when (not $ is_admin) $ lift $ permissionDenied "You can only modify your own profile!"
 
-                        (hidden_form, _) <- generateFormPost $ previewUserForm updated_user
+    ((result, _), _) <- runFormPost $ editUserForm undefined
 
-                        let preview_controls = [whamlet|
-                            <div .row>
-                                <div .span9>
-                                    <form method="POST" action="@{UserR user_id}">
-                                        ^{hidden_form}
-                                        <div .alert>
-                                            This is a preview; your changes have not been saved!
-                                        <script>
-                                            document.write('<input type="submit" value="edit" onclick="history.go(-1);return false;" />')
-                                        <input type=submit name=mode value=#{action}>
-                        |]
+    case result of
+        FormSuccess user_update -> do
+            mode <- lookupPostParam "mode"
+            let action :: Text = "update"
+            case mode of
+                Just "preview" -> do
+                    user <- runDB $ get404 user_id
+                    let updated_user = applyUserUpdate user user_update
+                        rendered_user = renderUser (Just viewer_id) user_id updated_user
 
-                        defaultLayout [whamlet|
-                            ^{preview_controls}
-                            ^{rendered_user}
-                            ^{preview_controls}
-                        |]
+                    (hidden_form, _) <- generateFormPost $ previewUserForm updated_user
 
-                    Just x | x == action -> do
-                        runDB $ updateUser user_id user_update
-                        redirect $ UserR user_id
+                    let preview_controls = [whamlet|
+                        <div .row>
+                            <div .span9>
+                                <form method="POST" action="@{UserR user_id}">
+                                    ^{hidden_form}
+                                    <div .alert>
+                                        This is a preview; your changes have not been saved!
+                                    <script>
+                                        document.write('<input type="submit" value="edit" onclick="history.go(-1);return false;" />')
+                                    <input type=submit name=mode value=#{action}>
+                    |]
 
-                    _ -> do
-                        setMessage "Error: unknown mode."
-                        redirect $ UserR user_id
+                    defaultLayout [whamlet|
+                        ^{preview_controls}
+                        ^{rendered_user}
+                        ^{preview_controls}
+                    |]
 
-            _ -> do
-                setMessage "Failed to update user."
-                redirect $ UserR user_id
+                Just x | x == action -> do
+                    runDB $ updateUser user_id user_update
+                    redirect $ UserR user_id
+
+                _ -> do
+                    setMessage "Error: unknown mode."
+                    redirect $ UserR user_id
+
+        _ -> do
+            setMessage "Failed to update user."
+            redirect $ UserR user_id
 
 getUsersR :: Handler Html
 getUsersR = do
     Entity _ viewer <- requireAuth
-
-    {- TODO
-    when (userRole viewer /= Admin) $ permissionDenied "Only admins can view all users."
-    -}
 
     users <- runDB $ selectList [] [ Asc UserId ]
 

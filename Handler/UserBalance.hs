@@ -6,9 +6,9 @@ import qualified Data.Set as S
 import qualified Data.Map as M
 import qualified Data.Text as T
 
--- import Model.Role
 import Model.Transaction
 import Model.Currency
+import Model.User
 
 import Widgets.Sidebar
 import Widgets.Time
@@ -23,16 +23,14 @@ lookupParamDefault name def = do
         param <- listToMaybe $ reads $ T.unpack param_str
         return $ fst param
         
-    
 
 getUserBalanceR :: UserId -> Handler Html
 getUserBalanceR user_id = do
     Entity viewer_id viewer <- requireAuth
     user <- runDB $ get404 user_id
 
-    {- TODO
-    when (userRole viewer /= Admin && user_id /= viewer_id) $ permissionDenied "You can only view your own account balance history."
-    -}
+    -- TODO: restrict viewing balance to user or snowdrift admins (logged) before moving to real money
+    -- when (user_id /= viewer_id) $ permissionDenied "You can only view your own account balance history."
 
     Just account <- runDB $ get $ userAccount user
 
@@ -70,10 +68,12 @@ getUserBalanceR user_id = do
 
 postUserBalanceR :: UserId -> Handler Html
 postUserBalanceR user_id = do
-    -- Entity viewer_id viewer <- requireAuth
+    Entity viewer_id _ <- requireAuth
     user <- runDB $ get404 user_id
 
-    -- TODO when (userRole viewer /= Admin && user_id /= viewer_id) $ permissionDenied "You can only add money to your own account."
+    when (user_id /= viewer_id) $ runDB $ do
+        is_admin <- isProjectAdmin "snowdrift" viewer_id
+        when (not $ is_admin) $ lift $ permissionDenied "You can only add money to your own account."
 
     ((result, _), _) <- runFormPost addTestCashForm
 

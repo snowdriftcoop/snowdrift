@@ -6,7 +6,7 @@
         <hr .wikitop>
         <div .row>
             ^{comments}
-        $if can_edit
+        $if affiliated
             <div .row>
                 <form action="@{DiscussWikiR project_handle target}" method="POST">
                     ^{comment_form}

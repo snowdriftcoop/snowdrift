@@ -11,7 +11,7 @@ import Data.Text as T
 
 import Debug.Trace
 
-data Role = Public | Uninvited | GeneralPublic | CommitteeCandidate | CommitteeMember | Editor | Admin deriving (Eq, Show, Read, Ord, Enum)
+data Role = Moderator | TeamMember | Admin deriving (Bounded, Enum, Eq, Show, Read)
 
 derivePersistField "Role"
 

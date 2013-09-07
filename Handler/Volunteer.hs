@@ -4,8 +4,6 @@ import Import
 
 import Widgets.Sidebar
 
-import Control.Arrow ((&&&))
-
 
 volunteerForm :: UTCTime -> ProjectId -> [Entity Interest] -> Entity User -> Form (VolunteerApplication, [InterestId])
 volunteerForm now project_id interests (Entity user_id user) = renderBootstrap $
