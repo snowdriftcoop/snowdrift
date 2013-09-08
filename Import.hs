@@ -9,7 +9,7 @@ import           Yesod                as Import hiding (Route (..), (||.), (==.)
 import           Yesod.Auth           as Import
 import           Yesod.Markdown       as Import (Markdown)
 
-import           Control.Arrow        as Import ((&&&))
+import           Control.Arrow        as Import ((&&&), first, second)
 
 import           Database.Esqueleto   as Import hiding (on)
 import qualified Database.Esqueleto

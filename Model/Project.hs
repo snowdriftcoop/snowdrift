@@ -15,12 +15,8 @@ data ProjectSummary =
         , summaryShareCost :: Milray
         }
 
-summarizeProject :: (MonadIO m, MonadBaseControl IO m, MonadLogger m, MonadUnsafeIO m, MonadThrow m, MonadResource m) => Entity Project -> SqlPersistT m ProjectSummary
-summarizeProject project = do
-    pledges <- select $ from $ \ pledge -> do
-        where_ ( pledge ^. PledgeProject ==. val (entityKey project) )
-        return pledge
-
+summarizeProject :: Monad m => Entity Project -> [Entity Pledge] -> m ProjectSummary
+summarizeProject project pledges = do
     let share_value = projectShareValue $ entityVal project
         share_count = ShareCount $ sum . map (pledgeFundedShares . entityVal) $ pledges
         user_count = UserCount $ fromIntegral $ length pledges
