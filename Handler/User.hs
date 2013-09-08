@@ -40,12 +40,15 @@ previewUserForm user = renderDivs $
 getUserR :: UserId -> Handler Html
 getUserR user_id = do
     maybe_viewer_id <- maybeAuthId
-    user <- runDB $ do
-        (\ f -> maybe (get404 user_id) f maybe_viewer_id) $ \ _ -> do
+
+    user <- runDB $ case maybe_viewer_id of
+        Nothing -> do
             on_committee <- fmap isJust $ getBy $ UniqueCommitteeMember user_id
             if on_committee
              then get404 user_id
              else permissionDenied "You must be logged in to view this user"
+
+        Just _ -> get404 user_id
 
     defaultLayout $ renderUser maybe_viewer_id user_id user
 

@@ -205,7 +205,7 @@ instance Yesod App where
     shouldLog _ _source level =
         development || level == LevelWarn || level == LevelError
 
-    isAuthorized _ _ = return Authorized -- TODO
+    isAuthorized _ _ = return Authorized -- restricted in the individual handlers
 
 
 -- How to run database actions.
