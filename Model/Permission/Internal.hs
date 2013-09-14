@@ -11,7 +11,7 @@ import Data.Text as T
 
 import Debug.Trace
 
-data PermissionLevel = NormalPermissions deriving (Eq, Show, Read, Ord, Enum)
+data PermissionLevel = Public | Normal | Moderated deriving (Eq, Show, Read, Ord, Enum, Bounded)
 
 derivePersistField "PermissionLevel"
 

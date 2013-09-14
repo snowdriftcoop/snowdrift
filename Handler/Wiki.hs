@@ -8,7 +8,6 @@ import Widgets.Sidebar
 import Widgets.Markdown
 import Widgets.Time
 
-import Model.Role (Role (..))
 import Model.Permission
 import Model.User
 
@@ -96,7 +95,7 @@ postWikiR project_handle target = do
             case mode of
                 Just "preview" -> do
                     (form, _) <- generateFormPost $ editWikiForm last_edit_id content comment
-                    defaultLayout $ renderPreview form action $ renderWiki project_handle target False False $ WikiPage target project_id content NormalPermissions
+                    defaultLayout $ renderPreview form action $ renderWiki project_handle target False False $ WikiPage target project_id content Normal
 
                 Just x | x == action -> do
                     runDB $ do
@@ -166,6 +165,56 @@ postWikiR project_handle target = do
         FormFailure msgs -> error $ "Error submitting form: " ++ T.unpack (T.concat msgs)
 
 
+editWikiPermissionsForm :: PermissionLevel -> Form PermissionLevel
+editWikiPermissionsForm level = renderDivs $ areq permissionLevelField "Permission Level" (Just level)
+
+getEditWikiPermissionsR :: Text -> Text -> Handler Html
+getEditWikiPermissionsR project_handle target = do
+    Entity user_id user <- requireAuth
+    (Entity page_id page) <- runDB $ do
+        Entity project_id _ <- getBy404 $ UniqueProjectHandle project_handle
+        getBy404 $ UniqueWikiTarget project_id target
+
+    affiliated <- runDB $ (||)
+            <$> isProjectAdmin project_handle user_id
+            <*> isProjectAdmin "snowdrift" user_id
+
+    when (not affiliated) $ permissionDenied "you do not have permission to edit page permissions"
+
+    (wiki_form, _) <- generateFormPost $ editWikiPermissionsForm (wikiPagePermissionLevel page)
+
+    defaultLayout $(widgetFile "edit_wiki_perm")
+
+postEditWikiPermissionsR :: Text -> Text -> Handler Html
+postEditWikiPermissionsR project_handle target = do
+    Entity user_id _ <- requireAuth
+    (Entity page_id page) <- runDB $ do
+        Entity project_id _ <- getBy404 $ UniqueProjectHandle project_handle
+        getBy404 $ UniqueWikiTarget project_id target
+
+    affiliated <- runDB $ (||)
+            <$> isProjectAdmin project_handle user_id
+            <*> isProjectAdmin "snowdrift" user_id
+
+    when (not affiliated) $ permissionDenied "you do not have permission to edit page permissions"
+
+    ((result, _), _) <- runFormPost $ editWikiPermissionsForm (wikiPagePermissionLevel page)
+
+    case result of
+        FormSuccess level -> do
+            runDB $ update $ \ p -> do
+                where_ $ p ^. WikiPageId ==. val page_id
+                set p [ WikiPagePermissionLevel =. val level ]
+
+            setMessage "permissions updated"
+
+            redirect $ WikiR project_handle target
+            
+
+        FormMissing -> error "Form missing."
+        FormFailure msgs -> error $ "Error submitting form: " ++ T.unpack (T.concat msgs)
+
+
 getEditWikiR :: Text -> Text -> Handler Html
 getEditWikiR project_handle target = do
     Entity user_id user <- requireAuth
@@ -225,12 +274,12 @@ postNewWikiR project_handle target = do
                 Just "preview" -> do
                         (form, _) <- generateFormPost $ newWikiForm (Just content)
                         defaultLayout $ renderPreview form action $ renderWiki project_handle target False False page
-                            where page = WikiPage target project_id content NormalPermissions
+                            where page = WikiPage target project_id content Normal
 
 
                 Just x | x == action -> do
                     _ <- runDB $ do
-                        page_id <- insert $ WikiPage target project_id content NormalPermissions
+                        page_id <- insert $ WikiPage target project_id content Normal
                         edit_id <- insert $ WikiEdit now user_id page_id content $ Just "Page created."
                         insert $ WikiLastEdit page_id edit_id
 
