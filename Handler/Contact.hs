@@ -3,10 +3,11 @@ module Handler.Contact where
 import Import
 
 import Widgets.Sidebar
+import Widgets.Markdown
 
 
-contactForm :: Form Textarea
-contactForm = renderDivs $ areq textareaField "" Nothing
+contactForm :: Form Markdown
+contactForm = renderDivs $ areq snowdriftMarkdownField "" Nothing
 
 getContactR :: Text -> Handler Html
 getContactR project_handle = do
@@ -23,7 +24,10 @@ postContactR project_handle = do
 
     case result of
         FormSuccess content -> do
-            void $ runDB $ insert $ Message now maybe_user_id Nothing content
+            void $ runDB $ do
+                Entity project_id _ <- getBy404 $ UniqueProjectHandle project_handle
+                insert $ Message (Just project_id) now maybe_user_id Nothing content
+
             setMessage "Comment submitted.  Thank you for your input!"
 
         _ -> setMessage "Error occurred when submitting form."

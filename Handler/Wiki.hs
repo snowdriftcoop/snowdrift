@@ -132,14 +132,14 @@ postWikiR project_handle target = do
 
                             render <- lift getUrlRenderParams
 
-                            let message_text = Textarea $ T.unlines
+                            let message_text = Markdown $ T.unlines
                                     [ "Edit conflict for wiki page \"" <> target <> "\"."
                                     , "Ticket created: " <> render (DiscussCommentR project_handle target comment_id) []
                                     , "(this message was automatically generated)"
                                     ]
 
-                            void $ insert $ Message now (Just last_editor) (Just user_id) message_text
-                            void $ insert $ Message now (Just user_id) (Just last_editor) message_text
+                            void $ insert $ Message (Just project_id) now (Just last_editor) (Just user_id) message_text
+                            void $ insert $ Message (Just project_id) now (Just user_id) (Just last_editor) message_text
 
                             lift $ setMessage $ flip ($) render
                                     [hamlet|

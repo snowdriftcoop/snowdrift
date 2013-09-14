@@ -110,10 +110,11 @@ CommitteeUser
 
 
 Message
+    project ProjectId Maybe
     createdTs UTCTime
     from UserId Maybe
     to UserId Maybe
-    content Textarea
+    content Markdown
 
 
 WikiPage
