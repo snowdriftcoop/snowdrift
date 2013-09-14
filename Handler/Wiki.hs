@@ -41,15 +41,11 @@ getWikiR project_handle target = do
         Entity _ page <- getBy404 $ UniqueWikiTarget project_id target
 
         -- TODO this should be changed when we add moderation
-        can_edit <-
-            let getCanEdit user_id = do
-                    fmap (not . null) $ select $ from $ \ pur -> do
-                        where_ $ pur ^. ProjectUserRoleUser ==. val user_id
-                            &&. pur ^. ProjectUserRoleProject ==. val project_id
-                            &&. pur ^. ProjectUserRoleRole ==. val Admin
-                        limit 1
-                        return ()
-             in maybe (return False) getCanEdit maybe_user_id
+        can_edit <- case maybe_user_id of
+            Nothing -> return False
+            Just user_id -> (||)
+                <$> isProjectAdmin project_handle user_id
+                <*> isProjectAdmin "snowdrift" user_id
 
         return (page, can_edit)
 
@@ -273,12 +269,12 @@ getDiscussWikiR project_handle target = do
 
     (roots, rest, users, retraction_map) <- runDB $ do
         roots <- select $ from $ \ comment -> do
-            where_ ( comment ^. CommentPage ==. val page_id &&. comment ^. CommentParent ==. val Nothing )
+            where_ ( comment ^. CommentPage ==. val page_id &&. isNothing (comment ^. CommentParent) )
             orderBy [asc (comment ^. CommentCreatedTs)]
             return comment
 
         rest <- select $ from $ \ comment -> do
-            where_ ( comment ^. CommentPage ==. val page_id &&. comment ^. CommentParent !=. val Nothing )
+            where_ ( comment ^. CommentPage ==. val page_id &&. not_ (isNothing (comment ^. CommentParent)) )
             orderBy [asc (comment ^. CommentParent), asc (comment ^. CommentCreatedTs)]
             return comment
 
@@ -292,7 +288,8 @@ getDiscussWikiR project_handle target = do
         retraction_map <- M.fromList . map ((commentRetractionComment &&& id) . entityVal) <$> selectList [ CommentRetractionComment <-. map entityKey (roots ++ rest) ] []
         return (roots, rest, users, retraction_map)
 
-    let comments = forM_ roots $ \ root -> renderComment user_id project_handle target users 10 0 [] retraction_map $ buildCommentTree root rest
+    let comments = forM_ roots $ \ root ->
+            renderComment user_id project_handle target users 10 0 [] retraction_map $ buildCommentTree root rest
 
     (comment_form, _) <- generateFormPost $ commentForm Nothing Nothing
 
@@ -319,7 +316,7 @@ getDiscussCommentR project_handle target comment_id = do
     
         rest <- select $ from $ \ comment -> do
             where_ ( comment ^. CommentPage ==. val page_id
-                    &&. comment ^. CommentParent !=. val Nothing
+                    &&. isNothing (comment ^. CommentParent)
                     &&. comment ^. CommentId >. val comment_id
                     &&. comment ^. CommentId `in_` valList (map (commentAncestorComment . entityVal) subtree))
             orderBy [asc (comment ^. CommentParent), asc (comment ^. CommentCreatedTs)]

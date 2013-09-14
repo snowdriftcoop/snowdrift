@@ -77,7 +77,7 @@ sidebar = do
                                 ( if is_committee_member
                                     then (||.
                                             ( message ^. MessageCreatedTs >=. val (userReadMessages user)
-                                              &&. message ^. MessageTo ==. val Nothing )
+                                              &&. isNothing (message ^. MessageTo) )
                                          )
                                     else id
                                 ) $ ( message ^. MessageCreatedTs >=. val (userReadMessages user)
