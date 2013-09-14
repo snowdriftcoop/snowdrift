@@ -2,7 +2,7 @@ module Handler.Messages where
 
 import Import
 
--- import Model.Role
+import Model.User
 
 import qualified Data.Map as M
 
@@ -13,16 +13,16 @@ getMessagesR = do
     Entity viewer_id viewer <- requireAuth
     now <- liftIO getCurrentTime
 
-    let messages = []
-    {- TODO
     messages <-
-        runDB $ if userRole viewer == CommitteeMember || userRole viewer == Admin
-         then selectList
-            ( [ MessageTo ==. Just viewer_id ]
-            ||. [ MessageTo ==. Nothing ]
-            ) [ Desc MessageCreatedTs ]
-         else selectList [ MessageTo ==. Just viewer_id ] [ Desc MessageCreatedTs ]
-    -}
+        -- TODO: filter by projects?
+        runDB $ do
+            snowdrift_member <- isProjectAffiliated "snowdrift" viewer_id
+            select $ from $ \ message -> do
+                where_ $ if snowdrift_member
+                    then message ^. MessageTo ==. val (Just viewer_id) ||. isNothing (message ^. MessageTo)
+                    else message ^. MessageTo ==. val (Just viewer_id)
+                orderBy [ desc $ message ^. MessageCreatedTs ]
+                return message
 
     users <- runDB $ select $ from $ \ user -> do
         where_ (user ^. UserId `in_` valList (mapMaybe (messageFrom . entityVal) messages))
