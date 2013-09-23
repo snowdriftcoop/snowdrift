@@ -30,7 +30,7 @@ JS is fine for amplification and beautification, but no essential function shoul
 About the frameworks and tools we use
 =====================================
 
-The Snowdridt.coop site uses the Yesod web framework which uses the Haskell programming language alongside HTML/CSS/JavaScript elements.
+The Snowdrift.coop site uses the Yesod web framework which uses the Haskell programming language alongside HTML/CSS/JavaScript elements.
 
 We also include [Twitter Bootstrap](http://twitter.github.io/bootstrap/index.html) CSS stuff, so feel free to use any of that as appropriate (within the guidelines mentioned above).
 
