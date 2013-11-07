@@ -106,14 +106,16 @@ VolunteerInterest
 CommitteeUser
     createdTs UTCTime
     user UserId
+    project ProjectId
     UniqueCommitteeMember user
 
 
 Message
+    project ProjectId Maybe
     createdTs UTCTime
     from UserId Maybe
     to UserId Maybe
-    content Textarea
+    content Markdown
 
 
 WikiPage
