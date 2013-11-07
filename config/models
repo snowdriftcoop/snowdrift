@@ -106,6 +106,7 @@ VolunteerInterest
 CommitteeUser
     createdTs UTCTime
     user UserId
+    project ProjectId
     UniqueCommitteeMember user
 
 
