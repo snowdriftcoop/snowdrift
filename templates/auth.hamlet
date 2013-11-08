@@ -1,10 +1,5 @@
 $newline never
 
-<p>
-    If you have an invitation code, you will be able to redeem that after you have completed logging in.
-
-<br>
-
 $forall auth <- authPlugins app
     <div class="span5">
         ^{apLogin auth toParent}
