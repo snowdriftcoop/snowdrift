@@ -262,7 +262,13 @@ snowdriftAuthBrowserId =
         login toMaster = do
             let parentLogin = apLogin auth toMaster
             [whamlet|
-                <p> Log-in or create an account with Mozilla Persona:
+                <p>
+                    <strong>Mozilla Persona is a secure and private log-in system that requires no new password.
+                <p>
+                    Persona doesn't track you the way other log-in systems do,
+                    and it works directly with gmail and yahoo accounts or with any e-mail after verification.
+                <p>
+                    The Sign in button below works for both new or existing snowdrift.coop accounts:
                 ^{parentLogin}
             |]
      in auth { apLogin = login }
@@ -273,7 +279,7 @@ snowdriftAuthHashDB =
         login toMaster = do
             let parentLogin = apLogin auth toMaster
             [whamlet|
-                <p> or use our built-in system:
+                <p> We also offer a built-in traditional log-in system:
                 <p>
                     <a href="@{UserCreateR}">
                        click here to create an account
