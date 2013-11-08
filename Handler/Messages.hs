@@ -7,6 +7,7 @@ import Model.User
 import qualified Data.Map as M
 
 import Widgets.Sidebar
+import Widgets.Time
 
 getMessagesR :: Handler Html
 getMessagesR = do

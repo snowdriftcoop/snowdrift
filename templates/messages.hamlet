@@ -16,6 +16,9 @@
                                     to #{getUserName to}
                                 $nothing
                                     to Snowdrift.coop generally
+                        <div .row>
+                            <div .spam3>
+                                ^{renderTime (messageCreatedTs message)}
 
                     <div .span5>
                         #{messageContent message}
