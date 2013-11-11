@@ -5,40 +5,38 @@ Infrastructure for [Snowdrift.coop](https://snowdrift.coop).
 
 Code is mirrored at [GitHub](https://github.com/dlthomas/snowdrift) and [Gitorious](https://gitorious.org/snowdrift/snowdrift).
 
-We are developing our own internal ticketing, but at this point we still have most issues ticketed at the GitHub site.
+Work to do / how to help
+========================
+
+We have our own in-progress ticketing system along with tickets at GitHub,
+see the [combined ticket list](http://snowdrift.coop/p/snowdrift/t) from both systems.
 
 The infrastructure here includes the site's wiki backend,
 but the contents of the wiki are held separately in the site database.
 
-The live Snowdrift.coop site has public and invitation-only sections. As work continues, more will be published.
-[Contact us](https://snowdrift.coop/contact) if you're interested in checking out the unpublished sections, including our overall next-steps page, or if you're interested in joining the steering committee.
-
-We're often on the #snowdrift IRC channel on freenode; feel free to drop in!
+We have volunteer info and discussion forums on the site and a #snowdrift IRC channel on freenode.net
 
 Development guidelines and notes
 ================================
 
-Overall, we strive to follow universal standards, be fully accessible, and avoid any browser-specific items.
+Overall, we strive to follow universal standards, be fully accessible, and avoid browser-specific code.
 
 All JavaScript should be recognized as acceptable by the FSF's [LibreJS plugin](https://www.gnu.org/software/librejs/)
 
-**When in doubt, first make sure things work well enough without JS.**
-There should not be a broken experience with NoScript.
-JS is fine for amplification and beautification, but no essential function should require JS.
+**When in doubt, make sure things work well enough without JavaScript.**
+NoScript should not cause a broken experience.
+JS is fine for amplification and beautification, but essential functions should not require JS.
 
 
 About the frameworks and tools we use
 =====================================
 
-The Snowdrift.coop site uses the Yesod web framework which uses the Haskell programming language alongside HTML/CSS/JavaScript elements.
+The Snowdrift.coop site uses the [Yesod web framework](http://www.yesodweb.com/) which uses the Haskell programming language alongside HTML/CSS/JavaScript elements.
 
-We also include [Twitter Bootstrap](http://twitter.github.io/bootstrap/index.html) CSS stuff, so feel free to use any of that as appropriate (within the guidelines mentioned above).
+We also include [Twitter Bootstrap](http://twitter.github.io/bootstrap/index.html) CSS stuff, although we use our own custom CSS for many things.
 
-Yesod uses a simpler, indendation-based variant of HTML/CSS/JS formats called [Shakespearean Templates](http://www.yesodweb.com/book/shakespearean-templates).
-
-Use the same HTML tags as normal, but there is no need to add the closing tag.
-Instead, items within a tag are placed on new lines underneath and indented an extra four spaces.
-See the link above to understand the many other shortcuts and additional features this system offers.
+Yesod uses [Shakespearean Templates](http://www.yesodweb.com/book/shakespearean-templates)
+which are simple indendation-based variant of HTML/CSS/JS which do not require closing tags or bracketing.
 
 We recommend setting your text editor to have the TAB key do indentation of four spaces.
 For VIM, for example, the config file .vimrc should have these three lines:
@@ -49,9 +47,8 @@ For VIM, for example, the config file .vimrc should have these three lines:
 
 VIM users should also install [Syntax Highlighting Files for Haskell](https://github.com/pbrisbin/html-template-syntax).
 
-Of course, the live site is rendered in standard HTML/CSS etc.
-
-Try the superb [Firebug](https://getfirebug.com) tool to explore and test things on the live site.
+We recommend [Firebug](https://getfirebug.com) tool to explore and test things on the live site
+(which is rendered into standard HTML/CSS, of course).
 
 If you are just learning Haskell or Yesod, here are some quality Free/Libre/Open resources:
 
@@ -62,6 +59,7 @@ If you are just learning Haskell or Yesod, here are some quality Free/Libre/Open
 
 And some gratis resources:
 
+* [Yet Another Haskell Tutorial](http://www.umiacs.umd.edu/~hal/docs/daume02yaht.pdf)
 * [Learn You A Haskell](http://learnyouahaskell.com/)
 * [Real World Haskell](http://book.realworldhaskell.org)
 * [Yesod Website](http://www.yesodweb.com/)
@@ -70,7 +68,6 @@ And some gratis resources:
     * [Yesod Cookbook](https://github.com/yesodweb/yesod/wiki/Cookbook)
 * [School of Haskell](https://www.fpcomplete.com/school)
 * #yesod and #haskell IRC channels on freenode
-
 
 Building
 ========
