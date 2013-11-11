@@ -25,7 +25,7 @@ All JavaScript should be recognized as acceptable by the FSF's [LibreJS plugin](
 
 **When in doubt, make sure things work well enough without JavaScript.**
 NoScript should not cause a broken experience.
-JS is fine for amplification and beautification, but essential functions should not require JS.
+JS is fine for amplification and beautification but should not be required for essential functions.
 
 
 About the frameworks and tools we use
@@ -47,8 +47,8 @@ For VIM, for example, the config file .vimrc should have these three lines:
 
 VIM users should also install [Syntax Highlighting Files for Haskell](https://github.com/pbrisbin/html-template-syntax).
 
-We recommend [Firebug](https://getfirebug.com) tool to explore and test things on the live site
-(which is rendered into standard HTML/CSS, of course).
+We recommend [Firebug](https://getfirebug.com) to explore and test things on the live site
+(which, after compiling, is standard HTML/CSS, of course).
 
 If you are just learning Haskell or Yesod, here are some quality Free/Libre/Open resources:
 
