@@ -48,7 +48,9 @@ set expandtab
 set shiftwidth=4
 set tabstop=4 
 
-VIM users should also install [Syntax Highlighting Files for Haskell](https://github.com/pbrisbin/html-template-syntax)
+VIM users should also install [Syntax Highlighting Files for Haskell](https://github.com/pbrisbin/html-template-syntax).
+
+Emacs users should use a package manager (preferably Marmalade) to install [Haskell Mode](https://github.com/haskell/haskell-mode).
 
 Of course, the live site is rendered in standard HTML/CSS etc.
 
