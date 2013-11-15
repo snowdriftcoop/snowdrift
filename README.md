@@ -37,9 +37,9 @@ Yesod uses the Haskell programming language alongside its
 [Shakespearean Templates](http://www.yesodweb.com/book/shakespearean-templates), which is a simple indendation-based way to code HTML/CSS/JS without the need for closing tags or bracketing.
 
 * For learning Haskell, check out the Free/Libre/Open [Haskell Wikibook](https://en.wikibooks.org/wiki/Haskell), which also has links to additional gratis resources. 
-* Stack Overflow also has questions tagged [yesod](http://stackoverflow.com/questions/tagged/yesod) and [haskell](http://stackoverflow.com/questions/tagged/yesod)
-* [School of Haskell](https://www.fpcomplete.com/school) is an interactive system that is proprietary but gratis
+* Stack Overflow user discussions are FLO (CC-BY-SA), and there are tags for [yesod](http://stackoverflow.com/questions/tagged/yesod) and [haskell](http://stackoverflow.com/questions/tagged/yesod)
 * The #yesod and #haskell IRC channels on freenode.net are active and helpful
+* [School of Haskell](https://www.fpcomplete.com/school) is an interactive system that is proprietary but gratis
 
 We also include [Twitter Bootstrap](http://twitter.github.io/bootstrap/index.html) CSS stuff, although we use our own custom CSS for many things.
 
