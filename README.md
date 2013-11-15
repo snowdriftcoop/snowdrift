@@ -34,7 +34,7 @@ About the frameworks and tools we use
 The Snowdrift.coop site uses the [Yesod web framework](http://www.yesodweb.com/)
 
 Yesod uses the Haskell programming language alongside its
-[Shakespearean Templates](http://www.yesodweb.com/book/shakespearean-templates), which is a simple indendation-based way to code HTML/CSS/JS without the need for closing tags or bracketing.
+[Shakespearean Templates](http://www.yesodweb.com/book/shakespearean-templates) which generate HTML/CSS/JS using indentation with no need for closing tags or bracketing.
 
 * For learning Haskell, check out the Free/Libre/Open [Haskell Wikibook](https://en.wikibooks.org/wiki/Haskell), which also has links to additional gratis resources. 
 * Stack Overflow user discussions are FLO (CC-BY-SA), and there are tags for [yesod](http://stackoverflow.com/questions/tagged/yesod) and [haskell](http://stackoverflow.com/questions/tagged/yesod)
@@ -42,6 +42,13 @@ Yesod uses the Haskell programming language alongside its
 * [School of Haskell](https://www.fpcomplete.com/school) is an interactive system that is proprietary but gratis
 
 We also include [Twitter Bootstrap](http://twitter.github.io/bootstrap/index.html) CSS stuff, although we use our own custom CSS for many things.
+
+[Firebug](https://getfirebug.com) is a useful tool to explore and test things on the live site
+(which, after compiling, is standard HTML/CSS, of course).
+
+
+Text-editor settings
+--------------------
 
 We recommend setting your text editor to have the TAB key do indentation of four spaces.
 For VIM, for example, the config file .vimrc should have these three lines:
@@ -51,9 +58,6 @@ For VIM, for example, the config file .vimrc should have these three lines:
     set tabstop=4 
 
 VIM users should also install [Syntax Highlighting Files for Haskell](https://github.com/pbrisbin/html-template-syntax).
-
-[Firebug](https://getfirebug.com) is a useful tool to explore and test things on the live site
-(which, after compiling, is standard HTML/CSS, of course).
 
 
 Building
