@@ -44,7 +44,6 @@ Yesod uses the Haskell programming language alongside its
 We also include [Twitter Bootstrap](http://twitter.github.io/bootstrap/index.html) CSS stuff, although we use our own custom CSS for many things.
 
 [Firebug](https://getfirebug.com) is a useful tool to explore and test things on the live site
-(which, after compiling, is standard HTML/CSS, of course).
 
 
 Text-editor settings
