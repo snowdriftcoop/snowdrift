@@ -31,12 +31,17 @@ JS is fine for amplification and beautification but should not be required for e
 About the frameworks and tools we use
 =====================================
 
-The Snowdrift.coop site uses the [Yesod web framework](http://www.yesodweb.com/) which uses the Haskell programming language alongside HTML/CSS/JavaScript elements.
+The Snowdrift.coop site uses the [Yesod web framework](http://www.yesodweb.com/)
+
+Yesod uses the Haskell programming language alongside its
+[Shakespearean Templates](http://www.yesodweb.com/book/shakespearean-templates), which is a simple indendation-based way to code HTML/CSS/JS without the need for closing tags or bracketing.
+
+* For learning Haskell, check out the Free/Libre/Open [Haskell Wikibook](https://en.wikibooks.org/wiki/Haskell), which also has links to additional gratis resources. 
+* Stack Overflow also has questions tagged [yesod](http://stackoverflow.com/questions/tagged/yesod) and [haskell](http://stackoverflow.com/questions/tagged/yesod)
+* [School of Haskell](https://www.fpcomplete.com/school) is an interactive system that is proprietary but gratis
+* The #yesod and #haskell IRC channels on freenode.net are active and helpful
 
 We also include [Twitter Bootstrap](http://twitter.github.io/bootstrap/index.html) CSS stuff, although we use our own custom CSS for many things.
-
-Yesod uses [Shakespearean Templates](http://www.yesodweb.com/book/shakespearean-templates)
-which are simple indendation-based variant of HTML/CSS/JS which do not require closing tags or bracketing.
 
 We recommend setting your text editor to have the TAB key do indentation of four spaces.
 For VIM, for example, the config file .vimrc should have these three lines:
@@ -47,27 +52,9 @@ For VIM, for example, the config file .vimrc should have these three lines:
 
 VIM users should also install [Syntax Highlighting Files for Haskell](https://github.com/pbrisbin/html-template-syntax).
 
-We recommend [Firebug](https://getfirebug.com) to explore and test things on the live site
+[Firebug](https://getfirebug.com) is a useful tool to explore and test things on the live site
 (which, after compiling, is standard HTML/CSS, of course).
 
-If you are just learning Haskell or Yesod, here are some quality Free/Libre/Open resources:
-
-
-* [Haskell Wikibook](https://en.wikibooks.org/wiki/Haskell)
-* [Haskell Wiki](http://www.haskell.org/haskellwiki/Haskell)
-* Stack Overflow questions tagged [yesod](http://stackoverflow.com/questions/tagged/yesod) or [haskell](http://stackoverflow.com/questions/tagged/yesod)
-
-And some gratis resources:
-
-* [Yet Another Haskell Tutorial](http://www.umiacs.umd.edu/~hal/docs/daume02yaht.pdf)
-* [Learn You A Haskell](http://learnyouahaskell.com/)
-* [Real World Haskell](http://book.realworldhaskell.org)
-* [Yesod Website](http://www.yesodweb.com/)
-    * [Yesod Book](http://www.yesodweb.com/book)
-    * [Yesod Wiki](https://github.com/yesodweb/yesod/wiki)
-    * [Yesod Cookbook](https://github.com/yesodweb/yesod/wiki/Cookbook)
-* [School of Haskell](https://www.fpcomplete.com/school)
-* #yesod and #haskell IRC channels on freenode
 
 Building
 ========
