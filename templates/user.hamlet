@@ -11,7 +11,7 @@
         $maybe nick <- userIrcNick user
             <div .row>
                 <div .span4>
-                    #{nick} on irc.freenode.net
+                    #{nick} on <a href="https://snowdrift.coop/p/snowdrift/w/irc">irc.freenode.net</a>
 
         $if Just user_id == viewer_id
             <a href="@{EditUserR user_id}">

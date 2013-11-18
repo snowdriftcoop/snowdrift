@@ -8,9 +8,12 @@
                     <tr>
                         <td>
                             <a href=@{UserR user_id}>
-                                #{userIdent user}
+                                #{userPrintName (Entity user_id user)}
                         <td>
-                            #{userPrintName (Entity user_id user)}
+                            #{userIdent user}
+                        <td>
+                            $maybe nick <- userIrcNick user
+                                #{nick}
                         <td>
                             -- TODO
 

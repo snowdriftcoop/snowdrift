@@ -131,7 +131,6 @@ postWikiR project_handle target = do
                             void $ insert $ Ticket now "edit conflict" comment_id
 
                             render <- lift getUrlRenderParams
-
                             let message_text = Markdown $ T.unlines
                                     [ "Edit conflict for wiki page \"" <> target <> "\"."
                                     , "Ticket created: " <> render (DiscussCommentR project_handle target comment_id) []

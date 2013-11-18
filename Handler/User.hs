@@ -132,7 +132,7 @@ getUsersR :: Handler Html
 getUsersR = do
     Entity _ viewer <- requireAuth
 
-    users <- runDB $ selectList [] [ Asc UserId ]
+    users <- runDB $ selectList [] [ Desc UserId ]
 
     defaultLayout $(widgetFile "users")
 

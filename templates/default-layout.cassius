@@ -242,37 +242,20 @@ q:after
 
 table 
     box-shadow : 10px 10px 5px #888888
-    border : 1px solid #000000
-    border-collapse : collapse
+    border-radius : 14px
+    width : 100%
 	
-    -moz-border-radius-bottomleft : 14px
-    -webkit-border-bottom-left-radius : 14px
-    border-bottom-left-radius : 14px
-	
-    -moz-border-radius-bottomright : 14px
-    -webkit-border-bottom-right-radius : 14px
-    border-bottom-right-radius : 14px
-	
-    -moz-border-radius-topright : 14px
-    -webkit-border-top-right-radius : 14px
-    border-top-right-radius : 14px
-
-    -moz-border-radius-topleft : 14px
-    -webkit-border-top-left-radius : 14px
-    border-top-left-radius : 14px
-
-table th
-    background-color : #0174DF
+th
+    background-color : lightblue
     font-weight : bold
     color : #ffffff
     text-align : center
+    padding : 16px, 0px, 16px, 0px
 
-table tr : nth-child(odd)
+tr : nth-child(even)
     background-color : #F2F2F2 
 
-table td
+td
     vertical-align : middle
-    border : solid #000000
-    border-width : 0px 1px 1px 0px
     text-align : left
-    padding : 7px
+    padding : 1em

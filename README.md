@@ -45,6 +45,11 @@ We also include [Twitter Bootstrap](http://twitter.github.io/bootstrap/index.htm
 
 [Firebug](https://getfirebug.com) is a useful tool to explore and test things on the live site
 
+VIM users should also install [Syntax Highlighting Files for Haskell](https://github.com/pbrisbin/html-template-syntax).
+
+Emacs users should use a package manager (preferably Marmalade) to install [Haskell Mode](https://github.com/haskell/haskell-mode).
+
+
 
 Text-editor settings
 --------------------
