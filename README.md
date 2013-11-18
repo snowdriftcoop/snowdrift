@@ -36,19 +36,14 @@ The Snowdrift.coop site uses the [Yesod web framework](http://www.yesodweb.com/)
 Yesod uses the Haskell programming language alongside its
 [Shakespearean Templates](http://www.yesodweb.com/book/shakespearean-templates) which generate HTML/CSS/JS using indentation with no need for closing tags or bracketing.
 
-* For learning Haskell, check out the Free/Libre/Open [Haskell Wikibook](https://en.wikibooks.org/wiki/Haskell), which also has links to additional gratis resources. 
-* Stack Overflow user discussions are FLO (CC-BY-SA), and there are tags for [yesod](http://stackoverflow.com/questions/tagged/yesod) and [haskell](http://stackoverflow.com/questions/tagged/yesod)
+* For learning Haskell, check out the [Haskell Wikibook](https://en.wikibooks.org/wiki/Haskell), which also has links to additional gratis resources. 
+* Stack Overflow user postings are FLO (CC-BY-SA), see the tags for [yesod](http://stackoverflow.com/questions/tagged/yesod) and [haskell](http://stackoverflow.com/questions/tagged/yesod)
 * The #yesod and #haskell IRC channels on freenode.net are active and helpful
 * [School of Haskell](https://www.fpcomplete.com/school) is an interactive system that is proprietary but gratis
 
 We also include [Twitter Bootstrap](http://twitter.github.io/bootstrap/index.html) CSS stuff, although we use our own custom CSS for many things.
 
 [Firebug](https://getfirebug.com) is a useful tool to explore and test things on the live site
-
-VIM users should also install [Syntax Highlighting Files for Haskell](https://github.com/pbrisbin/html-template-syntax).
-
-Emacs users should use a package manager (preferably Marmalade) to install [Haskell Mode](https://github.com/haskell/haskell-mode).
-
 
 
 Text-editor settings
@@ -62,6 +57,8 @@ For VIM, for example, the config file .vimrc should have these three lines:
     set tabstop=4 
 
 VIM users should also install [Syntax Highlighting Files for Haskell](https://github.com/pbrisbin/html-template-syntax).
+
+Emacs users should use a package manager (preferably Marmalade) to install [Haskell Mode](https://github.com/haskell/haskell-mode).
 
 
 Building
