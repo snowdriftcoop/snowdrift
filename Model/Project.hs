@@ -39,7 +39,7 @@ projectComputeShareValue pledges =
         num_users = fromIntegral $ length pledges
         geomean :: [Double] -> Double
         geomean xs = exp $ sum (map log xs) / fromIntegral (length xs)
-        multiplier = lg (geomean (map fromIntegral pledges) + 1)
+        multiplier = lg (geomean (map fromIntegral pledges) * 2)
      in Milray 1 $* (multiplier * (num_users - 1))
 
 
