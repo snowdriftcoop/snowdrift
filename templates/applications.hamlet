@@ -1,7 +1,7 @@
 <div .row>
     <div .span9>
         $if not (null applications)
-            <table .table>
+            <table>
                 $forall Entity application_id application <- applications
                     <tr>
                         <td>

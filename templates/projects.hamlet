@@ -3,7 +3,7 @@
         $if null projects
             no projects to display
         $else
-            <table .table>
+            <table>
                 $forall Entity _ project <- projects
                     <tr>
                         <td>

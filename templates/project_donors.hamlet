@@ -10,7 +10,7 @@
                 $if null pledges
                     no patrons yet
                 $else
-                    <table .table>
+                    <table>
                         $forall (pledge, user) <- pledges
                             <tr>
                                 <td>

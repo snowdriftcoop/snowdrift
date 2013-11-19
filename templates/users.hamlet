@@ -3,7 +3,7 @@
         $if null users
             no users to display
         $else
-            <table .table>
+            <table>
                 $forall Entity user_id user <- users
                     <tr>
                         <td>

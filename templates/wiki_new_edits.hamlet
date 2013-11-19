@@ -4,7 +4,7 @@
             $if null edits
                 no edits
             $else
-                <table .table>
+                <table>
                     $forall edit <- edits
                         ^{renderEdit edit}
 

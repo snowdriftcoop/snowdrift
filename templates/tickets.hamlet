@@ -8,7 +8,7 @@
         $if null tickets
             no tickets to display
         $else
-            <table .table>
+            <table>
                 $forall issue <- issues
                     ^{issueWidget issue}
 

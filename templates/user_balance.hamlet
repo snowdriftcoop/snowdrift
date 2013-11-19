@@ -15,7 +15,7 @@
             $if null transactions
                 no transactions recorded
             $else
-                <table .table>
+                <table>
                     <th>
                         <td>
 

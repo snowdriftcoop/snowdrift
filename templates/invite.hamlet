@@ -69,7 +69,7 @@
             no outstanding invites
         $else
             outstanding invitations:
-            <table .table>
+            <table>
                 <tr>
                     <th .text>Created
                     <th .text>Invited By
@@ -94,7 +94,7 @@
             no recently redeemed invites
         $else
             recent redemptions:
-            <table .table>
+            <table>
                 <tr>
                     <th .text>Redeemed
                     <th .text>Redeemed By

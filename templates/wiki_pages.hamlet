@@ -3,7 +3,7 @@
         $if null pages
             no pages to display
         $else
-            <table .table>
+            <table>
                 <tr>
                     <th>
                         target
