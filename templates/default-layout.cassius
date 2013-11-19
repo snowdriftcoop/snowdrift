@@ -244,16 +244,17 @@ table
     box-shadow : 10px 10px 5px #888888
     border-radius : 14px
     width : 100%
+    padding : 1em
 	
 th
-    background-color : lightblue
+    background : lightblue
     font-weight : bold
     color : #ffffff
     text-align : center
     padding : 16px, 0px, 16px, 0px
 
-tr : nth-child(even)
-    background-color : #F2F2F2 
+tr:nth-child(even)
+    background : #F2F2F2 
 
 td
     vertical-align : middle
