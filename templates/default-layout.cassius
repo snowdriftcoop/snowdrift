@@ -241,22 +241,20 @@ q:after
     content : '"'
 
 table 
-    box-shadow : 10px 10px 5px #888888
-    border-radius : 14px
-    width : 100%
-    padding : 1em
+    box-shadow : 8px 8px 5px #888888
+    margin : 2em 0
+    font-size : 0.9em
 
 th
-    background : lightblue
+    background : #4477BB
     font-weight : bold
     color : #ffffff
     text-align : center
-    padding : 16px, 0px, 16px, 0px
+    padding : 0.6em 0
 
 tr:nth-child(even)
     background : #F2F2F2
 
 td
     vertical-align : middle
-    text-align : left
-    padding : 1em
+    padding : 0.2em
