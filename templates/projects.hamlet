@@ -3,11 +3,11 @@
         $if null projects
             no projects to display
         $else
-            <table .table>
-                $forall Entity project_id project <- projects
+            <table>
+                $forall Entity _ project <- projects
                     <tr>
                         <td>
-                            <a href=@{ProjectR project_id}>
+                            <a href=@{ProjectR (projectHandle project)}>
                                 #{projectName project}
                         <td>
                             #{show (projectShareValue project)}/pledge

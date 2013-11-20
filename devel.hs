@@ -2,10 +2,9 @@
 import "Snowdrift" Application (getApplicationDev)
 import Network.Wai.Handler.Warp
     (runSettings, defaultSettings, settingsPort)
-import Control.Concurrent (forkIO)
 import System.Directory (doesFileExist, removeFile)
 import System.Exit (exitSuccess)
-import Control.Concurrent (threadDelay)
+import Control.Concurrent (forkIO, threadDelay)
 
 main :: IO ()
 main = do

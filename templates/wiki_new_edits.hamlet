@@ -1,0 +1,19 @@
+<div .row>
+    <div .span9>
+        <div .row>
+            $if null edits
+                no edits
+            $else
+                <table>
+                    $forall edit <- edits
+                        ^{renderEdit edit}
+
+        $if not (null edits)
+            <div .row>
+                <a href="@{WikiNewEditsR project_handle}?from=#{show (to + 1)}">
+                    older edits
+
+
+
+    <div .span3>
+        ^{sidebar}

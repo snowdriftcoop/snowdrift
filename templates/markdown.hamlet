@@ -1,38 +1,115 @@
 <div .row>
     <div .span8>
+        <h1>Summary of Markdown syntax
         <p>
             Markdown is a simple text-formatting system.
-            You can also use full inline HTML tags alongside Markdown.
-            Below are the most basic Markdown tags.
-            Simply use the symbols that are around the text.
+            Below are the basics.
             <br>
+            You can also use standard HTML within Markdown.
+        <p>
+            See
+            <a href="http://www.johnmacfarlane.net/pandoc/README#pandocs-markdown"> Pandoc's Markdown
+            for more options and details,
+            including <a href="http://www.johnmacfarlane.net/pandoc/README#verbatim-code-blocks"> code blocks</a>,
+            <a href="http://www.johnmacfarlane.net/pandoc/README#pipe-tables"> tables
+            (note: our site requires the "pipe" table format), and much more.
+        <p>
+            <em> Note: most Markdown formatting is nestable
+        <p>
+            <em>*italic*
             <br>
-            <em>*italic or emphasis*
-            <br>
-            <strong>**bold or strong**
+            <strong>**bold**
             <br>
             <strong>
                 <em>***bold-italic***
             <br>
-            [weblink-text](http://URL)
+            ~~<del>deleted/strikethrough</del>~~
+        <p>
+            [weblink-text](URL) or &lt;URL&gt;
             <br>
+            note: internal links do not require full URL, see
+            <a href="http://snowdrift.coop/w/wiki">
+                /w/wiki
+        <p>
+            images:
             <br>
-            blank lines separate paragraphs
+            ![Alt text](image URL "optional title")
+            <br>
+            example: ![Ad-free site](http://adfreeblog.org/adfreesite_buttonsm.jpg) shows
+            <img src="http://www.adfreeblog.org/adfreesite_buttonsm.jpg">
+            <br>
+            <em>for an image as clickable link, nest the image markdown as the text part of a weblink
+        <p>
+            separate paragraphs with blank lines
+            <br>
+            add two or more spaces at the end of a line for a single line-break
+        <p>
+            <em>lists, headers, and blockquotes must start with a blank line above (aside from the very first line)
+        <p>
+        <h1># h1 header
+        <h2>## h2 subheader
+        <h3>### h3 third level (and so on)
+        alternate option: any number of === on line under h1 text or --- under h2
+        <br>
+        <br>
+        <ul>
+            <li>* bulleted lists use any of these symbols:
+                <strong> * + -
             <ul>
-                <li>* bullet (* + - symbols all work)
-                <ul>
-                    <li> * indent four spaces to create sub-levels
-                        <p>indent to match bullet text for new paragraph within bullet
-            1. use numbers like this for ordered lists
-            <h1># Title
-            <h2>## subheader
-            <h3>### third level (and so on)
+                <li> * indent four spaces to create sub-levels
+                    <p>for a new paragraph under a list item, add a blank line, then indent four extra spaces but use no bullet
+        <p>
+            1. ordered list
+            <br>
+            2. after the first entry, numbers auto-calculate so specific numbers aren't needed,
+            <strong> #.
+            syntax works too
+            <br>
+            a. lists can also use letters or Roman numerals i. ii. iii. iv. (these also auto-calculate)
+            <br>
+            A.&nbsp;&nbsp;For
+            <em>capital
+            letters or Roman numerals, include
+            <em> two
+            spaces after the dot or use
+            <strong> A)
+            or
+            <strong> (A)
+            format (which also work for lower-case)
+        <p>
             <blockquote>
-                > blockquote (start line with >)
+                > blockquote
+                <blockquote>
+                    >> use multiple > symbols to make nested levels
+        <br>
+        <strong> term
+        <br>
+        &nbsp;&nbsp; ~ description (indent two spaces before ~ or : and another space before text)
+        <br>
+        <br>
+        <p>
+            a horizontal rule is 3 or more hyphens with empty lines above and below:
+            <br>
+            <br>
+            ---
+            <br>
+            <br>
             <hr>
-            horizontal rule is *** or --- (3 or more) on a line with nothing else
+        <p>
+            <strong>Footnotes:
+            <strong>[^tag]
+            marks the inline link
+        <p>
+            <strong>[^tag]:
+            marks the footnote itself (and must start on a new line with a blank line above)
+        <p>
+            Footnotes themselves can be placed anywhere and will be rendered at the end.
             <br>
+            Footnotes can also be in-line with no tag: <strong>^[</strong>Footnote text<strong>]</strong>
             <br>
-            for footnotes, use [^1] to mark the inline link and [^1]: for the footnote
+            Footnote numbers auto-calculate based on the placement of the links.
+        <p>
+            <strong> \
+            backslash before characters makes them show normally if they would otherwise be markdown commands
     <div .span3>
         ^{sidebar}

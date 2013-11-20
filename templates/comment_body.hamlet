@@ -1,0 +1,61 @@
+$newline never
+$# used by renderComment function
+
+<div .comment :top_level:.top_level :even_depth:.even_depth :odd_depth:.odd_depth>
+    <div>
+        <span .comment-head>
+            $maybe author_avatar <- userAvatar user
+                <a href="@{UserR user_id}">
+                    <img .small_avatar src="#{author_avatar}"> #
+            <a href="@{UserR user_id}">
+                #{author_name}
+        <span .comment-head>
+            ^{comment_time}
+        <span .comment-head>
+            |
+        <span .comment-head>
+            <a href="@{DiscussCommentR project_handle target comment_id}">
+                permalink
+        $maybe parent_id <- commentParent comment
+            <span .comment-head>
+                |
+            <span .comment-head>
+                <a href="@{DiscussCommentR project_handle target parent_id}">
+                    parent
+
+    $forall retraction <- earlier_retractions
+        <div .retraction>
+            A comment above this one was retracted ^{renderTime (commentRetractionTs retraction)}
+            #{renderMarkdown project_handle (commentRetractionReason retraction)}
+
+    $maybe retraction <- maybe_retraction
+        <div .retraction>
+            The author retracted this comment ^{renderTime (commentRetractionTs retraction)}
+            #{renderMarkdown project_handle (commentRetractionReason retraction)}
+
+    #{renderMarkdown project_handle (commentText comment)}
+
+    <div>
+    $if not (maybe_route == Just (DiscussCommentR project_handle target comment_id))
+        <span .comment-action>
+            <a href="@{DiscussCommentR project_handle target comment_id}">
+                reply
+
+    $if user_id == viewer_id
+        <span .comment-action>
+            <a href="@{RetractCommentR project_handle target comment_id}" style="color: darkred">
+                retract
+
+    $if depth > max_depth
+        $with replies <- countReplies children
+            $if replies > 0
+                <br>
+                <br>
+                <em>
+                    <a href="@{DiscussCommentR project_handle target comment_id}">
+                        #{replies} more #{plural replies "reply" "replies"}
+
+    $else
+        $forall child <- children
+            ^{renderComment viewer_id project_handle target users max_depth (depth + 1) empty_list retraction_map child}
+

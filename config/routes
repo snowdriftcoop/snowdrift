@@ -6,30 +6,51 @@
 
 / HomeR GET
 
+/users UsersR GET
 /user/#UserId UserR GET POST
 /user/#UserId/edit EditUserR GET
 /user/#UserId/balance UserBalanceR GET POST
 /user/#UserId/pledges UserPledgesR GET
+/user/!new UserCreateR GET POST
 
-/projects ProjectsR GET
-/project/#ProjectId ProjectR GET POST
-/project/#ProjectId/edit EditProjectR GET
-/project/#ProjectId/widget WidgetR GET
-/project/#ProjectId/shares UpdateSharesR GET POST
+/p ProjectsR GET
+/p/#Text ProjectR GET POST
+/p/#Text/patrons ProjectPatronsR GET
+/p/#Text/edit EditProjectR GET
+/p/#Text/widget WidgetR GET
+/p/#Text/shares UpdateSharesR GET POST
 
-/invitation/#Text InvitationR GET POST
-/invite InviteR GET POST
+/p/#Text/w WikiPagesR GET
+/p/#Text/w/#Text WikiR GET POST
+/p/#Text/w/#Text/edit EditWikiR GET
+/p/#Text/w/#Text/perm EditWikiPermissionsR GET POST
+/p/#Text/w/#Text/new NewWikiR GET POST
+/p/#Text/w/#Text/discuss DiscussWikiR GET POST
+/p/#Text/w/#Text/comment/#CommentId DiscussCommentR GET
+/p/#Text/w/#Text/comment/#CommentId/retract RetractCommentR GET POST
+/p/#Text/w/#Text/history WikiHistoryR GET
+/p/#Text/w/#Text/history/#WikiEditId WikiEditR GET
+/p/#Text/w/#Text/diff/#WikiEditId/#WikiEditId WikiDiffR GET
+/p/#Text/w/#Text/diffp WikiDiffProxyR GET
 
-/about AboutR GET
+/p/#Text/newcomments WikiNewCommentsR GET
+/p/#Text/newedits WikiNewEditsR GET
+/p/#Text/t TicketsR GET
+
+/p/#Text/invitation/#Text InvitationR GET POST
+/p/#Text/invite InviteR GET POST
+
+/p/#Text/who WhoR GET
+/p/#Text/volunteer VolunteerR GET POST
+/p/#Text/contact ContactR GET POST
+
 /faq FaqR GET
-/committee CommitteeR GET POST
-/contact ContactR GET POST
-/who WhoR GET
 
 /messages MessagesR GET
 
-/application/#CommitteeApplicationId ApplicationR GET
-/applications ApplicationsR GET
+/p/#Text/application/#VolunteerApplicationId ApplicationR GET
+
+p/#Text/applications ApplicationsR GET
 
 /tutorial/markdown MarkdownTutorialR GET
 
@@ -39,8 +60,5 @@
 /priv PrivacyR GET
 /license/javascript JsLicenseR GET
 
-/w/#Text WikiR GET POST
-/w/#Text/edit EditWikiR GET
-/w/#Text/new NewWikiR GET POST
-/w/#Text/discuss DiscussWikiR GET POST
-/w/#Text/comment/#WikiCommentId DiscussWikiCommentR GET
+/dev/repo RepoFeedR GET
+/dev/build BuildFeedR GET

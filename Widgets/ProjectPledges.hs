@@ -4,29 +4,35 @@ module Widgets.ProjectPledges where
 import Import
 
 import Model.Project
-
-import Database.Persist.Query.Join.Sql (runJoin)
-import Database.Persist.Query.Join (selectOneMany, SelectOneMany (..))
-
+import Model.Currency
 
 project_pledges :: UserId -> Widget
 project_pledges user_id = do
-    project_summaries <- lift $ runDB $ do
-        projects <- runJoin $ (selectOneMany (PledgeProject <-.) pledgeProject) { somFilterMany = [ PledgeUser ==. user_id ] }
-        mapM summarizeProject projects
+    project_summaries :: [ProjectSummary] <- handlerToWidget $ runDB $ do
+        projects_pledges <- fmap (map (second return)) $ select $ from $ \ (project `InnerJoin` pledge) -> do
+            on_ $ project ^. ProjectId ==. pledge ^. PledgeProject
+            where_ $ pledge ^. PledgeUser ==. val user_id
+            return (project, pledge)
+
+        mapM (uncurry summarizeProject) projects_pledges
+
+    let cost = summaryShareCost
+        shares = getCount . summaryShares
+        total x = cost x $* fromIntegral (shares x)
 
     toWidget [hamlet|
         $if null project_summaries
-            not contributing to any projects
+            not supporting any projects
         $else
             <p>
-                note: this is for testing purposes only, no real money is changing hands yet
+                note: for testing purposes only, no real money is changing hands yet
             <table .table>
                 $forall summary <- project_summaries
                     <tr>
                         <td>
-                            <a href="@{ProjectR (summaryProjectId summary)}">
+                            <a href="@{ProjectR (summaryProjectHandle summary)}">
                                 #{summaryName summary}
-                        <td>#{(show (summaryShareCost summary))}/share
-                        <td>#{(show (getCount (summaryShares summary)))} shares
+                        <td>#{show (cost summary)}/share
+                        <td>#{show (shares summary)}&nbsp;shares
+                        <td>#{show (total summary)}
     |]

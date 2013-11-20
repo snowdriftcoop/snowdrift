@@ -3,16 +3,21 @@
         $if can_edit
             <div .row>
                 <div .span3>
-                    <a href="@{EditWikiR target}">edit this page
+                    <a href="@{EditWikiR project_handle target}">edit this page
                 <div .span3>
-                    <a href="@{DiscussWikiR target}">discuss this page
+                    <a href="@{WikiHistoryR project_handle target}">view history
+                <div .span3>
+                    <a href="@{DiscussWikiR project_handle target}">discuss this page
         $else
             $if can_view_meta
                 <div .row>
                     <div .span3>
-                        <a href="@{DiscussWikiR target}">view discussion
+                        <a href="@{WikiHistoryR project_handle target}">view history
+                    <div .span3>
+                        <a href="@{DiscussWikiR project_handle target}">view discussion
+        <hr .wikitop>
         <div .row>
             <div .span9>
-                #{markdownToHtml (wikiPageContent page)}
+                #{renderMarkdown project_handle (wikiPageContent page)}
     <div .span3>
         ^{sidebar}

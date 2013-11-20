@@ -21,7 +21,7 @@ import Data.Attoparsec.Number (Number (..))
 import qualified Data.Vector as V
 
 share_value :: Double -> Int -> Double
-share_value avg_shares donors = 0.0001 * (logBase 2 (avg_shares + 1)) * (fromIntegral donors -  1)
+share_value avg_shares donors = 0.0001 * logBase 2 (avg_shares + 1) * (fromIntegral donors -  1)
 
 deg2rad :: Double -> Double
 deg2rad = (pi*) . (/180)
@@ -47,9 +47,9 @@ suffixed n = show n ++ number_suffix n
 
 conjoin :: String -> [String] -> String
 conjoin _ [x] = x
-conjoin c [x, y] = unwords $ [x, c, y]
+conjoin c [x, y] = unwords [x, c, y]
 conjoin c xs =
-    let conjoin' [x, y] = unwords $ [x ++ ",", c, y]
+    let conjoin' [x, y] = unwords [x ++ ",", c, y]
         conjoin' (x:xs') = x ++ ", " ++ conjoin' xs'
         conjoin' [] = ""
      in conjoin' xs
@@ -100,7 +100,7 @@ donutSharesChart donors_list = do
                                                                         , segmentStart = segmentEnd segment
                                                                         , segmentEnd = segmentEnd segment + 2 * pi * amount / total
                                                                         }
-                                                           ) (Segment { segmentTitle = undefined, segmentStart = undefined, segmentEnd = initial_offset }) $ zip caption_renderers amounts'
+                                                           ) Segment { segmentTitle = undefined, segmentStart = undefined, segmentEnd = initial_offset } $ zip caption_renderers amounts'
                 r_inner = fromIntegral index * 1.25 - 0.4
                 r_outer = r_inner + 1
 
@@ -110,7 +110,7 @@ donutSharesChart donors_list = do
 --             c-b
 --
                 segmentPath :: Double -> Segment -> String
-                segmentPath offset segment = do
+                segmentPath offset segment =
                     let a_x = r_outer * sin (segmentStart segment) + offset
                         a_y = -r_outer * cos (segmentStart segment) + offset
 
@@ -130,8 +130,8 @@ donutSharesChart donors_list = do
                         line = printf "L%f %f"
 
                         arc :: Direction -> Double -> Double -> String
-                        arc CW = printf "A%f %f 0 %d 1 %f %f" r_outer r_outer (if (segmentEnd segment) - (segmentStart segment) > pi then 1 else 0 :: Int)
-                        arc CCW = printf "A%f %f 0 %d 0 %f %f" r_inner r_inner (if (segmentEnd segment) - (segmentStart segment) > pi then 1 else 0 :: Int)
+                        arc CW = printf "A%f %f 0 %d 1 %f %f" r_outer r_outer (if segmentEnd segment - segmentStart segment > pi then 1 else 0 :: Int)
+                        arc CCW = printf "A%f %f 0 %d 0 %f %f" r_inner r_inner (if segmentEnd segment - segmentStart segment > pi then 1 else 0 :: Int)
 
                      in move a_x a_y ++ arc CW b_x b_y ++ line c_x c_y ++ arc CCW d_x d_y
 

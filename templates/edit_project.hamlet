@@ -1,8 +1,8 @@
 <div .row>
     <div .span8>
-        <form method=POST action=@{ProjectR project_id}>
+        <form method=POST action=@{ProjectR project_handle}>
             ^{project_form}
-            <input type=submit value=update>
+            <input name=mode type=submit value=preview>
 
     <div .span3 .offset1>
         ^{sidebar}

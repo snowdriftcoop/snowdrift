@@ -1,8 +1,8 @@
 <div .row>
     <div .span8>
-        <form method=POST action=@{WikiR target}>
+        <form method=POST action=@{WikiR project_handle target}>
             ^{wiki_form}
-            <input type=submit value=update>
+            <input type=submit name=mode value=preview>
 
     <div .span3 .offset1>
         ^{sidebar}

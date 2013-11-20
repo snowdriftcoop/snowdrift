@@ -1,15 +1,17 @@
 <div .row>
     <div .span9>
         $if not (null applications)
-            <table .table>
+            <table>
                 $forall Entity application_id application <- applications
                     <tr>
                         <td>
-                            <a href="@{ApplicationR application_id}">#{committeeApplicationName application}
+                            <a href="@{ApplicationR project_handle application_id}">#{volunteerApplicationName application}
                         <td>
-                            #{committeeApplicationOccupation application}
+                           $maybe website <- volunteerApplicationWebsite application
+                               #{website}
                         <td>
-                            #{committeeApplicationLocation application}
+                           $maybe location <- volunteerApplicationLocation application
+                               #{location}
 
     <div .span3>
         ^{sidebar}

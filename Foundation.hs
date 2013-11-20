@@ -1,30 +1,31 @@
+{-# LANGUAGE FlexibleInstances #-}
+
 module Foundation where
 
 import Prelude
-import Yesod
+import Yesod hiding ((==.), count, Value)
 import Yesod.Static
 import Yesod.Auth
 import Yesod.Auth.BrowserId
-import Yesod.Auth.GoogleEmail
+import Yesod.Auth.HashDB (authHashDB)
 import Yesod.Default.Config
 import Yesod.Default.Util (addStaticContentExternal)
-import Yesod.Markdown
 import Network.HTTP.Conduit (Manager)
 import qualified Settings
 import Settings.Development (development)
-import qualified Database.Persist.Store
+import qualified Database.Persist
 import Settings.StaticFiles
-import Database.Persist.GenericSql
 import Settings (widgetFile, Extra (..))
 import Model
 import Text.Jasmine (minifym)
-import Web.ClientSession (getKey)
 import Text.Hamlet (hamletFile)
+import System.Log.FastLogger (Logger)
 
 import Model.Currency
-import Model.Role.Internal
+-- import Model.Role.Internal
 
 import Control.Applicative
+import Control.Monad.Trans.Resource
 
 import Data.Int (Int64)
 import Data.Text (Text)
@@ -41,6 +42,10 @@ import qualified Data.ByteString.Lazy.Char8 as LB
 import qualified Data.Text.Lazy.Encoding as E
 import qualified Data.Text as T
 
+import Data.Time
+
+import Database.Esqueleto
+
 -- | The site argument for your application. This can be a good place to
 -- keep settings and values requiring initialization before your application
 -- starts running, such as database connections. Every handler will have
@@ -48,9 +53,10 @@ import qualified Data.Text as T
 data App = App
     { settings :: AppConfig DefaultEnv Extra
     , getStatic :: Static -- ^ Settings for static file serving.
-    , connPool :: Database.Persist.Store.PersistConfigPool Settings.PersistConfig -- ^ Database connection pool.
+    , connPool :: Database.Persist.PersistConfigPool Settings.PersistConf -- ^ Database connection pool.
     , httpManager :: Manager
-    , persistConfig :: Settings.PersistConfig
+    , persistConfig :: Settings.PersistConf
+    , appLogger :: Logger
     }
 
 
@@ -82,7 +88,7 @@ mkMessage "App" "messages" "en"
 -- split these actions into two functions and place them in separate files.
 mkYesodData "App" $(parseRoutesFile "config/routes")
 
-type Form x = Html -> MForm App App (FormResult x, Widget)
+type Form x = Html -> MForm (HandlerT App IO) (FormResult x, Widget)
 
 licenseText :: LB.ByteString
 licenseText = E.encodeUtf8 $ renderJavascriptUrl (\ _ _ -> T.empty) [julius|
@@ -116,9 +122,9 @@ instance Yesod App where
 
     -- Store session data on the client in encrypted cookies,
     -- default session idle timeout is 120 minutes
-    makeSessionBackend _ = do
-        key <- getKey "config/client_session_key.aes"
-        return . Just $ clientSessionBackend key 2880
+    makeSessionBackend _ = fmap Just $ defaultClientSessionBackend
+        (48 * 60 * 60)
+        "config/client_session_key.aes"
 
     defaultLayout widget = do
         master <- getYesod
@@ -135,7 +141,7 @@ instance Yesod App where
             addStylesheet $ StaticR css_bootstrap_min_css
             addScript $ StaticR js_bootstrap_min_js
             $(widgetFile "default-layout")
-        hamletToRepHtml $(hamletFile "templates/default-layout-wrapper.hamlet")
+        giveUrlRenderer $(hamletFile "templates/default-layout-wrapper.hamlet")
 
     -- This is done to provide an optimization for serving static files from
     -- a separate domain. Please see the staticRoot setting in Settings.hs
@@ -149,6 +155,32 @@ instance Yesod App where
 
     -- The page to be redirected to when authentication is required.
     authRoute _ = Just $ AuthR LoginR
+
+    errorHandler (PermissionDenied _) = do
+        maybe_user <- maybeAuth
+        selectRep $ do
+        provideRep $ defaultLayout $ do
+            setTitle "Permission Denied"
+            toWidget [hamlet|$newline never
+                <h1>Permission Denied
+                <p>
+                    $maybe _ <- maybe_user
+                        You do not have permission to view this page at this time. #
+                        If you think you should, let us know #
+                        $# TODO
+                        and we'll fix it for you or everyone. #
+                        Otherwise, you can always go to our #
+                        <a href="@{HomeR}">main page
+                        .
+                    $nothing
+                        You are not logged in, and this page is not publically visible. #
+                        <a href="@{AuthR LoginR}">Log in or create an account #
+                        or return to our #
+                        <a href="@{HomeR}">main page
+                        .
+            |]
+
+    errorHandler other_error = defaultErrorHandler other_error
 
     -- This function creates static content files in the static folder
     -- and names them based on a hash of their content. This allows
@@ -173,81 +205,20 @@ instance Yesod App where
     shouldLog _ _source level =
         development || level == LevelWarn || level == LevelError
 
-    isAuthorized HomeR _ = return Authorized
-    isAuthorized TosR _ = return Authorized
-    isAuthorized PostLoginR _ = return Authorized
-    isAuthorized JsLicenseR _ = return Authorized
-    isAuthorized PrivacyR _ = return Authorized
-    isAuthorized FaviconR _ = return Authorized
-    isAuthorized RobotsR _ = return Authorized
-    isAuthorized (AuthR _) _ = return Authorized
-    isAuthorized (InvitationR _) _ = return Authorized
+    isAuthorized _ _ = return Authorized -- restricted in the individual handlers
 
-    isAuthorized (WikiR target) write = do
-        role <- userRole . entityVal <$> requireAuth
-        page <- fmap entityVal $ runDB $ getBy404 $ UniqueWikiTarget target
-
-        let authorized = if write
-                          then role >= wikiPageCanEdit page
-                          else role >= wikiPageCanView page
-
-        return $ if authorized then Authorized else Unauthorized "You do not have sufficient permissions."
-
-    isAuthorized (DiscussWikiR target) write = do
-        role <- userRole . entityVal <$> requireAuth
-        page <- fmap entityVal $ runDB $ getBy404 $ UniqueWikiTarget target
-
-        let authorized = if write
-                          then role >= wikiPageCanEdit page
-                          else role >= wikiPageCanViewMeta page
-
-        return $ if authorized then Authorized else Unauthorized "You do not have sufficient permissions."
-
-    isAuthorized (DiscussWikiCommentR target _) write = do
-        role <- userRole . entityVal <$> requireAuth
-        page <- fmap entityVal $ runDB $ getBy404 $ UniqueWikiTarget target
-
-        let authorized = if write
-                          then role >= wikiPageCanEdit page
-                          else role >= wikiPageCanViewMeta page
-
-        return $ if authorized then Authorized else Unauthorized "You do not have sufficient permissions."
-
-    isAuthorized route write = do
-        role <- userRole . entityVal <$> requireAuth
-        return $ roleCanView role write route
-
-roleCanView :: Role -> Bool -> Route App -> AuthResult
-roleCanView Admin _ _ = Authorized
-roleCanView Editor _ _ = Authorized
-roleCanView CommitteeMember _ _ = Authorized
-roleCanView CommitteeCandidate _ _ = Authorized
-
-roleCanView GeneralPublic _ CommitteeR = Unauthorized "This page requires a special invite, sorry."
-roleCanView GeneralPublic _ InviteR = Unauthorized "This page requires a special invite, sorry."
-roleCanView GeneralPublic _ _ = Authorized
-
-roleCanView Uninvited _ _ = Unauthorized "Snowdrift is presently invite-only."
 
 -- How to run database actions.
 instance YesodPersist App where
-    type YesodPersistBackend App = SqlPersist
-    runDB f = do
-        master <- getYesod
-        Database.Persist.Store.runPool
-            (persistConfig master)
-            f
-            (connPool master)
-
-
-
-instance YesodMarkdown App where
-    markdownTutorial = Left MarkdownTutorialR
-
+    type YesodPersistBackend App = SqlPersistT
+    runDB = defaultRunDB persistConfig connPool
+instance YesodPersistRunner App where
+    getDBRunner = defaultGetDBRunner connPool
 
 authBrowserIdFixed :: AuthPlugin App
 authBrowserIdFixed =
     let complete = PluginR "browserid" []
+	login :: (Route Auth -> Route App) -> WidgetT App IO ()
         login toMaster = do
             addScriptRemote browserIdJs
 
@@ -283,8 +254,39 @@ authBrowserIdFixed =
                         <img src="https://browserid.org/i/persona_sign_in_blue.png">
             |]
 
-     in authBrowserId { apLogin = login }
+     in (authBrowserId def) { apLogin = login }
 
+snowdriftAuthBrowserId :: AuthPlugin App
+snowdriftAuthBrowserId =
+    let auth = authBrowserIdFixed
+        login toMaster = do
+            let parentLogin = apLogin auth toMaster
+            [whamlet|
+                <p>
+                    <strong>Mozilla Persona is a secure and private log-in system that requires no new password.
+                <p>
+                    Persona doesn't track you the way other log-in systems do,
+                    and it works directly with gmail and yahoo accounts or with any e-mail after verification.
+                <p>
+                    The Sign in button below works for both new or existing snowdrift.coop accounts:
+                ^{parentLogin}
+            |]
+     in auth { apLogin = login }
+
+snowdriftAuthHashDB :: AuthPlugin App
+snowdriftAuthHashDB =
+    let auth = authHashDB (Just . UniqueUser)
+        login toMaster = do
+            let parentLogin = apLogin auth toMaster
+            [whamlet|
+                <p> We also offer a built-in traditional log-in system:
+                <p>
+                    <a href="@{UserCreateR}">
+                       click here to create an account
+                <p> or
+                ^{parentLogin}
+            |]
+     in auth { apLogin = login }
 
 instance YesodAuth App where
     type AuthId App = UserId
@@ -295,27 +297,34 @@ instance YesodAuth App where
     logoutDest _ = HomeR
 
     getAuthId creds = runDB $ do
+        now <- liftIO getCurrentTime
         x <- getBy $ UniqueUser $ credsIdent creds
         case x of
             Just (Entity uid _) -> return $ Just uid
             Nothing -> do
                 account_id <- insert $ Account $ Milray 0
-                fmap Just $ insert $ User (credsIdent creds) Nothing account_id Uninvited Nothing Nothing Nothing Nothing Nothing
+                fmap Just $ insert $ User (credsIdent creds) Nothing Nothing Nothing account_id Nothing Nothing Nothing Nothing now now now now
 
     -- You can add other plugins like BrowserID, email or OAuth here
-    authPlugins _ = [authBrowserIdFixed, authGoogleEmail]
+    authPlugins _ = [ snowdriftAuthBrowserId, snowdriftAuthHashDB ]
 
     authHttpManager = httpManager
 
     loginHandler = do
-        app <- getYesod
-        rtm <- getRouteToMaster
+        app <- lift getYesod
+        toParent <- getRouteToParent
 
-        defaultLayout $(widgetFile "auth")
+        lift $ defaultLayout $(widgetFile "auth")
+
 
 
 instance YesodJquery App
 
+class HasGithubRepo a where
+    getGithubRepo :: a (Maybe Text)
+
+instance (MonadBaseControl IO m, MonadUnsafeIO m, MonadIO m, MonadThrow m) => HasGithubRepo (HandlerT App m) where
+    getGithubRepo = extraGithubRepo . appExtra . settings <$> getYesod
 
 -- This instance is required to use forms. You can modify renderMessage to
 -- achieve customized and internationalized form validation messages.
@@ -326,9 +335,3 @@ instance RenderMessage App FormMessage where
 getExtra :: Handler Extra
 getExtra = fmap (appExtra . settings) getYesod
 
--- Note: previous versions of the scaffolding included a deliver function to
--- send emails. Unfortunately, there are too many different options for us to
--- give a reasonable default. Instead, the information is available on the
--- wiki:
---
--- https://github.com/yesodweb/yesod/wiki/Sending-email

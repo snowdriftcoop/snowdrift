@@ -1,0 +1,23 @@
+<div .row>
+    <div .span8>
+        <div .row>
+            <div .span4>
+                <h2>
+                    #{projectName project}
+
+        <div .row>
+            <div .span8>
+                $if null pledges
+                    no patrons yet
+                $else
+                    <table>
+                        $forall (pledge, user) <- pledges
+                            <tr>
+                                <td>
+                                    <a href="@{UserR (entityKey user)}">
+                                        #{userPrintName user}
+                                <td>
+                                    #{show (pledgeShares (entityVal pledge))}&nbsp;shares
+
+    <div .span3 .offset1>
+        ^{sidebar}

@@ -5,6 +5,8 @@ import Import
 
 import Widgets.Sidebar
 
-getHomeR :: Handler RepHtml
-getHomeR = defaultLayout $(widgetFile "homepage")
-
+getHomeR :: Handler Html
+getHomeR =
+    defaultLayout $ do
+        setTitle "Snowdrift.coop | clearing the path to a Free/Libre/Open world"
+        $(widgetFile "homepage")

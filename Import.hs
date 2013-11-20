@@ -1,17 +1,26 @@
-{-# LANGUAGE CPP #-}
+{-# LANGUAGE CPP, DeriveDataTypeable #-}
 
-module Import
-    ( module Import
-    ) where
+module Import ( module Import ) where
+
 
 import           Prelude              as Import hiding (head, init, last,
                                                  readFile, tail, writeFile)
-import           Yesod                as Import hiding (Route (..))
+import           Yesod                as Import hiding (Route (..), (||.), (==.), (!=.), (<.), (<=.), (>.), (>=.), (=.), (+=.), (-=.), (*=.), (/=.), selectSource, delete, update, count, Value)
 import           Yesod.Auth           as Import
-import           Yesod.Markdown       as Import (markdownToHtml, Markdown, markdownField)
+import           Yesod.Markdown       as Import (Markdown)
+
+import           Control.Arrow        as Import ((&&&), first, second)
+
+import           Database.Esqueleto   as Import hiding (on)
+import qualified Database.Esqueleto
 
 import           Control.Applicative  as Import (pure, (<$>), (<*>))
 import           Data.Text            as Import (Text)
+
+import           Data.Function        as Import (on)
+
+import           Data.Map             as Import (Map)
+import           Data.Set             as Import (Set)
 
 import           Foundation           as Import
 import           Model                as Import
@@ -19,29 +28,35 @@ import           Settings             as Import
 import           Settings.Development as Import
 import           Settings.StaticFiles as Import
 
-import           Data.Function        as Import (on)
-import           Data.Maybe           as Import (fromMaybe, listToMaybe)
+import           Data.Maybe           as Import (fromMaybe, listToMaybe, mapMaybe, isJust)
 
 import           Data.Int             as Import (Int64)
 
-import           Control.Monad        as Import (when)
+import           Control.Monad        as Import
 
 import           Data.Time.Clock      as Import (UTCTime, diffUTCTime, getCurrentTime)
 import           Data.Time.Units
 
 #if __GLASGOW_HASKELL__ >= 704
-import           Data.Monoid          as Import
-                                                 (Monoid (mappend, mempty, mconcat),
-                                                 (<>))
+import           Data.Monoid          as Import (Monoid (mappend, mempty, mconcat), (<>))
 #else
-import           Data.Monoid          as Import
-                                                 (Monoid (mappend, mempty, mconcat))
+import           Data.Monoid          as Import (Monoid (mappend, mempty, mconcat))
 
 infixr 5 <>
 (<>) :: Monoid m => m -> m -> m
 (<>) = mappend
 #endif
 
+import Control.Exception (Exception)
+import Data.Typeable (Typeable)
+
+on_ :: Esqueleto query expr backend => expr (Value Bool) -> query ()
+on_ = Database.Esqueleto.on
+
+
+data DBException = DBException deriving (Typeable, Show)
+
+instance Exception DBException where
 
 class Count a where
     getCount :: a -> Int64
@@ -62,11 +77,11 @@ readMaybe s      =  case [x | (x,t) <- reads s, ("","") <- lex t] of
 age :: UTCTime -> UTCTime -> String
 age a b = let s = round $ toRational $ diffUTCTime a b
               f (t :: Second)
-                 | t > convertUnit (1 :: Fortnight) = show $ (convertUnit t :: Fortnight)
-                 | t > convertUnit (1 :: Week) = show $ (convertUnit t :: Week)
-                 | t > convertUnit (1 :: Day) = show $ (convertUnit t :: Day)
-                 | t > convertUnit (1 :: Hour) = show $ (convertUnit t :: Hour)
-                 | otherwise = show $ (convertUnit t :: Minute)
+                 | t > convertUnit (1 :: Fortnight) = show (convertUnit t :: Fortnight)
+                 | t > convertUnit (1 :: Week) = show (convertUnit t :: Week)
+                 | t > convertUnit (1 :: Day) = show (convertUnit t :: Day)
+                 | t > convertUnit (1 :: Hour) = show (convertUnit t :: Hour)
+                 | otherwise = show (convertUnit t :: Minute)
            in f s
 
 footnote :: Integer -> Widget

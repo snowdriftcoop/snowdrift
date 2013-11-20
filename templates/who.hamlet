@@ -14,7 +14,7 @@
                 <div .span7>
                     <p>
                         $maybe blurb <- userBlurb user
-                            #{markdownToHtml blurb}
+                            #{renderMarkdown project_handle blurb}
                         $nothing
                             &nbsp;
     <div .span3>

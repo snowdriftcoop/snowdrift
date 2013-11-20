@@ -7,13 +7,15 @@
                 #{show (accountBalance account)}
         <div .row>
             <div .span8>
-                $#^{add_funds_form}
+                <form method="POST">
+                    ^{add_funds_form}
+                    <input type="submit" value="load funds">
 
         <div .row>
             $if null transactions
                 no transactions recorded
             $else
-                <table .table>
+                <table>
                     <th>
                         <td>
 
@@ -31,5 +33,8 @@
                                         #{show (transactionAmount transaction)}
                                     $else
                                         (#{show (transactionAmount transaction)})
+
+                                <td>
+                                    #{transactionReason transaction}
     <div .span3>
         ^{sidebar}

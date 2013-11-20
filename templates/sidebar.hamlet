@@ -18,23 +18,47 @@
         <strong>
             <a href="@{MessagesR}">
                 _{MsgNewMessages (length messages)}
+        <br>
     $else
         ^{sb_link MessagesR "View Messages"}
 
-    $if not (null applications)
-        <strong>
-            <a href="@{ApplicationsR}">
-                _{MsgNewApplications (length applications)}
-    $else
-        ^{sb_link ApplicationsR "View Applications"}
+    $# TODO
+    $# $if not (null applications)
+    $#     <strong>
+    $#         <a href="@{ApplicationsR}">
+    $#             _{MsgNewApplications (length applications)}
+    $#     <br>
+    $# $else
+    $#     ^{sb_link ApplicationsR "View Applications"}
+
+$#    $if not (null comments)
+$#        <strong>
+$#            <a href="@{WikiNewCommentsR}">
+$#                _{MsgNewComments (length comments)}
+$#        <br>
+$#    $else
+$#        ^{sb_link WikiNewCommentsR "View Recent Comments"}
+$#
+$#    $if not (null edits)
+$#        <strong>
+$#            <a href="@{WikiNewEditsR}">
+$#                _{MsgNewWikiEdits (length edits)}
+$#        <br>
+$#    $else
+$#        ^{sb_link WikiNewEditsR "View Recent Wiki Edits"}
 
     <hr>
-    ^{sb_link AboutR "About Snowdrift.coop"}
-    ^{sb_link WhoR "Who We Are"}
+    ^{sb_link (WikiR "snowdrift" "about") "About Snowdrift.coop"}
+    ^{sb_link (WikiR "snowdrift" "press") "info for press"}
+    ^{sb_link (WhoR "snowdrift") "Who We Are"}
     ^{sb_link ProjectsR "See Projects"}
-    ^{sb_link CommitteeR "Join the steering committee"}
-    ^{sb_link (WikiR "next") "Next steps for Snowdrift"}
-    ^{sb_link InviteR "Invite others"}
-    ^{sb_link ContactR "Contact Us"}
+    $# TODO
+    $case True
+        $of False
+            ^{sb_link (WikiR "snowdrift" "joincommittee") "Join the steering committee"}
+        $of _
+            ^{sb_link (WikiR "snowdrift" "committee") "Committee"}
+    ^{sb_link (WikiR "snowdrift" "next") "Next steps for Snowdrift"}
+    $# TODO ^{sb_link InviteR "Invite others"}
+    $# TODO ^{sb_link ContactR "Contact Us"}
     <br>
-

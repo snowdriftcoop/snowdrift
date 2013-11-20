@@ -1,0 +1,35 @@
+<div .row>
+    <div .span9>
+        <div .row>
+            <div .span3>
+                <a href="@{WikiR project_handle target}"> back to current page
+        <hr .wikitop>
+        <div .row>
+            <form action="@{WikiDiffProxyR project_handle target}" method="GET">
+                <table>
+                    <tr>
+                        <td colspan="3">
+                        <td>
+                            <input type="submit" value="diff">
+                    $forall (index, Entity edit_id edit) <- editsIndexed
+                        <tr>
+                            <td>
+                                <a href="@{WikiEditR project_handle target edit_id}">
+                                    ^{renderTime (wikiEditTs edit)}
+                            <td>
+                                $with user_id <- wikiEditUser edit
+                                    $maybe user <- M.lookup user_id users
+                                        <a href="@{UserR user_id}">
+                                            #{userPrintName user}
+                            <td>
+                                $maybe comment <- wikiEditComment edit
+                                    #{comment}
+                            <td>
+                                <input type="radio" name="start" value="#{toPathPiece edit_id}" :(index == 1):checked>
+                                <input type="radio" name="end" value="#{toPathPiece edit_id}" :(index == 0):checked>
+                    <tr>
+                        <td colspan="3">
+                        <td>
+                            <input type="submit" value="diff">
+    <div .span3>
+        ^{sidebar}

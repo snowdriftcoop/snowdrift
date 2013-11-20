@@ -1,0 +1,14 @@
+<div .row>
+    <div .span9>
+        <div .row>
+            ^{rendered_comments}
+
+        $if not (null comments)
+            <div .row>
+                <a href="@{WikiNewCommentsR project_handle}?from=#{show (to + 1)}">
+                    older comments
+
+
+
+    <div .span3>
+        ^{sidebar}

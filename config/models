@@ -16,25 +16,39 @@ Transaction
 
 User
     ident Text
+    hash Text Maybe
+    salt Text Maybe
     name Text Maybe
     account AccountId
-    role Role
     avatar Text Maybe
     blurb Markdown Maybe
     statement Markdown Maybe
-    readMessages UTCTime Maybe
-    readApplications UTCTime Maybe
+    ircNick Text Maybe
+    readMessages UTCTime default=now()
+    readApplications UTCTime default=now()
+    readComments UTCTime default=now()
+    readEdits UTCTime default=now()
     UniqueUser ident
     UniqueUserAccount account
+    deriving Typeable
 
 
 Project
     createdTs UTCTime
     name Text
+    handle Text
     description Markdown
     account AccountId
     shareValue Milray
     UniqueProjectAccount account
+    UniqueProjectHandle handle
+
+
+ProjectUserRole
+    project ProjectId
+    user UserId
+    role Role
+    UniqueProjectUser project user
 
 
 ProjectUpdate
@@ -50,12 +64,6 @@ ProjectLastUpdate
     UniqueProjectLastUpdate project
 
 
-ProjectUser
-    project ProjectId
-    user UserId
-    canEdit Bool
-
-
 Pledge
     user UserId
     project ProjectId
@@ -66,6 +74,7 @@ Pledge
 
 Invite
     createdTs UTCTime
+    project ProjectId
     code Text
     user UserId
     role Role
@@ -76,58 +85,102 @@ Invite
     UniqueInvite code
 
 
-CommitteeApplication
+VolunteerApplication
     createdTs UTCTime
+    project ProjectId
     user UserId
     name Text
     email Text
     otherContactInfo Text Maybe
-    occupation Text
-    location Text
-    expertise Textarea Maybe
-    statement Textarea
+    website Text Maybe
+    location Text Maybe
+    experience Textarea Maybe
     comments Textarea Maybe
 
+Interest
+    description Text
+
+VolunteerInterest
+    volunteer VolunteerApplicationId
+    interest InterestId
 
 CommitteeUser
     createdTs UTCTime
     user UserId
+    project ProjectId
     UniqueCommitteeMember user
 
 
 Message
+    project ProjectId Maybe
     createdTs UTCTime
-    from UserId
+    from UserId Maybe
     to UserId Maybe
-    content Textarea
+    content Markdown
 
 
 WikiPage
     target Text
+    project ProjectId
     content Markdown
-    canView Role
-    canViewMeta Role
-    canEdit Role
-    UniqueWikiTarget target
+    permissionLevel PermissionLevel
+    UniqueWikiTarget project target
 
 WikiEdit
     ts UTCTime
     user UserId
     page WikiPageId
-    diff MarkdownDiff
+    content Markdown
+    comment Text Maybe
 
 WikiLastEdit
     page WikiPageId
     edit WikiEditId
     UniqueWikiLastEdit page
 
-WikiComment
+Comment
     createdTs UTCTime
-    retractedTs UTCTime Maybe
+    moderatedTs UTCTime Maybe
+    moderatedUser UserId Maybe
     page WikiPageId
-    parent WikiCommentId Maybe
+    parent CommentId Maybe
     user UserId
     text Markdown
-    retractedReason Markdown Maybe
+    depth Int
+
+CommentAncestor
+    comment CommentId
+    ancestor CommentId
+    UniqueCommentAncestor comment ancestor
+
+CommentRetraction
+    ts UTCTime
+    reason Markdown
+    comment CommentId
+
+Tag
+    name Text
+    UniqueTag name
+
+ProjectTag
+    project ProjectId
+    tag TagId
+    UniqueProjectTag project tag
+
+CommentTag
+    comment CommentId
+    tag TagId
+    user UserId
+    UniqueCommentTag comment tag user
+
+Ticket
+    createdTs UTCTime
+    name Text
+    comment CommentId
+
+Build
+    bootTime UTCTime
+    base Text
+    diff Text
 
  -- This file is used in Model.hs (which is imported by Foundation.hs)

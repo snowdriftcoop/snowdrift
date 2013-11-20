@@ -2,5 +2,5 @@ module Handler.Tos where
 
 import Import
 
-getTosR :: Handler RepHtml
+getTosR :: Handler Html
 getTosR = defaultLayout $(widgetFile "tos")

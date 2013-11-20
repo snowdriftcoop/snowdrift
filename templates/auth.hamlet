@@ -1,12 +1,6 @@
-<p>
-    Log in (or register) using any of the options below.
-    <br>
-    We recommend the first (Mozilla Persona) because it is fully Free/Libre/Open and privacy-respecting.
+$newline never
 
 $forall auth <- authPlugins app
-    <div>
-        ^{apLogin auth rtm}
-    $#  This "works" but displays ugly:
-    $#  $if apName auth == "browserid"
-    $#      (if this is your first time using Persona, leave this window open while you follow the confirmation link emailed to you)
+    <div class="span5">
+        ^{apLogin auth toParent}
 

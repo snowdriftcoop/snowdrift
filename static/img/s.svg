@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:osb="http://www.openswatchbook.org/uri/2009/osb"
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="74.999695"
+   height="74.999695"
+   id="svg3108"
+   version="1.1"
+   inkscape:version="0.48.3.1 r9886"
+   sodipodi:docname="Snowdrift-S.svg"
+   inkscape:export-filename="/home/aaron/Dropbox/Snowdrift artwork/Logo/rendered/Snowdrift-S-button.png"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90">
+  <defs
+     id="defs3110">
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4128"
+       id="linearGradient3088"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(-18.150165,-57.853652)"
+       x1="-630.48102"
+       y1="457.80765"
+       x2="-604.69257"
+       y2="457.80765" />
+    <linearGradient
+       id="linearGradient4128"
+       osb:paint="solid">
+      <stop
+         style="stop-color:#ffffff;stop-opacity:1;"
+         offset="0"
+         id="stop4130" />
+    </linearGradient>
+    <linearGradient
+       y2="457.80765"
+       x2="-604.69257"
+       y1="457.80765"
+       x1="-630.48102"
+       gradientTransform="translate(-18.150165,-57.853652)"
+       gradientUnits="userSpaceOnUse"
+       id="linearGradient3106"
+       xlink:href="#linearGradient4128"
+       inkscape:collect="always" />
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1.75"
+     inkscape:cx="-16.979838"
+     inkscape:cy="28.821261"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="920"
+     inkscape:window-height="493"
+     inkscape:window-x="134"
+     inkscape:window-y="191"
+     inkscape:window-maximized="0"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     showborder="false"
+     borderlayer="false"
+     inkscape:showpageshadow="true" />
+  <metadata
+     id="metadata3113">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-444.89273,-349.04089)">
+    <g
+       id="g3084"
+       transform="matrix(1.1466416,0,0,1.1466416,1211.5766,-96.084784)">
+      <path
+         id="path3057"
+         style="font-size:72px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Linux Biolinum O;-inkscape-font-specification:Linux Biolinum O Bold"
+         d="m -947.50275,342.7737 c -4.392,0 -10.44,-4.75201 -12.96,-8.568 l -1.872,0.072 c -0.288,2.59199 -0.864,6.624 -1.44,8.784 l 0.144,0.216 c 0,0 6.69601,3.24 15.48,3.24 10.58399,0 17.208,-6.76801 17.208,-14.112 0,-7.84799 -8.49601,-11.88001 -14.256,-14.616 -3.888,-1.8 -7.344,-3.52801 -7.344,-8.856 0,-3.6 2.592,-6.984 6.552,-6.984 4.32,0 8.568,5.112 10.44,8.64 l 2.16,-0.072 c 0.288,-2.592 0.792,-6.48 1.44,-8.64 l -0.144,-0.216 c 0,0 -5.90401,-3.24 -14.688,-3.24 -8.13599,0 -15.552,4.82401 -15.552,12.456 0,2.80799 0.504,5.544 2.232,7.776 3.312,4.39199 8.856,7.056 13.032,9.144 3.384,1.728 6.264,4.608 6.264,7.56 0,5.11199 -2.376,7.416 -6.696,7.416"
+         transform="translate(311.42853,100)"
+         inkscape:connector-curvature="0" />
+      <path
+         sodipodi:nodetypes="csssc"
+         inkscape:connector-curvature="0"
+         id="path3198"
+         d="m -640.41145,396.1568 c -5.21534,0 -10.88095,7.70898 -5.93259,7.70898 1.2304,0 9.83119,-2.60946 10.83258,-3.61086 2.82381,-2.8238 9.74085,2.29536 12.03621,0 1.63376,-1.63376 -7.33251,-5.70186 -17.1056,-4.09811"
+         style="fill:url(#linearGradient3106);fill-opacity:1;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+    </g>
+  </g>
+</svg>

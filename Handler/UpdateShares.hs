@@ -7,21 +7,21 @@ import Model.Currency
 import Model.Shares
 import Model.Project
 
-import Database.Persist.GenericSql
-
 import Widgets.Sidebar
 
 confirmForm :: Int64 -> Form SharesPurchaseOrder
 confirmForm shares = renderDivs $ SharesPurchaseOrder <$> areq hiddenField "" (Just shares)
 
-getUpdateSharesR :: ProjectId -> Handler RepHtml
-getUpdateSharesR project_id = do
+getUpdateSharesR :: Text -> Handler Html
+getUpdateSharesR project_handle = do
+    _ <- requireAuthId
+
     ((result, _), _) <- runFormGet $ buySharesForm 0
     case result of
         FormSuccess (SharesPurchaseOrder shares) -> do
             -- TODO - refuse negative
             user_id <- requireAuthId
-            project <- runDB $ get404 project_id
+            Entity project_id project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
             (confirm_form, _) <- generateFormPost $ confirmForm shares
 
             maybe_pledge <- runDB $ getBy $ UniquePledge user_id project_id
@@ -32,8 +32,8 @@ getUpdateSharesR project_id = do
         FormFailure _ -> defaultLayout [whamlet| form failure |]
 
 
-postUpdateSharesR :: ProjectId -> Handler RepHtml
-postUpdateSharesR project_id = do
+postUpdateSharesR :: Text -> Handler Html
+postUpdateSharesR project_handle = do
     user_id <- requireAuthId
     ((result, _), _) <- runFormPost $ confirmForm 1
 
@@ -44,6 +44,7 @@ postUpdateSharesR project_id = do
             success <- runDB $ do
                 Just user <- get user_id
                 Just account <- get $ userAccount user
+                Entity project_id _ <- getBy404 $ UniqueProjectHandle project_handle
 
                 either_unique <- insertBy $ Pledge user_id project_id shares shares
 
@@ -51,10 +52,13 @@ postUpdateSharesR project_id = do
                     Right _ -> return ()
                     Left (Entity pledge_id _) ->
                         if shares == 0
-                         then delete pledge_id
-                         else update pledge_id [ PledgeShares =. shares
-                                               , PledgeFundedShares =. shares
-                                               ]
+                         then delete $ from $ \ pledge -> do
+                            where_ (pledge ^. PledgeId ==. val pledge_id)
+                         else update $ \ pledge -> do
+                            set pledge [ PledgeShares =. val shares
+                                       , PledgeFundedShares =. val shares
+                                       ]
+                            where_ (pledge ^. PledgeId ==. val pledge_id)
 
                 updateShareValue project_id
 
@@ -64,16 +68,16 @@ postUpdateSharesR project_id = do
 
                 if accountBalance account < user_outlay $* 3
                  then do
-                    rollback
+                    transactionUndo
                     return False
                  else return True
 
-            if success
-             then setMessage "you are now contributing to this project"
-             else setMessage "you must have at least 3 months worth in your account to pledge additional shares"
-            redirect $ ProjectR project_id
+            setMessage $ if success
+             then "you are now pledged to support this project"
+             else "you must have at least 3 months worth in your account to pledge additional shares"
+            redirect $ ProjectR project_handle
 
         _ -> do
             setMessage "error occurred in form submission"
-            redirect $ UpdateSharesR project_id
+            redirect $ UpdateSharesR project_handle
 

@@ -8,20 +8,21 @@ import Model.Project
 import Model.Currency
 
 
-widgetLayout :: GWidget App App () -> GHandler App App RepHtml
+widgetLayout :: WidgetT App IO () -> HandlerT App IO Html
 widgetLayout widget = do
     pc <- widgetToPageContent $ do
         $(widgetFile "normalize")
         addStylesheet $ StaticR css_bootstrap_css
         widget
-    hamletToRepHtml $(hamletFile "templates/widget-wrapper.hamlet")
+    giveUrlRenderer $(hamletFile "templates/widget-wrapper.hamlet")
 
 
-getWidgetR :: ProjectId -> Handler RepHtml
-getWidgetR project_id = do
-    (project, pledges) <- runDB $ (,)
-        <$> get404 project_id
-        <*> getProjectShares project_id
+getWidgetR :: Text -> Handler Html
+getWidgetR project_handle = do
+    (project, pledges) <- runDB $ do
+        Entity project_id project <- getBy404 $ UniqueProjectHandle project_handle
+        pledges <- getProjectShares project_id
+        return (project, pledges)
 
     let share_value = projectShareValue project
         users = fromIntegral $ length pledges

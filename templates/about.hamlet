@@ -2,6 +2,10 @@
     <div .span8>
          <div .row>
             <div .span8>
+                <p>
+                    <em>This page is now outdated.
+                    <strong><a href={@WikiR "about"}>Click here to see the updated content</a>
+                <hr>
                 <h3>Summary
                 <p>
                     <strong>Snowdrift.coop is a new fundraising system dedicated to Free digital works.
@@ -108,7 +112,7 @@
 
                     <li>
                         Educational, scientific, and/or creative works that meet
-                        the <a href=freedomdefined.org/Definition> Definition of Free Cultural Works</a>,
+                        the <a href=http://freedomdefined.org/Definition> Definition of Free Cultural Works</a>,
                         and/or the <a href=http://opendefinition.org/okd/>Open Definition</a>
                         <ul>
                             <li>

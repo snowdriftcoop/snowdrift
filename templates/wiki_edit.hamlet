@@ -1,0 +1,22 @@
+<div .row>
+    <div .span9>
+        <div .row>
+            <div .span3>
+                <a href="@{WikiHistoryR project_handle target}">back to history
+            <div .span3>
+                <a href="@{WikiR project_handle target}">current version
+            <div .span3>
+                <a href="@{DiscussWikiR project_handle target}">view discussion
+        <div .row>
+                <div .span9>
+                    Page as of ^{renderTime (wikiEditTs edit)}
+        $maybe comment <- wikiEditComment edit
+            <div .row>
+                <div .span9>
+                    #{comment}
+        <hr .wikitop>
+        <div .row>
+                <div .span9>
+                    #{renderMarkdown project_handle (wikiEditContent edit)}
+    <div .span3>
+        ^{sidebar}

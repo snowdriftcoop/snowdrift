@@ -1,8 +1,10 @@
 <div .row>
     <div .span8>
+        Public profile info:
+    <div .span8>
         <form method=POST action=@{UserR user_id}>
             ^{form}
-            <input type=submit value=update>
+            <input type=submit name=mode value=preview>
 
     <div .span3 .offset1>
         ^{sidebar}

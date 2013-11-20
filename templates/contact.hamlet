@@ -1,8 +1,10 @@
 <div .row>
     <div .span8>
         <strong>Contact us
+        <p>
+            If you want a reply, be sure to include some contact info
 
-        <form method=POST target=@{ContactR}>
+        <form method=POST target=@{ContactR project_handle}>
             ^{contact_form}
             <br>
             <input type=submit value="send">

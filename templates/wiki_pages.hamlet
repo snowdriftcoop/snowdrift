@@ -1,0 +1,25 @@
+<div .row>
+    <div .span8>
+        $if null pages
+            no pages to display
+        $else
+            <table>
+                <tr>
+                    <th>
+                        target
+                    <th>
+                        view
+                    <th>
+                        edit
+                    <th>
+                        view meta
+
+                $forall Entity _ page <- pages
+                    <tr>
+                        <td>
+                            <a href=@{WikiR project_handle (wikiPageTarget page)}>
+                                #{wikiPageTarget page}
+
+    <div .span3 .offset1>
+        ^{sidebar}
+

@@ -6,14 +6,20 @@
                     #{userPrintName user_entity}
 
                 $maybe avatar <- userAvatar user
-                            <img .headshot_large src="#{avatar}">
+                    <img .headshot_large src="#{avatar}">
 
-        $if user_id == viewer_id
+        $maybe nick <- userIrcNick user
+            <div .row>
+                <div .span4>
+                    #{nick} on <a href="https://snowdrift.coop/p/snowdrift/w/irc">irc.freenode.net</a>
+
+        $if Just user_id == viewer_id
             <a href="@{EditUserR user_id}">
                 edit profile
+
     <div .span5>
         $maybe blurb <- userBlurb user
-            #{markdownToHtml blurb}
+            #{renderMarkdown project_handle blurb}
         $nothing
             &nbsp;
 
@@ -24,8 +30,8 @@
     <h4>Personal Statement
     <div .span6 .well .well-small .scroll .capped>
         $maybe statement <- userStatement user
-            #{markdownToHtml statement}
+            #{renderMarkdown project_handle statement}
 
-    <div .span4 .well .well-small>
+    <div .span5 .well .well-small>
         ^{project_pledges user_id}
 

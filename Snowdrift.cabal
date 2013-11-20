@@ -1,5 +1,5 @@
 name:              Snowdrift
-version:           0.0.1
+version:           0.0.2
 license:           OtherLicense
 license-file:      LICENSE
 author:            David L. L. Thomas
@@ -9,7 +9,7 @@ category:          Web
 stability:         Experimental
 cabal-version:     >= 1.8
 build-type:        Simple
-homepage:          http://snowdrift.coop
+homepage:          https://snowdrift.coop
 
 Flag dev
     Description:   Turn on development settings, like auto-reload templates.
@@ -21,21 +21,25 @@ Flag library-only
 
 library
     exposed-modules: Application
+                     Data.Filter
+                     Data.Order
+                     Data.Text.PrettyHtml
                      Foundation
                      Import
                      Model
-                     Model.Markdown.Diff
                      Model.Currency
                      Model.Project
                      Model.Role
+                     Model.Permission
                      Model.Shares
                      Model.Transaction
+                     Model.Markdown
+                     Model.Markdown.Diff
                      Model.User
                      Settings
                      Settings.StaticFiles
                      Settings.Development
                      Handler.Home
-                     Handler.About
                      Handler.Faq
                      Handler.User
                      Handler.Widget
@@ -43,7 +47,7 @@ library
                      Handler.Invite
                      Handler.Invitation
                      Handler.UpdateShares
-                     Handler.Committee
+                     Handler.Volunteer
                      Handler.Contact
                      Handler.Who
                      Handler.PostLogin
@@ -57,17 +61,23 @@ library
                      Handler.UserBalance
                      Handler.UserPledges
                      Handler.Wiki
+                     Handler.Tickets
+                     Handler.RepoFeed
+                     Handler.BuildFeed
+                     Version
+                     Widgets.Markdown
                      Widgets.Sidebar
                      Widgets.Time
                      Widgets.ProjectPledges
 
     other-modules: Model.Role.Internal
+                   Model.Permission.Internal
 
     if flag(dev) || flag(library-only)
         cpp-options:   -DDEVELOPMENT
-        ghc-options:   -Wall -Werror -O0
+        ghc-options:   -Wall -O0
     else
-        ghc-options:   -Wall -Werror -O2
+        ghc-options:   -Wall -O2
 
     extensions: TemplateHaskell
                 QuasiQuotes
@@ -80,53 +90,63 @@ library
                 FlexibleContexts
                 EmptyDataDecls
                 NoMonomorphismRestriction
+                DeriveDataTypeable
                 ScopedTypeVariables
 
     build-depends: base                          >= 4          && < 5
-                 , yesod                         >= 1.1        && < 1.2
-                 , yesod-core                    >= 1.1.6      && < 1.2
-                 , yesod-auth                    >= 1.1        && < 1.2
-                 , yesod-static                  >= 1.1        && < 1.2
-                 , yesod-default                 >= 1.1        && < 1.2
-                 , yesod-form                    >= 1.2        && < 1.3
-                 , yesod-routes
-                 , yesod-persistent
-                 , clientsession                 >= 0.8        && < 0.9
+                 -- , yesod-platform                >= 1.1        && < 1.2
+                 , yesod                         >= 1.2        && < 1.3
+                 , yesod-core                    >= 1.2        && < 1.3
+                 , yesod-auth                    >= 1.2        && < 1.3
+                 , yesod-static                  >= 1.2        && < 1.3
+                 , yesod-form                    >= 1.3        && < 1.4
+                 , clientsession                 >= 0.9        && < 0.10
+                 , resourcet
                  , bytestring                    >= 0.9        && < 0.11
                  , text                          >= 0.11       && < 0.12
-                 , persistent                    >= 1.0        && < 1.1
-                 , persistent-postgresql         >= 1.0        && < 1.1
-                 , persistent-template
+                 , persistent                    >= 1.2        && < 1.3
+                 , persistent-postgresql         >= 1.2        && < 1.3
+                 , persistent-template           >= 1.2        && < 1.3
                  , template-haskell
                  , hamlet                        >= 1.1        && < 1.2
                  , shakespeare-css               >= 1.0        && < 1.1
-                 , shakespeare-js                >= 1.0        && < 1.2
+                 , shakespeare-js                >= 1.0.2      && < 1.2
                  , shakespeare-text              >= 1.0        && < 1.1
                  , hjsmin                        >= 0.1        && < 0.2
                  , monad-control                 >= 0.3        && < 0.4
                  , wai-extra                     >= 1.3        && < 1.4
                  , yaml                          >= 0.8        && < 0.9
-                 , http-conduit                  >= 1.8        && < 1.9
+                 , http-conduit                  >= 1.9        && < 1.10
                  , directory                     >= 1.1        && < 1.3
                  , warp                          >= 1.3        && < 1.4
+                 , esqueleto                     >= 1.0
+                 , lifted-base
                  , vector
                  , data-default
+                 , aeson
+                 , conduit                       >= 1.0
+                 , monad-logger                  >= 0.3
+                 , fast-logger                   >= 0.3
                  , time
                  , time-units
-                 , monad-logger
                  , transformers
-                 , conduit
                  , random
-                 , yesod-markdown
-                 , Diff
+                 , yesod-markdown                >= 0.7
+                 , yesod-newsfeed
+                 , Diff                          >= 0.3        && < 0.4
                  , path-pieces
                  , containers
                  , authenticate
                  , blaze-builder
                  , blaze-html
                  , blaze-markup
-                 , attoparsec
+                 , attoparsec                    >= 0.10.3.0    && < 0.11.0.0
                  , old-locale
+                 , hit                           >= 0.5         && < 1.0
+                 , process
+                 , temporary
+                 , regex-tdfa                    >= 1.1 && < 1.2
+                 , github                        < 0.8
 
 
 executable         Snowdrift
@@ -137,7 +157,7 @@ executable         Snowdrift
     hs-source-dirs:    app
     build-depends:     base
                      , Snowdrift
-                     , yesod-default
+                     , yesod
 
     ghc-options:       -threaded -O2
 
@@ -149,11 +169,12 @@ test-suite test
 
     build-depends: base
                  , Snowdrift
-                 , yesod-test >= 0.3 && < 0.4
-                 , yesod-default
+                 , yesod-test >= 1.2 && < 1.3
                  , yesod-core
+                 , yesod
                  , persistent
                  , persistent-postgresql
-                 , xml-conduit
+                 , resourcet
+                 , monad-logger
                  , transformers
-                 , containers
+                 , hspec

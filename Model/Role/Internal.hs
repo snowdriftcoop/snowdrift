@@ -4,7 +4,6 @@ module Model.Role.Internal where
 import Prelude
 
 import Database.Persist.TH
-import Database.Persist.Store
 
 import Web.PathPieces
 
@@ -12,7 +11,7 @@ import Data.Text as T
 
 import Debug.Trace
 
-data Role = Uninvited | GeneralPublic | CommitteeCandidate | CommitteeMember | Editor | Admin deriving (Eq, Show, Read, Ord, Enum)
+data Role = Moderator | TeamMember | Admin deriving (Bounded, Enum, Eq, Show, Read)
 
 derivePersistField "Role"
 

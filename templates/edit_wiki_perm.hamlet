@@ -1,0 +1,8 @@
+<div .row>
+    <div .span8>
+        <form method=POST action=@{EditWikiPermissionsR project_handle target}>
+            ^{wiki_form}
+            <input type=submit>
+
+    <div .span3 .offset1>
+        ^{sidebar}

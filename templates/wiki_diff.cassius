@@ -1,0 +1,8 @@
+ins
+    color : darkgreen
+    background-color : mintcream
+
+
+del
+    color : darkred
+    background-color : ivory

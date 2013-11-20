@@ -2,5 +2,5 @@ module Handler.Privacy where
 
 import Import
 
-getPrivacyR :: Handler RepHtml
+getPrivacyR :: Handler Html
 getPrivacyR = defaultLayout $(widgetFile "priv")

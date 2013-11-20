@@ -1,0 +1,17 @@
+<div .row>
+    <div .span8>
+        <form>
+            ^{formWidget}
+            <input type=submit value="update view">
+
+    <div .span8>
+        $if null tickets
+            no tickets to display
+        $else
+            <table>
+                $forall issue <- issues
+                    ^{issueWidget issue}
+
+    <div .span3 .offset1>
+        ^{sidebar}
+

@@ -1,0 +1,22 @@
+<div .row>
+    <div .span9>
+        <div .row>
+            <div .span3>
+                <a href="@{DiscussWikiR project_handle target}"> back to full discussion page
+            <div .span3>
+                <a href="@{WikiR project_handle target}"> back to wiki page
+        <hr .wikitop>
+        <div .row>
+            <div .span9>
+                <div .row>
+                    ^{comment}
+                $if can_edit
+                    <div .row>
+                        <form action="@{DiscussWikiR project_handle target}" method="POST">
+                            ^{comment_form}
+                            <input type="submit" name="mode" value="preview">
+                <div .row>
+                    ^{child_comments}
+
+    <div .span3>
+        ^{sidebar}

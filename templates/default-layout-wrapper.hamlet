@@ -13,7 +13,7 @@ $newline never
             /*
             @licstart  The following is the entire license notice for the JavaScript code in this page.
 
-            Copyright (C) 2012  Snowdrift.coop
+            Copyright (C) 2013  Snowdrift.coop
 
             The JavaScript code in this page is free software: you can
             redistribute it and/or modify it under the terms of the GNU
@@ -70,7 +70,7 @@ $newline never
                 <a href="@{HomeR}">
                     <div #head .row>
                         <noscript>
-                            <img #logo .span10 .offset1 src=@{StaticR img_logo_png}>
+                            <img #logo .span10 .offset1 src=@{StaticR img_logo_png} alt="Snowdrift.coop: clearing the path to a Free/Libre/Open World">
                         <script>
                             fixup_logo()
                     <div .row>
@@ -83,17 +83,17 @@ $newline never
                     <div .span3>
                         &copy; #{extraCopyright $ appExtra $ settings master}
                     <div .span3>
-                        <a href="/license/javascript" rel="jslicense">JavaScript licenses
-                    <div .span3>
-                        Distributed under #
-                        <a href="https://www.gnu.org/licenses/agpl">
-                            AGPL
-                        \ and #
+                        Released&nbsp;under&nbsp;
+                        <a title="Affero GPL version 3.0 or newer" href="https://www.gnu.org/licenses/agpl">
+                            AGPLv3+
+                        &nbsp;and&nbsp;
                         <a href="https://creativecommons.org/licenses/by-sa/3.0">
                             CC&nbsp;BY-SA
-                        .
+
                     <div .span3>
-                        <a href="#{extraSourceRepo $ appExtra $ settings master}">Check out the source.
+                        <a href="/license/javascript" rel="jslicense">JavaScript licenses
+                    <div .span3>
+                        <a href="#{extraSourceRepo $ appExtra $ settings master}">Check out the source!
 
         $maybe analytics <- extraAnalytics $ appExtra $ settings master
             <script>

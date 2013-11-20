@@ -1,0 +1,22 @@
+<div .row>
+    <div .span9>
+        $# TODO - rewrite?
+        <h1>Get involved in building the #{project_handle} community!
+        <p>
+            Welcome!
+            Please read the
+            <a href=@{WikiR project_handle "how-to-help"}>How-to-help page
+            to find out more about our particular needs at this time.
+        <p>
+            To provide general feedback or request assistance, go to the
+            <a href=@{ContactR project_handle}>Contact page
+
+        <p>
+            To express interest in potentially volunteering, fill out this form:
+        <div .container>
+            <form action=@{VolunteerR project_handle} method="POST">
+                ^{volunteer_form}
+                <input type="submit" value="submit">
+    <div .span3>
+        ^{sidebar}
+

@@ -1,0 +1,18 @@
+<div .row>
+    <div .span9>
+        <div .row>
+            <div .span3> 
+                <a href="@{WikiHistoryR project_handle target}">back to history 
+            <div .span3>
+                <a href="@{WikiR project_handle target}">current version
+            <div .span3>
+                <a href="@{DiscussWikiR project_handle target}">view discussion
+
+        $# TODO - info from compared versions
+
+        <hr .wikitop>
+        <div .row>
+                <div .span9>
+                    #{renderDiff (diffEdits start_edit end_edit)}
+    <div .span3>
+        ^{sidebar}

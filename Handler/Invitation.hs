@@ -2,13 +2,13 @@ module Handler.Invitation where
 
 import Import
 
-import Model.Role
+-- import Model.Role
 
 import Widgets.Sidebar
 
 
-getInvitationR :: Text -> Handler RepHtml
-getInvitationR code = do
+getInvitationR :: Text -> Text -> Handler Html
+getInvitationR project_handle code = do
     Entity invite_id invite <- runDB $ getBy404 $ UniqueInvite code
     maybe_user_id <- maybeAuthId
 
@@ -17,28 +17,34 @@ getInvitationR code = do
 
     alreadyExpired
 
-    let redeemed = inviteRedeemed invite || inviteRedeemedBy invite /= Nothing
+    let redeemed = inviteRedeemed invite || isJust (inviteRedeemedBy invite)
 
-    defaultLayout $ $(widgetFile "invitation")
+    defaultLayout $(widgetFile "invitation")
     
 
-postInvitationR :: Text -> Handler RepHtml
-postInvitationR code = do
-    viewer_id <- requireAuthId
+postInvitationR :: Text -> Text -> Handler Html
+postInvitationR _ code = do
+    viewer_id :: UserId <- requireAuthId
     now <- liftIO getCurrentTime
-    role <- runDB $ do
+    _ <- runDB $ do
         Entity invite_id invite <- getBy404 $ UniqueInvite code
 
         if inviteRedeemed invite
          then return Nothing
          else do
-            update invite_id [ InviteRedeemed =. True
-                             , InviteRedeemedTs =. Just now
-                             , InviteRedeemedBy =. Just viewer_id
-                             ]
-            update viewer_id [ UserRole =. inviteRole invite ]
+            -- TODO make sure project handle matches invite
+            update $ \ i -> do
+                set i [ InviteRedeemed =. val True
+                      , InviteRedeemedTs =. val (Just now)
+                      , InviteRedeemedBy =. val (Just viewer_id)
+                      ]
+                where_ ( i ^. InviteId ==. val invite_id )
+
+            _ <- insertUnique $ ProjectUserRole (inviteProject invite) viewer_id (inviteRole invite)
+            -- TODO: update
+
             return $ Just $ inviteRole invite
 
-    redirect $ maybe (InvitationR code) roleDefaultTarget role
+    redirectUltDest HomeR
     
     

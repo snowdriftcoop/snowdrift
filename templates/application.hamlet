@@ -1,59 +1,62 @@
 
 <div .row>
     <div .span9>
-        <table .table>
+        <table>
             <tr>
                 <td>
                     Account:
                 <td>
-                    <a href="@{UserR (committeeApplicationUser application)}">
+                    <a href="@{UserR (volunteerApplicationUser application)}">
                         #{userPrintName user}
 
             <tr>
                 <td>
                     Name:
                 <td>
-                    #{committeeApplicationName application}
+                    #{volunteerApplicationName application}
 
             <tr>
                 <td>
                     Email:
                 <td>
-                    #{committeeApplicationEmail application}
+                    #{volunteerApplicationEmail application}
 
-            $maybe contactInfo <- committeeApplicationOtherContactInfo application
+            $maybe contactInfo <- volunteerApplicationOtherContactInfo application
                 <tr>
                     <td>
                         Other Contact Info:
                     <td>
                         #{contactInfo}
 
-            <tr>
-                <td>
-                    Occupation:
-                <td>
-                    #{committeeApplicationOccupation application}
+            $maybe website <- volunteerApplicationWebsite application
+               <tr>
+                   <td>
+                       Website URL:
+                   <td>
+                       #{website}
 
-            <tr>
-                <td>
-                    Location:
-                <td>
-                    #{committeeApplicationLocation application}
+            $maybe location <- volunteerApplicationLocation application 
+               <tr>
+                   <td>
+                       Location:
+                   <td>
+                       #{location}
 
-            $maybe expertise <- committeeApplicationExpertise application
+            $maybe experience <- volunteerApplicationExperience application
                 <tr>
                     <td>
-                        Expertise:
+                        Experience:
                     <td>
-                        #{expertise}
+                        #{experience}
 
-            <tr>
-                <td>
-                    Statement:
-                <td>
-                    #{committeeApplicationStatement application}
+            $if not (null interests)
+                <tr>
+                    <td>
+                        #{plural (length interests) "Interest" "Interests"}:
+                    <td>
+                        #{rendered_interests}
 
-            $maybe comments <- committeeApplicationComments application
+            $maybe comments <- volunteerApplicationComments application
                 <tr>
                     <td>
                         Comments:

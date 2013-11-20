@@ -1,9 +1,9 @@
 Default: &defaults
-  user: snowdrift
-  password: snowdrift
+  user: snowdrift_development
+  password: DGrhfkMc7W8vpMQazv8qlCyRjTdE2qE9
   host: localhost
   port: 5432
-  database: snowdrift
+  database: snowdrift_development
   poolsize: 10
 
 Development:

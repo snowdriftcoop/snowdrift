@@ -4,69 +4,47 @@
             <p>
                 Your invitation code has been generated.
             <p>
-                <strong>We suggest that you select and copy the content below and send it (perhaps with your own modifications) to the invitee along with a personal note.
-                Note that each code can only be used once.
-                You must generate a new code for each invitation.
+                <strong>Send the invite below to the invitee along with a personal note.
+                <em>
+                    Note: each code can only be used once.
+                    You must generate a new code for each invitation.
             <blockquote>
-                Snowdrift.coop is a new fundraising system dedicated to Free Software, Free Cultural Works, Open Educational Resources, Open Science, and similar projects.
+                Snowdrift.coop is a new non-profit cooperative system to support free/libre/open software, cultural works (art, music, etc.), science, educational resources, and more&hellip;
+                The invite below adds new access permissions.
+                If you do not have an account yet, please
+                <a href="https://snowdrift.coop/auth/login">
+                    create a new account
+                before redeeming the code here.
                 <p>
                     $maybe invite_role <- maybe_invite_role
                         $case invite_role
-                            $of CommitteeCandidate
-                                <p>
-                                    You are invited to be a candidate for the steering committee!
-                                    Please review the proposals on the web site.
-                                    Fill out the form on the  "Join the steering committee" page if you are interested in being involved.
-                                    Either way, we appreciate any feedback and any referrals to other potential supporters.
-
-                            $of CommitteeMember
-                                <p>
-                                    You have been selected to be a member of the steering committee!
-                                    Please let us know ASAP if you cannot accept the position.
-                                    Otherwise, welcome, we are so glad to have you join us.
-                                    With your help, we will help foster a new a new paradigm for Free/Libre/Open works and for community engagement.                                     The code below will change your account status so you will have access to committee-only parts of the site.
-
-                            $of Editor
-                                <p>
-                                    You are invited to be an editor.
-                                    This means you will have access to the entire site.
-                                    You will not be an official member of the steering committee or have any other commitments,
-                                    but we are asking for your critical feedback and other editorial comments to make the site better.
-                                    Thank you for your help!
-
                             $of Admin
                                 <p>
-                                    You are invited to be a site administrator.
+                                    You are invited to be an administrator of this project.
 
-                            $of GeneralPublic
+                            $of TeamMember
                                 <p>
-                                    You are invited access the preliminary site, review the proposals, and test the system.
+                                    You are invited to be a member of this project team.
 
-                            $of Uninvited
+                            $of Moderator
                                 <p>
-                                    Why are you creating an invite for uninvited? That shouldn't even be possible...
+                                    You are invited to be a moderator for this project.
+
                     $nothing
                         <strong>
                             No role selected?  This is almost certainly an error!
 
                 <p>
                     <strong>
-                        Use this link to redeem your private invitation:
+                        Use this link to redeem your invitation:
                         <br>
                         @{link}
             <hr>
         $nothing
             <p>
-                You may invite others to view the Snowdrift site in progress, but
-                <strong> please read all of the instructions here before inviting anyone.
+                Our invitation system generates private codes which users can redeem to gain further roles on the site.
             <p>
-                We are interested in networking with people who may provide valuable feedback,
-                join the official steering committee,
-                and/or help us find and recruit other people for the committee.
-                We are not yet opening to the general public.
-            <p>
-                Please do not invite people who may have a conflict of interest
-                (such as those with a current business interest in other crowdfunding systems or anyone known to be opposed to Free/Libre Open Source Software).
+                Permissions are project-specific, so users can have different roles for different projects.
             <p>
                 To invite others:
             <ul>
@@ -76,12 +54,8 @@
                     After you click "generate", you will be given a link which you can send to the invitee
                 <li>
                     Note: each invitation can only be used once, so you must generate a new link for each person you wish to invite
-            <p>
-                If you aren't sure whether to invite someone,
-                <a href=@{ContactR}>contact us
-                and we can give you guidance or reach out to them ourselves.
 
-        <form method=post action=@{InviteR}>
+        <form method=post action=@{InviteR project_handle}>
             ^{invite_form}
             <input type=submit value="generate invitation">
 
@@ -95,18 +69,23 @@
             no outstanding invites
         $else
             outstanding invitations:
-            <table .table>
+            <table>
                 <tr>
                     <th .text>Created
+                    <th .text>Invited By
                     <th .text>Info
                     <th .text>Role
                     <th .text>Code
                 $forall Entity _ invite <- outstanding_invites
                     <tr>
-                        <td .text>#{age now (inviteCreatedTs invite)} ago
+                        <td .text>#{age now (inviteCreatedTs invite)}&nbsp;ago
+                        $with user_id <- inviteUser invite
+                            <th .text>
+                                <a href="@{UserR user_id}">
+                                    #{format_inviter user_id}
                         <td .text>#{inviteTag invite}
                         <td .text>#{roleAbbrev (inviteRole invite)}
-                        <td .text>@{InvitationR (inviteCode invite)}
+                        <td .text>@{InvitationR project_handle (inviteCode invite)}
 
 <br>
 <div .row>
@@ -115,17 +94,23 @@
             no recently redeemed invites
         $else
             recent redemptions:
-            <table .table>
+            <table>
                 <tr>
                     <th .text>Redeemed
                     <th .text>Redeemed By
+                    <th .text>Invited By
                     <th .text>Info
                     <th .text>Role
                     <th .text>Code
                 $forall Entity _ invite <- redeemed_invites
                     <tr>
-                        <td .text>#{age now (fromMaybe now (inviteRedeemedTs invite))} ago
+                        <td .text>#{age now (fromMaybe now (inviteRedeemedTs invite))}&nbsp;ago
                         <td .text>#{format_user (inviteRedeemedBy invite)}
+                        $with user_id <- inviteUser invite
+                            <th .text>
+                                <a href="@{UserR user_id}">
+                                    #{format_inviter user_id}
+
                         <td .text>#{inviteTag invite}
                         <td .text>#{roleAbbrev (inviteRole invite)}
-                        <td .text>@{InvitationR (inviteCode invite)}
+                        <td .text>@{InvitationR project_handle (inviteCode invite)}

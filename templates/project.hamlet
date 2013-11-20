@@ -8,24 +8,36 @@
         <table>
             <tr>
                 <td>
-                    #{show project_value}
+                    Total&nbsp;of&nbsp;current&nbsp;pledges: #{show project_value}&nbsp;per&nbsp;month
             <tr>
                 <td>
                     <hr>
             <tr>
                 <td>
-                    _{MsgMembers users}
+                    $maybe project_handle <- maybe_project_handle
+                        <a href="@{ProjectPatronsR project_handle}">
+                            _{MsgPatrons users}
+                    $nothing
+                        _{MsgPatrons users}
             <tr>
                 <td>
                     _{MsgShares shares}
             <tr>
                 <td>
-                    #{show share_value}/share
+                    #{show share_value}&nbsp;per&nbsp;share
         <hr>
 
-        <form method=GET action=@{UpdateSharesR project_id}>
-            ^{update_shares}
-            <input type=submit value="enter pledge">
+        $maybe project_handle <- maybe_project_handle
+            <form method=GET action=@{UpdateSharesR project_handle}>
+                ^{update_shares}
+                $if isJust maybe_shares
+                    <input type=submit value="update pledge">
+                $else
+                    <input type=submit value="enter pledge">
+        $nothing
+            <form>
+                ^{update_shares}
+                <button value="enter pledge">
 
     <div .span3 .offset1>
         ^{sidebar}
