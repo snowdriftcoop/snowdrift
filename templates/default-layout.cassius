@@ -243,14 +243,14 @@ q:after
 table 
     box-shadow : 8px 8px 5px #888888
     margin : 2em 0
-    font-size : 0.9em
+    font-size : 0.85em
 
 th
     background : #4477BB
     font-weight : bold
     color : #ffffff
     text-align : center
-    padding : 0.6em 0
+    padding : 0.6em
 
 tr:nth-child(even)
     background : #F2F2F2
