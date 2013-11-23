@@ -116,14 +116,14 @@ Create database user:
 
 Answer prompts accordingly:
 
-* add name snowdrift
+* add name snowdrift_development
 * do not make super user
 * do not allow role to create databases
 * do not allow role to be allowed to create more new roles
 
 Create snowdrift database:
 
-    sudo -u postgres createdb snowdrift
+    sudo -u postgres createdb snowdrift_development
 
 Run postgres psql:
 
@@ -135,13 +135,18 @@ You should see a line that looks like:
 
 Add password to user:
 
-    postgres=# alter user snowdrift with encrypted password 'somepassword';
+    postgres=# alter user snowdrift_development with encrypted password 'somepassword';
 
 Then to add user to database:
 
-    postgres=# grant all privileges on database snowdrift to snowdrift;
+    postgres=# grant all privileges on database snowdrift_development to snowdrift_development;
 
 Edit config/postgresql.yml and update the credentials to match the user you created.
+
+Import development database:
+
+    sudo -u postgres psql snowdrift_development <devDB.sql
+    
 
 Once snowdrift is built, assuming you're using a cabal sandbox and have set your PATH correctly, you can start the server by running:
 
