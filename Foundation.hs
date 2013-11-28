@@ -265,7 +265,7 @@ snowdriftAuthBrowserId =
                 <p>
                     <strong>Mozilla Persona is a secure log-in that
                     doesn't track you the way other systems do.
-                    It works near-seamlessly with gmail or yahoo accounts,
+                    It works near-seamlessly with gmail or yahoo,
                     but any e-mail will work by setting a password and confirming the account.
                 <p>
                     The Sign-in button below works for both new and existing accounts:
