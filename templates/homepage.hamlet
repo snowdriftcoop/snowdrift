@@ -1,27 +1,20 @@
 <div .row>
     <div .span8>
         <p>
-            Imagine a world where everything from art, music, and software to educational resources, journalism, and research
-            is available for everyone to freely access, use, modify, and share.
-        <p>
-            The problem is:
-            <br>
-            If access is free of charge, getting funding is hard&hellip;
-        <p>
-            Snowdrift.coop is the answer!
-            <br>
             <strong>
-                We are building a new
-                <a href="@{WikiR "snowdrift" "about"}"> sustainable patronage system
-                based on community-wide matching of small, regular donations.
-            Our system invites widespread participation &mdash;
-            everyone working together to support the most deserving projects and hold them to the highest
-            standards.
+                Imagine a world where art, music, software, educational resources, journalism, and research
+                are all available for everyone to freely access, use, improve, and share&hellip;
         <p>
-            We are also
-            <strong> non-profit
-            and will be governed as a community-owned
-            <strong> cooperative.
+            That is the vision of a free and open internet, but getting there has been a struggle.
+            <br>
+            If access is free of charge, how can projects get funding?
+        <p>
+            Snowdrift.coop is the answer! We are building a
+            <strong> non-profit, cooperative
+            platform to provide
+            <strong> sustainable funding
+            through our
+            <a href="@{WikiR "snowdrift" "about"}"> community-wide matching patronage system.
         <h2>
             Join us!
         <p>

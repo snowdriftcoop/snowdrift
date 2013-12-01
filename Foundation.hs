@@ -263,12 +263,12 @@ snowdriftAuthBrowserId =
             let parentLogin = apLogin auth toMaster
             [whamlet|
                 <p>
-                    <strong>Mozilla Persona is a secure and private log-in system that requires no new password.
+                    <strong>Mozilla Persona is a secure log-in that
+                    doesn't track you the way other systems do.
+                    It works near-seamlessly with gmail or yahoo,
+                    but any e-mail will work by setting a password and confirming the account.
                 <p>
-                    Persona doesn't track you the way other log-in systems do,
-                    and it works directly with gmail and yahoo accounts or with any e-mail after verification.
-                <p>
-                    The Sign in button below works for both new or existing snowdrift.coop accounts:
+                    The Sign-in button below works for both new and existing accounts:
                 ^{parentLogin}
             |]
      in auth { apLogin = login }
