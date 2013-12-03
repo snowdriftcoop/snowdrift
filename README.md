@@ -66,7 +66,7 @@ Building
 
 Install ghc, cabal, and postgresql, however you do that on your system.
 
-On Debian-based Linux distros, that's:
+On Debian-based GNU/Linux distros, that's:
 
     sudo apt-get install ghc cabal-install haskell-platform postgresql zlib1g-dev libpq-dev happy alex
 
