@@ -69,8 +69,8 @@ Cloning the repository
 
 1. Have or make an account on Gitorious or GitHub
 2. Clone (Gitorious' term) / Fork (GitHub's term) the snowdrift repository to your account
-3. Tell Gitorious/GitHub the public side of your SSH key
-    * If you don't yet have a key, create one with the command "ssh-keygen"
+3. Tell Gitorious/GitHub the public side of your local SSH key
+    * If you don't yet have a key, create one on your local machine with the command "ssh-keygen"
     * The public part is in the .pub file (such as id_rsa.pub)
     * Both sites have further instructions if this isn't clear enough
 4. On your local machine, use the "git clone" command with the Gitorious or Github address for your account
