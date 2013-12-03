@@ -8,13 +8,13 @@ Code is mirrored at [GitHub](https://github.com/dlthomas/snowdrift) and [Gitorio
 Work to do / how to help
 ========================
 
-We have our own in-progress ticketing system along with tickets at GitHub,
-see the [combined ticket list](http://snowdrift.coop/p/snowdrift/t) from both systems.
+Along with [tickets at GitHub](https://github.com/dlthomas/snowdrift/issues),
+we have [our own in-progress ticketing system](http://snowdrift.coop/p/snowdrift/t) which lists all tickets from both systems.
 
 The infrastructure here includes the site's wiki backend,
 but the contents of the wiki are held separately in the site database.
 
-We have volunteer info and discussion forums on the site and a #snowdrift IRC channel on freenode.net
+We have [volunteer info](https://snowdrift.coop/p/snowdrift/w/how-to-help) and discussion forums on the site and a #snowdrift IRC channel on freenode.net
 
 Development guidelines and notes
 ================================
