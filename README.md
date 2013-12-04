@@ -75,10 +75,12 @@ Cloning the repository
     * Both sites have further instructions if this isn't clear enough
 4. On your local machine, use the "git clone" command with the Gitorious or Github address for your account
 
-This will create a directory, download the code, and set things so that "git pull" will update your local machine from your Gitorious or GitHub account,
-and "git push" will update your online account with any commits from your local machine.
+This will create a directory and download the code to it.
+In the future, when in the new directory,
+"git pull" will update your local machine from your Gitorious or GitHub account,
+and "git push" will go the other direction, sending any local commits to Gitorious or GitHub.
 
-After pushing to your account, alert us to your changes with Gitorious' "request merge" or GitHub's "pull request" commands on their websites.
+After pushing to your online account, alert us to the changes with Gitorious' "request merge" or GitHub's "pull request" commands on their websites.
 
 To pull updates from our main code, use
 
