@@ -131,10 +131,17 @@ Install dependencies and build Snowdrift:
 
     cabal install
 
-This will take a long time, but should ultimately tell you it installed Snowdrift.
-(Rebuilding goes much faster with cabal build, but only if dependency information hasn't changed.)
+This will take a *long* time, but should ultimately tell you it installed Snowdrift.
 
-While it goes, create a snowdrift database and user in postgresql.
+*After the initial build, you will not need to go through all of this again unless dependencies have changed.*
+
+To rebuild the site in the future (i.e. to test your changes), use "cabal build"
+
+
+Setting up the database
+-----------------------
+
+*This can be done while building is in progress*
 
 Create database user:
 
@@ -173,6 +180,10 @@ Import development database:
 
     sudo -u postgres psql snowdrift_development <devDB.sql
 
+    
+Running the site
+----------------
+    
 Once snowdrift is built, assuming you're using a cabal sandbox and have set your PATH correctly, you can start the server by running:
 
     Snowdrift Development
@@ -193,6 +204,10 @@ Then, you can start the server with:
 Either method for starting the server will print a bunch of text about creating tables, and then sit waiting for connections.
 
 Access the server by directing your web browser to localhost:3000
+
+
+Using the live test site
+------------------------
 
 You can log into the site via the built-in system with user: admin pass: admin
 
