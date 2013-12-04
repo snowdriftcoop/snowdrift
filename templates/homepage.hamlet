@@ -13,12 +13,13 @@
             <strong> non-profit, cooperative
             platform to provide
             <strong> sustainable funding
-            through our community-wide matching patronage system.
+            through our
+            <strong> community-wide matching patronage system.
         <h2>
             Learn more:
         <ul>
             <li>
-                <a href="@{WikiR "snowdrift" "intro"}"> Simplified infographic introduction
+                <a href="@{WikiR "snowdrift" "intro"}"> Illustrated intro
             <li>
                 <a href="@{WikiR "snowdrift" "about"}"> Longer manifesto and details
         <h2>
