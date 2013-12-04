@@ -192,4 +192,10 @@ Either method for starting the server will print a bunch of text about creating 
 
 Access the server by directing your web browser to localhost:3000.
 
+You can log into the site via the built-in system with user: admin pass: admin
+
+With that user you can create wiki pages by going to localhost:3000/p/snowdrift/w/*pagename*/new
+
+See the documentation on the live site [about the wiki](https://snowdrift.coop/p/snowdrift/w/wiki) and more.
+
 Happy hacking!
