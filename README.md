@@ -115,7 +115,7 @@ Update cabal so you can use the new [sandbox](http://coldwa.st/e/blog/2013-08-20
 
     cabal install Cabal cabal-install
 
-change to your snowdrift directory (if you're not already working there).
+**change to your snowdrift directory (if you're not already working there).**
 
 For isolation in case you have multiple snowdrift checkouts or other Haskell projects, initiate a cabal sandbox:
 
