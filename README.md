@@ -123,7 +123,7 @@ For isolation in case you have multiple snowdrift checkouts or other Haskell pro
 
     cabal sandbox init
 
-Add your sandboxed binaries to your PATH: (For the future, you may also wish to add this to your .bashrc or equivalent.)
+Add your sandboxed binaries to your PATH: (For the future, you may also wish to add this to your .bashrc or equivalent.)  
 *note: replace "snowdrift" in the command with whatever the name of your directory.
 GitHub clones are normally just "snowdrift" but Gitorious clones are "username-snowdrift"*
 
