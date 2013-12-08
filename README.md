@@ -41,7 +41,7 @@ Yesod uses the Haskell programming language alongside its
 * The #yesod and #haskell IRC channels on freenode.net are active and helpful
 * [School of Haskell](https://www.fpcomplete.com/school) is an interactive system that is proprietary but gratis
 
-We also include [Twitter Bootstrap](http://twitter.github.io/bootstrap/index.html) CSS stuff, although we use our own custom CSS for many things.
+We also include [Twitter Bootstrap](http://twitter.github.io/bootstrap/index.html) CSS stuff, although we use our own custom CSS for many things. See the style.md file for more notes on CSS and other design guidelines.
 
 [Firebug](https://getfirebug.com) is a useful tool to explore and test things on the live site
 
