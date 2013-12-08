@@ -36,7 +36,7 @@ The Snowdrift.coop site uses the [Yesod web framework](http://www.yesodweb.com/)
 Yesod uses the Haskell programming language alongside its
 [Shakespearean Templates](http://www.yesodweb.com/book/shakespearean-templates) which generate HTML/CSS/JS using indentation with no need for closing tags or bracketing.
 
-* For learning Haskell, check out the [Haskell Wikibook](https://en.wikibooks.org/wiki/Haskell), which also has links to additional gratis resources. 
+* For learning Haskell, check out the [Haskell Wikibook](https://en.wikibooks.org/wiki/Haskell), which also has links to additional gratis resources.
 * Stack Overflow user postings are FLO (CC-BY-SA), see the tags for [yesod](http://stackoverflow.com/questions/tagged/yesod) and [haskell](http://stackoverflow.com/questions/tagged/yesod)
 * The #yesod and #haskell IRC channels on freenode.net are active and helpful
 * [School of Haskell](https://www.fpcomplete.com/school) is an interactive system that is proprietary but gratis
@@ -54,7 +54,7 @@ For VIM, for example, the config file .vimrc should have these three lines:
 
     set expandtab
     set shiftwidth=4
-    set tabstop=4 
+    set tabstop=4
 
 VIM users should also install [Syntax Highlighting Files for Haskell](https://github.com/pbrisbin/html-template-syntax).
 
@@ -121,7 +121,7 @@ For isolation in case you have multiple snowdrift checkouts or other Haskell pro
 
     cabal sandbox init
 
-Add your sandboxed binaries to your PATH: (For the future, you may also wish to add this to your .bashrc or equivalent.)  
+Add your sandboxed binaries to your PATH: (For the future, you may also wish to add this to your .bashrc or equivalent.)
 *note: replace "snowdrift" in the command with whatever the name of your directory.
 GitHub clones are normally just "snowdrift" but Gitorious clones are "username-snowdrift"*
 
@@ -164,7 +164,7 @@ Run postgres psql:
 
 You should see a line that looks like:
 
-    postgres=# 
+    postgres=#
 
 Add password to user (substitute your chosen passphrase instead of 'somepassphrase':
 
@@ -180,14 +180,14 @@ Import development database:
 
     sudo -u postgres psql snowdrift_development <devDB.sql
 
-    
+
 Running the site
 ----------------
-    
+
 Once snowdrift is built, assuming you're using a cabal sandbox and have set your PATH correctly, you can start the server by running:
 
     Snowdrift Development
-    
+
 If you aren't using a cabal sandbox and/or don't have your PATH set correctly, you can always run the following from the snowdrift source directory:
 
     ./dist/build/Snowdrift/Snowdrift Development
@@ -196,7 +196,7 @@ You may also wish to use the yesod devel command (which will rebuild any changed
 To enable this, first install yesod-bin:
 
     cabal install yesod-bin
-    
+
 Then, you can start the server with:
 
     yesod devel
