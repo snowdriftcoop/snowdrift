@@ -102,6 +102,8 @@ I don't have the list at hand, but they can be picked out of the error
 messages when the below fails for want of them - if you make a list,
 please update this and send a pull request!)
 
+*note: there have been some errors reported with older versions of ghc and the haskell-platform* At this time, we are using GHC 7.6.3 and Haskell Platform 2013.2.0.0 — both are included in the latest Ubuntu, but there are [instructions for building updated GHC on older Ubuntu systems](https://gist.github.com/Dexyne/5791465). We have tested this as working with Ubuntu 12.04 LTS. These instructions or similar should work for other systems as well, but see <http://www.haskell.org/platform/> for more general info for all systems.
+
 Update cabal's package list:
 
     cabal update
@@ -131,7 +133,7 @@ Install dependencies and build Snowdrift:
 
     cabal install
 
-This will take a *long* time, but should ultimately tell you it installed Snowdrift.
+This will take a *long* time but should ultimately tell you it installed Snowdrift.
 
 *After the initial build, you will not need to go through all of this again unless dependencies have changed.*
 
