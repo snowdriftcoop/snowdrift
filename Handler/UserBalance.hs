@@ -13,7 +13,6 @@ import Model.User
 import Widgets.Sidebar
 import Widgets.Time
 
-import Data.Maybe (catMaybes)
 
 lookupParamDefault :: Read a => Text -> a -> Handler a
 lookupParamDefault name def = do
