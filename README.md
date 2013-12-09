@@ -145,6 +145,8 @@ Setting up the database
 
 *This can be done while building is in progress*
 
+Go to the config/ directory within the project directory and make a copy of postgresql.template and name the new file postgresql.yml
+
 Create database user:
 
     sudo -u postgres createuser
