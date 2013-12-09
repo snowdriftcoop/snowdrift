@@ -1,7 +1,7 @@
 $newline never
 $# used by renderComment function
 
-<div .comment :top_level:.top_level :even_depth:.even_depth :odd_depth:.odd_depth>
+<div .comment :unapproved:.unapproved :top_level:.top_level :even_depth:.even_depth :odd_depth:.odd_depth>
     <div>
         <span .comment-head>
             $maybe author_avatar <- userAvatar user
@@ -36,6 +36,11 @@ $# used by renderComment function
     #{renderMarkdown project_handle (commentText comment)}
 
     <div>
+    $if unapproved
+        <span .comment-action>
+            <a href="@{ApproveCommentR project_handle target comment_id}">
+                approve
+
     $if not (maybe_route == Just (DiscussCommentR project_handle target comment_id))
         <span .comment-action>
             <a href="@{DiscussCommentR project_handle target comment_id}">
