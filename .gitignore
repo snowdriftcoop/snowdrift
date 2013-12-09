@@ -1,7 +1,11 @@
 dist/
 static/tmp/
 config/client_session_key.aes
+config/postgresql.yml
 cabal-dev
+.cabal-sandbox/
+.directory
+cabal.sandbox.config
 *.hi
 *.o
 *.chi
