@@ -1,5 +1,5 @@
 <div .row>
-    <div .span8>
+    <div .col-md-8>
         $if null users
             no users to display
         $else
@@ -17,6 +17,6 @@
                         <td>
                             -- TODO
 
-    <div .span3 .offset1>
+    <div .col-md-3 .col-md-offset-1>
         ^{sidebar}
 

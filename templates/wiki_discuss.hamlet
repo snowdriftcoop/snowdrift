@@ -1,7 +1,7 @@
 <div .row>
-    <div .span9>
+    <div .col-md-9>
         <div .row>
-            <div .span3>
+            <div .col-md-3>
                 <a href="@{WikiR project_handle target}"> back to wiki page
         <hr .wikitop>
         <div .row>
@@ -12,5 +12,5 @@
                     ^{comment_form}
                     <input type="submit" name="mode" value="preview">
 
-    <div .span3>
+    <div .col-md-3>
         ^{sidebar}

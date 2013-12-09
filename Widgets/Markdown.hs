@@ -30,7 +30,6 @@ snowdriftMarkdownField = Field
                                 font-size : x-small
                                 padding : 0
                                 margin-top : -0.7em
-                                margin-bottom : -0.4em
                            |]
     , fieldEnctype = UrlEncoded
     }

@@ -1,4 +1,4 @@
-<div #body .span12>
+<div #body .col-md-12>
     $maybe msg <- mmsg
         <div .alert #message>
             #{msg}

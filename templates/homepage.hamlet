@@ -1,5 +1,5 @@
 <div .row>
-    <div .span8>
+    <div .col-md-8>
         <p>
             <strong>
                 Imagine a world where art, music, software, educational resources, journalism, and research
@@ -32,5 +32,5 @@
             We have
             <a href="@{WikiR "snowdrift" "how-to-help"}"> volunteer opportunities
             for everyone, regardless of background.
-    <div .span3 .offset1>
+    <div .col-md-3 .col-md-offset-1>
         ^{sidebar}

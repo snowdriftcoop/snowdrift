@@ -1,7 +1,7 @@
 <div .row>
-    <div .span9>
+    <div .col-md-9>
         <div .row>
-            <div .span3>
+            <div .col-md-3>
                 <a href="@{WikiR project_handle target}"> back to current page
         <hr .wikitop>
         <div .row>
@@ -31,5 +31,5 @@
                         <td colspan="3">
                         <td>
                             <input type="submit" value="diff">
-    <div .span3>
+    <div .col-md-3>
         ^{sidebar}

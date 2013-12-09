@@ -1,5 +1,5 @@
 <div .row>
-    <div .span8>
+    <div .col-md-8>
         <strong>Contact us
         <p>
             If you want a reply, be sure to include some contact info
@@ -9,6 +9,6 @@
             <br>
             <input type=submit value="send">
 
-    <div .span3 .offset1>
+    <div .col-md-3 .col-md-offset-1>
         ^{sidebar}
 

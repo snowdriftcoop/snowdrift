@@ -568,7 +568,7 @@ getWikiNewCommentsR project_handle = do
 
                 [whamlet|$newline never
                     <div .row>
-                        <div .span9>
+                        <div .col-md-9>
                             On #
                             <a href="@{WikiR project_handle target}">
                                 #{target}
@@ -893,7 +893,7 @@ renderPreview form action widget =
     [whamlet|
         <form method="POST" style="padding : 0em; margin : 0em">
             <div .row>
-                <div .span9>
+                <div .col-md-9>
                     <div .alert>
                         This is a preview; your changes have not been saved!
                         You can edit it below.
@@ -902,7 +902,7 @@ renderPreview form action widget =
             ^{widget}
 
             <div .row>
-                <div .span9>
+                <div .col-md-9>
                     <div .alert>
                         This is a preview; your changes have not been saved!
                     <input type=submit name=mode value="preview">

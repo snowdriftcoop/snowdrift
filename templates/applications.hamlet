@@ -1,5 +1,5 @@
 <div .row>
-    <div .span9>
+    <div .col-md-9>
         $if not (null applications)
             <table>
                 $forall Entity application_id application <- applications
@@ -13,5 +13,5 @@
                            $maybe location <- volunteerApplicationLocation application
                                #{location}
 
-    <div .span3>
+    <div .col-md-3>
         ^{sidebar}
