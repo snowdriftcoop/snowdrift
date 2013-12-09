@@ -137,6 +137,9 @@ div#message
 div.row
     padding-bottom : 1em
 
+.well
+    min-height : 40px
+
 figcaption
     font-size : 0.9em
     padding : 0.4em

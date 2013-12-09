@@ -1,5 +1,5 @@
 <div .row>
-    <div .span8>
+    <div .col-md-8>
         $if redeemed
             This code has been redeemed.
         $else
@@ -15,5 +15,5 @@
                 <form method=GET action=@{AuthR LoginR}>
                     <input type=submit value="Log In / Create Account">
     $maybe _ <- maybe_user_id
-        <div .span3 .offset1>
+        <div .col-md-3 .col-md-offset-1>
             ^{sidebar}

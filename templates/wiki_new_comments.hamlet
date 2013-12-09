@@ -1,5 +1,5 @@
 <div .row>
-    <div .span9>
+    <div .col-md-9>
         <div .row>
             ^{rendered_comments}
 
@@ -10,5 +10,5 @@
 
 
 
-    <div .span3>
+    <div .col-md-3>
         ^{sidebar}

@@ -142,7 +142,7 @@ postProjectR project_handle = do
                     let rendered_project = renderProject (Just project_handle) preview_project [] Nothing
                         preview_controls = [whamlet|
                             <div .row>
-                                <div .span9>
+                                <div .col-md-9>
                                     <form method="POST" action="@{ProjectR project_handle}">
                                         ^{hidden_form}
                                         <div .alert>

@@ -125,7 +125,7 @@ library
                  , data-default
                  , aeson
                  , conduit                       >= 1.0
-                 , monad-logger                  >= 0.3
+                 , monad-logger                  >= 0.3        && < 0.3.3
                  , fast-logger                   >= 0.3
                  , time
                  , time-units

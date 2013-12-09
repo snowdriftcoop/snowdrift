@@ -1,5 +1,5 @@
 <div .row>
-    <div .span9>
+    <div .col-md-9>
         <div .row>
             $if null edits
                 no edits
@@ -15,5 +15,5 @@
 
 
 
-    <div .span3>
+    <div .col-md-3>
         ^{sidebar}

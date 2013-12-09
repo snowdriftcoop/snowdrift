@@ -1,7 +1,7 @@
 <div .row>
-    <div .span8>
+    <div .col-md-8>
          <div .row>
-            <div .span8>
+            <div .col-md-8>
                 <p>
                     <em>This page is now outdated.
                     <strong><a href={@WikiR "about"}>Click here to see the updated content</a>
@@ -29,7 +29,7 @@
                     With these elements in place, we hope to bring supporters together in a way that has not been possible with other funding systems.
 
        <div .row>
-            <div .span8>
+            <div .col-md-8>
                 <h4>Contents
                 <ul .toc>
                     ^{toc_entry "intro" "Introduction"}
@@ -42,12 +42,12 @@
                     ^{toc_entry "coop" "Cooperation vs competition: a false dichotomy"}
                     ^{toc_entry "others" "What about fundraising for other purposes?"}
 
-    <div .span3 .offset1>
+    <div .col-md-3 .col-md-offset-1>
         ^{sidebar}
 
 
 <div .row>
-    <div .span12>
+    <div .col-md-12>
         <dl>
             <dt>
                 ^{toc_target "intro" "Introduction"}
@@ -453,11 +453,11 @@
                     <strong>For simplicity, these charts assume only a single share per donor.
 
                 <div .row>
-                    <div .span8 .offset2>
+                    <div .col-md-8 .col-md-offset-2>
                         ^{shareValueChart}
 
                 <div .row>
-                    <div .span8 .offset2>
+                    <div .col-md-8 .col-md-offset-2>
                         ^{projectValueChart}
 
                 <p>
@@ -467,7 +467,7 @@
                     The rest of the matching comes from the same 1/100 of a cent increases from all the other earlier donors combined.
 
                 <div .row>
-                    <div .span8 .offset2>
+                    <div .col-md-8 .col-md-offset-2>
                         ^{donut}
 
                 <p>

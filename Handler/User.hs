@@ -100,7 +100,7 @@ postUserR user_id = do
 
                     let preview_controls = [whamlet|
                         <div .row>
-                            <div .span9>
+                            <div .col-md-9>
                                 <form method="POST" action="@{UserR user_id}">
                                     ^{hidden_form}
                                     <div .alert>

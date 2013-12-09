@@ -1,10 +1,10 @@
 <div .row>
-    <div .span8>
+    <div .col-md-8>
         <form>
             ^{formWidget}
             <input type=submit value="update view">
 
-    <div .span8>
+    <div .col-md-8>
         $if null tickets
             no tickets to display
         $else
@@ -12,6 +12,6 @@
                 $forall issue <- issues
                     ^{issueWidget issue}
 
-    <div .span3 .offset1>
+    <div .col-md-3 .col-md-offset-1>
         ^{sidebar}
 

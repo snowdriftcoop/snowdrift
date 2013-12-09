@@ -1,10 +1,10 @@
 <div .row>
-    <div .span4>
+    <div .col-md-4>
         <h2>
             #{projectName project}
 
         #{description}
-    <div .span4>
+    <div .col-md-4>
         <table>
             <tr>
                 <td>
@@ -39,5 +39,5 @@
                 ^{update_shares}
                 <button value="enter pledge">
 
-    <div .span3 .offset1>
+    <div .col-md-3 .col-md-offset-1>
         ^{sidebar}

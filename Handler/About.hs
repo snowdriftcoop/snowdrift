@@ -171,7 +171,7 @@ donutSharesChart donors_list = do
     toWidget [whamlet|
         <a name="donut">
         <div .row>
-            <div .span5>
+            <div .col-md-5>
                 <figure>
                     <svg viewbox="0 0 20 20">
                         <defs>
@@ -182,12 +182,12 @@ donutSharesChart donors_list = do
                             ^{drawRing Shadow ring}
                             ^{drawRing Foreground ring}
 
-            <div .span3 style="position:relative;height:26em;text-size:0.7em">
+            <div .col-md-3 style="position:relative;height:26em;text-size:0.7em">
                 <div .row style="position:absolute;top:2em">
-                    <div .span3>
+                    <div .col-md-3>
                         Sources of funding increase when the #{list_desc} donors are added to a project (note: rings are not sized proportionally).
                 <div .row style="position:absolute;bottom:0em">
-                    <div .span3>
+                    <div .col-md-3>
                         <table .table .table-bordered>
                             $forall (color, label) <- zip chart_colors legend
                                 <tr>
