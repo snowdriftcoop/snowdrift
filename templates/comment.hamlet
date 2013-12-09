@@ -10,7 +10,7 @@
             <div .col-md-9>
                 <div .row>
                     ^{comment}
-                $if can_edit
+                $if show_reply
                     <div .row>
                         <form action="@{DiscussWikiR project_handle target}" method="POST">
                             ^{comment_form}

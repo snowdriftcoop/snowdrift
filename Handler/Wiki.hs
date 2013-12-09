@@ -39,7 +39,7 @@ getWikiR project_handle target = do
         Entity project_id _ <- getBy404 $ UniqueProjectHandle project_handle
         Entity _ page <- getBy404 $ UniqueWikiTarget project_id target
 
-        -- TODO this should be changed when we add moderation
+        -- TODO this should be changed when we add page moderation
         can_edit <- case maybe_user_id of
             Nothing -> return False
             Just user_id -> (||)
@@ -315,14 +315,26 @@ getDiscussWikiR project_handle target = do
             <$> isProjectAffiliated project_handle user_id
             <*> isProjectAdmin "snowdrift" user_id
 
+    moderator <- runDB $ isProjectModerator project_handle user_id
+
     (roots, rest, users, retraction_map) <- runDB $ do
         roots <- select $ from $ \ comment -> do
-            where_ ( comment ^. CommentPage ==. val page_id &&. isNothing (comment ^. CommentParent) )
+            where_ $ foldl1 (&&.) $ catMaybes
+                [ Just $ comment ^. CommentPage ==. val page_id
+                , Just $ isNothing $ comment ^. CommentParent
+                , if moderator then Nothing else Just $ not_ $ isNothing $ comment ^. CommentModeratedTs
+                ]
+
             orderBy [asc (comment ^. CommentCreatedTs)]
             return comment
 
         rest <- select $ from $ \ comment -> do
-            where_ ( comment ^. CommentPage ==. val page_id &&. not_ (isNothing (comment ^. CommentParent)) )
+            where_ $ foldl1 (&&.) $ catMaybes
+                [ Just $ comment ^. CommentPage ==. val page_id
+                , Just $ not_ $ isNothing $ comment ^. CommentParent
+                , if moderator then Nothing else Just $ not_ $ isNothing $ comment ^. CommentModeratedTs
+                ]
+
             orderBy [asc (comment ^. CommentParent), asc (comment ^. CommentCreatedTs)]
             return comment
 
@@ -350,8 +362,6 @@ getDiscussCommentR project_handle target comment_id = do
     Entity page_id _  <- runDB $ do
         Entity project_id _ <- getBy404 $ UniqueProjectHandle project_handle
         getBy404 $ UniqueWikiTarget project_id target
-
-    let can_edit = True -- TODO userRole viewer >= wikiPageCanEdit page
 
     (root, rest, users, earlier_retractions, retraction_map) <- runDB $ do
         root <- get404 comment_id
@@ -392,7 +402,7 @@ getDiscussCommentR project_handle target comment_id = do
 
     (comment_form, _) <- generateFormPost $ commentForm (Just comment_id) Nothing
 
-    defaultLayout $ renderDiscussComment viewer_id project_handle target can_edit comment_form (Entity comment_id root) rest users earlier_retractions retraction_map
+    defaultLayout $ renderDiscussComment viewer_id project_handle target True comment_form (Entity comment_id root) rest users earlier_retractions retraction_map
 
 
 renderDiscussComment :: UserId -> Text -> Text -> Bool -> Widget
@@ -401,7 +411,7 @@ renderDiscussComment :: UserId -> Text -> Text -> Bool -> Widget
     -> [CommentRetraction]
     -> M.Map CommentId CommentRetraction -> Widget
 
-renderDiscussComment viewer_id project_handle target can_edit comment_form root rest users earlier_retractions retraction_map = do
+renderDiscussComment viewer_id project_handle target show_reply comment_form root rest users earlier_retractions retraction_map = do
     let Node parent children = buildCommentTree root rest
         comment = renderComment viewer_id project_handle target users 1 0 earlier_retractions retraction_map $ Node parent []
         child_comments = mapM_ (renderComment viewer_id project_handle target users 10 0 [] retraction_map) children
@@ -420,6 +430,8 @@ postDiscussWikiR project_handle target = do
     affiliated <- runDB $ (||)
             <$> isProjectAffiliated project_handle user_id
             <*> isProjectAdmin "snowdrift" user_id
+
+    let established = isJust $ userEstablishedTs user
 
     when (not affiliated) $ permissionDenied "you do not have permission to post comments here"
 
@@ -465,7 +477,10 @@ postDiscussWikiR project_handle target = do
 
                 Just x | x == action -> do
                     runDB $ do
-                        comment_id <- insert $ Comment now Nothing Nothing page_id maybe_parent_id user_id text depth
+                        comment_id <- insert $ Comment now
+                            (if established then Just now else Nothing)
+                            (if established then Just user_id else Nothing)
+                            page_id maybe_parent_id user_id text depth
                         
                         let content = T.lines $ (\ (Markdown str) -> str) text
                             tickets = map T.strip $ mapMaybe (T.stripPrefix "ticket:") content
@@ -488,7 +503,7 @@ postDiscussWikiR project_handle target = do
 
                         forM_ ancestors $ \ ancestor_id -> insert $ CommentAncestor comment_id ancestor_id
 
-                    setMessage "comment posted"
+                    setMessage $ if established then "comment posted" else "comment submitted for moderation"
                     redirect $ DiscussWikiR project_handle target
 
                 _ -> error "unrecognized mode"
@@ -768,6 +783,59 @@ postRetractCommentR project_handle target comment_id = do
                 _ -> error "Error: unrecognized mode."
         _ -> error "Error when submitting form."
 
+
+
+getApproveCommentR :: Text -> Text -> CommentId -> Handler Html
+getApproveCommentR project_handle target comment_id = do
+    user_id <- requireAuthId
+
+    comment <- runDB $ get404 comment_id
+    Entity project_id _ <- runDB $ getBy404 $ UniqueProjectHandle project_handle
+    Entity page_id page <- runDB $ getBy404 $ UniqueWikiTarget project_id target
+
+    when (commentPage comment /= page_id) $ error "comment does not match page"
+    when (wikiPageProject page /= project_id) $ error "comment does not match project"
+
+    moderator <- runDB $ isProjectModerator project_handle user_id
+
+    when (not moderator) $ error "you must be a moderator to approve posts"
+
+    defaultLayout [whamlet|
+        <form method="POST">
+            <submit value="approve post">
+    |]
+    
+
+postApproveCommentR :: Text -> Text -> CommentId -> Handler Html
+postApproveCommentR project_handle target comment_id = do
+    user_id <- requireAuthId
+
+    now <- liftIO getCurrentTime
+
+    comment <- runDB $ get404 comment_id
+    Entity project_id _ <- runDB $ getBy404 $ UniqueProjectHandle project_handle
+    Entity page_id page <- runDB $ getBy404 $ UniqueWikiTarget project_id target
+
+    when (commentPage comment /= page_id) $ error "comment does not match page"
+    when (wikiPageProject page /= project_id) $ error "comment does not match project"
+
+    moderator <- runDB $ isProjectModerator project_handle user_id
+
+    when (not moderator) $ error "you must be a moderator to approve posts"
+
+    runDB $ update $ \ c -> do
+        set c
+            [ CommentModeratedTs =. val (Just now)
+            , CommentModeratedBy =. val (Just user_id)
+            ]
+
+        where_ $ c ^. CommentId ==. val comment_id
+
+    setMessage "comment approved"
+
+    redirect $ DiscussCommentR project_handle target comment_id
+
+
 retractForm :: Maybe Markdown -> Form Markdown
 retractForm reason = renderDivs $ areq snowdriftMarkdownField "Retraction reason:" reason
     
@@ -784,6 +852,7 @@ renderComment viewer_id project_handle target users max_depth depth earlier_retr
         Entity user_id user = users M.! commentUser comment
         author_name = userPrintName (Entity user_id user)
         comment_time = renderTime (commentCreatedTs comment)
+        unapproved = not $ isJust $ commentModeratedTs comment
 
         top_level = (commentDepth comment == 0)
         even_depth = not top_level && commentDepth comment `mod` 2 == 1

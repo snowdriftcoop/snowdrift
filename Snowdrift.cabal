@@ -146,7 +146,7 @@ library
                  , process
                  , temporary
                  , regex-tdfa                    >= 1.1 && < 1.2
-                 , github                        < 0.7.2
+                 , github                        < 0.8
 
 
 executable         Snowdrift

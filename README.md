@@ -36,7 +36,7 @@ The Snowdrift.coop site uses the [Yesod web framework](http://www.yesodweb.com/)
 Yesod uses the Haskell programming language alongside its
 [Shakespearean Templates](http://www.yesodweb.com/book/shakespearean-templates) which generate HTML/CSS/JS using indentation with no need for closing tags or bracketing.
 
-* For learning Haskell, check out the [Haskell Wikibook](https://en.wikibooks.org/wiki/Haskell), which also has links to additional gratis resources. 
+* For learning Haskell, check out the [Haskell Wikibook](https://en.wikibooks.org/wiki/Haskell), which also has links to additional gratis resources.
 * Stack Overflow user postings are FLO (CC-BY-SA), see the tags for [yesod](http://stackoverflow.com/questions/tagged/yesod) and [haskell](http://stackoverflow.com/questions/tagged/yesod)
 * The #yesod and #haskell IRC channels on freenode.net are active and helpful
 * [School of Haskell](https://www.fpcomplete.com/school) is an interactive system that is proprietary but gratis
@@ -54,7 +54,7 @@ For VIM, for example, the config file .vimrc should have these three lines:
 
     set expandtab
     set shiftwidth=4
-    set tabstop=4 
+    set tabstop=4
 
 VIM users should also install [Syntax Highlighting Files for Haskell](https://github.com/pbrisbin/html-template-syntax).
 
@@ -75,10 +75,12 @@ Cloning the repository
     * Both sites have further instructions if this isn't clear enough
 4. On your local machine, use the "git clone" command with the Gitorious or Github address for your account
 
-This will create a directory, download the code, and set things so that "git pull" will update your local machine from your Gitorious or GitHub account,
-and "git push" will update your online account with any commits from your local machine.
+This will create a directory and download the code to it.
+In the future, when in the new directory,
+"git pull" will update your local machine from your Gitorious or GitHub account,
+and "git push" will go the other direction, sending any local commits to Gitorious or GitHub.
 
-After pushing to your account, alert us to your changes with Gitorious' "request merge" or GitHub's "pull request" commands on their websites.
+After pushing to your online account, alert us to the changes with Gitorious' "request merge" or GitHub's "pull request" commands on their websites.
 
 To pull updates from our main code, use
 
@@ -100,6 +102,8 @@ I don't have the list at hand, but they can be picked out of the error
 messages when the below fails for want of them - if you make a list,
 please update this and send a pull request!)
 
+*note: there have been some errors reported with older versions of ghc and the haskell-platform* At this time, we are using GHC 7.6.3 and Haskell Platform 2013.2.0.0 — both are included in the latest Ubuntu, but there are [instructions for building updated GHC on older Ubuntu systems](https://gist.github.com/Dexyne/5791465). We have tested this as working with Ubuntu 12.04 LTS. These instructions or similar should work for other systems as well, but see <http://www.haskell.org/platform/> for more general info for all systems.
+
 Update cabal's package list:
 
     cabal update
@@ -113,7 +117,7 @@ Update cabal so you can use the new [sandbox](http://coldwa.st/e/blog/2013-08-20
 
     cabal install Cabal cabal-install
 
-change to your snowdrift directory (if you're not already working there).
+**change to your snowdrift directory (if you're not already working there).**
 
 For isolation in case you have multiple snowdrift checkouts or other Haskell projects, initiate a cabal sandbox:
 
@@ -129,10 +133,17 @@ Install dependencies and build Snowdrift:
 
     cabal install
 
-This will take a long time, but should ultimately tell you it installed Snowdrift.
-(Rebuilding goes much faster with cabal build, but only if dependency information hasn't changed.)
+This will take a *long* time but should ultimately tell you it installed Snowdrift.
 
-While it goes, create a snowdrift database and user in postgresql.
+*After the initial build, you will not need to go through all of this again unless dependencies have changed.*
+
+To rebuild the site in the future (i.e. to test your changes), use "cabal build"
+
+
+Setting up the database
+-----------------------
+
+*This can be done while building is in progress*
 
 Create database user:
 
@@ -155,7 +166,7 @@ Run postgres psql:
 
 You should see a line that looks like:
 
-    postgres=# 
+    postgres=#
 
 Add password to user (substitute your chosen passphrase instead of 'somepassphrase':
 
@@ -171,10 +182,14 @@ Import development database:
 
     sudo -u postgres psql snowdrift_development <devDB.sql
 
+
+Running the site
+----------------
+
 Once snowdrift is built, assuming you're using a cabal sandbox and have set your PATH correctly, you can start the server by running:
 
     Snowdrift Development
-    
+
 If you aren't using a cabal sandbox and/or don't have your PATH set correctly, you can always run the following from the snowdrift source directory:
 
     ./dist/build/Snowdrift/Snowdrift Development
@@ -183,18 +198,22 @@ You may also wish to use the yesod devel command (which will rebuild any changed
 To enable this, first install yesod-bin:
 
     cabal install yesod-bin
-    
+
 Then, you can start the server with:
 
     yesod devel
 
 Either method for starting the server will print a bunch of text about creating tables, and then sit waiting for connections.
 
-Access the server by directing your web browser to localhost:3000.
+Access the server by directing your web browser to localhost:3000
+
+
+Using the live test site
+------------------------
 
 You can log into the site via the built-in system with user: admin pass: admin
 
-With that user you can create wiki pages by going to localhost:3000/p/snowdrift/w/*pagename*/new
+With that user, create wiki pages at localhost:3000/p/snowdrift/w/*pagename*/new
 
 See the documentation on the live site [about the wiki](https://snowdrift.coop/p/snowdrift/w/wiki) and more.
 

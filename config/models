@@ -28,6 +28,8 @@ User
     readApplications UTCTime default=now()
     readComments UTCTime default=now()
     readEdits UTCTime default=now()
+    establishedTs UTCTime Maybe
+    establishedReason Text Maybe
     UniqueUser ident
     UniqueUserAccount account
     deriving Typeable
@@ -48,7 +50,7 @@ ProjectUserRole
     project ProjectId
     user UserId
     role Role
-    UniqueProjectUser project user
+    UniqueProjectUserRole project user role
 
 
 ProjectUpdate
@@ -141,7 +143,7 @@ WikiLastEdit
 Comment
     createdTs UTCTime
     moderatedTs UTCTime Maybe
-    moderatedUser UserId Maybe
+    moderatedBy UserId Maybe
     page WikiPageId
     parent CommentId Maybe
     user UserId
@@ -182,5 +184,10 @@ Build
     bootTime UTCTime
     base Text
     diff Text
+
+ManualEstablishment
+    establishedUser User
+    establishingUser User
+    UniqueManualEstablishment establishedUser
 
  -- This file is used in Model.hs (which is imported by Foundation.hs)
