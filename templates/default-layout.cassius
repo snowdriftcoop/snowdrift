@@ -217,25 +217,14 @@ span.title
     font-style : italic
     text-align : center 
     
+h1, h2, h3, h4, h5, h6
+    font-weight : bold
 
-h1, h2, h3, h4, h5
-    line-height : 1.2em
-    padding-bottom : 0.3em
-
-h2, h3, h4, h5
-    margin-top : 1em
+h2, h3, h4, h5, h6
+    line-height : 2em
 
 h1
-    font-size : xx-large
-
-h2
-    font-size : x-large
-
-h3
-    font-size : large
-
-h4
-    font-size : medium
+    margin-bottom : 0.5em
 
 q:before
     content : '"'
