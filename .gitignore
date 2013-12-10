@@ -6,6 +6,7 @@ cabal-dev
 .cabal-sandbox/
 .directory
 cabal.sandbox.config
+yesod-devel/
 *.hi
 *.o
 *.chi
