@@ -894,7 +894,7 @@ renderPreview form action widget =
         <form method="POST" style="padding : 0em; margin : 0em">
             <div .row>
                 <div .col-md-9>
-                    <div .alert>
+                    <div .alert .alert-danger>
                         This is a preview; your changes have not been saved!
                         You can edit it below.
                     <input type=submit name=mode value="#{action}">
@@ -903,7 +903,7 @@ renderPreview form action widget =
 
             <div .row>
                 <div .col-md-9>
-                    <div .alert>
+                    <div .alert .alert-danger>
                         This is a preview; your changes have not been saved!
                     <input type=submit name=mode value="preview">
                     <input type=submit name=mode value="#{action}">

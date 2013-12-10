@@ -103,7 +103,7 @@ postUserR user_id = do
                             <div .col-md-9>
                                 <form method="POST" action="@{UserR user_id}">
                                     ^{hidden_form}
-                                    <div .alert>
+                                    <div .alert .alert-danger>
                                         This is a preview; your changes have not been saved!
                                     <script>
                                         document.write('<input type="submit" value="edit" onclick="history.go(-1);return false;" />')

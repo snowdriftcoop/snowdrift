@@ -145,7 +145,7 @@ postProjectR project_handle = do
                                 <div .col-md-9>
                                     <form method="POST" action="@{ProjectR project_handle}">
                                         ^{hidden_form}
-                                        <div .alert>
+                                        <div .alert .alert-danger>
                                             This is a preview; your changes are not yet saved!
                                         <script>
                                             document.write('<input type="submit" value="edit" onclick="history.go(-1);return false;" />')
