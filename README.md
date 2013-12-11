@@ -41,7 +41,7 @@ Yesod uses the Haskell programming language alongside its
 * The #yesod and #haskell IRC channels on freenode.net are active and helpful
 * [School of Haskell](https://www.fpcomplete.com/school) is an interactive system that is proprietary but gratis
 
-We also include [Twitter Bootstrap](http://twitter.github.io/bootstrap/index.html) CSS stuff, although we use our own custom CSS for many things.
+Our front-end design uses [Twitter Bootstrap](http://getbootstrap.com/) for layout and styles, although there are several cases where we use our own custom CSS instead. See the style.md file for more notes on CSS and other design guidelines.
 
 [Firebug](https://getfirebug.com) is a useful tool to explore and test things on the live site
 
@@ -123,7 +123,7 @@ For isolation in case you have multiple snowdrift checkouts or other Haskell pro
 
     cabal sandbox init
 
-Add your sandboxed binaries to your PATH: (For the future, you may also wish to add this to your .bashrc or equivalent.)
+Add your sandboxed binaries to your PATH: (For the future, you may also wish to add this to your .bashrc or equivalent.)  
 *note: replace "snowdrift" in the command with whatever the name of your directory.
 GitHub clones are normally just "snowdrift" but Gitorious clones are "username-snowdrift"*
 
@@ -144,6 +144,8 @@ Setting up the database
 -----------------------
 
 *This can be done while building is in progress*
+
+Go to the config/ directory within the project directory and make a copy of postgresql.template and name the new file postgresql.yml
 
 Create database user:
 

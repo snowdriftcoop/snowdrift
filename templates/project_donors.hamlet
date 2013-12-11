@@ -1,12 +1,12 @@
 <div .row>
-    <div .span8>
+    <div .col-md-8>
         <div .row>
-            <div .span4>
+            <div .col-md-4>
                 <h2>
                     #{projectName project}
 
         <div .row>
-            <div .span8>
+            <div .col-md-8>
                 $if null pledges
                     no patrons yet
                 $else
@@ -19,5 +19,5 @@
                                 <td>
                                     #{show (pledgeShares (entityVal pledge))}&nbsp;shares
 
-    <div .span3 .offset1>
+    <div .col-md-3 .col-md-offset-1>
         ^{sidebar}

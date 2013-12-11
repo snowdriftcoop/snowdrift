@@ -54,7 +54,7 @@ $newline never
               var logo = document.createElement("img");
 
               logo.id = "logo";
-              logo.className = "span10 offset1";
+              logo.className = "col-md-10 col-md-offset-1";
 
               if(Modernizr.svg) {
                   logo.src = "@{StaticR img_logo_svg}";
@@ -70,19 +70,19 @@ $newline never
                 <a href="@{HomeR}">
                     <div #head .row>
                         <noscript>
-                            <img #logo .span10 .offset1 src=@{StaticR img_logo_png} alt="Snowdrift.coop: clearing the path to a Free/Libre/Open World">
+                            <img #logo .col-md-10 .col-md-offset-1 src=@{StaticR img_logo_png} alt="Snowdrift.coop: clearing the path to a Free/Libre/Open World">
                         <script>
                             fixup_logo()
                     <div .row>
-                        <div .note .span2 .offset10>
+                        <div .note .col-md-2 .col-md-offset-10>
                             a work in progress
             <div id="main" role="main">
               ^{pageBody pc}
             <footer>
                 <div .row>
-                    <div .span3>
+                    <div .col-md-3>
                         &copy; #{extraCopyright $ appExtra $ settings master}
-                    <div .span3>
+                    <div .col-md-3>
                         Released&nbsp;under&nbsp;
                         <a title="Affero GPL version 3.0 or newer" href="https://www.gnu.org/licenses/agpl">
                             AGPLv3+
@@ -90,9 +90,9 @@ $newline never
                         <a href="https://creativecommons.org/licenses/by-sa/4.0">
                             CC&nbsp;BY-SA
 
-                    <div .span3>
+                    <div .col-md-3>
                         <a href="/license/javascript" rel="jslicense">JavaScript licenses
-                    <div .span3>
+                    <div .col-md-3>
                         <a href="#{extraSourceRepo $ appExtra $ settings master}">Check out the source!
 
         $maybe analytics <- extraAnalytics $ appExtra $ settings master

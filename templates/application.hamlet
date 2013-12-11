@@ -1,6 +1,6 @@
 
 <div .row>
-    <div .span9>
+    <div .col-md-9>
         <table>
             <tr>
                 <td>
@@ -63,5 +63,5 @@
                     <td>
                         #{comments}
 
-    <div .span3>
+    <div .col-md-3>
         ^{sidebar}

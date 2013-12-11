@@ -1,8 +1,8 @@
 <div .row>
-    <div .span8>
+    <div .col-md-8>
         <form method=POST action=@{WikiR project_handle target}>
             ^{wiki_form}
             <input type=submit name=mode value=preview>
 
-    <div .span3 .offset1>
+    <div .col-md-3 .col-md-offset-1>
         ^{sidebar}

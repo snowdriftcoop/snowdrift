@@ -1,17 +1,17 @@
 <div .row>
-    <div .span9>
+    <div .col-md-9>
         $if not (null messages)
             $forall Entity _ message <- messages
                 <div .row>
-                    <div .span3 .well .well-small>
+                    <div .col-md-3 .well .well-sm>
                         <div .row>
-                            <div .span3>
+                            <div .col-md-3>
                                 $maybe from <- messageFrom message
                                     from #{getUserName from}
                                 $nothing
                                     from unregistered user
                         <div .row>
-                            <div .span3>
+                            <div .col-md-3>
                                 $maybe to <- messageTo message
                                     to #{getUserName to}
                                 $nothing
@@ -20,8 +20,8 @@
                             <div .span3>
                                 ^{renderTime (messageCreatedTs message)}
 
-                    <div .span5>
+                    <div .col-md-5>
                         #{messageContent message}
 
-    <div .span3>
+    <div .col-md-3>
         ^{sidebar}

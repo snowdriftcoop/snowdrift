@@ -1,5 +1,5 @@
 <div .row>
-    <div .span8>
+    <div .col-md-8>
         <h1>Summary of Markdown syntax
         <p>
             Markdown is a simple text-formatting system.
@@ -111,5 +111,5 @@
         <p>
             <strong> \
             backslash before characters makes them show normally if they would otherwise be markdown commands
-    <div .span3>
+    <div .col-md-3>
         ^{sidebar}

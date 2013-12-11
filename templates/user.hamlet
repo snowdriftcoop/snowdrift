@@ -1,7 +1,7 @@
 <div .row>
-    <div .span4>
+    <div .col-md-4>
         <div .row>
-            <div .span4>
+            <div .col-md-4>
                 <h1>
                     #{userPrintName user_entity}
 
@@ -10,28 +10,30 @@
 
         $maybe nick <- userIrcNick user
             <div .row>
-                <div .span4>
+                <div .col-md-4>
                     #{nick} on <a href="https://snowdrift.coop/p/snowdrift/w/irc">irc.freenode.net</a>
 
         $if Just user_id == viewer_id
             <a href="@{EditUserR user_id}">
                 edit profile
 
-    <div .span5>
+    <div .col-md-5>
         $maybe blurb <- userBlurb user
             #{renderMarkdown project_handle blurb}
         $nothing
             &nbsp;
 
-    <div .span3>
+    <div .col-md-3>
         ^{sidebar}
 
 <div .row>
     <h4>Personal Statement
-    <div .span6 .well .well-small .scroll .capped>
-        $maybe statement <- userStatement user
-            #{renderMarkdown project_handle statement}
+    <div .col-md-6>
+        <div .well .well-sm .scroll .capped>
+            $maybe statement <- userStatement user
+                #{renderMarkdown project_handle statement}
 
-    <div .span5 .well .well-small>
-        ^{project_pledges user_id}
+    <div .col-md-5>
+        <div .well .well-sm>
+            ^{project_pledges user_id}
 

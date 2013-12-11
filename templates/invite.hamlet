@@ -1,5 +1,5 @@
 <div .row>
-    <div .span8>
+    <div .col-md-8>
         $maybe link <- maybe_link
             <p>
                 Your invitation code has been generated.
@@ -59,12 +59,12 @@
             ^{invite_form}
             <input type=submit value="generate invitation">
 
-    <div .span3 .offset1>
+    <div .col-md-3 .col-md-offset-1>
         ^{sidebar}
 
 <br>
 <div .row>
-    <div .span11>
+    <div .col-md-11>
         $if null outstanding_invites
             no outstanding invites
         $else
@@ -89,7 +89,7 @@
 
 <br>
 <div .row>
-    <div .span11>
+    <div .col-md-11>
         $if null redeemed_invites
             no recently redeemed invites
         $else
