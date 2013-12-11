@@ -15,9 +15,9 @@ import Widgets.Sidebar
 
 
 inviteForm :: Form (Text, Role)
-inviteForm = renderBootstrap $ (,)
-    <$> areq textField "About this invitation:" Nothing
-    <*> areq roleField "Type of Invite:" (Just TeamMember)
+inviteForm = renderBootstrap3 $ (,)
+    <$> areq' textField "About this invitation:" Nothing
+    <*> areq' roleField "Type of Invite:" (Just TeamMember)
 
 getInviteR :: Text -> Handler Html
 getInviteR project_handle = do

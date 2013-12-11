@@ -20,13 +20,15 @@ hiddenMarkdown Nothing = fmap (fmap Markdown) $ aopt hiddenField "" Nothing
 hiddenMarkdown (Just (Markdown str)) = fmap (fmap Markdown) $ aopt hiddenField "" $ Just $ Just str
 
 editUserForm :: User -> Form UserUpdate
-editUserForm user = renderDivs $
+editUserForm user = renderBootstrap3 $
     UserUpdate
-        <$> aopt textField "Public Name" (Just $ userName user)
-        <*> aopt textField "Avatar (link)" (Just $ userAvatar user)
-        <*> aopt textField "IRC Nick (irc.freenode.net)" (Just $ userIrcNick user)
-        <*> aopt snowdriftMarkdownField "Blurb (used on listings of many people)" (Just $ userBlurb user)
-        <*> aopt snowdriftMarkdownField "Personal Statement (visible only on this page)" (Just $ userStatement user)
+        <$> aopt' textField "Public Name" (Just $ userName user)
+        <*> aopt' textField "Avatar (link)" (Just $ userAvatar user)
+        <*> aopt' textField "IRC Nick (irc.freenode.net)" (Just $ userIrcNick user)
+        <*> aopt' snowdriftMarkdownField "Blurb (used on listings of many people)" (Just $ userBlurb user)
+        <*> aopt' snowdriftMarkdownField "Personal Statement (visible only on this page)" (Just $ userStatement user)
+    where
+
 
 previewUserForm :: User -> Form UserUpdate
 previewUserForm user = renderDivs $

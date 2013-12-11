@@ -165,7 +165,7 @@ postWikiR project_handle target = do
 
 
 editWikiPermissionsForm :: PermissionLevel -> Form PermissionLevel
-editWikiPermissionsForm level = renderDivs $ areq permissionLevelField "Permission Level" (Just level)
+editWikiPermissionsForm level = renderDivs $ areq' permissionLevelField "Permission Level" (Just level)
 
 getEditWikiPermissionsR :: Text -> Text -> Handler Html
 getEditWikiPermissionsR project_handle target = do
@@ -837,7 +837,7 @@ postApproveCommentR project_handle target comment_id = do
 
 
 retractForm :: Maybe Markdown -> Form Markdown
-retractForm reason = renderDivs $ areq snowdriftMarkdownField "Retraction reason:" reason
+retractForm reason = renderDivs $ areq' snowdriftMarkdownField "Retraction reason:" reason
     
 
 renderComment :: UserId -> Text -> Text -> M.Map UserId (Entity User) -> Int -> Int
@@ -871,22 +871,22 @@ countReplies = sum . map (F.sum . fmap (const 1))
 editWikiForm :: WikiEditId -> Markdown -> Maybe Text -> Form (WikiEditId, Markdown, Maybe Text)
 editWikiForm last_edit_id content comment = renderDivs $ (,,)
         <$> areq hiddenField "" (Just last_edit_id)
-        <*> areq snowdriftMarkdownField "Page Content" (Just content)
-        <*> aopt textField "Comment" (Just comment)
+        <*> areq' snowdriftMarkdownField "Page Content" (Just content)
+        <*> aopt' textField "Comment" (Just comment)
 
 
 newWikiForm :: Maybe Markdown -> Form Markdown
-newWikiForm content = renderDivs $ areq snowdriftMarkdownField "Page Content" content
+newWikiForm content = renderDivs $ areq' snowdriftMarkdownField "Page Content" content
 
 
 disabledCommentForm :: Form Markdown
-disabledCommentForm = renderDivs $ areq snowdriftMarkdownField ("Reply" { fsAttrs = [("disabled","")] }) Nothing
+disabledCommentForm = renderDivs $ areq snowdriftMarkdownField ("Reply" { fsAttrs = [("disabled",""), ("class","form-control")] }) Nothing
 
 commentForm :: Maybe CommentId -> Maybe Markdown -> Form (Maybe CommentId, Markdown)
 commentForm parent content = renderDivs
     $ (,)
         <$> aopt hiddenField "" (Just parent)
-        <*> areq snowdriftMarkdownField (if parent == Nothing then "Comment" else "Reply") content
+        <*> areq' snowdriftMarkdownField (if parent == Nothing then "Comment" else "Reply") content
 
 renderPreview :: Widget -> Text -> Widget -> Widget
 renderPreview form action widget =

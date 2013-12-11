@@ -6,17 +6,17 @@ import Widgets.Sidebar
 
 
 volunteerForm :: UTCTime -> ProjectId -> [Entity Interest] -> Entity User -> Form (VolunteerApplication, [InterestId])
-volunteerForm now project_id interests (Entity user_id user) = renderBootstrap $
+volunteerForm now project_id interests (Entity user_id user) = renderBootstrap3 $
     (\ name email contact website location experience interest_ids other ->
         (VolunteerApplication now project_id user_id name email contact website location experience other, interest_ids)
-    )   <$> areq textField "Name or Internet Handle:" Nothing
-        <*> areq emailField "E-mail:" (Just . userIdent $ user)
-        <*> aopt textField "Other contact info (phone, IRC handle, chat ID, etc):" Nothing
-        <*> aopt textField "Website URL:" Nothing
-        <*> aopt textField "Location:" Nothing
-        <*> aopt textareaField "Relevant work/training/volunteer experience:" Nothing
-        <*> areq (multiSelectFieldList $ (interestDescription . entityVal &&& entityKey) <$> interests) "Areas of interest (use ctrl to select multiple):" Nothing
-        <*> aopt textareaField "Anything else you'd like us to know:" Nothing 
+    )   <$> areq' textField "Name or Internet Handle:" Nothing
+        <*> areq' emailField "E-mail:" (Just . userIdent $ user)
+        <*> aopt' textField "Other contact info (phone, IRC handle, chat ID, etc):" Nothing
+        <*> aopt' textField "Website URL:" Nothing
+        <*> aopt' textField "Location:" Nothing
+        <*> aopt' textareaField "Relevant work/training/volunteer experience:" Nothing
+        <*> areq' (multiSelectFieldList $ (interestDescription . entityVal &&& entityKey) <$> interests) "Areas of interest (use ctrl to select multiple):" Nothing
+        <*> aopt' textareaField "Anything else you'd like us to know:" Nothing 
    where
         source = (\ a -> zip a a) $ ["Article", "Weblink", "Conference", "Search engine", "Personal recommendation"]
 
