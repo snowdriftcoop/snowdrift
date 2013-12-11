@@ -433,8 +433,6 @@ postDiscussWikiR project_handle target = do
 
     let established = isJust $ userEstablishedTs user
 
-    when (not affiliated) $ permissionDenied "you do not have permission to post comments here"
-
     now <- liftIO getCurrentTime
 
     ((result, _), _) <- runFormPost $ commentForm Nothing Nothing
@@ -472,6 +470,7 @@ postDiscussWikiR project_handle target = do
                     let comment = Entity (Key $ PersistInt64 0) $ Comment now Nothing Nothing page_id maybe_parent_id user_id text depth
                         user_map = M.singleton user_id $ Entity user_id user
                         rendered_comment = renderDiscussComment user_id project_handle target False (return ()) comment [] user_map earlier_retractions M.empty
+
                     defaultLayout $ renderPreview form action rendered_comment
 
 
