@@ -371,10 +371,9 @@ getDiscussCommentR project_handle target comment_id = do
         subtree <- select $ from $ \ comment -> do
             where_ ( comment ^. CommentAncestorAncestor ==. val comment_id )
             return comment
-    
+
         rest <- select $ from $ \ comment -> do
             where_ ( comment ^. CommentPage ==. val page_id
-                    &&. isNothing (comment ^. CommentParent)
                     &&. comment ^. CommentId >. val comment_id
                     &&. comment ^. CommentId `in_` valList (map (commentAncestorComment . entityVal) subtree))
             orderBy [asc (comment ^. CommentParent), asc (comment ^. CommentCreatedTs)]
@@ -426,10 +425,6 @@ postDiscussWikiR project_handle target = do
     Entity page_id _ <- runDB $ do
         Entity project_id _ <- getBy404 $ UniqueProjectHandle project_handle
         getBy404 $ UniqueWikiTarget project_id target
-
-    affiliated <- runDB $ (||)
-            <$> isProjectAffiliated project_handle user_id
-            <*> isProjectAdmin "snowdrift" user_id
 
     let established = isJust $ userEstablishedTs user
 
