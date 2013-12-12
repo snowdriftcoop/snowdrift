@@ -349,7 +349,7 @@ getDiscussWikiR project_handle target = do
         return (roots, rest, users, retraction_map)
 
     let comments = forM_ roots $ \ root ->
-            renderComment user_id project_handle target users 10 0 [] retraction_map $ buildCommentTree root rest
+            renderComment user_id project_handle target users 10 0 [] retraction_map True $ buildCommentTree root rest
 
     (comment_form, _) <- generateFormPost $ commentForm Nothing Nothing
 
@@ -401,19 +401,20 @@ getDiscussCommentR project_handle target comment_id = do
 
     (comment_form, _) <- generateFormPost $ commentForm (Just comment_id) Nothing
 
-    defaultLayout $ renderDiscussComment viewer_id project_handle target True comment_form (Entity comment_id root) rest users earlier_retractions retraction_map
+    defaultLayout $ renderDiscussComment viewer_id project_handle target True comment_form (Entity comment_id root) rest users earlier_retractions retraction_map True
 
 
 renderDiscussComment :: UserId -> Text -> Text -> Bool -> Widget
     -> Entity Comment -> [Entity Comment]
     -> M.Map UserId (Entity User)
     -> [CommentRetraction]
-    -> M.Map CommentId CommentRetraction -> Widget
+    -> M.Map CommentId CommentRetraction
+    -> Bool -> Widget
 
-renderDiscussComment viewer_id project_handle target show_reply comment_form root rest users earlier_retractions retraction_map = do
+renderDiscussComment viewer_id project_handle target show_reply comment_form root rest users earlier_retractions retraction_map show_actions = do
     let Node parent children = buildCommentTree root rest
-        comment = renderComment viewer_id project_handle target users 1 0 earlier_retractions retraction_map $ Node parent []
-        child_comments = mapM_ (renderComment viewer_id project_handle target users 10 0 [] retraction_map) children
+        comment = renderComment viewer_id project_handle target users 1 0 earlier_retractions retraction_map show_actions $ Node parent []
+        child_comments = mapM_ (renderComment viewer_id project_handle target users 10 0 [] retraction_map show_actions) children
 
     $(widgetFile "comment")
 
@@ -464,7 +465,7 @@ postDiscussWikiR project_handle target = do
 
                     let comment = Entity (Key $ PersistInt64 0) $ Comment now Nothing Nothing page_id maybe_parent_id user_id text depth
                         user_map = M.singleton user_id $ Entity user_id user
-                        rendered_comment = renderDiscussComment user_id project_handle target False (return ()) comment [] user_map earlier_retractions M.empty
+                        rendered_comment = renderDiscussComment user_id project_handle target False (return ()) comment [] user_map earlier_retractions M.empty False
 
                     defaultLayout $ renderPreview form action rendered_comment
 
@@ -558,7 +559,7 @@ getWikiNewCommentsR project_handle = do
                         return comment_retraction
 
                 let target = wikiPageTarget $ entityVal $ pages M.! commentPage comment
-                    rendered_comment = renderComment viewer_id project_handle target users 1 0 earlier_retractions retraction_map $ Node (Entity comment_id comment) []
+                    rendered_comment = renderComment viewer_id project_handle target users 1 0 earlier_retractions retraction_map True $ Node (Entity comment_id comment) []
 
                 [whamlet|$newline never
                     <div .row>
@@ -725,7 +726,7 @@ getRetractCommentR project_handle target comment_id = do
 
 
     (retract_form, _) <- generateFormPost $ retractForm Nothing
-    let rendered_comment = renderDiscussComment user_id project_handle target False (return ()) (Entity comment_id comment) [] (M.singleton user_id $ Entity user_id user) earlier_retractions M.empty
+    let rendered_comment = renderDiscussComment user_id project_handle target False (return ()) (Entity comment_id comment) [] (M.singleton user_id $ Entity user_id user) earlier_retractions M.empty False
 
     defaultLayout $ [whamlet|
         ^{rendered_comment}
@@ -764,8 +765,11 @@ postRetractCommentR project_handle target comment_id = do
                     (form, _) <- generateFormPost $ retractForm (Just reason)
                     let soon = UTCTime (ModifiedJulianDay 0) 0
                         retraction = CommentRetraction soon reason comment_id
-                        
-                    defaultLayout $ renderPreview form action $ renderDiscussComment user_id project_handle target False (return ()) (Entity comment_id comment) [] (M.singleton user_id $ Entity user_id user) earlier_retractions $ M.singleton comment_id retraction
+                        comment_entity = Entity comment_id comment
+                        users = M.singleton user_id $ Entity user_id user
+                        retractions = M.singleton comment_id retraction
+
+                    defaultLayout $ renderPreview form action $ renderDiscussComment user_id project_handle target False (return ()) comment_entity [] users earlier_retractions retractions False
 
 
                 Just a | a == action -> do
@@ -835,9 +839,9 @@ retractForm reason = renderDivs $ areq snowdriftMarkdownField "Retraction reason
     
 
 renderComment :: UserId -> Text -> Text -> M.Map UserId (Entity User) -> Int -> Int
-    -> [CommentRetraction] -> M.Map CommentId CommentRetraction -> Tree (Entity Comment) -> Widget
+    -> [CommentRetraction] -> M.Map CommentId CommentRetraction -> Bool -> Tree (Entity Comment) -> Widget
 
-renderComment viewer_id project_handle target users max_depth depth earlier_retractions retraction_map tree = do
+renderComment viewer_id project_handle target users max_depth depth earlier_retractions retraction_map show_actions tree = do
     maybe_route <- handlerToWidget getCurrentRoute
 
     let Entity comment_id comment = rootLabel tree
