@@ -75,9 +75,9 @@ defaultOrder :: Orderable -> [Double]
 defaultOrder = const [0]
 
 viewForm :: Form (Filterable -> Bool, Orderable -> [Double])
-viewForm = renderDivs $ (,)
-    <$> (either (const defaultFilter) id . parseFilterExpression . fromMaybe "" <$> aopt textField "filter" Nothing)
-    <*> (either (const defaultOrder) id . parseOrderExpression . fromMaybe "" <$> aopt textField "sort" Nothing)
+viewForm = renderBootstrap3 $ (,)
+    <$> (either (const defaultFilter) id . parseFilterExpression . fromMaybe "" <$> aopt' textField "filter" Nothing)
+    <*> (either (const defaultOrder) id . parseOrderExpression . fromMaybe "" <$> aopt' textField "sort" Nothing)
 
 
 getTicketsR :: Text -> Handler Html

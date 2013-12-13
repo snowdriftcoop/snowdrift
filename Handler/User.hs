@@ -31,7 +31,7 @@ editUserForm user = renderBootstrap3 $
 
 
 previewUserForm :: User -> Form UserUpdate
-previewUserForm user = renderDivs $
+previewUserForm user = renderBootstrap3 $
     UserUpdate
         <$> aopt hiddenField "" (Just $ userName user)
         <*> aopt hiddenField "" (Just $ userAvatar user)

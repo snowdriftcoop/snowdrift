@@ -8,6 +8,7 @@ import           Prelude              as Import hiding (head, init, last,
 import           Yesod                as Import hiding (Route (..), (||.), (==.), (!=.), (<.), (<=.), (>.), (>=.), (=.), (+=.), (-=.), (*=.), (/=.), selectSource, delete, update, count, Value)
 import           Yesod.Auth           as Import
 import           Yesod.Markdown       as Import (Markdown)
+import qualified Text.Blaze.Html.Renderer.Text (renderHtml)
 
 import           Control.Arrow        as Import ((&&&), first, second)
 
@@ -16,6 +17,7 @@ import qualified Database.Esqueleto
 
 import           Control.Applicative  as Import (pure, (<$>), (<*>))
 import           Data.Text            as Import (Text)
+import qualified Data.Text.Lazy       as TL
 
 import           Data.Function        as Import (on)
 
@@ -158,7 +160,8 @@ renderBootstrap3 aform fragment = do
                 \#{fragment}
                 $forall view <- views
                     <div .form-group :fvRequired view:.required :not $ fvRequired view:.optional :has $ fvErrors view:.error>
-                        <label for=#{fvId view}>#{fvLabel view}
+                        $if not ( TL.null ( Text.Blaze.Html.Renderer.Text.renderHtml ( fvLabel view )))
+                            <label for=#{fvId view}>#{fvLabel view}
                         ^{fvInput view}
                         $maybe tt <- fvTooltip view
                             <span .help-block>#{tt}

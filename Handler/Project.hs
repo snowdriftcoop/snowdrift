@@ -84,14 +84,14 @@ data UpdateProject = UpdateProject { updateProjectName :: Text, updateProjectDes
 
 editProjectForm :: Maybe (Project, [Text]) -> Form UpdateProject
 editProjectForm project =
-    renderDivs $ UpdateProject
+    renderBootstrap3 $ UpdateProject
         <$> areq' textField "Project Name" (projectName . fst <$> project)
         <*> areq' snowdriftMarkdownField "Description" (projectDescription . fst <$> project)
         <*> (map T.strip . T.splitOn "," <$> areq' textField "Tags" (T.intercalate ", " . snd <$> project))
 
 previewProjectForm :: Maybe (Project, [Text]) -> Form UpdateProject
 previewProjectForm project =
-    renderDivs $ UpdateProject
+    renderBootstrap3 $ UpdateProject
         <$> areq hiddenField "" (projectName . fst <$> project)
         <*> (Markdown <$> areq hiddenField "" ((\ (Markdown str) -> str) . projectDescription . fst <$> project))
         <*> (map T.strip . T.splitOn "," <$> areq hiddenField "" (T.intercalate ", " . snd <$> project))

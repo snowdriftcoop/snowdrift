@@ -52,6 +52,9 @@ textarea
     width : 40em
     height : 14em
 
+.markdown_wrapper textarea
+    min-height : 14em
+
 a
     color : #74BBFB
 

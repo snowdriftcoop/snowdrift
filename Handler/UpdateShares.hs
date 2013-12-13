@@ -10,7 +10,7 @@ import Model.Project
 import Widgets.Sidebar
 
 confirmForm :: Int64 -> Form SharesPurchaseOrder
-confirmForm shares = renderDivs $ SharesPurchaseOrder <$> areq hiddenField "" (Just shares)
+confirmForm shares = renderBootstrap3 $ SharesPurchaseOrder <$> areq' hiddenField "" (Just shares)
 
 getUpdateSharesR :: Text -> Handler Html
 getUpdateSharesR project_handle = do
