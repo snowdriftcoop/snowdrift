@@ -515,8 +515,12 @@ getWikiNewCommentsR project_handle = do
 
     now <- liftIO getCurrentTime
 
+    Entity project_id project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
+
     (comments, pages, users, retraction_map) <- runDB $ do
-        unfiltered_pages :: [Entity WikiPage] <- select $ from $ \ page -> return page
+        unfiltered_pages <- select $ from $ \ page -> do
+            where_ $ page ^. WikiPageProject ==. val project_id
+            return page
 
         let pages = M.fromList $ map (entityKey &&& id) $ {- TODO filter ((userRole viewer >=) . wikiPageCanViewMeta . entityVal) -} unfiltered_pages
 
@@ -660,8 +664,14 @@ getWikiNewEditsR project_handle = do
     maybe_from <- fmap (Key . PersistInt64 . read . T.unpack) <$> lookupGetParam "from"
 
     now <- liftIO getCurrentTime
+
+    Entity project_id project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
+
     (edits, pages, users) :: ([Entity WikiEdit], M.Map WikiPageId (Entity WikiPage), M.Map UserId (Entity User)) <- runDB $ do
-        pages <- fmap (M.fromList . map (entityKey &&& id)) $ select $ from $ \ page -> return page
+        pages <- fmap (M.fromList . map (entityKey &&& id)) $ select $ from $ \ page -> do
+            where_ $ page ^. WikiPageProject ==. val project_id
+            return page
+
         edits <- select $ from $ \ edit -> do
             where_ $ case maybe_from of
                 Nothing -> ( edit ^. WikiEditPage `in_` valList (M.keys pages) )
