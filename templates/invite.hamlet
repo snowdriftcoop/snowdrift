@@ -3,18 +3,13 @@
         $maybe link <- maybe_link
             <p>
                 Your invitation code has been generated.
+                The code adds new role to an already existing snowdrift.coop account.
             <p>
-                <strong>Send the invite below to the invitee along with a personal note.
+                <strong>Send the code below to the invitee along with a personal note.
+                <br>
                 <em>
                     Note: each code can only be used once.
                     You must generate a new code for each invitation.
-            <blockquote>
-                Snowdrift.coop is a new non-profit cooperative system to support free/libre/open software, cultural works (art, music, etc.), science, educational resources, and more&hellip;
-                The invite below adds new access permissions.
-                If you do not have an account yet, please
-                <a href="https://snowdrift.coop/auth/login">
-                    create a new account
-                before redeeming the code here.
                 <p>
                     $maybe invite_role <- maybe_invite_role
                         $case invite_role
@@ -80,7 +75,7 @@
                     <tr>
                         <td .text>#{age now (inviteCreatedTs invite)}&nbsp;ago
                         $with user_id <- inviteUser invite
-                            <th .text>
+                            <td .text>
                                 <a href="@{UserR user_id}">
                                     #{format_inviter user_id}
                         <td .text>#{inviteTag invite}
@@ -107,7 +102,7 @@
                         <td .text>#{age now (fromMaybe now (inviteRedeemedTs invite))}&nbsp;ago
                         <td .text>#{format_user (inviteRedeemedBy invite)}
                         $with user_id <- inviteUser invite
-                            <th .text>
+                            <td .text>
                                 <a href="@{UserR user_id}">
                                     #{format_inviter user_id}
 

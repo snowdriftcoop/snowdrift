@@ -258,6 +258,7 @@ tr:nth-child(even)
 
 td
     vertical-align : middle
+    text-align : center
     padding : 0.2em
     border-top : 1px solid #DDDDDD
 
