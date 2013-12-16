@@ -8,6 +8,7 @@ import           Prelude              as Import hiding (head, init, last,
 import           Yesod                as Import hiding (Route (..), (||.), (==.), (!=.), (<.), (<=.), (>.), (>=.), (=.), (+=.), (-=.), (*=.), (/=.), selectSource, delete, update, count, Value)
 import           Yesod.Auth           as Import
 import           Yesod.Markdown       as Import (Markdown)
+import qualified Text.Blaze.Html.Renderer.Text (renderHtml)
 
 import           Control.Arrow        as Import ((&&&), first, second)
 
@@ -16,6 +17,7 @@ import qualified Database.Esqueleto
 
 import           Control.Applicative  as Import (pure, (<$>), (<*>))
 import           Data.Text            as Import (Text)
+import qualified Data.Text.Lazy       as TL
 
 import           Data.Function        as Import (on)
 
@@ -128,3 +130,42 @@ toc_target tag title =
             <a .toc_target name="toc_target#{tag}" href="#toc_entry#{tag}" title="Back to Table Of Contents">
                 ^
     |]
+
+-- allow easier creation of pretty bootstrap 3 forms. there has to be an easier way -_-
+--fieldSettings :: forall master . SomeMessage master -> [(Text, Text)] -> FieldSettings master 
+--fieldSettings label attrs = FieldSettings label Nothing Nothing Nothing attrs
+
+aopt' :: MonadHandler m
+    => Field m a 
+    -> SomeMessage (HandlerSite m) 
+    -> Maybe (Maybe a) 
+    -> AForm m (Maybe a)
+aopt' a b = aopt a (FieldSettings b Nothing Nothing Nothing [("class", "form-control")])
+
+areq' :: (RenderMessage site FormMessage, HandlerSite m ~ site, MonadHandler m)
+    => Field m a 
+    -> SomeMessage site 
+    -> Maybe a 
+    -> AForm m a
+areq' a b = areq a (FieldSettings b Nothing Nothing Nothing [("class", "form-control")])
+
+renderBootstrap3 :: Monad m => FormRender m a
+renderBootstrap3 aform fragment = do
+    (res, views') <- aFormToForm aform
+    let views = views' []
+        has (Just _) = True
+        has Nothing  = False
+    let widget = [whamlet|
+                $newline never
+                \#{fragment}
+                $forall view <- views
+                    <div .form-group :fvRequired view:.required :not $ fvRequired view:.optional :has $ fvErrors view:.error>
+                        $if not ( TL.null ( Text.Blaze.Html.Renderer.Text.renderHtml ( fvLabel view )))
+                            <label for=#{fvId view}>#{fvLabel view}
+                        ^{fvInput view}
+                        $maybe tt <- fvTooltip view
+                            <span .help-block>#{tt}
+                        $maybe err <- fvErrors view
+                            <span .help-block>#{err}
+                |]
+    return (res, widget)

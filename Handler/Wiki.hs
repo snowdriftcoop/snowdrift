@@ -165,7 +165,7 @@ postWikiR project_handle target = do
 
 
 editWikiPermissionsForm :: PermissionLevel -> Form PermissionLevel
-editWikiPermissionsForm level = renderDivs $ areq permissionLevelField "Permission Level" (Just level)
+editWikiPermissionsForm level = renderBootstrap3 $ areq' permissionLevelField "Permission Level" (Just level)
 
 getEditWikiPermissionsR :: Text -> Text -> Handler Html
 getEditWikiPermissionsR project_handle target = do
@@ -845,7 +845,7 @@ postApproveCommentR project_handle target comment_id = do
 
 
 retractForm :: Maybe Markdown -> Form Markdown
-retractForm reason = renderDivs $ areq snowdriftMarkdownField "Retraction reason:" reason
+retractForm reason = renderBootstrap3 $ areq' snowdriftMarkdownField "Retraction reason:" reason
     
 
 renderComment :: UserId -> Text -> Text -> M.Map UserId (Entity User) -> Int -> Int
@@ -877,24 +877,24 @@ countReplies = sum . map (F.sum . fmap (const 1))
 
 
 editWikiForm :: WikiEditId -> Markdown -> Maybe Text -> Form (WikiEditId, Markdown, Maybe Text)
-editWikiForm last_edit_id content comment = renderDivs $ (,,)
+editWikiForm last_edit_id content comment = renderBootstrap3 $ (,,)
         <$> areq hiddenField "" (Just last_edit_id)
-        <*> areq snowdriftMarkdownField "Page Content" (Just content)
-        <*> aopt textField "Comment" (Just comment)
+        <*> areq' snowdriftMarkdownField "Page Content" (Just content)
+        <*> aopt' textField "Comment" (Just comment)
 
 
 newWikiForm :: Maybe Markdown -> Form Markdown
-newWikiForm content = renderDivs $ areq snowdriftMarkdownField "Page Content" content
+newWikiForm content = renderBootstrap3 $ areq' snowdriftMarkdownField "Page Content" content
 
 
 disabledCommentForm :: Form Markdown
-disabledCommentForm = renderDivs $ areq snowdriftMarkdownField ("Reply" { fsAttrs = [("disabled","")] }) Nothing
+disabledCommentForm = renderBootstrap3 $ areq snowdriftMarkdownField ("Reply" { fsAttrs = [("disabled",""), ("class","form-control")] }) Nothing
 
 commentForm :: Maybe CommentId -> Maybe Markdown -> Form (Maybe CommentId, Markdown)
-commentForm parent content = renderDivs
+commentForm parent content = renderBootstrap3
     $ (,)
         <$> aopt hiddenField "" (Just parent)
-        <*> areq snowdriftMarkdownField (if parent == Nothing then "Comment" else "Reply") content
+        <*> areq' snowdriftMarkdownField (if parent == Nothing then "Comment" else "Reply") content
 
 renderPreview :: Widget -> Text -> Widget -> Widget
 renderPreview form action widget =
@@ -902,7 +902,7 @@ renderPreview form action widget =
         <form method="POST" style="padding : 0em; margin : 0em">
             <div .row>
                 <div .col-md-9>
-                    <div .alert>
+                    <div .alert .alert-danger>
                         This is a preview; your changes have not been saved!
                         You can edit it below.
                     <input type=submit name=mode value="#{action}">
@@ -911,7 +911,7 @@ renderPreview form action widget =
 
             <div .row>
                 <div .col-md-9>
-                    <div .alert>
+                    <div .alert .alert-danger>
                         This is a preview; your changes have not been saved!
                     <input type=submit name=mode value="preview">
                     <input type=submit name=mode value="#{action}">
