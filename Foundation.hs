@@ -26,9 +26,11 @@ import Model.Currency
 
 import Control.Applicative
 import Control.Monad.Trans.Resource
+import Control.Monad
 
 import Data.Int (Int64)
 import Data.Text (Text)
+import Data.Text as T
 
 import Data.Char (isSpace)
 
@@ -45,6 +47,12 @@ import qualified Data.Text as T
 import Data.Time
 
 import Database.Esqueleto
+
+import           Text.Blaze.Html.Renderer.Text (renderHtml)
+import           Yesod.Core.Handler (getUrlRenderParams)
+import qualified Data.Text            as T
+import qualified Data.Text.Lazy       as TL
+import Data.Monoid
 
 -- | The site argument for your application. This can be a good place to
 -- keep settings and values requiring initialization before your application
@@ -129,6 +137,7 @@ instance Yesod App where
     defaultLayout widget = do
         master <- getYesod
         mmsg <- getMessage
+        malert <- getAlert
 
         -- We break up the default layout into two components:
         -- default-layout is the contents of the body tag, and
@@ -335,3 +344,39 @@ instance RenderMessage App FormMessage where
 getExtra :: Handler Extra
 getExtra = fmap (appExtra . settings) getYesod
 
+-- expanded session messages
+-- need to use a seperate key to maintain compatability with Yesod.Auth
+
+alertKey :: Text
+alertKey = "_MSG_ALERT"
+
+
+addAlertEm :: Text -> Text -> Text -> Handler ()
+addAlertEm level msg em = do
+    render <- getUrlRenderParams
+    prev <- lookupSession alertKey
+
+    setSession alertKey $ maybe id mappend prev $ TL.toStrict $ renderHtml $ [hamlet|
+        $newline never
+        <div class="alert alert-#{level}">
+            <em>
+                #{em}
+            #{msg}
+    |] render
+
+addAlert :: Text -> Text -> Handler ()
+addAlert level msg = do
+    render <- getUrlRenderParams
+    prev <- lookupSession alertKey
+
+    setSession alertKey $ maybe id mappend prev $ TL.toStrict $ renderHtml $ [hamlet|
+        $newline never
+        <div class="alert alert-#{level}">
+            #{msg}
+    |] render
+
+getAlert :: Handler (Maybe Html)
+getAlert = do
+    mmsg <- liftM (fmap preEscapedToMarkup) $ lookupSession alertKey
+    deleteSession alertKey
+    return mmsg

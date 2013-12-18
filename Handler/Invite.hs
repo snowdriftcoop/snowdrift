@@ -91,7 +91,7 @@ postInviteR project_handle = do
             setSession "InviteCode" invite_code
             setSession "InviteRole" (pack $ show role)
 
-        _ -> setMessage "Error in submitting form."
+        _ -> addAlert "danger" "Error in submitting form." 
 
     redirect $ InviteR project_handle
 

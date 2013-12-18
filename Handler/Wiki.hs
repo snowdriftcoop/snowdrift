@@ -108,7 +108,7 @@ postWikiR project_handle target = do
                         either_last_edit <- insertBy $ WikiLastEdit page_id edit_id
 
                         if last_edit_id == wikiLastEditEdit last_edit
-                         then lift $ setMessage "Updated."
+                         then lift $ addAlert "success" "Updated."
                          else do
                             [ Value last_editor ] <- select $ from $ \ edit -> do
                                 where_ $ edit ^. WikiEditId ==. val (wikiLastEditEdit last_edit)
@@ -140,12 +140,7 @@ postWikiR project_handle target = do
                             void $ insert $ Message (Just project_id) now (Just last_editor) (Just user_id) message_text
                             void $ insert $ Message (Just project_id) now (Just user_id) (Just last_editor) message_text
 
-                            lift $ setMessage $ flip ($) render
-                                    [hamlet|
-                                        <em .error>
-                                            conflicting edits (ticket created, messages sent)
-                                    |]
-                            
+                            lift $ addAlert "danger" "conflicting edits (ticket created, messages sent)"
 
                         case either_last_edit of
                             Left (Entity to_update _) -> update $ \ l -> do
@@ -205,7 +200,7 @@ postEditWikiPermissionsR project_handle target = do
                 where_ $ p ^. WikiPageId ==. val page_id
                 set p [ WikiPagePermissionLevel =. val level ]
 
-            setMessage "permissions updated"
+            addAlert "success" "permissions updated"
 
             redirect $ WikiR project_handle target
             
@@ -282,7 +277,7 @@ postNewWikiR project_handle target = do
                         edit_id <- insert $ WikiEdit now user_id page_id content $ Just "Page created."
                         insert $ WikiLastEdit page_id edit_id
 
-                    setMessage "Created."
+                    addAlert "success" "Created."
                     redirect $ WikiR project_handle target
 
                 _ -> error "unrecognized mode"
@@ -503,7 +498,7 @@ postDiscussWikiR project_handle target = do
 
                         forM_ ancestors $ \ ancestor_id -> insert $ CommentAncestor comment_id ancestor_id
 
-                    setMessage $ if established then "comment posted" else "comment submitted for moderation"
+                    addAlert "success" (if established then "comment posted" else "comment submitted for moderation")
                     redirect $ DiscussWikiR project_handle target
 
                 _ -> error "unrecognized mode"
@@ -831,7 +826,7 @@ postApproveCommentR project_handle target comment_id = do
 
         where_ $ c ^. CommentId ==. val comment_id
 
-    setMessage "comment approved"
+    addAlert "success" "comment approved"
 
     redirect $ DiscussCommentR project_handle target comment_id
 

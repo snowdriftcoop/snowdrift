@@ -185,14 +185,14 @@ postProjectR project_handle = do
 
                         forM_ tag_ids $ \ tag_id -> insert $ ProjectTag project_id tag_id
 
-                    setMessage "project updated"
+                    addAlert "success" "project updated" 
                     redirect $ ProjectR project_handle
 
                 _ -> do
-                    setMessage "error: unrecognized mode"
+                    addAlertEm "danger" "unrecognized mode" "Error: "
                     redirect $ ProjectR project_handle
         _ -> do
-            setMessage "error"
+            addAlert "danger" "error" 
             redirect $ ProjectR project_handle
 
 

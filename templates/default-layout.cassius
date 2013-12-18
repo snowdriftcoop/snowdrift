@@ -220,12 +220,7 @@ span.title
     border-left : solid darkred 0.25em
     padding-left : 0.5em
     margin : 0.2em
-
-.alert
-    color : red
-    font-style : italic
-    text-align : center 
-    
+ 
 h1, h2, h3, h4, h5, h6
     font-weight : bold
 
