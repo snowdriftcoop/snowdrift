@@ -72,12 +72,13 @@ postUpdateSharesR project_handle = do
                     return False
                  else return True
 
-            setMessage $ if success
-             then "you are now pledged to support this project"
-             else "you must have at least 3 months worth in your account to pledge additional shares"
+            if success
+             then addAlert "success" "you are now pledged to support this project" 
+             else addAlert "warning" "you must have at least 3 months worth in your account to pledge additional shares" 
+
             redirect $ ProjectR project_handle
 
         _ -> do
-            setMessage "error occurred in form submission"
+            addAlert "danger" "error occurred in form submission" 
             redirect $ UpdateSharesR project_handle
 

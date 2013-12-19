@@ -81,7 +81,8 @@ postUserBalanceR user_id = do
     case result of
         FormSuccess amount -> do
             if amount < 10
-             then setMessage "Must load money in increments of at least $10."
+             then
+                addAlert "danger" "Must load money in increments of at least $10." 
              else do
                 runDB $ do
                     _ <- insert $ Transaction now (Just $ userAccount user) Nothing amount "Test Load" Nothing
@@ -89,7 +90,7 @@ postUserBalanceR user_id = do
                         set account [ AccountBalance +=. val amount ]
                         where_ ( account ^. AccountId ==. val (userAccount user) )
 
-                setMessage "Balance updated."
+                addAlert "success" "Balance updated." 
             redirect $ UserBalanceR user_id
 
         _ -> error "Error processing form."
