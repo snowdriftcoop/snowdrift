@@ -347,6 +347,8 @@ getDiscussWikiR project_handle target = do
             renderComment user_id project_handle target users 10 0 [] retraction_map $ buildCommentTree root rest
 
     (comment_form, _) <- generateFormPost $ commentForm Nothing Nothing
+    
+    let has_comments = length roots /= 0
 
     defaultLayout $(widgetFile "wiki_discuss")
 
@@ -506,6 +508,23 @@ postDiscussWikiR project_handle target = do
         FormMissing -> error "Form missing."
         FormFailure msgs -> error $ "Error submitting form: " ++ T.unpack (T.intercalate "\n" msgs)
 
+getNewDiscussWikiR :: Text -> Text -> Handler Html
+getNewDiscussWikiR project_handle target = do
+    Entity user_id user <- requireAuth
+    Entity page_id page  <- runDB $ do
+        Entity project_id _ <- getBy404 $ UniqueProjectHandle project_handle
+        getBy404 $ UniqueWikiTarget project_id target
+
+    affiliated <- runDB $ (||)
+            <$> isProjectAffiliated project_handle user_id
+            <*> isProjectAdmin "snowdrift" user_id
+
+    (comment_form, _) <- generateFormPost $ commentForm Nothing Nothing
+    
+    defaultLayout $(widgetFile "wiki_discuss_new")
+
+postNewDiscussWikiR :: Text -> Text -> Handler Html
+postNewDiscussWikiR = postDiscussWikiR
 
 getWikiNewCommentsR :: Text -> Handler Html
 getWikiNewCommentsR project_handle = do
@@ -791,13 +810,16 @@ getApproveCommentR project_handle target comment_id = do
     when (commentPage comment /= page_id) $ error "comment does not match page"
     when (wikiPageProject page /= project_id) $ error "comment does not match project"
 
-    moderator <- runDB $ isProjectModerator project_handle user_id
+    moderator <- runDB $ (||)
+        <$> isProjectModerator project_handle user_id
+        <*> isProjectAdmin project_handle user_id
 
     when (not moderator) $ error "you must be a moderator to approve posts"
 
     defaultLayout [whamlet|
         <form method="POST">
-            <submit value="approve post">
+            <input type=submit>
+                approve post
     |]
     
 
@@ -814,7 +836,9 @@ postApproveCommentR project_handle target comment_id = do
     when (commentPage comment /= page_id) $ error "comment does not match page"
     when (wikiPageProject page /= project_id) $ error "comment does not match project"
 
-    moderator <- runDB $ isProjectModerator project_handle user_id
+    moderator <- runDB $ (||)
+        <$> isProjectModerator project_handle user_id
+        <*> isProjectAdmin project_handle user_id
 
     when (not moderator) $ error "you must be a moderator to approve posts"
 
