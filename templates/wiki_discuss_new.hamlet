@@ -3,13 +3,7 @@
         <div .row>
             <div .col-md-3>
                 <a href="@{WikiR project_handle target}"> back to wiki page
-            <div .col-md-3>
-                $if affiliated
-                    <a href="@{NewDiscussWikiR project_handle target}"> new discussion thread
         <hr .wikitop>
-        <div .row>
-            ^{comments}
-        $if (&&) affiliated $ not has_comments
             <div .row>
                 <form action="@{DiscussWikiR project_handle target}" method="POST">
                     ^{comment_form}
