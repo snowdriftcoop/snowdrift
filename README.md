@@ -135,10 +135,7 @@ Install dependencies and build Snowdrift:
 
 This will take a *long* time but should ultimately tell you it installed Snowdrift.
 
-*After the initial build, you will not need to go through all of this again unless dependencies have changed.*
-
-To rebuild the site in the future (i.e. to test your changes), use "cabal build"
-
+You will also use cabal install to test your changes later, and then it will be much faster.
 
 Setting up the database
 -----------------------
@@ -196,16 +193,18 @@ If you aren't using a cabal sandbox and/or don't have your PATH set correctly, y
 
     ./dist/build/Snowdrift/Snowdrift Development
 
-You may also wish to use the yesod devel command (which will rebuild any changed files for you) to start the server.
+To rebuild the site after changes to the code, run cabal install first before starting the server.
+    
+Alternately, you may opt to use the yesod devel command which does a combined rebuild and server start.
 To enable this, first install yesod-bin:
 
     cabal install yesod-bin
 
-Then, you can start the server with:
+Then, you can rebuild and start the server with:
 
     yesod devel
 
-Either method for starting the server will print a bunch of text about creating tables, and then sit waiting for connections.
+After the server starts, it may print a bunch of text about creating tables, and it will then sit ready, waiting for connections.
 
 Access the server by directing your web browser to localhost:3000
 
