@@ -826,8 +826,7 @@ getApproveCommentR project_handle target comment_id = do
 
     defaultLayout [whamlet|
         <form method="POST">
-            <input type=submit>
-                approve post
+            <input type=submit value="approve post">
     |]
     
 
