@@ -344,7 +344,7 @@ getDiscussWikiR project_handle target = do
         return (roots, rest, users, retraction_map)
 
     let comments = forM_ roots $ \ root ->
-            renderComment user_id project_handle target users 10 0 [] retraction_map True $ buildCommentTree root rest
+            renderComment user_id project_handle target users 10 0 [] retraction_map True (buildCommentTree root rest) Nothing
 
     (comment_form, _) <- generateFormPost $ commentForm Nothing Nothing
     
@@ -409,9 +409,12 @@ renderDiscussComment :: UserId -> Text -> Text -> Bool -> Widget
     -> Bool -> Widget
 
 renderDiscussComment viewer_id project_handle target show_reply comment_form root rest users earlier_retractions retraction_map show_actions = do
-    let Node parent children = buildCommentTree root rest
-        comment = renderComment viewer_id project_handle target users 1 0 earlier_retractions retraction_map show_actions $ Node parent []
-        child_comments = mapM_ (renderComment viewer_id project_handle target users 10 0 [] retraction_map show_actions) children
+    let tree = buildCommentTree root rest
+    let mcomment_form =
+            if show_reply
+                then Just comment_form
+                else Nothing
+    let comment = renderComment viewer_id project_handle target users 1 0 earlier_retractions retraction_map show_actions tree mcomment_form
 
     $(widgetFile "comment")
 
@@ -577,7 +580,7 @@ getWikiNewCommentsR project_handle = do
                         return comment_retraction
 
                 let target = wikiPageTarget $ entityVal $ pages M.! commentPage comment
-                    rendered_comment = renderComment viewer_id project_handle target users 1 0 earlier_retractions retraction_map True $ Node (Entity comment_id comment) []
+                    rendered_comment = renderComment viewer_id project_handle target users 1 0 earlier_retractions retraction_map True (Node (Entity comment_id comment) []) Nothing
 
                 [whamlet|$newline never
                     <div .row>
@@ -867,10 +870,11 @@ retractForm reason = renderBootstrap3 $ areq' snowdriftMarkdownField "Retraction
     
 
 renderComment :: UserId -> Text -> Text -> M.Map UserId (Entity User) -> Int -> Int
-    -> [CommentRetraction] -> M.Map CommentId CommentRetraction -> Bool -> Tree (Entity Comment) -> Widget
+    -> [CommentRetraction] -> M.Map CommentId CommentRetraction -> Bool -> Tree (Entity Comment) -> Maybe Widget -> Widget
 
-renderComment viewer_id project_handle target users max_depth depth earlier_retractions retraction_map show_actions tree = do
+renderComment viewer_id project_handle target users max_depth depth earlier_retractions retraction_map show_actions tree mcomment_form = do
     maybe_route <- handlerToWidget getCurrentRoute
+    (comment_form, _) <- handlerToWidget $ generateFormPost $ commentForm Nothing Nothing
 
     let Entity comment_id comment = rootLabel tree
         children = subForest tree
@@ -888,7 +892,6 @@ renderComment viewer_id project_handle target users max_depth depth earlier_retr
         empty_list = []
 
      in $(widgetFile "comment_body")
-
 
 countReplies :: [Tree a] -> Int
 countReplies = sum . map (F.sum . fmap (const 1))

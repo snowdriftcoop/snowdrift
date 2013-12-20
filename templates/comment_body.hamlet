@@ -52,6 +52,12 @@ $# used by renderComment function
                     <a href="@{RetractCommentR project_handle target comment_id}" style="color: darkred">
                         retract
 
+    $maybe comment_form <- mcomment_form
+        <div .comment :even_depth:.odd_depth :odd_depth:.even_depth>
+            <form action="@{DiscussWikiR project_handle target}" method="POST">
+                ^{comment_form}
+                <input type="submit" name="mode" value="preview">
+
     $if depth > max_depth
         $with replies <- countReplies children
             $if replies > 0
@@ -63,5 +69,5 @@ $# used by renderComment function
 
     $else
         $forall child <- children
-            ^{renderComment viewer_id project_handle target users max_depth (depth + 1) empty_list retraction_map show_actions child}
+            ^{renderComment viewer_id project_handle target users max_depth (depth + 1) empty_list retraction_map show_actions child Nothing}
 
