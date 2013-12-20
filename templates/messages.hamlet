@@ -17,7 +17,7 @@
                                 $nothing
                                     to Snowdrift.coop generally
                         <div .row>
-                            <div .span3>
+                            <div .col-md-3>
                                 ^{renderTime (messageCreatedTs message)}
 
                     <div .col-md-5>
