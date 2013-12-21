@@ -221,10 +221,10 @@ h1, h2, h3, h4, h5, h6
     font-weight : bold
 
 h2, h3, h4, h5, h6
-    line-height : 2em
+    margin : 1.8em 0 0.8em
 
 h1
-    margin-bottom : 0.5em
+    margin-bottom : 0.8em
 
 q:before
     content : '"'
