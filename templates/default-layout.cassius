@@ -51,7 +51,7 @@ input[type=text], input[type=email]
     width : 30em
 
 input.inline_shares
-    width : 2.5em
+    width : 3.5em
     text-align : right
 
 textarea
