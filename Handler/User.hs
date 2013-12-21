@@ -20,16 +20,18 @@ hiddenMarkdown Nothing = fmap (fmap Markdown) $ aopt hiddenField "" Nothing
 hiddenMarkdown (Just (Markdown str)) = fmap (fmap Markdown) $ aopt hiddenField "" $ Just $ Just str
 
 editUserForm :: User -> Form UserUpdate
-editUserForm user = renderDivs $
+editUserForm user = renderBootstrap3 $
     UserUpdate
-        <$> aopt textField "Public Name" (Just $ userName user)
-        <*> aopt textField "Avatar (link)" (Just $ userAvatar user)
-        <*> aopt textField "IRC Nick (irc.freenode.net)" (Just $ userIrcNick user)
-        <*> aopt snowdriftMarkdownField "Blurb (used on listings of many people)" (Just $ userBlurb user)
-        <*> aopt snowdriftMarkdownField "Personal Statement (visible only on this page)" (Just $ userStatement user)
+        <$> aopt' textField "Public Name" (Just $ userName user)
+        <*> aopt' textField "Avatar (link)" (Just $ userAvatar user)
+        <*> aopt' textField "IRC Nick (irc.freenode.net)" (Just $ userIrcNick user)
+        <*> aopt' snowdriftMarkdownField "Blurb (used on listings of many people)" (Just $ userBlurb user)
+        <*> aopt' snowdriftMarkdownField "Personal Statement (visible only on this page)" (Just $ userStatement user)
+    where
+
 
 previewUserForm :: User -> Form UserUpdate
-previewUserForm user = renderDivs $
+previewUserForm user = renderBootstrap3 $
     UserUpdate
         <$> aopt hiddenField "" (Just $ userName user)
         <*> aopt hiddenField "" (Just $ userAvatar user)
@@ -103,7 +105,7 @@ postUserR user_id = do
                             <div .col-md-9>
                                 <form method="POST" action="@{UserR user_id}">
                                     ^{hidden_form}
-                                    <div .alert>
+                                    <div .alert .alert-danger>
                                         This is a preview; your changes have not been saved!
                                     <script>
                                         document.write('<input type="submit" value="edit" onclick="history.go(-1);return false;" />')

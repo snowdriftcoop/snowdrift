@@ -54,7 +54,6 @@ $newline never
               var logo = document.createElement("img");
 
               logo.id = "logo";
-              logo.className = "col-md-10 col-md-offset-1";
 
               if(Modernizr.svg) {
                   logo.src = "@{StaticR img_logo_svg}";
@@ -67,12 +66,11 @@ $newline never
     <body>
         <div class="container">
             <header>
-                <a href="@{HomeR}">
-                    <div #head .row>
-                        <noscript>
-                            <img #logo .col-md-10 .col-md-offset-1 src=@{StaticR img_logo_png} alt="Snowdrift.coop: clearing the path to a Free/Libre/Open World">
-                        <script>
-                            fixup_logo()
+                <a #head href="@{HomeR}">
+                    <noscript>
+                        img #logo src=@{StaticR img_logo_png} alt="Snowdrift.coop: clearing the path to a Free/Libre/Open World">
+                    <script>
+                        fixup_logo()
                     <div .row>
                         <div .note .col-md-2 .col-md-offset-10>
                             a work in progress

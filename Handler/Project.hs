@@ -84,14 +84,14 @@ data UpdateProject = UpdateProject { updateProjectName :: Text, updateProjectDes
 
 editProjectForm :: Maybe (Project, [Text]) -> Form UpdateProject
 editProjectForm project =
-    renderDivs $ UpdateProject
-        <$> areq textField "Project Name" (projectName . fst <$> project)
-        <*> areq snowdriftMarkdownField "Description" (projectDescription . fst <$> project)
-        <*> (map T.strip . T.splitOn "," <$> areq textField "Tags" (T.intercalate ", " . snd <$> project))
+    renderBootstrap3 $ UpdateProject
+        <$> areq' textField "Project Name" (projectName . fst <$> project)
+        <*> areq' snowdriftMarkdownField "Description" (projectDescription . fst <$> project)
+        <*> (map T.strip . T.splitOn "," <$> areq' textField "Tags" (T.intercalate ", " . snd <$> project))
 
 previewProjectForm :: Maybe (Project, [Text]) -> Form UpdateProject
 previewProjectForm project =
-    renderDivs $ UpdateProject
+    renderBootstrap3 $ UpdateProject
         <$> areq hiddenField "" (projectName . fst <$> project)
         <*> (Markdown <$> areq hiddenField "" ((\ (Markdown str) -> str) . projectDescription . fst <$> project))
         <*> (map T.strip . T.splitOn "," <$> areq hiddenField "" (T.intercalate ", " . snd <$> project))
@@ -145,7 +145,7 @@ postProjectR project_handle = do
                                 <div .col-md-9>
                                     <form method="POST" action="@{ProjectR project_handle}">
                                         ^{hidden_form}
-                                        <div .alert>
+                                        <div .alert .alert-danger>
                                             This is a preview; your changes are not yet saved!
                                         <script>
                                             document.write('<input type="submit" value="edit" onclick="history.go(-1);return false;" />')

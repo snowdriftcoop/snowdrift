@@ -3,18 +3,13 @@
         $maybe link <- maybe_link
             <p>
                 Your invitation code has been generated.
+                The code adds new role to an already existing snowdrift.coop account.
             <p>
-                <strong>Send the invite below to the invitee along with a personal note.
+                <strong>Send the code below to the invitee along with a personal note.
+                <br>
                 <em>
                     Note: each code can only be used once.
                     You must generate a new code for each invitation.
-            <blockquote>
-                Snowdrift.coop is a new non-profit cooperative system to support free/libre/open software, cultural works (art, music, etc.), science, educational resources, and more&hellip;
-                The invite below adds new access permissions.
-                If you do not have an account yet, please
-                <a href="https://snowdrift.coop/auth/login">
-                    create a new account
-                before redeeming the code here.
                 <p>
                     $maybe invite_role <- maybe_invite_role
                         $case invite_role
@@ -71,21 +66,21 @@
             outstanding invitations:
             <table>
                 <tr>
-                    <th .text>Created
-                    <th .text>Invited By
-                    <th .text>Info
-                    <th .text>Role
-                    <th .text>Code
+                    <th>Created
+                    <th>Invited By
+                    <th>Info
+                    <th>Role
+                    <th>Code
                 $forall Entity _ invite <- outstanding_invites
                     <tr>
-                        <td .text>#{age now (inviteCreatedTs invite)}&nbsp;ago
+                        <td>#{age now (inviteCreatedTs invite)}&nbsp;ago
                         $with user_id <- inviteUser invite
-                            <th .text>
+                            <td>
                                 <a href="@{UserR user_id}">
                                     #{format_inviter user_id}
-                        <td .text>#{inviteTag invite}
-                        <td .text>#{roleAbbrev (inviteRole invite)}
-                        <td .text>@{InvitationR project_handle (inviteCode invite)}
+                        <td>#{inviteTag invite}
+                        <td>#{roleAbbrev (inviteRole invite)}
+                        <td>@{InvitationR project_handle (inviteCode invite)}
 
 <br>
 <div .row>
@@ -96,21 +91,21 @@
             recent redemptions:
             <table>
                 <tr>
-                    <th .text>Redeemed
-                    <th .text>Redeemed By
-                    <th .text>Invited By
-                    <th .text>Info
-                    <th .text>Role
-                    <th .text>Code
+                    <th>Redeemed
+                    <th>Redeemed By
+                    <th>Invited By
+                    <th>Info
+                    <th>Role
+                    <th>Code
                 $forall Entity _ invite <- redeemed_invites
                     <tr>
-                        <td .text>#{age now (fromMaybe now (inviteRedeemedTs invite))}&nbsp;ago
-                        <td .text>#{format_user (inviteRedeemedBy invite)}
+                        <td>#{age now (fromMaybe now (inviteRedeemedTs invite))}&nbsp;ago
+                        <td>#{format_user (inviteRedeemedBy invite)}
                         $with user_id <- inviteUser invite
-                            <th .text>
+                            <td>
                                 <a href="@{UserR user_id}">
                                     #{format_inviter user_id}
 
-                        <td .text>#{inviteTag invite}
-                        <td .text>#{roleAbbrev (inviteRole invite)}
-                        <td .text>@{InvitationR project_handle (inviteCode invite)}
+                        <td>#{inviteTag invite}
+                        <td>#{roleAbbrev (inviteRole invite)}
+                        <td>@{InvitationR project_handle (inviteCode invite)}

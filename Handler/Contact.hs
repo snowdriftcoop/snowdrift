@@ -7,7 +7,7 @@ import Widgets.Markdown
 
 
 contactForm :: Form Markdown
-contactForm = renderDivs $ areq snowdriftMarkdownField "" Nothing
+contactForm = renderBootstrap3 $ areq' snowdriftMarkdownField "" Nothing
 
 getContactR :: Text -> Handler Html
 getContactR project_handle = do

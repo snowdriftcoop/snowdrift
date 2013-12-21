@@ -1,6 +1,6 @@
 <div #body .col-md-12>
     $maybe msg <- mmsg
-        <div .alert #message>
+        <div .alert .alert-info #message>
             #{msg}
 
     ^{widget}
