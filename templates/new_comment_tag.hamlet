@@ -1,0 +1,13 @@
+<div .row>
+    <div .col-md-9>
+        <div .row>
+            <form method=post>
+                ^{form}
+                <input type=submit value="add tag">
+
+        <div .row>
+            $forall tag <- tags
+                ^{tagWidget tag}
+
+    <div .col-md-3>
+        ^{sidebar}

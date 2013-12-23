@@ -1,0 +1,16 @@
+
+<div .row>
+    <div .col-md-8>
+        $if null tags
+            no tags to display
+        $else
+            <table>
+                $forall tag <- tags
+                    ^{tagWidget tag}
+
+    <div .col-md-3 .col-md-offset-1>
+        ^{sidebar}
+
+
+
+

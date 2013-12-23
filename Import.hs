@@ -69,6 +69,8 @@ instance Count UserCount where getCount (UserCount c) = c
 data ShareCount = ShareCount Int64
 instance Count ShareCount where getCount (ShareCount c) = c
 
+newtype Color = Color Int deriving (Typeable, Num)
+
 -- from http://stackoverflow.com/questions/8066850/why-doesnt-haskells-prelude-read-return-a-maybe
 readMaybe        :: (Read a) => String -> Maybe a
 readMaybe s      =  case [x | (x,t) <- reads s, ("","") <- lex t] of
@@ -130,6 +132,9 @@ toc_target tag title =
             <a .toc_target name="toc_target#{tag}" href="#toc_entry#{tag}" title="Back to Table Of Contents">
                 ^
     |]
+
+entityPairs :: [Entity t] -> [(Key t, t)]
+entityPairs = map (\ (Entity a b) -> (a, b))
 
 -- allow easier creation of pretty bootstrap 3 forms. there has to be an easier way -_-
 --fieldSettings :: forall master . SomeMessage master -> [(Text, Text)] -> FieldSettings master 

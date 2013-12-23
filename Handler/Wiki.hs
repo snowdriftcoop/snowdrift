@@ -7,9 +7,11 @@ import Import
 import Widgets.Sidebar
 import Widgets.Markdown
 import Widgets.Time
+import Widgets.Tag
 
 import Model.Permission
 import Model.User
+import Model.AnnotatedTag
 
 import Yesod.Markdown
 import Model.Markdown
@@ -114,7 +116,7 @@ postWikiR project_handle target = do
                                 where_ $ edit ^. WikiEditId ==. val (wikiLastEditEdit last_edit)
                                 return $ edit ^. WikiEditUser
 
-                            let comment_body = Markdown $ T.unlines 
+                            let comment_body = Markdown $ T.unlines
                                     [ "ticket: edit conflict"
                                     , ""
                                     , "[original version](/w/" <> target <> "/history/" <> toPathPiece last_edit_id <> ")"
@@ -145,7 +147,6 @@ postWikiR project_handle target = do
                                         <em .error>
                                             conflicting edits (ticket created, messages sent)
                                     |]
-                            
 
                         case either_last_edit of
                             Left (Entity to_update _) -> update $ \ l -> do
@@ -158,7 +159,6 @@ postWikiR project_handle target = do
 
                 _ -> error "Error: unrecognized mode"
 
-                
 
         FormMissing -> error "Form missing."
         FormFailure msgs -> error $ "Error submitting form: " ++ T.unpack (T.concat msgs)
@@ -208,7 +208,6 @@ postEditWikiPermissionsR project_handle target = do
             setMessage "permissions updated"
 
             redirect $ WikiR project_handle target
-            
 
         FormMissing -> error "Form missing."
         FormFailure msgs -> error $ "Error submitting form: " ++ T.unpack (T.concat msgs)
@@ -286,7 +285,6 @@ postNewWikiR project_handle target = do
                     redirect $ WikiR project_handle target
 
                 _ -> error "unrecognized mode"
-            
 
         FormMissing -> error "Form missing."
         FormFailure msgs -> error $ "Error submitting form: " ++ T.unpack (T.concat msgs)
@@ -348,8 +346,11 @@ getDiscussWikiR project_handle target = do
         retraction_map <- M.fromList . map ((commentRetractionComment &&& id) . entityVal) <$> selectList [ CommentRetractionComment <-. map entityKey (roots ++ rest) ] []
         return (roots, rest, users, retraction_map)
 
-    let comments = forM_ roots $ \ root ->
-            renderComment user_id project_handle target users 10 0 [] retraction_map True $ buildCommentTree root rest
+    tags <- runDB $ select $ from $ return
+
+    let tag_map = M.fromList $ entityPairs tags
+        comments = forM_ roots $ \ root ->
+            renderComment user_id project_handle target users 10 0 [] retraction_map True tag_map $ buildCommentTree root rest
 
     (comment_form, _) <- generateFormPost $ commentForm Nothing Nothing
 
@@ -396,12 +397,16 @@ getDiscussCommentR project_handle target comment_id = do
         retraction_map <- fmap (M.fromList . map ((commentRetractionComment &&& id) . entityVal)) $ select $ from $ \ retraction -> do
             where_ ( retraction ^. CommentRetractionComment `in_` valList (comment_id : map entityKey rest) )
             return retraction
-        
+
         return (root, rest, users, earlier_retractions, retraction_map)
 
     (comment_form, _) <- generateFormPost $ commentForm (Just comment_id) Nothing
 
-    defaultLayout $ renderDiscussComment viewer_id project_handle target True comment_form (Entity comment_id root) rest users earlier_retractions retraction_map True
+    tags <- runDB $ select $ from $ return
+
+    let tag_map = M.fromList $ entityPairs tags
+
+    defaultLayout $ renderDiscussComment viewer_id project_handle target True comment_form (Entity comment_id root) rest users earlier_retractions retraction_map True tag_map
 
 
 renderDiscussComment :: UserId -> Text -> Text -> Bool -> Widget
@@ -409,12 +414,12 @@ renderDiscussComment :: UserId -> Text -> Text -> Bool -> Widget
     -> M.Map UserId (Entity User)
     -> [CommentRetraction]
     -> M.Map CommentId CommentRetraction
-    -> Bool -> Widget
+    -> Bool -> M.Map TagId Tag -> Widget
 
-renderDiscussComment viewer_id project_handle target show_reply comment_form root rest users earlier_retractions retraction_map show_actions = do
+renderDiscussComment viewer_id project_handle target show_reply comment_form root rest users earlier_retractions retraction_map show_actions tag_map = do
     let Node parent children = buildCommentTree root rest
-        comment = renderComment viewer_id project_handle target users 1 0 earlier_retractions retraction_map show_actions $ Node parent []
-        child_comments = mapM_ (renderComment viewer_id project_handle target users 10 0 [] retraction_map show_actions) children
+        comment = renderComment viewer_id project_handle target users 1 0 earlier_retractions retraction_map show_actions tag_map $ Node parent []
+        child_comments = mapM_ (renderComment viewer_id project_handle target users 10 0 [] retraction_map show_actions tag_map) children
 
     $(widgetFile "comment")
 
@@ -460,12 +465,15 @@ postDiscussWikiR project_handle target = do
 
                             Nothing -> return []
 
+                    tags <- runDB $ select $ from $ return
+
+                    let tag_map = M.fromList $ entityPairs tags
 
                     (form, _) <- generateFormPost $ commentForm maybe_parent_id (Just text)
 
                     let comment = Entity (Key $ PersistInt64 0) $ Comment now Nothing Nothing page_id maybe_parent_id user_id text depth
                         user_map = M.singleton user_id $ Entity user_id user
-                        rendered_comment = renderDiscussComment user_id project_handle target False (return ()) comment [] user_map earlier_retractions M.empty False
+                        rendered_comment = renderDiscussComment user_id project_handle target False (return ()) comment [] user_map earlier_retractions M.empty False tag_map
 
                     defaultLayout $ renderPreview form action rendered_comment
 
@@ -476,7 +484,7 @@ postDiscussWikiR project_handle target = do
                             (if established then Just now else Nothing)
                             (if established then Just user_id else Nothing)
                             page_id maybe_parent_id user_id text depth
-                        
+
                         let content = T.lines $ (\ (Markdown str) -> str) text
                             tickets = map T.strip $ mapMaybe (T.stripPrefix "ticket:") content
                             tags = map T.strip $ mconcat $ map (T.splitOn ",") $ mapMaybe (T.stripPrefix "tags:") content
@@ -484,9 +492,9 @@ postDiscussWikiR project_handle target = do
                         forM_ tickets $ \ ticket -> insert $ Ticket now ticket comment_id
                         forM_ tags $ \ tag -> do
                             tag_id <- fmap (either entityKey id) $ insertBy $ Tag tag
-                            insert $ CommentTag comment_id tag_id user_id
+                            insert $ CommentTag comment_id tag_id user_id 1
 
-                        let getParentAncestors parent_id = do 
+                        let getParentAncestors parent_id = do
                                 comment_ancestor_entities <- select $ from $ \ comment_ancestor -> do
                                     where_ ( comment_ancestor ^. CommentAncestorComment ==. val parent_id )
                                     return comment_ancestor
@@ -506,7 +514,6 @@ postDiscussWikiR project_handle target = do
         FormMissing -> error "Form missing."
         FormFailure msgs -> error $ "Error submitting form: " ++ T.unpack (T.intercalate "\n" msgs)
 
-
 getWikiNewCommentsR :: Text -> Handler Html
 getWikiNewCommentsR project_handle = do
     Entity viewer_id viewer <- requireAuth
@@ -516,6 +523,10 @@ getWikiNewCommentsR project_handle = do
     now <- liftIO getCurrentTime
 
     Entity project_id project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
+
+    tags <- runDB $ select $ from $ return
+
+    let tag_map = M.fromList $ entityPairs tags
 
     (comments, pages, users, retraction_map) <- runDB $ do
         unfiltered_pages <- select $ from $ \ page -> do
@@ -563,7 +574,7 @@ getWikiNewCommentsR project_handle = do
                         return comment_retraction
 
                 let target = wikiPageTarget $ entityVal $ pages M.! commentPage comment
-                    rendered_comment = renderComment viewer_id project_handle target users 1 0 earlier_retractions retraction_map True $ Node (Entity comment_id comment) []
+                    rendered_comment = renderComment viewer_id project_handle target users 1 0 earlier_retractions retraction_map True tag_map $ Node (Entity comment_id comment) []
 
                 [whamlet|$newline never
                     <div .row>
@@ -598,7 +609,7 @@ getWikiHistoryR project_handle target = do
         users <- fmap (M.fromList . map (entityKey &&& id)) $ select $ from $ \ user -> do
             where_ ( user ^. UserId `in_` valList user_id_list )
             return user
-            
+
         return (edits, users)
 
     let editsIndexed = zip ([0..] :: [Int]) edits
@@ -734,9 +745,16 @@ getRetractCommentR project_handle target comment_id = do
 
             Nothing -> return []
 
+    tags <- runDB $ select $ from $ \ (comment_tag `InnerJoin` tag) -> do
+        on_ $ comment_tag ^. CommentTagTag ==. tag ^. TagId
+        where_ $ comment_tag ^. CommentTagComment ==. val comment_id
+        return tag
+
+    let tag_map = M.fromList $ entityPairs tags
 
     (retract_form, _) <- generateFormPost $ retractForm Nothing
-    let rendered_comment = renderDiscussComment user_id project_handle target False (return ()) (Entity comment_id comment) [] (M.singleton user_id $ Entity user_id user) earlier_retractions M.empty False
+
+    let rendered_comment = renderDiscussComment user_id project_handle target False (return ()) (Entity comment_id comment) [] (M.singleton user_id $ Entity user_id user) earlier_retractions M.empty False tag_map
 
     defaultLayout $ [whamlet|
         ^{rendered_comment}
@@ -773,13 +791,21 @@ postRetractCommentR project_handle target comment_id = do
             case mode of
                 Just "preview retraction" -> do
                     (form, _) <- generateFormPost $ retractForm (Just reason)
-                    let soon = UTCTime (ModifiedJulianDay 0) 0
+
+                    tags <- runDB $ select $ from $ \ (comment_tag `InnerJoin` tag) -> do
+                        on_ $ comment_tag ^. CommentTagTag ==. tag ^. TagId
+                        where_ $ comment_tag ^. CommentTagComment ==. val comment_id
+                        return tag
+
+                    let tag_map = M.fromList $ entityPairs tags
+                        soon = UTCTime (ModifiedJulianDay 0) 0
                         retraction = CommentRetraction soon reason comment_id
                         comment_entity = Entity comment_id comment
                         users = M.singleton user_id $ Entity user_id user
                         retractions = M.singleton comment_id retraction
 
-                    defaultLayout $ renderPreview form action $ renderDiscussComment user_id project_handle target False (return ()) comment_entity [] users earlier_retractions retractions False
+
+                    defaultLayout $ renderPreview form action $ renderDiscussComment user_id project_handle target False (return ()) comment_entity [] users earlier_retractions retractions False tag_map
 
 
                 Just a | a == action -> do
@@ -812,7 +838,7 @@ getApproveCommentR project_handle target comment_id = do
         <form method="POST">
             <submit value="approve post">
     |]
-    
+
 
 postApproveCommentR :: Text -> Text -> CommentId -> Handler Html
 postApproveCommentR project_handle target comment_id = do
@@ -846,12 +872,12 @@ postApproveCommentR project_handle target comment_id = do
 
 retractForm :: Maybe Markdown -> Form Markdown
 retractForm reason = renderBootstrap3 $ areq' snowdriftMarkdownField "Retraction reason:" reason
-    
+
 
 renderComment :: UserId -> Text -> Text -> M.Map UserId (Entity User) -> Int -> Int
-    -> [CommentRetraction] -> M.Map CommentId CommentRetraction -> Bool -> Tree (Entity Comment) -> Widget
+    -> [CommentRetraction] -> M.Map CommentId CommentRetraction -> Bool -> Map TagId Tag -> Tree (Entity Comment) -> Widget
 
-renderComment viewer_id project_handle target users max_depth depth earlier_retractions retraction_map show_actions tree = do
+renderComment viewer_id project_handle target users max_depth depth earlier_retractions retraction_map show_actions tag_map tree = do
     maybe_route <- handlerToWidget getCurrentRoute
 
     let Entity comment_id comment = rootLabel tree
@@ -869,7 +895,14 @@ renderComment viewer_id project_handle target users max_depth depth earlier_retr
         maybe_retraction = M.lookup comment_id retraction_map
         empty_list = []
 
-     in $(widgetFile "comment_body")
+    tags <- handlerToWidget $ do
+        comment_tags <- runDB $ select $ from $ \ comment_tag -> do
+            where_ $ comment_tag ^. CommentTagComment ==. val comment_id
+            return comment_tag
+
+        annotateCommentTags tag_map project_handle target comment_id $ map entityVal comment_tags
+
+    $(widgetFile "comment_body")
 
 
 countReplies :: [Tree a] -> Int

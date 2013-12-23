@@ -173,6 +173,7 @@ CommentTag
     comment CommentId
     tag TagId
     user UserId
+    count Int default=1
     UniqueCommentTag comment tag user
 
 Ticket
@@ -189,5 +190,17 @@ ManualEstablishment
     establishedUser User
     establishingUser User
     UniqueManualEstablishment establishedUser
+
+TagColor
+    tag TagId
+    user UserId
+    color Int
+    UniqueTagColor tag user
+    deriving Typeable
+
+DefaultTagColor
+    tag TagId
+    color Int
+    UniqueDefaultTag tag
 
  -- This file is used in Model.hs (which is imported by Foundation.hs)
