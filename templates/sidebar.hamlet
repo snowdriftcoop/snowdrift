@@ -52,13 +52,5 @@ $#        ^{sb_link WikiNewEditsR "View Recent Wiki Edits"}
     ^{sb_link (WikiR "snowdrift" "press") "info for press"}
     ^{sb_link (WhoR "snowdrift") "Who We Are"}
     ^{sb_link ProjectsR "See Projects"}
-    $# TODO
-    $case True
-        $of False
-            ^{sb_link (WikiR "snowdrift" "joincommittee") "Join the steering committee"}
-        $of _
-            ^{sb_link (WikiR "snowdrift" "committee") "Committee"}
-    ^{sb_link (WikiR "snowdrift" "next") "Next steps for Snowdrift"}
-    $# TODO ^{sb_link InviteR "Invite others"}
     $# TODO ^{sb_link ContactR "Contact Us"}
     <br>

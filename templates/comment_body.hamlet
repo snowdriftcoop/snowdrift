@@ -35,6 +35,12 @@ $# used by renderComment function
 
     #{renderMarkdown project_handle (commentText comment)}
 
+
+    $if show_actions
+        <div>
+            $forall tag <- tags
+                ^{tagWidget tag}
+
     <div>
         $if show_actions
             $if unapproved
@@ -51,6 +57,8 @@ $# used by renderComment function
                 <span .comment-action>
                     <a href="@{RetractCommentR project_handle target comment_id}" style="color: darkred">
                         retract
+
+            ^{newTagWidget $ NewCommentTagR project_handle target comment_id}
 
     $maybe comment_form <- mcomment_form
         <div .comment :even_depth:.odd_depth :odd_depth:.even_depth>
@@ -69,5 +77,5 @@ $# used by renderComment function
 
     $else
         $forall child <- children
-            ^{renderComment viewer_id project_handle target users max_depth (depth + 1) empty_list retraction_map show_actions child Nothing}
+            ^{renderComment viewer_id project_handle target users max_depth (depth + 1) empty_list retraction_map show_actions tag_map child Nothing}
 

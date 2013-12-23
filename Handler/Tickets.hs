@@ -1,15 +1,17 @@
 {-# LANGUAGE TupleSections #-}
+
 module Handler.Tickets where
 
 import Import
 
 import Widgets.Sidebar
+import Widgets.Tag
 
 import qualified Data.Map as M
 
 import Data.Filter
 import Data.Order
-import Data.List (sort, sortBy)
+import Data.List (sortBy)
 
 import qualified Github.Issues as GH
 
@@ -19,12 +21,15 @@ import qualified Data.Text as T
 
 import Yesod.Markdown (unMarkdown)
 
-data AnnotatedTicket = AnnotatedTicket TicketId Ticket WikiPage Comment [Tag]
+import Model.AnnotatedTag
+
+
+data AnnotatedTicket = AnnotatedTicket TicketId Ticket WikiPage Comment [AnnotatedTag]
 
 ticketToFilterable :: AnnotatedTicket -> Filterable
 ticketToFilterable (AnnotatedTicket _ ticket _ comment tags) = Filterable has_tag get_named_ts search_literal
     where
-        has_tag t = elem t $ map tagName tags
+        has_tag t = any (\ at -> atName at == t && atScore at > 0) tags
         get_named_ts "CREATED" = S.singleton $ ticketCreatedTs ticket
         get_named_ts name = error $ "Unrecognized time name " ++ T.unpack name
         search_literal str =
@@ -44,7 +49,7 @@ githubIssueToFilterable i = Filterable has_tag get_named_ts search_literal
 ticketToOrderable :: AnnotatedTicket -> Orderable
 ticketToOrderable (AnnotatedTicket _ ticket _ comment tags) = Orderable has_tag get_named_ts search_literal
     where
-        has_tag t = elem t $ map tagName tags
+        has_tag t = elem t $ map atName tags
         get_named_ts "CREATED" = S.singleton $ ticketCreatedTs ticket
         get_named_ts name = error $ "Unrecognized time name " ++ T.unpack name
         search_literal str =
@@ -121,11 +126,16 @@ getTicketsR project_handle = do
         used_tags'tickets <- forM tickets'comments $ \ (Entity ticket_id ticket, Entity comment_id comment) -> do
             let page = pages_map M.! commentPage comment
 
-            used_tags <- fmap (map $ \ (Value v) -> v) $ select $ from $ \ comment_tag -> do
+            used_tags <- select $ from $ \ comment_tag -> do
                 where_ $ comment_tag ^. CommentTagComment ==. val comment_id
-                return $ comment_tag ^. CommentTagTag
+                return comment_tag
 
-            return $ (S.fromList used_tags, \ tags_map -> AnnotatedTicket ticket_id ticket page comment (map (tags_map M.!) used_tags))
+            let tags' :: [(TagId, (UserId, Int))]
+                tags' = map ((commentTagTag &&& (commentTagUser &&& commentTagCount)) . entityVal) used_tags
+                t tags_map = AnnotatedTicket ticket_id ticket page comment <$> buildAnnotatedTags tags_map (CommentTagR project_handle (wikiPageTarget page) comment_id) tags'
+
+            return $ (S.fromList $ map (commentTagTag . entityVal) used_tags, t)
+
             
         tags <- select $ from $ \ tag -> do
             where_ $ tag ^. TagId `in_` valList (S.toList $ mconcat $ map fst $ used_tags'tickets)
@@ -133,7 +143,7 @@ getTicketsR project_handle = do
 
         let tags_map = M.fromList . map (entityKey &&& entityVal) $ tags
 
-        return $ map (($ tags_map) . snd) used_tags'tickets
+        mapM (\ (_, t) -> lift $ t tags_map) used_tags'tickets
 
     render <- getUrlRenderParams
 
@@ -148,9 +158,9 @@ getTicketsR project_handle = do
                                 <td>
                                     #{ticketName ticket}
                                 <td>
-                                    $forall tag <- sort $ map tagName tags
-                                        <span .tag style="background-color:teal;font-size:xx-small">
-                                            #{tag}
+                                    $forall tag <- tags
+                                        <span .tag>
+                                            ^{tagWidget tag}
                         |]
                     filterable = ticketToFilterable $ AnnotatedTicket ticket_id ticket page comment tags
                     orderable = ticketToOrderable $ AnnotatedTicket ticket_id ticket page comment tags

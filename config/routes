@@ -30,6 +30,9 @@
 /p/#Text/w/#Text/comment/#CommentId DiscussCommentR GET
 /p/#Text/w/#Text/comment/#CommentId/moderate ApproveCommentR GET POST
 /p/#Text/w/#Text/comment/#CommentId/retract RetractCommentR GET POST
+/p/#Text/w/#Text/comment/#CommentId/tags CommentTagsR GET
+/p/#Text/w/#Text/comment/#CommentId/tag/#TagId CommentTagR GET POST
+/p/#Text/w/#Text/comment/#CommentId/tag/!new NewCommentTagR GET POST
 /p/#Text/w/#Text/history WikiHistoryR GET
 /p/#Text/w/#Text/history/#WikiEditId WikiEditR GET
 /p/#Text/w/#Text/diff/#WikiEditId/#WikiEditId WikiDiffR GET

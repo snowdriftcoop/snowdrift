@@ -33,6 +33,7 @@ library
                      Model.Permission
                      Model.Shares
                      Model.Transaction
+                     Model.AnnotatedTag
                      Model.Markdown
                      Model.Markdown.Diff
                      Model.User
@@ -61,6 +62,7 @@ library
                      Handler.UserBalance
                      Handler.UserPledges
                      Handler.Wiki
+                     Handler.Tags
                      Handler.Tickets
                      Handler.RepoFeed
                      Handler.BuildFeed
@@ -68,6 +70,7 @@ library
                      Widgets.Markdown
                      Widgets.Sidebar
                      Widgets.Time
+                     Widgets.Tag
                      Widgets.ProjectPledges
 
     other-modules: Model.Role.Internal
@@ -149,6 +152,40 @@ library
                  , github                        < 0.8
 
 
+executable         SnowdriftProcessPayments
+    if flag(library-only)
+        Buildable: False
+
+    main-is:           SnowdriftProcessPayments.hs
+    hs-source-dirs:    app
+    build-depends:     base
+                     , Snowdrift
+                     , yesod
+                     , time
+                     , text                          >= 0.11       && < 0.12
+                     , persistent                    >= 1.2        && < 1.3
+                     , monad-logger                  >= 0.3        && < 0.3.3
+                     , bytestring                    >= 0.9        && < 0.11
+                     , fast-logger                   >= 0.3
+                     , blaze-builder
+                     , resourcet
+
+    ghc-options:       -threaded -O2
+
+    extensions: TemplateHaskell
+                QuasiQuotes
+                OverloadedStrings
+                NoImplicitPrelude
+                MultiParamTypeClasses
+                TypeFamilies
+                GADTs
+                GeneralizedNewtypeDeriving
+                FlexibleContexts
+                EmptyDataDecls
+                NoMonomorphismRestriction
+                DeriveDataTypeable
+                ScopedTypeVariables
+
 executable         Snowdrift
     if flag(library-only)
         Buildable: False
@@ -160,6 +197,7 @@ executable         Snowdrift
                      , yesod
 
     ghc-options:       -threaded -O2
+
 
 test-suite test
     type:              exitcode-stdio-1.0

@@ -1,0 +1,29 @@
+<div .row>
+    <div .col-md-8>
+        $if null tags
+            no tickets to display
+        $else
+            <table>
+                $forall tag <- tags
+                    <tr>
+                        <td>
+                            #{atName tag}
+
+                        <td>
+
+                        <td>
+                            #{atScoreString tag}
+
+                    $forall (user, votes) <- atUserVotes tag
+                        <tr>
+                            <td>
+
+                            <td>
+                                #{userPrintName user}
+
+                            <td>
+                                #{show votes}
+
+    <div .col-md-3 .col-md-offset-1>
+        ^{sidebar}
+

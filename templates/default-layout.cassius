@@ -51,7 +51,7 @@ input[type=text], input[type=email]
     width : 30em
 
 input.inline_shares
-    width : 2.5em
+    width : 3.5em
     text-align : right
 
 textarea
@@ -266,3 +266,12 @@ td
     box-shadow : 0 -1px 0 rgba(0, 0, 0, 0.2) inset
     text-shadow : 0 1px 0 rgba(255, 255, 255, 0.3)
     white-space : nowrap
+    display : inline
+
+.tag-input
+    width : 1em
+    height : 2em
+    background : none
+    border : none
+    padding : 0
+    margin : 0

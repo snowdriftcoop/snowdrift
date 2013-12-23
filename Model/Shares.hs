@@ -16,13 +16,12 @@ buySharesForm shares extra = do
             #{extra}
             <p>
                 <strong>
-                    I pledge ^{fvInput pledge_view}&nbsp;shares starting at 1&nbsp;&cent;/month for every 100 other patrons.
+                    I pledge ^{fvInput pledge_view}&nbsp;shares starting at 1&nbsp;&cent; per month per every 100 other patrons.
             <p>
-                &hellip; share value also increases just a little whenever patrons pledge extra shares beyond the minimum, although this increase tapers off with higher share numbers.
-            <p>
+                &hellip; share value also increases some when any patron pledges extra shares beyond the minimum.
+                <br>
                 <a href=@{WikiR "snowdrift" "mechanism"}>
                     <em>
                         read the details&hellip;
         |]
     return (result, view)
-
