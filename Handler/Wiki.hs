@@ -110,7 +110,7 @@ postWikiR project_handle target = do
                         either_last_edit <- insertBy $ WikiLastEdit page_id edit_id
 
                         if last_edit_id == wikiLastEditEdit last_edit
-                         then lift $ setMessage "Updated."
+                         then lift $ addAlert "success" "Updated."
                          else do
                             [ Value last_editor ] <- select $ from $ \ edit -> do
                                 where_ $ edit ^. WikiEditId ==. val (wikiLastEditEdit last_edit)
@@ -142,11 +142,7 @@ postWikiR project_handle target = do
                             void $ insert $ Message (Just project_id) now (Just last_editor) (Just user_id) message_text
                             void $ insert $ Message (Just project_id) now (Just user_id) (Just last_editor) message_text
 
-                            lift $ setMessage $ flip ($) render
-                                    [hamlet|
-                                        <em .error>
-                                            conflicting edits (ticket created, messages sent)
-                                    |]
+                            lift $ addAlert "danger" "conflicting edits (ticket created, messages sent)"
 
                         case either_last_edit of
                             Left (Entity to_update _) -> update $ \ l -> do
@@ -205,7 +201,7 @@ postEditWikiPermissionsR project_handle target = do
                 where_ $ p ^. WikiPageId ==. val page_id
                 set p [ WikiPagePermissionLevel =. val level ]
 
-            setMessage "permissions updated"
+            addAlert "success" "permissions updated"
 
             redirect $ WikiR project_handle target
 
@@ -281,7 +277,7 @@ postNewWikiR project_handle target = do
                         edit_id <- insert $ WikiEdit now user_id page_id content $ Just "Page created."
                         insert $ WikiLastEdit page_id edit_id
 
-                    setMessage "Created."
+                    addAlert "success" "Created."
                     redirect $ WikiR project_handle target
 
                 _ -> error "unrecognized mode"
@@ -350,9 +346,11 @@ getDiscussWikiR project_handle target = do
 
     let tag_map = M.fromList $ entityPairs tags
         comments = forM_ roots $ \ root ->
-            renderComment user_id project_handle target users 10 0 [] retraction_map True tag_map $ buildCommentTree root rest
+            renderComment user_id project_handle target users 10 0 [] retraction_map True tag_map (buildCommentTree root rest) Nothing
 
     (comment_form, _) <- generateFormPost $ commentForm Nothing Nothing
+    
+    let has_comments = not $ null roots
 
     defaultLayout $(widgetFile "wiki_discuss")
 
@@ -417,9 +415,12 @@ renderDiscussComment :: UserId -> Text -> Text -> Bool -> Widget
     -> Bool -> M.Map TagId Tag -> Widget
 
 renderDiscussComment viewer_id project_handle target show_reply comment_form root rest users earlier_retractions retraction_map show_actions tag_map = do
-    let Node parent children = buildCommentTree root rest
-        comment = renderComment viewer_id project_handle target users 1 0 earlier_retractions retraction_map show_actions tag_map $ Node parent []
-        child_comments = mapM_ (renderComment viewer_id project_handle target users 10 0 [] retraction_map show_actions tag_map) children
+    let tree = buildCommentTree root rest
+        comment = renderComment viewer_id project_handle target users 1 0 earlier_retractions retraction_map show_actions tag_map tree mcomment_form
+        mcomment_form =
+            if show_reply
+                then Just comment_form
+                else Nothing
 
     $(widgetFile "comment")
 
@@ -506,13 +507,31 @@ postDiscussWikiR project_handle target = do
 
                         forM_ ancestors $ \ ancestor_id -> insert $ CommentAncestor comment_id ancestor_id
 
-                    setMessage $ if established then "comment posted" else "comment submitted for moderation"
+                    addAlert "success" $ if established then "comment posted" else "comment submitted for moderation"
                     redirect $ DiscussWikiR project_handle target
 
                 _ -> error "unrecognized mode"
 
         FormMissing -> error "Form missing."
         FormFailure msgs -> error $ "Error submitting form: " ++ T.unpack (T.intercalate "\n" msgs)
+
+getNewDiscussWikiR :: Text -> Text -> Handler Html
+getNewDiscussWikiR project_handle target = do
+    Entity user_id user <- requireAuth
+    Entity page_id page  <- runDB $ do
+        Entity project_id _ <- getBy404 $ UniqueProjectHandle project_handle
+        getBy404 $ UniqueWikiTarget project_id target
+
+    affiliated <- runDB $ (||)
+            <$> isProjectAffiliated project_handle user_id
+            <*> isProjectAdmin "snowdrift" user_id
+
+    (comment_form, _) <- generateFormPost $ commentForm Nothing Nothing
+    
+    defaultLayout $(widgetFile "wiki_discuss_new")
+
+postNewDiscussWikiR :: Text -> Text -> Handler Html
+postNewDiscussWikiR = postDiscussWikiR
 
 getWikiNewCommentsR :: Text -> Handler Html
 getWikiNewCommentsR project_handle = do
@@ -574,7 +593,7 @@ getWikiNewCommentsR project_handle = do
                         return comment_retraction
 
                 let target = wikiPageTarget $ entityVal $ pages M.! commentPage comment
-                    rendered_comment = renderComment viewer_id project_handle target users 1 0 earlier_retractions retraction_map True tag_map $ Node (Entity comment_id comment) []
+                    rendered_comment = renderComment viewer_id project_handle target users 1 0 earlier_retractions retraction_map True tag_map (Node (Entity comment_id comment) []) Nothing
 
                 [whamlet|$newline never
                     <div .row>
@@ -836,7 +855,7 @@ getApproveCommentR project_handle target comment_id = do
 
     defaultLayout [whamlet|
         <form method="POST">
-            <submit value="approve post">
+            <input type=submit value="approve post">
     |]
 
 
@@ -865,7 +884,7 @@ postApproveCommentR project_handle target comment_id = do
 
         where_ $ c ^. CommentId ==. val comment_id
 
-    setMessage "comment approved"
+    addAlert "success" "comment approved"
 
     redirect $ DiscussCommentR project_handle target comment_id
 
@@ -875,10 +894,11 @@ retractForm reason = renderBootstrap3 $ areq' snowdriftMarkdownField "Retraction
 
 
 renderComment :: UserId -> Text -> Text -> M.Map UserId (Entity User) -> Int -> Int
-    -> [CommentRetraction] -> M.Map CommentId CommentRetraction -> Bool -> Map TagId Tag -> Tree (Entity Comment) -> Widget
+    -> [CommentRetraction] -> M.Map CommentId CommentRetraction -> Bool -> Map TagId Tag -> Tree (Entity Comment) -> Maybe Widget -> Widget
 
-renderComment viewer_id project_handle target users max_depth depth earlier_retractions retraction_map show_actions tag_map tree = do
+renderComment viewer_id project_handle target users max_depth depth earlier_retractions retraction_map show_actions tag_map tree mcomment_form = do
     maybe_route <- handlerToWidget getCurrentRoute
+    (comment_form, _) <- handlerToWidget $ generateFormPost $ commentForm Nothing Nothing
 
     let Entity comment_id comment = rootLabel tree
         children = subForest tree

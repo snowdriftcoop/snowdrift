@@ -8,12 +8,6 @@
         <table>
             <tr>
                 <td>
-                    Total&nbsp;of&nbsp;current&nbsp;pledges: #{show project_value}&nbsp;per&nbsp;month
-            <tr>
-                <td>
-                    <hr>
-            <tr>
-                <td>
                     $maybe project_handle <- maybe_project_handle
                         <a href="@{ProjectPatronsR project_handle}">
                             _{MsgPatrons users}
@@ -25,6 +19,9 @@
             <tr>
                 <td>
                     #{show share_value}&nbsp;per&nbsp;share
+            <tr>
+                <td>
+                    Total: #{show project_value}&nbsp;per&nbsp;month
         <hr>
 
         $maybe project_handle <- maybe_project_handle

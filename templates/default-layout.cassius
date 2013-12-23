@@ -51,7 +51,7 @@ input[type=text], input[type=email]
     width : 30em
 
 input.inline_shares
-    width : 2.5em
+    width : 3.5em
     text-align : right
 
 textarea
@@ -81,8 +81,15 @@ div.math
     padding-right: 0.122em
     margin-right: 0
 
-.note
-    color : blue
+.alert-info
+    color: #767676;
+    background-color: #F1F1F1;
+    border-color: #F0F1EF;
+
+.alert-success
+    color: #31708f;
+    background-color: #d9edf7;
+    border-color: #bce8f1;
 
 hr
     border-color : #CCCCDD
@@ -137,11 +144,6 @@ em
 dd
     padding : 0.7em
     padding-bottom : 1.5em
-
-div#message
-    font-size : 0.9em
-    font-style : italic
-    color : blue
 
 div.row
     padding-bottom : 1em
@@ -220,12 +222,7 @@ span.title
     border-left : solid darkred 0.25em
     padding-left : 0.5em
     margin : 0.2em
-
-.alert
-    color : red
-    font-style : italic
-    text-align : center 
-    
+ 
 h1, h2, h3, h4, h5, h6
     font-weight : bold
 

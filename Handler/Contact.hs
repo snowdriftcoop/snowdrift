@@ -28,9 +28,9 @@ postContactR project_handle = do
                 Entity project_id _ <- getBy404 $ UniqueProjectHandle project_handle
                 insert $ Message (Just project_id) now maybe_user_id Nothing content
 
-            setMessage "Comment submitted.  Thank you for your input!"
+            addAlert "success" "Comment submitted.  Thank you for your input!" 
 
-        _ -> setMessage "Error occurred when submitting form."
+        _ -> addAlert "danger" "Error occurred when submitting form." 
 
     redirect $ ContactR project_handle
 

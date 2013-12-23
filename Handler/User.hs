@@ -15,6 +15,8 @@ import Yesod.Auth.HashDB (setPassword)
 
 import Control.Exception.Lifted (throwIO, handle)
 
+import qualified Data.Text as T
+
 hiddenMarkdown :: (RenderMessage (HandlerSite m) FormMessage, MonadHandler m) => Maybe Markdown -> AForm m (Maybe Markdown)
 hiddenMarkdown Nothing = fmap (fmap Markdown) $ aopt hiddenField "" Nothing
 hiddenMarkdown (Just (Markdown str)) = fmap (fmap Markdown) $ aopt hiddenField "" $ Just $ Just str
@@ -123,11 +125,11 @@ postUserR user_id = do
                     redirect $ UserR user_id
 
                 _ -> do
-                    setMessage "Error: unknown mode."
+                    addAlertEm "danger" "unknown mode" "Error: "
                     redirect $ UserR user_id
 
         _ -> do
-            setMessage "Failed to update user."
+            addAlert "danger" "Failed to update user." 
             redirect $ UserR user_id
 
 getUsersR :: Handler Html
@@ -162,19 +164,19 @@ postUserCreateR = do
                 uid_maybe <- insertUnique user
                 lift $ case uid_maybe of
                     Just uid -> do
-                        setMessage $ toHtml $ "created user; welcome! (" ++ show account_id ++ ", " ++ show uid ++ ")"
+                        addAlert "success" $ T.pack ("Created user; welcome! (" ++ show account_id ++ ", " ++ show uid ++ ")") 
                         return True
 
                     Nothing -> do
-                        setMessage "E-mail or handle already in use."
+                        addAlert "danger" "E-mail or handle already in use." 
                         throwIO DBException
 
             when success $ do
                 setCreds True $ Creds "HashDB" ident []
                 redirectUltDest HomeR
 
-        FormMissing -> setMessage "missing field"
-        FormFailure strings -> setMessage (toHtml $ mconcat strings)
+        FormMissing -> addAlert "danger" "missing field" 
+        FormFailure strings -> addAlert "danger" (mconcat strings) 
 
     defaultLayout $ [whamlet|
         <form method=POST>

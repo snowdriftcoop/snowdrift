@@ -94,7 +94,7 @@ getTicketsR project_handle = do
 
     github_issues <- case github_issues' of
         Right x -> return x
-        Left _ -> setMessage "failed to fetch github tickets\n" >> return []
+        Left _ -> addAlert "danger" "failed to fetch github tickets\n" >> return []
 
     ((result, formWidget), encType) <- runFormGet viewForm
 
