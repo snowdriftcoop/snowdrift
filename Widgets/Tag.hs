@@ -17,6 +17,10 @@ pickForegroundColor bg = maximumBy (compare `on` \ a -> colorDiff a bg) [0x11111
 
 tagWidget :: AnnotatedTag -> Widget
 tagWidget t = do
+    maybe_user_id <- handlerToWidget maybeAuthId
+
+    let maybe_user_score = maybe_user_id >>= atUserScore t
+
     let bg :: String
         bg = printf "%06x" $ (\ (Color c) -> c) $ atColor t
         fg :: String
@@ -27,7 +31,11 @@ tagWidget t = do
             <small>
                 #{atName t}
                 <input type=submit name=direction value=- .tag-input>
-                #{atScoreString t}
+                $maybe user_score <- maybe_user_score
+                    #{user_score}/#{atScoreString t}
+                $nothing
+                    #{atScoreString t}
+
                 <input type=submit name=direction value=+ .tag-input>
     |]
 
