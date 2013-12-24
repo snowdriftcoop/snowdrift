@@ -22,6 +22,7 @@ import qualified Data.Foldable as F
 
 import qualified Data.Set as S
 import qualified Data.Map as M
+import qualified Data.List as L
 
 import Data.Tree
 
@@ -915,7 +916,7 @@ renderComment viewer_id project_handle target users max_depth depth earlier_retr
         maybe_retraction = M.lookup comment_id retraction_map
         empty_list = []
 
-    tags <- handlerToWidget $ do
+    tags <- fmap (L.sortBy (compare `on` atName)) $ handlerToWidget $ do
         comment_tags <- runDB $ select $ from $ \ comment_tag -> do
             where_ $ comment_tag ^. CommentTagComment ==. val comment_id
             return comment_tag
