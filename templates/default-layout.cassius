@@ -270,10 +270,15 @@ form.tag
 
 input.tag-input
     width : .8em
-    height : 2em
     background : none
-    border : none
-    padding : 0
-    padding-right : -0.4em
-    margin : 0
-    margin-right : -0.4em
+    border : solid lightgrey 1px
+    padding : 0 0.5em
+    margin : 0 -0.2em 0 0.2em
+    vertical-align : super
+
+input.tag-input[type="submit"]:hover
+    background : none
+    border : solid grey 1px
+
+input.tag.input[type="submit"]:active
+    background : none
