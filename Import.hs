@@ -9,7 +9,6 @@ import           Yesod                as Import hiding (Route (..), (||.), (==.)
 import           Yesod.Auth           as Import
 import           Yesod.Markdown       as Import (Markdown)
 import           Text.Blaze.Html.Renderer.Text (renderHtml)
-import           Yesod.Core.Handler (getUrlRenderParams)
 
 import           Control.Arrow        as Import ((&&&), first, second)
 
@@ -18,7 +17,6 @@ import qualified Database.Esqueleto
 
 import           Control.Applicative  as Import (pure, (<$>), (<*>))
 import           Data.Text            as Import (Text)
-import qualified Data.Text            as T
 import qualified Data.Text.Lazy       as TL
 
 import           Data.Function        as Import (on)

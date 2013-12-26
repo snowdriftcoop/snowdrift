@@ -86,6 +86,7 @@ postCommentTagR project_handle target comment_id tag_id = do
     let delta = case T.unpack <$> direction of
             Just "+" -> 1
             Just "-" -> -1
+            Just "x" -> -1
             Nothing -> error "direction unset"
             _ -> error "unrecognized direction"
 

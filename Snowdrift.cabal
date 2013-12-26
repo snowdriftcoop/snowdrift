@@ -37,6 +37,7 @@ library
                      Model.Markdown
                      Model.Markdown.Diff
                      Model.User
+                     Model.Settings
                      Settings
                      Settings.StaticFiles
                      Settings.Development
@@ -73,7 +74,8 @@ library
                      Widgets.Tag
                      Widgets.ProjectPledges
 
-    other-modules: Model.Role.Internal
+    other-modules: Model.Settings.Internal
+                   Model.Role.Internal
                    Model.Permission.Internal
 
     if flag(dev) || flag(library-only)

@@ -22,14 +22,12 @@ import Text.Hamlet (hamletFile)
 import System.Log.FastLogger (Logger)
 
 import Model.Currency
--- import Model.Role.Internal
 
 import Control.Applicative
 import Control.Monad.Trans.Resource
 import Control.Monad
 
 import Data.Int (Int64)
-import Data.Text (Text)
 import Data.Text as T
 
 import Data.Char (isSpace)
@@ -42,15 +40,12 @@ import Yesod.Form.Jquery
 
 import qualified Data.ByteString.Lazy.Char8 as LB
 import qualified Data.Text.Lazy.Encoding as E
-import qualified Data.Text as T
 
 import Data.Time
 
 import Database.Esqueleto
 
 import           Text.Blaze.Html.Renderer.Text (renderHtml)
-import           Yesod.Core.Handler (getUrlRenderParams)
-import qualified Data.Text            as T
 import qualified Data.Text.Lazy       as TL
 import Data.Monoid
 

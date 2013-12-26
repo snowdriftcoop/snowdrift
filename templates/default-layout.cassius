@@ -259,7 +259,7 @@ td
     padding : 0.2em
     border-top : 1px solid #DDDDDD
 
-.tag
+form.tag
     padding : 2px 4px
     border-radius: 3px
     font-weight: bold
@@ -268,10 +268,12 @@ td
     white-space : nowrap
     display : inline
 
-.tag-input
-    width : 1em
+input.tag-input
+    width : .8em
     height : 2em
     background : none
     border : none
     padding : 0
+    padding-right : -0.4em
     margin : 0
+    margin-right : -0.4em
