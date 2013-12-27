@@ -272,10 +272,10 @@ input.tag-input
     width : .8em
     background : none
     border : solid lightgrey 1px
-    padding : 0 0.5em
+    padding : 0 0.6em
     margin : 0 -0.2em 0 0.4em
-    vertical-align : super
-
+    vertical-align : calc(10%)
+ 
 input.tag-input[type="submit"]:hover
     background : none
     border : solid grey 1px
