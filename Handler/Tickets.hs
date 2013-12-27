@@ -159,8 +159,7 @@ getTicketsR project_handle = do
                                     #{ticketName ticket}
                                 <td>
                                     $forall tag <- tags
-                                        <span .tag>
-                                            ^{tagWidget tag}
+                                        ^{tagWidget tag}
                         |]
                     filterable = ticketToFilterable $ AnnotatedTicket ticket_id ticket page comment tags
                     orderable = ticketToOrderable $ AnnotatedTicket ticket_id ticket page comment tags
@@ -179,7 +178,7 @@ getTicketsR project_handle = do
                                 #{GH.issueTitle github_issue}
                             <td>
                                 $forall tag <- GH.issueLabels github_issue
-                                    <span .tag style="background-color:##{GH.labelColor tag};font-size:xx-small">
+                                    <form .tag style="background-color:##{GH.labelColor tag};font-size:xx-small">
                                         #{GH.labelName tag}
                                     
                     |]

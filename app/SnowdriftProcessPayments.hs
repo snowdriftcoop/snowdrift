@@ -25,6 +25,7 @@ import Data.Time
 
 import Blaze.ByteString.Builder (toByteString)
 
+retry x = x >>= \ x' -> when (not x') $ retry x
 
 main :: IO ()
 main = do
@@ -51,7 +52,7 @@ main = do
                 where_ $ pledge ^. PledgeProject ==. val project_id
                 return pledge
 
-            forM_ pledges $ \ (Entity pledge_id pledge) -> do
+            user_balances <- forM pledges $ \ (Entity pledge_id pledge) -> do
                 Just user <- get $ pledgeUser pledge
                 let amount = projectShareValue project $* fromIntegral (pledgeFundedShares pledge)
                     user_account_id = userAccount user
@@ -62,10 +63,25 @@ main = do
                 user_account <- updateGet user_account_id [AccountBalance Database.Persist.Sql.-=. amount]
                 project_account <- updateGet project_account_id [AccountBalance Database.Persist.Sql.+=. amount]
 
-                when (accountBalance user_account < 0) $ do
-                    transactionUndo
-                    error "transaction would create negative user balance"
+                return (pledgeUser pledge, accountBalance user_account)
 
-            return ()
+            let negative_balances = filter ((< 0) . snd) user_balances
+
+
+            if null negative_balances
+             then transactionSave >> return True
+             else do
+                transactionUndo
+
+                update $ \ p -> do
+                    set p [ PledgeFundedShares -=. val 1 ]
+                    where_ $ p ^. PledgeUser `in_` valList (map fst negative_balances)
+
+                updateShareValue project_id
+
+                transactionSave
+
+                return False
+
         return ()
 

@@ -86,9 +86,9 @@ postCommentTagR project_handle target comment_id tag_id = do
     let delta = case T.unpack <$> direction of
             Just "+" -> 1
             Just "-" -> -1
-            Just "x" -> -1
+            Just "\215" -> -1
             Nothing -> error "direction unset"
-            _ -> error "unrecognized direction"
+            Just str -> error $ "unrecognized direction: " ++ str
 
     runDB $ do
         maybe_comment_tag_entity <- getBy $ UniqueCommentTag comment_id tag_id user_id

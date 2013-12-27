@@ -38,14 +38,15 @@ tagWidget t = do
                 #{atName t}
                 $if show_tag_voting
                     <input type=submit name=direction style="color:##{fg}" value=- .tag-input>
-                    $maybe user_score <- maybe_user_score
-                        #{user_score}/#{atScoreString t}
-                    $nothing
-                        #{atScoreString t}
+                    <span .tag-score>
+                        $maybe user_score <- maybe_user_score
+                            #{user_score}/#{atScoreString t}
+                        $nothing
+                            #{atScoreString t}
                     <input type=submit name=direction style="color:##{fg}" value=+ .tag-input>
                 $else
                     $if my_tag
-                        <input type=submit name=direction style="color:##{fg}" value=x .tag-input>
+                        <input type=submit name=direction style="color:##{fg};vertical-align:super" value=&times; .tag-input>
     |]
 
 newTagWidget :: Route App -> Widget
