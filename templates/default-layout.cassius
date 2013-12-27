@@ -274,7 +274,6 @@ input.tag-input
     border : solid lightgrey 1px
     padding : 0 0.5em
     margin : 0 -0.2em 0 0.4em
-    vertical-align : super
 
 input.tag-input[type="submit"]:hover
     background : none
