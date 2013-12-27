@@ -171,6 +171,7 @@ executable         SnowdriftProcessPayments
                      , fast-logger                   >= 0.3
                      , blaze-builder
                      , resourcet
+                     , mtl
 
     ghc-options:       -threaded -O2
 
