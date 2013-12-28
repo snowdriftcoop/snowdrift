@@ -509,7 +509,7 @@ postDiscussWikiR project_handle target = do
                         forM_ ancestors $ \ ancestor_id -> insert $ CommentAncestor comment_id ancestor_id
 
                     addAlert "success" $ if established then "comment posted" else "comment submitted for moderation"
-                    redirect $ DiscussWikiR project_handle target
+                    redirect $ maybe (DiscussWikiR project_handle target) (DiscussCommentR project_handle target) maybe_parent_id
 
                 _ -> error "unrecognized mode"
 
