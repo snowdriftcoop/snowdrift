@@ -10,7 +10,7 @@ import           Yesod.Auth           as Import
 import           Yesod.Markdown       as Import (Markdown)
 import           Text.Blaze.Html.Renderer.Text (renderHtml)
 
-import           Control.Arrow        as Import ((&&&), first, second)
+import           Control.Arrow        as Import ((***), (&&&), first, second)
 
 import           Database.Esqueleto   as Import hiding (on)
 import qualified Database.Esqueleto

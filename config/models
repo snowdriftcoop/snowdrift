@@ -2,11 +2,17 @@ Account
     balance Milray
 
 
+Payday
+    date UTCTime
+
+
 Transaction
     ts UTCTime
 
     credit AccountId Maybe
     debit AccountId Maybe
+
+    payday PaydayId Maybe
 
     amount Milray
 
@@ -47,6 +53,7 @@ Project
     description Markdown
     account AccountId
     shareValue Milray
+    lastPayday PaydayId Maybe
     UniqueProjectAccount account
     UniqueProjectHandle handle
 

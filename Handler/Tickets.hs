@@ -119,7 +119,6 @@ getTicketsR project_handle = do
             return page
 
         -- TODO Permissions: only show tickets on pages where I can view comments
-        -- TODO Restrict pages to this project
             
         let pages_map = M.fromList . map (entityKey &&& entityVal) $ pages
 
