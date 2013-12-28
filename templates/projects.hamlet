@@ -10,7 +10,7 @@
                             <a href=@{ProjectR (projectHandle project)}>
                                 #{projectName project}
                         <td>
-                            #{show (projectShareValue project)}/pledge
+                            #{show (projectShareValue project)}/share
 
     <div .col-md-3 .col-md-offset-1>
         ^{sidebar}

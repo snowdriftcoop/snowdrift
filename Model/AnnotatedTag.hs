@@ -5,6 +5,7 @@ import Import
 
 import qualified Data.Map as M
 import qualified Data.Set as S
+import qualified Data.List as L
 
 import Data.List (sortBy)
 
@@ -22,6 +23,9 @@ atName = tagName . entityVal . atTag
 
 atScore :: AnnotatedTag -> Double
 atScore = sum . map (\ (_, x) -> if x == 0 then 0 else fromIntegral (signum x) * logBase 2 (1 + fromIntegral (abs x) :: Double)) . atUserVotes
+
+atUserScore :: AnnotatedTag -> UserId -> Maybe Int
+atUserScore at user_id = fmap snd $ L.find ((== user_id) . entityKey . fst) $ atUserVotes at
 
 atScoreString :: AnnotatedTag -> String
 atScoreString = printf "%.1f" . atScore

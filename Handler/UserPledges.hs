@@ -5,6 +5,9 @@ import Import
 import Widgets.ProjectPledges
 import Widgets.Sidebar
 
+getOldUserPledgesR :: UserId -> Handler Html
+getOldUserPledgesR = redirect . UserPledgesR
+
 getUserPledgesR :: UserId -> Handler Html
 getUserPledgesR user_id =
     -- TODO: refine permissions here

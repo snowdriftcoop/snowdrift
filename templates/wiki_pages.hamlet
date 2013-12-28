@@ -6,13 +6,7 @@
             <table>
                 <tr>
                     <th>
-                        target
-                    <th>
-                        view
-                    <th>
-                        edit
-                    <th>
-                        view meta
+                        page URL
 
                 $forall Entity _ page <- pages
                     <tr>

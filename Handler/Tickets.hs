@@ -23,6 +23,8 @@ import Yesod.Markdown (unMarkdown)
 
 import Model.AnnotatedTag
 
+import Text.Printf
+import Numeric
 
 data AnnotatedTicket = AnnotatedTicket TicketId Ticket WikiPage Comment [AnnotatedTag]
 
@@ -119,7 +121,6 @@ getTicketsR project_handle = do
             return page
 
         -- TODO Permissions: only show tickets on pages where I can view comments
-        -- TODO Restrict pages to this project
             
         let pages_map = M.fromList . map (entityKey &&& entityVal) $ pages
 
@@ -159,14 +160,15 @@ getTicketsR project_handle = do
                                     #{ticketName ticket}
                                 <td>
                                     $forall tag <- tags
-                                        <span .tag>
-                                            ^{tagWidget tag}
+                                        ^{tagWidget tag}
                         |]
                     filterable = ticketToFilterable $ AnnotatedTicket ticket_id ticket page comment tags
                     orderable = ticketToOrderable $ AnnotatedTicket ticket_id ticket page comment tags
 
         githubIssueToIssue github_issue = Issue widget filterable orderable
             where
+                fg :: String -> String
+                fg = printf "%06x" . pickForegroundColor . maybe 0 fst . listToMaybe . readHex
                 widget = [whamlet|
                         <tr>
                             <td>
@@ -179,7 +181,7 @@ getTicketsR project_handle = do
                                 #{GH.issueTitle github_issue}
                             <td>
                                 $forall tag <- GH.issueLabels github_issue
-                                    <span .tag style="background-color:##{GH.labelColor tag};font-size:xx-small">
+                                    <form .tag style="background-color:##{GH.labelColor tag};color:##{fg $ GH.labelColor tag};font-size:xx-small">
                                         #{GH.labelName tag}
                                     
                     |]

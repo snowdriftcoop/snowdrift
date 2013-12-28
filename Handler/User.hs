@@ -41,6 +41,10 @@ previewUserForm user = renderBootstrap3 $
         <*> hiddenMarkdown (userBlurb user)
         <*> hiddenMarkdown (userStatement user)
 
+
+getOldUserR :: UserId -> Handler Html
+getOldUserR = redirect . UserR
+
 getUserR :: UserId -> Handler Html
 getUserR user_id = do
     maybe_viewer_id <- maybeAuthId
@@ -67,6 +71,9 @@ renderUser viewer_id user_id user = do
             
 
 
+getOldEditUserR :: UserId -> Handler Html
+getOldEditUserR = redirect . EditUserR
+
 getEditUserR :: UserId -> Handler Html
 getEditUserR user_id = do
     viewer_id <- requireAuthId
@@ -79,6 +86,9 @@ getEditUserR user_id = do
     (form, enctype) <- generateFormPost $ editUserForm user
     defaultLayout $(widgetFile "edit_user")
 
+
+postOldUserR :: UserId -> Handler Html
+postOldUserR = postUserR
 
 postUserR :: UserId -> Handler Html
 postUserR user_id = do
@@ -132,6 +142,9 @@ postUserR user_id = do
             addAlert "danger" "Failed to update user." 
             redirect $ UserR user_id
 
+getOldUsersR :: Handler Html
+getOldUsersR = redirect UsersR
+
 getUsersR :: Handler Html
 getUsersR = do
     Entity _ viewer <- requireAuth
@@ -140,6 +153,9 @@ getUsersR = do
 
     defaultLayout $(widgetFile "users")
 
+
+getOldUserCreateR :: Handler Html
+getOldUserCreateR = redirect UserCreateR
 
 getUserCreateR :: Handler Html
 getUserCreateR = do
@@ -150,6 +166,9 @@ getUserCreateR = do
             <input type=submit>
     |]
 
+
+postOldUserCreateR :: Handler Html
+postOldUserCreateR = postUserCreateR
 
 postUserCreateR :: Handler Html
 postUserCreateR = do

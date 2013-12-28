@@ -10,6 +10,8 @@ import Model.Shares
 import Model.Markdown.Diff
 import Model.User
 
+import qualified Data.Map as M
+
 import qualified Data.Text as T
 import qualified Data.Set as S
 
@@ -99,7 +101,7 @@ previewProjectForm project =
 
 getEditProjectR :: Text -> Handler Html
 getEditProjectR project_handle = do
-    viewer_id <- requireAuthId 
+    viewer_id <- requireAuthId
 
     Entity project_id project <- runDB $ do
         can_edit <- (||) <$> isProjectAdmin project_handle viewer_id <*> isProjectAdmin "snowdrift" viewer_id
@@ -185,14 +187,14 @@ postProjectR project_handle = do
 
                         forM_ tag_ids $ \ tag_id -> insert $ ProjectTag project_id tag_id
 
-                    addAlert "success" "project updated" 
+                    addAlert "success" "project updated"
                     redirect $ ProjectR project_handle
 
                 _ -> do
                     addAlertEm "danger" "unrecognized mode" "Error: "
                     redirect $ ProjectR project_handle
         _ -> do
-            addAlert "danger" "error" 
+            addAlert "danger" "error"
             redirect $ ProjectR project_handle
 
 
@@ -203,16 +205,30 @@ getProjectPatronsR project_handle = do
     page <- lookupGetParamDefault "page" 0
     per_page <- lookupGetParamDefault "count" 20
 
-    (project, pledges) <- runDB $ do
+    (project, pledges, user_payouts_map) <- runDB $ do
         Entity project_id project <- getBy404 $ UniqueProjectHandle project_handle
-        pledges <- select $ from $ \(pledge `InnerJoin` user) -> do
-            on_ (pledge ^. PledgeUser ==. user ^. UserId)
-            where_ (pledge ^. PledgeProject ==. val project_id)
-            orderBy [ desc (pledge ^. PledgeShares), asc (user ^. UserName), asc (user ^. UserId)]
+        pledges <- select $ from $ \ (pledge `InnerJoin` user) -> do
+            on_ $ pledge ^. PledgeUser ==. user ^. UserId
+            where_ $ pledge ^. PledgeProject ==. val project_id
+            orderBy [ desc (pledge ^. PledgeFundedShares), asc (user ^. UserName), asc (user ^. UserId)]
             offset page
             limit per_page
             return (pledge, user)
 
-        return (project, pledges)
+        last_paydays <- case projectLastPayday project of
+            Nothing -> return []
+            Just last_payday -> select $ from $ \ payday -> do
+                where_ $ payday ^. PaydayId <=. val last_payday
+                orderBy [ desc $ payday ^. PaydayId ]
+                limit 2
+                return payday
+
+        user_payouts <- select $ from $ \ (transaction `InnerJoin` user) -> do
+            where_ $ transaction ^. TransactionPayday `in_` valList (map (Just . entityKey) last_paydays)
+            on_ $ transaction ^. TransactionDebit ==. just (user ^. UserAccount)
+            groupBy $ user ^. UserId
+            return $ (user ^. UserId, count $ transaction ^. TransactionId)
+
+        return (project, pledges, M.fromList $ map ((\ (Value x :: Value UserId) -> x) *** (\ (Value x :: Value Int) -> x)) user_payouts)
 
     defaultLayout $(widgetFile "project_donors")

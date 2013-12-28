@@ -17,7 +17,13 @@
                                     <a href="@{UserR (entityKey user)}">
                                         #{userPrintName user}
                                 <td>
-                                    #{show (pledgeShares (entityVal pledge))}&nbsp;shares
+                                    #{show (pledgeFundedShares (entityVal pledge))}&nbsp;shares
+                                <td>
+                                    $maybe count <- M.lookup (entityKey user) user_payouts_map
+                                        $if count < 2
+                                            (pending)
+                                    $nothing
+                                        (pending)
 
     <div .col-md-3 .col-md-offset-1>
         ^{sidebar}

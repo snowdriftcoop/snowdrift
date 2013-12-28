@@ -62,6 +62,10 @@ renderTags tags = defaultLayout $(widgetFile "tags")
 tagBumpForm :: Int -> Form Int
 tagBumpForm = renderDivs . areq hiddenField "" . Just
 
+
+getOldCommentTagR :: Text -> Text -> CommentId -> TagId -> Handler Html
+getOldCommentTagR project_handle target comment_id tag_id = redirect $ OldCommentTagR project_handle target comment_id tag_id
+
 getCommentTagR :: Text -> Text -> CommentId -> TagId -> Handler Html
 getCommentTagR = processCommentTag $ \ (AnnotatedTag tag url color user_votes) -> do
     let tag_name = tagName $ entityVal tag
@@ -70,6 +74,10 @@ getCommentTagR = processCommentTag $ \ (AnnotatedTag tag url color user_votes) -
     (decForm, _) <- generateFormPost $ tagBumpForm (-1)
 
     defaultLayout $(widgetFile "tag")
+
+
+postOldCommentTagR :: Text -> Text -> CommentId -> TagId -> Handler Html
+postOldCommentTagR = postCommentTagR
 
 postCommentTagR :: Text -> Text -> CommentId -> TagId -> Handler Html
 postCommentTagR project_handle target comment_id tag_id = do
@@ -86,8 +94,9 @@ postCommentTagR project_handle target comment_id tag_id = do
     let delta = case T.unpack <$> direction of
             Just "+" -> 1
             Just "-" -> -1
+            Just "\215" -> -1
             Nothing -> error "direction unset"
-            _ -> error "unrecognized direction"
+            Just str -> error $ "unrecognized direction: " ++ str
 
     runDB $ do
         maybe_comment_tag_entity <- getBy $ UniqueCommentTag comment_id tag_id user_id
@@ -103,12 +112,19 @@ postCommentTagR project_handle target comment_id tag_id = do
     redirectUltDest $ CommentTagR project_handle target comment_id tag_id
 
 
+getOldCommentTagsR :: Text -> Text -> CommentId -> Handler Html
+getOldCommentTagsR project_handle target comment_id = redirect $ CommentTagsR project_handle target comment_id 
+
 getCommentTagsR :: Text -> Text -> CommentId -> Handler Html
 getCommentTagsR = processCommentTags renderTags
 
 
 newCommentTagForm :: Form Text
 newCommentTagForm = renderBootstrap3 $ areq textField "" Nothing
+
+
+getOldNewCommentTagR :: Text -> Text -> CommentId -> Handler Html
+getOldNewCommentTagR project_handle target comment_id = redirect $ NewCommentTagR project_handle target comment_id
 
 getNewCommentTagR :: Text -> Text -> CommentId -> Handler Html
 getNewCommentTagR project_handle target comment_id = do
@@ -132,6 +148,10 @@ getNewCommentTagR project_handle target comment_id = do
     (form, _) <- generateFormPost newCommentTagForm
 
     defaultLayout $(widgetFile "new_comment_tag")
+
+
+postOldNewCommentTagR :: Text -> Text -> CommentId -> Handler Html
+postOldNewCommentTagR = postNewCommentTagR
 
 postNewCommentTagR :: Text -> Text -> CommentId -> Handler Html
 postNewCommentTagR project_handle target comment_id = do

@@ -222,7 +222,7 @@ span.title
     border-left : solid darkred 0.25em
     padding-left : 0.5em
     margin : 0.2em
- 
+
 h1, h2, h3, h4, h5, h6
     font-weight : bold
 
@@ -238,7 +238,7 @@ q:before
 q:after
     content : '"'
 
-table 
+table
     box-shadow : 8px 8px 5px #888888
     margin : 2em 0
     font-size : 0.85em
@@ -259,7 +259,7 @@ td
     padding : 0.2em
     border-top : 1px solid #DDDDDD
 
-.tag
+form.tag
     padding : 2px 4px
     border-radius: 3px
     font-weight: bold
@@ -268,10 +268,18 @@ td
     white-space : nowrap
     display : inline
 
-.tag-input
-    width : 1em
-    height : 2em
+input.tag-input
+    width : .8em
     background : none
-    border : none
-    padding : 0
-    margin : 0
+    border : solid lightgrey 1px
+    padding : 0 0.6em
+    margin : 0 -0.2em 0 0.4em
+    vertical-align : calc(10%)
+
+input.tag-input[type="submit"]:hover
+    background : none
+    border : solid grey 1px
+
+input.tag.input[type="submit"]:active
+    background : none
+

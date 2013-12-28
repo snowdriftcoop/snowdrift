@@ -23,6 +23,9 @@ lookupParamDefault name def = do
         return $ fst param
         
 
+getOldUserBalanceR :: UserId -> Handler Html
+getOldUserBalanceR = redirect . UserBalanceR
+
 getUserBalanceR :: UserId -> Handler Html
 getUserBalanceR user_id = do
     Entity viewer_id viewer <- requireAuth
@@ -65,6 +68,9 @@ getUserBalanceR user_id = do
 
 
 
+postOldUserBalanceR :: UserId -> Handler Html
+postOldUserBalanceR = postUserBalanceR
+
 postUserBalanceR :: UserId -> Handler Html
 postUserBalanceR user_id = do
     Entity viewer_id _ <- requireAuth
@@ -85,7 +91,7 @@ postUserBalanceR user_id = do
                 addAlert "danger" "Must load money in increments of at least $10." 
              else do
                 runDB $ do
-                    _ <- insert $ Transaction now (Just $ userAccount user) Nothing amount "Test Load" Nothing
+                    _ <- insert $ Transaction now (Just $ userAccount user) Nothing Nothing amount "Test Load" Nothing
                     update $ \ account -> do
                         set account [ AccountBalance +=. val amount ]
                         where_ ( account ^. AccountId ==. val (userAccount user) )
