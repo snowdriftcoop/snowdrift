@@ -54,6 +54,10 @@ getWikiR project_handle target = do
     defaultLayout $ renderWiki project_handle target can_edit can_view_meta page
 
 
+getOldWikiPagesR :: Text -> Handler Html
+getOldWikiPagesR = redirect . WikiPagesR
+
+
 getWikiPagesR :: Text -> Handler Html
 getWikiPagesR project_handle = do
     pages <- runDB $ select $ from $ \ (project `InnerJoin` wiki_page) -> do
@@ -68,6 +72,9 @@ getWikiPagesR project_handle = do
 renderWiki :: Text -> Text -> Bool -> Bool -> WikiPage -> Widget
 renderWiki project_handle target can_edit can_view_meta page = $(widgetFile "wiki")
 
+
+postOldWikiR :: Text -> Text -> Handler Html
+postOldWikiR = postWikiR
 
 postWikiR :: Text -> Text -> Handler Html
 postWikiR project_handle target = do
@@ -164,6 +171,9 @@ postWikiR project_handle target = do
 editWikiPermissionsForm :: PermissionLevel -> Form PermissionLevel
 editWikiPermissionsForm level = renderBootstrap3 $ areq' permissionLevelField "Permission Level" (Just level)
 
+getOldEditWikiPermissionsR :: Text -> Text -> Handler Html
+getOldEditWikiPermissionsR project_handle target = redirect $ EditWikiPermissionsR project_handle target
+
 getEditWikiPermissionsR :: Text -> Text -> Handler Html
 getEditWikiPermissionsR project_handle target = do
     Entity user_id user <- requireAuth
@@ -180,6 +190,10 @@ getEditWikiPermissionsR project_handle target = do
     (wiki_form, _) <- generateFormPost $ editWikiPermissionsForm (wikiPagePermissionLevel page)
 
     defaultLayout $(widgetFile "edit_wiki_perm")
+
+
+postOldEditWikiPermissionsR :: Text -> Text -> Handler Html
+postOldEditWikiPermissionsR = postEditWikiPermissionsR
 
 postEditWikiPermissionsR :: Text -> Text -> Handler Html
 postEditWikiPermissionsR project_handle target = do
@@ -210,6 +224,9 @@ postEditWikiPermissionsR project_handle target = do
         FormFailure msgs -> error $ "Error submitting form: " ++ T.unpack (T.concat msgs)
 
 
+getOldEditWikiR :: Text -> Text -> Handler Html
+getOldEditWikiR project_handle target = redirect $ EditWikiR project_handle target
+
 getEditWikiR :: Text -> Text -> Handler Html
 getEditWikiR project_handle target = do
     Entity user_id user <- requireAuth
@@ -230,6 +247,9 @@ getEditWikiR project_handle target = do
     defaultLayout $(widgetFile "edit_wiki")
 
 
+getOldNewWikiR :: Text -> Text -> Handler Html
+getOldNewWikiR project_handle target = redirect $ NewWikiR project_handle target
+
 getNewWikiR :: Text -> Text -> Handler Html
 getNewWikiR project_handle target = do
     Entity user_id user <- requireAuth
@@ -244,6 +264,9 @@ getNewWikiR project_handle target = do
 
     defaultLayout $(widgetFile "new_wiki")
 
+
+postOldNewWikiR :: Text -> Text -> Handler Html
+postOldNewWikiR = postNewWikiR
 
 postNewWikiR :: Text -> Text -> Handler Html
 postNewWikiR project_handle target = do
@@ -298,6 +321,9 @@ buildCommentTree root rest =
 
      in unfoldTree treeOfList (root, rest)
 
+
+getOldDiscussWikiR :: Text -> Text -> Handler Html
+getOldDiscussWikiR project_handle target = redirect $ DiscussWikiR project_handle target
 
 getDiscussWikiR :: Text -> Text -> Handler Html
 getDiscussWikiR project_handle target = do
@@ -355,6 +381,9 @@ getDiscussWikiR project_handle target = do
 
     defaultLayout $(widgetFile "wiki_discuss")
 
+
+getOldDiscussCommentR :: Text -> Text -> CommentId -> Handler Html
+getOldDiscussCommentR project_handle target comment_id = redirect $ DiscussCommentR project_handle target comment_id
 
 getDiscussCommentR :: Text -> Text -> CommentId -> Handler Html
 getDiscussCommentR project_handle target comment_id = do
@@ -426,6 +455,8 @@ renderDiscussComment viewer_id project_handle target show_reply comment_form roo
     $(widgetFile "comment")
 
 
+postOldDiscussWikiR :: Text -> Text -> Handler Html
+postOldDiscussWikiR = postDiscussWikiR
 
 postDiscussWikiR :: Text -> Text -> Handler Html
 postDiscussWikiR project_handle target = do
@@ -516,6 +547,10 @@ postDiscussWikiR project_handle target = do
         FormMissing -> error "Form missing."
         FormFailure msgs -> error $ "Error submitting form: " ++ T.unpack (T.intercalate "\n" msgs)
 
+
+getOldNewDiscussWikiR :: Text -> Text -> Handler Html
+getOldNewDiscussWikiR project_handle target = redirect $ NewDiscussWikiR project_handle target
+
 getNewDiscussWikiR :: Text -> Text -> Handler Html
 getNewDiscussWikiR project_handle target = do
     Entity user_id user <- requireAuth
@@ -531,8 +566,15 @@ getNewDiscussWikiR project_handle target = do
     
     defaultLayout $(widgetFile "wiki_discuss_new")
 
+postOldNewDiscussWikiR :: Text -> Text -> Handler Html
+postOldNewDiscussWikiR = postDiscussWikiR
+
 postNewDiscussWikiR :: Text -> Text -> Handler Html
 postNewDiscussWikiR = postDiscussWikiR
+
+
+getOldWikiNewCommentsR :: Text -> Handler Html
+getOldWikiNewCommentsR project_handle = redirect $ WikiNewCommentsR project_handle
 
 getWikiNewCommentsR :: Text -> Handler Html
 getWikiNewCommentsR project_handle = do
@@ -613,6 +655,9 @@ getWikiNewCommentsR project_handle = do
     defaultLayout $(widgetFile "wiki_new_comments")
 
 
+getOldWikiHistoryR :: Text -> Text -> Handler Html
+getOldWikiHistoryR project_handle target = redirect $ WikiHistoryR project_handle target
+
 getWikiHistoryR :: Text -> Text -> Handler Html
 getWikiHistoryR project_handle target = do
     _ <- requireAuthId
@@ -635,6 +680,10 @@ getWikiHistoryR project_handle target = do
     let editsIndexed = zip ([0..] :: [Int]) edits
     defaultLayout $(widgetFile "wiki_history")
 
+
+getOldWikiDiffProxyR :: Text -> Text -> Handler Html
+getOldWikiDiffProxyR project_handle target = redirect $ WikiDiffProxyR project_handle target
+
 -- | A proxy handler that redirects "ugly" to "pretty" diff URLs,
 -- e.g. /w/diff?from=a&to=b to /w/diff/a/b
 getWikiDiffProxyR :: Text -> Text -> Handler Html
@@ -652,6 +701,9 @@ getWikiDiffProxyR project_handle target = do
         (invalidArgs ["revision IDs"])
         (\(s, e) -> redirect $ WikiDiffR project_handle target s e)
         pairMay
+
+getOldWikiDiffR :: Text -> Text -> WikiEditId -> WikiEditId -> Handler Html
+getOldWikiDiffR project_handle target start_edit_id end_edit_id = redirect $ WikiDiffR project_handle target start_edit_id end_edit_id
 
 getWikiDiffR :: Text -> Text -> WikiEditId -> WikiEditId -> Handler Html
 getWikiDiffR project_handle target start_edit_id end_edit_id = do
@@ -673,6 +725,10 @@ getWikiDiffR project_handle target start_edit_id end_edit_id = do
 
     defaultLayout $(widgetFile "wiki_diff")
 
+
+getOldWikiEditR :: Text -> Text -> WikiEditId -> Handler Html
+getOldWikiEditR project_handle target edit_id = redirect $ WikiEditR project_handle target edit_id
+
 getWikiEditR :: Text -> Text -> WikiEditId -> Handler Html
 getWikiEditR project_handle target edit_id = do
     _ <- requireAuthId
@@ -687,6 +743,10 @@ getWikiEditR project_handle target edit_id = do
         return edit
 
     defaultLayout $(widgetFile "wiki_edit")
+
+
+getOldWikiNewEditsR :: Text -> Handler Html
+getOldWikiNewEditsR project_handle = redirect $ WikiNewEditsR project_handle
 
 getWikiNewEditsR :: Text -> Handler Html
 getWikiNewEditsR project_handle = do
@@ -743,6 +803,9 @@ getWikiNewEditsR project_handle = do
     defaultLayout $(widgetFile "wiki_new_edits")
 
 
+getOldRetractCommentR :: Text -> Text -> CommentId -> Handler Html
+getOldRetractCommentR project_handle target comment_id = redirect $ RetractCommentR project_handle target comment_id
+
 getRetractCommentR :: Text -> Text -> CommentId -> Handler Html
 getRetractCommentR project_handle target comment_id = do
     Entity user_id user <- requireAuth
@@ -782,6 +845,10 @@ getRetractCommentR project_handle target comment_id = do
             ^{retract_form}
             <input type="submit" name="mode" value="preview retraction">
     |]
+
+
+postOldRetractCommentR :: Text -> Text -> CommentId -> Handler Html
+postOldRetractCommentR = postRetractCommentR
 
 postRetractCommentR :: Text -> Text -> CommentId -> Handler Html
 postRetractCommentR project_handle target comment_id = do
@@ -839,6 +906,9 @@ postRetractCommentR project_handle target comment_id = do
 
 
 
+getOldApproveCommentR :: Text -> Text -> CommentId -> Handler Html
+getOldApproveCommentR project_handle target comment_id = redirect $ ApproveCommentR project_handle target comment_id
+
 getApproveCommentR :: Text -> Text -> CommentId -> Handler Html
 getApproveCommentR project_handle target comment_id = do
     user_id <- requireAuthId
@@ -859,6 +929,9 @@ getApproveCommentR project_handle target comment_id = do
             <input type=submit value="approve post">
     |]
 
+
+postOldApproveCommentR :: Text -> Text -> CommentId -> Handler Html
+postOldApproveCommentR = postApproveCommentR
 
 postApproveCommentR :: Text -> Text -> CommentId -> Handler Html
 postApproveCommentR project_handle target comment_id = do

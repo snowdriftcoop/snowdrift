@@ -23,6 +23,9 @@ lookupParamDefault name def = do
         return $ fst param
         
 
+getOldUserBalanceR :: UserId -> Handler Html
+getOldUserBalanceR = redirect . UserBalanceR
+
 getUserBalanceR :: UserId -> Handler Html
 getUserBalanceR user_id = do
     Entity viewer_id viewer <- requireAuth
@@ -64,6 +67,9 @@ getUserBalanceR user_id = do
     defaultLayout $(widgetFile "user_balance")
 
 
+
+postOldUserBalanceR :: UserId -> Handler Html
+postOldUserBalanceR = postUserBalanceR
 
 postUserBalanceR :: UserId -> Handler Html
 postUserBalanceR user_id = do
