@@ -23,6 +23,8 @@ import Yesod.Markdown (unMarkdown)
 
 import Model.AnnotatedTag
 
+import Text.Printf
+import Numeric
 
 data AnnotatedTicket = AnnotatedTicket TicketId Ticket WikiPage Comment [AnnotatedTag]
 
@@ -165,6 +167,8 @@ getTicketsR project_handle = do
 
         githubIssueToIssue github_issue = Issue widget filterable orderable
             where
+                fg :: String -> String
+                fg = printf "%06x" . pickForegroundColor . maybe 0 fst . listToMaybe . readHex
                 widget = [whamlet|
                         <tr>
                             <td>
@@ -177,7 +181,7 @@ getTicketsR project_handle = do
                                 #{GH.issueTitle github_issue}
                             <td>
                                 $forall tag <- GH.issueLabels github_issue
-                                    <form .tag style="background-color:##{GH.labelColor tag};font-size:xx-small">
+                                    <form .tag style="background-color:##{GH.labelColor tag};color:##{fg $ GH.labelColor tag};font-size:xx-small">
                                         #{GH.labelName tag}
                                     
                     |]
