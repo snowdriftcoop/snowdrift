@@ -222,7 +222,7 @@ span.title
     border-left : solid darkred 0.25em
     padding-left : 0.5em
     margin : 0.2em
- 
+
 h1, h2, h3, h4, h5, h6
     font-weight : bold
 
@@ -238,7 +238,7 @@ q:before
 q:after
     content : '"'
 
-table 
+table
     box-shadow : 8px 8px 5px #888888
     margin : 2em 0
     font-size : 0.85em
@@ -275,10 +275,11 @@ input.tag-input
     padding : 0 0.6em
     margin : 0 -0.2em 0 0.4em
     vertical-align : calc(10%)
- 
+
 input.tag-input[type="submit"]:hover
     background : none
     border : solid grey 1px
 
 input.tag.input[type="submit"]:active
     background : none
+
