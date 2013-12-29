@@ -269,10 +269,9 @@ form.tag
     display : inline
 
 input.tag-input
-    width : .8em
     background : none
     border : solid lightgrey 1px
-    padding : 0 0.6em
+    padding : 0 0.2em
     margin : 0 -0.2em 0 0.4em
     vertical-align : calc(10%)
 
