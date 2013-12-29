@@ -48,9 +48,9 @@ $# used by renderComment function
                     <a href="@{ApproveCommentR project_handle target comment_id}">
                         approve
 
-            $if not (maybe_route == Just (DiscussCommentR project_handle target comment_id))
+            $if not (maybe_route == Just (ReplyCommentR project_handle target comment_id))
                 <span .comment-action>
-                    <a href="@{DiscussCommentR project_handle target comment_id}">
+                    <a href="@{ReplyCommentR project_handle target comment_id}">
                         reply
 
             $if user_id == viewer_id
