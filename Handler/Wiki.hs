@@ -386,7 +386,15 @@ getOldDiscussCommentR :: Text -> Text -> CommentId -> Handler Html
 getOldDiscussCommentR project_handle target comment_id = redirect $ DiscussCommentR project_handle target comment_id
 
 getDiscussCommentR :: Text -> Text -> CommentId -> Handler Html
-getDiscussCommentR project_handle target comment_id = do
+getDiscussCommentR =
+    getDiscussCommentR' False
+
+getReplyCommentR :: Text -> Text -> CommentId -> Handler Html
+getReplyCommentR =
+    getDiscussCommentR' True
+
+getDiscussCommentR' :: Bool -> Text -> Text -> CommentId -> Handler Html
+getDiscussCommentR' show_reply project_handle target comment_id = do
     Entity viewer_id _ <- requireAuth
     Entity page_id _  <- runDB $ do
         Entity project_id _ <- getBy404 $ UniqueProjectHandle project_handle
@@ -434,7 +442,7 @@ getDiscussCommentR project_handle target comment_id = do
 
     let tag_map = M.fromList $ entityPairs tags
 
-    defaultLayout $ renderDiscussComment viewer_id project_handle target True comment_form (Entity comment_id root) rest users earlier_retractions retraction_map True tag_map
+    defaultLayout $ renderDiscussComment viewer_id project_handle target show_reply comment_form (Entity comment_id root) rest users earlier_retractions retraction_map True tag_map
 
 
 renderDiscussComment :: UserId -> Text -> Text -> Bool -> Widget
