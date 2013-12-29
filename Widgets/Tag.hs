@@ -46,7 +46,7 @@ tagWidget t = do
                     <input type=submit name=direction style="color:##{fg}" value=+ .tag-input>
                 $else
                     $if my_tag
-                        <input type=submit name=direction style="color:##{fg};vertical-align:super" value=&times; .tag-input>
+                        <input type=submit name=direction style="color:##{fg};" value=&times; .tag-input>
     |]
 
 newTagWidget :: Route App -> Widget
