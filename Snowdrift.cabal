@@ -72,6 +72,7 @@ library
                      Widgets.Sidebar
                      Widgets.Time
                      Widgets.Tag
+                     Widgets.Preview
                      Widgets.ProjectPledges
 
     other-modules: Model.Settings.Internal

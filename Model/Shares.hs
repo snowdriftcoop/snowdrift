@@ -12,7 +12,7 @@ buySharesForm shares extra = do
     (pledge_res, pledge_view) <- mreq intField ("" { fsAttrs = [("placeholder", "10"), ("class", "inline_shares")] }) (if shares > 0 then Just shares else Nothing)
 
     let result = SharesPurchaseOrder <$> pledge_res
-        view =  [whamlet|
+        view = [whamlet|
             #{extra}
             <p>
                 <strong>
@@ -25,3 +25,20 @@ buySharesForm shares extra = do
                         read the details&hellip;
         |]
     return (result, view)
+
+mockBuySharesForm :: Int64 -> Form SharesPurchaseOrder
+mockBuySharesForm shares extra = do
+    let view = [whamlet|
+            #{extra}
+            <p>
+                <strong>
+                    I pledge ... shares starting at 1&nbsp;&cent; per month per every 100 other patrons.
+            <p>
+                &hellip; share value also increases some when any patron pledges extra shares beyond the minimum.
+                <br>
+                <a href=@{WikiR "snowdrift" "mechanism"}>
+                    <em>
+                        read the details&hellip;
+        |]
+
+    return (FormSuccess $ SharesPurchaseOrder 0, view)

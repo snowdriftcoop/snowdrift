@@ -17,8 +17,8 @@ import qualified Data.Set as S
 
 import Widgets.Sidebar
 import Widgets.Markdown
+import Widgets.Preview
 
-import Yesod.Markdown
 import Model.Markdown
 
 lookupGetParamDefault :: Read a => Text -> a -> Handler a
@@ -59,15 +59,16 @@ getProjectR project_handle = do
 
         return (project, pledges, pledge)
 
-    defaultLayout $ renderProject (Just project_handle) project pledges pledge
+    defaultLayout $ renderProject (Just project_handle) project True pledges pledge
 
 
 renderProject :: Maybe Text
                  -> Project
+                 -> Bool
                  -> [Int64]
                  -> Maybe (Entity Pledge)
                  -> WidgetT App IO ()
-renderProject maybe_project_handle project pledges pledge = do
+renderProject maybe_project_handle project show_form pledges pledge = do
     let share_value = projectShareValue project
         users = fromIntegral $ length pledges
         shares = sum pledges
@@ -76,12 +77,14 @@ renderProject maybe_project_handle project pledges pledge = do
 
         maybe_shares = pledgeShares . entityVal <$> pledge
 
-    ((_, update_shares), _) <- handlerToWidget $ generateFormGet $ buySharesForm $ fromMaybe 0 maybe_shares
+    ((_, update_shares), _) <- if show_form
+                                then handlerToWidget $ generateFormGet $ buySharesForm $ fromMaybe 0 maybe_shares
+                                else handlerToWidget $ generateFormGet $ mockBuySharesForm $ fromMaybe 0 maybe_shares
 
     $(widgetFile "project")
 
 
-data UpdateProject = UpdateProject { updateProjectName :: Text, updateProjectDescription :: Markdown, updateProjectTags :: [Text] }
+data UpdateProject = UpdateProject { updateProjectName :: Text, updateProjectDescription :: Markdown, updateProjectTags :: [Text] } deriving Show
 
 
 editProjectForm :: Maybe (Project, [Text]) -> Form UpdateProject
@@ -89,14 +92,7 @@ editProjectForm project =
     renderBootstrap3 $ UpdateProject
         <$> areq' textField "Project Name" (projectName . fst <$> project)
         <*> areq' snowdriftMarkdownField "Description" (projectDescription . fst <$> project)
-        <*> (map T.strip . T.splitOn "," <$> areq' textField "Tags" (T.intercalate ", " . snd <$> project))
-
-previewProjectForm :: Maybe (Project, [Text]) -> Form UpdateProject
-previewProjectForm project =
-    renderBootstrap3 $ UpdateProject
-        <$> areq hiddenField "" (projectName . fst <$> project)
-        <*> (Markdown <$> areq hiddenField "" ((\ (Markdown str) -> str) . projectDescription . fst <$> project))
-        <*> (map T.strip . T.splitOn "," <$> areq hiddenField "" (T.intercalate ", " . snd <$> project))
+        <*> (maybe [] (map T.strip . T.splitOn ",") <$> aopt' textField "Tags" (Just . T.intercalate ", " . snd <$> project))
 
 
 getEditProjectR :: Text -> Handler Html
@@ -140,25 +136,9 @@ postProjectR project_handle = do
             case mode of
                 Just "preview" -> do
                     let preview_project = project { projectName = name, projectDescription = description }
-                    (hidden_form, _) <- generateFormPost $ previewProjectForm $ Just (preview_project, tags)
-                    let rendered_project = renderProject (Just project_handle) preview_project [] Nothing
-                        preview_controls = [whamlet|
-                            <div .row>
-                                <div .col-md-9>
-                                    <form method="POST" action="@{ProjectR project_handle}">
-                                        ^{hidden_form}
-                                        <div .alert .alert-danger>
-                                            This is a preview; your changes are not yet saved!
-                                        <script>
-                                            document.write('<input type="submit" value="edit" onclick="history.go(-1);return false;" />')
-                                        <input type=submit name=mode value=#{action}>
-                        |]
 
-                    defaultLayout $ [whamlet|
-                        ^{preview_controls}
-                        ^{rendered_project}
-                        ^{preview_controls}
-                    |]
+                    (form, _) <- generateFormPost $ editProjectForm (Just (preview_project, tags))
+                    defaultLayout $ renderPreview form action $ renderProject (Just project_handle) preview_project False [] Nothing
 
                 Just x | x == action -> do
                     runDB $ do
@@ -193,8 +173,8 @@ postProjectR project_handle = do
                 _ -> do
                     addAlertEm "danger" "unrecognized mode" "Error: "
                     redirect $ ProjectR project_handle
-        _ -> do
-            addAlert "danger" "error"
+        x -> do
+            addAlert "danger" $ T.pack $ show x
             redirect $ ProjectR project_handle
 
 

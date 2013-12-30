@@ -7,6 +7,7 @@ import Model.User
 import Widgets.Sidebar
 import Widgets.Markdown
 import Widgets.ProjectPledges
+import Widgets.Preview
 
 import Yesod.Markdown
 import Model.Markdown
@@ -107,28 +108,12 @@ postUserR user_id = do
             case mode of
                 Just "preview" -> do
                     user <- runDB $ get404 user_id
+
                     let updated_user = applyUserUpdate user user_update
-                        rendered_user = renderUser (Just viewer_id) user_id updated_user
 
-                    (hidden_form, _) <- generateFormPost $ previewUserForm updated_user
+                    (form, _) <- generateFormPost $ editUserForm updated_user
 
-                    let preview_controls = [whamlet|
-                        <div .row>
-                            <div .col-md-9>
-                                <form method="POST" action="@{UserR user_id}">
-                                    ^{hidden_form}
-                                    <div .alert .alert-danger>
-                                        This is a preview; your changes have not been saved!
-                                    <script>
-                                        document.write('<input type="submit" value="edit" onclick="history.go(-1);return false;" />')
-                                    <input type=submit name=mode value=#{action}>
-                    |]
-
-                    defaultLayout [whamlet|
-                        ^{preview_controls}
-                        ^{rendered_user}
-                        ^{preview_controls}
-                    |]
+                    defaultLayout $ renderPreview form action $ renderUser (Just viewer_id) user_id updated_user
 
                 Just x | x == action -> do
                     runDB $ updateUser user_id user_update
