@@ -3,16 +3,16 @@
         $if can_edit
             <div .row>
                 <div .col-md-3>
-                    <a href="@{EditWikiR project_handle target}">edit this page
+                    <a href="@{EditWikiR project_handle target}">edit
                 <div .col-md-3>
-                    <a href="@{WikiHistoryR project_handle target}">view history
+                    <a href="@{WikiHistoryR project_handle target}">history
                 <div .col-md-3>
-                    <a href="@{DiscussWikiR project_handle target}">discuss this page
+                    <a href="@{DiscussWikiR project_handle target}">discuss
         $else
             $if can_view_meta
                 <div .row>
                     <div .col-md-3>
-                        <a href="@{WikiHistoryR project_handle target}">view history
+                        <a href="@{WikiHistoryR project_handle target}">history
                     <div .col-md-3>
                         <a href="@{DiscussWikiR project_handle target}">view discussion
         <hr .wikitop>
