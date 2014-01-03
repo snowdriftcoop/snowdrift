@@ -211,4 +211,4 @@ getProjectPatronsR project_handle = do
 
         return (project, pledges, M.fromList $ map ((\ (Value x :: Value UserId) -> x) *** (\ (Value x :: Value Int) -> x)) user_payouts)
 
-    defaultLayout $(widgetFile "project_donors")
+    defaultLayout $(widgetFile "project_patrons")
