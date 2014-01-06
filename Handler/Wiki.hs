@@ -58,7 +58,6 @@ getWikiR project_handle target = do
 getOldWikiPagesR :: Text -> Handler Html
 getOldWikiPagesR = redirect . WikiPagesR
 
-
 getWikiPagesR :: Text -> Handler Html
 getWikiPagesR project_handle = do
     pages <- runDB $ select $ from $ \ (project `InnerJoin` wiki_page) -> do
@@ -377,7 +376,7 @@ getDiscussWikiR project_handle target = do
             renderComment user_id project_handle target users 10 0 [] retraction_map True tag_map (buildCommentTree root rest) Nothing
 
     (comment_form, _) <- generateFormPost $ commentForm Nothing Nothing
-    
+
     let has_comments = not $ null roots
 
     defaultLayout $(widgetFile "wiki_discuss")
@@ -900,7 +899,6 @@ postRetractCommentR project_handle target comment_id = do
                         users = M.singleton user_id $ Entity user_id user
                         retractions = M.singleton comment_id retraction
 
-
                     defaultLayout $ renderPreview form action $ renderDiscussComment user_id project_handle target False (return ()) comment_entity [] users earlier_retractions retractions False tag_map
 
 
@@ -973,7 +971,7 @@ postApproveCommentR project_handle target comment_id = do
 
 
 retractForm :: Maybe Markdown -> Form Markdown
-retractForm reason = renderBootstrap3 $ areq' snowdriftMarkdownField "Retraction reason:" reason
+retractForm reason = renderBootstrap3 $ areq snowdriftMarkdownField "Retraction reason:" reason
 
 
 renderComment :: UserId -> Text -> Text -> M.Map UserId (Entity User) -> Int -> Int
@@ -1014,7 +1012,7 @@ countReplies = sum . map (F.sum . fmap (const 1))
 
 editWikiForm :: WikiEditId -> Markdown -> Maybe Text -> Form (WikiEditId, Markdown, Maybe Text)
 editWikiForm last_edit_id content comment = renderBootstrap3 $ (,,)
-        <$> areq hiddenField "" (Just last_edit_id)
+        <$> areq' hiddenField "" (Just last_edit_id)
         <*> areq' snowdriftMarkdownField "Page Content" (Just content)
         <*> aopt' textField "Comment" (Just comment)
 
@@ -1029,6 +1027,6 @@ disabledCommentForm = renderBootstrap3 $ areq snowdriftMarkdownField ("Reply" { 
 commentForm :: Maybe CommentId -> Maybe Markdown -> Form (Maybe CommentId, Markdown)
 commentForm parent content = renderBootstrap3
     $ (,)
-        <$> aopt hiddenField "" (Just parent)
+        <$> aopt' hiddenField "" (Just parent)
         <*> areq' snowdriftMarkdownField (if parent == Nothing then "Comment" else "Reply") content
 

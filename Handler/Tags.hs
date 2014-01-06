@@ -50,6 +50,7 @@ processCommentTag go project_handle target comment_id tag_id = do
         return tag
 
     annotated_tags <- buildAnnotatedTags tag_map (CommentTagR project_handle target comment_id) tags
+
     case annotated_tags of
         [] -> error "That tag has not been applied to this comment."
         [tag] -> go tag

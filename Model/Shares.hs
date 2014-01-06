@@ -28,7 +28,7 @@ buySharesForm shares extra = do
     return (result, view)
 
 mockBuySharesForm :: Int64 -> Form SharesPurchaseOrder
-mockBuySharesForm shares extra = do
+mockBuySharesForm _ extra = do
     let view = [whamlet|
             #{extra}
             <p>
