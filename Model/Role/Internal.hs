@@ -11,7 +11,12 @@ import Data.Text as T
 
 import Debug.Trace
 
+import Data.Universe
+
 data Role = Moderator | TeamMember | Admin deriving (Bounded, Enum, Eq, Show, Read)
+
+instance Universe Role where
+    universe = [Moderator .. Admin]
 
 derivePersistField "Role"
 

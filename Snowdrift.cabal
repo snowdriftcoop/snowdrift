@@ -153,6 +153,7 @@ library
                  , temporary
                  , regex-tdfa                    >= 1.1 && < 1.2
                  , github                        < 0.8
+                 , universe
 
 
 executable         SnowdriftProcessPayments
