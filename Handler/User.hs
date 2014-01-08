@@ -2,7 +2,11 @@ module Handler.User where
 
 import Import
 
+import qualified Data.Map as Map
+import Data.Universe
+
 import Model.User
+import Model.Role
 
 import Widgets.Sidebar
 import Widgets.Markdown
@@ -134,10 +138,27 @@ getUsersR :: Handler Html
 getUsersR = do
     Entity _ viewer <- requireAuth
 
-    users <- runDB $ selectList [] [ Desc UserId ]
+    users' <- runDB $
+              select $
+              from $ \user -> do
+              return user
+
+    infos <- runDB $
+             select $
+             from $ \(user `InnerJoin` role `InnerJoin` project) -> do
+             on_ (project ^. ProjectId ==. role ^. ProjectUserRoleProject)
+             on_ (user ^. UserId ==. role ^. ProjectUserRoleUser)
+             orderBy [desc (user ^. UserId)]
+             return (user, role ^. ProjectUserRoleRole, project)
+
+    let roles = map roleLabel (universe :: [Role])
+        users = Map.toList $ Map.fromList $ map (\u -> (getUserKey u, u)) users'
+        userRoles = Map.fromListWith mappend $ map (\(u, Value r, p) -> (getUserKey u, [(roleLabel r, entityVal p)])) infos
+        filterRoles r rps = filter (\(r', _) -> r' == r) rps
+        getUserKey :: Entity User -> Text
+        getUserKey (Entity key _) = either (error . T.unpack) id . fromPersistValue . unKey $ key
 
     defaultLayout $(widgetFile "users")
-
 
 getOldUserCreateR :: Handler Html
 getOldUserCreateR = redirect UserCreateR

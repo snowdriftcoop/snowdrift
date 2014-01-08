@@ -1,21 +1,40 @@
 <div .row>
     <div .col-md-8>
-        $if null users
-            no users to display
-        $else
-            <table>
-                $forall Entity user_id user <- users
+        <table .table>
+            <thead>
+                <tr>
+                    <th>
+                        Name
+                    <th>
+                        Username
+                    <th>
+                        IRC Nick
+                    $forall role <- roles
+                        <th>
+                            #{role}
+            <tbody>
+                $if null users
                     <tr>
                         <td>
-                            <a href=@{UserR user_id}>
-                                #{userPrintName (Entity user_id user)}
-                        <td>
-                            #{userIdent user}
-                        <td>
-                            $maybe nick <- userIrcNick user
-                                #{nick}
-                        <td>
-                            -- TODO
+                            no users to display
+                $else
+                    $forall (user_id, user) <- users
+                        <tr>
+                            <td>
+                                <a href=@{UserR $ entityKey user}>
+                                    #{userPrintName user}
+                            <td>
+                                #{userIdent $ entityVal user}
+                            <td>
+                                $maybe nick <- userIrcNick $ entityVal user
+                                    #{nick}
+                            $forall role <- roles
+                                <td>
+                                    $maybe roles' <- Map.lookup user_id userRoles
+                                        $forall (_, project) <- filterRoles role roles'
+                                            <a href=@{ProjectR $ projectHandle project}>
+                                                #{projectName project} 
+                            
 
     <div .col-md-3 .col-md-offset-1>
         ^{sidebar}

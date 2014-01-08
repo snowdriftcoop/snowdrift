@@ -39,6 +39,8 @@ User
     UniqueUser ident
     UniqueUserAccount account
     deriving Typeable
+    deriving Show
+
 
 UserSetting
     user UserId
@@ -56,6 +58,7 @@ Project
     lastPayday PaydayId Maybe
     UniqueProjectAccount account
     UniqueProjectHandle handle
+    deriving Show
 
 
 ProjectUserRole
@@ -63,6 +66,7 @@ ProjectUserRole
     user UserId
     role Role
     UniqueProjectUserRole project user role
+    deriving Show
 
 
 ProjectUpdate
