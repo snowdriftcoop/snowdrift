@@ -1,7 +1,7 @@
 
 body
     background-color : white
-    font-size : normal
+    font-size : 1.1em
 
 header
     padding-bottom : 1em
@@ -102,7 +102,7 @@ hr.wikitop
 
 footer
     text-align : center
-    font-size : 0.8em
+    font-size : 0.85em
 
 ul, ol
     margin : 0.3em
@@ -114,7 +114,7 @@ ul, ol
     padding-left : 1em
 
 li, p
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif
+    font-family: serif
 
 li
     line-height : 1.4em
@@ -125,8 +125,7 @@ li.toc_li
     font-size : medium
 
 p
-    padding : 0.1em
-    padding-top : 0.4em
+    padding : .4em 1em
     line-height : 1.5em
 
 .footnote, .footnotes
@@ -241,7 +240,8 @@ q:after
 table
     box-shadow : 8px 8px 5px #888888
     margin : 2em 0
-    font-size : 0.85em
+    font-size : 0.8em
+    width : inherit
 
 th
     background : #4477BB
