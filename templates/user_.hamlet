@@ -7,8 +7,6 @@
 
                 $maybe avatar <- userAvatar user
                     <img .headshot_large src="#{avatar}">
-                $maybe est <- userEstablishedTs user
-                    <small>established user
 
         $maybe nick <- userIrcNick user
             <div .row>
@@ -38,22 +36,4 @@
     <div .col-md-5>
         <div .well .well-sm>
             ^{project_pledges user_id}
-
-<div .row>
-    <h4>Project Roles
-    <div .col-md-8>
-        <table>
-            <thead>
-                <tr>
-                    $forall role <- role_list
-                        <th>
-                            #{role}
-            <tbody>
-                <tr>
-                    $forall role <- role_list
-                        <td>
-                            $forall (_, project) <- filterRoles role roles
-                                <a href="@{ProjectR $ projectHandle $ entityVal project}">
-                                    #{projectName $ entityVal project} 
-                                <br>
 

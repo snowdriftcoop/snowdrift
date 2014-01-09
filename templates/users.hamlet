@@ -1,6 +1,6 @@
 <div .row>
     <div .col-md-8>
-        <table .table>
+        <table>
             <thead>
                 <tr>
                     <th>
@@ -9,6 +9,8 @@
                         Username
                     <th>
                         IRC Nick
+                    <th>
+                        Established
                     $forall role <- roles
                         <th>
                             #{role}
@@ -28,6 +30,9 @@
                             <td>
                                 $maybe nick <- userIrcNick $ entityVal user
                                     #{nick}
+                            <td>
+                                $maybe est <- userEstablishedTs $ entityVal user
+                                    Yes
                             $forall role <- roles
                                 <td>
                                     $maybe roles' <- Map.lookup user_id userRoles
