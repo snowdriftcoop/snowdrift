@@ -259,6 +259,9 @@ td
     padding : 0.2em
     border-top : 1px solid #DDDDDD
 
+figure
+    text-align : center
+
 form.tag
     padding : 2px 4px
     border-radius: 3px
