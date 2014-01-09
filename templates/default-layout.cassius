@@ -81,6 +81,9 @@ div.math
     padding-right: 0.122em
     margin-right: 0
 
+.alert
+    text-align : center
+
 .alert-info
     color: #767676;
     background-color: #F1F1F1;
