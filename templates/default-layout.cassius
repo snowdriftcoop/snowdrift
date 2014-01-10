@@ -165,7 +165,7 @@ figcaption
     padding-bottom : 2em
     text-align : right
     line-height : 1.5em
-    font-size : 0.9em
+    font-size : 0.8em
 
 span.title
     font-size : large
@@ -189,46 +189,6 @@ span.title
     text-align : right
     font-weight : bold
 
-.comment
-    padding : 0 .8em 0.3em 1em
-    margin-top : 1.8em
-    border-bottom-left-radius: 0.8em
-    font-size : small
-
-.comment p, .comment li
-    font-family : inherit
-
-.comment h1
-    font-size : large
-
-.comment h2
-    font-size : medium
-
-.comment-head, .comment-action
-    margin-right : 1em
-
-.top_level
-    border-left : solid black 0.2em
-
-.even_depth
-    border-left : solid lightblue 0.2em
-
-.odd_depth
-    border-left : solid lightgrey 0.2em
-
-.small_avatar
-    width : 2.5em
-    height : 2.5em
-    padding : 0em
-    margin-right : 0.3em
-    border-radius : 5px
-
-.retraction
-    color : darkred
-    border-left : solid darkred 0.25em
-    padding-left : 0.5em
-    margin : 0.2em
-
 h1, h2, h3, h4, h5, h6
     font-weight : bold
 
@@ -248,7 +208,6 @@ table
     box-shadow : 8px 8px 5px #888888
     margin : 2em 0
     font-size : 0.8em
-    width : inherit
 
 th
     background : #4477BB
@@ -263,7 +222,7 @@ tr:nth-child(even)
 td
     vertical-align : middle
     text-align : center
-    padding : 0.2em
+    padding : 0.3em 0.5em
     border-top : 1px solid #DDDDDD
 
 figure
@@ -291,4 +250,3 @@ input.tag-input[type="submit"]:hover
 
 input.tag.input[type="submit"]:active
     background : none
-
