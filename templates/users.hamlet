@@ -27,7 +27,7 @@
                                 $maybe nick <- userIrcNick $ entityVal user
                                     #{nick}
                             <td>
-                                $maybe est <- userEstablishedTs $ entityVal user
+                                $if isJust $ userEstablishedTs $ entityVal user
                                     Yes
                             $forall role <- roles
                                 <td>

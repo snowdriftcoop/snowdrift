@@ -7,7 +7,7 @@
 
                 $maybe avatar <- userAvatar user
                     <img .headshot_large src="#{avatar}">
-                $maybe est <- userEstablishedTs user
+                $if isJust $ userEstablishedTs user
                     <small>established user
 
         $maybe nick <- userIrcNick user

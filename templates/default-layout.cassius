@@ -21,6 +21,10 @@ img
     max-width: 100%
     height: auto
 
+.nav li .glyphicon
+    top: 2px;
+    line-height: 14px;
+
 input, textarea
     font-size : 0.9em
 

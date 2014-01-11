@@ -69,7 +69,7 @@ library
                      Handler.BuildFeed
                      Version
                      Widgets.Markdown
-                     Widgets.Sidebar
+                     Widgets.Navbar
                      Widgets.Time
                      Widgets.Tag
                      Widgets.Preview
