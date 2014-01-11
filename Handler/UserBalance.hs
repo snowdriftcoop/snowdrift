@@ -10,7 +10,7 @@ import Model.Transaction
 import Model.Currency
 import Model.User
 
-import Widgets.Sidebar
+
 import Widgets.Time
 
 

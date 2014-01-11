@@ -56,25 +56,16 @@ $newline never
               logo.id = "logo";
 
               if(Modernizr.svg) {
-                  logo.src = "@{StaticR img_logo_svg}";
+                  logo.src = "@{StaticR img_s_svg}";
               } else {
-                  logo.src = "@{StaticR img_logo_png}";
+                  logo.src = "@{StaticR img_s_png}";
               }
 
               head.replaceChild(logo, head.firstChild);
           }
     <body>
-        <div class="container">
+        <div .container>
             <header>
-                <a #head href="@{HomeR}">
-                    <noscript>
-                        img #logo src=@{StaticR img_logo_png} alt="Snowdrift.coop: clearing the path to a Free/Libre/Open World">
-                    <script>
-                        fixup_logo()
-                    <div .row>
-                        <div .note .col-md-2 .col-md-offset-10>
-                            a work in progress
-            <div id="main" role="main">
               ^{pageBody pc}
             <footer>
                 <div .row>

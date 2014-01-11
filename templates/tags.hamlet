@@ -24,6 +24,3 @@
                             <td>
                                 #{show votes}
 
-    <div .col-md-3 .col-md-offset-1>
-        ^{sidebar}
-

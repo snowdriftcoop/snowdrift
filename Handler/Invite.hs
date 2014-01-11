@@ -11,7 +11,7 @@ import qualified Data.Set as S
 import Model.Role
 import Model.User
 
-import Widgets.Sidebar
+
 
 
 inviteForm :: Form (Text, Role)

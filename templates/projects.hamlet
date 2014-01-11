@@ -12,6 +12,3 @@
                         <td>
                             #{show (projectShareValue project)}/share
 
-    <div .col-md-3 .col-md-offset-1>
-        ^{sidebar}
-

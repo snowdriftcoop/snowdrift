@@ -19,5 +19,4 @@ $newline never
 
                         <td>
                             #{show votes}
-    <div .col-md-3>
-        ^{sidebar}
+

@@ -4,5 +4,3 @@
             ^{wiki_form}
             <input type=submit name=mode value=preview>
 
-    <div .col-md-3 .col-md-offset-1>
-        ^{sidebar}

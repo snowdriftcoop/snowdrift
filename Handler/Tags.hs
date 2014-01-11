@@ -5,7 +5,7 @@ import Import
 import Model.User
 import Model.AnnotatedTag
 
-import Widgets.Sidebar
+
 import Widgets.Tag
 
 import qualified Data.Map as M

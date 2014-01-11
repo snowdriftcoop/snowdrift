@@ -23,5 +23,3 @@
                     <div .col-md-5>
                         #{messageContent message}
 
-    <div .col-md-3>
-        ^{sidebar}

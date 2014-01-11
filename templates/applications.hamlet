@@ -13,5 +13,3 @@
                            $maybe location <- volunteerApplicationLocation application
                                #{location}
 
-    <div .col-md-3>
-        ^{sidebar}

@@ -14,8 +14,7 @@ form
     margin : 0.6em
 
 img#logo
-    width: 100%
-    height: auto
+    height: 64px
 
 img
     padding : 0.8em
@@ -155,15 +154,6 @@ figcaption
     font-size : 0.9em
     padding : 0.4em
     margin : 0.6em
-
-#sidebar
-    border : solid black 1px
-    border-radius : 0.7em
-    padding : 0.7em
-    padding-bottom : 2em
-    text-align : right
-    line-height : 1.5em
-    font-size : 0.9em
 
 span.title
     font-size : large

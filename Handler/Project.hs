@@ -15,7 +15,7 @@ import qualified Data.Map as M
 import qualified Data.Text as T
 import qualified Data.Set as S
 
-import Widgets.Sidebar
+
 import Widgets.Markdown
 import Widgets.Preview
 

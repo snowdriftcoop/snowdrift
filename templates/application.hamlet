@@ -62,6 +62,3 @@
                         Comments:
                     <td>
                         #{comments}
-
-    <div .col-md-3>
-        ^{sidebar}

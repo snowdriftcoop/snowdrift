@@ -9,5 +9,3 @@
                     ^{comment_form}
                     <input type="submit" name="mode" value="preview">
 
-    <div .col-md-3>
-        ^{sidebar}

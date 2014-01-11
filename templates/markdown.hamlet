@@ -111,5 +111,4 @@
         <p>
             <strong> \
             backslash before characters makes them show normally if they would otherwise be markdown commands
-    <div .col-md-3>
-        ^{sidebar}
+

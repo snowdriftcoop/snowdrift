@@ -42,10 +42,6 @@
                     ^{toc_entry "coop" "Cooperation vs competition: a false dichotomy"}
                     ^{toc_entry "others" "What about fundraising for other purposes?"}
 
-    <div .col-md-3 .col-md-offset-1>
-        ^{sidebar}
-
-
 <div .row>
     <div .col-md-12>
         <dl>

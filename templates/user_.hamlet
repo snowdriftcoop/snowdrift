@@ -23,9 +23,6 @@
         $nothing
             &nbsp;
 
-    <div .col-md-3>
-        ^{sidebar}
-
 <div .row>
     <h4>Personal Statement
     <div .col-md-6>

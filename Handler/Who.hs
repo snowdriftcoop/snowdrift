@@ -2,7 +2,7 @@ module Handler.Who where
 
 import Import
 
-import Widgets.Sidebar
+
 
 import Data.List (sortBy)
 

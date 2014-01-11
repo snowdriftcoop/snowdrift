@@ -7,7 +7,7 @@ import Model.Currency
 import Model.Shares
 import Model.Project
 
-import Widgets.Sidebar
+
 
 confirmForm :: Int64 -> Form SharesPurchaseOrder
 confirmForm shares = renderBootstrap3 $ SharesPurchaseOrder <$> areq' hiddenField "" (Just shares)

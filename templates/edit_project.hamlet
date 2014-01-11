@@ -4,5 +4,3 @@
             ^{project_form}
             <input name=mode type=submit value=preview>
 
-    <div .col-md-3 .col-md-offset-1>
-        ^{sidebar}

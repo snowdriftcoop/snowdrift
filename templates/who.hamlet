@@ -17,5 +17,4 @@
                             #{renderMarkdown project_handle blurb}
                         $nothing
                             &nbsp;
-    <div .col-md-3>
-        ^{sidebar}
+

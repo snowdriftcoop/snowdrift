@@ -12,7 +12,7 @@ import Text.Printf
 
 import Data.List (tail)
 
-import Widgets.Sidebar
+
 
 import Yesod.Form.Jquery
 

@@ -45,5 +45,3 @@
                 ^{confirm_form}
                 <input type=submit value="Yes!">
 
-    <div .col-md-3 .col-md-offset-1>
-        ^{sidebar}

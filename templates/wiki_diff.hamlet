@@ -14,5 +14,4 @@
         <div .row>
                 <div .col-md-9>
                     #{renderDiff (diffEdits start_edit end_edit)}
-    <div .col-md-3>
-        ^{sidebar}
+

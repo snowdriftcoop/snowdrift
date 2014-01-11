@@ -14,6 +14,4 @@
                 Welcome! You must log in or create an account before redeeming your invitation code. The same log-in buttons will give you the option to make an account if you do not have one yet.
                 <form method=GET action=@{AuthR LoginR}>
                     <input type=submit value="Log In / Create Account">
-    $maybe _ <- maybe_user_id
-        <div .col-md-3 .col-md-offset-1>
-            ^{sidebar}
+

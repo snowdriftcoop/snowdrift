@@ -32,5 +32,3 @@
             We have
             <a href="@{WikiR "snowdrift" "how-to-help"}"> volunteer opportunities
             for everyone, regardless of background.
-    <div .col-md-3 .col-md-offset-1>
-        ^{sidebar}

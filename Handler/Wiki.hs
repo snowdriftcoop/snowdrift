@@ -4,7 +4,7 @@ module Handler.Wiki where
 
 import Import
 
-import Widgets.Sidebar
+
 import Widgets.Markdown
 import Widgets.Time
 import Widgets.Tag

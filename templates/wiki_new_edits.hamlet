@@ -13,7 +13,3 @@
                 <a href="@{WikiNewEditsR project_handle}?from=#{show (to + 1)}">
                     older edits
 
-
-
-    <div .col-md-3>
-        ^{sidebar}

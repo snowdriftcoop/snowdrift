@@ -8,7 +8,3 @@
                 <a href="@{WikiNewCommentsR project_handle}?from=#{show (to + 1)}">
                     older comments
 
-
-
-    <div .col-md-3>
-        ^{sidebar}

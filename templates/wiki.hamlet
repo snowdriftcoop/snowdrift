@@ -19,5 +19,4 @@
         <div .row>
             <div .col-md-9>
                 #{renderMarkdown project_handle (wikiPageContent page)}
-    <div .col-md-3>
-        ^{sidebar}
+

@@ -4,7 +4,7 @@ import Import
 
 import Model.User
 
-import Widgets.Sidebar
+
 
 getApplicationsR :: Text -> Handler Html
 getApplicationsR project_handle = do

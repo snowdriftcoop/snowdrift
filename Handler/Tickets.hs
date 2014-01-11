@@ -4,7 +4,7 @@ module Handler.Tickets where
 
 import Import
 
-import Widgets.Sidebar
+
 import Widgets.Tag
 
 import qualified Data.Map as M

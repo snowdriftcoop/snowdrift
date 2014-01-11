@@ -32,6 +32,8 @@ import Data.Text as T
 
 import Data.Char (isSpace)
 
+import Data.Maybe
+
 import Web.Authenticate.BrowserId (browserIdJs)
 
 import Blaze.ByteString.Builder.Char.Utf8 (fromText)
@@ -54,7 +56,8 @@ import Data.Monoid
 -- starts running, such as database connections. Every handler will have
 -- access to the data present here.
 data App = App
-    { settings :: AppConfig DefaultEnv Extra
+    { appNavbar :: WidgetT App IO ()
+    , settings :: AppConfig DefaultEnv Extra
     , getStatic :: Static -- ^ Settings for static file serving.
     , connPool :: Database.Persist.PersistConfigPool Settings.PersistConf -- ^ Database connection pool.
     , httpManager :: Manager
@@ -133,7 +136,14 @@ instance Yesod App where
         master <- getYesod
         mmsg <- getMessage
         malert <- getAlert
+        muser_id <- maybeAuthId
+        muser <- runDB $ case muser_id of
+            Nothing -> return Nothing
+            Just user_id -> get user_id
 
+        let navbar = appNavbar master
+        let userPrintName :: Entity User -> Text
+            userPrintName (Entity user_id user) = fromMaybe (either (error . T.unpack) (T.append "user") $ fromPersistValue $ unKey user_id) (userName user)
         -- We break up the default layout into two components:
         -- default-layout is the contents of the body tag, and
         -- default-layout-wrapper is the entire page. Since the final
@@ -144,6 +154,7 @@ instance Yesod App where
             $(widgetFile "normalize")
             addStylesheet $ StaticR css_bootstrap_min_css
             addScript $ StaticR js_bootstrap_min_js
+            navbar
             $(widgetFile "default-layout")
         giveUrlRenderer $(hamletFile "templates/default-layout-wrapper.hamlet")
 

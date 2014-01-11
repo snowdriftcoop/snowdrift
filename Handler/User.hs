@@ -8,7 +8,7 @@ import Data.Universe
 import Model.User
 import Model.Role
 
-import Widgets.Sidebar
+
 import Widgets.Markdown
 import Widgets.ProjectPledges
 import Widgets.Preview

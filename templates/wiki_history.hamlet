@@ -31,5 +31,4 @@
                         <td colspan="3">
                         <td>
                             <input type="submit" value="diff">
-    <div .col-md-3>
-        ^{sidebar}
+

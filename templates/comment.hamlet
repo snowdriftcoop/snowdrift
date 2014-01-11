@@ -10,5 +10,3 @@
             <div .col-md-9>
                 <div .row>
                     ^{comment}
-    <div .col-md-3>
-        ^{sidebar}

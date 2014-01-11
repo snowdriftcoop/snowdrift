@@ -6,8 +6,6 @@
                     <th>
                         Name
                     <th>
-                        Username
-                    <th>
                         IRC Nick
                     <th>
                         Established
@@ -26,8 +24,6 @@
                                 <a href=@{UserR $ entityKey user}>
                                     #{userPrintName user}
                             <td>
-                                #{userIdent $ entityVal user}
-                            <td>
                                 $maybe nick <- userIrcNick $ entityVal user
                                     #{nick}
                             <td>
@@ -39,8 +35,4 @@
                                         $forall (_, project) <- filterRoles role roles'
                                             <a href=@{ProjectR $ projectHandle project}>
                                                 #{projectName project} 
-                            
-
-    <div .col-md-3 .col-md-offset-1>
-        ^{sidebar}
 

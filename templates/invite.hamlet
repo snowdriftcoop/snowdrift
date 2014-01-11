@@ -54,9 +54,6 @@
             ^{invite_form}
             <input type=submit value="generate invitation">
 
-    <div .col-md-3 .col-md-offset-1>
-        ^{sidebar}
-
 <br>
 <div .row>
     <div .col-md-11>
