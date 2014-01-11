@@ -1,0 +1,40 @@
+
+.comment
+    padding : 0 .8em 0.3em 1em
+    margin-top : 1.8em
+    border-bottom-left-radius: 0.8em
+    font-size : small
+
+.comment p, .comment li
+    font-family : inherit
+
+.comment h1
+    font-size : large
+
+.comment h2
+    font-size : medium
+
+.comment-head, .comment-action
+    margin-right : 1em
+
+.top_level
+    border-left : solid black 0.2em
+
+.even_depth
+    border-left : solid lightblue 0.2em
+
+.odd_depth
+    border-left : solid lightgrey 0.2em
+
+.small_avatar
+    width : 2.5em
+    height : 2.5em
+    padding : 0em
+    margin-right : 0.3em
+    border-radius : 5px
+
+.retraction
+    color : darkred
+    border-left : solid darkred 0.25em
+    padding-left : 0.5em
+    margin : 0.2em

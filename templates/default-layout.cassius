@@ -1,7 +1,7 @@
 
 body
     background-color : white
-    font-size : normal
+    font-size : 1.1em
 
 header
     padding-bottom : 1em
@@ -80,6 +80,9 @@ div.math
     padding-right: 0.122em
     margin-right: 0
 
+.alert
+    text-align : center
+
 .alert-info
     color: #767676;
     background-color: #F1F1F1;
@@ -101,7 +104,7 @@ hr.wikitop
 
 footer
     text-align : center
-    font-size : 0.8em
+    font-size : 0.85em
 
 ul, ol
     margin : 0.3em
@@ -113,7 +116,7 @@ ul, ol
     padding-left : 1em
 
 li, p
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif
+    font-family: serif
 
 li
     line-height : 1.4em
@@ -124,8 +127,7 @@ li.toc_li
     font-size : medium
 
 p
-    padding : 0.1em
-    padding-top : 0.4em
+    padding : .4em 1em
     line-height : 1.5em
 
 .footnote, .footnotes
@@ -177,42 +179,6 @@ span.title
     text-align : right
     font-weight : bold
 
-.comment
-    padding : 0 .8em 0.3em 1em
-    margin-top : 1.8em
-    border-bottom-left-radius: 0.8em
-
-.comment h1
-    font-size : large
-
-.comment h2
-    font-size : medium
-
-.comment-head, .comment-action
-    margin-right : 1em
-
-.top_level
-    border-left : solid black 0.2em
-
-.even_depth
-    border-left : solid lightblue 0.2em
-
-.odd_depth
-    border-left : solid lightgrey 0.2em
-
-.small_avatar
-    width : 2.5em
-    height : 2.5em
-    padding : 0em
-    margin-right : 0.3em
-    border-radius : 5px
-
-.retraction
-    color : darkred
-    border-left : solid darkred 0.25em
-    padding-left : 0.5em
-    margin : 0.2em
-
 h1, h2, h3, h4, h5, h6
     font-weight : bold
 
@@ -231,7 +197,7 @@ q:after
 table
     box-shadow : 8px 8px 5px #888888
     margin : 2em 0
-    font-size : 0.85em
+    font-size : 0.8em
 
 th
     background : #4477BB
@@ -246,8 +212,11 @@ tr:nth-child(even)
 td
     vertical-align : middle
     text-align : center
-    padding : 0.2em
+    padding : 0.3em 0.5em
     border-top : 1px solid #DDDDDD
+
+figure
+    text-align : center
 
 form.tag
     padding : 2px 4px
@@ -271,4 +240,3 @@ input.tag-input[type="submit"]:hover
 
 input.tag.input[type="submit"]:active
     background : none
-
