@@ -21,6 +21,8 @@ import Widgets.Preview
 
 import Model.Markdown
 
+import Data.Time.Clock
+
 lookupGetParamDefault :: Read a => Text -> a -> Handler a
 lookupGetParamDefault name def = do
     maybe_value <- lookupGetParam name
@@ -76,6 +78,33 @@ renderProject maybe_project_handle project show_form pledges pledge = do
         description = renderMarkdown (fromMaybe "???" maybe_project_handle) $ projectDescription project
 
         maybe_shares = pledgeShares . entityVal <$> pledge
+
+    now <- liftIO getCurrentTime
+
+    amounts <- case projectLastPayday project of
+        Nothing -> return Nothing
+        Just last_payday -> handlerToWidget $ runDB $ do
+            [Value last :: Value Rational] <- select $ from $ \ transaction -> do
+                where_ $ transaction ^. TransactionPayday ==. val (Just last_payday)
+                        &&. transaction ^. TransactionCredit ==. val (Just $ projectAccount project)
+
+                return $ sum_ $ transaction ^. TransactionAmount
+
+            [Value year :: Value Rational] <- select $ from $ \ (transaction `InnerJoin` payday) -> do
+                where_ $ payday ^. PaydayDate >. val (addUTCTime (-365 * 24 * 60 * 60) now) 
+                        &&. transaction ^. TransactionCredit ==. val (Just $ projectAccount project)
+
+                on_ $ transaction ^. TransactionPayday ==. just (payday ^. PaydayId)
+
+                return $ sum_ $ transaction ^. TransactionAmount
+
+            [Value total :: Value Rational] <- select $ from $ \ transaction -> do
+                where_ $ transaction ^. TransactionCredit ==. val (Just $ projectAccount project)
+
+                return $ sum_ $ transaction ^. TransactionAmount
+
+
+            return $ Just (Milray $ round last,  Milray $ round year, Milray $ round total)
 
     ((_, update_shares), _) <- if show_form
                                 then handlerToWidget $ generateFormGet $ buySharesForm $ fromMaybe 0 maybe_shares
