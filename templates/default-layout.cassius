@@ -26,7 +26,7 @@ img
     line-height: 14px;
 
 input, textarea
-    font-size : 0.9em
+    font-size : small
 
 
 input[type=submit]
@@ -108,7 +108,7 @@ hr.wikitop
 
 footer
     text-align : center
-    font-size : 0.85em
+    font-size : 0.75em
 
 ul, ol
     margin : 0.3em
@@ -201,7 +201,7 @@ q:after
 table
     box-shadow : 8px 8px 5px #888888
     margin : 2em 0
-    font-size : 0.8em
+    font-size : 0.75em
 
 th
     background : #4477BB
