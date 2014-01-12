@@ -64,9 +64,8 @@ $newline never
               head.replaceChild(logo, head.firstChild);
           }
     <body>
+        ^{pageBody pc}
         <div .container>
-            <header>
-              ^{pageBody pc}
             <footer>
                 <div .row>
                     <div .col-md-3>

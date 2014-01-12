@@ -1,10 +1,11 @@
-<div id="main" role="main">
-    <div #body .col-md-12>
-        $maybe msg <- mmsg
-            <div .alert .alert-info #message>
-                #{msg}
-        $maybe alert <- malert
-            #{alert}
+<div .container>
+    <div id="main" role="main">
+        <div #body .col-md-12>
+            $maybe msg <- mmsg
+                <div .alert .alert-info #message>
+                    #{msg}
+            $maybe alert <- malert
+                #{alert}
 
-        ^{widget}
+            ^{widget}
 

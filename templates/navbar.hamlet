@@ -1,6 +1,5 @@
 <header>
-    <navbar .navbar .navbar-default>
-      <div .container>
+    <navbar .navbar .navbar-static-top>
         <div .navbar-header>
             <a #head href="@{HomeR}">
                 <noscript>
