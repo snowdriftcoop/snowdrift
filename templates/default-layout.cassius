@@ -4,7 +4,8 @@ body
     font-size : 1.1em
 
 header
-    padding-bottom : 1em
+    border-bottom: 1px solid lightgrey
+    margin-bottom : 1em
 
 td.container
     vertical-align : top
@@ -24,6 +25,9 @@ img
 .nav li .glyphicon
     top: 2px;
     line-height: 14px;
+
+header .container .row
+    padding-bottom: 0px;
 
 input, textarea
     font-size : 0.9em
