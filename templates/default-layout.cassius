@@ -4,7 +4,6 @@ body
     font-size : 1.1em
 
 header
-    border-bottom: 1px solid lightgrey
     margin-bottom : 1em
 
 td.container
@@ -21,6 +20,13 @@ img
     padding : 0.8em
     max-width: 100%
     height: auto
+
+body
+    padding-top: 70px;
+
+.navbar
+    border-bottom: 1px solid lightgrey;
+    background: white;
 
 .nav li .glyphicon
     top: 2px;

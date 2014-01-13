@@ -1,5 +1,6 @@
 <div .row>
-    <div .col-md-8>
+    <img src=@{StaticR img_logo_png} alt="Snowdrift.coop: clearing the path to a Free/Libre/Open World">
+    <div .col-md-12>
         <p>
             <strong>
                 Imagine a world where art, music, software, educational resources, journalism, and research
