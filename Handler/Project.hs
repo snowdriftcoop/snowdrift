@@ -86,13 +86,13 @@ renderProject maybe_project_handle project show_form pledges pledge = do
     amounts <- case projectLastPayday project of
         Nothing -> return Nothing
         Just last_payday -> handlerToWidget $ runDB $ do
-            [Value last :: Value Rational] <- select $ from $ \ transaction -> do
+            [Value (Just last)] <- select $ from $ \ transaction -> do
                 where_ $ transaction ^. TransactionPayday ==. val (Just last_payday)
                         &&. transaction ^. TransactionCredit ==. val (Just $ projectAccount project)
 
                 return $ sum_ $ transaction ^. TransactionAmount
 
-            [Value year :: Value Rational] <- select $ from $ \ (transaction `InnerJoin` payday) -> do
+            [Value (Just year)] <- select $ from $ \ (transaction `InnerJoin` payday) -> do
                 where_ $ payday ^. PaydayDate >. val (addUTCTime (-365 * 24 * 60 * 60) now) 
                         &&. transaction ^. TransactionCredit ==. val (Just $ projectAccount project)
 
@@ -100,13 +100,13 @@ renderProject maybe_project_handle project show_form pledges pledge = do
 
                 return $ sum_ $ transaction ^. TransactionAmount
 
-            [Value total :: Value Rational] <- select $ from $ \ transaction -> do
+            [Value (Just total)] <- select $ from $ \ transaction -> do
                 where_ $ transaction ^. TransactionCredit ==. val (Just $ projectAccount project)
 
                 return $ sum_ $ transaction ^. TransactionAmount
 
 
-            return $ Just (Milray $ round last,  Milray $ round year, Milray $ round total)
+            return $ Just (last, year, total)
 
     ((_, update_shares), _) <- if show_form
                                 then handlerToWidget $ generateFormGet $ buySharesForm $ fromMaybe 0 maybe_shares
