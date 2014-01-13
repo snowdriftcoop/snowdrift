@@ -219,4 +219,12 @@ DefaultTagColor
     color Int
     UniqueDefaultTag tag
 
+RoleEvent
+    time UTCTime
+    user UserId
+    role Role
+    project ProjectId
+    added Bool
+
+
  -- This file is used in Model.hs (which is imported by Foundation.hs)
