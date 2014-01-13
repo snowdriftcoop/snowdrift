@@ -1,6 +1,6 @@
 <header>
   <div .container>
-    <navbar .navbar .navbar-static-top>
+    <navbar .navbar .navbar-fixed-top>
       <div .row>
        <div .col-md-12>
         <div .navbar-header>
