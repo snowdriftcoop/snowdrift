@@ -87,27 +87,27 @@ renderProject maybe_project_handle project show_form pledges pledge = do
     amounts <- case projectLastPayday project of
         Nothing -> return Nothing
         Just last_payday -> handlerToWidget $ runDB $ do
-            [Value (Just last)] <- select $ from $ \ transaction -> do
+            [Value (Just last) :: Value (Maybe Rational)] <- select $ from $ \ transaction -> do
                 where_ $ transaction ^. TransactionPayday ==. val (Just last_payday)
                         &&. transaction ^. TransactionCredit ==. val (Just $ projectAccount project)
 
-                return $ sum_ $ transaction ^. TransactionAmount
+                return $ round_ $ sum_ $ transaction ^. TransactionAmount
 
-            [Value (Just year)] <- select $ from $ \ (transaction `InnerJoin` payday) -> do
+            [Value (Just year) :: Value (Maybe Rational)] <- select $ from $ \ (transaction `InnerJoin` payday) -> do
                 where_ $ payday ^. PaydayDate >. val (addUTCTime (-365 * 24 * 60 * 60) now) 
                         &&. transaction ^. TransactionCredit ==. val (Just $ projectAccount project)
 
                 on_ $ transaction ^. TransactionPayday ==. just (payday ^. PaydayId)
 
-                return $ sum_ $ transaction ^. TransactionAmount
+                return $ round_ $ sum_ $ transaction ^. TransactionAmount
 
-            [Value (Just total)] <- select $ from $ \ transaction -> do
+            [Value (Just total) :: Value (Maybe Rational)] <- select $ from $ \ transaction -> do
                 where_ $ transaction ^. TransactionCredit ==. val (Just $ projectAccount project)
 
-                return $ sum_ $ transaction ^. TransactionAmount
+                return $ round_ $ sum_ $ transaction ^. TransactionAmount
 
 
-            return $ Just (last, year, total)
+            return $ Just (Milray $ round $ last, Milray $ round $ year, Milray $ round $ total)
 
     ((_, update_shares), _) <- if show_form
                                 then handlerToWidget $ generateFormGet $ buySharesForm $ fromMaybe 0 maybe_shares
