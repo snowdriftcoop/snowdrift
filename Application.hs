@@ -12,6 +12,7 @@ import Yesod.Default.Main
 import Yesod.Default.Handlers
 import Network.Wai.Middleware.RequestLogger (logStdout, logStdoutDev)
 import qualified Database.Persist
+import qualified Database.Persist.Sql
 import Network.HTTP.Conduit (newManager, def)
 import Version
 import Control.Monad.Logger (runLoggingT)
@@ -19,7 +20,7 @@ import Control.Monad.Trans.Resource
 import System.IO (stdout)
 import System.Log.FastLogger (mkLogger)
 
-import Data.Text
+import Data.Text as T
 
 -- Import all relevant handler modules here.
 -- Don't forget to add new modules to your cabal file!
@@ -84,9 +85,9 @@ makeFoundation conf = do
     logger <- mkLogger True stdout
     let foundation = App navbar conf s p manager dbconf logger
 
-    runLoggingT
-        (Database.Persist.runPool dbconf (printMigration migrateAll >> runMigration migrateAll >> rolloutStagingWikiPages) p)
-        (messageLoggerSource foundation logger)
+    flip runLoggingT (messageLoggerSource foundation logger) $ do
+        Database.Persist.runPool dbconf (printMigration migrateAll >> runMigration migrateAll >> rolloutStagingWikiPages) p
+        Database.Persist.Sql.runSqlPool migrateTriggers p
 
     now <- getCurrentTime
     let (base, diff) = version
@@ -139,4 +140,31 @@ rolloutStagingWikiPages = do
         delete $ from $ \ page -> do
             where_ ( page ^. WikiPageId ==. val staged_page_id )
 
+
+migrateTriggers :: (MonadSqlPersist m, MonadBaseControl IO m, MonadUnsafeIO m, MonadThrow m) => m ()
+migrateTriggers = runResourceT $ do
+    flip rawExecute [] $ T.unlines
+        [ "CREATE OR REPLACE FUNCTION log_role_event_trigger() RETURNS trigger AS $role_event$"
+        , "    BEGIN"
+        , "        IF (TG_OP = 'DELETE') THEN"
+        , "            INSERT INTO role_event (time, \"user\", role, project, added) SELECT now(), OLD.\"user\", OLD.role, OLD.project, 'f';"
+        , "            RETURN OLD;"
+        , "        ELSIF (TG_OP = 'INSERT') THEN"
+        , "            INSERT INTO role_event (time, \"user\", role, project, added) SELECT now(), NEW.\"user\", NEW.role, NEW.project, 't';"
+        , "            RETURN NEW;"
+        , "        END IF;"
+        , "        RETURN NULL;"
+        , "    END;"
+        , "$role_event$ LANGUAGE plpgsql;"
+        ]
+
+    flip rawExecute [] "DROP TRIGGER IF EXISTS role_event ON project_user_role;"
+
+    flip rawExecute [] $ T.unlines
+        [ "CREATE TRIGGER role_event"
+        , "AFTER INSERT OR DELETE ON project_user_role"
+        , "    FOR EACH ROW EXECUTE PROCEDURE log_role_event_trigger();"
+        ]
+
+    return ()
         

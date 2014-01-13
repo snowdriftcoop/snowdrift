@@ -15,11 +15,15 @@ import qualified Data.Map as M
 import qualified Data.Text as T
 import qualified Data.Set as S
 
+import Data.Maybe (maybeToList)
 
 import Widgets.Markdown
 import Widgets.Preview
+import Widgets.Time
 
 import Model.Markdown
+
+import Data.Time.Clock
 
 lookupGetParamDefault :: Read a => Text -> a -> Handler a
 lookupGetParamDefault name def = do
@@ -76,6 +80,33 @@ renderProject maybe_project_handle project show_form pledges pledge = do
         description = renderMarkdown (fromMaybe "???" maybe_project_handle) $ projectDescription project
 
         maybe_shares = pledgeShares . entityVal <$> pledge
+
+    now <- liftIO getCurrentTime
+
+    amounts <- case projectLastPayday project of
+        Nothing -> return Nothing
+        Just last_payday -> handlerToWidget $ runDB $ do
+            [Value last :: Value Rational] <- select $ from $ \ transaction -> do
+                where_ $ transaction ^. TransactionPayday ==. val (Just last_payday)
+                        &&. transaction ^. TransactionCredit ==. val (Just $ projectAccount project)
+
+                return $ sum_ $ transaction ^. TransactionAmount
+
+            [Value year :: Value Rational] <- select $ from $ \ (transaction `InnerJoin` payday) -> do
+                where_ $ payday ^. PaydayDate >. val (addUTCTime (-365 * 24 * 60 * 60) now) 
+                        &&. transaction ^. TransactionCredit ==. val (Just $ projectAccount project)
+
+                on_ $ transaction ^. TransactionPayday ==. just (payday ^. PaydayId)
+
+                return $ sum_ $ transaction ^. TransactionAmount
+
+            [Value total :: Value Rational] <- select $ from $ \ transaction -> do
+                where_ $ transaction ^. TransactionCredit ==. val (Just $ projectAccount project)
+
+                return $ sum_ $ transaction ^. TransactionAmount
+
+
+            return $ Just (Milray $ round last,  Milray $ round year, Milray $ round total)
 
     ((_, update_shares), _) <- if show_form
                                 then handlerToWidget $ generateFormGet $ buySharesForm $ fromMaybe 0 maybe_shares
@@ -212,3 +243,59 @@ getProjectPatronsR project_handle = do
         return (project, pledges, M.fromList $ map ((\ (Value x :: Value UserId) -> x) *** (\ (Value x :: Value Int) -> x)) user_payouts)
 
     defaultLayout $(widgetFile "project_patrons")
+
+getProjectTransactionsR :: Text -> Handler Html
+getProjectTransactionsR project_handle = do
+    maybe_viewer_id <- maybeAuthId
+
+    (project, account, account_map, transaction_groups) <- runDB $ do
+        Entity _ project :: Entity Project <- getBy404 $ UniqueProjectHandle project_handle
+
+        account <- get404 $ projectAccount project
+
+        transactions <- select $ from $ \ t -> do
+            where_ $ t ^. TransactionCredit ==. val (Just $ projectAccount project)
+                    ||. t ^. TransactionDebit ==. val (Just $ projectAccount project)
+
+            orderBy [ desc $ t ^. TransactionTs ]
+            return t
+
+        let accounts = S.toList $ S.fromList $ concatMap (\ (Entity _ t) -> maybeToList (transactionCredit t) <> maybeToList (transactionDebit t)) transactions
+
+        users_by_account <- fmap (M.fromList . map (userAccount . entityVal &&& Right)) $ select $ from $ \ u -> do
+            where_ $ u ^. UserAccount `in_` valList accounts
+            return u
+
+        projects_by_account <- fmap (M.fromList . map (projectAccount . entityVal &&& Left)) $ select $ from $ \ p -> do
+            where_ $ p ^. ProjectAccount `in_` valList accounts
+            return p
+
+        let account_map = M.union projects_by_account users_by_account
+
+        payday_map <- fmap (M.fromList . map (entityKey &&& id)) $ select $ from $ \ pd -> do
+            where_ $ pd ^. PaydayId `in_` valList (S.toList $ S.fromList $ mapMaybe (transactionPayday . entityVal) transactions)
+            return pd
+
+        return (project, account, account_map, process payday_map transactions)
+
+    let getOtherAccount transaction
+            | transactionCredit transaction == Just (projectAccount project) = transactionDebit transaction
+            | transactionDebit transaction == Just (projectAccount project) = transactionCredit transaction
+            | otherwise = Nothing
+
+    defaultLayout $(widgetFile "project_transactions")
+
+  where
+    process payday_map =
+        let process' [] [] = []
+            process' (t':ts') [] = [(fmap (payday_map M.!) $ transactionPayday $ entityVal t', reverse (t':ts'))]
+            process' [] (t:ts) = process' [t] ts
+
+            process' (t':ts') (t:ts)
+                | transactionPayday (entityVal t') == transactionPayday (entityVal t)
+                = process' (t:t':ts') ts
+                | otherwise
+                = (fmap (payday_map M.!) $ transactionPayday $ entityVal t', reverse (t':ts')) : process' [t] ts
+         in process' []
+
+

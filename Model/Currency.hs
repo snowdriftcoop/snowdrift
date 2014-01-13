@@ -9,6 +9,8 @@ import Prelude
 import Database.Persist
 import Database.Persist.Sql
 
+import Text.Blaze
+
 
 class Currency a where
    ($*) :: a -> Double -> a
@@ -50,6 +52,10 @@ instance Show Milray where
                           fpart = reverse $ take 4 $ f ++ repeat '0'
                           ipart = intercalate "," $ reverse $ map reverse $ splitPieces i
                       in "$" ++ sign ++ (if null ipart then "0" else ipart) ++ "." ++ fpart
+
+
+instance ToMarkup Milray where
+    toMarkup = toMarkup . show
 
 instance Read Milray where
     readsPrec p ('$':'-':s) = map (\ (Milray i, rest) -> (Milray $ -i, rest)) $ readsPrec p ('$':s)

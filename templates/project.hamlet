@@ -22,6 +22,17 @@
             <tr>
                 <td>
                     Total: #{show project_value}&nbsp;per&nbsp;month
+            $maybe (last, year, total) <- amounts
+                <tr>
+                    <td>
+                        #{last} on the last payday
+                <tr>
+                    <td>
+                        #{year} in the past year
+                <tr>
+                    <td>
+                        #{total} total
+
         <hr>
 
         $if show_form
