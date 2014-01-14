@@ -36,7 +36,7 @@ import Handler.Volunteer
 import Handler.Contact
 import Handler.Who
 import Handler.PostLogin
-import Handler.Tos
+import Handler.ToU
 import Handler.Privacy
 import Handler.Messages
 import Handler.Application
