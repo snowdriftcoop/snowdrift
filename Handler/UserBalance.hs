@@ -98,7 +98,7 @@ postUserBalanceR user_id = do
         FormSuccess amount -> do
             if amount < 10
              then
-                addAlert "danger" "Must load money in increments of at least $10." 
+                addAlert "danger" "Sorry, minimum deposit is $10" 
              else do
                 runDB $ do
                     _ <- insert $ Transaction now (Just $ userAccount user) Nothing Nothing amount "Test Load" Nothing
