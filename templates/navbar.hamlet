@@ -9,11 +9,11 @@
                     <img #logo src=@{StaticR img_s_png} alt="Snowdrift.coop: clearing the path to a Free/Libre/Open World">
                 <script>
                     fixup_logo()
-        <div .collapse .navbar-collapse .navbar-left>
+        <div .navbar-left>
             <ul .nav .navbar-nav>
                 <li>
                     <a href=@{ProjectsR}> Browse Projects
-        <div .collapse .navbar-collapse .navbar-right>
+        <div .navbar-right>
             <ul .nav .navbar-nav>
                 $maybe Entity user_id _ <- maybe_user
                     $maybe (balance, pledged) <- money_info
