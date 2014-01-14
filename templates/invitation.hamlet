@@ -4,14 +4,13 @@
             This code has been redeemed.
         $else
             $maybe _ <- maybe_user_id
-                Click redeem to update your account to the level to which you've been invited.
+                Click 'redeem' to update your account to the level to which you've been invited.
                 <br>
-                Note that an invitation code can only be used once, so please be sure you are the intended recipient.
+                Note that each invitation code can only be used once, so please be sure you are the intended recipient.
 
                 <form method=POST action=@{InvitationR project_handle code}>
                     <input type=submit value="Redeem Invitation">
             $nothing
-                Welcome! You must log in or create an account before redeeming your invitation code. The same log-in buttons will give you the option to make an account if you do not have one yet.
+                Welcome! You must log in or create an account before redeeming your invitation code.
                 <form method=GET action=@{AuthR LoginR}>
                     <input type=submit value="Log In / Create Account">
-

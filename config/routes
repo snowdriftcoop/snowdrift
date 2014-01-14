@@ -81,7 +81,7 @@ p/#Text/applications ApplicationsR GET
 
 /dest PostLoginR GET
 
-/tos TosR GET
+/tou ToUR GET
 /priv PrivacyR GET
 /license/javascript JsLicenseR GET
 

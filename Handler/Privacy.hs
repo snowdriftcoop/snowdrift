@@ -2,5 +2,7 @@ module Handler.Privacy where
 
 import Import
 
+import Widgets.Doc
+
 getPrivacyR :: Handler Html
-getPrivacyR = defaultLayout $(widgetFile "priv")
+getPrivacyR = defaultLayout $ renderDoc "Privacy Policy"

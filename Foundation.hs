@@ -163,7 +163,7 @@ instance Yesod App where
     urlRenderOverride y (StaticR s) =
         Just $ uncurry (joinPath y (Settings.staticRoot $ settings y)) $ renderRoute s
 
-    urlRenderOverride _ TosR = Just (fromText "/tos")
+    urlRenderOverride _ ToUR = Just (fromText "/tou")
     urlRenderOverride _ PrivacyR = Just (fromText "/priv")
     urlRenderOverride _ PostLoginR = Just (fromText "/dest")
     urlRenderOverride _ _ = Nothing
@@ -242,7 +242,7 @@ authBrowserIdFixed =
                     navigator.id.request(
                         { siteName: null
                         // , siteLogo: '/static/img/logo.png'
-                        , termsOfService: '@{TosR}'
+                        , termsOfService: '@{ToUR}'
                         , privacyPolicy: '@{PrivacyR}'
                         , returnTo: '@{PostLoginR}'
                         , oncancel: function() {}

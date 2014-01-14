@@ -28,7 +28,7 @@
                                     #{nick}
                             <td>
                                 $if isJust $ userEstablishedTs $ entityVal user
-                                    Yes
+                                    &#10004;
                             $forall role <- roles
                                 <td>
                                     $maybe roles' <- Map.lookup user_id userRoles

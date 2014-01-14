@@ -226,5 +226,14 @@ RoleEvent
     project ProjectId
     added Bool
 
+Doc
+    name Text
+    currentVersion WikiEditId
+    UniqueDocName name
+
+DocEvent
+    time UTCTime
+    doc DocId
+    blessedVersion WikiEditId
 
  -- This file is used in Model.hs (which is imported by Foundation.hs)

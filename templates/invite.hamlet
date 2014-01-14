@@ -3,7 +3,7 @@
         $maybe link <- maybe_link
             <p>
                 Your invitation code has been generated.
-                The code adds new role to an already existing snowdrift.coop account.
+                The code adds a new role to an already existing snowdrift.coop account.
             <p>
                 <strong>Send the code below to the invitee along with a personal note.
                 <br>
@@ -44,11 +44,11 @@
                 To invite others:
             <ul>
                 <li>
-                    Enter information in the field below about who you are inviting and why
+                    Enter information in the field below about who you are inviting and why.
                 <li>
-                    After you click "generate", you will be given a link which you can send to the invitee
+                    After you click "generate", you will be given a link which you can send to the invitee.
                 <li>
-                    Note: each invitation can only be used once, so you must generate a new link for each person you wish to invite
+                    Note: each invitation can only be used once, so you must generate a new link for each person you wish to invite.
 
         <form method=post action=@{InviteR project_handle}>
             ^{invite_form}

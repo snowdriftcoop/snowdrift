@@ -12,11 +12,11 @@ getBuildFeedR :: Handler TypedContent
 getBuildFeedR = do
     builds :: [Build] <- fmap (map entityVal) $ runDB $ selectList [] [Desc BuildBootTime]
 
-    let title = T.pack $ "Snowdrift Deployments"
+    let title = T.pack $ "Snowdrift.coop Deployments"
         feed_url = BuildFeedR
         home_url = HomeR
-        author = "Snowdrift Team"
-        description = "Deployments of the Snowdrift site"
+        author = "Snowdrift.coop Team"
+        description = "Deployments of the Snowdrift.coop site"
         lang = "en"
         time :: UTCTime
         (time:_) = map buildBootTime builds

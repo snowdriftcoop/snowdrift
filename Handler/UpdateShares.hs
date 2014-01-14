@@ -74,7 +74,7 @@ postUpdateSharesR project_handle = do
 
             if success
              then addAlert "success" "you are now pledged to support this project" 
-             else addAlert "warning" "you must have at least 3 months worth in your account to pledge additional shares" 
+             else addAlert "warning" "Sorry, you must have funds to support your pledge for at least 3 months at current share value. Please deposit additional funds to your account." 
 
             redirect $ ProjectR project_handle
 

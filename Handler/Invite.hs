@@ -94,4 +94,3 @@ postInviteR project_handle = do
         _ -> addAlert "danger" "Error in submitting form." 
 
     redirect $ InviteR project_handle
-
