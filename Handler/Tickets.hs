@@ -96,7 +96,7 @@ getTicketsR project_handle = do
 
     github_issues <- case github_issues' of
         Right x -> return x
-        Left _ -> addAlert "danger" "failed to fetch github tickets\n" >> return []
+        Left _ -> addAlert "danger" "failed to fetch GitHub tickets\n" >> return []
 
     ((result, formWidget), encType) <- runFormGet viewForm
 
@@ -120,8 +120,6 @@ getTicketsR project_handle = do
             where_ $ page ^. WikiPageId `in_` valList (map (commentPage . entityVal . snd) tickets'comments)
             return page
 
-        -- TODO Permissions: only show tickets on pages where I can view comments
-            
         let pages_map = M.fromList . map (entityKey &&& entityVal) $ pages
 
         used_tags'tickets <- forM tickets'comments $ \ (Entity ticket_id ticket, Entity comment_id comment) -> do
