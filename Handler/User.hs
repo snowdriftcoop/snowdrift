@@ -31,7 +31,7 @@ editUserForm user = renderBootstrap3 $
     UserUpdate
         <$> aopt' textField "Public Name" (Just $ userName user)
         <*> aopt' textField "Avatar (link)" (Just $ userAvatar user)
-        <*> aopt' textField "IRC Nick (irc.freenode.net)" (Just $ userIrcNick user)
+        <*> aopt' textField "IRC name @freenode.net)" (Just $ userIrcNick user)
         <*> aopt' snowdriftMarkdownField "Blurb (used on listings of many people)" (Just $ userBlurb user)
         <*> aopt' snowdriftMarkdownField "Personal Statement (visible only on this page)" (Just $ userStatement user)
     where
