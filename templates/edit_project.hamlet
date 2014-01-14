@@ -3,4 +3,3 @@
         <form method=POST action=@{ProjectR project_handle}>
             ^{project_form}
             <input name=mode type=submit value=preview>
-

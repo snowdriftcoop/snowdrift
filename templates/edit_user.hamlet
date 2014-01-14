@@ -5,4 +5,3 @@
         <form method=POST action=@{UserR user_id}>
             ^{form}
             <input type=submit name=mode value=preview>
-

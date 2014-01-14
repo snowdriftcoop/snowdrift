@@ -54,6 +54,6 @@ updateShareValue project_id = do
 {-
  - TODO
  -  Unfund shares
- -  Fix algorithm
+ -  Fix algorithm (Aaron asks: fix it? what's broken? I think it's right… 2014-01-14)
  -}
 
