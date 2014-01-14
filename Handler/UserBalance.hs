@@ -9,6 +9,7 @@ import qualified Data.Text as T
 import Model.Transaction
 import Model.Currency
 import Model.User
+import Model.Role
 
 
 import Widgets.Time
@@ -26,9 +27,18 @@ lookupParamDefault name def = do
 getOldUserBalanceR :: UserId -> Handler Html
 getOldUserBalanceR = redirect . UserBalanceR
 
+-- check permissions for user balance view
 getUserBalanceR :: UserId -> Handler Html
 getUserBalanceR user_id = do
     Entity viewer_id viewer <- requireAuth
+    if viewer_id /= user_id
+        then permissionDenied "You must be a Snowdrift administrator to view user balances."
+        else getUserBalanceR' user_id
+
+getUserBalanceR' :: UserId -> Handler Html
+getUserBalanceR' user_id = do
+    Entity viewer_id viewer <- requireAuth
+
     user <- runDB $ get404 user_id
 
     -- TODO: restrict viewing balance to user or snowdrift admins (logged) before moving to real money

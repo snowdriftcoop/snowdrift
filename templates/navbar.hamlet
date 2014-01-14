@@ -6,7 +6,7 @@
         <div .navbar-header>
             <a #head href="@{HomeR}">
                 <noscript>
-                    img #logo src=@{StaticR img_s_png} alt="Snowdrift.coop: clearing the path to a Free/Libre/Open World">
+                    <img #logo src=@{StaticR img_s_png} alt="Snowdrift.coop: clearing the path to a Free/Libre/Open World">
                 <script>
                     fixup_logo()
         <div .collapse .navbar-collapse .navbar-left>
