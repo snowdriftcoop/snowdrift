@@ -37,11 +37,11 @@ getRepoFeedR = do
         return (commits, branch)
 
 
-    let title = T.pack $ "Snowdrift Commits (" ++ branch ++ ")"
+    let title = T.pack $ "Snowdrift.coop Commits (" ++ branch ++ ")"
         feed_url = RepoFeedR
         home_url = HomeR
-        author = "Snowdrift Team"
-        description = "Commits to the Snowdrift repository."
+        author = "Snowdrift.coop Team"
+        description = "Commits to the Snowdrift.coop repository."
         lang = "en"
         -- commitTime = toUTCTime . personTime . commitAuthor
         time = commitTime $ head commits
