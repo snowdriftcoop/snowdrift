@@ -10,8 +10,9 @@ renderPreview form action widget =
             <div .row>
                 <div .col-md-9>
                     <div .alert .alert-danger>
-                        This is a preview; your changes have not been saved!
-                        You can edit it below.
+                        This is a preview;
+                        <strong>your changes have <em>not</em> been saved!
+                        Below, you can edit more.
                     <input type=submit name=mode value="#{action}">
 
             ^{widget}
@@ -19,7 +20,8 @@ renderPreview form action widget =
             <div .row>
                 <div .col-md-9>
                     <div .alert .alert-danger>
-                        This is a preview; your changes have not been saved!
+                        This is a preview;
+                        <strong>your changes have <em>not</em> been saved!
                     <input type=submit name=mode value="preview">
                     <input type=submit name=mode value="#{action}">
                     ^{form}
