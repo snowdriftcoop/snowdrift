@@ -1,7 +1,7 @@
 <div .row>
     <div .col-md-8>
         $if null tags
-            no tickets to display
+            no tags to display
         $else
             <table>
                 $forall tag <- tags
