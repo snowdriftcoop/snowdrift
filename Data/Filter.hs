@@ -54,7 +54,7 @@ timeConstraintP =
         between name = (\ start end x -> not $ S.null $ snd $ S.split start $ fst $ S.split end $ getNamedTs x name) <$> (A.string name *> stripP "BETWEEN" *> timeP <* stripP "AND") <*> timeP 
 
 timeP :: Parser UTCTime
-timeP = fmap (flip UTCTime 0) $ stripP $ fromGregorian <$> (read <$> A.count 4 digit) <* "-" <*> (read <$> A.count 2 digit) <* "-" <*> (read <$> A.count 2 digit)
+timeP = fmap (`UTCTime` 0) $ stripP $ fromGregorian <$> (read <$> A.count 4 digit) <* "-" <*> (read <$> A.count 2 digit) <* "-" <*> (read <$> A.count 2 digit)
 
 tagP :: Parser (Filterable -> Bool)
 tagP = flip hasTag <$> takeWhile1 (inClass "a-z-")
