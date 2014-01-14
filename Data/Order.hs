@@ -61,8 +61,9 @@ termP = stripP $
 
 
 toTimeValue :: UTCTime -> Double
-toTimeValue = (/ 86400 {- seconds per day -}) . fromIntegral . round . diffUTCTime epoch
+toTimeValue = (/ 86400 {- seconds per day -}) . fromIntegral . (id :: Integer -> Integer) . round . diffUTCTime epoch
 
+timeValueP :: Parser (Orderable -> Double)
 timeValueP = timeConstraintP <|> fmap (const . toTimeValue) timeP
 
 timeConstraintP :: Parser (Orderable -> Double)
@@ -71,27 +72,27 @@ timeConstraintP =
     where
         before name = do
             void $ A.string name
-            stripP "BEFORE"
+            void $ stripP "BEFORE"
             end <- timeP
             return $ \ x -> fromIntegral $ fromEnum $ not $ S.null $ fst $ S.split end $ getNamedTs x name
 
         after name = do
             void $ A.string name
-            stripP "AFTER"
+            void $ stripP "AFTER"
             start <- timeP
             return $ \ x -> fromIntegral $ fromEnum $ not $ S.null $ snd $ S.split start $ getNamedTs x name
 
         between name = do
             void $ A.string name
-            stripP "BETWEEN"
+            void $ stripP "BETWEEN"
             start <- timeP
-            stripP "AND"
+            void $ stripP "AND"
             end <- timeP
             return $ \ x -> fromIntegral $ fromEnum $ not $ S.null $ snd $ S.split start $ fst $ S.split end $ getNamedTs x name
 
         time name = do
             void $ A.string name
-            stripP "TIME"
+            void $ stripP "TIME"
             return $ \ x -> maybe (-1) (toTimeValue . fst) $ S.maxView $ getNamedTs x name
 
 timeP :: Parser UTCTime

@@ -165,5 +165,26 @@ migrateTriggers = runResourceT $ do
         , "    FOR EACH ROW EXECUTE PROCEDURE log_role_event_trigger();"
         ]
 
+    flip rawExecute [] $ T.unlines
+        [ "CREATE OR REPLACE FUNCTION log_doc_event_trigger() RETURNS trigger AS $doc_event$"
+        , "    BEGIN"
+        , "        IF (TG_OP = 'INSERT' OR TG_OP = 'UPDATE') THEN"
+        , "            INSERT INTO doc_event (time, doc, blessed_version) SELECT now(), NEW.id, NEW.current_version;"
+        , "            RETURN NEW;"
+        , "        END IF;"
+        , "        RETURN NULL;"
+        , "    END;"
+        , "$doc_event$ LANGUAGE plpgsql;"
+        ]
+
+    flip rawExecute [] "DROP TRIGGER IF EXISTS doc_event ON doc;"
+
+    flip rawExecute [] $ T.unlines
+        [ "CREATE TRIGGER doc_event"
+        , "AFTER INSERT OR DELETE ON doc"
+        , "    FOR EACH ROW EXECUTE PROCEDURE log_doc_event_trigger();"
+        ]
+
+
     return ()
         
