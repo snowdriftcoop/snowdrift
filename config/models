@@ -56,6 +56,7 @@ Project
     account AccountId
     shareValue Milray
     lastPayday PaydayId Maybe
+    githubRepo Text Maybe
     UniqueProjectAccount account
     UniqueProjectHandle handle
     deriving Show

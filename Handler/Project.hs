@@ -115,7 +115,7 @@ renderProject maybe_project_handle project show_form pledges pledge = do
     $(widgetFile "project")
 
 
-data UpdateProject = UpdateProject { updateProjectName :: Text, updateProjectDescription :: Markdown, updateProjectTags :: [Text] } deriving Show
+data UpdateProject = UpdateProject { updateProjectName :: Text, updateProjectDescription :: Markdown, updateProjectTags :: [Text], updateProjectGithubRepo :: Maybe Text } deriving Show
 
 
 editProjectForm :: Maybe (Project, [Text]) -> Form UpdateProject
@@ -124,6 +124,7 @@ editProjectForm project =
         <$> areq' textField "Project Name" (projectName . fst <$> project)
         <*> areq' snowdriftMarkdownField "Description" (projectDescription . fst <$> project)
         <*> (maybe [] (map T.strip . T.splitOn ",") <$> aopt' textField "Tags" (Just . T.intercalate ", " . snd <$> project))
+        <*> aopt' textField "Github Repository" (projectGithubRepo . fst <$> project)
 
 
 getEditProjectR :: Text -> Handler Html
@@ -161,12 +162,12 @@ postProjectR project_handle = do
     now <- liftIO getCurrentTime
 
     case result of
-        FormSuccess (UpdateProject name description tags) -> do
+        FormSuccess (UpdateProject name description tags github_repo) -> do
             mode <- lookupPostParam "mode"
             let action :: Text = "update"
             case mode of
                 Just "preview" -> do
-                    let preview_project = project { projectName = name, projectDescription = description }
+                    let preview_project = project { projectName = name, projectDescription = description, projectGithubRepo = github_repo }
 
                     (form, _) <- generateFormPost $ editProjectForm (Just (preview_project, tags))
                     defaultLayout $ renderPreview form action $ renderProject (Just project_handle) preview_project False [] Nothing
@@ -181,7 +182,7 @@ postProjectR project_handle = do
                                 Nothing -> void $ insert $ ProjectLastUpdate project_id project_update
 
                         update $ \ p -> do
-                            set p [ ProjectName =. val name, ProjectDescription =. val description ]
+                            set p [ ProjectName =. val name, ProjectDescription =. val description, ProjectGithubRepo =. val github_repo ]
                             where_ (p ^. ProjectId ==. val project_id)
 
                         tag_ids <- forM tags $ \ tag_name -> do

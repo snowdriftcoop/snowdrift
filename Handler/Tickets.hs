@@ -91,8 +91,10 @@ getTicketsR :: Text -> Handler Html
 getTicketsR project_handle = do
     _ <- requireAuthId
 
-    -- TODO: make this a project-specific (optional) setting
-    github_issues' <- liftIO $ GH.issuesForRepo "dlthomas" (T.unpack project_handle) []
+
+    Entity _ project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
+
+    github_issues' <- liftIO $ maybe (return (Right [])) (( \ (account, repo) -> GH.issuesForRepo account repo []) . second (drop 1) . break (== '/') . T.unpack) $ projectGithubRepo project
 
     github_issues <- case github_issues' of
         Right x -> return x
