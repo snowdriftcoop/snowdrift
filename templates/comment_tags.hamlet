@@ -1,6 +1,6 @@
 
 <div .row>
-    <div .col-md-8>
+    <div .col-md-12>
         $if null tags
             no tags to display
         $else
