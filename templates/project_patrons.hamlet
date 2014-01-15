@@ -1,12 +1,12 @@
 <div .row>
-    <div .col-md-8>
+    <div .col-md-12>
         <div .row>
-            <div .col-md-4>
+            <div .col-md-12>
                 <h2>
                     #{projectName project}
 
         <div .row>
-            <div .col-md-8>
+            <div .col-md-12>
                 $if null pledges
                     no patrons yet
                 $else

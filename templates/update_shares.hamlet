@@ -1,5 +1,5 @@
 <div .row>
-    <div .col-md-8>
+    <div .col-md-12>
         $maybe Entity _ pledge <- maybe_pledge
             $case compare (pledgeShares pledge) shares
                 $# TODO: include funding amounts

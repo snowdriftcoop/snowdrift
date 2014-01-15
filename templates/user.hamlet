@@ -1,5 +1,5 @@
 <div .row>
-    <div .col-md-4>
+    <div .col-md-6>
         <div .row>
             <div .col-md-4>
                 <h1>
@@ -19,7 +19,7 @@
             <a href="@{EditUserR user_id}">
                 edit profile
 
-    <div .col-md-5>
+    <div .col-md-6>
         $maybe blurb <- userBlurb user
             #{renderMarkdown project_handle blurb}
         $nothing
@@ -32,13 +32,13 @@
             $maybe statement <- userStatement user
                 #{renderMarkdown project_handle statement}
 
-    <div .col-md-5>
+    <div .col-md-6>
         <div .well .well-sm>
             ^{project_pledges user_id}
 
 <div .row>
     <h4>Project Roles
-    <div .col-md-8>
+    <div .col-md-6>
         <table>
             <thead>
                 <tr>

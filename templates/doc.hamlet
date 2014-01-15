@@ -1,6 +1,6 @@
 <div .row>
-    <div .col-md-9>
+    <div .col-md-12>
         <hr .wikitop>
         <div .row>
-            <div .col-md-9>
+            <div .col-md-12>
                 #{renderMarkdown "snowdrift" (wikiEditContent page)}

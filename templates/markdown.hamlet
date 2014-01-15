@@ -1,6 +1,6 @@
 <div .row>
-    <div .col-md-8>
-        <h1> Summary of Markdown syntax
+    <div .col-md-12>
+        <h1>Summary of Markdown syntax
         <p>
             Markdown is a simple text-formatting system.
             Below are the basics.

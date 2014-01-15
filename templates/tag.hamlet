@@ -1,7 +1,7 @@
 $newline never
 
 <div .row>
-    <div .col-md-9>
+    <div .col-md-12>
         #{tag_name}
         <form method=post>
             <input type=submit method=post value="-">

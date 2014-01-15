@@ -1,5 +1,5 @@
 <div .row>
-    <div .col-md-9>
+    <div .col-md-12>
         <div .row>
             ^{rendered_comments}
 
