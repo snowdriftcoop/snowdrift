@@ -210,7 +210,7 @@ q:after
 
 table
     box-shadow : 8px 8px 5px #888888
-    margin : 2em 0
+    margin : 2em auto
     font-size : 0.75em
 
 th
