@@ -264,9 +264,8 @@ authBrowserIdFixed =
 
             toWidget [hamlet|
                 $newline never
-                <p>
-                    <a href="javascript:persona_login()">
-                        <img src="https://browserid.org/i/persona_sign_in_blue.png">
+                <a href="javascript:persona_login()">
+                    <img src="https://browserid.org/i/persona_sign_in_blue.png">
             |]
 
      in (authBrowserId def) { apLogin = login }

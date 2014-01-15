@@ -126,16 +126,16 @@ footer
     font-size : 0.75em
 
 ul, ol
-    margin : 0.3em
-    margin-top : 0.1em
-    margin-bottom : 0.1em
-    margin-left : 1em
-    padding : 0.2em
-    padding-top : 0em
-    padding-left : 1em
+    margin : 0.1em 0.5em 0.3em 1em
 
 li, p
-    font-family: serif
+    font-family : serif
+
+li
+    margin : 1em
+
+header li
+    margin : 0
 
 li.toc_li
     font-size : medium
