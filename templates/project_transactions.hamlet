@@ -1,5 +1,5 @@
 <div .row>
-    <div .col-md-8>
+    <div .col-md-12>
         <div .row>
             <div .col-md-3>
                 Account balance:
@@ -48,5 +48,3 @@
 
                                         <td>
                                             #{transactionReason transaction}
-    <div .col-md-3>
-        ^{sidebar}

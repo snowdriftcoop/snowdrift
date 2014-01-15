@@ -2,7 +2,7 @@ module Handler.Contact where
 
 import Import
 
-import Widgets.Sidebar
+
 import Widgets.Markdown
 
 

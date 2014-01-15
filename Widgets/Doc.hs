@@ -2,7 +2,6 @@ module Widgets.Doc where
 
 import Import
 import Model.Markdown
-import Widgets.Sidebar
 
 renderDoc :: Text -> Widget
 renderDoc name = do

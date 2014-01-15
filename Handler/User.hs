@@ -2,9 +2,13 @@ module Handler.User where
 
 import Import
 
-import Model.User
+import qualified Data.Map as Map
+import Data.Universe
 
-import Widgets.Sidebar
+import Model.User
+import Model.Role
+
+
 import Widgets.Markdown
 import Widgets.ProjectPledges
 import Widgets.Preview
@@ -27,7 +31,7 @@ editUserForm user = renderBootstrap3 $
     UserUpdate
         <$> aopt' textField "Public Name" (Just $ userName user)
         <*> aopt' textField "Avatar (link)" (Just $ userAvatar user)
-        <*> aopt' textField "IRC Nick (irc.freenode.net)" (Just $ userIrcNick user)
+        <*> aopt' textField "IRC name @freenode.net)" (Just $ userIrcNick user)
         <*> aopt' snowdriftMarkdownField "Blurb (used on listings of many people)" (Just $ userBlurb user)
         <*> aopt' snowdriftMarkdownField "Personal Statement (visible only on this page)" (Just $ userStatement user)
     where
@@ -59,8 +63,26 @@ getUserR user_id = do
 
         Just _ -> get404 user_id
 
-    defaultLayout $ renderUser maybe_viewer_id user_id user
+    roles <- runDB $
+             select $
+             from $ \(role `InnerJoin` project) -> do
+             on_ (role ^. ProjectUserRoleProject ==. project ^. ProjectId)
+             where_ (role ^. ProjectUserRoleUser ==. val user_id)
+             return (role ^. ProjectUserRoleRole, project)
 
+
+    defaultLayout $ renderUser' maybe_viewer_id user_id user roles
+
+
+renderUser' :: Maybe UserId -> UserId -> User -> [(Value Role, Entity Project)] -> Widget
+renderUser' viewer_id user_id user roles = do
+    let is_owner = Just user_id == viewer_id
+        user_entity = Entity user_id user
+        project_handle = error "bad link - no default project on user pages" -- TODO turn this into a caught exception
+        role_list = map roleLabel (universe :: [Role])
+        filterRoles r rps = filter (\(Value r', _) -> roleLabel r' == r) rps
+
+    $(widgetFile "user")
 
 renderUser :: Maybe UserId -> UserId -> User -> Widget
 renderUser viewer_id user_id user = do
@@ -68,7 +90,7 @@ renderUser viewer_id user_id user = do
         user_entity = Entity user_id user
         project_handle = error "bad link - no default project on user pages" -- TODO turn this into a caught exception
 
-    $(widgetFile "user")
+    $(widgetFile "user_")
             
 
 
@@ -134,10 +156,27 @@ getUsersR :: Handler Html
 getUsersR = do
     Entity _ viewer <- requireAuth
 
-    users <- runDB $ selectList [] [ Desc UserId ]
+    users' <- runDB $
+              select $
+              from $ \user -> do
+              return user
+
+    infos <- runDB $
+             select $
+             from $ \(user `InnerJoin` role `InnerJoin` project) -> do
+             on_ (project ^. ProjectId ==. role ^. ProjectUserRoleProject)
+             on_ (user ^. UserId ==. role ^. ProjectUserRoleUser)
+             orderBy [desc (user ^. UserId)]
+             return (user, role ^. ProjectUserRoleRole, project)
+
+    let roles = map roleLabel (universe :: [Role])
+        filterRoles r rps = filter (\(r', _) -> r' == r) rps
+        users = Map.toList $ Map.fromList $ map (\u -> (getUserKey u, u)) users'
+        userRoles = Map.fromListWith mappend $ map (\(u, Value r, p) -> (getUserKey u, [(roleLabel r, entityVal p)])) infos
+        getUserKey :: Entity User -> Text
+        getUserKey (Entity key _) = either (error . T.unpack) id . fromPersistValue . unKey $ key
 
     defaultLayout $(widgetFile "users")
-
 
 getOldUserCreateR :: Handler Html
 getOldUserCreateR = redirect UserCreateR

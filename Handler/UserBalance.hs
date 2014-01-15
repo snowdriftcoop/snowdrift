@@ -9,8 +9,9 @@ import qualified Data.Text as T
 import Model.Transaction
 import Model.Currency
 import Model.User
+import Model.Role
 
-import Widgets.Sidebar
+
 import Widgets.Time
 
 
@@ -26,9 +27,18 @@ lookupParamDefault name def = do
 getOldUserBalanceR :: UserId -> Handler Html
 getOldUserBalanceR = redirect . UserBalanceR
 
+-- check permissions for user balance view
 getUserBalanceR :: UserId -> Handler Html
 getUserBalanceR user_id = do
     Entity viewer_id viewer <- requireAuth
+    if viewer_id /= user_id
+        then permissionDenied "You must be a Snowdrift administrator to view user balances."
+        else getUserBalanceR' user_id
+
+getUserBalanceR' :: UserId -> Handler Html
+getUserBalanceR' user_id = do
+    Entity viewer_id viewer <- requireAuth
+
     user <- runDB $ get404 user_id
 
     -- TODO: restrict viewing balance to user or snowdrift admins (logged) before moving to real money
@@ -88,7 +98,7 @@ postUserBalanceR user_id = do
         FormSuccess amount -> do
             if amount < 10
              then
-                addAlert "danger" "Must load money in increments of at least $10." 
+                addAlert "danger" "Sorry, minimum deposit is $10" 
              else do
                 runDB $ do
                     _ <- insert $ Transaction now (Just $ userAccount user) Nothing Nothing amount "Test Load" Nothing

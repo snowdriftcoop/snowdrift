@@ -1,5 +1,5 @@
 <div .row>
-    <div .col-md-8>
+    <div .col-md-12>
         $if null pages
             no pages to display
         $else
@@ -13,7 +13,4 @@
                         <td>
                             <a href=@{WikiR project_handle (wikiPageTarget page)}>
                                 #{wikiPageTarget page}
-
-    <div .col-md-3 .col-md-offset-1>
-        ^{sidebar}
 

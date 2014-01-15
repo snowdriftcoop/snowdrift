@@ -1,5 +1,5 @@
 <div .row>
-    <div .col-md-9>
+    <div .col-md-12>
         <div .row>
             <div .col-md-3>
                 <a href="@{WikiHistoryR project_handle target}">back to history
@@ -8,15 +8,14 @@
             <div .col-md-3>
                 <a href="@{DiscussWikiR project_handle target}">view discussion
         <div .row>
-                <div .col-md-9>
+                <div .col-md-12>
                     Page as of ^{renderTime (wikiEditTs edit)}
         $maybe comment <- wikiEditComment edit
             <div .row>
-                <div .col-md-9>
+                <div .col-md-12>
                     #{comment}
         <hr .wikitop>
         <div .row>
-                <div .col-md-9>
+                <div .col-md-12>
                     #{renderMarkdown project_handle (wikiEditContent edit)}
-    <div .col-md-3>
-        ^{sidebar}
+

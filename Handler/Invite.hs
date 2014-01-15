@@ -11,7 +11,7 @@ import qualified Data.Set as S
 import Model.Role
 import Model.User
 
-import Widgets.Sidebar
+
 
 
 inviteForm :: Form (Text, Role)
@@ -94,4 +94,3 @@ postInviteR project_handle = do
         _ -> addAlert "danger" "Error in submitting form." 
 
     redirect $ InviteR project_handle
-

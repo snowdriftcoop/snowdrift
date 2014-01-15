@@ -1,23 +1,22 @@
 <div .row>
-    <div .col-md-9>
+    <div .col-md-12>
         $if can_edit
             <div .row>
-                <div .col-md-3>
+                <div .col-md-4>
                     <a href="@{EditWikiR project_handle target}">edit
-                <div .col-md-3>
+                <div .col-md-4>
                     <a href="@{WikiHistoryR project_handle target}">history
-                <div .col-md-3>
+                <div .col-md-4>
                     <a href="@{DiscussWikiR project_handle target}">discuss
         $else
             $if can_view_meta
                 <div .row>
-                    <div .col-md-3>
+                    <div .col-md-4>
                         <a href="@{WikiHistoryR project_handle target}">history
-                    <div .col-md-3>
+                    <div .col-md-4>
                         <a href="@{DiscussWikiR project_handle target}">view discussion
         <hr .wikitop>
         <div .row>
-            <div .col-md-9>
+            <div .col-md-12>
                 #{renderMarkdown project_handle (wikiPageContent page)}
-    <div .col-md-3>
-        ^{sidebar}
+

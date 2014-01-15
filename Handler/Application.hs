@@ -4,7 +4,7 @@ import Import
 
 import Model.User
 
-import Widgets.Sidebar
+
 
 import qualified Data.Text as T
 

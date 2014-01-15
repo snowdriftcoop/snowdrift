@@ -1,7 +1,7 @@
 <div .row>
-    <div .col-md-8>
+    <div .col-md-12>
         $if null tags
-            no tickets to display
+            no tags to display
         $else
             <table>
                 $forall tag <- tags
@@ -23,7 +23,4 @@
 
                             <td>
                                 #{show votes}
-
-    <div .col-md-3 .col-md-offset-1>
-        ^{sidebar}
 

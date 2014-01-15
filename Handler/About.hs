@@ -12,7 +12,7 @@ import Text.Printf
 
 import Data.List (tail)
 
-import Widgets.Sidebar
+
 
 import Yesod.Form.Jquery
 
@@ -21,7 +21,7 @@ import Data.Attoparsec.Number (Number (..))
 import qualified Data.Vector as V
 
 share_value :: Double -> Int -> Double
-share_value avg_shares donors = 0.0001 * logBase 2 (avg_shares + 1) * (fromIntegral donors -  1)
+share_value avg_shares patrons = 0.0001 * logBase 2 (avg_shares * 2) * (fromIntegral patrons -  1)
 
 deg2rad :: Double -> Double
 deg2rad = (pi*) . (/180)
@@ -59,27 +59,27 @@ hash :: Text -> Text
 hash = T.cons '#'
 
 donutSharesChart :: [Int] -> Widget
-donutSharesChart donors_list = do
+donutSharesChart patrons_list = do
     let margin = deg2rad 2
         initial_offset = deg2rad 40
 
         (legend, caption_renderers) :: ([Text], [Int -> Double -> Double -> String]) = unzip
             [ ( "new pledge amount"
-              , \ donor_count addition total_funding ->
-                      printf "When the %s donor joins, they contribute $%0.4f. The project's total funding is now $%0.4f per month."
-                        (suffixed donor_count)
+              , \ patron_count addition total_funding ->
+                      printf "When the %s patron joins at one share, they contribute $%0.4f. The project's total funding is now $%0.4f per month."
+                        (suffixed patron_count)
                         addition
                         total_funding
               )
-            , ( "extra 0.01\162 from one earlier donor"
+            , ( "extra 0.01\162 from one earlier patron"
               , \ _ addition _ ->
-                    printf "With each new donor, a single earlier donor always adds $%0.4f; and with more donors, this is a continually smaller portion of the total increased funding." 
+                    printf "With each new one-share patron, a single earlier patron always adds $%0.4f; and with more patrons, this is a continually smaller portion of the total increased funding." 
                         addition
               )
-            , ( "increase from remaining earlier donors"
-              , \ donor_count _ total_funding ->
-                    printf "When the %s donor joins, the earlier donors together match the new donor's pledge. The project's total funding is now $%0.4f per month."
-                        (suffixed donor_count)
+            , ( "increase from remaining earlier patrons"
+              , \ patron_count _ total_funding ->
+                    printf "When the %s patron joins, the earlier patrons together match the new patron's pledge. The project's total funding is now $%0.4f per month."
+                        (suffixed patron_count)
                         total_funding
               )
             ]
@@ -92,11 +92,11 @@ donutSharesChart donors_list = do
                  else segment { segmentStart = start, segmentEnd = end }
 
         drawRing :: Pass -> (Int, Int, [Double]) -> Widget
-        drawRing pass (index, donors, amounts) = do
+        drawRing pass (index, patrons, amounts) = do
             let (colors', amounts') = unzip $ filter ((>0) . snd) $ zip chart_colors amounts
                 total = sum amounts'
                 segments = map apply_margin $ tail $ scanl (\ segment (render_caption, amount) ->
-                                                                Segment { segmentTitle = T.pack $ render_caption donors amount (0.0001 * fromIntegral donors * fromIntegral (donors - 1))
+                                                                Segment { segmentTitle = T.pack $ render_caption patrons amount (0.0001 * fromIntegral patrons * fromIntegral (patrons - 1))
                                                                         , segmentStart = segmentEnd segment
                                                                         , segmentEnd = segmentEnd segment + 2 * pi * amount / total
                                                                         }
@@ -159,14 +159,14 @@ donutSharesChart donors_list = do
                     |]
 
 
-    let shares = map (share_value 1) donors_list
-        prev = map (share_value 1 . (-1 +) . fromIntegral) donors_list
+    let shares = map (share_value 1) patrons_list
+        prev = map (share_value 1 . (-1 +) . fromIntegral) patrons_list
         increase = zipWith (-) shares prev
-        remaining_donors = zipWith (\ d i -> fromIntegral (d - 2) * i) donors_list increase
+        remaining_patrons = zipWith (\ d i -> fromIntegral (d - 2) * i) patrons_list increase
 
-        rings = reverse $ zip3 [1..] donors_list $ zipWith3 (\ a b c -> [a, b, c]) shares increase remaining_donors
+        rings = reverse $ zip3 [1..] patrons_list $ zipWith3 (\ a b c -> [a, b, c]) shares increase remaining_patrons
 
-        list_desc = conjoin "and" $ map (\ n -> show n ++ number_suffix n) donors_list
+        list_desc = conjoin "and" $ map (\ n -> show n ++ number_suffix n) patrons_list
 
     toWidget [whamlet|
         <a name="donut">
@@ -185,7 +185,7 @@ donutSharesChart donors_list = do
             <div .col-md-3 style="position:relative;height:26em;text-size:0.7em">
                 <div .row style="position:absolute;top:2em">
                     <div .col-md-3>
-                        Sources of funding increase when the #{list_desc} donors are added to a project (note: rings are not sized proportionally).
+                        Sources of funding increase when the #{list_desc} patrons are added to a project (note: rings are not sized proportionally).
                 <div .row style="position:absolute;bottom:0em">
                     <div .col-md-3>
                         <table .table .table-bordered>
@@ -224,7 +224,7 @@ shareValueChart = do
         <div .chart_container>
             <div ##{ident}>
             <noscript>
-                <img .chart src="@{StaticR img_donorchart1_png}">
+                <img .chart src="@{StaticR img_pledgechart1_png}">
     |]
 
     let max_x = 50000
@@ -244,7 +244,7 @@ shareValueChart = do
             , seriesDefaults: {showMarker : false}
             , axesDefaults: { pad: 0 }
             , axes:
-                { xaxis: { label: "Donors" }
+                { xaxis: { label: "Patrons" }
                 , yaxis:
                     { label: "Dollars Pledged Monthly Per Share"
                     , tickOptions: { formatString: "$%d" }
@@ -270,10 +270,10 @@ projectValueChart = do
         <div .chart_container>
             <div id=#{ident}>
             <noscript>
-                <img .chart src="@{StaticR img_donorchart2_png}">
+                <img .chart src="@{StaticR img_pledgechart2_png}">
     |]
 
-    let project_value avg_shares donors = share_value avg_shares donors * avg_shares * fromIntegral donors
+    let project_value avg_shares patrons = share_value avg_shares patrons * avg_shares * fromIntegral patrons
         max_x = 50000 :: Int
         xs = [2, 1000 .. max_x] :: [Int]
         ys = map (project_value 1) xs :: [Double]
@@ -289,7 +289,7 @@ projectValueChart = do
             , seriesDefaults: {showMarker: false}
             , axesDefaults: { pad: 0 }
             , axes:
-                { xaxis: { label: "Donors" }
+                { xaxis: { label: "Patrons" }
                 , yaxis:
                     { label: "Total Monthly Dollars Raised"
                     , tickOptions: { formatString: "$%d" }

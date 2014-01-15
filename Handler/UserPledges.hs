@@ -3,7 +3,7 @@ module Handler.UserPledges where
 import Import
 
 import Widgets.ProjectPledges
-import Widgets.Sidebar
+
 
 getOldUserPledgesR :: UserId -> Handler Html
 getOldUserPledgesR = redirect . UserPledgesR

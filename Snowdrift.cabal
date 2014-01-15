@@ -70,7 +70,7 @@ library
                      Version
                      Widgets.Doc
                      Widgets.Markdown
-                     Widgets.Sidebar
+                     Widgets.Navbar
                      Widgets.Time
                      Widgets.Tag
                      Widgets.Preview

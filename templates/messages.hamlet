@@ -1,5 +1,5 @@
 <div .row>
-    <div .col-md-9>
+    <div .col-md-12>
         $if not (null messages)
             $forall Entity _ message <- messages
                 <div .row>
@@ -20,8 +20,6 @@
                             <div .col-md-3>
                                 ^{renderTime (messageCreatedTs message)}
 
-                    <div .col-md-5>
+                    <div .col-md-8>
                         #{messageContent message}
 
-    <div .col-md-3>
-        ^{sidebar}

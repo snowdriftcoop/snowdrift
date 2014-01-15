@@ -17,7 +17,6 @@ import qualified Data.Set as S
 
 import Data.Maybe (maybeToList)
 
-import Widgets.Sidebar
 import Widgets.Markdown
 import Widgets.Preview
 import Widgets.Time

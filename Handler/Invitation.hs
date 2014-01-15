@@ -4,7 +4,7 @@ import Import
 
 -- import Model.Role
 
-import Widgets.Sidebar
+
 
 
 getInvitationR :: Text -> Text -> Handler Html

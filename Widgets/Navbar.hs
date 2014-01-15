@@ -1,5 +1,5 @@
 
-module Widgets.Sidebar where
+module Widgets.Navbar where
 
 import Import
 
@@ -7,8 +7,8 @@ import Model.Currency
 
 import qualified Data.Set as S
 
-sidebar :: Widget
-sidebar = do
+navbar :: Widget
+navbar = do
     maybe_user <- handlerToWidget maybeAuth
     maybe_route <- handlerToWidget getCurrentRoute
 
@@ -21,21 +21,6 @@ sidebar = do
             return $ project_user_role ^. ProjectUserRoleRole
 
     let is_committee_member = False -- TODO
-        log_in_or_out =
-            case maybe_user of
-                Nothing ->
-                    toWidget [hamlet|
-                        <a href=@{AuthR LoginR}>Sign In / Create Account
-                    |] :: Widget
-
-                Just (Entity user_id user) -> do
-                    let name = fromMaybe (userIdent user) $ userName user
-                    toWidget [hamlet|
-                        <a href=@{UserR user_id}>#{name}
-                        <br>
-                        <a href=@{AuthR LogoutR}>Sign Out
-                    |]
-
 
         string :: String -> String
         string = id
@@ -124,5 +109,5 @@ sidebar = do
 
             return (messages, applications, edits, comments)
 
-    $(widgetFile "sidebar")
+    $(widgetFile "navbar")
 

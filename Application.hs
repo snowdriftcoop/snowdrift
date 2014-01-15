@@ -51,6 +51,7 @@ import Handler.Tickets
 import Handler.RepoFeed
 import Handler.BuildFeed
 
+import Widgets.Navbar
 
 version :: (Text, Text)
 version = $(mkVersion)
@@ -82,7 +83,7 @@ makeFoundation conf = do
               Database.Persist.applyEnv
     p <- Database.Persist.createPoolConfig (dbconf :: Settings.PersistConf)
     logger <- mkLogger True stdout
-    let foundation = App conf s p manager dbconf logger
+    let foundation = App navbar conf s p manager dbconf logger
 
     flip runLoggingT (messageLoggerSource foundation logger) $ do
         Database.Persist.runPool dbconf (printMigration migrateAll >> runMigration migrateAll >> rolloutStagingWikiPages) p

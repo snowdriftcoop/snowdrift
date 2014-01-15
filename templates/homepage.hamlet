@@ -1,12 +1,12 @@
 <div .row>
-    <div .col-md-8>
+    <img src=@{StaticR img_logo_png} alt="Snowdrift.coop: clearing the path to a Free/Libre/Open World">
+    <div .col-md-12>
         <p>
             <strong>
                 Imagine a world where art, music, software, educational resources, journalism, and research
                 are all available for everyone to freely access, use, improve, and share&hellip;
         <p>
             That is the vision of a free and open internet, but getting there has been a struggle.
-            <br>
             If access is free of charge, how can projects get funding?
         <p>
             Snowdrift.coop is the answer! We are building a
@@ -32,5 +32,3 @@
             We have
             <a href="@{WikiR "snowdrift" "how-to-help"}"> volunteer opportunities
             for everyone, regardless of background.
-    <div .col-md-3 .col-md-offset-1>
-        ^{sidebar}

@@ -13,7 +13,7 @@ $newline never
             /*
             @licstart  The following is the entire license notice for the JavaScript code in this page.
 
-            Copyright (C) 2013  Snowdrift.coop
+            Copyright (C) 2012-2014  Snowdrift.coop
 
             The JavaScript code in this page is free software: you can
             redistribute it and/or modify it under the terms of the GNU
@@ -56,26 +56,16 @@ $newline never
               logo.id = "logo";
 
               if(Modernizr.svg) {
-                  logo.src = "@{StaticR img_logo_svg}";
+                  logo.src = "@{StaticR img_s_svg}";
               } else {
-                  logo.src = "@{StaticR img_logo_png}";
+                  logo.src = "@{StaticR img_s_png}";
               }
 
               head.replaceChild(logo, head.firstChild);
           }
     <body>
-        <div class="container">
-            <header>
-                <a #head href="@{HomeR}">
-                    <noscript>
-                        img #logo src=@{StaticR img_logo_png} alt="Snowdrift.coop: clearing the path to a Free/Libre/Open World">
-                    <script>
-                        fixup_logo()
-                    <div .row>
-                        <div .note .col-md-2 .col-md-offset-10>
-                            a work in progress
-            <div id="main" role="main">
-              ^{pageBody pc}
+        ^{pageBody pc}
+        <div .container>
             <footer>
                 <div .row>
                     <div .col-md-3>

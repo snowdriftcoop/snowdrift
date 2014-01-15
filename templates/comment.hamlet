@@ -1,14 +1,12 @@
 <div .row>
-    <div .col-md-9>
+    <div .col-md-12>
         <div .row>
-            <div .col-md-3>
+            <div .col-md-6>
                 <a href="@{DiscussWikiR project_handle target}"> back to full discussion
-            <div .col-md-3>
+            <div .col-md-6>
                 <a href="@{WikiR project_handle target}"> back to wiki page
         <hr .wikitop>
         <div .row>
-            <div .col-md-9>
+            <div .col-md-12>
                 <div .row>
                     ^{comment}
-    <div .col-md-3>
-        ^{sidebar}

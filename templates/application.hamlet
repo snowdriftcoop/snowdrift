@@ -1,6 +1,6 @@
 
 <div .row>
-    <div .col-md-9>
+    <div .col-md-12>
         <table>
             <tr>
                 <td>
@@ -62,6 +62,3 @@
                         Comments:
                     <td>
                         #{comments}
-
-    <div .col-md-3>
-        ^{sidebar}

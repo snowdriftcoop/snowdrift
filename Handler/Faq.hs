@@ -2,10 +2,7 @@ module Handler.Faq where
 
 import Import
 
--- import Widgets.Sidebar
-
 getFaqR :: Handler Html
 getFaqR = do
-    addAlert "warning" "We don't have a list of frequently asked questions yet - hopefully the about page will answer yours." 
+    addAlert "warning" "We don't have a real FAQ at this time. Here's our general about page. See also the links at the bottom. Each page also has connected discussions." 
     redirect $ WikiR "snowdrift" "about"
-
