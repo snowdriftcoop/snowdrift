@@ -20,7 +20,7 @@ snowdriftMarkdownField = Field
                         <a href="#{tutorial}" target="_blank">
                             Markdown syntax
                     <div .markdown_wrapper>
-                        <textarea id="#{theId}" name="#{name}" *{attrs}>#{either id unMarkdown value}
+                        <textarea id="#{theId}" name="#{name}" :_isReq:required *{attrs}>#{either id unMarkdown value}
                 |]
 
                 toWidget $ [cassius|
