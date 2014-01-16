@@ -26,6 +26,8 @@ import Model.AnnotatedTag
 import Text.Printf
 import Numeric
 
+import Control.Concurrent.Async
+
 data AnnotatedTicket = AnnotatedTicket TicketId Ticket WikiPage Comment [AnnotatedTag]
 
 ticketToFilterable :: AnnotatedTicket -> Filterable
@@ -94,11 +96,10 @@ getTicketsR project_handle = do
 
     Entity _ project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
 
-    github_issues' <- liftIO $ maybe (return (Right [])) (( \ (account, repo) -> GH.issuesForRepo account repo []) . second (drop 1) . break (== '/') . T.unpack) $ projectGithubRepo project
+    get_github_issues <- liftIO $ async
+        $ maybe (return (Right [])) (( \ (account, repo) -> GH.issuesForRepo account repo []) . second (drop 1) . break (== '/') . T.unpack)
+        $ projectGithubRepo project
 
-    github_issues <- case github_issues' of
-        Right x -> return x
-        Left _ -> addAlert "danger" "failed to fetch GitHub tickets\n" >> return []
 
     ((result, formWidget), encType) <- runFormGet viewForm
 
@@ -148,6 +149,8 @@ getTicketsR project_handle = do
 
     render <- getUrlRenderParams
 
+    github_issues <- either (const $ addAlert "danger" "failed to fetch GitHub tickets\n" >> return []) return =<< liftIO (wait get_github_issues)
+
     let ticketToIssue (AnnotatedTicket ticket_id ticket page comment tags) = Issue widget filterable orderable
                 where
                     page_target = wikiPageTarget page
@@ -187,6 +190,7 @@ getTicketsR project_handle = do
                     |]
                 filterable = githubIssueToFilterable github_issue
                 orderable = githubIssueToOrderable github_issue
+
 
         issues = sortBy (flip compare `on` order_expression . issueOrderable) $ filter (filter_expression . issueFilterable) $ map ticketToIssue tickets ++ map githubIssueToIssue github_issues
 
