@@ -138,7 +138,7 @@ postWikiR project_handle target = do
 
                             comment_id <- insert $ Comment now (Just now) (Just user_id) page_id Nothing user_id comment_body 0
 
-                            void $ insert $ Ticket now "edit conflict" comment_id
+                            void $ insert $ Ticket now now "edit conflict" comment_id
 
                             render <- lift getUrlRenderParams
                             let message_text = Markdown $ T.unlines
@@ -530,7 +530,7 @@ postDiscussWikiR project_handle target = do
                             tickets = map T.strip $ mapMaybe (T.stripPrefix "ticket:") content
                             tags = map T.strip $ mconcat $ map (T.splitOn ",") $ mapMaybe (T.stripPrefix "tags:") content
 
-                        forM_ tickets $ \ ticket -> insert $ Ticket now ticket comment_id
+                        forM_ tickets $ \ ticket -> insert $ Ticket now now ticket comment_id
                         forM_ tags $ \ tag -> do
                             tag_id <- fmap (either entityKey id) $ insertBy $ Tag tag
                             insert $ CommentTag comment_id tag_id user_id 1
@@ -546,6 +546,15 @@ postDiscussWikiR project_handle target = do
                         ancestors <- maybe (return []) getParentAncestors maybe_parent_id
 
                         forM_ ancestors $ \ ancestor_id -> insert $ CommentAncestor comment_id ancestor_id
+
+                        let selectAncestors = subList_select $ from $ \ ancestor -> do
+                            where_ $ ancestor ^. CommentAncestorComment ==. val comment_id
+                            return $ ancestor ^. CommentAncestorAncestor
+
+                        update $ \ ticket -> do
+                            set ticket [ TicketUpdatedTs =. val now ]
+                            where_ $ ticket ^. TicketComment `in_` selectAncestors
+                        
 
                     addAlert "success" $ if established then "comment posted" else "comment submitted for moderation"
                     redirect $ maybe (DiscussWikiR project_handle target) (DiscussCommentR project_handle target) maybe_parent_id

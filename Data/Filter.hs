@@ -47,7 +47,7 @@ termP = stripP $
 
 timeConstraintP :: Parser (Filterable -> Bool)
 timeConstraintP =
-    foldl1 (<|>) $ [before, after, between] <*> ["CREATED"]
+    foldl1 (<|>) $ [before, after, between] <*> ["CREATED", "LAST UPDATED"]
     where
         before name = (\ end x -> not $ S.null $ fst $ S.split end $ getNamedTs x name) <$> (A.string name *> stripP "BEFORE" *> timeP)
         after name = (\ start x -> not $ S.null $ snd $ S.split start $ getNamedTs x name) <$> (A.string name *> stripP "AFTER" *> timeP)

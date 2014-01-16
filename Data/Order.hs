@@ -68,7 +68,7 @@ timeValueP = timeConstraintP <|> fmap (const . toTimeValue) timeP
 
 timeConstraintP :: Parser (Orderable -> Double)
 timeConstraintP =
-    foldl1 (<|>) $ [before, after, between, time] <*> ["CREATED"]
+    foldl1 (<|>) $ [before, after, between, time] <*> ["CREATED", "LAST ORDERED"]
     where
         before name = do
             void $ A.string name

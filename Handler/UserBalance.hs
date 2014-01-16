@@ -9,7 +9,6 @@ import qualified Data.Text as T
 import Model.Transaction
 import Model.Currency
 import Model.User
-import Model.Role
 
 
 import Widgets.Time
@@ -30,7 +29,7 @@ getOldUserBalanceR = redirect . UserBalanceR
 -- check permissions for user balance view
 getUserBalanceR :: UserId -> Handler Html
 getUserBalanceR user_id = do
-    Entity viewer_id viewer <- requireAuth
+    viewer_id <- requireAuthId
     if viewer_id /= user_id
         then permissionDenied "You must be a Snowdrift administrator to view user balances."
         else getUserBalanceR' user_id

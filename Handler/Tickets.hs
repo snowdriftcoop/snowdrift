@@ -26,6 +26,8 @@ import Model.AnnotatedTag
 import Text.Printf
 import Numeric
 
+import Control.Concurrent.Async
+
 data AnnotatedTicket = AnnotatedTicket TicketId Ticket WikiPage Comment [AnnotatedTag]
 
 ticketToFilterable :: AnnotatedTicket -> Filterable
@@ -33,6 +35,7 @@ ticketToFilterable (AnnotatedTicket _ ticket _ comment tags) = Filterable has_ta
     where
         has_tag t = any (\ at -> atName at == t && atScore at > 0) tags
         get_named_ts "CREATED" = S.singleton $ ticketCreatedTs ticket
+        get_named_ts "LAST UPDATED" = S.singleton $ ticketUpdatedTs ticket
         get_named_ts name = error $ "Unrecognized time name " ++ T.unpack name
         search_literal str =
             (null $ T.breakOnAll str $ ticketName ticket)
@@ -43,6 +46,7 @@ githubIssueToFilterable i = Filterable has_tag get_named_ts search_literal
     where
         has_tag t = elem (T.unpack t) $ map GH.labelName $ GH.issueLabels i
         get_named_ts "CREATED" = S.singleton $ GH.fromGithubDate $ GH.issueCreatedAt i
+        get_named_ts "LAST UPDATED" = S.singleton $ GH.fromGithubDate $ GH.issueUpdatedAt i
         get_named_ts name = error $ "Unrecognized time name " ++ T.unpack name
         search_literal str =
             (null $ T.breakOnAll str $ T.pack $ GH.issueTitle i)
@@ -53,6 +57,7 @@ ticketToOrderable (AnnotatedTicket _ ticket _ comment tags) = Orderable has_tag 
     where
         has_tag t = elem t $ map atName tags
         get_named_ts "CREATED" = S.singleton $ ticketCreatedTs ticket
+        get_named_ts "LAST UPDATED" = S.singleton $ ticketUpdatedTs ticket
         get_named_ts name = error $ "Unrecognized time name " ++ T.unpack name
         search_literal str =
             (null $ T.breakOnAll str $ ticketName ticket)
@@ -63,6 +68,7 @@ githubIssueToOrderable i = Orderable has_tag get_named_ts search_literal
     where
         has_tag t = elem (T.unpack t) $ map GH.labelName $ GH.issueLabels i
         get_named_ts "CREATED" = S.singleton $ GH.fromGithubDate $ GH.issueCreatedAt i
+        get_named_ts "LAST UPDATED" = S.singleton $ GH.fromGithubDate $ GH.issueUpdatedAt i
         get_named_ts name = error $ "Unrecognized time name " ++ T.unpack name
         search_literal str =
             (null $ T.breakOnAll str $ T.pack $ GH.issueTitle i)
@@ -91,12 +97,13 @@ getTicketsR :: Text -> Handler Html
 getTicketsR project_handle = do
     _ <- requireAuthId
 
-    -- TODO: make this a project-specific (optional) setting
-    github_issues' <- liftIO $ GH.issuesForRepo "dlthomas" (T.unpack project_handle) []
 
-    github_issues <- case github_issues' of
-        Right x -> return x
-        Left _ -> addAlert "danger" "failed to fetch GitHub tickets\n" >> return []
+    Entity _ project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
+
+    get_github_issues <- liftIO $ async
+        $ maybe (return (Right [])) (( \ (account, repo) -> GH.issuesForRepo account repo []) . second (drop 1) . break (== '/') . T.unpack)
+        $ projectGithubRepo project
+
 
     ((result, formWidget), encType) <- runFormGet viewForm
 
@@ -107,9 +114,9 @@ getTicketsR project_handle = do
     tickets :: [AnnotatedTicket] <- runDB $ do
         tickets'comments :: [(Entity Ticket, Entity Comment)] <- select $ from $ \ (comment `InnerJoin` ticket) -> do
             on_ $ comment ^. CommentId ==. ticket ^. TicketComment
-            let pages = subList_select $ from $ \ (page `InnerJoin` project) -> do
-                    on_ $ page ^. WikiPageProject ==. project ^. ProjectId
-                    where_ $ project ^. ProjectHandle ==. val project_handle
+            let pages = subList_select $ from $ \ (page `InnerJoin` proj) -> do
+                    on_ $ page ^. WikiPageProject ==. proj ^. ProjectId
+                    where_ $ proj ^. ProjectHandle ==. val project_handle
                     return $ page ^. WikiPageId
              in where_ $ comment ^. CommentPage `in_` pages
 
@@ -145,6 +152,8 @@ getTicketsR project_handle = do
         mapM (\ (_, t) -> lift $ t tags_map) used_tags'tickets
 
     render <- getUrlRenderParams
+
+    github_issues <- either (const $ addAlert "danger" "failed to fetch GitHub tickets\n" >> return []) return =<< liftIO (wait get_github_issues)
 
     let ticketToIssue (AnnotatedTicket ticket_id ticket page comment tags) = Issue widget filterable orderable
                 where
@@ -185,6 +194,7 @@ getTicketsR project_handle = do
                     |]
                 filterable = githubIssueToFilterable github_issue
                 orderable = githubIssueToOrderable github_issue
+
 
         issues = sortBy (flip compare `on` order_expression . issueOrderable) $ filter (filter_expression . issueFilterable) $ map ticketToIssue tickets ++ map githubIssueToIssue github_issues
 
