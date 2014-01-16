@@ -8,18 +8,18 @@ renderPreview form action widget =
     [whamlet|
         <form method="POST" style="padding : 0em; margin : 0em">
             <div .row>
-                <div .col-md-9>
+                <div .col-md-12>
                     <div .alert .alert-danger>
-                        <strong> This is a preview; your changes have <em>not</em> been saved!
+                        This is a preview; your changes have <em>not</em> been saved!
                         Below, you can edit more.
                     <input type=submit name=mode value="#{action}">
 
             ^{widget}
 
             <div .row>
-                <div .col-md-9>
+                <div .col-md-12>
                     <div .alert .alert-danger>
-                        <strong> This is a preview; your changes have <em>not</em> been saved!
+                        This is a preview; your changes have <em>not</em> been saved!
                     <input type=submit name=mode value="preview">
                     <input type=submit name=mode value="#{action}">
                     ^{form}
