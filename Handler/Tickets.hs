@@ -35,6 +35,7 @@ ticketToFilterable (AnnotatedTicket _ ticket _ comment tags) = Filterable has_ta
     where
         has_tag t = any (\ at -> atName at == t && atScore at > 0) tags
         get_named_ts "CREATED" = S.singleton $ ticketCreatedTs ticket
+        get_named_ts "LAST UPDATED" = S.singleton $ ticketUpdatedTs ticket
         get_named_ts name = error $ "Unrecognized time name " ++ T.unpack name
         search_literal str =
             (null $ T.breakOnAll str $ ticketName ticket)
@@ -45,6 +46,7 @@ githubIssueToFilterable i = Filterable has_tag get_named_ts search_literal
     where
         has_tag t = elem (T.unpack t) $ map GH.labelName $ GH.issueLabels i
         get_named_ts "CREATED" = S.singleton $ GH.fromGithubDate $ GH.issueCreatedAt i
+        get_named_ts "LAST UPDATED" = S.singleton $ GH.fromGithubDate $ GH.issueUpdatedAt i
         get_named_ts name = error $ "Unrecognized time name " ++ T.unpack name
         search_literal str =
             (null $ T.breakOnAll str $ T.pack $ GH.issueTitle i)
@@ -55,6 +57,7 @@ ticketToOrderable (AnnotatedTicket _ ticket _ comment tags) = Orderable has_tag 
     where
         has_tag t = elem t $ map atName tags
         get_named_ts "CREATED" = S.singleton $ ticketCreatedTs ticket
+        get_named_ts "LAST UPDATED" = S.singleton $ ticketUpdatedTs ticket
         get_named_ts name = error $ "Unrecognized time name " ++ T.unpack name
         search_literal str =
             (null $ T.breakOnAll str $ ticketName ticket)
@@ -65,6 +68,7 @@ githubIssueToOrderable i = Orderable has_tag get_named_ts search_literal
     where
         has_tag t = elem (T.unpack t) $ map GH.labelName $ GH.issueLabels i
         get_named_ts "CREATED" = S.singleton $ GH.fromGithubDate $ GH.issueCreatedAt i
+        get_named_ts "LAST UPDATED" = S.singleton $ GH.fromGithubDate $ GH.issueUpdatedAt i
         get_named_ts name = error $ "Unrecognized time name " ++ T.unpack name
         search_literal str =
             (null $ T.breakOnAll str $ T.pack $ GH.issueTitle i)
@@ -110,9 +114,9 @@ getTicketsR project_handle = do
     tickets :: [AnnotatedTicket] <- runDB $ do
         tickets'comments :: [(Entity Ticket, Entity Comment)] <- select $ from $ \ (comment `InnerJoin` ticket) -> do
             on_ $ comment ^. CommentId ==. ticket ^. TicketComment
-            let pages = subList_select $ from $ \ (page `InnerJoin` project) -> do
-                    on_ $ page ^. WikiPageProject ==. project ^. ProjectId
-                    where_ $ project ^. ProjectHandle ==. val project_handle
+            let pages = subList_select $ from $ \ (page `InnerJoin` proj) -> do
+                    on_ $ page ^. WikiPageProject ==. proj ^. ProjectId
+                    where_ $ proj ^. ProjectHandle ==. val project_handle
                     return $ page ^. WikiPageId
              in where_ $ comment ^. CommentPage `in_` pages
 

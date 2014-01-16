@@ -195,6 +195,7 @@ CommentTag
 
 Ticket
     createdTs UTCTime
+    updatedTs UTCTime
     name Text
     comment CommentId
 
