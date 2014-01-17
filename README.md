@@ -43,7 +43,7 @@ Yesod uses the Haskell programming language alongside its
 
 Our front-end design uses [Twitter Bootstrap](http://getbootstrap.com/) for layout and styles, although there are several cases where we use our own custom CSS instead. See the style.md file for more notes on CSS and other design guidelines.
 
-[Firebug](https://getfirebug.com) is a useful tool to explore and test things on the live site
+As a suggestion: Firefox's built-in developer tools offer lots of great ways to test the site, although [Firebug](https://getfirebug.com) may also be a useful addition for certain features.
 
 
 Text-editor settings
@@ -217,5 +217,9 @@ You can log into the site via the built-in system with user: admin pass: admin
 With that user, create wiki pages at localhost:3000/p/snowdrift/w/*pagename*/new
 
 See the documentation on the live site [about the wiki](https://snowdrift.coop/p/snowdrift/w/wiki) and more.
+
+If you make specific improvements or additions to your test DB that aren't just playing around but that you think will make for a better starting test DB for other contributors, use the following command in your main project directory to export the changes (which can then be committed via git as usual):
+
+    sudo -u postgres pg_dump snowdrift_development >devDB.sql
 
 Happy hacking!

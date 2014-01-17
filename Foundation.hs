@@ -264,8 +264,9 @@ authBrowserIdFixed =
 
             toWidget [hamlet|
                 $newline never
-                <a href="javascript:persona_login()">
-                    <img src="https://browserid.org/i/persona_sign_in_blue.png">
+                <figure>
+                    <a href="javascript:persona_login()">
+                        <img src="https://browserid.org/i/persona_sign_in_blue.png">
             |]
 
      in (authBrowserId def) { apLogin = login }
@@ -277,12 +278,12 @@ snowdriftAuthBrowserId =
             let parentLogin = apLogin auth toMaster
             [whamlet|
                 <p>
-                    <strong>Mozilla Persona is a secure log-in that
-                    doesn't track you the way other systems do.
+                    <strong>Mozilla Persona is a secure log-in
+                    that doesn't track you, unlike most other systems.
                     It works near-seamlessly with gmail or yahoo,
-                    but any e-mail will work by setting a password and confirming the account.
+                    but any e-mail will work after setting a password and confirming the account.
                 <p>
-                    The Sign-in button below works for both new and existing accounts:
+                    This Sign-in button works for both new and existing accounts:
                 ^{parentLogin}
             |]
      in auth { apLogin = login }
@@ -293,12 +294,11 @@ snowdriftAuthHashDB =
         login toMaster = do
             let parentLogin = apLogin auth toMaster
             [whamlet|
-                <p> We also offer a built-in traditional log-in system:
-                <p>
+                <p style="text-align: center"> We also offer a built-in system:
+                ^{parentLogin}
+                <p style="text-align: center">
                     <a href="@{UserCreateR}">
                        click here to create an account
-                <p> or
-                ^{parentLogin}
             |]
      in auth { apLogin = login }
 
