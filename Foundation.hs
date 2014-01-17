@@ -279,26 +279,40 @@ snowdriftAuthBrowserId =
             [whamlet|
                 <p>
                     <strong>Mozilla Persona is a secure log-in
-                    that doesn't track you, unlike most other systems.
+                    that, unlike most other systems, doesn't track you. 
                     It works near-seamlessly with gmail or yahoo,
                     but any e-mail will work after setting a password and confirming the account.
-                <p>
-                    This Sign-in button works for both new and existing accounts:
                 ^{parentLogin}
+                <p>
+                    The Persona sign-in works for both new and existing accounts.
             |]
      in auth { apLogin = login }
 
 snowdriftAuthHashDB :: AuthPlugin App
 snowdriftAuthHashDB =
     let auth = authHashDB (Just . UniqueUser)
-        login toMaster = do
-            let parentLogin = apLogin auth toMaster
+        loginRoute = PluginR "hashdb" ["login"]
+        login toMaster =
             [whamlet|
-                <p style="text-align: center"> We also offer a built-in system:
-                ^{parentLogin}
-                <p style="text-align: center">
-                    <a href="@{UserCreateR}">
-                       click here to create an account
+                <div id="login">
+                    <p .h3 .text-center> We also offer a built-in system
+                        <br>
+                        <small>
+                            <a href="@{UserCreateR}">
+                                click here to create an account
+                    <form .form-horizontal method="post" action="@{toMaster loginRoute}">
+                        <div .form-group>
+                            <label .col-sm-4 .control-label>
+                                Username:
+                            <div .col-sm-8>
+                                <input .form-control id="x" name="username" autofocus="" required>
+                        <div .form-group>
+                            <label .col-sm-4 .control-label>
+                                Passphrase:
+                            <div .col-sm-8>
+                                <input .form-control type="password" name="password" required>
+                        <figure>
+                            <input type="submit" value="Log in">
             |]
      in auth { apLogin = login }
 

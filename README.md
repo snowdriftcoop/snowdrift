@@ -41,7 +41,9 @@ Yesod uses the Haskell programming language alongside its
 * The #yesod and #haskell IRC channels on freenode.net are active and helpful
 * [School of Haskell](https://www.fpcomplete.com/school) is an interactive system that is proprietary but gratis
 
-Our front-end design uses [Twitter Bootstrap](http://getbootstrap.com/) for layout and styles, although there are several cases where we use our own custom CSS instead. See the style.md file for more notes on CSS and other design guidelines.
+Our front-end design uses **[Twitter Bootstrap](http://getbootstrap.com/)** for layout and styles, although there are cases where we use our own custom CSS instead.
+
+On the site we have a page about [site-design](https://snowdrift.coop/p/snowdrift/w/site-design), and the tickets and discussion there cover specific issues. Note: although px units are used for things like border thickness, we mostly stick to em units for anything relating to fonts and other text elements like line height.
 
 As a suggestion: Firefox's built-in developer tools offer lots of great ways to test the site, although [Firebug](https://getfirebug.com) may also be a useful addition for certain features.
 
