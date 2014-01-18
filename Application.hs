@@ -46,6 +46,7 @@ import Handler.MarkdownTutorial
 import Handler.UserBalance
 import Handler.UserPledges
 import Handler.Wiki
+import Handler.Discussion
 import Handler.Tags
 import Handler.Tickets
 import Handler.RepoFeed
