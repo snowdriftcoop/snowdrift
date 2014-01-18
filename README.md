@@ -43,7 +43,7 @@ Yesod uses the Haskell programming language alongside its
 
 Our front-end design uses **[Twitter Bootstrap](http://getbootstrap.com/)** for layout and styles, although there are cases where we use our own custom CSS instead.
 
-On the site we have a page about [site-design](https://snowdrift.coop/p/snowdrift/w/site-design), and the tickets and discussion there cover specific issues. Note: although px units are used for things like border thickness, we mostly stick to em units for anything relating to fonts and other text elements like line height.
+On the site we have a page about [site-design](https://snowdrift.coop/p/snowdrift/w/site-design), and the tickets and discussion there cover specific issues.
 
 As a suggestion: Firefox's built-in developer tools offer lots of great ways to test the site, although [Firebug](https://getfirebug.com) may also be a useful addition for certain features.
 
