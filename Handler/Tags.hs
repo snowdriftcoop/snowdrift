@@ -17,9 +17,9 @@ processCommentTags go project_handle target comment_id = do
     Entity project_id _ <- runDB $ getBy404 $ UniqueProjectHandle project_handle
     Entity page_id _ <- runDB $ getBy404 $ UniqueWikiTarget project_id target
 
-    comment <- runDB $ get404 comment_id
+    comment_page <- fmap (wikiPageCommentPage . entityVal) $ runDB $ getBy404 $ UniqueWikiPageComment comment_id
 
-    when (commentPage comment /= page_id) $ error "wrong page for comment"
+    when (comment_page /= page_id) $ error "wrong page for comment"
 
     tags <- fmap (map $ (commentTagTag &&& (commentTagUser &&& commentTagCount)) . entityVal) $ runDB $ select $ from $ \ comment_tag -> do
         where_ $ comment_tag ^. CommentTagComment ==. val comment_id
@@ -37,9 +37,9 @@ processCommentTag go project_handle target comment_id tag_id = do
     Entity project_id _ <- runDB $ getBy404 $ UniqueProjectHandle project_handle
     Entity page_id _ <- runDB $ getBy404 $ UniqueWikiTarget project_id target
 
-    comment <- runDB $ get404 comment_id
+    comment_page <- fmap (wikiPageCommentPage . entityVal) $ runDB $ getBy404 $ UniqueWikiPageComment comment_id
 
-    when (commentPage comment /= page_id) $ error "wrong page for comment"
+    when (comment_page /= page_id) $ error "wrong page for comment"
 
     tags <- fmap (map $ (commentTagTag &&& (commentTagUser &&& commentTagCount)) . entityVal) $ runDB $ select $ from $ \ comment_tag -> do
         where_ $ comment_tag ^. CommentTagComment ==. val comment_id &&. comment_tag ^. CommentTagTag ==. val tag_id
@@ -86,9 +86,9 @@ postCommentTagR project_handle target comment_id tag_id = do
     Entity project_id _ <- runDB $ getBy404 $ UniqueProjectHandle project_handle
     Entity page_id _ <- runDB $ getBy404 $ UniqueWikiTarget project_id target
 
-    comment <- runDB $ get404 comment_id
+    comment_page <- fmap (wikiPageCommentPage . entityVal) $ runDB $ getBy404 $ UniqueWikiPageComment comment_id
 
-    when (commentPage comment /= page_id) $ error "wrong page for comment"
+    when (comment_page /= page_id) $ error "wrong page for comment"
 
     direction <- lookupPostParam "direction"
 
@@ -133,8 +133,9 @@ getNewCommentTagR project_handle target comment_id = do
     Entity page_id _ <- runDB $ getBy404 $ UniqueWikiTarget project_id target
 
     comment <- runDB $ get404 comment_id
+    comment_page <- fmap (wikiPageCommentPage . entityVal) $ runDB $ getBy404 $ UniqueWikiPageComment comment_id
 
-    when (commentPage comment /= page_id) $ error "wrong page for comment"
+    when (comment_page /= page_id) $ error "wrong page for comment"
 
     comment_tags <- fmap (map entityVal) $ runDB $ select $ from $ \ comment_tag -> do
         where_ $ comment_tag ^. CommentTagComment ==. val comment_id
@@ -161,9 +162,9 @@ postNewCommentTagR project_handle target comment_id = do
     Entity project_id _ <- runDB $ getBy404 $ UniqueProjectHandle project_handle
     Entity page_id _ <- runDB $ getBy404 $ UniqueWikiTarget project_id target
 
-    comment <- runDB $ get404 comment_id
+    comment_page <- fmap (wikiPageCommentPage . entityVal) $ runDB $ getBy404 $ UniqueWikiPageComment comment_id
 
-    when (commentPage comment /= page_id) $ error "wrong page for comment"
+    when (comment_page /= page_id) $ error "wrong page for comment"
 
     ((result, _), _) <- runFormPost newCommentTagForm
 

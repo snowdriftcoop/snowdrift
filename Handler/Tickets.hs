@@ -98,7 +98,7 @@ getTicketsR project_handle = do
     _ <- requireAuthId
 
 
-    Entity _ project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
+    Entity project_id project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
 
     get_github_issues <- liftIO $ async
         $ maybe (return (Right [])) (( \ (account, repo) -> GH.issuesForRepo account repo []) . second (drop 1) . break (== '/') . T.unpack)
@@ -112,26 +112,14 @@ getTicketsR project_handle = do
             _ -> (defaultFilter, defaultOrder)
 
     tickets :: [AnnotatedTicket] <- runDB $ do
-        tickets'comments :: [(Entity Ticket, Entity Comment)] <- select $ from $ \ (comment `InnerJoin` ticket) -> do
+        tickets_info <- select $ from $ \ (ticket `InnerJoin` comment `InnerJoin` wiki_page_comment `InnerJoin` page) -> do
+            on_ $ page ^. WikiPageId ==. wiki_page_comment ^. WikiPageCommentPage
+            on_ $ comment ^. CommentId ==. wiki_page_comment ^. WikiPageCommentComment
             on_ $ comment ^. CommentId ==. ticket ^. TicketComment
-            let pages = subList_select $ from $ \ (page `InnerJoin` proj) -> do
-                    on_ $ page ^. WikiPageProject ==. proj ^. ProjectId
-                    where_ $ proj ^. ProjectHandle ==. val project_handle
-                    return $ page ^. WikiPageId
-             in where_ $ comment ^. CommentPage `in_` pages
-
             where_ $ comment ^. CommentId `notIn` subList_select (from $ \ retraction -> return $ retraction ^. CommentRetractionComment)
-            return (ticket, comment)
+            return (ticket, comment, page)
 
-        pages <- select $ from $ \ page -> do
-            where_ $ page ^. WikiPageId `in_` valList (map (commentPage . entityVal . snd) tickets'comments)
-            return page
-
-        let pages_map = M.fromList . map (entityKey &&& entityVal) $ pages
-
-        used_tags'tickets <- forM tickets'comments $ \ (Entity ticket_id ticket, Entity comment_id comment) -> do
-            let page = pages_map M.! commentPage comment
-
+        used_tags'tickets <- forM tickets_info $ \ (Entity ticket_id ticket, Entity comment_id comment, Entity _ page) -> do
             used_tags <- select $ from $ \ comment_tag -> do
                 where_ $ comment_tag ^. CommentTagComment ==. val comment_id
                 return comment_tag

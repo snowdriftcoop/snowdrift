@@ -161,11 +161,20 @@ Comment
     createdTs UTCTime
     moderatedTs UTCTime Maybe
     moderatedBy UserId Maybe
-    page WikiPageId
     parent CommentId Maybe
     user UserId
     text Markdown
     depth Int
+
+WikiPageComment
+    comment CommentId
+    page WikiPageId
+    UniqueWikiPageComment comment
+
+ProjectComment
+    project ProjectId
+    comment CommentId
+    UniqueProjectComment comment
 
 CommentAncestor
     comment CommentId

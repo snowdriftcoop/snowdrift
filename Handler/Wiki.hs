@@ -136,7 +136,8 @@ postWikiR project_handle target = do
                                     , "(this ticket was automatically generated)"
                                     ]
 
-                            comment_id <- insert $ Comment now (Just now) (Just user_id) page_id Nothing user_id comment_body 0
+                            comment_id <- insert $ Comment now (Just now) (Just user_id) Nothing user_id comment_body 0
+                            void $ insert $ WikiPageComment comment_id page_id
 
                             void $ insert $ Ticket now now "edit conflict" comment_id
 
@@ -339,9 +340,10 @@ getDiscussWikiR project_handle target = do
     moderator <- runDB $ isProjectModerator project_handle user_id
 
     (roots, rest, users, retraction_map) <- runDB $ do
-        roots <- select $ from $ \ comment -> do
+        roots <- select $ from $ \ (comment `InnerJoin` wiki_page_comment) -> do
+            on_ $ comment ^. CommentId ==. wiki_page_comment ^. WikiPageCommentComment
             where_ $ foldl1 (&&.) $ catMaybes
-                [ Just $ comment ^. CommentPage ==. val page_id
+                [ Just $ wiki_page_comment ^. WikiPageCommentPage ==. val page_id
                 , Just $ isNothing $ comment ^. CommentParent
                 , if moderator then Nothing else Just $ not_ $ isNothing $ comment ^. CommentModeratedTs
                 ]
@@ -349,9 +351,10 @@ getDiscussWikiR project_handle target = do
             orderBy [asc (comment ^. CommentCreatedTs)]
             return comment
 
-        rest <- select $ from $ \ comment -> do
+        rest <- select $ from $ \ (comment `InnerJoin` wiki_page_comment) -> do
+            on_ $ comment ^. CommentId ==. wiki_page_comment ^. WikiPageCommentComment
             where_ $ foldl1 (&&.) $ catMaybes
-                [ Just $ comment ^. CommentPage ==. val page_id
+                [ Just $ wiki_page_comment ^. WikiPageCommentPage ==. val page_id
                 , Just $ not_ $ isNothing $ comment ^. CommentParent
                 , if moderator then Nothing else Just $ not_ $ isNothing $ comment ^. CommentModeratedTs
                 ]
@@ -402,17 +405,19 @@ getDiscussCommentR' show_reply project_handle target comment_id = do
 
     (root, rest, users, earlier_retractions, retraction_map) <- runDB $ do
         root <- get404 comment_id
+        root_wiki_page <- fmap (wikiPageCommentPage . entityVal) $ getBy404 $ UniqueWikiPageComment comment_id
 
-        when (commentPage root /= page_id) $ error "Selected comment does not match selected page"
+        when (root_wiki_page /= page_id) $ error "Selected comment does not match selected page"
 
         subtree <- select $ from $ \ comment -> do
             where_ ( comment ^. CommentAncestorAncestor ==. val comment_id )
             return comment
 
-        rest <- select $ from $ \ comment -> do
-            where_ ( comment ^. CommentPage ==. val page_id
+        rest <- select $ from $ \ (comment `InnerJoin` wiki_page_comment) -> do
+            on_ $ comment ^. CommentId ==. wiki_page_comment ^. WikiPageCommentComment
+            where_ $ wiki_page_comment ^. WikiPageCommentPage ==. val page_id
                     &&. comment ^. CommentId >. val comment_id
-                    &&. comment ^. CommentId `in_` valList (map (commentAncestorComment . entityVal) subtree))
+                    &&. comment ^. CommentId `in_` valList (map (commentAncestorComment . entityVal) subtree)
             orderBy [asc (comment ^. CommentParent), asc (comment ^. CommentCreatedTs)]
             return comment
 
@@ -469,9 +474,6 @@ postOldDiscussWikiR = postDiscussWikiR
 postDiscussWikiR :: Text -> Text -> Handler Html
 postDiscussWikiR project_handle target = do
     Entity user_id user <- requireAuth
-    Entity page_id _ <- runDB $ do
-        Entity project_id _ <- getBy404 $ UniqueProjectHandle project_handle
-        getBy404 $ UniqueWikiTarget project_id target
 
     let established = isJust $ userEstablishedTs user
 
@@ -512,7 +514,7 @@ postDiscussWikiR project_handle target = do
 
                     (form, _) <- generateFormPost $ commentForm maybe_parent_id (Just text)
 
-                    let comment = Entity (Key $ PersistInt64 0) $ Comment now Nothing Nothing page_id maybe_parent_id user_id text depth
+                    let comment = Entity (Key $ PersistInt64 0) $ Comment now Nothing Nothing maybe_parent_id user_id text depth
                         user_map = M.singleton user_id $ Entity user_id user
                         rendered_comment = renderDiscussComment user_id project_handle target False (return ()) comment [] user_map earlier_retractions M.empty False tag_map
 
@@ -524,7 +526,9 @@ postDiscussWikiR project_handle target = do
                         comment_id <- insert $ Comment now
                             (if established then Just now else Nothing)
                             (if established then Just user_id else Nothing)
-                            page_id maybe_parent_id user_id text depth
+                            maybe_parent_id user_id text depth
+
+                        void $ insert $ WikiPageComment comment_id page_id
 
                         let content = T.lines $ (\ (Markdown str) -> str) text
                             tickets = map T.strip $ mapMaybe (T.stripPrefix "ticket:") content
@@ -554,7 +558,7 @@ postDiscussWikiR project_handle target = do
                         update $ \ ticket -> do
                             set ticket [ TicketUpdatedTs =. val now ]
                             where_ $ ticket ^. TicketComment `in_` selectAncestors
-                        
+
 
                     addAlert "success" $ if established then "comment posted" else "comment submitted for moderation"
                     redirect $ maybe (DiscussWikiR project_handle target) (DiscussCommentR project_handle target) maybe_parent_id
@@ -580,7 +584,7 @@ getNewDiscussWikiR project_handle target = do
             <*> isProjectAdmin "snowdrift" user_id
 
     (comment_form, _) <- generateFormPost $ commentForm Nothing Nothing
-    
+
     defaultLayout $(widgetFile "wiki_discuss_new")
 
 postOldNewDiscussWikiR :: Text -> Text -> Handler Html
@@ -614,11 +618,12 @@ getWikiNewCommentsR project_handle = do
 
         let pages = M.fromList $ map (entityKey &&& id) $ {- TODO filter ((userRole viewer >=) . wikiPageCanViewMeta . entityVal) -} unfiltered_pages
 
-        comments <- select $ from $ \ comment -> do
-            where_ $ case maybe_from of
-                Nothing -> ( comment ^. CommentPage `in_` valList (M.keys pages) )
-                Just from_comment -> ( comment ^. CommentPage `in_` valList (M.keys pages)
-                                &&. comment ^. CommentId <=. val from_comment )
+
+        let apply_offset comment = maybe id (\ from_comment rest -> comment ^. CommentId >=. val from_comment &&. rest) maybe_from
+
+        comments <- select $ from $ \ (comment `InnerJoin` wiki_page_comment) -> do
+            on_ $ comment ^. CommentId ==. wiki_page_comment ^. WikiPageCommentComment
+            where_ $ apply_offset comment $ wiki_page_comment ^. WikiPageCommentPage `in_` valList (M.keys pages)
             orderBy [ desc (comment ^. CommentId) ]
             limit 50
             return comment
@@ -652,8 +657,12 @@ getWikiNewCommentsR project_handle = do
                         orderBy [ asc (comment_retraction ^. CommentRetractionComment) ]
                         return comment_retraction
 
-                let target = wikiPageTarget $ entityVal $ pages M.! commentPage comment
-                    rendered_comment = renderComment viewer_id project_handle target users 1 0 earlier_retractions retraction_map True tag_map (Node (Entity comment_id comment) []) Nothing
+                [Value target] <- handlerToWidget $ runDB $ select $ from $ \ (page `InnerJoin` wiki_page_comment) -> do
+                    on_ $ wiki_page_comment ^. WikiPageCommentPage ==. page ^. WikiPageId
+                    where_ $ wiki_page_comment ^. WikiPageCommentComment ==. val comment_id
+                    return $ page ^. WikiPageTarget
+
+                let rendered_comment = renderComment viewer_id project_handle target users 1 0 earlier_retractions retraction_map True tag_map (Node (Entity comment_id comment) []) Nothing
 
                 [whamlet|$newline never
                     <div .row>
@@ -929,11 +938,12 @@ getApproveCommentR :: Text -> Text -> CommentId -> Handler Html
 getApproveCommentR project_handle target comment_id = do
     user_id <- requireAuthId
 
-    comment <- runDB $ get404 comment_id
     Entity project_id _ <- runDB $ getBy404 $ UniqueProjectHandle project_handle
     Entity page_id page <- runDB $ getBy404 $ UniqueWikiTarget project_id target
 
-    when (commentPage comment /= page_id) $ error "comment does not match page"
+    comment_page <- fmap (wikiPageCommentPage . entityVal) $ runDB $ getBy404 $ UniqueWikiPageComment comment_id
+
+    when (comment_page /= page_id) $ error "comment does not match page"
     when (wikiPageProject page /= project_id) $ error "comment does not match project"
 
     moderator <- runDB $ isProjectModerator project_handle user_id
@@ -955,11 +965,12 @@ postApproveCommentR project_handle target comment_id = do
 
     now <- liftIO getCurrentTime
 
-    comment <- runDB $ get404 comment_id
     Entity project_id _ <- runDB $ getBy404 $ UniqueProjectHandle project_handle
     Entity page_id page <- runDB $ getBy404 $ UniqueWikiTarget project_id target
 
-    when (commentPage comment /= page_id) $ error "comment does not match page"
+    comment_page <- fmap (wikiPageCommentPage . entityVal) $ runDB $ getBy404 $ UniqueWikiPageComment comment_id
+
+    when (comment_page /= page_id) $ error "comment does not match page"
     when (wikiPageProject page /= project_id) $ error "comment does not match project"
 
     moderator <- runDB $ isProjectModerator project_handle user_id

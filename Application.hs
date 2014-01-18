@@ -186,6 +186,5 @@ migrateTriggers = runResourceT $ do
         , "    FOR EACH ROW EXECUTE PROCEDURE log_doc_event_trigger();"
         ]
 
-
     return ()
         
