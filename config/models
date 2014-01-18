@@ -62,6 +62,13 @@ Project
     deriving Show
 
 
+ProjectBlog
+    time UTCTime
+    title Text
+    user UserId
+    content Markdown
+
+
 ProjectUserRole
     project ProjectId
     user UserId
@@ -171,10 +178,10 @@ WikiPageComment
     page WikiPageId
     UniqueWikiPageComment comment
 
-ProjectComment
-    project ProjectId
+ProjectBlogComment
     comment CommentId
-    UniqueProjectComment comment
+    blog ProjectBlogId
+    UniqueProjectBlogComment comment
 
 CommentAncestor
     comment CommentId

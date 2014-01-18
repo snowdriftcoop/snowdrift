@@ -474,6 +474,10 @@ postOldDiscussWikiR = postDiscussWikiR
 postDiscussWikiR :: Text -> Text -> Handler Html
 postDiscussWikiR project_handle target = do
     Entity user_id user <- requireAuth
+    Entity page_id _ <- runDB $ do
+        Entity project_id _ <- getBy404 $ UniqueProjectHandle project_handle
+        getBy404 $ UniqueWikiTarget project_id target
+
 
     let established = isJust $ userEstablishedTs user
 
