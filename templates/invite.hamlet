@@ -10,24 +10,21 @@
                 <em>
                     Note: each code can only be used once.
                     You must generate a new code for each invitation.
-                <p>
-                    $maybe invite_role <- maybe_invite_role
-                        $case invite_role
-                            $of Admin
-                                <p>
-                                    You are invited to be an administrator of this project.
+            <blockquote>
+                $maybe invite_role <- maybe_invite_role
+                    $case invite_role
+                        $of Admin
+                            You are invited to be an administrator of this project.
 
-                            $of TeamMember
-                                <p>
-                                    You are invited to be a member of this project team.
+                        $of TeamMember
+                            You are invited to be a member of this project team.
 
-                            $of Moderator
-                                <p>
-                                    You are invited to be a moderator for this project.
+                        $of Moderator
+                            You are invited to be a moderator for this project.
 
-                    $nothing
-                        <strong>
-                            No role selected?  This is almost certainly an error!
+                $nothing
+                    <strong>
+                        No role selected?  This is almost certainly an error!
 
                 <p>
                     <strong>
