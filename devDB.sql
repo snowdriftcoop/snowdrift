@@ -24,6 +24,47 @@ COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
 
 SET search_path = public, pg_catalog;
 
+--
+-- Name: log_doc_event_trigger(); Type: FUNCTION; Schema: public; Owner: snowdrift_development
+--
+
+CREATE FUNCTION log_doc_event_trigger() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+    BEGIN
+        IF (TG_OP = 'INSERT' OR TG_OP = 'UPDATE') THEN
+            INSERT INTO doc_event (time, doc, blessed_version) SELECT now(), NEW.id, NEW.current_version;
+            RETURN NEW;
+        END IF;
+        RETURN NULL;
+    END;
+$$;
+
+
+ALTER FUNCTION public.log_doc_event_trigger() OWNER TO snowdrift_development;
+
+--
+-- Name: log_role_event_trigger(); Type: FUNCTION; Schema: public; Owner: snowdrift_development
+--
+
+CREATE FUNCTION log_role_event_trigger() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+    BEGIN
+        IF (TG_OP = 'DELETE') THEN
+            INSERT INTO role_event (time, "user", role, project, added) SELECT now(), OLD."user", OLD.role, OLD.project, 'f';
+            RETURN OLD;
+        ELSIF (TG_OP = 'INSERT') THEN
+            INSERT INTO role_event (time, "user", role, project, added) SELECT now(), NEW."user", NEW.role, NEW.project, 't';
+            RETURN NEW;
+        END IF;
+        RETURN NULL;
+    END;
+$$;
+
+
+ALTER FUNCTION public.log_role_event_trigger() OWNER TO snowdrift_development;
+
 SET default_tablespace = '';
 
 SET default_with_oids = false;
@@ -104,8 +145,7 @@ CREATE TABLE comment (
     id integer NOT NULL,
     created_ts timestamp without time zone NOT NULL,
     moderated_ts timestamp without time zone,
-    moderated_user bigint,
-    page bigint NOT NULL,
+    moderated_by bigint,
     parent bigint,
     "user" bigint NOT NULL,
     text character varying NOT NULL,
@@ -213,7 +253,8 @@ CREATE TABLE comment_tag (
     id integer NOT NULL,
     comment bigint NOT NULL,
     tag bigint NOT NULL,
-    "user" bigint NOT NULL
+    "user" bigint NOT NULL,
+    count bigint DEFAULT 1 NOT NULL
 );
 
 
@@ -273,6 +314,142 @@ ALTER TABLE public.committee_user_id_seq OWNER TO snowdrift_development;
 --
 
 ALTER SEQUENCE committee_user_id_seq OWNED BY committee_user.id;
+
+
+--
+-- Name: database_version; Type: TABLE; Schema: public; Owner: snowdrift_development; Tablespace: 
+--
+
+CREATE TABLE database_version (
+    id integer NOT NULL,
+    last_migration bigint NOT NULL
+);
+
+
+ALTER TABLE public.database_version OWNER TO snowdrift_development;
+
+--
+-- Name: database_version_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
+--
+
+CREATE SEQUENCE database_version_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.database_version_id_seq OWNER TO snowdrift_development;
+
+--
+-- Name: database_version_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
+--
+
+ALTER SEQUENCE database_version_id_seq OWNED BY database_version.id;
+
+
+--
+-- Name: default_tag_color; Type: TABLE; Schema: public; Owner: snowdrift_development; Tablespace: 
+--
+
+CREATE TABLE default_tag_color (
+    id integer NOT NULL,
+    tag bigint NOT NULL,
+    color bigint NOT NULL
+);
+
+
+ALTER TABLE public.default_tag_color OWNER TO snowdrift_development;
+
+--
+-- Name: default_tag_color_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
+--
+
+CREATE SEQUENCE default_tag_color_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.default_tag_color_id_seq OWNER TO snowdrift_development;
+
+--
+-- Name: default_tag_color_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
+--
+
+ALTER SEQUENCE default_tag_color_id_seq OWNED BY default_tag_color.id;
+
+
+--
+-- Name: doc; Type: TABLE; Schema: public; Owner: snowdrift_development; Tablespace: 
+--
+
+CREATE TABLE doc (
+    id integer NOT NULL,
+    name character varying NOT NULL,
+    current_version bigint NOT NULL
+);
+
+
+ALTER TABLE public.doc OWNER TO snowdrift_development;
+
+--
+-- Name: doc_event; Type: TABLE; Schema: public; Owner: snowdrift_development; Tablespace: 
+--
+
+CREATE TABLE doc_event (
+    id integer NOT NULL,
+    "time" timestamp without time zone NOT NULL,
+    doc bigint NOT NULL,
+    blessed_version bigint NOT NULL
+);
+
+
+ALTER TABLE public.doc_event OWNER TO snowdrift_development;
+
+--
+-- Name: doc_event_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
+--
+
+CREATE SEQUENCE doc_event_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.doc_event_id_seq OWNER TO snowdrift_development;
+
+--
+-- Name: doc_event_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
+--
+
+ALTER SEQUENCE doc_event_id_seq OWNED BY doc_event.id;
+
+
+--
+-- Name: doc_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
+--
+
+CREATE SEQUENCE doc_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.doc_id_seq OWNER TO snowdrift_development;
+
+--
+-- Name: doc_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
+--
+
+ALTER SEQUENCE doc_id_seq OWNED BY doc.id;
 
 
 --
@@ -350,6 +527,40 @@ ALTER SEQUENCE invite_id_seq OWNED BY invite.id;
 
 
 --
+-- Name: manual_establishment; Type: TABLE; Schema: public; Owner: snowdrift_development; Tablespace: 
+--
+
+CREATE TABLE manual_establishment (
+    id integer NOT NULL,
+    established_user character varying NOT NULL,
+    establishing_user character varying NOT NULL
+);
+
+
+ALTER TABLE public.manual_establishment OWNER TO snowdrift_development;
+
+--
+-- Name: manual_establishment_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
+--
+
+CREATE SEQUENCE manual_establishment_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.manual_establishment_id_seq OWNER TO snowdrift_development;
+
+--
+-- Name: manual_establishment_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
+--
+
+ALTER SEQUENCE manual_establishment_id_seq OWNED BY manual_establishment.id;
+
+
+--
 -- Name: message; Type: TABLE; Schema: public; Owner: snowdrift_development; Tablespace: 
 --
 
@@ -384,6 +595,39 @@ ALTER TABLE public.message_id_seq OWNER TO snowdrift_development;
 --
 
 ALTER SEQUENCE message_id_seq OWNED BY message.id;
+
+
+--
+-- Name: payday; Type: TABLE; Schema: public; Owner: snowdrift_development; Tablespace: 
+--
+
+CREATE TABLE payday (
+    id integer NOT NULL,
+    date timestamp without time zone NOT NULL
+);
+
+
+ALTER TABLE public.payday OWNER TO snowdrift_development;
+
+--
+-- Name: payday_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
+--
+
+CREATE SEQUENCE payday_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.payday_id_seq OWNER TO snowdrift_development;
+
+--
+-- Name: payday_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
+--
+
+ALTER SEQUENCE payday_id_seq OWNED BY payday.id;
 
 
 --
@@ -433,11 +677,83 @@ CREATE TABLE project (
     handle character varying NOT NULL,
     description character varying NOT NULL,
     account bigint NOT NULL,
-    share_value bigint NOT NULL
+    share_value bigint NOT NULL,
+    last_payday bigint,
+    github_repo character varying
 );
 
 
 ALTER TABLE public.project OWNER TO snowdrift_development;
+
+--
+-- Name: project_blog; Type: TABLE; Schema: public; Owner: snowdrift_development; Tablespace: 
+--
+
+CREATE TABLE project_blog (
+    id integer NOT NULL,
+    "time" timestamp without time zone NOT NULL,
+    title character varying NOT NULL,
+    "user" bigint NOT NULL,
+    content character varying NOT NULL
+);
+
+
+ALTER TABLE public.project_blog OWNER TO snowdrift_development;
+
+--
+-- Name: project_blog_comment; Type: TABLE; Schema: public; Owner: snowdrift_development; Tablespace: 
+--
+
+CREATE TABLE project_blog_comment (
+    id integer NOT NULL,
+    comment bigint NOT NULL,
+    blog bigint NOT NULL
+);
+
+
+ALTER TABLE public.project_blog_comment OWNER TO snowdrift_development;
+
+--
+-- Name: project_blog_comment_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
+--
+
+CREATE SEQUENCE project_blog_comment_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.project_blog_comment_id_seq OWNER TO snowdrift_development;
+
+--
+-- Name: project_blog_comment_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
+--
+
+ALTER SEQUENCE project_blog_comment_id_seq OWNED BY project_blog_comment.id;
+
+
+--
+-- Name: project_blog_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
+--
+
+CREATE SEQUENCE project_blog_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.project_blog_id_seq OWNER TO snowdrift_development;
+
+--
+-- Name: project_blog_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
+--
+
+ALTER SEQUENCE project_blog_id_seq OWNED BY project_blog.id;
+
 
 --
 -- Name: project_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -600,6 +916,43 @@ ALTER SEQUENCE project_user_role_id_seq OWNED BY project_user_role.id;
 
 
 --
+-- Name: role_event; Type: TABLE; Schema: public; Owner: snowdrift_development; Tablespace: 
+--
+
+CREATE TABLE role_event (
+    id integer NOT NULL,
+    "time" timestamp without time zone NOT NULL,
+    "user" bigint NOT NULL,
+    role character varying NOT NULL,
+    project bigint NOT NULL,
+    added boolean NOT NULL
+);
+
+
+ALTER TABLE public.role_event OWNER TO snowdrift_development;
+
+--
+-- Name: role_event_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
+--
+
+CREATE SEQUENCE role_event_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.role_event_id_seq OWNER TO snowdrift_development;
+
+--
+-- Name: role_event_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
+--
+
+ALTER SEQUENCE role_event_id_seq OWNED BY role_event.id;
+
+
+--
 -- Name: tag; Type: TABLE; Schema: public; Owner: snowdrift_development; Tablespace: 
 --
 
@@ -610,6 +963,41 @@ CREATE TABLE tag (
 
 
 ALTER TABLE public.tag OWNER TO snowdrift_development;
+
+--
+-- Name: tag_color; Type: TABLE; Schema: public; Owner: snowdrift_development; Tablespace: 
+--
+
+CREATE TABLE tag_color (
+    id integer NOT NULL,
+    tag bigint NOT NULL,
+    "user" bigint NOT NULL,
+    color bigint NOT NULL
+);
+
+
+ALTER TABLE public.tag_color OWNER TO snowdrift_development;
+
+--
+-- Name: tag_color_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
+--
+
+CREATE SEQUENCE tag_color_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.tag_color_id_seq OWNER TO snowdrift_development;
+
+--
+-- Name: tag_color_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
+--
+
+ALTER SEQUENCE tag_color_id_seq OWNED BY tag_color.id;
+
 
 --
 -- Name: tag_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -640,7 +1028,8 @@ CREATE TABLE ticket (
     id integer NOT NULL,
     created_ts timestamp without time zone NOT NULL,
     name character varying NOT NULL,
-    comment bigint NOT NULL
+    comment bigint NOT NULL,
+    updated_ts timestamp without time zone NOT NULL
 );
 
 
@@ -678,7 +1067,8 @@ CREATE TABLE transaction (
     debit bigint,
     amount bigint NOT NULL,
     reason character varying NOT NULL,
-    info character varying
+    info character varying,
+    payday bigint
 );
 
 
@@ -723,7 +1113,9 @@ CREATE TABLE "user" (
     read_messages timestamp without time zone DEFAULT now() NOT NULL,
     read_applications timestamp without time zone DEFAULT now() NOT NULL,
     read_comments timestamp without time zone DEFAULT now() NOT NULL,
-    read_edits timestamp without time zone DEFAULT now() NOT NULL
+    read_edits timestamp without time zone DEFAULT now() NOT NULL,
+    established_ts timestamp without time zone,
+    established_reason character varying
 );
 
 
@@ -748,6 +1140,41 @@ ALTER TABLE public.user_id_seq OWNER TO snowdrift_development;
 --
 
 ALTER SEQUENCE user_id_seq OWNED BY "user".id;
+
+
+--
+-- Name: user_setting; Type: TABLE; Schema: public; Owner: snowdrift_development; Tablespace: 
+--
+
+CREATE TABLE user_setting (
+    id integer NOT NULL,
+    "user" bigint NOT NULL,
+    setting character varying NOT NULL,
+    value character varying NOT NULL
+);
+
+
+ALTER TABLE public.user_setting OWNER TO snowdrift_development;
+
+--
+-- Name: user_setting_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
+--
+
+CREATE SEQUENCE user_setting_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.user_setting_id_seq OWNER TO snowdrift_development;
+
+--
+-- Name: user_setting_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
+--
+
+ALTER SEQUENCE user_setting_id_seq OWNED BY user_setting.id;
 
 
 --
@@ -913,6 +1340,40 @@ CREATE TABLE wiki_page (
 ALTER TABLE public.wiki_page OWNER TO snowdrift_development;
 
 --
+-- Name: wiki_page_comment; Type: TABLE; Schema: public; Owner: snowdrift_development; Tablespace: 
+--
+
+CREATE TABLE wiki_page_comment (
+    id integer NOT NULL,
+    comment bigint NOT NULL,
+    page bigint NOT NULL
+);
+
+
+ALTER TABLE public.wiki_page_comment OWNER TO snowdrift_development;
+
+--
+-- Name: wiki_page_comment_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
+--
+
+CREATE SEQUENCE wiki_page_comment_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.wiki_page_comment_id_seq OWNER TO snowdrift_development;
+
+--
+-- Name: wiki_page_comment_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
+--
+
+ALTER SEQUENCE wiki_page_comment_id_seq OWNED BY wiki_page_comment.id;
+
+
+--
 -- Name: wiki_page_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
 --
 
@@ -986,6 +1447,34 @@ ALTER TABLE ONLY committee_user ALTER COLUMN id SET DEFAULT nextval('committee_u
 -- Name: id; Type: DEFAULT; Schema: public; Owner: snowdrift_development
 --
 
+ALTER TABLE ONLY database_version ALTER COLUMN id SET DEFAULT nextval('database_version_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: snowdrift_development
+--
+
+ALTER TABLE ONLY default_tag_color ALTER COLUMN id SET DEFAULT nextval('default_tag_color_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: snowdrift_development
+--
+
+ALTER TABLE ONLY doc ALTER COLUMN id SET DEFAULT nextval('doc_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: snowdrift_development
+--
+
+ALTER TABLE ONLY doc_event ALTER COLUMN id SET DEFAULT nextval('doc_event_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: snowdrift_development
+--
+
 ALTER TABLE ONLY interest ALTER COLUMN id SET DEFAULT nextval('interest_id_seq'::regclass);
 
 
@@ -1000,7 +1489,21 @@ ALTER TABLE ONLY invite ALTER COLUMN id SET DEFAULT nextval('invite_id_seq'::reg
 -- Name: id; Type: DEFAULT; Schema: public; Owner: snowdrift_development
 --
 
+ALTER TABLE ONLY manual_establishment ALTER COLUMN id SET DEFAULT nextval('manual_establishment_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: snowdrift_development
+--
+
 ALTER TABLE ONLY message ALTER COLUMN id SET DEFAULT nextval('message_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: snowdrift_development
+--
+
+ALTER TABLE ONLY payday ALTER COLUMN id SET DEFAULT nextval('payday_id_seq'::regclass);
 
 
 --
@@ -1015,6 +1518,20 @@ ALTER TABLE ONLY pledge ALTER COLUMN id SET DEFAULT nextval('pledge_id_seq'::reg
 --
 
 ALTER TABLE ONLY project ALTER COLUMN id SET DEFAULT nextval('project_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: snowdrift_development
+--
+
+ALTER TABLE ONLY project_blog ALTER COLUMN id SET DEFAULT nextval('project_blog_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: snowdrift_development
+--
+
+ALTER TABLE ONLY project_blog_comment ALTER COLUMN id SET DEFAULT nextval('project_blog_comment_id_seq'::regclass);
 
 
 --
@@ -1049,7 +1566,21 @@ ALTER TABLE ONLY project_user_role ALTER COLUMN id SET DEFAULT nextval('project_
 -- Name: id; Type: DEFAULT; Schema: public; Owner: snowdrift_development
 --
 
+ALTER TABLE ONLY role_event ALTER COLUMN id SET DEFAULT nextval('role_event_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: snowdrift_development
+--
+
 ALTER TABLE ONLY tag ALTER COLUMN id SET DEFAULT nextval('tag_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: snowdrift_development
+--
+
+ALTER TABLE ONLY tag_color ALTER COLUMN id SET DEFAULT nextval('tag_color_id_seq'::regclass);
 
 
 --
@@ -1071,6 +1602,13 @@ ALTER TABLE ONLY transaction ALTER COLUMN id SET DEFAULT nextval('transaction_id
 --
 
 ALTER TABLE ONLY "user" ALTER COLUMN id SET DEFAULT nextval('user_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: snowdrift_development
+--
+
+ALTER TABLE ONLY user_setting ALTER COLUMN id SET DEFAULT nextval('user_setting_id_seq'::regclass);
 
 
 --
@@ -1109,6 +1647,13 @@ ALTER TABLE ONLY wiki_page ALTER COLUMN id SET DEFAULT nextval('wiki_page_id_seq
 
 
 --
+-- Name: id; Type: DEFAULT; Schema: public; Owner: snowdrift_development
+--
+
+ALTER TABLE ONLY wiki_page_comment ALTER COLUMN id SET DEFAULT nextval('wiki_page_comment_id_seq'::regclass);
+
+
+--
 -- Data for Name: account; Type: TABLE DATA; Schema: public; Owner: snowdrift_development
 --
 
@@ -1132,6 +1677,7 @@ SELECT pg_catalog.setval('account_id_seq', 2, true);
 COPY build (id, boot_time, base, diff) FROM stdin;
 1	2013-11-20 02:25:05.013214	8604247d8116396ec0214ba7677d2212990517d2	
 2	2013-11-23 19:29:20.349772	8604247d8116396ec0214ba7677d2212990517d2	
+3	2014-01-20 19:09:52.001477	4ccd10f42fd6d64ac4e2b3d70b28c9c6a3223b0c	diff --git a/Application.hs b/Application.hs\nindex 241f582..bf838a7 100644\n--- a/Application.hs\n+++ b/Application.hs\n@@ -135,8 +135,8 @@ doMigration = do\n \n     mapM_ ((\\ file -> liftIO (putStrLn ("running " ++ file ++ "...") >> T.readFile file)) >=> flip rawExecute []) $ L.map (("migrations/" <>) . snd) migration_files\n \n-    let last_migration = L.maximum $ 0 : L.map fst migration_files\n-    update $ flip set [ DatabaseVersionLastMigration =. val last_migration ]\n+    let new_last_migration = L.maximum $ 0 : L.map fst migration_files\n+    update $ flip set [ DatabaseVersionLastMigration =. val new_last_migration ]\n \n     migrations <- parseMigration' migrateAll\n \n@@ -145,8 +145,10 @@ doMigration = do\n     liftIO $ putStrLn $ "safe: " ++ show (L.length safe)\n     liftIO $ putStrLn $ "unsafe: " ++ show (L.length unsafe)\n \n+    liftIO $ putStrLn $ "new last_migration: " ++ show new_last_migration\n+\n     when (not $ L.null $ L.map snd safe) $ do\n-        liftIO $ T.writeFile ("migrations/migrate" <> show (last_migration + 1)) $ T.unlines $ L.map ((`snoc` ';') . snd) safe\n+        liftIO $ T.writeFile ("migrations/migrate" <> show (new_last_migration + 1)) $ T.unlines $ L.map ((`snoc` ';') . snd) safe\n         mapM_ (flip rawExecute [] . snd) migrations\n \n     when (not $ L.null $ L.map snd unsafe) $ do\n
 \.
 
 
@@ -1139,14 +1685,14 @@ COPY build (id, boot_time, base, diff) FROM stdin;
 -- Name: build_id_seq; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_development
 --
 
-SELECT pg_catalog.setval('build_id_seq', 2, true);
+SELECT pg_catalog.setval('build_id_seq', 3, true);
 
 
 --
 -- Data for Name: comment; Type: TABLE DATA; Schema: public; Owner: snowdrift_development
 --
 
-COPY comment (id, created_ts, moderated_ts, moderated_user, page, parent, "user", text, depth) FROM stdin;
+COPY comment (id, created_ts, moderated_ts, moderated_by, parent, "user", text, depth) FROM stdin;
 \.
 
 
@@ -1191,7 +1737,7 @@ SELECT pg_catalog.setval('comment_retraction_id_seq', 1, false);
 -- Data for Name: comment_tag; Type: TABLE DATA; Schema: public; Owner: snowdrift_development
 --
 
-COPY comment_tag (id, comment, tag, "user") FROM stdin;
+COPY comment_tag (id, comment, tag, "user", count) FROM stdin;
 \.
 
 
@@ -1215,6 +1761,67 @@ COPY committee_user (id, created_ts, "user", project) FROM stdin;
 --
 
 SELECT pg_catalog.setval('committee_user_id_seq', 1, false);
+
+
+--
+-- Data for Name: database_version; Type: TABLE DATA; Schema: public; Owner: snowdrift_development
+--
+
+COPY database_version (id, last_migration) FROM stdin;
+1	2
+\.
+
+
+--
+-- Name: database_version_id_seq; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_development
+--
+
+SELECT pg_catalog.setval('database_version_id_seq', 1, true);
+
+
+--
+-- Data for Name: default_tag_color; Type: TABLE DATA; Schema: public; Owner: snowdrift_development
+--
+
+COPY default_tag_color (id, tag, color) FROM stdin;
+\.
+
+
+--
+-- Name: default_tag_color_id_seq; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_development
+--
+
+SELECT pg_catalog.setval('default_tag_color_id_seq', 1, false);
+
+
+--
+-- Data for Name: doc; Type: TABLE DATA; Schema: public; Owner: snowdrift_development
+--
+
+COPY doc (id, name, current_version) FROM stdin;
+\.
+
+
+--
+-- Data for Name: doc_event; Type: TABLE DATA; Schema: public; Owner: snowdrift_development
+--
+
+COPY doc_event (id, "time", doc, blessed_version) FROM stdin;
+\.
+
+
+--
+-- Name: doc_event_id_seq; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_development
+--
+
+SELECT pg_catalog.setval('doc_event_id_seq', 1, false);
+
+
+--
+-- Name: doc_id_seq; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_development
+--
+
+SELECT pg_catalog.setval('doc_id_seq', 1, false);
 
 
 --
@@ -1248,6 +1855,21 @@ SELECT pg_catalog.setval('invite_id_seq', 1, false);
 
 
 --
+-- Data for Name: manual_establishment; Type: TABLE DATA; Schema: public; Owner: snowdrift_development
+--
+
+COPY manual_establishment (id, established_user, establishing_user) FROM stdin;
+\.
+
+
+--
+-- Name: manual_establishment_id_seq; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_development
+--
+
+SELECT pg_catalog.setval('manual_establishment_id_seq', 1, false);
+
+
+--
 -- Data for Name: message; Type: TABLE DATA; Schema: public; Owner: snowdrift_development
 --
 
@@ -1260,6 +1882,21 @@ COPY message (id, project, created_ts, "from", "to", content) FROM stdin;
 --
 
 SELECT pg_catalog.setval('message_id_seq', 1, false);
+
+
+--
+-- Data for Name: payday; Type: TABLE DATA; Schema: public; Owner: snowdrift_development
+--
+
+COPY payday (id, date) FROM stdin;
+\.
+
+
+--
+-- Name: payday_id_seq; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_development
+--
+
+SELECT pg_catalog.setval('payday_id_seq', 1, false);
 
 
 --
@@ -1281,9 +1918,39 @@ SELECT pg_catalog.setval('pledge_id_seq', 1, false);
 -- Data for Name: project; Type: TABLE DATA; Schema: public; Owner: snowdrift_development
 --
 
-COPY project (id, created_ts, name, handle, description, account, share_value) FROM stdin;
-1	2013-11-23 11:52:54.632763	Snowdrift	snowdrift	Snowdrift Project	2	0
+COPY project (id, created_ts, name, handle, description, account, share_value, last_payday, github_repo) FROM stdin;
+1	2013-11-23 11:52:54.632763	Snowdrift	snowdrift	Snowdrift Project	2	0	\N	\N
 \.
+
+
+--
+-- Data for Name: project_blog; Type: TABLE DATA; Schema: public; Owner: snowdrift_development
+--
+
+COPY project_blog (id, "time", title, "user", content) FROM stdin;
+\.
+
+
+--
+-- Data for Name: project_blog_comment; Type: TABLE DATA; Schema: public; Owner: snowdrift_development
+--
+
+COPY project_blog_comment (id, comment, blog) FROM stdin;
+\.
+
+
+--
+-- Name: project_blog_comment_id_seq; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_development
+--
+
+SELECT pg_catalog.setval('project_blog_comment_id_seq', 1, false);
+
+
+--
+-- Name: project_blog_id_seq; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_development
+--
+
+SELECT pg_catalog.setval('project_blog_id_seq', 1, false);
 
 
 --
@@ -1355,11 +2022,41 @@ SELECT pg_catalog.setval('project_user_role_id_seq', 2, true);
 
 
 --
+-- Data for Name: role_event; Type: TABLE DATA; Schema: public; Owner: snowdrift_development
+--
+
+COPY role_event (id, "time", "user", role, project, added) FROM stdin;
+\.
+
+
+--
+-- Name: role_event_id_seq; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_development
+--
+
+SELECT pg_catalog.setval('role_event_id_seq', 1, false);
+
+
+--
 -- Data for Name: tag; Type: TABLE DATA; Schema: public; Owner: snowdrift_development
 --
 
 COPY tag (id, name) FROM stdin;
 \.
+
+
+--
+-- Data for Name: tag_color; Type: TABLE DATA; Schema: public; Owner: snowdrift_development
+--
+
+COPY tag_color (id, tag, "user", color) FROM stdin;
+\.
+
+
+--
+-- Name: tag_color_id_seq; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_development
+--
+
+SELECT pg_catalog.setval('tag_color_id_seq', 1, false);
 
 
 --
@@ -1373,7 +2070,7 @@ SELECT pg_catalog.setval('tag_id_seq', 1, false);
 -- Data for Name: ticket; Type: TABLE DATA; Schema: public; Owner: snowdrift_development
 --
 
-COPY ticket (id, created_ts, name, comment) FROM stdin;
+COPY ticket (id, created_ts, name, comment, updated_ts) FROM stdin;
 \.
 
 
@@ -1388,7 +2085,7 @@ SELECT pg_catalog.setval('ticket_id_seq', 1, false);
 -- Data for Name: transaction; Type: TABLE DATA; Schema: public; Owner: snowdrift_development
 --
 
-COPY transaction (id, ts, credit, debit, amount, reason, info) FROM stdin;
+COPY transaction (id, ts, credit, debit, amount, reason, info, payday) FROM stdin;
 \.
 
 
@@ -1403,8 +2100,8 @@ SELECT pg_catalog.setval('transaction_id_seq', 1, false);
 -- Data for Name: user; Type: TABLE DATA; Schema: public; Owner: snowdrift_development
 --
 
-COPY "user" (id, ident, hash, salt, name, account, avatar, blurb, statement, irc_nick, read_messages, read_applications, read_comments, read_edits) FROM stdin;
-1	admin	8bf2d491387febc07e5d8fd15a4140b28473566e	P^YTN3G:	Admin	1	\N	\N	\N	\N	2013-11-23 19:31:18.982213	2013-11-23 19:31:18.982213	2013-11-23 19:31:18.982213	2013-11-23 19:31:18.982213
+COPY "user" (id, ident, hash, salt, name, account, avatar, blurb, statement, irc_nick, read_messages, read_applications, read_comments, read_edits, established_ts, established_reason) FROM stdin;
+1	admin	8bf2d491387febc07e5d8fd15a4140b28473566e	P^YTN3G:	Admin	1	\N	\N	\N	\N	2013-11-23 19:31:18.982213	2013-11-23 19:31:18.982213	2013-11-23 19:31:18.982213	2013-11-23 19:31:18.982213	\N	\N
 \.
 
 
@@ -1413,6 +2110,21 @@ COPY "user" (id, ident, hash, salt, name, account, avatar, blurb, statement, irc
 --
 
 SELECT pg_catalog.setval('user_id_seq', 1, true);
+
+
+--
+-- Data for Name: user_setting; Type: TABLE DATA; Schema: public; Owner: snowdrift_development
+--
+
+COPY user_setting (id, "user", setting, value) FROM stdin;
+\.
+
+
+--
+-- Name: user_setting_id_seq; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_development
+--
+
+SELECT pg_catalog.setval('user_setting_id_seq', 1, false);
 
 
 --
@@ -1484,6 +2196,21 @@ COPY wiki_page (id, target, project, content, permission_level) FROM stdin;
 
 
 --
+-- Data for Name: wiki_page_comment; Type: TABLE DATA; Schema: public; Owner: snowdrift_development
+--
+
+COPY wiki_page_comment (id, comment, page) FROM stdin;
+\.
+
+
+--
+-- Name: wiki_page_comment_id_seq; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_development
+--
+
+SELECT pg_catalog.setval('wiki_page_comment_id_seq', 1, false);
+
+
+--
 -- Name: wiki_page_id_seq; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_development
 --
 
@@ -1547,6 +2274,38 @@ ALTER TABLE ONLY committee_user
 
 
 --
+-- Name: database_version_pkey; Type: CONSTRAINT; Schema: public; Owner: snowdrift_development; Tablespace: 
+--
+
+ALTER TABLE ONLY database_version
+    ADD CONSTRAINT database_version_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: default_tag_color_pkey; Type: CONSTRAINT; Schema: public; Owner: snowdrift_development; Tablespace: 
+--
+
+ALTER TABLE ONLY default_tag_color
+    ADD CONSTRAINT default_tag_color_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: doc_event_pkey; Type: CONSTRAINT; Schema: public; Owner: snowdrift_development; Tablespace: 
+--
+
+ALTER TABLE ONLY doc_event
+    ADD CONSTRAINT doc_event_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: doc_pkey; Type: CONSTRAINT; Schema: public; Owner: snowdrift_development; Tablespace: 
+--
+
+ALTER TABLE ONLY doc
+    ADD CONSTRAINT doc_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: interest_pkey; Type: CONSTRAINT; Schema: public; Owner: snowdrift_development; Tablespace: 
 --
 
@@ -1563,6 +2322,14 @@ ALTER TABLE ONLY invite
 
 
 --
+-- Name: manual_establishment_pkey; Type: CONSTRAINT; Schema: public; Owner: snowdrift_development; Tablespace: 
+--
+
+ALTER TABLE ONLY manual_establishment
+    ADD CONSTRAINT manual_establishment_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: message_pkey; Type: CONSTRAINT; Schema: public; Owner: snowdrift_development; Tablespace: 
 --
 
@@ -1571,11 +2338,35 @@ ALTER TABLE ONLY message
 
 
 --
+-- Name: payday_pkey; Type: CONSTRAINT; Schema: public; Owner: snowdrift_development; Tablespace: 
+--
+
+ALTER TABLE ONLY payday
+    ADD CONSTRAINT payday_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: pledge_pkey; Type: CONSTRAINT; Schema: public; Owner: snowdrift_development; Tablespace: 
 --
 
 ALTER TABLE ONLY pledge
     ADD CONSTRAINT pledge_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: project_blog_comment_pkey; Type: CONSTRAINT; Schema: public; Owner: snowdrift_development; Tablespace: 
+--
+
+ALTER TABLE ONLY project_blog_comment
+    ADD CONSTRAINT project_blog_comment_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: project_blog_pkey; Type: CONSTRAINT; Schema: public; Owner: snowdrift_development; Tablespace: 
+--
+
+ALTER TABLE ONLY project_blog
+    ADD CONSTRAINT project_blog_pkey PRIMARY KEY (id);
 
 
 --
@@ -1616,6 +2407,22 @@ ALTER TABLE ONLY project_update
 
 ALTER TABLE ONLY project_user_role
     ADD CONSTRAINT project_user_role_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: role_event_pkey; Type: CONSTRAINT; Schema: public; Owner: snowdrift_development; Tablespace: 
+--
+
+ALTER TABLE ONLY role_event
+    ADD CONSTRAINT role_event_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: tag_color_pkey; Type: CONSTRAINT; Schema: public; Owner: snowdrift_development; Tablespace: 
+--
+
+ALTER TABLE ONLY tag_color
+    ADD CONSTRAINT tag_color_pkey PRIMARY KEY (id);
 
 
 --
@@ -1667,11 +2474,35 @@ ALTER TABLE ONLY committee_user
 
 
 --
+-- Name: unique_default_tag; Type: CONSTRAINT; Schema: public; Owner: snowdrift_development; Tablespace: 
+--
+
+ALTER TABLE ONLY default_tag_color
+    ADD CONSTRAINT unique_default_tag UNIQUE (tag);
+
+
+--
+-- Name: unique_doc_name; Type: CONSTRAINT; Schema: public; Owner: snowdrift_development; Tablespace: 
+--
+
+ALTER TABLE ONLY doc
+    ADD CONSTRAINT unique_doc_name UNIQUE (name);
+
+
+--
 -- Name: unique_invite; Type: CONSTRAINT; Schema: public; Owner: snowdrift_development; Tablespace: 
 --
 
 ALTER TABLE ONLY invite
     ADD CONSTRAINT unique_invite UNIQUE (code);
+
+
+--
+-- Name: unique_manual_establishment; Type: CONSTRAINT; Schema: public; Owner: snowdrift_development; Tablespace: 
+--
+
+ALTER TABLE ONLY manual_establishment
+    ADD CONSTRAINT unique_manual_establishment UNIQUE (established_user);
 
 
 --
@@ -1688,6 +2519,14 @@ ALTER TABLE ONLY pledge
 
 ALTER TABLE ONLY project
     ADD CONSTRAINT unique_project_account UNIQUE (account);
+
+
+--
+-- Name: unique_project_blog_comment; Type: CONSTRAINT; Schema: public; Owner: snowdrift_development; Tablespace: 
+--
+
+ALTER TABLE ONLY project_blog_comment
+    ADD CONSTRAINT unique_project_blog_comment UNIQUE (comment);
 
 
 --
@@ -1715,11 +2554,11 @@ ALTER TABLE ONLY project_tag
 
 
 --
--- Name: unique_project_user; Type: CONSTRAINT; Schema: public; Owner: snowdrift_development; Tablespace: 
+-- Name: unique_project_user_role; Type: CONSTRAINT; Schema: public; Owner: snowdrift_development; Tablespace: 
 --
 
 ALTER TABLE ONLY project_user_role
-    ADD CONSTRAINT unique_project_user UNIQUE (project, "user");
+    ADD CONSTRAINT unique_project_user_role UNIQUE (project, "user", role);
 
 
 --
@@ -1728,6 +2567,14 @@ ALTER TABLE ONLY project_user_role
 
 ALTER TABLE ONLY tag
     ADD CONSTRAINT unique_tag UNIQUE (name);
+
+
+--
+-- Name: unique_tag_color; Type: CONSTRAINT; Schema: public; Owner: snowdrift_development; Tablespace: 
+--
+
+ALTER TABLE ONLY tag_color
+    ADD CONSTRAINT unique_tag_color UNIQUE (tag, "user");
 
 
 --
@@ -1755,6 +2602,14 @@ ALTER TABLE ONLY wiki_last_edit
 
 
 --
+-- Name: unique_wiki_page_comment; Type: CONSTRAINT; Schema: public; Owner: snowdrift_development; Tablespace: 
+--
+
+ALTER TABLE ONLY wiki_page_comment
+    ADD CONSTRAINT unique_wiki_page_comment UNIQUE (comment);
+
+
+--
 -- Name: unique_wiki_target; Type: CONSTRAINT; Schema: public; Owner: snowdrift_development; Tablespace: 
 --
 
@@ -1768,6 +2623,14 @@ ALTER TABLE ONLY wiki_page
 
 ALTER TABLE ONLY "user"
     ADD CONSTRAINT user_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: user_setting_pkey; Type: CONSTRAINT; Schema: public; Owner: snowdrift_development; Tablespace: 
+--
+
+ALTER TABLE ONLY user_setting
+    ADD CONSTRAINT user_setting_pkey PRIMARY KEY (id);
 
 
 --
@@ -1803,11 +2666,33 @@ ALTER TABLE ONLY wiki_last_edit
 
 
 --
+-- Name: wiki_page_comment_pkey; Type: CONSTRAINT; Schema: public; Owner: snowdrift_development; Tablespace: 
+--
+
+ALTER TABLE ONLY wiki_page_comment
+    ADD CONSTRAINT wiki_page_comment_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: wiki_page_pkey; Type: CONSTRAINT; Schema: public; Owner: snowdrift_development; Tablespace: 
 --
 
 ALTER TABLE ONLY wiki_page
     ADD CONSTRAINT wiki_page_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: doc_event; Type: TRIGGER; Schema: public; Owner: snowdrift_development
+--
+
+CREATE TRIGGER doc_event AFTER INSERT OR DELETE ON doc FOR EACH ROW EXECUTE PROCEDURE log_doc_event_trigger();
+
+
+--
+-- Name: role_event; Type: TRIGGER; Schema: public; Owner: snowdrift_development
+--
+
+CREATE TRIGGER role_event AFTER INSERT OR DELETE ON project_user_role FOR EACH ROW EXECUTE PROCEDURE log_role_event_trigger();
 
 
 --
@@ -1827,19 +2712,19 @@ ALTER TABLE ONLY comment_ancestor
 
 
 --
+-- Name: comment_moderated_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_development
+--
+
+ALTER TABLE ONLY comment
+    ADD CONSTRAINT comment_moderated_by_fkey FOREIGN KEY (moderated_by) REFERENCES "user"(id);
+
+
+--
 -- Name: comment_moderated_user_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_development
 --
 
 ALTER TABLE ONLY comment
-    ADD CONSTRAINT comment_moderated_user_fkey FOREIGN KEY (moderated_user) REFERENCES "user"(id);
-
-
---
--- Name: comment_page_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_development
---
-
-ALTER TABLE ONLY comment
-    ADD CONSTRAINT comment_page_fkey FOREIGN KEY (page) REFERENCES wiki_page(id);
+    ADD CONSTRAINT comment_moderated_user_fkey FOREIGN KEY (moderated_by) REFERENCES "user"(id);
 
 
 --
@@ -1904,6 +2789,38 @@ ALTER TABLE ONLY committee_user
 
 ALTER TABLE ONLY committee_user
     ADD CONSTRAINT committee_user_user_fkey FOREIGN KEY ("user") REFERENCES "user"(id);
+
+
+--
+-- Name: default_tag_color_tag_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_development
+--
+
+ALTER TABLE ONLY default_tag_color
+    ADD CONSTRAINT default_tag_color_tag_fkey FOREIGN KEY (tag) REFERENCES tag(id);
+
+
+--
+-- Name: doc_current_version_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_development
+--
+
+ALTER TABLE ONLY doc
+    ADD CONSTRAINT doc_current_version_fkey FOREIGN KEY (current_version) REFERENCES wiki_edit(id);
+
+
+--
+-- Name: doc_event_blessed_version_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_development
+--
+
+ALTER TABLE ONLY doc_event
+    ADD CONSTRAINT doc_event_blessed_version_fkey FOREIGN KEY (blessed_version) REFERENCES wiki_edit(id);
+
+
+--
+-- Name: doc_event_doc_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_development
+--
+
+ALTER TABLE ONLY doc_event
+    ADD CONSTRAINT doc_event_doc_fkey FOREIGN KEY (doc) REFERENCES doc(id);
 
 
 --
@@ -1979,6 +2896,38 @@ ALTER TABLE ONLY project
 
 
 --
+-- Name: project_blog_comment_blog_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_development
+--
+
+ALTER TABLE ONLY project_blog_comment
+    ADD CONSTRAINT project_blog_comment_blog_fkey FOREIGN KEY (blog) REFERENCES project_blog(id);
+
+
+--
+-- Name: project_blog_comment_comment_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_development
+--
+
+ALTER TABLE ONLY project_blog_comment
+    ADD CONSTRAINT project_blog_comment_comment_fkey FOREIGN KEY (comment) REFERENCES comment(id);
+
+
+--
+-- Name: project_blog_user_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_development
+--
+
+ALTER TABLE ONLY project_blog
+    ADD CONSTRAINT project_blog_user_fkey FOREIGN KEY ("user") REFERENCES "user"(id);
+
+
+--
+-- Name: project_last_payday_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_development
+--
+
+ALTER TABLE ONLY project
+    ADD CONSTRAINT project_last_payday_fkey FOREIGN KEY (last_payday) REFERENCES payday(id);
+
+
+--
 -- Name: project_last_update_project_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_development
 --
 
@@ -2043,6 +2992,38 @@ ALTER TABLE ONLY project_user_role
 
 
 --
+-- Name: role_event_project_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_development
+--
+
+ALTER TABLE ONLY role_event
+    ADD CONSTRAINT role_event_project_fkey FOREIGN KEY (project) REFERENCES project(id);
+
+
+--
+-- Name: role_event_user_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_development
+--
+
+ALTER TABLE ONLY role_event
+    ADD CONSTRAINT role_event_user_fkey FOREIGN KEY ("user") REFERENCES "user"(id);
+
+
+--
+-- Name: tag_color_tag_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_development
+--
+
+ALTER TABLE ONLY tag_color
+    ADD CONSTRAINT tag_color_tag_fkey FOREIGN KEY (tag) REFERENCES tag(id);
+
+
+--
+-- Name: tag_color_user_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_development
+--
+
+ALTER TABLE ONLY tag_color
+    ADD CONSTRAINT tag_color_user_fkey FOREIGN KEY ("user") REFERENCES "user"(id);
+
+
+--
 -- Name: ticket_comment_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_development
 --
 
@@ -2067,11 +3048,27 @@ ALTER TABLE ONLY transaction
 
 
 --
+-- Name: transaction_payday_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_development
+--
+
+ALTER TABLE ONLY transaction
+    ADD CONSTRAINT transaction_payday_fkey FOREIGN KEY (payday) REFERENCES payday(id);
+
+
+--
 -- Name: user_account_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_development
 --
 
 ALTER TABLE ONLY "user"
     ADD CONSTRAINT user_account_fkey FOREIGN KEY (account) REFERENCES account(id);
+
+
+--
+-- Name: user_setting_user_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_development
+--
+
+ALTER TABLE ONLY user_setting
+    ADD CONSTRAINT user_setting_user_fkey FOREIGN KEY ("user") REFERENCES "user"(id);
 
 
 --
@@ -2136,6 +3133,22 @@ ALTER TABLE ONLY wiki_last_edit
 
 ALTER TABLE ONLY wiki_last_edit
     ADD CONSTRAINT wiki_last_edit_page_fkey FOREIGN KEY (page) REFERENCES wiki_page(id);
+
+
+--
+-- Name: wiki_page_comment_comment_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_development
+--
+
+ALTER TABLE ONLY wiki_page_comment
+    ADD CONSTRAINT wiki_page_comment_comment_fkey FOREIGN KEY (comment) REFERENCES comment(id);
+
+
+--
+-- Name: wiki_page_comment_page_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_development
+--
+
+ALTER TABLE ONLY wiki_page_comment
+    ADD CONSTRAINT wiki_page_comment_page_fkey FOREIGN KEY (page) REFERENCES wiki_page(id);
 
 
 --

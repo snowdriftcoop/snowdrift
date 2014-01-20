@@ -254,4 +254,7 @@ DocEvent
     doc DocId
     blessedVersion WikiEditId
 
+DatabaseVersion
+    lastMigration Int
+
  -- This file is used in Model.hs (which is imported by Foundation.hs)

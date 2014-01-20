@@ -224,4 +224,23 @@ If you make specific improvements or additions to your test DB that aren't just 
 
     sudo -u postgres pg_dump snowdrift_development >devDB.sql
 
+
+Database Migrations
+-------------------
+
+When you first start the server (following a compile) after changing the database schema (in config/models) a migration script will be automatically generated and placed in migrations.
+
+The safe (i.e. guaranteed not to lose data) statements, if any, are placed in migration/migrateN where N is the next number in sequence.
+
+If there are no unsafe statements in the migration, the safe statements will be run and the server will continue to start normally.
+
+If there are any unsafe (may destroy data) statements, they are placed in migrations/migrate.unsafe, and the server will abort.
+
+In this case, if the data *is* intended to be lost (e.g. destroying a column storing data we no longer want) just copy the statements to the new migrateN file (creating it if necessary).
+
+If you don't want to lose the data (a column is being moved to a different table, a column is being renamed, &c) modify the migration file as appropriate.
+
+In any event, be sure to add the new migrations/migrateN file to git when you commit the corresponding schema changes, and update devDB.sql to match.
+
+
 Happy hacking!

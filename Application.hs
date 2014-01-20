@@ -1,4 +1,6 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
+{-# LANGUAGE TupleSections #-}
+
 module Application
     ( makeApplication
     , getApplicationDev
@@ -18,9 +20,12 @@ import Version
 import Control.Monad.Logger (runLoggingT)
 import Control.Monad.Trans.Resource
 import System.IO (stdout)
+import System.Directory
 import System.Log.FastLogger (mkLogger)
 
+import qualified Data.List as L
 import Data.Text as T
+import qualified Data.Text.IO as T
 
 -- Import all relevant handler modules here.
 -- Don't forget to add new modules to your cabal file!
@@ -86,8 +91,8 @@ makeFoundation conf = do
     logger <- mkLogger True stdout
     let foundation = App navbar conf s p manager dbconf logger
 
-    flip runLoggingT (messageLoggerSource foundation logger) $ do
-        Database.Persist.runPool dbconf (printMigration migrateAll >> runMigration migrateAll >> rolloutStagingWikiPages) p
+    flip runLoggingT (messageLoggerSource foundation logger) $ runResourceT $ do
+        Database.Persist.runPool dbconf doMigration p
         Database.Persist.Sql.runSqlPool migrateTriggers p
 
     now <- getCurrentTime
@@ -107,6 +112,52 @@ getApplicationDev =
         { csParseExtra = parseExtra
         }
 
+doMigration :: (MonadResource m, MonadBaseControl IO m, MonadIO m, MonadLogger m, MonadUnsafeIO m, MonadThrow m) => SqlPersistT m ()
+doMigration = do
+    liftIO $ putStrLn "creating version table"
+
+    flip rawExecute [] "CREATE TABLE IF NOT EXISTS \"database_version\" (\"id\" SERIAL PRIMARY KEY UNIQUE, \"last_migration\" INT8 NOT NULL);"
+
+    last_migration <- select $ from $ return
+
+    migration_number <- case last_migration of
+        [] -> (insert $ DatabaseVersion 0) >> return 0
+        [Entity _ (DatabaseVersion migration)] -> return migration
+        _ -> error "multiple entries in DB version table"
+
+    unfiltered_migration_files <- liftIO $ getDirectoryContents "migrations"
+
+    let migration_files :: [(Int, [Char])]
+        migration_files = L.sort
+            $ L.filter ((> migration_number) . fst)
+            $ mapMaybe (\ s -> fmap (,s) $ readMaybe =<< L.stripPrefix "migrate" s)
+            unfiltered_migration_files
+
+    mapM_ ((\ file -> liftIO (putStrLn ("running " ++ file ++ "...") >> T.readFile file)) >=> flip rawExecute []) $ L.map (("migrations/" <>) . snd) migration_files
+
+    let new_last_migration = L.maximum $ 0 : L.map fst migration_files
+    update $ flip set [ DatabaseVersionLastMigration =. val new_last_migration ]
+
+    migrations <- parseMigration' migrateAll
+
+    let (unsafe, safe) = L.partition fst migrations
+
+    liftIO $ putStrLn $ "safe: " ++ show (L.length safe)
+    liftIO $ putStrLn $ "unsafe: " ++ show (L.length unsafe)
+
+    liftIO $ putStrLn $ "new last_migration: " ++ show new_last_migration
+
+    when (not $ L.null $ L.map snd safe) $ do
+        liftIO $ T.writeFile ("migrations/migrate" <> show (new_last_migration + 1)) $ T.unlines $ L.map ((`snoc` ';') . snd) safe
+        mapM_ (flip rawExecute [] . snd) migrations
+
+    when (not $ L.null $ L.map snd unsafe) $ do
+        liftIO $ T.writeFile "migrations/migrate.unsafe" $ T.unlines $ L.map ((`snoc` ';') . snd) unsafe
+        error "Unsafe migrations written to migrations/migrate.unsafe"
+
+    rolloutStagingWikiPages
+
+
 rolloutStagingWikiPages :: (MonadBaseControl IO m, MonadIO m, MonadLogger m, MonadUnsafeIO m, MonadThrow m) => SqlPersistT m ()
 rolloutStagingWikiPages = do
     pages <- select $ from $ \ page -> do
@@ -122,7 +173,7 @@ rolloutStagingWikiPages = do
         update $ \ edit -> do
             set edit [ WikiEditPage =. val page_id ]
             where_ ( edit ^. WikiEditPage ==. val staged_page_id )
-    
+
         update $ \ page -> do
             set page [ WikiPageContent =. val (wikiPageContent staged_page) ]
             where_ ( page ^. WikiPageId ==. val page_id )
@@ -130,7 +181,7 @@ rolloutStagingWikiPages = do
         [ Value last_staged_edit_edit ] <- select $ from $ \ last_staged_edit -> do
             where_ ( last_staged_edit ^. WikiLastEditPage ==. val staged_page_id )
             return $ last_staged_edit ^. WikiLastEditEdit
-                    
+
         update $ \ last_edit -> do
             set last_edit [ WikiLastEditEdit =. val last_staged_edit_edit ]
             where_ ( last_edit ^. WikiLastEditPage ==. val page_id )
@@ -188,4 +239,4 @@ migrateTriggers = runResourceT $ do
         ]
 
     return ()
-        
+
