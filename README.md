@@ -242,5 +242,6 @@ If you don't want to lose the data (a column is being moved to a different table
 
 In any event, be sure to add the new migrations/migrateN file to git when you commit the corresponding schema changes, and update devDB.sql to match.
 
+When merging migrations, always put any you've added on the end - don't merge them into migration files others have probably already run.
 
 Happy hacking!
