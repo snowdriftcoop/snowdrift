@@ -41,9 +41,11 @@ Yesod uses the Haskell programming language alongside its
 * The #yesod and #haskell IRC channels on freenode.net are active and helpful
 * [School of Haskell](https://www.fpcomplete.com/school) is an interactive system that is proprietary but gratis
 
-Our front-end design uses [Twitter Bootstrap](http://getbootstrap.com/) for layout and styles, although there are several cases where we use our own custom CSS instead. See the style.md file for more notes on CSS and other design guidelines.
+Our front-end design uses **[Twitter Bootstrap](http://getbootstrap.com/)** for layout and styles, although there are cases where we use our own custom CSS instead.
 
-[Firebug](https://getfirebug.com) is a useful tool to explore and test things on the live site
+On the site we have a page about [site-design](https://snowdrift.coop/p/snowdrift/w/site-design), and the tickets and discussion there cover specific issues.
+
+As a suggestion: Firefox's built-in developer tools offer lots of great ways to test the site, although [Firebug](https://getfirebug.com) may also be a useful addition for certain features.
 
 
 Text-editor settings
@@ -102,7 +104,7 @@ I don't have the list at hand, but they can be picked out of the error
 messages when the below fails for want of them - if you make a list,
 please update this and send a pull request!)
 
-*note: there have been some errors reported with older versions of ghc and the haskell-platform* At this time, we are using GHC 7.6.3 and Haskell Platform 2013.2.0.0 — both are included in the latest Ubuntu, but there are [instructions for building updated GHC on older Ubuntu systems](https://gist.github.com/Dexyne/5791465). We have tested this as working with Ubuntu 12.04 LTS. These instructions or similar should work for other systems as well, but see <http://www.haskell.org/platform/> for more general info for all systems.
+   *note: there have been some errors reported with older versions of ghc and the haskell-platform* At this time, we are using GHC 7.6.3 and Haskell Platform 2013.2.0.0 — both are included in the latest Ubuntu, but there are [instructions for building updated GHC on older Ubuntu-based systems](https://gist.github.com/Dexyne/5791465). We tested this with Ubuntu 12.04 LTS and it should work on derivatives as well (such as the fully-FLO Trisquel 6). These instructions or similar should work for other systems as well, but see <http://www.haskell.org/platform/> for more general info.
 
 Update cabal's package list:
 
@@ -167,7 +169,7 @@ You should see a line that looks like:
 
     postgres=#
 
-Add password to user (substitute your chosen passphrase instead of 'somepassphrase':
+Add password to user (you may substitute your chosen passphrase instead of 'somepassphrase'):
 
     postgres=# alter user snowdrift_development with encrypted password 'somepassphrase';
 
@@ -175,7 +177,7 @@ Then to add user to database:
 
     postgres=# grant all privileges on database snowdrift_development to snowdrift_development;
 
-Edit config/postgresql.yml and update the password to match the one you chose.
+Leave postgres (with ctrl-D), then edit config/postgresql.yml and update the password to match the one you entered.
 
 Import development database:
 
@@ -217,5 +219,29 @@ You can log into the site via the built-in system with user: admin pass: admin
 With that user, create wiki pages at localhost:3000/p/snowdrift/w/*pagename*/new
 
 See the documentation on the live site [about the wiki](https://snowdrift.coop/p/snowdrift/w/wiki) and more.
+
+If you make specific improvements or additions to your test DB that aren't just playing around but that you think will make for a better starting test DB for other contributors, use the following command in your main project directory to export the changes (which can then be committed via git as usual):
+
+    sudo -u postgres pg_dump snowdrift_development >devDB.sql
+
+
+Database Migrations
+-------------------
+
+When you first start the server (following a compile) after changing the database schema (in config/models) a migration script will be automatically generated and placed in migrations.
+
+The safe (i.e. guaranteed not to lose data) statements, if any, are placed in migration/migrateN where N is the next number in sequence.
+
+If there are no unsafe statements in the migration, the safe statements will be run and the server will continue to start normally.
+
+If there are any unsafe (may destroy data) statements, they are placed in migrations/migrate.unsafe, and the server will abort.
+
+In this case, if the data *is* intended to be lost (e.g. destroying a column storing data we no longer want) just copy the statements to the new migrateN file (creating it if necessary).
+
+If you don't want to lose the data (a column is being moved to a different table, a column is being renamed, &c) modify the migration file as appropriate.
+
+In any event, be sure to add the new migrations/migrateN file to git when you commit the corresponding schema changes, and update devDB.sql to match.
+
+When merging migrations, always put any you've added on the end - don't merge them into migration files others have probably already run.
 
 Happy hacking!

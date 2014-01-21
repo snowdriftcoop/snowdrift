@@ -218,7 +218,7 @@ instance Yesod App where
     -- What messages should be logged. The following includes all messages when
     -- in development, and warnings and errors in production.
     shouldLog _ _source level =
-        development || level == LevelWarn || level == LevelError
+        development || level == LevelInfo || level == LevelWarn || level == LevelError
 
     isAuthorized _ _ = return Authorized -- restricted in the individual handlers
 
@@ -264,8 +264,9 @@ authBrowserIdFixed =
 
             toWidget [hamlet|
                 $newline never
-                <a href="javascript:persona_login()">
-                    <img src="https://browserid.org/i/persona_sign_in_blue.png">
+                <figure>
+                    <a href="javascript:persona_login()">
+                        <img src="https://browserid.org/i/persona_sign_in_blue.png">
             |]
 
      in (authBrowserId def) { apLogin = login }
@@ -277,28 +278,41 @@ snowdriftAuthBrowserId =
             let parentLogin = apLogin auth toMaster
             [whamlet|
                 <p>
-                    <strong>Mozilla Persona is a secure log-in that
-                    doesn't track you the way other systems do.
+                    <strong>Mozilla Persona is a secure log-in
+                    that, unlike most other systems, doesn't track you. 
                     It works near-seamlessly with gmail or yahoo,
-                    but any e-mail will work by setting a password and confirming the account.
-                <p>
-                    The Sign-in button below works for both new and existing accounts:
+                    but any e-mail will work after setting a password and confirming the account.
                 ^{parentLogin}
+                <p>
+                    The Persona sign-in works for both new and existing accounts.
             |]
      in auth { apLogin = login }
 
 snowdriftAuthHashDB :: AuthPlugin App
 snowdriftAuthHashDB =
     let auth = authHashDB (Just . UniqueUser)
-        login toMaster = do
-            let parentLogin = apLogin auth toMaster
+        loginRoute = PluginR "hashdb" ["login"]
+        login toMaster =
             [whamlet|
-                <p> We also offer a built-in traditional log-in system:
-                <p>
-                    <a href="@{UserCreateR}">
-                       click here to create an account
-                <p> or
-                ^{parentLogin}
+                <div id="login">
+                    <p .h3 .text-center> We also offer a built-in system
+                        <br>
+                        <small>
+                            <a href="@{UserCreateR}">
+                                click here to create an account
+                    <form .form-horizontal method="post" action="@{toMaster loginRoute}">
+                        <div .form-group>
+                            <label .col-sm-4 .control-label>
+                                Username:
+                            <div .col-sm-8>
+                                <input .form-control id="x" name="username" autofocus="" required>
+                        <div .form-group>
+                            <label .col-sm-4 .control-label>
+                                Passphrase:
+                            <div .col-sm-8>
+                                <input .form-control type="password" name="password" required>
+                        <figure>
+                            <input type="submit" value="Log in">
             |]
      in auth { apLogin = login }
 

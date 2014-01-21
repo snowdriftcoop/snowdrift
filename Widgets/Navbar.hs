@@ -6,8 +6,6 @@ import Import
 import Model.Currency
 import Model.User
 
-import qualified Data.Set as S
-
 navbar :: Widget
 navbar = do
     maybe_user <- handlerToWidget maybeAuth
@@ -81,34 +79,13 @@ navbar = do
                                 return application
                              else return []
 
-            edits :: [Entity WikiEdit] <- do
-                edits <- select $ from $ \ wiki_edit -> do
+            edits :: [Entity WikiEdit] <- select $ from $ \ wiki_edit -> do
                     where_ ( wiki_edit ^. WikiEditTs >=. val (userReadEdits user) &&. wiki_edit ^. WikiEditUser !=. val user_id )
                     return wiki_edit
 
-                if null edits
-                 then return []
-                 else do
-                    pages <- select $ from $ \ wiki_page -> do
-                        where_ ( wiki_page ^. WikiPageId `in_` valList (map (wikiEditPage . entityVal) edits) )
-                        return wiki_page
-
-                    let filtered_pages = map entityKey pages -- TODO $ filter (\ (Entity _ page) -> role >= wikiPageCanViewMeta page) pages
-                    return $ filter (flip S.member (S.fromList filtered_pages) . wikiEditPage . entityVal) edits
-
-            comments :: [Entity Comment] <- do
-                comments <- select $ from $ \ comment -> do
+            comments :: [Entity Comment] <- select $ from $ \ comment -> do
                     where_ ( comment ^. CommentCreatedTs >=. val (userReadComments user) &&. comment ^. CommentUser !=. val user_id )
                     return comment
-                if null comments
-                 then return []
-                 else do
-                    pages <- select $ from $ \ wiki_page -> do
-                        where_ ( wiki_page ^. WikiPageId `in_` valList (map (commentPage . entityVal) comments) )
-                        return wiki_page
-
-                    let filtered_pages = map entityKey pages -- TODO $ filter (\ (Entity _ page) -> role >= wikiPageCanViewMeta page) pages
-                    return $ filter (flip S.member (S.fromList filtered_pages) . commentPage . entityVal) comments
 
             return (messages, applications, edits, comments)
 

@@ -209,9 +209,10 @@ q:after
     content : '"'
 
 table
-    box-shadow : 8px 8px 5px #888888
+    box-shadow : 4px 4px 5px #888888
     margin : 2em auto
     font-size : 0.75em
+    min-width : 50%
 
 th
     background : #4477BB
@@ -221,7 +222,7 @@ th
     padding : 0.6em
 
 tr:nth-child(even)
-    background : #F2F2F2
+    background : #F5F9FD
 
 td
     vertical-align : middle

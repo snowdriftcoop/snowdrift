@@ -62,6 +62,13 @@ Project
     deriving Show
 
 
+ProjectBlog
+    time UTCTime
+    title Text
+    user UserId
+    content Markdown
+
+
 ProjectUserRole
     project ProjectId
     user UserId
@@ -161,11 +168,20 @@ Comment
     createdTs UTCTime
     moderatedTs UTCTime Maybe
     moderatedBy UserId Maybe
-    page WikiPageId
     parent CommentId Maybe
     user UserId
     text Markdown
     depth Int
+
+WikiPageComment
+    comment CommentId
+    page WikiPageId
+    UniqueWikiPageComment comment
+
+ProjectBlogComment
+    comment CommentId
+    blog ProjectBlogId
+    UniqueProjectBlogComment comment
 
 CommentAncestor
     comment CommentId
@@ -237,5 +253,8 @@ DocEvent
     time UTCTime
     doc DocId
     blessedVersion WikiEditId
+
+DatabaseVersion
+    lastMigration Int
 
  -- This file is used in Model.hs (which is imported by Foundation.hs)

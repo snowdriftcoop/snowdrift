@@ -3,8 +3,6 @@ module Handler.Volunteer where
 import Import
 
 
-
-
 volunteerForm :: UTCTime -> ProjectId -> [Entity Interest] -> Entity User -> Form (VolunteerApplication, [InterestId])
 volunteerForm now project_id interests (Entity user_id user) = renderBootstrap3 $
     (\ name email contact website location experience interest_ids other ->
