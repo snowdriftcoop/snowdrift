@@ -1768,7 +1768,7 @@ SELECT pg_catalog.setval('committee_user_id_seq', 1, false);
 --
 
 COPY database_version (id, last_migration) FROM stdin;
-1	2
+1	1
 \.
 
 

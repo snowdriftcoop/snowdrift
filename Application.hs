@@ -114,7 +114,7 @@ getApplicationDev =
 
 doMigration :: (MonadResource m, MonadBaseControl IO m, MonadIO m, MonadLogger m, MonadUnsafeIO m, MonadThrow m) => SqlPersistT m ()
 doMigration = do
-    liftIO $ putStrLn "creating version table"
+    $(logInfo) "creating version table"
 
     flip rawExecute [] "CREATE TABLE IF NOT EXISTS \"database_version\" (\"id\" SERIAL PRIMARY KEY UNIQUE, \"last_migration\" INT8 NOT NULL);"
 
@@ -133,27 +133,35 @@ doMigration = do
             $ mapMaybe (\ s -> fmap (,s) $ readMaybe =<< L.stripPrefix "migrate" s)
             unfiltered_migration_files
 
-    mapM_ ((\ file -> liftIO (putStrLn ("running " ++ file ++ "...") >> T.readFile file)) >=> flip rawExecute []) $ L.map (("migrations/" <>) . snd) migration_files
+    forM_ (L.map (("migrations/" <>) . snd) migration_files) $ \ file -> do
+        $(logWarn) $ "running " <> T.pack file <> "..."
+        migration <- liftIO $ T.readFile file
+        rawExecute migration []
 
-    let new_last_migration = L.maximum $ 0 : L.map fst migration_files
+    let new_last_migration = L.maximum $ migration_number : L.map fst migration_files
     update $ flip set [ DatabaseVersionLastMigration =. val new_last_migration ]
 
     migrations <- parseMigration' migrateAll
 
     let (unsafe, safe) = L.partition fst migrations
 
-    liftIO $ putStrLn $ "safe: " ++ show (L.length safe)
-    liftIO $ putStrLn $ "unsafe: " ++ show (L.length unsafe)
-
-    liftIO $ putStrLn $ "new last_migration: " ++ show new_last_migration
-
     when (not $ L.null $ L.map snd safe) $ do
-        liftIO $ T.writeFile ("migrations/migrate" <> show (new_last_migration + 1)) $ T.unlines $ L.map ((`snoc` ';') . snd) safe
+        let filename = "migrations/migrate" <> show (new_last_migration + 1)
+
+        liftIO $ T.writeFile filename $ T.unlines $ L.map ((`snoc` ';') . snd) safe
+
+        $(logWarn) $ "wrote " <> T.pack (show $ L.length safe) <> " safe statements to " <> T.pack filename
+
         mapM_ (flip rawExecute [] . snd) migrations
 
     when (not $ L.null $ L.map snd unsafe) $ do
-        liftIO $ T.writeFile "migrations/migrate.unsafe" $ T.unlines $ L.map ((`snoc` ';') . snd) unsafe
-        error "Unsafe migrations written to migrations/migrate.unsafe"
+        let filename = "migrations/migrate.unsafe"
+
+        liftIO $ T.writeFile filename $ T.unlines $ L.map ((`snoc` ';') . snd) unsafe
+
+        $(logWarn) $ "wrote " <> T.pack (show $ L.length unsafe) <> " safe statements to " <> T.pack filename
+
+        error "Some migration steps were unsafe.  Aborting."
 
     rolloutStagingWikiPages
 
