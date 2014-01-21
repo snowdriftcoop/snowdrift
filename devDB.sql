@@ -1678,6 +1678,7 @@ COPY build (id, boot_time, base, diff) FROM stdin;
 1	2013-11-20 02:25:05.013214	8604247d8116396ec0214ba7677d2212990517d2	
 2	2013-11-23 19:29:20.349772	8604247d8116396ec0214ba7677d2212990517d2	
 3	2014-01-20 19:09:52.001477	4ccd10f42fd6d64ac4e2b3d70b28c9c6a3223b0c	diff --git a/Application.hs b/Application.hs\nindex 241f582..bf838a7 100644\n--- a/Application.hs\n+++ b/Application.hs\n@@ -135,8 +135,8 @@ doMigration = do\n \n     mapM_ ((\\ file -> liftIO (putStrLn ("running " ++ file ++ "...") >> T.readFile file)) >=> flip rawExecute []) $ L.map (("migrations/" <>) . snd) migration_files\n \n-    let last_migration = L.maximum $ 0 : L.map fst migration_files\n-    update $ flip set [ DatabaseVersionLastMigration =. val last_migration ]\n+    let new_last_migration = L.maximum $ 0 : L.map fst migration_files\n+    update $ flip set [ DatabaseVersionLastMigration =. val new_last_migration ]\n \n     migrations <- parseMigration' migrateAll\n \n@@ -145,8 +145,10 @@ doMigration = do\n     liftIO $ putStrLn $ "safe: " ++ show (L.length safe)\n     liftIO $ putStrLn $ "unsafe: " ++ show (L.length unsafe)\n \n+    liftIO $ putStrLn $ "new last_migration: " ++ show new_last_migration\n+\n     when (not $ L.null $ L.map snd safe) $ do\n-        liftIO $ T.writeFile ("migrations/migrate" <> show (last_migration + 1)) $ T.unlines $ L.map ((`snoc` ';') . snd) safe\n+        liftIO $ T.writeFile ("migrations/migrate" <> show (new_last_migration + 1)) $ T.unlines $ L.map ((`snoc` ';') . snd) safe\n         mapM_ (flip rawExecute [] . snd) migrations\n \n     when (not $ L.null $ L.map snd unsafe) $ do\n
+4	2014-01-21 17:41:12.047799	ed014b5810941e61f82123f97be0c69600d99f0f	
 \.
 
 
@@ -1685,7 +1686,7 @@ COPY build (id, boot_time, base, diff) FROM stdin;
 -- Name: build_id_seq; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_development
 --
 
-SELECT pg_catalog.setval('build_id_seq', 3, true);
+SELECT pg_catalog.setval('build_id_seq', 4, true);
 
 
 --
@@ -1693,6 +1694,10 @@ SELECT pg_catalog.setval('build_id_seq', 3, true);
 --
 
 COPY comment (id, created_ts, moderated_ts, moderated_by, parent, "user", text, depth) FROM stdin;
+1	2014-01-21 18:11:03.914397	2014-01-21 18:12:36.696658	1	\N	1	This is a comment.	0
+2	2014-01-21 18:13:00.273315	2014-01-21 18:13:10.464805	1	1	1	Replies are threaded.	1
+3	2014-01-21 18:13:57.732222	\N	\N	\N	1	When a comment is posted by an unestablished user, it is marked for moderation and only shown to moderators.	0
+4	2014-01-21 18:15:30.945499	2014-01-21 18:15:37.484472	1	\N	1	adding a line starting with "ticket:" such as\n\nticket: this is a ticket\n\nmakes the post show up at /t where all the tickets are listed	0
 \.
 
 
@@ -1701,6 +1706,7 @@ COPY comment (id, created_ts, moderated_ts, moderated_by, parent, "user", text, 
 --
 
 COPY comment_ancestor (id, comment, ancestor) FROM stdin;
+1	2	1
 \.
 
 
@@ -1708,14 +1714,14 @@ COPY comment_ancestor (id, comment, ancestor) FROM stdin;
 -- Name: comment_ancestor_id_seq; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_development
 --
 
-SELECT pg_catalog.setval('comment_ancestor_id_seq', 1, false);
+SELECT pg_catalog.setval('comment_ancestor_id_seq', 1, true);
 
 
 --
 -- Name: comment_id_seq; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_development
 --
 
-SELECT pg_catalog.setval('comment_id_seq', 1, false);
+SELECT pg_catalog.setval('comment_id_seq', 4, true);
 
 
 --
@@ -1844,6 +1850,7 @@ SELECT pg_catalog.setval('interest_id_seq', 1, false);
 --
 
 COPY invite (id, created_ts, project, code, "user", role, tag, redeemed, redeemed_ts, redeemed_by) FROM stdin;
+1	2014-01-21 18:12:09.148007	1	df0176d67f1a4063	1	Moderator	admin as also moderator	t	2014-01-21 18:12:24.376052	1
 \.
 
 
@@ -1851,7 +1858,7 @@ COPY invite (id, created_ts, project, code, "user", role, tag, redeemed, redeeme
 -- Name: invite_id_seq; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_development
 --
 
-SELECT pg_catalog.setval('invite_id_seq', 1, false);
+SELECT pg_catalog.setval('invite_id_seq', 1, true);
 
 
 --
@@ -2011,6 +2018,7 @@ SELECT pg_catalog.setval('project_update_id_seq', 1, false);
 
 COPY project_user_role (id, project, "user", role) FROM stdin;
 2	1	1	Admin
+3	1	1	Moderator
 \.
 
 
@@ -2018,7 +2026,7 @@ COPY project_user_role (id, project, "user", role) FROM stdin;
 -- Name: project_user_role_id_seq; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_development
 --
 
-SELECT pg_catalog.setval('project_user_role_id_seq', 2, true);
+SELECT pg_catalog.setval('project_user_role_id_seq', 3, true);
 
 
 --
@@ -2026,6 +2034,7 @@ SELECT pg_catalog.setval('project_user_role_id_seq', 2, true);
 --
 
 COPY role_event (id, "time", "user", role, project, added) FROM stdin;
+1	2014-01-21 10:12:24.376209	1	Moderator	1	t
 \.
 
 
@@ -2033,7 +2042,7 @@ COPY role_event (id, "time", "user", role, project, added) FROM stdin;
 -- Name: role_event_id_seq; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_development
 --
 
-SELECT pg_catalog.setval('role_event_id_seq', 1, false);
+SELECT pg_catalog.setval('role_event_id_seq', 1, true);
 
 
 --
@@ -2071,6 +2080,7 @@ SELECT pg_catalog.setval('tag_id_seq', 1, false);
 --
 
 COPY ticket (id, created_ts, name, comment, updated_ts) FROM stdin;
+1	2014-01-21 18:15:30.945499	this is a ticket	4	2014-01-21 18:15:30.945499
 \.
 
 
@@ -2078,7 +2088,7 @@ COPY ticket (id, created_ts, name, comment, updated_ts) FROM stdin;
 -- Name: ticket_id_seq; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_development
 --
 
-SELECT pg_catalog.setval('ticket_id_seq', 1, false);
+SELECT pg_catalog.setval('ticket_id_seq', 1, true);
 
 
 --
@@ -2162,6 +2172,12 @@ SELECT pg_catalog.setval('volunteer_interest_id_seq', 1, false);
 --
 
 COPY wiki_edit (id, ts, "user", page, content, comment) FROM stdin;
+1	2014-01-21 17:46:06.695166	1	1	# Welcome\n\nThank you for testing (and hopefully helping to develop) Snowdrift.coop!\n\nThis is a wiki page within your test database. It is different than the database for the real Snowdrift.coop site.	Page created.
+2	2014-01-21 17:48:55.489319	1	2	# About Snowdrift.coop\n\nAll the real *about* stuff is on the live site: <https://snowdrift.coop/p/snowdrift/w/about>\n\nHere we will explain about testing.	Page created.
+3	2014-01-21 17:52:33.270443	1	2	# About Snowdrift.coop\n\nAll the real *about* stuff is on the live site: <https://snowdrift.coop/p/snowdrift/w/about>\n\nHere we will explain about testing.\n\n## Wiki pages\n\nSee the live site for details about the wiki system: <https://snowdrift.coop/p/snowdrift/w/wiki>\n\nIn creating the page you are looking at, several edits were made, so you can click above to see the history.	Added links to wiki page on live site and comment about history
+4	2014-01-21 17:53:21.094299	1	2	# About Snowdrift.coop\n\nAll the real *about* stuff is on the live site: <https://snowdrift.coop/p/snowdrift/w/about>\n\nHere we will explain about testing.\n\n## Wiki pages\n\nSee the live site for details about the wiki system: <https://snowdrift.coop/p/snowdrift/w/wiki>\n\nIn creating the page you are looking at, several edits were made, so you can click above to see the history.\n\nThere are discussion pages for every wiki page, as shown above.	Added sentence about discussion pages
+5	2014-01-21 17:55:07.436846	1	3	See the live site for [press info](https://snowdrift.coop/p/snowdrift/w/press)	Page created.
+6	2014-01-21 18:09:53.469506	1	4	# Development notes\n\nSee the live site for the full [how-to-help page](https://snowdrift.coop/p/snowdrift/w/how-to-help).\n\n## Development notes\n\nThe essential development details are in the README.md file with the code, not in this test database. When adding new info, consider whether it is best there versus here in the test database (the README has instructions about updating the test database).\n\n## Users\n\n[localhost:3000/u](/u) is a listing of all the users. The first user is just "admin" (passphrase is also "admin"). When new users register they start out unestablished and with no roles. You can add roles by using the admin user and visiting <http://localhost:3000/p/snowdrift/invite> and then logging in as another user to redeem the code.\n\nIt is a good idea to test things as:\n\na. logged-out\na. unestablished user\na. established users with different roles\n\nObviously testing on different systems, browsers, devices, etc. is good too.\n\n## Tickets\n\nSee <https://snowdrift.coop/p/snowdrift/t> for the live site's list of tickets. This is also linked at the live site's how-to-help page. Please add tickets to the live site as appropriate, add comments and questions, and mark things complete after you have fixed them and committed your changes.	Page created.
 \.
 
 
@@ -2169,7 +2185,7 @@ COPY wiki_edit (id, ts, "user", page, content, comment) FROM stdin;
 -- Name: wiki_edit_id_seq; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_development
 --
 
-SELECT pg_catalog.setval('wiki_edit_id_seq', 1, false);
+SELECT pg_catalog.setval('wiki_edit_id_seq', 6, true);
 
 
 --
@@ -2177,6 +2193,10 @@ SELECT pg_catalog.setval('wiki_edit_id_seq', 1, false);
 --
 
 COPY wiki_last_edit (id, page, edit) FROM stdin;
+1	1	1
+2	2	4
+3	3	5
+4	4	6
 \.
 
 
@@ -2184,7 +2204,7 @@ COPY wiki_last_edit (id, page, edit) FROM stdin;
 -- Name: wiki_last_edit_id_seq; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_development
 --
 
-SELECT pg_catalog.setval('wiki_last_edit_id_seq', 1, false);
+SELECT pg_catalog.setval('wiki_last_edit_id_seq', 4, true);
 
 
 --
@@ -2192,6 +2212,10 @@ SELECT pg_catalog.setval('wiki_last_edit_id_seq', 1, false);
 --
 
 COPY wiki_page (id, target, project, content, permission_level) FROM stdin;
+1	intro	1	# Welcome\n\nThank you for testing (and hopefully helping to develop) Snowdrift.coop!\n\nThis is a wiki page within your test database. It is different than the database for the real Snowdrift.coop site.	Normal
+2	about	1	# About Snowdrift.coop\n\nAll the real *about* stuff is on the live site: <https://snowdrift.coop/p/snowdrift/w/about>\n\nHere we will explain about testing.\n\n## Wiki pages\n\nSee the live site for details about the wiki system: <https://snowdrift.coop/p/snowdrift/w/wiki>\n\nIn creating the page you are looking at, several edits were made, so you can click above to see the history.\n\nThere are discussion pages for every wiki page, as shown above.	Normal
+3	press	1	See the live site for [press info](https://snowdrift.coop/p/snowdrift/w/press)	Normal
+4	how-to-help	1	# Development notes\n\nSee the live site for the full [how-to-help page](https://snowdrift.coop/p/snowdrift/w/how-to-help).\n\n## Development notes\n\nThe essential development details are in the README.md file with the code, not in this test database. When adding new info, consider whether it is best there versus here in the test database (the README has instructions about updating the test database).\n\n## Users\n\n[localhost:3000/u](/u) is a listing of all the users. The first user is just "admin" (passphrase is also "admin"). When new users register they start out unestablished and with no roles. You can add roles by using the admin user and visiting <http://localhost:3000/p/snowdrift/invite> and then logging in as another user to redeem the code.\n\nIt is a good idea to test things as:\n\na. logged-out\na. unestablished user\na. established users with different roles\n\nObviously testing on different systems, browsers, devices, etc. is good too.\n\n## Tickets\n\nSee <https://snowdrift.coop/p/snowdrift/t> for the live site's list of tickets. This is also linked at the live site's how-to-help page. Please add tickets to the live site as appropriate, add comments and questions, and mark things complete after you have fixed them and committed your changes.	Normal
 \.
 
 
@@ -2200,6 +2224,10 @@ COPY wiki_page (id, target, project, content, permission_level) FROM stdin;
 --
 
 COPY wiki_page_comment (id, comment, page) FROM stdin;
+1	1	2
+2	2	2
+3	3	2
+4	4	2
 \.
 
 
@@ -2207,14 +2235,14 @@ COPY wiki_page_comment (id, comment, page) FROM stdin;
 -- Name: wiki_page_comment_id_seq; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_development
 --
 
-SELECT pg_catalog.setval('wiki_page_comment_id_seq', 1, false);
+SELECT pg_catalog.setval('wiki_page_comment_id_seq', 4, true);
 
 
 --
 -- Name: wiki_page_id_seq; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_development
 --
 
-SELECT pg_catalog.setval('wiki_page_id_seq', 1, false);
+SELECT pg_catalog.setval('wiki_page_id_seq', 4, true);
 
 
 --

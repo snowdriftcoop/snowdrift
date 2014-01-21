@@ -104,7 +104,7 @@ I don't have the list at hand, but they can be picked out of the error
 messages when the below fails for want of them - if you make a list,
 please update this and send a pull request!)
 
-*note: there have been some errors reported with older versions of ghc and the haskell-platform* At this time, we are using GHC 7.6.3 and Haskell Platform 2013.2.0.0 — both are included in the latest Ubuntu, but there are [instructions for building updated GHC on older Ubuntu systems](https://gist.github.com/Dexyne/5791465). We have tested this as working with Ubuntu 12.04 LTS. These instructions or similar should work for other systems as well, but see <http://www.haskell.org/platform/> for more general info for all systems.
+   *note: there have been some errors reported with older versions of ghc and the haskell-platform* At this time, we are using GHC 7.6.3 and Haskell Platform 2013.2.0.0 — both are included in the latest Ubuntu, but there are [instructions for building updated GHC on older Ubuntu-based systems](https://gist.github.com/Dexyne/5791465). We tested this with Ubuntu 12.04 LTS and it should work on derivatives as well (such as the fully-FLO Trisquel 6). These instructions or similar should work for other systems as well, but see <http://www.haskell.org/platform/> for more general info.
 
 Update cabal's package list:
 
@@ -169,7 +169,7 @@ You should see a line that looks like:
 
     postgres=#
 
-Add password to user (substitute your chosen passphrase instead of 'somepassphrase':
+Add password to user (you may substitute your chosen passphrase instead of 'somepassphrase'):
 
     postgres=# alter user snowdrift_development with encrypted password 'somepassphrase';
 
@@ -177,7 +177,7 @@ Then to add user to database:
 
     postgres=# grant all privileges on database snowdrift_development to snowdrift_development;
 
-Edit config/postgresql.yml and update the password to match the one you chose.
+Leave postgres (with ctrl-D), then edit config/postgresql.yml and update the password to match the one you entered.
 
 Import development database:
 
