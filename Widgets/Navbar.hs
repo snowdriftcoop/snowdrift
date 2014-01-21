@@ -4,6 +4,7 @@ module Widgets.Navbar where
 import Import
 
 import Model.Currency
+import Model.User
 
 import qualified Data.Set as S
 
@@ -57,15 +58,17 @@ navbar = do
     (messages, applications, edits, comments) <- case maybe_user of
         Nothing -> return mempty
         Just (Entity user_id user) -> handlerToWidget $ runDB $ do
+            snowdrift_member <- isProjectAffiliated "snowdrift" user_id
             messages :: [Entity Message] <- select $ from $ \ message -> do
                             where_ $
-                                ( if is_committee_member
+                                ( if snowdrift_member
                                     then (||.
                                             ( message ^. MessageCreatedTs >=. val (userReadMessages user)
                                               &&. isNothing (message ^. MessageTo) )
                                          )
                                     else id
-                                ) $ ( message ^. MessageCreatedTs >=. val (userReadMessages user)
+                                ) $
+                                    ( message ^. MessageCreatedTs >=. val (userReadMessages user)
                                         &&. message ^. MessageTo ==. val (Just user_id)
                                     )
 
