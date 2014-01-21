@@ -6,7 +6,7 @@
         <div .navbar-header>
             <a #head href="@{HomeR}">
                 <noscript>
-                    <img #logo src=@{StaticR img_s_png} alt="Snowdrift.coop: clearing the path to a Free/Libre/Open World">
+                    <img #logo src=@{StaticR img_snowdriftcoop_png} alt="Snowdrift.coop: clearing the path to a Free/Libre/Open World">
                 <script>
                     fixup_logo()
         <div .navbar-left>
@@ -14,15 +14,16 @@
                 <li>
                     <a href=@{ProjectsR}> Browse Projects
         <div .navbar-right>
+            $maybe Entity user_id _ <- maybe_user
+                $maybe (balance, pledged) <- money_info
+                    <p .navbar-text>
+                        Pledged/Funds: 
+                        <a .navbar-link title="Current total monthly pledge" href="@{UserR user_id}">
+                            #{show pledged}
+                        /
+                        <a .navbar-link title="Current balance" href="@{UserBalanceR user_id}">
+                            #{show balance}
             <ul .nav .navbar-nav>
-                $maybe Entity user_id _ <- maybe_user
-                    $maybe (balance, pledged) <- money_info
-                        <li>
-                            <a title="Current total monthly pledge" href="@{UserR user_id}">
-                                #{show pledged}
-                        <li>
-                            <a title="Current balance" href="@{UserBalanceR user_id}">
-                                #{show balance}
                 $maybe (Entity user_id user) <- maybe_user
                     <li>
                         <a href=@{MessagesR}>

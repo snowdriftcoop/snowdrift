@@ -14,11 +14,15 @@ form
 
 img#logo
     height: 50px
-    padding: 0
+    padding: 10px 0 10px 14px
 
 img#logo_m
     height: 50px
     padding: 0
+
+p.navbar-text
+    font-size: 12px
+    margin-top: 14px
 
 img
     padding : 0.8em
@@ -27,7 +31,7 @@ img
 
 @media (min-width: 768px)
     body
-        padding-top: 70px;
+        padding-top: 70px
 
 .navbar
     border-bottom: 1px solid lightgrey;

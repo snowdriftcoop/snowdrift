@@ -56,9 +56,9 @@ $newline never
               logo.id = "logo";
 
               if(Modernizr.svg) {
-                  logo.src = "@{StaticR img_s_svg}";
+                  logo.src = "@{StaticR img_snowdriftcoop_svg}";
               } else {
-                  logo.src = "@{StaticR img_s_png}";
+                  logo.src = "@{StaticR img_snowdriftcoop_png}";
               }
 
               head.replaceChild(logo, head.firstChild);
