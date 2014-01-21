@@ -5,21 +5,22 @@
                 <div .row>
                     <div .col-md-3 .well .well-sm>
                         <div .row>
-                            <div .col-md-3>
+                            <div .col-md-12>
                                 $maybe from <- messageFrom message
-                                    from #{getUserName from}
+                                    <em>from
+                                    #{getUserName from}
                                 $nothing
-                                    from unregistered user
-                        <div .row>
-                            <div .col-md-3>
+                                    <em>from unregistered user
+                            <div .col-md-12>
                                 $maybe to <- messageTo message
-                                    to #{getUserName to}
+                                    <em>to
+                                    #{getUserName to}
                                 $nothing
-                                    to Snowdrift.coop generally
+                                    <em>to Snowdrift.coop generally
                         <div .row>
-                            <div .col-md-3>
+                            <div .col-md-12>
                                 ^{renderTime (messageCreatedTs message)}
 
-                    <div .col-md-8>
+                    <div .col-md-9>
                         #{messageContent message}
 
