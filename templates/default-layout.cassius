@@ -23,6 +23,7 @@ img#logo_m
 p.navbar-text
     font-size: 12px
     margin-top: 14px
+    margin-bottom: 10px
 
 img
     padding : 0.8em
