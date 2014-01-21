@@ -16,7 +16,8 @@
                                     <em>to
                                     #{getUserName to}
                                 $nothing
-                                    <em>to Snowdrift.coop generally
+                                    <em>to
+                                    Snowdrift.coop generally
                         <div .row>
                             <div .col-md-12>
                                 ^{renderTime (messageCreatedTs message)}
