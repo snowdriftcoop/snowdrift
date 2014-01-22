@@ -9,6 +9,8 @@
                     <img #logo src=@{StaticR img_snowdriftcoop_png} alt="Snowdrift.coop: clearing the path to a Free/Libre/Open World">
                 <script>
                     fixup_logo()
+                <span>
+                    a work in progress
         <div .navbar-left>
             <ul .nav .navbar-nav>
                 <li>
