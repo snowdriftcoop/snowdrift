@@ -139,6 +139,11 @@ li, p
 li
     margin : 1em
 
+#head span
+    position: relative
+    left: -167px
+    top: 16px
+
 header li
     margin : 0
     height: 50px
