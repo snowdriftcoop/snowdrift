@@ -23,6 +23,8 @@ import Widgets.Time
 
 import Model.Markdown
 
+import Yesod.Markdown
+
 import Data.Time.Clock
 
 lookupGetParamDefault :: Read a => Text -> a -> Handler a
@@ -93,7 +95,7 @@ renderProject maybe_project_handle project show_form pledges pledge = do
                 return $ round_ $ sum_ $ transaction ^. TransactionAmount
 
             [Value (Just year) :: Value (Maybe Rational)] <- select $ from $ \ (transaction `InnerJoin` payday) -> do
-                where_ $ payday ^. PaydayDate >. val (addUTCTime (-365 * 24 * 60 * 60) now) 
+                where_ $ payday ^. PaydayDate >. val (addUTCTime (-365 * 24 * 60 * 60) now)
                         &&. transaction ^. TransactionCredit ==. val (Just $ projectAccount project)
 
                 on_ $ transaction ^. TransactionPayday ==. just (payday ^. PaydayId)
@@ -298,5 +300,102 @@ getProjectTransactionsR project_handle = do
                 | otherwise
                 = (fmap (payday_map M.!) $ transactionPayday $ entityVal t', reverse (t':ts')) : process' [t] ts
          in process' []
+
+
+getProjectBlogR :: Text -> Handler Html
+getProjectBlogR project_handle = do
+    maybe_from <- fmap (Key . PersistInt64 . read . T.unpack) <$> lookupGetParam "from"
+    post_count <- maybe 10 id <$> fmap (read . T.unpack) <$> lookupGetParam "from"
+
+    let apply_offset blog = maybe id (\ from_blog rest -> blog ^. ProjectBlogId >=. val from_blog &&. rest) maybe_from
+
+    (posts, next) <- fmap (splitAt post_count) $ runDB $ select $ from $ \ (blog `InnerJoin` project) -> do
+        on_ $ blog ^. ProjectBlogProject ==. project ^. ProjectId
+        where_ $ apply_offset blog $ project ^. ProjectHandle ==. val project_handle
+        orderBy [ desc $ blog ^. ProjectBlogTime, desc $ blog ^. ProjectBlogId ]
+        limit (fromIntegral post_count + 1)
+        return blog
+
+    renderRouteParams <- getUrlRenderParams
+
+    let nextRoute next_id = renderRouteParams (ProjectBlogR project_handle) [("from", toPathPiece next_id)]
+
+    defaultLayout $(widgetFile "project_blog")
+
+projectBlogForm :: UTCTime -> UserId -> ProjectId -> Form ProjectBlog
+projectBlogForm now user_id project_id =
+    renderBootstrap3 $ mkBlog
+        <$> areq' textField "Post Title" Nothing
+        <*> areq' snowdriftMarkdownField "Post" Nothing
+  where
+    mkBlog :: Text -> Markdown -> ProjectBlog
+    mkBlog title (Markdown content) =
+        let (top_content, bottom_content) = break (== "---") $ T.lines content
+         in ProjectBlog now title user_id project_id (Markdown $ T.unlines top_content) (if null bottom_content then Nothing else Just $ Markdown $ T.unlines bottom_content)
+
+
+postProjectBlogR :: Text -> Handler Html
+postProjectBlogR project_handle = do
+    viewer_id <- requireAuthId
+
+    Entity project_id _ <- runDB $ do
+        can_edit <- or <$> sequence
+            [ isProjectAdmin project_handle viewer_id
+            , isProjectTeamMember project_handle viewer_id
+            , isProjectAdmin "snowdrift" viewer_id
+            ]
+
+        if can_edit
+         then getBy404 $ UniqueProjectHandle project_handle
+         else permissionDenied "You do not have permission to edit this project."
+
+    now <- liftIO getCurrentTime
+
+    ((result, _), _) <- runFormPost $ projectBlogForm now viewer_id project_id
+
+    case result of
+        FormSuccess blog_post' -> do
+            let blog_post :: ProjectBlog
+                blog_post = blog_post' { projectBlogTime = now, projectBlogUser = viewer_id }
+            mode <- lookupPostParam "mode"
+            let action :: Text = "post"
+            case mode of
+                Just "preview" -> do
+
+                    (form, _) <- generateFormPost $ projectBlogForm now viewer_id project_id
+
+                    defaultLayout $ renderPreview form action $ renderBlogPost project_handle blog_post
+
+                Just x | x == action -> do
+                    void $ runDB $ insert blog_post
+                    addAlert "success" "posted"
+                    redirect $ ProjectR project_handle
+
+                _ -> do
+                    addAlertEm "danger" "unrecognized mode" "Error: "
+                    redirect $ ProjectR project_handle
+
+        x -> do
+            addAlert "danger" $ T.pack $ show x
+            redirect $ ProjectR project_handle
+
+
+getProjectBlogPostR :: Text -> ProjectBlogId -> Handler Html
+getProjectBlogPostR project_handle blog_post_id = do
+    blog_post <- runDB $ get404 blog_post_id
+
+    defaultLayout $ renderBlogPost project_handle blog_post
+
+
+renderBlogPost :: Text -> ProjectBlog -> WidgetT App IO ()
+renderBlogPost project_handle blog_post = do
+    now <- liftIO getCurrentTime
+
+    let (Markdown top_content) = projectBlogTopContent blog_post
+        (Markdown bottom_content) = maybe (Markdown "") id $ projectBlogBottomContent blog_post
+        title = projectBlogTitle blog_post
+        content = renderMarkdown project_handle $ Markdown $ T.snoc top_content '\n' <> bottom_content
+
+    $(widgetFile "blog_post")
 
 

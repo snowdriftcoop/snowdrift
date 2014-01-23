@@ -26,6 +26,8 @@
 /p/#Text/widget WidgetR GET
 /p/#Text/shares UpdateSharesR GET POST
 /p/#Text/transactions ProjectTransactionsR GET
+/p/#Text/b ProjectBlogR GET POST
+/p/#Text/b/#ProjectBlogId ProjectBlogPostR GET
 
 /p/#Text/w WikiPagesR GET
 /p/#Text/w/#Text WikiR GET POST

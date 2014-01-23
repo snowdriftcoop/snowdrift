@@ -23,24 +23,17 @@ import Text.Blaze.Html5 (ins, del, br)
 
 getWikiR :: Text -> Text -> Handler Html
 getWikiR project_handle target = do
-    maybe_user_id <- maybeAuthId
+    maybe_user <- maybeAuth
 
-    let can_view_meta = isJust maybe_user_id
-
-    (page, can_edit) <- runDB $ do
+    page <- runDB $ do
         Entity project_id _ <- getBy404 $ UniqueProjectHandle project_handle
         Entity _ page <- getBy404 $ UniqueWikiTarget project_id target
 
-        -- TODO this should be changed when we add page moderation
-        can_edit <- case maybe_user_id of
-            Nothing -> return False
-            Just user_id -> (||)
-                <$> isProjectAdmin project_handle user_id
-                <*> isProjectAdmin "snowdrift" user_id
+        return page
 
-        return (page, can_edit)
+    let can_edit = isJust $ userEstablishedTs =<< entityVal <$> maybe_user
 
-    defaultLayout $ renderWiki project_handle target can_edit can_view_meta page
+    defaultLayout $ renderWiki project_handle target can_edit True page
 
 
 getOldWikiPagesR :: Text -> Handler Html
