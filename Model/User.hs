@@ -52,6 +52,16 @@ isProjectAdmin project_handle user_id = fmap (not . null) $ select $ from $ \ (p
     limit 1
     return ()
 
+isProjectTeamMember :: (MonadIO m, MonadLogger m, MonadBaseControl IO m, MonadUnsafeIO m, MonadThrow m)
+    => Text -> UserId -> SqlPersistT m Bool
+isProjectTeamMember project_handle user_id = fmap (not . null) $ select $ from $ \ (pur `InnerJoin` p) -> do
+    on_ $ pur ^. ProjectUserRoleProject ==. p ^. ProjectId
+    where_ $ p ^. ProjectHandle ==. val project_handle
+        &&. pur ^. ProjectUserRoleUser ==. val user_id
+        &&. pur ^. ProjectUserRoleRole ==. val TeamMember
+    limit 1
+    return ()
+
 isProjectModerator :: (MonadIO m, MonadLogger m, MonadBaseControl IO m, MonadUnsafeIO m, MonadThrow m)
     => Text -> UserId -> SqlPersistT m Bool
 isProjectModerator project_handle user_id = fmap (not . null) $ select $ from $ \ (pur `InnerJoin` p) -> do
