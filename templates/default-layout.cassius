@@ -45,7 +45,6 @@ header .container .row
 input, textarea
     font-size : small
 
-
 input[type=submit]
     color : white
     font-weight : bold
@@ -58,7 +57,7 @@ input[type=submit]
     background : #74BBFB
     background-image : linear-gradient(#92D9FF, #62AAEA)
 
-input[type=submit]:hover
+input[type=submit]:hover, input[type=submit]:focus
     background : #62AAEA
     background-image : linear-gradient(#78BFDD, #6097D9)
 
@@ -66,6 +65,10 @@ input[type=submit]:active
     background : #62AAEA
     background-image : linear-gradient(#78BFDD, #6097D9)
     box-shadow : 0 3px 5px rgba(0, 0, 0, 0.3) inset
+
+input[type=submit]:focus
+    outline: thin dotted
+    outline-offset: -2px
 
 input[type=text], input[type=email]
     width : 30em
@@ -127,14 +130,11 @@ footer
     text-align : center
     font-size : 0.75em
 
-ul, ol
-    margin : 0.1em 0.5em 0.3em 1em
-
 li, p
     font-family : serif
 
 li
-    margin : 1em
+    margin : 0.4em 0
 
 #head span
     position: relative
@@ -151,6 +151,9 @@ li.toc_li
 p
     padding : .4em 1em
     line-height : 1.5em
+
+li p
+    padding : 0
 
 .footnote, .footnotes
     font-size : 0.9em
@@ -257,7 +260,7 @@ input.tag-input
     margin : 0 -0.2em 0 0.4em
     vertical-align : calc(15%)
 
-input.tag-input[type="submit"]:hover
+input.tag-input[type="submit"]:hover, input.tag-input[type="submit"]:focus
     background : none
     border : solid grey 1px
 
