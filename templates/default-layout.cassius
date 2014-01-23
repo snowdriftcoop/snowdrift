@@ -18,9 +18,10 @@ img#logo_m
     padding: 0
 
 p.navbar-text
-    font-size: 12px
+    font-size: 0.8em
     margin-top: 4px
-    margin-bottom: 0px
+    margin-bottom: 0
+    padding: 0
 
 img
     padding : 0.8em
@@ -135,11 +136,6 @@ li, p
 
 li
     margin : 0.4em 0
-
-#head span
-    position: relative
-    left: -167px
-    top: 16px
 
 header li
     margin : 0

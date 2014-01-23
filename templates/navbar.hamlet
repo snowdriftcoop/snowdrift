@@ -9,8 +9,6 @@
                     <img #logo src=@{StaticR img_snowdriftcoop_png} alt="Snowdrift.coop: clearing the path to a Free/Libre/Open World">
                 <script>
                     fixup_logo()
-                <span>
-                    a work in progress
         <div .navbar-left>
             <ul .nav .navbar-nav>
                 <li>
@@ -19,7 +17,7 @@
             $maybe Entity user_id _ <- maybe_user
                 $maybe (balance, pledged) <- money_info
                     <p .navbar-text .text-center>
-                        Pledged / Funds: 
+                        Pledged / Funds 
                         <br>
                         <a .navbar-link title="Current total monthly pledge" href="@{UserR user_id}">
                             #{show pledged}
