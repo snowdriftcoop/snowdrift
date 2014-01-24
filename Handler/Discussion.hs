@@ -253,9 +253,8 @@ getOldDiscussWikiR project_handle target = redirect $ DiscussWikiR project_handl
 getDiscussWikiR :: Text -> Text -> Handler Html
 getDiscussWikiR project_handle target = do
     Entity user_id user <- requireAuth
-    Entity page_id page  <- runDB $ do
-        Entity project_id _ <- getBy404 $ UniqueProjectHandle project_handle
-        getBy404 $ UniqueWikiTarget project_id target
+    Entity project_id project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
+    Entity page_id page  <- runDB $ getBy404 $ UniqueWikiTarget project_id target
 
     affiliated <- runDB $ (||)
             <$> isProjectAffiliated project_handle user_id
@@ -306,7 +305,9 @@ getDiscussWikiR project_handle target = do
 
     let has_comments = not $ null roots
 
-    defaultLayout $(widgetFile "wiki_discuss")
+    defaultLayout $ mappend
+        (setTitle . toHtml $ projectName project <> " Wiki Discussion - " <> target <> " | Snowdrift.coop")
+        $(widgetFile "wiki_discuss")
 
 
 getOldDiscussCommentR :: Text -> Text -> CommentId -> Handler Html

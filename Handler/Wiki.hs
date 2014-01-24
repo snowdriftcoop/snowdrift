@@ -27,8 +27,8 @@ getWikiR project_handle target = do
 
     let can_view_meta = isJust maybe_user_id
 
-    (page, can_edit) <- runDB $ do
-        Entity project_id _ <- getBy404 $ UniqueProjectHandle project_handle
+    (page, can_edit, project) <- runDB $ do
+        Entity project_id project <- getBy404 $ UniqueProjectHandle project_handle
         Entity _ page <- getBy404 $ UniqueWikiTarget project_id target
 
         -- TODO this should be changed when we add page moderation
@@ -38,9 +38,17 @@ getWikiR project_handle target = do
                 <$> isProjectAdmin project_handle user_id
                 <*> isProjectAdmin "snowdrift" user_id
 
-        return (page, can_edit)
+        return (page, can_edit, project)
 
-    defaultLayout $ renderWiki project_handle target can_edit can_view_meta page
+    defaultLayout $ renderWiki' project project_handle target can_edit can_view_meta page
+
+renderWiki :: Text -> Text -> Bool -> Bool -> WikiPage -> Widget
+renderWiki project_handle target can_edit can_view_meta page = $(widgetFile "wiki")
+
+renderWiki' :: Project -> Text -> Text -> Bool -> Bool -> WikiPage -> Widget
+renderWiki' project project_handle target can_edit can_view_meta page = do
+    setTitle . toHtml $ projectName project `mappend` " Wiki - " `mappend` wikiPageTarget page `mappend` " | Snowdrift.coop"
+    renderWiki project_handle target can_edit can_view_meta page
 
 
 getOldWikiPagesR :: Text -> Handler Html
@@ -48,17 +56,19 @@ getOldWikiPagesR = redirect . WikiPagesR
 
 getWikiPagesR :: Text -> Handler Html
 getWikiPagesR project_handle = do
-    pages <- runDB $ select $ from $ \ (project `InnerJoin` wiki_page) -> do
-        on_ $ project ^. ProjectId ==. wiki_page ^. WikiPageProject
-        where_ $ project ^. ProjectHandle ==. val project_handle
+    (Entity _ project) <- runDB $ getBy404 $ UniqueProjectHandle project_handle
+    pages <- runDB $ select $ from $ \ (project' `InnerJoin` wiki_page) -> do
+        on_ $ project' ^. ProjectId ==. wiki_page ^. WikiPageProject
+        where_ $ project' ^. ProjectHandle ==. val project_handle
         orderBy [asc $ wiki_page ^. WikiPageTarget]
         return wiki_page
 
-    defaultLayout $(widgetFile "wiki_pages")
+    defaultLayout $ renderWikiPages project project_handle pages
 
-
-renderWiki :: Text -> Text -> Bool -> Bool -> WikiPage -> Widget
-renderWiki project_handle target can_edit can_view_meta page = $(widgetFile "wiki")
+renderWikiPages :: Project -> Text -> [Entity WikiPage] -> Widget
+renderWikiPages project project_handle pages = do
+    setTitle . toHtml $ projectName project `mappend` " Wiki Pages | Snowdrift.coop"
+    $(widgetFile "wiki_pages")
 
 
 postOldWikiR :: Text -> Text -> Handler Html
