@@ -17,7 +17,7 @@
             $maybe Entity user_id _ <- maybe_user
                 $maybe (balance, pledged) <- money_info
                     <p .navbar-text .text-center>
-                        Pledged / Funds 
+                        Pledges / Funds 
                         <br>
                         <a .navbar-link title="Current total monthly pledge" href="@{UserR user_id}">
                             #{show pledged}
