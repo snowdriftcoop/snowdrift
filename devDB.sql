@@ -694,7 +694,9 @@ CREATE TABLE project_blog (
     "time" timestamp without time zone NOT NULL,
     title character varying NOT NULL,
     "user" bigint NOT NULL,
-    content character varying NOT NULL
+    top_content character varying NOT NULL,
+    project bigint NOT NULL,
+    bottom_content character varying
 );
 
 
@@ -1679,6 +1681,20 @@ COPY build (id, boot_time, base, diff) FROM stdin;
 2	2013-11-23 19:29:20.349772	8604247d8116396ec0214ba7677d2212990517d2	
 3	2014-01-20 19:09:52.001477	4ccd10f42fd6d64ac4e2b3d70b28c9c6a3223b0c	diff --git a/Application.hs b/Application.hs\nindex 241f582..bf838a7 100644\n--- a/Application.hs\n+++ b/Application.hs\n@@ -135,8 +135,8 @@ doMigration = do\n \n     mapM_ ((\\ file -> liftIO (putStrLn ("running " ++ file ++ "...") >> T.readFile file)) >=> flip rawExecute []) $ L.map (("migrations/" <>) . snd) migration_files\n \n-    let last_migration = L.maximum $ 0 : L.map fst migration_files\n-    update $ flip set [ DatabaseVersionLastMigration =. val last_migration ]\n+    let new_last_migration = L.maximum $ 0 : L.map fst migration_files\n+    update $ flip set [ DatabaseVersionLastMigration =. val new_last_migration ]\n \n     migrations <- parseMigration' migrateAll\n \n@@ -145,8 +145,10 @@ doMigration = do\n     liftIO $ putStrLn $ "safe: " ++ show (L.length safe)\n     liftIO $ putStrLn $ "unsafe: " ++ show (L.length unsafe)\n \n+    liftIO $ putStrLn $ "new last_migration: " ++ show new_last_migration\n+\n     when (not $ L.null $ L.map snd safe) $ do\n-        liftIO $ T.writeFile ("migrations/migrate" <> show (last_migration + 1)) $ T.unlines $ L.map ((`snoc` ';') . snd) safe\n+        liftIO $ T.writeFile ("migrations/migrate" <> show (new_last_migration + 1)) $ T.unlines $ L.map ((`snoc` ';') . snd) safe\n         mapM_ (flip rawExecute [] . snd) migrations\n \n     when (not $ L.null $ L.map snd unsafe) $ do\n
 4	2014-01-21 17:41:12.047799	ed014b5810941e61f82123f97be0c69600d99f0f	
+5	2014-01-21 20:01:56.580066	ed014b5810941e61f82123f97be0c69600d99f0f	
+6	2014-01-21 22:30:50.979424	d9c16e7c96ebb0c2e66e9f5e6d2c85abc7aa26dd	
+7	2014-01-21 22:58:09.854227	d9c16e7c96ebb0c2e66e9f5e6d2c85abc7aa26dd	
+8	2014-01-22 00:06:52.037741	f8d42e0d451310462b2840f2777126be8fd0b162	
+9	2014-01-22 00:22:27.746213	1eea4b6d7e8a9a5b82e32a122f04d7611c9e29e3	
+10	2014-01-24 06:17:39.744006	0bd171dd45776715e763bd42438f32f9494b4fa5	
+11	2014-01-24 07:09:02.600052	0bd171dd45776715e763bd42438f32f9494b4fa5	diff --git a/templates/default-layout.cassius b/templates/default-layout.cassius\nindex adf4925..bb246ee 100644\n--- a/templates/default-layout.cassius\n+++ b/templates/default-layout.cassius\n@@ -19,7 +19,7 @@ img#logo_m\n \n p.navbar-text\n     font-size: 0.8em\n-    margin-top: 4px\n+    margin-top: 2px\n     margin-bottom: 0\n     padding: 0\n \ndiff --git a/templates/navbar.hamlet b/templates/navbar.hamlet\nindex 7cdc078..fe22941 100644\n--- a/templates/navbar.hamlet\n+++ b/templates/navbar.hamlet\n@@ -17,7 +17,7 @@\n             $maybe Entity user_id _ <- maybe_user\n                 $maybe (balance, pledged) <- money_info\n                     <p .navbar-text .text-center>\n-                        Pledged / Funds \n+                        Pledges / Funds \n                         <br>\n                         <a .navbar-link title="Current total monthly pledge" href="@{UserR user_id}">\n                             #{show pledged}\n
+12	2014-01-24 07:10:14.401191	0bd171dd45776715e763bd42438f32f9494b4fa5	diff --git a/Handler/Wiki.hs b/Handler/Wiki.hs\nindex c2aeff5..c66e6e4 100644\n--- a/Handler/Wiki.hs\n+++ b/Handler/Wiki.hs\n@@ -35,7 +35,7 @@ getWikiR project_handle target = do\n \n     when (not can_edit) $ permissionDenied "you do not have permission to edit this page"\n \n-    defaultLayout $ renderWiki' project project_handle target can_edit True page\n+    defaultLayout $ renderWiki project_handle target can_edit True page\n \n renderWiki :: Text -> Text -> Bool -> Bool -> WikiPage -> Widget\n renderWiki project_handle target can_edit can_view_meta page = $(widgetFile "wiki")\ndiff --git a/templates/default-layout.cassius b/templates/default-layout.cassius\nindex adf4925..bb246ee 100644\n--- a/templates/default-layout.cassius\n+++ b/templates/default-layout.cassius\n@@ -19,7 +19,7 @@ img#logo_m\n \n p.navbar-text\n     font-size: 0.8em\n-    margin-top: 4px\n+    margin-top: 2px\n     margin-bottom: 0\n     padding: 0\n \ndiff --git a/templates/navbar.hamlet b/templates/navbar.hamlet\nindex 7cdc078..fe22941 100644\n--- a/templates/navbar.hamlet\n+++ b/templates/navbar.hamlet\n@@ -17,7 +17,7 @@\n             $maybe Entity user_id _ <- maybe_user\n                 $maybe (balance, pledged) <- money_info\n                     <p .navbar-text .text-center>\n-                        Pledged / Funds \n+                        Pledges / Funds \n                         <br>\n                         <a .navbar-link title="Current total monthly pledge" href="@{UserR user_id}">\n                             #{show pledged}\n
+13	2014-01-24 07:14:01.500808	0bd171dd45776715e763bd42438f32f9494b4fa5	diff --git a/Handler/Wiki.hs b/Handler/Wiki.hs\nindex c2aeff5..a0d3d1e 100644\n--- a/Handler/Wiki.hs\n+++ b/Handler/Wiki.hs\n@@ -43,7 +43,7 @@ renderWiki project_handle target can_edit can_view_meta page = $(widgetFile "wik\n renderWiki' :: Project -> Text -> Text -> Bool -> Bool -> WikiPage -> Widget\n renderWiki' project project_handle target can_edit can_view_meta page = do\n     setTitle . toHtml $ projectName project `mappend` " Wiki - " `mappend` wikiPageTarget page `mappend` " | Snowdrift.coop"\n-    renderWiki project_handle target can_edit can_view_meta page\n+    renderWiki project_handle target can_edit True page\n \n \n getOldWikiPagesR :: Text -> Handler Html\ndiff --git a/templates/default-layout.cassius b/templates/default-layout.cassius\nindex adf4925..bb246ee 100644\n--- a/templates/default-layout.cassius\n+++ b/templates/default-layout.cassius\n@@ -19,7 +19,7 @@ img#logo_m\n \n p.navbar-text\n     font-size: 0.8em\n-    margin-top: 4px\n+    margin-top: 2px\n     margin-bottom: 0\n     padding: 0\n \ndiff --git a/templates/navbar.hamlet b/templates/navbar.hamlet\nindex 7cdc078..fe22941 100644\n--- a/templates/navbar.hamlet\n+++ b/templates/navbar.hamlet\n@@ -17,7 +17,7 @@\n             $maybe Entity user_id _ <- maybe_user\n                 $maybe (balance, pledged) <- money_info\n                     <p .navbar-text .text-center>\n-                        Pledged / Funds \n+                        Pledges / Funds \n                         <br>\n                         <a .navbar-link title="Current total monthly pledge" href="@{UserR user_id}">\n                             #{show pledged}\n
+14	2014-01-24 07:23:58.983733	0bd171dd45776715e763bd42438f32f9494b4fa5	diff --git a/Handler/Wiki.hs b/Handler/Wiki.hs\nindex c2aeff5..a0d3d1e 100644\n--- a/Handler/Wiki.hs\n+++ b/Handler/Wiki.hs\n@@ -43,7 +43,7 @@ renderWiki project_handle target can_edit can_view_meta page = $(widgetFile "wik\n renderWiki' :: Project -> Text -> Text -> Bool -> Bool -> WikiPage -> Widget\n renderWiki' project project_handle target can_edit can_view_meta page = do\n     setTitle . toHtml $ projectName project `mappend` " Wiki - " `mappend` wikiPageTarget page `mappend` " | Snowdrift.coop"\n-    renderWiki project_handle target can_edit can_view_meta page\n+    renderWiki project_handle target can_edit True page\n \n \n getOldWikiPagesR :: Text -> Handler Html\ndiff --git a/templates/default-layout.cassius b/templates/default-layout.cassius\nindex adf4925..bb246ee 100644\n--- a/templates/default-layout.cassius\n+++ b/templates/default-layout.cassius\n@@ -19,7 +19,7 @@ img#logo_m\n \n p.navbar-text\n     font-size: 0.8em\n-    margin-top: 4px\n+    margin-top: 2px\n     margin-bottom: 0\n     padding: 0\n \ndiff --git a/templates/navbar.hamlet b/templates/navbar.hamlet\nindex 7cdc078..fe22941 100644\n--- a/templates/navbar.hamlet\n+++ b/templates/navbar.hamlet\n@@ -17,7 +17,7 @@\n             $maybe Entity user_id _ <- maybe_user\n                 $maybe (balance, pledged) <- money_info\n                     <p .navbar-text .text-center>\n-                        Pledged / Funds \n+                        Pledges / Funds \n                         <br>\n                         <a .navbar-link title="Current total monthly pledge" href="@{UserR user_id}">\n                             #{show pledged}\n
+15	2014-01-24 07:53:46.525858	e05ef3d875769e1910908e96aed4ec096ecef498	diff --git a/Handler/Wiki.hs b/Handler/Wiki.hs\nindex c2aeff5..45b8ccb 100644\n--- a/Handler/Wiki.hs\n+++ b/Handler/Wiki.hs\n@@ -33,8 +33,6 @@ getWikiR project_handle target = do\n \n     let can_edit = isJust $ userEstablishedTs =<< entityVal <$> maybe_user\n \n-    when (not can_edit) $ permissionDenied "you do not have permission to edit this page"\n-\n     defaultLayout $ renderWiki' project project_handle target can_edit True page\n \n renderWiki :: Text -> Text -> Bool -> Bool -> WikiPage -> Widget\n
+16	2014-01-24 18:52:45.121638	b857adcedd7be11cf2909b5d6cb536fb17d999c9	
+17	2014-01-24 21:47:53.941683	b857adcedd7be11cf2909b5d6cb536fb17d999c9	
+18	2014-01-24 23:28:23.255958	b857adcedd7be11cf2909b5d6cb536fb17d999c9	
 \.
 
 
@@ -1686,7 +1702,7 @@ COPY build (id, boot_time, base, diff) FROM stdin;
 -- Name: build_id_seq; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_development
 --
 
-SELECT pg_catalog.setval('build_id_seq', 4, true);
+SELECT pg_catalog.setval('build_id_seq', 18, true);
 
 
 --
@@ -1774,7 +1790,7 @@ SELECT pg_catalog.setval('committee_user_id_seq', 1, false);
 --
 
 COPY database_version (id, last_migration) FROM stdin;
-1	1
+1	2
 \.
 
 
@@ -1851,6 +1867,7 @@ SELECT pg_catalog.setval('interest_id_seq', 1, false);
 
 COPY invite (id, created_ts, project, code, "user", role, tag, redeemed, redeemed_ts, redeemed_by) FROM stdin;
 1	2014-01-21 18:12:09.148007	1	df0176d67f1a4063	1	Moderator	admin as also moderator	t	2014-01-21 18:12:24.376052	1
+2	2014-01-24 23:33:43.323505	1	e3ed7c9e1500fc54	1	TeamMember	admin as also team member	t	2014-01-24 23:33:53.481901	1
 \.
 
 
@@ -1858,7 +1875,7 @@ COPY invite (id, created_ts, project, code, "user", role, tag, redeemed, redeeme
 -- Name: invite_id_seq; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_development
 --
 
-SELECT pg_catalog.setval('invite_id_seq', 1, true);
+SELECT pg_catalog.setval('invite_id_seq', 2, true);
 
 
 --
@@ -1881,6 +1898,7 @@ SELECT pg_catalog.setval('manual_establishment_id_seq', 1, false);
 --
 
 COPY message (id, project, created_ts, "from", "to", content) FROM stdin;
+1	1	2014-01-21 22:31:51.496246	1	\N	Welcome!
 \.
 
 
@@ -1888,7 +1906,7 @@ COPY message (id, project, created_ts, "from", "to", content) FROM stdin;
 -- Name: message_id_seq; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_development
 --
 
-SELECT pg_catalog.setval('message_id_seq', 1, false);
+SELECT pg_catalog.setval('message_id_seq', 1, true);
 
 
 --
@@ -1926,7 +1944,7 @@ SELECT pg_catalog.setval('pledge_id_seq', 1, false);
 --
 
 COPY project (id, created_ts, name, handle, description, account, share_value, last_payday, github_repo) FROM stdin;
-1	2013-11-23 11:52:54.632763	Snowdrift	snowdrift	Snowdrift Project	2	0	\N	\N
+1	2013-11-23 11:52:54.632763	Snowdrift.coop	snowdrift	The Snowdrift.coop site is itself one of the projects.	2	0	\N	\N
 \.
 
 
@@ -1934,7 +1952,7 @@ COPY project (id, created_ts, name, handle, description, account, share_value, l
 -- Data for Name: project_blog; Type: TABLE DATA; Schema: public; Owner: snowdrift_development
 --
 
-COPY project_blog (id, "time", title, "user", content) FROM stdin;
+COPY project_blog (id, "time", title, "user", top_content, project, bottom_content) FROM stdin;
 \.
 
 
@@ -1972,6 +1990,7 @@ SELECT pg_catalog.setval('project_id_seq', 1, true);
 --
 
 COPY project_last_update (id, project, update) FROM stdin;
+1	1	1
 \.
 
 
@@ -1979,7 +1998,7 @@ COPY project_last_update (id, project, update) FROM stdin;
 -- Name: project_last_update_id_seq; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_development
 --
 
-SELECT pg_catalog.setval('project_last_update_id_seq', 1, false);
+SELECT pg_catalog.setval('project_last_update_id_seq', 1, true);
 
 
 --
@@ -1987,6 +2006,7 @@ SELECT pg_catalog.setval('project_last_update_id_seq', 1, false);
 --
 
 COPY project_tag (id, project, tag) FROM stdin;
+1	1	1
 \.
 
 
@@ -1994,7 +2014,7 @@ COPY project_tag (id, project, tag) FROM stdin;
 -- Name: project_tag_id_seq; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_development
 --
 
-SELECT pg_catalog.setval('project_tag_id_seq', 1, false);
+SELECT pg_catalog.setval('project_tag_id_seq', 1, true);
 
 
 --
@@ -2002,6 +2022,7 @@ SELECT pg_catalog.setval('project_tag_id_seq', 1, false);
 --
 
 COPY project_update (id, updated_ts, project, author, description) FROM stdin;
+1	2014-01-24 21:49:51.132962	1	1	MarkdownDiff [(F,"Snowdrift Project"),(S,"The Snowdrift.coop site is itself one of the projects.")]
 \.
 
 
@@ -2009,7 +2030,7 @@ COPY project_update (id, updated_ts, project, author, description) FROM stdin;
 -- Name: project_update_id_seq; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_development
 --
 
-SELECT pg_catalog.setval('project_update_id_seq', 1, false);
+SELECT pg_catalog.setval('project_update_id_seq', 1, true);
 
 
 --
@@ -2019,6 +2040,7 @@ SELECT pg_catalog.setval('project_update_id_seq', 1, false);
 COPY project_user_role (id, project, "user", role) FROM stdin;
 2	1	1	Admin
 3	1	1	Moderator
+4	1	1	TeamMember
 \.
 
 
@@ -2026,7 +2048,7 @@ COPY project_user_role (id, project, "user", role) FROM stdin;
 -- Name: project_user_role_id_seq; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_development
 --
 
-SELECT pg_catalog.setval('project_user_role_id_seq', 3, true);
+SELECT pg_catalog.setval('project_user_role_id_seq', 4, true);
 
 
 --
@@ -2035,6 +2057,7 @@ SELECT pg_catalog.setval('project_user_role_id_seq', 3, true);
 
 COPY role_event (id, "time", "user", role, project, added) FROM stdin;
 1	2014-01-21 10:12:24.376209	1	Moderator	1	t
+2	2014-01-24 15:33:53.482076	1	TeamMember	1	t
 \.
 
 
@@ -2042,7 +2065,7 @@ COPY role_event (id, "time", "user", role, project, added) FROM stdin;
 -- Name: role_event_id_seq; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_development
 --
 
-SELECT pg_catalog.setval('role_event_id_seq', 1, true);
+SELECT pg_catalog.setval('role_event_id_seq', 2, true);
 
 
 --
@@ -2050,6 +2073,7 @@ SELECT pg_catalog.setval('role_event_id_seq', 1, true);
 --
 
 COPY tag (id, name) FROM stdin;
+1	website
 \.
 
 
@@ -2072,7 +2096,7 @@ SELECT pg_catalog.setval('tag_color_id_seq', 1, false);
 -- Name: tag_id_seq; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_development
 --
 
-SELECT pg_catalog.setval('tag_id_seq', 1, false);
+SELECT pg_catalog.setval('tag_id_seq', 1, true);
 
 
 --
@@ -2111,7 +2135,7 @@ SELECT pg_catalog.setval('transaction_id_seq', 1, false);
 --
 
 COPY "user" (id, ident, hash, salt, name, account, avatar, blurb, statement, irc_nick, read_messages, read_applications, read_comments, read_edits, established_ts, established_reason) FROM stdin;
-1	admin	8bf2d491387febc07e5d8fd15a4140b28473566e	P^YTN3G:	Admin	1	\N	\N	\N	\N	2013-11-23 19:31:18.982213	2013-11-23 19:31:18.982213	2013-11-23 19:31:18.982213	2013-11-23 19:31:18.982213	\N	\N
+1	admin	8bf2d491387febc07e5d8fd15a4140b28473566e	P^YTN3G:	Admin	1	\N	Admin is the name for the test user in our devDB database that comes with the code. Log in as admin with passphrase: admin	\N	\N	2014-01-21 22:58:23.380462	2013-11-23 19:31:18.982213	2013-11-23 19:31:18.982213	2013-11-23 19:31:18.982213	2014-01-24 15:28:15.681117	\N
 \.
 
 
@@ -2937,6 +2961,14 @@ ALTER TABLE ONLY project_blog_comment
 
 ALTER TABLE ONLY project_blog_comment
     ADD CONSTRAINT project_blog_comment_comment_fkey FOREIGN KEY (comment) REFERENCES comment(id);
+
+
+--
+-- Name: project_blog_project_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_development
+--
+
+ALTER TABLE ONLY project_blog
+    ADD CONSTRAINT project_blog_project_fkey FOREIGN KEY (project) REFERENCES project(id);
 
 
 --

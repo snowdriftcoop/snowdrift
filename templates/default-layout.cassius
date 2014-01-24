@@ -67,10 +67,6 @@ input[type=submit]:active
     background-image : linear-gradient(#78BFDD, #6097D9)
     box-shadow : 0 3px 5px rgba(0, 0, 0, 0.3) inset
 
-input[type=submit]:focus
-    outline: thin dotted
-    outline-offset: -2px
-
 input[type=text], input[type=email]
     width : 30em
 
