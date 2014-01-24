@@ -33,8 +33,6 @@ getWikiR project_handle target = do
 
     let can_edit = isJust $ userEstablishedTs =<< entityVal <$> maybe_user
 
-    when (not can_edit) $ permissionDenied "you do not have permission to edit this page"
-
     defaultLayout $ renderWiki project_handle target can_edit True page
 
 
@@ -219,6 +217,8 @@ getEditWikiR project_handle target = do
         return (page_entity, last_edit_entity)
 
     let can_edit = isJust $ userEstablishedTs user
+
+    when (not can_edit) $ permissionDenied "you do not have permission to edit this page"
 
     (wiki_form, _) <- generateFormPost $ editWikiForm (wikiLastEditEdit last_edit) (wikiPageContent page) Nothing
 
