@@ -33,8 +33,6 @@ getWikiR project_handle target = do
 
     let can_edit = isJust $ userEstablishedTs =<< entityVal <$> maybe_user
 
-    when (not can_edit) $ permissionDenied "you do not have permission to edit this page"
-
     defaultLayout $ renderWiki' project project_handle target can_edit True page
 
 renderWiki :: Text -> Text -> Bool -> Bool -> WikiPage -> Widget
