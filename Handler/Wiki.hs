@@ -228,6 +228,8 @@ getEditWikiR project_handle target = do
 
     let can_edit = isJust $ userEstablishedTs user
 
+    when (not can_edit) $ permissionDenied "you do not have permission to edit this page"
+
     (wiki_form, _) <- generateFormPost $ editWikiForm (wikiLastEditEdit last_edit) (wikiPageContent page) Nothing
 
     defaultLayout $(widgetFile "edit_wiki")
