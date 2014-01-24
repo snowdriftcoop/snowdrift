@@ -1,0 +1,15 @@
+$forall Entity post_id post <- posts
+    <div>
+        <a href=@{ProjectBlogPostR project_handle post_id}>
+            #{projectBlogTitle post}
+
+        <p>
+            ^{renderMarkdown project_handle $ projectBlogTopContent post}
+
+$case next
+    $of [Entity next_id _]
+        <a href=#{nextRoute next_id}>
+            next posts
+
+    $of _
+

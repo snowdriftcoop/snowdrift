@@ -35,8 +35,7 @@ getWikiR project_handle target = do
 
     when (not can_edit) $ permissionDenied "you do not have permission to edit this page"
 
-    defaultLayout $ renderWiki project project_handle target can_edit True page
-
+    defaultLayout $ renderWiki' project project_handle target can_edit True page
 
 renderWiki :: Text -> Text -> Bool -> Bool -> WikiPage -> Widget
 renderWiki project_handle target can_edit can_view_meta page = $(widgetFile "wiki")
