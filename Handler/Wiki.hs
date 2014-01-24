@@ -33,6 +33,8 @@ getWikiR project_handle target = do
 
     let can_edit = isJust $ userEstablishedTs =<< entityVal <$> maybe_user
 
+    when (not can_edit) $ permissionDenied "you do not have permission to edit this page"
+
     defaultLayout $ renderWiki project_handle target can_edit True page
 
 
@@ -59,14 +61,12 @@ postOldWikiR = postWikiR
 
 postWikiR :: Text -> Text -> Handler Html
 postWikiR project_handle target = do
-    Entity user_id _ <- requireAuth
+    Entity user_id user <- requireAuth
     now <- liftIO getCurrentTime
 
-    affiliated <- runDB $ (||)
-            <$> isProjectAffiliated project_handle user_id
-            <*> isProjectAdmin "snowdrift" user_id
+    let can_edit = isJust $ userEstablishedTs user
 
-    when (not affiliated) $ permissionDenied "you do not have permission to edit this page"
+    when (not can_edit) $ permissionDenied "you do not have permission to edit this page"
 
     (project_id, Entity page_id page, Entity _ last_edit) <- runDB $ do
         Entity project_id _ <- getBy404 $ UniqueProjectHandle project_handle
@@ -218,11 +218,7 @@ getEditWikiR project_handle target = do
         last_edit_entity <- getBy404 $ UniqueWikiLastEdit $ entityKey page_entity
         return (page_entity, last_edit_entity)
 
-    affiliated <- runDB $ (||)
-            <$> isProjectAffiliated project_handle user_id
-            <*> isProjectAdmin "snowdrift" user_id
-
-    when (not affiliated) $ permissionDenied "you do not have permission to edit this page"
+    let can_edit = isJust $ userEstablishedTs user
 
     (wiki_form, _) <- generateFormPost $ editWikiForm (wikiLastEditEdit last_edit) (wikiPageContent page) Nothing
 
