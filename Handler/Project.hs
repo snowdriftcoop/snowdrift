@@ -49,8 +49,12 @@ getProjectsR = do
             let project_ids = if null tagged_projects then S.empty else foldl1 S.intersection $ map (S.fromList . map (projectTagProject . entityVal)) tagged_projects
             selectList [ ProjectId <-. S.toList project_ids ] [ Asc ProjectCreatedTs, LimitTo per_page, OffsetBy page ]
 
-    defaultLayout $(widgetFile "projects")
+    defaultLayout $ renderProjects page per_page tags projects
 
+renderProjects :: Int -> Int -> [Text] -> [Entity Project] -> WidgetT App IO ()
+renderProjects page per_page tags projects = do
+    setTitle $ toHtml $ T.pack "Projects | Snowdrift.coop"
+    $(widgetFile "projects")
 
 getProjectR :: Text -> Handler Html
 getProjectR project_handle = do
@@ -114,6 +118,7 @@ renderProject maybe_project_handle project show_form pledges pledge = do
                                 then handlerToWidget $ generateFormGet $ buySharesForm $ fromMaybe 0 maybe_shares
                                 else handlerToWidget $ generateFormGet $ mockBuySharesForm $ fromMaybe 0 maybe_shares
 
+    setTitle . toHtml $ projectName project `mappend` " | Snowdrift.coop"
     $(widgetFile "project")
 
 

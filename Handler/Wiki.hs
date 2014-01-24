@@ -25,15 +25,26 @@ getWikiR :: Text -> Text -> Handler Html
 getWikiR project_handle target = do
     maybe_user <- maybeAuth
 
-    page <- runDB $ do
-        Entity project_id _ <- getBy404 $ UniqueProjectHandle project_handle
+    (page, project) <- runDB $ do
+        Entity project_id project <- getBy404 $ UniqueProjectHandle project_handle
         Entity _ page <- getBy404 $ UniqueWikiTarget project_id target
 
-        return page
+        return (page, project)
 
     let can_edit = isJust $ userEstablishedTs =<< entityVal <$> maybe_user
 
-    defaultLayout $ renderWiki project_handle target can_edit True page
+    when (not can_edit) $ permissionDenied "you do not have permission to edit this page"
+
+    defaultLayout $ renderWiki project project_handle target can_edit True page
+
+
+renderWiki :: Text -> Text -> Bool -> Bool -> WikiPage -> Widget
+renderWiki project_handle target can_edit can_view_meta page = $(widgetFile "wiki")
+
+renderWiki' :: Project -> Text -> Text -> Bool -> Bool -> WikiPage -> Widget
+renderWiki' project project_handle target can_edit can_view_meta page = do
+    setTitle . toHtml $ projectName project `mappend` " Wiki - " `mappend` wikiPageTarget page `mappend` " | Snowdrift.coop"
+    renderWiki project_handle target can_edit can_view_meta page
 
 
 getOldWikiPagesR :: Text -> Handler Html
@@ -41,17 +52,19 @@ getOldWikiPagesR = redirect . WikiPagesR
 
 getWikiPagesR :: Text -> Handler Html
 getWikiPagesR project_handle = do
-    pages <- runDB $ select $ from $ \ (project `InnerJoin` wiki_page) -> do
-        on_ $ project ^. ProjectId ==. wiki_page ^. WikiPageProject
-        where_ $ project ^. ProjectHandle ==. val project_handle
+    (Entity _ project) <- runDB $ getBy404 $ UniqueProjectHandle project_handle
+    pages <- runDB $ select $ from $ \ (project' `InnerJoin` wiki_page) -> do
+        on_ $ project' ^. ProjectId ==. wiki_page ^. WikiPageProject
+        where_ $ project' ^. ProjectHandle ==. val project_handle
         orderBy [asc $ wiki_page ^. WikiPageTarget]
         return wiki_page
 
-    defaultLayout $(widgetFile "wiki_pages")
+    defaultLayout $ renderWikiPages project project_handle pages
 
-
-renderWiki :: Text -> Text -> Bool -> Bool -> WikiPage -> Widget
-renderWiki project_handle target can_edit can_view_meta page = $(widgetFile "wiki")
+renderWikiPages :: Project -> Text -> [Entity WikiPage] -> Widget
+renderWikiPages project project_handle pages = do
+    setTitle . toHtml $ projectName project `mappend` " Wiki Pages | Snowdrift.coop"
+    $(widgetFile "wiki_pages")
 
 
 postOldWikiR :: Text -> Text -> Handler Html
@@ -59,14 +72,12 @@ postOldWikiR = postWikiR
 
 postWikiR :: Text -> Text -> Handler Html
 postWikiR project_handle target = do
-    Entity user_id _ <- requireAuth
+    Entity user_id user <- requireAuth
     now <- liftIO getCurrentTime
 
-    affiliated <- runDB $ (||)
-            <$> isProjectAffiliated project_handle user_id
-            <*> isProjectAdmin "snowdrift" user_id
+    let can_edit = isJust $ userEstablishedTs user
 
-    when (not affiliated) $ permissionDenied "you do not have permission to edit this page"
+    when (not can_edit) $ permissionDenied "you do not have permission to edit this page"
 
     (project_id, Entity page_id page, Entity _ last_edit) <- runDB $ do
         Entity project_id _ <- getBy404 $ UniqueProjectHandle project_handle
@@ -218,11 +229,7 @@ getEditWikiR project_handle target = do
         last_edit_entity <- getBy404 $ UniqueWikiLastEdit $ entityKey page_entity
         return (page_entity, last_edit_entity)
 
-    affiliated <- runDB $ (||)
-            <$> isProjectAffiliated project_handle user_id
-            <*> isProjectAdmin "snowdrift" user_id
-
-    when (not affiliated) $ permissionDenied "you do not have permission to edit this page"
+    let can_edit = isJust $ userEstablishedTs user
 
     (wiki_form, _) <- generateFormPost $ editWikiForm (wikiLastEditEdit last_edit) (wikiPageContent page) Nothing
 
