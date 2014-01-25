@@ -207,7 +207,7 @@ postUserCreateR = do
             now <- liftIO getCurrentTime
             success <- handle (\ DBException -> return False) $ runDB $ do
                 account_id <- insert $ Account 0
-                user <- setPassword passwd $ User ident Nothing Nothing name account_id avatar Nothing Nothing nick now now now now Nothing Nothing
+                user <- setPassword passwd $ User ident (Just now) Nothing Nothing name account_id avatar Nothing Nothing nick now now now now Nothing Nothing
                 uid_maybe <- insertUnique user
                 lift $ case uid_maybe of
                     Just uid -> do
