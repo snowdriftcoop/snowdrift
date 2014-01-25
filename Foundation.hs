@@ -331,7 +331,7 @@ instance YesodAuth App where
             Just (Entity user_id _) -> return $ Just user_id
             Nothing -> do
                 account_id <- insert $ Account $ Milray 0
-                user_id <- insert $ User (credsIdent creds) Nothing Nothing Nothing account_id Nothing Nothing Nothing Nothing now now now now Nothing Nothing
+                user_id <- insert $ User (credsIdent creds) Nothing Nothing Nothing Nothing account_id Nothing Nothing Nothing Nothing now now now now Nothing Nothing
                 insertSelect $ from $ \ p -> return $ TagColor <# (p ^. DefaultTagColorTag) <&> val user_id <&> (p ^. DefaultTagColorColor)
                 return $ Just user_id
 
