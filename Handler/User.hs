@@ -161,6 +161,7 @@ getUsersR = do
     users' <- runDB $
               select $
               from $ \user -> do
+              orderBy [desc $ user ^. UserId]
               return user
 
     infos <- runDB $
@@ -168,7 +169,6 @@ getUsersR = do
              from $ \(user `InnerJoin` role `InnerJoin` project) -> do
              on_ (project ^. ProjectId ==. role ^. ProjectUserRoleProject)
              on_ (user ^. UserId ==. role ^. ProjectUserRoleUser)
-             orderBy [desc (user ^. UserId)]
              return (user, role ^. ProjectUserRoleRole, project)
 
     let roles = map roleLabel (universe :: [Role])
