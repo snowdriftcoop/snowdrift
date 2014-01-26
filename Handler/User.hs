@@ -243,6 +243,11 @@ userCreateForm ident extra = do
 
     let view = [whamlet|
         ^{extra}
+        <p>
+            By registering, you agree to Snowdrift.coop's (amazingly ethical and ideal) 
+                <a href="@{ToUR}">Terms of Use
+                and
+                <a href="@{PrivacyR}"> Privacy Policy
         <table .table>
             <tr>
                 <td>
