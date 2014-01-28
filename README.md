@@ -3,25 +3,27 @@ snowdrift
 
 Infrastructure for [Snowdrift.coop](https://snowdrift.coop).
 
-Code is mirrored at [GitHub](https://github.com/dlthomas/snowdrift) (which is popular but proprietary) and [Gitorious](https://gitorious.org/snowdrift/snowdrift) (which is FLO, licensed AGPL, but less popular or fully featured).
+Code is mirrored at [GitHub](https://github.com/dlthomas/snowdrift) (which is popular but proprietary) and [Gitorious](https://gitorious.org/snowdrift/snowdrift) (which is FLO, licensed AGPL, but less popular).
+
+See the main [Git documentation](http://git-scm.com/documentation) if you are new to Git and need to learn the basics. You only need rudimentary understanding to start contributing to our code.
+
 
 Work to do / how to help
 ========================
 
-Along with [tickets at GitHub](https://github.com/dlthomas/snowdrift/issues),
-we have [our own in-progress ticketing system](http://snowdrift.coop/p/snowdrift/t) which lists all tickets from both systems.
+On the live site, we have [volunteer info](https://snowdrift.coop/p/snowdrift/w/how-to-help) which includes a general guide around the site. The site wiki and discussion system is our main organizational tool, but our #snowdrift IRC channel on freenode.net is a good place to get help or ask casual questions.
 
-The infrastructure here includes the site's wiki backend,
-but the contents of the wiki are held separately in the site database.
+We have [our own in-progress ticketing system](http://snowdrift.coop/p/snowdrift/t) which lists most of the specific tasks of all sorts, organized with tags indicating priority, skills involved, and more.
 
-We have [volunteer info](https://snowdrift.coop/p/snowdrift/w/how-to-help) and discussion forums on the site and a #snowdrift IRC channel on freenode.net
-
+This README assumes a basic understanding of command-line operations. If you need help with that or *any other* issues, let us know and we'll be happy to guide you!
+                                                                                                                                        
+                                                                                                                                        
 Development guidelines and notes
 ================================
 
 Overall, we strive to follow universal standards, be fully accessible, and avoid browser-specific code.
 
-All JavaScript should be recognized as acceptable by the FSF's [LibreJS plugin](https://www.gnu.org/software/librejs/)
+All JavaScript should be recognized as acceptable by the FSF's [LibreJS plugin](https://www.gnu.org/software/librejs/).
 
 **When in doubt, make sure things work well enough without JavaScript.**
 NoScript should not cause a broken experience.
@@ -31,15 +33,16 @@ JS is fine for amplification and beautification but should not be required for e
 About the frameworks and tools we use
 =====================================
 
-The Snowdrift.coop site uses the [Yesod web framework](http://www.yesodweb.com/)
+The Snowdrift.coop site uses the [Yesod web framework](http://www.yesodweb.com/).
 
 Yesod uses the Haskell programming language alongside its
 [Shakespearean Templates](http://www.yesodweb.com/book/shakespearean-templates) which generate HTML/CSS/JS using indentation with no need for closing tags or bracketing.
 
-* For learning Haskell, check out the [Haskell Wikibook](https://en.wikibooks.org/wiki/Haskell), which also has links to additional gratis resources.
+HTML, CSS, and JavaScript work on the site may be done without knowing Haskell, but because everything is integrated, some familiarity with the Haskell syntax is helpful.
+
+* For learning Haskell, check out the [Haskell Wikibook](https://en.wikibooks.org/wiki/Haskell), which also has links to additional resources.
 * Stack Overflow user postings are FLO (CC-BY-SA), see the tags for [yesod](http://stackoverflow.com/questions/tagged/yesod) and [haskell](http://stackoverflow.com/questions/tagged/yesod)
 * The #yesod and #haskell IRC channels on freenode.net are active and helpful
-* [School of Haskell](https://www.fpcomplete.com/school) is an interactive system that is proprietary but gratis
 
 Our front-end design uses **[Twitter Bootstrap](http://getbootstrap.com/)** for layout and styles, although there are cases where we use our own custom CSS instead.
 
@@ -104,7 +107,7 @@ I don't have the list at hand, but they can be picked out of the error
 messages when the below fails for want of them - if you make a list,
 please update this and send a pull request!)
 
-   *note: there have been some errors reported with older versions of ghc and the haskell-platform* At this time, we are using GHC 7.6.3 and Haskell Platform 2013.2.0.0 — both are included in the latest Ubuntu, but there are [instructions for building updated GHC on older Ubuntu-based systems](https://gist.github.com/Dexyne/5791465). We tested this with Ubuntu 12.04 LTS and it should work on derivatives as well (such as the fully-FLO Trisquel 6). These instructions or similar should work for other systems as well, but see <http://www.haskell.org/platform/> for more general info.
+   *note: there have been some errors reported with older versions of ghc and the haskell-platform* At this time, we are using GHC 7.6.3 and Haskell Platform 2013.2.0.0 — both are included in the latest Ubuntu, and there are [instructions for building updated GHC on older Ubuntu-based systems](https://gist.github.com/Dexyne/5791465). We tested this with Ubuntu 12.04 LTS and it should work on derivatives as well (such as the fully-FLO Trisquel 6). These instructions or similar should work for other systems as well, but see <http://www.haskell.org/platform/> for more general info.
 
 Update cabal's package list:
 
@@ -187,7 +190,7 @@ Import development database:
 Running the site
 ----------------
 
-Once snowdrift is built, assuming you're using a cabal sandbox and have set your PATH correctly, you can start the server by running:
+Once snowdrift is built, assuming you're using a cabal sandbox and have set your PATH correctly, make sure you are in your project directory, then start the server by running:
 
     Snowdrift Development
 
@@ -197,7 +200,7 @@ If you aren't using a cabal sandbox and/or don't have your PATH set correctly, y
 
 To rebuild the site after changes to the code, run cabal install first before starting the server.
     
-Alternately, you may opt to use the yesod devel command which does a combined rebuild and server start.
+Alternately, you may *opt* to use the yesod devel command which does a combined rebuild and server start.
 To enable this, first install yesod-bin:
 
     cabal install yesod-bin
@@ -219,13 +222,9 @@ You can log into the site via the built-in system with user: admin pass: admin
 With that user, create wiki pages at localhost:3000/p/snowdrift/w/*pagename*/new
 
 See the documentation on the live site [about the wiki](https://snowdrift.coop/p/snowdrift/w/wiki) and more.
-
-If you make specific improvements or additions to your test DB that aren't just playing around but that you think will make for a better starting test DB for other contributors, use the following command in your main project directory to export the changes (which can then be committed via git as usual):
-
-    sudo -u postgres pg_dump snowdrift_development >devDB.sql
-
-
-Database Migrations
+    
+    
+Database migrations
 -------------------
 
 When you first start the server (following a compile) after changing the database schema (in config/models) a migration script will be automatically generated and placed in migrations.
@@ -243,5 +242,33 @@ If you don't want to lose the data (a column is being moved to a different table
 In any event, be sure to add the new migrations/migrateN file to git when you commit the corresponding schema changes, and update devDB.sql to match.
 
 When merging migrations, always put any you've added on the end - don't merge them into migration files others have probably already run.
+
+
+Updating the test devDB database
+--------------------------------
+
+If you make specific improvements or additions to your test DB that aren't just playing around but that you think will make for a better starting test DB for other contributors, use the following command in your main project directory to export the changes (which can then be committed via git as usual):
+
+    sudo -u postgres pg_dump snowdrift_development >devDB.sql
+
+Resetting the test database
+---------------------------
+
+If you want to remove your test changes and reset your database to the devDB default, first delete your database with the following command:
+
+    sudo -u postgres psql <<<'drop database snowdrift_development'
+
+To then re-create the database, simply rerun two of the commands from the "Setting up the database" section above.
+First the "Create snowdrift database" command:
+
+    sudo -u postgres createdb snowdrift_development
+    
+and then the "Import development database" command:
+
+    sudo -u postgres psql snowdrift_development <devDB.sql
+
+That's it. You will *not* need to re-run the database user commands.
+
+---
 
 Happy hacking!
