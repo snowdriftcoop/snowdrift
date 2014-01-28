@@ -12,7 +12,9 @@ contactForm = renderBootstrap3 $ areq' snowdriftMarkdownField "" Nothing
 getContactR :: Text -> Handler Html
 getContactR project_handle = do
     (contact_form, _) <- generateFormPost contactForm
-    defaultLayout $(widgetFile "contact")
+    defaultLayout $ do
+        setTitle "Contact | Snowdrift.coop"
+        $(widgetFile "contact")
 
 
 postContactR :: Text -> Handler Html

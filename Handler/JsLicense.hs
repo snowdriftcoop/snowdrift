@@ -33,19 +33,21 @@ getJsLicenseR = do
             , Lib "jqplot.logAxisRenderer.min.js" (render $ StaticR js_plugins_jqplot_logAxisRenderer_min_js) "Expat License" "http://www.jclark.com/xml/copying.txt" "jqplot.logAxisRenderer.js" (render $ StaticR js_plugins_jqplot_logAxisRenderer_js)
             ]
 
-    defaultLayout [whamlet|
-        <table .table id="jslicense-labels1">
-            $forall lib <- libs
-                <tr>
-                    <td>
-                        <a href="#{libRoute lib}">
-                            #{libName lib}
+    defaultLayout $ do
+        setTitle "Javascript Licenses | Snowdrift.coop"
+        [whamlet|
+            <table .table id="jslicense-labels1">
+                $forall lib <- libs
+                    <tr>
+                        <td>
+                            <a href="#{libRoute lib}">
+                                #{libName lib}
 
-                    <td>
-                        <a href="#{libLicenseRoute lib}">
-                            #{libLicenseName lib}
+                        <td>
+                            <a href="#{libLicenseRoute lib}">
+                                #{libLicenseName lib}
 
-                    <td>
-                        <a href="#{libOrigRoute lib}">
-                            #{libOrigName lib}
-    |]
+                        <td>
+                            <a href="#{libOrigRoute lib}">
+                                #{libOrigName lib}
+        |]

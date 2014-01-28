@@ -33,16 +33,12 @@ getWikiR project_handle target = do
 
     let can_edit = isJust $ userEstablishedTs =<< entityVal <$> maybe_user
 
-    defaultLayout $ renderWiki' project project_handle target can_edit True page
+    defaultLayout $ do
+        setTitle . toHtml $ projectName project <> " Wiki - " <> wikiPageTarget page <> " | Snowdrift.coop"
+        renderWiki project_handle target can_edit True page
 
 renderWiki :: Text -> Text -> Bool -> Bool -> WikiPage -> Widget
 renderWiki project_handle target can_edit can_view_meta page = $(widgetFile "wiki")
-
-renderWiki' :: Project -> Text -> Text -> Bool -> Bool -> WikiPage -> Widget
-renderWiki' project project_handle target can_edit can_view_meta page = do
-    setTitle . toHtml $ projectName project `mappend` " Wiki - " `mappend` wikiPageTarget page `mappend` " | Snowdrift.coop"
-    renderWiki project_handle target can_edit can_view_meta page
-
 
 getOldWikiPagesR :: Text -> Handler Html
 getOldWikiPagesR = redirect . WikiPagesR
@@ -56,12 +52,9 @@ getWikiPagesR project_handle = do
         orderBy [asc $ wiki_page ^. WikiPageTarget]
         return wiki_page
 
-    defaultLayout $ renderWikiPages project project_handle pages
-
-renderWikiPages :: Project -> Text -> [Entity WikiPage] -> Widget
-renderWikiPages project project_handle pages = do
-    setTitle . toHtml $ projectName project `mappend` " Wiki Pages | Snowdrift.coop"
-    $(widgetFile "wiki_pages")
+    defaultLayout $ do
+        setTitle . toHtml $ projectName project <> " Wiki | Snowdrift.coop"
+        $(widgetFile "wiki_pages")
 
 
 postOldWikiR :: Text -> Text -> Handler Html
@@ -167,9 +160,8 @@ getOldEditWikiPermissionsR project_handle target = redirect $ EditWikiPermission
 getEditWikiPermissionsR :: Text -> Text -> Handler Html
 getEditWikiPermissionsR project_handle target = do
     Entity user_id user <- requireAuth
-    (Entity page_id page) <- runDB $ do
-        Entity project_id _ <- getBy404 $ UniqueProjectHandle project_handle
-        getBy404 $ UniqueWikiTarget project_id target
+    Entity project_id project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
+    Entity page_id page <- runDB $ getBy404 $ UniqueWikiTarget project_id target
 
     affiliated <- runDB $ (||)
             <$> isProjectAdmin project_handle user_id
@@ -179,7 +171,9 @@ getEditWikiPermissionsR project_handle target = do
 
     (wiki_form, _) <- generateFormPost $ editWikiPermissionsForm (wikiPagePermissionLevel page)
 
-    defaultLayout $(widgetFile "edit_wiki_perm")
+    defaultLayout $ do
+        setTitle . toHtml $ projectName project <> " Wiki Permissions - " <> target <> " | Snowdrift.coop"
+        $(widgetFile "edit_wiki_perm")
 
 
 postOldEditWikiPermissionsR :: Text -> Text -> Handler Html
@@ -220,8 +214,8 @@ getOldEditWikiR project_handle target = redirect $ EditWikiR project_handle targ
 getEditWikiR :: Text -> Text -> Handler Html
 getEditWikiR project_handle target = do
     Entity user_id user <- requireAuth
+    Entity project_id project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
     (Entity page_id page, Entity _ last_edit) <- runDB $ do
-        Entity project_id _ <- getBy404 $ UniqueProjectHandle project_handle
         page_entity <- getBy404 $ UniqueWikiTarget project_id target
         last_edit_entity <- getBy404 $ UniqueWikiLastEdit $ entityKey page_entity
         return (page_entity, last_edit_entity)
@@ -232,7 +226,9 @@ getEditWikiR project_handle target = do
 
     (wiki_form, _) <- generateFormPost $ editWikiForm (wikiLastEditEdit last_edit) (wikiPageContent page) Nothing
 
-    defaultLayout $(widgetFile "edit_wiki")
+    defaultLayout $ do
+        setTitle . toHtml $ projectName project <> " Wiki - " <> wikiPageTarget page <> " | Snowdrift.coop"
+        $(widgetFile "edit_wiki")
 
 
 getOldNewWikiR :: Text -> Text -> Handler Html
@@ -241,7 +237,7 @@ getOldNewWikiR project_handle target = redirect $ NewWikiR project_handle target
 getNewWikiR :: Text -> Text -> Handler Html
 getNewWikiR project_handle target = do
     Entity user_id user <- requireAuth
-
+    Entity _ project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
     affiliated <- runDB $ (||)
             <$> isProjectAffiliated project_handle user_id
             <*> isProjectAdmin "snowdrift" user_id
@@ -250,7 +246,9 @@ getNewWikiR project_handle target = do
 
     (wiki_form, _) <- generateFormPost $ newWikiForm Nothing
 
-    defaultLayout $(widgetFile "new_wiki")
+    defaultLayout $ do
+        setTitle . toHtml $ projectName project <> " Wiki - New Page | Snowdrift.coop"
+        $(widgetFile "new_wiki")
 
 
 postOldNewWikiR :: Text -> Text -> Handler Html
@@ -304,8 +302,8 @@ getOldWikiHistoryR project_handle target = redirect $ WikiHistoryR project_handl
 getWikiHistoryR :: Text -> Text -> Handler Html
 getWikiHistoryR project_handle target = do
     _ <- requireAuthId
+    Entity project_id project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
     (edits, users) <- runDB $ do
-        Entity project_id _ <- getBy404 $ UniqueProjectHandle project_handle
         Entity page_id _ <- getBy404 $ UniqueWikiTarget project_id target
         edits <- select $ from $ \ edit -> do
             where_ ( edit ^. WikiEditPage ==. val page_id )
@@ -321,7 +319,9 @@ getWikiHistoryR project_handle target = do
         return (edits, users)
 
     let editsIndexed = zip ([0..] :: [Int]) edits
-    defaultLayout $(widgetFile "wiki_history")
+    defaultLayout $ do
+        setTitle . toHtml $ projectName project <> " Wiki History - " <> target <> " | Snowdrift.coop"
+        $(widgetFile "wiki_history")
 
 
 getOldWikiDiffProxyR :: Text -> Text -> Handler Html
@@ -352,8 +352,8 @@ getWikiDiffR :: Text -> Text -> WikiEditId -> WikiEditId -> Handler Html
 getWikiDiffR project_handle target start_edit_id end_edit_id = do
     _ <- requireAuthId
 
+    Entity project_id project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
     (start_edit, end_edit) <- runDB $ do
-        Entity project_id _ <- getBy404 $ UniqueProjectHandle project_handle
         Entity page_id _ <- getBy404 $ UniqueWikiTarget project_id target
         start_edit <- get404 start_edit_id
         end_edit <- get404 end_edit_id
@@ -366,7 +366,9 @@ getWikiDiffR project_handle target start_edit_id end_edit_id = do
     let diffEdits = getDiff `on` ((\ (Markdown text) -> T.lines text) . wikiEditContent)
         renderDiff = mconcat . map (\ a -> (case a of Both x _ -> toHtml x; First x -> del (toHtml x); Second x -> ins (toHtml x)) >> br)
 
-    defaultLayout $(widgetFile "wiki_diff")
+    defaultLayout $ do
+        setTitle . toHtml $ projectName project <> " Wiki Diff - " <> target <> " | Snowdrift.coop"
+        $(widgetFile "wiki_diff")
 
 
 getOldWikiEditR :: Text -> Text -> WikiEditId -> Handler Html
@@ -376,8 +378,8 @@ getWikiEditR :: Text -> Text -> WikiEditId -> Handler Html
 getWikiEditR project_handle target edit_id = do
     _ <- requireAuthId
 
+    Entity project_id project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
     edit <- runDB $ do
-        Entity project_id _ <- getBy404 $ UniqueProjectHandle project_handle
         Entity page_id _ <- getBy404 $ UniqueWikiTarget project_id target
         edit <- get404 edit_id
 
@@ -385,7 +387,10 @@ getWikiEditR project_handle target edit_id = do
 
         return edit
 
-    defaultLayout $(widgetFile "wiki_edit")
+    defaultLayout $ do
+    -- TODO: prettier date format? or edit id?
+        setTitle . toHtml $ projectName project <> " Wiki - " <> target <> " at " <> (T.pack $ show $ wikiEditTs edit) <> " | Snowdrift.coop"
+        $(widgetFile "wiki_edit")
 
 
 getOldWikiNewEditsR :: Text -> Handler Html
@@ -443,7 +448,9 @@ getWikiNewEditsR project_handle = do
         set user [ UserReadEdits =. val now ]
         where_ ( user ^. UserId ==. val viewer_id )
 
-    defaultLayout $(widgetFile "wiki_new_edits")
+    defaultLayout $ do
+        setTitle . toHtml $ projectName project <> " Wiki - New Edits | Snowdrift.coop"
+        $(widgetFile "wiki_new_edits")
 
 
 editWikiForm :: WikiEditId -> Markdown -> Maybe Text -> Form (WikiEditId, Markdown, Maybe Text)

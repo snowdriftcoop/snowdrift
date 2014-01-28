@@ -19,6 +19,7 @@ getApplicationsR project_handle = do
 
     when (not affiliated) $ permissionDenied "you must be affiliated with this project to view applications"
 
+    Entity _ project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
     applications <- runDB $ do
         project_id <- fmap entityKey $ getBy404 $ UniqueProjectHandle project_handle
         select $ from $ \ application -> do
@@ -31,4 +32,6 @@ getApplicationsR project_handle = do
             where_ (user ^. UserId ==. val viewer_id)
 
 
-    defaultLayout $(widgetFile "applications")
+    defaultLayout $ do
+        setTitle . toHtml $ projectName project <> " Volunteer Applications | Snowdrift.coop"
+        $(widgetFile "applications")

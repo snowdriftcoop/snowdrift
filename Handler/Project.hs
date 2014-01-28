@@ -49,12 +49,9 @@ getProjectsR = do
             let project_ids = if null tagged_projects then S.empty else foldl1 S.intersection $ map (S.fromList . map (projectTagProject . entityVal)) tagged_projects
             selectList [ ProjectId <-. S.toList project_ids ] [ Asc ProjectCreatedTs, LimitTo per_page, OffsetBy page ]
 
-    defaultLayout $ renderProjects page per_page tags projects
-
-renderProjects :: Int -> Int -> [Text] -> [Entity Project] -> WidgetT App IO ()
-renderProjects page per_page tags projects = do
-    setTitle $ toHtml $ T.pack "Projects | Snowdrift.coop"
-    $(widgetFile "projects")
+    defaultLayout $ do
+        setTitle $ "Projects | Snowdrift.coop"
+        $(widgetFile "projects")
 
 getProjectR :: Text -> Handler Html
 getProjectR project_handle = do
@@ -69,7 +66,9 @@ getProjectR project_handle = do
 
         return (project, pledges, pledge)
 
-    defaultLayout $ renderProject (Just project_handle) project True pledges pledge
+    defaultLayout $ do
+        setTitle . toHtml $ projectName project <> " | Snowdrift.coop"
+        renderProject (Just project_handle) project True pledges pledge
 
 
 renderProject :: Maybe Text
@@ -118,7 +117,6 @@ renderProject maybe_project_handle project show_form pledges pledge = do
                                 then handlerToWidget $ generateFormGet $ buySharesForm $ fromMaybe 0 maybe_shares
                                 else handlerToWidget $ generateFormGet $ mockBuySharesForm $ fromMaybe 0 maybe_shares
 
-    setTitle . toHtml $ projectName project `mappend` " | Snowdrift.coop"
     $(widgetFile "project")
 
 
@@ -151,7 +149,9 @@ getEditProjectR project_handle = do
 
     (project_form, _) <- generateFormPost $ editProjectForm (Just (project, map (tagName . entityVal) tags))
 
-    defaultLayout $(widgetFile "edit_project")
+    defaultLayout $ do
+        setTitle . toHtml $ projectName project <> " | Snowdrift.coop"
+        $(widgetFile "edit_project")
 
 
 postProjectR :: Text -> Handler Html
@@ -250,7 +250,9 @@ getProjectPatronsR project_handle = do
 
         return (project, pledges, M.fromList $ map ((\ (Value x :: Value UserId) -> x) *** (\ (Value x :: Value Int) -> x)) user_payouts)
 
-    defaultLayout $(widgetFile "project_patrons")
+    defaultLayout $ do
+        setTitle . toHtml $ projectName project <> " Patrons | Snowdrift.coop"
+        $(widgetFile "project_patrons")
 
 getProjectTransactionsR :: Text -> Handler Html
 getProjectTransactionsR project_handle = do
@@ -291,7 +293,9 @@ getProjectTransactionsR project_handle = do
             | transactionDebit transaction == Just (projectAccount project) = transactionCredit transaction
             | otherwise = Nothing
 
-    defaultLayout $(widgetFile "project_transactions")
+    defaultLayout $ do
+        setTitle . toHtml $ projectName project <> " Transactions | Snowdrift.coop"
+        $(widgetFile "project_transactions")
 
   where
     process payday_map =
@@ -311,12 +315,12 @@ getProjectBlogR :: Text -> Handler Html
 getProjectBlogR project_handle = do
     maybe_from <- fmap (Key . PersistInt64 . read . T.unpack) <$> lookupGetParam "from"
     post_count <- maybe 10 id <$> fmap (read . T.unpack) <$> lookupGetParam "from"
+    Entity project_id project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
 
     let apply_offset blog = maybe id (\ from_blog rest -> blog ^. ProjectBlogId >=. val from_blog &&. rest) maybe_from
 
-    (posts, next) <- fmap (splitAt post_count) $ runDB $ select $ from $ \ (blog `InnerJoin` project) -> do
-        on_ $ blog ^. ProjectBlogProject ==. project ^. ProjectId
-        where_ $ apply_offset blog $ project ^. ProjectHandle ==. val project_handle
+    (posts, next) <- fmap (splitAt post_count) $ runDB $ select $ from $ \blog -> do
+        where_ $ apply_offset blog $ blog ^. ProjectBlogProject ==. val project_id
         orderBy [ desc $ blog ^. ProjectBlogTime, desc $ blog ^. ProjectBlogId ]
         limit (fromIntegral post_count + 1)
         return blog
@@ -325,7 +329,9 @@ getProjectBlogR project_handle = do
 
     let nextRoute next_id = renderRouteParams (ProjectBlogR project_handle) [("from", toPathPiece next_id)]
 
-    defaultLayout $(widgetFile "project_blog")
+    defaultLayout $ do
+        setTitle . toHtml $ projectName project <> " Blog | Snowdrift.coop"
+        $(widgetFile "project_blog")
 
 projectBlogForm :: UTCTime -> UserId -> ProjectId -> Form ProjectBlog
 projectBlogForm now user_id project_id =
@@ -387,9 +393,12 @@ postProjectBlogR project_handle = do
 
 getProjectBlogPostR :: Text -> ProjectBlogId -> Handler Html
 getProjectBlogPostR project_handle blog_post_id = do
+    Entity _ project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
     blog_post <- runDB $ get404 blog_post_id
 
-    defaultLayout $ renderBlogPost project_handle blog_post
+    defaultLayout $ do
+        setTitle . toHtml $ projectName project <> " Blog - " <> projectBlogTitle blog_post <> " | Snowdrift.coop"
+        renderBlogPost project_handle blog_post
 
 
 renderBlogPost :: Text -> ProjectBlog -> WidgetT App IO ()

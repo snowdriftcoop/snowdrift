@@ -39,5 +39,7 @@ getMessagesR = do
         where_ ( user ^. UserId ==. val viewer_id )
 
 
-    defaultLayout $(widgetFile "messages")
+    defaultLayout $ do
+        setTitle "Messages | Snowdrift.coop"
+        $(widgetFile "messages")
 

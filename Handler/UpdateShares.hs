@@ -26,7 +26,9 @@ getUpdateSharesR project_handle = do
 
             maybe_pledge <- runDB $ getBy $ UniquePledge user_id project_id
 
-            defaultLayout $(widgetFile "update_shares")
+            defaultLayout $ do
+                setTitle . toHtml $ projectName project <> " - Change Your Contribution | Snowdrift.coop"
+                $(widgetFile "update_shares")
 
         FormMissing -> defaultLayout [whamlet| form missing |]
         FormFailure _ -> defaultLayout [whamlet| form failure |]

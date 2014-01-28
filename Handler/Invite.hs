@@ -66,7 +66,9 @@ getInviteR project_handle = do
         format_inviter user_id =
             userPrintName $ users M.! user_id
 
-    defaultLayout $(widgetFile "invite")
+    defaultLayout $ do
+        setTitle . toHtml $ projectName project <> " - Send Invite | Snowdrift.coop"
+        $(widgetFile "invite")
 
 
 postInviteR :: Text -> Handler Html

@@ -186,5 +186,7 @@ getTicketsR project_handle = do
 
         issues = sortBy (flip compare `on` order_expression . issueOrderable) $ filter (filter_expression . issueFilterable) $ map ticketToIssue tickets ++ map githubIssueToIssue github_issues
 
-    defaultLayout $(widgetFile "tickets")
+    defaultLayout $ do
+        setTitle . toHtml $ projectName project <> " Tickets | Snowdrift.coop"
+        $(widgetFile "tickets")
         

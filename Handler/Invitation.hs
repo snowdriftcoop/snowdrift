@@ -1,7 +1,7 @@
 module Handler.Invitation where
 
 import Import
-
+import qualified Data.Text as T
 -- import Model.Role
 
 
@@ -9,6 +9,7 @@ import Import
 
 getInvitationR :: Text -> Text -> Handler Html
 getInvitationR project_handle code = do
+    Entity _ project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
     Entity invite_id invite <- runDB $ getBy404 $ UniqueInvite code
     maybe_user_id <- maybeAuthId
 
@@ -19,7 +20,9 @@ getInvitationR project_handle code = do
 
     let redeemed = inviteRedeemed invite || isJust (inviteRedeemedBy invite)
 
-    defaultLayout $(widgetFile "invitation")
+    defaultLayout $ do
+        setTitle . toHtml $ projectName project <> " Invitation - " <> (T.pack . show $ inviteRole invite) <> " | Snowdrift.coop"
+        $(widgetFile "invitation")
     
 
 postInvitationR :: Text -> Text -> Handler Html

@@ -11,6 +11,7 @@ import qualified Data.Text as T
 getApplicationR :: Text -> VolunteerApplicationId -> Handler Html
 getApplicationR project_handle application_id = do
     Entity viewer_id viewer <- requireAuth
+    Entity _ project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
 
     affiliated <- runDB $ (||)
         <$> isProjectAffiliated project_handle viewer_id
@@ -31,4 +32,6 @@ getApplicationR project_handle application_id = do
 
     let rendered_interests = T.intercalate ", " $ map (\ (Value x) -> x) interests
 
-    defaultLayout $(widgetFile "application")
+    defaultLayout $ do
+        setTitle . toHtml $ projectName project <> " Volunteer Application - " <> userPrintName user <> " | Snowdrift.coop"
+        $(widgetFile "application")

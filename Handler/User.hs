@@ -71,8 +71,8 @@ getUserR user_id = do
              return (role ^. ProjectUserRoleRole, project)
 
 
-    defaultLayout $ mappend
-        (setTitle . toHtml $ "User Profile - " <> userPrintName (Entity user_id user) <> " | Snowdrift.coop")
+    defaultLayout $ do
+        setTitle . toHtml $ "User Profile - " <> userPrintName (Entity user_id user) <> " | Snowdrift.coop"
         (renderUser' maybe_viewer_id user_id user roles)
 
 
@@ -109,7 +109,9 @@ getEditUserR user_id = do
     user <- runDB $ get404 user_id
 
     (form, enctype) <- generateFormPost $ editUserForm user
-    defaultLayout $(widgetFile "edit_user")
+    defaultLayout $ do
+        setTitle . toHtml $ "User Profile - " <> userPrintName (Entity user_id user) <> " | Snowdrift.coop"
+        $(widgetFile "edit_user")
 
 
 postOldUserR :: UserId -> Handler Html
@@ -178,9 +180,9 @@ getUsersR = do
         getUserKey :: Entity User -> Text
         getUserKey (Entity key _) = either (error . T.unpack) id . fromPersistValue . unKey $ key
 
-    defaultLayout $ mappend
+    defaultLayout $ do
+        setTitle "Users | Snowdrift.coop"
         $(widgetFile "users")
-        (setTitle "Users | Snowdrift.coop")
 
 getOldUserCreateR :: Handler Html
 getOldUserCreateR = redirect UserCreateR
@@ -188,11 +190,13 @@ getOldUserCreateR = redirect UserCreateR
 getUserCreateR :: Handler Html
 getUserCreateR = do
     (form, _) <- generateFormPost $ userCreateForm Nothing
-    defaultLayout $ [whamlet|
-        <form method=POST>
-            ^{form}
-            <input type=submit>
-    |]
+    defaultLayout $ do 
+        setTitle "Create User | Snowdrift.coop"
+        [whamlet|
+            <form method=POST>
+                ^{form}
+                <input type=submit>
+        |]
 
 
 postOldUserCreateR :: Handler Html

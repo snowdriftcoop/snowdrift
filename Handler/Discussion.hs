@@ -305,8 +305,8 @@ getDiscussWikiR project_handle target = do
 
     let has_comments = not $ null roots
 
-    defaultLayout $ mappend
-        (setTitle . toHtml $ projectName project <> " Wiki Discussion - " <> target <> " | Snowdrift.coop")
+    defaultLayout $ do
+        setTitle . toHtml $ projectName project <> " Wiki Discussion - " <> target <> " | Snowdrift.coop"
         $(widgetFile "wiki_discuss")
 
 
