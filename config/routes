@@ -71,8 +71,6 @@
 /p/#Text/volunteer VolunteerR GET POST
 /p/#Text/contact ContactR GET POST
 
-/faq FaqR GET
-
 /messages MessagesR GET
 
 /p/#Text/application/#VolunteerApplicationId ApplicationR GET
