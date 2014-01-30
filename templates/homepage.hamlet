@@ -29,6 +29,8 @@
                 <a href="@{WikiR "snowdrift" "about"}"> Longer manifesto and details
             <li>
                 <a href="@{WikiR "snowdrift" "press"}"> Info for press
+            <li>
+                <a href="@{WikiR "snowdrift" "faq"}"> FAQ
         <p>
             <strong>Join us!
             <br>
