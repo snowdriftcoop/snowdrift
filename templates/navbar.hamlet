@@ -6,7 +6,7 @@
         <div .navbar-header>
             <a #head href="@{HomeR}">
                 <noscript>
-                    <img #logo src=@{StaticR img_snowdriftcoop_png} alt="Snowdrift.coop: clearing the path to a Free/Libre/Open World">
+                    <img #logo src=@{StaticR img_snowdriftcoop_png} alt="Snowdrift.coop: clearing the path to a Free/Libre/Open world">
                 <script>
                     fixup_logo()
         <div .navbar-left>
@@ -46,7 +46,7 @@
        <div .col-md-12>
         <div .navbar-header>
             <a #head href="@{HomeR}">
-                <img #logo_m src=@{StaticR img_s_png} alt="Snowdrift.coop: clearing the path to a Free/Libre/Open World">
+                <img #logo_m src=@{StaticR img_s_png} alt="Snowdrift.coop: clearing the path to a Free/Libre/Open world">
         <div .navbar-left>
             <ul .nav .navbar-nav>
                 <li>
