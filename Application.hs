@@ -30,7 +30,6 @@ import qualified Data.Text.IO as T
 -- Import all relevant handler modules here.
 -- Don't forget to add new modules to your cabal file!
 import Handler.Home
-import Handler.Faq
 import Handler.User
 import Handler.Widget
 import Handler.Project

@@ -42,7 +42,6 @@ library
                      Settings.StaticFiles
                      Settings.Development
                      Handler.Home
-                     Handler.Faq
                      Handler.User
                      Handler.Widget
                      Handler.Project
