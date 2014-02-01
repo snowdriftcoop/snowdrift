@@ -1,27 +1,18 @@
 <div .row>
     <div .col-md-10 .col-md-offset-1>
-        <figure> 
+        <figure>
             <img src=@{StaticR img_logo_png}>
             <figcaption style="color: blue; margin-top: -20px;" class="text-right">
                 a work in progress
     <div .col-md-6>
         <p>
-            Imagine a world where art, music, software, educational resources, journalism, and research
-            are all available for everyone to freely access, use, improve, and share&hellip;
+            Imagine a world where everyone can freely access, use, improve, and share
+            everything from art, music, and software, to educational resources, journalism, and research&hellip;
         <p>
-            That is the vision of a free and open internet, but getting there has been a struggle.
-            <em> If access is free of charge, how can projects get funding?
-        <p>
-            Snowdrift.coop is the answer! We are building a
-            <strong> non-profit, cooperative
-            platform to provide
-            <strong> sustainable long-term funding
-            to free/libre/open projects through our
-            community-wide
-            <strong>matching patronage system.
+            <strong>Presenting the Snowdrift.coop matching patronage system:
+            a cooperative way to provide sustainable, long-term support
+            to creative projects that reject proprietary restrictions.
     <div .col-md-6>
-        <p>
-            <strong>Learn more:
         <ul>
             <li>
                 <a href="@{WikiR "snowdrift" "intro"}"> Illustrated intro
@@ -40,3 +31,4 @@
             We have
             <a href="@{WikiR "snowdrift" "how-to-help"}"> volunteer opportunities
             for everyone, regardless of background.
+
