@@ -31,4 +31,6 @@
             We have
             <a href="@{WikiR "snowdrift" "how-to-help"}"> volunteer opportunities
             for everyone, regardless of background.
-
+            You can also
+            <a href=@{WikiR "snowdrift" "fund-drive"}> donate funds
+            specifically for our development right now!
