@@ -31,10 +31,11 @@
             Add two or more spaces at the end of a line for a single line-break.
         <h2> Links
         \<strong>[</strong>weblink-text<strong>](</strong>URL<strong>)</strong>
-        or <strong>&lt;</strong>URL<strong>&gt;</strong>
         <p>
             <em> note: internal links do not need full URL, see
                 <a href="http://snowdrift.coop/p/snowdrift/w/wiki"> about the snowdrift.coop wiki system
+            <br>
+            external links require the http:// part of the URL, and for those cases, if you don't want separate link text, you can use: <strong>&lt;</strong>URL<strong>&gt;</strong>
         <h2> Images
         \<strong>![</strong>Alt text<strong>](</strong>image URL <strong>"</strong>optional title<strong>")</strong>
         <br>
