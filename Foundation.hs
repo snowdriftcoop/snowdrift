@@ -332,7 +332,15 @@ instance YesodAuth App where
             Nothing -> do
                 account_id <- insert $ Account $ Milray 0
                 user_id <- insert $ User (credsIdent creds) Nothing Nothing Nothing Nothing account_id Nothing Nothing Nothing Nothing now now now now Nothing Nothing
-                insertSelect $ from $ \ p -> return $ TagColor <# (p ^. DefaultTagColorTag) <&> val user_id <&> (p ^. DefaultTagColorColor)
+
+                -- TODO refactor back to insertSelect when quoting issue is resolved
+                --
+                -- insertSelect $ from $ \ p -> return $ TagColor <# (p ^. DefaultTagColorTag) <&> val user_id <&> (p ^. DefaultTagColorColor)
+                --
+                default_tag_colors <- select $ from $ return
+                forM_ default_tag_colors $ \ (Entity _ (DefaultTagColor tag color)) -> insert $ TagColor tag user_id color
+                --
+
                 return $ Just user_id
 
     -- You can add other plugins like BrowserID, email or OAuth here
