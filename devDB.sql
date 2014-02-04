@@ -1117,7 +1117,8 @@ CREATE TABLE "user" (
     read_comments timestamp without time zone DEFAULT now() NOT NULL,
     read_edits timestamp without time zone DEFAULT now() NOT NULL,
     established_ts timestamp without time zone,
-    established_reason character varying
+    established_reason character varying,
+    created_ts timestamp without time zone
 );
 
 
@@ -1695,6 +1696,7 @@ COPY build (id, boot_time, base, diff) FROM stdin;
 16	2014-01-24 18:52:45.121638	b857adcedd7be11cf2909b5d6cb536fb17d999c9	
 17	2014-01-24 21:47:53.941683	b857adcedd7be11cf2909b5d6cb536fb17d999c9	
 18	2014-01-24 23:28:23.255958	b857adcedd7be11cf2909b5d6cb536fb17d999c9	
+19	2014-02-04 05:22:47.977252	e42ac19d7713acb15779eb289dc57697a265ffe3	
 \.
 
 
@@ -1702,7 +1704,7 @@ COPY build (id, boot_time, base, diff) FROM stdin;
 -- Name: build_id_seq; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_development
 --
 
-SELECT pg_catalog.setval('build_id_seq', 18, true);
+SELECT pg_catalog.setval('build_id_seq', 19, true);
 
 
 --
@@ -1790,7 +1792,7 @@ SELECT pg_catalog.setval('committee_user_id_seq', 1, false);
 --
 
 COPY database_version (id, last_migration) FROM stdin;
-1	2
+1	3
 \.
 
 
@@ -2134,8 +2136,8 @@ SELECT pg_catalog.setval('transaction_id_seq', 1, false);
 -- Data for Name: user; Type: TABLE DATA; Schema: public; Owner: snowdrift_development
 --
 
-COPY "user" (id, ident, hash, salt, name, account, avatar, blurb, statement, irc_nick, read_messages, read_applications, read_comments, read_edits, established_ts, established_reason) FROM stdin;
-1	admin	8bf2d491387febc07e5d8fd15a4140b28473566e	P^YTN3G:	Admin	1	\N	Admin is the name for the test user in our devDB database that comes with the code. Log in as admin with passphrase: admin	\N	\N	2014-01-21 22:58:23.380462	2013-11-23 19:31:18.982213	2013-11-23 19:31:18.982213	2013-11-23 19:31:18.982213	2014-01-24 15:28:15.681117	\N
+COPY "user" (id, ident, hash, salt, name, account, avatar, blurb, statement, irc_nick, read_messages, read_applications, read_comments, read_edits, established_ts, established_reason, created_ts) FROM stdin;
+1	admin	8bf2d491387febc07e5d8fd15a4140b28473566e	P^YTN3G:	Admin	1	\N	Admin is the name for the test user in our devDB database that comes with the code. Log in as admin with passphrase: admin	\N	\N	2014-01-21 22:58:23.380462	2013-11-23 19:31:18.982213	2013-11-23 19:31:18.982213	2013-11-23 19:31:18.982213	2014-01-24 15:28:15.681117	\N	\N
 \.
 
 
