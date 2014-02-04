@@ -10,11 +10,11 @@ form
     margin : 0.6em
 
 img#logo
-    height: 50px
-    padding: 10px 0 10px 14px
+    max-height: 50px
+    padding: 10px 5px 10px 14px
 
 img#logo_m
-    height: 50px
+    max-height: 50px
     padding: 0
 
 p.navbar-text
@@ -28,10 +28,6 @@ img
     max-width: 100%
     height: auto
 
-@media (min-width: 768px)
-    body
-        padding-top: 70px
-
 .navbar
     border-bottom: 1px solid lightgrey;
     background: white;
@@ -39,6 +35,9 @@ img
 .nav li .glyphicon
     top: 2px;
     line-height: 14px;
+
+.nav-pills
+    margin : 0
 
 header .container .row
     padding-bottom: 0px;
