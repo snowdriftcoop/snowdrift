@@ -1,14 +1,14 @@
 <header>
   <div .container>
-    <navbar .navbar .navbar-fixed-top .hidden-xs>
+    <navbar .navbar .navbar-static-top .hidden-xs>
       <div .row>
        <div .col-md-12>
-        <div .navbar-header>
+        <div .navbar-header .visible-lg>
             <a #head href="@{HomeR}">
-                <noscript>
-                    <img #logo src=@{StaticR img_snowdriftcoop_png} alt="Snowdrift.coop: clearing the path to a Free/Libre/Open world">
-                <script>
-                    fixup_logo()
+                <img #logo src=@{StaticR img_snowdriftcoop_png} alt="Snowdrift.coop: clearing the path to a Free/Libre/Open world">
+        <div .navbar-header .hidden-lg>
+            <a #head href="@{HomeR}">
+                <img #logo_m src=@{StaticR img_s_png}>
         <div .navbar-left>
             <ul .nav .navbar-nav>
                 <li>
@@ -43,24 +43,24 @@
                         <a href=@{AuthR LoginR}>Sign In / Create Account
     <navbar .navbar .visible-xs>
       <div .row>
-       <div .col-md-12>
-        <div .navbar-header>
+        <div .col-xs-3>
             <a #head href="@{HomeR}">
-                <img #logo_m src=@{StaticR img_s_png} alt="Snowdrift.coop: clearing the path to a Free/Libre/Open world">
-        <div .navbar-left>
-            <ul .nav .navbar-nav>
+                <img #logo_m src=@{StaticR img_s_png}>
+        <div .col-xs-9>
+            <ul .nav .nav-pills>
                 <li>
-                    <a href=@{ProjectsR}> Browse Projects
-        <div .navbar-right>
-            <ul .nav .navbar-nav>
-                $maybe Entity user_id _ <- maybe_user
-                    $maybe (balance, pledged) <- money_info
-                        <li>
-                            <a title="Current total monthly pledge" href="@{UserR user_id}">
-                                #{show pledged}
-                        <li>
-                            <a title="Current balance" href="@{UserBalanceR user_id}">
-                                #{show balance}
+                    <a href=@{ProjectsR}> Projects
+                <li>
+                    $maybe Entity user_id _ <- maybe_user
+                        $maybe (balance, pledged) <- money_info
+                            <p .navbar-text .text-center>
+                                Pledges / Funds 
+                                <br>
+                                <a .navbar-link title="Current total monthly pledge" href="@{UserR user_id}">
+                                    #{show pledged}
+                                /
+                                <a .navbar-link title="Current balance" href="@{UserBalanceR user_id}">
+                                    #{show balance}
                 $maybe (Entity user_id user) <- maybe_user
                     <li>
                         $if not (null messages)
@@ -77,7 +77,7 @@
                         <a href=@{AuthR LogoutR}>Sign Out
                 $nothing
                     <li>
-                        <a href=@{AuthR LoginR}>Sign In / Create Account
+                        <a href=@{AuthR LoginR}>Sign In
         $# TODO
         $# $if not (null applications)
         $#     <strong>
