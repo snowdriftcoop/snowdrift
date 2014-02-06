@@ -77,14 +77,14 @@ navbar = do
                              then select $ from $ \ application -> do
                                 where_ ( application ^. VolunteerApplicationCreatedTs >=. val (userReadApplications user) )
                                 return application
-                             else return []
+                            else return []
 
             edits :: [Entity WikiEdit] <- select $ from $ \ wiki_edit -> do
                     where_ ( wiki_edit ^. WikiEditTs >=. val (userReadEdits user) &&. wiki_edit ^. WikiEditUser !=. val user_id )
                     return wiki_edit
 
             comments :: [Entity Comment] <- select $ from $ \ comment -> do
-                    where_ ( comment ^. CommentCreatedTs >=. val (userReadComments user) &&. comment ^. CommentUser !=. val user_id )
+                    where_ ( comment ^. CommentCreatedTs >=. val (userReadComments user) ) -- &&. comment ^. CommentUser !=. val user_id )
                     return comment
 
             return (messages, applications, edits, comments)

@@ -4,11 +4,19 @@
             no projects to display
         $else
             <table>
-                $forall Entity _ project <- projects
+                $forall Entity project_id project <- projects
                     <tr>
                         <td>
                             <a href=@{ProjectR (projectHandle project)}>
                                 #{projectName project}
+                        <td>
+                            <a href=@{WikiNewCommentsR (projectHandle project)}>
+                                <span .glyphicon .glyphicon-comment>
+                                    $maybe count <- M.lookup project_id comment_counts'
+                                        #{show $ L.head count}
+                        <td>
+                            <a href=@{WikiNewEditsR (projectHandle project)}>
+                                <span .glyphicon .glyphicon-list-alt>
                         <td>
                             #{show (projectShareValue project)}/share
 
