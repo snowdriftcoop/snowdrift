@@ -201,6 +201,8 @@ If you aren't using a cabal sandbox and/or don't have your PATH set correctly, y
 To rebuild the site after changes to the code, run cabal install first before starting the server.
     
 Alternately, you may *opt* to use the yesod devel command which does a combined rebuild and server start.
+Besides being an alternate test just in case things don't seem to build right with "cabal install", "yesod devel" also automatically updates the build if certain types of changes are made while the server is running.
+                                             
 To enable this, first install yesod-bin:
 
     cabal install yesod-bin
