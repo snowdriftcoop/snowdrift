@@ -1,14 +1,12 @@
 <header>
   <div .container>
     <navbar .navbar .navbar-static-top .hidden-xs>
-      <div .row>
+      <div .container>
        <div .col-md-12>
-        <div .navbar-header .visible-lg>
+        <div .navbar-header>
             <a #head href="@{HomeR}">
-                <img #logo src=@{StaticR img_snowdriftcoop_png} alt="Snowdrift.coop: clearing the path to a Free/Libre/Open world">
-        <div .navbar-header .hidden-lg>
-            <a #head href="@{HomeR}">
-                <img #logo_m src=@{StaticR img_s_png}>
+                <img .visible-lg #logo src=@{StaticR img_snowdriftcoop_png} alt="Snowdrift.coop: clearing the path to a Free/Libre/Open world">
+                <img .hidden-lg #logo_m src=@{StaticR img_s_png}>
         <div .navbar-left>
             <ul .nav .navbar-nav>
                 <li>
@@ -41,7 +39,7 @@
                 $nothing
                     <li>
                         <a href=@{AuthR LoginR}>Sign In / Create Account
-    <navbar .navbar .visible-xs>
+    <navbar .navbar .navbar-static-top .visible-xs>
       <div .row>
         <div .col-xs-3>
             <a #head href="@{HomeR}">
