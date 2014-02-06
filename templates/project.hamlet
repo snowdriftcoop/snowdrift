@@ -1,53 +1,61 @@
 <div .row>
     <div .col-md-6>
-        <h2>
+        <h1>
             #{projectName project}
 
         #{description}
-    <div .col-md-5 .col-md-offset-1>
-        <table>
-            <tr>
-                <td>
+    <div .col-md-6>
+        <div .row>
+            <div .col-sm-6>
+                <table>
+                    <tr>
+                        <th> Current patrons
+                    <tr>
+                        <td>
+                            $maybe project_handle <- maybe_project_handle
+                                <a href="@{ProjectPatronsR project_handle}">
+                                    _{MsgPatrons users}
+                            $nothing
+                                _{MsgPatrons users}
+                    <tr>
+                        <td>
+                            _{MsgShares shares}
+                    <tr>
+                        <td>
+                            #{show share_value}&nbsp;per&nbsp;share
+                    <tr>
+                        <td>
+                            Total: #{show project_value}&nbsp;per&nbsp;month
+            <div .col-sm-6>
+                <table>
+                    <tr>
+                        <th> History
+                    $maybe (last, year, total) <- amounts
+                        <tr>
+                            <td>
+                                #{last} on the last payday
+                        <tr>
+                            <td>
+                                #{year} in the past year
+                        <tr>
+                            <td>
+                                #{total} total
+        <div .row>
+            <div. col-xs-12>
+                <hr>
+
+                $if show_form
                     $maybe project_handle <- maybe_project_handle
-                        <a href="@{ProjectPatronsR project_handle}">
-                            _{MsgPatrons users}
+                        <form method=GET action=@{UpdateSharesR project_handle}>
+                            ^{update_shares}
+                            $if isJust maybe_shares
+                                <input type=submit value="update pledge">
+                            $else
+                                <input type=submit value="enter pledge">
                     $nothing
-                        _{MsgPatrons users}
-            <tr>
-                <td>
-                    _{MsgShares shares}
-            <tr>
-                <td>
-                    #{show share_value}&nbsp;per&nbsp;share
-            <tr>
-                <td>
-                    Total: #{show project_value}&nbsp;per&nbsp;month
-            $maybe (last, year, total) <- amounts
-                <tr>
-                    <td>
-                        #{last} on the last payday
-                <tr>
-                    <td>
-                        #{year} in the past year
-                <tr>
-                    <td>
-                        #{total} total
+                        <form>
+                            ^{update_shares}
+                            <button value="enter pledge">
 
-        <hr>
-
-        $if show_form
-            $maybe project_handle <- maybe_project_handle
-                <form method=GET action=@{UpdateSharesR project_handle}>
+                $else
                     ^{update_shares}
-                    $if isJust maybe_shares
-                        <input type=submit value="update pledge">
-                    $else
-                        <input type=submit value="enter pledge">
-            $nothing
-                <form>
-                    ^{update_shares}
-                    <button value="enter pledge">
-
-        $else
-            ^{update_shares}
-
