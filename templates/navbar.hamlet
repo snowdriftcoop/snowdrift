@@ -1,81 +1,79 @@
 <header>
-  <div .container>
-    <navbar .navbar .navbar-static-top .hidden-xs>
-      <div .container>
-       <div .col-md-12>
+  <div .container-fluid>
+    <nav .navbar .navbar-static-top .hidden-xs>
         <div .navbar-header>
             <a #head href="@{HomeR}">
                 <img .visible-lg #logo src=@{StaticR img_snowdriftcoop_png} alt="Snowdrift.coop: clearing the path to a Free/Libre/Open world">
                 <img .hidden-lg #logo_m src=@{StaticR img_s_png}>
-        <div .navbar-left>
-            <ul .nav .navbar-nav>
+        <ul .nav .navbar-nav .navbar-left>
+            <li>
+                <a href=@{ProjectsR}> Browse Projects
+        <ul .nav .navbar-nav .navbar-right>
+            <li>
+                $maybe Entity user_id _ <- maybe_user
+                    $maybe (balance, pledged) <- money_info
+                        <p .navbar-text .text-center>
+                            Pledges / Funds 
+                            <br>
+                            <a .navbar-link title="Current total monthly pledge" href="@{UserR user_id}">
+                                #{show pledged}
+                            /
+                            <a .navbar-link title="Current balance" href="@{UserBalanceR user_id}">
+                                #{show balance}
+            $maybe (Entity user_id user) <- maybe_user
                 <li>
-                    <a href=@{ProjectsR}> Browse Projects
-        <div .navbar-right>
-            $maybe Entity user_id _ <- maybe_user
-                $maybe (balance, pledged) <- money_info
-                    <p .navbar-text .text-center>
-                        Pledges / Funds 
-                        <br>
-                        <a .navbar-link title="Current total monthly pledge" href="@{UserR user_id}">
-                            #{show pledged}
-                        /
-                        <a .navbar-link title="Current balance" href="@{UserBalanceR user_id}">
-                            #{show balance}
-            <ul .nav .navbar-nav>
-                $maybe (Entity user_id user) <- maybe_user
-                    <li>
-                        <a href=@{MessagesR}>
-                            $if not (null messages)
-                                <span .glyphicon .glyphicon-envelope>
-                                    #{length messages}
-                            $else
-                                <span .glyphicon .glyphicon-envelope>
-                    $with name <- fromMaybe (userIdent user) $ userName user 
-                        <li>
-                            <a href=@{UserR user_id}>#{name}
-                    <li>
-                        <a href=@{AuthR LogoutR}>Sign Out
-                $nothing
-                    <li>
-                        <a href=@{AuthR LoginR}>Sign In / Create Account
-    <navbar .navbar .navbar-static-top .visible-xs>
-      <div .row>
-        <div .col-xs-3>
-            <a #head href="@{HomeR}">
-                <img #logo_m src=@{StaticR img_s_png}>
-        <div .col-xs-9>
-            <ul .nav .nav-pills>
-                <li>
-                    <a href=@{ProjectsR}> Projects
-                <li>
-                    $maybe Entity user_id _ <- maybe_user
-                        $maybe (balance, pledged) <- money_info
-                            <p .navbar-text .text-center>
-                                Pledges / Funds 
-                                <br>
-                                <a .navbar-link title="Current total monthly pledge" href="@{UserR user_id}">
-                                    #{show pledged}
-                                /
-                                <a .navbar-link title="Current balance" href="@{UserBalanceR user_id}">
-                                    #{show balance}
-                $maybe (Entity user_id user) <- maybe_user
-                    <li>
+                    <a href=@{MessagesR}>
                         $if not (null messages)
-                            <strong>
-                                <a href="@{MessagesR}">
-                                    _{MsgNewMessages (length messages)}
+                            <span .glyphicon .glyphicon-envelope>
+                                #{length messages}
                         $else
-                            <a href=@{MessagesR}>
-                                <span .glyphicon .glyphicon-envelope>
-                    $with name <- fromMaybe (userIdent user) $ userName user 
-                        <li>
-                            <a href=@{UserR user_id}>#{name}
+                            <span .glyphicon .glyphicon-envelope>
+                $with name <- fromMaybe (userIdent user) $ userName user 
                     <li>
-                        <a href=@{AuthR LogoutR}>Sign Out
-                $nothing
+                        <a href=@{UserR user_id}>#{name}
+                <li>
+                    <a href=@{AuthR LogoutR}>Sign Out
+            $nothing
+                <li>
+                    <a href=@{AuthR LoginR}>Sign In / Create Account
+
+    <nav .navbar .navbar-static-top .visible-xs>
+        <ul .nav .nav-pills .navbar-left>
+            <li>
+                <a #head href="@{HomeR}" style="padding : 0">
+                    <img #logo_m src=@{StaticR img_s_png}>
+            <li>
+                <a href=@{ProjectsR}> Projects
+            <li>
+                $maybe Entity user_id _ <- maybe_user
+                    $maybe (balance, pledged) <- money_info
+                        <p .navbar-text .text-center>
+                            Pledges / Funds 
+                            <br>
+                            <a .navbar-link title="Current total monthly pledge" href="@{UserR user_id}">
+                                #{show pledged}
+                            /
+                            <a .navbar-link title="Current balance" href="@{UserBalanceR user_id}">
+                                #{show balance}
+        <ul .nav .nav-pills .navbar-right>
+            $maybe (Entity user_id user) <- maybe_user
+                <li>
+                    $if not (null messages)
+                        <strong>
+                            <a href="@{MessagesR}">
+                                _{MsgNewMessages (length messages)}
+                    $else
+                        <a href=@{MessagesR}>
+                            <span .glyphicon .glyphicon-envelope>
+                $with name <- fromMaybe (userIdent user) $ userName user 
                     <li>
-                        <a href=@{AuthR LoginR}>Sign In
+                        <a href=@{UserR user_id}>#{name}
+                <li>
+                    <a href=@{AuthR LogoutR}>Sign Out
+            $nothing
+                <li>
+                    <a href=@{AuthR LoginR}>Sign In
+
         $# TODO
         $# $if not (null applications)
         $#     <strong>

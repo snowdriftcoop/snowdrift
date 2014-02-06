@@ -30,7 +30,6 @@ img
 
 .navbar
     border-bottom : 1px solid lightgrey
-    background : white
 
 .nav li .glyphicon
     top : 2px
