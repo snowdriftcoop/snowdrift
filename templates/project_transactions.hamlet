@@ -1,50 +1,48 @@
 <div .row>
-    <div .col-md-12>
-        <div .row>
-            <div .col-md-3>
-                Account balance:
-            <div .col-md-5>
-                #{show (accountBalance account)}
+    <div .col-sm-3>
+        Account balance:
+    <div .col-sm-5>
+        #{show (accountBalance account)}
 
-        <div .row>
-            $if null transaction_groups
-                no transactions recorded
-            $else
-                <table>
-                    $forall (maybe_payday, transactions) <- transaction_groups
-                        $maybe Entity _ payday <- maybe_payday
+<div .row>
+    $if null transaction_groups
+        no transactions recorded
+    $else
+        <table>
+            $forall (maybe_payday, transactions) <- transaction_groups
+                $maybe Entity _ payday <- maybe_payday
+                    <tr>
+                        <td>
+                            ^{renderTime $ paydayDate payday} ago
+                        <td .colspan=3>
+                            payday yielding #{sum $ map transactionAmount $ map entityVal transactions}
+
+                $nothing
+                    $forall (Entity _ transaction) <- transactions
+                        $with is_credit <- transactionCredit transaction == Just (projectAccount project)
                             <tr>
                                 <td>
-                                    ^{renderTime $ paydayDate payday} ago
-                                <td .colspan=3>
-                                    payday yielding #{sum $ map transactionAmount $ map entityVal transactions}
+                                    ^{renderTime (transactionTs transaction)} ago
 
-                        $nothing
-                            $forall (Entity _ transaction) <- transactions
-                                $with is_credit <- transactionCredit transaction == Just (projectAccount project)
-                                    <tr>
-                                        <td>
-                                            ^{renderTime (transactionTs transaction)} ago
+                                <td>
+                                    $if is_credit
+                                        #{show (transactionAmount transaction)}
+                                    $else
+                                        (#{show (transactionAmount transaction)})
 
-                                        <td>
-                                            $if is_credit
-                                                #{show (transactionAmount transaction)}
-                                            $else
-                                                (#{show (transactionAmount transaction)})
+                                <td>
+                                    $maybe other_account_id <- getOtherAccount transaction
+                                        $case M.lookup other_account_id account_map
+                                            $of Just (Right user)
+                                                <a href=@{UserR $ entityKey user}>
+                                                    #{userPrintName user}
 
-                                        <td>
-                                            $maybe other_account_id <- getOtherAccount transaction
-                                                $case M.lookup other_account_id account_map
-                                                    $of Just (Right user)
-                                                        <a href=@{UserR $ entityKey user}>
-                                                            #{userPrintName user}
+                                            $of Just (Left project)
+                                                <a href=@{ProjectR $ projectHandle $ entityVal project}>
+                                                    #{projectName $ entityVal project}
 
-                                                    $of Just (Left project)
-                                                        <a href=@{ProjectR $ projectHandle $ entityVal project}>
-                                                            #{projectName $ entityVal project}
+                                            $of Nothing
+                                                    unaffiliated account ##{either error id $ fromPersistValueText $ unKey other_account_id}
 
-                                                    $of Nothing
-                                                            unaffiliated account ##{either error id $ fromPersistValueText $ unKey other_account_id}
-
-                                        <td>
-                                            #{transactionReason transaction}
+                                <td>
+                                    #{transactionReason transaction}

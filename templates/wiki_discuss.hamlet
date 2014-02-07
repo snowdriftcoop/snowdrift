@@ -1,9 +1,9 @@
 <div .row>
-    <div .col-md-12>
+    <div .col-xs-12>
         <div .row>
-            <div .col-md-3>
+            <div .col-sm-6>
                 <a href="@{WikiR project_handle target}"> back to wiki page
-            <div .col-md-3>
+            <div .col-sm-6>
                 $if affiliated
                     <a href="@{NewDiscussWikiR project_handle target}"> new discussion thread
         <hr .wikitop>

@@ -1,5 +1,5 @@
 <div .row>
-    <div .col-md-12>
+    <div .col-xs-12>
         $if null pages
             no pages to display
         $else

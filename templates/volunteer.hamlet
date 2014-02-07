@@ -1,5 +1,5 @@
 <div .row>
-    <div .col-md-12>
+    <div .col-xs-12>
         $# TODO - rewrite?
         <h1>Get involved in building the #{project_handle} community!
         <p>
@@ -10,9 +10,10 @@
         <p>
             To provide general feedback or request assistance, go to the
             <a href=@{ContactR project_handle}>Contact page
+            or participate in the discussions connected with each wiki page.
 
         <p>
-            To express interest in potentially volunteering, fill out this form:
+            To express interest in volunteering, fill out this form:
         <div .container>
             <form action=@{VolunteerR project_handle} method="POST">
                 ^{volunteer_form}

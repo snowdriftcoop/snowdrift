@@ -1,12 +1,11 @@
 <div .row>
-    <div .col-md-12>
-        <div .row>
-            $if null edits
-                no edits
-            $else
-                <table>
-                    $forall edit <- edits
-                        ^{renderEdit edit}
+    <div .col-xs-12>
+        $if null edits
+            no edits
+        $else
+            <table>
+                $forall edit <- edits
+                    ^{renderEdit edit}
 
         $if not (null edits)
             <div .row>

@@ -1,4 +1,3 @@
 <div .row>
-    <div .col-md-12>
+    <div .col-xs-12>
         ^{project_pledges user_id}
-

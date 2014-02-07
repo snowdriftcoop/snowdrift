@@ -1,5 +1,5 @@
 <div .row>
-    <div .col-md-12>
+    <div .col-xs-12>
         $maybe Entity _ pledge <- maybe_pledge
             $case compare (pledgeShares pledge) shares
                 $# TODO: include funding amounts
@@ -44,4 +44,3 @@
             <form method=POST action=@{UpdateSharesR project_handle}>
                 ^{confirm_form}
                 <input type=submit value="Yes!">
-

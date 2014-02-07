@@ -1,5 +1,5 @@
 <div .row>
-    <div .col-md-12>
+    <div .col-xs-12>
         <form method=POST action=@{EditWikiPermissionsR project_handle target}>
             ^{wiki_form}
             <input type=submit>

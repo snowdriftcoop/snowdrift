@@ -1,12 +1,12 @@
 <div .row>
-    <div .col-md-12>
+    <div .col-xs-12>
         <div .row>
             <div .col-md-3>
                 Account balance:
             <div .col-md-5>
                 #{show (accountBalance account)}
         <div .row>
-            <div .col-md-12>
+            <div .col-xs-12>
                 <form method="POST">
                     ^{add_funds_form}
                     <input type="submit" value="load funds">
@@ -36,4 +36,3 @@
 
                                 <td>
                                     #{transactionReason transaction}
-

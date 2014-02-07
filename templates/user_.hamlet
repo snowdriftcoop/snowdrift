@@ -33,4 +33,3 @@
     <div .col-md-5>
         <div .well .well-sm>
             ^{project_pledges user_id}
-

@@ -1,6 +1,6 @@
 <div .container>
     <div id="main" role="main">
-        <div #body .col-md-12>
+        <div #body .col-xs-12>
             $maybe msg <- mmsg
                 <div .alert .alert-info #message>
                     #{msg}
