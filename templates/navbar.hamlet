@@ -3,8 +3,8 @@
     <nav .navbar .navbar-static-top .hidden-xs>
         <div .navbar-header>
             <a #head href="@{HomeR}">
-                <img .visible-lg #logo src=@{StaticR img_snowdriftcoop_png} alt="Snowdrift.coop: clearing the path to a Free/Libre/Open world">
-                <img .hidden-lg #logo_m src=@{StaticR img_s_png}>
+                <img .visible-lg .logo src=@{StaticR img_snowdriftcoop_png} alt="Snowdrift.coop: clearing the path to a Free/Libre/Open world">
+                <img .hidden-lg .logo src=@{StaticR img_s_png} alt="Snowdrift.coop">
         <ul .nav .navbar-nav .navbar-left>
             <li>
                 <a href=@{ProjectsR}> Browse Projects
@@ -41,7 +41,7 @@
         <ul .nav .nav-pills .navbar-left>
             <li>
                 <a #head href="@{HomeR}" style="padding : 0">
-                    <img #logo_m src=@{StaticR img_s_png}>
+                    <img .logo src=@{StaticR img_s_png} alt="Snowdrift.coop">
             <li>
                 <a href=@{ProjectsR}> Projects
             <li>

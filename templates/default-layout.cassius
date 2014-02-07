@@ -9,13 +9,9 @@ form
     padding : 0.4em
     margin : 0.6em
 
-img#logo
+img.logo
     max-height : 50px
-    padding : 10px 5px 10px 14px
-
-img#logo_m
-    max-height : 50px
-    padding : 0
+    padding : 5px
 
 p.navbar-text
     font-size : 0.8em
