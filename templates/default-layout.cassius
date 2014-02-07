@@ -10,38 +10,36 @@ form
     margin : 0.6em
 
 img#logo
-    height: 50px
-    padding: 10px 0 10px 14px
+    max-height : 50px
+    padding : 10px 5px 10px 14px
 
 img#logo_m
-    height: 50px
-    padding: 0
+    max-height : 50px
+    padding : 0
 
 p.navbar-text
-    font-size: 0.8em
-    margin-top: 2px
-    margin-bottom: 0
-    padding: 0
+    font-size : 0.8em
+    margin-top : 2px
+    margin-bottom : 0
+    padding : 0
 
 img
     padding : 0.8em
     max-width: 100%
     height: auto
 
-@media (min-width: 768px)
-    body
-        padding-top: 70px
-
 .navbar
-    border-bottom: 1px solid lightgrey;
-    background: white;
+    border-bottom : 1px solid lightgrey
 
 .nav li .glyphicon
-    top: 2px;
-    line-height: 14px;
+    top : 2px
+    line-height: 14px
+
+.nav-pills
+    margin : 0
 
 header .container .row
-    padding-bottom: 0px;
+    padding-bottom : 0px
 
 input, textarea
     font-size : small
@@ -49,7 +47,7 @@ input, textarea
 input[type=submit]
     color : white
     font-weight : bold
-    padding: .5em 1em
+    padding : .5em 1em
     margin : 0.5em 1em 0.5em 0
     border-radius: 5px
     border : solid thin #65A5E5
@@ -82,10 +80,10 @@ textarea
     min-height : 14em
 
 a
-    color : #74BBFB
+    color : #1299FF
 
 a:visited
-    color : #1E90FF
+    color : #2545D4
 
 .math
     font-family : serif
@@ -98,21 +96,21 @@ div.math
 
 .variable
     font-style : italic
-    padding-right: 0.122em
-    margin-right: 0
+    padding-right : 0.122em
+    margin-right : 0
 
 .alert
     text-align : center
 
 .alert-info
-    color: #767676;
-    background-color: #F1F1F1;
-    border-color: #F0F1EF;
+    color : #767676
+    background-color : #F1F1F1
+    border-color : #F0F1EF
 
 .alert-success
-    color: #31708f;
-    background-color: #d9edf7;
-    border-color: #bce8f1;
+    color : #31708f
+    background-color : #d9edf7
+    border-color : #bce8f1
 
 hr
     border-color : #CCCCDD
@@ -135,7 +133,7 @@ li
 
 header li
     margin : 0
-    height: 50px
+    height : 50px
 
 li.toc_li
     font-size : medium
@@ -238,8 +236,8 @@ figure
 
 form.tag
     padding : 2px 4px
-    border-radius: 3px
-    font-weight: bold
+    border-radius : 3px
+    font-weight : bold
     box-shadow : 0 -1px 0 rgba(0, 0, 0, 0.2) inset
     text-shadow : 0 1px 0 rgba(255, 255, 255, 0.3)
     white-space : nowrap

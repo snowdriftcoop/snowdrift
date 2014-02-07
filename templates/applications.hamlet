@@ -1,5 +1,5 @@
 <div .row>
-    <div .col-md-12>
+    <div .col-xs-12>
         $if not (null applications)
             <table>
                 $forall Entity application_id application <- applications

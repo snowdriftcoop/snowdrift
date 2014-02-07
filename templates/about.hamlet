@@ -1,49 +1,47 @@
 <div .row>
-    <div .col-md-12>
-         <div .row>
-            <div .col-md-12>
-                <p>
-                    <em>This page is now outdated.
-                    <strong><a href={@WikiR "about"}>Click here to see the updated content</a>
-                <hr>
-                <h3>Summary
-                <p>
-                    <strong>Snowdrift.coop is a new fundraising system dedicated to Free digital works.
-                    Today there are robust movements dedicated to Free Software, Free Cultural Works,
-                    Open research, and Open Educational Resources;
-                    but there is a need for better funding.
-                    The main challenge in fundraising is just getting people to commit.
-                    With so many organizations asking for our money, it is understandable that most of us are hesitant.
-                    So we've designed a system to reduce the risk of jumping in and pledging your support.
-                <p>
-                    Instead of one-time campaigns, we are focused on supporting projects long-term.
-                    With Snowdrift.coop, each pledge starts out very small and only increases when more donors join.
-                    This way, matching is achieved across the whole community, and nobody is unfairly burdened.
-                    Each donor knows that their pledge gets everyone else to chip in more.
-                    Regular ongoing contributions are calculated and paid out to projects monthly.
-                    To faciliate this, each donor will place funds in a private account from which donations are drawn.
-                <p>
-                    In line with our emphasis on both community values and individual freedom, we will be run as a cooperative.
-                    We will also ask everyone to follow a basic honor system.
-                    All projects will be required to use Free/Libre/Open licenses and to be transparent and accountable.
-                    With these elements in place, we hope to bring supporters together in a way that has not been possible with other funding systems.
-
-       <div .row>
-            <div .col-md-12>
-                <h4>Contents
-                <ul .toc>
-                    ^{toc_entry "intro" "Introduction"}
-                    ^{toc_entry "floss" "What makes a work \"free\"?"}
-                    ^{toc_entry "why" "Why digital works require a different economic model"}
-                    ^{toc_entry "meaning" "What does the Snowdrift name mean?"}
-                    ^{toc_entry "psych" "The psychological issues of cooperation, generosity, and freeloading"}
-                    ^{toc_entry "how" "How does the Snowdrift.coop funding system work?"}
-                    ^{toc_entry "whyfree" "Why restrict to only projects with certain approved licenses?"}
-                    ^{toc_entry "coop" "Cooperation vs competition: a false dichotomy"}
-                    ^{toc_entry "others" "What about fundraising for other purposes?"}
+    <div .col-xs-12>
+        <p>
+            <em>This page is now outdated.
+            <strong><a href={@WikiR "about"}>Click here to see the updated content</a>
+        <hr>
+        <h3>Summary
+        <p>
+            <strong>Snowdrift.coop is a new fundraising system dedicated to Free digital works.
+            Today there are robust movements dedicated to Free Software, Free Cultural Works,
+            Open research, and Open Educational Resources;
+            but there is a need for better funding.
+            The main challenge in fundraising is just getting people to commit.
+            With so many organizations asking for our money, it is understandable that most of us are hesitant.
+            So we've designed a system to reduce the risk of jumping in and pledging your support.
+        <p>
+            Instead of one-time campaigns, we are focused on supporting projects long-term.
+            With Snowdrift.coop, each pledge starts out very small and only increases when more donors join.
+            This way, matching is achieved across the whole community, and nobody is unfairly burdened.
+            Each donor knows that their pledge gets everyone else to chip in more.
+            Regular ongoing contributions are calculated and paid out to projects monthly.
+            To faciliate this, each donor will place funds in a private account from which donations are drawn.
+        <p>
+            In line with our emphasis on both community values and individual freedom, we will be run as a cooperative.
+            We will also ask everyone to follow a basic honor system.
+            All projects will be required to use Free/Libre/Open licenses and to be transparent and accountable.
+            With these elements in place, we hope to bring supporters together in a way that has not been possible with other funding systems.
 
 <div .row>
-    <div .col-md-12>
+    <div .col-xs-12>
+        <h4>Contents
+        <ul .toc>
+            ^{toc_entry "intro" "Introduction"}
+            ^{toc_entry "floss" "What makes a work \"free\"?"}
+            ^{toc_entry "why" "Why digital works require a different economic model"}
+            ^{toc_entry "meaning" "What does the Snowdrift name mean?"}
+            ^{toc_entry "psych" "The psychological issues of cooperation, generosity, and freeloading"}
+            ^{toc_entry "how" "How does the Snowdrift.coop funding system work?"}
+            ^{toc_entry "whyfree" "Why restrict to only projects with certain approved licenses?"}
+            ^{toc_entry "coop" "Cooperation vs competition: a false dichotomy"}
+            ^{toc_entry "others" "What about fundraising for other purposes?"}
+
+<div .row>
+    <div .col-xs-12>
         <dl>
             <dt>
                 ^{toc_target "intro" "Introduction"}

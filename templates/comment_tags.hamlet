@@ -1,10 +1,8 @@
-
 <div .row>
-    <div .col-md-12>
+    <div .col-xs-12>
         $if null tags
             no tags to display
         $else
             <table>
                 $forall tag <- tags
                     ^{tagWidget tag}
-

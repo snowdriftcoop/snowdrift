@@ -44,7 +44,8 @@ HTML, CSS, and JavaScript work on the site may be done without knowing Haskell, 
 * Stack Overflow user postings are FLO (CC-BY-SA), see the tags for [yesod](http://stackoverflow.com/questions/tagged/yesod) and [haskell](http://stackoverflow.com/questions/tagged/yesod)
 * The #yesod and #haskell IRC channels on freenode.net are active and helpful
 
-Our front-end design uses **[Twitter Bootstrap](http://getbootstrap.com/)** for layout and styles, although there are cases where we use our own custom CSS instead.
+Our front-end design uses **[Twitter Bootstrap](http://getbootstrap.com/)** for layout and styles, although there are cases where we use our own custom CSS.
+Note: Bootstrap uses a 12-column layout and so a div that uses all 12 is full-width. As some div with column specification is always required, our internal convention is to use .col-xs-12 as the default code for full-width. That means it is full-width on extra-small screens and above (i.e. on all screens). Whenever we want less than full width, then we use the xs, sm, md, lg specifications as appropriate for each case (see the Bootstrap docs at the link).
 
 On the site we have a page about [site-design](https://snowdrift.coop/p/snowdrift/w/site-design), and the tickets and discussion there cover specific issues.
 
@@ -200,7 +201,9 @@ If you aren't using a cabal sandbox and/or don't have your PATH set correctly, y
 
 To rebuild the site after changes to the code, run cabal install first before starting the server.
     
-Alternately, you may *opt* to use the yesod devel command which does a combined rebuild and server start.
+Alternately, you may use the yesod devel command which does a combined rebuild and server start.
+In rare cases, yesod devel may succeed where cabal install failed (or vice versa), but the main advantage to yesod devel is that it can be left running and will automatically update your build after each saved change.
+                                             
 To enable this, first install yesod-bin:
 
     cabal install yesod-bin
@@ -211,7 +214,7 @@ Then, you can rebuild and start the server with:
 
 After the server starts, it may print a bunch of text about creating tables, and it will then sit ready, waiting for connections.
 
-Access the server by directing your web browser to localhost:3000
+For either build approach, access the server by directing your web browser to localhost:3000
 
 
 Using the live test site
