@@ -45,7 +45,8 @@ HTML, CSS, and JavaScript work on the site may be done without knowing Haskell, 
 * The #yesod and #haskell IRC channels on freenode.net are active and helpful
 
 Our front-end design uses **[Twitter Bootstrap](http://getbootstrap.com/)** for layout and styles, although there are cases where we use our own custom CSS.
-Note: Bootstrap uses a 12-column layout and so a div that uses all 12 is full-width. As some div with column specification is always required, our internal convention is to use .col-xs-12 as the default code for full-width. That means it is full-width on extra-small screens and above (i.e. on all screens). Whenever we want less than full width, then we use the xs, sm, md, lg specifications as appropriate for each case (see the Bootstrap docs at the link).
+
+Note: Bootstrap uses a 12-column layout, and some column specification is always required. So, our internal convention is to use .col-xs-12 as the default code. This default will generate full-width for all screen sizes, and then when we want to specify a particular thought-out decision about rendering on larger screens (including potentially staying full-width), we add classes for the other screen sizes (sm, md, lg) as appropriate. Otherwise, see the Bootstrap docs at the link above.
 
 On the site we have a page about [site-design](https://snowdrift.coop/p/snowdrift/w/site-design), and the tickets and discussion there cover specific issues.
 
