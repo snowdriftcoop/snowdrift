@@ -5,6 +5,7 @@
 
         #{description}
     <div .col-md-6>
+        <em>We are currently testing with fake money and monthly payments sped up to daily
         <div .row>
             <div .col-sm-6>
                 <table>
@@ -41,7 +42,7 @@
                             <td>
                                 #{total} total
         <div .row>
-            <div. col-xs-12>
+            <div .col-xs-12>
                 <hr>
 
                 $if show_form
@@ -49,13 +50,13 @@
                         <form method=GET action=@{UpdateSharesR project_handle}>
                             ^{update_shares}
                             $if isJust maybe_shares
-                                <input type=submit value="update pledge">
+                                <input .pledge type=submit value="update pledge">
                             $else
-                                <input type=submit value="enter pledge">
+                                <input .pledge type=submit value="enter pledge">
                     $nothing
                         <form>
                             ^{update_shares}
-                            <button value="enter pledge">
+                            <button .pledge value="enter pledge">
 
                 $else
                     ^{update_shares}

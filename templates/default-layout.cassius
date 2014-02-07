@@ -83,7 +83,7 @@ a
     color : #1299FF
 
 a:visited
-    color : #2545D4
+    color : #2061F6
 
 .math
     font-family : serif
@@ -242,6 +242,10 @@ form.tag
     text-shadow : 0 1px 0 rgba(255, 255, 255, 0.3)
     white-space : nowrap
     display : inline
+
+input.pledge
+    display : block
+    margin : 1em auto
 
 input.tag-input
     background : none
