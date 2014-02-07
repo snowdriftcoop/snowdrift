@@ -1,23 +1,20 @@
 <div .row>
     <div .col-md-6>
+        <h1>
+            #{userPrintName user_entity}
+        <h5>
+            $if Just user_id == viewer_id
+                <a href="@{EditUserR user_id}">
+                    edit profile
         <div .row>
-            <div .col-md-4>
-                <h1>
-                    #{userPrintName user_entity}
-
+            <div .col-xs-4>
                 $maybe avatar <- userAvatar user
                     <img .headshot_large src="#{avatar}">
                 $if isJust $ userEstablishedTs user
                     <small>established user
-
-        $maybe nick <- userIrcNick user
-            <div .row>
-                <div .col-md-4>
+            <div. col-xs-8>
+                $maybe nick <- userIrcNick user
                     #{nick} on <a href="https://snowdrift.coop/p/snowdrift/w/irc">irc.freenode.net</a>
-
-        $if Just user_id == viewer_id
-            <a href="@{EditUserR user_id}">
-                edit profile
 
     <div .col-md-6>
         $maybe blurb <- userBlurb user
@@ -26,19 +23,11 @@
             &nbsp;
 
 <div .row>
-    <h4>Personal Statement
-    <div .col-md-6>
-        <div .well .well-sm .scroll .capped>
-            $maybe statement <- userStatement user
-                #{renderMarkdown project_handle statement}
 
     <div .col-md-6>
-        <div .well .well-sm>
-            ^{project_pledges user_id}
-
-<div .row>
-    <h4>Project Roles
-    <div .col-md-6>
+        ^{project_pledges user_id}
+        
+        <h4>Project Roles
         <table>
             <thead>
                 <tr>
@@ -52,5 +41,8 @@
                             $forall (_, project) <- filterRoles role roles
                                 <a href="@{ProjectR $ projectHandle $ entityVal project}">
                                     #{projectName $ entityVal project} 
-                                <br>
-
+    <div .col-md-6>
+        <h3>Personal Statement
+            <div .well .well-sm .scroll .capped>
+                $maybe statement <- userStatement user
+                    #{renderMarkdown project_handle statement}
