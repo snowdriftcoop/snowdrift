@@ -3,7 +3,8 @@
         <figure>
             <img src=@{StaticR img_logo_png}>
             <figcaption style="color: blue; margin-top: -20px;" class="text-right">
-                a work in progress
+                a work in progress:
+                <strong> public ALPHA — not functioning yet
     <div .col-md-6>
         <p>
             Imagine a world where everyone can freely access, use, improve, and share
