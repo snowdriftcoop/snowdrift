@@ -153,6 +153,10 @@ strong
 em
     font-style : italic
 
+blockquote
+    font-size : inherit
+    font-family : inherit
+
 dd
     padding : 0.7em
     padding-bottom : 1.5em
