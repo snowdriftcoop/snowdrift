@@ -42,7 +42,7 @@
                                 <a href="@{ProjectR $ projectHandle $ entityVal project}">
                                     #{projectName $ entityVal project} 
     <div .col-md-6>
-        <h3>Personal Statement
-        <div .well .well-sm .scroll .capped>
-            $maybe statement <- userStatement user
+        $maybe statement <- userStatement user
+            <h3>Personal Statement
+            <div .well .well-sm .scroll .capped>
                 #{renderMarkdown project_handle statement}
