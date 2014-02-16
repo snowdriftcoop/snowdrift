@@ -199,12 +199,10 @@ span.title
 
 h1, h2, h3, h4, h5, h6
     font-weight : bold
+    margin : 1.6em 0 0.8em
 
-h2, h3, h4, h5, h6
-    margin : 1.8em 0 0.8em
-
-h1
-    margin-bottom : 0.8em
+h1:first-child
+    margin-top : 0
 
 q:before
     content : '"'
@@ -233,6 +231,10 @@ td
     text-align : center
     padding : 0.3em 0.5em
     border-top : 1px solid #DDDDDD
+
+@media (min-width: 1200px) {
+  a:only-child { white-space: nowrap; }
+}
 
 figure
     text-align : center
