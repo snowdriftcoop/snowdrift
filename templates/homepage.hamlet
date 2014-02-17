@@ -2,7 +2,7 @@
     <div .col-md-10 .col-md-offset-1>
         <figure>
             <img src=@{StaticR img_logo_png}>
-            <figcaption style="color: blue; margin-top: -20px;" class="text-right">
+            <figcaption style="color: slategrey; margin-top: -20px;" class="text-right">
                 a work in progress:
                 <strong> public ALPHA — not functioning yet
     <div .col-md-6>
