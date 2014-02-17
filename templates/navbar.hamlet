@@ -8,6 +8,8 @@
         <ul .nav .navbar-nav .navbar-left>
             <li>
                 <a href=@{ProjectsR}> Browse Projects
+                        <span .badge>
+                            #{comments + edits}
         <ul .nav .navbar-nav .navbar-right>
             <li>
                 $maybe Entity user_id _ <- maybe_user

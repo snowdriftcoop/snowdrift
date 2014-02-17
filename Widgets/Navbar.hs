@@ -5,6 +5,9 @@ import Import
 
 import Model.Currency
 import Model.User
+import Model.ViewType
+
+import qualified Data.List as L
 
 navbar :: Widget
 navbar = do
@@ -54,9 +57,12 @@ navbar = do
 
 
     (messages, applications, edits, comments) <- case maybe_user of
-        Nothing -> return mempty
+        Nothing -> return ([], [], 0, 0)
         Just (Entity user_id user) -> handlerToWidget $ runDB $ do
             snowdrift_member <- isProjectAffiliated "snowdrift" user_id
+            projects <- select $ from $ \project -> do
+                return project
+
             messages :: [Entity Message] <- select $ from $ \ message -> do
                             where_ $
                                 ( if snowdrift_member
@@ -77,15 +83,55 @@ navbar = do
                              then select $ from $ \ application -> do
                                 where_ ( application ^. VolunteerApplicationCreatedTs >=. val (userReadApplications user) )
                                 return application
-                             else return []
-
+                            else return []
+            {-
             edits :: [Entity WikiEdit] <- select $ from $ \ wiki_edit -> do
-                    where_ ( wiki_edit ^. WikiEditTs >=. val (userReadEdits user) &&. wiki_edit ^. WikiEditUser !=. val user_id )
+                    where_ ( wiki_edit ^. WikiEditTs >=. val (userReadEdits user) ) -- &&. wiki_edit ^. WikiEditUser !=. val user_id )
                     return wiki_edit
 
             comments :: [Entity Comment] <- select $ from $ \ comment -> do
-                    where_ ( comment ^. CommentCreatedTs >=. val (userReadComments user) &&. comment ^. CommentUser !=. val user_id )
+                    where_ ( comment ^. CommentCreatedTs >=. val (userReadComments user) ) -- &&. comment ^. CommentUser !=. val user_id )
                     return comment
+            -}
+            let unval (Value a) = a
+                foldCounts (c1, c2) (c1', c2') =
+                    (c1 + (unval $ L.head c1'), c2 + (unval $ L.head c2'))
+            counts <- forM projects $ \(Entity project_id _) -> do
+                comment_viewtimes :: [Entity ViewTime] <- select $ from $ \ viewtime -> do
+                    where_ $
+                        ( viewtime ^. ViewTimeUser ==. val user_id ) &&.
+                        ( viewtime ^. ViewTimeProject ==. val project_id ) &&.
+                        ( viewtime ^. ViewTimeType ==. val ViewComments )
+                    return viewtime
+                edit_viewtimes :: [Entity ViewTime] <- select $ from $ \ viewtime -> do
+                    where_ $
+                        ( viewtime ^. ViewTimeUser ==. val user_id ) &&.
+                        ( viewtime ^. ViewTimeProject ==. val project_id ) &&.
+                        ( viewtime ^. ViewTimeType ==. val ViewEdits )
+                    return viewtime
+                comments <- case comment_viewtimes of
+                    [] -> return $ [Value 0]
+                    viewtime:_ ->
+                        select $ from $ \(comment `LeftOuterJoin` wpc `LeftOuterJoin` wp) -> do
+                            on_ (wp ^. WikiPageId ==. wpc ^. WikiPageCommentPage)
+                            on_ (wpc ^. WikiPageCommentComment ==. comment ^. CommentId)
+                            where_ $
+                                ( comment ^. CommentCreatedTs >=. (val . viewTimeTime $ entityVal viewtime ) ) &&.
+                                ( wp ^. WikiPageProject ==. val project_id ) &&.
+                                ( comment ^. CommentUser !=. val user_id )
+                            return (countRows :: SqlExpr (Value Int))
+                edits <- case edit_viewtimes of
+                    [] -> return $ [Value 0]
+                    viewtime:_ ->
+                        select $ from $ \(edit `LeftOuterJoin` wp) -> do
+                            on_ (wp ^. WikiPageId ==. edit ^. WikiEditPage)
+                            where_ $
+                                ( edit ^. WikiEditTs >=. (val . viewTimeTime $ entityVal viewtime) ) &&.
+                                ( wp ^. WikiPageProject ==. val project_id ) &&.
+                                ( edit ^. WikiEditUser !=. val user_id )
+                            return (countRows :: SqlExpr (Value Int))
+                return (comments, edits)
+            let (comments, edits) = foldl foldCounts (0, 0) counts
 
             return (messages, applications, edits, comments)
 

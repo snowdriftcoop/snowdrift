@@ -264,3 +264,10 @@ input.tag-input[type="submit"]:hover, input.tag-input[type="submit"]:focus
 
 input.tag.input[type="submit"]:active
     background : none
+
+table.projects tr td:nth-child(2), table.projects tr td:nth-child(3)
+    text-align: left
+
+table.projects tr td:nth-child(2):empty, table.projects tr td:nth-child(3):empty
+    color: gray;
+
