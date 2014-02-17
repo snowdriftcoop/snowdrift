@@ -121,9 +121,6 @@ footer
     text-align : center
     font-size : 0.75em
 
-li, p
-    font-family : serif
-
 li
     margin : 0.5em 0
 
