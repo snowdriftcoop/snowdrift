@@ -3,7 +3,7 @@
         $if null projects
             no projects to display
         $else
-            <table>
+            <table .projects>
                 $forall Entity project_id project <- projects
                     <tr>
                         <td>
@@ -12,11 +12,17 @@
                         <td>
                             <a href=@{WikiNewCommentsR (projectHandle project)}>
                                 <span .glyphicon .glyphicon-comment>
-                                    $maybe count <- M.lookup project_id comment_counts'
-                                        #{show $ L.head count}
+                                    $maybe (count', _) <- M.lookup project_id counts'
+                                        $with (Value count) <- L.head count'
+                                            $if not (count == 0)
+                                                #{show count}
                         <td>
                             <a href=@{WikiNewEditsR (projectHandle project)}>
                                 <span .glyphicon .glyphicon-list-alt>
+                                    $maybe (_, count') <- M.lookup project_id counts'
+                                        $with (Value count) <- L.head count'
+                                            $if not (count == 0)
+                                                #{show count}
                         <td>
                             #{show (projectShareValue project)}/share
 

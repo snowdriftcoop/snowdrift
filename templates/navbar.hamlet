@@ -8,9 +8,8 @@
         <ul .nav .navbar-nav .navbar-left>
             <li>
                 <a href=@{ProjectsR}> Browse Projects
-                    $if not (null comments)
-                        <span .glyphicon .glyphicon-exclamation-sign>
-                            #{length comments}
+                        <span .badge>
+                            #{comments + edits}
         <ul .nav .navbar-nav .navbar-right>
             <li>
                 $maybe Entity user_id _ <- maybe_user

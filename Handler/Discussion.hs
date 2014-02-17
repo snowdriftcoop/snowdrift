@@ -16,6 +16,7 @@ import qualified Data.Text as T
 
 import Model.AnnotatedTag
 import Model.User
+import Model.ViewType
 
 import Widgets.Markdown
 import Widgets.Preview
@@ -603,9 +604,18 @@ getWikiNewCommentsR project_handle = do
                             ^{rendered_comment}
                 |]
 
-    runDB $ update $ \ user -> do
-        set user [ UserReadComments =. val now ]
-        where_ ( user ^. UserId ==. val viewer_id )
+    runDB $ do
+        c <- updateCount $ \ viewtime -> do
+                set viewtime [ ViewTimeTime =. val now ]
+                where_ $
+                    ( viewtime ^. ViewTimeUser ==. val viewer_id ) &&.
+                    ( viewtime ^. ViewTimeProject ==. val project_id ) &&.
+                    ( viewtime ^. ViewTimeType ==. val ViewComments )
+        if (c == 0)
+            then
+                insert_ $ ViewTime viewer_id project_id ViewComments now
+            else
+                return ()
 
     defaultLayout $(widgetFile "wiki_new_comments")
 
