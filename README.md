@@ -29,6 +29,8 @@ All JavaScript should be recognized as acceptable by the FSF's [LibreJS plugin](
 NoScript should not cause a broken experience.
 JS is fine for amplification and beautification but should not be required for essential functions.
 
+We have a separate wiki and discussion page on the site specifically for [web-design issues](https://snowdrift.coop/p/snowdrift/w/site-design).
+
 
 About the frameworks and tools we use
 =====================================
