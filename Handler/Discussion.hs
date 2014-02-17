@@ -595,7 +595,7 @@ getWikiNewCommentsR project_handle = do
 
                 [whamlet|$newline never
                     <div .row>
-                        <div .col-md-9>
+                        <div .col-md-9 .col-md-offset-1 .col-lg-8 .col-lg-offset-2>
                             On #
                             <a href="@{WikiR project_handle target}">
                                 #{target}

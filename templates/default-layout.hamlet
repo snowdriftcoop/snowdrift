@@ -1,5 +1,5 @@
 <div .container>
-    <div id="main" role="main">
+    <div #main role="main" .row>
         <div #body .col-xs-12>
             $maybe msg <- mmsg
                 <div .alert .alert-info #message>
@@ -8,4 +8,3 @@
                 #{alert}
 
             ^{widget}
-

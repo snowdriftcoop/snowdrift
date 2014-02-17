@@ -3,14 +3,15 @@
         <figure>
             <img src=@{StaticR img_logo_png}>
             <figcaption style="color: blue; margin-top: -20px;" class="text-right">
-                a work in progress
+                a work in progress:
+                <strong> public ALPHA — not functioning yet
     <div .col-md-6>
         <p>
             Imagine a world where everyone can freely access, use, improve, and share
             everything from art, music, and software, to educational resources, journalism, and research&hellip;
         <p>
-            <strong>Presenting the Snowdrift.coop matching patronage system:
-            a cooperative way to provide sustainable, long-term funding
+            <strong>The Snowdrift.coop matching patronage system
+            is a cooperative way to provide sustainable, long-term funding
             to creative projects that reject proprietary restrictions.
     <div .col-md-6>
         <ul>
@@ -27,10 +28,10 @@
             <br>
             We are not yet operational, and we can use
             <em> your
-            help in getting there!
+            help in getting there.
             We have
             <a href="@{WikiR "snowdrift" "how-to-help"}"> volunteer opportunities
             for everyone, regardless of background.
             You can also
             <a href=@{WikiR "snowdrift" "fund-drive"}> donate funds
-            specifically for our development right now!
+            specifically for our development right now.

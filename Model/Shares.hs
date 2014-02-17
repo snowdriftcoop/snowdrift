@@ -14,16 +14,14 @@ buySharesForm shares extra = do
     let result = SharesPurchaseOrder <$> pledge_res
         view = [whamlet|
             #{extra}
-            <p>
+            <p .text-center>
                 <strong>
                     I pledge ^{fvInput pledge_view}&nbsp;shares.
             <p>
                 Share value is based at 1&cent; per month per every 100 other patrons
                 and also increases somewhat when any patron pledges multiple shares.
-                <br>
                 <a href=@{WikiR "snowdrift" "mechanism"}>
-                    <em>
-                        read the details&hellip;
+                    <em> Read the details&hellip;
         |]
     return (result, view)
 
@@ -37,10 +35,8 @@ mockBuySharesForm _ extra = do
             <p>
                 Share value is based at 1&cent; per month per every 100 other patrons
                 and also increases somewhat when any patron pledges multiple shares.
-                <br>
                 <a href=@{WikiR "snowdrift" "mechanism"}>
-                    <em>
-                        read the details&hellip;
+                    <em> Read the details&hellip;
         |]
 
     return (FormSuccess $ SharesPurchaseOrder 0, view)

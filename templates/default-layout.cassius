@@ -9,13 +9,9 @@ form
     padding : 0.4em
     margin : 0.6em
 
-img#logo
+img.logo
     max-height : 50px
-    padding : 10px 5px 10px 14px
-
-img#logo_m
-    max-height : 50px
-    padding : 0
+    padding : 5px
 
 p.navbar-text
     font-size : 0.8em
@@ -83,7 +79,7 @@ a
     color : #1299FF
 
 a:visited
-    color : #2545D4
+    color : #2061F6
 
 .math
     font-family : serif
@@ -125,11 +121,8 @@ footer
     text-align : center
     font-size : 0.75em
 
-li, p
-    font-family : serif
-
 li
-    margin : 0.4em 0
+    margin : 0.5em 0
 
 header li
     margin : 0
@@ -145,6 +138,9 @@ p
 li p
     padding : 0
 
+ul ul, ol ul, ul ol, ol ol
+    margin: 0
+
 .footnote, .footnotes
     font-size : 0.9em
     line-height : 1.2em
@@ -157,9 +153,15 @@ strong
 em
     font-style : italic
 
+blockquote
+    font-size : inherit
+    font-family : inherit
+
+dt
+    margin-top : 1.2em
+
 dd
-    padding : 0.7em
-    padding-bottom : 1.5em
+    padding : 0.4em
 
 div.row
     padding-bottom : 1em
@@ -196,12 +198,10 @@ span.title
 
 h1, h2, h3, h4, h5, h6
     font-weight : bold
+    margin : 1.6em 0 0.8em
 
-h2, h3, h4, h5, h6
-    margin : 1.8em 0 0.8em
-
-h1
-    margin-bottom : 0.8em
+h1:first-child
+    margin-top : 0
 
 q:before
     content : '"'
@@ -231,6 +231,9 @@ td
     padding : 0.3em 0.5em
     border-top : 1px solid #DDDDDD
 
+@media (min-width: 1200px)
+  a:only-child { white-space: nowrap; }
+
 figure
     text-align : center
 
@@ -242,6 +245,10 @@ form.tag
     text-shadow : 0 1px 0 rgba(255, 255, 255, 0.3)
     white-space : nowrap
     display : inline
+
+input.pledge
+    display : block
+    margin : 1em auto
 
 input.tag-input
     background : none
