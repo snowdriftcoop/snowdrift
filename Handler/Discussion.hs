@@ -617,6 +617,7 @@ getWikiNewCommentsR project_handle = do
             else
                 return ()
 
-    defaultLayout $(widgetFile "wiki_new_comments")
-
+    defaultLayout $ do
+        setTitle . toHtml $ projectName project <> " - New Comments | Snowdrift.coop"
+        $(widgetFile "wiki_new_comments")
 

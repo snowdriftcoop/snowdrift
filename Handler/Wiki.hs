@@ -477,7 +477,7 @@ getWikiNewEditsR project_handle = do
                 return ()
 
     defaultLayout $ do
-        setTitle . toHtml $ projectName project <> " Wiki - New Edits | Snowdrift.coop"
+        setTitle . toHtml $ projectName project <> " - New Wiki Edits | Snowdrift.coop"
         $(widgetFile "wiki_new_edits")
 
 
