@@ -1181,6 +1181,42 @@ ALTER SEQUENCE user_setting_id_seq OWNED BY user_setting.id;
 
 
 --
+-- Name: view_time; Type: TABLE; Schema: public; Owner: snowdrift_development; Tablespace: 
+--
+
+CREATE TABLE view_time (
+    id integer NOT NULL,
+    "user" bigint NOT NULL,
+    project bigint NOT NULL,
+    type character varying NOT NULL,
+    "time" timestamp without time zone DEFAULT now() NOT NULL
+);
+
+
+ALTER TABLE public.view_time OWNER TO snowdrift_development;
+
+--
+-- Name: view_time_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
+--
+
+CREATE SEQUENCE view_time_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.view_time_id_seq OWNER TO snowdrift_development;
+
+--
+-- Name: view_time_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
+--
+
+ALTER SEQUENCE view_time_id_seq OWNED BY view_time.id;
+
+
+--
 -- Name: volunteer_application; Type: TABLE; Schema: public; Owner: snowdrift_development; Tablespace: 
 --
 
@@ -1618,6 +1654,13 @@ ALTER TABLE ONLY user_setting ALTER COLUMN id SET DEFAULT nextval('user_setting_
 -- Name: id; Type: DEFAULT; Schema: public; Owner: snowdrift_development
 --
 
+ALTER TABLE ONLY view_time ALTER COLUMN id SET DEFAULT nextval('view_time_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: snowdrift_development
+--
+
 ALTER TABLE ONLY volunteer_application ALTER COLUMN id SET DEFAULT nextval('volunteer_application_id_seq'::regclass);
 
 
@@ -1697,6 +1740,7 @@ COPY build (id, boot_time, base, diff) FROM stdin;
 17	2014-01-24 21:47:53.941683	b857adcedd7be11cf2909b5d6cb536fb17d999c9	
 18	2014-01-24 23:28:23.255958	b857adcedd7be11cf2909b5d6cb536fb17d999c9	
 19	2014-02-04 05:22:47.977252	e42ac19d7713acb15779eb289dc57697a265ffe3	
+20	2014-02-19 07:09:52.149825	c493fa2f71136591ce1da62d6f53b7044d9cd408	
 \.
 
 
@@ -1704,7 +1748,7 @@ COPY build (id, boot_time, base, diff) FROM stdin;
 -- Name: build_id_seq; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_development
 --
 
-SELECT pg_catalog.setval('build_id_seq', 19, true);
+SELECT pg_catalog.setval('build_id_seq', 20, true);
 
 
 --
@@ -1716,6 +1760,7 @@ COPY comment (id, created_ts, moderated_ts, moderated_by, parent, "user", text, 
 2	2014-01-21 18:13:00.273315	2014-01-21 18:13:10.464805	1	1	1	Replies are threaded.	1
 3	2014-01-21 18:13:57.732222	\N	\N	\N	1	When a comment is posted by an unestablished user, it is marked for moderation and only shown to moderators.	0
 4	2014-01-21 18:15:30.945499	2014-01-21 18:15:37.484472	1	\N	1	adding a line starting with "ticket:" such as\n\nticket: this is a ticket\n\nmakes the post show up at /t where all the tickets are listed	0
+5	2014-02-19 07:16:16.641509	2014-02-19 07:16:16.641509	1	\N	1	# Intro here in test DB\n\nThe version of the intro here in the test DB may be outdated from the live intro on the actual site. Having it here is good for experimenting. It shows how Bootstrap and HTML can be integrated into the Wiki Markdown.	0
 \.
 
 
@@ -1739,7 +1784,7 @@ SELECT pg_catalog.setval('comment_ancestor_id_seq', 1, true);
 -- Name: comment_id_seq; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_development
 --
 
-SELECT pg_catalog.setval('comment_id_seq', 4, true);
+SELECT pg_catalog.setval('comment_id_seq', 5, true);
 
 
 --
@@ -1792,7 +1837,7 @@ SELECT pg_catalog.setval('committee_user_id_seq', 1, false);
 --
 
 COPY database_version (id, last_migration) FROM stdin;
-1	3
+1	4
 \.
 
 
@@ -2164,6 +2209,21 @@ SELECT pg_catalog.setval('user_setting_id_seq', 1, false);
 
 
 --
+-- Data for Name: view_time; Type: TABLE DATA; Schema: public; Owner: snowdrift_development
+--
+
+COPY view_time (id, "user", project, type, "time") FROM stdin;
+\.
+
+
+--
+-- Name: view_time_id_seq; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_development
+--
+
+SELECT pg_catalog.setval('view_time_id_seq', 1, false);
+
+
+--
 -- Data for Name: volunteer_application; Type: TABLE DATA; Schema: public; Owner: snowdrift_development
 --
 
@@ -2204,6 +2264,7 @@ COPY wiki_edit (id, ts, "user", page, content, comment) FROM stdin;
 4	2014-01-21 17:53:21.094299	1	2	# About Snowdrift.coop\n\nAll the real *about* stuff is on the live site: <https://snowdrift.coop/p/snowdrift/w/about>\n\nHere we will explain about testing.\n\n## Wiki pages\n\nSee the live site for details about the wiki system: <https://snowdrift.coop/p/snowdrift/w/wiki>\n\nIn creating the page you are looking at, several edits were made, so you can click above to see the history.\n\nThere are discussion pages for every wiki page, as shown above.	Added sentence about discussion pages
 5	2014-01-21 17:55:07.436846	1	3	See the live site for [press info](https://snowdrift.coop/p/snowdrift/w/press)	Page created.
 6	2014-01-21 18:09:53.469506	1	4	# Development notes\n\nSee the live site for the full [how-to-help page](https://snowdrift.coop/p/snowdrift/w/how-to-help).\n\n## Development notes\n\nThe essential development details are in the README.md file with the code, not in this test database. When adding new info, consider whether it is best there versus here in the test database (the README has instructions about updating the test database).\n\n## Users\n\n[localhost:3000/u](/u) is a listing of all the users. The first user is just "admin" (passphrase is also "admin"). When new users register they start out unestablished and with no roles. You can add roles by using the admin user and visiting <http://localhost:3000/p/snowdrift/invite> and then logging in as another user to redeem the code.\n\nIt is a good idea to test things as:\n\na. logged-out\na. unestablished user\na. established users with different roles\n\nObviously testing on different systems, browsers, devices, etc. is good too.\n\n## Tickets\n\nSee <https://snowdrift.coop/p/snowdrift/t> for the live site's list of tickets. This is also linked at the live site's how-to-help page. Please add tickets to the live site as appropriate, add comments and questions, and mark things complete after you have fixed them and committed your changes.	Page created.
+7	2014-02-19 07:13:42.97039	1	1	<div class="container text-center">\n\n# Intro to Snowdrift.coop\n\n<div class="row">\n<div class="col-sm-5 col-md-4">\n\nLet's consider *soft* wares…\n\n<div class="hidden-sm">\n<img alt="soft things imagined in a fuzzy cloud" style="padding: 0;" src="/static/img/intro/soft.png">\n</div>\n<div class="visible-sm">\n<img alt="soft things imagined in a fuzzy cloud" style="padding: 0;" src="/static/img/intro/soft.png" width=60%>\n</div>\nPrograms, art, music, texts, research, data, plans…\n\n</div>\n<div class="col-sm-7 col-md-8 col-lg-7 col-lg-offset-1">\n\nThey take effort to produce, but can be free to copy and share.\n\n![](/static/img/intro/effort.png)\n\n</div>\n</div>\n\n<h3 style="margin: 2em 0 0">\nToday, we see two ways to support development:\n</h3>\n\n<div class="row">\n<div class="col-sm-6 col-md-5 col-lg-4 col-lg-offset-1">\n\n<h2 style="margin: 1em 0 0">\nProprietary\n</h2>\n\nlock things down, charge for access\n\n![](/static/img/intro/proprietary.png)\n\n\nProject teams get paid,\nbut restrictions hurt everyone's freedoms \nto access, use, modify, and share!\n\n</div>\n<div class="col-sm-6 col-md-5 col-lg-4 col-md-offset-2">\n\n<h2 style="margin: 1em 0 0">\nFree/Libre/Open \n<small>[(FLO)](free-libre-open)</small>\n</h2>\n\nvoluntary community development\n\n![](/static/img/intro/flo.png)\n\nFreedoms for all! Open access! Collaboration!\nBut with limited funding, progress is often\nslow and fragmented.\n\n</div>\n</div>\n<div class="row" style="margin-top: 1.5em">\n<div class="col-xs-12">\n<h3 style="margin-bottom: 0">\nWhy not have the best of both worlds? Funding *and* freedom!\n</h3>\n\nFunds clearly exist. Can't we just move them to FLO projects instead of proprietary ones?\n\n</div>\n</div>\n\n<div class="row">\n<div class="col-md-3">\n\n<div class="visible-lg">\n<br>\n</div>\n\nPay project teams\nso they can can afford to\ndedicate time and energy\n\n<div class="hidden-xs hidden-sm">\n<br>\n</div>\n\nThose who would have paid\nfor proprietary access can\nfund FLO projects instead\n\n</div>\n<div class="col-md-6" style="margin: 0; padding: 0;">\n<img style="padding: 0;" src="/static/img/intro/flo-funding.png">\n</div>\n<div class="col-md-3">\n\n<div class="hidden-xs hidden-sm">\n<br>\n</div>\n\n<div class="visible-lg">\n<br>\n</div>\n\nVolunteers still\ncontribute creatively\n\n<div class="hidden-xs hidden-sm">\n<br>\n</div>\n\n<div class="visible-lg">\n<br><br>\n</div>\n\nThose who can't afford\ntime or money\nstill have access\n\n</div>\n</div>\n\n### Yet if access is free, will people still pay?\n\n<div class="row">\n<div class="col-md-6 text-left">\n\nTo achieve our vision, we need to cooperate; we can't just *assume* each individual will do their part.\n\nThis dilemma is often addressed with all-or-nothing fund-drives, but those are fraught with problems and don't provide sustainable funding.\n\n</div>\n<div class="col-md-6 text-left">\n\nOur solution is to simply tell everyone else that *we'll chip in more if more people will come help us*.\n\nLike neighbors coordinating to clear a snowdrift after a storm,\nwe can achieve great things…\n*if we work together!*\n\n</div>\n</div>\n\n<h2 style="margin: 1em 0 0">\nIntroducing:\n</h2>\n\n![](/static/img/logo.png)\n\n#### FLO projects get listed on the site, and the community patrons make a **matching pledge**:\n\n<br>\n<div class="row">\n<div class="col-xs-6 col-sm-3 col-lg-2 col-lg-offset-1">\n\n**Each month,**  \n![](/static/img/intro/month.png)\n\n</div>\n<div class="col-xs-6 col-sm-3">\n\n**I will donate 1¢**  \n![](/static/img/intro/cent.png)\n\n</div>\n<div class="col-xs-12 col-sm-6 col-lg-5">\n\n**for every 100 others who also pledge.**  \n![](/static/img/intro/100.png)\n\n</div>\n</div>\n\n\n<div class="row">\n<div class="hidden-xs col-md-10 col-md-offset-1 col-lg-8 col-lg-offset-2">\n\n<figure><img style="float: right; padding: 0;" src="/static/img/intro/wealthy.png"></figure>\nThat's the *minimum* base level.  \nTo give more, you can increase your pledge!  \n*Our precise [formula](formula)\nadds extra matching\nfor larger pledges…*\n\n</div>\n<div class="visible-xs">\n\nThat's the *minimum* base level.\nTo give more, you can increase your pledge!  \n![](/static/img/intro/wealthy.png)  \n*Our precise [formula](formula)\nadds extra matching\nfor larger pledges…*\n\n</div>\n</div>\n\nNobody goes it alone, each new patron is matched by the rest of the community!\n\n<div class="row">\n<div class="col-sm-8 col-md-6 col-md-offset-1 col-lg-5 col-lg-offset-2" style="padding-right: 0;">\n<img style="padding: 0;" src="/static/img/intro/quadratic.png">  \n**more patrons**\n</div>\n<div class="col-xs-12 visible-xs">\n&times; **more \\$ per patron** = quadratic funding growth\n</div>\n<div class="hidden-xs col-sm-4 text-left">\n<br>\n<p>\n**more \\$ per patron**\n<br><br><br><br><br>\n= quadratic funding growth\n</p>\n\n</div>\n</div>\n\nThe funds in each patron's account set the limit for total possible donations.\n\nAs long as projects continue to do good work and respond to feedback,  \n\n<div class="row">\n<div class="col-xs-6 col-md-4 col-md-offset-2">\nthey will receive ongoing support,  \n![](/static/img/intro/ongoing.png)\n</div>\n<div class="col-xs-6 col-md-3 col-md-offset-1 col-lg-4 col-lg-offset-0">\nallowing them to prosper and grow.  \n![](/static/img/intro/grow.png)\n</div>\n</div>\n\nWe're also organized as a non-profit member-owned cooperative,  \n![](/static/img/intro/co-op.png)  \nand we fund ourselves as one of the projects on the site instead of taking a cut of donations to other projects.\n\n## Read on: [*About Snowdrift.coop*](about)\n\n</div>\n\n### Jump in and try it!\n\n[Register an account](/auth/login) to pledge (with fake money for now during our alpha stage). It is always more meaningful to experience something than to only read about it conceptually. As we develop the system, we will add more clear charts and stats to help everyone understand what is happening and how it all works.	more complex graphical intro, makes sense in test DB to play with here
 \.
 
 
@@ -2211,7 +2272,7 @@ COPY wiki_edit (id, ts, "user", page, content, comment) FROM stdin;
 -- Name: wiki_edit_id_seq; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_development
 --
 
-SELECT pg_catalog.setval('wiki_edit_id_seq', 6, true);
+SELECT pg_catalog.setval('wiki_edit_id_seq', 7, true);
 
 
 --
@@ -2219,10 +2280,10 @@ SELECT pg_catalog.setval('wiki_edit_id_seq', 6, true);
 --
 
 COPY wiki_last_edit (id, page, edit) FROM stdin;
-1	1	1
 2	2	4
 3	3	5
 4	4	6
+1	1	7
 \.
 
 
@@ -2238,10 +2299,10 @@ SELECT pg_catalog.setval('wiki_last_edit_id_seq', 4, true);
 --
 
 COPY wiki_page (id, target, project, content, permission_level) FROM stdin;
-1	intro	1	# Welcome\n\nThank you for testing (and hopefully helping to develop) Snowdrift.coop!\n\nThis is a wiki page within your test database. It is different than the database for the real Snowdrift.coop site.	Normal
 2	about	1	# About Snowdrift.coop\n\nAll the real *about* stuff is on the live site: <https://snowdrift.coop/p/snowdrift/w/about>\n\nHere we will explain about testing.\n\n## Wiki pages\n\nSee the live site for details about the wiki system: <https://snowdrift.coop/p/snowdrift/w/wiki>\n\nIn creating the page you are looking at, several edits were made, so you can click above to see the history.\n\nThere are discussion pages for every wiki page, as shown above.	Normal
 3	press	1	See the live site for [press info](https://snowdrift.coop/p/snowdrift/w/press)	Normal
 4	how-to-help	1	# Development notes\n\nSee the live site for the full [how-to-help page](https://snowdrift.coop/p/snowdrift/w/how-to-help).\n\n## Development notes\n\nThe essential development details are in the README.md file with the code, not in this test database. When adding new info, consider whether it is best there versus here in the test database (the README has instructions about updating the test database).\n\n## Users\n\n[localhost:3000/u](/u) is a listing of all the users. The first user is just "admin" (passphrase is also "admin"). When new users register they start out unestablished and with no roles. You can add roles by using the admin user and visiting <http://localhost:3000/p/snowdrift/invite> and then logging in as another user to redeem the code.\n\nIt is a good idea to test things as:\n\na. logged-out\na. unestablished user\na. established users with different roles\n\nObviously testing on different systems, browsers, devices, etc. is good too.\n\n## Tickets\n\nSee <https://snowdrift.coop/p/snowdrift/t> for the live site's list of tickets. This is also linked at the live site's how-to-help page. Please add tickets to the live site as appropriate, add comments and questions, and mark things complete after you have fixed them and committed your changes.	Normal
+1	intro	1	<div class="container text-center">\n\n# Intro to Snowdrift.coop\n\n<div class="row">\n<div class="col-sm-5 col-md-4">\n\nLet's consider *soft* wares…\n\n<div class="hidden-sm">\n<img alt="soft things imagined in a fuzzy cloud" style="padding: 0;" src="/static/img/intro/soft.png">\n</div>\n<div class="visible-sm">\n<img alt="soft things imagined in a fuzzy cloud" style="padding: 0;" src="/static/img/intro/soft.png" width=60%>\n</div>\nPrograms, art, music, texts, research, data, plans…\n\n</div>\n<div class="col-sm-7 col-md-8 col-lg-7 col-lg-offset-1">\n\nThey take effort to produce, but can be free to copy and share.\n\n![](/static/img/intro/effort.png)\n\n</div>\n</div>\n\n<h3 style="margin: 2em 0 0">\nToday, we see two ways to support development:\n</h3>\n\n<div class="row">\n<div class="col-sm-6 col-md-5 col-lg-4 col-lg-offset-1">\n\n<h2 style="margin: 1em 0 0">\nProprietary\n</h2>\n\nlock things down, charge for access\n\n![](/static/img/intro/proprietary.png)\n\n\nProject teams get paid,\nbut restrictions hurt everyone's freedoms \nto access, use, modify, and share!\n\n</div>\n<div class="col-sm-6 col-md-5 col-lg-4 col-md-offset-2">\n\n<h2 style="margin: 1em 0 0">\nFree/Libre/Open \n<small>[(FLO)](free-libre-open)</small>\n</h2>\n\nvoluntary community development\n\n![](/static/img/intro/flo.png)\n\nFreedoms for all! Open access! Collaboration!\nBut with limited funding, progress is often\nslow and fragmented.\n\n</div>\n</div>\n<div class="row" style="margin-top: 1.5em">\n<div class="col-xs-12">\n<h3 style="margin-bottom: 0">\nWhy not have the best of both worlds? Funding *and* freedom!\n</h3>\n\nFunds clearly exist. Can't we just move them to FLO projects instead of proprietary ones?\n\n</div>\n</div>\n\n<div class="row">\n<div class="col-md-3">\n\n<div class="visible-lg">\n<br>\n</div>\n\nPay project teams\nso they can can afford to\ndedicate time and energy\n\n<div class="hidden-xs hidden-sm">\n<br>\n</div>\n\nThose who would have paid\nfor proprietary access can\nfund FLO projects instead\n\n</div>\n<div class="col-md-6" style="margin: 0; padding: 0;">\n<img style="padding: 0;" src="/static/img/intro/flo-funding.png">\n</div>\n<div class="col-md-3">\n\n<div class="hidden-xs hidden-sm">\n<br>\n</div>\n\n<div class="visible-lg">\n<br>\n</div>\n\nVolunteers still\ncontribute creatively\n\n<div class="hidden-xs hidden-sm">\n<br>\n</div>\n\n<div class="visible-lg">\n<br><br>\n</div>\n\nThose who can't afford\ntime or money\nstill have access\n\n</div>\n</div>\n\n### Yet if access is free, will people still pay?\n\n<div class="row">\n<div class="col-md-6 text-left">\n\nTo achieve our vision, we need to cooperate; we can't just *assume* each individual will do their part.\n\nThis dilemma is often addressed with all-or-nothing fund-drives, but those are fraught with problems and don't provide sustainable funding.\n\n</div>\n<div class="col-md-6 text-left">\n\nOur solution is to simply tell everyone else that *we'll chip in more if more people will come help us*.\n\nLike neighbors coordinating to clear a snowdrift after a storm,\nwe can achieve great things…\n*if we work together!*\n\n</div>\n</div>\n\n<h2 style="margin: 1em 0 0">\nIntroducing:\n</h2>\n\n![](/static/img/logo.png)\n\n#### FLO projects get listed on the site, and the community patrons make a **matching pledge**:\n\n<br>\n<div class="row">\n<div class="col-xs-6 col-sm-3 col-lg-2 col-lg-offset-1">\n\n**Each month,**  \n![](/static/img/intro/month.png)\n\n</div>\n<div class="col-xs-6 col-sm-3">\n\n**I will donate 1¢**  \n![](/static/img/intro/cent.png)\n\n</div>\n<div class="col-xs-12 col-sm-6 col-lg-5">\n\n**for every 100 others who also pledge.**  \n![](/static/img/intro/100.png)\n\n</div>\n</div>\n\n\n<div class="row">\n<div class="hidden-xs col-md-10 col-md-offset-1 col-lg-8 col-lg-offset-2">\n\n<figure><img style="float: right; padding: 0;" src="/static/img/intro/wealthy.png"></figure>\nThat's the *minimum* base level.  \nTo give more, you can increase your pledge!  \n*Our precise [formula](formula)\nadds extra matching\nfor larger pledges…*\n\n</div>\n<div class="visible-xs">\n\nThat's the *minimum* base level.\nTo give more, you can increase your pledge!  \n![](/static/img/intro/wealthy.png)  \n*Our precise [formula](formula)\nadds extra matching\nfor larger pledges…*\n\n</div>\n</div>\n\nNobody goes it alone, each new patron is matched by the rest of the community!\n\n<div class="row">\n<div class="col-sm-8 col-md-6 col-md-offset-1 col-lg-5 col-lg-offset-2" style="padding-right: 0;">\n<img style="padding: 0;" src="/static/img/intro/quadratic.png">  \n**more patrons**\n</div>\n<div class="col-xs-12 visible-xs">\n&times; **more \\$ per patron** = quadratic funding growth\n</div>\n<div class="hidden-xs col-sm-4 text-left">\n<br>\n<p>\n**more \\$ per patron**\n<br><br><br><br><br>\n= quadratic funding growth\n</p>\n\n</div>\n</div>\n\nThe funds in each patron's account set the limit for total possible donations.\n\nAs long as projects continue to do good work and respond to feedback,  \n\n<div class="row">\n<div class="col-xs-6 col-md-4 col-md-offset-2">\nthey will receive ongoing support,  \n![](/static/img/intro/ongoing.png)\n</div>\n<div class="col-xs-6 col-md-3 col-md-offset-1 col-lg-4 col-lg-offset-0">\nallowing them to prosper and grow.  \n![](/static/img/intro/grow.png)\n</div>\n</div>\n\nWe're also organized as a non-profit member-owned cooperative,  \n![](/static/img/intro/co-op.png)  \nand we fund ourselves as one of the projects on the site instead of taking a cut of donations to other projects.\n\n## Read on: [*About Snowdrift.coop*](about)\n\n</div>\n\n### Jump in and try it!\n\n[Register an account](/auth/login) to pledge (with fake money for now during our alpha stage). It is always more meaningful to experience something than to only read about it conceptually. As we develop the system, we will add more clear charts and stats to help everyone understand what is happening and how it all works.	Normal
 \.
 
 
@@ -2254,6 +2315,7 @@ COPY wiki_page_comment (id, comment, page) FROM stdin;
 2	2	2
 3	3	2
 4	4	2
+5	5	1
 \.
 
 
@@ -2261,7 +2323,7 @@ COPY wiki_page_comment (id, comment, page) FROM stdin;
 -- Name: wiki_page_comment_id_seq; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_development
 --
 
-SELECT pg_catalog.setval('wiki_page_comment_id_seq', 4, true);
+SELECT pg_catalog.setval('wiki_page_comment_id_seq', 5, true);
 
 
 --
@@ -2648,6 +2710,14 @@ ALTER TABLE ONLY "user"
 
 
 --
+-- Name: unique_view_time_user_project_type; Type: CONSTRAINT; Schema: public; Owner: snowdrift_development; Tablespace: 
+--
+
+ALTER TABLE ONLY view_time
+    ADD CONSTRAINT unique_view_time_user_project_type UNIQUE ("user", project, type);
+
+
+--
 -- Name: unique_wiki_last_edit; Type: CONSTRAINT; Schema: public; Owner: snowdrift_development; Tablespace: 
 --
 
@@ -2685,6 +2755,14 @@ ALTER TABLE ONLY "user"
 
 ALTER TABLE ONLY user_setting
     ADD CONSTRAINT user_setting_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: view_time_pkey; Type: CONSTRAINT; Schema: public; Owner: snowdrift_development; Tablespace: 
+--
+
+ALTER TABLE ONLY view_time
+    ADD CONSTRAINT view_time_pkey PRIMARY KEY (id);
 
 
 --
@@ -3131,6 +3209,22 @@ ALTER TABLE ONLY "user"
 
 ALTER TABLE ONLY user_setting
     ADD CONSTRAINT user_setting_user_fkey FOREIGN KEY ("user") REFERENCES "user"(id);
+
+
+--
+-- Name: view_time_project_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_development
+--
+
+ALTER TABLE ONLY view_time
+    ADD CONSTRAINT view_time_project_fkey FOREIGN KEY (project) REFERENCES project(id);
+
+
+--
+-- Name: view_time_user_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_development
+--
+
+ALTER TABLE ONLY view_time
+    ADD CONSTRAINT view_time_user_fkey FOREIGN KEY ("user") REFERENCES "user"(id);
 
 
 --
