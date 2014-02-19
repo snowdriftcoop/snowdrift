@@ -109,27 +109,27 @@ navbar = do
                         ( viewtime ^. ViewTimeProject ==. val project_id ) &&.
                         ( viewtime ^. ViewTimeType ==. val ViewEdits )
                     return viewtime
-                comments <- case comment_viewtimes of
-                    [] -> return $ [Value 0]
-                    viewtime:_ ->
-                        select $ from $ \(comment `LeftOuterJoin` wpc `LeftOuterJoin` wp) -> do
-                            on_ (wp ^. WikiPageId ==. wpc ^. WikiPageCommentPage)
-                            on_ (wpc ^. WikiPageCommentComment ==. comment ^. CommentId)
-                            where_ $
-                                ( comment ^. CommentCreatedTs >=. (val . viewTimeTime $ entityVal viewtime ) ) &&.
-                                ( wp ^. WikiPageProject ==. val project_id ) &&.
-                                ( comment ^. CommentUser !=. val user_id )
-                            return (countRows :: SqlExpr (Value Int))
-                edits <- case edit_viewtimes of
-                    [] -> return $ [Value 0]
-                    viewtime:_ ->
-                        select $ from $ \(edit `LeftOuterJoin` wp) -> do
-                            on_ (wp ^. WikiPageId ==. edit ^. WikiEditPage)
-                            where_ $
-                                ( edit ^. WikiEditTs >=. (val . viewTimeTime $ entityVal viewtime) ) &&.
-                                ( wp ^. WikiPageProject ==. val project_id ) &&.
-                                ( edit ^. WikiEditUser !=. val user_id )
-                            return (countRows :: SqlExpr (Value Int))
+                let comments_ts = case comment_viewtimes of
+                        [] -> userReadComments user
+                        (Entity _ viewtime):_ -> viewTimeTime viewtime
+                    edits_ts = case edit_viewtimes of
+                        [] -> userReadEdits user
+                        (Entity _ viewtime):_ -> viewTimeTime viewtime
+                comments <- select $ from $ \(comment `LeftOuterJoin` wpc `LeftOuterJoin` wp) -> do
+                    on_ (wp ^. WikiPageId ==. wpc ^. WikiPageCommentPage)
+                    on_ (wpc ^. WikiPageCommentComment ==. comment ^. CommentId)
+                    where_ $
+                        ( comment ^. CommentCreatedTs >=. val comments_ts ) &&.
+                        ( wp ^. WikiPageProject ==. val project_id ) &&.
+                        ( comment ^. CommentUser !=. val user_id )
+                    return (countRows :: SqlExpr (Value Int))
+                edits <- select $ from $ \(edit `LeftOuterJoin` wp) -> do
+                    on_ (wp ^. WikiPageId ==. edit ^. WikiEditPage)
+                    where_ $
+                        ( edit ^. WikiEditTs >=. val edits_ts ) &&.
+                        ( wp ^. WikiPageProject ==. val project_id ) &&.
+                        ( edit ^. WikiEditUser !=. val user_id )
+                    return (countRows :: SqlExpr (Value Int))
                 return (comments, edits)
             let (comments, edits) = foldl foldCounts (0, 0) counts
 
