@@ -23,13 +23,13 @@ Development guidelines and notes
 
 Overall, we strive to follow universal standards, be fully accessible, and avoid browser-specific code.
 
-All JavaScript should be recognized as acceptable by the FSF's [LibreJS plugin](https://www.gnu.org/software/librejs/).
+We generally build with *progressive enhancement* in mind.
+Content and functions should be built with simple HTML/CSS along with Yesod/Haskell server-side functions.
+JavaScript may then added for enhancement. Consider the ideas of [Unobtrusive JavaScript](http://en.wikipedia.org/wiki/Unobtrusive_JavaScript).
+Use of NoScript should never causes a broken experience.
+We also make sure all our JavaScript is recognized by the FSF's [LibreJS plugin](https://www.gnu.org/software/librejs/).
 
-**When in doubt, make sure things work well enough without JavaScript.**
-NoScript should not cause a broken experience.
-JS is fine for amplification and beautification but should not be required for essential functions.
-
-We have a separate wiki and discussion page on the site specifically for [web-design issues](https://snowdrift.coop/p/snowdrift/w/site-design).
+We have a separate wiki and discussion page on the site for discussing specific [web-design issues](https://snowdrift.coop/p/snowdrift/w/site-design).
 
 
 About the frameworks and tools we use
