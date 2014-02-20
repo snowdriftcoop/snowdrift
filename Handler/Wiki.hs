@@ -87,7 +87,7 @@ postWikiR project_handle target = do
             case mode of
                 Just "preview" -> do
                     (form, _) <- generateFormPost $ editWikiForm last_edit_id content comment
-                    defaultLayout $ renderPreview form action $ renderWiki project_handle target False False $ WikiPage target project_id content Normal
+                    defaultLayout $ renderPreview form action $ renderWiki project_handle target False False $ WikiPage target project_id content undefined Normal
 
                 Just x | x == action -> do
                     runDB $ do
@@ -118,8 +118,7 @@ postWikiR project_handle target = do
                                     , "(this ticket was automatically generated)"
                                     ]
 
-                            comment_id <- insert $ Comment now (Just now) (Just user_id) Nothing user_id comment_body 0
-                            void $ insert $ WikiPageComment comment_id page_id
+                            comment_id <- insert $ Comment now (Just now) (Just user_id) (wikiPageDiscussion page) Nothing user_id comment_body 0
 
                             void $ insert $ Ticket now now "edit conflict" comment_id
 
@@ -278,12 +277,13 @@ postNewWikiR project_handle target = do
                 Just "preview" -> do
                         (form, _) <- generateFormPost $ newWikiForm (Just content)
                         defaultLayout $ renderPreview form action $ renderWiki project_handle target False False page
-                            where page = WikiPage target project_id content Normal
+                            where page = WikiPage target project_id content undefined Normal
 
 
                 Just x | x == action -> do
                     _ <- runDB $ do
-                        page_id <- insert $ WikiPage target project_id content Normal
+                        discussion_id <- insert Discussion
+                        page_id <- insert $ WikiPage target project_id content discussion_id Normal
                         edit_id <- insert $ WikiEdit now user_id page_id content $ Just "Page created."
                         insert $ WikiLastEdit page_id edit_id
 

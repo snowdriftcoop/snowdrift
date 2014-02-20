@@ -342,7 +342,7 @@ projectBlogForm now user_id project_id =
     mkBlog :: Text -> Markdown -> ProjectBlog
     mkBlog title (Markdown content) =
         let (top_content, bottom_content) = break (== "---") $ T.lines content
-         in ProjectBlog now title user_id project_id (Markdown $ T.unlines top_content) (if null bottom_content then Nothing else Just $ Markdown $ T.unlines bottom_content)
+         in ProjectBlog now title user_id project_id undefined (Markdown $ T.unlines top_content) (if null bottom_content then Nothing else Just $ Markdown $ T.unlines bottom_content)
 
 
 postProjectBlogR :: Text -> Handler Html

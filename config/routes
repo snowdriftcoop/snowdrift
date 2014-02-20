@@ -40,14 +40,15 @@
 /p/#Text/w/#Text/discuss/new OldNewDiscussWikiR GET POST
 /p/#Text/w/#Text/c/#CommentId DiscussCommentR GET
 /p/#Text/w/#Text/c/#CommentId/reply ReplyCommentR GET
-/p/#Text/w/#Text/c/#CommentId/moderate ApproveCommentR GET POST
-/p/#Text/w/#Text/c/#CommentId/retract RetractCommentR GET POST
+/p/#Text/w/#Text/c/#CommentId/moderate ApproveWikiCommentR GET POST
+/p/#Text/w/#Text/c/#CommentId/rethread RethreadWikiCommentR POST
+/p/#Text/w/#Text/c/#CommentId/retract RetractWikiCommentR GET POST
 /p/#Text/w/#Text/c/#CommentId/tags CommentTagsR GET
 /p/#Text/w/#Text/c/#CommentId/tag/#TagId CommentTagR GET POST
 /p/#Text/w/#Text/c/#CommentId/tag/!new NewCommentTagR GET POST
 /p/#Text/w/#Text/comment/#CommentId OldDiscussCommentR GET
-/p/#Text/w/#Text/comment/#CommentId/moderate OldApproveCommentR GET POST
-/p/#Text/w/#Text/comment/#CommentId/retract OldRetractCommentR GET POST
+/p/#Text/w/#Text/comment/#CommentId/moderate OldApproveWikiCommentR GET POST
+/p/#Text/w/#Text/comment/#CommentId/retract OldRetractWikiCommentR GET POST
 /p/#Text/w/#Text/comment/#CommentId/tags OldCommentTagsR GET
 /p/#Text/w/#Text/comment/#CommentId/tag/#TagId OldCommentTagR GET POST
 /p/#Text/w/#Text/comment/#CommentId/tag/!new OldNewCommentTagR GET POST

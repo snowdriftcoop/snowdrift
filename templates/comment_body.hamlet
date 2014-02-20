@@ -45,7 +45,7 @@ $# used by renderComment function
         $if show_actions
             $if unapproved
                 <span .comment-action>
-                    <a href="@{ApproveCommentR project_handle target comment_id}">
+                    <a href="@{ApproveWikiCommentR project_handle target comment_id}">
                         approve
 
             $if not (maybe_route == Just (ReplyCommentR project_handle target comment_id))
@@ -55,7 +55,7 @@ $# used by renderComment function
 
             $if user_id == viewer_id
                 <span .comment-action>
-                    <a href="@{RetractCommentR project_handle target comment_id}" style="color: darkred">
+                    <a href="@{RetractWikiCommentR project_handle target comment_id}" style="color: darkred">
                         retract
 
             ^{newTagWidget $ NewCommentTagR project_handle target comment_id}

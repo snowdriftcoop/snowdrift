@@ -68,6 +68,7 @@ ProjectBlog
     title Text
     user UserId
     project ProjectId
+    discussion DiscussionId
     topContent Markdown
     bottomContent Markdown Maybe
     deriving Show
@@ -153,6 +154,7 @@ WikiPage
     target Text
     project ProjectId
     content Markdown
+    discussion DiscussionId
     permissionLevel PermissionLevel
     UniqueWikiTarget project target
 
@@ -168,24 +170,18 @@ WikiLastEdit
     edit WikiEditId
     UniqueWikiLastEdit page
 
+Discussion
+
 Comment
     createdTs UTCTime
     moderatedTs UTCTime Maybe
     moderatedBy UserId Maybe
+    discussion DiscussionId
     parent CommentId Maybe
     user UserId
     text Markdown
     depth Int
 
-WikiPageComment
-    comment CommentId
-    page WikiPageId
-    UniqueWikiPageComment comment
-
-ProjectBlogComment
-    comment CommentId
-    blog ProjectBlogId
-    UniqueProjectBlogComment comment
 
 CommentAncestor
     comment CommentId
@@ -196,6 +192,18 @@ CommentRetraction
     ts UTCTime
     reason Markdown
     comment CommentId
+
+CommentRethread
+    ts UTCTime
+    moderator UserId
+    oldParent CommentId Maybe
+    oldDiscussion DiscussionId
+
+    newParent CommentId Maybe
+    newDiscussion DiscussionId
+
+    comment CommentId
+    reason Text
 
 Tag
     name Text

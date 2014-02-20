@@ -112,9 +112,8 @@ getTicketsR project_handle = do
             _ -> (defaultFilter, defaultOrder)
 
     tickets :: [AnnotatedTicket] <- runDB $ do
-        tickets_info <- select $ from $ \ (ticket `InnerJoin` comment `InnerJoin` wiki_page_comment `InnerJoin` page) -> do
-            on_ $ page ^. WikiPageId ==. wiki_page_comment ^. WikiPageCommentPage
-            on_ $ comment ^. CommentId ==. wiki_page_comment ^. WikiPageCommentComment
+        tickets_info <- select $ from $ \ (ticket `InnerJoin` comment `InnerJoin` page) -> do
+            on_ $ page ^. WikiPageDiscussion ==. comment ^. CommentDiscussion
             on_ $ comment ^. CommentId ==. ticket ^. TicketComment
             where_ $ comment ^. CommentId `notIn` subList_select (from $ \ retraction -> return $ retraction ^. CommentRetractionComment)
             return (ticket, comment, page)

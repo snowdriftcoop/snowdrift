@@ -17,7 +17,10 @@ processCommentTags go project_handle target comment_id = do
     Entity project_id _ <- runDB $ getBy404 $ UniqueProjectHandle project_handle
     Entity page_id _ <- runDB $ getBy404 $ UniqueWikiTarget project_id target
 
-    comment_page <- fmap (wikiPageCommentPage . entityVal) $ runDB $ getBy404 $ UniqueWikiPageComment comment_id
+    [ Value comment_page ] <- runDB $ select $ from $ \ (c `InnerJoin` p) -> do
+        on_ $ c ^. CommentDiscussion ==. p ^. WikiPageDiscussion
+        where_ $ c ^. CommentId ==. val comment_id
+        return $ p ^. WikiPageId
 
     when (comment_page /= page_id) $ error "wrong page for comment"
 
@@ -37,7 +40,10 @@ processCommentTag go project_handle target comment_id tag_id = do
     Entity project_id _ <- runDB $ getBy404 $ UniqueProjectHandle project_handle
     Entity page_id _ <- runDB $ getBy404 $ UniqueWikiTarget project_id target
 
-    comment_page <- fmap (wikiPageCommentPage . entityVal) $ runDB $ getBy404 $ UniqueWikiPageComment comment_id
+    [ Value comment_page ] <- runDB $ select $ from $ \ (c `InnerJoin` p) -> do
+        on_ $ c ^. CommentDiscussion ==. p ^. WikiPageDiscussion
+        where_ $ c ^. CommentId ==. val comment_id
+        return $ p ^. WikiPageId
 
     when (comment_page /= page_id) $ error "wrong page for comment"
 
@@ -86,7 +92,10 @@ postCommentTagR project_handle target comment_id tag_id = do
     Entity project_id _ <- runDB $ getBy404 $ UniqueProjectHandle project_handle
     Entity page_id _ <- runDB $ getBy404 $ UniqueWikiTarget project_id target
 
-    comment_page <- fmap (wikiPageCommentPage . entityVal) $ runDB $ getBy404 $ UniqueWikiPageComment comment_id
+    [ Value comment_page ] <- runDB $ select $ from $ \ (c `InnerJoin` p) -> do
+        on_ $ c ^. CommentDiscussion ==. p ^. WikiPageDiscussion
+        where_ $ c ^. CommentId ==. val comment_id
+        return $ p ^. WikiPageId
 
     when (comment_page /= page_id) $ error "wrong page for comment"
 
@@ -114,7 +123,7 @@ postCommentTagR project_handle target comment_id tag_id = do
 
 
 getOldCommentTagsR :: Text -> Text -> CommentId -> Handler Html
-getOldCommentTagsR project_handle target comment_id = redirect $ CommentTagsR project_handle target comment_id 
+getOldCommentTagsR project_handle target comment_id = redirect $ CommentTagsR project_handle target comment_id
 
 getCommentTagsR :: Text -> Text -> CommentId -> Handler Html
 getCommentTagsR = processCommentTags renderTags
@@ -133,7 +142,10 @@ getNewCommentTagR project_handle target comment_id = do
     Entity page_id _ <- runDB $ getBy404 $ UniqueWikiTarget project_id target
 
     comment <- runDB $ get404 comment_id
-    comment_page <- fmap (wikiPageCommentPage . entityVal) $ runDB $ getBy404 $ UniqueWikiPageComment comment_id
+    [ Value comment_page ] <- runDB $ select $ from $ \ (c `InnerJoin` p) -> do
+        on_ $ c ^. CommentDiscussion ==. p ^. WikiPageDiscussion
+        where_ $ c ^. CommentId ==. val comment_id
+        return $ p ^. WikiPageId
 
     when (comment_page /= page_id) $ error "wrong page for comment"
 
@@ -162,7 +174,10 @@ postNewCommentTagR project_handle target comment_id = do
     Entity project_id _ <- runDB $ getBy404 $ UniqueProjectHandle project_handle
     Entity page_id _ <- runDB $ getBy404 $ UniqueWikiTarget project_id target
 
-    comment_page <- fmap (wikiPageCommentPage . entityVal) $ runDB $ getBy404 $ UniqueWikiPageComment comment_id
+    [ Value comment_page ] <- runDB $ select $ from $ \ (c `InnerJoin` p) -> do
+        on_ $ c ^. CommentDiscussion ==. p ^. WikiPageDiscussion
+        where_ $ c ^. CommentId ==. val comment_id
+        return $ p ^. WikiPageId
 
     when (comment_page /= page_id) $ error "wrong page for comment"
 
