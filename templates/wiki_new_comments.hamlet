@@ -1,10 +1,24 @@
 <div .row>
     <div .col-md-12>
-        <div .row>
-            ^{rendered_comments}
-
-        $if not (null comments)
+        $if null new_comments
             <div .row>
-                <a href="@{WikiNewCommentsR project_handle}?from=#{show (to + 1)}">
+                <h3>
+                    no new comments
+        $else
+            <div .row>
+                <h3>
+                    new comments
+            <div .row>
+                ^{rendered_new_comments}
+        $if not (null old_comments)
+            <hr>
+            <div .row>
+                <h3>
+                    old comments
+            <div .row>
+                ^{rendered_old_comments}
+        $if (not (null old_comments) || not (null new_comments))
+            <div .row>
+                <a href="@{WikiNewCommentsR project_handle}?from=#{show (to - 1)}">
                     older comments
 

@@ -541,7 +541,7 @@ getWikiNewCommentsR project_handle = do
 
     let tag_map = M.fromList $ entityPairs tags
 
-    (comments, pages, users, retraction_map) <- runDB $ do
+    (new_comments, old_comments, pages, users, retraction_map) <- runDB $ do
         unfiltered_pages <- select $ from $ \ page -> do
             where_ $ page ^. WikiPageProject ==. val project_id
             return page
@@ -551,29 +551,52 @@ getWikiNewCommentsR project_handle = do
 
         let apply_offset comment = maybe id (\ from_comment rest -> comment ^. CommentId >=. val from_comment &&. rest) maybe_from
 
-        comments <- select $ from $ \ (comment `InnerJoin` wiki_page_comment) -> do
+        viewtimes :: [Entity ViewTime] <- select $ from $ \ viewtime -> do
+            where_ $
+                ( viewtime ^. ViewTimeUser ==. val viewer_id ) &&.
+                ( viewtime ^. ViewTimeProject ==. val project_id ) &&.
+                ( viewtime ^. ViewTimeType ==. val ViewComments )
+            return viewtime
+
+        let comments_ts = case viewtimes of
+                [] -> userReadComments viewer
+                (Entity _ viewtime):_ -> viewTimeTime viewtime
+
+        new_comments :: [Entity Comment] <- select $ from $ \ (comment `InnerJoin` wiki_page_comment) -> do
             on_ $ comment ^. CommentId ==. wiki_page_comment ^. WikiPageCommentComment
-            where_ $ apply_offset comment $ wiki_page_comment ^. WikiPageCommentPage `in_` valList (M.keys pages)
+            where_ $
+                (apply_offset comment $ wiki_page_comment ^. WikiPageCommentPage `in_` valList (M.keys pages)) &&.
+                (comment ^. CommentCreatedTs >=. val comments_ts)
             orderBy [ desc (comment ^. CommentId) ]
             limit 50
             return comment
 
-        let user_ids = S.toList $ S.fromList $ map (commentUser . entityVal) comments
+        old_comments :: [Entity Comment] <- select $ from $ \ (comment `InnerJoin` wiki_page_comment) -> do
+            on_ $ comment ^. CommentId ==. wiki_page_comment ^. WikiPageCommentComment
+            where_ $
+                (apply_offset comment $ wiki_page_comment ^. WikiPageCommentPage `in_` valList (M.keys pages)) &&.
+                (comment ^. CommentCreatedTs <. val comments_ts)
+            orderBy [ desc (comment ^. CommentId) ]
+            limit $ fromIntegral $ 50 - length new_comments
+            offset $ fromIntegral $ length new_comments
+            return comment
+
+        let user_ids = S.toList $ S.fromList $ map (commentUser . entityVal) (new_comments <> old_comments)
         users <- fmap (M.fromList . map (entityKey &&& id)) $ select $ from $ \ user -> do
             where_ ( user ^. UserId `in_` valList user_ids )
             return user
 
         retraction_map <- do
             retractions <- select $ from $ \ comment_retraction -> do
-                where_ ( comment_retraction ^. CommentRetractionComment `in_` valList (map entityKey comments) )
+                where_ ( comment_retraction ^. CommentRetractionComment `in_` valList (map entityKey (new_comments <> old_comments) ) )
                 return comment_retraction
 
             return . M.fromList . map ((commentRetractionComment &&& id) . entityVal) $ retractions
 
-        return (comments, pages, users, retraction_map)
+        return (new_comments, old_comments, pages, users, retraction_map)
 
-    let PersistInt64 to = unKey $ minimum (map entityKey comments)
-        rendered_comments =
+    let PersistInt64 to = unKey $ minimum (map entityKey (new_comments <> old_comments) )
+        render_comments comments =
             if null comments
              then [whamlet|no new comments|]
              else forM_ comments $ \ (Entity comment_id comment) -> do
@@ -603,6 +626,8 @@ getWikiNewCommentsR project_handle = do
                             :
                             ^{rendered_comment}
                 |]
+        rendered_new_comments = render_comments new_comments
+        rendered_old_comments = render_comments old_comments
 
     runDB $ do
         c <- updateCount $ \ viewtime -> do
