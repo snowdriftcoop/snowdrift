@@ -48,8 +48,6 @@ HTML, CSS, and JavaScript work on the site may be done without knowing Haskell, 
 
 Our front-end design uses **[Twitter Bootstrap](http://getbootstrap.com/)** for layout and styles, although there are cases where we use our own custom CSS.
 
-Note: Bootstrap uses a 12-column layout, and some column specification is always required. So, our internal convention is to use .col-xs-12 as the default code. This default will generate full-width for all screen sizes, and then when we want to specify a particular thought-out decision about rendering on larger screens (including potentially staying full-width), we add classes for the other screen sizes (sm, md, lg) as appropriate. Otherwise, see the Bootstrap docs at the link above.
-
 On the site we have a page about [site-design](https://snowdrift.coop/p/snowdrift/w/site-design), and the tickets and discussion there cover specific issues.
 
 As a suggestion: Firefox's built-in developer tools offer lots of great ways to test the site, although [Firebug](https://getfirebug.com) may also be a useful addition for certain features.
