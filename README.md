@@ -1,5 +1,5 @@
-snowdrift
-=========
+Snowdrift.coop
+==============
 
 Infrastructure for [Snowdrift.coop](https://snowdrift.coop).
 
@@ -17,20 +17,6 @@ We have [our own in-progress ticketing system](http://snowdrift.coop/p/snowdrift
 
 This README assumes a basic understanding of command-line operations. If you need help with that or *any other* issues, let us know and we'll be happy to guide you!
                                                                                                                                         
-                                                                                                                                        
-Development guidelines and notes
-================================
-
-Overall, we strive to follow universal standards, be fully accessible, and avoid browser-specific code.
-
-We generally build with *progressive enhancement* in mind.
-Content and functions should be built with simple HTML/CSS along with Yesod/Haskell server-side functions.
-JavaScript may then added for enhancement. Consider the ideas of [Unobtrusive JavaScript](http://en.wikipedia.org/wiki/Unobtrusive_JavaScript).
-Use of NoScript should never causes a broken experience.
-We also make sure all our JavaScript is recognized by the FSF's [LibreJS plugin](https://www.gnu.org/software/librejs/).
-
-We have a separate wiki and discussion page on the site for discussing specific [web-design issues](https://snowdrift.coop/p/snowdrift/w/site-design).
-
 
 About the frameworks and tools we use
 =====================================
@@ -66,6 +52,20 @@ For VIM, for example, the config file .vimrc should have these three lines:
 VIM users should also install [Syntax Highlighting Files for Haskell](https://github.com/pbrisbin/html-template-syntax).
 
 Emacs users should use a package manager (preferably Marmalade) to install [Haskell Mode](https://github.com/haskell/haskell-mode).
+
+
+Development guidelines and notes
+================================
+
+Overall, we strive to follow universal standards, be fully accessible, and avoid browser-specific code.
+
+We generally build with *progressive enhancement* in mind.
+Content and functions should be built with simple HTML/CSS along with Yesod/Haskell server-side functions.
+JavaScript may then added for enhancement. Consider the ideas of [Unobtrusive JavaScript](http://en.wikipedia.org/wiki/Unobtrusive_JavaScript).
+Use of NoScript should never causes a broken experience.
+We also make sure all our JavaScript is recognized by the FSF's [LibreJS plugin](https://www.gnu.org/software/librejs/).
+
+We have a separate wiki and discussion page on the site for discussing specific [web-design issues](https://snowdrift.coop/p/snowdrift/w/site-design).
 
 
 Working on the code
