@@ -1,21 +1,14 @@
 <div .row>
-    <div .col-xs-12>
-        <div .row>
-            <div .col-sm-3>
-                <a href="@{WikiHistoryR project_handle target}">back to history
-            <div .col-sm-3>
-                <a href="@{WikiR project_handle target}">current version
-            <div .col-sm-3>
-                <a href="@{DiscussWikiR project_handle target}">view discussion
-        <div .row>
-                <div .col-xs-12>
-                    Page as of ^{renderTime (wikiEditTs edit)}
-        $maybe comment <- wikiEditComment edit
-            <div .row>
-                <div .col-xs-12>
-                    #{comment}
-        <hr .wikitop>
-        <div .row>
-                <div .col-xs-12>
-                    #{renderMarkdown project_handle (wikiEditContent edit)}
+    <div .col-sm-3>
+        <a href="@{WikiHistoryR project_handle target}">back to history
+    <div .col-sm-3>
+        <a href="@{WikiR project_handle target}">current version
+    <div .col-sm-3>
+        <a href="@{DiscussWikiR project_handle target}">view discussion
+
+Page as of ^{renderTime (wikiEditTs edit)}
+$maybe comment <- wikiEditComment edit
+    #{comment}
+<hr .wikitop>
+#{renderMarkdown project_handle (wikiEditContent edit)}
 

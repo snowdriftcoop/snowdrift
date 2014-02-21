@@ -1,3 +1,1 @@
-<div .row>
-    <div .col-xs-12>
-        #{renderMarkdown "snowdrift" (wikiEditContent page)}
+#{renderMarkdown "snowdrift" (wikiEditContent page)}

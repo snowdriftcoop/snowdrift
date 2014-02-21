@@ -1,23 +1,21 @@
-<div .row>
-    <div .col-xs-12>
-        $if not (null messages)
-            $forall Entity _ message <- messages
-                <div .row>
-                    <div .col-sm-3 .well .well-sm>
-                        $maybe from <- messageFrom message
-                            <em>from
-                            #{getUserName from}
-                        $nothing
-                            <em>from unregistered user
-                        <br>
-                        $maybe to <- messageTo message
-                            <em>to
-                            #{getUserName to}
-                        $nothing
-                            <em>to
-                            project generally
-                        <br>
-                        ^{renderTime (messageCreatedTs message)}
+$if not (null messages)
+    $forall Entity _ message <- messages
+        <div .row>
+            <div .col-sm-3 .well .well-sm>
+                $maybe from <- messageFrom message
+                    <em>from
+                    #{getUserName from}
+                $nothing
+                    <em>from unregistered user
+                <br>
+                $maybe to <- messageTo message
+                    <em>to
+                    #{getUserName to}
+                $nothing
+                    <em>to
+                    project generally
+                <br>
+                ^{renderTime (messageCreatedTs message)}
 
-                    <div .col-sm-9>
-                        #{messageContent message}
+            <div .col-sm-9>
+                #{messageContent message}

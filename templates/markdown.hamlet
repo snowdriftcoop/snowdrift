@@ -1,117 +1,115 @@
-<div .row>
-    <div .col-xs-12>
-        <h1>Summary of Markdown syntax
-        <p>
-            Markdown is a simple text-formatting system.
-            Below are the basics.
-        <p>
-            <em> Note: you can also use standard HTML within Markdown.
-        <p>
-            See
-            <a href="http://www.johnmacfarlane.net/pandoc/README#pandocs-markdown"> Pandoc's Markdown
-            for more options and details,
-            such as <a href="http://www.johnmacfarlane.net/pandoc/README#verbatim-code-blocks"> code blocks</a>,
-            <a href="http://www.johnmacfarlane.net/pandoc/README#pipe-tables"> tables
-            (note: our site requires the "pipe" table format), and much more.
-        <p>
-            <em> Note: most Markdown formatting is nestable
-        <h2> Basic formatting
-        <em>*italic*
+<h1>Summary of Markdown syntax
+<p>
+    Markdown is a simple text-formatting system.
+    Below are the basics.
+<p>
+    <em> Note: you can also use standard HTML within Markdown.
+<p>
+    See
+    <a href="http://www.johnmacfarlane.net/pandoc/README#pandocs-markdown"> Pandoc's Markdown
+    for more options and details,
+    such as <a href="http://www.johnmacfarlane.net/pandoc/README#verbatim-code-blocks"> code blocks</a>,
+    <a href="http://www.johnmacfarlane.net/pandoc/README#pipe-tables"> tables
+    (note: our site requires the "pipe" table format), and much more.
+<p>
+    <em> Note: most Markdown formatting is nestable
+<h2> Basic formatting
+<em>*italic*
+<br>
+<strong>**bold**
+<br>
+<strong>
+    <em>***bold-italic***
+<br>
+~~<del>deleted/strikethrough</del>~~
+<br>
+<p>
+    Make paragraphs by separating them with blank lines.
+    <br>
+    Add two or more spaces at the end of a line for a single line-break.
+<h2> Links
+\<strong>[</strong>weblink-text<strong>](</strong>URL<strong>)</strong>
+<p>
+    <em> note: internal links do not need full URL, see
+        <a href="http://snowdrift.coop/p/snowdrift/w/wiki"> about the snowdrift.coop wiki system
+    <br>
+    external links require the http:// part of the URL, and for those cases, if you don't want separate link text, you can use: <strong>&lt;</strong>URL<strong>&gt;</strong>
+<h2> Images
+\<strong>![</strong>Alt text<strong>](</strong>image URL <strong>"</strong>optional title<strong>")</strong>
+<br>
+example:
+<br>
+![Ad-free site](http://adfreeblog.org/adfreesite_buttonsm.jpg) shows
+<img src="http://www.adfreeblog.org/adfreesite_buttonsm.jpg">
+<p>
+    <em> for an image as clickable link, nest the image markdown as the text part of a weblink
+<h2> Headers, lists, and more
+<p>
+    <em> Lists, headers, and blockquotes must start with a blank line above
         <br>
-        <strong>**bold**
-        <br>
-        <strong>
-            <em>***bold-italic***
-        <br>
-        ~~<del>deleted/strikethrough</del>~~
-        <br>
-        <p>
-            Make paragraphs by separating them with blank lines.
-            <br>
-            Add two or more spaces at the end of a line for a single line-break.
-        <h2> Links
-        \<strong>[</strong>weblink-text<strong>](</strong>URL<strong>)</strong>
-        <p>
-            <em> note: internal links do not need full URL, see
-                <a href="http://snowdrift.coop/p/snowdrift/w/wiki"> about the snowdrift.coop wiki system
-            <br>
-            external links require the http:// part of the URL, and for those cases, if you don't want separate link text, you can use: <strong>&lt;</strong>URL<strong>&gt;</strong>
-        <h2> Images
-        \<strong>![</strong>Alt text<strong>](</strong>image URL <strong>"</strong>optional title<strong>")</strong>
-        <br>
-        example:
-        <br>
-        ![Ad-free site](http://adfreeblog.org/adfreesite_buttonsm.jpg) shows
-        <img src="http://www.adfreeblog.org/adfreesite_buttonsm.jpg">
-        <p>
-            <em> for an image as clickable link, nest the image markdown as the text part of a weblink
-        <h2> Headers, lists, and more
-        <p>
-            <em> Lists, headers, and blockquotes must start with a blank line above
-                <br>
-                (aside from the very first line).
-        <h1> # h1 header
-        <h2> ## h2 subheader
-        <h3> ### h3 third level (and so on)
-        <em> alternate option: any number of === on line under h1 text or --- under h2
-        <br>
-        <br>
-        <ul>
-            <li> * bulleted lists use any of these symbols:
-                <strong> * + -
-            <ul>
-                <li> * indent four spaces to create sub-levels
-                    <p> for a new paragraph under a list item, add a blank line, then indent four extra spaces but use no bullet
-        \<strong>1.</strong> ordered list
-        <br>
-        \<strong>2.</strong> after the first number, it auto-calculates.
-        <br>
-        <strong> #.
-        works too
-        <br>
-        \<strong>a.</strong> can also use letters
-        \<strong>i.</strong> or Roman numerals (which all also auto-calculate)
-        <br>
-        \<strong>A.</strong>&nbsp;&nbsp;For
-        <em> capital
-        letters or Roman numerals, include
-        <em> two
-        spaces after the dot or use
-        <br>
-        <strong> A)
-        or
-        <strong> (A)
-        format (which also work for lower-case)
-        <br>
-        <blockquote>
-            > blockquote
-            <blockquote>
-                >> use multiple > symbols to make nested levels
-        <br>
-        <strong> term
-        <br>
-        &nbsp;&nbsp; ~ description (indent two spaces before ~ or : and another space before text)
-        <br>
-        <br>
-        a horizontal rule is 3 or more hyphens with empty lines above and below:
-        <br>
-        <br>
-        ---
-        <br>
-        <br>
-        <hr>
-        <strong> \
-        backslash before characters makes them show normally if they would otherwise be markdown commands
-        <h2> Footnotes
-        <strong> [^tag]
-        marks the inline link
-        <br>
-        <br>
-        <strong> [^tag]:
-        marks the footnote itself (and must have a blank line above)
-        <p>
-            <em>Footnotes themselves can be placed anywhere and will be rendered at the end.
-            <br>
-            Footnotes can also be in-line with no tag like this: <strong>^[</strong>Footnote text<strong>]</strong>
-            <br>
-            <em>Footnote numbers auto-calculate based on the placement of the links.
+        (aside from the very first line).
+<h1> # h1 header
+<h2> ## h2 subheader
+<h3> ### h3 third level (and so on)
+<em> alternate option: any number of === on line under h1 text or --- under h2
+<br>
+<br>
+<ul>
+    <li> * bulleted lists use any of these symbols:
+        <strong> * + -
+    <ul>
+        <li> * indent four spaces to create sub-levels
+            <p> for a new paragraph under a list item, add a blank line, then indent four extra spaces but use no bullet
+\<strong>1.</strong> ordered list
+<br>
+\<strong>2.</strong> after the first number, it auto-calculates.
+<br>
+<strong> #.
+works too
+<br>
+\<strong>a.</strong> can also use letters
+\<strong>i.</strong> or Roman numerals (which all also auto-calculate)
+<br>
+\<strong>A.</strong>&nbsp;&nbsp;For
+<em> capital
+letters or Roman numerals, include
+<em> two
+spaces after the dot or use
+<br>
+<strong> A)
+or
+<strong> (A)
+format (which also work for lower-case)
+<br>
+<blockquote>
+    > blockquote
+    <blockquote>
+        >> use multiple > symbols to make nested levels
+<br>
+<strong> term
+<br>
+&nbsp;&nbsp; ~ description (indent two spaces before ~ or : and another space before text)
+<br>
+<br>
+a horizontal rule is 3 or more hyphens with empty lines above and below:
+<br>
+<br>
+---
+<br>
+<br>
+<hr>
+<strong> \
+backslash before characters makes them show normally if they would otherwise be markdown commands
+<h2> Footnotes
+<strong> [^tag]
+marks the inline link
+<br>
+<br>
+<strong> [^tag]:
+marks the footnote itself (and must have a blank line above)
+<p>
+    <em>Footnotes themselves can be placed anywhere and will be rendered at the end.
+    <br>
+    Footnotes can also be in-line with no tag like this: <strong>^[</strong>Footnote text<strong>]</strong>
+    <br>
+    <em>Footnote numbers auto-calculate based on the placement of the links.

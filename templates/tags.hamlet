@@ -1,26 +1,24 @@
-<div .row>
-    <div .col-xs-12>
-        $if null tags
-            no tags to display
-        $else
-            <table>
-                $forall tag <- tags
-                    <tr>
-                        <td>
-                            #{atName tag}
+$if null tags
+    no tags to display
+$else
+    <table>
+        $forall tag <- tags
+            <tr>
+                <td>
+                    #{atName tag}
 
-                        <td>
+                <td>
 
-                        <td>
-                            #{atScoreString tag}
+                <td>
+                    #{atScoreString tag}
 
-                    $forall (user, votes) <- atUserVotes tag
-                        <tr>
-                            <td>
+            $forall (user, votes) <- atUserVotes tag
+                <tr>
+                    <td>
 
-                            <td>
-                                #{userPrintName user}
+                    <td>
+                        #{userPrintName user}
 
-                            <td>
-                                #{show votes}
+                    <td>
+                        #{show votes}
 

@@ -4,6 +4,4 @@
     <div .col-xs-6>
         <a href="@{WikiR project_handle target}"> back to wiki page
 <hr .wikitop>
-<div .row>
-    <div .col-xs-12>
-        ^{comment}
+^{comment}

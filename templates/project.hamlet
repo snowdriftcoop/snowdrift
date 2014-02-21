@@ -2,8 +2,8 @@
     <div .col-md-6>
         <h1>
             #{projectName project}
-
         #{description}
+
     <div .col-md-6>
         <em>We are currently testing with fake money and monthly payments sped up to daily
         <div .row>
@@ -41,22 +41,20 @@
                         <tr>
                             <td>
                                 #{total} total
-        <div .row>
-            <div .col-xs-12>
-                <hr>
+        <hr>
 
-                $if show_form
-                    $maybe project_handle <- maybe_project_handle
-                        <form method=GET action=@{UpdateSharesR project_handle}>
-                            ^{update_shares}
-                            $if isJust maybe_shares
-                                <input .pledge type=submit value="update pledge">
-                            $else
-                                <input .pledge type=submit value="enter pledge">
-                    $nothing
-                        <form>
-                            ^{update_shares}
-                            <button .pledge value="enter pledge">
-
-                $else
+        $if show_form
+            $maybe project_handle <- maybe_project_handle
+                <form method=GET action=@{UpdateSharesR project_handle}>
                     ^{update_shares}
+                    $if isJust maybe_shares
+                        <input .pledge type=submit value="update pledge">
+                    $else
+                        <input .pledge type=submit value="enter pledge">
+            $nothing
+                <form>
+                    ^{update_shares}
+                    <button .pledge value="enter pledge">
+
+        $else
+            ^{update_shares}

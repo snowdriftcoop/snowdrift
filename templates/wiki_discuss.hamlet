@@ -1,17 +1,13 @@
 <div .row>
-    <div .col-xs-12>
-        <div .row>
-            <div .col-sm-6>
-                <a href="@{WikiR project_handle target}"> back to wiki page
-            <div .col-sm-6>
-                $if affiliated
-                    <a href="@{NewDiscussWikiR project_handle target}"> new discussion thread
-        <hr .wikitop>
-        <div .row>
-            ^{comments}
-        $if (&&) affiliated $ not has_comments
-            <div .row>
-                <form action="@{DiscussWikiR project_handle target}" method="POST">
-                    ^{comment_form}
-                    <input type="submit" name="mode" value="preview">
+    <div .col-sm-6>
+        <a href="@{WikiR project_handle target}"> back to wiki page
+    <div .col-sm-6>
+        $if affiliated
+            <a href="@{NewDiscussWikiR project_handle target}"> new discussion thread
+<hr .wikitop>
+^{comments}
+$if (&&) affiliated $ not has_comments
+    <form action="@{DiscussWikiR project_handle target}" method="POST">
+        ^{comment_form}
+        <input type="submit" name="mode" value="preview">
 

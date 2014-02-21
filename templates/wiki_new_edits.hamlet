@@ -1,22 +1,17 @@
-<div .row>
-    <div .col-md-12>
-        <div .row>
-            $if null new_edits
-                no new edits
-            $else
-                new edits
-                <table>
-                    $forall edit <- new_edits
-                        ^{renderEdit edit}
-        $if not (null old_edits)
-            <hr>
-            <div .row>
-                old edits
-                <table>
-                    $forall edit <- old_edits
-                        ^{renderEdit edit}
-        $if (not (null old_edits) || not (null new_edits))
-            <div .row>
-                <a href="@{WikiNewEditsR project_handle}?from=#{show (to + 1)}">
-                    older edits
+$if null new_edits
+    no new edits
+$else
+    new edits
+    <table>
+        $forall edit <- new_edits
+            ^{renderEdit edit}
+$if not (null old_edits)
+    <hr>
+    old edits
+    <table>
+        $forall edit <- old_edits
+            ^{renderEdit edit}
+$if (not (null old_edits) || not (null new_edits))
+    <a href="@{WikiNewEditsR project_handle}?from=#{show (to + 1)}">
+        older edits
 
