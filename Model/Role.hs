@@ -4,12 +4,18 @@ module Model.Role
     , roleLabel
     , roleAbbrev
     , roleField
+    , getRoles
     ) where
 
 import Import
 
 import Model.Role.Internal
 
+getRoles :: UserId -> ProjectId -> Handler [Role]
+getRoles user_id project_id = fmap (map (\ (Value a) -> a)) $ runDB $ select $ from $ \ r -> do
+    where_ $ r ^. ProjectUserRoleProject ==. val project_id
+            &&. r ^. ProjectUserRoleUser ==. val user_id
+    return $ r ^. ProjectUserRoleRole
 
 roleLabel :: Role -> Text
 roleLabel TeamMember = "Team Member"

@@ -282,8 +282,8 @@ postNewWikiR project_handle target = do
 
                 Just x | x == action -> do
                     _ <- runDB $ do
-                        discussion_id <- insert Discussion
-                        page_id <- insert $ WikiPage target project_id content discussion_id Normal
+                        discussion <- insert (Discussion 0)
+                        page_id <- insert $ WikiPage target project_id content discussion Normal
                         edit_id <- insert $ WikiEdit now user_id page_id content $ Just "Page created."
                         insert $ WikiLastEdit page_id edit_id
 

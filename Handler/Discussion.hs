@@ -26,11 +26,12 @@ import Widgets.Time
 import Yesod.Markdown
 import Model.Markdown
 
+import Yesod.Default.Config
 
-renderComment :: UserId -> Text -> Text -> M.Map UserId (Entity User) -> Int -> Int
+renderComment :: UserId -> [Role] -> Text -> Text -> M.Map UserId (Entity User) -> Int -> Int
     -> [CommentRetraction] -> M.Map CommentId CommentRetraction -> Bool -> Map TagId Tag -> Tree (Entity Comment) -> Maybe Widget -> Widget
 
-renderComment viewer_id project_handle target users max_depth depth earlier_retractions retraction_map show_actions tag_map tree mcomment_form = do
+renderComment viewer_id viewer_roles project_handle target users max_depth depth earlier_retractions retraction_map show_actions tag_map tree mcomment_form = do
     maybe_route <- handlerToWidget getCurrentRoute
     (comment_form, _) <- handlerToWidget $ generateFormPost $ commentForm Nothing Nothing
 
@@ -48,6 +49,9 @@ renderComment viewer_id project_handle target users max_depth depth earlier_retr
 
         maybe_retraction = M.lookup comment_id retraction_map
         empty_list = []
+
+        user_is_mod = elem Moderator viewer_roles
+        can_rethread = user_id == viewer_id || user_is_mod
 
     tags <- fmap (L.sortBy (compare `on` atName)) $ handlerToWidget $ do
         comment_tags <- runDB $ select $ from $ \ comment_tag -> do
@@ -152,6 +156,7 @@ getRetractWikiCommentR :: Text -> Text -> CommentId -> Handler Html
 getRetractWikiCommentR project_handle target comment_id = do
     Entity user_id user <- requireAuth
     comment <- runDB $ get404 comment_id
+    Entity project_id _ <- runDB $ getBy404 $ UniqueProjectHandle project_handle
     when (commentUser comment /= user_id) $ permissionDenied "You can only retract your own comments."
 
     earlier_retractions <- runDB $
@@ -179,7 +184,9 @@ getRetractWikiCommentR project_handle target comment_id = do
 
     (retract_form, _) <- generateFormPost $ retractForm Nothing
 
-    let rendered_comment = renderDiscussComment user_id project_handle target False (return ()) (Entity comment_id comment) [] (M.singleton user_id $ Entity user_id user) earlier_retractions M.empty False tag_map
+    roles <- getRoles user_id project_id
+
+    let rendered_comment = renderDiscussComment user_id roles project_handle target False (return ()) (Entity comment_id comment) [] (M.singleton user_id $ Entity user_id user) earlier_retractions M.empty False tag_map
 
     defaultLayout $ [whamlet|
         ^{rendered_comment}
@@ -196,6 +203,7 @@ postRetractWikiCommentR :: Text -> Text -> CommentId -> Handler Html
 postRetractWikiCommentR project_handle target comment_id = do
     Entity user_id user <- requireAuth
     comment <- runDB $ get404 comment_id
+    Entity project_id _ <- runDB $ getBy404 $ UniqueProjectHandle project_handle
     when (commentUser comment /= user_id) $ permissionDenied "You can only retract your own comments."
 
     ((result, _), _) <- runFormPost $ retractForm Nothing
@@ -233,7 +241,9 @@ postRetractWikiCommentR project_handle target comment_id = do
                         users = M.singleton user_id $ Entity user_id user
                         retractions = M.singleton comment_id retraction
 
-                    defaultLayout $ renderPreview form action $ renderDiscussComment user_id project_handle target False (return ()) comment_entity [] users earlier_retractions retractions False tag_map
+                    roles <- getRoles user_id project_id
+
+                    defaultLayout $ renderPreview form action $ renderDiscussComment user_id roles project_handle target False (return ()) comment_entity [] users earlier_retractions retractions False tag_map
 
 
                 Just a | a == action -> do
@@ -306,9 +316,11 @@ getDiscussWikiR project_handle target = do
 
     tags <- runDB $ select $ from $ return
 
+    roles <- getRoles user_id project_id
+
     let tag_map = M.fromList $ entityPairs tags
         comments = forM_ roots $ \ root ->
-            renderComment user_id project_handle target users 10 0 [] retraction_map True tag_map (buildCommentTree root rest) Nothing
+            renderComment user_id roles project_handle target users 10 0 [] retraction_map True tag_map (buildCommentTree root rest) Nothing
 
     (comment_form, _) <- generateFormPost $ commentForm Nothing Nothing
 
@@ -333,8 +345,8 @@ getReplyCommentR =
 getDiscussCommentR' :: Bool -> Text -> Text -> CommentId -> Handler Html
 getDiscussCommentR' show_reply project_handle target comment_id = do
     Entity viewer_id _ <- requireAuth
+    Entity project_id _ <- runDB $ getBy404 $ UniqueProjectHandle project_handle
     Entity page_id page  <- runDB $ do
-        Entity project_id _ <- getBy404 $ UniqueProjectHandle project_handle
         getBy404 $ UniqueWikiTarget project_id target
 
     (root, rest, users, earlier_retractions, retraction_map) <- runDB $ do
@@ -383,19 +395,21 @@ getDiscussCommentR' show_reply project_handle target comment_id = do
 
     let tag_map = M.fromList $ entityPairs tags
 
-    defaultLayout $ renderDiscussComment viewer_id project_handle target show_reply comment_form (Entity comment_id root) rest users earlier_retractions retraction_map True tag_map
+    roles <- getRoles viewer_id project_id
+
+    defaultLayout $ renderDiscussComment viewer_id roles project_handle target show_reply comment_form (Entity comment_id root) rest users earlier_retractions retraction_map True tag_map
 
 
-renderDiscussComment :: UserId -> Text -> Text -> Bool -> Widget
+renderDiscussComment :: UserId -> [Role] -> Text -> Text -> Bool -> Widget
     -> Entity Comment -> [Entity Comment]
     -> M.Map UserId (Entity User)
     -> [CommentRetraction]
     -> M.Map CommentId CommentRetraction
     -> Bool -> M.Map TagId Tag -> Widget
 
-renderDiscussComment viewer_id project_handle target show_reply comment_form root rest users earlier_retractions retraction_map show_actions tag_map = do
+renderDiscussComment viewer_id roles project_handle target show_reply comment_form root rest users earlier_retractions retraction_map show_actions tag_map = do
     let tree = buildCommentTree root rest
-        comment = renderComment viewer_id project_handle target users 1 0 earlier_retractions retraction_map show_actions tag_map tree mcomment_form
+        comment = renderComment viewer_id roles project_handle target users 1 0 earlier_retractions retraction_map show_actions tag_map tree mcomment_form
         mcomment_form =
             if show_reply
                 then Just comment_form
@@ -410,8 +424,8 @@ postOldDiscussWikiR = postDiscussWikiR
 postDiscussWikiR :: Text -> Text -> Handler Html
 postDiscussWikiR project_handle target = do
     Entity user_id user <- requireAuth
+    Entity project_id _ <- runDB $ getBy404 $ UniqueProjectHandle project_handle
     Entity _ page <- runDB $ do
-        Entity project_id _ <- getBy404 $ UniqueProjectHandle project_handle
         getBy404 $ UniqueWikiTarget project_id target
 
 
@@ -454,9 +468,11 @@ postDiscussWikiR project_handle target = do
 
                     (form, _) <- generateFormPost $ commentForm maybe_parent_id (Just text)
 
+                    roles <- getRoles user_id project_id
+
                     let comment = Entity (Key $ PersistInt64 0) $ Comment now Nothing Nothing (wikiPageDiscussion page) maybe_parent_id user_id text depth
                         user_map = M.singleton user_id $ Entity user_id user
-                        rendered_comment = renderDiscussComment user_id project_handle target False (return ()) comment [] user_map earlier_retractions M.empty False tag_map
+                        rendered_comment = renderDiscussComment user_id roles project_handle target False (return ()) comment [] user_map earlier_retractions M.empty False tag_map
 
                     defaultLayout $ renderPreview form action rendered_comment
 
@@ -580,6 +596,8 @@ getWikiNewCommentsR project_handle = do
 
         return (comments, pages, users, retraction_map)
 
+    roles <- getRoles viewer_id project_id
+
     let PersistInt64 to = unKey $ minimum (map entityKey comments)
         rendered_comments =
             if null comments
@@ -600,7 +618,7 @@ getWikiNewCommentsR project_handle = do
                     where_ $ c ^. CommentId ==. val comment_id
                     return $ p ^. WikiPageTarget
 
-                let rendered_comment = renderComment viewer_id project_handle target users 1 0 earlier_retractions retraction_map True tag_map (Node (Entity comment_id comment) []) Nothing
+                let rendered_comment = renderComment viewer_id roles project_handle target users 1 0 earlier_retractions retraction_map True tag_map (Node (Entity comment_id comment) []) Nothing
 
                 [whamlet|$newline never
                     <div .row>
@@ -659,7 +677,11 @@ postRethreadWikiCommentR project_handle target comment_id = do
 
     case result of
         FormSuccess (new_parent_url, reason) -> do
-            let url = T.splitOn "/" $ fst $ T.break (== '?') new_parent_url
+            app <- getYesod
+            let splitPath = drop 1 . T.splitOn "/"
+                stripQuery = fst . T.break (== '?')
+                stripRoot = maybe new_parent_url id . T.stripPrefix (appRoot $ settings app)
+                url = splitPath $ stripQuery $ stripRoot new_parent_url
 
             (new_parent_id, new_discussion_id) <- case parseRoute (url, []) of
                 Just (DiscussCommentR new_project_handle new_target new_parent_id) -> do
@@ -710,7 +732,7 @@ postRethreadWikiCommentR project_handle target comment_id = do
             mode <- lookupPostParam "mode"
             let action :: Text = "rethread"
             case mode of
-                Just "preview" -> error "no preview for rethreads yet"
+                Just "preview" -> error "no preview for rethreads yet" -- TODO
 
                 Just a | a == action -> do
                     now <- liftIO getCurrentTime
@@ -734,10 +756,25 @@ postRethreadWikiCommentR project_handle target comment_id = do
 
                         let descendents = comment_id : map (\ (Value x) -> x) descendents'
 
-                        when (not $ null old_ancestors) $ delete $ from $ \ comment_ancestor -> where_ $ comment_ancestor ^. CommentAncestorComment `in_` valList old_ancestors
-                                                                                                    &&. comment_ancestor ^. CommentAncestorAncestor `in_` valList descendents
+                        when (not $ null old_ancestors) $ do
+                            to_delete <- select $ from $ \ comment_ancestor -> do
+                                where_ $ comment_ancestor ^. CommentAncestorComment `in_` valList old_ancestors
+                                        &&. comment_ancestor ^. CommentAncestorAncestor `in_` valList descendents
+                                return comment_ancestor
 
-                        forM_ new_ancestors $ \ new_ancestor_id -> forM_ descendents $ \ descendent -> insert_ $ CommentAncestor descendent new_ancestor_id
+                            liftIO $ print to_delete
+
+                            delete $ from $ \ comment_ancestor -> do
+                                where_ $ comment_ancestor ^. CommentAncestorComment `in_` valList old_ancestors
+                                        &&. comment_ancestor ^. CommentAncestorAncestor `in_` valList descendents
+
+                            update $ \ c -> do
+                                where_ $ c ^. CommentId ==. val comment_id
+                                set c [ CommentParent =. val new_parent_id ]
+
+                        forM_ new_ancestors $ \ new_ancestor_id -> forM_ descendents $ \ descendent -> do
+                            liftIO $ putStrLn $ "inserting comment ancestor " ++ show descendent ++ " " ++ show new_ancestor_id
+                            insert_ $ CommentAncestor descendent new_ancestor_id
 
                         when (new_discussion_id /= commentDiscussion comment) $ update $ \ c -> do
                                 where_ $ c ^. CommentId `in_` valList descendents

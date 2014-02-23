@@ -171,6 +171,7 @@ WikiLastEdit
     UniqueWikiLastEdit page
 
 Discussion
+    nothing Int64
 
 Comment
     createdTs UTCTime
@@ -187,6 +188,7 @@ CommentAncestor
     comment CommentId
     ancestor CommentId
     UniqueCommentAncestor comment ancestor
+    deriving Show
 
 CommentRetraction
     ts UTCTime
