@@ -12,6 +12,6 @@ $if not (null old_edits)
         $forall edit <- old_edits
             ^{renderEdit edit}
 $if (not (null old_edits) || not (null new_edits))
-    <a href="@{WikiNewEditsR project_handle}?from=#{show (to + 1)}">
+    <a href="@{WikiNewEditsR project_handle}?from=#{show (to - 1)}">
         older edits
 

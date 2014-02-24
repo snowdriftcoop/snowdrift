@@ -549,7 +549,7 @@ getWikiNewCommentsR project_handle = do
         let pages = M.fromList $ map (entityKey &&& id) $ {- TODO filter ((userRole viewer >=) . wikiPageCanViewMeta . entityVal) -} unfiltered_pages
 
 
-        let apply_offset comment = maybe id (\ from_comment rest -> comment ^. CommentId >=. val from_comment &&. rest) maybe_from
+        let apply_offset comment = maybe id (\ from_comment rest -> comment ^. CommentId <=. val from_comment &&. rest) maybe_from
 
         viewtimes :: [Entity ViewTime] <- select $ from $ \ viewtime -> do
             where_ $

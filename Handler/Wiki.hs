@@ -472,8 +472,8 @@ getWikiNewEditsR project_handle = do
                         <td>
                             <a href="@{UserR (entityKey editor)}">
                                 #{userPrintName editor}
-                        $maybe comment <- wikiEditComment edit
-                            <td>
+                        <td>
+                            $maybe comment <- wikiEditComment edit
                                 #{comment}
                 |]
 
