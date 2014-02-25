@@ -222,4 +222,9 @@ test-suite test
                  , resourcet
                  , monad-logger
                  , transformers
+                 , bytestring
+                 , text
                  , hspec
+                 , network
+                 , http-types
+                 , wai-test
