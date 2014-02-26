@@ -57,8 +57,6 @@ widgetFileSettings = def
         }
     }
 
--- The rest of this file contains settings which rarely need changing by a
--- user.
 
 widgetFile :: String -> Q Exp
 widgetFile = (if development then widgetFileReload

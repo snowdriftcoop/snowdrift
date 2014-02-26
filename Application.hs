@@ -17,11 +17,13 @@ import qualified Database.Persist
 import qualified Database.Persist.Sql
 import Network.HTTP.Conduit (newManager, def)
 import Version
-import Control.Monad.Logger (runLoggingT)
+import Control.Monad.Logger (runLoggingT, runStderrLoggingT)
 import Control.Monad.Trans.Resource
 import System.IO (stdout)
 import System.Directory
 import System.Log.FastLogger (mkLogger)
+
+import Database.Persist.Postgresql (pgConnStr, withPostgresqlConn)
 
 import qualified Data.List as L
 import Data.Text as T
@@ -58,6 +60,11 @@ import Handler.BuildFeed
 
 import Widgets.Navbar
 
+import Data.ByteString (ByteString)
+import System.Posix.Env.ByteString
+
+import Control.Monad.Reader
+
 version :: (Text, Text)
 version = $(mkVersion)
 
@@ -65,6 +72,17 @@ version = $(mkVersion)
 -- of the call to mkYesodData which occurs in Foundation.hs. Please see the
 -- comments there for more details.
 mkYesodDispatch "App" resourcesApp
+
+-- probably not thread safe
+withEnv :: (MonadIO m) => ByteString -> ByteString -> m a -> m a
+withEnv k v action = do
+    original <- liftIO $ getEnv k
+
+    liftIO $ setEnv k v True
+    result <- action
+    liftIO $ maybe (unsetEnv k) (\ v' -> setEnv k v' True) original
+
+    return result
 
 -- This function allocates resources (such as a database connection pool),
 -- performs initialization and creates a WAI application. This is also the
@@ -89,6 +107,19 @@ makeFoundation conf = do
     p <- Database.Persist.createPoolConfig (dbconf :: Settings.PersistConf)
     logger <- mkLogger True stdout
     let foundation = App navbar conf s p manager dbconf logger
+
+    case appEnv conf of
+        Testing -> do
+            (withEnv "PGDATABASE" "template1" $ applyEnv (persistConfig foundation)) >>= \ dbconf' -> do
+                    let runDBNoTransaction (SqlPersistT r) = runReaderT r
+
+                    runStderrLoggingT $ runResourceT $ withPostgresqlConn (pgConnStr dbconf') $ runDBNoTransaction $ do
+                        liftIO $ putStrLn "dropping database..."
+                        rawExecute "DROP DATABASE IF EXISTS snowdrift_test;" []
+                        liftIO $ putStrLn "creating database..."
+                        rawExecute "CREATE DATABASE snowdrift_test WITH TEMPLATE snowdrift_test_template;" []
+                        liftIO $ putStrLn "ready."
+        _ -> return ()
 
     flip runLoggingT (messageLoggerSource foundation logger) $ runResourceT $ do
         Database.Persist.runPool dbconf doMigration p
