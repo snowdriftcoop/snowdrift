@@ -449,7 +449,7 @@ getWikiNewEditsR project_handle = do
                         ( edit ^. WikiEditId <=. val from_edit ) &&.
                         ( edit ^. WikiEditTs <. val edits_ts ) -- for performance?
             limit $ fromIntegral $ 50 - length new_edits
-            offset $ fromIntegral $ length new_edits
+            --offset $ fromIntegral $ length new_edits
             return edit
 
         let user_ids = S.toList $ S.fromList $ map (wikiEditUser . entityVal) (new_edits <> old_edits)

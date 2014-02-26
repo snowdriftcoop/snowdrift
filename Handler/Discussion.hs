@@ -596,7 +596,7 @@ getWikiNewCommentsR project_handle = do
                 (comment ^. CommentCreatedTs <. val since)
             orderBy [ desc (comment ^. CommentId) ]
             limit $ fromIntegral $ 50 - length new_comments
-            offset $ fromIntegral $ length new_comments
+            --offset $ fromIntegral $ length new_comments
             return comment
 
         let user_ids = S.toList $ S.fromList $ map (commentUser . entityVal) (new_comments <> old_comments)
