@@ -448,6 +448,7 @@ getWikiNewEditsR project_handle = do
                         ( edit ^. WikiEditPage `in_` valList (M.keys pages) ) &&.
                         ( edit ^. WikiEditId <=. val from_edit ) &&.
                         ( edit ^. WikiEditTs <. val edits_ts ) -- for performance?
+            orderBy [ desc (edit ^. WikiEditId) ]
             limit $ fromIntegral $ 50 - length new_edits
             --offset $ fromIntegral $ length new_edits
             return edit
