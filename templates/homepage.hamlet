@@ -23,9 +23,9 @@
                     <a href="@{WikiR "snowdrift" "about"}"> Longer manifesto
             <div .col-sm-6>
                 <p>
-                    <a href="@{WikiR "snowdrift" "press"}"> Info for press
-                <p>
                     <a href="@{WikiR "snowdrift" "faq"}"> FAQ
+                <p>
+                    <a href="@{WikiR "snowdrift" "press"}"> Info for press
         <p>
             <strong>Join us!
             <br>
