@@ -530,12 +530,30 @@ getOldWikiNewCommentsR project_handle = redirect $ WikiNewCommentsR project_hand
 getWikiNewCommentsR :: Text -> Handler Html
 getWikiNewCommentsR project_handle = do
     Entity viewer_id viewer <- requireAuth
+    Entity project_id project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
+
+    req <- getRequest
+    maybe_since <- lookupGetParam "since"
+    since :: UTCTime <- case maybe_since of
+        Nothing -> do
+            viewtimes :: [Entity ViewTime] <- runDB $ do 
+                select $ from $ \ viewtime -> do
+                    where_ $
+                        ( viewtime ^. ViewTimeUser ==. val viewer_id ) &&.
+                        ( viewtime ^. ViewTimeProject ==. val project_id ) &&.
+                        ( viewtime ^. ViewTimeType ==. val ViewComments )
+                    return viewtime
+
+            let comments_ts = case viewtimes of
+                    [] -> userReadComments viewer
+                    (Entity _ viewtime):_ -> viewTimeTime viewtime
+            
+            redirectParams (WikiNewCommentsR project_handle) $ (T.pack "since", T.pack $ show comments_ts) : (reqGetParams req)
+        Just since -> return (read . T.unpack $ since)
 
     maybe_from <- fmap (Key . PersistInt64 . read . T.unpack) <$> lookupGetParam "from"
 
     now <- liftIO getCurrentTime
-
-    Entity project_id project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
 
     tags <- runDB $ select $ from $ return
 
@@ -550,7 +568,7 @@ getWikiNewCommentsR project_handle = do
 
 
         let apply_offset comment = maybe id (\ from_comment rest -> comment ^. CommentId <=. val from_comment &&. rest) maybe_from
-
+{-
         viewtimes :: [Entity ViewTime] <- select $ from $ \ viewtime -> do
             where_ $
                 ( viewtime ^. ViewTimeUser ==. val viewer_id ) &&.
@@ -561,12 +579,12 @@ getWikiNewCommentsR project_handle = do
         let comments_ts = case viewtimes of
                 [] -> userReadComments viewer
                 (Entity _ viewtime):_ -> viewTimeTime viewtime
-
+-}
         new_comments :: [Entity Comment] <- select $ from $ \ (comment `InnerJoin` wiki_page_comment) -> do
             on_ $ comment ^. CommentId ==. wiki_page_comment ^. WikiPageCommentComment
             where_ $
                 (apply_offset comment $ wiki_page_comment ^. WikiPageCommentPage `in_` valList (M.keys pages)) &&.
-                (comment ^. CommentCreatedTs >=. val comments_ts)
+                (comment ^. CommentCreatedTs >=. val since)
             orderBy [ desc (comment ^. CommentId) ]
             limit 50
             return comment
@@ -575,7 +593,7 @@ getWikiNewCommentsR project_handle = do
             on_ $ comment ^. CommentId ==. wiki_page_comment ^. WikiPageCommentComment
             where_ $
                 (apply_offset comment $ wiki_page_comment ^. WikiPageCommentPage `in_` valList (M.keys pages)) &&.
-                (comment ^. CommentCreatedTs <. val comments_ts)
+                (comment ^. CommentCreatedTs <. val since)
             orderBy [ desc (comment ^. CommentId) ]
             limit $ fromIntegral $ 50 - length new_comments
             offset $ fromIntegral $ length new_comments

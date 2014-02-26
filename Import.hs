@@ -175,3 +175,4 @@ renderBootstrap3 aform fragment = do
                 |]
     return (res, widget)
 
+redirectParams route params = getUrlRenderParams >>= \ render -> redirect $ render route params
