@@ -10,6 +10,6 @@ $if not (null old_comments)
     <h3>
         old comments
     ^{rendered_old_comments}
-$if (not (null old_comments) || not (null new_comments))
-    <a href="@{WikiNewCommentsR project_handle}?from=#{show (to - 1)}">
+$if show_older
+    <a href="@{WikiNewCommentsR project_handle}?from=#{show (to - 1)}&since=#{show since}">
         older comments

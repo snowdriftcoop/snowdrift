@@ -586,7 +586,7 @@ getWikiNewCommentsR project_handle = do
                 (apply_offset comment $ wiki_page_comment ^. WikiPageCommentPage `in_` valList (M.keys pages)) &&.
                 (comment ^. CommentCreatedTs >=. val since)
             orderBy [ desc (comment ^. CommentId) ]
-            limit 50
+            limit 51
             return comment
 
         old_comments :: [Entity Comment] <- select $ from $ \ (comment `InnerJoin` wiki_page_comment) -> do
@@ -595,7 +595,7 @@ getWikiNewCommentsR project_handle = do
                 (apply_offset comment $ wiki_page_comment ^. WikiPageCommentPage `in_` valList (M.keys pages)) &&.
                 (comment ^. CommentCreatedTs <. val since)
             orderBy [ desc (comment ^. CommentId) ]
-            limit $ fromIntegral $ 50 - length new_comments
+            limit $ fromIntegral $ 51 - length new_comments
             --offset $ fromIntegral $ length new_comments
             return comment
 
@@ -613,7 +613,9 @@ getWikiNewCommentsR project_handle = do
 
         return (new_comments, old_comments, pages, users, retraction_map)
 
-    let PersistInt64 to = unKey $ minimum (map entityKey (new_comments <> old_comments) )
+    let new_comments' = take 50 new_comments
+        old_comments' = take (50 - length new_comments) old_comments
+        PersistInt64 to = unKey $ minimum (map entityKey (new_comments' <> old_comments') )
         render_comments comments =
             if null comments
              then [whamlet|no new comments|]
@@ -644,8 +646,9 @@ getWikiNewCommentsR project_handle = do
                             :
                             ^{rendered_comment}
                 |]
-        rendered_new_comments = render_comments new_comments
-        rendered_old_comments = render_comments old_comments
+        rendered_new_comments = render_comments new_comments'
+        rendered_old_comments = render_comments old_comments'
+        show_older = (length new_comments + length old_comments) > 50
 
     runDB $ do
         c <- updateCount $ \ viewtime -> do
