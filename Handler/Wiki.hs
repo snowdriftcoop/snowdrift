@@ -420,7 +420,7 @@ getWikiNewEditsR project_handle = do
                     [] -> userReadEdits viewer
                     (Entity _ viewtime):_ -> viewTimeTime viewtime
             
-            redirectParams (WikiNewCommentsR project_handle) $ (T.pack "since", T.pack $ show comments_ts) : (reqGetParams req)
+            redirectParams (WikiNewEditsR project_handle) $ (T.pack "since", T.pack $ show comments_ts) : (reqGetParams req)
         Just since -> return (read . T.unpack $ since)
 
     now <- liftIO getCurrentTime
