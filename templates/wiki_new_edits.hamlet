@@ -1,17 +1,17 @@
-$if null new_edits
+$if null new_edits'
     no new edits
 $else
     new edits
     <table>
-        $forall edit <- new_edits
+        $forall edit <- new_edits'
             ^{renderEdit edit}
-$if not (null old_edits)
+$if not (null old_edits')
     <hr>
     old edits
     <table>
-        $forall edit <- old_edits
+        $forall edit <- old_edits'
             ^{renderEdit edit}
-$if (not (null old_edits) || not (null new_edits))
+$if show_older 
     <a href="@{WikiNewEditsR project_handle}?from=#{show (to - 1)}">
         older edits
 

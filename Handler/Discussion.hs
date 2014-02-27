@@ -614,7 +614,7 @@ getWikiNewCommentsR project_handle = do
         return (new_comments, old_comments, pages, users, retraction_map)
 
     let new_comments' = take 50 new_comments
-        old_comments' = take (50 - length new_comments) old_comments
+        old_comments' = take (50 - length new_comments') old_comments
         PersistInt64 to = unKey $ minimum (map entityKey (new_comments' <> old_comments') )
         render_comments comments =
             if null comments
