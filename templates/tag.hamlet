@@ -1,22 +1,20 @@
 $newline never
 
-<div .row>
-    <div .col-xs-12>
-        #{tag_name}
-        <form method=post>
-            <input type=submit method=post value="-">
-            <input type=submit method=post value="+">
+#{tag_name}
+<form method=post>
+    <input type=submit method=post value="-">
+    <input type=submit method=post value="+">
 
-        $if null user_votes
-            tag does not appear on this comment
-        $else
-            <table>
-                $forall (user, votes) <- user_votes
-                    <tr>
-                        <td>
-                            <a href=@{UserR (entityKey user)}>
-                                #{userPrintName user}
+$if null user_votes
+    tag does not appear on this comment
+$else
+    <table>
+        $forall (user, votes) <- user_votes
+            <tr>
+                <td>
+                    <a href=@{UserR (entityKey user)}>
+                        #{userPrintName user}
 
-                        <td>
-                            #{show votes}
+                <td>
+                    #{show votes}
 

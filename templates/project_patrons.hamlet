@@ -1,25 +1,21 @@
-<div .row>
-    <div .col-xs-12>
-        <h1>
-            #{projectName project}
+<h1>
+    #{projectName project}
 
-<div .row>
-    <div .col-xs-12>
-        $if null pledges
-            no patrons yet
-        $else
-            <table>
-                $forall (pledge, user) <- pledges
-                    <tr>
-                        <td>
-                            <a href="@{UserR (entityKey user)}">
-                                #{userPrintName user}
-                        <td>
-                            #{show (pledgeFundedShares (entityVal pledge))}&nbsp;shares
-                        <td>
-                            $maybe count <- M.lookup (entityKey user) user_payouts_map
-                                $if count < 2
-                                    (pending)
-                            $nothing
-                                (pending)
+$if null pledges
+    <p> no patrons yet
+$else
+    <table>
+        $forall (pledge, user) <- pledges
+            <tr>
+                <td>
+                    <a href="@{UserR (entityKey user)}">
+                        #{userPrintName user}
+                <td>
+                    #{show (pledgeFundedShares (entityVal pledge))}&nbsp;shares
+                <td>
+                    $maybe count <- M.lookup (entityKey user) user_payouts_map
+                        $if count < 2
+                            (pending)
+                    $nothing
+                        (pending)
 

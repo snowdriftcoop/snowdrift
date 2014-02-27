@@ -1,16 +1,14 @@
-<div .row>
-    <div .col-xs-12>
-        $if redeemed
-            This code has been redeemed.
-        $else
-            $maybe _ <- maybe_user_id
-                Click 'redeem' to update your account to the level to which you've been invited.
-                <br>
-                Note that each invitation code can only be used once, so please be sure you are the intended recipient.
+$if redeemed
+    This code has been redeemed.
+$else
+    $maybe _ <- maybe_user_id
+        Click 'redeem' to update your account to the level to which you've been invited.
+        <br>
+        Note that each invitation code can only be used once, so please be sure you are the intended recipient.
 
-                <form method=POST action=@{InvitationR project_handle code}>
-                    <input type=submit value="Redeem Invitation">
-            $nothing
-                Welcome! You must log in or create an account before redeeming your invitation code.
-                <form method=GET action=@{AuthR LoginR}>
-                    <input type=submit value="Log In / Create Account">
+        <form method=POST action=@{InvitationR project_handle code}>
+            <input type=submit value="Redeem Invitation">
+    $nothing
+        Welcome! You must log in or create an account before redeeming your invitation code.
+        <form method=GET action=@{AuthR LoginR}>
+            <input type=submit value="Log In / Create Account">

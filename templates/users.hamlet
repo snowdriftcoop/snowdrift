@@ -1,38 +1,36 @@
-<div .row>
-    <div .col-xs-12>
-        <table>
-            <thead>
+<table>
+    <thead>
+        <tr>
+            <th>
+                Name
+            <th>
+                IRC Nick
+            <th>
+                Established
+            $forall role <- roles
+                <th>
+                    #{role}
+    <tbody>
+        $if null users
+            <tr>
+                <td>
+                    no users to display
+        $else
+            $forall (user_id, user) <- users
                 <tr>
-                    <th>
-                        Name
-                    <th>
-                        IRC Nick
-                    <th>
-                        Established
+                    <td>
+                        <a href=@{UserR $ entityKey user}>
+                            #{userPrintName user}
+                    <td>
+                        $maybe nick <- userIrcNick $ entityVal user
+                            #{nick}
+                    <td>
+                        $if isJust $ userEstablishedTs $ entityVal user
+                            &#10004;
                     $forall role <- roles
-                        <th>
-                            #{role}
-            <tbody>
-                $if null users
-                    <tr>
                         <td>
-                            no users to display
-                $else
-                    $forall (user_id, user) <- users
-                        <tr>
-                            <td>
-                                <a href=@{UserR $ entityKey user}>
-                                    #{userPrintName user}
-                            <td>
-                                $maybe nick <- userIrcNick $ entityVal user
-                                    #{nick}
-                            <td>
-                                $if isJust $ userEstablishedTs $ entityVal user
-                                    &#10004;
-                            $forall role <- roles
-                                <td>
-                                    $maybe roles' <- Map.lookup user_id userRoles
-                                        $forall (_, project) <- filterRoles role roles'
-                                            <a href=@{ProjectR $ projectHandle project}>
-                                                #{projectName project} 
+                            $maybe roles' <- Map.lookup user_id userRoles
+                                $forall (_, project) <- filterRoles role roles'
+                                    <a href=@{ProjectR $ projectHandle project}>
+                                        #{projectName project} 
 

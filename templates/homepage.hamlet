@@ -2,9 +2,10 @@
     <div .col-md-10 .col-md-offset-1>
         <figure>
             <img src=@{StaticR img_logo_png}>
-            <figcaption style="color: blue; margin-top: -20px;" class="text-right">
+            <figcaption style="color: slategrey; margin-top: -20px;" class="text-right">
                 a work in progress:
                 <strong> public ALPHA — not functioning yet
+<div .row>
     <div .col-md-6>
         <p>
             Imagine a world where everyone can freely access, use, improve, and share
@@ -14,15 +15,17 @@
             is a cooperative way to provide sustainable, long-term funding
             to creative projects that reject proprietary restrictions.
     <div .col-md-6>
-        <ul>
-            <li>
-                <a href="@{WikiR "snowdrift" "intro"}"> Illustrated intro
-            <li>
-                <a href="@{WikiR "snowdrift" "about"}"> Longer manifesto and details
-            <li>
-                <a href="@{WikiR "snowdrift" "press"}"> Info for press
-            <li>
-                <a href="@{WikiR "snowdrift" "faq"}"> FAQ
+        <div .row .text-center>
+            <div .col-sm-6>
+                <p>
+                    <a href="@{WikiR "snowdrift" "intro"}"> Illustrated intro
+                <p>
+                    <a href="@{WikiR "snowdrift" "about"}"> Longer manifesto
+            <div .col-sm-6>
+                <p>
+                    <a href="@{WikiR "snowdrift" "faq"}"> FAQ
+                <p>
+                    <a href="@{WikiR "snowdrift" "press"}"> Info for press
         <p>
             <strong>Join us!
             <br>

@@ -8,6 +8,7 @@ import Widgets.Preview
 
 import Model.Permission
 import Model.User
+import Model.ViewType
 
 import Yesod.Markdown
 import Model.Markdown
@@ -399,31 +400,87 @@ getOldWikiNewEditsR project_handle = redirect $ WikiNewEditsR project_handle
 getWikiNewEditsR :: Text -> Handler Html
 getWikiNewEditsR project_handle = do
     Entity viewer_id viewer <- requireAuth
+    Entity project_id project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
 
     maybe_from <- fmap (Key . PersistInt64 . read . T.unpack) <$> lookupGetParam "from"
 
+    req <- getRequest
+    maybe_since <- lookupGetParam "since"
+    since :: UTCTime <- case maybe_since of
+        Nothing -> do
+            viewtimes :: [Entity ViewTime] <- runDB $ do 
+                select $ from $ \ viewtime -> do
+                    where_ $
+                        ( viewtime ^. ViewTimeUser ==. val viewer_id ) &&.
+                        ( viewtime ^. ViewTimeProject ==. val project_id ) &&.
+                        ( viewtime ^. ViewTimeType ==. val ViewEdits )
+                    return viewtime
+
+            let comments_ts = case viewtimes of
+                    [] -> userReadEdits viewer
+                    (Entity _ viewtime):_ -> viewTimeTime viewtime
+            
+            redirectParams (WikiNewEditsR project_handle) $ (T.pack "since", T.pack $ show comments_ts) : (reqGetParams req)
+        Just since -> return (read . T.unpack $ since)
+
     now <- liftIO getCurrentTime
 
-    Entity project_id project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
 
-    (edits, pages, users) :: ([Entity WikiEdit], M.Map WikiPageId (Entity WikiPage), M.Map UserId (Entity User)) <- runDB $ do
+    (new_edits, old_edits, pages, users) :: ([Entity WikiEdit], [Entity WikiEdit], M.Map WikiPageId (Entity WikiPage), M.Map UserId (Entity User)) <- runDB $ do
         pages <- fmap (M.fromList . map (entityKey &&& id)) $ select $ from $ \ page -> do
             where_ $ page ^. WikiPageProject ==. val project_id
             return page
 
-        edits <- select $ from $ \ edit -> do
-            where_ $ case maybe_from of
-                Nothing -> ( edit ^. WikiEditPage `in_` valList (M.keys pages) )
-                Just from_edit -> ( edit ^. WikiEditPage `in_` valList (M.keys pages) &&. edit ^. WikiEditId <=. val from_edit )
+{-
+        viewtimes :: [Entity ViewTime] <- select $ from $ \ viewtime -> do
+            where_ $
+                ( viewtime ^. ViewTimeUser ==. val viewer_id ) &&.
+                ( viewtime ^. ViewTimeProject ==. val project_id ) &&.
+                ( viewtime ^. ViewTimeType ==. val ViewEdits )
+            return viewtime
+
+        let edits_ts = case viewtimes of
+                [] -> userReadEdits viewer
+                (Entity _ viewtime):_ -> viewTimeTime viewtime
+-}
+        new_edits :: [Entity WikiEdit] <- select $ from $ \ edit -> do
+            where_ $
+                case maybe_from of
+                    Nothing -> 
+                        ( edit ^. WikiEditPage `in_` valList (M.keys pages) ) &&.
+                        ( edit ^. WikiEditTs >=. val since )
+                    Just from_edit ->
+                        ( edit ^. WikiEditPage `in_` valList (M.keys pages) ) &&.
+                        ( edit ^. WikiEditId <=. val from_edit ) &&.
+                        ( edit ^. WikiEditTs >=. val since )
+
             orderBy [ desc (edit ^. WikiEditId) ]
-            limit 50
+            limit 51
             return edit
 
-        let user_ids = S.toList $ S.fromList $ map (wikiEditUser . entityVal) edits
-        users <- fmap (M.fromList . map (entityKey &&& id)) $ selectList [ UserId <-. user_ids ] []
-        return (edits, pages, users)
+        old_edits :: [Entity WikiEdit] <- select $ from $ \ edit -> do
+            where_ $
+                case maybe_from of
+                    Nothing ->
+                        ( edit ^. WikiEditPage `in_` valList ( M.keys pages) ) &&.
+                        ( edit ^. WikiEditTs <. val since )
+                    Just from_edit ->
+                        ( edit ^. WikiEditPage `in_` valList (M.keys pages) ) &&.
+                        ( edit ^. WikiEditId <=. val from_edit ) &&.
+                        ( edit ^. WikiEditTs <. val since )
+            orderBy [ desc (edit ^. WikiEditId) ]
+            limit $ fromIntegral $ 51 - length new_edits
+            --offset $ fromIntegral $ length new_edits
+            return edit
 
-    let PersistInt64 to = unKey $ minimum (map entityKey edits)
+        let user_ids = S.toList $ S.fromList $ map (wikiEditUser . entityVal) (new_edits <> old_edits)
+        users <- fmap (M.fromList . map (entityKey &&& id)) $ selectList [ UserId <-. user_ids ] []
+        return (new_edits, old_edits, pages, users)
+
+    let new_edits' = take 50 new_edits
+        old_edits' = take (50 - length new_edits') old_edits
+        show_older = (length new_edits + length old_edits) > 50
+        PersistInt64 to = unKey $ minimum (map entityKey (new_edits' <> old_edits'))
         renderEdit (Entity edit_id edit) =
             let editor = users M.! wikiEditUser edit
                 page = pages M.! wikiEditPage edit
@@ -439,17 +496,26 @@ getWikiNewEditsR project_handle = do
                         <td>
                             <a href="@{UserR (entityKey editor)}">
                                 #{userPrintName editor}
-                        $maybe comment <- wikiEditComment edit
-                            <td>
+                        <td>
+                            $maybe comment <- wikiEditComment edit
                                 #{comment}
                 |]
 
-    runDB $ update $ \ user -> do
-        set user [ UserReadEdits =. val now ]
-        where_ ( user ^. UserId ==. val viewer_id )
+    runDB $ do
+        c <- updateCount $ \ viewtime -> do
+                set viewtime [ ViewTimeTime =. val now ]
+                where_ $
+                    ( viewtime ^. ViewTimeUser ==. val viewer_id ) &&.
+                    ( viewtime ^. ViewTimeProject ==. val project_id ) &&.
+                    ( viewtime ^. ViewTimeType ==. val ViewEdits )
+        if (c == 0)
+            then
+                insert_ $ ViewTime viewer_id project_id ViewEdits now
+            else
+                return ()
 
     defaultLayout $ do
-        setTitle . toHtml $ projectName project <> " Wiki - New Edits | Snowdrift.coop"
+        setTitle . toHtml $ projectName project <> " - New Wiki Edits | Snowdrift.coop"
         $(widgetFile "wiki_new_edits")
 
 

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg id="svg6308" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" height="93.413" width="94.536" version="1.1" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
+ <metadata id="metadata6313">
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title/>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <g id="layer1" transform="translate(-327.73216,-485.6614)">
+  <g id="g7405" stroke="#6C6" stroke-miterlimit="10" transform="matrix(0.92383352,0,0,0.91427113,432.35436,566.67198)">
+   <ellipse id="ellipse6" d="m 73.75,37.667 c 0,19.836411 -16.117749,35.917 -36,35.917 -19.882251,0 -36,-16.080589 -36,-35.917 0,-19.836411 16.117749,-35.917 36,-35.917 19.882251,0 36,16.080589 36,35.917 z" cx="37.75" cy="37.667" rx="36" transform="matrix(1.2980132,0,0,1.2980132,-111.083,-86.419199)" ry="35.917" stroke-width="3.5" fill="none"/>
+   <path id="polygon8" d="m-78.991,7.1455-7.822-4.543,0-19.253-15.427,0,18.772-61.007,21.851,61.007-17.374,0,0,23.796z" stroke-width="1.99600005" fill="#6C6"/>
+   <path id="polygon8-1" d="m-37.691,3.1451-7.822,1.357,0-21.153-14.827,0,18.172-61.407,20.851,61.407-16.374,0,0,19.796z" stroke-width="1.99600005" fill="#6C6"/>
+  </g>
+ </g>
+</svg>

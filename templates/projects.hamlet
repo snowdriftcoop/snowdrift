@@ -1,14 +1,26 @@
-<div .row>
-    <div .col-xs-12>
-        $if null projects
-            no projects to display
-        $else
-            <table>
-                $forall Entity _ project <- projects
-                    <tr>
-                        <td>
-                            <a href=@{ProjectR (projectHandle project)}>
-                                #{projectName project}
-                        <td>
-                            #{show (projectShareValue project)}/share
+$if null projects
+    <p> no projects to display
+$else
+    <table .projects>
+        $forall Entity project_id project <- projects
+            <tr>
+                <td>
+                    <a href=@{ProjectR (projectHandle project)}>
+                        #{projectName project}
+                <td>
+                    <a href=@{WikiNewEditsR (projectHandle project)}>
+                        <span .glyphicon .glyphicon-list-alt>&nbsp;
+                            $maybe (_, count') <- M.lookup project_id counts'
+                                $with (Value count) <- L.head count'
+                                    $if not (count == 0)
+                                        #{show count}
+                <td>
+                    <a href=@{WikiNewCommentsR (projectHandle project)}>
+                        <span .glyphicon .glyphicon-comment>&nbsp;
+                            $maybe (count', _) <- M.lookup project_id counts'
+                                $with (Value count) <- L.head count'
+                                    $if not (count == 0)
+                                        #{show count}
+                <td>
+                    #{show (projectShareValue project)}/share
 

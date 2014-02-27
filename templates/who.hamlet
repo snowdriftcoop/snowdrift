@@ -1,20 +1,18 @@
-<div .row>
-    <div .col-xs-12>
-        $forall Entity user_id user <- members
-            <hr>
-            <div .row>
-                <div .bio_name .col-sm-3>
-                    <a href=@{UserR user_id}>
-                        #{userShortName user}
-                        <br>
-                        $maybe avatar <- userAvatar user
-                            <img .headshot src="#{avatar}">
-                        $nothing
-                            <img .headshot src="@{StaticR img_placeholder_png}">
-                <div .col-sm-9>
-                    <p>
-                        $maybe blurb <- userBlurb user
-                            #{renderMarkdown project_handle blurb}
-                        $nothing
-                            &nbsp;
+$forall Entity user_id user <- members
+    <hr>
+    <div .row>
+        <div .bio_name .col-sm-3>
+            <a href=@{UserR user_id}>
+                #{userShortName user}
+                <br>
+                $maybe avatar <- userAvatar user
+                    <img .headshot src="#{avatar}">
+                $nothing
+                    <img .headshot src="@{StaticR img_placeholder_png}">
+        <div .col-sm-9>
+            <p>
+                $maybe blurb <- userBlurb user
+                    #{renderMarkdown project_handle blurb}
+                $nothing
+                    &nbsp;
 

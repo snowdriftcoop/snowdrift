@@ -7,7 +7,9 @@
                 <img .hidden-lg .logo src=@{StaticR img_s_png} alt="Snowdrift.coop">
         <ul .nav .navbar-nav .navbar-left>
             <li>
-                <a href=@{ProjectsR}> Browse Projects
+                <a href=@{ProjectsR}> Browse Projects&nbsp;
+                        <span .badge>
+                            #{comments + edits}
         <ul .nav .navbar-nav .navbar-right>
             <li>
                 $maybe Entity user_id _ <- maybe_user
@@ -24,7 +26,7 @@
                 <li>
                     <a href=@{MessagesR}>
                         $if not (null messages)
-                            <span .glyphicon .glyphicon-envelope>
+                            <span .glyphicon .glyphicon-envelope>&nbsp;
                                 #{length messages}
                         $else
                             <span .glyphicon .glyphicon-envelope>
@@ -43,7 +45,9 @@
                 <a #head href="@{HomeR}" style="padding : 0">
                     <img .logo src=@{StaticR img_s_png} alt="Snowdrift.coop">
             <li>
-                <a href=@{ProjectsR}> Projects
+                <a href=@{ProjectsR}> Projects&nbsp;
+                        <span .badge>
+                            #{comments + edits}
             <li>
                 $maybe Entity user_id _ <- maybe_user
                     $maybe (balance, pledged) <- money_info
@@ -58,12 +62,11 @@
         <ul .nav .nav-pills .navbar-right>
             $maybe (Entity user_id user) <- maybe_user
                 <li>
-                    $if not (null messages)
-                        <strong>
-                            <a href="@{MessagesR}">
-                                _{MsgNewMessages (length messages)}
-                    $else
-                        <a href=@{MessagesR}>
+                    <a href="@{MessagesR}">
+                        $if not (null messages)
+                            <span .glyphicon .glyphicon-envelope>&nbsp;
+                                #{length messages}
+                        $else
                             <span .glyphicon .glyphicon-envelope>
                 $with name <- fromMaybe (userIdent user) $ userName user 
                     <li>

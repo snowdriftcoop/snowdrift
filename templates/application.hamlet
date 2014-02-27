@@ -1,63 +1,61 @@
-<div .row>
-    <div .col-xs-12>
-        <table>
-            <tr>
-                <td>
-                    Account:
-                <td>
-                    <a href="@{UserR (volunteerApplicationUser application)}">
-                        #{userPrintName user}
+<table>
+    <tr>
+        <td>
+            Account:
+        <td>
+            <a href="@{UserR (volunteerApplicationUser application)}">
+                #{userPrintName user}
 
-            <tr>
-                <td>
-                    Name:
-                <td>
-                    #{volunteerApplicationName application}
+    <tr>
+        <td>
+            Name:
+        <td>
+            #{volunteerApplicationName application}
 
-            <tr>
-                <td>
-                    Email:
-                <td>
-                    #{volunteerApplicationEmail application}
+    <tr>
+        <td>
+            Email:
+        <td>
+            #{volunteerApplicationEmail application}
 
-            $maybe contactInfo <- volunteerApplicationOtherContactInfo application
-                <tr>
-                    <td>
-                        Other Contact Info:
-                    <td>
-                        #{contactInfo}
+    $maybe contactInfo <- volunteerApplicationOtherContactInfo application
+        <tr>
+            <td>
+                Other Contact Info:
+            <td>
+                #{contactInfo}
 
-            $maybe website <- volunteerApplicationWebsite application
-               <tr>
-                   <td>
-                       Website URL:
-                   <td>
-                       #{website}
+    $maybe website <- volunteerApplicationWebsite application
+        <tr>
+            <td>
+                Website URL:
+            <td>
+                #{website}
 
-            $maybe location <- volunteerApplicationLocation application 
-               <tr>
-                   <td>
-                       Location:
-                   <td>
-                       #{location}
+    $maybe location <- volunteerApplicationLocation application 
+        <tr>
+            <td>
+                Location:
+            <td>
+                #{location}
 
-            $maybe experience <- volunteerApplicationExperience application
-                <tr>
-                    <td>
-                        Experience:
-                    <td>
-                        #{experience}
+    $maybe experience <- volunteerApplicationExperience application
+        <tr>
+            <td>
+                Experience:
+            <td>
+                #{experience}
 
-            $if not (null interests)
-                <tr>
-                    <td>
-                        #{plural (length interests) "Interest" "Interests"}:
-                    <td>
-                        #{rendered_interests}
+    $if not (null interests)
+        <tr>
+            <td>
+                #{plural (length interests) "Interest" "Interests"}:
+            <td>
+                #{rendered_interests}
 
-            $maybe comments <- volunteerApplicationComments application
-                <tr>
-                    <td>
-                        Comments:
-                    <td>
-                        #{comments}
+    $maybe comments <- volunteerApplicationComments application
+        <tr>
+            <td>
+                Comments:
+            <td>
+                #{comments}

@@ -37,6 +37,7 @@ library
                      Model.Markdown
                      Model.Markdown.Diff
                      Model.User
+                     Model.ViewType
                      Model.Settings
                      Settings
                      Settings.StaticFiles
@@ -78,6 +79,7 @@ library
 
     other-modules: Model.Settings.Internal
                    Model.Role.Internal
+                   Model.ViewType.Internal
                    Model.Permission.Internal
 
     if flag(dev) || flag(library-only)

@@ -1,8 +1,6 @@
-<div .row>
-    <div .col-xs-12>
-        $if null tags
-            no tags to display
-        $else
-            <table>
-                $forall tag <- tags
-                    ^{tagWidget tag}
+$if null tags
+    no tags to display
+$else
+    <table>
+        $forall tag <- tags
+            ^{tagWidget tag}

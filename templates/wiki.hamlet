@@ -1,22 +1,18 @@
-<div .row>
-    <div .col-xs-12>
-        $if can_edit
-            <div .row>
-                <div .col-sm-4>
-                    <a href="@{EditWikiR project_handle target}">edit
-                <div .col-sm-4>
-                    <a href="@{WikiHistoryR project_handle target}">history
-                <div .col-sm-4>
-                    <a href="@{DiscussWikiR project_handle target}">discuss
-        $else
-            $if can_view_meta
-                <div .row>
-                    <div .col-xs-6>
-                        <a href="@{WikiHistoryR project_handle target}">history
-                    <div .col-xs-6>
-                        <a href="@{DiscussWikiR project_handle target}">view discussion
-        <hr .wikitop>
+$if can_edit
+    <div .row>
+        <div .col-sm-4>
+            <a href="@{EditWikiR project_handle target}">edit
+        <div .col-sm-4>
+            <a href="@{WikiHistoryR project_handle target}">history
+        <div .col-sm-4>
+            <a href="@{DiscussWikiR project_handle target}">discuss
+$else
+    $if can_view_meta
         <div .row>
-            <div .col-xs-12>
-                #{renderMarkdown project_handle (wikiPageContent page)}
+            <div .col-xs-6>
+                <a href="@{WikiHistoryR project_handle target}">history
+            <div .col-xs-6>
+                <a href="@{DiscussWikiR project_handle target}">view discussion
+<hr .wikitop>
+#{renderMarkdown project_handle (wikiPageContent page)}
 

@@ -1,10 +1,7 @@
 <div .row>
-    <div .col-xs-12>
-        <div .row>
-            <div .col-xs-6>
-                <a href="@{WikiR project_handle target}"> back to wiki page
-        <hr .wikitop>
-            <div .row>
-                <form action="@{DiscussWikiR project_handle target}" method="POST">
-                    ^{comment_form}
-                    <input type="submit" name="mode" value="preview">
+    <div .col-xs-6>
+        <a href="@{WikiR project_handle target}"> back to wiki page
+<hr .wikitop>
+    <form action="@{DiscussWikiR project_handle target}" method="POST">
+        ^{comment_form}
+        <input type="submit" name="mode" value="preview">
