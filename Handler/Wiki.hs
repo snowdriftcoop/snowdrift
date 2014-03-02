@@ -88,7 +88,7 @@ postWikiR project_handle target = do
             case mode of
                 Just "preview" -> do
                     (form, _) <- generateFormPost $ editWikiForm last_edit_id content comment
-                    defaultLayout $ renderPreview form action $ renderWiki project_handle target False False $ WikiPage target project_id content undefined Normal
+                    defaultLayout $ renderPreview form action $ renderWiki project_handle target False False $ WikiPage target project_id content (Key $ PersistInt64 (-1)) Normal
 
                 Just x | x == action -> do
                     runDB $ do
