@@ -24,10 +24,49 @@ import Widgets.Preview
 import Widgets.Tag
 import Widgets.Time
 
+import Handler.Wiki
+
 import Yesod.Markdown
 import Model.Markdown
 
 import Yesod.Default.Config
+
+import Control.Monad.Trans.Resource
+
+getTags :: CommentId -> Handler [Entity Tag]
+getTags comment_id = runDB $ select $ from $ \ (comment_tag `InnerJoin` tag) -> do
+    on_ $ comment_tag ^. CommentTagTag ==. tag ^. TagId
+    where_ $ comment_tag ^. CommentTagComment ==. val comment_id
+    return tag
+
+getCommentPageId :: (MonadLogger m, MonadIO m, MonadBaseControl IO m, MonadUnsafeIO m, MonadThrow m) => CommentId -> SqlPersistT m WikiPageId
+getCommentPageId comment_id = do
+    [ Value page_id ] <- select $ from $ \ (c `InnerJoin` p) -> do
+        on_ $ c ^. CommentDiscussion ==. p ^. WikiPageDiscussion
+        where_ $ c ^. CommentId ==. val comment_id
+        return $ p ^. WikiPageId
+
+    return page_id
+
+
+checkCommentPage :: CommentId -> WikiPageId -> Handler ()
+checkCommentPage comment_id page_id = do
+    comment_page_id <- runDB $ getCommentPageId comment_id
+    when (comment_page_id /= page_id) $ error "comment does not match page"
+
+
+requireModerator :: (YesodPersist site, YesodPersistBackend site ~ SqlPersistT) => Text -> Text -> KeyBackend SqlBackend User -> HandlerT site IO ()
+requireModerator message project_handle user_id = do
+    [ Value c :: Value Int ] <- runDB $ select $ from $ \ (pur `InnerJoin` project) -> do
+        on_ $ pur ^. ProjectUserRoleProject ==. project ^. ProjectId
+        where_ $ pur ^. ProjectUserRoleUser ==. val user_id
+                &&. pur ^. ProjectUserRoleRole ==. val Moderator
+                &&. project ^. ProjectHandle ==. val project_handle
+
+        return $ count $ pur ^. ProjectUserRoleId
+
+    when (c < 1) $ permissionDenied message
+
 
 renderComment :: UserId -> [Role] -> Text -> Text -> M.Map UserId (Entity User) -> Int -> Int
     -> [CommentRetraction] -> M.Map CommentId CommentRetraction -> Bool -> Map TagId Tag -> Tree (Entity Comment) -> Maybe Widget -> Widget
@@ -40,18 +79,18 @@ renderComment viewer_id viewer_roles project_handle target users max_depth depth
         children = subForest tree
 
         Entity user_id user = users M.! commentUser comment
-        author_name = userPrintName (Entity user_id user)
-        comment_time = renderTime (commentCreatedTs comment)
-        unapproved = not $ isJust $ commentModeratedTs comment
+        author_name = userPrintName $ Entity user_id user
+        comment_time = renderTime $ commentCreatedTs comment
+        unapproved = not . isJust $ commentModeratedTs comment
 
-        top_level = (commentDepth comment == 0)
+        top_level = commentDepth comment == 0
         even_depth = not top_level && commentDepth comment `mod` 2 == 1
         odd_depth = not top_level && not even_depth
 
         maybe_retraction = M.lookup comment_id retraction_map
         empty_list = []
 
-        user_is_mod = elem Moderator viewer_roles
+        user_is_mod = Moderator `elem` viewer_roles
         can_rethread = user_id == viewer_id || user_is_mod
 
     tags <- fmap (L.sortBy (compare `on` atName)) $ handlerToWidget $ do
@@ -71,32 +110,29 @@ commentForm :: Maybe CommentId -> Maybe Markdown -> Form (Maybe CommentId, Markd
 commentForm parent content = renderBootstrap3
     $ (,)
         <$> aopt' hiddenField "" (Just parent)
-        <*> areq' snowdriftMarkdownField (if parent == Nothing then "Comment" else "Reply") content
+        <*> areq' snowdriftMarkdownField (if not $ isJust parent then "Comment" else "Reply") content
 
 
 {- TODO: Split out the core of this and move the wiki-specific stuff into Wiki -}
+
+
+checkApproveComment :: Text -> Text -> CommentId -> Handler UserId
+checkApproveComment project_handle target comment_id = do
+    user_id <- requireAuthId
+
+    (_, Entity page_id _) <- getPageInfo project_handle target
+    checkCommentPage comment_id page_id
+    requireModerator "You must be a moderator to approve posts." project_handle user_id
+
+    return user_id
+    
 
 getOldApproveWikiCommentR :: Text -> Text -> CommentId -> Handler Html
 getOldApproveWikiCommentR project_handle target comment_id = redirect $ ApproveWikiCommentR project_handle target comment_id
 
 getApproveWikiCommentR :: Text -> Text -> CommentId -> Handler Html
 getApproveWikiCommentR project_handle target comment_id = do
-    user_id <- requireAuthId
-
-    Entity project_id _ <- runDB $ getBy404 $ UniqueProjectHandle project_handle
-    Entity page_id page <- runDB $ getBy404 $ UniqueWikiTarget project_id target
-
-    [ Value comment_page ] <- runDB $ select $ from $ \ (c `InnerJoin` p) -> do
-        on_ $ c ^. CommentDiscussion ==. p ^. WikiPageDiscussion
-        where_ $ c ^. CommentId ==. val comment_id
-        return $ p ^. WikiPageId
-
-    when (comment_page /= page_id) $ error "comment does not match page"
-    when (wikiPageProject page /= project_id) $ error "comment does not match project"
-
-    moderator <- runDB $ isProjectModerator project_handle user_id
-
-    when (not moderator) $ error "you must be a moderator to approve posts"
+    void $ checkApproveComment project_handle target comment_id
 
     defaultLayout [whamlet|
         <form method="POST">
@@ -109,24 +145,9 @@ postOldApproveWikiCommentR = postApproveWikiCommentR
 
 postApproveWikiCommentR :: Text -> Text -> CommentId -> Handler Html
 postApproveWikiCommentR project_handle target comment_id = do
-    user_id <- requireAuthId
+    user_id <- checkApproveComment project_handle target comment_id
 
     now <- liftIO getCurrentTime
-
-    Entity project_id _ <- runDB $ getBy404 $ UniqueProjectHandle project_handle
-    Entity page_id page <- runDB $ getBy404 $ UniqueWikiTarget project_id target
-
-    [ Value comment_page ] <- runDB $ select $ from $ \ (c `InnerJoin` p) -> do
-        on_ $ c ^. CommentDiscussion ==. p ^. WikiPageDiscussion
-        where_ $ c ^. CommentId ==. val comment_id
-        return $ p ^. WikiPageId
-
-    when (comment_page /= page_id) $ error "comment does not match page"
-    when (wikiPageProject page /= project_id) $ error "comment does not match project"
-
-    moderator <- runDB $ isProjectModerator project_handle user_id
-
-    when (not moderator) $ error "you must be a moderator to approve posts"
 
     runDB $ update $ \ c -> do
         set c
@@ -150,15 +171,24 @@ countReplies :: [Tree a] -> Int
 countReplies = sum . map (F.sum . fmap (const 1))
 
 
+checkRetractComment :: Text -> Text -> CommentId -> Handler (Entity User, ProjectId, Comment)
+checkRetractComment project_handle target comment_id = do
+    user_entity <- requireAuth
+    comment <- runDB $ get404 comment_id
+
+    (Entity project_id _, _) <- getPageInfo project_handle target
+
+    when (commentUser comment /= entityKey user_entity) $ permissionDenied "You can only retract your own comments."
+
+    return (user_entity, project_id, comment)
+
+
 getOldRetractWikiCommentR :: Text -> Text -> CommentId -> Handler Html
 getOldRetractWikiCommentR project_handle target comment_id = redirect $ RetractWikiCommentR project_handle target comment_id
 
 getRetractWikiCommentR :: Text -> Text -> CommentId -> Handler Html
 getRetractWikiCommentR project_handle target comment_id = do
-    Entity user_id user <- requireAuth
-    comment <- runDB $ get404 comment_id
-    Entity project_id _ <- runDB $ getBy404 $ UniqueProjectHandle project_handle
-    when (commentUser comment /= user_id) $ permissionDenied "You can only retract your own comments."
+    (Entity user_id user, project_id, comment) <- checkRetractComment project_handle target comment_id
 
     earlier_retractions <- runDB $
         case commentParent comment of
@@ -176,10 +206,7 @@ getRetractWikiCommentR project_handle target comment_id = do
 
             Nothing -> return []
 
-    tags <- runDB $ select $ from $ \ (comment_tag `InnerJoin` tag) -> do
-        on_ $ comment_tag ^. CommentTagTag ==. tag ^. TagId
-        where_ $ comment_tag ^. CommentTagComment ==. val comment_id
-        return tag
+    tags <- getTags comment_id
 
     let tag_map = M.fromList $ entityPairs tags
 
@@ -202,10 +229,7 @@ postOldRetractWikiCommentR = postRetractWikiCommentR
 
 postRetractWikiCommentR :: Text -> Text -> CommentId -> Handler Html
 postRetractWikiCommentR project_handle target comment_id = do
-    Entity user_id user <- requireAuth
-    comment <- runDB $ get404 comment_id
-    Entity project_id _ <- runDB $ getBy404 $ UniqueProjectHandle project_handle
-    when (commentUser comment /= user_id) $ permissionDenied "You can only retract your own comments."
+    (Entity user_id user, project_id, comment) <- checkRetractComment project_handle target comment_id
 
     ((result, _), _) <- runFormPost $ retractForm Nothing
 
@@ -230,10 +254,7 @@ postRetractWikiCommentR project_handle target comment_id = do
                 Just "preview retraction" -> do
                     (form, _) <- generateFormPost $ retractForm (Just reason)
 
-                    tags <- runDB $ select $ from $ \ (comment_tag `InnerJoin` tag) -> do
-                        on_ $ comment_tag ^. CommentTagTag ==. tag ^. TagId
-                        where_ $ comment_tag ^. CommentTagComment ==. val comment_id
-                        return tag
+                    tags <- getTags comment_id
 
                     let tag_map = M.fromList $ entityPairs tags
                         soon = UTCTime (ModifiedJulianDay 0) 0
@@ -275,8 +296,7 @@ getOldDiscussWikiR project_handle target = redirect $ DiscussWikiR project_handl
 getDiscussWikiR :: Text -> Text -> Handler Html
 getDiscussWikiR project_handle target = do
     Entity user_id user <- requireAuth
-    Entity project_id project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
-    Entity page_id page  <- runDB $ getBy404 $ UniqueWikiTarget project_id target
+    (Entity project_id project, Entity page_id page) <- getPageInfo project_handle target
 
     affiliated <- runDB $ (||)
             <$> isProjectAffiliated project_handle user_id
@@ -315,7 +335,7 @@ getDiscussWikiR project_handle target = do
         retraction_map <- M.fromList . map ((commentRetractionComment &&& id) . entityVal) <$> selectList [ CommentRetractionComment <-. map entityKey (roots ++ rest) ] []
         return (roots, rest, users, retraction_map)
 
-    tags <- runDB $ select $ from $ return
+    tags <- runDB $ select $ from return
 
     roles <- getRoles user_id project_id
 
@@ -346,18 +366,14 @@ getReplyCommentR =
 getDiscussCommentR' :: Bool -> Text -> Text -> CommentId -> Handler Html
 getDiscussCommentR' show_reply project_handle target comment_id = do
     Entity viewer_id _ <- requireAuth
-    Entity project_id _ <- runDB $ getBy404 $ UniqueProjectHandle project_handle
-    Entity page_id page  <- runDB $ do
-        getBy404 $ UniqueWikiTarget project_id target
+
+    (Entity project_id _, Entity page_id page) <- getPageInfo project_handle target
 
     (root, rest, users, earlier_retractions, retraction_map) <- runDB $ do
         root <- get404 comment_id
-        [ Value root_wiki_page ] <- select $ from $ \ (c `InnerJoin` p) -> do
-            on_ $ c ^. CommentDiscussion ==. p ^. WikiPageDiscussion
-            where_ $ c ^. CommentId ==. val comment_id
-            return $ p ^. WikiPageId
+        root_wiki_page_id <- getCommentPageId comment_id
 
-        when (root_wiki_page /= page_id) $ error "Selected comment does not match selected page"
+        when (root_wiki_page_id /= page_id) $ error "Selected comment does not match selected page"
 
         subtree <- select $ from $ \ comment -> do
             where_ ( comment ^. CommentAncestorAncestor ==. val comment_id )
@@ -392,7 +408,7 @@ getDiscussCommentR' show_reply project_handle target comment_id = do
 
     (comment_form, _) <- generateFormPost $ commentForm (Just comment_id) Nothing
 
-    tags <- runDB $ select $ from $ return
+    tags <- runDB $ select $ from return
 
     let tag_map = M.fromList $ entityPairs tags
 
@@ -425,10 +441,8 @@ postOldDiscussWikiR = postDiscussWikiR
 postDiscussWikiR :: Text -> Text -> Handler Html
 postDiscussWikiR project_handle target = do
     Entity user_id user <- requireAuth
-    Entity project_id _ <- runDB $ getBy404 $ UniqueProjectHandle project_handle
-    Entity _ page <- runDB $ do
-        getBy404 $ UniqueWikiTarget project_id target
 
+    (Entity project_id _, Entity _ page) <- getPageInfo project_handle target
 
     let established = isJust $ userEstablishedTs user
 
@@ -463,7 +477,7 @@ postDiscussWikiR project_handle target = do
 
                             Nothing -> return []
 
-                    tags <- runDB $ select $ from $ return
+                    tags <- runDB $ select $ from return
 
                     let tag_map = M.fromList $ entityPairs tags
 
@@ -531,9 +545,8 @@ getOldNewDiscussWikiR project_handle target = redirect $ NewDiscussWikiR project
 getNewDiscussWikiR :: Text -> Text -> Handler Html
 getNewDiscussWikiR project_handle target = do
     Entity user_id user <- requireAuth
-    Entity page_id page  <- runDB $ do
-        Entity project_id _ <- getBy404 $ UniqueProjectHandle project_handle
-        getBy404 $ UniqueWikiTarget project_id target
+
+    (_, Entity page_id page) <- getPageInfo project_handle target
 
     affiliated <- runDB $ (||)
             <$> isProjectAffiliated project_handle user_id
@@ -562,8 +575,7 @@ getWikiNewCommentsR project_handle = do
     maybe_since <- lookupGetParam "since"
     since :: UTCTime <- case maybe_since of
         Nothing -> do
-            viewtimes :: [Entity ViewTime] <- runDB $ do
-                select $ from $ \ viewtime -> do
+            viewtimes :: [Entity ViewTime] <- runDB $ select $ from $ \ viewtime -> do
                     where_ $
                         ( viewtime ^. ViewTimeUser ==. val viewer_id ) &&.
                         ( viewtime ^. ViewTimeProject ==. val project_id ) &&.
@@ -572,16 +584,16 @@ getWikiNewCommentsR project_handle = do
 
             let comments_ts = case viewtimes of
                     [] -> userReadComments viewer
-                    (Entity _ viewtime):_ -> viewTimeTime viewtime
+                    Entity _ viewtime : _ -> viewTimeTime viewtime
 
-            redirectParams (WikiNewCommentsR project_handle) $ (T.pack "since", T.pack $ show comments_ts) : (reqGetParams req)
+            redirectParams (WikiNewCommentsR project_handle) $ (T.pack "since", T.pack $ show comments_ts) : reqGetParams req
         Just since -> return (read . T.unpack $ since)
 
     maybe_from <- fmap (Key . PersistInt64 . read . T.unpack) <$> lookupGetParam "from"
 
     now <- liftIO getCurrentTime
 
-    tags <- runDB $ select $ from $ return
+    tags <- runDB $ select $ from return
 
     let tag_map = M.fromList $ entityPairs tags
 
@@ -608,18 +620,17 @@ getWikiNewCommentsR project_handle = do
 -}
         new_comments :: [Entity Comment] <- select $ from $ \ (comment `InnerJoin` wiki_page) -> do
             on_ $ comment ^. CommentDiscussion ==. wiki_page ^. WikiPageDiscussion
-            where_ $
-                (apply_offset comment $ wiki_page ^. WikiPageId `in_` valList (M.keys pages)) &&.
-                (comment ^. CommentCreatedTs >=. val since)
+            where_ $ apply_offset comment (wiki_page ^. WikiPageId `in_` valList (M.keys pages))
+                    &&. (comment ^. CommentCreatedTs >=. val since)
+
             orderBy [ desc (comment ^. CommentId) ]
             limit 51
             return comment
 
         old_comments :: [Entity Comment] <- select $ from $ \ (comment `InnerJoin` wiki_page) -> do
             on_ $ comment ^. CommentDiscussion ==. wiki_page ^. WikiPageDiscussion
-            where_ $
-                (apply_offset comment $ wiki_page ^. WikiPageId `in_` valList (M.keys pages)) &&.
-                (comment ^. CommentCreatedTs <. val since)
+            where_ $ apply_offset comment (wiki_page ^. WikiPageId `in_` valList (M.keys pages))
+                    &&. (comment ^. CommentCreatedTs <. val since)
             orderBy [ desc (comment ^. CommentId) ]
             limit $ fromIntegral $ 51 - length new_comments
             --offset $ fromIntegral $ length new_comments
@@ -684,11 +695,8 @@ getWikiNewCommentsR project_handle = do
                     ( viewtime ^. ViewTimeUser ==. val viewer_id ) &&.
                     ( viewtime ^. ViewTimeProject ==. val project_id ) &&.
                     ( viewtime ^. ViewTimeType ==. val ViewComments )
-        if (c == 0)
-            then
-                insert_ $ ViewTime viewer_id project_id ViewComments now
-            else
-                return ()
+
+        when (c == 0) $ insert_ $ ViewTime viewer_id project_id ViewComments now
 
     defaultLayout $ do
         setTitle . toHtml $ projectName project <> " - New Comments | Snowdrift.coop"
@@ -737,23 +745,14 @@ postRethreadWikiCommentR project_handle target comment_id = do
             app <- getYesod
             let splitPath = drop 1 . T.splitOn "/"
                 stripQuery = fst . T.break (== '?')
-                stripRoot = maybe new_parent_url id . T.stripPrefix (appRoot $ settings app)
+                stripRoot = fromMaybe new_parent_url . T.stripPrefix (appRoot $ settings app)
                 url = splitPath $ stripQuery $ stripRoot new_parent_url
 
             (new_parent_id, new_discussion_id) <- case parseRoute (url, []) of
                 Just (DiscussCommentR new_project_handle new_target new_parent_id) -> do
-                    new_project_maybe <- runDB $ getBy $ UniqueProjectHandle new_project_handle
-                    let new_project_id = maybe (error "could not find project") entityKey new_project_maybe
+                    Entity new_project_id _ <- getByErr "could not find project" $ UniqueProjectHandle new_project_handle
 
-
-                    when (new_project_id /= project_id) $ do
-                        [ Value c :: Value Int ] <- runDB $ select $ from $ \ pur -> do
-                            where_ $ pur ^. ProjectUserRoleUser ==. val user_id
-                                &&. pur ^. ProjectUserRoleProject ==. val new_project_id
-                                &&. pur ^. ProjectUserRoleRole ==. val Moderator
-                            return $ count $ pur ^. ProjectUserRoleId
-
-                        when (c < 1) $ permissionDenied "You must be a moderator to rethread"
+                    when (new_project_id /= project_id) $ requireModerator "You must be a moderator to rethread." new_project_handle user_id
 
                     maybe_new_page <- runDB $ getBy $ UniqueWikiTarget new_project_id new_target
 
@@ -765,14 +764,7 @@ postRethreadWikiCommentR project_handle target comment_id = do
                     new_project_maybe <- runDB $ getBy $ UniqueProjectHandle new_project_handle
                     let new_project_id = maybe (error "could not find project") entityKey new_project_maybe
 
-                    when (new_project_id /= project_id) $ do
-                        [ Value c :: Value Int ] <- runDB $ select $ from $ \ pur -> do
-                            where_ $ pur ^. ProjectUserRoleUser ==. val user_id
-                                &&. pur ^. ProjectUserRoleProject ==. val new_project_id
-                                &&. pur ^. ProjectUserRoleRole ==. val Moderator
-                            return $ count $ pur ^. ProjectUserRoleId
-
-                        when (c < 1) $ permissionDenied "You must be a moderator to rethread"
+                    when (new_project_id /= project_id) $ requireModerator "You must be a moderator to rethread." new_project_handle user_id
 
                     maybe_new_page <- runDB $ getBy $ UniqueWikiTarget new_project_id new_target
 
@@ -813,7 +805,7 @@ postRethreadWikiCommentR project_handle target comment_id = do
 
                         let descendents = comment_id : map (\ (Value x) -> x) descendents'
 
-                        when (not $ null old_ancestors) $ do
+                        unless (null old_ancestors) $ do
                             to_delete <- select $ from $ \ comment_ancestor -> do
                                 where_ $ comment_ancestor ^. CommentAncestorComment `in_` valList old_ancestors
                                         &&. comment_ancestor ^. CommentAncestorAncestor `in_` valList descendents

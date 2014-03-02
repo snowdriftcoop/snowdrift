@@ -22,15 +22,20 @@ import Data.Algorithm.Diff (getDiff, Diff (..))
 
 import Text.Blaze.Html5 (ins, del, br)
 
+type PageInfo = (Entity Project, Entity WikiPage)
+
+getPageInfo :: Text -> Text -> Handler PageInfo
+getPageInfo project_handle target = runDB $ do
+    project <- getBy404 $ UniqueProjectHandle project_handle
+    page <- getBy404 $ UniqueWikiTarget (entityKey project) target
+
+    return (project, page)
+
 getWikiR :: Text -> Text -> Handler Html
 getWikiR project_handle target = do
     maybe_user <- maybeAuth
 
-    (page, project) <- runDB $ do
-        Entity project_id project <- getBy404 $ UniqueProjectHandle project_handle
-        Entity _ page <- getBy404 $ UniqueWikiTarget project_id target
-
-        return (page, project)
+    (Entity _ project, Entity _ page) <- getPageInfo project_handle target
 
     let can_edit = isJust $ userEstablishedTs =<< entityVal <$> maybe_user
 
@@ -70,11 +75,9 @@ postWikiR project_handle target = do
 
     when (not can_edit) $ permissionDenied "you do not have permission to edit this page"
 
-    (project_id, Entity page_id page, Entity _ last_edit) <- runDB $ do
-        Entity project_id _ <- getBy404 $ UniqueProjectHandle project_handle
-        page_entity <- getBy404 $ UniqueWikiTarget project_id target
-        last_edit_entity <- getBy404 $ UniqueWikiLastEdit $ entityKey page_entity
-        return (project_id, page_entity, last_edit_entity)
+    (Entity project_id _, Entity page_id page) <- getPageInfo project_handle target
+
+    Entity _ last_edit <- runDB $ getBy404 $ UniqueWikiLastEdit page_id
 
     ((result, _), _) <- runFormPost $ editWikiForm undefined (wikiPageContent page) Nothing
 
@@ -160,8 +163,7 @@ getOldEditWikiPermissionsR project_handle target = redirect $ EditWikiPermission
 getEditWikiPermissionsR :: Text -> Text -> Handler Html
 getEditWikiPermissionsR project_handle target = do
     Entity user_id user <- requireAuth
-    Entity project_id project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
-    Entity page_id page <- runDB $ getBy404 $ UniqueWikiTarget project_id target
+    (Entity project_id project, Entity page_id page) <- getPageInfo project_handle target
 
     affiliated <- runDB $ (||)
             <$> isProjectAdmin project_handle user_id
@@ -182,9 +184,7 @@ postOldEditWikiPermissionsR = postEditWikiPermissionsR
 postEditWikiPermissionsR :: Text -> Text -> Handler Html
 postEditWikiPermissionsR project_handle target = do
     Entity user_id _ <- requireAuth
-    (Entity page_id page) <- runDB $ do
-        Entity project_id _ <- getBy404 $ UniqueProjectHandle project_handle
-        getBy404 $ UniqueWikiTarget project_id target
+    (_, Entity page_id page) <- getPageInfo project_handle target
 
     affiliated <- runDB $ (||)
             <$> isProjectAdmin project_handle user_id
@@ -214,11 +214,9 @@ getOldEditWikiR project_handle target = redirect $ EditWikiR project_handle targ
 getEditWikiR :: Text -> Text -> Handler Html
 getEditWikiR project_handle target = do
     Entity user_id user <- requireAuth
-    Entity project_id project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
-    (Entity page_id page, Entity _ last_edit) <- runDB $ do
-        page_entity <- getBy404 $ UniqueWikiTarget project_id target
-        last_edit_entity <- getBy404 $ UniqueWikiLastEdit $ entityKey page_entity
-        return (page_entity, last_edit_entity)
+    (Entity project_id project, Entity page_id page) <- getPageInfo project_handle target
+
+    Entity _ last_edit <- runDB $ getBy404 $ UniqueWikiLastEdit page_id
 
     let can_edit = isJust $ userEstablishedTs user
 
@@ -303,9 +301,9 @@ getOldWikiHistoryR project_handle target = redirect $ WikiHistoryR project_handl
 getWikiHistoryR :: Text -> Text -> Handler Html
 getWikiHistoryR project_handle target = do
     _ <- requireAuthId
-    Entity project_id project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
+    (Entity project_id project, Entity page_id _) <- getPageInfo project_handle target
+
     (edits, users) <- runDB $ do
-        Entity page_id _ <- getBy404 $ UniqueWikiTarget project_id target
         edits <- select $ from $ \ edit -> do
             where_ ( edit ^. WikiEditPage ==. val page_id )
             orderBy [ desc (edit ^. WikiEditId) ]
@@ -353,9 +351,9 @@ getWikiDiffR :: Text -> Text -> WikiEditId -> WikiEditId -> Handler Html
 getWikiDiffR project_handle target start_edit_id end_edit_id = do
     _ <- requireAuthId
 
-    Entity project_id project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
+    (Entity project_id project, Entity page_id _) <- getPageInfo project_handle target
+
     (start_edit, end_edit) <- runDB $ do
-        Entity page_id _ <- getBy404 $ UniqueWikiTarget project_id target
         start_edit <- get404 start_edit_id
         end_edit <- get404 end_edit_id
 
@@ -379,9 +377,8 @@ getWikiEditR :: Text -> Text -> WikiEditId -> Handler Html
 getWikiEditR project_handle target edit_id = do
     _ <- requireAuthId
 
-    Entity project_id project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
+    (Entity project_id project, Entity page_id _) <- getPageInfo project_handle target
     edit <- runDB $ do
-        Entity page_id _ <- getBy404 $ UniqueWikiTarget project_id target
         edit <- get404 edit_id
 
         when (page_id /= wikiEditPage edit) $ error "selected edit is not an edit of selected page"
@@ -421,6 +418,7 @@ getWikiNewEditsR project_handle = do
                     (Entity _ viewtime):_ -> viewTimeTime viewtime
 
             redirectParams (WikiNewEditsR project_handle) $ (T.pack "since", T.pack $ show comments_ts) : (reqGetParams req)
+
         Just since -> return (read . T.unpack $ since)
 
     now <- liftIO getCurrentTime

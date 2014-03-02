@@ -52,6 +52,7 @@ infixr 5 <>
 import Control.Exception (Exception)
 import Data.Typeable (Typeable)
 
+
 on_ :: Esqueleto query expr backend => expr (Value Bool) -> query ()
 on_ = Database.Esqueleto.on
 
@@ -175,4 +176,12 @@ renderBootstrap3 aform fragment = do
                 |]
     return (res, widget)
 
+redirectParams :: (MonadHandler (HandlerT site m), MonadBaseControl IO m) => Route site -> [(Text, Text)] -> HandlerT site m a
 redirectParams route params = getUrlRenderParams >>= \ render -> redirect $ render route params
+
+
+getByErr message = runDB . fmap fromJustError . getBy
+    where
+        fromJustError :: Maybe a -> a
+        fromJustError = fromMaybe (error message)
+
