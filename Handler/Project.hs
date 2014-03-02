@@ -9,9 +9,10 @@ import Model.Project
 import Model.Shares
 import Model.Markdown.Diff
 import Model.User
+import Model.ViewType
 
+import qualified Data.List as L
 import qualified Data.Map as M
-
 import qualified Data.Text as T
 import qualified Data.Set as S
 
@@ -35,9 +36,11 @@ lookupGetParamDefault name def = do
 
 getProjectsR :: Handler Html
 getProjectsR = do
-    page <- lookupGetParamDefault "page" 0
-    per_page <- lookupGetParamDefault "count" 20
+    page <- lookupGetParamDefault "page" (0 :: Integer)
+    per_page <- lookupGetParamDefault "count" (20 :: Integer)
     tags <- maybe [] (map T.strip . T.splitOn ",") <$> lookupGetParam "tags"
+    muser <- maybeAuth
+{-
     projects <- runDB $ if null tags
         then selectList [] [ Asc ProjectCreatedTs, LimitTo per_page, OffsetBy page ]
         else do
@@ -48,6 +51,49 @@ getProjectsR = do
 
             let project_ids = if null tagged_projects then S.empty else foldl1 S.intersection $ map (S.fromList . map (projectTagProject . entityVal)) tagged_projects
             selectList [ ProjectId <-. S.toList project_ids ] [ Asc ProjectCreatedTs, LimitTo per_page, OffsetBy page ]
+-}
+    projects <- runDB $ select $ from $ \ project -> do
+        return project
+
+    counts <- case muser of
+        Nothing -> return []
+        Just (Entity user_id user) ->
+            forM projects $ \(Entity project_id _) -> runDB $ do
+                comment_viewtimes :: [Entity ViewTime] <- select $ from $ \ viewtime -> do
+                    where_ $
+                        ( viewtime ^. ViewTimeUser ==. val user_id ) &&.
+                        ( viewtime ^. ViewTimeProject ==. val project_id ) &&.
+                        ( viewtime ^. ViewTimeType ==. val ViewComments )
+                    return viewtime
+                edit_viewtimes :: [Entity ViewTime] <- select $ from $ \ viewtime -> do
+                    where_ $
+                        ( viewtime ^. ViewTimeUser ==. val user_id ) &&.
+                        ( viewtime ^. ViewTimeProject ==. val project_id ) &&.
+                        ( viewtime ^. ViewTimeType ==. val ViewEdits )
+                    return viewtime
+                let comments_ts = case comment_viewtimes of
+                        [] -> userReadComments user
+                        (Entity _ viewtime):_ -> viewTimeTime viewtime
+                    edits_ts = case edit_viewtimes of
+                        [] -> userReadEdits user
+                        (Entity _ viewtime):_ -> viewTimeTime viewtime
+                comment_counts <- select $ from $ \(comment `LeftOuterJoin` wp) -> do
+                    on_ (wp ^. WikiPageDiscussion ==. comment ^. CommentDiscussion)
+                    where_ $
+                        ( comment ^. CommentCreatedTs >=. val comments_ts ) &&.
+                        ( wp ^. WikiPageProject ==. val project_id ) &&.
+                        ( comment ^. CommentUser !=. val user_id )
+                    return (countRows :: SqlExpr (Value Int))
+                edit_counts <- select $ from $ \(edit `LeftOuterJoin` wp) -> do
+                    on_ (wp ^. WikiPageId ==. edit ^. WikiEditPage)
+                    where_ $
+                        ( edit ^. WikiEditTs >=. val edits_ts ) &&.
+                        ( wp ^. WikiPageProject ==. val project_id ) &&.
+                        ( edit ^. WikiEditUser !=. val user_id )
+                    return (countRows :: SqlExpr (Value Int))
+                return (project_id, (comment_counts, edit_counts))
+
+    let counts' = M.fromList counts
 
     defaultLayout $ do
         setTitle $ "Projects | Snowdrift.coop"

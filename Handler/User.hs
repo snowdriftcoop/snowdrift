@@ -175,7 +175,7 @@ getUsersR = do
 
     let roles = map roleLabel (universe :: [Role])
         filterRoles r rps = filter (\(r', _) -> r' == r) rps
-        users = Map.toList $ Map.fromList $ map (\u -> (getUserKey u, u)) users'
+        users = map (\u -> (getUserKey u, u)) users'
         userRoles = Map.fromListWith mappend $ map (\(u, Value r, p) -> (getUserKey u, [(roleLabel r, entityVal p)])) infos
         getUserKey :: Entity User -> Text
         getUserKey (Entity key _) = either (error . T.unpack) id . fromPersistValue . unKey $ key

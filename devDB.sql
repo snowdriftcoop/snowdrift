@@ -149,7 +149,8 @@ CREATE TABLE comment (
     parent bigint,
     "user" bigint NOT NULL,
     text character varying NOT NULL,
-    depth bigint NOT NULL
+    depth bigint NOT NULL,
+    discussion bigint NOT NULL
 );
 
 
@@ -208,6 +209,46 @@ ALTER TABLE public.comment_id_seq OWNER TO snowdrift_development;
 --
 
 ALTER SEQUENCE comment_id_seq OWNED BY comment.id;
+
+
+--
+-- Name: comment_rethread; Type: TABLE; Schema: public; Owner: snowdrift_development; Tablespace: 
+--
+
+CREATE TABLE comment_rethread (
+    id integer NOT NULL,
+    ts timestamp without time zone NOT NULL,
+    moderator bigint NOT NULL,
+    old_parent bigint,
+    old_discussion bigint NOT NULL,
+    new_parent bigint,
+    new_discussion bigint NOT NULL,
+    comment bigint NOT NULL,
+    reason character varying NOT NULL
+);
+
+
+ALTER TABLE public.comment_rethread OWNER TO snowdrift_development;
+
+--
+-- Name: comment_rethread_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
+--
+
+CREATE SEQUENCE comment_rethread_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.comment_rethread_id_seq OWNER TO snowdrift_development;
+
+--
+-- Name: comment_rethread_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
+--
+
+ALTER SEQUENCE comment_rethread_id_seq OWNED BY comment_rethread.id;
 
 
 --
@@ -381,6 +422,39 @@ ALTER TABLE public.default_tag_color_id_seq OWNER TO snowdrift_development;
 --
 
 ALTER SEQUENCE default_tag_color_id_seq OWNED BY default_tag_color.id;
+
+
+--
+-- Name: discussion; Type: TABLE; Schema: public; Owner: snowdrift_development; Tablespace: 
+--
+
+CREATE TABLE discussion (
+    id integer NOT NULL,
+    nothing bigint NOT NULL
+);
+
+
+ALTER TABLE public.discussion OWNER TO snowdrift_development;
+
+--
+-- Name: discussion_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
+--
+
+CREATE SEQUENCE discussion_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.discussion_id_seq OWNER TO snowdrift_development;
+
+--
+-- Name: discussion_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
+--
+
+ALTER SEQUENCE discussion_id_seq OWNED BY discussion.id;
 
 
 --
@@ -696,7 +770,8 @@ CREATE TABLE project_blog (
     "user" bigint NOT NULL,
     top_content character varying NOT NULL,
     project bigint NOT NULL,
-    bottom_content character varying
+    bottom_content character varying,
+    discussion bigint NOT NULL
 );
 
 
@@ -1181,6 +1256,42 @@ ALTER SEQUENCE user_setting_id_seq OWNED BY user_setting.id;
 
 
 --
+-- Name: view_time; Type: TABLE; Schema: public; Owner: snowdrift_development; Tablespace: 
+--
+
+CREATE TABLE view_time (
+    id integer NOT NULL,
+    "user" bigint NOT NULL,
+    project bigint NOT NULL,
+    type character varying NOT NULL,
+    "time" timestamp without time zone DEFAULT now() NOT NULL
+);
+
+
+ALTER TABLE public.view_time OWNER TO snowdrift_development;
+
+--
+-- Name: view_time_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
+--
+
+CREATE SEQUENCE view_time_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.view_time_id_seq OWNER TO snowdrift_development;
+
+--
+-- Name: view_time_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
+--
+
+ALTER SEQUENCE view_time_id_seq OWNED BY view_time.id;
+
+
+--
 -- Name: volunteer_application; Type: TABLE; Schema: public; Owner: snowdrift_development; Tablespace: 
 --
 
@@ -1336,7 +1447,8 @@ CREATE TABLE wiki_page (
     target character varying NOT NULL,
     project bigint NOT NULL,
     content character varying NOT NULL,
-    permission_level character varying NOT NULL
+    permission_level character varying NOT NULL,
+    discussion bigint NOT NULL
 );
 
 
@@ -1429,6 +1541,13 @@ ALTER TABLE ONLY comment_ancestor ALTER COLUMN id SET DEFAULT nextval('comment_a
 -- Name: id; Type: DEFAULT; Schema: public; Owner: snowdrift_development
 --
 
+ALTER TABLE ONLY comment_rethread ALTER COLUMN id SET DEFAULT nextval('comment_rethread_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: snowdrift_development
+--
+
 ALTER TABLE ONLY comment_retraction ALTER COLUMN id SET DEFAULT nextval('comment_retraction_id_seq'::regclass);
 
 
@@ -1458,6 +1577,13 @@ ALTER TABLE ONLY database_version ALTER COLUMN id SET DEFAULT nextval('database_
 --
 
 ALTER TABLE ONLY default_tag_color ALTER COLUMN id SET DEFAULT nextval('default_tag_color_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: snowdrift_development
+--
+
+ALTER TABLE ONLY discussion ALTER COLUMN id SET DEFAULT nextval('discussion_id_seq'::regclass);
 
 
 --
@@ -1618,6 +1744,13 @@ ALTER TABLE ONLY user_setting ALTER COLUMN id SET DEFAULT nextval('user_setting_
 -- Name: id; Type: DEFAULT; Schema: public; Owner: snowdrift_development
 --
 
+ALTER TABLE ONLY view_time ALTER COLUMN id SET DEFAULT nextval('view_time_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: snowdrift_development
+--
+
 ALTER TABLE ONLY volunteer_application ALTER COLUMN id SET DEFAULT nextval('volunteer_application_id_seq'::regclass);
 
 
@@ -1663,6 +1796,7 @@ ALTER TABLE ONLY wiki_page_comment ALTER COLUMN id SET DEFAULT nextval('wiki_pag
 COPY account (id, balance) FROM stdin;
 1	0
 2	0
+3	0
 \.
 
 
@@ -1670,7 +1804,7 @@ COPY account (id, balance) FROM stdin;
 -- Name: account_id_seq; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_development
 --
 
-SELECT pg_catalog.setval('account_id_seq', 2, true);
+SELECT pg_catalog.setval('account_id_seq', 3, true);
 
 
 --
@@ -1697,6 +1831,7 @@ COPY build (id, boot_time, base, diff) FROM stdin;
 17	2014-01-24 21:47:53.941683	b857adcedd7be11cf2909b5d6cb536fb17d999c9	
 18	2014-01-24 23:28:23.255958	b857adcedd7be11cf2909b5d6cb536fb17d999c9	
 19	2014-02-04 05:22:47.977252	e42ac19d7713acb15779eb289dc57697a265ffe3	
+20	2014-03-02 05:31:59.002319	008e9bc87dbbab3764cfac6ac19bd3db630387d4	diff --git a/Import.hs b/Import.hs\nindex 09eb514..0c29391 100644\n--- a/Import.hs\n+++ b/Import.hs\n@@ -175,3 +175,4 @@ renderBootstrap3 aform fragment = do\n                 |]\n     return (res, widget)\n \n+\ndiff --git a/Settings.hs b/Settings.hs\nindex e303486..ad348e9 100644\n--- a/Settings.hs\n+++ b/Settings.hs\n@@ -57,8 +57,6 @@ widgetFileSettings = def\n         }\n     }\n \n--- The rest of this file contains settings which rarely need changing by a\n--- user.\n \n widgetFile :: String -> Q Exp\n widgetFile = (if development then widgetFileReload\ndiff --git a/Snowdrift.cabal b/Snowdrift.cabal\nindex 16e0bd9..87f98b3 100644\n--- a/Snowdrift.cabal\n+++ b/Snowdrift.cabal\n@@ -228,3 +228,5 @@ test-suite test\n                  , network\n                  , http-types\n                  , wai-test\n+                 , unix\n+                 , mtl\n
 \.
 
 
@@ -1704,18 +1839,18 @@ COPY build (id, boot_time, base, diff) FROM stdin;
 -- Name: build_id_seq; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_development
 --
 
-SELECT pg_catalog.setval('build_id_seq', 19, true);
+SELECT pg_catalog.setval('build_id_seq', 20, true);
 
 
 --
 -- Data for Name: comment; Type: TABLE DATA; Schema: public; Owner: snowdrift_development
 --
 
-COPY comment (id, created_ts, moderated_ts, moderated_by, parent, "user", text, depth) FROM stdin;
-1	2014-01-21 18:11:03.914397	2014-01-21 18:12:36.696658	1	\N	1	This is a comment.	0
-2	2014-01-21 18:13:00.273315	2014-01-21 18:13:10.464805	1	1	1	Replies are threaded.	1
-3	2014-01-21 18:13:57.732222	\N	\N	\N	1	When a comment is posted by an unestablished user, it is marked for moderation and only shown to moderators.	0
-4	2014-01-21 18:15:30.945499	2014-01-21 18:15:37.484472	1	\N	1	adding a line starting with "ticket:" such as\n\nticket: this is a ticket\n\nmakes the post show up at /t where all the tickets are listed	0
+COPY comment (id, created_ts, moderated_ts, moderated_by, parent, "user", text, depth, discussion) FROM stdin;
+1	2014-01-21 18:11:03.914397	2014-01-21 18:12:36.696658	1	\N	1	This is a comment.	0	2
+2	2014-01-21 18:13:00.273315	2014-01-21 18:13:10.464805	1	1	1	Replies are threaded.	1	2
+3	2014-01-21 18:13:57.732222	\N	\N	\N	1	When a comment is posted by an unestablished user, it is marked for moderation and only shown to moderators.	0	2
+4	2014-01-21 18:15:30.945499	2014-01-21 18:15:37.484472	1	\N	1	adding a line starting with "ticket:" such as\n\nticket: this is a ticket\n\nmakes the post show up at /t where all the tickets are listed	0	2
 \.
 
 
@@ -1740,6 +1875,21 @@ SELECT pg_catalog.setval('comment_ancestor_id_seq', 1, true);
 --
 
 SELECT pg_catalog.setval('comment_id_seq', 4, true);
+
+
+--
+-- Data for Name: comment_rethread; Type: TABLE DATA; Schema: public; Owner: snowdrift_development
+--
+
+COPY comment_rethread (id, ts, moderator, old_parent, old_discussion, new_parent, new_discussion, comment, reason) FROM stdin;
+\.
+
+
+--
+-- Name: comment_rethread_id_seq; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_development
+--
+
+SELECT pg_catalog.setval('comment_rethread_id_seq', 1, false);
 
 
 --
@@ -1792,7 +1942,7 @@ SELECT pg_catalog.setval('committee_user_id_seq', 1, false);
 --
 
 COPY database_version (id, last_migration) FROM stdin;
-1	3
+1	5
 \.
 
 
@@ -1816,6 +1966,25 @@ COPY default_tag_color (id, tag, color) FROM stdin;
 --
 
 SELECT pg_catalog.setval('default_tag_color_id_seq', 1, false);
+
+
+--
+-- Data for Name: discussion; Type: TABLE DATA; Schema: public; Owner: snowdrift_development
+--
+
+COPY discussion (id, nothing) FROM stdin;
+1	0
+2	0
+3	0
+4	0
+\.
+
+
+--
+-- Name: discussion_id_seq; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_development
+--
+
+SELECT pg_catalog.setval('discussion_id_seq', 4, true);
 
 
 --
@@ -1954,7 +2123,7 @@ COPY project (id, created_ts, name, handle, description, account, share_value, l
 -- Data for Name: project_blog; Type: TABLE DATA; Schema: public; Owner: snowdrift_development
 --
 
-COPY project_blog (id, "time", title, "user", top_content, project, bottom_content) FROM stdin;
+COPY project_blog (id, "time", title, "user", top_content, project, bottom_content, discussion) FROM stdin;
 \.
 
 
@@ -2138,6 +2307,7 @@ SELECT pg_catalog.setval('transaction_id_seq', 1, false);
 
 COPY "user" (id, ident, hash, salt, name, account, avatar, blurb, statement, irc_nick, read_messages, read_applications, read_comments, read_edits, established_ts, established_reason, created_ts) FROM stdin;
 1	admin	8bf2d491387febc07e5d8fd15a4140b28473566e	P^YTN3G:	Admin	1	\N	Admin is the name for the test user in our devDB database that comes with the code. Log in as admin with passphrase: admin	\N	\N	2014-01-21 22:58:23.380462	2013-11-23 19:31:18.982213	2013-11-23 19:31:18.982213	2013-11-23 19:31:18.982213	2014-01-24 15:28:15.681117	\N	\N
+2	davidleothomas@gmail.com	\N	\N	\N	3	\N	\N	\N	\N	2014-03-02 05:32:31.934125	2014-03-02 05:32:31.934125	2014-03-02 05:32:31.934125	2014-03-02 05:32:31.934125	\N	\N	\N
 \.
 
 
@@ -2145,7 +2315,7 @@ COPY "user" (id, ident, hash, salt, name, account, avatar, blurb, statement, irc
 -- Name: user_id_seq; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_development
 --
 
-SELECT pg_catalog.setval('user_id_seq', 1, true);
+SELECT pg_catalog.setval('user_id_seq', 2, true);
 
 
 --
@@ -2161,6 +2331,21 @@ COPY user_setting (id, "user", setting, value) FROM stdin;
 --
 
 SELECT pg_catalog.setval('user_setting_id_seq', 1, false);
+
+
+--
+-- Data for Name: view_time; Type: TABLE DATA; Schema: public; Owner: snowdrift_development
+--
+
+COPY view_time (id, "user", project, type, "time") FROM stdin;
+\.
+
+
+--
+-- Name: view_time_id_seq; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_development
+--
+
+SELECT pg_catalog.setval('view_time_id_seq', 1, false);
 
 
 --
@@ -2237,11 +2422,11 @@ SELECT pg_catalog.setval('wiki_last_edit_id_seq', 4, true);
 -- Data for Name: wiki_page; Type: TABLE DATA; Schema: public; Owner: snowdrift_development
 --
 
-COPY wiki_page (id, target, project, content, permission_level) FROM stdin;
-1	intro	1	# Welcome\n\nThank you for testing (and hopefully helping to develop) Snowdrift.coop!\n\nThis is a wiki page within your test database. It is different than the database for the real Snowdrift.coop site.	Normal
-2	about	1	# About Snowdrift.coop\n\nAll the real *about* stuff is on the live site: <https://snowdrift.coop/p/snowdrift/w/about>\n\nHere we will explain about testing.\n\n## Wiki pages\n\nSee the live site for details about the wiki system: <https://snowdrift.coop/p/snowdrift/w/wiki>\n\nIn creating the page you are looking at, several edits were made, so you can click above to see the history.\n\nThere are discussion pages for every wiki page, as shown above.	Normal
-3	press	1	See the live site for [press info](https://snowdrift.coop/p/snowdrift/w/press)	Normal
-4	how-to-help	1	# Development notes\n\nSee the live site for the full [how-to-help page](https://snowdrift.coop/p/snowdrift/w/how-to-help).\n\n## Development notes\n\nThe essential development details are in the README.md file with the code, not in this test database. When adding new info, consider whether it is best there versus here in the test database (the README has instructions about updating the test database).\n\n## Users\n\n[localhost:3000/u](/u) is a listing of all the users. The first user is just "admin" (passphrase is also "admin"). When new users register they start out unestablished and with no roles. You can add roles by using the admin user and visiting <http://localhost:3000/p/snowdrift/invite> and then logging in as another user to redeem the code.\n\nIt is a good idea to test things as:\n\na. logged-out\na. unestablished user\na. established users with different roles\n\nObviously testing on different systems, browsers, devices, etc. is good too.\n\n## Tickets\n\nSee <https://snowdrift.coop/p/snowdrift/t> for the live site's list of tickets. This is also linked at the live site's how-to-help page. Please add tickets to the live site as appropriate, add comments and questions, and mark things complete after you have fixed them and committed your changes.	Normal
+COPY wiki_page (id, target, project, content, permission_level, discussion) FROM stdin;
+1	intro	1	# Welcome\n\nThank you for testing (and hopefully helping to develop) Snowdrift.coop!\n\nThis is a wiki page within your test database. It is different than the database for the real Snowdrift.coop site.	Normal	1
+2	about	1	# About Snowdrift.coop\n\nAll the real *about* stuff is on the live site: <https://snowdrift.coop/p/snowdrift/w/about>\n\nHere we will explain about testing.\n\n## Wiki pages\n\nSee the live site for details about the wiki system: <https://snowdrift.coop/p/snowdrift/w/wiki>\n\nIn creating the page you are looking at, several edits were made, so you can click above to see the history.\n\nThere are discussion pages for every wiki page, as shown above.	Normal	2
+3	press	1	See the live site for [press info](https://snowdrift.coop/p/snowdrift/w/press)	Normal	3
+4	how-to-help	1	# Development notes\n\nSee the live site for the full [how-to-help page](https://snowdrift.coop/p/snowdrift/w/how-to-help).\n\n## Development notes\n\nThe essential development details are in the README.md file with the code, not in this test database. When adding new info, consider whether it is best there versus here in the test database (the README has instructions about updating the test database).\n\n## Users\n\n[localhost:3000/u](/u) is a listing of all the users. The first user is just "admin" (passphrase is also "admin"). When new users register they start out unestablished and with no roles. You can add roles by using the admin user and visiting <http://localhost:3000/p/snowdrift/invite> and then logging in as another user to redeem the code.\n\nIt is a good idea to test things as:\n\na. logged-out\na. unestablished user\na. established users with different roles\n\nObviously testing on different systems, browsers, devices, etc. is good too.\n\n## Tickets\n\nSee <https://snowdrift.coop/p/snowdrift/t> for the live site's list of tickets. This is also linked at the live site's how-to-help page. Please add tickets to the live site as appropriate, add comments and questions, and mark things complete after you have fixed them and committed your changes.	Normal	4
 \.
 
 
@@ -2304,6 +2489,14 @@ ALTER TABLE ONLY comment
 
 
 --
+-- Name: comment_rethread_pkey; Type: CONSTRAINT; Schema: public; Owner: snowdrift_development; Tablespace: 
+--
+
+ALTER TABLE ONLY comment_rethread
+    ADD CONSTRAINT comment_rethread_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: comment_retraction_pkey; Type: CONSTRAINT; Schema: public; Owner: snowdrift_development; Tablespace: 
 --
 
@@ -2341,6 +2534,14 @@ ALTER TABLE ONLY database_version
 
 ALTER TABLE ONLY default_tag_color
     ADD CONSTRAINT default_tag_color_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: discussion_pkey; Type: CONSTRAINT; Schema: public; Owner: snowdrift_development; Tablespace: 
+--
+
+ALTER TABLE ONLY discussion
+    ADD CONSTRAINT discussion_pkey PRIMARY KEY (id);
 
 
 --
@@ -2648,6 +2849,14 @@ ALTER TABLE ONLY "user"
 
 
 --
+-- Name: unique_view_time_user_project_type; Type: CONSTRAINT; Schema: public; Owner: snowdrift_development; Tablespace: 
+--
+
+ALTER TABLE ONLY view_time
+    ADD CONSTRAINT unique_view_time_user_project_type UNIQUE ("user", project, type);
+
+
+--
 -- Name: unique_wiki_last_edit; Type: CONSTRAINT; Schema: public; Owner: snowdrift_development; Tablespace: 
 --
 
@@ -2685,6 +2894,14 @@ ALTER TABLE ONLY "user"
 
 ALTER TABLE ONLY user_setting
     ADD CONSTRAINT user_setting_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: view_time_pkey; Type: CONSTRAINT; Schema: public; Owner: snowdrift_development; Tablespace: 
+--
+
+ALTER TABLE ONLY view_time
+    ADD CONSTRAINT view_time_pkey PRIMARY KEY (id);
 
 
 --
@@ -2766,6 +2983,14 @@ ALTER TABLE ONLY comment_ancestor
 
 
 --
+-- Name: comment_discussion_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_development
+--
+
+ALTER TABLE ONLY comment
+    ADD CONSTRAINT comment_discussion_fkey FOREIGN KEY (discussion) REFERENCES discussion(id);
+
+
+--
 -- Name: comment_moderated_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_development
 --
 
@@ -2787,6 +3012,54 @@ ALTER TABLE ONLY comment
 
 ALTER TABLE ONLY comment
     ADD CONSTRAINT comment_parent_fkey FOREIGN KEY (parent) REFERENCES comment(id);
+
+
+--
+-- Name: comment_rethread_comment_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_development
+--
+
+ALTER TABLE ONLY comment_rethread
+    ADD CONSTRAINT comment_rethread_comment_fkey FOREIGN KEY (comment) REFERENCES comment(id);
+
+
+--
+-- Name: comment_rethread_moderator_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_development
+--
+
+ALTER TABLE ONLY comment_rethread
+    ADD CONSTRAINT comment_rethread_moderator_fkey FOREIGN KEY (moderator) REFERENCES "user"(id);
+
+
+--
+-- Name: comment_rethread_new_discussion_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_development
+--
+
+ALTER TABLE ONLY comment_rethread
+    ADD CONSTRAINT comment_rethread_new_discussion_fkey FOREIGN KEY (new_discussion) REFERENCES discussion(id);
+
+
+--
+-- Name: comment_rethread_new_parent_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_development
+--
+
+ALTER TABLE ONLY comment_rethread
+    ADD CONSTRAINT comment_rethread_new_parent_fkey FOREIGN KEY (new_parent) REFERENCES comment(id);
+
+
+--
+-- Name: comment_rethread_old_discussion_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_development
+--
+
+ALTER TABLE ONLY comment_rethread
+    ADD CONSTRAINT comment_rethread_old_discussion_fkey FOREIGN KEY (old_discussion) REFERENCES discussion(id);
+
+
+--
+-- Name: comment_rethread_old_parent_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_development
+--
+
+ALTER TABLE ONLY comment_rethread
+    ADD CONSTRAINT comment_rethread_old_parent_fkey FOREIGN KEY (old_parent) REFERENCES comment(id);
 
 
 --
@@ -2966,6 +3239,14 @@ ALTER TABLE ONLY project_blog_comment
 
 
 --
+-- Name: project_blog_discussion_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_development
+--
+
+ALTER TABLE ONLY project_blog
+    ADD CONSTRAINT project_blog_discussion_fkey FOREIGN KEY (discussion) REFERENCES discussion(id);
+
+
+--
 -- Name: project_blog_project_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_development
 --
 
@@ -3134,6 +3415,22 @@ ALTER TABLE ONLY user_setting
 
 
 --
+-- Name: view_time_project_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_development
+--
+
+ALTER TABLE ONLY view_time
+    ADD CONSTRAINT view_time_project_fkey FOREIGN KEY (project) REFERENCES project(id);
+
+
+--
+-- Name: view_time_user_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_development
+--
+
+ALTER TABLE ONLY view_time
+    ADD CONSTRAINT view_time_user_fkey FOREIGN KEY ("user") REFERENCES "user"(id);
+
+
+--
 -- Name: volunteer_application_project_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_development
 --
 
@@ -3211,6 +3508,14 @@ ALTER TABLE ONLY wiki_page_comment
 
 ALTER TABLE ONLY wiki_page_comment
     ADD CONSTRAINT wiki_page_comment_page_fkey FOREIGN KEY (page) REFERENCES wiki_page(id);
+
+
+--
+-- Name: wiki_page_discussion_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_development
+--
+
+ALTER TABLE ONLY wiki_page
+    ADD CONSTRAINT wiki_page_discussion_fkey FOREIGN KEY (discussion) REFERENCES discussion(id);
 
 
 --

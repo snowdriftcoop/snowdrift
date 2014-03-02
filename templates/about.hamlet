@@ -1,677 +1,671 @@
-<div .row>
-    <div .col-xs-12>
+<p>
+    <em>This page is now outdated.
+    <strong><a href={@WikiR "about"}>Click here to see the updated content</a>
+<hr>
+<h3>Summary
+<p>
+    <strong>Snowdrift.coop is a new fundraising system dedicated to Free digital works.
+    Today there are robust movements dedicated to Free Software, Free Cultural Works,
+    Open research, and Open Educational Resources;
+    but there is a need for better funding.
+    The main challenge in fundraising is just getting people to commit.
+    With so many organizations asking for our money, it is understandable that most of us are hesitant.
+    So we've designed a system to reduce the risk of jumping in and pledging your support.
+<p>
+    Instead of one-time campaigns, we are focused on supporting projects long-term.
+    With Snowdrift.coop, each pledge starts out very small and only increases when more donors join.
+    This way, matching is achieved across the whole community, and nobody is unfairly burdened.
+    Each donor knows that their pledge gets everyone else to chip in more.
+    Regular ongoing contributions are calculated and paid out to projects monthly.
+    To faciliate this, each donor will place funds in a private account from which donations are drawn.
+<p>
+    In line with our emphasis on both community values and individual freedom, we will be run as a cooperative.
+    We will also ask everyone to follow a basic honor system.
+    All projects will be required to use Free/Libre/Open licenses and to be transparent and accountable.
+    With these elements in place, we hope to bring supporters together in a way that has not been possible with other funding systems.
+
+<h4>Contents
+<ul .toc>
+    ^{toc_entry "intro" "Introduction"}
+    ^{toc_entry "floss" "What makes a work \"free\"?"}
+    ^{toc_entry "why" "Why digital works require a different economic model"}
+    ^{toc_entry "meaning" "What does the Snowdrift name mean?"}
+    ^{toc_entry "psych" "The psychological issues of cooperation, generosity, and freeloading"}
+    ^{toc_entry "how" "How does the Snowdrift.coop funding system work?"}
+    ^{toc_entry "whyfree" "Why restrict to only projects with certain approved licenses?"}
+    ^{toc_entry "coop" "Cooperation vs competition: a false dichotomy"}
+    ^{toc_entry "others" "What about fundraising for other purposes?"}
+
+<dl>
+    <dt>
+        ^{toc_target "intro" "Introduction"}
+    <dd>
         <p>
-            <em>This page is now outdated.
-            <strong><a href={@WikiR "about"}>Click here to see the updated content</a>
-        <hr>
-        <h3>Summary
+            With the internet, we have great opportunities to democratize access to ideas, culture, and technology.
+            There are many success stories, but there are still many issues.
+            Issues of freedom, privacy, and economics online are far from settled.
+
         <p>
-            <strong>Snowdrift.coop is a new fundraising system dedicated to Free digital works.
-            Today there are robust movements dedicated to Free Software, Free Cultural Works,
-            Open research, and Open Educational Resources;
-            but there is a need for better funding.
-            The main challenge in fundraising is just getting people to commit.
-            With so many organizations asking for our money, it is understandable that most of us are hesitant.
-            So we've designed a system to reduce the risk of jumping in and pledging your support.
+            The cost of distributing digital works is often negligible,
+            but the costs of research, development, and ongoing support are still present.
+            Blocking access until payment is made is one way to get funding,
+            but that has negative ramifications for openness, sharing, and freedom.
+
         <p>
-            Instead of one-time campaigns, we are focused on supporting projects long-term.
-            With Snowdrift.coop, each pledge starts out very small and only increases when more donors join.
-            This way, matching is achieved across the whole community, and nobody is unfairly burdened.
-            Each donor knows that their pledge gets everyone else to chip in more.
-            Regular ongoing contributions are calculated and paid out to projects monthly.
-            To faciliate this, each donor will place funds in a private account from which donations are drawn.
+            <strong>If a program or a creative work is valuable, it will be that much more valuable if it is free to access, to share, and to improve.
+            Today, we have excellent free resources available,
+            but many free projects struggle to compete with better-funded restricted-access alternatives.
+            In principle, all the funding could just go to free resources instead;
+            but if access is free, how do we get everyone to chip in to support initial and ongoing development?
+
         <p>
-            In line with our emphasis on both community values and individual freedom, we will be run as a cooperative.
-            We will also ask everyone to follow a basic honor system.
-            All projects will be required to use Free/Libre/Open licenses and to be transparent and accountable.
-            With these elements in place, we hope to bring supporters together in a way that has not been possible with other funding systems.
-
-<div .row>
-    <div .col-xs-12>
-        <h4>Contents
-        <ul .toc>
-            ^{toc_entry "intro" "Introduction"}
-            ^{toc_entry "floss" "What makes a work \"free\"?"}
-            ^{toc_entry "why" "Why digital works require a different economic model"}
-            ^{toc_entry "meaning" "What does the Snowdrift name mean?"}
-            ^{toc_entry "psych" "The psychological issues of cooperation, generosity, and freeloading"}
-            ^{toc_entry "how" "How does the Snowdrift.coop funding system work?"}
-            ^{toc_entry "whyfree" "Why restrict to only projects with certain approved licenses?"}
-            ^{toc_entry "coop" "Cooperation vs competition: a false dichotomy"}
-            ^{toc_entry "others" "What about fundraising for other purposes?"}
-
-<div .row>
-    <div .col-xs-12>
-        <dl>
-            <dt>
-                ^{toc_target "intro" "Introduction"}
-            <dd>
-                <p>
-                    With the internet, we have great opportunities to democratize access to ideas, culture, and technology.
-                    There are many success stories, but there are still many issues.
-                    Issues of freedom, privacy, and economics online are far from settled.
-
-                <p>
-                    The cost of distributing digital works is often negligible,
-                    but the costs of research, development, and ongoing support are still present.
-                    Blocking access until payment is made is one way to get funding,
-                    but that has negative ramifications for openness, sharing, and freedom.
-
-                <p>
-                    <strong>If a program or a creative work is valuable, it will be that much more valuable if it is free to access, to share, and to improve.
-                    Today, we have excellent free resources available,
-                    but many free projects struggle to compete with better-funded restricted-access alternatives.
-                    In principle, all the funding could just go to free resources instead;
-                    but if access is free, how do we get everyone to chip in to support initial and ongoing development?
-
-                <p>
-                    Free projects can ask for donations, yet while some people volunteer time and money, many others freeload.
-                    This is nothing new. It happens with all sorts of organizations, group projects, and social situations.
-                    And people are hesitant to chip in if others aren't going to do their fair share.
-                <p>
-                    So we are creating a novel fundraising system to address this dilemma.
-            <dt>
-                ^{toc_target "floss" "What makes a work \"free\"?"}
-            <dd>
-                <p>
-                    In English, the word "free" is often associated with
-                    <em> free of charge,
-                    but we are also concerned with other freedoms: access, use, sharing, and modification.
-                    This confusion with the English word "free" is often clarified by using the Romance language term
-                    <dfn> libre
-                    (as in liberty) to contrast with
-                    <dfn> gratis
-                    (zero price).
-                    We often use the term "Free/Libre" to emphasize our intended focus.
-                    The term "open" is often used to imply the same freedoms, although this term can also be unclear.
-                    Open resources are not Free/Libre if they are openly accessible but restricted in terms of use, sharing, or modification.
-                <p>
-                    <strong>Snowdrift.coop will fund projects meeting the following requirements:
+            Free projects can ask for donations, yet while some people volunteer time and money, many others freeload.
+            This is nothing new. It happens with all sorts of organizations, group projects, and social situations.
+            And people are hesitant to chip in if others aren't going to do their fair share.
+        <p>
+            So we are creating a novel fundraising system to address this dilemma.
+    <dt>
+        ^{toc_target "floss" "What makes a work \"free\"?"}
+    <dd>
+        <p>
+            In English, the word "free" is often associated with
+            <em> free of charge,
+            but we are also concerned with other freedoms: access, use, sharing, and modification.
+            This confusion with the English word "free" is often clarified by using the Romance language term
+            <dfn> libre
+            (as in liberty) to contrast with
+            <dfn> gratis
+            (zero price).
+            We often use the term "Free/Libre" to emphasize our intended focus.
+            The term "open" is often used to imply the same freedoms, although this term can also be unclear.
+            Open resources are not Free/Libre if they are openly accessible but restricted in terms of use, sharing, or modification.
+        <p>
+            <strong>Snowdrift.coop will fund projects meeting the following requirements:
+        <ul>
+            <li>
+                Free/Libre Open Source Software (FLOSS) meeting the
+                <a href=http://www.gnu.org/philosophy/free-sw.html> Free Software Definition
                 <ul>
                     <li>
-                        Free/Libre Open Source Software (FLOSS) meeting the
-                        <a href=http://www.gnu.org/philosophy/free-sw.html> Free Software Definition
-                        <ul>
-                            <li>
-                                We require software projects to use licenses approved by the
-                                <a href=http://www.gnu.org/licenses/license-list.html> Free Software Foundation
-                                and/or the
-                                <a href=http://opensource.org/licenses/category> Open Source Initiative
-                                <br>
-                                (the two lists are nearly identical)
+                        We require software projects to use licenses approved by the
+                        <a href=http://www.gnu.org/licenses/license-list.html> Free Software Foundation
+                        and/or the
+                        <a href=http://opensource.org/licenses/category> Open Source Initiative
+                        <br>
+                        (the two lists are nearly identical)
 
-                    <li>
-                        online services which meet the
-                        <a href=http://opendefinition.org/software-service/> Open Software Service Definition
+            <li>
+                online services which meet the
+                <a href=http://opendefinition.org/software-service/> Open Software Service Definition
 
-                    <li>
-                        Educational, scientific, and/or creative works that meet
-                        the <a href=http://freedomdefined.org/Definition> Definition of Free Cultural Works</a>,
-                        and/or the <a href=http://opendefinition.org/okd/>Open Definition</a>
-                        <ul>
-                            <li>
-                                This means (among other requirements) using
-                                <a href=http://freedomdefined.org/Licenses> Free Culture Licenses
-                                or
-                                <a href=http://opendefinition.org/licenses/> OD conformant licenses
-                    <li>
-                        We also require all project developers to join the
-                        <a href=http://defensivepatentlicense.com> Defensive Patent License
-                        system.
-                    <li>
-                        Existing proprietary (i.e. non-free) projects are welcome to sign up on the site but
-                        will be required to release under an approved license and meet our other requirements in order to receive payment.
-
-                    <li>
-                        Funds raised through Snowdrift.coop are required to be used toward ongoing development.
-                        We are not set up to provide rewards for past work.
-                        Of course, great prior achievements will encourage the most support for new or continuing projects.
-
-            <dt>
-                ^{toc_target "why" "Why digital works require a different economic model"}
-            <dd>
-                <p>
-                    The Internet offers amazing opportunities for global collaboration.
-                    The possibilities are demonstrated by well-known examples such as Wikipedia.
-                    Unfortunately, many people view modern media with assumptions that come from the familiar physical economy.
-                    The metaphor of "property" has been imposed inappropriately on ideas and digital works.
-
-                <p>
-                    <strong>Our free market economic system is fundamentally based on scarcity.
-                    Two people cannot both eat the same apple.
-                    Other items are not literally consumed, but you cannot wear my hat while I wear it.
-                    Thus scarcity leads to pressures of supply and demand and the rest of market economics.
-
-                <p>
-                    Of course, not everything is scarce. Air and sunlight are practically limitless.
-                    Human ideas are also not strictly scarce (although development time and effort may be).
-                    For all of human history we have freely shared stories and songs.
-                    Sure, people try to keep secrets or to control other's thoughts or words;
-                    but history has shown us the great value of being more open and of protecting indivdual freedom.
-                    Not only is respecting freedom more ethical, but free societies are also better able to collaborate and prosper.
-                    Even when controlled or secret, ideas do not work like physical property.
-                    Learning, using, and sharing ideas does not consume them.
-                    Giving an idea to someone else does not deprive you of the idea.
-
-                <p>
-                    The conflation of ideas with physical goods developed in part because of technology.
-                    Preliterate communities spread ideas through stories and songs with no physical container.
-                    The printing press made books the first physical mass medium several hundred years ago, but literacy was still slow to spread.
-                    The rest of our published media are all quite new.
-                    Recorded sound and video have existed for only a couple human generations.
-                    The "intellectual property" metaphor is a modern concept developed just as
-                    physical media containing audio and video recordings came to rival
-                    live concerts, live lectures, and live storytelling.
-
-                <p>
-                    Thanks to digital technology, recorded content has now been essentially freed from its containers,
-                    but our laws and cultural assumptions have not been updated to respect this change.
-                    Rather than embrace the natural implications of digital media,
-                    publishing companies have become entrenched with the old physical economy through reliance on <dfn>artificial scarcity</dfn>.
-                    This was achieved by (A) extending existing copyright law to apply to digital media
-                    and by (B) the development of Digital Restrictions Management (DRM) technology.
-
-                <p>
-                    Imposing artificial scarcity on digital works has three effects:
-
-                <ol>
-                    <li>
-                        Through artificial scarcity, works distributed digitally can be funded via the same market economy as physical goods.
-                        Because it isn't a natural fit, this business model can be problematic, but it works in some cases.
-
-                    <li>
-                        Access and creative derivations are restricted in ways that have no financial benefit to the publisher.
-                        Blocking users who can't afford to pay a license fee doesn't help the publisher economically.
-
-                    <li>
-                        By controlling access and restricting modifications, publishers gain power.
-                        For example, software publishers may institute features that violate user privacy
-                        or stop users from doing things with the software that the publishers don't like.
-                        If the source code is secret and/or modification is legally blocked, then the only
-                        choice users have is to take it or leave it (and you may not even have this choice
-                        if the software is required in your work or school).
-                        These particular problems are less prevalent in the physical free market economy.
-
-                <p>
-                    Only the first of these effects is ethical.
-                    The second and third effects are detrimental to a free society.
-                    Defenders of copyright and patent laws acknowledge this on the surface;
-                    their arguments focus on economic concerns.
-                    Publishers do not publicly state that they want power over readers.
-                    They do not express interest in reducing access as an end in itself.
-                    Their primary claim is that they need artificial scarcity in order to make money and thus to fund initial authorship.
-                    Thus, our goal is to acknowledge and address this concern.
-
-                <p>
-                    Aside from artificial scarcity, the primary economic model for funding digital works is
-                    to tie connect to the rest of the economy through advertisements.
-                    This may not be bad in principle, but the reality is problematic.
-                    Ads often rely on psychological manipulation via titillation, fear, and/or dishonesty.
-                    Most online ad systems violate the privacy of internet users in order to target particular audiences.
-                    Many ads encourage careless consumption.
-                    Ubiquity of commercial advertising is itself a problem as it pollutes our cultural space.
-                    Reliance on ad-revenue creates serious conflicts of interest for authors
-                    as they end up more beholden to advertisers than to the rest of the community.
-                    Limited advertising that carefully avoids these problems may be acceptible but is just not capable of significant funding.
-
-                <p>
-                    Another common business practice today is to release works freely
-                    and then sell physical accessories or special services such as technical support.
-                    Yet while businesses based on support may be profitable, this setup creates a conflict of interest;
-                    if your income comes from support services, you may be less inclined to create easy-to-use, well-documented software.
-
-                <p>
-                    Many developers and creative artists also ask for open-ended voluntary donations,
-                    and this can be remarkably successful in some cases, but often donations are unreliable.
-
-                <p>
-                    In founding Snowdrift.coop, we thought about how to achieve a better system.
-                    We want works funded without problematic restrictions or conflicts of interest.
-                    We also want more accuracy, openness, and honesty in our economic relationships.
-                    Our system does not accept the artificial pretense of paying for digital content itself.
-                    Donors at Snowdrift.coop are funding
-                    <em> development work.
-
-            <dt>
-                ^{toc_target "meaning" "What does the Snowdrift name mean?"}
-            <dd>
-                <p>
-                    The <dfn>Snowdrift Dilemma</dfn> is a variation on the better-known <dfn>Prisoner's Dilemma</dfn>.
-
-                <p>
-                    For those unfamiliar with the original prisoner's dilemma metaphor,
-                    imagine you and an acquaintance have been arrested for committing a felony.
-                    After being separated, you are each asked to confess.
-                    If you both confess, the police will convict both of you of the full crime.
-                    But if you both stay silent, the police will not have enough evidence,
-                    so you will face a lesser misdemeanor charge.
-                    Clearly, you are best off if you do not confess.
-                    But then they offer a deal: if you confess and the other prisoner refuses,
-                    they will drop all your charges, and your testimony will be used to convict the other
-                    prisoner &mdash; who will then get an extra harsh sentence for refusing to talk.
-                    But, of course, the other prisoner gets the same offer!
-                <p>
-                    The dilemma is:
+            <li>
+                Educational, scientific, and/or creative works that meet
+                the <a href=http://freedomdefined.org/Definition> Definition of Free Cultural Works</a>,
+                and/or the <a href=http://opendefinition.org/okd/>Open Definition</a>
                 <ul>
                     <li>
-                        If the other prisoner refuses to talk, then it is best for you to confess.
-                        You will go free.
+                        This means (among other requirements) using
+                        <a href=http://freedomdefined.org/Licenses> Free Culture Licenses
+                        or
+                        <a href=http://opendefinition.org/licenses/> OD conformant licenses
+            <li>
+                We also require all project developers to join the
+                <a href=http://defensivepatentlicense.com> Defensive Patent License
+                system.
+            <li>
+                Existing proprietary (i.e. non-free) projects are welcome to sign up on the site but
+                will be required to release under an approved license and meet our other requirements in order to receive payment.
 
-                   <li>
-                        If the other prisoner confesses, then you had better confess too.
-                        Otherwise you'll get an extra harsh sentence.
+            <li>
+                Funds raised through Snowdrift.coop are required to be used toward ongoing development.
+                We are not set up to provide rewards for past work.
+                Of course, great prior achievements will encourage the most support for new or continuing projects.
 
-                <p>
-                    <em>So, it is best for you to confess regardless of what the other prisoner does!
-                    Since both prisoners realize this, they will both confess.
-                    The result isn't the worst case for each of them, but if they had both chosen
-                    to stay silent, both would be better off.
-                    <em> If only they really trusted each other&hellip;!
+    <dt>
+        ^{toc_target "why" "Why digital works require a different economic model"}
+    <dd>
+        <p>
+            The Internet offers amazing opportunities for global collaboration.
+            The possibilities are demonstrated by well-known examples such as Wikipedia.
+            Unfortunately, many people view modern media with assumptions that come from the familiar physical economy.
+            The metaphor of "property" has been imposed inappropriately on ideas and digital works.
 
-                <p>
-                    Thankfully, even if people are totally self-centered,^{footnote 1}
-                    we can build trust <em>if</em> the situation is recurring.
-                    This is called the <dfn>Iterated Prisoner's Dilemma</dfn>.
-                    It is worth cooperating to show you are trustworthy if doing so can convince others to cooperate in the future.
-                    If others realize that deviating could break that trust, then everyone might learn to cooperate.
-                    After all, it is better for each individual when everyone cooperates than when everyone deviates.
+        <p>
+            <strong>Our free market economic system is fundamentally based on scarcity.
+            Two people cannot both eat the same apple.
+            Other items are not literally consumed, but you cannot wear my hat while I wear it.
+            Thus scarcity leads to pressures of supply and demand and the rest of market economics.
 
-                <p>
-                    Through many studies, the generally accepted best strategy in an iterated situation is tit-for-tat:
-                    Be nice and cooperate, but if someone else defects, then you deviate next time.
-                    Hopefully, they will get the message.
-                    If they cooperate, then you will cooperate.
-                    So tit-for-tat prefers cooperation but has a defensive strategy to deal with defectors.
-                    Still, interactions between different strategies are complex.
-                    It is easy for prisoner's dilemma situations to fall into cycles of non-cooperation.
+        <p>
+            Of course, not everything is scarce. Air and sunlight are practically limitless.
+            Human ideas are also not strictly scarce (although development time and effort may be).
+            For all of human history we have freely shared stories and songs.
+            Sure, people try to keep secrets or to control other's thoughts or words;
+            but history has shown us the great value of being more open and of protecting indivdual freedom.
+            Not only is respecting freedom more ethical, but free societies are also better able to collaborate and prosper.
+            Even when controlled or secret, ideas do not work like physical property.
+            Learning, using, and sharing ideas does not consume them.
+            Giving an idea to someone else does not deprive you of the idea.
 
-                <p>
-                    There are many real-world circumstances that have a setup similar to the Prisoner's Dilemma.
-                    Economists use the metaphor when discussing problems
-                    such as the <dfn><a href=http://en.wikipedia.org/wiki/Tragedy_of_the_commons>Tragedy of the Commons</a></dfn>.
-                    However, there are also many situations that seem similar but don't really fit this model.
+        <p>
+            The conflation of ideas with physical goods developed in part because of technology.
+            Preliterate communities spread ideas through stories and songs with no physical container.
+            The printing press made books the first physical mass medium several hundred years ago, but literacy was still slow to spread.
+            The rest of our published media are all quite new.
+            Recorded sound and video have existed for only a couple human generations.
+            The "intellectual property" metaphor is a modern concept developed just as
+            physical media containing audio and video recordings came to rival
+            live concerts, live lectures, and live storytelling.
 
-                <p>
-                    A similar but lesser-known metaphor in game theory is the <dfn>Snowdrift Dilemma</dfn>.
-                    Imagine two drivers in winter coming from opposite directions up to a big snowdrift blocking the road.
-                    It would be fair for both drivers to do their part and clear the snow together.
-                    But if you can relax in your car while the other driver does all the work,
-                    that would be nice (ignoring possible feelings of guilt^{footnote 2}).
-                    Of course, if both drivers sit and wait for the other to do the work, that is the worst case for everyone.
-                    So, unlike the Prisoner's Dilemma, choosing to cooperate while the other player defects is still better for you than if everyone defects.
-                    The issue is: nobody wants to be the first to act. If you wait, you may get to freeload.
+        <p>
+            Thanks to digital technology, recorded content has now been essentially freed from its containers,
+            but our laws and cultural assumptions have not been updated to respect this change.
+            Rather than embrace the natural implications of digital media,
+            publishing companies have become entrenched with the old physical economy through reliance on <dfn>artificial scarcity</dfn>.
+            This was achieved by (A) extending existing copyright law to apply to digital media
+            and by (B) the development of Digital Restrictions Management (DRM) technology.
 
-                <p>
-                    These dilemmas are used as models for the study of various behaviors.
-                    Applied to voluntary donation, different situations may be comparable to one or the other of these dilemmas.
-                    A project at risk of failure can be like the Prisoner's Dilemma.
-                    Your selfish best outcome would be for others to contribute so that the project succeeds without your donation.
-                    And if others do not contribute and the project fails, you are also better off having not contributed;
-                    a donation to the failed project would simply be lost.                    
-                    If a project is stable, however, it may be more like the Snowdrift Dilemma.
-                    You might selfishly hope to freeload, but donating still helps the project even if others don't join you.
-                    At least your donation will make some difference and won't be wasted.
-                    Of course, you'd most prefer if everyone chipped in.
+        <p>
+            Imposing artificial scarcity on digital works has three effects:
 
-                <p>
-                    Of these two dilemmas, the Snowdrift setup is, understandably, more likely to lead to cooperation.^{footnote 3}
-                    Obviously, changing the rules of the game can change players' decisions.
-                    <strong>So we have tweaked the rules further in order to solve these dilemmas.
-                    Snowdrift.coop is set up to maxize the payoff and minimize the risk when choosing to cooperate.
+        <ol>
+            <li>
+                Through artificial scarcity, works distributed digitally can be funded via the same market economy as physical goods.
+                Because it isn't a natural fit, this business model can be problematic, but it works in some cases.
 
-                <p .footnote>
-                    ^{footnote_anchor "1 2"}
-                    These hypothetical dilemmas assume that the participants are rational self-interested
-                    actors who wouldn't feel guilty for causing someone else to take all the blame.
-                    Of course, the existence of complex social emotions brings up questions about human biology.
-                    For more on how these dilemmas may give rise to our innate tendencies for cooperation and altruism, see
-                    <span class="citation"> Dawkins, Richard (1976, updated 2006) <i>The Selfish Gene</i>. New York City: Oxford University Press.
-                <p .footnote>
-                    ^{footnote_anchor "3"}
-                    K&uuml;mmerl, Rolf; Colliard, Caroline; Fiechter, Nicolas; Petitpierre, Blaise; Russier, Flavien; and Keller, Laurent. “Human cooperation in social dilemmas: comparing the Snowdrift game with the Prisoner’s Dilemma.” <i>Proc. R. Soc. B</i>, doi:10.1098/rspb.2007.0793.l.
+            <li>
+                Access and creative derivations are restricted in ways that have no financial benefit to the publisher.
+                Blocking users who can't afford to pay a license fee doesn't help the publisher economically.
 
-            <dt>
-                ^{toc_target "psych" "The psychological issues of cooperation, generosity, and freeloading"}
-            <dd>
-                <p>
-                    In the Snowdrift Dilemma, we want something done, so we may do it even if others are freeloading.
-                    However, real people do not just do rational cost/benefit analysis when faced with these social dilemmas.
-                    We are complex and emotional.
-                    We may choose to just be generous, but we still usually hope to be acknowledged and thanked.
-                    If we feel unfairly exploited, we may choose to suffer ourselves just to punish the freeloader(s).
-                    We may hold long-term grudges.
-                    If there is widespread freeloading, we may lose trust in society, and become pessimistic, discouraged, and unmotivated.
+            <li>
+                By controlling access and restricting modifications, publishers gain power.
+                For example, software publishers may institute features that violate user privacy
+                or stop users from doing things with the software that the publishers don't like.
+                If the source code is secret and/or modification is legally blocked, then the only
+                choice users have is to take it or leave it (and you may not even have this choice
+                if the software is required in your work or school).
+                These particular problems are less prevalent in the physical free market economy.
 
-                <p>
-                    Although most of us are inclined to be generous and thoughtful of others,
-                    when money enters the picture, it can displace these social considerations.^{footnote 4}
-                    So for effective fundraising, we must set up the rules of the game to encourage cooperation and to maintain social sensibility.
+        <p>
+            Only the first of these effects is ethical.
+            The second and third effects are detrimental to a free society.
+            Defenders of copyright and patent laws acknowledge this on the surface;
+            their arguments focus on economic concerns.
+            Publishers do not publicly state that they want power over readers.
+            They do not express interest in reducing access as an end in itself.
+            Their primary claim is that they need artificial scarcity in order to make money and thus to fund initial authorship.
+            Thus, our goal is to acknowledge and address this concern.
 
-                <p>
-                    These issues are addressed in the design of most fundraising systems.
-                    In a "walk-a-thon", the walkers aren't doing anything to directly help their cause;
-                    the entire point is merely to show donors that everyone cares.
-                    When everyone participates, it reduces the psychological problems caused by freeloading.
-                    The more social the activies are, the better the likelihood of maintaining social norms over dispassionate market norms.
-                    Of course, activities like walking are most meaningful when financial pledges
-                    are based on how much walking is done and the distance is not predetermined.
-                    This way, walkers can really feel that their actions make a difference,
-                    and donors feel that everyone is proving their commitment to the cause.
-                    There is also something to the feeling of accomplishment from having worked hard to achieve a goal.
-                    So, effective fundraisers are designed for active participation.
+        <p>
+            Aside from artificial scarcity, the primary economic model for funding digital works is
+            to tie connect to the rest of the economy through advertisements.
+            This may not be bad in principle, but the reality is problematic.
+            Ads often rely on psychological manipulation via titillation, fear, and/or dishonesty.
+            Most online ad systems violate the privacy of internet users in order to target particular audiences.
+            Many ads encourage careless consumption.
+            Ubiquity of commercial advertising is itself a problem as it pollutes our cultural space.
+            Reliance on ad-revenue creates serious conflicts of interest for authors
+            as they end up more beholden to advertisers than to the rest of the community.
+            Limited advertising that carefully avoids these problems may be acceptible but is just not capable of significant funding.
 
-                <p>
-                    In addition to our donation-matching setup,
-                    the other aspects of Snowdrift.coop are also designed to maximize social considerations and sense of community.
+        <p>
+            Another common business practice today is to release works freely
+            and then sell physical accessories or special services such as technical support.
+            Yet while businesses based on support may be profitable, this setup creates a conflict of interest;
+            if your income comes from support services, you may be less inclined to create easy-to-use, well-documented software.
 
-                <p .footnote>
-                    ^{footnote_anchor "4"}
-                    See, for example, the studies by Dan Ariely described in
-                    <i>Predictably Irrational
-                    and his other books. Video summaries and more are available at
-                    <a href=http://danariely.com/> DanAriely.com
-                    <br>
-                    Also see: Gneezy, U., and A. Rustichini "A Fine is a Price," <i>Journal of Legal Studies,</i> vol. XXIX, 1, part 1, 2000, 1-18.
+        <p>
+            Many developers and creative artists also ask for open-ended voluntary donations,
+            and this can be remarkably successful in some cases, but often donations are unreliable.
 
-            <dt>
-                ^{toc_target "how" "How does the Snowdrift.coop funding system work?"}
-            <dd>
-                <p>
-                    The problem with the Snowdrift Dilemma is that nobody wants to do all the work,
-                    so they are inclined to wait for others to contribute first.
-                    But then after the first people contribute, others have incentive to freeload.
-                    Our solution is to give donors a chance to say:
-                    <blockquote>
-                        <i>
-                            "I want to contribute, but I know this project won't make it on just my donation.
-                            Instead of paying all I can up front, I'll make a deal: I'll donate if lots of other folks chip in too."
-                <p>
-                    This is facilitated by the Snowdrift.coop system in which:
+        <p>
+            In founding Snowdrift.coop, we thought about how to achieve a better system.
+            We want works funded without problematic restrictions or conflicts of interest.
+            We also want more accuracy, openness, and honesty in our economic relationships.
+            Our system does not accept the artificial pretense of paying for digital content itself.
+            Donors at Snowdrift.coop are funding
+            <em> development work.
+
+    <dt>
+        ^{toc_target "meaning" "What does the Snowdrift name mean?"}
+    <dd>
+        <p>
+            The <dfn>Snowdrift Dilemma</dfn> is a variation on the better-known <dfn>Prisoner's Dilemma</dfn>.
+
+        <p>
+            For those unfamiliar with the original prisoner's dilemma metaphor,
+            imagine you and an acquaintance have been arrested for committing a felony.
+            After being separated, you are each asked to confess.
+            If you both confess, the police will convict both of you of the full crime.
+            But if you both stay silent, the police will not have enough evidence,
+            so you will face a lesser misdemeanor charge.
+            Clearly, you are best off if you do not confess.
+            But then they offer a deal: if you confess and the other prisoner refuses,
+            they will drop all your charges, and your testimony will be used to convict the other
+            prisoner &mdash; who will then get an extra harsh sentence for refusing to talk.
+            But, of course, the other prisoner gets the same offer!
+        <p>
+            The dilemma is:
+        <ul>
+            <li>
+                If the other prisoner refuses to talk, then it is best for you to confess.
+                You will go free.
+
+            <li>
+                If the other prisoner confesses, then you had better confess too.
+                Otherwise you'll get an extra harsh sentence.
+
+        <p>
+            <em>So, it is best for you to confess regardless of what the other prisoner does!
+            Since both prisoners realize this, they will both confess.
+            The result isn't the worst case for each of them, but if they had both chosen
+            to stay silent, both would be better off.
+            <em> If only they really trusted each other&hellip;!
+
+        <p>
+            Thankfully, even if people are totally self-centered,^{footnote 1}
+            we can build trust <em>if</em> the situation is recurring.
+            This is called the <dfn>Iterated Prisoner's Dilemma</dfn>.
+            It is worth cooperating to show you are trustworthy if doing so can convince others to cooperate in the future.
+            If others realize that deviating could break that trust, then everyone might learn to cooperate.
+            After all, it is better for each individual when everyone cooperates than when everyone deviates.
+
+        <p>
+            Through many studies, the generally accepted best strategy in an iterated situation is tit-for-tat:
+            Be nice and cooperate, but if someone else defects, then you deviate next time.
+            Hopefully, they will get the message.
+            If they cooperate, then you will cooperate.
+            So tit-for-tat prefers cooperation but has a defensive strategy to deal with defectors.
+            Still, interactions between different strategies are complex.
+            It is easy for prisoner's dilemma situations to fall into cycles of non-cooperation.
+
+        <p>
+            There are many real-world circumstances that have a setup similar to the Prisoner's Dilemma.
+            Economists use the metaphor when discussing problems
+            such as the <dfn><a href=http://en.wikipedia.org/wiki/Tragedy_of_the_commons>Tragedy of the Commons</a></dfn>.
+            However, there are also many situations that seem similar but don't really fit this model.
+
+        <p>
+            A similar but lesser-known metaphor in game theory is the <dfn>Snowdrift Dilemma</dfn>.
+            Imagine two drivers in winter coming from opposite directions up to a big snowdrift blocking the road.
+            It would be fair for both drivers to do their part and clear the snow together.
+            But if you can relax in your car while the other driver does all the work,
+            that would be nice (ignoring possible feelings of guilt^{footnote 2}).
+            Of course, if both drivers sit and wait for the other to do the work, that is the worst case for everyone.
+            So, unlike the Prisoner's Dilemma, choosing to cooperate while the other player defects is still better for you than if everyone defects.
+            The issue is: nobody wants to be the first to act. If you wait, you may get to freeload.
+
+        <p>
+            These dilemmas are used as models for the study of various behaviors.
+            Applied to voluntary donation, different situations may be comparable to one or the other of these dilemmas.
+            A project at risk of failure can be like the Prisoner's Dilemma.
+            Your selfish best outcome would be for others to contribute so that the project succeeds without your donation.
+            And if others do not contribute and the project fails, you are also better off having not contributed;
+            a donation to the failed project would simply be lost.
+            If a project is stable, however, it may be more like the Snowdrift Dilemma.
+            You might selfishly hope to freeload, but donating still helps the project even if others don't join you.
+            At least your donation will make some difference and won't be wasted.
+            Of course, you'd most prefer if everyone chipped in.
+
+        <p>
+            Of these two dilemmas, the Snowdrift setup is, understandably, more likely to lead to cooperation.^{footnote 3}
+            Obviously, changing the rules of the game can change players' decisions.
+            <strong>So we have tweaked the rules further in order to solve these dilemmas.
+            Snowdrift.coop is set up to maxize the payoff and minimize the risk when choosing to cooperate.
+
+        <p .footnote>
+            ^{footnote_anchor "1 2"}
+            These hypothetical dilemmas assume that the participants are rational self-interested
+            actors who wouldn't feel guilty for causing someone else to take all the blame.
+            Of course, the existence of complex social emotions brings up questions about human biology.
+            For more on how these dilemmas may give rise to our innate tendencies for cooperation and altruism, see
+            <span class="citation"> Dawkins, Richard (1976, updated 2006) <i>The Selfish Gene</i>. New York City: Oxford University Press.
+        <p .footnote>
+            ^{footnote_anchor "3"}
+            K&uuml;mmerl, Rolf; Colliard, Caroline; Fiechter, Nicolas; Petitpierre, Blaise; Russier, Flavien; and Keller, Laurent. “Human cooperation in social dilemmas: comparing the Snowdrift game with the Prisoner’s Dilemma.” <i>Proc. R. Soc. B</i>, doi:10.1098/rspb.2007.0793.l.
+
+    <dt>
+        ^{toc_target "psych" "The psychological issues of cooperation, generosity, and freeloading"}
+    <dd>
+        <p>
+            In the Snowdrift Dilemma, we want something done, so we may do it even if others are freeloading.
+            However, real people do not just do rational cost/benefit analysis when faced with these social dilemmas.
+            We are complex and emotional.
+            We may choose to just be generous, but we still usually hope to be acknowledged and thanked.
+            If we feel unfairly exploited, we may choose to suffer ourselves just to punish the freeloader(s).
+            We may hold long-term grudges.
+            If there is widespread freeloading, we may lose trust in society, and become pessimistic, discouraged, and unmotivated.
+
+        <p>
+            Although most of us are inclined to be generous and thoughtful of others,
+            when money enters the picture, it can displace these social considerations.^{footnote 4}
+            So for effective fundraising, we must set up the rules of the game to encourage cooperation and to maintain social sensibility.
+
+        <p>
+            These issues are addressed in the design of most fundraising systems.
+            In a "walk-a-thon", the walkers aren't doing anything to directly help their cause;
+            the entire point is merely to show donors that everyone cares.
+            When everyone participates, it reduces the psychological problems caused by freeloading.
+            The more social the activies are, the better the likelihood of maintaining social norms over dispassionate market norms.
+            Of course, activities like walking are most meaningful when financial pledges
+            are based on how much walking is done and the distance is not predetermined.
+            This way, walkers can really feel that their actions make a difference,
+            and donors feel that everyone is proving their commitment to the cause.
+            There is also something to the feeling of accomplishment from having worked hard to achieve a goal.
+            So, effective fundraisers are designed for active participation.
+
+        <p>
+            In addition to our donation-matching setup,
+            the other aspects of Snowdrift.coop are also designed to maximize social considerations and sense of community.
+
+        <p .footnote>
+            ^{footnote_anchor "4"}
+            See, for example, the studies by Dan Ariely described in
+            <i>Predictably Irrational
+            and his other books. Video summaries and more are available at
+            <a href=http://danariely.com/> DanAriely.com
+            <br>
+            Also see: Gneezy, U., and A. Rustichini "A Fine is a Price," <i>Journal of Legal Studies,</i> vol. XXIX, 1, part 1, 2000, 1-18.
+
+    <dt>
+        ^{toc_target "how" "How does the Snowdrift.coop funding system work?"}
+    <dd>
+        <p>
+            The problem with the Snowdrift Dilemma is that nobody wants to do all the work,
+            so they are inclined to wait for others to contribute first.
+            But then after the first people contribute, others have incentive to freeload.
+            Our solution is to give donors a chance to say:
+            <blockquote>
+                <i>
+                    "I want to contribute, but I know this project won't make it on just my donation.
+                    Instead of paying all I can up front, I'll make a deal: I'll donate if lots of other folks chip in too."
+        <p>
+            This is facilitated by the Snowdrift.coop system in which:
+        <ul>
+            <li>
+                Donors first contribute funds to their private Snowdrift.coop account (from which they can withdraw unused funds).
+            <li>
+                Then, they select projects to which they pledge their support.
+            <li>
+                Contributions are not set amounts.
+                They start very low and each time a new donor pledges, the pledge amount for all donors goes <em>up</em>.
+            <li>
+                Thus, the amount <em>you</em> donate goes up when either you add a pledge or when someone else adds a pledge.
+                <em> In both cases, the increased funding that a project gets is <strong>more</strong> than what you put in!
+
+            <li>
+                Our formula for monthly pledge share amount is:
+                <div .math> $0.0001&nbsp;&times;&nbsp;lg(
+                    <span .variable>G#
+                    (#
+                    <span .variable>shares#
+                    )#
+                    &nbsp;+&nbsp;1#
+                    )#
+                    &nbsp;&times;&nbsp;#
+                    (#
+                    <span .variable>donors#
+                    &nbsp;-&nbsp;1#
+                    )
+                where
+                <span .math>#
+                    <span .variable>G#
+                    (#
+                    <span .variable>shares#
+                    ) #
+                is the geometric mean of the number of shares from each donor.
+            <li>
+                This formula has the following effects:
                 <ul>
                     <li>
-                        Donors first contribute funds to their private Snowdrift.coop account (from which they can withdraw unused funds).
+                        With only a single share per donor, each will contribute 1/100 of a U.S. cent for each additional donor (not counting themselves).
                     <li>
-                        Then, they select projects to which they pledge their support.
+                        The logarithmic function means that extra shares from a single donor are also matched,
+                        but at a lower level than their initial share,
+                        and this matching tapers off with increasing numbers of extra shares.
+                        Thus, wealthier donors or institutions may contribute more without burdening others,
+                        but they still get some community reinforcement rather than just contributing unilaterally.
+                        Donors of multiple shares also send the message that they are matching single shares many times over,
+                        thus further encouraging new donors to join.
                     <li>
-                        Contributions are not set amounts.
-                        They start very low and each time a new donor pledges, the pledge amount for all donors goes <em>up</em>.
-                    <li>
-                        Thus, the amount <em>you</em> donate goes up when either you add a pledge or when someone else adds a pledge.
-                        <em> In both cases, the increased funding that a project gets is <strong>more</strong> than what you put in!
+                        Using the geometric average with the logarithm assures that all donors can make a significant impact when choosing to contribute extra shares.
+            <li>
+                This essentially solves the Snowdrift Dilemma by removing any incentive to delay donating.
+                Each pledge is an invitation to others to join and pledge as well.
+                This commitment builds trust without risk to those who step up first.
+            <li>
+                Of course, different projects may suggest that donors consider a certain number of shares,
+                such as for specialty projects that may be expensive to develop and have a smaller user base.
+        <p>
+            The following graphs show how donation amounts and total funding increase with the size of the donor community.
+            <strong>For simplicity, these charts assume only a single share per donor.
 
-                    <li>
-                        Our formula for monthly pledge share amount is:
-                        <div .math> $0.0001&nbsp;&times;&nbsp;lg(
-                            <span .variable>G#
-                            (#
-                            <span .variable>shares#
-                            )#
-                            &nbsp;+&nbsp;1#
-                            )#
-                            &nbsp;&times;&nbsp;#
-                            (#
-                            <span .variable>donors#
-                            &nbsp;-&nbsp;1#
-                            )
-                        where
-                        <span .math>#
-                            <span .variable>G#
-                            (#
-                            <span .variable>shares#
-                            ) #
-                        is the geometric mean of the number of shares from each donor.
-                    <li>
-                        This formula has the following effects:
-                        <ul>
-                            <li>
-                                With only a single share per donor, each will contribute 1/100 of a U.S. cent for each additional donor (not counting themselves).
-                            <li>
-                                The logarithmic function means that extra shares from a single donor are also matched,
-                                but at a lower level than their initial share,
-                                and this matching tapers off with increasing numbers of extra shares.
-                                Thus, wealthier donors or institutions may contribute more without burdening others,
-                                but they still get some community reinforcement rather than just contributing unilaterally.
-                                Donors of multiple shares also send the message that they are matching single shares many times over,
-                                thus further encouraging new donors to join.
-                            <li>
-                                Using the geometric average with the logarithm assures that all donors can make a significant impact when choosing to contribute extra shares.
-                    <li>
-                        This essentially solves the Snowdrift Dilemma by removing any incentive to delay donating.
-                        Each pledge is an invitation to others to join and pledge as well.
-                        This commitment builds trust without risk to those who step up first.
-                    <li>
-                        Of course, different projects may suggest that donors consider a certain number of shares,
-                        such as for specialty projects that may be expensive to develop and have a smaller user base.
-                <p>
-                    The following graphs show how donation amounts and total funding increase with the size of the donor community.
-                    <strong>For simplicity, these charts assume only a single share per donor.
+        <div .row>
+            <div .col-md-8 .col-md-offset-2>
+                ^{shareValueChart}
 
-                <div .row>
-                    <div .col-md-8 .col-md-offset-2>
-                        ^{shareValueChart}
+        <div .row>
+            <div .col-md-8 .col-md-offset-2>
+                ^{projectValueChart}
 
-                <div .row>
-                    <div .col-md-8 .col-md-offset-2>
-                        ^{projectValueChart}
+        <p>
+            If each donor pledges just one share, then the contribution from each is simply the number of other donors times 1/100 of a cent.
+            In the chart below, the blue indicates a share amount, which is the same for a new donor and for each earlier donor.
+            Orange indicates a consistent 1/100 of a cent increase from a single earlier donor over the amount they had been contributing.
+            The rest of the matching comes from the same 1/100 of a cent increases from all the other earlier donors combined.
 
-                <p>
-                    If each donor pledges just one share, then the contribution from each is simply the number of other donors times 1/100 of a cent.
-                    In the chart below, the blue indicates a share amount, which is the same for a new donor and for each earlier donor.
-                    Orange indicates a consistent 1/100 of a cent increase from a single earlier donor over the amount they had been contributing.
-                    The rest of the matching comes from the same 1/100 of a cent increases from all the other earlier donors combined.
+        <div .row>
+            <div .col-md-8 .col-md-offset-2>
+                ^{donut}
 
-                <div .row>
-                    <div .col-md-8 .col-md-offset-2>
-                        ^{donut}
+        <p>
+            Let's consider how this system affects the choices donors make.
+            Initially, you can choose to pledge or not.
+            Going ahead is encouraged because the pledge will be fully matched by the rest of the community.
+            The only catch is that we require you to help match future donors;
+            but let's consider if you had a choice whether or not to accept this condition.
+            When a new donor joins, your extra 1/100 of cent is not only matched once,
+            it is matched by all the other donors.
+            If you were willing to donate when matched one-to-one,
+            you should be thrilled to be matched 100-to-1 or 1000-to-1.
+            Everyone would choose to go ahead in this case, but only on the condition that everyone else had committed to this matching.
+            So by requiring this condition, we achieve a reliable system for the benfit of everyone.
 
-                <p>
-                    Let's consider how this system affects the choices donors make.
-                    Initially, you can choose to pledge or not.
-                    Going ahead is encouraged because the pledge will be fully matched by the rest of the community.
-                    The only catch is that we require you to help match future donors;
-                    but let's consider if you had a choice whether or not to accept this condition.
-                    When a new donor joins, your extra 1/100 of cent is not only matched once,
-                    it is matched by all the other donors.
-                    If you were willing to donate when matched one-to-one,
-                    you should be thrilled to be matched 100-to-1 or 1000-to-1.
-                    Everyone would choose to go ahead in this case, but only on the condition that everyone else had committed to this matching.
-                    So by requiring this condition, we achieve a reliable system for the benfit of everyone.
+        <p>
+            If you don't want to continue supporting a project, you are, of course, free to drop your pledge entirely
+            (knowing that everyone else will reduce their pledges as they will no longer be matching you).
+            If you choose to donate multiple shares, then you can choose to add or reduce your shares at any time.
+            The same matching pressures apply to extra shares but to a lesser extent, making this choice more flexible.
 
-                <p>
-                    If you don't want to continue supporting a project, you are, of course, free to drop your pledge entirely
-                    (knowing that everyone else will reduce their pledges as they will no longer be matching you).
-                    If you choose to donate multiple shares, then you can choose to add or reduce your shares at any time.
-                    The same matching pressures apply to extra shares but to a lesser extent, making this choice more flexible.
+        <p>
+            <strong>Our iterative model calculates pledge amounts and pays out to projects on a monthly basis.
+            This gives donors a chance to build trust, to maintain long-term connections,
+            and to withdraw their pledges if they are not satisfied with the progress or communication of a project.
+            This setup provides stability to developers while keeping them accountable to donors.
 
-                <p>
-                    <strong>Our iterative model calculates pledge amounts and pays out to projects on a monthly basis.
-                    This gives donors a chance to build trust, to maintain long-term connections,
-                    and to withdraw their pledges if they are not satisfied with the progress or communication of a project.
-                    This setup provides stability to developers while keeping them accountable to donors.
+        <p>
+            <strong> Why no set maximum donation amounts?
+            As discussed in studies of the prisoner's dilemma (and variants like the snowdrift dilemma),
+            when a fixed end or maximum is known, it leads to strategic gaming that reduces cooperation.
+            Also, consider how auctions work: people may think they only want to pay a certain amount,
+            but our perception of value changes when we see that others are willing to pay more.
+            <strong>For social negotiations to successfully achieve cooperation, flexibility is required from everyone.
 
-                <p>
-                    <strong> Why no set maximum donation amounts?
-                    As discussed in studies of the prisoner's dilemma (and variants like the snowdrift dilemma),
-                    when a fixed end or maximum is known, it leads to strategic gaming that reduces cooperation.
-                    Also, consider how auctions work: people may think they only want to pay a certain amount,
-                    but our perception of value changes when we see that others are willing to pay more.
-                    <strong>For social negotiations to successfully achieve cooperation, flexibility is required from everyone.
+        <p>
+            <strong> There are still effective limits.
+            Each donor contributes to their private Snowdrift.coop account,
+            and if their funds run out, then their pledges will be dropped by the system.
+            Effectively, this means they are not maintaining their social commitment,
+            and the system will then reduce the share value for everyone.
+            So there will be social pressure to add to their account and so continue their funding,
+            but Snowdrift.coop cannot force anyone to pay more than they are able.
+            Putting a larger amount into a dedicated funding account also allows for easier budgeting
+            compared to making separate budget decisions for each independant donation.
 
-                <p>
-                    <strong> There are still effective limits.
-                    Each donor contributes to their private Snowdrift.coop account,
-                    and if their funds run out, then their pledges will be dropped by the system.
-                    Effectively, this means they are not maintaining their social commitment,
-                    and the system will then reduce the share value for everyone.
-                    So there will be social pressure to add to their account and so continue their funding,
-                    but Snowdrift.coop cannot force anyone to pay more than they are able.
-                    Putting a larger amount into a dedicated funding account also allows for easier budgeting
-                    compared to making separate budget decisions for each independant donation.
+        <p>
+            We are also exploring options to allow share-splitting after levels get relatively high.
+            For example, an option could open for donating only bimonthly or quarterly.
+            We want to make sure that there is flexibility in the system.
+            Less wealthy donors should be able to continue and new donors to join at modest levels even for very successful projects.
+            The details of this mechanism have not been determined yet.
 
-                <p>
-                    We are also exploring options to allow share-splitting after levels get relatively high.
-                    For example, an option could open for donating only bimonthly or quarterly.
-                    We want to make sure that there is flexibility in the system.
-                    Less wealthy donors should be able to continue and new donors to join at modest levels even for very successful projects.
-                    The details of this mechanism have not been determined yet.
+        <p>
+            We will also require projects to have public accounting and other transparency;
+            given this, if a project meets its funding goals and has no expansion plans,
+            then donor levels should stabilize as donors choose to focus on other projects.
 
-                <p>
-                    We will also require projects to have public accounting and other transparency;
-                    given this, if a project meets its funding goals and has no expansion plans,
-                    then donor levels should stabilize as donors choose to focus on other projects.
+        <p>
+            With Snowdrift.coop, no donor will be unfairly burdened,
+            and everyone will be encouraged to be an active part of the community.
+            There is no risk of contributing a lot to a project only to have it fail because others did not contribute.
+            Each donor will know that they are making a big difference because
+            <em> each new pledge gets everyone else to donate more!
 
-                <p>
-                    With Snowdrift.coop, no donor will be unfairly burdened,
-                    and everyone will be encouraged to be an active part of the community.
-                    There is no risk of contributing a lot to a project only to have it fail because others did not contribute.
-                    Each donor will know that they are making a big difference because
-                    <em> each new pledge gets everyone else to donate more!
+        <p>
+            As a cooperative, Snowdrift.coop will be member-run. Among other benefits,
+            this reduces problems with conflicts of interest when setting policy,
+            in contrast to other crowd-funding services.
 
-                <p>
-                    As a cooperative, Snowdrift.coop will be member-run. Among other benefits,
-                    this reduces problems with conflicts of interest when setting policy,
-                    in contrast to other crowd-funding services.
+        <p>
+            To further maintain social considerations, we also:
+            emphasize honor, morality, and ethics;
+            work to build a sense of community, cooperation, and trust;
+            encourage everyone to care about issues beyond own immediate interests;
+            and model these ideals in our own actions and policies.
+            We will have a system to give public thanks to donors and a way for them to indicate which features they would most like their pledges to support.
+            There will also be special acknowledgement of those in the community who make creative contributions to projects.
 
-                <p>
-                    To further maintain social considerations, we also:
-                    emphasize honor, morality, and ethics;
-                    work to build a sense of community, cooperation, and trust;
-                    encourage everyone to care about issues beyond own immediate interests;
-                    and model these ideals in our own actions and policies.
-                    We will have a system to give public thanks to donors and a way for them to indicate which features they would most like their pledges to support.
-                    There will also be special acknowledgement of those in the community who make creative contributions to projects.
+    <dt>
+        ^{toc_target "whyfree" "Why restrict to only projects with certain approved licenses?"}
+    <dd>
+        <p>
+            By funding only Free/Libre Open Source Software and Free Cultural Works, we remove concerns about access to the funded results.
+            At Snowdrift.coop, donors need not be burdened to evaluate the terms of different licenses or worry about which project has which license.^{footnote 5}
+            All projects will be guaranteed to be freely available without problematic restrictions, so they are good long-term investments.
+            Our mission is to promote freedom by supporting the development of resources which serve the interests of the whole community.
 
-            <dt>
-                ^{toc_target "whyfree" "Why restrict to only projects with certain approved licenses?"}
-            <dd>
-                <p>
-                    By funding only Free/Libre Open Source Software and Free Cultural Works, we remove concerns about access to the funded results.
-                    At Snowdrift.coop, donors need not be burdened to evaluate the terms of different licenses or worry about which project has which license.^{footnote 5}
-                    All projects will be guaranteed to be freely available without problematic restrictions, so they are good long-term investments.
-                    Our mission is to promote freedom by supporting the development of resources which serve the interests of the whole community.
+        <p>
+            We value the ability of everyone to build on existing ideas in technology, science, and art.
+            Many wonderful things are achieved through the natural process of sharing and innovation.
+            Snowdrift.coop would not exist without the numerous past ideas upon which we are building.
 
-                <p>
-                    We value the ability of everyone to build on existing ideas in technology, science, and art.
-                    Many wonderful things are achieved through the natural process of sharing and innovation.
-                    Snowdrift.coop would not exist without the numerous past ideas upon which we are building.
+        <p>
+            If explicit permission from authors is required for any modification of their work, changes quickly becomes impossibly burdensome.
+            Popular authors may simply not have time to review and approve every request.
+            After just a few levels of change by different people, it becomes completely impractical to get permission from all the past authors.
+            Quite simply, restrictions on use or modification make works less valuable.
 
-                <p>
-                    If explicit permission from authors is required for any modification of their work, changes quickly becomes impossibly burdensome.
-                    Popular authors may simply not have time to review and approve every request.
-                    After just a few levels of change by different people, it becomes completely impractical to get permission from all the past authors.
-                    Quite simply, restrictions on use or modification make works less valuable.
+        <p>
+            We can achieve broad collaboration only by automatically granting everyone the rights to access, share, modify, and redistribute.
+            Authors are still free to publish original versions or to express approval or disapproval of new uses and modifications
+            (for instance, there is the <a href="http://questioncopyright.org/creator_endorsed_mark">Creator Endorsed Mark</a>).
+            Furthermore, with a copyleft license &mdash; something we encourage projects to choose but do not require &mdash;
+            authors will also be assured the same access to any derivative versions made by others.
 
-                <p>
-                    We can achieve broad collaboration only by automatically granting everyone the rights to access, share, modify, and redistribute.
-                    Authors are still free to publish original versions or to express approval or disapproval of new uses and modifications
-                    (for instance, there is the <a href="http://questioncopyright.org/creator_endorsed_mark">Creator Endorsed Mark</a>).
-                    Furthermore, with a copyleft license &mdash; something we encourage projects to choose but do not require &mdash;
-                    authors will also be assured the same access to any derivative versions made by others.
+        <p>
+            Non-commercial clauses are also problematic.
+            For one thing, commerce should be encouraged. Economic activity is a good thing as long as it isn't destructive.
+            An NC license is also incompatible with other licenses that allow commercial use.
+            All of Wikipedia is licensed with CC-BY-SA;
+            which means you can use it for any purpose &mdash; including commercial &mdash;
+            if you give credit and license your derivative the same way.
+            Thus, NC-licensed material cannot be mixed with any content from Wikipedia or anything else with a CC-BY-SA license.
+            Because of this situation, NC licenses have the unintended side effects of hampering a lot of non-commercial use
+            and creating a rift in the commons.
+            Using a copyleft Share-Alike license is actually enough to stop the type of commercial exploitation that most people worry about.
 
-                <p>
-                    Non-commercial clauses are also problematic.
-                    For one thing, commerce should be encouraged. Economic activity is a good thing as long as it isn't destructive.
-                    An NC license is also incompatible with other licenses that allow commercial use.
-                    All of Wikipedia is licensed with CC-BY-SA;
-                    which means you can use it for any purpose &mdash; including commercial &mdash;
-                    if you give credit and license your derivative the same way.
-                    Thus, NC-licensed material cannot be mixed with any content from Wikipedia or anything else with a CC-BY-SA license.
-                    Because of this situation, NC licenses have the unintended side effects of hampering a lot of non-commercial use
-                    and creating a rift in the commons.
-                    Using a copyleft Share-Alike license is actually enough to stop the type of commercial exploitation that most people worry about.
+        <p>
+            <strong>We are not stopping anyone from choosing other licenses if they want to fund them through other means.
+            Many mechanisms exist to enable authors to profit by wielding the power to restrict what others do with their work.
+            Snowdrift.coop exists precisely to be an alternative to that model.
+            We are giving the community a way to directly fund projects that the community wants.
+            <strong>If a project asks for community patronage, it is fair for the community to expect unrestricted access.
 
-                <p>
-                    <strong>We are not stopping anyone from choosing other licenses if they want to fund them through other means.
-                    Many mechanisms exist to enable authors to profit by wielding the power to restrict what others do with their work.
-                    Snowdrift.coop exists precisely to be an alternative to that model.
-                    We are giving the community a way to directly fund projects that the community wants.
-                    <strong>If a project asks for community patronage, it is fair for the community to expect unrestricted access.
+        <p>
+            Note: It is easy to be confused, but be assured:
+            <strong>These licenses have nothing to do with plagiarism or trademark issues.
+            Granting access and permission to change and distribute works does <em>not</em> permit false authorship claims.
+            The CC-BY, CC-BY-SA, and GFDL all require that the original author is given due credit,
+            that modified versions of works are clearly marked as modified,
+            and that any statements of endorsement are removed unless the modied version is independently approved by the endorser.
+            Authors also retain legal protections from slander and libel, the right to charge plagiarizers with fraud,
+            and the right to have their names removed from any derivatives with which they wish to be disassociated.
 
-                <p>
-                    Note: It is easy to be confused, but be assured:
-                    <strong>These licenses have nothing to do with plagiarism or trademark issues.
-                    Granting access and permission to change and distribute works does <em>not</em> permit false authorship claims.
-                    The CC-BY, CC-BY-SA, and GFDL all require that the original author is given due credit,
-                    that modified versions of works are clearly marked as modified,
-                    and that any statements of endorsement are removed unless the modied version is independently approved by the endorser.
-                    Authors also retain legal protections from slander and libel, the right to charge plagiarizers with fraud,
-                    and the right to have their names removed from any derivatives with which they wish to be disassociated.
+        <p .footnote>
+            ^{footnote_anchor "5"}
+            Of course, information about licenses will still be available. We will mark specially copyleft licenses.
+            Copyleft offers the benefit of keeping the same access and freedoms for all derivative versions,
+            but it has the downside of making it harder to integrate resources from different licenses.
+            We encourage the use of the primary copyleft licenses:
+            the GNU GPL for software, AGPL for online services, and Creative Commons CC-BY-SA for other works.
 
-                <p .footnote>
-                    ^{footnote_anchor "5"}
-                    Of course, information about licenses will still be available. We will mark specially copyleft licenses.
-                    Copyleft offers the benefit of keeping the same access and freedoms for all derivative versions,
-                    but it has the downside of making it harder to integrate resources from different licenses.
-                    We encourage the use of the primary copyleft licenses:
-                    the GNU GPL for software, AGPL for online services, and Creative Commons CC-BY-SA for other works.
+    <dt>
+        ^{toc_target "coop" "Cooperation vs competition: a false dichotomy"}
+    <dd>
+        <p>
+            Although we emphasize cooperation, we are not opposed to competition.
+            In fact, competition and cooperation are best when combined.
+            Within basic market economics, most interactions are cooperative.
+            We trade with others, collaborate, form partnerships&hellip;
+            Encouraging cooperation is in no way contradictory to our competitive free market system.
 
-            <dt>
-                ^{toc_target "coop" "Cooperation vs competition: a false dichotomy"}
-            <dd>
-                <p>
-                    Although we emphasize cooperation, we are not opposed to competition.
-                    In fact, competition and cooperation are best when combined.
-                    Within basic market economics, most interactions are cooperative.
-                    We trade with others, collaborate, form partnerships&hellip;
-                    Encouraging cooperation is in no way contradictory to our competitive free market system.
+        <p>
+            <strong>We want competition.
+            Competition is among the most powerful of motivators.
+            Snowdrift.coop is itself competing with other platforms to be the best funding mechanism.
+            Within Snowdrift, projects compete for funding by appealing to donors.
+            Although the system is different from the physical market economy, it still involves competition and choice.
 
-                <p>
-                    <strong>We want competition.
-                    Competition is among the most powerful of motivators.
-                    Snowdrift.coop is itself competing with other platforms to be the best funding mechanism.
-                    Within Snowdrift, projects compete for funding by appealing to donors.
-                    Although the system is different from the physical market economy, it still involves competition and choice.
+        <p>
+            What we don't want is destructive competition where success is achieved by hurting your opponents or keeping secrets.
+            As Richard Stallman puts it,
+            "competition itself is not harmful; the harmful thing is <em>combat</em>."^{footnote 6}
+            If you provide the best products or services,
+            you will succeed in a competitive and fair market even if you give everyone else access to your ideas.
+            This is the only honorable way to compete.
 
-                <p>
-                    What we don't want is destructive competition where success is achieved by hurting your opponents or keeping secrets.
-                    As Richard Stallman puts it,
-                    "competition itself is not harmful; the harmful thing is <em>combat</em>."^{footnote 6}
-                    If you provide the best products or services,
-                    you will succeed in a competitive and fair market even if you give everyone else access to your ideas.
-                    This is the only honorable way to compete.
+        <p>
+            We recognize the temptation to undermine competitors, and that is another of the dilemmas that we try to address.
+            As Dan Ariely wisely puts it,
+            <em>"it is easier to avoid temptation than to resist it."
+            By requiring transparency and Free/Libre/Open licenses, we reduce the temptation of many destructive competition strategies.
+            In essence, we help keep honorable people honorable.
+            Thus, everyone benefits from the sharing of ideas;
+            the way to succeed in the competition is to simply do the highest quality work;
+            and transparency helps assure that everyone still gets credit for their contributions.
 
-                <p>
-                    We recognize the temptation to undermine competitors, and that is another of the dilemmas that we try to address.
-                    As Dan Ariely wisely puts it,
-                    <em>"it is easier to avoid temptation than to resist it."
-                    By requiring transparency and Free/Libre/Open licenses, we reduce the temptation of many destructive competition strategies.
-                    In essence, we help keep honorable people honorable.
-                    Thus, everyone benefits from the sharing of ideas;
-                    the way to succeed in the competition is to simply do the highest quality work;
-                    and transparency helps assure that everyone still gets credit for their contributions.
+        <p>
+            Another way to look at this: When we compete in a zero-sum game, we profit only by taking away from others.
+            In non-zero-sum situations, competition can involve completely positive, constructive actions.
+            Business, technology, and other creative work need not be zero-sum games.
 
-                <p>
-                    Another way to look at this: When we compete in a zero-sum game, we profit only by taking away from others.
-                    In non-zero-sum situations, competition can involve completely positive, constructive actions.
-                    Business, technology, and other creative work need not be zero-sum games.
+        <p>
+            On a side-note: some skeptics wonder if Free Software and Free Culture are connected with "socialism".
+            Regardless of complex debates about the politics of that term, consider this:
+            The emphasis of Free Software and Free Culture is individual freedom (which includes the freedom to cooperate and coordinate).
+            The use and development of Free works is
+            <em>decentralized
+            and
+            <em>voluntary.
+            Free/Libre resources invite everyone to modify, use, and distribute in whatever manner they wish.
+            Rather than being a top-down directive, this allows for fluid and unrestricted innovation.
+            We want technology and culture to be controlled neither by governments nor by corporations.
+            However, we welcome both governments and corporations to be involved and to contribute to these developments &mdash;
+            as long as the end products are licensed to be open and respect freedom and liberty.
 
-                <p>
-                    On a side-note: some skeptics wonder if Free Software and Free Culture are connected with "socialism".
-                    Regardless of complex debates about the politics of that term, consider this:
-                    The emphasis of Free Software and Free Culture is individual freedom (which includes the freedom to cooperate and coordinate).
-                    The use and development of Free works is
-                    <em>decentralized
-                    and
-                    <em>voluntary.
-                    Free/Libre resources invite everyone to modify, use, and distribute in whatever manner they wish.
-                    Rather than being a top-down directive, this allows for fluid and unrestricted innovation.
-                    We want technology and culture to be controlled neither by governments nor by corporations.
-                    However, we welcome both governments and corporations to be involved and to contribute to these developments &mdash;
-                    as long as the end products are licensed to be open and respect freedom and liberty.
-
-                <p .footnote>
-                    ^{footnote_anchor "6"}
-                        from GNU.org
-                        <a href="www.gnu.org/philosophy/shouldbefree.html">Why Software Should Be Free
-                        by Richard Stallman
-            <dt>
-                ^{toc_target "others" "What about fundraising for other purposes?"}
-            <dd>
-                <p>
-                    We have Snowdrift.coop with a focus on the particular issues surrounding digital works.
-                    This is our primary focus and is a big enough challenge.
-                    If we are successful with our initial focus, however,
-                    there is a possibility that we will expand to fund other things consistent with the values for which we stand.
-                    Also, the software that runs Snowdrift.coop and all of the writings and ideas are available for use by others
-                    within the terms of the Free/Libre licenses we have chosen
-                    (specifically the Affero General Public License and the Creative Commons Attribution Share-Alike licenses, respectively).
+        <p .footnote>
+            ^{footnote_anchor "6"}
+                from GNU.org
+                <a href="www.gnu.org/philosophy/shouldbefree.html">Why Software Should Be Free
+                by Richard Stallman
+    <dt>
+        ^{toc_target "others" "What about fundraising for other purposes?"}
+    <dd>
+        <p>
+            We have Snowdrift.coop with a focus on the particular issues surrounding digital works.
+            This is our primary focus and is a big enough challenge.
+            If we are successful with our initial focus, however,
+            there is a possibility that we will expand to fund other things consistent with the values for which we stand.
+            Also, the software that runs Snowdrift.coop and all of the writings and ideas are available for use by others
+            within the terms of the Free/Libre licenses we have chosen
+            (specifically the Affero General Public License and the Creative Commons Attribution Share-Alike licenses, respectively).

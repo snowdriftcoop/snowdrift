@@ -1,0 +1,28 @@
+ALTER TABLE "project_blog" ADD COLUMN "discussion" INT8 NOT NULL;
+ALTER TABLE "wiki_page" ADD COLUMN "discussion" INT8;
+CREATe TABLE "discussion"("id" SERIAL PRIMARY KEY UNIQUE,"nothing" INT8 NOT NULL);
+UPDATE "wiki_page" SET "discussion" = nextval('discussion_id_seq');
+ALTER TABLE "wiki_page" ALTER COLUMN "discussion" SET NOT NULL;
+INSERT INTO "discussion" (id, nothing) SELECT "discussion", 0 FROM "wiki_page";
+
+ALTER TABLE "comment" ADD COLUMN "discussion" INT8;
+
+UPDATE "comment"
+SET "discussion" = "wiki_page"."discussion"
+FROM "wiki_page"
+    JOIN "wiki_page_comment" ON "wiki_page"."id" = "wiki_page_comment"."page"
+WHERE "wiki_page_comment"."comment" = "comment"."id";
+
+ALTER TABLE "comment" ALTER COLUMN "discussion" SET NOT NULL;
+
+CREATe TABLE "comment_rethread"("id" SERIAL PRIMARY KEY UNIQUE,"ts" TIMESTAMP NOT NULL,"moderator" INT8 NOT NULL,"old_parent" INT8 NULL,"old_discussion" INT8 NOT NULL,"new_parent" INT8 NULL,"new_discussion" INT8 NOT NULL,"comment" INT8 NOT NULL,"reason" VARCHAR NOT NULL);
+
+ALTER TABLE "comment_rethread" ADD CONSTRAINT "comment_rethread_moderator_fkey" FOREIGN KEY("moderator") REFERENCES "user";
+ALTER TABLE "comment_rethread" ADD CONSTRAINT "comment_rethread_old_parent_fkey" FOREIGN KEY("old_parent") REFERENCES "comment";
+ALTER TABLE "comment_rethread" ADD CONSTRAINT "comment_rethread_old_discussion_fkey" FOREIGN KEY("old_discussion") REFERENCES "discussion";
+ALTER TABLE "comment_rethread" ADD CONSTRAINT "comment_rethread_new_parent_fkey" FOREIGN KEY("new_parent") REFERENCES "comment";
+ALTER TABLE "comment_rethread" ADD CONSTRAINT "comment_rethread_new_discussion_fkey" FOREIGN KEY("new_discussion") REFERENCES "discussion";
+ALTER TABLE "comment_rethread" ADD CONSTRAINT "comment_rethread_comment_fkey" FOREIGN KEY("comment") REFERENCES "comment";
+ALTER TABLE "project_blog" ADD CONSTRAINT "project_blog_discussion_fkey" FOREIGN KEY("discussion") REFERENCES "discussion";
+ALTER TABLE "wiki_page" ADD CONSTRAINT "wiki_page_discussion_fkey" FOREIGN KEY("discussion") REFERENCES "discussion";
+ALTER TABLE "comment" ADD CONSTRAINT "comment_discussion_fkey" FOREIGN KEY("discussion") REFERENCES "discussion";

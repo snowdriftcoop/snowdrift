@@ -1,16 +1,13 @@
-<div .row>
-    <div .col-xs-12>
-        $if null pages
-            no pages to display
-        $else
-            <table>
-                <tr>
-                    <th>
-                        page URL
+$if null pages
+    no pages to display
+$else
+    <table>
+        <tr>
+            <th>
+                page URL
 
-                $forall Entity _ page <- pages
-                    <tr>
-                        <td>
-                            <a href=@{WikiR project_handle (wikiPageTarget page)}>
-                                #{wikiPageTarget page}
-
+        $forall Entity _ page <- pages
+            <tr>
+                <td>
+                    <a href=@{WikiR project_handle (wikiPageTarget page)}>
+                        #{wikiPageTarget page}

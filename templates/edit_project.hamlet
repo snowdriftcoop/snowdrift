@@ -1,5 +1,3 @@
-<div .row>
-    <div .col-xs-12>
-        <form method=POST action=@{ProjectR project_handle}>
-            ^{project_form}
-            <input name=mode type=submit value=preview>
+<form method=POST action=@{ProjectR project_handle}>
+    ^{project_form}
+    <input name=mode type=submit value=preview>

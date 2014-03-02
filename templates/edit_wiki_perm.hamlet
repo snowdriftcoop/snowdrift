@@ -1,5 +1,3 @@
-<div .row>
-    <div .col-xs-12>
-        <form method=POST action=@{EditWikiPermissionsR project_handle target}>
-            ^{wiki_form}
-            <input type=submit>
+<form method=POST action=@{EditWikiPermissionsR project_handle target}>
+    ^{wiki_form}
+    <input type=submit>

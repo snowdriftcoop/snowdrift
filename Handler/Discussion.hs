@@ -17,6 +17,7 @@ import qualified Data.Text as T
 import Model.AnnotatedTag
 import Model.User
 import Model.Role
+import Model.ViewType
 
 import Widgets.Markdown
 import Widgets.Preview
@@ -555,18 +556,36 @@ getOldWikiNewCommentsR project_handle = redirect $ WikiNewCommentsR project_hand
 getWikiNewCommentsR :: Text -> Handler Html
 getWikiNewCommentsR project_handle = do
     Entity viewer_id viewer <- requireAuth
+    Entity project_id project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
+
+    req <- getRequest
+    maybe_since <- lookupGetParam "since"
+    since :: UTCTime <- case maybe_since of
+        Nothing -> do
+            viewtimes :: [Entity ViewTime] <- runDB $ do
+                select $ from $ \ viewtime -> do
+                    where_ $
+                        ( viewtime ^. ViewTimeUser ==. val viewer_id ) &&.
+                        ( viewtime ^. ViewTimeProject ==. val project_id ) &&.
+                        ( viewtime ^. ViewTimeType ==. val ViewComments )
+                    return viewtime
+
+            let comments_ts = case viewtimes of
+                    [] -> userReadComments viewer
+                    (Entity _ viewtime):_ -> viewTimeTime viewtime
+
+            redirectParams (WikiNewCommentsR project_handle) $ (T.pack "since", T.pack $ show comments_ts) : (reqGetParams req)
+        Just since -> return (read . T.unpack $ since)
 
     maybe_from <- fmap (Key . PersistInt64 . read . T.unpack) <$> lookupGetParam "from"
 
     now <- liftIO getCurrentTime
 
-    Entity project_id project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
-
     tags <- runDB $ select $ from $ return
 
     let tag_map = M.fromList $ entityPairs tags
 
-    (comments, pages, users, retraction_map) <- runDB $ do
+    (new_comments, old_comments, pages, users, retraction_map) <- runDB $ do
         unfiltered_pages <- select $ from $ \ page -> do
             where_ $ page ^. WikiPageProject ==. val project_id
             return page
@@ -574,32 +593,57 @@ getWikiNewCommentsR project_handle = do
         let pages = M.fromList $ map (entityKey &&& entityVal) $ {- TODO filter ((userRole viewer >=) . wikiPageCanViewMeta . entityVal) -} unfiltered_pages
 
 
-        let apply_offset comment = maybe id (\ from_comment rest -> comment ^. CommentId >=. val from_comment &&. rest) maybe_from
+        let apply_offset comment = maybe id (\ from_comment rest -> comment ^. CommentId <=. val from_comment &&. rest) maybe_from
+{-
+        viewtimes :: [Entity ViewTime] <- select $ from $ \ viewtime -> do
+            where_ $
+                ( viewtime ^. ViewTimeUser ==. val viewer_id ) &&.
+                ( viewtime ^. ViewTimeProject ==. val project_id ) &&.
+                ( viewtime ^. ViewTimeType ==. val ViewComments )
+            return viewtime
 
-        comments <- select $ from $ \ c -> do
-            where_ $ apply_offset c $ c ^. CommentDiscussion `in_` valList (S.toList $ S.fromList $ map wikiPageDiscussion $ M.elems pages)
-            orderBy [ desc (c ^. CommentId) ]
-            limit 50
-            return c
+        let comments_ts = case viewtimes of
+                [] -> userReadComments viewer
+                (Entity _ viewtime):_ -> viewTimeTime viewtime
+-}
+        new_comments :: [Entity Comment] <- select $ from $ \ (comment `InnerJoin` wiki_page) -> do
+            on_ $ comment ^. CommentDiscussion ==. wiki_page ^. WikiPageDiscussion
+            where_ $
+                (apply_offset comment $ wiki_page ^. WikiPageId `in_` valList (M.keys pages)) &&.
+                (comment ^. CommentCreatedTs >=. val since)
+            orderBy [ desc (comment ^. CommentId) ]
+            limit 51
+            return comment
 
-        let user_ids = S.toList $ S.fromList $ map (commentUser . entityVal) comments
+        old_comments :: [Entity Comment] <- select $ from $ \ (comment `InnerJoin` wiki_page) -> do
+            on_ $ comment ^. CommentDiscussion ==. wiki_page ^. WikiPageDiscussion
+            where_ $
+                (apply_offset comment $ wiki_page ^. WikiPageId `in_` valList (M.keys pages)) &&.
+                (comment ^. CommentCreatedTs <. val since)
+            orderBy [ desc (comment ^. CommentId) ]
+            limit $ fromIntegral $ 51 - length new_comments
+            --offset $ fromIntegral $ length new_comments
+            return comment
+
+        let user_ids = S.toList $ S.fromList $ map (commentUser . entityVal) (new_comments <> old_comments)
         users <- fmap (M.fromList . map (entityKey &&& id)) $ select $ from $ \ user -> do
             where_ ( user ^. UserId `in_` valList user_ids )
             return user
 
         retraction_map <- do
             retractions <- select $ from $ \ comment_retraction -> do
-                where_ ( comment_retraction ^. CommentRetractionComment `in_` valList (map entityKey comments) )
+                where_ ( comment_retraction ^. CommentRetractionComment `in_` valList (map entityKey (new_comments <> old_comments) ) )
                 return comment_retraction
 
             return . M.fromList . map ((commentRetractionComment &&& id) . entityVal) $ retractions
 
-        return (comments, pages, users, retraction_map)
+        return (new_comments, old_comments, pages, users, retraction_map)
 
     roles <- getRoles viewer_id project_id
-
-    let PersistInt64 to = unKey $ minimum (map entityKey comments)
-        rendered_comments =
+    let new_comments' = take 50 new_comments
+        old_comments' = take (50 - length new_comments') old_comments
+        PersistInt64 to = unKey $ minimum (map entityKey (new_comments' <> old_comments') )
+        render_comments comments =
             if null comments
              then [whamlet|no new comments|]
              else forM_ comments $ \ (Entity comment_id comment) -> do
@@ -629,13 +673,26 @@ getWikiNewCommentsR project_handle = do
                             :
                             ^{rendered_comment}
                 |]
+        rendered_new_comments = render_comments new_comments'
+        rendered_old_comments = render_comments old_comments'
+        show_older = (length new_comments + length old_comments) > 50
 
-    runDB $ update $ \ user -> do
-        set user [ UserReadComments =. val now ]
-        where_ ( user ^. UserId ==. val viewer_id )
+    runDB $ do
+        c <- updateCount $ \ viewtime -> do
+                set viewtime [ ViewTimeTime =. val now ]
+                where_ $
+                    ( viewtime ^. ViewTimeUser ==. val viewer_id ) &&.
+                    ( viewtime ^. ViewTimeProject ==. val project_id ) &&.
+                    ( viewtime ^. ViewTimeType ==. val ViewComments )
+        if (c == 0)
+            then
+                insert_ $ ViewTime viewer_id project_id ViewComments now
+            else
+                return ()
 
-    defaultLayout $(widgetFile "wiki_new_comments")
-
+    defaultLayout $ do
+        setTitle . toHtml $ projectName project <> " - New Comments | Snowdrift.coop"
+        $(widgetFile "wiki_new_comments")
 
 rethreadForm :: Form (Text, Text)
 rethreadForm = renderBootstrap3 $ (,)

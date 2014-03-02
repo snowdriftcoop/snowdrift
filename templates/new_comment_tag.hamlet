@@ -1,8 +1,6 @@
-<div .row>
-    <div .col-xs-12>
-        <form method=post>
-            ^{form}
-            <input type=submit value="add tag">
+<form method=post>
+    ^{form}
+    <input type=submit value="add tag">
 
-        $forall tag <- tags
-            ^{tagWidget tag}
+$forall tag <- tags
+    ^{tagWidget tag}

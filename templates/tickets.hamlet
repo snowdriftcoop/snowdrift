@@ -1,13 +1,10 @@
-<div .row>
-    <div .col-xs-12>
-        <form>
-            ^{formWidget}
-            <input type=submit value="update view">
-<div .row>
-    <div .col-xs-12>
-        $if null tickets
-            no tickets to display
-        $else
-            <table>
-                $forall issue <- issues
-                    ^{issueWidget issue}
+<form>
+    ^{formWidget}
+    <input type=submit value="update view">
+
+$if null tickets
+    <p> no tickets to display
+$else
+    <table>
+        $forall issue <- issues
+            ^{issueWidget issue}

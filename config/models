@@ -42,6 +42,12 @@ User
     deriving Typeable
     deriving Show
 
+ViewTime
+    user UserId
+    project ProjectId
+    type ViewType
+    time UTCTime default=now()
+    UniqueViewTimeUserProjectType user project type
 
 UserSetting
     user UserId
