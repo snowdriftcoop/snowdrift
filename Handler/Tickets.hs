@@ -34,23 +34,29 @@ ticketToFilterable :: AnnotatedTicket -> Filterable
 ticketToFilterable (AnnotatedTicket _ ticket _ comment tags) = Filterable has_tag get_named_ts search_literal
     where
         has_tag t = any (\ at -> atName at == t && atScore at > 0) tags
+
         get_named_ts "CREATED" = S.singleton $ ticketCreatedTs ticket
         get_named_ts "LAST UPDATED" = S.singleton $ ticketUpdatedTs ticket
         get_named_ts name = error $ "Unrecognized time name " ++ T.unpack name
-        search_literal str =
-            (null $ T.breakOnAll str $ ticketName ticket)
-            || (null . T.breakOnAll str $ unMarkdown $ commentText comment)
+
+        search_literal str = uncurry ((||) `on` not . null . T.breakOnAll str) (ticketName ticket, unMarkdown $ commentText comment)
+
+
+mkFromGithubIssue :: ((Text -> Bool) -> (Text -> Set UTCTime) -> (Text -> Bool) -> t) -> GH.Issue -> t
+mkFromGithubIssue c i = c has_tag get_named_ts search_literal
+  where
+    has_tag t = elem (T.unpack t) $ map GH.labelName $ GH.issueLabels i
+
+    get_named_ts "CREATED" = S.singleton $ GH.fromGithubDate $ GH.issueCreatedAt i
+    get_named_ts "LAST UPDATED" = S.singleton $ GH.fromGithubDate $ GH.issueUpdatedAt i
+    get_named_ts name = error $ "Unrecognized time name " ++ T.unpack name
+
+    search_literal str =
+            not (null $ T.breakOnAll str $ T.pack $ GH.issueTitle i)
+                    || fromMaybe False (null . T.breakOnAll str . T.pack <$> GH.issueBody i)
 
 githubIssueToFilterable :: GH.Issue -> Filterable
-githubIssueToFilterable i = Filterable has_tag get_named_ts search_literal
-    where
-        has_tag t = elem (T.unpack t) $ map GH.labelName $ GH.issueLabels i
-        get_named_ts "CREATED" = S.singleton $ GH.fromGithubDate $ GH.issueCreatedAt i
-        get_named_ts "LAST UPDATED" = S.singleton $ GH.fromGithubDate $ GH.issueUpdatedAt i
-        get_named_ts name = error $ "Unrecognized time name " ++ T.unpack name
-        search_literal str =
-            (null $ T.breakOnAll str $ T.pack $ GH.issueTitle i)
-            || fromMaybe False (null . T.breakOnAll str . T.pack <$> GH.issueBody i)
+githubIssueToFilterable = mkFromGithubIssue Filterable
 
 ticketToOrderable :: AnnotatedTicket -> Orderable
 ticketToOrderable (AnnotatedTicket _ ticket _ comment tags) = Orderable has_tag get_named_ts search_literal
@@ -59,20 +65,10 @@ ticketToOrderable (AnnotatedTicket _ ticket _ comment tags) = Orderable has_tag 
         get_named_ts "CREATED" = S.singleton $ ticketCreatedTs ticket
         get_named_ts "LAST UPDATED" = S.singleton $ ticketUpdatedTs ticket
         get_named_ts name = error $ "Unrecognized time name " ++ T.unpack name
-        search_literal str =
-            (null $ T.breakOnAll str $ ticketName ticket)
-            || (null . T.breakOnAll str $ unMarkdown $ commentText comment)
+        search_literal str = uncurry ((||) `on` not . null . T.breakOnAll str) (ticketName ticket, unMarkdown $ commentText comment)
 
 githubIssueToOrderable :: GH.Issue -> Orderable
-githubIssueToOrderable i = Orderable has_tag get_named_ts search_literal
-    where
-        has_tag t = elem (T.unpack t) $ map GH.labelName $ GH.issueLabels i
-        get_named_ts "CREATED" = S.singleton $ GH.fromGithubDate $ GH.issueCreatedAt i
-        get_named_ts "LAST UPDATED" = S.singleton $ GH.fromGithubDate $ GH.issueUpdatedAt i
-        get_named_ts name = error $ "Unrecognized time name " ++ T.unpack name
-        search_literal str =
-            (null $ T.breakOnAll str $ T.pack $ GH.issueTitle i)
-            || fromMaybe False (null . T.breakOnAll str . T.pack <$> GH.issueBody i)
+githubIssueToOrderable = mkFromGithubIssue Orderable
 
 data Issue = Issue
     { issueWidget :: Widget
@@ -127,11 +123,11 @@ getTicketsR project_handle = do
                 tags' = map ((commentTagTag &&& (commentTagUser &&& commentTagCount)) . entityVal) used_tags
                 t tags_map = AnnotatedTicket ticket_id ticket page comment <$> buildAnnotatedTags tags_map (CommentTagR project_handle (wikiPageTarget page) comment_id) tags'
 
-            return $ (S.fromList $ map (commentTagTag . entityVal) used_tags, t)
+            return (S.fromList $ map (commentTagTag . entityVal) used_tags, t)
 
             
         tags <- select $ from $ \ tag -> do
-            where_ $ tag ^. TagId `in_` valList (S.toList $ mconcat $ map fst $ used_tags'tickets)
+            where_ $ tag ^. TagId `in_` valList (S.toList $ mconcat $ map fst used_tags'tickets)
             return tag
 
         let tags_map = M.fromList . map (entityKey &&& entityVal) $ tags
