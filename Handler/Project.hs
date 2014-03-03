@@ -9,7 +9,6 @@ import Model.Project
 import Model.Shares
 import Model.Markdown.Diff
 import Model.User
-import Model.ViewType
 
 import qualified Data.List as L
 import qualified Data.Map as M
@@ -52,51 +51,15 @@ getProjectsR = do
             let project_ids = if null tagged_projects then S.empty else foldl1 S.intersection $ map (S.fromList . map (projectTagProject . entityVal)) tagged_projects
             selectList [ ProjectId <-. S.toList project_ids ] [ Asc ProjectCreatedTs, LimitTo per_page, OffsetBy page ]
 -}
-    projects <- runDB $ select $ from $ \ project -> do
-        return project
 
-    counts <- case muser of
-        Nothing -> return []
-        Just (Entity user_id user) ->
-            forM projects $ \(Entity project_id _) -> runDB $ do
-                comment_viewtimes :: [Entity ViewTime] <- select $ from $ \ viewtime -> do
-                    where_ $
-                        ( viewtime ^. ViewTimeUser ==. val user_id ) &&.
-                        ( viewtime ^. ViewTimeProject ==. val project_id ) &&.
-                        ( viewtime ^. ViewTimeType ==. val ViewComments )
-                    return viewtime
-                edit_viewtimes :: [Entity ViewTime] <- select $ from $ \ viewtime -> do
-                    where_ $
-                        ( viewtime ^. ViewTimeUser ==. val user_id ) &&.
-                        ( viewtime ^. ViewTimeProject ==. val project_id ) &&.
-                        ( viewtime ^. ViewTimeType ==. val ViewEdits )
-                    return viewtime
-                let comments_ts = case comment_viewtimes of
-                        [] -> userReadComments user
-                        (Entity _ viewtime):_ -> viewTimeTime viewtime
-                    edits_ts = case edit_viewtimes of
-                        [] -> userReadEdits user
-                        (Entity _ viewtime):_ -> viewTimeTime viewtime
-                comment_counts <- select $ from $ \(comment `LeftOuterJoin` wp) -> do
-                    on_ (wp ^. WikiPageDiscussion ==. comment ^. CommentDiscussion)
-                    where_ $
-                        ( comment ^. CommentCreatedTs >=. val comments_ts ) &&.
-                        ( wp ^. WikiPageProject ==. val project_id ) &&.
-                        ( comment ^. CommentUser !=. val user_id )
-                    return (countRows :: SqlExpr (Value Int))
-                edit_counts <- select $ from $ \(edit `LeftOuterJoin` wp) -> do
-                    on_ (wp ^. WikiPageId ==. edit ^. WikiEditPage)
-                    where_ $
-                        ( edit ^. WikiEditTs >=. val edits_ts ) &&.
-                        ( wp ^. WikiPageProject ==. val project_id ) &&.
-                        ( edit ^. WikiEditUser !=. val user_id )
-                    return (countRows :: SqlExpr (Value Int))
-                return (project_id, (comment_counts, edit_counts))
+    projects <- runDB $ select $ from return
 
-    let counts' = M.fromList counts
+    counts <- runDB $ maybe (const $ return []) getCounts muser projects
+
+    let counts' = M.fromList $ zip (map entityKey projects) counts
 
     defaultLayout $ do
-        setTitle $ "Projects | Snowdrift.coop"
+        setTitle "Projects | Snowdrift.coop"
         $(widgetFile "projects")
 
 getProjectR :: Text -> Handler Html
@@ -157,11 +120,11 @@ renderProject maybe_project_handle project show_form pledges pledge = do
                 return $ round_ $ sum_ $ transaction ^. TransactionAmount
 
 
-            return $ Just (Milray $ round $ last, Milray $ round $ year, Milray $ round $ total)
+            return $ Just (Milray $ round last, Milray $ round year, Milray $ round total)
 
-    ((_, update_shares), _) <- if show_form
-                                then handlerToWidget $ generateFormGet $ buySharesForm $ fromMaybe 0 maybe_shares
-                                else handlerToWidget $ generateFormGet $ mockBuySharesForm $ fromMaybe 0 maybe_shares
+    let form = if show_form then buySharesForm else mockBuySharesForm
+
+    ((_, update_shares), _) <- handlerToWidget $ generateFormGet $ form $ fromMaybe 0 maybe_shares
 
     $(widgetFile "project")
 
@@ -292,7 +255,7 @@ getProjectPatronsR project_handle = do
             where_ $ transaction ^. TransactionPayday `in_` valList (map (Just . entityKey) last_paydays)
             on_ $ transaction ^. TransactionDebit ==. just (user ^. UserAccount)
             groupBy $ user ^. UserId
-            return $ (user ^. UserId, count $ transaction ^. TransactionId)
+            return (user ^. UserId, count $ transaction ^. TransactionId)
 
         return (project, pledges, M.fromList $ map ((\ (Value x :: Value UserId) -> x) *** (\ (Value x :: Value Int) -> x)) user_payouts)
 
@@ -326,7 +289,7 @@ getProjectTransactionsR project_handle = do
             where_ $ p ^. ProjectAccount `in_` valList accounts
             return p
 
-        let account_map = M.union projects_by_account users_by_account
+        let account_map = projects_by_account `M.union` users_by_account
 
         payday_map <- fmap (M.fromList . map (entityKey &&& id)) $ select $ from $ \ pd -> do
             where_ $ pd ^. PaydayId `in_` valList (S.toList $ S.fromList $ mapMaybe (transactionPayday . entityVal) transactions)
@@ -360,7 +323,7 @@ getProjectTransactionsR project_handle = do
 getProjectBlogR :: Text -> Handler Html
 getProjectBlogR project_handle = do
     maybe_from <- fmap (Key . PersistInt64 . read . T.unpack) <$> lookupGetParam "from"
-    post_count <- maybe 10 id <$> fmap (read . T.unpack) <$> lookupGetParam "from"
+    post_count <- fromMaybe 10 <$> fmap (read . T.unpack) <$> lookupGetParam "from"
     Entity project_id project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
 
     let apply_offset blog = maybe id (\ from_blog rest -> blog ^. ProjectBlogId >=. val from_blog &&. rest) maybe_from
@@ -452,7 +415,7 @@ renderBlogPost project_handle blog_post = do
     now <- liftIO getCurrentTime
 
     let (Markdown top_content) = projectBlogTopContent blog_post
-        (Markdown bottom_content) = maybe (Markdown "") id $ projectBlogBottomContent blog_post
+        (Markdown bottom_content) = fromMaybe (Markdown "") $ projectBlogBottomContent blog_post
         title = projectBlogTitle blog_post
         content = renderMarkdown project_handle $ Markdown $ T.snoc top_content '\n' <> bottom_content
 

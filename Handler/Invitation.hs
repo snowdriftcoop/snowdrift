@@ -13,8 +13,7 @@ getInvitationR project_handle code = do
     Entity invite_id invite <- runDB $ getBy404 $ UniqueInvite code
     maybe_user_id <- maybeAuthId
 
-    when (maybe_user_id == Nothing)
-        setUltDestCurrent
+    unless (isJust maybe_user_id) setUltDestCurrent
 
     alreadyExpired
 

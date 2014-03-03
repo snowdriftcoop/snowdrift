@@ -54,8 +54,7 @@ postUpdateSharesR project_handle = do
                     Right _ -> return ()
                     Left (Entity pledge_id _) ->
                         if shares == 0
-                         then delete $ from $ \ pledge -> do
-                            where_ (pledge ^. PledgeId ==. val pledge_id)
+                         then delete $ from $ \ pledge -> where_ (pledge ^. PledgeId ==. val pledge_id)
                          else update $ \ pledge -> do
                             set pledge [ PledgeShares =. val shares
                                        , PledgeFundedShares =. val shares

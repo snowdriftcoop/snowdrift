@@ -2,22 +2,19 @@
 {-# LANGUAGE FlexibleContexts #-}
 
 module TestImport
-    ( module Yesod.Test
-    , module Model
-    , module Foundation
-    , module Database.Persist
-    , runDB
+    ( runDB
     , Spec
     , Example
     , needsLogin
     , login
     , liftIO
     , extractLocation
+    , module TestImport
     ) where
 
 import Yesod (Yesod, RedirectUrl)
-import Yesod.Test
-import Database.Persist hiding (get)
+import Yesod.Test as TestImport
+import Database.Persist as TestImport hiding (get)
 import Database.Persist.Sql (SqlPersistM, runSqlPersistMPool)
 import Control.Monad.IO.Class (liftIO, MonadIO)
 
@@ -28,8 +25,8 @@ import Network.Wai.Test (SResponse (..))
 import qualified Data.ByteString as B
 import Data.Text as T
 import Data.Text.Encoding (decodeUtf8)
-import Foundation
-import Model
+import Foundation as TestImport
+import Model as TestImport
 
 
 type Spec = YesodSpec App

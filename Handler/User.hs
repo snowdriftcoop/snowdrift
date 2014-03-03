@@ -73,27 +73,18 @@ getUserR user_id = do
 
     defaultLayout $ do
         setTitle . toHtml $ "User Profile - " <> userPrintName (Entity user_id user) <> " | Snowdrift.coop"
-        (renderUser' maybe_viewer_id user_id user roles)
+        renderUser maybe_viewer_id user_id user roles
 
 
-renderUser' :: Maybe UserId -> UserId -> User -> [(Value Role, Entity Project)] -> Widget
-renderUser' viewer_id user_id user roles = do
+renderUser :: Maybe UserId -> UserId -> User -> [(Value Role, Entity Project)] -> Widget
+renderUser viewer_id user_id user roles = do
     let is_owner = Just user_id == viewer_id
         user_entity = Entity user_id user
         project_handle = error "bad link - no default project on user pages" -- TODO turn this into a caught exception
         role_list = map roleLabel (universe :: [Role])
-        filterRoles r rps = filter (\(Value r', _) -> roleLabel r' == r) rps
+        filterRoles r = filter (\(Value r', _) -> roleLabel r' == r)
 
     $(widgetFile "user")
-
-renderUser :: Maybe UserId -> UserId -> User -> Widget
-renderUser viewer_id user_id user = do
-    let is_owner = Just user_id == viewer_id
-        user_entity = Entity user_id user
-        project_handle = error "bad link - no default project on user pages" -- TODO turn this into a caught exception
-
-    $(widgetFile "user_")
-            
 
 
 getOldEditUserR :: UserId -> Handler Html
@@ -104,7 +95,7 @@ getEditUserR user_id = do
     viewer_id <- requireAuthId
     when (user_id /= viewer_id) $ runDB $ do
         is_admin <- isProjectAdmin "snowdrift" viewer_id
-        when (not $ is_admin) $ lift $ permissionDenied "You can only modify your own profile!"
+        unless is_admin $ lift $ permissionDenied "You can only modify your own profile!"
 
     user <- runDB $ get404 user_id
 
@@ -123,7 +114,7 @@ postUserR user_id = do
 
     when (user_id /= viewer_id) $ runDB $ do
         is_admin <- isProjectAdmin "snowdrift" viewer_id
-        when (not $ is_admin) $ lift $ permissionDenied "You can only modify your own profile!"
+        unless is_admin $ lift $ permissionDenied "You can only modify your own profile!"
 
     ((result, _), _) <- runFormPost $ editUserForm undefined
 
@@ -139,7 +130,7 @@ postUserR user_id = do
 
                     (form, _) <- generateFormPost $ editUserForm updated_user
 
-                    defaultLayout $ renderPreview form action $ renderUser (Just viewer_id) user_id updated_user
+                    defaultLayout $ renderPreview form action $ renderUser (Just viewer_id) user_id updated_user []
 
                 Just x | x == action -> do
                     runDB $ updateUser user_id user_update
@@ -174,7 +165,7 @@ getUsersR = do
              return (user, role ^. ProjectUserRoleRole, project)
 
     let roles = map roleLabel (universe :: [Role])
-        filterRoles r rps = filter (\(r', _) -> r' == r) rps
+        filterRoles r = filter (\(r', _) -> r' == r)
         users = map (\u -> (getUserKey u, u)) users'
         userRoles = Map.fromListWith mappend $ map (\(u, Value r, p) -> (getUserKey u, [(roleLabel r, entityVal p)])) infos
         getUserKey :: Entity User -> Text

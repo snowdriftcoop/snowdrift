@@ -173,27 +173,27 @@ instance Yesod App where
 
     errorHandler (PermissionDenied _) = do
         maybe_user <- maybeAuth
-        selectRep $ do
-        provideRep $ defaultLayout $ do
-            setTitle "Permission Denied"
-            toWidget [hamlet|$newline never
-                <h1>Permission Denied
-                <p>
-                    $maybe _ <- maybe_user
-                        You do not have permission to view this page at this time. #
-                        If you think you should, let us know #
-                        $# TODO
-                        and we'll fix it for you or everyone. #
-                        Otherwise, you can always go to our #
-                        <a href="@{HomeR}">main page
-                        .
-                    $nothing
-                        You are not logged in, and this page is not publically visible. #
-                        <a href="@{AuthR LoginR}">Log in or create an account #
-                        or return to our #
-                        <a href="@{HomeR}">main page
-                        .
-            |]
+        selectRep $ 
+            provideRep $ defaultLayout $ do
+                setTitle "Permission Denied"
+                toWidget [hamlet|$newline never
+                    <h1>Permission Denied
+                    <p>
+                        $maybe _ <- maybe_user
+                            You do not have permission to view this page at this time. #
+                            If you think you should, let us know #
+                            $# TODO
+                            and we'll fix it for you or everyone. #
+                            Otherwise, you can always go to our #
+                            <a href="@{HomeR}">main page
+                            .
+                        $nothing
+                            You are not logged in, and this page is not publically visible. #
+                            <a href="@{AuthR LoginR}">Log in or create an account #
+                            or return to our #
+                            <a href="@{HomeR}">main page
+                            .
+                |]
 
     errorHandler other_error = defaultErrorHandler other_error
 
@@ -217,8 +217,7 @@ instance Yesod App where
 
     -- What messages should be logged. The following includes all messages when
     -- in development, and warnings and errors in production.
-    shouldLog _ _source level =
-        development || level == LevelInfo || level == LevelWarn || level == LevelError
+    shouldLog _ _source level = development || level `elem` [LevelInfo, LevelWarn, LevelError]
 
     isAuthorized _ _ = return Authorized -- restricted in the individual handlers
 
@@ -337,7 +336,7 @@ instance YesodAuth App where
                 --
                 -- insertSelect $ from $ \ p -> return $ TagColor <# (p ^. DefaultTagColorTag) <&> val user_id <&> (p ^. DefaultTagColorColor)
                 --
-                default_tag_colors <- select $ from $ return
+                default_tag_colors <- select $ from return
                 forM_ default_tag_colors $ \ (Entity _ (DefaultTagColor tag color)) -> insert $ TagColor tag user_id color
                 --
 

@@ -16,7 +16,7 @@ volunteerForm now project_id interests (Entity user_id user) = renderBootstrap3 
         <*> areq' (multiSelectFieldList $ (interestDescription . entityVal &&& entityKey) <$> interests) "Areas of interest (use ctrl to select multiple):" Nothing
         <*> aopt' textareaField "Anything else you'd like us to know:" Nothing 
    where
-        source = (\ a -> zip a a) $ ["Article", "Weblink", "Conference", "Search engine", "Personal recommendation"]
+        source = (\ a -> zip a a) ["Article", "Weblink", "Conference", "Search engine", "Personal recommendation"]
 
 
 getVolunteerR :: Text -> Handler Html
@@ -24,7 +24,7 @@ getVolunteerR project_handle = do
     user <- requireAuth
     now <- liftIO getCurrentTime
     Entity project_id project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
-    interests <- runDB $ select $ from $ return
+    interests <- runDB $ select $ from return
     (volunteer_form, _) <- generateFormPost $ volunteerForm now project_id interests user
     defaultLayout $ do
         setTitle . toHtml $ projectName project <> " - Volunteer | Snowdrift.coop"
@@ -36,7 +36,7 @@ postVolunteerR project_handle = do
     user <- requireAuth
     now <- liftIO getCurrentTime
     Entity project_id _ <- runDB $ getBy404 $ UniqueProjectHandle project_handle
-    interests <- runDB $ select $ from $ return
+    interests <- runDB $ select $ from return
     ((result, _), _) <- runFormPost $ volunteerForm now project_id interests user
 
     case result of

@@ -26,7 +26,7 @@ getInviteR project_handle = do
         <$> isProjectAdmin project_handle viewer_id
         <*> isProjectAdmin "snowdrift" viewer_id
 
-    when (not admin) $ permissionDenied "must be an admin to invite"
+    unless admin $ permissionDenied "must be an admin to invite"
 
     Entity project_id project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
 
@@ -79,7 +79,7 @@ postInviteR project_handle = do
         <$> isProjectAdmin project_handle user_id
         <*> isProjectAdmin "snowdrift" user_id
 
-    when (not admin) $ permissionDenied "must be an admin to invite"
+    unless admin $ permissionDenied "must be an admin to invite"
 
     now <- liftIO getCurrentTime
     invite <- liftIO randomIO

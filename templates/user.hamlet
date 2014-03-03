@@ -25,7 +25,7 @@
 <div .row>
 
     <div .col-md-6>
-        ^{project_pledges user_id}
+        ^{projectPledges user_id}
         
         <h4>Project Roles
         <table>

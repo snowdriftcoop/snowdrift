@@ -41,7 +41,7 @@ buildAnnotatedTags tag_map tagUrl tags = do
         maybe_user_id <- maybeAuthId
         case maybe_user_id of
             Nothing -> do
-                colors <- runDB $ select $ from $ return
+                colors <- runDB $ select $ from return
                 return $ map ((unKey . defaultTagColorTag &&& Color . defaultTagColorColor) . entityVal) colors
 
             Just user_id -> do
@@ -66,5 +66,5 @@ buildAnnotatedTags tag_map tagUrl tags = do
 
 annotateCommentTags :: Map TagId Tag -> Text -> Text -> CommentId -> [CommentTag] -> Handler [AnnotatedTag]
 annotateCommentTags tag_map project_handle target comment_id =
-    buildAnnotatedTags tag_map (CommentTagR project_handle target comment_id) . map ((commentTagTag &&& (commentTagUser &&& commentTagCount)))
+    buildAnnotatedTags tag_map (CommentTagR project_handle target comment_id) . map (commentTagTag &&& (commentTagUser &&& commentTagCount))
 

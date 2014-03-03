@@ -20,8 +20,8 @@ import Data.Attoparsec.Number (Number (..))
 
 import qualified Data.Vector as V
 
-share_value :: Double -> Int -> Double
-share_value avg_shares patrons = 0.0001 * logBase 2 (avg_shares * 2) * (fromIntegral patrons -  1)
+shareValue :: Double -> Int -> Double
+shareValue avg_shares patrons = 0.0001 * logBase 2 (avg_shares * 2) * (fromIntegral patrons -  1)
 
 deg2rad :: Double -> Double
 deg2rad = (pi*) . (/180)
@@ -35,12 +35,12 @@ data Direction = CW | CCW;
 
 data Pass = Foreground | Shadow;
 
-chart_colors :: [Text]
-chart_colors = [ "#4bb2c5", "#EAA228", "#c5b47f", "#579575", "#839557", "#958c12", "#953579", "#4b5de4", "#d8b83f", "#ff5800", "#0085cc", "#c747a3", "#cddf54", "#FBD178", "#26B4E3", "#bd70c7"];
+chartColors :: [Text]
+chartColors = [ "#4bb2c5", "#EAA228", "#c5b47f", "#579575", "#839557", "#958c12", "#953579", "#4b5de4", "#d8b83f", "#ff5800", "#0085cc", "#c747a3", "#cddf54", "#FBD178", "#26B4E3", "#bd70c7"];
 
 
-number_suffix :: Int -> String
-number_suffix n = (["th", "st", "nd", "rd"] ++ repeat "th") !! (n `mod` 10)
+numberSuffix :: Int -> String
+numberSuffix n = (["th", "st", "nd", "rd"] ++ repeat "th") !! (n `mod` 10)
 
 suffixed :: Int -> String
 suffixed n = show n ++ number_suffix n
@@ -210,8 +210,8 @@ mkNumArray = mkArray . map (Number . D)
 mkPlotsArray :: [[[Double]]] -> Value
 mkPlotsArray = mkArray . map (mkArray . map mkNumArray)
 
-shareValueChart :: Widget
-shareValueChart = do
+
+addChart route = do
     ident <- lift newIdent
     app <- lift getYesod
 
@@ -224,8 +224,15 @@ shareValueChart = do
         <div .chart_container>
             <div ##{ident}>
             <noscript>
-                <img .chart src="@{StaticR img_pledgechart1_png}">
+                <img .chart src="@{route}">
     |]
+
+    return ident
+
+
+shareValueChart :: Widget
+shareValueChart = do
+    ident <- addChart $ StaticR img_pledgechart1_png
 
     let max_x = 50000
         max_y = share_value 1 max_x :: Double
@@ -258,20 +265,7 @@ shareValueChart = do
 
 projectValueChart :: Widget
 projectValueChart = do
-    ident <- lift newIdent
-    app <- lift getYesod
-
-    addScriptEither $ urlJqueryJs app
-    addStylesheetEither $ urlJqueryUiCss app
-    addScript $ StaticR js_jquery_jqplot_min_js
-    addScript $ StaticR js_plugins_jqplot_logAxisRenderer_min_js
-    addStylesheet $ StaticR css_jquery_jqplot_min_css
-    toWidget [hamlet|
-        <div .chart_container>
-            <div id=#{ident}>
-            <noscript>
-                <img .chart src="@{StaticR img_pledgechart2_png}">
-    |]
+    ident <- addChart $ StaticR img_pledgechart2_png
 
     let project_value avg_shares patrons = share_value avg_shares patrons * avg_shares * fromIntegral patrons
         max_x = 50000 :: Int

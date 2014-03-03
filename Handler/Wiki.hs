@@ -10,6 +10,8 @@ import Model.Permission
 import Model.User
 import Model.ViewType
 
+import Model.WikiPage
+
 import Yesod.Markdown
 import Model.Markdown
 
@@ -21,15 +23,6 @@ import qualified Data.Map as M
 import Data.Algorithm.Diff (getDiff, Diff (..))
 
 import Text.Blaze.Html5 (ins, del, br)
-
-type PageInfo = (Entity Project, Entity WikiPage)
-
-getPageInfo :: Text -> Text -> Handler PageInfo
-getPageInfo project_handle target = runDB $ do
-    project <- getBy404 $ UniqueProjectHandle project_handle
-    page <- getBy404 $ UniqueWikiTarget (entityKey project) target
-
-    return (project, page)
 
 getWikiR :: Text -> Text -> Handler Html
 getWikiR project_handle target = do
@@ -73,7 +66,7 @@ postWikiR project_handle target = do
 
     let can_edit = isJust $ userEstablishedTs user
 
-    when (not can_edit) $ permissionDenied "you do not have permission to edit this page"
+    unless can_edit $ permissionDenied "you do not have permission to edit this page"
 
     (Entity project_id _, Entity page_id page) <- getPageInfo project_handle target
 
@@ -117,7 +110,7 @@ postWikiR project_handle target = do
                                     , ""
                                     , "[my version](/w/" <> target <> "/history/" <> toPathPiece edit_id <> ")"
                                     , ""
-                                    , "[their version](/w/" <> target <> "/history/" <> (toPathPiece $ wikiLastEditEdit last_edit) <> ")"
+                                    , "[their version](/w/" <> target <> "/history/" <> toPathPiece (wikiLastEditEdit last_edit) <> ")"
                                     , ""
                                     , "(this ticket was automatically generated)"
                                     ]
@@ -169,7 +162,7 @@ getEditWikiPermissionsR project_handle target = do
             <$> isProjectAdmin project_handle user_id
             <*> isProjectAdmin "snowdrift" user_id
 
-    when (not affiliated) $ permissionDenied "you do not have permission to edit page permissions"
+    unless affiliated $ permissionDenied "you do not have permission to edit page permissions"
 
     (wiki_form, _) <- generateFormPost $ editWikiPermissionsForm (wikiPagePermissionLevel page)
 
@@ -190,7 +183,7 @@ postEditWikiPermissionsR project_handle target = do
             <$> isProjectAdmin project_handle user_id
             <*> isProjectAdmin "snowdrift" user_id
 
-    when (not affiliated) $ permissionDenied "you do not have permission to edit page permissions"
+    unless affiliated $ permissionDenied "you do not have permission to edit page permissions"
 
     ((result, _), _) <- runFormPost $ editWikiPermissionsForm (wikiPagePermissionLevel page)
 
@@ -220,7 +213,7 @@ getEditWikiR project_handle target = do
 
     let can_edit = isJust $ userEstablishedTs user
 
-    when (not can_edit) $ permissionDenied "you do not have permission to edit this page"
+    unless can_edit $ permissionDenied "you do not have permission to edit this page"
 
     (wiki_form, _) <- generateFormPost $ editWikiForm (wikiLastEditEdit last_edit) (wikiPageContent page) Nothing
 
@@ -240,7 +233,7 @@ getNewWikiR project_handle target = do
             <$> isProjectAffiliated project_handle user_id
             <*> isProjectAdmin "snowdrift" user_id
 
-    when (not affiliated) $ permissionDenied "you do not have permission to edit this page"
+    unless affiliated $ permissionDenied "you do not have permission to edit this page"
 
     (wiki_form, _) <- generateFormPost $ newWikiForm Nothing
 
@@ -260,7 +253,7 @@ postNewWikiR project_handle target = do
             <$> isProjectAffiliated project_handle user_id
             <*> isProjectAdmin "snowdrift" user_id
 
-    when (not affiliated) $ permissionDenied "you do not have permission to edit this page"
+    unless affiliated $ permissionDenied "you do not have permission to edit this page"
 
     now <- liftIO getCurrentTime
 
@@ -387,7 +380,7 @@ getWikiEditR project_handle target edit_id = do
 
     defaultLayout $ do
     -- TODO: prettier date format? or edit id?
-        setTitle . toHtml $ projectName project <> " Wiki - " <> target <> " at " <> (T.pack $ show $ wikiEditTs edit) <> " | Snowdrift.coop"
+        setTitle . toHtml $ projectName project <> " Wiki - " <> target <> " at " <> T.pack (show $ wikiEditTs edit) <> " | Snowdrift.coop"
         $(widgetFile "wiki_edit")
 
 
@@ -405,8 +398,7 @@ getWikiNewEditsR project_handle = do
     maybe_since <- lookupGetParam "since"
     since :: UTCTime <- case maybe_since of
         Nothing -> do
-            viewtimes :: [Entity ViewTime] <- runDB $ do
-                select $ from $ \ viewtime -> do
+            viewtimes :: [Entity ViewTime] <- runDB $ select $ from $ \ viewtime -> do
                     where_ $
                         ( viewtime ^. ViewTimeUser ==. val viewer_id ) &&.
                         ( viewtime ^. ViewTimeProject ==. val project_id ) &&.
@@ -415,9 +407,9 @@ getWikiNewEditsR project_handle = do
 
             let comments_ts = case viewtimes of
                     [] -> userReadEdits viewer
-                    (Entity _ viewtime):_ -> viewTimeTime viewtime
+                    Entity _ viewtime : _ -> viewTimeTime viewtime
 
-            redirectParams (WikiNewEditsR project_handle) $ (T.pack "since", T.pack $ show comments_ts) : (reqGetParams req)
+            redirectParams (WikiNewEditsR project_handle) $ (T.pack "since", T.pack $ show comments_ts) : reqGetParams req
 
         Just since -> return (read . T.unpack $ since)
 
@@ -506,11 +498,8 @@ getWikiNewEditsR project_handle = do
                     ( viewtime ^. ViewTimeUser ==. val viewer_id ) &&.
                     ( viewtime ^. ViewTimeProject ==. val project_id ) &&.
                     ( viewtime ^. ViewTimeType ==. val ViewEdits )
-        if (c == 0)
-            then
-                insert_ $ ViewTime viewer_id project_id ViewEdits now
-            else
-                return ()
+
+        when (c == 0) $ insert_ $ ViewTime viewer_id project_id ViewEdits now
 
     defaultLayout $ do
         setTitle . toHtml $ projectName project <> " - New Wiki Edits | Snowdrift.coop"

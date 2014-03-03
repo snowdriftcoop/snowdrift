@@ -26,11 +26,15 @@ unlinesHtml :: [Html] -> Html
 unlinesHtml = sequence_ . L.intersperse Html.br
 
 prettyHtml :: (Monad m, HasGithubRepo (HandlerT site m)) => [Parser Pretty] -> Text -> HandlerT site m Html
-prettyHtml filters text = do
+prettyHtml filters text =
     case parseOnly (many $ (Left <$> choice filters) <|> (Right . T.singleton <$> anyChar)) text of
         Right result -> do
-            let pieces = L.concatMap (\(a, b) -> L.map Left a ++ if T.length b > 0 then [Right b] else []) $ fmap (fmap T.concat) $ fmap partitionEithers $ L.groupBy ((==) `on` isRight) result
+            let regroup = L.concatMap $ \(a, b) -> L.map Left a ++ [Right b | T.length b > 0]
+                splitUp = fmap (fmap T.concat . partitionEithers) . L.groupBy ((==) `on` isRight)
+                pieces = regroup . splitUp $ result
+
             fmap sequence_ $ forM pieces $ either renderPretty (return . toHtml)
+
         Left err -> error err
 
 renderPretty :: (Monad m, HasGithubRepo (HandlerT site m)) => Pretty -> HandlerT site m Html
@@ -40,7 +44,7 @@ renderPretty pretty = case pretty of
             maybe_github_repo_link <- getGithubRepo
             let github_issue = toHtml $ "Github issue " ++ show int
             return $ case maybe_github_repo_link of
-                Just github_repo_link -> (Html.a github_issue) Html.! Attr.href (fromString $ "https://github.com/" ++ T.unpack github_repo_link ++ "/issues/" ++ show int)
+                Just github_repo_link -> Html.a github_issue Html.! Attr.href (fromString $ "https://github.com/" ++ T.unpack github_repo_link ++ "/issues/" ++ show int)
                 Nothing -> github_issue
 
 

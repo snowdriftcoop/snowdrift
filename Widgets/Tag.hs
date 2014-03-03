@@ -15,7 +15,7 @@ pickForegroundColor :: Int -> Int
 pickForegroundColor bg = maximumBy (compare `on` \ a -> colorDiff a bg) [0x111111, 0xeeeeee]
   where
     colorDiff a b = sum $ map abs $ zipWith (-) (bytelist a) (bytelist b)
-    bytelist a = map (.&. 255) . map (shiftR a) $ [0, 8, 16]
+    bytelist a = map ((.&. 255) . shiftR a) [0, 8, 16]
 
 tagWidget :: AnnotatedTag -> Widget
 tagWidget t = do
@@ -50,7 +50,7 @@ tagWidget t = do
     |]
 
 newTagWidget :: Route App -> Widget
-newTagWidget route = do
+newTagWidget route =
     toWidget [hamlet|
         <a href=@{route}>
             add tag

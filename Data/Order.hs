@@ -25,7 +25,7 @@ parseOrderExpression "" = Right $ const [0]
 parseOrderExpression expr = parseOnly seqP expr
 
 c :: (b -> b -> b) -> (a -> b) -> (a -> b) -> a -> b
-c op a b = \ x -> a x `op` b x
+c op a b x = a x `op` b x
 
 stripP :: Parser a -> Parser a
 stripP p = let ws = A.takeWhile (inClass " \t") in ws *> p <* ws
@@ -35,12 +35,12 @@ seqP = (\ fs ord -> map ($ ord) fs) <$> seqP'
     where seqP' = (:) <$> expressionP <* stripP ";" <*> seqP' <|> return <$> expressionP
 
 expressionP :: Parser (Orderable -> Double)
-expressionP = stripP $ sumTermP
+expressionP = stripP sumTermP
 
 sumTermP :: Parser (Orderable -> Double)
 sumTermP = foldl (flip ($)) <$> prodTermP <*> many (stripP sumOrDiffP <*> stripP prodTermP)
     where
-        sumOrDiffP :: Parser ((Orderable -> Double) -> (Orderable -> Double) -> (Orderable -> Double))
+        sumOrDiffP :: Parser ((Orderable -> Double) -> (Orderable -> Double) -> Orderable -> Double)
         sumOrDiffP = ("+" >> return (flip (c (+)))) <|> (stripP "-" >> return (flip (c (-))))
 
 prodTermP :: Parser (Orderable -> Double)

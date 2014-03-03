@@ -89,7 +89,7 @@ postUserBalanceR user_id = do
 
     when (user_id /= viewer_id) $ runDB $ do
         is_admin <- isProjectAdmin "snowdrift" viewer_id
-        when (not $ is_admin) $ lift $ permissionDenied "You can only add money to your own account."
+        unless is_admin $ lift $ permissionDenied "You can only add money to your own account."
 
     ((result, _), _) <- runFormPost addTestCashForm
 
