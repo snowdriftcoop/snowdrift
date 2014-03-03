@@ -10,6 +10,8 @@ import Model.Permission
 import Model.User
 import Model.ViewType
 
+import Model.WikiPage
+
 import Yesod.Markdown
 import Model.Markdown
 
@@ -21,15 +23,6 @@ import qualified Data.Map as M
 import Data.Algorithm.Diff (getDiff, Diff (..))
 
 import Text.Blaze.Html5 (ins, del, br)
-
-type PageInfo = (Entity Project, Entity WikiPage)
-
-getPageInfo :: Text -> Text -> Handler PageInfo
-getPageInfo project_handle target = runDB $ do
-    project <- getBy404 $ UniqueProjectHandle project_handle
-    page <- getBy404 $ UniqueWikiTarget (entityKey project) target
-
-    return (project, page)
 
 getWikiR :: Text -> Text -> Handler Html
 getWikiR project_handle target = do

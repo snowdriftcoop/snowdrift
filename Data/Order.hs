@@ -40,7 +40,7 @@ expressionP = stripP sumTermP
 sumTermP :: Parser (Orderable -> Double)
 sumTermP = foldl (flip ($)) <$> prodTermP <*> many (stripP sumOrDiffP <*> stripP prodTermP)
     where
-        sumOrDiffP :: Parser ((Orderable -> Double) -> (Orderable -> Double) -> (Orderable -> Double))
+        sumOrDiffP :: Parser ((Orderable -> Double) -> (Orderable -> Double) -> Orderable -> Double)
         sumOrDiffP = ("+" >> return (flip (c (+)))) <|> (stripP "-" >> return (flip (c (-))))
 
 prodTermP :: Parser (Orderable -> Double)

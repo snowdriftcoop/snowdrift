@@ -54,7 +54,7 @@ getProjectsR = do
 
     projects <- runDB $ select $ from return
 
-    counts <- runDB $ maybe (const $ return []) getCounts muser $ projects
+    counts <- runDB $ maybe (const $ return []) getCounts muser projects
 
     let counts' = M.fromList $ zip (map entityKey projects) counts
 

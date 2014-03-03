@@ -73,11 +73,11 @@ getUserR user_id = do
 
     defaultLayout $ do
         setTitle . toHtml $ "User Profile - " <> userPrintName (Entity user_id user) <> " | Snowdrift.coop"
-        renderUser' maybe_viewer_id user_id user roles
+        renderUser maybe_viewer_id user_id user roles
 
 
-renderUser' :: Maybe UserId -> UserId -> User -> [(Value Role, Entity Project)] -> Widget
-renderUser' viewer_id user_id user roles = do
+renderUser :: Maybe UserId -> UserId -> User -> [(Value Role, Entity Project)] -> Widget
+renderUser viewer_id user_id user roles = do
     let is_owner = Just user_id == viewer_id
         user_entity = Entity user_id user
         project_handle = error "bad link - no default project on user pages" -- TODO turn this into a caught exception
@@ -85,15 +85,6 @@ renderUser' viewer_id user_id user roles = do
         filterRoles r = filter (\(Value r', _) -> roleLabel r' == r)
 
     $(widgetFile "user")
-
-renderUser :: Maybe UserId -> UserId -> User -> Widget
-renderUser viewer_id user_id user = do
-    let is_owner = Just user_id == viewer_id
-        user_entity = Entity user_id user
-        project_handle = error "bad link - no default project on user pages" -- TODO turn this into a caught exception
-
-    $(widgetFile "user_")
-            
 
 
 getOldEditUserR :: UserId -> Handler Html
@@ -139,7 +130,7 @@ postUserR user_id = do
 
                     (form, _) <- generateFormPost $ editUserForm updated_user
 
-                    defaultLayout $ renderPreview form action $ renderUser (Just viewer_id) user_id updated_user
+                    defaultLayout $ renderPreview form action $ renderUser (Just viewer_id) user_id updated_user []
 
                 Just x | x == action -> do
                     runDB $ updateUser user_id user_update

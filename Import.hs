@@ -97,8 +97,8 @@ footnote note = [whamlet|$newline never
 |]
 
 
-footnote_anchor :: String -> Widget
-footnote_anchor labels = 
+footnoteAnchor :: String -> Widget
+footnoteAnchor labels = 
     case words labels of
         (first_label : remaining_labels) ->
             [whamlet|$newline never
@@ -115,8 +115,8 @@ footnote_anchor labels =
 
         _ -> error "empty footnote anchor"
 
-toc_entry :: String -> String -> Widget
-toc_entry tag title =
+tocEntry :: String -> String -> Widget
+tocEntry tag title =
     [whamlet|$newline never
         <li .toc_li>
             <a .toc_entry name="toc_entry#{tag}" href="#toc_target#{tag}">
@@ -124,8 +124,8 @@ toc_entry tag title =
     |]
 
 
-toc_target :: String -> String -> Widget
-toc_target tag title =
+tocTarget :: String -> String -> Widget
+tocTarget tag title =
     [whamlet|$newline never
         <span .title>
             #{title}

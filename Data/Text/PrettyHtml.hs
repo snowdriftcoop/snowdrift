@@ -29,7 +29,7 @@ prettyHtml :: (Monad m, HasGithubRepo (HandlerT site m)) => [Parser Pretty] -> T
 prettyHtml filters text =
     case parseOnly (many $ (Left <$> choice filters) <|> (Right . T.singleton <$> anyChar)) text of
         Right result -> do
-            let regroup = L.concatMap $ \(a, b) -> L.map Left a ++ if T.length b > 0 then [Right b] else []
+            let regroup = L.concatMap $ \(a, b) -> L.map Left a ++ [Right b | T.length b > 0]
                 splitUp = fmap (fmap T.concat . partitionEithers) . L.groupBy ((==) `on` isRight)
                 pieces = regroup . splitUp $ result
 

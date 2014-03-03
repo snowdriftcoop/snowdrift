@@ -18,6 +18,7 @@ import Model.AnnotatedTag
 import Model.User
 import Model.Role
 import Model.ViewType
+import Model.WikiPage
 
 import Widgets.Markdown
 import Widgets.Preview
@@ -31,22 +32,12 @@ import Model.Markdown
 
 import Yesod.Default.Config
 
-import Control.Monad.Trans.Resource
 
 getTags :: CommentId -> Handler [Entity Tag]
 getTags comment_id = runDB $ select $ from $ \ (comment_tag `InnerJoin` tag) -> do
     on_ $ comment_tag ^. CommentTagTag ==. tag ^. TagId
     where_ $ comment_tag ^. CommentTagComment ==. val comment_id
     return tag
-
-getCommentPageId :: (MonadLogger m, MonadIO m, MonadBaseControl IO m, MonadUnsafeIO m, MonadThrow m) => CommentId -> SqlPersistT m WikiPageId
-getCommentPageId comment_id = do
-    [ Value page_id ] <- select $ from $ \ (c `InnerJoin` p) -> do
-        on_ $ c ^. CommentDiscussion ==. p ^. WikiPageDiscussion
-        where_ $ c ^. CommentId ==. val comment_id
-        return $ p ^. WikiPageId
-
-    return page_id
 
 
 checkCommentPage :: CommentId -> WikiPageId -> Handler ()
@@ -602,7 +593,7 @@ getWikiNewCommentsR project_handle = do
             where_ $ page ^. WikiPageProject ==. val project_id
             return page
 
-        let pages = M.fromList $ map (entityKey &&& entityVal) $ {- TODO filter ((userRole viewer >=) . wikiPageCanViewMeta . entityVal) -} unfiltered_pages
+        let pages = M.fromList $ map (entityKey &&& entityVal) {- TODO filter ((userRole viewer >=) . wikiPageCanViewMeta . entityVal) -} unfiltered_pages
 
 
         let apply_offset comment = maybe id (\ from_comment rest -> comment ^. CommentId <=. val from_comment &&. rest) maybe_from
@@ -761,8 +752,7 @@ postRethreadWikiCommentR project_handle target comment_id = do
                     return (Just new_parent_id, wikiPageDiscussion new_page)
 
                 Just (DiscussWikiR new_project_handle new_target) -> do
-                    new_project_maybe <- runDB $ getBy $ UniqueProjectHandle new_project_handle
-                    let new_project_id = maybe (error "could not find project") entityKey new_project_maybe
+                    Entity new_project_id _ <- getByErr "could not find project" $ UniqueProjectHandle new_project_handle
 
                     when (new_project_id /= project_id) $ requireModerator "You must be a moderator to rethread." new_project_handle user_id
 

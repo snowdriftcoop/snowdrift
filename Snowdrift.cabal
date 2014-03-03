@@ -39,6 +39,7 @@ library
                      Model.User
                      Model.ViewType
                      Model.Settings
+                     Model.WikiPage
                      Settings
                      Settings.StaticFiles
                      Settings.Development

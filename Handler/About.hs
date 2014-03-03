@@ -210,8 +210,8 @@ mkNumArray = mkArray . map (Number . D)
 mkPlotsArray :: [[[Double]]] -> Value
 mkPlotsArray = mkArray . map (mkArray . map mkNumArray)
 
-shareValueChart :: Widget
-shareValueChart = do
+
+addChart route = do
     ident <- lift newIdent
     app <- lift getYesod
 
@@ -224,8 +224,15 @@ shareValueChart = do
         <div .chart_container>
             <div ##{ident}>
             <noscript>
-                <img .chart src="@{StaticR img_pledgechart1_png}">
+                <img .chart src="@{route}">
     |]
+
+    return ident
+
+
+shareValueChart :: Widget
+shareValueChart = do
+    ident <- addChart $ StaticR img_pledgechart1_png
 
     let max_x = 50000
         max_y = share_value 1 max_x :: Double
@@ -258,20 +265,7 @@ shareValueChart = do
 
 projectValueChart :: Widget
 projectValueChart = do
-    ident <- lift newIdent
-    app <- lift getYesod
-
-    addScriptEither $ urlJqueryJs app
-    addStylesheetEither $ urlJqueryUiCss app
-    addScript $ StaticR js_jquery_jqplot_min_js
-    addScript $ StaticR js_plugins_jqplot_logAxisRenderer_min_js
-    addStylesheet $ StaticR css_jquery_jqplot_min_css
-    toWidget [hamlet|
-        <div .chart_container>
-            <div id=#{ident}>
-            <noscript>
-                <img .chart src="@{StaticR img_pledgechart2_png}">
-    |]
+    ident <- addChart $ StaticR img_pledgechart2_png
 
     let project_value avg_shares patrons = share_value avg_shares patrons * avg_shares * fromIntegral patrons
         max_x = 50000 :: Int

@@ -26,19 +26,19 @@
 
 <h4>Contents
 <ul .toc>
-    ^{toc_entry "intro" "Introduction"}
-    ^{toc_entry "floss" "What makes a work \"free\"?"}
-    ^{toc_entry "why" "Why digital works require a different economic model"}
-    ^{toc_entry "meaning" "What does the Snowdrift name mean?"}
-    ^{toc_entry "psych" "The psychological issues of cooperation, generosity, and freeloading"}
-    ^{toc_entry "how" "How does the Snowdrift.coop funding system work?"}
-    ^{toc_entry "whyfree" "Why restrict to only projects with certain approved licenses?"}
-    ^{toc_entry "coop" "Cooperation vs competition: a false dichotomy"}
-    ^{toc_entry "others" "What about fundraising for other purposes?"}
+    ^{tocEntry "intro" "Introduction"}
+    ^{tocEntry "floss" "What makes a work \"free\"?"}
+    ^{tocEntry "why" "Why digital works require a different economic model"}
+    ^{tocEntry "meaning" "What does the Snowdrift name mean?"}
+    ^{tocEntry "psych" "The psychological issues of cooperation, generosity, and freeloading"}
+    ^{tocEntry "how" "How does the Snowdrift.coop funding system work?"}
+    ^{tocEntry "whyfree" "Why restrict to only projects with certain approved licenses?"}
+    ^{tocEntry "coop" "Cooperation vs competition: a false dichotomy"}
+    ^{tocEntry "others" "What about fundraising for other purposes?"}
 
 <dl>
     <dt>
-        ^{toc_target "intro" "Introduction"}
+        ^{tocTarget "intro" "Introduction"}
     <dd>
         <p>
             With the internet, we have great opportunities to democratize access to ideas, culture, and technology.
@@ -65,7 +65,7 @@
         <p>
             So we are creating a novel fundraising system to address this dilemma.
     <dt>
-        ^{toc_target "floss" "What makes a work \"free\"?"}
+        ^{tocTarget "floss" "What makes a work \"free\"?"}
     <dd>
         <p>
             In English, the word "free" is often associated with
@@ -122,7 +122,7 @@
                 Of course, great prior achievements will encourage the most support for new or continuing projects.
 
     <dt>
-        ^{toc_target "why" "Why digital works require a different economic model"}
+        ^{tocTarget "why" "Why digital works require a different economic model"}
     <dd>
         <p>
             The Internet offers amazing opportunities for global collaboration.
@@ -227,7 +227,7 @@
             <em> development work.
 
     <dt>
-        ^{toc_target "meaning" "What does the Snowdrift name mean?"}
+        ^{tocTarget "meaning" "What does the Snowdrift name mean?"}
     <dd>
         <p>
             The <dfn>Snowdrift Dilemma</dfn> is a variation on the better-known <dfn>Prisoner's Dilemma</dfn>.
@@ -314,18 +314,18 @@
             Snowdrift.coop is set up to maxize the payoff and minimize the risk when choosing to cooperate.
 
         <p .footnote>
-            ^{footnote_anchor "1 2"}
+            ^{footnoteAnchor "1 2"}
             These hypothetical dilemmas assume that the participants are rational self-interested
             actors who wouldn't feel guilty for causing someone else to take all the blame.
             Of course, the existence of complex social emotions brings up questions about human biology.
             For more on how these dilemmas may give rise to our innate tendencies for cooperation and altruism, see
             <span class="citation"> Dawkins, Richard (1976, updated 2006) <i>The Selfish Gene</i>. New York City: Oxford University Press.
         <p .footnote>
-            ^{footnote_anchor "3"}
+            ^{footnoteAnchor "3"}
             K&uuml;mmerl, Rolf; Colliard, Caroline; Fiechter, Nicolas; Petitpierre, Blaise; Russier, Flavien; and Keller, Laurent. “Human cooperation in social dilemmas: comparing the Snowdrift game with the Prisoner’s Dilemma.” <i>Proc. R. Soc. B</i>, doi:10.1098/rspb.2007.0793.l.
 
     <dt>
-        ^{toc_target "psych" "The psychological issues of cooperation, generosity, and freeloading"}
+        ^{tocTarget "psych" "The psychological issues of cooperation, generosity, and freeloading"}
     <dd>
         <p>
             In the Snowdrift Dilemma, we want something done, so we may do it even if others are freeloading.
@@ -359,7 +359,7 @@
             the other aspects of Snowdrift.coop are also designed to maximize social considerations and sense of community.
 
         <p .footnote>
-            ^{footnote_anchor "4"}
+            ^{footnoteAnchor "4"}
             See, for example, the studies by Dan Ariely described in
             <i>Predictably Irrational
             and his other books. Video summaries and more are available at
@@ -368,7 +368,7 @@
             Also see: Gneezy, U., and A. Rustichini "A Fine is a Price," <i>Journal of Legal Studies,</i> vol. XXIX, 1, part 1, 2000, 1-18.
 
     <dt>
-        ^{toc_target "how" "How does the Snowdrift.coop funding system work?"}
+        ^{tocTarget "how" "How does the Snowdrift.coop funding system work?"}
     <dd>
         <p>
             The problem with the Snowdrift Dilemma is that nobody wants to do all the work,
@@ -536,7 +536,7 @@
             There will also be special acknowledgement of those in the community who make creative contributions to projects.
 
     <dt>
-        ^{toc_target "whyfree" "Why restrict to only projects with certain approved licenses?"}
+        ^{tocTarget "whyfree" "Why restrict to only projects with certain approved licenses?"}
     <dd>
         <p>
             By funding only Free/Libre Open Source Software and Free Cultural Works, we remove concerns about access to the funded results.
@@ -592,7 +592,7 @@
             and the right to have their names removed from any derivatives with which they wish to be disassociated.
 
         <p .footnote>
-            ^{footnote_anchor "5"}
+            ^{footnoteAnchor "5"}
             Of course, information about licenses will still be available. We will mark specially copyleft licenses.
             Copyleft offers the benefit of keeping the same access and freedoms for all derivative versions,
             but it has the downside of making it harder to integrate resources from different licenses.
@@ -600,7 +600,7 @@
             the GNU GPL for software, AGPL for online services, and Creative Commons CC-BY-SA for other works.
 
     <dt>
-        ^{toc_target "coop" "Cooperation vs competition: a false dichotomy"}
+        ^{tocTarget "coop" "Cooperation vs competition: a false dichotomy"}
     <dd>
         <p>
             Although we emphasize cooperation, we are not opposed to competition.
@@ -654,12 +654,12 @@
             as long as the end products are licensed to be open and respect freedom and liberty.
 
         <p .footnote>
-            ^{footnote_anchor "6"}
+            ^{footnoteAnchor "6"}
                 from GNU.org
                 <a href="www.gnu.org/philosophy/shouldbefree.html">Why Software Should Be Free
                 by Richard Stallman
     <dt>
-        ^{toc_target "others" "What about fundraising for other purposes?"}
+        ^{tocTarget "others" "What about fundraising for other purposes?"}
     <dd>
         <p>
             We have Snowdrift.coop with a focus on the particular issues surrounding digital works.
