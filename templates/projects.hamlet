@@ -2,6 +2,11 @@ $if null projects
     <p> no projects to display
 $else
     <table .projects>
+        <tr>
+            <th> Project
+            <th> Edits
+            <th> Discussion
+            <th> Share value
         $forall Entity project_id project <- projects
             <tr>
                 <td>
