@@ -25,7 +25,7 @@ import Data.Time
 
 import Blaze.ByteString.Builder (toByteString)
 
-retry x = x >>= \ x' -> when (not x') $ retry x
+retry x = x >>= \ x' -> unless x' $ retry x
 
 main :: IO ()
 main = do
@@ -41,7 +41,7 @@ main = do
     now <- getCurrentTime
 
     runStdoutLoggingT $ runResourceT $ do
-        projects <- runDB $ select $ from $ return
+        projects <- runDB $ select $ from return
 
         forM_ projects $ \ (Entity project_id project) -> retry $ runDB $ do
             let project_name = projectName project

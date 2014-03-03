@@ -110,7 +110,7 @@ commentForm :: Maybe CommentId -> Maybe Markdown -> Form (Maybe CommentId, Markd
 commentForm parent content = renderBootstrap3
     $ (,)
         <$> aopt' hiddenField "" (Just parent)
-        <*> areq' snowdriftMarkdownField (if not $ isJust parent then "Comment" else "Reply") content
+        <*> areq' snowdriftMarkdownField (if isJust parent then "Reply" else "Comment") content
 
 
 {- TODO: Split out the core of this and move the wiki-specific stuff into Wiki -}

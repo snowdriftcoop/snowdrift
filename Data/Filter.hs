@@ -22,13 +22,13 @@ parseFilterExpression "" = Right $ const True
 parseFilterExpression expr = parseOnly expressionP expr
 
 c :: (Bool -> Bool -> Bool) -> (a -> Bool) -> (a -> Bool) -> a -> Bool
-c op a b = \ x -> a x `op` b x
+c op a b x = a x `op` b x
 
 stripP :: Parser a -> Parser a
 stripP p = let ws = A.takeWhile (inClass " \t") in ws *> p <* ws
 
 expressionP :: Parser (Filterable -> Bool)
-expressionP = stripP $ orTermP
+expressionP = stripP orTermP
 
 orTermP :: Parser (Filterable -> Bool)
 orTermP = stripP $ foldl (c (||)) <$> andTermP <*> many (orP *> andTermP)

@@ -39,6 +39,9 @@ import           Control.Monad        as Import
 import           Data.Time.Clock      as Import (UTCTime, diffUTCTime, getCurrentTime)
 import           Data.Time.Units
 
+import Control.Exception (Exception)
+import Data.Typeable (Typeable)
+
 #if __GLASGOW_HASKELL__ >= 704
 import           Data.Monoid          as Import (Monoid (mappend, mempty, mconcat), (<>))
 #else
@@ -48,9 +51,6 @@ infixr 5 <>
 (<>) :: Monoid m => m -> m -> m
 (<>) = mappend
 #endif
-
-import Control.Exception (Exception)
-import Data.Typeable (Typeable)
 
 
 on_ :: Esqueleto query expr backend => expr (Value Bool) -> query ()

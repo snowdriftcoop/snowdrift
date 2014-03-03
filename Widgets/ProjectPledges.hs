@@ -6,8 +6,8 @@ import Import
 import Model.Project
 import Model.Currency
 
-project_pledges :: UserId -> Widget
-project_pledges user_id = do
+projectPledges :: UserId -> Widget
+projectPledges user_id = do
     project_summaries :: [ProjectSummary] <- handlerToWidget $ runDB $ do
         projects_pledges <- fmap (map (second return)) $ select $ from $ \ (project `InnerJoin` pledge) -> do
             on_ $ project ^. ProjectId ==. pledge ^. PledgeProject

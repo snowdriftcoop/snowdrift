@@ -20,8 +20,8 @@ import Data.Attoparsec.Number (Number (..))
 
 import qualified Data.Vector as V
 
-share_value :: Double -> Int -> Double
-share_value avg_shares patrons = 0.0001 * logBase 2 (avg_shares * 2) * (fromIntegral patrons -  1)
+shareValue :: Double -> Int -> Double
+shareValue avg_shares patrons = 0.0001 * logBase 2 (avg_shares * 2) * (fromIntegral patrons -  1)
 
 deg2rad :: Double -> Double
 deg2rad = (pi*) . (/180)
@@ -35,12 +35,12 @@ data Direction = CW | CCW;
 
 data Pass = Foreground | Shadow;
 
-chart_colors :: [Text]
-chart_colors = [ "#4bb2c5", "#EAA228", "#c5b47f", "#579575", "#839557", "#958c12", "#953579", "#4b5de4", "#d8b83f", "#ff5800", "#0085cc", "#c747a3", "#cddf54", "#FBD178", "#26B4E3", "#bd70c7"];
+chartColors :: [Text]
+chartColors = [ "#4bb2c5", "#EAA228", "#c5b47f", "#579575", "#839557", "#958c12", "#953579", "#4b5de4", "#d8b83f", "#ff5800", "#0085cc", "#c747a3", "#cddf54", "#FBD178", "#26B4E3", "#bd70c7"];
 
 
-number_suffix :: Int -> String
-number_suffix n = (["th", "st", "nd", "rd"] ++ repeat "th") !! (n `mod` 10)
+numberSuffix :: Int -> String
+numberSuffix n = (["th", "st", "nd", "rd"] ++ repeat "th") !! (n `mod` 10)
 
 suffixed :: Int -> String
 suffixed n = show n ++ number_suffix n

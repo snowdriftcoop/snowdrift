@@ -3,6 +3,7 @@ module Model.Project where
 import Import
 
 import Model.Currency
+import Model.ViewType
 
 import Control.Monad.Trans.Resource
 
@@ -50,6 +51,46 @@ updateShareValue project_id = do
     update $ \ project -> do
         set project  [ ProjectShareValue =. val (projectComputeShareValue pledges) ]
         where_ (project ^. ProjectId ==. val project_id)
+
+getCounts (Entity user_id user) = mapM $ \(Entity project_id _) -> do
+    comment_viewtimes :: [Entity ViewTime] <- select $ from $ \ viewtime -> do
+        where_ $
+            ( viewtime ^. ViewTimeUser ==. val user_id ) &&.
+            ( viewtime ^. ViewTimeProject ==. val project_id ) &&.
+            ( viewtime ^. ViewTimeType ==. val ViewComments )
+        return viewtime
+
+    edit_viewtimes :: [Entity ViewTime] <- select $ from $ \ viewtime -> do
+        where_ $
+            ( viewtime ^. ViewTimeUser ==. val user_id ) &&.
+            ( viewtime ^. ViewTimeProject ==. val project_id ) &&.
+            ( viewtime ^. ViewTimeType ==. val ViewEdits )
+        return viewtime
+
+    let comments_ts = case comment_viewtimes of
+            [] -> userReadComments user
+            Entity _ viewtime : _ -> viewTimeTime viewtime
+        edits_ts = case edit_viewtimes of
+            [] -> userReadEdits user
+            Entity _ viewtime : _ -> viewTimeTime viewtime
+
+    comments <- select $ from $ \(comment `LeftOuterJoin` wp) -> do
+        on_ $ wp ^. WikiPageDiscussion ==. comment ^. CommentDiscussion
+        where_ $
+            ( comment ^. CommentCreatedTs >=. val comments_ts ) &&.
+            ( wp ^. WikiPageProject ==. val project_id ) &&.
+            ( comment ^. CommentUser !=. val user_id )
+        return (countRows :: SqlExpr (Value Int))
+
+    edits <- select $ from $ \(edit `LeftOuterJoin` wp) -> do
+        on_ (wp ^. WikiPageId ==. edit ^. WikiEditPage)
+        where_ $
+            ( edit ^. WikiEditTs >=. val edits_ts ) &&.
+            ( wp ^. WikiPageProject ==. val project_id ) &&.
+            ( edit ^. WikiEditUser !=. val user_id )
+        return (countRows :: SqlExpr (Value Int))
+
+    return (comments, edits)
 
 {-
  - TODO

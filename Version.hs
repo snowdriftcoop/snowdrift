@@ -24,5 +24,5 @@ getVersion = withSystemTempFile "version" $ \ filename handle -> do
 mkVersion :: Q Exp
 mkVersion = do
     (base, diff) <- runIO  getVersion
-    return $ TupE $ map (LitE . StringL) $ [ base, diff ]
+    return $ TupE $ map (LitE . StringL) [ base, diff ]
 
