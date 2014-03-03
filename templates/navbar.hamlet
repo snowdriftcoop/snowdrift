@@ -8,11 +8,12 @@
         <ul .nav .navbar-nav .navbar-left>
             <li>
                 <a href=@{ProjectsR}> Browse Projects&nbsp;
+                    $maybe (Entity user_id user) <- maybe_user
                         <span .badge>
                             #{comments + edits}
         <ul .nav .navbar-nav .navbar-right>
-            <li>
-                $maybe Entity user_id _ <- maybe_user
+            $maybe (Entity user_id user) <- maybe_user
+                <li>
                     $maybe (balance, pledged) <- money_info
                         <p .navbar-text .text-center>
                             Pledges / Funds 
@@ -22,7 +23,6 @@
                             /
                             <a .navbar-link title="Current balance" href="@{UserBalanceR user_id}">
                                 #{show balance}
-            $maybe (Entity user_id user) <- maybe_user
                 <li>
                     <a href=@{MessagesR}>
                         $if not (null messages)
@@ -46,10 +46,11 @@
                     <img .logo src=@{StaticR img_s_png} alt="Snowdrift.coop">
             <li>
                 <a href=@{ProjectsR}> Projects&nbsp;
+                    $maybe Entity user_id _ <- maybe_user
                         <span .badge>
                             #{comments + edits}
-            <li>
-                $maybe Entity user_id _ <- maybe_user
+            $maybe Entity user_id _ <- maybe_user
+                <li>
                     $maybe (balance, pledged) <- money_info
                         <p .navbar-text .text-center>
                             Pledges / Funds 
@@ -85,20 +86,3 @@
         $#     <br>
         $# $else
         $#     ^{sb_link ApplicationsR "View Applications"}
-
-    $#    $if not (null comments)
-    $#        <strong>
-    $#            <a href="@{WikiNewCommentsR}">
-    $#                _{MsgNewComments (length comments)}
-    $#        <br>
-    $#    $else
-    $#        ^{sb_link WikiNewCommentsR "View Recent Comments"}
-    $#
-    $#    $if not (null edits)
-    $#        <strong>
-    $#            <a href="@{WikiNewEditsR}">
-    $#                _{MsgNewWikiEdits (length edits)}
-    $#        <br>
-    $#    $else
-    $#        ^{sb_link WikiNewEditsR "View Recent Wiki Edits"}
-
