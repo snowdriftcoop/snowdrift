@@ -185,11 +185,11 @@ span.title
     max-height : 30em
 
 .headshot
-    padding-top : 0.5em
+    margin-top : 0.5em
     width : 8em
 
 .headshot_large
-    padding-top : 0.5em
+    margin-top : 0.5em
     width : 12em
 
 .bio_name
