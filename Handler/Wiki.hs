@@ -293,7 +293,7 @@ getOldWikiHistoryR project_handle target = redirect $ WikiHistoryR project_handl
 
 getWikiHistoryR :: Text -> Text -> Handler Html
 getWikiHistoryR project_handle target = do
-    _ <- requireAuthId
+    --_ <- requireAuthId
     (Entity project_id project, Entity page_id _) <- getPageInfo project_handle target
 
     (edits, users) <- runDB $ do
@@ -323,7 +323,7 @@ getOldWikiDiffProxyR project_handle target = redirect $ WikiDiffProxyR project_h
 -- e.g. /w/diff?from=a&to=b to /w/diff/a/b
 getWikiDiffProxyR :: Text -> Text -> Handler Html
 getWikiDiffProxyR project_handle target = do
-    _ <- requireAuthId
+--    _ <- requireAuthId
 
     (start_edit_id_t, end_edit_id_t) <- runInputGet $ (,)
                                         <$> ireq textField "start"
@@ -342,7 +342,7 @@ getOldWikiDiffR project_handle target start_edit_id end_edit_id = redirect $ Wik
 
 getWikiDiffR :: Text -> Text -> WikiEditId -> WikiEditId -> Handler Html
 getWikiDiffR project_handle target start_edit_id end_edit_id = do
-    _ <- requireAuthId
+--    _ <- requireAuthId
 
     (Entity project_id project, Entity page_id _) <- getPageInfo project_handle target
 
@@ -368,7 +368,7 @@ getOldWikiEditR project_handle target edit_id = redirect $ WikiEditR project_han
 
 getWikiEditR :: Text -> Text -> WikiEditId -> Handler Html
 getWikiEditR project_handle target edit_id = do
-    _ <- requireAuthId
+--    _ <- requireAuthId
 
     (Entity project_id project, Entity page_id _) <- getPageInfo project_handle target
     edit <- runDB $ do
@@ -389,29 +389,32 @@ getOldWikiNewEditsR project_handle = redirect $ WikiNewEditsR project_handle
 
 getWikiNewEditsR :: Text -> Handler Html
 getWikiNewEditsR project_handle = do
-    Entity viewer_id viewer <- requireAuth
+    --Entity viewer_id viewer <- requireAuth
+    mauth <- maybeAuth
     Entity project_id project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
 
     maybe_from <- fmap (Key . PersistInt64 . read . T.unpack) <$> lookupGetParam "from"
 
     req <- getRequest
     maybe_since <- lookupGetParam "since"
-    since :: UTCTime <- case maybe_since of
-        Nothing -> do
-            viewtimes :: [Entity ViewTime] <- runDB $ select $ from $ \ viewtime -> do
-                    where_ $
-                        ( viewtime ^. ViewTimeUser ==. val viewer_id ) &&.
-                        ( viewtime ^. ViewTimeProject ==. val project_id ) &&.
-                        ( viewtime ^. ViewTimeType ==. val ViewEdits )
-                    return viewtime
+    since :: UTCTime <- case mauth of
+        Nothing -> liftIO getCurrentTime
+        Just (Entity viewer_id viewer) -> case maybe_since of
+            Nothing -> do
+                viewtimes :: [Entity ViewTime] <- runDB $ select $ from $ \ viewtime -> do
+                        where_ $
+                            ( viewtime ^. ViewTimeUser ==. val viewer_id ) &&.
+                            ( viewtime ^. ViewTimeProject ==. val project_id ) &&.
+                            ( viewtime ^. ViewTimeType ==. val ViewEdits )
+                        return viewtime
 
-            let comments_ts = case viewtimes of
-                    [] -> userReadEdits viewer
-                    Entity _ viewtime : _ -> viewTimeTime viewtime
+                let comments_ts = case viewtimes of
+                        [] -> userReadEdits viewer
+                        Entity _ viewtime : _ -> viewTimeTime viewtime
 
-            redirectParams (WikiNewEditsR project_handle) $ (T.pack "since", T.pack $ show comments_ts) : reqGetParams req
+                redirectParams (WikiNewEditsR project_handle) $ (T.pack "since", T.pack $ show comments_ts) : reqGetParams req
 
-        Just since -> return (read . T.unpack $ since)
+            Just since -> return (read . T.unpack $ since)
 
     now <- liftIO getCurrentTime
 
@@ -491,15 +494,17 @@ getWikiNewEditsR project_handle = do
                                 #{comment}
                 |]
 
-    runDB $ do
-        c <- updateCount $ \ viewtime -> do
-                set viewtime [ ViewTimeTime =. val now ]
-                where_ $
-                    ( viewtime ^. ViewTimeUser ==. val viewer_id ) &&.
-                    ( viewtime ^. ViewTimeProject ==. val project_id ) &&.
-                    ( viewtime ^. ViewTimeType ==. val ViewEdits )
+    case mauth of
+        Nothing -> return ()
+        Just (Entity viewer_id _) -> runDB $ do
+            c <- updateCount $ \ viewtime -> do
+                    set viewtime [ ViewTimeTime =. val now ]
+                    where_ $
+                        ( viewtime ^. ViewTimeUser ==. val viewer_id ) &&.
+                        ( viewtime ^. ViewTimeProject ==. val project_id ) &&.
+                        ( viewtime ^. ViewTimeType ==. val ViewEdits )
 
-        when (c == 0) $ insert_ $ ViewTime viewer_id project_id ViewEdits now
+            when (c == 0) $ insert_ $ ViewTime viewer_id project_id ViewEdits now
 
     defaultLayout $ do
         setTitle . toHtml $ projectName project <> " - New Wiki Edits | Snowdrift.coop"

@@ -91,7 +91,7 @@ viewForm = renderBootstrap3 $ (,)
 
 getTicketsR :: Text -> Handler Html
 getTicketsR project_handle = do
-    _ <- requireAuthId
+    --_ <- requireAuthId
 
 
     Entity project_id project <- runDB $ getBy404 $ UniqueProjectHandle project_handle

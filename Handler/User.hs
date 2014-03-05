@@ -54,7 +54,7 @@ getUserR :: UserId -> Handler Html
 getUserR user_id = do
     maybe_viewer_id <- maybeAuthId
 
-    user <- runDB $ case maybe_viewer_id of
+    {- user <- runDB $ case maybe_viewer_id of
         Nothing -> do
             on_committee <- fmap isJust $ getBy $ UniqueCommitteeMember user_id
             if on_committee
@@ -62,7 +62,9 @@ getUserR user_id = do
              else permissionDenied "You must be logged in to view this user"
 
         Just _ -> get404 user_id
+    -}
 
+    user <- runDB $ get404 user_id
     roles <- runDB $
              select $
              from $ \(role `InnerJoin` project) -> do
