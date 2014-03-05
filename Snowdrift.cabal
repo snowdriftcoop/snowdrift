@@ -235,3 +235,7 @@ test-suite test
                  , wai-test
                  , unix
                  , mtl
+                 , containers
+                 , html-conduit
+                 , xml-conduit
+                 , esqueleto                     >= 1.3
