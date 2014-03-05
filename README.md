@@ -5,7 +5,7 @@ Infrastructure for [Snowdrift.coop](https://snowdrift.coop).
 
 Code is mirrored at [GitHub](https://github.com/dlthomas/snowdrift) (which is popular but proprietary) and [Gitorious](https://gitorious.org/snowdrift/snowdrift) (which is FLO, licensed AGPL, but less popular).
 
-See the main [Git documentation](http://git-scm.com/documentation) if you are new to Git and need to learn the basics. You only need rudimentary understanding to start contributing to our code.
+See the main [Git documentation](http://git-scm.com/documentation) if you are new to Git and need to learn the basics. You only need rudimentary understanding to start contributing to our code. It will help to understand branching so that you can segregate work on different features.
 
 
 Work to do / how to help
