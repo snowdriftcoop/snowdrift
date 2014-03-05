@@ -7,12 +7,17 @@
                 <img .hidden-lg .logo src=@{StaticR img_s_png} alt="Snowdrift.coop">
         <ul .nav .navbar-nav .navbar-left>
             <li>
-                <a href=@{ProjectsR}> Browse Projects&nbsp;
-                    $maybe (Entity user_id user) <- maybe_user
-                        <span .badge>
-                            #{comments + edits}
+                <a href=@{ProjectsR}> Browse Projects
+            $maybe Entity user_id _ <- maybe_user
+                <li>
+                    <p .navbar-text .text-center>
+                        <a href=@{ProjectsR}>
+                            new activity
+                            <br>
+                            <span .badge>
+                                #{comments + edits}
         <ul .nav .navbar-nav .navbar-right>
-            $maybe (Entity user_id user) <- maybe_user
+            $maybe Entity user_id user <- maybe_user
                 <li>
                     $maybe (balance, pledged) <- money_info
                         <p .navbar-text .text-center>
@@ -45,11 +50,15 @@
                 <a #head href="@{HomeR}" style="padding : 0">
                     <img .logo src=@{StaticR img_s_png} alt="Snowdrift.coop">
             <li>
-                <a href=@{ProjectsR}> Projects&nbsp;
-                    $maybe Entity user_id _ <- maybe_user
-                        <span .badge>
-                            #{comments + edits}
+                <a href=@{ProjectsR}> Projects
             $maybe Entity user_id _ <- maybe_user
+                <li>
+                    <p .navbar-text .text-center>
+                        <a href=@{ProjectsR}>
+                            new activity
+                            <br>
+                            <span .badge>
+                                #{comments + edits}
                 <li>
                     $maybe (balance, pledged) <- money_info
                         <p .navbar-text .text-center>
@@ -61,7 +70,7 @@
                             <a .navbar-link title="Current balance" href="@{UserBalanceR user_id}">
                                 #{show balance}
         <ul .nav .nav-pills .navbar-right>
-            $maybe (Entity user_id user) <- maybe_user
+            $maybe Entity user_id user <- maybe_user
                 <li>
                     <a href="@{MessagesR}">
                         $if not (null messages)
