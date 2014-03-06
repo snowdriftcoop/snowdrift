@@ -13,7 +13,7 @@
         <p>
             <strong>The Snowdrift.coop matching patronage system
             is a cooperative way to provide sustainable, long-term funding
-            to creative projects that reject proprietary restrictions.
+            to creative projects that respect our freedoms and celebrate open participation.
     <div .col-md-6>
         <div .row .text-center>
             <div .col-sm-6>
@@ -28,13 +28,10 @@
                     <a href="@{WikiR "snowdrift" "press"}"> Info for press
         <p>
             <strong>Join us!
-            <br>
-            We are not yet operational, and we can use
-            <em> your
-            help in getting there.
-            We have
-            <a href="@{WikiR "snowdrift" "how-to-help"}"> volunteer opportunities
-            for everyone, regardless of background.
-            You can also
-            <a href=@{WikiR "snowdrift" "fund-drive"}> donate funds
-            specifically for our development right now.
+            Our core
+            <a href="@{WhoR "snowdrift"}"> team
+            is supported by a growing community of volunteers who are passionate about building a fairer economy for a better world.
+            There are many ways to <a href="@{WikiR "snowdrift" "how-to-help"}">get involved</a>,
+            and you can also
+            <a href=@{WikiR "snowdrift" "fund-drive"}> donate
+            to fund our current development work.

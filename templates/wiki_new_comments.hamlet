@@ -1,14 +1,18 @@
-$if null new_comments
-    <h3>
-        no new comments
+$if isJust mauth
+    $if null new_comments
+        <h3>
+            no new comments
+    $else
+        <h3>
+            new comments
+        ^{rendered_new_comments}
+    $if not (null old_comments)
+        <hr>
+        <h3>
+            old comments
+        ^{rendered_old_comments}
 $else
-    <h3>
-        new comments
     ^{rendered_new_comments}
-$if not (null old_comments)
-    <hr>
-    <h3>
-        old comments
     ^{rendered_old_comments}
 $if show_older
     <a href="@{WikiNewCommentsR project_handle}?from=#{show (to - 1)}&since=#{show since}">

@@ -1,15 +1,20 @@
-$if null new_edits'
-    no new edits
+$if isJust mauth
+    $if null new_edits'
+        no new edits
+    $else
+        new edits
+        <table>
+            $forall edit <- new_edits'
+                ^{renderEdit edit}
+    $if not (null old_edits')
+        <hr>
+        old edits
+        <table>
+            $forall edit <- old_edits'
+                ^{renderEdit edit}
 $else
-    new edits
     <table>
-        $forall edit <- new_edits'
-            ^{renderEdit edit}
-$if not (null old_edits')
-    <hr>
-    old edits
-    <table>
-        $forall edit <- old_edits'
+        $forall edit <- new_edits' <> old_edits'
             ^{renderEdit edit}
 $if show_older 
     <a href="@{WikiNewEditsR project_handle}?from=#{show (to - 1)}">
