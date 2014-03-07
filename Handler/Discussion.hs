@@ -681,7 +681,7 @@ getWikiNewCommentsR project_handle = do
         PersistInt64 to = unKey $ minimum (map entityKey (new_comments' <> old_comments') )
         render_comments comments =
             if null comments
-             then [whamlet|no new comments|]
+             then [whamlet||]
              else forM_ comments $ \ (Entity comment_id comment) -> do
                 earlier_retractions <- handlerToWidget $ runDB $ do
                     ancestors <- select $ from $ \ comment_ancestor -> do
