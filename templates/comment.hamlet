@@ -3,5 +3,7 @@
         <a href="@{DiscussWikiR project_handle target}"> back to full discussion
     <div .col-xs-6>
         <a href="@{WikiR project_handle target}"> back to wiki page
+
 <hr .wikitop>
+
 ^{comment}

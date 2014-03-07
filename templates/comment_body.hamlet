@@ -68,7 +68,7 @@ $# used by renderComment function
 
     $maybe comment_form <- mcomment_form
         <div .comment :even_depth:.odd_depth :odd_depth:.even_depth>
-            <form action="@{DiscussWikiR project_handle target}" method="POST">
+            <form action="@{action}" method="POST">
                 ^{comment_form}
                 <input type="submit" name="mode" value="preview">
 

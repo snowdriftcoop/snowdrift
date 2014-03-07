@@ -16,7 +16,7 @@ import qualified Data.Text as T
 
 processCommentTags :: ([AnnotatedTag] -> Handler Html) -> Text -> Text -> CommentId -> Handler Html
 processCommentTags go project_handle target comment_id = do
-    (Entity project_id _, Entity page_id _) <- getPageInfo project_handle target
+    (_, Entity page_id _) <- getPageInfo project_handle target
 
     comment_page_id <- runDB $ getCommentPageId comment_id
 
@@ -35,7 +35,7 @@ processCommentTags go project_handle target comment_id = do
 
 processCommentTag :: (AnnotatedTag -> Handler Html) -> Text -> Text -> CommentId -> TagId -> Handler Html
 processCommentTag go project_handle target comment_id tag_id = do
-    (Entity project_id _, Entity page_id _) <- getPageInfo project_handle target
+    (_, Entity page_id _) <- getPageInfo project_handle target
 
     comment_page <- runDB $ getCommentPageId comment_id
 
@@ -84,7 +84,7 @@ postCommentTagR :: Text -> Text -> CommentId -> TagId -> Handler Html
 postCommentTagR project_handle target comment_id tag_id = do
     user_id <- requireAuthId
 
-    (Entity project_id _, Entity page_id _) <- getPageInfo project_handle target
+    (_, Entity page_id _) <- getPageInfo project_handle target
 
     comment_page_id <- runDB $ getCommentPageId comment_id
 
@@ -159,7 +159,7 @@ postNewCommentTagR :: Text -> Text -> CommentId -> Handler Html
 postNewCommentTagR project_handle target comment_id = do
     user_id <- requireAuthId
 
-    (Entity project_id _, Entity page_id _) <- getPageInfo project_handle target
+    (_, Entity page_id _) <- getPageInfo project_handle target
 
     comment_page_id <- runDB $ getCommentPageId comment_id
 

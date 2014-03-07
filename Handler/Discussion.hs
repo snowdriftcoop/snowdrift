@@ -25,8 +25,6 @@ import Widgets.Preview
 import Widgets.Tag
 import Widgets.Time
 
-import Handler.Wiki
-
 import Yesod.Markdown
 import Model.Markdown
 
@@ -92,17 +90,18 @@ renderComment mviewer_id viewer_roles project_handle target users max_depth dept
 
         annotateCommentTags tag_map project_handle target comment_id $ map entityVal comment_tags
 
+    Just action <- getCurrentRoute
+
     $(widgetFile "comment_body")
 
 
 disabledCommentForm :: Form Markdown
 disabledCommentForm = renderBootstrap3 $ areq snowdriftMarkdownField ("Reply" { fsAttrs = [("disabled",""), ("class","form-control")] }) Nothing
 
-commentForm :: Maybe CommentId -> Maybe Markdown -> Form (Maybe CommentId, Markdown)
-commentForm parent content = renderBootstrap3
-    $ (,)
-        <$> aopt' hiddenField "" (Just parent)
-        <*> areq' snowdriftMarkdownField (if isJust parent then "Reply" else "Comment") content
+commentForm :: Maybe CommentId -> Maybe Markdown -> Form Markdown
+commentForm parent content =
+    let comment_label = if isJust parent then "Reply" else "Comment"
+     in renderBootstrap3 $ areq' snowdriftMarkdownField comment_label content
 
 
 {- TODO: Split out the core of this and move the wiki-specific stuff into Wiki -}
@@ -365,6 +364,18 @@ getReplyCommentR :: Text -> Text -> CommentId -> Handler Html
 getReplyCommentR =
     getDiscussCommentR' True
 
+postReplyCommentR :: Text -> Text -> CommentId -> Handler Html
+postReplyCommentR project_handle target comment_id = do
+    (project_entity, Entity _ page) <- getPageInfo project_handle target
+
+    ((result, _), _) <- runFormPost $ commentForm (Just comment_id) Nothing
+
+    case result of
+        FormSuccess text -> processWikiComment (Just comment_id) text project_entity page
+        FormMissing -> error "Form missing."
+        FormFailure msgs -> error $ "Error submitting form: " ++ T.unpack (T.intercalate "\n" msgs)
+
+
 getDiscussCommentR' :: Bool -> Text -> Text -> CommentId -> Handler Html
 getDiscussCommentR' show_reply project_handle target comment_id = do
     --Entity viewer_id _ <- requireAuth
@@ -441,106 +452,108 @@ renderDiscussComment viewer_id roles project_handle target show_reply comment_fo
     $(widgetFile "comment")
 
 
-postOldDiscussWikiR :: Text -> Text -> Handler Html
-postOldDiscussWikiR = postDiscussWikiR
-
-postDiscussWikiR :: Text -> Text -> Handler Html
-postDiscussWikiR project_handle target = do
+processWikiComment :: Maybe CommentId -> Markdown -> Entity Project -> WikiPage -> Handler Html
+processWikiComment maybe_parent_id text (Entity project_id project) page = do
     Entity user_id user <- requireAuth
-
-    (Entity project_id _, Entity _ page) <- getPageInfo project_handle target
 
     let established = isJust $ userEstablishedTs user
 
     now <- liftIO getCurrentTime
 
+    depth <- case maybe_parent_id of
+        Just parent_id -> do
+            Just parent <- runDB $ get parent_id
+            return $ (+1) $ commentDepth parent
+        _ -> return 0
+
+    mode <- lookupPostParam "mode"
+
+    let action :: Text = "post"
+
+    case mode of
+        Just "preview" -> do
+            earlier_retractions <- runDB $
+                case maybe_parent_id of
+                    Just parent_id -> do
+                        ancestors <- fmap ((parent_id :) . map (commentAncestorAncestor . entityVal)) $ select $ from $ \ ancestor -> do
+                            where_ ( ancestor ^. CommentAncestorComment ==. val parent_id )
+                            return ancestor
+
+                        fmap (map entityVal) $ select $ from $ \ retraction -> do
+                            where_ ( retraction ^. CommentRetractionComment `in_` valList ancestors )
+                            return retraction
+
+                    Nothing -> return []
+
+            tags <- runDB $ select $ from return
+
+            let tag_map = M.fromList $ entityPairs tags
+
+            (form, _) <- generateFormPost $ commentForm maybe_parent_id (Just text)
+
+            roles <- getRoles user_id project_id
+
+            let comment = Entity (Key $ PersistInt64 0) $ Comment now Nothing Nothing (wikiPageDiscussion page) maybe_parent_id user_id text depth
+                user_map = M.singleton user_id $ Entity user_id user
+                rendered_comment = renderDiscussComment (Just user_id) roles (projectHandle project) (wikiPageTarget page) False (return ()) comment [] user_map earlier_retractions M.empty False tag_map
+
+            defaultLayout $ renderPreview form action rendered_comment
+
+
+        Just x | x == action -> do
+            runDB $ do
+                comment_id <- insert $ Comment now
+                    (if established then Just now else Nothing)
+                    (if established then Just user_id else Nothing)
+                    (wikiPageDiscussion page)
+                    maybe_parent_id user_id text depth
+
+                let content = T.lines $ (\ (Markdown str) -> str) text
+                    tickets = map T.strip $ mapMaybe (T.stripPrefix "ticket:") content
+                    tags = map T.strip $ mconcat $ map (T.splitOn ",") $ mapMaybe (T.stripPrefix "tags:") content
+
+                forM_ tickets $ \ ticket -> insert_ $ Ticket now now ticket comment_id
+                forM_ tags $ \ tag -> do
+                    tag_id <- fmap (either entityKey id) $ insertBy $ Tag tag
+                    insert_ $ CommentTag comment_id tag_id user_id 1
+
+                let getParentAncestors parent_id = do
+                        comment_ancestor_entities <- select $ from $ \ comment_ancestor -> do
+                            where_ ( comment_ancestor ^. CommentAncestorComment ==. val parent_id )
+                            return comment_ancestor
+
+                        let ancestors = map (commentAncestorAncestor . entityVal) comment_ancestor_entities
+                        return $ parent_id : ancestors
+
+                ancestors <- maybe (return []) getParentAncestors maybe_parent_id
+
+                forM_ ancestors $ \ ancestor_id -> insert_ $ CommentAncestor comment_id ancestor_id
+
+                let selectAncestors = subList_select $ from $ \ ancestor -> do
+                    where_ $ ancestor ^. CommentAncestorComment ==. val comment_id
+                    return $ ancestor ^. CommentAncestorAncestor
+
+                update $ \ ticket -> do
+                    set ticket [ TicketUpdatedTs =. val now ]
+                    where_ $ ticket ^. TicketComment `in_` selectAncestors
+
+
+            addAlert "success" $ if established then "comment posted" else "comment submitted for moderation"
+            redirect $ maybe (DiscussWikiR (projectHandle project) (wikiPageTarget page)) (DiscussCommentR (projectHandle project) (wikiPageTarget page)) maybe_parent_id
+
+        _ -> error "unrecognized mode"
+
+postOldDiscussWikiR :: Text -> Text -> Handler Html
+postOldDiscussWikiR = postDiscussWikiR
+
+postDiscussWikiR :: Text -> Text -> Handler Html
+postDiscussWikiR project_handle target = do
+    (project_entity, Entity _ page) <- getPageInfo project_handle target
+
     ((result, _), _) <- runFormPost $ commentForm Nothing Nothing
 
     case result of
-        FormSuccess (maybe_parent_id, text) -> do
-            depth <- case maybe_parent_id of
-                Just parent_id -> do
-                    Just parent <- runDB $ get parent_id
-                    return $ (+1) $ commentDepth parent
-                _ -> return 0
-
-            mode <- lookupPostParam "mode"
-
-            let action :: Text = "post"
-
-            case mode of
-                Just "preview" -> do
-                    earlier_retractions <- runDB $
-                        case maybe_parent_id of
-                            Just parent_id -> do
-                                ancestors <- fmap ((parent_id :) . map (commentAncestorAncestor . entityVal)) $ select $ from $ \ ancestor -> do
-                                    where_ ( ancestor ^. CommentAncestorComment ==. val parent_id )
-                                    return ancestor
-
-                                fmap (map entityVal) $ select $ from $ \ retraction -> do
-                                    where_ ( retraction ^. CommentRetractionComment `in_` valList ancestors )
-                                    return retraction
-
-                            Nothing -> return []
-
-                    tags <- runDB $ select $ from return
-
-                    let tag_map = M.fromList $ entityPairs tags
-
-                    (form, _) <- generateFormPost $ commentForm maybe_parent_id (Just text)
-
-                    roles <- getRoles user_id project_id
-
-                    let comment = Entity (Key $ PersistInt64 0) $ Comment now Nothing Nothing (wikiPageDiscussion page) maybe_parent_id user_id text depth
-                        user_map = M.singleton user_id $ Entity user_id user
-                        rendered_comment = renderDiscussComment (Just user_id) roles project_handle target False (return ()) comment [] user_map earlier_retractions M.empty False tag_map
-
-                    defaultLayout $ renderPreview form action rendered_comment
-
-
-                Just x | x == action -> do
-                    runDB $ do
-                        comment_id <- insert $ Comment now
-                            (if established then Just now else Nothing)
-                            (if established then Just user_id else Nothing)
-                            (wikiPageDiscussion page)
-                            maybe_parent_id user_id text depth
-
-                        let content = T.lines $ (\ (Markdown str) -> str) text
-                            tickets = map T.strip $ mapMaybe (T.stripPrefix "ticket:") content
-                            tags = map T.strip $ mconcat $ map (T.splitOn ",") $ mapMaybe (T.stripPrefix "tags:") content
-
-                        forM_ tickets $ \ ticket -> insert_ $ Ticket now now ticket comment_id
-                        forM_ tags $ \ tag -> do
-                            tag_id <- fmap (either entityKey id) $ insertBy $ Tag tag
-                            insert_ $ CommentTag comment_id tag_id user_id 1
-
-                        let getParentAncestors parent_id = do
-                                comment_ancestor_entities <- select $ from $ \ comment_ancestor -> do
-                                    where_ ( comment_ancestor ^. CommentAncestorComment ==. val parent_id )
-                                    return comment_ancestor
-
-                                let ancestors = map (commentAncestorAncestor . entityVal) comment_ancestor_entities
-                                return $ parent_id : ancestors
-
-                        ancestors <- maybe (return []) getParentAncestors maybe_parent_id
-
-                        forM_ ancestors $ \ ancestor_id -> insert_ $ CommentAncestor comment_id ancestor_id
-
-                        let selectAncestors = subList_select $ from $ \ ancestor -> do
-                            where_ $ ancestor ^. CommentAncestorComment ==. val comment_id
-                            return $ ancestor ^. CommentAncestorAncestor
-
-                        update $ \ ticket -> do
-                            set ticket [ TicketUpdatedTs =. val now ]
-                            where_ $ ticket ^. TicketComment `in_` selectAncestors
-
-
-                    addAlert "success" $ if established then "comment posted" else "comment submitted for moderation"
-                    redirect $ maybe (DiscussWikiR project_handle target) (DiscussCommentR project_handle target) maybe_parent_id
-
-                _ -> error "unrecognized mode"
-
+        FormSuccess text -> processWikiComment Nothing text project_entity page
         FormMissing -> error "Form missing."
         FormFailure msgs -> error $ "Error submitting form: " ++ T.unpack (T.intercalate "\n" msgs)
 
@@ -551,6 +564,7 @@ getOldNewDiscussWikiR project_handle target = redirect $ NewDiscussWikiR project
 getNewDiscussWikiR :: Text -> Text -> Handler Html
 getNewDiscussWikiR project_handle target = do
     Entity user_id user <- requireAuth
+    let action = DiscussWikiR project_handle target
 
     (_, Entity page_id page) <- getPageInfo project_handle target
 

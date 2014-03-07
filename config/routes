@@ -39,7 +39,7 @@
 /p/#Text/w/#Text/discuss OldDiscussWikiR GET POST
 /p/#Text/w/#Text/discuss/new OldNewDiscussWikiR GET POST
 /p/#Text/w/#Text/c/#CommentId DiscussCommentR GET
-/p/#Text/w/#Text/c/#CommentId/reply ReplyCommentR GET
+/p/#Text/w/#Text/c/#CommentId/reply ReplyCommentR GET POST
 /p/#Text/w/#Text/c/#CommentId/moderate ApproveWikiCommentR GET POST
 /p/#Text/w/#Text/c/#CommentId/rethread RethreadWikiCommentR GET POST
 /p/#Text/w/#Text/c/#CommentId/retract RetractWikiCommentR GET POST
