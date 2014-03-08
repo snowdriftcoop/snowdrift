@@ -50,7 +50,7 @@ discussionSpecs =
                 byLabel "Comment" "Thread 1 - root message"
             
 
-            forM_ [1..10] $ \ i -> do
+            comment_map <- fmap M.fromList $ forM [1..10] $ \ i -> do
                 [ Value (Just comment_id) ] <- runDB $ select $ from $ \ comment -> return (max_ $ comment ^. CommentId)
 
                 get $ ReplyCommentR "snowdrift" "about" comment_id
@@ -59,7 +59,24 @@ discussionSpecs =
             
                 postComment $ do
                     byLabel "Reply" $ T.pack $ "Thread 1 - reply " ++ show i
-                
 
+                return (i, comment_id)
                 
+            let rethread_url = RethreadWikiCommentR "snowdrift" "about" $ comment_map M.! 4
+
+            get rethread_url
+
+            statusIs 200
+
+            request $ do
+                addNonce
+                setMethod "POST"
+                setUrl rethread_url
+                byLabel "New Parent Url" "/p/snowdrift/w/about/d"
+                byLabel "Reason" "testing"
+                addPostParam "mode" "rethread"
+
+            printBody
+
+            statusIs 303
 

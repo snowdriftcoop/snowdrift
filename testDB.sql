@@ -1256,7 +1256,7 @@ ALTER SEQUENCE user_setting_id_seq OWNED BY user_setting.id;
 
 
 --
--- Name: view_time; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+-- Name: view_time; Type: TABLE; Schema: public; Owner: snowdrift_test; Tablespace: 
 --
 
 CREATE TABLE view_time (
@@ -1268,10 +1268,10 @@ CREATE TABLE view_time (
 );
 
 
-ALTER TABLE public.view_time OWNER TO postgres;
+ALTER TABLE public.view_time OWNER TO snowdrift_test;
 
 --
--- Name: view_time_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: view_time_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
 --
 
 CREATE SEQUENCE view_time_id_seq
@@ -1282,10 +1282,10 @@ CREATE SEQUENCE view_time_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.view_time_id_seq OWNER TO postgres;
+ALTER TABLE public.view_time_id_seq OWNER TO snowdrift_test;
 
 --
--- Name: view_time_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: view_time_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
 --
 
 ALTER SEQUENCE view_time_id_seq OWNED BY view_time.id;
@@ -1741,7 +1741,7 @@ ALTER TABLE ONLY user_setting ALTER COLUMN id SET DEFAULT nextval('user_setting_
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: id; Type: DEFAULT; Schema: public; Owner: snowdrift_test
 --
 
 ALTER TABLE ONLY view_time ALTER COLUMN id SET DEFAULT nextval('view_time_id_seq'::regclass);
@@ -2250,6 +2250,7 @@ COPY project_user_role (id, project, "user", role) FROM stdin;
 2	1	1	Admin
 3	1	1	Moderator
 4	1	1	TeamMember
+5	1	2	Moderator
 \.
 
 
@@ -2257,7 +2258,7 @@ COPY project_user_role (id, project, "user", role) FROM stdin;
 -- Name: project_user_role_id_seq; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_test
 --
 
-SELECT pg_catalog.setval('project_user_role_id_seq', 4, true);
+SELECT pg_catalog.setval('project_user_role_id_seq', 5, true);
 
 
 --
@@ -2267,6 +2268,7 @@ SELECT pg_catalog.setval('project_user_role_id_seq', 4, true);
 COPY role_event (id, "time", "user", role, project, added) FROM stdin;
 1	2014-01-21 10:12:24.376209	1	Moderator	1	t
 2	2014-01-24 15:33:53.482076	1	TeamMember	1	t
+3	2014-03-07 19:13:15.080277	2	Moderator	1	t
 \.
 
 
@@ -2274,7 +2276,7 @@ COPY role_event (id, "time", "user", role, project, added) FROM stdin;
 -- Name: role_event_id_seq; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_test
 --
 
-SELECT pg_catalog.setval('role_event_id_seq', 2, true);
+SELECT pg_catalog.setval('role_event_id_seq', 3, true);
 
 
 --
@@ -2372,7 +2374,7 @@ SELECT pg_catalog.setval('user_setting_id_seq', 1, false);
 
 
 --
--- Data for Name: view_time; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: view_time; Type: TABLE DATA; Schema: public; Owner: snowdrift_test
 --
 
 COPY view_time (id, "user", project, type, "time") FROM stdin;
@@ -2380,7 +2382,7 @@ COPY view_time (id, "user", project, type, "time") FROM stdin;
 
 
 --
--- Name: view_time_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: view_time_id_seq; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_test
 --
 
 SELECT pg_catalog.setval('view_time_id_seq', 1, false);
@@ -2887,7 +2889,7 @@ ALTER TABLE ONLY "user"
 
 
 --
--- Name: unique_view_time_user_project_type; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+-- Name: unique_view_time_user_project_type; Type: CONSTRAINT; Schema: public; Owner: snowdrift_test; Tablespace: 
 --
 
 ALTER TABLE ONLY view_time
@@ -2935,7 +2937,7 @@ ALTER TABLE ONLY user_setting
 
 
 --
--- Name: view_time_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+-- Name: view_time_pkey; Type: CONSTRAINT; Schema: public; Owner: snowdrift_test; Tablespace: 
 --
 
 ALTER TABLE ONLY view_time
@@ -3453,7 +3455,7 @@ ALTER TABLE ONLY user_setting
 
 
 --
--- Name: view_time_project_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: view_time_project_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_test
 --
 
 ALTER TABLE ONLY view_time
@@ -3461,7 +3463,7 @@ ALTER TABLE ONLY view_time
 
 
 --
--- Name: view_time_user_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: view_time_user_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_test
 --
 
 ALTER TABLE ONLY view_time
