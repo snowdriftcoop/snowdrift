@@ -373,6 +373,15 @@ getDiscussCommentR' show_reply project_handle target comment_id = do
 
     (Entity project_id _, Entity page_id page) <- getPageInfo project_handle target
 
+    roles <- case mviewer_id of
+        Nothing -> return []
+        Just viewer_id -> getRoles viewer_id project_id
+
+    moderator <- case mviewer_id of
+        Nothing -> return False
+        Just viewer_id ->
+            runDB $ isProjectModerator project_handle viewer_id
+
     (root, rest, users, earlier_retractions, retraction_map) <- runDB $ do
         root <- get404 comment_id
         root_wiki_page_id <- getCommentPageId comment_id
@@ -384,9 +393,12 @@ getDiscussCommentR' show_reply project_handle target comment_id = do
             return comment
 
         rest <- select $ from $ \ c -> do
-            where_ $ c ^. CommentDiscussion ==. val (wikiPageDiscussion page)
-                    &&. c ^. CommentId >. val comment_id
-                    &&. c ^. CommentId `in_` valList (map (commentAncestorComment . entityVal) subtree)
+            where_ $ foldl1 (&&.) $ catMaybes
+                [ Just $ c ^. CommentDiscussion ==. val (wikiPageDiscussion page)
+                , Just $ c ^. CommentId >. val comment_id
+                , Just $ c ^. CommentId `in_` valList (map (commentAncestorComment . entityVal) subtree)
+                , if moderator then Nothing else Just $ not_ $ isNothing $ c ^. CommentModeratedTs
+                ]
             orderBy [asc (c ^. CommentParent), asc (c ^. CommentCreatedTs)]
             return c
 
@@ -415,10 +427,6 @@ getDiscussCommentR' show_reply project_handle target comment_id = do
     tags <- runDB $ select $ from return
 
     let tag_map = M.fromList $ entityPairs tags
-
-    roles <- case mviewer_id of
-        Nothing -> return []
-        Just viewer_id -> getRoles viewer_id project_id
 
     defaultLayout $ renderDiscussComment mviewer_id roles project_handle target show_reply comment_form (Entity comment_id root) rest users earlier_retractions retraction_map True tag_map
 
