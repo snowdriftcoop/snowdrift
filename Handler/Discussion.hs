@@ -265,7 +265,7 @@ postRetractWikiCommentR project_handle target comment_id = do
 
                     redirect $ DiscussCommentR project_handle target comment_id
 
-                mode -> error $ "Error: unrecognized mode (" ++ show mode ++ ")"
+                m -> error $ "Error: unrecognized mode (" ++ show m ++ ")"
         _ -> error "Error when submitting form."
 
 
@@ -541,7 +541,7 @@ processWikiComment maybe_parent_id text (Entity project_id project) page = do
             addAlert "success" $ if established then "comment posted" else "comment submitted for moderation"
             redirect $ maybe (DiscussWikiR (projectHandle project) (wikiPageTarget page)) (DiscussCommentR (projectHandle project) (wikiPageTarget page)) maybe_parent_id
 
-        mode -> error $ "Error: unrecognized mode (" ++ show mode ++ ")"
+        m -> error $ "Error: unrecognized mode (" ++ show m ++ ")"
 
 postOldDiscussWikiR :: Text -> Text -> Handler Html
 postOldDiscussWikiR = postDiscussWikiR
@@ -859,5 +859,5 @@ postRethreadWikiCommentR project_handle target comment_id = do
 
                     redirect new_parent_url
 
-                mode -> error $ "Error: unrecognized mode (" ++ show mode ++ ")"
+                m -> error $ "Error: unrecognized mode (" ++ show m ++ ")"
         _ -> error "Error when submitting form."
