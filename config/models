@@ -141,13 +141,6 @@ VolunteerInterest
     volunteer VolunteerApplicationId
     interest InterestId
 
-CommitteeUser
-    createdTs UTCTime
-    user UserId
-    project ProjectId
-    UniqueCommitteeMember user
-
-
 Message
     project ProjectId Maybe
     createdTs UTCTime

@@ -8,7 +8,7 @@
         <ul .nav .navbar-nav .navbar-left>
             <li>
                 <a href=@{ProjectsR}> Browse Projects
-            $maybe Entity user_id _ <- maybe_user
+            $maybe _ <- maybe_user
                 <li>
                     <p .navbar-text .text-center>
                         <a href=@{ProjectsR}>
