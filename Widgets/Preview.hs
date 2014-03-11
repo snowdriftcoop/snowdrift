@@ -10,7 +10,6 @@ renderPreview form action widget =
             <div .alert .alert-danger>
                 This is a preview; your changes have <em>not</em> been saved!
                 Edit your posting <a href="#edit-preview">below</a>.
-            <input type=submit name=mode value="#{action}">
 
             ^{widget}
 
