@@ -32,9 +32,9 @@ HTML, CSS, and JavaScript work on the site may be done without knowing Haskell, 
 * Stack Overflow user postings are FLO (CC-BY-SA), see the tags for [yesod](http://stackoverflow.com/questions/tagged/yesod) and [haskell](http://stackoverflow.com/questions/tagged/yesod)
 * The #yesod and #haskell IRC channels on freenode.net are active and helpful
 
-Our front-end design uses **[Twitter Bootstrap](http://getbootstrap.com/)** for layout and styles, although there are cases where we use our own custom CSS.
+Our front-end uses **[Twitter Bootstrap](http://getbootstrap.com/)** for layout and styles, although there are cases where we use our own custom CSS.
 
-On the site we have a page about [site-design](https://snowdrift.coop/p/snowdrift/w/site-design), and the tickets and discussion there cover specific issues.
+On the site, we have a page about [site-design](https://snowdrift.coop/p/snowdrift/w/site-design) with associated tickets and discussion.
 
 As a suggestion: Firefox's built-in developer tools offer lots of great ways to test the site, although [Firebug](https://getfirebug.com) may also be a useful addition for certain features.
 
@@ -130,9 +130,11 @@ For isolation in case you have multiple snowdrift checkouts or other Haskell pro
 
     cabal sandbox init
 
-Add your sandboxed binaries to your PATH: (For the future, you may also wish to add this to your .bashrc or equivalent.)  
-*note: replace "snowdrift" in the command with whatever the name of your directory.
-GitHub clones are normally just "snowdrift" but Gitorious clones are "username-snowdrift"*
+Next, add your sandboxed binaries to your PATH: (For the future, you may also wish to add this to your .bashrc or equivalent.)
+
+*Replace "~/snowdrift/" in the command below with your correct directory.*
+GitHub clones are normally just "snowdrift" but Gitorious clones are "*username*-snowdrift".
+It is also possible to place the directory wherever you like with whatever name.
 
     export PATH=~/snowdrift/.cabal-sandbox/bin:$PATH
 
