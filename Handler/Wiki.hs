@@ -134,7 +134,7 @@ postWikiR project_handle target = do
                             render <- lift getUrlRenderParams
                             let message_text = Markdown $ T.unlines
                                     [ "Edit conflict for wiki page *" <> target <> "*."
-                                    , "<br>[Ticket created**](" <> render (DiscussCommentR project_handle target comment_id) [] ")"
+                                    , "<br>[**Ticket created**](" <> render (DiscussCommentR project_handle target comment_id) [] <> ")"
                                     , "<br>*(this message was automatically generated)*"
                                     ]
 
