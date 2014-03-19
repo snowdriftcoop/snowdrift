@@ -32,9 +32,9 @@ HTML, CSS, and JavaScript work on the site may be done without knowing Haskell, 
 * Stack Overflow user postings are FLO (CC-BY-SA), see the tags for [yesod](http://stackoverflow.com/questions/tagged/yesod) and [haskell](http://stackoverflow.com/questions/tagged/yesod)
 * The #yesod and #haskell IRC channels on freenode.net are active and helpful
 
-Our front-end design uses **[Twitter Bootstrap](http://getbootstrap.com/)** for layout and styles, although there are cases where we use our own custom CSS.
+Our front-end uses **[Twitter Bootstrap](http://getbootstrap.com/)** for layout and styles, although there are cases where we use our own custom CSS.
 
-On the site we have a page about [site-design](https://snowdrift.coop/p/snowdrift/w/site-design), and the tickets and discussion there cover specific issues.
+On the site, we have a page about [site-design](https://snowdrift.coop/p/snowdrift/w/site-design) with associated tickets and discussion.
 
 As a suggestion: Firefox's built-in developer tools offer lots of great ways to test the site, although [Firebug](https://getfirebug.com) may also be a useful addition for certain features.
 
@@ -103,13 +103,14 @@ On Debian-based GNU/Linux distros, that's:
 
     sudo apt-get install ghc cabal-install haskell-platform postgresql zlib1g-dev libpq-dev happy alex
 
+   *note: there have been some errors reported with older versions of ghc and the haskell-platform* At this time, we are using GHC 7.6.3 and Haskell Platform 2013.2.0.0 — both are included in the latest Ubuntu, and there are [instructions for building updated GHC on older Ubuntu-based systems](https://gist.github.com/Dexyne/5791465). We tested this with Ubuntu 12.04 LTS and it should work on derivatives as well (such as the fully-FLO Trisquel 6). These instructions or similar should work for other systems as well, but see <http://www.haskell.org/platform/> for more general info.
+
 (There are a few non-Haskell libraries that some dependencies which you may
 need to install, presumably in your system's package manager as well.
-I don't have the list at hand, but they can be picked out of the error
+We don't have a full list compiled yet, but they can be picked out of the error
 messages when the below fails for want of them - if you make a list,
 please update this and send a pull request!)
 
-   *note: there have been some errors reported with older versions of ghc and the haskell-platform* At this time, we are using GHC 7.6.3 and Haskell Platform 2013.2.0.0 — both are included in the latest Ubuntu, and there are [instructions for building updated GHC on older Ubuntu-based systems](https://gist.github.com/Dexyne/5791465). We tested this with Ubuntu 12.04 LTS and it should work on derivatives as well (such as the fully-FLO Trisquel 6). These instructions or similar should work for other systems as well, but see <http://www.haskell.org/platform/> for more general info.
 
 Update cabal's package list:
 
@@ -130,9 +131,11 @@ For isolation in case you have multiple snowdrift checkouts or other Haskell pro
 
     cabal sandbox init
 
-Add your sandboxed binaries to your PATH: (For the future, you may also wish to add this to your .bashrc or equivalent.)  
-*note: replace "snowdrift" in the command with whatever the name of your directory.
-GitHub clones are normally just "snowdrift" but Gitorious clones are "username-snowdrift"*
+Next, add your sandboxed binaries to your PATH: (For the future, you may also wish to add this to your .bashrc or equivalent.)
+
+*Replace "~/snowdrift/" in the command below with your correct directory.*
+GitHub clones are normally just "snowdrift" but Gitorious clones are "*username*-snowdrift".
+It is also possible to place the directory wherever you like with whatever name.
 
     export PATH=~/snowdrift/.cabal-sandbox/bin:$PATH
 

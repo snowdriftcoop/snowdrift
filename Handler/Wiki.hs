@@ -30,14 +30,26 @@ getWikiR project_handle target = do
 
     (Entity _ project, Entity _ page) <- getPageInfo project_handle target
 
-    let can_edit = isJust $ userEstablishedTs =<< entityVal <$> maybe_user
+    moderator <- case maybe_user of
+        Nothing -> return False
+        Just (Entity viewer_id _) ->
+            runDB $ isProjectModerator project_handle viewer_id
 
+    [Value (comment_count :: Int)] <- runDB $ select $ from $ \comment -> do
+        where_ $ foldl1 (&&.) $ catMaybes
+            [ Just $ comment ^. CommentDiscussion ==. val (wikiPageDiscussion page)
+            , if moderator then Nothing else Just $ not_ $ isNothing $ comment ^. CommentModeratedTs
+            ]
+        return countRows
+
+    let can_edit = isJust $ userEstablishedTs =<< entityVal <$> maybe_user
+    
     defaultLayout $ do
         setTitle . toHtml $ projectName project <> " Wiki - " <> wikiPageTarget page <> " | Snowdrift.coop"
-        renderWiki project_handle target can_edit True page
+        renderWiki comment_count project_handle target can_edit True page
 
-renderWiki :: Text -> Text -> Bool -> Bool -> WikiPage -> Widget
-renderWiki project_handle target can_edit can_view_meta page = $(widgetFile "wiki")
+renderWiki :: Int -> Text -> Text -> Bool -> Bool -> WikiPage -> Widget
+renderWiki comment_count project_handle target can_edit can_view_meta page = $(widgetFile "wiki")
 
 getOldWikiPagesR :: Text -> Handler Html
 getOldWikiPagesR = redirect . WikiPagesR
@@ -84,7 +96,7 @@ postWikiR project_handle target = do
             case mode of
                 Just "preview" -> do
                     (form, _) <- generateFormPost $ editWikiForm last_edit_id content comment
-                    defaultLayout $ renderPreview form action $ renderWiki project_handle target False False $ WikiPage target project_id content (Key $ PersistInt64 (-1)) Normal
+                    defaultLayout $ renderPreview form action $ renderWiki 0 project_handle target False False $ WikiPage target project_id content (Key $ PersistInt64 (-1)) Normal
 
                 Just x | x == action -> do
                     runDB $ do
@@ -106,11 +118,11 @@ postWikiR project_handle target = do
                             let comment_body = Markdown $ T.unlines
                                     [ "ticket: edit conflict"
                                     , ""
-                                    , "[original version](/w/" <> target <> "/history/" <> toPathPiece last_edit_id <> ")"
+                                    , "[original version](" <> target <> "/h/" <> toPathPiece last_edit_id <> ")"
                                     , ""
-                                    , "[my version](/w/" <> target <> "/history/" <> toPathPiece edit_id <> ")"
+                                    , "[my version](" <> target <> "/h/" <> toPathPiece edit_id <> ")"
                                     , ""
-                                    , "[their version](/w/" <> target <> "/history/" <> toPathPiece (wikiLastEditEdit last_edit) <> ")"
+                                    , "[their version](" <> target <> "/h/" <> toPathPiece (wikiLastEditEdit last_edit) <> ")"
                                     , ""
                                     , "(this ticket was automatically generated)"
                                     ]
@@ -121,9 +133,9 @@ postWikiR project_handle target = do
 
                             render <- lift getUrlRenderParams
                             let message_text = Markdown $ T.unlines
-                                    [ "Edit conflict for wiki page \"" <> target <> "\"."
-                                    , "Ticket created: " <> render (DiscussCommentR project_handle target comment_id) []
-                                    , "(this message was automatically generated)"
+                                    [ "Edit conflict for wiki page *" <> target <> "*."
+                                    , "<br>[**Ticket created**](" <> render (DiscussCommentR project_handle target comment_id) [] <> ")"
+                                    , "<br>*(this message was automatically generated)*"
                                     ]
 
                             void $ insert $ Message (Just project_id) now (Just last_editor) (Just user_id) message_text
@@ -268,7 +280,7 @@ postNewWikiR project_handle target = do
             case mode of
                 Just "preview" -> do
                         (form, _) <- generateFormPost $ newWikiForm (Just content)
-                        defaultLayout $ renderPreview form action $ renderWiki project_handle target False False page
+                        defaultLayout $ renderPreview form action $ renderWiki 0 project_handle target False False page
                             where page = WikiPage target project_id content undefined Normal
 
 

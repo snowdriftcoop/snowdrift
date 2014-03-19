@@ -5,14 +5,20 @@ $if can_edit
         <div .col-sm-4>
             <a href="@{WikiHistoryR project_handle target}">history
         <div .col-sm-4>
-            <a href="@{DiscussWikiR project_handle target}">discuss
+            <a href="@{DiscussWikiR project_handle target}">
+                discuss
+                <span .badge>
+                    #{comment_count}
 $else
     $if can_view_meta
         <div .row>
             <div .col-xs-6>
                 <a href="@{WikiHistoryR project_handle target}">history
             <div .col-xs-6>
-                <a href="@{DiscussWikiR project_handle target}">view discussion
+                <a href="@{DiscussWikiR project_handle target}">
+                    view discussion
+                    <span .badge>
+                        #{comment_count}
 <hr .wikitop>
 #{renderMarkdown project_handle (wikiPageContent page)}
 

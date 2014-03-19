@@ -1,37 +1,51 @@
 <div .row>
-    <div .col-md-10 .col-md-offset-1>
+    <div .col-md-6>
+        <p>
+            Imagine a future where art, music, software, educational resources, journalism, and research
+            are available for everyone to freely access, use, improve, and share&hellip;
+    <div .col-md-6>
+        <p>
+            If we cooperate, we can provide sustainable, long-term funding
+            for projects that respect our freedoms and celebrate open collaboration.
+<div .row>
+    <div .col-md-8 .col-lg-9>
         <figure>
-            <img src=@{StaticR img_logo_png}>
+            <img alt="Snowdrift.coop &mdash; clearing the path to a Free/Libre/Open world" src=@{StaticR img_logo_png}>
             <figcaption style="color: slategrey; margin-top: -20px;" class="text-right">
                 a work in progress:
                 <strong> public ALPHA — not functioning yet
+    <div .col-md-4 .col-lg-3 .text-center>
+        <h3> Our matching patronage system
+        <strong>
+            <a href="@{WikiR "snowdrift" "intro"}"> Illustrated intro
+            <br>
+            <a href="@{WikiR "snowdrift" "about"}"> Longer manifesto
+            <br>
+            <a href="@{WikiR "snowdrift" "faq"}"> FAQ
+            <br>
+            <a href="@{WikiR "snowdrift" "press"}"> Info for press
 <div .row>
     <div .col-md-6>
-        <p>
-            Imagine a world where everyone can freely access, use, improve, and share
-            everything from art, music, and software, to educational resources, journalism, and research&hellip;
-        <p>
-            <strong>The Snowdrift.coop matching patronage system
-            is a cooperative way to provide sustainable, long-term funding
-            to creative projects that respect our freedoms and celebrate open participation.
-    <div .col-md-6>
-        <div .row .text-center>
-            <div .col-sm-6>
-                <p>
-                    <a href="@{WikiR "snowdrift" "intro"}"> Illustrated intro
-                <p>
-                    <a href="@{WikiR "snowdrift" "about"}"> Longer manifesto
-            <div .col-sm-6>
-                <p>
-                    <a href="@{WikiR "snowdrift" "faq"}"> FAQ
-                <p>
-                    <a href="@{WikiR "snowdrift" "press"}"> Info for press
         <p>
             <strong>Join us!
             Our core
             <a href="@{WhoR "snowdrift"}"> team
-            is supported by a growing community of volunteers who are passionate about building a fairer economy for a better world.
-            There are many ways to <a href="@{WikiR "snowdrift" "how-to-help"}">get involved</a>,
+            is supported by a growing community.
+            There are many ways to 
+            <strong><a href="@{WikiR "snowdrift" "how-to-help"}">get involved</a>,
             and you can also
-            <a href=@{WikiR "snowdrift" "fund-drive"}> donate
-            to fund our current development work.
+            <a href=@{WikiR "snowdrift" "fund-drive"}>
+                <strong> donate
+            to fund our development.
+    <div .col-md-6>
+        <p>
+            <strong>Now recruiting projects!
+            If you are involved in a
+            <a href="@{WikiR "snowdrift" "project-requirements"}">free/libre/open
+            project interested in possible inclusion at our launch, <a href=@{ContactR "snowdrift"}>contact us</a>.
+<div>
+    <figure>
+        <figcaption style="margin: 0">
+            Meet co-founder Aaron Wolf at LibrePlanet March 22-23rd in Cambridge, MA
+        <a href="https://libreplanet.org/2014/">
+            <img style="padding: 0" alt="Come to LibrePlanet 2014!" src="static/img/external/libreplanet2014.png">

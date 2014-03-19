@@ -120,7 +120,9 @@ hr.wikitop
 footer
     text-align : center
     font-size : 0.75em
-    margin-top : 1em
+    margin-top : 2em
+    padding : 1em 0
+    border-top : solid 1px
 
 li
     margin : 0.5em 0
