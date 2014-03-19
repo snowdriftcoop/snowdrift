@@ -12,6 +12,7 @@ import Test.Hspec (hspec)
 import Application (makeFoundation)
 
 import DiscussionTest
+import WikiTest
 
 
 main :: IO ()
@@ -25,5 +26,6 @@ main = do
 
     hspec $ do
         yesodSpec foundation $ do
+            wikiSpecs
             discussionSpecs
 

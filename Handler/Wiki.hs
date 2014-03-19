@@ -72,7 +72,7 @@ postWikiR project_handle target = do
 
     Entity _ last_edit <- runDB $ getBy404 $ UniqueWikiLastEdit page_id
 
-    ((result, _), _) <- runFormPost $ editWikiForm undefined (wikiPageContent page) Nothing
+    ((result, _), _) <- runFormPost $ editWikiForm (wikiLastEditEdit last_edit) (wikiPageContent page) Nothing
 
 
     case result of
@@ -269,7 +269,7 @@ postNewWikiR project_handle target = do
                 Just "preview" -> do
                         (form, _) <- generateFormPost $ newWikiForm (Just content)
                         defaultLayout $ renderPreview form action $ renderWiki project_handle target False False page
-                            where page = WikiPage target project_id content undefined Normal
+                            where page = WikiPage target project_id content (Key $ PersistInt64 0) Normal
 
 
                 Just x | x == action -> do
