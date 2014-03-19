@@ -4,6 +4,7 @@ import Import
 
 import Model.Currency
 import Model.ViewType
+import Model.User
 
 import Control.Monad.Trans.Resource
 
@@ -55,9 +56,11 @@ updateShareValue project_id = do
 getCounts :: (MonadLogger m, MonadIO m, MonadBaseControl IO m, MonadUnsafeIO m, MonadThrow m)
     => Entity User -> [Entity Project] -> SqlPersistT m [([Value Int], [Value Int])]
 
-getCounts (Entity user_id user) = mapM $ \(Entity project_id _) -> do
+getCounts (Entity user_id user) = mapM $ \(Entity project_id project) -> do
+    moderator <- isProjectModerator (projectHandle project) user_id
+
     comment_viewtimes :: [Entity ViewTime] <- select $ from $ \ viewtime -> do
-        where_ $
+        where_ $ 
             ( viewtime ^. ViewTimeUser ==. val user_id ) &&.
             ( viewtime ^. ViewTimeProject ==. val project_id ) &&.
             ( viewtime ^. ViewTimeType ==. val ViewComments )
@@ -79,10 +82,12 @@ getCounts (Entity user_id user) = mapM $ \(Entity project_id _) -> do
 
     comments <- select $ from $ \(comment `LeftOuterJoin` wp) -> do
         on_ $ wp ^. WikiPageDiscussion ==. comment ^. CommentDiscussion
-        where_ $
-            ( comment ^. CommentCreatedTs >=. val comments_ts ) &&.
-            ( wp ^. WikiPageProject ==. val project_id ) &&.
-            ( comment ^. CommentUser !=. val user_id )
+        where_ $ foldl1 (&&.) $ catMaybes
+            [ Just $ comment ^. CommentCreatedTs >=. val comments_ts
+            , Just $ wp ^. WikiPageProject ==. val project_id
+            , Just $ comment ^. CommentUser !=. val user_id
+            , if moderator then Nothing else Just $ not_ $ isNothing $ comment ^. CommentModeratedTs
+            ]
         return (countRows :: SqlExpr (Value Int))
 
     edits <- select $ from $ \(edit `LeftOuterJoin` wp) -> do

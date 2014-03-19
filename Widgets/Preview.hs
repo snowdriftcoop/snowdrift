@@ -6,23 +6,18 @@ import Import
 renderPreview :: Widget -> Text -> Widget -> Widget
 renderPreview form action widget =
     [whamlet|
-        <form method="POST" style="padding : 0em; margin : 0em">
-            <div .row>
-                <div .col-xs-12>
-                    <div .alert .alert-danger>
-                        This is a preview; your changes have <em>not</em> been saved!
-                        Below, you can edit more.
-                    <input type=submit name=mode value="#{action}">
+        <form method="POST">
+            <div .alert .alert-danger>
+                This is a preview; your changes have <em>not</em> been saved!
+                Edit your posting <a href="#edit-preview">below</a>.
 
             ^{widget}
 
-            <div .row>
-                <div .col-xs-12>
-                    <div .alert .alert-danger>
-                        This is a preview; your changes have <em>not</em> been saved!
-                    <input type=submit name=mode value="preview">
-                    <input type=submit name=mode value="#{action}">
-                    ^{form}
-                    <input type=submit name=mode value="preview">
-                    <input type=submit name=mode value="#{action}">
+            <div #edit-preview .alert .alert-danger>
+                This is a preview; your changes have <em>not</em> been saved!
+            <input type=submit name=mode value="preview">
+            <input type=submit name=mode value="#{action}">
+            ^{form}
+            <input type=submit name=mode value="preview">
+            <input type=submit name=mode value="#{action}">
     |]
