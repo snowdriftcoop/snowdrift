@@ -25,24 +25,69 @@
             <br>
             <a href="@{WikiR "snowdrift" "press"}"> Info for press
 <div .row>
-    <div .col-md-6>
+    <div .col-md-8 .col-md-offset-2>
+        <h2 style="margin-top: 0.5em">Join us!
         <p>
-            <strong>Join us!
             Our core
             <a href="@{WhoR "snowdrift"}"> team
             is supported by a growing community.
-            There are many ways to 
-            <strong><a href="@{WikiR "snowdrift" "how-to-help"}">get involved</a>,
-            and you can also
-            <a href=@{WikiR "snowdrift" "fund-drive"}>
-                <strong> donate
-            to fund our development.
-    <div .col-md-6>
         <p>
-            <strong>Now recruiting projects!
+            There are many ways to 
+            <strong><a href="@{WikiR "snowdrift" "how-to-help"}">get involved</a>
+            from site development and design to legal help to community organizing and more.
+
+        <h2>Now recruiting projects
+        <p>
             If you are involved in a
             <a href="@{WikiR "snowdrift" "project-requirements"}">free/libre/open
-            project interested in possible inclusion at our launch, <a href=@{ContactR "snowdrift"}>contact us</a>.
+            project interested in possible inclusion at our launch, please <a href=@{ContactR "snowdrift"}>contact us</a>.
+
+        <h2>Donate
+        <p>
+            Our goal is to use the patronage system itself to fund ongoing Snowdrift.coop development,
+            but plain old donations today will help us get the site fully operating.
+
+<div .row>
+    <div .col-md-4 style="border: 1px solid; margin-top: 1em;">
+        <figure>
+            <img alt="Paypal" src="/static/img/external/PayPal_logo.gif" style="padding: 0">
+            <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top" style="padding: 0; margin: 0;">
+                <input type="hidden" name="cmd" value="_s-xclick">
+                <input type="hidden" name="hosted_button_id" value="M24Z4DFEW4SQL">
+                <input type="image" src="/static/img/external/paypal-donate.gif" name="submit" alt="PayPal donations &mdash; not our ideal.">
+        <small> Paypal can work without proprietary JavaScript, and while it isn't our ideal, it is popular and easy to use.
+
+    <div .col-md-4 style="border: 1px solid; margin-top: 1em;">
+        <figure>
+            <small>(U.S.-based donors)
+            <br>
+            <a href="https://www.dwolla.com/hub/snowdrift">
+                <img alt="Donate with Dwolla" src="/static/img/external/dwolla.png" style="padding: 0">
+        <small>
+            Dwolla avoids credit-cards and has very low fees:
+            <em>Free
+            for payments under $10, otherwise 25¢.
+            Unfortunately, Dwolla seems to require proprietary JavaScript,
+            and you must <a href="http://refer.dwolla.com/a/clk/28gB5q">create a Dwolla account</a>.
+    <div .col-md-4 style="border: 1px solid; margin-top: 1em;">
+        <figure>
+            <img alt="Bitcoin" src="/static/img/external/Bitcoin.png" style="height: 4em"> 
+        <small>
+            We will soon have a smoother process, but for now, <a href=@{ContactR "snowdrift"}>contact us</a>,
+            and we can send you a BTC invoice with an address.
+
+<div .row>
+    <div .col-md-8 .col-md-offset-2>
+        <small>
+            We're working to add more
+            <a href="@{WikiR "snowdrift" "payment-services"}">payment options
+            soon.
+            If anyone prefers, we will also accept checks through the mail.
+            <br>
+            <em>
+                Please note: Snowdrift.coop is legally incorporated as a non-profit cooperative in Michigan and planning for 501(c)(4) status.
+                Because we are not a traditional 501(c)(3) charity, donations to us are not tax-deductible.
+<hr>
 <div>
     <figure>
         <figcaption style="margin: 0">
