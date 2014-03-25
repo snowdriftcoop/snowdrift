@@ -14,6 +14,7 @@ import Data.Int (Int64)
 
 import Model.Currency (Milray)
 import Model.Role.Internal (Role)
+import Model.ClosureType.Internal (ClosureType)
 import Model.Permission.Internal (PermissionLevel)
 import Model.Markdown.Diff (MarkdownDiff)
 import Model.ViewType.Internal (ViewType)

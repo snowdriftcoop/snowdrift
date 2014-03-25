@@ -28,6 +28,7 @@ library
                      Import
                      Model
                      Model.Currency
+                     Model.ClosureType
                      Model.Project
                      Model.Role
                      Model.Permission
@@ -79,6 +80,7 @@ library
                      Widgets.ProjectPledges
 
     other-modules: Model.Settings.Internal
+                   Model.ClosureType.Internal
                    Model.Role.Internal
                    Model.ViewType.Internal
                    Model.Permission.Internal

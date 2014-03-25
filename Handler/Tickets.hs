@@ -111,7 +111,7 @@ getTicketsR project_handle = do
         tickets_info <- select $ from $ \ (ticket `InnerJoin` comment `InnerJoin` page) -> do
             on_ $ page ^. WikiPageDiscussion ==. comment ^. CommentDiscussion
             on_ $ comment ^. CommentId ==. ticket ^. TicketComment
-            where_ $ comment ^. CommentId `notIn` subList_select (from $ \ retraction -> return $ retraction ^. CommentRetractionComment)
+            where_ $ comment ^. CommentId `notIn` subList_select (from $ \ closure -> return $ closure ^. CommentClosureComment)
             return (ticket, comment, page)
 
         used_tags'tickets <- forM tickets_info $ \ (Entity ticket_id ticket, Entity comment_id comment, Entity _ page) -> do

@@ -42,6 +42,19 @@ applyUserUpdate user user_update = user
 userPrintName :: Entity User -> Text
 userPrintName (Entity user_id user) = fromMaybe (either (error . T.unpack) (T.append "user") $ fromPersistValue $ unKey user_id) (userName user)
 
+
+userWidget :: UserId -> Widget
+userWidget user_id = do
+    maybe_user <- handlerToWidget $ runDB $ get user_id
+    case maybe_user of
+        Nothing -> [whamlet|deleted user|]
+        Just user ->
+            [whamlet|
+                <a href=@{UserR user_id}>
+                    #{userPrintName (Entity user_id user)}
+            |]
+
+
 isProjectAdmin :: (MonadIO m, MonadLogger m, MonadBaseControl IO m, MonadUnsafeIO m, MonadThrow m)
     => Text -> UserId -> SqlPersistT m Bool
 isProjectAdmin project_handle user_id = fmap (not . null) $ select $ from $ \ (pur `InnerJoin` p) -> do

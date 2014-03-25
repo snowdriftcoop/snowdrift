@@ -17,6 +17,7 @@ import qualified Data.Text as T
 import Model.AnnotatedTag
 import Model.User
 import Model.Role
+import Model.ClosureType
 import Model.ViewType
 import Model.WikiPage
 
@@ -57,10 +58,10 @@ requireModerator message project_handle user_id = do
     when (c < 1) $ permissionDenied message
 
 
-renderComment :: Maybe UserId -> [Role] -> Text -> Text -> M.Map UserId (Entity User) -> Int -> Int
-    -> [CommentRetraction] -> M.Map CommentId CommentRetraction -> Bool -> Map TagId Tag -> Tree (Entity Comment) -> Maybe Widget -> Widget
+renderComment :: Maybe (Entity User) -> [Role] -> Text -> Text -> M.Map UserId (Entity User) -> Int -> Int
+    -> [CommentClosure] -> M.Map CommentId CommentClosure -> Bool -> Map TagId Tag -> Tree (Entity Comment) -> Maybe Widget -> Widget
 
-renderComment mviewer_id viewer_roles project_handle target users max_depth depth earlier_retractions retraction_map show_actions tag_map tree mcomment_form = do
+renderComment mviewer viewer_roles project_handle target users max_depth depth earlier_closures closure_map show_actions tag_map tree mcomment_form = do
     maybe_route <- handlerToWidget getCurrentRoute
     (comment_form, _) <- handlerToWidget $ generateFormPost $ commentForm Nothing Nothing
 
@@ -76,12 +77,15 @@ renderComment mviewer_id viewer_roles project_handle target users max_depth dept
         even_depth = not top_level && commentDepth comment `mod` 2 == 1
         odd_depth = not top_level && not even_depth
 
-        maybe_retraction = M.lookup comment_id retraction_map
+        maybe_closure = M.lookup comment_id closure_map
         empty_list = []
 
         user_is_mod = Moderator `elem` viewer_roles
-        can_rethread = maybe False (\viewer_id -> user_id == viewer_id || user_is_mod) mviewer_id
-        can_retract = maybe False (\viewer_id -> user_id == viewer_id) mviewer_id
+        can_rethread = maybe False (\ (Entity viewer_id _) -> user_id == viewer_id || user_is_mod) mviewer
+
+        -- TODO unify these with the checks in the handlers
+        can_retract = maybe False (\ (Entity viewer_id _) -> user_id == viewer_id) mviewer
+        can_close = maybe False (\ (Entity _ viewer) -> isJust (userEstablishedTs viewer)) mviewer
 
     tags <- fmap (L.sortBy (compare `on` atName)) $ handlerToWidget $ do
         comment_tags <- runDB $ select $ from $ \ comment_tag -> do
@@ -153,35 +157,56 @@ postApproveWikiCommentR project_handle target comment_id = do
     redirect $ DiscussCommentR project_handle target comment_id
 
 
-retractForm :: Maybe Markdown -> Form Markdown
-retractForm reason = renderBootstrap3 $ areq snowdriftMarkdownField "Retraction reason:" reason
-
+closureForm :: ClosureType -> Maybe Markdown -> Form Markdown
+closureForm Retracted reason = renderBootstrap3 $ areq snowdriftMarkdownField "Retraction reason:" reason
+closureForm Closed reason = renderBootstrap3 $ areq snowdriftMarkdownField "Reason for closing:" reason
 
 
 countReplies :: [Tree a] -> Int
 countReplies = sum . map (F.sum . fmap (const 1))
 
 
-checkRetractComment :: Text -> Text -> CommentId -> Handler (Entity User, ProjectId, Comment)
-checkRetractComment project_handle target comment_id = do
-    user_entity <- requireAuth
+checkRetractComment :: UserId -> Text -> Text -> CommentId -> Handler (ProjectId, Comment)
+checkRetractComment user_id  project_handle target comment_id = do
     comment <- runDB $ get404 comment_id
 
     (Entity project_id _, _) <- getPageInfo project_handle target
 
-    when (commentUser comment /= entityKey user_entity) $ permissionDenied "You can only retract your own comments."
+    when (commentUser comment /= user_id) $ permissionDenied "You can only retract your own comments."
 
-    return (user_entity, project_id, comment)
+    return (project_id, comment)
+
+
+checkCloseComment :: User -> Text -> Text -> CommentId -> Handler (ProjectId, Comment)
+checkCloseComment user project_handle target comment_id = do
+    comment <- runDB $ get404 comment_id
+
+    (Entity project_id _, _) <- getPageInfo project_handle target
+
+    -- TODO: what should this be?
+    unless (isJust $ userEstablishedTs user) $ permissionDenied "You must be an established user to close a conversation."
+
+    return (project_id, comment)
 
 
 getOldRetractWikiCommentR :: Text -> Text -> CommentId -> Handler Html
 getOldRetractWikiCommentR project_handle target comment_id = redirect $ RetractWikiCommentR project_handle target comment_id
 
 getRetractWikiCommentR :: Text -> Text -> CommentId -> Handler Html
-getRetractWikiCommentR project_handle target comment_id = do
-    (Entity user_id user, project_id, comment) <- checkRetractComment project_handle target comment_id
+getRetractWikiCommentR = getCloseWikiComment Retracted
 
-    earlier_retractions <- runDB $
+getCloseWikiCommentR :: Text -> Text -> CommentId -> Handler Html
+getCloseWikiCommentR = getCloseWikiComment Closed
+
+getCloseWikiComment :: ClosureType -> Text -> Text -> CommentId -> Handler Html
+getCloseWikiComment closure_type project_handle target comment_id = do
+    Entity user_id user <- requireAuth
+
+    (project_id, comment) <- case closure_type of
+        Retracted -> checkRetractComment user_id project_handle target comment_id
+        Closed -> checkCloseComment user project_handle target comment_id
+
+    earlier_closures <- runDB $
         case commentParent comment of
             Just parent_id -> do
                 ancestors <- do
@@ -191,9 +216,9 @@ getRetractWikiCommentR project_handle target comment_id = do
 
                     return . (parent_id :) . map (commentAncestorAncestor . entityVal) $ comment_ancestor_entities
 
-                fmap (map entityVal) $ select $ from $ \ comment_retraction -> do
-                    where_ ( comment_retraction ^. CommentRetractionComment `in_` valList ancestors )
-                    return comment_retraction
+                fmap (map entityVal) $ select $ from $ \ closure -> do
+                    where_ ( closure ^. CommentClosureComment `in_` valList ancestors )
+                    return closure
 
             Nothing -> return []
 
@@ -201,17 +226,17 @@ getRetractWikiCommentR project_handle target comment_id = do
 
     let tag_map = M.fromList $ entityPairs tags
 
-    (retract_form, _) <- generateFormPost $ retractForm Nothing
+    (closure_form, _) <- generateFormPost $ closureForm closure_type Nothing
 
     roles <- getRoles user_id project_id
 
-    let rendered_comment = renderDiscussComment (Just user_id) roles project_handle target False (return ()) (Entity comment_id comment) [] (M.singleton user_id $ Entity user_id user) earlier_retractions M.empty False tag_map
+    let rendered_comment = renderDiscussComment (Just $ Entity user_id user) roles project_handle target False (return ()) (Entity comment_id comment) [] (M.singleton user_id $ Entity user_id user) earlier_closures M.empty False tag_map
 
     defaultLayout $ [whamlet|
         ^{rendered_comment}
         <form method="POST">
-            ^{retract_form}
-            <input type="submit" name="mode" value="preview retraction">
+            ^{closure_form}
+            <input type="submit" name="mode" value="preview">
     |]
 
 
@@ -219,14 +244,23 @@ postOldRetractWikiCommentR :: Text -> Text -> CommentId -> Handler Html
 postOldRetractWikiCommentR = postRetractWikiCommentR
 
 postRetractWikiCommentR :: Text -> Text -> CommentId -> Handler Html
-postRetractWikiCommentR project_handle target comment_id = do
-    (Entity user_id user, project_id, comment) <- checkRetractComment project_handle target comment_id
+postRetractWikiCommentR = postCloseWikiComment Retracted
 
-    ((result, _), _) <- runFormPost $ retractForm Nothing
+postCloseWikiCommentR :: Text -> Text -> CommentId -> Handler Html
+postCloseWikiCommentR = postCloseWikiComment Closed
+
+postCloseWikiComment :: ClosureType -> Text -> Text -> CommentId -> Handler Html
+postCloseWikiComment closure_type project_handle target comment_id = do
+    Entity user_id user <- requireAuth
+    (project_id, comment) <- case closure_type of
+        Retracted -> checkRetractComment user_id project_handle target comment_id
+        Closed -> checkCloseComment user project_handle target comment_id
+
+    ((result, _), _) <- runFormPost $ closureForm closure_type Nothing
 
     case result of
         FormSuccess reason -> do
-            earlier_retractions <- runDB $
+            earlier_closures <- runDB $
                 case commentParent comment of
                     Just parent_id -> do
                         ancestors <- do
@@ -235,33 +269,37 @@ postRetractWikiCommentR project_handle target comment_id = do
                                 return comment_ancestor
 
                             return . (parent_id :) . map (commentAncestorAncestor . entityVal) $ comment_ancestor_entities
-                        map entityVal <$> selectList [ CommentRetractionComment <-. ancestors ] []
+                        map entityVal <$> selectList [ CommentClosureComment <-. ancestors ] []
 
                     Nothing -> return []
 
-            let action :: Text = "retract"
+            let action :: Text = case closure_type of
+                    Closed -> "close"
+                    Retracted -> "retract"
+
             mode <- lookupPostParam "mode"
             case mode of
-                Just "preview retraction" -> do
-                    (form, _) <- generateFormPost $ retractForm (Just reason)
+                Just "preview" -> do
+                    soon <- liftIO getCurrentTime
+
+                    (form, _) <- generateFormPost $ closureForm closure_type (Just reason)
 
                     tags <- getTags comment_id
 
                     let tag_map = M.fromList $ entityPairs tags
-                        soon = UTCTime (ModifiedJulianDay 0) 0
-                        retraction = CommentRetraction soon reason comment_id
+                        closure = CommentClosure soon user_id closure_type reason comment_id
                         comment_entity = Entity comment_id comment
                         users = M.singleton user_id $ Entity user_id user
-                        retractions = M.singleton comment_id retraction
+                        closures = M.singleton comment_id closure
 
                     roles <- getRoles user_id project_id
 
-                    defaultLayout $ renderPreview form action $ renderDiscussComment (Just user_id) roles project_handle target False (return ()) comment_entity [] users earlier_retractions retractions False tag_map
+                    defaultLayout $ renderPreview form action $ renderDiscussComment (Just $ Entity user_id user) roles project_handle target False (return ()) comment_entity [] users earlier_closures closures False tag_map
 
 
                 Just a | a == action -> do
                     now <- liftIO getCurrentTime
-                    runDB $ insert_ $ CommentRetraction now reason comment_id
+                    runDB $ insert_ $ CommentClosure now user_id closure_type reason comment_id
 
                     redirect $ DiscussCommentR project_handle target comment_id
 
@@ -302,7 +340,7 @@ getDiscussWikiR project_handle target = do
         Just (Entity user_id _) ->
             runDB $ isProjectModerator project_handle user_id
 
-    (roots, rest, users, retraction_map) <- runDB $ do
+    (roots, rest, users, closure_map) <- runDB $ do
         roots <- select $ from $ \ comment -> do
             where_ $ foldl1 (&&.) $ catMaybes
                 [ Just $ comment ^. CommentDiscussion ==. val (wikiPageDiscussion page)
@@ -330,8 +368,8 @@ getDiscussWikiR project_handle target = do
 
         let users = M.fromList $ map (entityKey &&& id) user_entities
 
-        retraction_map <- M.fromList . map ((commentRetractionComment &&& id) . entityVal) <$> selectList [ CommentRetractionComment <-. map entityKey (roots ++ rest) ] []
-        return (roots, rest, users, retraction_map)
+        closure_map <- M.fromList . map ((commentClosureComment &&& id) . entityVal) <$> selectList [ CommentClosureComment <-. map entityKey (roots ++ rest) ] []
+        return (roots, rest, users, closure_map)
 
     tags <- runDB $ select $ from return
 
@@ -340,9 +378,8 @@ getDiscussWikiR project_handle target = do
         Just (Entity user_id _) -> getRoles user_id project_id
 
     let tag_map = M.fromList $ entityPairs tags
-        muser_id = maybe Nothing (\(Entity user_id _) -> Just user_id) muser
         comments = forM_ roots $ \ root ->
-            renderComment muser_id roles project_handle target users 10 0 [] retraction_map True tag_map (buildCommentTree root rest) Nothing
+            renderComment muser roles project_handle target users 10 0 [] closure_map True tag_map (buildCommentTree root rest) Nothing
 
     (comment_form, _) <- generateFormPost $ commentForm Nothing Nothing
 
@@ -378,22 +415,20 @@ postReplyCommentR project_handle target comment_id = do
 
 getDiscussCommentR' :: Bool -> Text -> Text -> CommentId -> Handler Html
 getDiscussCommentR' show_reply project_handle target comment_id = do
-    --Entity viewer_id _ <- requireAuth
-    mauth <- maybeAuth
-    let mviewer_id = maybe Nothing (\(Entity v _) -> Just v) mauth
+    mviewer <- maybeAuth
 
     (Entity project_id _, Entity page_id page) <- getPageInfo project_handle target
 
-    roles <- case mviewer_id of
+    roles <- case mviewer of
         Nothing -> return []
-        Just viewer_id -> getRoles viewer_id project_id
+        Just (Entity viewer_id _) -> getRoles viewer_id project_id
 
-    moderator <- case mviewer_id of
+    moderator <- case mviewer of
         Nothing -> return False
-        Just viewer_id ->
+        Just (Entity viewer_id _) ->
             runDB $ isProjectModerator project_handle viewer_id
 
-    (root, rest, users, earlier_retractions, retraction_map) <- runDB $ do
+    (root, rest, users, earlier_closures, closure_map) <- runDB $ do
         root <- get404 comment_id
         root_wiki_page_id <- getCommentPageId comment_id
 
@@ -422,16 +457,16 @@ getDiscussCommentR' show_reply project_handle target comment_id = do
 
         let users = M.fromList $ map (entityKey &&& id) user_entities
 
-        earlier_retractions <- fmap (map entityVal) $ select $ from $ \ (comment_ancestor `InnerJoin` retraction) -> do
-            on_ (comment_ancestor ^. CommentAncestorAncestor ==. retraction ^. CommentRetractionComment)
+        earlier_closures <- fmap (map entityVal) $ select $ from $ \ (comment_ancestor `InnerJoin` closure) -> do
+            on_ (comment_ancestor ^. CommentAncestorAncestor ==. closure ^. CommentClosureComment)
             where_ ( comment_ancestor ^. CommentAncestorComment ==. val comment_id )
-            return retraction
+            return closure
 
-        retraction_map <- fmap (M.fromList . map ((commentRetractionComment &&& id) . entityVal)) $ select $ from $ \ retraction -> do
-            where_ ( retraction ^. CommentRetractionComment `in_` valList (comment_id : map entityKey rest) )
-            return retraction
+        closure_map <- fmap (M.fromList . map ((commentClosureComment &&& id) . entityVal)) $ select $ from $ \ closure -> do
+            where_ ( closure ^. CommentClosureComment `in_` valList (comment_id : map entityKey rest) )
+            return closure
 
-        return (root, rest, users, earlier_retractions, retraction_map)
+        return (root, rest, users, earlier_closures, closure_map)
 
     (comment_form, _) <- generateFormPost $ commentForm (Just comment_id) Nothing
 
@@ -439,19 +474,19 @@ getDiscussCommentR' show_reply project_handle target comment_id = do
 
     let tag_map = M.fromList $ entityPairs tags
 
-    defaultLayout $ renderDiscussComment mviewer_id roles project_handle target show_reply comment_form (Entity comment_id root) rest users earlier_retractions retraction_map True tag_map
+    defaultLayout $ renderDiscussComment mviewer roles project_handle target show_reply comment_form (Entity comment_id root) rest users earlier_closures closure_map True tag_map
 
 
-renderDiscussComment :: Maybe UserId -> [Role] -> Text -> Text -> Bool -> Widget
+renderDiscussComment :: Maybe (Entity User) -> [Role] -> Text -> Text -> Bool -> Widget
     -> Entity Comment -> [Entity Comment]
     -> M.Map UserId (Entity User)
-    -> [CommentRetraction]
-    -> M.Map CommentId CommentRetraction
+    -> [CommentClosure]
+    -> M.Map CommentId CommentClosure
     -> Bool -> M.Map TagId Tag -> Widget
 
-renderDiscussComment viewer_id roles project_handle target show_reply comment_form root rest users earlier_retractions retraction_map show_actions tag_map = do
+renderDiscussComment viewer roles project_handle target show_reply comment_form root rest users earlier_closures closure_map show_actions tag_map = do
     let tree = buildCommentTree root rest
-        comment = renderComment viewer_id roles project_handle target users 1 0 earlier_retractions retraction_map show_actions tag_map tree mcomment_form
+        comment = renderComment viewer roles project_handle target users 1 0 earlier_closures closure_map show_actions tag_map tree mcomment_form
         mcomment_form =
             if show_reply
                 then Just comment_form
@@ -480,16 +515,16 @@ processWikiComment maybe_parent_id text (Entity project_id project) page = do
 
     case mode of
         Just "preview" -> do
-            earlier_retractions <- runDB $
+            earlier_closures <- runDB $
                 case maybe_parent_id of
                     Just parent_id -> do
                         ancestors <- fmap ((parent_id :) . map (commentAncestorAncestor . entityVal)) $ select $ from $ \ ancestor -> do
                             where_ ( ancestor ^. CommentAncestorComment ==. val parent_id )
                             return ancestor
 
-                        fmap (map entityVal) $ select $ from $ \ retraction -> do
-                            where_ ( retraction ^. CommentRetractionComment `in_` valList ancestors )
-                            return retraction
+                        fmap (map entityVal) $ select $ from $ \ closure -> do
+                            where_ ( closure ^. CommentClosureComment `in_` valList ancestors )
+                            return closure
 
                     Nothing -> return []
 
@@ -503,7 +538,7 @@ processWikiComment maybe_parent_id text (Entity project_id project) page = do
 
             let comment = Entity (Key $ PersistInt64 0) $ Comment now Nothing Nothing (wikiPageDiscussion page) maybe_parent_id user_id text depth
                 user_map = M.singleton user_id $ Entity user_id user
-                rendered_comment = renderDiscussComment (Just user_id) roles (projectHandle project) (wikiPageTarget page) False (return ()) comment [] user_map earlier_retractions M.empty False tag_map
+                rendered_comment = renderDiscussComment (Just $ Entity user_id user) roles (projectHandle project) (wikiPageTarget page) False (return ()) comment [] user_map earlier_closures M.empty False tag_map
 
             defaultLayout $ renderPreview form action rendered_comment
 
@@ -596,13 +631,13 @@ getOldWikiNewCommentsR project_handle = redirect $ WikiNewCommentsR project_hand
 
 getWikiNewCommentsR :: Text -> Handler Html
 getWikiNewCommentsR project_handle = do
-    mauth <- maybeAuth
+    mviewer <- maybeAuth
     -- Entity viewer_id viewer <- requireAuth
     Entity project_id project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
 
     req <- getRequest
     maybe_since <- lookupGetParam "since"
-    since :: UTCTime <- case mauth of
+    since :: UTCTime <- case mviewer of
         Nothing -> liftIO getCurrentTime
         Just (Entity viewer_id viewer) -> case maybe_since of
             Nothing -> do
@@ -628,7 +663,7 @@ getWikiNewCommentsR project_handle = do
 
     let tag_map = M.fromList $ entityPairs tags
 
-    (new_comments, old_comments, pages, users, retraction_map) <- runDB $ do
+    (new_comments, old_comments, pages, users, closure_map) <- runDB $ do
         unfiltered_pages <- select $ from $ \ page -> do
             where_ $ page ^. WikiPageProject ==. val project_id
             return page
@@ -672,16 +707,16 @@ getWikiNewCommentsR project_handle = do
             where_ ( user ^. UserId `in_` valList user_ids )
             return user
 
-        retraction_map <- do
-            retractions <- select $ from $ \ comment_retraction -> do
-                where_ ( comment_retraction ^. CommentRetractionComment `in_` valList (map entityKey (new_comments <> old_comments) ) )
-                return comment_retraction
+        closure_map <- do
+            closures <- select $ from $ \ comment_closure -> do
+                where_ ( comment_closure ^. CommentClosureComment `in_` valList (map entityKey (new_comments <> old_comments) ) )
+                return comment_closure
 
-            return . M.fromList . map ((commentRetractionComment &&& id) . entityVal) $ retractions
+            return . M.fromList . map ((commentClosureComment &&& id) . entityVal) $ closures
 
-        return (new_comments, old_comments, pages, users, retraction_map)
+        return (new_comments, old_comments, pages, users, closure_map)
 
-    roles <- case mauth of
+    roles <- case mviewer of
         Nothing -> return []
         Just (Entity viewer_id _) -> getRoles viewer_id project_id
     let new_comments' = take 50 new_comments
@@ -691,23 +726,22 @@ getWikiNewCommentsR project_handle = do
             if null comments
              then [whamlet||]
              else forM_ comments $ \ (Entity comment_id comment) -> do
-                earlier_retractions <- handlerToWidget $ runDB $ do
+                earlier_closures <- handlerToWidget $ runDB $ do
                     ancestors <- select $ from $ \ comment_ancestor -> do
                         where_ ( comment_ancestor ^. CommentAncestorComment ==. val comment_id )
                         return comment_ancestor
 
-                    fmap (map entityVal) $ select $ from $ \ comment_retraction -> do
-                        where_ ( comment_retraction ^. CommentRetractionComment `in_` valList (map (commentAncestorAncestor . entityVal) ancestors))
-                        orderBy [ asc (comment_retraction ^. CommentRetractionComment) ]
-                        return comment_retraction
+                    fmap (map entityVal) $ select $ from $ \ comment_closure -> do
+                        where_ ( comment_closure ^. CommentClosureComment `in_` valList (map (commentAncestorAncestor . entityVal) ancestors))
+                        orderBy [ asc (comment_closure ^. CommentClosureComment) ]
+                        return comment_closure
 
                 [Value target] <- handlerToWidget $ runDB $ select $ from $ \ (c `InnerJoin` p) -> do
                     on_ $ p ^. WikiPageDiscussion ==. c ^. CommentDiscussion
                     where_ $ c ^. CommentId ==. val comment_id
                     return $ p ^. WikiPageTarget
 
-                let mviewer_id = maybe Nothing (\(Entity viewer_id _) -> Just viewer_id) mauth
-                let rendered_comment = renderComment mviewer_id roles project_handle target users 1 0 earlier_retractions retraction_map True tag_map (Node (Entity comment_id comment) []) Nothing
+                let rendered_comment = renderComment mviewer roles project_handle target users 1 0 earlier_closures closure_map True tag_map (Node (Entity comment_id comment) []) Nothing
 
                 [whamlet|$newline never
                     <div .row>
@@ -722,7 +756,7 @@ getWikiNewCommentsR project_handle = do
         rendered_old_comments = render_comments old_comments'
         show_older = (length new_comments + length old_comments) > 50
 
-    case mauth of
+    case mviewer of
         Nothing -> return ()
         Just (Entity viewer_id _) ->
             runDB $ do

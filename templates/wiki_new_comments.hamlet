@@ -1,4 +1,4 @@
-$if isJust mauth
+$if isJust mviewer
     $if null new_comments
         <h3>
             no new comments

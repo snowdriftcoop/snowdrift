@@ -189,8 +189,10 @@ CommentAncestor
     UniqueCommentAncestor comment ancestor
     deriving Show
 
-CommentRetraction
+CommentClosure
     ts UTCTime
+    user UserId
+    type ClosureType
     reason Markdown
     comment CommentId
 

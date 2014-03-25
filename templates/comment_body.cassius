@@ -33,7 +33,13 @@
     margin-right : 0.3em
     border-radius : 5px
 
-.retraction
+.closed
+    color : goldenrod
+    border-left : solid goldenrod 0.25em
+    padding-left : 0.5em
+    margin : 0.2em
+
+.retracted
     color : darkred
     border-left : solid darkred 0.25em
     padding-left : 0.5em
