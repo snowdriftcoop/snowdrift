@@ -6,5 +6,5 @@ ALTER TABLE "comment_closure" ADD CONSTRAINT "comment_closure_user_fkey" FOREIGN
 UPDATE "comment_closure" SET "user" = "comment"."user" FROM "comment" WHERE "comment_closure"."comment" = "comment"."id";
 ALTER TABLE "comment_closure" ALTER COLUMN "user" SET NOT NULL;
 ALTER TABLE "comment_closure" ALTER COLUMN "type" DROP DEFAULT;
-INSERT INTO "comment_closure" ("ts", "user", "type", "reason", "comment") SELECT now(), "user", 'Closed', 'Close converted from tag.', "comment" FROM "comment_tag" JOIN "tag" ON "comment_tag"."tag" = "tag"."id" WHERE "tag"."name" = 'closed';
+INSERT INTO "comment_closure" ("ts", "user", "type", "reason", "comment") SELECT now(), "user", 'Closed', 'This comment was closed before we had a field explaining the reason for closing.', "comment" FROM "comment_tag" JOIN "tag" ON "comment_tag"."tag" = "tag"."id" WHERE "tag"."name" = 'closed';
 DELETE FROM "comment_tag" USING "tag" WHERE "comment_tag"."tag" = "tag"."id" AND "tag"."name" = 'closed';
