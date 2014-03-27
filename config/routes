@@ -46,7 +46,9 @@
 /p/#Text/w/#Text/c/#CommentId/retract RetractWikiCommentR GET POST
 /p/#Text/w/#Text/c/#CommentId/tags CommentTagsR GET
 /p/#Text/w/#Text/c/#CommentId/tag/#TagId CommentTagR GET POST
-/p/#Text/w/#Text/c/#CommentId/tag/!new NewCommentTagR GET POST
+/p/#Text/w/#Text/c/#CommentId/tag/!new NewCommentTagR GET
+/p/#Text/w/#Text/c/#CommentId/tag/!new/create CreateNewCommentTagR POST
+/p/#Text/w/#Text/c/#CommentId/tag/!new/apply ApplyNewCommentTagR POST
 /p/#Text/w/#Text/comment/#CommentId OldDiscussCommentR GET
 /p/#Text/w/#Text/comment/#CommentId/moderate OldApproveWikiCommentR GET POST
 /p/#Text/w/#Text/comment/#CommentId/retract OldRetractWikiCommentR GET POST
