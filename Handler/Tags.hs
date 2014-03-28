@@ -175,7 +175,7 @@ postApplyNewCommentTagR = postNewCommentTagR False
 
 postNewCommentTagR :: Bool -> Text -> Text -> CommentId -> Handler Html
 postNewCommentTagR create_tag project_handle target comment_id = do
-    user_id <- requireAuthId
+    Entity user_id user <- requireAuth
 
     when (not $ isJust $ userEstablishedTs user) (permissionDenied "You must be an established user to add tags")
 
