@@ -119,16 +119,26 @@ getOldCommentTagsR project_handle target comment_id = redirect $ CommentTagsR pr
 getCommentTagsR :: Text -> Text -> CommentId -> Handler Html
 getCommentTagsR = processCommentTags renderTags
 
+createCommentTagForm :: Form (Text, Text)
+createCommentTagForm = renderBootstrap3 $ (,)
+    <$> areq textField "" Nothing
+    <*> areq hiddenField "" (Just "create")
 
-newCommentTagForm :: Form Text
-newCommentTagForm = renderBootstrap3 $ areq textField "" Nothing
-
+newCommentTagForm :: [Entity Tag] -> Form (TagId, Text)
+newCommentTagForm all_tags = renderBootstrap3 $ (,)
+    <$> areq (selectFieldList tags) "" Nothing
+    <*> areq hiddenField "" (Just "apply")
+    where tags = fmap (\(Entity tag_id tag) -> (tagName tag, tag_id)) all_tags
 
 getOldNewCommentTagR :: Text -> Text -> CommentId -> Handler Html
 getOldNewCommentTagR project_handle target comment_id = redirect $ NewCommentTagR project_handle target comment_id
 
 getNewCommentTagR :: Text -> Text -> CommentId -> Handler Html
 getNewCommentTagR project_handle target comment_id = do
+    Entity user_id user <- requireAuth
+
+    unless (isJust $ userEstablishedTs user) (permissionDenied "You must be an established user to add tags")
+
     Entity project_id _ <- runDB $ getBy404 $ UniqueProjectHandle project_handle
     Entity page_id _ <- runDB $ getBy404 $ UniqueWikiTarget project_id target
 
@@ -147,36 +157,83 @@ getNewCommentTagR project_handle target comment_id = do
 
     tags <- annotateCommentTags tag_map project_handle target comment_id comment_tags
 
-    (form, _) <- generateFormPost newCommentTagForm
+    all_tags :: [Entity Tag] <- runDB $ select $ from $ \ tag -> do
+        orderBy [ desc (tag ^. TagName) ]
+        return tag
+
+    (apply_form, _) <- generateFormPost $ newCommentTagForm all_tags
+    (create_form, _) <- generateFormPost $ createCommentTagForm
 
     defaultLayout $(widgetFile "new_comment_tag")
 
 
 postOldNewCommentTagR :: Text -> Text -> CommentId -> Handler Html
-postOldNewCommentTagR = postNewCommentTagR
+postOldNewCommentTagR = postNewCommentTagR False
 
-postNewCommentTagR :: Text -> Text -> CommentId -> Handler Html
-postNewCommentTagR project_handle target comment_id = do
-    user_id <- requireAuthId
+postCreateNewCommentTagR = postNewCommentTagR True
+postApplyNewCommentTagR = postNewCommentTagR False
 
-    (_, Entity page_id _) <- getPageInfo project_handle target
+postNewCommentTagR :: Bool -> Text -> Text -> CommentId -> Handler Html
+postNewCommentTagR create_tag project_handle target comment_id = do
+    Entity user_id user <- requireAuth
+
+    unless (isJust $ userEstablishedTs user) (permissionDenied "You must be an established user to add tags")
+
+    (Entity project_id _, Entity page_id _) <- getPageInfo project_handle target
+
 
     comment_page_id <- runDB $ getCommentPageId comment_id
 
     when (comment_page_id /= page_id) $ error "wrong page for comment"
 
-    ((result, _), _) <- runFormPost newCommentTagForm
+    all_tags :: [Entity Tag] <- runDB $ select $ from $ \ tag -> do
+        orderBy [ desc (tag ^. TagName) ]
+        return tag
 
+    let formFailure es = error $ T.unpack $ "form submission failed: " <> T.intercalate "; " es
+
+    if create_tag
+        then do
+            ((result_create, _), _) <- runFormPost $ createCommentTagForm
+            case result_create of 
+                FormSuccess (tag_name, _) -> do
+                    runDB $ do
+                        maybe_tag <- getBy $ UniqueTag tag_name
+                        case maybe_tag of
+                            Nothing -> do 
+                                tag_id <- insert $ Tag tag_name
+                                insert $ CommentTag comment_id tag_id user_id 1
+                            Just _ -> permissionDenied "tag already exists"
+                    redirectUltDest $ DiscussCommentR project_handle target comment_id
+                FormMissing -> error "form missing"
+                FormFailure es -> formFailure es
+        else do
+            ((result_apply, _), _) <- runFormPost $ newCommentTagForm all_tags
+            case result_apply of 
+                FormSuccess (tag_id, _) -> do
+                    runDB $ do
+                        maybe_tag <- get tag_id
+                        case maybe_tag of
+                            Nothing -> permissionDenied "tag does not exist"
+                            Just _ -> void $ insert $ CommentTag comment_id tag_id user_id 1
+                    redirectUltDest $ DiscussCommentR project_handle target comment_id
+                FormMissing -> error "form missing"
+                FormFailure es -> formFailure (es <> [T.pack " apply"])
+
+{-
     case result of
         FormMissing -> error "form missing"
         FormFailure es -> error $ T.unpack $ "form submission failed: " <> T.intercalate "; " es
-        FormSuccess tag_name -> do
+        FormSuccess tag_id -> do
             runDB $ do
-                maybe_tag <- getBy $ UniqueTag tag_name
-                tag_id <- case maybe_tag of
+                maybe_tag <- get tag_id
+                case maybe_tag of
+                    {-
                     Nothing -> insert $ Tag tag_name
-                    Just (Entity tag_id _) -> return tag_id
-
-                void $ insert $ CommentTag comment_id tag_id user_id 1
+                    -}
+                    Nothing -> permissionDenied "tag does not exist"
+                    Just _ ->
+                        void $ insert $ CommentTag comment_id tag_id user_id 1
 
             redirectUltDest $ DiscussCommentR project_handle target comment_id
+-}

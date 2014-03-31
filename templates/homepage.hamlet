@@ -1,17 +1,17 @@
 <div .row>
     <div .col-md-6>
         <p>
-            Imagine a future where art, music, software, educational resources, journalism, and research
-            are available for everyone to freely access, use, improve, and share&hellip;
+            Today, proprietary interests are taking ever more control of our technology, education, and culture.
+
     <div .col-md-6>
         <p>
-            If we cooperate, we can provide sustainable, long-term funding
-            for projects that respect our freedoms and celebrate open collaboration.
+            By coordinating, we can fund the progress we want without sacrificing our freedoms…
+
 <div .row>
     <div .col-md-8 .col-lg-9>
         <figure>
             <img alt="Snowdrift.coop &mdash; clearing the path to a Free/Libre/Open world" src=@{StaticR img_logo_png}>
-            <figcaption style="color: slategrey; margin-top: -20px;" class="text-right">
+            <figcaption style="color: #B22222; margin-top: -20px;" class="text-right">
                 a work in progress:
                 <strong> public ALPHA — not functioning yet
     <div .col-md-4 .col-lg-3 .text-center>
@@ -40,11 +40,11 @@
         <p>
             If you are involved in a
             <a href="@{WikiR "snowdrift" "project-requirements"}">free/libre/open
-            project interested in possible inclusion at our launch, please <a href=@{ContactR "snowdrift"}>contact us</a>.
+            project interested being included when we launch, please <a href=@{ContactR "snowdrift"}>contact us</a>.
 
         <h2>Donate
         <p>
-            Our goal is to use the patronage system itself to fund ongoing Snowdrift.coop development,
+            Our goal is to use the patronage system itself to fund ongoing development,
             but plain old donations today will help us get the site fully operating.
 
 <div .row>
@@ -87,10 +87,3 @@
             <em>
                 Please note: Snowdrift.coop is legally incorporated as a non-profit cooperative in Michigan and planning for 501(c)(4) status.
                 Because we are not a traditional 501(c)(3) charity, donations to us are not tax-deductible.
-<hr>
-<div>
-    <figure>
-        <figcaption style="margin: 0">
-            Meet co-founder Aaron Wolf at LibrePlanet March 22-23rd in Cambridge, MA
-        <a href="https://libreplanet.org/2014/">
-            <img style="padding: 0" alt="Come to LibrePlanet 2014!" src="static/img/external/libreplanet2014.png">

@@ -1,6 +1,9 @@
-<form method=post>
-    ^{form}
-    <input type=submit value="add tag">
+<form method=post action="./new/apply">
+    ^{apply_form}
+    <input type=submit value="apply">
 
+<form method=post action="./new/create">
+    ^{create_form}
+    <input type=submit value="create & apply">
 $forall tag <- tags
     ^{tagWidget tag}
