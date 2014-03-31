@@ -127,7 +127,7 @@ postWikiR project_handle target = do
                                     , "(this ticket was automatically generated)"
                                     ]
 
-                            comment_id <- insert $ Comment now (Just now) (Just user_id) (wikiPageDiscussion page) Nothing user_id comment_body 0
+                            comment_id <- insert $ Comment now (Just now) (Just user_id) Nothing (wikiPageDiscussion page) Nothing user_id comment_body 0
 
                             void $ insert $ Ticket now now "edit conflict" comment_id
 

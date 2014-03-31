@@ -65,6 +65,8 @@ import System.Posix.Env.ByteString
 
 import Control.Monad.Reader
 
+import System.Environment (lookupEnv)
+
 runSql :: MonadSqlPersist m => Text -> m ()
 runSql = flip rawExecute [] -- TODO quasiquoter?
 
@@ -115,12 +117,15 @@ makeFoundation conf = do
         Testing -> withEnv "PGDATABASE" "template1" (applyEnv $ persistConfig foundation) >>= \ dbconf' -> do
                 let runDBNoTransaction (SqlPersistT r) = runReaderT r
 
-                runStderrLoggingT $ runResourceT $ withPostgresqlConn (pgConnStr dbconf') $ runDBNoTransaction $ do
-                    liftIO $ putStrLn "dropping database..."
-                    runSql "DROP DATABASE IF EXISTS snowdrift_test;"
-                    liftIO $ putStrLn "creating database..."
-                    runSql "CREATE DATABASE snowdrift_test WITH TEMPLATE snowdrift_test_template;"
-                    liftIO $ putStrLn "ready."
+                options <- maybe [] L.words <$> lookupEnv "SNOWDRIFT_TESTING_OPTIONS" 
+
+                unless (elem "nodrop" options) $ do
+                    runStderrLoggingT $ runResourceT $ withPostgresqlConn (pgConnStr dbconf') $ runDBNoTransaction $ do
+                        liftIO $ putStrLn "dropping database..."
+                        runSql "DROP DATABASE IF EXISTS snowdrift_test;"
+                        liftIO $ putStrLn "creating database..."
+                        runSql "CREATE DATABASE snowdrift_test WITH TEMPLATE snowdrift_test_template;"
+                        liftIO $ putStrLn "ready."
         _ -> return ()
 
     flip runLoggingT (messageLoggerSource foundation logger) $ runResourceT $ do

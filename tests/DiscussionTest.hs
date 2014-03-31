@@ -15,7 +15,29 @@ import Data.Text as T
 import Control.Monad
 
 discussionSpecs :: Spec
-discussionSpecs =
+discussionSpecs = do
+    let postComment route stmts = do
+            get route
+            statusIs 200
+
+            [ form ] <- htmlQuery "form"
+
+            let getAttrs = XML.elementAttributes . XML.documentRoot . HTML.parseLBS
+                Just action = M.lookup "action" $ getAttrs form
+
+            request $ do
+                addNonce
+                setMethod "POST"
+                setUrl action
+                addPostParam "mode" "post"
+                stmts
+
+            statusIsResp 303
+
+        getLatestCommentId = do
+            [ Value (Just comment_id) ] <- runDB $ select $ from $ \ comment -> return (max_ $ comment ^. CommentId)
+            return comment_id
+
     ydescribe "discussion" $ do
         yit "loads the discussion page" $ do
             login
@@ -23,45 +45,22 @@ discussionSpecs =
             get $ DiscussWikiR "snowdrift" "about"
             statusIs 200
 
-        yit "posts some new comments" $ do
+        yit "posts and moves some comments" $ do
             login
 
-            get $ NewDiscussWikiR "snowdrift" "about"
+            liftIO $ putStrLn "posting root comment"
 
-            statusIs 200
-            
-            let postComment stmts = do 
-                [ form ] <- htmlQuery "form"
+            postComment (NewDiscussWikiR "snowdrift" "about") $ byLabel "Comment" "Thread 1 - root message"
 
-                let getAttrs = XML.elementAttributes . XML.documentRoot . HTML.parseLBS
-                    Just action = M.lookup "action" $ getAttrs form
-
-                request $ do
-                    addNonce
-                    setMethod "POST"
-                    setUrl action
-                    addPostParam "mode" "post"
-                    stmts
-
-                statusIs 303
-
-
-            postComment $ do
-                byLabel "Comment" "Thread 1 - root message"
-            
+            liftIO $ putStrLn "posting reply comments"
 
             comment_map <- fmap M.fromList $ forM [1..10] $ \ i -> do
-                [ Value (Just comment_id) ] <- runDB $ select $ from $ \ comment -> return (max_ $ comment ^. CommentId)
+                comment_id <- getLatestCommentId
 
-                get $ ReplyCommentR "snowdrift" "about" comment_id
-
-                statusIs 200
-            
-                postComment $ do
-                    byLabel "Reply" $ T.pack $ "Thread 1 - reply " ++ show i
+                postComment (ReplyCommentR "snowdrift" "about" comment_id) $ byLabel "Reply" $ T.pack $ "Thread 1 - reply " ++ show i
 
                 return (i, comment_id)
-                
+
             let rethread_url = RethreadWikiCommentR "snowdrift" "about" $ comment_map M.! 4
 
             get rethread_url
@@ -76,7 +75,62 @@ discussionSpecs =
                 byLabel "Reason" "testing"
                 addPostParam "mode" "rethread"
 
-            printBody
+            statusIsResp 303
 
-            statusIs 303
+
+    ydescribe "discussion - rethreading" $ do
+        let createComments = do
+                postComment (NewDiscussWikiR "snowdrift" "about") $ byLabel "Comment" "First message"
+                first <- getLatestCommentId
+                postComment (NewDiscussWikiR "snowdrift" "about") $ byLabel "Comment" "Second message"
+                second <- getLatestCommentId
+
+                return (first, second)
+
+            testRethread first second = do
+                let rethread_url c = RethreadWikiCommentR "snowdrift" "about" c
+
+                get $ rethread_url first
+                statusIs 200
+
+                request $ do
+                    addNonce
+                    setMethod "POST"
+                    setUrl $ rethread_url first
+                    byLabel "New Parent Url" $ T.pack $ "/p/snowdrift/w/about/c/" ++ (\ (PersistInt64 i) -> show i) (unKey second)
+                    byLabel "Reason" "testing"
+                    addPostParam "mode" "rethread"
+
+                statusIsResp 303
+
+                get $ DiscussCommentR "snowdrift" "about" second
+                statusIs 200
+
+                printBody
+
+                bodyContains "First message"
+                bodyContains "Second message"
+
+
+        yit "can move newer comments under older" $ do
+            login
+
+            get $ NewDiscussWikiR "snowdrift" "about"
+            statusIs 200
+
+            (first, second) <- createComments
+
+            testRethread first second
+
+
+        yit "can move older comments under newer" $ do
+            login
+
+            get $ NewDiscussWikiR "snowdrift" "about"
+            statusIs 200
+
+            (first, second) <- createComments
+
+            testRethread second first
+
 

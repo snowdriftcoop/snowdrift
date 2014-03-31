@@ -4,8 +4,6 @@ module Handler.Discussion where
 
 import Import
 
-import Data.Time
-
 import Data.Tree
 
 import qualified Data.Foldable as F
@@ -30,6 +28,8 @@ import Yesod.Markdown
 import Model.Markdown
 
 import Yesod.Default.Config
+
+import qualified Control.Monad.State as St
 
 
 getTags :: CommentId -> Handler [Entity Tag]
@@ -167,7 +167,7 @@ countReplies = sum . map (F.sum . fmap (const 1))
 
 
 checkRetractComment :: UserId -> Text -> Text -> CommentId -> Handler (ProjectId, Comment)
-checkRetractComment user_id  project_handle target comment_id = do
+checkRetractComment user_id project_handle target comment_id = do
     comment <- runDB $ get404 comment_id
 
     (Entity project_id _, _) <- getPageInfo project_handle target
@@ -345,6 +345,7 @@ getDiscussWikiR project_handle target = do
             where_ $ foldl1 (&&.) $ catMaybes
                 [ Just $ comment ^. CommentDiscussion ==. val (wikiPageDiscussion page)
                 , Just $ isNothing $ comment ^. CommentParent
+                , Just $ isNothing $ comment ^. CommentRethreaded
                 , if moderator then Nothing else Just $ not_ $ isNothing $ comment ^. CommentModeratedTs
                 ]
 
@@ -355,6 +356,7 @@ getDiscussWikiR project_handle target = do
             where_ $ foldl1 (&&.) $ catMaybes
                 [ Just $ comment ^. CommentDiscussion ==. val (wikiPageDiscussion page)
                 , Just $ not_ $ isNothing $ comment ^. CommentParent
+                , Just $ isNothing $ comment ^. CommentRethreaded
                 , if moderator then Nothing else Just $ not_ $ isNothing $ comment ^. CommentModeratedTs
                 ]
 
@@ -434,14 +436,15 @@ getDiscussCommentR' show_reply project_handle target comment_id = do
 
         when (root_wiki_page_id /= page_id) $ error "Selected comment does not match selected page"
 
-        subtree <- select $ from $ \ comment -> do
-            where_ ( comment ^. CommentAncestorAncestor ==. val comment_id )
-            return comment
+        subtree <- select $ from $ \ comment_ancestor -> do
+            where_ $ comment_ancestor ^. CommentAncestorAncestor ==. val comment_id
+            return comment_ancestor
 
         rest <- select $ from $ \ c -> do
             where_ $ foldl1 (&&.) $ catMaybes
                 [ Just $ c ^. CommentDiscussion ==. val (wikiPageDiscussion page)
                 , Just $ c ^. CommentId >. val comment_id
+                , Just $ isNothing $ c ^. CommentRethreaded
                 , Just $ c ^. CommentId `in_` valList (map (commentAncestorComment . entityVal) subtree)
                 , if moderator then Nothing else Just $ not_ $ isNothing $ c ^. CommentModeratedTs
                 ]
@@ -536,7 +539,7 @@ processWikiComment maybe_parent_id text (Entity project_id project) page = do
 
             roles <- getRoles user_id project_id
 
-            let comment = Entity (Key $ PersistInt64 0) $ Comment now Nothing Nothing (wikiPageDiscussion page) maybe_parent_id user_id text depth
+            let comment = Entity (Key $ PersistInt64 0) $ Comment now Nothing Nothing Nothing (wikiPageDiscussion page) maybe_parent_id user_id text depth
                 user_map = M.singleton user_id $ Entity user_id user
                 rendered_comment = renderDiscussComment (Just $ Entity user_id user) roles (projectHandle project) (wikiPageTarget page) False (return ()) comment [] user_map earlier_closures M.empty False tag_map
 
@@ -548,6 +551,7 @@ processWikiComment maybe_parent_id text (Entity project_id project) page = do
                 comment_id <- insert $ Comment now
                     (if established then Just now else Nothing)
                     (if established then Just user_id else Nothing)
+                    Nothing
                     (wikiPageDiscussion page)
                     maybe_parent_id user_id text depth
 
@@ -785,8 +789,47 @@ getRethreadWikiCommentR project_handle target comment_id = do
     defaultLayout $(widgetFile "rethread")
 
 
+rethreadComments :: RethreadId -> Int -> Maybe CommentId -> DiscussionId -> [CommentId] -> SqlPersistT Handler [CommentId]
+
+rethreadComments rethread_id depth_offset maybe_new_parent_id new_discussion_id comment_ids = do
+    new_comment_ids <- flip St.evalStateT M.empty $ forM comment_ids $ \ comment_id -> do
+        rethreads <- St.get
+
+        Just comment <- get comment_id
+
+        let new_parent_id = maybe maybe_new_parent_id Just $ M.lookup (commentParent comment) rethreads
+
+        new_comment_id <- insert $ comment
+            { commentDepth = commentDepth comment - depth_offset
+            , commentParent = new_parent_id
+            , commentDiscussion = new_discussion_id
+            }
+
+        St.put $ M.insert (Just comment_id) new_comment_id rethreads
+
+        return new_comment_id
+
+    forM_ (zip comment_ids new_comment_ids) $ \ (comment_id, new_comment_id) -> insert_ $ CommentRethread rethread_id comment_id new_comment_id
+
+    insertSelect $ from $ \ (comment_closure `InnerJoin` comment_rethread) -> do
+        on_ $ comment_closure ^. CommentClosureComment ==. comment_rethread ^. CommentRethreadOldComment
+        return $ CommentClosure
+                    <#  (comment_closure ^. CommentClosureTs)
+                    <&> (comment_closure ^. CommentClosureClosedBy)
+                    <&> (comment_closure ^. CommentClosureType)
+                    <&> (comment_closure ^. CommentClosureReason)
+                    <&> (comment_rethread ^. CommentRethreadNewComment)
+
+    update $ \ comment -> do
+        where_ $ comment ^. CommentId `in_` valList comment_ids
+        set comment [ CommentRethreaded =. just (val rethread_id) ]
+
+    return new_comment_ids
+
 postRethreadWikiCommentR :: Text -> Text -> CommentId -> Handler Html
 postRethreadWikiCommentR project_handle target comment_id = do
+    -- TODO (0): AVOID CYCLES
+
     user_id <- requireAuthId
 
     Entity project_id _ <- runDB $ getBy404 $ UniqueProjectHandle project_handle
@@ -848,52 +891,45 @@ postRethreadWikiCommentR project_handle target comment_id = do
 
             when (new_parent_id == commentParent comment && new_discussion_id == commentDiscussion comment) $ error "trying to move comment to its current location"
 
+            new_parent_depth <- maybe (return $ -1) (fmap commentDepth . runDB . get404) new_parent_id
+            old_parent_depth <- maybe (return $ -1) (fmap commentDepth . runDB . get404) $ commentParent comment
+
+            let depth_offset = old_parent_depth - new_parent_depth
+
             mode <- lookupPostParam "mode"
             let action :: Text = "rethread"
             case mode of
                 Just "preview" -> error "no preview for rethreads yet" -- TODO
 
-                Just a | a == action -> do
+                Just action' | action' == action -> do
                     now <- liftIO getCurrentTime
 
                     runDB $ do
-                        insert_ $ CommentRethread now user_id (commentParent comment) (commentDiscussion comment) new_parent_id new_discussion_id comment_id reason
-
-                        let getAncestors c = do
-                                ancestors <- select $ from $ \ comment_ancestor -> do
-                                    where_ $ comment_ancestor ^. CommentAncestorComment ==. val c
-                                    return $ comment_ancestor ^. CommentAncestorAncestor
-
-                                return $ c : map (\ (Value x) -> x) ancestors
-
-                        old_ancestors <- maybe (return []) getAncestors $ commentParent comment
-                        new_ancestors <- maybe (return []) getAncestors new_parent_id
-
-                        descendents' <- select $ from $ \ comment_ancestor -> do
+                        descendents <- fmap (map (\ (Value x) -> x)) $ select $ from $ \ comment_ancestor -> do
                                 where_ $ comment_ancestor ^. CommentAncestorAncestor ==. val comment_id
+                                orderBy [ asc $ comment_ancestor ^. CommentAncestorComment ]
                                 return $ comment_ancestor ^. CommentAncestorComment
 
-                        let descendents = comment_id : map (\ (Value x) -> x) descendents'
+                        let comments = comment_id : descendents
 
-                        unless (null old_ancestors) $ do
-                            to_delete <- select $ from $ \ comment_ancestor -> do
-                                where_ $ comment_ancestor ^. CommentAncestorComment `in_` valList old_ancestors
-                                        &&. comment_ancestor ^. CommentAncestorAncestor `in_` valList descendents
-                                return comment_ancestor
+                        rethread_id <- insert $ Rethread now user_id comment_id reason
 
-                            liftIO $ print to_delete
+                        new_comment_ids <- rethreadComments rethread_id depth_offset new_parent_id new_discussion_id comments
 
-                            delete $ from $ \ comment_ancestor -> do
-                                where_ $ comment_ancestor ^. CommentAncestorComment `in_` valList old_ancestors
-                                        &&. comment_ancestor ^. CommentAncestorAncestor `in_` valList descendents
+                        delete $ from $ \ ancestor -> where_ $ ancestor ^. CommentAncestorComment `in_` valList comments
 
-                            update $ \ c -> do
-                                where_ $ c ^. CommentId ==. val comment_id
-                                set c [ CommentParent =. val new_parent_id ]
+                        forM_ new_comment_ids $ \ new_comment_id -> do
+                            insertSelect $ from $ \ (c `InnerJoin` a) -> do
+                                on_ $ c ^. CommentParent ==. just (a ^. CommentAncestorComment)
+                                where_ $ c ^. CommentId ==. val new_comment_id
+                                return $ CommentAncestor <# val new_comment_id <&> (a ^. CommentAncestorAncestor)
 
-                        forM_ new_ancestors $ \ new_ancestor_id -> forM_ descendents $ \ descendent -> do
-                            liftIO $ putStrLn $ "inserting comment ancestor " ++ show descendent ++ " " ++ show new_ancestor_id
-                            insert_ $ CommentAncestor descendent new_ancestor_id
+                            [ Value maybe_new_parent_id ] <- select $ from $ \ c -> do
+                                where_ $ c ^. CommentId ==. val new_comment_id
+                                return (c ^. CommentParent)
+
+                            maybe (return ()) (insert_ . CommentAncestor new_comment_id) maybe_new_parent_id
+                            
 
                         when (new_discussion_id /= commentDiscussion comment) $ update $ \ c -> do
                                 where_ $ c ^. CommentId `in_` valList descendents
@@ -903,3 +939,5 @@ postRethreadWikiCommentR project_handle target comment_id = do
 
                 m -> error $ "Error: unrecognized mode (" ++ show m ++ ")"
         _ -> error "Error when submitting form."
+
+

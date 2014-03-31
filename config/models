@@ -176,6 +176,7 @@ Comment
     createdTs UTCTime
     moderatedTs UTCTime Maybe
     moderatedBy UserId Maybe
+    rethreaded RethreadId Maybe
     discussion DiscussionId
     parent CommentId Maybe
     user UserId
@@ -191,22 +192,25 @@ CommentAncestor
 
 CommentClosure
     ts UTCTime
-    user UserId
+    closedBy UserId
     type ClosureType
     reason Markdown
     comment CommentId
 
-CommentRethread
+
+Rethread
     ts UTCTime
     moderator UserId
-    oldParent CommentId Maybe
-    oldDiscussion DiscussionId
 
-    newParent CommentId Maybe
-    newDiscussion DiscussionId
-
-    comment CommentId
+    oldComment CommentId
+    
     reason Text
+
+CommentRethread
+    rethread RethreadId
+    oldComment CommentId
+    newComment CommentId
+
 
 Tag
     name Text

@@ -44,10 +44,10 @@ $# used by renderComment function
 
             $of Closed
                 <div .closed>
-                    $if commentClosureUser closure == user_id
+                    $if commentClosureClosedBy closure == user_id
                         The author
                     $else
-                        ^{userWidget $ commentClosureUser closure}
+                        ^{userWidget $ commentClosureClosedBy closure}
                     \ closed this comment ^{renderTime (commentClosureTs closure)}
                     #{renderMarkdown project_handle (commentClosureReason closure)}
 

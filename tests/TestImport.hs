@@ -9,6 +9,7 @@ module TestImport
     , login
     , liftIO
     , extractLocation
+    , statusIsResp
     , module TestImport
     ) where
 
@@ -21,12 +22,19 @@ import Control.Monad.IO.Class (liftIO, MonadIO)
 import Network.URI (URI (uriPath), parseURI)
 import Network.HTTP.Types (StdMethod (..), renderStdMethod)
 import Network.Wai.Test (SResponse (..))
+import qualified Test.HUnit as HUnit
+import qualified Network.HTTP.Types as H
 
 import qualified Data.ByteString as B
-import Data.Text as T
+
+import qualified Data.Text as T
+import Data.Text (Text)
+
 import Data.Text.Encoding (decodeUtf8)
 import Foundation as TestImport
 import Model as TestImport
+
+import Control.Monad (when)
 
 
 type Spec = YesodSpec App
@@ -49,7 +57,7 @@ assertFailure msg = assertEqual msg True False
 -- Convert an absolute URL (eg extracted from responses) to just the path
 -- for use in test requests.
 urlPath :: Text -> Text
-urlPath = pack . maybe "" uriPath . parseURI . unpack
+urlPath = T.pack . maybe "" uriPath . parseURI . T.unpack
 
 -- Stages in login process, used below
 firstRedirect :: (Yesod site, RedirectUrl site url) => StdMethod -> url -> YesodExample site (Maybe B.ByteString)
@@ -66,7 +74,7 @@ assertLoginPage loc = do
                 (testRoot `T.append` "/auth/login") loc
 
     get $ urlPath loc
-    statusIs 200
+    statusIsResp 200
     bodyContains "Login"
 
 
@@ -83,7 +91,7 @@ submitLogin user pass = do
 
 extractLocation :: YesodExample site (Maybe B.ByteString)
 extractLocation = do
-    statusIs 303
+    statusIsResp 303
     withResponse ( \ SResponse { simpleHeaders = h } ->
                         return $ lookup "Location" h
                  )
@@ -110,3 +118,11 @@ login = do
 
     liftIO $ putStrLn "Logged in."
 
+
+statusIsResp :: Int -> YesodExample site ()
+statusIsResp number = withResponse $ \ SResponse { simpleStatus = s } -> do
+  when (H.statusCode s /= number) printBody
+  liftIO $ flip HUnit.assertBool (H.statusCode s == number) $ concat
+    [ "Expected status was ", show number
+    , " but received status was ", show $ H.statusCode s
+    ]
