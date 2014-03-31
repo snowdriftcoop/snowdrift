@@ -40,11 +40,11 @@
         <p>
             If you are involved in a
             <a href="@{WikiR "snowdrift" "project-requirements"}">free/libre/open
-            project interested in possible inclusion at our launch, please <a href=@{ContactR "snowdrift"}>contact us</a>.
+            project interested being included when we launch, please <a href=@{ContactR "snowdrift"}>contact us</a>.
 
         <h2>Donate
         <p>
-            Our goal is to use the patronage system itself to fund ongoing Snowdrift.coop development,
+            Our goal is to use the patronage system itself to fund ongoing development,
             but plain old donations today will help us get the site fully operating.
 
 <div .row>
