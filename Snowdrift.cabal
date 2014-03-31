@@ -106,12 +106,12 @@ library
                 ScopedTypeVariables
 
     build-depends: base                          >= 4          && < 5
-                 -- , yesod-platform                >= 1.1        && < 1.2
-                 , yesod                         >= 1.2        && < 1.3
-                 , yesod-core                    >= 1.2        && < 1.3
+                 -- , yesod-platform
+                 , yesod                         == 1.2.2.1
+                 , yesod-core                    == 1.2.4.5
                  , yesod-auth                    >= 1.2        && < 1.3
                  , yesod-static                  >= 1.2        && < 1.3
-                 , yesod-form                    >= 1.3        && < 1.4
+                 , yesod-form                    == 1.3.3
                  , clientsession                 >= 0.9        && < 0.10
                  , resourcet
                  , bytestring                    >= 0.9        && < 0.11
@@ -121,7 +121,7 @@ library
                  , persistent-template           >= 1.2        && < 1.3
                  , template-haskell
                  , hamlet                        >= 1.1        && < 1.2
-                 , shakespeare-css               >= 1.0        && < 1.1
+                 , shakespeare-css               == 1.0.6.4
                  , shakespeare-js                >= 1.0.2      && < 1.2
                  , shakespeare-text              >= 1.0        && < 1.1
                  , hjsmin                        >= 0.1        && < 0.2
@@ -135,26 +135,26 @@ library
                  , lifted-base
                  , vector
                  , data-default
-                 , aeson
+                 , aeson                         == 0.6.1.0
                  , conduit                       >= 1.0
-                 , monad-logger                  >= 0.3        && < 0.3.3
-                 , fast-logger                   >= 0.3
+                 , monad-logger                  >= 0.3        && < 0.4
+                 , fast-logger                   >= 0.3        && < 0.4
                  , time
                  , time-units
                  , transformers
                  , random
-                 , yesod-markdown                >= 0.7
+                 , yesod-markdown                == 0.8.1
                  , yesod-newsfeed
                  , Diff                          >= 0.3        && < 0.4
                  , path-pieces
                  , containers
                  , authenticate
                  , blaze-builder
-                 , blaze-html
+                 , blaze-html                    == 0.6.1.1
                  , blaze-markup
                  , attoparsec                    >= 0.10.3.0    && < 0.11.0.0
                  , old-locale
-                 , hit                           >= 0.5         && < 1.0
+                 , hit                           >= 0.5         && < 0.5.5
                  , process
                  , temporary
                  , regex-tdfa                    >= 1.1 && < 1.2
@@ -241,3 +241,4 @@ test-suite test
                  , html-conduit
                  , xml-conduit
                  , esqueleto                     >= 1.3
+                 , HUnit == 1.2.5.2
