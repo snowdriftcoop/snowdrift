@@ -57,7 +57,7 @@ requireModerator message project_handle user_id = do
 
     when (c < 1) $ permissionDenied message
 
--- renderComment is for how each comment is rendered within whatever larger context it may have
+-- |renderComment is for how each comment is rendered within whatever larger context it may have
 renderComment :: Maybe (Entity User) -> [Role] -> Text -> Text -> M.Map UserId (Entity User) -> Int -> Int
     -> [CommentClosure] -> M.Map CommentId CommentClosure -> Bool -> Map TagId Tag -> Tree (Entity Comment) -> Maybe Widget -> Widget
 
@@ -322,7 +322,7 @@ buildCommentTree root rest =
 getOldDiscussWikiR :: Text -> Text -> Handler Html
 getOldDiscussWikiR project_handle target = redirect $ DiscussWikiR project_handle target
 
--- getDiscussWikiR generates the associated discussion page for each wiki page
+-- |getDiscussWikiR generates the associated discussion page for each wiki page
 getDiscussWikiR :: Text -> Text -> Handler Html
 getDiscussWikiR project_handle target = do
     --Entity user_id user <- requireAuth
@@ -480,7 +480,7 @@ getDiscussCommentR' show_reply project_handle target comment_id = do
 
     defaultLayout $ renderDiscussComment mviewer roles project_handle target show_reply comment_form (Entity comment_id root) rest users earlier_closures closure_map True tag_map
 
--- renderDiscussComment is for permalink views of particular comments
+-- |renderDiscussComment is for permalink views of particular comments
 renderDiscussComment :: Maybe (Entity User) -> [Role] -> Text -> Text -> Bool -> Widget
     -> Entity Comment -> [Entity Comment]
     -> M.Map UserId (Entity User)
