@@ -5,4 +5,3 @@ module Model.ClosureType (ClosureType (..)) where
 
 import Model.ClosureType.Internal
 
-

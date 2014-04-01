@@ -16,6 +16,7 @@ import Model.AnnotatedTag
 import Model.User
 import Model.Role
 import Model.ClosureType
+import Model.CollapseState
 import Model.ViewType
 import Model.WikiPage
 
@@ -58,10 +59,10 @@ requireModerator message project_handle user_id = do
     when (c < 1) $ permissionDenied message
 
 
-renderComment :: Maybe (Entity User) -> [Role] -> Text -> Text -> M.Map UserId (Entity User) -> Int -> Int
+renderComment :: UTCTime -> Maybe (Entity User) -> [Role] -> Text -> Text -> M.Map UserId (Entity User) -> Int -> Int
     -> [CommentClosure] -> M.Map CommentId CommentClosure -> Bool -> Map TagId Tag -> Tree (Entity Comment) -> Maybe Widget -> Widget
 
-renderComment mviewer viewer_roles project_handle target users max_depth depth earlier_closures closure_map show_actions tag_map tree mcomment_form = do
+renderComment now mviewer viewer_roles project_handle target users max_depth depth earlier_closures closure_map show_actions tag_map tree mcomment_form = do
     maybe_route <- handlerToWidget getCurrentRoute
     (comment_form, _) <- handlerToWidget $ generateFormPost $ commentForm Nothing Nothing
 
@@ -96,7 +97,32 @@ renderComment mviewer viewer_roles project_handle target users max_depth depth e
 
     Just action <- getCurrentRoute
 
-    $(widgetFile "comment_body")
+    collapse_state <- maybe (return FullyVisible) (handlerToWidget . collapseState now) maybe_closure
+
+    case (depth == 0, collapse_state) of
+        (True, _) -> $(widgetFile "comment_body")
+        (_, FullyVisible) -> $(widgetFile "comment_body")
+
+        (_, Collapsed) -> -- TODO: prettify, unify with messages in comment_body
+            [whamlet|
+                $case maybe Closed commentClosureType maybe_closure
+                    $of Closed
+                        <div .closed>
+                            Closed #
+                            <a href=@{DiscussCommentR project_handle target comment_id}>
+                                comment thread
+                            \ collapsed.
+                                
+
+                    $of Retracted
+                        <div .retracted>
+                            Retracted #
+                            <a href=@{DiscussCommentR project_handle target comment_id}>
+                                comment thread
+                            \ collapsed.
+            |]
+
+        (_, FullyHidden) -> return ()
 
 
 disabledCommentForm :: Form Markdown
@@ -328,6 +354,8 @@ getDiscussWikiR project_handle target = do
     muser <- maybeAuth
     (Entity project_id project, Entity page_id page) <- getPageInfo project_handle target
 
+    now <- liftIO getCurrentTime
+
     affiliated <- case muser of 
         Nothing -> return False
         Just (Entity user_id _) ->
@@ -381,7 +409,7 @@ getDiscussWikiR project_handle target = do
 
     let tag_map = M.fromList $ entityPairs tags
         comments = forM_ roots $ \ root ->
-            renderComment muser roles project_handle target users 10 0 [] closure_map True tag_map (buildCommentTree root rest) Nothing
+            renderComment now muser roles project_handle target users 10 0 [] closure_map True tag_map (buildCommentTree root rest) Nothing
 
     (comment_form, _) <- generateFormPost $ commentForm Nothing Nothing
 
@@ -488,8 +516,10 @@ renderDiscussComment :: Maybe (Entity User) -> [Role] -> Text -> Text -> Bool ->
     -> Bool -> M.Map TagId Tag -> Widget
 
 renderDiscussComment viewer roles project_handle target show_reply comment_form root rest users earlier_closures closure_map show_actions tag_map = do
+    now <- liftIO getCurrentTime
+
     let tree = buildCommentTree root rest
-        comment = renderComment viewer roles project_handle target users 1 0 earlier_closures closure_map show_actions tag_map tree mcomment_form
+        comment = renderComment now viewer roles project_handle target users 1 0 earlier_closures closure_map show_actions tag_map tree mcomment_form
         mcomment_form =
             if show_reply
                 then Just comment_form
@@ -745,7 +775,7 @@ getWikiNewCommentsR project_handle = do
                     where_ $ c ^. CommentId ==. val comment_id
                     return $ p ^. WikiPageTarget
 
-                let rendered_comment = renderComment mviewer roles project_handle target users 1 0 earlier_closures closure_map True tag_map (Node (Entity comment_id comment) []) Nothing
+                let rendered_comment = renderComment now mviewer roles project_handle target users 1 0 earlier_closures closure_map True tag_map (Node (Entity comment_id comment) []) Nothing
 
                 [whamlet|$newline never
                     <div .row>

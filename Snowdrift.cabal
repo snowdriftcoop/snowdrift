@@ -41,6 +41,7 @@ library
                      Model.ViewType
                      Model.Settings
                      Model.WikiPage
+                     Model.CollapseState
                      Settings
                      Settings.StaticFiles
                      Settings.Development
@@ -81,6 +82,7 @@ library
 
     other-modules: Model.Settings.Internal
                    Model.ClosureType.Internal
+                   Model.CollapseState.Internal
                    Model.Role.Internal
                    Model.ViewType.Internal
                    Model.Permission.Internal
