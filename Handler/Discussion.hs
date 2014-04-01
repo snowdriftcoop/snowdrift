@@ -59,6 +59,7 @@ requireModerator message project_handle user_id = do
     when (c < 1) $ permissionDenied message
 
 
+-- renderComment is for how each comment is rendered within whatever larger context it may have
 renderComment :: UTCTime -> Maybe (Entity User) -> [Role] -> Text -> Text -> M.Map UserId (Entity User) -> Int -> Int
     -> [CommentClosure] -> M.Map CommentId CommentClosure -> Bool -> Map TagId Tag -> Tree (Entity Comment) -> Maybe Widget -> Widget
 
@@ -410,6 +411,7 @@ getDiscussWikiR project_handle target = do
     let tag_map = M.fromList $ entityPairs tags
         comments = forM_ roots $ \ root ->
             renderComment now muser roles project_handle target users 10 0 [] closure_map True tag_map (buildCommentTree root rest) Nothing
+            -- the first number above after "users" specifies how many replies to show at once, with the first counted as reply 0
 
     (comment_form, _) <- generateFormPost $ commentForm Nothing Nothing
 
@@ -507,7 +509,7 @@ getDiscussCommentR' show_reply project_handle target comment_id = do
 
     defaultLayout $ renderDiscussComment mviewer roles project_handle target show_reply comment_form (Entity comment_id root) rest users earlier_closures closure_map True tag_map
 
-
+-- renderDiscussComment is for permalink views of particular comments
 renderDiscussComment :: Maybe (Entity User) -> [Role] -> Text -> Text -> Bool -> Widget
     -> Entity Comment -> [Entity Comment]
     -> M.Map UserId (Entity User)
@@ -519,7 +521,8 @@ renderDiscussComment viewer roles project_handle target show_reply comment_form 
     now <- liftIO getCurrentTime
 
     let tree = buildCommentTree root rest
-        comment = renderComment now viewer roles project_handle target users 1 0 earlier_closures closure_map show_actions tag_map tree mcomment_form
+        comment = renderComment now viewer roles project_handle target users 11 0 earlier_closures closure_map show_actions tag_map tree mcomment_form
+        -- the first number above after "users" specifies how many replies to show at once, with the first counted as reply 0
         mcomment_form =
             if show_reply
                 then Just comment_form
@@ -775,7 +778,8 @@ getWikiNewCommentsR project_handle = do
                     where_ $ c ^. CommentId ==. val comment_id
                     return $ p ^. WikiPageTarget
 
-                let rendered_comment = renderComment now mviewer roles project_handle target users 1 0 earlier_closures closure_map True tag_map (Node (Entity comment_id comment) []) Nothing
+                let rendered_comment = renderComment now mviewer roles project_handle target users 8 0 earlier_closures closure_map True tag_map (Node (Entity comment_id comment) []) Nothing
+                -- the first number above after "users" specifies how many replies to show at once, with the first counted as reply 0
 
                 [whamlet|$newline never
                     <div .row>

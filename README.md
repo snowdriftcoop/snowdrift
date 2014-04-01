@@ -67,6 +67,7 @@ We also make sure all our JavaScript is recognized by the FSF's [LibreJS plugin]
 
 We have a separate wiki and discussion page on the site for discussing specific [web-design issues](https://snowdrift.coop/p/snowdrift/w/site-design).
 
+Please consider adding concise comments to your code explaining to others anything you think may be unclear.
 
 Working on the code
 ===================
