@@ -1,3 +1,5 @@
+-- Each project can generate invitation codes to give users special roles such as Moderator or Team Member or Admin.
+
 module Handler.Invitation where
 
 import Import
