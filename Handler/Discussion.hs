@@ -104,7 +104,7 @@ disabledCommentForm = renderBootstrap3 $ areq snowdriftMarkdownField ("Reply" { 
 
 commentForm :: Maybe CommentId -> Maybe Markdown -> Form Markdown
 commentForm parent content =
-    let comment_label = if isJust parent then "Reply" else "Comment"
+    let comment_label = if isJust parent then "Reply" else "New Topic"
      in renderBootstrap3 $ areq' snowdriftMarkdownField comment_label content
 
 
