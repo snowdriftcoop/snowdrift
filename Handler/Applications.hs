@@ -1,3 +1,5 @@
+-- Applications.hs (plural) is for viewing the *list* of all volunteer applications for a project
+
 module Handler.Applications where
 
 import Import
