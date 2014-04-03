@@ -1,3 +1,5 @@
+-- Application.hs (singular name) is for viewing the details of a single volunteer's application
+
 module Handler.Application where
 
 import Import
