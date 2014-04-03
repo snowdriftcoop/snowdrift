@@ -1,13 +1,18 @@
 <div .row>
     <div .col-sm-6>
         <a href="@{WikiR project_handle target}"> back to wiki page
-    <div .col-sm-6>
-        $if affiliated
-            <a href="@{NewDiscussWikiR project_handle target}"> new discussion thread
+    $if has_comments
+        <div .col-sm-6>
+            <a href="@{NewDiscussWikiR project_handle target}"> new discussion topic
 <hr .wikitop>
 ^{comments}
-$if (&&) affiliated $ not has_comments
-    <form action="@{DiscussWikiR project_handle target}" method="POST">
-        ^{comment_form}
-        <input type="submit" name="mode" value="preview">
-
+$if not has_comments
+    $if isJust muser
+        <form action="@{DiscussWikiR project_handle target}" method="POST">
+            ^{comment_form}
+            <input type="submit" name="mode" value="preview">
+    $else
+        <p>
+            There is no discussion here yet.
+            <a href=@{AuthR LoginR}>Sign in
+            to start a new topic.
