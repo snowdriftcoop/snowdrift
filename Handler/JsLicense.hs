@@ -1,3 +1,5 @@
+-- Aside from sharing license info as a value itself, this is here so that our code will be recognized as FLO by LibreJS http://www.gnu.org/software/librejs
+
 module Handler.JsLicense where
 
 import Import

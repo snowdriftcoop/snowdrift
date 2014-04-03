@@ -252,12 +252,12 @@ userCreateForm ident extra = do
                     ^{fvInput identView}
             <tr>
                 <td>
-                    Password:
+                    Passphrase:
                 <td>
                     ^{fvInput passwd1View}
             <tr>
                 <td>
-                    Repeat Password:
+                    Repeat passphrase:
                 <td>
                     ^{fvInput passwd2View}
             <tr>

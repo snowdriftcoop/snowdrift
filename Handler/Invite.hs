@@ -1,3 +1,6 @@
+{- Each project can generate invitation codes to give users special roles such as Moderator or Team Member or Admin.
+Invite.hs is the part where users affiliated with a project generate invitations and see outstanding or past invitations. -}
+
 module Handler.Invite where
 
 import Import

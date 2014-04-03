@@ -31,6 +31,7 @@ HTML, CSS, and JavaScript work on the site may be done without knowing Haskell, 
 * For learning Haskell, check out the [Haskell Wikibook](https://en.wikibooks.org/wiki/Haskell), which also has links to additional resources.
 * Stack Overflow user postings are FLO (CC-BY-SA), see the tags for [yesod](http://stackoverflow.com/questions/tagged/yesod) and [haskell](http://stackoverflow.com/questions/tagged/yesod)
 * The #yesod and #haskell IRC channels on freenode.net are active and helpful
+* "cabal repl" is a nice command that runs the GHCI command-line interpreter but pulls in the projects functions instead of just the prelude set
 
 Our front-end uses **[Twitter Bootstrap](http://getbootstrap.com/)** for layout and styles, although there are cases where we use our own custom CSS.
 
@@ -67,6 +68,8 @@ We also make sure all our JavaScript is recognized by the FSF's [LibreJS plugin]
 
 We have a separate wiki and discussion page on the site for discussing specific [web-design issues](https://snowdrift.coop/p/snowdrift/w/site-design).
 
+Please consider adding concise comments to your code explaining to others anything you think may be unclear.
+Ideally, follow the syntax for [Haddock Haskell documentation](http://www.haskell.org/haddock/doc/html/markup.html).
 
 Working on the code
 ===================
