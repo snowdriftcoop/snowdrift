@@ -50,7 +50,7 @@ discussionSpecs = do
 
             liftIO $ putStrLn "posting root comment"
 
-            postComment (NewDiscussWikiR "snowdrift" "about") $ byLabel "Comment" "Thread 1 - root message"
+            postComment (NewDiscussWikiR "snowdrift" "about") $ byLabel "New Topic" "Thread 1 - root message"
 
             liftIO $ putStrLn "posting reply comments"
 
@@ -80,9 +80,9 @@ discussionSpecs = do
 
     ydescribe "discussion - rethreading" $ do
         let createComments = do
-                postComment (NewDiscussWikiR "snowdrift" "about") $ byLabel "Comment" "First message"
+                postComment (NewDiscussWikiR "snowdrift" "about") $ byLabel "New Topic" "First message"
                 first <- getLatestCommentId
-                postComment (NewDiscussWikiR "snowdrift" "about") $ byLabel "Comment" "Second message"
+                postComment (NewDiscussWikiR "snowdrift" "about") $ byLabel "New Topic" "Second message"
                 second <- getLatestCommentId
 
                 return (first, second)

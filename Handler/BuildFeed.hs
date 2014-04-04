@@ -1,3 +1,5 @@
+-- This file generates https://snowdrift.coop/dev/build which is a feed showing updates to the live Snowdrift.coop site
+
 module Handler.BuildFeed where
 
 import Import

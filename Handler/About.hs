@@ -1,3 +1,8 @@
+{- About.hs was used to generate graphs on a deprecated about page.
+Now that we use wiki pages, we couldn't have live JavaScript there,
+so we saved png files of the graphs. But this stuff could still be used somewhere
+eventually or used to generated updated graphs. -}
+
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE ExtendedDefaultRules #-}
@@ -247,7 +252,7 @@ shareValueChart = do
         $(#{String $ hash ident}).addClass("chart");
 
         $.jqplot(#{String ident}, #{mkPlotsArray plots},
-            { title: "Monthly Pledge Share Amount"
+            { title: "Monthly Pledge Share Amount (given all pledges are single share)"
             , seriesDefaults: {showMarker : false}
             , axesDefaults: { pad: 0 }
             , axes:
@@ -279,7 +284,7 @@ projectValueChart = do
         $(#{String $ hash ident}).addClass("chart");
 
         $.jqplot(#{String ident}, #{mkPlotsArray plots},
-            { title: "Project Monthly Donations"
+            { title: "Project Monthly Donations (given all pledges are single share)"
             , seriesDefaults: {showMarker: false}
             , axesDefaults: { pad: 0 }
             , axes:
