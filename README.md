@@ -157,18 +157,11 @@ Setting up the database
 
 Go to the config/ directory within the project directory and make a copy of postgresql.template and name the new file postgresql.yml
 
-Create database user:
+Create database user called "snowdrift_development" *without* superuser, createdb, or createuser priveleges:
 
-    sudo -u postgres createuser
+    sudo -u postgres createuser -S -D -R snowdrift_development
 
-Answer prompts accordingly:
-
-* add name snowdrift_development
-* do not make super user
-* do not allow role to create databases
-* do not allow role to be allowed to create more new roles
-
-Create snowdrift database:
+Create snowdrift_development database:
 
     sudo -u postgres createdb snowdrift_development
 
@@ -180,11 +173,11 @@ You should see a line that looks like:
 
     postgres=#
 
-Add password to user (you may substitute your chosen passphrase instead of 'somepassphrase'):
+Add a password to the snowdrift_development user (you may substitute your chosen passphrase instead of 'somepassphrase'):
 
     postgres=# alter user snowdrift_development with encrypted password 'somepassphrase';
 
-Then to add user to database:
+Then add user to database:
 
     postgres=# grant all privileges on database snowdrift_development to snowdrift_development;
 
@@ -198,7 +191,8 @@ Import development database:
 Running the site
 ----------------
 
-Once snowdrift is built, assuming you're using a cabal sandbox and have set your PATH correctly, make sure you are in your project directory, then start the server by running:
+Once snowdrift is built and assuming you're using a cabal sandbox, have set your PATH correctly, and are in your snowdrift directory,
+you can start the server with the command:
 
     Snowdrift Development
 
@@ -209,13 +203,14 @@ If you aren't using a cabal sandbox and/or don't have your PATH set correctly, y
 To rebuild the site after changes to the code, run cabal install first before starting the server.
     
 Alternately, you may use the yesod devel command which does a combined rebuild and server start.
-In rare cases, yesod devel may succeed where cabal install failed (or vice versa), but the main advantage to yesod devel is that it can be left running and will automatically update your build after each saved change.
+In rare cases, yesod devel may succeed where cabal install failed (or vice versa),
+but the main advantage to yesod devel is that it can be left running and will automatically update your build after each saved change to any file.
                                              
-To enable this, first install yesod-bin:
+To enable yesod devel, first install yesod-bin:
 
     cabal install yesod-bin
 
-Then, you can rebuild and start the server with:
+From now on, you can rebuild and start the server with:
 
     yesod devel
 
@@ -231,9 +226,15 @@ You can log into the site via the built-in system with user: admin pass: admin
 
 With that user, create wiki pages at localhost:3000/p/snowdrift/w/*pagename*/new
 
-See the documentation on the live site [about the wiki](https://snowdrift.coop/p/snowdrift/w/wiki) and more.
-    
-    
+See the wiki documentation on the live site [about the wiki](https://snowdrift.coop/p/snowdrift/w/wiki) and more.
+
+That's all you need to get started!
+You can now register new users, make pledges, and test and work on all aspects of the site.
+
+
+Additional notes about database and testing
+===========================================
+
 Database migrations
 -------------------
 
@@ -254,21 +255,26 @@ In any event, be sure to add the new migrations/migrateN file to git when you co
 When merging migrations, always put any you've added on the end - don't merge them into migration files others have probably already run.
 
 
-Updating the test devDB database
+Updating the devDB database
 --------------------------------
 
-If you make specific improvements or additions to your test DB that aren't just playing around but that you think will make for a better starting test DB for other contributors, use the following command in your main project directory to export the changes (which can then be committed via git as usual):
+If you make specific improvements or additions to your database that aren't just playing around but that you think will make for a better starting database for other contributors, use the following command in your main project directory to export the changes (which can then be committed via git as usual):
 
     sudo -u postgres pg_dump snowdrift_development >devDB.sql
 
-Resetting the test database
+Resetting your database
 ---------------------------
 
-If you want to remove your test changes and reset your database to the devDB default, first delete your database with the following command:
+To remove any changes and reset your database to the devDB default
+(such as when others have provided a new update you want to try or when you want to start clean before making changes you plan to commit),
+follow these steps:
+
+Start by deleting your database:
 
     sudo -u postgres psql <<<'drop database snowdrift_development'
 
-To then re-create the database, simply rerun two of the commands from the "Setting up the database" section above.
+Then simply re-create the database by rerunning two of the commands from the "Setting up the database" section above.
+
 First the "Create snowdrift database" command:
 
     sudo -u postgres createdb snowdrift_development
@@ -278,6 +284,84 @@ and then the "Import development database" command:
     sudo -u postgres psql snowdrift_development <devDB.sql
 
 That's it. You will *not* need to re-run the database user commands.
+
+
+Running tests
+=============
+
+After making various changes to the code and running locally to verify that everything compiles and also appears to work as desired,
+it is best to then run our automated tests before sharing your changes with the main project.
+
+Setting up the test template database
+-------------------------------------
+
+To prepare for running tests, you will need to install some extra dependencies with the command:
+
+    cabal install --only-dependencies --enable-tests
+
+Like setting up the original development database, we then need to set up a database and user for testing.
+
+Create database user *without* superuser or createrole priveleges but *with* createdb priveleges:
+
+    sudo -u postgres createuser -S -d -R snowdrift_test
+
+Create the snowdrift_test database *template*:
+
+    sudo -u postgres createdb snowdrift_test_template
+
+Run postgres psql to bring up the postgres=# prompt:
+
+    sudo -u postgres psql
+
+At the postgres=# prompt, mark the new database as a template:
+
+    postgres=# update pg_database set datistemplate=true where datname='snowdrift_test_template';
+
+Then, add a password to the snowdrift_test user
+(as with snowdrift_development, you may substitute your chosen passphrase instead of 'somepassphrase'):
+
+    postgres=# alter user snowdrift_test with encrypted password 'somepassphrase';
+
+Leave postgres (with ctrl-D).
+
+If you used a different password than the one you used for snowdrift_development,
+then edit config/postgresql.yml and add a "password:" line under "Testing:" along with your new passphrase.
+
+Finally, import the testDB.sql to the new template database:
+
+    sudo -u postgres psql snowdrift_test_template <testDB.sql
+
+
+Running the tests
+-----------------
+
+To run the tests, do
+
+    yesod test
+
+If tests fail, try to figure out what is wrong. Ask us for help if needed.
+
+
+Updating to the latest test database
+------------------------------------
+
+When the testDB.sql file is updated, you'll need to update your template.
+
+Go to the postgres=# prompt:
+
+    sudo -u postgres psql
+
+Unmark the template:
+
+    postgres=# update pg_database set datistemplate=false where datname='snowdrift_test_template';
+          
+Use ctrl-D to leave the prompt.
+
+Drop the template DB:
+
+    sudo -u postgres psql <<<'drop database snowdrift_test_template'
+
+Then follow the instructions above about setting up the test DB, skipping the dependencies and the items about user creation and user password (those don't need updating).
 
 ---
 

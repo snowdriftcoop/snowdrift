@@ -10,6 +10,7 @@ Development:
   <<: *defaults
 
 Testing:
+  user: snowdrift_test
   database: snowdrift_test
   <<: *defaults
 
