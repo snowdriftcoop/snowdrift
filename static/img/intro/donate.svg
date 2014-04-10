@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="210"
+   height="60"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.48.3.1 r9886"
+   sodipodi:docname="New document 1">
+  <defs
+     id="defs4">
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4857"
+       id="linearGradient6880"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(227.52285,-306.97032)"
+       x1="151.75447"
+       y1="814.69196"
+       x2="151.75447"
+       y2="847.9082" />
+    <linearGradient
+       inkscape:collect="always"
+       id="linearGradient4857">
+      <stop
+         style="stop-color:#ffffff;stop-opacity:1;"
+         offset="0"
+         id="stop4859" />
+      <stop
+         style="stop-color:#ffffff;stop-opacity:0;"
+         offset="1"
+         id="stop4861" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4790"
+       id="linearGradient6885"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(1.3333335,0,0,1,211.69705,83.817183)"
+       x1="122.47333"
+       y1="473.47906"
+       x2="122.47333"
+       y2="423.54349" />
+    <linearGradient
+       id="linearGradient4790">
+      <stop
+         style="stop-color:#ff9800;stop-opacity:1;"
+         offset="0"
+         id="stop4792" />
+      <stop
+         style="stop-color:#ff9600;stop-opacity:1;"
+         offset="1"
+         id="stop4794" />
+    </linearGradient>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1.24"
+     inkscape:cx="-34.112903"
+     inkscape:cy="30"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     fit-margin-top="4"
+     fit-margin-left="4"
+     fit-margin-right="4"
+     fit-margin-bottom="4"
+     inkscape:window-width="1366"
+     inkscape:window-height="710"
+     inkscape:window-x="0"
+     inkscape:window-y="35"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-270,-502.36218)">
+    <rect
+       style="fill:none;stroke:#ff7d00;stroke-width:2;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       id="rect5726"
+       width="200"
+       height="50"
+       x="275"
+       y="507.36218"
+       rx="25"
+       ry="25" />
+    <rect
+       ry="25"
+       rx="25"
+       y="507.36218"
+       x="275"
+       height="50"
+       width="200"
+       id="rect5728"
+       style="fill:url(#linearGradient6885);fill-opacity:1;fill-rule:nonzero;stroke:none" />
+    <text
+       sodipodi:linespacing="125%"
+       id="text5730"
+       y="543.3844"
+       x="301.54453"
+       style="font-size:36.98973083px;font-style:oblique;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial Oblique"
+       xml:space="preserve"><tspan
+         y="543.3844"
+         x="301.54453"
+         id="tspan5732"
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:Linux Biolinum O;-inkscape-font-specification:Linux Biolinum O Bold">Donate??</tspan></text>
+    <path
+       inkscape:connector-curvature="0"
+       style="opacity:0.5;fill:url(#linearGradient6880);fill-opacity:1;fill-rule:nonzero;stroke:none"
+       d="m 299.99155,507.36448 c -13.85,0 -25,11.15 -25,25 l 200,0 c 0,-13.85 -11.15,-25 -25,-25 l -150,0 z"
+       id="path5734" />
+  </g>
+</svg>
