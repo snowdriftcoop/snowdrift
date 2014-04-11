@@ -176,6 +176,28 @@ renderBootstrap3 aform fragment = do
                 |]
     return (res, widget)
 
+checkboxesFieldList' :: (Eq a, RenderMessage site FormMessage, RenderMessage site msg) => [(msg, a)]
+                     -> Field (HandlerT site IO) [a]
+checkboxesFieldList' = checkboxesField' . optionsPairs
+
+checkboxesField' :: (Eq a, RenderMessage site FormMessage)
+                 => HandlerT site IO (OptionList a)
+                 -> Field (HandlerT site IO) [a]
+checkboxesField' ioptlist = (multiSelectField ioptlist)
+    { fieldView =
+        \theId name attrs val isReq -> do
+            opts <- fmap olOptions $ handlerToWidget ioptlist
+            let optselected (Left _) _ = False
+                optselected (Right vals) opt = (optionInternalValue opt) `elem` vals
+            [whamlet|
+                <span ##{theId}>
+                    $forall opt <- opts
+                        <input type=checkbox id="#{name}_#{optionExternalValue opt}" name=#{name} value=#{optionExternalValue opt} *{attrs} :optselected val opt:checked>
+                        <label for="#{name}_#{optionExternalValue opt}">
+                            #{optionDisplay opt}
+                |]
+    }
+
 redirectParams :: (MonadHandler (HandlerT site m), MonadBaseControl IO m) => Route site -> [(Text, Text)] -> HandlerT site m a
 redirectParams route params = getUrlRenderParams >>= \ render -> redirect $ render route params
 
