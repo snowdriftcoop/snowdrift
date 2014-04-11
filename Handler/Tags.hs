@@ -119,19 +119,40 @@ getOldCommentTagsR project_handle target comment_id = redirect $ CommentTagsR pr
 getCommentTagsR :: Text -> Text -> CommentId -> Handler Html
 getCommentTagsR = processCommentTags renderTags
 
-createCommentTagForm :: Form (Text, Text)
-createCommentTagForm = renderBootstrap3 $ (,)
-    <$> areq textField "" Nothing
-    <*> areq hiddenField "" (Just "create")
+createCommentTagForm :: Form Text
+createCommentTagForm = renderBootstrap3 $ areq textField "" Nothing
+--    <*> areq hiddenField "" (Just "create")
 
-newCommentTagForm :: [Entity Tag] -> Form (TagId, Text)
-newCommentTagForm all_tags = renderBootstrap3 $ (,)
-    <$> areq (selectFieldList tags) "" Nothing
-    <*> areq hiddenField "" (Just "apply")
-    where tags = fmap (\(Entity tag_id tag) -> (tagName tag, tag_id)) all_tags
+newCommentTagForm :: [Entity Tag] -> [Entity Tag] -> Form (Maybe [TagId], Maybe [TagId])
+newCommentTagForm project_tags other_tags = renderBootstrap3 $ (,)
+    -- <$> fmap (\(Entity tag_id tag) -> aopt checkBoxField (tag_id) (tagName tag)) (project_tags <> other_tags)
+    <$> aopt (checkboxesFieldList' $ tags project_tags) "Tags already used in this project:" Nothing
+    <*> aopt (checkboxesFieldList' $ tags other_tags) "Other tags:" Nothing
+--    <*> areq hiddenField "" (Just "apply")
+    where tags = fmap (\(Entity tag_id tag) -> (tagName tag, tag_id))
 
 getOldNewCommentTagR :: Text -> Text -> CommentId -> Handler Html
 getOldNewCommentTagR project_handle target comment_id = redirect $ NewCommentTagR project_handle target comment_id
+
+tagList :: ProjectId -> Handler ([Entity Tag], [Entity Tag])
+tagList project_id = do
+    project_tags :: [Entity Tag] <- runDB $ select $ from $ \(tag `InnerJoin` rel `InnerJoin` comment `InnerJoin` page) -> do
+        on_ ( page ^. WikiPageDiscussion ==. comment ^. CommentDiscussion )
+        on_ ( comment ^. CommentId ==. rel ^. CommentTagComment )
+        on_ ( rel ^. CommentTagTag ==. tag ^. TagId )
+        where_ ( page ^. WikiPageProject ==. val project_id )
+        orderBy [ desc (tag ^. TagName) ]
+        return tag
+
+    other_tags :: [Entity Tag] <- runDB $ select $ from $ \(tag `InnerJoin` rel `InnerJoin` comment `InnerJoin` page) -> do
+        on_ ( page ^. WikiPageDiscussion ==. comment ^. CommentDiscussion )
+        on_ ( comment ^. CommentId ==. rel ^. CommentTagComment )
+        on_ ( rel ^. CommentTagTag ==. tag ^. TagId )
+        where_ ( page ^. WikiPageProject !=. val project_id )
+        orderBy [ desc (tag ^. TagName) ]
+        return tag
+
+    return (project_tags, other_tags)
 
 getNewCommentTagR :: Text -> Text -> CommentId -> Handler Html
 getNewCommentTagR project_handle target comment_id = do
@@ -157,11 +178,29 @@ getNewCommentTagR project_handle target comment_id = do
 
     tags <- annotateCommentTags tag_map project_handle target comment_id comment_tags
 
+    (project_tags, other_tags) <- tagList project_id
+{-
+    project_tags :: [Entity Tag] <- runDB $ select $ from $ \(tag `InnerJoin` rel `InnerJoin` comment `InnerJoin` page) -> do
+        on_ ( page ^. WikiPageDiscussion ==. comment ^. CommentDiscussion )
+        on_ ( comment ^. CommentId ==. rel ^. CommentTagComment )
+        on_ ( rel ^. CommentTagTag ==. tag ^. TagId )
+        where_ ( page ^. WikiPageProject ==. val project_id )
+        orderBy [ desc (tag ^. TagName) ]
+        return tag
+
+    other_tags :: [Entity Tag] <- runDB $ select $ from $ \(tag `InnerJoin` rel `InnerJoin` comment `InnerJoin` page) -> do
+        on_ ( page ^. WikiPageDiscussion ==. comment ^. CommentDiscussion )
+        on_ ( comment ^. CommentId ==. rel ^. CommentTagComment )
+        on_ ( rel ^. CommentTagTag ==. tag ^. TagId )
+        where_ ( page ^. WikiPageProject !=. val project_id )
+        orderBy [ desc (tag ^. TagName) ]
+        return tag
+-}      
     all_tags :: [Entity Tag] <- runDB $ select $ from $ \ tag -> do
         orderBy [ desc (tag ^. TagName) ]
         return tag
 
-    (apply_form, _) <- generateFormPost $ newCommentTagForm all_tags
+    (apply_form, _) <- generateFormPost $ newCommentTagForm project_tags other_tags
     (create_form, _) <- generateFormPost $ createCommentTagForm
 
     defaultLayout $(widgetFile "new_comment_tag")
@@ -196,7 +235,7 @@ postNewCommentTagR create_tag project_handle target comment_id = do
         then do
             ((result_create, _), _) <- runFormPost $ createCommentTagForm
             case result_create of 
-                FormSuccess (tag_name, _) -> do
+                FormSuccess (tag_name) -> do
                     runDB $ do
                         maybe_tag <- getBy $ UniqueTag tag_name
                         case maybe_tag of
@@ -208,14 +247,25 @@ postNewCommentTagR create_tag project_handle target comment_id = do
                 FormMissing -> error "form missing"
                 FormFailure es -> formFailure es
         else do
-            ((result_apply, _), _) <- runFormPost $ newCommentTagForm all_tags
+            (project_tags, other_tags) <- tagList project_id
+            ((result_apply, _), _) <- runFormPost $ newCommentTagForm project_tags other_tags
             case result_apply of 
-                FormSuccess (tag_id, _) -> do
+                FormSuccess (mproject_tag_ids, mother_tag_ids) -> do
+                    let project_tag_ids = fromMaybe [] mproject_tag_ids
+                    let other_tag_ids = fromMaybe [] mother_tag_ids
                     runDB $ do
-                        maybe_tag <- get tag_id
-                        case maybe_tag of
-                            Nothing -> permissionDenied "tag does not exist"
-                            Just _ -> void $ insert $ CommentTag comment_id tag_id user_id 1
+                        let tag_ids = project_tag_ids <> other_tag_ids
+                        valid_tags <- select $ from $ \tag -> do
+                            where_ ( tag ^. TagId `in_` valList tag_ids )
+                            return tag
+                        if (null valid_tags)
+                            then
+                                permissionDenied "error: invalid tag id"
+                            else
+                                void $ insertMany $ fmap (\(Entity tag_id _) -> CommentTag comment_id tag_id user_id 1) valid_tags
+                        -- case maybe_tag of
+                        --    Nothing -> permissionDenied "tag does not exist"
+                        --    Just _ -> void $ insert $ CommentTag comment_id tag_id user_id 1
                     redirectUltDest $ DiscussCommentR project_handle target comment_id
                 FormMissing -> error "form missing"
                 FormFailure es -> formFailure (es <> [T.pack " apply"])
