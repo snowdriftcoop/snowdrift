@@ -195,12 +195,14 @@ getNewCommentTagR project_handle target comment_id = do
         where_ ( page ^. WikiPageProject !=. val project_id )
         orderBy [ desc (tag ^. TagName) ]
         return tag
--}      
+
     all_tags :: [Entity Tag] <- runDB $ select $ from $ \ tag -> do
         orderBy [ desc (tag ^. TagName) ]
         return tag
+-}
 
-    (apply_form, _) <- generateFormPost $ newCommentTagForm project_tags other_tags
+    let filtered_project_tags = filter (\(Entity t _) -> not $ M.member t tag_map)  project_tags
+    (apply_form, _) <- generateFormPost $ newCommentTagForm filtered_project_tags other_tags
     (create_form, _) <- generateFormPost $ createCommentTagForm
 
     defaultLayout $(widgetFile "new_comment_tag")
