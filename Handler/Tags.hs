@@ -127,7 +127,7 @@ newCommentTagForm :: [Entity Tag] -> [Entity Tag] -> Form (Maybe [TagId], Maybe 
 newCommentTagForm project_tags other_tags = renderBootstrap3 $ (,)
     -- <$> fmap (\(Entity tag_id tag) -> aopt checkBoxField (tag_id) (tagName tag)) (project_tags <> other_tags)
     <$> aopt (checkboxesFieldList' $ tags project_tags) "Tags already used in this project:" Nothing
-    <*> aopt (checkboxesFieldList' $ tags other_tags) "Other tags:" Nothing
+    <*> aopt (checkboxesFieldList' $ tags other_tags) "Tags used in other projects:" Nothing
 --    <*> areq hiddenField "" (Just "apply")
     where tags = fmap (\(Entity tag_id tag) -> (tagName tag, tag_id))
 
