@@ -136,7 +136,7 @@ getOldNewCommentTagR project_handle target comment_id = redirect $ NewCommentTag
 
 tagList :: ProjectId -> Handler ([Entity Tag], [Entity Tag])
 tagList project_id = do
-    project_tags :: [Entity Tag] <- runDB $ select $ from $ \(tag `InnerJoin` rel `InnerJoin` comment `InnerJoin` page) -> do
+    project_tags :: [Entity Tag] <- runDB $ selectDistinct $ from $ \(tag `InnerJoin` rel `InnerJoin` comment `InnerJoin` page) -> do
         on_ ( page ^. WikiPageDiscussion ==. comment ^. CommentDiscussion )
         on_ ( comment ^. CommentId ==. rel ^. CommentTagComment )
         on_ ( rel ^. CommentTagTag ==. tag ^. TagId )
@@ -144,7 +144,7 @@ tagList project_id = do
         orderBy [ desc (tag ^. TagName) ]
         return tag
 
-    other_tags :: [Entity Tag] <- runDB $ select $ from $ \(tag `InnerJoin` rel `InnerJoin` comment `InnerJoin` page) -> do
+    other_tags :: [Entity Tag] <- runDB $ selectDistinct $ from $ \(tag `InnerJoin` rel `InnerJoin` comment `InnerJoin` page) -> do
         on_ ( page ^. WikiPageDiscussion ==. comment ^. CommentDiscussion )
         on_ ( comment ^. CommentId ==. rel ^. CommentTagComment )
         on_ ( rel ^. CommentTagTag ==. tag ^. TagId )
