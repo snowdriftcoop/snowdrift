@@ -201,8 +201,8 @@ getNewCommentTagR project_handle target comment_id = do
         return tag
 -}
 
-    let filtered_project_tags = filter (\(Entity t _) -> not $ M.member t tag_map)  project_tags
-    (apply_form, _) <- generateFormPost $ newCommentTagForm filtered_project_tags other_tags
+    let filter_tags = filter (\(Entity t _) -> not $ M.member t tag_map)
+    (apply_form, _) <- generateFormPost $ newCommentTagForm (filter_tags project_tags) (filter_tags other_tags)
     (create_form, _) <- generateFormPost $ createCommentTagForm
 
     defaultLayout $(widgetFile "new_comment_tag")
@@ -238,14 +238,20 @@ postNewCommentTagR create_tag project_handle target comment_id = do
             ((result_create, _), _) <- runFormPost $ createCommentTagForm
             case result_create of 
                 FormSuccess (tag_name) -> do
-                    runDB $ do
+                    msuccess <- runDB $ do
                         maybe_tag <- getBy $ UniqueTag tag_name
                         case maybe_tag of
                             Nothing -> do 
                                 tag_id <- insert $ Tag tag_name
-                                insert $ CommentTag comment_id tag_id user_id 1
-                            Just _ -> permissionDenied "tag already exists"
-                    redirectUltDest $ DiscussCommentR project_handle target comment_id
+                                void $ insert $ CommentTag comment_id tag_id user_id 1
+                            Just _ -> do
+                                return ()
+                        return maybe_tag
+                    if (isJust $ msuccess) then do
+                        addAlert "danger" "that tag already exists"
+                        redirectUltDest $ NewCommentTagR project_handle target comment_id
+                        else do
+                            redirectUltDest $ DiscussCommentR project_handle target comment_id
                 FormMissing -> error "form missing"
                 FormFailure es -> formFailure es
         else do
