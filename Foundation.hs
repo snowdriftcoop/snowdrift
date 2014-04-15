@@ -40,6 +40,8 @@ import Blaze.ByteString.Builder.Char.Utf8 (fromText)
 
 import Yesod.Form.Jquery
 
+import Yesod.Markdown (Markdown (..))
+
 import qualified Data.ByteString.Lazy.Char8 as LB
 import qualified Data.Text.Lazy.Encoding as E
 
@@ -277,13 +279,14 @@ snowdriftAuthBrowserId =
             let parentLogin = apLogin auth toMaster
             [whamlet|
                 <p>
-                    <strong>Mozilla Persona is a secure log-in
-                    that, unlike most other systems, doesn't track you. 
-                    It works near-seamlessly with gmail or yahoo,
-                    but any e-mail will work after setting a password and confirming the account.
+                    <strong>Mozilla Persona is a secure log-in that doesn't track you! 
+                    After registering, it works on many different websites with a single click.
+                <p>
+                    Registering a gmail or yahoo account takes just a quick verification.
+                    Any e-mail will work after setting a password and confirming the account.
                 ^{parentLogin}
                 <p>
-                    The Persona sign-in works for both new and existing accounts.
+                    The Persona sign-in button works for both new and existing accounts.
             |]
      in auth { apLogin = login }
 
@@ -331,6 +334,13 @@ instance YesodAuth App where
             Nothing -> do
                 account_id <- insert $ Account $ Milray 0
                 user_id <- insert $ User (credsIdent creds) Nothing Nothing Nothing Nothing account_id Nothing Nothing Nothing Nothing now now now now Nothing Nothing
+                
+                let message_text = Markdown $ T.unlines
+                        [ "Thanks for registering!"
+                        , "<br> Please read our [**welcome message**](/p/snowdrift/w/welcome) and let us know any questions."
+                        ]
+
+                void $ insert $ Message Nothing now Nothing (Just user_id) message_text
 
                 -- TODO refactor back to insertSelect when quoting issue is resolved
                 --
