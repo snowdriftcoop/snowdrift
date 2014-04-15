@@ -208,7 +208,8 @@ postUserCreateR = do
                 uid_maybe <- insertUnique user
                 lift $ case uid_maybe of
                     Just uid -> do
-                        addAlert "success" $ T.pack ("Created user; welcome! (" ++ show account_id ++ ", " ++ show uid ++ ")") 
+-- The addAlert here didn't render right, and anyway, the "login" alert is also showing currently and we're making a message to welcome users anyway
+--                      addAlert "success" $ T.pack ("Created user; welcome! (" ++ show account_id ++ ", " ++ show uid ++ ")") 
                         return True
 
                     Nothing -> do
