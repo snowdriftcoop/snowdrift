@@ -18,6 +18,7 @@ data UserUpdate =
         , userUpdateStatement :: Maybe Markdown
         }
 
+
 updateUser :: (MonadLogger m, MonadIO m, MonadBaseControl IO m, MonadThrow m, MonadUnsafeIO m) => Key User -> UserUpdate -> SqlPersistT m ()
 updateUser user_id user_update = update $ \ user -> do
         set user $ catMaybes

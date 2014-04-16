@@ -7,7 +7,8 @@ import Yesod hiding ((==.), count, Value)
 import Yesod.Static
 import Yesod.Auth
 import Yesod.Auth.BrowserId
-import Yesod.Auth.HashDB (authHashDB)
+import Yesod.Auth.HashDB (authHashDB, setPassword)
+
 import Yesod.Default.Config
 import Yesod.Default.Util (addStaticContentExternal)
 import Network.HTTP.Conduit (Manager)
@@ -26,6 +27,7 @@ import Model.Currency
 import Control.Applicative
 import Control.Monad.Trans.Resource
 import Control.Monad
+import Control.Exception.Lifted (throwIO, handle)
 
 import Data.Int (Int64)
 import Data.Text as T
@@ -326,31 +328,11 @@ instance YesodAuth App where
     -- Where to send a user after logout
     logoutDest _ = HomeR
 
-    getAuthId creds = runDB $ do
-        now <- liftIO getCurrentTime
-        x <- getBy $ UniqueUser $ credsIdent creds
-        case x of
+    getAuthId creds = do
+        maybe_user_id <- runDB $ getBy $ UniqueUser $ credsIdent creds
+        case maybe_user_id of
             Just (Entity user_id _) -> return $ Just user_id
-            Nothing -> do
-                account_id <- insert $ Account $ Milray 0
-                user_id <- insert $ User (credsIdent creds) Nothing Nothing Nothing Nothing account_id Nothing Nothing Nothing Nothing now now now now Nothing Nothing
-                
-                let message_text = Markdown $ T.unlines
-                        [ "Thanks for registering!"
-                        , "<br> Please read our [**welcome message**](/p/snowdrift/w/welcome) and let us know any questions."
-                        ]
-
-                void $ insert $ Message Nothing now Nothing (Just user_id) message_text
-
-                -- TODO refactor back to insertSelect when quoting issue is resolved
-                --
-                -- insertSelect $ from $ \ p -> return $ TagColor <# (p ^. DefaultTagColorTag) <&> val user_id <&> (p ^. DefaultTagColorColor)
-                --
-                default_tag_colors <- select $ from return
-                forM_ default_tag_colors $ \ (Entity _ (DefaultTagColor tag color)) -> insert $ TagColor tag user_id color
-                --
-
-                return $ Just user_id
+            Nothing -> createUser (credsIdent creds) Nothing Nothing Nothing Nothing
 
     -- You can add other plugins like BrowserID, email or OAuth here
     authPlugins _ = [ snowdriftAuthBrowserId, snowdriftAuthHashDB ]
@@ -363,6 +345,35 @@ instance YesodAuth App where
 
         lift $ defaultLayout $(widgetFile "auth")
 
+
+createUser :: Text -> Maybe Text -> Maybe Text -> Maybe Text -> Maybe Text -> Handler (Maybe UserId)
+createUser ident passwd name avatar nick = do
+    now <- liftIO getCurrentTime
+    handle (\ DBException -> return Nothing) $ runDB $ do
+        account_id <- insert $ Account 0
+        user <- maybe return setPassword passwd $ User ident (Just now) Nothing Nothing name account_id avatar Nothing Nothing nick now now now now Nothing Nothing
+        uid_maybe <- insertUnique user
+        case uid_maybe of
+            Just user_id -> do
+    
+                -- TODO refactor back to insertSelect when quoting issue is resolved
+                --
+                -- insertSelect $ from $ \ p -> return $ TagColor <# (p ^. DefaultTagColorTag) <&> val user_id <&> (p ^. DefaultTagColorColor)
+                --
+                default_tag_colors <- select $ from return
+                forM_ default_tag_colors $ \ (Entity _ (DefaultTagColor tag color)) -> insert $ TagColor tag user_id color
+                --
+
+                let message_text = Markdown $ T.unlines
+                        [ "Thanks for registering!"
+                        , "<br> Please read our [**welcome message**](/p/snowdrift/w/welcome) and let us know any questions."
+                        ]
+
+                void $ insert $ Message Nothing now Nothing (Just user_id) message_text
+                return $ Just user_id
+            Nothing -> do
+                lift $ addAlert "danger" "E-mail or handle already in use."
+                throwIO DBException
 
 
 instance YesodJquery App
