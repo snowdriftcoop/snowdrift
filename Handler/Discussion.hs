@@ -351,7 +351,6 @@ getOldDiscussWikiR project_handle target = redirect $ DiscussWikiR project_handl
 -- |getDiscussWikiR generates the associated discussion page for each wiki page
 getDiscussWikiR :: Text -> Text -> Handler Html
 getDiscussWikiR project_handle target = do
-    --Entity user_id user <- requireAuth
     muser <- maybeAuth
     (Entity project_id project, Entity page_id page) <- getPageInfo project_handle target
 
@@ -668,7 +667,6 @@ getOldWikiNewCommentsR project_handle = redirect $ WikiNewCommentsR project_hand
 getWikiNewCommentsR :: Text -> Handler Html
 getWikiNewCommentsR project_handle = do
     mviewer <- maybeAuth
-    -- Entity viewer_id viewer <- requireAuth
     Entity project_id project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
 
     req <- getRequest
