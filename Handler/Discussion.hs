@@ -429,8 +429,9 @@ getDiscussCommentR =
     getDiscussCommentR' False
 
 getReplyCommentR :: Text -> Text -> CommentId -> Handler Html
-getReplyCommentR =
-    getDiscussCommentR' True
+getReplyCommentR a b c = do
+    _ <- requireAuth
+    getDiscussCommentR' True a b c
 
 postReplyCommentR :: Text -> Text -> CommentId -> Handler Html
 postReplyCommentR project_handle target comment_id = do
