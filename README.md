@@ -102,6 +102,8 @@ To pull updates from our main code, use
 
     git pull git@gitorious.org:snowdrift/snowdrift.git
 
+Note: if you are collaborating with others before a patch is ready to go live and some participants use Gitorious and others use GitHub, you can pull by just using the full git address and just sending your collaborator a an e-mail or otherwise alerting them to pull your updates.
+
 
 Building
 --------
