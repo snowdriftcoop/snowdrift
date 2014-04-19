@@ -50,7 +50,7 @@ projectPledges user_id = do
             not supporting any projects
         $else
             <p>
-                Note: For testing purposes only.  No real money is changing hands yet
+                Note: For testing purposes only.  No real money is changing hands yet.
             <table .table>
                 $forall summary <- project_summaries
                     <tr>

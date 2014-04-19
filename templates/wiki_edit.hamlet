@@ -1,7 +1,7 @@
 <p>
     Page as of ^{renderTime (wikiEditTs edit)}
     <br>
-    Edit comment:
+    Edit comment: #
     $maybe comment <- wikiEditComment edit
         #{comment}
 
