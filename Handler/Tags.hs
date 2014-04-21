@@ -255,8 +255,16 @@ postNewCommentTagR create_tag project_handle target comment_id = do
                 FormMissing -> error "form missing"
                 FormFailure es -> formFailure es
         else do
+            comment_tags <- fmap (map entityVal) $ runDB $ select $ from $ \ comment_tag -> do
+                where_ $ comment_tag ^. CommentTagComment ==. val comment_id
+                return comment_tag
+
+            tag_map <- fmap (M.fromList . entityPairs) $ runDB $ select $ from $ \ tag -> do
+                where_ $ tag ^. TagId `in_` valList (S.toList $ S.fromList $ map commentTagTag comment_tags)
+                return tag
+            let filter_tags = filter (\(Entity t _) -> not $ M.member t tag_map)
             (project_tags, other_tags) <- tagList project_id
-            ((result_apply, _), _) <- runFormPost $ newCommentTagForm project_tags other_tags
+            ((result_apply, _), _) <- runFormPost $ newCommentTagForm (filter_tags project_tags) (filter_tags other_tags)
             case result_apply of 
                 FormSuccess (mproject_tag_ids, mother_tag_ids) -> do
                     let project_tag_ids = fromMaybe [] mproject_tag_ids
