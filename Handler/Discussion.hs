@@ -210,6 +210,7 @@ checkCloseComment user project_handle target comment_id = do
     (Entity project_id _, _) <- getPageInfo project_handle target
 
     -- TODO: what should this be?
+    -- Aaron says: I think this should be changed to *affiliated* OR the original poster, unless/until we make a notification system for closing and a way to re-open. We could also have a *moderated* closing that requires confirmation… There are now comments discussing these things on the site.
     unless (isJust $ userEstablishedTs user) $ permissionDenied "You must be an established user to close a conversation."
 
     return (project_id, comment)
@@ -252,11 +253,15 @@ getCloseWikiComment closure_type project_handle target comment_id = do
 
     let tag_map = M.fromList $ entityPairs tags
 
+    let poster_id = commentUser comment
+    poster <- runDB $ get404 poster_id
+    let users = (M.fromList [ (user_id, Entity user_id user), (poster_id, Entity poster_id poster) ])
+
     (closure_form, _) <- generateFormPost $ closureForm closure_type Nothing
 
     roles <- getRoles user_id project_id
 
-    let rendered_comment = renderDiscussComment (Just $ Entity user_id user) roles project_handle target False (return ()) (Entity comment_id comment) [] (M.singleton user_id $ Entity user_id user) earlier_closures M.empty False tag_map
+    let rendered_comment = renderDiscussComment (Just $ Entity user_id user) roles project_handle target False (return ()) (Entity comment_id comment) [] users earlier_closures M.empty False tag_map
 
     defaultLayout $ [whamlet|
         ^{rendered_comment}
@@ -275,9 +280,11 @@ postRetractWikiCommentR = postCloseWikiComment Retracted
 postCloseWikiCommentR :: Text -> Text -> CommentId -> Handler Html
 postCloseWikiCommentR = postCloseWikiComment Closed
 
+-- a *lot* of postCloseWikiComment is completely redundant to getCloseWikiComment above. There's gotta be a way to clean this up.
 postCloseWikiComment :: ClosureType -> Text -> Text -> CommentId -> Handler Html
 postCloseWikiComment closure_type project_handle target comment_id = do
     Entity user_id user <- requireAuth
+
     (project_id, comment) <- case closure_type of
         Retracted -> checkRetractComment user_id project_handle target comment_id
         Closed -> checkCloseComment user project_handle target comment_id
@@ -314,13 +321,15 @@ postCloseWikiComment closure_type project_handle target comment_id = do
 
                     let tag_map = M.fromList $ entityPairs tags
                         closure = CommentClosure soon user_id closure_type reason comment_id
-                        comment_entity = Entity comment_id comment
-                        users = M.singleton user_id $ Entity user_id user
                         closures = M.singleton comment_id closure
+
+                    let poster_id = commentUser comment
+                    poster <- runDB $ get404 poster_id
+                    let users = (M.fromList [ (user_id, Entity user_id user), (poster_id, Entity poster_id poster) ])
 
                     roles <- getRoles user_id project_id
 
-                    defaultLayout $ renderPreview form action $ renderDiscussComment (Just $ Entity user_id user) roles project_handle target False (return ()) comment_entity [] users earlier_closures closures False tag_map
+                    defaultLayout $ renderPreview form action $ renderDiscussComment (Just $ Entity user_id user) roles project_handle target False (return ()) (Entity comment_id comment) [] users earlier_closures closures False tag_map
 
 
                 Just a | a == action -> do
