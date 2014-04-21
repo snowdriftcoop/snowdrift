@@ -233,6 +233,18 @@ instance YesodPersist App where
 instance YesodPersistRunner App where
     getDBRunner = defaultGetDBRunner connPool
 
+-- set which project in the site runs the site itself
+getSiteProject :: Handler (Entity Project)
+getSiteProject = do
+    handle <- getSiteProjectHandle
+    project <- runDB $ getBy $ UniqueProjectHandle handle
+    case project of
+         Nothing -> error "The site project defined for this website doesn't exist."
+         Just a -> return a
+
+getSiteProjectHandle :: Handler Text
+getSiteProjectHandle = extraSiteProject . appExtra . settings <$> getYesod
+
 authBrowserIdFixed :: AuthPlugin App
 authBrowserIdFixed =
     let complete = PluginR "browserid" []

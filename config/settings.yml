@@ -5,6 +5,7 @@ Default: &defaults
   copyright: "2012-2014 Snowdrift.coop"
   source: "https://gitorious.org/snowdrift/snowdrift"
   githubrepo: "dlthomas/snowdrift"
+  siteproject: "snowdrift"
   #analytics: UA-YOURCODE
 
 Development:

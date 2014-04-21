@@ -67,6 +67,7 @@ data Extra = Extra
     { extraCopyright :: Text
     , extraSourceRepo :: Text
     , extraGithubRepo :: Maybe Text
+    , extraSiteProject :: Text
     , extraAnalytics :: Maybe Text -- ^ Google Analytics
     } deriving Show
 
@@ -75,4 +76,5 @@ parseExtra _ o = Extra
     <$> o .:  "copyright"
     <*> o .:  "source"
     <*> o .:?  "githubrepo"
+    <*> o .:  "siteproject"
     <*> o .:? "analytics"
