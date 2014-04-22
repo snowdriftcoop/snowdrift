@@ -239,7 +239,7 @@ getSiteProject = do
     handle <- getSiteProjectHandle
     project <- runDB $ getBy $ UniqueProjectHandle handle
     case project of
-         Nothing -> error "The site project defined for this website doesn't exist."
+         Nothing -> error "No project has been defined as the owner of this website."
          Just a -> return a
 
 getSiteProjectHandle :: Handler Text
