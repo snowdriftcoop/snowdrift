@@ -3,9 +3,7 @@ Snowdrift.coop
 
 Infrastructure for [Snowdrift.coop](https://snowdrift.coop).
 
-Code is mirrored at [GitHub](https://github.com/dlthomas/snowdrift) (which is popular but proprietary) and [Gitorious](https://gitorious.org/snowdrift/snowdrift) (which is FLO, licensed AGPL, but less popular).
-
-See the main [Git documentation](http://git-scm.com/documentation) if you are new to Git and need to learn the basics. You only need rudimentary understanding to start contributing to our code. It will help to understand branching so that you can segregate work on different features.
+Our code is mirrored at [GitHub](https://github.com/dlthomas/snowdrift) (which is popular but proprietary) and [Gitorious](https://gitorious.org/snowdrift/snowdrift) (which is FLO, licensed AGPL, but less popular).
 
 
 Work to do / how to help
@@ -15,7 +13,10 @@ On the live site, we have [volunteer info](https://snowdrift.coop/p/snowdrift/w/
 
 We have [our own in-progress ticketing system](http://snowdrift.coop/p/snowdrift/t) which lists most of the specific tasks of all sorts, organized with tags indicating priority, skills involved, and more.
 
-This README assumes a basic understanding of command-line operations. If you need help with that or *any other* issues, let us know and we'll be happy to guide you!
+This README assumes you are running a GNU/Linux system and have a basic understanding of command-line operations.
+If you are on a different system, we will still work to help you get set up.
+
+If you need help with *any* issues here, let us know. We are always happy to assist and answer *any* questions!
                                                                                                                                         
 
 About the frameworks and tools we use
@@ -31,9 +32,9 @@ HTML, CSS, and JavaScript work on the site may be done without knowing Haskell, 
 * For learning Haskell, check out the [Haskell Wikibook](https://en.wikibooks.org/wiki/Haskell), which also has links to additional resources.
 * Stack Overflow user postings are FLO (CC-BY-SA), see the tags for [yesod](http://stackoverflow.com/questions/tagged/yesod) and [haskell](http://stackoverflow.com/questions/tagged/yesod)
 * The #yesod and #haskell IRC channels on freenode.net are active and helpful
-* "cabal repl" is a nice command that runs the GHCI command-line interpreter but pulls in the projects functions instead of just the prelude set
+* "cabal repl" is a command that uses [ghci](https://en.wikibooks.org/wiki/Haskell/Using_GHCi_effectively) already connected to the project code. Then, you can import particular files from the code and explore the functions.
 
-Our front-end uses **[Twitter Bootstrap](http://getbootstrap.com/)** for layout and styles, although there are cases where we use our own custom CSS.
+Our front-end uses **[Twitter Bootstrap](http://getbootstrap.com/)** for layout and styles, although there are many cases where we use our own custom CSS.
 
 On the site, we have a page about [site-design](https://snowdrift.coop/p/snowdrift/w/site-design) with associated tickets and discussion.
 
@@ -74,6 +75,11 @@ Ideally, follow the syntax for [Haddock Haskell documentation](http://www.haskel
 Working on the code
 ===================
 
+See the main [Git documentation](http://git-scm.com/documentation) if you are new to Git.
+You only need rudimentary understanding of Git to start contributing to our code.
+You will need to know how to push, pull, and commit.
+It will help to understand basic branching so that you can segregate work on different features.
+                                                                      
 Cloning the repository
 ----------------------
 
@@ -95,6 +101,8 @@ After pushing to your online account, alert us to the changes with Gitorious' "r
 To pull updates from our main code, use
 
     git pull git@gitorious.org:snowdrift/snowdrift.git
+
+Note: if you are collaborating with others before a patch is ready to go live and some participants use Gitorious and others use GitHub, you can pull by just using the full git address and just sending your collaborator a an e-mail or otherwise alerting them to pull your updates.
 
 
 Building

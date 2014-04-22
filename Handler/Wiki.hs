@@ -95,7 +95,7 @@ postWikiR project_handle target = do
 
             case mode of
                 Just "preview" -> do
-                    (form, _) <- generateFormPost $ editWikiForm last_edit_id content comment
+                    (form, _) <- generateFormPost $ editWikiForm last_edit_id content (Just comment)
                     defaultLayout $ renderPreview form action $ renderWiki 0 project_handle target False False $ WikiPage target project_id content (Key $ PersistInt64 (-1)) Normal
 
                 Just x | x == action -> do
@@ -104,7 +104,7 @@ postWikiR project_handle target = do
                             set p [WikiPageContent =. val content]
                             where_ $ p ^. WikiPageId ==. val page_id
 
-                        edit_id <- insert $ WikiEdit now user_id page_id content comment
+                        edit_id <- insert $ WikiEdit now user_id page_id content (Just comment)
                         -- TODO - I think there might be a race condition here...
                         either_last_edit <- insertBy $ WikiLastEdit page_id edit_id
 
@@ -523,11 +523,11 @@ getWikiNewEditsR project_handle = do
         $(widgetFile "wiki_new_edits")
 
 
-editWikiForm :: WikiEditId -> Markdown -> Maybe Text -> Form (WikiEditId, Markdown, Maybe Text)
+editWikiForm :: WikiEditId -> Markdown -> Maybe Text -> Form (WikiEditId, Markdown, Text)
 editWikiForm last_edit_id content comment = renderBootstrap3 $ (,,)
         <$> areq' hiddenField "" (Just last_edit_id)
         <*> areq' snowdriftMarkdownField "Page Content" (Just content)
-        <*> aopt' textField "Comment" (Just comment)
+        <*> areq' textField "Comment" comment
 
 
 newWikiForm :: Maybe Markdown -> Form Markdown
