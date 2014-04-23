@@ -31,16 +31,22 @@
         <table>
             <thead>
                 <tr>
-                    $forall role <- role_list
-                        <th>
-                            #{role}
+                    <th>Project
+                    <th>Team Member
+                    <th>Moderator
+                    <th>Administrator
             <tbody>
-                <tr>
-                    $forall role <- role_list
-                        <td>
-                            $forall (_, project) <- filterRoles role roles
-                                <a href="@{ProjectR $ projectHandle $ entityVal project}">
-                                    #{projectName $ entityVal project} 
+                $forall (project, roles) <- Map.toAscList projects
+                    <tr>
+                    <td><a href="@{ProjectR $ projectHandle $ entityVal project}">
+                        #{projectName $ entityVal project}
+                    <td>$if S.member roles TeamMember
+                        <P>X
+                    <td>$if S.member roles Moderator
+                        <P>X
+                    <td>$if S.member roles Administrator
+                        <P>X
+
     <div .col-md-6>
         $maybe statement <- userStatement user
             <h3>Personal Statement

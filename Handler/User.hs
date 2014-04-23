@@ -4,6 +4,7 @@ import Import
 
 import qualified Data.Map as Map
 import Data.Universe
+import qualified Data.Set as Set
 
 import Model.User
 import Model.Role
@@ -65,13 +66,20 @@ getUserR user_id = do
     -}
 
     user <- runDB $ get404 user_id
+    
     roles <- runDB $
-             select $
-             from $ \(role `InnerJoin` project) -> do
-             on_ (role ^. ProjectUserRoleProject ==. project ^. ProjectId)
-             where_ (role ^. ProjectUserRoleUser ==. val user_id)
-             return (role ^. ProjectUserRoleRole, project)
-
+             select $ from $ \(role' `InnerJoin` project') -> do
+                 on_ (role' ^. ProjectUserRoleProject ==. project' ^. ProjectId)
+                 where_ (role' ^. ProjectUserRoleUser ==. val user_id)
+                 return (role' ^. ProjectUserRoleRole, project')
+    
+    project_list <- runDB $
+             select $ from $ \(role `InnerJoin` project) -> do
+                 on_ (role ^. ProjectUserRoleProject ==. project ^. ProjectId)
+                 where_ (role ^. ProjectUserRoleUser ==. val user_id)
+                 return (project ^. ProjectId, role ^. ProjectUserRoleRole)
+    
+    let projects = Map.fromListWith Set.union $ map (second Set.singleton) project_list
 
     defaultLayout $ do
         setTitle . toHtml $ "User Profile - " <> userPrintName (Entity user_id user) <> " | Snowdrift.coop"
