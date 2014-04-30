@@ -822,6 +822,7 @@ rethreadForm = renderBootstrap3 $ (,)
     <$> areq' textField "New Parent Url" Nothing
     <*> areq' textField "Reason" Nothing
 
+
 getRethreadWikiCommentR :: Text -> Text -> CommentId -> Handler Html
 getRethreadWikiCommentR project_handle target comment_id = do
     (form, _) <- generateFormPost rethreadForm
@@ -849,7 +850,16 @@ rethreadComments rethread_id depth_offset maybe_new_parent_id new_discussion_id 
 
         return new_comment_id
 
-    forM_ (zip comment_ids new_comment_ids) $ \ (comment_id, new_comment_id) -> insert_ $ CommentRethread rethread_id comment_id new_comment_id
+    forM_ (zip comment_ids new_comment_ids) $ \ (comment_id, new_comment_id) -> do
+        update $ \ comment_tag -> do
+            where_ $ comment_tag ^. CommentTagComment ==. val comment_id
+            set comment_tag [ CommentTagComment =. val new_comment_id ]
+
+        update $ \ ticket -> do
+            where_ $ ticket ^. TicketComment ==. val comment_id
+            set ticket [ TicketComment =. val new_comment_id ]
+
+        insert_ $ CommentRethread rethread_id comment_id new_comment_id
 
     insertSelect $ from $ \ (comment_closure `InnerJoin` comment_rethread) -> do
         on_ $ comment_closure ^. CommentClosureComment ==. comment_rethread ^. CommentRethreadOldComment
