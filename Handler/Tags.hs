@@ -126,10 +126,12 @@ createCommentTagForm = renderBootstrap3 $ areq textField "" Nothing
 newCommentTagForm :: [Entity Tag] -> [Entity Tag] -> Form (Maybe [TagId], Maybe [TagId])
 newCommentTagForm project_tags other_tags = renderBootstrap3 $ (,)
     -- <$> fmap (\(Entity tag_id tag) -> aopt checkBoxField (tag_id) (tagName tag)) (project_tags <> other_tags)
-    <$> aopt (checkboxesFieldList' $ tags project_tags) "Tags used elsewhere in this project:" Nothing
-    <*> aopt (checkboxesFieldList' $ tags other_tags) "Tags used in other projects:" Nothing
+    <$> aopt (tagCloudField $ tags project_tags) "Tags used elsewhere in this project:" Nothing
+    <*> aopt (tagCloudField $ tags other_tags) "Tags used in other projects:" Nothing
 --    <*> areq hiddenField "" (Just "apply")
     where tags = fmap (\(Entity tag_id tag) -> (tagName tag, tag_id))
+          tagCloudField = checkboxesFieldList' $ (\(PersistInt64 a) -> show a) . unKey
+
 
 getOldNewCommentTagR :: Text -> Text -> CommentId -> Handler Html
 getOldNewCommentTagR project_handle target comment_id = redirect $ NewCommentTagR project_handle target comment_id
