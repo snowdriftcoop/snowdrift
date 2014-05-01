@@ -163,17 +163,20 @@ getUsersR = do
               orderBy [desc $ user ^. UserId]
               return user
 
-    infos <- runDB $
+    infos :: [(Entity User, ((Value Text, Value Text), Value Role))] <- runDB $
              select $
              from $ \(user `InnerJoin` role `InnerJoin` project) -> do
              on_ (project ^. ProjectId ==. role ^. ProjectUserRoleProject)
              on_ (user ^. UserId ==. role ^. ProjectUserRoleUser)
-             return (user, role ^. ProjectUserRoleRole, project)
+             return (user, ((project ^. ProjectName, project ^. ProjectHandle), role ^. ProjectUserRoleRole))
 
-    let roles = map roleLabel (universe :: [Role])
-        filterRoles r = filter (\(r', _) -> r' == r)
-        users = map (\u -> (getUserKey u, u)) users'  -- (User, ((ProjectName, ProjectHandle), Set Roles))
-        userRoles = Map.fromListWith mappend $ map (\(u, Value r, p) -> (getUserKey u, [(roleLabel r, entityVal p)])) infos
+
+    let users = map (\u -> (getUserKey u, u)) users'  
+        infos' :: [(UserId, ((Text, Text), Role))] = map (entityKey *** unwrapValues) infos
+        infos'' :: [(UserId, Map (Text, Text) (Set Role))] = map (second $ uncurry Map.singleton . second Set.singleton) infos'
+        allProjects :: Map UserId (Map (Text, Text) (Set Role)) = Map.fromListWith (Map.unionWith Set.union) infos''
+        userProjects :: Entity User -> Maybe (Map (Text, Text) (Set (Role)))
+        userProjects u = Map.lookup (entityKey u) allProjects
         getUserKey :: Entity User -> Text
         getUserKey (Entity key _) = either (error . T.unpack) id . fromPersistValue . unKey $ key
 
