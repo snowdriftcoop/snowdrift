@@ -160,7 +160,7 @@ library
                  , process
                  , temporary
                  , regex-tdfa                    >= 1.1 && < 1.2
-                 , github                        < 0.8
+                 , github                        >= 0.8 && < 0.9
                  , async                         < 2.1 && >= 2.0
                  , universe
                  , unix
