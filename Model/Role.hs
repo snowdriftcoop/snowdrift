@@ -5,11 +5,13 @@ module Model.Role
     , roleAbbrev
     , roleField
     , getRoles
+    , presentationRoles
     ) where
 
 import Import
 
 import Model.Role.Internal
+import Data.Universe
 
 getRoles :: UserId -> ProjectId -> Handler [Role]
 getRoles user_id project_id = fmap (map (\ (Value a) -> a)) $ runDB $ select $ from $ \ r -> do
@@ -30,3 +32,5 @@ roleAbbrev Admin = "A"
 roleField :: (RenderMessage (HandlerSite m) FormMessage, m ~ HandlerT site IO) => Field m Role
 roleField = radioFieldList $ map (roleLabel &&& id) [minBound ..]
 
+presentationRoles :: [Role]
+presentationRoles = universe

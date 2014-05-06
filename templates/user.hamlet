@@ -26,21 +26,25 @@
 
     <div .col-md-6>
         ^{projectPledgeSummary user_id}
-        
+
         <h4>Project Roles
         <table>
             <thead>
                 <tr>
-                    $forall role <- role_list
-                        <th>
-                            #{role}
+                   <th>Project
+                   $forall role <- presentationRoles
+                     <th>#{ roleLabel role }
             <tbody>
-                <tr>
-                    $forall role <- role_list
+                $forall ((projectName, projectHandle), roles) <- Map.toAscList projects
+                    <tr>
+                    <td><a href=@{ProjectR $ projectHandle}>
+                        #{projectName }
+
+                    $forall role' <- presentationRoles
                         <td>
-                            $forall (_, project) <- filterRoles role roles
-                                <a href="@{ProjectR $ projectHandle $ entityVal project}">
-                                    #{projectName $ entityVal project} 
+                            $if Set.member role' roles
+                                &#10004;
+
     <div .col-md-6>
         $maybe statement <- userStatement user
             <h3>Personal Statement

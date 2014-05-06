@@ -13,10 +13,10 @@ import Debug.Trace
 
 import Data.Universe
 
-data Role = Moderator | TeamMember | Admin deriving (Bounded, Enum, Eq, Show, Read)
+data Role = TeamMember | Moderator | Admin deriving (Bounded, Enum, Eq, Show, Read, Ord)
 
 instance Universe Role where
-    universe = [Moderator .. Admin]
+    universe = [TeamMember .. Admin]
 
 derivePersistField "Role"
 
