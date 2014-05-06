@@ -23,6 +23,7 @@ import Control.Exception.Lifted (throwIO, handle)
 
 import qualified Data.Text as T
 
+
 hiddenMarkdown :: (RenderMessage (HandlerSite m) FormMessage, MonadHandler m) => Maybe Markdown -> AForm m (Maybe Markdown)
 hiddenMarkdown Nothing = fmap (fmap Markdown) $ aopt hiddenField "" Nothing
 hiddenMarkdown (Just (Markdown str)) = fmap (fmap Markdown) $ aopt hiddenField "" $ Just $ Just str
@@ -66,21 +67,19 @@ getUserR user_id = do
     -}
 
     user <- runDB $ get404 user_id
-    
-    project_list :: [((Value Text, Value Text), Value Role)] <- runDB $
+
+    wrapped_project_list :: [((Value Text, Value Text), Value Role)] <- runDB $
              select $ from $ \(role `InnerJoin` project) -> do
                  on_ (role ^. ProjectUserRoleProject ==. project ^. ProjectId)
                  where_ (role ^. ProjectUserRoleUser ==. val user_id)
                  return ((project ^. ProjectName, project ^. ProjectHandle), role ^. ProjectUserRoleRole)
-    
-    let project_list2 = map unwrapValues project_list
-    let projects = Map.fromListWith Set.union $ map (second Set.singleton) project_list2
-    
+
+    let project_list = map unwrapValues wrapped_project_list
+        projects = Map.fromListWith Set.union $ map (second Set.singleton) project_list
+
     defaultLayout $ do
         setTitle . toHtml $ "User Profile - " <> userPrintName (Entity user_id user) <> " | Snowdrift.coop"
         renderUser maybe_viewer_id user_id user projects
-
-unwrapValues ((Value a, Value b), Value c) = ((a, b), c)
 
 renderUser :: Maybe UserId -> UserId -> User -> Map (Text, Text) (Set (Role)) -> Widget
 renderUser viewer_id user_id user projects = do
@@ -147,7 +146,7 @@ postUserR user_id = do
                     redirect $ UserR user_id
 
         _ -> do
-            addAlert "danger" "Failed to update user." 
+            addAlert "danger" "Failed to update user."
             redirect $ UserR user_id
 
 getOldUsersR :: Handler Html
@@ -171,7 +170,7 @@ getUsersR = do
              return (user, ((project ^. ProjectName, project ^. ProjectHandle), role ^. ProjectUserRoleRole))
 
 
-    let users = map (\u -> (getUserKey u, u)) users'  
+    let users = map (\u -> (getUserKey u, u)) users'
         infos' :: [(UserId, ((Text, Text), Role))] = map (entityKey *** unwrapValues) infos
         infos'' :: [(UserId, Map (Text, Text) (Set Role))] = map (second $ uncurry Map.singleton . second Set.singleton) infos'
         allProjects :: Map UserId (Map (Text, Text) (Set Role)) = Map.fromListWith (Map.unionWith Set.union) infos''
@@ -190,7 +189,7 @@ getOldUserCreateR = redirect UserCreateR
 getUserCreateR :: Handler Html
 getUserCreateR = do
     (form, _) <- generateFormPost $ userCreateForm Nothing
-    defaultLayout $ do 
+    defaultLayout $ do
         setTitle "Create User | Snowdrift.coop"
         [whamlet|
             <form method=POST>
@@ -216,26 +215,26 @@ postUserCreateR = do
                 lift $ case uid_maybe of
                     Just uid -> do
 -- The addAlert here didn't render right, and anyway, the "login" alert is also showing currently and we're making a message to welcome users anyway
---                      addAlert "success" $ T.pack ("Created user; welcome! (" ++ show account_id ++ ", " ++ show uid ++ ")") 
+--                      addAlert "success" $ T.pack ("Created user; welcome! (" ++ show account_id ++ ", " ++ show uid ++ ")")
                         return True
 
                     Nothing -> do
-                        addAlert "danger" "E-mail or handle already in use." 
+                        addAlert "danger" "E-mail or handle already in use."
                         throwIO DBException
 
             when success $ do
                 setCreds True $ Creds "HashDB" ident []
                 redirectUltDest HomeR
 
-        FormMissing -> addAlert "danger" "missing field" 
-        FormFailure strings -> addAlert "danger" (mconcat strings) 
+        FormMissing -> addAlert "danger" "missing field"
+        FormFailure strings -> addAlert "danger" (mconcat strings)
 
     defaultLayout $ [whamlet|
         <form method=POST>
             ^{form}
             <input type=submit>
     |]
-    
+
 
 userCreateForm :: Maybe Text -> Form (Text, Text, Maybe Text, Maybe Text, Maybe Text)
 userCreateForm ident extra = do

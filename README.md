@@ -1,6 +1,3 @@
-NOTE:  This is a fork of the original project.  Each person working on the project has their own fork.  For the official GitHub Repo, please see the next section for links.  Thank you.
-
-
 Snowdrift.coop
 ==============
 

@@ -26,7 +26,7 @@
 
     <div .col-md-6>
         ^{projectPledgeSummary user_id}
-        
+
         <h4>Project Roles
         <table>
             <thead>
@@ -39,7 +39,7 @@
                     <tr>
                     <td><a href=@{ProjectR $ projectHandle}>
                         #{projectName }
-                    
+
                     $forall role' <- presentationRoles
                         <td>
                             $if Set.member role' roles
