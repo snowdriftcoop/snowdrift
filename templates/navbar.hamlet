@@ -23,7 +23,7 @@
                         <p .navbar-text .text-center>
                             Pledges / Funds 
                             <br>
-                            <a .navbar-link title="Current total monthly pledge" href="@{UserR user_id}">
+                            <a .navbar-link title="Current total monthly pledge" href="@{UserPledgesR user_id}">
                                 #{show pledged}
                             /
                             <a .navbar-link title="Current balance" href="@{UserBalanceR user_id}">
