@@ -4,6 +4,7 @@ import Import
 
 import qualified Data.Map as Map
 import Data.Universe
+import qualified Data.Set as Set
 
 import Model.User
 import Model.Role
@@ -65,21 +66,24 @@ getUserR user_id = do
     -}
 
     user <- runDB $ get404 user_id
-    roles <- runDB $
-             select $
-             from $ \(role `InnerJoin` project) -> do
-             on_ (role ^. ProjectUserRoleProject ==. project ^. ProjectId)
-             where_ (role ^. ProjectUserRoleUser ==. val user_id)
-             return (role ^. ProjectUserRoleRole, project)
-
-
+    
+    project_list :: [((Value Text, Value Text), Value Role)] <- runDB $
+             select $ from $ \(role `InnerJoin` project) -> do
+                 on_ (role ^. ProjectUserRoleProject ==. project ^. ProjectId)
+                 where_ (role ^. ProjectUserRoleUser ==. val user_id)
+                 return ((project ^. ProjectName, project ^. ProjectHandle), role ^. ProjectUserRoleRole)
+    
+    let project_list2 = map unwrapValues project_list
+    let projects = Map.fromListWith Set.union $ map (second Set.singleton) project_list2
+    
     defaultLayout $ do
         setTitle . toHtml $ "User Profile - " <> userPrintName (Entity user_id user) <> " | Snowdrift.coop"
-        renderUser maybe_viewer_id user_id user roles
+        renderUser maybe_viewer_id user_id user projects
 
+unwrapValues ((Value a, Value b), Value c) = ((a, b), c)
 
-renderUser :: Maybe UserId -> UserId -> User -> [(Value Role, Entity Project)] -> Widget
-renderUser viewer_id user_id user roles = do
+renderUser :: Maybe UserId -> UserId -> User -> Map (Text, Text) (Set (Role)) -> Widget
+renderUser viewer_id user_id user projects = do
     let is_owner = Just user_id == viewer_id
         user_entity = Entity user_id user
         project_handle = error "bad link - no default project on user pages" -- TODO turn this into a caught exception
@@ -132,7 +136,7 @@ postUserR user_id = do
 
                     (form, _) <- generateFormPost $ editUserForm updated_user
 
-                    defaultLayout $ renderPreview form action $ renderUser (Just viewer_id) user_id updated_user []
+                    defaultLayout $ renderPreview form action $ renderUser (Just viewer_id) user_id updated_user Map.empty
 
                 Just x | x == action -> do
                     runDB $ updateUser user_id user_update
@@ -159,17 +163,20 @@ getUsersR = do
               orderBy [desc $ user ^. UserId]
               return user
 
-    infos <- runDB $
+    infos :: [(Entity User, ((Value Text, Value Text), Value Role))] <- runDB $
              select $
              from $ \(user `InnerJoin` role `InnerJoin` project) -> do
              on_ (project ^. ProjectId ==. role ^. ProjectUserRoleProject)
              on_ (user ^. UserId ==. role ^. ProjectUserRoleUser)
-             return (user, role ^. ProjectUserRoleRole, project)
+             return (user, ((project ^. ProjectName, project ^. ProjectHandle), role ^. ProjectUserRoleRole))
 
-    let roles = map roleLabel (universe :: [Role])
-        filterRoles r = filter (\(r', _) -> r' == r)
-        users = map (\u -> (getUserKey u, u)) users'
-        userRoles = Map.fromListWith mappend $ map (\(u, Value r, p) -> (getUserKey u, [(roleLabel r, entityVal p)])) infos
+
+    let users = map (\u -> (getUserKey u, u)) users'  
+        infos' :: [(UserId, ((Text, Text), Role))] = map (entityKey *** unwrapValues) infos
+        infos'' :: [(UserId, Map (Text, Text) (Set Role))] = map (second $ uncurry Map.singleton . second Set.singleton) infos'
+        allProjects :: Map UserId (Map (Text, Text) (Set Role)) = Map.fromListWith (Map.unionWith Set.union) infos''
+        userProjects :: Entity User -> Maybe (Map (Text, Text) (Set (Role)))
+        userProjects u = Map.lookup (entityKey u) allProjects
         getUserKey :: Entity User -> Text
         getUserKey (Entity key _) = either (error . T.unpack) id . fromPersistValue . unKey $ key
 
