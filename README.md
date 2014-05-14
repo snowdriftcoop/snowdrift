@@ -156,7 +156,7 @@ Install dependencies and build Snowdrift:
 
 This will take a *long* time but should ultimately tell you it installed Snowdrift.
 
-You will also use cabal install to test your changes later, and then it will be much faster.
+You can also use cabal install to test your changes later, and then it will run much faster.
 
 Setting up the database
 -----------------------
