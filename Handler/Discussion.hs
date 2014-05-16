@@ -30,6 +30,8 @@ import Model.Markdown
 
 import Yesod.Default.Config
 
+import Network.HTTP.Types.Status
+
 import qualified Control.Monad.State as St
 
 
@@ -455,6 +457,16 @@ postReplyCommentR project_handle target comment_id = do
 
 getDiscussCommentR' :: Bool -> Text -> Text -> CommentId -> Handler Html
 getDiscussCommentR' show_reply project_handle target comment_id = do
+    rethread <- runDB $ select $ from $ \ comment_rethread -> do
+        where_ $ comment_rethread ^. CommentRethreadOldComment ==. val comment_id
+        return $ comment_rethread ^. CommentRethreadNewComment
+
+    case rethread of
+        [] -> return ()
+        Value destination_comment_id : _ ->
+            let route = if show_reply then ReplyCommentR else DiscussCommentR
+             in redirectWith movedPermanently301 $ route project_handle target destination_comment_id 
+
     mviewer <- maybeAuth
 
     (Entity project_id _, Entity page_id page) <- getPageInfo project_handle target
