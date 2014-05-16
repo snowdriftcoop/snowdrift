@@ -600,12 +600,23 @@ processWikiComment maybe_parent_id text (Entity project_id project) page = do
 
         Just x | x == action -> do
             runDB $ do
+                let getDestination comment_id = do
+                        destination <- select $ from $ \ comment_rethread -> do
+                            where_ $ comment_rethread ^. CommentRethreadOldComment ==. val comment_id
+                            return $ comment_rethread ^. CommentRethreadNewComment
+
+                        case destination of
+                            [] -> return comment_id
+                            Value comment_id' : _ -> getDestination comment_id'
+
+                maybe_parent_id' <- maybe (return Nothing) (fmap Just . getDestination) maybe_parent_id
+
                 comment_id <- insert $ Comment now
                     (if established then Just now else Nothing)
                     (if established then Just user_id else Nothing)
                     Nothing
                     (wikiPageDiscussion page)
-                    maybe_parent_id user_id text depth
+                    maybe_parent_id' user_id text depth
 
                 let content = T.lines $ (\ (Markdown str) -> str) text
                     tickets = map T.strip $ mapMaybe (T.stripPrefix "ticket:") content
