@@ -7,9 +7,10 @@
                 IRC Nick
             <th>
                 Established
-            $forall role <- roles
-                <th>
-                    #{role}
+            <th>
+                Projects
+
+
     <tbody>
         $if null users
             <tr>
@@ -27,10 +28,7 @@
                     <td>
                         $if isJust $ userEstablishedTs $ entityVal user
                             &#10004;
-                    $forall role <- roles
-                        <td>
-                            $maybe roles' <- Map.lookup user_id userRoles
-                                $forall (_, project) <- filterRoles role roles'
-                                    <a href=@{ProjectR $ projectHandle project}>
-                                        #{projectName project} 
-
+                    <td>
+                        $forall ((projectName, projectHandle), roles) <- Map.toAscList (fromMaybe Map.empty (userProjects user))
+                            <a href=@{ProjectR $ projectHandle}>
+                                #{projectName} (#{T.intercalate "/" (map roleAbbrev $ Set.toList roles)})

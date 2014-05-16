@@ -1,4 +1,4 @@
-{-# LANGUAGE CPP, DeriveDataTypeable #-}
+{-# LANGUAGE CPP, DeriveDataTypeable, TypeFamilies #-}
 
 module Import ( module Import ) where
 
@@ -94,7 +94,7 @@ footnote note = [whamlet|$newline never
 
 
 footnoteAnchor :: String -> Widget
-footnoteAnchor labels = 
+footnoteAnchor labels =
     case words labels of
         (first_label : remaining_labels) ->
             [whamlet|$newline never
@@ -134,20 +134,20 @@ entityPairs :: [Entity t] -> [(Key t, t)]
 entityPairs = map (\ (Entity a b) -> (a, b))
 
 -- allow easier creation of pretty bootstrap 3 forms. there has to be an easier way -_-
---fieldSettings :: forall master . SomeMessage master -> [(Text, Text)] -> FieldSettings master 
+--fieldSettings :: forall master . SomeMessage master -> [(Text, Text)] -> FieldSettings master
 --fieldSettings label attrs = FieldSettings label Nothing Nothing Nothing attrs
 
 aopt' :: MonadHandler m
-    => Field m a 
-    -> SomeMessage (HandlerSite m) 
-    -> Maybe (Maybe a) 
+    => Field m a
+    -> SomeMessage (HandlerSite m)
+    -> Maybe (Maybe a)
     -> AForm m (Maybe a)
 aopt' a b = aopt a (FieldSettings b Nothing Nothing Nothing [("class", "form-control")])
 
 areq' :: (RenderMessage site FormMessage, HandlerSite m ~ site, MonadHandler m)
-    => Field m a 
-    -> SomeMessage site 
-    -> Maybe a 
+    => Field m a
+    -> SomeMessage site
+    -> Maybe a
     -> AForm m a
 areq' a b = areq a (FieldSettings b Nothing Nothing Nothing [("class", "form-control")])
 
@@ -215,4 +215,19 @@ getByErr message = runDB . fmap fromJustError . getBy
     where
         fromJustError :: Maybe a -> a
         fromJustError = fromMaybe (error message)
+
+
+-- maybe we should make this a typeclass?
+class WrappedValues a where
+    type Unwrapped a
+    unwrapValues :: a -> Unwrapped a
+
+instance WrappedValues (Value a) where
+    type Unwrapped (Value a) = a
+    unwrapValues (Value v) = v
+
+instance (WrappedValues a, WrappedValues b) => WrappedValues (a, b) where
+    type Unwrapped (a, b) = (Unwrapped a, Unwrapped b)
+    unwrapValues (a, b) = (unwrapValues a, unwrapValues b)
+
 
