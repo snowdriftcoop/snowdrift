@@ -22,7 +22,7 @@ If you need help with *any* issues here, let us know. We are always happy to ass
 About the frameworks and tools we use
 =====================================
 
-The Snowdrift.coop site uses the [Yesod web framework](http://www.yesodweb.com/).
+The Snowdrift.coop site uses the **[Yesod web framework](http://www.yesodweb.com/)**.
 
 Yesod uses the Haskell programming language alongside its
 [Shakespearean Templates](http://www.yesodweb.com/book/shakespearean-templates) which generate HTML/CSS/JS using indentation with no need for closing tags or bracketing.
@@ -31,8 +31,8 @@ HTML, CSS, and JavaScript work on the site may be done without knowing Haskell, 
 
 * For learning Haskell, check out the [Haskell Wikibook](https://en.wikibooks.org/wiki/Haskell), which also has links to additional resources.
 * Stack Overflow user postings are FLO (CC-BY-SA), see the tags for [yesod](http://stackoverflow.com/questions/tagged/yesod) and [haskell](http://stackoverflow.com/questions/tagged/yesod)
-* The #yesod and #haskell IRC channels on freenode.net are active and helpful
-* "cabal repl" is a command that uses [ghci](https://en.wikibooks.org/wiki/Haskell/Using_GHCi_effectively) already connected to the project code. Then, you can import particular files from the code and explore the functions.
+* Alongside #snowdrift on freenode.net, the #yesod and #haskell channels are also active and helpful
+* "cabal repl" is a command that loads [ghci](https://en.wikibooks.org/wiki/Haskell/Using_GHCi_effectively) with connection to the project code. Then, you can easily import particular files from the code and explore the functions.
 
 Our front-end uses **[Twitter Bootstrap](http://getbootstrap.com/)** for layout and styles, although there are many cases where we use our own custom CSS.
 
@@ -156,7 +156,7 @@ Install dependencies and build Snowdrift:
 
 This will take a *long* time but should ultimately tell you it installed Snowdrift.
 
-You will also use cabal install to test your changes later, and then it will be much faster.
+You can also use cabal install to test your changes later, and then it will run much faster.
 
 Setting up the database
 -----------------------

@@ -176,9 +176,22 @@ renderBootstrap3 aform fragment = do
                 |]
     return (res, widget)
 
-checkboxesFieldList' :: (Eq a, RenderMessage site FormMessage, RenderMessage site msg) => [(msg, a)]
+optionsPairs' :: (MonadHandler m, RenderMessage (HandlerSite m) msg)
+             => (a -> String) -> [(msg, a)] -> m (OptionList a)
+optionsPairs' mk_external opts = do
+  mr <- getMessageRender
+  let mkOption (display, internal) =
+          Option { optionDisplay       = mr display
+                 , optionInternalValue = internal
+                 , optionExternalValue = pack' $ mk_external internal
+                 }
+  return $ mkOptionList (map mkOption opts)
+
+checkboxesFieldList' :: (Eq a, RenderMessage site FormMessage, RenderMessage site msg)
+                     => (a -> String)
+                     -> [(msg, a)]
                      -> Field (HandlerT site IO) [a]
-checkboxesFieldList' = checkboxesField' . optionsPairs
+checkboxesFieldList' mk_external = checkboxesField' . (optionsPairs' mk_external)
 
 checkboxesField' :: (Eq a, RenderMessage site FormMessage)
                  => HandlerT site IO (OptionList a)
