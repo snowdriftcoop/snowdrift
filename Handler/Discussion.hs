@@ -599,7 +599,7 @@ processWikiComment maybe_parent_id text (Entity project_id project) page = do
 
 
         Just x | x == action -> do
-            runDB $ do
+            maybe_parent_id' <- runDB $ do
                 let getDestination comment_id = do
                         destination <- select $ from $ \ comment_rethread -> do
                             where_ $ comment_rethread ^. CommentRethreadOldComment ==. val comment_id
@@ -647,9 +647,11 @@ processWikiComment maybe_parent_id text (Entity project_id project) page = do
                     set ticket [ TicketUpdatedTs =. val now ]
                     where_ $ ticket ^. TicketComment `in_` selectAncestors
 
+                return maybe_parent_id'
+
 
             addAlert "success" $ if established then "comment posted" else "comment submitted for moderation"
-            redirect $ maybe (DiscussWikiR (projectHandle project) (wikiPageTarget page)) (DiscussCommentR (projectHandle project) (wikiPageTarget page)) maybe_parent_id
+            redirect $ maybe (DiscussWikiR (projectHandle project) (wikiPageTarget page)) (DiscussCommentR (projectHandle project) (wikiPageTarget page)) maybe_parent_id'
 
         m -> error $ "Error: unrecognized mode (" ++ show m ++ ")"
 
