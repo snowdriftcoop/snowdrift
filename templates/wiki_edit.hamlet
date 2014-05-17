@@ -14,5 +14,5 @@
         <a href="@{DiscussWikiR project_handle target}">view discussion
 
 <hr .wikitop>
-#{renderMarkdown project_handle (wikiEditContent edit)}
+^{markdownWidget project_handle (wikiEditContent edit)}
 

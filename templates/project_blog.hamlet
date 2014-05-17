@@ -4,7 +4,7 @@ $forall Entity post_id post <- posts
             #{projectBlogTitle post}
 
         <p>
-            ^{renderMarkdown project_handle $ projectBlogTopContent post}
+            ^{markdownWidget project_handle $ projectBlogTopContent post}
 
 $case next
     $of [Entity next_id _]

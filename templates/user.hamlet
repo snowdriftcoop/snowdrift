@@ -18,7 +18,7 @@
 
     <div .col-md-6>
         $maybe blurb <- userBlurb user
-            #{renderMarkdown project_handle blurb}
+            ^{markdownWidget project_handle blurb}
         $nothing
             &nbsp;
 
@@ -49,4 +49,4 @@
         $maybe statement <- userStatement user
             <h3>Personal Statement
             <div .well .well-sm .scroll .capped>
-                #{renderMarkdown project_handle statement}
+                ^{markdownWidget project_handle statement}
