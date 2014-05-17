@@ -99,7 +99,7 @@ renderComment now mviewer viewer_roles project_handle target users max_depth dep
 
     Just action <- getCurrentRoute
 
-    collapse_state <- maybe (return FullyVisible) (handlerToWidget . collapseState now) maybe_closure
+    collapse_state <- return FullyVisible -- maybe (return FullyVisible) (handlerToWidget . collapseState now) maybe_closure
 
     case (depth == 0, collapse_state) of
         (True, _) -> $(widgetFile "comment_body")
