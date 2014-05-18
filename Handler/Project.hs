@@ -238,6 +238,7 @@ getProjectPatronsR project_handle = do
         pledges <- select $ from $ \ (pledge `InnerJoin` user) -> do
             on_ $ pledge ^. PledgeUser ==. user ^. UserId
             where_ $ pledge ^. PledgeProject ==. val project_id
+                &&. pledge ^. PledgeFundedShares >. val 0
             orderBy [ desc (pledge ^. PledgeFundedShares), asc (user ^. UserName), asc (user ^. UserId)]
             offset page
             limit per_page
