@@ -52,6 +52,7 @@ main = do
 
             pledges <- select $ from $ \ pledge -> do
                 where_ $ pledge ^. PledgeProject ==. val project_id
+                    &&. pledge ^. PledgeFundedShares >. val 0
                 return pledge
 
             paydays <- select $ from $ \ payday -> do
