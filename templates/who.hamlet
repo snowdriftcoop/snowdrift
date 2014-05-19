@@ -12,7 +12,7 @@ $forall Entity user_id user <- members
         <div .col-sm-9>
             <p>
                 $maybe blurb <- userBlurb user
-                    #{renderMarkdown project_handle blurb}
+                    ^{markdownWidget project_handle blurb}
                 $nothing
                     &nbsp;
 

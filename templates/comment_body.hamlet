@@ -28,19 +28,19 @@ $# used by renderComment function
             $of Retracted
                 <div .retracted>
                     A comment above this one was retracted ^{renderTime (commentClosureTs closure)}
-                    #{renderMarkdown project_handle (commentClosureReason closure)}
+                    ^{markdownWidget project_handle (commentClosureReason closure)}
 
             $of Closed
                 <div .closed>
                     A comment above this one was closed at ^{renderTime (commentClosureTs closure)}
-                    #{renderMarkdown project_handle (commentClosureReason closure)}
+                    ^{markdownWidget project_handle (commentClosureReason closure)}
 
     $maybe closure <- maybe_closure
         $case commentClosureType closure
             $of Retracted
                 <div .retracted>
                     The author retracted this comment ^{renderTime (commentClosureTs closure)}
-                    #{renderMarkdown project_handle (commentClosureReason closure)}
+                    ^{markdownWidget project_handle (commentClosureReason closure)}
 
             $of Closed
                 <div .closed>
@@ -49,9 +49,9 @@ $# used by renderComment function
                     $else
                         ^{userWidget $ commentClosureClosedBy closure}
                     \ closed this comment ^{renderTime (commentClosureTs closure)}
-                    #{renderMarkdown project_handle (commentClosureReason closure)}
+                    ^{markdownWidget project_handle (commentClosureReason closure)}
 
-    #{renderMarkdown project_handle (commentText comment)}
+    ^{markdownWidget project_handle (commentText comment)}
 
 
     $if show_actions

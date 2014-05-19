@@ -20,5 +20,5 @@ $else
                     <span .badge>
                         #{comment_count}
 <hr .wikitop>
-#{renderMarkdown project_handle (wikiPageContent page)}
+^{markdownWidget project_handle (wikiPageContent page)}
 

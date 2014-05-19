@@ -30,6 +30,8 @@ import Model.Markdown
 
 import Yesod.Default.Config
 
+import Network.HTTP.Types.Status
+
 import qualified Control.Monad.State as St
 
 
@@ -97,7 +99,7 @@ renderComment now mviewer viewer_roles project_handle target users max_depth dep
 
     Just action <- getCurrentRoute
 
-    collapse_state <- maybe (return FullyVisible) (handlerToWidget . collapseState now) maybe_closure
+    collapse_state <- return FullyVisible -- maybe (return FullyVisible) (handlerToWidget . collapseState now) maybe_closure
 
     case (depth == 0, collapse_state) of
         (True, _) -> $(widgetFile "comment_body")
@@ -455,6 +457,16 @@ postReplyCommentR project_handle target comment_id = do
 
 getDiscussCommentR' :: Bool -> Text -> Text -> CommentId -> Handler Html
 getDiscussCommentR' show_reply project_handle target comment_id = do
+    rethread <- runDB $ select $ from $ \ comment_rethread -> do
+        where_ $ comment_rethread ^. CommentRethreadOldComment ==. val comment_id
+        return $ comment_rethread ^. CommentRethreadNewComment
+
+    case rethread of
+        [] -> return ()
+        Value destination_comment_id : _ ->
+            let route = if show_reply then ReplyCommentR else DiscussCommentR
+             in redirectWith movedPermanently301 $ route project_handle target destination_comment_id 
+
     mviewer <- maybeAuth
 
     (Entity project_id _, Entity page_id page) <- getPageInfo project_handle target
@@ -587,13 +599,24 @@ processWikiComment maybe_parent_id text (Entity project_id project) page = do
 
 
         Just x | x == action -> do
-            runDB $ do
+            maybe_parent_id' <- runDB $ do
+                let getDestination comment_id = do
+                        destination <- select $ from $ \ comment_rethread -> do
+                            where_ $ comment_rethread ^. CommentRethreadOldComment ==. val comment_id
+                            return $ comment_rethread ^. CommentRethreadNewComment
+
+                        case destination of
+                            [] -> return comment_id
+                            Value comment_id' : _ -> getDestination comment_id'
+
+                maybe_parent_id' <- maybe (return Nothing) (fmap Just . getDestination) maybe_parent_id
+
                 comment_id <- insert $ Comment now
                     (if established then Just now else Nothing)
                     (if established then Just user_id else Nothing)
                     Nothing
                     (wikiPageDiscussion page)
-                    maybe_parent_id user_id text depth
+                    maybe_parent_id' user_id text depth
 
                 let content = T.lines $ (\ (Markdown str) -> str) text
                     tickets = map T.strip $ mapMaybe (T.stripPrefix "ticket:") content
@@ -624,9 +647,11 @@ processWikiComment maybe_parent_id text (Entity project_id project) page = do
                     set ticket [ TicketUpdatedTs =. val now ]
                     where_ $ ticket ^. TicketComment `in_` selectAncestors
 
+                return maybe_parent_id'
+
 
             addAlert "success" $ if established then "comment posted" else "comment submitted for moderation"
-            redirect $ maybe (DiscussWikiR (projectHandle project) (wikiPageTarget page)) (DiscussCommentR (projectHandle project) (wikiPageTarget page)) maybe_parent_id
+            redirect $ maybe (DiscussWikiR (projectHandle project) (wikiPageTarget page)) (DiscussCommentR (projectHandle project) (wikiPageTarget page)) maybe_parent_id'
 
         m -> error $ "Error: unrecognized mode (" ++ show m ++ ")"
 

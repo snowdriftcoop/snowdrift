@@ -52,6 +52,7 @@ main = do
 
             pledges <- select $ from $ \ pledge -> do
                 where_ $ pledge ^. PledgeProject ==. val project_id
+                    &&. pledge ^. PledgeFundedShares >. val 0
                 return pledge
 
             paydays <- select $ from $ \ payday -> do
@@ -92,6 +93,7 @@ main = do
                     update $ \ p -> do
                         set p [ PledgeFundedShares -=. val 1 ]
                         where_ $ p ^. PledgeUser `in_` valList (map fst negative_balances)
+                            &&. p ^. PledgeFundedShares >. val 0
 
                     updateShareValue project_id
 

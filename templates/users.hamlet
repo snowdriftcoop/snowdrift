@@ -17,7 +17,7 @@
                 <td>
                     no users to display
         $else
-            $forall (user_id, user) <- users
+            $forall (_, user) <- users
                 <tr>
                     <td>
                         <a href=@{UserR $ entityKey user}>

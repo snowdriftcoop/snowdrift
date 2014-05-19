@@ -198,14 +198,14 @@ checkboxesField' :: (Eq a, RenderMessage site FormMessage)
                  -> Field (HandlerT site IO) [a]
 checkboxesField' ioptlist = (multiSelectField ioptlist)
     { fieldView =
-        \theId name attrs val isReq -> do
+        \theId name attrs value isReq -> do
             opts <- fmap olOptions $ handlerToWidget ioptlist
             let optselected (Left _) _ = False
                 optselected (Right vals) opt = (optionInternalValue opt) `elem` vals
             [whamlet|
                 <span ##{theId}>
                     $forall opt <- opts
-                        <input type=checkbox id="#{name}_#{optionExternalValue opt}" name=#{name} value=#{optionExternalValue opt} *{attrs} :optselected val opt:checked>
+                        <input type=checkbox id="#{name}_#{optionExternalValue opt}" name=#{name} value=#{optionExternalValue opt} *{attrs} :optselected value opt:checked>
                         <label for="#{name}_#{optionExternalValue opt}">
                             #{optionDisplay opt}
                 |]
@@ -233,5 +233,9 @@ instance WrappedValues (Value a) where
 instance (WrappedValues a, WrappedValues b) => WrappedValues (a, b) where
     type Unwrapped (a, b) = (Unwrapped a, Unwrapped b)
     unwrapValues (a, b) = (unwrapValues a, unwrapValues b)
+
+instance (WrappedValues a, WrappedValues b, WrappedValues c) => WrappedValues (a, b, c) where
+    type Unwrapped (a, b, c) = (Unwrapped a, Unwrapped b, Unwrapped c)
+    unwrapValues (a, b, c) = (unwrapValues a, unwrapValues b, unwrapValues c)
 
 
