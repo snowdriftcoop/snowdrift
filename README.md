@@ -116,11 +116,11 @@ On Debian-based GNU/Linux distros, that's:
 
    *note: there have been some errors reported with older versions of ghc and the haskell-platform* At this time, we are using GHC 7.6.3 and Haskell Platform 2013.2.0.0 — both are included in the latest Ubuntu, and there are [instructions for building updated GHC on older Ubuntu-based systems](https://gist.github.com/Dexyne/5791465). We tested this with Ubuntu 12.04 LTS and it should work on derivatives as well (such as the fully-FLO Trisquel 6). These instructions or similar should work for other systems as well, but see <http://www.haskell.org/platform/> for more general info.
 
-(There are a few non-Haskell libraries that some dependencies which you may
-need to install, presumably in your system's package manager as well.
+(There are a few non-Haskell libraries with some dependencies which you may
+need to install and which presumably will be in your system's package manager.
 We don't have a full list compiled yet, but they can be picked out of the error
-messages when the below fails for want of them - if you make a list,
-please update this and send a pull request!)
+messages if the commands below fail. If you make a list,
+please update this README and send a pull request!)
 
 
 Update cabal's package list:
