@@ -16,7 +16,7 @@ getUpdateSharesR :: Text -> Handler Html
 getUpdateSharesR project_handle = do
     _ <- requireAuthId
 
-    ((result, _), _) <- runFormGet $ buySharesForm 0
+    ((result, _), _) <- runFormGet $ pledgeForm 0
     case result of
         FormSuccess (SharesPurchaseOrder shares) -> do
             -- TODO - refuse negative

@@ -122,7 +122,7 @@ renderProject maybe_project_handle project show_form pledges pledge = do
 
             return $ Just (Milray $ round last, Milray $ round year, Milray $ round total)
 
-    let form = if show_form then buySharesForm else mockBuySharesForm
+    let form = if show_form then pledgeForm else previewPledgeForm
 
     ((_, update_shares), _) <- handlerToWidget $ generateFormGet $ form $ fromMaybe 0 maybe_shares
 
