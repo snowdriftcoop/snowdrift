@@ -204,10 +204,6 @@ you can start the server with the command:
 
     Snowdrift Development
 
-If you aren't using a cabal sandbox and/or don't have your PATH set correctly, you can always run the following from the snowdrift source directory:
-
-    ./dist/build/Snowdrift/Snowdrift Development
-
 To rebuild the site after changes to the code, run cabal install first before starting the server.
     
 Alternately, you may use the yesod devel command which does a combined rebuild and server start.
