@@ -20,3 +20,4 @@ renderTime time = do
         <span title="#{render time}">
             #{age now time}&nbsp;ago
     |]
+
