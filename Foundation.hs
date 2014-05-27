@@ -109,15 +109,15 @@ licenseText = E.encodeUtf8 $ renderJavascriptUrl (\ _ _ -> T.empty) [julius|
 
      The JavaScript code in this page is free software: you can
      redistribute it and/or modify it under the terms of the GNU
-     General Public License (GNU GPL) as published by the Free Software
+     Affero General Public License (GNU AGPL) as published by the Free Software
      Foundation, either version 3 of the License, or (at your option)
      any later version.  The code is distributed WITHOUT ANY WARRANTY;
      without even the implied warranty of MERCHANTABILITY or FITNESS
      FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
 
-     As additional permission under GNU GPL version 3 section 7, you
+     As additional permission under GNU AGPL version 3 section 7, you
      may distribute non-source (e.g., minimized or compacted) forms of
-     that code without the copy of the GNU GPL normally required by
+     that code without the copy of the GNU AGPL normally required by
      section 4, provided you include this license notice and a URL
      through which recipients can access the Corresponding Source.
 
@@ -147,7 +147,8 @@ instance Yesod App where
 
         let navbar = appNavbar master
         let userPrintName :: Entity User -> Text
-            userPrintName (Entity user_id user) = fromMaybe (either (error . T.unpack) (T.append "user") $ fromPersistValue $ unKey user_id) (userName user)
+            userPrintName (Entity user_id user) =
+                fromMaybe (either (error . T.unpack) (T.append "user") $ fromPersistValue $ unKey user_id) (userName user)
         -- We break up the default layout into two components:
         -- default-layout is the contents of the body tag, and
         -- default-layout-wrapper is the entire page. Since the final
@@ -296,9 +297,9 @@ snowdriftAuthBrowserId =
                     <strong>Mozilla Persona is a secure log-in that doesn't track you! 
                     After registering, it works on many different websites with a single click.
                 <p>
-                    Registering a gmail or yahoo account takes just a quick verification.
-                    Any e-mail will work after setting a password and confirming the account.
-                ^{parentLogin}
+                    Use it with any e-mail by setting a password and confirming the account.
+                    With gmail or yahoo accounts, it's even faster — just a couple clicks.
+                    ^{parentLogin}
                 <p>
                     The Persona sign-in button works for both new and existing accounts.
             |]
@@ -315,7 +316,7 @@ snowdriftAuthHashDB =
                         <br>
                         <small>
                             <a href="@{UserCreateR}">
-                                click here to create an account
+                                click here to create a new account
                     <form .form-horizontal method="post" action="@{toMaster loginRoute}">
                         <div .form-group>
                             <label .col-sm-4 .control-label>
@@ -381,6 +382,7 @@ createUser ident passwd name avatar nick = do
                         [ "Thanks for registering!"
                         , "<br> Please read our [**welcome message**](/p/snowdrift/w/welcome), and let us know any questions."
                         ]
+                -- TODO: change snowdrift_id to the generated site-project id
                 void $ insert $ Message (Just snowdrift_id) now Nothing (Just user_id) message_text True
                 return $ Just user_id
             Nothing -> do
@@ -441,3 +443,4 @@ getAlert = do
     mmsg <- liftM (fmap preEscapedToMarkup) $ lookupSession alertKey
     deleteSession alertKey
     return mmsg
+
