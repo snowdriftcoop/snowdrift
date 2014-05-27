@@ -7,7 +7,8 @@ import Yesod hiding ((==.), count, Value)
 import Yesod.Static
 import Yesod.Auth
 import Yesod.Auth.BrowserId
-import Yesod.Auth.HashDB (authHashDB)
+import Yesod.Auth.HashDB (authHashDB, setPassword)
+
 import Yesod.Default.Config
 import Yesod.Default.Util (addStaticContentExternal)
 import Network.HTTP.Conduit (Manager)
@@ -26,6 +27,7 @@ import Model.Currency
 import Control.Applicative
 import Control.Monad.Trans.Resource
 import Control.Monad
+import Control.Exception.Lifted (throwIO, handle)
 
 import Data.Int (Int64)
 import Data.Text as T
@@ -39,6 +41,8 @@ import Web.Authenticate.BrowserId (browserIdJs)
 import Blaze.ByteString.Builder.Char.Utf8 (fromText)
 
 import Yesod.Form.Jquery
+
+import Yesod.Markdown (Markdown (..))
 
 import qualified Data.ByteString.Lazy.Char8 as LB
 import qualified Data.Text.Lazy.Encoding as E
@@ -229,6 +233,18 @@ instance YesodPersist App where
 instance YesodPersistRunner App where
     getDBRunner = defaultGetDBRunner connPool
 
+-- set which project in the site runs the site itself
+getSiteProject :: Handler (Entity Project)
+getSiteProject = do
+    handle <- getSiteProjectHandle
+    project <- runDB $ getBy $ UniqueProjectHandle handle
+    case project of
+         Nothing -> error "No project has been defined as the owner of this website."
+         Just a -> return a
+
+getSiteProjectHandle :: Handler Text
+getSiteProjectHandle = extraSiteProject . appExtra . settings <$> getYesod
+
 authBrowserIdFixed :: AuthPlugin App
 authBrowserIdFixed =
     let complete = PluginR "browserid" []
@@ -277,13 +293,14 @@ snowdriftAuthBrowserId =
             let parentLogin = apLogin auth toMaster
             [whamlet|
                 <p>
-                    <strong>Mozilla Persona is a secure log-in
-                    that, unlike most other systems, doesn't track you. 
-                    It works near-seamlessly with gmail or yahoo,
-                    but any e-mail will work after setting a password and confirming the account.
+                    <strong>Mozilla Persona is a secure log-in that doesn't track you! 
+                    After registering, it works on many different websites with a single click.
+                <p>
+                    Registering a gmail or yahoo account takes just a quick verification.
+                    Any e-mail will work after setting a password and confirming the account.
                 ^{parentLogin}
                 <p>
-                    The Persona sign-in works for both new and existing accounts.
+                    The Persona sign-in button works for both new and existing accounts.
             |]
      in auth { apLogin = login }
 
@@ -323,24 +340,11 @@ instance YesodAuth App where
     -- Where to send a user after logout
     logoutDest _ = HomeR
 
-    getAuthId creds = runDB $ do
-        now <- liftIO getCurrentTime
-        x <- getBy $ UniqueUser $ credsIdent creds
-        case x of
+    getAuthId creds = do
+        maybe_user_id <- runDB $ getBy $ UniqueUser $ credsIdent creds
+        case maybe_user_id of
             Just (Entity user_id _) -> return $ Just user_id
-            Nothing -> do
-                account_id <- insert $ Account $ Milray 0
-                user_id <- insert $ User (credsIdent creds) Nothing Nothing Nothing Nothing account_id Nothing Nothing Nothing Nothing now now now now Nothing Nothing
-
-                -- TODO refactor back to insertSelect when quoting issue is resolved
-                --
-                -- insertSelect $ from $ \ p -> return $ TagColor <# (p ^. DefaultTagColorTag) <&> val user_id <&> (p ^. DefaultTagColorColor)
-                --
-                default_tag_colors <- select $ from return
-                forM_ default_tag_colors $ \ (Entity _ (DefaultTagColor tag color)) -> insert $ TagColor tag user_id color
-                --
-
-                return $ Just user_id
+            Nothing -> createUser (credsIdent creds) Nothing Nothing Nothing Nothing
 
     -- You can add other plugins like BrowserID, email or OAuth here
     authPlugins _ = [ snowdriftAuthBrowserId, snowdriftAuthHashDB ]
@@ -353,6 +357,35 @@ instance YesodAuth App where
 
         lift $ defaultLayout $(widgetFile "auth")
 
+
+createUser :: Text -> Maybe Text -> Maybe Text -> Maybe Text -> Maybe Text -> Handler (Maybe UserId)
+createUser ident passwd name avatar nick = do
+    now <- liftIO getCurrentTime
+    handle (\ DBException -> return Nothing) $ runDB $ do
+        account_id <- insert $ Account 0
+        user <- maybe return setPassword passwd $ User ident (Just now) Nothing Nothing name account_id avatar Nothing Nothing nick now now now now Nothing Nothing
+        uid_maybe <- insertUnique user
+        Entity snowdrift_id _ <- getBy404 $ UniqueProjectHandle "snowdrift"
+        case uid_maybe of
+            Just user_id -> do
+    
+                -- TODO refactor back to insertSelect when quoting issue is resolved
+                --
+                -- insertSelect $ from $ \ p -> return $ TagColor <# (p ^. DefaultTagColorTag) <&> val user_id <&> (p ^. DefaultTagColorColor)
+                --
+                default_tag_colors <- select $ from return
+                forM_ default_tag_colors $ \ (Entity _ (DefaultTagColor tag color)) -> insert $ TagColor tag user_id color
+                --
+
+                let message_text = Markdown $ T.unlines
+                        [ "Thanks for registering!"
+                        , "<br> Please read our [**welcome message**](/p/snowdrift/w/welcome), and let us know any questions."
+                        ]
+                void $ insert $ Message (Just snowdrift_id) now Nothing (Just user_id) message_text True
+                return $ Just user_id
+            Nothing -> do
+                lift $ addAlert "danger" "E-mail or handle already in use."
+                throwIO DBException
 
 
 instance YesodJquery App

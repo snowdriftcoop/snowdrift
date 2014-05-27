@@ -6,6 +6,7 @@ import Model.User
 
 import qualified Data.Map as M
 
+import Model.Project
 
 import Widgets.Time
 

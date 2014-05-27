@@ -57,10 +57,6 @@ on_ :: Esqueleto query expr backend => expr (Value Bool) -> query ()
 on_ = Database.Esqueleto.on
 
 
-data DBException = DBException deriving (Typeable, Show)
-
-instance Exception DBException where
-
 class Count a where
     getCount :: a -> Int64
 

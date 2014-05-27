@@ -22,6 +22,8 @@ import Model.Settings.Internal (UserSettingName)
 
 import Yesod.Markdown (Markdown)
 
+import Control.Exception (Exception)
+
 -- You can define all of your database entities in the entities file.
 -- You can find more information on persistent and how to declare entities
 -- at:
@@ -34,3 +36,6 @@ instance HashDBUser User where
     userPasswordSalt = userSalt
     setSaltAndPasswordHash salt hash user = user { userHash = Just hash, userSalt = Just salt }
 
+data DBException = DBException deriving (Typeable, Show)
+
+instance Exception DBException where

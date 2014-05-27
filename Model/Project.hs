@@ -106,3 +106,11 @@ getCounts (Entity user_id user) = mapM $ \(Entity project_id project) -> do
  -  Fix algorithm (Aaron asks: fix it? what's broken? I think it's right… 2014-01-14)
  -}
 
+
+projectNameWidget :: ProjectId -> Widget
+projectNameWidget project_id = do
+    maybe_project <- handlerToWidget $ runDB $ get project_id
+    case maybe_project of
+        Nothing -> [whamlet| (unknown project) |]
+        Just project -> [whamlet| #{projectName project} |]
+
