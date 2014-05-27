@@ -2,7 +2,6 @@ module Handler.Contact where
 
 import Import
 
-
 import Widgets.Markdown
 
 
@@ -12,8 +11,9 @@ contactForm = renderBootstrap3 $ areq' snowdriftMarkdownField "" Nothing
 getContactR :: Text -> Handler Html
 getContactR project_handle = do
     (contact_form, _) <- generateFormPost contactForm
+    Entity _ project <- runDB $ getBy404 (UniqueProjectHandle project_handle)
     defaultLayout $ do
-        setTitle "Contact | Snowdrift.coop"
+        setTitle . toHtml $ "Contact " <> projectName project <> " | Snowdrift.coop"
         $(widgetFile "contact")
 
 
@@ -28,7 +28,7 @@ postContactR project_handle = do
         FormSuccess content -> do
             void $ runDB $ do
                 Entity project_id _ <- getBy404 $ UniqueProjectHandle project_handle
-                insert $ Message (Just project_id) now maybe_user_id Nothing content
+                insert $ Message (Just project_id) now maybe_user_id Nothing content False
 
             addAlert "success" "Comment submitted.  Thank you for your input!" 
 

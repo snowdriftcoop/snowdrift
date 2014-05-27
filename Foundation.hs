@@ -365,6 +365,7 @@ createUser ident passwd name avatar nick = do
         account_id <- insert $ Account 0
         user <- maybe return setPassword passwd $ User ident (Just now) Nothing Nothing name account_id avatar Nothing Nothing nick now now now now Nothing Nothing
         uid_maybe <- insertUnique user
+        Entity snowdrift_id _ <- getBy404 $ UniqueProjectHandle "snowdrift"
         case uid_maybe of
             Just user_id -> do
     
@@ -378,10 +379,9 @@ createUser ident passwd name avatar nick = do
 
                 let message_text = Markdown $ T.unlines
                         [ "Thanks for registering!"
-                        , "<br> Please read our [**welcome message**](/p/snowdrift/w/welcome) and let us know any questions."
+                        , "<br> Please read our [**welcome message**](/p/snowdrift/w/welcome), and let us know any questions."
                         ]
-
-                void $ insert $ Message Nothing now Nothing (Just user_id) message_text
+                void $ insert $ Message (Just snowdrift_id) now Nothing (Just user_id) message_text True
                 return $ Just user_id
             Nothing -> do
                 lift $ addAlert "danger" "E-mail or handle already in use."

@@ -68,7 +68,6 @@ Project
     UniqueProjectHandle handle
     deriving Show
 
-
 ProjectBlog
     time UTCTime
     title Text
@@ -141,12 +140,14 @@ VolunteerInterest
     volunteer VolunteerApplicationId
     interest InterestId
 
+
 Message
     project ProjectId Maybe
     createdTs UTCTime
     from UserId Maybe
     to UserId Maybe
     content Markdown
+    automated Bool default=False
 
 
 WikiPage
