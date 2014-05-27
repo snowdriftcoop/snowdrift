@@ -17,6 +17,13 @@ pickForegroundColor bg = maximumBy (compare `on` \ a -> colorDiff a bg) [0x11111
     colorDiff a b = sum $ map abs $ zipWith (-) (bytelist a) (bytelist b)
     bytelist a = map ((.&. 255) . shiftR a) [0, 8, 16]
 
+{- We've been playing around with voting on tags and didn't finalize
+an agreement about how to calculate voting, so that feature is currently
+not presented on the live site. I (Aaron) am favoring the same range-voting
+we propose for the co-op where there's a 6-point scale, but that's not
+what the code has currently.
+-}
+
 tagWidget :: AnnotatedTag -> Widget
 tagWidget t = do
     maybe_user_id <- handlerToWidget maybeAuthId
