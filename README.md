@@ -189,7 +189,9 @@ Then add user to database:
 
     postgres=# grant all privileges on database snowdrift_development to snowdrift_development;
 
-Leave postgres (with ctrl-D), then edit config/postgresql.yml and update the password to match the one you entered.
+Leave postgres (with ctrl-D).
+
+Edit config/postgresql.yml and update the password to match the one you entered.
 
 Import development database:
 
@@ -254,15 +256,24 @@ In this case, if the data *is* intended to be lost (e.g. destroying a column sto
 
 If you don't want to lose the data (a column is being moved to a different table, a column is being renamed, &c) modify the migration file as appropriate.
 
-In any event, be sure to add the new migrations/migrateN file to git when you commit the corresponding schema changes, and update devDB.sql to match.
+If you try different things in the course of testing and/or reset your database, you might generate extra migrations.
+Be sure to clear and reset any migrations once you have a final version.
+Then, you can run the site once to generate the correct final migration.
+
+Committing database updates
+---------------------------
+
+Add any valid new migrations/migrateN files to git when you commit the corresponding schema changes.
 
 When merging migrations, always put any you've added on the end - don't merge them into migration files others have probably already run.
+
+You should also update devDB.sql, as described below.
 
 
 Updating the devDB database
 --------------------------------
 
-If you make specific improvements or additions to your database that aren't just playing around but that you think will make for a better starting database for other contributors, use the following command in your main project directory to export the changes (which can then be committed via git as usual):
+If you make specific improvements or additions to your database that aren't just playing around but that you think will make for a better starting database for other contributors (and also when you have updated the basic database with migration files), use the following command in your main project directory to export the changes (which can then be committed via git as usual):
 
     sudo -u postgres pg_dump snowdrift_development >devDB.sql
 
@@ -355,7 +366,7 @@ Go to the postgres=# prompt:
 
     sudo -u postgres psql
 
-Unmark the template:
+Unmark the template (don't include the postgres=# prompt part):
 
     postgres=# update pg_database set datistemplate=false where datname='snowdrift_test_template';
           
