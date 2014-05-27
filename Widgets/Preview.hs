@@ -8,8 +8,8 @@ renderPreview form action widget =
     [whamlet|
         <form method="POST">
             <div .alert .alert-danger>
-                This is a preview; your changes have <em>not</em> been saved!
-                Edit your posting <a href="#edit-preview">below</a>.
+                This is a preview; changes have <em>not</em> been saved!
+                Edit and/or submit your posting <a href="#edit-preview">below</a>.
 
             ^{widget}
 
@@ -21,3 +21,4 @@ renderPreview form action widget =
             <input type=submit name=mode value="preview">
             <input type=submit name=mode value="#{action}">
     |]
+
