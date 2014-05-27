@@ -147,7 +147,7 @@ Message
     from UserId Maybe
     to UserId Maybe
     content Markdown
-    automated Bool default=False
+    automated Bool default=false
 
 
 WikiPage

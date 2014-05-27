@@ -267,13 +267,15 @@ Add any valid new migrations/migrateN files to git when you commit the correspon
 
 When merging migrations, always put any you've added on the end - don't merge them into migration files others have probably already run.
 
-You should also update devDB.sql, as described below.
+Although it will run the migrations anyway, it will be efficient to also update devDB.sql, as described below.
 
 
 Updating the devDB database
 --------------------------------
 
-If you make specific improvements or additions to your database that aren't just playing around but that you think will make for a better starting database for other contributors (and also when you have updated the basic database with migration files), use the following command in your main project directory to export the changes (which can then be committed via git as usual):
+If you make specific improvements or additions to your database that aren't just playing around but that you think will make for a better starting database for other contributors (and also when you have updated the basic database with migration files), you can use the following command to export the changes (which can then be committed via git as usual).
+
+While in your project directory:
 
     sudo -u postgres pg_dump snowdrift_development >devDB.sql
 
