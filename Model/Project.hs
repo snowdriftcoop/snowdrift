@@ -103,7 +103,7 @@ getCounts (Entity user_id user) = mapM $ \(Entity project_id project) -> do
 {-
  - TODO
  -  Unfund shares
- -  Fix algorithm (Aaron asks: fix it? what's broken? I think it's right… 2014-01-14)
+ -  Fix algorithm
  -}
 
 
