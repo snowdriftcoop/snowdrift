@@ -26,5 +26,6 @@ getUserSettings = cached $ do
 
 
 applyUserSetting :: UserSettings -> UserSetting -> UserSettings
-applyUserSetting user_settings setting@(UserSetting { userSettingSetting = ShowTagVotes }) = user_settings { userSettingsShowTagVotes = read (userSettingValue setting) }
+applyUserSetting user_settings setting@(UserSetting { userSettingSetting = ShowTagVotes }) =
+        user_settings { userSettingsShowTagVotes = read (userSettingValue setting) }
 
