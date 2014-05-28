@@ -32,7 +32,7 @@ projectPledgeSummary user_id = do
                 $if (length project_summary) == 1
                     <p>Patron to 1 project
                 $else
-                    <p>Patron to (length project_summary) projects
+                    <p>Patron to #{length project_summary}) projects
      |]
 
 -- |The listing of all pledges for a given user, shown on u/#/pledges
