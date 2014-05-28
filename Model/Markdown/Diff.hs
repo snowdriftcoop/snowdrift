@@ -37,3 +37,4 @@ diffToDiffInfo (Second x) = (S, x)
 
 diffMarkdown :: Markdown -> Markdown -> MarkdownDiff
 diffMarkdown (Markdown m1) (Markdown m2) = MarkdownDiff $ map diffToDiffInfo $ getDiff (T.lines m1) (T.lines m2) 
+
