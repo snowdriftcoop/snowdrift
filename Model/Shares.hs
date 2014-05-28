@@ -38,3 +38,4 @@ previewPledgeForm _ extra = do
         |]
 
     return (FormSuccess $ SharesPurchaseOrder 0, view)
+

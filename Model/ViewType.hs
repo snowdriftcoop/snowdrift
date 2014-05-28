@@ -19,3 +19,4 @@ viewTypeAbbrev :: ViewType -> Text
 viewTypeAbbrev ViewComments = "ViewComments"
 viewTypeAbbrev ViewEdits = "ViewEdits"
 viewTypeAbbrev ViewApplications = "ViewApplications"
+
