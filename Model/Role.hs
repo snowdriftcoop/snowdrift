@@ -34,3 +34,4 @@ roleField = radioFieldList $ map (roleLabel &&& id) [minBound ..]
 
 presentationRoles :: [Role]
 presentationRoles = universe
+
