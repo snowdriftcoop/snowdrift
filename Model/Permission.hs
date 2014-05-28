@@ -12,3 +12,4 @@ permissionLevelField = radioFieldList $ map (permissionLevelLabel &&& id) [minBo
 
 permissionLevelLabel :: PermissionLevel -> Text
 permissionLevelLabel = T.pack . show
+
