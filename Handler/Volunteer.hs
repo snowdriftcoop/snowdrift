@@ -13,7 +13,8 @@ volunteerForm now project_id interests (Entity user_id user) = renderBootstrap3 
         <*> aopt' textField "Website URL:" Nothing
         <*> aopt' textField "Location:" Nothing
         <*> aopt' textareaField "Relevant work/training/volunteer experience:" Nothing
-        <*> areq' (multiSelectFieldList $ (interestDescription . entityVal &&& entityKey) <$> interests) "Areas of interest (use ctrl to select multiple):" Nothing
+        <*> areq' (multiSelectFieldList $ (interestDescription . entityVal &&& entityKey) <$> interests)
+                    "Areas of interest (use ctrl to select multiple):" Nothing
         <*> aopt' textareaField "Anything else you'd like us to know:" Nothing 
    where
         source = (\ a -> zip a a) ["Article", "Weblink", "Conference", "Search engine", "Personal recommendation"]

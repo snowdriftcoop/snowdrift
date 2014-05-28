@@ -23,15 +23,12 @@ lookupParamDefault name def = do
         return $ fst param
         
 
-getOldUserBalanceR :: UserId -> Handler Html
-getOldUserBalanceR = redirect . UserBalanceR
-
 -- check permissions for user balance view
 getUserBalanceR :: UserId -> Handler Html
 getUserBalanceR user_id = do
     viewer_id <- requireAuthId
     if viewer_id /= user_id
-        then permissionDenied "You must be a Snowdrift administrator to view user balances."
+        then permissionDenied "You must be a site administrator to view user balances."
         else getUserBalanceR' user_id
 
 getUserBalanceR' :: UserId -> Handler Html
@@ -78,10 +75,6 @@ getUserBalanceR' user_id = do
         $(widgetFile "user_balance")
 
 
-
-postOldUserBalanceR :: UserId -> Handler Html
-postOldUserBalanceR = postUserBalanceR
-
 postUserBalanceR :: UserId -> Handler Html
 postUserBalanceR user_id = do
     Entity viewer_id _ <- requireAuth
@@ -115,3 +108,4 @@ postUserBalanceR user_id = do
 
 addTestCashForm :: Form Milray
 addTestCashForm = renderBootstrap3 $ fromInteger . (10000 *) <$> areq' intField "Add (fake) money to your account (in whole dollars)" (Just 10)
+

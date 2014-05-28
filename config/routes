@@ -12,12 +12,6 @@
 /u/#UserId/balance UserBalanceR GET POST
 /u/#UserId/pledges UserPledgesR GET
 /u/!new UserCreateR GET POST
-/users OldUsersR GET
-/user/#UserId OldUserR GET POST
-/user/#UserId/edit OldEditUserR GET
-/user/#UserId/balance OldUserBalanceR GET POST
-/user/#UserId/pledges OldUserPledgesR GET
-/user/!new OldUserCreateR GET POST
 
 /p ProjectsR GET
 /p/#Text ProjectR GET POST
@@ -36,8 +30,6 @@
 /p/#Text/w/#Text/new NewWikiR GET POST
 /p/#Text/w/#Text/d DiscussWikiR GET POST
 /p/#Text/w/#Text/d/new NewDiscussWikiR GET POST
-/p/#Text/w/#Text/discuss OldDiscussWikiR GET POST
-/p/#Text/w/#Text/discuss/new OldNewDiscussWikiR GET POST
 /p/#Text/w/#Text/c/#CommentId DiscussCommentR GET
 /p/#Text/w/#Text/c/#CommentId/reply ReplyCommentR GET POST
 /p/#Text/w/#Text/c/#CommentId/moderate ApproveWikiCommentR GET POST
@@ -50,14 +42,8 @@
 /p/#Text/w/#Text/c/#CommentId/tag/!new/create CreateNewCommentTagR POST
 /p/#Text/w/#Text/c/#CommentId/tag/!new/apply ApplyNewCommentTagR POST
 /p/#Text/w/#Text/comment/#CommentId OldDiscussCommentR GET
-/p/#Text/w/#Text/comment/#CommentId/moderate OldApproveWikiCommentR GET POST
-/p/#Text/w/#Text/comment/#CommentId/retract OldRetractWikiCommentR GET POST
-/p/#Text/w/#Text/comment/#CommentId/tags OldCommentTagsR GET
-/p/#Text/w/#Text/comment/#CommentId/tag/#TagId OldCommentTagR GET POST
-/p/#Text/w/#Text/comment/#CommentId/tag/!new OldNewCommentTagR GET POST
 /p/#Text/w/#Text/h WikiHistoryR GET
 /p/#Text/w/#Text/h/#WikiEditId WikiEditR GET
-/p/#Text/w/#Text/history OldWikiHistoryR GET
 /p/#Text/w/#Text/history/#WikiEditId OldWikiEditR GET
 
 /p/#Text/w/#Text/diff/#WikiEditId/#WikiEditId WikiDiffR GET

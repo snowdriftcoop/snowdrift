@@ -126,3 +126,4 @@ statusIsResp number = withResponse $ \ SResponse { simpleStatus = s } -> do
     [ "Expected status was ", show number
     , " but received status was ", show $ H.statusCode s
     ]
+

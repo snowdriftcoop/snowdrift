@@ -19,7 +19,8 @@ getApplicationsR project_handle = do
         <$> isProjectAffiliated project_handle viewer_id
         <*> isProjectAdmin "snowdrift" viewer_id
 
-    unless affiliated $ permissionDenied "you must be affiliated with this project to view applications"
+    unless affiliated $
+        permissionDenied "you must be affiliated with this project to view applications"
 
     Entity _ project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
     applications <- runDB $ do
@@ -35,5 +36,9 @@ getApplicationsR project_handle = do
 
 
     defaultLayout $ do
-        setTitle . toHtml $ projectName project <> " Volunteer Applications | Snowdrift.coop"
+
+        setTitle . toHtml $
+            projectName project <> " Volunteer Applications | Snowdrift.coop"
+
         $(widgetFile "applications")
+

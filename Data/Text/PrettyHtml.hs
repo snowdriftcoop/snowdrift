@@ -44,7 +44,8 @@ renderPretty pretty = case pretty of
             maybe_github_repo_link <- getGithubRepo
             let github_issue = toHtml $ "Github issue " ++ show int
             return $ case maybe_github_repo_link of
-                Just github_repo_link -> Html.a github_issue Html.! Attr.href (fromString $ "https://github.com/" ++ T.unpack github_repo_link ++ "/issues/" ++ show int)
+                Just github_repo_link -> Html.a github_issue Html.! Attr.href
+                    (fromString $ "https://github.com/" ++ T.unpack github_repo_link ++ "/issues/" ++ show int)
                 Nothing -> github_issue
 
 

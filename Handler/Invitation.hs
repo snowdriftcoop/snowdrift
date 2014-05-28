@@ -9,7 +9,6 @@ import qualified Data.Text as T
 
 
 
-
 getInvitationR :: Text -> Text -> Handler Html
 getInvitationR project_handle code = do
     Entity _ project <- runDB $ getBy404 $ UniqueProjectHandle project_handle

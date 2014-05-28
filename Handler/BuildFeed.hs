@@ -36,3 +36,4 @@ getBuildFeedR = do
         return entry
 
     newsFeed $ Feed title feed_url home_url author description lang time entries
+

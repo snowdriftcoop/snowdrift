@@ -28,8 +28,8 @@ editUserForm :: User -> Form UserUpdate
 editUserForm user = renderBootstrap3 $
     UserUpdate
         <$> aopt' textField "Public Name" (Just $ userName user)
-        <*> aopt' textField "Avatar (link)" (Just $ userAvatar user)
-        <*> aopt' textField "IRC name @freenode.net)" (Just $ userIrcNick user)
+        <*> aopt' textField "Avatar image (link)" (Just $ userAvatar user)
+        <*> aopt' textField "IRC nick @freenode.net)" (Just $ userIrcNick user)
         <*> aopt' snowdriftMarkdownField "Blurb (used on listings of many people)" (Just $ userBlurb user)
         <*> aopt' snowdriftMarkdownField "Personal Statement (visible only on this page)" (Just $ userStatement user)
     where
@@ -45,22 +45,9 @@ previewUserForm user = renderBootstrap3 $
         <*> hiddenMarkdown (userStatement user)
 
 
-getOldUserR :: UserId -> Handler Html
-getOldUserR = redirect . UserR
-
 getUserR :: UserId -> Handler Html
 getUserR user_id = do
     maybe_viewer_id <- maybeAuthId
-
-    {- user <- runDB $ case maybe_viewer_id of
-        Nothing -> do
-            on_committee <- fmap isJust $ getBy $ UniqueCommitteeMember user_id
-            if on_committee
-             then get404 user_id
-             else permissionDenied "You must be logged in to view this user"
-
-        Just _ -> get404 user_id
-    -}
 
     user <- runDB $ get404 user_id
 
@@ -88,9 +75,6 @@ renderUser viewer_id user_id user projects = do
     $(widgetFile "user")
 
 
-getOldEditUserR :: UserId -> Handler Html
-getOldEditUserR = redirect . EditUserR
-
 getEditUserR :: UserId -> Handler Html
 getEditUserR user_id = do
     viewer_id <- requireAuthId
@@ -105,9 +89,6 @@ getEditUserR user_id = do
         setTitle . toHtml $ "User Profile - " <> userPrintName (Entity user_id user) <> " | Snowdrift.coop"
         $(widgetFile "edit_user")
 
-
-postOldUserR :: UserId -> Handler Html
-postOldUserR = postUserR
 
 postUserR :: UserId -> Handler Html
 postUserR user_id = do
@@ -145,9 +126,6 @@ postUserR user_id = do
             addAlert "danger" "Failed to update user."
             redirect $ UserR user_id
 
-getOldUsersR :: Handler Html
-getOldUsersR = redirect UsersR
-
 getUsersR :: Handler Html
 getUsersR = do
     Entity _ viewer <- requireAuth
@@ -179,8 +157,6 @@ getUsersR = do
         setTitle "Users | Snowdrift.coop"
         $(widgetFile "users")
 
-getOldUserCreateR :: Handler Html
-getOldUserCreateR = redirect UserCreateR
 
 getUserCreateR :: Handler Html
 getUserCreateR = do
@@ -193,9 +169,6 @@ getUserCreateR = do
                 <input type=submit>
         |]
 
-
-postOldUserCreateR :: Handler Html
-postOldUserCreateR = postUserCreateR
 
 postUserCreateR :: Handler Html
 postUserCreateR = do
@@ -273,3 +246,4 @@ userCreateForm ident extra = do
         result = (,,,,) <$> identRes <*> passwdRes <*> nameRes <*> avatarRes <*> nickRes
 
     return (result, view)
+
