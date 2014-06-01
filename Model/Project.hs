@@ -26,7 +26,7 @@ summarizeProject project pledges = do
     return $ ProjectSummary (projectName $ entityVal project) (projectHandle $ entityVal project) user_count share_count share_value
 
 
-getProjectShares :: (MonadUnsafeIO m, MonadThrow m, MonadIO m, MonadBaseControl IO m, MonadLogger m, MonadResource m) => ProjectId -> SqlPersistT m [Int64]
+getProjectShares :: (MonadThrow m, MonadIO m, MonadBaseControl IO m, MonadLogger m, MonadResource m) => ProjectId -> SqlPersistT m [Int64]
 getProjectShares project_id = do
     pledges <- select $ from $ \ pledge -> do
         where_ ( pledge ^. PledgeProject ==. val project_id &&. pledge ^. PledgeFundedShares >. val 0)
@@ -45,7 +45,7 @@ projectComputeShareValue pledges =
      in Milray 1 $* (multiplier * (num_users - 1))
 
 
-updateShareValue :: (MonadUnsafeIO m, MonadThrow m, MonadIO m, MonadBaseControl IO m, MonadLogger m, MonadResource m) => ProjectId -> SqlPersistT m ()
+updateShareValue :: (MonadThrow m, MonadIO m, MonadBaseControl IO m, MonadLogger m, MonadResource m) => ProjectId -> SqlPersistT m ()
 updateShareValue project_id = do
     pledges <- getProjectShares project_id
     
@@ -53,7 +53,7 @@ updateShareValue project_id = do
         set project  [ ProjectShareValue =. val (projectComputeShareValue pledges) ]
         where_ (project ^. ProjectId ==. val project_id)
 
-getCounts :: (MonadLogger m, MonadIO m, MonadBaseControl IO m, MonadUnsafeIO m, MonadThrow m)
+getCounts :: (MonadLogger m, MonadResource m, MonadIO m, MonadBaseControl IO m, MonadThrow m)
     => Entity User -> [Entity Project] -> SqlPersistT m [([Value Int], [Value Int])]
 
 getCounts (Entity user_id user) = mapM $ \(Entity project_id project) -> do

@@ -32,7 +32,7 @@ discussionSpecs = do
                 addPostParam "mode" "post"
                 stmts
 
-            statusIsResp 303
+            statusIsResp 302
 
         getLatestCommentId = do
             [ Value (Just comment_id) ] <- runDB $ select $ from $ \ comment -> return (max_ $ comment ^. CommentId)
@@ -75,7 +75,7 @@ discussionSpecs = do
                 byLabel "Reason" "testing"
                 addPostParam "mode" "rethread"
 
-            statusIsResp 303
+            statusIsResp 302
 
 
     ydescribe "discussion - rethreading" $ do
@@ -101,7 +101,7 @@ discussionSpecs = do
                     byLabel "Reason" "testing"
                     addPostParam "mode" "rethread"
 
-                statusIsResp 303
+                statusIsResp 302
 
                 get $ DiscussCommentR "snowdrift" "about" second
                 statusIs 200

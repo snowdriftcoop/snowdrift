@@ -13,7 +13,7 @@ getPageInfo project_handle target = runDB $ do
 
     return (project, page)
 
-getCommentPageId :: (MonadLogger m, MonadIO m, MonadBaseControl IO m, MonadUnsafeIO m, MonadThrow m) => CommentId -> SqlPersistT m WikiPageId
+getCommentPageId :: (MonadLogger m, MonadResource m, MonadIO m, MonadBaseControl IO m, MonadThrow m) => CommentId -> SqlPersistT m WikiPageId
 getCommentPageId comment_id = do
     [ Value page_id ] <- select $ from $ \ (c `InnerJoin` p) -> do
         on_ $ c ^. CommentDiscussion ==. p ^. WikiPageDiscussion

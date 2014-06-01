@@ -18,10 +18,6 @@ import Data.Text as T
 import Control.Applicative
 
 
-isRight :: Either a b -> Bool
-isRight (Right _) = True
-isRight _ = False
-
 unlinesHtml :: [Html] -> Html
 unlinesHtml = sequence_ . L.intersperse Html.br
 

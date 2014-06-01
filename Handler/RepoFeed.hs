@@ -37,7 +37,7 @@ getRepoFeedR = do
         return (commits, branch)
 
 
-    let title = T.pack $ "Snowdrift.coop Commits (" ++ branch ++ ")"
+    let title = T.pack $ "Snowdrift.coop Commits (" ++ refNameRaw branch ++ ")"
         feed_url = RepoFeedR
         home_url = HomeR
         author = "Snowdrift.coop Team"

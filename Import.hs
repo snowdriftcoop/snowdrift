@@ -17,6 +17,7 @@ import qualified Database.Esqueleto
 
 import           Control.Applicative  as Import (pure, (<$>), (<*>))
 import           Data.Text            as Import (Text)
+import qualified Data.Text            as T
 import qualified Data.Text.Lazy       as TL
 
 import           Data.Function        as Import (on)
@@ -183,7 +184,7 @@ optionsPairs' mk_external opts = do
   let mkOption (display, internal) =
           Option { optionDisplay       = mr display
                  , optionInternalValue = internal
-                 , optionExternalValue = pack' $ mk_external internal
+                 , optionExternalValue = T.pack $ mk_external internal
                  }
   return $ mkOptionList (map mkOption opts)
 

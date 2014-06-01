@@ -109,60 +109,63 @@ library
 
     build-depends: base                          >= 4          && < 5
                  -- , yesod-platform
-                 , yesod                         == 1.2.2.1
-                 , yesod-core                    == 1.2.4.5
-                 , yesod-auth                    >= 1.2        && < 1.3
-                 , yesod-static                  >= 1.2        && < 1.3
-                 , yesod-form                    == 1.3.3
-                 , clientsession                 >= 0.9        && < 0.10
+                 , yesod
+                 , yesod-core
+                 , yesod-auth
+                 , yesod-auth-hashdb
+                 , yesod-static
+                 , yesod-form
+                 , clientsession
                  , resourcet
-                 , bytestring                    >= 0.9        && < 0.11
-                 , text                          >= 0.11       && < 0.12
-                 , persistent                    >= 1.2        && < 1.3
-                 , persistent-postgresql         >= 1.2        && < 1.3
-                 , persistent-template           >= 1.2        && < 1.3
+                 , bytestring
+                 , text
+                 , persistent
+                 , persistent-postgresql
+                 , persistent-template
                  , template-haskell
-                 , hamlet                        >= 1.1        && < 1.2
-                 , shakespeare-css               == 1.0.6.4
-                 , shakespeare-js                >= 1.0.2      && < 1.2
-                 , shakespeare-text              >= 1.0        && < 1.1
-                 , hjsmin                        >= 0.1        && < 0.2
-                 , monad-control                 >= 0.3        && < 0.4
-                 , wai-extra                     >= 1.3        && < 1.4
-                 , yaml                          >= 0.8        && < 0.8.7
-                 , http-conduit                  >= 1.9        && < 1.10
-                 , directory                     >= 1.1        && < 1.3
-                 , warp                          >= 1.3        && < 1.4
-                 , esqueleto                     >= 1.3
+                 , hamlet
+                 , shakespeare
+                 , shakespeare-css
+                 , shakespeare-js
+                 , shakespeare-text
+                 , hjsmin
+                 , monad-control
+                 , wai-extra
+                 , wai-logger
+                 , yaml
+                 , http-conduit
+                 , directory
+                 , warp
+                 , esqueleto
                  , lifted-base
                  , vector
                  , data-default
-                 , aeson                         == 0.6.1.0
-                 , conduit                       >= 1.0
-                 , monad-logger                  >= 0.3        && < 0.4
-                 , fast-logger                   >= 0.3        && < 0.4
+                 , aeson
+                 , conduit
+                 , monad-logger
+                 , fast-logger
                  , time
                  , time-units
                  , transformers
                  , http-types
                  , random
-                 , yesod-markdown                == 0.8.1
+                 , yesod-markdown
                  , yesod-newsfeed
-                 , Diff                          >= 0.3        && < 0.4
+                 , Diff
                  , path-pieces
                  , containers
                  , authenticate
                  , blaze-builder
-                 , blaze-html                    == 0.6.1.1
+                 , blaze-html
                  , blaze-markup
-                 , attoparsec                    >= 0.10.3.0    && < 0.11.0.0
+                 , attoparsec
                  , old-locale
-                 , hit                           >= 0.5         && < 0.5.5
+                 , hit < 0.6
                  , process
                  , temporary
-                 , regex-tdfa                    >= 1.1 && < 1.2
-                 , github                        >= 0.8 && < 0.9
-                 , async                         < 2.1 && >= 2.0
+                 , regex-tdfa
+                 , github
+                 , async
                  , universe
                  , unix
                  , mtl
@@ -178,11 +181,11 @@ executable         SnowdriftProcessPayments
                      , Snowdrift
                      , yesod
                      , time
-                     , text                          >= 0.11       && < 0.12
-                     , persistent                    >= 1.2        && < 1.3
-                     , monad-logger                  >= 0.3        && < 0.3.3
-                     , bytestring                    >= 0.9        && < 0.11
-                     , fast-logger                   >= 0.3
+                     , text
+                     , persistent
+                     , monad-logger
+                     , bytestring
+                     , fast-logger
                      , blaze-builder
                      , resourcet
                      , mtl
@@ -224,7 +227,7 @@ test-suite test
 
     build-depends: base
                  , Snowdrift
-                 , yesod-test >= 1.2 && < 1.3
+                 , yesod-test
                  , yesod-core
                  , yesod
                  , persistent
@@ -243,5 +246,5 @@ test-suite test
                  , containers
                  , html-conduit
                  , xml-conduit
-                 , esqueleto                     >= 1.3
-                 , HUnit == 1.2.5.2
+                 , esqueleto
+                 , HUnit

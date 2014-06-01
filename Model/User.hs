@@ -18,7 +18,7 @@ data UserUpdate =
         , userUpdateStatement :: Maybe Markdown
         }
 
-updateUser :: (MonadLogger m, MonadIO m, MonadBaseControl IO m, MonadThrow m, MonadUnsafeIO m) => Key User -> UserUpdate -> SqlPersistT m ()
+updateUser :: (MonadLogger m, MonadResource m, MonadIO m, MonadBaseControl IO m, MonadThrow m) => Key User -> UserUpdate -> SqlPersistT m ()
 updateUser user_id user_update = update $ \ user -> do
         set user $ catMaybes
             [ (UserName =.) . val . Just <$> userUpdateName user_update
@@ -55,7 +55,7 @@ userWidget user_id = do
             |]
 
 
-isProjectAdmin :: (MonadIO m, MonadLogger m, MonadBaseControl IO m, MonadUnsafeIO m, MonadThrow m)
+isProjectAdmin :: (MonadIO m, MonadResource m, MonadLogger m, MonadBaseControl IO m, MonadThrow m)
     => Text -> UserId -> SqlPersistT m Bool
 isProjectAdmin project_handle user_id = fmap (not . null) $ select $ from $ \ (pur `InnerJoin` p) -> do
     on_ $ pur ^. ProjectUserRoleProject ==. p ^. ProjectId
@@ -65,7 +65,7 @@ isProjectAdmin project_handle user_id = fmap (not . null) $ select $ from $ \ (p
     limit 1
     return ()
 
-isProjectTeamMember :: (MonadIO m, MonadLogger m, MonadBaseControl IO m, MonadUnsafeIO m, MonadThrow m)
+isProjectTeamMember :: (MonadIO m, MonadResource m, MonadLogger m, MonadBaseControl IO m, MonadThrow m)
     => Text -> UserId -> SqlPersistT m Bool
 isProjectTeamMember project_handle user_id = fmap (not . null) $ select $ from $ \ (pur `InnerJoin` p) -> do
     on_ $ pur ^. ProjectUserRoleProject ==. p ^. ProjectId
@@ -75,7 +75,7 @@ isProjectTeamMember project_handle user_id = fmap (not . null) $ select $ from $
     limit 1
     return ()
 
-isProjectModerator :: (MonadIO m, MonadLogger m, MonadBaseControl IO m, MonadUnsafeIO m, MonadThrow m)
+isProjectModerator :: (MonadIO m, MonadResource m, MonadLogger m, MonadBaseControl IO m, MonadThrow m)
     => Text -> UserId -> SqlPersistT m Bool
 isProjectModerator project_handle user_id = fmap (not . null) $ select $ from $ \ (pur `InnerJoin` p) -> do
     on_ $ pur ^. ProjectUserRoleProject ==. p ^. ProjectId
@@ -85,7 +85,7 @@ isProjectModerator project_handle user_id = fmap (not . null) $ select $ from $ 
     limit 1
     return ()
     
-isProjectAffiliated :: (MonadIO m, MonadLogger m, MonadBaseControl IO m, MonadUnsafeIO m, MonadThrow m)
+isProjectAffiliated :: (MonadIO m, MonadResource m, MonadLogger m, MonadBaseControl IO m, MonadThrow m)
     => Text -> UserId -> SqlPersistT m Bool
 isProjectAffiliated project_handle user_id = fmap (not . null) $ select $ from $ \ (pur `InnerJoin` p) -> do
     on_ $ pur ^. ProjectUserRoleProject ==. p ^. ProjectId

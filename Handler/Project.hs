@@ -104,7 +104,7 @@ renderProject maybe_project_handle project show_form pledges pledge = do
                 where_ $ transaction ^. TransactionPayday ==. val (Just last_payday)
                         &&. transaction ^. TransactionCredit ==. val (Just $ projectAccount project)
 
-                return $ round_ $ sum_ $ transaction ^. TransactionAmount
+                return $ sum_ $ transaction ^. TransactionAmount
 
             [Value (Just year) :: Value (Maybe Rational)] <- select $ from $ \ (transaction `InnerJoin` payday) -> do
                 where_ $ payday ^. PaydayDate >. val (addUTCTime (-365 * 24 * 60 * 60) now)
@@ -112,12 +112,12 @@ renderProject maybe_project_handle project show_form pledges pledge = do
 
                 on_ $ transaction ^. TransactionPayday ==. just (payday ^. PaydayId)
 
-                return $ round_ $ sum_ $ transaction ^. TransactionAmount
+                return $ sum_ $ transaction ^. TransactionAmount
 
             [Value (Just total) :: Value (Maybe Rational)] <- select $ from $ \ transaction -> do
                 where_ $ transaction ^. TransactionCredit ==. val (Just $ projectAccount project)
 
-                return $ round_ $ sum_ $ transaction ^. TransactionAmount
+                return $ sum_ $ transaction ^. TransactionAmount
 
 
             return $ Just (Milray $ round last, Milray $ round year, Milray $ round total)

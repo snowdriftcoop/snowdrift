@@ -91,7 +91,7 @@ submitLogin user pass = do
 
 extractLocation :: YesodExample site (Maybe B.ByteString)
 extractLocation = do
-    statusIsResp 303
+    statusIsResp 302
     withResponse ( \ SResponse { simpleHeaders = h } ->
                         return $ lookup "Location" h
                  )

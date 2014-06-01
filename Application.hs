@@ -9,25 +9,34 @@ module Application
 
 import Import
 import Settings
+-- import Yesod.Auth
 import Yesod.Default.Config
 import Yesod.Default.Main
 import Yesod.Default.Handlers
-import Network.Wai.Middleware.RequestLogger (logStdout, logStdoutDev)
+import Network.Wai.Middleware.RequestLogger
+    ( mkRequestLogger, outputFormat, OutputFormat (..), IPAddrSource (..), destination
+    )
+import qualified Network.Wai.Middleware.RequestLogger as RequestLogger
 import qualified Database.Persist
-import qualified Database.Persist.Sql
-import Network.HTTP.Conduit (newManager, def)
-import Version
+-- import Database.Persist.Sql (runSqlPool)
+import Network.HTTP.Client.Conduit (newManager)
 import Control.Monad.Logger (runLoggingT, runStderrLoggingT)
-import Control.Monad.Trans.Resource
-import System.IO (stdout)
-import System.Directory
-import System.Log.FastLogger (mkLogger)
+import Control.Concurrent (forkIO, threadDelay)
+import System.Log.FastLogger (newStdoutLoggerSet, defaultBufSize, flushLogStr)
+import Network.Wai.Logger (clockDateCacher)
+import Data.Default (def)
+import Yesod.Core.Types (loggerSet, Logger (Logger))
 
+import Control.Monad.Trans.Resource
+
+import System.Directory
 import Database.Persist.Postgresql (pgConnStr, withPostgresqlConn)
 
 import qualified Data.List as L
 import Data.Text as T
 import qualified Data.Text.IO as T
+
+import Version
 
 -- Import all relevant handler modules here.
 -- Don't forget to add new modules to your cabal file!
@@ -93,26 +102,53 @@ withEnv k v action = do
 -- performs initialization and creates a WAI application. This is also the
 -- place to put your migrate statements to have automatic database
 -- migrations handled by Yesod.
-makeApplication :: AppConfig DefaultEnv Extra -> IO Application
+makeApplication :: AppConfig DefaultEnv Extra -> IO (Application, LogFunc)
 makeApplication conf = do
     foundation <- makeFoundation conf
-    app <- toWaiAppPlain foundation
-    return $ logWare app
-  where
-    logWare   = if development then logStdoutDev
-                               else logStdout
 
+    -- Initialize the logging middleware
+    logWare <- mkRequestLogger def
+        { outputFormat =
+            if development
+                then Detailed True
+                else Apache FromSocket
+        , destination = RequestLogger.Logger $ loggerSet $ appLogger foundation
+        }
+
+    -- Create the WAI application and apply middlewares
+    app <- toWaiAppPlain foundation
+    let logFunc = messageLoggerSource foundation (appLogger foundation)
+    return (logWare $ defaultMiddlewaresNoLogging app, logFunc)
+
+-- | Loads up any necessary settings, creates your foundation datatype, and
+-- performs some initialization.
 makeFoundation :: AppConfig DefaultEnv Extra -> IO App
 makeFoundation conf = do
-    manager <- newManager def
+    manager <- newManager
     s <- staticSite
     dbconf <- withYamlEnvironment "config/postgresql.yml" (appEnv conf)
               Database.Persist.loadConfig >>=
               Database.Persist.applyEnv
     p <- Database.Persist.createPoolConfig (dbconf :: Settings.PersistConf)
-    logger <- mkLogger True stdout
-    let foundation = App navbar conf s p manager dbconf logger
 
+    loggerSet' <- newStdoutLoggerSet defaultBufSize
+    (getter, updater) <- clockDateCacher
+
+    -- If the Yesod logger (as opposed to the request logger middleware) is
+    -- used less than once a second on average, you may prefer to omit this
+    -- thread and use "(updater >> getter)" in place of "getter" below.  That
+    -- would update the cache every time it is used, instead of every second.
+    let updateLoop = do
+            threadDelay 1000000
+            updater
+            flushLogStr loggerSet'
+            updateLoop
+    _ <- forkIO updateLoop
+
+    let logger = Yesod.Core.Types.Logger loggerSet' getter
+        foundation = App navbar conf s p manager dbconf logger
+
+    -- Perform database migration using our application's logging settings.
     case appEnv conf of
         Testing -> withEnv "PGDATABASE" "template1" (applyEnv $ persistConfig foundation) >>= \ dbconf' -> do
                 let runDBNoTransaction (SqlPersistT r) = runReaderT r
@@ -128,9 +164,13 @@ makeFoundation conf = do
                         liftIO $ putStrLn "ready."
         _ -> return ()
 
-    flip runLoggingT (messageLoggerSource foundation logger) $ runResourceT $ do
+    let migration = runResourceT $ do
         Database.Persist.runPool dbconf doMigration p
-        Database.Persist.Sql.runSqlPool migrateTriggers p
+        runSqlPool migrateTriggers p
+
+    runLoggingT
+	migration
+	(messageLoggerSource foundation logger)
 
     now <- getCurrentTime
     let (base, diff) = version
@@ -143,13 +183,13 @@ makeFoundation conf = do
 -- for yesod devel
 getApplicationDev :: IO (Int, Application)
 getApplicationDev =
-    defaultDevelApp loader makeApplication
+    defaultDevelApp loader (fmap fst . makeApplication)
   where
     loader = Yesod.Default.Config.loadConfig (configSettings Development)
         { csParseExtra = parseExtra
         }
 
-doMigration :: (MonadResource m, MonadBaseControl IO m, MonadIO m, MonadLogger m, MonadUnsafeIO m, MonadThrow m) => SqlPersistT m ()
+doMigration :: (MonadResource m, MonadBaseControl IO m, MonadIO m, MonadLogger m, MonadThrow m) => SqlPersistT m ()
 doMigration = do
     $(logInfo) "creating version table"
 
@@ -203,7 +243,7 @@ doMigration = do
     rolloutStagingWikiPages
 
 
-rolloutStagingWikiPages :: (MonadBaseControl IO m, MonadIO m, MonadLogger m, MonadUnsafeIO m, MonadThrow m) => SqlPersistT m ()
+rolloutStagingWikiPages :: (MonadBaseControl IO m, MonadIO m, MonadLogger m, MonadResource m, MonadThrow m) => SqlPersistT m ()
 rolloutStagingWikiPages = do
     pages <- select $ from $ \ page -> do
         where_ ( page ^. WikiPageTarget `like` val "_staging_%" )
@@ -236,7 +276,7 @@ rolloutStagingWikiPages = do
         delete $ from $ \ page -> where_ ( page ^. WikiPageId ==. val staged_page_id )
 
 
-migrateTriggers :: (MonadSqlPersist m, MonadBaseControl IO m, MonadUnsafeIO m, MonadThrow m) => m ()
+migrateTriggers :: (MonadSqlPersist m, MonadBaseControl IO m, MonadThrow m) => m ()
 migrateTriggers = runResourceT $ do
     runSql $ T.unlines
         [ "CREATE OR REPLACE FUNCTION log_role_event_trigger() RETURNS trigger AS $role_event$"

@@ -10,6 +10,7 @@ import Yesod.Auth.BrowserId
 import Yesod.Auth.HashDB (authHashDB)
 import Yesod.Default.Config
 import Yesod.Default.Util (addStaticContentExternal)
+import Yesod.Core.Types (Logger)
 import Network.HTTP.Conduit (Manager)
 import qualified Settings
 import Settings.Development (development)
@@ -19,7 +20,6 @@ import Settings (widgetFile, Extra (..))
 import Model
 import Text.Jasmine (minifym)
 import Text.Hamlet (hamletFile)
-import System.Log.FastLogger (Logger)
 
 import Model.Currency
 
@@ -75,7 +75,7 @@ mkMessage "App" "messages" "en"
 
 -- This is where we define all of the routes in our application. For a full
 -- explanation of the syntax, please see:
--- http://www.yesodweb.com/book/handler
+-- http://www.yesodweb.com/book/routing-and-handlers
 --
 -- This function does three things:
 --
@@ -129,7 +129,7 @@ instance Yesod App where
     -- Store session data on the client in encrypted cookies,
     -- default session idle timeout is 120 minutes
     makeSessionBackend _ = fmap Just $ defaultClientSessionBackend
-        (48 * 60 * 60)
+        (48 * 60)    -- timeout in minutes
         "config/client_session_key.aes"
 
     defaultLayout widget = do
@@ -221,6 +221,7 @@ instance Yesod App where
 
     isAuthorized _ _ = return Authorized -- restricted in the individual handlers
 
+    makeLogger = return . appLogger
 
 -- How to run database actions.
 instance YesodPersist App where
@@ -360,7 +361,7 @@ instance YesodJquery App
 class HasGithubRepo a where
     getGithubRepo :: a (Maybe Text)
 
-instance (MonadBaseControl IO m, MonadUnsafeIO m, MonadIO m, MonadThrow m) => HasGithubRepo (HandlerT App m) where
+instance (MonadBaseControl IO m, MonadIO m, MonadThrow m) => HasGithubRepo (HandlerT App m) where
     getGithubRepo = extraGithubRepo . appExtra . settings <$> getYesod
 
 -- This instance is required to use forms. You can modify renderMessage to
