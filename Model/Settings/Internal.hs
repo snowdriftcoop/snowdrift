@@ -9,3 +9,4 @@ data UserSettingName = ShowTagVotes
     deriving (Bounded, Eq, Ord, Show, Read)
 
 derivePersistField "UserSettingName"
+

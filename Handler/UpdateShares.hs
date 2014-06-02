@@ -63,9 +63,11 @@ postUpdateSharesR project_handle = do
 
                 updateShareValue project_id
 
-                user_pledges <- rawSql "SELECT ??, ?? FROM pledge JOIN project ON pledge.project = project.id WHERE pledge.\"user\" = ?;" [ unKey user_id ]
+                user_pledges <- rawSql
+                    "SELECT ??, ?? FROM pledge JOIN project ON pledge.project = project.id WHERE pledge.\"user\" = ?;" [ unKey user_id ]
 
-                let user_outlay = sum $ map (\ (Entity _ pledge, Entity _ project) -> projectShareValue project $* fromIntegral (pledgeShares pledge)) user_pledges :: Milray
+                let user_outlay = sum $ map (\ (Entity _ pledge, Entity _ project) ->
+                                    projectShareValue project $* fromIntegral (pledgeShares pledge)) user_pledges :: Milray
 
                 if accountBalance account < user_outlay $* 3
                  then do
@@ -75,7 +77,8 @@ postUpdateSharesR project_handle = do
 
             if success
              then addAlert "success" "you are now pledged to support this project" 
-             else addAlert "warning" "Sorry, you must have funds to support your pledge for at least 3 months at current share value. Please deposit additional funds to your account." 
+             else addAlert "warning"
+                "Sorry, you must have funds to support your pledge for at least 3 months at current share value. Please deposit additional funds to your account." 
 
             redirect $ ProjectR project_handle
 

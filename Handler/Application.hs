@@ -37,3 +37,4 @@ getApplicationR project_handle application_id = do
     defaultLayout $ do
         setTitle . toHtml $ projectName project <> " Volunteer Application - " <> userPrintName user <> " | Snowdrift.coop"
         $(widgetFile "application")
+

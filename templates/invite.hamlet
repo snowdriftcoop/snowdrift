@@ -1,7 +1,7 @@
 $maybe link <- maybe_link
     <p>
         Your invitation code has been generated.
-        The code adds a new role to an already existing snowdrift.coop account.
+        The code adds a new project role to an existing snowdrift.coop account.
     <p>
         <strong>Send the code below to the invitee along with a personal note.
     <p>
@@ -12,13 +12,13 @@ $maybe link <- maybe_link
         $maybe invite_role <- maybe_invite_role
             $case invite_role
                 $of Admin
-                    You are invited to be an administrator of this project.
+                    You are invited to be an administrator for #{projectName project}.
 
                 $of TeamMember
-                    You are invited to be a member of this project team.
+                    You are invited to be a member of the #{projectName project} team.
 
                 $of Moderator
-                    You are invited to be a moderator for this project.
+                    You are invited to be a moderator for #{projectName project}.
 
         $nothing
             <strong>
@@ -97,3 +97,4 @@ $else
                 <td>#{inviteTag invite}
                 <td>#{roleAbbrev (inviteRole invite)}
                 <td>@{InvitationR project_handle (inviteCode invite)}
+

@@ -17,10 +17,6 @@ import Widgets.Preview
 import Yesod.Markdown
 import Model.Markdown
 
-import Yesod.Auth.HashDB (setPassword)
-
-import Control.Exception.Lifted (throwIO, handle)
-
 import qualified Data.Text as T
 
 
@@ -32,8 +28,8 @@ editUserForm :: User -> Form UserUpdate
 editUserForm user = renderBootstrap3 $
     UserUpdate
         <$> aopt' textField "Public Name" (Just $ userName user)
-        <*> aopt' textField "Avatar (link)" (Just $ userAvatar user)
-        <*> aopt' textField "IRC name @freenode.net)" (Just $ userIrcNick user)
+        <*> aopt' textField "Avatar image (link)" (Just $ userAvatar user)
+        <*> aopt' textField "IRC nick @freenode.net)" (Just $ userIrcNick user)
         <*> aopt' snowdriftMarkdownField "Blurb (used on listings of many people)" (Just $ userBlurb user)
         <*> aopt' snowdriftMarkdownField "Personal Statement (visible only on this page)" (Just $ userStatement user)
     where
@@ -49,22 +45,9 @@ previewUserForm user = renderBootstrap3 $
         <*> hiddenMarkdown (userStatement user)
 
 
-getOldUserR :: UserId -> Handler Html
-getOldUserR = redirect . UserR
-
 getUserR :: UserId -> Handler Html
 getUserR user_id = do
     maybe_viewer_id <- maybeAuthId
-
-    {- user <- runDB $ case maybe_viewer_id of
-        Nothing -> do
-            on_committee <- fmap isJust $ getBy $ UniqueCommitteeMember user_id
-            if on_committee
-             then get404 user_id
-             else permissionDenied "You must be logged in to view this user"
-
-        Just _ -> get404 user_id
-    -}
 
     user <- runDB $ get404 user_id
 
@@ -92,9 +75,6 @@ renderUser viewer_id user_id user projects = do
     $(widgetFile "user")
 
 
-getOldEditUserR :: UserId -> Handler Html
-getOldEditUserR = redirect . EditUserR
-
 getEditUserR :: UserId -> Handler Html
 getEditUserR user_id = do
     viewer_id <- requireAuthId
@@ -109,9 +89,6 @@ getEditUserR user_id = do
         setTitle . toHtml $ "User Profile - " <> userPrintName (Entity user_id user) <> " | Snowdrift.coop"
         $(widgetFile "edit_user")
 
-
-postOldUserR :: UserId -> Handler Html
-postOldUserR = postUserR
 
 postUserR :: UserId -> Handler Html
 postUserR user_id = do
@@ -149,9 +126,6 @@ postUserR user_id = do
             addAlert "danger" "Failed to update user."
             redirect $ UserR user_id
 
-getOldUsersR :: Handler Html
-getOldUsersR = redirect UsersR
-
 getUsersR :: Handler Html
 getUsersR = do
     Entity _ viewer <- requireAuth
@@ -183,8 +157,6 @@ getUsersR = do
         setTitle "Users | Snowdrift.coop"
         $(widgetFile "users")
 
-getOldUserCreateR :: Handler Html
-getOldUserCreateR = redirect UserCreateR
 
 getUserCreateR :: Handler Html
 getUserCreateR = do
@@ -198,35 +170,17 @@ getUserCreateR = do
         |]
 
 
-postOldUserCreateR :: Handler Html
-postOldUserCreateR = postUserCreateR
-
 postUserCreateR :: Handler Html
 postUserCreateR = do
     ((result, form), _) <- runFormPost $ userCreateForm Nothing
 
     case result of
         FormSuccess (ident, passwd, name, avatar, nick) -> do
-            now <- liftIO getCurrentTime
-            success <- handle (\ DBException -> return False) $ runDB $ do
-                account_id <- insert $ Account 0
-                user <- setPassword passwd $ User ident (Just now) Nothing Nothing name account_id avatar Nothing Nothing nick now now now now Nothing Nothing
-                uid_maybe <- insertUnique user
-                lift $ case uid_maybe of
-                    Just uid -> do
--- The addAlert here didn't render right, and anyway, the "login" alert is also showing currently and we're making a message to welcome users anyway
---                      addAlert "success" $ T.pack ("Created user; welcome! (" ++ show account_id ++ ", " ++ show uid ++ ")")
-                        return True
-
-                    Nothing -> do
-                        addAlert "danger" "E-mail or handle already in use."
-                        throwIO DBException
-
-            when success $ do
+            createUser ident (Just passwd) name avatar nick >>= \ maybe_user_id -> when (isJust maybe_user_id) $ do
                 setCreds True $ Creds "HashDB" ident []
                 redirectUltDest HomeR
 
-        FormMissing -> addAlert "danger" "missing field"
+        FormMissing -> addAlert "danger" "missing field" 
         FormFailure strings -> addAlert "danger" (mconcat strings)
 
     defaultLayout $ [whamlet|
@@ -292,3 +246,4 @@ userCreateForm ident extra = do
         result = (,,,,) <$> identRes <*> passwdRes <*> nameRes <*> avatarRes <*> nickRes
 
     return (result, view)
+

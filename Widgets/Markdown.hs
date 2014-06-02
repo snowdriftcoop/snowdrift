@@ -23,14 +23,5 @@ snowdriftMarkdownField = Field
                         <textarea id="#{theId}" name="#{name}" :_isReq:required *{attrs}>#{either id unMarkdown value}
                 |]
 
-                toWidget $ [cassius|
-                            .markdown_wrapper
-                                padding-bottom : 1.2em
-
-                            .markdown_label
-                                font-size : x-small
-                                padding : 0
-                                margin-top : -0.7em
-                           |]
     , fieldEnctype = UrlEncoded
     }

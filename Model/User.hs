@@ -54,42 +54,50 @@ userWidget user_id = do
                     #{userPrintName (Entity user_id user)}
             |]
 
+{- isProject___ stuff below is almost all redundant. It really should be
+- refactored into being a main function to lookup affiliations and tiny
+- functions for each affiliation -}
 
 isProjectAdmin :: (MonadIO m, MonadResource m, MonadLogger m, MonadBaseControl IO m, MonadThrow m)
     => Text -> UserId -> SqlPersistT m Bool
-isProjectAdmin project_handle user_id = fmap (not . null) $ select $ from $ \ (pur `InnerJoin` p) -> do
-    on_ $ pur ^. ProjectUserRoleProject ==. p ^. ProjectId
-    where_ $ p ^. ProjectHandle ==. val project_handle
-        &&. pur ^. ProjectUserRoleUser ==. val user_id
-        &&. pur ^. ProjectUserRoleRole ==. val Admin
-    limit 1
-    return ()
+isProjectAdmin project_handle user_id =
+    fmap (not . null) $ select $ from $ \ (pur `InnerJoin` p) -> do
+        on_ $ pur ^. ProjectUserRoleProject ==. p ^. ProjectId
+        where_ $ p ^. ProjectHandle ==. val project_handle
+            &&. pur ^. ProjectUserRoleUser ==. val user_id
+            &&. pur ^. ProjectUserRoleRole ==. val Admin
+        limit 1
+        return ()
 
 isProjectTeamMember :: (MonadIO m, MonadResource m, MonadLogger m, MonadBaseControl IO m, MonadThrow m)
     => Text -> UserId -> SqlPersistT m Bool
-isProjectTeamMember project_handle user_id = fmap (not . null) $ select $ from $ \ (pur `InnerJoin` p) -> do
-    on_ $ pur ^. ProjectUserRoleProject ==. p ^. ProjectId
-    where_ $ p ^. ProjectHandle ==. val project_handle
-        &&. pur ^. ProjectUserRoleUser ==. val user_id
-        &&. pur ^. ProjectUserRoleRole ==. val TeamMember
-    limit 1
-    return ()
+isProjectTeamMember project_handle user_id =
+    fmap (not . null) $ select $ from $ \ (pur `InnerJoin` p) -> do
+        on_ $ pur ^. ProjectUserRoleProject ==. p ^. ProjectId
+        where_ $ p ^. ProjectHandle ==. val project_handle
+            &&. pur ^. ProjectUserRoleUser ==. val user_id
+            &&. pur ^. ProjectUserRoleRole ==. val TeamMember
+        limit 1
+        return ()
 
 isProjectModerator :: (MonadIO m, MonadResource m, MonadLogger m, MonadBaseControl IO m, MonadThrow m)
     => Text -> UserId -> SqlPersistT m Bool
-isProjectModerator project_handle user_id = fmap (not . null) $ select $ from $ \ (pur `InnerJoin` p) -> do
-    on_ $ pur ^. ProjectUserRoleProject ==. p ^. ProjectId
-    where_ $ p ^. ProjectHandle ==. val project_handle
-        &&. pur ^. ProjectUserRoleUser ==. val user_id
-        &&. pur ^. ProjectUserRoleRole ==. val Moderator
-    limit 1
-    return ()
+isProjectModerator project_handle user_id =
+    fmap (not . null) $ select $ from $ \ (pur `InnerJoin` p) -> do
+        on_ $ pur ^. ProjectUserRoleProject ==. p ^. ProjectId
+        where_ $ p ^. ProjectHandle ==. val project_handle
+            &&. pur ^. ProjectUserRoleUser ==. val user_id
+            &&. pur ^. ProjectUserRoleRole ==. val Moderator
+        limit 1
+        return ()
     
 isProjectAffiliated :: (MonadIO m, MonadResource m, MonadLogger m, MonadBaseControl IO m, MonadThrow m)
     => Text -> UserId -> SqlPersistT m Bool
-isProjectAffiliated project_handle user_id = fmap (not . null) $ select $ from $ \ (pur `InnerJoin` p) -> do
-    on_ $ pur ^. ProjectUserRoleProject ==. p ^. ProjectId
-    where_ $ p ^. ProjectHandle ==. val project_handle
-        &&. pur ^. ProjectUserRoleUser ==. val user_id
-    limit 1
-    return ()
+isProjectAffiliated project_handle user_id =
+    fmap (not . null) $ select $ from $ \ (pur `InnerJoin` p) -> do
+        on_ $ pur ^. ProjectUserRoleProject ==. p ^. ProjectId
+        where_ $ p ^. ProjectHandle ==. val project_handle
+            &&. pur ^. ProjectUserRoleUser ==. val user_id
+        limit 1
+        return ()
+

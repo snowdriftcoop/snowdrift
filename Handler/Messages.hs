@@ -6,6 +6,7 @@ import Model.User
 
 import qualified Data.Map as M
 
+import Model.Project
 
 import Widgets.Time
 
@@ -15,7 +16,8 @@ getMessagesR = do
     now <- liftIO getCurrentTime
 
     messages <-
-        -- TODO: filter by projects?
+        -- TODO: filter by projects? Also, generalize so project-affiliates
+        -- see any message for their respective projects.
         runDB $ do
             snowdrift_member <- isProjectAffiliated "snowdrift" viewer_id
             select $ from $ \ message -> do

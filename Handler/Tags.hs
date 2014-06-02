@@ -22,9 +22,10 @@ processCommentTags go project_handle target comment_id = do
 
     when (comment_page_id /= page_id) $ error "wrong page for comment"
 
-    tags <- fmap (map $ (commentTagTag &&& (commentTagUser &&& commentTagCount)) . entityVal) $ runDB $ select $ from $ \ comment_tag -> do
-        where_ $ comment_tag ^. CommentTagComment ==. val comment_id
-        return comment_tag
+    tags <- fmap (map $ (commentTagTag &&& (commentTagUser &&& commentTagCount)) . entityVal) $
+        runDB $ select $ from $ \ comment_tag -> do
+            where_ $ comment_tag ^. CommentTagComment ==. val comment_id
+            return comment_tag
 
     tag_map <- fmap (M.fromList . entityPairs) $ runDB $ select $ from $ \ tag -> do
         where_ $ tag ^. TagId `in_` valList (S.toList $ S.fromList $ map fst tags)
@@ -41,9 +42,11 @@ processCommentTag go project_handle target comment_id tag_id = do
 
     when (comment_page /= page_id) $ error "wrong page for comment"
 
-    tags <- fmap (map $ (commentTagTag &&& (commentTagUser &&& commentTagCount)) . entityVal) $ runDB $ select $ from $ \ comment_tag -> do
-        where_ $ comment_tag ^. CommentTagComment ==. val comment_id &&. comment_tag ^. CommentTagTag ==. val tag_id
-        return comment_tag
+    tags <- fmap (map $ (commentTagTag &&& (commentTagUser &&& commentTagCount)) . entityVal) $
+        runDB $ select $ from $ \ comment_tag -> do
+            where_ $ comment_tag ^. CommentTagComment ==. val comment_id
+                &&. comment_tag ^. CommentTagTag ==. val tag_id
+            return comment_tag
 
     tag_map <- fmap (M.fromList . entityPairs) $ runDB $ select $ from $ \ tag -> do
         where_ $ tag ^. TagId `in_` valList (S.toList $ S.fromList $ map fst tags)
@@ -64,9 +67,6 @@ tagBumpForm :: Int -> Form Int
 tagBumpForm = renderDivs . areq hiddenField "" . Just
 
 
-getOldCommentTagR :: Text -> Text -> CommentId -> TagId -> Handler Html
-getOldCommentTagR project_handle target comment_id tag_id = redirect $ OldCommentTagR project_handle target comment_id tag_id
-
 getCommentTagR :: Text -> Text -> CommentId -> TagId -> Handler Html
 getCommentTagR = processCommentTag $ \ (AnnotatedTag tag url color user_votes) -> do
     let tag_name = tagName $ entityVal tag
@@ -76,9 +76,6 @@ getCommentTagR = processCommentTag $ \ (AnnotatedTag tag url color user_votes) -
 
     defaultLayout $(widgetFile "tag")
 
-
-postOldCommentTagR :: Text -> Text -> CommentId -> TagId -> Handler Html
-postOldCommentTagR = postCommentTagR
 
 postCommentTagR :: Text -> Text -> CommentId -> TagId -> Handler Html
 postCommentTagR project_handle target comment_id tag_id = do
@@ -113,9 +110,6 @@ postCommentTagR project_handle target comment_id tag_id = do
     redirectUltDest $ CommentTagR project_handle target comment_id tag_id
 
 
-getOldCommentTagsR :: Text -> Text -> CommentId -> Handler Html
-getOldCommentTagsR project_handle target comment_id = redirect $ CommentTagsR project_handle target comment_id
-
 getCommentTagsR :: Text -> Text -> CommentId -> Handler Html
 getCommentTagsR = processCommentTags renderTags
 
@@ -133,26 +127,25 @@ newCommentTagForm project_tags other_tags = renderBootstrap3 $ (,)
           tagCloudField = checkboxesFieldList' $ (\(PersistInt64 a) -> show a) . unKey
 
 
-getOldNewCommentTagR :: Text -> Text -> CommentId -> Handler Html
-getOldNewCommentTagR project_handle target comment_id = redirect $ NewCommentTagR project_handle target comment_id
-
 tagList :: ProjectId -> Handler ([Entity Tag], [Entity Tag])
 tagList project_id = do
-    project_tags :: [Entity Tag] <- runDB $ selectDistinct $ from $ \(tag `InnerJoin` rel `InnerJoin` comment `InnerJoin` page) -> do
-        on_ ( page ^. WikiPageDiscussion ==. comment ^. CommentDiscussion )
-        on_ ( comment ^. CommentId ==. rel ^. CommentTagComment )
-        on_ ( rel ^. CommentTagTag ==. tag ^. TagId )
-        where_ ( page ^. WikiPageProject ==. val project_id )
-        orderBy [ desc (tag ^. TagName) ]
-        return tag
+    project_tags :: [Entity Tag] <- runDB $
+        selectDistinct $ from $ \(tag `InnerJoin` rel `InnerJoin` comment `InnerJoin` page) -> do
+            on_ ( page ^. WikiPageDiscussion ==. comment ^. CommentDiscussion )
+            on_ ( comment ^. CommentId ==. rel ^. CommentTagComment )
+            on_ ( rel ^. CommentTagTag ==. tag ^. TagId )
+            where_ ( page ^. WikiPageProject ==. val project_id )
+            orderBy [ desc (tag ^. TagName) ]
+            return tag
 
-    other_tags :: [Entity Tag] <- runDB $ selectDistinct $ from $ \(tag `InnerJoin` rel `InnerJoin` comment `InnerJoin` page) -> do
-        on_ ( page ^. WikiPageDiscussion ==. comment ^. CommentDiscussion )
-        on_ ( comment ^. CommentId ==. rel ^. CommentTagComment )
-        on_ ( rel ^. CommentTagTag ==. tag ^. TagId )
-        where_ ( page ^. WikiPageProject !=. val project_id )
-        orderBy [ desc (tag ^. TagName) ]
-        return tag
+    other_tags :: [Entity Tag] <- runDB $
+        selectDistinct $ from $ \(tag `InnerJoin` rel `InnerJoin` comment `InnerJoin` page) -> do
+            on_ ( page ^. WikiPageDiscussion ==. comment ^. CommentDiscussion )
+            on_ ( comment ^. CommentId ==. rel ^. CommentTagComment )
+            on_ ( rel ^. CommentTagTag ==. tag ^. TagId )
+            where_ ( page ^. WikiPageProject !=. val project_id )
+            orderBy [ desc (tag ^. TagName) ]
+            return tag
 
     return (project_tags, other_tags)
 
@@ -160,7 +153,8 @@ getNewCommentTagR :: Text -> Text -> CommentId -> Handler Html
 getNewCommentTagR project_handle target comment_id = do
     Entity user_id user <- requireAuth
 
-    unless (isJust $ userEstablishedTs user) (permissionDenied "You must be an established user to add tags")
+    unless (isJust $ userEstablishedTs user)
+        (permissionDenied "You must be an established user to add tags")
 
     Entity project_id _ <- runDB $ getBy404 $ UniqueProjectHandle project_handle
     Entity page_id _ <- runDB $ getBy404 $ UniqueWikiTarget project_id target
@@ -210,9 +204,6 @@ getNewCommentTagR project_handle target comment_id = do
     defaultLayout $(widgetFile "new_comment_tag")
 
 
-postOldNewCommentTagR :: Text -> Text -> CommentId -> Handler Html
-postOldNewCommentTagR = postNewCommentTagR False
-
 postCreateNewCommentTagR = postNewCommentTagR True
 postApplyNewCommentTagR = postNewCommentTagR False
 
@@ -220,7 +211,8 @@ postNewCommentTagR :: Bool -> Text -> Text -> CommentId -> Handler Html
 postNewCommentTagR create_tag project_handle target comment_id = do
     Entity user_id user <- requireAuth
 
-    unless (isJust $ userEstablishedTs user) (permissionDenied "You must be an established user to add tags")
+    unless (isJust $ userEstablishedTs user)
+        (permissionDenied "You must be an established user to add tags")
 
     (Entity project_id _, Entity page_id _) <- getPageInfo project_handle target
 
@@ -305,3 +297,4 @@ postNewCommentTagR create_tag project_handle target comment_id = do
 
             redirectUltDest $ DiscussCommentR project_handle target comment_id
 -}
+

@@ -21,6 +21,11 @@ data AnnotatedTag = AnnotatedTag
 atName :: AnnotatedTag -> Text
 atName = tagName . entityVal . atTag
 
+{- Scoring for voting on tags is something not currently presented
+- on the site. We've discussed changing it. I (Aaron) prefer a 6-point
+- range voting just like we proposed for the Bylaws instead of mimicking
+- the pledge formula here. Final decisions haven't been made yet -}
+
 atScore :: AnnotatedTag -> Double
 atScore = sum . map (\ (_, x) -> if x == 0 then 0 else fromIntegral (signum x) * logBase 2 (1 + fromIntegral (abs x) :: Double)) . atUserVotes
 

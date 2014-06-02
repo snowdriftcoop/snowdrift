@@ -150,9 +150,6 @@ checkApproveComment project_handle target comment_id = do
     return user_id
     
 
-getOldApproveWikiCommentR :: Text -> Text -> CommentId -> Handler Html
-getOldApproveWikiCommentR project_handle target comment_id = redirect $ ApproveWikiCommentR project_handle target comment_id
-
 getApproveWikiCommentR :: Text -> Text -> CommentId -> Handler Html
 getApproveWikiCommentR project_handle target comment_id = do
     void $ checkApproveComment project_handle target comment_id
@@ -162,9 +159,6 @@ getApproveWikiCommentR project_handle target comment_id = do
             <input type=submit value="approve post">
     |]
 
-
-postOldApproveWikiCommentR :: Text -> Text -> CommentId -> Handler Html
-postOldApproveWikiCommentR = postApproveWikiCommentR
 
 postApproveWikiCommentR :: Text -> Text -> CommentId -> Handler Html
 postApproveWikiCommentR project_handle target comment_id = do
@@ -212,14 +206,15 @@ checkCloseComment user project_handle target comment_id = do
     (Entity project_id _, _) <- getPageInfo project_handle target
 
     -- TODO: what should this be?
-    -- Aaron says: I think this should be changed to *affiliated* OR the original poster, unless/until we make a notification system for closing and a way to re-open. We could also have a *moderated* closing that requires confirmation… There are now comments discussing these things on the site.
+    -- Aaron says: I think we should allow established to mark as closed,
+    -- but only *affiliated* OR the original poster should do so in one step,
+    -- otherwise, the marking of closed should require *moderator* confirmation…
+    -- We should also have a re-open function.
+    -- There are now comments discussing these things on the site.
     unless (isJust $ userEstablishedTs user) $ permissionDenied "You must be an established user to close a conversation."
 
     return (project_id, comment)
 
-
-getOldRetractWikiCommentR :: Text -> Text -> CommentId -> Handler Html
-getOldRetractWikiCommentR project_handle target comment_id = redirect $ RetractWikiCommentR project_handle target comment_id
 
 getRetractWikiCommentR :: Text -> Text -> CommentId -> Handler Html
 getRetractWikiCommentR = getCloseWikiComment Retracted
@@ -272,9 +267,6 @@ getCloseWikiComment closure_type project_handle target comment_id = do
             <input type="submit" name="mode" value="preview">
     |]
 
-
-postOldRetractWikiCommentR :: Text -> Text -> CommentId -> Handler Html
-postOldRetractWikiCommentR = postRetractWikiCommentR
 
 postRetractWikiCommentR :: Text -> Text -> CommentId -> Handler Html
 postRetractWikiCommentR = postCloseWikiComment Retracted
@@ -331,7 +323,8 @@ postCloseWikiComment closure_type project_handle target comment_id = do
 
                     roles <- getRoles user_id project_id
 
-                    defaultLayout $ renderPreview form action $ renderDiscussComment (Just $ Entity user_id user) roles project_handle target False (return ()) (Entity comment_id comment) [] users earlier_closures closures False tag_map
+                    defaultLayout $ renderPreview form action $
+                        renderDiscussComment (Just $ Entity user_id user) roles project_handle target False (return ()) (Entity comment_id comment) [] users earlier_closures closures False tag_map
 
 
                 Just a | a == action -> do
@@ -355,9 +348,6 @@ buildCommentTree root rest =
 
      in unfoldTree treeOfList (root, rest)
 
-
-getOldDiscussWikiR :: Text -> Text -> Handler Html
-getOldDiscussWikiR project_handle target = redirect $ DiscussWikiR project_handle target
 
 -- |getDiscussWikiR generates the associated discussion page for each wiki page
 getDiscussWikiR :: Text -> Text -> Handler Html
@@ -409,7 +399,9 @@ getDiscussWikiR project_handle target = do
 
         let users = M.fromList $ map (entityKey &&& id) user_entities
 
-        closure_map <- M.fromList . map ((commentClosureComment &&& id) . entityVal) <$> selectList [ CommentClosureComment <-. map entityKey (roots ++ rest) ] []
+        closure_map <- M.fromList . map ((commentClosureComment &&& id) . entityVal) <$>
+            selectList [ CommentClosureComment <-. map entityKey (roots ++ rest) ] []
+
         return (roots, rest, users, closure_map)
 
     tags <- runDB $ select $ from return
@@ -430,10 +422,13 @@ getDiscussWikiR project_handle target = do
         setTitle . toHtml $ projectName project <> " Wiki Discussion - " <> target <> " | Snowdrift.coop"
         $(widgetFile "wiki_discuss")
 
-
+-- This is just because we used to have "/comment/#" with that long thing,
+-- and this keeps any permalinks from breaking
 getOldDiscussCommentR :: Text -> Text -> CommentId -> Handler Html
 getOldDiscussCommentR project_handle target comment_id = redirect $ DiscussCommentR project_handle target comment_id
 
+-- This is a hacked change where getDiscussCommentR' below should really be
+-- adapted to become this and have only one function.
 getDiscussCommentR :: Text -> Text -> CommentId -> Handler Html
 getDiscussCommentR =
     getDiscussCommentR' False
@@ -655,8 +650,6 @@ processWikiComment maybe_parent_id text (Entity project_id project) page = do
 
         m -> error $ "Error: unrecognized mode (" ++ show m ++ ")"
 
-postOldDiscussWikiR :: Text -> Text -> Handler Html
-postOldDiscussWikiR = postDiscussWikiR
 
 postDiscussWikiR :: Text -> Text -> Handler Html
 postDiscussWikiR project_handle target = do
@@ -669,9 +662,6 @@ postDiscussWikiR project_handle target = do
         FormMissing -> error "Form missing."
         FormFailure msgs -> error $ "Error submitting form: " ++ T.unpack (T.intercalate "\n" msgs)
 
-
-getOldNewDiscussWikiR :: Text -> Text -> Handler Html
-getOldNewDiscussWikiR project_handle target = redirect $ NewDiscussWikiR project_handle target
 
 getNewDiscussWikiR :: Text -> Text -> Handler Html
 getNewDiscussWikiR project_handle target = do
@@ -688,15 +678,10 @@ getNewDiscussWikiR project_handle target = do
 
     defaultLayout $(widgetFile "wiki_discuss_new")
 
-postOldNewDiscussWikiR :: Text -> Text -> Handler Html
-postOldNewDiscussWikiR = postDiscussWikiR
 
 postNewDiscussWikiR :: Text -> Text -> Handler Html
 postNewDiscussWikiR = postDiscussWikiR
 
-
-getOldWikiNewCommentsR :: Text -> Handler Html
-getOldWikiNewCommentsR project_handle = redirect $ WikiNewCommentsR project_handle
 
 getWikiNewCommentsR :: Text -> Handler Html
 getWikiNewCommentsR project_handle = do
@@ -964,7 +949,8 @@ postRethreadWikiCommentR project_handle target comment_id = do
 
                 _ -> error "could not find discussion for that URL"
 
-            when (new_parent_id == commentParent comment && new_discussion_id == commentDiscussion comment) $ error "trying to move comment to its current location"
+            when (new_parent_id == commentParent comment && new_discussion_id == commentDiscussion comment) $
+                error "trying to move comment to its current location"
 
             new_parent_depth <- maybe (return $ -1) (fmap commentDepth . runDB . get404) new_parent_id
             old_parent_depth <- maybe (return $ -1) (fmap commentDepth . runDB . get404) $ commentParent comment

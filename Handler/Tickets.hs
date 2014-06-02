@@ -91,8 +91,6 @@ viewForm = renderBootstrap3 $ (,)
 
 getTicketsR :: Text -> Handler Html
 getTicketsR project_handle = do
-    --_ <- requireAuthId
-
 
     Entity project_id project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
 
@@ -121,7 +119,8 @@ getTicketsR project_handle = do
 
             let tags' :: [(TagId, (UserId, Int))]
                 tags' = map ((commentTagTag &&& (commentTagUser &&& commentTagCount)) . entityVal) used_tags
-                t tags_map = AnnotatedTicket ticket_id ticket page comment <$> buildAnnotatedTags tags_map (CommentTagR project_handle (wikiPageTarget page) comment_id) tags'
+                t tags_map = AnnotatedTicket ticket_id ticket page comment <$>
+                    buildAnnotatedTags tags_map (CommentTagR project_handle (wikiPageTarget page) comment_id) tags'
 
             return (S.fromList $ map (commentTagTag . entityVal) used_tags, t)
 
@@ -136,7 +135,8 @@ getTicketsR project_handle = do
 
     render <- getUrlRenderParams
 
-    github_issues <- either (const $ addAlert "danger" "failed to fetch GitHub tickets\n" >> return []) return =<< liftIO (wait get_github_issues)
+    github_issues <- either (const $ addAlert "danger" "failed to fetch GitHub tickets\n"
+                            >> return []) return =<< liftIO (wait get_github_issues)
 
     let ticketToIssue (AnnotatedTicket ticket_id ticket page comment tags) = Issue widget filterable orderable
                 where
@@ -184,4 +184,4 @@ getTicketsR project_handle = do
     defaultLayout $ do
         setTitle . toHtml $ projectName project <> " Tickets | Snowdrift.coop"
         $(widgetFile "tickets")
-        
+

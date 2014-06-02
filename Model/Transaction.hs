@@ -18,7 +18,7 @@ renderOtherAccount is_credit transaction user_accounts project_accounts = do
         maybe_user = maybe Nothing (`M.lookup` user_accounts) maybe_account_id
 
     toWidget $ case (maybe_project, maybe_user) of
-        (Just _, Just _) -> error "account belongs to both a project and a user - this shouldn't happen"
+        (Just _, Just _) -> error "account belongs to both a project and a user — this shouldn't happen"
         (Just (Entity _ project), Nothing) ->
             [hamlet|
                 <a href="@{ProjectR (projectHandle project)}">

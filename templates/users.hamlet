@@ -8,8 +8,7 @@
             <th>
                 Established
             <th>
-                Projects
-
+                Project roles
 
     <tbody>
         $if null users
@@ -32,3 +31,4 @@
                         $forall ((projectName, projectHandle), roles) <- Map.toAscList (fromMaybe Map.empty (userProjects user))
                             <a href=@{ProjectR $ projectHandle}>
                                 #{projectName} (#{T.intercalate "/" (map roleAbbrev $ Set.toList roles)})
+

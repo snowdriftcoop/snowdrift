@@ -58,10 +58,6 @@ on_ :: Esqueleto query expr backend => expr (Value Bool) -> query ()
 on_ = Database.Esqueleto.on
 
 
-data DBException = DBException deriving (Typeable, Show)
-
-instance Exception DBException where
-
 class Count a where
     getCount :: a -> Int64
 
@@ -90,50 +86,6 @@ age a b = let s = round $ toRational $ diffUTCTime a b
                  | otherwise = show (convertUnit t :: Minute)
            in f s
 
-footnote :: Integer -> Widget
-footnote note = [whamlet|$newline never
-    <sup>
-        <a name="fn_use#{show note}" href="#fn#{show note}">
-            #{show note}
-|]
-
-
-footnoteAnchor :: String -> Widget
-footnoteAnchor labels =
-    case words labels of
-        (first_label : remaining_labels) ->
-            [whamlet|$newline never
-                [
-                    <a .footnote_anchor name="fn#{first_label}" href="#fn_use#{first_label}">
-                        #{first_label}
-
-                    $forall label <- remaining_labels
-                        ,
-                        <a .footnote_anchor name="fn#{label}" href="#fn_use#{label}">
-                            #{label}
-                ]
-            |]
-
-        _ -> error "empty footnote anchor"
-
-tocEntry :: String -> String -> Widget
-tocEntry tag title =
-    [whamlet|$newline never
-        <li .toc_li>
-            <a .toc_entry name="toc_entry#{tag}" href="#toc_target#{tag}">
-                #{title}
-    |]
-
-
-tocTarget :: String -> String -> Widget
-tocTarget tag title =
-    [whamlet|$newline never
-        <span .title>
-            #{title}
-        <sup>
-            <a .toc_target name="toc_target#{tag}" href="#toc_entry#{tag}" title="Back to Table Of Contents">
-                ^
-    |]
 
 entityPairs :: [Entity t] -> [(Key t, t)]
 entityPairs = map (\ (Entity a b) -> (a, b))
@@ -240,3 +192,52 @@ instance (WrappedValues a, WrappedValues b, WrappedValues c) => WrappedValues (a
     unwrapValues (a, b, c) = (unwrapValues a, unwrapValues b, unwrapValues c)
 
 
+
+
+{- The following footnote and toc functions were used our pre-wiki about page
+At the time of this comment, they are no longer used anywhere live. -}
+
+footnote :: Integer -> Widget
+footnote note = [whamlet|$newline never
+    <sup>
+        <a name="fn_use#{show note}" href="#fn#{show note}">
+            #{show note}
+|]
+
+
+footnoteAnchor :: String -> Widget
+footnoteAnchor labels =
+    case words labels of
+        (first_label : remaining_labels) ->
+            [whamlet|$newline never
+                [
+                    <a .footnote_anchor name="fn#{first_label}" href="#fn_use#{first_label}">
+                        #{first_label}
+
+                    $forall label <- remaining_labels
+                        ,
+                        <a .footnote_anchor name="fn#{label}" href="#fn_use#{label}">
+                            #{label}
+                ]
+            |]
+
+        _ -> error "empty footnote anchor"
+
+tocEntry :: String -> String -> Widget
+tocEntry tag title =
+    [whamlet|$newline never
+        <li .toc_li>
+            <a .toc_entry name="toc_entry#{tag}" href="#toc_target#{tag}">
+                #{title}
+    |]
+
+
+tocTarget :: String -> String -> Widget
+tocTarget tag title =
+    [whamlet|$newline never
+        <span .title>
+            #{title}
+        <sup>
+            <a .toc_target name="toc_target#{tag}" href="#toc_entry#{tag}" title="Back to Table Of Contents">
+                ^
+    |]

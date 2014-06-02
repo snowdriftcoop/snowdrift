@@ -73,7 +73,10 @@ textarea
     height : 14em
 
 .markdown_wrapper textarea
-    min-height : 14em
+    min-height : 16em
+
+.markdown_label
+    font-size : small
 
 a
     color : #1299FF
@@ -290,4 +293,7 @@ input.tag-input[type="submit"]:hover, input.tag-input[type="submit"]:focus
 
 input.tag.input[type="submit"]:active
     background : none
+
+pre
+    margin : 1em
 
