@@ -22,7 +22,7 @@ If you need help with *any* issues here, let us know. We are always happy to ass
 About the frameworks and tools we use
 =====================================
 
-The Snowdrift.coop site uses the **[Yesod web framework](http://www.yesodweb.com/)**.
+The Snowdrift.coop site uses the **[Yesod web framework](http://www.yesodweb.com/)**. Like the software itself, the associated book and documentation are all FLO and very thorough.
 
 Yesod uses the Haskell programming language alongside its
 [Shakespearean Templates](http://www.yesodweb.com/book/shakespearean-templates) which generate HTML/CSS/JS using indentation with no need for closing tags or bracketing.
@@ -32,7 +32,7 @@ HTML, CSS, and JavaScript work on the site may be done without knowing Haskell, 
 * For learning Haskell, check out the [Haskell Wikibook](https://en.wikibooks.org/wiki/Haskell), which also has links to additional resources.
 * Stack Overflow user postings are FLO (CC-BY-SA), see the tags for [yesod](http://stackoverflow.com/questions/tagged/yesod) and [haskell](http://stackoverflow.com/questions/tagged/yesod)
 * Alongside #snowdrift on freenode.net, the #yesod and #haskell channels are also active and helpful
-* "cabal repl" is a command that loads [ghci](https://en.wikibooks.org/wiki/Haskell/Using_GHCi_effectively) with connection to the project code. Then, you can easily import particular files from the code and explore the functions.
+* A useful tool is "cabal repl" — a command that loads [ghci](https://en.wikibooks.org/wiki/Haskell/Using_GHCi_effectively) in a mode connected to the project. Using that, you can easily import files from the code and explore the functions.
 
 Our front-end uses **[Twitter Bootstrap](http://getbootstrap.com/)** for layout and styles, although there are many cases where we use our own custom CSS.
 
@@ -72,6 +72,7 @@ We have a separate wiki and discussion page on the site for discussing specific 
 Please consider adding concise comments to your code explaining to others anything you think may be unclear.
 Ideally, follow the syntax for [Haddock Haskell documentation](http://www.haskell.org/haddock/doc/html/markup.html).
 
+
 Working on the code
 ===================
 
@@ -102,37 +103,37 @@ To pull updates from our main code, use
 
     git pull git@gitorious.org:snowdrift/snowdrift.git
 
-Note: if you are collaborating with others before a patch is ready to go live and some participants use Gitorious and others use GitHub, you can pull by just using the full git address and just sending your collaborator a an e-mail or otherwise alerting them to pull your updates.
+Note: if you are collaborating with others before a patch is ready to go live and some participants use Gitorious and others use GitHub, you can pull by just using the full git address and then sending your collaborator a an e-mail or otherwise alerting them to pull your updates.
 
 
 Building
 --------
 
-Install ghc, cabal, and postgresql, however you do that on your system.
+Install ghc, cabal, and postgresql, however you do that on your system. Yesod also requires a few other items such as "happy" and "alex".
 
 On Debian-based GNU/Linux distros, that's:
 
     sudo apt-get install ghc cabal-install haskell-platform postgresql zlib1g-dev libpq-dev happy alex
 
-   *note: there have been some errors reported with older versions of ghc and the haskell-platform* At this time, we are using GHC 7.6.3 and Haskell Platform 2013.2.0.0 — both are included in the latest Ubuntu, and there are [instructions for building updated GHC on older Ubuntu-based systems](https://gist.github.com/Dexyne/5791465). We tested this with Ubuntu 12.04 LTS and it should work on derivatives as well (such as the fully-FLO Trisquel 6). These instructions or similar should work for other systems as well, but see <http://www.haskell.org/platform/> for more general info.
+**Note: we are now using GHC 7.8.2.** The Haskell Platform has not yet updated to it, but many systems have. If your system is still using an older version, you may need to manually upgrade. See <http://www.haskell.org/ghc/download>.
 
-(There are a few non-Haskell libraries with some dependencies which you may
+(There are also a few non-Haskell libraries with some dependencies which you may
 need to install and which presumably will be in your system's package manager.
 We don't have a full list compiled yet, but they can be picked out of the error
 messages if the commands below fail. If you make a list,
 please update this README and send a pull request!)
 
 
-Update cabal's package list:
+After installing everything, update cabal's package list:
 
     cabal update
 
 Add ~/.cabal/bin to your PATH; for bash, run the following command
-(also add it to your .bashrc (or equivalent) file so it will run automatically in the future):
+to also add it to your .bashrc (or equivalent) file so it will run automatically in the future:
 
     export PATH=~/.cabal/bin:$PATH
 
-Update cabal so you can use the new [sandbox](http://coldwa.st/e/blog/2013-08-20-Cabal-sandbox.html) feature in cabal 1.18+:
+Upgrade cabal itself:
 
     cabal install Cabal cabal-install
 
@@ -142,11 +143,11 @@ For isolation in case you have multiple snowdrift checkouts or other Haskell pro
 
     cabal sandbox init
 
-Next, add your sandboxed binaries to your PATH: (For the future, you may also wish to add this to your .bashrc or equivalent.)
+Next, add your sandboxed binaries to your PATH:
 
 *Replace "~/snowdrift/" in the command below with your correct directory.*
 GitHub clones are normally just "snowdrift" but Gitorious clones are "*username*-snowdrift".
-It is also possible to place the directory wherever you like with whatever name.
+You may alternatively place the directory wherever you like with whatever name.
 
     export PATH=~/snowdrift/.cabal-sandbox/bin:$PATH
 
@@ -154,9 +155,9 @@ Install dependencies and build Snowdrift:
 
     cabal install
 
-This will take a *long* time but should ultimately tell you it installed Snowdrift.
+This will take a *long* time but should ultimately tell you it installed Snowdrift. (Contact us for help if it says otherwise)
 
-You can also use cabal install to test your changes later, and then it will run much faster.
+You can also use cabal install to update your build later, and then it will run much faster.
 
 Setting up the database
 -----------------------
@@ -206,7 +207,7 @@ you can start the server with the command:
 
     Snowdrift Development
 
-To rebuild the site after changes to the code, run cabal install first before starting the server.
+To rebuild the site after changes to the code, run "cabal install" first before starting the server.
     
 Alternately, you may use the yesod devel command which does a combined rebuild and server start.
 In rare cases, yesod devel may succeed where cabal install failed (or vice versa),
