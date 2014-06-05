@@ -31,11 +31,11 @@ Note: our code is mirrored at [GitHub](https://github.com/dlthomas/snowdrift) (w
 It also contains links for learning Haskell, comments about our development methods, and more.
 
 For those experienced with Git, Haskell, PostgreSQL, and perhaps even Yesod,
-see the quick-and-dirty init script below. It assumes all system dependencies
-are installed and up to date, so this is just the steps to install Snowdrift.
+here's a quick-and-dirty init script:
 
 ```
-// Install Yesod, PostgreSQL, dependencies, update cabal, PATH, etc. — see GUIDE.md
+// Install Yesod, PostgreSQL, dependencies, update cabal, set PATH, etc. — see GUIDE.md
+
 // Fork, clone and install
 git clone [your remote address, e.g. git@gitorious.org:snowdrift/yourusername-snowdrift.git]
 cd snowdrift
