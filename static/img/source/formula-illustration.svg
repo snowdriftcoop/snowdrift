@@ -13,11 +13,11 @@
    height="1062.9666"
    id="svg38653"
    version="1.1"
-   inkscape:version="0.48.3.1 r9886"
+   inkscape:version="0.48.4 r9939"
    sodipodi:docname="formula-illustration.svg"
    inkscape:export-filename="/home/aaron/Desktop/formula-illustration.png"
-   inkscape:export-xdpi="90"
-   inkscape:export-ydpi="90">
+   inkscape:export-xdpi="74.714325"
+   inkscape:export-ydpi="74.714325">
   <defs
      id="defs38655">
     <marker
@@ -82,18 +82,18 @@
      pagecolor="#ffffff"
      bordercolor="#666666"
      borderopacity="1.0"
-     inkscape:pageopacity="1"
+     inkscape:pageopacity="0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.73"
-     inkscape:cx="299.38745"
-     inkscape:cy="504.76654"
+     inkscape:cx="189.79841"
+     inkscape:cy="285.58846"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
-     inkscape:window-width="1920"
-     inkscape:window-height="1021"
+     inkscape:window-width="1366"
+     inkscape:window-height="710"
      inkscape:window-x="0"
-     inkscape:window-y="36"
+     inkscape:window-y="35"
      inkscape:window-maximized="1"
      fit-margin-top="10"
      fit-margin-right="10"
@@ -4711,6 +4711,6 @@
          style="font-style:normal;text-align:center;text-anchor:middle"
          id="tspan3921">those will provide <tspan
    style="font-style:italic"
-   id="tspan3821">addtional</tspan> matching.</tspan></text>
+   id="tspan3821">additional</tspan> matching.</tspan></text>
   </g>
 </svg>
