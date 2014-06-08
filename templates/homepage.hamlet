@@ -33,20 +33,20 @@
             <a href="@{WhoR "snowdrift"}"> team
             is supported by a growing community.
         <p>
-            There are many ways to 
-            <strong><a href="@{WikiR "snowdrift" "how-to-help"}">get involved</a>
-            from site development and design to legal help to community organizing and more.
+            <strong><a href="@{WikiR "snowdrift" "how-to-help"}">Come help</a>
+            with site development, design, community organizing, or other tasks…
 
         <h2>Now recruiting projects
         <p>
-            If you are involved in a
+            If your
             <a href="@{WikiR "snowdrift" "project-requirements"}">free/libre/open
-            project interested being included when we launch, please <a href=@{ContactR "snowdrift"}>contact us</a>.
+            project needs funding, please <a href=@{ContactR "snowdrift"}>contact us</a>.
+            We want projects included as we develop to make sure things work well for you!
 
         <h2>Donate
         <p>
-            Our goal is to use the patronage system itself to fund ongoing development,
-            but plain old donations today will help us get the site fully operating.
+            We will use the patronage system itself to fund our ongoing development,
+            but traditional donations <i>today</i> will help us get the site  operating.
 
 <div .row>
     <div .col-md-4 style="border: 1px solid; margin-top: 1em;">
@@ -56,7 +56,7 @@
                 <input type="hidden" name="cmd" value="_s-xclick">
                 <input type="hidden" name="hosted_button_id" value="M24Z4DFEW4SQL">
                 <input type="image" src="/static/img/external/paypal-donate.gif" name="submit" alt="PayPal donations &mdash; not our ideal.">
-        <small> Paypal can work without proprietary JavaScript, and while it isn't our ideal, it is popular and easy to use.
+        <small> Paypal can work without proprietary JavaScript, and while not our ideal, it's popular and easy to use.
 
     <div .col-md-4 style="border: 1px solid; margin-top: 1em;">
         <figure>
@@ -68,14 +68,14 @@
             Dwolla avoids credit-cards and has very low fees:
             <em>Free
             for payments under $10, otherwise 25¢.
-            Unfortunately, Dwolla seems to require proprietary JavaScript,
-            and you must <a href="http://refer.dwolla.com/a/clk/28gB5q">create a Dwolla account</a>.
+            To use it, you must <a href="http://refer.dwolla.com/a/clk/28gB5q">create a Dwolla account</a>.
+            They don't seem to work with LibreJS at this time.
     <div .col-md-4 style="border: 1px solid; margin-top: 1em;">
         <figure>
             <img alt="Bitcoin" src="/static/img/external/Bitcoin.png" style="height: 4em"> 
         <small>
-            We will soon have a smoother process, but for now, <a href=@{ContactR "snowdrift"}>contact us</a>,
-            and we can send you a BTC invoice with an address.
+            We plan to offer a smoother process, but for now, <a href=@{ContactR "snowdrift"}>contact us</a>,
+            to get a BTC invoice with an address.
 
 <div .row>
     <div .col-md-8 .col-md-offset-2>
@@ -83,7 +83,6 @@
             We're working to add more
             <a href="@{WikiR "snowdrift" "payment-services"}">payment options
             soon.
-            If anyone prefers, we will also accept checks through the mail.
             <br>
             <em>
                 Please note: Snowdrift.coop is legally incorporated as a non-profit cooperative in Michigan and planning for 501(c)(4) status.
