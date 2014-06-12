@@ -30,7 +30,7 @@ roleAbbrev Moderator = "M"
 roleAbbrev Admin = "A"
 
 roleField :: (RenderMessage (HandlerSite m) FormMessage, m ~ HandlerT site IO) => Field m Role
-roleField = radioFieldList $ map (roleLabel &&& id) [minBound ..]
+roleField = (radioField' . optionsPairs) $ map (roleLabel &&& id) [minBound ..]
 
 presentationRoles :: [Role]
 presentationRoles = universe
