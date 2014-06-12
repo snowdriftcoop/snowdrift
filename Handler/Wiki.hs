@@ -161,7 +161,7 @@ postWikiR project_handle target = do
 
 
 editWikiPermissionsForm :: PermissionLevel -> Form PermissionLevel
-editWikiPermissionsForm level = renderBootstrap3 $ areq' permissionLevelField "Permission Level" (Just level)
+editWikiPermissionsForm level = renderBootstrap3 $ areq permissionLevelField "Permission Level" (Just level)
 
 
 getEditWikiPermissionsR :: Text -> Text -> Handler Html

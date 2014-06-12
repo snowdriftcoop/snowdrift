@@ -129,6 +129,64 @@ renderBootstrap3 aform fragment = do
                 |]
     return (res, widget)
 
+radioField' :: (Eq a, RenderMessage site FormMessage)
+           => HandlerT site IO (OptionList a)
+           -> Field (HandlerT site IO) a
+radioField' = selectFieldHelper'
+    (\theId _name _attrs inside -> [whamlet|
+$newline never
+<div ##{theId}>^{inside}
+|])
+    (\theId name isSel -> [whamlet|
+$newline never
+<div .radio>
+    <label for=#{theId}-none>
+            <input id=#{theId}-none type=radio name=#{name} value=none :isSel:checked>
+            _{MsgSelectNone}
+|])
+    (\theId name attrs value isSel text -> [whamlet|
+$newline never
+<div .radio>
+    <label for=#{theId}-#{value}>
+            <input id=#{theId}-#{value} type=radio name=#{name} value=#{value} :isSel:checked *{attrs}>
+            \#{text}
+|])
+
+selectFieldHelper'
+        :: (Eq a, RenderMessage site FormMessage)
+        => (Text -> Text -> [(Text, Text)] -> WidgetT site IO () -> WidgetT site IO ())
+        -> (Text -> Text -> Bool -> WidgetT site IO ())
+        -> (Text -> Text -> [(Text, Text)] -> Text -> Bool -> Text -> WidgetT site IO ())
+        -> HandlerT site IO (OptionList a)
+        -> Field (HandlerT site IO) a
+selectFieldHelper' outside onOpt inside opts' = Field
+    { fieldParse = \x _ -> do
+        opts <- opts'
+        return $ selectParser opts x
+    , fieldView = \theId name attrs val isReq -> do
+        opts <- fmap olOptions $ handlerToWidget opts'
+        outside theId name attrs $ do
+            unless isReq $ onOpt theId name $ not $ render opts val `elem` map optionExternalValue opts
+            flip mapM_ opts $ \opt -> inside
+                theId
+                name
+                ((if isReq then (("required", "required"):) else id) attrs)
+                (optionExternalValue opt)
+                ((render opts val) == optionExternalValue opt)
+                (optionDisplay opt)
+    , fieldEnctype = UrlEncoded
+    }
+  where
+    render _ (Left _) = ""
+    render opts (Right a) = maybe "" optionExternalValue $ listToMaybe $ filter ((== a) . optionInternalValue) opts
+    selectParser _ [] = Right Nothing
+    selectParser opts (s:_) = case s of
+            "" -> Right Nothing
+            "none" -> Right Nothing
+            x -> case olReadExternal opts x of
+                    Nothing -> Left $ SomeMessage $ MsgInvalidEntry x
+                    Just y -> Right $ Just y
+
 optionsPairs' :: (MonadHandler m, RenderMessage (HandlerSite m) msg)
              => (a -> String) -> [(msg, a)] -> m (OptionList a)
 optionsPairs' mk_external opts = do
