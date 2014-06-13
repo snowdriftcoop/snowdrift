@@ -296,10 +296,6 @@ snowdriftAuthBrowserId =
             [whamlet|
                 <p>
                     <strong>Mozilla Persona is a secure log-in that doesn't track you! 
-                    After registering, it works on many different websites with a single click.
-                <p>
-                    Use it with any e-mail by setting a password and confirming the account.
-                    With gmail or yahoo accounts, it's even faster — just a couple clicks.
                     ^{parentLogin}
                 <p>
                     The Persona sign-in button works for both new and existing accounts.
