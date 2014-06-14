@@ -17,9 +17,11 @@ Like the software itself, the associated book and documentation are all FLO and 
 
 Yesod uses the Haskell programming language alongside its
 [Shakespearean Templates](http://www.yesodweb.com/book/shakespearean-templates).
-With some minor variations (such as using indentation instead of closing tags or bracketing), normal HTML/CSS/JavaScript can be used directly in the templates.
+With some minor variations (such as indentation instead of closing tags or bracketing),
+normal HTML/CSS/JavaScript can be used directly in the templates.
 
-Our front-end uses **[Twitter Bootstrap](http://getbootstrap.com/)** for layout and styles, although there are many cases where we use our own custom CSS.
+Our front-end uses **[Twitter Bootstrap](http://getbootstrap.com/)** for layout and styles,
+although there are many cases where we use our own custom CSS.
 
 As a suggestion for beginners: Firefox's built-in developer tools
 and the [Firebug](https://getfirebug.com) plugin both offer great (and complementary) functions
