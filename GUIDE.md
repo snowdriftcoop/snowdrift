@@ -50,9 +50,11 @@ For VIM, for example, the config file .vimrc should have these three lines:
     set shiftwidth=4
     set tabstop=4
 
-VIM users should also install [Syntax Highlighting Files for Haskell](https://github.com/pbrisbin/html-template-syntax).
+VIM users should also install
+[Syntax Highlighting Files for Haskell](https://github.com/pbrisbin/html-template-syntax).
 
-Emacs users should use a package manager (preferably Marmalade) to install [Haskell Mode](https://github.com/haskell/haskell-mode).
+Emacs users should use a package manager (preferably Marmalade) to install
+[Haskell Mode](https://github.com/haskell/haskell-mode).
 
 
 Development guidelines and notes
@@ -62,17 +64,21 @@ Overall, we strive to follow universal standards, be fully accessible, and avoid
 
 We generally build with *progressive enhancement* in mind.
 Content and functions should be built with simple HTML/CSS along with Yesod/Haskell server-side functions.
-JavaScript may then added for enhancement. Consider the ideas of [Unobtrusive JavaScript](http://en.wikipedia.org/wiki/Unobtrusive_JavaScript).
+JavaScript may then added for enhancement.
+Consider the ideas of [Unobtrusive JavaScript](http://en.wikipedia.org/wiki/Unobtrusive_JavaScript).
 Use of NoScript should never causes a broken experience.
-We also make sure all our JavaScript is recognized by the FSF's [LibreJS plugin](https://www.gnu.org/software/librejs/).
+We also make sure all our JavaScript is recognized
+by the FSF's [LibreJS plugin](https://www.gnu.org/software/librejs/).
 
-We have a separate wiki and discussion page on the site for discussing specific [web-design issues](https://snowdrift.coop/p/snowdrift/w/site-design).
+We have a separate wiki and discussion page on the site
+for discussing specific [web-design issues](https://snowdrift.coop/p/snowdrift/w/site-design).
 We also have a complete [list of tickets](https://snowdrift.coop/p/snowdrift/t)
 with a range of front-end, back-end, and more or less technical items.
 We're also working to tag thing to clarify the types of skills needed for different tasks.
 
 Please consider adding concise comments to your code explaining to others anything you think may be unclear.
-Ideally, follow the syntax for [Haddock Haskell documentation](http://www.haskell.org/haddock/doc/html/markup.html).
+Ideally, follow the syntax for
+[Haddock Haskell documentation](http://www.haskell.org/haddock/doc/html/markup.html).
 
 
 Working on the code
