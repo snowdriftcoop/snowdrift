@@ -10,7 +10,9 @@ import qualified Text.HTML.DOM as HTML
 
 import Database.Esqueleto hiding (get)
 
+import Network.Wai.Test (SResponse (..))
 import Data.Text as T
+import qualified Data.ByteString.Char8 as BSC
 
 import Control.Monad
 
@@ -133,4 +135,38 @@ discussionSpecs = do
 
             testRethread second first
 
+        yit "can rethread across pages and the redirect still works" $ do
+            login
+
+            postComment (NewDiscussWikiR "snowdrift" "about") $ byLabel "New Topic" "posting on about page"
+            originalId <- getLatestCommentId
+
+            get $ RethreadWikiCommentR "snowdrift" "about" originalId
+            statusIs 200
+
+            request $ do
+                addNonce
+                setMethod "POST"
+                setUrl $ RethreadWikiCommentR "snowdrift" "about" originalId
+                byLabel "New Parent Url" "/p/snowdrift/w/intro/d"
+                byLabel "Reason" "testing cross-page rethreading"
+                addPostParam "mode" "rethread"
+
+            statusIsResp 302
+
+            get $ DiscussCommentR "snowdrift" "about" originalId
+            statusIsResp 301
+
+            Just location <- do
+                statusIsResp 301
+                withResponse ( \ SResponse { simpleHeaders = h } ->
+                                    return $ lookup "Location" h
+                             )
+
+            newId <- getLatestCommentId
+            let new_url = BSC.unpack location
+                desired_url = "http://localhost:3000/p/snowdrift/w/intro/c/" ++ (\ (PersistInt64 i) -> show i) (unKey newId)
+
+            assertEqual ("Redirect not matching! (" ++ show new_url ++ " /=  " ++ show desired_url ++ ")") new_url desired_url 
+                
 
