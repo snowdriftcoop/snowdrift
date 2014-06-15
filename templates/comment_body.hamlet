@@ -2,7 +2,7 @@ $newline never
 $# used by renderComment function
 
 <div .comment :unapproved:.unapproved :top_level:.top_level :even_depth:.even_depth :odd_depth:.odd_depth>
-    <div>
+    <div .comment-head>
         <span .comment-head>
             $maybe author_avatar <- userAvatar user
                 <a href="@{UserR user_id}">
@@ -59,7 +59,7 @@ $# used by renderComment function
             $forall tag <- tags
                 ^{tagWidget tag}
 
-    <div>
+    <div .comment-action>
         $if show_actions
             $if user_is_mod
                 $if unapproved

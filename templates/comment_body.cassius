@@ -2,11 +2,14 @@
 .comment
     padding : 0 .8em 0.3em 1em
     margin-top : 1.8em
-    border-bottom-left-radius: 0.8em
+    border-bottom-left-radius: 1em
     font-size : small
 
 .comment p, .comment li
     font-family : inherit
+
+.comment p, .comment ul, .comment ol
+    margin : 1em 0
 
 .comment h1
     font-size : large
@@ -15,7 +18,8 @@
     font-size : medium
 
 .comment-head, .comment-action
-    margin-right : 1em
+    margin-right : 1.5em
+    margin-bottom : 0.8em
 
 .top_level
     border-left : solid black 0.2em
