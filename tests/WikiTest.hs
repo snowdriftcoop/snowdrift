@@ -17,7 +17,9 @@ import Control.Monad
 wikiSpecs :: Spec
 wikiSpecs =
     ydescribe "wiki" $ do
+
         yit "creates a new page" $ do
+
             login
 
             get $ NewWikiR "snowdrift" "testpage"
@@ -37,5 +39,4 @@ wikiSpecs =
                 setMethod "POST"
                 byLabel "Page Content" "test"
                 addPostParam "mode" "post"
-
 
