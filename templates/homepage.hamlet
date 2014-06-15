@@ -1,11 +1,15 @@
-<p>
-    Cultural and educational works, technology, scientific research, and journalism
-    all provide the greatest value when everyone can freely access, adapt, and share.
-<p>
-    Yet since our consumer market fails for <i>public goods</i>,
-    most creative projects support their work with <i>artificial restrictions</i> and <i>third-party ads</i>.
-<p>
-    But if we cooperate, we can fund progress without compromise…
+<div .row>
+    <div .col-md-6>
+        <p>
+            Cultural and educational works, technology, scientific research, and journalism
+            all provide the greatest value when everyone can freely access, adapt, and share.
+    <div .col-md-6>
+        <p>
+            But since our consumer market fails for <i>public goods</i>, most
+            creative projects support their work with <i>artificial restrictions</i> and <i>third-party ads</i>.
+    <div .col-md-12>
+        <p>
+            Yet if we cooperate, we can fund progress without compromise…
 
 <div .row>
     <div .col-md-8 .col-lg-9>
