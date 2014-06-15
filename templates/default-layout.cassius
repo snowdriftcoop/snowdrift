@@ -128,7 +128,7 @@ footer
     border-top : solid 1px
 
 li
-    margin : 0.5em 0
+    margin : 0 0 1em 1em
 
 header li
     margin : 0
@@ -140,6 +140,10 @@ li.toc_li
 p
     padding : .4em 1em
     line-height : 1.5em
+
+p, ul, ol
+    max-width : 40em
+    margin : 0.5em auto
 
 li p
     padding : 0
@@ -205,6 +209,7 @@ span.title
 h1, h2, h3, h4, h5, h6
     font-weight : bold
     margin : 1.6em 0 0.8em
+    max-width : 780px
 
 h1:first-child
     margin-top : 0
@@ -236,9 +241,6 @@ td
     text-align : center
     padding : 0.3em 0.5em
     border-top : 1px solid #DDDDDD
-
-@media (min-width: 1200px)
-  a:only-child { white-space: nowrap; }
 
 figure
     text-align : center
@@ -297,3 +299,10 @@ input.tag.input[type="submit"]:active
 pre
     margin : 1em
 
+@media (min-width: 992px)
+    h1, h2, h3, h4, h5, h6 { margin-left: 10%; }
+
+@media (min-width: 1200px)
+    a:only-child { white-space: nowrap; }
+    h1, h2, h3, h4, h5, h6 { margin-left: 18%; }
+    
