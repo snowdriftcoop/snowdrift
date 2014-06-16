@@ -28,28 +28,27 @@
             <a href="@{WikiR "snowdrift" "faq"}"> FAQ
             <br>
             <a href="@{WikiR "snowdrift" "press"}"> Info for press
-<div .row>
-    <div .col-md-8 .col-md-offset-2>
-        <h2 style="margin-top: 0.5em">Join us!
-        <p>
-            Our core
-            <a href="@{WhoR "snowdrift"}"> team
-            is supported by a growing community.
-        <p>
-            <strong><a href="@{WikiR "snowdrift" "how-to-help"}">Come help</a>
-            with site development, design, community organizing, or other tasks…
 
-        <h2>Now recruiting projects
-        <p>
-            If your
-            <a href="@{WikiR "snowdrift" "project-requirements"}">free/libre/open
-            project needs funding, please <a href=@{ContactR "snowdrift"}>contact us</a>.
-            We want projects included as we develop to make sure things work well for you!
+<h2 style="margin-top: 0.5em">Join us!
+<p>
+    Our core
+    <a href="@{WhoR "snowdrift"}"> team
+    is supported by a growing community.
+<p>
+    <strong><a href="@{WikiR "snowdrift" "how-to-help"}">Come help</a>
+    with site development, design, community organizing, or other tasks…
 
-        <h2>Donate
-        <p>
-            We will use the patronage system itself to fund our ongoing development,
-            but traditional donations <i>today</i> will help us get the site  operating.
+<h2>Now recruiting projects
+<p>
+    If your
+    <a href="@{WikiR "snowdrift" "project-requirements"}">free/libre/open
+    project needs funding, please <a href=@{ContactR "snowdrift"}>contact us</a>.
+    We want projects included as we develop to make sure things work well for you!
+
+<h2>Donate
+<p>
+    We will use the patronage system itself to fund our ongoing development,
+    but traditional donations <i>today</i> will help us get the site  operating.
 
 <div .row>
     <div .col-md-4 style="border: 1px solid; margin-top: 1em;">
@@ -80,14 +79,15 @@
             We plan to offer a smoother process, but for now, <a href=@{ContactR "snowdrift"}>contact us</a>,
             to get a BTC invoice with an address.
 
-<div .row>
-    <div .col-md-8 .col-md-offset-2>
-        <small>
-            We're working to add more
-            <a href="@{WikiR "snowdrift" "payment-services"}">payment options
-            soon.
-            <br>
-            <em>
-                Please note: Snowdrift.coop is legally incorporated as a non-profit cooperative in Michigan and planning for 501(c)(4) status.
-                Because we are not a traditional 501(c)(3) charity, donations to us are not tax-deductible.
+<small>
+    <p>
+        We're working to add more
+        <a href="@{WikiR "snowdrift" "payment-services"}">payment options
+        soon.
+    <p>
+        <em>
+            Please note:
+            Snowdrift.coop is legally incorporated as a non-profit cooperative in Michigan
+            and planning for 501(c)(4) status.
+            Unlike a traditional 501(c)(3) charity, donations to us are not tax-deductible.
 
