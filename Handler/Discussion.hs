@@ -114,7 +114,7 @@ renderComment now mviewer viewer_roles project_handle target users max_depth dep
                             <a href=@{DiscussCommentR project_handle target comment_id}>
                                 comment thread
                             \ collapsed.
-                                
+
 
                     $of Retracted
                         <div .retracted>
@@ -148,7 +148,7 @@ checkApproveComment project_handle target comment_id = do
     requireModerator "You must be a moderator to approve posts." project_handle user_id
 
     return user_id
-    
+
 
 getApproveWikiCommentR :: Text -> Text -> CommentId -> Handler Html
 getApproveWikiCommentR project_handle target comment_id = do
@@ -357,7 +357,7 @@ getDiscussWikiR project_handle target = do
 
     now <- liftIO getCurrentTime
 
-    affiliated <- case muser of 
+    affiliated <- case muser of
         Nothing -> return False
         Just (Entity user_id _) ->
             runDB $ (||)
@@ -456,11 +456,29 @@ getDiscussCommentR' show_reply project_handle target comment_id = do
         where_ $ comment_rethread ^. CommentRethreadOldComment ==. val comment_id
         return $ comment_rethread ^. CommentRethreadNewComment
 
+
     case rethread of
         [] -> return ()
-        Value destination_comment_id : _ ->
-            let route = if show_reply then ReplyCommentR else DiscussCommentR
-             in redirectWith movedPermanently301 $ route project_handle target destination_comment_id 
+        Value destination_comment_id : _ -> do
+            route <- runDB $ do
+                -- TODO: any way to statically make sure we've covered all discussion types?
+                destination_infos <- select $ from $ \ (comment `LeftOuterJoin` page) -> do
+                    on_ $ (just $ comment ^. CommentDiscussion) ==. page ?. WikiPageDiscussion
+                    where_ $ comment ^. CommentId ==. val destination_comment_id
+                    return $ (page ?. WikiPageTarget)
+
+                let route_destination [] = error "unrecognized discussion for comment"
+
+                    route_destination (Value (Just destination_target) : _)=
+                        let route = if show_reply then ReplyCommentR else DiscussCommentR
+                         in route project_handle destination_target destination_comment_id
+
+                    route_destination (_ : rest) = route_destination rest
+
+                return $ route_destination destination_infos
+
+            redirectWith movedPermanently301 route
+
 
     mviewer <- maybeAuth
 
@@ -794,7 +812,7 @@ getWikiNewCommentsR project_handle = do
                     where_ $ c ^. CommentId ==. val comment_id
                     return $ p ^. WikiPageTarget
 
-                let rendered_comment = renderComment now mviewer roles project_handle target users 0 0 {- max_depth is irrelevant for the new-comments listing -} 
+                let rendered_comment = renderComment now mviewer roles project_handle target users 0 0 {- max_depth is irrelevant for the new-comments listing -}
                                            earlier_closures closure_map True tag_map (Node (Entity comment_id comment) []) Nothing
 
                 [whamlet|$newline never
@@ -990,7 +1008,7 @@ postRethreadWikiCommentR project_handle target comment_id = do
                                 return (c ^. CommentParent)
 
                             maybe (return ()) (insert_ . CommentAncestor new_comment_id) maybe_new_parent_id
-                            
+
 
                         when (new_discussion_id /= commentDiscussion comment) $ update $ \ c -> do
                                 where_ $ c ^. CommentId `in_` valList descendents
