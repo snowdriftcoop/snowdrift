@@ -12,13 +12,3 @@ getPageInfo project_handle target = runDB $ do
     page <- getBy404 $ UniqueWikiTarget (entityKey project) target
 
     return (project, page)
-
-getCommentPageId :: (MonadLogger m, MonadResource m, MonadIO m, MonadBaseControl IO m, MonadThrow m) => CommentId -> SqlPersistT m WikiPageId
-getCommentPageId comment_id = do
-    [ Value page_id ] <- select $ from $ \ (c `InnerJoin` p) -> do
-        on_ $ c ^. CommentDiscussion ==. p ^. WikiPageDiscussion
-        where_ $ c ^. CommentId ==. val comment_id
-        return $ p ^. WikiPageId
-
-    return page_id
-

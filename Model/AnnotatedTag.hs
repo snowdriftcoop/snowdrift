@@ -12,9 +12,9 @@ import Data.List (sortBy)
 import Text.Printf
 
 data AnnotatedTag = AnnotatedTag
-    { atTag :: Entity Tag
-    , atUrl :: Route App
-    , atColor :: Color
+    { atTag       :: Entity Tag
+    , atUrl       :: Route App
+    , atColor     :: Color
     , atUserVotes :: [(Entity User, Int)]
     }
 
@@ -34,7 +34,6 @@ atUserScore at user_id = fmap snd $ L.find ((== user_id) . entityKey . fst) $ at
 
 atScoreString :: AnnotatedTag -> String
 atScoreString = printf "%.1f" . atScore
-
 
 buildAnnotatedTags :: Map TagId Tag -> (TagId -> Route App) -> [(TagId, (UserId, Int))] -> Handler [AnnotatedTag]
 buildAnnotatedTags tag_map tagUrl tags = do
@@ -66,7 +65,7 @@ buildAnnotatedTags tag_map tagUrl tags = do
             sorted_user_votes = sortBy (compare `on` (userName . entityVal . fst)) user_votes'
 
         return $ AnnotatedTag tag (tagUrl tag_id) (M.findWithDefault 0x77AADD tag_id tag_colors) sorted_user_votes
-        
+
     return $ sortBy (compare `on` atScore) annotated_tags
 
 annotateCommentTags :: Map TagId Tag -> Text -> Text -> CommentId -> [CommentTag] -> Handler [AnnotatedTag]

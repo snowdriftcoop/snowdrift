@@ -11,3 +11,5 @@ yesod-devel/
 *.o
 *.chi
 *.chs.h
+codex.tags
+hscope.out

@@ -153,7 +153,7 @@ makeFoundation conf = do
         Testing -> withEnv "PGDATABASE" "template1" (applyEnv $ persistConfig foundation) >>= \ dbconf' -> do
                 let runDBNoTransaction (SqlPersistT r) = runReaderT r
 
-                options <- maybe [] L.words <$> lookupEnv "SNOWDRIFT_TESTING_OPTIONS" 
+                options <- maybe [] L.words <$> lookupEnv "SNOWDRIFT_TESTING_OPTIONS"
 
                 unless (elem "nodrop" options) $ do
                     runStderrLoggingT $ runResourceT $ withPostgresqlConn (pgConnStr dbconf') $ runDBNoTransaction $ do

@@ -175,15 +175,22 @@ Discussion
 
 Comment
     createdTs UTCTime
+
+    -- "Unestablished" users may still make comments, but they must be approved
+    -- by a moderator. "Established" users' comments are marked as moderated by
+    -- themselves (though this does not mean they are a moderator).
     moderatedTs UTCTime Maybe
     moderatedBy UserId Maybe
+
+    -- A comment may be rethreaded by a moderator. If it is, this field will be
+    -- Just, and the new Commen that replaces it will have rethreaded == Nothing
     rethreaded RethreadId Maybe
+
     discussion DiscussionId
     parent CommentId Maybe
     user UserId
     text Markdown
     depth Int
-
 
 CommentAncestor
     comment CommentId
@@ -191,6 +198,7 @@ CommentAncestor
     UniqueCommentAncestor comment ancestor
     deriving Show
 
+-- A comment-being-closed event.
 CommentClosure
     ts UTCTime
     closedBy UserId
@@ -198,20 +206,18 @@ CommentClosure
     reason Markdown
     comment CommentId
 
-
+-- A rethread event. Moderators may move comment threads around as they wish.
 Rethread
-    ts UTCTime
-    moderator UserId
+    ts UTCTime            -- Timestamp.
+    moderator UserId      -- The moderator that rethreaded.
+    oldComment CommentId  -- The old comment that was rethreaded.
+    reason Text           -- The reason for rethreading.
 
-    oldComment CommentId
-    
-    reason Text
-
+-- An individual comment-rethread relation.
 CommentRethread
     rethread RethreadId
     oldComment CommentId
     newComment CommentId
-
 
 Tag
     name Text
