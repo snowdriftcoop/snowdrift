@@ -41,12 +41,13 @@ commentWidget :: UTCTime                               -- ^ Timestamp.
               -> Int                                   -- ^ Depth.
               -> [CommentClosure]                      -- ^ Earlier closures.
               -> Map CommentId CommentClosure          -- ^ Closure map.
+              -> Map CommentId (Entity Ticket)         -- ^ Ticket map.
               -> Bool                                  -- ^ Show actions.
               -> Map TagId Tag                         -- ^ Tag map.
               -> Tree (Entity Comment)                 -- ^ Comment tree.
               -> Maybe Widget                          -- ^ Comment form.
               -> Widget
-commentWidget now viewer_roles project_handle target users max_depth depth earlier_closures closure_map show_actions tag_map tree mcomment_form = do
+commentWidget now viewer_roles project_handle target users max_depth depth earlier_closures closure_map ticket_map show_actions tag_map tree mcomment_form = do
     mviewer           <- handlerToWidget maybeAuth
     maybe_route       <- handlerToWidget getCurrentRoute
     (comment_form, _) <- handlerToWidget $ generateFormPost $ commentForm Nothing Nothing
@@ -65,6 +66,7 @@ commentWidget now viewer_roles project_handle target users max_depth depth earli
         is_odd_depth  = not is_top_level && not is_even_depth
 
         maybe_closure = M.lookup comment_id closure_map
+        maybe_ticket  = M.lookup comment_id ticket_map
         empty_list    = []
 
         user_is_mod  = Moderator `elem` viewer_roles
@@ -121,11 +123,11 @@ discussCommentWidget :: [Role]
                      -> Map UserId User
                      -> [CommentClosure]
                      -> Map CommentId CommentClosure
-                     -- -> Map CommentId (Entity Ticket)
+                     -> Map CommentId (Entity Ticket)
                      -> Bool
                      -> Map TagId Tag
                      -> Widget
-discussCommentWidget roles project_handle target show_reply comment_form root rest users earlier_closures closure_map {- ticket_map -} show_actions tag_map = do
+discussCommentWidget roles project_handle target show_reply comment_form root rest users earlier_closures closure_map ticket_map show_actions tag_map = do
     now <- liftIO getCurrentTime
 
     let tree = buildCommentTree root rest
@@ -139,6 +141,7 @@ discussCommentWidget roles project_handle target show_reply comment_form root re
                       0
                       earlier_closures
                       closure_map
+                      ticket_map
                       show_actions
                       tag_map
                       tree

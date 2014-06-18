@@ -55,6 +55,13 @@ getProjectShares project_id = do
 
     return $ map (pledgeFundedShares . entityVal) pledges
 
+-- | Get all WikiPages for a Project.
+getProjectPages :: ProjectId -> YesodDB App [Entity WikiPage]
+getProjectPages project_id =
+    select $
+        from $ \page -> do
+        where_ $ page ^. WikiPageProject ==. val project_id
+        return page
 
 projectComputeShareValue :: [Int64] -> Milray
 projectComputeShareValue pledges =
@@ -74,6 +81,7 @@ updateShareValue project_id = do
         set project  [ ProjectShareValue =. val (projectComputeShareValue pledges) ]
         where_ (project ^. ProjectId ==. val project_id)
 
+-- TODO: Better name.
 getCounts :: Entity User -> [Entity Project] -> YesodDB App [([Value Int], [Value Int])]
 getCounts (Entity user_id user) = mapM $ \(Entity project_id project) -> do
     moderator <- isProjectModerator (projectHandle project) user_id

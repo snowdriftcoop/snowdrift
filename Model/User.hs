@@ -18,6 +18,9 @@ data UserUpdate =
         , userUpdateStatement :: Maybe Markdown
         }
 
+getUsersIn :: [UserId] -> YesodDB App [Entity User]
+getUsersIn user_ids = selectList [UserId <-. user_ids] []
+
 updateUser :: UserId -> UserUpdate -> YesodDB App ()
 updateUser user_id user_update = update $ \ user -> do
         set user $ catMaybes
@@ -103,7 +106,3 @@ isProjectAffiliated project_handle user_id =
         limit 1
         return ()
 
--- Given a list of UserIds, make a Map UserId User
--- TODO: Generalize to Foldable
-makeUsersMap :: [UserId] -> YesodDB App (Map UserId User)
-makeUsersMap user_ids = M.fromList . map (entityKey &&& entityVal) <$> selectList [UserId <-. user_ids] []

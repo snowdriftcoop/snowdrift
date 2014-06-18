@@ -14,24 +14,28 @@ module Model.Comment
     , getTags
     , makeClosureMap
     , makeTicketMap
+    , newCommentClosure
     , subGetCommentAncestors
     ) where
 
 import Import
 
-import qualified Data.Map   as M
-import           Data.Maybe (listToMaybe)
-import           GHC.Exts   (IsList(..))
-import           Prelude    (head)
+import qualified Data.Map          as M
+import           Data.Maybe        (listToMaybe)
+import           GHC.Exts          (IsList(..))
+import           Prelude           (head)
+
+import           Model.ClosureType (ClosureType)
 
 -- | Get all ancestors that have been closed.
 getAncestorClosures :: CommentId -> YesodDB App [CommentClosure]
 getAncestorClosures comment_id = fmap (map entityVal) $
     select $
-        from $ \(comment_ancestor `InnerJoin` closure) -> do
-        on_ (comment_ancestor ^. CommentAncestorAncestor ==. closure ^. CommentClosureComment)
-        where_ (comment_ancestor ^. CommentAncestorComment ==. val comment_id)
-        return closure
+        from $ \(ca `InnerJoin` cc) -> do
+        on_ (ca ^. CommentAncestorAncestor ==. cc ^. CommentClosureComment)
+        orderBy [asc (cc ^. CommentClosureComment)]
+        where_ (ca ^. CommentAncestorComment ==. val comment_id)
+        return cc
 
 -- | Get all ancestors, including this comment, that have been closed.
 getAncestorClosures' :: CommentId -> YesodDB App [CommentClosure]
@@ -162,3 +166,7 @@ makeTicketMap comment_ids = fmap (M.fromList . map ((ticketComment . entityVal) 
         from $ \t -> do
         where_ (t ^. TicketComment `in_` valList comment_ids)
         return t
+
+newCommentClosure :: MonadIO m => UserId -> ClosureType -> Markdown -> CommentId -> m CommentClosure
+newCommentClosure user_id closure_type reason comment_id =
+    (\now -> CommentClosure now user_id closure_type reason comment_id) `liftM` liftIO getCurrentTime

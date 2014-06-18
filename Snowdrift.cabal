@@ -44,6 +44,7 @@ library
                      Model.Ticket
                      Model.Transaction
                      Model.User
+                     Model.ViewTime
                      Model.ViewType
                      Model.WikiPage
                      Settings
