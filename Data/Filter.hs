@@ -1,4 +1,4 @@
-module Data.Filter (parseFilterExpression, Filterable (..)) where
+module Data.Filter (defaultFilter, parseFilterExpression, Filterable (..)) where
 
 import Import
 
@@ -17,7 +17,10 @@ data Filterable = Filterable
     , searchLiteral :: Text -> Bool
     }
 
-parseFilterExpression ::Text -> Either String (Filterable -> Bool)
+defaultFilter :: Filterable -> Bool
+defaultFilter = const True
+
+parseFilterExpression :: Text -> Either String (Filterable -> Bool)
 parseFilterExpression "" = Right $ const True
 parseFilterExpression expr = parseOnly expressionP expr
 
@@ -51,7 +54,7 @@ timeConstraintP =
     where
         before name = (\ end x -> not $ S.null $ fst $ S.split end $ getNamedTs x name) <$> (A.string name *> stripP "BEFORE" *> timeP)
         after name = (\ start x -> not $ S.null $ snd $ S.split start $ getNamedTs x name) <$> (A.string name *> stripP "AFTER" *> timeP)
-        between name = (\ start end x -> not $ S.null $ snd $ S.split start $ fst $ S.split end $ getNamedTs x name) <$> (A.string name *> stripP "BETWEEN" *> timeP <* stripP "AND") <*> timeP 
+        between name = (\ start end x -> not $ S.null $ snd $ S.split start $ fst $ S.split end $ getNamedTs x name) <$> (A.string name *> stripP "BETWEEN" *> timeP <* stripP "AND") <*> timeP
 
 timeP :: Parser UTCTime
 timeP = fmap (`UTCTime` 0) $ stripP $ fromGregorian <$> (read <$> A.count 4 digit) <* "-" <*> (read <$> A.count 2 digit) <* "-" <*> (read <$> A.count 2 digit)

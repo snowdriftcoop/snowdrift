@@ -2,11 +2,14 @@ module Model.Project where
 
 import Import
 
-import Model.Currency
-import Model.ViewType
-import Model.User
+import           Model.Currency
+import           Model.ViewType
+import           Model.User
 
-import Control.Monad.Trans.Resource
+import           Control.Monad.Trans.Resource
+import qualified Github.Data                  as GH
+import qualified Github.Issues                as GH
+import qualified Data.Text                    as T
 
 data ProjectSummary =
     ProjectSummary
@@ -16,6 +19,9 @@ data ProjectSummary =
         , summaryShares :: ShareCount
         , summaryShareCost :: Milray
         }
+
+getGithubIssues :: Project -> IO (Either GH.Error [GH.Issue])
+getGithubIssues = maybe (return $ Right []) ((\(account, repo) -> GH.issuesForRepo account repo []) . second (drop 1) . break (== '/') . T.unpack) . projectGithubRepo
 
 summarizeProject :: Monad m => Entity Project -> [Entity Pledge] -> m ProjectSummary
 summarizeProject project pledges = do
@@ -48,7 +54,7 @@ projectComputeShareValue pledges =
 updateShareValue :: (MonadThrow m, MonadIO m, MonadBaseControl IO m, MonadLogger m, MonadResource m) => ProjectId -> SqlPersistT m ()
 updateShareValue project_id = do
     pledges <- getProjectShares project_id
-    
+
     update $ \ project -> do
         set project  [ ProjectShareValue =. val (projectComputeShareValue pledges) ]
         where_ (project ^. ProjectId ==. val project_id)
@@ -60,7 +66,7 @@ getCounts (Entity user_id user) = mapM $ \(Entity project_id project) -> do
     moderator <- isProjectModerator (projectHandle project) user_id
 
     comment_viewtimes :: [Entity ViewTime] <- select $ from $ \ viewtime -> do
-        where_ $ 
+        where_ $
             ( viewtime ^. ViewTimeUser ==. val user_id ) &&.
             ( viewtime ^. ViewTimeProject ==. val project_id ) &&.
             ( viewtime ^. ViewTimeType ==. val ViewComments )

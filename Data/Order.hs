@@ -1,4 +1,4 @@
-module Data.Order (parseOrderExpression, Orderable (..)) where
+module Data.Order (defaultOrder, parseOrderExpression, Orderable (..)) where
 
 import Import
 
@@ -16,6 +16,9 @@ data Orderable = Orderable
     , getNamedTs :: Text -> Set UTCTime
     , searchLiteral :: Text -> Bool
     }
+
+defaultOrder :: Orderable -> [Double]
+defaultOrder = const [0]
 
 epoch :: UTCTime
 epoch = read "1970-01-01 00:00:00"

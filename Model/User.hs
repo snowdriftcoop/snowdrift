@@ -1,8 +1,8 @@
 module Model.User where
 
-
 import Import
 
+import qualified Data.Map  as M
 import qualified Data.Text as T
 
 import Control.Monad.Trans.Resource
@@ -90,7 +90,11 @@ isProjectModerator project_handle user_id =
             &&. pur ^. ProjectUserRoleRole ==. val Moderator
         limit 1
         return ()
-    
+
+isCurUserProjectModerator :: Text -> Handler Bool
+isCurUserProjectModerator project_handle =
+    maybeAuthId >>= maybe (return False) (runDB . isProjectModerator project_handle)
+
 isProjectAffiliated :: (MonadIO m, MonadResource m, MonadLogger m, MonadBaseControl IO m, MonadThrow m)
     => Text -> UserId -> SqlPersistT m Bool
 isProjectAffiliated project_handle user_id =
@@ -101,3 +105,6 @@ isProjectAffiliated project_handle user_id =
         limit 1
         return ()
 
+-- Given a foldable container of UserId, make a Map UserId User
+makeUsersMap :: [UserId] -> YesodDB App (Map UserId User)
+makeUsersMap user_ids = M.fromList . map (entityKey &&& entityVal) <$> selectList [UserId <-. user_ids] []
