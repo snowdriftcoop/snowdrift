@@ -17,6 +17,7 @@ import           Data.Tree
 import           Model.ClosureType
 import           Model.Comment
 import           Model.Role
+import           Model.Tag                  (getAllTags)
 import           Model.User
 import           Model.ViewType
 import           Model.WikiPage
@@ -339,8 +340,10 @@ postReplyCommentR project_handle target comment_id = do
     ((result, _), _) <- runFormPost $ commentForm (Just comment_id) Nothing
 
     case result of
-        FormSuccess text -> processWikiComment (Just comment_id) text project_entity page
-        FormMissing -> error "Form missing."
+        FormSuccess text -> do
+            mode <- lookupPostParam "mode"
+            processWikiComment mode (Just comment_id) text project_entity page
+        FormMissing      -> error "Form missing."
         FormFailure msgs -> error $ "Error submitting form: " ++ T.unpack (T.intercalate "\n" msgs)
 
 getDiscussCommentR' :: Bool -> Text -> Text -> CommentId -> Handler Html
@@ -369,13 +372,13 @@ getDiscussCommentR' show_reply project_handle target comment_id = do
         when (root_wiki_page_id /= page_id) $
             error "Selected comment does not match selected page"
 
-        ancestors <- getCommentAncestors comment_id
+        descendants <- getCommentDescendants comment_id
 
         -- TODO: move to Model/Comment?
         rest <-
             select $
                 from $ \c -> do
-                where_ (c ^. CommentId `in_` valList ancestors &&.
+                where_ (c ^. CommentId `in_` valList descendants &&.
                         if moderator
                             then val True
                             else not_ . isNothing $ c ^. CommentModeratedTs)
@@ -410,127 +413,95 @@ getDiscussCommentR' show_reply project_handle target comment_id = do
                         users
                         earlier_closures
                         closure_map
-                        ticket_map
+                        -- ticket_map
                         True
                         tag_map
 
-processWikiComment :: Maybe CommentId -> Markdown -> Entity Project -> WikiPage -> Handler Html
-processWikiComment maybe_parent_id text (Entity project_id project) page = do
+processWikiComment :: Maybe Text -> Maybe CommentId -> Markdown -> Entity Project -> WikiPage -> Handler Html
+processWikiComment mode =
+    case mode of
+        Just "preview" -> processWikiCommentPreview
+        Just "post"    -> processWikiCommentPost
+        _              -> error $ "Error: unrecognized mode (" ++ show mode ++ ")"
+
+processWikiCommentPreview :: Maybe CommentId -> Markdown -> Entity Project -> WikiPage -> Handler Html
+processWikiCommentPreview maybe_parent_id text (Entity project_id project) page = do
     Entity user_id user <- requireAuth
 
-    let established = isJust $ userEstablishedTs user
+    roles <- getRoles project_id
+    earlier_closures <- maybe (return []) (runDB . getAncestorClosures') maybe_parent_id
+    tag_map <- entitiesMap <$> runDB getAllTags
 
+    depth <- depthFromMaybeParentId maybe_parent_id
     now <- liftIO getCurrentTime
+    let comment =
+          Entity (Key $ PersistInt64 0) $
+            Comment now Nothing Nothing Nothing (wikiPageDiscussion page) maybe_parent_id user_id text depth
 
-    depth <- case maybe_parent_id of
-        Just parent_id -> do
-            Just parent <- runDB $ get parent_id
-            return $ (+1) $ commentDepth parent
-        _ -> return 0
+        rendered_comment = discussCommentWidget
+                               roles
+                               (projectHandle project)
+                               (wikiPageTarget page)
+                               False
+                               (return ())
+                               comment
+                               []
+                               (M.singleton user_id user)
+                               earlier_closures
+                               mempty
+                               False
+                               tag_map
 
-    mode <- lookupPostParam "mode"
+    (form, _) <- generateFormPost $ commentForm maybe_parent_id (Just text)
+    defaultLayout $ renderPreview form "post" rendered_comment
 
-    let action :: Text = "post"
+processWikiCommentPost :: Maybe CommentId -> Markdown -> Entity Project -> WikiPage -> Handler Html
+processWikiCommentPost maybe_parent_id text (Entity project_id project) page = do
+    Entity user_id user <- requireAuth
+    now <- liftIO getCurrentTime
+    depth <- depthFromMaybeParentId maybe_parent_id
 
-    case mode of
-        Just "preview" -> do
-            earlier_closures <- runDB $
-                case maybe_parent_id of
-                    Just parent_id -> do
-                        ancestors <- fmap ((parent_id :) . map (commentAncestorAncestor . entityVal)) $ select $ from $ \ ancestor -> do
-                            where_ ( ancestor ^. CommentAncestorComment ==. val parent_id )
-                            return ancestor
+    let is_established = isEstablished user
+    maybe_parent_id' <- runDB $ do
+        maybe_parent_id' <- maybe (return Nothing) (fmap Just . getCommentDestination) maybe_parent_id
 
-                        fmap (map entityVal) $ select $ from $ \ closure -> do
-                            where_ ( closure ^. CommentClosureComment `in_` valList ancestors )
-                            return closure
+        comment_id <- insert $ Comment now
+                                       (if is_established then Just now else Nothing)
+                                       (if is_established then Just user_id else Nothing)
+                                       Nothing
+                                       (wikiPageDiscussion page)
+                                       maybe_parent_id'
+                                       user_id
+                                       text
+                                       depth
 
-                    Nothing -> return []
+        let content = T.lines $ (\ (Markdown str) -> str) text
+            tickets = map T.strip $ mapMaybe (T.stripPrefix "ticket:") content
+            tags    = map T.strip $ mconcat $ map (T.splitOn ",") $ mapMaybe (T.stripPrefix "tags:") content
 
-            tags <- runDB $ select $ from return
+        forM_ tickets $ \ ticket -> insert_ $ Ticket now now ticket comment_id
+        forM_ tags $ \ tag -> do
+            tag_id <- fmap (either entityKey id) $ insertBy $ Tag tag
+            insert_ $ CommentTag comment_id tag_id user_id 1
 
-            let tag_map = entitiesMap tags
+        ancestor_ids <- maybe (return [])
+                              (\parent_id -> (parent_id :) <$> getCommentAncestors parent_id)
+                              maybe_parent_id
 
-            (form, _) <- generateFormPost $ commentForm maybe_parent_id (Just text)
+        forM_ ancestor_ids (insert_ . CommentAncestor comment_id)
 
-            roles <- getRoles project_id
+        update $ \ticket -> do
+            set ticket [ TicketUpdatedTs =. val now ]
+            where_ $ ticket ^. TicketComment `in_` subGetCommentAncestors comment_id
 
-            let comment = Entity (Key $ PersistInt64 0) $ Comment now Nothing Nothing Nothing (wikiPageDiscussion page) maybe_parent_id user_id text depth
-                user_map = M.singleton user_id user
-                rendered_comment = discussCommentWidget
-                                       roles
-                                       (projectHandle project)
-                                       (wikiPageTarget page)
-                                       False
-                                       (return ())
-                                       comment
-                                       []
-                                       user_map
-                                       earlier_closures
-                                       mempty
-                                       False
-                                       tag_map
+        return maybe_parent_id'
 
-            defaultLayout $ renderPreview form action rendered_comment
+    addAlert "success" $ if is_established then "comment posted" else "comment submitted for moderation"
+    redirect $ maybe (DiscussWikiR (projectHandle project) (wikiPageTarget page)) (DiscussCommentR (projectHandle project) (wikiPageTarget page)) maybe_parent_id'
 
-
-        Just x | x == action -> do
-            maybe_parent_id' <- runDB $ do
-                let getDestination comment_id = do
-                        destination <- select $ from $ \ comment_rethread -> do
-                            where_ $ comment_rethread ^. CommentRethreadOldComment ==. val comment_id
-                            return $ comment_rethread ^. CommentRethreadNewComment
-
-                        case destination of
-                            [] -> return comment_id
-                            Value comment_id' : _ -> getDestination comment_id'
-
-                maybe_parent_id' <- maybe (return Nothing) (fmap Just . getDestination) maybe_parent_id
-
-                comment_id <- insert $ Comment now
-                    (if established then Just now else Nothing)
-                    (if established then Just user_id else Nothing)
-                    Nothing
-                    (wikiPageDiscussion page)
-                    maybe_parent_id' user_id text depth
-
-                let content = T.lines $ (\ (Markdown str) -> str) text
-                    tickets = map T.strip $ mapMaybe (T.stripPrefix "ticket:") content
-                    tags    = map T.strip $ mconcat $ map (T.splitOn ",") $ mapMaybe (T.stripPrefix "tags:") content
-
-                forM_ tickets $ \ ticket -> insert_ $ Ticket now now ticket comment_id
-                forM_ tags $ \ tag -> do
-                    tag_id <- fmap (either entityKey id) $ insertBy $ Tag tag
-                    insert_ $ CommentTag comment_id tag_id user_id 1
-
-                let getParentAncestors parent_id = do
-                        comment_ancestor_entities <- select $ from $ \ comment_ancestor -> do
-                            where_ ( comment_ancestor ^. CommentAncestorComment ==. val parent_id )
-                            return comment_ancestor
-
-                        let ancestors = map (commentAncestorAncestor . entityVal) comment_ancestor_entities
-                        return $ parent_id : ancestors
-
-                ancestors <- maybe (return []) getParentAncestors maybe_parent_id
-
-                forM_ ancestors $ \ ancestor_id -> insert_ $ CommentAncestor comment_id ancestor_id
-
-                let selectAncestors = subList_select $ from $ \ ancestor -> do
-                    where_ $ ancestor ^. CommentAncestorComment ==. val comment_id
-                    return $ ancestor ^. CommentAncestorAncestor
-
-                update $ \ ticket -> do
-                    set ticket [ TicketUpdatedTs =. val now ]
-                    where_ $ ticket ^. TicketComment `in_` selectAncestors
-
-                return maybe_parent_id'
-
-
-            addAlert "success" $ if established then "comment posted" else "comment submitted for moderation"
-            redirect $ maybe (DiscussWikiR (projectHandle project) (wikiPageTarget page)) (DiscussCommentR (projectHandle project) (wikiPageTarget page)) maybe_parent_id'
-
-        m -> error $ "Error: unrecognized mode (" ++ show m ++ ")"
-
+-- Get the depth of a comment, given (maybe) its parent's CommentId.
+depthFromMaybeParentId :: Maybe CommentId -> Handler Int
+depthFromMaybeParentId = maybe (return 0) (fmap (+1) . runDB . getCommentDepth)
 
 postDiscussWikiR :: Text -> Text -> Handler Html
 postDiscussWikiR project_handle target = do
@@ -539,7 +510,9 @@ postDiscussWikiR project_handle target = do
     ((result, _), _) <- runFormPost $ commentForm Nothing Nothing
 
     case result of
-        FormSuccess text -> processWikiComment Nothing text project_entity page
+        FormSuccess text -> do
+            mode <- lookupPostParam "mode"
+            processWikiComment mode Nothing text project_entity page
         FormMissing      -> error "Form missing."
         FormFailure msgs -> error $ "Error submitting form: " ++ T.unpack (T.intercalate "\n" msgs)
 

@@ -121,11 +121,11 @@ discussCommentWidget :: [Role]
                      -> Map UserId User
                      -> [CommentClosure]
                      -> Map CommentId CommentClosure
-                     -> Map CommentId (Entity Ticket)
+                     -- -> Map CommentId (Entity Ticket)
                      -> Bool
                      -> Map TagId Tag
                      -> Widget
-discussCommentWidget roles project_handle target show_reply comment_form root rest users earlier_closures closure_map ticket_map show_actions tag_map = do
+discussCommentWidget roles project_handle target show_reply comment_form root rest users earlier_closures closure_map {- ticket_map -} show_actions tag_map = do
     now <- liftIO getCurrentTime
 
     let tree = buildCommentTree root rest

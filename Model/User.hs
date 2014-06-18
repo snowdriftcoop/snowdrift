@@ -53,6 +53,9 @@ userWidget user_id = do
                     #{userPrintName (Entity user_id user)}
             |]
 
+isEstablished :: User -> Bool
+isEstablished = isJust . userEstablishedTs
+
 {- isProject___ stuff below is almost all redundant. It really should be
 - refactored into being a main function to lookup affiliations and tiny
 - functions for each affiliation -}

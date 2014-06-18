@@ -40,6 +40,7 @@ library
                      Model.Role
                      Model.Settings
                      Model.Shares
+                     Model.Tag
                      Model.Ticket
                      Model.Transaction
                      Model.User

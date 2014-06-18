@@ -1,6 +1,10 @@
 module Model.Comment
     ( getAncestorClosures
+    , getAncestorClosures'
     , getCommentAncestors
+    , getCommentDescendants
+    , getCommentDestination
+    , getCommentDepth
     , getCommentPage
     , getCommentPageId
     , getCommentRethread
@@ -10,6 +14,7 @@ module Model.Comment
     , getTags
     , makeClosureMap
     , makeTicketMap
+    , subGetCommentAncestors
     ) where
 
 import Import
@@ -19,7 +24,7 @@ import           Data.Maybe (listToMaybe)
 import           GHC.Exts   (IsList(..))
 import           Prelude    (head)
 
--- Get all ancestors that have been closed.
+-- | Get all ancestors that have been closed.
 getAncestorClosures :: CommentId -> YesodDB App [CommentClosure]
 getAncestorClosures comment_id = fmap (map entityVal) $
     select $
@@ -28,13 +33,44 @@ getAncestorClosures comment_id = fmap (map entityVal) $
         where_ (comment_ancestor ^. CommentAncestorComment ==. val comment_id)
         return closure
 
--- Get a comment's ancestors' ids.
+-- | Get all ancestors, including this comment, that have been closed.
+getAncestorClosures' :: CommentId -> YesodDB App [CommentClosure]
+getAncestorClosures' comment_id = do
+    all_comment_ids <- (comment_id :) <$> getCommentAncestors comment_id
+    fmap (map entityVal) $
+        select $
+            from $ \c -> do
+            where_ (c ^. CommentClosureComment `in_` valList all_comment_ids)
+            return c
+
+-- | Get a comment's ancestors' ids.
 getCommentAncestors :: CommentId -> YesodDB App [CommentId]
-getCommentAncestors comment_id = fmap (map unValue) $
+getCommentAncestors = fmap (map unValue) . select . ancestorsQuery
+
+subGetCommentAncestors :: CommentId -> SqlExpr (ValueList CommentId)
+subGetCommentAncestors = subList_select . ancestorsQuery
+
+ancestorsQuery :: CommentId -> SqlQuery (SqlExpr (Value CommentId))
+ancestorsQuery comment_id =
+    from $ \ca -> do
+    where_ (ca ^. CommentAncestorComment ==. val comment_id)
+    return (ca ^. CommentAncestorAncestor)
+
+getCommentDepth :: CommentId -> YesodDB App Int
+getCommentDepth = fmap commentDepth . getJust
+
+-- | Get a comment's descendants' ids.
+getCommentDescendants :: CommentId -> YesodDB App [CommentId]
+getCommentDescendants comment_id = fmap (map unValue) $
     select $
         from $ \ca -> do
         where_ (ca ^. CommentAncestorAncestor ==. val comment_id)
-        return (ca^.CommentAncestorComment)
+        return (ca ^. CommentAncestorComment)
+
+-- | Get the "true" CommentId for this comment (i.e. take the rethread train to
+-- the very last stop). Makes an unbounded number of queries.
+getCommentDestination :: CommentId -> YesodDB App CommentId
+getCommentDestination comment_id = getCommentRethread comment_id >>= maybe (return comment_id) getCommentDestination
 
 getCommentPage :: CommentId -> YesodDB App WikiPage
 getCommentPage = fmap entityVal . getCommentPageEntity
@@ -50,15 +86,15 @@ getCommentPageEntity comment_id = fmap head $
         where_ (c ^. CommentId ==. val comment_id)
         return p
 
--- Get the CommentId this CommentId was rethreaded to, if it was.
+-- | Get the CommentId this CommentId was rethreaded to, if it was.
 getCommentRethread :: CommentId -> YesodDB App (Maybe CommentId)
 getCommentRethread comment_id = fmap unValue . listToMaybe <$> (
     select $
-        from $ \comment_rethread -> do
-        where_ $ comment_rethread ^. CommentRethreadOldComment ==. val comment_id
-        return $ comment_rethread ^. CommentRethreadNewComment)
+        from $ \cr -> do
+        where_ $ cr ^. CommentRethreadOldComment ==. val comment_id
+        return $ cr ^. CommentRethreadNewComment)
 
--- Get a Comment's CommentTags.
+-- | Get a Comment's CommentTags.
 getCommentTags :: CommentId -> YesodDB App [Entity CommentTag]
 getCommentTags comment_id =
     select $
@@ -86,7 +122,7 @@ getRootComments is_moderator discussion_id =
         orderBy [asc (comment ^. CommentCreatedTs)]
         return comment
 
--- Generic comment conditions that apply to both root comments and child comments.
+-- | Generic comment conditions that apply to both root comments and child comments.
 -- Join on discussion_id, don't display rethreaded comments (they should always
 -- be hidden as they've been replaced by another comment), and only show un-moderated
 -- comments if the user is a moderator of the page.
@@ -102,7 +138,7 @@ genericCommentConditions is_moderator discussion_id comment_table =
         then val True
         else not_ . isNothing $ comment_table ^. CommentModeratedTs
 
--- Get a Comment's Tags.
+-- | Get a Comment's Tags.
 getTags :: CommentId -> YesodDB App [Entity Tag]
 getTags comment_id =
     select $
