@@ -32,19 +32,19 @@ commentForm parent content =
      in renderBootstrap3 $ areq' snowdriftMarkdownField comment_label content
 
 -- | commentWidget is for how each comment is rendered within whatever larger context it may have
-commentWidget :: UTCTime                        -- ^ Timestamp.
-              -> [Role]                         -- ^ The viewer's roles.
-              -> Text                           -- ^ Project handle.
-              -> Text                           -- ^ Wiki page name.
-              -> Map UserId User                -- ^ Users map.
-              -> Int                            -- ^ Max depth.
-              -> Int                            -- ^ Depth.
-              -> [CommentClosure]               -- ^ Earlier closures.
-              -> Map CommentId CommentClosure   -- ^ Closure map.
-              -> Bool                           -- ^ Show actions.
-              -> Map TagId Tag                  -- ^ Tag map.
-              -> Tree (Entity Comment)          -- ^ Comment tree.
-              -> Maybe Widget                   -- ^ Comment form.
+commentWidget :: UTCTime                               -- ^ Timestamp.
+              -> [Role]                                -- ^ The viewer's roles.
+              -> Text                                  -- ^ Project handle.
+              -> Text                                  -- ^ Wiki page name.
+              -> Map UserId User                       -- ^ Users map.
+              -> Int                                   -- ^ Max depth.
+              -> Int                                   -- ^ Depth.
+              -> [CommentClosure]                      -- ^ Earlier closures.
+              -> Map CommentId CommentClosure          -- ^ Closure map.
+              -> Bool                                  -- ^ Show actions.
+              -> Map TagId Tag                         -- ^ Tag map.
+              -> Tree (Entity Comment)                 -- ^ Comment tree.
+              -> Maybe Widget                          -- ^ Comment form.
               -> Widget
 commentWidget now viewer_roles project_handle target users max_depth depth earlier_closures closure_map show_actions tag_map tree mcomment_form = do
     mviewer           <- handlerToWidget maybeAuth
@@ -109,3 +109,51 @@ commentWidget now viewer_roles project_handle target users max_depth depth earli
             |]
 
         (_, FullyHidden) -> return ()
+
+-- | discussCommentWidget is for permalink views of particular comments
+discussCommentWidget :: [Role]
+                     -> Text
+                     -> Text
+                     -> Bool
+                     -> Widget
+                     -> Entity Comment
+                     -> [Entity Comment]
+                     -> Map UserId User
+                     -> [CommentClosure]
+                     -> Map CommentId CommentClosure
+                     -> Map CommentId (Entity Ticket)
+                     -> Bool
+                     -> Map TagId Tag
+                     -> Widget
+discussCommentWidget roles project_handle target show_reply comment_form root rest users earlier_closures closure_map ticket_map show_actions tag_map = do
+    now <- liftIO getCurrentTime
+
+    let tree = buildCommentTree root rest
+        comment = commentWidget
+                      now
+                      roles
+                      project_handle
+                      target
+                      users
+                      11
+                      0
+                      earlier_closures
+                      closure_map
+                      show_actions
+                      tag_map
+                      tree
+                      (if show_reply then Just comment_form else Nothing)
+
+    $(widgetFile "comment")
+
+buildCommentTree :: Entity Comment -> [ Entity Comment ] -> Tree (Entity Comment)
+buildCommentTree root rest =
+    let treeOfList (node, items) =
+            let has_parent p = (== Just (entityKey p)) . commentParent . entityVal
+                list = dropWhile (not . has_parent node) items
+                (children, rest') = span (has_parent node) list
+                items' = map (, rest') children
+             in (node, items')
+
+     in unfoldTree treeOfList (root, rest)
+

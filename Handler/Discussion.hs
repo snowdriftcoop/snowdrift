@@ -1,10 +1,9 @@
-{-# LANGUAGE TupleSections #-}
-
 module Handler.Discussion where
 
 import Import
 
 import qualified Control.Monad.State        as St
+import           Data.Foldable              (Foldable)
 import qualified Data.Foldable              as F
 import           Data.Map                   (Map)
 import qualified Data.Map                   as M
@@ -23,7 +22,7 @@ import           Model.ViewType
 import           Model.WikiPage
 import           Widgets.Markdown
 import           Widgets.Preview
-import           View.Comment               (commentForm, commentWidget)
+import           View.Comment               (buildCommentTree, commentForm, commentWidget, discussCommentWidget)
 
 checkCommentPage :: CommentId -> WikiPageId -> Handler ()
 checkCommentPage comment_id page_id = do
@@ -149,16 +148,16 @@ getCloseWikiComment closure_type project_handle target comment_id = do
 
     tags <- runDB $ getTags comment_id
 
-    let tag_map = M.fromList $ entityPairs tags
+    let tag_map = entitiesMap tags
 
     let poster_id = commentUser comment
     poster <- runDB $ get404 poster_id
 
     (closure_form, _) <- generateFormPost $ closureForm closure_type Nothing
 
-    roles <- getRoles user_id project_id
+    roles <- getRoles project_id
 
-    let rendered_comment = renderDiscussComment
+    let rendered_comment = discussCommentWidget
                                roles
                                project_handle
                                target
@@ -225,16 +224,16 @@ postCloseWikiComment closure_type project_handle target comment_id = do
 
                     tags <- runDB $ getTags comment_id
 
-                    let tag_map = M.fromList $ entityPairs tags
+                    let tag_map = entitiesMap tags
                         closure = CommentClosure soon user_id closure_type reason comment_id
                         closures = M.singleton comment_id closure
 
                     let poster_id = commentUser comment
                     poster <- runDB $ get404 poster_id
-                    roles  <- getRoles user_id project_id
+                    roles  <- getRoles project_id
 
                     defaultLayout $ renderPreview form action $
-                        renderDiscussComment
+                        discussCommentWidget
                             roles
                             project_handle
                             target
@@ -259,17 +258,6 @@ postCloseWikiComment closure_type project_handle target comment_id = do
         _ -> error "Error when submitting form."
 
 
-buildCommentTree :: Entity Comment -> [ Entity Comment ] -> Tree (Entity Comment)
-buildCommentTree root rest =
-    let treeOfList (node, items) =
-            let has_parent p = (== Just (entityKey p)) . commentParent . entityVal
-                list = dropWhile (not . has_parent node) items
-                (children, rest') = span (has_parent node) list
-                items' = map (, rest') children
-             in (node, items')
-
-     in unfoldTree treeOfList (root, rest)
-
 
 -- |getDiscussWikiR generates the associated discussion page for each wiki page
 getDiscussWikiR :: Text -> Text -> Handler Html
@@ -292,7 +280,6 @@ getDiscussWikiR project_handle target = do
         roots   <- getRootComments    is_moderator (wikiPageDiscussion page)
         replies <- getRepliesComments is_moderator (wikiPageDiscussion page)
 
-        let get_user_ids = F.foldMap (S.singleton . commentUser . entityVal)
         users <- makeUsersMap (S.toList $ get_user_ids roots <> get_user_ids replies)
 
         closure_map <- M.fromList . map ((commentClosureComment &&& id) . entityVal) <$>
@@ -302,11 +289,9 @@ getDiscussWikiR project_handle target = do
 
     tags <- runDB $ select $ from return
 
-    roles <- case muser of
-        Nothing -> return []
-        Just (Entity user_id _) -> getRoles user_id project_id
+    roles <- getRoles project_id
 
-    let tag_map = M.fromList $ entityPairs tags
+    let tag_map = entitiesMap tags
         comments = forM_ roots $ \root ->
             commentWidget
                 now
@@ -358,138 +343,76 @@ postReplyCommentR project_handle target comment_id = do
         FormMissing -> error "Form missing."
         FormFailure msgs -> error $ "Error submitting form: " ++ T.unpack (T.intercalate "\n" msgs)
 
-
 getDiscussCommentR' :: Bool -> Text -> Text -> CommentId -> Handler Html
 getDiscussCommentR' show_reply project_handle target comment_id = do
-    rethread <- runDB $ select $ from $ \ comment_rethread -> do
-        where_ $ comment_rethread ^. CommentRethreadOldComment ==. val comment_id
-        return $ comment_rethread ^. CommentRethreadNewComment
-
-
-    case rethread of
-        [] -> return ()
-        Value destination_comment_id : _ -> do
-            route <- runDB $ do
-                -- TODO: any way to statically make sure we've covered all discussion types?
-                destination_infos <- select $ from $ \ (comment `LeftOuterJoin` page) -> do
-                    on_ $ (just $ comment ^. CommentDiscussion) ==. page ?. WikiPageDiscussion
-                    where_ $ comment ^. CommentId ==. val destination_comment_id
-                    return $ (page ?. WikiPageTarget)
-
-                let route_destination [] = error "unrecognized discussion for comment"
-
-                    route_destination (Value (Just destination_target) : _)=
-                        let route = if show_reply then ReplyCommentR else DiscussCommentR
-                         in route project_handle destination_target destination_comment_id
-
-                    route_destination (_ : rest) = route_destination rest
-
-                return $ route_destination destination_infos
-
-            redirectWith movedPermanently301 route
-
+    runDB (getCommentRethread comment_id) >>= \case
+        Nothing -> return ()
+        Just destination_comment_id -> do
+            -- TODO: any way to statically make sure we've covered all discussion types?
+            page_target <- wikiPageTarget <$> runDB (getCommentPage comment_id)
+            redirectWith movedPermanently301
+                         (let route = if show_reply then ReplyCommentR else DiscussCommentR
+                          in route project_handle page_target destination_comment_id)
 
     mviewer <- maybeAuth
 
     (Entity project_id _, Entity page_id page) <- getPageInfo project_handle target
 
-    roles <- case mviewer of
-        Nothing -> return []
-        Just (Entity viewer_id _) -> getRoles viewer_id project_id
+    roles <- getRoles project_id
 
-    moderator <- case mviewer of
-        Nothing -> return False
-        Just (Entity viewer_id _) ->
-            runDB $ isProjectModerator project_handle viewer_id
+    moderator <- isCurUserProjectModerator project_handle
 
-    (root, rest, users, earlier_closures, closure_map) <- runDB $ do
+    (root, rest, users, earlier_closures, closure_map, ticket_map) <- runDB $ do
         root <- get404 comment_id
         root_wiki_page_id <- getCommentPageId comment_id
 
-        when (root_wiki_page_id /= page_id) $ error "Selected comment does not match selected page"
+        when (root_wiki_page_id /= page_id) $
+            error "Selected comment does not match selected page"
 
-        subtree <- select $ from $ \ comment_ancestor -> do
-            where_ $ comment_ancestor ^. CommentAncestorAncestor ==. val comment_id
-            return comment_ancestor
+        ancestors <- getCommentAncestors comment_id
 
-        rest <- select $ from $ \ c -> do
-            where_ $ foldl1 (&&.) $ catMaybes
-                [ Just $ c ^. CommentDiscussion ==. val (wikiPageDiscussion page)
-                , Just $ c ^. CommentId >. val comment_id
-                , Just $ isNothing $ c ^. CommentRethreaded
-                , Just $ c ^. CommentId `in_` valList (map (commentAncestorComment . entityVal) subtree)
-                , if moderator then Nothing else Just $ not_ $ isNothing $ c ^. CommentModeratedTs
-                ]
-            orderBy [asc (c ^. CommentParent), asc (c ^. CommentCreatedTs)]
-            return c
+        -- TODO: move to Model/Comment?
+        rest <-
+            select $
+                from $ \c -> do
+                where_ (c ^. CommentId `in_` valList ancestors &&.
+                        if moderator
+                            then val True
+                            else not_ . isNothing $ c ^. CommentModeratedTs)
+                orderBy [asc (c ^. CommentParent), asc (c ^. CommentCreatedTs)]
+                return c
 
-        let get_user_ids = S.fromList . map (commentUser . entityVal) . F.toList
-            user_id_list = S.toList $ S.insert (commentUser root) $ get_user_ids rest
+        let all_comments    = (Entity comment_id root):rest
+            all_comment_ids = map entityKey all_comments
+            user_ids = get_user_ids all_comments
 
-        user_entities <- select $ from $ \ user -> do
-            where_ ( user ^. UserId `in_` valList user_id_list )
-            return user
+        users            <- makeUsersMap (S.toList user_ids)
+        earlier_closures <- getAncestorClosures comment_id
+        closure_map      <- makeClosureMap all_comment_ids
+        ticket_map       <- makeTicketMap all_comment_ids
 
-        let users = M.fromList $ map (entityKey &&& entityVal) user_entities
-
-        earlier_closures <- fmap (map entityVal) $ select $ from $ \ (comment_ancestor `InnerJoin` closure) -> do
-            on_ (comment_ancestor ^. CommentAncestorAncestor ==. closure ^. CommentClosureComment)
-            where_ ( comment_ancestor ^. CommentAncestorComment ==. val comment_id )
-            return closure
-
-        closure_map <- fmap (M.fromList . map ((commentClosureComment &&& id) . entityVal)) $ select $ from $ \ closure -> do
-            where_ ( closure ^. CommentClosureComment `in_` valList (comment_id : map entityKey rest) )
-            return closure
-
-        return (root, rest, users, earlier_closures, closure_map)
+        return (root, rest, users, earlier_closures, closure_map, ticket_map)
 
     (comment_form, _) <- generateFormPost $ commentForm (Just comment_id) Nothing
 
     tags <- runDB $ select $ from return
 
-    let tag_map = M.fromList $ entityPairs tags
+    let tag_map = entitiesMap tags
 
-    defaultLayout $ renderDiscussComment roles project_handle target show_reply comment_form (Entity comment_id root) rest users earlier_closures closure_map True tag_map
-
--- |renderDiscussComment is for permalink views of particular comments
-renderDiscussComment :: [Role]
-                     -> Text
-                     -> Text
-                     -> Bool
-                     -> Widget
-                     -> Entity Comment
-                     -> [Entity Comment]
-                     -> Map UserId User
-                     -> [CommentClosure]
-                     -> Map CommentId CommentClosure
-                     -> Bool
-                     -> Map TagId Tag
-                     -> Widget
-renderDiscussComment roles project_handle target show_reply comment_form root rest users earlier_closures closure_map show_actions tag_map = do
-    now <- liftIO getCurrentTime
-
-    let tree = buildCommentTree root rest
-        comment = commentWidget
-                      now
-                      roles
-                      project_handle
-                      target
-                      users
-                      11
-                      0
-                      earlier_closures
-                      closure_map
-                      show_actions
-                      tag_map
-                      tree
-                      mcomment_form
-        mcomment_form =
-            if show_reply
-                then Just comment_form
-                else Nothing
-
-    $(widgetFile "comment")
-
+    defaultLayout $ discussCommentWidget
+                        roles
+                        project_handle
+                        target
+                        show_reply
+                        comment_form
+                        (Entity comment_id root)
+                        rest
+                        users
+                        earlier_closures
+                        closure_map
+                        ticket_map
+                        True
+                        tag_map
 
 processWikiComment :: Maybe CommentId -> Markdown -> Entity Project -> WikiPage -> Handler Html
 processWikiComment maybe_parent_id text (Entity project_id project) page = do
@@ -526,15 +449,15 @@ processWikiComment maybe_parent_id text (Entity project_id project) page = do
 
             tags <- runDB $ select $ from return
 
-            let tag_map = M.fromList $ entityPairs tags
+            let tag_map = entitiesMap tags
 
             (form, _) <- generateFormPost $ commentForm maybe_parent_id (Just text)
 
-            roles <- getRoles user_id project_id
+            roles <- getRoles project_id
 
             let comment = Entity (Key $ PersistInt64 0) $ Comment now Nothing Nothing Nothing (wikiPageDiscussion page) maybe_parent_id user_id text depth
                 user_map = M.singleton user_id user
-                rendered_comment = renderDiscussComment
+                rendered_comment = discussCommentWidget
                                        roles
                                        (projectHandle project)
                                        (wikiPageTarget page)
@@ -672,7 +595,7 @@ getWikiNewCommentsR project_handle = do
 
     tags <- runDB $ select $ from return
 
-    let tag_map = M.fromList $ entityPairs tags
+    let tag_map = entitiesMap tags
 
     (new_comments, old_comments, pages, users, closure_map) <- runDB $ do
         unfiltered_pages <- select $ from $ \ page -> do
@@ -724,9 +647,8 @@ getWikiNewCommentsR project_handle = do
 
         return (new_comments, old_comments, pages, users, closure_map)
 
-    roles <- case mviewer of
-        Nothing -> return []
-        Just (Entity viewer_id _) -> getRoles viewer_id project_id
+    roles <- getRoles project_id
+
     let new_comments' = take 50 new_comments
         old_comments' = take (50 - length new_comments') old_comments
         PersistInt64 to = unKey $ minimum (map entityKey (new_comments' <> old_comments') )
@@ -968,3 +890,6 @@ postRethreadWikiCommentR project_handle target comment_id = do
 
                 m -> error $ "Error: unrecognized mode (" ++ show m ++ ")"
         _ -> error "Error when submitting form."
+
+get_user_ids :: Foldable f => f (Entity Comment) -> Set UserId
+get_user_ids = F.foldMap (S.singleton . commentUser . entityVal)

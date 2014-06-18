@@ -30,10 +30,7 @@ viewForm = renderBootstrap3 $ (,)
 
 getTicketsR :: Text -> Handler Html
 getTicketsR project_handle = do
-
     Entity project_id project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
-
-    get_github_issues <- liftIO . async . getGithubIssues $ project
 
     ((result, formWidget), encType) <- runFormGet viewForm
 
@@ -41,12 +38,9 @@ getTicketsR project_handle = do
             FormSuccess x -> x
             _ -> (defaultFilter, defaultOrder)
 
-    tickets <- runDB $ getTickets project_handle
-
-    render <- getUrlRenderParams
-
-    github_issues <- either (const $ addAlert "danger" "failed to fetch GitHub tickets\n"
-                            >> return []) return =<< liftIO (wait get_github_issues)
+    tickets       <- runDB $ getTickets project_id project_handle
+    render        <- getUrlRenderParams
+    github_issues <- getGithubIssues project
 
     let issues = sortBy (flip compare `on` order_expression . issueOrderable) $
                    filter (filter_expression . issueFilterable) $
@@ -55,3 +49,4 @@ getTicketsR project_handle = do
     defaultLayout $ do
         setTitle . toHtml $ projectName project <> " Tickets | Snowdrift.coop"
         $(widgetFile "tickets")
+  where

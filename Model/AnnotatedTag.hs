@@ -35,11 +35,16 @@ atUserScore at user_id = fmap snd $ L.find ((== user_id) . entityKey . fst) $ at
 atScoreString :: AnnotatedTag -> String
 atScoreString = printf "%.1f" . atScore
 
-buildAnnotatedTags :: Map TagId Tag -> (TagId -> Route App) -> [(TagId, (UserId, Int))] -> Handler [AnnotatedTag]
-buildAnnotatedTags tag_map tagUrl tags = do
-    user_map <- fmap (M.fromList . entityPairs) $ runDB $ select $ from $ \ user -> do
-        where_ $ user ^. UserId `in_` valList (S.toList $ S.fromList $ map (fst . snd) tags)
-        return user
+buildAnnotatedTags :: Map TagId Tag -> (TagId -> Route App) -> [CommentTag] -> Handler [AnnotatedTag]
+buildAnnotatedTags tag_map tagUrl comment_tags = do
+    let tags :: [(TagId, (UserId, Int))]
+        tags = map (commentTagTag &&& (commentTagUser &&& commentTagCount)) comment_tags
+
+    user_map <- fmap entitiesMap . runDB $
+        select $
+            from $ \user -> do
+            where_ $ user ^. UserId `in_` valList (S.toList . S.fromList $ map (fst . snd) tags)
+            return user
 
     tag_colors <- fmap (M.mapKeysMonotonic Key) $ cached $ fmap M.fromList $ do
         maybe_user_id <- maybeAuthId
@@ -69,6 +74,4 @@ buildAnnotatedTags tag_map tagUrl tags = do
     return $ sortBy (compare `on` atScore) annotated_tags
 
 annotateCommentTags :: Map TagId Tag -> Text -> Text -> CommentId -> [CommentTag] -> Handler [AnnotatedTag]
-annotateCommentTags tag_map project_handle target comment_id =
-    buildAnnotatedTags tag_map (CommentTagR project_handle target comment_id) . map (commentTagTag &&& (commentTagUser &&& commentTagCount))
-
+annotateCommentTags tag_map project_handle target comment_id = buildAnnotatedTags tag_map (CommentTagR project_handle target comment_id)

@@ -69,11 +69,10 @@ renderUser viewer_id user_id user projects = do
     let is_owner = Just user_id == viewer_id
         user_entity = Entity user_id user
         project_handle = error "bad link - no default project on user pages" -- TODO turn this into a caught exception
-        role_list = map roleLabel (universe :: [Role])
+        role_list = map roleLabel ([minBound..maxBound] :: [Role])
         filterRoles r = filter (\(Value r', _) -> roleLabel r' == r)
 
     $(widgetFile "user")
-
 
 getEditUserR :: UserId -> Handler Html
 getEditUserR user_id = do
@@ -180,7 +179,7 @@ postUserCreateR = do
                 setCreds True $ Creds "HashDB" ident []
                 redirectUltDest HomeR
 
-        FormMissing -> addAlert "danger" "missing field" 
+        FormMissing -> addAlert "danger" "missing field"
         FormFailure strings -> addAlert "danger" (mconcat strings)
 
     defaultLayout $ [whamlet|

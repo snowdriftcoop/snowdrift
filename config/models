@@ -192,6 +192,8 @@ Comment
     text Markdown
     depth Int
 
+-- A comment has zero or more ancestors: its parent, grandparent, great
+-- grandparent, etc.
 CommentAncestor
     comment CommentId
     ancestor CommentId
@@ -235,11 +237,13 @@ CommentTag
     count Int default=1
     UniqueCommentTag comment tag user
 
+-- A Comment can have at most one Ticket (i.e. the comment can be marked as a ticket)
 Ticket
     createdTs UTCTime
     updatedTs UTCTime
     name Text
     comment CommentId
+    UniqueTicket comment
 
 Build
     bootTime UTCTime
