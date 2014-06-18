@@ -2,17 +2,15 @@ module Handler.Tags where
 
 import Import
 
-import Model.User
-import Model.AnnotatedTag
+import qualified Data.Map           as M
+import qualified Data.Set           as S
+import qualified Data.Text          as T
 
-
-import Widgets.Tag
-
-import Model.WikiPage
-
-import qualified Data.Map as M
-import qualified Data.Set as S
-import qualified Data.Text as T
+import           Model.AnnotatedTag
+import           Model.Comment      (getCommentPageId)
+import           Model.User
+import           Model.WikiPage
+import           Widgets.Tag
 
 processCommentTags :: ([AnnotatedTag] -> Handler Html) -> Text -> Text -> CommentId -> Handler Html
 processCommentTags go project_handle target comment_id = do
@@ -230,12 +228,12 @@ postNewCommentTagR create_tag project_handle target comment_id = do
     if create_tag
         then do
             ((result_create, _), _) <- runFormPost $ createCommentTagForm
-            case result_create of 
+            case result_create of
                 FormSuccess (tag_name) -> do
                     msuccess <- runDB $ do
                         maybe_tag <- getBy $ UniqueTag tag_name
                         case maybe_tag of
-                            Nothing -> do 
+                            Nothing -> do
                                 tag_id <- insert $ Tag tag_name
                                 void $ insert $ CommentTag comment_id tag_id user_id 1
                             Just _ -> do
@@ -259,7 +257,7 @@ postNewCommentTagR create_tag project_handle target comment_id = do
             let filter_tags = filter (\(Entity t _) -> not $ M.member t tag_map)
             (project_tags, other_tags) <- tagList project_id
             ((result_apply, _), _) <- runFormPost $ newCommentTagForm (filter_tags project_tags) (filter_tags other_tags)
-            case result_apply of 
+            case result_apply of
                 FormSuccess (mproject_tag_ids, mother_tag_ids) -> do
                     let project_tag_ids = fromMaybe [] mproject_tag_ids
                     let other_tag_ids = fromMaybe [] mother_tag_ids

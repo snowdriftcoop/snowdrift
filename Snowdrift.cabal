@@ -27,21 +27,24 @@ library
                      Foundation
                      Import
                      Model
-                     Model.Currency
-                     Model.ClosureType
-                     Model.Project
-                     Model.Role
-                     Model.Permission
-                     Model.Shares
-                     Model.Transaction
                      Model.AnnotatedTag
+                     Model.ClosureType
+                     Model.CollapseState
+                     Model.Comment
+                     Model.Currency
+                     Model.Issue
                      Model.Markdown
                      Model.Markdown.Diff
+                     Model.Permission
+                     Model.Project
+                     Model.Role
+                     Model.Settings
+                     Model.Shares
+                     Model.Ticket
+                     Model.Transaction
                      Model.User
                      Model.ViewType
-                     Model.Settings
                      Model.WikiPage
-                     Model.CollapseState
                      Settings
                      Settings.StaticFiles
                      Settings.Development
@@ -71,6 +74,7 @@ library
                      Handler.Tickets
                      Handler.RepoFeed
                      Handler.BuildFeed
+                     View.Comment
                      Version
                      Widgets.Doc
                      Widgets.Markdown
