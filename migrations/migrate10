@@ -1,1 +1,0 @@
-ALTER TABLE "ticket" DROP CONSTRAINT "unique_ticket";
