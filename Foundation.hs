@@ -149,6 +149,7 @@ instance Yesod App where
         let userPrintName :: Entity User -> Text
             userPrintName (Entity user_id user) =
                 fromMaybe (either (error . T.unpack) (T.append "user") $ fromPersistValue $ unKey user_id) (userName user)
+
         -- We break up the default layout into two components:
         -- default-layout is the contents of the body tag, and
         -- default-layout-wrapper is the entire page. Since the final
@@ -156,7 +157,6 @@ instance Yesod App where
         -- you to use normal widget features in default-layout.
 
         pc <- widgetToPageContent $ do
-            $(widgetFile "normalize")
             addStylesheet $ StaticR css_bootstrap_min_css
             addScript $ StaticR js_bootstrap_min_js
             navbar
