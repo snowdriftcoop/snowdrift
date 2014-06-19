@@ -319,7 +319,7 @@ getDiscussCommentR' show_reply project_handle target comment_id = do
         Nothing -> return ()
         Just destination_comment_id -> do
             -- TODO: any way to statically make sure we've covered all discussion types?
-            page_target <- wikiPageTarget <$> runDB (getCommentPage comment_id)
+            page_target <- wikiPageTarget <$> runDB (getCommentPage destination_comment_id)
             redirectWith movedPermanently301
                          (let route = if show_reply then ReplyCommentR else DiscussCommentR
                           in route project_handle page_target destination_comment_id)
