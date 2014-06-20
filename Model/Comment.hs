@@ -3,6 +3,7 @@ module Model.Comment
     , buildCommentTree
     , getAncestorClosures
     , getAncestorClosures'
+    , getClosedRootComments
     , getCommentAncestors
     , getCommentDescendants
     , getCommentDestination
@@ -11,6 +12,7 @@ module Model.Comment
     , getCommentPageId
     , getCommentRethread
     , getCommentTags
+    , getOpenRootComments
     , getRepliesComments
     , getRootComments
     , getTags
@@ -60,6 +62,18 @@ buildCommentForest :: [Entity Comment]                                          
                    -> [Entity Comment]                                             -- replies comments
                    -> Forest (Entity Comment)
 buildCommentForest roots replies = (map (buildCommentTree . (, replies))) roots
+
+-- | Comment is closed?
+exprCommentIsClosed :: SqlExpr (Entity Comment) -> SqlExpr (Value Bool)
+exprCommentIsClosed c = c ^. CommentId `in_`   subList_select (from $ \cl -> return (cl ^. CommentClosureComment))
+
+-- | Comment is open?
+exprCommentIsOpen :: SqlExpr (Entity Comment) -> SqlExpr (Value Bool)
+exprCommentIsOpen c = c ^. CommentId `notIn` subList_select (from $ \cl -> return (cl ^. CommentClosureComment))
+
+-- | Comment is root?
+exprCommentIsRoot :: SqlExpr (Entity Comment) -> SqlExpr (Value Bool)
+exprCommentIsRoot c = isNothing (c ^. CommentParent)
 
 -- | Get all ancestors that have been closed.
 getAncestorClosures :: CommentId -> YesodDB App [CommentClosure]
@@ -156,11 +170,31 @@ getRepliesComments is_moderator discussion_id =
 getRootComments :: Bool -> DiscussionId -> YesodDB App [Entity Comment]
 getRootComments is_moderator discussion_id =
     select $
-        from $ \comment -> do
+        from $ \c -> do
         where_ $
-            genericCommentConditions is_moderator discussion_id comment &&.
-            isNothing (comment ^. CommentParent)
-        return comment
+            genericCommentConditions is_moderator discussion_id c &&.
+            exprCommentIsRoot c
+        return c
+
+getClosedRootComments :: Bool -> DiscussionId -> YesodDB App [Entity Comment]
+getClosedRootComments is_moderator discussion_id =
+    select $
+        from $ \c -> do
+        where_ $
+            genericCommentConditions is_moderator discussion_id c &&.
+            exprCommentIsRoot c &&.
+            exprCommentIsClosed c
+        return c
+
+getOpenRootComments :: Bool -> DiscussionId -> YesodDB App [Entity Comment]
+getOpenRootComments is_moderator discussion_id =
+    select $
+        from $ \c -> do
+        where_ $
+            genericCommentConditions is_moderator discussion_id c &&.
+            exprCommentIsRoot c &&.
+            exprCommentIsOpen c
+        return c
 
 -- | Generic comment conditions that apply to both root comments and child comments.
 -- Join on discussion_id, don't display rethreaded comments (they should always

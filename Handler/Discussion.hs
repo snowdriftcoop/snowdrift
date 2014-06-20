@@ -230,7 +230,15 @@ postCloseWikiComment closure_type project_handle target comment_id = do
 
 -- | getDiscussWikiR generates the associated discussion page for each wiki page
 getDiscussWikiR :: Text -> Text -> Handler Html
-getDiscussWikiR project_handle target = do
+getDiscussWikiR project_handle target = lookupGetParam "state" >>= \case
+    Just "closed" -> getDiscussWikiR' project_handle target getClosedRootComments
+    _             -> getDiscussWikiR' project_handle target getOpenRootComments
+
+getDiscussWikiR' :: Text                                                   -- ^ Project handle.
+                 -> Text                                                   -- ^ Wiki page name.
+                 -> (Bool -> DiscussionId -> YesodDB App [Entity Comment]) -- ^ Root comment getter.
+                 -> Handler Html
+getDiscussWikiR' project_handle target get_root_comments = do
     muser <- maybeAuth
     (Entity project_id project, Entity _ page) <- getPageInfo project_handle target
 
@@ -247,7 +255,7 @@ getDiscussWikiR project_handle target = do
 
     roles <- getRolesHandler project_id
     (roots, replies, user_map, closure_map, ticket_map, tag_map) <- runDB $ do
-        roots           <- getRootComments is_moderator (wikiPageDiscussion page)
+        roots           <- get_root_comments is_moderator (wikiPageDiscussion page)
         replies         <- getRepliesComments is_moderator (wikiPageDiscussion page)
         user_map        <- entitiesMap <$> getUsersIn (S.toList $ get_user_ids roots <> get_user_ids replies)
         let comment_ids  = map entityKey (roots ++ replies)
