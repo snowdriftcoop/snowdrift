@@ -40,6 +40,8 @@ powerful and enjoyable programming in Haskell can be.
 * Stack Overflow user postings are FLO (CC-BY-SA), see the tags for [yesod](http://stackoverflow.com/questions/tagged/yesod) and [haskell](http://stackoverflow.com/questions/tagged/yesod)
 * Alongside #snowdrift on freenode.net, the #yesod and #haskell channels are also active and helpful
 * A useful tool is "cabal repl" — a command that loads [ghci](https://en.wikibooks.org/wiki/Haskell/Using_GHCi_effectively) in a mode connected to the project. Using that, you can easily import files from the code and explore the functions.
+* To help write clean Haskell code and learn conventions, run hlint on your files to get suggestions for possible improvements.
+    * Given a working Haskell installation, add hlint with the command "cabal install hlint"
 
 
 Text-editor settings
