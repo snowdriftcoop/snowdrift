@@ -147,8 +147,8 @@ instance Yesod App where
 
         let navbar = appNavbar master
         let userPrintName :: Entity User -> Text
-            userPrintName (Entity user_id user) =
-                fromMaybe (either (error . T.unpack) (T.append "user") $ fromPersistValue $ unKey user_id) (userName user)
+            userPrintName (Entity user_id user) = fromMaybe ("user" <> toPathPiece user_id) (userName user)
+
         -- We break up the default layout into two components:
         -- default-layout is the contents of the body tag, and
         -- default-layout-wrapper is the entire page. Since the final

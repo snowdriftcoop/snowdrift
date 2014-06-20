@@ -1,16 +1,16 @@
 $newline never
-$# used by commentWidget function
+$# used by commentTreeWidget function
 
-<div .comment :unapproved:.unapproved :is_top_level:.top_level :is_even_depth:.even_depth :is_odd_depth:.odd_depth>
+<div .comment :is_unapproved:.unapproved :is_top_level:.top_level :is_even_depth:.even_depth :is_odd_depth:.odd_depth>
     <div>
         <span .comment-head>
             $maybe author_avatar <- userAvatar user
                 <a href="@{UserR user_id}">
                     <img .small_avatar src="#{author_avatar}"> #
             <a href="@{UserR user_id}">
-                #{author_name}
+                #{userPrintName (Entity user_id user)}
         <span .comment-head>
-            ^{comment_time}
+            ^{renderTime $ commentCreatedTs comment}
         <span .comment-head>
             |
         <span .comment-head>
@@ -23,7 +23,7 @@ $# used by commentWidget function
                 <a href="@{DiscussCommentR project_handle target parent_id}">
                     parent
 
-    $maybe Entity ticket_id ticket <- maybe_ticket
+    $maybe Entity ticket_id ticket <- mticket
         <div .ticket>SD-#{toPathPiece ticket_id}
 
     $forall closure <- earlier_closures
@@ -38,7 +38,7 @@ $# used by commentWidget function
                     A comment above this one was closed at ^{renderTime (commentClosureTs closure)}
                     ^{markdownWidget project_handle (commentClosureReason closure)}
 
-    $maybe closure <- maybe_closure
+    $maybe closure <- mclosure
         $case commentClosureType closure
             $of Retracted
                 <div .retracted>
@@ -64,13 +64,13 @@ $# used by commentWidget function
 
     <div>
         $if show_actions
-            $if user_is_mod
-                $if unapproved
+            $if is_mod
+                $if is_unapproved
                     <span .comment-action>
                         <a href="@{ApproveWikiCommentR project_handle target comment_id}">
                             approve
 
-            $if not (maybe_route == Just (ReplyCommentR project_handle target comment_id))
+            $if not (current_route == ReplyCommentR project_handle target comment_id)
                 <span .comment-action>
                     <a href="@{ReplyCommentR project_handle target comment_id}">
                         reply
@@ -94,7 +94,7 @@ $# used by commentWidget function
 
     $maybe comment_form <- mcomment_form
         <div .comment :is_even_depth:.odd_depth :is_odd_depth:.even_depth>
-            <form action="@{action}" method="POST">
+            <form action="@{current_route}" method="POST">
                 ^{comment_form}
                 <input type="submit" name="mode" value="preview">
 
@@ -108,6 +108,6 @@ $# used by commentWidget function
                         #{replies} more #{plural replies "reply" "replies"}
 
     $else
-        $forall child <- children
-            ^{commentWidget now viewer_roles project_handle target users max_depth (depth + 1) empty_list closure_map ticket_map show_actions tag_map child Nothing}
-
+        $# We only want to display the closures/reractions from above the viewed comment on the first comment,
+        $# not all comments in the tree.
+        ^{commentForestWidget children [] user_map closure_map ticket_map tag_map project_handle target max_depth depth show_actions mcomment_form}
