@@ -58,7 +58,7 @@
                 <input type="hidden" name="cmd" value="_s-xclick">
                 <input type="hidden" name="hosted_button_id" value="M24Z4DFEW4SQL">
                 <input type="image" src="/static/img/external/paypal-donate.gif" name="submit" alt="PayPal donations &mdash; not our ideal.">
-        <small> Paypal can work without proprietary JavaScript, and while not our ideal, it's popular and easy to use.
+        <small> Paypal can work without proprietary JavaScript, and though not ideal, it's popular and easy.
 
     <div .col-md-4 style="border: 1px solid; margin-top: 1em;">
         <figure>
@@ -67,17 +67,18 @@
             <a href="https://www.dwolla.com/hub/snowdrift">
                 <img alt="Donate with Dwolla" src="/static/img/external/dwolla.png" style="padding: 0">
         <small>
-            Dwolla avoids credit-cards and has very low fees:
+            Dwolla avoids credit-cards and has low fees:
             <em>Free
             for payments under $10, otherwise 25¢.
-            To use it, you must <a href="http://refer.dwolla.com/a/clk/28gB5q">create a Dwolla account</a>.
-            They don't seem to work with LibreJS at this time.
+            But you must <a href="http://refer.dwolla.com/a/clk/28gB5q">create a Dwolla account</a>,
+            and they don't seem to work with LibreJS at this time.
     <div .col-md-4 style="border: 1px solid; margin-top: 1em;">
         <figure>
             <img alt="Bitcoin" src="/static/img/external/Bitcoin.png" style="height: 4em"> 
         <small>
-            We plan to offer a smoother process, but for now, <a href=@{ContactR "snowdrift"}>contact us</a>,
-            to get a BTC invoice with an address.
+            We're still deciding the best options, but, for now,
+            <a href=@{ContactR "snowdrift"}>contact us
+            to get a BTC invoice with an address to donate.
 
 <small>
     <p>
