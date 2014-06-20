@@ -5,7 +5,10 @@
         ^{description}
 
     <div .col-md-6>
-        <em>We are currently testing with fake money and monthly payments sped up to daily
+        <em>
+            We are currently
+            <strong>testing with fake money
+            and monthly payments sped up to daily
         <div .row>
             <div .col-sm-6>
                 <table>
