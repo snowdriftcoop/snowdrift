@@ -3,10 +3,7 @@
     padding : 0 .8em 0.3em 1em
     margin-top : 1.8em
     border-bottom-left-radius: 1em
-    font-size : small
-
-.comment p, .comment li
-    font-family : inherit
+    font-size : 15px
 
 .comment p, .comment ul, .comment ol, .comment h1, .comment h2, .comment h3, .comment h4, .comment h5, .comment h6
     margin : 1em 0
