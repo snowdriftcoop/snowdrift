@@ -12,8 +12,8 @@ import qualified Data.Text as T
 
 getApplicationR :: Text -> VolunteerApplicationId -> Handler Html
 getApplicationR project_handle application_id = do
-    Entity viewer_id viewer <- requireAuth
-    Entity _ project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
+    viewer_id <- requireAuthId
+    project <- entityVal <$> (runDB . getBy404 $ UniqueProjectHandle project_handle)
 
     affiliated <- runDB $ (||)
         <$> isProjectAffiliated project_handle viewer_id

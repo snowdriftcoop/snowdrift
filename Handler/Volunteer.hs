@@ -15,10 +15,7 @@ volunteerForm now project_id interests (Entity user_id user) = renderBootstrap3 
         <*> aopt' textareaField "Relevant work/training/volunteer experience:" Nothing
         <*> areq' (multiSelectFieldList $ (interestDescription . entityVal &&& entityKey) <$> interests)
                     "Areas of interest (use ctrl to select multiple):" Nothing
-        <*> aopt' textareaField "Anything else you'd like us to know:" Nothing 
-   where
-        source = (\ a -> zip a a) ["Article", "Weblink", "Conference", "Search engine", "Personal recommendation"]
-
+        <*> aopt' textareaField "Anything else you'd like us to know:" Nothing
 
 getVolunteerR :: Text -> Handler Html
 getVolunteerR project_handle = do

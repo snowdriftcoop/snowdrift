@@ -2,16 +2,12 @@ module Model.Markdown where
 
 import Import
 
-import Text.Regex.TDFA
-import Text.Regex.TDFA.ByteString
-import Yesod.Markdown (markdownToHtml, Markdown (..))
-
-import qualified Prelude as Partial (init)
-
-import qualified Data.Text as T
-import qualified Data.ByteString.Char8 as BS
-
-import Data.Text.Encoding
+import qualified Data.ByteString.Char8      as BS
+import qualified Data.Text                  as T
+import           Data.Text.Encoding
+import           Text.Regex.TDFA
+import           Text.Regex.TDFA.ByteString
+import           Yesod.Markdown             (markdownToHtml, Markdown (..))
 
 fixLinks :: Text -> Text -> Text
 fixLinks project' line' =

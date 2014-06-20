@@ -7,7 +7,6 @@ import           Model.ViewType
 import           Model.User
 
 import           Control.Concurrent.Async     (Async, async, wait)
-import           Control.Monad.Trans.Resource
 import qualified Github.Data                  as GH
 import qualified Github.Issues                as GH
 import qualified Data.Text                    as T

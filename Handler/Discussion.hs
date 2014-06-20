@@ -5,12 +5,9 @@ import Import
 import qualified Control.Monad.State        as St
 import           Data.Foldable              (Foldable)
 import qualified Data.Foldable              as F
-import           Data.List                  (sortBy)
-import           Data.Map                   (Map)
 import qualified Data.Map                   as M
 import qualified Data.Set                   as S
 import qualified Data.Text                  as T
-import           Data.Tree
 import           Network.HTTP.Types.Status
 import           Yesod.Default.Config
 import           Yesod.Markdown
@@ -135,14 +132,13 @@ getCloseWikiComment :: ClosureType -> Text -> Text -> CommentId -> Handler Html
 getCloseWikiComment closure_type project_handle target comment_id = do
     Entity user_id user <- requireAuth
 
-    (project_id, comment) <- case closure_type of
+    (_, comment) <- case closure_type of
         Retracted -> checkRetractComment user_id project_handle target comment_id
         Closed -> checkCloseComment user project_handle target comment_id
 
     let poster_id = commentUser comment
-    (roles, poster, earlier_closures, ticket_map, tag_map) <- runDB $ (,,,,)
-        <$> getRoles user_id project_id
-        <*> get404 poster_id
+    (poster, earlier_closures, ticket_map, tag_map) <- runDB $ (,,,)
+        <$> get404 poster_id
         <*> getAncestorClosures comment_id
         <*> makeTicketMap [comment_id]
         <*> (entitiesMap <$> getTags comment_id)
@@ -182,7 +178,7 @@ postCloseWikiComment closure_type project_handle target comment_id = do
         FormSuccess reason -> do
             Entity user_id user <- requireAuth
 
-            (project_id, comment) <- case closure_type of
+            (_, comment) <- case closure_type of
                 Retracted -> checkRetractComment user_id project_handle target comment_id
                 Closed    -> checkCloseComment   user    project_handle target comment_id
 
@@ -199,9 +195,8 @@ postCloseWikiComment closure_type project_handle target comment_id = do
 
                     let poster_id = commentUser comment
 
-                    (roles, poster, ticket_map, tag_map) <- runDB $ (,,,)
-                        <$> getRoles user_id project_id
-                        <*> get404 poster_id
+                    (poster, ticket_map, tag_map) <- runDB $ (,,)
+                        <$> get404 poster_id
                         <*> makeTicketMap [comment_id]
                         <*> (entitiesMap <$> getTags comment_id)
                     closure_map <- M.singleton comment_id <$> newCommentClosure user_id closure_type reason comment_id
@@ -232,20 +227,10 @@ postCloseWikiComment closure_type project_handle target comment_id = do
 getDiscussWikiR :: Text -> Text -> Handler Html
 getDiscussWikiR project_handle target = do
     muser <- maybeAuth
-    (Entity project_id project, Entity _ page) <- getPageInfo project_handle target
-
-    now <- liftIO getCurrentTime
-
-    affiliated <- case muser of
-        Nothing -> return False
-        Just (Entity user_id _) ->
-            runDB $ (||)
-                <$> isProjectAffiliated project_handle user_id
-                <*> isProjectAdmin "snowdrift" user_id
+    (Entity _ project, Entity _ page) <- getPageInfo project_handle target
 
     is_moderator <- isCurUserProjectModerator project_handle
 
-    roles <- getRolesHandler project_id
     (roots, replies, user_map, closure_map, ticket_map, tag_map) <- runDB $ do
         roots           <- getRootComments is_moderator (wikiPageDiscussion page)
         replies         <- getRepliesComments is_moderator (wikiPageDiscussion page)
@@ -318,11 +303,7 @@ getDiscussCommentR' show_reply project_handle target comment_id = do
                          (let route = if show_reply then ReplyCommentR else DiscussCommentR
                           in route project_handle page_target destination_comment_id)
 
-    mviewer <- maybeAuth
-
-    (Entity project_id _, Entity page_id page) <- getPageInfo project_handle target
-
-    roles <- getRolesHandler project_id
+    (_, Entity page_id _) <- getPageInfo project_handle target
 
     moderator <- isCurUserProjectModerator project_handle
 
@@ -383,12 +364,11 @@ processWikiComment mode =
         _              -> error $ "Error: unrecognized mode (" ++ show mode ++ ")"
 
 processWikiCommentPreview :: Maybe CommentId -> Markdown -> Entity Project -> WikiPage -> Handler Html
-processWikiCommentPreview maybe_parent_id text (Entity project_id project) page = do
+processWikiCommentPreview maybe_parent_id text (Entity _ project) page = do
     Entity user_id user <- requireAuth
 
-    (roles, earlier_closures, tag_map) <- runDB $ (,,)
-        <$> getRoles user_id project_id
-        <*> maybe (return []) getAncestorClosures' maybe_parent_id
+    (earlier_closures, tag_map) <- runDB $ (,)
+        <$> maybe (return []) getAncestorClosures' maybe_parent_id
         <*> (entitiesMap <$> getAllTags)
 
     depth <- depthFromMaybeParentId maybe_parent_id
@@ -413,7 +393,7 @@ processWikiCommentPreview maybe_parent_id text (Entity project_id project) page 
     defaultLayout $ renderPreview form "post" rendered_comment
 
 processWikiCommentPost :: Maybe CommentId -> Markdown -> Entity Project -> WikiPage -> Handler Html
-processWikiCommentPost maybe_parent_id text (Entity project_id project) page = do
+processWikiCommentPost maybe_parent_id text (Entity _ project) page = do
     Entity user_id user <- requireAuth
     now <- liftIO getCurrentTime
     depth <- depthFromMaybeParentId maybe_parent_id
@@ -476,14 +456,8 @@ postDiscussWikiR project_handle target = do
 
 getNewDiscussWikiR :: Text -> Text -> Handler Html
 getNewDiscussWikiR project_handle target = do
-    Entity user_id user <- requireAuth
+    void requireAuth
     let action = DiscussWikiR project_handle target
-
-    (_, Entity page_id page) <- getPageInfo project_handle target
-
-    affiliated <- runDB $ (||)
-            <$> isProjectAffiliated project_handle user_id
-            <*> isProjectAdmin "snowdrift" user_id
 
     (comment_form, _) <- generateFormPost $ commentForm Nothing Nothing
 
@@ -516,12 +490,11 @@ getWikiNewCommentsR project_handle = do
 
     tag_map <- entitiesMap <$> runDB getAllTags
 
-    (new_comments, old_comments, pages_map, users, closure_map, ticket_map) <- runDB $ do
+    (new_comments, old_comments, users, closure_map, ticket_map) <- runDB $ do
         unfiltered_pages <- getProjectPages project_id
 
-        let pages_map = entitiesMap {- TODO filter ((userRole viewer >=) . wikiPageCanViewMeta . entityVal) -} unfiltered_pages
-
-        let apply_offset comment = maybe id (\from_comment rest -> comment ^. CommentId <=. val from_comment &&. rest) maybe_from
+        let pages_map = entitiesMap {- TODO filter ((userRole viewer >=) . wikiPageCanVisitMeta . entityVal) -} unfiltered_pages
+            apply_offset comment = maybe id (\from_comment rest -> comment ^. CommentId <=. val from_comment &&. rest) maybe_from
 
         new_comments :: [Entity Comment] <-
             select $
@@ -549,9 +522,7 @@ getWikiNewCommentsR project_handle = do
         closure_map <- makeClosureMap comment_ids
         ticket_map  <- makeTicketMap  comment_ids
 
-        return (new_comments, old_comments, pages_map, users, closure_map, ticket_map)
-
-    roles <- getRolesHandler project_id
+        return (new_comments, old_comments, users, closure_map, ticket_map)
 
     let new_comments' = take 50 new_comments
         old_comments' = take (50 - length new_comments') old_comments
@@ -616,14 +587,11 @@ rethreadForm = renderBootstrap3 $ (,)
 
 
 getRethreadWikiCommentR :: Text -> Text -> CommentId -> Handler Html
-getRethreadWikiCommentR project_handle target comment_id = do
+getRethreadWikiCommentR _ _ _ = do
     (form, _) <- generateFormPost rethreadForm
-
     defaultLayout $(widgetFile "rethread")
 
-
-rethreadComments :: RethreadId -> Int -> Maybe CommentId -> DiscussionId -> [CommentId] -> SqlPersistT Handler [CommentId]
-
+rethreadComments :: RethreadId -> Int -> Maybe CommentId -> DiscussionId -> [CommentId] -> YesodDB App [CommentId]
 rethreadComments rethread_id depth_offset maybe_new_parent_id new_discussion_id comment_ids = do
     new_comment_ids <- flip St.evalStateT M.empty $ forM comment_ids $ \ comment_id -> do
         rethreads <- St.get

@@ -24,11 +24,9 @@ import Import
 
 import qualified Data.Map          as M
 import           Data.Tree
-import           Data.Maybe        (listToMaybe)
 import           GHC.Exts          (IsList(..))
 import           Prelude           (head)
 
-import           Data.Tree.Extra   (sortTreeBy, sortForestBy)
 import           Model.ClosureType (ClosureType)
 
 -- | Build a tree of comments, given the root and replies. The replies are not necessarily
@@ -206,6 +204,3 @@ makeTicketMap comment_ids = fmap (M.fromList . map ((ticketComment . entityVal) 
 newCommentClosure :: MonadIO m => UserId -> ClosureType -> Markdown -> CommentId -> m CommentClosure
 newCommentClosure user_id closure_type reason comment_id =
     (\now -> CommentClosure now user_id closure_type reason comment_id) `liftM` liftIO getCurrentTime
-
-orderCommentNew :: Entity Comment -> Entity Comment -> Ordering
-orderCommentNew (Entity _ c1) (Entity _ c2) = commentCreatedTs c2 `compare` commentCreatedTs c1

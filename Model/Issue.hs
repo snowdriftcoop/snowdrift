@@ -35,7 +35,7 @@ instance Issue SomeIssue where
     issueOrderable  (SomeIssue k) = k issueOrderable
 
 instance Issue AnnotatedTicket where
-    issueWidget (AnnotatedTicket project_handle ticket_id ticket page comment tags) =
+    issueWidget (AnnotatedTicket project_handle ticket_id ticket page _ tags) =
         [whamlet|
           <tr>
             <td>

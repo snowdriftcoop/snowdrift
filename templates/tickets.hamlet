@@ -1,4 +1,4 @@
-<form>
+<form enctype=#{encType}>
     ^{formWidget}
     <input type=submit value="update view">
 

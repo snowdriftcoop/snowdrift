@@ -21,7 +21,7 @@ lookupParamDefault name def = do
         param_str <- maybe_param
         param <- listToMaybe $ reads $ T.unpack param_str
         return $ fst param
-        
+
 
 -- check permissions for user balance view
 getUserBalanceR :: UserId -> Handler Html
@@ -33,8 +33,6 @@ getUserBalanceR user_id = do
 
 getUserBalanceR' :: UserId -> Handler Html
 getUserBalanceR' user_id = do
-    Entity viewer_id viewer <- requireAuth
-
     user <- runDB $ get404 user_id
 
     -- TODO: restrict viewing balance to user or snowdrift admins (logged) before moving to real money
@@ -54,7 +52,7 @@ getUserBalanceR' user_id = do
             offset offset'
             return transaction
 
-        let accounts = catMaybes $ S.toList $ S.fromList $ map (transactionCredit . entityVal) transactions ++ map (transactionDebit . entityVal) transactions 
+        let accounts = catMaybes $ S.toList $ S.fromList $ map (transactionCredit . entityVal) transactions ++ map (transactionDebit . entityVal) transactions
 
         users <- selectList [ UserAccount <-. accounts ] []
         projects <- selectList [ ProjectAccount <-. accounts ] []
@@ -67,7 +65,7 @@ getUserBalanceR' user_id = do
             , mkMapBy (userAccount . entityVal) users
             , mkMapBy (projectAccount . entityVal) projects
             )
-        
+
     (add_funds_form, _) <- generateFormPost addTestCashForm
 
     defaultLayout $ do
@@ -92,7 +90,7 @@ postUserBalanceR user_id = do
         FormSuccess amount -> do
             if amount < 10
              then
-                addAlert "danger" "Sorry, minimum deposit is $10" 
+                addAlert "danger" "Sorry, minimum deposit is $10"
              else do
                 runDB $ do
                     _ <- insert $ Transaction now (Just $ userAccount user) Nothing Nothing amount "Test Load" Nothing
@@ -100,7 +98,7 @@ postUserBalanceR user_id = do
                         set account [ AccountBalance +=. val amount ]
                         where_ ( account ^. AccountId ==. val (userAccount user) )
 
-                addAlert "success" "Balance updated." 
+                addAlert "success" "Balance updated."
             redirect $ UserBalanceR user_id
 
         _ -> error "Error processing form."

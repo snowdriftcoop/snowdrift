@@ -35,22 +35,7 @@ lookupGetParamDefault name def = do
 
 getProjectsR :: Handler Html
 getProjectsR = do
-    page <- lookupGetParamDefault "page" (0 :: Integer)
-    per_page <- lookupGetParamDefault "count" (20 :: Integer)
-    tags <- maybe [] (map T.strip . T.splitOn ",") <$> lookupGetParam "tags"
     muser <- maybeAuth
-{-
-    projects <- runDB $ if null tags
-        then selectList [] [ Asc ProjectCreatedTs, LimitTo per_page, OffsetBy page ]
-        else do
-            tagged_projects <- forM tags $ \ name -> select $ from $ \ (t `InnerJoin` p_t) -> do
-                on_ (t ^. TagId ==. p_t ^. ProjectTagTag)
-                where_ ( t ^. TagName ==. val name )
-                return p_t
-
-            let project_ids = if null tagged_projects then S.empty else foldl1 S.intersection $ map (S.fromList . map (projectTagProject . entityVal)) tagged_projects
-            selectList [ ProjectId <-. S.toList project_ids ] [ Asc ProjectCreatedTs, LimitTo per_page, OffsetBy page ]
--}
 
     projects <- runDB $ select $ from return
 
@@ -266,8 +251,6 @@ getProjectPatronsR project_handle = do
 
 getProjectTransactionsR :: Text -> Handler Html
 getProjectTransactionsR project_handle = do
-    maybe_viewer_id <- maybeAuthId
-
     (project, account, account_map, transaction_groups) <- runDB $ do
         Entity _ project :: Entity Project <- getBy404 $ UniqueProjectHandle project_handle
 
@@ -413,13 +396,9 @@ getProjectBlogPostR project_handle blog_post_id = do
 
 renderBlogPost :: Text -> ProjectBlog -> WidgetT App IO ()
 renderBlogPost project_handle blog_post = do
-    now <- liftIO getCurrentTime
-
     let (Markdown top_content) = projectBlogTopContent blog_post
         (Markdown bottom_content) = fromMaybe (Markdown "") $ projectBlogBottomContent blog_post
         title = projectBlogTitle blog_post
         content = markdownWidget project_handle $ Markdown $ T.snoc top_content '\n' <> bottom_content
 
     $(widgetFile "blog_post")
-
-
