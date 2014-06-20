@@ -7,7 +7,7 @@
         <p>
             But since our consumer market fails for <i>public goods</i>, most
             creative projects support their work with <i>artificial restrictions</i> and <i>third-party ads</i>.
-    <div .col-md-12>
+    <div .col-md-12 .text-center>
         <p>
             Yet if we cooperate, we can fund progress without compromise…
 
@@ -15,7 +15,7 @@
     <div .col-md-8 .col-lg-9>
         <figure>
             <img alt="Snowdrift.coop &mdash; clearing the path to a Free/Libre/Open world" src=@{StaticR img_logo_png}>
-            <figcaption style="color: #B22222; margin-top: -20px;" class="text-right">
+            <figcaption style="color: #B22222; margin-top: -20px; font-size: 0.9em; margin: 0.6em; padding: 0.4em;" class="text-right">
                 a work in progress:
                 <strong> public ALPHA — not functioning yet
     <div .col-md-4 .col-lg-3 .text-center>
