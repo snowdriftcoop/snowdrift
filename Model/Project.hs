@@ -47,7 +47,7 @@ summarizeProject project pledges = do
     return $ ProjectSummary (projectName $ entityVal project) (projectHandle $ entityVal project) user_count share_count share_value
 
 
-getProjectShares :: ProjectId -> YesodDB App [Int64]
+getProjectShares :: (MonadThrow m, MonadIO m, MonadBaseControl IO m, MonadLogger m, MonadResource m) => ProjectId -> SqlPersistT m [Int64]
 getProjectShares project_id = do
     pledges <- select $ from $ \ pledge -> do
         where_ ( pledge ^. PledgeProject ==. val project_id &&. pledge ^. PledgeFundedShares >. val 0)
@@ -73,7 +73,8 @@ projectComputeShareValue pledges =
      in Milray 1 $* (multiplier * (num_users - 1))
 
 
-updateShareValue :: ProjectId -> YesodDB App ()
+-- signature needs to remain generic, for SnowdriftProcessPayments
+updateShareValue :: (MonadThrow m, MonadIO m, MonadBaseControl IO m, MonadLogger m, MonadResource m) => ProjectId -> SqlPersistT m ()
 updateShareValue project_id = do
     pledges <- getProjectShares project_id
 
