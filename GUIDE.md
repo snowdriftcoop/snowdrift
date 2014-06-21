@@ -172,8 +172,6 @@ Install dependencies and build Snowdrift:
 This will take a *long* time but should ultimately tell you it installed Snowdrift.
 (Contact us for help if it says otherwise)
 
-You can also use "cabal install" to update your build later, and then it will run much faster.
-
 
 Setting up the database
 -----------------------
@@ -226,10 +224,10 @@ you can start the server with the command:
 
     Snowdrift Development
 
-To rebuild the site after changes to the code, run "cabal install" first before starting the server.
+To rebuild the site after changes to the code, run "cabal build" before starting the server.
     
 Alternately, you may use the yesod devel command which does a combined rebuild and server start.
-In rare cases, yesod devel may succeed where cabal install failed (or vice versa),
+In rare cases, an alternate build command may help with troubleshooting,
 but the main advantage to yesod devel is that it can be left running
 and will automatically update your build after each saved change to any file.
                                              
