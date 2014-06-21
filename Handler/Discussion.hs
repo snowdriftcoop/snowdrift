@@ -572,36 +572,37 @@ getWikiNewCommentsR project_handle = do
             if null comments
                 then [whamlet||]
                 else forM_ comments $ \ (Entity comment_id comment) -> do
-                         (earlier_closures, target) <- handlerToWidget . runDB $ (,)
-                             <$> getAncestorClosures comment_id
-                             <*> (wikiPageTarget <$> getCommentPage comment_id)
+                    (earlier_closures, target) <- handlerToWidget . runDB $ (,)
+                        <$> getAncestorClosures comment_id
+                        <*> (wikiPageTarget <$> getCommentPage comment_id)
 
-                         let rendered_comment =
-                                 commentWidget
-                                     now
-                                     roles
-                                     project_handle
-                                     target
-                                     users
-                                     0
-                                     0 -- max_depth is irrelevant for the new-comments listing
-                                     earlier_closures
-                                     closure_map
-                                     ticket_map
-                                     True
-                                     tag_map
-                                     (Node (Entity comment_id comment) [])
-                                     Nothing
+                    let rendered_comment =
+                            commentWidget
+                                now
+                                roles
+                                project_handle
+                                target
+                                users
+                                0
+                                0 -- max_depth is irrelevant for the new-comments listing
+                                earlier_closures
+                                closure_map
+                                ticket_map
+                                True
+                                tag_map
+                                (Node (Entity comment_id comment) [])
+                                Nothing
 
-                         [whamlet|$newline never
-                             <div .row>
-                                 <div .col-md-9 .col-md-offset-1 .col-lg-8 .col-lg-offset-2>
-                                     On #
-                                     <a href="@{WikiR project_handle target}">
-                                         #{target}
-                                     :
-                                     ^{rendered_comment}
-                         |]
+                    [whamlet|$newline never
+                        <div .row>
+                            <div .col-md-9 .col-md-offset-1 .col-lg-8 .col-lg-offset-2>
+                                <h4>
+                                    On #
+                                    <a href="@{WikiR project_handle target}">
+                                        #{target}
+                                    :
+                                ^{rendered_comment}
+                    |]
         rendered_new_comments = render_comments new_comments'
         rendered_old_comments = render_comments old_comments'
         show_older = (length new_comments + length old_comments) > 50
