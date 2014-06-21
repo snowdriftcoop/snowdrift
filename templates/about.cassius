@@ -1,9 +1,0 @@
-
-.chart
-    width : 45em
-    height : 30em
-
-.chart_container
-    padding : 1em
-    font-size : 0.8em
-

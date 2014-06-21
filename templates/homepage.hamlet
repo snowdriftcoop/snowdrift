@@ -1,18 +1,21 @@
 <div .row>
     <div .col-md-6>
         <p>
-            Shareable, unrestricted works provide value to all.
-            How can we better support such public goods?
-            
+            Cultural and educational works, technology, scientific research, and journalism
+            all provide the greatest value when everyone can freely access, adapt, and share.
     <div .col-md-6>
         <p>
-            To promote free and open technology, education, and culture, we must cooperate… 
+            But since our consumer market fails for <i>public goods</i>, most
+            creative projects support their work with <i>artificial restrictions</i> and <i>third-party ads</i>.
+    <div .col-md-12 .text-center>
+        <p>
+            Yet if we cooperate, we can fund progress without compromise…
 
 <div .row>
     <div .col-md-8 .col-lg-9>
         <figure>
             <img alt="Snowdrift.coop &mdash; clearing the path to a Free/Libre/Open world" src=@{StaticR img_logo_png}>
-            <figcaption style="color: #B22222; margin-top: -20px;" class="text-right">
+            <figcaption style="color: #B22222; margin-top: -20px; font-size: 0.9em; padding: 0.4em;" class="text-right">
                 a work in progress:
                 <strong> public ALPHA — not functioning yet
     <div .col-md-4 .col-lg-3 .text-center>
@@ -25,28 +28,27 @@
             <a href="@{WikiR "snowdrift" "faq"}"> FAQ
             <br>
             <a href="@{WikiR "snowdrift" "press"}"> Info for press
-<div .row>
-    <div .col-md-8 .col-md-offset-2>
-        <h2 style="margin-top: 0.5em">Join us!
-        <p>
-            Our core
-            <a href="@{WhoR "snowdrift"}"> team
-            is supported by a growing community.
-        <p>
-            <strong><a href="@{WikiR "snowdrift" "how-to-help"}">Come help</a>
-            with site development, design, community organizing, or other tasks…
 
-        <h2>Now recruiting projects
-        <p>
-            If your
-            <a href="@{WikiR "snowdrift" "project-requirements"}">free/libre/open
-            project needs funding, please <a href=@{ContactR "snowdrift"}>contact us</a>.
-            We want projects included as we develop to make sure things work well for you!
+<h2 style="margin-top: 0.5em">Join us!
+<p>
+    Our core
+    <a href="@{WhoR "snowdrift"}"> team
+    is supported by a growing community.
+<p>
+    <strong><a href="@{WikiR "snowdrift" "how-to-help"}">Come help</a>
+    with site development, design, community organizing, or other tasks…
 
-        <h2>Donate
-        <p>
-            We will use the patronage system itself to fund our ongoing development,
-            but traditional donations <i>today</i> will help us get the site  operating.
+<h2>Now recruiting projects
+<p>
+    If your
+    <a href="@{WikiR "snowdrift" "project-requirements"}">free/libre/open
+    project needs funding, please <a href=@{ContactR "snowdrift"}>contact us</a>.
+    We want projects included as we develop to make sure things work well for you!
+
+<h2>Donate
+<p>
+    We will use the patronage system itself to fund our ongoing development,
+    but traditional donations <i>today</i> will help us get the site  operating.
 
 <div .row>
     <div .col-md-4 style="border: 1px solid; margin-top: 1em;">
@@ -56,7 +58,7 @@
                 <input type="hidden" name="cmd" value="_s-xclick">
                 <input type="hidden" name="hosted_button_id" value="M24Z4DFEW4SQL">
                 <input type="image" src="/static/img/external/paypal-donate.gif" name="submit" alt="PayPal donations &mdash; not our ideal.">
-        <small> Paypal can work without proprietary JavaScript, and while not our ideal, it's popular and easy to use.
+        <small> Paypal can work without proprietary JavaScript, and though not ideal, it's popular and easy.
 
     <div .col-md-4 style="border: 1px solid; margin-top: 1em;">
         <figure>
@@ -65,26 +67,28 @@
             <a href="https://www.dwolla.com/hub/snowdrift">
                 <img alt="Donate with Dwolla" src="/static/img/external/dwolla.png" style="padding: 0">
         <small>
-            Dwolla avoids credit-cards and has very low fees:
+            Dwolla avoids credit-cards and has low fees:
             <em>Free
             for payments under $10, otherwise 25¢.
-            To use it, you must <a href="http://refer.dwolla.com/a/clk/28gB5q">create a Dwolla account</a>.
-            They don't seem to work with LibreJS at this time.
+            But you must <a href="http://refer.dwolla.com/a/clk/28gB5q">create a Dwolla account</a>,
+            and they don't seem to work with LibreJS at this time.
     <div .col-md-4 style="border: 1px solid; margin-top: 1em;">
         <figure>
             <img alt="Bitcoin" src="/static/img/external/Bitcoin.png" style="height: 4em"> 
         <small>
-            We plan to offer a smoother process, but for now, <a href=@{ContactR "snowdrift"}>contact us</a>,
-            to get a BTC invoice with an address.
+            We're still deciding the best options, but, for now,
+            <a href=@{ContactR "snowdrift"}>contact us
+            to get a BTC invoice with an address to donate.
 
-<div .row>
-    <div .col-md-8 .col-md-offset-2>
-        <small>
-            We're working to add more
-            <a href="@{WikiR "snowdrift" "payment-services"}">payment options
-            soon.
-            <br>
-            <em>
-                Please note: Snowdrift.coop is legally incorporated as a non-profit cooperative in Michigan and planning for 501(c)(4) status.
-                Because we are not a traditional 501(c)(3) charity, donations to us are not tax-deductible.
+<small>
+    <p>
+        We're working to add more
+        <a href="@{WikiR "snowdrift" "payment-services"}">payment options
+        soon.
+    <p>
+        <em>
+            Please note:
+            Snowdrift.coop is legally incorporated as a non-profit cooperative in Michigan
+            and planning for 501(c)(4) status.
+            Unlike a traditional 501(c)(3) charity, donations to us are not tax-deductible.
 

@@ -62,7 +62,7 @@ $# used by commentWidget function
             $forall tag <- tags
                 ^{tagWidget tag}
 
-    <div>
+    <div .comment-action>
         $if show_actions
             $if user_is_mod
                 $if unapproved
