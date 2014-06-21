@@ -7,7 +7,7 @@ import qualified Data.Set           as S
 import qualified Data.Text          as T
 
 import           Model.AnnotatedTag
-import           Model.Comment      (getCommentPageId)
+import           Model.Comment      (getCommentPageId, getCommentTags)
 import           Model.User
 import           Model.WikiPage
 import           Widgets.Tag
@@ -18,18 +18,19 @@ processCommentTags go project_handle target comment_id = do
 
     comment_page_id <- runDB $ getCommentPageId comment_id
 
-    when (comment_page_id /= page_id) $ error "wrong page for comment"
+    when (comment_page_id /= page_id) $
+        error "wrong page for comment"
 
-    tags <- fmap (map $ (commentTagTag &&& (commentTagUser &&& commentTagCount)) . entityVal) $
-        runDB $ select $ from $ \ comment_tag -> do
-            where_ $ comment_tag ^. CommentTagComment ==. val comment_id
-            return comment_tag
+    comment_tags <- map entityVal <$> runDB (getCommentTags comment_id)
 
-    tag_map <- fmap (M.fromList . entityPairs) $ runDB $ select $ from $ \ tag -> do
-        where_ $ tag ^. TagId `in_` valList (S.toList $ S.fromList $ map fst tags)
-        return tag
+    let tag_ids = S.toList . S.fromList $ map commentTagTag comment_tags
+    tag_map <- fmap entitiesMap . runDB $
+        select $
+            from $ \tag -> do
+            where_ (tag ^. TagId `in_` valList tag_ids)
+            return tag
 
-    go =<< buildAnnotatedTags tag_map (CommentTagR project_handle target comment_id) tags
+    go =<< buildAnnotatedTags tag_map (CommentTagR project_handle target comment_id) comment_tags
 
 
 processCommentTag :: (AnnotatedTag -> Handler Html) -> Text -> Text -> CommentId -> TagId -> Handler Html
@@ -40,17 +41,19 @@ processCommentTag go project_handle target comment_id tag_id = do
 
     when (comment_page /= page_id) $ error "wrong page for comment"
 
-    tags <- fmap (map $ (commentTagTag &&& (commentTagUser &&& commentTagCount)) . entityVal) $
-        runDB $ select $ from $ \ comment_tag -> do
-            where_ $ comment_tag ^. CommentTagComment ==. val comment_id
-                &&. comment_tag ^. CommentTagTag ==. val tag_id
-            return comment_tag
+    comment_tags <- map entityVal <$> runDB (
+        select $
+            from $ \comment_tag -> do
+            where_ (comment_tag ^. CommentTagComment ==. val comment_id &&.
+                    comment_tag ^. CommentTagTag ==. val tag_id)
+            return comment_tag)
 
-    tag_map <- fmap (M.fromList . entityPairs) $ runDB $ select $ from $ \ tag -> do
-        where_ $ tag ^. TagId `in_` valList (S.toList $ S.fromList $ map fst tags)
+    let tag_ids = S.toList . S.fromList $ map commentTagTag comment_tags
+    tag_map <- fmap entitiesMap $ runDB $ select $ from $ \ tag -> do
+        where_ $ tag ^. TagId `in_` valList tag_ids
         return tag
 
-    annotated_tags <- buildAnnotatedTags tag_map (CommentTagR project_handle target comment_id) tags
+    annotated_tags <- buildAnnotatedTags tag_map (CommentTagR project_handle target comment_id) comment_tags
 
     case annotated_tags of
         [] -> error "That tag has not been applied to this comment."
@@ -60,10 +63,8 @@ processCommentTag go project_handle target comment_id tag_id = do
 renderTags :: [AnnotatedTag] -> Handler Html
 renderTags tags = defaultLayout $(widgetFile "tags")
 
-
 tagBumpForm :: Int -> Form Int
 tagBumpForm = renderDivs . areq hiddenField "" . Just
-
 
 getCommentTagR :: Text -> Text -> CommentId -> TagId -> Handler Html
 getCommentTagR = processCommentTag $ \ (AnnotatedTag tag url color user_votes) -> do
@@ -73,7 +74,6 @@ getCommentTagR = processCommentTag $ \ (AnnotatedTag tag url color user_votes) -
     (decForm, _) <- generateFormPost $ tagBumpForm (-1)
 
     defaultLayout $(widgetFile "tag")
-
 
 postCommentTagR :: Text -> Text -> CommentId -> TagId -> Handler Html
 postCommentTagR project_handle target comment_id tag_id = do
@@ -124,7 +124,6 @@ newCommentTagForm project_tags other_tags = renderBootstrap3 $ (,)
     where tags = fmap (\(Entity tag_id tag) -> (tagName tag, tag_id))
           tagCloudField = checkboxesFieldList' $ (\(PersistInt64 a) -> show a) . unKey
 
-
 tagList :: ProjectId -> Handler ([Entity Tag], [Entity Tag])
 tagList project_id = do
     project_tags :: [Entity Tag] <- runDB $
@@ -166,7 +165,7 @@ getNewCommentTagR project_handle target comment_id = do
         where_ $ comment_tag ^. CommentTagComment ==. val comment_id
         return comment_tag
 
-    tag_map <- fmap (M.fromList . entityPairs) $ runDB $ select $ from $ \ tag -> do
+    tag_map <- fmap entitiesMap $ runDB $ select $ from $ \ tag -> do
         where_ $ tag ^. TagId `in_` valList (S.toList $ S.fromList $ map commentTagTag comment_tags)
         return tag
 
@@ -251,7 +250,7 @@ postNewCommentTagR create_tag project_handle target comment_id = do
                 where_ $ comment_tag ^. CommentTagComment ==. val comment_id
                 return comment_tag
 
-            tag_map <- fmap (M.fromList . entityPairs) $ runDB $ select $ from $ \ tag -> do
+            tag_map <- fmap entitiesMap $ runDB $ select $ from $ \ tag -> do
                 where_ $ tag ^. TagId `in_` valList (S.toList $ S.fromList $ map commentTagTag comment_tags)
                 return tag
             let filter_tags = filter (\(Entity t _) -> not $ M.member t tag_map)

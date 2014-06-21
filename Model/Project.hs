@@ -6,6 +6,7 @@ import           Model.Currency
 import           Model.ViewType
 import           Model.User
 
+import           Control.Concurrent.Async     (Async, async, wait)
 import           Control.Monad.Trans.Resource
 import qualified Github.Data                  as GH
 import qualified Github.Issues                as GH
@@ -20,8 +21,22 @@ data ProjectSummary =
         , summaryShareCost :: Milray
         }
 
-getGithubIssues :: Project -> IO (Either GH.Error [GH.Issue])
-getGithubIssues = maybe (return $ Right []) ((\(account, repo) -> GH.issuesForRepo account repo []) . second (drop 1) . break (== '/') . T.unpack) . projectGithubRepo
+getGithubIssues :: Project -> Handler [GH.Issue]
+getGithubIssues project =
+    getGithubIssues'
+    >>= liftIO . wait
+    >>= either (\_ -> addAlert "danger" "failed to fetch GitHub tickets\n" >> return [])
+               return
+  where
+    getGithubIssues' :: Handler (Async (Either GH.Error [GH.Issue]))
+    getGithubIssues' = liftIO . async $
+        maybe
+            (return $ Right [])
+            (\(account, repo) -> GH.issuesForRepo account repo [])
+            parsedProjectGithubRepo
+
+    parsedProjectGithubRepo :: Maybe (String, String)
+    parsedProjectGithubRepo = second (drop 1) . break (== '/') . T.unpack <$> projectGithubRepo project
 
 summarizeProject :: Monad m => Entity Project -> [Entity Pledge] -> m ProjectSummary
 summarizeProject project pledges = do
@@ -40,6 +55,13 @@ getProjectShares project_id = do
 
     return $ map (pledgeFundedShares . entityVal) pledges
 
+-- | Get all WikiPages for a Project.
+getProjectPages :: ProjectId -> YesodDB App [Entity WikiPage]
+getProjectPages project_id =
+    select $
+        from $ \page -> do
+        where_ $ page ^. WikiPageProject ==. val project_id
+        return page
 
 projectComputeShareValue :: [Int64] -> Milray
 projectComputeShareValue pledges =
@@ -51,6 +73,7 @@ projectComputeShareValue pledges =
      in Milray 1 $* (multiplier * (num_users - 1))
 
 
+-- signature needs to remain generic, for SnowdriftProcessPayments
 updateShareValue :: (MonadThrow m, MonadIO m, MonadBaseControl IO m, MonadLogger m, MonadResource m) => ProjectId -> SqlPersistT m ()
 updateShareValue project_id = do
     pledges <- getProjectShares project_id
@@ -59,9 +82,8 @@ updateShareValue project_id = do
         set project  [ ProjectShareValue =. val (projectComputeShareValue pledges) ]
         where_ (project ^. ProjectId ==. val project_id)
 
-getCounts :: (MonadLogger m, MonadResource m, MonadIO m, MonadBaseControl IO m, MonadThrow m)
-    => Entity User -> [Entity Project] -> SqlPersistT m [([Value Int], [Value Int])]
-
+-- TODO: Better name.
+getCounts :: Entity User -> [Entity Project] -> YesodDB App [([Value Int], [Value Int])]
 getCounts (Entity user_id user) = mapM $ \(Entity project_id project) -> do
     moderator <- isProjectModerator (projectHandle project) user_id
 

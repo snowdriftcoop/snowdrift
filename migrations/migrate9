@@ -1,0 +1,1 @@
+ALTER TABLE "ticket" ADD CONSTRAINT "unique_ticket" UNIQUE("comment");

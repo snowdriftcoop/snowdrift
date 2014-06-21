@@ -12,7 +12,7 @@ import           Text.Blaze.Html.Renderer.Text (renderHtml)
 
 import           Control.Arrow        as Import ((***), (&&&), first, second)
 
-import           Database.Esqueleto   as Import hiding (on)
+import           Database.Esqueleto   as Import hiding (on, valList)
 import qualified Database.Esqueleto
 
 import           Control.Applicative  as Import (pure, (<$>), (<*>))
@@ -43,6 +43,12 @@ import           Data.Time.Units
 import Control.Exception (Exception)
 import Data.Typeable (Typeable)
 
+import GHC.Exts (IsList(..))
+import Data.Map (Map)
+import qualified Data.Map as M
+import Data.Set (Set)
+import qualified Data.Set as S
+
 #if __GLASGOW_HASKELL__ >= 704
 import           Data.Monoid          as Import (Monoid (mappend, mempty, mconcat), (<>))
 #else
@@ -53,10 +59,17 @@ infixr 5 <>
 (<>) = mappend
 #endif
 
+instance Ord a => IsList (Set a) where
+    type Item (Set a) = a
+    fromList = S.fromList
+    toList = S.toList
 
 on_ :: Esqueleto query expr backend => expr (Value Bool) -> query ()
 on_ = Database.Esqueleto.on
 
+-- Like Database.Esqueleto.valList, but more generic.
+valList :: (Esqueleto query expr backend, PersistField typ, IsList l, typ ~ Item l) => l -> expr (ValueList typ)
+valList = Database.Esqueleto.valList . toList
 
 class Count a where
     getCount :: a -> Int64
@@ -87,8 +100,8 @@ age a b = let s = round $ toRational $ diffUTCTime a b
            in f s
 
 
-entityPairs :: [Entity t] -> [(Key t, t)]
-entityPairs = map (\ (Entity a b) -> (a, b))
+entitiesMap :: [Entity t] -> Map (Key t) t
+entitiesMap = foldr (\(Entity k v) -> M.insert k v) mempty
 
 -- allow easier creation of pretty bootstrap 3 forms. there has to be an easier way -_-
 --fieldSettings :: forall master . SomeMessage master -> [(Text, Text)] -> FieldSettings master

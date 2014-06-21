@@ -40,9 +40,11 @@ library
                      Model.Role
                      Model.Settings
                      Model.Shares
+                     Model.Tag
                      Model.Ticket
                      Model.Transaction
                      Model.User
+                     Model.ViewTime
                      Model.ViewType
                      Model.WikiPage
                      Settings
@@ -97,19 +99,21 @@ library
     else
         ghc-options:   -Wall -O2
 
-    extensions: TemplateHaskell
-                QuasiQuotes
-                OverloadedStrings
-                NoImplicitPrelude
-                MultiParamTypeClasses
-                TypeFamilies
+    extensions: DeriveDataTypeable
+                EmptyDataDecls
+                FlexibleContexts
                 GADTs
                 GeneralizedNewtypeDeriving
-                FlexibleContexts
-                EmptyDataDecls
+                LambdaCase
+                MultiParamTypeClasses
+                NoImplicitPrelude
                 NoMonomorphismRestriction
-                DeriveDataTypeable
+                QuasiQuotes
+                OverloadedStrings
                 ScopedTypeVariables
+                TemplateHaskell
+                TupleSections
+                TypeFamilies
 
     build-depends: base                          >= 4          && < 5
                  -- , yesod-platform

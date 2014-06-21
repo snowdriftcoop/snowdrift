@@ -18,7 +18,10 @@ data UserUpdate =
         , userUpdateStatement :: Maybe Markdown
         }
 
-updateUser :: (MonadLogger m, MonadResource m, MonadIO m, MonadBaseControl IO m, MonadThrow m) => Key User -> UserUpdate -> SqlPersistT m ()
+getUsersIn :: [UserId] -> YesodDB App [Entity User]
+getUsersIn user_ids = selectList [UserId <-. user_ids] []
+
+updateUser :: UserId -> UserUpdate -> YesodDB App ()
 updateUser user_id user_update = update $ \ user -> do
         set user $ catMaybes
             [ (UserName =.) . val . Just <$> userUpdateName user_update
@@ -42,7 +45,6 @@ applyUserUpdate user user_update = user
 userPrintName :: Entity User -> Text
 userPrintName (Entity user_id user) = fromMaybe (either (error . T.unpack) (T.append "user") $ fromPersistValue $ unKey user_id) (userName user)
 
-
 userWidget :: UserId -> Widget
 userWidget user_id = do
     maybe_user <- handlerToWidget $ runDB $ get user_id
@@ -54,12 +56,14 @@ userWidget user_id = do
                     #{userPrintName (Entity user_id user)}
             |]
 
+isEstablished :: User -> Bool
+isEstablished = isJust . userEstablishedTs
+
 {- isProject___ stuff below is almost all redundant. It really should be
 - refactored into being a main function to lookup affiliations and tiny
 - functions for each affiliation -}
 
-isProjectAdmin :: (MonadIO m, MonadResource m, MonadLogger m, MonadBaseControl IO m, MonadThrow m)
-    => Text -> UserId -> SqlPersistT m Bool
+isProjectAdmin :: Text -> UserId -> YesodDB App Bool
 isProjectAdmin project_handle user_id =
     fmap (not . null) $ select $ from $ \ (pur `InnerJoin` p) -> do
         on_ $ pur ^. ProjectUserRoleProject ==. p ^. ProjectId
@@ -69,8 +73,7 @@ isProjectAdmin project_handle user_id =
         limit 1
         return ()
 
-isProjectTeamMember :: (MonadIO m, MonadResource m, MonadLogger m, MonadBaseControl IO m, MonadThrow m)
-    => Text -> UserId -> SqlPersistT m Bool
+isProjectTeamMember :: Text -> UserId -> YesodDB App Bool
 isProjectTeamMember project_handle user_id =
     fmap (not . null) $ select $ from $ \ (pur `InnerJoin` p) -> do
         on_ $ pur ^. ProjectUserRoleProject ==. p ^. ProjectId
@@ -80,8 +83,7 @@ isProjectTeamMember project_handle user_id =
         limit 1
         return ()
 
-isProjectModerator :: (MonadIO m, MonadResource m, MonadLogger m, MonadBaseControl IO m, MonadThrow m)
-    => Text -> UserId -> SqlPersistT m Bool
+isProjectModerator :: Text -> UserId -> YesodDB App Bool
 isProjectModerator project_handle user_id =
     fmap (not . null) $ select $ from $ \ (pur `InnerJoin` p) -> do
         on_ $ pur ^. ProjectUserRoleProject ==. p ^. ProjectId
@@ -95,8 +97,7 @@ isCurUserProjectModerator :: Text -> Handler Bool
 isCurUserProjectModerator project_handle =
     maybeAuthId >>= maybe (return False) (runDB . isProjectModerator project_handle)
 
-isProjectAffiliated :: (MonadIO m, MonadResource m, MonadLogger m, MonadBaseControl IO m, MonadThrow m)
-    => Text -> UserId -> SqlPersistT m Bool
+isProjectAffiliated :: Text -> UserId -> YesodDB App Bool
 isProjectAffiliated project_handle user_id =
     fmap (not . null) $ select $ from $ \ (pur `InnerJoin` p) -> do
         on_ $ pur ^. ProjectUserRoleProject ==. p ^. ProjectId
@@ -105,6 +106,3 @@ isProjectAffiliated project_handle user_id =
         limit 1
         return ()
 
--- Given a foldable container of UserId, make a Map UserId User
-makeUsersMap :: [UserId] -> YesodDB App (Map UserId User)
-makeUsersMap user_ids = M.fromList . map (entityKey &&& entityVal) <$> selectList [UserId <-. user_ids] []

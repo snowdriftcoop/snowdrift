@@ -178,7 +178,7 @@ instance Yesod App where
 
     errorHandler (PermissionDenied _) = do
         maybe_user <- maybeAuth
-        selectRep $ 
+        selectRep $
             provideRep $ defaultLayout $ do
                 setTitle "Permission Denied"
                 toWidget [hamlet|$newline never
@@ -295,7 +295,7 @@ snowdriftAuthBrowserId =
             let parentLogin = apLogin auth toMaster
             [whamlet|
                 <p>
-                    <strong>Mozilla Persona is a secure log-in that doesn't track you! 
+                    <strong>Mozilla Persona is a secure log-in that doesn't track you!
                     ^{parentLogin}
                 <p>
                     The Persona sign-in button works for both new and existing accounts.
@@ -366,7 +366,7 @@ createUser ident passwd name avatar nick = do
         Entity snowdrift_id _ <- getBy404 $ UniqueProjectHandle "snowdrift"
         case uid_maybe of
             Just user_id -> do
-    
+
                 -- TODO refactor back to insertSelect when quoting issue is resolved
                 --
                 -- insertSelect $ from $ \ p -> return $ TagColor <# (p ^. DefaultTagColorTag) <&> val user_id <&> (p ^. DefaultTagColorColor)
