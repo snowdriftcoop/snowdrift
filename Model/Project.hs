@@ -6,10 +6,13 @@ import           Model.Currency
 import           Model.ViewType
 import           Model.User
 
+import Control.Monad.Trans.Resource (MonadThrow)
+
 import           Control.Concurrent.Async     (Async, async, wait)
 import qualified Github.Data                  as GH
 import qualified Github.Issues                as GH
 import qualified Data.Text                    as T
+
 
 data ProjectSummary =
     ProjectSummary
