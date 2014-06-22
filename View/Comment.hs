@@ -9,7 +9,6 @@ import           Data.Tree
 
 import Model.AnnotatedTag
 import Model.User
-import Model.Role
 import Model.ClosureType
 import Model.CollapseState
 import Model.Comment           (getCommentTags)
@@ -71,7 +70,6 @@ commentTreeWidget (Node (Entity comment_id comment) children)
         is_top_level  = commentDepth comment == 0
         is_even_depth = not is_top_level && commentDepth comment `mod` 2 == 1
         is_odd_depth  = not is_top_level && not is_even_depth
-        empty_list    = []
 
     tags <- fmap (L.sortBy (compare `on` atName)) . handlerToWidget $ do
         runDB (getCommentTags comment_id) >>=

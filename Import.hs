@@ -1,4 +1,5 @@
 {-# LANGUAGE CPP, DeriveDataTypeable, TypeFamilies #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Import ( module Import ) where
 
@@ -40,13 +41,10 @@ import           Control.Monad        as Import
 import           Data.Time.Clock      as Import (UTCTime, diffUTCTime, getCurrentTime)
 import           Data.Time.Units
 
-import Control.Exception (Exception)
 import Data.Typeable (Typeable)
 
 import GHC.Exts (IsList(..))
-import Data.Map (Map)
 import qualified Data.Map as M
-import Data.Set (Set)
 import qualified Data.Set as S
 
 #if __GLASGOW_HASKELL__ >= 704
@@ -176,16 +174,16 @@ selectFieldHelper' outside onOpt inside opts' = Field
     { fieldParse = \x _ -> do
         opts <- opts'
         return $ selectParser opts x
-    , fieldView = \theId name attrs val isReq -> do
+    , fieldView = \theId name attrs value isReq -> do
         opts <- fmap olOptions $ handlerToWidget opts'
         outside theId name attrs $ do
-            unless isReq $ onOpt theId name $ not $ render opts val `elem` map optionExternalValue opts
+            unless isReq $ onOpt theId name $ not $ render opts value `elem` map optionExternalValue opts
             flip mapM_ opts $ \opt -> inside
                 theId
                 name
                 ((if isReq then (("required", "required"):) else id) attrs)
                 (optionExternalValue opt)
-                ((render opts val) == optionExternalValue opt)
+                ((render opts value) == optionExternalValue opt)
                 (optionDisplay opt)
     , fieldEnctype = UrlEncoded
     }
@@ -222,7 +220,7 @@ checkboxesField' :: (Eq a, RenderMessage site FormMessage)
                  -> Field (HandlerT site IO) [a]
 checkboxesField' ioptlist = (multiSelectField ioptlist)
     { fieldView =
-        \theId name attrs value isReq -> do
+        \theId name attrs value _ -> do
             opts <- fmap olOptions $ handlerToWidget ioptlist
             let optselected (Left _) _ = False
                 optselected (Right vals) opt = (optionInternalValue opt) `elem` vals
@@ -238,12 +236,12 @@ checkboxesField' ioptlist = (multiSelectField ioptlist)
 redirectParams :: (MonadHandler (HandlerT site m), MonadBaseControl IO m) => Route site -> [(Text, Text)] -> HandlerT site m a
 redirectParams route params = getUrlRenderParams >>= \ render -> redirect $ render route params
 
-
+getByErr :: (PersistEntity val, PersistEntityBackend val ~ SqlBackend)
+         => String -> Unique val -> Handler (Entity val)
 getByErr message = runDB . fmap fromJustError . getBy
     where
         fromJustError :: Maybe a -> a
         fromJustError = fromMaybe (error message)
-
 
 -- maybe we should make this a typeclass?
 class WrappedValues a where

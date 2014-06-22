@@ -3,7 +3,6 @@ module Handler.User where
 import Import
 
 import qualified Data.Map as Map
-import Data.Universe
 import qualified Data.Set as Set
 
 import Model.User
@@ -66,11 +65,8 @@ getUserR user_id = do
 
 renderUser :: Maybe UserId -> UserId -> User -> Map (Text, Text) (Set (Role)) -> Widget
 renderUser viewer_id user_id user projects = do
-    let is_owner = Just user_id == viewer_id
-        user_entity = Entity user_id user
+    let user_entity = Entity user_id user
         project_handle = error "bad link - no default project on user pages" -- TODO turn this into a caught exception
-        role_list = map roleLabel ([minBound..maxBound] :: [Role])
-        filterRoles r = filter (\(Value r', _) -> roleLabel r' == r)
 
     $(widgetFile "user")
 
@@ -127,13 +123,13 @@ postUserR user_id = do
 
 getUsersR :: Handler Html
 getUsersR = do
-    Entity _ viewer <- requireAuth
+    void requireAuth
 
     users' <- runDB $
-              select $
-              from $ \user -> do
-              orderBy [desc $ user ^. UserId]
-              return user
+                  select $
+                  from $ \user -> do
+                  orderBy [desc $ user ^. UserId]
+                  return user
 
     infos :: [(Entity User, ((Value Text, Value Text), Value Role))] <- runDB $
              select $

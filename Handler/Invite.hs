@@ -24,14 +24,14 @@ inviteForm = renderBootstrap3 $ (,)
 
 getInviteR :: Text -> Handler Html
 getInviteR project_handle = do
-    Entity viewer_id viewer <- requireAuth
+    viewer_id <- requireAuthId
     admin <- runDB $ (||)
         <$> isProjectAdmin project_handle viewer_id
         <*> isProjectAdmin "snowdrift" viewer_id
 
     unless admin $ permissionDenied "must be an admin to invite"
 
-    Entity project_id project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
+    project <- entityVal <$> (runDB . getBy404 $ UniqueProjectHandle project_handle)
 
     now <- liftIO getCurrentTime
     maybe_invite_code <- lookupSession "InviteCode"
@@ -96,7 +96,7 @@ postInviteR project_handle = do
             setSession "InviteCode" invite_code
             setSession "InviteRole" (pack $ show role)
 
-        _ -> addAlert "danger" "Error in submitting form." 
+        _ -> addAlert "danger" "Error in submitting form."
 
     redirect $ InviteR project_handle
 

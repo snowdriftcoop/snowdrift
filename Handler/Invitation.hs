@@ -11,9 +11,10 @@ import qualified Data.Text as T
 
 getInvitationR :: Text -> Text -> Handler Html
 getInvitationR project_handle code = do
-    Entity _ project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
-    Entity invite_id invite <- runDB $ getBy404 $ UniqueInvite code
-    maybe_user_id <- maybeAuthId
+    (Entity _ project, Entity _ invite) <- runDB $ (,)
+        <$> getBy404 (UniqueProjectHandle project_handle)
+        <*> getBy404 (UniqueInvite code)
+    maybe_user_id    <- maybeAuthId
 
     unless (isJust maybe_user_id) setUltDestCurrent
 
@@ -24,7 +25,7 @@ getInvitationR project_handle code = do
     defaultLayout $ do
         setTitle . toHtml $ projectName project <> " Invitation - " <> (T.pack . show $ inviteRole invite) <> " | Snowdrift.coop"
         $(widgetFile "invitation")
-    
+
 
 postInvitationR :: Text -> Text -> Handler Html
 postInvitationR _ code = do
@@ -50,5 +51,5 @@ postInvitationR _ code = do
             return $ Just $ inviteRole invite
 
     redirectUltDest HomeR
-    
-    
+
+

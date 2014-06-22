@@ -2,8 +2,6 @@ module Model.WikiPage where
 
 import Import
 
-import Control.Monad.Trans.Resource
-
 type PageInfo = (Entity Project, Entity WikiPage)
 
 getPageInfo :: Text -> Text -> Handler PageInfo
