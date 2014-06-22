@@ -4,7 +4,7 @@ import Import
 
 import System.IO
 import System.IO.Temp
-import System.Cmd
+import System.Process
 import System.Exit
 
 import Language.Haskell.TH
@@ -19,7 +19,7 @@ getVersion = withSystemTempFile "version" $ \ filename handle -> do
     ExitSuccess <- system $ "git diff " ++ base ++ " -- . >" ++ filename
     diff <- readFile filename
     return (base, diff)
- 
+
 
 mkVersion :: Q Exp
 mkVersion = do

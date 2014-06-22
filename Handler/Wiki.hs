@@ -166,8 +166,8 @@ editWikiPermissionsForm level = renderBootstrap3 $ areq permissionLevelField "Pe
 
 getEditWikiPermissionsR :: Text -> Text -> Handler Html
 getEditWikiPermissionsR project_handle target = do
-    Entity user_id user <- requireAuth
-    (Entity project_id project, Entity page_id page) <- getPageInfo project_handle target
+    user_id <- requireAuthId
+    (Entity _ project, Entity _ page) <- getPageInfo project_handle target
 
     affiliated <- runDB $ (||)
             <$> isProjectAdmin project_handle user_id
@@ -211,8 +211,8 @@ postEditWikiPermissionsR project_handle target = do
 
 getEditWikiR :: Text -> Text -> Handler Html
 getEditWikiR project_handle target = do
-    Entity user_id user <- requireAuth
-    (Entity project_id project, Entity page_id page) <- getPageInfo project_handle target
+    user <- entityVal <$> requireAuth
+    (Entity _ project, Entity page_id page) <- getPageInfo project_handle target
 
     Entity _ last_edit <- runDB $ getBy404 $ UniqueWikiLastEdit page_id
 
@@ -229,7 +229,7 @@ getEditWikiR project_handle target = do
 
 getNewWikiR :: Text -> Text -> Handler Html
 getNewWikiR project_handle target = do
-    Entity user_id user <- requireAuth
+    user_id <- requireAuthId
     Entity _ project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
     affiliated <- runDB $ (||)
             <$> isProjectAffiliated project_handle user_id
@@ -289,8 +289,7 @@ postNewWikiR project_handle target = do
 
 getWikiHistoryR :: Text -> Text -> Handler Html
 getWikiHistoryR project_handle target = do
-    --_ <- requireAuthId
-    (Entity project_id project, Entity page_id _) <- getPageInfo project_handle target
+    (Entity _ project, Entity page_id _) <- getPageInfo project_handle target
 
     (edits, users) <- runDB $ do
         edits <- select $ from $ \ edit -> do
@@ -333,18 +332,14 @@ getWikiDiffProxyR project_handle target = do
 
 getWikiDiffR :: Text -> Text -> WikiEditId -> WikiEditId -> Handler Html
 getWikiDiffR project_handle target start_edit_id end_edit_id = do
---    _ <- requireAuthId
+    (Entity _ project, Entity page_id _) <- getPageInfo project_handle target
 
-    (Entity project_id project, Entity page_id _) <- getPageInfo project_handle target
+    (start_edit, end_edit) <- runDB $ (,)
+        <$> get404 start_edit_id
+        <*> get404 end_edit_id
 
-    (start_edit, end_edit) <- runDB $ do
-        start_edit <- get404 start_edit_id
-        end_edit <- get404 end_edit_id
-
-        when (page_id /= wikiEditPage start_edit) $ error "selected 'start' edit is not an edit of selected page"
-        when (page_id /= wikiEditPage end_edit) $ error "selected 'end' edit is not an edit of selected page"
-
-        return (start_edit, end_edit)
+    when (page_id /= wikiEditPage start_edit) $ error "selected 'start' edit is not an edit of selected page"
+    when (page_id /= wikiEditPage end_edit)   $ error "selected 'end' edit is not an edit of selected page"
 
     let diffEdits = getDiff `on` ((\ (Markdown text) -> T.lines text) . wikiEditContent)
         renderDiff = mconcat . map (\ a -> (case a of Both x _ -> toHtml x; First x -> del (toHtml x); Second x -> ins (toHtml x)) >> br)
@@ -365,9 +360,7 @@ getOldWikiEditR project_handle target edit_id = redirect $ WikiEditR project_han
 
 getWikiEditR :: Text -> Text -> WikiEditId -> Handler Html
 getWikiEditR project_handle target edit_id = do
---    _ <- requireAuthId
-
-    (Entity project_id project, Entity page_id _) <- getPageInfo project_handle target
+    (Entity _ project, Entity page_id _) <- getPageInfo project_handle target
     edit <- runDB $ do
         edit <- get404 edit_id
 

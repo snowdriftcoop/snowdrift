@@ -2,11 +2,6 @@ module Model.User where
 
 import Import
 
-import qualified Data.Map  as M
-import qualified Data.Text as T
-
-import Control.Monad.Trans.Resource
-
 import Model.Role
 
 data UserUpdate =
@@ -41,9 +36,8 @@ applyUserUpdate user user_update = user
         , userBlurb = fromMaybe (userBlurb user) $ Just <$> userUpdateBlurb user_update
         }
 
-
 userPrintName :: Entity User -> Text
-userPrintName (Entity user_id user) = fromMaybe (either (error . T.unpack) (T.append "user") $ fromPersistValue $ unKey user_id) (userName user)
+userPrintName (Entity user_id user) = fromMaybe ("user" <> toPathPiece user_id) (userName user)
 
 userWidget :: UserId -> Widget
 userWidget user_id = do

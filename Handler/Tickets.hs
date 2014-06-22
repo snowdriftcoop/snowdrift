@@ -6,21 +6,11 @@ import Import
 
 import           Data.Filter
 import           Data.Order
-import           Model.AnnotatedTag
 import           Model.Issue
 import           Model.Project            (getGithubIssues)
-import           Model.Ticket             (AnnotatedTicket(..), getTickets)
-import           Widgets.Tag
+import           Model.Ticket             (getTickets)
 
-import           Control.Concurrent.Async
 import           Data.List                (sortBy)
-import qualified Data.Map                 as M
-import qualified Data.Set                 as S
-import qualified Data.Text                as T
-import qualified Github.Issues            as GH
-import           Numeric
-import           Text.Printf
-import           Yesod.Markdown           (unMarkdown)
 
 viewForm :: Form (Filterable -> Bool, Orderable -> [Double])
 viewForm = renderBootstrap3 $ (,)
@@ -39,7 +29,6 @@ getTicketsR project_handle = do
             _ -> (defaultFilter, defaultOrder)
 
     tickets       <- runDB $ getTickets project_id project_handle
-    render        <- getUrlRenderParams
     github_issues <- getGithubIssues project
 
     let issues = sortBy (flip compare `on` order_expression . issueOrderable) $
@@ -49,4 +38,3 @@ getTicketsR project_handle = do
     defaultLayout $ do
         setTitle . toHtml $ projectName project <> " Tickets | Snowdrift.coop"
         $(widgetFile "tickets")
-  where

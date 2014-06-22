@@ -63,15 +63,9 @@ processCommentTag go project_handle target comment_id tag_id = do
 renderTags :: [AnnotatedTag] -> Handler Html
 renderTags tags = defaultLayout $(widgetFile "tags")
 
-tagBumpForm :: Int -> Form Int
-tagBumpForm = renderDivs . areq hiddenField "" . Just
-
 getCommentTagR :: Text -> Text -> CommentId -> TagId -> Handler Html
-getCommentTagR = processCommentTag $ \ (AnnotatedTag tag url color user_votes) -> do
+getCommentTagR = processCommentTag $ \ (AnnotatedTag tag _ _ user_votes) -> do
     let tag_name = tagName $ entityVal tag
-
-    (incForm, _) <- generateFormPost $ tagBumpForm 1
-    (decForm, _) <- generateFormPost $ tagBumpForm (-1)
 
     defaultLayout $(widgetFile "tag")
 
@@ -148,7 +142,9 @@ tagList project_id = do
 
 getNewCommentTagR :: Text -> Text -> CommentId -> Handler Html
 getNewCommentTagR project_handle target comment_id = do
-    Entity user_id user <- requireAuth
+    void . runDB $ get404 comment_id
+
+    user <- entityVal <$> requireAuth
 
     unless (isJust $ userEstablishedTs user)
         (permissionDenied "You must be an established user to add tags")
@@ -156,7 +152,6 @@ getNewCommentTagR project_handle target comment_id = do
     Entity project_id _ <- runDB $ getBy404 $ UniqueProjectHandle project_handle
     Entity page_id _ <- runDB $ getBy404 $ UniqueWikiTarget project_id target
 
-    comment <- runDB $ get404 comment_id
     comment_page_id <- runDB $ getCommentPageId comment_id
 
     when (comment_page_id /= page_id) $ error "wrong page for comment"
@@ -172,27 +167,6 @@ getNewCommentTagR project_handle target comment_id = do
     tags <- annotateCommentTags tag_map project_handle target comment_id comment_tags
 
     (project_tags, other_tags) <- tagList project_id
-{-
-    project_tags :: [Entity Tag] <- runDB $ select $ from $ \(tag `InnerJoin` rel `InnerJoin` comment `InnerJoin` page) -> do
-        on_ ( page ^. WikiPageDiscussion ==. comment ^. CommentDiscussion )
-        on_ ( comment ^. CommentId ==. rel ^. CommentTagComment )
-        on_ ( rel ^. CommentTagTag ==. tag ^. TagId )
-        where_ ( page ^. WikiPageProject ==. val project_id )
-        orderBy [ desc (tag ^. TagName) ]
-        return tag
-
-    other_tags :: [Entity Tag] <- runDB $ select $ from $ \(tag `InnerJoin` rel `InnerJoin` comment `InnerJoin` page) -> do
-        on_ ( page ^. WikiPageDiscussion ==. comment ^. CommentDiscussion )
-        on_ ( comment ^. CommentId ==. rel ^. CommentTagComment )
-        on_ ( rel ^. CommentTagTag ==. tag ^. TagId )
-        where_ ( page ^. WikiPageProject !=. val project_id )
-        orderBy [ desc (tag ^. TagName) ]
-        return tag
-
-    all_tags :: [Entity Tag] <- runDB $ select $ from $ \ tag -> do
-        orderBy [ desc (tag ^. TagName) ]
-        return tag
--}
 
     let filter_tags = filter (\(Entity t _) -> not $ M.member t tag_map)
     (apply_form, _) <- generateFormPost $ newCommentTagForm (filter_tags project_tags) (filter_tags other_tags)
@@ -201,8 +175,9 @@ getNewCommentTagR project_handle target comment_id = do
     defaultLayout $(widgetFile "new_comment_tag")
 
 
+postCreateNewCommentTagR, postApplyNewCommentTagR :: Text -> Text -> CommentId -> Handler Html
 postCreateNewCommentTagR = postNewCommentTagR True
-postApplyNewCommentTagR = postNewCommentTagR False
+postApplyNewCommentTagR  = postNewCommentTagR False
 
 postNewCommentTagR :: Bool -> Text -> Text -> CommentId -> Handler Html
 postNewCommentTagR create_tag project_handle target comment_id = do
@@ -217,10 +192,6 @@ postNewCommentTagR create_tag project_handle target comment_id = do
     comment_page_id <- runDB $ getCommentPageId comment_id
 
     when (comment_page_id /= page_id) $ error "wrong page for comment"
-
-    all_tags :: [Entity Tag] <- runDB $ select $ from $ \ tag -> do
-        orderBy [ desc (tag ^. TagName) ]
-        return tag
 
     let formFailure es = error $ T.unpack $ "form submission failed: " <> T.intercalate "; " es
 
@@ -276,22 +247,3 @@ postNewCommentTagR create_tag project_handle target comment_id = do
                     redirectUltDest $ DiscussCommentR project_handle target comment_id
                 FormMissing -> error "form missing"
                 FormFailure es -> formFailure (es <> [T.pack " apply"])
-
-{-
-    case result of
-        FormMissing -> error "form missing"
-        FormFailure es -> error $ T.unpack $ "form submission failed: " <> T.intercalate "; " es
-        FormSuccess tag_id -> do
-            runDB $ do
-                maybe_tag <- get tag_id
-                case maybe_tag of
-                    {-
-                    Nothing -> insert $ Tag tag_name
-                    -}
-                    Nothing -> permissionDenied "tag does not exist"
-                    Just _ ->
-                        void $ insert $ CommentTag comment_id tag_id user_id 1
-
-            redirectUltDest $ DiscussCommentR project_handle target comment_id
--}
-

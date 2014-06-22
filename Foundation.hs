@@ -34,8 +34,6 @@ import Data.Text as T
 
 import Data.Char (isSpace)
 
-import Data.Maybe
-
 import Web.Authenticate.BrowserId (browserIdJs)
 
 import Blaze.ByteString.Builder.Char.Utf8 (fromText)
@@ -140,14 +138,8 @@ instance Yesod App where
         master <- getYesod
         mmsg <- getMessage
         malert <- getAlert
-        muser_id <- maybeAuthId
-        muser <- runDB $ case muser_id of
-            Nothing -> return Nothing
-            Just user_id -> get user_id
 
         let navbar = appNavbar master
-        let userPrintName :: Entity User -> Text
-            userPrintName (Entity user_id user) = fromMaybe ("user" <> toPathPiece user_id) (userName user)
 
         -- We break up the default layout into two components:
         -- default-layout is the contents of the body tag, and
@@ -236,12 +228,8 @@ instance YesodPersistRunner App where
 
 -- set which project in the site runs the site itself
 getSiteProject :: Handler (Entity Project)
-getSiteProject = do
-    handle <- getSiteProjectHandle
-    project <- runDB $ getBy $ UniqueProjectHandle handle
-    case project of
-         Nothing -> error "No project has been defined as the owner of this website."
-         Just a -> return a
+getSiteProject = maybe (error "No project has been defined as the owner of this website.") id <$>
+    (getSiteProjectHandle >>= runDB . getBy . UniqueProjectHandle)
 
 getSiteProjectHandle :: Handler Text
 getSiteProjectHandle = extraSiteProject . appExtra . settings <$> getYesod

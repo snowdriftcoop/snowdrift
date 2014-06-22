@@ -6,11 +6,9 @@ import Import
 
 import Model.User
 
-
-
 getApplicationsR :: Text -> Handler Html
 getApplicationsR project_handle = do
-    Entity viewer_id viewer <- requireAuth
+    viewer_id <- requireAuthId
     now <- liftIO getCurrentTime
 
     -- let applications_map = M.fromListWith (++) $ map (id &&& return) $ applications
