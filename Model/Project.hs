@@ -72,7 +72,7 @@ projectComputeShareValue pledges =
         geomean :: [Double] -> Double
         geomean xs = exp $ sum (map log xs) / fromIntegral (length xs)
         multiplier = lg (geomean (map fromIntegral pledges) * 2)
-     in Milray 1 $* (multiplier * (num_users - 1))
+     in Milray 10 $* (multiplier * (num_users - 1))
 
 
 -- signature needs to remain generic, for SnowdriftProcessPayments
