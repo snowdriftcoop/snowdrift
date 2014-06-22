@@ -23,10 +23,10 @@
                             Pledges / Funds 
                             <br>
                             <a .navbar-link title="Current total monthly pledge" href="@{UserPledgesR user_id}">
-                                #{show pledged}
+                                #{milrayCents pledged}
                             /
                             <a .navbar-link title="Current balance" href="@{UserBalanceR user_id}">
-                                #{show balance}
+                                #{milrayCents balance}
                 <li>
                     <a href=@{MessagesR}>
                         $if not (null messages)

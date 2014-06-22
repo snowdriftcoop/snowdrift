@@ -16,6 +16,23 @@ class Currency a where
    ($*) :: a -> Double -> a
    (*$) :: Double -> a -> a
 
+data Cent = Cent Int64 deriving (Eq, Ord)
+
+instance Show Cent where
+    show (Cent c) = let splitPieces [] = []
+                        splitPieces s = case splitAt 3 s of (a, b) -> a : splitPieces b
+                        sign = if c < 0 then "-" else ""
+                        (f,i) = splitAt 2 $ reverse $ show $ abs c
+                        fpart = reverse $ take 2 $ f ++ repeat '0'
+                        ipart = intercalate "," $ reverse $ map reverse $ splitPieces i
+                     in "$" ++ sign ++ (if null ipart then "0" else ipart) ++ "." ++ fpart
+
+
+instance ToMarkup Cent where
+    toMarkup = toMarkup . show
+
+milrayCents (Milray a) = Cent (round $ fromIntegral a / 100)
+
 {-
  - Milray - 1/100th of 1 cent
  -  from "A Connecticut Yankee In King Arthur's Court"
