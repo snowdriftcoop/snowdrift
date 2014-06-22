@@ -5,17 +5,20 @@ import Import
 import qualified Control.Monad.State        as St
 import           Data.Foldable              (Foldable)
 import qualified Data.Foldable              as F
+import           Data.List                  (sortBy)
 import           Data.Map                   (Map)
 import qualified Data.Map                   as M
 import qualified Data.Set                   as S
 import qualified Data.Text                  as T
+import           Data.Tree
 import           Network.HTTP.Types.Status
 import           Yesod.Default.Config
 import           Yesod.Markdown
 
-import           Data.Tree
+import qualified Data.Tree.Extra            as Tree
+import           Data.Tree.Extra            (sortForestBy, sortTreeBy)
 import           Model.ClosureType
-import           Model.Comment
+import           Model.Comment              -- (buildCommentTree, ...) TODO
 import           Model.Project              (getProjectPages)
 import           Model.Role
 import           Model.Tag                  (getAllTags)
@@ -25,7 +28,9 @@ import           Model.ViewType
 import           Model.WikiPage
 import           Widgets.Markdown
 import           Widgets.Preview
-import           View.Comment               (buildCommentTree, commentForm, commentWidget, discussCommentWidget)
+import           View.Comment               ( commentForm, commentForestWidget, commentTreeWidget
+                                            , discussCommentTreeWidget, orderingNewestFirst
+                                            )
 
 checkCommentPage :: CommentId -> WikiPageId -> Handler ()
 checkCommentPage comment_id page_id = do
@@ -142,23 +147,19 @@ getCloseWikiComment closure_type project_handle target comment_id = do
         <*> makeTicketMap [comment_id]
         <*> (entitiesMap <$> getTags comment_id)
 
-    (closure_form, _) <- generateFormPost $ closureForm closure_type Nothing
-
-    let rendered_comment = discussCommentWidget
-                               roles
+    let rendered_comment = discussCommentTreeWidget
+                               (Tree.singleton (Entity comment_id comment))
+                               earlier_closures
+                               (M.fromList [(user_id, user), (poster_id, poster)])
+                               mempty -- closure map
+                               ticket_map
+                               tag_map
                                project_handle
                                target
                                False
-                               (return ())
-                               (Entity comment_id comment)
-                               []
-                               (M.fromList [(user_id, user), (poster_id, poster)])
-                               earlier_closures
-                               mempty
-                               ticket_map
-                               False
-                               tag_map
+                               Nothing
 
+    (closure_form, _) <- generateFormPost $ closureForm closure_type Nothing
     defaultLayout $ [whamlet|
         ^{rendered_comment}
         <form method="POST">
@@ -206,21 +207,17 @@ postCloseWikiComment closure_type project_handle target comment_id = do
                     closure_map <- M.singleton comment_id <$> newCommentClosure user_id closure_type reason comment_id
 
                     defaultLayout $ renderPreview form action $
-                        discussCommentWidget
-                            roles
-                            project_handle
-                            target
-                            False
-                            (return ())
-                            (Entity comment_id comment)
-                            []
-                            (M.fromList [(user_id, user), (poster_id, poster)])
+                        discussCommentTreeWidget
+                            (Tree.singleton (Entity comment_id comment))
                             earlier_closures
+                            (M.fromList [(user_id, user), (poster_id, poster)])
                             closure_map
                             ticket_map
-                            False
                             tag_map
-
+                            project_handle
+                            target
+                            False   -- show actions?
+                            Nothing -- comment form
 
                 Just a | a == action -> do
                     now <- liftIO getCurrentTime
@@ -233,7 +230,15 @@ postCloseWikiComment closure_type project_handle target comment_id = do
 
 -- | getDiscussWikiR generates the associated discussion page for each wiki page
 getDiscussWikiR :: Text -> Text -> Handler Html
-getDiscussWikiR project_handle target = do
+getDiscussWikiR project_handle target = lookupGetParam "state" >>= \case
+    Just "closed" -> getDiscussWikiR' project_handle target getClosedRootComments
+    _             -> getDiscussWikiR' project_handle target getOpenRootComments
+
+getDiscussWikiR' :: Text                                                   -- ^ Project handle.
+                 -> Text                                                   -- ^ Wiki page name.
+                 -> (Bool -> DiscussionId -> YesodDB App [Entity Comment]) -- ^ Root comment getter.
+                 -> Handler Html
+getDiscussWikiR' project_handle target get_root_comments = do
     muser <- maybeAuth
     (Entity project_id project, Entity _ page) <- getPageInfo project_handle target
 
@@ -249,32 +254,29 @@ getDiscussWikiR project_handle target = do
     is_moderator <- isCurUserProjectModerator project_handle
 
     roles <- getRolesHandler project_id
-    (roots, replies, users, closure_map, ticket_map, tag_map) <- runDB $ do
-        roots           <- getRootComments    is_moderator (wikiPageDiscussion page)
+    (roots, replies, user_map, closure_map, ticket_map, tag_map) <- runDB $ do
+        roots           <- get_root_comments is_moderator (wikiPageDiscussion page)
         replies         <- getRepliesComments is_moderator (wikiPageDiscussion page)
-        users           <- entitiesMap <$> getUsersIn (S.toList $ get_user_ids roots <> get_user_ids replies)
+        user_map        <- entitiesMap <$> getUsersIn (S.toList $ get_user_ids roots <> get_user_ids replies)
         let comment_ids  = map entityKey (roots ++ replies)
         closure_map     <- makeClosureMap comment_ids
         ticket_map      <- makeTicketMap comment_ids
         tag_map         <- entitiesMap <$> getAllTags
-        return (roots, replies, users, closure_map, ticket_map, tag_map)
+        return (roots, replies, user_map, closure_map, ticket_map, tag_map)
 
-    let comments = forM_ roots $ \root ->
-            commentWidget
-                now
-                roles
-                project_handle
-                target
-                users
-                8
-                0
-                []              -- Earlier closures.
-                closure_map
-                ticket_map
-                True
-                tag_map
-                (buildCommentTree root replies)
-                Nothing
+    let comments = commentForestWidget
+                       (sortForestBy orderingNewestFirst (buildCommentForest roots replies))
+                       []             -- earlier closures
+                       user_map
+                       closure_map
+                       ticket_map
+                       tag_map
+                       project_handle
+                       target
+                       8              -- max depth
+                       0              -- depth
+                       True           -- show actions?
+                       Nothing        -- comment form
 
     (comment_form, _) <- generateFormPost $ commentForm Nothing Nothing
 
@@ -332,7 +334,7 @@ getDiscussCommentR' show_reply project_handle target comment_id = do
 
     moderator <- isCurUserProjectModerator project_handle
 
-    (root, rest, users, earlier_closures, closure_map, ticket_map) <- runDB $ do
+    (root, rest, user_map, earlier_closures, closure_map, ticket_map) <- runDB $ do
         root <- get404 comment_id
         root_wiki_page_id <- getCommentPageId comment_id
 
@@ -356,12 +358,12 @@ getDiscussCommentR' show_reply project_handle target comment_id = do
             all_comment_ids = map entityKey all_comments
             user_ids = get_user_ids all_comments
 
-        users            <- entitiesMap <$> getUsersIn (S.toList user_ids)
         earlier_closures <- getAncestorClosures comment_id
+        user_map         <- entitiesMap <$> getUsersIn (S.toList user_ids)
         closure_map      <- makeClosureMap all_comment_ids
         ticket_map       <- makeTicketMap all_comment_ids
 
-        return (root, rest, users, earlier_closures, closure_map, ticket_map)
+        return (root, rest, user_map, earlier_closures, closure_map, ticket_map)
 
     (comment_form, _) <- generateFormPost $ commentForm (Just comment_id) Nothing
 
@@ -369,20 +371,17 @@ getDiscussCommentR' show_reply project_handle target comment_id = do
 
     let tag_map = entitiesMap tags
 
-    defaultLayout $ discussCommentWidget
-                        roles
-                        project_handle
-                        target
-                        show_reply
-                        comment_form
-                        (Entity comment_id root)
-                        rest
-                        users
+    defaultLayout $ discussCommentTreeWidget
+                        (sortTreeBy orderingNewestFirst $ buildCommentTree (Entity comment_id root, rest))
                         earlier_closures
+                        user_map
                         closure_map
                         ticket_map
-                        True
                         tag_map
+                        project_handle
+                        target
+                        True -- show actions?
+                        (if show_reply then Just comment_form else Nothing)
 
 processWikiComment :: Maybe Text -> Maybe CommentId -> Markdown -> Entity Project -> WikiPage -> Handler Html
 processWikiComment mode =
@@ -406,20 +405,17 @@ processWikiCommentPreview maybe_parent_id text (Entity project_id project) page 
           Entity (Key $ PersistInt64 0) $
             Comment now Nothing Nothing Nothing (wikiPageDiscussion page) maybe_parent_id user_id text depth
 
-        rendered_comment = discussCommentWidget
-                               roles
-                               (projectHandle project)
-                               (wikiPageTarget page)
-                               False
-                               (return ())
-                               comment
-                               []
-                               (M.singleton user_id user)
+        rendered_comment = discussCommentTreeWidget
+                               (Tree.singleton comment)
                                earlier_closures
+                               (M.singleton user_id user)
                                mempty
                                mempty -- TODO: is this right?
-                               False
                                tag_map
+                               (projectHandle project)
+                               (wikiPageTarget page)
+                               False   -- show actions?
+                               Nothing -- comment form
 
     (form, _) <- generateFormPost $ commentForm maybe_parent_id (Just text)
     defaultLayout $ renderPreview form "post" rendered_comment
@@ -577,20 +573,18 @@ getWikiNewCommentsR project_handle = do
                              <*> (wikiPageTarget <$> getCommentPage comment_id)
 
                          let rendered_comment =
-                                 commentWidget
-                                     now
-                                     roles
-                                     project_handle
-                                     target
-                                     users
-                                     0
-                                     0 -- max_depth is irrelevant for the new-comments listing
+                                 commentTreeWidget
+                                     (Tree.singleton (Entity comment_id comment))
                                      earlier_closures
+                                     users
                                      closure_map
                                      ticket_map
-                                     True
                                      tag_map
-                                     (Node (Entity comment_id comment) [])
+                                     project_handle
+                                     target
+                                     0    -- max_depth is irrelevant for the new-comments listing 0
+                                     0
+                                     True -- show actions?
                                      Nothing
 
                          [whamlet|$newline never

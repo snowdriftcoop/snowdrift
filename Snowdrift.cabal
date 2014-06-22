@@ -24,6 +24,7 @@ library
                      Data.Filter
                      Data.Order
                      Data.Text.PrettyHtml
+                     Data.Tree.Extra
                      Foundation
                      Import
                      Model
@@ -114,6 +115,7 @@ library
                 TemplateHaskell
                 TupleSections
                 TypeFamilies
+                ViewPatterns
 
     build-depends: base                          >= 4          && < 5
                  -- , yesod-platform
