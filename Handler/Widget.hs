@@ -11,8 +11,7 @@ import Model.Currency
 widgetLayout :: WidgetT App IO () -> HandlerT App IO Html
 widgetLayout widget = do
     pc <- widgetToPageContent $ do
-        $(widgetFile "normalize")
-        addStylesheet $ StaticR css_bootstrap_css
+        addStylesheet $ StaticR css_bootstrap_min_css
         widget
     giveUrlRenderer $(hamletFile "templates/widget-wrapper.hamlet")
 

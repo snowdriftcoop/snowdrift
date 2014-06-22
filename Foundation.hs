@@ -156,7 +156,6 @@ instance Yesod App where
         -- you to use normal widget features in default-layout.
 
         pc <- widgetToPageContent $ do
-            $(widgetFile "normalize")
             addStylesheet $ StaticR css_bootstrap_min_css
             addScript $ StaticR js_bootstrap_min_js
             navbar
