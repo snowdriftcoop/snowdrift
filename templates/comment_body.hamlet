@@ -110,4 +110,4 @@ $# used by commentTreeWidget function
     $else
         $# We only want to display the closures/reractions from above the viewed comment on the first comment,
         $# not all comments in the tree.
-        ^{commentForestWidget children [] user_map closure_map ticket_map tag_map project_handle target max_depth depth show_actions mcomment_form}
+        ^{commentForestWidget children [] user_map closure_map ticket_map tag_map project_handle target max_depth (depth+1) show_actions Nothing}
