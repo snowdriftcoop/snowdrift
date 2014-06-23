@@ -343,7 +343,7 @@ getDiscussCommentR' show_reply project_handle target comment_id = do
         user_map         <- entitiesMap <$> getUsersIn (S.toList user_ids)
         closure_map      <- makeClosureMap all_comment_ids
         ticket_map       <- makeTicketMap all_comment_ids
-        tag_map          <- entitiesMap <$> runDB getAllTags
+        tag_map          <- entitiesMap <$> getAllTags
 
         return (root, rest, user_map, earlier_closures, closure_map, ticket_map, tag_map)
 
