@@ -85,6 +85,7 @@ renderProject maybe_project_handle project show_form pledges pledge = do
     amounts <- case projectLastPayday project of
         Nothing -> return Nothing
         Just last_payday -> handlerToWidget $ runDB $ do
+            -- This assumes there were transactions associated with the last payday
             [Value (Just last) :: Value (Maybe Rational)] <- select $ from $ \ transaction -> do
                 where_ $ transaction ^. TransactionPayday ==. val (Just last_payday)
                         &&. transaction ^. TransactionCredit ==. val (Just $ projectAccount project)

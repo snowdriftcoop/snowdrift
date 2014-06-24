@@ -23,7 +23,7 @@ $# used by commentTreeWidget function
                 <a href="@{DiscussCommentR project_handle target parent_id}">
                     parent
 
-    $maybe Entity ticket_id ticket <- mticket
+    $maybe Entity ticket_id _ <- mticket
         <div .ticket>SD-#{toPathPiece ticket_id}
 
     $forall closure <- earlier_closures

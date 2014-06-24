@@ -31,7 +31,8 @@ instance Show Cent where
 instance ToMarkup Cent where
     toMarkup = toMarkup . show
 
-milrayCents (Milray a) = Cent (round $ fromIntegral a / 100)
+milrayCents :: Milray -> Cent
+milrayCents (Milray a) = Cent (round $ fromIntegral a / (100 :: Double))
 
 {-
  - Milray - 1/100th of 1 cent
