@@ -51,32 +51,31 @@ getProjectR :: Text -> Handler Html
 getProjectR project_handle = do
     maybe_viewer_id <- maybeAuthId
 
-    (project, pledges, pledge) <- runDB $ do
+    (project_id, project, pledges, pledge) <- runDB $ do
         Entity project_id project <- getBy404 $ UniqueProjectHandle project_handle
         pledges <- getProjectShares project_id
         pledge <- case maybe_viewer_id of
             Nothing -> return Nothing
             Just viewer_id -> getBy $ UniquePledge viewer_id project_id
 
-        return (project, pledges, pledge)
+        return (project_id, project, pledges, pledge)
 
     defaultLayout $ do
         setTitle . toHtml $ projectName project <> " | Snowdrift.coop"
-        renderProject (Just project_handle) project True pledges pledge
+        renderProject (Just project_id) project pledges pledge
 
 
-renderProject :: Maybe Text
+renderProject :: Maybe ProjectId
                  -> Project
-                 -> Bool
                  -> [Int64]
                  -> Maybe (Entity Pledge)
                  -> WidgetT App IO ()
-renderProject maybe_project_handle project show_form pledges pledge = do
+renderProject maybe_project_id project pledges pledge = do
     let share_value = projectShareValue project
         users = fromIntegral $ length pledges
         shares = sum pledges
         project_value = share_value $* fromIntegral shares
-        description = markdownWidget (fromMaybe "???" maybe_project_handle) $ projectDescription project
+        description = markdownWidget (projectHandle project) $ projectDescription project
 
         maybe_shares = pledgeShares . entityVal <$> pledge
 
@@ -108,9 +107,8 @@ renderProject maybe_project_handle project show_form pledges pledge = do
 
             return $ Just (Milray $ round last, Milray $ round year, Milray $ round total)
 
-    let form = if show_form then pledgeForm else previewPledgeForm
 
-    ((_, update_shares), _) <- handlerToWidget $ generateFormGet $ form $ fromMaybe 0 maybe_shares
+    ((_, update_shares), _) <- handlerToWidget $ generateFormGet $ maybe previewPledgeForm pledgeForm maybe_project_id
 
     $(widgetFile "project")
 
@@ -172,7 +170,7 @@ postProjectR project_handle = do
                     let preview_project = project { projectName = name, projectDescription = description, projectGithubRepo = github_repo }
 
                     (form, _) <- generateFormPost $ editProjectForm (Just (preview_project, tags))
-                    defaultLayout $ renderPreview form action $ renderProject (Just project_handle) preview_project False [] Nothing
+                    defaultLayout $ renderPreview form action $ renderProject Nothing preview_project [] Nothing
 
                 Just x | x == action -> do
                     runDB $ do

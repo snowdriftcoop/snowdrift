@@ -287,4 +287,13 @@ DocEvent
 DatabaseVersion
     lastMigration Int
 
+PledgeFormRendered
+    ts UTCTime
+    order Text
+    user UserId Maybe
+
+SharesPledged
+    ts UTCTime
+    render PledgeFormRenderedId
+
  -- This file is used in Model.hs (which is imported by Foundation.hs)

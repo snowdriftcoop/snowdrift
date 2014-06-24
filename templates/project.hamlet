@@ -16,8 +16,8 @@
                         <th> Current patrons
                     <tr>
                         <td>
-                            $maybe project_handle <- maybe_project_handle
-                                <a href="@{ProjectPatronsR project_handle}">
+                            $maybe _ <- maybe_project_id
+                                <a href="@{ProjectPatronsR $ projectHandle project}">
                                     _{MsgPatrons users}
                             $nothing
                                 _{MsgPatrons users}
@@ -46,18 +46,12 @@
                                 #{total} total
         <hr>
 
-        $if show_form
-            $maybe project_handle <- maybe_project_handle
-                <form method=GET action=@{UpdateSharesR project_handle}>
-                    ^{update_shares}
-                    $if isJust maybe_shares
-                        <input .pledge type=submit value="update pledge">
-                    $else
-                        <input .pledge type=submit value="enter pledge">
-            $nothing
-                <form>
-                    ^{update_shares}
-                    <button .pledge value="enter pledge">
-
-        $else
+        $maybe _ <- maybe_project_id
+            <form method=GET action=@{UpdateSharesR $ projectHandle project}>
+                ^{update_shares}
+                $if isJust maybe_shares
+                    <input .pledge type=submit value="update pledge">
+                $else
+                    <input .pledge type=submit value="enter pledge">
+        $nothing
             ^{update_shares}
