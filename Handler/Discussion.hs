@@ -315,7 +315,7 @@ getDiscussCommentR' show_reply project_handle target comment_id = do
 
     moderator <- isCurUserProjectModerator project_handle
 
-    (root, rest, user_map, earlier_closures, closure_map, ticket_map) <- runDB $ do
+    (root, rest, user_map, earlier_closures, closure_map, ticket_map, tag_map) <- runDB $ do
         root <- get404 comment_id
         root_wiki_page_id <- getCommentPageId comment_id
 
@@ -343,14 +343,15 @@ getDiscussCommentR' show_reply project_handle target comment_id = do
         user_map         <- entitiesMap <$> getUsersIn (S.toList user_ids)
         closure_map      <- makeClosureMap all_comment_ids
         ticket_map       <- makeTicketMap all_comment_ids
+        tag_map          <- entitiesMap <$> getAllTags
 
-        return (root, rest, user_map, earlier_closures, closure_map, ticket_map)
+        return (root, rest, user_map, earlier_closures, closure_map, ticket_map, tag_map)
 
-    (comment_form, _) <- generateFormPost $ commentForm (Just comment_id) Nothing
+    comment_form <-
+        if show_reply
+        then Just . fst <$> generateFormPost (commentForm (Just comment_id) Nothing)
+        else return Nothing
 
-    tags <- runDB $ select $ from return
-
-    let tag_map = entitiesMap tags
 
     defaultLayout $ discussCommentTreeWidget
                         (sortTreeBy orderingNewestFirst $ buildCommentTree (Entity comment_id root, rest))
@@ -362,7 +363,7 @@ getDiscussCommentR' show_reply project_handle target comment_id = do
                         project_handle
                         target
                         True -- show actions?
-                        (if show_reply then Just comment_form else Nothing)
+                        comment_form
 
 processWikiComment :: Maybe Text -> Maybe CommentId -> Markdown -> Entity Project -> WikiPage -> Handler Html
 processWikiComment mode =
