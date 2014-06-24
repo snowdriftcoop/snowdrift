@@ -4,21 +4,109 @@ module Model.Shares where
 
 import Import
 
+import System.Random (randomIO)
+import qualified Data.Text as T
+import qualified Data.Text.Read as T
+
+pledgeSizes :: [[Int64]]
+pledgeSizes =
+    [ [1,2,4,8,16]
+    , [1,2,3,5,10]
+    , [1,2,5,10]
+    ]
+
+pledgeListKey :: Text
+pledgeListKey = "pledge_list"
+
+pledgeRenderKey :: Text
+pledgeRenderKey = "pledge_render"
 
 data SharesPurchaseOrder = SharesPurchaseOrder Int64
 
-pledgeForm :: Int64 -> Form SharesPurchaseOrder
-pledgeForm shares extra = do
-    (pledge_res, pledge_view) <- mreq intField ("" { fsAttrs = [("placeholder", "1"), ("class", "inline_shares")] }) (if shares > 0 then Just shares else Nothing)
+pledgeField :: Field Handler SharesPurchaseOrder
+pledgeField = Field
+    { fieldParse = parse
+        
+    , fieldView = view
+    , fieldEnctype = UrlEncoded
+    }
+  where
+    parse [] _ = return $ Left $ SomeMessage $ MsgValueRequired
+    parse (x:_) _
+        | "-other" `T.isSuffixOf` x = do
+            mv <- lookupGetParam x
+            case mv of
+                Nothing -> return $ Left $ SomeMessage $ MsgValueRequired
+                Just v -> return $ parseValue v
+            
+        | otherwise = return $ parseValue x
 
-    let result = SharesPurchaseOrder <$> pledge_res
-        view = [whamlet|
+    parseValue v = 
+        case T.decimal v of
+            Right (a, "") -> Right $ Just $ SharesPurchaseOrder a
+            _ -> Left $ SomeMessage $ MsgInvalidInteger v
+            
+    view ident name attrs v req = do
+        now <- liftIO getCurrentTime
+        list <- handlerToWidget get_list
+        muser <- handlerToWidget maybeAuthId
+        render_key <- handlerToWidget $ runDB $ insert $ PledgeFormRendered now (T.pack $ show list) muser
+
+        handlerToWidget $ setSession pledgeRenderKey $ T.pack $ show render_key
+
+        let value = either (const 2) (\ (SharesPurchaseOrder s) -> s) v
+            hasValue = any (== value) list
+            otherValue = if hasValue then "" else show value
+
+        [whamlet|
+            <fieldset>
+                $forall amount <- list
+                    <input id="#{ident}-#{amount}" name="#{name}" *{attrs} type="radio" :req:required value="#{amount}" :amount == value:selected>#{amount} #
+                    
+                <input id="#{ident}-other" name="#{name}" *{attrs} type="radio" :req:required value="#{name}-other" :not hasValue:selected>other:
+                <input id="#{ident}-other-val" name="#{name}-other" *{attrs} type="text" value="#{otherValue}">
+        |]
+
+
+    get_list = do
+        mlist <- lookupSession pledgeListKey
+        case mlist of
+            Nothing -> do
+                r <- liftIO randomIO
+                let idx = mod r $ length pledgeSizes
+                    sizes = pledgeSizes !! idx
+
+                setSession pledgeListKey $ T.pack $ show sizes
+
+                return sizes
+
+            Just t -> return $ read $ T.unpack t
+
+    
+
+    
+
+pledgeForm :: ProjectId -> Form SharesPurchaseOrder
+pledgeForm project_id extra = do
+    muser <- lift maybeAuthId
+    shares <- case muser of
+        Nothing -> return 0
+        Just user_id -> do
+            fmap (sum . map unValue) $ lift $ runDB $ select $ from $ \ pledge -> do
+                where_ $ pledge ^. PledgeProject ==. val project_id
+                    &&. pledge ^. PledgeUser ==. val user_id
+                return $ pledge ^. PledgeShares
+
+    
+    (result, pledge_view) <- mreq pledgeField "" (if shares > 0 then Just (SharesPurchaseOrder shares) else Nothing)
+
+    let view = [whamlet|
             #{extra}
             <div .text-center>
                 <h3 style="margin-top:0">
-                    Your pledge:
+                    You pledge:
                 <strong>
-                    shares:&nbsp;^{fvInput pledge_view}
+                    ^{fvInput pledge_view}
             <p>
                 Share value is based on 0.1&cent; times the number of other patrons,
                 with additional <i>partial</i> matching for any patron who pledges extra shares.
@@ -28,8 +116,8 @@ pledgeForm shares extra = do
     return (result, view)
 
 -- |previewPledgeForm is used for previewing a project page when editing
-previewPledgeForm :: Int64 -> Form SharesPurchaseOrder
-previewPledgeForm _ extra = do
+previewPledgeForm :: Form SharesPurchaseOrder
+previewPledgeForm extra = do
     let view = [whamlet|
             #{extra}
             <p>

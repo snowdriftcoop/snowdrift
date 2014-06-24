@@ -15,13 +15,12 @@ confirmForm shares = renderBootstrap3 $ SharesPurchaseOrder <$> areq' hiddenFiel
 getUpdateSharesR :: Text -> Handler Html
 getUpdateSharesR project_handle = do
     _ <- requireAuthId
-
-    ((result, _), _) <- runFormGet $ pledgeForm 0
+    Entity project_id project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
+    ((result, _), _) <- runFormGet $ pledgeForm project_id
     case result of
         FormSuccess (SharesPurchaseOrder shares) -> do
             -- TODO - refuse negative
             user_id <- requireAuthId
-            Entity project_id project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
             (confirm_form, _) <- generateFormPost $ confirmForm shares
 
             maybe_pledge <- runDB $ getBy $ UniquePledge user_id project_id
