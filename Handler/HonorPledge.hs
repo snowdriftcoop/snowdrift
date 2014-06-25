@@ -12,12 +12,11 @@ getHonorPledgeR = do
         $(widgetFile "honor-pledge")
 
 postHonorPledgeR :: Handler Html
-postHonorPledgeR = maybeAuth >>= \case
-    Nothing  -> redirect HomeR
-    Just (Entity user_id User{..}) ->
-        case userEstablished of
-            EstEligible elig_time reason -> do
-                runDB $ establishUser user_id elig_time reason
-                setMessage "Established!"
-                redirect HonorPledgeR
-            _ -> redirect HonorPledgeR
+postHonorPledgeR = do
+    Entity user_id user <- requireAuth
+    case userEstablished user of
+        EstEligible elig_time reason -> do
+            runDB $ establishUser user_id elig_time reason
+            setMessage "Congratulations, you've been established!"
+            redirect HonorPledgeR
+        _ -> error "You're not eligible for establishment."

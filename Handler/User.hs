@@ -19,6 +19,7 @@ getUserR user_id = do
 
     projects_and_roles <- runDB $ getProjectsAndRoles user_id
 
+    setUltDestCurrent -- establishment form redirects to ultimate dest.
     defaultLayout $ do
         setTitle . toHtml $ "User Profile - " <> userPrintName (Entity user_id user) <> " | Snowdrift.coop"
         renderUser mviewer_id user_id user projects_and_roles
@@ -59,7 +60,9 @@ postUserR user_id = do
 
                     (form, _) <- generateFormPost $ editUserForm updated_user
 
-                    defaultLayout $ renderPreview form action $ renderUser (Just viewer_id) user_id updated_user mempty
+                    defaultLayout $
+                        renderPreview form action $
+                            renderUser (Just viewer_id) user_id updated_user mempty
 
                 Just x | x == action -> do
                     runDB $ updateUser user_id user_update
@@ -135,7 +138,23 @@ postUserCreateR = do
             <input type=submit>
     |]
 
+-- | POST handler for marking a user as eligible for establishment.
 postUserEstEligibleR :: UserId -> Handler Html
 postUserEstEligibleR user_id = do
-    (result, enctype) <- runFormPost establishUserForm
-    undefined
+    establisher_id <- requireAuthId
+
+    ok <- canMakeEligible user_id establisher_id
+    unless ok $
+        error "You can't establish this user"
+
+    ((result, _), _) <- runFormPost establishUserForm
+    case result of
+        FormSuccess reason -> do
+            user <- runDB (get404 user_id)
+            case userEstablished user of
+                EstUnestablished -> do
+                    runDB $ eligEstablishUser establisher_id user_id reason
+                    setMessage "User established. Thanks!" -- not entirely correct, user is just eligible. change?
+                    redirectUltDest HomeR
+                _ -> error "User not unestablished!"
+        _ -> error "Error submitting form."

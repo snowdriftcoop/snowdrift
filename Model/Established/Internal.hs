@@ -13,11 +13,15 @@ data Established
     deriving (Read, Show)
 
 estIsEstablished :: Established -> Bool
-estIsEstablished (EstEligible _ _) = True
-estIsEstablished _                 = False
+estIsEstablished (EstEstablished _ _ _) = True
+estIsEstablished _                      = False
 
 estIsEligible :: Established -> Bool
-estIsEligible (EstEstablished _ _ _) = True
-estIsEligible _                      = False
+estIsEligible (EstEligible _ _) = True
+estIsEligible _                 = False
+
+estIsUnestablished :: Established -> Bool
+estIsUnestablished EstUnestablished = True
+estIsUnestablished _                = False
 
 derivePersistField "Established"

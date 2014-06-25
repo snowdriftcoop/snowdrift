@@ -1,7 +1,9 @@
 module Model.User
     ( UserUpdate(..)
     , applyUserUpdate
+    , canCurUserMakeEligible
     , canMakeEligible
+    , eligEstablishUser
     , establishUser
     , getAllRoles
     , getCurUserRoles
@@ -80,7 +82,10 @@ isEstablished :: User -> Bool
 isEstablished = estIsEstablished . userEstablished
 
 isEligibleEstablish :: User -> Bool
-isEligibleEstablish = estIsEstablished . userEstablished
+isEligibleEstablish = estIsEligible . userEstablished
+
+isUnestablished :: User -> Bool
+isUnestablished = estIsUnestablished . userEstablished
 
 isCurUserEligibleEstablish :: Handler Bool
 isCurUserEligibleEstablish = maybe False (isEligibleEstablish . entityVal) <$> maybeAuth
@@ -95,6 +100,17 @@ establishUser user_id elig_time reason = do
         set u [ UserEstablished =. val est ]
         where_ (u ^. UserId ==. val user_id)
 
+-- | Make a user eligible for establishment.
+eligEstablishUser :: UserId -> UserId -> Text -> YesodDB App ()
+eligEstablishUser establisher_id user_id reason = do
+    elig_time <- liftIO getCurrentTime
+    let est = EstEligible elig_time reason
+    update $ \u -> do
+        set u [ UserEstablished =. val est ]
+        where_ (u ^. UserId ==. val user_id)
+
+    insert_ (ManualEstablishment user_id establisher_id)
+
 -- | Get a User's Roles in a Project.
 getRoles :: UserId -> ProjectId -> YesodDB App [Role]
 getRoles user_id project_id = fmap (map unValue) $
@@ -107,7 +123,7 @@ getRoles user_id project_id = fmap (map unValue) $
 -- | Get all of a User's Roles, across all Projects.
 getAllRoles :: UserId -> YesodDB App [Role]
 getAllRoles user_id = fmap unwrapValues $
-    select $
+    selectDistinct $
         from $ \pur -> do
         where_ (pur ^. ProjectUserRoleUser ==. val user_id)
         return (pur ^. ProjectUserRoleRole)
@@ -187,6 +203,15 @@ isProjectAffiliated project_handle user_id =
         return ()
 
 -- | Check if the current User can make the given User eligible for establishment.
--- This is True if the current User is a Moderator of any Project.
-canMakeEligible :: Handler Bool
-canMakeEligible = maybeAuthId >>= maybe (return False) (fmap (elem Moderator) . runDB . getAllRoles)
+-- This is True if the current User is a Moderator of any Project, and the given User
+-- is Unestablished.
+canCurUserMakeEligible :: UserId -> Handler Bool
+canCurUserMakeEligible user_id = maybeAuthId >>= maybe (return False) (canMakeEligible user_id)
+
+-- | Check if a User (FIRST ARG) can be made eligible by another User (SECOND ARG).
+canMakeEligible :: UserId -> UserId -> Handler Bool
+canMakeEligible establishee_id establisher_id = do
+    (establishee, establisher_is_mod) <- runDB $ (,)
+        <$> get404 establishee_id
+        <*> (elem Moderator <$> getAllRoles establisher_id)
+    return $ isUnestablished establishee && establisher_is_mod

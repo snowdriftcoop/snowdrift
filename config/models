@@ -250,8 +250,8 @@ Build
     diff Text
 
 ManualEstablishment
-    establishedUser User
-    establishingUser User
+    establishedUser UserId
+    establishingUser UserId
     UniqueManualEstablishment establishedUser
 
 TagColor

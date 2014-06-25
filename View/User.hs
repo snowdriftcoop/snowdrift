@@ -88,10 +88,8 @@ editUserForm User{..} = renderBootstrap3 $
 
 -- | Form to mark a user as eligible for establishment. The user is fully established
 -- when s/he accepts the honor pledge.
-establishUserForm :: Form (Text, UTCTime)
-establishUserForm = renderBootstrap3 $ (,)
-    <$> (unTextarea <$> areq textareaField "Reason" Nothing)
-    <*> lift (liftIO getCurrentTime)
+establishUserForm :: Form Text
+establishUserForm = renderBootstrap3 $ areq textField "Reason" Nothing
 
 previewUserForm :: User -> Form UserUpdate
 previewUserForm user = renderBootstrap3 $
@@ -102,10 +100,17 @@ previewUserForm user = renderBootstrap3 $
         <*> hiddenMarkdown (userBlurb user)
         <*> hiddenMarkdown (userStatement user)
 
+-- | Render a User profile, including
 renderUser :: Maybe UserId -> UserId -> User -> Map (Entity Project) (Set Role) -> Widget
 renderUser mviewer_id user_id user projects_and_roles = do
     let user_entity = Entity user_id user
         project_handle = error "bad link - no default project on user pages" -- TODO turn this into a caught exception
+
+    should_show_est_form <- handlerToWidget (canCurUserMakeEligible user_id)
+    mest_form_and_enctype <-
+        if should_show_est_form
+            then Just <$> handlerToWidget (generateFormPost establishUserForm)
+            else return Nothing
 
     $(widgetFile "user")
 
