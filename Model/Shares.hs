@@ -61,9 +61,9 @@ pledgeField = Field
         [whamlet|
             <fieldset>
                 $forall amount <- list
-                    <input id="#{ident}-#{amount}" name="#{name}" *{attrs} type="radio" :req:required value="#{amount}" :amount == value:selected>#{amount} #
+                    <input id="#{ident}-#{amount}" name="#{name}" *{attrs} type="radio" :req:required value="#{amount}" :amount == value:checked>#{amount} #
                     
-                <input id="#{ident}-other" name="#{name}" *{attrs} type="radio" :req:required value="#{name}-other" :not hasValue:selected>other:
+                <input id="#{ident}-other" name="#{name}" *{attrs} type="radio" :req:required value="#{name}-other" :not hasValue:checked>other:
                 <input id="#{ident}-other-val" name="#{name}-other" *{attrs} type="text" value="#{otherValue}">
         |]
 
