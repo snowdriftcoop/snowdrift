@@ -23,20 +23,19 @@ pledgeRenderKey = "pledge_render"
 
 data SharesPurchaseOrder = SharesPurchaseOrder Int64
 
-pledgeField :: Field Handler SharesPurchaseOrder
-pledgeField = Field
+pledgeField :: ProjectId -> Field Handler SharesPurchaseOrder
+pledgeField project_id = Field
     { fieldParse = parse
-        
     , fieldView = view
     , fieldEnctype = UrlEncoded
     }
   where
-    parse [] _ = return $ Left $ SomeMessage $ MsgValueRequired
+    parse [] _ = return $ Left $ SomeMessage MsgValueRequired
     parse (x:_) _
         | "-other" `T.isSuffixOf` x = do
             mv <- lookupGetParam x
             case mv of
-                Nothing -> return $ Left $ SomeMessage $ MsgValueRequired
+                Nothing -> return $ Left $ SomeMessage MsgValueRequired
                 Just v -> return $ parseValue v
             
         | otherwise = return $ parseValue x
@@ -50,7 +49,7 @@ pledgeField = Field
         now <- liftIO getCurrentTime
         list <- handlerToWidget get_list
         muser <- handlerToWidget maybeAuthId
-        render_key <- handlerToWidget $ runDB $ insert $ PledgeFormRendered now (T.pack $ show list) muser
+        render_key <- handlerToWidget $ runDB $ insert $ PledgeFormRendered now (T.pack $ show list) project_id muser
 
         handlerToWidget $ setSession pledgeRenderKey $ T.pack $ show render_key
 
@@ -59,30 +58,29 @@ pledgeField = Field
             otherValue = if hasValue then "" else show value
 
         [whamlet|
+            $newline never
             <fieldset>
                 $forall amount <- list
-                    <input id="#{ident}-#{amount}" name="#{name}" *{attrs} type="radio" :req:required value="#{amount}" :amount == value:checked>#{amount} #
+                    <input id="#{ident}-#{amount}" .form-inline name="#{name}" *{attrs} type="radio" :req:required value="#{amount}" :amount == value:checked>
+                    #{amount} #
                     
-                <input id="#{ident}-other" name="#{name}" *{attrs} type="radio" :req:required value="#{name}-other" :not hasValue:checked>other:
-                <input id="#{ident}-other-val" name="#{name}-other" *{attrs} type="text" value="#{otherValue}">
+                <div>
+                    <input id="#{ident}-other" .form-inline name="#{name}" *{attrs} type="radio" :req:required value="#{name}-other" :not hasValue:checked>
+                    other:&nbsp;
+                    <input id="#{ident}-other-val" .form-inline style="width : 2.5em; text-align : center" name="#{name}-other" *{attrs} type="text" value="#{otherValue}">
         |]
 
 
     get_list = do
-        mlist <- lookupSession pledgeListKey
-        case mlist of
-            Nothing -> do
-                r <- liftIO randomIO
-                let idx = mod r $ length pledgeSizes
-                    sizes = pledgeSizes !! idx
+        r <- liftIO randomIO
+        let idx = mod r $ length pledgeSizes
+            sizes = pledgeSizes !! idx
 
-                setSession pledgeListKey $ T.pack $ show sizes
+        setSession pledgeListKey $ T.pack $ show sizes
 
-                return sizes
+        return sizes
 
-            Just t -> return $ read $ T.unpack t
 
-    
 
     
 
@@ -98,7 +96,7 @@ pledgeForm project_id extra = do
                 return $ pledge ^. PledgeShares
 
     
-    (result, pledge_view) <- mreq pledgeField "" (if shares > 0 then Just (SharesPurchaseOrder shares) else Nothing)
+    (result, pledge_view) <- mreq (pledgeField project_id) "" (if shares > 0 then Just (SharesPurchaseOrder shares) else Nothing)
 
     let view = [whamlet|
             #{extra}
