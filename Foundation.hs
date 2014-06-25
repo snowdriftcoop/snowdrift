@@ -18,6 +18,7 @@ import           Control.Monad.Trans.Resource
 import qualified Data.ByteString.Lazy.Char8         as LB
 import           Data.Char                          (isSpace)
 import           Data.Int                           (Int64)
+import           Data.Maybe                         (fromJust)
 import           Data.Monoid
 import           Data.Time
 import           Data.Text                          as T
@@ -356,7 +357,7 @@ createUser ident passwd name avatar nick = do
                         , "<br> Please read our [**welcome message**](/p/snowdrift/w/welcome), and let us know any questions."
                         ]
                 -- TODO: change snowdrift_id to the generated site-project id
-                void $ insert $ Message (Just snowdrift_id) now Nothing (Just user_id) message_text True
+                insert_ $ Message (Just snowdrift_id) now Nothing (Just user_id) message_text True
                 return $ Just user_id
             Nothing -> do
                 lift $ addAlert "danger" "E-mail or handle already in use."
@@ -417,3 +418,7 @@ getAlert = do
     deleteSession alertKey
     return mmsg
 
+-- | Get the ProjectId for the "snowdrift" project. Partial function. Possibly this should
+-- be replaced by a hard-coded key? We're hard-coding "snowdrift", anyways.
+getSnowdriftId :: YesodDB App ProjectId
+getSnowdriftId = entityKey . fromJust <$> getBy (UniqueProjectHandle "snowdrift")

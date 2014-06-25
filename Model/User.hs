@@ -29,8 +29,10 @@ module Model.User
 
 import Import
 
-import qualified Data.Map as M
-import qualified Data.Set as S
+import qualified Data.Map       as M
+import qualified Data.Set       as S
+import qualified Data.Text      as T
+import           Yesod.Markdown (Markdown(..))
 
 data UserUpdate =
     UserUpdate
@@ -100,7 +102,8 @@ establishUser user_id elig_time reason = do
         set u [ UserEstablished =. val est ]
         where_ (u ^. UserId ==. val user_id)
 
--- | Make a user eligible for establishment.
+-- | Make a user eligible for establishment. Put a message in their inbox
+-- instructing them to read and accept the honor pledge.
 eligEstablishUser :: UserId -> UserId -> Text -> YesodDB App ()
 eligEstablishUser establisher_id user_id reason = do
     elig_time <- liftIO getCurrentTime
@@ -109,7 +112,19 @@ eligEstablishUser establisher_id user_id reason = do
         set u [ UserEstablished =. val est ]
         where_ (u ^. UserId ==. val user_id)
 
-    insert_ (ManualEstablishment user_id establisher_id)
+    insert_ $ ManualEstablishment user_id establisher_id
+
+    snowdrift_id <- getSnowdriftId
+    insert_ $ Message (Just snowdrift_id) elig_time Nothing (Just user_id) message_text True
+  where
+    message_text :: Markdown
+    message_text = Markdown $ T.unlines
+        [ "Congratulations! You've become eligible to become an *established* user for the following reason:"
+        , ""
+        , "> " <> reason
+        , ""
+        , "An established user's comments do not require moderation. Please read and accept the honor pledge [**here**](/honor-pledge)."
+        ]
 
 -- | Get a User's Roles in a Project.
 getRoles :: UserId -> ProjectId -> YesodDB App [Role]

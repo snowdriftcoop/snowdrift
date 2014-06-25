@@ -70,6 +70,10 @@ $# used by commentTreeWidget function
                         <a href="@{ApproveWikiCommentR project_handle target comment_id}">
                             approve
 
+                    <span .comment-action>
+                        <a href="@{UserR user_id}">
+                            establish user
+
             $if not (current_route == ReplyCommentR project_handle target comment_id)
                 <span .comment-action>
                     <a href="@{ReplyCommentR project_handle target comment_id}">

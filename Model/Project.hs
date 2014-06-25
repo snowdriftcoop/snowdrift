@@ -6,8 +6,7 @@ import           Model.Currency
 import           Model.ViewType
 import           Model.User
 
-import Control.Monad.Trans.Resource (MonadThrow)
-
+import           Control.Monad.Trans.Resource (MonadThrow)
 import           Control.Concurrent.Async     (Async, async, wait)
 import qualified Github.Data                  as GH
 import qualified Github.Issues                as GH
@@ -135,11 +134,9 @@ getCounts (Entity user_id user) = mapM $ \(Entity project_id _) -> do
  -  Fix algorithm
  -}
 
-
 projectNameWidget :: ProjectId -> Widget
 projectNameWidget project_id = do
     maybe_project <- handlerToWidget $ runDB $ get project_id
     case maybe_project of
         Nothing -> [whamlet| (unknown project) |]
         Just project -> [whamlet| #{projectName project} |]
-
