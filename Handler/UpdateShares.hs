@@ -7,6 +7,7 @@ import Model.Currency
 import Model.Shares
 import Model.Project
 
+import qualified Data.Text as T
 
 
 confirmForm :: Int64 -> Form SharesPurchaseOrder
@@ -37,15 +38,18 @@ postUpdateSharesR :: Text -> Handler Html
 postUpdateSharesR project_handle = do
     user_id <- requireAuthId
     ((result, _), _) <- runFormPost $ confirmForm 1
+    now <- liftIO getCurrentTime
 
     case result of
         FormSuccess (SharesPurchaseOrder shares) -> do
             -- TODO - refuse negative
+            Just pledge_render_id <- fmap (read . T.unpack) <$> lookupSession pledgeRenderKey
 
             success <- runDB $ do
                 Just user <- get user_id
                 Just account <- get $ userAccount user
                 Entity project_id _ <- getBy404 $ UniqueProjectHandle project_handle
+                _ <- insert $ SharesPledged now user_id shares pledge_render_id
 
                 either_unique <- insertBy $ Pledge user_id project_id shares shares
 
