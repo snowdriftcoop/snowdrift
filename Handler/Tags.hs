@@ -146,7 +146,7 @@ getNewCommentTagR project_handle target comment_id = do
 
     user <- entityVal <$> requireAuth
 
-    unless (isJust $ userEstablishedTs user)
+    unless (isEstablished user)
         (permissionDenied "You must be an established user to add tags")
 
     Entity project_id _ <- runDB $ getBy404 $ UniqueProjectHandle project_handle
@@ -183,7 +183,7 @@ postNewCommentTagR :: Bool -> Text -> Text -> CommentId -> Handler Html
 postNewCommentTagR create_tag project_handle target comment_id = do
     Entity user_id user <- requireAuth
 
-    unless (isJust $ userEstablishedTs user)
+    unless (isEstablished user)
         (permissionDenied "You must be an established user to add tags")
 
     (Entity project_id _, Entity page_id _) <- getPageInfo project_handle target

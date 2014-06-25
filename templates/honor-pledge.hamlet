@@ -1,0 +1,5 @@
+<h1>Be honorable.
+
+$if is_elig
+    <form action=@{HonorPledgeR} method=post>
+        <input type="submit" value="Accept">

@@ -28,12 +28,12 @@ getWikiR :: Text -> Text -> Handler Html
 getWikiR project_handle target = do
     maybe_user <- maybeAuth
 
-    (Entity _ project, Entity _ page) <- getPageInfo project_handle target
+    (Entity project_id project, Entity _ page) <- getPageInfo project_handle target
 
     moderator <- case maybe_user of
         Nothing -> return False
         Just (Entity viewer_id _) ->
-            runDB $ isProjectModerator project_handle viewer_id
+            runDB $ isProjectModerator' viewer_id project_id
 
     [Value (comment_count :: Int)] <- runDB $ select $ from $ \comment -> do
         where_ $ foldl1 (&&.) $ catMaybes
@@ -42,7 +42,7 @@ getWikiR project_handle target = do
             ]
         return countRows
 
-    let can_edit = isJust $ userEstablishedTs =<< entityVal <$> maybe_user
+    let can_edit = fromMaybe False (isEstablished . entityVal <$> maybe_user)
 
     defaultLayout $ do
 
@@ -75,7 +75,7 @@ postWikiR project_handle target = do
     Entity user_id user <- requireAuth
     now <- liftIO getCurrentTime
 
-    let can_edit = isJust $ userEstablishedTs user
+    let can_edit = isEstablished user
 
     unless can_edit $ permissionDenied "you do not have permission to edit this page"
 
@@ -216,7 +216,7 @@ getEditWikiR project_handle target = do
 
     Entity _ last_edit <- runDB $ getBy404 $ UniqueWikiLastEdit page_id
 
-    let can_edit = isJust $ userEstablishedTs user
+    let can_edit = isEstablished user
 
     unless can_edit $ permissionDenied "you do not have permission to edit this page"
 

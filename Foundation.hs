@@ -2,56 +2,45 @@
 
 module Foundation where
 
-import Prelude
-import Yesod hiding ((==.), count, Value)
-import Yesod.Static
-import Yesod.Auth
-import Yesod.Auth.BrowserId
-import Yesod.Auth.HashDB (authHashDB, setPassword)
-
-import Yesod.Default.Config
-import Yesod.Default.Util (addStaticContentExternal)
-import Yesod.Core.Types (Logger)
-import Network.HTTP.Conduit (Manager)
+import           Model
+import           Model.Currency
+import           Model.Established.Internal         (Established(..))
 import qualified Settings
-import Settings.Development (development)
+import           Settings                           (widgetFile, Extra (..))
+import           Settings.Development               (development)
+import           Settings.StaticFiles
+
+import           Blaze.ByteString.Builder.Char.Utf8 (fromText)
+import           Control.Applicative
+import           Control.Exception.Lifted           (throwIO, handle)
+import           Control.Monad
+import           Control.Monad.Trans.Resource
+import qualified Data.ByteString.Lazy.Char8         as LB
+import           Data.Char                          (isSpace)
+import           Data.Int                           (Int64)
+import           Data.Monoid
+import           Data.Time
+import           Data.Text                          as T
+import qualified Data.Text.Lazy                     as TL
+import qualified Data.Text.Lazy.Encoding            as E
+import           Database.Esqueleto
 import qualified Database.Persist
-import Settings.StaticFiles
-import Settings (widgetFile, Extra (..))
-import Model
-import Text.Jasmine (minifym)
-import Text.Hamlet (hamletFile)
-
-import Model.Currency
-
-import Control.Applicative
-import Control.Monad.Trans.Resource
-import Control.Monad
-import Control.Exception.Lifted (throwIO, handle)
-
-import Data.Int (Int64)
-import Data.Text as T
-
-import Data.Char (isSpace)
-
-import Web.Authenticate.BrowserId (browserIdJs)
-
-import Blaze.ByteString.Builder.Char.Utf8 (fromText)
-
-import Yesod.Form.Jquery
-
-import Yesod.Markdown (Markdown (..))
-
-import qualified Data.ByteString.Lazy.Char8 as LB
-import qualified Data.Text.Lazy.Encoding as E
-
-import Data.Time
-
-import Database.Esqueleto
-
-import           Text.Blaze.Html.Renderer.Text (renderHtml)
-import qualified Data.Text.Lazy       as TL
-import Data.Monoid
+import           Network.HTTP.Conduit               (Manager)
+import           Prelude
+import           Text.Blaze.Html.Renderer.Text      (renderHtml)
+import           Text.Hamlet                        (hamletFile)
+import           Text.Jasmine                       (minifym)
+import           Web.Authenticate.BrowserId         (browserIdJs)
+import           Yesod                              hiding ((==.), count, Value)
+import           Yesod.Auth
+import           Yesod.Auth.BrowserId
+import           Yesod.Auth.HashDB                  (authHashDB, setPassword)
+import           Yesod.Core.Types                   (Logger)
+import           Yesod.Default.Config
+import           Yesod.Default.Util                 (addStaticContentExternal)
+import           Yesod.Form.Jquery
+import           Yesod.Markdown                     (Markdown (..))
+import           Yesod.Static
 
 -- | The site argument for your application. This can be a good place to
 -- keep settings and values requiring initialization before your application
@@ -348,7 +337,7 @@ createUser ident passwd name avatar nick = do
     now <- liftIO getCurrentTime
     handle (\ DBException -> return Nothing) $ runDB $ do
         account_id <- insert $ Account 0
-        user <- maybe return setPassword passwd $ User ident (Just now) Nothing Nothing name account_id avatar Nothing Nothing nick now now now now Nothing Nothing
+        user <- maybe return setPassword passwd $ User ident (Just now) Nothing Nothing name account_id avatar Nothing Nothing nick now now now now EstUnestablished
         uid_maybe <- insertUnique user
         Entity snowdrift_id _ <- getBy404 $ UniqueProjectHandle "snowdrift"
         case uid_maybe of

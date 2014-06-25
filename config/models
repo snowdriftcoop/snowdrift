@@ -35,8 +35,7 @@ User
     readApplications UTCTime default=now()
     readComments UTCTime default=now()
     readEdits UTCTime default=now()
-    establishedTs UTCTime Maybe
-    establishedReason Text Maybe
+    established Established default='EstUnestablished'
     UniqueUser ident
     UniqueUserAccount account
     deriving Typeable
@@ -66,7 +65,7 @@ Project
     githubRepo Text Maybe
     UniqueProjectAccount account
     UniqueProjectHandle handle
-    deriving Show
+    deriving Eq Show
 
 ProjectBlog
     time UTCTime

@@ -1,7 +1,5 @@
 module Model.Role
     ( Role (..)
-    , getRoles
-    , getRolesHandler
     , presentationRoles
     , roleLabel
     , roleAbbrev
@@ -9,21 +7,6 @@ module Model.Role
     ) where
 
 import Import
-
-import Model.Role.Internal
-
-getRoles :: UserId -> ProjectId -> YesodDB App [Role]
-getRoles user_id project_id = fmap (map unValue) $
-    select $
-        from $ \r -> do
-        where_ (r ^. ProjectUserRoleProject ==. val project_id &&.
-                r ^. ProjectUserRoleUser ==. val user_id)
-        return $ r ^. ProjectUserRoleRole
-
-getRolesHandler :: ProjectId -> Handler [Role]
-getRolesHandler project_id = maybeAuthId >>= \case
-    Nothing -> return []
-    Just user_id -> runDB $ getRoles user_id project_id
 
 roleLabel :: Role -> Text
 roleLabel TeamMember = "Team Member"

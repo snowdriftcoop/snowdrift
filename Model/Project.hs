@@ -13,7 +13,6 @@ import qualified Github.Data                  as GH
 import qualified Github.Issues                as GH
 import qualified Data.Text                    as T
 
-
 data ProjectSummary =
     ProjectSummary
         { summaryName :: Text
@@ -86,8 +85,8 @@ updateShareValue project_id = do
 
 -- TODO: Better name.
 getCounts :: Entity User -> [Entity Project] -> YesodDB App [([Value Int], [Value Int])]
-getCounts (Entity user_id user) = mapM $ \(Entity project_id project) -> do
-    moderator <- isProjectModerator (projectHandle project) user_id
+getCounts (Entity user_id user) = mapM $ \(Entity project_id _) -> do
+    moderator <- isProjectModerator' user_id project_id
 
     comment_viewtimes :: [Entity ViewTime] <- select $ from $ \ viewtime -> do
         where_ $

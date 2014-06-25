@@ -77,3 +77,5 @@ p/#Text/applications ApplicationsR GET
 
 /dev/repo RepoFeedR GET
 /dev/build BuildFeedR GET
+/honor-pledge HonorPledgeR GET POST
+/u/#UserId/elig UserEstEligibleR POST
