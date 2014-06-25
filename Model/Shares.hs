@@ -20,8 +20,8 @@ pledgeForm shares extra = do
                 <strong>
                     shares:&nbsp;^{fvInput pledge_view}
             <p>
-                Share value is based on 0.1&cent; times the number of other patrons.
-                When a patron pledges extra shares, those get <i>partial</i> matching as well.
+                Share value is based on 0.1&cent; times the number of other patrons,
+                with additional <i>partial</i> matching for any patron who pledges extra shares.
                 <a href=@{WikiR "snowdrift" "mechanism"}>
                     <em> Read the details&hellip;
         |]
