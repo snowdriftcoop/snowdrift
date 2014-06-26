@@ -29,7 +29,6 @@ library
                      Import
                      Model
                      Model.AnnotatedTag
-                     Model.ClosureType
                      Model.CollapseState
                      Model.Comment
                      Model.Currency
@@ -51,35 +50,35 @@ library
                      Settings
                      Settings.StaticFiles
                      Settings.Development
-                     Handler.Home
-                     Handler.User
-                     Handler.Widget
-                     Handler.Project
-                     Handler.Invite
-                     Handler.Invitation
-                     Handler.UpdateShares
-                     Handler.Volunteer
-                     Handler.Contact
-                     Handler.Who
-                     Handler.PostLogin
-                     Handler.ToU
-                     Handler.Privacy
-                     Handler.Messages
                      Handler.Application
                      Handler.Applications
+                     Handler.BuildFeed
+                     Handler.Contact
+                     Handler.Home
+                     Handler.HonorPledge
+                     Handler.Invitation
+                     Handler.Invite
                      Handler.JsLicense
                      Handler.MarkdownTutorial
+                     Handler.Messages
+                     Handler.PostLogin
+                     Handler.Privacy
+                     Handler.Project
+                     Handler.RepoFeed
+                     Handler.Tickets
+                     Handler.ToU
+                     Handler.UpdateShares
+                     Handler.User
                      Handler.UserBalance
                      Handler.UserPledges
+                     Handler.Volunteer
+                     Handler.Who
+                     Handler.Widget
                      Handler.Wiki
-                     Handler.Discussion
-                     Handler.Tags
-                     Handler.Tickets
-                     Handler.RepoFeed
-                     Handler.BuildFeed
-                     Handler.HonorPledge
+                     Handler.Wiki.Comment
                      View.Comment
                      View.User
+                     View.Wiki
                      Version
                      Widgets.Doc
                      Widgets.Markdown
@@ -91,8 +90,8 @@ library
 
     other-modules: Model.Settings.Internal
                    Model.Established.Internal
-                   Model.ClosureType.Internal
                    Model.CollapseState.Internal
+                   Model.Comment.Internal
                    Model.Role.Internal
                    Model.ViewType.Internal
                    Model.Permission.Internal

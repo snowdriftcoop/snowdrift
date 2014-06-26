@@ -8,16 +8,14 @@ import qualified Data.Map      as M
 import           Data.Tree
 
 import Model.AnnotatedTag
-import Model.User
-import Model.ClosureType
 import Model.CollapseState
 import Model.Comment           (getCommentTags)
-
+import Model.Markdown
+import Model.User
 import Widgets.Markdown
 import Widgets.Tag
 import Widgets.Time
 
-import Model.Markdown
 
 countReplies :: [Tree a] -> Int
 countReplies = sum . map (F.sum . fmap (const 1))
@@ -204,3 +202,28 @@ orderingNewestFirst = flip (compare `on` (timestamp . newest))
 
     timestamp :: Entity Comment -> UTCTime
     timestamp = commentCreatedTs . entityVal
+
+rethreadForm :: Form (Text, Text)
+rethreadForm = renderBootstrap3 $ (,)
+    <$> areq' textField "New Parent Url" Nothing
+    <*> areq' textField "Reason" Nothing
+
+createCommentTagForm :: Form Text
+createCommentTagForm = renderBootstrap3 $ areq textField "" Nothing
+
+newCommentTagForm :: [Entity Tag] -> [Entity Tag] -> Form (Maybe [TagId], Maybe [TagId])
+newCommentTagForm project_tags other_tags = renderBootstrap3 $ (,)
+    -- <$> fmap (\(Entity tag_id tag) -> aopt checkBoxField (tag_id) (tagName tag)) (project_tags <> other_tags)
+    <$> aopt (tagCloudField $ tags project_tags) "Tags used elsewhere in this project:" Nothing
+    <*> aopt (tagCloudField $ tags other_tags) "Tags used in other projects:" Nothing
+--    <*> areq hiddenField "" (Just "apply")
+    where tags = fmap (\(Entity tag_id tag) -> (tagName tag, tag_id))
+          tagCloudField = checkboxesFieldList' $ (\(PersistInt64 a) -> show a) . unKey
+
+closedForm, retractedForm :: Maybe Markdown -> Form Markdown
+closedForm    = requiredMarkdownForm "Reason for closing:"
+retractedForm = requiredMarkdownForm "Reason for retracting:"
+
+requiredMarkdownForm :: FieldSettings App -> Maybe Markdown -> Form Markdown
+requiredMarkdownForm settings = renderBootstrap3 . areq snowdriftMarkdownField settings
+

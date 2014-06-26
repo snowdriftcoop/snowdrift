@@ -1,35 +1,50 @@
 module Model.Comment
-    ( buildCommentForest
+    ( approveComment
+    , buildCommentForest
     , buildCommentTree
     , getAncestorClosures
     , getAncestorClosures'
     , getClosedRootComments
     , getCommentAncestors
+    , getCommentDepth
+    , getCommentDepth404
     , getCommentDescendants
     , getCommentDestination
-    , getCommentDepth
     , getCommentPage
     , getCommentPageId
     , getCommentRethread
     , getCommentTags
+    , getCommentsUsers
     , getOpenRootComments
     , getRepliesComments
     , getRootComments
     , getTags
     , makeClosureMap
+    , makeModeratedComment
     , makeTicketMap
-    , newCommentClosure
+    , newClosedCommentClosure
+    , newRetractedCommentClosure
     , subGetCommentAncestors
     ) where
 
 import Import
 
+import           Data.Foldable     (Foldable)
+import qualified Data.Foldable     as F
 import qualified Data.Map          as M
+import qualified Data.Set          as S
 import           Data.Tree
 import           GHC.Exts          (IsList(..))
 import           Prelude           (head)
 
-import           Model.ClosureType (ClosureType)
+approveComment :: UserId -> CommentId -> YesodDB App ()
+approveComment user_id comment_id = do
+    now <- liftIO getCurrentTime
+    update $ \c -> do
+        set c [ CommentModeratedTs =. val (Just now)
+              , CommentModeratedBy =. val (Just user_id)
+              ]
+        where_ (c ^. CommentId ==. val comment_id)
 
 -- | Build a tree of comments, given the root and replies. The replies are not necessarily
 -- direct or indirect descendants of the root, but rather may be siblings, nephews, etc.
@@ -109,6 +124,9 @@ ancestorsQuery comment_id =
 getCommentDepth :: CommentId -> YesodDB App Int
 getCommentDepth = fmap commentDepth . getJust
 
+getCommentDepth404 :: CommentId -> Handler Int
+getCommentDepth404 = fmap commentDepth . runDB . get404
+
 -- | Get a comment's descendants' ids.
 getCommentDescendants :: CommentId -> YesodDB App [CommentId]
 getCommentDescendants comment_id = fmap (map unValue) $
@@ -128,6 +146,8 @@ getCommentPage = fmap entityVal . getCommentPageEntity
 getCommentPageId :: CommentId -> YesodDB App WikiPageId
 getCommentPageId = fmap entityKey . getCommentPageEntity
 
+-- | Partial function. Fails if the given Comment is not on a WikiPage, but some
+-- other Discussion.
 getCommentPageEntity :: CommentId -> YesodDB App (Entity WikiPage)
 getCommentPageEntity comment_id = fmap head $
     select $
@@ -235,6 +255,29 @@ makeTicketMap comment_ids = fmap (M.fromList . map ((ticketComment . entityVal) 
         where_ (t ^. TicketComment `in_` valList comment_ids)
         return t
 
-newCommentClosure :: MonadIO m => UserId -> ClosureType -> Markdown -> CommentId -> m CommentClosure
-newCommentClosure user_id closure_type reason comment_id =
+newClosedCommentClosure, newRetractedCommentClosure :: MonadIO m => UserId -> Markdown -> CommentId -> m CommentClosure
+newClosedCommentClosure    = newCommentClosure Closed
+newRetractedCommentClosure = newCommentClosure Retracted
+
+newCommentClosure :: MonadIO m => ClosureType -> UserId -> Markdown -> CommentId -> m CommentClosure
+newCommentClosure closure_type user_id reason comment_id =
     (\now -> CommentClosure now user_id closure_type reason comment_id) `liftM` liftIO getCurrentTime
+
+-- | Construct a comment, auto-moderated by 'this' User (because they are established).
+makeModeratedComment :: MonadIO m => UserId -> DiscussionId -> Maybe CommentId -> Markdown -> Int -> m Comment
+makeModeratedComment user_id discussion_id parent_comment comment_text depth = do
+    now <- liftIO getCurrentTime
+    return $ Comment
+                 now
+                 (Just now)
+                 (Just user_id)
+                 Nothing
+                 discussion_id
+                 parent_comment
+                 user_id
+                 comment_text
+                 depth
+
+-- | Get the set of Users that have posted the given Foldable of comments.
+getCommentsUsers :: Foldable f => f (Entity Comment) -> Set UserId
+getCommentsUsers = F.foldMap (S.singleton . commentUser . entityVal)

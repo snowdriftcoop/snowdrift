@@ -1,50 +1,41 @@
 {-# LANGUAGE CPP, DeriveDataTypeable, TypeFamilies #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
-module Import ( module Import ) where
+module Import (module Import) where
 
+import           Foundation                    as Import
+import           Model                         as Import
+import           Model.Comment.Internal        as Import
+import           Model.Established.Internal    as Import
+import           Model.Role.Internal           as Import
+import           Model.Project.Internal        as Import
+import           Settings                      as Import
+import           Settings.Development          as Import
+import           Settings.StaticFiles          as Import
 
-import           Prelude              as Import hiding (head, init, last,
-                                                 readFile, tail, writeFile)
-import           Yesod                as Import hiding (Route (..), (||.), (==.), (!=.), (<.), (<=.), (>.), (>=.), (=.), (+=.), (-=.), (*=.), (/=.), selectSource, delete, update, count, Value)
-import           Yesod.Auth           as Import
-import           Yesod.Markdown       as Import (Markdown)
-import           Text.Blaze.Html.Renderer.Text (renderHtml)
-
-import           Control.Arrow        as Import ((***), (&&&), first, second)
-
-import           Database.Esqueleto   as Import hiding (on, valList)
-import qualified Database.Esqueleto
-
-import           Control.Applicative  as Import (pure, (<$>), (<*>))
-import           Data.Text            as Import (Text)
-import qualified Data.Text            as T
-import qualified Data.Text.Lazy       as TL
-
-import           Data.Function        as Import (on)
-
-import           Data.Map             as Import (Map)
-import           Data.Set             as Import (Set)
-
-import           Foundation           as Import
-import           Model                as Import
-import           Settings             as Import
-import           Settings.Development as Import
-import           Settings.StaticFiles as Import
-
-import           Data.Maybe           as Import (fromMaybe, listToMaybe, mapMaybe, isJust, catMaybes)
-
-import           Data.Int             as Import (Int64)
-
-import           Control.Monad        as Import
-
-import           Data.Time.Clock      as Import (UTCTime, diffUTCTime, getCurrentTime)
+import           Control.Applicative           as Import (pure, (<$>), (<*>))
+import           Control.Arrow                 as Import ((***), (&&&), first, second)
+import           Control.Monad                 as Import
+import           Data.Function                 as Import (on)
+import           Data.Int                      as Import (Int64)
+import           Data.Map                      as Import (Map)
+import           Data.Maybe                    as Import (fromMaybe, listToMaybe, mapMaybe, isJust, catMaybes)
+import           Data.Set                      as Import (Set)
+import           Data.Text                     as Import (Text)
+import qualified Data.Text                     as T
+import qualified Data.Text.Lazy                as TL
+import           Data.Time.Clock               as Import (UTCTime, diffUTCTime, getCurrentTime)
 import           Data.Time.Units
-
 import           Model.Established.Internal as Import
 import           Model.Role.Internal        as Import
-
-import Data.Typeable (Typeable)
+import           Data.Typeable (Typeable)
+import           Database.Esqueleto            as Import hiding (on, valList)
+import qualified Database.Esqueleto
+import           Prelude                       as Import hiding (head, init, last, readFile, tail, writeFile)
+import           Text.Blaze.Html.Renderer.Text (renderHtml)
+import           Yesod                         as Import hiding (Route (..), (||.), (==.), (!=.), (<.), (<=.), (>.), (>=.), (=.), (+=.), (-=.), (*=.), (/=.), selectSource, delete, update, count, Value)
+import           Yesod.Auth                    as Import
+import           Yesod.Markdown                as Import (Markdown)
 
 import GHC.Exts (IsList(..))
 import qualified Data.Map as M
@@ -265,10 +256,6 @@ instance (WrappedValues a, WrappedValues b) => WrappedValues (a, b) where
 instance (WrappedValues a, WrappedValues b, WrappedValues c) => WrappedValues (a, b, c) where
     type Unwrapped (a, b, c) = (Unwrapped a, Unwrapped b, Unwrapped c)
     unwrapValues (a, b, c) = (unwrapValues a, unwrapValues b, unwrapValues c)
-
-
-
-
 
 {- The following footnote and toc functions were used our pre-wiki about page
 At the time of this comment, they are no longer used anywhere live. -}

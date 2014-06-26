@@ -204,6 +204,13 @@ Rethread
     oldComment CommentId  -- The old comment that was rethreaded.
     reason Text           -- The reason for rethreading.
 
+-- A flagging event.
+CommentFlagging
+    ts UTCTime
+    flagger UserId
+    comment CommentId
+    reason FlagReason
+
 -- An individual comment-rethread relation.
 CommentRethread
     rethread RethreadId

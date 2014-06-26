@@ -140,3 +140,28 @@ projectNameWidget project_id = do
     case maybe_project of
         Nothing -> [whamlet| (unknown project) |]
         Just project -> [whamlet| #{projectName project} |]
+
+getProjectTagList :: ProjectId -> YesodDB App ([Entity Tag], [Entity Tag])
+getProjectTagList project_id = (,) <$> getProjectTags <*> getOtherTags
+  where
+    getProjectTags :: YesodDB App [Entity Tag]
+    getProjectTags =
+        selectDistinct $
+            from $ \(tag `InnerJoin` rel `InnerJoin` comment `InnerJoin` page) -> do
+            on_ ( page ^. WikiPageDiscussion ==. comment ^. CommentDiscussion )
+            on_ ( comment ^. CommentId ==. rel ^. CommentTagComment )
+            on_ ( rel ^. CommentTagTag ==. tag ^. TagId )
+            where_ ( page ^. WikiPageProject ==. val project_id )
+            orderBy [ desc (tag ^. TagName) ]
+            return tag
+
+    getOtherTags :: YesodDB App [Entity Tag]
+    getOtherTags = do
+        selectDistinct $
+            from $ \(tag `InnerJoin` rel `InnerJoin` comment `InnerJoin` page) -> do
+            on_ ( page ^. WikiPageDiscussion ==. comment ^. CommentDiscussion )
+            on_ ( comment ^. CommentId ==. rel ^. CommentTagComment )
+            on_ ( rel ^. CommentTagTag ==. tag ^. TagId )
+            where_ ( page ^. WikiPageProject !=. val project_id )
+            orderBy [ desc (tag ^. TagName) ]
+            return tag
