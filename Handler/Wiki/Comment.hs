@@ -70,7 +70,7 @@ processWikiCommentPreview maybe_parent_id text (Entity _ project) page = do
     now <- liftIO getCurrentTime
     let comment =
           Entity (Key $ PersistInt64 0) $
-            Comment now Nothing Nothing Nothing (wikiPageDiscussion page) maybe_parent_id user_id text depth
+            Comment now Nothing Nothing (wikiPageDiscussion page) maybe_parent_id user_id text depth
 
         rendered_comment = discussCommentTreeWidget
                                (Tree.singleton comment)
@@ -100,7 +100,6 @@ processWikiCommentPost maybe_parent_id text (Entity _ project) page = do
         comment_id <- insert $ Comment now
                                        (if is_established then Just now else Nothing)
                                        (if is_established then Just user_id else Nothing)
-                                       Nothing
                                        (wikiPageDiscussion page)
                                        maybe_parent_id'
                                        user_id
@@ -160,41 +159,23 @@ getDiscussCommentR' show_reply project_handle target comment_id = do
                          (let route = if show_reply then ReplyCommentR else DiscussCommentR
                           in route project_handle page_target destination_comment_id)
 
-    (_, Entity page_id _, _) <- checkCommentPage project_handle target comment_id
+    (_, Entity page_id _, root) <- checkCommentPage project_handle target comment_id
 
-    moderator <- isCurUserProjectModerator project_handle
+    is_moderator <- isCurUserProjectModerator project_handle
 
-    (root, rest, user_map, earlier_closures, closure_map, ticket_map, tag_map) <- runDB $ do
-        root <- get404 comment_id
-        root_wiki_page_id <- getCommentPageId comment_id
-
-        when (root_wiki_page_id /= page_id) $
-            error "Selected comment does not match selected page"
-
-        descendants <- getCommentDescendants comment_id
-
-        -- TODO: move to Model/Comment?
-        rest <-
-            select $
-                from $ \c -> do
-                where_ (c ^. CommentId `in_` valList descendants &&.
-                        if moderator
-                            then val True
-                            else not_ . isNothing $ c ^. CommentModeratedTs)
-                orderBy [asc (c ^. CommentParent), asc (c ^. CommentCreatedTs)]
-                return c
+    (rest, user_map, earlier_closures, closure_map, ticket_map, tag_map) <- runDB $ do
+        rest <- getCommentDescendants is_moderator comment_id
 
         let all_comments    = (Entity comment_id root):rest
             all_comment_ids = map entityKey all_comments
-            user_ids = getCommentsUsers all_comments
 
         earlier_closures <- getAncestorClosures comment_id
-        user_map         <- entitiesMap <$> getUsersIn (S.toList user_ids)
+        user_map         <- entitiesMap <$> getUsersIn (S.toList $ getCommentsUsers all_comments)
         closure_map      <- makeClosureMap all_comment_ids
         ticket_map       <- makeTicketMap all_comment_ids
         tag_map          <- entitiesMap <$> getAllTags
 
-        return (root, rest, user_map, earlier_closures, closure_map, ticket_map, tag_map)
+        return (rest, user_map, earlier_closures, closure_map, ticket_map, tag_map)
 
     comment_form <-
         if show_reply
@@ -446,7 +427,7 @@ postRethreadWikiCommentR project_handle target comment_id = do
                     now <- liftIO getCurrentTime
 
                     runDB $ do
-                        descendants <- getCommentDescendants comment_id
+                        descendants <- getCommentDescendantsIds comment_id
 
                         let comments = comment_id : descendants
 
@@ -521,7 +502,8 @@ rethreadComments rethread_id depth_offset maybe_new_parent_id new_discussion_id 
 
         insert_ $ CommentRethread rethread_id comment_id new_comment_id
 
-    insertSelect $ from $ \ (comment_closure `InnerJoin` comment_rethread) -> do
+    insertSelect $
+        from $ \(comment_closure `InnerJoin` comment_rethread) -> do
         on_ $ comment_closure ^. CommentClosureComment ==. comment_rethread ^. CommentRethreadOldComment
         return $ CommentClosure
                     <#  (comment_closure ^. CommentClosureTs)
@@ -529,10 +511,6 @@ rethreadComments rethread_id depth_offset maybe_new_parent_id new_discussion_id 
                     <&> (comment_closure ^. CommentClosureType)
                     <&> (comment_closure ^. CommentClosureReason)
                     <&> (comment_rethread ^. CommentRethreadNewComment)
-
-    update $ \ comment -> do
-        where_ $ comment ^. CommentId `in_` valList comment_ids
-        set comment [ CommentRethreaded =. just (val rethread_id) ]
 
     return new_comment_ids
 

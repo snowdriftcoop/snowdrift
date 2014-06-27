@@ -421,8 +421,8 @@ postWikiR project_handle target = do
 -- | getDiscussWikiR generates the associated discussion page for each wiki page
 getDiscussWikiR :: Text -> Text -> Handler Html
 getDiscussWikiR project_handle target = lookupGetParam "state" >>= \case
-    Just "closed" -> go getClosedRootComments
-    _             -> go getOpenRootComments
+    Just "closed" -> go getAllClosedRootComments
+    _             -> go getAllOpenRootComments
   where
     go = getDiscussWikiR' project_handle target
 
@@ -438,7 +438,7 @@ getDiscussWikiR' project_handle target get_root_comments = do
 
     (roots, replies, user_map, closure_map, ticket_map, tag_map) <- runDB $ do
         roots           <- get_root_comments is_moderator (wikiPageDiscussion page)
-        replies         <- getRepliesComments is_moderator (wikiPageDiscussion page)
+        replies         <- getCommentsDescendants is_moderator (map entityKey roots)
         user_map        <- entitiesMap <$> getUsersIn (S.toList $ getCommentsUsers roots <> getCommentsUsers replies)
         let comment_ids  = map entityKey (roots ++ replies)
         closure_map     <- makeClosureMap comment_ids

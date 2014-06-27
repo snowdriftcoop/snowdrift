@@ -171,10 +171,6 @@ Comment
     moderatedTs UTCTime Maybe
     moderatedBy UserId Maybe
 
-    -- A comment may be rethreaded by a moderator. If it is, this field will be
-    -- Just, and the new Comment that replaces it will have rethreaded == Nothing
-    rethreaded RethreadId Maybe
-
     discussion DiscussionId
     parent CommentId Maybe
     user UserId
