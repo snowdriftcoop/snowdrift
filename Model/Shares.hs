@@ -101,22 +101,12 @@ pledgeForm project_id extra = do
             #{extra}
             <div .text-center>
                 <h3 style="margin-top:0">
-<<<<<<< HEAD
                     How many shares will you pledge?
-
-=======
-                    You pledge:
->>>>>>> 5e2cfe36d5037737e70fff28b97ede708effaf4c
                 <strong>
                     ^{fvInput pledge_view}
             <p>
-<<<<<<< HEAD
-                Share value is based on 0.1&cent; times the number of other patrons,
-                with additional <i>partial</i> matching for any patron who pledges extra shares.
-=======
                 Share value starts at 0.1&cent; times the number of other patrons,
                 but extra shares from any one patron also get <i>partial</i> matching.
->>>>>>> fixed look of the new radio-style pledge form
                 <a href=@{WikiR "snowdrift" "mechanism"}>
                     <em> Read the details&hellip;
         |]
