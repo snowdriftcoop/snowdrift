@@ -39,10 +39,9 @@ input[type=submit]:active
 input[type=text], input[type=email]
     width : 30em
 
-/* this will be irrelevant after we move to a radio and "other" style pledge form */
-input.inline_shares
-    width : 3.5em
-    text-align : right
+.radio-inline
+    width : 2em
+    vertical-align : unset
 
 .markdown_wrapper textarea
     height : 12em
