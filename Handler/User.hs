@@ -61,7 +61,7 @@ postUserR user_id = do
                     (form, _) <- generateFormPost $ editUserForm updated_user
 
                     defaultLayout $
-                        renderPreview form action $
+                        previewWidget form action $
                             renderUser (Just viewer_id) user_id updated_user mempty
 
                 Just x | x == action -> do

@@ -72,20 +72,21 @@ processWikiCommentPreview maybe_parent_id text (Entity _ project) page = do
           Entity (Key $ PersistInt64 0) $
             Comment now Nothing Nothing (wikiPageDiscussion page) maybe_parent_id user_id text depth
 
-        rendered_comment = discussCommentTreeWidget
+        rendered_comment = commentTreeWidget
                                (Tree.singleton comment)
                                earlier_closures
                                (M.singleton user_id user)
                                mempty
-                               mempty -- TODO: is this right?
+                               mempty -- TODO: this isn't right...
                                tag_map
                                (projectHandle project)
                                (wikiPageTarget page)
                                False   -- show actions?
-                               Nothing -- comment form
+                               0
+                               0
 
     (form, _) <- generateFormPost $ commentForm maybe_parent_id (Just text)
-    defaultLayout $ renderPreview form "post" rendered_comment
+    defaultLayout $ previewWidget form "post" rendered_comment
 
 processWikiCommentPost :: Maybe CommentId -> Markdown -> Entity Project -> WikiPage -> Handler Html
 processWikiCommentPost maybe_parent_id text (Entity _ project) page = do
@@ -134,6 +135,9 @@ processWikiCommentPost maybe_parent_id text (Entity _ project) page = do
 depthFromMaybeParentId :: Maybe CommentId -> Handler Int
 depthFromMaybeParentId = maybe (return 0) (fmap (+1) . runDB . getCommentDepth)
 
+getMaxDepth :: Handler Int
+getMaxDepth = fromMaybe 11 <$> runInputGet (iopt intField "maxdepth")
+
 --------------------------------------------------------------------------------
 -- / and /reply
 
@@ -177,22 +181,27 @@ getDiscussCommentR' show_reply project_handle target comment_id = do
 
         return (rest, user_map, earlier_closures, closure_map, ticket_map, tag_map)
 
-    comment_form <-
-        if show_reply
-        then Just . fst <$> generateFormPost (commentForm (Just comment_id) Nothing)
-        else return Nothing
+    let comment_form_widget =
+            if show_reply
+                then commentFormWidget (Just comment_id) Nothing
+                else mempty
 
-    defaultLayout $ discussCommentTreeWidget
-                        (sortTreeBy orderingNewestFirst $ buildCommentTree (Entity comment_id root, rest))
-                        earlier_closures
-                        user_map
-                        closure_map
-                        ticket_map
-                        tag_map
-                        project_handle
-                        target
-                        True -- show actions?
-                        comment_form
+    max_depth <- getMaxDepth
+
+    defaultLayout $
+        commentTreeWithReplyWidget
+            comment_form_widget
+            (sortTreeBy orderingNewestFirst $ buildCommentTree (Entity comment_id root, rest))
+            earlier_closures
+            user_map
+            closure_map
+            ticket_map
+            tag_map
+            project_handle
+            target
+            True -- show actions?
+            max_depth
+            0
 
 postReplyCommentR :: Text -> Text -> CommentId -> Handler Html
 postReplyCommentR project_handle target comment_id = do
@@ -211,7 +220,9 @@ postReplyCommentR project_handle target comment_id = do
 -- /flag
 
 getFlagCommentR :: Text -> Text -> CommentId -> Handler Html
-getFlagCommentR = error "TODO"
+getFlagCommentR project_handle target comment_id = do
+    (project, page, comment) <- checkCommentPage project_handle target comment_id
+    error "TODO"
 
 postFlagCommentR :: Text -> Text -> CommentId -> Handler Html
 postFlagCommentR = error "TODO"
@@ -266,17 +277,18 @@ closeWikiComment comment_check make_closure_form project_handle target comment_i
         <*> makeTicketMap [comment_id]
         <*> (entitiesMap <$> getTags comment_id)
 
-    let rendered_comment = discussCommentTreeWidget
+    let rendered_comment = commentTreeWidget
                                (Tree.singleton (Entity comment_id comment))
                                earlier_closures
                                (M.fromList [(user_id, user), (poster_id, poster)])
-                               mempty -- earlier closures
+                               mempty -- closures map - TODO why mempty?
                                ticket_map
                                tag_map
                                project_handle
                                target
-                               False
-                               Nothing
+                               False -- show actions?
+                               0
+                               0
 
     (closure_form, _) <- generateFormPost $ make_closure_form Nothing
     defaultLayout $ [whamlet|
@@ -321,8 +333,8 @@ postCloseWikiComment comment_check make_closure_form new_comment_closure action 
                         <*> (entitiesMap <$> getTags comment_id)
                     closure_map <- M.singleton comment_id <$> new_comment_closure user_id reason comment_id
 
-                    defaultLayout $ renderPreview form action $
-                        discussCommentTreeWidget
+                    defaultLayout $ previewWidget form action $
+                        commentTreeWidget
                             (Tree.singleton (Entity comment_id comment))
                             earlier_closures
                             (M.fromList [(user_id, user), (poster_id, poster)])
@@ -332,7 +344,8 @@ postCloseWikiComment comment_check make_closure_form new_comment_closure action 
                             project_handle
                             target
                             False   -- show actions?
-                            Nothing -- comment form
+                            0
+                            0
 
                 Just a | a == action -> do
                     new_comment_closure user_id reason comment_id >>= runDB . insert_

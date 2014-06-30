@@ -6,7 +6,7 @@ import Import
 
 import qualified Data.Tree.Extra            as Tree
 import           Data.Tree.Extra            (sortForestBy)
-import           Handler.Wiki.Comment       (processWikiComment)
+import           Handler.Wiki.Comment       (getMaxDepth, processWikiComment)
 import           Model.Comment
 import           Model.Markdown
 import           Model.Permission
@@ -133,10 +133,9 @@ getWikiNewCommentsR project_handle = do
                                 tag_map
                                 project_handle
                                 target
-                                0    -- max_depth is irrelevant for the new-comments listing 0
+                                True   -- show actions?
+                                0      -- max_depth is irrelevant for the new-comments listing 0
                                 0
-                                True -- show actions?
-                                Nothing
 
                     [whamlet|$newline never
                         <div .row>
@@ -351,7 +350,7 @@ postWikiR project_handle target = do
                 Just "preview" -> do
                     (form, _) <- generateFormPost $ editWikiForm last_edit_id content (Just comment)
 
-                    defaultLayout $ renderPreview form action $
+                    defaultLayout $ previewWidget form action $
                         renderWiki 0 project_handle target False False $
                             WikiPage target project_id content (Key $ PersistInt64 (-1)) Normal
 
@@ -446,19 +445,22 @@ getDiscussWikiR' project_handle target get_root_comments = do
         tag_map         <- entitiesMap <$> getAllTags
         return (roots, replies, user_map, closure_map, ticket_map, tag_map)
 
-    let comments = commentForestWidget
-                       (sortForestBy orderingNewestFirst (buildCommentForest roots replies))
-                       []             -- earlier closures
-                       user_map
-                       closure_map
-                       ticket_map
-                       tag_map
-                       project_handle
-                       target
-                       8              -- max depth
-                       0              -- depth
-                       True           -- show actions?
-                       Nothing        -- comment form
+    max_depth <- getMaxDepth
+
+    let comments =
+            forM_ (sortForestBy orderingNewestFirst (buildCommentForest roots replies)) $ \comment ->
+                commentTreeWidget
+                    comment
+                    [] -- earlier closures
+                    user_map
+                    closure_map
+                    ticket_map
+                    tag_map
+                    project_handle
+                    target
+                    True           -- show actions?
+                    max_depth
+                    0              -- depth
 
     (comment_form, _) <- generateFormPost $ commentForm Nothing Nothing
 
@@ -467,19 +469,6 @@ getDiscussWikiR' project_handle target get_root_comments = do
     defaultLayout $ do
         setTitle . toHtml $ projectName project <> " Wiki Discussion - " <> target <> " | Snowdrift.coop"
         $(widgetFile "wiki_discuss")
-
-postDiscussWikiR :: Text -> Text -> Handler Html
-postDiscussWikiR project_handle target = do
-    (project_entity, Entity _ page) <- runDB $ getPageInfo project_handle target
-
-    ((result, _), _) <- runFormPost $ commentForm Nothing Nothing
-
-    case result of
-        FormSuccess text -> do
-            mode <- lookupPostParam "mode"
-            processWikiComment mode Nothing text project_entity page
-        FormMissing      -> error "Form missing."
-        FormFailure msgs -> error $ "Error submitting form: " ++ T.unpack (T.intercalate "\n" msgs)
 
 --------------------------------------------------------------------------------
 -- /#target/d/new
@@ -495,7 +484,17 @@ getNewDiscussWikiR project_handle target = do
 
 
 postNewDiscussWikiR :: Text -> Text -> Handler Html
-postNewDiscussWikiR = postDiscussWikiR
+postNewDiscussWikiR project_handle target = do
+    (project_entity, Entity _ page) <- runDB $ getPageInfo project_handle target
+
+    ((result, _), _) <- runFormPost $ commentForm Nothing Nothing
+
+    case result of
+        FormSuccess text -> do
+            mode <- lookupPostParam "mode"
+            processWikiComment mode Nothing text project_entity page
+        FormMissing      -> error "Form missing."
+        FormFailure msgs -> error $ "Error submitting form: " ++ T.unpack (T.intercalate "\n" msgs)
 
 --------------------------------------------------------------------------------
 -- /#target/diff/#from/#to
@@ -629,11 +628,12 @@ postNewWikiR project_handle target = do
             <$> isProjectAffiliated project_handle user_id
             <*> isProjectAdmin "snowdrift" user_id
 
-    unless affiliated $ permissionDenied "you do not have permission to edit this page"
+    unless affiliated $
+        permissionDenied "you do not have permission to edit this page"
 
     now <- liftIO getCurrentTime
 
-    Entity project_id _ <- runDB $ getBy404 $ UniqueProjectHandle project_handle
+    Entity project_id _ <- runDB . getBy404 $ UniqueProjectHandle project_handle
 
     ((result, _), _) <- runFormPost $ newWikiForm Nothing
 
@@ -644,9 +644,9 @@ postNewWikiR project_handle target = do
             case mode of
                 Just "preview" -> do
                         (form, _) <- generateFormPost $ newWikiForm (Just content)
-                        defaultLayout $ renderPreview form action $ renderWiki 0 project_handle target False False page
-                            where page = WikiPage target project_id content (Key $ PersistInt64 0) Normal
-
+                        defaultLayout $ do
+                            let page = WikiPage target project_id content (Key $ PersistInt64 0) Normal
+                            previewWidget form action $ renderWiki 0 project_handle target False False page
 
                 Just x | x == action -> do
                     _ <- runDB $ do

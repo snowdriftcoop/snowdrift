@@ -1,10 +1,9 @@
-
 module Widgets.Preview where
 
 import Import
 
-renderPreview :: Widget -> Text -> Widget -> Widget
-renderPreview form action widget =
+previewWidget :: Widget -> Text -> Widget -> Widget
+previewWidget form action widget =
     [whamlet|
         <form method="POST">
             <div .alert .alert-danger>
@@ -13,12 +12,13 @@ renderPreview form action widget =
 
             ^{widget}
 
-            <div #edit-preview .alert .alert-danger>
-                This is a preview; your changes have <em>not</em> been saved!
             <input type=submit name=mode value="preview">
             <input type=submit name=mode value="#{action}">
+
+            <hr>
+
             ^{form}
+
             <input type=submit name=mode value="preview">
             <input type=submit name=mode value="#{action}">
     |]
-

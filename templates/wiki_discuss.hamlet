@@ -5,7 +5,9 @@
         <div .col-sm-6>
             <a href="@{NewDiscussWikiR project_handle target}"> new discussion topic
 <hr .wikitop>
+
 ^{comments}
+
 $if not has_comments
     $if isJust muser
         <form action="@{DiscussWikiR project_handle target}" method="POST">

@@ -48,14 +48,14 @@
 
 -- Project wiki
 
-/p/#Text/w                                    WikiPagesR           GET
-/p/#Text/newcomments                        WikiNewCommentsR     GET
-/p/#Text/newedits                           WikiNewEditsR        GET
+/p/#Text/w           WikiPagesR       GET
+/p/#Text/newcomments WikiNewCommentsR GET
+/p/#Text/newedits    WikiNewEditsR    GET
 
 -- Project wiki page
 
 /p/#Text/w/#Text                              WikiR                GET POST
-/p/#Text/w/#Text/d                            DiscussWikiR         GET POST
+/p/#Text/w/#Text/d                            DiscussWikiR         GET
 /p/#Text/w/#Text/d/new                        NewDiscussWikiR      GET POST
 /p/#Text/w/#Text/diff/#WikiEditId/#WikiEditId WikiDiffR            GET
 /p/#Text/w/#Text/diffp                        WikiDiffProxyR       GET

@@ -170,7 +170,7 @@ postProjectR project_handle = do
                     let preview_project = project { projectName = name, projectDescription = description, projectGithubRepo = github_repo }
 
                     (form, _) <- generateFormPost $ editProjectForm (Just (preview_project, tags))
-                    defaultLayout $ renderPreview form action $ renderProject Nothing preview_project [] Nothing
+                    defaultLayout $ previewWidget form action $ renderProject (Just project_handle) preview_project [] Nothing
 
                 Just x | x == action -> do
                     runDB $ do
@@ -367,7 +367,7 @@ postProjectBlogR project_handle = do
 
                     (form, _) <- generateFormPost $ projectBlogForm now viewer_id project_id
 
-                    defaultLayout $ renderPreview form action $ renderBlogPost project_handle blog_post
+                    defaultLayout $ previewWidget form action $ renderBlogPost project_handle blog_post
 
                 Just x | x == action -> do
                     void $ runDB $ insert blog_post

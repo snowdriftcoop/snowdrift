@@ -13,7 +13,13 @@ data ClosureType
 derivePersistField "ClosureType"
 
 data FlagReason
-    = FlagOffensive
+    = FlagPersonalAttack Text
+    | FlagUnconstructiveCriticism Text
+    | FlagCondescension Text
+    | FlagDefensiveness Text
+    | FlagSpamming Text
+    | FlagPrivacyViolation Text
+    | FlagHateSpeech Text
     | FlagOther Text
     deriving (Read, Show)
 

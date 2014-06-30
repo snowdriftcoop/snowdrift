@@ -20,6 +20,10 @@ module Model.Comment
     , getCommentTags
     , getCommentsUsers
     , getTags
+    , isApproved
+    , isEvenDepth
+    , isOddDepth
+    , isTopLevel
     , makeClosureMap
     , makeModeratedComment
     , makeTicketMap
@@ -46,6 +50,18 @@ approveComment user_id comment_id = do
               , CommentModeratedBy =. val (Just user_id)
               ]
         where_ (c ^. CommentId ==. val comment_id)
+
+isApproved :: Comment -> Bool
+isApproved = isJust . commentModeratedTs
+
+isTopLevel :: Comment -> Bool
+isTopLevel = (== 0) . commentDepth
+
+isEvenDepth :: Comment -> Bool
+isEvenDepth comment = not (isTopLevel comment) && commentDepth comment `mod` 2 == 1
+
+isOddDepth :: Comment -> Bool
+isOddDepth comment = not (isTopLevel comment) && not (isEvenDepth comment)
 
 -- | Build a tree of comments, given the root and replies. The replies are not necessarily
 -- direct or indirect descendants of the root, but rather may be siblings, nephews, etc.
@@ -93,9 +109,9 @@ getAncestorClosures' comment_id = do
     all_comment_ids <- (comment_id :) <$> getCommentAncestors comment_id
     fmap (map entityVal) $
         select $
-            from $ \c -> do
-            where_ (c ^. CommentClosureComment `in_` valList all_comment_ids)
-            return c
+            from $ \cc -> do
+            where_ (cc ^. CommentClosureComment `in_` valList all_comment_ids)
+            return cc
 
 -- | Get a comment's ancestors' ids.
 getCommentAncestors :: CommentId -> YesodDB App [CommentId]
