@@ -119,7 +119,7 @@ eligEstablishUser establisher_id user_id reason = do
   where
     message_text :: Markdown
     message_text = Markdown $ T.unlines
-        [ "Because" <> reason ","
+        [ "Because" <> reason <> ","
         , "you are now eligible to become an *established* user."
         , ""
         , "After you [accept the honor pledge](/honor-pledge), you can comment and take other actions on the site without moderation. "
