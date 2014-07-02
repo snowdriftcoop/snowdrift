@@ -58,9 +58,12 @@ $maybe (est_form, est_form_enctype) <- mest_form_and_enctype
         <h4>Establish User
         <h6>
             <em>
-                As a project moderator, you have the ability to "establish" ordinary users. Established
-                users' comments appear on the site without being explicitly approved by a moderator. If
-                you feel this user has contributed positively to the site, please fill out this form.
+                As a project moderator, you have the ability to "establish" ordinary users.
+                Established users have additional permissions such as flagging, tagging, and commenting without moderation.
+                If you now trust this user to be legitimate
+                (such as having posted several helpful, on-topic comments showing that they are clearly not a spammer or malicious troll),
+                please fill out this form.
+                They will then become fully established after affirming the <a href="@{WikiR "snowdrift" "honor"}">honor pledge</a>.
 
         <form action=@{UserEstEligibleR user_id} method=post enctype=#{est_form_enctype}>
             ^{est_form}
