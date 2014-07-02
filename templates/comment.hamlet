@@ -8,15 +8,15 @@
                 #{userPrintName (Entity user_id user)}
         <span .comment-head>
             ^{renderTime $ commentCreatedTs comment}
-        <span .comment-head>
+        <span .comment-head :not show_actions:.preview>
             |
-        <span .comment-head>
+        <span .comment-head :not show_actions:.preview>
             <a href="@{DiscussCommentR project_handle target comment_id}">
                 permalink
         $maybe parent_id <- commentParent comment
-            <span .comment-head>
+            <span .comment-head :not show_actions:.preview>
                 |
-            <span .comment-head>
+            <span .comment-head :not show_actions:.preview>
                 <a href="@{DiscussCommentR project_handle target parent_id}">
                     parent
 
@@ -53,43 +53,41 @@
 
     ^{markdownWidget project_handle (commentText comment)}
 
-    $if show_actions
-        <div>
-            $forall tag <- tags
-                ^{tagWidget tag}
+    <div>
+        $forall tag <- tags
+            ^{tagWidget tag}
 
-    <div .comment-action>
-        $if show_actions
-            $if is_mod
-                $if is_unapproved
-                    <span .comment-action>
-                        <a href="@{ApproveWikiCommentR project_handle target comment_id}">
-                            approve
-
-                    <span .comment-action>
-                        <a href="@{UserR user_id}">
-                            establish user
-
-            $if can_reply
+    <div .comment-action :not show_actions:.preview>
+        $if is_mod
+            $if is_unapproved
                 <span .comment-action>
-                    <a href="@{ReplyCommentR project_handle target comment_id}">
-                        reply
+                    <a href="@{ApproveWikiCommentR project_handle target comment_id}">
+                        approve
 
-            $if can_retract
                 <span .comment-action>
-                    <a href="@{RetractWikiCommentR project_handle target comment_id}" style="color: darkred">
-                        retract
+                    <a href="@{UserR user_id}">
+                        establish user
 
-            $if can_close
-                <span .comment-action>
-                    <a href="@{CloseWikiCommentR project_handle target comment_id}" style="color: goldenrod">
-                        close
+        $if can_reply
+            <span .comment-action>
+                <a href="@{ReplyCommentR project_handle target comment_id}">
+                    reply
 
-            $if can_rethread
-                <span .comment-action>
-                    <a href="@{RethreadWikiCommentR project_handle target comment_id}">
-                        rethread
+        $if can_retract
+            <span .comment-action>
+                <a href="@{RetractWikiCommentR project_handle target comment_id}" style="color: darkred">
+                    retract
 
-            ^{newTagWidget $ NewCommentTagR project_handle target comment_id}
+        $if can_close
+            <span .comment-action>
+                <a href="@{CloseWikiCommentR project_handle target comment_id}" style="color: goldenrod">
+                    close
+
+        $if can_rethread
+            <span .comment-action>
+                <a href="@{RethreadWikiCommentR project_handle target comment_id}">
+                    rethread
+
+        ^{newTagWidget $ NewCommentTagR project_handle target comment_id}
 
     ^{inner_widget}

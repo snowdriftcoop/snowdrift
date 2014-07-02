@@ -2,7 +2,6 @@ module Model.Comment.Internal where
 
 import Prelude
 
-import Data.Text (Text)
 import Database.Persist.TH
 
 data ClosureType
@@ -13,14 +12,13 @@ data ClosureType
 derivePersistField "ClosureType"
 
 data FlagReason
-    = FlagPersonalAttack Text
-    | FlagUnconstructiveCriticism Text
-    | FlagCondescension Text
-    | FlagDefensiveness Text
-    | FlagSpamming Text
-    | FlagPrivacyViolation Text
-    | FlagHateSpeech Text
-    | FlagOther Text
-    deriving (Read, Show)
+    = FlagPersonalAttack
+    | FlagUnconstructiveCriticism
+    | FlagCondescension
+    | FlagDefensiveness
+    | FlagSpamming
+    | FlagPrivacyViolation
+    | FlagHateSpeech
+    deriving (Eq, Read, Show)
 
 derivePersistField "FlagReason"

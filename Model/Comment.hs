@@ -1,7 +1,10 @@
 module Model.Comment
-    ( approveComment
+    ( ClosureMap
+    , TicketMap
+    , approveComment
     , buildCommentForest
     , buildCommentTree
+    , flagComment
     , getAllClosedRootComments
     , getAllOpenRootComments
     , getAllRootComments
@@ -41,6 +44,9 @@ import qualified Data.Set          as S
 import           Data.Tree
 import           GHC.Exts          (IsList(..))
 import           Prelude           (head)
+
+type ClosureMap = Map CommentId CommentClosure
+type TicketMap  = Map CommentId (Entity Ticket)
 
 approveComment :: UserId -> CommentId -> YesodDB App ()
 approveComment user_id comment_id = do
@@ -93,6 +99,13 @@ buildCommentForest :: [Entity Comment]                                          
                    -> Forest (Entity Comment)
 buildCommentForest roots replies = (map (buildCommentTree . (, replies))) roots
 
+-- | Flag a comment.
+flagComment :: CommentId -> UserId -> [FlagReason] -> Maybe Text -> YesodDB App ()
+flagComment comment_id user_id reasons message = do
+    now <- liftIO getCurrentTime
+    flagging_id <- insert (CommentFlagging now user_id comment_id message)
+    void $ insertMany (map (CommentFlaggingReason flagging_id) reasons)
+
 -- | Get all ancestors that have been closed.
 getAncestorClosures :: CommentId -> YesodDB App [CommentClosure]
 getAncestorClosures comment_id = fmap (map entityVal) $
@@ -137,9 +150,11 @@ getCommentDepth404 = fmap commentDepth . runDB . get404
 getCommentDestination :: CommentId -> YesodDB App CommentId
 getCommentDestination comment_id = getCommentRethread comment_id >>= maybe (return comment_id) getCommentDestination
 
+-- | Partial function.
 getCommentPage :: CommentId -> YesodDB App WikiPage
 getCommentPage = fmap entityVal . getCommentPageEntity
 
+-- | Partial function.
 getCommentPageId :: CommentId -> YesodDB App WikiPageId
 getCommentPageId = fmap entityKey . getCommentPageEntity
 

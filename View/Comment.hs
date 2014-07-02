@@ -6,6 +6,7 @@ module View.Comment
     , commentTreeWithReplyWidget
     , createCommentTagForm
     , disabledCommentForm
+    , flagCommentForm
     , newCommentTagForm
     , orderingNewestFirst
     , requiredMarkdownForm
@@ -18,12 +19,12 @@ import Import
 import Model.AnnotatedTag
 import Model.Comment
 import Model.Markdown
+import Model.Tag               (TagMap)
 import Model.User
 import Widgets.Markdown
 import Widgets.Tag
 import Widgets.Time
 
-import qualified Data.Foldable as F
 import qualified Data.List     as L
 import qualified Data.Map      as M
 import qualified Data.Text     as T
@@ -71,6 +72,28 @@ retractedForm = requiredMarkdownForm "Reason for retracting:"
 requiredMarkdownForm :: FieldSettings App -> Maybe Markdown -> Form Markdown
 requiredMarkdownForm settings = renderBootstrap3 . areq snowdriftMarkdownField settings
 
+flagCommentForm :: Form ([FlagReason], Maybe Text)
+flagCommentForm = renderBootstrap3 $ (,) <$> flagReasonsForm <*> additionalCommentsForm
+  where
+    flagReasonsForm :: AForm Handler [FlagReason]
+    flagReasonsForm = areq (nonemptyCheckboxesFieldList reasons) "Code of Conduct Violation(s)" Nothing
+      where
+        nonemptyCheckboxesFieldList :: [(Text, FlagReason)] -> Field Handler [FlagReason]
+        nonemptyCheckboxesFieldList = checkBool (not . null) ("Please select one or more violations." :: Text) . checkboxesFieldList
+
+        reasons :: [(Text, FlagReason)]
+        reasons = [ ("Personal attack",          FlagPersonalAttack)
+                  , ("Unconstructive criticism", FlagUnconstructiveCriticism)
+                  , ("Condescension",            FlagCondescension)
+                  , ("Defensiveness",            FlagDefensiveness)
+                  , ("Spamming",                 FlagSpamming)
+                  , ("Privacy violation",        FlagPrivacyViolation)
+                  , ("Hate speech",              FlagHateSpeech)
+                  ]
+
+    additionalCommentsForm :: AForm Handler (Maybe Text)
+    additionalCommentsForm = aopt textField "Additional comments (optional)" Nothing
+
 -- | An entire comment tree.
 commentTreeWidget :: Tree (Entity Comment)         -- ^ Comment tree.
                   -> [CommentClosure]              -- ^ Earlier closures.
@@ -87,18 +110,18 @@ commentTreeWidget :: Tree (Entity Comment)         -- ^ Comment tree.
 commentTreeWidget = commentTreeWithReplyWidget mempty
 
 -- | An entire comment tree, with a reply box underneath the root comment.
-commentTreeWithReplyWidget :: Widget                        -- ^ Reply form.
-                           -> Tree (Entity Comment)         -- ^ Comment tree.
-                           -> [CommentClosure]              -- ^ Earlier closures.
-                           -> Map UserId User               -- ^ Comment poster.
-                           -> Map CommentId CommentClosure  -- ^ Closure map.
-                           -> Map CommentId (Entity Ticket) -- ^ Ticket map.
-                           -> Map TagId Tag                 -- ^ Tag map.
-                           -> Text                          -- ^ Project handle.
-                           -> Text                          -- ^ Wiki page name.
-                           -> Bool                          -- ^ Show actions? (false, for preview)
-                           -> Int                           -- ^ Max depth.
-                           -> Int                           -- ^ Depth.
+commentTreeWithReplyWidget :: Widget                -- ^ Reply form.
+                           -> Tree (Entity Comment) -- ^ Comment tree.
+                           -> [CommentClosure]      -- ^ Earlier closures.
+                           -> UserMap
+                           -> ClosureMap
+                           -> TicketMap
+                           -> TagMap
+                           -> Text                  -- ^ Project handle.
+                           -> Text                  -- ^ Wiki page name.
+                           -> Bool                  -- ^ Show actions? (false, for preview)
+                           -> Int                   -- ^ Max depth.
+                           -> Int                   -- ^ Depth.
                            -> Widget
 commentTreeWithReplyWidget reply_form
                            (Node root_entity@(Entity root_id root) children)
@@ -116,7 +139,6 @@ commentTreeWithReplyWidget reply_form
             reply_form <>
             expandCommentOrChildrenWidget
                 children
-                [] -- don't want to show earlier closures on *all* comments, just the first one.
                 user_map
                 closure_map
                 ticket_map
@@ -140,7 +162,6 @@ commentTreeWithReplyWidget reply_form
         inner_widget
 
 expandCommentOrChildrenWidget :: [Tree (Entity Comment)]       -- ^ Children comments.
-                              -> [CommentClosure]              -- ^ Earlier closures.
                               -> Map UserId User               -- ^ Comment poster.
                               -> Map CommentId CommentClosure  -- ^ Closure map.
                               -> Map CommentId (Entity Ticket) -- ^ Ticket map.
@@ -152,7 +173,6 @@ expandCommentOrChildrenWidget :: [Tree (Entity Comment)]       -- ^ Children com
                               -> Int                           -- ^ Depth.
                               -> Widget
 expandCommentOrChildrenWidget children
-                              earlier_closures
                               user_map
                               closure_map
                               ticket_map

@@ -52,3 +52,5 @@
     padding-left : 0.5em
     margin : 0.2em
 
+.preview
+    visibility : hidden

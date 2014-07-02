@@ -476,12 +476,8 @@ getDiscussWikiR' project_handle target get_root_comments = do
 getNewDiscussWikiR :: Text -> Text -> Handler Html
 getNewDiscussWikiR project_handle target = do
     void requireAuth
-    let action = DiscussWikiR project_handle target
-
     (comment_form, _) <- generateFormPost $ commentForm Nothing Nothing
-
     defaultLayout $(widgetFile "wiki_discuss_new")
-
 
 postNewDiscussWikiR :: Text -> Text -> Handler Html
 postNewDiscussWikiR project_handle target = do

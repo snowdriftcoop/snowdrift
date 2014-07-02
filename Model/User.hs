@@ -1,5 +1,6 @@
 module Model.User
-    ( UserUpdate(..)
+    ( UserMap
+    , UserUpdate(..)
     , applyUserUpdate
     , canCurUserMakeEligible
     , canMakeEligible
@@ -33,6 +34,8 @@ import qualified Data.Map       as M
 import qualified Data.Set       as S
 import qualified Data.Text      as T
 import           Yesod.Markdown (Markdown(..))
+
+type UserMap = Map UserId User
 
 data UserUpdate =
     UserUpdate

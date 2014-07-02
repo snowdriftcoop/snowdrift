@@ -4,20 +4,12 @@ module Handler.Wiki.Comment where
 
 import Import
 
-import qualified Control.Monad.State        as St
-import qualified Data.Map                   as M
-import qualified Data.Set                   as S
-import qualified Data.Text                  as T
-import           Network.HTTP.Types.Status
-import           Yesod.Default.Config
-import           Yesod.Markdown
-
 import qualified Data.Tree.Extra            as Tree
 import           Data.Tree.Extra            (sortForestBy, sortTreeBy)
 import           Model.AnnotatedTag
 import           Model.Comment
 import           Model.Project              (getProjectPages, getProjectTagList)
-import           Model.Tag                  (getAllTags)
+import           Model.Tag                  (TagMap, getAllTags)
 import           Model.User
 import           Model.ViewTime             (getCommentViewTimes)
 import           Model.ViewType
@@ -26,6 +18,17 @@ import           Widgets.Markdown
 import           Widgets.Preview
 import           Widgets.Tag
 import           View.Comment
+
+import qualified Control.Monad.State        as St
+import           Control.Monad.Trans.Maybe  (MaybeT(..), runMaybeT)
+import           Data.Default               (Default, def)
+import qualified Data.Map                   as M
+import qualified Data.Set                   as S
+import qualified Data.Text                  as T
+import           Network.HTTP.Types.Status
+import           Yesod.Default.Config
+import           Yesod.Markdown
+
 
 --------------------------------------------------------------------------------
 -- Utility functions
@@ -58,6 +61,7 @@ processWikiComment mode =
         Just "post"    -> processWikiCommentPost
         _              -> error $ "Error: unrecognized mode (" ++ show mode ++ ")"
 
+-- TODO(mitchell): We should reuse commentActionWidget here, somehow.
 processWikiCommentPreview :: Maybe CommentId -> Markdown -> Entity Project -> WikiPage -> Handler Html
 processWikiCommentPreview maybe_parent_id text (Entity _ project) page = do
     Entity user_id user <- requireAuth
@@ -77,7 +81,7 @@ processWikiCommentPreview maybe_parent_id text (Entity _ project) page = do
                                earlier_closures
                                (M.singleton user_id user)
                                mempty
-                               mempty -- TODO: this isn't right...
+                               mempty -- TODO(mitchell): this isn't right...?
                                tag_map
                                (projectHandle project)
                                (wikiPageTarget page)
@@ -136,7 +140,14 @@ depthFromMaybeParentId :: Maybe CommentId -> Handler Int
 depthFromMaybeParentId = maybe (return 0) (fmap (+1) . runDB . getCommentDepth)
 
 getMaxDepth :: Handler Int
-getMaxDepth = fromMaybe 11 <$> runInputGet (iopt intField "maxdepth")
+getMaxDepth = getMaxDepthDefault 11 -- hard-coded default max depth
+
+getMaxDepthZero :: Handler Int
+getMaxDepthZero = getMaxDepthDefault 0
+
+getMaxDepthDefault :: Int -> Handler Int
+getMaxDepthDefault n = fromMaybe n <$> runInputGet (iopt intField "maxdepth")
+
 
 --------------------------------------------------------------------------------
 -- / and /reply
@@ -144,64 +155,27 @@ getMaxDepth = fromMaybe 11 <$> runInputGet (iopt intField "maxdepth")
 -- This is a hacked change where getDiscussCommentR' below should really be
 -- adapted to become this and have only one function.
 getDiscussCommentR :: Text -> Text -> CommentId -> Handler Html
-getDiscussCommentR =
-    getDiscussCommentR' False
-
-getReplyCommentR :: Text -> Text -> CommentId -> Handler Html
-getReplyCommentR a b c = do
-    _ <- requireAuth
-    getDiscussCommentR' True a b c
-
-getDiscussCommentR' :: Bool -> Text -> Text -> CommentId -> Handler Html
-getDiscussCommentR' show_reply project_handle target comment_id = do
-    runDB (getCommentRethread comment_id) >>= \case
-        Nothing -> return ()
-        Just destination_comment_id -> do
-            -- TODO: any way to statically make sure we've covered all discussion types?
-            page_target <- wikiPageTarget <$> runDB (getCommentPage destination_comment_id)
-            redirectWith movedPermanently301
-                         (let route = if show_reply then ReplyCommentR else DiscussCommentR
-                          in route project_handle page_target destination_comment_id)
-
-    (_, Entity page_id _, root) <- checkCommentPage project_handle target comment_id
-
-    is_moderator <- isCurUserProjectModerator project_handle
-
-    (rest, user_map, earlier_closures, closure_map, ticket_map, tag_map) <- runDB $ do
-        rest <- getCommentDescendants is_moderator comment_id
-
-        let all_comments    = (Entity comment_id root):rest
-            all_comment_ids = map entityKey all_comments
-
-        earlier_closures <- getAncestorClosures comment_id
-        user_map         <- entitiesMap <$> getUsersIn (S.toList $ getCommentsUsers all_comments)
-        closure_map      <- makeClosureMap all_comment_ids
-        ticket_map       <- makeTicketMap all_comment_ids
-        tag_map          <- entitiesMap <$> getAllTags
-
-        return (rest, user_map, earlier_closures, closure_map, ticket_map, tag_map)
-
-    let comment_form_widget =
-            if show_reply
-                then commentFormWidget (Just comment_id) Nothing
-                else mempty
-
-    max_depth <- getMaxDepth
-
-    defaultLayout $
-        commentTreeWithReplyWidget
-            comment_form_widget
-            (sortTreeBy orderingNewestFirst $ buildCommentTree (Entity comment_id root, rest))
-            earlier_closures
-            user_map
-            closure_map
-            ticket_map
-            tag_map
+getDiscussCommentR project_handle target comment_id =
+    defaultLayout =<<
+        commentActionWidget
+            getMaxDepth
+            True
+            mempty
             project_handle
             target
-            True -- show actions?
-            max_depth
-            0
+            comment_id
+
+getReplyCommentR :: Text -> Text -> CommentId -> Handler Html
+getReplyCommentR project_handle target comment_id = do
+    void requireAuth
+    defaultLayout =<<
+        commentActionWidget
+            getMaxDepth
+            True
+            (commentFormWidget (Just comment_id) Nothing)
+            project_handle
+            target
+            comment_id
 
 postReplyCommentR :: Text -> Text -> CommentId -> Handler Html
 postReplyCommentR project_handle target comment_id = do
@@ -221,153 +195,135 @@ postReplyCommentR project_handle target comment_id = do
 
 getFlagCommentR :: Text -> Text -> CommentId -> Handler Html
 getFlagCommentR project_handle target comment_id = do
-    (project, page, comment) <- checkCommentPage project_handle target comment_id
-    error "TODO"
+    void requireAuth
+    defaultLayout =<<
+        commentActionWidget
+            getMaxDepthZero
+            True
+            widget
+            project_handle
+            target
+            comment_id
+  where
+    widget = do
+        (form, enctype) <- handlerToWidget $ generateFormPost flagCommentForm
+        [whamlet|
+            <form method="POST" enctype=#{enctype}>
+                ^{form}
+                <input type="submit" value="submit">
+        |]
 
 postFlagCommentR :: Text -> Text -> CommentId -> Handler Html
-postFlagCommentR = error "TODO"
+postFlagCommentR project_handle target comment_id = do
+    user_id <- requireAuthId
+    (project, page, comment) <- checkCommentPage project_handle target comment_id
+    ((result, _), _) <- runFormPost flagCommentForm
+    case result of
+        FormSuccess (reasons, message) -> do
+            runDB $ flagComment comment_id user_id reasons message
+            addAlert "success" "comment flagged"
+            -- TODO(mitchell): is there a better place to redirect?
+            redirect $ DiscussWikiR project_handle target
+        -- TODO(mitchell): why is the error message for an empty form "Value is required"...?
+        FormFailure errs -> do
+            addAlert "danger" (T.intercalate ", " errs)
+            redirect $ FlagCommentR project_handle target comment_id
+        _ -> error "form missing"
 
 --------------------------------------------------------------------------------
 -- /moderate
 
 getApproveWikiCommentR :: Text -> Text -> CommentId -> Handler Html
 getApproveWikiCommentR project_handle target comment_id = do
-    void $ checkApproveComment project_handle target comment_id
-    defaultLayout [whamlet|
+    void $ sanityCheckApprove project_handle
+    defaultLayout =<<
+        commentActionWidget
+            getMaxDepth
+            True
+            widget
+            project_handle
+            target
+            comment_id
+  where
+    widget = [whamlet|
         <form method="POST">
             <input type=submit value="approve post">
     |]
 
 postApproveWikiCommentR :: Text -> Text -> CommentId -> Handler Html
 postApproveWikiCommentR project_handle target comment_id = do
-    user_id <- checkApproveComment project_handle target comment_id
+    void $ checkCommentPage project_handle target comment_id
+    user_id <- sanityCheckApprove project_handle
+
     runDB $ approveComment user_id comment_id
     addAlert "success" "comment approved"
     redirect $ DiscussCommentR project_handle target comment_id
 
--- | Sanity check for approving comments.
-checkApproveComment :: Text -> Text -> CommentId -> Handler UserId
-checkApproveComment project_handle target comment_id = do
+sanityCheckApprove :: Text -> Handler UserId
+sanityCheckApprove project_handle = do
     user_id <- requireAuthId
-    void $ checkCommentPage project_handle target comment_id
     requireModerator "You must be a moderator to approve posts." project_handle user_id
     return user_id
 
 --------------------------------------------------------------------------------
 -- /close and /retract
 
-getRetractWikiCommentR, getCloseWikiCommentR :: Text -> Text -> CommentId -> Handler Html
-getRetractWikiCommentR = closeWikiComment checkRetractComment retractedForm
-getCloseWikiCommentR   = closeWikiComment checkCloseComment   closedForm
+getRetractWikiCommentR :: Text -> Text -> CommentId -> Handler Html
+getRetractWikiCommentR project_handle target comment_id = do
+    -- This function calls checkCommentPage twice: once in retractSanityCheck, and another
+    -- time in commentActionWidget. Maybe it should be taken out of commentActionWidget,
+    -- and the handlers should be in charge of calling it?
+    retractSanityCheck project_handle target comment_id
+    defaultLayout =<<
+        commentActionWidget
+            getMaxDepth
+            True
+            widget
+            project_handle
+            target
+            comment_id
+  where
+    widget :: Widget
+    widget = do
+        (form, enctype) <- handlerToWidget . generateFormPost $ retractedForm Nothing
+        [whamlet|
+            <form method="POST" enctype=#{enctype}>
+                ^{form}
+                <input type="submit" name="mode" value="preview">
+        |]
 
-closeWikiComment :: (Entity User -> Text -> Text -> CommentId -> Handler Comment)
-                 -> (Maybe Markdown -> Form Markdown)
-                 -> Text
-                 -> Text
-                 -> CommentId
-                 -> Handler Html
-closeWikiComment comment_check make_closure_form project_handle target comment_id = do
-    user_entity@(Entity user_id user) <- requireAuth
-    comment <- comment_check user_entity project_handle target comment_id
-
-    let poster_id = commentUser comment
-    (poster, earlier_closures, ticket_map, tag_map) <- runDB $ (,,,)
-        <$> get404 poster_id
-        <*> getAncestorClosures comment_id
-        <*> makeTicketMap [comment_id]
-        <*> (entitiesMap <$> getTags comment_id)
-
-    let rendered_comment = commentTreeWidget
-                               (Tree.singleton (Entity comment_id comment))
-                               earlier_closures
-                               (M.fromList [(user_id, user), (poster_id, poster)])
-                               mempty -- closures map - TODO why mempty?
-                               ticket_map
-                               tag_map
-                               project_handle
-                               target
-                               False -- show actions?
-                               0
-                               0
-
-    (closure_form, _) <- generateFormPost $ make_closure_form Nothing
-    defaultLayout $ [whamlet|
-        ^{rendered_comment}
-        <form method="POST">
-            ^{closure_form}
-            <input type="submit" name="mode" value="preview">
-    |]
-
-postRetractWikiCommentR, postCloseWikiCommentR :: Text -> Text -> CommentId -> Handler Html
-postRetractWikiCommentR = postCloseWikiComment checkRetractComment retractedForm newRetractedCommentClosure "retract"
-postCloseWikiCommentR   = postCloseWikiComment checkCloseComment   closedForm    newClosedCommentClosure    "close"
-
--- a *lot* of postCloseWikiComment is completely redundant to closeWikiComment above. There's gotta be a way to clean this up.
-postCloseWikiComment :: (Entity User -> Text -> Text -> CommentId -> Handler Comment)
-                     -> (Maybe Markdown -> Form Markdown)
-                     -> (UserId -> Markdown -> CommentId -> Handler CommentClosure)
-                     -> Text
-                     -> Text
-                     -> Text
-                     -> CommentId
-                     -> Handler Html
-postCloseWikiComment comment_check make_closure_form new_comment_closure action project_handle target comment_id = do
-    ((result, _), _) <- runFormPost $ make_closure_form Nothing
-
-    case result of
-        FormSuccess reason -> do
-            user_entity@(Entity user_id user) <- requireAuth
-            comment <- comment_check user_entity project_handle target comment_id
-
-            earlier_closures <- runDB $ getAncestorClosures comment_id
-
-            lookupPostParam "mode" >>= \case
-                Just "preview" -> do
-                    (form, _) <- generateFormPost $ make_closure_form (Just reason)
-
-                    let poster_id = commentUser comment
-
-                    (poster, ticket_map, tag_map) <- runDB $ (,,)
-                        <$> get404 poster_id
-                        <*> makeTicketMap [comment_id]
-                        <*> (entitiesMap <$> getTags comment_id)
-                    closure_map <- M.singleton comment_id <$> new_comment_closure user_id reason comment_id
-
-                    defaultLayout $ previewWidget form action $
-                        commentTreeWidget
-                            (Tree.singleton (Entity comment_id comment))
-                            earlier_closures
-                            (M.fromList [(user_id, user), (poster_id, poster)])
-                            closure_map
-                            ticket_map
-                            tag_map
-                            project_handle
-                            target
-                            False   -- show actions?
-                            0
-                            0
-
-                Just a | a == action -> do
-                    new_comment_closure user_id reason comment_id >>= runDB . insert_
-                    redirect $ DiscussCommentR project_handle target comment_id
-
-                mode -> error $ "Error: unrecognized mode (" ++ show mode ++ ")"
-        _ -> error "Error when submitting form."
-
--- | Sanity check: is the user retracting their own comment?
-checkRetractComment :: Entity User -> Text -> Text -> CommentId -> Handler Comment
-checkRetractComment (Entity user_id _) project_handle target comment_id = do
+retractSanityCheck :: Text -> Text -> CommentId -> Handler ()
+retractSanityCheck project_handle target comment_id = do
+    user_id <- requireAuthId
     (_, _, comment) <- checkCommentPage project_handle target comment_id
-
     when (commentUser comment /= user_id) $
         permissionDenied "You can only retract your own comments."
 
-    return comment
+getCloseWikiCommentR :: Text -> Text -> CommentId -> Handler Html
+getCloseWikiCommentR project_handle target comment_id = do
+    closeSanityCheck project_handle target comment_id
+    defaultLayout =<<
+        commentActionWidget
+            getMaxDepth
+            True
+            widget
+            project_handle
+            target
+            comment_id
+  where
+    widget :: Widget
+    widget = do
+        (form, enctype) <- handlerToWidget . generateFormPost $ closedForm Nothing
+        [whamlet|
+            <form method="POST" enctype=#{enctype}>
+                ^{form}
+                <input type="submit" name="mode" value="preview">
+        |]
 
--- | Sanity check: is the user established? (this may change)
-checkCloseComment :: Entity User -> Text -> Text -> CommentId -> Handler Comment
-checkCloseComment (Entity _ user) project_handle target comment_id = do
-    (_, _, comment) <- checkCommentPage project_handle target comment_id
+-- Same signature as retractSanityCheck, for use in postClosureWikiComment
+closeSanityCheck :: Text -> Text -> CommentId -> Handler ()
+closeSanityCheck _ _ _ = do
+    user <- entityVal <$> requireAuth
 
     -- TODO: what should this be?
     -- Aaron says: I think we should allow established to mark as closed,
@@ -378,7 +334,43 @@ checkCloseComment (Entity _ user) project_handle target comment_id = do
     unless (isEstablished user) $
         permissionDenied "You must be an established user to close a conversation."
 
-    return comment
+postRetractWikiCommentR, postCloseWikiCommentR :: Text -> Text -> CommentId -> Handler Html
+postRetractWikiCommentR = postClosureWikiComment retractSanityCheck retractedForm newRetractedCommentClosure "retract"
+postCloseWikiCommentR   = postClosureWikiComment closeSanityCheck   closedForm    newClosedCommentClosure    "close"
+
+-- | POST handler for either closing or retracting a comment, which are very similar.
+postClosureWikiComment :: (Text -> Text -> CommentId -> Handler ())
+                       -> (Maybe Markdown -> Form Markdown)
+                       -> (UserId -> Markdown -> CommentId -> Handler CommentClosure)
+                       -> Text
+                       -> Text
+                       -> Text
+                       -> CommentId
+                       -> Handler Html
+postClosureWikiComment sanity_check make_closure_form make_new_comment_closure action project_handle target comment_id = do
+    sanity_check project_handle target comment_id
+    ((result, _), _) <- runFormPost $ make_closure_form Nothing
+    case result of
+        FormSuccess reason -> do
+            user_id <- requireAuthId
+            new_comment_closure <- make_new_comment_closure user_id reason comment_id
+            lookupPostParam "mode" >>= \case
+                Just "preview" -> do
+                    (form, _) <- generateFormPost $ make_closure_form (Just reason)
+                    commentActionWidgetMod
+                        (def { mod_closure_map = M.insert comment_id new_comment_closure })
+                        getMaxDepthZero
+                        False
+                        mempty -- TODO(mitchell): is this right?
+                        project_handle
+                        target
+                        comment_id
+                      >>= defaultLayout . previewWidget form action
+                Just mode | mode == action -> do
+                    runDB $ insert_ new_comment_closure
+                    redirect $ DiscussCommentR project_handle target comment_id
+                mode -> error $ "Error: unrecognized mode (" ++ show mode ++ ")"
+        _ -> error "Error when submitting form."
 
 --------------------------------------------------------------------------------
 -- /rethread
@@ -697,6 +689,95 @@ postNewCommentTagR create_tag project_handle target comment_id = do
                     redirectUltDest $ DiscussCommentR project_handle target comment_id
                 FormMissing -> error "form missing"
                 FormFailure es -> formFailure (es <> [T.pack " apply"])
+
+-- TODO title this section
+
+-- | Helper method to create a Widget for a comment action (/, /reply, /moderate, etc).
+-- Returns a Widget from a Handler (rather than just calling defaultLayout) so that the widget
+-- can be put in a preview (for some POST handlers).
+commentActionWidget :: Handler Int                            -- ^ Max depth getter.
+                    -> Bool                                   -- ^ Show actions?
+                    -> Widget                                 -- ^ Widget to display under root comment.
+                    -> Text                                   -- ^ Project handle.
+                    -> Text                                   -- ^ Target.
+                    -> CommentId                              -- ^ Root comment id.
+                    -> Handler Widget
+commentActionWidget = commentActionWidgetMod def
+
+-- | Data type used in commentActionWidgetMod, containing modifications to comment-action-related
+-- data structures.
+data CommentMods = CommentMods
+    { mod_earlier_closures :: [CommentClosure] -> [CommentClosure]
+    , mod_user_map         :: UserMap          -> UserMap
+    , mod_closure_map      :: ClosureMap       -> ClosureMap
+    , mod_ticket_map       :: TicketMap        -> TicketMap
+    , mod_tag_map          :: TagMap           -> TagMap
+    }
+
+instance Default CommentMods where
+    def = CommentMods id id id id id
+
+-- | Like @commentActionWidget@, but includes modifications to the datastructures grabbed from
+-- the database. This is used for showing previews of comment trees, where changes are not
+-- saved yet.
+commentActionWidgetMod :: CommentMods    -- ^ Comment structure modifications.
+                       -> Handler Int    -- ^ Max depth getter.
+                       -> Bool           -- ^ Is preview_
+                       -> Widget         -- ^ Widget to display under root comment.
+                       -> Text           -- ^ Project handle.
+                       -> Text           -- ^ Target.
+                       -> CommentId      -- ^ Root comment id.
+                       -> Handler Widget
+commentActionWidgetMod CommentMods{..} get_max_depth show_actions form project_handle target comment_id = do
+    redirectIfRethreaded project_handle comment_id
+    (_, _, root) <- checkCommentPage project_handle target comment_id
+
+    is_moderator <- isCurUserProjectModerator project_handle
+    (rest, user_map, earlier_closures, closure_map, ticket_map, tag_map) <- runDB $ do
+        rest <- getCommentDescendants is_moderator comment_id
+
+        let all_comments    = (Entity comment_id root):rest
+            all_comment_ids = map entityKey all_comments
+
+        earlier_closures <- getAncestorClosures comment_id
+        user_map         <- entitiesMap <$> getUsersIn (S.toList $ getCommentsUsers all_comments)
+        closure_map      <- makeClosureMap all_comment_ids
+        ticket_map       <- makeTicketMap  all_comment_ids
+        tag_map          <- entitiesMap <$> getAllTags
+
+        return (rest, user_map, earlier_closures, closure_map, ticket_map, tag_map)
+
+    user_map_with_viewer <- (maybe id (\(Entity viewer_id viewer) -> M.insert viewer_id viewer))
+        <$> maybeAuth
+        <*> pure user_map
+
+    max_depth <- get_max_depth
+    return $
+        commentTreeWithReplyWidget
+            form
+            (sortTreeBy orderingNewestFirst $ buildCommentTree (Entity comment_id root, rest))
+            (mod_earlier_closures earlier_closures)
+            (mod_user_map user_map_with_viewer)
+            (mod_closure_map closure_map)
+            (mod_ticket_map ticket_map)
+            (mod_tag_map tag_map)
+            project_handle
+            target
+            show_actions
+            max_depth
+            0
+
+redirectIfRethreaded :: Text -> CommentId -> Handler ()
+redirectIfRethreaded project_handle comment_id = runDB go >>= \case
+    Nothing -> return ()
+    Just (destination_comment_id, target) ->
+        redirectWith movedPermanently301 (DiscussCommentR project_handle target destination_comment_id)
+  where
+    go :: YesodDB App (Maybe (CommentId, Text))
+    go = runMaybeT $ do
+        destination_comment_id <- MaybeT (getCommentRethread comment_id)
+        target                 <- lift (wikiPageTarget <$> getCommentPage destination_comment_id)
+        return (destination_comment_id, target)
 
 --------------------------------------------------------------------------------
 -- DEPRECATED
