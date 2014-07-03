@@ -123,7 +123,7 @@ To edit the new code before merging, you can do
 
     git checkout FETCH_HEAD
 
-To merge the update, make sure you have checked out the branch you want the updates on, then
+To merge the update, make sure you are on the branch where you want the updates, then
 
     git merge FETCH_HEAD
 
