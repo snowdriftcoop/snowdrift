@@ -89,7 +89,7 @@ editUserForm User{..} = renderBootstrap3 $
 -- | Form to mark a user as eligible for establishment. The user is fully established
 -- when s/he accepts the honor pledge.
 establishUserForm :: Form Text
-establishUserForm = renderBootstrap3 $ areq textField "Reason" Nothing
+establishUserForm = renderBootstrap3 $ areq' textField "Reason" Nothing
 
 previewUserForm :: User -> Form UserUpdate
 previewUserForm user = renderBootstrap3 $
