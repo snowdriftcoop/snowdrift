@@ -1,5 +1,18 @@
-<h1>Be honorable.
+<h1 class="text-center">The Snowdrift.coop honor pledge
+
+<p>
+    <strong>
+        “I will participate at Snowdrift.coop with honesty and good faith,
+        respecting the community rules and guidelines.
+        I recognize that these standards are an integral part of my participation.
+        If at any time I fail to live up to this commitment,
+        I will take initiative to rectify the situation and will ask for guidance when needed.
+        I will also ask others to rectify their own infractions.” 
+
+<p>
+    <em>
+        See further details at the <a href="@{WikiR "snowdrift" "honor"}">honor system wiki page</a>.
 
 $if is_elig
-    <form action=@{HonorPledgeR} method=post>
+    <form class="text-center" action=@{HonorPledgeR} method=post>
         <input type="submit" value="Accept">

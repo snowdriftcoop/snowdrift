@@ -119,11 +119,12 @@ eligEstablishUser establisher_id user_id reason = do
   where
     message_text :: Markdown
     message_text = Markdown $ T.unlines
-        [ "Congratulations! You've become eligible to become an *established* user for the following reason:"
+        -- "Because" <> reason <> ","
+        -- That reason could be added when we find a good way to fit it in,
+        -- but for now it is just stored in the database
+        [ "You are now eligible to become an *established* user."
         , ""
-        , "> " <> reason
-        , ""
-        , "An established user's comments do not require moderation. Please read and accept the honor pledge [**here**](/honor-pledge)."
+        , "After you [accept the honor pledge](/honor-pledge), you can comment and take other actions on the site without moderation."
         ]
 
 -- | Get a User's Roles in a Project.

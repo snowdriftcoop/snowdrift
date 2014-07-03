@@ -154,7 +154,7 @@ postUserEstEligibleR user_id = do
             case userEstablished user of
                 EstUnestablished -> do
                     runDB $ eligEstablishUser establisher_id user_id reason
-                    setMessage "User established. Thanks!" -- not entirely correct, user is just eligible. change?
+                    setMessage "This user is now eligible for establishment. Thanks!"
                     redirectUltDest HomeR
                 _ -> error "User not unestablished!"
         _ -> error "Error submitting form."
