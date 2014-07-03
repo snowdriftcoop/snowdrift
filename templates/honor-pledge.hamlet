@@ -1,4 +1,4 @@
-<h1>The Snowdrift.coop honor pledge
+<h1 class="text-center">The Snowdrift.coop honor pledge
 
 <p>
     <strong>
@@ -14,5 +14,5 @@
         See further details at the <a href="@{WikiR "snowdrift" "honor"}">honor system wiki page</a>.
 
 $if is_elig
-    <form action=@{HonorPledgeR} method=post>
+    <form class="text-center" action=@{HonorPledgeR} method=post>
         <input type="submit" value="Accept">
