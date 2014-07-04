@@ -129,14 +129,16 @@ pledgeForm project_id extra = do
             #{extra}
             <div .text-center>
                 <h3 style="margin-top:0">
-                    How many shares will you pledge?
-                <strong>
-                    ^{fvInput pledge_view}
-            <p>
-                Share value starts at 0.1&cent; times the number of other patrons,
-                but extra shares from any one patron also get <i>partial</i> matching.
+                    Pledge your support!
+                <p>
+                    One share means a monthly donation of 0.1&cent; per other patron
+                    plus <i>some</i> extra for anyone donating extra shares.
                 <a href=@{WikiR "snowdrift" "mechanism"}>
                     <em> Read the details&hellip;
+                <h4>
+                    Your number of shares pledged:
+                <strong>
+                    ^{fvInput pledge_view}
         |]
     return (result, view)
 
