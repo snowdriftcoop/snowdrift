@@ -12,7 +12,7 @@ import Text.Julius (rawJS)
 
 pledgeSizes :: [[Int64]]
 pledgeSizes =
-    [ [1,2,4,8,16]
+    [ [1,2,4,8]
     , [1,2,3,5,10]
     , [1,2,5,10]
     ]
@@ -99,13 +99,19 @@ pledgeField project_id = Field
 
 
     get_list = do
-        r <- liftIO randomIO
-        let idx = mod r $ length pledgeSizes
-            sizes = pledgeSizes !! idx
+        mlist <- lookupSession pledgeListKey
+        case mlist of
+            Nothing -> do
+                r <- liftIO randomIO
+                let idx = mod r $ length pledgeSizes
+                    sizes = pledgeSizes !! idx
 
-        setSession pledgeListKey $ T.pack $ show sizes
+                setSession pledgeListKey $ T.pack $ show sizes
 
-        return sizes
+                return sizes
+
+            Just t -> return $ read $ T.unpack t
+
 
 
 
