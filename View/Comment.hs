@@ -72,7 +72,7 @@ retractedForm = requiredMarkdownForm "Reason for retracting:"
 requiredMarkdownForm :: FieldSettings App -> Maybe Markdown -> Form Markdown
 requiredMarkdownForm settings = renderBootstrap3 . areq snowdriftMarkdownField settings
 
-flagCommentForm :: Form ([FlagReason], Maybe Text)
+flagCommentForm :: Form ([FlagReason], Maybe Markdown)
 flagCommentForm = renderBootstrap3 $ (,) <$> flagReasonsForm <*> additionalCommentsForm
   where
     flagReasonsForm :: AForm Handler [FlagReason]
@@ -91,8 +91,8 @@ flagCommentForm = renderBootstrap3 $ (,) <$> flagReasonsForm <*> additionalComme
                   , ("Hate speech",              FlagHateSpeech)
                   ]
 
-    additionalCommentsForm :: AForm Handler (Maybe Text)
-    additionalCommentsForm = aopt textField "Additional comments (optional)" Nothing
+    additionalCommentsForm :: AForm Handler (Maybe Markdown)
+    additionalCommentsForm = aopt' snowdriftMarkdownField "Optional: add helpful comments to clarify the issue and/or suggestions for improvement" Nothing
 
 -- | An entire comment tree.
 commentTreeWidget :: Tree (Entity Comment)         -- ^ Comment tree.

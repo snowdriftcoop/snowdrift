@@ -100,7 +100,7 @@ buildCommentForest :: [Entity Comment]                                          
 buildCommentForest roots replies = (map (buildCommentTree . (, replies))) roots
 
 -- | Flag a comment.
-flagComment :: CommentId -> UserId -> [FlagReason] -> Maybe Text -> YesodDB App ()
+flagComment :: CommentId -> UserId -> [FlagReason] -> Maybe Markdown -> YesodDB App ()
 flagComment comment_id user_id reasons message = do
     now <- liftIO getCurrentTime
     flagging_id <- insert (CommentFlagging now user_id comment_id message)

@@ -205,7 +205,7 @@ CommentFlagging
     ts UTCTime
     flagger UserId
     comment CommentId
-    message Text Maybe -- Optional message provided by the flagger.
+    message Markdown Maybe -- Optional message provided by the flagger.
     UniqueCommentFlagging flagger comment
 
 -- A reason associated with a comment flagging. One-to-many relation.
