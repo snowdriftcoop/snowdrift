@@ -8,6 +8,8 @@ import System.Random (randomIO)
 import qualified Data.Text as T
 import qualified Data.Text.Read as T
 
+import Text.Julius (rawJS)
+
 pledgeSizes :: [[Int64]]
 pledgeSizes =
     [ [1,2,4,8,16]
@@ -67,6 +69,32 @@ pledgeField project_id = Field
                 <div>
                     <input id="#{ident}-other" .radio-inline name="#{name}" *{attrs} type="radio" :req:required value="#{name}-other" :not hasValue:checked>other:&nbsp;
                     <input id="#{ident}-other-val" .form-inline style="width : 2.5em; text-align : center" name="#{name}-other" *{attrs} type="text" value="#{otherValue}">
+        |]
+
+        toWidget [julius|
+            (function () {
+                var button = document.getElementById("#{rawJS ident}-other");
+                var field = document.getElementById("#{rawJS ident}-other-val");
+
+                function setup_other_field() {
+                    if(button.checked) {
+                        field.disabled = false;
+                        field.required = true;
+                    } else {
+                        field.disabled = true;
+                        field.required = false;
+                        field.value = "";
+                    }
+                }
+
+                var buttons = document.getElementsByName("#{rawJS name}");
+
+                for(var i = 0; i < buttons.length; i++) {
+                    buttons[i].onchange = setup_other_field;
+                }
+
+                setup_other_field();
+            })()
         |]
 
 
