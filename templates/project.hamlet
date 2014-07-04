@@ -5,10 +5,11 @@
         ^{description}
 
     <div .col-md-6>
-        <em>
-            currently
-            <strong>testing with fake money
-            and daily payments instead of monthly
+        <div style="border-width: 2px; border-style: solid; border-color: red;" class="text-center">
+            <em>
+                currently
+                <strong>testing with fake money
+                and daily instead of monthly
 
         $maybe _ <- maybe_project_id
             <form method=GET action=@{UpdateSharesR $ projectHandle project}>
