@@ -3,8 +3,8 @@ $if not (null messages)
         <div .row>
             <div .col-sm-3 .well .well-sm>
                 $if (messageAutomated message)
-                     <em>automated message
-                <br>
+                    <em>automated message
+                    <br>
                 $maybe from <- messageFrom message
                     <em>from
                     #{getUserName from}
