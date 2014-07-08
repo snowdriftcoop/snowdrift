@@ -90,7 +90,6 @@ Working on the code
 
 See the main [Git documentation](http://git-scm.com/documentation) if you are new to Git.
 You only need rudimentary understanding of Git to start contributing to our code.
-You will need to know how to push, pull, and commit.
 It will help to understand basic branching so that you can segregate work on different features.
                                                                       
 Cloning the repository
@@ -112,14 +111,25 @@ and "git push" will go the other direction, sending any local commits to Gitorio
 After pushing to your online account,
 alert us to the changes with Gitorious' "request merge" or GitHub's "pull request" commands on their websites.
 
-To pull updates from our main code, use
+To get updates from our main code, use
 
-    git pull git@gitorious.org:snowdrift/snowdrift.git
+    git fetch git@gitorious.org:snowdrift/snowdrift.git
 
-Note: if you are collaborating with others before a patch is ready to go live
-land some participants use Gitorious and others use GitHub (or other hosts),
-you can pull by using the full git address
-and then sending your collaborator an e-mail or otherwise alerting them to pull your updates.
+Then, to see the diff for the updates, use
+
+    git diff FETCH_HEAD
+
+To edit the new code before merging, you can do
+
+    git checkout FETCH_HEAD
+
+To merge the update, make sure you are on the branch where you want the updates, then
+
+    git merge FETCH_HEAD
+
+Note: when collaborating with others across Gitorious and GitHub (or other hosts),
+you can use the same fetch process by using the git address from each developer
+and simply communicate by e-mail or IRC or other options about when to fetch updates.
 
 
 Building

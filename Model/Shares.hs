@@ -134,15 +134,18 @@ pledgeForm project_id extra = do
     let view = [whamlet|
             #{extra}
             <div .text-center>
-                <h3 style="margin-top:0">
-                    How many shares will you pledge?
+                <h3 style="margin-top: 1em">
+                    Pledge your support!
+                <p>
+                    One share means a monthly donation of 0.1&cent; per other patron
+                    plus <i>some</i> extra for anyone donating extra shares.
+                    <br>
+                    <a href=@{WikiR "snowdrift" "mechanism"}>
+                        <em> Read the details&hellip;
+                <h4 style="margin-top: 1em">
+                    Your number of shares:
                 <strong>
                     ^{fvInput pledge_view}
-            <p>
-                Share value starts at 0.1&cent; times the number of other patrons,
-                but extra shares from any one patron also get <i>partial</i> matching.
-                <a href=@{WikiR "snowdrift" "mechanism"}>
-                    <em> Read the details&hellip;
         |]
     return (result, view)
 

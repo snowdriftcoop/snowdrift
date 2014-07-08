@@ -12,7 +12,7 @@
                     <img .headshot_large src="#{avatar}">
                 $if isJust $ userEstablishedTs user
                     <small>established user
-            <div. col-xs-8>
+            <div .col-xs-8>
                 $maybe nick <- userIrcNick user
                     #{nick} on <a href="https://snowdrift.coop/p/snowdrift/w/irc">irc.freenode.net</a>
 
