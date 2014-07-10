@@ -64,6 +64,7 @@
                     <a href="@{ApproveWikiCommentR project_handle target comment_id}">
                         approve
 
+            $if can_establish
                 <span .comment-action>
                     <a href="@{UserR user_id}">
                         establish user

@@ -232,6 +232,7 @@ commentWidget (Entity comment_id comment)
         is_even_depth = isEvenDepth comment
         is_odd_depth  = isOddDepth  comment
         can_reply     = not (current_route == ReplyCommentR project_handle target comment_id)
+        can_establish = estIsUnestablished (userEstablished user)
 
     (is_mod, can_rethread, can_retract, can_close, can_add_tag) <-
         handlerToWidget $ makeViewerPermissions user_id project_handle
