@@ -18,5 +18,5 @@ postHonorPledgeR = do
         EstEligible elig_time reason -> do
             runDB $ establishUser user_id elig_time reason
             setMessage "Congratulations, you are now a fully established user!"
-            redirect HonorPledgeR
+            redirect HomeR
         _ -> error "You're not eligible for establishment."
