@@ -96,14 +96,21 @@ isCurUserEligibleEstablish :: Handler Bool
 isCurUserEligibleEstablish = maybe False (isEligibleEstablish . entityVal) <$> maybeAuth
 
 -- | Establish a user, given their eligible-timestamp and reason for
--- eligibility.
+-- eligibility. Mark all unmoderated comments of theirs as moderated.
 establishUser :: UserId -> UTCTime -> Text -> YesodDB App ()
 establishUser user_id elig_time reason = do
     est_time <- liftIO getCurrentTime
+
     let est = EstEstablished elig_time est_time reason
     update $ \u -> do
         set u [ UserEstablished =. val est ]
         where_ (u ^. UserId ==. val user_id)
+
+    update $ \c -> do
+        set c [ CommentModeratedTs =. just (val est_time)
+              , CommentModeratedBy =. just (val user_id)
+              ]
+        where_ (c ^. CommentUser ==. val user_id)
 
 -- | Make a user eligible for establishment. Put a message in their inbox
 -- instructing them to read and accept the honor pledge.
