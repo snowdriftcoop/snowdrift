@@ -233,7 +233,8 @@ commentWidget (Entity comment_id comment)
         is_odd_depth  = isOddDepth  comment
         can_reply     = not (current_route == ReplyCommentR project_handle target comment_id)
 
-    (is_mod, can_rethread, can_retract, can_close) <- handlerToWidget $ makeViewerPermissions user_id project_handle
+    (is_mod, can_rethread, can_retract, can_close, can_add_tag) <-
+        handlerToWidget $ makeViewerPermissions user_id project_handle
 
     tags <- fmap (L.sortBy (compare `on` atName)) . handlerToWidget $ do
         runDB (getCommentTags comment_id) >>=
@@ -241,19 +242,16 @@ commentWidget (Entity comment_id comment)
 
     $(widgetFile "comment")
 
--- TODO: Does ViewerPermissions belong elsewhere?
-
-type ViewerPermissions = (Bool, Bool, Bool, Bool)
-
-makeViewerPermissions :: UserId -> Text -> Handler ViewerPermissions
+makeViewerPermissions :: UserId -> Text -> Handler (Bool, Bool, Bool, Bool, Bool)
 makeViewerPermissions owner_id project_handle = maybeAuth >>= \case
-    Nothing -> return (False, False, False, False)
+    Nothing -> return (False, False, False, False, False)
     Just (Entity viewer_id viewer) -> do
         is_mod <- runDB . isProjectModerator project_handle $ viewer_id
         let can_rethread = owner_id == viewer_id || is_mod
             can_retract  = owner_id == viewer_id
             can_close    = isEstablished viewer
-        return (is_mod, can_rethread, can_retract, can_close)
+            can_add_tag  = isEstablished viewer
+        return (is_mod, can_rethread, can_retract, can_close, can_add_tag)
 
 -- Order comment trees by newest-first, taking the root and all children of each
 -- tree into consideration.

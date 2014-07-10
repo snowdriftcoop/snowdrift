@@ -88,6 +88,9 @@
                 <a href="@{RethreadWikiCommentR project_handle target comment_id}">
                     rethread
 
-        ^{newTagWidget $ NewCommentTagR project_handle target comment_id}
+        $if can_add_tag
+            <span .comment-action>
+                <a href="@{NewCommentTagR project_handle target comment_id}">
+                    add tag
 
     ^{inner_widget}
