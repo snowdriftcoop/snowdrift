@@ -37,13 +37,15 @@ module Model.Comment
 
 import Import
 
-import           Data.Foldable     (Foldable)
-import qualified Data.Foldable     as F
-import qualified Data.Map          as M
-import qualified Data.Set          as S
+import           Model.User    (isProjectModerator')
+
+import           Data.Foldable (Foldable)
+import qualified Data.Foldable as F
+import qualified Data.Map      as M
+import qualified Data.Set      as S
 import           Data.Tree
-import           GHC.Exts          (IsList(..))
-import           Prelude           (head)
+import           GHC.Exts      (IsList(..))
+import           Prelude       (head)
 
 type ClosureMap = Map CommentId CommentClosure
 type TicketMap  = Map CommentId (Entity Ticket)
@@ -192,13 +194,12 @@ getCommentDescendantsIds comment_id = fmap (map unValue) $
         where_ (ca ^. CommentAncestorAncestor ==. val comment_id)
         return (ca ^. CommentAncestorComment)
 
--- | Get all descendants of the given root comment. Filter hidden comments and
--- possibly filter unmoderated comments.
--- TODO: Share code with with getCommentsDescendants
-getCommentDescendants :: Bool -> CommentId -> YesodDB App [Entity Comment]
-getCommentDescendants is_moderator root_id = go >>= filterHiddenComments
+-- | Get all descendants of the given root comment.
+-- TODO(mitchell): Share code with with getCommentsDescendants
+getCommentDescendants :: Maybe UserId -> ProjectId -> CommentId -> YesodDB App [Entity Comment]
+getCommentDescendants mviewer_id project_id root_id = filterComments mviewer_id project_id <*> go
   where
-    go = fmap (if is_moderator then id else filterUnmoderatedComments) $
+    go =
         select $
             from $ \c -> do
             where_ (c ^. CommentId `in_`
@@ -210,12 +211,11 @@ getCommentDescendants is_moderator root_id = go >>= filterHiddenComments
             orderBy [asc (c ^. CommentParent), asc (c ^. CommentCreatedTs)]
             return c
 
--- | Get all descendants of all given root comments. Filter hidden comments and
--- possibly filter unmoderated comments.
-getCommentsDescendants :: Bool -> [CommentId] -> YesodDB App [Entity Comment]
-getCommentsDescendants is_moderator root_ids = go >>= filterHiddenComments
+-- | Get all descendants of all given root comments.
+getCommentsDescendants :: Maybe UserId -> ProjectId -> [CommentId] -> YesodDB App [Entity Comment]
+getCommentsDescendants mviewer_id project_id root_ids = filterComments mviewer_id project_id <*> go
   where
-    go = fmap (if is_moderator then id else filterUnmoderatedComments) $
+    go =
         select $
             from $ \c -> do
             where_ (c ^. CommentId `in_`
@@ -228,10 +228,10 @@ getCommentsDescendants is_moderator root_ids = go >>= filterHiddenComments
             return c
 
 -- | Get all Comments on a Discussion that are root comments.
-getAllRootComments :: Bool -> DiscussionId -> YesodDB App [Entity Comment]
-getAllRootComments is_moderator discussion_id = go >>= filterHiddenComments
+getAllRootComments :: Maybe UserId -> ProjectId -> DiscussionId -> YesodDB App [Entity Comment]
+getAllRootComments mviewer_id project_id discussion_id = filterComments mviewer_id project_id <*> go
   where
-    go = fmap (if is_moderator then id else filterUnmoderatedComments) $
+    go =
         select $
             from $ \c -> do
             where_ $
@@ -239,10 +239,10 @@ getAllRootComments is_moderator discussion_id = go >>= filterHiddenComments
                 exprCommentIsRoot c
             return c
 
-getAllClosedRootComments :: Bool -> DiscussionId -> YesodDB App [Entity Comment]
-getAllClosedRootComments is_moderator discussion_id = go >>= filterHiddenComments
+getAllClosedRootComments :: Maybe UserId -> ProjectId -> DiscussionId -> YesodDB App [Entity Comment]
+getAllClosedRootComments mviewer_id project_id discussion_id = filterComments mviewer_id project_id <*> go
   where
-    go = fmap (if is_moderator then id else filterUnmoderatedComments) $
+    go =
         select $
             from $ \c -> do
             where_ $
@@ -251,10 +251,10 @@ getAllClosedRootComments is_moderator discussion_id = go >>= filterHiddenComment
                 exprCommentIsClosed c
             return c
 
-getAllOpenRootComments :: Bool -> DiscussionId -> YesodDB App [Entity Comment]
-getAllOpenRootComments is_moderator discussion_id = go >>= filterHiddenComments
+getAllOpenRootComments :: Maybe UserId -> ProjectId -> DiscussionId -> YesodDB App [Entity Comment]
+getAllOpenRootComments mviewer_id project_id discussion_id = filterComments mviewer_id project_id <*> go
   where
-    go = fmap (if is_moderator then id else filterUnmoderatedComments) $
+    go =
       select $
           from $ \c -> do
           where_ $
@@ -263,12 +263,33 @@ getAllOpenRootComments is_moderator discussion_id = go >>= filterHiddenComments
               exprCommentIsOpen c
           return c
 
--- | Filter hidden comments (rethreaded or flagged).
-filterHiddenComments :: [Entity Comment] -> YesodDB App [Entity Comment]
-filterHiddenComments comments = do
-    hidden_ids <- getHiddenCommentIds
-    return $ filter (flip S.notMember hidden_ids . entityKey) comments
+-- | Filter comments per the following rules:
+-- Hidden comments (rethreaded or flagged) are not shown.
+-- Otherwise, if the viewer is...
+--    a moderator: show all
+--    logged in: show all moderated, plus unmoderated 'own' comments
+--    not logged in: show all moderated
+filterComments :: Maybe UserId -> ProjectId -> YesodDB App ([Entity Comment] -> [Entity Comment])
+filterComments mviewer_id project_id = do
+    filter_one <- (\hidden_ids -> flip S.notMember hidden_ids . entityKey) <$> getHiddenCommentIds
+    filter_two <- makeCommentFilter
+    return $ filter (\c -> filter_one c && filter_two c)
   where
+    makeCommentFilter :: YesodDB App (Entity Comment -> Bool)
+    makeCommentFilter = case mviewer_id of
+        Nothing -> return isModerated
+        Just viewer_id -> do
+            is_moderator <- isProjectModerator' viewer_id project_id
+            if is_moderator
+                then return $ const True
+                else return $ \c -> isModerated c || isOwnComment viewer_id c
+      where
+        isModerated :: Entity Comment -> Bool
+        isModerated = isJust . commentModeratedTs . entityVal
+
+        isOwnComment :: UserId -> Entity Comment -> Bool
+        isOwnComment user_id (Entity _ Comment{..}) = user_id == commentUser
+
     getHiddenCommentIds :: YesodDB App (Set CommentId)
     getHiddenCommentIds = (<>) <$> rethreadedCommentIds <*> flaggedCommentIds
       where
@@ -283,9 +304,6 @@ filterHiddenComments comments = do
             select $
                 from $ \f ->
                 return (f ^. CommentFlaggingComment)
-
-filterUnmoderatedComments :: [Entity Comment] -> [Entity Comment]
-filterUnmoderatedComments = filter (isJust . commentModeratedTs . entityVal)
 
 -- | Comment is closed?
 exprCommentIsClosed :: SqlExpr (Entity Comment) -> SqlExpr (Value Bool)

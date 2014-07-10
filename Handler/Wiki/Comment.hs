@@ -730,11 +730,11 @@ commentActionWidgetMod :: CommentMods    -- ^ Comment structure modifications.
                        -> Handler Widget
 commentActionWidgetMod CommentMods{..} get_max_depth show_actions form project_handle target comment_id = do
     redirectIfRethreaded project_handle comment_id
-    (_, _, root) <- checkCommentPage project_handle target comment_id
+    (Entity project_id _, _, root) <- checkCommentPage project_handle target comment_id
 
-    is_moderator <- isCurUserProjectModerator project_handle
+    mviewer_id <- maybeAuthId
     (rest, user_map, earlier_closures, closure_map, ticket_map, tag_map) <- runDB $ do
-        rest <- getCommentDescendants is_moderator comment_id
+        rest <- getCommentDescendants mviewer_id project_id comment_id
 
         let all_comments    = (Entity comment_id root):rest
             all_comment_ids = map entityKey all_comments

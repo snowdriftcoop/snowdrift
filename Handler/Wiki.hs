@@ -427,17 +427,20 @@ getDiscussWikiR project_handle target = lookupGetParam "state" >>= \case
 
 getDiscussWikiR' :: Text                                                   -- ^ Project handle.
                  -> Text                                                   -- ^ Wiki page name.
-                 -> (Bool -> DiscussionId -> YesodDB App [Entity Comment]) -- ^ Root comment getter.
+                 -> (Maybe UserId
+                     -> ProjectId
+                     -> DiscussionId
+                     -> YesodDB App [Entity Comment]) -- ^ Root comment getter.
                  -> Handler Html
 getDiscussWikiR' project_handle target get_root_comments = do
     muser <- maybeAuth
-    (Entity _ project, Entity _ page) <- runDB $ getPageInfo project_handle target
+    let muser_id = entityKey <$> muser
 
-    is_moderator <- isCurUserProjectModerator project_handle
+    (Entity project_id project, Entity _ page) <- runDB $ getPageInfo project_handle target
 
     (roots, replies, user_map, closure_map, ticket_map, tag_map) <- runDB $ do
-        roots           <- get_root_comments is_moderator (wikiPageDiscussion page)
-        replies         <- getCommentsDescendants is_moderator (map entityKey roots)
+        roots           <- get_root_comments muser_id project_id (wikiPageDiscussion page)
+        replies         <- getCommentsDescendants muser_id project_id (map entityKey roots)
         user_map        <- entitiesMap <$> getUsersIn (S.toList $ getCommentsUsers roots <> getCommentsUsers replies)
         let comment_ids  = map entityKey (roots ++ replies)
         closure_map     <- makeClosureMap comment_ids
