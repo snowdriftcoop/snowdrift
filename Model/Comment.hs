@@ -285,7 +285,7 @@ filterHiddenComments comments = do
                 return (f ^. CommentFlaggingComment)
 
 filterUnmoderatedComments :: [Entity Comment] -> [Entity Comment]
-filterUnmoderatedComments = filter (not . isJust . commentModeratedTs . entityVal)
+filterUnmoderatedComments = filter (isJust . commentModeratedTs . entityVal)
 
 -- | Comment is closed?
 exprCommentIsClosed :: SqlExpr (Entity Comment) -> SqlExpr (Value Bool)
