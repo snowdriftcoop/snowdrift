@@ -77,7 +77,9 @@ library
                      Handler.Tickets
                      Handler.RepoFeed
                      Handler.BuildFeed
+                     Handler.HonorPledge
                      View.Comment
+                     View.User
                      Version
                      Widgets.Doc
                      Widgets.Markdown
@@ -88,6 +90,7 @@ library
                      Widgets.ProjectPledges
 
     other-modules: Model.Settings.Internal
+                   Model.Established.Internal
                    Model.ClosureType.Internal
                    Model.CollapseState.Internal
                    Model.Role.Internal
@@ -103,6 +106,7 @@ library
     extensions: DeriveDataTypeable
                 EmptyDataDecls
                 FlexibleContexts
+                FlexibleInstances
                 GADTs
                 GeneralizedNewtypeDeriving
                 LambdaCase
@@ -111,6 +115,7 @@ library
                 NoMonomorphismRestriction
                 QuasiQuotes
                 OverloadedStrings
+                RecordWildCards
                 ScopedTypeVariables
                 TemplateHaskell
                 TupleSections

@@ -6,13 +6,11 @@ import           Model.Currency
 import           Model.ViewType
 import           Model.User
 
-import Control.Monad.Trans.Resource (MonadThrow)
-
+import           Control.Monad.Trans.Resource (MonadThrow)
 import           Control.Concurrent.Async     (Async, async, wait)
 import qualified Github.Data                  as GH
 import qualified Github.Issues                as GH
 import qualified Data.Text                    as T
-
 
 data ProjectSummary =
     ProjectSummary
@@ -86,8 +84,8 @@ updateShareValue project_id = do
 
 -- TODO: Better name.
 getCounts :: Entity User -> [Entity Project] -> YesodDB App [([Value Int], [Value Int])]
-getCounts (Entity user_id user) = mapM $ \(Entity project_id project) -> do
-    moderator <- isProjectModerator (projectHandle project) user_id
+getCounts (Entity user_id user) = mapM $ \(Entity project_id _) -> do
+    moderator <- isProjectModerator' user_id project_id
 
     comment_viewtimes :: [Entity ViewTime] <- select $ from $ \ viewtime -> do
         where_ $
@@ -136,11 +134,9 @@ getCounts (Entity user_id user) = mapM $ \(Entity project_id project) -> do
  -  Fix algorithm
  -}
 
-
 projectNameWidget :: ProjectId -> Widget
 projectNameWidget project_id = do
     maybe_project <- handlerToWidget $ runDB $ get project_id
     case maybe_project of
         Nothing -> [whamlet| (unknown project) |]
         Just project -> [whamlet| #{projectName project} |]
-

@@ -6,12 +6,15 @@
 
 / HomeR GET
 
-/u UsersR GET
-/u/#UserId UserR GET POST
-/u/#UserId/edit EditUserR GET
-/u/#UserId/balance UserBalanceR GET POST
-/u/#UserId/pledges UserPledgesR GET
-/u/!new UserCreateR GET POST
+/honor-pledge HonorPledgeR GET POST
+
+/u                 UsersR           GET
+/u/#UserId         UserR            GET POST
+/u/#UserId/edit    EditUserR        GET
+/u/#UserId/elig    UserEstEligibleR     POST
+/u/#UserId/balance UserBalanceR     GET POST
+/u/#UserId/pledges UserPledgesR     GET
+/u/!new            UserCreateR      GET POST
 
 /p ProjectsR GET
 /p/#Text ProjectR GET POST

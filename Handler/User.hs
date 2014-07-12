@@ -2,73 +2,27 @@ module Handler.User where
 
 import Import
 
-import qualified Data.Map as Map
-import qualified Data.Set as Set
+import           Model.Role
+import           Model.User
+import           Widgets.Preview
+import           View.User
 
-import Model.User
-import Model.Role
-
-
-import Widgets.Markdown
-import Widgets.ProjectPledges
-import Widgets.Preview
-
-import Yesod.Markdown
-import Model.Markdown
-
+import qualified Data.Map as M
+import qualified Data.Set as S
 import qualified Data.Text as T
-
-
-hiddenMarkdown :: (RenderMessage (HandlerSite m) FormMessage, MonadHandler m) => Maybe Markdown -> AForm m (Maybe Markdown)
-hiddenMarkdown Nothing = fmap (fmap Markdown) $ aopt hiddenField "" Nothing
-hiddenMarkdown (Just (Markdown str)) = fmap (fmap Markdown) $ aopt hiddenField "" $ Just $ Just str
-
-editUserForm :: User -> Form UserUpdate
-editUserForm user = renderBootstrap3 $
-    UserUpdate
-        <$> aopt' textField "Public Name" (Just $ userName user)
-        <*> aopt' textField "Avatar image (link)" (Just $ userAvatar user)
-        <*> aopt' textField "IRC nick @freenode.net)" (Just $ userIrcNick user)
-        <*> aopt' snowdriftMarkdownField "Blurb (used on listings of many people)" (Just $ userBlurb user)
-        <*> aopt' snowdriftMarkdownField "Personal Statement (visible only on this page)" (Just $ userStatement user)
-    where
-
-
-previewUserForm :: User -> Form UserUpdate
-previewUserForm user = renderBootstrap3 $
-    UserUpdate
-        <$> aopt hiddenField "" (Just $ userName user)
-        <*> aopt hiddenField "" (Just $ userAvatar user)
-        <*> aopt hiddenField "" (Just $ userIrcNick user)
-        <*> hiddenMarkdown (userBlurb user)
-        <*> hiddenMarkdown (userStatement user)
-
 
 getUserR :: UserId -> Handler Html
 getUserR user_id = do
-    maybe_viewer_id <- maybeAuthId
+    mviewer_id <- maybeAuthId
 
     user <- runDB $ get404 user_id
 
-    wrapped_project_list :: [((Value Text, Value Text), Value Role)] <- runDB $
-             select $ from $ \(role `InnerJoin` project) -> do
-                 on_ (role ^. ProjectUserRoleProject ==. project ^. ProjectId)
-                 where_ (role ^. ProjectUserRoleUser ==. val user_id)
-                 return ((project ^. ProjectName, project ^. ProjectHandle), role ^. ProjectUserRoleRole)
+    projects_and_roles <- runDB $ getProjectsAndRoles user_id
 
-    let project_list = map unwrapValues wrapped_project_list
-        projects = Map.fromListWith Set.union $ map (second Set.singleton) project_list
-
+    setUltDestCurrent -- establishment form redirects to ultimate dest.
     defaultLayout $ do
         setTitle . toHtml $ "User Profile - " <> userPrintName (Entity user_id user) <> " | Snowdrift.coop"
-        renderUser maybe_viewer_id user_id user projects
-
-renderUser :: Maybe UserId -> UserId -> User -> Map (Text, Text) (Set (Role)) -> Widget
-renderUser viewer_id user_id user projects = do
-    let user_entity = Entity user_id user
-        project_handle = error "bad link - no default project on user pages" -- TODO turn this into a caught exception
-
-    $(widgetFile "user")
+        renderUser mviewer_id user_id user projects_and_roles
 
 getEditUserR :: UserId -> Handler Html
 getEditUserR user_id = do
@@ -83,7 +37,6 @@ getEditUserR user_id = do
     defaultLayout $ do
         setTitle . toHtml $ "User Profile - " <> userPrintName (Entity user_id user) <> " | Snowdrift.coop"
         $(widgetFile "edit_user")
-
 
 postUserR :: UserId -> Handler Html
 postUserR user_id = do
@@ -107,7 +60,9 @@ postUserR user_id = do
 
                     (form, _) <- generateFormPost $ editUserForm updated_user
 
-                    defaultLayout $ renderPreview form action $ renderUser (Just viewer_id) user_id updated_user Map.empty
+                    defaultLayout $
+                        renderPreview form action $
+                            renderUser (Just viewer_id) user_id updated_user mempty
 
                 Just x | x == action -> do
                     runDB $ updateUser user_id user_update
@@ -141,10 +96,10 @@ getUsersR = do
 
     let users = map (\u -> (getUserKey u, u)) users'
         infos' :: [(UserId, ((Text, Text), Role))] = map (entityKey *** unwrapValues) infos
-        infos'' :: [(UserId, Map (Text, Text) (Set Role))] = map (second $ uncurry Map.singleton . second Set.singleton) infos'
-        allProjects :: Map UserId (Map (Text, Text) (Set Role)) = Map.fromListWith (Map.unionWith Set.union) infos''
+        infos'' :: [(UserId, Map (Text, Text) (Set Role))] = map (second $ uncurry M.singleton . second S.singleton) infos'
+        allProjects :: Map UserId (Map (Text, Text) (Set Role)) = M.fromListWith (M.unionWith S.union) infos''
         userProjects :: Entity User -> Maybe (Map (Text, Text) (Set (Role)))
-        userProjects u = Map.lookup (entityKey u) allProjects
+        userProjects u = M.lookup (entityKey u) allProjects
         getUserKey :: Entity User -> Text
         getUserKey (Entity key _) = either (error . T.unpack) id . fromPersistValue . unKey $ key
 
@@ -155,7 +110,7 @@ getUsersR = do
 
 getUserCreateR :: Handler Html
 getUserCreateR = do
-    (form, _) <- generateFormPost $ userCreateForm Nothing
+    (form, _) <- generateFormPost $ createUserForm Nothing
     defaultLayout $ do
         setTitle "Create User | Snowdrift.coop"
         [whamlet|
@@ -164,10 +119,9 @@ getUserCreateR = do
                 <input type=submit>
         |]
 
-
 postUserCreateR :: Handler Html
 postUserCreateR = do
-    ((result, form), _) <- runFormPost $ userCreateForm Nothing
+    ((result, form), _) <- runFormPost $ createUserForm Nothing
 
     case result of
         FormSuccess (ident, passwd, name, avatar, nick) -> do
@@ -184,61 +138,23 @@ postUserCreateR = do
             <input type=submit>
     |]
 
+-- | POST handler for marking a user as eligible for establishment.
+postUserEstEligibleR :: UserId -> Handler Html
+postUserEstEligibleR user_id = do
+    establisher_id <- requireAuthId
 
-userCreateForm :: Maybe Text -> Form (Text, Text, Maybe Text, Maybe Text, Maybe Text)
-userCreateForm ident extra = do
-    (identRes, identView) <- mreq textField "" ident
-    (passwd1Res, passwd1View) <- mreq passwordField "" Nothing
-    (passwd2Res, passwd2View) <- mreq passwordField "" Nothing
-    (nameRes, nameView) <- mopt textField "" Nothing
-    (avatarRes, avatarView) <- mopt textField "" Nothing
-    (nickRes, nickView) <- mopt textField "" Nothing
+    ok <- canMakeEligible user_id establisher_id
+    unless ok $
+        error "You can't establish this user"
 
-    let view = [whamlet|
-        ^{extra}
-        <p>
-            By registering, you agree to Snowdrift.coop's (amazingly ethical and ideal) #
-                <a href="@{ToUR}">Terms of Use
-                and <a href="@{PrivacyR}">Privacy Policy</a>.
-        <table .table>
-            <tr>
-                <td>
-                    E-mail or handle (private):
-                <td>
-                    ^{fvInput identView}
-            <tr>
-                <td>
-                    Passphrase:
-                <td>
-                    ^{fvInput passwd1View}
-            <tr>
-                <td>
-                    Repeat passphrase:
-                <td>
-                    ^{fvInput passwd2View}
-            <tr>
-                <td>
-                    Name (public, optional):
-                <td>
-                    ^{fvInput nameView}
-            <tr>
-                <td>
-                    Avatar (link, optional):
-                <td>
-                    ^{fvInput avatarView}
-            <tr>
-                <td>
-                    IRC Nick (irc.freenode.net, optional):
-                <td>
-                    ^{fvInput nickView}
-    |]
-
-        passwdRes = case (passwd1Res, passwd2Res) of
-            (FormSuccess a, FormSuccess b) -> if a == b then FormSuccess a else FormFailure ["passwords do not match"]
-            (FormSuccess _, x) -> x
-            (x, _) -> x
-
-        result = (,,,,) <$> identRes <*> passwdRes <*> nameRes <*> avatarRes <*> nickRes
-
-    return (result, view)
-
+    ((result, _), _) <- runFormPost establishUserForm
+    case result of
+        FormSuccess reason -> do
+            user <- runDB (get404 user_id)
+            case userEstablished user of
+                EstUnestablished -> do
+                    runDB $ eligEstablishUser establisher_id user_id reason
+                    setMessage "This user is now eligible for establishment. Thanks!"
+                    redirectUltDest HomeR
+                _ -> error "User not unestablished!"
+        _ -> error "Error submitting form."

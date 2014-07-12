@@ -1,7 +1,6 @@
 Account
     balance Milray
 
-
 Payday
     date UTCTime
 
@@ -19,7 +18,6 @@ Transaction
     reason Text
     info Text Maybe
 
-
 User
     ident Text
     createdTs UTCTime Maybe
@@ -35,8 +33,7 @@ User
     readApplications UTCTime default=now()
     readComments UTCTime default=now()
     readEdits UTCTime default=now()
-    establishedTs UTCTime Maybe
-    establishedReason Text Maybe
+    established Established default='EstUnestablished'
     UniqueUser ident
     UniqueUserAccount account
     deriving Typeable
@@ -54,7 +51,6 @@ UserSetting
     setting UserSettingName
     value String
 
-
 Project
     createdTs UTCTime
     name Text
@@ -66,7 +62,7 @@ Project
     githubRepo Text Maybe
     UniqueProjectAccount account
     UniqueProjectHandle handle
-    deriving Show
+    deriving Eq Show
 
 ProjectBlog
     time UTCTime
@@ -78,7 +74,6 @@ ProjectBlog
     bottomContent Markdown Maybe
     deriving Show
 
-
 ProjectUserRole
     project ProjectId
     user UserId
@@ -86,19 +81,16 @@ ProjectUserRole
     UniqueProjectUserRole project user role
     deriving Show
 
-
 ProjectUpdate
     updatedTs UTCTime
     project ProjectId
     author UserId
     description MarkdownDiff
 
-
 ProjectLastUpdate
     project ProjectId
     update ProjectUpdateId
     UniqueProjectLastUpdate project
-
 
 Pledge
     user UserId
@@ -106,7 +98,6 @@ Pledge
     shares Int64
     fundedShares Int64
     UniquePledge user project
-
 
 Invite
     createdTs UTCTime
@@ -119,7 +110,6 @@ Invite
     redeemedTs UTCTime Maybe
     redeemedBy UserId Maybe
     UniqueInvite code
-
 
 VolunteerApplication
     createdTs UTCTime
@@ -140,15 +130,14 @@ VolunteerInterest
     volunteer VolunteerApplicationId
     interest InterestId
 
-
 Message
     project ProjectId Maybe
     createdTs UTCTime
     from UserId Maybe
     to UserId Maybe
     content Markdown
+    -- Whether the message was sent automatically by Snowdrift, or by an actual user.
     automated Bool default=false
-
 
 WikiPage
     target Text
@@ -250,9 +239,11 @@ Build
     base Text
     diff Text
 
+-- A User may be established by a number of different ways. Manual establishment
+-- by a moderator is one of them.
 ManualEstablishment
-    establishedUser User
-    establishingUser User
+    establishedUser UserId
+    establishingUser UserId
     UniqueManualEstablishment establishedUser
 
 TagColor
@@ -299,4 +290,3 @@ SharesPledged
     shares Int64
     render PledgeFormRenderedId
 
- -- This file is used in Model.hs (which is imported by Foundation.hs)

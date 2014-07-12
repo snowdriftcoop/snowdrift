@@ -25,10 +25,10 @@
                         $maybe nick <- userIrcNick $ entityVal user
                             #{nick}
                     <td>
-                        $if isJust $ userEstablishedTs $ entityVal user
+                        $if isEstablished (entityVal user)
                             &#10004;
                     <td>
-                        $forall ((projectName, projectHandle), roles) <- Map.toAscList (fromMaybe Map.empty (userProjects user))
+                        $forall ((projectName, projectHandle), roles) <- M.toAscList (fromMaybe mempty (userProjects user))
                             <a href=@{ProjectR $ projectHandle}>
-                                #{projectName} (#{T.intercalate "/" (map roleAbbrev $ Set.toList roles)})
+                                #{projectName} (#{T.intercalate "/" (map roleAbbrev $ S.toList roles)})
 

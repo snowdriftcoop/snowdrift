@@ -277,3 +277,10 @@ div.math
     padding-right : 0.122em
     margin-right : 0
 
+#establish-form
+    border : 1px solid
+
+#establish-form p
+    font-size : small
+    font-style : italic
+

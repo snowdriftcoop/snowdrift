@@ -150,7 +150,8 @@ CREATE TABLE comment (
     "user" bigint NOT NULL,
     text character varying NOT NULL,
     depth bigint NOT NULL,
-    discussion bigint NOT NULL
+    discussion bigint NOT NULL,
+    rethreaded bigint
 );
 
 
@@ -191,6 +192,22 @@ ALTER SEQUENCE comment_ancestor_id_seq OWNED BY comment_ancestor.id;
 
 
 --
+-- Name: comment_closure; Type: TABLE; Schema: public; Owner: snowdrift_test; Tablespace: 
+--
+
+CREATE TABLE comment_closure (
+    id integer NOT NULL,
+    ts timestamp without time zone NOT NULL,
+    reason character varying NOT NULL,
+    comment bigint NOT NULL,
+    closed_by bigint NOT NULL,
+    type character varying NOT NULL
+);
+
+
+ALTER TABLE public.comment_closure OWNER TO snowdrift_test;
+
+--
 -- Name: comment_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
 --
 
@@ -217,14 +234,9 @@ ALTER SEQUENCE comment_id_seq OWNED BY comment.id;
 
 CREATE TABLE comment_rethread (
     id integer NOT NULL,
-    ts timestamp without time zone NOT NULL,
-    moderator bigint NOT NULL,
-    old_parent bigint,
-    old_discussion bigint NOT NULL,
-    new_parent bigint,
-    new_discussion bigint NOT NULL,
-    comment bigint NOT NULL,
-    reason character varying NOT NULL
+    rethread bigint NOT NULL,
+    old_comment bigint NOT NULL,
+    new_comment bigint NOT NULL
 );
 
 
@@ -283,7 +295,28 @@ ALTER TABLE public.comment_retraction_id_seq OWNER TO snowdrift_test;
 -- Name: comment_retraction_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
 --
 
-ALTER SEQUENCE comment_retraction_id_seq OWNED BY comment_retraction.id;
+ALTER SEQUENCE comment_retraction_id_seq OWNED BY comment_closure.id;
+
+
+--
+-- Name: comment_retraction_id_seq1; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
+--
+
+CREATE SEQUENCE comment_retraction_id_seq1
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.comment_retraction_id_seq1 OWNER TO snowdrift_test;
+
+--
+-- Name: comment_retraction_id_seq1; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
+--
+
+ALTER SEQUENCE comment_retraction_id_seq1 OWNED BY comment_retraction.id;
 
 
 --
@@ -606,8 +639,8 @@ ALTER SEQUENCE invite_id_seq OWNED BY invite.id;
 
 CREATE TABLE manual_establishment (
     id integer NOT NULL,
-    established_user character varying NOT NULL,
-    establishing_user character varying NOT NULL
+    established_user bigint NOT NULL,
+    establishing_user bigint NOT NULL
 );
 
 
@@ -644,7 +677,8 @@ CREATE TABLE message (
     created_ts timestamp without time zone NOT NULL,
     "from" bigint,
     "to" bigint,
-    content character varying NOT NULL
+    content character varying NOT NULL,
+    automated boolean DEFAULT false NOT NULL
 );
 
 
@@ -993,6 +1027,42 @@ ALTER SEQUENCE project_user_role_id_seq OWNED BY project_user_role.id;
 
 
 --
+-- Name: rethread; Type: TABLE; Schema: public; Owner: snowdrift_test; Tablespace: 
+--
+
+CREATE TABLE rethread (
+    id integer NOT NULL,
+    ts timestamp without time zone NOT NULL,
+    moderator bigint NOT NULL,
+    old_comment bigint NOT NULL,
+    reason character varying NOT NULL
+);
+
+
+ALTER TABLE public.rethread OWNER TO snowdrift_test;
+
+--
+-- Name: rethread_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
+--
+
+CREATE SEQUENCE rethread_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.rethread_id_seq OWNER TO snowdrift_test;
+
+--
+-- Name: rethread_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
+--
+
+ALTER SEQUENCE rethread_id_seq OWNED BY rethread.id;
+
+
+--
 -- Name: role_event; Type: TABLE; Schema: public; Owner: snowdrift_test; Tablespace: 
 --
 
@@ -1191,9 +1261,8 @@ CREATE TABLE "user" (
     read_applications timestamp without time zone DEFAULT now() NOT NULL,
     read_comments timestamp without time zone DEFAULT now() NOT NULL,
     read_edits timestamp without time zone DEFAULT now() NOT NULL,
-    established_ts timestamp without time zone,
-    established_reason character varying,
-    created_ts timestamp without time zone
+    created_ts timestamp without time zone,
+    established character varying DEFAULT 'EstUnestablished'::character varying NOT NULL
 );
 
 
@@ -1541,6 +1610,13 @@ ALTER TABLE ONLY comment_ancestor ALTER COLUMN id SET DEFAULT nextval('comment_a
 -- Name: id; Type: DEFAULT; Schema: public; Owner: snowdrift_test
 --
 
+ALTER TABLE ONLY comment_closure ALTER COLUMN id SET DEFAULT nextval('comment_retraction_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: snowdrift_test
+--
+
 ALTER TABLE ONLY comment_rethread ALTER COLUMN id SET DEFAULT nextval('comment_rethread_id_seq'::regclass);
 
 
@@ -1548,7 +1624,7 @@ ALTER TABLE ONLY comment_rethread ALTER COLUMN id SET DEFAULT nextval('comment_r
 -- Name: id; Type: DEFAULT; Schema: public; Owner: snowdrift_test
 --
 
-ALTER TABLE ONLY comment_retraction ALTER COLUMN id SET DEFAULT nextval('comment_retraction_id_seq'::regclass);
+ALTER TABLE ONLY comment_retraction ALTER COLUMN id SET DEFAULT nextval('comment_retraction_id_seq1'::regclass);
 
 
 --
@@ -1689,6 +1765,13 @@ ALTER TABLE ONLY project_update ALTER COLUMN id SET DEFAULT nextval('project_upd
 --
 
 ALTER TABLE ONLY project_user_role ALTER COLUMN id SET DEFAULT nextval('project_user_role_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: snowdrift_test
+--
+
+ALTER TABLE ONLY rethread ALTER COLUMN id SET DEFAULT nextval('rethread_id_seq'::regclass);
 
 
 --
@@ -1884,11 +1967,11 @@ SELECT pg_catalog.setval('build_id_seq', 58, true);
 -- Data for Name: comment; Type: TABLE DATA; Schema: public; Owner: snowdrift_test
 --
 
-COPY comment (id, created_ts, moderated_ts, moderated_by, parent, "user", text, depth, discussion) FROM stdin;
-1	2014-01-21 18:11:03.914397	2014-01-21 18:12:36.696658	1	\N	1	This is a comment.	0	2
-2	2014-01-21 18:13:00.273315	2014-01-21 18:13:10.464805	1	1	1	Replies are threaded.	1	2
-3	2014-01-21 18:13:57.732222	\N	\N	\N	1	When a comment is posted by an unestablished user, it is marked for moderation and only shown to moderators.	0	2
-4	2014-01-21 18:15:30.945499	2014-01-21 18:15:37.484472	1	\N	1	adding a line starting with "ticket:" such as\n\nticket: this is a ticket\n\nmakes the post show up at /t where all the tickets are listed	0	2
+COPY comment (id, created_ts, moderated_ts, moderated_by, parent, "user", text, depth, discussion, rethreaded) FROM stdin;
+1	2014-01-21 18:11:03.914397	2014-01-21 18:12:36.696658	1	\N	1	This is a comment.	0	2	\N
+2	2014-01-21 18:13:00.273315	2014-01-21 18:13:10.464805	1	1	1	Replies are threaded.	1	2	\N
+3	2014-01-21 18:13:57.732222	\N	\N	\N	1	When a comment is posted by an unestablished user, it is marked for moderation and only shown to moderators.	0	2	\N
+4	2014-01-21 18:15:30.945499	2014-01-21 18:15:37.484472	1	\N	1	adding a line starting with "ticket:" such as\n\nticket: this is a ticket\n\nmakes the post show up at /t where all the tickets are listed	0	2	\N
 \.
 
 
@@ -1909,6 +1992,14 @@ SELECT pg_catalog.setval('comment_ancestor_id_seq', 1, true);
 
 
 --
+-- Data for Name: comment_closure; Type: TABLE DATA; Schema: public; Owner: snowdrift_test
+--
+
+COPY comment_closure (id, ts, reason, comment, closed_by, type) FROM stdin;
+\.
+
+
+--
 -- Name: comment_id_seq; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_test
 --
 
@@ -1919,7 +2010,7 @@ SELECT pg_catalog.setval('comment_id_seq', 4, true);
 -- Data for Name: comment_rethread; Type: TABLE DATA; Schema: public; Owner: snowdrift_test
 --
 
-COPY comment_rethread (id, ts, moderator, old_parent, old_discussion, new_parent, new_discussion, comment, reason) FROM stdin;
+COPY comment_rethread (id, rethread, old_comment, new_comment) FROM stdin;
 \.
 
 
@@ -1943,6 +2034,13 @@ COPY comment_retraction (id, ts, reason, comment) FROM stdin;
 --
 
 SELECT pg_catalog.setval('comment_retraction_id_seq', 1, false);
+
+
+--
+-- Name: comment_retraction_id_seq1; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_test
+--
+
+SELECT pg_catalog.setval('comment_retraction_id_seq1', 1, false);
 
 
 --
@@ -1980,7 +2078,7 @@ SELECT pg_catalog.setval('committee_user_id_seq', 1, false);
 --
 
 COPY database_version (id, last_migration) FROM stdin;
-1	5
+1	12
 \.
 
 
@@ -2106,8 +2204,8 @@ SELECT pg_catalog.setval('manual_establishment_id_seq', 1, false);
 -- Data for Name: message; Type: TABLE DATA; Schema: public; Owner: snowdrift_test
 --
 
-COPY message (id, project, created_ts, "from", "to", content) FROM stdin;
-1	1	2014-01-21 22:31:51.496246	1	\N	Welcome!
+COPY message (id, project, created_ts, "from", "to", content, automated) FROM stdin;
+1	1	2014-01-21 22:31:51.496246	1	\N	Welcome!	f
 \.
 
 
@@ -2262,6 +2360,21 @@ SELECT pg_catalog.setval('project_user_role_id_seq', 5, true);
 
 
 --
+-- Data for Name: rethread; Type: TABLE DATA; Schema: public; Owner: snowdrift_test
+--
+
+COPY rethread (id, ts, moderator, old_comment, reason) FROM stdin;
+\.
+
+
+--
+-- Name: rethread_id_seq; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_test
+--
+
+SELECT pg_catalog.setval('rethread_id_seq', 1, false);
+
+
+--
 -- Data for Name: role_event; Type: TABLE DATA; Schema: public; Owner: snowdrift_test
 --
 
@@ -2345,9 +2458,9 @@ SELECT pg_catalog.setval('transaction_id_seq', 1, false);
 -- Data for Name: user; Type: TABLE DATA; Schema: public; Owner: snowdrift_test
 --
 
-COPY "user" (id, ident, hash, salt, name, account, avatar, blurb, statement, irc_nick, read_messages, read_applications, read_comments, read_edits, established_ts, established_reason, created_ts) FROM stdin;
-1	admin	8bf2d491387febc07e5d8fd15a4140b28473566e	P^YTN3G:	Admin	1	\N	Admin is the name for the test user in our devDB database that comes with the code. Log in as admin with passphrase: admin	\N	\N	2014-01-21 22:58:23.380462	2013-11-23 19:31:18.982213	2013-11-23 19:31:18.982213	2013-11-23 19:31:18.982213	2014-01-24 15:28:15.681117	\N	\N
-2	test	a090d14299acd2b596b64fb5a46d3587ece359d8	_>4icWF[	Test	3	\N	\N	\N	\N	2014-02-24 01:58:57.856901	2014-02-24 01:58:57.856901	2014-02-24 01:58:57.856901	2014-02-24 01:58:57.856901	\N	\N	2014-02-24 01:58:57.856901
+COPY "user" (id, ident, hash, salt, name, account, avatar, blurb, statement, irc_nick, read_messages, read_applications, read_comments, read_edits, created_ts, established) FROM stdin;
+1	admin	8bf2d491387febc07e5d8fd15a4140b28473566e	P^YTN3G:	Admin	1	\N	Admin is the name for the test user in our devDB database that comes with the code. Log in as admin with passphrase: admin	\N	\N	2014-01-21 22:58:23.380462	2013-11-23 19:31:18.982213	2013-11-23 19:31:18.982213	2013-11-23 19:31:18.982213	\N	EstUnestablished
+2	test	a090d14299acd2b596b64fb5a46d3587ece359d8	_>4icWF[	Test	3	\N	\N	\N	\N	2014-02-24 01:58:57.856901	2014-02-24 01:58:57.856901	2014-02-24 01:58:57.856901	2014-02-24 01:58:57.856901	2014-02-24 01:58:57.856901	EstUnestablished
 \.
 
 
@@ -2540,8 +2653,16 @@ ALTER TABLE ONLY comment_rethread
 -- Name: comment_retraction_pkey; Type: CONSTRAINT; Schema: public; Owner: snowdrift_test; Tablespace: 
 --
 
-ALTER TABLE ONLY comment_retraction
+ALTER TABLE ONLY comment_closure
     ADD CONSTRAINT comment_retraction_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: comment_retraction_pkey1; Type: CONSTRAINT; Schema: public; Owner: snowdrift_test; Tablespace: 
+--
+
+ALTER TABLE ONLY comment_retraction
+    ADD CONSTRAINT comment_retraction_pkey1 PRIMARY KEY (id);
 
 
 --
@@ -2702,6 +2823,14 @@ ALTER TABLE ONLY project_update
 
 ALTER TABLE ONLY project_user_role
     ADD CONSTRAINT project_user_role_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: rethread_pkey; Type: CONSTRAINT; Schema: public; Owner: snowdrift_test; Tablespace: 
+--
+
+ALTER TABLE ONLY rethread
+    ADD CONSTRAINT rethread_pkey PRIMARY KEY (id);
 
 
 --
@@ -2873,6 +3002,14 @@ ALTER TABLE ONLY tag_color
 
 
 --
+-- Name: unique_ticket; Type: CONSTRAINT; Schema: public; Owner: snowdrift_test; Tablespace: 
+--
+
+ALTER TABLE ONLY ticket
+    ADD CONSTRAINT unique_ticket UNIQUE (comment);
+
+
+--
 -- Name: unique_user; Type: CONSTRAINT; Schema: public; Owner: snowdrift_test; Tablespace: 
 --
 
@@ -3023,6 +3160,30 @@ ALTER TABLE ONLY comment_ancestor
 
 
 --
+-- Name: comment_closure_closed_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_test
+--
+
+ALTER TABLE ONLY comment_closure
+    ADD CONSTRAINT comment_closure_closed_by_fkey FOREIGN KEY (closed_by) REFERENCES "user"(id);
+
+
+--
+-- Name: comment_closure_comment_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_test
+--
+
+ALTER TABLE ONLY comment_closure
+    ADD CONSTRAINT comment_closure_comment_fkey FOREIGN KEY (comment) REFERENCES comment(id);
+
+
+--
+-- Name: comment_closure_user_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_test
+--
+
+ALTER TABLE ONLY comment_closure
+    ADD CONSTRAINT comment_closure_user_fkey FOREIGN KEY (closed_by) REFERENCES "user"(id);
+
+
+--
 -- Name: comment_discussion_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_test
 --
 
@@ -3055,51 +3216,43 @@ ALTER TABLE ONLY comment
 
 
 --
--- Name: comment_rethread_comment_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_test
+-- Name: comment_rethread_new_comment_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_test
 --
 
 ALTER TABLE ONLY comment_rethread
-    ADD CONSTRAINT comment_rethread_comment_fkey FOREIGN KEY (comment) REFERENCES comment(id);
+    ADD CONSTRAINT comment_rethread_new_comment_fkey FOREIGN KEY (new_comment) REFERENCES comment(id);
 
 
 --
--- Name: comment_rethread_moderator_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_test
---
-
-ALTER TABLE ONLY comment_rethread
-    ADD CONSTRAINT comment_rethread_moderator_fkey FOREIGN KEY (moderator) REFERENCES "user"(id);
-
-
---
--- Name: comment_rethread_new_discussion_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_test
+-- Name: comment_rethread_old_comment_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_test
 --
 
 ALTER TABLE ONLY comment_rethread
-    ADD CONSTRAINT comment_rethread_new_discussion_fkey FOREIGN KEY (new_discussion) REFERENCES discussion(id);
+    ADD CONSTRAINT comment_rethread_old_comment_fkey FOREIGN KEY (old_comment) REFERENCES comment(id);
 
 
 --
--- Name: comment_rethread_new_parent_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_test
---
-
-ALTER TABLE ONLY comment_rethread
-    ADD CONSTRAINT comment_rethread_new_parent_fkey FOREIGN KEY (new_parent) REFERENCES comment(id);
-
-
---
--- Name: comment_rethread_old_discussion_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_test
+-- Name: comment_rethread_rethread_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_test
 --
 
 ALTER TABLE ONLY comment_rethread
-    ADD CONSTRAINT comment_rethread_old_discussion_fkey FOREIGN KEY (old_discussion) REFERENCES discussion(id);
+    ADD CONSTRAINT comment_rethread_rethread_fkey FOREIGN KEY (rethread) REFERENCES rethread(id);
 
 
 --
--- Name: comment_rethread_old_parent_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_test
+-- Name: comment_rethreaded_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_test
 --
 
-ALTER TABLE ONLY comment_rethread
-    ADD CONSTRAINT comment_rethread_old_parent_fkey FOREIGN KEY (old_parent) REFERENCES comment(id);
+ALTER TABLE ONLY comment
+    ADD CONSTRAINT comment_rethreaded_fkey FOREIGN KEY (rethreaded) REFERENCES rethread(id);
+
+
+--
+-- Name: comment_retraction_comment_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_test
+--
+
+ALTER TABLE ONLY comment_closure
+    ADD CONSTRAINT comment_retraction_comment_fkey FOREIGN KEY (comment) REFERENCES comment(id);
 
 
 --
@@ -3212,6 +3365,22 @@ ALTER TABLE ONLY invite
 
 ALTER TABLE ONLY invite
     ADD CONSTRAINT invite_user_fkey FOREIGN KEY ("user") REFERENCES "user"(id);
+
+
+--
+-- Name: manual_establishment_established_user_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_test
+--
+
+ALTER TABLE ONLY manual_establishment
+    ADD CONSTRAINT manual_establishment_established_user_fkey FOREIGN KEY (established_user) REFERENCES "user"(id);
+
+
+--
+-- Name: manual_establishment_establishing_user_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_test
+--
+
+ALTER TABLE ONLY manual_establishment
+    ADD CONSTRAINT manual_establishment_establishing_user_fkey FOREIGN KEY (establishing_user) REFERENCES "user"(id);
 
 
 --
@@ -3372,6 +3541,22 @@ ALTER TABLE ONLY project_user_role
 
 ALTER TABLE ONLY project_user_role
     ADD CONSTRAINT project_user_role_user_fkey FOREIGN KEY ("user") REFERENCES "user"(id);
+
+
+--
+-- Name: rethread_moderator_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_test
+--
+
+ALTER TABLE ONLY rethread
+    ADD CONSTRAINT rethread_moderator_fkey FOREIGN KEY (moderator) REFERENCES "user"(id);
+
+
+--
+-- Name: rethread_old_comment_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_test
+--
+
+ALTER TABLE ONLY rethread
+    ADD CONSTRAINT rethread_old_comment_fkey FOREIGN KEY (old_comment) REFERENCES comment(id);
 
 
 --

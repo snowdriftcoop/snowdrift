@@ -17,7 +17,6 @@ import           Data.Tree.Extra            (sortForestBy, sortTreeBy)
 import           Model.ClosureType
 import           Model.Comment              -- (buildCommentTree, ...) TODO
 import           Model.Project              (getProjectPages)
-import           Model.Role
 import           Model.Tag                  (getAllTags)
 import           Model.User
 import           Model.ViewTime             (getCommentViewTimes)
@@ -116,7 +115,7 @@ checkCloseComment user project_handle target comment_id = do
     -- otherwise, the marking of closed should require *moderator* confirmation…
     -- We should also have a re-open function.
     -- There are now comments discussing these things on the site.
-    unless (isJust $ userEstablishedTs user) $
+    unless (isEstablished user) $
         permissionDenied "You must be an established user to close a conversation."
 
     return (project_id, comment)

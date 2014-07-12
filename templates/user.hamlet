@@ -3,14 +3,14 @@
         <h1>
             #{userPrintName user_entity}
         <h5>
-            $if Just user_id == viewer_id
+            $if Just user_id == mviewer_id
                 <a href="@{EditUserR user_id}">
                     edit profile
         <div .row>
             <div .col-xs-4>
                 $maybe avatar <- userAvatar user
                     <img .headshot_large src="#{avatar}">
-                $if isJust $ userEstablishedTs user
+                $if isEstablished user
                     <small>established user
             <div .col-xs-8>
                 $maybe nick <- userIrcNick user
@@ -35,14 +35,15 @@
                    $forall role <- presentationRoles
                      <th>#{ roleLabel role }
             <tbody>
-                $forall ((projectName, projectHandle), roles) <- Map.toAscList projects
+                $forall (Entity _ project, roles) <- M.toAscList projects_and_roles
                     <tr>
-                    <td><a href=@{ProjectR $ projectHandle}>
-                        #{projectName }
+                    <td><a href=@{ProjectR (projectHandle project)}>
+                        #{projectName project}
 
                     $forall role' <- presentationRoles
                         <td>
-                            $if Set.member role' roles
+                            $if S.member role' roles
+                                $# check mark
                                 &#10004;
 
     <div .col-md-6>
@@ -50,3 +51,20 @@
             <h3>Personal Statement
             <div .well .well-sm .scroll .capped>
                 ^{markdownWidget project_handle statement}
+
+$maybe (est_form, est_form_enctype) <- mest_form_and_enctype
+    <div .row>
+        <div .col-md-6 #establish-form>
+            <h4>Establish User
+            <p>
+                As a project moderator, you have the ability to "establish" ordinary users.
+                Established users have additional permissions such as flagging, tagging, and commenting without moderation.
+            <p>
+                Approve users who you now trust to be legitimate
+                (e.g. they have posted several helpful, on-topic comments and are clearly not a spammer or malicious troll).
+                They will then get fully established after affirming the <a href="@{WikiR "snowdrift" "honor"}">honor pledge</a>.
+
+            <form action=@{UserEstEligibleR user_id} method=post enctype=#{est_form_enctype}>
+                ^{est_form}
+                <input type=submit value="Approve">
+

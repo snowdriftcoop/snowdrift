@@ -41,6 +41,9 @@ import           Control.Monad        as Import
 import           Data.Time.Clock      as Import (UTCTime, diffUTCTime, getCurrentTime)
 import           Data.Time.Units
 
+import           Model.Established.Internal as Import
+import           Model.Role.Internal        as Import
+
 import Data.Typeable (Typeable)
 
 import GHC.Exts (IsList(..))
@@ -243,10 +246,13 @@ getByErr message = runDB . fmap fromJustError . getBy
         fromJustError :: Maybe a -> a
         fromJustError = fromMaybe (error message)
 
--- maybe we should make this a typeclass?
 class WrappedValues a where
     type Unwrapped a
     unwrapValues :: a -> Unwrapped a
+
+instance WrappedValues a => WrappedValues [a] where
+    type Unwrapped [a] = [Unwrapped a]
+    unwrapValues = map unwrapValues
 
 instance WrappedValues (Value a) where
     type Unwrapped (Value a) = a
@@ -259,6 +265,7 @@ instance (WrappedValues a, WrappedValues b) => WrappedValues (a, b) where
 instance (WrappedValues a, WrappedValues b, WrappedValues c) => WrappedValues (a, b, c) where
     type Unwrapped (a, b, c) = (Unwrapped a, Unwrapped b, Unwrapped c)
     unwrapValues (a, b, c) = (unwrapValues a, unwrapValues b, unwrapValues c)
+
 
 
 
