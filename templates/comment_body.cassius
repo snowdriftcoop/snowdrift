@@ -6,7 +6,7 @@
     font-size : 15px
 
 .comment p, .comment ul, .comment ol, .comment h1, .comment h2, .comment h3, .comment h4, .comment h5, .comment h6
-    margin : 1em 0
+    margin : .5em 0
 
 .comment figure
     text-align : left
