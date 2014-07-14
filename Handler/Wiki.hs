@@ -13,7 +13,7 @@ import           Model.Permission
 import           Model.Project              (getProjectPages)
 import           Model.Tag                  (getAllTagsMap)
 import           Model.User
-import           Model.ViewTime             (getCommentsViewTime)
+import           Model.ViewTime
 import           Model.ViewType
 import           Model.WikiPage             (getAllWikiComments)
 import           Widgets.Preview
@@ -398,8 +398,8 @@ getDiscussWikiR project_handle target = lookupGetParam "state" >>= \case
   where
     go = getDiscussWikiR' project_handle target
 
-getDiscussWikiR' :: Text                                                   -- ^ Project handle.
-                 -> Text                                                   -- ^ Wiki page name.
+getDiscussWikiR' :: Text                              -- ^ Project handle.
+                 -> Text                              -- ^ Wiki page name.
                  -> (Maybe UserId
                      -> ProjectId
                      -> DiscussionId
@@ -438,7 +438,7 @@ getDiscussWikiR' project_handle target get_root_comments = do
                     max_depth
                     0              -- depth
 
-    (comment_form, _) <- generateFormPost $ commentForm Nothing Nothing
+    (comment_form, _) <- generateFormPost commentNewTopicForm
 
     let has_comments = not $ null roots
 
@@ -452,14 +452,14 @@ getDiscussWikiR' project_handle target get_root_comments = do
 getNewDiscussWikiR :: Text -> Text -> Handler Html
 getNewDiscussWikiR project_handle target = do
     void requireAuth
-    (comment_form, _) <- generateFormPost $ commentForm Nothing Nothing
+    (comment_form, _) <- generateFormPost commentNewTopicForm
     defaultLayout $(widgetFile "wiki_discuss_new")
 
 postNewDiscussWikiR :: Text -> Text -> Handler Html
 postNewDiscussWikiR project_handle target = do
     (project_entity, Entity _ page) <- runDB $ getPageInfo project_handle target
 
-    ((result, _), _) <- runFormPost $ commentForm Nothing Nothing
+    ((result, _), _) <- runFormPost commentNewTopicForm
 
     case result of
         FormSuccess text -> do

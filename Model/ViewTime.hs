@@ -13,7 +13,7 @@ getCommentsViewTime user_id project_id = getBy $ UniqueViewTimeUserProjectType u
 updateCommentsViewTime :: UTCTime -> UserId -> ProjectId -> YesodDB App ()
 updateCommentsViewTime now user_id project_id = do
     c <- updateCount $ \vt -> do
-         set viewtime [ ViewTimeTime =. val now ]
+         set vt [ ViewTimeTime =. val now ]
          where_ (vt ^. ViewTimeUser    ==. val user_id &&.
                  vt ^. ViewTimeProject ==. val project_id &&.
                  vt ^. ViewTimeType    ==. val ViewComments)

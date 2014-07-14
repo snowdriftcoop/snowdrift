@@ -4,6 +4,7 @@ module Model.Comment
     , approveComment
     , buildCommentForest
     , buildCommentTree
+    , editComment
     , filterComments
     , flagComment
     , getAllClosedRootComments
@@ -101,6 +102,13 @@ buildCommentForest :: [Entity Comment]                                          
                    -> [Entity Comment]                                             -- replies comments
                    -> Forest (Entity Comment)
 buildCommentForest roots replies = (map (buildCommentTree . (, replies))) roots
+
+-- | Edit a comment's text.
+editComment :: CommentId -> Markdown -> YesodDB App ()
+editComment comment_id text =
+    update $ \c -> do
+    set c [ CommentText =. val text ]
+    where_ (c ^. CommentId ==. val comment_id)
 
 -- | Flag a comment.
 flagComment :: CommentId -> UserId -> [FlagReason] -> Maybe Markdown -> YesodDB App ()

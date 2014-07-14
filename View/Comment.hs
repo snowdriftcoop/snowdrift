@@ -1,8 +1,9 @@
 module View.Comment
-    ( CommentMods(..)
-    , closedForm
-    , commentWidget
-    , commentWidgetMod
+    ( closedForm
+    , commentEditForm
+    , commentEditFormWidget
+    , commentNewTopicForm
+    , commentReplyForm
     , commentForm
     , commentFormWidget
     , commentTreeWidget
@@ -28,28 +29,39 @@ import Widgets.Markdown
 import Widgets.Tag
 import Widgets.Time
 
-import qualified Data.List     as L
-import qualified Data.Map      as M
-import qualified Data.Text     as T
+-- import           Control.Lens  ((%~), _3)
+import qualified Data.List                 as L
+import qualified Data.Map                  as M
+import qualified Data.Text                 as T
 import           Data.Tree
 
 disabledCommentForm :: Form Markdown
 disabledCommentForm = renderBootstrap3 $ areq snowdriftMarkdownField ("Reply" { fsAttrs = [("disabled",""), ("class","form-control")] }) Nothing
 
-commentForm :: Maybe CommentId -> Maybe Markdown -> Form Markdown
-commentForm parent content =
-    let comment_label = if isJust parent then "Reply" else "New Topic"
-     in renderBootstrap3 $ areq' snowdriftMarkdownField comment_label content
+commentForm :: SomeMessage App -> Maybe Markdown -> Form Markdown
+commentForm label = renderBootstrap3 . areq' snowdriftMarkdownField label
 
-commentFormWidget :: Maybe CommentId -> Maybe Markdown -> Widget
-commentFormWidget parent content = do
-    (comment_form, enctype) <- handlerToWidget $ generateFormPost (commentForm parent content)
+commentFormWidget :: SomeMessage App -> Maybe Markdown -> Widget
+commentFormWidget label content = do
+    (comment_form, enctype) <- handlerToWidget $ generateFormPost (commentForm label content)
     [whamlet|
         <div>
             <form method="POST" enctype=#{enctype}>
                 ^{comment_form}
                 <input type="submit" name="mode" value="preview">
     |]
+
+commentEditForm :: Markdown -> Form Markdown
+commentEditForm = commentForm "Edit" . Just
+
+commentEditFormWidget :: Markdown -> Widget
+commentEditFormWidget = commentFormWidget "Edit" . Just
+
+commentNewTopicForm :: Form Markdown
+commentNewTopicForm = commentForm "New Topic" Nothing
+
+commentReplyForm :: Form Markdown
+commentReplyForm = commentForm "Reply" Nothing
 
 rethreadForm :: Form (Text, Text)
 rethreadForm = renderBootstrap3 $ (,)
@@ -278,79 +290,3 @@ expandCommentWidget num_replies new_max_depth = do
             <a href="@?{(cur_route, [("maxdepth", T.pack (show new_max_depth))])}">
                 #{num_replies} more #{plural num_replies "reply" "replies"}
     |]
-
--- | Helper method to create a Widget for a comment action (/, /reply, /moderate, etc).
--- Returns a Widget from a Handler (rather than just calling defaultLayout) so that the widget
--- can be put in a preview (for some POST handlers).
-commentWidget :: Handler Int    -- ^ Max depth getter.
-              -> Bool           -- ^ Show actions?
-              -> Widget         -- ^ Widget to display under root comment.
-              -> Text           -- ^ Project handle.
-              -> Text           -- ^ Target.
-              -> CommentId      -- ^ Root comment id.
-              -> Handler Widget
-commentWidget = commentWidgetMod def
-
--- | Data type used in commentWidgetMod, containing modifications to comment-action-related
--- data structures.
-data CommentMods = CommentMods
-    { mod_earlier_closures :: [CommentClosure] -> [CommentClosure]
-    , mod_user_map         :: UserMap          -> UserMap
-    , mod_closure_map      :: ClosureMap       -> ClosureMap
-    , mod_ticket_map       :: TicketMap        -> TicketMap
-    , mod_tag_map          :: TagMap           -> TagMap
-    }
-
-instance Default CommentMods where
-    def = CommentMods id id id id id
-
--- | Like @commentWidget@, but includes modifications to the datastructures grabbed from
--- the database. This is used for showing previews of comment trees, where changes are not
--- saved yet.
-commentWidgetMod :: CommentMods    -- ^ Comment structure modifications.
-                 -> Handler Int    -- ^ Max depth getter.
-                 -> Bool           -- ^ Is preview_
-                 -> Widget         -- ^ Widget to display under root comment.
-                 -> Text           -- ^ Project handle.
-                 -> Text           -- ^ Target.
-                 -> CommentId      -- ^ Root comment id.
-                 -> Handler Widget
-commentWidgetMod CommentMods{..} get_max_depth show_actions form project_handle target comment_id = do
-    redirectIfRethreaded project_handle comment_id
-    (Entity project_id _, _, root) <- checkCommentPage project_handle target comment_id
-
-    mviewer_id <- maybeAuthId
-    (rest, user_map, earlier_closures, closure_map, ticket_map, tag_map) <- runDB $ do
-        rest <- getCommentDescendants mviewer_id project_id comment_id
-
-        let all_comments    = (Entity comment_id root):rest
-            all_comment_ids = map entityKey all_comments
-
-        earlier_closures <- getAncestorClosures comment_id
-        user_map         <- entitiesMap <$> getUsersIn (S.toList $ getCommentsUsers all_comments)
-        closure_map      <- makeClosureMap all_comment_ids
-        ticket_map       <- makeTicketMap  all_comment_ids
-        tag_map          <- entitiesMap <$> getAllTags
-
-        return (rest, user_map, earlier_closures, closure_map, ticket_map, tag_map)
-
-    user_map_with_viewer <- (maybe id (\(Entity viewer_id viewer) -> M.insert viewer_id viewer))
-        <$> maybeAuth
-        <*> pure user_map
-
-    max_depth <- get_max_depth
-    return $
-        commentTreeWithReplyWidget
-            form
-            (sortTreeBy orderingNewestFirst $ buildCommentTree (Entity comment_id root, rest))
-            (mod_earlier_closures earlier_closures)
-            (mod_user_map user_map_with_viewer)
-            (mod_closure_map closure_map)
-            (mod_ticket_map ticket_map)
-            (mod_tag_map tag_map)
-            project_handle
-            target
-            show_actions
-            max_depth
-            0
-
