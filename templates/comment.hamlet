@@ -7,7 +7,10 @@
             <a href="@{UserR user_id}">
                 #{userPrintName (Entity user_id user)}
         <span .comment-head>
-            ^{renderTime $ commentCreatedTs comment}
+            $maybe moderated_ts <- commentModeratedTs comment
+                ^{renderTime moderated_ts}
+            $nothing
+                ^{renderTime $ commentCreatedTs comment}
         <span .comment-head :not show_actions:.preview>
             |
         <span .comment-head :not show_actions:.preview>

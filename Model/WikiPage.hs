@@ -27,6 +27,7 @@ getUnapprovedComments pages_ids = do
         on_ (c ^. CommentDiscussion ==. wp ^. WikiPageDiscussion)
         where_ (wp ^. WikiPageId `in_` valList pages_ids &&.
                 isNothing (c ^. CommentModeratedTs))
+        orderBy [desc (c ^. CommentCreatedTs)]
         return c
 
 getNewComments :: [WikiPageId] -> CommentId -> UTCTime -> Int64 -> YesodDB App [Entity Comment]
@@ -37,7 +38,7 @@ getNewComments pages_ids latest_comment_id since limit_num = do
         where_ (wp ^. WikiPageId `in_` valList pages_ids &&.
                 c ^. CommentId <=. val latest_comment_id &&.
                 c ^. CommentModeratedTs >=. just (val since))
-        orderBy [desc (c ^. CommentId)]
+        orderBy [desc (c ^. CommentModeratedTs)]
         limit limit_num
         return c
 
@@ -48,6 +49,6 @@ getOldComments pages_ids since limit_num = do
         on_ (c ^. CommentDiscussion ==. wp ^. WikiPageDiscussion)
         where_ (wp ^. WikiPageId `in_` valList pages_ids &&.
                 c ^. CommentModeratedTs <. just (val since))
-        orderBy [desc (c ^. CommentId)]
+        orderBy [desc (c ^. CommentModeratedTs)]
         limit limit_num
         return c

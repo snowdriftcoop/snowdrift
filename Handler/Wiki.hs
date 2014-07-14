@@ -132,8 +132,9 @@ getWikiNewCommentsR project_handle = do
                                 ^{rendered_comment}
                     |]
 
-        rendered_new_comments = render_comments new_comments'
-        rendered_old_comments = render_comments old_comments'
+        rendered_unapproved_comments = render_comments unapproved_comments
+        rendered_new_comments        = render_comments new_comments'
+        rendered_old_comments        = render_comments old_comments'
         show_older = (length new_comments + length old_comments) > 50
 
     case mviewer of
