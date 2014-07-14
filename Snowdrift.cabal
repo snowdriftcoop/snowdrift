@@ -80,6 +80,7 @@ library
                      Handler.HonorPledge
                      View.Comment
                      View.User
+                     View.PledgeButton
                      Version
                      Widgets.Doc
                      Widgets.Markdown
@@ -184,6 +185,11 @@ library
                  , universe
                  , unix
                  , mtl
+                 , file-embed
+                 , diagrams
+                 , diagrams-lib
+                 , diagrams-rasterific
+                 , JuicyPixels
 
 
 executable         SnowdriftProcessPayments

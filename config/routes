@@ -18,6 +18,7 @@
 
 /p ProjectsR GET
 /p/#Text ProjectR GET POST
+/p/#Text/button.png ProjectPledgeButtonR GET
 /p/#Text/patrons ProjectPatronsR GET
 /p/#Text/edit EditProjectR GET
 /p/#Text/widget WidgetR GET

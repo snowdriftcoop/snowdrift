@@ -1,4 +1,4 @@
-{-# LANGUAGE TupleSections #-}
+{-# LANGUAGE TupleSections, OverloadedStrings #-}
 
 module Handler.Project where
 
@@ -9,6 +9,7 @@ import Model.Project
 import Model.Shares
 import Model.Markdown.Diff
 import Model.User
+import View.PledgeButton
 
 import qualified Data.List as L
 import qualified Data.Map as M
@@ -46,6 +47,15 @@ getProjectsR = do
     defaultLayout $ do
         setTitle "Projects | Snowdrift.coop"
         $(widgetFile "projects")
+
+getProjectPledgeButtonR :: Text -> Handler TypedContent
+getProjectPledgeButtonR project_handle = do
+   pledges <- runDB $ do
+        Entity project_id _project <- getBy404 $ UniqueProjectHandle project_handle
+        getProjectShares project_id
+   let png = overlayImage blankPledgeButton $
+        fillInPledgeCount (fromIntegral (length pledges))
+   respond "image/png" png
 
 getProjectR :: Text -> Handler Html
 getProjectR project_handle = do
