@@ -11,10 +11,11 @@ import           Model.Comment
 import           Model.Markdown
 import           Model.Permission
 import           Model.Project              (getProjectPages)
-import           Model.Tag                  (getAllTags)
+import           Model.Tag                  (getAllTagsMap)
 import           Model.User
-import           Model.ViewTime             (getCommentViewTimes)
+import           Model.ViewTime             (getCommentsViewTime)
 import           Model.ViewType
+import           Model.WikiPage             (getAllWikiComments)
 import           Widgets.Preview
 import           Widgets.Time
 import           View.Comment
@@ -52,6 +53,12 @@ getWikiPagesR project_handle = do
         setTitle . toHtml $ projectName project <> " Wiki | Snowdrift.coop"
         $(widgetFile "wiki_pages")
 
+-- | Redirect 'here' with added GET parameters.
+redirectHereWithParams :: [(Text, Text)] -> Handler a
+redirectHereWithParams new_params = do
+    Just route <- getCurrentRoute
+    getRequest >>= redirectParams route . (new_params ++) . reqGetParams
+
 --------------------------------------------------------------------------------
 -- /newcomments
 
@@ -60,57 +67,31 @@ getWikiNewCommentsR project_handle = do
     mviewer <- maybeAuth
     Entity project_id project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
 
-    req <- getRequest
-    maybe_since <- lookupGetParam "since"
-    since :: UTCTime <- case mviewer of
-        Nothing -> liftIO getCurrentTime
-        Just (Entity viewer_id viewer) -> case maybe_since of
-            Nothing -> do
-                comments_ts <- runDB (getCommentViewTimes viewer_id project_id) >>= \case
-                    []         -> return (userReadComments viewer)
-                    viewtime:_ -> return (viewTimeTime viewtime)
-                redirectParams (WikiNewCommentsR project_handle) $ (T.pack "since", T.pack $ show comments_ts) : reqGetParams req
-            Just since -> return (read . T.unpack $ since)
-
-    maybe_from <- fmap (Key . PersistInt64 . read . T.unpack) <$> lookupGetParam "from"
-
     now <- liftIO getCurrentTime
 
-    tag_map <- entitiesMap <$> runDB getAllTags
+    since :: UTCTime <- case mviewer of
+        Nothing -> return now
+        Just (Entity viewer_id viewer) -> lookupGetParam "since" >>= \case
+            Nothing -> do
+                comments_ts <- maybe (userReadComments viewer) (viewTimeTime . entityVal) <$>
+                                   runDB (getCommentsViewTime viewer_id project_id)
+                redirectHereWithParams [("since", T.pack $ show comments_ts)]
+            Just since -> return (read . T.unpack $ since)
 
-    (new_comments, old_comments, users, closure_map, ticket_map) <- runDB $ do
-        unfiltered_pages <- getProjectPages project_id
+    latest_comment_id <- Key . PersistInt64 . fromMaybe maxBound <$> runInputGet (iopt intField "latest")
 
-        let pages_map = entitiesMap {- TODO filter ((userRole viewer >=) . wikiPageCanVisitMeta . entityVal) -} unfiltered_pages
-            apply_offset comment = maybe id (\from_comment rest -> comment ^. CommentId <=. val from_comment &&. rest) maybe_from
-
-        new_comments :: [Entity Comment] <-
-            select $
-                from $ \(comment `InnerJoin` wiki_page) -> do
-                on_ (comment ^. CommentDiscussion ==. wiki_page ^. WikiPageDiscussion)
-                where_ (apply_offset comment (wiki_page ^. WikiPageId `in_` valList (M.keys pages_map)) &&.
-                        comment ^. CommentCreatedTs >=. val since)
-                orderBy [ desc (comment ^. CommentId) ]
-                limit 51
-                return comment
-
-        old_comments :: [Entity Comment] <-
-            select $
-                from $ \(comment `InnerJoin` wiki_page) -> do
-                on_ (comment ^. CommentDiscussion ==. wiki_page ^. WikiPageDiscussion)
-                where_ (apply_offset comment (wiki_page ^. WikiPageId `in_` valList (M.keys pages_map)) &&.
-                        comment ^. CommentCreatedTs <. val since)
-                orderBy [ desc (comment ^. CommentId) ]
-                limit $ fromIntegral $ 51 - length new_comments
-                return comment
+    (unapproved_comments, new_comments, old_comments, users, closure_map, ticket_map, tag_map) <- runDB $ do
+        (unapproved_comments, new_comments, old_comments) <-
+            getAllWikiComments (entityKey <$> mviewer) project_id latest_comment_id since 51
 
         users <- entitiesMap <$> getUsersIn (S.toList . S.fromList $ map (commentUser . entityVal) (new_comments <> old_comments))
 
         let comment_ids = map entityKey (new_comments <> old_comments)
         closure_map <- makeClosureMap comment_ids
         ticket_map  <- makeTicketMap  comment_ids
+        tag_map <- getAllTagsMap
 
-        return (new_comments, old_comments, users, closure_map, ticket_map)
+        return (unapproved_comments, new_comments, old_comments, users, closure_map, ticket_map, tag_map)
 
     let new_comments' = take 50 new_comments
         old_comments' = take (50 - length new_comments') old_comments
@@ -118,6 +99,9 @@ getWikiNewCommentsR project_handle = do
         render_comments comments =
             if null comments
                 then [whamlet||]
+                -- TODO(mitchell): This code could use commentWidget, and we wouldn't need
+                -- many queries above (users, closure_map, etc), but many more database hits
+                -- would result (one per new comment). Meh...
                 else forM_ comments $ \ (Entity comment_id comment) -> do
                     (earlier_closures, target) <- handlerToWidget . runDB $ (,)
                         <$> getAncestorClosures comment_id
@@ -154,16 +138,7 @@ getWikiNewCommentsR project_handle = do
 
     case mviewer of
         Nothing -> return ()
-        Just (Entity viewer_id _) ->
-            runDB $ do
-                c <- updateCount $ \ viewtime -> do
-                        set viewtime [ ViewTimeTime =. val now ]
-                        where_ $
-                            ( viewtime ^. ViewTimeUser ==. val viewer_id ) &&.
-                            ( viewtime ^. ViewTimeProject ==. val project_id ) &&.
-                            ( viewtime ^. ViewTimeType ==. val ViewComments )
-
-                when (c == 0) $ insert_ $ ViewTime viewer_id project_id ViewComments now
+        Just (Entity viewer_id _) -> runDB $ updateCommentsViewTime now viewer_id project_id
 
     defaultLayout $ do
         setTitle . toHtml $ projectName project <> " - New Comments | Snowdrift.coop"
@@ -179,11 +154,9 @@ getWikiNewEditsR project_handle = do
 
     maybe_from <- fmap (Key . PersistInt64 . read . T.unpack) <$> lookupGetParam "from"
 
-    req <- getRequest
-    maybe_since <- lookupGetParam "since"
     since :: UTCTime <- case mauth of
         Nothing -> liftIO getCurrentTime
-        Just (Entity viewer_id viewer) -> case maybe_since of
+        Just (Entity viewer_id viewer) -> lookupGetParam "since" >>= \case
             Nothing -> do
                 viewtimes :: [Entity ViewTime] <- runDB $ select $ from $ \ viewtime -> do
                         where_ $
@@ -196,7 +169,7 @@ getWikiNewEditsR project_handle = do
                         [] -> userReadEdits viewer
                         Entity _ viewtime : _ -> viewTimeTime viewtime
 
-                redirectParams (WikiNewEditsR project_handle) $ (T.pack "since", T.pack $ show comments_ts) : reqGetParams req
+                redirectHereWithParams [("since", T.pack $ show comments_ts)]
 
             Just since -> return (read . T.unpack $ since)
 
@@ -445,7 +418,7 @@ getDiscussWikiR' project_handle target get_root_comments = do
         let comment_ids  = map entityKey (roots ++ replies)
         closure_map     <- makeClosureMap comment_ids
         ticket_map      <- makeTicketMap comment_ids
-        tag_map         <- entitiesMap <$> getAllTags
+        tag_map         <- getAllTagsMap
         return (roots, replies, user_map, closure_map, ticket_map, tag_map)
 
     max_depth <- getMaxDepth

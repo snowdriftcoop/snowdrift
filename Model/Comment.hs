@@ -4,6 +4,7 @@ module Model.Comment
     , approveComment
     , buildCommentForest
     , buildCommentTree
+    , filterComments
     , flagComment
     , getAllClosedRootComments
     , getAllOpenRootComments

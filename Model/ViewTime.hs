@@ -1,16 +1,21 @@
 module Model.ViewTime
-    ( getCommentViewTimes
+    ( getCommentsViewTime
+    , updateCommentsViewTime
     ) where
 
 import Import
 
 import Model.ViewType (ViewType(..))
 
-getCommentViewTimes :: UserId -> ProjectId -> YesodDB App [ViewTime]
-getCommentViewTimes user_id project_id = fmap (map entityVal) $
-    select $
-        from $ \vt -> do
-        where_ (vt ^. ViewTimeUser    ==. val user_id &&.
-                vt ^. ViewTimeProject ==. val project_id &&.
-                vt ^. ViewTimeType    ==. val ViewComments)
-        return vt
+getCommentsViewTime :: UserId -> ProjectId -> YesodDB App (Maybe (Entity ViewTime))
+getCommentsViewTime user_id project_id = getBy $ UniqueViewTimeUserProjectType user_id project_id ViewComments
+
+updateCommentsViewTime :: UTCTime -> UserId -> ProjectId -> YesodDB App ()
+updateCommentsViewTime now user_id project_id = do
+    c <- updateCount $ \vt -> do
+         set viewtime [ ViewTimeTime =. val now ]
+         where_ (vt ^. ViewTimeUser    ==. val user_id &&.
+                 vt ^. ViewTimeProject ==. val project_id &&.
+                 vt ^. ViewTimeType    ==. val ViewComments)
+    when (c == 0) $
+      insert_ $ ViewTime user_id project_id ViewComments now

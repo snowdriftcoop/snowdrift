@@ -31,7 +31,7 @@ User
     ircNick Text Maybe
     readMessages UTCTime default=now()
     readApplications UTCTime default=now()
-    readComments UTCTime default=now()
+    readComments UTCTime default=now() -- The last time /newcomments was visited.
     readEdits UTCTime default=now()
     established Established default='EstUnestablished'
     UniqueUser ident

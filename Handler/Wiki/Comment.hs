@@ -11,7 +11,6 @@ import           Model.Comment
 import           Model.Project              (getProjectPages, getProjectTagList)
 import           Model.Tag                  (TagMap, getAllTags)
 import           Model.User
-import           Model.ViewTime             (getCommentViewTimes)
 import           Model.ViewType
 import           Model.WikiPage
 import           Widgets.Markdown
@@ -61,7 +60,7 @@ processWikiComment mode =
         Just "post"    -> processWikiCommentPost
         _              -> error $ "Error: unrecognized mode (" ++ show mode ++ ")"
 
--- TODO(mitchell): We should reuse commentActionWidget here, somehow.
+-- TODO(mitchell): We should reuse commentWidget here, somehow.
 processWikiCommentPreview :: Maybe CommentId -> Markdown -> Entity Project -> WikiPage -> Handler Html
 processWikiCommentPreview maybe_parent_id text (Entity _ project) page = do
     Entity user_id user <- requireAuth
@@ -148,6 +147,18 @@ getMaxDepthZero = getMaxDepthDefault 0
 getMaxDepthDefault :: Int -> Handler Int
 getMaxDepthDefault n = fromMaybe n <$> runInputGet (iopt intField "maxdepth")
 
+redirectIfRethreaded :: Text -> CommentId -> Handler ()
+redirectIfRethreaded project_handle comment_id = runDB go >>= \case
+    Nothing -> return ()
+    Just (destination_comment_id, target) ->
+        redirectWith movedPermanently301 (DiscussCommentR project_handle target destination_comment_id)
+  where
+    go :: YesodDB App (Maybe (CommentId, Text))
+    go = runMaybeT $ do
+        destination_comment_id <- MaybeT (getCommentRethread comment_id)
+        target                 <- lift (wikiPageTarget <$> getCommentPage destination_comment_id)
+        return (destination_comment_id, target)
+
 
 --------------------------------------------------------------------------------
 -- / and /reply
@@ -157,7 +168,7 @@ getMaxDepthDefault n = fromMaybe n <$> runInputGet (iopt intField "maxdepth")
 getDiscussCommentR :: Text -> Text -> CommentId -> Handler Html
 getDiscussCommentR project_handle target comment_id =
     defaultLayout =<<
-        commentActionWidget
+        commentWidget
             getMaxDepth
             True
             mempty
@@ -169,7 +180,7 @@ getReplyCommentR :: Text -> Text -> CommentId -> Handler Html
 getReplyCommentR project_handle target comment_id = do
     void requireAuth
     defaultLayout =<<
-        commentActionWidget
+        commentWidget
             getMaxDepth
             True
             (commentFormWidget (Just comment_id) Nothing)
@@ -197,7 +208,7 @@ getFlagCommentR :: Text -> Text -> CommentId -> Handler Html
 getFlagCommentR project_handle target comment_id = do
     void requireAuth
     defaultLayout =<<
-        commentActionWidget
+        commentWidget
             getMaxDepthZero
             True
             widget
@@ -237,7 +248,7 @@ getApproveWikiCommentR :: Text -> Text -> CommentId -> Handler Html
 getApproveWikiCommentR project_handle target comment_id = do
     void $ sanityCheckApprove project_handle
     defaultLayout =<<
-        commentActionWidget
+        commentWidget
             getMaxDepth
             True
             widget
@@ -271,11 +282,11 @@ sanityCheckApprove project_handle = do
 getRetractWikiCommentR :: Text -> Text -> CommentId -> Handler Html
 getRetractWikiCommentR project_handle target comment_id = do
     -- This function calls checkCommentPage twice: once in retractSanityCheck, and another
-    -- time in commentActionWidget. Maybe it should be taken out of commentActionWidget,
+    -- time in commentWidget. Maybe it should be taken out of commentWidget,
     -- and the handlers should be in charge of calling it?
     retractSanityCheck project_handle target comment_id
     defaultLayout =<<
-        commentActionWidget
+        commentWidget
             getMaxDepth
             True
             widget
@@ -303,7 +314,7 @@ getCloseWikiCommentR :: Text -> Text -> CommentId -> Handler Html
 getCloseWikiCommentR project_handle target comment_id = do
     closeSanityCheck project_handle target comment_id
     defaultLayout =<<
-        commentActionWidget
+        commentWidget
             getMaxDepth
             True
             widget
@@ -357,7 +368,7 @@ postClosureWikiComment sanity_check make_closure_form make_new_comment_closure a
             lookupPostParam "mode" >>= \case
                 Just "preview" -> do
                     (form, _) <- generateFormPost $ make_closure_form (Just reason)
-                    commentActionWidgetMod
+                    commentWidgetMod
                         (def { mod_closure_map = M.insert comment_id new_comment_closure })
                         getMaxDepthZero
                         False
@@ -689,95 +700,6 @@ postNewCommentTagR create_tag project_handle target comment_id = do
                     redirectUltDest $ DiscussCommentR project_handle target comment_id
                 FormMissing -> error "form missing"
                 FormFailure es -> formFailure (es <> [T.pack " apply"])
-
--- TODO title this section
-
--- | Helper method to create a Widget for a comment action (/, /reply, /moderate, etc).
--- Returns a Widget from a Handler (rather than just calling defaultLayout) so that the widget
--- can be put in a preview (for some POST handlers).
-commentActionWidget :: Handler Int                            -- ^ Max depth getter.
-                    -> Bool                                   -- ^ Show actions?
-                    -> Widget                                 -- ^ Widget to display under root comment.
-                    -> Text                                   -- ^ Project handle.
-                    -> Text                                   -- ^ Target.
-                    -> CommentId                              -- ^ Root comment id.
-                    -> Handler Widget
-commentActionWidget = commentActionWidgetMod def
-
--- | Data type used in commentActionWidgetMod, containing modifications to comment-action-related
--- data structures.
-data CommentMods = CommentMods
-    { mod_earlier_closures :: [CommentClosure] -> [CommentClosure]
-    , mod_user_map         :: UserMap          -> UserMap
-    , mod_closure_map      :: ClosureMap       -> ClosureMap
-    , mod_ticket_map       :: TicketMap        -> TicketMap
-    , mod_tag_map          :: TagMap           -> TagMap
-    }
-
-instance Default CommentMods where
-    def = CommentMods id id id id id
-
--- | Like @commentActionWidget@, but includes modifications to the datastructures grabbed from
--- the database. This is used for showing previews of comment trees, where changes are not
--- saved yet.
-commentActionWidgetMod :: CommentMods    -- ^ Comment structure modifications.
-                       -> Handler Int    -- ^ Max depth getter.
-                       -> Bool           -- ^ Is preview_
-                       -> Widget         -- ^ Widget to display under root comment.
-                       -> Text           -- ^ Project handle.
-                       -> Text           -- ^ Target.
-                       -> CommentId      -- ^ Root comment id.
-                       -> Handler Widget
-commentActionWidgetMod CommentMods{..} get_max_depth show_actions form project_handle target comment_id = do
-    redirectIfRethreaded project_handle comment_id
-    (Entity project_id _, _, root) <- checkCommentPage project_handle target comment_id
-
-    mviewer_id <- maybeAuthId
-    (rest, user_map, earlier_closures, closure_map, ticket_map, tag_map) <- runDB $ do
-        rest <- getCommentDescendants mviewer_id project_id comment_id
-
-        let all_comments    = (Entity comment_id root):rest
-            all_comment_ids = map entityKey all_comments
-
-        earlier_closures <- getAncestorClosures comment_id
-        user_map         <- entitiesMap <$> getUsersIn (S.toList $ getCommentsUsers all_comments)
-        closure_map      <- makeClosureMap all_comment_ids
-        ticket_map       <- makeTicketMap  all_comment_ids
-        tag_map          <- entitiesMap <$> getAllTags
-
-        return (rest, user_map, earlier_closures, closure_map, ticket_map, tag_map)
-
-    user_map_with_viewer <- (maybe id (\(Entity viewer_id viewer) -> M.insert viewer_id viewer))
-        <$> maybeAuth
-        <*> pure user_map
-
-    max_depth <- get_max_depth
-    return $
-        commentTreeWithReplyWidget
-            form
-            (sortTreeBy orderingNewestFirst $ buildCommentTree (Entity comment_id root, rest))
-            (mod_earlier_closures earlier_closures)
-            (mod_user_map user_map_with_viewer)
-            (mod_closure_map closure_map)
-            (mod_ticket_map ticket_map)
-            (mod_tag_map tag_map)
-            project_handle
-            target
-            show_actions
-            max_depth
-            0
-
-redirectIfRethreaded :: Text -> CommentId -> Handler ()
-redirectIfRethreaded project_handle comment_id = runDB go >>= \case
-    Nothing -> return ()
-    Just (destination_comment_id, target) ->
-        redirectWith movedPermanently301 (DiscussCommentR project_handle target destination_comment_id)
-  where
-    go :: YesodDB App (Maybe (CommentId, Text))
-    go = runMaybeT $ do
-        destination_comment_id <- MaybeT (getCommentRethread comment_id)
-        target                 <- lift (wikiPageTarget <$> getCommentPage destination_comment_id)
-        return (destination_comment_id, target)
 
 --------------------------------------------------------------------------------
 -- DEPRECATED
