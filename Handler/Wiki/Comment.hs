@@ -206,6 +206,48 @@ postReplyCommentR project_handle target comment_id = do
         FormFailure msgs -> error $ "Error submitting form: " ++ T.unpack (T.intercalate "\n" msgs)
 
 --------------------------------------------------------------------------------
+-- /delete
+
+getDeleteCommentR :: Text -> Text -> CommentId -> Handler Html
+getDeleteCommentR project_handle target comment_id = do
+    void requireAuth
+    defaultLayout =<<
+        makeCommentWidget
+          getMaxDepthZero
+          True
+          widget
+          project_handle
+          target
+          comment_id
+  where
+    widget = [whamlet|
+        <div>
+            <form method=POST>
+                <input type=submit name=mode value=Delete>
+                <input type=submit name=mode value=Cancel>
+    |]
+
+postDeleteCommentR :: Text -> Text -> CommentId -> Handler Html
+postDeleteCommentR project_handle target comment_id =
+    lookupPostParam "mode" >>= \case
+        Just "Delete" -> deleteDeleteCommentR project_handle target comment_id
+        _             -> redirect $ DiscussCommentR project_handle target comment_id
+
+deleteDeleteCommentR :: Text -> Text -> CommentId -> Handler Html
+deleteDeleteCommentR project_handle target comment_id = do
+    user_id <- requireAuthId
+    comment <- runDB $ get404 comment_id
+
+    can_delete <- runDB $ canDeleteComment user_id (Entity comment_id comment)
+    unless can_delete $
+        permissionDenied "You can't delete that comment."
+
+    runDB $ deleteComment comment_id
+
+    addAlert "success" "comment deleted"
+    redirect $ DiscussWikiR project_handle target
+
+--------------------------------------------------------------------------------
 -- /edit
 
 getEditCommentR :: Text -> Text -> CommentId -> Handler Html
@@ -254,8 +296,7 @@ postEditCommentR project_handle target comment_id = do
         user_id <- requireAuthId
         (_, _, comment) <- checkCommentPage project_handle target comment_id
 
-        -- TODO(mitchell): Replace with 'unless canEditComment', when we finalize edit permission details.
-        when (commentUser comment /= user_id) $
+        unless (canEditComment user_id comment) $
             permissionDenied "You can't edit that comment."
 
         runDB $ editComment comment_id new_text

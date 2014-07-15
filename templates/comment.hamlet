@@ -87,6 +87,16 @@
                 <a href="@{CloseWikiCommentR project_handle target comment_id}" style="color: goldenrod">
                     close
 
+        $if can_edit
+            <span .comment-action>
+                <a href="@{EditCommentR project_handle target comment_id}">
+                    edit
+
+        $if can_delete
+            <span .comment-action>
+                <a href="@{DeleteCommentR project_handle target comment_id}">
+                    delete
+
         $if can_rethread
             <span .comment-action>
                 <a href="@{RethreadWikiCommentR project_handle target comment_id}">

@@ -229,7 +229,7 @@ commentWidget :: Entity Comment        -- ^ Comment.
               -> Bool                  -- ^ Show actions?
               -> Widget                -- ^ Inner widget (children comments, 'expand' link, reply box, etc)
               -> Widget
-commentWidget (Entity comment_id comment)
+commentWidget c@(Entity comment_id comment)
               earlier_closures
               user
               mclosure
@@ -239,18 +239,14 @@ commentWidget (Entity comment_id comment)
               target
               show_actions
               inner_widget = do
-    Just current_route <- getCurrentRoute
-
-    let user_id = commentUser comment
+    let user_id       = commentUser comment
         is_unapproved = not . isApproved $ comment
         is_top_level  = isTopLevel  comment
         is_even_depth = isEvenDepth comment
         is_odd_depth  = isOddDepth  comment
-        can_reply     = not (current_route == ReplyCommentR project_handle target comment_id)
-        can_establish = estIsUnestablished (userEstablished user)
 
-    (is_mod, can_rethread, can_retract, can_close, can_add_tag) <-
-        handlerToWidget $ makeViewerPermissions user_id project_handle
+    (is_mod, can_establish, can_reply, can_retract, can_close, can_edit, can_delete, can_rethread, can_add_tag) <-
+        handlerToWidget $ makeViewerPermissions (Entity user_id user) project_handle target c
 
     tags <- fmap (L.sortBy (compare `on` atName)) . handlerToWidget $ do
         runDB (getCommentTags comment_id) >>=
@@ -258,16 +254,40 @@ commentWidget (Entity comment_id comment)
 
     $(widgetFile "comment")
 
-makeViewerPermissions :: UserId -> Text -> Handler (Bool, Bool, Bool, Bool, Bool)
-makeViewerPermissions owner_id project_handle = maybeAuth >>= \case
-    Nothing -> return (False, False, False, False, False)
-    Just (Entity viewer_id viewer) -> do
-        is_mod <- runDB . isProjectModerator project_handle $ viewer_id
-        let can_rethread = owner_id == viewer_id || is_mod
-            can_retract  = owner_id == viewer_id
-            can_close    = isEstablished viewer
-            can_add_tag  = isEstablished viewer
-        return (is_mod, can_rethread, can_retract, can_close, can_add_tag)
+makeViewerPermissions :: Entity User    -- comment poster
+                      -> Text
+                      -> Text
+                      -> Entity Comment
+                      -> Handler ( Bool -- is moderator?
+                                 , Bool -- can establish?
+                                 , Bool -- can reply?
+                                 , Bool -- can retract?
+                                 , Bool -- can close?
+                                 , Bool -- can edit?
+                                 , Bool -- can delete?
+                                 , Bool -- can rethread?
+                                 , Bool -- can add tag?
+                                 )
+makeViewerPermissions (Entity poster_id poster) project_handle target comment_entity@(Entity comment_id comment) = do
+    Just current_route <- getCurrentRoute
+    let can_reply = not (current_route == ReplyCommentR project_handle target comment_id)
+
+    maybeAuth >>= \case
+        Nothing -> return (False, False, can_reply, False, False, False, False, False, False)
+        Just (Entity viewer_id viewer) -> do
+            (is_mod, can_delete) <- runDB $ (,)
+                <$> isProjectModerator project_handle viewer_id
+                <*> canDeleteComment viewer_id comment_entity
+
+            let can_establish = is_mod && estIsUnestablished (userEstablished poster)
+                can_retract   = poster_id == viewer_id
+                can_close     = isEstablished viewer
+                can_edit      = canEditComment viewer_id comment
+                can_rethread  = poster_id == viewer_id || is_mod
+                can_add_tag   = isEstablished viewer
+
+            return (is_mod, can_establish, can_reply, can_retract, can_close, can_edit,
+                    can_delete, can_rethread, can_add_tag)
 
 -- Order comment trees by newest-first, taking the root and all children of each
 -- tree into consideration.

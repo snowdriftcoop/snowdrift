@@ -67,19 +67,20 @@
 
 -- Project wiki page comments
 
-/p/#Text/w/#Text/c/#CommentId                 DiscussCommentR      GET
-/p/#Text/w/#Text/c/#CommentId/close           CloseWikiCommentR    GET POST
-/p/#Text/w/#Text/c/#CommentId/edit            EditCommentR         GET POST
-/p/#Text/w/#Text/c/#CommentId/flag            FlagCommentR         GET POST
-/p/#Text/w/#Text/c/#CommentId/moderate        ApproveWikiCommentR  GET POST
-/p/#Text/w/#Text/c/#CommentId/reply           ReplyCommentR        GET POST
-/p/#Text/w/#Text/c/#CommentId/rethread        RethreadWikiCommentR GET POST
-/p/#Text/w/#Text/c/#CommentId/retract         RetractWikiCommentR  GET POST
-/p/#Text/w/#Text/c/#CommentId/tags            CommentTagsR         GET
-/p/#Text/w/#Text/c/#CommentId/tag/#TagId      CommentTagR          GET POST
-/p/#Text/w/#Text/c/#CommentId/tag/!new        NewCommentTagR       GET
-/p/#Text/w/#Text/c/#CommentId/tag/!new/create CreateNewCommentTagR     POST
-/p/#Text/w/#Text/c/#CommentId/tag/!new/apply  ApplyNewCommentTagR      POST
+/p/#Text/w/#Text/c/#CommentId                 DiscussCommentR       GET
+/p/#Text/w/#Text/c/#CommentId/close           CloseWikiCommentR     GET POST
+/p/#Text/w/#Text/c/#CommentId/delete          DeleteCommentR        GET POST DELETE
+/p/#Text/w/#Text/c/#CommentId/edit            EditCommentR          GET POST
+/p/#Text/w/#Text/c/#CommentId/flag            FlagCommentR          GET POST
+/p/#Text/w/#Text/c/#CommentId/moderate        ApproveWikiCommentR   GET POST
+/p/#Text/w/#Text/c/#CommentId/reply           ReplyCommentR         GET POST
+/p/#Text/w/#Text/c/#CommentId/rethread        RethreadWikiCommentR  GET POST
+/p/#Text/w/#Text/c/#CommentId/retract         RetractWikiCommentR   GET POST
+/p/#Text/w/#Text/c/#CommentId/tags            CommentTagsR          GET
+/p/#Text/w/#Text/c/#CommentId/tag/#TagId      CommentTagR           GET POST
+/p/#Text/w/#Text/c/#CommentId/tag/!new        NewCommentTagR        GET
+/p/#Text/w/#Text/c/#CommentId/tag/!new/create CreateNewCommentTagR      POST
+/p/#Text/w/#Text/c/#CommentId/tag/!new/apply  ApplyNewCommentTagR       POST
 
 -- Devs only!
 

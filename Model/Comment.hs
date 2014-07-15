@@ -4,6 +4,9 @@ module Model.Comment
     , approveComment
     , buildCommentForest
     , buildCommentTree
+    , canDeleteComment
+    , canEditComment
+    , deleteComment
     , editComment
     , filterComments
     , flagComment
@@ -102,6 +105,24 @@ buildCommentForest :: [Entity Comment]                                          
                    -> [Entity Comment]                                             -- replies comments
                    -> Forest (Entity Comment)
 buildCommentForest roots replies = (map (buildCommentTree . (, replies))) roots
+
+canDeleteComment :: UserId -> Entity Comment -> YesodDB App Bool
+canDeleteComment user_id (Entity comment_id comment) = do
+    if commentUser comment /= user_id
+        then return False
+        else do
+          descendants_ids <- getCommentDescendantsIds comment_id
+          if null descendants_ids
+              then return True
+              else return False
+
+canEditComment :: UserId -> Comment -> Bool
+canEditComment user_id = (user_id ==) . commentUser
+
+-- | Delete a comment from the database. Should not be called on comments with
+-- children, as their foreign keys would then cause runtime errors.
+deleteComment :: CommentId -> YesodDB App ()
+deleteComment = deleteKey
 
 -- | Edit a comment's text.
 editComment :: CommentId -> Markdown -> YesodDB App ()
