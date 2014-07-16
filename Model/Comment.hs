@@ -8,7 +8,6 @@ module Model.Comment
     , canEditComment
     , deleteComment
     , editComment
-    , filterComments
     , flagComment
     , getAllClosedRootComments
     , getAllOpenRootComments
@@ -38,6 +37,11 @@ module Model.Comment
     , newClosedCommentClosure
     , newRetractedCommentClosure
     , subGetCommentAncestors
+    -- SQL expressions/queries
+    , exprPermissionFilter
+    , exprUnapproved
+    -- Probably shouldn't be exported
+    , makeViewerInfo
     ) where
 
 import Import
@@ -56,13 +60,12 @@ type ClosureMap = Map CommentId CommentClosure
 type TicketMap  = Map CommentId (Entity Ticket)
 
 approveComment :: UserId -> CommentId -> YesodDB App ()
-approveComment user_id comment_id = do
-    now <- liftIO getCurrentTime
+approveComment user_id comment_id = liftIO getCurrentTime >>= \now ->
     update $ \c -> do
-        set c [ CommentModeratedTs =. val (Just now)
-              , CommentModeratedBy =. val (Just user_id)
-              ]
-        where_ (c ^. CommentId ==. val comment_id)
+    set c [ CommentModeratedTs =. val (Just now)
+          , CommentModeratedBy =. val (Just user_id)
+          ]
+    where_ (c ^. CommentId ==. val comment_id)
 
 isApproved :: Comment -> Bool
 isApproved = isJust . commentModeratedTs
@@ -142,11 +145,11 @@ flagComment comment_id user_id reasons message = do
 getAncestorClosures :: CommentId -> YesodDB App [CommentClosure]
 getAncestorClosures comment_id = fmap (map entityVal) $
     select $
-        from $ \(ca `InnerJoin` cc) -> do
-        on_ (ca ^. CommentAncestorAncestor ==. cc ^. CommentClosureComment)
-        orderBy [asc (cc ^. CommentClosureComment)]
-        where_ (ca ^. CommentAncestorComment ==. val comment_id)
-        return cc
+    from $ \(ca `InnerJoin` cc) -> do
+    on_ (ca ^. CommentAncestorAncestor ==. cc ^. CommentClosureComment)
+    orderBy [asc (cc ^. CommentClosureComment)]
+    where_ (ca ^. CommentAncestorComment ==. val comment_id)
+    return cc
 
 -- | Get all ancestors, including this comment, that have been closed.
 getAncestorClosures' :: CommentId -> YesodDB App [CommentClosure]
@@ -154,22 +157,16 @@ getAncestorClosures' comment_id = do
     all_comment_ids <- (comment_id :) <$> getCommentAncestors comment_id
     fmap (map entityVal) $
         select $
-            from $ \cc -> do
-            where_ (cc ^. CommentClosureComment `in_` valList all_comment_ids)
-            return cc
+        from $ \cc -> do
+        where_ (cc ^. CommentClosureComment `in_` valList all_comment_ids)
+        return cc
 
 -- | Get a comment's ancestors' ids.
 getCommentAncestors :: CommentId -> YesodDB App [CommentId]
-getCommentAncestors = fmap (map unValue) . select . ancestorsQuery
+getCommentAncestors = fmap (map unValue) . select . querAncestors
 
 subGetCommentAncestors :: CommentId -> SqlExpr (ValueList CommentId)
-subGetCommentAncestors = subList_select . ancestorsQuery
-
-ancestorsQuery :: CommentId -> SqlQuery (SqlExpr (Value CommentId))
-ancestorsQuery comment_id =
-    from $ \ca -> do
-    where_ (ca ^. CommentAncestorComment ==. val comment_id)
-    return (ca ^. CommentAncestorAncestor)
+subGetCommentAncestors = subList_select . querAncestors
 
 getCommentDepth :: CommentId -> YesodDB App Int
 getCommentDepth = fmap commentDepth . getJust
@@ -195,186 +192,112 @@ getCommentPageId = fmap entityKey . getCommentPageEntity
 getCommentPageEntity :: CommentId -> YesodDB App (Entity WikiPage)
 getCommentPageEntity comment_id = fmap head $
     select $
-        from $ \(c `InnerJoin` p) -> do
-        on_ (c ^. CommentDiscussion ==. p ^. WikiPageDiscussion)
-        where_ (c ^. CommentId ==. val comment_id)
-        return p
+    from $ \(c `InnerJoin` p) -> do
+    on_ (c ^. CommentDiscussion ==. p ^. WikiPageDiscussion)
+    where_ (c ^. CommentId ==. val comment_id)
+    return p
 
 -- | Get the CommentId this CommentId was rethreaded to, if it was.
 getCommentRethread :: CommentId -> YesodDB App (Maybe CommentId)
 getCommentRethread comment_id = fmap unValue . listToMaybe <$> (
     select $
-        from $ \cr -> do
-        where_ $ cr ^. CommentRethreadOldComment ==. val comment_id
-        return $ cr ^. CommentRethreadNewComment)
+    from $ \cr -> do
+    where_ $ cr ^. CommentRethreadOldComment ==. val comment_id
+    return $ cr ^. CommentRethreadNewComment)
 
 -- | Get a Comment's CommentTags.
 getCommentTags :: CommentId -> YesodDB App [Entity CommentTag]
 getCommentTags comment_id =
     select $
-        from $ \comment_tag -> do
-        where_ $ comment_tag ^. CommentTagComment ==. val comment_id
-        return comment_tag
+    from $ \comment_tag -> do
+    where_ $ comment_tag ^. CommentTagComment ==. val comment_id
+    return comment_tag
 
 -- | Get a Comment's descendants' ids (don't filter hidden or unmoderated comments).
 getCommentDescendantsIds :: CommentId -> YesodDB App [CommentId]
-getCommentDescendantsIds comment_id = fmap (map unValue) $
-    select $
-        from $ \ca -> do
-        where_ (ca ^. CommentAncestorAncestor ==. val comment_id)
-        return (ca ^. CommentAncestorComment)
+getCommentDescendantsIds = fmap (map unValue) . select . querDescendants
 
 -- | Get all descendants of the given root comment.
--- TODO(mitchell): Share code with with getCommentsDescendants
 getCommentDescendants :: Maybe UserId -> ProjectId -> CommentId -> YesodDB App [Entity Comment]
-getCommentDescendants mviewer_id project_id root_id = filterComments mviewer_id project_id <*> go
-  where
-    go =
-        select $
-            from $ \c -> do
-            where_ (c ^. CommentId `in_`
-                (subList_select $
-                    from $ \ca -> do
-                    where_ (ca ^. CommentAncestorAncestor ==. val root_id)
-                    return (ca ^. CommentAncestorComment)))
-            -- DO NOT change ordering here! buildCommentTree relies on it.
-            orderBy [asc (c ^. CommentParent), asc (c ^. CommentCreatedTs)]
-            return c
+getCommentDescendants mviewer_id project_id root_id = makeViewerInfo mviewer_id project_id >>= \viewer_info ->
+    select $
+    from $ \c -> do
+    where_ $
+        c ^. CommentId `in_` subList_select (querDescendants root_id) &&.
+        exprPermissionFilter viewer_info c
+    -- DO NOT change ordering here! buildCommentTree relies on it.
+    orderBy [asc (c ^. CommentParent), asc (c ^. CommentCreatedTs)]
+    return c
 
 -- | Get all descendants of all given root comments.
 getCommentsDescendants :: Maybe UserId -> ProjectId -> [CommentId] -> YesodDB App [Entity Comment]
-getCommentsDescendants mviewer_id project_id root_ids = filterComments mviewer_id project_id <*> go
-  where
-    go =
-        select $
-            from $ \c -> do
-            where_ (c ^. CommentId `in_`
-                (subList_select $
-                    from $ \ca -> do
-                    where_ (ca ^. CommentAncestorAncestor `in_` valList root_ids)
-                    return (ca ^. CommentAncestorComment)))
-            -- DO NOT change ordering here! buildCommentTree relies on it.
-            orderBy [asc (c ^. CommentParent), asc (c ^. CommentCreatedTs)]
-            return c
+getCommentsDescendants mviewer_id project_id root_ids = makeViewerInfo mviewer_id project_id >>= \viewer_info ->
+    select $
+    from $ \c -> do
+    where_ $
+        c ^. CommentId `in_` subList_select (querAllDescendants root_ids) &&.
+        exprPermissionFilter viewer_info c
+    -- DO NOT change ordering here! buildCommentTree relies on it.
+    orderBy [asc (c ^. CommentParent), asc (c ^. CommentCreatedTs)]
+    return c
 
 -- | Get all Comments on a Discussion that are root comments.
 getAllRootComments :: Maybe UserId -> ProjectId -> DiscussionId -> YesodDB App [Entity Comment]
-getAllRootComments mviewer_id project_id discussion_id = filterComments mviewer_id project_id <*> go
-  where
-    go =
-        select $
-            from $ \c -> do
-            where_ $
-                exprCommentOnDiscussion discussion_id c &&.
-                exprCommentIsRoot c
-            return c
+getAllRootComments mviewer_id project_id discussion_id = makeViewerInfo mviewer_id project_id >>= \viewer_info ->
+    select $
+    from $ \c -> do
+    where_ $
+        exprOnDiscussion discussion_id c &&.
+        exprRoot c &&.
+        exprPermissionFilter viewer_info c
+    return c
 
 getAllClosedRootComments :: Maybe UserId -> ProjectId -> DiscussionId -> YesodDB App [Entity Comment]
-getAllClosedRootComments mviewer_id project_id discussion_id = filterComments mviewer_id project_id <*> go
-  where
-    go =
-        select $
-            from $ \c -> do
-            where_ $
-                exprCommentOnDiscussion discussion_id c &&.
-                exprCommentIsRoot c &&.
-                exprCommentIsClosed c
-            return c
+getAllClosedRootComments mviewer_id project_id discussion_id = makeViewerInfo mviewer_id project_id >>= \viewer_info ->
+    select $
+    from $ \c -> do
+    where_ $
+        exprOnDiscussion discussion_id c &&.
+        exprRoot c &&.
+        exprClosed c &&.
+        exprPermissionFilter viewer_info c
+    return c
 
 getAllOpenRootComments :: Maybe UserId -> ProjectId -> DiscussionId -> YesodDB App [Entity Comment]
-getAllOpenRootComments mviewer_id project_id discussion_id = filterComments mviewer_id project_id <*> go
-  where
-    go =
-      select $
-          from $ \c -> do
-          where_ $
-              exprCommentOnDiscussion discussion_id c &&.
-              exprCommentIsRoot c &&.
-              exprCommentIsOpen c
-          return c
-
--- | Filter comments per the following rules:
--- Hidden comments (rethreaded or flagged) are not shown.
--- Otherwise, if the viewer is...
---    a moderator: show all
---    logged in: show all moderated, plus unmoderated 'own' comments
---    not logged in: show all moderated
-filterComments :: Maybe UserId -> ProjectId -> YesodDB App ([Entity Comment] -> [Entity Comment])
-filterComments mviewer_id project_id = do
-    filter_one <- (\hidden_ids -> flip S.notMember hidden_ids . entityKey) <$> getHiddenCommentIds
-    filter_two <- makeCommentFilter
-    return $ filter (\c -> filter_one c && filter_two c)
-  where
-    makeCommentFilter :: YesodDB App (Entity Comment -> Bool)
-    makeCommentFilter = case mviewer_id of
-        Nothing -> return isModerated
-        Just viewer_id -> do
-            is_moderator <- isProjectModerator' viewer_id project_id
-            if is_moderator
-                then return $ const True
-                else return $ \c -> isModerated c || isOwnComment viewer_id c
-      where
-        isModerated :: Entity Comment -> Bool
-        isModerated = isJust . commentModeratedTs . entityVal
-
-        isOwnComment :: UserId -> Entity Comment -> Bool
-        isOwnComment user_id (Entity _ Comment{..}) = user_id == commentUser
-
-    getHiddenCommentIds :: YesodDB App (Set CommentId)
-    getHiddenCommentIds = (<>) <$> rethreadedCommentIds <*> flaggedCommentIds
-      where
-        rethreadedCommentIds :: YesodDB App (Set CommentId)
-        rethreadedCommentIds = fmap (S.fromList . map unValue) $
-            select $
-                from $ \r ->
-                return (r ^. RethreadOldComment)
-
-        flaggedCommentIds :: YesodDB App (Set CommentId)
-        flaggedCommentIds = fmap (S.fromList . map unValue) $
-            select $
-                from $ \f ->
-                return (f ^. CommentFlaggingComment)
-
--- | Comment is closed?
-exprCommentIsClosed :: SqlExpr (Entity Comment) -> SqlExpr (Value Bool)
-exprCommentIsClosed c = c ^. CommentId `in_`   subList_select (from $ \cl -> return (cl ^. CommentClosureComment))
-
--- | Comment is open?
-exprCommentIsOpen :: SqlExpr (Entity Comment) -> SqlExpr (Value Bool)
-exprCommentIsOpen c = c ^. CommentId `notIn` subList_select (from $ \cl -> return (cl ^. CommentClosureComment))
-
--- | Comment is root?
-exprCommentIsRoot :: SqlExpr (Entity Comment) -> SqlExpr (Value Bool)
-exprCommentIsRoot c = isNothing (c ^. CommentParent)
-
--- | Comment on this Discussion?
-exprCommentOnDiscussion :: DiscussionId -> SqlExpr (Entity Comment) -> SqlExpr (Value Bool)
-exprCommentOnDiscussion discussion_id c = c ^. CommentDiscussion ==. val discussion_id
+getAllOpenRootComments mviewer_id project_id discussion_id = makeViewerInfo mviewer_id project_id >>= \viewer_info ->
+    select $
+    from $ \c -> do
+    where_ $
+        exprOnDiscussion discussion_id c &&.
+        exprRoot c &&.
+        exprOpen c &&.
+        exprPermissionFilter viewer_info c
+    return c
 
 -- | Get a Comment's Tags.
 getTags :: CommentId -> YesodDB App [Entity Tag]
 getTags comment_id =
     select $
-        from $ \(comment_tag `InnerJoin` tag) -> do
-        on_ (comment_tag ^. CommentTagTag ==. tag ^. TagId)
-        where_ (comment_tag ^. CommentTagComment ==. val comment_id)
-        return tag
+    from $ \(ct `InnerJoin` t) -> do
+    on_ (ct ^. CommentTagTag ==. t ^. TagId)
+    where_ (ct ^. CommentTagComment ==. val comment_id)
+    return t
 
 makeClosureMap :: (IsList c, CommentId ~ Item c) => c -> YesodDB App (Map CommentId CommentClosure)
 makeClosureMap comment_ids = fmap (M.fromList . map ((commentClosureComment &&& id) . entityVal)) $
     select $
-        from $ \ closure -> do
-        where_ (closure ^. CommentClosureComment `in_` valList comment_ids)
-        return closure
+    from $ \c -> do
+    where_ (c ^. CommentClosureComment `in_` valList comment_ids)
+    return c
 
 -- Given a collection of CommentId, make a map from CommentId to Entity Ticket. Comments that
 -- are not tickets will simply not be in the map.
 makeTicketMap :: (IsList c, CommentId ~ Item c) => c -> YesodDB App (Map CommentId (Entity Ticket))
 makeTicketMap comment_ids = fmap (M.fromList . map ((ticketComment . entityVal) &&& id)) $
     select $
-        from $ \t -> do
-        where_ (t ^. TicketComment `in_` valList comment_ids)
-        return t
+    from $ \t -> do
+    where_ (t ^. TicketComment `in_` valList comment_ids)
+    return t
 
 newClosedCommentClosure, newRetractedCommentClosure :: MonadIO m => UserId -> Markdown -> CommentId -> m CommentClosure
 newClosedCommentClosure    = newCommentClosure Closed
@@ -401,3 +324,90 @@ makeModeratedComment user_id discussion_id parent_comment comment_text depth = d
 -- | Get the set of Users that have posted the given Foldable of comments.
 getCommentsUsers :: Foldable f => f (Entity Comment) -> Set UserId
 getCommentsUsers = F.foldMap (S.singleton . commentUser . entityVal)
+
+
+-- | Dumb helper function to make a "viewer info" argument for exprPermissionFilter.
+-- Unfortunately we export it as another module uses exprPermissionFilter. Probably
+-- this should be rectified.
+makeViewerInfo :: Maybe UserId -> ProjectId -> YesodDB App (Maybe (UserId, Bool))
+makeViewerInfo Nothing _ = return Nothing
+makeViewerInfo (Just viewer_id) project_id = Just . (viewer_id,) <$> isProjectModerator' viewer_id project_id
+
+--------------------------------------------------------------------------------
+
+exprClosed, exprOpen :: SqlExpr (Entity Comment) -> SqlExpr (Value Bool)
+exprClosed c = c ^. CommentId `in_`   exprClosedCommentIds
+exprOpen   c = c ^. CommentId `notIn` exprClosedCommentIds
+
+exprClosedCommentIds :: SqlExpr (ValueList CommentId)
+exprClosedCommentIds =
+    subList_select $
+    from $ \cl ->
+    return (cl ^. CommentClosureComment)
+
+-- | Comment is root?
+exprRoot :: SqlExpr (Entity Comment) -> SqlExpr (Value Bool)
+exprRoot c = isNothing (c ^. CommentParent)
+
+-- | Comment on this Discussion?
+exprOnDiscussion :: DiscussionId -> SqlExpr (Entity Comment) -> SqlExpr (Value Bool)
+exprOnDiscussion discussion_id c = c ^. CommentDiscussion ==. val discussion_id
+
+-- | SQL expression to filter a comment based on "permissions", as follows:
+--    If moderator, show all.
+--    If logged in, show all approved (hiding flagged), plus own comments (unapproved + flagged).
+--    If not logged in, show all approved (hiding flagged).
+--    No matter what, hide rethreaded comments (they've essentially been replaced).
+exprPermissionFilter :: Maybe (UserId, Bool) -> SqlExpr (Entity Comment) -> SqlExpr (Value Bool)
+exprPermissionFilter (Just (_,True))      c = exprNotRethreaded c
+exprPermissionFilter (Just (viewer_id,_)) c = exprNotRethreaded c &&. (exprApprovedAndNotFlagged c ||. exprPostedBy viewer_id c)
+exprPermissionFilter Nothing              c = exprNotRethreaded c &&. exprApprovedAndNotFlagged c
+    -- is_mod <- isProjectModerator' viewer_id project_id
+
+exprNotRethreaded :: SqlExpr (Entity Comment) -> SqlExpr (Value Bool)
+exprNotRethreaded c = c ^. CommentId `notIn` rethreadedCommentIds
+  where
+    rethreadedCommentIds :: SqlExpr (ValueList CommentId)
+    rethreadedCommentIds =
+        subList_select $
+        from $ \r ->
+        return (r ^. RethreadOldComment)
+
+exprApproved :: SqlExpr (Entity Comment) -> SqlExpr (Value Bool)
+exprApproved = not_ . exprUnapproved
+
+exprUnapproved :: SqlExpr (Entity Comment) -> SqlExpr (Value Bool)
+exprUnapproved c = isNothing (c ^. CommentModeratedTs)
+
+exprNotFlagged :: SqlExpr (Entity Comment) -> SqlExpr (Value Bool)
+exprNotFlagged c = c ^. CommentId `notIn` flaggedCommentIds
+  where
+    flaggedCommentIds :: SqlExpr (ValueList CommentId)
+    flaggedCommentIds =
+        subList_select $
+        from $ \cf ->
+        return (cf ^. CommentFlaggingComment)
+
+exprApprovedAndNotFlagged :: SqlExpr (Entity Comment) -> SqlExpr (Value Bool)
+exprApprovedAndNotFlagged c = exprApproved c &&. exprNotFlagged c
+
+exprPostedBy :: UserId -> SqlExpr (Entity Comment) -> SqlExpr (Value Bool)
+exprPostedBy user_id c = c ^. CommentUser ==. val user_id
+
+querAncestors :: CommentId -> SqlQuery (SqlExpr (Value CommentId))
+querAncestors comment_id =
+    from $ \ca -> do
+    where_ (ca ^. CommentAncestorComment ==. val comment_id)
+    return (ca ^. CommentAncestorAncestor)
+
+querDescendants :: CommentId -> SqlQuery (SqlExpr (Value CommentId))
+querDescendants comment_id =
+    from $ \ca -> do
+    where_ (ca ^. CommentAncestorAncestor ==. val comment_id)
+    return (ca ^. CommentAncestorComment)
+
+querAllDescendants :: [CommentId] -> SqlQuery (SqlExpr (Value CommentId))
+querAllDescendants comment_ids =
+    from $ \ca -> do
+    where_ (ca ^. CommentAncestorAncestor `in_` valList comment_ids)
+    return (ca ^. CommentAncestorComment)

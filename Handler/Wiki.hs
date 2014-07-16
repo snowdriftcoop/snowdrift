@@ -84,12 +84,15 @@ getWikiNewCommentsR project_handle = do
         (unapproved_comments, new_comments, old_comments) <-
             getAllWikiComments (entityKey <$> mviewer) project_id latest_comment_id since 51
 
-        users <- entitiesMap <$> getUsersIn (S.toList . S.fromList $ map (commentUser . entityVal) (new_comments <> old_comments))
+        let all_comment_entities = unapproved_comments <> new_comments <> old_comments
+            all_comments         = map entityVal all_comment_entities
+            all_comment_ids      = map entityKey all_comment_entities
 
-        let comment_ids = map entityKey (new_comments <> old_comments)
-        closure_map <- makeClosureMap comment_ids
-        ticket_map  <- makeTicketMap  comment_ids
-        tag_map <- getAllTagsMap
+        users <- entitiesMap <$> getUsersIn (S.toList . S.fromList $ map commentUser all_comments)
+
+        closure_map <- makeClosureMap all_comment_ids
+        ticket_map  <- makeTicketMap  all_comment_ids
+        tag_map     <- getAllTagsMap
 
         return (unapproved_comments, new_comments, old_comments, users, closure_map, ticket_map, tag_map)
 

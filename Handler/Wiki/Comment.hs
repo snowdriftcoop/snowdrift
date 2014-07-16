@@ -333,16 +333,21 @@ postFlagCommentR project_handle target comment_id = do
     (project, page, comment) <- checkCommentPage project_handle target comment_id
     ((result, _), _) <- runFormPost flagCommentForm
     case result of
-        FormSuccess (reasons, message) -> do
+        -- TODO(mitchell): Change the form to just return [FlagReason], not Maybe [FlagReason]
+        FormSuccess (Nothing, _) -> flagFailure "Please check at least one Code of Conduct violation."
+        FormSuccess (Just [], _) -> flagFailure "Please check at least one Code of Conduct violation."
+        FormSuccess (Just reasons, message) -> do
             runDB $ flagComment comment_id user_id reasons message
             addAlert "success" "comment flagged"
-            -- TODO(mitchell): is there a better place to redirect?
             redirect $ DiscussWikiR project_handle target
-        -- TODO(mitchell): why is the error message for an empty form "Value is required"...?
-        FormFailure errs -> do
-            addAlert "danger" (T.intercalate ", " errs)
-            redirect $ FlagCommentR project_handle target comment_id
-        _ -> error "form missing"
+        FormFailure errs -> flagFailure (T.intercalate ", " errs)
+        _ -> flagFailure "Form missing."
+
+flagFailure :: Text -> Handler a
+flagFailure msg = do
+    addAlert "danger" msg
+    Just route <- getCurrentRoute
+    redirect route
 
 --------------------------------------------------------------------------------
 -- /moderate

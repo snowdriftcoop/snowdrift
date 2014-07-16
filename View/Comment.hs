@@ -87,24 +87,14 @@ retractedForm = requiredMarkdownForm "Reason for retracting:"
 requiredMarkdownForm :: FieldSettings App -> Maybe Markdown -> Form Markdown
 requiredMarkdownForm settings = renderBootstrap3 . areq snowdriftMarkdownField settings
 
-flagCommentForm :: Form ([FlagReason], Maybe Markdown)
+flagCommentForm :: Form (Maybe [FlagReason], Maybe Markdown)
 flagCommentForm = renderBootstrap3 $ (,) <$> flagReasonsForm <*> additionalCommentsForm
   where
-    flagReasonsForm :: AForm Handler [FlagReason]
-    flagReasonsForm = areq (nonemptyCheckboxesFieldList reasons) "Code of Conduct Violation(s)" Nothing
+    flagReasonsForm :: AForm Handler (Maybe [FlagReason])
+    flagReasonsForm = aopt (checkboxesFieldList reasons) "Code of Conduct Violation(s)" Nothing
       where
-        nonemptyCheckboxesFieldList :: [(Text, FlagReason)] -> Field Handler [FlagReason]
-        nonemptyCheckboxesFieldList = checkBool (not . null) ("Please select one or more violations." :: Text) . checkboxesFieldList
-
         reasons :: [(Text, FlagReason)]
-        reasons = [ ("Personal attack",          FlagPersonalAttack)
-                  , ("Unconstructive criticism", FlagUnconstructiveCriticism)
-                  , ("Condescension",            FlagCondescension)
-                  , ("Defensiveness",            FlagDefensiveness)
-                  , ("Spamming",                 FlagSpamming)
-                  , ("Privacy violation",        FlagPrivacyViolation)
-                  , ("Hate speech",              FlagHateSpeech)
-                  ]
+        reasons = map (descFlagReason &&& id) [minBound..maxBound]
 
     additionalCommentsForm :: AForm Handler (Maybe Markdown)
     additionalCommentsForm = aopt' snowdriftMarkdownField "Optional: add helpful comments to clarify the issue and/or suggestions for improvement" Nothing
