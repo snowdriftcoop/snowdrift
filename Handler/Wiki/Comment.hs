@@ -325,6 +325,7 @@ getFlagCommentR project_handle target comment_id = do
         (form, enctype) <- handlerToWidget $ generateFormPost flagCommentForm
         [whamlet|
             <form method="POST" enctype=#{enctype}>
+                <h4>Code of Conduct Violation(s):
                 ^{form}
                 <input .flag-submit type="submit" value="flag comment">
         |]

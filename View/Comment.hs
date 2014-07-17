@@ -91,7 +91,7 @@ flagCommentForm :: Form (Maybe [FlagReason], Maybe Markdown)
 flagCommentForm = renderBootstrap3 $ (,) <$> flagReasonsForm <*> additionalCommentsForm
   where
     flagReasonsForm :: AForm Handler (Maybe [FlagReason])
-    flagReasonsForm = aopt (checkboxesFieldList reasons) "Code of Conduct Violation(s)" Nothing
+    flagReasonsForm = aopt (checkboxesFieldList reasons) "" Nothing
       where
         reasons :: [(Text, FlagReason)]
         reasons = map (descFlagReason &&& id) [minBound..maxBound]

@@ -39,7 +39,7 @@ input[type=submit]:active
 input[type=text], input[type=email]
     width : 30em
 
-.flag-submit
+.flag-submit[type=submit]
     background : red
     background-image : linear-gradient(#df6955, #a5022a)
     border-color: #a5022a
