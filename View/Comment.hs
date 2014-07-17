@@ -286,7 +286,7 @@ makeViewerPermissions (Entity poster_id poster) project_handle target comment_en
                 can_edit      = canEditComment viewer_id comment
                 can_rethread  = poster_id == viewer_id || is_mod
                 can_add_tag   = isEstablished viewer
-                can_flag      = isEstablished viewer
+                can_flag      = isEstablished viewer && viewer_id /= poster_id
 
             return (is_mod, can_establish, can_reply, can_retract, can_close, can_edit,
                     can_delete, can_rethread, can_add_tag, can_flag)

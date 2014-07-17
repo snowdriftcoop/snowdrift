@@ -15,7 +15,6 @@ import           Widgets.Preview
 import           Widgets.Tag
 import           View.Comment
 
-import qualified Control.Monad.State       as St
 import           Control.Monad.Trans.Maybe (MaybeT(..), runMaybeT)
 import           Data.Default              (Default, def)
 import qualified Data.Map                  as M
@@ -42,10 +41,13 @@ redirectIfRethreaded project_handle comment_id = runDB go >>= \case
         return (destination_comment_id, target)
 
 -- | Convenience method for all pages that accept a project handle, target, and comment id
--- as URL parameters. Makes sure that the comment is indeed on the page.
+-- as URL parameters. Makes sure that the comment is indeed on the page. Redirects if the
+-- comment was rethreaded.
 checkCommentPage :: Text -> Text -> CommentId -> Handler (Entity Project, Entity WikiPage, Comment)
 checkCommentPage project_handle target comment_id = do
-    (project, page, comment) <- runDB $ do
+    redirectIfRethreaded project_handle comment_id
+
+    (project@(Entity project_id _), page, comment) <- runDB $ do
         project <- getBy404 $ UniqueProjectHandle project_handle
         page    <- getBy404 $ UniqueWikiTarget (entityKey project) target
         comment <- get404 comment_id
@@ -54,7 +56,37 @@ checkCommentPage project_handle target comment_id = do
     when (commentDiscussion comment /= wikiPageDiscussion (entityVal page)) $
         error "comment does not match page"
 
+    -- The logic here is DUPLICATED (in SQL land) in Model.Comment.exprPermissionFilter!
+    -- (because this function only fetches the root comment via Database.Persist.get) - all
+    -- changes here must be reflected there, too!
+
+    maybeAuthId >>= \case
+        -- Not logged in: only show approved-and-not-flagged comments
+        Nothing -> do
+            ok <- isApprovedAndNotFlagged comment
+            unless ok deny
+        -- Logged in:
+        Just viewer_id -> do
+            -- If mod: no restrictions (show unapproved and flagged)
+            is_mod <- runDB $ isProjectModerator' viewer_id project_id
+            unless is_mod $
+                -- Otherwise, if ordinary user, if viewing own comment, no restrictions.
+                unless (commentUser comment == viewer_id) $ do
+                    -- Otherwise, same restriction as not logged in applies:
+                    -- only show approved-and-not-flagged comments.
+                    ok <- isApprovedAndNotFlagged comment
+                    unless ok deny
+
     return (project, page, comment)
+  where
+    isApprovedAndNotFlagged :: Comment -> Handler Bool
+    isApprovedAndNotFlagged comment =
+        if isApproved comment
+            then not <$> runDB (isFlagged comment_id)
+            else return False
+
+    deny :: Handler a
+    deny = permissionDenied "You don't have permission to view this comment."
 
 requireModerator :: Text -> Text -> UserId -> Handler ()
 requireModerator message project_handle user_id = do
@@ -163,8 +195,6 @@ getMaxDepthDefault n = fromMaybe n <$> runInputGet (iopt intField "maxdepth")
 --------------------------------------------------------------------------------
 -- / and /reply
 
--- This is a hacked change where getDiscussCommentR' below should really be
--- adapted to become this and have only one function.
 getDiscussCommentR :: Text -> Text -> CommentId -> Handler Html
 getDiscussCommentR project_handle target comment_id =
     defaultLayout =<<
@@ -608,48 +638,6 @@ postRethreadWikiCommentR project_handle target comment_id = do
         maybe (error "could not find new page") (wikiPageDiscussion . entityVal) <$>
             runDB (getBy $ UniqueWikiTarget new_project_id new_target)
 
-rethreadComments :: RethreadId -> Int -> Maybe CommentId -> DiscussionId -> [CommentId] -> YesodDB App [CommentId]
-rethreadComments rethread_id depth_offset maybe_new_parent_id new_discussion_id comment_ids = do
-    new_comment_ids <- flip St.evalStateT M.empty $ forM comment_ids $ \ comment_id -> do
-        rethreads <- St.get
-
-        Just comment <- get comment_id
-
-        let new_parent_id = maybe maybe_new_parent_id Just $ M.lookup (commentParent comment) rethreads
-
-        new_comment_id <- insert $ comment
-            { commentDepth = commentDepth comment - depth_offset
-            , commentParent = new_parent_id
-            , commentDiscussion = new_discussion_id
-            }
-
-        St.put $ M.insert (Just comment_id) new_comment_id rethreads
-
-        return new_comment_id
-
-    forM_ (zip comment_ids new_comment_ids) $ \ (comment_id, new_comment_id) -> do
-        update $ \ comment_tag -> do
-            where_ $ comment_tag ^. CommentTagComment ==. val comment_id
-            set comment_tag [ CommentTagComment =. val new_comment_id ]
-
-        update $ \ ticket -> do
-            where_ $ ticket ^. TicketComment ==. val comment_id
-            set ticket [ TicketComment =. val new_comment_id ]
-
-        insert_ $ CommentRethread rethread_id comment_id new_comment_id
-
-    insertSelect $
-        from $ \(comment_closure `InnerJoin` comment_rethread) -> do
-        on_ $ comment_closure ^. CommentClosureComment ==. comment_rethread ^. CommentRethreadOldComment
-        return $ CommentClosure
-                    <#  (comment_closure ^. CommentClosureTs)
-                    <&> (comment_closure ^. CommentClosureClosedBy)
-                    <&> (comment_closure ^. CommentClosureType)
-                    <&> (comment_closure ^. CommentClosureReason)
-                    <&> (comment_rethread ^. CommentRethreadNewComment)
-
-    return new_comment_ids
-
 --------------------------------------------------------------------------------
 -- /tags/*
 
@@ -863,7 +851,6 @@ makeCommentWidgetMod :: CommentMods    -- ^ Comment structure modifications.
                      -> CommentId      -- ^ Root comment id.
                      -> Handler Widget
 makeCommentWidgetMod CommentMods{..} get_max_depth show_actions form project_handle target comment_id = do
-    redirectIfRethreaded project_handle comment_id
     (Entity project_id _, _, root) <-
         -- TODO(mitchell)
         -- (_3 %~ mod_comment) <$> checkCommentPage project_handle target comment_id

@@ -20,9 +20,9 @@ module Model.Comment
     , getCommentDepth404
     , getCommentDescendants
     , getCommentDescendantsIds
+    , getCommentDestination
     , getCommentFlagging
     , getCommentsDescendants
-    , getCommentDestination
     , getCommentPage
     , getCommentPageId
     , getCommentRethread
@@ -31,6 +31,7 @@ module Model.Comment
     , getTags
     , isApproved
     , isEvenDepth
+    , isFlagged
     , isOddDepth
     , isTopLevel
     , makeClosureMap
@@ -39,6 +40,7 @@ module Model.Comment
     , makeTicketMap
     , newClosedCommentClosure
     , newRetractedCommentClosure
+    , rethreadComments
     , subGetCommentAncestors
     -- SQL expressions/queries
     , exprPermissionFilter
@@ -49,17 +51,18 @@ module Model.Comment
 
 import Import
 
-import           Model.User     (isProjectModerator')
+import           Model.User          (isProjectModerator')
 
-import           Data.Foldable  (Foldable)
-import qualified Data.Foldable  as F
-import qualified Data.Map       as M
-import qualified Data.Set       as S
-import qualified Data.Text      as T
+import qualified Control.Monad.State as St
+import           Data.Foldable       (Foldable)
+import qualified Data.Foldable       as F
+import qualified Data.Map            as M
+import qualified Data.Set            as S
+import qualified Data.Text           as T
 import           Data.Tree
-import           GHC.Exts       (IsList(..))
-import           Prelude        (head)
-import           Yesod.Markdown (Markdown(..))
+import           GHC.Exts            (IsList(..))
+import           Prelude             (head)
+import           Yesod.Markdown      (Markdown(..))
 
 type ClosureMap = Map CommentId CommentClosure
 type TicketMap  = Map CommentId (Entity Ticket)
@@ -84,6 +87,9 @@ isEvenDepth comment = not (isTopLevel comment) && commentDepth comment `mod` 2 =
 
 isOddDepth :: Comment -> Bool
 isOddDepth comment = not (isTopLevel comment) && not (isEvenDepth comment)
+
+isFlagged :: CommentId -> YesodDB App Bool
+isFlagged = fmap (maybe False (const True)) . getBy . UniqueCommentFlagging
 
 -- | Build a tree of comments, given the root and replies. The replies are not necessarily
 -- direct or indirect descendants of the root, but rather may be siblings, nephews, etc.
@@ -219,11 +225,6 @@ getCommentDepth = fmap commentDepth . getJust
 getCommentDepth404 :: CommentId -> Handler Int
 getCommentDepth404 = fmap commentDepth . runDB . get404
 
--- | Get the "true" CommentId for this comment (i.e. take the rethread train to
--- the very last stop). Makes an unbounded number of queries.
-getCommentDestination :: CommentId -> YesodDB App CommentId
-getCommentDestination comment_id = getCommentRethread comment_id >>= maybe (return comment_id) getCommentDestination
-
 -- | Get the CommentFlagging even for this Comment, if there is one.
 getCommentFlagging :: CommentId -> YesodDB App (Maybe (Entity CommentFlagging))
 getCommentFlagging = getBy . UniqueCommentFlagging
@@ -289,6 +290,13 @@ getCommentsDescendants mviewer_id project_id root_ids = makeViewerInfo mviewer_i
     -- DO NOT change ordering here! buildCommentTree relies on it.
     orderBy [asc (c ^. CommentParent), asc (c ^. CommentCreatedTs)]
     return c
+
+-- | Get the "true" target of this CommentId (which may be itself, if not rethreaded -
+-- otherwise, ride the rethread train to the end)
+getCommentDestination :: CommentId -> YesodDB App CommentId
+getCommentDestination comment_id = do
+    void $ get404 comment_id -- make sure the comment even exists, so this function terminates.
+    getCommentRethread comment_id >>= maybe (return comment_id) getCommentDestination
 
 -- | Get all Comments on a Discussion that are root comments.
 getAllRootComments :: Maybe UserId -> ProjectId -> DiscussionId -> YesodDB App [Entity Comment]
@@ -391,6 +399,49 @@ makeModeratedComment user_id discussion_id parent_comment comment_text depth = d
 getCommentsUsers :: Foldable f => f (Entity Comment) -> Set UserId
 getCommentsUsers = F.foldMap (S.singleton . commentUser . entityVal)
 
+rethreadComments :: RethreadId -> Int -> Maybe CommentId -> DiscussionId -> [CommentId] -> YesodDB App [CommentId]
+rethreadComments rethread_id depth_offset maybe_new_parent_id new_discussion_id comment_ids = do
+    new_comment_ids <- flip St.evalStateT M.empty $ forM comment_ids $ \ comment_id -> do
+        rethreads <- St.get
+
+        Just comment <- get comment_id
+
+        let new_parent_id = maybe maybe_new_parent_id Just $ M.lookup (commentParent comment) rethreads
+
+        new_comment_id <- insert $ comment
+            { commentDepth = commentDepth comment - depth_offset
+            , commentParent = new_parent_id
+            , commentDiscussion = new_discussion_id
+            }
+
+        St.put $ M.insert (Just comment_id) new_comment_id rethreads
+
+        return new_comment_id
+
+    forM_ (zip comment_ids new_comment_ids) $ \ (comment_id, new_comment_id) -> do
+        update $ \ comment_tag -> do
+            where_ $ comment_tag ^. CommentTagComment ==. val comment_id
+            set comment_tag [ CommentTagComment =. val new_comment_id ]
+
+        update $ \ ticket -> do
+            where_ $ ticket ^. TicketComment ==. val comment_id
+            set ticket [ TicketComment =. val new_comment_id ]
+
+        insert_ $ CommentRethread rethread_id comment_id new_comment_id
+
+    insertSelect $
+        from $ \(comment_closure `InnerJoin` comment_rethread) -> do
+        on_ $ comment_closure ^. CommentClosureComment ==. comment_rethread ^. CommentRethreadOldComment
+        return $ CommentClosure
+                    <#  (comment_closure ^. CommentClosureTs)
+                    <&> (comment_closure ^. CommentClosureClosedBy)
+                    <&> (comment_closure ^. CommentClosureType)
+                    <&> (comment_closure ^. CommentClosureReason)
+                    <&> (comment_rethread ^. CommentRethreadNewComment)
+
+    return new_comment_ids
+
+
 
 -- | Dumb helper function to make a "viewer info" argument for exprPermissionFilter.
 -- Unfortunately we export it as another module uses exprPermissionFilter. Probably
@@ -424,11 +475,14 @@ exprOnDiscussion discussion_id c = c ^. CommentDiscussion ==. val discussion_id
 --    If logged in, show all approved (hiding flagged), plus own comments (unapproved + flagged).
 --    If not logged in, show all approved (hiding flagged).
 --    No matter what, hide rethreaded comments (they've essentially been replaced).
+--
+-- The logic here is DUPLICATED (in Haskell land) in Handler.Wiki.Comment.checkCommentPage
+-- (because that function only fetches the root comment via Database.Persist.get) - all
+-- changes here must be reflected there, too!
 exprPermissionFilter :: Maybe (UserId, Bool) -> SqlExpr (Entity Comment) -> SqlExpr (Value Bool)
 exprPermissionFilter (Just (_,True))      c = exprNotRethreaded c
 exprPermissionFilter (Just (viewer_id,_)) c = exprNotRethreaded c &&. (exprApprovedAndNotFlagged c ||. exprPostedBy viewer_id c)
 exprPermissionFilter Nothing              c = exprNotRethreaded c &&. exprApprovedAndNotFlagged c
-    -- is_mod <- isProjectModerator' viewer_id project_id
 
 exprNotRethreaded :: SqlExpr (Entity Comment) -> SqlExpr (Value Bool)
 exprNotRethreaded c = c ^. CommentId `notIn` rethreadedCommentIds

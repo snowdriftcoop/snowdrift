@@ -6,7 +6,6 @@ import Import
 
 import Model.Comment (exprPermissionFilter, exprUnapproved, makeViewerInfo)
 import Model.Project (getProjectPages)
-import Model.User    (isProjectModerator')
 
 -- | Get the unapproved, new and old Comments on all WikiPages of Project. Takes a
 -- UTCTime 'since' to filter comments EARLIER than this time, and a CommentId
