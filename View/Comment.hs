@@ -1,5 +1,6 @@
 module View.Comment
     ( closedForm
+    , commentCassius
     , commentEditForm
     , commentEditFormWidget
     , commentNewTopicForm
@@ -7,7 +8,7 @@ module View.Comment
     , commentForm
     , commentFormWidget
     , commentTreeWidget
-    , commentTreeWithReplyWidget
+    , commentTreeWidgetNoCSS
     , createCommentTagForm
     , disabledCommentForm
     , flagCommentForm
@@ -100,51 +101,156 @@ flagCommentForm = renderBootstrap3 $ (,) <$> flagReasonsForm <*> additionalComme
     additionalCommentsForm = aopt' snowdriftMarkdownField "Optional: add helpful comments to clarify the issue and/or suggestions for improvement" Nothing
 
 -- | An entire comment tree.
-commentTreeWidget :: Tree (Entity Comment)         -- ^ Comment tree.
-                  -> [CommentClosure]              -- ^ Earlier closures.
+commentTreeWidget :: Widget                -- ^ Form to display under the root comment.
+                  -> Tree (Entity Comment) -- ^ Comment tree.
+                  -> [CommentClosure]      -- ^ Earlier closures.
                   -> UserMap
                   -> ClosureMap
                   -> TicketMap
                   -> FlagMap
                   -> TagMap
-                  -> Text                          -- ^ Project handle.
-                  -> Text                          -- ^ Wiki page name.
-                  -> Bool                          -- ^ Show actions? (false, for preview)
-                  -> Int                           -- ^ Max depth.
-                  -> Int                           -- ^ Depth.
+                  -> Text                  -- ^ Project handle.
+                  -> Text                  -- ^ Wiki page name.
+                  -> Bool                  -- ^ Show actions? (false, for preview)
+                  -> Int                   -- ^ Max depth.
+                  -> Int                   -- ^ Depth.
                   -> Widget
-commentTreeWidget = commentTreeWithReplyWidget mempty
+commentTreeWidget form_under_root_comment
+                  comment_tree
+                  earlier_closures
+                  user_map
+                  closure_map
+                  ticket_map
+                  flag_map
+                  tag_map
+                  project_handle
+                  target
+                  show_actions
+                  max_depth
+                  depth = do
+    commentTreeWidgetNoCSS
+      form_under_root_comment
+      comment_tree
+      earlier_closures
+      user_map
+      closure_map
+      ticket_map
+      flag_map
+      tag_map
+      project_handle
+      target
+      show_actions
+      max_depth
+      depth
+    commentCassius
 
--- | An entire comment tree, with a reply box underneath the root comment.
-commentTreeWithReplyWidget :: Widget                -- ^ Reply form.
-                           -> Tree (Entity Comment) -- ^ Comment tree.
-                           -> [CommentClosure]      -- ^ Earlier closures.
-                           -> UserMap
-                           -> ClosureMap
-                           -> TicketMap
-                           -> FlagMap
-                           -> TagMap
-                           -> Text                  -- ^ Project handle.
-                           -> Text                  -- ^ Wiki page name.
-                           -> Bool                  -- ^ Show actions? (false, for preview)
-                           -> Int                   -- ^ Max depth.
-                           -> Int                   -- ^ Depth.
-                           -> Widget
-commentTreeWithReplyWidget reply_form
-                           (Node root_entity@(Entity root_id root) children)
-                           earlier_closures
-                           user_map
-                           closure_map
-                           ticket_map
-                           flag_map
-                           tag_map
-                           project_handle
-                           target
-                           show_actions
-                           max_depth
-                           depth = do
+commentCassius :: Widget
+commentCassius = toWidget [cassius|
+  .comment
+      padding : 0 .8em 0.3em 1em
+      margin-top : 1.8em
+      border-bottom-left-radius: 1em
+      font-size : 15px
+
+  .comment p, .comment ul, .comment ol, .comment h1, .comment h2, .comment h3, .comment h4, .comment h5, .comment h6
+      margin : .5em 0
+
+  .comment figure
+      text-align : left
+
+  .comment h1
+      font-size : large
+
+  .comment h2
+      font-size : medium
+
+  .comment blockquote
+      font-size : 14px
+      margin : 1em
+
+  .comment-head, .comment-action
+      margin-right : 1em
+      margin-bottom : 0.5em
+      display : inline-flex
+      padding : 2px 5px
+
+  .top_level
+      border-left : solid black 0.2em
+
+  .even_depth
+      border-left : solid lightblue 0.2em
+
+  .odd_depth
+      border-left : solid lightgrey 0.2em
+
+  .small_avatar
+      width : 2.5em
+      height : 2.5em
+      padding : 0em
+      margin-right : 0.3em
+      border-radius : 5px
+
+  .closed
+      color : goldenrod
+      border-left : solid goldenrod 0.25em
+      padding-left : 0.5em
+
+  .retracted
+      color : darkred
+      border-left : solid darkred 0.25em
+      padding-left : 0.5em
+
+  .flagged
+      border : thin solid darkred
+      border-left : solid red
+      padding : .5em
+      margin : .5em 0
+      display : table
+
+  .flag-reasons
+      color : darkred
+      max-width : 41em
+
+  .flag-reasons, .flag-markdown
+      background : whitesmoke
+      padding : .5em
+      margin : .5em 0
+      display : table
+
+  .preview
+      visibility : hidden
+|]
+
+-- | An entire comment tree, without CSS.
+commentTreeWidgetNoCSS :: Widget                -- ^ Form to display under the root comment.
+                       -> Tree (Entity Comment) -- ^ Comment tree.
+                       -> [CommentClosure]      -- ^ Earlier closures.
+                       -> UserMap
+                       -> ClosureMap
+                       -> TicketMap
+                       -> FlagMap
+                       -> TagMap
+                       -> Text                  -- ^ Project handle.
+                       -> Text                  -- ^ Wiki page name.
+                       -> Bool                  -- ^ Show actions? (false, for preview)
+                       -> Int                   -- ^ Max depth.
+                       -> Int                   -- ^ Depth.
+                       -> Widget
+commentTreeWidgetNoCSS form_under_root_comment
+                       (Node root_entity@(Entity root_id root) children)
+                       earlier_closures
+                       user_map
+                       closure_map
+                       ticket_map
+                       flag_map
+                       tag_map
+                       project_handle
+                       target
+                       show_actions
+                       max_depth
+                       depth = do
     let inner_widget =
-            reply_form <>
+            form_under_root_comment <>
             expandCommentOrChildrenWidget
                 children
                 user_map
@@ -198,7 +304,8 @@ expandCommentOrChildrenWidget children
     if depth > max_depth && num_children > 0
         then expandCommentWidget num_children (max_depth + 2) -- FIXME(mitchell): arbitrary '2' here
         else forM_ children $ \child ->
-                 commentTreeWidget
+                 commentTreeWidgetNoCSS
+                     mempty
                      child
                      [] -- don't want to show earlier closures on *all* comments, just the first one.
                      user_map
@@ -252,6 +359,7 @@ commentWidget c@(Entity comment_id comment)
         runDB (getCommentTags comment_id) >>=
           annotateCommentTags tag_map project_handle target comment_id . map entityVal
 
+    -- Don't add a comment.cassius file! Instead, modify commentCassius in this file.
     $(widgetFile "comment")
 
 makeViewerPermissions :: Entity User    -- comment poster

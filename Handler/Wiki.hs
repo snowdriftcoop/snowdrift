@@ -102,39 +102,42 @@ getWikiNewCommentsR project_handle = do
         render_comments comments =
             if null comments
                 then [whamlet||]
-                -- TODO(mitchell): This code could use commentWidget, and we wouldn't need
+                -- TODO(mitchell): This code could use makeCommentWidget, and we wouldn't need
                 -- many queries above (users, closure_map, etc), but many more database hits
                 -- would result (one per new comment). Meh...
-                else forM_ comments $ \ (Entity comment_id comment) -> do
-                    (earlier_closures, target) <- handlerToWidget . runDB $ (,)
-                        <$> getAncestorClosures comment_id
-                        <*> (wikiPageTarget <$> getCommentPage comment_id)
+                else do
+                    forM_ comments $ \ (Entity comment_id comment) -> do
+                        (earlier_closures, target) <- handlerToWidget . runDB $ (,)
+                            <$> getAncestorClosures comment_id
+                            <*> (wikiPageTarget <$> getCommentPage comment_id)
 
-                    let rendered_comment =
-                            commentTreeWidget
-                                (Tree.singleton (Entity comment_id comment))
-                                earlier_closures
-                                users
-                                closure_map
-                                ticket_map
-                                flag_map
-                                tag_map
-                                project_handle
-                                target
-                                True   -- show actions?
-                                0      -- max_depth is irrelevant for the new-comments listing 0
-                                0
+                        let rendered_comment =
+                                commentTreeWidgetNoCSS
+                                    mempty
+                                    (Tree.singleton (Entity comment_id comment))
+                                    earlier_closures
+                                    users
+                                    closure_map
+                                    ticket_map
+                                    flag_map
+                                    tag_map
+                                    project_handle
+                                    target
+                                    True   -- show actions?
+                                    0      -- max_depth is irrelevant for the new-comments listing 0
+                                    0
 
-                    [whamlet|$newline never
-                        <div .row>
-                            <div .col-md-9 .col-md-offset-1 .col-lg-8 .col-lg-offset-2>
-                                <h4>
-                                    On #
-                                    <a href="@{WikiR project_handle target}">
-                                        #{target}
-                                    :
-                                ^{rendered_comment}
-                    |]
+                        [whamlet|$newline never
+                            <div .row>
+                                <div .col-md-9 .col-md-offset-1 .col-lg-8 .col-lg-offset-2>
+                                    <h4>
+                                        On #
+                                        <a href="@{WikiR project_handle target}">
+                                            #{target}
+                                        :
+                                    ^{rendered_comment}
+                        |]
+                    commentCassius
 
         rendered_unapproved_comments = render_comments unapproved_comments
         rendered_new_comments        = render_comments new_comments'
@@ -430,9 +433,10 @@ getDiscussWikiR' project_handle target get_root_comments = do
     max_depth <- getMaxDepth
 
     -- TODO(mitchell): use makeCommentWidget here
-    let comments =
+    let comments = do
             forM_ (sortForestBy orderingNewestFirst (buildCommentForest roots replies)) $ \comment ->
-                commentTreeWidget
+                commentTreeWidgetNoCSS
+                    mempty
                     comment
                     [] -- earlier closures
                     user_map
@@ -445,6 +449,7 @@ getDiscussWikiR' project_handle target get_root_comments = do
                     True           -- show actions?
                     max_depth
                     0              -- depth
+            commentCassius
 
     (comment_form, _) <- generateFormPost commentNewTopicForm
 

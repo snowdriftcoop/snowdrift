@@ -117,6 +117,7 @@ processWikiCommentPreview maybe_parent_id text (Entity _ project) page = do
             Comment now Nothing Nothing (wikiPageDiscussion page) maybe_parent_id user_id text depth
 
         rendered_comment = commentTreeWidget
+                               mempty
                                (Tree.singleton comment)
                                earlier_closures
                                (M.singleton user_id user)
@@ -851,7 +852,7 @@ makeCommentWidgetMod :: CommentMods    -- ^ Comment structure modifications.
                      -> Text           -- ^ Target.
                      -> CommentId      -- ^ Root comment id.
                      -> Handler Widget
-makeCommentWidgetMod CommentMods{..} get_max_depth show_actions form project_handle target comment_id = do
+makeCommentWidgetMod CommentMods{..} get_max_depth show_actions form_under_root_comment project_handle target comment_id = do
     (Entity project_id _, _, root) <-
         -- TODO(mitchell)
         -- (_3 %~ mod_comment) <$> checkCommentPage project_handle target comment_id
@@ -879,15 +880,15 @@ makeCommentWidgetMod CommentMods{..} get_max_depth show_actions form project_han
 
     max_depth <- get_max_depth
     return $
-        commentTreeWithReplyWidget
-            form
+        commentTreeWidget
+            form_under_root_comment
             (sortTreeBy orderingNewestFirst $ buildCommentTree (Entity comment_id root, rest))
             (mod_earlier_closures earlier_closures)
-            (mod_user_map user_map_with_viewer)
-            (mod_closure_map closure_map)
-            (mod_ticket_map ticket_map)
-            (mod_flag_map flag_map)
-            (mod_tag_map tag_map)
+            (mod_user_map         user_map_with_viewer)
+            (mod_closure_map      closure_map)
+            (mod_ticket_map       ticket_map)
+            (mod_flag_map         flag_map)
+            (mod_tag_map          tag_map)
             project_handle
             target
             show_actions
