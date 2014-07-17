@@ -23,6 +23,23 @@
                 <a href="@{DiscussCommentR project_handle target parent_id}">
                     parent
 
+    <div .comment-action :not show_actions:.preview style="margin-top: .5em">
+
+        $if can_edit
+            <span .comment-action>
+                <a href="@{EditCommentR project_handle target comment_id}">
+                    edit
+
+        $if can_delete
+            <span .comment-action>
+                <a href="@{DeleteCommentR project_handle target comment_id}">
+                    delete
+
+        $if can_retract
+            <span .comment-action>
+                <a href="@{RetractWikiCommentR project_handle target comment_id}" style="color: darkred">
+                    retract
+
     $maybe Entity ticket_id _ <- mticket
         <div .ticket>SD-#{toPathPiece ticket_id}
 
@@ -70,41 +87,11 @@
             ^{tagWidget tag}
 
     <div .comment-action :not show_actions:.preview>
-        $if is_mod
-            $if is_unapproved
-                <span .comment-action>
-                    <a href="@{ApproveWikiCommentR project_handle target comment_id}">
-                        approve
-
-            $if can_establish
-                <span .comment-action>
-                    <a href="@{UserR user_id}">
-                        establish user
-
-        $if can_reply
-            <span .comment-action>
-                <a href="@{ReplyCommentR project_handle target comment_id}">
-                    reply
-
-        $if can_retract
-            <span .comment-action>
-                <a href="@{RetractWikiCommentR project_handle target comment_id}" style="color: darkred">
-                    retract
 
         $if can_close
             <span .comment-action>
                 <a href="@{CloseWikiCommentR project_handle target comment_id}" style="color: goldenrod">
                     close
-
-        $if can_edit
-            <span .comment-action>
-                <a href="@{EditCommentR project_handle target comment_id}">
-                    edit
-
-        $if can_delete
-            <span .comment-action>
-                <a href="@{DeleteCommentR project_handle target comment_id}">
-                    delete
 
         $if can_rethread
             <span .comment-action>
@@ -114,11 +101,29 @@
         $if can_add_tag
             <span .comment-action>
                 <a href="@{NewCommentTagR project_handle target comment_id}">
-                    add tag
+                    tag
 
         $if can_flag
             <span .comment-action>
                 <a href="@{FlagCommentR project_handle target comment_id}">
                     flag
+
+        $if can_reply
+            <span .comment-action>
+                <a href="@{ReplyCommentR project_handle target comment_id}">
+                    reply
+
+    <div .comment-action :not show_actions:.preview>
+        $if is_mod
+            $if is_unapproved
+                <span .comment-action>
+                    <a href="@{ApproveWikiCommentR project_handle target comment_id}" style="color: green">
+                        approve
+
+            $if can_establish
+                <span .comment-action>
+                    <a href="@{UserR user_id}" style="color: green">
+                        establish user
+
 
     ^{inner_widget}
