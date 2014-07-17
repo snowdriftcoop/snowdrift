@@ -326,7 +326,7 @@ getFlagCommentR project_handle target comment_id = do
         [whamlet|
             <form method="POST" enctype=#{enctype}>
                 ^{form}
-                <input type="submit" value="submit">
+                <input .flag-submit type="submit" value="flag comment">
         |]
 
 postFlagCommentR :: Text -> Text -> CommentId -> Handler Html

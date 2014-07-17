@@ -39,6 +39,15 @@ input[type=submit]:active
 input[type=text], input[type=email]
     width : 30em
 
+.flag-submit
+    background : red
+    background-image : linear-gradient(#df6955, #a5022a)
+    border-color: #a5022a
+    
+.flag-submit[type=submit]:hover, .flag-submit[type=submit]:focus, .flag-submit[type=submit]:active
+    background : dark-red
+    background-image : linear-gradient(#dd4f48, #d91700)
+
 .radio-inline
     width : 2em
     vertical-align : unset
