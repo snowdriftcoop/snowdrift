@@ -174,11 +174,11 @@ flagComment project_handle target comment_id permalink_route flagger_id reasons 
             void $ insertMany (map (CommentFlaggingReason flagging_id) reasons)
 
             let message_text = Markdown . T.unlines $
-                    [ "One of your comments has been flagged as not meeting the standards of the Code of Conduct. We *want* your involvement as long as it is respectful and friendly, so please don’t feel discouraged."
+                    [ "Another user flagged your comment as not meeting the standards of the Code of Conduct. We *want* your involvement as long as it remains respectful and friendly, so please don’t feel discouraged."
                     , ""
-                    , "Please follow the link below for clarification or suggestions the flagger may have offered, and take this change to improve your tone and clarify any misunderstanding. Your comment will be made publicly visible after being edited."
+                    , "Please follow the link below for clarification and suggestions the flagger may have offered, and take this chance to improve your tone and clarify any misunderstanding. Your newly edited comment will then be publicly visible again."
                     , ""
-                    , "Please alert a moderator if you believe that this flagging is inappropriate, that your posts are being excessively flagged, that the feedback from the flagger is itself a violation of the Code of Conduct, or if you want other assistance."
+                    , "Please alert a moderator if you believe that this flagging is inappropriate, if the flagger violated the Code of Conduct in their feedback, or if you want other assistance."
                     , ""
                     , "[link to flagged comment](" <> permalink_route <> ")"
                     ]
