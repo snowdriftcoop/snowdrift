@@ -337,7 +337,7 @@ postEditCommentR project_handle target comment_id = do
 
         editComment comment_id new_text
 
-        addAlert "success" "comment edited"
+        addAlert "success" "posted new edit"
         redirect $ DiscussCommentR project_handle target comment_id
 
 --------------------------------------------------------------------------------
