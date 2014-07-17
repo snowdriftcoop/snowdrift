@@ -1,7 +1,6 @@
-CREATe TABLE "comment_flagging"("id" SERIAL PRIMARY KEY UNIQUE,"ts" TIMESTAMP NOT NULL,"flagger" INT8 NOT NULL,"comment" INT8 NOT NULL,"message" VARCHAR NULL);
-ALTER TABLE "comment_flagging" ADD CONSTRAINT "unique_comment_flagging" UNIQUE("flagger","comment");
-ALTER TABLE "comment_flagging" ADD CONSTRAINT "comment_flagging_flagger_fkey" FOREIGN KEY("flagger") REFERENCES "user"("id");
-ALTER TABLE "comment_flagging" ADD CONSTRAINT "comment_flagging_comment_fkey" FOREIGN KEY("comment") REFERENCES "comment"("id");
-CREATe TABLE "comment_flagging_reason"("id" SERIAL PRIMARY KEY UNIQUE,"flagging" INT8 NOT NULL,"reason" VARCHAR NOT NULL);
-ALTER TABLE "comment_flagging_reason" ADD CONSTRAINT "unique_comment_flagging_reason" UNIQUE("flagging","reason");
-ALTER TABLE "comment_flagging_reason" ADD CONSTRAINT "comment_flagging_reason_flagging_fkey" FOREIGN KEY("flagging") REFERENCES "comment_flagging"("id");
+CREATe TABLE "pledge_form_rendered"("id" SERIAL PRIMARY KEY UNIQUE,"ts" TIMESTAMP NOT NULL,"order" VARCHAR NOT NULL,"project" INT8 NOT NULL,"user" INT8 NULL);
+ALTER TABLE "pledge_form_rendered" ADD CONSTRAINT "pledge_form_rendered_project_fkey" FOREIGN KEY("project") REFERENCES "project"("id");
+ALTER TABLE "pledge_form_rendered" ADD CONSTRAINT "pledge_form_rendered_user_fkey" FOREIGN KEY("user") REFERENCES "user"("id");
+CREATe TABLE "shares_pledged"("id" SERIAL PRIMARY KEY UNIQUE,"ts" TIMESTAMP NOT NULL,"user" INT8 NOT NULL,"shares" INT8 NOT NULL,"render" INT8 NOT NULL);
+ALTER TABLE "shares_pledged" ADD CONSTRAINT "shares_pledged_user_fkey" FOREIGN KEY("user") REFERENCES "user"("id");
+ALTER TABLE "shares_pledged" ADD CONSTRAINT "shares_pledged_render_fkey" FOREIGN KEY("render") REFERENCES "pledge_form_rendered"("id");

@@ -205,8 +205,15 @@ CommentFlagging
     ts UTCTime
     flagger UserId
     comment CommentId
+
+    -- These two fields are required to reconstruct the permalink to the comment,
+    -- for inclusion in messages to the flagger/flaggee.
+    projectHandle Text
+    target Text
+
     message Markdown Maybe -- Optional message provided by the flagger.
-    UniqueCommentFlagging flagger comment
+    -- Only one flagging can exist for a comment at any given time.
+    UniqueCommentFlagging comment
 
 -- A reason associated with a comment flagging. One-to-many relation.
 CommentFlaggingReason

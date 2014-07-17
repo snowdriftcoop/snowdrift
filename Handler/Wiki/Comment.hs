@@ -91,8 +91,9 @@ processWikiCommentPreview maybe_parent_id text (Entity _ project) page = do
                                (Tree.singleton comment)
                                earlier_closures
                                (M.singleton user_id user)
-                               mempty
-                               mempty -- TODO(mitchell): this isn't right...?
+                               mempty -- closure map - TODO(mitchell): this isn't right...?
+                               mempty -- ticket map - TODO(mitchell): this isn't right either
+                               mempty -- flag map
                                tag_map
                                (projectHandle project)
                                (wikiPageTarget page)
@@ -265,7 +266,7 @@ getEditCommentR project_handle target comment_id = do
 
 postEditCommentR :: Text -> Text -> CommentId -> Handler Html
 postEditCommentR project_handle target comment_id = do
-    (project, Entity _ page, _) <- checkCommentPage project_handle target comment_id
+    void $ checkCommentPage project_handle target comment_id
     ((result, _), _) <- runFormPost $ commentEditForm ""
     case result of
         FormSuccess new_text -> lookupPostParam "mode" >>= \case
@@ -279,7 +280,7 @@ postEditCommentR project_handle target comment_id = do
     previewEdit new_text = do
         (form, _) <- generateFormPost $ commentEditForm new_text
         makeCommentWidgetMod
-          modifyCommentText
+          mods
           getMaxDepthZero
           False
           mempty
@@ -288,8 +289,12 @@ postEditCommentR project_handle target comment_id = do
           comment_id
             >>= defaultLayout . previewWidget form "post"
       where
-        modifyCommentText :: CommentMods
-        modifyCommentText = def { mod_comment = \c -> c { commentText = new_text } }
+        mods :: CommentMods
+        mods = def
+            { mod_comment = \c -> c { commentText = new_text }
+            -- Since an edit removes a flagging, don't show the flagged markup in preview.
+            , mod_flag_map = M.delete comment_id
+            }
 
     postEdit :: Markdown -> Handler Html
     postEdit new_text = do
@@ -299,7 +304,7 @@ postEditCommentR project_handle target comment_id = do
         unless (canEditComment user_id comment) $
             permissionDenied "You can't edit that comment."
 
-        runDB $ editComment comment_id new_text
+        editComment comment_id new_text
 
         addAlert "success" "comment edited"
         redirect $ DiscussCommentR project_handle target comment_id
@@ -330,15 +335,25 @@ getFlagCommentR project_handle target comment_id = do
 postFlagCommentR :: Text -> Text -> CommentId -> Handler Html
 postFlagCommentR project_handle target comment_id = do
     user_id <- requireAuthId
-    (project, page, comment) <- checkCommentPage project_handle target comment_id
+    void $ checkCommentPage project_handle target comment_id
     ((result, _), _) <- runFormPost flagCommentForm
     case result of
         -- TODO(mitchell): Change the form to just return [FlagReason], not Maybe [FlagReason]
         FormSuccess (Nothing, _) -> flagFailure "Please check at least one Code of Conduct violation."
         FormSuccess (Just [], _) -> flagFailure "Please check at least one Code of Conduct violation."
         FormSuccess (Just reasons, message) -> do
-            runDB $ flagComment comment_id user_id reasons message
-            addAlert "success" "comment flagged"
+            permalink_route <- getUrlRender <*> pure (EditCommentR project_handle target comment_id)
+            success <- runDB $ flagComment
+                                 project_handle
+                                 target
+                                 comment_id
+                                 permalink_route
+                                 user_id
+                                 reasons
+                                 message
+            if success
+                then addAlert "success" "comment flagged and removed"
+                else addAlert "danger" "comment recently flagged and removed by another user"
             redirect $ DiscussWikiR project_handle target
         FormFailure errs -> flagFailure (T.intercalate ", " errs)
         _ -> flagFailure "Form missing."
@@ -643,7 +658,7 @@ rethreadComments rethread_id depth_offset maybe_new_parent_id new_discussion_id 
 
 getCommentTagsR :: Text -> Text -> CommentId -> Handler Html
 getCommentTagsR project_handle target comment_id = do
-    (_, Entity page_id _, _) <- checkCommentPage project_handle target comment_id
+    void $ checkCommentPage project_handle target comment_id
 
     comment_tags <- map entityVal <$> runDB (getCommentTags comment_id)
 
@@ -660,7 +675,7 @@ getCommentTagsR project_handle target comment_id = do
 
 getCommentTagR :: Text -> Text -> CommentId -> TagId -> Handler Html
 getCommentTagR project_handle target comment_id tag_id = do
-    (_, Entity page_id _, _) <- checkCommentPage project_handle target comment_id
+    void $  checkCommentPage project_handle target comment_id
 
     comment_tags <- map entityVal <$> runDB (
         select $
@@ -688,7 +703,7 @@ getCommentTagR project_handle target comment_id tag_id = do
 postCommentTagR :: Text -> Text -> CommentId -> TagId -> Handler Html
 postCommentTagR project_handle target comment_id tag_id = do
     user_id <- requireAuthId
-    (_, Entity page_id _, _) <- checkCommentPage project_handle target comment_id
+    void $  checkCommentPage project_handle target comment_id
 
     direction <- lookupPostParam "direction"
 
@@ -721,7 +736,7 @@ getNewCommentTagR project_handle target comment_id = do
     unless (isEstablished user)
         (permissionDenied "You must be an established user to add tags")
 
-    (Entity project_id _, Entity page_id _, _) <- checkCommentPage project_handle target comment_id
+    (Entity project_id _, _, _) <- checkCommentPage project_handle target comment_id
 
     comment_tags <- fmap (map entityVal) $ runDB $ select $ from $ \ comment_tag -> do
         where_ $ comment_tag ^. CommentTagComment ==. val comment_id
@@ -752,7 +767,7 @@ postNewCommentTagR create_tag project_handle target comment_id = do
     unless (isEstablished user)
         (permissionDenied "You must be an established user to add tags")
 
-    (Entity project_id _, Entity page_id _, _) <- checkCommentPage project_handle target comment_id
+    (Entity project_id _, _, _) <- checkCommentPage project_handle target comment_id
 
     let formFailure es = error $ T.unpack $ "form submission failed: " <> T.intercalate "; " es
 
@@ -820,11 +835,12 @@ data CommentMods = CommentMods
     , mod_user_map         :: UserMap          -> UserMap
     , mod_closure_map      :: ClosureMap       -> ClosureMap
     , mod_ticket_map       :: TicketMap        -> TicketMap
+    , mod_flag_map         :: FlagMap          -> FlagMap
     , mod_tag_map          :: TagMap           -> TagMap
     }
 
 instance Default CommentMods where
-    def = CommentMods id id id id id id
+    def = CommentMods id id id id id id id
 
 -- | Helper method to create a Widget for a comment action (/, /reply, /moderate, etc).
 -- Returns a Widget from a Handler (rather than just calling defaultLayout) so that the widget
@@ -857,7 +873,7 @@ makeCommentWidgetMod CommentMods{..} get_max_depth show_actions form project_han
         (\(a,b,c) -> (a,b,mod_comment c)) <$> checkCommentPage project_handle target comment_id
 
     mviewer_id <- maybeAuthId
-    (rest, user_map, earlier_closures, closure_map, ticket_map, tag_map) <- runDB $ do
+    (rest, user_map, earlier_closures, closure_map, ticket_map, flag_map, tag_map) <- runDB $ do
         rest <- getCommentDescendants mviewer_id project_id comment_id
 
         let all_comments    = (Entity comment_id root):rest
@@ -867,9 +883,10 @@ makeCommentWidgetMod CommentMods{..} get_max_depth show_actions form project_han
         user_map         <- entitiesMap <$> getUsersIn (S.toList $ getCommentsUsers all_comments)
         closure_map      <- makeClosureMap all_comment_ids
         ticket_map       <- makeTicketMap  all_comment_ids
+        flag_map         <- makeFlagMap    all_comment_ids
         tag_map          <- entitiesMap <$> getAllTags
 
-        return (rest, user_map, earlier_closures, closure_map, ticket_map, tag_map)
+        return (rest, user_map, earlier_closures, closure_map, ticket_map, flag_map, tag_map)
 
     user_map_with_viewer <- (maybe id (\(Entity viewer_id viewer) -> M.insert viewer_id viewer))
         <$> maybeAuth
@@ -884,6 +901,7 @@ makeCommentWidgetMod CommentMods{..} get_max_depth show_actions form project_han
             (mod_user_map user_map_with_viewer)
             (mod_closure_map closure_map)
             (mod_ticket_map ticket_map)
+            (mod_flag_map flag_map)
             (mod_tag_map tag_map)
             project_handle
             target

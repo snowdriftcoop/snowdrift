@@ -54,6 +54,15 @@
                     \ closed this comment ^{renderTime (commentClosureTs closure)}
                     ^{markdownWidget project_handle (commentClosureReason closure)}
 
+    $maybe (mflag_markdown, flag_reasons) <- mflag
+        <div .flagged>
+            This comment has been flagged for the following reasons:
+            <span .flag-resons>#{T.intercalate ", " $ map descFlagReason flag_reasons}
+            $maybe flag_markdown <- mflag_markdown
+                <div .flag-markdown>
+                    Additional comments:
+                    #{flag_markdown}
+
     ^{markdownWidget project_handle (commentText comment)}
 
     <div>
@@ -106,5 +115,10 @@
             <span .comment-action>
                 <a href="@{NewCommentTagR project_handle target comment_id}">
                     add tag
+
+        $if can_flag
+            <span .comment-action>
+                <a href="@{FlagCommentR project_handle target comment_id}">
+                    flag
 
     ^{inner_widget}

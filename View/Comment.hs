@@ -102,10 +102,11 @@ flagCommentForm = renderBootstrap3 $ (,) <$> flagReasonsForm <*> additionalComme
 -- | An entire comment tree.
 commentTreeWidget :: Tree (Entity Comment)         -- ^ Comment tree.
                   -> [CommentClosure]              -- ^ Earlier closures.
-                  -> Map UserId User               -- ^ Comment poster.
-                  -> Map CommentId CommentClosure  -- ^ Closure map.
-                  -> Map CommentId (Entity Ticket) -- ^ Ticket map.
-                  -> Map TagId Tag                 -- ^ Tag map.
+                  -> UserMap
+                  -> ClosureMap
+                  -> TicketMap
+                  -> FlagMap
+                  -> TagMap
                   -> Text                          -- ^ Project handle.
                   -> Text                          -- ^ Wiki page name.
                   -> Bool                          -- ^ Show actions? (false, for preview)
@@ -121,6 +122,7 @@ commentTreeWithReplyWidget :: Widget                -- ^ Reply form.
                            -> UserMap
                            -> ClosureMap
                            -> TicketMap
+                           -> FlagMap
                            -> TagMap
                            -> Text                  -- ^ Project handle.
                            -> Text                  -- ^ Wiki page name.
@@ -134,6 +136,7 @@ commentTreeWithReplyWidget reply_form
                            user_map
                            closure_map
                            ticket_map
+                           flag_map
                            tag_map
                            project_handle
                            target
@@ -147,6 +150,7 @@ commentTreeWithReplyWidget reply_form
                 user_map
                 closure_map
                 ticket_map
+                flag_map
                 tag_map
                 project_handle
                 target
@@ -160,6 +164,7 @@ commentTreeWithReplyWidget reply_form
         (user_map M.! commentUser root)
         (M.lookup root_id closure_map)
         (M.lookup root_id ticket_map)
+        (M.lookup root_id flag_map)
         tag_map
         project_handle
         target
@@ -167,10 +172,11 @@ commentTreeWithReplyWidget reply_form
         inner_widget
 
 expandCommentOrChildrenWidget :: [Tree (Entity Comment)]       -- ^ Children comments.
-                              -> Map UserId User               -- ^ Comment poster.
-                              -> Map CommentId CommentClosure  -- ^ Closure map.
-                              -> Map CommentId (Entity Ticket) -- ^ Ticket map.
-                              -> Map TagId Tag                 -- ^ Tag map.
+                              -> UserMap
+                              -> ClosureMap
+                              -> TicketMap
+                              -> FlagMap
+                              -> TagMap
                               -> Text                          -- ^ Project handle.
                               -> Text                          -- ^ Wiki page name.
                               -> Bool                          -- ^ Show actions? (false, for preview)
@@ -181,6 +187,7 @@ expandCommentOrChildrenWidget children
                               user_map
                               closure_map
                               ticket_map
+                              flag_map
                               tag_map
                               project_handle
                               target
@@ -189,7 +196,7 @@ expandCommentOrChildrenWidget children
                               depth = do
     let num_children = length children
     if depth > max_depth && num_children > 0
-        then expandCommentWidget num_children (max_depth + 2) -- FIXME: arbitrary '2' here
+        then expandCommentWidget num_children (max_depth + 2) -- FIXME(mitchell): arbitrary '2' here
         else forM_ children $ \child ->
                  commentTreeWidget
                      child
@@ -197,6 +204,7 @@ expandCommentOrChildrenWidget children
                      user_map
                      closure_map
                      ticket_map
+                     flag_map
                      tag_map
                      project_handle
                      target
@@ -208,22 +216,24 @@ expandCommentOrChildrenWidget children
 -- The reason this can't be made more modular is the HTML for nested comments
 -- requires us to render the entire tree (can't close the parent comment's div
 -- before the children comments).
-commentWidget :: Entity Comment        -- ^ Comment.
-              -> [CommentClosure]      -- ^ Earlier closures.
-              -> User                  -- ^ Comment poster.
-              -> Maybe CommentClosure  -- ^ Is this closed?
-              -> Maybe (Entity Ticket) -- ^ Is this a ticket?
-              -> Map TagId Tag         -- ^ Tag map.
-              -> Text                  -- ^ Project handle.
-              -> Text                  -- ^ Wiki page name.
-              -> Bool                  -- ^ Show actions?
-              -> Widget                -- ^ Inner widget (children comments, 'expand' link, reply box, etc)
+commentWidget :: Entity Comment                       -- ^ Comment.
+              -> [CommentClosure]                     -- ^ Earlier closures.
+              -> User                                 -- ^ Comment poster.
+              -> Maybe CommentClosure                 -- ^ Is this closed?
+              -> Maybe (Entity Ticket)                -- ^ Is this a ticket?
+              -> Maybe (Maybe Markdown, [FlagReason]) -- ^ Is this comment flagged?
+              -> TagMap                               -- ^ Tag map.
+              -> Text                                 -- ^ Project handle.
+              -> Text                                 -- ^ Wiki page name.
+              -> Bool                                 -- ^ Show actions?
+              -> Widget                               -- ^ Inner widget (children comments, 'expand' link, reply box, etc)
               -> Widget
 commentWidget c@(Entity comment_id comment)
               earlier_closures
               user
               mclosure
               mticket
+              mflag
               tag_map
               project_handle
               target
@@ -235,7 +245,7 @@ commentWidget c@(Entity comment_id comment)
         is_even_depth = isEvenDepth comment
         is_odd_depth  = isOddDepth  comment
 
-    (is_mod, can_establish, can_reply, can_retract, can_close, can_edit, can_delete, can_rethread, can_add_tag) <-
+    (is_mod, can_establish, can_reply, can_retract, can_close, can_edit, can_delete, can_rethread, can_add_tag, can_flag) <-
         handlerToWidget $ makeViewerPermissions (Entity user_id user) project_handle target c
 
     tags <- fmap (L.sortBy (compare `on` atName)) . handlerToWidget $ do
@@ -257,13 +267,14 @@ makeViewerPermissions :: Entity User    -- comment poster
                                  , Bool -- can delete?
                                  , Bool -- can rethread?
                                  , Bool -- can add tag?
+                                 , Bool -- can flag?
                                  )
 makeViewerPermissions (Entity poster_id poster) project_handle target comment_entity@(Entity comment_id comment) = do
     Just current_route <- getCurrentRoute
     let can_reply = not (current_route == ReplyCommentR project_handle target comment_id)
 
     maybeAuth >>= \case
-        Nothing -> return (False, False, can_reply, False, False, False, False, False, False)
+        Nothing -> return (False, False, can_reply, False, False, False, False, False, False, False)
         Just (Entity viewer_id viewer) -> do
             (is_mod, can_delete) <- runDB $ (,)
                 <$> isProjectModerator project_handle viewer_id
@@ -275,9 +286,10 @@ makeViewerPermissions (Entity poster_id poster) project_handle target comment_en
                 can_edit      = canEditComment viewer_id comment
                 can_rethread  = poster_id == viewer_id || is_mod
                 can_add_tag   = isEstablished viewer
+                can_flag      = isEstablished viewer
 
             return (is_mod, can_establish, can_reply, can_retract, can_close, can_edit,
-                    can_delete, can_rethread, can_add_tag)
+                    can_delete, can_rethread, can_add_tag, can_flag)
 
 -- Order comment trees by newest-first, taking the root and all children of each
 -- tree into consideration.

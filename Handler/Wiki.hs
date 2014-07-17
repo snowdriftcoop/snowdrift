@@ -10,7 +10,6 @@ import           Handler.Wiki.Comment       (getMaxDepth, processWikiComment)
 import           Model.Comment
 import           Model.Markdown
 import           Model.Permission
-import           Model.Project              (getProjectPages)
 import           Model.Tag                  (getAllTagsMap)
 import           Model.User
 import           Model.ViewTime
@@ -80,7 +79,7 @@ getWikiNewCommentsR project_handle = do
 
     latest_comment_id <- Key . PersistInt64 . fromMaybe maxBound <$> runInputGet (iopt intField "latest")
 
-    (unapproved_comments, new_comments, old_comments, users, closure_map, ticket_map, tag_map) <- runDB $ do
+    (unapproved_comments, new_comments, old_comments, users, closure_map, ticket_map, flag_map, tag_map) <- runDB $ do
         (unapproved_comments, new_comments, old_comments) <-
             getAllWikiComments (entityKey <$> mviewer) project_id latest_comment_id since 51
 
@@ -92,9 +91,10 @@ getWikiNewCommentsR project_handle = do
 
         closure_map <- makeClosureMap all_comment_ids
         ticket_map  <- makeTicketMap  all_comment_ids
+        flag_map    <- makeFlagMap    all_comment_ids
         tag_map     <- getAllTagsMap
 
-        return (unapproved_comments, new_comments, old_comments, users, closure_map, ticket_map, tag_map)
+        return (unapproved_comments, new_comments, old_comments, users, closure_map, ticket_map, flag_map, tag_map)
 
     let new_comments' = take 50 new_comments
         old_comments' = take (50 - length new_comments') old_comments
@@ -117,6 +117,7 @@ getWikiNewCommentsR project_handle = do
                                 users
                                 closure_map
                                 ticket_map
+                                flag_map
                                 tag_map
                                 project_handle
                                 target
@@ -415,18 +416,20 @@ getDiscussWikiR' project_handle target get_root_comments = do
 
     (Entity project_id project, Entity _ page) <- runDB $ getPageInfo project_handle target
 
-    (roots, replies, user_map, closure_map, ticket_map, tag_map) <- runDB $ do
+    (roots, replies, user_map, closure_map, ticket_map, flag_map, tag_map) <- runDB $ do
         roots           <- get_root_comments muser_id project_id (wikiPageDiscussion page)
         replies         <- getCommentsDescendants muser_id project_id (map entityKey roots)
         user_map        <- entitiesMap <$> getUsersIn (S.toList $ getCommentsUsers roots <> getCommentsUsers replies)
         let comment_ids  = map entityKey (roots ++ replies)
         closure_map     <- makeClosureMap comment_ids
-        ticket_map      <- makeTicketMap comment_ids
+        ticket_map      <- makeTicketMap  comment_ids
+        flag_map        <- makeFlagMap    comment_ids
         tag_map         <- getAllTagsMap
-        return (roots, replies, user_map, closure_map, ticket_map, tag_map)
+        return (roots, replies, user_map, closure_map, ticket_map, flag_map, tag_map)
 
     max_depth <- getMaxDepth
 
+    -- TODO(mitchell): use makeCommentWidget here
     let comments =
             forM_ (sortForestBy orderingNewestFirst (buildCommentForest roots replies)) $ \comment ->
                 commentTreeWidget
@@ -435,6 +438,7 @@ getDiscussWikiR' project_handle target get_root_comments = do
                     user_map
                     closure_map
                     ticket_map
+                    flag_map
                     tag_map
                     project_handle
                     target

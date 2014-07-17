@@ -1,5 +1,6 @@
 module Model.Comment
     ( ClosureMap
+    , FlagMap
     , TicketMap
     , approveComment
     , buildCommentForest
@@ -19,6 +20,7 @@ module Model.Comment
     , getCommentDepth404
     , getCommentDescendants
     , getCommentDescendantsIds
+    , getCommentFlagging
     , getCommentsDescendants
     , getCommentDestination
     , getCommentPage
@@ -32,6 +34,7 @@ module Model.Comment
     , isOddDepth
     , isTopLevel
     , makeClosureMap
+    , makeFlagMap
     , makeModeratedComment
     , makeTicketMap
     , newClosedCommentClosure
@@ -46,18 +49,21 @@ module Model.Comment
 
 import Import
 
-import           Model.User    (isProjectModerator')
+import           Model.User     (isProjectModerator')
 
-import           Data.Foldable (Foldable)
-import qualified Data.Foldable as F
-import qualified Data.Map      as M
-import qualified Data.Set      as S
+import           Data.Foldable  (Foldable)
+import qualified Data.Foldable  as F
+import qualified Data.Map       as M
+import qualified Data.Set       as S
+import qualified Data.Text      as T
 import           Data.Tree
-import           GHC.Exts      (IsList(..))
-import           Prelude       (head)
+import           GHC.Exts       (IsList(..))
+import           Prelude        (head)
+import           Yesod.Markdown (Markdown(..))
 
 type ClosureMap = Map CommentId CommentClosure
 type TicketMap  = Map CommentId (Entity Ticket)
+type FlagMap    = Map CommentId (Maybe Markdown, [FlagReason])
 
 approveComment :: UserId -> CommentId -> YesodDB App ()
 approveComment user_id comment_id = liftIO getCurrentTime >>= \now ->
@@ -122,24 +128,63 @@ canDeleteComment user_id (Entity comment_id comment) = do
 canEditComment :: UserId -> Comment -> Bool
 canEditComment user_id = (user_id ==) . commentUser
 
--- | Delete a comment from the database. Should not be called on comments with
--- children, as their foreign keys would then cause runtime errors.
+-- | Delete-cascade a comment from the database.
 deleteComment :: CommentId -> YesodDB App ()
-deleteComment = deleteKey
+deleteComment = deleteCascade
 
--- | Edit a comment's text.
-editComment :: CommentId -> Markdown -> YesodDB App ()
-editComment comment_id text =
-    update $ \c -> do
-    set c [ CommentText =. val text ]
-    where_ (c ^. CommentId ==. val comment_id)
+-- | Edit a comment's text. If the comment was flagged, unflag it and send a
+-- message to the flagger.
+editComment :: CommentId -> Markdown -> Handler ()
+editComment comment_id text = do
+    runDB (updateCommentText >> getCommentFlagging comment_id) >>= \case
+        Nothing -> return ()
+        Just (Entity comment_flagging_id CommentFlagging{..}) -> do
+            let permalink_route = DiscussCommentR
+                                    commentFlaggingProjectHandle
+                                    commentFlaggingTarget
+                                    comment_id
+            permalink_text <- getUrlRender <*> pure permalink_route
+            let message_text = Markdown $ "A comment you flagged has been edited and reposted to the site. You can view it [here](" <> permalink_text <> ")."
+            now <- liftIO getCurrentTime
+            runDB $ do
+                deleteCascade comment_flagging_id -- delete flagging and all flagging reasons with it.
+                snowdrift_id <- getSnowdriftId
+                insert_ $ Message
+                            (Just snowdrift_id)
+                            now
+                            Nothing
+                            (Just $ commentFlaggingFlagger)
+                            message_text
+                            True
+  where
+    updateCommentText =
+        update $ \c -> do
+        set c [ CommentText =. val text ]
+        where_ (c ^. CommentId ==. val comment_id)
 
--- | Flag a comment.
-flagComment :: CommentId -> UserId -> [FlagReason] -> Maybe Markdown -> YesodDB App ()
-flagComment comment_id user_id reasons message = do
+-- | Flag a comment. Send a message to the poster about the flagging. Return whether
+-- or not the flag was successful (fails if the comment was already flagged.)
+flagComment :: Text -> Text -> CommentId -> Text -> UserId -> [FlagReason] -> Maybe Markdown -> YesodDB App Bool
+flagComment project_handle target comment_id permalink_route flagger_id reasons message = do
+    poster_id <- commentUser <$> get404 comment_id
     now <- liftIO getCurrentTime
-    flagging_id <- insert (CommentFlagging now user_id comment_id message)
-    void $ insertMany (map (CommentFlaggingReason flagging_id) reasons)
+    insertUnique (CommentFlagging now flagger_id comment_id project_handle target message) >>= \case
+        Nothing -> return False
+        Just flagging_id -> do
+            void $ insertMany (map (CommentFlaggingReason flagging_id) reasons)
+
+            let message_text = Markdown . T.unlines $
+                    [ "One of your comments has been flagged as not meeting the standards of the Code of Conduct. We *want* your involvement as long as it is respectful and friendly, so please don’t feel discouraged."
+                    , ""
+                    , "Please follow the link below for clarification or suggestions the flagger may have offered, and take this change to improve your tone and clarify any misunderstanding. Your comment will be made publicly visible after being edited."
+                    , ""
+                    , "Please alert a moderator if you believe that this flagging is inappropriate, that your posts are being excessively flagged, that the feedback from the flagger is itself a violation of the Code of Conduct, or if you want other assistance."
+                    , ""
+                    , "[link to flagged comment](" <> permalink_route <> ")"
+                    ]
+            snowdrift_id <- getSnowdriftId
+            insert_ $ Message (Just snowdrift_id) now Nothing (Just poster_id) message_text True
+            return True
 
 -- | Get all ancestors that have been closed.
 getAncestorClosures :: CommentId -> YesodDB App [CommentClosure]
@@ -178,6 +223,10 @@ getCommentDepth404 = fmap commentDepth . runDB . get404
 -- the very last stop). Makes an unbounded number of queries.
 getCommentDestination :: CommentId -> YesodDB App CommentId
 getCommentDestination comment_id = getCommentRethread comment_id >>= maybe (return comment_id) getCommentDestination
+
+-- | Get the CommentFlagging even for this Comment, if there is one.
+getCommentFlagging :: CommentId -> YesodDB App (Maybe (Entity CommentFlagging))
+getCommentFlagging = getBy . UniqueCommentFlagging
 
 -- | Partial function.
 getCommentPage :: CommentId -> YesodDB App WikiPage
@@ -283,7 +332,7 @@ getTags comment_id =
     where_ (ct ^. CommentTagComment ==. val comment_id)
     return t
 
-makeClosureMap :: (IsList c, CommentId ~ Item c) => c -> YesodDB App (Map CommentId CommentClosure)
+makeClosureMap :: (IsList c, CommentId ~ Item c) => c -> YesodDB App ClosureMap
 makeClosureMap comment_ids = fmap (M.fromList . map ((commentClosureComment &&& id) . entityVal)) $
     select $
     from $ \c -> do
@@ -292,12 +341,29 @@ makeClosureMap comment_ids = fmap (M.fromList . map ((commentClosureComment &&& 
 
 -- Given a collection of CommentId, make a map from CommentId to Entity Ticket. Comments that
 -- are not tickets will simply not be in the map.
-makeTicketMap :: (IsList c, CommentId ~ Item c) => c -> YesodDB App (Map CommentId (Entity Ticket))
+makeTicketMap :: (IsList c, CommentId ~ Item c) => c -> YesodDB App TicketMap
 makeTicketMap comment_ids = fmap (M.fromList . map ((ticketComment . entityVal) &&& id)) $
     select $
     from $ \t -> do
     where_ (t ^. TicketComment `in_` valList comment_ids)
     return t
+
+makeFlagMap :: (IsList c, CommentId ~ Item c) => c -> YesodDB App FlagMap
+makeFlagMap comment_ids = mkFlagMap <$> getCommentFlaggings
+  where
+    getCommentFlaggings :: YesodDB App [(CommentId, Maybe Markdown, FlagReason)]
+    getCommentFlaggings = fmap (map unwrapValues) $
+        select $
+        from $ \(cf `InnerJoin` cfr) -> do
+        on_ (cf ^. CommentFlaggingId ==. cfr ^. CommentFlaggingReasonFlagging)
+        where_ (cf ^. CommentFlaggingComment `in_` valList comment_ids)
+        return (cf ^. CommentFlaggingComment, cf ^. CommentFlaggingMessage, cfr ^. CommentFlaggingReasonReason)
+
+    mkFlagMap :: [(CommentId, Maybe Markdown, FlagReason)] -> FlagMap
+    mkFlagMap = foldr (\(comment_id, message, reason) -> M.insertWith combine comment_id (message, [reason])) mempty
+      where
+        combine :: (Maybe Markdown, [FlagReason]) -> (Maybe Markdown, [FlagReason]) -> (Maybe Markdown, [FlagReason])
+        combine (message, reasons1) (_, reasons2) = (message, reasons1 <> reasons2)
 
 newClosedCommentClosure, newRetractedCommentClosure :: MonadIO m => UserId -> Markdown -> CommentId -> m CommentClosure
 newClosedCommentClosure    = newCommentClosure Closed

@@ -27,7 +27,10 @@ import Yesod.Markdown             (Markdown)
 -- You can find more information on persistent and how to declare entities
 -- at:
 -- http://www.yesodweb.com/book/persistent/
-share [mkPersist sqlOnlySettings, mkMigrate "migrateAll"]
+share [ mkPersist sqlOnlySettings
+      , mkMigrate "migrateAll"
+      , mkDeleteCascade sqlOnlySettings
+      ]
     $(persistFileWith lowerCaseSettings "config/models")
 
 instance HashDBUser User where
