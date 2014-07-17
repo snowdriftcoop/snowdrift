@@ -355,8 +355,9 @@ getFlagCommentR project_handle target comment_id = do
         (form, enctype) <- handlerToWidget $ generateFormPost flagCommentForm
         [whamlet|
             <form method="POST" enctype=#{enctype}>
+                <h4>Code of Conduct Violation(s):
                 ^{form}
-                <input type="submit" value="submit">
+                <input .flag-submit type="submit" value="flag comment">
         |]
 
 postFlagCommentR :: Text -> Text -> CommentId -> Handler Html
@@ -379,8 +380,8 @@ postFlagCommentR project_handle target comment_id = do
                                  reasons
                                  message
             if success
-                then addAlert "success" "comment flagged and removed"
-                else addAlert "danger" "comment recently flagged and removed by another user"
+                then addAlert "success" "comment hidden and flagged for revision"
+                else addAlert "danger" "error: another user flagged this just before you"
             redirect $ DiscussWikiR project_handle target
         FormFailure errs -> flagFailure (T.intercalate ", " errs)
         _ -> flagFailure "Form missing."
@@ -896,7 +897,7 @@ makeCommentWidgetMod CommentMods{..} get_max_depth show_actions form project_han
 --------------------------------------------------------------------------------
 -- DEPRECATED
 
--- This is just because we used to have "/comment/#" with that long thing,
+-- This is just because we used to have "/comment/#" with that longer URL,
 -- and this keeps any permalinks from breaking
 getOldDiscussCommentR :: Text -> Text -> CommentId -> Handler Html
 getOldDiscussCommentR project_handle target comment_id = redirect $ DiscussCommentR project_handle target comment_id
