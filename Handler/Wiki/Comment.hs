@@ -116,20 +116,23 @@ processWikiCommentPreview maybe_parent_id text (Entity _ project) page = do
           Entity (Key $ PersistInt64 0) $
             Comment now Nothing Nothing (wikiPageDiscussion page) maybe_parent_id user_id text depth
 
-        rendered_comment = commentTreeWidget
-                               mempty
-                               (Tree.singleton comment)
-                               earlier_closures
-                               (M.singleton user_id user)
-                               mempty -- closure map - TODO(mitchell): this isn't right...?
-                               mempty -- ticket map - TODO(mitchell): this isn't right either
-                               mempty -- flag map
-                               tag_map
-                               (projectHandle project)
-                               (wikiPageTarget page)
-                               False   -- show actions?
-                               0
-                               0
+        rendered_comment = let project_handle = projectHandle project
+                               target         = wikiPageTarget page
+                               comment_widget = commentTreeWidget
+                                                  mempty
+                                                  (Tree.singleton comment)
+                                                  earlier_closures
+                                                  (M.singleton user_id user)
+                                                  mempty -- closure map - TODO(mitchell): this isn't right...?
+                                                  mempty -- ticket map - TODO(mitchell): this isn't right either
+                                                  mempty -- flag map
+                                                  tag_map
+                                                  (projectHandle project)
+                                                  (wikiPageTarget page)
+                                                  False   -- show actions?
+                                                  0
+                                                  0
+                           in $(widgetFile "comment_wrapper")
 
     (form, _) <- generateFormPost $
         commentForm
@@ -197,27 +200,27 @@ getMaxDepthDefault n = fromMaybe n <$> runInputGet (iopt intField "maxdepth")
 -- / and /reply
 
 getDiscussCommentR :: Text -> Text -> CommentId -> Handler Html
-getDiscussCommentR project_handle target comment_id =
-    defaultLayout =<<
-        makeCommentWidget
-          getMaxDepth
-          True
-          mempty
-          project_handle
-          target
-          comment_id
+getDiscussCommentR project_handle target comment_id = do
+    comment_widget <- makeCommentWidget
+                        getMaxDepth
+                        True
+                        mempty
+                        project_handle
+                        target
+                        comment_id
+    defaultLayout $(widgetFile "comment_wrapper")
 
 getReplyCommentR :: Text -> Text -> CommentId -> Handler Html
 getReplyCommentR project_handle target comment_id = do
     void requireAuth
-    defaultLayout =<<
-        makeCommentWidget
-          getMaxDepth
-          True
-          widget
-          project_handle
-          target
-          comment_id
+    comment_widget <- makeCommentWidget
+                        getMaxDepth
+                        True
+                        widget
+                        project_handle
+                        target
+                        comment_id
+    defaultLayout $(widgetFile "comment_wrapper")
   where
     widget = commentFormWidget "Reply" Nothing
 
@@ -240,14 +243,14 @@ postReplyCommentR project_handle target comment_id = do
 getDeleteCommentR :: Text -> Text -> CommentId -> Handler Html
 getDeleteCommentR project_handle target comment_id = do
     void requireAuth
-    defaultLayout =<<
-        makeCommentWidget
-          getMaxDepthZero
-          True
-          widget
-          project_handle
-          target
-          comment_id
+    comment_widget <- makeCommentWidget
+                        getMaxDepthZero
+                        True
+                        widget
+                        project_handle
+                        target
+                        comment_id
+    defaultLayout $(widgetFile "comment_wrapper")
   where
     widget = [whamlet|
         <div>
@@ -283,14 +286,14 @@ getEditCommentR :: Text -> Text -> CommentId -> Handler Html
 getEditCommentR project_handle target comment_id = do
     void requireAuth
     comment <- runDB $ get404 comment_id
-    defaultLayout =<<
-        makeCommentWidget
-          getMaxDepthZero
-          True
-          (commentEditFormWidget $ commentText comment)
-          project_handle
-          target
-          comment_id
+    comment_widget <- makeCommentWidget
+                        getMaxDepthZero
+                        True
+                        (commentEditFormWidget $ commentText comment)
+                        project_handle
+                        target
+                        comment_id
+    defaultLayout $(widgetFile "comment_wrapper")
 
 postEditCommentR :: Text -> Text -> CommentId -> Handler Html
 postEditCommentR project_handle target comment_id = do
@@ -343,14 +346,14 @@ postEditCommentR project_handle target comment_id = do
 getFlagCommentR :: Text -> Text -> CommentId -> Handler Html
 getFlagCommentR project_handle target comment_id = do
     void requireAuth
-    defaultLayout =<<
-        makeCommentWidget
-          getMaxDepthZero
-          True
-          widget
-          project_handle
-          target
-          comment_id
+    comment_widget <- makeCommentWidget
+                        getMaxDepthZero
+                        True
+                        widget
+                        project_handle
+                        target
+                        comment_id
+    defaultLayout $(widgetFile "comment_wrapper")
   where
     widget = do
         (form, enctype) <- handlerToWidget $ generateFormPost flagCommentForm
@@ -399,14 +402,14 @@ flagFailure msg = do
 getApproveWikiCommentR :: Text -> Text -> CommentId -> Handler Html
 getApproveWikiCommentR project_handle target comment_id = do
     void $ sanityCheckApprove project_handle
-    defaultLayout =<<
-        makeCommentWidget
-          getMaxDepth
-          True
-          widget
-          project_handle
-          target
-          comment_id
+    comment_widget <- makeCommentWidget
+                        getMaxDepth
+                        True
+                        widget
+                        project_handle
+                        target
+                        comment_id
+    defaultLayout $(widgetFile "comment_wrapper")
   where
     widget = [whamlet|
         <form method="POST">
@@ -437,14 +440,14 @@ getRetractWikiCommentR project_handle target comment_id = do
     -- time in makeCommentWidget. Maybe it should be taken out of makeCommentWidget,
     -- and the handlers should be in charge of calling it?
     retractSanityCheck project_handle target comment_id
-    defaultLayout =<<
-        makeCommentWidget
-          getMaxDepth
-          True
-          widget
-          project_handle
-          target
-          comment_id
+    comment_widget <- makeCommentWidget
+                        getMaxDepth
+                        True
+                        widget
+                        project_handle
+                        target
+                        comment_id
+    defaultLayout $(widgetFile "comment_wrapper")
   where
     widget :: Widget
     widget = do
@@ -465,14 +468,14 @@ retractSanityCheck project_handle target comment_id = do
 getCloseWikiCommentR :: Text -> Text -> CommentId -> Handler Html
 getCloseWikiCommentR project_handle target comment_id = do
     closeSanityCheck project_handle target comment_id
-    defaultLayout =<<
-        makeCommentWidget
-          getMaxDepth
-          True
-          widget
-          project_handle
-          target
-          comment_id
+    comment_widget <- makeCommentWidget
+                        getMaxDepth
+                        True
+                        widget
+                        project_handle
+                        target
+                        comment_id
+    defaultLayout $(widgetFile "comment_wrapper")
   where
     widget :: Widget
     widget = do

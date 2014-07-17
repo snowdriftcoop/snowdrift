@@ -4,27 +4,28 @@ module Handler.Wiki where
 
 import Import
 
-import qualified Data.Tree.Extra            as Tree
-import           Data.Tree.Extra            (sortForestBy)
-import           Handler.Wiki.Comment       (getMaxDepth, processWikiComment)
+import qualified Data.Tree.Extra      as Tree
+import           Data.Tree.Extra      (sortForestBy)
+import           Handler.Wiki.Comment (getMaxDepth, processWikiComment)
 import           Model.Comment
 import           Model.Markdown
 import           Model.Permission
-import           Model.Tag                  (getAllTagsMap)
+import           Model.Tag            (getAllTagsMap)
 import           Model.User
 import           Model.ViewTime
 import           Model.ViewType
-import           Model.WikiPage             (getAllWikiComments)
+import           Model.WikiPage       (getAllWikiComments)
 import           Widgets.Preview
 import           Widgets.Time
 import           View.Comment
 import           View.Wiki
 
-import           Data.Algorithm.Diff        (getDiff, Diff (..))
-import qualified Data.Map                   as M
-import qualified Data.Set                   as S
-import qualified Data.Text                  as T
-import           Text.Blaze.Html5           (ins, del, br)
+import           Data.Algorithm.Diff  (getDiff, Diff (..))
+import qualified Data.Map             as M
+import qualified Data.Set             as S
+import qualified Data.Text            as T
+import           Text.Blaze.Html5     (ins, del, br)
+import           Text.Cassius         (cassiusFile)
 import           Yesod.Markdown
 
 --------------------------------------------------------------------------------
@@ -112,7 +113,7 @@ getWikiNewCommentsR project_handle = do
                             <*> (wikiPageTarget <$> getCommentPage comment_id)
 
                         let rendered_comment =
-                                commentTreeWidgetNoCSS
+                                commentTreeWidget
                                     mempty
                                     (Tree.singleton (Entity comment_id comment))
                                     earlier_closures
@@ -137,7 +138,7 @@ getWikiNewCommentsR project_handle = do
                                         :
                                     ^{rendered_comment}
                         |]
-                    commentCassius
+                    toWidget $(cassiusFile "templates/comment_wrapper.cassius")
 
         rendered_unapproved_comments = render_comments unapproved_comments
         rendered_new_comments        = render_comments new_comments'
@@ -435,7 +436,7 @@ getDiscussWikiR' project_handle target get_root_comments = do
     -- TODO(mitchell): use makeCommentWidget here
     let comments = do
             forM_ (sortForestBy orderingNewestFirst (buildCommentForest roots replies)) $ \comment ->
-                commentTreeWidgetNoCSS
+                commentTreeWidget
                     mempty
                     comment
                     [] -- earlier closures
@@ -449,7 +450,7 @@ getDiscussWikiR' project_handle target get_root_comments = do
                     True           -- show actions?
                     max_depth
                     0              -- depth
-            commentCassius
+            toWidget $(cassiusFile "templates/comment_wrapper.cassius")
 
     (comment_form, _) <- generateFormPost commentNewTopicForm
 
