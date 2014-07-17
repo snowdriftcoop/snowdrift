@@ -909,7 +909,7 @@ makeCommentWidgetMod CommentMods{..} get_max_depth show_actions form project_han
 --------------------------------------------------------------------------------
 -- DEPRECATED
 
--- This is just because we used to have "/comment/#" with that long thing,
+-- This is just because we used to have "/comment/#" with that longer URL,
 -- and this keeps any permalinks from breaking
 getOldDiscussCommentR :: Text -> Text -> CommentId -> Handler Html
 getOldDiscussCommentR project_handle target comment_id = redirect $ DiscussCommentR project_handle target comment_id
