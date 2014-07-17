@@ -5,15 +5,12 @@ module Handler.Wiki.Comment where
 import Import
 
 import qualified Data.Tree.Extra           as Tree
-import           Data.Tree.Extra           (sortForestBy, sortTreeBy)
+import           Data.Tree.Extra           (sortTreeBy)
 import           Model.AnnotatedTag
 import           Model.Comment
-import           Model.Project             (getProjectPages, getProjectTagList)
+import           Model.Project             (getProjectTagList)
 import           Model.Tag                 (TagMap, getAllTags)
 import           Model.User
-import           Model.ViewType
-import           Model.WikiPage
-import           Widgets.Markdown
 import           Widgets.Preview
 import           Widgets.Tag
 import           View.Comment
