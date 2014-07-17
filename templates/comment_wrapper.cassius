@@ -69,5 +69,5 @@
     margin : .5em 0
     display : table
 
-.preview
-    visibility : hidden
+.preview a
+    pointer-events: none
