@@ -86,17 +86,17 @@ retractedForm = requiredMarkdownForm "Reason for retracting:"
 requiredMarkdownForm :: FieldSettings App -> Maybe Markdown -> Form Markdown
 requiredMarkdownForm settings = renderBootstrap3 . areq snowdriftMarkdownField settings
 
-flagCommentForm :: Form (Maybe [FlagReason], Maybe Markdown)
-flagCommentForm = renderBootstrap3 $ (,) <$> flagReasonsForm <*> additionalCommentsForm
+flagCommentForm :: Maybe (Maybe [FlagReason]) -> Maybe (Maybe Markdown) -> Form (Maybe [FlagReason], Maybe Markdown)
+flagCommentForm def_reasons def_message = renderBootstrap3 $ (,) <$> flagReasonsForm <*> additionalCommentsForm
   where
     flagReasonsForm :: AForm Handler (Maybe [FlagReason])
-    flagReasonsForm = aopt (checkboxesFieldList reasons) "" Nothing
+    flagReasonsForm = aopt (checkboxesFieldList reasons) "" def_reasons
       where
         reasons :: [(Text, FlagReason)]
         reasons = map (descFlagReason &&& id) [minBound..maxBound]
 
     additionalCommentsForm :: AForm Handler (Maybe Markdown)
-    additionalCommentsForm = aopt' snowdriftMarkdownField "Optional: add helpful comments to clarify the issue and/or suggestions for improvement" Nothing
+    additionalCommentsForm = aopt' snowdriftMarkdownField "Optional: add helpful comments to clarify the issue and/or suggestions for improvement" def_message
 
 -- | An entire comment tree.
 commentTreeWidget :: Widget                -- ^ Form to display under the root comment.

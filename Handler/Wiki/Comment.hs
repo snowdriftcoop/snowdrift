@@ -356,24 +356,33 @@ getFlagCommentR project_handle target comment_id = do
     defaultLayout $(widgetFile "comment_wrapper")
   where
     widget = do
-        (form, enctype) <- handlerToWidget $ generateFormPost flagCommentForm
+        (form, enctype) <- handlerToWidget $ generateFormPost (flagCommentForm Nothing Nothing)
         [whamlet|
             <form method="POST" enctype=#{enctype}>
                 <h4>Code of Conduct Violation(s):
                 ^{form}
                 <input .flag-submit type="submit" value="flag comment">
+                <input type="hidden" name="mode" value="preview">
         |]
 
 postFlagCommentR :: Text -> Text -> CommentId -> Handler Html
 postFlagCommentR project_handle target comment_id = do
     user_id <- requireAuthId
     void $ checkCommentPage project_handle target comment_id
-    ((result, _), _) <- runFormPost flagCommentForm
+    ((result, _), _) <- runFormPost (flagCommentForm Nothing Nothing)
     case result of
         -- TODO(mitchell): Change the form to just return [FlagReason], not Maybe [FlagReason]
         FormSuccess (Nothing, _) -> flagFailure "Please check at least one Code of Conduct violation."
         FormSuccess (Just [], _) -> flagFailure "Please check at least one Code of Conduct violation."
-        FormSuccess (Just reasons, message) -> do
+        FormSuccess (Just reasons, message) -> lookupPostParam "mode" >>= \case
+            Just "flag comment" -> postFlag user_id reasons message
+            Just "preview"      -> previewFlag reasons message
+            m                   -> error $ "Error: unrecognized mode (" ++ show m ++ ")"
+        FormFailure errs -> flagFailure (T.intercalate ", " errs)
+        _ -> flagFailure "Form missing."
+  where
+    postFlag :: UserId -> [FlagReason] -> Maybe Markdown -> Handler Html
+    postFlag user_id reasons message = do
             permalink_route <- getUrlRender <*> pure (EditCommentR project_handle target comment_id)
             success <- runDB $ flagComment
                                  project_handle
@@ -387,8 +396,43 @@ postFlagCommentR project_handle target comment_id = do
                 then addAlert "success" "comment hidden and flagged for revision"
                 else addAlert "danger" "error: another user flagged this just before you"
             redirect $ DiscussWikiR project_handle target
-        FormFailure errs -> flagFailure (T.intercalate ", " errs)
-        _ -> flagFailure "Form missing."
+
+    previewFlag :: [FlagReason] -> Maybe Markdown -> Handler Html
+    previewFlag reasons message = do
+        (form, _) <- generateFormPost $ flagCommentForm (Just (Just reasons)) (Just message)
+
+        let mods = def { mod_flag_map = M.insert comment_id (message, reasons) }
+        unwrapped_comment_widget <-
+            makeCommentWidgetMod
+              mods
+              getMaxDepthZero
+              True
+              mempty
+              project_handle
+              target
+              comment_id
+
+        let form_with_header =
+                [whamlet|
+                    <h4>Code of Conduct Violation(s):
+                    ^{form}
+                |]
+            comment_widget = do
+                previewWidget form_with_header "flag comment" unwrapped_comment_widget
+                -- Duplicate .flag-submit markup from default-layout.cassius, so the
+                -- pre-preview page (GET /flag) button looks the same as the preview
+                -- page's. This is unfortunate.
+                toWidget [cassius|
+                    .preview-action-button[type=submit]
+                        background : red
+                        background-image : linear-gradient(#df6955, #a5022a)
+                        border-color: #a5022a
+
+                    .preview-action-button[type=submit]:hover, .flag-submit[type=submit]:focus, .flag-submit[type=submit]:active
+                        background : dark-red
+                        background-image : linear-gradient(#dd4f48, #d91700)
+                |]
+        defaultLayout $(widgetFile "comment_wrapper")
 
 flagFailure :: Text -> Handler a
 flagFailure msg = do
