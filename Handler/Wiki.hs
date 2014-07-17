@@ -10,6 +10,7 @@ import           Handler.Wiki.Comment (getMaxDepth, processWikiComment)
 import           Model.Comment
 import           Model.Markdown
 import           Model.Permission
+import           Model.Project
 import           Model.Tag            (getAllTagsMap)
 import           Model.User
 import           Model.ViewTime
@@ -42,13 +43,10 @@ getPageInfo project_handle target = do
 
 getWikiPagesR :: Text -> Handler Html
 getWikiPagesR project_handle = do
-    (Entity _ project) <- runDB $ getBy404 $ UniqueProjectHandle project_handle
-    pages <- runDB $ select $ from $ \ (project' `InnerJoin` wiki_page) -> do
-        on_ $ project' ^. ProjectId ==. wiki_page ^. WikiPageProject
-        where_ $ project' ^. ProjectHandle ==. val project_handle
-        orderBy [asc $ wiki_page ^. WikiPageTarget]
-        return wiki_page
-
+    (project, pages) <- runDB $ do
+        Entity project_id project <- getBy404 $ UniqueProjectHandle project_handle
+        pages <- getProjectWikiPages project_id
+        return (project, pages)
     defaultLayout $ do
         setTitle . toHtml $ projectName project <> " Wiki | Snowdrift.coop"
         $(widgetFile "wiki_pages")

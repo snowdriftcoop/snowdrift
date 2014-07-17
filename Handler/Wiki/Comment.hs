@@ -310,15 +310,15 @@ postEditCommentR project_handle target comment_id = do
     previewEdit :: Markdown -> Handler Html
     previewEdit new_text = do
         (form, _) <- generateFormPost $ commentEditForm new_text
-        makeCommentWidgetMod
-          mods
-          getMaxDepthZero
-          False
-          mempty
-          project_handle
-          target
-          comment_id
-            >>= defaultLayout . previewWidget form "post"
+        comment_widget <- previewWidget form "post" <$> makeCommentWidgetMod
+                                                          mods
+                                                          getMaxDepthZero
+                                                          False
+                                                          mempty
+                                                          project_handle
+                                                          target
+                                                          comment_id
+        defaultLayout $(widgetFile "comment_wrapper")
       where
         mods :: CommentMods
         mods = def
@@ -523,15 +523,16 @@ postClosureWikiComment sanity_check make_closure_form make_new_comment_closure a
             lookupPostParam "mode" >>= \case
                 Just "preview" -> do
                     (form, _) <- generateFormPost $ make_closure_form (Just reason)
-                    makeCommentWidgetMod
-                      (def { mod_closure_map = M.insert comment_id new_comment_closure })
-                      getMaxDepthZero
-                      False
-                      mempty -- TODO(mitchell): is this right?
-                      project_handle
-                      target
-                      comment_id
-                        >>= defaultLayout . previewWidget form action
+                    comment_widget <- previewWidget form action <$>
+                                          makeCommentWidgetMod
+                                            (def { mod_closure_map = M.insert comment_id new_comment_closure })
+                                            getMaxDepthZero
+                                            False
+                                            mempty -- TODO(mitchell): is this right?
+                                            project_handle
+                                            target
+                                            comment_id
+                    defaultLayout $(widgetFile "comment_wrapper")
                 Just mode | mode == action -> do
                     runDB $ insert_ new_comment_closure
                     redirect $ DiscussCommentR project_handle target comment_id

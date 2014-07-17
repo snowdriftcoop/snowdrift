@@ -165,3 +165,12 @@ getProjectTagList project_id = (,) <$> getProjectTags <*> getOtherTags
             where_ ( page ^. WikiPageProject !=. val project_id )
             orderBy [ desc (tag ^. TagName) ]
             return tag
+
+-- | Get all of a Project's WikiPages, sorted alphabetically.
+getProjectWikiPages :: ProjectId ->  YesodDB App [Entity WikiPage]
+getProjectWikiPages project_id =
+    select $
+    from $ \(p `InnerJoin` wp) -> do
+    on_ (p ^. ProjectId ==. wp ^. WikiPageProject)
+    orderBy [asc (wp ^. WikiPageTarget)]
+    return wp
