@@ -1,42 +1,42 @@
 <div .comment :is_unapproved:.unapproved :is_top_level:.top_level :is_even_depth:.even_depth :is_odd_depth:.odd_depth>
     <div>
-        <span .comment-head>
+        <div .comment-head>
             $maybe author_avatar <- userAvatar user
                 <a href="@{UserR user_id}">
                     <img .small_avatar src="#{author_avatar}"> #
             <a href="@{UserR user_id}">
                 #{userPrintName (Entity user_id user)}
-        <span .comment-head>
+        <div .comment-head>
             $maybe moderated_ts <- commentModeratedTs comment
                 ^{renderTime moderated_ts}
             $nothing
                 ^{renderTime $ commentCreatedTs comment}
-        <span .comment-head :not show_actions:.preview>
+        <div .comment-head :not show_actions:.preview>
             |
-        <span .comment-head :not show_actions:.preview>
+        <div .comment-head :not show_actions:.preview>
             <a href="@{DiscussCommentR project_handle target comment_id}">
                 permalink
         $maybe parent_id <- commentParent comment
-            <span .comment-head :not show_actions:.preview>
+            <div .comment-head :not show_actions:.preview>
                 |
-            <span .comment-head :not show_actions:.preview>
+            <div .comment-head :not show_actions:.preview>
                 <a href="@{DiscussCommentR project_handle target parent_id}">
                     parent
 
-    <div .comment-action :not show_actions:.preview style="margin-top: .5em">
+    <div :not show_actions:.preview>
 
         $if can_edit
-            <span .comment-action>
+            <div .comment-action>
                 <a href="@{EditCommentR project_handle target comment_id}">
                     edit
 
         $if can_delete
-            <span .comment-action>
+            <div .comment-action>
                 <a href="@{DeleteCommentR project_handle target comment_id}">
                     delete
 
         $if can_retract
-            <span .comment-action>
+            <div .comment-action>
                 <a href="@{RetractWikiCommentR project_handle target comment_id}" style="color: darkred">
                     retract
 
@@ -73,12 +73,16 @@
 
     $maybe (mflag_markdown, flag_reasons) <- mflag
         <div .flagged>
-            This comment has been flagged for the following reasons:
-            <span .flag-resons>#{T.intercalate ", " $ map descFlagReason flag_reasons}
+            A user flagged this comment as a violation of the
+            <a href="@{WikiR "snowdrift" "conduct"}">
+                Code of Conduct
+            due to:
+            <div .flag-reasons>#{T.intercalate ", " $ map descFlagReason flag_reasons}
             $maybe flag_markdown <- mflag_markdown
                 <div .flag-markdown>
                     Additional comments:
                     #{flag_markdown}
+            <i>Please edit to address these concerns and repost.
 
     ^{markdownWidget project_handle (commentText comment)}
 
@@ -86,42 +90,42 @@
         $forall tag <- tags
             ^{tagWidget tag}
 
-    <div .comment-action :not show_actions:.preview>
+    <div :not show_actions:.preview>
 
         $if can_close
-            <span .comment-action>
+            <div .comment-action>
                 <a href="@{CloseWikiCommentR project_handle target comment_id}" style="color: goldenrod">
                     close
 
         $if can_rethread
-            <span .comment-action>
+            <div .comment-action>
                 <a href="@{RethreadWikiCommentR project_handle target comment_id}">
                     rethread
 
         $if can_add_tag
-            <span .comment-action>
+            <div .comment-action>
                 <a href="@{NewCommentTagR project_handle target comment_id}">
                     tag
 
         $if can_flag
-            <span .comment-action>
+            <div .comment-action>
                 <a href="@{FlagCommentR project_handle target comment_id}">
                     flag
 
         $if can_reply
-            <span .comment-action>
+            <div .comment-action>
                 <a href="@{ReplyCommentR project_handle target comment_id}">
                     reply
 
-    <div .comment-action :not show_actions:.preview>
+    <div :not show_actions:.preview>
         $if is_mod
             $if is_unapproved
-                <span .comment-action>
+                <div .comment-action>
                     <a href="@{ApproveWikiCommentR project_handle target comment_id}" style="color: green">
                         approve
 
             $if can_establish
-                <span .comment-action>
+                <div .comment-action>
                     <a href="@{UserR user_id}" style="color: green">
                         establish user
 
