@@ -349,8 +349,8 @@ postFlagCommentR project_handle target comment_id = do
                                  reasons
                                  message
             if success
-                then addAlert "success" "comment flagged and removed"
-                else addAlert "danger" "comment recently flagged and removed by another user"
+                then addAlert "success" "comment hidden and flagged for revision"
+                else addAlert "danger" "error: another user flagged this just before you"
             redirect $ DiscussWikiR project_handle target
         FormFailure errs -> flagFailure (T.intercalate ", " errs)
         _ -> flagFailure "Form missing."
