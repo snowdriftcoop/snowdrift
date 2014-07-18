@@ -337,7 +337,7 @@ postEditCommentR project_handle target comment_id = do
 
         editComment comment_id new_text
 
-        addAlert "success" "comment edited"
+        addAlert "success" "posted new edit"
         redirect $ DiscussCommentR project_handle target comment_id
 
 --------------------------------------------------------------------------------
@@ -361,7 +361,7 @@ getFlagCommentR project_handle target comment_id = do
             <form method="POST" enctype=#{enctype}>
                 <h4>Code of Conduct Violation(s):
                 ^{form}
-                <input .flag-submit type="submit" value="flag comment">
+                <input type="submit" value="preview flag message">
                 <input type="hidden" name="mode" value="preview">
         |]
 
@@ -419,18 +419,20 @@ postFlagCommentR project_handle target comment_id = do
                 |]
             comment_widget = do
                 previewWidget form_with_header "flag comment" unwrapped_comment_widget
-                -- Duplicate .flag-submit markup from default-layout.cassius, so the
-                -- pre-preview page (GET /flag) button looks the same as the preview
-                -- page's. This is unfortunate.
+                -- the CSS below styles this particular flagging submit
+                -- button. It would be ideal to have this in a more
+                -- generalized place so it can be reused in other flagging
+                -- buttons and be in just one place, but this works for
+                -- now.
                 toWidget [cassius|
                     .preview-action-button[type=submit]
-                        background : red
-                        background-image : linear-gradient(#df6955, #a5022a)
+                        background : dark-red
+                        background-image : linear-gradient(#ee2700, #bd1000)
                         border-color: #a5022a
 
-                    .preview-action-button[type=submit]:hover, .flag-submit[type=submit]:focus, .flag-submit[type=submit]:active
-                        background : dark-red
-                        background-image : linear-gradient(#dd4f48, #d91700)
+                    .preview-action-button[type=submit]:hover, .preview-action-button[type=submit]:focus, .preview-action-button[type=submit]:active
+                        background : red
+                        background-image : linear-gradient(#d22935, #a5022a)
                 |]
         defaultLayout $(widgetFile "comment_wrapper")
 
