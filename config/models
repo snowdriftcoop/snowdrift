@@ -31,7 +31,7 @@ User
     ircNick Text Maybe
     readMessages UTCTime default=now()
     readApplications UTCTime default=now()
-    readComments UTCTime default=now()
+    readComments UTCTime default=now() -- The last time /newcomments was visited.
     readEdits UTCTime default=now()
     established Established default='EstUnestablished'
     UniqueUser ident
@@ -171,10 +171,6 @@ Comment
     moderatedTs UTCTime Maybe
     moderatedBy UserId Maybe
 
-    -- A comment may be rethreaded by a moderator. If it is, this field will be
-    -- Just, and the new Comment that replaces it will have rethreaded == Nothing
-    rethreaded RethreadId Maybe
-
     discussion DiscussionId
     parent CommentId Maybe
     user UserId
@@ -203,6 +199,27 @@ Rethread
     moderator UserId      -- The moderator that rethreaded.
     oldComment CommentId  -- The old comment that was rethreaded.
     reason Text           -- The reason for rethreading.
+
+-- A flagging event, with one or more reason stored in CommentFlaggingReason.
+CommentFlagging
+    ts UTCTime
+    flagger UserId
+    comment CommentId
+
+    -- These two fields are required to reconstruct the permalink to the comment,
+    -- for inclusion in messages to the flagger/flaggee.
+    projectHandle Text
+    target Text
+
+    message Markdown Maybe -- Optional message provided by the flagger.
+    -- Only one flagging can exist for a comment at any given time.
+    UniqueCommentFlagging comment
+
+-- A reason associated with a comment flagging. One-to-many relation.
+CommentFlaggingReason
+    flagging CommentFlaggingId
+    reason FlagReason
+    UniqueCommentFlaggingReason flagging reason
 
 -- An individual comment-rethread relation.
 CommentRethread

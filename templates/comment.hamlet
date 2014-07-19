@@ -1,9 +1,133 @@
-<div .row>
-    <div .col-xs-6>
-        <a href="@{DiscussWikiR project_handle target}"> back to full discussion
-    <div .col-xs-6>
-        <a href="@{WikiR project_handle target}"> back to wiki page
+<div .comment :is_unapproved:.unapproved :is_top_level:.top_level :is_even_depth:.even_depth :is_odd_depth:.odd_depth>
+    <div>
+        <div .comment-head>
+            $maybe author_avatar <- userAvatar user
+                <a href="@{UserR user_id}">
+                    <img .small_avatar src="#{author_avatar}"> #
+            <a href="@{UserR user_id}">
+                #{userPrintName (Entity user_id user)}
+        <div .comment-head>
+            $maybe moderated_ts <- commentModeratedTs comment
+                ^{renderTime moderated_ts}
+            $nothing
+                ^{renderTime $ commentCreatedTs comment}
+        <div .comment-head :not show_actions:.preview>
+            |
+        <div .comment-head :not show_actions:.preview>
+            <a href="@{DiscussCommentR project_handle target comment_id}">
+                permalink
+        $maybe parent_id <- commentParent comment
+            <div .comment-head :not show_actions:.preview>
+                |
+            <div .comment-head :not show_actions:.preview>
+                <a href="@{DiscussCommentR project_handle target parent_id}">
+                    parent
 
-<hr .wikitop>
+    <div :not show_actions:.preview>
 
-^{comment}
+        $if can_edit
+            <div .comment-action>
+                <a href="@{EditCommentR project_handle target comment_id}">
+                    edit
+
+        $if can_delete
+            <div .comment-action>
+                <a href="@{DeleteCommentR project_handle target comment_id}">
+                    delete
+
+        $if can_retract
+            <div .comment-action>
+                <a href="@{RetractWikiCommentR project_handle target comment_id}" style="color: darkred">
+                    retract
+
+    $maybe Entity ticket_id _ <- mticket
+        <div .ticket>SD-#{toPathPiece ticket_id}
+
+    $forall closure <- earlier_closures
+        $case commentClosureType closure
+            $of Retracted
+                <div .retracted>
+                    A comment above this one was retracted ^{renderTime (commentClosureTs closure)}
+                    ^{markdownWidget project_handle (commentClosureReason closure)}
+
+            $of Closed
+                <div .closed>
+                    A comment above this one was closed at ^{renderTime (commentClosureTs closure)}
+                    ^{markdownWidget project_handle (commentClosureReason closure)}
+
+    $maybe closure <- mclosure
+        $case commentClosureType closure
+            $of Retracted
+                <div .retracted>
+                    The author retracted this comment ^{renderTime (commentClosureTs closure)}
+                    ^{markdownWidget project_handle (commentClosureReason closure)}
+
+            $of Closed
+                <div .closed>
+                    $if commentClosureClosedBy closure == user_id
+                        The author
+                    $else
+                        ^{userWidget $ commentClosureClosedBy closure}
+                    \ closed this comment ^{renderTime (commentClosureTs closure)}
+                    ^{markdownWidget project_handle (commentClosureReason closure)}
+
+    $maybe (mflag_markdown, flag_reasons) <- mflag
+        <div .flagged>
+            A user flagged this comment as a violation of the
+            <a href="@{WikiR "snowdrift" "conduct"}">
+                Code of Conduct
+            due to:
+            <div .flag-reasons>#{T.intercalate ", " $ map descFlagReason flag_reasons}
+            $maybe flag_markdown <- mflag_markdown
+                <div .flag-markdown>
+                    Additional comments:
+                    #{flag_markdown}
+            <i>Please edit to address these concerns and repost.
+
+    ^{markdownWidget project_handle (commentText comment)}
+
+    <div>
+        $forall tag <- tags
+            ^{tagWidget tag}
+
+    <div :not show_actions:.preview>
+
+        $if can_close
+            <div .comment-action>
+                <a href="@{CloseWikiCommentR project_handle target comment_id}" style="color: goldenrod">
+                    close
+
+        $if can_rethread
+            <div .comment-action>
+                <a href="@{RethreadWikiCommentR project_handle target comment_id}">
+                    rethread
+
+        $if can_add_tag
+            <div .comment-action>
+                <a href="@{NewCommentTagR project_handle target comment_id}">
+                    tag
+
+        $if can_flag
+            <div .comment-action>
+                <a href="@{FlagCommentR project_handle target comment_id}">
+                    flag
+
+        $if can_reply
+            <div .comment-action>
+                <a href="@{ReplyCommentR project_handle target comment_id}">
+                    reply
+
+    <div :not show_actions:.preview>
+        $if is_mod
+            $if is_unapproved
+                <div .comment-action>
+                    <a href="@{ApproveWikiCommentR project_handle target comment_id}" style="color: green">
+                        approve
+
+            $if can_establish
+                <div .comment-action>
+                    <a href="@{UserR user_id}" style="color: green">
+                        establish user
+
+
+    ^{inner_widget}

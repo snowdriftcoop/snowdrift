@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE FlexibleContexts #-}
 module DiscussionTest
     ( discussionSpecs
     ) where
@@ -25,12 +26,11 @@ discussionSpecs = do
             [ form ] <- htmlQuery "form"
 
             let getAttrs = XML.elementAttributes . XML.documentRoot . HTML.parseLBS
-                Just action = M.lookup "action" $ getAttrs form
 
             request $ do
                 addNonce
                 setMethod "POST"
-                setUrl action
+                maybe (setUrl route) setUrl (M.lookup "action" $ getAttrs form)
                 addPostParam "mode" "post"
                 stmts
 
@@ -167,6 +167,6 @@ discussionSpecs = do
             let new_url = BSC.unpack location
                 desired_url = "http://localhost:3000/p/snowdrift/w/intro/c/" ++ (\ (PersistInt64 i) -> show i) (unKey newId)
 
-            assertEqual ("Redirect not matching! (" ++ show new_url ++ " /=  " ++ show desired_url ++ ")") new_url desired_url 
-                
+            assertEqual ("Redirect not matching! (" ++ show new_url ++ " /=  " ++ show desired_url ++ ")") new_url desired_url
+
 

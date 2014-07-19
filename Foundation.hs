@@ -404,7 +404,7 @@ addAlertEm level msg em = do
 addAlert :: Text -> Text -> Handler ()
 addAlert level msg = do
     render <- getUrlRenderParams
-    prev <- lookupSession alertKey
+    prev   <- lookupSession alertKey
 
     setSession alertKey $ maybe id mappend prev $ TL.toStrict $ renderHtml $ [hamlet|
         $newline never

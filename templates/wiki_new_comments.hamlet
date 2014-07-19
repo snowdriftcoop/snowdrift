@@ -1,4 +1,9 @@
 $if isJust mviewer
+    $if not (null unapproved_comments)
+        <h3>
+            unapproved comments
+        ^{rendered_unapproved_comments}
+
     $if null new_comments
         <h3>
             no new comments

@@ -19,7 +19,6 @@ getUserR user_id = do
 
     projects_and_roles <- runDB $ getProjectsAndRoles user_id
 
-    setUltDestCurrent -- establishment form redirects to ultimate dest.
     defaultLayout $ do
         setTitle . toHtml $ "User Profile - " <> userPrintName (Entity user_id user) <> " | Snowdrift.coop"
         renderUser mviewer_id user_id user projects_and_roles
@@ -61,7 +60,7 @@ postUserR user_id = do
                     (form, _) <- generateFormPost $ editUserForm updated_user
 
                     defaultLayout $
-                        renderPreview form action $
+                        previewWidget form action $
                             renderUser (Just viewer_id) user_id updated_user mempty
 
                 Just x | x == action -> do

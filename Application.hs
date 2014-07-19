@@ -40,33 +40,33 @@ import Version
 
 -- Import all relevant handler modules here.
 -- Don't forget to add new modules to your cabal file!
-import Handler.Home
-import Handler.User
-import Handler.Widget
-import Handler.Project
-import Handler.Invitation
-import Handler.Invite
-import Handler.UpdateShares
-import Handler.Volunteer
-import Handler.Contact
-import Handler.Who
-import Handler.PostLogin
-import Handler.ToU
-import Handler.Privacy
-import Handler.Messages
+
 import Handler.Application
 import Handler.Applications
+import Handler.BuildFeed
+import Handler.Contact
+import Handler.Home
+import Handler.HonorPledge
+import Handler.Invitation
+import Handler.Invite
 import Handler.JsLicense
 import Handler.MarkdownTutorial
+import Handler.Messages
+import Handler.PostLogin
+import Handler.Privacy
+import Handler.Project
+import Handler.RepoFeed
+import Handler.Tickets
+import Handler.ToU
+import Handler.UpdateShares
+import Handler.User
 import Handler.UserBalance
 import Handler.UserPledges
+import Handler.Volunteer
+import Handler.Who
+import Handler.Widget
 import Handler.Wiki
-import Handler.Discussion
-import Handler.Tags
-import Handler.Tickets
-import Handler.RepoFeed
-import Handler.BuildFeed
-import Handler.HonorPledge
+import Handler.Wiki.Comment
 
 import Widgets.Navbar
 

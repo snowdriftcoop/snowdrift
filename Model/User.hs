@@ -1,5 +1,6 @@
 module Model.User
-    ( UserUpdate(..)
+    ( UserMap
+    , UserUpdate(..)
     , applyUserUpdate
     , canCurUserMakeEligible
     , canMakeEligible
@@ -33,6 +34,8 @@ import qualified Data.Map       as M
 import qualified Data.Set       as S
 import qualified Data.Text      as T
 import           Yesod.Markdown (Markdown(..))
+
+type UserMap = Map UserId User
 
 data UserUpdate =
     UserUpdate
@@ -93,14 +96,21 @@ isCurUserEligibleEstablish :: Handler Bool
 isCurUserEligibleEstablish = maybe False (isEligibleEstablish . entityVal) <$> maybeAuth
 
 -- | Establish a user, given their eligible-timestamp and reason for
--- eligibility.
+-- eligibility. Mark all unmoderated comments of theirs as moderated.
 establishUser :: UserId -> UTCTime -> Text -> YesodDB App ()
 establishUser user_id elig_time reason = do
     est_time <- liftIO getCurrentTime
+
     let est = EstEstablished elig_time est_time reason
     update $ \u -> do
         set u [ UserEstablished =. val est ]
         where_ (u ^. UserId ==. val user_id)
+
+    update $ \c -> do
+        set c [ CommentModeratedTs =. just (val est_time)
+              , CommentModeratedBy =. just (val user_id)
+              ]
+        where_ (c ^. CommentUser ==. val user_id)
 
 -- | Make a user eligible for establishment. Put a message in their inbox
 -- instructing them to read and accept the honor pledge.
@@ -119,9 +129,6 @@ eligEstablishUser establisher_id user_id reason = do
   where
     message_text :: Markdown
     message_text = Markdown $ T.unlines
-        -- "Because" <> reason <> ","
-        -- That reason could be added when we find a good way to fit it in,
-        -- but for now it is just stored in the database
         [ "You are now eligible to become an *established* user."
         , ""
         , "After you [accept the honor pledge](/honor-pledge), you can comment and take other actions on the site without moderation."
