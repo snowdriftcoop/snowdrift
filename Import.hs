@@ -25,8 +25,6 @@ import qualified Data.Text                     as T
 import qualified Data.Text.Lazy                as TL
 import           Data.Time.Clock               as Import (UTCTime, diffUTCTime, getCurrentTime)
 import           Data.Time.Units
-import           Model.Established.Internal as Import
-import           Model.Role.Internal        as Import
 import           Data.Typeable (Typeable)
 import           Database.Esqueleto            as Import hiding (on, valList)
 import qualified Database.Esqueleto

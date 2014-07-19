@@ -170,7 +170,7 @@ getProjectTagList project_id = (,) <$> getProjectTags <*> getOtherTags
 getProjectWikiPages :: ProjectId ->  YesodDB App [Entity WikiPage]
 getProjectWikiPages project_id =
     select $
-    from $ \(p `InnerJoin` wp) -> do
-    on_ (p ^. ProjectId ==. wp ^. WikiPageProject)
+    from $ \ wp -> do
+    where_ $ wp ^. WikiPageProject ==. val project_id
     orderBy [asc (wp ^. WikiPageTarget)]
     return wp

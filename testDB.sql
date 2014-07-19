@@ -3,7 +3,6 @@
 --
 
 SET statement_timeout = 0;
-SET lock_timeout = 0;
 SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
 SET check_function_bodies = false;
@@ -151,8 +150,7 @@ CREATE TABLE comment (
     "user" bigint NOT NULL,
     text character varying NOT NULL,
     depth bigint NOT NULL,
-    discussion bigint NOT NULL,
-    rethreaded bigint
+    discussion bigint NOT NULL
 );
 
 
@@ -207,6 +205,78 @@ CREATE TABLE comment_closure (
 
 
 ALTER TABLE public.comment_closure OWNER TO snowdrift_test;
+
+--
+-- Name: comment_flagging; Type: TABLE; Schema: public; Owner: snowdrift_test; Tablespace: 
+--
+
+CREATE TABLE comment_flagging (
+    id integer NOT NULL,
+    ts timestamp without time zone NOT NULL,
+    flagger bigint NOT NULL,
+    comment bigint NOT NULL,
+    project_handle character varying NOT NULL,
+    target character varying NOT NULL,
+    message character varying
+);
+
+
+ALTER TABLE public.comment_flagging OWNER TO snowdrift_test;
+
+--
+-- Name: comment_flagging_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
+--
+
+CREATE SEQUENCE comment_flagging_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.comment_flagging_id_seq OWNER TO snowdrift_test;
+
+--
+-- Name: comment_flagging_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
+--
+
+ALTER SEQUENCE comment_flagging_id_seq OWNED BY comment_flagging.id;
+
+
+--
+-- Name: comment_flagging_reason; Type: TABLE; Schema: public; Owner: snowdrift_test; Tablespace: 
+--
+
+CREATE TABLE comment_flagging_reason (
+    id integer NOT NULL,
+    flagging bigint NOT NULL,
+    reason character varying NOT NULL
+);
+
+
+ALTER TABLE public.comment_flagging_reason OWNER TO snowdrift_test;
+
+--
+-- Name: comment_flagging_reason_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
+--
+
+CREATE SEQUENCE comment_flagging_reason_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.comment_flagging_reason_id_seq OWNER TO snowdrift_test;
+
+--
+-- Name: comment_flagging_reason_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
+--
+
+ALTER SEQUENCE comment_flagging_reason_id_seq OWNED BY comment_flagging_reason.id;
+
 
 --
 -- Name: comment_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -755,6 +825,42 @@ CREATE TABLE pledge (
 ALTER TABLE public.pledge OWNER TO snowdrift_test;
 
 --
+-- Name: pledge_form_rendered; Type: TABLE; Schema: public; Owner: snowdrift_test; Tablespace: 
+--
+
+CREATE TABLE pledge_form_rendered (
+    id integer NOT NULL,
+    ts timestamp without time zone NOT NULL,
+    "order" character varying NOT NULL,
+    project bigint NOT NULL,
+    "user" bigint
+);
+
+
+ALTER TABLE public.pledge_form_rendered OWNER TO snowdrift_test;
+
+--
+-- Name: pledge_form_rendered_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
+--
+
+CREATE SEQUENCE pledge_form_rendered_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.pledge_form_rendered_id_seq OWNER TO snowdrift_test;
+
+--
+-- Name: pledge_form_rendered_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
+--
+
+ALTER SEQUENCE pledge_form_rendered_id_seq OWNED BY pledge_form_rendered.id;
+
+
+--
 -- Name: pledge_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
 --
 
@@ -1098,6 +1204,42 @@ ALTER TABLE public.role_event_id_seq OWNER TO snowdrift_test;
 --
 
 ALTER SEQUENCE role_event_id_seq OWNED BY role_event.id;
+
+
+--
+-- Name: shares_pledged; Type: TABLE; Schema: public; Owner: snowdrift_test; Tablespace: 
+--
+
+CREATE TABLE shares_pledged (
+    id integer NOT NULL,
+    ts timestamp without time zone NOT NULL,
+    "user" bigint NOT NULL,
+    shares bigint NOT NULL,
+    render bigint NOT NULL
+);
+
+
+ALTER TABLE public.shares_pledged OWNER TO snowdrift_test;
+
+--
+-- Name: shares_pledged_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
+--
+
+CREATE SEQUENCE shares_pledged_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.shares_pledged_id_seq OWNER TO snowdrift_test;
+
+--
+-- Name: shares_pledged_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
+--
+
+ALTER SEQUENCE shares_pledged_id_seq OWNED BY shares_pledged.id;
 
 
 --
@@ -1618,6 +1760,20 @@ ALTER TABLE ONLY comment_closure ALTER COLUMN id SET DEFAULT nextval('comment_re
 -- Name: id; Type: DEFAULT; Schema: public; Owner: snowdrift_test
 --
 
+ALTER TABLE ONLY comment_flagging ALTER COLUMN id SET DEFAULT nextval('comment_flagging_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: snowdrift_test
+--
+
+ALTER TABLE ONLY comment_flagging_reason ALTER COLUMN id SET DEFAULT nextval('comment_flagging_reason_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: snowdrift_test
+--
+
 ALTER TABLE ONLY comment_rethread ALTER COLUMN id SET DEFAULT nextval('comment_rethread_id_seq'::regclass);
 
 
@@ -1723,6 +1879,13 @@ ALTER TABLE ONLY pledge ALTER COLUMN id SET DEFAULT nextval('pledge_id_seq'::reg
 -- Name: id; Type: DEFAULT; Schema: public; Owner: snowdrift_test
 --
 
+ALTER TABLE ONLY pledge_form_rendered ALTER COLUMN id SET DEFAULT nextval('pledge_form_rendered_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: snowdrift_test
+--
+
 ALTER TABLE ONLY project ALTER COLUMN id SET DEFAULT nextval('project_id_seq'::regclass);
 
 
@@ -1780,6 +1943,13 @@ ALTER TABLE ONLY rethread ALTER COLUMN id SET DEFAULT nextval('rethread_id_seq':
 --
 
 ALTER TABLE ONLY role_event ALTER COLUMN id SET DEFAULT nextval('role_event_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: snowdrift_test
+--
+
+ALTER TABLE ONLY shares_pledged ALTER COLUMN id SET DEFAULT nextval('shares_pledged_id_seq'::regclass);
 
 
 --
@@ -1968,11 +2138,11 @@ SELECT pg_catalog.setval('build_id_seq', 58, true);
 -- Data for Name: comment; Type: TABLE DATA; Schema: public; Owner: snowdrift_test
 --
 
-COPY comment (id, created_ts, moderated_ts, moderated_by, parent, "user", text, depth, discussion, rethreaded) FROM stdin;
-1	2014-01-21 18:11:03.914397	2014-01-21 18:12:36.696658	1	\N	1	This is a comment.	0	2	\N
-2	2014-01-21 18:13:00.273315	2014-01-21 18:13:10.464805	1	1	1	Replies are threaded.	1	2	\N
-3	2014-01-21 18:13:57.732222	\N	\N	\N	1	When a comment is posted by an unestablished user, it is marked for moderation and only shown to moderators.	0	2	\N
-4	2014-01-21 18:15:30.945499	2014-01-21 18:15:37.484472	1	\N	1	adding a line starting with "ticket:" such as\n\nticket: this is a ticket\n\nmakes the post show up at /t where all the tickets are listed	0	2	\N
+COPY comment (id, created_ts, moderated_ts, moderated_by, parent, "user", text, depth, discussion) FROM stdin;
+1	2014-01-21 18:11:03.914397	2014-01-21 18:12:36.696658	1	\N	1	This is a comment.	0	2
+2	2014-01-21 18:13:00.273315	2014-01-21 18:13:10.464805	1	1	1	Replies are threaded.	1	2
+3	2014-01-21 18:13:57.732222	\N	\N	\N	1	When a comment is posted by an unestablished user, it is marked for moderation and only shown to moderators.	0	2
+4	2014-01-21 18:15:30.945499	2014-01-21 18:15:37.484472	1	\N	1	adding a line starting with "ticket:" such as\n\nticket: this is a ticket\n\nmakes the post show up at /t where all the tickets are listed	0	2
 \.
 
 
@@ -1998,6 +2168,36 @@ SELECT pg_catalog.setval('comment_ancestor_id_seq', 1, true);
 
 COPY comment_closure (id, ts, reason, comment, closed_by, type) FROM stdin;
 \.
+
+
+--
+-- Data for Name: comment_flagging; Type: TABLE DATA; Schema: public; Owner: snowdrift_test
+--
+
+COPY comment_flagging (id, ts, flagger, comment, project_handle, target, message) FROM stdin;
+\.
+
+
+--
+-- Name: comment_flagging_id_seq; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_test
+--
+
+SELECT pg_catalog.setval('comment_flagging_id_seq', 1, false);
+
+
+--
+-- Data for Name: comment_flagging_reason; Type: TABLE DATA; Schema: public; Owner: snowdrift_test
+--
+
+COPY comment_flagging_reason (id, flagging, reason) FROM stdin;
+\.
+
+
+--
+-- Name: comment_flagging_reason_id_seq; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_test
+--
+
+SELECT pg_catalog.setval('comment_flagging_reason_id_seq', 1, false);
 
 
 --
@@ -2079,7 +2279,7 @@ SELECT pg_catalog.setval('committee_user_id_seq', 1, false);
 --
 
 COPY database_version (id, last_migration) FROM stdin;
-1	12
+1	14
 \.
 
 
@@ -2241,6 +2441,21 @@ COPY pledge (id, "user", project, shares, funded_shares) FROM stdin;
 
 
 --
+-- Data for Name: pledge_form_rendered; Type: TABLE DATA; Schema: public; Owner: snowdrift_test
+--
+
+COPY pledge_form_rendered (id, ts, "order", project, "user") FROM stdin;
+\.
+
+
+--
+-- Name: pledge_form_rendered_id_seq; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_test
+--
+
+SELECT pg_catalog.setval('pledge_form_rendered_id_seq', 1, false);
+
+
+--
 -- Name: pledge_id_seq; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_test
 --
 
@@ -2394,6 +2609,21 @@ SELECT pg_catalog.setval('role_event_id_seq', 3, true);
 
 
 --
+-- Data for Name: shares_pledged; Type: TABLE DATA; Schema: public; Owner: snowdrift_test
+--
+
+COPY shares_pledged (id, ts, "user", shares, render) FROM stdin;
+\.
+
+
+--
+-- Name: shares_pledged_id_seq; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_test
+--
+
+SELECT pg_catalog.setval('shares_pledged_id_seq', 1, false);
+
+
+--
 -- Data for Name: tag; Type: TABLE DATA; Schema: public; Owner: snowdrift_test
 --
 
@@ -2459,9 +2689,9 @@ SELECT pg_catalog.setval('transaction_id_seq', 1, false);
 -- Data for Name: user; Type: TABLE DATA; Schema: public; Owner: snowdrift_test
 --
 
-COPY "user" (id, ident, hash, salt, name, account, avatar, blurb, statement, irc_nick, read_messages, read_applications, read_comments, read_edits, established_ts, established_reason, created_ts) FROM stdin;
-2	test	a090d14299acd2b596b64fb5a46d3587ece359d8	_>4icWF[	Test	3	\N	\N	\N	\N	2014-02-24 01:58:57.856901	2014-02-24 01:58:57.856901	2014-02-24 01:58:57.856901	2014-02-24 01:58:57.856901	\N	\N	2014-02-24 01:58:57.856901
-1	admin	8bf2d491387febc07e5d8fd15a4140b28473566e	P^YTN3G:	Admin	1	\N	Admin is the name for the test user in our devDB database that comes with the code. Log in as admin with passphrase: admin	\N	\N	2014-01-21 22:58:23.380462	2013-11-23 19:31:18.982213	2013-11-23 19:31:18.982213	2013-11-23 19:31:18.982213	2014-01-24 15:28:15.681117	you rock!	\N
+COPY "user" (id, ident, hash, salt, name, account, avatar, blurb, statement, irc_nick, read_messages, read_applications, read_comments, read_edits, created_ts, established) FROM stdin;
+1	admin	8bf2d491387febc07e5d8fd15a4140b28473566e	P^YTN3G:	Admin	1	\N	Admin is the name for the test user in our devDB database that comes with the code. Log in as admin with passphrase: admin	\N	\N	2014-01-21 22:58:23.380462	2013-11-23 19:31:18.982213	2013-11-23 19:31:18.982213	2013-11-23 19:31:18.982213	\N	EstUnestablished
+2	test	a090d14299acd2b596b64fb5a46d3587ece359d8	_>4icWF[	Test	3	\N	\N	\N	\N	2014-02-24 01:58:57.856901	2014-02-24 01:58:57.856901	2014-02-24 01:58:57.856901	2014-02-24 01:58:57.856901	2014-02-24 01:58:57.856901	EstUnestablished
 \.
 
 
@@ -2635,6 +2865,22 @@ ALTER TABLE ONLY comment_ancestor
 
 
 --
+-- Name: comment_flagging_pkey; Type: CONSTRAINT; Schema: public; Owner: snowdrift_test; Tablespace: 
+--
+
+ALTER TABLE ONLY comment_flagging
+    ADD CONSTRAINT comment_flagging_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: comment_flagging_reason_pkey; Type: CONSTRAINT; Schema: public; Owner: snowdrift_test; Tablespace: 
+--
+
+ALTER TABLE ONLY comment_flagging_reason
+    ADD CONSTRAINT comment_flagging_reason_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: comment_pkey; Type: CONSTRAINT; Schema: public; Owner: snowdrift_test; Tablespace: 
 --
 
@@ -2763,6 +3009,14 @@ ALTER TABLE ONLY payday
 
 
 --
+-- Name: pledge_form_rendered_pkey; Type: CONSTRAINT; Schema: public; Owner: snowdrift_test; Tablespace: 
+--
+
+ALTER TABLE ONLY pledge_form_rendered
+    ADD CONSTRAINT pledge_form_rendered_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: pledge_pkey; Type: CONSTRAINT; Schema: public; Owner: snowdrift_test; Tablespace: 
 --
 
@@ -2843,6 +3097,14 @@ ALTER TABLE ONLY role_event
 
 
 --
+-- Name: shares_pledged_pkey; Type: CONSTRAINT; Schema: public; Owner: snowdrift_test; Tablespace: 
+--
+
+ALTER TABLE ONLY shares_pledged
+    ADD CONSTRAINT shares_pledged_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: tag_color_pkey; Type: CONSTRAINT; Schema: public; Owner: snowdrift_test; Tablespace: 
 --
 
@@ -2880,6 +3142,22 @@ ALTER TABLE ONLY transaction
 
 ALTER TABLE ONLY comment_ancestor
     ADD CONSTRAINT unique_comment_ancestor UNIQUE (comment, ancestor);
+
+
+--
+-- Name: unique_comment_flagging; Type: CONSTRAINT; Schema: public; Owner: snowdrift_test; Tablespace: 
+--
+
+ALTER TABLE ONLY comment_flagging
+    ADD CONSTRAINT unique_comment_flagging UNIQUE (comment);
+
+
+--
+-- Name: unique_comment_flagging_reason; Type: CONSTRAINT; Schema: public; Owner: snowdrift_test; Tablespace: 
+--
+
+ALTER TABLE ONLY comment_flagging_reason
+    ADD CONSTRAINT unique_comment_flagging_reason UNIQUE (flagging, reason);
 
 
 --
@@ -3193,6 +3471,30 @@ ALTER TABLE ONLY comment
 
 
 --
+-- Name: comment_flagging_comment_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_test
+--
+
+ALTER TABLE ONLY comment_flagging
+    ADD CONSTRAINT comment_flagging_comment_fkey FOREIGN KEY (comment) REFERENCES comment(id);
+
+
+--
+-- Name: comment_flagging_flagger_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_test
+--
+
+ALTER TABLE ONLY comment_flagging
+    ADD CONSTRAINT comment_flagging_flagger_fkey FOREIGN KEY (flagger) REFERENCES "user"(id);
+
+
+--
+-- Name: comment_flagging_reason_flagging_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_test
+--
+
+ALTER TABLE ONLY comment_flagging_reason
+    ADD CONSTRAINT comment_flagging_reason_flagging_fkey FOREIGN KEY (flagging) REFERENCES comment_flagging(id);
+
+
+--
 -- Name: comment_moderated_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_test
 --
 
@@ -3238,14 +3540,6 @@ ALTER TABLE ONLY comment_rethread
 
 ALTER TABLE ONLY comment_rethread
     ADD CONSTRAINT comment_rethread_rethread_fkey FOREIGN KEY (rethread) REFERENCES rethread(id);
-
-
---
--- Name: comment_rethreaded_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_test
---
-
-ALTER TABLE ONLY comment
-    ADD CONSTRAINT comment_rethreaded_fkey FOREIGN KEY (rethreaded) REFERENCES rethread(id);
 
 
 --
@@ -3406,6 +3700,22 @@ ALTER TABLE ONLY message
 
 ALTER TABLE ONLY message
     ADD CONSTRAINT message_to_fkey FOREIGN KEY ("to") REFERENCES "user"(id);
+
+
+--
+-- Name: pledge_form_rendered_project_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_test
+--
+
+ALTER TABLE ONLY pledge_form_rendered
+    ADD CONSTRAINT pledge_form_rendered_project_fkey FOREIGN KEY (project) REFERENCES project(id);
+
+
+--
+-- Name: pledge_form_rendered_user_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_test
+--
+
+ALTER TABLE ONLY pledge_form_rendered
+    ADD CONSTRAINT pledge_form_rendered_user_fkey FOREIGN KEY ("user") REFERENCES "user"(id);
 
 
 --
@@ -3574,6 +3884,22 @@ ALTER TABLE ONLY role_event
 
 ALTER TABLE ONLY role_event
     ADD CONSTRAINT role_event_user_fkey FOREIGN KEY ("user") REFERENCES "user"(id);
+
+
+--
+-- Name: shares_pledged_render_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_test
+--
+
+ALTER TABLE ONLY shares_pledged
+    ADD CONSTRAINT shares_pledged_render_fkey FOREIGN KEY (render) REFERENCES pledge_form_rendered(id);
+
+
+--
+-- Name: shares_pledged_user_fkey; Type: FK CONSTRAINT; Schema: public; Owner: snowdrift_test
+--
+
+ALTER TABLE ONLY shares_pledged
+    ADD CONSTRAINT shares_pledged_user_fkey FOREIGN KEY ("user") REFERENCES "user"(id);
 
 
 --
