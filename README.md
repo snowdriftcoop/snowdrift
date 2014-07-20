@@ -34,7 +34,9 @@ For those experienced with Git, Haskell, PostgreSQL, and perhaps even Yesod,
 here's a quick-and-dirty init script:
 
 ```
-// Install GHC 7.8.2, Yesod, PostgreSQL, other dependencies, update cabal, set PATH, etc. — see GUIDE.md
+// Install any dependencies you don't have:
+// GHC **7.8.2**, cabal, PostgreSQL, zlib1g-dev, libpq-dev, happy, alex, llvm
+// update cabal, set PATH, etc. — see GUIDE.md for more detailed instructions
 
 // Fork, clone and install
 git clone [your remote address, e.g. git@gitorious.org:snowdrift/yourusername-snowdrift.git]
