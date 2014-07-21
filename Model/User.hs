@@ -106,11 +106,14 @@ establishUser user_id elig_time reason = do
         set u [ UserEstablished =. val est ]
         where_ (u ^. UserId ==. val user_id)
 
+    -- Automatically approve all unapproved comments.
     update $ \c -> do
         set c [ CommentModeratedTs =. just (val est_time)
               , CommentModeratedBy =. just (val user_id)
               ]
-        where_ (c ^. CommentUser ==. val user_id)
+        where_ $
+            c ^. CommentUser ==. val user_id &&.
+            isNothing (c ^. CommentModeratedTs)
 
 -- | Make a user eligible for establishment. Put a message in their inbox
 -- instructing them to read and accept the honor pledge.
