@@ -112,9 +112,11 @@ processWikiCommentPreview maybe_parent_id text (Entity _ project) page = do
 
     depth <- depthFromMaybeParentId maybe_parent_id
     now <- liftIO getCurrentTime
-    let comment =
+    let (moderated_ts, moderated_by) = if isEstablished user then (Just now, Just user_id) else (Nothing, Nothing)
+
+        comment =
           Entity (Key $ PersistInt64 0) $
-            Comment now Nothing Nothing (wikiPageDiscussion page) maybe_parent_id user_id text depth
+            Comment now moderated_ts moderated_by (wikiPageDiscussion page) maybe_parent_id user_id text depth
 
         rendered_comment = let project_handle = projectHandle project
                                target         = wikiPageTarget page
