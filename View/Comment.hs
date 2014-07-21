@@ -255,22 +255,24 @@ makeViewerPermissions :: Entity User    -- comment poster
                                  )
 makeViewerPermissions (Entity poster_id poster) project_handle target comment_entity@(Entity comment_id comment) = do
     Just current_route <- getCurrentRoute
-    let can_reply = not (current_route == ReplyCommentR project_handle target comment_id)
+    let is_reply_route = current_route == ReplyCommentR project_handle target comment_id
 
     maybeAuth >>= \case
-        Nothing -> return (False, False, can_reply, False, False, False, False, False, False, False)
+        Nothing -> return (False, False, not is_reply_route, False, False, False, False, False, False, False)
         Just (Entity viewer_id viewer) -> do
-            (is_mod, can_delete) <- runDB $ (,)
+            (is_mod, can_delete, is_flagged) <- runDB $ (,,)
                 <$> isProjectModerator project_handle viewer_id
                 <*> canDeleteComment viewer_id comment_entity
+                <*> isFlagged comment_id
 
             let can_establish = is_mod && estIsUnestablished (userEstablished poster)
+                can_reply     = not is_reply_route && not is_flagged
                 can_retract   = poster_id == viewer_id
                 can_close     = isEstablished viewer
                 can_edit      = canEditComment viewer_id comment
                 can_rethread  = poster_id == viewer_id || is_mod
                 can_add_tag   = isEstablished viewer
-                can_flag      = isEstablished viewer && viewer_id /= poster_id
+                can_flag      = isEstablished viewer && viewer_id /= poster_id && not is_flagged
 
             return (is_mod, can_establish, can_reply, can_retract, can_close, can_edit,
                     can_delete, can_rethread, can_add_tag, can_flag)
