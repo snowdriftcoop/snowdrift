@@ -140,7 +140,7 @@ Yesod also requires a few other items such as "happy" and "alex".
 
 On Debian-based GNU/Linux distros, the full install command is:
 
-    sudo apt-get install ghc cabal-install haskell-platform postgresql zlib1g-dev libpq-dev happy alex
+    sudo apt-get install ghc cabal-install haskell-platform postgresql zlib1g-dev libpq-dev happy alex llvm
 
 **Note: we are now using GHC 7.8.2**
 The Haskell Platform has not yet updated to it, but many systems have.
