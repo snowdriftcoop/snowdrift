@@ -10,7 +10,7 @@
 
 $if not has_comments
     $if isJust muser
-        <form action="@{DiscussWikiR project_handle target}" method="POST">
+        <form action="@{NewDiscussWikiR project_handle target}" method="POST">
             ^{comment_form}
             <input type="submit" name="mode" value="preview">
     $else
