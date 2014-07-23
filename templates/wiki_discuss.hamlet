@@ -1,9 +1,12 @@
 <div .row>
-    <div .col-sm-6>
+    <div .col-sm-4>
         <a href="@{WikiR project_handle target}"> back to wiki page
     $if has_comments
-        <div .col-sm-6>
-            <a href="@{NewDiscussWikiR project_handle target}"> new discussion topic
+        <div .col-sm-4>
+            <a href="@{NewDiscussWikiR project_handle target}"> new topic
+    <div .col-sm-4>
+        <a href="@{DiscussWikiR project_handle target}?state=closed">
+            closed threads
 <hr .wikitop>
 
 ^{comments}

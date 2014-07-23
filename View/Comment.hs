@@ -68,7 +68,7 @@ rethreadForm = renderBootstrap3 $ (,)
     <*> areq' textField "Reason" Nothing
 
 createCommentTagForm :: Form Text
-createCommentTagForm = renderBootstrap3 $ areq textField "" Nothing
+createCommentTagForm = renderBootstrap3 $ areq' textField "" Nothing
 
 newCommentTagForm :: [Entity Tag] -> [Entity Tag] -> Form (Maybe [TagId], Maybe [TagId])
 newCommentTagForm project_tags other_tags = renderBootstrap3 $ (,)
@@ -83,8 +83,8 @@ closedForm, retractedForm :: Maybe Markdown -> Form Markdown
 closedForm    = requiredMarkdownForm "Reason for closing:"
 retractedForm = requiredMarkdownForm "Reason for retracting:"
 
-requiredMarkdownForm :: FieldSettings App -> Maybe Markdown -> Form Markdown
-requiredMarkdownForm settings = renderBootstrap3 . areq snowdriftMarkdownField settings
+requiredMarkdownForm :: SomeMessage App -> Maybe Markdown -> Form Markdown
+requiredMarkdownForm settings = renderBootstrap3 . areq' snowdriftMarkdownField settings
 
 flagCommentForm :: Maybe (Maybe [FlagReason]) -> Maybe (Maybe Markdown) -> Form (Maybe [FlagReason], Maybe Markdown)
 flagCommentForm def_reasons def_message = renderBootstrap3 $ (,) <$> flagReasonsForm <*> additionalCommentsForm
