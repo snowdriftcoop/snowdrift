@@ -16,7 +16,7 @@ $else
                 <a href="@{WikiHistoryR project_handle target}">history
             <div .col-xs-6>
                 <a href="@{DiscussWikiR project_handle target}">
-                    view discussion
+                    discussion
                     <span .badge>
                         #{comment_count}
 <hr .wikitop>
