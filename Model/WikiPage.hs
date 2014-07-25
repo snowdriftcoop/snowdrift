@@ -4,7 +4,7 @@ module Model.WikiPage
 
 import Import
 
-import Model.Comment (exprPermissionFilter, exprUnapproved, makeViewerInfo)
+import Model.Comment
 import Model.Project (getProjectPages)
 
 -- | Get the unapproved, new and old Comments on all WikiPages of Project. Takes a

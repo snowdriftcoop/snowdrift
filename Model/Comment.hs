@@ -555,7 +555,9 @@ exprOnDiscussion discussion_id c = c ^. CommentDiscussion ==. val discussion_id
 -- The logic here is DUPLICATED (in Haskell land) in Handler.Wiki.Comment.checkCommentPage
 -- (because that function only fetches the root comment via Database.Persist.get) - all
 -- changes here must be reflected there, too!
-exprPermissionFilter :: Maybe (UserId, Bool) -> SqlExpr (Entity Comment) -> SqlExpr (Value Bool)
+exprPermissionFilter :: Maybe (UserId, Bool) -- Logged in? And if so, moderator?
+                     -> SqlExpr (Entity Comment)
+                     -> SqlExpr (Value Bool)
 exprPermissionFilter (Just (_,True))      c = exprNotRethreaded c
 exprPermissionFilter (Just (viewer_id,_)) c = exprNotRethreaded c &&. (exprApprovedAndNotFlagged c ||. exprPostedBy viewer_id c)
 exprPermissionFilter Nothing              c = exprNotRethreaded c &&. exprApprovedAndNotFlagged c

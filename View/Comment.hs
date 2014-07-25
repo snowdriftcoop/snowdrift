@@ -36,7 +36,7 @@ import qualified Data.Text                 as T
 import           Data.Tree
 
 disabledCommentForm :: Form Markdown
-disabledCommentForm = renderBootstrap3 $ areq' snowdriftMarkdownField ("Reply" { fsAttrs = [("disabled",""), ("class","form-control")] }) Nothing
+disabledCommentForm = renderBootstrap3 $ areq snowdriftMarkdownField ("Reply" { fsAttrs = [("disabled",""), ("class","form-control")] }) Nothing
 
 commentForm :: SomeMessage App -> Maybe Markdown -> Form Markdown
 commentForm label = renderBootstrap3 . areq' snowdriftMarkdownField label

@@ -16,7 +16,7 @@ import           Model.Tag            (getAllTagsMap)
 import           Model.User
 import           Model.ViewTime
 import           Model.ViewType
-import           Model.WikiPage       (getAllWikiComments)
+import           Model.WikiPage
 import           Widgets.Preview
 import           Widgets.Time
 import           View.Comment
@@ -285,22 +285,14 @@ getWikiNewEditsR project_handle = do
 getWikiR :: Text -> Text -> Handler Html
 getWikiR project_handle target = do
     maybe_user <- maybeAuth
-
     (Entity project_id project, Entity _ page) <- runYDB $ getPageInfo project_handle target
 
-    moderator <- case maybe_user of
-        Nothing -> return False
-        Just (Entity viewer_id _) ->
-            runDB $ isProjectModerator' viewer_id project_id
-
-    [Value (comment_count :: Int)] <- runDB $
-        select $
-        from $ \comment -> do
-        where_ $ foldl1 (&&.) $ catMaybes
-            [ Just $ comment ^. CommentDiscussion ==. val (wikiPageDiscussion page)
-            , if moderator then Nothing else Just $ not_ $ isNothing $ comment ^. CommentModeratedTs
-            ]
-        return countRows
+    comment_count <- runDB $ do
+        let muser_id      = entityKey <$> maybe_user
+            discussion_id = wikiPageDiscussion page
+        roots_ids <- map entityKey <$> getAllOpenRootComments muser_id project_id discussion_id
+        children <- getCommentsDescendants muser_id project_id roots_ids
+        return $ length roots_ids + length children
 
     let can_edit = fromMaybe False (isEstablished . entityVal <$> maybe_user)
 
