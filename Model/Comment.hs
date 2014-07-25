@@ -25,10 +25,13 @@ module Model.Comment
     , getCommentsDescendants
     , getCommentPage
     , getCommentPageId
+    , getCommentPageEntity'
     , getCommentRethread
     , getCommentTags
     , getCommentsUsers
     , getTags
+    , insertApprovedComment
+    , insertUnapprovedComment
     , isApproved
     , isEvenDepth
     , isFlagged
@@ -51,30 +54,91 @@ module Model.Comment
 
 import Import
 
-import           Model.User          (isProjectModerator')
+import           Model.Message
+import           Model.SnowdriftEvent
+import           Model.User                  (isProjectModerator')
 
-import qualified Control.Monad.State as St
-import           Data.Foldable       (Foldable)
-import qualified Data.Foldable       as F
-import qualified Data.Map            as M
-import qualified Data.Set            as S
-import qualified Data.Text           as T
+import qualified Control.Monad.State         as St
+import           Control.Monad.Writer.Strict (tell)
+import           Data.Foldable               (Foldable)
+import qualified Data.Foldable               as F
+import qualified Data.Map                    as M
+import           Data.Maybe                  (fromJust)
+import qualified Data.Set                    as S
+import qualified Data.Text                   as T
 import           Data.Tree
-import           GHC.Exts            (IsList(..))
-import           Prelude             (head)
-import           Yesod.Markdown      (Markdown(..))
+import           GHC.Exts                    (IsList(..))
+import           Yesod.Markdown              (Markdown(..))
 
 type ClosureMap = Map CommentId CommentClosure
 type TicketMap  = Map CommentId (Entity Ticket)
 type FlagMap    = Map CommentId (Maybe Markdown, [FlagReason])
 
-approveComment :: UserId -> CommentId -> YesodDB App ()
-approveComment user_id comment_id = liftIO getCurrentTime >>= \now ->
-    update $ \c -> do
-    set c [ CommentModeratedTs =. val (Just now)
-          , CommentModeratedBy =. val (Just user_id)
-          ]
-    where_ (c ^. CommentId ==. val comment_id)
+approveComment :: UserId -> CommentId -> Comment -> SDB ()
+approveComment user_id comment_id comment = do
+    lift upd
+    tell [ECommentPosted comment_id comment]
+  where
+    upd = liftIO getCurrentTime >>= \now ->
+        update $ \c -> do
+        set c [ CommentModeratedTs =. val (Just now)
+              , CommentModeratedBy =. val (Just user_id)
+              ]
+        where_ (c ^. CommentId ==. val comment_id)
+
+insertApprovedComment :: UTCTime
+                      -> UTCTime
+                      -> UserId
+                      -> DiscussionId
+                      -> Maybe CommentId
+                      -> UserId
+                      -> Markdown
+                      -> Int
+                      -> SDB CommentId
+insertApprovedComment created_ts moderated_ts moderated_by discussion_id mparent_id user_id text depth =
+    insertComment
+      (Just moderated_ts)
+      (Just moderated_by)
+      ECommentPosted
+      created_ts
+      discussion_id
+      mparent_id
+      user_id
+      text
+      depth
+
+insertUnapprovedComment :: UTCTime
+                        -> DiscussionId
+                        -> Maybe CommentId
+                        -> UserId
+                        -> Markdown
+                        -> Int
+                        -> SDB CommentId
+insertUnapprovedComment = insertComment Nothing Nothing ECommentPending
+
+insertComment :: Maybe UTCTime
+              -> Maybe UserId
+              -> (CommentId -> Comment -> SnowdriftEvent)
+              -> UTCTime
+              -> DiscussionId
+              -> Maybe CommentId
+              -> UserId
+              -> Markdown
+              -> Int
+              -> SDB CommentId
+insertComment mmoderated_ts mmoderated_by mk_event created_ts discussion_id mparent_id user_id text depth = do
+    let comment = Comment
+                    created_ts
+                    mmoderated_ts
+                    mmoderated_by
+                    discussion_id
+                    mparent_id
+                    user_id
+                    text
+                    depth
+    comment_id <- lift $ insert comment
+    tell [mk_event comment_id comment]
+    return comment_id
 
 isApproved :: Comment -> Bool
 isApproved = isJust . commentModeratedTs
@@ -88,7 +152,7 @@ isEvenDepth comment = not (isTopLevel comment) && commentDepth comment `mod` 2 =
 isOddDepth :: Comment -> Bool
 isOddDepth comment = not (isTopLevel comment) && not (isEvenDepth comment)
 
-isFlagged :: CommentId -> YesodDB App Bool
+isFlagged :: CommentId -> DB Bool
 isFlagged = fmap (maybe False (const True)) . getBy . UniqueCommentFlagging
 
 -- | Build a tree of comments, given the root and replies. The replies are not necessarily
@@ -121,7 +185,7 @@ buildCommentForest :: [Entity Comment]                                          
                    -> Forest (Entity Comment)
 buildCommentForest roots replies = (map (buildCommentTree . (, replies))) roots
 
-canDeleteComment :: UserId -> Entity Comment -> YesodDB App Bool
+canDeleteComment :: UserId -> Entity Comment -> DB Bool
 canDeleteComment user_id (Entity comment_id comment) = do
     if commentUser comment /= user_id
         then return False
@@ -135,33 +199,35 @@ canEditComment :: UserId -> Comment -> Bool
 canEditComment user_id = (user_id ==) . commentUser
 
 -- | Delete-cascade a comment from the database.
-deleteComment :: CommentId -> YesodDB App ()
+deleteComment :: CommentId -> DB ()
 deleteComment = deleteCascade
 
 -- | Edit a comment's text. If the comment was flagged, unflag it and send a
 -- message to the flagger.
-editComment :: CommentId -> Markdown -> Handler ()
+editComment :: CommentId -> Markdown -> SYDB ()
 editComment comment_id text = do
-    runDB (updateCommentText >> getCommentFlagging comment_id) >>= \case
+    lift updateCommentText
+    lift (getCommentFlagging comment_id) >>= \case
         Nothing -> return ()
         Just (Entity comment_flagging_id CommentFlagging{..}) -> do
             let permalink_route = DiscussCommentR
                                     commentFlaggingProjectHandle
                                     commentFlaggingTarget
                                     comment_id
-            permalink_text <- getUrlRender <*> pure permalink_route
+            permalink_text <- lift $ getUrlRender <*> pure permalink_route
             let message_text = Markdown $ "A comment you flagged has been edited and reposted to the site. You can view it [here](" <> permalink_text <> ")."
             now <- liftIO getCurrentTime
-            runDB $ do
-                deleteCascade comment_flagging_id -- delete flagging and all flagging reasons with it.
-                snowdrift_id <- getSnowdriftId
-                insert_ $ Message
-                            (Just snowdrift_id)
-                            now
-                            Nothing
-                            (Just $ commentFlaggingFlagger)
-                            message_text
-                            True
+            lift $ deleteCascade comment_flagging_id -- delete flagging and all flagging reasons with it.
+            snowdrift_id <- lift getSnowdriftId
+            insertMessage_ $
+                Message
+                  MessageDirect
+                  (Just snowdrift_id)
+                  now
+                  Nothing
+                  (Just $ commentFlaggingFlagger)
+                  message_text
+                  True
   where
     updateCommentText =
         update $ \c -> do
@@ -170,14 +236,14 @@ editComment comment_id text = do
 
 -- | Flag a comment. Send a message to the poster about the flagging. Return whether
 -- or not the flag was successful (fails if the comment was already flagged.)
-flagComment :: Text -> Text -> CommentId -> Text -> UserId -> [FlagReason] -> Maybe Markdown -> YesodDB App Bool
+flagComment :: Text -> Text -> CommentId -> Text -> UserId -> [FlagReason] -> Maybe Markdown -> SYDB Bool
 flagComment project_handle target comment_id permalink_route flagger_id reasons message = do
-    poster_id <- commentUser <$> get404 comment_id
+    poster_id <- lift $ commentUser <$> get404 comment_id
     now <- liftIO getCurrentTime
-    insertUnique (CommentFlagging now flagger_id comment_id project_handle target message) >>= \case
+    lift (insertUnique (CommentFlagging now flagger_id comment_id project_handle target message)) >>= \case
         Nothing -> return False
         Just flagging_id -> do
-            void $ insertMany (map (CommentFlaggingReason flagging_id) reasons)
+            lift $ void $ insertMany (map (CommentFlaggingReason flagging_id) reasons)
 
             let message_text = Markdown . T.unlines $
                     [ "Another user flagged your comment as not meeting the standards of the Code of Conduct. We *want* your involvement as long as it remains respectful and friendly, so please don’t feel discouraged."
@@ -188,12 +254,20 @@ flagComment project_handle target comment_id permalink_route flagger_id reasons 
                     , ""
                     , "[link to flagged comment](" <> permalink_route <> ")"
                     ]
-            snowdrift_id <- getSnowdriftId
-            insert_ $ Message (Just snowdrift_id) now Nothing (Just poster_id) message_text True
+            snowdrift_id <- lift getSnowdriftId
+            insertMessage_ $
+                Message
+                  MessageDirect
+                  (Just snowdrift_id)
+                  now
+                  Nothing
+                  (Just poster_id)
+                  message_text
+                  True
             return True
 
 -- | Get all ancestors that have been closed.
-getAncestorClosures :: CommentId -> YesodDB App [CommentClosure]
+getAncestorClosures :: CommentId -> DB [CommentClosure]
 getAncestorClosures comment_id = fmap (map entityVal) $
     select $
     from $ \(ca `InnerJoin` cc) -> do
@@ -203,7 +277,7 @@ getAncestorClosures comment_id = fmap (map entityVal) $
     return cc
 
 -- | Get all ancestors, including this comment, that have been closed.
-getAncestorClosures' :: CommentId -> YesodDB App [CommentClosure]
+getAncestorClosures' :: CommentId -> DB [CommentClosure]
 getAncestorClosures' comment_id = do
     all_comment_ids <- (comment_id :) <$> getCommentAncestors comment_id
     fmap (map entityVal) $
@@ -213,34 +287,38 @@ getAncestorClosures' comment_id = do
         return cc
 
 -- | Get a comment's ancestors' ids.
-getCommentAncestors :: CommentId -> YesodDB App [CommentId]
+getCommentAncestors :: CommentId -> DB [CommentId]
 getCommentAncestors = fmap (map unValue) . select . querAncestors
 
 subGetCommentAncestors :: CommentId -> SqlExpr (ValueList CommentId)
 subGetCommentAncestors = subList_select . querAncestors
 
-getCommentDepth :: CommentId -> YesodDB App Int
+getCommentDepth :: CommentId -> DB Int
 getCommentDepth = fmap commentDepth . getJust
 
 getCommentDepth404 :: CommentId -> Handler Int
-getCommentDepth404 = fmap commentDepth . runDB . get404
+getCommentDepth404 = fmap commentDepth . runYDB . get404
 
 -- | Get the CommentFlagging even for this Comment, if there is one.
-getCommentFlagging :: CommentId -> YesodDB App (Maybe (Entity CommentFlagging))
+getCommentFlagging :: CommentId -> DB (Maybe (Entity CommentFlagging))
 getCommentFlagging = getBy . UniqueCommentFlagging
 
 -- | Partial function.
-getCommentPage :: CommentId -> YesodDB App WikiPage
+getCommentPage :: CommentId -> DB WikiPage
 getCommentPage = fmap entityVal . getCommentPageEntity
 
 -- | Partial function.
-getCommentPageId :: CommentId -> YesodDB App WikiPageId
+getCommentPageId :: CommentId -> DB WikiPageId
 getCommentPageId = fmap entityKey . getCommentPageEntity
 
 -- | Partial function. Fails if the given Comment is not on a WikiPage, but some
 -- other Discussion.
-getCommentPageEntity :: CommentId -> YesodDB App (Entity WikiPage)
-getCommentPageEntity comment_id = fmap head $
+getCommentPageEntity :: CommentId -> DB (Entity WikiPage)
+getCommentPageEntity = fmap fromJust . getCommentPageEntity'
+
+-- | Safe version. TODO: Rename above 'unsafeGetCommentPageEntity'
+getCommentPageEntity' :: CommentId -> DB (Maybe (Entity WikiPage))
+getCommentPageEntity' comment_id = fmap listToMaybe $
     select $
     from $ \(c `InnerJoin` p) -> do
     on_ (c ^. CommentDiscussion ==. p ^. WikiPageDiscussion)
@@ -248,7 +326,7 @@ getCommentPageEntity comment_id = fmap head $
     return p
 
 -- | Get the CommentId this CommentId was rethreaded to, if it was.
-getCommentRethread :: CommentId -> YesodDB App (Maybe CommentId)
+getCommentRethread :: CommentId -> DB (Maybe CommentId)
 getCommentRethread comment_id = fmap unValue . listToMaybe <$> (
     select $
     from $ \cr -> do
@@ -256,7 +334,7 @@ getCommentRethread comment_id = fmap unValue . listToMaybe <$> (
     return $ cr ^. CommentRethreadNewComment)
 
 -- | Get a Comment's CommentTags.
-getCommentTags :: CommentId -> YesodDB App [Entity CommentTag]
+getCommentTags :: CommentId -> DB [Entity CommentTag]
 getCommentTags comment_id =
     select $
     from $ \comment_tag -> do
@@ -264,11 +342,11 @@ getCommentTags comment_id =
     return comment_tag
 
 -- | Get a Comment's descendants' ids (don't filter hidden or unmoderated comments).
-getCommentDescendantsIds :: CommentId -> YesodDB App [CommentId]
+getCommentDescendantsIds :: CommentId -> DB [CommentId]
 getCommentDescendantsIds = fmap (map unValue) . select . querDescendants
 
 -- | Get all descendants of the given root comment.
-getCommentDescendants :: Maybe UserId -> ProjectId -> CommentId -> YesodDB App [Entity Comment]
+getCommentDescendants :: Maybe UserId -> ProjectId -> CommentId -> DB [Entity Comment]
 getCommentDescendants mviewer_id project_id root_id = makeViewerInfo mviewer_id project_id >>= \viewer_info ->
     select $
     from $ \c -> do
@@ -280,7 +358,7 @@ getCommentDescendants mviewer_id project_id root_id = makeViewerInfo mviewer_id 
     return c
 
 -- | Get all descendants of all given root comments.
-getCommentsDescendants :: Maybe UserId -> ProjectId -> [CommentId] -> YesodDB App [Entity Comment]
+getCommentsDescendants :: Maybe UserId -> ProjectId -> [CommentId] -> DB [Entity Comment]
 getCommentsDescendants mviewer_id project_id root_ids = makeViewerInfo mviewer_id project_id >>= \viewer_info ->
     select $
     from $ \c -> do
@@ -293,13 +371,13 @@ getCommentsDescendants mviewer_id project_id root_ids = makeViewerInfo mviewer_i
 
 -- | Get the "true" target of this CommentId (which may be itself, if not rethreaded -
 -- otherwise, ride the rethread train to the end)
-getCommentDestination :: CommentId -> YesodDB App CommentId
+getCommentDestination :: CommentId -> YDB CommentId
 getCommentDestination comment_id = do
     void $ get404 comment_id -- make sure the comment even exists, so this function terminates.
     getCommentRethread comment_id >>= maybe (return comment_id) getCommentDestination
 
 -- | Get all Comments on a Discussion that are root comments.
-getAllRootComments :: Maybe UserId -> ProjectId -> DiscussionId -> YesodDB App [Entity Comment]
+getAllRootComments :: Maybe UserId -> ProjectId -> DiscussionId -> DB [Entity Comment]
 getAllRootComments mviewer_id project_id discussion_id = makeViewerInfo mviewer_id project_id >>= \viewer_info ->
     select $
     from $ \c -> do
@@ -309,7 +387,7 @@ getAllRootComments mviewer_id project_id discussion_id = makeViewerInfo mviewer_
         exprPermissionFilter viewer_info c
     return c
 
-getAllClosedRootComments :: Maybe UserId -> ProjectId -> DiscussionId -> YesodDB App [Entity Comment]
+getAllClosedRootComments :: Maybe UserId -> ProjectId -> DiscussionId -> DB [Entity Comment]
 getAllClosedRootComments mviewer_id project_id discussion_id = makeViewerInfo mviewer_id project_id >>= \viewer_info ->
     select $
     from $ \c -> do
@@ -320,7 +398,7 @@ getAllClosedRootComments mviewer_id project_id discussion_id = makeViewerInfo mv
         exprPermissionFilter viewer_info c
     return c
 
-getAllOpenRootComments :: Maybe UserId -> ProjectId -> DiscussionId -> YesodDB App [Entity Comment]
+getAllOpenRootComments :: Maybe UserId -> ProjectId -> DiscussionId -> DB [Entity Comment]
 getAllOpenRootComments mviewer_id project_id discussion_id = makeViewerInfo mviewer_id project_id >>= \viewer_info ->
     select $
     from $ \c -> do
@@ -332,7 +410,7 @@ getAllOpenRootComments mviewer_id project_id discussion_id = makeViewerInfo mvie
     return c
 
 -- | Get a Comment's Tags.
-getTags :: CommentId -> YesodDB App [Entity Tag]
+getTags :: CommentId -> DB [Entity Tag]
 getTags comment_id =
     select $
     from $ \(ct `InnerJoin` t) -> do
@@ -340,7 +418,7 @@ getTags comment_id =
     where_ (ct ^. CommentTagComment ==. val comment_id)
     return t
 
-makeClosureMap :: (IsList c, CommentId ~ Item c) => c -> YesodDB App ClosureMap
+makeClosureMap :: (IsList c, CommentId ~ Item c) => c -> DB ClosureMap
 makeClosureMap comment_ids = fmap (M.fromList . map ((commentClosureComment &&& id) . entityVal)) $
     select $
     from $ \c -> do
@@ -349,17 +427,17 @@ makeClosureMap comment_ids = fmap (M.fromList . map ((commentClosureComment &&& 
 
 -- Given a collection of CommentId, make a map from CommentId to Entity Ticket. Comments that
 -- are not tickets will simply not be in the map.
-makeTicketMap :: (IsList c, CommentId ~ Item c) => c -> YesodDB App TicketMap
+makeTicketMap :: (IsList c, CommentId ~ Item c) => c -> DB TicketMap
 makeTicketMap comment_ids = fmap (M.fromList . map ((ticketComment . entityVal) &&& id)) $
     select $
     from $ \t -> do
     where_ (t ^. TicketComment `in_` valList comment_ids)
     return t
 
-makeFlagMap :: (IsList c, CommentId ~ Item c) => c -> YesodDB App FlagMap
+makeFlagMap :: (IsList c, CommentId ~ Item c) => c -> DB FlagMap
 makeFlagMap comment_ids = mkFlagMap <$> getCommentFlaggings
   where
-    getCommentFlaggings :: YesodDB App [(CommentId, Maybe Markdown, FlagReason)]
+    getCommentFlaggings :: DB [(CommentId, Maybe Markdown, FlagReason)]
     getCommentFlaggings = fmap (map unwrapValues) $
         select $
         from $ \(cf `InnerJoin` cfr) -> do
@@ -399,7 +477,7 @@ makeModeratedComment user_id discussion_id parent_comment comment_text depth = d
 getCommentsUsers :: Foldable f => f (Entity Comment) -> Set UserId
 getCommentsUsers = F.foldMap (S.singleton . commentUser . entityVal)
 
-rethreadComments :: RethreadId -> Int -> Maybe CommentId -> DiscussionId -> [CommentId] -> YesodDB App [CommentId]
+rethreadComments :: RethreadId -> Int -> Maybe CommentId -> DiscussionId -> [CommentId] -> DB [CommentId]
 rethreadComments rethread_id depth_offset maybe_new_parent_id new_discussion_id comment_ids = do
     new_comment_ids <- flip St.evalStateT M.empty $ forM comment_ids $ \ comment_id -> do
         rethreads <- St.get
@@ -441,12 +519,10 @@ rethreadComments rethread_id depth_offset maybe_new_parent_id new_discussion_id 
 
     return new_comment_ids
 
-
-
 -- | Dumb helper function to make a "viewer info" argument for exprPermissionFilter.
 -- Unfortunately we export it as another module uses exprPermissionFilter. Probably
 -- this should be rectified.
-makeViewerInfo :: Maybe UserId -> ProjectId -> YesodDB App (Maybe (UserId, Bool))
+makeViewerInfo :: Maybe UserId -> ProjectId -> DB (Maybe (UserId, Bool))
 makeViewerInfo Nothing _ = return Nothing
 makeViewerInfo (Just viewer_id) project_id = Just . (viewer_id,) <$> isProjectModerator' viewer_id project_id
 

@@ -11,7 +11,7 @@ import qualified Data.Text as T
 
 getInvitationR :: Text -> Text -> Handler Html
 getInvitationR project_handle code = do
-    (Entity _ project, Entity _ invite) <- runDB $ (,)
+    (Entity _ project, Entity _ invite) <- runYDB $ (,)
         <$> getBy404 (UniqueProjectHandle project_handle)
         <*> getBy404 (UniqueInvite code)
     maybe_user_id    <- maybeAuthId
@@ -31,7 +31,7 @@ postInvitationR :: Text -> Text -> Handler Html
 postInvitationR _ code = do
     viewer_id :: UserId <- requireAuthId
     now <- liftIO getCurrentTime
-    _ <- runDB $ do
+    _ <- runYDB $ do
         Entity invite_id invite <- getBy404 $ UniqueInvite code
 
         if inviteRedeemed invite

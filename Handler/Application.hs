@@ -13,7 +13,7 @@ import qualified Data.Text as T
 getApplicationR :: Text -> VolunteerApplicationId -> Handler Html
 getApplicationR project_handle application_id = do
     viewer_id <- requireAuthId
-    project <- entityVal <$> (runDB . getBy404 $ UniqueProjectHandle project_handle)
+    project <- entityVal <$> (runYDB . getBy404 $ UniqueProjectHandle project_handle)
 
     affiliated <- runDB $ (||)
         <$> isProjectAffiliated project_handle viewer_id
@@ -21,7 +21,7 @@ getApplicationR project_handle application_id = do
 
     unless affiliated $ permissionDenied "you must be affiliated with this project to view applications"
 
-    (application, user) <- runDB $ do
+    (application, user) <- runYDB $ do
         application <- get404 application_id
         let user_id = volunteerApplicationUser application
         user <- get404 user_id

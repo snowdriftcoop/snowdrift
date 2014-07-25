@@ -40,11 +40,11 @@ buildAnnotatedTags tag_map tagUrl comment_tags = do
     let tags :: [(TagId, (UserId, Int))]
         tags = map (commentTagTag &&& (commentTagUser &&& commentTagCount)) comment_tags
 
-    user_map <- fmap entitiesMap . runDB $
+    user_map <- fmap entitiesMap $ runDB $
         select $
-            from $ \user -> do
-            where_ $ user ^. UserId `in_` valList (S.toList . S.fromList $ map (fst . snd) tags)
-            return user
+        from $ \user -> do
+        where_ $ user ^. UserId `in_` valList (S.toList . S.fromList $ map (fst . snd) tags)
+        return user
 
     tag_colors <- fmap (M.mapKeysMonotonic Key) $ cached $ fmap M.fromList $ do
         maybe_user_id <- maybeAuthId
@@ -54,7 +54,9 @@ buildAnnotatedTags tag_map tagUrl comment_tags = do
                 return $ map ((unKey . defaultTagColorTag &&& Color . defaultTagColorColor) . entityVal) colors
 
             Just user_id -> do
-                colors <- runDB $ select $ from $ \ tag_color -> do
+                colors <- runDB $
+                    select $
+                    from $ \ tag_color -> do
                     where_ $ tag_color ^. TagColorUser ==. val user_id
                     return tag_color
 

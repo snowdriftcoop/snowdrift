@@ -34,6 +34,7 @@ User
     readComments UTCTime default=now() -- The last time /newcomments was visited.
     readEdits UTCTime default=now()
     established Established default='EstUnestablished'
+    messagePreferences [MessagePreference] default='["sMessageOnReply"]'
     UniqueUser ident
     UniqueUserAccount account
     deriving Typeable
@@ -131,6 +132,7 @@ VolunteerInterest
     interest InterestId
 
 Message
+    type MessageType default='MessageDirect'
     project ProjectId Maybe
     createdTs UTCTime
     from UserId Maybe
@@ -176,6 +178,7 @@ Comment
     user UserId
     text Markdown
     depth Int
+    deriving Show
 
 -- A comment has zero or more ancestors: its parent, grandparent, great
 -- grandparent, etc.

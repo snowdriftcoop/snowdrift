@@ -21,7 +21,7 @@ getVolunteerR :: Text -> Handler Html
 getVolunteerR project_handle = do
     user <- requireAuth
     now <- liftIO getCurrentTime
-    Entity project_id project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
+    Entity project_id project <- runYDB $ getBy404 $ UniqueProjectHandle project_handle
     interests <- runDB $ select $ from return
     (volunteer_form, _) <- generateFormPost $ volunteerForm now project_id interests user
     defaultLayout $ do
@@ -33,7 +33,7 @@ postVolunteerR :: Text -> Handler Html
 postVolunteerR project_handle = do
     user <- requireAuth
     now <- liftIO getCurrentTime
-    Entity project_id _ <- runDB $ getBy404 $ UniqueProjectHandle project_handle
+    Entity project_id _ <- runYDB $ getBy404 $ UniqueProjectHandle project_handle
     interests <- runDB $ select $ from return
     ((result, _), _) <- runFormPost $ volunteerForm now project_id interests user
 

@@ -8,6 +8,7 @@ module Model.User
     , establishUser
     , getAllRoles
     , getCurUserRoles
+    , getMessagePrefs
     , getProjectsAndRoles
     , getRoles
     , getUsersIn
@@ -23,12 +24,18 @@ module Model.User
     , isProjectModerator'
     , isProjectTeamMember
     , isProjectTeamMember'
+    , messagePrefOnReply
     , updateUser
     , userPrintName
     , userWidget
+    -- Message preferences
+    , MessagePreference(..)
+    , showMessagePreference
     ) where
 
 import Import
+import Model.Message
+import Model.User.Internal
 
 import qualified Data.Map       as M
 import qualified Data.Set       as S
@@ -39,35 +46,38 @@ type UserMap = Map UserId User
 
 data UserUpdate =
     UserUpdate
-        { userUpdateName :: Maybe Text
-        , userUpdateAvatar :: Maybe Text
-        , userUpdateIrcNick :: Maybe Text
-        , userUpdateBlurb :: Maybe Markdown
-        , userUpdateStatement :: Maybe Markdown
+        { userUpdateName               :: Maybe Text
+        , userUpdateAvatar             :: Maybe Text
+        , userUpdateIrcNick            :: Maybe Text
+        , userUpdateBlurb              :: Maybe Markdown
+        , userUpdateStatement          :: Maybe Markdown
+        , userUpdateMessagePreferences :: Maybe [MessagePreference]
         }
 
-getUsersIn :: [UserId] -> YesodDB App [Entity User]
+getUsersIn :: [UserId] -> DB [Entity User]
 getUsersIn user_ids = selectList [UserId <-. user_ids] []
 
-updateUser :: UserId -> UserUpdate -> YesodDB App ()
-updateUser user_id user_update = update $ \ user -> do
-        set user $ catMaybes
-            [ (UserName =.) . val . Just <$> userUpdateName user_update
-            , (UserAvatar =.) . val . Just <$> userUpdateAvatar user_update
-            , (UserIrcNick =.) . val . Just <$> userUpdateIrcNick user_update
-            , (UserStatement =.) . val . Just <$> userUpdateStatement user_update
-            , (UserBlurb =.) . val . Just <$> userUpdateBlurb user_update
+updateUser :: UserId -> UserUpdate -> DB ()
+updateUser user_id UserUpdate{..} =
+    update $ \u -> do
+    set u $ [ UserName               =. val userUpdateName
+            , UserAvatar             =. val userUpdateAvatar
+            , UserIrcNick            =. val userUpdateIrcNick
+            , UserStatement          =. val userUpdateStatement
+            , UserBlurb              =. val userUpdateBlurb
+            , UserMessagePreferences =. val (fromMaybe [] userUpdateMessagePreferences)
             ]
-        where_ ( user ^. UserId ==. val user_id )
+    where_ (u ^. UserId ==. val user_id)
 
 applyUserUpdate :: User -> UserUpdate -> User
-applyUserUpdate user user_update = user
-        { userName = fromMaybe (userName user) $ Just <$> userUpdateName user_update
-        , userAvatar = fromMaybe (userAvatar user) $ Just <$> userUpdateAvatar user_update
-        , userIrcNick = fromMaybe (userIrcNick user) $ Just <$> userUpdateIrcNick user_update
-        , userStatement = fromMaybe (userStatement user) $ Just <$> userUpdateStatement user_update
-        , userBlurb = fromMaybe (userBlurb user) $ Just <$> userUpdateBlurb user_update
-        }
+applyUserUpdate user UserUpdate{..} = user
+    { userName               = userUpdateName
+    , userAvatar             = userUpdateAvatar
+    , userIrcNick            = userUpdateIrcNick
+    , userStatement          = userUpdateStatement
+    , userBlurb              = userUpdateBlurb
+    , userMessagePreferences = fromMaybe [] userUpdateMessagePreferences
+    }
 
 userPrintName :: Entity User -> Text
 userPrintName (Entity user_id user) = fromMaybe ("user" <> toPathPiece user_id) (userName user)
@@ -97,7 +107,7 @@ isCurUserEligibleEstablish = maybe False (isEligibleEstablish . entityVal) <$> m
 
 -- | Establish a user, given their eligible-timestamp and reason for
 -- eligibility. Mark all unmoderated comments of theirs as moderated.
-establishUser :: UserId -> UTCTime -> Text -> YesodDB App ()
+establishUser :: UserId -> UTCTime -> Text -> DB ()
 establishUser user_id elig_time reason = do
     est_time <- liftIO getCurrentTime
 
@@ -117,18 +127,19 @@ establishUser user_id elig_time reason = do
 
 -- | Make a user eligible for establishment. Put a message in their inbox
 -- instructing them to read and accept the honor pledge.
-eligEstablishUser :: UserId -> UserId -> Text -> YesodDB App ()
+eligEstablishUser :: UserId -> UserId -> Text -> SDB ()
 eligEstablishUser establisher_id user_id reason = do
     elig_time <- liftIO getCurrentTime
     let est = EstEligible elig_time reason
-    update $ \u -> do
+    lift $
+        update $ \u -> do
         set u [ UserEstablished =. val est ]
         where_ (u ^. UserId ==. val user_id)
 
-    insert_ $ ManualEstablishment user_id establisher_id
+    lift $ insert_ $ ManualEstablishment user_id establisher_id
 
-    snowdrift_id <- getSnowdriftId
-    insert_ $ Message (Just snowdrift_id) elig_time Nothing (Just user_id) message_text True
+    snowdrift_id <- lift getSnowdriftId
+    insertMessage_ $ Message MessageDirect (Just snowdrift_id) elig_time Nothing (Just user_id) message_text True
   where
     message_text :: Markdown
     message_text = Markdown $ T.unlines
@@ -137,8 +148,15 @@ eligEstablishUser establisher_id user_id reason = do
         , "After you [accept the honor pledge](/honor-pledge), you can comment and take other actions on the site without moderation."
         ]
 
+-- | Get a User's MessagePreferences. Unsafe if UserId does not exist.
+getMessagePrefs :: UserId -> DB [MessagePreference]
+getMessagePrefs user_id = userMessagePreferences <$> getJust user_id
+
+messagePrefOnReply :: UserId -> DB Bool
+messagePrefOnReply user_id = (elem MessageOnReply) <$> getMessagePrefs user_id
+
 -- | Get a User's Roles in a Project.
-getRoles :: UserId -> ProjectId -> YesodDB App [Role]
+getRoles :: UserId -> ProjectId -> DB [Role]
 getRoles user_id project_id = fmap (map unValue) $
     select $
         from $ \r -> do
@@ -147,7 +165,7 @@ getRoles user_id project_id = fmap (map unValue) $
         return $ r ^. ProjectUserRoleRole
 
 -- | Get all of a User's Roles, across all Projects.
-getAllRoles :: UserId -> YesodDB App [Role]
+getAllRoles :: UserId -> DB [Role]
 getAllRoles user_id = fmap unwrapValues $
     selectDistinct $
         from $ \pur -> do
@@ -161,11 +179,11 @@ getCurUserRoles project_id = maybeAuthId >>= \case
     Just user_id -> runDB $ getRoles user_id project_id
 
 -- | Does this User have this Role in this Project?
-hasRole :: Role -> UserId -> ProjectId -> YesodDB App Bool
+hasRole :: Role -> UserId -> ProjectId -> DB Bool
 hasRole role user_id = fmap (elem role) . getRoles user_id
 
 -- | Get all Projects this User is affiliated with, along with each Role.
-getProjectsAndRoles :: UserId -> YesodDB App (Map (Entity Project) (Set Role))
+getProjectsAndRoles :: UserId -> DB (Map (Entity Project) (Set Role))
 getProjectsAndRoles user_id = fmap buildMap $
     select $
         from $ \(p `InnerJoin` pur) -> do
@@ -176,16 +194,16 @@ getProjectsAndRoles user_id = fmap buildMap $
     buildMap :: [(Entity Project, Value Role)] -> Map (Entity Project) (Set Role)
     buildMap = foldr (\(p, Value r) -> M.insertWith (<>) p (S.singleton r)) mempty
 
-isProjectAdmin' :: UserId -> ProjectId -> YesodDB App Bool
+isProjectAdmin' :: UserId -> ProjectId -> DB Bool
 isProjectAdmin' = hasRole Admin
 
-isProjectTeamMember' :: UserId -> ProjectId -> YesodDB App Bool
+isProjectTeamMember' :: UserId -> ProjectId -> DB Bool
 isProjectTeamMember' = hasRole TeamMember
 
-isProjectModerator' :: UserId -> ProjectId -> YesodDB App Bool
+isProjectModerator' :: UserId -> ProjectId -> DB Bool
 isProjectModerator' = hasRole Moderator
 
-isProjectAdmin :: Text -> UserId -> YesodDB App Bool
+isProjectAdmin :: Text -> UserId -> DB Bool
 isProjectAdmin project_handle user_id =
     fmap (not . null) $ select $ from $ \ (pur `InnerJoin` p) -> do
         on_ $ pur ^. ProjectUserRoleProject ==. p ^. ProjectId
@@ -195,7 +213,7 @@ isProjectAdmin project_handle user_id =
         limit 1
         return ()
 
-isProjectTeamMember :: Text -> UserId -> YesodDB App Bool
+isProjectTeamMember :: Text -> UserId -> DB Bool
 isProjectTeamMember project_handle user_id =
     fmap (not . null) $ select $ from $ \ (pur `InnerJoin` p) -> do
         on_ $ pur ^. ProjectUserRoleProject ==. p ^. ProjectId
@@ -205,7 +223,7 @@ isProjectTeamMember project_handle user_id =
         limit 1
         return ()
 
-isProjectModerator :: Text -> UserId -> YesodDB App Bool
+isProjectModerator :: Text -> UserId -> DB Bool
 isProjectModerator project_handle user_id =
     fmap (not . null) $ select $ from $ \ (pur `InnerJoin` p) -> do
         on_ $ pur ^. ProjectUserRoleProject ==. p ^. ProjectId
@@ -217,9 +235,9 @@ isProjectModerator project_handle user_id =
 
 isCurUserProjectModerator :: Text -> Handler Bool
 isCurUserProjectModerator project_handle =
-    maybeAuthId >>= maybe (return False) (runDB . isProjectModerator project_handle)
+    maybeAuthId >>= maybe (return False) (runYDB . isProjectModerator project_handle)
 
-isProjectAffiliated :: Text -> UserId -> YesodDB App Bool
+isProjectAffiliated :: Text -> UserId -> DB Bool
 isProjectAffiliated project_handle user_id =
     fmap (not . null) $ select $ from $ \ (pur `InnerJoin` p) -> do
         on_ $ pur ^. ProjectUserRoleProject ==. p ^. ProjectId
@@ -237,7 +255,7 @@ canCurUserMakeEligible user_id = maybeAuthId >>= maybe (return False) (canMakeEl
 -- | Check if a User (FIRST ARG) can be made eligible by another User (SECOND ARG).
 canMakeEligible :: UserId -> UserId -> Handler Bool
 canMakeEligible establishee_id establisher_id = do
-    (establishee, establisher_is_mod) <- runDB $ (,)
+    (establishee, establisher_is_mod) <- runYDB $ (,)
         <$> get404 establishee_id
         <*> (elem Moderator <$> getAllRoles establisher_id)
     return $ isUnestablished establishee && establisher_is_mod

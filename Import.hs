@@ -30,7 +30,7 @@ import           Database.Esqueleto            as Import hiding (on, valList)
 import qualified Database.Esqueleto
 import           Prelude                       as Import hiding (head, init, last, readFile, tail, writeFile)
 import           Text.Blaze.Html.Renderer.Text (renderHtml)
-import           Yesod                         as Import hiding (Route (..), (||.), (==.), (!=.), (<.), (<=.), (>.), (>=.), (=.), (+=.), (-=.), (*=.), (/=.), selectSource, delete, update, count, Value)
+import           Yesod                         as Import hiding (Route (..), (||.), (==.), (!=.), (<.), (<=.), (>.), (>=.), (=.), (+=.), (-=.), (*=.), (/=.), selectSource, delete, update, count, Value, runDB)
 import           Yesod.Auth                    as Import
 import           Yesod.Markdown                as Import (Markdown)
 
@@ -229,7 +229,7 @@ redirectParams route params = getUrlRenderParams >>= \ render -> redirect $ rend
 
 getByErr :: (PersistEntity val, PersistEntityBackend val ~ SqlBackend)
          => String -> Unique val -> Handler (Entity val)
-getByErr message = runDB . fmap fromJustError . getBy
+getByErr message = runYDB . fmap fromJustError . getBy
     where
         fromJustError :: Maybe a -> a
         fromJustError = fromMaybe (error message)

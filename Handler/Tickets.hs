@@ -20,7 +20,7 @@ viewForm = renderBootstrap3 $ (,)
 
 getTicketsR :: Text -> Handler Html
 getTicketsR project_handle = do
-    Entity project_id project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
+    Entity project_id project <- runYDB $ getBy404 $ UniqueProjectHandle project_handle
 
     ((result, formWidget), encType) <- runFormGet viewForm
 
@@ -28,7 +28,7 @@ getTicketsR project_handle = do
             FormSuccess x -> x
             _ -> (defaultFilter, defaultOrder)
 
-    tickets       <- runDB $ getTickets project_id project_handle
+    tickets       <- runYDB $ getTickets project_id project_handle
     github_issues <- getGithubIssues project
 
     let issues = sortBy (flip compare `on` order_expression . issueOrderable) $

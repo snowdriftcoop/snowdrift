@@ -50,7 +50,7 @@ getProjectsR = do
 
 getProjectPledgeButtonR :: Text -> Handler TypedContent
 getProjectPledgeButtonR project_handle = do
-   pledges <- runDB $ do
+   pledges <- runYDB $ do
         Entity project_id _project <- getBy404 $ UniqueProjectHandle project_handle
         getProjectShares project_id
    let png = overlayImage blankPledgeButton $
@@ -61,7 +61,7 @@ getProjectR :: Text -> Handler Html
 getProjectR project_handle = do
     maybe_viewer_id <- maybeAuthId
 
-    (project_id, project, pledges, pledge) <- runDB $ do
+    (project_id, project, pledges, pledge) <- runYDB $ do
         Entity project_id project <- getBy404 $ UniqueProjectHandle project_handle
         pledges <- getProjectShares project_id
         pledge <- case maybe_viewer_id of
@@ -95,25 +95,28 @@ renderProject maybe_project_id project pledges pledge = do
         Nothing -> return Nothing
         Just last_payday -> handlerToWidget $ runDB $ do
             -- This assumes there were transactions associated with the last payday
-            [Value (Just last) :: Value (Maybe Rational)] <- select $ from $ \ transaction -> do
-                where_ $ transaction ^. TransactionPayday ==. val (Just last_payday)
-                        &&. transaction ^. TransactionCredit ==. val (Just $ projectAccount project)
-
+            [Value (Just last) :: Value (Maybe Rational)] <-
+                select $
+                from $ \ transaction -> do
+                where_ $
+                    transaction ^. TransactionPayday ==. val (Just last_payday) &&.
+                    transaction ^. TransactionCredit ==. val (Just $ projectAccount project)
                 return $ sum_ $ transaction ^. TransactionAmount
 
-            [Value (Just year) :: Value (Maybe Rational)] <- select $ from $ \ (transaction `InnerJoin` payday) -> do
-                where_ $ payday ^. PaydayDate >. val (addUTCTime (-365 * 24 * 60 * 60) now)
-                        &&. transaction ^. TransactionCredit ==. val (Just $ projectAccount project)
-
+            [Value (Just year) :: Value (Maybe Rational)] <-
+                select $
+                from $ \ (transaction `InnerJoin` payday) -> do
+                where_ $
+                    payday ^. PaydayDate >. val (addUTCTime (-365 * 24 * 60 * 60) now) &&.
+                    transaction ^. TransactionCredit ==. val (Just $ projectAccount project)
                 on_ $ transaction ^. TransactionPayday ==. just (payday ^. PaydayId)
-
                 return $ sum_ $ transaction ^. TransactionAmount
 
-            [Value (Just total) :: Value (Maybe Rational)] <- select $ from $ \ transaction -> do
+            [Value (Just total) :: Value (Maybe Rational)] <-
+                select $
+                from $ \ transaction -> do
                 where_ $ transaction ^. TransactionCredit ==. val (Just $ projectAccount project)
-
                 return $ sum_ $ transaction ^. TransactionAmount
-
 
             return $ Just (Milray $ round last, Milray $ round year, Milray $ round total)
 
@@ -139,13 +142,15 @@ getEditProjectR :: Text -> Handler Html
 getEditProjectR project_handle = do
     viewer_id <- requireAuthId
 
-    Entity project_id project <- runDB $ do
+    Entity project_id project <- runYDB $ do
         can_edit <- (||) <$> isProjectAdmin project_handle viewer_id <*> isProjectAdmin "snowdrift" viewer_id
         if can_edit
          then getBy404 $ UniqueProjectHandle project_handle
          else permissionDenied "You do not have permission to edit this project."
 
-    tags <- runDB $ select $ from $ \ (p_t `InnerJoin` tag) -> do
+    tags <- runDB $
+        select $
+        from $ \ (p_t `InnerJoin` tag) -> do
         on_ (p_t ^. ProjectTagTag ==. tag ^. TagId)
         where_ (p_t ^. ProjectTagProject ==. val project_id)
         return tag
@@ -161,7 +166,7 @@ postProjectR :: Text -> Handler Html
 postProjectR project_handle = do
     viewer_id <- requireAuthId
 
-    Entity project_id project <- runDB $ do
+    Entity project_id project <- runYDB $ do
         can_edit <- (||) <$> isProjectAdmin project_handle viewer_id <*> isProjectAdmin "snowdrift" viewer_id
         if can_edit
          then getBy404 $ UniqueProjectHandle project_handle
@@ -227,7 +232,7 @@ getProjectPatronsR project_handle = do
     page <- lookupGetParamDefault "page" 0
     per_page <- lookupGetParamDefault "count" 20
 
-    (project, pledges, user_payouts_map) <- runDB $ do
+    (project, pledges, user_payouts_map) <- runYDB $ do
         Entity project_id project <- getBy404 $ UniqueProjectHandle project_handle
         pledges <- select $ from $ \ (pledge `InnerJoin` user) -> do
             on_ $ pledge ^. PledgeUser ==. user ^. UserId
@@ -260,7 +265,7 @@ getProjectPatronsR project_handle = do
 
 getProjectTransactionsR :: Text -> Handler Html
 getProjectTransactionsR project_handle = do
-    (project, account, account_map, transaction_groups) <- runDB $ do
+    (project, account, account_map, transaction_groups) <- runYDB $ do
         Entity _ project :: Entity Project <- getBy404 $ UniqueProjectHandle project_handle
 
         account <- get404 $ projectAccount project
@@ -317,11 +322,13 @@ getProjectBlogR :: Text -> Handler Html
 getProjectBlogR project_handle = do
     maybe_from <- fmap (Key . PersistInt64 . read . T.unpack) <$> lookupGetParam "from"
     post_count <- fromMaybe 10 <$> fmap (read . T.unpack) <$> lookupGetParam "from"
-    Entity project_id project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
+    Entity project_id project <- runYDB $ getBy404 $ UniqueProjectHandle project_handle
 
     let apply_offset blog = maybe id (\ from_blog rest -> blog ^. ProjectBlogId >=. val from_blog &&. rest) maybe_from
 
-    (posts, next) <- fmap (splitAt post_count) $ runDB $ select $ from $ \blog -> do
+    (posts, next) <- fmap (splitAt post_count) $ runDB $
+        select $
+        from $ \blog -> do
         where_ $ apply_offset blog $ blog ^. ProjectBlogProject ==. val project_id
         orderBy [ desc $ blog ^. ProjectBlogTime, desc $ blog ^. ProjectBlogId ]
         limit (fromIntegral post_count + 1)
@@ -351,7 +358,7 @@ postProjectBlogR :: Text -> Handler Html
 postProjectBlogR project_handle = do
     viewer_id <- requireAuthId
 
-    Entity project_id _ <- runDB $ do
+    Entity project_id _ <- runYDB $ do
         can_edit <- or <$> sequence
             [ isProjectAdmin project_handle viewer_id
             , isProjectTeamMember project_handle viewer_id
@@ -395,8 +402,9 @@ postProjectBlogR project_handle = do
 
 getProjectBlogPostR :: Text -> ProjectBlogId -> Handler Html
 getProjectBlogPostR project_handle blog_post_id = do
-    Entity _ project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
-    blog_post <- runDB $ get404 blog_post_id
+    (Entity _ project, blog_post) <- runYDB $ (,)
+        <$> getBy404 (UniqueProjectHandle project_handle)
+        <*> get404 blog_post_id
 
     defaultLayout $ do
         setTitle . toHtml $ projectName project <> " Blog - " <> projectBlogTitle blog_post <> " | Snowdrift.coop"

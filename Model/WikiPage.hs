@@ -10,7 +10,7 @@ import Model.Project (getProjectPages)
 -- | Get the unapproved, new and old Comments on all WikiPages of Project. Takes a
 -- UTCTime 'since' to filter comments EARLIER than this time, and a CommentId
 -- 'latest_comment_id' to filter comments AFTER this comment (used for paging).
-getAllWikiComments :: Maybe UserId -> ProjectId -> CommentId -> UTCTime -> Int64 -> YesodDB App ([Entity Comment], [Entity Comment], [Entity Comment])
+getAllWikiComments :: Maybe UserId -> ProjectId -> CommentId -> UTCTime -> Int64 -> DB ([Entity Comment], [Entity Comment], [Entity Comment])
 getAllWikiComments mviewer_id project_id latest_comment_id since limit_num = do
     viewer_info         <- makeViewerInfo mviewer_id project_id
     pages_ids           <- map entityKey <$> getProjectPages project_id
@@ -19,7 +19,7 @@ getAllWikiComments mviewer_id project_id latest_comment_id since limit_num = do
     old_comments        <- getOldComments        viewer_info pages_ids (limit_num - fromIntegral (length new_comments))
     return (unapproved_comments, new_comments, old_comments)
   where
-    getUnapprovedComments :: Maybe (UserId, Bool) -> [WikiPageId] -> YesodDB App [Entity Comment]
+    getUnapprovedComments :: Maybe (UserId, Bool) -> [WikiPageId] -> DB [Entity Comment]
     getUnapprovedComments viewer_info pages_ids =
         select $
         from $ \(c `InnerJoin` wp) -> do
@@ -31,7 +31,7 @@ getAllWikiComments mviewer_id project_id latest_comment_id since limit_num = do
         orderBy [desc (c ^. CommentCreatedTs)]
         return c
 
-    getNewComments :: Maybe (UserId, Bool) -> [WikiPageId] -> YesodDB App [Entity Comment]
+    getNewComments :: Maybe (UserId, Bool) -> [WikiPageId] -> DB [Entity Comment]
     getNewComments viewer_info pages_ids =
         select $
         from $ \(c `InnerJoin` wp) -> do
@@ -45,7 +45,7 @@ getAllWikiComments mviewer_id project_id latest_comment_id since limit_num = do
         limit limit_num
         return c
 
-    getOldComments :: Maybe (UserId, Bool) -> [WikiPageId] -> Int64 -> YesodDB App [Entity Comment]
+    getOldComments :: Maybe (UserId, Bool) -> [WikiPageId] -> Int64 -> DB [Entity Comment]
     getOldComments viewer_info pages_ids lim =
         select $
         from $ \(c `InnerJoin` wp) -> do

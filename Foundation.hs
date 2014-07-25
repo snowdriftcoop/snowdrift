@@ -1,10 +1,11 @@
-{-# LANGUAGE FlexibleInstances #-}
-
 module Foundation where
 
 import           Model
 import           Model.Currency
 import           Model.Established.Internal         (Established(..))
+import           Model.Message.Internal             (MessageType(..))
+import           Model.SnowdriftEvent
+import           Model.User.Internal                (MessagePreference(..))
 import qualified Settings
 import           Settings                           (widgetFile, Extra (..))
 import           Settings.Development               (development)
@@ -12,9 +13,13 @@ import           Settings.StaticFiles
 
 import           Blaze.ByteString.Builder.Char.Utf8 (fromText)
 import           Control.Applicative
+import           Control.Concurrent.STM
 import           Control.Exception.Lifted           (throwIO, handle)
 import           Control.Monad
+import           Control.Monad.Logger
+import           Control.Monad.Reader
 import           Control.Monad.Trans.Resource
+import           Control.Monad.Writer.Strict        (WriterT, runWriterT)
 import qualified Data.ByteString.Lazy.Char8         as LB
 import           Data.Char                          (isSpace)
 import           Data.Int                           (Int64)
@@ -32,7 +37,8 @@ import           Text.Blaze.Html.Renderer.Text      (renderHtml)
 import           Text.Hamlet                        (hamletFile)
 import           Text.Jasmine                       (minifym)
 import           Web.Authenticate.BrowserId         (browserIdJs)
-import           Yesod                              hiding ((==.), count, Value)
+import           Yesod                              hiding (runDB, (==.), count, Value)
+import qualified Yesod                              as Y
 import           Yesod.Auth
 import           Yesod.Auth.BrowserId
 import           Yesod.Auth.HashDB                  (authHashDB, setPassword)
@@ -43,20 +49,24 @@ import           Yesod.Form.Jquery
 import           Yesod.Markdown                     (Markdown (..))
 import           Yesod.Static
 
+-- A type for running DB actions outside of a Handler.
+type Daemon a = ReaderT App (LoggingT (ResourceT IO)) a
+
 -- | The site argument for your application. This can be a good place to
 -- keep settings and values requiring initialization before your application
 -- starts running, such as database connections. Every handler will have
 -- access to the data present here.
 data App = App
-    { appNavbar :: WidgetT App IO ()
-    , settings :: AppConfig DefaultEnv Extra
-    , getStatic :: Static -- ^ Settings for static file serving.
-    , connPool :: Database.Persist.PersistConfigPool Settings.PersistConf -- ^ Database connection pool.
-    , httpManager :: Manager
-    , persistConfig :: Settings.PersistConf
-    , appLogger :: Logger
+    { appNavbar        :: WidgetT App IO ()
+    , settings         :: AppConfig DefaultEnv Extra
+    , getStatic        :: Static -- ^ Settings for static file serving.
+    , connPool         :: Database.Persist.PersistConfigPool Settings.PersistConf -- ^ Database connection pool.
+    , httpManager      :: Manager
+    , persistConfig    :: Settings.PersistConf
+    , appLogger        :: Logger
+    , appEventChan     :: TChan SnowdriftEvent
+    , appEventHandlers :: [SnowdriftEvent -> Daemon ()]
     }
-
 
 plural :: Integral i => i -> Text -> Text -> Text
 plural 1 x _ = x
@@ -213,13 +223,14 @@ instance Yesod App where
 instance YesodPersist App where
     type YesodPersistBackend App = SqlPersistT
     runDB = defaultRunDB persistConfig connPool
+
 instance YesodPersistRunner App where
     getDBRunner = defaultGetDBRunner connPool
 
 -- set which project in the site runs the site itself
 getSiteProject :: Handler (Entity Project)
 getSiteProject = maybe (error "No project has been defined as the owner of this website.") id <$>
-    (getSiteProjectHandle >>= runDB . getBy . UniqueProjectHandle)
+    (getSiteProjectHandle >>= runYDB . getBy . UniqueProjectHandle)
 
 getSiteProjectHandle :: Handler Text
 getSiteProjectHandle = extraSiteProject . appExtra . settings <$> getYesod
@@ -336,9 +347,9 @@ instance YesodAuth App where
 createUser :: Text -> Maybe Text -> Maybe Text -> Maybe Text -> Maybe Text -> Handler (Maybe UserId)
 createUser ident passwd name avatar nick = do
     now <- liftIO getCurrentTime
-    handle (\ DBException -> return Nothing) $ runDB $ do
+    handle (\DBException -> return Nothing) $ runYDB $ do
         account_id <- insert $ Account 0
-        user <- maybe return setPassword passwd $ User ident (Just now) Nothing Nothing name account_id avatar Nothing Nothing nick now now now now EstUnestablished
+        user <- maybe return setPassword passwd $ User ident (Just now) Nothing Nothing name account_id avatar Nothing Nothing nick now now now now EstUnestablished [MessageOnReply]
         uid_maybe <- insertUnique user
         Entity snowdrift_id _ <- getBy404 $ UniqueProjectHandle "snowdrift"
         case uid_maybe of
@@ -357,7 +368,8 @@ createUser ident passwd name avatar nick = do
                         , "<br> Please read our [**welcome message**](/p/snowdrift/w/welcome), and let us know any questions."
                         ]
                 -- TODO: change snowdrift_id to the generated site-project id
-                insert_ $ Message (Just snowdrift_id) now Nothing (Just user_id) message_text True
+                -- TODO(mitchell): This message doesn't get sent to the event channel. Is that okay?
+                insert_ $ Message MessageDirect (Just snowdrift_id) now Nothing (Just user_id) message_text True
                 return $ Just user_id
             Nothing -> do
                 lift $ addAlert "danger" "E-mail or handle already in use."
@@ -420,5 +432,62 @@ getAlert = do
 
 -- | Get the ProjectId for the "snowdrift" project. Partial function. Possibly this should
 -- be replaced by a hard-coded key? We're hard-coding "snowdrift", anyways.
-getSnowdriftId :: YesodDB App ProjectId
+getSnowdriftId :: DB ProjectId
 getSnowdriftId = entityKey . fromJust <$> getBy (UniqueProjectHandle "snowdrift")
+
+-- | Write a list of SnowdriftEvent to the event channel.
+pushEvents :: (MonadIO m, MonadReader App m) => [SnowdriftEvent] -> m ()
+pushEvents events = ask >>= liftIO . atomically . forM_ events . writeTChan . appEventChan
+
+--------------------------------------------------------------------------------
+
+-- There are FOUR different kinds of database actions, each with a different run function.
+-- Terminology:
+--    DB - database
+--    Y  - Yesod
+--    S  - Snowdrift
+
+-- Convenient type synonym for all that is required to hit the database in a monad.
+-- Types that satisfy this constraint: Handler, Daemon.
+type DBConstraint m = (MonadBaseControl IO m, MonadIO m, MonadLogger m, MonadResource m, MonadReader App m)
+
+-- Run a Daemon in IO.
+runDaemon :: App -> Daemon a -> IO a
+runDaemon app daemon =
+    runResourceT $
+      runLoggingT
+        (runReaderT daemon app)
+        (messageLoggerSource app (appLogger app))
+
+-- A basic database action.
+type DB a = DBConstraint m => SqlPersistT m a
+
+runDB :: DBConstraint m => DB a -> m a
+runDB action = do
+    app <- ask
+    Database.Persist.runPool (persistConfig app) action (connPool app)
+
+-- A database action that requires the inner monad to be Handler (for example, to use
+-- get404 or getBy404)
+type YDB a = SqlPersistT Handler a
+
+runYDB :: YDB a -> Handler a
+runYDB = Y.runDB
+
+-- A database action that writes [SnowdriftEvent], to be run after the transaction is complete.
+type SDB a  = DBConstraint m => WriterT [SnowdriftEvent] (SqlPersistT m) a
+
+runSDB :: DBConstraint m => SDB a -> m a
+runSDB w = do
+    (a, events) <- runDB (runWriterT w)
+    pushEvents events
+    return a
+
+-- A combination of YDB and SDB (writes events, requires inner Handler).
+type SYDB a = WriterT [SnowdriftEvent] (SqlPersistT Handler) a
+
+runSYDB :: SYDB a -> Handler a
+runSYDB w = do
+    (a, events) <- runYDB (runWriterT w)
+    pushEvents events
+    return a

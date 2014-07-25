@@ -8,17 +8,15 @@ module View.User
 
 import Import
 
-import           Widgets.ProjectPledges
-
 import           Model.Markdown
-import           Yesod.Markdown
-
-import qualified Data.Map         as M
-import qualified Data.Set         as S
-
 import           Model.Role
 import           Model.User
-import           Widgets.Markdown (snowdriftMarkdownField)
+import           Widgets.Markdown       (snowdriftMarkdownField)
+import           Widgets.ProjectPledges
+
+import qualified Data.Map               as M
+import qualified Data.Set               as S
+import           Yesod.Markdown
 
 createUserForm :: Maybe Text -> Form (Text, Text, Maybe Text, Maybe Text, Maybe Text)
 createUserForm ident extra = do
@@ -77,14 +75,15 @@ createUserForm ident extra = do
 
     return (result, view)
 
-editUserForm :: User -> Form UserUpdate
-editUserForm User{..} = renderBootstrap3 $
+editUserForm :: Maybe User -> Form UserUpdate
+editUserForm muser = renderBootstrap3 $
     UserUpdate
-        <$> aopt' textField              "Public Name"                                    (Just userName)
-        <*> aopt' textField              "Avatar image (link)"                            (Just userAvatar)
-        <*> aopt' textField              "IRC nick @freenode.net)"                        (Just userIrcNick)
-        <*> aopt' snowdriftMarkdownField "Blurb (used on listings of many people)"        (Just userBlurb)
-        <*> aopt' snowdriftMarkdownField "Personal Statement (visible only on this page)" (Just userStatement)
+        <$> aopt' textField               "Public Name"                                    (userName                      <$> muser)
+        <*> aopt' textField               "Avatar image (link)"                            (userAvatar                    <$> muser)
+        <*> aopt' textField               "IRC nick @freenode.net)"                        (userIrcNick                   <$> muser)
+        <*> aopt' snowdriftMarkdownField  "Blurb (used on listings of many people)"        (userBlurb                     <$> muser)
+        <*> aopt' snowdriftMarkdownField  "Personal Statement (visible only on this page)" (userStatement                 <$> muser)
+        <*> aopt' messagePreferencesField "Message filter"                                 (Just . userMessagePreferences <$> muser)
 
 -- | Form to mark a user as eligible for establishment. The user is fully established
 -- when s/he accepts the honor pledge.
@@ -92,13 +91,17 @@ establishUserForm :: Form Text
 establishUserForm = renderBootstrap3 $ areq' textField "Reason" Nothing
 
 previewUserForm :: User -> Form UserUpdate
-previewUserForm user = renderBootstrap3 $
+previewUserForm User{..} = renderBootstrap3 $
     UserUpdate
-        <$> aopt hiddenField "" (Just $ userName user)
-        <*> aopt hiddenField "" (Just $ userAvatar user)
-        <*> aopt hiddenField "" (Just $ userIrcNick user)
-        <*> hiddenMarkdown (userBlurb user)
-        <*> hiddenMarkdown (userStatement user)
+        <$> aopt hiddenField "" (Just userName)
+        <*> aopt hiddenField "" (Just userAvatar)
+        <*> aopt hiddenField "" (Just userIrcNick)
+        <*> hiddenMarkdown userBlurb
+        <*> hiddenMarkdown userStatement
+        <*> aopt messagePreferencesField "" (Just (Just userMessagePreferences))
+
+messagePreferencesField :: Field Handler [MessagePreference]
+messagePreferencesField = checkboxesFieldList (map (showMessagePreference &&& id) [minBound..maxBound])
 
 -- | Render a User profile, including
 renderUser :: Maybe UserId -> UserId -> User -> Map (Entity Project) (Set Role) -> Widget

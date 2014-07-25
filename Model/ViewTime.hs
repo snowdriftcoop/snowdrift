@@ -7,10 +7,10 @@ import Import
 
 import Model.ViewType (ViewType(..))
 
-getCommentsViewTime :: UserId -> ProjectId -> YesodDB App (Maybe (Entity ViewTime))
+getCommentsViewTime :: UserId -> ProjectId -> DB (Maybe (Entity ViewTime))
 getCommentsViewTime user_id project_id = getBy $ UniqueViewTimeUserProjectType user_id project_id ViewComments
 
-updateCommentsViewTime :: UTCTime -> UserId -> ProjectId -> YesodDB App ()
+updateCommentsViewTime :: UTCTime -> UserId -> ProjectId -> DB ()
 updateCommentsViewTime now user_id project_id = do
     c <- updateCount $ \vt -> do
          set vt [ ViewTimeTime =. val now ]

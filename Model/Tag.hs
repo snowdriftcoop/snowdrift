@@ -8,8 +8,8 @@ import Import
 
 type TagMap = Map TagId Tag
 
-getAllTagsMap :: YesodDB App TagMap
+getAllTagsMap :: DB TagMap
 getAllTagsMap = entitiesMap <$> getAllTags
 
-getAllTags :: YesodDB App [Entity Tag]
+getAllTags :: DB [Entity Tag]
 getAllTags = select $ from (\t -> return t)

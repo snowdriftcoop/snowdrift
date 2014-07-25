@@ -16,7 +16,7 @@ confirmForm shares = renderBootstrap3 $ SharesPurchaseOrder <$> areq' hiddenFiel
 getUpdateSharesR :: Text -> Handler Html
 getUpdateSharesR project_handle = do
     _ <- requireAuthId
-    Entity project_id project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
+    Entity project_id project <- runYDB $ getBy404 $ UniqueProjectHandle project_handle
     ((result, _), _) <- runFormGet $ pledgeForm project_id
     case result of
         FormSuccess (SharesPurchaseOrder shares) -> do
@@ -45,7 +45,7 @@ postUpdateSharesR project_handle = do
             -- TODO - refuse negative
             Just pledge_render_id <- fmap (read . T.unpack) <$> lookupSession pledgeRenderKey
 
-            success <- runDB $ do
+            success <- runYDB $ do
                 Just user <- get user_id
                 Just account <- get $ userAccount user
                 Entity project_id _ <- getBy404 $ UniqueProjectHandle project_handle
@@ -79,13 +79,13 @@ postUpdateSharesR project_handle = do
                  else return True
 
             if success
-             then addAlert "success" "you are now pledged to support this project" 
+             then addAlert "success" "you are now pledged to support this project"
              else addAlert "warning"
-                "Sorry, you must have funds to support your pledge for at least 3 months at current share value. Please deposit additional funds to your account." 
+                "Sorry, you must have funds to support your pledge for at least 3 months at current share value. Please deposit additional funds to your account."
 
             redirect $ ProjectR project_handle
 
         _ -> do
-            addAlert "danger" "error occurred in form submission" 
+            addAlert "danger" "error occurred in form submission"
             redirect $ UpdateSharesR project_handle
 

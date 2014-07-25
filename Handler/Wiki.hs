@@ -9,6 +9,7 @@ import           Data.Tree.Extra      (sortForestBy)
 import           Handler.Wiki.Comment (getMaxDepth, processWikiComment)
 import           Model.Comment
 import           Model.Markdown
+import           Model.Message
 import           Model.Permission
 import           Model.Project
 import           Model.Tag            (getAllTagsMap)
@@ -32,7 +33,7 @@ import           Yesod.Markdown
 --------------------------------------------------------------------------------
 -- Utility functions
 
-getPageInfo :: Text -> Text -> YesodDB App (Entity Project, Entity WikiPage)
+getPageInfo :: Text -> Text -> YDB (Entity Project, Entity WikiPage)
 getPageInfo project_handle target = do
     project <- getBy404 $ UniqueProjectHandle project_handle
     page    <- getBy404 $ UniqueWikiTarget (entityKey project) target
@@ -43,7 +44,7 @@ getPageInfo project_handle target = do
 
 getWikiPagesR :: Text -> Handler Html
 getWikiPagesR project_handle = do
-    (project, pages) <- runDB $ do
+    (project, pages) <- runYDB $ do
         Entity project_id project <- getBy404 $ UniqueProjectHandle project_handle
         pages <- getProjectWikiPages project_id
         return (project, pages)
@@ -63,7 +64,7 @@ redirectHereWithParams new_params = do
 getWikiNewCommentsR :: Text -> Handler Html
 getWikiNewCommentsR project_handle = do
     mviewer <- maybeAuth
-    Entity project_id project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
+    Entity project_id project <- runYDB $ getBy404 $ UniqueProjectHandle project_handle
 
     now <- liftIO getCurrentTime
 
@@ -106,7 +107,7 @@ getWikiNewCommentsR project_handle = do
                 -- would result (one per new comment). Meh...
                 else do
                     forM_ comments $ \ (Entity comment_id comment) -> do
-                        (earlier_closures, target) <- handlerToWidget . runDB $ (,)
+                        (earlier_closures, target) <- handlerToWidget $ runDB $ (,)
                             <$> getAncestorClosures comment_id
                             <*> (wikiPageTarget <$> getCommentPage comment_id)
 
@@ -157,7 +158,7 @@ getWikiNewCommentsR project_handle = do
 getWikiNewEditsR :: Text -> Handler Html
 getWikiNewEditsR project_handle = do
     mauth <- maybeAuth
-    Entity project_id project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
+    Entity project_id project <- runYDB $ getBy404 $ UniqueProjectHandle project_handle
 
     maybe_from <- fmap (Key . PersistInt64 . read . T.unpack) <$> lookupGetParam "from"
 
@@ -165,12 +166,14 @@ getWikiNewEditsR project_handle = do
         Nothing -> liftIO getCurrentTime
         Just (Entity viewer_id viewer) -> lookupGetParam "since" >>= \case
             Nothing -> do
-                viewtimes :: [Entity ViewTime] <- runDB $ select $ from $ \ viewtime -> do
-                        where_ $
-                            ( viewtime ^. ViewTimeUser ==. val viewer_id ) &&.
-                            ( viewtime ^. ViewTimeProject ==. val project_id ) &&.
-                            ( viewtime ^. ViewTimeType ==. val ViewEdits )
-                        return viewtime
+                viewtimes :: [Entity ViewTime] <- runDB $
+                    select $
+                    from $ \ viewtime -> do
+                    where_ $
+                        viewtime ^. ViewTimeUser ==. val viewer_id &&.
+                        viewtime ^. ViewTimeProject ==. val project_id &&.
+                        viewtime ^. ViewTimeType ==. val ViewEdits
+                    return viewtime
 
                 let comments_ts = case viewtimes of
                         [] -> userReadEdits viewer
@@ -184,7 +187,9 @@ getWikiNewEditsR project_handle = do
 
 
     (new_edits, old_edits, pages, users) :: ([Entity WikiEdit], [Entity WikiEdit], M.Map WikiPageId (Entity WikiPage), M.Map UserId (Entity User)) <- runDB $ do
-        pages <- fmap (M.fromList . map (entityKey &&& id)) $ select $ from $ \ page -> do
+        pages <- fmap (M.fromList . map (entityKey &&& id)) $
+            select $
+            from $ \ page -> do
             where_ $ page ^. WikiPageProject ==. val project_id
             return page
 
@@ -262,11 +267,11 @@ getWikiNewEditsR project_handle = do
         Nothing -> return ()
         Just (Entity viewer_id _) -> runDB $ do
             c <- updateCount $ \ viewtime -> do
-                    set viewtime [ ViewTimeTime =. val now ]
-                    where_ $
-                        ( viewtime ^. ViewTimeUser ==. val viewer_id ) &&.
-                        ( viewtime ^. ViewTimeProject ==. val project_id ) &&.
-                        ( viewtime ^. ViewTimeType ==. val ViewEdits )
+                 set viewtime [ ViewTimeTime =. val now ]
+                 where_ $
+                     viewtime ^. ViewTimeUser ==. val viewer_id &&.
+                     viewtime ^. ViewTimeProject ==. val project_id &&.
+                     viewtime ^. ViewTimeType ==. val ViewEdits
 
             when (c == 0) $ insert_ $ ViewTime viewer_id project_id ViewEdits now
 
@@ -281,14 +286,16 @@ getWikiR :: Text -> Text -> Handler Html
 getWikiR project_handle target = do
     maybe_user <- maybeAuth
 
-    (Entity project_id project, Entity _ page) <- runDB $ getPageInfo project_handle target
+    (Entity project_id project, Entity _ page) <- runYDB $ getPageInfo project_handle target
 
     moderator <- case maybe_user of
         Nothing -> return False
         Just (Entity viewer_id _) ->
             runDB $ isProjectModerator' viewer_id project_id
 
-    [Value (comment_count :: Int)] <- runDB $ select $ from $ \comment -> do
+    [Value (comment_count :: Int)] <- runDB $
+        select $
+        from $ \comment -> do
         where_ $ foldl1 (&&.) $ catMaybes
             [ Just $ comment ^. CommentDiscussion ==. val (wikiPageDiscussion page)
             , if moderator then Nothing else Just $ not_ $ isNothing $ comment ^. CommentModeratedTs
@@ -313,9 +320,9 @@ postWikiR project_handle target = do
 
     unless can_edit $ permissionDenied "you do not have permission to edit this page"
 
-    (Entity project_id _, Entity page_id page) <- runDB $ getPageInfo project_handle target
+    (Entity project_id _, Entity page_id page) <- runYDB $ getPageInfo project_handle target
 
-    Entity _ last_edit <- runDB $ getBy404 $ UniqueWikiLastEdit page_id
+    Entity _ last_edit <- runYDB $ getBy404 $ UniqueWikiLastEdit page_id
 
     ((result, _), _) <- runFormPost $ editWikiForm (wikiLastEditEdit last_edit) (wikiPageContent page) Nothing
 
@@ -335,19 +342,22 @@ postWikiR project_handle target = do
                             WikiPage target project_id content (Key $ PersistInt64 (-1)) Normal
 
                 Just x | x == action -> do
-                    runDB $ do
-                        update $ \ p -> do
+                    runSYDB $ do
+                        lift $
+                            update $ \ p -> do
                             set p [WikiPageContent =. val content]
                             where_ $ p ^. WikiPageId ==. val page_id
 
-                        edit_id <- insert $ WikiEdit now user_id page_id content (Just comment)
+                        edit_id <- lift $ insert $ WikiEdit now user_id page_id content (Just comment)
                         -- TODO - I think there might be a race condition here...
-                        either_last_edit <- insertBy $ WikiLastEdit page_id edit_id
+                        either_last_edit <- lift $ insertBy $ WikiLastEdit page_id edit_id
 
                         if last_edit_id == wikiLastEditEdit last_edit
-                         then lift $ addAlert "success" "Updated."
+                         then lift $ lift $ addAlert "success" "Updated."
                          else do
-                            [ Value last_editor ] <- select $ from $ \ edit -> do
+                            [ Value last_editor ] <- lift $
+                                select $
+                                from $ \edit -> do
                                 where_ $ edit ^. WikiEditId ==. val (wikiLastEditEdit last_edit)
                                 return $ edit ^. WikiEditUser
 
@@ -363,9 +373,9 @@ postWikiR project_handle target = do
                                     , "(this ticket was automatically generated)"
                                     ]
 
-                            comment_id <- insert =<< makeModeratedComment user_id (wikiPageDiscussion page) Nothing comment_body 0
+                            comment_id <- lift $ insert =<< makeModeratedComment user_id (wikiPageDiscussion page) Nothing comment_body 0
 
-                            insert_ $ Ticket now now "edit conflict" comment_id
+                            lift $ insert_ $ Ticket now now "edit conflict" comment_id
 
                             render <- lift getUrlRenderParams
                             let message_text = Markdown $ T.unlines
@@ -373,16 +383,16 @@ postWikiR project_handle target = do
                                     , "<br>[**Ticket created**](" <> render (DiscussCommentR project_handle target comment_id) [] <> ")"
                                     ]
 
-                            void $ insert $ Message (Just project_id) now (Just last_editor) (Just user_id) message_text True
-                            void $ insert $ Message (Just project_id) now (Just user_id) (Just last_editor) message_text True
+                            insertMessage_ $ Message MessageDirect (Just project_id) now (Just last_editor) (Just user_id) message_text True
+                            insertMessage_ $ Message MessageDirect (Just project_id) now (Just user_id) (Just last_editor) message_text True
 
-                            lift $ addAlert "danger" "conflicting edits (ticket created, messages sent)"
+                            lift $ lift $ addAlert "danger" "conflicting edits (ticket created, messages sent)"
 
                         case either_last_edit of
-                            Left (Entity to_update _) -> update $ \ l -> do
+                            Left (Entity to_update _) -> lift $
+                                update $ \l -> do
                                 set l [WikiLastEditEdit =. val edit_id]
                                 where_ $ l ^. WikiLastEditId ==. val to_update
-
                             Right _ -> return ()
 
                     redirect $ WikiR project_handle target
@@ -405,18 +415,18 @@ getDiscussWikiR project_handle target = lookupGetParam "state" >>= \case
   where
     go = getDiscussWikiR' project_handle target
 
-getDiscussWikiR' :: Text                              -- ^ Project handle.
-                 -> Text                              -- ^ Wiki page name.
+getDiscussWikiR' :: Text                      -- ^ Project handle.
+                 -> Text                      -- ^ Wiki page name.
                  -> (Maybe UserId
                      -> ProjectId
                      -> DiscussionId
-                     -> YesodDB App [Entity Comment]) -- ^ Root comment getter.
+                     -> DB [Entity Comment])  -- ^ Root comment getter.
                  -> Handler Html
 getDiscussWikiR' project_handle target get_root_comments = do
     muser <- maybeAuth
     let muser_id = entityKey <$> muser
 
-    (Entity project_id project, Entity _ page) <- runDB $ getPageInfo project_handle target
+    (Entity project_id project, Entity _ page) <- runYDB $ getPageInfo project_handle target
 
     (roots, replies, user_map, closure_map, ticket_map, flag_map, tag_map) <- runDB $ do
         roots           <- get_root_comments muser_id project_id (wikiPageDiscussion page)
@@ -469,7 +479,7 @@ getNewDiscussWikiR project_handle target = do
 
 postNewDiscussWikiR :: Text -> Text -> Handler Html
 postNewDiscussWikiR project_handle target = do
-    (project_entity, Entity _ page) <- runDB $ getPageInfo project_handle target
+    (project_entity, Entity _ page) <- runYDB $ getPageInfo project_handle target
 
     ((result, _), _) <- runFormPost commentNewTopicForm
 
@@ -486,9 +496,9 @@ postNewDiscussWikiR project_handle target = do
 
 getWikiDiffR :: Text -> Text -> WikiEditId -> WikiEditId -> Handler Html
 getWikiDiffR project_handle target start_edit_id end_edit_id = do
-    (Entity _ project, Entity page_id _) <- runDB $ getPageInfo project_handle target
+    (Entity _ project, Entity page_id _) <- runYDB $ getPageInfo project_handle target
 
-    (start_edit, end_edit) <- runDB $ (,)
+    (start_edit, end_edit) <- runYDB $ (,)
         <$> get404 start_edit_id
         <*> get404 end_edit_id
 
@@ -526,9 +536,9 @@ getWikiDiffProxyR project_handle target = do
 getEditWikiR :: Text -> Text -> Handler Html
 getEditWikiR project_handle target = do
     user <- entityVal <$> requireAuth
-    (Entity _ project, Entity page_id page) <- runDB $ getPageInfo project_handle target
+    (Entity _ project, Entity page_id page) <- runYDB $ getPageInfo project_handle target
 
-    Entity _ last_edit <- runDB $ getBy404 $ UniqueWikiLastEdit page_id
+    Entity _ last_edit <- runYDB $ getBy404 $ UniqueWikiLastEdit page_id
 
     let can_edit = isEstablished user
 
@@ -545,10 +555,12 @@ getEditWikiR project_handle target = do
 
 getWikiHistoryR :: Text -> Text -> Handler Html
 getWikiHistoryR project_handle target = do
-    (Entity _ project, Entity page_id _) <- runDB $ getPageInfo project_handle target
+    (Entity _ project, Entity page_id _) <- runYDB $ getPageInfo project_handle target
 
     (edits, users) <- runDB $ do
-        edits <- select $ from $ \ edit -> do
+        edits <-
+            select $
+            from $ \ edit -> do
             where_ ( edit ^. WikiEditPage ==. val page_id )
             orderBy [ desc (edit ^. WikiEditId) ]
             return edit
@@ -571,8 +583,8 @@ getWikiHistoryR project_handle target = do
 
 getWikiEditR :: Text -> Text -> WikiEditId -> Handler Html
 getWikiEditR project_handle target edit_id = do
-    (Entity _ project, Entity page_id _) <- runDB $ getPageInfo project_handle target
-    edit <- runDB $ do
+    (Entity _ project, Entity page_id _) <- runYDB $ getPageInfo project_handle target
+    edit <- runYDB $ do
         edit <- get404 edit_id
 
         when (page_id /= wikiEditPage edit) $ error "selected edit is not an edit of selected page"
@@ -590,7 +602,7 @@ getWikiEditR project_handle target edit_id = do
 getNewWikiR :: Text -> Text -> Handler Html
 getNewWikiR project_handle target = do
     user_id <- requireAuthId
-    Entity _ project <- runDB $ getBy404 $ UniqueProjectHandle project_handle
+    Entity _ project <- runYDB $ getBy404 $ UniqueProjectHandle project_handle
     affiliated <- runDB $ (||)
             <$> isProjectAffiliated project_handle user_id
             <*> isProjectAdmin "snowdrift" user_id
@@ -617,7 +629,7 @@ postNewWikiR project_handle target = do
 
     now <- liftIO getCurrentTime
 
-    Entity project_id _ <- runDB . getBy404 $ UniqueProjectHandle project_handle
+    Entity project_id _ <- runYDB . getBy404 $ UniqueProjectHandle project_handle
 
     ((result, _), _) <- runFormPost $ newWikiForm Nothing
 
@@ -655,7 +667,7 @@ postNewWikiR project_handle target = do
 getEditWikiPermissionsR :: Text -> Text -> Handler Html
 getEditWikiPermissionsR project_handle target = do
     user_id <- requireAuthId
-    (Entity _ project, Entity _ page) <- runDB $ getPageInfo project_handle target
+    (Entity _ project, Entity _ page) <- runYDB $ getPageInfo project_handle target
 
     affiliated <- runDB $ (||)
             <$> isProjectAdmin project_handle user_id
@@ -672,7 +684,7 @@ getEditWikiPermissionsR project_handle target = do
 postEditWikiPermissionsR :: Text -> Text -> Handler Html
 postEditWikiPermissionsR project_handle target = do
     Entity user_id _ <- requireAuth
-    (_, Entity page_id page) <- runDB $ getPageInfo project_handle target
+    (_, Entity page_id page) <- runYDB $ getPageInfo project_handle target
 
     affiliated <- runDB $ (||)
             <$> isProjectAdmin project_handle user_id
@@ -684,7 +696,8 @@ postEditWikiPermissionsR project_handle target = do
 
     case result of
         FormSuccess level -> do
-            runDB $ update $ \ p -> do
+            runDB $
+                update $ \ p -> do
                 where_ $ p ^. WikiPageId ==. val page_id
                 set p [ WikiPagePermissionLevel =. val level ]
 

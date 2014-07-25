@@ -2,8 +2,8 @@ module Handler.Contact where
 
 import Import
 
+import Model.Message
 import Widgets.Markdown
-
 
 contactForm :: Form Markdown
 contactForm = renderBootstrap3 $ areq' snowdriftMarkdownField "" Nothing
@@ -11,7 +11,7 @@ contactForm = renderBootstrap3 $ areq' snowdriftMarkdownField "" Nothing
 getContactR :: Text -> Handler Html
 getContactR project_handle = do
     (contact_form, _) <- generateFormPost contactForm
-    Entity _ project <- runDB $ getBy404 (UniqueProjectHandle project_handle)
+    Entity _ project <- runYDB $ getBy404 (UniqueProjectHandle project_handle)
     defaultLayout $ do
         setTitle . toHtml $ "Contact " <> projectName project <> " | Snowdrift.coop"
         $(widgetFile "contact")
@@ -26,13 +26,13 @@ postContactR project_handle = do
 
     case result of
         FormSuccess content -> do
-            void $ runDB $ do
-                Entity project_id _ <- getBy404 $ UniqueProjectHandle project_handle
-                insert $ Message (Just project_id) now maybe_user_id Nothing content False
+            runSYDB $ do
+                Entity project_id _ <- lift $ getBy404 $ UniqueProjectHandle project_handle
+                insertMessage_ $ Message MessageDirect (Just project_id) now maybe_user_id Nothing content False
 
-            addAlert "success" "Comment submitted.  Thank you for your input!" 
+            addAlert "success" "Comment submitted.  Thank you for your input!"
 
-        _ -> addAlert "danger" "Error occurred when submitting form." 
+        _ -> addAlert "danger" "Error occurred when submitting form."
 
     redirect $ ContactR project_handle
 

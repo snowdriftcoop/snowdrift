@@ -1,20 +1,21 @@
 module View.Comment
-    ( closedForm
+    ( commentCloseForm
+    , commentCloseFormWidget
     , commentEditForm
     , commentEditFormWidget
-    , commentNewTopicForm
-    , commentReplyForm
     , commentForm
     , commentFormWidget
+    , commentNewTopicForm
+    , commentReplyForm
+    , commentRetractForm
+    , commentRetractFormWidget
     , commentTreeWidget
     , createCommentTagForm
     , disabledCommentForm
     , flagCommentForm
     , newCommentTagForm
     , orderingNewestFirst
-    , requiredMarkdownForm
     , rethreadForm
-    , retractedForm
     ) where
 
 import Import
@@ -35,18 +36,21 @@ import qualified Data.Text                 as T
 import           Data.Tree
 
 disabledCommentForm :: Form Markdown
-disabledCommentForm = renderBootstrap3 $ areq snowdriftMarkdownField ("Reply" { fsAttrs = [("disabled",""), ("class","form-control")] }) Nothing
+disabledCommentForm = renderBootstrap3 $ areq' snowdriftMarkdownField ("Reply" { fsAttrs = [("disabled",""), ("class","form-control")] }) Nothing
 
 commentForm :: SomeMessage App -> Maybe Markdown -> Form Markdown
 commentForm label = renderBootstrap3 . areq' snowdriftMarkdownField label
 
 commentFormWidget :: SomeMessage App -> Maybe Markdown -> Widget
-commentFormWidget label content = do
-    (comment_form, enctype) <- handlerToWidget $ generateFormPost (commentForm label content)
+commentFormWidget label = commentFormWidget' . commentForm label
+
+commentFormWidget' :: Form Markdown -> Widget
+commentFormWidget' form = do
+    (widget, enctype) <- handlerToWidget $ generateFormPost form
     [whamlet|
         <div>
             <form method="POST" enctype=#{enctype}>
-                ^{comment_form}
+                ^{widget}
                 <input type="submit" name="mode" value="preview">
     |]
 
@@ -54,13 +58,25 @@ commentEditForm :: Markdown -> Form Markdown
 commentEditForm = commentForm "Edit" . Just
 
 commentEditFormWidget :: Markdown -> Widget
-commentEditFormWidget = commentFormWidget "Edit" . Just
+commentEditFormWidget = commentFormWidget' . commentEditForm
 
 commentNewTopicForm :: Form Markdown
 commentNewTopicForm = commentForm "New Topic" Nothing
 
 commentReplyForm :: Form Markdown
 commentReplyForm = commentForm "Reply" Nothing
+
+commentCloseForm :: Maybe Markdown -> Form Markdown
+commentCloseForm = commentForm "Reason for closing:"
+
+commentCloseFormWidget :: Maybe Markdown -> Widget
+commentCloseFormWidget = commentFormWidget' . commentCloseForm
+
+commentRetractForm :: Maybe Markdown -> Form Markdown
+commentRetractForm = commentForm "Reason for retracting:"
+
+commentRetractFormWidget :: Maybe Markdown -> Widget
+commentRetractFormWidget = commentFormWidget' . commentRetractForm
 
 rethreadForm :: Form (Text, Text)
 rethreadForm = renderBootstrap3 $ (,)
@@ -78,13 +94,6 @@ newCommentTagForm project_tags other_tags = renderBootstrap3 $ (,)
 --    <*> areq hiddenField "" (Just "apply")
     where tags = fmap (\(Entity tag_id tag) -> (tagName tag, tag_id))
           tagCloudField = checkboxesFieldList' $ (\(PersistInt64 a) -> show a) . unKey
-
-closedForm, retractedForm :: Maybe Markdown -> Form Markdown
-closedForm    = requiredMarkdownForm "Reason for closing:"
-retractedForm = requiredMarkdownForm "Reason for retracting:"
-
-requiredMarkdownForm :: SomeMessage App -> Maybe Markdown -> Form Markdown
-requiredMarkdownForm settings = renderBootstrap3 . areq' snowdriftMarkdownField settings
 
 flagCommentForm :: Maybe (Maybe [FlagReason]) -> Maybe (Maybe Markdown) -> Form (Maybe [FlagReason], Maybe Markdown)
 flagCommentForm def_reasons def_message = renderBootstrap3 $ (,) <$> flagReasonsForm <*> additionalCommentsForm

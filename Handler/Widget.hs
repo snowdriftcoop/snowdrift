@@ -18,7 +18,7 @@ widgetLayout widget = do
 
 getWidgetR :: Text -> Handler Html
 getWidgetR project_handle = do
-    (project, pledges) <- runDB $ do
+    (project, pledges) <- runYDB $ do
         Entity project_id project <- getBy404 $ UniqueProjectHandle project_handle
         pledges <- getProjectShares project_id
         return (project, pledges)
@@ -27,6 +27,6 @@ getWidgetR project_handle = do
         users = fromIntegral $ length pledges
         shares = fromIntegral $ sum pledges
         project_value = share_value $* shares
-        
+
     widgetLayout $(widgetFile "widget")
-    
+

@@ -10,7 +10,7 @@ import qualified Data.Set as S
 
 data AnnotatedTicket = AnnotatedTicket Text TicketId Ticket WikiPage Comment [AnnotatedTag]
 
-getTickets :: ProjectId -> Text -> YesodDB App [AnnotatedTicket]
+getTickets :: ProjectId -> Text -> YDB [AnnotatedTicket]
 getTickets project_id project_handle = do
     tickets_info <- getTicketsInfo
 
@@ -39,14 +39,14 @@ getTickets project_id project_handle = do
     mapM (\(_, t) -> lift $ t tags_map) used_tags'tickets
   where
     -- Get all of this Project's Ticket/Comment/WikiPage tuples, for all open tickets.
-    getTicketsInfo :: YesodDB App [(Entity Ticket, Entity Comment, Entity WikiPage)]
+    getTicketsInfo :: DB [(Entity Ticket, Entity Comment, Entity WikiPage)]
     getTicketsInfo =
         select $
-            from $ \(ticket `InnerJoin` comment `InnerJoin` page) -> do
-            on_ (page ^. WikiPageDiscussion ==. comment ^. CommentDiscussion)
-            on_ (comment ^. CommentId ==. ticket ^. TicketComment)
-            where_ (page ^. WikiPageProject ==. val project_id &&.
-                    comment ^. CommentId `notIn` subList_select
-                                                     (from $ \closure ->
-                                                      return $ closure ^. CommentClosureComment))
-            return (ticket, comment, page)
+        from $ \(ticket `InnerJoin` comment `InnerJoin` page) -> do
+        on_ (page ^. WikiPageDiscussion ==. comment ^. CommentDiscussion)
+        on_ (comment ^. CommentId ==. ticket ^. TicketComment)
+        where_ (page ^. WikiPageProject ==. val project_id &&.
+                comment ^. CommentId `notIn` subList_select
+                                                 (from $ \closure ->
+                                                  return $ closure ^. CommentClosureComment))
+        return (ticket, comment, page)

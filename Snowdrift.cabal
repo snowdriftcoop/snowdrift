@@ -35,11 +35,13 @@ library
                      Model.Issue
                      Model.Markdown
                      Model.Markdown.Diff
+                     Model.Message
                      Model.Permission
                      Model.Project
                      Model.Role
                      Model.Settings
                      Model.Shares
+                     Model.SnowdriftEvent
                      Model.Tag
                      Model.Ticket
                      Model.Transaction
@@ -89,13 +91,15 @@ library
                      Widgets.Preview
                      Widgets.ProjectPledges
 
-    other-modules: Model.Settings.Internal
-                   Model.Established.Internal
-                   Model.CollapseState.Internal
+    other-modules: Model.CollapseState.Internal
                    Model.Comment.Internal
-                   Model.Role.Internal
-                   Model.ViewType.Internal
+                   Model.Established.Internal
+                   Model.Message.Internal
                    Model.Permission.Internal
+                   Model.Role.Internal
+                   Model.Settings.Internal
+                   Model.User.Internal
+                   Model.ViewType.Internal
 
     if flag(dev) || flag(library-only)
         cpp-options:   -DDEVELOPMENT
@@ -103,7 +107,9 @@ library
     else
         ghc-options:   -Werror -Wall -O2
 
-    extensions: DeriveDataTypeable
+    extensions: ConstraintKinds
+                DeriveDataTypeable
+                DeriveFunctor
                 EmptyDataDecls
                 FlexibleContexts
                 FlexibleInstances
@@ -115,6 +121,7 @@ library
                 NoMonomorphismRestriction
                 QuasiQuotes
                 OverloadedStrings
+                RankNTypes
                 RecordWildCards
                 ScopedTypeVariables
                 TemplateHaskell
@@ -123,72 +130,72 @@ library
                 ViewPatterns
 
     build-depends: base                          >= 4          && < 5
-                 -- , yesod-platform
-                 , yesod
-                 , yesod-core
-                 , yesod-auth
-                 , yesod-auth-hashdb
-                 , yesod-static
-                 , yesod-form
-                 , clientsession
-                 , resourcet
-                 , bytestring
-                 , text
-                 , persistent
-                 , persistent-postgresql
-                 , persistent-template
-                 , template-haskell
-                 , hamlet
-                 , shakespeare
-                 , shakespeare-css
-                 , shakespeare-js
-                 , shakespeare-text
-                 , hjsmin
-                 , monad-control
-                 , wai-extra
-                 , wai-logger
-                 , yaml
-                 , http-conduit
-                 , directory
-                 , warp
-                 , esqueleto
-                 , lifted-base
-                 , vector
-                 , data-default
                  , aeson
-                 , conduit
-                 , monad-logger
-                 , fast-logger
-                 , time
-                 , time-units
-                 , transformers
-                 , http-types
-                 , random
-                 , yesod-markdown
-                 , yesod-newsfeed
-                 , Diff
-                 , path-pieces
-                 , containers
+                 , async
+                 , attoparsec
                  , authenticate
                  , blaze-builder
                  , blaze-html
                  , blaze-markup
-                 , attoparsec
-                 , old-locale
-                 , hit < 0.6
-                 , process
-                 , temporary
-                 , regex-tdfa
-                 , github
-                 , async
-                 , universe
-                 , unix
-                 , mtl
-                 , file-embed
+                 , bytestring
+                 , clientsession
+                 , conduit
+                 , containers
+                 , data-default
                  , diagrams
                  , diagrams-lib
                  , diagrams-rasterific
+                 , Diff
+                 , directory
+                 , esqueleto
+                 , fast-logger
+                 , file-embed
+                 , github
+                 , hamlet
+                 , hit < 0.6
+                 , hjsmin
+                 , http-conduit
+                 , http-types
                  , JuicyPixels
+                 , lifted-base
+                 , monad-control
+                 , monad-logger
+                 , mtl
+                 , old-locale
+                 , path-pieces
+                 , persistent
+                 , persistent-postgresql
+                 , persistent-template
+                 , process
+                 , random
+                 , regex-tdfa
+                 , resourcet
+                 , shakespeare
+                 , shakespeare-css
+                 , shakespeare-js
+                 , shakespeare-text
+                 , stm
+                 , template-haskell
+                 , temporary
+                 , text
+                 , time
+                 , time-units
+                 , transformers
+                 , universe
+                 , unix
+                 , vector
+                 , wai-extra
+                 , wai-logger
+                 , warp
+                 , yaml
+                 , yesod
+                 , yesod-auth
+                 , yesod-auth-hashdb
+                 , yesod-core
+                 , yesod-form
+                 , yesod-markdown
+                 , yesod-newsfeed
+                 , yesod-static
 
 
 executable         SnowdriftProcessPayments

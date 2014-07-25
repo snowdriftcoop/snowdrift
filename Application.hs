@@ -9,34 +9,40 @@ module Application
 
 import Import
 import Settings
--- import Yesod.Auth
-import Yesod.Default.Config
-import Yesod.Default.Main
-import Yesod.Default.Handlers
-import Network.Wai.Middleware.RequestLogger
-    ( mkRequestLogger, outputFormat, OutputFormat (..), IPAddrSource (..), destination
-    )
-import qualified Network.Wai.Middleware.RequestLogger as RequestLogger
-import qualified Database.Persist
--- import Database.Persist.Sql (runSqlPool)
-import Network.HTTP.Client.Conduit (newManager)
-import Control.Monad.Logger (runLoggingT, runStderrLoggingT)
-import Control.Concurrent (forkIO, threadDelay)
-import System.Log.FastLogger (newStdoutLoggerSet, defaultBufSize, flushLogStr)
-import Network.Wai.Logger (clockDateCacher)
-import Data.Default (def)
-import Yesod.Core.Types (loggerSet, Logger (Logger))
-
-import Control.Monad.Trans.Resource
-
-import System.Directory
-import Database.Persist.Postgresql (pgConnStr, withPostgresqlConn)
-
-import qualified Data.List as L
-import Data.Text as T
-import qualified Data.Text.IO as T
-
 import Version
+
+import           Blaze.ByteString.Builder             (toLazyByteString)
+import           Control.Concurrent                   (forkIO, threadDelay)
+import           Control.Concurrent.STM               (TChan, atomically, newTChanIO, tryReadTChan)
+import           Control.Monad.Logger                 (runLoggingT, runStderrLoggingT)
+import           Control.Monad.Reader
+import           Control.Monad.Trans.Resource
+import           Data.ByteString                      (ByteString)
+import           Data.Default                         (def)
+import qualified Data.List                            as L
+import           Data.Text                            as T
+import qualified Data.Text.Lazy                       as TL
+import qualified Data.Text.Lazy.Encoding              as TLE
+import qualified Data.Text.IO                         as T
+import qualified Database.Persist
+import           Database.Persist                     (getJust)
+import           Database.Persist.Postgresql          (pgConnStr, withPostgresqlConn)
+import           Network.HTTP.Client.Conduit          (newManager)
+import           Network.Wai.Middleware.RequestLogger ( mkRequestLogger, outputFormat, OutputFormat (..)
+                                                      , IPAddrSource (..), destination
+                                                      )
+import           Network.Wai.Logger                   (clockDateCacher)
+import qualified Network.Wai.Middleware.RequestLogger as RequestLogger
+import           System.Directory
+import           System.Environment                   (lookupEnv)
+import           System.Log.FastLogger                (newStdoutLoggerSet, defaultBufSize, flushLogStr)
+import           System.Posix.Env.ByteString
+import           Yesod                                (renderRoute)
+import           Yesod.Core.Types                     (loggerSet, Logger (Logger))
+import           Yesod.Default.Config
+import           Yesod.Default.Handlers
+import           Yesod.Default.Main
+import           Yesod.Markdown
 
 -- Import all relevant handler modules here.
 -- Don't forget to add new modules to your cabal file!
@@ -68,14 +74,11 @@ import Handler.Widget
 import Handler.Wiki
 import Handler.Wiki.Comment
 
+import Model.Message
+import Model.SnowdriftEvent
+import Model.User
+
 import Widgets.Navbar
-
-import Data.ByteString (ByteString)
-import System.Posix.Env.ByteString
-
-import Control.Monad.Reader
-
-import System.Environment (lookupEnv)
 
 runSql :: MonadSqlPersist m => Text -> m ()
 runSql = flip rawExecute [] -- TODO quasiquoter?
@@ -139,15 +142,25 @@ makeFoundation conf = do
     -- used less than once a second on average, you may prefer to omit this
     -- thread and use "(updater >> getter)" in place of "getter" below.  That
     -- would update the cache every time it is used, instead of every second.
-    let updateLoop = do
+    let updateLoop = forever $ do
             threadDelay 1000000
             updater
             flushLogStr loggerSet'
             updateLoop
-    _ <- forkIO updateLoop
+    void $ forkIO updateLoop
 
+    event_chan <- newTChanIO
     let logger = Yesod.Core.Types.Logger loggerSet' getter
-        foundation = App navbar conf s p manager dbconf logger
+        foundation = App
+                       navbar
+                       conf
+                       s
+                       p
+                       manager
+                       dbconf
+                       logger
+                       event_chan
+                       [messageEventHandler] -- Add more event handlers here.
 
     -- Perform database migration using our application's logging settings.
     case appEnv conf of
@@ -169,15 +182,18 @@ makeFoundation conf = do
         Database.Persist.runPool dbconf doMigration p
         runSqlPool migrateTriggers p
 
+
     runLoggingT
-	migration
-	(messageLoggerSource foundation logger)
+        migration
+        (messageLoggerSource foundation logger)
 
     now <- getCurrentTime
     let (base, diff) = version
     runLoggingT
         (runResourceT $ Database.Persist.runPool dbconf (insert_ $ Build now base diff) p)
         (messageLoggerSource foundation logger)
+
+    forkEventHandler foundation
 
     return foundation
 
@@ -324,3 +340,51 @@ migrateTriggers = runResourceT $ do
 
     return ()
 
+--------------------------------------------------------------------------------
+-- SnowdriftEvent handling
+
+forkEventHandler :: App -> IO ()
+forkEventHandler app@App{..} = void . forkIO . forever $ do
+    threadDelay 1000000 -- Sleep for one second in between runs.
+    handleNEvents 10     -- Handle up to 10 events per run.
+  where
+    handleNEvents :: Int -> IO ()
+    handleNEvents 0 = return ()
+    handleNEvents n = atomically (tryReadTChan appEventChan) >>= \case
+        Nothing    -> return ()
+        Just event -> do
+            mapM_ (runDaemon app) (appEventHandlers <*> [event])
+            handleNEvents (n-1)
+
+-- Handler in charge of sending Messages to interested parties.
+messageEventHandler :: SnowdriftEvent -> Daemon ()
+messageEventHandler (ECommentPosted comment_id comment) = case commentParent comment of
+    Nothing -> return ()
+    Just parent_comment_id -> do
+        (parent_user_id, parent_user) <- runDB $ do
+            parent_user_id <- commentUser <$> getJust parent_comment_id
+            (parent_user_id,) <$> getJust parent_user_id
+        when (MessageOnReply `elem` userMessagePreferences parent_user) $ do
+            app <- ask
+            let parent_comment_route = renderRoute' (CommentDirectLinkR parent_comment_id) app
+                reply_comment_route  = renderRoute' (CommentDirectLinkR comment_id)        app
+
+            let content = mconcat
+                  [ "Someone replied to [your comment]("
+                  , Markdown parent_comment_route
+                  , ")! You can view the reply [here]("
+                  , Markdown reply_comment_route
+                  , ")."
+                  , ""
+                  , "*You can filter these messages by adjusting the settings in your profile.*"
+                  ]
+            now <- liftIO getCurrentTime
+            runSDB $ insertMessage_ (Message MessageReply Nothing now Nothing (Just parent_user_id) content True)
+messageEventHandler _ = return ()
+
+renderRoute' :: Route App -> App -> Text
+renderRoute' route app =
+    let (path_pieces, query_params) = renderRoute route
+    -- converting a lazy ByteString to a strict Text... ridiculous!
+    -- why does joinPath return a ByteString??
+    in TL.toStrict $ TLE.decodeUtf8 $ toLazyByteString (joinPath app "" path_pieces query_params)

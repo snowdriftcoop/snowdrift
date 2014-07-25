@@ -56,12 +56,12 @@ getProjectShares project_id = do
     return $ map (pledgeFundedShares . entityVal) pledges
 
 -- | Get all WikiPages for a Project.
-getProjectPages :: ProjectId -> YesodDB App [Entity WikiPage]
+getProjectPages :: ProjectId -> DB [Entity WikiPage]
 getProjectPages project_id =
     select $
-        from $ \page -> do
-        where_ $ page ^. WikiPageProject ==. val project_id
-        return page
+    from $ \page -> do
+    where_ $ page ^. WikiPageProject ==. val project_id
+    return page
 
 projectComputeShareValue :: [Int64] -> Milray
 projectComputeShareValue pledges =
@@ -83,7 +83,7 @@ updateShareValue project_id = do
         where_ (project ^. ProjectId ==. val project_id)
 
 -- TODO: Better name.
-getCounts :: Entity User -> [Entity Project] -> YesodDB App [([Value Int], [Value Int])]
+getCounts :: Entity User -> [Entity Project] -> DB [([Value Int], [Value Int])]
 getCounts (Entity user_id user) = mapM $ \(Entity project_id _) -> do
     moderator <- isProjectModerator' user_id project_id
 
@@ -141,33 +141,33 @@ projectNameWidget project_id = do
         Nothing -> [whamlet| (unknown project) |]
         Just project -> [whamlet| #{projectName project} |]
 
-getProjectTagList :: ProjectId -> YesodDB App ([Entity Tag], [Entity Tag])
+getProjectTagList :: ProjectId -> DB ([Entity Tag], [Entity Tag])
 getProjectTagList project_id = (,) <$> getProjectTags <*> getOtherTags
   where
-    getProjectTags :: YesodDB App [Entity Tag]
+    getProjectTags :: DB [Entity Tag]
     getProjectTags =
         selectDistinct $
-            from $ \(tag `InnerJoin` rel `InnerJoin` comment `InnerJoin` page) -> do
-            on_ ( page ^. WikiPageDiscussion ==. comment ^. CommentDiscussion )
-            on_ ( comment ^. CommentId ==. rel ^. CommentTagComment )
-            on_ ( rel ^. CommentTagTag ==. tag ^. TagId )
-            where_ ( page ^. WikiPageProject ==. val project_id )
-            orderBy [ desc (tag ^. TagName) ]
-            return tag
+        from $ \(tag `InnerJoin` rel `InnerJoin` comment `InnerJoin` page) -> do
+        on_ ( page ^. WikiPageDiscussion ==. comment ^. CommentDiscussion )
+        on_ ( comment ^. CommentId ==. rel ^. CommentTagComment )
+        on_ ( rel ^. CommentTagTag ==. tag ^. TagId )
+        where_ ( page ^. WikiPageProject ==. val project_id )
+        orderBy [ desc (tag ^. TagName) ]
+        return tag
 
-    getOtherTags :: YesodDB App [Entity Tag]
-    getOtherTags = do
+    getOtherTags :: DB [Entity Tag]
+    getOtherTags =
         selectDistinct $
-            from $ \(tag `InnerJoin` rel `InnerJoin` comment `InnerJoin` page) -> do
-            on_ ( page ^. WikiPageDiscussion ==. comment ^. CommentDiscussion )
-            on_ ( comment ^. CommentId ==. rel ^. CommentTagComment )
-            on_ ( rel ^. CommentTagTag ==. tag ^. TagId )
-            where_ ( page ^. WikiPageProject !=. val project_id )
-            orderBy [ desc (tag ^. TagName) ]
-            return tag
+        from $ \(tag `InnerJoin` rel `InnerJoin` comment `InnerJoin` page) -> do
+        on_ ( page ^. WikiPageDiscussion ==. comment ^. CommentDiscussion )
+        on_ ( comment ^. CommentId ==. rel ^. CommentTagComment )
+        on_ ( rel ^. CommentTagTag ==. tag ^. TagId )
+        where_ ( page ^. WikiPageProject !=. val project_id )
+        orderBy [ desc (tag ^. TagName) ]
+        return tag
 
 -- | Get all of a Project's WikiPages, sorted alphabetically.
-getProjectWikiPages :: ProjectId ->  YesodDB App [Entity WikiPage]
+getProjectWikiPages :: ProjectId ->  DB [Entity WikiPage]
 getProjectWikiPages project_id =
     select $
     from $ \ wp -> do

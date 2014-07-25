@@ -31,7 +31,7 @@ getInviteR project_handle = do
 
     unless admin $ permissionDenied "must be an admin to invite"
 
-    project <- entityVal <$> (runDB . getBy404 $ UniqueProjectHandle project_handle)
+    project <- entityVal <$> (runYDB . getBy404 $ UniqueProjectHandle project_handle)
 
     now <- liftIO getCurrentTime
     maybe_invite_code <- lookupSession "InviteCode"
@@ -41,16 +41,20 @@ getInviteR project_handle = do
     let maybe_link = InvitationR project_handle <$> maybe_invite_code
     (invite_form, _) <- generateFormPost inviteForm
 
-    outstanding_invites <- runDB $ select $ from $ \ invite -> do
-            where_ ( invite ^. InviteRedeemed ==. val False )
-            orderBy [ desc (invite ^. InviteCreatedTs) ]
-            return invite
+    outstanding_invites <- runDB $
+        select $
+        from $ \ invite -> do
+        where_ ( invite ^. InviteRedeemed ==. val False )
+        orderBy [ desc (invite ^. InviteCreatedTs) ]
+        return invite
 
-    redeemed_invites <- runDB $ select $ from $ \ invite -> do
-            where_ ( invite ^. InviteRedeemed ==. val True )
-            orderBy [ desc (invite ^. InviteCreatedTs) ]
-            limit 20
-            return invite
+    redeemed_invites <- runDB $
+        select $
+        from $ \ invite -> do
+        where_ ( invite ^. InviteRedeemed ==. val True )
+        orderBy [ desc (invite ^. InviteCreatedTs) ]
+        limit 20
+        return invite
 
     let redeemed_users = S.fromList $ mapMaybe (inviteRedeemedBy . entityVal) redeemed_invites
         redeemed_inviters = S.fromList $ map (inviteUser . entityVal) redeemed_invites
@@ -86,7 +90,7 @@ postInviteR project_handle = do
 
     now <- liftIO getCurrentTime
     invite <- liftIO randomIO
-    project_id <- fmap entityKey $ runDB $ getBy404 $ UniqueProjectHandle project_handle
+    project_id <- fmap entityKey $ runYDB $ getBy404 $ UniqueProjectHandle project_handle
 
     ((result, _), _) <- runFormPost inviteForm
     case result of

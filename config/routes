@@ -83,6 +83,11 @@
 /p/#Text/w/#Text/c/#CommentId/tag/!new/create CreateNewCommentTagR      POST
 /p/#Text/w/#Text/c/#CommentId/tag/!new/apply  ApplyNewCommentTagR       POST
 
+-- Experimental, may go away - but there are times when all you have is a CommentId,
+-- and you want to render a page. This function, for now, should redirect to
+-- the correct wiki page. TODO: when we add more discussion types, what then?
+/c/#CommentId CommentDirectLinkR GET
+
 -- Devs only!
 
 /dev/repo  RepoFeedR  GET

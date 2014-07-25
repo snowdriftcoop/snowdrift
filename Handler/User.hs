@@ -15,7 +15,7 @@ getUserR :: UserId -> Handler Html
 getUserR user_id = do
     mviewer_id <- maybeAuthId
 
-    user <- runDB $ get404 user_id
+    user <- runYDB $ get404 user_id
 
     projects_and_roles <- runDB $ getProjectsAndRoles user_id
 
@@ -23,29 +23,30 @@ getUserR user_id = do
         setTitle . toHtml $ "User Profile - " <> userPrintName (Entity user_id user) <> " | Snowdrift.coop"
         renderUser mviewer_id user_id user projects_and_roles
 
+checkEditUser :: UserId -> Handler UserId
+checkEditUser user_id = do
+    viewer_id <- requireAuthId
+    when (user_id /= viewer_id) $ runYDB $ do
+        is_admin <- isProjectAdmin "snowdrift" viewer_id
+        unless is_admin $
+            lift $ permissionDenied "You can only modify your own profile!"
+    return viewer_id
+
 getEditUserR :: UserId -> Handler Html
 getEditUserR user_id = do
-    viewer_id <- requireAuthId
-    when (user_id /= viewer_id) $ runDB $ do
-        is_admin <- isProjectAdmin "snowdrift" viewer_id
-        unless is_admin $ lift $ permissionDenied "You can only modify your own profile!"
+    _ <- checkEditUser user_id
+    user <- runYDB (get404 user_id)
 
-    user <- runDB $ get404 user_id
-
-    (form, enctype) <- generateFormPost $ editUserForm user
+    (form, enctype) <- generateFormPost $ editUserForm (Just user)
     defaultLayout $ do
         setTitle . toHtml $ "User Profile - " <> userPrintName (Entity user_id user) <> " | Snowdrift.coop"
         $(widgetFile "edit_user")
 
 postUserR :: UserId -> Handler Html
 postUserR user_id = do
-    viewer_id <- requireAuthId
+    viewer_id <- checkEditUser user_id
 
-    when (user_id /= viewer_id) $ runDB $ do
-        is_admin <- isProjectAdmin "snowdrift" viewer_id
-        unless is_admin $ lift $ permissionDenied "You can only modify your own profile!"
-
-    ((result, _), _) <- runFormPost $ editUserForm undefined
+    ((result, _), _) <- runFormPost $ editUserForm Nothing
 
     case result of
         FormSuccess user_update -> do
@@ -53,11 +54,11 @@ postUserR user_id = do
             let action :: Text = "update"
             case mode of
                 Just "preview" -> do
-                    user <- runDB $ get404 user_id
+                    user <- runYDB $ get404 user_id
 
                     let updated_user = applyUserUpdate user user_update
 
-                    (form, _) <- generateFormPost $ editUserForm updated_user
+                    (form, _) <- generateFormPost $ editUserForm (Just updated_user)
 
                     defaultLayout $
                         previewWidget form action $
@@ -86,11 +87,11 @@ getUsersR = do
                   return user
 
     infos :: [(Entity User, ((Value Text, Value Text), Value Role))] <- runDB $
-             select $
-             from $ \(user `InnerJoin` role `InnerJoin` project) -> do
-             on_ (project ^. ProjectId ==. role ^. ProjectUserRoleProject)
-             on_ (user ^. UserId ==. role ^. ProjectUserRoleUser)
-             return (user, ((project ^. ProjectName, project ^. ProjectHandle), role ^. ProjectUserRoleRole))
+        select $
+        from $ \(user `InnerJoin` role `InnerJoin` project) -> do
+        on_ (project ^. ProjectId ==. role ^. ProjectUserRoleProject)
+        on_ (user ^. UserId ==. role ^. ProjectUserRoleUser)
+        return (user, ((project ^. ProjectName, project ^. ProjectHandle), role ^. ProjectUserRoleRole))
 
 
     let users = map (\u -> (getUserKey u, u)) users'
@@ -149,10 +150,10 @@ postUserEstEligibleR user_id = do
     ((result, _), _) <- runFormPost establishUserForm
     case result of
         FormSuccess reason -> do
-            user <- runDB (get404 user_id)
+            user <- runYDB (get404 user_id)
             case userEstablished user of
                 EstUnestablished -> do
-                    runDB $ eligEstablishUser establisher_id user_id reason
+                    runSDB $ eligEstablishUser establisher_id user_id reason
                     setMessage "This user is now eligible for establishment. Thanks!"
                     redirectUltDest HomeR
                 _ -> error "User not unestablished!"
