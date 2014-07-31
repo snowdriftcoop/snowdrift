@@ -7,12 +7,12 @@ module Model.User
     , eligEstablishUser
     , establishUser
     , fetchUserMessagePrefDB
+    , fetchUsersInDB
     -- TODO(mitchell): consistent naming scheme
     , getAllRoles
     , getCurUserRoles
     , getProjectsAndRoles
     , getRoles
-    , getUsersIn
     , hasRole
     , isCurUserEligibleEstablish
     , isCurUserProjectModerator
@@ -52,8 +52,8 @@ data UserUpdate =
         -- , userUpdateMessagePreferences :: Maybe [MessagePreference]
         }
 
-getUsersIn :: [UserId] -> DB [Entity User]
-getUsersIn user_ids = selectList [UserId <-. user_ids] []
+fetchUsersInDB :: [UserId] -> DB [Entity User]
+fetchUsersInDB user_ids = selectList [UserId <-. user_ids] []
 
 updateUser :: UserId -> UserUpdate -> DB ()
 updateUser user_id UserUpdate{..} =

@@ -169,6 +169,7 @@ Message
     content Markdown
     -- Whether the message was sent automatically by Snowdrift, or by an actual user.
     automated Bool default=false
+    deriving Eq
 
 WikiPage
     target Text

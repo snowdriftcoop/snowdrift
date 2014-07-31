@@ -1,11 +1,19 @@
 module Model.WikiPage
     ( getAllWikiComments
+    , fetchWikiPagesInDB
     ) where
 
 import Import
 
 import Model.Comment.Sql
 import Model.Project     (getProjectPages)
+
+fetchWikiPagesInDB :: [WikiPageId] -> DB [Entity WikiPage]
+fetchWikiPagesInDB wiki_page_ids =
+    select $
+    from $ \wp -> do
+    where_ (wp ^. WikiPageId `in_` valList wiki_page_ids)
+    return wp
 
 -- | Get the unapproved, new and old Comments on all WikiPages of Project. Takes a
 -- UTCTime 'since' to filter comments EARLIER than this time, and a CommentId

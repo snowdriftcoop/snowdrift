@@ -198,7 +198,7 @@ getDiscussWikiR' project_handle target get_root_comments = do
     (roots, replies, user_map, closure_map, ticket_map, flag_map, tag_map) <- runDB $ do
         roots           <- get_root_comments muser_id project_id (wikiPageDiscussion page)
         replies         <- getCommentsDescendants muser_id project_id (map entityKey roots)
-        user_map        <- entitiesMap <$> getUsersIn (S.toList $ getCommentsUsers roots <> getCommentsUsers replies)
+        user_map        <- entitiesMap <$> fetchUsersInDB (S.toList $ getCommentsUsers roots <> getCommentsUsers replies)
         let comment_ids  = map entityKey (roots ++ replies)
         closure_map     <- makeClosureMap comment_ids
         ticket_map      <- makeTicketMap  comment_ids

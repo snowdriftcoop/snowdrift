@@ -33,6 +33,7 @@ library
                      Model.Comment
                      Model.Comment.Sql
                      Model.Currency
+                     Model.Discussion
                      Model.Issue
                      Model.Markdown
                      Model.Markdown.Diff
@@ -42,6 +43,7 @@ library
                      Model.Role
                      Model.Settings
                      Model.Shares
+                     Model.SnowdriftEvent
                      Model.SnowdriftEvent.Internal
                      Model.Tag
                      Model.Ticket
@@ -81,6 +83,7 @@ library
                      Handler.Wiki
                      Handler.Wiki.Comment
                      View.Comment
+                     View.SnowdriftEvent
                      View.User
                      View.Wiki
                      View.PledgeButton

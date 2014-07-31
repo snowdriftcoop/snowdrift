@@ -13,7 +13,7 @@ data MessageType
     -- Project scope
     | MessageNewPledger
     | MessageNewPage
-    deriving (Read, Show)
+    deriving (Eq, Read, Show)
 derivePersistField "MessageType"
 
 showMessageType :: MessageType -> Text

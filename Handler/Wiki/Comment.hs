@@ -896,7 +896,7 @@ makeCommentWidgetMod CommentMods{..} get_max_depth show_actions form_under_root_
             all_comment_ids = map entityKey all_comments
 
         earlier_closures <- getAncestorClosures comment_id
-        user_map         <- entitiesMap <$> getUsersIn (S.toList $ getCommentsUsers all_comments)
+        user_map         <- entitiesMap <$> fetchUsersInDB (S.toList $ getCommentsUsers all_comments)
         closure_map      <- makeClosureMap all_comment_ids
         ticket_map       <- makeTicketMap  all_comment_ids
         flag_map         <- makeFlagMap    all_comment_ids

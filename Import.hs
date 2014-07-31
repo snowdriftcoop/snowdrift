@@ -8,6 +8,7 @@ import           Model                         as Import
 import           Model.Comment.Internal        as Import
 import           Model.Established.Internal    as Import
 import           Model.Role.Internal           as Import
+import           Model.SnowdriftEvent.Internal as Import
 import           Settings                      as Import
 import           Settings.Development          as Import
 import           Settings.StaticFiles          as Import
@@ -253,6 +254,10 @@ instance (WrappedValues a, WrappedValues b) => WrappedValues (a, b) where
 instance (WrappedValues a, WrappedValues b, WrappedValues c) => WrappedValues (a, b, c) where
     type Unwrapped (a, b, c) = (Unwrapped a, Unwrapped b, Unwrapped c)
     unwrapValues (a, b, c) = (unwrapValues a, unwrapValues b, unwrapValues c)
+
+-- | Convenience function for unwrapping an Entity and supplying both the key and value to another function.
+onEntity :: (Key a -> a -> b) -> Entity a -> b
+onEntity f (Entity x y) = f x y
 
 {- The following footnote and toc functions were used our pre-wiki about page
 At the time of this comment, they are no longer used anywhere live. -}

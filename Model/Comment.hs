@@ -51,7 +51,6 @@ import Import
 
 import           Model.Comment.Sql
 import           Model.Message
-import           Model.SnowdriftEvent.Internal
 
 import qualified Control.Monad.State         as St
 import           Control.Monad.Writer.Strict (tell)

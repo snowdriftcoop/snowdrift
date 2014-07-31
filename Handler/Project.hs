@@ -5,17 +5,21 @@ module Handler.Project where
 import Import
 
 import Model.Currency
+import Model.Discussion
 import Model.Project
 import Model.Shares
 import Model.Markdown
 import Model.Markdown.Diff
+import Model.SnowdriftEvent
 import Model.User
+import Model.WikiPage
 import View.PledgeButton
+import View.SnowdriftEvent
 import Widgets.Markdown
 import Widgets.Preview
 import Widgets.Time
 
-import           Data.List       (sort)
+import           Data.List       (sortBy)
 import qualified Data.Map        as M
 import           Data.Maybe      (fromJust, maybeToList)
 import qualified Data.Text       as T
@@ -417,38 +421,33 @@ postUnwatchProjectR = undefined -- TODO(mitchell)
 --------------------------------------------------------------------------------
 -- /feed
 
--- Analogous data types to SnowdriftEvent, but specialized for displaying the feed.
--- This is necessary because there is some extra information required for displaying
--- feed items not present in SnowdriftEvents, such as the WikiPage that a Comment
--- was made on.
-data FeedEvent = FeedEvent UTCTime FeedEventData
-    deriving Eq
-
-data FeedEventData
-    = FECommentPostedOnWikiPage (Entity Comment) (Entity WikiPage)
-    | FEWikiEdit (Entity WikiEdit) (Entity WikiPage)
-    deriving Eq
-
--- | Order FeedEvents by reverse timestamp (newer comes first).
-instance Ord FeedEvent where
-    compare (FeedEvent time1 _) (FeedEvent time2 _) = compare time2 time1
-
--- | If an unapproved comment is passed to this function, bad things will happen.
-mkCommentPostedOnWikiPageFeedEvent :: Entity Comment -> Entity WikiPage -> FeedEvent
-mkCommentPostedOnWikiPageFeedEvent c@(Entity _ Comment{..}) wp =
-    FeedEvent (fromJust commentModeratedTs) (FECommentPostedOnWikiPage c wp)
-
-mkWikiEditFeedEvent :: Entity WikiEdit -> Entity WikiPage -> FeedEvent
-mkWikiEditFeedEvent we@(Entity _ WikiEdit{..}) wp = FeedEvent wikiEditTs (FEWikiEdit we wp)
-
 -- | This function is responsible for hitting every relevant event table. Nothing
 -- statically guarantees that.
 getProjectFeedR :: Text -> Handler Html
 getProjectFeedR project_handle = do
     before <- maybe (liftIO getCurrentTime) (return . read . T.unpack) =<< lookupGetParam "before"
-    events <- runYDB $ do
+    (events, discussion_wiki_pages_map, wiki_pages_map, users_map) <- runYDB $ do
         Entity project_id _ <- getBy404 (UniqueProjectHandle project_handle)
-        comments_posted <- map (uncurry mkCommentPostedOnWikiPageFeedEvent) <$> fetchProjectCommentsPostedOnWikiPagesDB project_id before
-        wiki_edits      <- map (uncurry mkWikiEditFeedEvent)                <$> fetchProjectWikiEditsDB                 project_id before
-        return (sort $ comments_posted ++ wiki_edits)
+        comment_entities   <- fetchProjectCommentsPostedOnWikiPagesDB project_id before
+        wiki_edit_entities <- fetchProjectWikiEditsDB                 project_id before
+
+        -- Suplementary maps for displaying the data.
+
+        let comments   = map entityVal comment_entities
+            wiki_edits = map entityVal wiki_edit_entities
+
+        discussion_wiki_pages_map <- M.fromList . map (\e@(Entity _ WikiPage{..}) -> (wikiPageDiscussion, e)) <$>
+                                       fetchDiscussionWikiPagesInDB (map commentDiscussion comments)
+
+        wiki_pages_map <- entitiesMap <$> fetchWikiPagesInDB (map wikiEditPage wiki_edits)
+
+        users_map <- (<>)
+            <$> (entitiesMap <$> fetchUsersInDB (map commentUser comments))
+            <*> (entitiesMap <$> fetchUsersInDB (map wikiEditUser wiki_edits))
+
+        let events = sortBy snowdriftEventNewestToOldest . mconcat $
+              [ map (onEntity ECommentPosted) comment_entities
+              , map (onEntity EWikiEdit)      wiki_edit_entities
+              ]
+        return (events, discussion_wiki_pages_map, wiki_pages_map, users_map)
     defaultLayout $(widgetFile "project_feed")

@@ -6,7 +6,6 @@ module Model.Message
 
 import Import
 import Model.Message.Internal
-import Model.SnowdriftEvent.Internal
 
 import Control.Monad.Writer.Strict (tell)
 

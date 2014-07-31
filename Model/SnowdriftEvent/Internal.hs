@@ -1,4 +1,6 @@
-module Model.SnowdriftEvent.Internal where
+module Model.SnowdriftEvent.Internal
+    ( SnowdriftEvent(..)
+    ) where
 
 import Model
 

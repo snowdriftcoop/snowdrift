@@ -149,7 +149,7 @@ getProjectWikiPages project_id =
     return wp
 
 -- | Fetch all Comments posted on some Project's WikiPages.
-fetchProjectCommentsPostedOnWikiPagesDB :: ProjectId -> UTCTime -> DB [(Entity Comment, Entity WikiPage)]
+fetchProjectCommentsPostedOnWikiPagesDB :: ProjectId -> UTCTime -> DB [Entity Comment]
 fetchProjectCommentsPostedOnWikiPagesDB project_id before =
     select $
     from $ \(ecp `InnerJoin` c `InnerJoin` wp) -> do
@@ -158,10 +158,10 @@ fetchProjectCommentsPostedOnWikiPagesDB project_id before =
     where_ $
         ecp ^. EventCommentPostedTs <=. val before &&.
         wp ^. WikiPageProject ==. val project_id
-    return (c, wp)
+    return c
 
 -- | Fetch all WikiEdits made on some Project.
-fetchProjectWikiEditsDB :: ProjectId -> UTCTime -> DB [(Entity WikiEdit, Entity WikiPage)]
+fetchProjectWikiEditsDB :: ProjectId -> UTCTime -> DB [Entity WikiEdit]
 fetchProjectWikiEditsDB project_id before =
     select $
     from $ \(ewe `InnerJoin` we `InnerJoin` wp) -> do
@@ -170,4 +170,4 @@ fetchProjectWikiEditsDB project_id before =
     where_ $
         ewe ^. EventWikiEditTs <=. val before &&.
         wp ^. WikiPageProject ==. val project_id
-    return (we, wp)
+    return we
