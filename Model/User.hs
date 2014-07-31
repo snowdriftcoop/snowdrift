@@ -27,6 +27,8 @@ module Model.User
     , isProjectTeamMember'
     , updateUser
     , userPrintName
+    , userUnwatchProjectDB
+    , userWatchProjectDB
     , userWidget
     ) where
 
@@ -265,3 +267,9 @@ fetchUserMessagePrefDB user_id msg_type = fmap (fmap unValue . listToMaybe) $
         ump ^. UserMessagePrefUser ==. val user_id &&.
         ump ^. UserMessagePrefType ==. val msg_type
     return (ump ^. UserMessagePrefDelivery)
+
+userWatchProjectDB :: UserId -> ProjectId -> DB ()
+userWatchProjectDB user_id project_id = void (insertUnique (UserWatchingProject user_id project_id))
+
+userUnwatchProjectDB :: UserId -> ProjectId -> DB ()
+userUnwatchProjectDB user_id project_id = deleteBy (UniqueUserWatchingProject user_id project_id)

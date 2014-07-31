@@ -412,11 +412,18 @@ renderBlogPost project_handle blog_post = do
 
     $(widgetFile "blog_post")
 
-postWatchProjectR :: ProjectId -> Handler ()
-postWatchProjectR = undefined -- TODO(mitchell)
+postWatchProjectR, postUnwatchProjectR :: ProjectId -> Handler ()
+postWatchProjectR   = watchOrUnwatchProject userWatchProjectDB   "watching "
+postUnwatchProjectR = watchOrUnwatchProject userUnwatchProjectDB "no longer watching "
 
-postUnwatchProjectR :: ProjectId -> Handler ()
-postUnwatchProjectR = undefined -- TODO(mitchell)
+watchOrUnwatchProject :: (UserId -> ProjectId -> DB ()) -> Text -> ProjectId -> Handler ()
+watchOrUnwatchProject action msg project_id = do
+    user_id <- requireAuthId
+    project <- runYDB $ do
+        action user_id project_id
+        get404 project_id
+    addAlert "success" (msg <> projectName project)
+    redirect HomeR
 
 --------------------------------------------------------------------------------
 -- /feed

@@ -49,6 +49,18 @@ UserMessagePref
     delivery MessageDelivery
     UniqueUserMessagePref user type
 
+-- User-watching-project relation
+UserWatchingProject
+    user UserId
+    project ProjectId
+    UniqueUserWatchingProject user project
+
+-- TODO(mitchell) is this used?
+UserSetting
+    user UserId
+    setting UserSettingName
+    value String
+
 ViewTime
     user UserId
     project ProjectId
@@ -69,17 +81,6 @@ ViewWikiEdit
     user UserId
     edit WikiEditId
     UniqueViewWikiEdit user edit
-
-UserSetting
-    user UserId
-    setting UserSettingName
-    value String
-
--- User-watching-project relation
-UserWatchingProject
-    user UserId
-    project ProjectId
-    UniqueUserWatchingProject user project
 
 Project
     createdTs UTCTime
