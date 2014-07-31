@@ -20,6 +20,8 @@ import           Data.Default              (Default, def)
 import qualified Data.Map                  as M
 import qualified Data.Set                  as S
 import qualified Data.Text                 as T
+import           Data.Tree                 (Tree)
+import qualified Data.Tree                 as Tree
 import           Network.HTTP.Types.Status (movedPermanently301)
 import           Yesod.Default.Config
 import           Yesod.Markdown
@@ -199,25 +201,34 @@ getMaxDepthDefault n = fromMaybe n <$> runInputGet (iopt intField "maxdepth")
 
 getDiscussCommentR :: Text -> Text -> CommentId -> Handler Html
 getDiscussCommentR project_handle target comment_id = do
-    comment_widget <- makeCommentWidget
-                        getMaxDepth
-                        True
-                        mempty
-                        project_handle
-                        target
-                        comment_id
+    (comment_widget, comment_tree) <-
+        makeCommentWidget
+          getMaxDepth
+          True
+          mempty
+          project_handle
+          target
+          comment_id
+    maybeAuthId >>= \case
+        Nothing -> return ()
+        Just user_id -> runYDB $ do
+            -- this Just is ok, because makeCommentWidget will fail if the project_handle is invalid
+            Just (Entity project_id _) <- getBy (UniqueProjectHandle project_handle)
+            ok <- userWatchingProjectDB user_id project_id
+            when ok $
+                userViewCommentsDB user_id (map entityKey (Tree.flatten comment_tree))
     defaultLayout $(widgetFile "comment_wrapper")
 
 getReplyCommentR :: Text -> Text -> CommentId -> Handler Html
 getReplyCommentR project_handle target comment_id = do
     void requireAuth
-    comment_widget <- makeCommentWidget
-                        getMaxDepth
-                        True
-                        widget
-                        project_handle
-                        target
-                        comment_id
+    comment_widget <- fst <$> makeCommentWidget
+                                getMaxDepth
+                                True
+                                widget
+                                project_handle
+                                target
+                                comment_id
     defaultLayout $(widgetFile "comment_wrapper")
   where
     widget = commentFormWidget "Reply" Nothing
@@ -241,13 +252,13 @@ postReplyCommentR project_handle target comment_id = do
 getDeleteCommentR :: Text -> Text -> CommentId -> Handler Html
 getDeleteCommentR project_handle target comment_id = do
     void requireAuth
-    comment_widget <- makeCommentWidget
-                        getMaxDepthZero
-                        True
-                        widget
-                        project_handle
-                        target
-                        comment_id
+    comment_widget <- fst <$> makeCommentWidget
+                                getMaxDepthZero
+                                True
+                                widget
+                                project_handle
+                                target
+                                comment_id
     defaultLayout $(widgetFile "comment_wrapper")
   where
     widget = [whamlet|
@@ -284,13 +295,13 @@ getEditCommentR :: Text -> Text -> CommentId -> Handler Html
 getEditCommentR project_handle target comment_id = do
     void requireAuth
     comment <- runYDB $ get404 comment_id
-    comment_widget <- makeCommentWidget
-                        getMaxDepthZero
-                        True
-                        (commentEditFormWidget $ commentText comment)
-                        project_handle
-                        target
-                        comment_id
+    comment_widget <- fst <$> makeCommentWidget
+                                getMaxDepthZero
+                                True
+                                (commentEditFormWidget $ commentText comment)
+                                project_handle
+                                target
+                                comment_id
     defaultLayout $(widgetFile "comment_wrapper")
 
 postEditCommentR :: Text -> Text -> CommentId -> Handler Html
@@ -308,14 +319,15 @@ postEditCommentR project_handle target comment_id = do
     previewEdit :: Markdown -> Handler Html
     previewEdit new_text = do
         (form, _) <- generateFormPost $ commentEditForm new_text
-        comment_widget <- previewWidget form "post" <$> makeCommentWidgetMod
-                                                          mods
-                                                          getMaxDepthZero
-                                                          False
-                                                          mempty
-                                                          project_handle
-                                                          target
-                                                          comment_id
+        comment_widget <- previewWidget form "post" . fst <$>
+            makeCommentWidgetMod
+              mods
+              getMaxDepthZero
+              False
+              mempty
+              project_handle
+              target
+              comment_id
         defaultLayout $(widgetFile "comment_wrapper")
       where
         mods :: CommentMods
@@ -344,13 +356,13 @@ postEditCommentR project_handle target comment_id = do
 getFlagCommentR :: Text -> Text -> CommentId -> Handler Html
 getFlagCommentR project_handle target comment_id = do
     void requireAuth
-    comment_widget <- makeCommentWidget
-                        getMaxDepthZero
-                        True
-                        widget
-                        project_handle
-                        target
-                        comment_id
+    comment_widget <- fst <$> makeCommentWidget
+                                getMaxDepthZero
+                                True
+                                widget
+                                project_handle
+                                target
+                                comment_id
     defaultLayout $(widgetFile "comment_wrapper")
   where
     widget = do
@@ -400,7 +412,7 @@ postFlagCommentR project_handle target comment_id = do
         (form, _) <- generateFormPost $ flagCommentForm (Just (Just reasons)) (Just message)
 
         let mods = def { mod_flag_map = M.insert comment_id (message, reasons) }
-        unwrapped_comment_widget <-
+        unwrapped_comment_widget <- fst <$>
             makeCommentWidgetMod
               mods
               getMaxDepthZero
@@ -446,13 +458,13 @@ flagFailure msg = do
 getApproveWikiCommentR :: Text -> Text -> CommentId -> Handler Html
 getApproveWikiCommentR project_handle target comment_id = do
     void $ sanityCheckApprove project_handle
-    comment_widget <- makeCommentWidget
-                        getMaxDepth
-                        True
-                        widget
-                        project_handle
-                        target
-                        comment_id
+    comment_widget <- fst <$> makeCommentWidget
+                                getMaxDepth
+                                True
+                                widget
+                                project_handle
+                                target
+                                comment_id
     defaultLayout $(widgetFile "comment_wrapper")
   where
     widget = [whamlet|
@@ -484,13 +496,13 @@ getRetractWikiCommentR project_handle target comment_id = do
     -- time in makeCommentWidget. Maybe it should be taken out of makeCommentWidget,
     -- and the handlers should be in charge of calling it?
     retractSanityCheck project_handle target comment_id
-    comment_widget <- makeCommentWidget
-                        getMaxDepth
-                        True
-                        (commentRetractFormWidget Nothing)
-                        project_handle
-                        target
-                        comment_id
+    comment_widget <- fst <$> makeCommentWidget
+                                getMaxDepth
+                                True
+                                (commentRetractFormWidget Nothing)
+                                project_handle
+                                target
+                                comment_id
     defaultLayout $(widgetFile "comment_wrapper")
 
 retractSanityCheck :: Text -> Text -> CommentId -> Handler ()
@@ -503,13 +515,13 @@ retractSanityCheck project_handle target comment_id = do
 getCloseWikiCommentR :: Text -> Text -> CommentId -> Handler Html
 getCloseWikiCommentR project_handle target comment_id = do
     closeSanityCheck project_handle target comment_id
-    comment_widget <- makeCommentWidget
-                        getMaxDepth
-                        True
-                        (commentCloseFormWidget Nothing)
-                        project_handle
-                        target
-                        comment_id
+    comment_widget <- fst <$> makeCommentWidget
+                                getMaxDepth
+                                True
+                                (commentCloseFormWidget Nothing)
+                                project_handle
+                                target
+                                comment_id
     defaultLayout $(widgetFile "comment_wrapper")
 
 -- Same signature as retractSanityCheck, for use in postClosureWikiComment
@@ -549,7 +561,7 @@ postClosureWikiComment sanity_check make_closure_form make_new_comment_closure a
             lookupPostParam "mode" >>= \case
                 Just "preview" -> do
                     (form, _) <- generateFormPost $ make_closure_form (Just reason)
-                    comment_widget <- previewWidget form action <$>
+                    comment_widget <- previewWidget form action . fst <$>
                                           makeCommentWidgetMod
                                             (def { mod_closure_map = M.insert comment_id new_comment_closure })
                                             getMaxDepthZero
@@ -860,15 +872,18 @@ instance Default CommentMods where
     def = CommentMods id id id id id id id
 
 -- | Helper method to create a Widget for a comment action (/, /reply, /moderate, etc).
--- Returns a Widget from a Handler (rather than just calling defaultLayout) so that the widget
--- can be put in a preview (for some POST handlers).
+--
+-- Returns:
+--    a widget, so that the widget can possibly be put in a preview (for some POST handlers).
+--    a comment tree, so that additional actions may be taken on the comments actually
+--    shown (such as marking them all as viewed)
 makeCommentWidget :: Handler Int    -- ^ Max depth getter.
                   -> Bool           -- ^ Show actions?
                   -> Widget         -- ^ Widget to display under root comment.
                   -> Text           -- ^ Project handle.
                   -> Text           -- ^ Target.
                   -> CommentId      -- ^ Root comment id.
-                  -> Handler Widget
+                  -> Handler (Widget, Tree (Entity Comment))
 makeCommentWidget = makeCommentWidgetMod def
 
 -- | Like @makeCommentWidget@, but includes modifications to the datastructures grabbed from
@@ -881,7 +896,7 @@ makeCommentWidgetMod :: CommentMods    -- ^ Comment structure modifications.
                      -> Text           -- ^ Project handle.
                      -> Text           -- ^ Target.
                      -> CommentId      -- ^ Root comment id.
-                     -> Handler Widget
+                     -> Handler (Widget, Tree (Entity Comment))
 makeCommentWidgetMod CommentMods{..} get_max_depth show_actions form_under_root_comment project_handle target comment_id = do
     (Entity project_id _, _, root) <-
         -- TODO(mitchell)
@@ -909,21 +924,23 @@ makeCommentWidgetMod CommentMods{..} get_max_depth show_actions form_under_root_
         <*> pure user_map
 
     max_depth <- get_max_depth
-    return $
-        commentTreeWidget
-            form_under_root_comment
-            (sortTreeBy orderingNewestFirst $ buildCommentTree (Entity comment_id root, rest))
-            (mod_earlier_closures earlier_closures)
-            (mod_user_map         user_map_with_viewer)
-            (mod_closure_map      closure_map)
-            (mod_ticket_map       ticket_map)
-            (mod_flag_map         flag_map)
-            (mod_tag_map          tag_map)
-            project_handle
-            target
-            show_actions
-            max_depth
-            0
+    let comment_tree = sortTreeBy orderingNewestFirst (buildCommentTree (Entity comment_id root, rest))
+        comment_tree_widget =
+            commentTreeWidget
+                form_under_root_comment
+                comment_tree
+                (mod_earlier_closures earlier_closures)
+                (mod_user_map         user_map_with_viewer)
+                (mod_closure_map      closure_map)
+                (mod_ticket_map       ticket_map)
+                (mod_flag_map         flag_map)
+                (mod_tag_map          tag_map)
+                project_handle
+                target
+                show_actions
+                max_depth
+                0
+    return (comment_tree_widget, comment_tree)
 
 --------------------------------------------------------------------------------
 -- Experimental - /c/#CommentId

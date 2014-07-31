@@ -40,6 +40,7 @@ library
                      Model.Message
                      Model.Permission
                      Model.Project
+                     Model.Project.Sql
                      Model.Role
                      Model.Settings
                      Model.Shares

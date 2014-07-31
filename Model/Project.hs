@@ -1,7 +1,8 @@
 module Model.Project
     ( ProjectSummary(..)
-    , fetchProjectCommentsPostedOnWikiPagesDB
-    , fetchProjectWikiEditsDB
+    , fetchProjectCommentIdsDB
+    , fetchProjectCommentsPostedOnWikiPagesBeforeDB
+    , fetchProjectWikiEditsBeforeDB
     -- TODO(mitchell): rename all these... prefix fetch, suffix DB
     , getAllProjects
     , getGithubIssues
@@ -17,7 +18,10 @@ module Model.Project
 
 import Import
 
+import           Model.Comment.Sql
 import           Model.Currency
+import           Model.Project.Sql
+import           Model.WikiPage.Sql
 
 import           Control.Monad.Trans.Resource (MonadThrow)
 import           Control.Concurrent.Async     (Async, async, wait)
@@ -34,11 +38,12 @@ data ProjectSummary =
         , summaryShareCost     :: Milray
         }
 
+-- | Fetch all Comments made on this Project, somewhere (for now, just WikiPages)
+fetchProjectCommentIdsDB :: ProjectId -> DB [CommentId]
+fetchProjectCommentIdsDB = fetchProjectCommentIdsPostedOnWikiPagesDB
+
 getAllProjects :: DB [Entity Project]
-getAllProjects =
-    select $
-    from $ \p ->
-    return p
+getAllProjects = select (from return)
 
 getGithubIssues :: Project -> Handler [GH.Issue]
 getGithubIssues project =
@@ -144,30 +149,34 @@ getProjectWikiPages :: ProjectId ->  DB [Entity WikiPage]
 getProjectWikiPages project_id =
     select $
     from $ \ wp -> do
-    where_ $ wp ^. WikiPageProject ==. val project_id
+    where_ (exprWikiPageOnProject wp project_id)
     orderBy [asc (wp ^. WikiPageTarget)]
     return wp
 
--- | Fetch all Comments posted on some Project's WikiPages.
-fetchProjectCommentsPostedOnWikiPagesDB :: ProjectId -> UTCTime -> DB [Entity Comment]
-fetchProjectCommentsPostedOnWikiPagesDB project_id before =
+-- | Fetch all Comments posted on some Project's WikiPages before some time.
+fetchProjectCommentsPostedOnWikiPagesBeforeDB :: ProjectId -> UTCTime -> DB [Entity Comment]
+fetchProjectCommentsPostedOnWikiPagesBeforeDB project_id before =
     select $
     from $ \(ecp `InnerJoin` c `InnerJoin` wp) -> do
-    on_ (c ^. CommentDiscussion ==. wp ^. WikiPageDiscussion)
+    on_ (exprCommentOnWikiPage c wp)
     on_ (ecp ^. EventCommentPostedComment ==. c ^. CommentId)
     where_ $
         ecp ^. EventCommentPostedTs <=. val before &&.
-        wp ^. WikiPageProject ==. val project_id
+        exprWikiPageOnProject wp project_id
     return c
 
+-- | Fetch all CommentIds on some Project's WikiPages.
+fetchProjectCommentIdsPostedOnWikiPagesDB :: ProjectId -> DB [CommentId]
+fetchProjectCommentIdsPostedOnWikiPagesDB = fmap (map unValue) . select . querProjectCommentIdsPostedOnWikiPagesDB
+
 -- | Fetch all WikiEdits made on some Project.
-fetchProjectWikiEditsDB :: ProjectId -> UTCTime -> DB [Entity WikiEdit]
-fetchProjectWikiEditsDB project_id before =
+fetchProjectWikiEditsBeforeDB :: ProjectId -> UTCTime -> DB [Entity WikiEdit]
+fetchProjectWikiEditsBeforeDB project_id before =
     select $
     from $ \(ewe `InnerJoin` we `InnerJoin` wp) -> do
     on_ (wp ^. WikiPageId ==. we ^. WikiEditPage)
     on_ (ewe ^. EventWikiEditWikiEdit ==. we ^. WikiEditId)
     where_ $
         ewe ^. EventWikiEditTs <=. val before &&.
-        wp ^. WikiPageProject ==. val project_id
+        exprWikiPageOnProject wp project_id
     return we

@@ -435,8 +435,8 @@ getProjectFeedR project_handle = do
     before <- maybe (liftIO getCurrentTime) (return . read . T.unpack) =<< lookupGetParam "before"
     (events, discussion_wiki_pages_map, wiki_pages_map, users_map) <- runYDB $ do
         Entity project_id _ <- getBy404 (UniqueProjectHandle project_handle)
-        comment_entities   <- fetchProjectCommentsPostedOnWikiPagesDB project_id before
-        wiki_edit_entities <- fetchProjectWikiEditsDB                 project_id before
+        comment_entities   <- fetchProjectCommentsPostedOnWikiPagesBeforeDB project_id before
+        wiki_edit_entities <- fetchProjectWikiEditsBeforeDB                 project_id before
 
         -- Suplementary maps for displaying the data.
 

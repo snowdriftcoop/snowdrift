@@ -22,6 +22,10 @@ exprRoot c = isNothing (c ^. CommentParent)
 exprOnDiscussion :: DiscussionId -> SqlExpr (Entity Comment) -> SqlExpr (Value Bool)
 exprOnDiscussion discussion_id c = c ^. CommentDiscussion ==. val discussion_id
 
+-- | Comment on this WikiPage?
+exprCommentOnWikiPage :: SqlExpr (Entity Comment) -> SqlExpr (Entity WikiPage) -> SqlExpr (Value Bool)
+exprCommentOnWikiPage c wp = c ^. CommentDiscussion ==. wp ^. WikiPageDiscussion
+
 -- | SQL expression to filter a comment based on "permissions", as follows:
 --    If moderator, show all.
 --    If logged in, show all approved (hiding flagged), plus own comments (unapproved + flagged).

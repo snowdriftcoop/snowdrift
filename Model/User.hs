@@ -29,13 +29,16 @@ module Model.User
     , userPrintName
     , userUnwatchProjectDB
     , userWatchProjectDB
+    , userWatchingProjectDB
     , userWidget
+    , userViewCommentsDB
     ) where
 
 import Import
 
 import Model.Comment.Sql
 import Model.Message
+import Model.Project.Sql
 
 import qualified Data.Map       as M
 import qualified Data.Set       as S
@@ -272,4 +275,27 @@ userWatchProjectDB :: UserId -> ProjectId -> DB ()
 userWatchProjectDB user_id project_id = void (insertUnique (UserWatchingProject user_id project_id))
 
 userUnwatchProjectDB :: UserId -> ProjectId -> DB ()
-userUnwatchProjectDB user_id project_id = deleteBy (UniqueUserWatchingProject user_id project_id)
+userUnwatchProjectDB user_id project_id = delete_watching >> delete_views
+  where
+    delete_watching = deleteBy (UniqueUserWatchingProject user_id project_id)
+    delete_views =
+        delete $
+        from $ \vc ->
+        where_ (vc ^. ViewCommentComment `in_` (subList_select (querProjectCommentIdsPostedOnWikiPagesDB project_id)))
+
+userWatchingProjectDB :: UserId -> ProjectId -> DB Bool
+userWatchingProjectDB user_id project_id = maybe (False) (const True) <$> getBy (UniqueUserWatchingProject user_id project_id)
+
+userViewCommentsDB :: UserId -> [CommentId] -> DB ()
+userViewCommentsDB user_id unfiltered_comment_ids = filteredCommentIds >>= userViewCommentsDB'
+  where
+    filteredCommentIds = fmap (map unValue) $
+        select $
+        from $ \vc -> do
+        where_ $
+            vc ^. ViewCommentUser ==. val user_id &&.
+            vc ^. ViewCommentComment `notIn` valList unfiltered_comment_ids
+        return (vc ^. ViewCommentComment)
+
+    userViewCommentsDB' :: [CommentId] -> DB ()
+    userViewCommentsDB' comment_ids = void (insertMany (map (ViewComment user_id) comment_ids))
