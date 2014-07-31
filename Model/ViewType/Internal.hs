@@ -5,11 +5,8 @@ import Prelude
 import Database.Persist.TH (derivePersistField)
 
 data ViewType
-    = ViewComments
-    | ViewEdits
-    | ViewApplications
+    = ViewApplications
     deriving (Bounded, Enum, Eq, Show, Read)
-
 derivePersistField "ViewType"
 
 {- instance PathPiece Role where

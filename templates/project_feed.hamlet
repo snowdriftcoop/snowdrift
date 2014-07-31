@@ -1,0 +1,9 @@
+<h1>#{project_handle} feed.
+
+$forall event <- events
+    $case event
+        $of FeedEvent _ (FECommentPostedOnWikiPage (Entity comment_id comment) (Entity _ wiki_page))
+            <div>On #{wikiPageTarget wiki_page}: #{commentText comment}
+                \ <a href=@{CommentDirectLinkR comment_id}>(permalink)
+        $of FeedEvent _ (FEWikiEdit (Entity _ _) (Entity _ wiki_page))
+            <div>#{wikiPageTarget wiki_page} edit!

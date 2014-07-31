@@ -5,9 +5,6 @@ import Import
 
 import Model.Currency
 import Model.User
-import Model.Project
-
-import qualified Data.List as L
 
 navbar :: Widget
 navbar = do
@@ -36,35 +33,25 @@ navbar = do
 
     -- TODO: make stuff below generalize to project affiliates instead of snowdrift only
 
-    (messages, edits, comments) <- case maybe_user of
-        Nothing -> return ([], 0, 0)
+    messages <- case maybe_user of
+        Nothing -> return []
         Just (Entity user_id user) -> handlerToWidget $ runDB $ do
             snowdrift_member <- isProjectAffiliated "snowdrift" user_id
-            projects <- select $ from $ \ project -> return project
 
-            messages :: [Entity Message] <- select $ from $ \ message -> do
-                where_ $
-                    let
-                        readSnowdriftMessages =
-                            ( message ^. MessageCreatedTs >=. val (userReadMessages user)
-                                &&. isNothing (message ^. MessageTo))
+            select $
+             from $ \message -> do
+             where_ $
+                let
+                    readSnowdriftMessages =
+                        ( message ^. MessageCreatedTs >=. val (userReadMessages user)
+                            &&. isNothing (message ^. MessageTo))
 
-                        readUserMessages =
-                            ( message ^. MessageCreatedTs >=. val (userReadMessages user)
-                                &&. message ^. MessageTo ==. val (Just user_id))
-                     in if snowdrift_member
-                            then readSnowdriftMessages ||. readUserMessages
-                            else readUserMessages
-                return message
-
-            let unval (Value a) = a
-                foldCounts (c1, c2) (c1', c2') =
-                    (c1 + unval (L.head c1'), c2 + unval (L.head c2'))
-
-            counts <- getCounts (Entity user_id user) projects
-
-            let (comments, edits) = foldl foldCounts (0, 0) counts
-
-            return (messages, edits, comments)
+                    readUserMessages =
+                        ( message ^. MessageCreatedTs >=. val (userReadMessages user)
+                            &&. message ^. MessageTo ==. val (Just user_id))
+                 in if snowdrift_member
+                        then readSnowdriftMessages ||. readUserMessages
+                        else readUserMessages
+             return message
 
     $(widgetFile "navbar")

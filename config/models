@@ -31,14 +31,23 @@ User
     ircNick Text Maybe
     readMessages UTCTime default=now()
     readApplications UTCTime default=now()
-    readComments UTCTime default=now() -- The last time /newcomments was visited.
-    readEdits UTCTime default=now()
     established Established default='EstUnestablished'
-    messagePreferences [MessagePreference] default='["sMessageOnReply"]'
     UniqueUser ident
     UniqueUserAccount account
-    deriving Typeable
-    deriving Show
+    deriving Show Typeable
+
+-- A single message preference. If some MessageType does not appear
+-- in any row for a particular user, that means the user does not
+-- wish to be notified of those messages.
+--
+-- Messages that "must" be delivered (e.g. administrative messages
+-- directly from Snowdrift) don't need an entry in this table, as
+-- the code that sends such messages needn't query it.
+UserMessagePref
+    user UserId
+    type MessageType
+    delivery MessageDelivery
+    UniqueUserMessagePref user type
 
 ViewTime
     user UserId
@@ -47,10 +56,30 @@ ViewTime
     time UTCTime default=now()
     UniqueViewTimeUserProjectType user project type
 
+-- A viewing of a single comment. The existence of this of a row here indicates
+-- the comment has been viewed by the user; the absence indicates it hasnt.
+ViewComment
+    user UserId
+    comment CommentId
+    UniqueViewComment user comment
+
+-- A viewing of a single wiki page edit. The existence of this of a row here indicates
+-- the edit has been viewed by the user; the absence indicates it hasnt.
+ViewWikiEdit
+    user UserId
+    edit WikiEditId
+    UniqueViewWikiEdit user edit
+
 UserSetting
     user UserId
     setting UserSettingName
     value String
+
+-- User-watching-project relation
+UserWatchingProject
+    user UserId
+    project ProjectId
+    UniqueUserWatchingProject user project
 
 Project
     createdTs UTCTime
@@ -148,6 +177,7 @@ WikiPage
     discussion DiscussionId
     permissionLevel PermissionLevel
     UniqueWikiTarget project target
+    deriving Eq
 
 WikiEdit
     ts UTCTime
@@ -155,6 +185,7 @@ WikiEdit
     page WikiPageId
     content Markdown
     comment Text Maybe
+    deriving Eq
 
 WikiLastEdit
     page WikiPageId
@@ -178,7 +209,7 @@ Comment
     user UserId
     text Markdown
     depth Int
-    deriving Show
+    deriving Eq Show
 
 -- A comment has zero or more ancestors: its parent, grandparent, great
 -- grandparent, etc.
@@ -310,3 +341,24 @@ SharesPledged
     shares Int64
     render PledgeFormRenderedId
 
+--------------------------------------------------------------------------------
+-- Snowdrift events. These are all combined into a single sum time in 
+-- Model.SnowdriftEvent.
+
+-- An approved comment.
+EventCommentPosted
+    comment CommentId
+    ts UTCTime
+
+-- An unapproved comment.
+EventCommentPending
+    comment CommentId
+    ts UTCTime
+
+EventMessageSent
+    message MessageId
+    ts UTCTime
+
+EventWikiEdit
+    wikiEdit WikiEditId
+    ts UTCTime

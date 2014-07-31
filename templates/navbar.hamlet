@@ -14,7 +14,7 @@
                             new activity
                             <br>
                             <span .badge>
-                                #{comments + edits}
+                                0 TODO
         <ul .nav .navbar-nav .navbar-right>
             $maybe Entity user_id user <- maybe_user
                 <li>
@@ -57,7 +57,7 @@
                             new activity
                             <br>
                             <span .badge>
-                                #{comments + edits}
+                                TODO
                 <li>
                     $maybe (balance, pledged) <- money_info
                         <p .navbar-text .text-center>

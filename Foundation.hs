@@ -3,9 +3,8 @@ module Foundation where
 import           Model
 import           Model.Currency
 import           Model.Established.Internal         (Established(..))
-import           Model.Message.Internal             (MessageType(..))
-import           Model.SnowdriftEvent
-import           Model.User.Internal                (MessagePreference(..))
+import           Model.Message.Internal             (MessageType(..), MessageDelivery(..))
+import           Model.SnowdriftEvent.Internal
 import qualified Settings
 import           Settings                           (widgetFile, Extra (..))
 import           Settings.Development               (development)
@@ -349,7 +348,7 @@ createUser ident passwd name avatar nick = do
     now <- liftIO getCurrentTime
     handle (\DBException -> return Nothing) $ runYDB $ do
         account_id <- insert $ Account 0
-        user <- maybe return setPassword passwd $ User ident (Just now) Nothing Nothing name account_id avatar Nothing Nothing nick now now now now EstUnestablished [MessageOnReply]
+        user <- maybe return setPassword passwd $ User ident (Just now) Nothing Nothing name account_id avatar Nothing Nothing nick now now EstUnestablished
         uid_maybe <- insertUnique user
         Entity snowdrift_id _ <- getBy404 $ UniqueProjectHandle "snowdrift"
         case uid_maybe of
@@ -363,6 +362,8 @@ createUser ident passwd name avatar nick = do
                 forM_ default_tag_colors $ \ (Entity _ (DefaultTagColor tag color)) -> insert $ TagColor tag user_id color
                 --
 
+                insertDefaultMessagePrefs user_id
+
                 let message_text = Markdown $ T.unlines
                         [ "Thanks for registering!"
                         , "<br> Please read our [**welcome message**](/p/snowdrift/w/welcome), and let us know any questions."
@@ -374,7 +375,9 @@ createUser ident passwd name avatar nick = do
             Nothing -> do
                 lift $ addAlert "danger" "E-mail or handle already in use."
                 throwIO DBException
-
+  where
+    insertDefaultMessagePrefs :: UserId -> DB ()
+    insertDefaultMessagePrefs user_id = insert_ $ UserMessagePref user_id MessageReply DeliverInternal
 
 instance YesodJquery App
 

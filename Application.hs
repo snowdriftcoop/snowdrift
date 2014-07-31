@@ -13,19 +13,19 @@ import Version
 
 import           Blaze.ByteString.Builder             (toLazyByteString)
 import           Control.Concurrent                   (forkIO, threadDelay)
-import           Control.Concurrent.STM               (TChan, atomically, newTChanIO, tryReadTChan)
+import           Control.Concurrent.STM               (atomically, newTChanIO, tryReadTChan)
 import           Control.Monad.Logger                 (runLoggingT, runStderrLoggingT)
 import           Control.Monad.Reader
 import           Control.Monad.Trans.Resource
 import           Data.ByteString                      (ByteString)
 import           Data.Default                         (def)
 import qualified Data.List                            as L
+import           Data.Maybe                           (fromJust)
 import           Data.Text                            as T
 import qualified Data.Text.Lazy                       as TL
 import qualified Data.Text.Lazy.Encoding              as TLE
 import qualified Data.Text.IO                         as T
 import qualified Database.Persist
-import           Database.Persist                     (getJust)
 import           Database.Persist.Postgresql          (pgConnStr, withPostgresqlConn)
 import           Network.HTTP.Client.Conduit          (newManager)
 import           Network.Wai.Middleware.RequestLogger ( mkRequestLogger, outputFormat, OutputFormat (..)
@@ -75,7 +75,7 @@ import Handler.Wiki
 import Handler.Wiki.Comment
 
 import Model.Message
-import Model.SnowdriftEvent
+import Model.SnowdriftEvent.Internal
 import Model.User
 
 import Widgets.Navbar
@@ -160,7 +160,10 @@ makeFoundation conf = do
                        dbconf
                        logger
                        event_chan
-                       [messageEventHandler] -- Add more event handlers here.
+                       -- Add more event handlers here.
+                       [ messageEventHandler
+                       , eventInserterHandler
+                       ]
 
     -- Perform database migration using our application's logging settings.
     case appEnv conf of
@@ -356,15 +359,17 @@ forkEventHandler app@App{..} = void . forkIO . forever $ do
             mapM_ (runDaemon app) (appEventHandlers <*> [event])
             handleNEvents (n-1)
 
--- Handler in charge of sending Messages to interested parties.
+-- | Handler in charge of sending Messages to interested parties.
 messageEventHandler :: SnowdriftEvent -> Daemon ()
 messageEventHandler (ECommentPosted comment_id comment) = case commentParent comment of
     Nothing -> return ()
     Just parent_comment_id -> do
-        (parent_user_id, parent_user) <- runDB $ do
-            parent_user_id <- commentUser <$> getJust parent_comment_id
-            (parent_user_id,) <$> getJust parent_user_id
-        when (MessageOnReply `elem` userMessagePreferences parent_user) $ do
+        (parent_user_id, delivery) <- runDB $ do
+            parent_user_id <- commentUser <$> Database.Persist.getJust parent_comment_id
+            delivery <- fetchUserMessagePrefDB parent_user_id MessageReply
+            return (parent_user_id, delivery)
+        -- Any non-Nothing delivery implies an internal Message should be sent.
+        when (isJust delivery) $ do
             app <- ask
             let parent_comment_route = renderRoute' (CommentDirectLinkR parent_comment_id) app
                 reply_comment_route  = renderRoute' (CommentDirectLinkR comment_id)        app
@@ -378,9 +383,16 @@ messageEventHandler (ECommentPosted comment_id comment) = case commentParent com
                   , ""
                   , "*You can filter these messages by adjusting the settings in your profile.*"
                   ]
-            now <- liftIO getCurrentTime
-            runSDB $ insertMessage_ (Message MessageReply Nothing now Nothing (Just parent_user_id) content True)
+            runSDB $ insertMessage_ MessageReply Nothing Nothing (Just parent_user_id) content True
 messageEventHandler _ = return ()
+
+-- | Handler in charge of inserting events (stripped down) into a separate table for each type.
+eventInserterHandler :: SnowdriftEvent -> Daemon ()
+-- If an unapproved comment is sent as an ECommentPosted event, bad things will happen (fromJust).
+eventInserterHandler (ECommentPosted comment_id Comment{..})  = runDB (insert_ (EventCommentPosted comment_id (fromJust commentModeratedTs)))
+eventInserterHandler (ECommentPending comment_id Comment{..}) = runDB (insert_ (EventCommentPending comment_id commentCreatedTs))
+eventInserterHandler (EMessageSent message_id Message{..})    = runDB (insert_ (EventMessageSent message_id messageCreatedTs))
+eventInserterHandler (EWikiEdit wiki_edit_id WikiEdit{..})    = runDB (insert_ (EventWikiEdit wiki_edit_id wikiEditTs))
 
 renderRoute' :: Route App -> App -> Text
 renderRoute' route app =

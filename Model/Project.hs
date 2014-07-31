@@ -1,10 +1,23 @@
-module Model.Project where
+module Model.Project
+    ( ProjectSummary(..)
+    , fetchProjectCommentsPostedOnWikiPagesDB
+    , fetchProjectWikiEditsDB
+    -- TODO(mitchell): rename all these... prefix fetch, suffix DB
+    , getAllProjects
+    , getGithubIssues
+    , getProjectPages
+    , getProjectShares
+    , getProjectTagList
+    , getProjectWikiPages
+    , projectComputeShareValue
+    , projectNameWidget
+    , summarizeProject
+    , updateShareValue
+    ) where
 
 import Import
 
 import           Model.Currency
-import           Model.ViewType
-import           Model.User
 
 import           Control.Monad.Trans.Resource (MonadThrow)
 import           Control.Concurrent.Async     (Async, async, wait)
@@ -14,12 +27,18 @@ import qualified Data.Text                    as T
 
 data ProjectSummary =
     ProjectSummary
-        { summaryName :: Text
+        { summaryName          :: Text
         , summaryProjectHandle :: Text
-        , summaryUsers :: UserCount
-        , summaryShares :: ShareCount
-        , summaryShareCost :: Milray
+        , summaryUsers         :: UserCount
+        , summaryShares        :: ShareCount
+        , summaryShareCost     :: Milray
         }
+
+getAllProjects :: DB [Entity Project]
+getAllProjects =
+    select $
+    from $ \p ->
+    return p
 
 getGithubIssues :: Project -> Handler [GH.Issue]
 getGithubIssues project =
@@ -82,52 +101,6 @@ updateShareValue project_id = do
         set project  [ ProjectShareValue =. val (projectComputeShareValue pledges) ]
         where_ (project ^. ProjectId ==. val project_id)
 
--- TODO: Better name.
-getCounts :: Entity User -> [Entity Project] -> DB [([Value Int], [Value Int])]
-getCounts (Entity user_id user) = mapM $ \(Entity project_id _) -> do
-    moderator <- isProjectModerator' user_id project_id
-
-    comment_viewtimes :: [Entity ViewTime] <- select $ from $ \ viewtime -> do
-        where_ $
-            ( viewtime ^. ViewTimeUser ==. val user_id ) &&.
-            ( viewtime ^. ViewTimeProject ==. val project_id ) &&.
-            ( viewtime ^. ViewTimeType ==. val ViewComments )
-        return viewtime
-
-    edit_viewtimes :: [Entity ViewTime] <- select $ from $ \ viewtime -> do
-        where_ $
-            ( viewtime ^. ViewTimeUser ==. val user_id ) &&.
-            ( viewtime ^. ViewTimeProject ==. val project_id ) &&.
-            ( viewtime ^. ViewTimeType ==. val ViewEdits )
-        return viewtime
-
-    let comments_ts = case comment_viewtimes of
-            [] -> userReadComments user
-            Entity _ viewtime : _ -> viewTimeTime viewtime
-        edits_ts = case edit_viewtimes of
-            [] -> userReadEdits user
-            Entity _ viewtime : _ -> viewTimeTime viewtime
-
-    comments <- select $ from $ \(comment `LeftOuterJoin` wp) -> do
-        on_ $ wp ^. WikiPageDiscussion ==. comment ^. CommentDiscussion
-        where_ $ foldl1 (&&.) $ catMaybes
-            [ Just $ comment ^. CommentCreatedTs >=. val comments_ts
-            , Just $ wp ^. WikiPageProject ==. val project_id
-            , Just $ comment ^. CommentUser !=. val user_id
-            , if moderator then Nothing else Just $ not_ $ isNothing $ comment ^. CommentModeratedTs
-            ]
-        return (countRows :: SqlExpr (Value Int))
-
-    edits <- select $ from $ \(edit `LeftOuterJoin` wp) -> do
-        on_ (wp ^. WikiPageId ==. edit ^. WikiEditPage)
-        where_ $
-            ( edit ^. WikiEditTs >=. val edits_ts ) &&.
-            ( wp ^. WikiPageProject ==. val project_id ) &&.
-            ( edit ^. WikiEditUser !=. val user_id )
-        return (countRows :: SqlExpr (Value Int))
-
-    return (comments, edits)
-
 {-
  - TODO
  -  Unfund shares
@@ -174,3 +147,27 @@ getProjectWikiPages project_id =
     where_ $ wp ^. WikiPageProject ==. val project_id
     orderBy [asc (wp ^. WikiPageTarget)]
     return wp
+
+-- | Fetch all Comments posted on some Project's WikiPages.
+fetchProjectCommentsPostedOnWikiPagesDB :: ProjectId -> UTCTime -> DB [(Entity Comment, Entity WikiPage)]
+fetchProjectCommentsPostedOnWikiPagesDB project_id before =
+    select $
+    from $ \(ecp `InnerJoin` c `InnerJoin` wp) -> do
+    on_ (c ^. CommentDiscussion ==. wp ^. WikiPageDiscussion)
+    on_ (ecp ^. EventCommentPostedComment ==. c ^. CommentId)
+    where_ $
+        ecp ^. EventCommentPostedTs <=. val before &&.
+        wp ^. WikiPageProject ==. val project_id
+    return (c, wp)
+
+-- | Fetch all WikiEdits made on some Project.
+fetchProjectWikiEditsDB :: ProjectId -> UTCTime -> DB [(Entity WikiEdit, Entity WikiPage)]
+fetchProjectWikiEditsDB project_id before =
+    select $
+    from $ \(ewe `InnerJoin` we `InnerJoin` wp) -> do
+    on_ (wp ^. WikiPageId ==. we ^. WikiEditPage)
+    on_ (ewe ^. EventWikiEditWikiEdit ==. we ^. WikiEditId)
+    where_ $
+        ewe ^. EventWikiEditTs <=. val before &&.
+        wp ^. WikiPageProject ==. val project_id
+    return (we, wp)

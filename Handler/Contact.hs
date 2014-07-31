@@ -20,7 +20,6 @@ getContactR project_handle = do
 postContactR :: Text -> Handler Html
 postContactR project_handle = do
     maybe_user_id <- maybeAuthId
-    now <- liftIO getCurrentTime
 
     ((result, _), _) <- runFormPost contactForm
 
@@ -28,7 +27,7 @@ postContactR project_handle = do
         FormSuccess content -> do
             runSYDB $ do
                 Entity project_id _ <- lift $ getBy404 $ UniqueProjectHandle project_handle
-                insertMessage_ $ Message MessageDirect (Just project_id) now maybe_user_id Nothing content False
+                insertMessage_ MessageDirect (Just project_id) maybe_user_id Nothing content False
 
             addAlert "success" "Comment submitted.  Thank you for your input!"
 

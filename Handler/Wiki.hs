@@ -4,7 +4,6 @@ module Handler.Wiki where
 
 import Import
 
-import qualified Data.Tree.Extra      as Tree
 import           Data.Tree.Extra      (sortForestBy)
 import           Handler.Wiki.Comment (getMaxDepth, processWikiComment)
 import           Model.Comment
@@ -14,9 +13,6 @@ import           Model.Permission
 import           Model.Project
 import           Model.Tag            (getAllTagsMap)
 import           Model.User
-import           Model.ViewTime
-import           Model.ViewType
-import           Model.WikiPage
 import           Widgets.Preview
 import           Widgets.Time
 import           View.Comment
@@ -57,227 +53,6 @@ redirectHereWithParams :: [(Text, Text)] -> Handler a
 redirectHereWithParams new_params = do
     Just route <- getCurrentRoute
     getRequest >>= redirectParams route . (new_params ++) . reqGetParams
-
---------------------------------------------------------------------------------
--- /newcomments
-
-getWikiNewCommentsR :: Text -> Handler Html
-getWikiNewCommentsR project_handle = do
-    mviewer <- maybeAuth
-    Entity project_id project <- runYDB $ getBy404 $ UniqueProjectHandle project_handle
-
-    now <- liftIO getCurrentTime
-
-    since :: UTCTime <- case mviewer of
-        Nothing -> return now
-        Just (Entity viewer_id viewer) -> lookupGetParam "since" >>= \case
-            Nothing -> do
-                comments_ts <- maybe (userReadComments viewer) (viewTimeTime . entityVal) <$>
-                                   runDB (getCommentsViewTime viewer_id project_id)
-                redirectHereWithParams [("since", T.pack $ show comments_ts)]
-            Just since -> return (read . T.unpack $ since)
-
-    latest_comment_id <- Key . PersistInt64 . fromMaybe maxBound <$> runInputGet (iopt intField "latest")
-
-    (unapproved_comments, new_comments, old_comments, users, closure_map, ticket_map, flag_map, tag_map) <- runDB $ do
-        (unapproved_comments, new_comments, old_comments) <-
-            getAllWikiComments (entityKey <$> mviewer) project_id latest_comment_id since 51
-
-        let all_comment_entities = unapproved_comments <> new_comments <> old_comments
-            all_comments         = map entityVal all_comment_entities
-            all_comment_ids      = map entityKey all_comment_entities
-
-        users <- entitiesMap <$> getUsersIn (S.toList . S.fromList $ map commentUser all_comments)
-
-        closure_map <- makeClosureMap all_comment_ids
-        ticket_map  <- makeTicketMap  all_comment_ids
-        flag_map    <- makeFlagMap    all_comment_ids
-        tag_map     <- getAllTagsMap
-
-        return (unapproved_comments, new_comments, old_comments, users, closure_map, ticket_map, flag_map, tag_map)
-
-    let new_comments' = take 50 new_comments
-        old_comments' = take (50 - length new_comments') old_comments
-        PersistInt64 to = unKey $ minimum (map entityKey (new_comments' <> old_comments') )
-        render_comments comments =
-            if null comments
-                then [whamlet||]
-                -- TODO(mitchell): This code could use makeCommentWidget, and we wouldn't need
-                -- many queries above (users, closure_map, etc), but many more database hits
-                -- would result (one per new comment). Meh...
-                else do
-                    forM_ comments $ \ (Entity comment_id comment) -> do
-                        (earlier_closures, target) <- handlerToWidget $ runDB $ (,)
-                            <$> getAncestorClosures comment_id
-                            <*> (wikiPageTarget <$> getCommentPage comment_id)
-
-                        let rendered_comment =
-                                commentTreeWidget
-                                    mempty
-                                    (Tree.singleton (Entity comment_id comment))
-                                    earlier_closures
-                                    users
-                                    closure_map
-                                    ticket_map
-                                    flag_map
-                                    tag_map
-                                    project_handle
-                                    target
-                                    True   -- show actions?
-                                    0      -- max_depth is irrelevant for the new-comments listing 0
-                                    0
-
-                        [whamlet|$newline never
-                            <div .row>
-                                <div .col-md-9 .col-md-offset-1 .col-lg-8 .col-lg-offset-2>
-                                    <h4>
-                                        On #
-                                        <a href="@{WikiR project_handle target}">
-                                            #{target}
-                                        :
-                                    ^{rendered_comment}
-                        |]
-                    toWidget $(cassiusFile "templates/comment_wrapper.cassius")
-
-        rendered_unapproved_comments = render_comments unapproved_comments
-        rendered_new_comments        = render_comments new_comments'
-        rendered_old_comments        = render_comments old_comments'
-        show_older = (length new_comments + length old_comments) > 50
-
-    case mviewer of
-        Nothing -> return ()
-        Just (Entity viewer_id _) -> runDB $ updateCommentsViewTime now viewer_id project_id
-
-    defaultLayout $ do
-        setTitle . toHtml $ projectName project <> " - New Comments | Snowdrift.coop"
-        $(widgetFile "wiki_new_comments")
-
---------------------------------------------------------------------------------
--- /newedits
-
-getWikiNewEditsR :: Text -> Handler Html
-getWikiNewEditsR project_handle = do
-    mauth <- maybeAuth
-    Entity project_id project <- runYDB $ getBy404 $ UniqueProjectHandle project_handle
-
-    maybe_from <- fmap (Key . PersistInt64 . read . T.unpack) <$> lookupGetParam "from"
-
-    since :: UTCTime <- case mauth of
-        Nothing -> liftIO getCurrentTime
-        Just (Entity viewer_id viewer) -> lookupGetParam "since" >>= \case
-            Nothing -> do
-                viewtimes :: [Entity ViewTime] <- runDB $
-                    select $
-                    from $ \ viewtime -> do
-                    where_ $
-                        viewtime ^. ViewTimeUser ==. val viewer_id &&.
-                        viewtime ^. ViewTimeProject ==. val project_id &&.
-                        viewtime ^. ViewTimeType ==. val ViewEdits
-                    return viewtime
-
-                let comments_ts = case viewtimes of
-                        [] -> userReadEdits viewer
-                        Entity _ viewtime : _ -> viewTimeTime viewtime
-
-                redirectHereWithParams [("since", T.pack $ show comments_ts)]
-
-            Just since -> return (read . T.unpack $ since)
-
-    now <- liftIO getCurrentTime
-
-
-    (new_edits, old_edits, pages, users) :: ([Entity WikiEdit], [Entity WikiEdit], M.Map WikiPageId (Entity WikiPage), M.Map UserId (Entity User)) <- runDB $ do
-        pages <- fmap (M.fromList . map (entityKey &&& id)) $
-            select $
-            from $ \ page -> do
-            where_ $ page ^. WikiPageProject ==. val project_id
-            return page
-
-{-
-        viewtimes :: [Entity ViewTime] <- select $ from $ \ viewtime -> do
-            where_ $
-                ( viewtime ^. ViewTimeUser ==. val viewer_id ) &&.
-                ( viewtime ^. ViewTimeProject ==. val project_id ) &&.
-                ( viewtime ^. ViewTimeType ==. val ViewEdits )
-            return viewtime
-
-        let edits_ts = case viewtimes of
-                [] -> userReadEdits viewer
-                (Entity _ viewtime):_ -> viewTimeTime viewtime
--}
-        new_edits :: [Entity WikiEdit] <- select $ from $ \ edit -> do
-            where_ $
-                case maybe_from of
-                    Nothing ->
-                        ( edit ^. WikiEditPage `in_` valList (M.keys pages) ) &&.
-                        ( edit ^. WikiEditTs >=. val since )
-                    Just from_edit ->
-                        ( edit ^. WikiEditPage `in_` valList (M.keys pages) ) &&.
-                        ( edit ^. WikiEditId <=. val from_edit ) &&.
-                        ( edit ^. WikiEditTs >=. val since )
-
-            orderBy [ desc (edit ^. WikiEditId) ]
-            limit 51
-            return edit
-
-        old_edits :: [Entity WikiEdit] <- select $ from $ \ edit -> do
-            where_ $
-                case maybe_from of
-                    Nothing ->
-                        ( edit ^. WikiEditPage `in_` valList ( M.keys pages) ) &&.
-                        ( edit ^. WikiEditTs <. val since )
-                    Just from_edit ->
-                        ( edit ^. WikiEditPage `in_` valList (M.keys pages) ) &&.
-                        ( edit ^. WikiEditId <=. val from_edit ) &&.
-                        ( edit ^. WikiEditTs <. val since )
-            orderBy [ desc (edit ^. WikiEditId) ]
-            limit $ fromIntegral $ 51 - length new_edits
-            --offset $ fromIntegral $ length new_edits
-            return edit
-
-        let user_ids = S.toList $ S.fromList $ map (wikiEditUser . entityVal) (new_edits <> old_edits)
-        users <- fmap (M.fromList . map (entityKey &&& id)) $ selectList [ UserId <-. user_ids ] []
-        return (new_edits, old_edits, pages, users)
-
-    let new_edits' = take 50 new_edits
-        old_edits' = take (50 - length new_edits') old_edits
-        show_older = (length new_edits + length old_edits) > 50
-        PersistInt64 to = unKey $ minimum (map entityKey (new_edits' <> old_edits'))
-        renderEdit (Entity edit_id edit) =
-            let editor = users M.! wikiEditUser edit
-                page = pages M.! wikiEditPage edit
-             in [whamlet|
-                    <tr>
-                        <td>
-                            <a href="@{WikiEditR project_handle (wikiPageTarget (entityVal page)) edit_id}">
-                                #{wikiPageTarget (entityVal page)}
-
-                        <td>
-                            ^{renderTime (wikiEditTs edit)}
-
-                        <td>
-                            <a href="@{UserR (entityKey editor)}">
-                                #{userPrintName editor}
-                        <td>
-                            $maybe comment <- wikiEditComment edit
-                                #{comment}
-                |]
-
-    case mauth of
-        Nothing -> return ()
-        Just (Entity viewer_id _) -> runDB $ do
-            c <- updateCount $ \ viewtime -> do
-                 set viewtime [ ViewTimeTime =. val now ]
-                 where_ $
-                     viewtime ^. ViewTimeUser ==. val viewer_id &&.
-                     viewtime ^. ViewTimeProject ==. val project_id &&.
-                     viewtime ^. ViewTimeType ==. val ViewEdits
-
-            when (c == 0) $ insert_ $ ViewTime viewer_id project_id ViewEdits now
-
-    defaultLayout $ do
-        setTitle . toHtml $ projectName project <> " - New Wiki Edits | Snowdrift.coop"
-        $(widgetFile "wiki_new_edits")
 
 --------------------------------------------------------------------------------
 -- /#target
@@ -375,8 +150,8 @@ postWikiR project_handle target = do
                                     , "<br>[**Ticket created**](" <> render (DiscussCommentR project_handle target comment_id) [] <> ")"
                                     ]
 
-                            insertMessage_ $ Message MessageDirect (Just project_id) now (Just last_editor) (Just user_id) message_text True
-                            insertMessage_ $ Message MessageDirect (Just project_id) now (Just user_id) (Just last_editor) message_text True
+                            insertMessage_ MessageDirect (Just project_id) (Just last_editor) (Just user_id)     message_text True
+                            insertMessage_ MessageDirect (Just project_id) (Just user_id)     (Just last_editor) message_text True
 
                             lift $ lift $ addAlert "danger" "conflicting edits (ticket created, messages sent)"
 

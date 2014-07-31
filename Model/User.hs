@@ -6,9 +6,10 @@ module Model.User
     , canMakeEligible
     , eligEstablishUser
     , establishUser
+    , fetchUserMessagePrefDB
+    -- TODO(mitchell): consistent naming scheme
     , getAllRoles
     , getCurUserRoles
-    , getMessagePrefs
     , getProjectsAndRoles
     , getRoles
     , getUsersIn
@@ -24,18 +25,15 @@ module Model.User
     , isProjectModerator'
     , isProjectTeamMember
     , isProjectTeamMember'
-    , messagePrefOnReply
     , updateUser
     , userPrintName
     , userWidget
-    -- Message preferences
-    , MessagePreference(..)
-    , showMessagePreference
     ) where
 
 import Import
+
+import Model.Comment.Sql
 import Model.Message
-import Model.User.Internal
 
 import qualified Data.Map       as M
 import qualified Data.Set       as S
@@ -51,7 +49,7 @@ data UserUpdate =
         , userUpdateIrcNick            :: Maybe Text
         , userUpdateBlurb              :: Maybe Markdown
         , userUpdateStatement          :: Maybe Markdown
-        , userUpdateMessagePreferences :: Maybe [MessagePreference]
+        -- , userUpdateMessagePreferences :: Maybe [MessagePreference]
         }
 
 getUsersIn :: [UserId] -> DB [Entity User]
@@ -65,7 +63,7 @@ updateUser user_id UserUpdate{..} =
             , UserIrcNick            =. val userUpdateIrcNick
             , UserStatement          =. val userUpdateStatement
             , UserBlurb              =. val userUpdateBlurb
-            , UserMessagePreferences =. val (fromMaybe [] userUpdateMessagePreferences)
+            -- , UserMessagePreferences =. val (fromMaybe [] userUpdateMessagePreferences)
             ]
     where_ (u ^. UserId ==. val user_id)
 
@@ -76,7 +74,7 @@ applyUserUpdate user UserUpdate{..} = user
     , userIrcNick            = userUpdateIrcNick
     , userStatement          = userUpdateStatement
     , userBlurb              = userUpdateBlurb
-    , userMessagePreferences = fromMaybe [] userUpdateMessagePreferences
+    -- , userMessagePreferences = fromMaybe [] userUpdateMessagePreferences
     }
 
 userPrintName :: Entity User -> Text
@@ -116,14 +114,17 @@ establishUser user_id elig_time reason = do
         set u [ UserEstablished =. val est ]
         where_ (u ^. UserId ==. val user_id)
 
-    -- Automatically approve all unapproved comments.
-    update $ \c -> do
-        set c [ CommentModeratedTs =. just (val est_time)
-              , CommentModeratedBy =. just (val user_id)
-              ]
-        where_ $
-            c ^. CommentUser ==. val user_id &&.
-            isNothing (c ^. CommentModeratedTs)
+    approveUnapprovedComments est_time
+  where
+    approveUnapprovedComments :: UTCTime -> DB ()
+    approveUnapprovedComments est_time =
+        update $ \c -> do
+            set c [ CommentModeratedTs =. just (val est_time)
+                  , CommentModeratedBy =. just (val user_id)
+                  ]
+            where_ $
+                c ^. CommentUser ==. val user_id &&.
+                exprUnapproved c
 
 -- | Make a user eligible for establishment. Put a message in their inbox
 -- instructing them to read and accept the honor pledge.
@@ -139,7 +140,7 @@ eligEstablishUser establisher_id user_id reason = do
     lift $ insert_ $ ManualEstablishment user_id establisher_id
 
     snowdrift_id <- lift getSnowdriftId
-    insertMessage_ $ Message MessageDirect (Just snowdrift_id) elig_time Nothing (Just user_id) message_text True
+    insertMessage_ MessageDirect (Just snowdrift_id) Nothing (Just user_id) message_text True
   where
     message_text :: Markdown
     message_text = Markdown $ T.unlines
@@ -147,13 +148,6 @@ eligEstablishUser establisher_id user_id reason = do
         , ""
         , "After you [accept the honor pledge](/honor-pledge), you can comment and take other actions on the site without moderation."
         ]
-
--- | Get a User's MessagePreferences. Unsafe if UserId does not exist.
-getMessagePrefs :: UserId -> DB [MessagePreference]
-getMessagePrefs user_id = userMessagePreferences <$> getJust user_id
-
-messagePrefOnReply :: UserId -> DB Bool
-messagePrefOnReply user_id = (elem MessageOnReply) <$> getMessagePrefs user_id
 
 -- | Get a User's Roles in a Project.
 getRoles :: UserId -> ProjectId -> DB [Role]
@@ -259,3 +253,15 @@ canMakeEligible establishee_id establisher_id = do
         <$> get404 establishee_id
         <*> (elem Moderator <$> getAllRoles establisher_id)
     return $ isUnestablished establishee && establisher_is_mod
+
+-- | How does this User prefer messages of a certain type to be delivered (if at all)?
+-- listToMaybe is appropriate here due to UniqueUserMessagePref (list returned will
+-- either be [] or [Value delivery])
+fetchUserMessagePrefDB :: UserId -> MessageType -> DB (Maybe MessageDelivery)
+fetchUserMessagePrefDB user_id msg_type = fmap (fmap unValue . listToMaybe) $
+    select $
+    from $ \ump -> do
+    where_ $
+        ump ^. UserMessagePrefUser ==. val user_id &&.
+        ump ^. UserMessagePrefType ==. val msg_type
+    return (ump ^. UserMessagePrefDelivery)

@@ -83,7 +83,7 @@ editUserForm muser = renderBootstrap3 $
         <*> aopt' textField               "IRC nick @freenode.net)"                        (userIrcNick                   <$> muser)
         <*> aopt' snowdriftMarkdownField  "Blurb (used on listings of many people)"        (userBlurb                     <$> muser)
         <*> aopt' snowdriftMarkdownField  "Personal Statement (visible only on this page)" (userStatement                 <$> muser)
-        <*> aopt' messagePreferencesField "Message filter"                                 (Just . userMessagePreferences <$> muser)
+        -- <*> aopt' messagePreferencesField "Message filter"                                 (Just . userMessagePreferences <$> muser)
 
 -- | Form to mark a user as eligible for establishment. The user is fully established
 -- when s/he accepts the honor pledge.
@@ -98,10 +98,10 @@ previewUserForm User{..} = renderBootstrap3 $
         <*> aopt hiddenField "" (Just userIrcNick)
         <*> hiddenMarkdown userBlurb
         <*> hiddenMarkdown userStatement
-        <*> aopt messagePreferencesField "" (Just (Just userMessagePreferences))
+        -- <*> aopt messagePreferencesField "" (Just (Just userMessagePreferences))
 
-messagePreferencesField :: Field Handler [MessagePreference]
-messagePreferencesField = checkboxesFieldList (map (showMessagePreference &&& id) [minBound..maxBound])
+-- messagePreferencesField :: Field Handler [MessagePreference]
+-- messagePreferencesField = checkboxesFieldList (map (showMessagePreference &&& id) [minBound..maxBound])
 
 -- | Render a User profile, including
 renderUser :: Maybe UserId -> UserId -> User -> Map (Entity Project) (Set Role) -> Widget

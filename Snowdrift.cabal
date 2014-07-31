@@ -31,6 +31,7 @@ library
                      Model.AnnotatedTag
                      Model.CollapseState
                      Model.Comment
+                     Model.Comment.Sql
                      Model.Currency
                      Model.Issue
                      Model.Markdown
@@ -41,14 +42,15 @@ library
                      Model.Role
                      Model.Settings
                      Model.Shares
-                     Model.SnowdriftEvent
+                     Model.SnowdriftEvent.Internal
                      Model.Tag
                      Model.Ticket
                      Model.Transaction
                      Model.User
-                     Model.ViewTime
+                     Model.User.Sql
                      Model.ViewType
                      Model.WikiPage
+                     Model.WikiPage.Sql
                      Settings
                      Settings.StaticFiles
                      Settings.Development
@@ -98,7 +100,6 @@ library
                    Model.Permission.Internal
                    Model.Role.Internal
                    Model.Settings.Internal
-                   Model.User.Internal
                    Model.ViewType.Internal
 
     if flag(dev) || flag(library-only)

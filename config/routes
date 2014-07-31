@@ -36,6 +36,7 @@
 /p/#Text/b/#ProjectBlogId                    ProjectBlogPostR     GET
 /p/#Text/contact                             ContactR             GET POST
 /p/#Text/edit                                EditProjectR         GET
+/p/#Text/feed                                ProjectFeedR         GET
 /p/#Text/invitation/#Text                    InvitationR          GET POST
 /p/#Text/invite                              InviteR              GET POST
 /p/#Text/patrons                             ProjectPatronsR      GET
@@ -47,14 +48,12 @@
 /p/#Text/who                                 WhoR                 GET
 /p/#Text/widget                              WidgetR              GET
 
+/p/#ProjectId/watch   WatchProjectR   POST
+/p/#ProjectId/unwatch UnwatchProjectR POST
+
 -- Project wiki
 
-/p/#Text/w           WikiPagesR       GET
-/p/#Text/newcomments WikiNewCommentsR GET
-/p/#Text/newedits    WikiNewEditsR    GET
-
--- Project wiki page
-
+/p/#Text/w                                    WikiPagesR           GET
 /p/#Text/w/#Text                              WikiR                GET POST
 /p/#Text/w/#Text/d                            DiscussWikiR         GET
 /p/#Text/w/#Text/d/new                        NewDiscussWikiR      GET POST

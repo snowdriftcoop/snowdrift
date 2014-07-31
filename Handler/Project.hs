@@ -7,42 +7,30 @@ import Import
 import Model.Currency
 import Model.Project
 import Model.Shares
+import Model.Markdown
 import Model.Markdown.Diff
 import Model.User
 import View.PledgeButton
-
-import qualified Data.List as L
-import qualified Data.Map as M
-import qualified Data.Text as T
-import qualified Data.Set as S
-
-import Data.Maybe (maybeToList)
-
 import Widgets.Markdown
 import Widgets.Preview
 import Widgets.Time
 
-import Model.Markdown
-
-import Yesod.Markdown
-
-import Data.Time.Clock
+import           Data.List       (sort)
+import qualified Data.Map        as M
+import           Data.Maybe      (fromJust, maybeToList)
+import qualified Data.Text       as T
+import           Data.Time.Clock
+import qualified Data.Set        as S
+import           Yesod.Markdown
 
 lookupGetParamDefault :: Read a => Text -> a -> Handler a
 lookupGetParamDefault name def = do
     maybe_value <- lookupGetParam name
     return $ fromMaybe def $ maybe_value >>= readMaybe . T.unpack
 
-
 getProjectsR :: Handler Html
 getProjectsR = do
-    muser <- maybeAuth
-
-    projects <- runDB $ select $ from return
-
-    counts <- runDB $ maybe (const $ return []) getCounts muser projects
-
-    let counts' = M.fromList $ zip (map entityKey projects) counts
+    projects <- runDB getAllProjects
 
     defaultLayout $ do
         setTitle "Projects | Snowdrift.coop"
@@ -419,3 +407,48 @@ renderBlogPost project_handle blog_post = do
         content = markdownWidget project_handle $ Markdown $ T.snoc top_content '\n' <> bottom_content
 
     $(widgetFile "blog_post")
+
+postWatchProjectR :: ProjectId -> Handler ()
+postWatchProjectR = undefined -- TODO(mitchell)
+
+postUnwatchProjectR :: ProjectId -> Handler ()
+postUnwatchProjectR = undefined -- TODO(mitchell)
+
+--------------------------------------------------------------------------------
+-- /feed
+
+-- Analogous data types to SnowdriftEvent, but specialized for displaying the feed.
+-- This is necessary because there is some extra information required for displaying
+-- feed items not present in SnowdriftEvents, such as the WikiPage that a Comment
+-- was made on.
+data FeedEvent = FeedEvent UTCTime FeedEventData
+    deriving Eq
+
+data FeedEventData
+    = FECommentPostedOnWikiPage (Entity Comment) (Entity WikiPage)
+    | FEWikiEdit (Entity WikiEdit) (Entity WikiPage)
+    deriving Eq
+
+-- | Order FeedEvents by reverse timestamp (newer comes first).
+instance Ord FeedEvent where
+    compare (FeedEvent time1 _) (FeedEvent time2 _) = compare time2 time1
+
+-- | If an unapproved comment is passed to this function, bad things will happen.
+mkCommentPostedOnWikiPageFeedEvent :: Entity Comment -> Entity WikiPage -> FeedEvent
+mkCommentPostedOnWikiPageFeedEvent c@(Entity _ Comment{..}) wp =
+    FeedEvent (fromJust commentModeratedTs) (FECommentPostedOnWikiPage c wp)
+
+mkWikiEditFeedEvent :: Entity WikiEdit -> Entity WikiPage -> FeedEvent
+mkWikiEditFeedEvent we@(Entity _ WikiEdit{..}) wp = FeedEvent wikiEditTs (FEWikiEdit we wp)
+
+-- | This function is responsible for hitting every relevant event table. Nothing
+-- statically guarantees that.
+getProjectFeedR :: Text -> Handler Html
+getProjectFeedR project_handle = do
+    before <- maybe (liftIO getCurrentTime) (return . read . T.unpack) =<< lookupGetParam "before"
+    events <- runYDB $ do
+        Entity project_id _ <- getBy404 (UniqueProjectHandle project_handle)
+        comments_posted <- map (uncurry mkCommentPostedOnWikiPageFeedEvent) <$> fetchProjectCommentsPostedOnWikiPagesDB project_id before
+        wiki_edits      <- map (uncurry mkWikiEditFeedEvent)                <$> fetchProjectWikiEditsDB                 project_id before
+        return (sort $ comments_posted ++ wiki_edits)
+    defaultLayout $(widgetFile "project_feed")

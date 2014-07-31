@@ -45,18 +45,13 @@ module Model.Comment
     , newRetractedCommentClosure
     , rethreadComments
     , subGetCommentAncestors
-    -- SQL expressions/queries
-    , exprPermissionFilter
-    , exprUnapproved
-    -- Probably shouldn't be exported
-    , makeViewerInfo
     ) where
 
 import Import
 
+import           Model.Comment.Sql
 import           Model.Message
-import           Model.SnowdriftEvent
-import           Model.User                  (isProjectModerator')
+import           Model.SnowdriftEvent.Internal
 
 import qualified Control.Monad.State         as St
 import           Control.Monad.Writer.Strict (tell)
@@ -216,18 +211,9 @@ editComment comment_id text = do
                                     comment_id
             permalink_text <- lift $ getUrlRender <*> pure permalink_route
             let message_text = Markdown $ "A comment you flagged has been edited and reposted to the site. You can view it [here](" <> permalink_text <> ")."
-            now <- liftIO getCurrentTime
             lift $ deleteCascade comment_flagging_id -- delete flagging and all flagging reasons with it.
             snowdrift_id <- lift getSnowdriftId
-            insertMessage_ $
-                Message
-                  MessageDirect
-                  (Just snowdrift_id)
-                  now
-                  Nothing
-                  (Just $ commentFlaggingFlagger)
-                  message_text
-                  True
+            insertMessage_ MessageDirect (Just snowdrift_id) Nothing (Just $ commentFlaggingFlagger) message_text True
   where
     updateCommentText =
         update $ \c -> do
@@ -255,15 +241,7 @@ flagComment project_handle target comment_id permalink_route flagger_id reasons 
                     , "[link to flagged comment](" <> permalink_route <> ")"
                     ]
             snowdrift_id <- lift getSnowdriftId
-            insertMessage_ $
-                Message
-                  MessageDirect
-                  (Just snowdrift_id)
-                  now
-                  Nothing
-                  (Just poster_id)
-                  message_text
-                  True
+            insertMessage_ MessageDirect (Just snowdrift_id) Nothing (Just poster_id) message_text True
             return True
 
 -- | Get all ancestors that have been closed.
@@ -347,24 +325,24 @@ getCommentDescendantsIds = fmap (map unValue) . select . querDescendants
 
 -- | Get all descendants of the given root comment.
 getCommentDescendants :: Maybe UserId -> ProjectId -> CommentId -> DB [Entity Comment]
-getCommentDescendants mviewer_id project_id root_id = makeViewerInfo mviewer_id project_id >>= \viewer_info ->
+getCommentDescendants mviewer_id project_id root_id =
     select $
     from $ \c -> do
     where_ $
         c ^. CommentId `in_` subList_select (querDescendants root_id) &&.
-        exprPermissionFilter viewer_info c
+        exprPermissionFilter mviewer_id (val project_id) c
     -- DO NOT change ordering here! buildCommentTree relies on it.
     orderBy [asc (c ^. CommentParent), asc (c ^. CommentCreatedTs)]
     return c
 
 -- | Get all descendants of all given root comments.
 getCommentsDescendants :: Maybe UserId -> ProjectId -> [CommentId] -> DB [Entity Comment]
-getCommentsDescendants mviewer_id project_id root_ids = makeViewerInfo mviewer_id project_id >>= \viewer_info ->
+getCommentsDescendants mviewer_id project_id root_ids =
     select $
     from $ \c -> do
     where_ $
         c ^. CommentId `in_` subList_select (querAllDescendants root_ids) &&.
-        exprPermissionFilter viewer_info c
+        exprPermissionFilter mviewer_id (val project_id) c
     -- DO NOT change ordering here! buildCommentTree relies on it.
     orderBy [asc (c ^. CommentParent), asc (c ^. CommentCreatedTs)]
     return c
@@ -378,35 +356,35 @@ getCommentDestination comment_id = do
 
 -- | Get all Comments on a Discussion that are root comments.
 getAllRootComments :: Maybe UserId -> ProjectId -> DiscussionId -> DB [Entity Comment]
-getAllRootComments mviewer_id project_id discussion_id = makeViewerInfo mviewer_id project_id >>= \viewer_info ->
+getAllRootComments mviewer_id project_id discussion_id =
     select $
     from $ \c -> do
     where_ $
         exprOnDiscussion discussion_id c &&.
         exprRoot c &&.
-        exprPermissionFilter viewer_info c
+        exprPermissionFilter mviewer_id (val project_id) c
     return c
 
 getAllClosedRootComments :: Maybe UserId -> ProjectId -> DiscussionId -> DB [Entity Comment]
-getAllClosedRootComments mviewer_id project_id discussion_id = makeViewerInfo mviewer_id project_id >>= \viewer_info ->
+getAllClosedRootComments mviewer_id project_id discussion_id =
     select $
     from $ \c -> do
     where_ $
         exprOnDiscussion discussion_id c &&.
         exprRoot c &&.
         exprClosed c &&.
-        exprPermissionFilter viewer_info c
+        exprPermissionFilter mviewer_id (val project_id) c
     return c
 
 getAllOpenRootComments :: Maybe UserId -> ProjectId -> DiscussionId -> DB [Entity Comment]
-getAllOpenRootComments mviewer_id project_id discussion_id = makeViewerInfo mviewer_id project_id >>= \viewer_info ->
+getAllOpenRootComments mviewer_id project_id discussion_id =
     select $
     from $ \c -> do
     where_ $
         exprOnDiscussion discussion_id c &&.
         exprRoot c &&.
         exprOpen c &&.
-        exprPermissionFilter viewer_info c
+        exprPermissionFilter mviewer_id (val project_id) c
     return c
 
 -- | Get a Comment's Tags.
@@ -518,94 +496,3 @@ rethreadComments rethread_id depth_offset maybe_new_parent_id new_discussion_id 
                     <&> (comment_rethread ^. CommentRethreadNewComment)
 
     return new_comment_ids
-
--- | Dumb helper function to make a "viewer info" argument for exprPermissionFilter.
--- Unfortunately we export it as another module uses exprPermissionFilter. Probably
--- this should be rectified.
-makeViewerInfo :: Maybe UserId -> ProjectId -> DB (Maybe (UserId, Bool))
-makeViewerInfo Nothing _ = return Nothing
-makeViewerInfo (Just viewer_id) project_id = Just . (viewer_id,) <$> isProjectModerator' viewer_id project_id
-
---------------------------------------------------------------------------------
-
-exprClosed, exprOpen :: SqlExpr (Entity Comment) -> SqlExpr (Value Bool)
-exprClosed c = c ^. CommentId `in_`   exprClosedCommentIds
-exprOpen   c = c ^. CommentId `notIn` exprClosedCommentIds
-
-exprClosedCommentIds :: SqlExpr (ValueList CommentId)
-exprClosedCommentIds =
-    subList_select $
-    from $ \cl ->
-    return (cl ^. CommentClosureComment)
-
--- | Comment is root?
-exprRoot :: SqlExpr (Entity Comment) -> SqlExpr (Value Bool)
-exprRoot c = isNothing (c ^. CommentParent)
-
--- | Comment on this Discussion?
-exprOnDiscussion :: DiscussionId -> SqlExpr (Entity Comment) -> SqlExpr (Value Bool)
-exprOnDiscussion discussion_id c = c ^. CommentDiscussion ==. val discussion_id
-
--- | SQL expression to filter a comment based on "permissions", as follows:
---    If moderator, show all.
---    If logged in, show all approved (hiding flagged), plus own comments (unapproved + flagged).
---    If not logged in, show all approved (hiding flagged).
---    No matter what, hide rethreaded comments (they've essentially been replaced).
---
--- The logic here is DUPLICATED (in Haskell land) in Handler.Wiki.Comment.checkCommentPage
--- (because that function only fetches the root comment via Database.Persist.get) - all
--- changes here must be reflected there, too!
-exprPermissionFilter :: Maybe (UserId, Bool) -- Logged in? And if so, moderator?
-                     -> SqlExpr (Entity Comment)
-                     -> SqlExpr (Value Bool)
-exprPermissionFilter (Just (_,True))      c = exprNotRethreaded c
-exprPermissionFilter (Just (viewer_id,_)) c = exprNotRethreaded c &&. (exprApprovedAndNotFlagged c ||. exprPostedBy viewer_id c)
-exprPermissionFilter Nothing              c = exprNotRethreaded c &&. exprApprovedAndNotFlagged c
-
-exprNotRethreaded :: SqlExpr (Entity Comment) -> SqlExpr (Value Bool)
-exprNotRethreaded c = c ^. CommentId `notIn` rethreadedCommentIds
-  where
-    rethreadedCommentIds :: SqlExpr (ValueList CommentId)
-    rethreadedCommentIds =
-        subList_select $
-        from $ \r ->
-        return (r ^. RethreadOldComment)
-
-exprApproved :: SqlExpr (Entity Comment) -> SqlExpr (Value Bool)
-exprApproved = not_ . exprUnapproved
-
-exprUnapproved :: SqlExpr (Entity Comment) -> SqlExpr (Value Bool)
-exprUnapproved c = isNothing (c ^. CommentModeratedTs)
-
-exprNotFlagged :: SqlExpr (Entity Comment) -> SqlExpr (Value Bool)
-exprNotFlagged c = c ^. CommentId `notIn` flaggedCommentIds
-  where
-    flaggedCommentIds :: SqlExpr (ValueList CommentId)
-    flaggedCommentIds =
-        subList_select $
-        from $ \cf ->
-        return (cf ^. CommentFlaggingComment)
-
-exprApprovedAndNotFlagged :: SqlExpr (Entity Comment) -> SqlExpr (Value Bool)
-exprApprovedAndNotFlagged c = exprApproved c &&. exprNotFlagged c
-
-exprPostedBy :: UserId -> SqlExpr (Entity Comment) -> SqlExpr (Value Bool)
-exprPostedBy user_id c = c ^. CommentUser ==. val user_id
-
-querAncestors :: CommentId -> SqlQuery (SqlExpr (Value CommentId))
-querAncestors comment_id =
-    from $ \ca -> do
-    where_ (ca ^. CommentAncestorComment ==. val comment_id)
-    return (ca ^. CommentAncestorAncestor)
-
-querDescendants :: CommentId -> SqlQuery (SqlExpr (Value CommentId))
-querDescendants comment_id =
-    from $ \ca -> do
-    where_ (ca ^. CommentAncestorAncestor ==. val comment_id)
-    return (ca ^. CommentAncestorComment)
-
-querAllDescendants :: [CommentId] -> SqlQuery (SqlExpr (Value CommentId))
-querAllDescendants comment_ids =
-    from $ \ca -> do
-    where_ (ca ^. CommentAncestorAncestor `in_` valList comment_ids)
-    return (ca ^. CommentAncestorComment)

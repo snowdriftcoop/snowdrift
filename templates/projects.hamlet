@@ -7,25 +7,13 @@ $else
             <th> Edits
             <th> Discussion
             <th> Share value
-        $forall Entity project_id project <- projects
+        $forall Entity _ project <- projects
             <tr>
                 <td>
                     <a href=@{ProjectR (projectHandle project)}>
                         #{projectName project}
                 <td>
-                    <a href=@{WikiNewEditsR (projectHandle project)}>
+                    <a href=@{ProjectFeedR (projectHandle project)}>
                         <span .glyphicon .glyphicon-list-alt>&nbsp;
-                            $maybe (_, count') <- M.lookup project_id counts'
-                                $with (Value count) <- L.head count'
-                                    $if not (count == 0)
-                                        #{show count}
-                <td>
-                    <a href=@{WikiNewCommentsR (projectHandle project)}>
-                        <span .glyphicon .glyphicon-comment>&nbsp;
-                            $maybe (count', _) <- M.lookup project_id counts'
-                                $with (Value count) <- L.head count'
-                                    $if not (count == 0)
-                                        #{show count}
                 <td>
                     #{show (projectShareValue project)}/share
-
