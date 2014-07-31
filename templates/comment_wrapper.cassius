@@ -23,7 +23,7 @@
 .comment-head, .comment-action
     margin-right : 1em
     margin-bottom : 0.5em
-    display : inline-flex
+    display : inline-block
     padding : 2px 5px
 
 .top_level
