@@ -433,7 +433,7 @@ watchOrUnwatchProject action msg project_id = do
 getProjectFeedR :: Text -> Handler Html
 getProjectFeedR project_handle = do
     before <- maybe (liftIO getCurrentTime) (return . read . T.unpack) =<< lookupGetParam "before"
-    (events, discussion_wiki_pages_map, wiki_pages_map, users_map) <- runYDB $ do
+    (events, discussion_wiki_pages_map, wiki_pages_map, _) <- runYDB $ do
         Entity project_id _ <- getBy404 (UniqueProjectHandle project_handle)
         comment_entities   <- fetchProjectCommentsPostedOnWikiPagesBeforeDB project_id before
         wiki_edit_entities <- fetchProjectWikiEditsBeforeDB                 project_id before

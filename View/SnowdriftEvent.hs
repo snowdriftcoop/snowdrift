@@ -5,7 +5,7 @@ module View.SnowdriftEvent where
 import Import
 
 renderCommentPostedOnWikiPageEvent :: CommentId -> Comment -> Entity WikiPage -> Widget
-renderCommentPostedOnWikiPageEvent comment_id comment (Entity wiki_page_id wiki_page) =
+renderCommentPostedOnWikiPageEvent comment_id comment (Entity _ wiki_page) =
     [whamlet|
         <div>On #{wikiPageTarget wiki_page}: #{commentText comment}
             \ <a href=@{CommentDirectLinkR comment_id}>(permalink)
@@ -20,7 +20,7 @@ renderCommentPostedOnUnknownDiscussionEvent comment_id comment =
     |]
 
 renderWikiEditEvent :: WikiEditId -> WikiEdit -> Entity WikiPage -> Widget
-renderWikiEditEvent wiki_edit_id wiki_edit (Entity wiki_page_id wiki_page) =
+renderWikiEditEvent _ _ (Entity _ wiki_page) =
     [whamlet|
         <div>#{wikiPageTarget wiki_page} edit!
     |]

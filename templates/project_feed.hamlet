@@ -23,3 +23,9 @@ $forall event <- events
 
         $of EWikiEdit wiki_edit_id wiki_edit
             ^{renderWikiEditEvent wiki_edit_id wiki_edit (Entity (wikiEditPage wiki_edit) (fromJust $ M.lookup (wikiEditPage wiki_edit) wiki_pages_map))}
+
+        $of ECommentPending _ _
+            $# TODO?
+
+        $of EMessageSent _ _
+            $# TODO?

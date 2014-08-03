@@ -37,7 +37,7 @@ discussionSpecs = do
             statusIsResp 302
 
         getLatestCommentId = do
-            [ Value (Just comment_id) ] <- runDB $ select $ from $ \ comment -> return (max_ $ comment ^. CommentId)
+            [ Value (Just comment_id) ] <- testDB $ select $ from $ \ comment -> return (max_ $ comment ^. CommentId)
             return comment_id
 
     ydescribe "discussion" $ do

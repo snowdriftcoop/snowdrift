@@ -40,8 +40,8 @@ import Control.Monad (when)
 type Spec = YesodSpec App
 type Example = YesodExample App
 
-runDB :: SqlPersistM a -> Example a
-runDB query = do
+testDB :: SqlPersistM a -> Example a
+testDB query = do
     pool <- fmap connPool getTestYesod
     liftIO $ runSqlPersistMPool query pool
 

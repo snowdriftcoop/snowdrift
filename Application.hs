@@ -75,7 +75,7 @@ import Handler.Wiki
 import Handler.Wiki.Comment
 
 import Model.Message
-import Model.SnowdriftEvent.Internal
+-- import Model.SnowdriftEvent.Internal
 import Model.User
 
 import Widgets.Navbar
