@@ -30,3 +30,12 @@ data MessageDelivery
     | DeliverEmailDigest  -- Send email digest in addition to internal messages (sent immediately)
     deriving (Read, Show)
 derivePersistField "MessageDelivery"
+
+-- | Can this message type be filtered out entirely?
+messagePreferenceCanBeNone :: MessageType -> Bool
+messagePreferenceCanBeNone MessageDirect     = False
+messagePreferenceCanBeNone MessageBalanceLow = False
+messagePreferenceCanBeNone MessageReply      = True
+messagePreferenceCanBeNone MessageNewProject = True
+messagePreferenceCanBeNone MessageNewPledger = True
+messagePreferenceCanBeNone MessageNewPage    = True

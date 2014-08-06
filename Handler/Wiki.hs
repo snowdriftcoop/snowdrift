@@ -65,11 +65,11 @@ getWikiR project_handle target = do
     comment_count <- runDB $ do
         let muser_id      = entityKey <$> maybe_user
             discussion_id = wikiPageDiscussion page
-        roots_ids <- map entityKey <$> getAllOpenRootComments muser_id project_id discussion_id
-        children <- getCommentsDescendants muser_id project_id roots_ids
+        roots_ids <- map entityKey <$> fetchAllOpenRootCommentsDB muser_id project_id discussion_id
+        children <- fetchCommentsDescendantsDB muser_id project_id roots_ids
         return $ length roots_ids + length children
 
-    let can_edit = fromMaybe False (isEstablished . entityVal <$> maybe_user)
+    let can_edit = fromMaybe False (userCanEditWikiPage . entityVal <$> maybe_user)
 
     defaultLayout $ do
 
@@ -83,9 +83,8 @@ postWikiR project_handle target = do
     Entity user_id user <- requireAuth
     now <- liftIO getCurrentTime
 
-    let can_edit = isEstablished user
-
-    unless can_edit $ permissionDenied "you do not have permission to edit this page"
+    unless (userCanEditWikiPage user) $
+        permissionDenied "you do not have permission to edit this page"
 
     (Entity project_id _, Entity page_id page) <- runYDB $ getPageInfo project_handle target
 
@@ -177,8 +176,8 @@ postWikiR project_handle target = do
 -- | getDiscussWikiR generates the associated discussion page for each wiki page
 getDiscussWikiR :: Text -> Text -> Handler Html
 getDiscussWikiR project_handle target = lookupGetParam "state" >>= \case
-    Just "closed" -> go getAllClosedRootComments
-    _             -> go getAllOpenRootComments
+    Just "closed" -> go fetchAllClosedRootCommentsDB
+    _             -> go fetchAllOpenRootCommentsDB
   where
     go = getDiscussWikiR' project_handle target
 
@@ -193,16 +192,16 @@ getDiscussWikiR' project_handle target get_root_comments = do
     muser <- maybeAuth
     let muser_id = entityKey <$> muser
 
-    (Entity project_id project, Entity _ page) <- runYDB $ getPageInfo project_handle target
+    (Entity project_id project, Entity _ page) <- runYDB (getPageInfo project_handle target)
 
     (roots, replies, user_map, closure_map, ticket_map, flag_map, tag_map) <- runDB $ do
         roots           <- get_root_comments muser_id project_id (wikiPageDiscussion page)
-        replies         <- getCommentsDescendants muser_id project_id (map entityKey roots)
-        user_map        <- entitiesMap <$> fetchUsersInDB (S.toList $ getCommentsUsers roots <> getCommentsUsers replies)
+        replies         <- fetchCommentsDescendantsDB muser_id project_id (map entityKey roots)
+        user_map        <- entitiesMap <$> fetchUsersInDB (S.toList $ makeCommentUsersSet roots <> makeCommentUsersSet replies)
         let comment_ids  = map entityKey (roots ++ replies)
-        closure_map     <- makeClosureMap comment_ids
-        ticket_map      <- makeTicketMap  comment_ids
-        flag_map        <- makeFlagMap    comment_ids
+        closure_map     <- makeClosureMapDB comment_ids
+        ticket_map      <- makeTicketMapDB  comment_ids
+        flag_map        <- makeFlagMapDB    comment_ids
         tag_map         <- getAllTagsMap
         return (roots, replies, user_map, closure_map, ticket_map, flag_map, tag_map)
 
@@ -307,9 +306,8 @@ getEditWikiR project_handle target = do
 
     Entity _ last_edit <- runYDB $ getBy404 $ UniqueWikiLastEdit page_id
 
-    let can_edit = isEstablished user
-
-    unless can_edit $ permissionDenied "you do not have permission to edit this page"
+    unless (userCanEditWikiPage user) $
+        permissionDenied "you do not have permission to edit this page"
 
     (wiki_form, _) <- generateFormPost $ editWikiForm (wikiLastEditEdit last_edit) (wikiPageContent page) Nothing
 

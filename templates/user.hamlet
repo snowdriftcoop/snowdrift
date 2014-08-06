@@ -10,7 +10,7 @@
             <div .col-xs-4>
                 $maybe avatar <- userAvatar user
                     <img .headshot_large src="#{avatar}">
-                $if isEstablished user
+                $if userIsEstablished user
                     <small>established user
             <div .col-xs-8>
                 $maybe nick <- userIrcNick user

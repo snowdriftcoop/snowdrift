@@ -9,7 +9,7 @@ import           Data.Tree.Extra           (sortTreeBy)
 import           Model.AnnotatedTag
 import           Model.Comment
 import           Model.Project             (getProjectTagList)
-import           Model.Tag                 (TagMap, getAllTags)
+import           Model.Tag
 import           Model.User
 import           Widgets.Preview
 import           Widgets.Tag
@@ -38,8 +38,8 @@ redirectIfRethreaded project_handle comment_id = runDB go >>= \case
   where
     go :: DB (Maybe (CommentId, Text))
     go = runMaybeT $ do
-        destination_comment_id <- MaybeT (getCommentRethread comment_id)
-        target                 <- lift (wikiPageTarget <$> getCommentPage destination_comment_id)
+        destination_comment_id <- MaybeT (fetchCommentRethreadDB comment_id)
+        target                 <- lift (wikiPageTarget <$> unsafeFetchCommentPageDB destination_comment_id)
         return (destination_comment_id, target)
 
 -- | Convenience method for all pages that accept a project handle, target, and comment id
@@ -70,7 +70,7 @@ checkCommentPage project_handle target comment_id = do
         -- Logged in:
         Just viewer_id -> do
             -- If mod: no restrictions (show unapproved and flagged)
-            is_mod <- runDB $ isProjectModerator' viewer_id project_id
+            is_mod <- runDB (userIsProjectModeratorDB' viewer_id project_id)
             unless is_mod $
                 -- Otherwise, if ordinary user, if viewing own comment, no restrictions.
                 unless (commentUser comment == viewer_id) $ do
@@ -83,8 +83,8 @@ checkCommentPage project_handle target comment_id = do
   where
     isApprovedAndNotFlagged :: Comment -> Handler Bool
     isApprovedAndNotFlagged comment =
-        if isApproved comment
-            then not <$> runDB (isFlagged comment_id)
+        if commentIsApproved comment
+            then not <$> runDB (commentIsFlagged comment_id)
             else return False
 
     deny :: Handler a
@@ -109,12 +109,12 @@ processWikiCommentPreview maybe_parent_id text (Entity _ project) page = do
     Entity user_id user <- requireAuth
 
     (earlier_closures, tag_map) <- runDB $ (,)
-        <$> maybe (return []) getAncestorClosures' maybe_parent_id
+        <$> maybe (return []) fetchAncestorClosuresDB' maybe_parent_id
         <*> (entitiesMap <$> getAllTags)
 
     depth <- depthFromMaybeParentId maybe_parent_id
     now <- liftIO getCurrentTime
-    let (moderated_ts, moderated_by) = if isEstablished user then (Just now, Just user_id) else (Nothing, Nothing)
+    let (moderated_ts, moderated_by) = if userIsEstablished user then (Just now, Just user_id) else (Nothing, Nothing)
 
         comment =
           Entity (Key $ PersistInt64 0) $
@@ -150,14 +150,14 @@ processWikiCommentPost maybe_parent_id text (Entity _ project) page = do
     now <- liftIO getCurrentTime
     depth <- depthFromMaybeParentId maybe_parent_id
 
-    let is_established = isEstablished user
+    let is_established = userIsEstablished user
     maybe_parent_id' <- runSYDB $ do
-        maybe_parent_id' <- lift $ maybe (return Nothing) (fmap Just . getCommentDestination) maybe_parent_id
+        maybe_parent_id' <- lift $ maybe (return Nothing) (fmap Just . fetchCommentDestinationDB) maybe_parent_id
 
         comment_id <-
             if is_established
-                then insertApprovedComment   now now user_id (wikiPageDiscussion page) maybe_parent_id' user_id text depth
-                else insertUnapprovedComment now             (wikiPageDiscussion page) maybe_parent_id' user_id text depth
+                then insertApprovedCommentDB   now now user_id (wikiPageDiscussion page) maybe_parent_id' user_id text depth
+                else insertUnapprovedCommentDB now             (wikiPageDiscussion page) maybe_parent_id' user_id text depth
 
         let content = T.lines $ (\ (Markdown str) -> str) text
             tickets = map T.strip $ mapMaybe (T.stripPrefix "ticket:") content
@@ -169,14 +169,14 @@ processWikiCommentPost maybe_parent_id text (Entity _ project) page = do
             insert_ $ CommentTag comment_id tag_id user_id 1
 
         ancestor_ids <- lift $ maybe (return [])
-                                      (\parent_id -> (parent_id :) <$> getCommentAncestors parent_id)
+                                      (\parent_id -> (parent_id :) <$> fetchCommentAncestorsDB parent_id)
                                       maybe_parent_id
 
         lift $ forM_ ancestor_ids (insert_ . CommentAncestor comment_id)
 
         lift $ update $ \ticket -> do
                   set ticket [ TicketUpdatedTs =. val now ]
-                  where_ $ ticket ^. TicketComment `in_` subGetCommentAncestors comment_id
+                  where_ $ ticket ^. TicketComment `in_` subFetchCommentAncestorsDB comment_id
 
         return maybe_parent_id'
 
@@ -185,7 +185,7 @@ processWikiCommentPost maybe_parent_id text (Entity _ project) page = do
 
 -- Get the depth of a comment, given (maybe) its parent's CommentId.
 depthFromMaybeParentId :: Maybe CommentId -> Handler Int
-depthFromMaybeParentId = maybe (return 0) (\c ->  fmap (+1) $ runDB $ getCommentDepth c)
+depthFromMaybeParentId = maybe (return 0) (\c ->  fmap (+1) $ runDB (fetchCommentDepthDB c))
 
 getMaxDepth :: Handler Int
 getMaxDepth = getMaxDepthDefault 11 -- hard-coded default max depth
@@ -279,14 +279,15 @@ deleteDeleteCommentR project_handle target comment_id = do
     user_id <- requireAuthId
     comment <- runYDB $ get404 comment_id
 
-    can_delete <- runDB $ canDeleteComment user_id (Entity comment_id comment)
-    unless can_delete $
-        permissionDenied "You can't delete that comment."
+    ok <- runDB $ do
+        can_delete <- userCanDeleteCommentDB user_id (Entity comment_id comment)
+        if can_delete
+            then deleteCommentDB comment_id >> return True
+            else return False
 
-    runDB $ deleteComment comment_id
-
-    addAlert "success" "comment deleted"
-    redirect $ DiscussWikiR project_handle target
+    if ok
+        then addAlert "success" "comment deleted" >> redirect (DiscussWikiR project_handle target)
+        else permissionDenied "You can't delete that comment."
 
 --------------------------------------------------------------------------------
 -- /edit
@@ -342,13 +343,13 @@ postEditCommentR project_handle target comment_id = do
         user_id <- requireAuthId
         (_, _, comment) <- checkCommentPage project_handle target comment_id
 
-        unless (canEditComment user_id comment) $
+        unless (userCanEditComment user_id comment) $
             permissionDenied "You can't edit that comment."
 
-        runSYDB $ editComment comment_id new_text
+        runSYDB (editCommentDB comment_id new_text)
 
         addAlert "success" "posted new edit"
-        redirect $ DiscussCommentR project_handle target comment_id
+        redirect (DiscussCommentR project_handle target comment_id)
 
 --------------------------------------------------------------------------------
 -- /flag
@@ -394,7 +395,7 @@ postFlagCommentR project_handle target comment_id = do
     postFlag :: UserId -> [FlagReason] -> Maybe Markdown -> Handler Html
     postFlag user_id reasons message = do
             permalink_route <- getUrlRender <*> pure (EditCommentR project_handle target comment_id)
-            success <- runSYDB $ flagComment
+            success <- runSYDB $ flagCommentDB
                                    project_handle
                                    target
                                    comment_id
@@ -477,9 +478,9 @@ postApproveWikiCommentR project_handle target comment_id = do
     (_, _, comment) <- checkCommentPage project_handle target comment_id
     user_id <- sanityCheckApprove project_handle
 
-    runSDB $ approveComment user_id comment_id comment
+    runSDB (approveCommentDB user_id comment_id comment)
     addAlert "success" "comment approved"
-    redirect $ DiscussCommentR project_handle target comment_id
+    redirect (DiscussCommentR project_handle target comment_id)
 
 sanityCheckApprove :: Text -> Handler UserId
 sanityCheckApprove project_handle = do
@@ -528,14 +529,7 @@ getCloseWikiCommentR project_handle target comment_id = do
 closeSanityCheck :: Text -> Text -> CommentId -> Handler ()
 closeSanityCheck _ _ _ = do
     user <- entityVal <$> requireAuth
-
-    -- TODO: what should this be?
-    -- Aaron says: I think we should allow established to mark as closed,
-    -- but only *affiliated* OR the original poster should do so in one step,
-    -- otherwise, the marking of closed should require *moderator* confirmation…
-    -- We should also have a re-open function.
-    -- There are now comments discussing these things on the site.
-    unless (isEstablished user) $
+    unless (userCanCloseComment user) $
         permissionDenied "You must be an established user to close a conversation."
 
 postRetractWikiCommentR, postCloseWikiCommentR :: Text -> Text -> CommentId -> Handler Html
@@ -592,7 +586,7 @@ postRethreadWikiCommentR project_handle target comment_id = do
     (Entity project_id _, _, comment) <- checkCommentPage project_handle target comment_id
 
     user_id <- requireAuthId
-    ok <- runDB $ isProjectModerator' user_id project_id
+    ok <- runDB (userIsProjectModeratorDB' user_id project_id)
     unless ok $
         permissionDenied "You must be a moderator to rethread"
 
@@ -623,8 +617,8 @@ postRethreadWikiCommentR project_handle target comment_id = do
             when (new_parent_id == old_parent_id && new_discussion_id == commentDiscussion comment) $
                 error "trying to move comment to its current location"
 
-            new_parent_depth <- maybe (return $ -1) getCommentDepth404 new_parent_id
-            old_parent_depth <- maybe (return $ -1) getCommentDepth404 old_parent_id
+            new_parent_depth <- maybe (return $ -1) fetchCommentDepth404DB new_parent_id
+            old_parent_depth <- maybe (return $ -1) fetchCommentDepth404DB old_parent_id
 
             let depth_offset = old_parent_depth - new_parent_depth
 
@@ -637,13 +631,13 @@ postRethreadWikiCommentR project_handle target comment_id = do
                     now <- liftIO getCurrentTime
 
                     runDB $ do
-                        descendants <- getCommentDescendantsIds comment_id
+                        descendants <- fetchCommentDescendantsIdsDB comment_id
 
                         let comments = comment_id : descendants
 
                         rethread_id <- insert $ Rethread now user_id comment_id reason
 
-                        new_comment_ids <- rethreadComments rethread_id depth_offset new_parent_id new_discussion_id comments
+                        new_comment_ids <- rethreadCommentsDB rethread_id depth_offset new_parent_id new_discussion_id comments
 
                         delete $
                             from $ \ca ->
@@ -689,14 +683,10 @@ getCommentTagsR :: Text -> Text -> CommentId -> Handler Html
 getCommentTagsR project_handle target comment_id = do
     void $ checkCommentPage project_handle target comment_id
 
-    comment_tags <- map entityVal <$> runDB (getCommentTags comment_id)
+    comment_tags <- map entityVal <$> runDB (fetchCommentCommentTagsDB comment_id)
 
     let tag_ids = S.toList . S.fromList $ map commentTagTag comment_tags
-    tag_map <- fmap entitiesMap . runYDB $
-        select $
-            from $ \tag -> do
-            where_ (tag ^. TagId `in_` valList tag_ids)
-            return tag
+    tag_map <- fmap entitiesMap $ runYDB (fetchTagsInDB tag_ids)
 
     renderTags =<< buildAnnotatedTags tag_map (CommentTagR project_handle target comment_id) comment_tags
   where
@@ -762,8 +752,8 @@ getNewCommentTagR project_handle target comment_id = do
 
     user <- entityVal <$> requireAuth
 
-    unless (isEstablished user)
-        (permissionDenied "You must be an established user to add tags")
+    unless (userIsEstablished user) $
+        permissionDenied "You must be an established user to add tags"
 
     (Entity project_id _, _, _) <- checkCommentPage project_handle target comment_id
 
@@ -793,8 +783,8 @@ postNewCommentTagR :: Bool -> Text -> Text -> CommentId -> Handler Html
 postNewCommentTagR create_tag project_handle target comment_id = do
     Entity user_id user <- requireAuth
 
-    unless (isEstablished user)
-        (permissionDenied "You must be an established user to add tags")
+    unless (userIsEstablished user) $
+        permissionDenied "You must be an established user to add tags"
 
     (Entity project_id _, _, _) <- checkCommentPage project_handle target comment_id
 
@@ -905,16 +895,16 @@ makeCommentWidgetMod CommentMods{..} get_max_depth show_actions form_under_root_
 
     mviewer_id <- maybeAuthId
     (rest, user_map, earlier_closures, closure_map, ticket_map, flag_map, tag_map) <- runDB $ do
-        rest <- getCommentDescendants mviewer_id project_id comment_id
+        rest <- fetchCommentDescendantsDB mviewer_id project_id comment_id
 
         let all_comments    = (Entity comment_id root):rest
             all_comment_ids = map entityKey all_comments
 
-        earlier_closures <- getAncestorClosures comment_id
-        user_map         <- entitiesMap <$> fetchUsersInDB (S.toList $ getCommentsUsers all_comments)
-        closure_map      <- makeClosureMap all_comment_ids
-        ticket_map       <- makeTicketMap  all_comment_ids
-        flag_map         <- makeFlagMap    all_comment_ids
+        earlier_closures <- fetchAncestorClosuresDB comment_id
+        user_map         <- entitiesMap <$> fetchUsersInDB (S.toList $ makeCommentUsersSet all_comments)
+        closure_map      <- makeClosureMapDB all_comment_ids
+        ticket_map       <- makeTicketMapDB  all_comment_ids
+        flag_map         <- makeFlagMapDB    all_comment_ids
         tag_map          <- entitiesMap <$> getAllTags
 
         return (rest, user_map, earlier_closures, closure_map, ticket_map, flag_map, tag_map)
@@ -946,7 +936,7 @@ makeCommentWidgetMod CommentMods{..} get_max_depth show_actions form_under_root_
 -- Experimental - /c/#CommentId
 
 getCommentDirectLinkR :: CommentId -> Handler Html
-getCommentDirectLinkR comment_id = runDB (getCommentPageEntity' comment_id) >>= \case
+getCommentDirectLinkR comment_id = runDB (fetchCommentPageEntityDB comment_id) >>= \case
     -- comment not on a wiki page? right now, there's nowhere else to check
     -- TODO: fixme once discussions are expanded
     Nothing -> notFound

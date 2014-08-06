@@ -3,7 +3,7 @@ module Model.Ticket where
 import Import
 
 import Model.AnnotatedTag
-import Model.Comment      (getCommentTags)
+import Model.Comment
 
 import qualified Data.Map as M
 import qualified Data.Set as S
@@ -19,7 +19,7 @@ getTickets project_id project_handle = do
         -- TODO: refactor this to avoid N+1 selects (for example, select all CommentTags where
         -- comment_id in comment_ids)
         forM tickets_info $ \(Entity ticket_id ticket, Entity comment_id comment, Entity _ page) -> do
-            used_tags <- map entityVal <$> getCommentTags comment_id
+            used_tags <- map entityVal <$> fetchCommentCommentTagsDB comment_id
 
             let t :: Map TagId Tag -> Handler AnnotatedTicket
                 t tags_map = AnnotatedTicket project_handle ticket_id ticket page comment <$>

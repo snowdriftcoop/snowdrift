@@ -67,7 +67,7 @@
                     $if commentClosureClosedBy closure == user_id
                         The author
                     $else
-                        ^{userWidget $ commentClosureClosedBy closure}
+                        ^{userNameWidget $ commentClosureClosedBy closure}
                     \ closed this comment ^{renderTime (commentClosureTs closure)}
                     ^{markdownWidget project_handle (commentClosureReason closure)}
 

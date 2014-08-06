@@ -11,3 +11,4 @@ fetchDiscussionWikiPagesInDB discussion_ids =
     from $ \wp -> do
     where_ (wp ^. WikiPageDiscussion `in_` valList discussion_ids)
     return wp
+

@@ -19,6 +19,13 @@ renderCommentPostedOnUnknownDiscussionEvent comment_id comment =
             \ <a href=@{CommentDirectLinkR comment_id}>(permalink)
     |]
 
+renderCommentPendingEvent :: CommentId -> Comment -> Widget
+renderCommentPendingEvent comment_id comment =
+    [whamlet|
+        <div>Comment pending: #{commentText comment}
+            \ <a href=@{CommentDirectLinkR comment_id}>(permalink)
+    |]
+
 renderWikiEditEvent :: WikiEditId -> WikiEdit -> Entity WikiPage -> Widget
 renderWikiEditEvent _ _ (Entity _ wiki_page) =
     [whamlet|

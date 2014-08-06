@@ -25,7 +25,7 @@
                         $maybe nick <- userIrcNick $ entityVal user
                             #{nick}
                     <td>
-                        $if isEstablished (entityVal user)
+                        $if userIsEstablished (entityVal user)
                             &#10004;
                     <td>
                         $forall ((projectName, projectHandle), roles) <- M.toAscList (fromMaybe mempty (userProjects user))

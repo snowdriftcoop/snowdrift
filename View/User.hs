@@ -4,6 +4,7 @@ module View.User
     , establishUserForm
     , previewUserForm
     , renderUser
+    , userNameWidget
     ) where
 
 import Import
@@ -83,7 +84,7 @@ editUserForm muser = renderBootstrap3 $
         <*> aopt' textField               "IRC nick @freenode.net)"                        (userIrcNick                   <$> muser)
         <*> aopt' snowdriftMarkdownField  "Blurb (used on listings of many people)"        (userBlurb                     <$> muser)
         <*> aopt' snowdriftMarkdownField  "Personal Statement (visible only on this page)" (userStatement                 <$> muser)
-        -- <*> aopt' messagePreferencesField "Message filter"                                 (Just . userMessagePreferences <$> muser)
+        <*> error "TODO: message preferences"
 
 -- | Form to mark a user as eligible for establishment. The user is fully established
 -- when s/he accepts the honor pledge.
@@ -98,10 +99,7 @@ previewUserForm User{..} = renderBootstrap3 $
         <*> aopt hiddenField "" (Just userIrcNick)
         <*> hiddenMarkdown userBlurb
         <*> hiddenMarkdown userStatement
-        -- <*> aopt messagePreferencesField "" (Just (Just userMessagePreferences))
-
--- messagePreferencesField :: Field Handler [MessagePreference]
--- messagePreferencesField = checkboxesFieldList (map (showMessagePreference &&& id) [minBound..maxBound])
+        <*> error "TODO: message preferences"
 
 -- | Render a User profile, including
 renderUser :: Maybe UserId -> UserId -> User -> Map (Entity Project) (Set Role) -> Widget
@@ -120,3 +118,14 @@ renderUser mviewer_id user_id user projects_and_roles = do
 hiddenMarkdown :: Maybe Markdown -> AForm Handler (Maybe Markdown)
 hiddenMarkdown Nothing               = fmap (fmap Markdown) $ aopt hiddenField "" Nothing
 hiddenMarkdown (Just (Markdown str)) = fmap (fmap Markdown) $ aopt hiddenField "" (Just $ Just str)
+
+userNameWidget :: UserId -> Widget
+userNameWidget user_id = do
+    maybe_user <- handlerToWidget $ runDB $ get user_id
+    case maybe_user of
+        Nothing -> [whamlet|deleted user|]
+        Just user ->
+            [whamlet|
+                <a href=@{UserR user_id}>
+                    #{userPrintName (Entity user_id user)}
+            |]

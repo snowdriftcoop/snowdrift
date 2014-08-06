@@ -1,10 +1,11 @@
 module Model.Project
     ( ProjectSummary(..)
+    , fetchAllProjectsDB
     , fetchProjectCommentIdsDB
+    , fetchProjectCommentsPendingBeforeDB
     , fetchProjectCommentsPostedOnWikiPagesBeforeDB
     , fetchProjectWikiEditsBeforeDB
     -- TODO(mitchell): rename all these... prefix fetch, suffix DB
-    , getAllProjects
     , getGithubIssues
     , getProjectPages
     , getProjectShares
@@ -42,8 +43,8 @@ data ProjectSummary =
 fetchProjectCommentIdsDB :: ProjectId -> DB [CommentId]
 fetchProjectCommentIdsDB = fetchProjectCommentIdsPostedOnWikiPagesDB
 
-getAllProjects :: DB [Entity Project]
-getAllProjects = select (from return)
+fetchAllProjectsDB :: DB [Entity Project]
+fetchAllProjectsDB = select (from return)
 
 getGithubIssues :: Project -> Handler [GH.Issue]
 getGithubIssues project =
@@ -154,20 +155,31 @@ getProjectWikiPages project_id =
     return wp
 
 -- | Fetch all Comments posted on some Project's WikiPages before some time.
-fetchProjectCommentsPostedOnWikiPagesBeforeDB :: ProjectId -> UTCTime -> DB [Entity Comment]
-fetchProjectCommentsPostedOnWikiPagesBeforeDB project_id before =
+fetchProjectCommentsPostedOnWikiPagesBeforeDB :: ProjectId -> Maybe UserId -> UTCTime -> DB [Entity Comment]
+fetchProjectCommentsPostedOnWikiPagesBeforeDB project_id muser_id before =
     select $
     from $ \(ecp `InnerJoin` c `InnerJoin` wp) -> do
     on_ (exprCommentOnWikiPage c wp)
     on_ (ecp ^. EventCommentPostedComment ==. c ^. CommentId)
     where_ $
         ecp ^. EventCommentPostedTs <=. val before &&.
-        exprWikiPageOnProject wp project_id
+        exprWikiPageOnProject wp project_id &&.
+        exprPermissionFilter muser_id (val project_id) c
     return c
 
 -- | Fetch all CommentIds on some Project's WikiPages.
 fetchProjectCommentIdsPostedOnWikiPagesDB :: ProjectId -> DB [CommentId]
 fetchProjectCommentIdsPostedOnWikiPagesDB = fmap (map unValue) . select . querProjectCommentIdsPostedOnWikiPagesDB
+
+fetchProjectCommentsPendingBeforeDB :: ProjectId -> Maybe UserId -> UTCTime -> DB [Entity Comment]
+fetchProjectCommentsPendingBeforeDB project_id muser_id before =
+    select $
+    from $ \(ecp `InnerJoin` c) -> do
+    on_ (ecp ^. EventCommentPendingComment ==. c ^. CommentId)
+    where_ $
+        ecp ^. EventCommentPendingTs <=. val before &&.
+        exprPermissionFilter muser_id (val project_id) c
+    return c
 
 -- | Fetch all WikiEdits made on some Project.
 fetchProjectWikiEditsBeforeDB :: ProjectId -> UTCTime -> DB [Entity WikiEdit]

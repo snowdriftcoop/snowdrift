@@ -1,50 +1,52 @@
 module Model.Comment
+    -- Types
     ( ClosureMap
     , FlagMap
     , TicketMap
-    , approveComment
+    -- Utility functions
     , buildCommentForest
     , buildCommentTree
-    , canDeleteComment
-    , canEditComment
-    , deleteComment
-    , editComment
-    , flagComment
-    , getAllClosedRootComments
-    , getAllOpenRootComments
-    , getAllRootComments
-    , getAncestorClosures
-    , getAncestorClosures'
-    , getCommentAncestors
-    , getCommentDepth
-    , getCommentDepth404
-    , getCommentDescendants
-    , getCommentDescendantsIds
-    , getCommentDestination
-    , getCommentFlagging
-    , getCommentsDescendants
-    , getCommentPage
-    , getCommentPageId
-    , getCommentPageEntity'
-    , getCommentRethread
-    , getCommentTags
-    , getCommentsUsers
-    , getTags
-    , insertApprovedComment
-    , insertUnapprovedComment
-    , isApproved
-    , isEvenDepth
-    , isFlagged
-    , isOddDepth
-    , isTopLevel
-    , makeClosureMap
-    , makeFlagMap
+    , commentIsApproved
+    , commentIsEvenDepth
+    , commentIsFlagged
+    , commentIsOddDepth
+    , commentIsTopLevel
+    , makeCommentUsersSet
     , makeModeratedComment
-    , makeTicketMap
     , newClosedCommentClosure
     , newRetractedCommentClosure
-    , rethreadComments
-    , subGetCommentAncestors
+    -- Database actions
+    , approveCommentDB
+    , deleteCommentDB
+    , editCommentDB
+    , flagCommentDB
+    , fetchAllClosedRootCommentsDB
+    , fetchAllOpenRootCommentsDB
+    , fetchAllRootCommentsDB
+    , fetchAncestorClosuresDB
+    , fetchAncestorClosuresDB'
+    , fetchCommentAncestorsDB
+    , fetchCommentCommentTagsDB
+    , fetchCommentDepthDB
+    , fetchCommentDepth404DB
+    , fetchCommentDescendantsDB
+    , fetchCommentDescendantsIdsDB
+    , fetchCommentDestinationDB
+    , fetchCommentFlaggingDB
+    , fetchCommentsDescendantsDB
+    , fetchCommentPageEntityDB
+    , fetchCommentRethreadDB
+    , fetchCommentTagsDB
+    , filterCommentsDB
+    , insertApprovedCommentDB
+    , insertUnapprovedCommentDB
+    , makeClosureMapDB
+    , makeFlagMapDB
+    , makeTicketMapDB
+    , rethreadCommentsDB
+    , subFetchCommentAncestorsDB
+    , unsafeFetchCommentPageDB
+    , unsafeFetchCommentPageIdDB
     ) where
 
 import Import
@@ -64,90 +66,30 @@ import           Data.Tree
 import           GHC.Exts                    (IsList(..))
 import           Yesod.Markdown              (Markdown(..))
 
+--------------------------------------------------------------------------------
+-- Types
+
 type ClosureMap = Map CommentId CommentClosure
 type TicketMap  = Map CommentId (Entity Ticket)
 type FlagMap    = Map CommentId (Maybe Markdown, [FlagReason])
 
-approveComment :: UserId -> CommentId -> Comment -> SDB ()
-approveComment user_id comment_id comment = do
-    lift upd
-    tell [ECommentPosted comment_id comment]
-  where
-    upd = liftIO getCurrentTime >>= \now ->
-        update $ \c -> do
-        set c [ CommentModeratedTs =. val (Just now)
-              , CommentModeratedBy =. val (Just user_id)
-              ]
-        where_ (c ^. CommentId ==. val comment_id)
+--------------------------------------------------------------------------------
+-- Utility functions
 
-insertApprovedComment :: UTCTime
-                      -> UTCTime
-                      -> UserId
-                      -> DiscussionId
-                      -> Maybe CommentId
-                      -> UserId
-                      -> Markdown
-                      -> Int
-                      -> SDB CommentId
-insertApprovedComment created_ts moderated_ts moderated_by discussion_id mparent_id user_id text depth =
-    insertComment
-      (Just moderated_ts)
-      (Just moderated_by)
-      ECommentPosted
-      created_ts
-      discussion_id
-      mparent_id
-      user_id
-      text
-      depth
+commentIsApproved :: Comment -> Bool
+commentIsApproved = isJust . commentModeratedTs
 
-insertUnapprovedComment :: UTCTime
-                        -> DiscussionId
-                        -> Maybe CommentId
-                        -> UserId
-                        -> Markdown
-                        -> Int
-                        -> SDB CommentId
-insertUnapprovedComment = insertComment Nothing Nothing ECommentPending
+commentIsTopLevel :: Comment -> Bool
+commentIsTopLevel = (== 0) . commentDepth
 
-insertComment :: Maybe UTCTime
-              -> Maybe UserId
-              -> (CommentId -> Comment -> SnowdriftEvent)
-              -> UTCTime
-              -> DiscussionId
-              -> Maybe CommentId
-              -> UserId
-              -> Markdown
-              -> Int
-              -> SDB CommentId
-insertComment mmoderated_ts mmoderated_by mk_event created_ts discussion_id mparent_id user_id text depth = do
-    let comment = Comment
-                    created_ts
-                    mmoderated_ts
-                    mmoderated_by
-                    discussion_id
-                    mparent_id
-                    user_id
-                    text
-                    depth
-    comment_id <- lift $ insert comment
-    tell [mk_event comment_id comment]
-    return comment_id
+commentIsEvenDepth :: Comment -> Bool
+commentIsEvenDepth comment = not (commentIsTopLevel comment) && commentDepth comment `mod` 2 == 1
 
-isApproved :: Comment -> Bool
-isApproved = isJust . commentModeratedTs
+commentIsOddDepth :: Comment -> Bool
+commentIsOddDepth comment = not (commentIsTopLevel comment) && not (commentIsEvenDepth comment)
 
-isTopLevel :: Comment -> Bool
-isTopLevel = (== 0) . commentDepth
-
-isEvenDepth :: Comment -> Bool
-isEvenDepth comment = not (isTopLevel comment) && commentDepth comment `mod` 2 == 1
-
-isOddDepth :: Comment -> Bool
-isOddDepth comment = not (isTopLevel comment) && not (isEvenDepth comment)
-
-isFlagged :: CommentId -> DB Bool
-isFlagged = fmap (maybe False (const True)) . getBy . UniqueCommentFlagging
+commentIsFlagged :: CommentId -> DB Bool
+commentIsFlagged = fmap (maybe False (const True)) . getBy . UniqueCommentFlagging
 
 -- | Build a tree of comments, given the root and replies. The replies are not necessarily
 -- direct or indirect descendants of the root, but rather may be siblings, nephews, etc.
@@ -179,255 +121,6 @@ buildCommentForest :: [Entity Comment]                                          
                    -> Forest (Entity Comment)
 buildCommentForest roots replies = (map (buildCommentTree . (, replies))) roots
 
-canDeleteComment :: UserId -> Entity Comment -> DB Bool
-canDeleteComment user_id (Entity comment_id comment) = do
-    if commentUser comment /= user_id
-        then return False
-        else do
-          descendants_ids <- getCommentDescendantsIds comment_id
-          if null descendants_ids
-              then return True
-              else return False
-
-canEditComment :: UserId -> Comment -> Bool
-canEditComment user_id = (user_id ==) . commentUser
-
--- | Delete-cascade a comment from the database.
-deleteComment :: CommentId -> DB ()
-deleteComment = deleteCascade
-
--- | Edit a comment's text. If the comment was flagged, unflag it and send a
--- message to the flagger.
-editComment :: CommentId -> Markdown -> SYDB ()
-editComment comment_id text = do
-    lift updateCommentText
-    lift (getCommentFlagging comment_id) >>= \case
-        Nothing -> return ()
-        Just (Entity comment_flagging_id CommentFlagging{..}) -> do
-            let permalink_route = DiscussCommentR
-                                    commentFlaggingProjectHandle
-                                    commentFlaggingTarget
-                                    comment_id
-            permalink_text <- lift $ getUrlRender <*> pure permalink_route
-            let message_text = Markdown $ "A comment you flagged has been edited and reposted to the site. You can view it [here](" <> permalink_text <> ")."
-            lift $ deleteCascade comment_flagging_id -- delete flagging and all flagging reasons with it.
-            snowdrift_id <- lift getSnowdriftId
-            insertMessage_ MessageDirect (Just snowdrift_id) Nothing (Just $ commentFlaggingFlagger) message_text True
-  where
-    updateCommentText =
-        update $ \c -> do
-        set c [ CommentText =. val text ]
-        where_ (c ^. CommentId ==. val comment_id)
-
--- | Flag a comment. Send a message to the poster about the flagging. Return whether
--- or not the flag was successful (fails if the comment was already flagged.)
-flagComment :: Text -> Text -> CommentId -> Text -> UserId -> [FlagReason] -> Maybe Markdown -> SYDB Bool
-flagComment project_handle target comment_id permalink_route flagger_id reasons message = do
-    poster_id <- lift $ commentUser <$> get404 comment_id
-    now <- liftIO getCurrentTime
-    lift (insertUnique (CommentFlagging now flagger_id comment_id project_handle target message)) >>= \case
-        Nothing -> return False
-        Just flagging_id -> do
-            lift $ void $ insertMany (map (CommentFlaggingReason flagging_id) reasons)
-
-            let message_text = Markdown . T.unlines $
-                    [ "Another user flagged your comment as not meeting the standards of the Code of Conduct. We *want* your involvement as long as it remains respectful and friendly, so please don’t feel discouraged."
-                    , ""
-                    , "Please follow the link below for clarification and suggestions the flagger may have offered, and take this chance to improve your tone and clarify any misunderstanding. Your newly edited comment will then be publicly visible again."
-                    , ""
-                    , "Please alert a moderator if you believe that this flagging is inappropriate, if the flagger violated the Code of Conduct in their feedback, or if you want other assistance."
-                    , ""
-                    , "[link to flagged comment](" <> permalink_route <> ")"
-                    ]
-            snowdrift_id <- lift getSnowdriftId
-            insertMessage_ MessageDirect (Just snowdrift_id) Nothing (Just poster_id) message_text True
-            return True
-
--- | Get all ancestors that have been closed.
-getAncestorClosures :: CommentId -> DB [CommentClosure]
-getAncestorClosures comment_id = fmap (map entityVal) $
-    select $
-    from $ \(ca `InnerJoin` cc) -> do
-    on_ (ca ^. CommentAncestorAncestor ==. cc ^. CommentClosureComment)
-    orderBy [asc (cc ^. CommentClosureComment)]
-    where_ (ca ^. CommentAncestorComment ==. val comment_id)
-    return cc
-
--- | Get all ancestors, including this comment, that have been closed.
-getAncestorClosures' :: CommentId -> DB [CommentClosure]
-getAncestorClosures' comment_id = do
-    all_comment_ids <- (comment_id :) <$> getCommentAncestors comment_id
-    fmap (map entityVal) $
-        select $
-        from $ \cc -> do
-        where_ (cc ^. CommentClosureComment `in_` valList all_comment_ids)
-        return cc
-
--- | Get a comment's ancestors' ids.
-getCommentAncestors :: CommentId -> DB [CommentId]
-getCommentAncestors = fmap (map unValue) . select . querAncestors
-
-subGetCommentAncestors :: CommentId -> SqlExpr (ValueList CommentId)
-subGetCommentAncestors = subList_select . querAncestors
-
-getCommentDepth :: CommentId -> DB Int
-getCommentDepth = fmap commentDepth . getJust
-
-getCommentDepth404 :: CommentId -> Handler Int
-getCommentDepth404 = fmap commentDepth . runYDB . get404
-
--- | Get the CommentFlagging even for this Comment, if there is one.
-getCommentFlagging :: CommentId -> DB (Maybe (Entity CommentFlagging))
-getCommentFlagging = getBy . UniqueCommentFlagging
-
--- | Partial function.
-getCommentPage :: CommentId -> DB WikiPage
-getCommentPage = fmap entityVal . getCommentPageEntity
-
--- | Partial function.
-getCommentPageId :: CommentId -> DB WikiPageId
-getCommentPageId = fmap entityKey . getCommentPageEntity
-
--- | Partial function. Fails if the given Comment is not on a WikiPage, but some
--- other Discussion.
-getCommentPageEntity :: CommentId -> DB (Entity WikiPage)
-getCommentPageEntity = fmap fromJust . getCommentPageEntity'
-
--- | Safe version. TODO: Rename above 'unsafeGetCommentPageEntity'
-getCommentPageEntity' :: CommentId -> DB (Maybe (Entity WikiPage))
-getCommentPageEntity' comment_id = fmap listToMaybe $
-    select $
-    from $ \(c `InnerJoin` p) -> do
-    on_ (c ^. CommentDiscussion ==. p ^. WikiPageDiscussion)
-    where_ (c ^. CommentId ==. val comment_id)
-    return p
-
--- | Get the CommentId this CommentId was rethreaded to, if it was.
-getCommentRethread :: CommentId -> DB (Maybe CommentId)
-getCommentRethread comment_id = fmap unValue . listToMaybe <$> (
-    select $
-    from $ \cr -> do
-    where_ $ cr ^. CommentRethreadOldComment ==. val comment_id
-    return $ cr ^. CommentRethreadNewComment)
-
--- | Get a Comment's CommentTags.
-getCommentTags :: CommentId -> DB [Entity CommentTag]
-getCommentTags comment_id =
-    select $
-    from $ \comment_tag -> do
-    where_ $ comment_tag ^. CommentTagComment ==. val comment_id
-    return comment_tag
-
--- | Get a Comment's descendants' ids (don't filter hidden or unmoderated comments).
-getCommentDescendantsIds :: CommentId -> DB [CommentId]
-getCommentDescendantsIds = fmap (map unValue) . select . querDescendants
-
--- | Get all descendants of the given root comment.
-getCommentDescendants :: Maybe UserId -> ProjectId -> CommentId -> DB [Entity Comment]
-getCommentDescendants mviewer_id project_id root_id =
-    select $
-    from $ \c -> do
-    where_ $
-        c ^. CommentId `in_` subList_select (querDescendants root_id) &&.
-        exprPermissionFilter mviewer_id (val project_id) c
-    -- DO NOT change ordering here! buildCommentTree relies on it.
-    orderBy [asc (c ^. CommentParent), asc (c ^. CommentCreatedTs)]
-    return c
-
--- | Get all descendants of all given root comments.
-getCommentsDescendants :: Maybe UserId -> ProjectId -> [CommentId] -> DB [Entity Comment]
-getCommentsDescendants mviewer_id project_id root_ids =
-    select $
-    from $ \c -> do
-    where_ $
-        c ^. CommentId `in_` subList_select (querAllDescendants root_ids) &&.
-        exprPermissionFilter mviewer_id (val project_id) c
-    -- DO NOT change ordering here! buildCommentTree relies on it.
-    orderBy [asc (c ^. CommentParent), asc (c ^. CommentCreatedTs)]
-    return c
-
--- | Get the "true" target of this CommentId (which may be itself, if not rethreaded -
--- otherwise, ride the rethread train to the end)
-getCommentDestination :: CommentId -> YDB CommentId
-getCommentDestination comment_id = do
-    void $ get404 comment_id -- make sure the comment even exists, so this function terminates.
-    getCommentRethread comment_id >>= maybe (return comment_id) getCommentDestination
-
--- | Get all Comments on a Discussion that are root comments.
-getAllRootComments :: Maybe UserId -> ProjectId -> DiscussionId -> DB [Entity Comment]
-getAllRootComments mviewer_id project_id discussion_id =
-    select $
-    from $ \c -> do
-    where_ $
-        exprOnDiscussion discussion_id c &&.
-        exprRoot c &&.
-        exprPermissionFilter mviewer_id (val project_id) c
-    return c
-
-getAllClosedRootComments :: Maybe UserId -> ProjectId -> DiscussionId -> DB [Entity Comment]
-getAllClosedRootComments mviewer_id project_id discussion_id =
-    select $
-    from $ \c -> do
-    where_ $
-        exprOnDiscussion discussion_id c &&.
-        exprRoot c &&.
-        exprClosed c &&.
-        exprPermissionFilter mviewer_id (val project_id) c
-    return c
-
-getAllOpenRootComments :: Maybe UserId -> ProjectId -> DiscussionId -> DB [Entity Comment]
-getAllOpenRootComments mviewer_id project_id discussion_id =
-    select $
-    from $ \c -> do
-    where_ $
-        exprOnDiscussion discussion_id c &&.
-        exprRoot c &&.
-        exprOpen c &&.
-        exprPermissionFilter mviewer_id (val project_id) c
-    return c
-
--- | Get a Comment's Tags.
-getTags :: CommentId -> DB [Entity Tag]
-getTags comment_id =
-    select $
-    from $ \(ct `InnerJoin` t) -> do
-    on_ (ct ^. CommentTagTag ==. t ^. TagId)
-    where_ (ct ^. CommentTagComment ==. val comment_id)
-    return t
-
-makeClosureMap :: (IsList c, CommentId ~ Item c) => c -> DB ClosureMap
-makeClosureMap comment_ids = fmap (M.fromList . map ((commentClosureComment &&& id) . entityVal)) $
-    select $
-    from $ \c -> do
-    where_ (c ^. CommentClosureComment `in_` valList comment_ids)
-    return c
-
--- Given a collection of CommentId, make a map from CommentId to Entity Ticket. Comments that
--- are not tickets will simply not be in the map.
-makeTicketMap :: (IsList c, CommentId ~ Item c) => c -> DB TicketMap
-makeTicketMap comment_ids = fmap (M.fromList . map ((ticketComment . entityVal) &&& id)) $
-    select $
-    from $ \t -> do
-    where_ (t ^. TicketComment `in_` valList comment_ids)
-    return t
-
-makeFlagMap :: (IsList c, CommentId ~ Item c) => c -> DB FlagMap
-makeFlagMap comment_ids = mkFlagMap <$> getCommentFlaggings
-  where
-    getCommentFlaggings :: DB [(CommentId, Maybe Markdown, FlagReason)]
-    getCommentFlaggings = fmap (map unwrapValues) $
-        select $
-        from $ \(cf `InnerJoin` cfr) -> do
-        on_ (cf ^. CommentFlaggingId ==. cfr ^. CommentFlaggingReasonFlagging)
-        where_ (cf ^. CommentFlaggingComment `in_` valList comment_ids)
-        return (cf ^. CommentFlaggingComment, cf ^. CommentFlaggingMessage, cfr ^. CommentFlaggingReasonReason)
-
-    mkFlagMap :: [(CommentId, Maybe Markdown, FlagReason)] -> FlagMap
-    mkFlagMap = foldr (\(comment_id, message, reason) -> M.insertWith combine comment_id (message, [reason])) mempty
-      where
-        combine :: (Maybe Markdown, [FlagReason]) -> (Maybe Markdown, [FlagReason]) -> (Maybe Markdown, [FlagReason])
-        combine (message, reasons1) (_, reasons2) = (message, reasons1 <> reasons2)
-
 newClosedCommentClosure, newRetractedCommentClosure :: MonadIO m => UserId -> Markdown -> CommentId -> m CommentClosure
 newClosedCommentClosure    = newCommentClosure Closed
 newRetractedCommentClosure = newCommentClosure Retracted
@@ -451,11 +144,322 @@ makeModeratedComment user_id discussion_id parent_comment comment_text depth = d
                  depth
 
 -- | Get the set of Users that have posted the given Foldable of comments.
-getCommentsUsers :: Foldable f => f (Entity Comment) -> Set UserId
-getCommentsUsers = F.foldMap (S.singleton . commentUser . entityVal)
+makeCommentUsersSet :: Foldable f => f (Entity Comment) -> Set UserId
+makeCommentUsersSet = F.foldMap (S.singleton . commentUser . entityVal)
 
-rethreadComments :: RethreadId -> Int -> Maybe CommentId -> DiscussionId -> [CommentId] -> DB [CommentId]
-rethreadComments rethread_id depth_offset maybe_new_parent_id new_discussion_id comment_ids = do
+--------------------------------------------------------------------------------
+-- Database actions
+
+approveCommentDB :: UserId -> CommentId -> Comment -> SDB ()
+approveCommentDB user_id comment_id comment = do
+    lift upd
+    tell [ECommentPosted comment_id comment]
+  where
+    upd = liftIO getCurrentTime >>= \now ->
+        update $ \c -> do
+        set c [ CommentModeratedTs =. val (Just now)
+              , CommentModeratedBy =. val (Just user_id)
+              ]
+        where_ (c ^. CommentId ==. val comment_id)
+
+insertApprovedCommentDB :: UTCTime
+                        -> UTCTime
+                        -> UserId
+                        -> DiscussionId
+                        -> Maybe CommentId
+                        -> UserId
+                        -> Markdown
+                        -> Int
+                        -> SDB CommentId
+insertApprovedCommentDB created_ts moderated_ts moderated_by discussion_id mparent_id user_id text depth =
+    insertCommentDB
+      (Just moderated_ts)
+      (Just moderated_by)
+      ECommentPosted
+      created_ts
+      discussion_id
+      mparent_id
+      user_id
+      text
+      depth
+
+insertUnapprovedCommentDB :: UTCTime
+                          -> DiscussionId
+                          -> Maybe CommentId
+                          -> UserId
+                          -> Markdown
+                          -> Int
+                          -> SDB CommentId
+insertUnapprovedCommentDB = insertCommentDB Nothing Nothing ECommentPending
+
+insertCommentDB :: Maybe UTCTime
+                -> Maybe UserId
+                -> (CommentId -> Comment -> SnowdriftEvent)
+                -> UTCTime
+                -> DiscussionId
+                -> Maybe CommentId
+                -> UserId
+                -> Markdown
+                -> Int
+                -> SDB CommentId
+insertCommentDB mmoderated_ts mmoderated_by mk_event created_ts discussion_id mparent_id user_id text depth = do
+    let comment = Comment
+                    created_ts
+                    mmoderated_ts
+                    mmoderated_by
+                    discussion_id
+                    mparent_id
+                    user_id
+                    text
+                    depth
+    comment_id <- lift $ insert comment
+    tell [mk_event comment_id comment]
+    return comment_id
+
+-- | Delete-cascade a comment from the database.
+deleteCommentDB :: CommentId -> DB ()
+deleteCommentDB = deleteCascade
+
+-- | Edit a comment's text. If the comment was flagged, unflag it and send a
+-- message to the flagger.
+editCommentDB :: CommentId -> Markdown -> SYDB ()
+editCommentDB comment_id text = do
+    lift updateCommentText
+    lift (fetchCommentFlaggingDB comment_id) >>= \case
+        Nothing -> return ()
+        Just (Entity comment_flagging_id CommentFlagging{..}) -> do
+            let permalink_route = DiscussCommentR
+                                    commentFlaggingProjectHandle
+                                    commentFlaggingTarget
+                                    comment_id
+            permalink_text <- lift $ getUrlRender <*> pure permalink_route
+            let message_text = Markdown $ "A comment you flagged has been edited and reposted to the site. You can view it [here](" <> permalink_text <> ")."
+            lift $ deleteCascade comment_flagging_id -- delete flagging and all flagging reasons with it.
+            snowdrift_id <- lift getSnowdriftId
+            insertMessage_ MessageDirect (Just snowdrift_id) Nothing (Just $ commentFlaggingFlagger) message_text True
+  where
+    updateCommentText =
+        update $ \c -> do
+        set c [ CommentText =. val text ]
+        where_ (c ^. CommentId ==. val comment_id)
+
+-- | Flag a comment. Send a message to the poster about the flagging. Return whether
+-- or not the flag was successful (fails if the comment was already flagged.)
+flagCommentDB :: Text -> Text -> CommentId -> Text -> UserId -> [FlagReason] -> Maybe Markdown -> SYDB Bool
+flagCommentDB project_handle target comment_id permalink_route flagger_id reasons message = do
+    poster_id <- lift $ commentUser <$> get404 comment_id
+    now <- liftIO getCurrentTime
+    lift (insertUnique (CommentFlagging now flagger_id comment_id project_handle target message)) >>= \case
+        Nothing -> return False
+        Just flagging_id -> do
+            lift $ void $ insertMany (map (CommentFlaggingReason flagging_id) reasons)
+
+            let message_text = Markdown . T.unlines $
+                    [ "Another user flagged your comment as not meeting the standards of the Code of Conduct. We *want* your involvement as long as it remains respectful and friendly, so please don’t feel discouraged."
+                    , ""
+                    , "Please follow the link below for clarification and suggestions the flagger may have offered, and take this chance to improve your tone and clarify any misunderstanding. Your newly edited comment will then be publicly visible again."
+                    , ""
+                    , "Please alert a moderator if you believe that this flagging is inappropriate, if the flagger violated the Code of Conduct in their feedback, or if you want other assistance."
+                    , ""
+                    , "[link to flagged comment](" <> permalink_route <> ")"
+                    ]
+            snowdrift_id <- lift getSnowdriftId
+            insertMessage_ MessageDirect (Just snowdrift_id) Nothing (Just poster_id) message_text True
+            return True
+
+-- | Filter a list of comments per the permission filter (see Model.Comment.Sql.exprPermissionFilter)
+filterCommentsDB :: [CommentId] -> Maybe UserId -> ProjectId -> DB [CommentId]
+filterCommentsDB comment_ids muser_id project_id = fmap (map unValue) $
+    select $
+    from $ \c -> do
+    where_ $
+        c ^. CommentId `in_` valList comment_ids &&.
+        exprPermissionFilter muser_id (val project_id) c
+    return (c ^. CommentId)
+
+-- | Get all ancestors that have been closed.
+fetchAncestorClosuresDB :: CommentId -> DB [CommentClosure]
+fetchAncestorClosuresDB comment_id = fmap (map entityVal) $
+    select $
+    from $ \(ca `InnerJoin` cc) -> do
+    on_ (ca ^. CommentAncestorAncestor ==. cc ^. CommentClosureComment)
+    orderBy [asc (cc ^. CommentClosureComment)]
+    where_ (ca ^. CommentAncestorComment ==. val comment_id)
+    return cc
+
+-- | Get all ancestors, including this comment, that have been closed.
+fetchAncestorClosuresDB' :: CommentId -> DB [CommentClosure]
+fetchAncestorClosuresDB' comment_id = do
+    all_comment_ids <- (comment_id :) <$> fetchCommentAncestorsDB comment_id
+    fmap (map entityVal) $
+        select $
+        from $ \cc -> do
+        where_ (cc ^. CommentClosureComment `in_` valList all_comment_ids)
+        return cc
+
+-- | Get a comment's ancestors' ids.
+fetchCommentAncestorsDB :: CommentId -> DB [CommentId]
+fetchCommentAncestorsDB = fmap (map unValue) . select . querAncestors
+
+subFetchCommentAncestorsDB :: CommentId -> SqlExpr (ValueList CommentId)
+subFetchCommentAncestorsDB = subList_select . querAncestors
+
+fetchCommentDepthDB :: CommentId -> DB Int
+fetchCommentDepthDB = fmap commentDepth . getJust
+
+fetchCommentDepth404DB :: CommentId -> Handler Int
+fetchCommentDepth404DB = fmap commentDepth . runYDB . get404
+
+-- | Get the CommentFlagging even for this Comment, if there is one.
+fetchCommentFlaggingDB :: CommentId -> DB (Maybe (Entity CommentFlagging))
+fetchCommentFlaggingDB = getBy . UniqueCommentFlagging
+
+unsafeFetchCommentPageDB :: CommentId -> DB WikiPage
+unsafeFetchCommentPageDB = fmap entityVal . unsafeFetchCommentPageEntityDB
+
+unsafeFetchCommentPageIdDB :: CommentId -> DB WikiPageId
+unsafeFetchCommentPageIdDB = fmap entityKey . unsafeFetchCommentPageEntityDB
+
+-- | Fails if the given Comment is not on a WikiPage, but some other Discussion.
+unsafeFetchCommentPageEntityDB :: CommentId -> DB (Entity WikiPage)
+unsafeFetchCommentPageEntityDB = fmap fromJust . fetchCommentPageEntityDB
+
+fetchCommentPageEntityDB :: CommentId -> DB (Maybe (Entity WikiPage))
+fetchCommentPageEntityDB comment_id = fmap listToMaybe $
+    select $
+    from $ \(c `InnerJoin` p) -> do
+    on_ (c ^. CommentDiscussion ==. p ^. WikiPageDiscussion)
+    where_ (c ^. CommentId ==. val comment_id)
+    return p
+
+-- | Get the CommentId this CommentId was rethreaded to, if it was.
+fetchCommentRethreadDB :: CommentId -> DB (Maybe CommentId)
+fetchCommentRethreadDB comment_id = fmap unValue . listToMaybe <$> (
+    select $
+    from $ \cr -> do
+    where_ $ cr ^. CommentRethreadOldComment ==. val comment_id
+    return $ cr ^. CommentRethreadNewComment)
+
+-- | Get a Comment's CommentTags.
+fetchCommentCommentTagsDB :: CommentId -> DB [Entity CommentTag]
+fetchCommentCommentTagsDB comment_id =
+    select $
+    from $ \comment_tag -> do
+    where_ $ comment_tag ^. CommentTagComment ==. val comment_id
+    return comment_tag
+
+-- | Get a Comment's descendants' ids (don't filter hidden or unmoderated comments).
+fetchCommentDescendantsIdsDB :: CommentId -> DB [CommentId]
+fetchCommentDescendantsIdsDB = fmap (map unValue) . select . querDescendants
+
+-- | Get all descendants of the given root comment.
+fetchCommentDescendantsDB :: Maybe UserId -> ProjectId -> CommentId -> DB [Entity Comment]
+fetchCommentDescendantsDB mviewer_id project_id root_id =
+    select $
+    from $ \c -> do
+    where_ $
+        c ^. CommentId `in_` subList_select (querDescendants root_id) &&.
+        exprPermissionFilter mviewer_id (val project_id) c
+    -- DO NOT change ordering here! buildCommentTree relies on it.
+    orderBy [asc (c ^. CommentParent), asc (c ^. CommentCreatedTs)]
+    return c
+
+-- | Get all descendants of all given root comments.
+fetchCommentsDescendantsDB :: Maybe UserId -> ProjectId -> [CommentId] -> DB [Entity Comment]
+fetchCommentsDescendantsDB mviewer_id project_id root_ids =
+    select $
+    from $ \c -> do
+    where_ $
+        c ^. CommentId `in_` subList_select (querAllDescendants root_ids) &&.
+        exprPermissionFilter mviewer_id (val project_id) c
+    -- DO NOT change ordering here! buildCommentTree relies on it.
+    orderBy [asc (c ^. CommentParent), asc (c ^. CommentCreatedTs)]
+    return c
+
+-- | Get the "true" target of this CommentId (which may be itself, if not rethreaded -
+-- otherwise, ride the rethread train to the end)
+fetchCommentDestinationDB :: CommentId -> YDB CommentId
+fetchCommentDestinationDB comment_id = do
+    void $ get404 comment_id -- make sure the comment even exists, so this function terminates.
+    fetchCommentRethreadDB comment_id >>= maybe (return comment_id) fetchCommentDestinationDB
+
+-- | Get all Comments on a Discussion that are root comments.
+fetchAllRootCommentsDB :: Maybe UserId -> ProjectId -> DiscussionId -> DB [Entity Comment]
+fetchAllRootCommentsDB mviewer_id project_id discussion_id =
+    select $
+    from $ \c -> do
+    where_ $
+        exprOnDiscussion discussion_id c &&.
+        exprRoot c &&.
+        exprPermissionFilter mviewer_id (val project_id) c
+    return c
+
+fetchAllClosedRootCommentsDB :: Maybe UserId -> ProjectId -> DiscussionId -> DB [Entity Comment]
+fetchAllClosedRootCommentsDB mviewer_id project_id discussion_id =
+    select $
+    from $ \c -> do
+    where_ $
+        exprOnDiscussion discussion_id c &&.
+        exprRoot c &&.
+        exprClosed c &&.
+        exprPermissionFilter mviewer_id (val project_id) c
+    return c
+
+fetchAllOpenRootCommentsDB :: Maybe UserId -> ProjectId -> DiscussionId -> DB [Entity Comment]
+fetchAllOpenRootCommentsDB mviewer_id project_id discussion_id =
+    select $
+    from $ \c -> do
+    where_ $
+        exprOnDiscussion discussion_id c &&.
+        exprRoot c &&.
+        exprOpen c &&.
+        exprPermissionFilter mviewer_id (val project_id) c
+    return c
+
+-- | Get a Comment's Tags.
+fetchCommentTagsDB :: CommentId -> DB [Entity Tag]
+fetchCommentTagsDB comment_id =
+    select $
+    from $ \(ct `InnerJoin` t) -> do
+    on_ (ct ^. CommentTagTag ==. t ^. TagId)
+    where_ (ct ^. CommentTagComment ==. val comment_id)
+    return t
+
+makeClosureMapDB :: (IsList c, CommentId ~ Item c) => c -> DB ClosureMap
+makeClosureMapDB comment_ids = fmap (M.fromList . map ((commentClosureComment &&& id) . entityVal)) $
+    select $
+    from $ \c -> do
+    where_ (c ^. CommentClosureComment `in_` valList comment_ids)
+    return c
+
+-- Given a collection of CommentId, make a map from CommentId to Entity Ticket. Comments that
+-- are not tickets will simply not be in the map.
+makeTicketMapDB :: (IsList c, CommentId ~ Item c) => c -> DB TicketMap
+makeTicketMapDB comment_ids = fmap (M.fromList . map ((ticketComment . entityVal) &&& id)) $
+    select $
+    from $ \t -> do
+    where_ (t ^. TicketComment `in_` valList comment_ids)
+    return t
+
+makeFlagMapDB :: (IsList c, CommentId ~ Item c) => c -> DB FlagMap
+makeFlagMapDB comment_ids = mkFlagMap <$> getCommentFlaggings
+  where
+    getCommentFlaggings :: DB [(CommentId, Maybe Markdown, FlagReason)]
+    getCommentFlaggings = fmap (map unwrapValues) $
+        select $
+        from $ \(cf `InnerJoin` cfr) -> do
+        on_ (cf ^. CommentFlaggingId ==. cfr ^. CommentFlaggingReasonFlagging)
+        where_ (cf ^. CommentFlaggingComment `in_` valList comment_ids)
+        return (cf ^. CommentFlaggingComment, cf ^. CommentFlaggingMessage, cfr ^. CommentFlaggingReasonReason)
+
+    mkFlagMap :: [(CommentId, Maybe Markdown, FlagReason)] -> FlagMap
+    mkFlagMap = foldr (\(comment_id, message, reason) -> M.insertWith combine comment_id (message, [reason])) mempty
+      where
+        combine :: (Maybe Markdown, [FlagReason]) -> (Maybe Markdown, [FlagReason]) -> (Maybe Markdown, [FlagReason])
+        combine (message, reasons1) (_, reasons2) = (message, reasons1 <> reasons2)
+
+rethreadCommentsDB :: RethreadId -> Int -> Maybe CommentId -> DiscussionId -> [CommentId] -> DB [CommentId]
+rethreadCommentsDB rethread_id depth_offset maybe_new_parent_id new_discussion_id comment_ids = do
     new_comment_ids <- flip St.evalStateT M.empty $ forM comment_ids $ \ comment_id -> do
         rethreads <- St.get
 

@@ -17,7 +17,7 @@ getUserR user_id = do
 
     user <- runYDB $ get404 user_id
 
-    projects_and_roles <- runDB $ getProjectsAndRoles user_id
+    projects_and_roles <- runDB (fetchUserProjectsAndRolesDB user_id)
 
     defaultLayout $ do
         setTitle . toHtml $ "User Profile - " <> userPrintName (Entity user_id user) <> " | Snowdrift.coop"
@@ -56,7 +56,7 @@ postUserR user_id = do
                 Just "preview" -> do
                     user <- runYDB $ get404 user_id
 
-                    let updated_user = applyUserUpdate user user_update
+                    let updated_user = updateUserPreview user_update user
 
                     (form, _) <- generateFormPost $ editUserForm (Just updated_user)
 
@@ -65,16 +65,16 @@ postUserR user_id = do
                             renderUser (Just viewer_id) user_id updated_user mempty
 
                 Just x | x == action -> do
-                    runDB $ updateUser user_id user_update
-                    redirect $ UserR user_id
+                    runDB (updateUserDB user_id user_update)
+                    redirect (UserR user_id)
 
                 _ -> do
                     addAlertEm "danger" "unknown mode" "Error: "
-                    redirect $ UserR user_id
+                    redirect (UserR user_id)
 
         _ -> do
             addAlert "danger" "Failed to update user."
-            redirect $ UserR user_id
+            redirect (UserR user_id)
 
 getUsersR :: Handler Html
 getUsersR = do
@@ -153,7 +153,7 @@ postUserEstEligibleR user_id = do
             user <- runYDB (get404 user_id)
             case userEstablished user of
                 EstUnestablished -> do
-                    runSDB $ eligEstablishUser establisher_id user_id reason
+                    runSDB (eligEstablishUserDB establisher_id user_id reason)
                     setMessage "This user is now eligible for establishment. Thanks!"
                     redirectUltDest HomeR
                 _ -> error "User not unestablished!"

@@ -34,7 +34,7 @@ lookupGetParamDefault name def = do
 
 getProjectsR :: Handler Html
 getProjectsR = do
-    projects <- runDB getAllProjects
+    projects <- runDB fetchAllProjectsDB
 
     defaultLayout $ do
         setTitle "Projects | Snowdrift.coop"
@@ -432,15 +432,17 @@ watchOrUnwatchProject action msg project_id = do
 -- statically guarantees that.
 getProjectFeedR :: Text -> Handler Html
 getProjectFeedR project_handle = do
+    muser_id <- maybeAuthId
     before <- maybe (liftIO getCurrentTime) (return . read . T.unpack) =<< lookupGetParam "before"
     (events, discussion_wiki_pages_map, wiki_pages_map, _) <- runYDB $ do
         Entity project_id _ <- getBy404 (UniqueProjectHandle project_handle)
-        comment_entities   <- fetchProjectCommentsPostedOnWikiPagesBeforeDB project_id before
-        wiki_edit_entities <- fetchProjectWikiEditsBeforeDB                 project_id before
+        comment_posted_entities  <- fetchProjectCommentsPostedOnWikiPagesBeforeDB project_id muser_id before
+        comment_pending_entities <- fetchProjectCommentsPendingBeforeDB project_id muser_id before
+        wiki_edit_entities       <- fetchProjectWikiEditsBeforeDB project_id before
 
         -- Suplementary maps for displaying the data.
 
-        let comments   = map entityVal comment_entities
+        let comments   = map entityVal (comment_posted_entities <> comment_pending_entities)
             wiki_edits = map entityVal wiki_edit_entities
 
         discussion_wiki_pages_map <- M.fromList . map (\e@(Entity _ WikiPage{..}) -> (wikiPageDiscussion, e)) <$>
@@ -453,8 +455,9 @@ getProjectFeedR project_handle = do
             <*> (entitiesMap <$> fetchUsersInDB (map wikiEditUser wiki_edits))
 
         let events = sortBy snowdriftEventNewestToOldest . mconcat $
-              [ map (onEntity ECommentPosted) comment_entities
-              , map (onEntity EWikiEdit)      wiki_edit_entities
+              [ map (onEntity ECommentPosted)  comment_posted_entities
+              , map (onEntity ECommentPending) comment_pending_entities
+              , map (onEntity EWikiEdit)       wiki_edit_entities
               ]
         return (events, discussion_wiki_pages_map, wiki_pages_map, users_map)
     defaultLayout $(widgetFile "project_feed")

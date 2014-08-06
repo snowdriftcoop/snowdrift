@@ -1,41 +1,49 @@
 module Model.User
+    -- Types
     ( UserMap
     , UserUpdate(..)
-    , applyUserUpdate
+    -- Utility functions
+    , curUserIsEligibleEstablish
+    , updateUserPreview
+    , userCanCloseComment
+    , userCanEditComment
+    , userCanEditWikiPage
+    , userIsEligibleEstablish
+    , userIsEstablished
+    , userIsUnestablished
+    , userPrintName
+    -- Database actions
+    , eligEstablishUserDB
+    , establishUserDB
+    , fetchAllUserRolesDB
+    , fetchCurUserRolesDB
+    , fetchUserMessagePrefDB
+    , fetchUserProjectsAndRolesDB
+    , fetchUserRolesDB
+    , fetchUsersInDB
+    , updateUserDB
+    , userCanDeleteCommentDB
+    , userIsProjectAdminDB'
+    , userIsProjectModeratorDB'
+    , userIsProjectTeamMemberDB'
+    , userUnwatchProjectDB
+    , userViewCommentsDB
+    , userWatchingProjectDB
+    , userWatchProjectDB
+    -- Unsorted
     , canCurUserMakeEligible
     , canMakeEligible
-    , eligEstablishUser
-    , establishUser
-    , fetchUserMessagePrefDB
-    , fetchUsersInDB
-    -- TODO(mitchell): consistent naming scheme
-    , getAllRoles
-    , getCurUserRoles
-    , getProjectsAndRoles
-    , getRoles
-    , hasRole
-    , isCurUserEligibleEstablish
     , isCurUserProjectModerator
-    , isEligibleEstablish
-    , isEstablished
     , isProjectAdmin
-    , isProjectAdmin'
     , isProjectAffiliated
     , isProjectModerator
-    , isProjectModerator'
     , isProjectTeamMember
-    , isProjectTeamMember'
-    , updateUser
-    , userPrintName
-    , userUnwatchProjectDB
-    , userWatchProjectDB
-    , userWatchingProjectDB
-    , userWidget
-    , userViewCommentsDB
     ) where
 
 import Import
 
+
+import Model.Comment
 import Model.Comment.Sql
 import Model.Message
 import Model.Project.Sql
@@ -44,6 +52,9 @@ import qualified Data.Map       as M
 import qualified Data.Set       as S
 import qualified Data.Text      as T
 import           Yesod.Markdown (Markdown(..))
+
+--------------------------------------------------------------------------------
+-- Types
 
 type UserMap = Map UserId User
 
@@ -54,64 +65,87 @@ data UserUpdate =
         , userUpdateIrcNick            :: Maybe Text
         , userUpdateBlurb              :: Maybe Markdown
         , userUpdateStatement          :: Maybe Markdown
-        -- , userUpdateMessagePreferences :: Maybe [MessagePreference]
+        , userUpdateMessagePreferences :: [(MessageType, MessageDelivery)]
         }
 
-fetchUsersInDB :: [UserId] -> DB [Entity User]
-fetchUsersInDB user_ids = selectList [UserId <-. user_ids] []
+--------------------------------------------------------------------------------
+-- Utility functions
 
-updateUser :: UserId -> UserUpdate -> DB ()
-updateUser user_id UserUpdate{..} =
-    update $ \u -> do
-    set u $ [ UserName               =. val userUpdateName
-            , UserAvatar             =. val userUpdateAvatar
-            , UserIrcNick            =. val userUpdateIrcNick
-            , UserStatement          =. val userUpdateStatement
-            , UserBlurb              =. val userUpdateBlurb
-            -- , UserMessagePreferences =. val (fromMaybe [] userUpdateMessagePreferences)
-            ]
-    where_ (u ^. UserId ==. val user_id)
+-- TODO: what should this be?
+-- Aaron says: I think we should allow established to mark as closed,
+-- but only *affiliated* OR the original poster should do so in one step,
+-- otherwise, the marking of closed should require *moderator* confirmation…
+-- We should also have a re-open function.
+-- There are now comments discussing these things on the site.
+userCanCloseComment :: User -> Bool
+userCanCloseComment = userIsEstablished
 
-applyUserUpdate :: User -> UserUpdate -> User
-applyUserUpdate user UserUpdate{..} = user
+-- | Can this User edit this Comment?
+userCanEditComment :: UserId -> Comment -> Bool
+userCanEditComment user_id = (user_id ==) . commentUser
+
+userCanEditWikiPage :: User -> Bool
+userCanEditWikiPage = userIsEstablished
+
+-- | Is the user established?
+userIsEstablished :: User -> Bool
+userIsEstablished = estIsEstablished . userEstablished
+
+-- | Is the user eligible for establishment?
+userIsEligibleEstablish :: User -> Bool
+userIsEligibleEstablish = estIsEligible . userEstablished
+
+-- | Is the user unestablished?
+userIsUnestablished :: User -> Bool
+userIsUnestablished = estIsUnestablished . userEstablished
+
+-- | Is the current user eligible for establishment?
+curUserIsEligibleEstablish :: Handler Bool
+curUserIsEligibleEstablish = maybe False (userIsEligibleEstablish . entityVal) <$> maybeAuth
+
+-- | Get a User's public display name (defaults to userN if no name has been set).
+userPrintName :: Entity User -> Text
+userPrintName (Entity user_id user) = fromMaybe ("user" <> toPathPiece user_id) (userName user)
+
+-- | Apply a UserUpdate in memory, for preview. For this reason,
+-- userUpdateMessagePreferences doesn't need to be touched.
+updateUserPreview :: UserUpdate -> User -> User
+updateUserPreview UserUpdate{..} user = user
     { userName               = userUpdateName
     , userAvatar             = userUpdateAvatar
     , userIrcNick            = userUpdateIrcNick
     , userStatement          = userUpdateStatement
     , userBlurb              = userUpdateBlurb
-    -- , userMessagePreferences = fromMaybe [] userUpdateMessagePreferences
     }
 
-userPrintName :: Entity User -> Text
-userPrintName (Entity user_id user) = fromMaybe ("user" <> toPathPiece user_id) (userName user)
+--------------------------------------------------------------------------------
+-- Database functions
 
-userWidget :: UserId -> Widget
-userWidget user_id = do
-    maybe_user <- handlerToWidget $ runDB $ get user_id
-    case maybe_user of
-        Nothing -> [whamlet|deleted user|]
-        Just user ->
-            [whamlet|
-                <a href=@{UserR user_id}>
-                    #{userPrintName (Entity user_id user)}
-            |]
+fetchUsersInDB :: [UserId] -> DB [Entity User]
+fetchUsersInDB user_ids = selectList [UserId <-. user_ids] []
 
-isEstablished :: User -> Bool
-isEstablished = estIsEstablished . userEstablished
+updateUserDB :: UserId -> UserUpdate -> DB ()
+updateUserDB user_id UserUpdate{..} = do
+    update $ \u -> do
+     set u $ [ UserName               =. val userUpdateName
+             , UserAvatar             =. val userUpdateAvatar
+             , UserIrcNick            =. val userUpdateIrcNick
+             , UserStatement          =. val userUpdateStatement
+             , UserBlurb              =. val userUpdateBlurb
+             ]
+     where_ (u ^. UserId ==. val user_id)
 
-isEligibleEstablish :: User -> Bool
-isEligibleEstablish = estIsEligible . userEstablished
+    delete $
+     from $ \ump -> do
+     where_ (ump ^. UserId ==. val user_id)
 
-isUnestablished :: User -> Bool
-isUnestablished = estIsUnestablished . userEstablished
-
-isCurUserEligibleEstablish :: Handler Bool
-isCurUserEligibleEstablish = maybe False (isEligibleEstablish . entityVal) <$> maybeAuth
+    let new_prefs = map (uncurry (UserMessagePref user_id)) userUpdateMessagePreferences
+    void (insertMany new_prefs)
 
 -- | Establish a user, given their eligible-timestamp and reason for
 -- eligibility. Mark all unmoderated comments of theirs as moderated.
-establishUser :: UserId -> UTCTime -> Text -> DB ()
-establishUser user_id elig_time reason = do
+establishUserDB :: UserId -> UTCTime -> Text -> DB ()
+establishUserDB user_id elig_time reason = do
     est_time <- liftIO getCurrentTime
 
     let est = EstEstablished elig_time est_time reason
@@ -133,8 +167,8 @@ establishUser user_id elig_time reason = do
 
 -- | Make a user eligible for establishment. Put a message in their inbox
 -- instructing them to read and accept the honor pledge.
-eligEstablishUser :: UserId -> UserId -> Text -> SDB ()
-eligEstablishUser establisher_id user_id reason = do
+eligEstablishUserDB :: UserId -> UserId -> Text -> SDB ()
+eligEstablishUserDB establisher_id user_id reason = do
     elig_time <- liftIO getCurrentTime
     let est = EstEligible elig_time reason
     lift $
@@ -155,8 +189,8 @@ eligEstablishUser establisher_id user_id reason = do
         ]
 
 -- | Get a User's Roles in a Project.
-getRoles :: UserId -> ProjectId -> DB [Role]
-getRoles user_id project_id = fmap (map unValue) $
+fetchUserRolesDB :: UserId -> ProjectId -> DB [Role]
+fetchUserRolesDB user_id project_id = fmap (map unValue) $
     select $
         from $ \r -> do
         where_ (r ^. ProjectUserRoleProject ==. val project_id &&.
@@ -164,26 +198,26 @@ getRoles user_id project_id = fmap (map unValue) $
         return $ r ^. ProjectUserRoleRole
 
 -- | Get all of a User's Roles, across all Projects.
-getAllRoles :: UserId -> DB [Role]
-getAllRoles user_id = fmap unwrapValues $
+fetchAllUserRolesDB :: UserId -> DB [Role]
+fetchAllUserRolesDB user_id = fmap unwrapValues $
     selectDistinct $
         from $ \pur -> do
         where_ (pur ^. ProjectUserRoleUser ==. val user_id)
         return (pur ^. ProjectUserRoleRole)
 
 -- | Get the current User's Roles in a Project.
-getCurUserRoles :: ProjectId -> Handler [Role]
-getCurUserRoles project_id = maybeAuthId >>= \case
+fetchCurUserRolesDB :: ProjectId -> Handler [Role]
+fetchCurUserRolesDB project_id = maybeAuthId >>= \case
     Nothing -> return []
-    Just user_id -> runDB $ getRoles user_id project_id
+    Just user_id -> runDB $ fetchUserRolesDB user_id project_id
 
 -- | Does this User have this Role in this Project?
-hasRole :: Role -> UserId -> ProjectId -> DB Bool
-hasRole role user_id = fmap (elem role) . getRoles user_id
+userHasRoleDB :: Role -> UserId -> ProjectId -> DB Bool
+userHasRoleDB role user_id = fmap (elem role) . fetchUserRolesDB user_id
 
 -- | Get all Projects this User is affiliated with, along with each Role.
-getProjectsAndRoles :: UserId -> DB (Map (Entity Project) (Set Role))
-getProjectsAndRoles user_id = fmap buildMap $
+fetchUserProjectsAndRolesDB :: UserId -> DB (Map (Entity Project) (Set Role))
+fetchUserProjectsAndRolesDB user_id = fmap buildMap $
     select $
         from $ \(p `InnerJoin` pur) -> do
         on_ (p ^. ProjectId ==.  pur ^. ProjectUserRoleProject)
@@ -193,14 +227,14 @@ getProjectsAndRoles user_id = fmap buildMap $
     buildMap :: [(Entity Project, Value Role)] -> Map (Entity Project) (Set Role)
     buildMap = foldr (\(p, Value r) -> M.insertWith (<>) p (S.singleton r)) mempty
 
-isProjectAdmin' :: UserId -> ProjectId -> DB Bool
-isProjectAdmin' = hasRole Admin
+userIsProjectAdminDB' :: UserId -> ProjectId -> DB Bool
+userIsProjectAdminDB' = userHasRoleDB Admin
 
-isProjectTeamMember' :: UserId -> ProjectId -> DB Bool
-isProjectTeamMember' = hasRole TeamMember
+userIsProjectTeamMemberDB' :: UserId -> ProjectId -> DB Bool
+userIsProjectTeamMemberDB' = userHasRoleDB TeamMember
 
-isProjectModerator' :: UserId -> ProjectId -> DB Bool
-isProjectModerator' = hasRole Moderator
+userIsProjectModeratorDB' :: UserId -> ProjectId -> DB Bool
+userIsProjectModeratorDB' = userHasRoleDB Moderator
 
 isProjectAdmin :: Text -> UserId -> DB Bool
 isProjectAdmin project_handle user_id =
@@ -256,8 +290,8 @@ canMakeEligible :: UserId -> UserId -> Handler Bool
 canMakeEligible establishee_id establisher_id = do
     (establishee, establisher_is_mod) <- runYDB $ (,)
         <$> get404 establishee_id
-        <*> (elem Moderator <$> getAllRoles establisher_id)
-    return $ isUnestablished establishee && establisher_is_mod
+        <*> (elem Moderator <$> fetchAllUserRolesDB establisher_id)
+    return $ userIsUnestablished establishee && establisher_is_mod
 
 -- | How does this User prefer messages of a certain type to be delivered (if at all)?
 -- listToMaybe is appropriate here due to UniqueUserMessagePref (list returned will
@@ -299,3 +333,13 @@ userViewCommentsDB user_id unfiltered_comment_ids = filteredCommentIds >>= userV
 
     userViewCommentsDB' :: [CommentId] -> DB ()
     userViewCommentsDB' comment_ids = void (insertMany (map (ViewComment user_id) comment_ids))
+
+userCanDeleteCommentDB :: UserId -> Entity Comment -> DB Bool
+userCanDeleteCommentDB user_id (Entity comment_id comment) = do
+    if commentUser comment /= user_id
+        then return False
+        else do
+          descendants_ids <- fetchCommentDescendantsIdsDB comment_id
+          if null descendants_ids
+              then return True
+              else return False

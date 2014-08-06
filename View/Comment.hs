@@ -25,6 +25,7 @@ import Model.Comment
 import Model.Markdown
 import Model.Tag               (TagMap)
 import Model.User
+import View.User
 import Widgets.Markdown
 import Widgets.Tag
 import Widgets.Time
@@ -233,16 +234,16 @@ commentWidget c@(Entity comment_id comment)
               show_actions
               inner_widget = do
     let user_id       = commentUser comment
-        is_unapproved = not . isApproved $ comment
-        is_top_level  = isTopLevel  comment
-        is_even_depth = isEvenDepth comment
-        is_odd_depth  = isOddDepth  comment
+        is_unapproved = not . commentIsApproved $ comment
+        is_top_level  = commentIsTopLevel  comment
+        is_even_depth = commentIsEvenDepth comment
+        is_odd_depth  = commentIsOddDepth  comment
 
     (is_mod, can_establish, can_reply, can_retract, can_close, can_edit, can_delete, can_rethread, can_add_tag, can_flag) <-
         handlerToWidget $ makeViewerPermissions (Entity user_id user) project_handle target c
 
     tags <- fmap (L.sortBy (compare `on` atName)) . handlerToWidget $ do
-        runDB (getCommentTags comment_id) >>=
+        runDB (fetchCommentCommentTagsDB comment_id) >>=
           annotateCommentTags tag_map project_handle target comment_id . map entityVal
 
     $(widgetFile "comment")
@@ -271,17 +272,17 @@ makeViewerPermissions (Entity poster_id poster) project_handle target comment_en
         Just (Entity viewer_id viewer) -> do
             (is_mod, can_delete, is_flagged) <- runDB $ (,,)
                 <$> isProjectModerator project_handle viewer_id
-                <*> canDeleteComment viewer_id comment_entity
-                <*> isFlagged comment_id
+                <*> userCanDeleteCommentDB viewer_id comment_entity
+                <*> commentIsFlagged comment_id
 
             let can_establish = is_mod && estIsUnestablished (userEstablished poster)
                 can_reply     = not is_reply_route && not is_flagged
                 can_retract   = poster_id == viewer_id
-                can_close     = isEstablished viewer
-                can_edit      = canEditComment viewer_id comment
+                can_close     = userIsEstablished viewer
+                can_edit      = userCanEditComment viewer_id comment
                 can_rethread  = poster_id == viewer_id || is_mod
-                can_add_tag   = isEstablished viewer
-                can_flag      = isEstablished viewer && viewer_id /= poster_id && not is_flagged
+                can_add_tag   = userIsEstablished viewer
+                can_flag      = userIsEstablished viewer && viewer_id /= poster_id && not is_flagged
 
             return (is_mod, can_establish, can_reply, can_retract, can_close, can_edit,
                     can_delete, can_rethread, can_add_tag, can_flag)
