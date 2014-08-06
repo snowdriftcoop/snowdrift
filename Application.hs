@@ -383,6 +383,7 @@ messageEventHandler (ECommentPosted comment_id comment) = case commentParent com
                   , "*You can filter these messages by adjusting the settings in your profile.*"
                   ]
             runSDB $ insertMessage_ MessageReply Nothing Nothing (Just parent_user_id) content True
+-- TODO(mitchell): send messages on other events, per preferences
 messageEventHandler _ = return ()
 
 -- | Handler in charge of inserting events (stripped down) into a separate table for each type.
@@ -391,6 +392,7 @@ eventInserterHandler :: SnowdriftEvent -> Daemon ()
 eventInserterHandler (ECommentPosted comment_id Comment{..})  = runDB (insert_ (EventCommentPosted comment_id (fromJust commentModeratedTs)))
 eventInserterHandler (ECommentPending comment_id Comment{..}) = runDB (insert_ (EventCommentPending comment_id commentCreatedTs))
 eventInserterHandler (EMessageSent message_id Message{..})    = runDB (insert_ (EventMessageSent message_id messageCreatedTs))
+eventInserterHandler (EWikiPage wiki_page_id WikiPage{..})    = runDB (insert_ (EventWikiPage wiki_page_id wikiPageCreatedTs))
 eventInserterHandler (EWikiEdit wiki_edit_id WikiEdit{..})    = runDB (insert_ (EventWikiEdit wiki_edit_id wikiEditTs))
 
 renderRoute' :: Route App -> App -> Text

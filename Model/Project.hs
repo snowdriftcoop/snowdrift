@@ -5,6 +5,7 @@ module Model.Project
     , fetchProjectCommentsPendingBeforeDB
     , fetchProjectCommentsPostedOnWikiPagesBeforeDB
     , fetchProjectWikiEditsBeforeDB
+    , fetchProjectWikiPagesBeforeDB
     -- TODO(mitchell): rename all these... prefix fetch, suffix DB
     , getGithubIssues
     , getProjectPages
@@ -171,6 +172,7 @@ fetchProjectCommentsPostedOnWikiPagesBeforeDB project_id muser_id before =
 fetchProjectCommentIdsPostedOnWikiPagesDB :: ProjectId -> DB [CommentId]
 fetchProjectCommentIdsPostedOnWikiPagesDB = fmap (map unValue) . select . querProjectCommentIdsPostedOnWikiPagesDB
 
+-- | Fetch all pending Comments made on a Project before some time.
 fetchProjectCommentsPendingBeforeDB :: ProjectId -> Maybe UserId -> UTCTime -> DB [Entity Comment]
 fetchProjectCommentsPendingBeforeDB project_id muser_id before =
     select $
@@ -181,7 +183,18 @@ fetchProjectCommentsPendingBeforeDB project_id muser_id before =
         exprPermissionFilter muser_id (val project_id) c
     return c
 
--- | Fetch all WikiEdits made on some Project.
+-- | Fetch all WikiPages made on some Project before some time.
+fetchProjectWikiPagesBeforeDB :: ProjectId -> UTCTime -> DB [Entity WikiPage]
+fetchProjectWikiPagesBeforeDB project_id before =
+    select $
+    from $ \(ewp `InnerJoin` wp) -> do
+    on_ (ewp ^. EventWikiPageWikiPage ==. wp ^. WikiPageId)
+    where_ $
+        ewp ^. EventWikiPageTs <=. val before &&.
+        exprWikiPageOnProject wp project_id
+    return wp
+
+-- | Fetch all WikiEdits made on some Project before some time.
 fetchProjectWikiEditsBeforeDB :: ProjectId -> UTCTime -> DB [Entity WikiEdit]
 fetchProjectWikiEditsBeforeDB project_id before =
     select $

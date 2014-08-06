@@ -1,12 +1,27 @@
 module Model.WikiPage
-    ( getAllWikiComments
+    ( createWikiPageDB
+    , getAllWikiComments
     , fetchWikiPagesInDB
     ) where
 
 import Import
 
 import Model.Comment.Sql
+import Model.Discussion
+import Model.Permission
 import Model.Project     (getProjectPages)
+
+import Control.Monad.Writer.Strict (tell)
+
+createWikiPageDB :: Text -> ProjectId -> Markdown -> PermissionLevel -> UserId -> SDB ()
+createWikiPageDB target project_id content permission_level user_id = do
+    now           <- liftIO getCurrentTime
+    discussion_id <- lift createDiscussionDB
+    let wiki_page = WikiPage now target project_id content discussion_id Normal
+    wiki_page_id <- lift (insert wiki_page)
+    wiki_edit_id <- lift (insert (WikiEdit now user_id wiki_page_id content (Just "Page created.")))
+    lift $ insert_ (WikiLastEdit wiki_page_id wiki_edit_id)
+    tell [EWikiPage wiki_page_id wiki_page]
 
 fetchWikiPagesInDB :: [WikiPageId] -> DB [Entity WikiPage]
 fetchWikiPagesInDB wiki_page_ids =

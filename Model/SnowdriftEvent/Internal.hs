@@ -9,4 +9,5 @@ data SnowdriftEvent
     = ECommentPosted  CommentId Comment   -- Comment approved.
     | ECommentPending CommentId Comment   -- Comment unapproved (pending approval).
     | EMessageSent    MessageId Message
-    | EWikiEdit       WikiEditId WikiEdit
+    | EWikiEdit       WikiEditId WikiEdit -- New WikiEdit made.
+    | EWikiPage       WikiPageId WikiPage -- New WikiPage posted.

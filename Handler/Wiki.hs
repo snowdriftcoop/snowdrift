@@ -13,6 +13,7 @@ import           Model.Permission
 import           Model.Project
 import           Model.Tag            (getAllTagsMap)
 import           Model.User
+import           Model.WikiPage
 import           Widgets.Preview
 import           Widgets.Time
 import           View.Comment
@@ -105,7 +106,7 @@ postWikiR project_handle target = do
 
                     defaultLayout $ previewWidget form action $
                         renderWiki 0 project_handle target False False $
-                            WikiPage target project_id content (Key $ PersistInt64 (-1)) Normal
+                            WikiPage now target project_id content (Key $ PersistInt64 (-1)) Normal
 
                 Just x | x == action -> do
                     runSYDB $ do
@@ -406,15 +407,11 @@ postNewWikiR project_handle target = do
                 Just "preview" -> do
                         (form, _) <- generateFormPost $ newWikiForm (Just content)
                         defaultLayout $ do
-                            let page = WikiPage target project_id content (Key $ PersistInt64 0) Normal
+                            let page = WikiPage now target project_id content (Key $ PersistInt64 0) Normal
                             previewWidget form action $ renderWiki 0 project_handle target False False page
 
                 Just x | x == action -> do
-                    _ <- runDB $ do
-                        discussion <- insert (Discussion 0)
-                        page_id <- insert $ WikiPage target project_id content discussion Normal
-                        edit_id <- insert $ WikiEdit now user_id page_id content $ Just "Page created."
-                        insert $ WikiLastEdit page_id edit_id
+                    runSDB (createWikiPageDB target project_id content Normal user_id)
 
                     addAlert "success" "Created."
                     redirect $ WikiR project_handle target
@@ -423,8 +420,6 @@ postNewWikiR project_handle target = do
 
         FormMissing -> error "Form missing."
         FormFailure msgs -> error $ "Error submitting form: " ++ T.unpack (T.concat msgs)
-
-
 
 --------------------------------------------------------------------------------
 -- /#target/perm
@@ -483,5 +478,3 @@ postEditWikiPermissionsR project_handle target = do
 -- almost certainly internal anyway)
 getOldWikiEditR :: Text -> Text -> WikiEditId -> Handler Html
 getOldWikiEditR project_handle target edit_id = redirect $ WikiEditR project_handle target edit_id
-
-

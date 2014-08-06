@@ -1,5 +1,6 @@
 module Model.Discussion
-    ( fetchDiscussionWikiPagesInDB
+    ( createDiscussionDB
+    , fetchDiscussionWikiPagesInDB
     ) where
 
 import Import
@@ -12,3 +13,5 @@ fetchDiscussionWikiPagesInDB discussion_ids =
     where_ (wp ^. WikiPageDiscussion `in_` valList discussion_ids)
     return wp
 
+createDiscussionDB :: DB DiscussionId
+createDiscussionDB = insert (Discussion 0)

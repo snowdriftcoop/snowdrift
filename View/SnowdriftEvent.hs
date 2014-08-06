@@ -26,6 +26,12 @@ renderCommentPendingEvent comment_id comment =
             \ <a href=@{CommentDirectLinkR comment_id}>(permalink)
     |]
 
+renderWikiPageEvent :: WikiPageId -> WikiPage -> Widget
+renderWikiPageEvent wiki_page_id wiki_page =
+    [whamlet|
+        <div>Wiki page: #{wikiPageTarget wiki_page}
+    |]
+
 renderWikiEditEvent :: WikiEditId -> WikiEdit -> Entity WikiPage -> Widget
 renderWikiEditEvent _ _ (Entity _ wiki_page) =
     [whamlet|

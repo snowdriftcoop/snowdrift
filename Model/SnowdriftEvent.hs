@@ -12,3 +12,4 @@ snowdriftEventTime (ECommentPosted  _ Comment{..})  = fromMaybe commentCreatedTs
 snowdriftEventTime (ECommentPending _ Comment{..})  = commentCreatedTs
 snowdriftEventTime (EMessageSent    _ Message{..})  = messageCreatedTs
 snowdriftEventTime (EWikiEdit       _ WikiEdit{..}) = wikiEditTs
+snowdriftEventTime (EWikiPage       _ WikiPage{..}) = wikiPageCreatedTs

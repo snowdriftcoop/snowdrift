@@ -438,6 +438,7 @@ getProjectFeedR project_handle = do
         Entity project_id _ <- getBy404 (UniqueProjectHandle project_handle)
         comment_posted_entities  <- fetchProjectCommentsPostedOnWikiPagesBeforeDB project_id muser_id before
         comment_pending_entities <- fetchProjectCommentsPendingBeforeDB project_id muser_id before
+        wiki_page_entities       <- fetchProjectWikiPagesBeforeDB project_id before
         wiki_edit_entities       <- fetchProjectWikiEditsBeforeDB project_id before
 
         -- Suplementary maps for displaying the data.
@@ -457,6 +458,7 @@ getProjectFeedR project_handle = do
         let events = sortBy snowdriftEventNewestToOldest . mconcat $
               [ map (onEntity ECommentPosted)  comment_posted_entities
               , map (onEntity ECommentPending) comment_pending_entities
+              , map (onEntity EWikiPage)       wiki_page_entities
               , map (onEntity EWikiEdit)       wiki_edit_entities
               ]
         return (events, discussion_wiki_pages_map, wiki_pages_map, users_map)

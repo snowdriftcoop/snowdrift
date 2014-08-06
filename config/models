@@ -173,6 +173,7 @@ Message
     deriving Eq
 
 WikiPage
+    createdTs UTCTime default=now()
     target Text
     project ProjectId
     content Markdown
@@ -357,10 +358,17 @@ EventCommentPending
     comment CommentId
     ts UTCTime
 
+-- Message sent event.
 EventMessageSent
     message MessageId
     ts UTCTime
 
+-- Wiki page created event.
+EventWikiPage
+    wikiPage WikiPageId
+    ts UTCTime
+
+-- Wiki edit made event.
 EventWikiEdit
     wikiEdit WikiEditId
     ts UTCTime
