@@ -115,7 +115,7 @@ postWikiR project_handle target = do
                             set p [WikiPageContent =. val content]
                             where_ $ p ^. WikiPageId ==. val page_id
 
-                        edit_id <- lift $ insert $ WikiEdit now user_id page_id content (Just comment)
+                        edit_id <- createWikiEditDB user_id page_id content (Just comment)
                         -- TODO - I think there might be a race condition here...
                         either_last_edit <- lift $ insertBy $ WikiLastEdit page_id edit_id
 

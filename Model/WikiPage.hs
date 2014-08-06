@@ -1,5 +1,6 @@
 module Model.WikiPage
-    ( createWikiPageDB
+    ( createWikiEditDB
+    , createWikiPageDB
     , getAllWikiComments
     , fetchWikiPagesInDB
     ) where
@@ -17,11 +18,20 @@ createWikiPageDB :: Text -> ProjectId -> Markdown -> PermissionLevel -> UserId -
 createWikiPageDB target project_id content permission_level user_id = do
     now           <- liftIO getCurrentTime
     discussion_id <- lift createDiscussionDB
-    let wiki_page = WikiPage now target project_id content discussion_id Normal
+    let wiki_page = WikiPage now target project_id content discussion_id permission_level
     wiki_page_id <- lift (insert wiki_page)
+    -- Don't generate a WikiEdit event in addition to this WikiPage event.
     wiki_edit_id <- lift (insert (WikiEdit now user_id wiki_page_id content (Just "Page created.")))
     lift $ insert_ (WikiLastEdit wiki_page_id wiki_edit_id)
     tell [EWikiPage wiki_page_id wiki_page]
+
+createWikiEditDB :: UserId -> WikiPageId -> Markdown -> Maybe Text -> SDB WikiEditId
+createWikiEditDB user_id wiki_page_id content mcomment = do
+    now <- liftIO getCurrentTime
+    let wiki_edit = WikiEdit now user_id wiki_page_id content mcomment
+    wiki_edit_id <- lift (insert wiki_edit)
+    tell [EWikiEdit wiki_edit_id wiki_edit]
+    return wiki_edit_id
 
 fetchWikiPagesInDB :: [WikiPageId] -> DB [Entity WikiPage]
 fetchWikiPagesInDB wiki_page_ids =
