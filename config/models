@@ -29,7 +29,7 @@ User
     blurb Markdown Maybe
     statement Markdown Maybe
     ircNick Text Maybe
-    readMessages UTCTime default=now()
+    readMessages UTCTime default=now() -- The last time the user visited /messages
     readApplications UTCTime default=now()
     established Established default='EstUnestablished'
     UniqueUser ident
@@ -165,16 +165,49 @@ VolunteerInterest
     volunteer VolunteerApplicationId
     interest InterestId
 
+-- Many valid permutations here:
+--
+-- +---------------------+-----------------------------------------------------+
+-- | fromUser    Nothing | Arbitrary "alert" message/notification, not from    |
+-- | fromProject Nothing | any particular user or project (such as "a user has |
+-- | toProject   Nothing | replied to one of your comments").                  |
+-- +---------------------+-----------------------------------------------------+
+-- | fromUser    Nothing | Anonymous message sent to a project (feedback).     |
+-- | fromProject Nothing |                                                     |
+-- | toProject   Just    |                                                     |
+-- +---------------------+-----------------------------------------------------+
+-- | fromUser    Nothing | Project-to-user message.                            |
+-- | fromProject Just    |                                                     |
+-- | toProject   Nothing |                                                     |
+-- +---------------------+-----------------------------------------------------+
+-- | fromUser    Nothing | Project-to-project message.                         |
+-- | fromProject Just    |                                                     |
+-- | toProject   Just    |                                                     |
+-- +---------------------+-----------------------------------------------------+
+-- | fromUser    Just    | User-to-user message.                               |
+-- | fromProject Nothing |                                                     |
+-- | toProject   Nothing |                                                     |
+-- +---------------------+-----------------------------------------------------+
+-- | fromUser    Just    | User-to-project message.                            |
+-- | fromProject Nothing |                                                     |
+-- | toProject   Just    |                                                     |
+-- +---------------------+-----------------------------------------------------+
+-- | fromUser    Just    | User-to-user message, on behalf of a project.       |
+-- | fromProject Just    |                                                     |
+-- | toProject   Nothing |                                                     |
+-- +---------------------+-----------------------------------------------------+
+-- | fromUser    Just    | User-to-project message, on behalf of a project.    |
+-- | fromProject Just    |                                                     |
+-- | toProject   Just    |                                                     |
+-- +---------------------+-----------------------------------------------------+
 Message
-    type MessageType default='MessageDirect'
-    project ProjectId Maybe
     createdTs UTCTime
-    from UserId Maybe
-    to UserId Maybe
+    type MessageType
+    fromUser UserId Maybe
+    fromProject ProjectId Maybe
+    toUser UserId
+    toProject ProjectId Maybe
     content Markdown
-    -- Whether the message was sent automatically by Snowdrift, or by an actual user.
-    automated Bool default=false
-    deriving Eq
 
 WikiPage
     createdTs UTCTime default=now()

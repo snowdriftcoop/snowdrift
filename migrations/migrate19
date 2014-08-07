@@ -1,0 +1,7 @@
+DROP TABLE "message" CASCADE;
+CREATe TABLE "message"("id" SERIAL PRIMARY KEY UNIQUE,"created_ts" TIMESTAMP NOT NULL,"type" VARCHAR NOT NULL,"from_user" INT8 NULL,"from_project" INT8 NULL,"to_user" INT8 NOT NULL,"to_project" INT8 NULL,"content" VARCHAR NOT NULL);
+ALTER TABLE "message" ADD CONSTRAINT "message_from_user_fkey" FOREIGN KEY("from_user") REFERENCES "user"("id");
+ALTER TABLE "message" ADD CONSTRAINT "message_from_project_fkey" FOREIGN KEY("from_project") REFERENCES "project"("id");
+ALTER TABLE "message" ADD CONSTRAINT "message_to_user_fkey" FOREIGN KEY("to_user") REFERENCES "user"("id");
+ALTER TABLE "message" ADD CONSTRAINT "message_to_project_fkey" FOREIGN KEY("to_project") REFERENCES "project"("id");
+ALTER TABLE "event_message_sent" ADD CONSTRAINT "event_message_sent_message_fkey" FOREIGN KEY("message") REFERENCES "message"("id");

@@ -137,8 +137,9 @@ postWikiR project_handle target = do
                                     , "<br>[**Ticket created**](" <> render (DiscussCommentR project_handle target comment_id) [] <> ")"
                                     ]
 
-                            insertMessage_ MessageDirect (Just project_id) (Just last_editor) (Just user_id)     message_text True
-                            insertMessage_ MessageDirect (Just project_id) (Just user_id)     (Just last_editor) message_text True
+                            -- TODO(mitchell): new MessageType for edit conflict
+                            void $ sendNotificationMessageDB MessageDirect last_editor message_text
+                            void $ sendNotificationMessageDB MessageDirect user_id     message_text
 
                             lift (lift (alertDanger "conflicting edits (ticket created, messages sent)"))
 

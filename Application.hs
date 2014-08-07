@@ -382,7 +382,7 @@ messageEventHandler (ECommentPosted comment_id comment) = case commentParent com
                   , ""
                   , "*You can filter these messages by adjusting the settings in your profile.*"
                   ]
-            runSDB $ insertMessage_ MessageReply Nothing Nothing (Just parent_user_id) content True
+            void $ runSDB (sendNotificationMessageDB MessageReply parent_user_id content)
 -- TODO(mitchell): send messages on other events, per preferences
 messageEventHandler _ = return ()
 

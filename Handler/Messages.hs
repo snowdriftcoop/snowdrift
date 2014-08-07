@@ -12,27 +12,16 @@ import Widgets.Time
 
 getMessagesR :: Handler Html
 getMessagesR = do
-    Entity viewer_id viewer <- requireAuth
+    viewer_entity@(Entity viewer_id viewer) <- requireAuth
     now <- liftIO getCurrentTime
 
-    messages <-
-        -- TODO: filter by projects? Also, generalize so project-affiliates
-        -- see any message for their respective projects.
-        runDB $ do
-            snowdrift_member <- isProjectAffiliated "snowdrift" viewer_id
-            select $ from $ \ message -> do
-                where_ $ if snowdrift_member
-                    then message ^. MessageTo ==. val (Just viewer_id) ||. isNothing (message ^. MessageTo)
-                    else message ^. MessageTo ==. val (Just viewer_id)
-                orderBy [ desc $ message ^. MessageCreatedTs ]
-                return message
+    (messages, user_map) <- runDB $ do
+        messages <- fetchUserMessagesDB viewer_id
+        let from_users = catMaybes (map (messageFromUser . entityVal) messages)
+        user_map <- entitiesMap . (viewer_entity :) <$> fetchUsersInDB from_users
+        return (messages, user_map)
 
-    users <- runDB $ select $ from $ \ user -> do
-        where_ (user ^. UserId `in_` valList (mapMaybe (messageFrom . entityVal) messages))
-        return user
-
-    let user_map = M.fromList $ ((viewer_id, viewer):) $ map (entityKey &&& entityVal) users
-        getUserName user_id =
+    let getUserName user_id =
             let user = user_map M.! user_id
              in fromMaybe (userIdent user) (userName user)
 

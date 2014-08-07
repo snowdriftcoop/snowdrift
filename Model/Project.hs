@@ -4,11 +4,12 @@ module Model.Project
     , fetchProjectCommentIdsDB
     , fetchProjectCommentsPendingBeforeDB
     , fetchProjectCommentsPostedOnWikiPagesBeforeDB
+    , fetchProjectDeletedPledgesBeforeDB
+    , fetchProjectNewPledgesBeforeDB
+    , fetchProjectTeamMembersDB
+    , fetchProjectUpdatedPledgesBeforeDB
     , fetchProjectWikiEditsBeforeDB
     , fetchProjectWikiPagesBeforeDB
-    , fetchProjectNewPledgesBeforeDB
-    , fetchProjectUpdatedPledgesBeforeDB
-    , fetchProjectDeletedPledgesBeforeDB
     , insertProjectPledgeDB
     -- TODO(mitchell): rename all these... prefix fetch, suffix DB
     , getGithubIssues
@@ -269,3 +270,17 @@ fetchProjectDeletedPledgesBeforeDB project_id before = fmap (map entityVal) $
         edp ^. EventDeletedPledgeTs      <=. val before &&.
         edp ^. EventDeletedPledgeProject ==. val project_id
     return edp
+
+-- | Fetch this Project's team members.
+fetchProjectTeamMembersDB :: ProjectId -> DB [UserId]
+fetchProjectTeamMembersDB = fetchProjectRoleDB TeamMember
+
+-- | Abstract fetching Project Admins, TeamMembers, etc. Not exported.
+fetchProjectRoleDB :: Role -> ProjectId -> DB [UserId]
+fetchProjectRoleDB role project_id = fmap (map unValue) $
+    select $
+    from $ \pur -> do
+    where_ $
+        pur ^. ProjectUserRoleProject ==. val project_id &&.
+        pur ^. ProjectUserRoleRole    ==. val role
+    return (pur ^. ProjectUserRoleUser)

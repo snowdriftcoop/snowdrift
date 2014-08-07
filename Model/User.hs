@@ -17,8 +17,10 @@ module Model.User
     , establishUserDB
     , fetchAllUserRolesDB
     , fetchCurUserRolesDB
+    , fetchNumUnreadMessagesDB
     , fetchNumUnviewedCommentsOnProjectWikiPagesDB
     , fetchNumUnviewedWikiEditsOnProjectDB
+    , fetchUserMessagesDB
     , fetchUserMessagePrefDB
     , fetchUserProjectsAndRolesDB
     , fetchUserRolesDB
@@ -184,7 +186,7 @@ eligEstablishUserDB establisher_id user_id reason = do
     lift $ insert_ $ ManualEstablishment user_id establisher_id
 
     snowdrift_id <- lift getSnowdriftId
-    insertMessage_ MessageDirect (Just snowdrift_id) Nothing (Just user_id) message_text True
+    void $ sendP2UMessageDB MessageDirect Nothing snowdrift_id user_id message_text
   where
     message_text :: Markdown
     message_text = Markdown $ T.unlines
@@ -310,6 +312,15 @@ fetchUserMessagePrefDB user_id msg_type = fmap (fmap unValue . listToMaybe) $
         ump ^. UserMessagePrefType ==. val msg_type
     return (ump ^. UserMessagePrefDelivery)
 
+-- | Fetch a User's private Messages.
+fetchUserMessagesDB :: UserId -> DB [Entity Message]
+fetchUserMessagesDB user_id =
+    select $
+    from $ \m -> do
+    where_ (m ^. MessageToUser ==. val user_id)
+    orderBy [desc (m ^. MessageCreatedTs)]
+    return m
+
 userWatchProjectDB :: UserId -> ProjectId -> DB ()
 userWatchProjectDB user_id project_id = void (insertUnique (UserWatchingProject user_id project_id))
 
@@ -403,3 +414,13 @@ fetchNumUnviewedWikiEditsOnProjectDB user_id project_id = fmap (M.fromList . map
     let countRows' = countRows :: SqlExpr (Value Int)
     having (countRows' >. val 0)
     return (wp ^. WikiPageId, countRows')
+
+fetchNumUnreadMessagesDB :: UserId -> DB Int
+fetchNumUnreadMessagesDB user_id = fmap (\[Value n] -> n) $
+    select $
+    from $ \(u `InnerJoin` m) -> do
+    on_ (u ^. UserId ==. m ^. MessageToUser)
+    where_ $
+        u ^. UserId ==. val user_id &&.
+        m ^. MessageCreatedTs >=. u ^. UserReadMessages
+    return countRows

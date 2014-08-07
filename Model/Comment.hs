@@ -235,8 +235,7 @@ editCommentDB comment_id text = do
             permalink_text <- lift $ getUrlRender <*> pure permalink_route
             let message_text = Markdown $ "A comment you flagged has been edited and reposted to the site. You can view it [here](" <> permalink_text <> ")."
             lift $ deleteCascade comment_flagging_id -- delete flagging and all flagging reasons with it.
-            snowdrift_id <- lift getSnowdriftId
-            insertMessage_ MessageDirect (Just snowdrift_id) Nothing (Just $ commentFlaggingFlagger) message_text True
+            void $ sendNotificationMessageDB MessageDirect commentFlaggingFlagger message_text
   where
     updateCommentText =
         update $ \c -> do
@@ -263,8 +262,7 @@ flagCommentDB project_handle target comment_id permalink_route flagger_id reason
                     , ""
                     , "[link to flagged comment](" <> permalink_route <> ")"
                     ]
-            snowdrift_id <- lift getSnowdriftId
-            insertMessage_ MessageDirect (Just snowdrift_id) Nothing (Just poster_id) message_text True
+            void $ sendNotificationMessageDB MessageDirect poster_id message_text
             return True
 
 -- | Filter a list of comments per the permission filter (see Model.Comment.Sql.exprPermissionFilter)

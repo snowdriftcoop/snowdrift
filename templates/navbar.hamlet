@@ -29,9 +29,9 @@
                                 #{milrayCents balance}
                 <li>
                     <a href=@{MessagesR}>
-                        $if not (null messages)
+                        $if num_unread_messages /= 0
                             <span .glyphicon .glyphicon-envelope>&nbsp;
-                                #{length messages}
+                                #{num_unread_messages}
                         $else
                             <span .glyphicon .glyphicon-envelope>
                 $with name <- fromMaybe (userIdent user) $ userName user 
@@ -72,9 +72,9 @@
             $maybe Entity user_id user <- maybe_user
                 <li>
                     <a href="@{MessagesR}">
-                        $if not (null messages)
+                        $if num_unread_messages /= 0
                             <span .glyphicon .glyphicon-envelope>&nbsp;
-                                #{length messages}
+                                #{num_unread_messages}
                         $else
                             <span .glyphicon .glyphicon-envelope>
                 $with name <- fromMaybe (userIdent user) $ userName user 

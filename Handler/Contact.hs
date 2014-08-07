@@ -27,7 +27,10 @@ postContactR project_handle = do
         FormSuccess content -> do
             runSYDB $ do
                 Entity project_id _ <- lift $ getBy404 $ UniqueProjectHandle project_handle
-                insertMessage_ MessageDirect (Just project_id) maybe_user_id Nothing content False
+                void $
+                    case maybe_user_id of
+                        Nothing      -> sendAnonymousMessageDB project_id content
+                        Just user_id -> sendU2PMessageDB user_id project_id content
 
             alertSuccess "Comment submitted.  Thank you for your input!"
 

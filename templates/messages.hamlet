@@ -2,29 +2,31 @@ $if not (null messages)
     $forall Entity _ message <- messages
         <div .row>
             <div .col-sm-3 .well .well-sm>
-                $if (messageAutomated message)
-                    <em>automated message
-                    <br>
-                $maybe from <- messageFrom message
+
+                $maybe user <- messageFromUser message
                     <em>from
-                    #{getUserName from}
+                    #{getUserName user}
+                    $maybe project <- messageFromProject message
+                        <em>on behalf of
+                        ^{projectNameWidget project}
                 $nothing
-                    $maybe project <- messageProject message
+                    $maybe project <- messageFromProject message
                         <em>from
                         ^{projectNameWidget project}
                     $nothing
-                        <em>from unregistered user
+                        <em>from anonymous user
+
                 <br>
-                $maybe to <- messageTo message
+
+                $maybe project <- messageToProject message
                     <em>to
-                    #{getUserName to}
+                    ^{projectNameWidget project}
                 $nothing
-                    $maybe project <- messageProject message
-                        <em>to
-                        ^{projectNameWidget project}
-                    $nothing
-                        ERROR! How can there be a message that isn't to anyone?
+                    <em>to
+                    #{getUserName (messageToUser message)}
+
                 <br>
+
                 ^{renderTime (messageCreatedTs message)}
 
             <div .col-sm-9>

@@ -1,15 +1,11 @@
-
 module Model.Role.Internal where
 
 import Prelude
 
-import Database.Persist.TH
-
-import Web.PathPieces
-
 import Data.Text as T
-
+import Database.Persist.TH
 import Debug.Trace
+import Web.PathPieces
 
 data Role
     = TeamMember

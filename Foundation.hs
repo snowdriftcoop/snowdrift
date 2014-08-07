@@ -370,7 +370,7 @@ createUser ident passwd name avatar nick = do
                         ]
                 -- TODO: change snowdrift_id to the generated site-project id
                 -- TODO(mitchell): This message doesn't get sent to the event channel. Is that okay?
-                insert_ $ Message MessageDirect (Just snowdrift_id) now Nothing (Just user_id) message_text True
+                insert_ $ Message now MessageDirect Nothing (Just snowdrift_id) user_id Nothing message_text
                 return $ Just user_id
             Nothing -> do
                 lift $ addAlert "danger" "E-mail or handle already in use."
