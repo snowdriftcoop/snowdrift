@@ -59,10 +59,13 @@ insertProjectPledgeDB :: UserId
                       -> SDB ()
 insertProjectPledgeDB user_id project_id shares pledge_render_id = do
     now <- liftIO getCurrentTime
-    lift $ insert_ (SharesPledged now user_id shares pledge_render_id)
-    let pledge = Pledge now user_id project_id shares shares
-    insertBy pledge  >>= \case
-        Left (Entity pledge_id _) -> do
+    let shares_pledged = SharesPledged now user_id project_id shares pledge_render_id
+    shares_pledged_id <- lift (insert shares_pledged)
+    getBy (UniquePledge user_id project_id) >>= \case
+        Nothing -> do
+            pledge_id <- lift $ insert_ (Pledge now user_id project_id shares shares)
+            tell [ENewPledge shares_pledged_id shares_pledged]
+        Just (Entity pledge_id old_pledge) -> do
             if shares == 0
                 then do
                     lift (deleteKey pledge_id)
@@ -74,8 +77,7 @@ insertProjectPledgeDB user_id project_id shares pledge_render_id = do
                               , PledgeFundedShares =. val shares
                               ]
                         where_ (p ^. PledgeId ==. val pledge_id)
-                    tell [EUpdatedPledge shares pledge_id pledge]
-        Right pledge_id -> tell [ENewPledge pledge_id pledge]
+                    tell [EUpdatedPledge (pledgeShares old_pledge) shares_pledged_id shares_pledged]
 
 getGithubIssues :: Project -> Handler [GH.Issue]
 getGithubIssues project =
@@ -236,27 +238,27 @@ fetchProjectWikiEditsBeforeDB project_id before =
         exprWikiPageOnProject wp project_id
     return we
 
--- | Fetch all new Pledges made on this Project before this time.
-fetchProjectNewPledgesBeforeDB :: ProjectId -> UTCTime -> DB [Entity Pledge]
+-- | Fetch all new SharesPledged made on this Project before this time.
+fetchProjectNewPledgesBeforeDB :: ProjectId -> UTCTime -> DB [Entity SharesPledged]
 fetchProjectNewPledgesBeforeDB project_id before =
     select $
-    from $ \(enp `InnerJoin` p) -> do
-    on_ (enp ^. EventNewPledgePledge ==. p ^. PledgeId)
+    from $ \(enp `InnerJoin` sp) -> do
+    on_ (enp ^. EventNewPledgeSharesPledged ==. sp ^. SharesPledgedId)
     where_ $
         enp ^. EventNewPledgeTs <=. val before &&.
-        p ^. PledgeProject ==. val project_id
-    return p
+        sp ^. SharesPledgedProject ==. val project_id
+    return sp
 
 -- | Fetch all updated Pledges made on this Project before this time, along with the old number of shares.
-fetchProjectUpdatedPledgesBeforeDB :: ProjectId -> UTCTime -> DB [(Int64, Entity Pledge)]
+fetchProjectUpdatedPledgesBeforeDB :: ProjectId -> UTCTime -> DB [(Int64, Entity SharesPledged)]
 fetchProjectUpdatedPledgesBeforeDB project_id before = fmap (map (\(Value n, p) -> (n, p))) $
     select $
-    from $ \(eup `InnerJoin` p) -> do
-    on_ (eup ^. EventUpdatedPledgePledge ==. p ^. PledgeId)
+    from $ \(eup `InnerJoin` sp) -> do
+    on_ (eup ^. EventUpdatedPledgeSharesPledged ==. sp ^. SharesPledgedId)
     where_ $
         eup ^. EventUpdatedPledgeTs <=. val before &&.
-        p ^. PledgeProject ==. val project_id
-    return (eup ^. EventUpdatedPledgeOldShares, p)
+        sp ^. SharesPledgedProject ==. val project_id
+    return (eup ^. EventUpdatedPledgeOldShares, sp)
 
 -- | Fetch all deleted pledge events made on this Project before this time.
 fetchProjectDeletedPledgesBeforeDB :: ProjectId -> UTCTime -> DB [EventDeletedPledge]

@@ -449,9 +449,9 @@ getProjectFeedR project_handle = do
         -- data to display the project feed row, it MUST be used to fetch the data below!
         -- The Maybes from Data.Map.lookup are unsafely STRIPPED in the views!
 
-        let comments   = map entityVal (comment_posted_entities <> comment_pending_entities)
-            wiki_edits = map entityVal wiki_edit_entities
-            pledges    = map entityVal (new_pledge_entities <> (map snd updated_pledges))
+        let comments       = map entityVal (comment_posted_entities <> comment_pending_entities)
+            wiki_edits     = map entityVal wiki_edit_entities
+            shares_pledged = map entityVal (new_pledge_entities <> (map snd updated_pledges))
 
         -- WikiPages that can be keyed by a Comment's DiscussionId (i.e. the Comment *is* on a WikiPage)
         discussion_wiki_pages_map <- M.fromList . map (\e@(Entity _ WikiPage{..}) -> (wikiPageDiscussion, e)) <$>
@@ -465,7 +465,7 @@ getProjectFeedR project_handle = do
         users_map <- (\a b c d -> a <> b <> c <> d)
             <$> (entitiesMap <$> fetchUsersInDB (map commentUser comments))
             <*> (entitiesMap <$> fetchUsersInDB (map wikiEditUser wiki_edits))
-            <*> (entitiesMap <$> fetchUsersInDB (map pledgeUser pledges))
+            <*> (entitiesMap <$> fetchUsersInDB (map sharesPledgedUser shares_pledged))
             <*> (entitiesMap <$> fetchUsersInDB (map (\(EventDeletedPledge _ user_id _ _) -> user_id) deleted_pledge_events))
 
         let events = sortBy snowdriftEventNewestToOldest . mconcat $
@@ -481,8 +481,8 @@ getProjectFeedR project_handle = do
     defaultLayout $(widgetFile "project_feed")
   where
     -- "event updated pledge to snowdrift event". Makes above code cleaner.
-    eup2se :: (Int64, Entity Pledge) -> SnowdriftEvent
-    eup2se (old_shares, Entity pledge_id pledge) = EUpdatedPledge old_shares pledge_id pledge
+    eup2se :: (Int64, Entity SharesPledged) -> SnowdriftEvent
+    eup2se (old_shares, Entity shares_pledged_id shares_pledged) = EUpdatedPledge old_shares shares_pledged_id shares_pledged
 
     -- "event deleted pledge to snowdrift event". Makes above code cleaner.
     edp2se :: EventDeletedPledge -> SnowdriftEvent

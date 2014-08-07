@@ -42,19 +42,19 @@ renderWikiEditEvent _ _ (Entity _ wiki_page) =
         <div>#{wikiPageTarget wiki_page} edit!
     |]
 
-renderNewPledgeEvent :: PledgeId -> Pledge -> UserMap -> Widget
-renderNewPledgeEvent pledge_id Pledge{..} users_map = do
-    let pledger = users_map ! pledgeUser
+renderNewPledgeEvent :: SharesPledgedId -> SharesPledged -> UserMap -> Widget
+renderNewPledgeEvent shares_pledged_id SharesPledged{..} users_map = do
+    let pledger = users_map ! sharesPledgedUser
     [whamlet|
-        <div>#{userPrintName (Entity pledgeUser pledger)} pledged #{show pledgeShares} new shares!
+        <div>#{userPrintName (Entity sharesPledgedUser pledger)} pledged #{show sharesPledgedShares} new shares!
     |]
 
-renderUpdatedPledgeEvent :: Int64 -> PledgeId -> Pledge -> UserMap -> Widget
-renderUpdatedPledgeEvent old_shares pledge_id Pledge{..} users_map = do
-    let pledger = users_map ! pledgeUser
-        direction_text = if old_shares < pledgeShares then "down " else "up " :: Text
+renderUpdatedPledgeEvent :: Int64 -> SharesPledgedId -> SharesPledged -> UserMap -> Widget
+renderUpdatedPledgeEvent old_shares shares_pledged_id SharesPledged{..} users_map = do
+    let pledger = users_map ! sharesPledgedUser
+        direction_text = if old_shares < sharesPledgedShares then "down " else "up " :: Text
     [whamlet|
-        <div>#{userPrintName (Entity pledgeUser pledger)} pledged #{show pledgeShares} shares! (#{direction_text} from #{show old_shares})
+        <div>#{userPrintName (Entity sharesPledgedUser pledger)} pledged #{show sharesPledgedShares} shares! (#{direction_text} from #{show old_shares})
     |]
 
 renderDeletedPledgeEvent :: UserId -> Int64 -> UserMap -> Widget

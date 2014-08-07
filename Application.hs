@@ -389,14 +389,14 @@ messageEventHandler _ = return ()
 -- | Handler in charge of inserting events (stripped down) into a separate table for each type.
 eventInserterHandler :: SnowdriftEvent -> Daemon ()
 -- If an unapproved comment is sent as an ECommentPosted event, bad things will happen (fromJust).
-eventInserterHandler (ECommentPosted comment_id Comment{..})          = runDB (insert_ (EventCommentPosted (fromJust commentModeratedTs) comment_id))
-eventInserterHandler (ECommentPending comment_id Comment{..})         = runDB (insert_ (EventCommentPending commentCreatedTs comment_id))
-eventInserterHandler (EMessageSent message_id Message{..})            = runDB (insert_ (EventMessageSent messageCreatedTs message_id))
-eventInserterHandler (EWikiPage wiki_page_id WikiPage{..})            = runDB (insert_ (EventWikiPage wikiPageCreatedTs wiki_page_id))
-eventInserterHandler (EWikiEdit wiki_edit_id WikiEdit{..})            = runDB (insert_ (EventWikiEdit wikiEditTs wiki_edit_id))
-eventInserterHandler (ENewPledge pledge_id Pledge{..})                = runDB (insert_ (EventNewPledge pledgeCreatedTs pledge_id))
-eventInserterHandler (EUpdatedPledge old_shares pledge_id Pledge{..}) = runDB (insert_ (EventUpdatedPledge pledgeCreatedTs old_shares pledge_id))
-eventInserterHandler (EDeletedPledge ts user_id project_id shares)    = runDB (insert_ (EventDeletedPledge ts user_id project_id shares))
+eventInserterHandler (ECommentPosted comment_id Comment{..})                         = runDB (insert_ (EventCommentPosted (fromJust commentModeratedTs) comment_id))
+eventInserterHandler (ECommentPending comment_id Comment{..})                        = runDB (insert_ (EventCommentPending commentCreatedTs comment_id))
+eventInserterHandler (EMessageSent message_id Message{..})                           = runDB (insert_ (EventMessageSent messageCreatedTs message_id))
+eventInserterHandler (EWikiPage wiki_page_id WikiPage{..})                           = runDB (insert_ (EventWikiPage wikiPageCreatedTs wiki_page_id))
+eventInserterHandler (EWikiEdit wiki_edit_id WikiEdit{..})                           = runDB (insert_ (EventWikiEdit wikiEditTs wiki_edit_id))
+eventInserterHandler (ENewPledge shares_pledged_id SharesPledged{..})                = runDB (insert_ (EventNewPledge sharesPledgedTs shares_pledged_id))
+eventInserterHandler (EUpdatedPledge old_shares shares_pledged_id SharesPledged{..}) = runDB (insert_ (EventUpdatedPledge sharesPledgedTs old_shares shares_pledged_id))
+eventInserterHandler (EDeletedPledge ts user_id project_id shares)                   = runDB (insert_ (EventDeletedPledge ts user_id project_id shares))
 
 renderRoute' :: Route App -> App -> Text
 renderRoute' route app =

@@ -345,6 +345,7 @@ PledgeFormRendered
 SharesPledged
     ts UTCTime
     user UserId
+    project ProjectId
     shares Int64
     render PledgeFormRenderedId
 
@@ -379,12 +380,12 @@ EventWikiEdit
 
 EventNewPledge
     ts UTCTime
-    pledge PledgeId
+    sharesPledged SharesPledgedId
 
 EventUpdatedPledge
     ts UTCTime
     oldShares Int64
-    pledge PledgeId
+    sharesPledged SharesPledgedId
 
 EventDeletedPledge
     ts UTCTime

@@ -19,9 +19,9 @@ data SnowdriftEvent
     -- New WikiPage posted.
     | EWikiPage WikiPageId WikiPage
     -- New pledge.
-    | ENewPledge PledgeId Pledge
+    | ENewPledge SharesPledgedId SharesPledged
     -- Pledge that has changed in value.
     | EUpdatedPledge Int64 {- old shares -}
-                     PledgeId Pledge {- new pledge info -}
+                     SharesPledgedId SharesPledged {- new pledge info -}
     -- Deleted pledge.
     | EDeletedPledge UTCTime UserId ProjectId Int64
