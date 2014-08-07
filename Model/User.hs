@@ -18,6 +18,7 @@ module Model.User
     , fetchAllUserRolesDB
     , fetchCurUserRolesDB
     , fetchNumUnviewedCommentsOnProjectWikiPagesDB
+    , fetchNumUnviewedWikiEditsOnProjectDB
     , fetchUserMessagePrefDB
     , fetchUserProjectsAndRolesDB
     , fetchUserRolesDB
@@ -50,6 +51,7 @@ import Model.Comment.Sql
 import Model.Message
 import Model.Project.Sql
 import Model.User.Sql
+import Model.WikiPage.Sql
 
 import qualified Data.Map       as M
 import qualified Data.Set       as S
@@ -382,8 +384,21 @@ fetchNumUnviewedCommentsOnProjectWikiPagesDB user_id project_id = fmap (M.fromLi
     from $ \(c `InnerJoin` wp) -> do
     on_ (c ^. CommentDiscussion ==. wp ^. WikiPageDiscussion)
     where_ $
-        wp ^. WikiPageProject ==. val project_id &&.
+        exprWikiPageOnProject wp project_id &&.
         c ^. CommentId `notIn` exprUserViewedComments user_id
+    groupBy (wp ^. WikiPageId)
+    let countRows' = countRows :: SqlExpr (Value Int)
+    having (countRows' >. val 0)
+    return (wp ^. WikiPageId, countRows')
+
+fetchNumUnviewedWikiEditsOnProjectDB :: UserId -> ProjectId -> DB (Map WikiPageId Int)
+fetchNumUnviewedWikiEditsOnProjectDB user_id project_id = fmap (M.fromList . map unwrapValues) $
+    select $
+    from $ \(wp `InnerJoin` we) -> do
+    on_ (wp ^. WikiPageId ==. we ^. WikiEditPage)
+    where_ $
+        exprWikiPageOnProject wp project_id &&.
+        we ^. WikiEditId `notIn` exprUserViewedWikiEdits user_id
     groupBy (wp ^. WikiPageId)
     let countRows' = countRows :: SqlExpr (Value Int)
     having (countRows' >. val 0)

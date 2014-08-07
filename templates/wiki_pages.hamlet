@@ -11,5 +11,9 @@ $else
                 <td>
                     <a href=@{WikiR project_handle (wikiPageTarget page)}>
                         #{wikiPageTarget page}
+
                     $maybe n <- M.lookup page_id unviewed_comments
-                        <span>#{show n}
+                        <span>Unviewed comments: #{show n}
+
+                    $maybe n <- M.lookup page_id unviewed_edits
+                        <span>Unviewed edits: #{show n}

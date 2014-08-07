@@ -494,18 +494,21 @@ getProjectFeedR project_handle = do
 getWikiPagesR :: Text -> Handler Html
 getWikiPagesR project_handle = do
     muser_id <- maybeAuthId
-    (project, pages, unviewed_comments) <- runYDB $ do
+    (project, pages, unviewed_comments, unviewed_edits) <- runYDB $ do
         Entity project_id project <- getBy404 $ UniqueProjectHandle project_handle
         pages <- getProjectWikiPages project_id
-        -- If the user is not logged in or not watching the project, this map is empty.
-        unviewed_comments <- case muser_id of
-            Nothing -> return mempty
+
+        -- If the user is not logged in or not watching the project, these maps are empty.
+        (unviewed_comments, unviewed_edits) <- case muser_id of
+            Nothing -> return (mempty, mempty)
             Just user_id -> do
                 is_watching <- userIsWatchingProjectDB user_id project_id
                 if is_watching
-                    then fetchNumUnviewedCommentsOnProjectWikiPagesDB user_id project_id
-                    else return mempty
-        return (project, pages, unviewed_comments)
+                    then (,)
+                        <$> fetchNumUnviewedCommentsOnProjectWikiPagesDB user_id project_id
+                        <*> fetchNumUnviewedWikiEditsOnProjectDB         user_id project_id
+                    else return (mempty, mempty)
+        return (project, pages, unviewed_comments, unviewed_edits)
     defaultLayout $ do
         setTitle . toHtml $ projectName project <> " Wiki | Snowdrift.coop"
         $(widgetFile "wiki_pages")
