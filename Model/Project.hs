@@ -69,7 +69,7 @@ insertProjectPledgeDB user_id project_id shares pledge_render_id = do
             if shares == 0
                 then do
                     lift (deleteKey pledge_id)
-                    tell [EDeletedPledge now user_id project_id shares]
+                    tell [EDeletedPledge now user_id project_id (pledgeShares old_pledge)]
                 else do
                     lift $
                         update $ \p -> do

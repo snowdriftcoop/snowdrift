@@ -51,15 +51,17 @@ renderNewPledgeEvent shares_pledged_id SharesPledged{..} users_map = do
 
 renderUpdatedPledgeEvent :: Int64 -> SharesPledgedId -> SharesPledged -> UserMap -> Widget
 renderUpdatedPledgeEvent old_shares shares_pledged_id SharesPledged{..} users_map = do
-    let pledger = users_map ! sharesPledgedUser
-        direction_text = if old_shares < sharesPledgedShares then "down " else "up " :: Text
+    let pledger      = users_map ! sharesPledgedUser
+        (verb, punc) = if old_shares < sharesPledgedShares
+                           then ("increased", "!")
+                           else ("decreased", ".") :: (Text, Text)
     [whamlet|
-        <div>#{userPrintName (Entity sharesPledgedUser pledger)} pledged #{show sharesPledgedShares} shares! (#{direction_text} from #{show old_shares})
+        <div>#{userPrintName (Entity sharesPledgedUser pledger)} #{verb} their pledge from #{show old_shares} to #{show sharesPledgedShares} shares#{punc}
     |]
 
 renderDeletedPledgeEvent :: UserId -> Int64 -> UserMap -> Widget
 renderDeletedPledgeEvent user_id shares users_map = do
     let pledger = users_map ! user_id
     [whamlet|
-        <div>#{userPrintName (Entity user_id pledger)} withdrew #{show shares}.
+        <div>#{userPrintName (Entity user_id pledger)} withdrew #{show shares} shares.
     |]
