@@ -389,11 +389,14 @@ messageEventHandler _ = return ()
 -- | Handler in charge of inserting events (stripped down) into a separate table for each type.
 eventInserterHandler :: SnowdriftEvent -> Daemon ()
 -- If an unapproved comment is sent as an ECommentPosted event, bad things will happen (fromJust).
-eventInserterHandler (ECommentPosted comment_id Comment{..})  = runDB (insert_ (EventCommentPosted comment_id (fromJust commentModeratedTs)))
-eventInserterHandler (ECommentPending comment_id Comment{..}) = runDB (insert_ (EventCommentPending comment_id commentCreatedTs))
-eventInserterHandler (EMessageSent message_id Message{..})    = runDB (insert_ (EventMessageSent message_id messageCreatedTs))
-eventInserterHandler (EWikiPage wiki_page_id WikiPage{..})    = runDB (insert_ (EventWikiPage wiki_page_id wikiPageCreatedTs))
-eventInserterHandler (EWikiEdit wiki_edit_id WikiEdit{..})    = runDB (insert_ (EventWikiEdit wiki_edit_id wikiEditTs))
+eventInserterHandler (ECommentPosted comment_id Comment{..})          = runDB (insert_ (EventCommentPosted (fromJust commentModeratedTs) comment_id))
+eventInserterHandler (ECommentPending comment_id Comment{..})         = runDB (insert_ (EventCommentPending commentCreatedTs comment_id))
+eventInserterHandler (EMessageSent message_id Message{..})            = runDB (insert_ (EventMessageSent messageCreatedTs message_id))
+eventInserterHandler (EWikiPage wiki_page_id WikiPage{..})            = runDB (insert_ (EventWikiPage wikiPageCreatedTs wiki_page_id))
+eventInserterHandler (EWikiEdit wiki_edit_id WikiEdit{..})            = runDB (insert_ (EventWikiEdit wikiEditTs wiki_edit_id))
+eventInserterHandler (ENewPledge pledge_id Pledge{..})                = runDB (insert_ (EventNewPledge pledgeCreatedTs pledge_id))
+eventInserterHandler (EUpdatedPledge old_shares pledge_id Pledge{..}) = runDB (insert_ (EventUpdatedPledge pledgeCreatedTs old_shares pledge_id))
+eventInserterHandler (EDeletedPledge ts user_id project_id shares)    = runDB (insert_ (EventDeletedPledge ts user_id project_id shares))
 
 renderRoute' :: Route App -> App -> Text
 renderRoute' route app =

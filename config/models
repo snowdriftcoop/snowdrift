@@ -123,7 +123,11 @@ ProjectLastUpdate
     update ProjectUpdateId
     UniqueProjectLastUpdate project
 
+-- Parts of Pledge are duplicated in EventDeletedPledge.
+-- If you modify Pledge, be sure to (possibly) modify
+-- EventDeletedPledge as well!
 Pledge
+    createdTs UTCTime default=now()
     user UserId
     project ProjectId
     shares Int64
@@ -350,25 +354,40 @@ SharesPledged
 
 -- An approved comment.
 EventCommentPosted
-    comment CommentId
     ts UTCTime
+    comment CommentId
 
 -- An unapproved comment.
 EventCommentPending
-    comment CommentId
     ts UTCTime
+    comment CommentId
 
 -- Message sent event.
 EventMessageSent
-    message MessageId
     ts UTCTime
+    message MessageId
 
 -- Wiki page created event.
 EventWikiPage
-    wikiPage WikiPageId
     ts UTCTime
+    wikiPage WikiPageId
 
 -- Wiki edit made event.
 EventWikiEdit
-    wikiEdit WikiEditId
     ts UTCTime
+    wikiEdit WikiEditId
+
+EventNewPledge
+    ts UTCTime
+    pledge PledgeId
+
+EventUpdatedPledge
+    ts UTCTime
+    oldShares Int64
+    pledge PledgeId
+
+EventDeletedPledge
+    ts UTCTime
+    user UserId
+    project ProjectId
+    shares Int64

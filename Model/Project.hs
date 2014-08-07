@@ -6,6 +6,10 @@ module Model.Project
     , fetchProjectCommentsPostedOnWikiPagesBeforeDB
     , fetchProjectWikiEditsBeforeDB
     , fetchProjectWikiPagesBeforeDB
+    , fetchProjectNewPledgesBeforeDB
+    , fetchProjectUpdatedPledgesBeforeDB
+    , fetchProjectDeletedPledgesBeforeDB
+    , insertProjectPledgeDB
     -- TODO(mitchell): rename all these... prefix fetch, suffix DB
     , getGithubIssues
     , getProjectPages
@@ -26,6 +30,7 @@ import           Model.Project.Sql
 import           Model.WikiPage.Sql
 
 import           Control.Monad.Trans.Resource (MonadThrow)
+import           Control.Monad.Writer.Strict  (tell)
 import           Control.Concurrent.Async     (Async, async, wait)
 import qualified Github.Data                  as GH
 import qualified Github.Issues                as GH
@@ -46,6 +51,31 @@ fetchProjectCommentIdsDB = fetchProjectCommentIdsPostedOnWikiPagesDB
 
 fetchAllProjectsDB :: DB [Entity Project]
 fetchAllProjectsDB = select (from return)
+
+insertProjectPledgeDB :: UserId
+                      -> ProjectId
+                      -> Int64
+                      -> PledgeFormRenderedId
+                      -> SDB ()
+insertProjectPledgeDB user_id project_id shares pledge_render_id = do
+    now <- liftIO getCurrentTime
+    lift $ insert_ (SharesPledged now user_id shares pledge_render_id)
+    let pledge = Pledge now user_id project_id shares shares
+    insertBy pledge  >>= \case
+        Left (Entity pledge_id _) -> do
+            if shares == 0
+                then do
+                    lift (deleteKey pledge_id)
+                    tell [EDeletedPledge now user_id project_id shares]
+                else do
+                    lift $
+                        update $ \p -> do
+                        set p [ PledgeShares       =. val shares
+                              , PledgeFundedShares =. val shares
+                              ]
+                        where_ (p ^. PledgeId ==. val pledge_id)
+                    tell [EUpdatedPledge shares pledge_id pledge]
+        Right pledge_id -> tell [ENewPledge pledge_id pledge]
 
 getGithubIssues :: Project -> Handler [GH.Issue]
 getGithubIssues project =
@@ -155,7 +185,7 @@ getProjectWikiPages project_id =
     orderBy [asc (wp ^. WikiPageTarget)]
     return wp
 
--- | Fetch all Comments posted on some Project's WikiPages before some time.
+-- | Fetch all Comments posted on this Project's WikiPages before this time.
 fetchProjectCommentsPostedOnWikiPagesBeforeDB :: ProjectId -> Maybe UserId -> UTCTime -> DB [Entity Comment]
 fetchProjectCommentsPostedOnWikiPagesBeforeDB project_id muser_id before =
     select $
@@ -168,11 +198,11 @@ fetchProjectCommentsPostedOnWikiPagesBeforeDB project_id muser_id before =
         exprPermissionFilter muser_id (val project_id) c
     return c
 
--- | Fetch all CommentIds on some Project's WikiPages.
+-- | Fetch all CommentIds on this Project's WikiPages.
 fetchProjectCommentIdsPostedOnWikiPagesDB :: ProjectId -> DB [CommentId]
 fetchProjectCommentIdsPostedOnWikiPagesDB = fmap (map unValue) . select . querProjectCommentIdsPostedOnWikiPagesDB
 
--- | Fetch all pending Comments made on a Project before some time.
+-- | Fetch all pending Comments made on a Project before this time.
 fetchProjectCommentsPendingBeforeDB :: ProjectId -> Maybe UserId -> UTCTime -> DB [Entity Comment]
 fetchProjectCommentsPendingBeforeDB project_id muser_id before =
     select $
@@ -183,7 +213,7 @@ fetchProjectCommentsPendingBeforeDB project_id muser_id before =
         exprPermissionFilter muser_id (val project_id) c
     return c
 
--- | Fetch all WikiPages made on some Project before some time.
+-- | Fetch all WikiPages made on this Project before this time.
 fetchProjectWikiPagesBeforeDB :: ProjectId -> UTCTime -> DB [Entity WikiPage]
 fetchProjectWikiPagesBeforeDB project_id before =
     select $
@@ -194,7 +224,7 @@ fetchProjectWikiPagesBeforeDB project_id before =
         exprWikiPageOnProject wp project_id
     return wp
 
--- | Fetch all WikiEdits made on some Project before some time.
+-- | Fetch all WikiEdits made on this Project before this time.
 fetchProjectWikiEditsBeforeDB :: ProjectId -> UTCTime -> DB [Entity WikiEdit]
 fetchProjectWikiEditsBeforeDB project_id before =
     select $
@@ -205,3 +235,35 @@ fetchProjectWikiEditsBeforeDB project_id before =
         ewe ^. EventWikiEditTs <=. val before &&.
         exprWikiPageOnProject wp project_id
     return we
+
+-- | Fetch all new Pledges made on this Project before this time.
+fetchProjectNewPledgesBeforeDB :: ProjectId -> UTCTime -> DB [Entity Pledge]
+fetchProjectNewPledgesBeforeDB project_id before =
+    select $
+    from $ \(enp `InnerJoin` p) -> do
+    on_ (enp ^. EventNewPledgePledge ==. p ^. PledgeId)
+    where_ $
+        enp ^. EventNewPledgeTs <=. val before &&.
+        p ^. PledgeProject ==. val project_id
+    return p
+
+-- | Fetch all updated Pledges made on this Project before this time, along with the old number of shares.
+fetchProjectUpdatedPledgesBeforeDB :: ProjectId -> UTCTime -> DB [(Int64, Entity Pledge)]
+fetchProjectUpdatedPledgesBeforeDB project_id before = fmap (map (\(Value n, p) -> (n, p))) $
+    select $
+    from $ \(eup `InnerJoin` p) -> do
+    on_ (eup ^. EventUpdatedPledgePledge ==. p ^. PledgeId)
+    where_ $
+        eup ^. EventUpdatedPledgeTs <=. val before &&.
+        p ^. PledgeProject ==. val project_id
+    return (eup ^. EventUpdatedPledgeOldShares, p)
+
+-- | Fetch all deleted pledge events made on this Project before this time.
+fetchProjectDeletedPledgesBeforeDB :: ProjectId -> UTCTime -> DB [EventDeletedPledge]
+fetchProjectDeletedPledgesBeforeDB project_id before = fmap (map entityVal) $
+    select $
+    from $ \edp -> do
+    where_ $
+        edp ^. EventDeletedPledgeTs      <=. val before &&.
+        edp ^. EventDeletedPledgeProject ==. val project_id
+    return edp

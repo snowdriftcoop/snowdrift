@@ -30,5 +30,14 @@ $forall event <- events
         $of EWikiEdit wiki_edit_id wiki_edit
             ^{renderWikiEditEvent wiki_edit_id wiki_edit (Entity (wikiEditPage wiki_edit) (fromJust $ M.lookup (wikiEditPage wiki_edit) wiki_pages_map))}
 
+        $of ENewPledge pledge_id pledge
+            ^{renderNewPledgeEvent pledge_id pledge users_map}
+
+        $of EUpdatedPledge old_shares pledge_id pledge
+            ^{renderUpdatedPledgeEvent old_shares pledge_id pledge users_map}
+
+        $of EDeletedPledge _ user_id _ shares
+            ^{renderDeletedPledgeEvent user_id shares users_map}
+
         $of EMessageSent _ _
             $# Don't display message events on project feeds.

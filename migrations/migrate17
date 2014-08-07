@@ -1,3 +1,11 @@
+ALTER TABLE "pledge" ADD COLUMN "created_ts" TIMESTAMP NOT NULL DEFAULT now();
 ALTER TABLE "wiki_page" ADD COLUMN "created_ts" TIMESTAMP NOT NULL DEFAULT now();
-CREATe TABLE "event_wiki_page"("id" SERIAL PRIMARY KEY UNIQUE,"wiki_page" INT8 NOT NULL,"ts" TIMESTAMP NOT NULL);
+CREATe TABLE "event_wiki_page"("id" SERIAL PRIMARY KEY UNIQUE,"ts" TIMESTAMP NOT NULL,"wiki_page" INT8 NOT NULL);
 ALTER TABLE "event_wiki_page" ADD CONSTRAINT "event_wiki_page_wiki_page_fkey" FOREIGN KEY("wiki_page") REFERENCES "wiki_page"("id");
+CREATe TABLE "event_new_pledge"("id" SERIAL PRIMARY KEY UNIQUE,"ts" TIMESTAMP NOT NULL,"pledge" INT8 NOT NULL);
+ALTER TABLE "event_new_pledge" ADD CONSTRAINT "event_new_pledge_pledge_fkey" FOREIGN KEY("pledge") REFERENCES "pledge"("id");
+CREATe TABLE "event_updated_pledge"("id" SERIAL PRIMARY KEY UNIQUE,"ts" TIMESTAMP NOT NULL,"old_shares" INT8 NOT NULL,"pledge" INT8 NOT NULL);
+ALTER TABLE "event_updated_pledge" ADD CONSTRAINT "event_updated_pledge_pledge_fkey" FOREIGN KEY("pledge") REFERENCES "pledge"("id");
+CREATe TABLE "event_deleted_pledge"("id" SERIAL PRIMARY KEY UNIQUE,"ts" TIMESTAMP NOT NULL,"user" INT8 NOT NULL,"project" INT8 NOT NULL,"shares" INT8 NOT NULL);
+ALTER TABLE "event_deleted_pledge" ADD CONSTRAINT "event_deleted_pledge_user_fkey" FOREIGN KEY("user") REFERENCES "user"("id");
+ALTER TABLE "event_deleted_pledge" ADD CONSTRAINT "event_deleted_pledge_project_fkey" FOREIGN KEY("project") REFERENCES "project"("id");

@@ -4,10 +4,24 @@ module Model.SnowdriftEvent.Internal
 
 import Model
 
+import Data.Int (Int64)
+import Data.Time (UTCTime)
+
 -- A sum type of all events, each of which have their own database table.
 data SnowdriftEvent
-    = ECommentPosted  CommentId Comment   -- Comment approved.
-    | ECommentPending CommentId Comment   -- Comment unapproved (pending approval).
-    | EMessageSent    MessageId Message
-    | EWikiEdit       WikiEditId WikiEdit -- New WikiEdit made.
-    | EWikiPage       WikiPageId WikiPage -- New WikiPage posted.
+    -- Comment approved.
+    = ECommentPosted  CommentId Comment
+    -- Comment unapproved (pending approval).
+    | ECommentPending CommentId Comment
+    | EMessageSent MessageId Message
+    -- New WikiEdit made.
+    | EWikiEdit WikiEditId WikiEdit
+    -- New WikiPage posted.
+    | EWikiPage WikiPageId WikiPage
+    -- New pledge.
+    | ENewPledge PledgeId Pledge
+    -- Pledge that has changed in value.
+    | EUpdatedPledge Int64 {- old shares -}
+                     PledgeId Pledge {- new pledge info -}
+    -- Deleted pledge.
+    | EDeletedPledge UTCTime UserId ProjectId Int64

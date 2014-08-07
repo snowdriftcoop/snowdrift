@@ -36,56 +36,33 @@ getUpdateSharesR project_handle = do
 
 postUpdateSharesR :: Text -> Handler Html
 postUpdateSharesR project_handle = do
-    user_id <- requireAuthId
     ((result, _), _) <- runFormPost $ confirmForm 1
-    now <- liftIO getCurrentTime
 
     case result of
         FormSuccess (SharesPurchaseOrder shares) -> do
             -- TODO - refuse negative
             Just pledge_render_id <- fmap (read . T.unpack) <$> lookupSession pledgeRenderKey
 
-            success <- runYDB $ do
-                Just user <- get user_id
-                Just account <- get $ userAccount user
-                Entity project_id _ <- getBy404 $ UniqueProjectHandle project_handle
-                _ <- insert $ SharesPledged now user_id shares pledge_render_id
+            success <- runSYDB $ do
+                Entity user_id user <- lift (lift requireAuth)
+                Just account <- lift $ get (userAccount user)
+                Entity project_id project <- lift $ getBy404 (UniqueProjectHandle project_handle)
 
-                either_unique <- insertBy $ Pledge user_id project_id shares shares
-
-                case either_unique of
-                    Right _ -> return ()
-                    Left (Entity pledge_id _) ->
-                        if shares == 0
-                         then delete $ from $ \ pledge -> where_ (pledge ^. PledgeId ==. val pledge_id)
-                         else update $ \ pledge -> do
-                            set pledge [ PledgeShares =. val shares
-                                       , PledgeFundedShares =. val shares
-                                       ]
-                            where_ (pledge ^. PledgeId ==. val pledge_id)
-
-                updateShareValue project_id
-
-                user_pledges <- rawSql
-                    "SELECT ??, ?? FROM pledge JOIN project ON pledge.project = project.id WHERE pledge.\"user\" = ?;" [ unKey user_id ]
-
-                let user_outlay = sum $ map (\ (Entity _ pledge, Entity _ project) ->
-                                    projectShareValue project $* fromIntegral (pledgeShares pledge)) user_pledges :: Milray
-
+                let user_outlay = projectShareValue project $* fromIntegral shares :: Milray
                 if accountBalance account < user_outlay $* 3
-                 then do
-                    transactionUndo
-                    return False
-                 else return True
+                    then return False
+                    else do
+                        insertProjectPledgeDB user_id project_id shares pledge_render_id
+                        lift (updateShareValue project_id)
+                        return True
 
             if success
-             then addAlert "success" "you are now pledged to support this project"
-             else addAlert "warning"
-                "Sorry, you must have funds to support your pledge for at least 3 months at current share value. Please deposit additional funds to your account."
+               then addAlert "success" "you are now pledged to support this project"
+               else addAlert "warning"
+                             "Sorry, you must have funds to support your pledge for at least 3 months at current share value. Please deposit additional funds to your account."
 
-            redirect $ ProjectR project_handle
+            redirect (ProjectR project_handle)
 
         _ -> do
             addAlert "danger" "error occurred in form submission"
             redirect $ UpdateSharesR project_handle
-

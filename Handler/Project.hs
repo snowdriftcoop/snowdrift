@@ -436,30 +436,54 @@ getProjectFeedR project_handle = do
     before <- maybe (liftIO getCurrentTime) (return . read . T.unpack) =<< lookupGetParam "before"
     (events, discussion_wiki_pages_map, wiki_pages_map, _) <- runYDB $ do
         Entity project_id _ <- getBy404 (UniqueProjectHandle project_handle)
+
         comment_posted_entities  <- fetchProjectCommentsPostedOnWikiPagesBeforeDB project_id muser_id before
         comment_pending_entities <- fetchProjectCommentsPendingBeforeDB project_id muser_id before
         wiki_page_entities       <- fetchProjectWikiPagesBeforeDB project_id before
         wiki_edit_entities       <- fetchProjectWikiEditsBeforeDB project_id before
+        new_pledge_entities      <- fetchProjectNewPledgesBeforeDB project_id before
+        updated_pledges          <- fetchProjectUpdatedPledgesBeforeDB project_id before
+        deleted_pledge_events    <- fetchProjectDeletedPledgesBeforeDB project_id before
 
-        -- Suplementary maps for displaying the data.
+        -- Suplementary maps for displaying the data. If something above requires extra
+        -- data to display the project feed row, it MUST be used to fetch the data below!
+        -- The Maybes from Data.Map.lookup are unsafely STRIPPED in the views!
 
         let comments   = map entityVal (comment_posted_entities <> comment_pending_entities)
             wiki_edits = map entityVal wiki_edit_entities
+            pledges    = map entityVal (new_pledge_entities <> (map snd updated_pledges))
 
+        -- WikiPages that can be keyed by a Comment's DiscussionId (i.e. the Comment *is* on a WikiPage)
         discussion_wiki_pages_map <- M.fromList . map (\e@(Entity _ WikiPage{..}) -> (wikiPageDiscussion, e)) <$>
                                        fetchDiscussionWikiPagesInDB (map commentDiscussion comments)
 
+        -- WikiPages keyed by their own IDs (contained in a WikiEdit)
         wiki_pages_map <- entitiesMap <$> fetchWikiPagesInDB (map wikiEditPage wiki_edits)
 
-        users_map <- (<>)
+        -- All users: Comment posters, WikiPage creators, WikiEdit makers,
+        -- and Pledgers (new, updated, and deleted).
+        users_map <- (\a b c d -> a <> b <> c <> d)
             <$> (entitiesMap <$> fetchUsersInDB (map commentUser comments))
             <*> (entitiesMap <$> fetchUsersInDB (map wikiEditUser wiki_edits))
+            <*> (entitiesMap <$> fetchUsersInDB (map pledgeUser pledges))
+            <*> (entitiesMap <$> fetchUsersInDB (map (\(EventDeletedPledge _ user_id _ _) -> user_id) deleted_pledge_events))
 
         let events = sortBy snowdriftEventNewestToOldest . mconcat $
               [ map (onEntity ECommentPosted)  comment_posted_entities
               , map (onEntity ECommentPending) comment_pending_entities
               , map (onEntity EWikiPage)       wiki_page_entities
               , map (onEntity EWikiEdit)       wiki_edit_entities
+              , map (onEntity ENewPledge)      new_pledge_entities
+              , map eup2se                     updated_pledges
+              , map edp2se                     deleted_pledge_events
               ]
         return (events, discussion_wiki_pages_map, wiki_pages_map, users_map)
     defaultLayout $(widgetFile "project_feed")
+  where
+    -- "event updated pledge to snowdrift event". Makes above code cleaner.
+    eup2se :: (Int64, Entity Pledge) -> SnowdriftEvent
+    eup2se (old_shares, Entity pledge_id pledge) = EUpdatedPledge old_shares pledge_id pledge
+
+    -- "event deleted pledge to snowdrift event". Makes above code cleaner.
+    edp2se :: EventDeletedPledge -> SnowdriftEvent
+    edp2se (EventDeletedPledge a b c d) = EDeletedPledge a b c d
