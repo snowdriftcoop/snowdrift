@@ -73,7 +73,7 @@ postUserR user_id = do
                     redirect (UserR user_id)
 
         _ -> do
-            addAlert "danger" "Failed to update user."
+            alertDanger "Failed to update user."
             redirect (UserR user_id)
 
 getUsersR :: Handler Html
@@ -129,8 +129,8 @@ postUserCreateR = do
                 setCreds True $ Creds "HashDB" ident []
                 redirectUltDest HomeR
 
-        FormMissing -> addAlert "danger" "missing field"
-        FormFailure strings -> addAlert "danger" (mconcat strings)
+        FormMissing -> alertDanger "missing field"
+        FormFailure strings -> alertDanger (mconcat strings)
 
     defaultLayout $ [whamlet|
         <form method=POST>

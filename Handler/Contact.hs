@@ -29,9 +29,9 @@ postContactR project_handle = do
                 Entity project_id _ <- lift $ getBy404 $ UniqueProjectHandle project_handle
                 insertMessage_ MessageDirect (Just project_id) maybe_user_id Nothing content False
 
-            addAlert "success" "Comment submitted.  Thank you for your input!"
+            alertSuccess "Comment submitted.  Thank you for your input!"
 
-        _ -> addAlert "danger" "Error occurred when submitting form."
+        _ -> alertDanger "Error occurred when submitting form."
 
     redirect $ ContactR project_handle
 

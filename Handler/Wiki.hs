@@ -120,7 +120,7 @@ postWikiR project_handle target = do
                         either_last_edit <- lift $ insertBy $ WikiLastEdit page_id edit_id
 
                         if last_edit_id == wikiLastEditEdit last_edit
-                         then lift $ lift $ addAlert "success" "Updated."
+                         then lift (lift (alertSuccess "Updated."))
                          else do
                             [ Value last_editor ] <- lift $
                                 select $
@@ -153,7 +153,7 @@ postWikiR project_handle target = do
                             insertMessage_ MessageDirect (Just project_id) (Just last_editor) (Just user_id)     message_text True
                             insertMessage_ MessageDirect (Just project_id) (Just user_id)     (Just last_editor) message_text True
 
-                            lift $ lift $ addAlert "danger" "conflicting edits (ticket created, messages sent)"
+                            lift (lift (alertDanger "conflicting edits (ticket created, messages sent)"))
 
                         case either_last_edit of
                             Left (Entity to_update _) -> lift $
@@ -413,7 +413,7 @@ postNewWikiR project_handle target = do
                 Just x | x == action -> do
                     runSDB (createWikiPageDB target project_id content Normal user_id)
 
-                    addAlert "success" "Created."
+                    alertSuccess "Created."
                     redirect $ WikiR project_handle target
 
                 _ -> error "unrecognized mode"
@@ -461,7 +461,7 @@ postEditWikiPermissionsR project_handle target = do
                 where_ $ p ^. WikiPageId ==. val page_id
                 set p [ WikiPagePermissionLevel =. val level ]
 
-            addAlert "success" "permissions updated"
+            alertSuccess "permissions updated"
 
             redirect $ WikiR project_handle target
 

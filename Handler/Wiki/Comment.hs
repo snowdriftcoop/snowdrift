@@ -180,7 +180,7 @@ processWikiCommentPost maybe_parent_id text (Entity _ project) page = do
 
         return maybe_parent_id'
 
-    addAlert "success" $ if is_established then "comment posted" else "comment submitted for moderation"
+    alertSuccess $ if is_established then "comment posted" else "comment submitted for moderation"
     redirect $ maybe (DiscussWikiR (projectHandle project) (wikiPageTarget page)) (DiscussCommentR (projectHandle project) (wikiPageTarget page)) maybe_parent_id'
 
 -- Get the depth of a comment, given (maybe) its parent's CommentId.
@@ -286,7 +286,7 @@ deleteDeleteCommentR project_handle target comment_id = do
             else return False
 
     if ok
-        then addAlert "success" "comment deleted" >> redirect (DiscussWikiR project_handle target)
+        then alertSuccess "comment deleted" >> redirect (DiscussWikiR project_handle target)
         else permissionDenied "You can't delete that comment."
 
 --------------------------------------------------------------------------------
@@ -348,7 +348,7 @@ postEditCommentR project_handle target comment_id = do
 
         runSYDB (editCommentDB comment_id new_text)
 
-        addAlert "success" "posted new edit"
+        alertSuccess "posted new edit"
         redirect (DiscussCommentR project_handle target comment_id)
 
 --------------------------------------------------------------------------------
@@ -404,8 +404,8 @@ postFlagCommentR project_handle target comment_id = do
                                    reasons
                                    message
             if success
-                then addAlert "success" "comment hidden and flagged for revision"
-                else addAlert "danger" "error: another user flagged this just before you"
+                then alertSuccess "comment hidden and flagged for revision"
+                else alertDanger "error: another user flagged this just before you"
             redirect $ DiscussWikiR project_handle target
 
     previewFlag :: [FlagReason] -> Maybe Markdown -> Handler Html
@@ -449,7 +449,7 @@ postFlagCommentR project_handle target comment_id = do
 
 flagFailure :: Text -> Handler a
 flagFailure msg = do
-    addAlert "danger" msg
+    alertDanger msg
     Just route <- getCurrentRoute
     redirect route
 
@@ -479,7 +479,7 @@ postApproveWikiCommentR project_handle target comment_id = do
     user_id <- sanityCheckApprove project_handle
 
     runSDB (approveCommentDB user_id comment_id comment)
-    addAlert "success" "comment approved"
+    alertSuccess "comment approved"
     redirect (DiscussCommentR project_handle target comment_id)
 
 sanityCheckApprove :: Text -> Handler UserId
@@ -805,7 +805,7 @@ postNewCommentTagR create_tag project_handle target comment_id = do
                                 return ()
                         return maybe_tag
                     if (isJust $ msuccess) then do
-                        addAlert "danger" "that tag already exists"
+                        alertDanger "that tag already exists"
                         redirectUltDest $ NewCommentTagR project_handle target comment_id
                         else do
                             redirectUltDest $ DiscussCommentR project_handle target comment_id

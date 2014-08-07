@@ -43,10 +43,10 @@ postVolunteerR project_handle = do
                 application_id <- insert application
                 forM_ interest_ids $ \ interest_id -> insert $ VolunteerInterest application_id interest_id
 
-            addAlert "success" "application submitted"
-            redirect $ VolunteerR project_handle
+            alertSuccess "application submitted"
+            redirect (VolunteerR project_handle)
 
         _ -> do
-            addAlert "danger" "error submitting application"
-            redirect $ VolunteerR project_handle
+            alertDanger "error submitting application"
+            redirect (VolunteerR project_handle)
 

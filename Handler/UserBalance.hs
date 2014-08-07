@@ -90,17 +90,16 @@ postUserBalanceR user_id = do
     case result of
         FormSuccess amount -> do
             if amount < 10
-             then
-                addAlert "danger" "Sorry, minimum deposit is $10"
-             else do
-                runDB $ do
-                    _ <- insert $ Transaction now (Just $ userAccount user) Nothing Nothing amount "Test Load" Nothing
-                    update $ \ account -> do
-                        set account [ AccountBalance +=. val amount ]
-                        where_ ( account ^. AccountId ==. val (userAccount user) )
+                then alertDanger "Sorry, minimum deposit is $10"
+                else do
+                    runDB $ do
+                        _ <- insert $ Transaction now (Just $ userAccount user) Nothing Nothing amount "Test Load" Nothing
+                        update $ \ account -> do
+                            set account [ AccountBalance +=. val amount ]
+                            where_ ( account ^. AccountId ==. val (userAccount user) )
 
-                addAlert "success" "Balance updated."
-            redirect $ UserBalanceR user_id
+                    alertSuccess "Balance updated."
+            redirect (UserBalanceR user_id)
 
         _ -> error "Error processing form."
 

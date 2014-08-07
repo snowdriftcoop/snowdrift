@@ -206,14 +206,14 @@ postProjectR project_handle = do
 
                         forM_ tag_ids $ \ tag_id -> insert $ ProjectTag project_id tag_id
 
-                    addAlert "success" "project updated"
+                    alertSuccess "project updated"
                     redirect $ ProjectR project_handle
 
                 _ -> do
                     addAlertEm "danger" "unrecognized mode" "Error: "
                     redirect $ ProjectR project_handle
         x -> do
-            addAlert "danger" $ T.pack $ show x
+            alertDanger $ T.pack $ show x
             redirect $ ProjectR project_handle
 
 
@@ -380,7 +380,7 @@ postProjectBlogR project_handle = do
 
                 Just x | x == action -> do
                     void $ runDB $ insert blog_post
-                    addAlert "success" "posted"
+                    alertSuccess "posted"
                     redirect $ ProjectR project_handle
 
                 _ -> do
@@ -388,7 +388,7 @@ postProjectBlogR project_handle = do
                     redirect $ ProjectR project_handle
 
         x -> do
-            addAlert "danger" $ T.pack $ show x
+            alertDanger $ T.pack $ show x
             redirect $ ProjectR project_handle
 
 
@@ -422,7 +422,7 @@ watchOrUnwatchProject action msg project_id = do
     project <- runYDB $ do
         action user_id project_id
         get404 project_id
-    addAlert "success" (msg <> projectName project)
+    alertSuccess (msg <> projectName project)
     redirect HomeR
 
 --------------------------------------------------------------------------------

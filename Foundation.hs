@@ -416,6 +416,7 @@ addAlertEm level msg em = do
             #{msg}
     |] render
 
+-- TODO(mitchell): don't export this
 addAlert :: Text -> Text -> Handler ()
 addAlert level msg = do
     render <- getUrlRenderParams
@@ -426,6 +427,12 @@ addAlert level msg = do
         <div class="alert alert-#{level}">
             #{msg}
     |] render
+
+alertDanger, alertInfo, alertSuccess, alertWarning :: Text -> Handler ()
+alertDanger  = addAlert "danger"
+alertInfo    = addAlert "info"
+alertSuccess = addAlert "success"
+alertWarning = addAlert "warning"
 
 getAlert :: Handler (Maybe Html)
 getAlert = do

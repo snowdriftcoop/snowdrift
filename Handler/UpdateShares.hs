@@ -57,12 +57,11 @@ postUpdateSharesR project_handle = do
                         return True
 
             if success
-               then addAlert "success" "you are now pledged to support this project"
-               else addAlert "warning"
-                             "Sorry, you must have funds to support your pledge for at least 3 months at current share value. Please deposit additional funds to your account."
+               then alertSuccess "you are now pledged to support this project"
+               else alertWarning "Sorry, you must have funds to support your pledge for at least 3 months at current share value. Please deposit additional funds to your account."
 
             redirect (ProjectR project_handle)
 
         _ -> do
-            addAlert "danger" "error occurred in form submission"
-            redirect $ UpdateSharesR project_handle
+            alertDanger "error occurred in form submission"
+            redirect (UpdateSharesR project_handle)
