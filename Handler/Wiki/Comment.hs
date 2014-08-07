@@ -214,7 +214,7 @@ getDiscussCommentR project_handle target comment_id = do
         Just user_id -> runYDB $ do
             -- this Just is ok, because makeCommentWidget will fail if the project_handle is invalid
             Just (Entity project_id _) <- getBy (UniqueProjectHandle project_handle)
-            ok <- userWatchingProjectDB user_id project_id
+            ok <- userIsWatchingProjectDB user_id project_id
             when ok $
                 userViewCommentsDB user_id (map entityKey (Tree.flatten comment_tree))
     defaultLayout $(widgetFile "comment_wrapper")

@@ -17,6 +17,7 @@ module Model.User
     , establishUserDB
     , fetchAllUserRolesDB
     , fetchCurUserRolesDB
+    , fetchNumUnviewedCommentsOnProjectWikiPagesDB
     , fetchUserMessagePrefDB
     , fetchUserProjectsAndRolesDB
     , fetchUserRolesDB
@@ -28,7 +29,7 @@ module Model.User
     , userIsProjectTeamMemberDB'
     , userUnwatchProjectDB
     , userViewCommentsDB
-    , userWatchingProjectDB
+    , userIsWatchingProjectDB
     , userWatchProjectDB
     -- Unsorted
     , canCurUserMakeEligible
@@ -47,6 +48,7 @@ import Model.Comment
 import Model.Comment.Sql
 import Model.Message
 import Model.Project.Sql
+import Model.User.Sql
 
 import qualified Data.Map       as M
 import qualified Data.Set       as S
@@ -317,8 +319,8 @@ userUnwatchProjectDB user_id project_id = delete_watching >> delete_views
         from $ \vc ->
         where_ (vc ^. ViewCommentComment `in_` (subList_select (querProjectCommentIdsPostedOnWikiPagesDB project_id)))
 
-userWatchingProjectDB :: UserId -> ProjectId -> DB Bool
-userWatchingProjectDB user_id project_id = maybe (False) (const True) <$> getBy (UniqueUserWatchingProject user_id project_id)
+userIsWatchingProjectDB :: UserId -> ProjectId -> DB Bool
+userIsWatchingProjectDB user_id project_id = maybe (False) (const True) <$> getBy (UniqueUserWatchingProject user_id project_id)
 
 userViewCommentsDB :: UserId -> [CommentId] -> DB ()
 userViewCommentsDB user_id unfiltered_comment_ids = filteredCommentIds >>= userViewCommentsDB'
@@ -343,3 +345,17 @@ userCanDeleteCommentDB user_id (Entity comment_id comment) = do
           if null descendants_ids
               then return True
               else return False
+
+-- | Fetch a User's number of unviewed comments on each WikiPage of a Project.
+fetchNumUnviewedCommentsOnProjectWikiPagesDB :: UserId -> ProjectId -> DB (Map WikiPageId Int)
+fetchNumUnviewedCommentsOnProjectWikiPagesDB user_id project_id = fmap (M.fromList . map unwrapValues) $
+    select $
+    from $ \(c `InnerJoin` wp) -> do
+    on_ (c ^. CommentDiscussion ==. wp ^. WikiPageDiscussion)
+    where_ $
+        wp ^. WikiPageProject ==. val project_id &&.
+        c ^. CommentId `notIn` exprUserViewedComments user_id
+    groupBy (wp ^. WikiPageId)
+    let countRows' = countRows :: SqlExpr (Value Int)
+    having (countRows' >. val 0)
+    return (wp ^. WikiPageId, countRows')

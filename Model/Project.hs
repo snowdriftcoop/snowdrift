@@ -63,7 +63,7 @@ insertProjectPledgeDB user_id project_id shares pledge_render_id = do
     shares_pledged_id <- lift (insert shares_pledged)
     getBy (UniquePledge user_id project_id) >>= \case
         Nothing -> do
-            pledge_id <- lift $ insert_ (Pledge now user_id project_id shares shares)
+            lift $ insert_ (Pledge now user_id project_id shares shares)
             tell [ENewPledge shares_pledged_id shares_pledged]
         Just (Entity pledge_id old_pledge) -> do
             if shares == 0

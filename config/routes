@@ -45,6 +45,7 @@
 /p/#Text/t                                   TicketsR             GET
 /p/#Text/transactions                        ProjectTransactionsR GET
 /p/#Text/volunteer                           VolunteerR           GET POST
+/p/#Text/w                                   WikiPagesR           GET
 /p/#Text/who                                 WhoR                 GET
 /p/#Text/widget                              WidgetR              GET
 
@@ -53,7 +54,6 @@
 
 -- Project wiki
 
-/p/#Text/w                                    WikiPagesR           GET
 /p/#Text/w/#Text                              WikiR                GET POST
 /p/#Text/w/#Text/d                            DiscussWikiR         GET
 /p/#Text/w/#Text/d/new                        NewDiscussWikiR      GET POST

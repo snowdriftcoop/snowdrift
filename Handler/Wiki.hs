@@ -10,7 +10,6 @@ import           Model.Comment
 import           Model.Markdown
 import           Model.Message
 import           Model.Permission
-import           Model.Project
 import           Model.Tag            (getAllTagsMap)
 import           Model.User
 import           Model.WikiPage
@@ -35,25 +34,6 @@ getPageInfo project_handle target = do
     project <- getBy404 $ UniqueProjectHandle project_handle
     page    <- getBy404 $ UniqueWikiTarget (entityKey project) target
     return (project, page)
-
---------------------------------------------------------------------------------
--- /
-
-getWikiPagesR :: Text -> Handler Html
-getWikiPagesR project_handle = do
-    (project, pages) <- runYDB $ do
-        Entity project_id project <- getBy404 $ UniqueProjectHandle project_handle
-        pages <- getProjectWikiPages project_id
-        return (project, pages)
-    defaultLayout $ do
-        setTitle . toHtml $ projectName project <> " Wiki | Snowdrift.coop"
-        $(widgetFile "wiki_pages")
-
--- | Redirect 'here' with added GET parameters.
-redirectHereWithParams :: [(Text, Text)] -> Handler a
-redirectHereWithParams new_params = do
-    Just route <- getCurrentRoute
-    getRequest >>= redirectParams route . (new_params ++) . reqGetParams
 
 --------------------------------------------------------------------------------
 -- /#target

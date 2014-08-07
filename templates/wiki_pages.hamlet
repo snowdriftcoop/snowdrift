@@ -6,8 +6,10 @@ $else
             <th>
                 page URL
 
-        $forall Entity _ page <- pages
+        $forall Entity page_id page <- pages
             <tr>
                 <td>
                     <a href=@{WikiR project_handle (wikiPageTarget page)}>
                         #{wikiPageTarget page}
+                    $maybe n <- M.lookup page_id unviewed_comments
+                        <span>#{show n}

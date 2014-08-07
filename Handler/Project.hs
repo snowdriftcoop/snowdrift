@@ -487,3 +487,25 @@ getProjectFeedR project_handle = do
     -- "event deleted pledge to snowdrift event". Makes above code cleaner.
     edp2se :: EventDeletedPledge -> SnowdriftEvent
     edp2se (EventDeletedPledge a b c d) = EDeletedPledge a b c d
+
+--------------------------------------------------------------------------------
+-- /w
+
+getWikiPagesR :: Text -> Handler Html
+getWikiPagesR project_handle = do
+    muser_id <- maybeAuthId
+    (project, pages, unviewed_comments) <- runYDB $ do
+        Entity project_id project <- getBy404 $ UniqueProjectHandle project_handle
+        pages <- getProjectWikiPages project_id
+        -- If the user is not logged in or not watching the project, this map is empty.
+        unviewed_comments <- case muser_id of
+            Nothing -> return mempty
+            Just user_id -> do
+                is_watching <- userIsWatchingProjectDB user_id project_id
+                if is_watching
+                    then fetchNumUnviewedCommentsOnProjectWikiPagesDB user_id project_id
+                    else return mempty
+        return (project, pages, unviewed_comments)
+    defaultLayout $ do
+        setTitle . toHtml $ projectName project <> " Wiki | Snowdrift.coop"
+        $(widgetFile "wiki_pages")
