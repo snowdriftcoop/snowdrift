@@ -1,6 +1,7 @@
 module Model.User.Sql
   ( exprIsModerator
   , exprUserViewedComments
+  , exprUserViewedWikiEdits
   ) where
 
 import Import
@@ -26,3 +27,11 @@ exprUserViewedComments user_id =
     on_ (c ^. CommentId ==. vc ^. ViewCommentComment)
     where_ (vc ^. ViewCommentUser ==. val user_id)
     return (c ^. CommentId)
+
+-- | Expression to get all the WikiEdits a User has viewed.
+exprUserViewedWikiEdits :: UserId -> SqlExpr (ValueList WikiEditId)
+exprUserViewedWikiEdits user_id =
+    subList_select $
+    from $ \vwe -> do
+    where_ (vwe ^. ViewWikiEditUser ==. val user_id)
+    return (vwe ^. ViewWikiEditEdit)

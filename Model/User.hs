@@ -29,6 +29,7 @@ module Model.User
     , userIsProjectTeamMemberDB'
     , userUnwatchProjectDB
     , userViewCommentsDB
+    , userViewWikiEditsDB
     , userIsWatchingProjectDB
     , userWatchProjectDB
     -- Unsorted
@@ -311,17 +312,29 @@ userWatchProjectDB :: UserId -> ProjectId -> DB ()
 userWatchProjectDB user_id project_id = void (insertUnique (UserWatchingProject user_id project_id))
 
 userUnwatchProjectDB :: UserId -> ProjectId -> DB ()
-userUnwatchProjectDB user_id project_id = delete_watching >> delete_views
+userUnwatchProjectDB user_id project_id = do
+    delete_watching
+    delete_comment_views
+    delete_wiki_edit_views
   where
     delete_watching = deleteBy (UniqueUserWatchingProject user_id project_id)
-    delete_views =
+
+    delete_comment_views = delete_wiki_page_comment_views
+
+    delete_wiki_page_comment_views =
         delete $
         from $ \vc ->
         where_ (vc ^. ViewCommentComment `in_` (subList_select (querProjectCommentIdsPostedOnWikiPagesDB project_id)))
 
+    delete_wiki_edit_views =
+        delete $
+        from $ \vwe ->
+        where_ (vwe ^. ViewWikiEditEdit `in_` (subList_select (querProjectWikiEdits project_id)))
+
 userIsWatchingProjectDB :: UserId -> ProjectId -> DB Bool
 userIsWatchingProjectDB user_id project_id = maybe (False) (const True) <$> getBy (UniqueUserWatchingProject user_id project_id)
 
+-- | Mark all given Comments as viewed by the given User.
 userViewCommentsDB :: UserId -> [CommentId] -> DB ()
 userViewCommentsDB user_id unfiltered_comment_ids = filteredCommentIds >>= userViewCommentsDB'
   where
@@ -335,6 +348,22 @@ userViewCommentsDB user_id unfiltered_comment_ids = filteredCommentIds >>= userV
 
     userViewCommentsDB' :: [CommentId] -> DB ()
     userViewCommentsDB' comment_ids = void (insertMany (map (ViewComment user_id) comment_ids))
+
+-- | Mark all WikiEdits made on the given WikiPage as viewed by the given User.
+userViewWikiEditsDB :: UserId -> WikiPageId -> DB ()
+userViewWikiEditsDB user_id wiki_page_id = unviewedWikiEdits >>= viewWikiEdits
+  where
+    unviewedWikiEdits :: DB [WikiEditId]
+    unviewedWikiEdits = fmap (map unValue) $
+        select $
+        from $ \we -> do
+        where_ $
+            we ^. WikiEditPage ==. val wiki_page_id &&.
+            we ^. WikiEditId `notIn` exprUserViewedWikiEdits user_id
+        return (we ^. WikiEditId)
+
+    viewWikiEdits :: [WikiEditId] -> DB ()
+    viewWikiEdits = mapM_ (insert_ . ViewWikiEdit user_id)
 
 userCanDeleteCommentDB :: UserId -> Entity Comment -> DB Bool
 userCanDeleteCommentDB user_id (Entity comment_id comment) = do

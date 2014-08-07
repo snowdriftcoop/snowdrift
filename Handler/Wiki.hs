@@ -41,19 +41,26 @@ getPageInfo project_handle target = do
 getWikiR :: Text -> Text -> Handler Html
 getWikiR project_handle target = do
     maybe_user <- maybeAuth
-    (Entity project_id project, Entity _ page) <- runYDB $ getPageInfo project_handle target
+    (project, page, comment_count) <- runYDB $ do
+        (Entity project_id project, Entity page_id page) <- getPageInfo project_handle target
 
-    comment_count <- runDB $ do
         let muser_id      = entityKey <$> maybe_user
             discussion_id = wikiPageDiscussion page
+
+        case muser_id of
+            Nothing -> return ()
+            Just user_id -> do
+                is_watching <- userIsWatchingProjectDB user_id project_id
+                when is_watching $
+                    userViewWikiEditsDB user_id page_id
+
         roots_ids <- map entityKey <$> fetchAllOpenRootCommentsDB muser_id project_id discussion_id
         children <- fetchCommentsDescendantsDB muser_id project_id roots_ids
-        return $ length roots_ids + length children
+        return (project, page, length roots_ids + length children)
 
     let can_edit = fromMaybe False (userCanEditWikiPage . entityVal <$> maybe_user)
 
     defaultLayout $ do
-
         setTitle . toHtml $
             projectName project <> " : " <> wikiPageTarget page <> " | Snowdrift.coop"
 
