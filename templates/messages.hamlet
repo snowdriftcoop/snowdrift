@@ -3,9 +3,9 @@ $if not (null messages)
         <div .row>
             <div .col-sm-3 .well .well-sm>
 
-                $maybe user <- messageFromUser message
+                $maybe from_user <- messageFromUser message
                     <em>from
-                    #{getUserName user}
+                    #{userDisplayName (Entity from_user (fromJust (M.lookup from_user user_map)))}
                     $maybe project <- messageFromProject message
                         <em>on behalf of
                         ^{projectNameWidget project}
@@ -23,7 +23,7 @@ $if not (null messages)
                     ^{projectNameWidget project}
                 $nothing
                     <em>to
-                    #{getUserName (messageToUser message)}
+                    #{userDisplayName (Entity (messageToUser message) ((fromJust (M.lookup (messageToUser message) user_map))))}
 
                 <br>
 

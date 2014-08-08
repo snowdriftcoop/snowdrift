@@ -34,7 +34,7 @@ $else
                                     $case M.lookup other_account_id account_map
                                         $of Just (Right user)
                                             <a href=@{UserR $ entityKey user}>
-                                                #{userPrintName user}
+                                                #{userDisplayName user}
 
                                         $of Just (Left project)
                                             <a href=@{ProjectR $ projectHandle $ entityVal project}>

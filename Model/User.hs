@@ -11,7 +11,7 @@ module Model.User
     , userIsEligibleEstablish
     , userIsEstablished
     , userIsUnestablished
-    , userPrintName
+    , userDisplayName
     -- Database actions
     , eligEstablishUserDB
     , establishUserDB
@@ -30,10 +30,11 @@ module Model.User
     , userIsProjectAdminDB'
     , userIsProjectModeratorDB'
     , userIsProjectTeamMemberDB'
+    , userIsWatchingProjectDB
+    , userReadMessagesDB
     , userUnwatchProjectDB
     , userViewCommentsDB
     , userViewWikiEditsDB
-    , userIsWatchingProjectDB
     , userWatchProjectDB
     -- Unsorted
     , canCurUserMakeEligible
@@ -111,8 +112,8 @@ curUserIsEligibleEstablish :: Handler Bool
 curUserIsEligibleEstablish = maybe False (userIsEligibleEstablish . entityVal) <$> maybeAuth
 
 -- | Get a User's public display name (defaults to userN if no name has been set).
-userPrintName :: Entity User -> Text
-userPrintName (Entity user_id user) = fromMaybe ("user" <> toPathPiece user_id) (userName user)
+userDisplayName :: Entity User -> Text
+userDisplayName (Entity user_id user) = fromMaybe ("user" <> toPathPiece user_id) (userName user)
 
 -- | Apply a UserUpdate in memory, for preview. For this reason,
 -- userUpdateMessagePreferences doesn't need to be touched.
@@ -377,6 +378,13 @@ userViewWikiEditsDB user_id wiki_page_id = unviewedWikiEdits >>= viewWikiEdits
 
     viewWikiEdits :: [WikiEditId] -> DB ()
     viewWikiEdits = mapM_ (insert_ . ViewWikiEdit user_id)
+
+-- | Update this User's read messages timestamp.
+userReadMessagesDB :: UserId -> DB ()
+userReadMessagesDB user_id = liftIO getCurrentTime >>= \now -> do
+    update $ \u -> do
+    set u [UserReadMessages =. val now]
+    where_ (u ^. UserId ==. val user_id)
 
 userCanDeleteCommentDB :: UserId -> Entity Comment -> DB Bool
 userCanDeleteCommentDB user_id (Entity comment_id comment) = do

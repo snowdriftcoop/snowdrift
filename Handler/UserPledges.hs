@@ -14,7 +14,7 @@ getUserPledgesR user_id = do
     user <- runYDB $ get404 user_id
     defaultLayout $ do
         setTitle . toHtml $
-            "User Pledges - " <> userPrintName (Entity user_id user) <> " | Snowdrift.coop"
+            "User Pledges - " <> userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
 
         $(widgetFile "user_pledges")
 

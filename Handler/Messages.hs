@@ -2,35 +2,34 @@ module Handler.Messages where
 
 import Import
 
-import Model.User
+import           Model.Message
+import           Model.Project
+import           Model.User
+import           Widgets.Time
 
-import qualified Data.Map as M
-
-import Model.Project
-
-import Widgets.Time
+import           Data.Maybe
+import qualified Data.Map   as M
 
 getMessagesR :: Handler Html
 getMessagesR = do
-    viewer_entity@(Entity viewer_id viewer) <- requireAuth
-    now <- liftIO getCurrentTime
+    user@(Entity user_id _) <- requireAuth
 
     (messages, user_map) <- runDB $ do
-        messages <- fetchUserMessagesDB viewer_id
+        messages <- fetchUserMessagesDB user_id
         let from_users = catMaybes (map (messageFromUser . entityVal) messages)
-        user_map <- entitiesMap . (viewer_entity :) <$> fetchUsersInDB from_users
+        user_map <- entitiesMap . (user :) <$> fetchUsersInDB from_users
+        userReadMessagesDB user_id
         return (messages, user_map)
-
-    let getUserName user_id =
-            let user = user_map M.! user_id
-             in fromMaybe (userIdent user) (userName user)
-
-    _ <- runDB $ update $ \ user -> do
-        set user [ UserReadMessages =. val now ]
-        where_ ( user ^. UserId ==. val viewer_id )
-
 
     defaultLayout $ do
         setTitle "Messages | Snowdrift.coop"
         $(widgetFile "messages")
 
+postArchiveMessageR :: MessageId -> Handler ()
+postArchiveMessageR message_id = do
+    user_id <- requireAuthId
+    runYDB $ do
+        message <- get404 message_id
+        unless (user_id == messageToUser message) $
+            lift (permissionDenied "You can't archive this message.")
+        archiveMessageDB message_id

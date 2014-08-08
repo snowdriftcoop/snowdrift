@@ -9,7 +9,7 @@ $else
             <tr>
                 <td>
                     <a href="@{UserR (entityKey user)}">
-                        #{userPrintName user}
+                        #{userDisplayName user}
                 <td>
                     #{show (pledgeFundedShares (entityVal pledge))}&nbsp;shares
                 <td>

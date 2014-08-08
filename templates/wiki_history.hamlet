@@ -17,7 +17,7 @@
                     $with user_id <- wikiEditUser edit
                         $maybe user <- M.lookup user_id users
                             <a href="@{UserR user_id}">
-                                #{userPrintName user}
+                                #{userDisplayName user}
                 <td>
                     $maybe comment <- wikiEditComment edit
                         #{comment}

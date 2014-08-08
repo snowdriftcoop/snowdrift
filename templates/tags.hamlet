@@ -17,7 +17,7 @@ $else
                     <td>
 
                     <td>
-                        #{userPrintName user}
+                        #{userDisplayName user}
 
                     <td>
                         #{show votes}

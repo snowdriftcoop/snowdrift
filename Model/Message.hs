@@ -1,5 +1,6 @@
 module Model.Message
-    ( sendAnonymousMessageDB
+    ( archiveMessageDB
+    , sendAnonymousMessageDB
     , sendNotificationMessageDB
     , sendU2UMessageDB
     , sendU2PMessageDB
@@ -14,6 +15,13 @@ import Model.Message.Internal
 import Model.Project
 
 import Control.Monad.Writer.Strict (tell)
+
+-- | Archive a message.
+archiveMessageDB :: MessageId -> DB ()
+archiveMessageDB message_id =
+    update $ \m -> do
+    set m [MessageArchived =. val True]
+    where_ (m ^. MessageId ==. val message_id)
 
 -- | Send an anonymous Message to a Project (as feedback, presumably).
 sendAnonymousMessageDB :: ProjectId -> Markdown -> SDB [MessageId]
@@ -51,7 +59,7 @@ sendMessage2P mfrom_user mfrom_project to_project content = lift (fetchProjectTe
 sendMessage :: MessageType -> Maybe UserId -> Maybe ProjectId -> UserId -> Maybe ProjectId -> Markdown -> SDB MessageId
 sendMessage message_type mfrom_user mfrom_project to_user mto_project content = do
     now <- liftIO getCurrentTime
-    let message = Message now message_type mfrom_user mfrom_project to_user mto_project content
+    let message = Message now message_type mfrom_user mfrom_project to_user mto_project content False
     message_id <- lift (insert message)
     tell [EMessageSent message_id message]
     return message_id

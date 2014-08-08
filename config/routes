@@ -26,6 +26,10 @@
 /u/#UserId/pledges UserPledgesR     GET
 /u/!new            UserCreateR      GET POST
 
+-- Messages
+
+/m/#MessageId/archive ArchiveMessageR POST
+
 -- Project
 
 /p                                           ProjectsR            GET

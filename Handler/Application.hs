@@ -35,6 +35,6 @@ getApplicationR project_handle application_id = do
     let rendered_interests = T.intercalate ", " $ map (\ (Value x) -> x) interests
 
     defaultLayout $ do
-        setTitle . toHtml $ projectName project <> " Volunteer Application - " <> userPrintName user <> " | Snowdrift.coop"
+        setTitle . toHtml $ projectName project <> " Volunteer Application - " <> userDisplayName user <> " | Snowdrift.coop"
         $(widgetFile "application")
 

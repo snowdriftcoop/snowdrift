@@ -71,7 +71,7 @@ getInviteR project_handle = do
              in fromMaybe (userIdent user) $ userName user
 
         format_inviter user_id =
-            userPrintName $ users M.! user_id
+            userDisplayName $ users M.! user_id
 
     defaultLayout $ do
         setTitle . toHtml $ projectName project <> " - Send Invite | Snowdrift.coop"

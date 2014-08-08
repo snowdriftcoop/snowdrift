@@ -5,7 +5,7 @@
                 <a href="@{UserR user_id}">
                     <img .small_avatar src="#{author_avatar}"> #
             <a href="@{UserR user_id}">
-                #{userPrintName (Entity user_id user)}
+                #{userDisplayName (Entity user_id user)}
         <div .comment-head>
             $maybe moderated_ts <- commentModeratedTs comment
                 ^{renderTime moderated_ts}

@@ -20,7 +20,7 @@ getUserR user_id = do
     projects_and_roles <- runDB (fetchUserProjectsAndRolesDB user_id)
 
     defaultLayout $ do
-        setTitle . toHtml $ "User Profile - " <> userPrintName (Entity user_id user) <> " | Snowdrift.coop"
+        setTitle . toHtml $ "User Profile - " <> userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
         renderUser mviewer_id user_id user projects_and_roles
 
 checkEditUser :: UserId -> Handler UserId
@@ -39,7 +39,7 @@ getEditUserR user_id = do
 
     (form, enctype) <- generateFormPost $ editUserForm (Just user)
     defaultLayout $ do
-        setTitle . toHtml $ "User Profile - " <> userPrintName (Entity user_id user) <> " | Snowdrift.coop"
+        setTitle . toHtml $ "User Profile - " <> userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
         $(widgetFile "edit_user")
 
 postUserR :: UserId -> Handler Html

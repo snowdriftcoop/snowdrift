@@ -69,7 +69,7 @@ getUserBalanceR' user_id = do
     (add_funds_form, _) <- generateFormPost addTestCashForm
 
     defaultLayout $ do
-        setTitle . toHtml $ "User Balance - " <> userPrintName (Entity user_id user) <> " | Snowdrift.coop"
+        setTitle . toHtml $ "User Balance - " <> userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
         $(widgetFile "user_balance")
 
 

@@ -127,5 +127,5 @@ userNameWidget user_id = do
         Just user ->
             [whamlet|
                 <a href=@{UserR user_id}>
-                    #{userPrintName (Entity user_id user)}
+                    #{userDisplayName (Entity user_id user)}
             |]

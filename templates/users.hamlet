@@ -20,7 +20,7 @@
                 <tr>
                     <td>
                         <a href=@{UserR $ entityKey user}>
-                            #{userPrintName user}
+                            #{userDisplayName user}
                     <td>
                         $maybe nick <- userIrcNick $ entityVal user
                             #{nick}

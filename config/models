@@ -208,6 +208,7 @@ Message
     toUser UserId
     toProject ProjectId Maybe
     content Markdown
+    archived Bool -- Put into the "trash bin".
 
 WikiPage
     createdTs UTCTime default=now()

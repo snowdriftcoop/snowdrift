@@ -13,7 +13,7 @@ $else
             <tr>
                 <td>
                     <a href=@{UserR (entityKey user)}>
-                        #{userPrintName user}
+                        #{userDisplayName user}
 
                 <td>
                     #{show votes}
