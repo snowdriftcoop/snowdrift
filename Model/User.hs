@@ -319,15 +319,15 @@ fetchUserMessagesDB :: UserId -> DB [Entity Message]
 fetchUserMessagesDB = fetchMessages (not_ . (^. MessageArchived))
 
 -- | Fetch a User's archived private Messages.
-fetchUserArchivedMessages :: UserId -> DB [Entity Message]
-fetchUserArchivedMessages = fetchMessages (^. MessageArchived)
+fetchUserArchivedMessagesDB :: UserId -> DB [Entity Message]
+fetchUserArchivedMessagesDB = fetchMessages (^. MessageArchived)
 
 -- | Abstract fetching archived/unarchived messages. Unexported.
 fetchMessages :: (SqlExpr (Entity Message) -> SqlExpr (Value Bool)) -> UserId -> DB [Entity Message]
 fetchMessages cond user_id =
     select $
     from $ \m -> do
-    where_
+    where_ $
         m ^. MessageToUser ==. val user_id &&.
         cond m
     orderBy [desc (m ^. MessageCreatedTs)]
