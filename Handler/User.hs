@@ -26,10 +26,8 @@ getUserR user_id = do
 checkEditUser :: UserId -> Handler UserId
 checkEditUser user_id = do
     viewer_id <- requireAuthId
-    when (user_id /= viewer_id) $ runYDB $ do
-        is_admin <- isProjectAdmin "snowdrift" viewer_id
-        unless is_admin $
-            lift $ permissionDenied "You can only modify your own profile!"
+    unless (user_id == viewer_id) $
+        permissionDenied "You can only modify your own profile."
     return viewer_id
 
 getEditUserR :: UserId -> Handler Html

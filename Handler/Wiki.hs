@@ -29,11 +29,38 @@ import           Yesod.Markdown
 --------------------------------------------------------------------------------
 -- Utility functions
 
-getPageInfo :: Text -> Text -> YDB (Entity Project, Entity WikiPage)
-getPageInfo project_handle target = do
+-- | Get the Project/WikiPage entities.
+pageInfo :: Text -> Text -> YDB (Entity Project, Entity WikiPage)
+pageInfo project_handle target = do
     project <- getBy404 $ UniqueProjectHandle project_handle
     page    <- getBy404 $ UniqueWikiTarget (entityKey project) target
     return (project, page)
+
+-- | Get the Project/WikiPage entities, but require some generic permissions,
+-- failing with permissionDenied if they are not satisfied.
+pageInfoRequirePermission :: Text                                                          -- Project handle.
+                          -> Text                                                          -- Wiki page.
+                          -> (Entity User -> Entity Project -> Entity WikiPage -> DB Bool) -- Permission checker.
+                          -> Handler (Entity User, Entity Project, Entity WikiPage)
+pageInfoRequirePermission project_handle target has_permission = do
+    user <- requireAuth
+    (project, page, ok) <- runYDB $ do
+        (project, page) <- pageInfo project_handle target
+        ok <- has_permission user project page
+        return (project, page, ok)
+    unless ok (permissionDenied "You don't have permission to access this page.")
+    return (user, project, page)
+
+-- | Like pageInfoRequirePermission, but specialized to requiring Project affiliation.
+pageInfoRequireAffiliation :: Text -> Text -> Handler (Entity User, Entity Project, Entity WikiPage)
+pageInfoRequireAffiliation project_handle target =
+    pageInfoRequirePermission project_handle target (\(Entity user_id _) (Entity project_id _) _ ->
+      userIsAffiliatedWithProjectDB user_id project_id)
+
+-- | Like pageInfoRequirePermission, but specialized to requiring that the User can edit a WikiPage.
+pageInfoRequireCanEdit :: Text -> Text -> Handler (Entity User, Entity Project, Entity WikiPage)
+pageInfoRequireCanEdit project_handle target =
+    pageInfoRequirePermission project_handle target (\(Entity _ user) _ _ -> return (userCanEditWikiPage user))
 
 --------------------------------------------------------------------------------
 -- /#target
@@ -42,7 +69,7 @@ getWikiR :: Text -> Text -> Handler Html
 getWikiR project_handle target = do
     maybe_user <- maybeAuth
     (project, page, comment_count) <- runYDB $ do
-        (Entity project_id project, Entity page_id page) <- getPageInfo project_handle target
+        (Entity project_id project, Entity page_id page) <- pageInfo project_handle target
 
         let muser_id      = entityKey <$> maybe_user
             discussion_id = wikiPageDiscussion page
@@ -68,14 +95,9 @@ getWikiR project_handle target = do
 
 postWikiR :: Text -> Text -> Handler Html
 postWikiR project_handle target = do
-    Entity user_id user <- requireAuth
     now <- liftIO getCurrentTime
 
-    unless (userCanEditWikiPage user) $
-        permissionDenied "you do not have permission to edit this page"
-
-    (Entity project_id _, Entity page_id page) <- runYDB $ getPageInfo project_handle target
-
+    (Entity user_id _, Entity project_id _, Entity page_id page) <- pageInfoRequireCanEdit project_handle target
     Entity _ last_edit <- runYDB $ getBy404 $ UniqueWikiLastEdit page_id
 
     ((result, _), _) <- runFormPost $ editWikiForm (wikiLastEditEdit last_edit) (wikiPageContent page) Nothing
@@ -181,7 +203,7 @@ getDiscussWikiR' project_handle target get_root_comments = do
     muser <- maybeAuth
     let muser_id = entityKey <$> muser
 
-    (Entity project_id project, Entity _ page) <- runYDB (getPageInfo project_handle target)
+    (Entity project_id project, Entity _ page) <- runYDB (pageInfo project_handle target)
 
     (roots, replies, user_map, closure_map, ticket_map, flag_map, tag_map) <- runDB $ do
         roots           <- get_root_comments muser_id project_id (wikiPageDiscussion page)
@@ -234,7 +256,7 @@ getNewDiscussWikiR project_handle target = do
 
 postNewDiscussWikiR :: Text -> Text -> Handler Html
 postNewDiscussWikiR project_handle target = do
-    (project_entity, Entity _ page) <- runYDB $ getPageInfo project_handle target
+    (project_entity, Entity _ page) <- runYDB $ pageInfo project_handle target
 
     ((result, _), _) <- runFormPost commentNewTopicForm
 
@@ -251,7 +273,7 @@ postNewDiscussWikiR project_handle target = do
 
 getWikiDiffR :: Text -> Text -> WikiEditId -> WikiEditId -> Handler Html
 getWikiDiffR project_handle target start_edit_id end_edit_id = do
-    (Entity _ project, Entity page_id _) <- runYDB $ getPageInfo project_handle target
+    (Entity _ project, Entity page_id _) <- runYDB $ pageInfo project_handle target
 
     (start_edit, end_edit) <- runYDB $ (,)
         <$> get404 start_edit_id
@@ -290,13 +312,8 @@ getWikiDiffProxyR project_handle target = do
 
 getEditWikiR :: Text -> Text -> Handler Html
 getEditWikiR project_handle target = do
-    user <- entityVal <$> requireAuth
-    (Entity _ project, Entity page_id page) <- runYDB $ getPageInfo project_handle target
-
+    (_, Entity _ project, Entity page_id page) <- pageInfoRequireCanEdit project_handle target
     Entity _ last_edit <- runYDB $ getBy404 $ UniqueWikiLastEdit page_id
-
-    unless (userCanEditWikiPage user) $
-        permissionDenied "you do not have permission to edit this page"
 
     (wiki_form, _) <- generateFormPost $ editWikiForm (wikiLastEditEdit last_edit) (wikiPageContent page) Nothing
 
@@ -309,7 +326,7 @@ getEditWikiR project_handle target = do
 
 getWikiHistoryR :: Text -> Text -> Handler Html
 getWikiHistoryR project_handle target = do
-    (Entity _ project, Entity page_id _) <- runYDB $ getPageInfo project_handle target
+    (Entity _ project, Entity page_id _) <- runYDB $ pageInfo project_handle target
 
     (edits, users) <- runDB $ do
         edits <-
@@ -337,7 +354,7 @@ getWikiHistoryR project_handle target = do
 
 getWikiEditR :: Text -> Text -> WikiEditId -> Handler Html
 getWikiEditR project_handle target edit_id = do
-    (Entity _ project, Entity page_id _) <- runYDB $ getPageInfo project_handle target
+    (Entity _ project, Entity page_id _) <- runYDB $ pageInfo project_handle target
     edit <- runYDB $ do
         edit <- get404 edit_id
 
@@ -355,16 +372,8 @@ getWikiEditR project_handle target edit_id = do
 
 getNewWikiR :: Text -> Text -> Handler Html
 getNewWikiR project_handle target = do
-    user_id <- requireAuthId
-    Entity _ project <- runYDB $ getBy404 $ UniqueProjectHandle project_handle
-    affiliated <- runDB $ (||)
-            <$> isProjectAffiliated project_handle user_id
-            <*> isProjectAdmin "snowdrift" user_id
-
-    unless affiliated $ permissionDenied "you do not have permission to edit this page"
-
+    (_, Entity _ project, _) <- pageInfoRequireAffiliation project_handle target
     (wiki_form, _) <- generateFormPost $ newWikiForm Nothing
-
     defaultLayout $ do
         setTitle . toHtml $ projectName project <> " Wiki - New Page | Snowdrift.coop"
         $(widgetFile "new_wiki")
@@ -372,21 +381,9 @@ getNewWikiR project_handle target = do
 
 postNewWikiR :: Text -> Text -> Handler Html
 postNewWikiR project_handle target = do
-    Entity user_id _ <- requireAuth
-
-    affiliated <- runDB $ (||)
-            <$> isProjectAffiliated project_handle user_id
-            <*> isProjectAdmin "snowdrift" user_id
-
-    unless affiliated $
-        permissionDenied "you do not have permission to edit this page"
-
+    (Entity user_id _, Entity project_id _, _) <- pageInfoRequireAffiliation project_handle target
     now <- liftIO getCurrentTime
-
-    Entity project_id _ <- runYDB . getBy404 $ UniqueProjectHandle project_handle
-
     ((result, _), _) <- runFormPost $ newWikiForm Nothing
-
     case result of
         FormSuccess content -> do
             mode <- lookupPostParam "mode"
@@ -414,15 +411,7 @@ postNewWikiR project_handle target = do
 
 getEditWikiPermissionsR :: Text -> Text -> Handler Html
 getEditWikiPermissionsR project_handle target = do
-    user_id <- requireAuthId
-    (Entity _ project, Entity _ page) <- runYDB $ getPageInfo project_handle target
-
-    affiliated <- runDB $ (||)
-            <$> isProjectAdmin project_handle user_id
-            <*> isProjectAdmin "snowdrift" user_id
-
-    unless affiliated $ permissionDenied "you do not have permission to edit page permissions"
-
+    (_, Entity _ project, Entity _ page) <- pageInfoRequireAffiliation project_handle target
     (wiki_form, _) <- generateFormPost $ editWikiPermissionsForm (wikiPagePermissionLevel page)
 
     defaultLayout $ do
@@ -431,15 +420,7 @@ getEditWikiPermissionsR project_handle target = do
 
 postEditWikiPermissionsR :: Text -> Text -> Handler Html
 postEditWikiPermissionsR project_handle target = do
-    Entity user_id _ <- requireAuth
-    (_, Entity page_id page) <- runYDB $ getPageInfo project_handle target
-
-    affiliated <- runDB $ (||)
-            <$> isProjectAdmin project_handle user_id
-            <*> isProjectAdmin "snowdrift" user_id
-
-    unless affiliated $ permissionDenied "you do not have permission to edit page permissions"
-
+    (_, _, Entity page_id page) <- pageInfoRequireAffiliation project_handle target
     ((result, _), _) <- runFormPost $ editWikiPermissionsForm (wikiPagePermissionLevel page)
 
     case result of

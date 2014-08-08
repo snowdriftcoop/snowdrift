@@ -28,11 +28,15 @@ module Model.User
     , fetchUsersInDB
     , updateUserDB
     , userCanDeleteCommentDB
-    , userIsProjectAdminDB'
-    , userIsProjectModeratorDB'
-    , userIsProjectTeamMemberDB'
+    , userHasRoleDB
+    , userHasRolesAnyDB
+    , userIsAffiliatedWithProjectDB
+    , userIsProjectAdminDB
+    , userIsProjectModeratorDB
+    , userIsProjectTeamMemberDB
     , userIsWatchingProjectDB
     , userReadMessagesDB
+    , userReadVolunteerApplicationsDB
     , userUnwatchProjectDB
     , userViewCommentsDB
     , userViewWikiEditsDB
@@ -40,11 +44,6 @@ module Model.User
     -- Unsorted
     , canCurUserMakeEligible
     , canMakeEligible
-    , isCurUserProjectModerator
-    , isProjectAdmin
-    , isProjectAffiliated
-    , isProjectModerator
-    , isProjectTeamMember
     ) where
 
 import Import
@@ -224,6 +223,10 @@ fetchCurUserRolesDB project_id = maybeAuthId >>= \case
 userHasRoleDB :: Role -> UserId -> ProjectId -> DB Bool
 userHasRoleDB role user_id = fmap (elem role) . fetchUserRolesDB user_id
 
+-- | Does this User have any of these Roles in this Project?
+userHasRolesAnyDB :: [Role] -> UserId -> ProjectId -> DB Bool
+userHasRolesAnyDB roles user_id project_id = (or . flip map roles . flip elem) <$> fetchUserRolesDB user_id project_id
+
 -- | Get all Projects this User is affiliated with, along with each Role.
 fetchUserProjectsAndRolesDB :: UserId -> DB (Map (Entity Project) (Set Role))
 fetchUserProjectsAndRolesDB user_id = fmap buildMap $
@@ -236,57 +239,18 @@ fetchUserProjectsAndRolesDB user_id = fmap buildMap $
     buildMap :: [(Entity Project, Value Role)] -> Map (Entity Project) (Set Role)
     buildMap = foldr (\(p, Value r) -> M.insertWith (<>) p (S.singleton r)) mempty
 
-userIsProjectAdminDB' :: UserId -> ProjectId -> DB Bool
-userIsProjectAdminDB' = userHasRoleDB Admin
+userIsProjectAdminDB :: UserId -> ProjectId -> DB Bool
+userIsProjectAdminDB = userHasRoleDB Admin
 
-userIsProjectTeamMemberDB' :: UserId -> ProjectId -> DB Bool
-userIsProjectTeamMemberDB' = userHasRoleDB TeamMember
+userIsProjectTeamMemberDB :: UserId -> ProjectId -> DB Bool
+userIsProjectTeamMemberDB = userHasRoleDB TeamMember
 
-userIsProjectModeratorDB' :: UserId -> ProjectId -> DB Bool
-userIsProjectModeratorDB' = userHasRoleDB Moderator
+userIsProjectModeratorDB :: UserId -> ProjectId -> DB Bool
+userIsProjectModeratorDB = userHasRoleDB Moderator
 
-isProjectAdmin :: Text -> UserId -> DB Bool
-isProjectAdmin project_handle user_id =
-    fmap (not . null) $ select $ from $ \ (pur `InnerJoin` p) -> do
-        on_ $ pur ^. ProjectUserRoleProject ==. p ^. ProjectId
-        where_ $ p ^. ProjectHandle ==. val project_handle
-            &&. pur ^. ProjectUserRoleUser ==. val user_id
-            &&. pur ^. ProjectUserRoleRole ==. val Admin
-        limit 1
-        return ()
-
-isProjectTeamMember :: Text -> UserId -> DB Bool
-isProjectTeamMember project_handle user_id =
-    fmap (not . null) $ select $ from $ \ (pur `InnerJoin` p) -> do
-        on_ $ pur ^. ProjectUserRoleProject ==. p ^. ProjectId
-        where_ $ p ^. ProjectHandle ==. val project_handle
-            &&. pur ^. ProjectUserRoleUser ==. val user_id
-            &&. pur ^. ProjectUserRoleRole ==. val TeamMember
-        limit 1
-        return ()
-
-isProjectModerator :: Text -> UserId -> DB Bool
-isProjectModerator project_handle user_id =
-    fmap (not . null) $ select $ from $ \ (pur `InnerJoin` p) -> do
-        on_ $ pur ^. ProjectUserRoleProject ==. p ^. ProjectId
-        where_ $ p ^. ProjectHandle ==. val project_handle
-            &&. pur ^. ProjectUserRoleUser ==. val user_id
-            &&. pur ^. ProjectUserRoleRole ==. val Moderator
-        limit 1
-        return ()
-
-isCurUserProjectModerator :: Text -> Handler Bool
-isCurUserProjectModerator project_handle =
-    maybeAuthId >>= maybe (return False) (runYDB . isProjectModerator project_handle)
-
-isProjectAffiliated :: Text -> UserId -> DB Bool
-isProjectAffiliated project_handle user_id =
-    fmap (not . null) $ select $ from $ \ (pur `InnerJoin` p) -> do
-        on_ $ pur ^. ProjectUserRoleProject ==. p ^. ProjectId
-        where_ $ p ^. ProjectHandle ==. val project_handle
-            &&. pur ^. ProjectUserRoleUser ==. val user_id
-        limit 1
-        return ()
+-- | A User is affiliated with a Project if they have *any* Role.
+userIsAffiliatedWithProjectDB :: UserId -> ProjectId -> DB Bool
+userIsAffiliatedWithProjectDB = userHasRolesAnyDB [minBound..maxBound]
 
 -- | Check if the current User can make the given User eligible for establishment.
 -- This is True if the current User is a Moderator of any Project, and the given User
@@ -395,6 +359,13 @@ userReadMessagesDB :: UserId -> DB ()
 userReadMessagesDB user_id = liftIO getCurrentTime >>= \now -> do
     update $ \u -> do
     set u [UserReadMessages =. val now]
+    where_ (u ^. UserId ==. val user_id)
+
+-- | Update this User's read applications timestamp.
+userReadVolunteerApplicationsDB :: UserId -> DB ()
+userReadVolunteerApplicationsDB user_id = liftIO getCurrentTime >>= \now -> do
+    update $ \u -> do
+    set u [UserReadApplications =. val now]
     where_ (u ^. UserId ==. val user_id)
 
 userCanDeleteCommentDB :: UserId -> Entity Comment -> DB Bool

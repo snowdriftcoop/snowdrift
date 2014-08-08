@@ -70,7 +70,7 @@ checkCommentPage project_handle target comment_id = do
         -- Logged in:
         Just viewer_id -> do
             -- If mod: no restrictions (show unapproved and flagged)
-            is_mod <- runDB (userIsProjectModeratorDB' viewer_id project_id)
+            is_mod <- runDB (userIsProjectModeratorDB viewer_id project_id)
             unless is_mod $
                 -- Otherwise, if ordinary user, if viewing own comment, no restrictions.
                 unless (commentUser comment == viewer_id) $ do
@@ -92,7 +92,9 @@ checkCommentPage project_handle target comment_id = do
 
 requireModerator :: Text -> Text -> UserId -> Handler ()
 requireModerator message project_handle user_id = do
-    ok <- runDB $ isProjectModerator project_handle user_id
+    ok <- runYDB $ do
+        Entity project_id _ <- getBy404 (UniqueProjectHandle project_handle)
+        userIsProjectModeratorDB user_id project_id
     unless ok $
         permissionDenied message
 
@@ -586,7 +588,7 @@ postRethreadWikiCommentR project_handle target comment_id = do
     (Entity project_id _, _, comment) <- checkCommentPage project_handle target comment_id
 
     user_id <- requireAuthId
-    ok <- runDB (userIsProjectModeratorDB' user_id project_id)
+    ok <- runDB (userIsProjectModeratorDB user_id project_id)
     unless ok $
         permissionDenied "You must be a moderator to rethread"
 

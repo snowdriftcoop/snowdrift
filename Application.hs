@@ -47,14 +47,11 @@ import           Yesod.Markdown
 -- Import all relevant handler modules here.
 -- Don't forget to add new modules to your cabal file!
 
-import Handler.Application
-import Handler.Applications
 import Handler.BuildFeed
 import Handler.Contact
 import Handler.Home
 import Handler.HonorPledge
 import Handler.Invitation
-import Handler.Invite
 import Handler.JsLicense
 import Handler.MarkdownTutorial
 import Handler.Messages

@@ -4,59 +4,70 @@ module Handler.Project where
 
 import Import
 
-import Model.Currency
-import Model.Discussion
-import Model.Project
-import Model.Shares
-import Model.Markdown
-import Model.Markdown.Diff
-import Model.SnowdriftEvent
-import Model.User
-import Model.WikiPage
-import View.PledgeButton
-import View.SnowdriftEvent
-import Widgets.Markdown
-import Widgets.Preview
-import Widgets.Time
+import           Model.Application
+import           Model.Discussion
+import           Model.Markdown
+import           Model.Markdown.Diff
+import           Model.Project
+import           Model.Role
+import           Model.SnowdriftEvent
+import           Model.User
+import           Model.WikiPage
+import           View.PledgeButton
+import           View.Project
+import           View.SnowdriftEvent
+import           Widgets.Preview
+import           Widgets.Time
 
-import           Data.List       (sortBy)
-import qualified Data.Map        as M
-import           Data.Maybe      (fromJust, maybeToList)
-import qualified Data.Text       as T
-import           Data.Time.Clock
-import qualified Data.Set        as S
-import           Yesod.Markdown
+import           Data.List            (sortBy)
+import qualified Data.Map             as M
+import           Data.Maybe           (fromJust, maybeToList)
+import qualified Data.Set             as S
+import qualified Data.Text            as T
+import           System.Random        (randomIO)
+import           Text.Printf
+
+--------------------------------------------------------------------------------
+-- Utility functions
 
 lookupGetParamDefault :: Read a => Text -> a -> Handler a
 lookupGetParamDefault name def = do
     maybe_value <- lookupGetParam name
     return $ fromMaybe def $ maybe_value >>= readMaybe . T.unpack
 
+-- | Require any of the given Roles, failing with permissionDenied if none are satisfied.
+requireRolesAny :: [Role] -> Text -> Text -> Handler (UserId, Entity Project)
+requireRolesAny roles project_handle err_msg = do
+    user_id <- requireAuthId
+    (project, ok) <- runYDB $ do
+        project@(Entity project_id _) <- getBy404 (UniqueProjectHandle project_handle)
+        ok <- userHasRolesAnyDB roles user_id project_id
+        return (project, ok)
+    unless ok $
+        permissionDenied err_msg
+    return (user_id, project)
+
+-------------------------------------------------------------------------------
+--
+
 getProjectsR :: Handler Html
 getProjectsR = do
     projects <- runDB fetchAllProjectsDB
-
     defaultLayout $ do
         setTitle "Projects | Snowdrift.coop"
         $(widgetFile "projects")
 
-getProjectPledgeButtonR :: Text -> Handler TypedContent
-getProjectPledgeButtonR project_handle = do
-   pledges <- runYDB $ do
-        Entity project_id _project <- getBy404 $ UniqueProjectHandle project_handle
-        getProjectShares project_id
-   let png = overlayImage blankPledgeButton $
-        fillInPledgeCount (fromIntegral (length pledges))
-   respond "image/png" png
+--------------------------------------------------------------------------------
+-- /
 
 getProjectR :: Text -> Handler Html
 getProjectR project_handle = do
-    maybe_viewer_id <- maybeAuthId
+    mviewer_id <- maybeAuthId
 
     (project_id, project, pledges, pledge) <- runYDB $ do
         Entity project_id project <- getBy404 $ UniqueProjectHandle project_handle
         pledges <- getProjectShares project_id
-        pledge <- case maybe_viewer_id of
+        pledge <- case mviewer_id of
             Nothing -> return Nothing
             Just viewer_id -> getBy $ UniquePledge viewer_id project_id
 
@@ -66,103 +77,10 @@ getProjectR project_handle = do
         setTitle . toHtml $ projectName project <> " | Snowdrift.coop"
         renderProject (Just project_id) project pledges pledge
 
-
-renderProject :: Maybe ProjectId
-              -> Project
-              -> [Int64]
-              -> Maybe (Entity Pledge)
-              -> WidgetT App IO ()
-renderProject maybe_project_id project pledges pledge = do
-    let share_value = projectShareValue project
-        users = fromIntegral $ length pledges
-        shares = sum pledges
-        project_value = share_value $* fromIntegral shares
-        description = markdownWidget (projectHandle project) $ projectDescription project
-
-        maybe_shares = pledgeShares . entityVal <$> pledge
-
-    now <- liftIO getCurrentTime
-
-    amounts <- case projectLastPayday project of
-        Nothing -> return Nothing
-        Just last_payday -> handlerToWidget $ runDB $ do
-            -- This assumes there were transactions associated with the last payday
-            [Value (Just last) :: Value (Maybe Rational)] <-
-                select $
-                from $ \ transaction -> do
-                where_ $
-                    transaction ^. TransactionPayday ==. val (Just last_payday) &&.
-                    transaction ^. TransactionCredit ==. val (Just $ projectAccount project)
-                return $ sum_ $ transaction ^. TransactionAmount
-
-            [Value (Just year) :: Value (Maybe Rational)] <-
-                select $
-                from $ \ (transaction `InnerJoin` payday) -> do
-                where_ $
-                    payday ^. PaydayDate >. val (addUTCTime (-365 * 24 * 60 * 60) now) &&.
-                    transaction ^. TransactionCredit ==. val (Just $ projectAccount project)
-                on_ $ transaction ^. TransactionPayday ==. just (payday ^. PaydayId)
-                return $ sum_ $ transaction ^. TransactionAmount
-
-            [Value (Just total) :: Value (Maybe Rational)] <-
-                select $
-                from $ \ transaction -> do
-                where_ $ transaction ^. TransactionCredit ==. val (Just $ projectAccount project)
-                return $ sum_ $ transaction ^. TransactionAmount
-
-            return $ Just (Milray $ round last, Milray $ round year, Milray $ round total)
-
-
-    ((_, update_shares), _) <- handlerToWidget $ generateFormGet $ maybe previewPledgeForm pledgeForm maybe_project_id
-
-    $(widgetFile "project")
-
-
-data UpdateProject = UpdateProject { updateProjectName :: Text, updateProjectDescription :: Markdown, updateProjectTags :: [Text], updateProjectGithubRepo :: Maybe Text } deriving Show
-
-
-editProjectForm :: Maybe (Project, [Text]) -> Form UpdateProject
-editProjectForm project =
-    renderBootstrap3 $ UpdateProject
-        <$> areq' textField "Project Name" (projectName . fst <$> project)
-        <*> areq' snowdriftMarkdownField "Description" (projectDescription . fst <$> project)
-        <*> (maybe [] (map T.strip . T.splitOn ",") <$> aopt' textField "Tags" (Just . T.intercalate ", " . snd <$> project))
-        <*> aopt' textField "Github Repository" (projectGithubRepo . fst <$> project)
-
-
-getEditProjectR :: Text -> Handler Html
-getEditProjectR project_handle = do
-    viewer_id <- requireAuthId
-
-    Entity project_id project <- runYDB $ do
-        can_edit <- (||) <$> isProjectAdmin project_handle viewer_id <*> isProjectAdmin "snowdrift" viewer_id
-        if can_edit
-         then getBy404 $ UniqueProjectHandle project_handle
-         else permissionDenied "You do not have permission to edit this project."
-
-    tags <- runDB $
-        select $
-        from $ \ (p_t `InnerJoin` tag) -> do
-        on_ (p_t ^. ProjectTagTag ==. tag ^. TagId)
-        where_ (p_t ^. ProjectTagProject ==. val project_id)
-        return tag
-
-    (project_form, _) <- generateFormPost $ editProjectForm (Just (project, map (tagName . entityVal) tags))
-
-    defaultLayout $ do
-        setTitle . toHtml $ projectName project <> " | Snowdrift.coop"
-        $(widgetFile "edit_project")
-
-
 postProjectR :: Text -> Handler Html
 postProjectR project_handle = do
-    viewer_id <- requireAuthId
-
-    Entity project_id project <- runYDB $ do
-        can_edit <- (||) <$> isProjectAdmin project_handle viewer_id <*> isProjectAdmin "snowdrift" viewer_id
-        if can_edit
-         then getBy404 $ UniqueProjectHandle project_handle
-         else permissionDenied "You do not have permission to edit this project."
+    (viewer_id, Entity project_id project) <-
+        requireRolesAny [Admin] project_handle "You do not have permission to edit this project."
 
     ((result, _), _) <- runFormPost $ editProjectForm Nothing
 
@@ -213,102 +131,63 @@ postProjectR project_handle = do
                     addAlertEm "danger" "unrecognized mode" "Error: "
                     redirect $ ProjectR project_handle
         x -> do
-            alertDanger $ T.pack $ show x
-            redirect $ ProjectR project_handle
+            alertDanger (T.pack $ show x)
+            redirect (ProjectR project_handle)
 
+--------------------------------------------------------------------------------
+-- /application
 
-getProjectPatronsR :: Text -> Handler Html
-getProjectPatronsR project_handle = do
-    _ <- requireAuthId
+getApplicationsR :: Text -> Handler Html
+getApplicationsR project_handle = do
+    viewer_id <- requireAuthId
 
-    page <- lookupGetParamDefault "page" 0
-    per_page <- lookupGetParamDefault "count" 20
+    (project, applications) <- runYDB $ do
+        Entity project_id project <- getBy404 (UniqueProjectHandle project_handle)
+        ok <- userIsAffiliatedWithProjectDB viewer_id project_id
+        unless ok $
+            lift (permissionDenied "You don't have permission to view this page.")
 
-    (project, pledges, user_payouts_map) <- runYDB $ do
-        Entity project_id project <- getBy404 $ UniqueProjectHandle project_handle
-        pledges <- select $ from $ \ (pledge `InnerJoin` user) -> do
-            on_ $ pledge ^. PledgeUser ==. user ^. UserId
-            where_ $ pledge ^. PledgeProject ==. val project_id
-                &&. pledge ^. PledgeFundedShares >. val 0
-            orderBy [ desc (pledge ^. PledgeFundedShares), asc (user ^. UserName), asc (user ^. UserId)]
-            offset page
-            limit per_page
-            return (pledge, user)
-
-        last_paydays <- case projectLastPayday project of
-            Nothing -> return []
-            Just last_payday -> select $ from $ \ payday -> do
-                where_ $ payday ^. PaydayId <=. val last_payday
-                orderBy [ desc $ payday ^. PaydayId ]
-                limit 2
-                return payday
-
-        user_payouts <- select $ from $ \ (transaction `InnerJoin` user) -> do
-            where_ $ transaction ^. TransactionPayday `in_` valList (map (Just . entityKey) last_paydays)
-            on_ $ transaction ^. TransactionDebit ==. just (user ^. UserAccount)
-            groupBy $ user ^. UserId
-            return (user ^. UserId, count $ transaction ^. TransactionId)
-
-        return (project, pledges, M.fromList $ map ((\ (Value x :: Value UserId) -> x) *** (\ (Value x :: Value Int) -> x)) user_payouts)
+        applications <- fetchProjectVolunteerApplicationsDB project_id
+        userReadVolunteerApplicationsDB viewer_id
+        return (project, applications)
 
     defaultLayout $ do
-        setTitle . toHtml $ projectName project <> " Patrons | Snowdrift.coop"
-        $(widgetFile "project_patrons")
+        setTitle . toHtml $ projectName project <> " Volunteer Applications | Snowdrift.coop"
+        $(widgetFile "applications")
 
-getProjectTransactionsR :: Text -> Handler Html
-getProjectTransactionsR project_handle = do
-    (project, account, account_map, transaction_groups) <- runYDB $ do
-        Entity _ project :: Entity Project <- getBy404 $ UniqueProjectHandle project_handle
+getApplicationR :: Text -> VolunteerApplicationId -> Handler Html
+getApplicationR project_handle application_id = do
+    viewer_id <- requireAuthId
+    (project, user, application, interests, num_interests) <- runYDB $ do
+        Entity project_id project <- getBy404 (UniqueProjectHandle project_handle)
+        ok <- userIsAffiliatedWithProjectDB viewer_id project_id
+        unless ok $
+            lift (permissionDenied "You don't have permission to view this page.")
 
-        account <- get404 $ projectAccount project
-
-        transactions <- select $ from $ \ t -> do
-            where_ $ t ^. TransactionCredit ==. val (Just $ projectAccount project)
-                    ||. t ^. TransactionDebit ==. val (Just $ projectAccount project)
-
-            orderBy [ desc $ t ^. TransactionTs ]
-            return t
-
-        let accounts = S.toList $ S.fromList $ concatMap (\ (Entity _ t) -> maybeToList (transactionCredit t) <> maybeToList (transactionDebit t)) transactions
-
-        users_by_account <- fmap (M.fromList . map (userAccount . entityVal &&& Right)) $ select $ from $ \ u -> do
-            where_ $ u ^. UserAccount `in_` valList accounts
-            return u
-
-        projects_by_account <- fmap (M.fromList . map (projectAccount . entityVal &&& Left)) $ select $ from $ \ p -> do
-            where_ $ p ^. ProjectAccount `in_` valList accounts
-            return p
-
-        let account_map = projects_by_account `M.union` users_by_account
-
-        payday_map <- fmap (M.fromList . map (entityKey &&& id)) $ select $ from $ \ pd -> do
-            where_ $ pd ^. PaydayId `in_` valList (S.toList $ S.fromList $ mapMaybe (transactionPayday . entityVal) transactions)
-            return pd
-
-        return (project, account, account_map, process payday_map transactions)
-
-    let getOtherAccount transaction
-            | transactionCredit transaction == Just (projectAccount project) = transactionDebit transaction
-            | transactionDebit transaction == Just (projectAccount project) = transactionCredit transaction
-            | otherwise = Nothing
+        application <- get404 application_id
+        let user_id = volunteerApplicationUser application
+        user <- get404 user_id
+        (interests, num_interests) <- (T.intercalate ", " &&& length) <$> fetchApplicationVolunteerInterestsDB application_id
+        return (project, Entity user_id user, application, interests, num_interests)
 
     defaultLayout $ do
-        setTitle . toHtml $ projectName project <> " Transactions | Snowdrift.coop"
-        $(widgetFile "project_transactions")
+        setTitle . toHtml $ projectName project <> " Volunteer Application - " <> userDisplayName user <> " | Snowdrift.coop"
+        $(widgetFile "application")
 
-  where
-    process payday_map =
-        let process' [] [] = []
-            process' (t':ts') [] = [(fmap (payday_map M.!) $ transactionPayday $ entityVal t', reverse (t':ts'))]
-            process' [] (t:ts) = process' [t] ts
+--------------------------------------------------------------------------------
+-- /button.png
 
-            process' (t':ts') (t:ts)
-                | transactionPayday (entityVal t') == transactionPayday (entityVal t)
-                = process' (t:t':ts') ts
-                | otherwise
-                = (fmap (payday_map M.!) $ transactionPayday $ entityVal t', reverse (t':ts')) : process' [t] ts
-         in process' []
+getProjectPledgeButtonR :: Text -> Handler TypedContent
+getProjectPledgeButtonR project_handle = do
+   pledges <- runYDB $ do
+        Entity project_id _project <- getBy404 $ UniqueProjectHandle project_handle
+        getProjectShares project_id
+   let png = overlayImage blankPledgeButton $
+        fillInPledgeCount (fromIntegral (length pledges))
+   respond "image/png" png
 
+--------------------------------------------------------------------------------
+-- /b
 
 getProjectBlogR :: Text -> Handler Html
 getProjectBlogR project_handle = do
@@ -334,32 +213,10 @@ getProjectBlogR project_handle = do
         setTitle . toHtml $ projectName project <> " Blog | Snowdrift.coop"
         $(widgetFile "project_blog")
 
-projectBlogForm :: UTCTime -> UserId -> ProjectId -> Form ProjectBlog
-projectBlogForm now user_id project_id =
-    renderBootstrap3 $ mkBlog
-        <$> areq' textField "Post Title" Nothing
-        <*> areq' snowdriftMarkdownField "Post" Nothing
-  where
-    mkBlog :: Text -> Markdown -> ProjectBlog
-    mkBlog title (Markdown content) =
-        let (top_content, bottom_content) = break (== "---") $ T.lines content
-         in ProjectBlog now title user_id project_id undefined (Markdown $ T.unlines top_content) (if null bottom_content then Nothing else Just $ Markdown $ T.unlines bottom_content)
-
-
 postProjectBlogR :: Text -> Handler Html
 postProjectBlogR project_handle = do
-    viewer_id <- requireAuthId
-
-    Entity project_id _ <- runYDB $ do
-        can_edit <- or <$> sequence
-            [ isProjectAdmin project_handle viewer_id
-            , isProjectTeamMember project_handle viewer_id
-            , isProjectAdmin "snowdrift" viewer_id
-            ]
-
-        if can_edit
-         then getBy404 $ UniqueProjectHandle project_handle
-         else permissionDenied "You do not have permission to edit this project."
+    (viewer_id, Entity project_id _) <-
+        requireRolesAny [Admin, TeamMember] project_handle "You do not have permission to edit this project."
 
     now <- liftIO getCurrentTime
 
@@ -391,7 +248,6 @@ postProjectBlogR project_handle = do
             alertDanger $ T.pack $ show x
             redirect $ ProjectR project_handle
 
-
 getProjectBlogPostR :: Text -> ProjectBlogId -> Handler Html
 getProjectBlogPostR project_handle blog_post_id = do
     (Entity _ project, blog_post) <- runYDB $ (,)
@@ -402,28 +258,26 @@ getProjectBlogPostR project_handle blog_post_id = do
         setTitle . toHtml $ projectName project <> " Blog - " <> projectBlogTitle blog_post <> " | Snowdrift.coop"
         renderBlogPost project_handle blog_post
 
+--------------------------------------------------------------------------------
+-- /edit
 
-renderBlogPost :: Text -> ProjectBlog -> WidgetT App IO ()
-renderBlogPost project_handle blog_post = do
-    let (Markdown top_content) = projectBlogTopContent blog_post
-        (Markdown bottom_content) = fromMaybe (Markdown "") $ projectBlogBottomContent blog_post
-        title = projectBlogTitle blog_post
-        content = markdownWidget project_handle $ Markdown $ T.snoc top_content '\n' <> bottom_content
+getEditProjectR :: Text -> Handler Html
+getEditProjectR project_handle = do
+    (viewer_id, Entity project_id project) <-
+        requireRolesAny [Admin] project_handle "You do not have permission to edit this project."
 
-    $(widgetFile "blog_post")
+    tags <- runDB $
+        select $
+        from $ \ (p_t `InnerJoin` tag) -> do
+        on_ (p_t ^. ProjectTagTag ==. tag ^. TagId)
+        where_ (p_t ^. ProjectTagProject ==. val project_id)
+        return tag
 
-postWatchProjectR, postUnwatchProjectR :: ProjectId -> Handler ()
-postWatchProjectR   = watchOrUnwatchProject userWatchProjectDB   "watching "
-postUnwatchProjectR = watchOrUnwatchProject userUnwatchProjectDB "no longer watching "
+    (project_form, _) <- generateFormPost $ editProjectForm (Just (project, map (tagName . entityVal) tags))
 
-watchOrUnwatchProject :: (UserId -> ProjectId -> DB ()) -> Text -> ProjectId -> Handler ()
-watchOrUnwatchProject action msg project_id = do
-    user_id <- requireAuthId
-    project <- runYDB $ do
-        action user_id project_id
-        get404 project_id
-    alertSuccess (msg <> projectName project)
-    redirect HomeR
+    defaultLayout $ do
+        setTitle . toHtml $ projectName project <> " | Snowdrift.coop"
+        $(widgetFile "edit_project")
 
 --------------------------------------------------------------------------------
 -- /feed
@@ -489,6 +343,174 @@ getProjectFeedR project_handle = do
     edp2se (EventDeletedPledge a b c d) = EDeletedPledge a b c d
 
 --------------------------------------------------------------------------------
+-- /invite
+
+getInviteR :: Text -> Handler Html
+getInviteR project_handle = do
+    (viewer_id, Entity _ project) <- requireRolesAny [Admin] project_handle "You must be a project admin to invite."
+
+    now <- liftIO getCurrentTime
+    maybe_invite_code <- lookupSession "InviteCode"
+    maybe_invite_role <- fmap (read . T.unpack) <$> lookupSession "InviteRole"
+    deleteSession "InviteCode"
+    deleteSession "InviteRole"
+    let maybe_link = InvitationR project_handle <$> maybe_invite_code
+    (invite_form, _) <- generateFormPost inviteForm
+
+    outstanding_invites <- runDB $
+        select $
+        from $ \ invite -> do
+        where_ ( invite ^. InviteRedeemed ==. val False )
+        orderBy [ desc (invite ^. InviteCreatedTs) ]
+        return invite
+
+    redeemed_invites <- runDB $
+        select $
+        from $ \ invite -> do
+        where_ ( invite ^. InviteRedeemed ==. val True )
+        orderBy [ desc (invite ^. InviteCreatedTs) ]
+        limit 20
+        return invite
+
+    let redeemed_users = S.fromList $ mapMaybe (inviteRedeemedBy . entityVal) redeemed_invites
+        redeemed_inviters = S.fromList $ map (inviteUser . entityVal) redeemed_invites
+        outstanding_inviters = S.fromList $ map (inviteUser . entityVal) outstanding_invites
+        user_ids = S.toList $ redeemed_users `S.union` redeemed_inviters `S.union` outstanding_inviters
+
+    user_entities <- runDB $ selectList [ UserId <-. user_ids ] []
+
+    let users = M.fromList $ map (entityKey &&& id) user_entities
+
+    let format_user Nothing = "NULL"
+        format_user (Just user_id) =
+            let Entity _ user = users M.! user_id
+             in fromMaybe (userIdent user) $ userName user
+
+        format_inviter user_id =
+            userDisplayName $ users M.! user_id
+
+    defaultLayout $ do
+        setTitle . toHtml $ projectName project <> " - Send Invite | Snowdrift.coop"
+        $(widgetFile "invite")
+
+postInviteR :: Text -> Handler Html
+postInviteR project_handle = do
+    (user_id, Entity project_id _) <- requireRolesAny [Admin] project_handle "You must be a project admin to invite."
+
+    now <- liftIO getCurrentTime
+    invite <- liftIO randomIO
+
+    ((result, _), _) <- runFormPost inviteForm
+    case result of
+        FormSuccess (tag, role) -> do
+            let invite_code = T.pack $ printf "%016x" (invite :: Int64)
+            _ <- runDB $ insert $ Invite now project_id invite_code user_id role tag False Nothing Nothing
+            setSession "InviteCode" invite_code
+            setSession "InviteRole" (T.pack $ show role)
+
+        _ -> alertDanger "Error in submitting form."
+
+    redirect $ InviteR project_handle
+
+--------------------------------------------------------------------------------
+-- /patrons
+
+getProjectPatronsR :: Text -> Handler Html
+getProjectPatronsR project_handle = do
+    _ <- requireAuthId
+
+    page <- lookupGetParamDefault "page" 0
+    per_page <- lookupGetParamDefault "count" 20
+
+    (project, pledges, user_payouts_map) <- runYDB $ do
+        Entity project_id project <- getBy404 $ UniqueProjectHandle project_handle
+        pledges <- select $ from $ \ (pledge `InnerJoin` user) -> do
+            on_ $ pledge ^. PledgeUser ==. user ^. UserId
+            where_ $ pledge ^. PledgeProject ==. val project_id
+                &&. pledge ^. PledgeFundedShares >. val 0
+            orderBy [ desc (pledge ^. PledgeFundedShares), asc (user ^. UserName), asc (user ^. UserId)]
+            offset page
+            limit per_page
+            return (pledge, user)
+
+        last_paydays <- case projectLastPayday project of
+            Nothing -> return []
+            Just last_payday -> select $ from $ \ payday -> do
+                where_ $ payday ^. PaydayId <=. val last_payday
+                orderBy [ desc $ payday ^. PaydayId ]
+                limit 2
+                return payday
+
+        user_payouts <- select $ from $ \ (transaction `InnerJoin` user) -> do
+            where_ $ transaction ^. TransactionPayday `in_` valList (map (Just . entityKey) last_paydays)
+            on_ $ transaction ^. TransactionDebit ==. just (user ^. UserAccount)
+            groupBy $ user ^. UserId
+            return (user ^. UserId, count $ transaction ^. TransactionId)
+
+        return (project, pledges, M.fromList $ map ((\ (Value x :: Value UserId) -> x) *** (\ (Value x :: Value Int) -> x)) user_payouts)
+
+    defaultLayout $ do
+        setTitle . toHtml $ projectName project <> " Patrons | Snowdrift.coop"
+        $(widgetFile "project_patrons")
+
+--------------------------------------------------------------------------------
+-- /transactions
+
+getProjectTransactionsR :: Text -> Handler Html
+getProjectTransactionsR project_handle = do
+    (project, account, account_map, transaction_groups) <- runYDB $ do
+        Entity _ project :: Entity Project <- getBy404 $ UniqueProjectHandle project_handle
+
+        account <- get404 $ projectAccount project
+
+        transactions <- select $ from $ \ t -> do
+            where_ $ t ^. TransactionCredit ==. val (Just $ projectAccount project)
+                    ||. t ^. TransactionDebit ==. val (Just $ projectAccount project)
+
+            orderBy [ desc $ t ^. TransactionTs ]
+            return t
+
+        let accounts = S.toList $ S.fromList $ concatMap (\ (Entity _ t) -> maybeToList (transactionCredit t) <> maybeToList (transactionDebit t)) transactions
+
+        users_by_account <- fmap (M.fromList . map (userAccount . entityVal &&& Right)) $ select $ from $ \ u -> do
+            where_ $ u ^. UserAccount `in_` valList accounts
+            return u
+
+        projects_by_account <- fmap (M.fromList . map (projectAccount . entityVal &&& Left)) $ select $ from $ \ p -> do
+            where_ $ p ^. ProjectAccount `in_` valList accounts
+            return p
+
+        let account_map = projects_by_account `M.union` users_by_account
+
+        payday_map <- fmap (M.fromList . map (entityKey &&& id)) $ select $ from $ \ pd -> do
+            where_ $ pd ^. PaydayId `in_` valList (S.toList $ S.fromList $ mapMaybe (transactionPayday . entityVal) transactions)
+            return pd
+
+        return (project, account, account_map, process payday_map transactions)
+
+    let getOtherAccount transaction
+            | transactionCredit transaction == Just (projectAccount project) = transactionDebit transaction
+            | transactionDebit transaction == Just (projectAccount project) = transactionCredit transaction
+            | otherwise = Nothing
+
+    defaultLayout $ do
+        setTitle . toHtml $ projectName project <> " Transactions | Snowdrift.coop"
+        $(widgetFile "project_transactions")
+
+  where
+    process payday_map =
+        let process' [] [] = []
+            process' (t':ts') [] = [(fmap (payday_map M.!) $ transactionPayday $ entityVal t', reverse (t':ts'))]
+            process' [] (t:ts) = process' [t] ts
+
+            process' (t':ts') (t:ts)
+                | transactionPayday (entityVal t') == transactionPayday (entityVal t)
+                = process' (t:t':ts') ts
+                | otherwise
+                = (fmap (payday_map M.!) $ transactionPayday $ entityVal t', reverse (t':ts')) : process' [t] ts
+         in process' []
+
+--------------------------------------------------------------------------------
 -- /w
 
 getWikiPagesR :: Text -> Handler Html
@@ -512,3 +534,19 @@ getWikiPagesR project_handle = do
     defaultLayout $ do
         setTitle . toHtml $ projectName project <> " Wiki | Snowdrift.coop"
         $(widgetFile "wiki_pages")
+
+--------------------------------------------------------------------------------
+-- /watch, /unwatch
+
+postWatchProjectR, postUnwatchProjectR :: ProjectId -> Handler ()
+postWatchProjectR   = watchOrUnwatchProject userWatchProjectDB   "watching "
+postUnwatchProjectR = watchOrUnwatchProject userUnwatchProjectDB "no longer watching "
+
+watchOrUnwatchProject :: (UserId -> ProjectId -> DB ()) -> Text -> ProjectId -> Handler ()
+watchOrUnwatchProject action msg project_id = do
+    user_id <- requireAuthId
+    project <- runYDB $ do
+        action user_id project_id
+        get404 project_id
+    alertSuccess (msg <> projectName project)
+    redirect HomeR

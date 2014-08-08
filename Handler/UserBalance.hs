@@ -77,11 +77,8 @@ postUserBalanceR :: UserId -> Handler Html
 postUserBalanceR user_id = do
     Entity viewer_id _ <- requireAuth
     user <- runYDB $ get404 user_id
-
-    when (user_id /= viewer_id) $ runYDB $ do
-        is_admin <- isProjectAdmin "snowdrift" viewer_id
-        unless is_admin $
-            lift $ permissionDenied "You can only add money to your own account."
+    unless (user_id == viewer_id) $
+        permissionDenied "You can only add money to your own account."
 
     ((result, _), _) <- runFormPost addTestCashForm
 

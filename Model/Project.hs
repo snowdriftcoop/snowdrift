@@ -1,5 +1,6 @@
 module Model.Project
     ( ProjectSummary(..)
+    , UpdateProject(..)
     , fetchAllProjectsDB
     , fetchProjectCommentIdsDB
     , fetchProjectCommentsPendingBeforeDB
@@ -8,6 +9,7 @@ module Model.Project
     , fetchProjectNewPledgesBeforeDB
     , fetchProjectTeamMembersDB
     , fetchProjectUpdatedPledgesBeforeDB
+    , fetchProjectVolunteerApplicationsDB
     , fetchProjectWikiEditsBeforeDB
     , fetchProjectWikiPagesBeforeDB
     , insertProjectPledgeDB
@@ -37,14 +39,20 @@ import qualified Github.Data                  as GH
 import qualified Github.Issues                as GH
 import qualified Data.Text                    as T
 
-data ProjectSummary =
-    ProjectSummary
-        { summaryName          :: Text
-        , summaryProjectHandle :: Text
-        , summaryUsers         :: UserCount
-        , summaryShares        :: ShareCount
-        , summaryShareCost     :: Milray
-        }
+data ProjectSummary = ProjectSummary
+    { summaryName          :: Text
+    , summaryProjectHandle :: Text
+    , summaryUsers         :: UserCount
+    , summaryShares        :: ShareCount
+    , summaryShareCost     :: Milray
+    }
+
+data UpdateProject = UpdateProject
+    { updateProjectName        :: Text
+    , updateProjectDescription :: Markdown
+    , updateProjectTags        :: [Text]
+    , updateProjectGithubRepo  :: Maybe Text
+    } deriving Show
 
 -- | Fetch all Comments made on this Project, somewhere (for now, just WikiPages)
 fetchProjectCommentIdsDB :: ProjectId -> DB [CommentId]
@@ -284,3 +292,13 @@ fetchProjectRoleDB role project_id = fmap (map unValue) $
         pur ^. ProjectUserRoleProject ==. val project_id &&.
         pur ^. ProjectUserRoleRole    ==. val role
     return (pur ^. ProjectUserRoleUser)
+
+-- | Fetch all Project VolunteerApplications.
+fetchProjectVolunteerApplicationsDB :: ProjectId -> DB [Entity VolunteerApplication]
+fetchProjectVolunteerApplicationsDB project_id =
+    select $
+    from $ \va -> do
+    where_ (va ^. VolunteerApplicationProject ==. val project_id)
+    orderBy [desc (va ^. VolunteerApplicationCreatedTs)]
+    return va
+

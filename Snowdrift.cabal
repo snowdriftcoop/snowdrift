@@ -29,6 +29,7 @@ library
                      Import
                      Model
                      Model.AnnotatedTag
+                     Model.Application
                      Model.CollapseState
                      Model.Comment
                      Model.Comment.Sql
@@ -57,14 +58,11 @@ library
                      Settings
                      Settings.StaticFiles
                      Settings.Development
-                     Handler.Application
-                     Handler.Applications
                      Handler.BuildFeed
                      Handler.Contact
                      Handler.Home
                      Handler.HonorPledge
                      Handler.Invitation
-                     Handler.Invite
                      Handler.JsLicense
                      Handler.MarkdownTutorial
                      Handler.Messages
@@ -88,6 +86,7 @@ library
                      View.User
                      View.Wiki
                      View.PledgeButton
+                     View.Project
                      Version
                      Widgets.Doc
                      Widgets.Markdown

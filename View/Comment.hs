@@ -270,10 +270,11 @@ makeViewerPermissions (Entity poster_id poster) project_handle target comment_en
     maybeAuth >>= \case
         Nothing -> return (False, False, not is_reply_route, False, False, False, False, False, False, False)
         Just (Entity viewer_id viewer) -> do
-            (is_mod, can_delete, is_flagged) <- runDB $ (,,)
-                <$> isProjectModerator project_handle viewer_id
-                <*> userCanDeleteCommentDB viewer_id comment_entity
-                <*> commentIsFlagged comment_id
+            (is_mod, can_delete, is_flagged) <- runYDB $ do
+                Entity project_id _ <- getBy404 (UniqueProjectHandle project_handle)
+                (,,) <$> userIsProjectModeratorDB viewer_id project_id
+                     <*> userCanDeleteCommentDB viewer_id comment_entity
+                     <*> commentIsFlagged comment_id
 
             let can_establish = is_mod && estIsUnestablished (userEstablished poster)
                 can_reply     = not is_reply_route && not is_flagged
