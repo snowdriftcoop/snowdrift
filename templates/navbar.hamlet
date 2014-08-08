@@ -7,14 +7,6 @@
         <ul .nav .navbar-nav .navbar-left>
             <li>
                 <a href=@{ProjectsR}> Browse Projects
-            $maybe _ <- maybe_user
-                <li>
-                    <p .navbar-text .text-center>
-                        <a href=@{ProjectsR}>
-                            new activity
-                            <br>
-                            <span .badge>
-                                0 TODO
         <ul .nav .navbar-nav .navbar-right>
             $maybe Entity user_id user <- maybe_user
                 <li>
