@@ -45,7 +45,8 @@ pageInfoRequirePermission :: Text                                               
 pageInfoRequirePermission project_handle target has_permission = do
     user <- requireAuth
     (project, page, ok) <- runYDB $ do
-        (project, page) <- pageInfo project_handle target
+        project <- getBy404 (UniqueProjectHandle project_handle)
+        page    <- getBy404 (UniqueWikiTarget (entityKey project) target)
         ok <- has_permission user project page
         return (project, page, ok)
     unless ok (permissionDenied "You don't have permission to access this page.")
@@ -56,6 +57,18 @@ pageInfoRequireAffiliation :: Text -> Text -> Handler (Entity User, Entity Proje
 pageInfoRequireAffiliation project_handle target =
     pageInfoRequirePermission project_handle target (\(Entity user_id _) (Entity project_id _) _ ->
       userIsAffiliatedWithProjectDB user_id project_id)
+
+-- | Like pageInfoRequireAffiliation, but this is for creating a new WikiPage, so one doesn't
+-- already exist. TODO(mitchell): Make a better abstraction here.
+pageInfoRequireAffiliation' :: Text -> Handler (Entity User, Entity Project)
+pageInfoRequireAffiliation' project_handle = do
+    user@(Entity user_id _) <- requireAuth
+    (project, ok) <- runYDB $ do
+        project@(Entity project_id _) <- getBy404 (UniqueProjectHandle project_handle)
+        ok <- userIsAffiliatedWithProjectDB user_id project_id
+        return (project, ok)
+    unless ok (permissionDenied "You don't have permission to access this page.")
+    return (user, project)
 
 -- | Like pageInfoRequirePermission, but specialized to requiring that the User can edit a WikiPage.
 pageInfoRequireCanEdit :: Text -> Text -> Handler (Entity User, Entity Project, Entity WikiPage)
@@ -372,7 +385,7 @@ getWikiEditR project_handle target edit_id = do
 
 getNewWikiR :: Text -> Text -> Handler Html
 getNewWikiR project_handle target = do
-    (_, Entity _ project, _) <- pageInfoRequireAffiliation project_handle target
+    (_, Entity _ project) <- pageInfoRequireAffiliation' project_handle
     (wiki_form, _) <- generateFormPost $ newWikiForm Nothing
     defaultLayout $ do
         setTitle . toHtml $ projectName project <> " Wiki - New Page | Snowdrift.coop"
@@ -381,7 +394,7 @@ getNewWikiR project_handle target = do
 
 postNewWikiR :: Text -> Text -> Handler Html
 postNewWikiR project_handle target = do
-    (Entity user_id _, Entity project_id _, _) <- pageInfoRequireAffiliation project_handle target
+    (Entity user_id _, Entity project_id _) <- pageInfoRequireAffiliation' project_handle
     now <- liftIO getCurrentTime
     ((result, _), _) <- runFormPost $ newWikiForm Nothing
     case result of
