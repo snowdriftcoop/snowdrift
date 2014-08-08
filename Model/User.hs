@@ -313,7 +313,9 @@ userUnwatchProjectDB user_id project_id = do
     delete_wiki_page_comment_views =
         delete $
         from $ \vc ->
-        where_ (vc ^. ViewCommentComment `in_` (subList_select (querProjectCommentIdsPostedOnWikiPagesDB project_id)))
+        where_ (vc ^. ViewCommentComment `in_` (
+            subList_select $
+            querProjectCommentIdsPostedOnWikiPagesDB project_id (Just user_id)))
 
     delete_wiki_edit_views =
         delete $

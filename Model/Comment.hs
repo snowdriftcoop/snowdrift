@@ -152,10 +152,18 @@ makeCommentUsersSet = F.foldMap (S.singleton . commentUser . entityVal)
 
 approveCommentDB :: UserId -> CommentId -> Comment -> SDB ()
 approveCommentDB user_id comment_id comment = do
-    lift upd
-    tell [ECommentPosted comment_id comment]
+    now <- liftIO getCurrentTime
+    -- Do an in-memory adjustment of the comment with exactly the same changes
+    -- as 'upd' below (so we can avoid hitting the database).
+    let updated_comment = comment
+          { commentModeratedTs = Just now
+          , commentModeratedBy = Just user_id
+          }
+    lift (upd now)
+    tell [ECommentPosted comment_id updated_comment]
   where
-    upd = liftIO getCurrentTime >>= \now ->
+
+    upd now =
         update $ \c -> do
         set c [ CommentModeratedTs =. val (Just now)
               , CommentModeratedBy =. val (Just user_id)

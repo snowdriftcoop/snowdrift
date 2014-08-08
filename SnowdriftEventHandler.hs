@@ -69,6 +69,7 @@ messageEventHandler (ECommentPending comment_id comment) = do
 
             lift (fetchProjectModeratorsDB project_id) >>=
               mapM_ (\user_id -> sendNotificationMessageDB MessageDirect user_id content)
+messageEventHandler _ = return ()
 
 -- | Handler in charge of inserting events (stripped down) into a separate table for each type.
 eventInserterHandler :: SnowdriftEvent -> Daemon ()

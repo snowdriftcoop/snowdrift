@@ -56,7 +56,7 @@ data UpdateProject = UpdateProject
     } deriving Show
 
 -- | Fetch all Comments made on this Project, somewhere (for now, just WikiPages)
-fetchProjectCommentIdsDB :: ProjectId -> DB [CommentId]
+fetchProjectCommentIdsDB :: ProjectId -> Maybe UserId -> DB [CommentId]
 fetchProjectCommentIdsDB = fetchProjectCommentIdsPostedOnWikiPagesDB
 
 fetchAllProjectsDB :: DB [Entity Project]
@@ -211,8 +211,10 @@ fetchProjectCommentsPostedOnWikiPagesBeforeDB project_id muser_id before =
     return c
 
 -- | Fetch all CommentIds on this Project's WikiPages.
-fetchProjectCommentIdsPostedOnWikiPagesDB :: ProjectId -> DB [CommentId]
-fetchProjectCommentIdsPostedOnWikiPagesDB = fmap (map unValue) . select . querProjectCommentIdsPostedOnWikiPagesDB
+fetchProjectCommentIdsPostedOnWikiPagesDB :: ProjectId -> Maybe UserId -> DB [CommentId]
+fetchProjectCommentIdsPostedOnWikiPagesDB project_id muser_id = fmap (map unValue) $
+    select $
+    querProjectCommentIdsPostedOnWikiPagesDB project_id muser_id
 
 -- | Fetch all pending Comments made on a Project before this time.
 fetchProjectCommentsPendingBeforeDB :: ProjectId -> Maybe UserId -> UTCTime -> DB [Entity Comment]

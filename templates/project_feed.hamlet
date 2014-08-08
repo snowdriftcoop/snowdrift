@@ -21,9 +21,6 @@ $forall event <- events
             $nothing
                 ^{renderCommentPostedOnUnknownDiscussionEvent comment_id comment}
 
-        $of ECommentPending comment_id comment
-            ^{renderCommentPendingEvent comment_id comment}
-
         $of EWikiPage wiki_page_id wiki_page
             ^{renderWikiPageEvent wiki_page_id wiki_page}
 
@@ -39,5 +36,8 @@ $forall event <- events
         $of EDeletedPledge _ user_id _ shares
             ^{renderDeletedPledgeEvent user_id shares users_map}
 
+        $# Graveyard of event types we don't want to put on the feed.
+        $# Don't match-all here, we don't want to accidentally not consider something.
+
         $of EMessageSent _ _
-            $# Don't display message events on project feeds.
+        $of ECommentPending _ _
