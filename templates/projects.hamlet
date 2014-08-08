@@ -4,8 +4,8 @@ $else
     <table .projects>
         <tr>
             <th> Project
-            <th> Edits
-            <th> Discussion
+            <th> Feed
+            <th> Wiki
             <th> Share value
         $forall Entity _ project <- projects
             <tr>
@@ -14,6 +14,9 @@ $else
                         #{projectName project}
                 <td>
                     <a href=@{ProjectFeedR (projectHandle project)}>
-                        <span .glyphicon .glyphicon-list-alt>&nbsp;
+                        <span .glyphicon .glyphicon-list>&nbsp;
+                <td>
+                    <a href=@{WikiPagesR (projectHandle project)}>
+                        <span .glyphicon .glyphicon-book>&nbsp;
                 <td>
                     #{show (projectShareValue project)}/share
