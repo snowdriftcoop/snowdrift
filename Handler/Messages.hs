@@ -25,6 +25,21 @@ getMessagesR = do
         setTitle "Messages | Snowdrift.coop"
         $(widgetFile "messages")
 
+-- TODO(mitchell): Share more code with getMessagesR?
+getArchivedMessagesR :: Handler Html
+getArchivedMessagesR = do
+    user@(Entity user_id _) <- requireAuth
+
+    (messages, user_map) <- runDB $ do
+        messages <- fetchUserArchivedMessagesDB user_id
+        let from_users = catMaybes (map (messageFromUser . entityVal) messages)
+        user_map <- entitiesMap . (user :) <$> fetchUsersInDB from_users
+        return (messages, user_map)
+
+    defaultLayout $ do
+        setTitle "Messages | Snowdrift.coop"
+        $(widgetFile "messages")
+
 postArchiveMessageR :: MessageId -> Handler ()
 postArchiveMessageR message_id = do
     user_id <- requireAuthId

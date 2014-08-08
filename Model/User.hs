@@ -20,6 +20,7 @@ module Model.User
     , fetchNumUnreadMessagesDB
     , fetchNumUnviewedCommentsOnProjectWikiPagesDB
     , fetchNumUnviewedWikiEditsOnProjectDB
+    , fetchUserArchivedMessagesDB
     , fetchUserMessagesDB
     , fetchUserMessagePrefDB
     , fetchUserProjectsAndRolesDB
@@ -313,12 +314,22 @@ fetchUserMessagePrefDB user_id msg_type = fmap (fmap unValue . listToMaybe) $
         ump ^. UserMessagePrefType ==. val msg_type
     return (ump ^. UserMessagePrefDelivery)
 
--- | Fetch a User's private Messages.
+-- | Fetch a User's unarchived private Messages.
 fetchUserMessagesDB :: UserId -> DB [Entity Message]
-fetchUserMessagesDB user_id =
+fetchUserMessagesDB = fetchMessages (not_ . (^. MessageArchived))
+
+-- | Fetch a User's archived private Messages.
+fetchUserArchivedMessages :: UserId -> DB [Entity Message]
+fetchUserArchivedMessages = fetchMessages (^. MessageArchived)
+
+-- | Abstract fetching archived/unarchived messages. Unexported.
+fetchMessages :: (SqlExpr (Entity Message) -> SqlExpr (Value Bool)) -> UserId -> DB [Entity Message]
+fetchMessages cond user_id =
     select $
     from $ \m -> do
-    where_ (m ^. MessageToUser ==. val user_id)
+    where_
+        m ^. MessageToUser ==. val user_id &&.
+        cond m
     orderBy [desc (m ^. MessageCreatedTs)]
     return m
 
