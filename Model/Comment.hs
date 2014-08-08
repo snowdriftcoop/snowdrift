@@ -34,7 +34,7 @@ module Model.Comment
     , fetchCommentDestinationDB
     , fetchCommentFlaggingDB
     , fetchCommentsDescendantsDB
-    , fetchCommentPageEntityDB
+    , fetchCommentWikiPageDB
     , fetchCommentRethreadDB
     , fetchCommentTagsDB
     , filterCommentsDB
@@ -320,10 +320,10 @@ unsafeFetchCommentPageIdDB = fmap entityKey . unsafeFetchCommentPageEntityDB
 
 -- | Fails if the given Comment is not on a WikiPage, but some other Discussion.
 unsafeFetchCommentPageEntityDB :: CommentId -> DB (Entity WikiPage)
-unsafeFetchCommentPageEntityDB = fmap fromJust . fetchCommentPageEntityDB
+unsafeFetchCommentPageEntityDB = fmap fromJust . fetchCommentWikiPageDB
 
-fetchCommentPageEntityDB :: CommentId -> DB (Maybe (Entity WikiPage))
-fetchCommentPageEntityDB comment_id = fmap listToMaybe $
+fetchCommentWikiPageDB :: CommentId -> DB (Maybe (Entity WikiPage))
+fetchCommentWikiPageDB comment_id = fmap listToMaybe $
     select $
     from $ \(c `InnerJoin` p) -> do
     on_ (c ^. CommentDiscussion ==. p ^. WikiPageDiscussion)

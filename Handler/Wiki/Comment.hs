@@ -938,9 +938,9 @@ makeCommentWidgetMod CommentMods{..} get_max_depth show_actions form_under_root_
 -- Experimental - /c/#CommentId
 
 getCommentDirectLinkR :: CommentId -> Handler Html
-getCommentDirectLinkR comment_id = runDB (fetchCommentPageEntityDB comment_id) >>= \case
+getCommentDirectLinkR comment_id = runDB (fetchCommentWikiPageDB comment_id) >>= \case
     -- comment not on a wiki page? right now, there's nowhere else to check
-    -- TODO: fixme once discussions are expanded
+    -- TODO(mitchell): does this require constant attention?
     Nothing -> notFound
     Just (Entity _ page) -> do
         project <- runYDB $ get404 (wikiPageProject page)

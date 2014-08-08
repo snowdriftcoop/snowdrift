@@ -58,6 +58,7 @@ library
                      Settings
                      Settings.StaticFiles
                      Settings.Development
+                     SnowdriftEventHandler
                      Handler.BuildFeed
                      Handler.Contact
                      Handler.Home

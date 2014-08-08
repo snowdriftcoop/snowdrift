@@ -9,9 +9,9 @@ module Application
 
 import Import
 import Settings
+import SnowdriftEventHandler
 import Version
 
-import           Blaze.ByteString.Builder             (toLazyByteString)
 import           Control.Concurrent                   (forkIO, threadDelay)
 import           Control.Concurrent.STM               (atomically, newTChanIO, tryReadTChan)
 import           Control.Monad.Logger                 (runLoggingT, runStderrLoggingT)
@@ -20,10 +20,7 @@ import           Control.Monad.Trans.Resource
 import           Data.ByteString                      (ByteString)
 import           Data.Default                         (def)
 import qualified Data.List                            as L
-import           Data.Maybe                           (fromJust)
 import           Data.Text                            as T
-import qualified Data.Text.Lazy                       as TL
-import qualified Data.Text.Lazy.Encoding              as TLE
 import qualified Data.Text.IO                         as T
 import qualified Database.Persist
 import           Database.Persist.Postgresql          (pgConnStr, withPostgresqlConn)
@@ -37,12 +34,10 @@ import           System.Directory
 import           System.Environment                   (lookupEnv)
 import           System.Log.FastLogger                (newStdoutLoggerSet, defaultBufSize, flushLogStr)
 import           System.Posix.Env.ByteString
-import           Yesod                                (renderRoute)
 import           Yesod.Core.Types                     (loggerSet, Logger (Logger))
 import           Yesod.Default.Config
 import           Yesod.Default.Handlers
 import           Yesod.Default.Main
-import           Yesod.Markdown
 
 -- Import all relevant handler modules here.
 -- Don't forget to add new modules to your cabal file!
@@ -70,9 +65,6 @@ import Handler.Who
 import Handler.Widget
 import Handler.Wiki
 import Handler.Wiki.Comment
-
-import Model.Message
-import Model.User
 
 import Widgets.Navbar
 
@@ -156,10 +148,7 @@ makeFoundation conf = do
                        dbconf
                        logger
                        event_chan
-                       -- Add more event handlers here.
-                       [ messageEventHandler
-                       , eventInserterHandler
-                       ]
+                       snowdriftEventHandlers
 
     -- Perform database migration using our application's logging settings.
     case appEnv conf of
@@ -354,50 +343,3 @@ forkEventHandler app@App{..} = void . forkIO . forever $ do
         Just event -> do
             mapM_ (runDaemon app) (appEventHandlers <*> [event])
             handleNEvents (n-1)
-
--- | Handler in charge of sending Messages to interested parties.
-messageEventHandler :: SnowdriftEvent -> Daemon ()
-messageEventHandler (ECommentPosted comment_id comment) = case commentParent comment of
-    Nothing -> return ()
-    Just parent_comment_id -> do
-        (parent_user_id, delivery) <- runDB $ do
-            parent_user_id <- commentUser <$> Database.Persist.getJust parent_comment_id
-            delivery <- fetchUserMessagePrefDB parent_user_id MessageReply
-            return (parent_user_id, delivery)
-        -- Any non-Nothing delivery implies an internal Message should be sent.
-        when (isJust delivery) $ do
-            app <- ask
-            let parent_comment_route = renderRoute' (CommentDirectLinkR parent_comment_id) app
-                reply_comment_route  = renderRoute' (CommentDirectLinkR comment_id)        app
-
-            let content = mconcat
-                  [ "Someone replied to [your comment]("
-                  , Markdown parent_comment_route
-                  , ")! You can view the reply [here]("
-                  , Markdown reply_comment_route
-                  , ")."
-                  , ""
-                  , "*You can filter these messages by adjusting the settings in your profile.*"
-                  ]
-            void $ runSDB (sendNotificationMessageDB MessageReply parent_user_id content)
--- TODO(mitchell): send messages on other events, per preferences
-messageEventHandler _ = return ()
-
--- | Handler in charge of inserting events (stripped down) into a separate table for each type.
-eventInserterHandler :: SnowdriftEvent -> Daemon ()
--- If an unapproved comment is sent as an ECommentPosted event, bad things will happen (fromJust).
-eventInserterHandler (ECommentPosted comment_id Comment{..})                         = runDB (insert_ (EventCommentPosted (fromJust commentModeratedTs) comment_id))
-eventInserterHandler (ECommentPending comment_id Comment{..})                        = runDB (insert_ (EventCommentPending commentCreatedTs comment_id))
-eventInserterHandler (EMessageSent message_id Message{..})                           = runDB (insert_ (EventMessageSent messageCreatedTs message_id))
-eventInserterHandler (EWikiPage wiki_page_id WikiPage{..})                           = runDB (insert_ (EventWikiPage wikiPageCreatedTs wiki_page_id))
-eventInserterHandler (EWikiEdit wiki_edit_id WikiEdit{..})                           = runDB (insert_ (EventWikiEdit wikiEditTs wiki_edit_id))
-eventInserterHandler (ENewPledge shares_pledged_id SharesPledged{..})                = runDB (insert_ (EventNewPledge sharesPledgedTs shares_pledged_id))
-eventInserterHandler (EUpdatedPledge old_shares shares_pledged_id SharesPledged{..}) = runDB (insert_ (EventUpdatedPledge sharesPledgedTs old_shares shares_pledged_id))
-eventInserterHandler (EDeletedPledge ts user_id project_id shares)                   = runDB (insert_ (EventDeletedPledge ts user_id project_id shares))
-
-renderRoute' :: Route App -> App -> Text
-renderRoute' route app =
-    let (path_pieces, query_params) = renderRoute route
-    -- converting a lazy ByteString to a strict Text... ridiculous!
-    -- why does joinPath return a ByteString??
-    in TL.toStrict $ TLE.decodeUtf8 $ toLazyByteString (joinPath app "" path_pieces query_params)

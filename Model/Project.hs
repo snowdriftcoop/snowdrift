@@ -7,6 +7,7 @@ module Model.Project
     , fetchProjectCommentsPostedOnWikiPagesBeforeDB
     , fetchProjectDeletedPledgesBeforeDB
     , fetchProjectNewPledgesBeforeDB
+    , fetchProjectModeratorsDB
     , fetchProjectTeamMembersDB
     , fetchProjectUpdatedPledgesBeforeDB
     , fetchProjectVolunteerApplicationsDB
@@ -283,6 +284,9 @@ fetchProjectDeletedPledgesBeforeDB project_id before = fmap (map entityVal) $
 fetchProjectTeamMembersDB :: ProjectId -> DB [UserId]
 fetchProjectTeamMembersDB = fetchProjectRoleDB TeamMember
 
+fetchProjectModeratorsDB :: ProjectId -> DB [UserId]
+fetchProjectModeratorsDB = fetchProjectRoleDB Moderator
+
 -- | Abstract fetching Project Admins, TeamMembers, etc. Not exported.
 fetchProjectRoleDB :: Role -> ProjectId -> DB [UserId]
 fetchProjectRoleDB role project_id = fmap (map unValue) $
@@ -292,7 +296,7 @@ fetchProjectRoleDB role project_id = fmap (map unValue) $
         pur ^. ProjectUserRoleProject ==. val project_id &&.
         pur ^. ProjectUserRoleRole    ==. val role
     return (pur ^. ProjectUserRoleUser)
-
+  --
 -- | Fetch all Project VolunteerApplications.
 fetchProjectVolunteerApplicationsDB :: ProjectId -> DB [Entity VolunteerApplication]
 fetchProjectVolunteerApplicationsDB project_id =
