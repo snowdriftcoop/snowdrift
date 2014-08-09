@@ -104,7 +104,7 @@ getWikiR project_handle target = do
         setTitle . toHtml $
             projectName project <> " : " <> wikiPageTarget page <> " | Snowdrift.coop"
 
-        renderWiki comment_count project_handle target can_edit True page
+        renderWiki comment_count project_handle target can_edit page
 
 postWikiR :: Text -> Text -> Handler Html
 postWikiR project_handle target = do
@@ -127,7 +127,7 @@ postWikiR project_handle target = do
                     (form, _) <- generateFormPost $ editWikiForm last_edit_id content (Just comment)
 
                     defaultLayout $ previewWidget form action $
-                        renderWiki 0 project_handle target False False $
+                        renderWiki 0 project_handle target False $
                             WikiPage now target project_id content (Key $ PersistInt64 (-1)) Normal
 
                 Just x | x == action -> do
@@ -406,7 +406,7 @@ postNewWikiR project_handle target = do
                         (form, _) <- generateFormPost $ newWikiForm (Just content)
                         defaultLayout $ do
                             let page = WikiPage now target project_id content (Key $ PersistInt64 0) Normal
-                            previewWidget form action $ renderWiki 0 project_handle target False False page
+                            previewWidget form action $ renderWiki 0 project_handle target False page
 
                 Just x | x == action -> do
                     runSDB (createWikiPageDB target project_id content Normal user_id)

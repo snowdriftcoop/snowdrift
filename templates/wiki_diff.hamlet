@@ -1,13 +1,12 @@
 $# TODO - info from compared versions
 
-<div .row>
-    <div .col-sm-4> 
+<div .page-toolbox>
+    <div .page-tool> 
         <a href="@{WikiHistoryR project_handle target}">back to history 
-    <div .col-sm-4>
+    <div .page-tool>
         <a href="@{WikiR project_handle target}">current version
-    <div .col-sm-4>
+    <div .page-tool>
         <a href="@{DiscussWikiR project_handle target}">view discussion
 
-<hr .wikitop>
 #{renderDiff (diffEdits start_edit end_edit)}
 

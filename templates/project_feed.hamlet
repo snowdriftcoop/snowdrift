@@ -8,7 +8,7 @@ $forall event <- events
             $# on by looking in each map in order. There ought to be a nicer
             $# way to do this, but I'd like to keep both of:
             $#   - ECommentPosted not being split into a different event for
-            $#       each location a comment might be posted.
+            $#       each comment location.
             $#   - A single event data type (as opposed to something like 
             $#       FeedEvent that specialized SnowdriftEvent, e.g.
             $#       FECommentPostedOnWikiPage)

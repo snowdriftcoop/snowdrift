@@ -1,7 +1,5 @@
-<div .row>
-    <div .col-xs-6>
-        <a href="@{WikiR project_handle target}"> back to current page
-<hr .wikitop>
+<a href="@{WikiR project_handle target}"> back to current page
+
 <form action="@{WikiDiffProxyR project_handle target}" method="GET">
     <table>
         <tr>
