@@ -17,12 +17,12 @@ module Model.User
     , establishUserDB
     , fetchAllUserRolesDB
     , fetchCurUserRolesDB
-    , fetchNumUnreadMessagesDB
+    , fetchNumUnreadNotificationsDB
     , fetchNumUnviewedCommentsOnProjectWikiPagesDB
     , fetchNumUnviewedWikiEditsOnProjectDB
-    , fetchUserArchivedMessagesDB
-    , fetchUserMessagesDB
-    , fetchUserMessagePrefDB
+    , fetchUserArchivedNotificationsDB
+    , fetchUserNotificationsDB
+    , fetchUserNotificationPrefDB
     , fetchUserProjectsAndRolesDB
     , fetchUserRolesDB
     , fetchUsersInDB
@@ -35,7 +35,7 @@ module Model.User
     , userIsProjectModeratorDB
     , userIsProjectTeamMemberDB
     , userIsWatchingProjectDB
-    , userReadMessagesDB
+    , userReadNotificationsDB
     , userReadVolunteerApplicationsDB
     , userUnwatchProjectDB
     , userViewCommentsDB
@@ -51,7 +51,7 @@ import Import
 
 import Model.Comment
 import Model.Comment.Sql
-import Model.Message
+import Model.Notification
 import Model.Project.Sql
 import Model.User.Sql
 import Model.WikiPage.Sql
@@ -73,7 +73,7 @@ data UserUpdate =
         , userUpdateIrcNick            :: Maybe Text
         , userUpdateBlurb              :: Maybe Markdown
         , userUpdateStatement          :: Maybe Markdown
-        , userUpdateMessagePreferences :: [(MessageType, MessageDelivery)]
+        , userUpdateNotificationPreferences :: [(NotificationType, NotificationDelivery)]
         }
 
 --------------------------------------------------------------------------------
@@ -116,7 +116,7 @@ userDisplayName :: Entity User -> Text
 userDisplayName (Entity user_id user) = fromMaybe ("user" <> toPathPiece user_id) (userName user)
 
 -- | Apply a UserUpdate in memory, for preview. For this reason,
--- userUpdateMessagePreferences doesn't need to be touched.
+-- userUpdateNotificationPreferences doesn't need to be touched.
 updateUserPreview :: UserUpdate -> User -> User
 updateUserPreview UserUpdate{..} user = user
     { userName               = userUpdateName
@@ -147,7 +147,7 @@ updateUserDB user_id UserUpdate{..} = do
      from $ \ump -> do
      where_ (ump ^. UserId ==. val user_id)
 
-    let new_prefs = map (uncurry (UserMessagePref user_id)) userUpdateMessagePreferences
+    let new_prefs = map (uncurry (UserNotificationPref user_id)) userUpdateNotificationPreferences
     void (insertMany new_prefs)
 
 -- | Establish a user, given their eligible-timestamp and reason for
@@ -173,7 +173,7 @@ establishUserDB user_id elig_time reason = do
                 c ^. CommentUser ==. val user_id &&.
                 exprUnapproved c
 
--- | Make a user eligible for establishment. Put a message in their inbox
+-- | Make a user eligible for establishment. Put a notification in their inbox
 -- instructing them to read and accept the honor pledge.
 eligEstablishUserDB :: UserId -> UserId -> Text -> SDB ()
 eligEstablishUserDB establisher_id user_id reason = do
@@ -181,16 +181,16 @@ eligEstablishUserDB establisher_id user_id reason = do
     let est = EstEligible elig_time reason
     lift $
         update $ \u -> do
-        set u [ UserEstablished =. val est ]
+        set u [UserEstablished =. val est]
         where_ (u ^. UserId ==. val user_id)
 
     lift $ insert_ $ ManualEstablishment user_id establisher_id
 
     snowdrift_id <- lift getSnowdriftId
-    void $ sendP2UMessageDB MessageDirect Nothing snowdrift_id user_id message_text
+    sendNotificationDB_ NotifEligEstablish user_id (Just snowdrift_id) content
   where
-    message_text :: Markdown
-    message_text = Markdown $ T.unlines
+    content :: Markdown
+    content = Markdown $ T.unlines
         [ "You are now eligible to become an *established* user."
         , ""
         , "After you [accept the honor pledge](/honor-pledge), you can comment and take other actions on the site without moderation."
@@ -266,36 +266,36 @@ canMakeEligible establishee_id establisher_id = do
         <*> (elem Moderator <$> fetchAllUserRolesDB establisher_id)
     return $ userIsUnestablished establishee && establisher_is_mod
 
--- | How does this User prefer messages of a certain type to be delivered (if at all)?
--- listToMaybe is appropriate here due to UniqueUserMessagePref (list returned will
+-- | How does this User prefer notifications of a certain type to be delivered (if at all)?
+-- listToMaybe is appropriate here due to UniqueUserNotificationPref (list returned will
 -- either be [] or [Value delivery])
-fetchUserMessagePrefDB :: UserId -> MessageType -> DB (Maybe MessageDelivery)
-fetchUserMessagePrefDB user_id msg_type = fmap (fmap unValue . listToMaybe) $
+fetchUserNotificationPrefDB :: UserId -> NotificationType -> DB (Maybe NotificationDelivery)
+fetchUserNotificationPrefDB user_id notif_type = fmap (fmap unValue . listToMaybe) $
     select $
-    from $ \ump -> do
+    from $ \unp -> do
     where_ $
-        ump ^. UserMessagePrefUser ==. val user_id &&.
-        ump ^. UserMessagePrefType ==. val msg_type
-    return (ump ^. UserMessagePrefDelivery)
+        unp ^. UserNotificationPrefUser ==. val user_id &&.
+        unp ^. UserNotificationPrefType ==. val notif_type
+    return (unp ^. UserNotificationPrefDelivery)
 
--- | Fetch a User's unarchived private Messages.
-fetchUserMessagesDB :: UserId -> DB [Entity Message]
-fetchUserMessagesDB = fetchMessages (not_ . (^. MessageArchived))
+-- | Fetch a User's unarchived private Notifications.
+fetchUserNotificationsDB :: UserId -> DB [Entity Notification]
+fetchUserNotificationsDB = fetchNotifs (not_ . (^. NotificationArchived))
 
--- | Fetch a User's archived private Messages.
-fetchUserArchivedMessagesDB :: UserId -> DB [Entity Message]
-fetchUserArchivedMessagesDB = fetchMessages (^. MessageArchived)
+-- | Fetch a User's archived private Notifications.
+fetchUserArchivedNotificationsDB :: UserId -> DB [Entity Notification]
+fetchUserArchivedNotificationsDB = fetchNotifs (^. NotificationArchived)
 
--- | Abstract fetching archived/unarchived messages. Unexported.
-fetchMessages :: (SqlExpr (Entity Message) -> SqlExpr (Value Bool)) -> UserId -> DB [Entity Message]
-fetchMessages cond user_id =
+-- | Abstract fetching archived/unarchived Notifications. Unexported.
+fetchNotifs :: (SqlExpr (Entity Notification) -> SqlExpr (Value Bool)) -> UserId -> DB [Entity Notification]
+fetchNotifs cond user_id =
     select $
-    from $ \m -> do
+    from $ \n -> do
     where_ $
-        m ^. MessageToUser ==. val user_id &&.
-        cond m
-    orderBy [desc (m ^. MessageCreatedTs)]
-    return m
+        n ^. NotificationTo ==. val user_id &&.
+        cond n
+    orderBy [desc (n ^. NotificationCreatedTs)]
+    return n
 
 userWatchProjectDB :: UserId -> ProjectId -> DB ()
 userWatchProjectDB user_id project_id = void (insertUnique (UserWatchingProject user_id project_id))
@@ -356,11 +356,11 @@ userViewWikiEditsDB user_id wiki_page_id = unviewedWikiEdits >>= viewWikiEdits
     viewWikiEdits :: [WikiEditId] -> DB ()
     viewWikiEdits = mapM_ (insert_ . ViewWikiEdit user_id)
 
--- | Update this User's read messages timestamp.
-userReadMessagesDB :: UserId -> DB ()
-userReadMessagesDB user_id = liftIO getCurrentTime >>= \now -> do
+-- | Update this User's read notifications timestamp.
+userReadNotificationsDB :: UserId -> DB ()
+userReadNotificationsDB user_id = liftIO getCurrentTime >>= \now -> do
     update $ \u -> do
-    set u [UserReadMessages =. val now]
+    set u [UserReadNotifications =. val now]
     where_ (u ^. UserId ==. val user_id)
 
 -- | Update this User's read applications timestamp.
@@ -407,12 +407,12 @@ fetchNumUnviewedWikiEditsOnProjectDB user_id project_id = fmap (M.fromList . map
     having (countRows' >. val 0)
     return (wp ^. WikiPageId, countRows')
 
-fetchNumUnreadMessagesDB :: UserId -> DB Int
-fetchNumUnreadMessagesDB user_id = fmap (\[Value n] -> n) $
+fetchNumUnreadNotificationsDB :: UserId -> DB Int
+fetchNumUnreadNotificationsDB user_id = fmap (\[Value n] -> n) $
     select $
-    from $ \(u `InnerJoin` m) -> do
-    on_ (u ^. UserId ==. m ^. MessageToUser)
+    from $ \(u `InnerJoin` n) -> do
+    on_ (u ^. UserId ==. n ^. NotificationTo)
     where_ $
         u ^. UserId ==. val user_id &&.
-        m ^. MessageCreatedTs >=. u ^. UserReadMessages
+        n ^. NotificationCreatedTs >=. u ^. UserReadNotifications
     return countRows

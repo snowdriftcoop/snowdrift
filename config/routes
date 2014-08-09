@@ -25,11 +25,11 @@
 /u/#UserId/pledges UserPledgesR     GET
 /u/!new            UserCreateR      GET POST
 
--- Messages
+-- Notifications
 
-/messages             MessagesR         GET
-/messages/archived    ArchivedMessagesR GET
-/m/#MessageId/archive ArchiveMessageR       POST
+/notifications             NotificationsR         GET
+/notifications/archived    ArchivedNotificationsR GET
+/n/#NotificationId/archive ArchiveNotificationR       POST
 
 -- Project
 
@@ -39,7 +39,6 @@
 /p/#Text/application/#VolunteerApplicationId ApplicationR         GET
 /p/#Text/b                                   ProjectBlogR         GET POST
 /p/#Text/b/#ProjectBlogId                    ProjectBlogPostR     GET
-/p/#Text/contact                             ContactR             GET POST
 /p/#Text/edit                                EditProjectR         GET
 /p/#Text/feed                                ProjectFeedR         GET
 /p/#Text/invitation/#Text                    InvitationR          GET POST

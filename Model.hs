@@ -2,27 +2,27 @@
 
 module Model where
 
-import Model.Comment.Internal     (ClosureType, FlagReason)
-import Model.Currency             (Milray)
-import Model.Established.Internal (Established(..))
-import Model.Markdown.Diff        (MarkdownDiff)
-import Model.Message.Internal     (MessageType, MessageDelivery)
-import Model.Permission.Internal  (PermissionLevel)
-import Model.Role.Internal        (Role)
-import Model.Settings.Internal    (UserSettingName)
-import Model.ViewType.Internal    (ViewType)
+import Model.Comment.Internal      (ClosureType, FlagReason)
+import Model.Currency              (Milray)
+import Model.Established.Internal  (Established(..))
+import Model.Markdown.Diff         (MarkdownDiff)
+import Model.Notification.Internal (NotificationType, NotificationDelivery)
+import Model.Permission.Internal   (PermissionLevel)
+import Model.Role.Internal         (Role)
+import Model.Settings.Internal     (UserSettingName)
+import Model.ViewType.Internal     (ViewType)
 
-import Control.Exception          (Exception)
-import Data.Int                   (Int64)
-import Data.Function              (on)
-import Data.Text                  (Text)
-import Data.Time.Clock            (UTCTime)
-import Data.Typeable              (Typeable)
+import Control.Exception           (Exception)
+import Data.Int                    (Int64)
+import Data.Function               (on)
+import Data.Text                   (Text)
+import Data.Time.Clock             (UTCTime)
+import Data.Typeable               (Typeable)
 import Database.Persist.Quasi
 import Prelude
 import Yesod
-import Yesod.Auth.HashDB          (HashDBUser (..))
-import Yesod.Markdown             (Markdown)
+import Yesod.Auth.HashDB           (HashDBUser (..))
+import Yesod.Markdown              (Markdown)
 
 -- You can define all of your database entities in the entities file.
 -- You can find more information on persistent and how to declare entities

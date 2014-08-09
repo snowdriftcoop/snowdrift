@@ -10,7 +10,7 @@ snowdriftEventNewestToOldest x y  = compare (snowdriftEventTime y) (snowdriftEve
 snowdriftEventTime :: SnowdriftEvent -> UTCTime
 snowdriftEventTime (ECommentPosted _ Comment{..})         = fromMaybe commentCreatedTs commentModeratedTs
 snowdriftEventTime (ECommentPending _ Comment{..})        = commentCreatedTs
-snowdriftEventTime (EMessageSent _ Message{..})           = messageCreatedTs
+snowdriftEventTime (ENotificationSent _ Notification{..}) = notificationCreatedTs
 snowdriftEventTime (EWikiEdit _ WikiEdit{..})             = wikiEditTs
 snowdriftEventTime (EWikiPage _ WikiPage{..})             = wikiPageCreatedTs
 snowdriftEventTime (ENewPledge _ SharesPledged{..})       = sharesPledgedTs

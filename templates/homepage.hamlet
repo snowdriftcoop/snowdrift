@@ -42,7 +42,7 @@
 <p>
     If your
     <a href="@{WikiR "snowdrift" "project-requirements"}">free/libre/open
-    project needs funding, please <a href=@{ContactR "snowdrift"}>contact us</a>.
+    project needs funding, please contact us. TODO(aaron): where should this link?
     We want projects included as we develop to make sure things work well for you!
 
 <h2>Donate
@@ -77,7 +77,7 @@
             <img alt="Bitcoin" src="/static/img/external/Bitcoin.png" style="height: 4em"> 
         <small>
             We're still deciding the best options, but, for now,
-            <a href=@{ContactR "snowdrift"}>contact us
+            contact us (TODO(aaron): where should this link?)
             to get a BTC invoice with an address to donate.
 
 <small>

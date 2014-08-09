@@ -1,0 +1,14 @@
+$if not (null notifs)
+    $forall Entity _ notif <- notifs
+        <div .row>
+            <div .col-sm-3 .well .well-sm>
+
+                $maybe project <- notificationProject notif
+                    <em>^{projectNameWidget project}
+
+                <br>
+
+                ^{renderTime (notificationCreatedTs notif)}
+
+            <div .col-sm-9>
+                #{notificationContent notif}

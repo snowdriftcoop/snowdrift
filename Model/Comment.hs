@@ -52,7 +52,7 @@ module Model.Comment
 import Import
 
 import           Model.Comment.Sql
-import           Model.Message
+import           Model.Notification
 
 import qualified Control.Monad.State         as St
 import           Control.Monad.Writer.Strict (tell)
@@ -162,7 +162,7 @@ approveCommentDB user_id comment_id comment = do
           }
     lift $ do
         updateComment now
-        deleteUnapprovedMessages
+        deleteUnapprovedCommentNotifications
     tell [ECommentPosted comment_id updated_comment]
   where
     updateComment now =
@@ -172,16 +172,16 @@ approveCommentDB user_id comment_id comment = do
               ]
         where_ (c ^. CommentId ==. val comment_id)
 
-    -- Delete all messages sent about this pending comment, as they no longer apply.
-    -- Also deletes the UnapprovedMessageComment entities, the EventMessageSent,
-    -- and any other rows with a foreign key on MessageId.
-    deleteUnapprovedMessages = do
-        msg_ids <- fmap (map unValue) $
-                   select $
-                   from $ \umc -> do
-                   where_ (umc ^. UnapprovedMessageCommentComment ==. val comment_id)
-                   return (umc ^. UnapprovedMessageCommentMessage)
-        deleteCascadeWhere [MessageId P.<-. msg_ids]
+    -- Delete all notifications sent about this pending comment, as they no longer apply.
+    -- Also deletes the UnapprovedCommentNotification entities, the EventNotificationSent,
+    -- and any other rows with a foreign key on NotificationId.
+    deleteUnapprovedCommentNotifications = do
+        notif_ids <- fmap (map unValue) $
+                         select $
+                         from $ \unc -> do
+                         where_ (unc ^. UnapprovedCommentNotificationComment ==. val comment_id)
+                         return (unc ^. UnapprovedCommentNotificationNotification)
+        deleteCascadeWhere [NotificationId P.<-. notif_ids]
 
 insertApprovedCommentDB :: UTCTime
                         -> UTCTime
@@ -242,7 +242,7 @@ deleteCommentDB :: CommentId -> DB ()
 deleteCommentDB = deleteCascade
 
 -- | Edit a comment's text. If the comment was flagged, unflag it and send a
--- message to the flagger.
+-- notification to the flagger.
 editCommentDB :: CommentId -> Markdown -> SYDB ()
 editCommentDB comment_id text = do
     lift updateCommentText
@@ -254,16 +254,16 @@ editCommentDB comment_id text = do
                                     commentFlaggingTarget
                                     comment_id
             permalink_text <- lift $ getUrlRender <*> pure permalink_route
-            let message_text = Markdown $ "A comment you flagged has been edited and reposted to the site. You can view it [here](" <> permalink_text <> ")."
-            lift $ deleteCascade comment_flagging_id -- delete flagging and all flagging reasons with it.
-            void $ sendNotificationMessageDB MessageDirect commentFlaggingFlagger message_text
+            let notif_text = Markdown $ "A comment you flagged has been edited and reposted to the site. You can view it [here](" <> permalink_text <> ")."
+            lift (deleteCascade comment_flagging_id) -- delete flagging and all flagging reasons with it.
+            sendNotificationDB_ NotifFlagRepost commentFlaggingFlagger Nothing notif_text
   where
     updateCommentText =
         update $ \c -> do
         set c [ CommentText =. val text ]
         where_ (c ^. CommentId ==. val comment_id)
 
--- | Flag a comment. Send a message to the poster about the flagging. Return whether
+-- | Flag a comment. Send a notification to the poster about the flagging. Return whether
 -- or not the flag was successful (fails if the comment was already flagged.)
 flagCommentDB :: Text -> Text -> CommentId -> Text -> UserId -> [FlagReason] -> Maybe Markdown -> SYDB Bool
 flagCommentDB project_handle target comment_id permalink_route flagger_id reasons message = do
@@ -274,7 +274,7 @@ flagCommentDB project_handle target comment_id permalink_route flagger_id reason
         Just flagging_id -> do
             lift $ void $ insertMany (map (CommentFlaggingReason flagging_id) reasons)
 
-            let message_text = Markdown . T.unlines $
+            let notif_text = Markdown . T.unlines $
                     [ "Another user flagged your comment as not meeting the standards of the Code of Conduct. We *want* your involvement as long as it remains respectful and friendly, so please don’t feel discouraged."
                     , ""
                     , "Please follow the link below for clarification and suggestions the flagger may have offered, and take this chance to improve your tone and clarify any misunderstanding. Your newly edited comment will then be publicly visible again."
@@ -283,7 +283,7 @@ flagCommentDB project_handle target comment_id permalink_route flagger_id reason
                     , ""
                     , "[link to flagged comment](" <> permalink_route <> ")"
                     ]
-            void $ sendNotificationMessageDB MessageDirect poster_id message_text
+            sendNotificationDB_ NotifFlag poster_id Nothing notif_text
             return True
 
 -- | Filter a list of comments per the permission filter (see Model.Comment.Sql.exprPermissionFilter)

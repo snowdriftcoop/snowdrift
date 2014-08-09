@@ -8,7 +8,7 @@ import           Data.Tree.Extra      (sortForestBy)
 import           Handler.Wiki.Comment (getMaxDepth, processWikiComment)
 import           Model.Comment
 import           Model.Markdown
-import           Model.Message
+import           Model.Notification
 import           Model.Permission
 import           Model.Tag            (getAllTagsMap)
 import           Model.User
@@ -167,16 +167,15 @@ postWikiR project_handle target = do
                             lift $ insert_ $ Ticket now now "edit conflict" comment_id
 
                             render <- lift getUrlRenderParams
-                            let message_text = Markdown $ T.unlines
+                            let notif_text = Markdown $ T.unlines
                                     [ "Edit conflict for wiki page *" <> target <> "*."
                                     , "<br>[**Ticket created**](" <> render (DiscussCommentR project_handle target comment_id) [] <> ")"
                                     ]
 
-                            -- TODO(mitchell): new MessageType for edit conflict
-                            void $ sendNotificationMessageDB MessageDirect last_editor message_text
-                            void $ sendNotificationMessageDB MessageDirect user_id     message_text
+                            sendNotificationDB_ NotifEditConflict last_editor Nothing notif_text
+                            sendNotificationDB_ NotifEditConflict user_id     Nothing notif_text
 
-                            lift (lift (alertDanger "conflicting edits (ticket created, messages sent)"))
+                            lift (lift (alertDanger "conflicting edits (ticket created, notification sent)"))
 
                         case either_last_edit of
                             Left (Entity to_update _) -> lift $

@@ -3,7 +3,7 @@ module Foundation where
 import           Model
 import           Model.Currency
 import           Model.Established.Internal         (Established(..))
-import           Model.Message.Internal             (MessageType(..), MessageDelivery(..))
+import           Model.Notification.Internal        (NotificationType(..), NotificationDelivery(..))
 import           Model.SnowdriftEvent.Internal
 import qualified Settings
 import           Settings                           (widgetFile, Extra (..))
@@ -362,22 +362,22 @@ createUser ident passwd name avatar nick = do
                 forM_ default_tag_colors $ \ (Entity _ (DefaultTagColor tag color)) -> insert $ TagColor tag user_id color
                 --
 
-                insertDefaultMessagePrefs user_id
+                insertDefaultNotificationPrefs user_id
 
-                let message_text = Markdown $ T.unlines
+                let notif_text = Markdown $ T.unlines
                         [ "Thanks for registering!"
                         , "<br> Please read our [**welcome message**](/p/snowdrift/w/welcome), and let us know any questions."
                         ]
                 -- TODO: change snowdrift_id to the generated site-project id
-                -- TODO(mitchell): This message doesn't get sent to the event channel. Is that okay?
-                insert_ $ Message now MessageDirect Nothing (Just snowdrift_id) user_id Nothing message_text False
+                -- TODO(mitchell): This notification doesn't get sent to the event channel. Is that okay?
+                insert_ $ Notification now NotifWelcome user_id (Just snowdrift_id) notif_text False
                 return $ Just user_id
             Nothing -> do
                 lift $ addAlert "danger" "E-mail or handle already in use."
                 throwIO DBException
   where
-    insertDefaultMessagePrefs :: UserId -> DB ()
-    insertDefaultMessagePrefs user_id = insert_ $ UserMessagePref user_id MessageReply DeliverInternal
+    insertDefaultNotificationPrefs :: UserId -> DB ()
+    insertDefaultNotificationPrefs user_id = insert_ (UserNotificationPref user_id NotifReply NotifDeliverInternal)
 
 instance YesodJquery App
 

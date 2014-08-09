@@ -38,7 +38,7 @@ library
                      Model.Issue
                      Model.Markdown
                      Model.Markdown.Diff
-                     Model.Message
+                     Model.Notification
                      Model.Permission
                      Model.Project
                      Model.Project.Sql
@@ -60,13 +60,12 @@ library
                      Settings.Development
                      SnowdriftEventHandler
                      Handler.BuildFeed
-                     Handler.Contact
                      Handler.Home
                      Handler.HonorPledge
                      Handler.Invitation
                      Handler.JsLicense
                      Handler.MarkdownTutorial
-                     Handler.Messages
+                     Handler.Notification
                      Handler.PostLogin
                      Handler.Privacy
                      Handler.Project
@@ -100,7 +99,7 @@ library
     other-modules: Model.CollapseState.Internal
                    Model.Comment.Internal
                    Model.Established.Internal
-                   Model.Message.Internal
+                   Model.Notification.Internal
                    Model.Permission.Internal
                    Model.Role.Internal
                    Model.Settings.Internal

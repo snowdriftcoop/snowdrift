@@ -20,10 +20,10 @@
                             <a .navbar-link title="Current balance" href="@{UserBalanceR user_id}">
                                 #{milrayCents balance}
                 <li>
-                    <a href=@{MessagesR}>
-                        $if num_unread_messages /= 0
+                    <a href=@{NotificationsR}>
+                        $if num_unread_notifs /= 0
                             <span .glyphicon .glyphicon-envelope>&nbsp;
-                                #{num_unread_messages}
+                                #{num_unread_notifs}
                         $else
                             <span .glyphicon .glyphicon-envelope>
                 $with name <- fromMaybe (userIdent user) $ userName user 
@@ -63,10 +63,10 @@
         <ul .nav .nav-pills .navbar-right>
             $maybe Entity user_id user <- maybe_user
                 <li>
-                    <a href="@{MessagesR}">
-                        $if num_unread_messages /= 0
+                    <a href="@{NotificationsR}">
+                        $if num_unread_notifs /= 0
                             <span .glyphicon .glyphicon-envelope>&nbsp;
-                                #{num_unread_messages}
+                                #{num_unread_notifs}
                         $else
                             <span .glyphicon .glyphicon-envelope>
                 $with name <- fromMaybe (userIdent user) $ userName user 

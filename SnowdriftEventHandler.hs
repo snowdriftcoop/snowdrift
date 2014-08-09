@@ -5,7 +5,7 @@ module SnowdriftEventHandler
 import Import
 
 import           Model.Discussion
-import           Model.Message
+import           Model.Notification
 import           Model.Project
 import           Model.User
 
@@ -21,21 +21,21 @@ import           Yesod.Markdown
 -- Add more event handlers here.
 snowdriftEventHandlers :: [SnowdriftEvent -> Daemon ()]
 snowdriftEventHandlers =
-    [ messageEventHandler
+    [ notificationEventHandler
     , eventInserterHandler
     ]
 
--- | Handler in charge of sending Messages to interested parties.
-messageEventHandler :: SnowdriftEvent -> Daemon ()
+-- | Handler in charge of sending Notifications to interested parties.
+notificationEventHandler :: SnowdriftEvent -> Daemon ()
 -- Notify the comment's parent's poster that their comment has been replied to (per their preferences).
-messageEventHandler (ECommentPosted comment_id comment) = case commentParent comment of
+notificationEventHandler (ECommentPosted comment_id comment) = case commentParent comment of
     Nothing -> return ()
     Just parent_comment_id -> do
         (parent_user_id, delivery) <- runDB $ do
             parent_user_id <- commentUser <$> Database.Persist.getJust parent_comment_id
-            delivery <- fetchUserMessagePrefDB parent_user_id MessageReply
+            delivery <- fetchUserNotificationPrefDB parent_user_id NotifReply
             return (parent_user_id, delivery)
-        -- Any non-Nothing delivery implies an internal Message should be sent.
+        -- Any non-Nothing delivery implies an internal Notification should be sent.
         when (isJust delivery) $ do
             app <- ask
             let parent_comment_route = renderRoute' (CommentDirectLinkR parent_comment_id) app
@@ -48,11 +48,11 @@ messageEventHandler (ECommentPosted comment_id comment) = case commentParent com
                   , Markdown reply_comment_route
                   , ")."
                   , ""
-                  , "*You can filter these messages by adjusting the settings in your profile.*"
+                  , "*You can filter these notifications by adjusting the settings in your profile.*"
                   ]
-            void $ runSDB (sendNotificationMessageDB MessageReply parent_user_id content)
+            runSDB (sendNotificationDB_ NotifReply parent_user_id Nothing content)
 -- Notify all moderators of the project the comment was posted on.
-messageEventHandler (ECommentPending comment_id comment) = do
+notificationEventHandler (ECommentPending comment_id comment) = do
     app <- ask
     runSDB $ lift (fetchDiscussionProjectDB (commentDiscussion comment)) >>= \case
         Nothing -> return () -- Comment wasn't on a project, somehow? I guess do nothing.
@@ -68,24 +68,23 @@ messageEventHandler (ECommentPending comment_id comment) = do
                   ]
 
             lift (fetchProjectModeratorsDB project_id) >>=
-                mapM_ (\user_id -> do
-                    -- Send the message, and record the fact that we send it (so we can
-                    -- later delete it, when the comment is approved).
-                    msg_id <- sendNotificationMessageDB MessageUnapprovedComment user_id content
-                    insert_ (UnapprovedMessageComment msg_id comment_id))
-messageEventHandler (EMessageSent _ _)       = return () -- TODO(mitchell)
-messageEventHandler (EWikiEdit _ _)          = return () -- TODO(mitchell)
-messageEventHandler (EWikiPage _ _)          = return () -- TODO(mitchell)
-messageEventHandler (ENewPledge _ _)         = return () -- TODO(mitchell)
-messageEventHandler (EUpdatedPledge _ _ _)   = return () -- TODO(mitchell)
-messageEventHandler (EDeletedPledge _ _ _ _) = return () -- TODO(mitchell)
+                -- Send the notification, and record the fact that we send it (so we can
+                -- later delete it, when the comment is approved).
+                mapM_ (\user_id -> sendNotificationDB NotifUnapprovedComment user_id Nothing content
+                                     >>= insert_ . UnapprovedCommentNotification comment_id)
+notificationEventHandler (ENotificationSent _ _)       = return ()
+notificationEventHandler (EWikiEdit _ _)          = return ()
+notificationEventHandler (EWikiPage _ _)          = return ()
+notificationEventHandler (ENewPledge _ _)         = return ()
+notificationEventHandler (EUpdatedPledge _ _ _)   = return ()
+notificationEventHandler (EDeletedPledge _ _ _ _) = return ()
 
 -- | Handler in charge of inserting events (stripped down) into a separate table for each type.
 eventInserterHandler :: SnowdriftEvent -> Daemon ()
 -- If an unapproved comment is sent as an ECommentPosted event, bad things will happen (fromJust).
 eventInserterHandler (ECommentPosted comment_id Comment{..})                         = runDB (insert_ (EventCommentPosted (fromJust commentModeratedTs) comment_id))
 eventInserterHandler (ECommentPending comment_id Comment{..})                        = runDB (insert_ (EventCommentPending commentCreatedTs comment_id))
-eventInserterHandler (EMessageSent message_id Message{..})                           = runDB (insert_ (EventMessageSent messageCreatedTs message_id))
+eventInserterHandler (ENotificationSent notif_id Notification{..})                   = runDB (insert_ (EventNotificationSent notificationCreatedTs notif_id))
 eventInserterHandler (EWikiPage wiki_page_id WikiPage{..})                           = runDB (insert_ (EventWikiPage wikiPageCreatedTs wiki_page_id))
 eventInserterHandler (EWikiEdit wiki_edit_id WikiEdit{..})                           = runDB (insert_ (EventWikiEdit wikiEditTs wiki_edit_id))
 eventInserterHandler (ENewPledge shares_pledged_id SharesPledged{..})                = runDB (insert_ (EventNewPledge sharesPledgedTs shares_pledged_id))

@@ -29,25 +29,25 @@ User
     blurb Markdown Maybe
     statement Markdown Maybe
     ircNick Text Maybe
-    readMessages UTCTime default=now() -- The last time the user visited /messages
+    readNotifications UTCTime default=now() -- The last time the user visited /notifications
     readApplications UTCTime default=now()
     established Established default='EstUnestablished'
     UniqueUser ident
     UniqueUserAccount account
     deriving Show Typeable
 
--- A single message preference. If some MessageType does not appear
--- in any row for a particular user, that means the user does not
--- wish to be notified of those messages.
+-- A single notification preference. If some NotificationType does not appear in any
+-- row for a particular user, that means the user does not wish to be notified
+-- of those notifications.
 --
--- Messages that "must" be delivered (e.g. administrative messages
--- directly from Snowdrift) don't need an entry in this table, as
--- the code that sends such messages needn't query it.
-UserMessagePref
+-- Notifications that "must" be delivered (e.g. administrative notifications
+-- directly from Snowdrift) don't need an entry in this table, as the code that
+-- sends such notifications needn't query it.
+UserNotificationPref
     user UserId
-    type MessageType
-    delivery MessageDelivery
-    UniqueUserMessagePref user type
+    type NotificationType
+    delivery NotificationDelivery
+    UniqueUserNotificationPref user type
 
 -- User-watching-project relation
 UserWatchingProject
@@ -165,58 +165,21 @@ VolunteerInterest
     volunteer VolunteerApplicationId
     interest InterestId
 
--- Many valid permutations here:
---
--- +---------------------+-----------------------------------------------------+
--- | fromUser    Nothing | Arbitrary "alert" message/notification, not from    |
--- | fromProject Nothing | any particular user or project (such as "a user has |
--- | toProject   Nothing | replied to one of your comments").                  |
--- +---------------------+-----------------------------------------------------+
--- | fromUser    Nothing | Anonymous message sent to a project (feedback).     |
--- | fromProject Nothing |                                                     |
--- | toProject   Just    |                                                     |
--- +---------------------+-----------------------------------------------------+
--- | fromUser    Nothing | Project-to-user message.                            |
--- | fromProject Just    |                                                     |
--- | toProject   Nothing |                                                     |
--- +---------------------+-----------------------------------------------------+
--- | fromUser    Nothing | Project-to-project message.                         |
--- | fromProject Just    |                                                     |
--- | toProject   Just    |                                                     |
--- +---------------------+-----------------------------------------------------+
--- | fromUser    Just    | User-to-user message.                               |
--- | fromProject Nothing |                                                     |
--- | toProject   Nothing |                                                     |
--- +---------------------+-----------------------------------------------------+
--- | fromUser    Just    | User-to-project message.                            |
--- | fromProject Nothing |                                                     |
--- | toProject   Just    |                                                     |
--- +---------------------+-----------------------------------------------------+
--- | fromUser    Just    | User-to-user message, on behalf of a project.       |
--- | fromProject Just    |                                                     |
--- | toProject   Nothing |                                                     |
--- +---------------------+-----------------------------------------------------+
--- | fromUser    Just    | User-to-project message, on behalf of a project.    |
--- | fromProject Just    |                                                     |
--- | toProject   Just    |                                                     |
--- +---------------------+-----------------------------------------------------+
-Message
+Notification
     createdTs UTCTime
-    type MessageType
-    fromUser UserId Maybe
-    fromProject ProjectId Maybe
-    toUser UserId
-    toProject ProjectId Maybe
+    type NotificationType
+    to UserId
+    project ProjectId Maybe -- An "associated" project.
     content Markdown
-    archived Bool -- Put into the "trash bin".
+    archived Bool           -- Put into the "trash bin".
 
--- A many-to-one relationship linking messages sent to moderators about an
--- unapproved comment. When the comment is approved, all such messages are
+-- A many-to-one relationship linking notifications sent to moderators about an
+-- unapproved comment. When the comment is approved, all such notifications are
 -- deleted automatically (as they are no longer relevant) - this table
--- allows us to keep track of which messages to delete.
-UnapprovedMessageComment
-    message MessageId
+-- allows us to keep track of which notifications to delete.
+UnapprovedCommentNotification
     comment CommentId
+    notification NotificationId
 
 WikiPage
     createdTs UTCTime default=now()
@@ -405,10 +368,10 @@ EventCommentPending
     ts UTCTime
     comment CommentId
 
--- Message sent event.
-EventMessageSent
+-- Notification sent event.
+EventNotificationSent
     ts UTCTime
-    message MessageId
+    notification NotificationId
 
 -- Wiki page created event.
 EventWikiPage

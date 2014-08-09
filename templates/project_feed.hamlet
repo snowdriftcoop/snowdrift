@@ -39,5 +39,5 @@ $forall event <- events
         $# Graveyard of event types we don't want to put on the feed.
         $# Don't match-all here, we don't want to accidentally not consider something.
 
-        $of EMessageSent _ _
+        $of ENotificationSent _ _
         $of ECommentPending _ _

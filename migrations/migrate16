@@ -20,7 +20,5 @@ CREATe TABLE "event_comment_posted"("id" SERIAL PRIMARY KEY UNIQUE,"comment" INT
 ALTER TABLE "event_comment_posted" ADD CONSTRAINT "event_comment_posted_comment_fkey" FOREIGN KEY("comment") REFERENCES "comment"("id");
 CREATe TABLE "event_comment_pending"("id" SERIAL PRIMARY KEY UNIQUE,"comment" INT8 NOT NULL,"ts" TIMESTAMP NOT NULL);
 ALTER TABLE "event_comment_pending" ADD CONSTRAINT "event_comment_pending_comment_fkey" FOREIGN KEY("comment") REFERENCES "comment"("id");
-CREATe TABLE "event_message_sent"("id" SERIAL PRIMARY KEY UNIQUE,"message" INT8 NOT NULL,"ts" TIMESTAMP NOT NULL);
-ALTER TABLE "event_message_sent" ADD CONSTRAINT "event_message_sent_message_fkey" FOREIGN KEY("message") REFERENCES "message"("id");
 CREATe TABLE "event_wiki_edit"("id" SERIAL PRIMARY KEY UNIQUE,"wiki_edit" INT8 NOT NULL,"ts" TIMESTAMP NOT NULL);
 ALTER TABLE "event_wiki_edit" ADD CONSTRAINT "event_wiki_edit_wiki_edit_fkey" FOREIGN KEY("wiki_edit") REFERENCES "wiki_edit"("id");
