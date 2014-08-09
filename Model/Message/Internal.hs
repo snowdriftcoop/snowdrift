@@ -6,23 +6,32 @@ import Database.Persist.TH
 import Data.Text (Text)
 
 data MessageType
-    = MessageDirect     -- Direct message (can't be ignored)
-    | MessageBalanceLow -- Balance low (can't be ignored)
-    | MessageReply      -- Reply to a comment made.
+    -- Generic "direct" message (can't be ignored)
+    = MessageDirect
+    -- Balance low (can't be ignored)
+    | MessageBalanceLow
+    -- Alert moderators about an unapproved comment.
+    -- These messages are auto-deleted when the comment is approved.
+    | MessageUnapprovedComment
+    -- Reply to a comment made.
+    | MessageReply
+    -- New projected created on Snowdrift.
     | MessageNewProject
-    -- Project scope
+    -- New pledger to a Project.
     | MessageNewPledger
+    -- New WikiPage.
     | MessageNewPage
     deriving (Eq, Read, Show)
 derivePersistField "MessageType"
 
 showMessageType :: MessageType -> Text
-showMessageType MessageDirect     = "Snowdrift direct messages"
-showMessageType MessageBalanceLow = "Balance low"
-showMessageType MessageReply      = "Replies to my comments"
-showMessageType MessageNewProject = "New project sign-ups"
-showMessageType MessageNewPledger = "New pledgers"
-showMessageType MessageNewPage    = "New Wiki pages"
+showMessageType MessageDirect            = "Snowdrift direct messages"
+showMessageType MessageUnapprovedComment = "Unapproved comments"
+showMessageType MessageBalanceLow        = "Balance low"
+showMessageType MessageReply             = "Replies to my comments"
+showMessageType MessageNewProject        = "New project sign-ups"
+showMessageType MessageNewPledger        = "New pledgers"
+showMessageType MessageNewPage           = "New Wiki pages"
 
 data MessageDelivery
     = DeliverInternal     -- Only send internal Snowdrift messages.
@@ -33,9 +42,10 @@ derivePersistField "MessageDelivery"
 
 -- | Can this message type be filtered out entirely?
 messagePreferenceCanBeNone :: MessageType -> Bool
-messagePreferenceCanBeNone MessageDirect     = False
-messagePreferenceCanBeNone MessageBalanceLow = False
-messagePreferenceCanBeNone MessageReply      = True
-messagePreferenceCanBeNone MessageNewProject = True
-messagePreferenceCanBeNone MessageNewPledger = True
-messagePreferenceCanBeNone MessageNewPage    = True
+messagePreferenceCanBeNone MessageDirect            = False
+messagePreferenceCanBeNone MessageBalanceLow        = False
+messagePreferenceCanBeNone MessageUnapprovedComment = True
+messagePreferenceCanBeNone MessageReply             = True
+messagePreferenceCanBeNone MessageNewProject        = True
+messagePreferenceCanBeNone MessageNewPledger        = True
+messagePreferenceCanBeNone MessageNewPage           = True

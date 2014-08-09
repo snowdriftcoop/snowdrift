@@ -210,6 +210,14 @@ Message
     content Markdown
     archived Bool -- Put into the "trash bin".
 
+-- A many-to-one relationship linking messages sent to moderators about an
+-- unapproved comment. When the comment is approved, all such messages are
+-- deleted automatically (as they are no longer relevant) - this table
+-- allows us to keep track of which messages to delete.
+UnapprovedMessageComment
+    message MessageId
+    comment CommentId
+
 WikiPage
     createdTs UTCTime default=now()
     target Text

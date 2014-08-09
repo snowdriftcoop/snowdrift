@@ -68,8 +68,17 @@ messageEventHandler (ECommentPending comment_id comment) = do
                   ]
 
             lift (fetchProjectModeratorsDB project_id) >>=
-              mapM_ (\user_id -> sendNotificationMessageDB MessageDirect user_id content)
-messageEventHandler _ = return ()
+                mapM_ (\user_id -> do
+                    -- Send the message, and record the fact that we send it (so we can
+                    -- later delete it, when the comment is approved).
+                    msg_id <- sendNotificationMessageDB MessageUnapprovedComment user_id content
+                    insert_ (UnapprovedMessageComment msg_id comment_id))
+messageEventHandler (EMessageSent _ _)       = return () -- TODO(mitchell)
+messageEventHandler (EWikiEdit _ _)          = return () -- TODO(mitchell)
+messageEventHandler (EWikiPage _ _)          = return () -- TODO(mitchell)
+messageEventHandler (ENewPledge _ _)         = return () -- TODO(mitchell)
+messageEventHandler (EUpdatedPledge _ _ _)   = return () -- TODO(mitchell)
+messageEventHandler (EDeletedPledge _ _ _ _) = return () -- TODO(mitchell)
 
 -- | Handler in charge of inserting events (stripped down) into a separate table for each type.
 eventInserterHandler :: SnowdriftEvent -> Daemon ()

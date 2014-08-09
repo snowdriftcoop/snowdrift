@@ -63,6 +63,7 @@ import           Data.Maybe                  (fromJust)
 import qualified Data.Set                    as S
 import qualified Data.Text                   as T
 import           Data.Tree
+import qualified Database.Persist            as P
 import           GHC.Exts                    (IsList(..))
 import           Yesod.Markdown              (Markdown(..))
 
@@ -159,16 +160,28 @@ approveCommentDB user_id comment_id comment = do
           { commentModeratedTs = Just now
           , commentModeratedBy = Just user_id
           }
-    lift (upd now)
+    lift $ do
+        updateComment now
+        deleteUnapprovedMessages
     tell [ECommentPosted comment_id updated_comment]
   where
-
-    upd now =
+    updateComment now =
         update $ \c -> do
         set c [ CommentModeratedTs =. val (Just now)
               , CommentModeratedBy =. val (Just user_id)
               ]
         where_ (c ^. CommentId ==. val comment_id)
+
+    -- Delete all messages sent about this pending comment, as they no longer apply.
+    -- Also deletes the UnapprovedMessageComment entities, the EventMessageSent,
+    -- and any other rows with a foreign key on MessageId.
+    deleteUnapprovedMessages = do
+        msg_ids <- fmap (map unValue) $
+                   select $
+                   from $ \umc -> do
+                   where_ (umc ^. UnapprovedMessageCommentComment ==. val comment_id)
+                   return (umc ^. UnapprovedMessageCommentMessage)
+        deleteCascadeWhere [MessageId P.<-. msg_ids]
 
 insertApprovedCommentDB :: UTCTime
                         -> UTCTime
