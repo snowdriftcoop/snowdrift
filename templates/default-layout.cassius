@@ -71,9 +71,21 @@ hr
     color : #CCCCDD
     background-color : #CCCCDD
 
-hr.wikitop
-    margin-top : 0.1em
-    padding-bottom : 0.1em
+.page-toolbox
+    float : right
+    border : solid lightgrey
+    margin-left : 1em
+
+/* This @media sets the page-toolbox above the page for small screens */
+@media (max-width: 767px)
+    .page-toolbox
+        float : none
+        display : inline-flex
+        margin-left : 0
+        
+.page-tool
+    margin : 8px
+    padding : 2px 5px
 
 footer
     text-align : center
@@ -143,8 +155,8 @@ h1, h2, h3, h4, h5, h6
     margin : 1.6em 0 0.8em
     max-width : 780px
 
-h1:first-child
-    margin-top : 0
+h1:first-of-type
+    margin-top : .5em
 
 q:before
     content : '"'

@@ -18,5 +18,5 @@ editWikiPermissionsForm level = renderBootstrap3 $ areq permissionLevelField "Pe
 newWikiForm :: Maybe Markdown -> Form Markdown
 newWikiForm content = renderBootstrap3 $ areq' snowdriftMarkdownField "Page Content" content
 
-renderWiki :: Int -> Text -> Text -> Bool -> Bool -> WikiPage -> Widget
-renderWiki comment_count project_handle target can_edit can_view_meta page = $(widgetFile "wiki")
+renderWiki :: Int -> Text -> Text -> Bool -> WikiPage -> Widget
+renderWiki comment_count project_handle target can_edit page = $(widgetFile "wiki")

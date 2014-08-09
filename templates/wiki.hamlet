@@ -1,24 +1,14 @@
-$if can_edit
-    <div .row>
-        <div .col-sm-4>
+<div .page-toolbox>
+    $if can_edit
+        <div .page-tool>
             <a href="@{EditWikiR project_handle target}">edit
-        <div .col-sm-4>
-            <a href="@{WikiHistoryR project_handle target}">history
-        <div .col-sm-4>
-            <a href="@{DiscussWikiR project_handle target}">
-                discuss
-                <span .badge>
-                    #{comment_count}
-$else
-    $if can_view_meta
-        <div .row>
-            <div .col-xs-6>
-                <a href="@{WikiHistoryR project_handle target}">history
-            <div .col-xs-6>
-                <a href="@{DiscussWikiR project_handle target}">
-                    discussion
-                    <span .badge>
-                        #{comment_count}
-<hr .wikitop>
+    <div .page-tool>
+        <a href="@{WikiHistoryR project_handle target}">history
+    <div .page-tool>
+        <a href="@{DiscussWikiR project_handle target}">
+            discuss
+            <span .badge>
+                #{comment_count}
+
 ^{markdownWidget project_handle (wikiPageContent page)}
 
