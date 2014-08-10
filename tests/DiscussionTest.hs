@@ -59,7 +59,7 @@ discussionSpecs = do
             comment_map <- fmap M.fromList $ forM [1..10] $ \ i -> do
                 comment_id <- getLatestCommentId
 
-                postComment (ReplyCommentR "snowdrift" "about" comment_id) $ byLabel "Reply" $ T.pack $ "Thread 1 - reply " ++ show i
+                postComment (ReplyCommentR "snowdrift" "about" comment_id) $ byLabel "Reply" $ T.pack $ "Thread 1 - reply " ++ show (i :: Integer)
 
                 return (i, comment_id)
 

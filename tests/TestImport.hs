@@ -87,7 +87,6 @@ submitLogin user pass = do
         addPostParam "username" user
         addPostParam "password" pass
 
-    extractLocation >>= liftIO . print
 
 extractLocation :: YesodExample site (Maybe B.ByteString)
 extractLocation = do
@@ -110,13 +109,9 @@ needsLogin method url = do
 --
 login :: (Yesod site) => YesodExample site ()
 login = do
-    liftIO $ putStrLn "Logging in..."
     get $ urlPath $ testRoot `T.append` "/auth/login"
     statusIs 200
-    liftIO $ putStrLn "Submitting login."
     submitLogin "test" "test"
-
-    liftIO $ putStrLn "Logged in."
 
 
 statusIsResp :: Int -> YesodExample site ()

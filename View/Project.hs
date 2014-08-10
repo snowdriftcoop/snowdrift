@@ -62,9 +62,10 @@ renderProject maybe_project_id project pledges pledge = do
 renderBlogPost :: Text -> ProjectBlog -> WidgetT App IO ()
 renderBlogPost project_handle blog_post = do
     let (Markdown top_content) = projectBlogTopContent blog_post
-        (Markdown bottom_content) = fromMaybe (Markdown "") $ projectBlogBottomContent blog_post
+        (Markdown bottom_content) = maybe (Markdown "") ("***\n" <>) $ projectBlogBottomContent blog_post
         title = projectBlogTitle blog_post
         content = markdownWidget project_handle $ Markdown $ T.snoc top_content '\n' <> bottom_content
+
     $(widgetFile "blog_post")
 
 editProjectForm :: Maybe (Project, [Text]) -> Form UpdateProject
@@ -75,16 +76,22 @@ editProjectForm project =
         <*> (maybe [] (map T.strip . T.splitOn ",") <$> aopt' textField "Tags" (Just . T.intercalate ", " . snd <$> project))
         <*> aopt' textField "Github Repository" (projectGithubRepo . fst <$> project)
 
-projectBlogForm :: UTCTime -> UserId -> ProjectId -> Form ProjectBlog
-projectBlogForm now user_id project_id =
-    renderBootstrap3 $ mkBlog
-        <$> areq' textField "Post Title" Nothing
-        <*> areq' snowdriftMarkdownField "Post" Nothing
+projectBlogForm :: Maybe (Text, Text, Markdown) -> Form (UTCTime -> UserId -> ProjectId -> DiscussionId -> ProjectBlog)
+projectBlogForm defaults = renderBootstrap3 $
+    let getTitle (title, _, _) = title
+        getHandle (_, handle, _) = handle
+        getContent (_, _, content) = content
+     in mkBlog
+        <$> areq' textField "Post Title" (getTitle <$> defaults)
+        <*> areq' textField "Post Handle" (getHandle <$> defaults)
+        <*> areq' snowdriftMarkdownField "Content" (getContent <$> defaults)
   where
-    mkBlog :: Text -> Markdown -> ProjectBlog
-    mkBlog title (Markdown content) =
-        let (top_content, bottom_content) = break (== "---") $ T.lines content
-         in ProjectBlog now title user_id project_id undefined (Markdown $ T.unlines top_content) (if null bottom_content then Nothing else Just $ Markdown $ T.unlines bottom_content)
+    mkBlog :: Text -> Text -> Markdown -> (UTCTime -> UserId -> ProjectId -> DiscussionId -> ProjectBlog)
+    mkBlog title handle (Markdown content) now user_id project_id discussion_id =
+        let (top_content, bottom_content) = break (== "***") $ T.lines content
+         in ProjectBlog now title handle user_id project_id
+                discussion_id (Markdown $ T.unlines top_content)
+                (if null bottom_content then Nothing else Just $ Markdown $ T.unlines bottom_content)
 
 inviteForm :: Form (Text, Role)
 inviteForm = renderBootstrap3 $ (,)

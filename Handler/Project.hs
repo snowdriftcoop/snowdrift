@@ -27,6 +27,7 @@ import qualified Data.Text            as T
 import           System.Random        (randomIO)
 import           Text.Printf
 
+
 --------------------------------------------------------------------------------
 -- Utility functions
 
@@ -39,12 +40,17 @@ lookupGetParamDefault name def = do
 requireRolesAny :: [Role] -> Text -> Text -> Handler (UserId, Entity Project)
 requireRolesAny roles project_handle err_msg = do
     user_id <- requireAuthId
+
     (project, ok) <- runYDB $ do
         project@(Entity project_id _) <- getBy404 (UniqueProjectHandle project_handle)
+
         ok <- userHasRolesAnyDB roles user_id project_id
+
         return (project, ok)
+
     unless ok $
         permissionDenied err_msg
+
     return (user_id, project)
 
 -------------------------------------------------------------------------------
@@ -211,51 +217,81 @@ getProjectBlogR project_handle = do
 
     defaultLayout $ do
         setTitle . toHtml $ projectName project <> " Blog | Snowdrift.coop"
+
         $(widgetFile "project_blog")
 
-postProjectBlogR :: Text -> Handler Html
-postProjectBlogR project_handle = do
+
+getNewProjectBlogPostR :: Text -> Handler Html
+getNewProjectBlogPostR project_handle = do
+    (_, Entity _ project) <- requireRolesAny [Admin, TeamMember] project_handle "You do not have permission to post to this project's blog."
+
+    (blog_form, _) <- generateFormPost $ projectBlogForm Nothing
+
+    defaultLayout $ do
+        setTitle . toHtml $ "Post To " <> projectName project <> " Blog | Snowdrift.coop"
+
+        $(widgetFile "new_blog_post")
+
+
+postNewProjectBlogPostR :: Text -> Handler Html
+postNewProjectBlogPostR project_handle = do
     (viewer_id, Entity project_id _) <-
-        requireRolesAny [Admin, TeamMember] project_handle "You do not have permission to edit this project."
+        requireRolesAny [Admin, TeamMember] project_handle "You do not have permission to post to this project's blog."
 
     now <- liftIO getCurrentTime
 
-    ((result, _), _) <- runFormPost $ projectBlogForm now viewer_id project_id
+    ((result, _), _) <- runFormPost $ projectBlogForm Nothing
 
     case result of
-        FormSuccess blog_post' -> do
-            let blog_post :: ProjectBlog
-                blog_post = blog_post' { projectBlogTime = now, projectBlogUser = viewer_id }
+        FormSuccess mk_blog_post -> do
             mode <- lookupPostParam "mode"
             let action :: Text = "post"
             case mode of
                 Just "preview" -> do
+                    let blog_post :: ProjectBlog
+                        blog_post = mk_blog_post now viewer_id project_id (Key $ PersistInt64 0)
+                        title = projectBlogTitle blog_post
+                        handle = projectBlogHandle blog_post
+                        top_content = projectBlogTopContent blog_post
+                        bottom_content = fromMaybe "" $ projectBlogBottomContent blog_post
+                        content = top_content <> bottom_content
 
-                    (form, _) <- generateFormPost $ projectBlogForm now viewer_id project_id
+                    (form, _) <- generateFormPost $ projectBlogForm $ Just (title, handle, content)
 
                     defaultLayout $ previewWidget form action $ renderBlogPost project_handle blog_post
 
                 Just x | x == action -> do
-                    void $ runDB $ insert blog_post
-                    alertSuccess "posted"
-                    redirect $ ProjectR project_handle
+                    void $ runDB $ do
+                        discussion_id <- insert $ Discussion 0
 
-                _ -> do
-                    addAlertEm "danger" "unrecognized mode" "Error: "
-                    redirect $ ProjectR project_handle
+                        let blog_post :: ProjectBlog
+                            blog_post = mk_blog_post now viewer_id project_id discussion_id
+
+                        insert blog_post
+
+                    alertSuccess "posted"
+                    redirect $ ProjectBlogR project_handle
+
+                x -> do
+                    addAlertEm "danger" ("unrecognized mode: " <> T.pack (show x)) "Error: "
+                    redirect $ NewProjectBlogPostR project_handle
 
         x -> do
             alertDanger $ T.pack $ show x
-            redirect $ ProjectR project_handle
+            redirect $ NewProjectBlogPostR project_handle
 
-getProjectBlogPostR :: Text -> ProjectBlogId -> Handler Html
-getProjectBlogPostR project_handle blog_post_id = do
-    (Entity _ project, blog_post) <- runYDB $ (,)
-        <$> getBy404 (UniqueProjectHandle project_handle)
-        <*> get404 blog_post_id
+
+getProjectBlogPostR :: Text -> Text -> Handler Html
+getProjectBlogPostR project_handle blog_post_handle = do
+    (project, blog_post) <- runYDB $ do
+        Entity project_id project <- getBy404 $ UniqueProjectHandle project_handle
+        Entity _ blog_post <- getBy404 $ UniqueProjectBlogPost project_id blog_post_handle
+
+        return (project, blog_post)
 
     defaultLayout $ do
         setTitle . toHtml $ projectName project <> " Blog - " <> projectBlogTitle blog_post <> " | Snowdrift.coop"
+
         renderBlogPost project_handle blog_post
 
 --------------------------------------------------------------------------------
@@ -263,7 +299,7 @@ getProjectBlogPostR project_handle blog_post_id = do
 
 getEditProjectR :: Text -> Handler Html
 getEditProjectR project_handle = do
-    (viewer_id, Entity project_id project) <-
+    (_, Entity project_id project) <-
         requireRolesAny [Admin] project_handle "You do not have permission to edit this project."
 
     tags <- runDB $
@@ -347,7 +383,7 @@ getProjectFeedR project_handle = do
 
 getInviteR :: Text -> Handler Html
 getInviteR project_handle = do
-    (viewer_id, Entity _ project) <- requireRolesAny [Admin] project_handle "You must be a project admin to invite."
+    (_, Entity _ project) <- requireRolesAny [Admin] project_handle "You must be a project admin to invite."
 
     now <- liftIO getCurrentTime
     maybe_invite_code <- lookupSession "InviteCode"
@@ -516,7 +552,8 @@ getProjectTransactionsR project_handle = do
 getWikiPagesR :: Text -> Handler Html
 getWikiPagesR project_handle = do
     muser_id <- maybeAuthId
-    (project, pages, unviewed_comments, unviewed_edits) <- runYDB $ do
+    -- TODO: should be be using unviewed_comments and unviewed_edits?
+    (project, pages, _, _) <- runYDB $ do
         Entity project_id project <- getBy404 $ UniqueProjectHandle project_handle
         pages <- getProjectWikiPages project_id
 

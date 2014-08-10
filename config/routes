@@ -37,8 +37,9 @@
 /p/#Text                                     ProjectR             GET POST
 /p/#Text/applications                        ApplicationsR        GET
 /p/#Text/application/#VolunteerApplicationId ApplicationR         GET
-/p/#Text/b                                   ProjectBlogR         GET POST
-/p/#Text/b/#ProjectBlogId                    ProjectBlogPostR     GET
+/p/#Text/blog                                ProjectBlogR         GET
+/p/#Text/blog/!new                           NewProjectBlogPostR  GET POST
+/p/#Text/blog/#Text                          ProjectBlogPostR     GET
 /p/#Text/contact                             ContactR             GET POST
 /p/#Text/edit                                EditProjectR         GET
 /p/#Text/feed                                ProjectFeedR         GET

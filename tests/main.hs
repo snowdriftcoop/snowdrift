@@ -13,6 +13,7 @@ import Application (makeFoundation)
 
 import DiscussionTest
 import WikiTest
+import BlogTest
 
 import System.IO
 
@@ -34,4 +35,6 @@ main = do
             wikiSpecs
 
             discussionSpecs
+
+            blogSpecs
 

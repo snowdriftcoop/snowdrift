@@ -98,11 +98,13 @@ Project
 ProjectBlog
     time UTCTime
     title Text
+    handle Text
     user UserId
     project ProjectId
     discussion DiscussionId
     topContent Markdown
     bottomContent Markdown Maybe
+    UniqueProjectBlogPost project handle
     deriving Show
 
 ProjectUserRole

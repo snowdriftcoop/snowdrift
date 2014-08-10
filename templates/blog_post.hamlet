@@ -1,6 +1,7 @@
 
-<h2>
-    #{title}
+<div .post>
+    <h2>
+        #{title}
 
-^{content}
+    ^{content}
 
