@@ -75,16 +75,22 @@ linkTickets line' = do
 
 
 renderMarkdown :: Text -> Markdown -> Handler Html
-renderMarkdown project (Markdown markdown) = do
+renderMarkdown = renderMarkdownWith return
+
+renderMarkdownWith :: (Text -> Handler Text) -> Text -> Markdown -> Handler Html
+renderMarkdownWith transform project (Markdown markdown) = do
     let ls = T.lines markdown
 
-    ls' <- mapM (linkTickets . fixLinks project) ls
+    ls' <- mapM (transform <=< linkTickets . fixLinks project) ls
 
     return $ markdownToHtml $ Markdown $ T.unlines ls'
 
 
 markdownWidget :: Text -> Markdown -> Widget
-markdownWidget project markdown = do
-    rendered <- handlerToWidget $ renderMarkdown project markdown
+markdownWidget = markdownWidgetWith return
+
+markdownWidgetWith :: (Text -> Handler Text) -> Text -> Markdown -> Widget
+markdownWidgetWith transform project markdown = do
+    rendered <- handlerToWidget $ renderMarkdownWith transform project markdown
     toWidget rendered
 

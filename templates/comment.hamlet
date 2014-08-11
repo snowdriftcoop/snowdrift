@@ -40,9 +40,6 @@
                 <a href="@{RetractWikiCommentR project_handle target comment_id}" style="color: darkred">
                     retract
 
-    $maybe Entity ticket_id _ <- mticket
-        <div .ticket>SD-#{toPathPiece ticket_id}
-
     $forall closure <- earlier_closures
         $case commentClosureType closure
             $of Retracted
@@ -84,7 +81,7 @@
                     #{flag_markdown}
             <i>Please edit to address these concerns and repost.
 
-    ^{markdownWidget project_handle (commentText comment)}
+    ^{markdownWidgetWith commentTextTransform project_handle (commentText comment)}
 
     <div>
         $forall tag <- tags

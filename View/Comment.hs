@@ -246,6 +246,16 @@ commentWidget c@(Entity comment_id comment)
         runDB (fetchCommentCommentTagsDB comment_id) >>=
           annotateCommentTags tag_map project_handle target comment_id . map entityVal
 
+    let ticket_str = case mticket of
+            Just (Entity (Key (PersistInt64 tid)) _) -> T.pack $ show tid
+            _ -> "???"
+
+        prettyTicketLine line =
+            let pretty title = "<div class='ticket-title'>SD-" <> ticket_str <> ": " <> title <> "</div>"
+             in return $ maybe line pretty $ T.stripPrefix "ticket: " line
+
+        commentTextTransform = prettyTicketLine
+
     $(widgetFile "comment")
 
 makeViewerPermissions :: Entity User    -- comment poster
