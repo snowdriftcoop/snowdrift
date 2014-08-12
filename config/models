@@ -32,6 +32,7 @@ User
     readNotifications UTCTime default=now() -- The last time the user visited /notifications
     readApplications UTCTime default=now()
     established Established default='EstUnestablished'
+    discussion DiscussionId default=nextval('discussion_id_seq'::regclass)
     UniqueUser ident
     UniqueUserAccount account
     deriving Show Typeable
@@ -91,6 +92,7 @@ Project
     shareValue Milray
     lastPayday PaydayId Maybe
     githubRepo Text Maybe
+    discussion DiscussionId default=nextval('discussion_id_seq'::regclass)
     UniqueProjectAccount account
     UniqueProjectHandle handle
     deriving Eq Show

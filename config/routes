@@ -41,7 +41,6 @@
 /p/#Text/blog                                ProjectBlogR         GET
 /p/#Text/blog/!new                           NewProjectBlogPostR  GET POST
 /p/#Text/blog/#Text                          ProjectBlogPostR     GET
-/p/#Text/contact                             ContactR             GET POST
 /p/#Text/edit                                EditProjectR         GET
 /p/#Text/feed                                ProjectFeedR         GET
 /p/#Text/invitation/#Text                    InvitationR          GET POST

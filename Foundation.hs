@@ -347,8 +347,9 @@ createUser :: Text -> Maybe Text -> Maybe Text -> Maybe Text -> Maybe Text -> Ha
 createUser ident passwd name avatar nick = do
     now <- liftIO getCurrentTime
     handle (\DBException -> return Nothing) $ runYDB $ do
-        account_id <- insert $ Account 0
-        user <- maybe return setPassword passwd $ User ident (Just now) Nothing Nothing name account_id avatar Nothing Nothing nick now now EstUnestablished
+        account_id <- insert (Account 0)
+        discussion_id <- insert (Discussion 0)
+        user <- maybe return setPassword passwd $ User ident (Just now) Nothing Nothing name account_id avatar Nothing Nothing nick now now EstUnestablished discussion_id
         uid_maybe <- insertUnique user
         Entity snowdrift_id _ <- getBy404 $ UniqueProjectHandle "snowdrift"
         case uid_maybe of

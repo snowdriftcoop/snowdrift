@@ -1,0 +1,8 @@
+ALTER TABLE "user" ADD COLUMN "discussion" INT8 NOT NULL DEFAULT nextval('discussion_id_seq'::regclass);
+INSERT INTO "discussion" (id, nothing) SELECT "discussion", 0 FROM "user";
+ALTER TABLE "user" ADD CONSTRAINT "user_discussion_fkey" FOREIGN KEY("discussion") REFERENCES "discussion"("id");
+ALTER TABLE "project" ADD COLUMN "discussion" INT8 NOT NULL DEFAULT nextval('discussion_id_seq'::regclass);
+INSERT INTO "discussion" (id, nothing) SELECT "discussion", 0 FROM "project";
+ALTER TABLE "project" ADD CONSTRAINT "project_discussion_fkey" FOREIGN KEY("discussion") REFERENCES "discussion"("id");
+ALTER TABLE "project_blog" ADD COLUMN "handle" VARCHAR NOT NULL;
+ALTER TABLE "project_blog" ADD CONSTRAINT "unique_project_blog_post" UNIQUE("project","handle");
