@@ -31,7 +31,7 @@ renderCommentPendingEvent comment_id comment =
     |]
 
 renderWikiPageEvent :: WikiPageId -> WikiPage -> Widget
-renderWikiPageEvent wiki_page_id wiki_page =
+renderWikiPageEvent _ wiki_page =
     [whamlet|
         <div>Wiki page: #{wikiPageTarget wiki_page}
     |]
@@ -43,14 +43,14 @@ renderWikiEditEvent _ _ (Entity _ wiki_page) =
     |]
 
 renderNewPledgeEvent :: SharesPledgedId -> SharesPledged -> UserMap -> Widget
-renderNewPledgeEvent shares_pledged_id SharesPledged{..} users_map = do
+renderNewPledgeEvent _ SharesPledged{..} users_map = do
     let pledger = users_map ! sharesPledgedUser
     [whamlet|
         <div>#{userDisplayName (Entity sharesPledgedUser pledger)} pledged #{show sharesPledgedShares} new shares!
     |]
 
 renderUpdatedPledgeEvent :: Int64 -> SharesPledgedId -> SharesPledged -> UserMap -> Widget
-renderUpdatedPledgeEvent old_shares shares_pledged_id SharesPledged{..} users_map = do
+renderUpdatedPledgeEvent old_shares _ SharesPledged{..} users_map = do
     let pledger      = users_map ! sharesPledgedUser
         (verb, punc) = if old_shares < sharesPledgedShares
                            then ("increased", "!")

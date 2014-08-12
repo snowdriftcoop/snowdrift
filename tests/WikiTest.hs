@@ -4,15 +4,6 @@ module WikiTest
     ) where
 
 import TestImport
-import qualified Data.Map as M
-import qualified Text.XML as XML
-import qualified Text.HTML.DOM as HTML
-
-import Database.Esqueleto hiding (get)
-
-import Data.Text as T
-
-import Control.Monad
 
 wikiSpecs :: Spec
 wikiSpecs =

@@ -1,10 +1,17 @@
-$forall Entity post_id post <- posts
-    <div>
-        <a href=@{ProjectBlogPostR project_handle post_id}>
+$forall Entity _ post <- posts
+    <div .post>
+        <a href=@{ProjectBlogPostR project_handle (projectBlogHandle post)}>
             #{projectBlogTitle post}
+
+        \ - #
+
+        <small>
+            ^{renderTime $ projectBlogTime post}
 
         <p>
             ^{markdownWidget project_handle $ projectBlogTopContent post}
+
+    <hr>
 
 $case next
     $of [Entity next_id _]
