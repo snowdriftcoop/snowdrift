@@ -4,26 +4,30 @@ module Handler.Wiki where
 
 import Import
 
-import           Data.Tree.Extra      (sortForestBy)
-import           Handler.Wiki.Comment (getMaxDepth, processWikiComment)
+import           Handler.Comment
+import           Handler.Wiki.Comment   (processWikiComment)
 import           Model.Comment
+import           Model.Comment.Sql
+import           Model.Discussion
 import           Model.Markdown
 import           Model.Notification
 import           Model.Permission
-import           Model.Tag            (getAllTagsMap)
 import           Model.User
-import           Model.WikiPage
+import           Model.Wiki
+import           Model.Wiki.Comment.Sql
 import           Widgets.Preview
 import           Widgets.Time
 import           View.Comment
 import           View.Wiki
+import           View.Wiki.Comment
 
-import           Data.Algorithm.Diff  (getDiff, Diff (..))
-import qualified Data.Map             as M
-import qualified Data.Set             as S
-import qualified Data.Text            as T
-import           Text.Blaze.Html5     (ins, del, br)
-import           Text.Cassius         (cassiusFile)
+import           Data.Algorithm.Diff    (getDiff, Diff (..))
+import           Data.Default           (def)
+import qualified Data.Map               as M
+import qualified Data.Set               as S
+import qualified Data.Text              as T
+import           Text.Blaze.Html5       (ins, del, br)
+import           Text.Cassius           (cassiusFile)
 import           Yesod.Markdown
 
 --------------------------------------------------------------------------------
@@ -94,9 +98,10 @@ getWikiR project_handle target = do
                 when is_watching $
                     userViewWikiEditsDB user_id page_id
 
-        roots_ids <- map entityKey <$> fetchAllOpenRootCommentsDB muser_id project_id discussion_id
-        children <- fetchCommentsDescendantsDB muser_id project_id roots_ids
-        return (project, page, length roots_ids + length children)
+        let has_permission = exprCommentWikiPagePermissionFilter muser_id (val project_id)
+        roots_ids    <- map entityKey <$> fetchDiscussionRootCommentsDB discussion_id has_permission
+        num_children <- length <$> fetchCommentsDescendantsDB roots_ids has_permission
+        return (project, page, length roots_ids + num_children)
 
     let can_edit = fromMaybe False (userCanEditWikiPage . entityVal <$> maybe_user)
 
@@ -169,7 +174,7 @@ postWikiR project_handle target = do
                             render <- lift getUrlRenderParams
                             let notif_text = Markdown $ T.unlines
                                     [ "Edit conflict for wiki page *" <> target <> "*."
-                                    , "<br>[**Ticket created**](" <> render (DiscussCommentR project_handle target comment_id) [] <> ")"
+                                    , "<br>[**Ticket created**](" <> render (WikiCommentR project_handle target comment_id) [] <> ")"
                                     ]
 
                             sendNotificationDB_ NotifEditConflict last_editor Nothing notif_text
@@ -199,59 +204,41 @@ postWikiR project_handle target = do
 -- | getDiscussWikiR generates the associated discussion page for each wiki page
 getDiscussWikiR :: Text -> Text -> Handler Html
 getDiscussWikiR project_handle target = lookupGetParam "state" >>= \case
-    Just "closed" -> go fetchAllClosedRootCommentsDB
-    _             -> go fetchAllOpenRootCommentsDB
+    Just "closed" -> go fetchDiscussionClosedRootCommentsDB
+    _             -> go fetchDiscussionRootCommentsDB
   where
     go = getDiscussWikiR' project_handle target
 
-getDiscussWikiR' :: Text                      -- ^ Project handle.
-                 -> Text                      -- ^ Wiki page name.
-                 -> (Maybe UserId
-                     -> ProjectId
-                     -> DiscussionId
-                     -> DB [Entity Comment])  -- ^ Root comment getter.
+getDiscussWikiR' :: Text                                                      -- ^ Project handle.
+                 -> Text                                                      -- ^ Wiki page name.
+                 -> (DiscussionId -> ExprCommentCond -> DB [Entity Comment])  -- ^ Root comment getter.
                  -> Handler Html
 getDiscussWikiR' project_handle target get_root_comments = do
     muser <- maybeAuth
     let muser_id = entityKey <$> muser
 
-    (Entity project_id project, Entity _ page) <- runYDB (pageInfo project_handle target)
+    (Entity project_id project, page, root_comments) <- runYDB $ do
+        (project@(Entity project_id _), Entity _ page) <- pageInfo project_handle target
+        let has_permission = (exprCommentWikiPagePermissionFilter muser_id (val project_id))
+        root_comments <- get_root_comments (wikiPageDiscussion page) has_permission
+        return (project, page, root_comments)
 
-    (roots, replies, user_map, closure_map, ticket_map, flag_map, tag_map) <- runDB $ do
-        roots           <- get_root_comments muser_id project_id (wikiPageDiscussion page)
-        replies         <- fetchCommentsDescendantsDB muser_id project_id (map entityKey roots)
-        user_map        <- entitiesMap <$> fetchUsersInDB (S.toList $ makeCommentUsersSet roots <> makeCommentUsersSet replies)
-        let comment_ids  = map entityKey (roots ++ replies)
-        closure_map     <- makeClosureMapDB comment_ids
-        ticket_map      <- makeTicketMapDB  comment_ids
-        flag_map        <- makeFlagMapDB    comment_ids
-        tag_map         <- getAllTagsMap
-        return (roots, replies, user_map, closure_map, ticket_map, flag_map, tag_map)
-
-    max_depth <- getMaxDepth
-
-    -- TODO(mitchell): use makeCommentWidget here
-    let comments = do
-            forM_ (sortForestBy orderingNewestFirst (buildCommentForest roots replies)) $ \comment ->
-                commentTreeWidget
-                    mempty
-                    comment
-                    [] -- earlier closures
-                    user_map
-                    closure_map
-                    ticket_map
-                    flag_map
-                    tag_map
-                    project_handle
-                    target
-                    True           -- show actions?
-                    max_depth
-                    0              -- depth
-            toWidget $(cassiusFile "templates/comment_wrapper.cassius")
+    comment_forest_no_css <- makeWikiPageCommentForestWidget'
+                               muser
+                               project_id
+                               project_handle
+                               (wikiPageTarget page)
+                               root_comments
+                               def
+                               (getMaxDepthDefault 0)
+                               False
+                               mempty
+    let has_comments = not (null root_comments)
+        comment_forest = do
+            comment_forest_no_css
+            toWidget $(cassiusFile "templates/wiki_comment_wrapper.cassius")
 
     (comment_form, _) <- generateFormPost commentNewTopicForm
-
-    let has_comments = not $ null roots
 
     defaultLayout $ do
         setTitle . toHtml $ projectName project <> " Wiki Discussion - " <> target <> " | Snowdrift.coop"
@@ -268,14 +255,14 @@ getNewDiscussWikiR project_handle target = do
 
 postNewDiscussWikiR :: Text -> Text -> Handler Html
 postNewDiscussWikiR project_handle target = do
-    (project_entity, Entity _ page) <- runYDB $ pageInfo project_handle target
+    (Entity _ project, Entity _ page) <- runYDB $ pageInfo project_handle target
 
     ((result, _), _) <- runFormPost commentNewTopicForm
 
     case result of
         FormSuccess text -> do
             mode <- lookupPostParam "mode"
-            processWikiComment mode Nothing text project_entity page
+            processWikiComment mode Nothing text project page
         FormMissing      -> error "Form missing."
         FormFailure msgs -> error $ "Error submitting form: " ++ T.unpack (T.intercalate "\n" msgs)
 

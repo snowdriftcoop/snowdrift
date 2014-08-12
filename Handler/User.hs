@@ -3,13 +3,98 @@ module Handler.User where
 import Import
 
 import           Model.Role
+import           Model.Transaction
 import           Model.User
 import           Widgets.Preview
 import           View.User
+import           Widgets.ProjectPledges
+import           Widgets.Time
 
-import qualified Data.Map as M
-import qualified Data.Set as S
+import qualified Data.Map  as M
+import qualified Data.Set  as S
 import qualified Data.Text as T
+
+--------------------------------------------------------------------------------
+-- Utility functions
+
+lookupParamDefault :: Read a => Text -> a -> Handler a
+lookupParamDefault name def = do
+    maybe_param <- lookup name <$> reqGetParams <$> getRequest
+    return $ fromMaybe def $ do
+        param_str <- maybe_param
+        param <- listToMaybe $ reads $ T.unpack param_str
+        return $ fst param
+
+--------------------------------------------------------------------------------
+-- /
+
+getUsersR :: Handler Html
+getUsersR = do
+    void requireAuth
+
+    users' <- runDB $
+                  select $
+                  from $ \user -> do
+                  orderBy [desc $ user ^. UserId]
+                  return user
+
+    infos :: [(Entity User, ((Value Text, Value Text), Value Role))] <- runDB $
+        select $
+        from $ \(user `InnerJoin` role `InnerJoin` project) -> do
+        on_ (project ^. ProjectId ==. role ^. ProjectUserRoleProject)
+        on_ (user ^. UserId ==. role ^. ProjectUserRoleUser)
+        return (user, ((project ^. ProjectName, project ^. ProjectHandle), role ^. ProjectUserRoleRole))
+
+
+    let users = map (\u -> (getUserKey u, u)) users'
+        infos' :: [(UserId, ((Text, Text), Role))] = map (entityKey *** unwrapValues) infos
+        infos'' :: [(UserId, Map (Text, Text) (Set Role))] = map (second $ uncurry M.singleton . second S.singleton) infos'
+        allProjects :: Map UserId (Map (Text, Text) (Set Role)) = M.fromListWith (M.unionWith S.union) infos''
+        userProjects :: Entity User -> Maybe (Map (Text, Text) (Set (Role)))
+        userProjects u = M.lookup (entityKey u) allProjects
+        getUserKey :: Entity User -> Text
+        getUserKey (Entity key _) = either (error . T.unpack) id . fromPersistValue . unKey $ key
+
+    defaultLayout $ do
+        setTitle "Users | Snowdrift.coop"
+        $(widgetFile "users")
+
+--------------------------------------------------------------------------------
+-- /new
+
+getUserCreateR :: Handler Html
+getUserCreateR = do
+    (form, _) <- generateFormPost $ createUserForm Nothing
+    defaultLayout $ do
+        setTitle "Create User | Snowdrift.coop"
+        [whamlet|
+            <form method=POST>
+                ^{form}
+                <input type=submit>
+        |]
+
+postUserCreateR :: Handler Html
+postUserCreateR = do
+    ((result, form), _) <- runFormPost $ createUserForm Nothing
+
+    case result of
+        FormSuccess (ident, passwd, name, avatar, nick) -> do
+            createUser ident (Just passwd) name avatar nick >>= \ maybe_user_id -> when (isJust maybe_user_id) $ do
+                setCreds True $ Creds "HashDB" ident []
+                redirectUltDest HomeR
+
+        FormMissing -> alertDanger "missing field"
+        FormFailure strings -> alertDanger (mconcat strings)
+
+    defaultLayout $ [whamlet|
+        <form method=POST>
+            ^{form}
+            <input type=submit>
+    |]
+
+
+--------------------------------------------------------------------------------
+-- /#UserId
 
 getUserR :: UserId -> Handler Html
 getUserR user_id = do
@@ -23,12 +108,96 @@ getUserR user_id = do
         setTitle . toHtml $ "User Profile - " <> userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
         renderUser mviewer_id user_id user projects_and_roles
 
-checkEditUser :: UserId -> Handler UserId
-checkEditUser user_id = do
+--------------------------------------------------------------------------------
+-- /#UserId/balance
+
+-- check permissions for user balance view
+getUserBalanceR :: UserId -> Handler Html
+getUserBalanceR user_id = do
     viewer_id <- requireAuthId
+    if viewer_id /= user_id
+        then permissionDenied "You must be a site administrator to view user balances."
+        else getUserBalanceR' user_id
+
+getUserBalanceR' :: UserId -> Handler Html
+getUserBalanceR' user_id = do
+    user <- runYDB $ get404 user_id
+
+    -- TODO: restrict viewing balance to user or snowdrift admins (logged) before moving to real money
+    -- when (user_id /= viewer_id) $ permissionDenied "You can only view your own account balance history."
+
+    Just account <- runDB $ get $ userAccount user
+
+    offset' <- lookupParamDefault "offset" 0
+    limit' <- lookupParamDefault "count" 20
+
+    (transactions, user_accounts, project_accounts) <- runDB $ do
+        transactions <- select $ from $ \ transaction -> do
+            where_ ( transaction ^. TransactionCredit ==. val (Just (userAccount user))
+                    ||. transaction ^. TransactionDebit ==. val (Just (userAccount user)))
+            orderBy [ desc (transaction ^. TransactionTs) ]
+            limit limit'
+            offset offset'
+            return transaction
+
+        let accounts = catMaybes $ S.toList $ S.fromList $ map (transactionCredit . entityVal) transactions ++ map (transactionDebit . entityVal) transactions
+
+        users <- selectList [ UserAccount <-. accounts ] []
+        projects <- selectList [ ProjectAccount <-. accounts ] []
+
+        let mkMapBy :: Ord b => (a -> b) -> [a] -> M.Map b a
+            mkMapBy f = M.fromList . map (\ e -> (f e, e))
+
+        return
+            ( transactions
+            , mkMapBy (userAccount . entityVal) users
+            , mkMapBy (projectAccount . entityVal) projects
+            )
+
+    (add_funds_form, _) <- generateFormPost addTestCashForm
+
+    defaultLayout $ do
+        setTitle . toHtml $ "User Balance - " <> userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
+        $(widgetFile "user_balance")
+
+postUserBalanceR :: UserId -> Handler Html
+postUserBalanceR user_id = do
+    Entity viewer_id _ <- requireAuth
+    user <- runYDB $ get404 user_id
     unless (user_id == viewer_id) $
-        permissionDenied "You can only modify your own profile."
-    return viewer_id
+        permissionDenied "You can only add money to your own account."
+
+    ((result, _), _) <- runFormPost addTestCashForm
+
+    now <- liftIO getCurrentTime
+
+    case result of
+        FormSuccess amount -> do
+            if amount < 10
+                then alertDanger "Sorry, minimum deposit is $10"
+                else do
+                    runDB $ do
+                        _ <- insert $ Transaction now (Just $ userAccount user) Nothing Nothing amount "Test Load" Nothing
+                        update $ \ account -> do
+                            set account [ AccountBalance +=. val amount ]
+                            where_ ( account ^. AccountId ==. val (userAccount user) )
+
+                    alertSuccess "Balance updated."
+            redirect (UserBalanceR user_id)
+
+        _ -> error "Error processing form."
+
+--------------------------------------------------------------------------------
+-- /#UserId/d
+
+getUserDiscussR :: UserId -> Handler Html
+getUserDiscussR user_id = undefined
+
+postUserDiscussR :: UserId -> Handler Html
+postUserDiscussR user_id = undefined
+
+--------------------------------------------------------------------------------
+-- /#UserId/edit
 
 getEditUserR :: UserId -> Handler Html
 getEditUserR user_id = do
@@ -74,69 +243,16 @@ postUserR user_id = do
             alertDanger "Failed to update user."
             redirect (UserR user_id)
 
-getUsersR :: Handler Html
-getUsersR = do
-    void requireAuth
+checkEditUser :: UserId -> Handler UserId
+checkEditUser user_id = do
+    viewer_id <- requireAuthId
+    unless (user_id == viewer_id) $
+        permissionDenied "You can only modify your own profile."
+    return viewer_id
 
-    users' <- runDB $
-                  select $
-                  from $ \user -> do
-                  orderBy [desc $ user ^. UserId]
-                  return user
+--------------------------------------------------------------------------------
+-- /#UserId/elig
 
-    infos :: [(Entity User, ((Value Text, Value Text), Value Role))] <- runDB $
-        select $
-        from $ \(user `InnerJoin` role `InnerJoin` project) -> do
-        on_ (project ^. ProjectId ==. role ^. ProjectUserRoleProject)
-        on_ (user ^. UserId ==. role ^. ProjectUserRoleUser)
-        return (user, ((project ^. ProjectName, project ^. ProjectHandle), role ^. ProjectUserRoleRole))
-
-
-    let users = map (\u -> (getUserKey u, u)) users'
-        infos' :: [(UserId, ((Text, Text), Role))] = map (entityKey *** unwrapValues) infos
-        infos'' :: [(UserId, Map (Text, Text) (Set Role))] = map (second $ uncurry M.singleton . second S.singleton) infos'
-        allProjects :: Map UserId (Map (Text, Text) (Set Role)) = M.fromListWith (M.unionWith S.union) infos''
-        userProjects :: Entity User -> Maybe (Map (Text, Text) (Set (Role)))
-        userProjects u = M.lookup (entityKey u) allProjects
-        getUserKey :: Entity User -> Text
-        getUserKey (Entity key _) = either (error . T.unpack) id . fromPersistValue . unKey $ key
-
-    defaultLayout $ do
-        setTitle "Users | Snowdrift.coop"
-        $(widgetFile "users")
-
-
-getUserCreateR :: Handler Html
-getUserCreateR = do
-    (form, _) <- generateFormPost $ createUserForm Nothing
-    defaultLayout $ do
-        setTitle "Create User | Snowdrift.coop"
-        [whamlet|
-            <form method=POST>
-                ^{form}
-                <input type=submit>
-        |]
-
-postUserCreateR :: Handler Html
-postUserCreateR = do
-    ((result, form), _) <- runFormPost $ createUserForm Nothing
-
-    case result of
-        FormSuccess (ident, passwd, name, avatar, nick) -> do
-            createUser ident (Just passwd) name avatar nick >>= \ maybe_user_id -> when (isJust maybe_user_id) $ do
-                setCreds True $ Creds "HashDB" ident []
-                redirectUltDest HomeR
-
-        FormMissing -> alertDanger "missing field"
-        FormFailure strings -> alertDanger (mconcat strings)
-
-    defaultLayout $ [whamlet|
-        <form method=POST>
-            ^{form}
-            <input type=submit>
-    |]
-
--- | POST handler for marking a user as eligible for establishment.
 postUserEstEligibleR :: UserId -> Handler Html
 postUserEstEligibleR user_id = do
     establisher_id <- requireAuthId
@@ -156,3 +272,18 @@ postUserEstEligibleR user_id = do
                     redirectUltDest HomeR
                 _ -> error "User not unestablished!"
         _ -> error "Error submitting form."
+
+--------------------------------------------------------------------------------
+-- /#UserId/pledges
+
+getUserPledgesR :: UserId -> Handler Html
+getUserPledgesR user_id = do
+    -- TODO: refine permissions here
+    _ <- requireAuthId
+    user <- runYDB $ get404 user_id
+    defaultLayout $ do
+        setTitle . toHtml $
+            "User Pledges - " <> userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
+
+        $(widgetFile "user_pledges")
+

@@ -2,6 +2,8 @@ module View.Project where
 
 import Import
 
+import           Data.Filter
+import           Data.Order
 import           Model.Currency
 import           Model.Markdown
 import           Model.Project
@@ -90,3 +92,8 @@ inviteForm :: Form (Text, Role)
 inviteForm = renderBootstrap3 $ (,)
     <$> areq' textField "About this invitation:" Nothing
     <*> areq roleField "Type of Invite:" (Just TeamMember)
+
+viewForm :: Form (Filterable -> Bool, Orderable -> [Double])
+viewForm = renderBootstrap3 $ (,)
+    <$> (either (const defaultFilter) id . parseFilterExpression . fromMaybe "" <$> aopt' textField "filter" Nothing)
+    <*> (either (const defaultOrder) id . parseOrderExpression . fromMaybe "" <$> aopt' textField "sort" Nothing)

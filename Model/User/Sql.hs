@@ -1,13 +1,13 @@
 module Model.User.Sql
-  ( exprIsModerator
+  ( exprUserIsModerator
   , exprUserViewedComments
   , exprUserViewedWikiEdits
   ) where
 
 import Import
 
-exprIsModerator :: UserId -> SqlExpr (Value ProjectId) -> SqlExpr (Value Bool)
-exprIsModerator = exprHasRole Moderator
+exprUserIsModerator :: UserId -> SqlExpr (Value ProjectId) -> SqlExpr (Value Bool)
+exprUserIsModerator = exprHasRole Moderator
 
 exprHasRole :: Role -> UserId -> SqlExpr (Value ProjectId) -> SqlExpr (Value Bool)
 exprHasRole role user_id project_id =

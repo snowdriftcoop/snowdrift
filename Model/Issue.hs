@@ -6,16 +6,13 @@ import Import
 
 import           Data.Filter
 import           Data.Order
-import           Model.AnnotatedTag
-import           Model.Ticket
-import           Widgets.Tag        (pickForegroundColor, tagWidget)
+import           Widgets.Tag (pickForegroundColor)
 
 import qualified Data.Set           as S
 import qualified Data.Text          as T
 import qualified Github.Issues      as GH
 import           Numeric            (readHex)
 import           Text.Printf
-import           Yesod.Markdown     (unMarkdown)
 
 -- An Issue abstracts a Snowdrift ticket, Github issue, etc.
 class Issue a where
@@ -33,42 +30,6 @@ instance Issue SomeIssue where
     issueWidget     (SomeIssue k) = k issueWidget
     issueFilterable (SomeIssue k) = k issueFilterable
     issueOrderable  (SomeIssue k) = k issueOrderable
-
-instance Issue AnnotatedTicket where
-    issueWidget (AnnotatedTicket project_handle ticket_id ticket page _ tags) =
-        [whamlet|
-          <tr>
-            <td>
-              <a href="@{DiscussCommentR project_handle (wikiPageTarget page) (ticketComment ticket)}">
-                SD-#{toPathPiece ticket_id}
-            <td>
-              #{ticketName ticket}
-            <td>
-              $forall tag <- tags
-                ^{tagWidget tag}
-        |]
-    issueFilterable = ticketToFilterable
-    issueOrderable = ticketToOrderable
-
-ticketToFilterable :: AnnotatedTicket -> Filterable
-ticketToFilterable (AnnotatedTicket _ _ ticket _ comment tags) = Filterable has_tag get_named_ts search_literal
-  where
-    has_tag t = any (\ at -> atName at == t && atScore at > 0) tags
-
-    get_named_ts "CREATED" = S.singleton $ ticketCreatedTs ticket
-    get_named_ts "LAST UPDATED" = S.singleton $ ticketUpdatedTs ticket
-    get_named_ts name = error $ "Unrecognized time name " ++ T.unpack name
-
-    search_literal str = uncurry ((||) `on` not . null . T.breakOnAll str) (ticketName ticket, unMarkdown $ commentText comment)
-
-ticketToOrderable :: AnnotatedTicket -> Orderable
-ticketToOrderable (AnnotatedTicket _ _ ticket _ comment tags) = Orderable has_tag get_named_ts search_literal
-  where
-    has_tag t = elem t $ map atName tags
-    get_named_ts "CREATED" = S.singleton $ ticketCreatedTs ticket
-    get_named_ts "LAST UPDATED" = S.singleton $ ticketUpdatedTs ticket
-    get_named_ts name = error $ "Unrecognized time name " ++ T.unpack name
-    search_literal str = uncurry ((||) `on` not . null . T.breakOnAll str) (ticketName ticket, unMarkdown $ commentText comment)
 
 instance Issue GH.Issue where
     issueWidget github_issue =

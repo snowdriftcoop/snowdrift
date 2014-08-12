@@ -8,7 +8,7 @@
         <a href="@{DiscussWikiR project_handle target}?state=closed">
             closed threads
 
-^{comments}
+^{comment_forest}
 
 $if not has_comments
     $if isJust muser

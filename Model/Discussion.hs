@@ -1,13 +1,35 @@
 module Model.Discussion
     ( createDiscussionDB
+    , fetchDiscussionClosedRootCommentsDB
     , fetchDiscussionProjectDB
+    , fetchDiscussionRootCommentsDB
     , fetchDiscussionWikiPage
     , fetchDiscussionWikiPagesInDB
     ) where
 
 import Import
 
+import Model.Comment.Sql
 import Control.Monad.Trans.Maybe
+
+-- | Get all open root Comments on a Discussion.
+fetchDiscussionRootCommentsDB :: DiscussionId -> ExprCommentCond -> DB [Entity Comment]
+fetchDiscussionRootCommentsDB = fetchRootComments exprCommentOpen
+
+-- | Get all closed root Comments on a Discussion.
+fetchDiscussionClosedRootCommentsDB :: DiscussionId -> ExprCommentCond -> DB [Entity Comment]
+fetchDiscussionClosedRootCommentsDB = fetchRootComments exprCommentClosed
+
+fetchRootComments :: ExprCommentCond -> DiscussionId -> ExprCommentCond -> DB [Entity Comment]
+fetchRootComments open_or_closed discussion_id has_permission =
+    select $
+    from $ \c -> do
+    where_ $
+        exprCommentOnDiscussion discussion_id c &&.
+        exprCommentIsRoot c &&.
+        open_or_closed c &&.
+        has_permission c
+    return c
 
 -- | Given a list of DiscussionId, fetch the discussions which are WikiPages.
 fetchDiscussionWikiPagesInDB :: [DiscussionId] -> DB [Entity WikiPage]

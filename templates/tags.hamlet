@@ -5,14 +5,14 @@ $else
         $forall tag <- tags
             <tr>
                 <td>
-                    #{atName tag}
+                    #{annotTagName tag}
 
                 <td>
 
                 <td>
-                    #{atScoreString tag}
+                    #{annotTagScoreString tag}
 
-            $forall (user, votes) <- atUserVotes tag
+            $forall (user, votes) <- annotTagUserVotes tag
                 <tr>
                     <td>
 
@@ -21,4 +21,3 @@ $else
 
                     <td>
                         #{show votes}
-

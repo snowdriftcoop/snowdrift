@@ -1,4 +1,4 @@
-module Model.WikiPage
+module Model.Wiki
     ( createWikiEditDB
     , createWikiPageDB
     , getAllWikiComments
@@ -10,7 +10,8 @@ import Import
 import Model.Comment.Sql
 import Model.Discussion
 import Model.Permission
-import Model.Project     (getProjectPages)
+import Model.Project               (getProjectPages)
+import Model.Wiki.Comment.Sql
 
 import Control.Monad.Writer.Strict (tell)
 
@@ -58,8 +59,8 @@ getAllWikiComments mviewer_id project_id latest_comment_id since limit_num = do
         on_ (c ^. CommentDiscussion ==. wp ^. WikiPageDiscussion)
         where_ $
             wp ^. WikiPageId `in_` valList pages_ids &&.
-            exprUnapproved c &&.
-            exprPermissionFilter mviewer_id (val project_id) c
+            exprCommentUnapproved c &&.
+            exprCommentWikiPagePermissionFilter mviewer_id (val project_id) c
         orderBy [desc (c ^. CommentCreatedTs)]
         return c
 
@@ -72,7 +73,7 @@ getAllWikiComments mviewer_id project_id latest_comment_id since limit_num = do
             wp ^. WikiPageId `in_` valList pages_ids &&.
             c ^. CommentId <=. val latest_comment_id &&.
             c ^. CommentModeratedTs >=. just (val since) &&.
-            exprPermissionFilter mviewer_id (val project_id) c
+            exprCommentWikiPagePermissionFilter mviewer_id (val project_id) c
         orderBy [desc (c ^. CommentModeratedTs)]
         limit limit_num
         return c
@@ -85,7 +86,7 @@ getAllWikiComments mviewer_id project_id latest_comment_id since limit_num = do
         where_ $
             wp ^. WikiPageId `in_` valList pages_ids &&.
             c ^. CommentModeratedTs <. just (val since) &&.
-            exprPermissionFilter mviewer_id (val project_id) c
+            exprCommentWikiPagePermissionFilter mviewer_id (val project_id) c
         orderBy [desc (c ^. CommentModeratedTs)]
         limit lim
         return c

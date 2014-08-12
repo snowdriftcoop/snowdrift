@@ -4,15 +4,18 @@ module Handler.Project where
 
 import Import
 
+import           Data.Filter
+import           Data.Order
 import           Model.Application
 import           Model.Discussion
+import           Model.Issue
 import           Model.Markdown
 import           Model.Markdown.Diff
 import           Model.Project
 import           Model.Role
 import           Model.SnowdriftEvent
 import           Model.User
-import           Model.WikiPage
+import           Model.Wiki
 import           View.PledgeButton
 import           View.Project
 import           View.SnowdriftEvent
@@ -452,6 +455,32 @@ getProjectPatronsR project_handle = do
     defaultLayout $ do
         setTitle . toHtml $ projectName project <> " Patrons | Snowdrift.coop"
         $(widgetFile "project_patrons")
+
+--------------------------------------------------------------------------------
+-- /t
+
+getTicketsR :: Text -> Handler Html
+getTicketsR project_handle = do
+    muser_id <- maybeAuthId
+    (project, tagged_tickets) <- runYDB $ do
+        Entity project_id project <- getBy404 (UniqueProjectHandle project_handle)
+        tagged_tickets <- fetchProjectTaggedTicketsDB project_id muser_id
+        return (project, tagged_tickets)
+
+    ((result, formWidget), encType) <- runFormGet viewForm
+    let (filter_expression, order_expression) = case result of
+            FormSuccess x -> x
+            _ -> (defaultFilter, defaultOrder)
+
+    github_issues <- getGithubIssues project
+
+    let issues = sortBy (flip compare `on` order_expression . issueOrderable) $
+                   filter (filter_expression . issueFilterable) $
+                      map mkSomeIssue tagged_tickets ++ map mkSomeIssue github_issues
+
+    defaultLayout $ do
+        setTitle . toHtml $ projectName project <> " Tickets | Snowdrift.coop"
+        $(widgetFile "tickets")
 
 --------------------------------------------------------------------------------
 -- /transactions

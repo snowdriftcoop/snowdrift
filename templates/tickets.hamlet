@@ -2,7 +2,7 @@
     ^{formWidget}
     <input type=submit value="update view">
 
-$if null tickets
+$if null issues
     <p> no tickets to display
 $else
     <table>

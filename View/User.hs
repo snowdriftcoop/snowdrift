@@ -1,5 +1,6 @@
 module View.User
-    ( createUserForm
+    ( addTestCashForm
+    , createUserForm
     , editUserForm
     , establishUserForm
     , previewUserForm
@@ -9,9 +10,11 @@ module View.User
 
 import Import
 
+import           Model.Currency
 import           Model.Markdown
 import           Model.Role
 import           Model.User
+import           Model.User.Internal
 import           Widgets.Markdown       (snowdriftMarkdownField)
 import           Widgets.ProjectPledges
 
@@ -129,3 +132,6 @@ userNameWidget user_id = do
                 <a href=@{UserR user_id}>
                     #{userDisplayName (Entity user_id user)}
             |]
+
+addTestCashForm :: Form Milray
+addTestCashForm = renderBootstrap3 $ fromInteger . (10000 *) <$> areq' intField "Add (fake) money to your account (in whole dollars)" (Just 10)

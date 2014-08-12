@@ -1,4 +1,3 @@
-
 module Widgets.Tag where
 
 import Import
@@ -6,7 +5,7 @@ import Import
 import Data.List (maximumBy)
 import Data.Bits
 
-import Model.AnnotatedTag
+import Model.Tag
 import Text.Printf
 
 import Model.Settings
@@ -30,26 +29,26 @@ tagWidget t = do
 
     show_tag_voting <- userSettingsShowTagVotes <$> handlerToWidget getUserSettings
 
-    let my_tag = any ((== maybe_user_id) . Just . entityKey . fst) $ atUserVotes t
+    let my_tag = any ((== maybe_user_id) . Just . entityKey . fst) $ annotTagUserVotes t
 
-    let maybe_user_score = maybe_user_id >>= atUserScore t
+    let maybe_user_score = maybe_user_id >>= annotTagUserScore t
 
     let bg :: String
-        bg = printf "%06x" $ (\ (Color c) -> c) $ atColor t
+        bg = printf "%06x" $ (\ (Color c) -> c) $ annotTagColor t
         fg :: String
-        fg = printf "%06x" $ pickForegroundColor $ (\ (Color c) -> c) $ atColor t
+        fg = printf "%06x" $ pickForegroundColor $ (\ (Color c) -> c) $ annotTagColor t
 
     toWidget [hamlet|
-        <form .tag action=@{atUrl t} style="background-color:##{bg};color:##{fg}" method=post>
+        <form .tag action=@{annotTagUrl t} style="background-color:##{bg};color:##{fg}" method=post>
             <small>
-                #{atName t}
+                #{annotTagName t}
                 $if show_tag_voting
                     <input type=submit name=direction style="color:##{fg}" value=- .tag-input>
                     <span .tag-score>
                         $maybe user_score <- maybe_user_score
-                            #{user_score}/#{atScoreString t}
+                            #{user_score}/#{annotTagScoreString t}
                         $nothing
-                            #{atScoreString t}
+                            #{annotTagScoreString t}
                     <input type=submit name=direction style="color:##{fg}" value=+ .tag-input>
                 $else
                     $if my_tag

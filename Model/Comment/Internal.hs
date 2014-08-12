@@ -3,7 +3,7 @@ module Model.Comment.Internal where
 import Prelude
 
 import Database.Persist.TH
-import Data.Text (Text)
+import Data.Text           (Text)
 
 data ClosureType
     = Retracted

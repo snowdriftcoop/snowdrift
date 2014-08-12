@@ -1,4 +1,4 @@
-module Model.WikiPage.Sql where
+module Model.Wiki.Sql where
 
 import Import
 

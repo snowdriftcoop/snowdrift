@@ -1,13 +1,29 @@
 module Model.Tag
     ( TagMap
+    , AnnotatedTag(..)
+    , annotTagName
+    , annotTagScore
+    , annotTagScoreString
+    , annotTagUserScore
+    , sortAnnotTagsByName
+    , sortAnnotTagsByScore
+    , fetchAllTagsDB
     , fetchTagsInDB
-    , getAllTags
-    , getAllTagsMap
+    , fetchTagColorsDB
+    , fetchDefaultTagColorsDB
     ) where
 
 import Import
 
+import           Data.List   (sortBy)
+import qualified Data.Map    as M
+import qualified Data.List   as L
+import           Text.Printf
+
 type TagMap = Map TagId Tag
+
+fetchAllTagsDB :: DB [Entity Tag]
+fetchAllTagsDB = select (from return)
 
 fetchTagsInDB :: [TagId] -> DB [Entity Tag]
 fetchTagsInDB tag_ids =
@@ -16,8 +32,49 @@ fetchTagsInDB tag_ids =
         where_ (t ^. TagId `in_` valList tag_ids)
         return t
 
-getAllTagsMap :: DB TagMap
-getAllTagsMap = entitiesMap <$> getAllTags
+fetchTagColorsDB :: UserId -> DB (Map TagId Color)
+fetchTagColorsDB user_id = fmap go $
+    select $
+    from $ \tc -> do
+    where_ (tc ^. TagColorUser ==. val user_id)
+    return tc
+  where
+    go :: [Entity TagColor] -> Map TagId Color
+    go = M.fromList . map ((tagColorTag &&& Color . tagColorColor) . entityVal)
 
-getAllTags :: DB [Entity Tag]
-getAllTags = select $ from (\t -> return t)
+fetchDefaultTagColorsDB :: DB (Map TagId Color)
+fetchDefaultTagColorsDB = go <$> select (from return)
+  where
+    go :: [Entity DefaultTagColor] -> Map TagId Color
+    go = M.fromList . map ((defaultTagColorTag &&& Color . defaultTagColorColor) . entityVal)
+
+-- | An tag 'annotated' with rendering information..
+data AnnotatedTag = AnnotatedTag
+    { annotTagTag       :: Entity Tag
+    , annotTagUrl       :: Route App  -- ^ The route to POST to (for changing votes).
+    , annotTagColor     :: Color
+    , annotTagUserVotes :: [(Entity User, Int)]
+    }
+
+annotTagName :: AnnotatedTag -> Text
+annotTagName = tagName . entityVal . annotTagTag
+
+{- Scoring for voting on tags is something not currently presented
+- on the site. We've discussed changing it. I (Aaron) prefer a 6-point
+- range voting just like we proposed for the Bylaws instead of mimicking
+- the pledge formula here. Final decisions haven't been made yet -}
+
+annotTagScore :: AnnotatedTag -> Double
+annotTagScore = sum . map (\ (_, x) -> if x == 0 then 0 else fromIntegral (signum x) * logBase 2 (1 + fromIntegral (abs x) :: Double)) . annotTagUserVotes
+
+annotTagUserScore :: AnnotatedTag -> UserId -> Maybe Int
+annotTagUserScore at user_id = fmap snd $ L.find ((== user_id) . entityKey . fst) $ annotTagUserVotes at
+
+annotTagScoreString :: AnnotatedTag -> String
+annotTagScoreString = printf "%.1f" . annotTagScore
+
+sortAnnotTagsByName :: [AnnotatedTag] -> [AnnotatedTag]
+sortAnnotTagsByName = sortBy (compare `on` annotTagName)
+
+sortAnnotTagsByScore :: [AnnotatedTag] -> [AnnotatedTag]
+sortAnnotTagsByScore = sortBy (compare `on` annotTagScore)

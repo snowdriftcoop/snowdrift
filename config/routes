@@ -18,12 +18,13 @@
 -- User
 
 /u                 UsersR           GET
+/u/!new            UserCreateR      GET POST
 /u/#UserId         UserR            GET POST
+/u/#UserId/balance UserBalanceR     GET POST
+/u/#UserId/d       UserDiscussR     GET POST
 /u/#UserId/edit    EditUserR        GET
 /u/#UserId/elig    UserEstEligibleR     POST
-/u/#UserId/balance UserBalanceR     GET POST
 /u/#UserId/pledges UserPledgesR     GET
-/u/!new            UserCreateR      GET POST
 
 -- Notifications
 
@@ -71,25 +72,29 @@
 
 -- Project wiki page comments
 
-/p/#Text/w/#Text/c/#CommentId                 DiscussCommentR       GET
-/p/#Text/w/#Text/c/#CommentId/close           CloseWikiCommentR     GET POST
-/p/#Text/w/#Text/c/#CommentId/delete          DeleteCommentR        GET POST DELETE
-/p/#Text/w/#Text/c/#CommentId/edit            EditCommentR          GET POST
-/p/#Text/w/#Text/c/#CommentId/flag            FlagCommentR          GET POST
-/p/#Text/w/#Text/c/#CommentId/moderate        ApproveWikiCommentR   GET POST
-/p/#Text/w/#Text/c/#CommentId/reply           ReplyCommentR         GET POST
-/p/#Text/w/#Text/c/#CommentId/rethread        RethreadWikiCommentR  GET POST
-/p/#Text/w/#Text/c/#CommentId/retract         RetractWikiCommentR   GET POST
-/p/#Text/w/#Text/c/#CommentId/tags            CommentTagsR          GET
-/p/#Text/w/#Text/c/#CommentId/tag/#TagId      CommentTagR           GET POST
-/p/#Text/w/#Text/c/#CommentId/tag/!new        NewCommentTagR        GET
-/p/#Text/w/#Text/c/#CommentId/tag/!new/create CreateNewCommentTagR      POST
-/p/#Text/w/#Text/c/#CommentId/tag/!new/apply  ApplyNewCommentTagR       POST
+/p/#Text/w/#Text/c/#CommentId                 WikiCommentR             GET
+/p/#Text/w/#Text/c/#CommentId/close           CloseWikiCommentR        GET POST
+/p/#Text/w/#Text/c/#CommentId/delete          DeleteWikiCommentR       GET POST DELETE
+/p/#Text/w/#Text/c/#CommentId/edit            EditWikiCommentR         GET POST
+/p/#Text/w/#Text/c/#CommentId/flag            FlagWikiCommentR         GET POST
+/p/#Text/w/#Text/c/#CommentId/moderate        ApproveWikiCommentR      GET POST
+/p/#Text/w/#Text/c/#CommentId/reply           ReplyWikiCommentR        GET POST
+/p/#Text/w/#Text/c/#CommentId/rethread        RethreadWikiCommentR     GET POST
+/p/#Text/w/#Text/c/#CommentId/retract         RetractWikiCommentR      GET POST
+/p/#Text/w/#Text/c/#CommentId/tag/!new        WikiCommentAddTagR       GET
+-- Redundant tag stuff for prettier URLs.
+/p/#Text/w/#Text/c/#CommentId/tags            WikiCommentTagsR         GET
+/p/#Text/w/#Text/c/#CommentId/tag/#TagId      WikiCommentTagR          GET POST
+/p/#Text/w/#Text/c/#CommentId/tag/!apply      WikiCommentApplyTagR         POST
+/p/#Text/w/#Text/c/#CommentId/tag/!create     WikiCommentCreateTagR        POST
 
--- Experimental, may go away - but there are times when all you have is a CommentId,
--- and you want to render a page. This function, for now, should redirect to
--- the correct wiki page. TODO: when we add more discussion types, what then?
-/c/#CommentId CommentDirectLinkR GET
+-- Comment stuff (discussion-agnostic).
+
+/c/#CommentId             CommentDirectLinkR GET
+/c/#CommentId/tags        CommentTagsR       GET
+/c/#CommentId/tag/#TagId  CommentTagR        GET POST
+/c/#CommentId/tag/!apply  CommentApplyTagR       POST
+/c/#CommentId/tag/!create CommentCreateTagR      POST
 
 -- Devs only!
 

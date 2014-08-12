@@ -2,13 +2,15 @@ module Model.Project
     ( ProjectSummary(..)
     , UpdateProject(..)
     , fetchAllProjectsDB
-    , fetchProjectCommentIdsDB
+    , fetchProjectCommentsDB
     , fetchProjectCommentsPendingBeforeDB
     , fetchProjectCommentsPostedOnWikiPagesBeforeDB
     , fetchProjectDeletedPledgesBeforeDB
     , fetchProjectNewPledgesBeforeDB
     , fetchProjectModeratorsDB
     , fetchProjectTeamMembersDB
+    , fetchProjectTicketsDB
+    , fetchProjectTaggedTicketsDB
     , fetchProjectUpdatedPledgesBeforeDB
     , fetchProjectVolunteerApplicationsDB
     , fetchProjectWikiEditsBeforeDB
@@ -28,17 +30,30 @@ module Model.Project
 
 import Import
 
+import           Data.Filter
+import           Data.Order
+import           Model.Comment
 import           Model.Comment.Sql
 import           Model.Currency
+import           Model.Issue
 import           Model.Project.Sql
-import           Model.WikiPage.Sql
+import           Model.Tag
+import           Model.User
+import           Model.Wiki.Comment.Sql
+import           Model.Wiki.Sql
+import           Widgets.Tag
 
 import           Control.Monad.Trans.Resource (MonadThrow)
 import           Control.Monad.Writer.Strict  (tell)
 import           Control.Concurrent.Async     (Async, async, wait)
 import qualified Github.Data                  as GH
 import qualified Github.Issues                as GH
+import qualified Data.Map                     as M
+import qualified Data.Set                     as S
 import qualified Data.Text                    as T
+
+--------------------------------------------------------------------------------
+-- Types
 
 data ProjectSummary = ProjectSummary
     { summaryName          :: Text
@@ -55,9 +70,50 @@ data UpdateProject = UpdateProject
     , updateProjectGithubRepo  :: Maybe Text
     } deriving Show
 
--- | Fetch all Comments made on this Project, somewhere (for now, just WikiPages)
-fetchProjectCommentIdsDB :: ProjectId -> Maybe UserId -> DB [CommentId]
-fetchProjectCommentIdsDB = fetchProjectCommentIdsPostedOnWikiPagesDB
+newtype TaggedTicket = TaggedTicket ((Entity Ticket), [AnnotatedTag])
+
+instance Issue TaggedTicket where
+    issueWidget (TaggedTicket ((Entity ticket_id ticket),tags)) =
+        [whamlet|
+          <tr>
+            <td>
+              <a href="@{CommentDirectLinkR (ticketComment ticket)}">
+                SD-#{toPathPiece ticket_id}
+            <td>
+              #{ticketName ticket}
+            <td>
+              $forall tag <- tags
+                ^{tagWidget tag}
+        |]
+    issueFilterable = ticketToFilterable
+    issueOrderable = ticketToOrderable
+
+ticketToFilterable :: TaggedTicket -> Filterable
+ticketToFilterable (TaggedTicket (Entity _ ticket, tags)) = Filterable has_tag get_named_ts search_literal
+  where
+    has_tag t = any (\tag -> annotTagName tag == t && annotTagScore tag > 0) tags
+
+    get_named_ts "CREATED" = S.singleton $ ticketCreatedTs ticket
+    get_named_ts "LAST UPDATED" = S.singleton $ ticketUpdatedTs ticket
+    get_named_ts name = error $ "Unrecognized time name " ++ T.unpack name
+
+    search_literal str = (not . null . T.breakOnAll str) (ticketName ticket)
+
+ticketToOrderable :: TaggedTicket -> Orderable
+ticketToOrderable (TaggedTicket ((Entity _ ticket),tags)) = Orderable has_tag get_named_ts search_literal
+  where
+    has_tag t = elem t $ map annotTagName tags
+    get_named_ts "CREATED" = S.singleton $ ticketCreatedTs ticket
+    get_named_ts "LAST UPDATED" = S.singleton $ ticketUpdatedTs ticket
+    get_named_ts name = error $ "Unrecognized time name " ++ T.unpack name
+    search_literal str = (not . null . T.breakOnAll str) (ticketName ticket)
+
+--------------------------------------------------------------------------------
+-- Database actions
+
+-- | Fetch all Comments made on this Project, somewhere.
+fetchProjectCommentsDB :: ProjectId -> Maybe UserId -> DB [CommentId]
+fetchProjectCommentsDB project_id muser_id = fmap (map unValue) $ select (querProjectCommentsDB project_id muser_id)
 
 fetchAllProjectsDB :: DB [Entity Project]
 fetchAllProjectsDB = select (from return)
@@ -207,14 +263,8 @@ fetchProjectCommentsPostedOnWikiPagesBeforeDB project_id muser_id before =
     where_ $
         ecp ^. EventCommentPostedTs <=. val before &&.
         exprWikiPageOnProject wp project_id &&.
-        exprPermissionFilter muser_id (val project_id) c
+        exprCommentWikiPagePermissionFilter muser_id (val project_id) c
     return c
-
--- | Fetch all CommentIds on this Project's WikiPages.
-fetchProjectCommentIdsPostedOnWikiPagesDB :: ProjectId -> Maybe UserId -> DB [CommentId]
-fetchProjectCommentIdsPostedOnWikiPagesDB project_id muser_id = fmap (map unValue) $
-    select $
-    querProjectCommentIdsPostedOnWikiPagesDB project_id muser_id
 
 -- | Fetch all pending Comments made on a Project before this time.
 fetchProjectCommentsPendingBeforeDB :: ProjectId -> Maybe UserId -> UTCTime -> DB [Entity Comment]
@@ -224,7 +274,7 @@ fetchProjectCommentsPendingBeforeDB project_id muser_id before =
     on_ (ecp ^. EventCommentPendingComment ==. c ^. CommentId)
     where_ $
         ecp ^. EventCommentPendingTs <=. val before &&.
-        exprPermissionFilter muser_id (val project_id) c
+        exprCommentWikiPagePermissionFilter muser_id (val project_id) c
     return c
 
 -- | Fetch all WikiPages made on this Project before this time.
@@ -308,3 +358,46 @@ fetchProjectVolunteerApplicationsDB project_id =
     orderBy [desc (va ^. VolunteerApplicationCreatedTs)]
     return va
 
+-- fetchProjectTicketsDB :: ProjectId -> DB [(Entity Ticket, [AnnotatedTag])]
+-- fetchProjectTicketsDB project_id = do
+--     tickets_info <- getTicketsInfo
+
+--     -- used_tags'tickets :: [(Set TagId, Map TagId Tag -> Handler AnnotatedTicket)]
+--     used_tags'tickets <-
+--         -- TODO: refactor this to avoid N+1 selects (for example, select all CommentTags where
+--         -- comment_id in comment_ids)
+--         forM tickets_info $ \(ticket, Entity comment_id comment, Entity _ page) -> do
+--             used_tags <- map entityVal <$> fetchCommentCommentTagsDB comment_id
+
+--             let t :: Map TagId Tag -> Handler (Entity Ticket, CommentId, [AnnotatedTag])
+--                 t tags_map = (ticket, comment <$>
+--                     buildAnnotatedTags
+--                         tags_map
+--                         (CommentTagR project_handle (wikiPageTarget page) comment_id)
+--                         used_tags
+
+--             return (S.fromList $ map commentTagTag used_tags, t)
+
+--     tags_map <- M.fromList . map (entityKey &&& entityVal) <$>
+--         (select $
+--             from $ \tag -> do
+--             where_ $ tag ^. TagId `in_` valList (S.toList . mconcat $ map fst used_tags'tickets)
+--             return tag)
+
+--     mapM (\(_, t) -> lift $ t tags_map) used_tags'tickets
+
+fetchProjectTicketsDB :: ProjectId -> Maybe UserId -> DB [Entity Ticket]
+fetchProjectTicketsDB project_id muser_id =
+    select $
+    from $ \(t `InnerJoin` c) -> do
+    on_ (t ^. TicketComment ==. c ^. CommentId)
+    where_ (c ^. CommentId `in_` subList_select (querProjectCommentsDB project_id muser_id))
+    return t
+
+fetchProjectTaggedTicketsDB :: ProjectId -> Maybe UserId -> DB [TaggedTicket]
+fetchProjectTaggedTicketsDB project_id muser_id = do
+    tickets <- fetchProjectTicketsDB project_id muser_id
+    annot_tags_map <- fetchCommentCommentTagsInDB (map (ticketComment . entityVal) tickets) >>= buildAnnotatedCommentTagsDB muser_id
+    let tagTicket :: Entity Ticket -> TaggedTicket
+        tagTicket t@(Entity _ ticket) = TaggedTicket (t, M.findWithDefault [] (ticketComment ticket) annot_tags_map)
+    return (map tagTicket tickets)

@@ -28,7 +28,6 @@ library
                      Foundation
                      Import
                      Model
-                     Model.AnnotatedTag
                      Model.Application
                      Model.CollapseState
                      Model.Comment
@@ -48,18 +47,21 @@ library
                      Model.SnowdriftEvent
                      Model.SnowdriftEvent.Internal
                      Model.Tag
-                     Model.Ticket
                      Model.Transaction
                      Model.User
+                     Model.User.Internal
                      Model.User.Sql
                      Model.ViewType
-                     Model.WikiPage
-                     Model.WikiPage.Sql
+                     Model.Wiki
+                     Model.Wiki.Comment
+                     Model.Wiki.Comment.Sql
+                     Model.Wiki.Sql
                      Settings
                      Settings.StaticFiles
                      Settings.Development
                      SnowdriftEventHandler
                      Handler.BuildFeed
+                     Handler.Comment
                      Handler.Home
                      Handler.HonorPledge
                      Handler.Invitation
@@ -70,12 +72,9 @@ library
                      Handler.Privacy
                      Handler.Project
                      Handler.RepoFeed
-                     Handler.Tickets
                      Handler.ToU
                      Handler.UpdateShares
                      Handler.User
-                     Handler.UserBalance
-                     Handler.UserPledges
                      Handler.Volunteer
                      Handler.Who
                      Handler.Widget
@@ -85,6 +84,7 @@ library
                      View.SnowdriftEvent
                      View.User
                      View.Wiki
+                     View.Wiki.Comment
                      View.PledgeButton
                      View.Project
                      Version

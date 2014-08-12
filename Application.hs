@@ -43,6 +43,7 @@ import           Yesod.Default.Main
 -- Don't forget to add new modules to your cabal file!
 
 import Handler.BuildFeed
+import Handler.Comment
 import Handler.Home
 import Handler.HonorPledge
 import Handler.Invitation
@@ -53,12 +54,9 @@ import Handler.PostLogin
 import Handler.Privacy
 import Handler.Project
 import Handler.RepoFeed
-import Handler.Tickets
 import Handler.ToU
 import Handler.UpdateShares
 import Handler.User
-import Handler.UserBalance
-import Handler.UserPledges
 import Handler.Volunteer
 import Handler.Who
 import Handler.Widget
