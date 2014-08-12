@@ -11,7 +11,7 @@ import Data.Map ((!))
 renderCommentPostedOnWikiPageEvent :: CommentId -> Comment -> Entity WikiPage -> Widget
 renderCommentPostedOnWikiPageEvent comment_id comment (Entity _ wiki_page) =
     [whamlet|
-        <div>On #{wikiPageTarget wiki_page}: #{commentText comment}
+        <div>On /w/#{wikiPageTarget wiki_page}: #{commentText comment}
             \ <a href=@{CommentDirectLinkR comment_id}>(permalink)
     |]
 
@@ -63,5 +63,5 @@ renderDeletedPledgeEvent :: UserId -> Int64 -> UserMap -> Widget
 renderDeletedPledgeEvent user_id shares users_map = do
     let pledger = users_map ! user_id
     [whamlet|
-        <div>#{userDisplayName (Entity user_id pledger)} withdrew #{show shares} shares.
+        <div>#{userDisplayName (Entity user_id pledger)} withdrew their #{show shares}-share pledge.
     |]
