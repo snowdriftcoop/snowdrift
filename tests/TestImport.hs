@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE TemplateHaskell #-}
 
 module TestImport
     ( runDB
@@ -10,6 +11,7 @@ module TestImport
     , liftIO
     , extractLocation
     , statusIsResp
+    , onException
     , module TestImport
     ) where
 
@@ -35,6 +37,19 @@ import Foundation as TestImport
 import Model as TestImport
 
 import Control.Monad (when)
+
+import qualified Language.Haskell.Meta.Parse as Exp
+import qualified Language.Haskell.Meta.Syntax.Translate as Exp
+import qualified Language.Haskell.TH as TH
+import           Language.Haskell.TH.Quote
+
+import qualified Language.Haskell.Exts.Parser as Src
+import qualified Language.Haskell.Exts.SrcLoc as Src
+import qualified Language.Haskell.Exts.Pretty as Src
+import qualified Language.Haskell.Exts.Annotated.Syntax as Src
+
+import Control.Exception.Lifted
+
 
 
 type Spec = YesodSpec App
@@ -121,4 +136,40 @@ statusIsResp number = withResponse $ \ SResponse { simpleStatus = s } -> do
     [ "Expected status was ", show number
     , " but received status was ", show $ H.statusCode s
     ]
+
+
+marked :: QuasiQuoter
+marked = QuasiQuoter { quoteExp = decorate }
+  where
+    decorate input = do
+        loc <- TH.location
+        let file = TH.loc_filename loc
+            (line, _) = TH.loc_start loc
+
+            fixup 1 = 0
+            fixup x = x - 2
+
+            onException l = Src.QVarOp l $ Src.Qual l (Src.ModuleName l "TestImport") (Src.Ident l "onException")
+            report l =
+                let str = file ++ ":" ++ show (line + fixup (Src.srcLine l)) ++ ": exception raised here"
+                 in Src.App l
+                        (Src.Var l $ Src.Qual l (Src.ModuleName l "TestImport") (Src.Ident l "liftIO"))
+                      $ Src.App l
+                            (Src.Var l $ Src.Qual l (Src.ModuleName l "Prelude") (Src.Ident l "putStrLn"))
+                            (Src.Lit l $ Src.String l str str)
+
+            mark l e = Src.InfixApp l e (onException l) (report l)
+
+            decorateExp :: Src.Exp Src.SrcLoc -> Src.Exp Src.SrcLoc
+            decorateExp (Src.Do l stmts) = mark l $ Src.Do l $ map decorateStmt stmts
+            decorateExp exp = mark (Src.ann exp) exp
+
+            decorateStmt :: Src.Stmt Src.SrcLoc -> Src.Stmt Src.SrcLoc
+            decorateStmt (Src.Generator l pat exp) = Src.Generator l pat $ decorateExp exp
+            decorateStmt (Src.Qualifier l exp) = Src.Qualifier l $ decorateExp exp
+            decorateStmt stmt = stmt
+
+        case Src.parse ("do\n" ++ input) of
+            Src.ParseOk a -> either fail return $ Exp.parseExp $ Src.prettyPrint $ decorateExp a
+            Src.ParseFailed l e -> fail e
 

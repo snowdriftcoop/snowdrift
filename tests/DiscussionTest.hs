@@ -19,7 +19,7 @@ import Control.Monad
 
 discussionSpecs :: Spec
 discussionSpecs = do
-    let postComment route stmts = do
+    let postComment route stmts = [marked|
             get route
             statusIs 200
 
@@ -35,19 +35,22 @@ discussionSpecs = do
                 stmts
 
             statusIsResp 302
+        |]
 
-        getLatestCommentId = do
+        getLatestCommentId = [marked|
             [ Value (Just comment_id) ] <- testDB $ select $ from $ \ comment -> return (max_ $ comment ^. CommentId)
             return comment_id
+        |]
 
     ydescribe "discussion" $ do
-        yit "loads the discussion page" $ do
+        yit "loads the discussion page" $ [marked|
             login
 
             get $ DiscussWikiR "snowdrift" "about"
             statusIs 200
+        |]
 
-        yit "posts and moves some comments" $ do
+        yit "posts and moves some comments" $ [marked|
             login
 
             liftIO $ putStrLn "posting root comment"
@@ -78,18 +81,20 @@ discussionSpecs = do
                 addPostParam "mode" "rethread"
 
             statusIsResp 302
+        |]
 
 
     ydescribe "discussion - rethreading" $ do
-        let createComments = do
+        let createComments = [marked|
                 postComment (NewDiscussWikiR "snowdrift" "about") $ byLabel "New Topic" "First message"
                 first <- getLatestCommentId
                 postComment (NewDiscussWikiR "snowdrift" "about") $ byLabel "New Topic" "Second message"
                 second <- getLatestCommentId
 
                 return (first, second)
+            |]
 
-            testRethread first second = do
+            testRethread first second = [marked|
                 let rethread_url c = RethreadWikiCommentR "snowdrift" "about" c
 
                 get $ rethread_url first
@@ -112,9 +117,10 @@ discussionSpecs = do
 
                 bodyContains "First message"
                 bodyContains "Second message"
+            |]
 
 
-        yit "can move newer comments under older" $ do
+        yit "can move newer comments under older" $ [marked|
             login
 
             get $ NewDiscussWikiR "snowdrift" "about"
@@ -123,9 +129,10 @@ discussionSpecs = do
             (first, second) <- createComments
 
             testRethread first second
+        |]
 
 
-        yit "can move older comments under newer" $ do
+        yit "can move older comments under newer" $ [marked|
             login
 
             get $ NewDiscussWikiR "snowdrift" "about"
@@ -134,8 +141,9 @@ discussionSpecs = do
             (first, second) <- createComments
 
             testRethread second first
+        |]
 
-        yit "can rethread across pages and the redirect still works" $ do
+        yit "can rethread across pages and the redirect still works" $ [marked|
             login
 
             postComment (NewDiscussWikiR "snowdrift" "about") $ byLabel "New Topic" "posting on about page"
@@ -168,5 +176,6 @@ discussionSpecs = do
                 desired_url = "http://localhost:3000/p/snowdrift/w/intro/c/" ++ (\ (PersistInt64 i) -> show i) (unKey newId)
 
             assertEqual ("Redirect not matching! (" ++ show new_url ++ " /=  " ++ show desired_url ++ ")") new_url desired_url
+        |]
 
 
