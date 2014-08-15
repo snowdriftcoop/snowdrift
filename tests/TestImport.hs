@@ -158,7 +158,7 @@ marked = QuasiQuoter { quoteExp = decorate }
                             (Src.Var l $ Src.Qual l (Src.ModuleName l "Prelude") (Src.Ident l "putStrLn"))
                             (Src.Lit l $ Src.String l str str)
 
-            mark l e = Src.InfixApp l e (onException l) (report l)
+            mark l e = Src.InfixApp l (Src.Paren l e) (onException l) (report l)
 
             decorateExp :: Src.Exp Src.SrcLoc -> Src.Exp Src.SrcLoc
             decorateExp (Src.Do l stmts) = mark l $ Src.Do l $ map decorateStmt stmts

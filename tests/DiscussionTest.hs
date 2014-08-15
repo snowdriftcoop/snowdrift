@@ -37,10 +37,9 @@ discussionSpecs = do
             statusIsResp 302
         |]
 
-        getLatestCommentId = [marked|
+        getLatestCommentId = do
             [ Value (Just comment_id) ] <- testDB $ select $ from $ \ comment -> return (max_ $ comment ^. CommentId)
             return comment_id
-        |]
 
     ydescribe "discussion" $ do
         yit "loads the discussion page" $ [marked|
