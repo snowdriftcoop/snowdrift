@@ -221,20 +221,26 @@ doMigration = do
         runSql migration
 
     let new_last_migration = L.maximum $ migration_number : L.map fst migration_files
+
     update $ flip set [ DatabaseVersionLastMigration =. val new_last_migration ]
 
     migrations <- parseMigration' migrateAll
 
     let (unsafe, safe) = L.partition fst migrations
 
-    unless (L.null $ L.map snd safe) $ do
-        let filename = "migrations/migrate" <> show (new_last_migration + 1)
+    maybe_newer_last_migration <-
+        if (L.null $ L.map snd safe)
+         then return Nothing
+         else do
+            let filename = "migrations/migrate" <> show (new_last_migration + 1)
 
-        liftIO $ T.writeFile filename $ T.unlines $ L.map ((`snoc` ';') . snd) safe
+            liftIO $ T.writeFile filename $ T.unlines $ L.map ((`snoc` ';') . snd) safe
 
-        $(logWarn) $ "wrote " <> T.pack (show $ L.length safe) <> " safe statements to " <> T.pack filename
+            $(logWarn) $ "wrote " <> T.pack (show $ L.length safe) <> " safe statements to " <> T.pack filename
 
-        mapM_ (runSql . snd) migrations
+            mapM_ (runSql . snd) migrations
+
+            return $ Just $ new_last_migration + 1
 
     unless (L.null $ L.map snd unsafe) $ do
         let filename = "migrations/migrate.unsafe"
@@ -244,6 +250,8 @@ doMigration = do
         $(logWarn) $ "wrote " <> T.pack (show $ L.length unsafe) <> " safe statements to " <> T.pack filename
 
         error "Some migration steps were unsafe.  Aborting."
+
+    maybe (return ()) (\ newer_last_migration -> update $ flip set [ DatabaseVersionLastMigration =. val newer_last_migration ]) maybe_newer_last_migration
 
     rolloutStagingWikiPages
 
