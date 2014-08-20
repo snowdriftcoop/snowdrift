@@ -56,7 +56,7 @@
 /p/#Text/c/#CommentId/tag/!apply             ProjectCommentApplyTagR      POST
 /p/#Text/c/#CommentId/tag/!create            ProjectCommentCreateTagR     POST
 /p/#Text/d                                   ProjectDiscussionR       GET
-/p/#Text/d/new                               NewProjectDiscussionR    GET
+/p/#Text/d/new                               NewProjectDiscussionR    GET POST
 /p/#Text/edit                                EditProjectR             GET
 /p/#Text/feed                                ProjectFeedR             GET
 /p/#Text/invitation/#Text                    InvitationR              GET POST

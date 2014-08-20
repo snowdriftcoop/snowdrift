@@ -230,7 +230,7 @@ commentTreeWidget form_under_root_comment
         comment_routes
         action_permissions
         earlier_closures
-        (user_map M.! commentUser root)
+        (fromMaybe (error "comment user missing from user map") (M.lookup (commentUser root) user_map))
         (M.lookup root_id closure_map)
         (M.lookup root_id ticket_map)
         (M.lookup root_id flag_map)
@@ -272,9 +272,9 @@ commentWidget (Entity comment_id comment)
 
     -- TODO(mitchell): Lots of refactoring to lift this database hit up to the
     -- controller layer. This currently has horrible performance - a hit *per* comment!
-    tags <- handlerToWidget $
-        runDB $
-          (sortAnnotTagsByName . (M.! comment_id)) <$>
+    tags <- handlerToWidget $ runDB $
+        maybe [] sortAnnotTagsByName .
+          M.lookup comment_id <$>
             (fetchCommentCommentTagsDB comment_id >>= buildAnnotatedCommentTagsDB mviewer_id)
 
     $(widgetFile "comment")

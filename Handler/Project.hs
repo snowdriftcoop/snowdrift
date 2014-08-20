@@ -845,11 +845,13 @@ getInviteR project_handle = do
 
     let format_user Nothing = "NULL"
         format_user (Just user_id) =
-            let Entity _ user = users M.! user_id
+            let Entity _ user = fromMaybe (error "getInviteR: user_id not found in users map")
+                                          (M.lookup user_id users)
              in fromMaybe (userIdent user) $ userName user
 
         format_inviter user_id =
-            userDisplayName $ users M.! user_id
+            userDisplayName $ fromMaybe (error "getInviteR(#2): user_id not found in users map")
+                                        (M.lookup user_id users)
 
     defaultLayout $ do
         setTitle . toHtml $ projectName project <> " - Send Invite | Snowdrift.coop"

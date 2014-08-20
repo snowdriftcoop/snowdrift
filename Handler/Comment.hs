@@ -163,13 +163,15 @@ makeCommentForestWidget
         comment_forest_widget =
             forM_ comment_forest $ \comment_tree -> do
                 let root_id = entityKey (rootLabel comment_tree)
+                    earlier_closures = M.findWithDefault [] root_id earlier_closures_mapt
+
                 commentTreeWidget
                     form_under_root_comment
                     comment_tree
                     (entityKey <$> mviewer)
                     commentHandlerRoutes
                     commentHandlerMakeActionPermissions
-                    (mod_earlier_closures (earlier_closures_map M.! root_id))
+                    (mod_earlier_closures earlier_closures)
                     (mod_user_map         user_map_with_viewer)
                     (mod_closure_map      closure_map)
                     (mod_ticket_map       ticket_map)
@@ -270,7 +272,9 @@ getProjectCommentAddTag comment_id project_id user_id = do
     (tag_map, tags, project_tags, other_tags) <- runDB $ do
         comment_tags               <- fetchCommentCommentTagsDB comment_id
         tag_map                    <- entitiesMap <$> fetchTagsInDB (map commentTagTag comment_tags)
-        tags                       <- (M.! comment_id) <$> buildAnnotatedCommentTagsDB (Just user_id) comment_tags
+        annot_tags_map             <- buildAnnotatedCommentTagsDB (Just user_id) comment_tags
+        let tags = fromMaybe (error "getProjectCommentAddTag: comment_id not found in annot tags map")
+                             (M.lookup comment_id annot_tags_map)
         (project_tags, other_tags) <- getProjectTagList project_id
         return (tag_map, tags, project_tags, other_tags)
 
@@ -593,7 +597,10 @@ deleteCommentDirectLinkR comment_id = do
 getCommentTagsR :: CommentId -> Handler Html
 getCommentTagsR comment_id = do
     muser_id <- maybeAuthId
-    tags <- runDB $ (M.! comment_id) <$> (fetchCommentCommentTagsDB comment_id >>= buildAnnotatedCommentTagsDB muser_id)
+    tags <- runDB $ do
+        annot_tags_map <- fetchCommentCommentTagsDB comment_id >>= buildAnnotatedCommentTagsDB muser_id
+        return $ fromMaybe (error "getCommentTagsR: comment_id not found in annot tags map")
+                           (M.lookup comment_id annot_tags_map)
     defaultLayout $(widgetFile "tags")
 
 --------------------------------------------------------------------------------
@@ -602,7 +609,10 @@ getCommentTagsR comment_id = do
 getCommentTagR :: CommentId -> TagId -> Handler Html
 getCommentTagR comment_id tag_id = do
     muser_id <- maybeAuthId
-    tags <- runDB $ (M.! comment_id) <$> (fetchCommentTagCommentTagsDB comment_id tag_id >>= buildAnnotatedCommentTagsDB muser_id)
+    tags <- runDB $ do
+        annot_tags_map <- fetchCommentTagCommentTagsDB comment_id tag_id >>= buildAnnotatedCommentTagsDB muser_id
+        return $ fromMaybe (error "getCommentTagR: comment_id not found in annot tags map")
+                           (M.lookup comment_id annot_tags_map)
     case tags of
         [] -> error "That tag has not been applied to this comment."
         [tag] -> renderTag tag
