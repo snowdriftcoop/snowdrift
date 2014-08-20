@@ -5,6 +5,7 @@ $else
         <tr>
             <th> Project
             <th> Feed
+            <th> Discussion
             <th> Wiki
             <th> Share value
 
@@ -16,6 +17,9 @@ $else
                 <td>
                     <a href=@{ProjectFeedR (projectHandle project)}>
                         <span .glyphicon .glyphicon-list>&nbsp;
+                <td>
+                    <a href=@{ProjectDiscussionR (projectHandle project)}>
+                        <span .glyphicon .glyphicon-comment>&nbsp;
                 <td>
                     <a href=@{WikiPagesR (projectHandle project)}>
                         <span .glyphicon .glyphicon-book>&nbsp;

@@ -689,7 +689,8 @@ getProjectDiscussion project_handle get_root_comments = do
     let has_comments = not (null root_comments)
         comment_forest = do
             comment_forest_no_css
-            toWidget $(cassiusFile "templates/project_discussion_wrapper.cassius")
+            -- Re-use the wiki page comment CSS. Is this correct?
+            toWidget $(cassiusFile "templates/wiki_discussion_wrapper.cassius")
 
     (comment_form, _) <- generateFormPost commentNewTopicForm
 

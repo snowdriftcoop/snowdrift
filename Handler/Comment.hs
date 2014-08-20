@@ -163,7 +163,7 @@ makeCommentForestWidget
         comment_forest_widget =
             forM_ comment_forest $ \comment_tree -> do
                 let root_id = entityKey (rootLabel comment_tree)
-                    earlier_closures = M.findWithDefault [] root_id earlier_closures_mapt
+                    earlier_closures = M.findWithDefault [] root_id earlier_closures_map
 
                 commentTreeWidget
                     form_under_root_comment
