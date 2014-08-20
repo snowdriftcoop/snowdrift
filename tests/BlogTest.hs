@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE FlexibleContexts #-}
+
 module BlogTest
     ( blogSpecs
     ) where
@@ -22,7 +23,7 @@ import Data.Maybe (fromMaybe)
 
 blogSpecs :: Spec
 blogSpecs = do
-    let postBlog route stmts = do
+    let postBlog route stmts = [marked|
             get route
             statusIs 200
 
@@ -39,8 +40,9 @@ blogSpecs = do
                 stmts
 
             statusIsResp 302
+        |]
 
-        previewBlog route stmts = do
+        previewBlog route stmts = [marked|
             get route
             statusIs 200
 
@@ -57,12 +59,13 @@ blogSpecs = do
                 stmts
 
             statusIs 200
+        |]
 
 
 
     ydescribe "blog" $ do
 
-        yit "loads the project page - no blog post" $ do
+        yit "loads the project page - no blog post" $ [marked|
             login
 
             get $ ProjectR "snowdrift"
@@ -73,9 +76,10 @@ blogSpecs = do
             htmlNoneContain "#post" "Above fold."
             htmlNoneContain "#post" "Below fold."
         -}
+        |]
 
 
-        yit "loads the project blog - no blog post" $ do
+        yit "loads the project blog - no blog post" $ [marked|
             login
 
             get $ ProjectBlogR "snowdrift"
@@ -84,9 +88,10 @@ blogSpecs = do
 
             htmlNoneContain ".post" "Above fold."
             htmlNoneContain ".post" "Below fold."
+        |]
 
 
-        yit "previews blog post" $ do
+        yit "previews blog post" $ [marked|
             login
 
             previewBlog (NewProjectBlogPostR "snowdrift") $ do
@@ -96,9 +101,10 @@ blogSpecs = do
 
             bodyContains "Above fold."
             bodyContains "Below fold."
+        |]
 
 
-        yit "posts blog post" $ do
+        yit "posts blog post" $ [marked|
             login
 
             postBlog (NewProjectBlogPostR "snowdrift") $ do
@@ -119,9 +125,9 @@ blogSpecs = do
 
             htmlAnyContain ".post" "Above fold."
             htmlAnyContain ".post" "Below fold."
+        |]
 
-
-        yit "loads the project blog - with blog post" $ do
+        yit "loads the project blog - with blog post" $ [marked|
             login
 
             get $ ProjectBlogR "snowdrift"
@@ -130,9 +136,10 @@ blogSpecs = do
 
             htmlAnyContain ".post" "Above fold."
             htmlNoneContain ".post" "Below fold."
+        |]
 
     {-
-        yit "loads the project page - with blog post" $ do
+        yit "loads the project page - with blog post" $ [marked|
             login
 
             get $ ProjectR "snowdrift"
@@ -141,6 +148,7 @@ blogSpecs = do
 
             htmlAllContain "#post" "Above fold."
             htmlNoneContain "#post" "Below fold."
+        |]
     -}
 
 

@@ -40,9 +40,6 @@
                 <a href="@{comment_route_retract comment_id}" style="color: darkred">
                     retract
 
-    $maybe Entity ticket_id _ <- mticket
-        <div .ticket>SD-#{toPathPiece ticket_id}
-
     $forall closure <- earlier_closures
         $case commentClosureType closure
             $of Retracted

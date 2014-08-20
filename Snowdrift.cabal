@@ -258,6 +258,8 @@ test-suite test
     hs-source-dirs:    tests
     ghc-options:       -Wall
 
+    extensions: QuasiQuotes
+
     build-depends: base
                  , Snowdrift
                  , yesod-test
@@ -282,3 +284,7 @@ test-suite test
                  , xml-conduit
                  , esqueleto
                  , HUnit
+                 , template-haskell
+                 , haskell-src-exts
+                 , haskell-src-meta
+                 , lifted-base

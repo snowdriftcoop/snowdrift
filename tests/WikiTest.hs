@@ -9,7 +9,7 @@ wikiSpecs :: Spec
 wikiSpecs =
     ydescribe "wiki" $ do
 
-        yit "creates a new page" $ do
+        yit "creates a new page" $ [marked|
 
             login
 
@@ -30,4 +30,5 @@ wikiSpecs =
                 setMethod "POST"
                 byLabel "Page Content" "test"
                 addPostParam "mode" "post"
+        |]
 
