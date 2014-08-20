@@ -4,7 +4,6 @@ import Import
 
 import Model.Comment.Sql
 import Model.Wiki.Sql
-import Model.Wiki.Comment.Sql
 
 querProjectCommentsDB :: ProjectId -> Maybe UserId -> SqlQuery (SqlExpr (Value CommentId))
 querProjectCommentsDB project_id muser_id =
@@ -19,7 +18,7 @@ querProjectCommentsOnWikiPagesDB project_id muser_id =
     on_ (exprCommentOnWikiPage c wp)
     where_ $
         exprWikiPageOnProject wp project_id &&.
-        exprCommentWikiPagePermissionFilter muser_id (val project_id) c
+        exprCommentProjectPermissionFilter muser_id (val project_id) c
     return (c ^. CommentId)
 
 -- | Query that returns all WikiEdits made on any WikiPage on this Project

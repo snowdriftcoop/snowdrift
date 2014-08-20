@@ -35,6 +35,7 @@ module Model.User
     , userIsProjectModeratorDB
     , userIsProjectTeamMemberDB
     , userIsWatchingProjectDB
+    , userMaybeViewProjectCommentsDB
     , userReadNotificationsDB
     , userReadVolunteerApplicationsDB
     , userUnwatchProjectDB
@@ -330,6 +331,14 @@ userViewCommentsDB user_id unfiltered_comment_ids = filteredCommentIds >>= userV
 
     userViewCommentsDB' :: [CommentId] -> DB ()
     userViewCommentsDB' comment_ids = void (insertMany (map (ViewComment user_id) comment_ids))
+
+-- | Mark all given Comments as viewed by the given User, if they are watching
+-- the given Project.
+userMaybeViewProjectCommentsDB :: UserId -> ProjectId -> [CommentId] -> DB ()
+userMaybeViewProjectCommentsDB user_id project_id comment_ids = do
+    ok <- userIsWatchingProjectDB user_id project_id
+    when ok $
+        userViewCommentsDB user_id comment_ids
 
 -- | Mark all WikiEdits made on the given WikiPage as viewed by the given User.
 userViewWikiEditsDB :: UserId -> WikiPageId -> DB ()

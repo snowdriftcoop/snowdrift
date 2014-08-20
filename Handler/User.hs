@@ -190,11 +190,11 @@ postUserBalanceR user_id = do
 --------------------------------------------------------------------------------
 -- /#UserId/d
 
-getUserDiscussR :: UserId -> Handler Html
-getUserDiscussR user_id = undefined
+getUserDiscussionR :: UserId -> Handler Html
+getUserDiscussionR user_id = error "TODO(mitchell)"
 
-postUserDiscussR :: UserId -> Handler Html
-postUserDiscussR user_id = undefined
+postUserDiscussionR :: UserId -> Handler Html
+postUserDiscussionR user_id = error "TODO(mitchell)"
 
 --------------------------------------------------------------------------------
 -- /#UserId/edit

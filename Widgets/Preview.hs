@@ -12,13 +12,13 @@ previewWidget form action widget =
 
             ^{widget}
 
-            <input type=submit name=mode value="preview">
-            <input .preview-action-button type=submit name=mode value="#{action}">
+            <button type="submit" name="mode" value="preview">preview
+            <button .preview-action-button type="submit" name="mode" value="post">#{action}
 
             <hr>
 
             ^{form}
 
-            <input type=submit name=mode value="preview">
-            <input .preview-action-button type=submit name=mode value="#{action}">
+            <button type="submit" name="mode" value="preview">preview
+            <button .preview-action-button type="submit" name="mode" value="post">#{action}
     |]

@@ -5,8 +5,10 @@ module Handler.Wiki where
 import Import
 
 import           Handler.Comment
-import           Handler.Wiki.Comment   (processWikiComment)
+import           Handler.Discussion
+import           Handler.Wiki.Comment (makeWikiPageCommentForestWidget)
 import           Model.Comment
+import           Model.Comment.ActionPermissions
 import           Model.Comment.Sql
 import           Model.Discussion
 import           Model.Markdown
@@ -14,20 +16,18 @@ import           Model.Notification
 import           Model.Permission
 import           Model.User
 import           Model.Wiki
-import           Model.Wiki.Comment.Sql
 import           Widgets.Preview
 import           Widgets.Time
 import           View.Comment
 import           View.Wiki
-import           View.Wiki.Comment
 
-import           Data.Algorithm.Diff    (getDiff, Diff (..))
-import           Data.Default           (def)
-import qualified Data.Map               as M
-import qualified Data.Set               as S
-import qualified Data.Text              as T
-import           Text.Blaze.Html5       (ins, del, br)
-import           Text.Cassius           (cassiusFile)
+import           Data.Algorithm.Diff  (getDiff, Diff (..))
+import           Data.Default         (def)
+import qualified Data.Map             as M
+import qualified Data.Set             as S
+import qualified Data.Text            as T
+import           Text.Blaze.Html5     (ins, del, br)
+import           Text.Cassius         (cassiusFile)
 import           Yesod.Markdown
 
 --------------------------------------------------------------------------------
@@ -98,7 +98,7 @@ getWikiR project_handle target = do
                 when is_watching $
                     userViewWikiEditsDB user_id page_id
 
-        let has_permission = exprCommentWikiPagePermissionFilter muser_id (val project_id)
+        let has_permission = exprCommentProjectPermissionFilter muser_id (val project_id)
         roots_ids    <- map entityKey <$> fetchDiscussionRootCommentsDB discussion_id has_permission
         num_children <- length <$> fetchCommentsDescendantsDB roots_ids has_permission
         return (project, page, length roots_ids + num_children)
@@ -201,42 +201,41 @@ postWikiR project_handle target = do
 --------------------------------------------------------------------------------
 -- /#target/d
 
--- | getDiscussWikiR generates the associated discussion page for each wiki page
-getDiscussWikiR :: Text -> Text -> Handler Html
-getDiscussWikiR project_handle target = lookupGetParam "state" >>= \case
-    Just "closed" -> go fetchDiscussionClosedRootCommentsDB
-    _             -> go fetchDiscussionRootCommentsDB
-  where
-    go = getDiscussWikiR' project_handle target
+-- | getWikiDiscussionR generates the associated discussion page for each wiki page
+getWikiDiscussionR :: Text -> Text -> Handler Html
+getWikiDiscussionR project_handle target = getDiscussion (getWikiDiscussionR' project_handle target)
 
-getDiscussWikiR' :: Text                                                      -- ^ Project handle.
-                 -> Text                                                      -- ^ Wiki page name.
-                 -> (DiscussionId -> ExprCommentCond -> DB [Entity Comment])  -- ^ Root comment getter.
-                 -> Handler Html
-getDiscussWikiR' project_handle target get_root_comments = do
+getWikiDiscussionR'
+        :: Text                                                      -- ^ Project handle.
+        -> Text                                                      -- ^ Wiki page name.
+        -> (DiscussionId -> ExprCommentCond -> DB [Entity Comment])  -- ^ Root comment getter.
+        -> Handler Html
+getWikiDiscussionR' project_handle target get_root_comments = do
     muser <- maybeAuth
     let muser_id = entityKey <$> muser
 
     (Entity project_id project, page, root_comments) <- runYDB $ do
         (project@(Entity project_id _), Entity _ page) <- pageInfo project_handle target
-        let has_permission = (exprCommentWikiPagePermissionFilter muser_id (val project_id))
+        let has_permission = (exprCommentProjectPermissionFilter muser_id (val project_id))
         root_comments <- get_root_comments (wikiPageDiscussion page) has_permission
         return (project, page, root_comments)
 
-    comment_forest_no_css <- makeWikiPageCommentForestWidget'
-                               muser
-                               project_id
-                               project_handle
-                               (wikiPageTarget page)
-                               root_comments
-                               def
-                               (getMaxDepthDefault 0)
-                               False
-                               mempty
+    (comment_forest_no_css, _) <-
+        makeWikiPageCommentForestWidget
+          muser
+          project_id
+          project_handle
+          (wikiPageTarget page)
+          root_comments
+          def
+          (getMaxDepthDefault 0)
+          False
+          mempty
+
     let has_comments = not (null root_comments)
         comment_forest = do
             comment_forest_no_css
-            toWidget $(cassiusFile "templates/wiki_comment_wrapper.cassius")
+            toWidget $(cassiusFile "templates/wiki_discussion_wrapper.cassius")
 
     (comment_form, _) <- generateFormPost commentNewTopicForm
 
@@ -247,24 +246,25 @@ getDiscussWikiR' project_handle target get_root_comments = do
 --------------------------------------------------------------------------------
 -- /#target/d/new
 
-getNewDiscussWikiR :: Text -> Text -> Handler Html
-getNewDiscussWikiR project_handle target = do
+getNewWikiDiscussionR :: Text -> Text -> Handler Html
+getNewWikiDiscussionR project_handle target = do
     void requireAuth
-    (comment_form, _) <- generateFormPost commentNewTopicForm
-    defaultLayout $(widgetFile "wiki_discuss_new")
+    let widget = commentNewTopicFormWidget
+    defaultLayout $(widgetFile "wiki_discussion_wrapper")
 
-postNewDiscussWikiR :: Text -> Text -> Handler Html
-postNewDiscussWikiR project_handle target = do
-    (Entity _ project, Entity _ page) <- runYDB $ pageInfo project_handle target
+postNewWikiDiscussionR :: Text -> Text -> Handler Html
+postNewWikiDiscussionR project_handle target = do
+    Entity user_id user <- requireAuth
+    (_, Entity _ WikiPage{..}) <- runYDB (pageInfo project_handle target)
 
-    ((result, _), _) <- runFormPost commentNewTopicForm
-
-    case result of
-        FormSuccess text -> do
-            mode <- lookupPostParam "mode"
-            processWikiComment mode Nothing text project page
-        FormMissing      -> error "Form missing."
-        FormFailure msgs -> error $ "Error submitting form: " ++ T.unpack (T.intercalate "\n" msgs)
+    postNewComment
+      Nothing
+      user_id
+      (userIsEstablished user)
+      wikiPageDiscussion
+      (makeWikiPageCommentActionPermissions project_handle target) >>= \case
+        Left comment_id -> redirect (WikiCommentR project_handle target comment_id) -- Posted the new topic.
+        Right widget -> defaultLayout $(widgetFile "wiki_discussion_wrapper")       -- Previewing the reply.
 
 --------------------------------------------------------------------------------
 -- /#target/diff/#from/#to

@@ -15,6 +15,7 @@ module Model.Project
     , fetchProjectVolunteerApplicationsDB
     , fetchProjectWikiEditsBeforeDB
     , fetchProjectWikiPagesBeforeDB
+    , fetchProjectWikiPageByNameDB
     , insertProjectPledgeDB
     -- TODO(mitchell): rename all these... prefix fetch, suffix DB
     , getGithubIssues
@@ -39,10 +40,10 @@ import           Model.Issue
 import           Model.Project.Sql
 import           Model.Tag
 import           Model.User
-import           Model.Wiki.Comment.Sql
 import           Model.Wiki.Sql
 import           Widgets.Tag
 
+import           Control.Monad.Trans.Maybe    (MaybeT(..), runMaybeT)
 import           Control.Monad.Trans.Resource (MonadThrow)
 import           Control.Monad.Writer.Strict  (tell)
 import           Control.Concurrent.Async     (Async, async, wait)
@@ -263,7 +264,7 @@ fetchProjectCommentsPostedOnWikiPagesBeforeDB project_id muser_id before =
     where_ $
         ecp ^. EventCommentPostedTs <=. val before &&.
         exprWikiPageOnProject wp project_id &&.
-        exprCommentWikiPagePermissionFilter muser_id (val project_id) c
+        exprCommentProjectPermissionFilter muser_id (val project_id) c
     return c
 
 -- | Fetch all pending Comments made on a Project before this time.
@@ -274,7 +275,7 @@ fetchProjectCommentsPendingBeforeDB project_id muser_id before =
     on_ (ecp ^. EventCommentPendingComment ==. c ^. CommentId)
     where_ $
         ecp ^. EventCommentPendingTs <=. val before &&.
-        exprCommentWikiPagePermissionFilter muser_id (val project_id) c
+        exprCommentProjectPermissionFilter muser_id (val project_id) c
     return c
 
 -- | Fetch all WikiPages made on this Project before this time.
@@ -358,33 +359,13 @@ fetchProjectVolunteerApplicationsDB project_id =
     orderBy [desc (va ^. VolunteerApplicationCreatedTs)]
     return va
 
--- fetchProjectTicketsDB :: ProjectId -> DB [(Entity Ticket, [AnnotatedTag])]
--- fetchProjectTicketsDB project_id = do
---     tickets_info <- getTicketsInfo
-
---     -- used_tags'tickets :: [(Set TagId, Map TagId Tag -> Handler AnnotatedTicket)]
---     used_tags'tickets <-
---         -- TODO: refactor this to avoid N+1 selects (for example, select all CommentTags where
---         -- comment_id in comment_ids)
---         forM tickets_info $ \(ticket, Entity comment_id comment, Entity _ page) -> do
---             used_tags <- map entityVal <$> fetchCommentCommentTagsDB comment_id
-
---             let t :: Map TagId Tag -> Handler (Entity Ticket, CommentId, [AnnotatedTag])
---                 t tags_map = (ticket, comment <$>
---                     buildAnnotatedTags
---                         tags_map
---                         (CommentTagR project_handle (wikiPageTarget page) comment_id)
---                         used_tags
-
---             return (S.fromList $ map commentTagTag used_tags, t)
-
---     tags_map <- M.fromList . map (entityKey &&& entityVal) <$>
---         (select $
---             from $ \tag -> do
---             where_ $ tag ^. TagId `in_` valList (S.toList . mconcat $ map fst used_tags'tickets)
---             return tag)
-
---     mapM (\(_, t) -> lift $ t tags_map) used_tags'tickets
+-- | Fetch a WikiPage (maybe), given the Project handle and WikiPage target.
+-- (Presumably, these Texts come from something like a rethread form,
+-- where the user types in URLs manually).
+fetchProjectWikiPageByNameDB :: Text -> Text -> DB (Maybe (Entity WikiPage))
+fetchProjectWikiPageByNameDB project_handle target = runMaybeT $ do
+    Entity project_id _ <- MaybeT (getBy (UniqueProjectHandle project_handle))
+    MaybeT (getBy (UniqueWikiTarget project_id target))
 
 fetchProjectTicketsDB :: ProjectId -> Maybe UserId -> DB [Entity Ticket]
 fetchProjectTicketsDB project_id muser_id =

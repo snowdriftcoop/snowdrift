@@ -1,9 +1,7 @@
 module Model.Comment
     -- Types
     ( ClosureMap
-    , CommentActionPermissions(..)
     , CommentMods(..)
-    , CommentRoutes(..)
     , FlagMap
     , MaxDepth(..)
     , NoCommentReason(..)
@@ -35,6 +33,7 @@ module Model.Comment
     , fetchCommentCommentTagsDB
     , fetchCommentCommentTagsInDB
     , fetchCommentDepthDB
+    , fetchCommentDepthFromMaybeParentIdDB
     , fetchCommentDepth404DB
     , fetchCommentDescendantsDB
     , fetchCommentDestinationDB
@@ -45,11 +44,11 @@ module Model.Comment
     , fetchCommentTagsDB
     , fetchCommentTagCommentTagsDB
     , filterCommentsDB
-    , insertApprovedCommentDB
-    , insertUnapprovedCommentDB
     , makeClosureMapDB
     , makeFlagMapDB
     , makeTicketMapDB
+    , postApprovedCommentDB
+    , postUnapprovedCommentDB
     , rethreadCommentsDB
     , subFetchCommentAncestorsDB
     , unsafeFetchCommentPageDB
@@ -88,23 +87,6 @@ data NoCommentReason
     = CommentNotFound
     | CommentPermissionDenied
 
--- | Collection of Routes that can be made from a CommentId (because Comments on
--- various places around the site have different URLs, even though their
--- IDs are unique).
-data CommentRoutes = CommentRoutes
-    { comment_route_add_tag   :: CommentId -> Route App
-    , comment_route_approve   :: CommentId -> Route App
-    , comment_route_close     :: CommentId -> Route App
-    , comment_route_delete    :: CommentId -> Route App
-    , comment_route_edit      :: CommentId -> Route App
-    , comment_route_flag      :: CommentId -> Route App
-    , comment_route_permalink :: CommentId -> Route App
-    , comment_route_reply     :: CommentId -> Route App
-    , comment_route_rethread  :: CommentId -> Route App
-    , comment_route_retract   :: CommentId -> Route App
-    , comment_route_tag       :: CommentId -> TagId -> Route App
-    }
-
 -- | Data type used in makeCommentWidgetMod, containing modifications to comment-action-related
 -- data structures.
 data CommentMods = CommentMods
@@ -119,19 +101,6 @@ data CommentMods = CommentMods
 
 instance Default CommentMods where
     def = CommentMods id id id id id id id
-
-data CommentActionPermissions = CommentActionPermissions
-    { can_add_tag   :: Bool
-    , can_approve   :: Bool
-    , can_close     :: Bool
-    , can_delete    :: Bool
-    , can_edit      :: Bool
-    , can_establish :: Bool
-    , can_flag      :: Bool
-    , can_reply     :: Bool
-    , can_rethread  :: Bool
-    , can_retract   :: Bool
-    }
 
 data MaxDepth
     = NoMaxDepth
@@ -261,19 +230,18 @@ approveCommentDB user_id comment_id comment = do
                          return (unc ^. UnapprovedCommentNotificationNotification)
         deleteCascadeWhere [NotificationId P.<-. notif_ids]
 
-insertApprovedCommentDB :: UTCTime
-                        -> UTCTime
-                        -> UserId
-                        -> DiscussionId
-                        -> Maybe CommentId
-                        -> UserId
-                        -> Markdown
-                        -> Int
-                        -> SDB CommentId
-insertApprovedCommentDB created_ts moderated_ts moderated_by discussion_id mparent_id user_id text depth =
+insertApprovedCommentDB
+        :: UTCTime
+        -> DiscussionId
+        -> Maybe CommentId
+        -> UserId
+        -> Markdown
+        -> Int
+        -> SDB CommentId
+insertApprovedCommentDB created_ts discussion_id mparent_id user_id text depth =
     insertCommentDB
-      (Just moderated_ts)
-      (Just moderated_by)
+      (Just created_ts)
+      (Just user_id)
       ECommentPosted
       created_ts
       discussion_id
@@ -282,13 +250,14 @@ insertApprovedCommentDB created_ts moderated_ts moderated_by discussion_id mpare
       text
       depth
 
-insertUnapprovedCommentDB :: UTCTime
-                          -> DiscussionId
-                          -> Maybe CommentId
-                          -> UserId
-                          -> Markdown
-                          -> Int
-                          -> SDB CommentId
+insertUnapprovedCommentDB
+        :: UTCTime
+        -> DiscussionId
+        -> Maybe CommentId
+        -> UserId
+        -> Markdown
+        -> Int
+        -> SDB CommentId
 insertUnapprovedCommentDB = insertCommentDB Nothing Nothing ECommentPending
 
 insertCommentDB :: Maybe UTCTime
@@ -374,6 +343,47 @@ flagCommentDB comment_id permalink_route flagger_id reasons message = do
             sendNotificationDB_ NotifFlag poster_id Nothing notif_text
             return True
 
+-- | Post an new (approved) Comment.
+postApprovedCommentDB :: UserId -> Maybe CommentId -> DiscussionId -> Markdown -> SDB CommentId
+postApprovedCommentDB = postComment insertApprovedCommentDB
+
+postUnapprovedCommentDB :: UserId -> Maybe CommentId -> DiscussionId -> Markdown -> SDB CommentId
+postUnapprovedCommentDB = postComment insertUnapprovedCommentDB
+
+postComment
+        :: (UTCTime -> DiscussionId -> Maybe CommentId -> UserId -> Markdown -> Int -> SDB CommentId)
+        -> UserId
+        -> Maybe CommentId
+        -> DiscussionId
+        -> Markdown
+        -> SDB CommentId
+postComment insert_comment user_id mparent_id discussion_id contents = do
+    (now, depth) <- lift $ (,)
+        <$> liftIO getCurrentTime
+        <*> fetchCommentDepthFromMaybeParentIdDB mparent_id
+
+    comment_id <- insert_comment now discussion_id mparent_id user_id contents depth
+
+    let content = T.lines (unMarkdown contents)
+        tickets = map T.strip $ mapMaybe (T.stripPrefix "ticket:") content
+        tags    = map T.strip $ mconcat $ map (T.splitOn ",") $ mapMaybe (T.stripPrefix "tags:") content
+
+    lift $ do
+        forM_ tickets $ \ticket -> insert_ (Ticket now now ticket comment_id)
+        forM_ tags $ \tag -> do
+            tag_id <- either entityKey id <$> insertBy (Tag tag)
+            insert_ (CommentTag comment_id tag_id user_id 1)
+
+        case mparent_id of
+            Nothing -> return ()
+            Just parent_id -> mapM_ (insert_ . CommentAncestor comment_id) =<< (parent_id:) <$> fetchCommentAncestorsDB parent_id
+
+        update $ \t -> do
+         set t [TicketUpdatedTs =. val now]
+         where_ (t ^. TicketComment `in_` subFetchCommentAncestorsDB comment_id)
+
+    return comment_id
+
 -- | Filter a list of comments per the provided permission filter.
 filterCommentsDB :: [CommentId] -> ExprCommentCond -> DB [CommentId]
 filterCommentsDB comment_ids has_permission = fmap (map unValue) $
@@ -427,6 +437,10 @@ subFetchCommentAncestorsDB = subList_select . querCommentAncestors
 
 fetchCommentDepthDB :: CommentId -> DB Int
 fetchCommentDepthDB = fmap commentDepth . getJust
+
+-- | Get the depth of a comment, given (maybe) its parent's CommentId.
+fetchCommentDepthFromMaybeParentIdDB :: Maybe CommentId -> DB Int
+fetchCommentDepthFromMaybeParentIdDB = maybe (return 0) (fmap (+1) . fetchCommentDepthDB)
 
 fetchCommentDepth404DB :: CommentId -> Handler Int
 fetchCommentDepth404DB = fmap commentDepth . runYDB . get404

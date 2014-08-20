@@ -1,4 +1,0 @@
-<form method=post>
-    ^{form}
-    <input type=submit name=mode value=rethread>
-

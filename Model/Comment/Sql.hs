@@ -2,6 +2,8 @@ module Model.Comment.Sql where
 
 import Import
 
+import Model.User.Sql
+
 type ExprCommentCond = SqlExpr (Entity Comment) -> SqlExpr (Value Bool)
 
 exprCommentClosed, exprCommentOpen :: ExprCommentCond
@@ -59,6 +61,22 @@ exprCommentViewedBy user_id c = c ^. CommentId `in_`
      from $ \vc -> do
      where_ (vc ^. ViewCommentUser ==. val user_id)
      return (vc ^. ViewCommentComment))
+
+-- | SQL expression to filter a Comment (somewhere) on a Project based on "permissions", as follows:
+--    If moderator, show all.
+--    If logged in, show all approved (hiding flagged), plus own comments (unapproved + flagged).
+--    If not logged in, show all approved (hiding flagged).
+--    No matter what, hide rethreaded comments (they've essentially been replaced).
+exprCommentProjectPermissionFilter :: Maybe UserId -> SqlExpr (Value ProjectId) -> ExprCommentCond
+exprCommentProjectPermissionFilter muser_id project_id c = exprCommentNotRethreaded c &&. permissionFilter
+  where
+    permissionFilter :: SqlExpr (Value Bool)
+    permissionFilter = case muser_id of
+        Just user_id -> approvedAndNotFlagged ||. exprCommentPostedBy user_id c ||. exprUserIsModerator user_id project_id
+        Nothing      -> approvedAndNotFlagged
+
+    approvedAndNotFlagged :: SqlExpr (Value Bool)
+    approvedAndNotFlagged = exprCommentApproved c &&. not_ (exprCommentFlagged c)
 
 querCommentAncestors :: CommentId -> SqlQuery (SqlExpr (Value CommentId))
 querCommentAncestors comment_id =

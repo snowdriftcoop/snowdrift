@@ -13,7 +13,7 @@ $else
                     <a href=@{WikiR project_handle (wikiPageTarget page)}>
                         #{wikiPageTarget page}
                 <td>
-                    <a href=@{DiscussWikiR project_handle (wikiPageTarget page)}>
+                    <a href=@{WikiDiscussionR project_handle (wikiPageTarget page)}>
                         <span .glyphicon .glyphicon-comment>&nbsp;
                 <td>
                     <a href=@{WikiHistoryR project_handle (wikiPageTarget page)}>

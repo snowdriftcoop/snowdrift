@@ -1,4 +1,12 @@
-module View.Project where
+module View.Project
+    ( editProjectForm
+    , inviteForm
+    , projectBlogForm
+    , renderBlogPost
+    , renderProject
+    , viewForm
+    ) where
+
 
 import Import
 

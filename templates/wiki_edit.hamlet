@@ -12,6 +12,6 @@
     <div .page-tool>
         <a href="@{WikiR project_handle target}">current version
     <div .page-tool>
-        <a href="@{DiscussWikiR project_handle target}">view discussion
+        <a href="@{WikiDiscussionR project_handle target}">view discussion
 
 ^{markdownWidget project_handle (wikiEditContent edit)}

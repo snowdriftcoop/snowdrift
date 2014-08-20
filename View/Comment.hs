@@ -1,33 +1,34 @@
 module View.Comment
-    ( commentCloseForm
-    , commentCloseFormWidget
-    , commentEditForm
-    , commentEditFormWidget
+    ( approveCommentFormWidget
+    , closeCommentForm
+    , closeCommentFormWidget
     , commentForm
     , commentFormWidget
     , commentNewTopicForm
+    , commentNewTopicFormWidget
     , commentReplyForm
     , commentReplyFormWidget
-    , commentRetractForm
-    , commentRetractFormWidget
     , commentTreeWidget
     , createCommentTagForm
+    , deleteCommentFormWidget
     , disabledCommentForm
+    , editCommentForm
+    , editCommentFormWidget
     , flagCommentForm
-    , makeCommentForestWidget
-    , makeCommentForestWidget'
-    , makeCommentTreeWidget
-    , makeCommentTreeWidget'
+    , flagCommentFormWidget
     , newCommentTagForm
     , orderingNewestFirst
-    , rethreadForm
+    , rethreadCommentForm
+    , rethreadCommentFormWidget
+    , retractCommentForm
+    , retractCommentFormWidget
     ) where
 
 import Import
 
-import Data.Tree.Extra (sortForestBy)
 import Model.Comment
-import Model.Comment.Sql
+import Model.Comment.ActionPermissions
+import Model.Comment.Routes
 import Model.Tag
 import Model.User
 import View.User
@@ -37,7 +38,6 @@ import Widgets.Time
 
 import qualified Data.List as L
 import qualified Data.Map  as M
-import qualified Data.Set  as S
 import qualified Data.Text as T
 import           Data.Tree
 
@@ -57,40 +57,53 @@ commentFormWidget' form = do
         <div>
             <form method="POST" enctype=#{enctype}>
                 ^{widget}
-                <input type="submit" name="mode" value="preview">
+                <button type="submit" name="mode" value="preview">preview
     |]
 
-commentEditForm :: Markdown -> Form Markdown
-commentEditForm = commentForm "Edit" . Just
+closeCommentForm    :: Maybe Markdown -> Form Markdown
+commentNewTopicForm ::                   Form Markdown
+commentReplyForm    ::                   Form Markdown
+editCommentForm     :: Markdown       -> Form Markdown
+retractCommentForm  :: Maybe Markdown -> Form Markdown
 
-commentEditFormWidget :: Markdown -> Widget
-commentEditFormWidget = commentFormWidget' . commentEditForm
-
-commentNewTopicForm :: Form Markdown
+closeCommentForm    = commentForm "Reason for closing:"
 commentNewTopicForm = commentForm "New Topic" Nothing
+commentReplyForm    = commentForm "Reply"     Nothing
+editCommentForm     = commentForm "Edit"      . Just
+retractCommentForm  = commentForm "Reason for retracting:"
 
-commentReplyForm :: Form Markdown
-commentReplyForm = commentForm "Reply" Nothing
+closeCommentFormWidget    :: Maybe Markdown -> Widget
+commentNewTopicFormWidget ::                   Widget
+commentReplyFormWidget    ::                   Widget
+editCommentFormWidget     :: Markdown       -> Widget
+retractCommentFormWidget  :: Maybe Markdown -> Widget
 
-commentReplyFormWidget :: Widget
-commentReplyFormWidget = commentFormWidget' commentReplyForm
+closeCommentFormWidget    = commentFormWidget' . closeCommentForm
+commentNewTopicFormWidget = commentFormWidget' commentNewTopicForm
+commentReplyFormWidget    = commentFormWidget' commentReplyForm
+editCommentFormWidget     = commentFormWidget' . editCommentForm
+retractCommentFormWidget  = commentFormWidget' . retractCommentForm
 
-commentCloseForm :: Maybe Markdown -> Form Markdown
-commentCloseForm = commentForm "Reason for closing:"
+approveCommentFormWidget :: Widget
+approveCommentFormWidget =
+    [whamlet|
+        <form method="POST">
+            <button type="submit" name="mode" value="post">approve post
+    |]
 
-commentCloseFormWidget :: Maybe Markdown -> Widget
-commentCloseFormWidget = commentFormWidget' . commentCloseForm
-
-commentRetractForm :: Maybe Markdown -> Form Markdown
-commentRetractForm = commentForm "Reason for retracting:"
-
-commentRetractFormWidget :: Maybe Markdown -> Widget
-commentRetractFormWidget = commentFormWidget' . commentRetractForm
-
-rethreadForm :: Form (Text, Text)
-rethreadForm = renderBootstrap3 $ (,)
+rethreadCommentForm :: Form (Text, Text)
+rethreadCommentForm = renderBootstrap3 $ (,)
     <$> areq' textField "New Parent Url" Nothing
     <*> areq' textField "Reason" Nothing
+
+rethreadCommentFormWidget :: Widget
+rethreadCommentFormWidget = do
+    (form, enctype) <- handlerToWidget (generateFormPost rethreadCommentForm)
+    [whamlet|
+        <form method=post enctype=#{enctype}>
+            ^{form}
+            <button type="submit" name="mode" value="post">rethread
+    |]
 
 createCommentTagForm :: Form Text
 createCommentTagForm = renderBootstrap3 $ areq' textField "" Nothing
@@ -116,20 +129,65 @@ flagCommentForm def_reasons def_message = renderBootstrap3 $ (,) <$> flagReasons
     additionalCommentsForm :: AForm Handler (Maybe Markdown)
     additionalCommentsForm = aopt' snowdriftMarkdownField "Optional: add helpful comments to clarify the issue and/or suggestions for improvement" def_message
 
+flagCommentFormWidget :: Maybe (Maybe [FlagReason]) -> Maybe (Maybe Markdown) -> Widget
+flagCommentFormWidget def_reasons def_message = do
+    (form, enctype) <- handlerToWidget (generateFormPost (flagCommentForm def_reasons def_message))
+    [whamlet|
+        <form method="POST" enctype=#{enctype}>
+            <h4>Code of Conduct Violation(s):
+            ^{form}
+            <button type="submit" name="mode" value="preview">preview flag message
+    |]
+
+deleteCommentFormWidget :: Widget
+deleteCommentFormWidget =
+    [whamlet|
+        <div>
+            <form method=POST>
+                <button type="submit" name="mode" value="post">delete
+                <button type="submit" name="mode" value="cancel">cancel
+    |]
+
+-- | Order comment trees by newest-first, taking the root and all children of each
+-- tree into consideration (essentially compares each tree's newest comment,
+-- no matter how deeply nested).
+orderingNewestFirst :: Tree (Entity Comment) -> Tree (Entity Comment) -> Ordering
+orderingNewestFirst = flip (compare `on` (timestamp . newest))
+  where
+    newest :: Tree (Entity Comment) -> Entity Comment
+    newest = L.maximumBy (compare `on` timestamp) . flatten
+
+    timestamp :: Entity Comment -> UTCTime
+    timestamp = commentCreatedTs . entityVal
+
+expandCommentWidget :: Int -> MaxDepth -> Widget
+expandCommentWidget num_replies new_max_depth = do
+    Just cur_route <- getCurrentRoute
+    let new_route = case new_max_depth of
+                        NoMaxDepth -> (cur_route, [])
+                        MaxDepth n -> (cur_route, [("maxdepth", T.pack (show n))])
+    [whamlet|
+        <br>
+        <br>
+        <em>
+            <a href="@?{new_route}">
+                #{num_replies} more #{plural num_replies "reply" "replies"}
+    |]
+
 -- | An entire comment tree.
-commentTreeWidget :: Widget                                               -- ^ Form to display under the root comment.
-                  -> Tree (Entity Comment)                                -- ^ Comment tree.
-                  -> Maybe UserId                                         -- ^ Viewer.
-                  -> CommentRoutes                                        -- ^ Comment routes.
-                  -> (Entity Comment -> Handler CommentActionPermissions) -- ^ Action permissions maker.
-                  -> [CommentClosure]                                     -- ^ Earlier closures.
+commentTreeWidget :: Widget                       -- ^ Form to display under the root comment.
+                  -> Tree (Entity Comment)        -- ^ Comment tree.
+                  -> Maybe UserId                 -- ^ Viewer.
+                  -> CommentRoutes                -- ^ Comment routes.
+                  -> MakeCommentActionPermissions -- ^ Action permissions maker.
+                  -> [CommentClosure]             -- ^ Earlier closures.
                   -> UserMap
                   -> ClosureMap
                   -> TicketMap
                   -> FlagMap
-                  -> Bool                                                 -- ^ Is preview?
-                  -> MaxDepth                                             -- ^ Max depth.
-                  -> Int                                                  -- ^ Depth.
+                  -> Bool                         -- ^ Is preview?
+                  -> MaxDepth                     -- ^ Max depth.
+                  -> Int                          -- ^ Depth.
                   -> Widget
 commentTreeWidget form_under_root_comment
                   (Node root_entity@(Entity root_id root) children)
@@ -220,135 +278,3 @@ commentWidget (Entity comment_id comment)
             (fetchCommentCommentTagsDB comment_id >>= buildAnnotatedCommentTagsDB mviewer_id)
 
     $(widgetFile "comment")
-
--- | Make a Comment forest Widget. Also returns the comment forest directly, so that additional
--- actions may be taken on the comments (such as marking them all as viewed).
-makeCommentForestWidget
-        :: [Entity Comment]
-        -> Maybe (Entity User)
-        -> ExprCommentCond                                      -- ^ Comment permission filter.
-        -> CommentMods                                          -- ^ Comment structure modifications.
-        -> CommentRoutes                                        -- ^ Comment routes.
-        -> (Entity Comment -> Handler CommentActionPermissions) -- ^ Action permissions maker.
-        -> MaxDepth                                             -- ^ Max depth getter.
-        -> Bool                                                 -- ^ Is this a preview?
-        -> Widget                                               -- ^ Widget to display under root comment.
-        -> Handler (Widget, Forest (Entity Comment))
-makeCommentForestWidget
-        roots
-        mviewer
-        has_permission
-        CommentMods{..}
-        comment_routes
-        make_action_permissions
-        max_depth
-        is_preview
-        form_under_root_comment = do
-    let root_ids = map entityKey roots
-    (children, user_map, earlier_closures_map, closure_map, ticket_map, flag_map) <- runDB $ do
-        children <- fetchCommentsDescendantsDB root_ids has_permission
-
-        let all_comments    = roots ++ children
-            all_comment_ids = map entityKey all_comments
-
-        earlier_closures_map <- fetchCommentsAncestorClosuresDB root_ids
-        user_map             <- entitiesMap <$> fetchUsersInDB (S.toList $ makeCommentUsersSet all_comments)
-        closure_map          <- makeClosureMapDB all_comment_ids
-        ticket_map           <- makeTicketMapDB  all_comment_ids
-        flag_map             <- makeFlagMapDB    all_comment_ids
-
-        return (children, user_map, earlier_closures_map, closure_map, ticket_map, flag_map)
-
-    let user_map_with_viewer = (maybe id (onEntity M.insert) mviewer) user_map
-        comment_forest = sortForestBy orderingNewestFirst (buildCommentForest roots children)
-        comment_forest_widget =
-            forM_ comment_forest $ \comment_tree -> do
-                let root_id = entityKey (rootLabel comment_tree)
-                commentTreeWidget
-                    form_under_root_comment
-                    comment_tree
-                    (entityKey <$> mviewer)
-                    comment_routes
-                    make_action_permissions
-                    (mod_earlier_closures (earlier_closures_map M.! root_id))
-                    (mod_user_map         user_map_with_viewer)
-                    (mod_closure_map      closure_map)
-                    (mod_ticket_map       ticket_map)
-                    (mod_flag_map         flag_map)
-                    is_preview
-                    max_depth
-                    0
-
-    return (comment_forest_widget, comment_forest)
-
--- | Like makeCommentForestWidget, but don't return the forest of Comments (just the Widget).
-makeCommentForestWidget'
-        :: [Entity Comment]
-        -> Maybe (Entity User)
-        -> ExprCommentCond                                      -- ^ Comment permission filter.
-        -> CommentMods                                          -- ^ Comment structure modifications.
-        -> CommentRoutes                                        -- ^ Comment routes.
-        -> (Entity Comment -> Handler CommentActionPermissions) -- ^ Action permissions maker.
-        -> MaxDepth                                             -- ^ Max depth getter.
-        -> Bool                                                 -- ^ Is this a preview?
-        -> Widget                                               -- ^ Widget to display under root comment.
-        -> Handler Widget
-makeCommentForestWidget' a b c d e f g h i = fst <$> makeCommentForestWidget a b c d e f g h i
-
--- | Make a Comment tree Widget. Also returns the comment tree directly, so that additional
--- actions may be taken on the comments (such as marking them all as viewed).
-makeCommentTreeWidget
-        :: Entity Comment                                       -- ^ Root comment.
-        -> Maybe (Entity User)
-        -> ExprCommentCond                                      -- ^ Comment permission filter.
-        -> CommentMods                                          -- ^ Comment structure modifications.
-        -> CommentRoutes                                        -- ^ Comment routes.
-        -> (Entity Comment -> Handler CommentActionPermissions) -- ^ Action permissions maker.
-        -> MaxDepth                                             -- ^ Max depth getter.
-        -> Bool                                                 -- ^ Is this a preview?
-        -> Widget                                               -- ^ Widget to display under root comment.
-        -> Handler (Widget, Tree (Entity Comment))
-makeCommentTreeWidget a b c d e f g h i = do
-    (widget, [tree]) <- makeCommentForestWidget [a] b c d e f g h i
-    return (widget, tree)
-
--- | Like makeCommentTreeWidget, but don't return the tree of Comments (just the Widget).
--- actions may be taken on the comments (such as marking them all as viewed).
-makeCommentTreeWidget'
-        :: Entity Comment
-        -> Maybe (Entity User)
-        -> ExprCommentCond
-        -> CommentMods
-        -> CommentRoutes
-        -> (Entity Comment -> Handler CommentActionPermissions)
-        -> MaxDepth
-        -> Bool
-        -> Widget
-        -> Handler Widget
-makeCommentTreeWidget' a b c d e f g h i = fst <$> makeCommentTreeWidget a b c d e f g h i
-
--- | Order comment trees by newest-first, taking the root and all children of each
--- tree into consideration (essentially compares each tree's newest comment,
--- no matter how deeply nested).
-orderingNewestFirst :: Tree (Entity Comment) -> Tree (Entity Comment) -> Ordering
-orderingNewestFirst = flip (compare `on` (timestamp . newest))
-  where
-    newest :: Tree (Entity Comment) -> Entity Comment
-    newest = L.maximumBy (compare `on` timestamp) . flatten
-
-    timestamp :: Entity Comment -> UTCTime
-    timestamp = commentCreatedTs . entityVal
-
-expandCommentWidget :: Int -> MaxDepth -> Widget
-expandCommentWidget num_replies new_max_depth = do
-    Just cur_route <- getCurrentRoute
-    let new_route = case new_max_depth of
-                        NoMaxDepth -> (cur_route, [])
-                        MaxDepth n -> (cur_route, [("maxdepth", T.pack (show n))])
-    [whamlet|
-        <br>
-        <br>
-        <em>
-            <a href="@?{new_route}">
-                #{num_replies} more #{plural num_replies "reply" "replies"}
-    |]

@@ -5,7 +5,7 @@
     <div .page-tool>
         <a href="@{WikiHistoryR project_handle target}">history
     <div .page-tool>
-        <a href="@{DiscussWikiR project_handle target}">
+        <a href="@{WikiDiscussionR project_handle target}">
             discuss
             <span .badge>
                 #{comment_count}

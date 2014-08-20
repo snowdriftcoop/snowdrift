@@ -1,0 +1,8 @@
+<div>TODO(aaron): This header
+<div .row>
+    <div .col-xs-6>
+        <a href="@{ProjectDiscussionR project_handle}"> back to full discussion
+
+<hr .wikitop>
+
+^{widget}
