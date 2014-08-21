@@ -255,8 +255,8 @@ getProjectWikiPages project_id =
     return wp
 
 -- | Fetch all Comments posted on this Project's WikiPages before this time.
-fetchProjectCommentsPostedOnWikiPagesBeforeDB :: ProjectId -> Maybe UserId -> UTCTime -> DB [Entity Comment]
-fetchProjectCommentsPostedOnWikiPagesBeforeDB project_id muser_id before =
+fetchProjectCommentsPostedOnWikiPagesBeforeDB :: ProjectId -> Maybe UserId -> UTCTime -> Int64 -> DB [Entity Comment]
+fetchProjectCommentsPostedOnWikiPagesBeforeDB project_id muser_id before lim =
     select $
     from $ \(ecp `InnerJoin` c `InnerJoin` wp) -> do
     on_ (exprCommentOnWikiPage c wp)
@@ -265,33 +265,36 @@ fetchProjectCommentsPostedOnWikiPagesBeforeDB project_id muser_id before =
         ecp ^. EventCommentPostedTs <=. val before &&.
         exprWikiPageOnProject wp project_id &&.
         exprCommentProjectPermissionFilter muser_id (val project_id) c
+    limit lim
     return c
 
 -- | Fetch all pending Comments made on a Project before this time.
-fetchProjectCommentsPendingBeforeDB :: ProjectId -> Maybe UserId -> UTCTime -> DB [Entity Comment]
-fetchProjectCommentsPendingBeforeDB project_id muser_id before =
+fetchProjectCommentsPendingBeforeDB :: ProjectId -> Maybe UserId -> UTCTime -> Int64 -> DB [Entity Comment]
+fetchProjectCommentsPendingBeforeDB project_id muser_id before lim =
     select $
     from $ \(ecp `InnerJoin` c) -> do
     on_ (ecp ^. EventCommentPendingComment ==. c ^. CommentId)
     where_ $
         ecp ^. EventCommentPendingTs <=. val before &&.
         exprCommentProjectPermissionFilter muser_id (val project_id) c
+    limit lim
     return c
 
 -- | Fetch all WikiPages made on this Project before this time.
-fetchProjectWikiPagesBeforeDB :: ProjectId -> UTCTime -> DB [Entity WikiPage]
-fetchProjectWikiPagesBeforeDB project_id before =
+fetchProjectWikiPagesBeforeDB :: ProjectId -> UTCTime -> Int64 -> DB [Entity WikiPage]
+fetchProjectWikiPagesBeforeDB project_id before lim =
     select $
     from $ \(ewp `InnerJoin` wp) -> do
     on_ (ewp ^. EventWikiPageWikiPage ==. wp ^. WikiPageId)
     where_ $
         ewp ^. EventWikiPageTs <=. val before &&.
         exprWikiPageOnProject wp project_id
+    limit lim
     return wp
 
 -- | Fetch all WikiEdits made on this Project before this time.
-fetchProjectWikiEditsBeforeDB :: ProjectId -> UTCTime -> DB [Entity WikiEdit]
-fetchProjectWikiEditsBeforeDB project_id before =
+fetchProjectWikiEditsBeforeDB :: ProjectId -> UTCTime -> Int64 -> DB [Entity WikiEdit]
+fetchProjectWikiEditsBeforeDB project_id before lim =
     select $
     from $ \(ewe `InnerJoin` we `InnerJoin` wp) -> do
     on_ (wp ^. WikiPageId ==. we ^. WikiEditPage)
@@ -299,38 +302,42 @@ fetchProjectWikiEditsBeforeDB project_id before =
     where_ $
         ewe ^. EventWikiEditTs <=. val before &&.
         exprWikiPageOnProject wp project_id
+    limit lim
     return we
 
 -- | Fetch all new SharesPledged made on this Project before this time.
-fetchProjectNewPledgesBeforeDB :: ProjectId -> UTCTime -> DB [Entity SharesPledged]
-fetchProjectNewPledgesBeforeDB project_id before =
+fetchProjectNewPledgesBeforeDB :: ProjectId -> UTCTime -> Int64 -> DB [Entity SharesPledged]
+fetchProjectNewPledgesBeforeDB project_id before lim =
     select $
     from $ \(enp `InnerJoin` sp) -> do
     on_ (enp ^. EventNewPledgeSharesPledged ==. sp ^. SharesPledgedId)
     where_ $
         enp ^. EventNewPledgeTs <=. val before &&.
         sp ^. SharesPledgedProject ==. val project_id
+    limit lim
     return sp
 
 -- | Fetch all updated Pledges made on this Project before this time, along with the old number of shares.
-fetchProjectUpdatedPledgesBeforeDB :: ProjectId -> UTCTime -> DB [(Int64, Entity SharesPledged)]
-fetchProjectUpdatedPledgesBeforeDB project_id before = fmap (map (\(Value n, p) -> (n, p))) $
+fetchProjectUpdatedPledgesBeforeDB :: ProjectId -> UTCTime -> Int64 -> DB [(Int64, Entity SharesPledged)]
+fetchProjectUpdatedPledgesBeforeDB project_id before lim = fmap (map (\(Value n, p) -> (n, p))) $
     select $
     from $ \(eup `InnerJoin` sp) -> do
     on_ (eup ^. EventUpdatedPledgeSharesPledged ==. sp ^. SharesPledgedId)
     where_ $
         eup ^. EventUpdatedPledgeTs <=. val before &&.
         sp ^. SharesPledgedProject ==. val project_id
+    limit lim
     return (eup ^. EventUpdatedPledgeOldShares, sp)
 
 -- | Fetch all deleted pledge events made on this Project before this time.
-fetchProjectDeletedPledgesBeforeDB :: ProjectId -> UTCTime -> DB [EventDeletedPledge]
-fetchProjectDeletedPledgesBeforeDB project_id before = fmap (map entityVal) $
+fetchProjectDeletedPledgesBeforeDB :: ProjectId -> UTCTime -> Int64 -> DB [EventDeletedPledge]
+fetchProjectDeletedPledgesBeforeDB project_id before lim = fmap (map entityVal) $
     select $
     from $ \edp -> do
     where_ $
         edp ^. EventDeletedPledgeTs      <=. val before &&.
         edp ^. EventDeletedPledgeProject ==. val project_id
+    limit lim
     return edp
 
 -- | Fetch this Project's team members.

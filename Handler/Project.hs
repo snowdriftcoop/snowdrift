@@ -8,6 +8,7 @@ import Data.Filter
 import Data.Order
 import Handler.Comment
 import Handler.Discussion
+import Handler.Utils
 import Model.Application
 import Model.Comment
 import Model.Comment.ActionPermissions
@@ -749,18 +750,20 @@ getEditProjectR project_handle = do
 -- statically guarantees that.
 getProjectFeedR :: Text -> Handler Html
 getProjectFeedR project_handle = do
+    let lim = 26 -- limit n from each table, then take (n-1)
+
     muser_id <- maybeAuthId
-    before <- maybe (liftIO getCurrentTime) (return . read . T.unpack) =<< lookupGetParam "before"
-    (project, events, discussion_wiki_pages_map, wiki_pages_map, users_map) <- runYDB $ do
+    before <- lookupGetUTCTimeDefaultNow "before"
+    (project, all_unsorted_events, discussion_wiki_pages_map, wiki_pages_map, users_map) <- runYDB $ do
         Entity project_id project <- getBy404 (UniqueProjectHandle project_handle)
 
-        comment_posted_entities  <- fetchProjectCommentsPostedOnWikiPagesBeforeDB project_id muser_id before
-        comment_pending_entities <- fetchProjectCommentsPendingBeforeDB project_id muser_id before
-        wiki_page_entities       <- fetchProjectWikiPagesBeforeDB project_id before
-        wiki_edit_entities       <- fetchProjectWikiEditsBeforeDB project_id before
-        new_pledge_entities      <- fetchProjectNewPledgesBeforeDB project_id before
-        updated_pledges          <- fetchProjectUpdatedPledgesBeforeDB project_id before
-        deleted_pledge_events    <- fetchProjectDeletedPledgesBeforeDB project_id before
+        comment_posted_entities  <- fetchProjectCommentsPostedOnWikiPagesBeforeDB project_id muser_id before lim
+        comment_pending_entities <- fetchProjectCommentsPendingBeforeDB project_id muser_id before lim
+        wiki_page_entities       <- fetchProjectWikiPagesBeforeDB project_id before lim
+        wiki_edit_entities       <- fetchProjectWikiEditsBeforeDB project_id before lim
+        new_pledge_entities      <- fetchProjectNewPledgesBeforeDB project_id before lim
+        updated_pledges          <- fetchProjectUpdatedPledgesBeforeDB project_id before lim
+        deleted_pledge_events    <- fetchProjectDeletedPledgesBeforeDB project_id before lim
 
         -- Suplementary maps for displaying the data. If something above requires extra
         -- data to display the project feed row, it MUST be used to fetch the data below!
@@ -769,6 +772,13 @@ getProjectFeedR project_handle = do
         let comments       = map entityVal (comment_posted_entities <> comment_pending_entities)
             wiki_edits     = map entityVal wiki_edit_entities
             shares_pledged = map entityVal (new_pledge_entities <> (map snd updated_pledges))
+            -- All users: Comment posters, WikiPage creators, WikiEdit makers,
+            -- and Pledgers (new, updated, and deleted).
+            user_ids = S.toList $
+                         S.fromList (map commentUser comments) <>
+                         S.fromList (map wikiEditUser wiki_edits) <>
+                         S.fromList (map sharesPledgedUser shares_pledged) <>
+                         S.fromList (map eventDeletedPledgeUser deleted_pledge_events)
 
         -- WikiPages that can be keyed by a Comment's DiscussionId (i.e. the Comment *is* on a WikiPage)
         discussion_wiki_pages_map <- M.fromList . map (\e@(Entity _ WikiPage{..}) -> (wikiPageDiscussion, e)) <$>
@@ -777,15 +787,9 @@ getProjectFeedR project_handle = do
         -- WikiPages keyed by their own IDs (contained in a WikiEdit)
         wiki_pages_map <- entitiesMap <$> fetchWikiPagesInDB (map wikiEditPage wiki_edits)
 
-        -- All users: Comment posters, WikiPage creators, WikiEdit makers,
-        -- and Pledgers (new, updated, and deleted).
-        users_map <- (\a b c d -> a <> b <> c <> d)
-            <$> (entitiesMap <$> fetchUsersInDB (map commentUser comments))
-            <*> (entitiesMap <$> fetchUsersInDB (map wikiEditUser wiki_edits))
-            <*> (entitiesMap <$> fetchUsersInDB (map sharesPledgedUser shares_pledged))
-            <*> (entitiesMap <$> fetchUsersInDB (map (\(EventDeletedPledge _ user_id _ _) -> user_id) deleted_pledge_events))
+        users_map <- entitiesMap <$> fetchUsersInDB user_ids
 
-        let events = sortBy snowdriftEventNewestToOldest . mconcat $
+        let all_unsorted_events = mconcat
               [ map (onEntity ECommentPosted)  comment_posted_entities
               , map (onEntity ECommentPending) comment_pending_entities
               , map (onEntity EWikiPage)       wiki_page_entities
@@ -794,7 +798,19 @@ getProjectFeedR project_handle = do
               , map eup2se                     updated_pledges
               , map edp2se                     deleted_pledge_events
               ]
-        return (project, events, discussion_wiki_pages_map, wiki_pages_map, users_map)
+
+        return (project, all_unsorted_events, discussion_wiki_pages_map, wiki_pages_map, users_map)
+
+    let (events, more_events) = splitAt (lim-1) (sortBy snowdriftEventNewestToOldest all_unsorted_events)
+
+        -- For pagination: Nothing means no more pages, Just time means set the 'before'
+        -- GET param to that time. Note that this means 'before' should be a <= relation,
+        -- rather than a <.
+        mnext_before :: Maybe Text
+        mnext_before = case more_events of
+          []             -> Nothing
+          (next_event:_) -> (Just . T.pack . show . snowdriftEventTime) next_event
+
     defaultLayout $(widgetFile "project_feed")
   where
     -- "event updated pledge to snowdrift event". Makes above code cleaner.

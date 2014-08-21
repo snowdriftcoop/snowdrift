@@ -1,5 +1,6 @@
 module Model.SnowdriftEvent
     ( snowdriftEventNewestToOldest
+    , snowdriftEventTime
     ) where
 
 import Import
