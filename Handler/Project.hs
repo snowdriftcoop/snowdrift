@@ -751,8 +751,8 @@ getProjectFeedR :: Text -> Handler Html
 getProjectFeedR project_handle = do
     muser_id <- maybeAuthId
     before <- maybe (liftIO getCurrentTime) (return . read . T.unpack) =<< lookupGetParam "before"
-    (events, discussion_wiki_pages_map, wiki_pages_map, users_map) <- runYDB $ do
-        Entity project_id _ <- getBy404 (UniqueProjectHandle project_handle)
+    (project, events, discussion_wiki_pages_map, wiki_pages_map, users_map) <- runYDB $ do
+        Entity project_id project <- getBy404 (UniqueProjectHandle project_handle)
 
         comment_posted_entities  <- fetchProjectCommentsPostedOnWikiPagesBeforeDB project_id muser_id before
         comment_pending_entities <- fetchProjectCommentsPendingBeforeDB project_id muser_id before
@@ -794,7 +794,7 @@ getProjectFeedR project_handle = do
               , map eup2se                     updated_pledges
               , map edp2se                     deleted_pledge_events
               ]
-        return (events, discussion_wiki_pages_map, wiki_pages_map, users_map)
+        return (project, events, discussion_wiki_pages_map, wiki_pages_map, users_map)
     defaultLayout $(widgetFile "project_feed")
   where
     -- "event updated pledge to snowdrift event". Makes above code cleaner.
