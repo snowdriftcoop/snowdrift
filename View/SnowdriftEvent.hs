@@ -12,12 +12,13 @@ renderCommentPostedOnWikiPageEvent project_handle comment_id comment (Entity _ w
     let poster = fromMaybe
             (error "renderCommentPostedOnWikiPageEvent: poster not found in user map")
             (M.lookup (commentUser comment) users_map)
+
+        moderated_ts = fromMaybe
+            (error "renderCommentPostedOnWikiPageEvent: commentModeratedTs is Nothing")
+            (commentModeratedTs comment)
     [whamlet|
         <div .event>
-            $maybe moderated_ts <- commentModeratedTs comment
-                ^{renderTime moderated_ts}
-            $nothing
-                ^{renderTime $ commentCreatedTs comment}
+            ^{renderTime moderated_ts}
             <a href=@{UserR (commentUser comment)}> #{userDisplayName (Entity (commentUser comment) poster)}
             posted a
             <a href=@{CommentDirectLinkR comment_id}>comment
