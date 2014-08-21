@@ -1,8 +1,5 @@
-<div>TODO(aaron): This header
-<div .row>
-    <div .col-xs-6>
+<div .page-toolbox>
+    <div .page-tool>
         <a href="@{ProjectDiscussionR project_handle}"> back to full discussion
-
-<hr .wikitop>
 
 ^{widget}

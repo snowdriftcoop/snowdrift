@@ -15,7 +15,7 @@ img
 input, textarea
     font-size : 15px
 
-input[type=submit]
+input[type=submit], button
     color : white
     font-weight : bold
     padding : .4em 1em
@@ -27,11 +27,11 @@ input[type=submit]
     background : #74BBFB
     background-image : linear-gradient(#92D9FF, #62AAEA)
 
-input[type=submit]:hover, input[type=submit]:focus
+input[type=submit]:hover, input[type=submit]:focus, button:hover, button:focus
     background : #62AAEA
     background-image : linear-gradient(#78BFDD, #6097D9)
 
-input[type=submit]:active
+input[type=submit]:active, button:active
     background : #62AAEA
     background-image : linear-gradient(#78BFDD, #6097D9)
     box-shadow : 0 3px 5px rgba(0, 0, 0, 0.3) inset
