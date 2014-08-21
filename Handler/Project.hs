@@ -690,8 +690,7 @@ getProjectDiscussion project_handle get_root_comments = do
     let has_comments = not (null root_comments)
         comment_forest = do
             comment_forest_no_css
-            -- Re-use the wiki page comment CSS. Is this correct?
-            toWidget $(cassiusFile "templates/wiki_discussion_wrapper.cassius")
+            toWidget $(cassiusFile "templates/comment.cassius")
 
     (comment_form, _) <- generateFormPost commentNewTopicForm
 
@@ -824,7 +823,7 @@ getProjectFeedR project_handle = do
 
     defaultLayout $ do
         $(widgetFile "project_feed")
-        toWidget $(cassiusFile "templates/wiki_discussion_wrapper.cassius")
+        toWidget $(cassiusFile "templates/comment.cassius")
   where
     -- "event updated pledge to snowdrift event". Makes above code cleaner.
     eup2se :: (Int64, Entity SharesPledged) -> SnowdriftEvent

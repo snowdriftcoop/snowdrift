@@ -235,7 +235,7 @@ getWikiDiscussionR' project_handle target get_root_comments = do
     let has_comments = not (null root_comments)
         comment_forest = do
             comment_forest_no_css
-            toWidget $(cassiusFile "templates/wiki_discussion_wrapper.cassius")
+            toWidget $(cassiusFile "templates/comment.cassius")
 
     (comment_form, _) <- generateFormPost commentNewTopicForm
 
