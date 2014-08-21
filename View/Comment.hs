@@ -281,10 +281,12 @@ commentWidget (Entity comment_id comment)
             Just (Entity (Key (PersistInt64 tid)) _) -> T.pack $ show tid
             _ -> "???"
 
-        prettyTicketLine line =
-            let pretty title = "<div class='ticket-title'>SD-" <> ticket_str <> ": " <> title <> "</div>"
-             in return $ maybe line pretty $ T.stripPrefix "ticket: " line
+-- error about ambiguity about monad type in this, needs to be adjusted to
+-- fit the idea that comments aren't necessarily on wiki pages
+--      prettyTicketLine line =
+--          let pretty title = "<div class='ticket-title'>SD-" <> ticket_str <> ": " <> title <> "</div>"
+--           in return $ maybe line pretty $ T.stripPrefix "ticket: " line
 
-        commentTextTransform = prettyTicketLine
+--      commentTextTransform = prettyTicketLine
 
     $(widgetFile "comment")
