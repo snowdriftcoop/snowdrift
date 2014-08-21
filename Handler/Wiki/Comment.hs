@@ -14,7 +14,7 @@ import           Model.User
 import           Data.Default                    (def)
 import           Data.Tree                       (Forest, Tree)
 import qualified Data.Tree                       as Tree
-
+import           Text.Cassius (cassiusFile)
 --------------------------------------------------------------------------------
 -- Utility functions
 
@@ -147,7 +147,9 @@ getWikiCommentR project_handle target comment_id = do
         Just (Entity user_id _) ->
             runDB (userMaybeViewProjectCommentsDB user_id project_id (map entityKey (Tree.flatten comment_tree)))
 
-    defaultLayout $(widgetFile "wiki_discussion_wrapper")
+    defaultLayout $ do
+        $(widgetFile "wiki_discussion_wrapper")
+        toWidget $(cassiusFile "templates/comment.cassius")
 
 --------------------------------------------------------------------------------
 -- /close
@@ -162,7 +164,9 @@ getCloseWikiCommentR project_handle target comment_id = do
           comment_id
           def
           getMaxDepth
-    defaultLayout $(widgetFile "wiki_discussion_wrapper")
+    defaultLayout $ do
+        $(widgetFile "wiki_discussion_wrapper")
+        toWidget $(cassiusFile "templates/comment.cassius")
 
 postCloseWikiCommentR :: Text -> Text -> CommentId -> Handler Html
 postCloseWikiCommentR project_handle target comment_id = do
@@ -191,7 +195,9 @@ getDeleteWikiCommentR project_handle target comment_id = do
           comment_id
           def
           (getMaxDepthDefault 0)
-    defaultLayout $(widgetFile "wiki_discussion_wrapper")
+    defaultLayout $ do
+        $(widgetFile "wiki_discussion_wrapper")
+        toWidget $(cassiusFile "templates/comment.cassius")
 
 postDeleteWikiCommentR :: Text -> Text -> CommentId -> Handler Html
 postDeleteWikiCommentR project_handle target comment_id = do
@@ -216,7 +222,9 @@ getEditWikiCommentR project_handle target comment_id = do
           comment_id
           def
           (getMaxDepthDefault 0)
-    defaultLayout $(widgetFile "wiki_discussion_wrapper")
+    defaultLayout $ do
+        $(widgetFile "wiki_discussion_wrapper")
+        toWidget $(cassiusFile "templates/comment.cassius")
 
 postEditWikiCommentR :: Text -> Text -> CommentId -> Handler Html
 postEditWikiCommentR project_handle target comment_id = do
@@ -244,7 +252,9 @@ getFlagWikiCommentR project_handle target comment_id = do
           comment_id
           def
           (getMaxDepthDefault 0)
-    defaultLayout $(widgetFile "wiki_discussion_wrapper")
+    defaultLayout $ do
+        $(widgetFile "wiki_discussion_wrapper")
+        toWidget $(cassiusFile "templates/comment.cassius")
 
 postFlagWikiCommentR :: Text -> Text -> CommentId -> Handler Html
 postFlagWikiCommentR project_handle target comment_id = do
@@ -272,7 +282,9 @@ getApproveWikiCommentR project_handle target comment_id = do
           comment_id
           def
           getMaxDepth
-    defaultLayout $(widgetFile "wiki_discussion_wrapper")
+    defaultLayout $ do
+        $(widgetFile "wiki_discussion_wrapper")
+        toWidget $(cassiusFile "templates/comment.cassius")
 
 postApproveWikiCommentR :: Text -> Text -> CommentId -> Handler Html
 postApproveWikiCommentR project_handle target comment_id = do
@@ -294,7 +306,9 @@ getReplyWikiCommentR project_handle target comment_id = do
                      comment_id
                      def
                      getMaxDepth
-    defaultLayout $(widgetFile "wiki_discussion_wrapper")
+    defaultLayout $ do
+        $(widgetFile "wiki_discussion_wrapper")
+        toWidget $(cassiusFile "templates/comment.cassius")
 
 postReplyWikiCommentR :: Text -> Text -> CommentId -> Handler Html
 postReplyWikiCommentR project_handle target parent_id = do
@@ -323,7 +337,9 @@ getRethreadWikiCommentR project_handle target comment_id = do
           comment_id
           def
           (getMaxDepthDefault 0)
-    defaultLayout $(widgetFile "wiki_discussion_wrapper")
+    defaultLayout $ do
+        $(widgetFile "wiki_discussion_wrapper")
+        toWidget $(cassiusFile "templates/comment.cassius")
 
 postRethreadWikiCommentR :: Text -> Text -> CommentId -> Handler Html
 postRethreadWikiCommentR project_handle target comment_id = do
@@ -344,7 +360,9 @@ getRetractWikiCommentR project_handle target comment_id = do
           comment_id
           def
           getMaxDepth
-    defaultLayout $(widgetFile "wiki_discussion_wrapper")
+    defaultLayout $ do
+        $(widgetFile "wiki_discussion_wrapper")
+        toWidget $(cassiusFile "templates/comment.cassius")
 
 postRetractWikiCommentR :: Text -> Text -> CommentId -> Handler Html
 postRetractWikiCommentR project_handle target comment_id = do
