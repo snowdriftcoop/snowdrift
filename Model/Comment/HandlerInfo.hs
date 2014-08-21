@@ -27,5 +27,5 @@ wikiPageCommentHandlerInfo :: Maybe UserId -> ProjectId -> Text -> Text -> Comme
 wikiPageCommentHandlerInfo muser_id project_id project_handle target = CommentHandlerInfo
     { commentHandlerHasPermission         = exprCommentProjectPermissionFilter muser_id (val project_id)
     , commentHandlerRoutes                = wikiPageCommentRoutes project_handle target
-    , commentHandlerMakeActionPermissions = makeWikiPageCommentActionPermissions project_handle target
+    , commentHandlerMakeActionPermissions = makeProjectCommentActionPermissions project_handle
     }

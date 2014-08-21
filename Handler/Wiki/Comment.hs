@@ -55,11 +55,10 @@ checkCommentPage' muser_id project_handle target comment_id = do
 checkWikiPageCommentActionPermission
         :: (CommentActionPermissions -> Bool)
         -> Text
-        -> Text
         -> Entity Comment
         -> Handler ()
-checkWikiPageCommentActionPermission can_perform_action project_handle target comment = do
-    ok <- can_perform_action <$> makeWikiPageCommentActionPermissions project_handle target comment
+checkWikiPageCommentActionPermission can_perform_action project_handle comment = do
+    ok <- can_perform_action <$> makeProjectCommentActionPermissions project_handle comment
     unless ok (permissionDenied "You don't have permission to perform this action.")
 
 makeWikiPageCommentForestWidget
@@ -168,7 +167,7 @@ getCloseWikiCommentR project_handle target comment_id = do
 postCloseWikiCommentR :: Text -> Text -> CommentId -> Handler Html
 postCloseWikiCommentR project_handle target comment_id = do
     (user@(Entity user_id _), (Entity project_id _), _, comment) <- checkCommentPageRequireAuth project_handle target comment_id
-    checkWikiPageCommentActionPermission can_close project_handle target (Entity comment_id comment)
+    checkWikiPageCommentActionPermission can_close project_handle (Entity comment_id comment)
 
     postCloseComment
       user
@@ -197,7 +196,7 @@ getDeleteWikiCommentR project_handle target comment_id = do
 postDeleteWikiCommentR :: Text -> Text -> CommentId -> Handler Html
 postDeleteWikiCommentR project_handle target comment_id = do
     (_, _, _, comment) <- checkCommentPage project_handle target comment_id
-    checkWikiPageCommentActionPermission can_delete project_handle target (Entity comment_id comment)
+    checkWikiPageCommentActionPermission can_delete project_handle (Entity comment_id comment)
 
     was_deleted <- postDeleteComment comment_id
     if was_deleted
@@ -222,7 +221,7 @@ getEditWikiCommentR project_handle target comment_id = do
 postEditWikiCommentR :: Text -> Text -> CommentId -> Handler Html
 postEditWikiCommentR project_handle target comment_id = do
     (user@(Entity user_id _), Entity project_id _, _, comment) <- checkCommentPageRequireAuth project_handle target comment_id
-    checkWikiPageCommentActionPermission can_edit project_handle target (Entity comment_id comment)
+    checkWikiPageCommentActionPermission can_edit project_handle (Entity comment_id comment)
 
     postEditComment
       user
@@ -250,7 +249,7 @@ getFlagWikiCommentR project_handle target comment_id = do
 postFlagWikiCommentR :: Text -> Text -> CommentId -> Handler Html
 postFlagWikiCommentR project_handle target comment_id = do
     (user@(Entity user_id _), Entity project_id _, _, comment) <- checkCommentPageRequireAuth project_handle target comment_id
-    checkWikiPageCommentActionPermission can_flag project_handle target (Entity comment_id comment)
+    checkWikiPageCommentActionPermission can_flag project_handle (Entity comment_id comment)
 
     postFlagComment
       user
@@ -278,7 +277,7 @@ getApproveWikiCommentR project_handle target comment_id = do
 postApproveWikiCommentR :: Text -> Text -> CommentId -> Handler Html
 postApproveWikiCommentR project_handle target comment_id = do
     (Entity user_id _, _, _, comment) <- checkCommentPageRequireAuth project_handle target comment_id
-    checkWikiPageCommentActionPermission can_approve project_handle target (Entity comment_id comment)
+    checkWikiPageCommentActionPermission can_approve project_handle (Entity comment_id comment)
 
     postApproveComment user_id comment_id comment
     redirect (WikiCommentR project_handle target comment_id)
@@ -300,14 +299,14 @@ getReplyWikiCommentR project_handle target comment_id = do
 postReplyWikiCommentR :: Text -> Text -> CommentId -> Handler Html
 postReplyWikiCommentR project_handle target parent_id = do
     (Entity user_id user, _, Entity _ page, parent) <- checkCommentPageRequireAuth project_handle target parent_id
-    checkWikiPageCommentActionPermission can_reply project_handle target (Entity parent_id parent)
+    checkWikiPageCommentActionPermission can_reply project_handle (Entity parent_id parent)
 
     postNewComment
       (Just parent_id)
       user_id
       (userIsEstablished user)
       (wikiPageDiscussion page)
-      (makeWikiPageCommentActionPermissions project_handle target) >>= \case
+      (makeProjectCommentActionPermissions project_handle) >>= \case
         Left _ -> redirect (WikiCommentR project_handle target parent_id)     -- Posted the reply.
         Right widget -> defaultLayout $(widgetFile "wiki_discussion_wrapper") -- Previewing the reply.
 
@@ -329,7 +328,7 @@ getRethreadWikiCommentR project_handle target comment_id = do
 postRethreadWikiCommentR :: Text -> Text -> CommentId -> Handler Html
 postRethreadWikiCommentR project_handle target comment_id = do
     (Entity user_id _, _, _, comment) <- checkCommentPageRequireAuth project_handle target comment_id
-    checkWikiPageCommentActionPermission can_rethread project_handle target (Entity comment_id comment)
+    checkWikiPageCommentActionPermission can_rethread project_handle (Entity comment_id comment)
     postRethreadComment user_id comment_id comment
 
 --------------------------------------------------------------------------------
@@ -350,7 +349,7 @@ getRetractWikiCommentR project_handle target comment_id = do
 postRetractWikiCommentR :: Text -> Text -> CommentId -> Handler Html
 postRetractWikiCommentR project_handle target comment_id = do
     (user@(Entity user_id _), Entity project_id _, _, comment) <- checkCommentPageRequireAuth project_handle target comment_id
-    checkWikiPageCommentActionPermission can_retract project_handle target (Entity comment_id comment)
+    checkWikiPageCommentActionPermission can_retract project_handle (Entity comment_id comment)
 
     postRetractComment
       user
@@ -385,7 +384,7 @@ postWikiCommentCreateTagR _ _ = postCommentCreateTagR
 getWikiCommentAddTagR :: Text -> Text -> CommentId -> Handler Html
 getWikiCommentAddTagR project_handle target comment_id = do
     (Entity user_id _, Entity project_id _, _, comment) <- checkCommentPageRequireAuth project_handle target comment_id
-    ok <- can_add_tag <$> makeWikiPageCommentActionPermissions project_handle target (Entity comment_id comment)
+    ok <- can_add_tag <$> makeProjectCommentActionPermissions project_handle (Entity comment_id comment)
     unless ok (permissionDenied "You don't have permission to view this page.")
     getProjectCommentAddTag comment_id project_id user_id
 

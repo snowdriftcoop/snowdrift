@@ -13,8 +13,8 @@ $forall event <- events
             $#       FeedEvent that specialized SnowdriftEvent, e.g.
             $#       FECommentPostedOnWikiPage)
 
-            $maybe wiki_page <- M.lookup (commentDiscussion comment) discussion_wiki_pages_map
-                ^{renderCommentPostedOnWikiPageEvent project_handle comment_id comment wiki_page users_map}
+            $maybe wiki_page <- M.lookup (commentDiscussion comment) discussion_wiki_page_map
+                ^{renderCommentPostedOnWikiPageEvent comment_id comment wiki_page project_handle muser_id comment_routes make_action_permissions earlier_closures_map user_map closure_map ticket_map flag_map}
 
             $# This should never happen.
 
@@ -22,19 +22,19 @@ $forall event <- events
                 ^{renderCommentPostedOnUnknownDiscussionEvent comment_id comment}
 
         $of EWikiPage wiki_page_id wiki_page
-            ^{renderWikiPageEvent project_handle wiki_page_id wiki_page users_map}
+            ^{renderWikiPageEvent project_handle wiki_page_id wiki_page user_map}
 
         $of EWikiEdit wiki_edit_id wiki_edit
-            ^{renderWikiEditEvent project_handle wiki_edit_id wiki_edit (Entity (wikiEditPage wiki_edit) (fromJust $ M.lookup (wikiEditPage wiki_edit) wiki_pages_map)) users_map}
+            ^{renderWikiEditEvent project_handle wiki_edit_id wiki_edit wiki_page_map user_map}
 
         $of ENewPledge shares_pledged_id shares_pledged
-            ^{renderNewPledgeEvent shares_pledged_id shares_pledged users_map}
+            ^{renderNewPledgeEvent shares_pledged_id shares_pledged user_map}
 
         $of EUpdatedPledge old_shares shares_pledged_id shares_pledged
-            ^{renderUpdatedPledgeEvent old_shares shares_pledged_id shares_pledged users_map}
+            ^{renderUpdatedPledgeEvent old_shares shares_pledged_id shares_pledged user_map}
 
         $of EDeletedPledge ts user_id _ shares
-            ^{renderDeletedPledgeEvent ts user_id shares users_map}
+            ^{renderDeletedPledgeEvent ts user_id shares user_map}
 
         $# Graveyard of event types we don't want to put on the feed.
         $# Don't match-all here, we don't want to accidentally not consider something.

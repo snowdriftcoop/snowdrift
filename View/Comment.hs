@@ -9,6 +9,7 @@ module View.Comment
     , commentReplyForm
     , commentReplyFormWidget
     , commentTreeWidget
+    , commentWidget
     , createCommentTagForm
     , deleteCommentFormWidget
     , disabledCommentForm

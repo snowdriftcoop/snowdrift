@@ -262,7 +262,7 @@ postNewWikiDiscussionR project_handle target = do
       user_id
       (userIsEstablished user)
       wikiPageDiscussion
-      (makeWikiPageCommentActionPermissions project_handle target) >>= \case
+      (makeProjectCommentActionPermissions project_handle) >>= \case
         Left comment_id -> redirect (WikiCommentR project_handle target comment_id) -- Posted the new topic.
         Right widget -> defaultLayout $(widgetFile "wiki_discussion_wrapper")       -- Previewing the reply.
 

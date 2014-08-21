@@ -3,29 +3,68 @@
 module View.SnowdriftEvent where
 
 import Import
+
+import Model.Comment
+import Model.Comment.ActionPermissions
+import Model.Comment.Routes
 import Model.User
-import qualified Data.Map as M
+import View.Comment
 import Widgets.Time
 
-renderCommentPostedOnWikiPageEvent :: Text -> CommentId -> Comment -> Entity WikiPage -> UserMap -> Widget
-renderCommentPostedOnWikiPageEvent project_handle comment_id comment (Entity _ wiki_page) users_map = do
-    let poster = fromMaybe
-            (error "renderCommentPostedOnWikiPageEvent: poster not found in user map")
-            (M.lookup (commentUser comment) users_map)
+import qualified Data.Map as M
 
-        moderated_ts = fromMaybe
-            (error "renderCommentPostedOnWikiPageEvent: commentModeratedTs is Nothing")
-            (commentModeratedTs comment)
+renderCommentPostedOnWikiPageEvent
+        :: CommentId
+        -> Comment
+        -> Entity WikiPage
+        -> Text
+        -> Maybe UserId
+        -> CommentRoutes
+        -> MakeCommentActionPermissions
+        -> Map CommentId [CommentClosure]
+        -> UserMap
+        -> ClosureMap
+        -> TicketMap
+        -> FlagMap
+        -> Widget
+renderCommentPostedOnWikiPageEvent
+        comment_id
+        comment
+        (Entity _ wiki_page)
+        project_handle
+        mviewer_id
+        comment_routes
+        make_action_permissions
+        earlier_closures_map
+        user_map
+        closure_map
+        ticket_map
+        flag_map = do
+    let comment_entity = Entity comment_id comment
+    action_permissions <- handlerToWidget (make_action_permissions comment_entity)
+    let comment_widget =
+            commentWidget
+              comment_entity
+              mviewer_id
+              comment_routes
+              action_permissions
+              (M.findWithDefault [] comment_id earlier_closures_map)
+              (fromMaybe (error "renderCommentPostedOnWikiPageEvent: comment user missing from user map")
+                         (M.lookup (commentUser comment) user_map))
+              (M.lookup comment_id closure_map)
+              (M.lookup comment_id ticket_map)
+              (M.lookup comment_id flag_map)
+              False
+              mempty
+
+        target = wikiPageTarget wiki_page
+
     [whamlet|
         <div .event>
-            ^{renderTime moderated_ts}
-            <a href=@{UserR (commentUser comment)}> #{userDisplayName (Entity (commentUser comment) poster)}
-            posted a
-            <a href=@{CommentDirectLinkR comment_id}>comment
-            on the
-            <a href=@{WikiR project_handle (wikiPageTarget wiki_page)}> #{wikiPageTarget wiki_page}
-            wiki page: #{commentText comment}
+            <a href=@{WikiR project_handle target}>#{target}
+            comment
 
+            ^{comment_widget}
     |]
 
 -- This should really *never* be called, but it's included in case of nuclear meltdown.
@@ -44,10 +83,9 @@ renderCommentPostedOnUnknownDiscussionEvent comment_id comment =
     |]
 
 renderCommentPendingEvent :: CommentId -> Comment -> UserMap -> Widget
-renderCommentPendingEvent comment_id comment users_map = do
-    let poster = fromMaybe
-            (error "renderCommentPostedOnWikiPageEvent: poster not found in user map")
-            (M.lookup (commentUser comment) users_map)
+renderCommentPendingEvent comment_id comment user_map = do
+    let poster = fromMaybe (error "renderCommentPendingEvent: poster not found in user map")
+                           (M.lookup (commentUser comment) user_map)
     [whamlet|
         <div .event>
             ^{renderTime $ commentCreatedTs comment}
@@ -59,19 +97,19 @@ renderCommentPendingEvent comment_id comment users_map = do
     |]
 
 renderWikiPageEvent :: Text -> WikiPageId -> WikiPage -> UserMap -> Widget
-renderWikiPageEvent project_handle _ wiki_page users_map = do
+renderWikiPageEvent project_handle _ wiki_page user_map = do
 --
 -- The commented stuff here (and in the whamlet commented part)
 -- is because there's no wikiPageUser yet and the
--- users_map is also not needed until this is active--
+-- user_map is also not needed until this is active--
 --    let editor = fromMaybe
 --            (error "renderWikiPageEvent: wiki editor not found in user map")
---            (M.lookup (wikiPageUser wiki_page) users_map)
+--            (M.lookup (wikiPageUser wiki_page) user_map)
 --
     [whamlet|
         <div .event>
             ^{renderTime $ wikiPageCreatedTs wiki_page}
-            <!-- 
+            <!--
                 <a href=@{UserR (wikiPageUser wiki_page)}>
                     #{userDisplayName (Entity (wikiPageUser wiki_page) editor)}
                 -->
@@ -79,11 +117,12 @@ renderWikiPageEvent project_handle _ wiki_page users_map = do
             <a href=@{WikiR project_handle (wikiPageTarget wiki_page)}>#{wikiPageTarget wiki_page}
     |]
 
-renderWikiEditEvent :: Text -> WikiEditId -> WikiEdit -> Entity WikiPage -> UserMap -> Widget
-renderWikiEditEvent project_handle edit_id wiki_edit (Entity _ wiki_page) users_map = do
-    let editor = fromMaybe
-            (error "renderWikiEditEvent: wiki editor not found in user map")
-            (M.lookup (wikiEditUser wiki_edit) users_map)
+renderWikiEditEvent :: Text -> WikiEditId -> WikiEdit -> Map WikiPageId WikiPage -> UserMap -> Widget
+renderWikiEditEvent project_handle edit_id wiki_edit wiki_page_map user_map = do
+    let editor = fromMaybe (error "renderWikiEditEvent: wiki editor not found in user map")
+                           (M.lookup (wikiEditUser wiki_edit) user_map)
+        wiki_page = fromMaybe (error "renderWikiEditEvent: wiki page not found in wiki page map")
+                              (M.lookup (wikiEditPage wiki_edit) wiki_page_map)
     [whamlet|
         <div .event>
             ^{renderTime $ wikiEditTs wiki_edit}
@@ -99,10 +138,9 @@ renderWikiEditEvent project_handle edit_id wiki_edit (Entity _ wiki_page) users_
     |]
 
 renderNewPledgeEvent :: SharesPledgedId -> SharesPledged -> UserMap -> Widget
-renderNewPledgeEvent _ SharesPledged{..} users_map = do
-    let pledger = fromMaybe
-            (error "renderNewPledgeEvent: pledger not found in user map")
-            (M.lookup sharesPledgedUser users_map)
+renderNewPledgeEvent _ SharesPledged{..} user_map = do
+    let pledger = fromMaybe (error "renderNewPledgeEvent: pledger not found in user map")
+                            (M.lookup sharesPledgedUser user_map)
     [whamlet|
         <div .event>
             ^{renderTime sharesPledgedTs}
@@ -111,10 +149,9 @@ renderNewPledgeEvent _ SharesPledged{..} users_map = do
     |]
 
 renderUpdatedPledgeEvent :: Int64 -> SharesPledgedId -> SharesPledged -> UserMap -> Widget
-renderUpdatedPledgeEvent old_shares _ SharesPledged{..} users_map = do
-    let pledger = fromMaybe
-            (error "renderNewPledgeEvent: pledger not found in user map")
-            (M.lookup sharesPledgedUser users_map)
+renderUpdatedPledgeEvent old_shares _ SharesPledged{..} user_map = do
+    let pledger = fromMaybe (error "renderUpdatedPledgeEvent: pledger not found in user map")
+                            (M.lookup sharesPledgedUser user_map)
         (verb, punc) = if old_shares < sharesPledgedShares
                            then ("increased", "!")
                            else ("decreased", ".") :: (Text, Text)
@@ -126,10 +163,9 @@ renderUpdatedPledgeEvent old_shares _ SharesPledged{..} users_map = do
     |]
 
 renderDeletedPledgeEvent :: UTCTime -> UserId -> Int64 -> UserMap -> Widget
-renderDeletedPledgeEvent ts user_id shares users_map = do
-    let pledger = fromMaybe
-            (error "renderNewPledgeEvent: pledger not found in user map")
-            (M.lookup user_id users_map)
+renderDeletedPledgeEvent ts user_id shares user_map = do
+    let pledger = fromMaybe (error "renderDeletedPledgeEvent: pledger not found in user map")
+                            (M.lookup user_id user_map)
     [whamlet|
         <div .event>
             ^{renderTime ts}
