@@ -5,7 +5,6 @@ module View.SnowdriftEvent where
 import Import
 import Model.User
 import qualified Data.Map as M
-import Data.Map ((!))
 import Widgets.Time
 
 renderCommentPostedOnWikiPageEvent :: Text -> CommentId -> Comment -> Entity WikiPage -> UserMap -> Widget
@@ -100,7 +99,9 @@ renderWikiEditEvent project_handle edit_id wiki_edit (Entity _ wiki_page) users_
 
 renderNewPledgeEvent :: SharesPledgedId -> SharesPledged -> UserMap -> Widget
 renderNewPledgeEvent _ SharesPledged{..} users_map = do
-    let pledger = users_map ! sharesPledgedUser
+    let pledger = fromMaybe
+            (error "renderNewPledgeEvent: pledger not found in user map")
+            (M.lookup sharesPledgedUser users_map)
     [whamlet|
         <div .event>
             ^{renderTime sharesPledgedTs}
@@ -110,7 +111,9 @@ renderNewPledgeEvent _ SharesPledged{..} users_map = do
 
 renderUpdatedPledgeEvent :: Int64 -> SharesPledgedId -> SharesPledged -> UserMap -> Widget
 renderUpdatedPledgeEvent old_shares _ SharesPledged{..} users_map = do
-    let pledger      = users_map ! sharesPledgedUser
+    let pledger = fromMaybe
+            (error "renderNewPledgeEvent: pledger not found in user map")
+            (M.lookup sharesPledgedUser users_map)
         (verb, punc) = if old_shares < sharesPledgedShares
                            then ("increased", "!")
                            else ("decreased", ".") :: (Text, Text)
@@ -123,7 +126,9 @@ renderUpdatedPledgeEvent old_shares _ SharesPledged{..} users_map = do
 
 renderDeletedPledgeEvent :: UTCTime -> UserId -> Int64 -> UserMap -> Widget
 renderDeletedPledgeEvent ts user_id shares users_map = do
-    let pledger = users_map ! user_id
+    let pledger = fromMaybe
+            (error "renderNewPledgeEvent: pledger not found in user map")
+            (M.lookup user_id users_map)
     [whamlet|
         <div .event>
             ^{renderTime ts}
