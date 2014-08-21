@@ -20,6 +20,11 @@
     font-size : 14px
     margin : 1em
 
+.ticket-title
+    background-color: lightblue;
+        border-radius: 1em;
+            padding: 0.5em;
+
 .comment-head, .comment-action
     margin-right : 1em
     margin-bottom : 0.5em
