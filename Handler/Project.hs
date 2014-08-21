@@ -13,7 +13,6 @@ import Model.Application
 import Model.Comment
 import Model.Comment.ActionPermissions
 import Model.Comment.HandlerInfo
-import Model.Comment.Routes
 import Model.Comment.Sql
 import Model.Discussion
 import Model.Issue
@@ -752,8 +751,6 @@ getEditProjectR project_handle = do
 getProjectFeedR :: Text -> Handler Html
 getProjectFeedR project_handle = do
     let lim = 26 -- limit n from each table, then take (n-1)
-        comment_routes = projectCommentRoutes project_handle
-        make_action_permissions = makeProjectCommentActionPermissions project_handle
 
     muser_id <- maybeAuthId
     before <- lookupGetUTCTimeDefaultNow "before"

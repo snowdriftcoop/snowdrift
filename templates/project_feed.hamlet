@@ -14,7 +14,7 @@ $forall event <- events
             $#       FECommentPostedOnWikiPage)
 
             $maybe wiki_page <- M.lookup (commentDiscussion comment) discussion_wiki_page_map
-                ^{renderCommentPostedOnWikiPageEvent comment_id comment wiki_page project_handle muser_id comment_routes make_action_permissions earlier_closures_map user_map closure_map ticket_map flag_map}
+                ^{renderCommentPostedOnWikiPageEvent comment_id comment wiki_page project_handle muser_id earlier_closures_map user_map closure_map ticket_map flag_map}
 
             $# This should never happen.
 

@@ -19,8 +19,6 @@ renderCommentPostedOnWikiPageEvent
         -> Entity WikiPage
         -> Text
         -> Maybe UserId
-        -> CommentRoutes
-        -> MakeCommentActionPermissions
         -> Map CommentId [CommentClosure]
         -> UserMap
         -> ClosureMap
@@ -33,15 +31,17 @@ renderCommentPostedOnWikiPageEvent
         (Entity _ wiki_page)
         project_handle
         mviewer_id
-        comment_routes
-        make_action_permissions
         earlier_closures_map
         user_map
         closure_map
         ticket_map
         flag_map = do
     let comment_entity = Entity comment_id comment
-    action_permissions <- handlerToWidget (make_action_permissions comment_entity)
+        target = wikiPageTarget wiki_page
+        comment_routes = wikiPageCommentRoutes project_handle target
+
+    action_permissions <- handlerToWidget (makeProjectCommentActionPermissions project_handle comment_entity)
+
     let comment_widget =
             commentWidget
               comment_entity
@@ -57,7 +57,6 @@ renderCommentPostedOnWikiPageEvent
               False
               mempty
 
-        target = wikiPageTarget wiki_page
 
     [whamlet|
         <div .event>
