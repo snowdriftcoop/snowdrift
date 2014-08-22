@@ -11,9 +11,11 @@ previewWidget form action widget =
 
         ^{widget}
 
-        <hr>
-
+        <div .alert .alert-danger>
+            This is a preview; your changes have <em>not</em> been saved!
         <form #edit-preview method="POST">
+            <button type="submit" name="mode" value="preview">preview
+            <button .preview-action-button type="submit" name="mode" value="post">#{action}
 
             ^{form}
 
