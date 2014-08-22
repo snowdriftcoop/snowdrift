@@ -1,8 +1,10 @@
-<form class="tagcloud" method=post action="./new/apply">
+$# TODO: We should use type-safe URLs here... just got bit by this...
+
+<form class="tagcloud" method=post action="./apply">
     ^{apply_form}
     <input type=submit value="apply">
 
-<form method=post action="./new/create">
+<form method=post action="./create">
     ^{create_form}
     <input type=submit value="create & apply">
 $forall tag <- tags
