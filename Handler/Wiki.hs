@@ -263,8 +263,8 @@ postNewWikiDiscussionR project_handle target = do
       (userIsEstablished user)
       wikiPageDiscussion
       (makeProjectCommentActionPermissions project_handle) >>= \case
-        Left comment_id -> redirect (WikiCommentR project_handle target comment_id) -- Posted the new topic.
-        Right widget -> defaultLayout $(widgetFile "wiki_discussion_wrapper")       -- Previewing the reply.
+        Left comment_id -> redirect (WikiCommentR project_handle target comment_id)
+        Right (widget, form) -> defaultLayout $ previewWidget form "post" ($(widgetFile "wiki_discussion_wrapper"))
 
 --------------------------------------------------------------------------------
 -- /#target/diff/#from/#to

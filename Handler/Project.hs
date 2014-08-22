@@ -580,8 +580,8 @@ postReplyProjectCommentR project_handle parent_id = do
       (userIsEstablished user)
       (projectDiscussion project)
       (makeProjectCommentActionPermissions project_handle) >>= \case
-        Left _ -> redirect (ProjectCommentR project_handle parent_id)            -- Posted the reply.
-        Right widget -> defaultLayout $(widgetFile "project_discussion_wrapper") -- Previewing the reply.
+        Left _ -> redirect (ProjectCommentR project_handle parent_id)
+        Right (widget, form) -> defaultLayout $ previewWidget form "post" ($(widgetFile "project_discussion_wrapper"))
 
 --------------------------------------------------------------------------------
 -- /c/#CommentId/rethread
@@ -718,8 +718,8 @@ postNewProjectDiscussionR project_handle = do
       (userIsEstablished user)
       projectDiscussion
       (makeProjectCommentActionPermissions project_handle) >>= \case
-        Left comment_id -> redirect (ProjectCommentR project_handle comment_id)  -- Posted the new topic.
-        Right widget -> defaultLayout $(widgetFile "project_discussion_wrapper") -- Previewing the reply.
+        Left comment_id -> redirect (ProjectCommentR project_handle comment_id)
+        Right (widget, form) -> defaultLayout $ previewWidget form "post" ($(widgetFile "project_discussion_wrapper"))
 
 --------------------------------------------------------------------------------
 -- /edit

@@ -10,6 +10,7 @@ import           Model.Comment.ActionPermissions
 import           Model.Comment.HandlerInfo
 import           Model.Comment.Sql
 import           Model.User
+import           Widgets.Preview
 
 import           Data.Default                    (def)
 import           Data.Tree                       (Forest, Tree)
@@ -322,8 +323,8 @@ postReplyWikiCommentR project_handle target parent_id = do
       (userIsEstablished user)
       (wikiPageDiscussion page)
       (makeProjectCommentActionPermissions project_handle) >>= \case
-        Left _ -> redirect (WikiCommentR project_handle target parent_id)     -- Posted the reply.
-        Right widget -> defaultLayout $(widgetFile "wiki_discussion_wrapper") -- Previewing the reply.
+        Left _ -> redirect (WikiCommentR project_handle target parent_id)
+        Right (widget, form) -> defaultLayout $ previewWidget form "post" ($(widgetFile "wiki_discussion_wrapper"))
 
 --------------------------------------------------------------------------------
 -- /rethread
