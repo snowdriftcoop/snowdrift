@@ -251,29 +251,25 @@ postApproveComment user_id comment_id comment = do
     runSDB (approveCommentDB user_id comment_id comment)
     alertSuccess "comment approved"
 
-postCloseComment, postRetractComment :: Entity User -> CommentId -> Comment -> CommentHandlerInfo -> Handler (Maybe Widget)
-postCloseComment   = postClosureComment closeCommentForm   newClosedCommentClosure    can_close   "close"
-postRetractComment = postClosureComment retractCommentForm newRetractedCommentClosure can_retract "retract"
+postCloseComment, postRetractComment :: Entity User -> CommentId -> Comment -> CommentHandlerInfo -> Handler (Maybe (Widget, Widget))
+postCloseComment   = postClosureComment closeCommentForm   newClosedCommentClosure    can_close
+postRetractComment = postClosureComment retractCommentForm newRetractedCommentClosure can_retract
 
--- | Handle a POST to a /close or /retract URL. Checks the POST params for "mode" key - could be either
--- "Delete" or "Cancel" (see View.Comment.deleteCommentFormWidget). Returns whether or not
--- the Comment was deleted (True = deleted, False = not deleted).
+-- | Handle a POST to a /close or /retract URL.
 -- Permission checking should occur *PRIOR TO* this function.
 postClosureComment
         :: (Maybe Markdown -> Form Markdown)
         -> (UserId -> Markdown -> CommentId -> Handler CommentClosure)
         -> (CommentActionPermissions -> Bool)
-        -> Text
         -> Entity User
         -> CommentId
         -> Comment
         -> CommentHandlerInfo
-        -> Handler (Maybe Widget)
+        -> Handler (Maybe (Widget, Widget))
 postClosureComment
         make_closure_form
         make_new_comment_closure
         can_perform_action
-        post_button_text
         user@(Entity user_id _)
         comment_id
         comment
@@ -299,7 +295,7 @@ postClosureComment
                           (getMaxDepthDefault 0)
                           True
 
-                    return (Just (previewWidget form post_button_text comment_widget))
+                    return (Just (comment_widget, form))
         _ -> error "Error when submitting form."
 
 -- | Handle a POST to a /delete URL. Returns whether or not the Comment was deleted,

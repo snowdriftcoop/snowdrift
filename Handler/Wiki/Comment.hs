@@ -184,8 +184,8 @@ postCloseWikiCommentR project_handle target comment_id = do
       comment
       (wikiPageCommentHandlerInfo (Just user_id) project_id project_handle target)
       >>= \case
-        Nothing -> redirect (WikiCommentR project_handle target comment_id)  -- Closure posted.
-        Just widget -> defaultLayout $(widgetFile "wiki_discussion_wrapper") -- Previewing closure.
+        Nothing -> redirect (WikiCommentR project_handle target comment_id)
+        Just (widget, form) -> defaultLayout $ previewWidget form "close" ($(widgetFile "wiki_discussion_wrapper"))
 
 --------------------------------------------------------------------------------
 -- /delete
@@ -199,7 +199,7 @@ getDeleteWikiCommentR project_handle target comment_id = do
           target
           comment_id
           def
-          (getMaxDepthDefault 0)
+          getMaxDepth
     defaultLayout $ do
         $(widgetFile "wiki_discussion_wrapper")
         toWidget $(cassiusFile "templates/comment.cassius")
@@ -226,7 +226,7 @@ getEditWikiCommentR project_handle target comment_id = do
           target
           comment_id
           def
-          (getMaxDepthDefault 0)
+          getMaxDepth
     defaultLayout $ do
         $(widgetFile "wiki_discussion_wrapper")
         toWidget $(cassiusFile "templates/comment.cassius")
@@ -256,7 +256,7 @@ getFlagWikiCommentR project_handle target comment_id = do
           target
           comment_id
           def
-          (getMaxDepthDefault 0)
+          getMaxDepth
     defaultLayout $ do
         $(widgetFile "wiki_discussion_wrapper")
         toWidget $(cassiusFile "templates/comment.cassius")
@@ -304,13 +304,14 @@ postApproveWikiCommentR project_handle target comment_id = do
 
 getReplyWikiCommentR :: Text -> Text -> CommentId -> Handler Html
 getReplyWikiCommentR project_handle target comment_id = do
-    (widget, _) <- makeWikiPageCommentActionWidget
-                     makeReplyCommentWidget
-                     project_handle
-                     target
-                     comment_id
-                     def
-                     getMaxDepth
+    (widget, _) <-
+        makeWikiPageCommentActionWidget
+          makeReplyCommentWidget
+          project_handle
+          target
+          comment_id
+          def
+          getMaxDepth
     defaultLayout $ do
         $(widgetFile "wiki_discussion_wrapper")
         toWidget $(cassiusFile "templates/comment.cassius")
@@ -340,7 +341,7 @@ getRethreadWikiCommentR project_handle target comment_id = do
           target
           comment_id
           def
-          (getMaxDepthDefault 0)
+          getMaxDepth
     defaultLayout $ do
         $(widgetFile "wiki_discussion_wrapper")
         toWidget $(cassiusFile "templates/comment.cassius")
@@ -379,8 +380,8 @@ postRetractWikiCommentR project_handle target comment_id = do
       comment
       (wikiPageCommentHandlerInfo (Just user_id) project_id project_handle target)
       >>= \case
-        Nothing -> redirect (WikiCommentR project_handle target comment_id)  -- Closure posted.
-        Just widget -> defaultLayout $(widgetFile "wiki_discussion_wrapper") -- Previewing closure.
+        Nothing -> redirect (WikiCommentR project_handle target comment_id)
+        Just (widget, form) -> defaultLayout $ previewWidget form "retract" ($(widgetFile "wiki_discussion_wrapper"))
 
 --------------------------------------------------------------------------------
 -- /tags

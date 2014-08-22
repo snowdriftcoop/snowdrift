@@ -452,8 +452,8 @@ postCloseProjectCommentR project_handle comment_id = do
       comment
       (projectCommentHandlerInfo (Just user_id) project_id project_handle)
       >>= \case
-        Nothing -> redirect (ProjectCommentR project_handle comment_id)         -- Closure posted.
-        Just widget -> defaultLayout $(widgetFile "project_discussion_wrapper") -- Previewing closure.
+        Nothing -> redirect (ProjectCommentR project_handle comment_id)
+        Just (widget, form) -> defaultLayout $ previewWidget form "close" ($(widgetFile "project_discussion_wrapper"))
 
 --------------------------------------------------------------------------------
 -- /c/#CommentId/delete
@@ -466,7 +466,7 @@ getDeleteProjectCommentR project_handle comment_id = do
           project_handle
           comment_id
           def
-          (getMaxDepthDefault 0)
+          getMaxDepth
     defaultLayout $(widgetFile "project_discussion_wrapper")
 
 postDeleteProjectCommentR :: Text -> CommentId -> Handler Html
@@ -490,7 +490,7 @@ getEditProjectCommentR project_handle comment_id = do
           project_handle
           comment_id
           def
-          (getMaxDepthDefault 0)
+          getMaxDepth
     defaultLayout $(widgetFile "project_discussion_wrapper")
 
 postEditProjectCommentR :: Text -> CommentId -> Handler Html
@@ -517,7 +517,7 @@ getFlagProjectCommentR project_handle comment_id = do
           project_handle
           comment_id
           def
-          (getMaxDepthDefault 0)
+          getMaxDepth
     defaultLayout $(widgetFile "project_discussion_wrapper")
 
 postFlagProjectCommentR :: Text -> CommentId -> Handler Html
@@ -593,7 +593,7 @@ getRethreadProjectCommentR project_handle comment_id = do
           project_handle
           comment_id
           def
-          (getMaxDepthDefault 0)
+          getMaxDepth
     defaultLayout $(widgetFile "project_discussion_wrapper")
 
 postRethreadProjectCommentR :: Text -> CommentId -> Handler Html
@@ -627,8 +627,8 @@ postRetractProjectCommentR project_handle comment_id = do
       comment
       (projectCommentHandlerInfo (Just user_id) project_id project_handle)
       >>= \case
-        Nothing -> redirect (ProjectCommentR project_handle comment_id)         -- Closure posted.
-        Just widget -> defaultLayout $(widgetFile "project_discussion_wrapper") -- Previewing closure.
+        Nothing -> redirect (ProjectCommentR project_handle comment_id)
+        Just (widget, form) -> defaultLayout $ previewWidget form "retract" ($(widgetFile "project_discussion_wrapper"))
 
 --------------------------------------------------------------------------------
 -- /c/#CommentId/tags
