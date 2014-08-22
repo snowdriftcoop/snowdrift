@@ -60,8 +60,9 @@ renderCommentPostedOnWikiPageEvent
 
     [whamlet|
         <div .event>
+            On the
             <a href=@{WikiR project_handle target}>#{target}
-            comment
+            wiki page:
 
             ^{comment_widget}
     |]
