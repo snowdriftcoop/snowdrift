@@ -295,7 +295,9 @@ fetchCommentDB comment_id has_permission = get comment_id >>= \case
     Just _ -> fmap (maybe (Left CommentPermissionDenied) (Right . entityVal) . listToMaybe) $
                   select $
                   from $ \c -> do
-                  where_ (has_permission c)
+                  where_ $
+                      c ^. CommentId ==. val comment_id &&.
+                      has_permission c
                   return c
 
 -- | Delete-cascade a comment from the database.

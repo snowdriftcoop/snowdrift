@@ -15,6 +15,7 @@ import           Data.Default                    (def)
 import           Data.Tree                       (Forest, Tree)
 import qualified Data.Tree                       as Tree
 import           Text.Cassius (cassiusFile)
+
 --------------------------------------------------------------------------------
 -- Utility functions
 
