@@ -12,7 +12,7 @@ img
     max-width: 100%
     height: auto
 
-input, textarea
+input, textarea, button
     font-size : 15px
 
 input[type=submit], button
