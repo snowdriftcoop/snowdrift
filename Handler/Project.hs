@@ -202,17 +202,9 @@ postProjectR project_handle = do
     now <- liftIO getCurrentTime
 
     case result of
-        FormSuccess (UpdateProject name description tags github_repo) -> do
-            mode <- lookupPostParam "mode"
-            let action :: Text = "update"
-            case mode of
-                Just "preview" -> do
-                    let preview_project = project { projectName = name, projectDescription = description, projectGithubRepo = github_repo }
-
-                    (form, _) <- generateFormPost $ editProjectForm (Just (preview_project, tags))
-                    defaultLayout $ previewWidget form action $ renderProject (Just project_id) preview_project [] Nothing
-
-                Just x | x == action -> do
+        FormSuccess (UpdateProject name description tags github_repo) ->
+            lookupPostMode >>= \case
+                Just PostMode -> do
                     runDB $ do
                         when (projectDescription project /= description) $ do
                             project_update <- insert $ ProjectUpdate now project_id viewer_id $ diffMarkdown (projectDescription project) description
@@ -235,16 +227,21 @@ postProjectR project_handle = do
                                 Entity tag_id _ : _ -> return tag_id
 
 
-                        delete $ from $ \ project_tag -> where_ (project_tag ^. ProjectTagProject ==. val project_id)
+                        delete $
+                         from $ \pt ->
+                         where_ (pt ^. ProjectTagProject ==. val project_id)
 
-                        forM_ tag_ids $ \ tag_id -> insert $ ProjectTag project_id tag_id
+                        forM_ tag_ids $ \tag_id -> insert (ProjectTag project_id tag_id)
 
                     alertSuccess "project updated"
                     redirect $ ProjectR project_handle
 
                 _ -> do
-                    addAlertEm "danger" "unrecognized mode" "Error: "
-                    redirect $ ProjectR project_handle
+                    let preview_project = project { projectName = name, projectDescription = description, projectGithubRepo = github_repo }
+
+                    (form, _) <- generateFormPost $ editProjectForm (Just (preview_project, tags))
+                    defaultLayout $ previewWidget form "update" $ renderProject (Just project_id) preview_project [] Nothing
+
         x -> do
             alertDanger (T.pack $ show x)
             redirect (ProjectR project_handle)
@@ -571,13 +568,12 @@ getReplyProjectCommentR project_handle parent_id = do
 
 postReplyProjectCommentR :: Text -> CommentId -> Handler Html
 postReplyProjectCommentR project_handle parent_id = do
-    (Entity user_id user, Entity _ project, parent) <- checkCommentRequireAuth project_handle parent_id
+    (user, Entity _ project, parent) <- checkCommentRequireAuth project_handle parent_id
     checkProjectCommentActionPermission can_reply project_handle (Entity parent_id parent)
 
     postNewComment
       (Just parent_id)
-      user_id
-      (userIsEstablished user)
+      user
       (projectDiscussion project)
       (makeProjectCommentActionPermissions project_handle) >>= \case
         Left _ -> redirect (ProjectCommentR project_handle parent_id)
@@ -709,13 +705,12 @@ getNewProjectDiscussionR project_handle = do
 
 postNewProjectDiscussionR :: Text -> Handler Html
 postNewProjectDiscussionR project_handle = do
-    Entity user_id user <- requireAuth
+    user <- requireAuth
     Entity _ Project{..} <- runYDB (getBy404 (UniqueProjectHandle project_handle))
 
     postNewComment
       Nothing
-      user_id
-      (userIsEstablished user)
+      user
       projectDiscussion
       (makeProjectCommentActionPermissions project_handle) >>= \case
         Left comment_id -> redirect (ProjectCommentR project_handle comment_id)
@@ -758,30 +753,30 @@ getProjectFeedR project_handle = do
       ticket_map, flag_map) <- runYDB $ do
         Entity project_id project <- getBy404 (UniqueProjectHandle project_handle)
 
-        comment_posted_entities  <- fetchProjectCommentsPostedOnWikiPagesBeforeDB project_id muser_id before lim
-        comment_pending_entities <- fetchProjectCommentsPendingBeforeDB project_id muser_id before lim
-        wiki_page_entities       <- fetchProjectWikiPagesBeforeDB project_id before lim
-        wiki_edit_entities       <- fetchProjectWikiEditsBeforeDB project_id before lim
-        new_pledge_entities      <- fetchProjectNewPledgesBeforeDB project_id before lim
-        updated_pledges          <- fetchProjectUpdatedPledgesBeforeDB project_id before lim
-        deleted_pledge_events    <- fetchProjectDeletedPledgesBeforeDB project_id before lim
+        project_comments   <- fetchProjectCommentsBeforeDB         project_id muser_id before lim
+        wiki_page_comments <- fetchProjectWikiPageCommentsBeforeDB project_id muser_id before lim
+        wiki_pages         <- fetchProjectWikiPagesBeforeDB        project_id before lim
+        wiki_edit_entities <- fetchProjectWikiEditsBeforeDB        project_id before lim
+        new_pledges        <- fetchProjectNewPledgesBeforeDB       project_id before lim
+        updated_pledges    <- fetchProjectUpdatedPledgesBeforeDB   project_id before lim
+        deleted_pledges    <- fetchProjectDeletedPledgesBeforeDB   project_id before lim
 
         -- Suplementary maps for displaying the data. If something above requires extra
         -- data to display the project feed row, it MUST be used to fetch the data below!
         -- The Maybes from Data.Map.lookup are unsafely STRIPPED in the views!
 
-        let comment_entities = comment_posted_entities <> comment_pending_entities
+        let comment_entities = project_comments <> wiki_page_comments
             comment_ids      = map entityKey comment_entities
             comments         = map entityVal comment_entities
             wiki_edits       = map entityVal wiki_edit_entities
-            shares_pledged   = map entityVal (new_pledge_entities <> (map snd updated_pledges))
+            shares_pledged   = map entityVal (new_pledges <> (map snd updated_pledges))
             -- All users: Comment posters, WikiPage creators, WikiEdit makers,
             -- and Pledgers (new, updated, and deleted).
             user_ids = S.toList $
                          S.fromList (map commentUser comments) <>
                          S.fromList (map wikiEditUser wiki_edits) <>
                          S.fromList (map sharesPledgedUser shares_pledged) <>
-                         S.fromList (map eventDeletedPledgeUser deleted_pledge_events)
+                         S.fromList (map eventDeletedPledgeUser deleted_pledges)
 
         -- WikiPages that can be keyed by a Comment's DiscussionId (i.e. the Comment *is* on a WikiPage)
         discussion_wiki_page_map <- M.fromList . map (\e@(Entity _ WikiPage{..}) -> (wikiPageDiscussion, e)) <$>
@@ -798,13 +793,12 @@ getProjectFeedR project_handle = do
         flag_map             <- makeFlagMapDB    comment_ids
 
         let all_unsorted_events = mconcat
-              [ map (onEntity ECommentPosted)  comment_posted_entities
-              , map (onEntity ECommentPending) comment_pending_entities
-              , map (onEntity EWikiPage)       wiki_page_entities
+              [ map (onEntity ECommentPosted)  comment_entities
+              , map (onEntity EWikiPage)       wiki_pages
               , map (onEntity EWikiEdit)       wiki_edit_entities
-              , map (onEntity ENewPledge)      new_pledge_entities
+              , map (onEntity ENewPledge)      new_pledges
               , map eup2se                     updated_pledges
-              , map edp2se                     deleted_pledge_events
+              , map edp2se                     deleted_pledges
               ]
 
         return (project, all_unsorted_events, discussion_wiki_page_map,

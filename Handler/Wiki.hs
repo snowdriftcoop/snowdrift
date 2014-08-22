@@ -254,13 +254,12 @@ getNewWikiDiscussionR project_handle target = do
 
 postNewWikiDiscussionR :: Text -> Text -> Handler Html
 postNewWikiDiscussionR project_handle target = do
-    Entity user_id user <- requireAuth
+    user <- requireAuth
     (_, Entity _ WikiPage{..}) <- runYDB (pageInfo project_handle target)
 
     postNewComment
       Nothing
-      user_id
-      (userIsEstablished user)
+      user
       wikiPageDiscussion
       (makeProjectCommentActionPermissions project_handle) >>= \case
         Left comment_id -> redirect (WikiCommentR project_handle target comment_id)

@@ -415,15 +415,15 @@ postFlagComment user@(Entity user_id _) comment@(Entity comment_id _) comment_ha
 -- "mode" key - could either be a "post" (posts the comment and returns its id) or a "preview"
 -- (returns the comment tree and form, to wrap in a preview). Permission checking should occur
 -- *PRIOR TO* this function.
-postNewComment :: Maybe CommentId -> UserId -> Bool -> DiscussionId -> MakeCommentActionPermissions -> Handler (Either CommentId (Widget, Widget))
-postNewComment mparent_id user_id is_established discussion_id make_permissions = do
+postNewComment :: Maybe CommentId -> Entity User -> DiscussionId -> MakeCommentActionPermissions -> Handler (Either CommentId (Widget, Widget))
+postNewComment mparent_id (Entity user_id user) discussion_id make_permissions = do
     -- commentReplyForm is OK here (the alternative is commentNewTopicForm) because they're
     -- actually the same form with different titles.
     ((result, _), _) <- runFormPost commentReplyForm
     case result of
         FormSuccess contents -> lookupPostMode >>= \case
             Just PostMode -> do
-                if is_established
+                if userIsEstablished user
                     then do
                         comment_id <- runSDB (postApprovedCommentDB user_id mparent_id discussion_id contents)
                         alertSuccess "comment posted"
@@ -433,13 +433,14 @@ postNewComment mparent_id user_id is_established discussion_id make_permissions 
                         alertSuccess "comment submitted for moderation"
                         return (Left comment_id)
             _ -> do
-                Entity user_id user <- requireAuth
                 earlier_closures    <- earlierClosuresFromMaybeParentId mparent_id
                 depth               <- runDB (fetchCommentDepthFromMaybeParentIdDB mparent_id)
                 (form, _)           <- generateFormPost (commentForm (maybe "New Topic" (const "Reply") mparent_id) (Just contents))
                 now                 <- liftIO getCurrentTime
 
-                let (moderated_ts, moderated_by) = if userIsEstablished user then (Just now, Just user_id) else (Nothing, Nothing)
+                let (moderated_ts, moderated_by) = if userIsEstablished user
+                                                       then (Just now, Just user_id)
+                                                       else (Nothing, Nothing)
                     comment = Entity
                                 (Key $ PersistInt64 0)
                                 (Comment now moderated_ts moderated_by discussion_id mparent_id user_id contents depth)

@@ -3,8 +3,9 @@ module Model.Project
     , UpdateProject(..)
     , fetchAllProjectsDB
     , fetchProjectCommentsDB
-    , fetchProjectCommentsPendingBeforeDB
-    , fetchProjectCommentsPostedOnWikiPagesBeforeDB
+    , fetchProjectCommentsBeforeDB
+    , fetchProjectPendingCommentsBeforeDB
+    , fetchProjectWikiPageCommentsBeforeDB
     , fetchProjectDeletedPledgesBeforeDB
     , fetchProjectNewPledgesBeforeDB
     , fetchProjectModeratorsDB
@@ -254,9 +255,24 @@ getProjectWikiPages project_id =
     orderBy [asc (wp ^. WikiPageTarget)]
     return wp
 
+fetchProjectCommentsBeforeDB :: ProjectId -> Maybe UserId -> UTCTime -> Int64 -> DB [Entity Comment]
+fetchProjectCommentsBeforeDB project_id muser_id before lim =
+    select $
+    from $ \(ecp `InnerJoin` c) -> do
+    on_ (ecp ^. EventCommentPostedComment ==. c ^. CommentId)
+    where_ $
+        ecp ^. EventCommentPostedTs <=. val before &&.
+        exprCommentProjectPermissionFilter muser_id (val project_id) c &&.
+        c ^. CommentDiscussion ==. (sub_select $
+                                    from $ \p -> do
+                                    where_ (p ^. ProjectId ==. val project_id)
+                                    return (p ^. ProjectDiscussion))
+    limit lim
+    return c
+
 -- | Fetch all Comments posted on this Project's WikiPages before this time.
-fetchProjectCommentsPostedOnWikiPagesBeforeDB :: ProjectId -> Maybe UserId -> UTCTime -> Int64 -> DB [Entity Comment]
-fetchProjectCommentsPostedOnWikiPagesBeforeDB project_id muser_id before lim =
+fetchProjectWikiPageCommentsBeforeDB :: ProjectId -> Maybe UserId -> UTCTime -> Int64 -> DB [Entity Comment]
+fetchProjectWikiPageCommentsBeforeDB project_id muser_id before lim =
     select $
     from $ \(ecp `InnerJoin` c `InnerJoin` wp) -> do
     on_ (exprCommentOnWikiPage c wp)
@@ -269,8 +285,8 @@ fetchProjectCommentsPostedOnWikiPagesBeforeDB project_id muser_id before lim =
     return c
 
 -- | Fetch all pending Comments made on a Project before this time.
-fetchProjectCommentsPendingBeforeDB :: ProjectId -> Maybe UserId -> UTCTime -> Int64 -> DB [Entity Comment]
-fetchProjectCommentsPendingBeforeDB project_id muser_id before lim =
+fetchProjectPendingCommentsBeforeDB :: ProjectId -> Maybe UserId -> UTCTime -> Int64 -> DB [Entity Comment]
+fetchProjectPendingCommentsBeforeDB project_id muser_id before lim =
     select $
     from $ \(ecp `InnerJoin` c) -> do
     on_ (ecp ^. EventCommentPendingComment ==. c ^. CommentId)

@@ -13,7 +13,57 @@ import Widgets.Time
 
 import qualified Data.Map as M
 
-renderCommentPostedOnWikiPageEvent
+renderProjectCommentPostedEvent
+        :: CommentId
+        -> Comment
+        -> Project
+        -> Maybe UserId
+        -> Map CommentId [CommentClosure]
+        -> UserMap
+        -> ClosureMap
+        -> TicketMap
+        -> FlagMap
+        -> Widget
+renderProjectCommentPostedEvent
+        comment_id
+        comment
+        Project{..}
+        mviewer_id
+        earlier_closures_map
+        user_map
+        closure_map
+        ticket_map
+        flag_map = do
+    let comment_entity = Entity comment_id comment
+        comment_routes = projectCommentRoutes projectHandle
+
+    action_permissions <- handlerToWidget (makeProjectCommentActionPermissions projectHandle comment_entity)
+
+    let comment_widget =
+            commentWidget
+              comment_entity
+              mviewer_id
+              comment_routes
+              action_permissions
+              (M.findWithDefault [] comment_id earlier_closures_map)
+              (fromMaybe (error "renderProjectCommentPostedEvent: comment user missing from user map")
+                         (M.lookup (commentUser comment) user_map))
+              (M.lookup comment_id closure_map)
+              (M.lookup comment_id ticket_map)
+              (M.lookup comment_id flag_map)
+              False
+              mempty
+
+    [whamlet|
+        <div .event>
+            On
+            <a href=@{ProjectR projectHandle}>#{projectName}#
+            :
+
+            ^{comment_widget}
+    |]
+
+renderWikiPageCommentPostedEvent
         :: CommentId
         -> Comment
         -> Entity WikiPage
@@ -25,7 +75,7 @@ renderCommentPostedOnWikiPageEvent
         -> TicketMap
         -> FlagMap
         -> Widget
-renderCommentPostedOnWikiPageEvent
+renderWikiPageCommentPostedEvent
         comment_id
         comment
         (Entity _ wiki_page)
@@ -49,7 +99,7 @@ renderCommentPostedOnWikiPageEvent
               comment_routes
               action_permissions
               (M.findWithDefault [] comment_id earlier_closures_map)
-              (fromMaybe (error "renderCommentPostedOnWikiPageEvent: comment user missing from user map")
+              (fromMaybe (error "renderWikiPageCommentPostedEvent: comment user missing from user map")
                          (M.lookup (commentUser comment) user_map))
               (M.lookup comment_id closure_map)
               (M.lookup comment_id ticket_map)

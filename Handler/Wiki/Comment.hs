@@ -314,13 +314,12 @@ getReplyWikiCommentR project_handle target comment_id = do
 
 postReplyWikiCommentR :: Text -> Text -> CommentId -> Handler Html
 postReplyWikiCommentR project_handle target parent_id = do
-    (Entity user_id user, _, Entity _ page, parent) <- checkCommentPageRequireAuth project_handle target parent_id
+    (user, _, Entity _ page, parent) <- checkCommentPageRequireAuth project_handle target parent_id
     checkWikiPageCommentActionPermission can_reply project_handle (Entity parent_id parent)
 
     postNewComment
       (Just parent_id)
-      user_id
-      (userIsEstablished user)
+      user
       (wikiPageDiscussion page)
       (makeProjectCommentActionPermissions project_handle) >>= \case
         Left _ -> redirect (WikiCommentR project_handle target parent_id)
