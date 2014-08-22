@@ -96,7 +96,10 @@ checkComment' muser_id project_handle comment_id = do
     case ecomment of
         Left CommentNotFound         -> notFound
         Left CommentPermissionDenied -> permissionDenied "You don't have permission to view this comment."
-        Right comment                -> return (project, comment)
+        Right comment                ->
+            if commentDiscussion comment /= projectDiscussion (entityVal project)
+                then notFound
+                else return (project, comment)
 
 checkProjectCommentActionPermission :: (CommentActionPermissions -> Bool) -> Text -> Entity Comment -> Handler ()
 checkProjectCommentActionPermission can_perform_action project_handle comment = do
@@ -628,25 +631,36 @@ postRetractProjectCommentR project_handle comment_id = do
         Just widget -> defaultLayout $(widgetFile "project_discussion_wrapper") -- Previewing closure.
 
 --------------------------------------------------------------------------------
--- tag passthroughs, for better looking URLs
+-- /c/#CommentId/tags
 
 getProjectCommentTagsR :: Text -> CommentId -> Handler Html
-getProjectCommentTagsR _ = getCommentTagsR
+getProjectCommentTagsR _ = getCommentTags
+
+--------------------------------------------------------------------------------
+-- /c/#CommentId/tag/#TagId
 
 getProjectCommentTagR :: Text -> CommentId -> TagId -> Handler Html
 getProjectCommentTagR _ = getCommentTagR
 
 postProjectCommentTagR :: Text -> CommentId -> TagId -> Handler Html
-postProjectCommentTagR _ = postCommentTagR
-
-postProjectCommentApplyTagR :: Text -> CommentId -> Handler Html
-postProjectCommentApplyTagR _ = postCommentApplyTagR
-
-postProjectCommentCreateTagR :: Text -> CommentId -> Handler Html
-postProjectCommentCreateTagR _ = postCommentCreateTagR
+postProjectCommentTagR project_handle comment_id tag_id = do
+    postCommentTag comment_id tag_id
+    redirect (ProjectCommentTagR project_handle comment_id tag_id)
 
 --------------------------------------------------------------------------------
--- /tag/new
+-- /c/#CommentId/tag/apply, /c/#CommentId/tag/create
+
+postProjectCommentApplyTagR, postProjectCommentCreateTagR:: Text -> CommentId -> Handler Html
+postProjectCommentApplyTagR  = applyOrCreate postCommentApplyTag
+postProjectCommentCreateTagR = applyOrCreate postCommentCreateTag
+
+applyOrCreate :: (CommentId -> Handler ()) -> Text -> CommentId -> Handler Html
+applyOrCreate action project_handle comment_id = do
+    action comment_id
+    redirect (ProjectCommentR project_handle comment_id)
+
+--------------------------------------------------------------------------------
+-- /c/#CommentId/tag/new
 
 getProjectCommentAddTagR :: Text -> CommentId -> Handler Html
 getProjectCommentAddTagR project_handle comment_id = do

@@ -101,14 +101,8 @@
 /p/#Text/w/#Text/new                          NewWikiR              GET POST
 /p/#Text/w/#Text/perm                         EditWikiPermissionsR  GET POST
 
--- Comment stuff (discussion-agnostic).
-
-/c/#CommentId             CommentDirectLinkR GET      DELETE
-
-/c/#CommentId/tags        CommentTagsR       GET
-/c/#CommentId/tag/#TagId  CommentTagR        GET POST
-/c/#CommentId/tag/!apply  CommentApplyTagR       POST
-/c/#CommentId/tag/!create CommentCreateTagR      POST
+/c/#CommentId            CommentDirectLinkR GET      DELETE
+/c/#CommentId/tag/#TagId CommentTagR        GET
 
 -- Devs only!
 

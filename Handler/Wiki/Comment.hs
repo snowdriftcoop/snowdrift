@@ -52,7 +52,10 @@ checkCommentPage' muser_id project_handle target comment_id = do
     case ecomment of
         Left CommentNotFound         -> notFound
         Left CommentPermissionDenied -> permissionDenied "You don't have permission to view this comment."
-        Right comment                -> return (project, page, comment)
+        Right comment                ->
+            if commentDiscussion comment /= wikiPageDiscussion (entityVal page)
+                then notFound
+                else return (project, page, comment)
 
 checkWikiPageCommentActionPermission
         :: (CommentActionPermissions -> Bool)
@@ -380,22 +383,33 @@ postRetractWikiCommentR project_handle target comment_id = do
         Just widget -> defaultLayout $(widgetFile "wiki_discussion_wrapper") -- Previewing closure.
 
 --------------------------------------------------------------------------------
--- tag passthroughs, for better looking URLs
+-- /tags
 
 getWikiCommentTagsR :: Text -> Text -> CommentId -> Handler Html
-getWikiCommentTagsR _ _ = getCommentTagsR
+getWikiCommentTagsR _ _ = getCommentTags
+
+--------------------------------------------------------------------------------
+-- /tag/#TagId
 
 getWikiCommentTagR :: Text -> Text -> CommentId -> TagId -> Handler Html
 getWikiCommentTagR _ _ = getCommentTagR
 
 postWikiCommentTagR :: Text -> Text -> CommentId -> TagId -> Handler Html
-postWikiCommentTagR _ _ = postCommentTagR
+postWikiCommentTagR project_handle target comment_id tag_id = do
+    postCommentTag comment_id tag_id
+    redirect (WikiCommentTagR project_handle target comment_id tag_id)
 
-postWikiCommentApplyTagR :: Text -> Text -> CommentId -> Handler Html
-postWikiCommentApplyTagR  _ _ = postCommentApplyTagR
+--------------------------------------------------------------------------------
+-- /tag/apply, /tag/create
 
-postWikiCommentCreateTagR :: Text -> Text -> CommentId -> Handler Html
-postWikiCommentCreateTagR _ _ = postCommentCreateTagR
+postWikiCommentApplyTagR, postWikiCommentCreateTagR :: Text -> Text -> CommentId -> Handler Html
+postWikiCommentApplyTagR  = applyOrCreate postCommentApplyTag
+postWikiCommentCreateTagR = applyOrCreate postCommentCreateTag
+
+applyOrCreate :: (CommentId -> Handler ()) -> Text -> Text -> CommentId -> Handler Html
+applyOrCreate action project_handle target comment_id = do
+    action comment_id
+    redirect (WikiCommentR project_handle target comment_id)
 
 --------------------------------------------------------------------------------
 -- /tag/new

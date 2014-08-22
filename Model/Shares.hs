@@ -39,14 +39,14 @@ pledgeField project_id = Field
             case mv of
                 Nothing -> return $ Left $ SomeMessage MsgValueRequired
                 Just v -> return $ parseValue v
-            
+
         | otherwise = return $ parseValue x
 
-    parseValue v = 
+    parseValue v =
         case T.decimal v of
             Right (a, "") -> Right $ Just $ SharesPurchaseOrder a
             _ -> Left $ SomeMessage $ MsgInvalidInteger v
-            
+
     view ident name attrs v req = do
         now <- liftIO getCurrentTime
         list <- handlerToWidget get_list
@@ -65,7 +65,7 @@ pledgeField project_id = Field
                 $forall amount <- list
                     <input id="#{ident}-#{amount}" .radio-inline name="#{name}" *{attrs} type="radio" :req:required value="#{amount}" :amount == value:checked>
                     #{amount}
-                    
+
                 <div>
                     <input id="#{ident}-other" .radio-inline name="#{name}" *{attrs} type="radio" :req:required value="#{name}-other" :not hasValue:checked>other:&nbsp;
                     <input id="#{ident}-other-val" .form-inline style="width : 2.5em; text-align : center" name="#{name}-other" *{attrs} type="text" value="#{otherValue}">
@@ -115,7 +115,7 @@ pledgeField project_id = Field
 
 
 
-    
+
 
 pledgeForm :: ProjectId -> Form SharesPurchaseOrder
 pledgeForm project_id extra = do
@@ -128,7 +128,7 @@ pledgeForm project_id extra = do
                     &&. pledge ^. PledgeUser ==. val user_id
                 return $ pledge ^. PledgeShares
 
-    
+
     (result, pledge_view) <- mreq (pledgeField project_id) "" (if shares > 0 then Just (SharesPurchaseOrder shares) else Nothing)
 
     let view = [whamlet|

@@ -6,13 +6,10 @@ module Handler.Comment
     ( deleteCommentDirectLinkR
     , getCommentDirectLinkR
     , getCommentTagR
-    , getCommentTagsR
-    , postCommentApplyTagR
-    , postCommentCreateTagR
-    , postCommentTagR
     -- Utils
     , MakeCommentActionWidget
     , earlierClosuresFromMaybeParentId
+    , getCommentTags
     , getMaxDepth
     , getMaxDepthDefault
     , getMaxDepthNoLimit
@@ -27,6 +24,9 @@ module Handler.Comment
     , makeReplyCommentWidget
     , makeRethreadCommentWidget
     , makeRetractCommentWidget
+    , postCommentTag
+    , postCommentApplyTag
+    , postCommentCreateTag
     , postApproveComment
     , postCloseComment
     , postDeleteComment
@@ -240,7 +240,7 @@ getProjectCommentAddTag comment_id project_id user_id = do
         return (tag_map, tags, project_tags, other_tags)
 
     let filter_tags = filter (\(Entity t _) -> not $ M.member t tag_map)
-    (apply_form, _) <- generateFormPost $ newCommentTagForm (filter_tags project_tags) (filter_tags other_tags)
+    (apply_form, _)  <- generateFormPost $ newCommentTagForm (filter_tags project_tags) (filter_tags other_tags)
     (create_form, _) <- generateFormPost $ createCommentTagForm
 
     defaultLayout $(widgetFile "new_comment_tag")
@@ -555,6 +555,78 @@ postRethreadComment user_id comment_id comment = do
                 _ -> error "no preview for rethreads yet" -- TODO(david)
         _ -> error "Error when submitting form."
 
+getCommentTags :: CommentId -> Handler Html
+getCommentTags comment_id = do
+    muser_id <- maybeAuthId
+    tags <- runDB $ M.findWithDefault [] comment_id <$> (fetchCommentCommentTagsDB comment_id >>= buildAnnotatedCommentTagsDB muser_id)
+    defaultLayout $(widgetFile "tags")
+
+postCommentTag :: CommentId -> TagId -> Handler ()
+postCommentTag comment_id tag_id = do
+    user_id <- requireAuthId
+    direction <- lookupPostParam "direction"
+
+    let delta = case T.unpack <$> direction of
+            Just "+" -> 1
+            Just "-" -> -1
+            Just "\215" -> -1
+            Nothing -> error "direction unset"
+            Just str -> error $ "unrecognized direction: " ++ str
+
+    runDB $ do
+        maybe_comment_tag_entity <- getBy (UniqueCommentTag comment_id tag_id user_id)
+        case maybe_comment_tag_entity of
+            Nothing -> insert_ (CommentTag comment_id tag_id user_id delta)
+            Just (Entity comment_tag_id comment_tag) -> case commentTagCount comment_tag + delta of
+                0 -> delete $ from $ \ ct -> where_ $ ct ^. CommentTagId ==. val comment_tag_id
+                x -> void $ update $ \ ct -> do
+                    set ct [ CommentTagCount =. val x ]
+                    where_ $ ct ^. CommentTagId ==. val comment_tag_id
+
+postCommentApplyTag :: CommentId -> Handler ()
+postCommentApplyTag comment_id = do
+    Entity user_id user <- requireAuth
+
+    unless (userCanAddTag user) $
+        permissionDenied "You must be an established user to add tags"
+
+    ((result_apply, _), _) <- runFormPost (newCommentTagForm [] [])
+    case result_apply of
+        FormSuccess (mproject_tag_ids, mother_tag_ids) -> do
+            let project_tag_ids = fromMaybe [] mproject_tag_ids
+                other_tag_ids   = fromMaybe [] mother_tag_ids
+
+            ok <- runDB $ do
+                valid_tags <- fetchTagsInDB (project_tag_ids <> other_tag_ids)
+                if null valid_tags
+                    then return False
+                    else do
+                        void (insertMany $ fmap (\(Entity tag_id _) -> CommentTag comment_id tag_id user_id 1) valid_tags)
+                        return True
+            unless ok (permissionDenied "Error: Invalid tag ID.")
+        FormMissing -> error "form missing"
+        FormFailure errs -> error $ T.unpack $ "Form failed: " <> T.intercalate "; " errs
+
+postCommentCreateTag :: CommentId -> Handler ()
+postCommentCreateTag comment_id = do
+    Entity user_id user <- requireAuth
+
+    unless (userCanAddTag user) $
+        permissionDenied "You must be an established user to add tags"
+
+    ((result_create, _), _) <- runFormPost $ createCommentTagForm
+    case result_create of
+        FormSuccess tag_name -> do
+            tag_exists <- runDB $ getBy (UniqueTag tag_name) >>= \case
+                Nothing -> do
+                    tag_id <- insert $ Tag tag_name
+                    insert_ (CommentTag comment_id tag_id user_id 1)
+                    return False
+                Just _ -> return True
+            when tag_exists (alertDanger "That tag already exists.")
+        FormMissing -> error "form missing"
+        FormFailure errs -> error $ T.unpack $ "Form failed: " <> T.intercalate "; " errs
+
 --------------------------------------------------------------------------------
 -- /
 
@@ -580,16 +652,7 @@ deleteCommentDirectLinkR comment_id = do
     unless ok (permissionDenied "You don't have permission to delete that comment.")
 
 --------------------------------------------------------------------------------
--- /tags
-
-getCommentTagsR :: CommentId -> Handler Html
-getCommentTagsR comment_id = do
-    muser_id <- maybeAuthId
-    tags <- runDB $ M.findWithDefault [] comment_id <$> (fetchCommentCommentTagsDB comment_id >>= buildAnnotatedCommentTagsDB muser_id)
-    defaultLayout $(widgetFile "tags")
-
---------------------------------------------------------------------------------
--- /tag/#TagId
+-- /c/
 
 getCommentTagR :: CommentId -> TagId -> Handler Html
 getCommentTagR comment_id tag_id = do
@@ -604,79 +667,3 @@ getCommentTagR comment_id tag_id = do
         let tag_name = tagName $ entityVal tag
         defaultLayout $(widgetFile "tag")
 
-postCommentTagR :: CommentId -> TagId -> Handler Html
-postCommentTagR comment_id tag_id = do
-    user_id <- requireAuthId
-    direction <- lookupPostParam "direction"
-
-    let delta = case T.unpack <$> direction of
-            Just "+" -> 1
-            Just "-" -> -1
-            Just "\215" -> -1
-            Nothing -> error "direction unset"
-            Just str -> error $ "unrecognized direction: " ++ str
-
-    runDB $ do
-        maybe_comment_tag_entity <- getBy (UniqueCommentTag comment_id tag_id user_id)
-        case maybe_comment_tag_entity of
-            Nothing -> insert_ (CommentTag comment_id tag_id user_id delta)
-            Just (Entity comment_tag_id comment_tag) -> case commentTagCount comment_tag + delta of
-                0 -> delete $ from $ \ ct -> where_ $ ct ^. CommentTagId ==. val comment_tag_id
-                x -> void $ update $ \ ct -> do
-                    set ct [ CommentTagCount =. val x ]
-                    where_ $ ct ^. CommentTagId ==. val comment_tag_id
-
-    setUltDestReferer
-    redirectUltDest (CommentTagR comment_id tag_id)
-
---------------------------------------------------------------------------------
--- /tag/apply
-
-postCommentApplyTagR :: CommentId -> Handler Html
-postCommentApplyTagR comment_id = do
-    Entity user_id user <- requireAuth
-
-    unless (userCanAddTag user) $
-        permissionDenied "You must be an established user to add tags"
-
-    ((result_apply, _), _) <- runFormPost (newCommentTagForm [] [])
-    case result_apply of
-        FormSuccess (mproject_tag_ids, mother_tag_ids) -> do
-            let project_tag_ids = fromMaybe [] mproject_tag_ids
-                other_tag_ids   = fromMaybe [] mother_tag_ids
-
-            ok <- runDB $ do
-                valid_tags <- fetchTagsInDB (project_tag_ids <> other_tag_ids)
-                if (null valid_tags)
-                    then return False
-                    else do
-                        void (insertMany $ fmap (\(Entity tag_id _) -> CommentTag comment_id tag_id user_id 1) valid_tags)
-                        return True
-            unless ok (permissionDenied "Error: Invalid tag ID.")
-            redirectUltDest (CommentDirectLinkR comment_id)
-        FormMissing -> error "form missing"
-        FormFailure errs -> error $ T.unpack $ "Form failed: " <> T.intercalate "; " errs
-
---------------------------------------------------------------------------------
--- /tag/create
-
-postCommentCreateTagR :: CommentId -> Handler Html
-postCommentCreateTagR comment_id = do
-    Entity user_id user <- requireAuth
-
-    unless (userCanAddTag user) $
-        permissionDenied "You must be an established user to add tags"
-
-    ((result_create, _), _) <- runFormPost $ createCommentTagForm
-    case result_create of
-        FormSuccess tag_name -> do
-            tag_exists <- runDB $ getBy (UniqueTag tag_name) >>= \case
-                Nothing -> do
-                    tag_id <- insert $ Tag tag_name
-                    insert_ (CommentTag comment_id tag_id user_id 1)
-                    return False
-                Just _ -> return True
-            when tag_exists (alertDanger "That tag already exists.")
-            redirectUltDest (CommentDirectLinkR comment_id)
-        FormMissing -> error "form missing"
-        FormFailure errs -> error $ T.unpack $ "Form failed: " <> T.intercalate "; " errs
