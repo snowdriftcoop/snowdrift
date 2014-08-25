@@ -87,7 +87,7 @@ editUserForm muser = renderBootstrap3 $
         <*> aopt' textField               "IRC nick @freenode.net)"                        (userIrcNick                   <$> muser)
         <*> aopt' snowdriftMarkdownField  "Blurb (used on listings of many people)"        (userBlurb                     <$> muser)
         <*> aopt' snowdriftMarkdownField  "Personal Statement (visible only on this page)" (userStatement                 <$> muser)
-        <*> error "TODO: message preferences"
+        <*> error "TODO: notification preferences"
 
 -- | Form to mark a user as eligible for establishment. The user is fully established
 -- when s/he accepts the honor pledge.
@@ -102,7 +102,7 @@ previewUserForm User{..} = renderBootstrap3 $
         <*> aopt hiddenField "" (Just userIrcNick)
         <*> hiddenMarkdown userBlurb
         <*> hiddenMarkdown userStatement
-        <*> error "TODO: message preferences"
+        <*> error "TODO: notification preferences"
 
 -- | Render a User profile, including
 renderUser :: Maybe UserId -> UserId -> User -> Map (Entity Project) (Set Role) -> Widget
