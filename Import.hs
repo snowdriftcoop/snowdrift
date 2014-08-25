@@ -235,6 +235,9 @@ getByErr message = runYDB . fmap fromJustError . getBy
         fromJustError :: Maybe a -> a
         fromJustError = fromMaybe (error message)
 
+lookupErr :: Ord k => String -> k -> Map k a -> a
+lookupErr = M.findWithDefault . error
+
 class WrappedValues a where
     type Unwrapped a
     unwrapValues :: a -> Unwrapped a

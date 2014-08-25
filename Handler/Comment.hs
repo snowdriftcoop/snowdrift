@@ -129,11 +129,10 @@ makeCommentForestWidget
                     earlier_closures = M.findWithDefault [] root_id earlier_closures_map
 
                 commentTreeWidget
-                    form_under_root_comment
                     comment_tree
                     (entityKey <$> mviewer)
                     commentHandlerRoutes
-                    commentHandlerMakeActionPermissions
+                    commentHandlerMakeActionPermissionsMap
                     (mod_earlier_closures earlier_closures)
                     (mod_user_map         user_map_with_viewer)
                     (mod_closure_map      closure_map)
@@ -142,6 +141,7 @@ makeCommentForestWidget
                     is_preview
                     max_depth
                     0
+                    form_under_root_comment
 
     return (comment_forest_widget, comment_forest)
 
@@ -175,14 +175,17 @@ makeCommentActionWidget :: (CommentActionPermissions -> Bool) -> Widget -> MakeC
 makeCommentActionWidget
         can_perform_action
         form_widget
-        comment
+        comment@(Entity comment_id _)
         user
         handler_info
         mods
         get_max_depth
         is_preview = do
-    ok <- can_perform_action <$> (commentHandlerMakeActionPermissions handler_info) comment
-    unless ok (permissionDenied "You don't have permission to perform this action.")
+    action_permissions <-
+        lookupErr "makeCommentActionWidget: comment id not found in map" comment_id
+          <$> commentHandlerMakeActionPermissionsMap handler_info [comment]
+    unless (can_perform_action action_permissions)
+           (permissionDenied "You don't have permission to perform this action.")
 
     makeCommentTreeWidget
         handler_info
@@ -409,8 +412,8 @@ postFlagComment user@(Entity user_id _) comment@(Entity comment_id _) comment_ha
 -- "mode" key - could either be a "post" (posts the comment and returns its id) or a "preview"
 -- (returns the comment tree and form, to wrap in a preview). Permission checking should occur
 -- *PRIOR TO* this function.
-postNewComment :: Maybe CommentId -> Entity User -> DiscussionId -> MakeCommentActionPermissions -> Handler (Either CommentId (Widget, Widget))
-postNewComment mparent_id (Entity user_id user) discussion_id make_permissions = do
+postNewComment :: Maybe CommentId -> Entity User -> DiscussionId -> MakeActionPermissionsMap -> Handler (Either CommentId (Widget, Widget))
+postNewComment mparent_id (Entity user_id user) discussion_id make_permissions_map = do
     -- commentReplyForm is OK here (the alternative is commentNewTopicForm) because they're
     -- actually the same form with different titles.
     ((result, _), _) <- runFormPost commentReplyForm
@@ -443,11 +446,10 @@ postNewComment mparent_id (Entity user_id user) discussion_id make_permissions =
 
                 let comment_tree =
                         commentTreeWidget
-                          mempty
                           (Tree.singleton comment)
                           (Just user_id)
                           dummyCommentRoutes -- 'True' below, so routes aren't used.
-                          make_permissions
+                          make_permissions_map
                           earlier_closures
                           (M.singleton user_id user)
                           mempty -- closure map
@@ -456,6 +458,7 @@ postNewComment mparent_id (Entity user_id user) discussion_id make_permissions =
                           True
                           max_depth
                           0
+                          mempty
 
                 return (Right (comment_tree, form))
         FormMissing -> error "Form missing."

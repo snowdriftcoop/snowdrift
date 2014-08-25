@@ -373,7 +373,7 @@ userReadVolunteerApplicationsDB user_id = liftIO getCurrentTime >>= \now -> do
 -- | Is this User allowed to delete this Comment?
 -- If it has any replies at all - no.
 userCanDeleteCommentDB :: UserId -> Entity Comment -> DB Bool
-userCanDeleteCommentDB user_id (Entity comment_id comment) = do
+userCanDeleteCommentDB user_id (Entity comment_id comment) =
     if commentUser comment /= user_id
         then return False
         else do

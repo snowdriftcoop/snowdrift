@@ -43,6 +43,7 @@ module Model.Comment
     , fetchCommentRethreadDB
     , fetchCommentTagsDB
     , fetchCommentTagCommentTagsDB
+    , fetchCommentsWithChildrenInDB
     , filterCommentsDB
     , makeClosureMapDB
     , makeFlagMapDB
@@ -520,6 +521,15 @@ fetchCommentsDescendantsDB comment_ids has_permission =
     orderBy [asc (c ^. CommentParent), asc (c ^. CommentCreatedTs)]
     return c
 
+-- | Given a list of candidate CommentIds, return only those that have any
+-- (possibly not visible) children.
+fetchCommentsWithChildrenInDB :: [CommentId] -> DB [CommentId]
+fetchCommentsWithChildrenInDB comment_ids = fmap (map unValue) $
+    selectDistinct $
+    from $ \ca -> do
+    where_ (ca ^. CommentAncestorAncestor `in_` valList comment_ids)
+    return (ca ^. CommentAncestorAncestor)
+
 -- | Get the "true" target of this CommentId (which may be itself, if not rethreaded -
 -- otherwise, ride the rethread train to the end)
 fetchCommentDestinationDB :: CommentId -> YDB CommentId
@@ -553,7 +563,7 @@ makeClosureMapDB comment_ids = fmap (M.fromList . map ((commentClosureComment &&
     where_ (c ^. CommentClosureComment `in_` valList comment_ids)
     return c
 
--- Given a collection of CommentId, make a map from CommentId to Entity Ticket. Comments that
+-- | Given a collection of CommentId, make a map from CommentId to Entity Ticket. Comments that
 -- are not tickets will simply not be in the map.
 makeTicketMapDB :: (IsList c, CommentId ~ Item c) => c -> DB TicketMap
 makeTicketMapDB comment_ids = fmap (M.fromList . map ((ticketComment . entityVal) &&& id)) $
@@ -562,6 +572,8 @@ makeTicketMapDB comment_ids = fmap (M.fromList . map ((ticketComment . entityVal
     where_ (t ^. TicketComment `in_` valList comment_ids)
     return t
 
+-- | Given a collection of CommentId, make a FlagMap. Comments that are not flagged
+-- will simply not be in the map.
 makeFlagMapDB :: (IsList c, CommentId ~ Item c) => c -> DB FlagMap
 makeFlagMapDB comment_ids = mkFlagMap <$> getCommentFlaggings
   where

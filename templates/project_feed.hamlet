@@ -14,10 +14,10 @@ $forall event <- events
             $#       FECommentPostedOnWikiPage)
 
             $if commentDiscussion comment == projectDiscussion project
-                ^{renderProjectCommentPostedEvent comment_id comment project muser_id earlier_closures_map user_map closure_map ticket_map flag_map}
+                ^{renderProjectCommentPostedEvent comment_id comment project muser_id action_permissions_map earlier_closures_map user_map closure_map ticket_map flag_map}
             $else
                 $maybe wiki_page <- M.lookup (commentDiscussion comment) discussion_wiki_page_map
-                    ^{renderWikiPageCommentPostedEvent comment_id comment wiki_page project_handle muser_id earlier_closures_map user_map closure_map ticket_map flag_map}
+                    ^{renderWikiPageCommentPostedEvent comment_id comment wiki_page project_handle muser_id action_permissions_map earlier_closures_map user_map closure_map ticket_map flag_map}
 
                 $# This should never happen.
 

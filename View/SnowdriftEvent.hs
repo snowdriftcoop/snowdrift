@@ -18,6 +18,7 @@ renderProjectCommentPostedEvent
         -> Comment
         -> Project
         -> Maybe UserId
+        -> ActionPermissionsMap
         -> Map CommentId [CommentClosure]
         -> UserMap
         -> ClosureMap
@@ -29,25 +30,25 @@ renderProjectCommentPostedEvent
         comment
         Project{..}
         mviewer_id
+        action_permissions_map
         earlier_closures_map
         user_map
         closure_map
         ticket_map
         flag_map = do
-    let comment_entity = Entity comment_id comment
-        comment_routes = projectCommentRoutes projectHandle
-
-    action_permissions <- handlerToWidget (makeProjectCommentActionPermissions projectHandle comment_entity)
 
     let comment_widget =
             commentWidget
-              comment_entity
+              (Entity comment_id comment)
               mviewer_id
-              comment_routes
-              action_permissions
+              (projectCommentRoutes projectHandle)
+              (lookupErr "renderProjectCommentPostedEvent: comment id missing from permissions map"
+                         comment_id
+                         action_permissions_map)
               (M.findWithDefault [] comment_id earlier_closures_map)
-              (fromMaybe (error "renderProjectCommentPostedEvent: comment user missing from user map")
-                         (M.lookup (commentUser comment) user_map))
+              (lookupErr "renderProjectCommentPostedEvent: comment user missing from user map"
+                         (commentUser comment)
+                         user_map)
               (M.lookup comment_id closure_map)
               (M.lookup comment_id ticket_map)
               (M.lookup comment_id flag_map)
@@ -69,6 +70,7 @@ renderWikiPageCommentPostedEvent
         -> Entity WikiPage
         -> Text
         -> Maybe UserId
+        -> ActionPermissionsMap
         -> Map CommentId [CommentClosure]
         -> UserMap
         -> ClosureMap
@@ -81,32 +83,31 @@ renderWikiPageCommentPostedEvent
         (Entity _ wiki_page)
         project_handle
         mviewer_id
+        action_permissions_map
         earlier_closures_map
         user_map
         closure_map
         ticket_map
         flag_map = do
-    let comment_entity = Entity comment_id comment
-        target = wikiPageTarget wiki_page
-        comment_routes = wikiPageCommentRoutes project_handle target
 
-    action_permissions <- handlerToWidget (makeProjectCommentActionPermissions project_handle comment_entity)
-
-    let comment_widget =
+    let target = wikiPageTarget wiki_page
+        comment_widget =
             commentWidget
-              comment_entity
+              (Entity comment_id comment)
               mviewer_id
-              comment_routes
-              action_permissions
+              (wikiPageCommentRoutes project_handle target)
+              (lookupErr "renderWikiPageCommentPostedEvent: comment id missing from permissions map"
+                         comment_id
+                         action_permissions_map)
               (M.findWithDefault [] comment_id earlier_closures_map)
-              (fromMaybe (error "renderWikiPageCommentPostedEvent: comment user missing from user map")
-                         (M.lookup (commentUser comment) user_map))
+              (lookupErr "renderWikiPageCommentPostedEvent: comment user missing from user map"
+                         (commentUser comment)
+                         user_map)
               (M.lookup comment_id closure_map)
               (M.lookup comment_id ticket_map)
               (M.lookup comment_id flag_map)
               False
               mempty
-
 
     [whamlet|
         <div .event>
@@ -134,8 +135,7 @@ renderCommentPostedOnUnknownDiscussionEvent comment_id comment =
 
 renderCommentPendingEvent :: CommentId -> Comment -> UserMap -> Widget
 renderCommentPendingEvent comment_id comment user_map = do
-    let poster = fromMaybe (error "renderCommentPendingEvent: poster not found in user map")
-                           (M.lookup (commentUser comment) user_map)
+    let poster = lookupErr "renderCommentPendingEvent: poster not found in user map" (commentUser comment) user_map
     [whamlet|
         <div .event>
             ^{renderTime $ commentCreatedTs comment}
@@ -169,10 +169,8 @@ renderWikiPageEvent project_handle _ wiki_page user_map = do
 
 renderWikiEditEvent :: Text -> WikiEditId -> WikiEdit -> Map WikiPageId WikiPage -> UserMap -> Widget
 renderWikiEditEvent project_handle edit_id wiki_edit wiki_page_map user_map = do
-    let editor = fromMaybe (error "renderWikiEditEvent: wiki editor not found in user map")
-                           (M.lookup (wikiEditUser wiki_edit) user_map)
-        wiki_page = fromMaybe (error "renderWikiEditEvent: wiki page not found in wiki page map")
-                              (M.lookup (wikiEditPage wiki_edit) wiki_page_map)
+    let editor    = lookupErr "renderWikiEditEvent: wiki editor not found in user map"    (wikiEditUser wiki_edit) user_map
+        wiki_page = lookupErr "renderWikiEditEvent: wiki page not found in wiki page map" (wikiEditPage wiki_edit) wiki_page_map
     [whamlet|
         <div .event>
             ^{renderTime $ wikiEditTs wiki_edit}
@@ -189,8 +187,7 @@ renderWikiEditEvent project_handle edit_id wiki_edit wiki_page_map user_map = do
 
 renderNewPledgeEvent :: SharesPledgedId -> SharesPledged -> UserMap -> Widget
 renderNewPledgeEvent _ SharesPledged{..} user_map = do
-    let pledger = fromMaybe (error "renderNewPledgeEvent: pledger not found in user map")
-                            (M.lookup sharesPledgedUser user_map)
+    let pledger = lookupErr "renderNewPledgeEvent: pledger not found in user map" sharesPledgedUser user_map
     [whamlet|
         <div .event>
             ^{renderTime sharesPledgedTs}
@@ -200,8 +197,7 @@ renderNewPledgeEvent _ SharesPledged{..} user_map = do
 
 renderUpdatedPledgeEvent :: Int64 -> SharesPledgedId -> SharesPledged -> UserMap -> Widget
 renderUpdatedPledgeEvent old_shares _ SharesPledged{..} user_map = do
-    let pledger = fromMaybe (error "renderUpdatedPledgeEvent: pledger not found in user map")
-                            (M.lookup sharesPledgedUser user_map)
+    let pledger = lookupErr "renderUpdatedPledgeEvent: pledger not found in user map" sharesPledgedUser user_map
         (verb, punc) = if old_shares < sharesPledgedShares
                            then ("increased", "!")
                            else ("decreased", ".") :: (Text, Text)
@@ -214,8 +210,7 @@ renderUpdatedPledgeEvent old_shares _ SharesPledged{..} user_map = do
 
 renderDeletedPledgeEvent :: UTCTime -> UserId -> Int64 -> UserMap -> Widget
 renderDeletedPledgeEvent ts user_id shares user_map = do
-    let pledger = fromMaybe (error "renderDeletedPledgeEvent: pledger not found in user map")
-                            (M.lookup user_id user_map)
+    let pledger = lookupErr "renderDeletedPledgeEvent: pledger not found in user map" user_id user_map
     [whamlet|
         <div .event>
             ^{renderTime ts}

@@ -101,10 +101,22 @@ checkComment' muser_id project_handle comment_id = do
                 then notFound
                 else return (project, comment)
 
-checkProjectCommentActionPermission :: (CommentActionPermissions -> Bool) -> Text -> Entity Comment -> Handler ()
-checkProjectCommentActionPermission can_perform_action project_handle comment = do
-    ok <- can_perform_action <$> makeProjectCommentActionPermissions project_handle comment
-    unless ok (permissionDenied "You don't have permission to perform this action.")
+checkProjectCommentActionPermission
+        :: (CommentActionPermissions -> Bool)
+        -> Entity User
+        -> Text
+        -> Entity Comment
+        -> Handler ()
+checkProjectCommentActionPermission
+        can_perform_action
+        user
+        project_handle
+        comment@(Entity comment_id _) = do
+    action_permissions <-
+        lookupErr "checkWikiPageCommentActionPermission: comment id not found in map" comment_id
+          <$> makeProjectCommentActionPermissionsMap (Just user) project_handle [comment]
+    unless (can_perform_action action_permissions)
+           (permissionDenied "You don't have permission to perform this action.")
 
 makeProjectCommentForestWidget
         :: Maybe (Entity User)
@@ -126,7 +138,7 @@ makeProjectCommentForestWidget
         is_preview
         widget_under_root_comment = do
     makeCommentForestWidget
-      (projectCommentHandlerInfo (entityKey <$> muser) project_id project_handle)
+      (projectCommentHandlerInfo muser project_id project_handle)
       comments
       muser
       comment_mods
@@ -156,11 +168,11 @@ makeProjectCommentActionWidget
         -> Handler MaxDepth
         -> Handler (Widget, Tree (Entity Comment))
 makeProjectCommentActionWidget make_comment_action_widget project_handle comment_id mods get_max_depth = do
-    (user@(Entity user_id _), Entity project_id _, comment) <- checkCommentRequireAuth project_handle comment_id
+    (user, Entity project_id _, comment) <- checkCommentRequireAuth project_handle comment_id
     make_comment_action_widget
       (Entity comment_id comment)
       user
-      (projectCommentHandlerInfo (Just user_id) project_id project_handle)
+      (projectCommentHandlerInfo (Just user) project_id project_handle)
       mods
       get_max_depth
       False
@@ -443,14 +455,14 @@ getCloseProjectCommentR project_handle comment_id = do
 
 postCloseProjectCommentR :: Text -> CommentId -> Handler Html
 postCloseProjectCommentR project_handle comment_id = do
-    (user@(Entity user_id _), (Entity project_id _), comment) <- checkCommentRequireAuth project_handle comment_id
-    checkProjectCommentActionPermission can_close project_handle (Entity comment_id comment)
+    (user, (Entity project_id _), comment) <- checkCommentRequireAuth project_handle comment_id
+    checkProjectCommentActionPermission can_close user project_handle (Entity comment_id comment)
 
     postCloseComment
       user
       comment_id
       comment
-      (projectCommentHandlerInfo (Just user_id) project_id project_handle)
+      (projectCommentHandlerInfo (Just user) project_id project_handle)
       >>= \case
         Nothing -> redirect (ProjectCommentR project_handle comment_id)
         Just (widget, form) -> defaultLayout $ previewWidget form "close" ($(widgetFile "project_discussion_wrapper"))
@@ -471,8 +483,8 @@ getDeleteProjectCommentR project_handle comment_id = do
 
 postDeleteProjectCommentR :: Text -> CommentId -> Handler Html
 postDeleteProjectCommentR project_handle comment_id = do
-    (_, _, comment) <- checkComment project_handle comment_id
-    checkProjectCommentActionPermission can_delete project_handle (Entity comment_id comment)
+    (user, _, comment) <- checkCommentRequireAuth project_handle comment_id
+    checkProjectCommentActionPermission can_delete user project_handle (Entity comment_id comment)
 
     was_deleted <- postDeleteComment comment_id
     if was_deleted
@@ -495,13 +507,13 @@ getEditProjectCommentR project_handle comment_id = do
 
 postEditProjectCommentR :: Text -> CommentId -> Handler Html
 postEditProjectCommentR project_handle comment_id = do
-    (user@(Entity user_id _), Entity project_id _, comment) <- checkCommentRequireAuth project_handle comment_id
-    checkProjectCommentActionPermission can_edit project_handle (Entity comment_id comment)
+    (user, Entity project_id _, comment) <- checkCommentRequireAuth project_handle comment_id
+    checkProjectCommentActionPermission can_edit user project_handle (Entity comment_id comment)
 
     postEditComment
       user
       (Entity comment_id comment)
-      (projectCommentHandlerInfo (Just user_id) project_id project_handle)
+      (projectCommentHandlerInfo (Just user) project_id project_handle)
       >>= \case
         Nothing -> redirect (ProjectCommentR project_handle comment_id)         -- Edit made.
         Just widget -> defaultLayout $(widgetFile "project_discussion_wrapper") -- Previewing edit.
@@ -522,13 +534,13 @@ getFlagProjectCommentR project_handle comment_id = do
 
 postFlagProjectCommentR :: Text -> CommentId -> Handler Html
 postFlagProjectCommentR project_handle comment_id = do
-    (user@(Entity user_id _), Entity project_id _, comment) <- checkCommentRequireAuth project_handle comment_id
-    checkProjectCommentActionPermission can_flag project_handle (Entity comment_id comment)
+    (user, Entity project_id _, comment) <- checkCommentRequireAuth project_handle comment_id
+    checkProjectCommentActionPermission can_flag user project_handle (Entity comment_id comment)
 
     postFlagComment
       user
       (Entity comment_id comment)
-      (projectCommentHandlerInfo (Just user_id) project_id project_handle)
+      (projectCommentHandlerInfo (Just user) project_id project_handle)
       >>= \case
         Nothing -> redirect (ProjectDiscussionR project_handle)
         Just widget -> defaultLayout $(widgetFile "project_discussion_wrapper")
@@ -549,8 +561,8 @@ getApproveProjectCommentR project_handle comment_id = do
 
 postApproveProjectCommentR :: Text -> CommentId -> Handler Html
 postApproveProjectCommentR project_handle comment_id = do
-    (Entity user_id _, _, comment) <- checkCommentRequireAuth project_handle comment_id
-    checkProjectCommentActionPermission can_approve project_handle (Entity comment_id comment)
+    (user@(Entity user_id _), _, comment) <- checkCommentRequireAuth project_handle comment_id
+    checkProjectCommentActionPermission can_approve user project_handle (Entity comment_id comment)
 
     postApproveComment user_id comment_id comment
     redirect (ProjectCommentR project_handle comment_id)
@@ -572,13 +584,13 @@ getReplyProjectCommentR project_handle parent_id = do
 postReplyProjectCommentR :: Text -> CommentId -> Handler Html
 postReplyProjectCommentR project_handle parent_id = do
     (user, Entity _ project, parent) <- checkCommentRequireAuth project_handle parent_id
-    checkProjectCommentActionPermission can_reply project_handle (Entity parent_id parent)
+    checkProjectCommentActionPermission can_reply user project_handle (Entity parent_id parent)
 
     postNewComment
       (Just parent_id)
       user
       (projectDiscussion project)
-      (makeProjectCommentActionPermissions project_handle) >>= \case
+      (makeProjectCommentActionPermissionsMap (Just user) project_handle) >>= \case
         Left _ -> redirect (ProjectCommentR project_handle parent_id)
         Right (widget, form) -> defaultLayout $ previewWidget form "post" ($(widgetFile "project_discussion_wrapper"))
 
@@ -598,8 +610,8 @@ getRethreadProjectCommentR project_handle comment_id = do
 
 postRethreadProjectCommentR :: Text -> CommentId -> Handler Html
 postRethreadProjectCommentR project_handle comment_id = do
-    (Entity user_id _, _, comment) <- checkCommentRequireAuth project_handle comment_id
-    checkProjectCommentActionPermission can_rethread project_handle (Entity comment_id comment)
+    (user@(Entity user_id _), _, comment) <- checkCommentRequireAuth project_handle comment_id
+    checkProjectCommentActionPermission can_rethread user project_handle (Entity comment_id comment)
     postRethreadComment user_id comment_id comment
 
 --------------------------------------------------------------------------------
@@ -618,14 +630,14 @@ getRetractProjectCommentR project_handle comment_id = do
 
 postRetractProjectCommentR :: Text -> CommentId -> Handler Html
 postRetractProjectCommentR project_handle comment_id = do
-    (user@(Entity user_id _), Entity project_id _, comment) <- checkCommentRequireAuth project_handle comment_id
-    checkProjectCommentActionPermission can_retract project_handle (Entity comment_id comment)
+    (user, Entity project_id _, comment) <- checkCommentRequireAuth project_handle comment_id
+    checkProjectCommentActionPermission can_retract user project_handle (Entity comment_id comment)
 
     postRetractComment
       user
       comment_id
       comment
-      (projectCommentHandlerInfo (Just user_id) project_id project_handle)
+      (projectCommentHandlerInfo (Just user) project_id project_handle)
       >>= \case
         Nothing -> redirect (ProjectCommentR project_handle comment_id)
         Just (widget, form) -> defaultLayout $ previewWidget form "retract" ($(widgetFile "project_discussion_wrapper"))
@@ -664,9 +676,8 @@ applyOrCreate action project_handle comment_id = do
 
 getProjectCommentAddTagR :: Text -> CommentId -> Handler Html
 getProjectCommentAddTagR project_handle comment_id = do
-    (Entity user_id _, Entity project_id _, comment) <- checkCommentRequireAuth project_handle comment_id
-    ok <- can_add_tag <$> makeProjectCommentActionPermissions project_handle (Entity comment_id comment)
-    unless ok (permissionDenied "You don't have permission to view this page.")
+    (user@(Entity user_id _), Entity project_id _, comment) <- checkCommentRequireAuth project_handle comment_id
+    checkProjectCommentActionPermission can_add_tag user project_handle (Entity comment_id comment)
     getProjectCommentAddTag comment_id project_id user_id
 
 --------------------------------------------------------------------------------
@@ -726,7 +737,7 @@ postNewProjectDiscussionR project_handle = do
       Nothing
       user
       projectDiscussion
-      (makeProjectCommentActionPermissions project_handle) >>= \case
+      (makeProjectCommentActionPermissionsMap (Just user) project_handle) >>= \case
         Left comment_id -> redirect (ProjectCommentR project_handle comment_id)
         Right (widget, form) -> defaultLayout $ previewWidget form "post" ($(widgetFile "project_discussion_wrapper"))
 
@@ -760,11 +771,17 @@ getProjectFeedR :: Text -> Handler Html
 getProjectFeedR project_handle = do
     let lim = 26 -- limit n from each table, then take (n-1)
 
-    muser_id <- maybeAuthId
+    muser <- maybeAuth
+    let muser_id = entityKey <$> muser
+
+
     before <- lookupGetUTCTimeDefaultNow "before"
-    (project, all_unsorted_events, discussion_wiki_page_map,
-      wiki_page_map, user_map, earlier_closures_map, closure_map,
-      ticket_map, flag_map) <- runYDB $ do
+
+    (project, comment_entities, wiki_pages, wiki_edit_entities,
+     new_pledges, updated_pledges, deleted_pledges,
+     discussion_wiki_page_map, wiki_page_map, user_map,
+     earlier_closures_map, closure_map, ticket_map, flag_map) <- runYDB $ do
+
         Entity project_id project <- getBy404 (UniqueProjectHandle project_handle)
 
         project_comments   <- fetchProjectCommentsBeforeDB         project_id muser_id before lim
@@ -806,20 +823,24 @@ getProjectFeedR project_handle = do
         ticket_map           <- makeTicketMapDB  comment_ids
         flag_map             <- makeFlagMapDB    comment_ids
 
-        let all_unsorted_events = mconcat
-              [ map (onEntity ECommentPosted)  comment_entities
-              , map (onEntity EWikiPage)       wiki_pages
-              , map (onEntity EWikiEdit)       wiki_edit_entities
-              , map (onEntity ENewPledge)      new_pledges
-              , map eup2se                     updated_pledges
-              , map edp2se                     deleted_pledges
-              ]
 
-        return (project, all_unsorted_events, discussion_wiki_page_map,
-          wiki_page_map, user_map, earlier_closures_map, closure_map,
-          ticket_map, flag_map)
+        return (project, comment_entities, wiki_pages, wiki_edit_entities,
+                new_pledges, updated_pledges, deleted_pledges,
+                discussion_wiki_page_map, wiki_page_map, user_map,
+                earlier_closures_map, closure_map, ticket_map, flag_map)
 
-    let (events, more_events) = splitAt (lim-1) (sortBy snowdriftEventNewestToOldest all_unsorted_events)
+    action_permissions_map <- makeProjectCommentActionPermissionsMap muser project_handle comment_entities
+
+    let all_unsorted_events = mconcat
+            [ map (onEntity ECommentPosted)  comment_entities
+            , map (onEntity EWikiPage)       wiki_pages
+            , map (onEntity EWikiEdit)       wiki_edit_entities
+            , map (onEntity ENewPledge)      new_pledges
+            , map eup2se                     updated_pledges
+            , map edp2se                     deleted_pledges
+            ]
+
+        (events, more_events) = splitAt (lim-1) (sortBy snowdriftEventNewestToOldest all_unsorted_events)
 
         -- For pagination: Nothing means no more pages, Just time means set the 'before'
         -- GET param to that time. Note that this means 'before' should be a <= relation,

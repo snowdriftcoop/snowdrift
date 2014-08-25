@@ -2,6 +2,7 @@ module View.Comment
     ( approveCommentFormWidget
     , closeCommentForm
     , closeCommentFormWidget
+    , commentForestWidget
     , commentForm
     , commentFormWidget
     , commentNewTopicForm
@@ -40,7 +41,8 @@ import Widgets.Time
 import qualified Data.List as L
 import qualified Data.Map  as M
 import qualified Data.Text as T
-import           Data.Tree
+import           Data.Tree (Forest, Tree(..))
+import qualified Data.Tree as Tree
 
 disabledCommentForm :: Form Markdown
 disabledCommentForm = renderBootstrap3 $ areq snowdriftMarkdownField ("Reply" { fsAttrs = [("disabled",""), ("class","form-control")] }) Nothing
@@ -156,7 +158,7 @@ orderingNewestFirst :: Tree (Entity Comment) -> Tree (Entity Comment) -> Orderin
 orderingNewestFirst = flip (compare `on` (timestamp . newest))
   where
     newest :: Tree (Entity Comment) -> Entity Comment
-    newest = L.maximumBy (compare `on` timestamp) . flatten
+    newest = L.maximumBy (compare `on` timestamp) . Tree.flatten
 
     timestamp :: Entity Comment -> UTCTime
     timestamp = commentCreatedTs . entityVal
@@ -175,46 +177,114 @@ expandCommentWidget num_replies new_max_depth = do
                 #{num_replies} more #{plural num_replies "reply" "replies"}
     |]
 
+-- | An entire comment forest.
+commentForestWidget
+        :: Forest (Entity Comment)
+        -> Maybe UserId             -- ^ Viewer.
+        -> CommentRoutes
+        -> MakeActionPermissionsMap
+        -> [CommentClosure]         -- ^ Earlier closures.
+        -> UserMap
+        -> ClosureMap
+        -> TicketMap
+        -> FlagMap
+        -> Bool                     -- ^ Is preview?
+        -> MaxDepth                 -- ^ Max depth.
+        -> Int                      -- ^ Depth.
+        -> Widget                   -- ^ Widget to display under each root comment.
+        -> Widget
+commentForestWidget
+        comment_forest
+        mviewer_id
+        comment_routes
+        make_action_permissions_map
+        earlier_closures
+        user_map
+        closure_map
+        ticket_map
+        flag_map
+        is_preview
+        max_depth
+        depth
+        widget_under_root_comment = do
+    action_permissions_map <- handlerToWidget (make_action_permissions_map (concatMap Tree.flatten comment_forest))
+    forM_ comment_forest $ \comment_tree ->
+        commentTreeWidget'
+          comment_tree
+          mviewer_id
+          comment_routes
+          action_permissions_map
+          earlier_closures
+          user_map
+          closure_map
+          ticket_map
+          flag_map
+          is_preview
+          max_depth
+          depth
+          widget_under_root_comment
+
 -- | An entire comment tree.
-commentTreeWidget :: Widget                       -- ^ Form to display under the root comment.
-                  -> Tree (Entity Comment)        -- ^ Comment tree.
-                  -> Maybe UserId                 -- ^ Viewer.
-                  -> CommentRoutes                -- ^ Comment routes.
-                  -> MakeCommentActionPermissions -- ^ Action permissions maker.
-                  -> [CommentClosure]             -- ^ Earlier closures.
-                  -> UserMap
-                  -> ClosureMap
-                  -> TicketMap
-                  -> FlagMap
-                  -> Bool                         -- ^ Is preview?
-                  -> MaxDepth                     -- ^ Max depth.
-                  -> Int                          -- ^ Depth.
-                  -> Widget
-commentTreeWidget form_under_root_comment
-                  (Node root_entity@(Entity root_id root) children)
-                  mviewer_id
-                  comment_routes
-                  make_action_permissions
-                  earlier_closures
-                  user_map
-                  closure_map
-                  ticket_map
-                  flag_map
-                  is_preview
-                  max_depth
-                  depth = do
+commentTreeWidget
+        :: Tree (Entity Comment)
+        -> Maybe UserId             -- ^ Viewer.
+        -> CommentRoutes
+        -> MakeActionPermissionsMap
+        -> [CommentClosure]         -- ^ Earlier closures.
+        -> UserMap
+        -> ClosureMap
+        -> TicketMap
+        -> FlagMap
+        -> Bool                     -- ^ Is preview?
+        -> MaxDepth
+        -> Int                      -- ^ Depth.
+        -> Widget                   -- ^ Form to display under the root comment.
+        -> Widget
+commentTreeWidget a b c d e f g h i j k l m = commentForestWidget [a] b c d e f g h i j k l m
+
+-- | Helper function for commentForestWidget/commentTreeWidget that takes an
+-- ActionPermissionsMap (as opposed to a MakeActionPermissionsMap). Unexported.
+commentTreeWidget'
+        :: Tree (Entity Comment)
+        -> Maybe UserId          -- ^ Viewer.
+        -> CommentRoutes
+        -> ActionPermissionsMap
+        -> [CommentClosure]      -- ^ Earlier closures.
+        -> UserMap
+        -> ClosureMap
+        -> TicketMap
+        -> FlagMap
+        -> Bool                  -- ^ Is preview?
+        -> MaxDepth
+        -> Int                   -- ^ Depth.
+        -> Widget                -- ^ Form to display under the root comment.
+        -> Widget
+commentTreeWidget'
+        (Node root_entity@(Entity root_id root) children)
+        mviewer_id
+        comment_routes
+        action_permissions_map
+        earlier_closures
+        user_map
+        closure_map
+        ticket_map
+        flag_map
+        is_preview
+        max_depth
+        depth
+        form_under_root_comment = do
+
     let num_children = length children
         inner_widget =
             form_under_root_comment <>
             if MaxDepth depth > max_depth && num_children > 0
                 then expandCommentWidget num_children (addMaxDepth max_depth 2) -- FIXME(mitchell): arbitrary '2' here
                 else forM_ children $ \child ->
-                         commentTreeWidget
-                           mempty
+                         commentTreeWidget'
                            child
                            mviewer_id
                            comment_routes
-                           make_action_permissions
+                           action_permissions_map
                            [] -- don't want to show earlier closures on *all* comments, just the first one.
                            user_map
                            closure_map
@@ -223,15 +293,15 @@ commentTreeWidget form_under_root_comment
                            is_preview
                            max_depth
                            (depth+1)
+                           mempty
 
-    action_permissions <- handlerToWidget (make_action_permissions root_entity)
     commentWidget
         root_entity
         mviewer_id
         comment_routes
-        action_permissions
+        (lookupErr "comment id missing from action permissions map" root_id action_permissions_map)
         earlier_closures
-        (fromMaybe (error "comment user missing from user map") (M.lookup (commentUser root) user_map))
+        (lookupErr "comment user missing from user map" (commentUser root) user_map)
         (M.lookup root_id closure_map)
         (M.lookup root_id ticket_map)
         (M.lookup root_id flag_map)
