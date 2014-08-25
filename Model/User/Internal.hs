@@ -14,5 +14,5 @@ data UserUpdate =
         , userUpdateIrcNick            :: Maybe Text
         , userUpdateBlurb              :: Maybe Markdown
         , userUpdateStatement          :: Maybe Markdown
-        , userUpdateNotificationPreferences :: [(NotificationType, NotificationDelivery)]
+--      , userUpdateNotificationPreferences :: [(NotificationType, NotificationDelivery)]
         }

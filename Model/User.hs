@@ -140,9 +140,10 @@ updateUserDB user_id UserUpdate{..} = do
     delete $
      from $ \ump -> do
      where_ (ump ^. UserId ==. val user_id)
-
-    let new_prefs = map (uncurry (UserNotificationPref user_id)) userUpdateNotificationPreferences
-    void (insertMany new_prefs)
+-- This stuff next two lines sets notification prefs, but not complete yet
+-- with UI etc:
+--  let new_prefs = map (uncurry (UserNotificationPref user_id)) userUpdateNotificationPreferences
+--  void (insertMany new_prefs)
 
 -- | Establish a user, given their eligible-timestamp and reason for
 -- eligibility. Mark all unmoderated comments of theirs as moderated.
