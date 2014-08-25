@@ -2,6 +2,7 @@ module Handler.User where
 
 import Import
 
+import           Handler.Utils
 import           Model.Role
 import           Model.Transaction
 import           Model.User
@@ -217,10 +218,12 @@ postUserR user_id = do
 
     case result of
         FormSuccess user_update -> do
-            mode <- lookupPostParam "mode"
-            let action :: Text = "update"
-            case mode of
-                Just "preview" -> do
+            lookupPostMode >>= \case
+                Just PostMode -> do
+                    runDB (updateUserDB user_id user_update)
+                    redirect (UserR user_id)
+
+                _ -> do
                     user <- runYDB $ get404 user_id
 
                     let updated_user = updateUserPreview user_update user
@@ -228,17 +231,8 @@ postUserR user_id = do
                     (form, _) <- generateFormPost $ editUserForm (Just updated_user)
 
                     defaultLayout $
-                        previewWidget form action $
+                        previewWidget form "update" $
                             renderUser (Just viewer_id) user_id updated_user mempty
-
-                Just x | x == action -> do
-                    runDB (updateUserDB user_id user_update)
-                    redirect (UserR user_id)
-
-                _ -> do
-                    addAlertEm "danger" "unknown mode" "Error: "
-                    redirect (UserR user_id)
-
         _ -> do
             alertDanger "Failed to update user."
             redirect (UserR user_id)
