@@ -1,2 +1,6 @@
+ALTER TABLE "comment" DROP CONSTRAINT "comment_moderated_by_fkey";
+ALTER TABLE "comment" DROP CONSTRAINT "comment_moderated_user_fkey";
 ALTER TABLE "comment" RENAME COLUMN "moderated_ts" TO "approved_ts";
 ALTER TABLE "comment" RENAME COLUMN "moderated_by" TO "approved_by";
+ALTER TABLE "comment" ADD CONSTRAINT "comment_approved_by_fkey";
+ALTER TABLE "comment" ADD CONSTRAINT "comment_approved_user_fkey";
