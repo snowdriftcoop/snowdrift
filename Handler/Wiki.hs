@@ -167,7 +167,7 @@ postWikiR project_handle target = do
                                     , "(this ticket was automatically generated)"
                                     ]
 
-                            comment_id <- lift $ insert =<< makeModeratedComment user_id (wikiPageDiscussion page) Nothing comment_body 0
+                            comment_id <- lift $ insert =<< makeApprovedComment user_id (wikiPageDiscussion page) Nothing comment_body 0
 
                             lift $ insert_ $ Ticket now now "edit conflict" comment_id
 

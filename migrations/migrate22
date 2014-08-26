@@ -1,0 +1,3 @@
+ALTER TABLE "comment" RENAME COLUMN "moderated_ts" TO "approved_ts";
+ALTER TABLE "comment" RENAME COLUMN "moderated_by" TO "approved_by";
+ALTER TABLE "comment" ADD CONSTRAINT "comment_approved_by_fkey" FOREIGN KEY("approved_by") REFERENCES "user"("id");

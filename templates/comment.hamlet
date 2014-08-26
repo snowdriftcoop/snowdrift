@@ -7,8 +7,8 @@
             <a href="@{UserR user_id}">
                 #{userDisplayName (Entity user_id user)}
         <div .comment-head>
-            $maybe moderated_ts <- commentModeratedTs comment
-                ^{renderTime moderated_ts}
+            $maybe approved_ts <- commentApprovedTs comment
+                ^{renderTime approved_ts}
             $nothing
                 ^{renderTime $ commentCreatedTs comment}
         <div .comment-head :is_preview:.preview>

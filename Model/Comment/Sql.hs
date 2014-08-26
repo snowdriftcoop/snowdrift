@@ -41,7 +41,7 @@ exprCommentApproved :: ExprCommentCond
 exprCommentApproved = not_ . exprCommentUnapproved
 
 exprCommentUnapproved :: ExprCommentCond
-exprCommentUnapproved c = isNothing (c ^. CommentModeratedTs)
+exprCommentUnapproved c = isNothing (c ^. CommentApprovedTs)
 
 exprCommentFlagged :: ExprCommentCond
 exprCommentFlagged c = c ^. CommentId `in_` flaggedCommentIds

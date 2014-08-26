@@ -16,7 +16,7 @@ module Model.Comment
     , commentIsOddDepth
     , commentIsTopLevel
     , makeCommentUsersSet
-    , makeModeratedComment
+    , makeApprovedComment
     , newClosedCommentClosure
     , newRetractedCommentClosure
     -- Database actions
@@ -126,7 +126,7 @@ addMaxDepth (MaxDepth x) y = MaxDepth (x + y)
 -- Utility functions
 
 commentIsApproved :: Comment -> Bool
-commentIsApproved = isJust . commentModeratedTs
+commentIsApproved = isJust . commentApprovedTs
 
 commentIsTopLevel :: Comment -> Bool
 commentIsTopLevel = (== 0) . commentDepth
@@ -178,9 +178,9 @@ newCommentClosure :: MonadIO m => ClosureType -> UserId -> Markdown -> CommentId
 newCommentClosure closure_type user_id reason comment_id =
     (\now -> CommentClosure now user_id closure_type reason comment_id) `liftM` liftIO getCurrentTime
 
--- | Construct a comment, auto-moderated by 'this' User (because they are established).
-makeModeratedComment :: MonadIO m => UserId -> DiscussionId -> Maybe CommentId -> Markdown -> Int -> m Comment
-makeModeratedComment user_id discussion_id parent_comment comment_text depth = do
+-- | Construct a comment, auto-approved by 'this' User (because they are established).
+makeApprovedComment :: MonadIO m => UserId -> DiscussionId -> Maybe CommentId -> Markdown -> Int -> m Comment
+makeApprovedComment user_id discussion_id parent_comment comment_text depth = do
     now <- liftIO getCurrentTime
     return $ Comment
                  now
@@ -205,8 +205,8 @@ approveCommentDB user_id comment_id comment = do
     -- Do an in-memory adjustment of the comment with exactly the same changes
     -- as 'upd' below (so we can avoid hitting the database).
     let updated_comment = comment
-          { commentModeratedTs = Just now
-          , commentModeratedBy = Just user_id
+          { commentApprovedTs = Just now
+          , commentApprovedBy = Just user_id
           }
     lift $ do
         updateComment now
@@ -215,8 +215,8 @@ approveCommentDB user_id comment_id comment = do
   where
     updateComment now =
         update $ \c -> do
-        set c [ CommentModeratedTs =. val (Just now)
-              , CommentModeratedBy =. val (Just user_id)
+        set c [ CommentApprovedTs =. val (Just now)
+              , CommentApprovedBy =. val (Just user_id)
               ]
         where_ (c ^. CommentId ==. val comment_id)
 
@@ -271,11 +271,11 @@ insertCommentDB :: Maybe UTCTime
                 -> Markdown
                 -> Int
                 -> SDB CommentId
-insertCommentDB mmoderated_ts mmoderated_by mk_event created_ts discussion_id mparent_id user_id text depth = do
+insertCommentDB mapproved_ts mapproved_by mk_event created_ts discussion_id mparent_id user_id text depth = do
     let comment = Comment
                     created_ts
-                    mmoderated_ts
-                    mmoderated_by
+                    mapproved_ts
+                    mapproved_by
                     discussion_id
                     mparent_id
                     user_id
@@ -493,7 +493,7 @@ fetchCommentCommentTagsInDB comment_ids = fmap (map entityVal) $
     where_ (ct ^. CommentTagComment `in_` valList comment_ids)
     return ct
 
--- | Get a Comment's descendants' ids (don't filter hidden or unmoderated comments).
+-- | Get a Comment's descendants' ids (don't filter hidden or unapproved comments).
 fetchCommentAllDescendantsDB :: CommentId -> DB [CommentId]
 fetchCommentAllDescendantsDB = fmap (map unValue) . select . querCommentDescendants
 

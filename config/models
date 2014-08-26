@@ -215,10 +215,10 @@ Comment
     createdTs UTCTime
 
     -- "Unestablished" users may still make comments, but they must be approved
-    -- by a moderator. "Established" users' comments are marked as moderated by
+    -- by a moderator. "Established" users' comments are marked as approved by
     -- themselves (though this does not mean they are a moderator).
-    moderatedTs UTCTime Maybe
-    moderatedBy UserId Maybe
+    approvedTs UTCTime Maybe
+    approvedBy UserId Maybe
 
     discussion DiscussionId
     parent CommentId Maybe

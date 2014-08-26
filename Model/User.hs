@@ -146,7 +146,7 @@ updateUserDB user_id UserUpdate{..} = do
 --  void (insertMany new_prefs)
 
 -- | Establish a user, given their eligible-timestamp and reason for
--- eligibility. Mark all unmoderated comments of theirs as moderated.
+-- eligibility. Mark all unapproved comments of theirs as approved.
 establishUserDB :: UserId -> UTCTime -> Text -> DB ()
 establishUserDB user_id elig_time reason = do
     est_time <- liftIO getCurrentTime
@@ -161,8 +161,8 @@ establishUserDB user_id elig_time reason = do
     approveUnapprovedComments :: UTCTime -> DB ()
     approveUnapprovedComments est_time =
         update $ \c -> do
-            set c [ CommentModeratedTs =. just (val est_time)
-                  , CommentModeratedBy =. just (val user_id)
+            set c [ CommentApprovedTs =. just (val est_time)
+                  , CommentApprovedBy =. just (val user_id)
                   ]
             where_ $
                 c ^. CommentUser ==. val user_id &&.

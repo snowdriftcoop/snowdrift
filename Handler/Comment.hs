@@ -435,12 +435,12 @@ postNewComment mparent_id (Entity user_id user) discussion_id make_permissions_m
                 (form, _)           <- generateFormPost (commentForm (maybe "New Topic" (const "Reply") mparent_id) (Just contents))
                 now                 <- liftIO getCurrentTime
 
-                let (moderated_ts, moderated_by) = if userIsEstablished user
+                let (approved_ts, approved_by) = if userIsEstablished user
                                                        then (Just now, Just user_id)
                                                        else (Nothing, Nothing)
                     comment = Entity
                                 (Key $ PersistInt64 0)
-                                (Comment now moderated_ts moderated_by discussion_id mparent_id user_id contents depth)
+                                (Comment now approved_ts approved_by discussion_id mparent_id user_id contents depth)
 
                 max_depth <- getMaxDepthDefault 0
 

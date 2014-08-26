@@ -123,8 +123,8 @@ renderCommentPostedOnUnknownDiscussionEvent :: CommentId -> Comment -> Widget
 renderCommentPostedOnUnknownDiscussionEvent comment_id comment =
     [whamlet|
         <div .event>
-            $maybe moderated_ts <- commentModeratedTs comment
-                ^{renderTime moderated_ts}
+            $maybe approved_ts <- commentApprovedTs comment
+                ^{renderTime approved_ts}
             $nothing
                 ^{renderTime $ commentCreatedTs comment}
             somehow, this

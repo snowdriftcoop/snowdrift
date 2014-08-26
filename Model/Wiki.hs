@@ -71,9 +71,9 @@ getAllWikiComments mviewer_id project_id latest_comment_id since limit_num = do
         where_ $
             wp ^. WikiPageId `in_` valList pages_ids &&.
             c ^. CommentId <=. val latest_comment_id &&.
-            c ^. CommentModeratedTs >=. just (val since) &&.
+            c ^. CommentApprovedTs >=. just (val since) &&.
             exprCommentProjectPermissionFilter mviewer_id (val project_id) c
-        orderBy [desc (c ^. CommentModeratedTs)]
+        orderBy [desc (c ^. CommentApprovedTs)]
         limit limit_num
         return c
 
@@ -84,8 +84,8 @@ getAllWikiComments mviewer_id project_id latest_comment_id since limit_num = do
         on_ (c ^. CommentDiscussion ==. wp ^. WikiPageDiscussion)
         where_ $
             wp ^. WikiPageId `in_` valList pages_ids &&.
-            c ^. CommentModeratedTs <. just (val since) &&.
+            c ^. CommentApprovedTs <. just (val since) &&.
             exprCommentProjectPermissionFilter mviewer_id (val project_id) c
-        orderBy [desc (c ^. CommentModeratedTs)]
+        orderBy [desc (c ^. CommentApprovedTs)]
         limit lim
         return c
