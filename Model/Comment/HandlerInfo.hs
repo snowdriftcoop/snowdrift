@@ -31,5 +31,5 @@ wikiPageCommentHandlerInfo :: Maybe (Entity User) -> ProjectId -> Text -> Text -
 wikiPageCommentHandlerInfo muser project_id project_handle target =
     CommentHandlerInfo
         (exprCommentProjectPermissionFilter (entityKey <$> muser) (val project_id))
-        (wikiPageCommentRoutes target project_handle)
+        (wikiPageCommentRoutes project_handle target)
         (makeProjectCommentActionPermissionsMap muser project_handle)
