@@ -41,6 +41,7 @@
 /p/#Text/blog                                ProjectBlogR             GET
 /p/#Text/blog/!new                           NewProjectBlogPostR      GET POST
 /p/#Text/blog/#Text                          ProjectBlogPostR         GET
+/p/#Text/button.png                          ProjectPledgeButtonR     GET
 /p/#Text/c/#CommentId                        ProjectCommentR          GET
 /p/#Text/c/#CommentId/close                  CloseProjectCommentR     GET POST
 /p/#Text/c/#CommentId/delete                 DeleteProjectCommentR    GET POST
@@ -62,7 +63,6 @@
 /p/#Text/invitation/#Text                    InvitationR              GET POST
 /p/#Text/invite                              InviteR                  GET POST
 /p/#Text/patrons                             ProjectPatronsR          GET
-/p/#Text/button.png                          ProjectPledgeButtonR     GET
 /p/#Text/shares                              UpdateSharesR            GET POST
 /p/#Text/t                                   TicketsR                 GET
 /p/#Text/transactions                        ProjectTransactionsR     GET

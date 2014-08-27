@@ -2,6 +2,7 @@ module View.Project
     ( editProjectForm
     , inviteForm
     , projectBlogForm
+    , projectConfirmSharesForm
     , renderBlogPost
     , renderProject
     , viewForm
@@ -112,3 +113,6 @@ viewForm :: Form (Filterable -> Bool, Orderable -> [Double])
 viewForm = renderBootstrap3 $ (,)
     <$> (either (const defaultFilter) id . parseFilterExpression . fromMaybe "" <$> aopt' textField "filter" Nothing)
     <*> (either (const defaultOrder) id . parseOrderExpression . fromMaybe "" <$> aopt' textField "sort" Nothing)
+
+projectConfirmSharesForm :: Maybe Int64 -> Form SharesPurchaseOrder
+projectConfirmSharesForm = renderBootstrap3 . fmap SharesPurchaseOrder . areq' hiddenField ""
