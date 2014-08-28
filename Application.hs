@@ -55,7 +55,6 @@ import Handler.Privacy
 import Handler.Project
 import Handler.RepoFeed
 import Handler.ToU
-import Handler.UpdateShares
 import Handler.User
 import Handler.Volunteer
 import Handler.Who

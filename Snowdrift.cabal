@@ -75,7 +75,6 @@ library
                      Handler.Project
                      Handler.RepoFeed
                      Handler.ToU
-                     Handler.UpdateShares
                      Handler.User
                      Handler.Utils
                      Handler.Volunteer

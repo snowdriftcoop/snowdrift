@@ -14,12 +14,14 @@ import Model.Comment
 import Model.Comment.ActionPermissions
 import Model.Comment.HandlerInfo
 import Model.Comment.Sql
+import Model.Currency
 import Model.Discussion
 import Model.Issue
 import Model.Markdown
 import Model.Markdown.Diff
 import Model.Project
 import Model.Role
+import Model.Shares
 import Model.SnowdriftEvent
 import Model.User
 import Model.Wiki
@@ -974,6 +976,66 @@ getProjectPatronsR project_handle = do
     defaultLayout $ do
         setTitle . toHtml $ projectName project <> " Patrons | Snowdrift.coop"
         $(widgetFile "project_patrons")
+
+--------------------------------------------------------------------------------
+-- shares
+
+getUpdateSharesR :: Text -> Handler Html
+getUpdateSharesR project_handle = do
+    _ <- requireAuthId
+    Entity project_id project <- runYDB $ getBy404 $ UniqueProjectHandle project_handle
+
+    ((result, _), _) <- runFormGet $ pledgeForm project_id
+    case result of
+        FormSuccess (SharesPurchaseOrder shares) -> do
+            -- TODO - refuse negative
+            user_id <- requireAuthId
+            (confirm_form, _) <- generateFormPost $ projectConfirmSharesForm (Just shares)
+
+            runDB (getBy (UniquePledge user_id project_id)) >>= \case
+                Just (Entity _ pledge) | pledgeShares pledge == shares -> do
+                    alertWarning ("you've already pledged " <> T.pack (show shares) <> " shares of support to this project")
+                    redirect (ProjectR project_handle)
+                mpledge ->
+                    defaultLayout $ do
+                        setTitle . toHtml $ projectName project <> " - Change Your Contribution | Snowdrift.coop"
+                        $(widgetFile "update_shares")
+
+        FormMissing -> defaultLayout [whamlet| form missing |]
+        FormFailure _ -> defaultLayout [whamlet| form failure |]
+
+
+postUpdateSharesR :: Text -> Handler Html
+postUpdateSharesR project_handle = do
+    ((result, _), _) <- runFormPost $ projectConfirmSharesForm Nothing
+
+    case result of
+        FormSuccess (SharesPurchaseOrder shares) -> do
+            -- TODO - refuse negative
+            Just pledge_render_id <- fmap (read . T.unpack) <$> lookupSession pledgeRenderKey
+
+            success <- runSYDB $ do
+                Entity user_id user <- lift (lift requireAuth)
+                Just account <- lift $ get (userAccount user)
+                Entity project_id project <- lift $ getBy404 (UniqueProjectHandle project_handle)
+
+                let user_outlay = projectShareValue project $* fromIntegral shares :: Milray
+                if accountBalance account < user_outlay $* 3
+                    then return False
+                    else do
+                        insertProjectPledgeDB user_id project_id shares pledge_render_id
+                        lift (updateShareValue project_id)
+                        return True
+
+            if success
+               then alertSuccess ("you have pledged " <> T.pack (show shares) <> " shares of support to this project")
+               else alertWarning "Sorry, you must have funds to support your pledge for at least 3 months at current share value. Please deposit additional funds to your account."
+
+            redirect (ProjectR project_handle)
+
+        _ -> do
+            alertDanger "error occurred in form submission"
+            redirect (UpdateSharesR project_handle)
 
 --------------------------------------------------------------------------------
 -- /t
