@@ -331,7 +331,7 @@ commentWidget (Entity comment_id comment)
               earlier_closures
               user
               mclosure
-              mticket
+              _ -- mticket
               mflag
               is_preview
               inner_widget = do
@@ -348,16 +348,18 @@ commentWidget (Entity comment_id comment)
           M.lookup comment_id <$>
             (fetchCommentCommentTagsDB comment_id >>= buildAnnotatedCommentTagsDB mviewer_id)
 
+{-
     let ticket_str = case mticket of
             Just (Entity (Key (PersistInt64 tid)) _) -> T.pack $ show tid
             _ -> "???"
 
 -- error about ambiguity about monad type in this, needs to be adjusted to
 -- fit the idea that comments aren't necessarily on wiki pages
---      prettyTicketLine line =
---          let pretty title = "<div class='ticket-title'>SD-" <> ticket_str <> ": " <> title <> "</div>"
---           in return $ maybe line pretty $ T.stripPrefix "ticket: " line
+        prettyTicketLine line =
+            let pretty title = "<div class='ticket-title'>SD-" <> ticket_str <> ": " <> title <> "</div>"
+             in return $ maybe line pretty $ T.stripPrefix "ticket: " line
 
---      commentTextTransform = prettyTicketLine
+        commentTextTransform = prettyTicketLine
+-}
 
     $(widgetFile "comment")

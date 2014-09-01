@@ -77,7 +77,7 @@ discussionSpecs = do
                 setUrl rethread_url
                 byLabel "New Parent Url" "/p/snowdrift/w/about/d"
                 byLabel "Reason" "testing"
-                addPostParam "mode" "rethread"
+                addPostParam "mode" "post"
 
             statusIsResp 302
         |]
@@ -105,7 +105,7 @@ discussionSpecs = do
                     setUrl $ rethread_url first
                     byLabel "New Parent Url" $ T.pack $ "/p/snowdrift/w/about/c/" ++ (\ (PersistInt64 i) -> show i) (unKey second)
                     byLabel "Reason" "testing"
-                    addPostParam "mode" "rethread"
+                    addPostParam "mode" "post"
 
                 statusIsResp 302
 
@@ -157,7 +157,7 @@ discussionSpecs = do
                 setUrl $ RethreadWikiCommentR "snowdrift" "about" originalId
                 byLabel "New Parent Url" "/p/snowdrift/w/intro/d"
                 byLabel "Reason" "testing cross-page rethreading"
-                addPostParam "mode" "rethread"
+                addPostParam "mode" "post"
 
             statusIsResp 302
 
@@ -172,7 +172,8 @@ discussionSpecs = do
 
             newId <- getLatestCommentId
             let new_url = BSC.unpack location
-                desired_url = "http://localhost:3000/p/snowdrift/w/intro/c/" ++ (\ (PersistInt64 i) -> show i) (unKey newId)
+                -- desired_url = "http://localhost:3000/p/snowdrift/w/intro/c/" ++ (\ (PersistInt64 i) -> show i) (unKey newId)
+                desired_url = "http://localhost:3000/c/" ++ (\ (PersistInt64 i) -> show i) (unKey newId)
 
             assertEqual ("Redirect not matching! (" ++ show new_url ++ " /=  " ++ show desired_url ++ ")") new_url desired_url
         |]

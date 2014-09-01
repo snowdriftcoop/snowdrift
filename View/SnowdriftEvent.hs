@@ -147,7 +147,7 @@ renderCommentPendingEvent comment_id comment user_map = do
     |]
 
 renderWikiPageEvent :: Text -> WikiPageId -> WikiPage -> UserMap -> Widget
-renderWikiPageEvent project_handle _ wiki_page user_map = do
+renderWikiPageEvent project_handle _ wiki_page _ = do
 --
 -- The commented stuff here (and in the whamlet commented part)
 -- is because there's no wikiPageUser yet and the
