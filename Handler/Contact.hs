@@ -2,10 +2,9 @@ module Handler.Contact where
 
 import Import
 
-import Widgets.Markdown
-
 import Model.User
 import Model.Comment
+import Widgets.Markdown
 
 contactForm :: Form Markdown
 contactForm = renderBootstrap3 $ areq' snowdriftMarkdownField "" Nothing

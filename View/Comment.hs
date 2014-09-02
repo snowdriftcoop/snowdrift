@@ -54,7 +54,7 @@ commentForm :: SomeMessage App -> Maybe Markdown -> Form NewComment
 commentForm label content = renderBootstrap3 $ NewComment
     <$> areq' snowdriftMarkdownField label content
     <*> pure VisPublic
-    --    turn below back on and delete the pure line above
+    --    TODO(aaron) turn below back on and delete the pure line above
     --    to activate private commenting
 --    <*> (toVisibility <$> areq' checkBoxField "Private?" Nothing)
 --  where

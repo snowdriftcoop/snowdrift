@@ -84,6 +84,8 @@ exprCommentProjectPermissionFilter muser_id project_id c = exprCommentNotRethrea
         Just user_id -> approvedAndNotFlagged ||. exprCommentPostedBy user_id c ||. exprUserIsModerator user_id project_id
         Nothing      -> approvedAndNotFlagged
 
+    -- isVisible when comment is public (VisPublic), or the viewer is
+    -- a project team member, or the viewer posted the topic initially
     isVisible :: SqlExpr (Value Bool)
     isVisible = seq (appendFile "testlog" $ "isVisible for " ++ show muser_id) $ case muser_id of
         Just user_id -> c ^. CommentVisibility ==. val VisPublic ||. exprUserIsTeamMember user_id project_id ||. exprRootPostedBy user_id c
