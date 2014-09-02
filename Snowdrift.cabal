@@ -54,6 +54,7 @@ library
                      Model.User
                      Model.User.Internal
                      Model.User.Sql
+                     Model.Utils
                      Model.ViewType
                      Model.Wiki
                      Model.Wiki.Sql

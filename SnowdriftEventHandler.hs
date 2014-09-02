@@ -4,12 +4,12 @@ module SnowdriftEventHandler
 
 import Import
 
-import Handler.Utils
 import Model.Comment
 import Model.Discussion
 import Model.Notification
 import Model.Project
 import Model.User
+import Model.Utils
 
 import           Data.Maybe           (fromJust)
 import qualified Database.Persist

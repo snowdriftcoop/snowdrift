@@ -57,10 +57,11 @@ module Model.Comment
 
 import Import
 
-import           Model.Comment.Sql
-import           Model.Discussion
-import           Model.Notification
-import           Model.Tag
+import Model.Comment.Sql
+import Model.Discussion
+import Model.Notification
+import Model.Tag
+import Model.Utils
 
 import qualified Control.Monad.State         as State
 import           Control.Monad.Writer.Strict (tell)
@@ -68,6 +69,7 @@ import           Data.Default                (Default, def)
 import           Data.Foldable               (Foldable)
 import qualified Data.Foldable               as F
 import qualified Data.Map                    as M
+import           Data.Maybe                  (fromJust)
 import qualified Data.Set                    as S
 import qualified Data.Text                   as T
 import           Data.Tree
@@ -329,8 +331,8 @@ editCommentDB comment_id text = do
     lift (fetchCommentFlaggingDB comment_id) >>= \case
         Nothing -> return ()
         Just (Entity comment_flagging_id CommentFlagging{..}) -> do
-            permalink_text <- lift (getUrlRender <*> pure (CommentDirectLinkR comment_id))
-            let notif_text = Markdown $ "A comment you flagged has been edited and reposted to the site. You can view it [here](" <> permalink_text <> ")."
+            rendered_route <- lift (makeCommentRouteDB comment_id >>= lift . routeToText . fromJust)
+            let notif_text = Markdown $ "A comment you flagged has been edited and reposted to the site. You can view it [here](" <> rendered_route <> ")."
             lift (deleteCascade comment_flagging_id) -- delete flagging and all flagging reasons with it.
             sendNotificationDB_ NotifFlagRepost commentFlaggingFlagger Nothing notif_text
   where
@@ -679,4 +681,3 @@ makeCommentRouteDB comment_id = get comment_id >>= \case
         DiscussionOnWikiPage (Entity _ wiki_page) -> do
             project <- getJust (wikiPageProject wiki_page)
             return (Just (WikiCommentR (projectHandle project) (wikiPageTarget wiki_page) comment_id))
-
