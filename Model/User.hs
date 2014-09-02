@@ -66,6 +66,8 @@ import qualified Data.Set       as S
 import qualified Data.Text      as T
 import           Yesod.Markdown (Markdown(..))
 
+-- anonymousUser is a special user for items posted by visitors who are not
+-- logged in, such as posting to /contact for a project
 anonymousUser :: UserId
 anonymousUser = Key $ PersistInt64 (-1)
 
