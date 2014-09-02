@@ -5,11 +5,19 @@ import Prelude
 import Database.Persist.TH
 import Data.Text           (Text)
 
+import Yesod.Markdown      (Markdown)
+
 data ClosureType
     = Retracted
     | Closed
     deriving (Read, Show)
 derivePersistField "ClosureType"
+
+data Visibility = VisPublic | VisPrivate | VisInternal deriving (Read, Show, Eq)
+derivePersistField "Visibility"
+
+newtype NewClosure = NewClosure Markdown
+data NewComment = NewComment Markdown Visibility
 
 data FlagReason
     = FlagPersonalAttack

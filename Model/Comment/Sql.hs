@@ -62,18 +62,32 @@ exprCommentViewedBy user_id c = c ^. CommentId `in_`
      where_ (vc ^. ViewCommentUser ==. val user_id)
      return (vc ^. ViewCommentComment))
 
+exprRootPostedBy :: UserId -> ExprCommentCond
+exprRootPostedBy user_id c = isNothing (c ^. CommentParent) ||. c ^. CommentId `in_` sublist
+  where
+    sublist = subList_select $ from $ \ (comment_ancestor `InnerJoin` root) -> do
+        on_ $ root ^. CommentId ==. comment_ancestor ^. CommentAncestorAncestor
+        where_ $ isNothing (root ^. CommentParent)
+            &&. root ^. CommentUser ==. val user_id
+        return (comment_ancestor ^. CommentAncestorComment)
+
 -- | SQL expression to filter a Comment (somewhere) on a Project based on "permissions", as follows:
 --    If moderator, show all.
 --    If logged in, show all approved (hiding flagged), plus own comments (unapproved + flagged).
 --    If not logged in, show all approved (hiding flagged).
 --    No matter what, hide rethreaded comments (they've essentially been replaced).
 exprCommentProjectPermissionFilter :: Maybe UserId -> SqlExpr (Value ProjectId) -> ExprCommentCond
-exprCommentProjectPermissionFilter muser_id project_id c = exprCommentNotRethreaded c &&. permissionFilter
+exprCommentProjectPermissionFilter muser_id project_id c = exprCommentNotRethreaded c &&. permissionFilter &&. isVisible
   where
     permissionFilter :: SqlExpr (Value Bool)
     permissionFilter = case muser_id of
         Just user_id -> approvedAndNotFlagged ||. exprCommentPostedBy user_id c ||. exprUserIsModerator user_id project_id
         Nothing      -> approvedAndNotFlagged
+
+    isVisible :: SqlExpr (Value Bool)
+    isVisible = seq (appendFile "testlog" $ "isVisible for " ++ show muser_id) $ case muser_id of
+        Just user_id -> c ^. CommentVisibility ==. val VisPublic ||. exprUserIsTeamMember user_id project_id ||. exprRootPostedBy user_id c
+        Nothing -> c ^. CommentVisibility ==. val VisPublic
 
     approvedAndNotFlagged :: SqlExpr (Value Bool)
     approvedAndNotFlagged = exprCommentApproved c &&. not_ (exprCommentFlagged c)

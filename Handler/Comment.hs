@@ -261,7 +261,7 @@ postRetractComment = postClosureComment retractCommentForm newRetractedCommentCl
 -- | Handle a POST to a /close or /retract URL.
 -- Permission checking should occur *PRIOR TO* this function.
 postClosureComment
-        :: (Maybe Markdown -> Form Markdown)
+        :: (Maybe Markdown -> Form NewClosure)
         -> (UserId -> Markdown -> CommentId -> Handler CommentClosure)
         -> (CommentActionPermissions -> Bool)
         -> Entity User
@@ -279,7 +279,7 @@ postClosureComment
         comment_handler_info = do
     ((result, _), _) <- runFormPost (make_closure_form Nothing)
     case result of
-        FormSuccess reason -> do
+        FormSuccess (NewClosure reason) -> do
             new_comment_closure <- make_new_comment_closure user_id reason comment_id
             lookupPostMode >>= \case
                 Just PostMode -> do
@@ -320,7 +320,7 @@ postEditComment :: Entity User -> Entity Comment -> CommentHandlerInfo -> Handle
 postEditComment user comment@(Entity comment_id _) comment_handler_info = do
     ((result, _), _) <- runFormPost (editCommentForm "")
     case result of
-        FormSuccess new_text -> lookupPostMode >>= \case
+        FormSuccess (NewComment new_text _) -> lookupPostMode >>= \case
             Just PostMode -> do
                 runSYDB (editCommentDB comment_id new_text)
                 alertSuccess "posted new edit"
@@ -418,15 +418,15 @@ postNewComment mparent_id (Entity user_id user) discussion_id make_permissions_m
     -- actually the same form with different titles.
     ((result, _), _) <- runFormPost commentReplyForm
     case result of
-        FormSuccess contents -> lookupPostMode >>= \case
+        FormSuccess (NewComment contents visibility) -> lookupPostMode >>= \case
             Just PostMode -> do
                 if userIsEstablished user
                     then do
-                        comment_id <- runSDB (postApprovedCommentDB user_id mparent_id discussion_id contents)
+                        comment_id <- runSDB (postApprovedCommentDB user_id mparent_id discussion_id contents visibility)
                         alertSuccess "comment posted"
                         return (Left comment_id)
                     else do
-                        comment_id <- runSDB (postUnapprovedCommentDB user_id mparent_id discussion_id contents)
+                        comment_id <- runSDB (postUnapprovedCommentDB user_id mparent_id discussion_id contents visibility)
                         alertSuccess "comment submitted for moderation"
                         return (Left comment_id)
             _ -> do
@@ -440,7 +440,7 @@ postNewComment mparent_id (Entity user_id user) discussion_id make_permissions_m
                                                        else (Nothing, Nothing)
                     comment = Entity
                                 (Key $ PersistInt64 0)
-                                (Comment now approved_ts approved_by discussion_id mparent_id user_id contents depth)
+                                (Comment now approved_ts approved_by discussion_id mparent_id user_id contents depth visibility)
 
                 max_depth <- getMaxDepthDefault 0
 

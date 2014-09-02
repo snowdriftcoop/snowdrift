@@ -2,7 +2,7 @@
 
 module Model where
 
-import Model.Comment.Internal      (ClosureType, FlagReason)
+import Model.Comment.Internal      (ClosureType, FlagReason, Visibility)
 import Model.Currency              (Milray)
 import Model.Established.Internal  (Established(..))
 import Model.Markdown.Diff         (MarkdownDiff)
