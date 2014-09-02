@@ -77,22 +77,28 @@ exprCommentRootPostedBy user_id c = ((isNothing (c ^. CommentParent)) &&. c ^. C
 --    If logged in, show all approved (hiding flagged), plus own comments (unapproved + flagged).
 --    If not logged in, show all approved (hiding flagged).
 --    No matter what, hide rethreaded comments (they've essentially been replaced).
+-- TODO(mitchell, david): rethink this function with regards to comment visibility
 exprCommentProjectPermissionFilter :: Maybe UserId -> SqlExpr (Value ProjectId) -> ExprCommentCond
-exprCommentProjectPermissionFilter muser_id project_id c = exprCommentNotRethreaded c &&. permissionFilter &&. isVisible
+exprCommentProjectPermissionFilter muser_id project_id c =
+    exprCommentNotRethreaded c &&. exprCommentProjectPermissionFilterIncludingRethreaded muser_id project_id c
+
+-- | A "special case" of the above (almost universal) permission filter, for Project feeds: we *do*
+-- want to display rethreaded Comments in this case, because otherwise, the original "comment posted"
+-- feed events would vanish.
+exprCommentProjectPermissionFilterIncludingRethreaded :: Maybe UserId -> SqlExpr (Value ProjectId) -> ExprCommentCond
+exprCommentProjectPermissionFilterIncludingRethreaded muser_id project_id c = isVisible &&. permissionFilter
   where
-    permissionFilter :: SqlExpr (Value Bool)
+    -- isVisible when comment is public (VisPublic), or the viewer is
+    -- a project team member, or the viewer posted the topic initially
+    -- TODO(mitchell, david): this is wrong, but good enough for now
+    isVisible = case muser_id of
+        Just user_id -> c ^. CommentVisibility ==. val VisPublic ||. exprUserIsTeamMember user_id project_id ||. exprCommentRootPostedBy user_id c
+        Nothing -> c ^. CommentVisibility ==. val VisPublic
+
     permissionFilter = case muser_id of
         Just user_id -> approvedAndNotFlagged ||. exprCommentPostedBy user_id c ||. exprUserIsModerator user_id project_id
         Nothing      -> approvedAndNotFlagged
 
-    -- isVisible when comment is public (VisPublic), or the viewer is
-    -- a project team member, or the viewer posted the topic initially
-    isVisible :: SqlExpr (Value Bool)
-    isVisible = seq (appendFile "testlog" $ "isVisible for " ++ show muser_id) $ case muser_id of
-        Just user_id -> c ^. CommentVisibility ==. val VisPublic ||. exprUserIsTeamMember user_id project_id ||. exprCommentRootPostedBy user_id c
-        Nothing -> c ^. CommentVisibility ==. val VisPublic
-
-    approvedAndNotFlagged :: SqlExpr (Value Bool)
     approvedAndNotFlagged = exprCommentApproved c &&. not_ (exprCommentFlagged c)
 
 querCommentAncestors :: CommentId -> SqlQuery (SqlExpr (Value CommentId))

@@ -481,74 +481,52 @@ postRethreadComment user_id comment_id comment = do
 
             -- FIXME(mitchell,david): We shouldn't have to enumerate the routes like this.
             -- Luckily robust rethreading is not priority.
-            (new_parent_id, new_discussion_id) <- case parseRoute (url, []) of
-                Just (WikiCommentR new_project_handle new_target new_parent_id) -> do
+            (new_route, mnew_parent_id, new_discussion_id) <- case parseRoute (url, []) of
+                Just (new_route@(WikiCommentR new_project_handle new_target new_parent_id)) -> do
                     new_discussion_id <-
                         maybe notfound (wikiPageDiscussion . entityVal) <$>
                           runDB (fetchProjectWikiPageByNameDB new_project_handle new_target)
-                    return (Just new_parent_id, new_discussion_id)
-                Just (WikiDiscussionR new_project_handle new_target) -> do
+                    return (new_route, Just new_parent_id, new_discussion_id)
+                Just (new_route@(WikiDiscussionR new_project_handle new_target)) -> do
                     new_discussion_id <-
                         maybe notfound (wikiPageDiscussion . entityVal) <$>
                           runDB (fetchProjectWikiPageByNameDB new_project_handle new_target)
-                    return (Nothing, new_discussion_id)
-                Just (ProjectCommentR new_project_handle new_parent_id) -> do
+                    return (new_route, Nothing, new_discussion_id)
+                Just (new_route@(ProjectCommentR new_project_handle new_parent_id)) -> do
                     new_discussion_id <-
                         maybe notfound (projectDiscussion . entityVal) <$>
                           runDB (getBy (UniqueProjectHandle new_project_handle))
-                    return (Just new_parent_id, new_discussion_id)
-                Just (ProjectDiscussionR new_project_handle) -> do
+                    return (new_route, Just new_parent_id, new_discussion_id)
+                Just (new_route@(ProjectDiscussionR new_project_handle)) -> do
                     new_discussion_id <-
                         maybe notfound (projectDiscussion . entityVal) <$>
                           runDB (getBy (UniqueProjectHandle new_project_handle))
-                    return (Nothing, new_discussion_id)
+                    return (new_route, Nothing, new_discussion_id)
 
                 Nothing -> error "failed to parse URL"
                 _       -> notfound
 
-            let old_parent_id = commentParent comment
-            when (new_parent_id == old_parent_id && new_discussion_id == commentDiscussion comment) $
-                error "trying to move comment to its current location"
+            let mold_parent_id = commentParent comment
+            when (mnew_parent_id == mold_parent_id && new_discussion_id == commentDiscussion comment) $ do
+                alertDanger "trying to move comment to its current location"
+                getCommentDirectLinkR comment_id
 
-            new_parent_depth <- maybe (return $ -1) fetchCommentDepth404DB new_parent_id
-            old_parent_depth <- maybe (return $ -1) fetchCommentDepth404DB old_parent_id
-
-            let depth_offset = old_parent_depth - new_parent_depth
+            new_parent_depth <- maybe (return (-1)) fetchCommentDepth404DB mnew_parent_id
+            old_parent_depth <- maybe (return (-1)) fetchCommentDepth404DB mold_parent_id
 
             lookupPostMode >>= \case
                 Just PostMode -> do
-                    now <- liftIO getCurrentTime
+                    runSDB $
+                        rethreadCommentDB
+                          mnew_parent_id
+                          new_discussion_id
+                          comment_id
+                          user_id
+                          reason
+                          (old_parent_depth - new_parent_depth)
 
-                    runDB $ do
-                        descendants <- fetchCommentAllDescendantsDB comment_id
-                        rethread_id <- insert (Rethread now user_id comment_id reason)
-                        let comments = comment_id : descendants
-                        new_comment_ids <- rethreadCommentsDB rethread_id depth_offset new_parent_id new_discussion_id comments
-
-                        delete $
-                         from $ \ca ->
-                         where_ $ ca ^. CommentAncestorComment `in_` valList comments
-
-                        forM_ new_comment_ids $ \ new_comment_id -> do
-                            insertSelect $
-                             from $ \(c `InnerJoin` ca) -> do
-                             on_ (c ^. CommentParent ==. just (ca ^. CommentAncestorComment))
-                             where_ (c ^. CommentId ==. val new_comment_id)
-                             return (CommentAncestor <# val new_comment_id <&> (ca ^. CommentAncestorAncestor))
-
-                            [Value maybe_new_parent_id] <-
-                                select $
-                                from $ \c -> do
-                                where_ (c ^. CommentId ==. val new_comment_id)
-                                return (c ^. CommentParent)
-
-                            maybe (return ()) (insert_ . CommentAncestor new_comment_id) maybe_new_parent_id
-
-                        when (new_discussion_id /= commentDiscussion comment) $
-                            update $ \c -> do
-                            set c [ CommentDiscussion =. val new_discussion_id ]
-                            where_ (c ^. CommentId `in_` valList descendants)
-
+                    new_route_text <- getUrlRender <*> pure new_route
+                    alertSuccess ("comment rethreaded to " <> new_route_text)
                     redirect new_parent_url
 
                 _ -> error "no preview for rethreads yet" -- TODO(david)
@@ -629,14 +607,8 @@ postCommentCreateTag comment_id = do
 --------------------------------------------------------------------------------
 -- /
 
-getCommentDirectLinkR :: CommentId -> Handler Html
-getCommentDirectLinkR comment_id = runDB (fetchCommentWikiPageDB comment_id) >>= \case
-    -- comment not on a wiki page? right now, there's nowhere else to check
-    -- TODO(mitchell): does this require constant attention?
-    Nothing -> notFound
-    Just (Entity _ page) -> do
-        project <- runYDB (get404 (wikiPageProject page))
-        redirect (WikiCommentR (projectHandle project) (wikiPageTarget page) comment_id)
+getCommentDirectLinkR :: CommentId -> Handler ()
+getCommentDirectLinkR comment_id = runDB (makeCommentRouteDB comment_id) >>= maybe notFound redirect
 
 deleteCommentDirectLinkR :: CommentId -> Handler ()
 deleteCommentDirectLinkR comment_id = do

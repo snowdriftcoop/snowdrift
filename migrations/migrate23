@@ -2,3 +2,7 @@ insert into account (id, balance) values (-1, 0);
 insert into discussion (id, nothing) values (-1, 0);
 insert into "user" (id, ident, name, account, discussion) values (-1, 'anonymous', 'anonymous user', -1, -1);
 ALTER TABLE "comment" ADD COLUMN "visibility" VARCHAR NOT NULL DEFAULT 'VisPublic';
+ALTER TABLE "rethread" ADD COLUMN "new_comment" INT8 NOT NULL;
+ALTER TABLE "rethread" ADD CONSTRAINT "rethread_new_comment_fkey" FOREIGN KEY("new_comment") REFERENCES "comment"("id");
+CREATe TABLE "event_comment_rethreaded"("id" SERIAL PRIMARY KEY UNIQUE,"ts" TIMESTAMP NOT NULL,"rethread" INT8 NOT NULL);
+ALTER TABLE "event_comment_rethreaded" ADD CONSTRAINT "event_comment_rethreaded_rethread_fkey" FOREIGN KEY("rethread") REFERENCES "rethread"("id");

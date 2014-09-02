@@ -1,16 +1,92 @@
 module Model.Discussion
-    ( createDiscussionDB
+    ( DiscussionOn(..)
+    , createDiscussionDB
     , fetchDiscussionClosedRootCommentsDB
-    , fetchDiscussionProjectDB
+    , fetchDiscussionDB
+    , fetchDiscussionsDB
     , fetchDiscussionRootCommentsDB
-    , fetchDiscussionWikiPage
-    , fetchDiscussionWikiPagesInDB
     ) where
 
 import Import
 
 import Model.Comment.Sql
 import Control.Monad.Trans.Maybe
+
+import qualified Data.Map as M
+
+-- | An internal sum type that contains a constructer per database table that acts
+-- as a "Discussion". This way, we get a relatively type-safe way of ensuring that
+-- all possible such tables are referenced when fetching the data associated with
+-- some arbitrary Discussion.
+--
+-- Any new Discussion-ey tables MUST have a constructor added here! (and below, too)
+data DiscussionType
+    = DiscussionTypeProject
+    | DiscussionTypeWikiPage
+    deriving (Bounded, Enum)
+
+-- | Similar to DiscussionType, but exported, and actually contains the data.
+data DiscussionOn
+    = DiscussionOnProject  (Entity Project)
+    | DiscussionOnWikiPage (Entity WikiPage)
+
+-- | Given a 'requested' DiscussionType, attempt to fetch the Discussion from that
+-- table. If, say, the requested DiscussionType is DiscussionTypeProject, but the
+-- given DiscussionId corresponds to a discussion on a WikiPage, this function
+-- will return Nothing.
+--
+-- TODO(mitchell): Make this function more type safe.
+fetchDiscussionInternal :: DiscussionId -> DiscussionType -> DB (Maybe DiscussionOn)
+fetchDiscussionInternal discussion_id DiscussionTypeProject = fmap (fmap DiscussionOnProject . listToMaybe) $
+    select $
+    from $ \p -> do
+    where_ (p ^. ProjectDiscussion ==. val discussion_id)
+    return p
+fetchDiscussionInternal discussion_id DiscussionTypeWikiPage = fmap (fmap DiscussionOnWikiPage . listToMaybe) $
+    select $
+    from $ \wp -> do
+    where_ (wp ^. WikiPageDiscussion ==. val discussion_id)
+    return wp
+
+fetchDiscussionsInternal :: [DiscussionId] -> DiscussionType -> DB (Map DiscussionId DiscussionOn)
+fetchDiscussionsInternal discussion_ids DiscussionTypeProject = fmap (foldr go mempty) $
+    select $
+    from $ \p -> do
+    where_ (p ^. ProjectDiscussion `in_` valList discussion_ids)
+    return p
+  where
+    go :: Entity Project -> Map DiscussionId DiscussionOn -> Map DiscussionId DiscussionOn
+    go p@(Entity _ Project{..}) = M.insert projectDiscussion (DiscussionOnProject p)
+fetchDiscussionsInternal discussion_ids DiscussionTypeWikiPage = fmap (foldr go mempty) $
+    select $
+    from $ \wp -> do
+    where_ (wp ^. WikiPageDiscussion `in_` valList discussion_ids)
+    return wp
+  where
+    go :: Entity WikiPage -> Map DiscussionId DiscussionOn -> Map DiscussionId DiscussionOn
+    go w@(Entity _ WikiPage{..}) = M.insert wikiPageDiscussion (DiscussionOnWikiPage w)
+
+-- | Fetch a single discussion, given its id.
+fetchDiscussionDB :: DiscussionId -> DB DiscussionOn
+fetchDiscussionDB discussion_id =
+    fromJustErr "fetchDiscussionDB: discussion not found" <$> runMaybeT (foldr mplus mzero f)
+  where
+    -- f :: [MaybeT DB DiscussionOn]
+    f = map (MaybeT . fetchDiscussionInternal discussion_id) [minBound..maxBound]
+
+-- | Fetch a list of discussions, given their ids. The returned map will have a key for
+-- every input DiscussionId.
+fetchDiscussionsDB :: [DiscussionId] -> DB (Map DiscussionId DiscussionOn)
+fetchDiscussionsDB discussion_ids = do
+    discussion_map <- mconcat <$> sequence (map (fetchDiscussionsInternal discussion_ids) [minBound..maxBound])
+    when (M.size discussion_map /= length discussion_ids) $
+        error "fetchDiscussionsDB: some discussion not found"
+    return discussion_map
+
+--------------------------------------------------------------------------------
+
+createDiscussionDB :: DB DiscussionId
+createDiscussionDB = insert (Discussion 0)
 
 -- | Get all open root Comments on a Discussion.
 fetchDiscussionRootCommentsDB :: DiscussionId -> ExprCommentCond -> DB [Entity Comment]
@@ -30,35 +106,3 @@ fetchRootComments open_or_closed discussion_id has_permission =
         open_or_closed c &&.
         has_permission c
     return c
-
--- | Given a list of DiscussionId, fetch the discussions which are WikiPages.
-fetchDiscussionWikiPagesInDB :: [DiscussionId] -> DB [Entity WikiPage]
-fetchDiscussionWikiPagesInDB discussion_ids =
-    select $
-    from $ \wp -> do
-    where_ (wp ^. WikiPageDiscussion `in_` valList discussion_ids)
-    return wp
-
--- | Fetch the Project this Discussion is associated with (if any).
--- TODO(mitchell): Does this require constant attention, as we expand
--- discussions?
-fetchDiscussionProjectDB :: DiscussionId -> DB (Maybe ProjectId)
-fetchDiscussionProjectDB discussion_id = runMaybeT $
-    -- From a list of possible ways to find a ProjectId from a DiscussionId, find the Project (maybe).
-    foldr (mplus . f) mzero
-        -- add more functions here as necessary
-        [(fetchDiscussionWikiPage, wikiPageProject)]
-  where
-    -- f :: (DiscussionId -> DB (Maybe (Entity a)), a -> ProjectId) -> MaybeT DB (Entity Project)
-    f (action, project_id_getter) = project_id_getter . entityVal <$> MaybeT (action discussion_id)
-
--- | Fetch the WikiPage this Discussion is on with (if any).
-fetchDiscussionWikiPage :: DiscussionId -> DB (Maybe (Entity WikiPage))
-fetchDiscussionWikiPage discussion_id = fmap listToMaybe $
-    select $
-    from $ \wp -> do
-    where_ (wp ^. WikiPageDiscussion ==. val discussion_id)
-    return wp
-
-createDiscussionDB :: DB DiscussionId
-createDiscussionDB = insert (Discussion 0)

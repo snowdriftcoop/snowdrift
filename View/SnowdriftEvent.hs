@@ -7,69 +7,19 @@ import Import
 import Model.Comment
 import Model.Comment.ActionPermissions
 import Model.Comment.Routes
+import Model.Discussion
 import Model.User
 import View.Comment
 import Widgets.Time
 
-import qualified Data.Map as M
+import qualified Data.Map   as M
 
-renderProjectCommentPostedEvent
+renderCommentPostedEvent
         :: CommentId
         -> Comment
-        -> Project
         -> Maybe UserId
-        -> ActionPermissionsMap
-        -> Map CommentId [CommentClosure]
-        -> UserMap
-        -> ClosureMap
-        -> TicketMap
-        -> FlagMap
-        -> Widget
-renderProjectCommentPostedEvent
-        comment_id
-        comment
-        Project{..}
-        mviewer_id
-        action_permissions_map
-        earlier_closures_map
-        user_map
-        closure_map
-        ticket_map
-        flag_map = do
-
-    let comment_widget =
-            commentWidget
-              (Entity comment_id comment)
-              mviewer_id
-              (projectCommentRoutes projectHandle)
-              (lookupErr "renderProjectCommentPostedEvent: comment id missing from permissions map"
-                         comment_id
-                         action_permissions_map)
-              (M.findWithDefault [] comment_id earlier_closures_map)
-              (lookupErr "renderProjectCommentPostedEvent: comment user missing from user map"
-                         (commentUser comment)
-                         user_map)
-              (M.lookup comment_id closure_map)
-              (M.lookup comment_id ticket_map)
-              (M.lookup comment_id flag_map)
-              False
-              mempty
-
-    [whamlet|
-        <div .event>
-            On
-            <a href=@{ProjectR projectHandle}>#{projectName}#
-            :
-
-            ^{comment_widget}
-    |]
-
-renderWikiPageCommentPostedEvent
-        :: CommentId
-        -> Comment
-        -> Entity WikiPage
         -> Text
-        -> Maybe UserId
+        -> Map DiscussionId DiscussionOn
         -> ActionPermissionsMap
         -> Map CommentId [CommentClosure]
         -> UserMap
@@ -77,12 +27,12 @@ renderWikiPageCommentPostedEvent
         -> TicketMap
         -> FlagMap
         -> Widget
-renderWikiPageCommentPostedEvent
+renderCommentPostedEvent
         comment_id
         comment
-        (Entity _ wiki_page)
-        project_handle
         mviewer_id
+        project_handle
+        discussion_map
         action_permissions_map
         earlier_closures_map
         user_map
@@ -90,48 +40,54 @@ renderWikiPageCommentPostedEvent
         ticket_map
         flag_map = do
 
-    let target = wikiPageTarget wiki_page
+    let action_permissions = lookupErr "renderCommentPostedEvent: comment id missing from permissions map"
+                                       comment_id
+                                       action_permissions_map
+
+        user               = lookupErr "renderCommentPostedEvent: comment user missing from user map"
+                                       (commentUser comment)
+                                       user_map
+
+        discussion         = lookupErr "renderCommentPostedEvent: discussion id not found in map"
+                                      (commentDiscussion comment)
+                                      discussion_map
+
+        (routes, feed_item_widget) = case discussion of
+            DiscussionOnProject (Entity _ Project{..}) ->
+                (projectCommentRoutes projectHandle, [whamlet|
+                    <div .event>
+                        On
+                        <a href=@{ProjectR projectHandle}>#{projectName}#
+                        :
+
+                        ^{comment_widget}
+                |])
+
+            DiscussionOnWikiPage (Entity _ WikiPage{..}) ->
+                (wikiPageCommentRoutes project_handle wikiPageTarget, [whamlet|
+                    <div .event>
+                        On the
+                        <a href=@{WikiR project_handle wikiPageTarget}>#{wikiPageTarget}
+                        wiki page:
+
+                        ^{comment_widget}
+                |])
+
         comment_widget =
             commentWidget
               (Entity comment_id comment)
               mviewer_id
-              (wikiPageCommentRoutes project_handle target)
-              (lookupErr "renderWikiPageCommentPostedEvent: comment id missing from permissions map"
-                         comment_id
-                         action_permissions_map)
+              routes
+              action_permissions
               (M.findWithDefault [] comment_id earlier_closures_map)
-              (lookupErr "renderWikiPageCommentPostedEvent: comment user missing from user map"
-                         (commentUser comment)
-                         user_map)
+              user
               (M.lookup comment_id closure_map)
               (M.lookup comment_id ticket_map)
               (M.lookup comment_id flag_map)
               False
               mempty
 
-    [whamlet|
-        <div .event>
-            On the
-            <a href=@{WikiR project_handle target}>#{target}
-            wiki page:
-
-            ^{comment_widget}
-    |]
-
--- This should really *never* be called, but it's included in case of nuclear meltdown.
-renderCommentPostedOnUnknownDiscussionEvent :: CommentId -> Comment -> Widget
-renderCommentPostedOnUnknownDiscussionEvent comment_id comment =
-    [whamlet|
-        <div .event>
-            $maybe approved_ts <- commentApprovedTs comment
-                ^{renderTime approved_ts}
-            $nothing
-                ^{renderTime $ commentCreatedTs comment}
-            somehow, this
-            <a href=@{CommentDirectLinkR comment_id}> comment
-            was posted on an unknown discussion: #
-            #{commentText comment}
-    |]
+    feed_item_widget
 
 renderCommentPendingEvent :: CommentId -> Comment -> UserMap -> Widget
 renderCommentPendingEvent comment_id comment user_map = do
@@ -142,8 +98,27 @@ renderCommentPendingEvent comment_id comment user_map = do
             <a href=@{UserR (commentUser comment)}> #{userDisplayName (Entity (commentUser comment) poster)}
             posted a
             <a href=@{CommentDirectLinkR comment_id}> comment
-            awaiting moderator approval:
-            #{commentText comment}
+            awaiting moderator approval: #{commentText comment}
+    |]
+
+renderCommentRethreadedEvent :: Rethread -> UserMap -> Widget
+renderCommentRethreadedEvent Rethread{..} user_map = do
+    (Just old_route, Just new_route) <- handlerToWidget $ runDB $ (,)
+        <$> makeCommentRouteDB rethreadOldComment
+        <*> makeCommentRouteDB rethreadNewComment
+
+    let user = lookupErr "renderCommentRethreadedEvent: rethreader not found in user map" rethreadModerator user_map
+
+    -- TODO(aaron)
+    [whamlet|
+        <div .event>
+            ^{renderTime rethreadTs}
+            <a href=@{UserR rethreadModerator}> #{userDisplayName (Entity rethreadModerator user)}
+            rethreaded a comment from
+            <del>@{old_route}
+            to
+            <a href=@{new_route}>@{new_route}#
+            : #{rethreadReason}
     |]
 
 renderWikiPageEvent :: Text -> WikiPageId -> WikiPage -> UserMap -> Widget

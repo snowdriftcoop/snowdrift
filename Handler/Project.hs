@@ -33,6 +33,7 @@ import Widgets.Preview
 import Widgets.Time
 
 import           Data.Default  (def)
+import qualified Data.Foldable as F
 import           Data.List     (sortBy)
 import qualified Data.Map      as M
 import           Data.Maybe    (maybeToList)
@@ -802,52 +803,45 @@ getEditProjectR project_handle = do
 -- statically guarantees that.
 getProjectFeedR :: Text -> Handler Html
 getProjectFeedR project_handle = do
-    let lim = 26 -- limit n from each table, then take (n-1)
+    let lim = 26 -- limit 'lim' from each table, then take 'lim - 1'
 
     muser <- maybeAuth
     let muser_id = entityKey <$> muser
 
-
     before <- lookupGetUTCTimeDefaultNow "before"
 
-    (project, comment_entities, wiki_pages, wiki_edit_entities,
-     new_pledges, updated_pledges, deleted_pledges,
-     discussion_wiki_page_map, wiki_page_map, user_map,
+    (project, comments, rethreads, wiki_pages, wiki_edits, new_pledges,
+     updated_pledges, deleted_pledges, discussion_map, wiki_page_map, user_map,
      earlier_closures_map, closure_map, ticket_map, flag_map) <- runYDB $ do
 
         Entity project_id project <- getBy404 (UniqueProjectHandle project_handle)
 
-        project_comments   <- fetchProjectCommentsBeforeDB         project_id muser_id before lim
-        wiki_page_comments <- fetchProjectWikiPageCommentsBeforeDB project_id muser_id before lim
-        wiki_pages         <- fetchProjectWikiPagesBeforeDB        project_id before lim
-        wiki_edit_entities <- fetchProjectWikiEditsBeforeDB        project_id before lim
-        new_pledges        <- fetchProjectNewPledgesBeforeDB       project_id before lim
-        updated_pledges    <- fetchProjectUpdatedPledgesBeforeDB   project_id before lim
-        deleted_pledges    <- fetchProjectDeletedPledgesBeforeDB   project_id before lim
+        comments        <- fetchProjectCommentsIncludingRethreadedBeforeDB project_id muser_id before lim
+        rethreads       <- fetchProjectCommentRethreadsBeforeDB            project_id muser_id before lim
+        wiki_pages      <- fetchProjectWikiPagesBeforeDB                   project_id before lim
+        wiki_edits      <- fetchProjectWikiEditsBeforeDB                   project_id before lim
+        new_pledges     <- fetchProjectNewPledgesBeforeDB                  project_id before lim
+        updated_pledges <- fetchProjectUpdatedPledgesBeforeDB              project_id before lim
+        deleted_pledges <- fetchProjectDeletedPledgesBeforeDB              project_id before lim
 
         -- Suplementary maps for displaying the data. If something above requires extra
         -- data to display the project feed row, it MUST be used to fetch the data below!
-        -- The Maybes from Data.Map.lookup are unsafely STRIPPED in the views!
 
-        let comment_entities = project_comments <> wiki_page_comments
-            comment_ids      = map entityKey comment_entities
-            comments         = map entityVal comment_entities
-            wiki_edits       = map entityVal wiki_edit_entities
-            shares_pledged   = map entityVal (new_pledges <> (map snd updated_pledges))
-            -- All users: Comment posters, WikiPage creators, WikiEdit makers,
-            -- and Pledgers (new, updated, and deleted).
+        let (comment_ids, comment_users)       = F.foldMap (\c -> ([entityKey c], [commentUser (entityVal c)])) comments
+            (wiki_edit_users, wiki_edit_pages) = F.foldMap (\(Entity _ e) -> ([wikiEditUser e], [wikiEditPage e])) wiki_edits
+            shares_pledged                     = map entityVal (new_pledges <> (map snd updated_pledges))
+            -- All users: comment posters, wiki page creators, etc.
             user_ids = S.toList $
-                         S.fromList (map commentUser comments) <>
-                         S.fromList (map wikiEditUser wiki_edits) <>
+                         S.fromList comment_users <>
+                         S.fromList (map (rethreadModerator . entityVal) rethreads) <>
+                         S.fromList wiki_edit_users <>
                          S.fromList (map sharesPledgedUser shares_pledged) <>
                          S.fromList (map eventDeletedPledgeUser deleted_pledges)
 
-        -- WikiPages that can be keyed by a Comment's DiscussionId (i.e. the Comment *is* on a WikiPage)
-        discussion_wiki_page_map <- M.fromList . map (\e@(Entity _ WikiPage{..}) -> (wikiPageDiscussion, e)) <$>
-                                       fetchDiscussionWikiPagesInDB (map commentDiscussion comments)
+        discussion_map <- fetchProjectDiscussionsDB project_id >>= fetchDiscussionsDB
 
         -- WikiPages keyed by their own IDs (contained in a WikiEdit)
-        wiki_page_map <- entitiesMap <$> fetchWikiPagesInDB (map wikiEditPage wiki_edits)
+        wiki_page_map <- entitiesMap <$> fetchWikiPagesInDB wiki_edit_pages
 
         user_map <- entitiesMap <$> fetchUsersInDB user_ids
 
@@ -856,21 +850,21 @@ getProjectFeedR project_handle = do
         ticket_map           <- makeTicketMapDB  comment_ids
         flag_map             <- makeFlagMapDB    comment_ids
 
+        return (project, comments, rethreads, wiki_pages, wiki_edits,
+                new_pledges, updated_pledges, deleted_pledges, discussion_map,
+                wiki_page_map, user_map, earlier_closures_map, closure_map,
+                ticket_map, flag_map)
 
-        return (project, comment_entities, wiki_pages, wiki_edit_entities,
-                new_pledges, updated_pledges, deleted_pledges,
-                discussion_wiki_page_map, wiki_page_map, user_map,
-                earlier_closures_map, closure_map, ticket_map, flag_map)
-
-    action_permissions_map <- makeProjectCommentActionPermissionsMap muser project_handle comment_entities
+    action_permissions_map <- makeProjectCommentActionPermissionsMap muser project_handle comments
 
     let all_unsorted_events = mconcat
-            [ map (onEntity ECommentPosted)  comment_entities
-            , map (onEntity EWikiPage)       wiki_pages
-            , map (onEntity EWikiEdit)       wiki_edit_entities
-            , map (onEntity ENewPledge)      new_pledges
-            , map eup2se                     updated_pledges
-            , map edp2se                     deleted_pledges
+            [ map (onEntity ECommentPosted)     comments
+            , map (onEntity ECommentRethreaded) rethreads
+            , map (onEntity EWikiPage)          wiki_pages
+            , map (onEntity EWikiEdit)          wiki_edits
+            , map (onEntity ENewPledge)         new_pledges
+            , map eup2se                        updated_pledges
+            , map edp2se                        deleted_pledges
             ]
 
         (events, more_events) = splitAt (lim-1) (sortBy snowdriftEventNewestToOldest all_unsorted_events)
@@ -887,11 +881,11 @@ getProjectFeedR project_handle = do
         $(widgetFile "project_feed")
         toWidget $(cassiusFile "templates/comment.cassius")
   where
-    -- "event updated pledge to snowdrift event". Makes above code cleaner.
+    -- "event updated pledge to snowdrift event"
     eup2se :: (Int64, Entity SharesPledged) -> SnowdriftEvent
     eup2se (old_shares, Entity shares_pledged_id shares_pledged) = EUpdatedPledge old_shares shares_pledged_id shares_pledged
 
-    -- "event deleted pledge to snowdrift event". Makes above code cleaner.
+    -- "event deleted pledge to snowdrift event"
     edp2se :: EventDeletedPledge -> SnowdriftEvent
     edp2se (EventDeletedPledge a b c d) = EDeletedPledge a b c d
 

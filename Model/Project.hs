@@ -2,11 +2,11 @@ module Model.Project
     ( ProjectSummary(..)
     , UpdateProject(..)
     , fetchAllProjectsDB
+    , fetchProjectCommentRethreadsBeforeDB
     , fetchProjectCommentsDB
-    , fetchProjectCommentsBeforeDB
-    , fetchProjectPendingCommentsBeforeDB
-    , fetchProjectWikiPageCommentsBeforeDB
+    , fetchProjectCommentsIncludingRethreadedBeforeDB
     , fetchProjectDeletedPledgesBeforeDB
+    , fetchProjectDiscussionsDB
     , fetchProjectNewPledgesBeforeDB
     , fetchProjectModeratorsDB
     , fetchProjectTeamMembersDB
@@ -255,46 +255,43 @@ getProjectWikiPages project_id =
     orderBy [asc (wp ^. WikiPageTarget)]
     return wp
 
-fetchProjectCommentsBeforeDB :: ProjectId -> Maybe UserId -> UTCTime -> Int64 -> DB [Entity Comment]
-fetchProjectCommentsBeforeDB project_id muser_id before lim =
+-- | Fetch all Discussions that are somewhere on the given Project.
+fetchProjectDiscussionsDB :: ProjectId -> DB [DiscussionId]
+fetchProjectDiscussionsDB project_id = do
+    pd <- projectDiscussion <$> getJust project_id
+    wpds <- fmap (map unValue) $
+                select $
+                from $ \wp -> do
+                where_ (wp ^. WikiPageProject ==. val project_id)
+                return (wp ^. WikiPageDiscussion)
+    return (pd : wpds)
+
+-- | Get all (posted, not pending) Comments made *somewhere* on a Project, before the given time.
+fetchProjectCommentsIncludingRethreadedBeforeDB :: ProjectId -> Maybe UserId -> UTCTime -> Int64 -> DB [Entity Comment]
+fetchProjectCommentsIncludingRethreadedBeforeDB project_id muser_id before lim = fetchProjectDiscussionsDB project_id >>= \project_discussions ->
     select $
     from $ \(ecp `InnerJoin` c) -> do
     on_ (ecp ^. EventCommentPostedComment ==. c ^. CommentId)
     where_ $
         ecp ^. EventCommentPostedTs <=. val before &&.
+        exprCommentProjectPermissionFilterIncludingRethreaded muser_id (val project_id) c &&.
+        c ^. CommentDiscussion `in_` valList project_discussions
+    limit lim
+    return c
+
+-- | Get all Rethreads whose *destinations* are on the given Project.
+fetchProjectCommentRethreadsBeforeDB :: ProjectId -> Maybe UserId -> UTCTime -> Int64 -> DB [Entity Rethread]
+fetchProjectCommentRethreadsBeforeDB project_id muser_id before lim = fetchProjectDiscussionsDB project_id >>= \project_discussions ->
+    select $
+    from $ \(ecr `InnerJoin` r `InnerJoin` c) -> do
+    on_ (r ^. RethreadNewComment ==. c ^. CommentId)
+    on_ (ecr ^. EventCommentRethreadedRethread ==. r ^. RethreadId)
+    where_ $
+        ecr ^. EventCommentRethreadedTs <=. val before &&.
         exprCommentProjectPermissionFilter muser_id (val project_id) c &&.
-        c ^. CommentDiscussion ==. (sub_select $
-                                    from $ \p -> do
-                                    where_ (p ^. ProjectId ==. val project_id)
-                                    return (p ^. ProjectDiscussion))
+        c ^. CommentDiscussion `in_` valList project_discussions
     limit lim
-    return c
-
--- | Fetch all Comments posted on this Project's WikiPages before this time.
-fetchProjectWikiPageCommentsBeforeDB :: ProjectId -> Maybe UserId -> UTCTime -> Int64 -> DB [Entity Comment]
-fetchProjectWikiPageCommentsBeforeDB project_id muser_id before lim =
-    select $
-    from $ \(ecp `InnerJoin` c `InnerJoin` wp) -> do
-    on_ (exprCommentOnWikiPage c wp)
-    on_ (ecp ^. EventCommentPostedComment ==. c ^. CommentId)
-    where_ $
-        ecp ^. EventCommentPostedTs <=. val before &&.
-        exprWikiPageOnProject wp project_id &&.
-        exprCommentProjectPermissionFilter muser_id (val project_id) c
-    limit lim
-    return c
-
--- | Fetch all pending Comments made on a Project before this time.
-fetchProjectPendingCommentsBeforeDB :: ProjectId -> Maybe UserId -> UTCTime -> Int64 -> DB [Entity Comment]
-fetchProjectPendingCommentsBeforeDB project_id muser_id before lim =
-    select $
-    from $ \(ecp `InnerJoin` c) -> do
-    on_ (ecp ^. EventCommentPendingComment ==. c ^. CommentId)
-    where_ $
-        ecp ^. EventCommentPendingTs <=. val before &&.
-        exprCommentProjectPermissionFilter muser_id (val project_id) c
-    limit lim
-    return c
+    return r
 
 -- | Fetch all WikiPages made on this Project before this time.
 fetchProjectWikiPagesBeforeDB :: ProjectId -> UTCTime -> Int64 -> DB [Entity WikiPage]

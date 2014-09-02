@@ -3,26 +3,10 @@
 $forall event <- events
     $case event
         $of ECommentPosted comment_id comment
+            ^{renderCommentPostedEvent comment_id comment muser_id project_handle discussion_map action_permissions_map earlier_closures_map user_map closure_map ticket_map flag_map}
 
-            $# Here we must discover what kind of discussion the comment was posted
-            $# on by looking in each map in order. There ought to be a nicer
-            $# way to do this, but I'd like to keep both of:
-            $#   - ECommentPosted not being split into a different event for
-            $#       each comment location.
-            $#   - A single event data type (as opposed to something like 
-            $#       FeedEvent that specialized SnowdriftEvent, e.g.
-            $#       FECommentPostedOnWikiPage)
-
-            $if commentDiscussion comment == projectDiscussion project
-                ^{renderProjectCommentPostedEvent comment_id comment project muser_id action_permissions_map earlier_closures_map user_map closure_map ticket_map flag_map}
-            $else
-                $maybe wiki_page <- M.lookup (commentDiscussion comment) discussion_wiki_page_map
-                    ^{renderWikiPageCommentPostedEvent comment_id comment wiki_page project_handle muser_id action_permissions_map earlier_closures_map user_map closure_map ticket_map flag_map}
-
-                $# This should never happen.
-
-                $nothing
-                    ^{renderCommentPostedOnUnknownDiscussionEvent comment_id comment}
+        $of ECommentRethreaded _ rethread
+            ^{renderCommentRethreadedEvent rethread user_map}
 
         $of EWikiPage wiki_page_id wiki_page
             ^{renderWikiPageEvent project_handle wiki_page_id wiki_page user_map}

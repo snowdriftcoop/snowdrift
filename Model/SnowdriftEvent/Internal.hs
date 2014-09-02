@@ -10,9 +10,11 @@ import Data.Time (UTCTime)
 -- A sum type of all events, each of which have their own database table.
 data SnowdriftEvent
     -- Comment approved.
-    = ECommentPosted  CommentId Comment
+    = ECommentPosted CommentId Comment
     -- Comment unapproved (pending approval).
     | ECommentPending CommentId Comment
+    -- Comment rethreaded.
+    | ECommentRethreaded RethreadId Rethread -- rethreaded-from-URL
     | ENotificationSent NotificationId Notification
     -- New WikiEdit made.
     | EWikiEdit WikiEditId WikiEdit
@@ -21,7 +23,7 @@ data SnowdriftEvent
     -- New pledge.
     | ENewPledge SharesPledgedId SharesPledged
     -- Pledge that has changed in value.
-    | EUpdatedPledge Int64 {- old shares -}
-                     SharesPledgedId SharesPledged {- new pledge info -}
+    | EUpdatedPledge Int64                         -- old shares
+                     SharesPledgedId SharesPledged -- new pledge info
     -- Deleted pledge.
     | EDeletedPledge UTCTime UserId ProjectId Int64

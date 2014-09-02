@@ -6,33 +6,30 @@ Payday
 
 
 Transaction
-    ts UTCTime
-
+    ts     UTCTime
     credit AccountId Maybe
-    debit AccountId Maybe
-
-    payday PaydayId Maybe
-
+    debit  AccountId Maybe
+    payday PaydayId  Maybe
     amount Milray
-
     reason Text
-    info Text Maybe
+    info   Text      Maybe
 
 User
-    ident Text
-    createdTs UTCTime Maybe
-    hash Text Maybe
-    salt Text Maybe
-    name Text Maybe
-    account AccountId
-    avatar Text Maybe
-    blurb Markdown Maybe
-    statement Markdown Maybe
-    ircNick Text Maybe
-    readNotifications UTCTime default=now() -- The last time the user visited /notifications
-    readApplications UTCTime default=now()
-    established Established default='EstUnestablished'
-    discussion DiscussionId default=nextval('discussion_id_seq'::regclass)
+    ident             Text
+    createdTs         UTCTime      Maybe
+    hash              Text         Maybe
+    salt              Text         Maybe
+    name              Text         Maybe
+    account           AccountId
+    avatar            Text         Maybe
+    blurb             Markdown     Maybe
+    statement         Markdown     Maybe
+    ircNick           Text         Maybe
+    readNotifications UTCTime            default=now() -- The last time the user visited /notifications
+    readApplications  UTCTime            default=now()
+    established       Established        default='EstUnestablished'
+    discussion        DiscussionId       default=nextval('discussion_id_seq'::regclass)
+
     UniqueUser ident
     UniqueUserAccount account
     deriving Show Typeable
@@ -45,35 +42,39 @@ User
 -- directly from Snowdrift) don't need an entry in this table, as the code that
 -- sends such notifications needn't query it.
 UserNotificationPref
-    user UserId
-    type NotificationType
+    user     UserId
+    type     NotificationType
     delivery NotificationDelivery
+
     UniqueUserNotificationPref user type
 
 -- User-watching-project relation
 UserWatchingProject
-    user UserId
+    user    UserId
     project ProjectId
+
     UniqueUserWatchingProject user project
 
 -- TODO(mitchell) is this used?
 UserSetting
-    user UserId
+    user    UserId
     setting UserSettingName
     value String
 
 ViewTime
-    user UserId
+    user    UserId
     project ProjectId
-    type ViewType
-    time UTCTime default=now()
+    type    ViewType
+    time    UTCTime   default=now()
+
     UniqueViewTimeUserProjectType user project type
 
 -- A viewing of a single comment. The existence of this of a row here indicates
 -- the comment has been viewed by the user; the absence indicates it hasnt.
 ViewComment
-    user UserId
+    user    UserId
     comment CommentId
+
     UniqueViewComment user comment
 
 -- A viewing of a single wiki page edit. The existence of this of a row here indicates
@@ -81,277 +82,305 @@ ViewComment
 ViewWikiEdit
     user UserId
     edit WikiEditId
+
     UniqueViewWikiEdit user edit
 
 Project
-    createdTs UTCTime
-    name Text
-    handle Text
+    createdTs   UTCTime
+    name        Text
+    handle      Text
     description Markdown
-    account AccountId
-    shareValue Milray
-    lastPayday PaydayId Maybe
-    githubRepo Text Maybe
-    discussion DiscussionId default=nextval('discussion_id_seq'::regclass)
+    account     AccountId
+    shareValue  Milray
+    lastPayday  PaydayId     Maybe
+    githubRepo  Text         Maybe
+    discussion  DiscussionId       default=nextval('discussion_id_seq'::regclass)
+
     UniqueProjectAccount account
     UniqueProjectHandle handle
+
     deriving Eq Show
 
 ProjectBlog
-    time UTCTime
-    title Text
-    handle Text
-    user UserId
-    project ProjectId
-    discussion DiscussionId
-    topContent Markdown
-    bottomContent Markdown Maybe
+    time          UTCTime
+    title         Text
+    handle        Text
+    user          UserId
+    project       ProjectId
+    discussion    DiscussionId
+    topContent    Markdown
+    bottomContent Markdown     Maybe
+
     UniqueProjectBlogPost project handle
+
     deriving Show
 
 ProjectUserRole
     project ProjectId
-    user UserId
-    role Role
+    user    UserId
+    role    Role
+
     UniqueProjectUserRole project user role
+
     deriving Show
 
 ProjectUpdate
-    updatedTs UTCTime
-    project ProjectId
-    author UserId
+    updatedTs   UTCTime
+    project     ProjectId
+    author      UserId
     description MarkdownDiff
 
 ProjectLastUpdate
     project ProjectId
-    update ProjectUpdateId
+    update  ProjectUpdateId
+
     UniqueProjectLastUpdate project
 
 -- Parts of Pledge are duplicated in EventDeletedPledge.
 -- If you modify Pledge, be sure to (possibly) modify
 -- EventDeletedPledge as well!
 Pledge
-    createdTs UTCTime default=now()
-    user UserId
-    project ProjectId
-    shares Int64
+    createdTs    UTCTime default=now()
+    user         UserId
+    project      ProjectId
+    shares       Int64
     fundedShares Int64
+
     UniquePledge user project
 
 Invite
-    createdTs UTCTime
-    project ProjectId
-    code Text
-    user UserId
-    role Role
-    tag Text
-    redeemed Bool
-    redeemedTs UTCTime Maybe
-    redeemedBy UserId Maybe
+    createdTs  UTCTime
+    project    ProjectId
+    code       Text
+    user       UserId
+    role       Role
+    tag        Text
+    redeemed   Bool
+    redeemedTs UTCTime   Maybe
+    redeemedBy UserId    Maybe
+
     UniqueInvite code
 
 VolunteerApplication
-    createdTs UTCTime
-    project ProjectId
-    user UserId
-    name Text
-    email Text
-    otherContactInfo Text Maybe
-    website Text Maybe
-    location Text Maybe
-    experience Textarea Maybe
-    comments Textarea Maybe
+    createdTs        UTCTime
+    project          ProjectId
+    user             UserId
+    name             Text
+    email            Text
+    otherContactInfo Text      Maybe
+    website          Text      Maybe
+    location         Text      Maybe
+    experience       Textarea  Maybe
+    comments         Textarea  Maybe
 
 Interest
     description Text
 
 VolunteerInterest
     volunteer VolunteerApplicationId
-    interest InterestId
+    interest  InterestId
 
 Notification
     createdTs UTCTime
-    type NotificationType
-    to UserId
-    project ProjectId Maybe -- An "associated" project.
-    content Markdown
-    archived Bool           -- Put into the "trash bin".
+    type      NotificationType
+    to        UserId
+    project   ProjectId        Maybe -- An "associated" project.
+    content   Markdown
+    archived  Bool                   -- Put into the "trash bin".
 
 -- A many-to-one relationship linking notifications sent to moderators about an
 -- unapproved comment. When the comment is approved, all such notifications are
 -- deleted automatically (as they are no longer relevant) - this table
 -- allows us to keep track of which notifications to delete.
 UnapprovedCommentNotification
-    comment CommentId
+    comment      CommentId
     notification NotificationId
 
 WikiPage
-    createdTs UTCTime default=now()
-    target Text
-    project ProjectId
-    content Markdown
-    discussion DiscussionId
+    createdTs       UTCTime         default=now()
+    target          Text
+    project         ProjectId
+    content         Markdown
+    discussion      DiscussionId
     permissionLevel PermissionLevel
+
     UniqueWikiTarget project target
+
     deriving Eq
 
 WikiEdit
-    ts UTCTime
-    user UserId
-    page WikiPageId
+    ts      UTCTime
+    user    UserId
+    page    WikiPageId
     content Markdown
-    comment Text Maybe
+    comment Text       Maybe
+
     deriving Eq
 
 WikiLastEdit
     page WikiPageId
     edit WikiEditId
+
     UniqueWikiLastEdit page
 
 Discussion
     nothing Int64
 
 Comment
-    createdTs UTCTime
+    createdTs  UTCTime
 
     -- "Unestablished" users may still make comments, but they must be approved
     -- by a moderator. "Established" users' comments are marked as approved by
     -- themselves (though this does not mean they are a moderator).
-    approvedTs UTCTime Maybe
-    approvedBy UserId Maybe
+    approvedTs UTCTime      Maybe
+    approvedBy UserId       Maybe
 
     discussion DiscussionId
-    parent CommentId Maybe
-    user UserId
-    text Markdown
-    depth Int
-    visibility Visibility default='VisPublic'
+    parent     CommentId    Maybe
+    user       UserId
+    text       Markdown
+    depth      Int
+    visibility Visibility         default='VisPublic'
+
     deriving Eq Show
 
 -- A comment has zero or more ancestors: its parent, grandparent, great
 -- grandparent, etc.
 CommentAncestor
-    comment CommentId
+    comment  CommentId
     ancestor CommentId
+
     UniqueCommentAncestor comment ancestor
+
     deriving Show
 
 -- A comment-being-closed event.
 CommentClosure
-    ts UTCTime
+    ts       UTCTime
     closedBy UserId
-    type ClosureType
-    reason Markdown
-    comment CommentId
+    type     ClosureType
+    reason   Markdown
+    comment  CommentId
 
 -- A rethread event. Moderators may move comment threads around as they wish.
 Rethread
-    ts UTCTime            -- Timestamp.
-    moderator UserId      -- The moderator that rethreaded.
-    oldComment CommentId  -- The old comment that was rethreaded.
-    reason Text           -- The reason for rethreading.
+    ts         UTCTime                     -- Timestamp.
+    moderator  UserId                      -- The moderator that rethreaded.
+    oldComment CommentId                   -- The old comment that was rethreaded.
+    newComment CommentId
+    reason     Text                        -- The reason for rethreading.
 
 -- A flagging event, with one or more reason stored in CommentFlaggingReason.
 CommentFlagging
-    ts UTCTime
+    ts      UTCTime
     flagger UserId
     comment CommentId
-    message Markdown Maybe -- Optional message provided by the flagger.
+    message Markdown  Maybe -- Optional message provided by the flagger.
+
     -- Only one flagging can exist for a comment at any given time.
     UniqueCommentFlagging comment
 
 -- A reason associated with a comment flagging. One-to-many relation.
 CommentFlaggingReason
     flagging CommentFlaggingId
-    reason FlagReason
+    reason   FlagReason
+
     UniqueCommentFlaggingReason flagging reason
 
 -- An individual comment-rethread relation.
 CommentRethread
-    rethread RethreadId
+    rethread   RethreadId
     oldComment CommentId
     newComment CommentId
 
 Tag
-    name Text
+    name      Text
     UniqueTag name
 
 ProjectTag
     project ProjectId
-    tag TagId
+    tag     TagId
+
     UniqueProjectTag project tag
 
 CommentTag
     comment CommentId
-    tag TagId
-    user UserId
-    count Int default=1
+    tag     TagId
+    user    UserId
+    count   Int       default=1
+
     UniqueCommentTag comment tag user
 
 -- A Comment can have at most one Ticket (i.e. the comment can be marked as a ticket)
 Ticket
     createdTs UTCTime
     updatedTs UTCTime
-    name Text
-    comment CommentId
+    name      Text
+    comment   CommentId
+
     UniqueTicket comment
 
 Build
     bootTime UTCTime
-    base Text
-    diff Text
+    base     Text
+    diff     Text
 
 -- A User may be established by a number of different ways. Manual establishment
 -- by a moderator is one of them.
 ManualEstablishment
-    establishedUser UserId
+    establishedUser  UserId
     establishingUser UserId
+
     UniqueManualEstablishment establishedUser
 
 TagColor
-    tag TagId
-    user UserId
+    tag   TagId
+    user  UserId
     color Int
+
     UniqueTagColor tag user
+
     deriving Typeable
 
 DefaultTagColor
-    tag TagId
+    tag   TagId
     color Int
+
     UniqueDefaultTag tag
 
 RoleEvent
-    time UTCTime
-    user UserId
-    role Role
+    time    UTCTime
+    user    UserId
+    role    Role
     project ProjectId
-    added Bool
+    added   Bool
 
 Doc
-    name Text
+    name           Text
     currentVersion WikiEditId
+
     UniqueDocName name
 
 DocEvent
-    time UTCTime
-    doc DocId
+    time           UTCTime
+    doc            DocId
     blessedVersion WikiEditId
 
 DatabaseVersion
     lastMigration Int
 
 PledgeFormRendered
-    ts UTCTime
-    order Text
+    ts      UTCTime
+    order   Text
     project ProjectId
-    user UserId Maybe
+    user    UserId    Maybe
 
 SharesPledged
-    ts UTCTime
-    user UserId
+    ts      UTCTime
+    user    UserId
     project ProjectId
-    shares Int64
-    render PledgeFormRenderedId
+    shares  Int64
+    render  PledgeFormRenderedId
 
 --------------------------------------------------------------------------------
 -- Snowdrift events. These are all combined into a single sum time in 
@@ -359,40 +388,44 @@ SharesPledged
 
 -- An approved comment.
 EventCommentPosted
-    ts UTCTime
+    ts      UTCTime
     comment CommentId
 
 -- An unapproved comment.
 EventCommentPending
-    ts UTCTime
+    ts      UTCTime
     comment CommentId
+
+EventCommentRethreaded
+    ts       UTCTime
+    rethread RethreadId
 
 -- Notification sent event.
 EventNotificationSent
-    ts UTCTime
+    ts           UTCTime
     notification NotificationId
 
 -- Wiki page created event.
 EventWikiPage
-    ts UTCTime
+    ts       UTCTime
     wikiPage WikiPageId
 
 -- Wiki edit made event.
 EventWikiEdit
-    ts UTCTime
+    ts       UTCTime
     wikiEdit WikiEditId
 
 EventNewPledge
-    ts UTCTime
+    ts            UTCTime
     sharesPledged SharesPledgedId
 
 EventUpdatedPledge
-    ts UTCTime
-    oldShares Int64
+    ts            UTCTime
+    oldShares     Int64
     sharesPledged SharesPledgedId
 
 EventDeletedPledge
-    ts UTCTime
-    user UserId
+    ts      UTCTime
+    user    UserId
     project ProjectId
-    shares Int64
+    shares  Int64

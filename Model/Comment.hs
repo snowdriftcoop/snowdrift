@@ -39,41 +39,41 @@ module Model.Comment
     , fetchCommentDestinationDB
     , fetchCommentFlaggingDB
     , fetchCommentsDescendantsDB
-    , fetchCommentWikiPageDB
     , fetchCommentRethreadDB
     , fetchCommentTagsDB
     , fetchCommentTagCommentTagsDB
+    , fetchCommentsInDB
     , fetchCommentsWithChildrenInDB
     , filterCommentsDB
     , makeClosureMapDB
+    , makeCommentRouteDB
     , makeFlagMapDB
     , makeTicketMapDB
     , postApprovedCommentDB
     , postUnapprovedCommentDB
-    , rethreadCommentsDB
+    , rethreadCommentDB
     , subFetchCommentAncestorsDB
-    , unsafeFetchCommentPageDB
-    , unsafeFetchCommentPageIdDB
     ) where
 
 import Import
 
 import           Model.Comment.Sql
+import           Model.Discussion
 import           Model.Notification
 import           Model.Tag
 
-import qualified Control.Monad.State         as St
+import qualified Control.Monad.State         as State
 import           Control.Monad.Writer.Strict (tell)
 import           Data.Default                (Default, def)
 import           Data.Foldable               (Foldable)
 import qualified Data.Foldable               as F
 import qualified Data.Map                    as M
-import           Data.Maybe                  (fromJust)
 import qualified Data.Set                    as S
 import qualified Data.Text                   as T
 import           Data.Tree
 import qualified Database.Persist            as P
 import           GHC.Exts                    (IsList(..))
+import qualified Prelude                     as Prelude
 import           Yesod.Markdown              (Markdown(..))
 
 --------------------------------------------------------------------------------
@@ -308,6 +308,15 @@ fetchCommentDB comment_id has_permission = get comment_id >>= \case
                       has_permission c
                   return c
 
+fetchCommentsInDB :: [CommentId] -> ExprCommentCond -> DB [Entity Comment]
+fetchCommentsInDB comment_ids has_permission =
+    select $
+    from $ \c -> do
+    where_ $
+        c ^. CommentId `in_` valList comment_ids &&.
+        has_permission c
+    return c
+
 -- | Delete-cascade a comment from the database.
 deleteCommentDB :: CommentId -> DB ()
 deleteCommentDB = deleteCascade
@@ -460,24 +469,6 @@ fetchCommentDepth404DB = fmap commentDepth . runYDB . get404
 fetchCommentFlaggingDB :: CommentId -> DB (Maybe (Entity CommentFlagging))
 fetchCommentFlaggingDB = getBy . UniqueCommentFlagging
 
-unsafeFetchCommentPageDB :: CommentId -> DB WikiPage
-unsafeFetchCommentPageDB = fmap entityVal . unsafeFetchCommentPageEntityDB
-
-unsafeFetchCommentPageIdDB :: CommentId -> DB WikiPageId
-unsafeFetchCommentPageIdDB = fmap entityKey . unsafeFetchCommentPageEntityDB
-
--- | Fails if the given Comment is not on a WikiPage, but some other Discussion.
-unsafeFetchCommentPageEntityDB :: CommentId -> DB (Entity WikiPage)
-unsafeFetchCommentPageEntityDB = fmap fromJust . fetchCommentWikiPageDB
-
-fetchCommentWikiPageDB :: CommentId -> DB (Maybe (Entity WikiPage))
-fetchCommentWikiPageDB comment_id = fmap listToMaybe $
-    select $
-    from $ \(c `InnerJoin` p) -> do
-    on_ (c ^. CommentDiscussion ==. p ^. WikiPageDiscussion)
-    where_ (c ^. CommentId ==. val comment_id)
-    return p
-
 -- | Get the CommentId this CommentId was rethreaded to, if it was.
 fetchCommentRethreadDB :: CommentId -> DB (Maybe CommentId)
 fetchCommentRethreadDB comment_id = fmap unValue . listToMaybe <$> (
@@ -503,7 +494,12 @@ fetchCommentCommentTagsInDB comment_ids = fmap (map entityVal) $
 
 -- | Get a Comment's descendants' ids (don't filter hidden or unapproved comments).
 fetchCommentAllDescendantsDB :: CommentId -> DB [CommentId]
-fetchCommentAllDescendantsDB = fmap (map unValue) . select . querCommentDescendants
+fetchCommentAllDescendantsDB comment_id = fmap (map unValue) $
+    select $
+    from $ \ca -> do
+    where_ (ca ^. CommentAncestorAncestor ==. val comment_id)
+    orderBy [asc (ca ^. CommentAncestorComment)]
+    return (ca ^. CommentAncestorComment)
 
 -- | Get all descendants of the given root comment.
 fetchCommentDescendantsDB :: CommentId -> ExprCommentCond -> DB [Entity Comment]
@@ -511,8 +507,11 @@ fetchCommentDescendantsDB comment_id has_permission =
     select $
     from $ \c -> do
     where_ $
-        c ^. CommentId `in_` subList_select (querCommentDescendants comment_id) &&.
-        has_permission c
+        has_permission c &&.
+        c ^. CommentId `in_` (subList_select $
+                              from $ \ca -> do
+                              where_ (ca ^. CommentAncestorAncestor ==. val comment_id)
+                              return (ca ^. CommentAncestorComment))
     -- DO NOT change ordering here! buildCommentTree relies on it.
     orderBy [asc (c ^. CommentParent), asc (c ^. CommentCreatedTs)]
     return c
@@ -599,44 +598,85 @@ makeFlagMapDB comment_ids = mkFlagMap <$> getCommentFlaggings
         combine :: (Maybe Markdown, [FlagReason]) -> (Maybe Markdown, [FlagReason]) -> (Maybe Markdown, [FlagReason])
         combine (message, reasons1) (_, reasons2) = (message, reasons1 <> reasons2)
 
-rethreadCommentsDB :: RethreadId -> Int -> Maybe CommentId -> DiscussionId -> [CommentId] -> DB [CommentId]
-rethreadCommentsDB rethread_id depth_offset maybe_new_parent_id new_discussion_id comment_ids = do
-    new_comment_ids <- flip St.evalStateT M.empty $ forM comment_ids $ \ comment_id -> do
-        rethreads <- St.get
+rethreadCommentDB :: Maybe CommentId -> DiscussionId -> CommentId -> UserId -> Text -> Int -> SDB ()
+rethreadCommentDB mnew_parent_id new_discussion_id root_comment_id user_id reason depth_offset = do
+    (old_comment_ids, new_comment_ids) <- lift $ do
+        descendants_ids <- fetchCommentAllDescendantsDB root_comment_id
+        let old_comment_ids = root_comment_id : descendants_ids
 
-        Just comment <- get comment_id
+        new_comment_ids <- flip State.evalStateT mempty $ forM old_comment_ids $ \comment_id -> do
+            rethread_map <- State.get
 
-        let new_parent_id = maybe maybe_new_parent_id Just $ M.lookup (commentParent comment) rethreads
+            Just comment <- get comment_id
 
-        new_comment_id <- insert $ comment
-            { commentDepth = commentDepth comment - depth_offset
-            , commentParent = new_parent_id
-            , commentDiscussion = new_discussion_id
-            }
+            let new_parent_id = maybe mnew_parent_id Just $ M.lookup (commentParent comment) rethread_map
 
-        St.put $ M.insert (Just comment_id) new_comment_id rethreads
+            new_comment_id <- insert $ comment
+                { commentDepth      = commentDepth comment - depth_offset
+                , commentParent     = new_parent_id
+                , commentDiscussion = new_discussion_id
+                }
 
-        return new_comment_id
+            State.put $ M.insert (Just comment_id) new_comment_id rethread_map
 
-    forM_ (zip comment_ids new_comment_ids) $ \ (comment_id, new_comment_id) -> do
-        update $ \ comment_tag -> do
-            where_ $ comment_tag ^. CommentTagComment ==. val comment_id
-            set comment_tag [ CommentTagComment =. val new_comment_id ]
+            return new_comment_id
 
-        update $ \ ticket -> do
-            where_ $ ticket ^. TicketComment ==. val comment_id
-            set ticket [ TicketComment =. val new_comment_id ]
+        return (old_comment_ids, new_comment_ids)
 
-        insert_ $ CommentRethread rethread_id comment_id new_comment_id
 
-    insertSelect $
-        from $ \(comment_closure `InnerJoin` comment_rethread) -> do
-        on_ $ comment_closure ^. CommentClosureComment ==. comment_rethread ^. CommentRethreadOldComment
-        return $ CommentClosure
-                    <#  (comment_closure ^. CommentClosureTs)
-                    <&> (comment_closure ^. CommentClosureClosedBy)
-                    <&> (comment_closure ^. CommentClosureType)
-                    <&> (comment_closure ^. CommentClosureReason)
-                    <&> (comment_rethread ^. CommentRethreadNewComment)
+    now <- liftIO getCurrentTime
 
-    return new_comment_ids
+    let new_root_comment_id = Prelude.head new_comment_ids -- This is kind of ugly, but it should be safe.
+        rethread = Rethread now user_id root_comment_id new_root_comment_id reason
+    rethread_id <- lift (insert rethread)
+    tell [ECommentRethreaded rethread_id rethread]
+
+    lift $ do
+        forM_ (zip old_comment_ids new_comment_ids) $ \ (comment_id, new_comment_id) -> do
+            update $ \ comment_tag -> do
+                where_ $ comment_tag ^. CommentTagComment ==. val comment_id
+                set comment_tag [ CommentTagComment =. val new_comment_id ]
+
+            update $ \ ticket -> do
+                where_ $ ticket ^. TicketComment ==. val comment_id
+                set ticket [ TicketComment =. val new_comment_id ]
+
+            insert_ $ CommentRethread rethread_id comment_id new_comment_id
+
+            insertSelect $
+             from $ \(c `InnerJoin` ca) -> do
+             on_ (c ^. CommentParent ==. just (ca ^. CommentAncestorComment))
+             where_ (c ^. CommentId ==. val new_comment_id)
+             return (CommentAncestor <# val new_comment_id <&> (ca ^. CommentAncestorAncestor))
+
+            [Value maybe_new_parent_id] <-
+                select $
+                from $ \c -> do
+                where_ (c ^. CommentId ==. val new_comment_id)
+                return (c ^. CommentParent)
+
+            maybe (return ()) (insert_ . CommentAncestor new_comment_id) maybe_new_parent_id
+
+        insertSelect $
+            from $ \(comment_closure `InnerJoin` comment_rethread) -> do
+            on_ $ comment_closure ^. CommentClosureComment ==. comment_rethread ^. CommentRethreadOldComment
+            return $ CommentClosure
+                        <#  (comment_closure ^. CommentClosureTs)
+                        <&> (comment_closure ^. CommentClosureClosedBy)
+                        <&> (comment_closure ^. CommentClosureType)
+                        <&> (comment_closure ^. CommentClosureReason)
+                        <&> (comment_rethread ^. CommentRethreadNewComment)
+
+        delete $
+         from $ \ca ->
+         where_ $ ca ^. CommentAncestorComment `in_` valList old_comment_ids
+
+makeCommentRouteDB :: CommentId -> DB (Maybe (Route App))
+makeCommentRouteDB comment_id = get comment_id >>= \case
+    Nothing -> return Nothing
+    Just comment -> fetchDiscussionDB (commentDiscussion comment) >>= \case
+        DiscussionOnProject (Entity _ project) -> return (Just (ProjectCommentR (projectHandle project) comment_id))
+        DiscussionOnWikiPage (Entity _ wiki_page) -> do
+            project <- getJust (wikiPageProject wiki_page)
+            return (Just (WikiCommentR (projectHandle project) (wikiPageTarget wiki_page) comment_id))
+

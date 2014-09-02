@@ -14,6 +14,8 @@ data NotificationType
     -- Alert moderators about an unapproved comment.
     -- These notifications are auto-deleted when the comment is approved.
     | NotifUnapprovedComment
+    -- User's comment was rethreaded.
+    | NotifRethreadedComment
     -- Reply to a comment made.
     | NotifReply
     -- Edit conflict.
@@ -29,6 +31,7 @@ showNotificationType :: NotificationType -> Text
 showNotificationType NotifWelcome           = "Snowdrift welcome message"
 showNotificationType NotifEligEstablish     = "You have become eligible for establishment"
 showNotificationType NotifUnapprovedComment = "Unapproved comments"
+showNotificationType NotifRethreadedComment = "Rethreaded comments"
 showNotificationType NotifBalanceLow        = "Balance low"
 showNotificationType NotifReply             = "Replies to my comments"
 showNotificationType NotifEditConflict      = "Edit conflict"
