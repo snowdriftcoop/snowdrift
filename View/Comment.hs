@@ -64,6 +64,8 @@ commentForm label content = renderBootstrap3 $ NewComment
 commentFormWidget :: SomeMessage App -> Maybe Markdown -> Widget
 commentFormWidget label = commentFormWidget' . commentForm label
 
+-- intentional duplication of commentFormWidget' because some aspects
+-- of closing and other markdown aren't identical (such as marking privacy)
 closureFormWidget' :: Form NewClosure -> Widget
 closureFormWidget' form = do
     (widget, enctype) <- handlerToWidget $ generateFormPost form

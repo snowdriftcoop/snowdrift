@@ -62,8 +62,10 @@ exprCommentViewedBy user_id c = c ^. CommentId `in_`
      where_ (vc ^. ViewCommentUser ==. val user_id)
      return (vc ^. ViewCommentComment))
 
-exprRootPostedBy :: UserId -> ExprCommentCond
-exprRootPostedBy user_id c = ((isNothing (c ^. CommentParent)) &&. c ^. CommentUser ==. val user_id) ||. c ^. CommentId `in_` sublist
+-- Is the root (earliest ancestor) of this comment posted by the given
+-- user?
+exprCommentRootPostedBy :: UserId -> ExprCommentCond
+exprCommentRootPostedBy user_id c = ((isNothing (c ^. CommentParent)) &&. c ^. CommentUser ==. val user_id) ||. c ^. CommentId `in_` sublist
   where
     sublist = subList_select $ from $ \ (comment_ancestor `InnerJoin` root) -> do
         on_ $ root ^. CommentId ==. comment_ancestor ^. CommentAncestorAncestor
@@ -88,7 +90,7 @@ exprCommentProjectPermissionFilter muser_id project_id c = exprCommentNotRethrea
     -- a project team member, or the viewer posted the topic initially
     isVisible :: SqlExpr (Value Bool)
     isVisible = seq (appendFile "testlog" $ "isVisible for " ++ show muser_id) $ case muser_id of
-        Just user_id -> c ^. CommentVisibility ==. val VisPublic ||. exprUserIsTeamMember user_id project_id ||. exprRootPostedBy user_id c
+        Just user_id -> c ^. CommentVisibility ==. val VisPublic ||. exprUserIsTeamMember user_id project_id ||. exprCommentRootPostedBy user_id c
         Nothing -> c ^. CommentVisibility ==. val VisPublic
 
     approvedAndNotFlagged :: SqlExpr (Value Bool)

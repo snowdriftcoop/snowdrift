@@ -63,7 +63,6 @@ library
                      SnowdriftEventHandler
                      Handler.BuildFeed
                      Handler.Comment
-                     Handler.Contact
                      Handler.Discussion
                      Handler.Home
                      Handler.HonorPledge

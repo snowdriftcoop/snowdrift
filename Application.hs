@@ -44,7 +44,6 @@ import           Yesod.Default.Main
 
 import Handler.BuildFeed
 import Handler.Comment
-import Handler.Contact
 import Handler.Home
 import Handler.HonorPledge
 import Handler.Invitation
