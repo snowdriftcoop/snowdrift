@@ -418,37 +418,6 @@ getProjectBlogPostR project_handle blog_post_handle = do
         renderBlogPost project_handle blog_post
 
 --------------------------------------------------------------------------------
--- /contact
-
--- ProjectContactR stuff posts a private new topic to project discussion
-
-getProjectContactR :: Text -> Handler Html
-getProjectContactR project_handle = do
-    (project_contact_form, _) <- generateFormPost projectContactForm
-    Entity _ project <- runYDB $ getBy404 (UniqueProjectHandle project_handle)
-    defaultLayout $ do
-        setTitle . toHtml $ "Contact " <> projectName project <> " | Snowdrift.coop"
-        $(widgetFile "project_contact")
-
-postProjectContactR :: Text -> Handler Html
-postProjectContactR project_handle = do
-    maybe_user_id <- maybeAuthId
-
-    ((result, _), _) <- runFormPost projectContactForm
-
-    Entity _ project <- runYDB $ getBy404 (UniqueProjectHandle project_handle)
-
-    case result of
-        FormSuccess content -> do
-            _ <- runSDB (postApprovedCommentDB (fromMaybe anonymousUser maybe_user_id) Nothing (projectDiscussion project) content VisPrivate)
-
-            alertSuccess "Comment submitted. Thank you for your input!"
-
-        _ -> alertDanger "Error occurred when submitting form."
-
-    redirect $ ProjectContactR project_handle
-
---------------------------------------------------------------------------------
 -- /c/#CommentId
 
 getProjectCommentR :: Text -> CommentId -> Handler Html
@@ -712,6 +681,37 @@ getProjectCommentAddTagR project_handle comment_id = do
     (user@(Entity user_id _), Entity project_id _, comment) <- checkCommentRequireAuth project_handle comment_id
     checkProjectCommentActionPermission can_add_tag user project_handle (Entity comment_id comment)
     getProjectCommentAddTag comment_id project_id user_id
+
+--------------------------------------------------------------------------------
+-- /contact
+
+-- ProjectContactR stuff posts a private new topic to project discussion
+
+getProjectContactR :: Text -> Handler Html
+getProjectContactR project_handle = do
+    (project_contact_form, _) <- generateFormPost projectContactForm
+    Entity _ project <- runYDB $ getBy404 (UniqueProjectHandle project_handle)
+    defaultLayout $ do
+        setTitle . toHtml $ "Contact " <> projectName project <> " | Snowdrift.coop"
+        $(widgetFile "project_contact")
+
+postProjectContactR :: Text -> Handler Html
+postProjectContactR project_handle = do
+    maybe_user_id <- maybeAuthId
+
+    ((result, _), _) <- runFormPost projectContactForm
+
+    Entity _ project <- runYDB $ getBy404 (UniqueProjectHandle project_handle)
+
+    case result of
+        FormSuccess content -> do
+            _ <- runSDB (postApprovedCommentDB (fromMaybe anonymousUser maybe_user_id) Nothing (projectDiscussion project) content VisPrivate)
+
+            alertSuccess "Comment submitted. Thank you for your input!"
+
+        _ -> alertDanger "Error occurred when submitting form."
+
+    redirect $ ProjectContactR project_handle
 
 --------------------------------------------------------------------------------
 -- /d
