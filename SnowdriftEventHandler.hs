@@ -80,7 +80,6 @@ notificationEventHandler (ECommentRethreaded _ Rethread{..}) = do
     rendered_old_route <- routeToText old_route
     rendered_new_route <- routeToText new_route
 
-    -- TODO(aaron)
     let content = mconcat
           [ "One of your comments has been rethreaded from ~~"
           , Markdown rendered_old_route

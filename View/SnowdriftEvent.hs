@@ -109,7 +109,6 @@ renderCommentRethreadedEvent Rethread{..} user_map = do
 
     let user = lookupErr "renderCommentRethreadedEvent: rethreader not found in user map" rethreadModerator user_map
 
-    -- TODO(aaron)
     [whamlet|
         <div .event>
             ^{renderTime rethreadTs}
