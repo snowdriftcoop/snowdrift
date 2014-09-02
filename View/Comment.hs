@@ -53,10 +53,13 @@ closureForm label message = renderBootstrap3 $ NewClosure <$> areq' snowdriftMar
 commentForm :: SomeMessage App -> Maybe Markdown -> Form NewComment
 commentForm label content = renderBootstrap3 $ NewComment
     <$> areq' snowdriftMarkdownField label content
-    <*> (toVisibility <$> areq' checkBoxField "Private?" Nothing)
-  where
-    toVisibility True = VisPrivate
-    toVisibility _ = VisPublic
+    <*> pure VisPublic
+    --    turn below back on and delete the pure line above
+    --    to activate private commenting
+--    <*> (toVisibility <$> areq' checkBoxField "Private?" Nothing)
+--  where
+--    toVisibility True = VisPrivate
+--    toVisibility _ = VisPublic
 
 commentFormWidget :: SomeMessage App -> Maybe Markdown -> Widget
 commentFormWidget label = commentFormWidget' . commentForm label
