@@ -109,10 +109,9 @@
                 <a href="@{comment_route_flag comment_id}">
                     flag
 
-        $if can_reply
-            <div .comment-action>
-                <a href="@{comment_route_reply comment_id}">
-                    reply
+        <div .comment-action>
+            <a href="@{comment_route_reply comment_id}">
+                reply
 
     <div :is_preview:.preview>
         $if can_approve
