@@ -32,11 +32,8 @@ data CommentActionPermissions = CommentActionPermissions
 emptyCommentActionPermissions :: CommentActionPermissions
 emptyCommentActionPermissions = CommentActionPermissions False False False False False False False False False False
 
-makeEmptyCommentActionPermissionsMap :: MakeActionPermissionsMap
-makeEmptyCommentActionPermissionsMap = return .
-    foldr (\(Entity comment_id _) -> M.insert comment_id emptyCommentActionPermissions) mempty
-
--- permissions for visitors who are not logged in
+-- | Comment action permissions for a logged out user.
+loggedOutCommentActionPermissions :: CommentActionPermissions
 loggedOutCommentActionPermissions = emptyCommentActionPermissions { can_reply = True }
 
 makeLoggedOutCommentActionPermissionsMap :: MakeActionPermissionsMap
