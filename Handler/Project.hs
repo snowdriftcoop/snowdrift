@@ -442,6 +442,28 @@ getProjectCommentR project_handle comment_id = do
     defaultLayout $(widgetFile "project_discussion_wrapper")
 
 --------------------------------------------------------------------------------
+-- /c/#CommentId/approve
+
+getApproveProjectCommentR :: Text -> CommentId -> Handler Html
+getApproveProjectCommentR project_handle comment_id = do
+    (widget, _) <-
+        makeProjectCommentActionWidget
+          makeApproveCommentWidget
+          project_handle
+          comment_id
+          def
+          getMaxDepth
+    defaultLayout $(widgetFile "project_discussion_wrapper")
+
+postApproveProjectCommentR :: Text -> CommentId -> Handler Html
+postApproveProjectCommentR project_handle comment_id = do
+    (user@(Entity user_id _), _, comment) <- checkCommentRequireAuth project_handle comment_id
+    checkProjectCommentActionPermission can_approve user project_handle (Entity comment_id comment)
+
+    postApproveComment user_id comment_id comment
+    redirect (ProjectCommentR project_handle comment_id)
+
+--------------------------------------------------------------------------------
 -- /c/#CommentId/close
 
 getCloseProjectCommentR :: Text -> CommentId -> Handler Html
@@ -546,28 +568,6 @@ postFlagProjectCommentR project_handle comment_id = do
       >>= \case
         Nothing -> redirect (ProjectDiscussionR project_handle)
         Just widget -> defaultLayout $(widgetFile "project_discussion_wrapper")
-
---------------------------------------------------------------------------------
--- /approve
-
-getApproveProjectCommentR :: Text -> CommentId -> Handler Html
-getApproveProjectCommentR project_handle comment_id = do
-    (widget, _) <-
-        makeProjectCommentActionWidget
-          makeApproveCommentWidget
-          project_handle
-          comment_id
-          def
-          getMaxDepth
-    defaultLayout $(widgetFile "project_discussion_wrapper")
-
-postApproveProjectCommentR :: Text -> CommentId -> Handler Html
-postApproveProjectCommentR project_handle comment_id = do
-    (user@(Entity user_id _), _, comment) <- checkCommentRequireAuth project_handle comment_id
-    checkProjectCommentActionPermission can_approve user project_handle (Entity comment_id comment)
-
-    postApproveComment user_id comment_id comment
-    redirect (ProjectCommentR project_handle comment_id)
 
 --------------------------------------------------------------------------------
 -- /c/#CommentId/reply
