@@ -13,6 +13,8 @@ data ClosureType
     deriving (Read, Show)
 derivePersistField "ClosureType"
 
+-- VisPublic = visible to all | VisPrivate = visible to comment-poster and
+-- project team | VisInternal = visible only to project team
 data Visibility = VisPublic | VisPrivate | VisInternal deriving (Read, Show, Eq)
 derivePersistField "Visibility"
 
