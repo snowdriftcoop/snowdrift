@@ -418,9 +418,10 @@ getProjectBlogPostR project_handle blog_post_handle = do
         renderBlogPost project_handle blog_post
 
 --------------------------------------------------------------------------------
--- /c/#CommentId
+-- /contact
 
--- ProjectContactR posts a private new topic to project discussion
+-- ProjectContactR stuff posts a private new topic to project discussion
+
 getProjectContactR :: Text -> Handler Html
 getProjectContactR project_handle = do
     (project_contact_form, _) <- generateFormPost projectContactForm
@@ -441,11 +442,14 @@ postProjectContactR project_handle = do
         FormSuccess content -> do
             _ <- runSDB (postApprovedCommentDB (fromMaybe anonymousUser maybe_user_id) Nothing (projectDiscussion project) content VisPrivate)
 
-            alertSuccess "Comment submitted.  Thank you for your input!"
+            alertSuccess "Comment submitted. Thank you for your input!"
 
         _ -> alertDanger "Error occurred when submitting form."
 
     redirect $ ProjectContactR project_handle
+
+--------------------------------------------------------------------------------
+-- /c/#CommentId
 
 getProjectCommentR :: Text -> CommentId -> Handler Html
 getProjectCommentR project_handle comment_id = do
@@ -575,7 +579,7 @@ postFlagProjectCommentR project_handle comment_id = do
         Just widget -> defaultLayout $(widgetFile "project_discussion_wrapper")
 
 --------------------------------------------------------------------------------
--- /moderate TODO: rename to /approve
+-- /approve
 
 getApproveProjectCommentR :: Text -> CommentId -> Handler Html
 getApproveProjectCommentR project_handle comment_id = do

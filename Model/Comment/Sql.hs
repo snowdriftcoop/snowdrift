@@ -62,8 +62,7 @@ exprCommentViewedBy user_id c = c ^. CommentId `in_`
      where_ (vc ^. ViewCommentUser ==. val user_id)
      return (vc ^. ViewCommentComment))
 
--- Is the root (earliest ancestor) of this comment posted by the given
--- user?
+-- Is the root (earliest ancestor) of this comment posted by the given user?
 exprCommentRootPostedBy :: UserId -> ExprCommentCond
 exprCommentRootPostedBy user_id c = ((isNothing (c ^. CommentParent)) &&. c ^. CommentUser ==. val user_id) ||. c ^. CommentId `in_` sublist
   where
