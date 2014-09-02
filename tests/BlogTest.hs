@@ -92,7 +92,7 @@ blogSpecs = do
 
 
         yit "previews blog post" $ [marked|
-            login
+            adminLogin
 
             previewBlog (NewProjectBlogPostR "snowdrift") $ do
                 byLabel "Post Title" "Test"
@@ -105,7 +105,7 @@ blogSpecs = do
 
 
         yit "posts blog post" $ [marked|
-            login
+            adminLogin
 
             postBlog (NewProjectBlogPostR "snowdrift") $ do
                 byLabel "Post Title" "Test"

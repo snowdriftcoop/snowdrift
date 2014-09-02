@@ -192,10 +192,10 @@ postUserBalanceR user_id = do
 -- /#UserId/d
 
 getUserDiscussionR :: UserId -> Handler Html
-getUserDiscussionR user_id = error "TODO(mitchell)"
+getUserDiscussionR _ = error "TODO(mitchell)"
 
 postUserDiscussionR :: UserId -> Handler Html
-postUserDiscussionR user_id = error "TODO(mitchell)"
+postUserDiscussionR _ = error "TODO(mitchell)"
 
 --------------------------------------------------------------------------------
 -- /#UserId/edit

@@ -1,5 +1,6 @@
 module View.Project
     ( editProjectForm
+    , projectContactForm
     , inviteForm
     , projectBlogForm
     , projectConfirmSharesForm
@@ -103,6 +104,9 @@ projectBlogForm defaults = renderBootstrap3 $
          in ProjectBlog now title handle user_id project_id
                 discussion_id (Markdown $ T.unlines top_content)
                 (if null bottom_content then Nothing else Just $ Markdown $ T.unlines bottom_content)
+
+projectContactForm :: Form Markdown
+projectContactForm = renderBootstrap3 $ areq' snowdriftMarkdownField "" Nothing
 
 inviteForm :: Form (Text, Role)
 inviteForm = renderBootstrap3 $ (,)

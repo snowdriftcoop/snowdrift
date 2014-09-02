@@ -45,7 +45,7 @@ discussionSpecs = do
         yit "loads the discussion page" $ [marked|
             login
 
-            get $ DiscussWikiR "snowdrift" "about"
+            get $ WikiDiscussionR "snowdrift" "about"
             statusIs 200
         |]
 
@@ -54,14 +54,14 @@ discussionSpecs = do
 
             liftIO $ putStrLn "posting root comment"
 
-            postComment (NewDiscussWikiR "snowdrift" "about") $ byLabel "New Topic" "Thread 1 - root message"
+            postComment (NewWikiDiscussionR "snowdrift" "about") $ byLabel "New Topic" "Thread 1 - root message"
 
             liftIO $ putStrLn "posting reply comments"
 
             comment_map <- fmap M.fromList $ forM [1..10] $ \ i -> do
                 comment_id <- getLatestCommentId
 
-                postComment (ReplyCommentR "snowdrift" "about" comment_id) $ byLabel "Reply" $ T.pack $ "Thread 1 - reply " ++ show (i :: Integer)
+                postComment (ReplyWikiCommentR "snowdrift" "about" comment_id) $ byLabel "Reply" $ T.pack $ "Thread 1 - reply " ++ show (i :: Integer)
 
                 return (i, comment_id)
 
@@ -77,7 +77,7 @@ discussionSpecs = do
                 setUrl rethread_url
                 byLabel "New Parent Url" "/p/snowdrift/w/about/d"
                 byLabel "Reason" "testing"
-                addPostParam "mode" "rethread"
+                addPostParam "mode" "post"
 
             statusIsResp 302
         |]
@@ -85,9 +85,9 @@ discussionSpecs = do
 
     ydescribe "discussion - rethreading" $ do
         let createComments = [marked|
-                postComment (NewDiscussWikiR "snowdrift" "about") $ byLabel "New Topic" "First message"
+                postComment (NewWikiDiscussionR "snowdrift" "about") $ byLabel "New Topic" "First message"
                 first <- getLatestCommentId
-                postComment (NewDiscussWikiR "snowdrift" "about") $ byLabel "New Topic" "Second message"
+                postComment (NewWikiDiscussionR "snowdrift" "about") $ byLabel "New Topic" "Second message"
                 second <- getLatestCommentId
 
                 return (first, second)
@@ -105,11 +105,11 @@ discussionSpecs = do
                     setUrl $ rethread_url first
                     byLabel "New Parent Url" $ T.pack $ "/p/snowdrift/w/about/c/" ++ (\ (PersistInt64 i) -> show i) (unKey second)
                     byLabel "Reason" "testing"
-                    addPostParam "mode" "rethread"
+                    addPostParam "mode" "post"
 
                 statusIsResp 302
 
-                get $ DiscussCommentR "snowdrift" "about" second
+                get $ WikiCommentR "snowdrift" "about" second
                 statusIs 200
 
                 printBody
@@ -122,7 +122,7 @@ discussionSpecs = do
         yit "can move newer comments under older" $ [marked|
             login
 
-            get $ NewDiscussWikiR "snowdrift" "about"
+            get $ NewWikiDiscussionR "snowdrift" "about"
             statusIs 200
 
             (first, second) <- createComments
@@ -134,7 +134,7 @@ discussionSpecs = do
         yit "can move older comments under newer" $ [marked|
             login
 
-            get $ NewDiscussWikiR "snowdrift" "about"
+            get $ NewWikiDiscussionR "snowdrift" "about"
             statusIs 200
 
             (first, second) <- createComments
@@ -145,7 +145,7 @@ discussionSpecs = do
         yit "can rethread across pages and the redirect still works" $ [marked|
             login
 
-            postComment (NewDiscussWikiR "snowdrift" "about") $ byLabel "New Topic" "posting on about page"
+            postComment (NewWikiDiscussionR "snowdrift" "about") $ byLabel "New Topic" "posting on about page"
             originalId <- getLatestCommentId
 
             get $ RethreadWikiCommentR "snowdrift" "about" originalId
@@ -157,11 +157,11 @@ discussionSpecs = do
                 setUrl $ RethreadWikiCommentR "snowdrift" "about" originalId
                 byLabel "New Parent Url" "/p/snowdrift/w/intro/d"
                 byLabel "Reason" "testing cross-page rethreading"
-                addPostParam "mode" "rethread"
+                addPostParam "mode" "post"
 
             statusIsResp 302
 
-            get $ DiscussCommentR "snowdrift" "about" originalId
+            get $ WikiCommentR "snowdrift" "about" originalId
             statusIsResp 301
 
             Just location <- do
@@ -172,7 +172,8 @@ discussionSpecs = do
 
             newId <- getLatestCommentId
             let new_url = BSC.unpack location
-                desired_url = "http://localhost:3000/p/snowdrift/w/intro/c/" ++ (\ (PersistInt64 i) -> show i) (unKey newId)
+                -- desired_url = "http://localhost:3000/p/snowdrift/w/intro/c/" ++ (\ (PersistInt64 i) -> show i) (unKey newId)
+                desired_url = "http://localhost:3000/c/" ++ (\ (PersistInt64 i) -> show i) (unKey newId)
 
             assertEqual ("Redirect not matching! (" ++ show new_url ++ " /=  " ++ show desired_url ++ ")") new_url desired_url
         |]

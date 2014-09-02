@@ -179,8 +179,8 @@ newCommentClosure closure_type user_id reason comment_id =
     (\now -> CommentClosure now user_id closure_type reason comment_id) `liftM` liftIO getCurrentTime
 
 -- | Construct a comment, auto-approved by 'this' User (because they are established).
-makeApprovedComment :: MonadIO m => UserId -> DiscussionId -> Maybe CommentId -> Markdown -> Int -> m Comment
-makeApprovedComment user_id discussion_id parent_comment comment_text depth = do
+makeApprovedComment :: MonadIO m => UserId -> DiscussionId -> Maybe CommentId -> Markdown -> Int -> Visibility -> m Comment
+makeApprovedComment user_id discussion_id parent_comment comment_text depth visibility = do
     now <- liftIO getCurrentTime
     return $ Comment
                  now
@@ -191,6 +191,7 @@ makeApprovedComment user_id discussion_id parent_comment comment_text depth = do
                  user_id
                  comment_text
                  depth
+                 visibility
 
 -- | Get the set of Users that have posted the given Foldable of comments.
 makeCommentUsersSet :: Foldable f => f (Entity Comment) -> Set UserId
@@ -238,8 +239,9 @@ insertApprovedCommentDB
         -> UserId
         -> Markdown
         -> Int
+        -> Visibility
         -> SDB CommentId
-insertApprovedCommentDB created_ts discussion_id mparent_id user_id text depth =
+insertApprovedCommentDB created_ts discussion_id mparent_id user_id text depth visibility =
     insertCommentDB
       (Just created_ts)
       (Just user_id)
@@ -250,6 +252,7 @@ insertApprovedCommentDB created_ts discussion_id mparent_id user_id text depth =
       user_id
       text
       depth
+      visibility
 
 insertUnapprovedCommentDB
         :: UTCTime
@@ -258,6 +261,7 @@ insertUnapprovedCommentDB
         -> UserId
         -> Markdown
         -> Int
+        -> Visibility
         -> SDB CommentId
 insertUnapprovedCommentDB = insertCommentDB Nothing Nothing ECommentPending
 
@@ -270,8 +274,9 @@ insertCommentDB :: Maybe UTCTime
                 -> UserId
                 -> Markdown
                 -> Int
+                -> Visibility
                 -> SDB CommentId
-insertCommentDB mapproved_ts mapproved_by mk_event created_ts discussion_id mparent_id user_id text depth = do
+insertCommentDB mapproved_ts mapproved_by mk_event created_ts discussion_id mparent_id user_id text depth visibility = do
     let comment = Comment
                     created_ts
                     mapproved_ts
@@ -281,6 +286,8 @@ insertCommentDB mapproved_ts mapproved_by mk_event created_ts discussion_id mpar
                     user_id
                     text
                     depth
+                    visibility
+
     comment_id <- lift $ insert comment
     tell [mk_event comment_id comment]
     return comment_id
@@ -347,25 +354,26 @@ flagCommentDB comment_id permalink_route flagger_id reasons message = do
             return True
 
 -- | Post an new (approved) Comment.
-postApprovedCommentDB :: UserId -> Maybe CommentId -> DiscussionId -> Markdown -> SDB CommentId
+postApprovedCommentDB :: UserId -> Maybe CommentId -> DiscussionId -> Markdown -> Visibility -> SDB CommentId
 postApprovedCommentDB = postComment insertApprovedCommentDB
 
-postUnapprovedCommentDB :: UserId -> Maybe CommentId -> DiscussionId -> Markdown -> SDB CommentId
+postUnapprovedCommentDB :: UserId -> Maybe CommentId -> DiscussionId -> Markdown -> Visibility -> SDB CommentId
 postUnapprovedCommentDB = postComment insertUnapprovedCommentDB
 
 postComment
-        :: (UTCTime -> DiscussionId -> Maybe CommentId -> UserId -> Markdown -> Int -> SDB CommentId)
+        :: (UTCTime -> DiscussionId -> Maybe CommentId -> UserId -> Markdown -> Int -> Visibility -> SDB CommentId)
         -> UserId
         -> Maybe CommentId
         -> DiscussionId
         -> Markdown
+        -> Visibility
         -> SDB CommentId
-postComment insert_comment user_id mparent_id discussion_id contents = do
+postComment insert_comment user_id mparent_id discussion_id contents visibility = do
     (now, depth) <- lift $ (,)
         <$> liftIO getCurrentTime
         <*> fetchCommentDepthFromMaybeParentIdDB mparent_id
 
-    comment_id <- insert_comment now discussion_id mparent_id user_id contents depth
+    comment_id <- insert_comment now discussion_id mparent_id user_id contents depth visibility
 
     let content = T.lines (unMarkdown contents)
         tickets = map T.strip $ mapMaybe (T.stripPrefix "ticket:") content

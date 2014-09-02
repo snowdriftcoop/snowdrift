@@ -2,8 +2,6 @@ module Model.User.Internal where
 
 import Prelude
 
-import Model.Notification.Internal
-
 import Data.Text      (Text)
 import Yesod.Markdown (Markdown)
 

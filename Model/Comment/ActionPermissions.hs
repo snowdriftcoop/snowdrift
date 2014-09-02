@@ -36,9 +36,16 @@ makeEmptyCommentActionPermissionsMap :: MakeActionPermissionsMap
 makeEmptyCommentActionPermissionsMap = return .
     foldr (\(Entity comment_id _) -> M.insert comment_id emptyCommentActionPermissions) mempty
 
+-- permissions for visitors who are not logged in
+loggedOutCommentActionPermissions = emptyCommentActionPermissions { can_reply = True }
+
+makeLoggedOutCommentActionPermissionsMap :: MakeActionPermissionsMap
+makeLoggedOutCommentActionPermissionsMap = return .
+    foldr (\(Entity comment_id _) -> M.insert comment_id loggedOutCommentActionPermissions) mempty
+
 -- | Action permissions that apply to both a Project discussion and a Projects WikiPage discussion.
 makeProjectCommentActionPermissionsMap :: Maybe (Entity User) -> Text -> MakeActionPermissionsMap
-makeProjectCommentActionPermissionsMap Nothing _ comments = makeEmptyCommentActionPermissionsMap comments
+makeProjectCommentActionPermissionsMap Nothing _ comments = makeLoggedOutCommentActionPermissionsMap comments
 makeProjectCommentActionPermissionsMap (Just (Entity viewer_id viewer)) project_handle comments = do
         let map2 :: (a -> b) -> (a -> c) -> [a] -> ([b],[c])
             map2 f g = foldr (\a (bs, cs) -> (f a : bs, g a : cs)) ([],[])

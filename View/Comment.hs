@@ -47,13 +47,36 @@ import qualified Data.Tree as Tree
 disabledCommentForm :: Form Markdown
 disabledCommentForm = renderBootstrap3 $ areq snowdriftMarkdownField ("Reply" { fsAttrs = [("disabled",""), ("class","form-control")] }) Nothing
 
-commentForm :: SomeMessage App -> Maybe Markdown -> Form Markdown
-commentForm label = renderBootstrap3 . areq' snowdriftMarkdownField label
+closureForm :: SomeMessage App -> Maybe Markdown -> Form NewClosure
+closureForm label message = renderBootstrap3 $ NewClosure <$> areq' snowdriftMarkdownField label message
+
+commentForm :: SomeMessage App -> Maybe Markdown -> Form NewComment
+commentForm label content = renderBootstrap3 $ NewComment
+    <$> areq' snowdriftMarkdownField label content
+    <*> pure VisPublic
+    --    TODO(aaron) turn below back on and delete the pure line above
+    --    to activate private commenting
+--    <*> (toVisibility <$> areq' checkBoxField "Private?" Nothing)
+--  where
+--    toVisibility True = VisPrivate
+--    toVisibility _ = VisPublic
 
 commentFormWidget :: SomeMessage App -> Maybe Markdown -> Widget
 commentFormWidget label = commentFormWidget' . commentForm label
 
-commentFormWidget' :: Form Markdown -> Widget
+-- intentional duplication of commentFormWidget' because some aspects
+-- of closing and other markdown aren't identical (such as marking privacy)
+closureFormWidget' :: Form NewClosure -> Widget
+closureFormWidget' form = do
+    (widget, enctype) <- handlerToWidget $ generateFormPost form
+    [whamlet|
+        <div>
+            <form method="POST" enctype=#{enctype}>
+                ^{widget}
+                <button type="submit" name="mode" value="preview">preview
+    |]
+
+commentFormWidget' :: Form NewComment -> Widget
 commentFormWidget' form = do
     (widget, enctype) <- handlerToWidget $ generateFormPost form
     [whamlet|
@@ -63,29 +86,32 @@ commentFormWidget' form = do
                 <button type="submit" name="mode" value="preview">preview
     |]
 
-closeCommentForm    :: Maybe Markdown -> Form Markdown
-commentNewTopicForm ::                   Form Markdown
-commentReplyForm    ::                   Form Markdown
-editCommentForm     :: Markdown       -> Form Markdown
-retractCommentForm  :: Maybe Markdown -> Form Markdown
+closeCommentForm    :: Maybe Markdown -> Form NewClosure
+retractCommentForm  :: Maybe Markdown -> Form NewClosure
 
-closeCommentForm    = commentForm "Reason for closing:"
+commentNewTopicForm ::                   Form NewComment
+commentReplyForm    ::                   Form NewComment
+editCommentForm     :: Markdown       -> Form NewComment
+
+closeCommentForm    = closureForm "Reason for closing:"
+retractCommentForm  = closureForm "Reason for retracting:"
+
 commentNewTopicForm = commentForm "New Topic" Nothing
 commentReplyForm    = commentForm "Reply"     Nothing
 editCommentForm     = commentForm "Edit"      . Just
-retractCommentForm  = commentForm "Reason for retracting:"
 
 closeCommentFormWidget    :: Maybe Markdown -> Widget
+retractCommentFormWidget  :: Maybe Markdown -> Widget
 commentNewTopicFormWidget ::                   Widget
 commentReplyFormWidget    ::                   Widget
 editCommentFormWidget     :: Markdown       -> Widget
-retractCommentFormWidget  :: Maybe Markdown -> Widget
 
-closeCommentFormWidget    = commentFormWidget' . closeCommentForm
+closeCommentFormWidget    = closureFormWidget' . closeCommentForm
+retractCommentFormWidget  = closureFormWidget' . retractCommentForm
+
 commentNewTopicFormWidget = commentFormWidget' commentNewTopicForm
 commentReplyFormWidget    = commentFormWidget' commentReplyForm
 editCommentFormWidget     = commentFormWidget' . editCommentForm
-retractCommentFormWidget  = commentFormWidget' . retractCommentForm
 
 approveCommentFormWidget :: Widget
 approveCommentFormWidget =
@@ -331,7 +357,7 @@ commentWidget (Entity comment_id comment)
               earlier_closures
               user
               mclosure
-              mticket
+              _ -- mticket
               mflag
               is_preview
               inner_widget = do
@@ -348,16 +374,18 @@ commentWidget (Entity comment_id comment)
           M.lookup comment_id <$>
             (fetchCommentCommentTagsDB comment_id >>= buildAnnotatedCommentTagsDB mviewer_id)
 
+{-
     let ticket_str = case mticket of
             Just (Entity (Key (PersistInt64 tid)) _) -> T.pack $ show tid
             _ -> "???"
 
 -- error about ambiguity about monad type in this, needs to be adjusted to
 -- fit the idea that comments aren't necessarily on wiki pages
---      prettyTicketLine line =
---          let pretty title = "<div class='ticket-title'>SD-" <> ticket_str <> ": " <> title <> "</div>"
---           in return $ maybe line pretty $ T.stripPrefix "ticket: " line
+        prettyTicketLine line =
+            let pretty title = "<div class='ticket-title'>SD-" <> ticket_str <> ": " <> title <> "</div>"
+             in return $ maybe line pretty $ T.stripPrefix "ticket: " line
 
---      commentTextTransform = prettyTicketLine
+        commentTextTransform = prettyTicketLine
+-}
 
     $(widgetFile "comment")

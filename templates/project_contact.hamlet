@@ -4,6 +4,6 @@
 <br>
 <br>
 
-<form method=POST target=@{ContactR project_handle}>
-    ^{contact_form}
+<form method=POST target=@{ProjectContactR project_handle}>
+    ^{project_contact_form}
     <input type=submit value="send">

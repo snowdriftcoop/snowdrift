@@ -128,6 +128,16 @@ login = do
     statusIs 200
     submitLogin "test" "test"
 
+-- Do a login (using hashdb auth).  This just attempts to go to the home
+-- url, and follows through the login process.  It should probably be the
+-- first thing in each "it" spec.
+--
+adminLogin :: (Yesod site) => YesodExample site ()
+adminLogin = do
+    get $ urlPath $ testRoot `T.append` "/auth/login"
+    statusIs 200
+    submitLogin "admin" "admin"
+
 
 statusIsResp :: Int -> YesodExample site ()
 statusIsResp number = withResponse $ \ SResponse { simpleStatus = s } -> do

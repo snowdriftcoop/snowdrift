@@ -225,6 +225,7 @@ Comment
     user UserId
     text Markdown
     depth Int
+    visibility Visibility default='VisPublic'
     deriving Eq Show
 
 -- A comment has zero or more ancestors: its parent, grandparent, great

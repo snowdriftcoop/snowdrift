@@ -1,6 +1,7 @@
 module Model.User
     ( UserMap
     -- Utility functions
+    , anonymousUser
     , curUserIsEligibleEstablish
     , updateUserPreview
     , userCanAddTag
@@ -64,6 +65,11 @@ import qualified Data.Map       as M
 import qualified Data.Set       as S
 import qualified Data.Text      as T
 import           Yesod.Markdown (Markdown(..))
+
+-- anonymousUser is a special user for items posted by visitors who are not
+-- logged in, such as posting to /contact for a project
+anonymousUser :: UserId
+anonymousUser = Key $ PersistInt64 (-1)
 
 type UserMap = Map UserId User
 
