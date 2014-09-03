@@ -465,6 +465,36 @@ postApproveProjectCommentR project_handle comment_id = do
     redirect (ProjectCommentR project_handle comment_id)
 
 --------------------------------------------------------------------------------
+-- /c/#CommentId/claim
+
+getClaimProjectCommentR :: Text -> CommentId -> Handler Html
+getClaimProjectCommentR project_handle comment_id = do
+    (widget, _) <-
+        makeProjectCommentActionWidget
+          makeClaimCommentWidget
+          project_handle
+          comment_id
+          def
+          getMaxDepth
+    defaultLayout $ do
+        $(widgetFile "project_discussion_wrapper")
+        -- toWidget $(cassiusFile "templates/comment.cassius") -- TODO(mitchell): need this?
+
+postClaimProjectCommentR :: Text -> CommentId -> Handler Html
+postClaimProjectCommentR project_handle comment_id = do
+    (user, (Entity project_id _), comment) <- checkCommentRequireAuth project_handle comment_id
+    checkProjectCommentActionPermission can_claim user project_handle (Entity comment_id comment)
+
+    postClaimComment
+      user
+      comment_id
+      comment
+      (projectCommentHandlerInfo (Just user) project_id project_handle)
+      >>= \case
+        Nothing -> redirect (ProjectCommentR project_handle comment_id)
+        Just (widget, form) -> defaultLayout $ previewWidget form "claim" ($(widgetFile "project_discussion_wrapper"))
+
+--------------------------------------------------------------------------------
 -- /c/#CommentId/close
 
 getCloseProjectCommentR :: Text -> CommentId -> Handler Html
@@ -682,6 +712,12 @@ getProjectCommentAddTagR project_handle comment_id = do
     (user@(Entity user_id _), Entity project_id _, comment) <- checkCommentRequireAuth project_handle comment_id
     checkProjectCommentActionPermission can_add_tag user project_handle (Entity comment_id comment)
     getProjectCommentAddTag comment_id project_id user_id
+
+getUnclaimProjectCommentR :: Text -> CommentId -> Handler Html
+getUnclaimProjectCommentR = undefined
+
+postUnclaimProjectCommentR :: Text -> CommentId -> Handler Html
+postUnclaimProjectCommentR = undefined
 
 --------------------------------------------------------------------------------
 -- /contact

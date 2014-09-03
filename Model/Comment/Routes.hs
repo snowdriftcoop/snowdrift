@@ -9,6 +9,7 @@ data CommentRoutes = CommentRoutes
     { comment_route_add_tag   :: CommentId -> Route App
     , comment_route_approve   :: CommentId -> Route App
     , comment_route_close     :: CommentId -> Route App
+    , comment_route_claim     :: CommentId -> Route App
     , comment_route_delete    :: CommentId -> Route App
     , comment_route_edit      :: CommentId -> Route App
     , comment_route_flag      :: CommentId -> Route App
@@ -17,26 +18,20 @@ data CommentRoutes = CommentRoutes
     , comment_route_rethread  :: CommentId -> Route App
     , comment_route_retract   :: CommentId -> Route App
     , comment_route_tag       :: CommentId -> TagId -> Route App
+    , comment_route_unclaim   :: CommentId -> Route App
     }
 
 dummyCommentRoutes :: CommentRoutes
-dummyCommentRoutes = CommentRoutes
-    (const HomeR)
-    (const HomeR)
-    (const HomeR)
-    (const HomeR)
-    (const HomeR)
-    (const HomeR)
-    (const HomeR)
-    (const HomeR)
-    (const HomeR)
-    (const HomeR)
-    (\_ _ -> HomeR)
+dummyCommentRoutes =
+    CommentRoutes (const HomeR) (const HomeR) (const HomeR) (const HomeR) (const HomeR) (const HomeR)
+                  (const HomeR) (const HomeR) (const HomeR) (const HomeR) (const HomeR) (\_ _ -> HomeR)
+                  (const HomeR)
 
 projectCommentRoutes :: Text -> CommentRoutes
 projectCommentRoutes project_handle = CommentRoutes
     { comment_route_add_tag   = ProjectCommentAddTagR   project_handle
     , comment_route_approve   = ApproveProjectCommentR  project_handle
+    , comment_route_claim     = ClaimProjectCommentR    project_handle
     , comment_route_close     = CloseProjectCommentR    project_handle
     , comment_route_delete    = DeleteProjectCommentR   project_handle
     , comment_route_edit      = EditProjectCommentR     project_handle
@@ -46,12 +41,14 @@ projectCommentRoutes project_handle = CommentRoutes
     , comment_route_rethread  = RethreadProjectCommentR project_handle
     , comment_route_retract   = RetractProjectCommentR  project_handle
     , comment_route_tag       = ProjectCommentTagR      project_handle
+    , comment_route_unclaim   = UnclaimProjectCommentR  project_handle
     }
 
 wikiPageCommentRoutes :: Text -> Text -> CommentRoutes
 wikiPageCommentRoutes project_handle target = CommentRoutes
     { comment_route_add_tag   = WikiCommentAddTagR   project_handle target
     , comment_route_approve   = ApproveWikiCommentR  project_handle target
+    , comment_route_claim     = ClaimWikiCommentR    project_handle target
     , comment_route_close     = CloseWikiCommentR    project_handle target
     , comment_route_delete    = DeleteWikiCommentR   project_handle target
     , comment_route_edit      = EditWikiCommentR     project_handle target
@@ -61,4 +58,5 @@ wikiPageCommentRoutes project_handle target = CommentRoutes
     , comment_route_rethread  = RethreadWikiCommentR project_handle target
     , comment_route_retract   = RetractWikiCommentR  project_handle target
     , comment_route_tag       = WikiCommentTagR      project_handle target
+    , comment_route_unclaim   = UnclaimWikiCommentR  project_handle target
     }

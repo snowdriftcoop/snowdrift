@@ -149,6 +149,37 @@ getWikiCommentR project_handle target comment_id = do
         toWidget $(cassiusFile "templates/comment.cassius")
 
 --------------------------------------------------------------------------------
+-- /claim
+
+getClaimWikiCommentR :: Text -> Text -> CommentId -> Handler Html
+getClaimWikiCommentR project_handle target comment_id = do
+    (widget, _) <-
+        makeWikiPageCommentActionWidget
+          makeClaimCommentWidget
+          project_handle
+          target
+          comment_id
+          def
+          getMaxDepth
+    defaultLayout $ do
+        $(widgetFile "wiki_discussion_wrapper")
+        toWidget $(cassiusFile "templates/comment.cassius")
+
+postClaimWikiCommentR :: Text -> Text -> CommentId -> Handler Html
+postClaimWikiCommentR project_handle target comment_id = do
+    (user, (Entity project_id _), _, comment) <- checkCommentPageRequireAuth project_handle target comment_id
+    checkProjectCommentActionPermission can_claim user project_handle (Entity comment_id comment)
+
+    postClaimComment
+      user
+      comment_id
+      comment
+      (wikiPageCommentHandlerInfo (Just user) project_id project_handle target)
+      >>= \case
+        Nothing -> redirect (WikiCommentR project_handle target comment_id)
+        Just (widget, form) -> defaultLayout $ previewWidget form "claim" ($(widgetFile "wiki_discussion_wrapper"))
+
+--------------------------------------------------------------------------------
 -- /close
 
 getCloseWikiCommentR :: Text -> Text -> CommentId -> Handler Html
@@ -412,6 +443,12 @@ getWikiCommentAddTagR project_handle target comment_id = do
     (user@(Entity user_id _), Entity project_id _, _, comment) <- checkCommentPageRequireAuth project_handle target comment_id
     checkProjectCommentActionPermission can_add_tag user project_handle (Entity comment_id comment)
     getProjectCommentAddTag comment_id project_id user_id
+
+getUnclaimWikiCommentR :: Text -> Text -> CommentId -> Handler Html
+getUnclaimWikiCommentR = undefined
+
+postUnclaimWikiCommentR :: Text -> Text -> CommentId -> Handler Html
+postUnclaimWikiCommentR = undefined
 
 --------------------------------------------------------------------------------
 -- DEPRECATED

@@ -19,6 +19,7 @@ type ActionPermissionsMap = Map CommentId CommentActionPermissions
 data CommentActionPermissions = CommentActionPermissions
     { can_add_tag   :: Bool
     , can_approve   :: Bool
+    , can_claim     :: Bool
     , can_close     :: Bool
     , can_delete    :: Bool
     , can_edit      :: Bool
@@ -27,10 +28,12 @@ data CommentActionPermissions = CommentActionPermissions
     , can_reply     :: Bool
     , can_rethread  :: Bool
     , can_retract   :: Bool
+    , can_unclaim   :: Bool
     }
 
 emptyCommentActionPermissions :: CommentActionPermissions
-emptyCommentActionPermissions = CommentActionPermissions False False False False False False False False False False
+emptyCommentActionPermissions =
+    CommentActionPermissions False False False False False False False False False False False False
 
 -- | Comment action permissions for a logged out user.
 loggedOutCommentActionPermissions :: CommentActionPermissions
@@ -49,14 +52,16 @@ makeProjectCommentActionPermissionsMap (Just (Entity viewer_id viewer)) project_
 
             (comment_ids, user_ids) = map2 entityKey (commentUser . entityVal) comments
 
-        (viewer_is_mod, user_map, closure_map, flag_map, comments_with_children) <- runYDB $ do
+        (viewer_is_mod, user_map, claimed_map, closure_map, flag_map, ticket_map, comments_with_children) <- runYDB $ do
             Entity project_id _ <- getBy404 (UniqueProjectHandle project_handle)
 
-            (,,,,) <$> userIsProjectModeratorDB viewer_id project_id
-                   <*> (entitiesMap <$> fetchUsersInDB user_ids)
-                   <*> makeClosureMapDB comment_ids
-                   <*> makeFlagMapDB comment_ids
-                   <*> (S.fromList <$> fetchCommentsWithChildrenInDB comment_ids)
+            (,,,,,,) <$> userIsProjectModeratorDB viewer_id project_id
+                     <*> (entitiesMap <$> fetchUsersInDB user_ids)
+                     <*> makeClaimedTicketMapDB comment_ids
+                     <*> makeClosureMapDB comment_ids
+                     <*> makeFlagMapDB comment_ids
+                     <*> makeTicketMapDB comment_ids
+                     <*> (S.fromList <$> fetchCommentsWithChildrenInDB comment_ids)
 
         let viewer_is_established = userIsEstablished viewer
             viewer_can_close = userCanCloseComment viewer
@@ -70,6 +75,7 @@ makeProjectCommentActionPermissionsMap (Just (Entity viewer_id viewer)) project_
                 in M.insert comment_id (CommentActionPermissions
                        { can_add_tag   = viewer_is_established
                        , can_approve   = viewer_is_mod && not (commentIsApproved comment)
+                       , can_claim     = M.member comment_id ticket_map && M.notMember comment_id claimed_map
                        , can_close     = viewer_can_close && M.notMember comment_id closure_map
                        , can_delete    = viewer_id == user_id && S.notMember comment_id comments_with_children
                        , can_edit      = userCanEditComment viewer_id comment
@@ -78,6 +84,9 @@ makeProjectCommentActionPermissionsMap (Just (Entity viewer_id viewer)) project_
                        , can_reply     = True
                        , can_rethread  = viewer_is_mod || viewer_id == user_id
                        , can_retract   = viewer_id == user_id
+                       , can_unclaim   = maybe False
+                                               (\(Entity _ t) -> ticketClaimingUser t == viewer_id)
+                                               (M.lookup comment_id claimed_map)
                        })
 
         return (foldr step mempty comments)

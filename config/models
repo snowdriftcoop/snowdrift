@@ -320,6 +320,14 @@ Ticket
 
     UniqueTicket comment
 
+TicketClaiming
+    ts      UTCTime
+    user    UserId
+    ticket  CommentId
+    note    Text      Maybe
+
+    UniqueTicketClaiming ticket
+
 Build
     bootTime UTCTime
     base     Text

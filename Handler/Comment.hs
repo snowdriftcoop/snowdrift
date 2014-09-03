@@ -15,6 +15,7 @@ module Handler.Comment
     , getMaxDepthNoLimit
     , getProjectCommentAddTag
     , makeApproveCommentWidget
+    , makeClaimCommentWidget
     , makeCloseCommentWidget
     , makeCommentForestWidget
     , makeCommentTreeWidget
@@ -28,6 +29,7 @@ module Handler.Comment
     , postCommentApplyTag
     , postCommentCreateTag
     , postApproveComment
+    , postClaimComment
     , postCloseComment
     , postDeleteComment
     , postEditComment
@@ -197,6 +199,7 @@ makeCommentActionWidget
         form_widget
 
 makeApproveCommentWidget  :: MakeCommentActionWidget
+makeClaimCommentWidget    :: MakeCommentActionWidget
 makeCloseCommentWidget    :: MakeCommentActionWidget
 makeEditCommentWidget     :: MakeCommentActionWidget
 makeFlagCommentWidget     :: MakeCommentActionWidget
@@ -206,6 +209,7 @@ makeRethreadCommentWidget :: MakeCommentActionWidget
 makeRetractCommentWidget  :: MakeCommentActionWidget
 
 makeApproveCommentWidget  = makeCommentActionWidget can_approve  approveCommentFormWidget
+makeClaimCommentWidget    = makeCommentActionWidget can_claim    (claimCommentFormWidget Nothing)
 makeCloseCommentWidget    = makeCommentActionWidget can_close    (closeCommentFormWidget Nothing)
 makeFlagCommentWidget     = makeCommentActionWidget can_flag     (flagCommentFormWidget Nothing Nothing)
 makeDeleteCommentWidget   = makeCommentActionWidget can_delete   deleteCommentFormWidget
@@ -253,6 +257,30 @@ postApproveComment :: UserId -> CommentId -> Comment -> Handler ()
 postApproveComment user_id comment_id comment = do
     runSDB (approveCommentDB user_id comment_id comment)
     alertSuccess "comment approved"
+
+postClaimComment :: Entity User -> CommentId -> Comment -> CommentHandlerInfo -> Handler (Maybe (Widget, Widget))
+postClaimComment user@(Entity user_id _) comment_id comment comment_handler_info = do
+    ((result, _), _) <- runFormPost (claimCommentForm Nothing)
+    case result of
+        FormSuccess mnote -> do
+            lookupPostMode >>= \case
+                Just PostMode -> do
+                    runDB (userClaimCommentDB user_id comment_id mnote)
+                    return Nothing
+                _ -> do
+                    (form, _) <- generateFormPost (claimCommentForm (Just mnote))
+                    (comment_widget, _) <-
+                        makeCommentActionWidget
+                        can_claim
+                        mempty
+                        (Entity comment_id comment)
+                        user
+                        comment_handler_info
+                        def -- TODO(mitchell): adjust for new claim
+                        (getMaxDepthDefault 0)
+                        True
+                    return (Just (comment_widget, form))
+        _ -> error "Error when submitting form."
 
 postCloseComment, postRetractComment :: Entity User -> CommentId -> Comment -> CommentHandlerInfo -> Handler (Maybe (Widget, Widget))
 postCloseComment   = postClosureComment closeCommentForm   newClosedCommentClosure    can_close
@@ -623,7 +651,7 @@ deleteCommentDirectLinkR comment_id = do
     unless ok (permissionDenied "You don't have permission to delete that comment.")
 
 --------------------------------------------------------------------------------
--- /c/
+-- /c/#CommentId
 
 getCommentTagR :: CommentId -> TagId -> Handler Html
 getCommentTagR comment_id tag_id = do
@@ -637,4 +665,3 @@ getCommentTagR comment_id tag_id = do
     renderTag (AnnotatedTag tag _ _ user_votes) = do
         let tag_name = tagName $ entityVal tag
         defaultLayout $(widgetFile "tag")
-

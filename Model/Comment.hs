@@ -45,6 +45,7 @@ module Model.Comment
     , fetchCommentsInDB
     , fetchCommentsWithChildrenInDB
     , filterCommentsDB
+    , makeClaimedTicketMapDB
     , makeClosureMapDB
     , makeCommentRouteDB
     , makeFlagMapDB
@@ -580,6 +581,13 @@ makeTicketMapDB comment_ids = fmap (M.fromList . map ((ticketComment . entityVal
     from $ \t -> do
     where_ (t ^. TicketComment `in_` valList comment_ids)
     return t
+
+makeClaimedTicketMapDB :: [CommentId] -> DB (Map CommentId (Entity TicketClaiming))
+makeClaimedTicketMapDB comment_ids = fmap (M.fromList . map (\(Value x, y) -> (x, y))) $
+    select $
+    from $ \tc -> do
+    where_ (tc ^. TicketClaimingTicket `in_` valList comment_ids)
+    return (tc ^. TicketClaimingTicket, tc)
 
 -- | Given a collection of CommentId, make a FlagMap. Comments that are not flagged
 -- will simply not be in the map.

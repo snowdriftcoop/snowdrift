@@ -1,29 +1,34 @@
 module View.Comment
-    ( approveCommentFormWidget
-    , closeCommentForm
-    , closeCommentFormWidget
-    , commentForestWidget
-    , commentForm
+    ( commentForm
     , commentFormWidget
-    , commentNewTopicForm
-    , commentNewTopicFormWidget
-    , commentReplyForm
-    , commentReplyFormWidget
+    , commentForestWidget
     , commentTreeWidget
     , commentWidget
-    , createCommentTagForm
-    , deleteCommentFormWidget
     , disabledCommentForm
+    -- Comment action forms
+    , claimCommentForm
+    , closeCommentForm
+    , commentNewTopicForm
+    , commentReplyForm
+    , createCommentTagForm
     , editCommentForm
-    , editCommentFormWidget
     , flagCommentForm
-    , flagCommentFormWidget
     , newCommentTagForm
-    , orderingNewestFirst
     , rethreadCommentForm
-    , rethreadCommentFormWidget
     , retractCommentForm
+    -- Comment action form widgets
+    , approveCommentFormWidget
+    , claimCommentFormWidget
+    , closeCommentFormWidget
+    , commentNewTopicFormWidget
+    , commentReplyFormWidget
+    , deleteCommentFormWidget
+    , editCommentFormWidget
+    , flagCommentFormWidget
+    , rethreadCommentFormWidget
     , retractCommentFormWidget
+    -- Misc
+    , orderingNewestFirst
     ) where
 
 import Import
@@ -76,7 +81,7 @@ closureFormWidget' form = do
                 <button type="submit" name="mode" value="preview">preview
     |]
 
-commentFormWidget' :: Form NewComment -> Widget
+commentFormWidget' :: Form a -> Widget
 commentFormWidget' form = do
     (widget, enctype) <- handlerToWidget $ generateFormPost form
     [whamlet|
@@ -89,9 +94,9 @@ commentFormWidget' form = do
 closeCommentForm    :: Maybe Markdown -> Form NewClosure
 retractCommentForm  :: Maybe Markdown -> Form NewClosure
 
-commentNewTopicForm ::                   Form NewComment
-commentReplyForm    ::                   Form NewComment
-editCommentForm     :: Markdown       -> Form NewComment
+commentNewTopicForm ::               Form NewComment
+commentReplyForm    ::               Form NewComment
+editCommentForm     :: Markdown   -> Form NewComment
 
 closeCommentForm    = closureForm "Reason for closing:"
 retractCommentForm  = closureForm "Reason for retracting:"
@@ -100,15 +105,17 @@ commentNewTopicForm = commentForm "New Topic" Nothing
 commentReplyForm    = commentForm "Reply"     Nothing
 editCommentForm     = commentForm "Edit"      . Just
 
-closeCommentFormWidget    :: Maybe Markdown -> Widget
-retractCommentFormWidget  :: Maybe Markdown -> Widget
-commentNewTopicFormWidget ::                   Widget
-commentReplyFormWidget    ::                   Widget
-editCommentFormWidget     :: Markdown       -> Widget
+claimCommentFormWidget    :: Maybe (Maybe Text) -> Widget
+closeCommentFormWidget    :: Maybe Markdown     -> Widget
+retractCommentFormWidget  :: Maybe Markdown     -> Widget
+commentNewTopicFormWidget ::                       Widget
+commentReplyFormWidget    ::                       Widget
+editCommentFormWidget     :: Markdown           -> Widget
 
 closeCommentFormWidget    = closureFormWidget' . closeCommentForm
 retractCommentFormWidget  = closureFormWidget' . retractCommentForm
 
+claimCommentFormWidget    = commentFormWidget' . claimCommentForm
 commentNewTopicFormWidget = commentFormWidget' commentNewTopicForm
 commentReplyFormWidget    = commentFormWidget' commentReplyForm
 editCommentFormWidget     = commentFormWidget' . editCommentForm
@@ -119,6 +126,9 @@ approveCommentFormWidget =
         <form method="POST">
             <button type="submit" name="mode" value="post">approve post
     |]
+
+claimCommentForm :: Maybe (Maybe Text) -> Form (Maybe Text)
+claimCommentForm = renderBootstrap3 . aopt' textField "Note (optional)"
 
 rethreadCommentForm :: Form (Text, Text)
 rethreadCommentForm = renderBootstrap3 $ (,)
