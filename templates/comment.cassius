@@ -2,10 +2,10 @@
     padding : 0 .8em 0.3em 1em
     margin-top : 1.8em
     border-bottom-left-radius: 1em
-    font-size : 15px
+    font-size : 0.8em
 
 .comment p, .comment ul, .comment ol, .comment h1, .comment h2, .comment h3, .comment h4, .comment h5, .comment h6
-    margin : .5em 0
+    margin : 0
 
 .comment figure
     text-align : left
@@ -20,11 +20,24 @@
     font-size : 14px
     margin : 1em
 
-.comment-head, .comment-action
-    margin-right : 1em
-    margin-bottom : 0.5em
+.comment-date span
+    color : gray
+    font-style : italic
+
+.comment-head-item, .comment-action
     display : inline-block
-    padding : 2px 5px
+    font-size : small
+
+.comment-actions
+    margin-bottom : 1em
+
+.comment-action a, .comment-action a:visited
+    color : gray
+    margin-right : 1px
+
+.awaiting-approval
+    color : green
+    font-style : italic
 
 .top_level
     border-left : solid black 0.2em
@@ -76,4 +89,3 @@
 
 .preview a
     pointer-events: none
-

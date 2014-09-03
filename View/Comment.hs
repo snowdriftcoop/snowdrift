@@ -43,11 +43,11 @@ import Widgets.Markdown
 import Widgets.Tag
 import Widgets.Time
 
-import qualified Data.List as L
-import qualified Data.Map  as M
-import qualified Data.Text as T
-import           Data.Tree (Forest, Tree(..))
-import qualified Data.Tree as Tree
+import qualified Data.List   as L
+import qualified Data.Map    as M
+import qualified Data.Text   as T
+import           Data.Tree   (Forest, Tree(..))
+import qualified Data.Tree   as Tree
 
 disabledCommentForm :: Form Markdown
 disabledCommentForm = renderBootstrap3 $ areq snowdriftMarkdownField ("Reply" { fsAttrs = [("disabled",""), ("class","form-control")] }) Nothing
@@ -124,7 +124,7 @@ approveCommentFormWidget :: Widget
 approveCommentFormWidget =
     [whamlet|
         <form method="POST">
-            <button type="submit" name="mode" value="post">approve post
+            <button type="submit" name="mode" value="post">approve
     |]
 
 claimCommentForm :: Maybe (Maybe Text) -> Form (Maybe Text)
@@ -348,6 +348,8 @@ commentTreeWidget'
 -- The reason this can't be made more modular is the HTML for nested comments
 -- requires us to render the entire tree (can't close the parent comment's div
 -- before the children comments).
+--
+-- Note this widget has NO CSS.
 commentWidget :: Entity Comment                       -- ^ Comment.
               -> Maybe UserId                         -- ^ Viewer.
               -> CommentRoutes                        -- ^ Comment routes.
@@ -398,4 +400,4 @@ commentWidget (Entity comment_id comment)
         commentTextTransform = prettyTicketLine
 -}
 
-    $(widgetFile "comment")
+    $(whamletFile "templates/comment.hamlet")

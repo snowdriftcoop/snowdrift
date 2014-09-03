@@ -124,6 +124,7 @@ library
                 GeneralizedNewtypeDeriving
                 LambdaCase
                 MultiParamTypeClasses
+                MultiWayIf
                 NoImplicitPrelude
                 NoMonomorphismRestriction
                 QuasiQuotes

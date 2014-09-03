@@ -63,7 +63,7 @@ $else
             <th>Code
         $forall Entity _ invite <- outstanding_invites
             <tr>
-                <td>#{age now (inviteCreatedTs invite)}&nbsp;ago
+                <td>#{showDiffTime now (inviteCreatedTs invite)}&nbsp;ago
                 $with user_id <- inviteUser invite
                     <td>
                         <a href="@{UserR user_id}">
@@ -87,7 +87,7 @@ $else
             <th>Code
         $forall Entity _ invite <- redeemed_invites
             <tr>
-                <td>#{age now (fromMaybe now (inviteRedeemedTs invite))}&nbsp;ago
+                <td>#{showDiffTime now (fromMaybe now (inviteRedeemedTs invite))}&nbsp;ago
                 <td>#{format_user (inviteRedeemedBy invite)}
                 $with user_id <- inviteUser invite
                     <td>

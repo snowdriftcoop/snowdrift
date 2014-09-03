@@ -76,14 +76,14 @@ makeProjectCommentActionPermissionsMap (Just (Entity viewer_id viewer)) project_
                        { can_add_tag   = viewer_is_established
                        , can_approve   = viewer_is_mod && not (commentIsApproved comment)
                        , can_claim     = M.member comment_id ticket_map && M.notMember comment_id claimed_map
-                       , can_close     = viewer_can_close && M.notMember comment_id closure_map
+                       , can_close     = viewer_can_close && M.notMember comment_id closure_map && commentIsApproved comment
                        , can_delete    = viewer_id == user_id && S.notMember comment_id comments_with_children
                        , can_edit      = userCanEditComment viewer_id comment
                        , can_establish = viewer_is_mod && userIsUnestablished user
                        , can_flag      = viewer_is_established && viewer_id /= user_id && M.notMember comment_id flag_map
-                       , can_reply     = True
+                       , can_reply     = commentIsApproved comment
                        , can_rethread  = viewer_is_mod || viewer_id == user_id
-                       , can_retract   = viewer_id == user_id
+                       , can_retract   = viewer_id == user_id && commentIsApproved comment
                        , can_unclaim   = maybe False
                                                (\(Entity _ t) -> ticketClaimingUser t == viewer_id)
                                                (M.lookup comment_id claimed_map)
