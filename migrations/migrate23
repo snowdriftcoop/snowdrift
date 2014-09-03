@@ -1,8 +1,21 @@
-insert into account (id, balance) values (-1, 0);
-insert into discussion (id, nothing) values (-1, 0);
-insert into "user" (id, ident, name, account, discussion) values (-1, 'anonymous', 'anonymous user', -1, -1);
+INSERT INTO account (id, balance) VALUES (-1, 0);
+INSERT INTO discussion (id, nothing) VALUES (-1, 0);
+INSERT INTO "user" (id, ident, name, account, discussion, established) VALUES (-1, 'anonymous', 'anonymous user', -1, -1, 'EstEligable');
+
+UPDATE "message" SET "from" = -1 WHERE "from" IS NULL;
+
+INSERT INTO "comment" (created_ts, discussion, "user", text, depth) SELECT message.created_ts, project.discussion, message."from", content, 0 FROM message JOIN project ON message.project = project.id;
+
+DROP TABLE "message" CASCADE;
+
 ALTER TABLE "comment" ADD COLUMN "visibility" VARCHAR NOT NULL DEFAULT 'VisPublic';
-ALTER TABLE "rethread" ADD COLUMN "new_comment" INT8 NOT NULL;
+
+ALTER TABLE "rethread" ADD COLUMN "new_comment" INT8;
+
+UPDATE "rethread" SET "new_comment" = "comment_rethread"."new_comment" FROM "comment_rethread" WHERE "comment_rethread"."rethread" = "rethread"."id" AND "comment_rethread"."old_comment" = "rethread"."old_comment";
+
+ALTER TABLE "rethread" ALTER COLUMN "new_comment" SET NOT NULL;
+
 ALTER TABLE "rethread" ADD CONSTRAINT "rethread_new_comment_fkey" FOREIGN KEY("new_comment") REFERENCES "comment"("id");
 CREATe TABLE "event_comment_rethreaded"("id" SERIAL PRIMARY KEY UNIQUE,"ts" TIMESTAMP NOT NULL,"rethread" INT8 NOT NULL);
 ALTER TABLE "event_comment_rethreaded" ADD CONSTRAINT "event_comment_rethreaded_rethread_fkey" FOREIGN KEY("rethread") REFERENCES "rethread"("id");

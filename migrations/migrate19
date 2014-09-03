@@ -1,4 +1,3 @@
-DROP TABLE "message" CASCADE;
 ALTER TABLE "user" RENAME COLUMN "read_messages" TO "read_notifications";
 CREATe TABLE "user_notification_pref"("id" SERIAL PRIMARY KEY UNIQUE,"user" INT8 NOT NULL,"type" VARCHAR NOT NULL,"delivery" VARCHAR NOT NULL);
 ALTER TABLE "user_notification_pref" ADD CONSTRAINT "unique_user_notification_pref" UNIQUE("user","type");
