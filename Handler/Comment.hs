@@ -47,8 +47,8 @@ import           Model.Comment.ActionPermissions
 import           Model.Comment.HandlerInfo
 import           Model.Comment.Routes
 import           Model.Project
-import           Model.Tag
 import           Model.User
+import           Model.Tag
 import           View.Comment
 import           Widgets.Preview
 import           Widgets.Tag

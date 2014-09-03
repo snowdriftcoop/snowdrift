@@ -13,7 +13,6 @@ module Model.User
     , userIsUnestablished
     , userDisplayName
     -- Database actions
-    , buildAnnotatedCommentTagsDB
     , eligEstablishUserDB
     , establishUserDB
     , fetchAllUserRolesDB
@@ -54,13 +53,12 @@ import Import
 import Model.Comment
 import Model.Comment.Sql
 import Model.Notification
+import Model.Project
 import Model.Project.Sql
-import Model.Tag
 import Model.User.Internal
 import Model.User.Sql
 import Model.Wiki.Sql
 
-import           Data.List      (sortBy)
 import qualified Data.Map       as M
 import qualified Data.Set       as S
 import qualified Data.Text      as T
@@ -311,10 +309,11 @@ userUnwatchProjectDB user_id project_id = do
 
     delete_comment_views = delete_wiki_page_comment_views
 
-    delete_wiki_page_comment_views =
+    delete_wiki_page_comment_views = fetchProjectDiscussionsDB project_id >>= \discussion_ids ->
         delete $
-        from $ \vc ->
-        where_ (vc ^. ViewCommentComment `in_` subList_select (querProjectCommentsOnWikiPagesDB project_id (Just user_id)))
+        from $ \(vc `InnerJoin` c) -> do
+        on_ (vc ^. ViewCommentComment ==. c ^. CommentId)
+        where_ (c ^. CommentDiscussion `in_` valList discussion_ids)
 
     delete_wiki_edit_views =
         delete $
@@ -425,44 +424,3 @@ fetchNumUnreadNotificationsDB user_id = fmap (\[Value n] -> n) $
         u ^. UserId ==. val user_id &&.
         n ^. NotificationCreatedTs >=. u ^. UserReadNotifications
     return countRows
-
--- | Annotate a [CommentTag]. Returns a Map CommentId [AnnotatedTag] so this
--- function can be called with multiple Comments' CommentTags. If all
--- [CommentTag] are of the same comment, that's fine -- the returned map will
--- only have one key.
---
--- The [AnnotatedTag] value is left unsorted, but the [(Entity User, Int)] within each
--- AnnotatedTag is sorted by ascending username.
-buildAnnotatedCommentTagsDB :: Maybe UserId -> [CommentTag] -> DB (Map CommentId [AnnotatedTag])
-buildAnnotatedCommentTagsDB muser_id comment_tags =  do
-    user_map <- entitiesMap <$> fetchUsersInDB (map commentTagUser comment_tags)
-    tag_map <- entitiesMap <$> fetchTagsInDB (map commentTagTag comment_tags)
-    -- TODO(mitchell): cached
-    tag_colors <- maybe fetchDefaultTagColorsDB fetchTagColorsDB muser_id
-
-    let f :: [CommentTag] -> Map CommentId [AnnotatedTag]
-        f = M.mapWithKey (map . i) . M.map h . g
-
-        -- Pair each CommentTag with its CommentId, then collect CommentTags back up,
-        -- grouped by their CommentIds.
-        g :: [CommentTag] -> Map CommentId [CommentTag]
-        g = M.fromListWith (++) . map (commentTagComment &&& return)
-
-        -- Group each CommentTag by TagId, combining Users' votes.
-        h :: [CommentTag] -> [(TagId, [(Entity User, Int)])]
-        h = M.toList . foldr step mempty
-          where
-            step :: CommentTag -> Map TagId [(Entity User, Int)] -> Map TagId [(Entity User, Int)]
-            step (CommentTag _ tag_id user_id n) =
-                M.insertWith (++) tag_id [(Entity user_id (user_map M.! user_id), n)]
-
-        -- Construct an AnnotatedTag given all relevant info.
-        i :: CommentId -> (TagId, [(Entity User, Int)]) -> AnnotatedTag
-        i comment_id (tag_id, user_votes) =
-          AnnotatedTag
-            (Entity tag_id (tag_map M.! tag_id))
-            (CommentTagR comment_id tag_id)
-            (M.findWithDefault 0x77AADD tag_id tag_colors)
-            (sortBy (compare `on` (userName . entityVal . fst)) user_votes)
-
-    return (f comment_tags)

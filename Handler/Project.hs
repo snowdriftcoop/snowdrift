@@ -1070,7 +1070,7 @@ getTicketsR project_handle = do
     muser_id <- maybeAuthId
     (project, tagged_tickets) <- runYDB $ do
         Entity project_id project <- getBy404 (UniqueProjectHandle project_handle)
-        tagged_tickets <- fetchProjectTaggedTicketsDB project_id muser_id
+        tagged_tickets <- fetchProjectOpenTicketsDB project_id muser_id
         return (project, tagged_tickets)
 
     ((result, formWidget), encType) <- runFormGet viewForm

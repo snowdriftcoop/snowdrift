@@ -3,15 +3,13 @@ module Model.Project
     , UpdateProject(..)
     , fetchAllProjectsDB
     , fetchProjectCommentRethreadsBeforeDB
-    , fetchProjectCommentsDB
     , fetchProjectCommentsIncludingRethreadedBeforeDB
     , fetchProjectDeletedPledgesBeforeDB
     , fetchProjectDiscussionsDB
     , fetchProjectNewPledgesBeforeDB
     , fetchProjectModeratorsDB
     , fetchProjectTeamMembersDB
-    , fetchProjectTicketsDB
-    , fetchProjectTaggedTicketsDB
+    , fetchProjectOpenTicketsDB
     , fetchProjectUpdatedPledgesBeforeDB
     , fetchProjectVolunteerApplicationsDB
     , fetchProjectWikiEditsBeforeDB
@@ -32,17 +30,15 @@ module Model.Project
 
 import Import
 
-import           Data.Filter
-import           Data.Order
-import           Model.Comment
-import           Model.Comment.Sql
-import           Model.Currency
-import           Model.Issue
-import           Model.Project.Sql
-import           Model.Tag
-import           Model.User
-import           Model.Wiki.Sql
-import           Widgets.Tag
+import Data.Filter
+import Data.Order
+import Model.Comment
+import Model.Comment.Sql
+import Model.Currency
+import Model.Issue
+import Model.Tag
+import Model.Wiki.Sql
+import Widgets.Tag
 
 import           Control.Monad.Trans.Maybe    (MaybeT(..), runMaybeT)
 import           Control.Monad.Trans.Resource (MonadThrow)
@@ -112,10 +108,6 @@ ticketToOrderable (TaggedTicket ((Entity _ ticket),tags)) = Orderable has_tag ge
 
 --------------------------------------------------------------------------------
 -- Database actions
-
--- | Fetch all Comments made on this Project, somewhere.
-fetchProjectCommentsDB :: ProjectId -> Maybe UserId -> DB [CommentId]
-fetchProjectCommentsDB project_id muser_id = fmap (map unValue) $ select (querProjectCommentsDB project_id muser_id)
 
 fetchAllProjectsDB :: DB [Entity Project]
 fetchAllProjectsDB = select (from return)
@@ -387,18 +379,19 @@ fetchProjectWikiPageByNameDB project_handle target = runMaybeT $ do
     Entity project_id _ <- MaybeT (getBy (UniqueProjectHandle project_handle))
     MaybeT (getBy (UniqueWikiTarget project_id target))
 
-fetchProjectTicketsDB :: ProjectId -> Maybe UserId -> DB [Entity Ticket]
-fetchProjectTicketsDB project_id muser_id =
-    select $
-    from $ \(t `InnerJoin` c) -> do
-    on_ (t ^. TicketComment ==. c ^. CommentId)
-    where_ (c ^. CommentId `in_` subList_select (querProjectCommentsDB project_id muser_id))
-    return t
-
-fetchProjectTaggedTicketsDB :: ProjectId -> Maybe UserId -> DB [TaggedTicket]
-fetchProjectTaggedTicketsDB project_id muser_id = do
-    tickets <- fetchProjectTicketsDB project_id muser_id
+fetchProjectOpenTicketsDB :: ProjectId -> Maybe UserId -> DB [TaggedTicket]
+fetchProjectOpenTicketsDB project_id muser_id = do
+    tickets <- fetchProjectDiscussionsDB project_id >>= fetch_tickets
     annot_tags_map <- fetchCommentCommentTagsInDB (map (ticketComment . entityVal) tickets) >>= buildAnnotatedCommentTagsDB muser_id
     let tagTicket :: Entity Ticket -> TaggedTicket
         tagTicket t@(Entity _ ticket) = TaggedTicket (t, M.findWithDefault [] (ticketComment ticket) annot_tags_map)
     return (map tagTicket tickets)
+  where
+    fetch_tickets discussion_ids =
+        select $
+        from $ \(t `InnerJoin` c) -> do
+        on_ (t ^. TicketComment ==. c ^. CommentId)
+        where_ $
+            c ^. CommentDiscussion `in_` valList discussion_ids &&.
+            c ^. CommentId `notIn` exprClosedCommentIds
+        return t

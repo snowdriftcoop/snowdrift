@@ -38,10 +38,10 @@ module Model.Comment
     , fetchCommentDescendantsDB
     , fetchCommentDestinationDB
     , fetchCommentFlaggingDB
-    , fetchCommentsDescendantsDB
     , fetchCommentRethreadDB
     , fetchCommentTagsDB
     , fetchCommentTagCommentTagsDB
+    , fetchCommentsDescendantsDB
     , fetchCommentsInDB
     , fetchCommentsWithChildrenInDB
     , filterCommentsDB
