@@ -345,7 +345,7 @@ postDeleteComment comment_id =
 -- if there's a preview widget to display (per POST param "mode").
 -- Permission checking should occur *PRIOR TO* this function.
 postEditComment :: Entity User -> Entity Comment -> CommentHandlerInfo -> Handler (Maybe Widget)
-postEditComment user comment@(Entity comment_id _) comment_handler_info = do
+postEditComment user (Entity comment_id comment) comment_handler_info = do
     ((result, _), _) <- runFormPost (editCommentForm "")
     case result of
         FormSuccess (NewComment new_text _) -> lookupPostMode >>= \case
@@ -359,13 +359,11 @@ postEditComment user comment@(Entity comment_id _) comment_handler_info = do
                     makeCommentActionWidget
                       can_edit
                       mempty
-                      comment
+                      (Entity comment_id (comment { commentText = new_text }))
                       user
                       comment_handler_info
-                      (def { mod_comment = \c -> c { commentText = new_text }
-                           -- Since an edit removes a flagging, don't show the flagged markup in preview.
-                           , mod_flag_map = M.delete comment_id
-                           })
+                      -- Since an edit removes a flagging, don't show the flagged markup in preview.
+                      (def { mod_flag_map = M.delete comment_id })
                       (getMaxDepthDefault 0)
                       True
                 return (Just (previewWidget form "post" comment_widget))

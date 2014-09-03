@@ -94,17 +94,16 @@ data NoCommentReason
 -- | Data type used in makeCommentWidgetMod, containing modifications to comment-action-related
 -- data structures.
 data CommentMods = CommentMods
-    { mod_comment          :: Comment          -> Comment
-    , mod_earlier_closures :: [CommentClosure] -> [CommentClosure]
-    , mod_user_map         :: Map UserId User  -> Map UserId User -- can't user UserMap here, circular dependency.
-    , mod_closure_map      :: ClosureMap       -> ClosureMap
-    , mod_ticket_map       :: TicketMap        -> TicketMap
-    , mod_flag_map         :: FlagMap          -> FlagMap
-    , mod_tag_map          :: TagMap           -> TagMap
+    { mod_earlier_closures   :: [CommentClosure] -> [CommentClosure]
+    , mod_user_map           :: Map UserId User  -> Map UserId User
+    , mod_closure_map        :: ClosureMap       -> ClosureMap
+    , mod_ticket_map         :: TicketMap        -> TicketMap
+    , mod_flag_map           :: FlagMap          -> FlagMap
+    , mod_tag_map            :: TagMap           -> TagMap
     }
 
 instance Default CommentMods where
-    def = CommentMods id id id id id id id
+    def = CommentMods id id id id id id
 
 data MaxDepth
     = NoMaxDepth
