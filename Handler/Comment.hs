@@ -569,7 +569,7 @@ postRetractComment
         -> Comment
         -> CommentHandlerInfo
         -> Handler (Maybe (Widget, Widget))
-postRetractComment user@(Entity user_id _) comment_id comment comment_handler_info = do
+postRetractComment user comment_id comment comment_handler_info = do
     ((result, _), _) <- runFormPost (retractCommentForm Nothing)
     case result of
         FormSuccess (NewClosure reason) -> do

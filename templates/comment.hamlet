@@ -63,7 +63,8 @@
             <span .glyphicon .glyphicon-arrow-right>
             awaiting moderator approval
 
-    #{commentText comment}
+    <div .comment-body>
+        #{commentText comment}
 
     <div>
         $forall tag <- tags
