@@ -9,8 +9,11 @@ import           Text.Regex.TDFA
 import           Text.Regex.TDFA.ByteString
 import           Yesod.Markdown             (markdownToHtml, Markdown (..))
 
-fixLinks :: Text -> Text -> Text
-fixLinks project' line' =
+
+-- TODO: we should probably put together some standard sets of these transforms for use in various places, rather than assembling ad-hoc
+
+fixLinks :: Text -> Text -> Handler Text
+fixLinks project' line' = do
     let Right pattern = compile defaultCompOpt defaultExecOpt "(\\[[^]]*\\])\\(([a-z]+:)?([a-z0-9-]+)\\)"
         project = encodeUtf8 project'
         parse _   (Left err) = error err
@@ -27,7 +30,7 @@ fixLinks project' line' =
         parse _ (Right (Just _)) = error "strange match"
 
         line = encodeUtf8 line'
-     in decodeUtf8 $ parse line (regexec pattern line)
+    return $ decodeUtf8 $ parse line (regexec pattern line)
 
 
 linkTickets :: Text -> Handler Text
@@ -73,24 +76,23 @@ linkTickets line' = do
         line = encodeUtf8 line'
      in fmap decodeUtf8 $ parse line (regexec pattern line)
 
-
-renderMarkdown :: Text -> Markdown -> Handler Html
+renderMarkdown :: Markdown -> Handler Html
 renderMarkdown = renderMarkdownWith return
 
-renderMarkdownWith :: (Text -> Handler Text) -> Text -> Markdown -> Handler Html
-renderMarkdownWith transform project (Markdown markdown) = do
+renderMarkdownWith :: (Text -> Handler Text) -> Markdown -> Handler Html
+renderMarkdownWith transform (Markdown markdown) = do
     let ls = T.lines markdown
 
-    ls' <- mapM (transform <=< linkTickets . fixLinks project) ls
+    ls' <- mapM (transform <=< linkTickets) ls
 
     return $ markdownToHtml $ Markdown $ T.unlines ls'
 
 
-markdownWidget :: Text -> Markdown -> Widget
+markdownWidget :: Markdown -> Widget
 markdownWidget = markdownWidgetWith return
 
-markdownWidgetWith :: (Text -> Handler Text) -> Text -> Markdown -> Widget
-markdownWidgetWith transform project markdown = do
-    rendered <- handlerToWidget $ renderMarkdownWith transform project markdown
+markdownWidgetWith :: (Text -> Handler Text) -> Markdown -> Widget
+markdownWidgetWith transform markdown = do
+    rendered <- handlerToWidget $ renderMarkdownWith transform markdown
     toWidget rendered
 

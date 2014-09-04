@@ -18,7 +18,7 @@
 
     <div .col-md-6>
         $maybe blurb <- userBlurb user
-            ^{markdownWidget project_handle blurb}
+            ^{markdownWidget blurb}
         $nothing
             &nbsp;
 
@@ -50,7 +50,7 @@
         $maybe statement <- userStatement user
             <h3>Personal Statement
             <div .well .well-sm .scroll .capped>
-                ^{markdownWidget project_handle statement}
+                ^{markdownWidget statement}
 
 $maybe (est_form, est_form_enctype) <- mest_form_and_enctype
     <div .row>

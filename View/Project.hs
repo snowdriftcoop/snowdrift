@@ -31,7 +31,7 @@ renderProject maybe_project_id project pledges pledge = do
         users = fromIntegral $ length pledges
         shares = sum pledges
         project_value = share_value $* fromIntegral shares
-        description = markdownWidget (projectHandle project) $ projectDescription project
+        description = markdownWidgetWith (fixLinks $ projectHandle project) $ projectDescription project
 
         maybe_shares = pledgeShares . entityVal <$> pledge
 
@@ -76,7 +76,7 @@ renderBlogPost project_handle blog_post = do
     let (Markdown top_content) = projectBlogTopContent blog_post
         (Markdown bottom_content) = maybe (Markdown "") ("***\n" <>) $ projectBlogBottomContent blog_post
         title = projectBlogTitle blog_post
-        content = markdownWidget project_handle $ Markdown $ T.snoc top_content '\n' <> bottom_content
+        content = markdownWidgetWith (fixLinks project_handle) $ Markdown $ T.snoc top_content '\n' <> bottom_content
 
     $(widgetFile "blog_post")
 

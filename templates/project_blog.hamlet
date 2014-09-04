@@ -9,7 +9,7 @@ $forall Entity _ post <- posts
             ^{renderTime $ projectBlogTime post}
 
         <p>
-            ^{markdownWidget project_handle $ projectBlogTopContent post}
+            ^{markdownWidgetWith (fixLinks project_handle) $ projectBlogTopContent post}
 
     <hr>
 

@@ -1,1 +1,1 @@
-^{markdownWidget "snowdrift" (wikiEditContent page)}
+^{markdownWidget (wikiEditContent page)}
