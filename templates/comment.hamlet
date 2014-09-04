@@ -81,7 +81,7 @@
                     #{flag_markdown}
             <i>Please edit to address these concerns and repost.
 
-    #{commentText comment}
+    ^{markdownWidgetWith commentTextTransform (commentText comment)}
 
     <div>
         $forall tag <- tags

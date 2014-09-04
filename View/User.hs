@@ -108,7 +108,6 @@ previewUserForm User{..} = renderBootstrap3 $
 renderUser :: Maybe UserId -> UserId -> User -> Map (Entity Project) (Set Role) -> Widget
 renderUser mviewer_id user_id user projects_and_roles = do
     let user_entity = Entity user_id user
-        project_handle = error "bad link - no default project on user pages" -- TODO turn this into a caught exception
 
     should_show_est_form <- handlerToWidget (canCurUserMakeEligible user_id)
     mest_form_and_enctype <-
