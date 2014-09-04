@@ -575,7 +575,7 @@ postEditProjectCommentR project_handle comment_id = do
       (projectCommentHandlerInfo (Just user) project_id project_handle)
       >>= \case
         Nothing -> redirect (ProjectCommentR project_handle comment_id)         -- Edit made.
-        Just widget -> defaultLayout (projectDiscussionPage project_handle widget)
+        Just (widget, form) -> defaultLayout $ previewWidget form "edit" (projectDiscussionPage project_handle widget)
 
 --------------------------------------------------------------------------------
 -- /c/#CommentId/flag
@@ -602,7 +602,7 @@ postFlagProjectCommentR project_handle comment_id = do
       (projectCommentHandlerInfo (Just user) project_id project_handle)
       >>= \case
         Nothing -> redirect (ProjectDiscussionR project_handle)
-        Just widget -> defaultLayout (projectDiscussionPage project_handle widget)
+        Just (widget, form) -> defaultLayout $ previewWidget form "flag" (projectDiscussionPage project_handle widget)
 
 --------------------------------------------------------------------------------
 -- /c/#CommentId/reply
@@ -778,7 +778,7 @@ getProjectDiscussion project_handle get_root_comments = do
           project_handle
           root_comments
           def
-          (getMaxDepthDefault 0)
+          getMaxDepth
           False
           mempty
 

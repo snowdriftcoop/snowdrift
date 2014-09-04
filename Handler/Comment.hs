@@ -342,7 +342,11 @@ postDeleteComment comment_id =
 -- | Handle a POST to an /edit URL. Returns Nothing if the comment was edited, or Just Widget
 -- if there's a preview widget to display (per POST param "mode").
 -- Permission checking should occur *PRIOR TO* this function.
-postEditComment :: Entity User -> Entity Comment -> CommentHandlerInfo -> Handler (Maybe Widget)
+postEditComment
+        :: Entity User
+        -> Entity Comment
+        -> CommentHandlerInfo
+        -> Handler (Maybe (Widget, Widget))
 postEditComment user (Entity comment_id comment) comment_handler_info = do
     ((result, _), _) <- runFormPost (editCommentForm "")
     case result of
@@ -364,13 +368,13 @@ postEditComment user (Entity comment_id comment) comment_handler_info = do
                       (def { mod_flag_map = M.delete comment_id })
                       (getMaxDepthDefault 0)
                       True
-                return (Just (previewWidget form "post" comment_widget))
+                return (Just (comment_widget, form))
         FormMissing -> error "Form missing."
         FormFailure msgs -> error $ "Error submitting form: " ++ T.unpack (T.intercalate "\n" msgs)
 
 -- | Handle a POST to a /flag URL.
 -- Permission checking should occur *PRIOR TO* this function.
-postFlagComment :: Entity User -> Entity Comment -> CommentHandlerInfo -> Handler (Maybe Widget)
+postFlagComment :: Entity User -> Entity Comment -> CommentHandlerInfo -> Handler (Maybe (Widget, Widget))
 postFlagComment user@(Entity user_id _) comment@(Entity comment_id _) comment_handler_info = do
     ((result, _), _) <- runFormPost (flagCommentForm Nothing Nothing)
     case result of
@@ -387,32 +391,9 @@ postFlagComment user@(Entity user_id _) comment@(Entity comment_id _) comment_ha
                     else alertDanger "error: another user flagged this just before you"
                 return Nothing
             _ -> do
-                (form, _) <- generateFormPost $ flagCommentForm (Just (Just reasons)) (Just message)
-
-                let style_widget =
-                        -- the CSS below styles this particular flagging submit
-                        -- button. It would be ideal to have this in a more
-                        -- generalized place so it can be reused in other flagging
-                        -- buttons and be in just one place, but this works for
-                        -- now.
-                        toWidget [cassius|
-                            .preview-action-button[type=submit]
-                                background : dark-red
-                                background-image : linear-gradient(#ee2700, #bd1000)
-                                border-color: #a5022a
-
-                            .preview-action-button[type=submit]:hover, .preview-action-button[type=submit]:focus, .preview-action-button[type=submit]:active
-                                background : red
-                                background-image : linear-gradient(#d22935, #a5022a)
-                        |]
-                    form_with_header =
-                        [whamlet|
-                            <h4>Code of Conduct Violation(s):
-                            ^{form}
-                        |]
-
                 now <- liftIO getCurrentTime
-                let flagging = CommentFlagging now user_id comment_id message
+                let form = generateFlagCommentForm (Just (Just reasons)) (Just message)
+                    flagging = CommentFlagging now user_id comment_id message
                 (comment_widget, _) <-
                     makeCommentActionWidget
                       can_flag
@@ -423,7 +404,7 @@ postFlagComment user@(Entity user_id _) comment@(Entity comment_id _) comment_ha
                       (def { mod_flag_map = M.insert comment_id (flagging, reasons) })
                       (getMaxDepthDefault 0)
                       True
-                return (Just (style_widget <> previewWidget form_with_header "flag comment" comment_widget))
+                return (Just (comment_widget, form))
 
         FormFailure errs -> flagFailure (T.intercalate ", " errs)
         _ -> flagFailure "Form missing."

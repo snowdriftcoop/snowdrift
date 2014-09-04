@@ -131,4 +131,5 @@
                 <a href="@{comment_route_unclaim comment_id}">
                     unclaim
 
-    ^{inner_widget}
+    <div .inner-widget>
+        ^{inner_widget}

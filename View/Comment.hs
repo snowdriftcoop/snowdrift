@@ -13,6 +13,7 @@ module View.Comment
     , createCommentTagForm
     , editCommentForm
     , flagCommentForm
+    , generateFlagCommentForm
     , newCommentTagForm
     , rethreadCommentForm
     , retractCommentForm
@@ -178,6 +179,25 @@ flagCommentFormWidget def_reasons def_message = do
             <button type="submit" name="mode" value="preview">preview flag message
     |]
 
+generateFlagCommentForm :: Maybe (Maybe [FlagReason]) -> Maybe (Maybe Markdown) -> Widget
+generateFlagCommentForm reasons message = do
+    (form, _) <- handlerToWidget (generateFormPost $ flagCommentForm reasons message)
+    [whamlet|
+        <h4>Code of Conduct Violation(s):
+        ^{form}
+    |]
+    toWidget [cassius|
+        .preview-action-button[type=submit]
+            background : dark-red
+            background-image : linear-gradient(#ee2700, #bd1000)
+            border-color: #a5022a
+
+        .preview-action-button[type=submit]:hover, .preview-action-button[type=submit]:focus, .preview-action-button[type=submit]:active
+            background : red
+            background-image : linear-gradient(#d22935, #a5022a)
+    |]
+
+
 deleteCommentFormWidget :: Widget
 deleteCommentFormWidget =
     [whamlet|
@@ -206,11 +226,8 @@ expandCommentWidget num_replies new_max_depth = do
                         NoMaxDepth -> (cur_route, [])
                         MaxDepth n -> (cur_route, [("maxdepth", T.pack (show n))])
     [whamlet|
-        <br>
-        <br>
-        <em>
-            <a href="@?{new_route}">
-                #{num_replies} more #{plural num_replies "reply" "replies"}
+        <a .expand href="@?{new_route}">
+            #{num_replies} more #{plural num_replies "reply" "replies"}
     |]
 
 -- | An entire comment forest.
@@ -325,7 +342,7 @@ commentTreeWidget'
     let num_children = length children
         inner_widget =
             form_under_root_comment <>
-            if MaxDepth depth > max_depth && num_children > 0
+            if MaxDepth depth >= max_depth && num_children > 0
                 then expandCommentWidget num_children (addMaxDepth max_depth 2) -- FIXME(mitchell): arbitrary '2' here
                 else forM_ children $ \child ->
                          commentTreeWidget'
