@@ -632,7 +632,6 @@ rethreadCommentDB mnew_parent_id new_discussion_id root_comment_id user_id reaso
 
         return (old_comment_ids, new_comment_ids)
 
-
     now <- liftIO getCurrentTime
 
     let new_root_comment_id = Prelude.head new_comment_ids -- This is kind of ugly, but it should be safe.
@@ -640,17 +639,22 @@ rethreadCommentDB mnew_parent_id new_discussion_id root_comment_id user_id reaso
     rethread_id <- lift (insert rethread)
     tell [ECommentRethreaded rethread_id rethread]
 
+    let updateForRethread :: (PersistEntity val, PersistEntityBackend val ~ SqlBackend)
+                          => EntityField val CommentId
+                          -> (SqlExpr (Entity val) -> SqlExpr (Entity CommentRethread) -> SqlExpr (Insertion val))
+                          -> DB ()
+        updateForRethread comment_field constructor =
+            insertSelect $
+            from $ \(table `InnerJoin` cr) -> do
+            on_ (table ^. comment_field ==. cr ^. CommentRethreadOldComment)
+            where_ (table ^. comment_field `in_` valList old_comment_ids)
+            return (constructor table cr)
+
     lift $ do
-        forM_ (zip old_comment_ids new_comment_ids) $ \ (comment_id, new_comment_id) -> do
-            update $ \ comment_tag -> do
-                where_ $ comment_tag ^. CommentTagComment ==. val comment_id
-                set comment_tag [ CommentTagComment =. val new_comment_id ]
+        forM_ (zip old_comment_ids new_comment_ids) $ \(old_comment_id, new_comment_id) -> do
+            insert_ (CommentRethread rethread_id old_comment_id new_comment_id)
 
-            update $ \ ticket -> do
-                where_ $ ticket ^. TicketComment ==. val comment_id
-                set ticket [ TicketComment =. val new_comment_id ]
-
-            insert_ $ CommentRethread rethread_id comment_id new_comment_id
+            -- TODO(mitchell, david): pull the stuff below out of the for-loop
 
             insertSelect $
              from $ \(c `InnerJoin` ca) -> do
@@ -666,19 +670,60 @@ rethreadCommentDB mnew_parent_id new_discussion_id root_comment_id user_id reaso
 
             maybe (return ()) (insert_ . CommentAncestor new_comment_id) maybe_new_parent_id
 
-        insertSelect $
-            from $ \(comment_closure `InnerJoin` comment_rethread) -> do
-            on_ $ comment_closure ^. CommentClosureComment ==. comment_rethread ^. CommentRethreadOldComment
-            return $ CommentClosure
-                        <#  (comment_closure ^. CommentClosureTs)
-                        <&> (comment_closure ^. CommentClosureClosedBy)
-                        <&> (comment_closure ^. CommentClosureType)
-                        <&> (comment_closure ^. CommentClosureReason)
-                        <&> (comment_rethread ^. CommentRethreadNewComment)
+        -- EVERYTHING with a foreign key on CommentId needs to be added here, for the
+        -- new comments. We don't want to update in-place because we *do* show the
+        -- rethreaded comments on Project feeds (for one thing).
 
-        delete $
-         from $ \ca ->
-         where_ $ ca ^. CommentAncestorComment `in_` valList old_comment_ids
+        updateForRethread CommentClosingComment
+                          (\cc cr -> CommentClosing
+                              <#  (cc  ^. CommentClosingTs)
+                              <&> (cc  ^. CommentClosingClosedBy)
+                              <&> (cc  ^. CommentClosingReason)
+                              <&> (cr  ^. CommentRethreadNewComment))
+
+        updateForRethread CommentFlaggingComment
+                          (\cf cr -> CommentFlagging
+                              <#  (cf  ^. CommentFlaggingTs)
+                              <&> (cf  ^. CommentFlaggingFlagger)
+                              <&> (cr  ^. CommentRethreadNewComment)
+                              <&> (cf  ^. CommentFlaggingMessage))
+
+        updateForRethread CommentRetractingComment
+                          (\r cr -> CommentRetracting
+                              <#  (r   ^. CommentRetractingTs)
+                              <&> (r   ^. CommentRetractingReason)
+                              <&> (cr  ^. CommentRethreadNewComment))
+
+        updateForRethread CommentTagComment
+                          (\ct cr -> CommentTag
+                              <#  (cr  ^. CommentRethreadNewComment)
+                              <&> (ct  ^. CommentTagTag)
+                              <&> (ct  ^. CommentTagUser)
+                              <&> (ct  ^. CommentTagCount))
+
+        updateForRethread TicketComment
+                          (\t cr -> Ticket
+                              <#  (t   ^. TicketCreatedTs)
+                              <&> (t   ^. TicketUpdatedTs)
+                              <&> (t   ^. TicketName)
+                              <&> (cr  ^. CommentRethreadNewComment))
+
+        updateForRethread TicketClaimingTicket
+                          (\tc cr -> TicketClaiming
+                              <#  (tc  ^. TicketClaimingTs)
+                              <&> (tc  ^. TicketClaimingUser)
+                              <&> (cr  ^. CommentRethreadNewComment)
+                              <&> (tc  ^. TicketClaimingNote))
+
+        updateForRethread UnapprovedCommentNotificationComment
+                          (\ucn cr -> UnapprovedCommentNotification
+                              <#  (cr  ^. CommentRethreadNewComment)
+                              <&> (ucn ^. UnapprovedCommentNotificationNotification))
+
+        updateForRethread ViewCommentComment
+                          (\vc cr -> ViewComment
+                              <#  (vc  ^. ViewCommentUser)
+                              <&> (cr  ^. CommentRethreadNewComment))
 
 makeCommentRouteDB :: CommentId -> DB (Maybe (Route App))
 makeCommentRouteDB comment_id = get comment_id >>= \case
