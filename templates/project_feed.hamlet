@@ -3,7 +3,7 @@
 $forall event <- events
     $case event
         $of ECommentPosted comment_id comment
-            ^{renderCommentPostedEvent comment_id comment muser_id project_handle discussion_map action_permissions_map earlier_closures_map user_map closure_map ticket_map flag_map}
+            ^{renderCommentPostedEvent comment_id comment muser_id project_handle discussion_map action_permissions_map earlier_closures_map earlier_retracts_map user_map closure_map retract_map ticket_map flag_map}
 
         $of ECommentRethreaded _ rethread
             ^{renderCommentRethreadedEvent rethread user_map}

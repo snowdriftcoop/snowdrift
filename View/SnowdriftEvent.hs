@@ -21,11 +21,13 @@ renderCommentPostedEvent
         -> Text
         -> Map DiscussionId DiscussionOn
         -> ActionPermissionsMap
-        -> Map CommentId [CommentClosure]
-        -> UserMap
-        -> ClosureMap
-        -> TicketMap
-        -> FlagMap
+        -> Map CommentId [CommentClosing]
+        -> Map CommentId [CommentRetracting]
+        -> Map UserId User
+        -> Map CommentId CommentClosing
+        -> Map CommentId CommentRetracting
+        -> Map CommentId Ticket
+        -> Map CommentId (CommentFlagging, [FlagReason])
         -> Widget
 renderCommentPostedEvent
         comment_id
@@ -35,8 +37,10 @@ renderCommentPostedEvent
         discussion_map
         action_permissions_map
         earlier_closures_map
+        earlier_retracts_map
         user_map
         closure_map
+        retract_map
         ticket_map
         flag_map = do
 
@@ -80,8 +84,10 @@ renderCommentPostedEvent
               routes
               action_permissions
               (M.findWithDefault [] comment_id earlier_closures_map)
+              (M.findWithDefault [] comment_id earlier_retracts_map)
               user
               (M.lookup comment_id closure_map)
+              (M.lookup comment_id retract_map)
               (M.lookup comment_id ticket_map)
               (M.lookup comment_id flag_map)
               False

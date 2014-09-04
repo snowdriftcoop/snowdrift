@@ -9,6 +9,6 @@ import Model.Discussion
 -- "root comment getter", by looking for a "state=open" or "state=closed" GET param.
 getDiscussion :: ((DiscussionId -> ExprCommentCond -> DB [Entity Comment]) -> Handler Html) -> Handler Html
 getDiscussion callback = lookupGetParam "state" >>= \case
-    Just "closed" -> callback fetchDiscussionClosedRootCommentsDB
+    Just "closed" -> callback fetchDiscussionClosedOrRetractedRootCommentsDB
     -- Not "closed"? Just accept anything else as meaning "open".
     _             -> callback fetchDiscussionRootCommentsDB

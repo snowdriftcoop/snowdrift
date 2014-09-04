@@ -393,5 +393,5 @@ fetchProjectOpenTicketsDB project_id muser_id = do
         on_ (t ^. TicketComment ==. c ^. CommentId)
         where_ $
             c ^. CommentDiscussion `in_` valList discussion_ids &&.
-            c ^. CommentId `notIn` exprClosedCommentIds
+            exprCommentOpen c
         return t

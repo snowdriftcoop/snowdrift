@@ -852,7 +852,8 @@ getProjectFeedR project_handle = do
 
     (project, comments, rethreads, wiki_pages, wiki_edits, new_pledges,
      updated_pledges, deleted_pledges, discussion_map, wiki_page_map, user_map,
-     earlier_closures_map, closure_map, ticket_map, flag_map) <- runYDB $ do
+     earlier_closures_map, earlier_retracts_map, closure_map, retract_map,
+     ticket_map, flag_map) <- runYDB $ do
 
         Entity project_id project <- getBy404 (UniqueProjectHandle project_handle)
 
@@ -886,14 +887,17 @@ getProjectFeedR project_handle = do
         user_map <- entitiesMap <$> fetchUsersInDB user_ids
 
         earlier_closures_map <- fetchCommentsAncestorClosuresDB comment_ids
-        closure_map          <- makeClosureMapDB comment_ids
-        ticket_map           <- makeTicketMapDB  comment_ids
-        flag_map             <- makeFlagMapDB    comment_ids
+        earlier_retracts_map <- fetchCommentsAncestorRetractsDB comment_ids
+        closure_map          <- makeCommentClosingMapDB         comment_ids
+        retract_map          <- makeCommentRetractingMapDB      comment_ids
+        ticket_map           <- makeTicketMapDB                 comment_ids
+        flag_map             <- makeFlagMapDB                   comment_ids
 
         return (project, comments, rethreads, wiki_pages, wiki_edits,
                 new_pledges, updated_pledges, deleted_pledges, discussion_map,
-                wiki_page_map, user_map, earlier_closures_map, closure_map,
-                ticket_map, flag_map)
+                wiki_page_map, user_map, earlier_closures_map,
+                earlier_retracts_map, closure_map, retract_map, ticket_map,
+                flag_map)
 
     action_permissions_map <- makeProjectCommentActionPermissionsMap muser project_handle comments
 

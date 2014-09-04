@@ -22,41 +22,37 @@
                     parent
 
     $forall closure <- earlier_closures
-        $case commentClosureType closure
-            $of Retracted
-                <div .retracted>
-                    A comment above this one was retracted ^{renderTime (commentClosureTs closure)}
-                    #{commentClosureReason closure}
+        <div .closed>
+            A comment above this one was closed at ^{renderTime (commentClosingTs closure)}
+            #{commentClosingReason closure}
 
-            $of Closed
-                <div .closed>
-                    A comment above this one was closed at ^{renderTime (commentClosureTs closure)}
-                    #{commentClosureReason closure}
+    $forall retract <- earlier_retracts
+        <div .retracted>
+            A comment above this one was retracted ^{renderTime (commentRetractingTs retract)}
+            #{commentRetractingReason retract}
 
     $maybe closure <- mclosure
-        $case commentClosureType closure
-            $of Retracted
-                <div .retracted>
-                    The author retracted this comment ^{renderTime (commentClosureTs closure)}
-                    #{commentClosureReason closure}
+        <div .closed>
+            $if commentClosingClosedBy closure == user_id
+                The author
+            $else
+                ^{userNameWidget $ commentClosingClosedBy closure}
+            \ closed this comment ^{renderTime (commentClosingTs closure)}
+            #{commentClosingReason closure}
 
-            $of Closed
-                <div .closed>
-                    $if commentClosureClosedBy closure == user_id
-                        The author
-                    $else
-                        ^{userNameWidget $ commentClosureClosedBy closure}
-                    \ closed this comment ^{renderTime (commentClosureTs closure)}
-                    #{commentClosureReason closure}
+    $maybe retract <- mretract
+        <div .retracted>
+            The author retracted this comment ^{renderTime (commentRetractingTs retract)}
+            #{commentRetractingReason retract}
 
-    $maybe (mflag_markdown, flag_reasons) <- mflag
+    $maybe (flagging , flag_reasons) <- mflag
         <div .flagged>
             A user flagged this comment as a violation of the
             <a href="@{WikiR "snowdrift" "conduct"}">
                 Code of Conduct
             due to:
             <div .flag-reasons>#{T.intercalate ", " $ map descFlagReason flag_reasons}
-            $maybe flag_markdown <- mflag_markdown
+            $maybe flag_markdown <- commentFlaggingMessage flagging
                 <div .flag-markdown>
                     Additional comments:
                     #{flag_markdown}

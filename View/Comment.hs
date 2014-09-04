@@ -219,11 +219,13 @@ commentForestWidget
         -> Maybe UserId             -- ^ Viewer.
         -> CommentRoutes
         -> MakeActionPermissionsMap
-        -> [CommentClosure]         -- ^ Earlier closures.
-        -> UserMap
-        -> ClosureMap
-        -> TicketMap
-        -> FlagMap
+        -> [CommentClosing]         -- ^ Earlier closures.
+        -> [CommentRetracting]      -- ^ Earlier retracts.
+        -> Map UserId User
+        -> Map CommentId CommentClosing
+        -> Map CommentId CommentRetracting
+        -> Map CommentId Ticket
+        -> Map CommentId (CommentFlagging, [FlagReason])
         -> Bool                     -- ^ Is preview?
         -> MaxDepth                 -- ^ Max depth.
         -> Int                      -- ^ Depth.
@@ -235,8 +237,10 @@ commentForestWidget
         comment_routes
         make_action_permissions_map
         earlier_closures
+        earlier_retracts
         user_map
-        closure_map
+        close_map
+        retract_map
         ticket_map
         flag_map
         is_preview
@@ -251,8 +255,10 @@ commentForestWidget
           comment_routes
           action_permissions_map
           earlier_closures
+          earlier_retracts
           user_map
-          closure_map
+          close_map
+          retract_map
           ticket_map
           flag_map
           is_preview
@@ -266,17 +272,19 @@ commentTreeWidget
         -> Maybe UserId             -- ^ Viewer.
         -> CommentRoutes
         -> MakeActionPermissionsMap
-        -> [CommentClosure]         -- ^ Earlier closures.
-        -> UserMap
-        -> ClosureMap
-        -> TicketMap
-        -> FlagMap
+        -> [CommentClosing]         -- ^ Earlier closures.
+        -> [CommentRetracting]      -- ^ Earlier retracts.
+        -> Map UserId User
+        -> Map CommentId CommentClosing
+        -> Map CommentId CommentRetracting
+        -> Map CommentId Ticket
+        -> Map CommentId (CommentFlagging, [FlagReason])
         -> Bool                     -- ^ Is preview?
         -> MaxDepth
         -> Int                      -- ^ Depth.
         -> Widget                   -- ^ Form to display under the root comment.
         -> Widget
-commentTreeWidget a b c d e f g h i j k l m = commentForestWidget [a] b c d e f g h i j k l m
+commentTreeWidget tree = commentForestWidget [tree]
 
 -- | Helper function for commentForestWidget/commentTreeWidget that takes an
 -- ActionPermissionsMap (as opposed to a MakeActionPermissionsMap). Unexported.
@@ -285,11 +293,13 @@ commentTreeWidget'
         -> Maybe UserId          -- ^ Viewer.
         -> CommentRoutes
         -> ActionPermissionsMap
-        -> [CommentClosure]      -- ^ Earlier closures.
-        -> UserMap
-        -> ClosureMap
-        -> TicketMap
-        -> FlagMap
+        -> [CommentClosing]      -- ^ Earlier closures.
+        -> [CommentRetracting]   -- ^ Earlier retracts.
+        -> Map UserId User
+        -> Map CommentId CommentClosing
+        -> Map CommentId CommentRetracting
+        -> Map CommentId Ticket
+        -> Map CommentId (CommentFlagging, [FlagReason])
         -> Bool                  -- ^ Is preview?
         -> MaxDepth
         -> Int                   -- ^ Depth.
@@ -301,8 +311,10 @@ commentTreeWidget'
         comment_routes
         action_permissions_map
         earlier_closures
+        earlier_retracts
         user_map
-        closure_map
+        close_map
+        retract_map
         ticket_map
         flag_map
         is_preview
@@ -322,8 +334,10 @@ commentTreeWidget'
                            comment_routes
                            action_permissions_map
                            [] -- don't want to show earlier closures on *all* comments, just the first one.
+                           [] -- same for earlier retracts
                            user_map
-                           closure_map
+                           close_map
+                           retract_map
                            ticket_map
                            flag_map
                            is_preview
@@ -337,8 +351,10 @@ commentTreeWidget'
         comment_routes
         (lookupErr "comment id missing from action permissions map" root_id action_permissions_map)
         earlier_closures
+        earlier_retracts
         (lookupErr "comment user missing from user map" (commentUser root) user_map)
-        (M.lookup root_id closure_map)
+        (M.lookup root_id close_map)
+        (M.lookup root_id retract_map)
         (M.lookup root_id ticket_map)
         (M.lookup root_id flag_map)
         is_preview
@@ -350,26 +366,30 @@ commentTreeWidget'
 -- before the children comments).
 --
 -- Note this widget has NO CSS.
-commentWidget :: Entity Comment                       -- ^ Comment.
-              -> Maybe UserId                         -- ^ Viewer.
-              -> CommentRoutes                        -- ^ Comment routes.
-              -> CommentActionPermissions             -- ^ Permissions for comment actions.
-              -> [CommentClosure]                     -- ^ Earlier closures.
-              -> User                                 -- ^ Comment poster.
-              -> Maybe CommentClosure                 -- ^ Is this closed?
-              -> Maybe (Entity Ticket)                -- ^ Is this a ticket?
-              -> Maybe (Maybe Markdown, [FlagReason]) -- ^ Is this comment flagged?
-              -> Bool                                 -- ^ Is this a preview?
-              -> Widget                               -- ^ Inner widget (children comments, 'expand' link, reply box, etc)
+commentWidget :: Entity Comment                        -- ^ Comment.
+              -> Maybe UserId                          -- ^ Viewer.
+              -> CommentRoutes                         -- ^ Comment routes.
+              -> CommentActionPermissions              -- ^ Permissions for comment actions.
+              -> [CommentClosing]                      -- ^ Earlier closures.
+              -> [CommentRetracting]                   -- ^ Earlier retracts.
+              -> User                                  -- ^ Comment poster.
+              -> Maybe CommentClosing                  -- ^ Is this closed?
+              -> Maybe CommentRetracting               -- ^ Is this retracted?
+              -> Maybe Ticket                          -- ^ Is this a ticket?
+              -> Maybe (CommentFlagging, [FlagReason]) -- ^ Is this flagged?
+              -> Bool                                  -- ^ Is this a preview?
+              -> Widget                                -- ^ Inner widget (children comments, 'expand' link, reply box, etc)
               -> Widget
 commentWidget (Entity comment_id comment)
               mviewer_id
               CommentRoutes{..}
               CommentActionPermissions{..}
               earlier_closures
+              earlier_retracts
               user
               mclosure
-              _ -- mticket
+              mretract
+              mticket
               mflag
               is_preview
               inner_widget = do
