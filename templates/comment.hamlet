@@ -64,7 +64,7 @@
             awaiting moderator approval
 
     <div .comment-body>
-        #{markDownWidgetWith commentTextTransform (commentText comment)}
+        ^{markdownWidgetWith commentTextTransform (commentText comment)}
 
     <div>
         $forall tag <- tags

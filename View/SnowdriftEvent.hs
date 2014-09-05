@@ -26,7 +26,7 @@ renderCommentPostedEvent
         -> Map UserId User
         -> Map CommentId CommentClosing
         -> Map CommentId CommentRetracting
-        -> Map CommentId Ticket
+        -> Map CommentId (Entity Ticket)
         -> Map CommentId (CommentFlagging, [FlagReason])
         -> Widget
 renderCommentPostedEvent

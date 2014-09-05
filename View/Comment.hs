@@ -242,7 +242,7 @@ commentForestWidget
         -> Map UserId User
         -> Map CommentId CommentClosing
         -> Map CommentId CommentRetracting
-        -> Map CommentId Ticket
+        -> Map CommentId (Entity Ticket)
         -> Map CommentId (CommentFlagging, [FlagReason])
         -> Bool                     -- ^ Is preview?
         -> MaxDepth                 -- ^ Max depth.
@@ -295,7 +295,7 @@ commentTreeWidget
         -> Map UserId User
         -> Map CommentId CommentClosing
         -> Map CommentId CommentRetracting
-        -> Map CommentId Ticket
+        -> Map CommentId (Entity Ticket)
         -> Map CommentId (CommentFlagging, [FlagReason])
         -> Bool                     -- ^ Is preview?
         -> MaxDepth
@@ -316,7 +316,7 @@ commentTreeWidget'
         -> Map UserId User
         -> Map CommentId CommentClosing
         -> Map CommentId CommentRetracting
-        -> Map CommentId Ticket
+        -> Map CommentId (Entity Ticket)
         -> Map CommentId (CommentFlagging, [FlagReason])
         -> Bool                  -- ^ Is preview?
         -> MaxDepth
@@ -393,7 +393,7 @@ commentWidget :: Entity Comment                        -- ^ Comment.
               -> User                                  -- ^ Comment poster.
               -> Maybe CommentClosing                  -- ^ Is this closed?
               -> Maybe CommentRetracting               -- ^ Is this retracted?
-              -> Maybe Ticket                          -- ^ Is this a ticket?
+              -> Maybe (Entity Ticket)                 -- ^ Is this a ticket?
               -> Maybe (CommentFlagging, [FlagReason]) -- ^ Is this flagged?
               -> Bool                                  -- ^ Is this a preview?
               -> Widget                                -- ^ Inner widget (children comments, 'expand' link, reply box, etc)

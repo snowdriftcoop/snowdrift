@@ -94,7 +94,7 @@ data CommentMods = CommentMods
     , mod_user_map         :: Map UserId User                               -> Map UserId User
     , mod_closure_map      :: Map CommentId CommentClosing                  -> Map CommentId CommentClosing
     , mod_retract_map      :: Map CommentId CommentRetracting               -> Map CommentId CommentRetracting
-    , mod_ticket_map       :: Map CommentId Ticket                          -> Map CommentId Ticket
+    , mod_ticket_map       :: Map CommentId (Entity Ticket)                 -> Map CommentId (Entity Ticket)
     , mod_flag_map         :: Map CommentId (CommentFlagging, [FlagReason]) -> Map CommentId (CommentFlagging, [FlagReason])
     , mod_tag_map          :: Map TagId Tag                                 -> Map TagId Tag
     }
@@ -601,14 +601,14 @@ closeOrRetractMap comment_field comment_projection comment_ids = fmap (foldr ste
 
 -- | Given a collection of CommentId, make a map from CommentId to Entity Ticket. Comments that
 -- are not tickets will simply not be in the map.
-makeTicketMapDB :: (IsList c, CommentId ~ Item c) => c -> DB (Map CommentId Ticket)
+makeTicketMapDB :: (IsList c, CommentId ~ Item c) => c -> DB (Map CommentId (Entity Ticket))
 makeTicketMapDB comment_ids = fmap (foldr step mempty) $
     select $
     from $ \t -> do
     where_ (t ^. TicketComment `in_` valList comment_ids)
     return t
   where
-    step (Entity _ t) = M.insert (ticketComment t) t
+    step t = M.insert (ticketComment (entityVal t)) t
 
 makeClaimedTicketMapDB :: [CommentId] -> DB (Map CommentId (Entity TicketClaiming))
 makeClaimedTicketMapDB comment_ids = fmap (M.fromList . map (\(Value x, y) -> (x, y))) $
