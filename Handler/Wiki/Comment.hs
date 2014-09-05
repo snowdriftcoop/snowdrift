@@ -9,6 +9,7 @@ import           Handler.Project (checkProjectCommentActionPermission)
 import           Model.Comment
 import           Model.Comment.ActionPermissions
 import           Model.Comment.HandlerInfo
+import           Model.Comment.Mods
 import           Model.Comment.Sql
 import           Model.User
 import           Widgets.Preview
@@ -338,7 +339,7 @@ postReplyWikiCommentR project_handle target parent_id = do
       (Just parent_id)
       user
       (wikiPageDiscussion page)
-      (makeProjectCommentActionPermissionsMap (Just user) project_handle) >>= \case
+      (makeProjectCommentActionPermissionsMap (Just user) project_handle def) >>= \case
         Left _ -> redirect (WikiCommentR project_handle target parent_id)
         Right (widget, form) -> defaultLayout $ previewWidget form "post" (wikiDiscussionPage project_handle target widget)
 

@@ -243,6 +243,7 @@ commentForestWidget
         -> Map CommentId CommentClosing
         -> Map CommentId CommentRetracting
         -> Map CommentId (Entity Ticket)
+        -> Map CommentId TicketClaiming
         -> Map CommentId (CommentFlagging, [FlagReason])
         -> Bool                     -- ^ Is preview?
         -> MaxDepth                 -- ^ Max depth.
@@ -260,6 +261,7 @@ commentForestWidget
         close_map
         retract_map
         ticket_map
+        claim_map
         flag_map
         is_preview
         max_depth
@@ -278,6 +280,7 @@ commentForestWidget
           close_map
           retract_map
           ticket_map
+          claim_map
           flag_map
           is_preview
           max_depth
@@ -296,6 +299,7 @@ commentTreeWidget
         -> Map CommentId CommentClosing
         -> Map CommentId CommentRetracting
         -> Map CommentId (Entity Ticket)
+        -> Map CommentId TicketClaiming
         -> Map CommentId (CommentFlagging, [FlagReason])
         -> Bool                     -- ^ Is preview?
         -> MaxDepth
@@ -317,6 +321,7 @@ commentTreeWidget'
         -> Map CommentId CommentClosing
         -> Map CommentId CommentRetracting
         -> Map CommentId (Entity Ticket)
+        -> Map CommentId TicketClaiming
         -> Map CommentId (CommentFlagging, [FlagReason])
         -> Bool                  -- ^ Is preview?
         -> MaxDepth
@@ -334,6 +339,7 @@ commentTreeWidget'
         close_map
         retract_map
         ticket_map
+        claim_map
         flag_map
         is_preview
         max_depth
@@ -357,6 +363,7 @@ commentTreeWidget'
                            close_map
                            retract_map
                            ticket_map
+                           claim_map
                            flag_map
                            is_preview
                            max_depth
@@ -374,6 +381,7 @@ commentTreeWidget'
         (M.lookup root_id close_map)
         (M.lookup root_id retract_map)
         (M.lookup root_id ticket_map)
+        (M.lookup root_id claim_map)
         (M.lookup root_id flag_map)
         is_preview
         inner_widget
@@ -394,6 +402,7 @@ commentWidget :: Entity Comment                        -- ^ Comment.
               -> Maybe CommentClosing                  -- ^ Is this closed?
               -> Maybe CommentRetracting               -- ^ Is this retracted?
               -> Maybe (Entity Ticket)                 -- ^ Is this a ticket?
+              -> Maybe TicketClaiming                  -- ^ Is this ticket claimed?
               -> Maybe (CommentFlagging, [FlagReason]) -- ^ Is this flagged?
               -> Bool                                  -- ^ Is this a preview?
               -> Widget                                -- ^ Inner widget (children comments, 'expand' link, reply box, etc)
@@ -408,6 +417,7 @@ commentWidget (Entity comment_id comment)
               mclosure
               mretract
               mticket
+              mclaim
               mflag
               is_preview
               inner_widget = do

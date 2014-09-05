@@ -13,6 +13,7 @@ import Model.Application
 import Model.Comment
 import Model.Comment.ActionPermissions
 import Model.Comment.HandlerInfo
+import Model.Comment.Mods
 import Model.Comment.Sql
 import Model.Currency
 import Model.Discussion
@@ -116,8 +117,8 @@ checkProjectCommentActionPermission
         project_handle
         comment@(Entity comment_id _) = do
     action_permissions <-
-        lookupErr "checkWikiPageCommentActionPermission: comment id not found in map" comment_id
-          <$> makeProjectCommentActionPermissionsMap (Just user) project_handle [comment]
+        lookupErr "checkProjectCommentActionPermission: comment id not found in map" comment_id
+          <$> makeProjectCommentActionPermissionsMap (Just user) project_handle def [comment]
     unless (can_perform_action action_permissions)
            (permissionDenied "You don't have permission to perform this action.")
 
@@ -627,7 +628,7 @@ postReplyProjectCommentR project_handle parent_id = do
       (Just parent_id)
       user
       (projectDiscussion project)
-      (makeProjectCommentActionPermissionsMap (Just user) project_handle) >>= \case
+      (makeProjectCommentActionPermissionsMap (Just user) project_handle def) >>= \case
         Left _ -> redirect (ProjectCommentR project_handle parent_id)
         Right (widget, form) -> defaultLayout $ previewWidget form "post" (projectDiscussionPage project_handle widget)
 
@@ -811,7 +812,7 @@ postNewProjectDiscussionR project_handle = do
       Nothing
       user
       projectDiscussion
-      (makeProjectCommentActionPermissionsMap (Just user) project_handle) >>= \case
+      (makeProjectCommentActionPermissionsMap (Just user) project_handle def) >>= \case
         Left comment_id -> redirect (ProjectCommentR project_handle comment_id)
         Right (widget, form) -> defaultLayout $ previewWidget form "post" (projectDiscussionPage project_handle widget)
 
@@ -853,7 +854,7 @@ getProjectFeedR project_handle = do
     (project, comments, rethreads, wiki_pages, wiki_edits, new_pledges,
      updated_pledges, deleted_pledges, discussion_map, wiki_page_map, user_map,
      earlier_closures_map, earlier_retracts_map, closure_map, retract_map,
-     ticket_map, flag_map) <- runYDB $ do
+     ticket_map, claim_map, flag_map) <- runYDB $ do
 
         Entity project_id project <- getBy404 (UniqueProjectHandle project_handle)
 
@@ -891,15 +892,16 @@ getProjectFeedR project_handle = do
         closure_map          <- makeCommentClosingMapDB         comment_ids
         retract_map          <- makeCommentRetractingMapDB      comment_ids
         ticket_map           <- makeTicketMapDB                 comment_ids
+        claim_map            <- makeClaimedTicketMapDB          comment_ids
         flag_map             <- makeFlagMapDB                   comment_ids
 
         return (project, comments, rethreads, wiki_pages, wiki_edits,
                 new_pledges, updated_pledges, deleted_pledges, discussion_map,
                 wiki_page_map, user_map, earlier_closures_map,
                 earlier_retracts_map, closure_map, retract_map, ticket_map,
-                flag_map)
+                claim_map, flag_map)
 
-    action_permissions_map <- makeProjectCommentActionPermissionsMap muser project_handle comments
+    action_permissions_map <- makeProjectCommentActionPermissionsMap muser project_handle def comments
 
     let all_unsorted_events = mconcat
             [ map (onEntity ECommentPosted)     comments

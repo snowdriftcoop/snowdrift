@@ -339,6 +339,8 @@ TicketClaiming
 
     UniqueTicketClaiming ticket
 
+    deriving Show
+
 Build
     bootTime UTCTime
     base     Text

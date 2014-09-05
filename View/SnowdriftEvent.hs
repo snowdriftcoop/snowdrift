@@ -27,6 +27,7 @@ renderCommentPostedEvent
         -> Map CommentId CommentClosing
         -> Map CommentId CommentRetracting
         -> Map CommentId (Entity Ticket)
+        -> Map CommentId TicketClaiming
         -> Map CommentId (CommentFlagging, [FlagReason])
         -> Widget
 renderCommentPostedEvent
@@ -42,6 +43,7 @@ renderCommentPostedEvent
         closure_map
         retract_map
         ticket_map
+        claim_map
         flag_map = do
 
     let action_permissions = lookupErr "renderCommentPostedEvent: comment id missing from permissions map"
@@ -89,6 +91,7 @@ renderCommentPostedEvent
               (M.lookup comment_id closure_map)
               (M.lookup comment_id retract_map)
               (M.lookup comment_id ticket_map)
+              (M.lookup comment_id claim_map)
               (M.lookup comment_id flag_map)
               False
               mempty

@@ -7,6 +7,7 @@ module Model.Comment.HandlerInfo
 import Import
 
 import Model.Comment.ActionPermissions
+import Model.Comment.Mods
 import Model.Comment.Routes
 import Model.Comment.Sql
 
@@ -20,16 +21,16 @@ data CommentHandlerInfo = CommentHandlerInfo
     , commentHandlerMakeActionPermissionsMap :: MakeActionPermissionsMap
     }
 
-projectCommentHandlerInfo :: Maybe (Entity User) -> ProjectId -> Text -> CommentHandlerInfo
-projectCommentHandlerInfo muser project_id project_handle =
+projectCommentHandlerInfo :: Maybe (Entity User) -> ProjectId -> Text -> CommentMods -> CommentHandlerInfo
+projectCommentHandlerInfo muser project_id project_handle mods =
     CommentHandlerInfo
         (exprCommentProjectPermissionFilter (entityKey <$> muser) (val project_id))
         (projectCommentRoutes project_handle)
-        (makeProjectCommentActionPermissionsMap muser project_handle)
+        (makeProjectCommentActionPermissionsMap muser project_handle mods)
 
-wikiPageCommentHandlerInfo :: Maybe (Entity User) -> ProjectId -> Text -> Text -> CommentHandlerInfo
-wikiPageCommentHandlerInfo muser project_id project_handle target =
+wikiPageCommentHandlerInfo :: Maybe (Entity User) -> ProjectId -> Text -> Text -> CommentMods -> CommentHandlerInfo
+wikiPageCommentHandlerInfo muser project_id project_handle target mods =
     CommentHandlerInfo
         (exprCommentProjectPermissionFilter (entityKey <$> muser) (val project_id))
         (wikiPageCommentRoutes project_handle target)
-        (makeProjectCommentActionPermissionsMap muser project_handle)
+        (makeProjectCommentActionPermissionsMap muser project_handle mods)

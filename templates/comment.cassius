@@ -45,6 +45,9 @@
     color : green
     font-style : italic
 
+.claimed-by
+    color : gray
+
 .top_level
     border-left : solid black 0.2em
 

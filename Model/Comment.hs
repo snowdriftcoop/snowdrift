@@ -1,7 +1,6 @@
 module Model.Comment
     -- Types
-    ( CommentMods(..)
-    , MaxDepth(..)
+    ( MaxDepth(..)
     , NoCommentReason(..)
     , addMaxDepth
     -- Utility functions
@@ -64,7 +63,6 @@ import Model.Utils
 
 import qualified Control.Monad.State                  as State
 import           Control.Monad.Writer.Strict          (tell)
-import           Data.Default                         (Default, def)
 import           Data.Foldable                        (Foldable)
 import qualified Data.Foldable                        as F
 import qualified Data.Map                             as M
@@ -85,22 +83,6 @@ import           Yesod.Markdown                       (Markdown(..))
 data NoCommentReason
     = CommentNotFound
     | CommentPermissionDenied
-
--- | Data type used in makeCommentWidgetMod, containing modifications to comment-action-related
--- data structures.
-data CommentMods = CommentMods
-    { mod_earlier_closures :: [CommentClosing]                              -> [CommentClosing]
-    , mod_earlier_retracts :: [CommentRetracting]                           -> [CommentRetracting]
-    , mod_user_map         :: Map UserId User                               -> Map UserId User
-    , mod_closure_map      :: Map CommentId CommentClosing                  -> Map CommentId CommentClosing
-    , mod_retract_map      :: Map CommentId CommentRetracting               -> Map CommentId CommentRetracting
-    , mod_ticket_map       :: Map CommentId (Entity Ticket)                 -> Map CommentId (Entity Ticket)
-    , mod_flag_map         :: Map CommentId (CommentFlagging, [FlagReason]) -> Map CommentId (CommentFlagging, [FlagReason])
-    , mod_tag_map          :: Map TagId Tag                                 -> Map TagId Tag
-    }
-
-instance Default CommentMods where
-    def = CommentMods id id id id id id id id
 
 data MaxDepth
     = NoMaxDepth
@@ -610,8 +592,8 @@ makeTicketMapDB comment_ids = fmap (foldr step mempty) $
   where
     step t = M.insert (ticketComment (entityVal t)) t
 
-makeClaimedTicketMapDB :: [CommentId] -> DB (Map CommentId (Entity TicketClaiming))
-makeClaimedTicketMapDB comment_ids = fmap (M.fromList . map (\(Value x, y) -> (x, y))) $
+makeClaimedTicketMapDB :: [CommentId] -> DB (Map CommentId TicketClaiming)
+makeClaimedTicketMapDB comment_ids = fmap (M.fromList . map (\(Value x, Entity _ y) -> (x, y))) $
     select $
     from $ \tc -> do
     where_ (tc ^. TicketClaimingTicket `in_` valList comment_ids)

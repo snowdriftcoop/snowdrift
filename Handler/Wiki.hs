@@ -261,7 +261,7 @@ postNewWikiDiscussionR project_handle target = do
       Nothing
       user
       wikiPageDiscussion
-      (makeProjectCommentActionPermissionsMap (Just user) project_handle) >>= \case
+      (makeProjectCommentActionPermissionsMap (Just user) project_handle def) >>= \case
         Left comment_id -> redirect (WikiCommentR project_handle target comment_id)
         Right (widget, form) -> defaultLayout $ previewWidget form "post" ($(widgetFile "wiki_discussion_wrapper"))
 

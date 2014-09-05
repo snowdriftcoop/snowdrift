@@ -63,6 +63,29 @@
                     #{flag_markdown}
             <i>Please edit to address these concerns and repost.
 
+    $maybe _ <- mticket
+        <span .glyphicon .glyphicon-tag>
+
+        $if can_claim
+            <div :is_preview:.preview .comment-action>
+                <a href="@{comment_route_claim comment_id}">
+                    claim
+
+        $else
+            $maybe claim <- mclaim
+                <span .claimed-by>
+                    claimed
+                    ^{renderTime (ticketClaimingTs claim)}
+                    by
+                    <a href="@{UserR user_id}">#{userDisplayName (Entity user_id user)}#
+                    $maybe note <- ticketClaimingNote claim
+                        : #{note}
+
+                $if can_unclaim
+                    <div :is_preview:.preview .comment-action>
+                        <a href="@{comment_route_unclaim comment_id}">
+                            (unclaim)
+
     $if is_unapproved
         <div .awaiting-approval>
             <span .glyphicon .glyphicon-arrow-right>
@@ -80,16 +103,6 @@
             ^{tagWidget tag}
 
     <div :is_preview:.preview .comment-actions>
-        $if can_claim
-            <div .comment-action>
-                <a href="@{comment_route_claim comment_id}">
-                    claim
-
-        $if can_unclaim
-            <div .comment-action>
-                <a href="@{comment_route_unclaim comment_id}">
-                    unclaim
-
         $if can_edit
             <div .comment-action>
                 <a href="@{comment_route_edit comment_id}">
