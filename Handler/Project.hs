@@ -575,7 +575,7 @@ postEditProjectCommentR project_handle comment_id = do
       (projectCommentHandlerInfo (Just user) project_id project_handle)
       >>= \case
         Nothing -> redirect (ProjectCommentR project_handle comment_id)         -- Edit made.
-        Just (widget, form) -> defaultLayout $ previewWidget form "edit" (projectDiscussionPage project_handle widget)
+        Just (widget, form) -> defaultLayout $ previewWidget form "post" (projectDiscussionPage project_handle widget)
 
 --------------------------------------------------------------------------------
 -- /c/#CommentId/flag

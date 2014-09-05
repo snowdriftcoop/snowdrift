@@ -261,7 +261,7 @@ postEditWikiCommentR project_handle target comment_id = do
       (wikiPageCommentHandlerInfo (Just user) project_id project_handle target)
       >>= \case
         Nothing -> redirect (WikiCommentR project_handle target comment_id)  -- Edit made.
-        Just (widget, form) -> defaultLayout $ previewWidget form "edit" (wikiDiscussionPage project_handle target widget)
+        Just (widget, form) -> defaultLayout $ previewWidget form "post" (wikiDiscussionPage project_handle target widget)
 
 --------------------------------------------------------------------------------
 -- /flag
