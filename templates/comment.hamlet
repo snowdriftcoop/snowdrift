@@ -80,6 +80,16 @@
             ^{tagWidget tag}
 
     <div :is_preview:.preview .comment-actions>
+        $if can_claim
+            <div .comment-action>
+                <a href="@{comment_route_claim comment_id}">
+                    claim
+
+        $if can_unclaim
+            <div .comment-action>
+                <a href="@{comment_route_unclaim comment_id}">
+                    unclaim
+
         $if can_edit
             <div .comment-action>
                 <a href="@{comment_route_edit comment_id}">
@@ -119,16 +129,6 @@
             <div .comment-action>
                 <a href="@{comment_route_reply comment_id}">
                     reply
-
-        $if can_claim
-            <div .comment-action>
-                <a href="@{comment_route_claim comment_id}">
-                    claim
-
-        $if can_unclaim
-            <div .comment-action>
-                <a href="@{comment_route_unclaim comment_id}">
-                    unclaim
 
     <div .inner-widget>
         ^{inner_widget}
