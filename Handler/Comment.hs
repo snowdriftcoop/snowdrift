@@ -52,7 +52,6 @@ import           Model.Project
 import           Model.User
 import           Model.Tag
 import           View.Comment
-import           Widgets.Preview
 import           Widgets.Tag
 
 import           Data.Default                    (def)

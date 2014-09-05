@@ -7,6 +7,11 @@
             <a href="@{UserR user_id}">
                 #{userDisplayName (Entity user_id user)}
 
+        $if can_establish
+            <div .comment-head-item>
+                <a href="@{UserR user_id}">
+                    (establish user)
+
         <div .comment-head-item .comment-date>
             ^{renderTime (fromMaybe (commentCreatedTs comment) (commentApprovedTs comment))}
         <div .comment-head-item :is_preview:.preview>
@@ -63,6 +68,10 @@
             <span .glyphicon .glyphicon-arrow-right>
             awaiting moderator approval
 
+            $if can_approve
+                <a href="@{comment_route_approve comment_id}">
+                    \ (approve)
+
     <div .comment-body>
         ^{markdownWidgetWith commentTextTransform (commentText comment)}
 
@@ -71,60 +80,50 @@
             ^{tagWidget tag}
 
     <div :is_preview:.preview .comment-actions>
-        $if can_approve
+        $if can_edit
             <div .comment-action>
-                <a href="@{comment_route_approve comment_id}">
-                    approve
-
-        $if can_claim
-            <div .comment-action>
-                <a href="@{comment_route_claim comment_id}">
-                    claim
+                <a href="@{comment_route_edit comment_id}">
+                    edit
 
         $if can_close
             <div .comment-action>
                 <a href="@{comment_route_close comment_id}">
                     close
 
+        $if can_retract
+            <div .comment-action>
+                <a href="@{comment_route_retract comment_id}">
+                    retract
+
         $if can_delete
             <div .comment-action>
                 <a href="@{comment_route_delete comment_id}">
                     delete
-
-        $if can_edit
-            <div .comment-action>
-                <a href="@{comment_route_edit comment_id}">
-                    edit
-
-        $if can_establish
-            <div .comment-action>
-                <a href="@{UserR user_id}">
-                    establish user
 
         $if can_flag
             <div .comment-action>
                 <a href="@{comment_route_flag comment_id}">
                     flag
 
-        $if can_reply
+        $if can_add_tag
             <div .comment-action>
-                <a href="@{comment_route_reply comment_id}">
-                    reply
+                <a href="@{comment_route_add_tag comment_id}">
+                    tag
 
         $if can_rethread
             <div .comment-action>
                 <a href="@{comment_route_rethread comment_id}">
                     rethread
 
-        $if can_retract
+        $if can_reply
             <div .comment-action>
-                <a href="@{comment_route_retract comment_id}">
-                    retract
+                <a href="@{comment_route_reply comment_id}">
+                    reply
 
-        $if can_add_tag
+        $if can_claim
             <div .comment-action>
-                <a href="@{comment_route_add_tag comment_id}">
-                    tag
+                <a href="@{comment_route_claim comment_id}">
+                    claim
 
         $if can_unclaim
             <div .comment-action>
