@@ -68,29 +68,31 @@ commentForm label content = renderBootstrap3 $ NewComment
 --    toVisibility True = VisPrivate
 --    toVisibility _ = VisPublic
 
-commentFormWidget :: SomeMessage App -> Maybe Markdown -> Widget
-commentFormWidget label = commentFormWidget' . commentForm label
+commentFormWidget :: Text -> SomeMessage App -> Maybe Markdown -> Widget
+commentFormWidget post_text label content = commentFormWidget' post_text (commentForm label content)
 
 -- intentional duplication of commentFormWidget' because some aspects
 -- of closing and other markdown aren't identical (such as marking privacy)
-closureFormWidget' :: Form NewClosure -> Widget
-closureFormWidget' form = do
+closureFormWidget' :: Text -> Form NewClosure -> Widget
+closureFormWidget' post_text form = do
     (widget, enctype) <- handlerToWidget $ generateFormPost form
     [whamlet|
         <div>
             <form method="POST" enctype=#{enctype}>
                 ^{widget}
                 <button type="submit" name="mode" value="preview">preview
+                <button type="submit" name="mode" value="post">#{post_text}
     |]
 
-commentFormWidget' :: Form a -> Widget
-commentFormWidget' form = do
+commentFormWidget' :: Text -> Form a -> Widget
+commentFormWidget' post_text form = do
     (widget, enctype) <- handlerToWidget $ generateFormPost form
     [whamlet|
         <div>
             <form method="POST" enctype=#{enctype}>
                 ^{widget}
                 <button type="submit" name="mode" value="preview">preview
+                <button type="submit" name="mode" value="post">#{post_text}
     |]
 
 closeCommentForm    :: Maybe Markdown -> Form NewClosure
@@ -114,13 +116,13 @@ commentNewTopicFormWidget ::                       Widget
 commentReplyFormWidget    ::                       Widget
 editCommentFormWidget     :: Markdown           -> Widget
 
-closeCommentFormWidget    = closureFormWidget' . closeCommentForm
-retractCommentFormWidget  = closureFormWidget' . retractCommentForm
+closeCommentFormWidget    = closureFormWidget' "close" . closeCommentForm
+retractCommentFormWidget  = closureFormWidget' "retract" . retractCommentForm
 
-claimCommentFormWidget    = commentFormWidget' . claimCommentForm
-commentNewTopicFormWidget = commentFormWidget' commentNewTopicForm
-commentReplyFormWidget    = commentFormWidget' commentReplyForm
-editCommentFormWidget     = commentFormWidget' . editCommentForm
+claimCommentFormWidget    = commentFormWidget' "claim" . claimCommentForm
+commentNewTopicFormWidget = commentFormWidget' "post" commentNewTopicForm
+commentReplyFormWidget    = commentFormWidget' "post" commentReplyForm
+editCommentFormWidget     = commentFormWidget' "post" . editCommentForm
 
 approveCommentFormWidget :: Widget
 approveCommentFormWidget =
@@ -177,7 +179,8 @@ flagCommentFormWidget def_reasons def_message = do
         <form method="POST" enctype=#{enctype}>
             <h4>Code of Conduct Violation(s):
             ^{form}
-            <button type="submit" name="mode" value="preview">preview flag message
+            <button type="submit" name="mode" value="preview">preview
+            <button type="submit" name="mode" value="post">flag
     |]
 
 generateFlagCommentForm :: Maybe (Maybe [FlagReason]) -> Maybe (Maybe Markdown) -> Widget
