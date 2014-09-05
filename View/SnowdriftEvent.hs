@@ -61,7 +61,7 @@ renderCommentPostedEvent
                 (projectCommentRoutes projectHandle, [whamlet|
                     <div .event>
                         On
-                        <a href=@{ProjectR projectHandle}>#{projectName}#
+                        <a href=@{ProjectDiscussionR projectHandle}>#{projectName}#
                         :
 
                         ^{comment_widget}
@@ -71,7 +71,7 @@ renderCommentPostedEvent
                 (wikiPageCommentRoutes project_handle wikiPageTarget, [whamlet|
                     <div .event>
                         On the
-                        <a href=@{WikiR project_handle wikiPageTarget}>#{wikiPageTarget}
+                        <a href=@{WikiDiscussionR project_handle wikiPageTarget}>#{wikiPageTarget}
                         wiki page:
 
                         ^{comment_widget}
