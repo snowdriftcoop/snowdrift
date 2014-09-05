@@ -39,6 +39,7 @@ module Model.User
     , userMaybeViewProjectCommentsDB
     , userReadNotificationsDB
     , userReadVolunteerApplicationsDB
+    , userUnclaimCommentDB
     , userUnwatchProjectDB
     , userViewCommentsDB
     , userViewWikiEditsDB
@@ -389,9 +390,14 @@ userCanDeleteCommentDB user_id (Entity comment_id comment) =
               then return True
               else return False
 
+-- TODO: claim event
 userClaimCommentDB :: UserId -> CommentId -> Maybe Text -> DB ()
 userClaimCommentDB user_id comment_id mnote = liftIO getCurrentTime >>= \now ->
     insert_ (TicketClaiming now user_id comment_id mnote)
+
+-- TODO: unclaim event
+userUnclaimCommentDB :: UserId -> CommentId -> Maybe Text -> DB ()
+userUnclaimCommentDB _ comment_id _ = deleteBy (UniqueTicketClaiming comment_id)
 
 -- | Fetch a User's number of unviewed comments on each WikiPage of a Project.
 fetchNumUnviewedCommentsOnProjectWikiPagesDB :: UserId -> ProjectId -> DB (Map WikiPageId Int)

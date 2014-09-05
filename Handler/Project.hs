@@ -718,11 +718,33 @@ getProjectCommentAddTagR project_handle comment_id = do
     checkProjectCommentActionPermission can_add_tag user project_handle (Entity comment_id comment)
     getProjectCommentAddTag comment_id project_id user_id
 
+--------------------------------------------------------------------------------
+-- /c/#CommentId/unclaim
+
 getUnclaimProjectCommentR :: Text -> CommentId -> Handler Html
-getUnclaimProjectCommentR = undefined
+getUnclaimProjectCommentR project_handle comment_id = do
+    (widget, _) <-
+        makeProjectCommentActionWidget
+          makeUnclaimCommentWidget
+          project_handle
+          comment_id
+          def
+          getMaxDepth
+    defaultLayout (projectDiscussionPage project_handle widget)
 
 postUnclaimProjectCommentR :: Text -> CommentId -> Handler Html
-postUnclaimProjectCommentR = undefined
+postUnclaimProjectCommentR project_handle comment_id = do
+    (user, (Entity project_id _), comment) <- checkCommentRequireAuth project_handle comment_id
+    checkProjectCommentActionPermission can_unclaim user project_handle (Entity comment_id comment)
+
+    postUnclaimComment
+      user
+      comment_id
+      comment
+      (projectCommentHandlerInfo (Just user) project_id project_handle)
+      >>= \case
+        Nothing -> redirect (ProjectCommentR project_handle comment_id)
+        Just (widget, form) -> defaultLayout $ previewWidget form "unclaim" (projectDiscussionPage project_handle widget)
 
 --------------------------------------------------------------------------------
 -- /contact

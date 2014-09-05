@@ -431,11 +431,36 @@ getWikiCommentAddTagR project_handle target comment_id = do
     checkProjectCommentActionPermission can_add_tag user project_handle (Entity comment_id comment)
     getProjectCommentAddTag comment_id project_id user_id
 
+
+--------------------------------------------------------------------------------
+-- /unclaim
+
 getUnclaimWikiCommentR :: Text -> Text -> CommentId -> Handler Html
-getUnclaimWikiCommentR = undefined
+getUnclaimWikiCommentR project_handle target comment_id = do
+    (widget, _) <-
+        makeWikiPageCommentActionWidget
+          makeUnclaimCommentWidget
+          project_handle
+          target
+          comment_id
+          def
+          getMaxDepth
+
+    defaultLayout (wikiDiscussionPage project_handle target widget)
 
 postUnclaimWikiCommentR :: Text -> Text -> CommentId -> Handler Html
-postUnclaimWikiCommentR = undefined
+postUnclaimWikiCommentR project_handle target comment_id = do
+    (user, (Entity project_id _), _, comment) <- checkCommentPageRequireAuth project_handle target comment_id
+    checkProjectCommentActionPermission can_unclaim user project_handle (Entity comment_id comment)
+
+    postUnclaimComment
+      user
+      comment_id
+      comment
+      (wikiPageCommentHandlerInfo (Just user) project_id project_handle target)
+      >>= \case
+        Nothing -> redirect (WikiCommentR project_handle target comment_id)
+        Just (widget, form) -> defaultLayout $ previewWidget form "unclaim" (wikiDiscussionPage project_handle target widget)
 
 --------------------------------------------------------------------------------
 -- DEPRECATED

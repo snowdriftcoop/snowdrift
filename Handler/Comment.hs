@@ -25,6 +25,7 @@ module Handler.Comment
     , makeReplyCommentWidget
     , makeRethreadCommentWidget
     , makeRetractCommentWidget
+    , makeUnclaimCommentWidget
     , postCommentTag
     , postCommentApplyTag
     , postCommentCreateTag
@@ -37,6 +38,7 @@ module Handler.Comment
     , postNewComment
     , postRethreadComment
     , postRetractComment
+    , postUnclaimComment
     , redirectIfRethreaded
     ) where
 
@@ -225,6 +227,7 @@ makeDeleteCommentWidget   :: MakeCommentActionWidget
 makeReplyCommentWidget    :: MakeCommentActionWidget
 makeRethreadCommentWidget :: MakeCommentActionWidget
 makeRetractCommentWidget  :: MakeCommentActionWidget
+makeUnclaimCommentWidget  :: MakeCommentActionWidget
 
 makeApproveCommentWidget  = makeCommentActionWidget can_approve  approveCommentFormWidget
 makeClaimCommentWidget    = makeCommentActionWidget can_claim    (claimCommentFormWidget Nothing)
@@ -234,6 +237,7 @@ makeDeleteCommentWidget   = makeCommentActionWidget can_delete   deleteCommentFo
 makeReplyCommentWidget    = makeCommentActionWidget can_reply    commentReplyFormWidget
 makeRethreadCommentWidget = makeCommentActionWidget can_rethread rethreadCommentFormWidget
 makeRetractCommentWidget  = makeCommentActionWidget can_retract  (retractCommentFormWidget Nothing)
+makeUnclaimCommentWidget  = makeCommentActionWidget can_unclaim  (claimCommentFormWidget Nothing)
 
 makeEditCommentWidget
         comment
@@ -583,6 +587,30 @@ postRetractComment user comment_id comment make_comment_handler_info = do
                           (getMaxDepthDefault 0)
                           True
 
+                    return (Just (comment_widget, form))
+        _ -> error "Error when submitting form."
+
+postUnclaimComment :: Entity User -> CommentId -> Comment -> (CommentMods -> CommentHandlerInfo) -> Handler (Maybe (Widget, Widget))
+postUnclaimComment user@(Entity user_id _) comment_id comment make_comment_handler_info = do
+    ((result, _), _) <- runFormPost (claimCommentForm Nothing)
+    case result of
+        FormSuccess mnote -> do
+            lookupPostMode >>= \case
+                Just PostMode -> do
+                    runDB (userUnclaimCommentDB user_id comment_id mnote)
+                    return Nothing
+                _ -> do
+                    (form, _) <- generateFormPost (claimCommentForm (Just mnote))
+                    (comment_widget, _) <-
+                        makeCommentActionWidget
+                        can_unclaim
+                        mempty
+                        (Entity comment_id comment)
+                        user
+                        make_comment_handler_info
+                        (def { mod_claim_map = M.delete comment_id })
+                        (getMaxDepthDefault 0)
+                        True
                     return (Just (comment_widget, form))
         _ -> error "Error when submitting form."
 
