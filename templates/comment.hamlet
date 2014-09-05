@@ -26,6 +26,39 @@
                 <a href="@{comment_route_permalink parent_id}">
                     parent
 
+    $maybe Entity (Key (PersistInt64 ticket_id))  _ <- mticket
+        <span .glyphicon .glyphicon-tag>
+        <span .ticket-num>SD-#{show ticket_id}
+
+        $if can_claim
+            <div :is_preview:.preview .comment-action>
+                <a href="@{comment_route_claim comment_id}">
+                    claim
+
+        $else
+            $maybe claim <- mclaim
+                <span .claimed-by>
+                    claimed
+                    ^{renderTime (ticketClaimingTs claim)}
+                    by
+                    <a href="@{UserR user_id}">#{userDisplayName (Entity user_id user)}#
+                    $maybe note <- ticketClaimingNote claim
+                        : #{note}
+
+                $if can_unclaim
+                    <div :is_preview:.preview .comment-action>
+                        <a href="@{comment_route_unclaim comment_id}">
+                            (unclaim)
+
+    $if is_unapproved
+        <div .awaiting-approval>
+            <span .glyphicon .glyphicon-arrow-right>
+            awaiting moderator approval
+
+            $if can_approve
+                <a href="@{comment_route_approve comment_id}">
+                    \ (approve)
+
     $forall closure <- earlier_closures
         <div .closed>
             A comment above this one was closed at ^{renderTime (commentClosingTs closure)}
@@ -62,39 +95,6 @@
                     Additional comments:
                     #{flag_markdown}
             <i>Please edit to address these concerns and repost.
-
-    $maybe Entity (Key (PersistInt64 ticket_id))  _ <- mticket
-        <span .glyphicon .glyphicon-tag>
-        <span .ticket-num>SD-#{show ticket_id}
-
-        $if can_claim
-            <div :is_preview:.preview .comment-action>
-                <a href="@{comment_route_claim comment_id}">
-                    claim
-
-        $else
-            $maybe claim <- mclaim
-                <span .claimed-by>
-                    claimed
-                    ^{renderTime (ticketClaimingTs claim)}
-                    by
-                    <a href="@{UserR user_id}">#{userDisplayName (Entity user_id user)}#
-                    $maybe note <- ticketClaimingNote claim
-                        : #{note}
-
-                $if can_unclaim
-                    <div :is_preview:.preview .comment-action>
-                        <a href="@{comment_route_unclaim comment_id}">
-                            (unclaim)
-
-    $if is_unapproved
-        <div .awaiting-approval>
-            <span .glyphicon .glyphicon-arrow-right>
-            awaiting moderator approval
-
-            $if can_approve
-                <a href="@{comment_route_approve comment_id}">
-                    \ (approve)
 
     <div .comment-body>
         ^{markdownWidgetWith commentTextTransform (commentText comment)}
