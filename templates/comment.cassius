@@ -38,6 +38,9 @@
     font-size : 1.12em
     margin : 0.5em 0
 
+.ticket-num
+    color : gray
+
 .inner-widget
     margin-top: 1em
 

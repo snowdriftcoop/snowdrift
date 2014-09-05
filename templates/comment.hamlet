@@ -63,8 +63,9 @@
                     #{flag_markdown}
             <i>Please edit to address these concerns and repost.
 
-    $maybe _ <- mticket
+    $maybe Entity (Key (PersistInt64 ticket_id))  _ <- mticket
         <span .glyphicon .glyphicon-tag>
+        <span .ticket-num>SD-#{show ticket_id}
 
         $if can_claim
             <div :is_preview:.preview .comment-action>
