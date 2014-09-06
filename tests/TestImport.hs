@@ -50,6 +50,8 @@ import qualified Language.Haskell.Exts.Annotated.Syntax as Src
 
 import Control.Exception.Lifted
 
+import System.IO (hPutStrLn, stderr)
+
 
 
 type Spec = YesodSpec App
@@ -141,11 +143,17 @@ adminLogin = do
 
 statusIsResp :: Int -> YesodExample site ()
 statusIsResp number = withResponse $ \ SResponse { simpleStatus = s } -> do
-  when (H.statusCode s /= number) printBody
-  liftIO $ flip HUnit.assertBool (H.statusCode s == number) $ concat
-    [ "Expected status was ", show number
-    , " but received status was ", show $ H.statusCode s
-    ]
+    let errMsg = concat
+            [ "Expected status was ", show number
+            , " but received status was ", show $ H.statusCode s
+            ]
+
+    when (H.statusCode s /= number) $ do
+        liftIO $ hPutStrLn stderr $ errMsg ++ ":"
+        printBody
+        liftIO $ hPutStrLn stderr ""
+
+    liftIO $ flip HUnit.assertBool (H.statusCode s == number) errMsg
 
 
 marked :: QuasiQuoter
