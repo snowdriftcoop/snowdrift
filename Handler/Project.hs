@@ -368,23 +368,8 @@ postNewProjectBlogPostR project_handle = do
 
     case result of
         FormSuccess mk_blog_post -> do
-            mode <- lookupPostParam "mode"
-            let action :: Text = "post"
-            case mode of
-                Just "preview" -> do
-                    let blog_post :: ProjectBlog
-                        blog_post = mk_blog_post now viewer_id project_id (Key $ PersistInt64 0)
-                        title = projectBlogTitle blog_post
-                        handle = projectBlogHandle blog_post
-                        top_content = projectBlogTopContent blog_post
-                        bottom_content = fromMaybe "" $ projectBlogBottomContent blog_post
-                        content = top_content <> bottom_content
-
-                    (form, _) <- generateFormPost $ projectBlogForm $ Just (title, handle, content)
-
-                    defaultLayout $ previewWidget form action $ renderBlogPost project_handle blog_post
-
-                Just x | x == action -> do
+            lookupPostMode >>= \case
+                Just PostMode -> do
                     void $ runDB $ do
                         discussion_id <- insert $ Discussion 0
 
@@ -396,9 +381,18 @@ postNewProjectBlogPostR project_handle = do
                     alertSuccess "posted"
                     redirect $ ProjectBlogR project_handle
 
-                x -> do
-                    addAlertEm "danger" ("unrecognized mode: " <> T.pack (show x)) "Error: "
-                    redirect $ NewProjectBlogPostR project_handle
+                _ -> do
+                    let blog_post :: ProjectBlog
+                        blog_post = mk_blog_post now viewer_id project_id (Key $ PersistInt64 0)
+                        title = projectBlogTitle blog_post
+                        handle = projectBlogHandle blog_post
+                        top_content = projectBlogTopContent blog_post
+                        bottom_content = fromMaybe "" $ projectBlogBottomContent blog_post
+                        content = top_content <> bottom_content
+
+                    (form, _) <- generateFormPost $ projectBlogForm $ Just (title, handle, content)
+
+                    defaultLayout $ previewWidget form "post" $ renderBlogPost project_handle blog_post
 
         x -> do
             alertDanger $ T.pack $ show x

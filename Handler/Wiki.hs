@@ -4,22 +4,23 @@ module Handler.Wiki where
 
 import Import
 
-import           Handler.Comment
-import           Handler.Discussion
-import           Handler.Wiki.Comment (makeWikiPageCommentForestWidget)
-import           Model.Comment
-import           Model.Comment.ActionPermissions
-import           Model.Comment.Sql
-import           Model.Discussion
-import           Model.Markdown
-import           Model.Notification
-import           Model.Permission
-import           Model.User
-import           Model.Wiki
-import           Widgets.Preview
-import           Widgets.Time
-import           View.Comment
-import           View.Wiki
+import Handler.Comment
+import Handler.Discussion
+import Handler.Utils
+import Handler.Wiki.Comment (makeWikiPageCommentForestWidget)
+import Model.Comment
+import Model.Comment.ActionPermissions
+import Model.Comment.Sql
+import Model.Discussion
+import Model.Markdown
+import Model.Notification
+import Model.Permission
+import Model.User
+import Model.Wiki
+import Widgets.Preview
+import Widgets.Time
+import View.Comment
+import View.Wiki
 
 import           Data.Algorithm.Diff  (getDiff, Diff (..))
 import           Data.Default         (def)
@@ -123,19 +124,8 @@ postWikiR project_handle target = do
 
     case result of
         FormSuccess (last_edit_id, content, comment) -> do
-            mode <- lookupPostParam "mode"
-
-            let action :: Text = "update"
-
-            case mode of
-                Just "preview" -> do
-                    (form, _) <- generateFormPost $ editWikiForm last_edit_id content (Just comment)
-
-                    defaultLayout $ previewWidget form action $
-                        renderWiki 0 project_handle target False $
-                            WikiPage now target project_id content (Key $ PersistInt64 (-1)) Normal
-
-                Just x | x == action -> do
+            lookupPostMode >>= \case
+                Just PostMode -> do
                     runSYDB $ do
                         lift $
                             update $ \ p -> do
@@ -191,8 +181,12 @@ postWikiR project_handle target = do
 
                     redirect $ WikiR project_handle target
 
-                _ -> error "Error: unrecognized mode"
+                _ -> do
+                    (form, _) <- generateFormPost $ editWikiForm last_edit_id content (Just comment)
 
+                    defaultLayout $ previewWidget form "update" $
+                        renderWiki 0 project_handle target False $
+                            WikiPage now target project_id content (Key $ PersistInt64 (-1)) Normal
 
         FormMissing -> error "Form missing."
         FormFailure msgs -> error $ "Error submitting form: " ++ T.unpack (T.concat msgs)
@@ -384,22 +378,18 @@ postNewWikiR project_handle target = do
     ((result, _), _) <- runFormPost $ newWikiForm Nothing
     case result of
         FormSuccess content -> do
-            mode <- lookupPostParam "mode"
-            let action :: Text = "create"
-            case mode of
-                Just "preview" -> do
-                        (form, _) <- generateFormPost $ newWikiForm (Just content)
-                        defaultLayout $ do
-                            let page = WikiPage now target project_id content (Key $ PersistInt64 0) Normal
-                            previewWidget form action $ renderWiki 0 project_handle target False page
-
-                Just x | x == action -> do
+            lookupPostMode >>= \case
+                Just PostMode -> do
                     runSDB (createWikiPageDB target project_id content Normal user_id)
 
                     alertSuccess "Created."
                     redirect $ WikiR project_handle target
 
-                _ -> error "unrecognized mode"
+                _ -> do
+                    (form, _) <- generateFormPost $ newWikiForm (Just content)
+                    defaultLayout $ do
+                        let page = WikiPage now target project_id content (Key $ PersistInt64 0) Normal
+                        previewWidget form "create" $ renderWiki 0 project_handle target False page
 
         FormMissing -> error "Form missing."
         FormFailure msgs -> error $ "Error submitting form: " ++ T.unpack (T.concat msgs)
