@@ -191,7 +191,7 @@ projectDiscussionPage project_handle widget = do
 
 getProjectsR :: Handler Html
 getProjectsR = do
-    projects <- runDB fetchAllProjectsDB
+    projects <- runDB fetchPublicProjectsDB
     defaultLayout $ do
         setTitle "Projects | Snowdrift.coop"
         $(widgetFile "projects")

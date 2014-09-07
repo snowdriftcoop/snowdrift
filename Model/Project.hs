@@ -1,7 +1,7 @@
 module Model.Project
     ( ProjectSummary(..)
     , UpdateProject(..)
-    , fetchAllProjectsDB
+    , fetchPublicProjectsDB
     , fetchProjectCommentRethreadsBeforeDB
     , fetchProjectCommentsIncludingRethreadedBeforeDB
     , fetchProjectDeletedPledgesBeforeDB
@@ -109,8 +109,10 @@ ticketToOrderable (TaggedTicket ((Entity _ ticket),tags)) = Orderable has_tag ge
 --------------------------------------------------------------------------------
 -- Database actions
 
-fetchAllProjectsDB :: DB [Entity Project]
-fetchAllProjectsDB = select (from return)
+fetchPublicProjectsDB :: DB [Entity Project]
+fetchPublicProjectsDB = select $ from $ \ p -> do
+    where_ $ p ^. ProjectPublic
+    return p
 
 insertProjectPledgeDB :: UserId
                       -> ProjectId
