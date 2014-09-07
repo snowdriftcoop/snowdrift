@@ -10,6 +10,7 @@ module Model.Comment
     , commentIsEvenDepth
     , commentIsFlagged
     , commentIsOddDepth
+    , commentIsPrivate
     , commentIsTopLevel
     , makeCommentUsersSet
     , makeApprovedComment
@@ -120,6 +121,9 @@ commentIsOddDepth comment = not (commentIsTopLevel comment) && not (commentIsEve
 
 commentIsFlagged :: CommentId -> DB Bool
 commentIsFlagged = fmap (maybe False (const True)) . getBy . UniqueCommentFlagging
+
+commentIsPrivate :: Comment -> Bool
+commentIsPrivate comment = commentVisibility comment == VisPrivate
 
 -- | Build a tree of comments, given the root and replies. The replies are not necessarily
 -- direct or indirect descendants of the root, but rather may be siblings, nephews, etc.

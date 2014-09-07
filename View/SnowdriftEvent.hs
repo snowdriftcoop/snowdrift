@@ -164,7 +164,8 @@ renderWikiEditEvent project_handle edit_id wiki_edit wiki_page_map user_map = do
             wiki page: #
             $maybe comment <- wikiEditComment wiki_edit
                 #{comment}
-            <a style="float:right" href="@{WikiEditR project_handle (wikiPageTarget wiki_page) edit_id}">
+            <br>
+            <a href="@{WikiEditR project_handle (wikiPageTarget wiki_page) edit_id}">
                 see this edit version <!-- TODO: make this link to the diff instead -->
     |]
 

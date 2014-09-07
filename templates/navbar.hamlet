@@ -44,13 +44,6 @@
                 <a href=@{ProjectsR}> Projects
             $maybe Entity user_id _ <- maybe_user
                 <li>
-                    <p .navbar-text .text-center>
-                        <a href=@{ProjectsR}>
-                            new activity
-                            <br>
-                            <span .badge>
-                                TODO
-                <li>
                     $maybe (balance, pledged) <- money_info
                         <p .navbar-text .text-center>
                             Pledges / Funds 
@@ -78,11 +71,3 @@
                 <li>
                     <a href=@{AuthR LoginR}>Sign In
 
-        $# TODO
-        $# $if not (null applications)
-        $#     <strong>
-        $#         <a href="@{ApplicationsR}">
-        $#             _{MsgNewApplications (length applications)}
-        $#     <br>
-        $# $else
-        $#     ^{sb_link ApplicationsR "View Applications"}

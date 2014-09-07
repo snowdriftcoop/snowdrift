@@ -68,9 +68,13 @@
     border-radius : 5px
 
 .ticket-title
-    background-color: lightblue;
-    border-radius: 1em;
-    padding: 0.5em;
+    background-color : #CCDDFF
+    border-radius : 1em
+    padding : 0.5em
+    display : inline-block
+    max-width : 35em
+    margin : 0 1em
+    text-align : center
 
 .closed
     color : goldenrod

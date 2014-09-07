@@ -429,6 +429,7 @@ commentWidget (Entity comment_id comment)
         is_top_level  = commentIsTopLevel  comment
         is_even_depth = commentIsEvenDepth comment
         is_odd_depth  = commentIsOddDepth  comment
+        is_private    = commentIsPrivate   comment
 
     -- TODO(mitchell): Lots of refactoring to lift this database hit up to the
     -- controller layer. This currently has horrible performance - a hit *per* comment!

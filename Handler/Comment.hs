@@ -274,7 +274,7 @@ getProjectCommentAddTag comment_id project_id user_id = do
 
     defaultLayout $(widgetFile "new_comment_tag")
 
--- | Handle a POST to a /moderate URL. Permission checking should occur *PRIOR TO* this function.
+-- | Handle a POST to a /approve URL. Permission checking should occur *PRIOR TO* this function.
 postApproveComment :: UserId -> CommentId -> Comment -> Handler ()
 postApproveComment user_id comment_id comment = do
     runSDB (approveCommentDB user_id comment_id comment)

@@ -183,6 +183,29 @@ postClaimWikiCommentR project_handle target comment_id = do
         Just (widget, form) -> defaultLayout $ previewWidget form "claim" (wikiDiscussionPage project_handle target widget)
 
 --------------------------------------------------------------------------------
+-- /approve
+
+getApproveWikiCommentR :: Text -> Text -> CommentId -> Handler Html
+getApproveWikiCommentR project_handle target comment_id = do
+    (widget, _) <-
+        makeWikiPageCommentActionWidget
+          makeApproveCommentWidget
+          project_handle
+          target
+          comment_id
+          def
+          getMaxDepth
+    defaultLayout (wikiDiscussionPage project_handle target widget)
+
+postApproveWikiCommentR :: Text -> Text -> CommentId -> Handler Html
+postApproveWikiCommentR project_handle target comment_id = do
+    (user@(Entity user_id _), _, _, comment) <- checkCommentPageRequireAuth project_handle target comment_id
+    checkProjectCommentActionPermission can_approve user project_handle (Entity comment_id comment)
+
+    postApproveComment user_id comment_id comment
+    redirect (WikiCommentR project_handle target comment_id)
+
+--------------------------------------------------------------------------------
 -- /close
 
 getCloseWikiCommentR :: Text -> Text -> CommentId -> Handler Html
@@ -291,29 +314,6 @@ postFlagWikiCommentR project_handle target comment_id = do
       >>= \case
         Nothing -> redirect (WikiDiscussionR project_handle target)
         Just (widget, form) -> defaultLayout $ previewWidget form "flag" (wikiDiscussionPage project_handle target widget)
-
---------------------------------------------------------------------------------
--- /moderate TODO: rename to /approve
-
-getApproveWikiCommentR :: Text -> Text -> CommentId -> Handler Html
-getApproveWikiCommentR project_handle target comment_id = do
-    (widget, _) <-
-        makeWikiPageCommentActionWidget
-          makeApproveCommentWidget
-          project_handle
-          target
-          comment_id
-          def
-          getMaxDepth
-    defaultLayout (wikiDiscussionPage project_handle target widget)
-
-postApproveWikiCommentR :: Text -> Text -> CommentId -> Handler Html
-postApproveWikiCommentR project_handle target comment_id = do
-    (user@(Entity user_id _), _, _, comment) <- checkCommentPageRequireAuth project_handle target comment_id
-    checkProjectCommentActionPermission can_approve user project_handle (Entity comment_id comment)
-
-    postApproveComment user_id comment_id comment
-    redirect (WikiCommentR project_handle target comment_id)
 
 --------------------------------------------------------------------------------
 -- /reply
