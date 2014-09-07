@@ -6,6 +6,7 @@ module Model.Comment.Sql
     , exprCommentIsRoot
     , exprCommentNotRethreaded
     , exprCommentOnDiscussion
+    , exprCommentOnWikiPage
     , exprCommentOpen
     , exprCommentPostedBy
     , exprCommentProjectPermissionFilter

@@ -5,7 +5,7 @@ import Import
 
 import Model.CollapseState.Internal
 
-import Data.Time.Units
+-- import Data.Time.Units
 
 collapseState :: Handler ()
 collapseState = undefined -- TODO(mitchell, david)
