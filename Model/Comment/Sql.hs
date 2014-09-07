@@ -1,20 +1,45 @@
-module Model.Comment.Sql where
+module Model.Comment.Sql
+    ( ExprCommentCond
+    , exprCommentApproved
+    , exprCommentClosedOrRetracted
+    , exprCommentFlagged
+    , exprCommentIsRoot
+    , exprCommentNotRethreaded
+    , exprCommentOnDiscussion
+    , exprCommentOpen
+    , exprCommentPostedBy
+    , exprCommentProjectPermissionFilter
+    , exprCommentProjectPermissionFilterIncludingRethreaded
+    , exprCommentRootPostedBy
+    , exprCommentUnapproved
+    , exprCommentViewedBy
+    , querCommentAncestors
+    , querCommentDescendants
+    , querCommentsDescendants
+    ) where
 
 import Import
 
 import Model.User.Sql
 
+-- | A SQL expression for a comment "condition" (Comment -> Bool).
 type ExprCommentCond = SqlExpr (Entity Comment) -> SqlExpr (Value Bool)
 
-exprCommentClosed, exprCommentOpen :: ExprCommentCond
-exprCommentClosed c = c ^. CommentId `in_`   exprClosedCommentIds
-exprCommentOpen   c = c ^. CommentId `notIn` exprClosedCommentIds
+exprCommentClosedOrRetracted, exprCommentOpen :: ExprCommentCond
+exprCommentClosedOrRetracted c = c ^. CommentId `in_`   exprClosedCommentIds ||. c ^. CommentId `in_`   exprRetractedCommentIds
+exprCommentOpen              c = c ^. CommentId `notIn` exprClosedCommentIds &&. c ^. CommentId `notIn` exprRetractedCommentIds
 
 exprClosedCommentIds :: SqlExpr (ValueList CommentId)
 exprClosedCommentIds =
     subList_select $
-    from $ \cl ->
-    return (cl ^. CommentClosureComment)
+    from $ \cc ->
+    return (cc ^. CommentClosingComment)
+
+exprRetractedCommentIds :: SqlExpr (ValueList CommentId)
+exprRetractedCommentIds =
+    subList_select $
+    from $ \cr ->
+    return (cr ^. CommentRetractingComment)
 
 -- | Comment is root?
 exprCommentIsRoot :: ExprCommentCond

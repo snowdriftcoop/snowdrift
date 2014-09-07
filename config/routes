@@ -43,6 +43,7 @@
 /p/#Text/blog/#Text                          ProjectBlogPostR         GET
 /p/#Text/button.png                          ProjectPledgeButtonR     GET
 /p/#Text/c/#CommentId                        ProjectCommentR          GET
+/p/#Text/c/#CommentId/claim                  ClaimProjectCommentR     GET POST
 /p/#Text/c/#CommentId/close                  CloseProjectCommentR     GET POST
 /p/#Text/c/#CommentId/delete                 DeleteProjectCommentR    GET POST
 /p/#Text/c/#CommentId/edit                   EditProjectCommentR      GET POST
@@ -56,6 +57,7 @@
 /p/#Text/c/#CommentId/tag/#TagId             ProjectCommentTagR       GET POST
 /p/#Text/c/#CommentId/tag/!apply             ProjectCommentApplyTagR      POST
 /p/#Text/c/#CommentId/tag/!create            ProjectCommentCreateTagR     POST
+/p/#Text/c/#CommentId/unclaim                UnclaimProjectCommentR   GET POST
 /p/#Text/contact                             ProjectContactR          GET POST
 /p/#Text/d                                   ProjectDiscussionR       GET
 /p/#Text/d/new                               NewProjectDiscussionR    GET POST
@@ -79,6 +81,7 @@
 
 /p/#Text/w/#Text                              WikiR                 GET POST
 /p/#Text/w/#Text/c/#CommentId                 WikiCommentR          GET
+/p/#Text/w/#Text/c/#CommentId/claim           ClaimWikiCommentR     GET POST
 /p/#Text/w/#Text/c/#CommentId/close           CloseWikiCommentR     GET POST
 /p/#Text/w/#Text/c/#CommentId/delete          DeleteWikiCommentR    GET POST
 /p/#Text/w/#Text/c/#CommentId/edit            EditWikiCommentR      GET POST
@@ -92,6 +95,7 @@
 /p/#Text/w/#Text/c/#CommentId/tag/#TagId      WikiCommentTagR       GET POST
 /p/#Text/w/#Text/c/#CommentId/tag/!apply      WikiCommentApplyTagR      POST
 /p/#Text/w/#Text/c/#CommentId/tag/!create     WikiCommentCreateTagR     POST
+/p/#Text/w/#Text/c/#CommentId/unclaim         UnclaimWikiCommentR   GET POST
 /p/#Text/w/#Text/d                            WikiDiscussionR       GET
 /p/#Text/w/#Text/d/new                        NewWikiDiscussionR    GET POST
 /p/#Text/w/#Text/diff/#WikiEditId/#WikiEditId WikiDiffR             GET

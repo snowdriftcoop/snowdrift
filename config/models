@@ -254,21 +254,22 @@ CommentAncestor
 
     deriving Show
 
--- A comment-being-closed event.
-CommentClosure
+-- A comment-closed relation.
+CommentClosing
     ts       UTCTime
     closedBy UserId
-    type     ClosureType
     reason   Markdown
     comment  CommentId
 
--- A rethread event. Moderators may move comment threads around as they wish.
-Rethread
-    ts         UTCTime                     -- Timestamp.
-    moderator  UserId                      -- The moderator that rethreaded.
-    oldComment CommentId                   -- The old comment that was rethreaded.
-    newComment CommentId
-    reason     Text                        -- The reason for rethreading.
+    UniqueCommentClosing comment
+
+A comment-retracted relation.
+CommentRetracting
+    ts      UTCTime
+    reason  Markdown
+    comment CommentId
+
+    UniqueCommentRetracting comment
 
 -- A flagging event, with one or more reason stored in CommentFlaggingReason.
 CommentFlagging
@@ -286,6 +287,14 @@ CommentFlaggingReason
     reason   FlagReason
 
     UniqueCommentFlaggingReason flagging reason
+
+-- A rethread event. Moderators may move comment threads around as they wish.
+Rethread
+    ts         UTCTime                     -- Timestamp.
+    moderator  UserId                      -- The moderator that rethreaded.
+    oldComment CommentId                   -- The old comment that was rethreaded.
+    newComment CommentId
+    reason     Text                        -- The reason for rethreading.
 
 -- An individual comment-rethread relation.
 CommentRethread
@@ -319,6 +328,18 @@ Ticket
     comment   CommentId
 
     UniqueTicket comment
+
+    deriving Eq Ord
+
+TicketClaiming
+    ts      UTCTime
+    user    UserId
+    ticket  CommentId
+    note    Text      Maybe
+
+    UniqueTicketClaiming ticket
+
+    deriving Show
 
 Build
     bootTime UTCTime

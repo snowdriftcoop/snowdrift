@@ -33,6 +33,7 @@ library
                      Model.Comment
                      Model.Comment.ActionPermissions
                      Model.Comment.HandlerInfo
+                     Model.Comment.Mods
                      Model.Comment.Routes
                      Model.Comment.Sql
                      Model.Currency
@@ -124,6 +125,7 @@ library
                 GeneralizedNewtypeDeriving
                 LambdaCase
                 MultiParamTypeClasses
+                MultiWayIf
                 NoImplicitPrelude
                 NoMonomorphismRestriction
                 QuasiQuotes

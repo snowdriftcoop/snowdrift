@@ -1,29 +1,35 @@
 module View.Comment
-    ( approveCommentFormWidget
-    , closeCommentForm
-    , closeCommentFormWidget
-    , commentForestWidget
-    , commentForm
+    ( commentForm
     , commentFormWidget
-    , commentNewTopicForm
-    , commentNewTopicFormWidget
-    , commentReplyForm
-    , commentReplyFormWidget
+    , commentForestWidget
     , commentTreeWidget
     , commentWidget
-    , createCommentTagForm
-    , deleteCommentFormWidget
     , disabledCommentForm
+    -- Comment action forms
+    , claimCommentForm
+    , closeCommentForm
+    , commentNewTopicForm
+    , commentReplyForm
+    , createCommentTagForm
     , editCommentForm
-    , editCommentFormWidget
     , flagCommentForm
-    , flagCommentFormWidget
+    , generateFlagCommentForm
     , newCommentTagForm
-    , orderingNewestFirst
     , rethreadCommentForm
-    , rethreadCommentFormWidget
     , retractCommentForm
+    -- Comment action form widgets
+    , approveCommentFormWidget
+    , claimCommentFormWidget
+    , closeCommentFormWidget
+    , commentNewTopicFormWidget
+    , commentReplyFormWidget
+    , deleteCommentFormWidget
+    , editCommentFormWidget
+    , flagCommentFormWidget
+    , rethreadCommentFormWidget
     , retractCommentFormWidget
+    -- Misc
+    , orderingNewestFirst
     ) where
 
 import Import
@@ -39,11 +45,11 @@ import Widgets.Markdown
 import Widgets.Tag
 import Widgets.Time
 
-import qualified Data.List as L
-import qualified Data.Map  as M
-import qualified Data.Text as T
-import           Data.Tree (Forest, Tree(..))
-import qualified Data.Tree as Tree
+import qualified Data.List   as L
+import qualified Data.Map    as M
+import qualified Data.Text   as T
+import           Data.Tree   (Forest, Tree(..))
+import qualified Data.Tree   as Tree
 
 disabledCommentForm :: Form Markdown
 disabledCommentForm = renderBootstrap3 $ areq snowdriftMarkdownField ("Reply" { fsAttrs = [("disabled",""), ("class","form-control")] }) Nothing
@@ -62,37 +68,39 @@ commentForm label content = renderBootstrap3 $ NewComment
 --    toVisibility True = VisPrivate
 --    toVisibility _ = VisPublic
 
-commentFormWidget :: SomeMessage App -> Maybe Markdown -> Widget
-commentFormWidget label = commentFormWidget' . commentForm label
+commentFormWidget :: Text -> SomeMessage App -> Maybe Markdown -> Widget
+commentFormWidget post_text label content = commentFormWidget' post_text (commentForm label content)
 
 -- intentional duplication of commentFormWidget' because some aspects
 -- of closing and other markdown aren't identical (such as marking privacy)
-closureFormWidget' :: Form NewClosure -> Widget
-closureFormWidget' form = do
+closureFormWidget' :: Text -> Form NewClosure -> Widget
+closureFormWidget' post_text form = do
     (widget, enctype) <- handlerToWidget $ generateFormPost form
     [whamlet|
         <div>
             <form method="POST" enctype=#{enctype}>
                 ^{widget}
                 <button type="submit" name="mode" value="preview">preview
+                <button type="submit" name="mode" value="post">#{post_text}
     |]
 
-commentFormWidget' :: Form NewComment -> Widget
-commentFormWidget' form = do
+commentFormWidget' :: Text -> Form a -> Widget
+commentFormWidget' post_text form = do
     (widget, enctype) <- handlerToWidget $ generateFormPost form
     [whamlet|
         <div>
             <form method="POST" enctype=#{enctype}>
                 ^{widget}
                 <button type="submit" name="mode" value="preview">preview
+                <button type="submit" name="mode" value="post">#{post_text}
     |]
 
 closeCommentForm    :: Maybe Markdown -> Form NewClosure
 retractCommentForm  :: Maybe Markdown -> Form NewClosure
 
-commentNewTopicForm ::                   Form NewComment
-commentReplyForm    ::                   Form NewComment
-editCommentForm     :: Markdown       -> Form NewComment
+commentNewTopicForm ::               Form NewComment
+commentReplyForm    ::               Form NewComment
+editCommentForm     :: Markdown   -> Form NewComment
 
 closeCommentForm    = closureForm "Reason for closing:"
 retractCommentForm  = closureForm "Reason for retracting:"
@@ -101,25 +109,30 @@ commentNewTopicForm = commentForm "New Topic" Nothing
 commentReplyForm    = commentForm "Reply"     Nothing
 editCommentForm     = commentForm "Edit"      . Just
 
-closeCommentFormWidget    :: Maybe Markdown -> Widget
-retractCommentFormWidget  :: Maybe Markdown -> Widget
-commentNewTopicFormWidget ::                   Widget
-commentReplyFormWidget    ::                   Widget
-editCommentFormWidget     :: Markdown       -> Widget
+claimCommentFormWidget    :: Maybe (Maybe Text) -> Widget
+closeCommentFormWidget    :: Maybe Markdown     -> Widget
+retractCommentFormWidget  :: Maybe Markdown     -> Widget
+commentNewTopicFormWidget ::                       Widget
+commentReplyFormWidget    ::                       Widget
+editCommentFormWidget     :: Markdown           -> Widget
 
-closeCommentFormWidget    = closureFormWidget' . closeCommentForm
-retractCommentFormWidget  = closureFormWidget' . retractCommentForm
+closeCommentFormWidget    = closureFormWidget' "close" . closeCommentForm
+retractCommentFormWidget  = closureFormWidget' "retract" . retractCommentForm
 
-commentNewTopicFormWidget = commentFormWidget' commentNewTopicForm
-commentReplyFormWidget    = commentFormWidget' commentReplyForm
-editCommentFormWidget     = commentFormWidget' . editCommentForm
+claimCommentFormWidget    = commentFormWidget' "claim" . claimCommentForm
+commentNewTopicFormWidget = commentFormWidget' "post" commentNewTopicForm
+commentReplyFormWidget    = commentFormWidget' "post" commentReplyForm
+editCommentFormWidget     = commentFormWidget' "post" . editCommentForm
 
 approveCommentFormWidget :: Widget
 approveCommentFormWidget =
     [whamlet|
         <form method="POST">
-            <button type="submit" name="mode" value="post">approve post
+            <button type="submit" name="mode" value="post">approve
     |]
+
+claimCommentForm :: Maybe (Maybe Text) -> Form (Maybe Text)
+claimCommentForm = renderBootstrap3 . aopt' textField "Note (optional)"
 
 rethreadCommentForm :: Form (Text, Text)
 rethreadCommentForm = renderBootstrap3 $ (,)
@@ -166,8 +179,28 @@ flagCommentFormWidget def_reasons def_message = do
         <form method="POST" enctype=#{enctype}>
             <h4>Code of Conduct Violation(s):
             ^{form}
-            <button type="submit" name="mode" value="preview">preview flag message
+            <button type="submit" name="mode" value="preview">preview
+            <button type="submit" name="mode" value="post">flag
     |]
+
+generateFlagCommentForm :: Maybe (Maybe [FlagReason]) -> Maybe (Maybe Markdown) -> Widget
+generateFlagCommentForm reasons message = do
+    (form, _) <- handlerToWidget (generateFormPost $ flagCommentForm reasons message)
+    [whamlet|
+        <h4>Code of Conduct Violation(s):
+        ^{form}
+    |]
+    toWidget [cassius|
+        .preview-action-button[type=submit]
+            background : dark-red
+            background-image : linear-gradient(#ee2700, #bd1000)
+            border-color: #a5022a
+
+        .preview-action-button[type=submit]:hover, .preview-action-button[type=submit]:focus, .preview-action-button[type=submit]:active
+            background : red
+            background-image : linear-gradient(#d22935, #a5022a)
+    |]
+
 
 deleteCommentFormWidget :: Widget
 deleteCommentFormWidget =
@@ -197,11 +230,8 @@ expandCommentWidget num_replies new_max_depth = do
                         NoMaxDepth -> (cur_route, [])
                         MaxDepth n -> (cur_route, [("maxdepth", T.pack (show n))])
     [whamlet|
-        <br>
-        <br>
-        <em>
-            <a href="@?{new_route}">
-                #{num_replies} more #{plural num_replies "reply" "replies"}
+        <a .expand href="@?{new_route}">
+            #{num_replies} more #{plural num_replies "reply" "replies"}
     |]
 
 -- | An entire comment forest.
@@ -210,11 +240,14 @@ commentForestWidget
         -> Maybe UserId             -- ^ Viewer.
         -> CommentRoutes
         -> MakeActionPermissionsMap
-        -> [CommentClosure]         -- ^ Earlier closures.
-        -> UserMap
-        -> ClosureMap
-        -> TicketMap
-        -> FlagMap
+        -> [CommentClosing]         -- ^ Earlier closures.
+        -> [CommentRetracting]      -- ^ Earlier retracts.
+        -> Map UserId User
+        -> Map CommentId CommentClosing
+        -> Map CommentId CommentRetracting
+        -> Map CommentId (Entity Ticket)
+        -> Map CommentId TicketClaiming
+        -> Map CommentId (CommentFlagging, [FlagReason])
         -> Bool                     -- ^ Is preview?
         -> MaxDepth                 -- ^ Max depth.
         -> Int                      -- ^ Depth.
@@ -226,9 +259,12 @@ commentForestWidget
         comment_routes
         make_action_permissions_map
         earlier_closures
+        earlier_retracts
         user_map
-        closure_map
+        close_map
+        retract_map
         ticket_map
+        claim_map
         flag_map
         is_preview
         max_depth
@@ -242,9 +278,12 @@ commentForestWidget
           comment_routes
           action_permissions_map
           earlier_closures
+          earlier_retracts
           user_map
-          closure_map
+          close_map
+          retract_map
           ticket_map
+          claim_map
           flag_map
           is_preview
           max_depth
@@ -257,17 +296,20 @@ commentTreeWidget
         -> Maybe UserId             -- ^ Viewer.
         -> CommentRoutes
         -> MakeActionPermissionsMap
-        -> [CommentClosure]         -- ^ Earlier closures.
-        -> UserMap
-        -> ClosureMap
-        -> TicketMap
-        -> FlagMap
+        -> [CommentClosing]         -- ^ Earlier closures.
+        -> [CommentRetracting]      -- ^ Earlier retracts.
+        -> Map UserId User
+        -> Map CommentId CommentClosing
+        -> Map CommentId CommentRetracting
+        -> Map CommentId (Entity Ticket)
+        -> Map CommentId TicketClaiming
+        -> Map CommentId (CommentFlagging, [FlagReason])
         -> Bool                     -- ^ Is preview?
         -> MaxDepth
         -> Int                      -- ^ Depth.
         -> Widget                   -- ^ Form to display under the root comment.
         -> Widget
-commentTreeWidget a b c d e f g h i j k l m = commentForestWidget [a] b c d e f g h i j k l m
+commentTreeWidget tree = commentForestWidget [tree]
 
 -- | Helper function for commentForestWidget/commentTreeWidget that takes an
 -- ActionPermissionsMap (as opposed to a MakeActionPermissionsMap). Unexported.
@@ -276,11 +318,14 @@ commentTreeWidget'
         -> Maybe UserId          -- ^ Viewer.
         -> CommentRoutes
         -> ActionPermissionsMap
-        -> [CommentClosure]      -- ^ Earlier closures.
-        -> UserMap
-        -> ClosureMap
-        -> TicketMap
-        -> FlagMap
+        -> [CommentClosing]      -- ^ Earlier closures.
+        -> [CommentRetracting]   -- ^ Earlier retracts.
+        -> Map UserId User
+        -> Map CommentId CommentClosing
+        -> Map CommentId CommentRetracting
+        -> Map CommentId (Entity Ticket)
+        -> Map CommentId TicketClaiming
+        -> Map CommentId (CommentFlagging, [FlagReason])
         -> Bool                  -- ^ Is preview?
         -> MaxDepth
         -> Int                   -- ^ Depth.
@@ -292,9 +337,12 @@ commentTreeWidget'
         comment_routes
         action_permissions_map
         earlier_closures
+        earlier_retracts
         user_map
-        closure_map
+        close_map
+        retract_map
         ticket_map
+        claim_map
         flag_map
         is_preview
         max_depth
@@ -304,7 +352,7 @@ commentTreeWidget'
     let num_children = length children
         inner_widget =
             form_under_root_comment <>
-            if MaxDepth depth > max_depth && num_children > 0
+            if MaxDepth depth >= max_depth && num_children > 0
                 then expandCommentWidget num_children (addMaxDepth max_depth 2) -- FIXME(mitchell): arbitrary '2' here
                 else forM_ children $ \child ->
                          commentTreeWidget'
@@ -313,9 +361,12 @@ commentTreeWidget'
                            comment_routes
                            action_permissions_map
                            [] -- don't want to show earlier closures on *all* comments, just the first one.
+                           [] -- same for earlier retracts
                            user_map
-                           closure_map
+                           close_map
+                           retract_map
                            ticket_map
+                           claim_map
                            flag_map
                            is_preview
                            max_depth
@@ -328,9 +379,12 @@ commentTreeWidget'
         comment_routes
         (lookupErr "comment id missing from action permissions map" root_id action_permissions_map)
         earlier_closures
+        earlier_retracts
         (lookupErr "comment user missing from user map" (commentUser root) user_map)
-        (M.lookup root_id closure_map)
+        (M.lookup root_id close_map)
+        (M.lookup root_id retract_map)
         (M.lookup root_id ticket_map)
+        (M.lookup root_id claim_map)
         (M.lookup root_id flag_map)
         is_preview
         inner_widget
@@ -339,26 +393,34 @@ commentTreeWidget'
 -- The reason this can't be made more modular is the HTML for nested comments
 -- requires us to render the entire tree (can't close the parent comment's div
 -- before the children comments).
-commentWidget :: Entity Comment                       -- ^ Comment.
-              -> Maybe UserId                         -- ^ Viewer.
-              -> CommentRoutes                        -- ^ Comment routes.
-              -> CommentActionPermissions             -- ^ Permissions for comment actions.
-              -> [CommentClosure]                     -- ^ Earlier closures.
-              -> User                                 -- ^ Comment poster.
-              -> Maybe CommentClosure                 -- ^ Is this closed?
-              -> Maybe (Entity Ticket)                -- ^ Is this a ticket?
-              -> Maybe (Maybe Markdown, [FlagReason]) -- ^ Is this comment flagged?
-              -> Bool                                 -- ^ Is this a preview?
-              -> Widget                               -- ^ Inner widget (children comments, 'expand' link, reply box, etc)
+--
+-- Note this widget has NO CSS.
+commentWidget :: Entity Comment                        -- ^ Comment.
+              -> Maybe UserId                          -- ^ Viewer.
+              -> CommentRoutes                         -- ^ Comment routes.
+              -> CommentActionPermissions              -- ^ Permissions for comment actions.
+              -> [CommentClosing]                      -- ^ Earlier closures.
+              -> [CommentRetracting]                   -- ^ Earlier retracts.
+              -> User                                  -- ^ Comment poster.
+              -> Maybe CommentClosing                  -- ^ Is this closed?
+              -> Maybe CommentRetracting               -- ^ Is this retracted?
+              -> Maybe (Entity Ticket)                 -- ^ Is this a ticket?
+              -> Maybe TicketClaiming                  -- ^ Is this ticket claimed?
+              -> Maybe (CommentFlagging, [FlagReason]) -- ^ Is this flagged?
+              -> Bool                                  -- ^ Is this a preview?
+              -> Widget                                -- ^ Inner widget (children comments, 'expand' link, reply box, etc)
               -> Widget
 commentWidget (Entity comment_id comment)
               mviewer_id
               CommentRoutes{..}
               CommentActionPermissions{..}
               earlier_closures
+              earlier_retracts
               user
               mclosure
+              mretract
               mticket
+              mclaim
               mflag
               is_preview
               inner_widget = do
@@ -385,4 +447,4 @@ commentWidget (Entity comment_id comment)
 
         commentTextTransform = prettyTicketLine
 
-    $(widgetFile "comment")
+    $(whamletFile "templates/comment.hamlet")

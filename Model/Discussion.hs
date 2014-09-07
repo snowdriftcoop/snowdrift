@@ -1,7 +1,7 @@
 module Model.Discussion
     ( DiscussionOn(..)
     , createDiscussionDB
-    , fetchDiscussionClosedRootCommentsDB
+    , fetchDiscussionClosedOrRetractedRootCommentsDB
     , fetchDiscussionDB
     , fetchDiscussionsDB
     , fetchDiscussionRootCommentsDB
@@ -93,8 +93,8 @@ fetchDiscussionRootCommentsDB :: DiscussionId -> ExprCommentCond -> DB [Entity C
 fetchDiscussionRootCommentsDB = fetchRootComments exprCommentOpen
 
 -- | Get all closed root Comments on a Discussion.
-fetchDiscussionClosedRootCommentsDB :: DiscussionId -> ExprCommentCond -> DB [Entity Comment]
-fetchDiscussionClosedRootCommentsDB = fetchRootComments exprCommentClosed
+fetchDiscussionClosedOrRetractedRootCommentsDB :: DiscussionId -> ExprCommentCond -> DB [Entity Comment]
+fetchDiscussionClosedOrRetractedRootCommentsDB = fetchRootComments exprCommentClosedOrRetracted
 
 fetchRootComments :: ExprCommentCond -> DiscussionId -> ExprCommentCond -> DB [Entity Comment]
 fetchRootComments open_or_closed discussion_id has_permission =

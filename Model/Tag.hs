@@ -1,6 +1,5 @@
 module Model.Tag
-    ( TagMap
-    , AnnotatedTag(..)
+    ( AnnotatedTag(..)
     , annotTagName
     , annotTagScore
     , annotTagScoreString
@@ -20,8 +19,6 @@ import           Data.List   (sortBy)
 import qualified Data.Map    as M
 import qualified Data.List   as L
 import           Text.Printf
-
-type TagMap = Map TagId Tag
 
 fetchAllTagsDB :: DB [Entity Tag]
 fetchAllTagsDB = select (from return)

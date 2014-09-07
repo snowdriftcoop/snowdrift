@@ -9,6 +9,7 @@ import           Handler.Project (checkProjectCommentActionPermission)
 import           Model.Comment
 import           Model.Comment.ActionPermissions
 import           Model.Comment.HandlerInfo
+import           Model.Comment.Mods
 import           Model.Comment.Sql
 import           Model.User
 import           Widgets.Preview
@@ -121,6 +122,11 @@ makeWikiPageCommentActionWidget make_comment_action_widget project_handle target
       get_max_depth
       False
 
+wikiDiscussionPage :: Text -> Text -> Widget -> Widget
+wikiDiscussionPage project_handle target widget = do
+    $(widgetFile "wiki_discussion_wrapper")
+    toWidget $(cassiusFile "templates/comment.cassius")
+
 --------------------------------------------------------------------------------
 -- /
 
@@ -144,9 +150,37 @@ getWikiCommentR project_handle target comment_id = do
         Just (Entity user_id _) ->
             runDB (userMaybeViewProjectCommentsDB user_id project_id (map entityKey (Tree.flatten comment_tree)))
 
-    defaultLayout $ do
-        $(widgetFile "wiki_discussion_wrapper")
-        toWidget $(cassiusFile "templates/comment.cassius")
+    defaultLayout (wikiDiscussionPage project_handle target widget)
+
+--------------------------------------------------------------------------------
+-- /claim
+
+getClaimWikiCommentR :: Text -> Text -> CommentId -> Handler Html
+getClaimWikiCommentR project_handle target comment_id = do
+    (widget, _) <-
+        makeWikiPageCommentActionWidget
+          makeClaimCommentWidget
+          project_handle
+          target
+          comment_id
+          def
+          getMaxDepth
+
+    defaultLayout (wikiDiscussionPage project_handle target widget)
+
+postClaimWikiCommentR :: Text -> Text -> CommentId -> Handler Html
+postClaimWikiCommentR project_handle target comment_id = do
+    (user, (Entity project_id _), _, comment) <- checkCommentPageRequireAuth project_handle target comment_id
+    checkProjectCommentActionPermission can_claim user project_handle (Entity comment_id comment)
+
+    postClaimComment
+      user
+      comment_id
+      comment
+      (wikiPageCommentHandlerInfo (Just user) project_id project_handle target)
+      >>= \case
+        Nothing -> redirect (WikiCommentR project_handle target comment_id)
+        Just (widget, form) -> defaultLayout $ previewWidget form "claim" (wikiDiscussionPage project_handle target widget)
 
 --------------------------------------------------------------------------------
 -- /close
@@ -161,9 +195,7 @@ getCloseWikiCommentR project_handle target comment_id = do
           comment_id
           def
           getMaxDepth
-    defaultLayout $ do
-        $(widgetFile "wiki_discussion_wrapper")
-        toWidget $(cassiusFile "templates/comment.cassius")
+    defaultLayout (wikiDiscussionPage project_handle target widget)
 
 postCloseWikiCommentR :: Text -> Text -> CommentId -> Handler Html
 postCloseWikiCommentR project_handle target comment_id = do
@@ -177,7 +209,7 @@ postCloseWikiCommentR project_handle target comment_id = do
       (wikiPageCommentHandlerInfo (Just user) project_id project_handle target)
       >>= \case
         Nothing -> redirect (WikiCommentR project_handle target comment_id)
-        Just (widget, form) -> defaultLayout $ previewWidget form "close" ($(widgetFile "wiki_discussion_wrapper"))
+        Just (widget, form) -> defaultLayout $ previewWidget form "close" (wikiDiscussionPage project_handle target widget)
 
 --------------------------------------------------------------------------------
 -- /delete
@@ -192,9 +224,7 @@ getDeleteWikiCommentR project_handle target comment_id = do
           comment_id
           def
           getMaxDepth
-    defaultLayout $ do
-        $(widgetFile "wiki_discussion_wrapper")
-        toWidget $(cassiusFile "templates/comment.cassius")
+    defaultLayout (wikiDiscussionPage project_handle target widget)
 
 postDeleteWikiCommentR :: Text -> Text -> CommentId -> Handler Html
 postDeleteWikiCommentR project_handle target comment_id = do
@@ -219,9 +249,7 @@ getEditWikiCommentR project_handle target comment_id = do
           comment_id
           def
           getMaxDepth
-    defaultLayout $ do
-        $(widgetFile "wiki_discussion_wrapper")
-        toWidget $(cassiusFile "templates/comment.cassius")
+    defaultLayout (wikiDiscussionPage project_handle target widget)
 
 postEditWikiCommentR :: Text -> Text -> CommentId -> Handler Html
 postEditWikiCommentR project_handle target comment_id = do
@@ -234,7 +262,7 @@ postEditWikiCommentR project_handle target comment_id = do
       (wikiPageCommentHandlerInfo (Just user) project_id project_handle target)
       >>= \case
         Nothing -> redirect (WikiCommentR project_handle target comment_id)  -- Edit made.
-        Just widget -> defaultLayout $(widgetFile "wiki_discussion_wrapper") -- Previewing edit.
+        Just (widget, form) -> defaultLayout $ previewWidget form "post" (wikiDiscussionPage project_handle target widget)
 
 --------------------------------------------------------------------------------
 -- /flag
@@ -249,9 +277,7 @@ getFlagWikiCommentR project_handle target comment_id = do
           comment_id
           def
           getMaxDepth
-    defaultLayout $ do
-        $(widgetFile "wiki_discussion_wrapper")
-        toWidget $(cassiusFile "templates/comment.cassius")
+    defaultLayout (wikiDiscussionPage project_handle target widget)
 
 postFlagWikiCommentR :: Text -> Text -> CommentId -> Handler Html
 postFlagWikiCommentR project_handle target comment_id = do
@@ -264,7 +290,7 @@ postFlagWikiCommentR project_handle target comment_id = do
       (wikiPageCommentHandlerInfo (Just user) project_id project_handle target)
       >>= \case
         Nothing -> redirect (WikiDiscussionR project_handle target)
-        Just widget -> defaultLayout $(widgetFile "wiki_discussion_wrapper")
+        Just (widget, form) -> defaultLayout $ previewWidget form "flag" (wikiDiscussionPage project_handle target widget)
 
 --------------------------------------------------------------------------------
 -- /moderate TODO: rename to /approve
@@ -279,9 +305,7 @@ getApproveWikiCommentR project_handle target comment_id = do
           comment_id
           def
           getMaxDepth
-    defaultLayout $ do
-        $(widgetFile "wiki_discussion_wrapper")
-        toWidget $(cassiusFile "templates/comment.cassius")
+    defaultLayout (wikiDiscussionPage project_handle target widget)
 
 postApproveWikiCommentR :: Text -> Text -> CommentId -> Handler Html
 postApproveWikiCommentR project_handle target comment_id = do
@@ -304,9 +328,7 @@ getReplyWikiCommentR project_handle target comment_id = do
           comment_id
           def
           getMaxDepth
-    defaultLayout $ do
-        $(widgetFile "wiki_discussion_wrapper")
-        toWidget $(cassiusFile "templates/comment.cassius")
+    defaultLayout (wikiDiscussionPage project_handle target widget)
 
 postReplyWikiCommentR :: Text -> Text -> CommentId -> Handler Html
 postReplyWikiCommentR project_handle target parent_id = do
@@ -317,9 +339,9 @@ postReplyWikiCommentR project_handle target parent_id = do
       (Just parent_id)
       user
       (wikiPageDiscussion page)
-      (makeProjectCommentActionPermissionsMap (Just user) project_handle) >>= \case
+      (makeProjectCommentActionPermissionsMap (Just user) project_handle def) >>= \case
         Left _ -> redirect (WikiCommentR project_handle target parent_id)
-        Right (widget, form) -> defaultLayout $ previewWidget form "post" ($(widgetFile "wiki_discussion_wrapper"))
+        Right (widget, form) -> defaultLayout $ previewWidget form "post" (wikiDiscussionPage project_handle target widget)
 
 --------------------------------------------------------------------------------
 -- /rethread
@@ -334,9 +356,7 @@ getRethreadWikiCommentR project_handle target comment_id = do
           comment_id
           def
           getMaxDepth
-    defaultLayout $ do
-        $(widgetFile "wiki_discussion_wrapper")
-        toWidget $(cassiusFile "templates/comment.cassius")
+    defaultLayout (wikiDiscussionPage project_handle target widget)
 
 postRethreadWikiCommentR :: Text -> Text -> CommentId -> Handler Html
 postRethreadWikiCommentR project_handle target comment_id = do
@@ -357,9 +377,7 @@ getRetractWikiCommentR project_handle target comment_id = do
           comment_id
           def
           getMaxDepth
-    defaultLayout $ do
-        $(widgetFile "wiki_discussion_wrapper")
-        toWidget $(cassiusFile "templates/comment.cassius")
+    defaultLayout (wikiDiscussionPage project_handle target widget)
 
 postRetractWikiCommentR :: Text -> Text -> CommentId -> Handler Html
 postRetractWikiCommentR project_handle target comment_id = do
@@ -373,7 +391,7 @@ postRetractWikiCommentR project_handle target comment_id = do
       (wikiPageCommentHandlerInfo (Just user) project_id project_handle target)
       >>= \case
         Nothing -> redirect (WikiCommentR project_handle target comment_id)
-        Just (widget, form) -> defaultLayout $ previewWidget form "retract" ($(widgetFile "wiki_discussion_wrapper"))
+        Just (widget, form) -> defaultLayout $ previewWidget form "retract" (wikiDiscussionPage project_handle target widget)
 
 --------------------------------------------------------------------------------
 -- /tags
@@ -412,6 +430,37 @@ getWikiCommentAddTagR project_handle target comment_id = do
     (user@(Entity user_id _), Entity project_id _, _, comment) <- checkCommentPageRequireAuth project_handle target comment_id
     checkProjectCommentActionPermission can_add_tag user project_handle (Entity comment_id comment)
     getProjectCommentAddTag comment_id project_id user_id
+
+
+--------------------------------------------------------------------------------
+-- /unclaim
+
+getUnclaimWikiCommentR :: Text -> Text -> CommentId -> Handler Html
+getUnclaimWikiCommentR project_handle target comment_id = do
+    (widget, _) <-
+        makeWikiPageCommentActionWidget
+          makeUnclaimCommentWidget
+          project_handle
+          target
+          comment_id
+          def
+          getMaxDepth
+
+    defaultLayout (wikiDiscussionPage project_handle target widget)
+
+postUnclaimWikiCommentR :: Text -> Text -> CommentId -> Handler Html
+postUnclaimWikiCommentR project_handle target comment_id = do
+    (user, (Entity project_id _), _, comment) <- checkCommentPageRequireAuth project_handle target comment_id
+    checkProjectCommentActionPermission can_unclaim user project_handle (Entity comment_id comment)
+
+    postUnclaimComment
+      user
+      comment_id
+      comment
+      (wikiPageCommentHandlerInfo (Just user) project_id project_handle target)
+      >>= \case
+        Nothing -> redirect (WikiCommentR project_handle target comment_id)
+        Just (widget, form) -> defaultLayout $ previewWidget form "unclaim" (wikiDiscussionPage project_handle target widget)
 
 --------------------------------------------------------------------------------
 -- DEPRECATED

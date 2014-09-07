@@ -7,12 +7,6 @@ import Data.Text           (Text)
 
 import Yesod.Markdown      (Markdown)
 
-data ClosureType
-    = Retracted
-    | Closed
-    deriving (Read, Show)
-derivePersistField "ClosureType"
-
 -- VisPublic = visible to all | VisPrivate = visible to topic-poster and
 -- those with provenance over the discussion (e.g. project team for project
 -- discussion ) | VisInternal = visible only to those with provenance over

@@ -15,6 +15,7 @@ module Handler.Comment
     , getMaxDepthNoLimit
     , getProjectCommentAddTag
     , makeApproveCommentWidget
+    , makeClaimCommentWidget
     , makeCloseCommentWidget
     , makeCommentForestWidget
     , makeCommentTreeWidget
@@ -24,10 +25,12 @@ module Handler.Comment
     , makeReplyCommentWidget
     , makeRethreadCommentWidget
     , makeRetractCommentWidget
+    , makeUnclaimCommentWidget
     , postCommentTag
     , postCommentApplyTag
     , postCommentCreateTag
     , postApproveComment
+    , postClaimComment
     , postCloseComment
     , postDeleteComment
     , postEditComment
@@ -35,6 +38,7 @@ module Handler.Comment
     , postNewComment
     , postRethreadComment
     , postRetractComment
+    , postUnclaimComment
     , redirectIfRethreaded
     ) where
 
@@ -45,12 +49,12 @@ import           Handler.Utils
 import           Model.Comment
 import           Model.Comment.ActionPermissions
 import           Model.Comment.HandlerInfo
+import           Model.Comment.Mods
 import           Model.Comment.Routes
 import           Model.Project
 import           Model.User
 import           Model.Tag
 import           View.Comment
-import           Widgets.Preview
 import           Widgets.Tag
 
 import           Data.Default                    (def)
@@ -64,9 +68,13 @@ import           Yesod.Default.Config            (appRoot)
 --------------------------------------------------------------------------------
 -- Utility functions
 
-earlierClosuresFromMaybeParentId :: Maybe CommentId -> Handler [CommentClosure]
+earlierClosuresFromMaybeParentId :: Maybe CommentId -> Handler [CommentClosing]
 earlierClosuresFromMaybeParentId Nothing  = return []
 earlierClosuresFromMaybeParentId (Just c) = runDB (fetchCommentAncestorClosuresDB' c)
+
+earlierRetractsFromMaybeParentId :: Maybe CommentId -> Handler [CommentRetracting]
+earlierRetractsFromMaybeParentId Nothing  = return []
+earlierRetractsFromMaybeParentId (Just c) = runDB (fetchCommentAncestorRetractsDB' c)
 
 -- | Get the max depth from the "maxdepth" GET param, or 11 (arbitrary) if it doesn't exist.
 getMaxDepth :: Handler MaxDepth
@@ -88,7 +96,7 @@ redirectIfRethreaded comment_id = runDB (fetchCommentRethreadDB comment_id) >>= 
 -- | Make a Comment forest Widget. Also returns the comment forest directly, so that additional
 -- actions may be taken on the comments (such as marking them all as viewed).
 makeCommentForestWidget
-        :: CommentHandlerInfo
+        :: (CommentMods -> CommentHandlerInfo)
         -> [Entity Comment]
         -> Maybe (Entity User)
         -> CommentMods                  -- ^ Comment structure modifications.
@@ -97,27 +105,34 @@ makeCommentForestWidget
         -> Widget                       -- ^ Widget to display under root comment.
         -> Handler (Widget, Forest (Entity Comment))
 makeCommentForestWidget
-        CommentHandlerInfo{..}
+        make_comment_handler_info
         roots
         mviewer
-        CommentMods{..}
+        mods@CommentMods{..}
         get_max_depth
         is_preview
         form_under_root_comment = do
-    let root_ids = map entityKey roots
-    (children, user_map, earlier_closures_map, closure_map, ticket_map, flag_map) <- runDB $ do
+    let CommentHandlerInfo{..} = make_comment_handler_info mods
+        root_ids = map entityKey roots
+
+    (children, user_map, earlier_closures_map, earlier_retracts_map,
+     closure_map, retract_map, ticket_map, claim_map, flag_map) <- runDB $ do
         children <- fetchCommentsDescendantsDB root_ids commentHandlerHasPermission
 
         let all_comments    = roots ++ children
             all_comment_ids = map entityKey all_comments
 
         earlier_closures_map <- fetchCommentsAncestorClosuresDB root_ids
+        earlier_retracts_map <- fetchCommentsAncestorRetractsDB root_ids
         user_map             <- entitiesMap <$> fetchUsersInDB (S.toList $ makeCommentUsersSet all_comments)
-        closure_map          <- makeClosureMapDB all_comment_ids
-        ticket_map           <- makeTicketMapDB  all_comment_ids
-        flag_map             <- makeFlagMapDB    all_comment_ids
+        closure_map          <- makeCommentClosingMapDB    all_comment_ids
+        retract_map          <- makeCommentRetractingMapDB all_comment_ids
+        ticket_map           <- makeTicketMapDB            all_comment_ids
+        claim_map            <- makeClaimedTicketMapDB     all_comment_ids
+        flag_map             <- makeFlagMapDB              all_comment_ids
 
-        return (children, user_map, earlier_closures_map, closure_map, ticket_map, flag_map)
+        return (children, user_map, earlier_closures_map, earlier_retracts_map,
+                closure_map, retract_map, ticket_map, claim_map, flag_map)
 
     max_depth <- get_max_depth
 
@@ -127,6 +142,7 @@ makeCommentForestWidget
             forM_ comment_forest $ \comment_tree -> do
                 let root_id = entityKey (rootLabel comment_tree)
                     earlier_closures = M.findWithDefault [] root_id earlier_closures_map
+                    earlier_retracts = M.findWithDefault [] root_id earlier_retracts_map
 
                 commentTreeWidget
                     comment_tree
@@ -134,9 +150,12 @@ makeCommentForestWidget
                     commentHandlerRoutes
                     commentHandlerMakeActionPermissionsMap
                     (mod_earlier_closures earlier_closures)
+                    (mod_earlier_retracts earlier_retracts)
                     (mod_user_map         user_map_with_viewer)
                     (mod_closure_map      closure_map)
+                    (mod_retract_map      retract_map)
                     (mod_ticket_map       ticket_map)
+                    (mod_claim_map        claim_map)
                     (mod_flag_map         flag_map)
                     is_preview
                     max_depth
@@ -148,7 +167,7 @@ makeCommentForestWidget
 -- | Make a Comment tree Widget. Also returns the comment tree directly, so that additional
 -- actions may be taken on the comments (such as marking them all as viewed).
 makeCommentTreeWidget
-        :: CommentHandlerInfo
+        :: (CommentMods -> CommentHandlerInfo)
         -> Entity Comment               -- ^ Root comment.
         -> Maybe (Entity User)
         -> CommentMods                  -- ^ Comment structure modifications.
@@ -163,7 +182,7 @@ makeCommentTreeWidget a b c d e f g  = do
 type MakeCommentActionWidget
     = Entity Comment
    -> Entity User
-   -> CommentHandlerInfo
+   -> (CommentMods -> CommentHandlerInfo)
    -> CommentMods
    -> Handler MaxDepth
    -> Bool -- is preview?
@@ -177,18 +196,21 @@ makeCommentActionWidget
         form_widget
         comment@(Entity comment_id _)
         user
-        handler_info
+        make_handler_info
         mods
         get_max_depth
         is_preview = do
+    -- Just checking action permissions - we *don't* want to pass make_handler_info 'mods'.
+    -- Consider previewing a 'close' action: presumably, 'mods' will add the comment to
+    -- the 'close' map, which would mean the 'can_close' action would be False!
     action_permissions <-
         lookupErr "makeCommentActionWidget: comment id not found in map" comment_id
-          <$> commentHandlerMakeActionPermissionsMap handler_info [comment]
+          <$> commentHandlerMakeActionPermissionsMap (make_handler_info def) [comment]
     unless (can_perform_action action_permissions)
            (permissionDenied "You don't have permission to perform this action.")
 
     makeCommentTreeWidget
-        handler_info
+        make_handler_info
         comment
         (Just user)
         mods
@@ -197,6 +219,7 @@ makeCommentActionWidget
         form_widget
 
 makeApproveCommentWidget  :: MakeCommentActionWidget
+makeClaimCommentWidget    :: MakeCommentActionWidget
 makeCloseCommentWidget    :: MakeCommentActionWidget
 makeEditCommentWidget     :: MakeCommentActionWidget
 makeFlagCommentWidget     :: MakeCommentActionWidget
@@ -204,19 +227,22 @@ makeDeleteCommentWidget   :: MakeCommentActionWidget
 makeReplyCommentWidget    :: MakeCommentActionWidget
 makeRethreadCommentWidget :: MakeCommentActionWidget
 makeRetractCommentWidget  :: MakeCommentActionWidget
+makeUnclaimCommentWidget  :: MakeCommentActionWidget
 
 makeApproveCommentWidget  = makeCommentActionWidget can_approve  approveCommentFormWidget
+makeClaimCommentWidget    = makeCommentActionWidget can_claim    (claimCommentFormWidget Nothing)
 makeCloseCommentWidget    = makeCommentActionWidget can_close    (closeCommentFormWidget Nothing)
 makeFlagCommentWidget     = makeCommentActionWidget can_flag     (flagCommentFormWidget Nothing Nothing)
 makeDeleteCommentWidget   = makeCommentActionWidget can_delete   deleteCommentFormWidget
 makeReplyCommentWidget    = makeCommentActionWidget can_reply    commentReplyFormWidget
 makeRethreadCommentWidget = makeCommentActionWidget can_rethread rethreadCommentFormWidget
 makeRetractCommentWidget  = makeCommentActionWidget can_retract  (retractCommentFormWidget Nothing)
+makeUnclaimCommentWidget  = makeCommentActionWidget can_unclaim  (claimCommentFormWidget Nothing)
 
 makeEditCommentWidget
         comment
         user
-        comment_handler_info
+        make_comment_handler_info
         mods
         get_max_depth
         is_preview = do
@@ -225,7 +251,7 @@ makeEditCommentWidget
       (editCommentFormWidget (commentText (entityVal comment)))
       comment
       user
-      comment_handler_info
+      make_comment_handler_info
       mods
       get_max_depth
       is_preview
@@ -254,47 +280,59 @@ postApproveComment user_id comment_id comment = do
     runSDB (approveCommentDB user_id comment_id comment)
     alertSuccess "comment approved"
 
-postCloseComment, postRetractComment :: Entity User -> CommentId -> Comment -> CommentHandlerInfo -> Handler (Maybe (Widget, Widget))
-postCloseComment   = postClosureComment closeCommentForm   newClosedCommentClosure    can_close
-postRetractComment = postClosureComment retractCommentForm newRetractedCommentClosure can_retract
-
--- | Handle a POST to a /close or /retract URL.
--- Permission checking should occur *PRIOR TO* this function.
-postClosureComment
-        :: (Maybe Markdown -> Form NewClosure)
-        -> (UserId -> Markdown -> CommentId -> Handler CommentClosure)
-        -> (CommentActionPermissions -> Bool)
-        -> Entity User
-        -> CommentId
-        -> Comment
-        -> CommentHandlerInfo
-        -> Handler (Maybe (Widget, Widget))
-postClosureComment
-        make_closure_form
-        make_new_comment_closure
-        can_perform_action
-        user@(Entity user_id _)
-        comment_id
-        comment
-        comment_handler_info = do
-    ((result, _), _) <- runFormPost (make_closure_form Nothing)
+postClaimComment :: Entity User -> CommentId -> Comment -> (CommentMods -> CommentHandlerInfo) -> Handler (Maybe (Widget, Widget))
+postClaimComment user@(Entity user_id _) comment_id comment make_comment_handler_info = do
+    ((result, _), _) <- runFormPost (claimCommentForm Nothing)
     case result of
-        FormSuccess (NewClosure reason) -> do
-            new_comment_closure <- make_new_comment_closure user_id reason comment_id
+        FormSuccess mnote -> do
             lookupPostMode >>= \case
                 Just PostMode -> do
-                    runDB (insert_ new_comment_closure)
+                    runDB (userClaimCommentDB user_id comment_id mnote)
                     return Nothing
                 _ -> do
-                    (form, _) <- generateFormPost (make_closure_form (Just reason))
+                    now <- liftIO getCurrentTime
+                    (form, _) <- generateFormPost (claimCommentForm (Just mnote))
                     (comment_widget, _) <-
                         makeCommentActionWidget
-                          can_perform_action
+                        can_claim
+                        mempty
+                        (Entity comment_id comment)
+                        user
+                        make_comment_handler_info
+                        (def { mod_claim_map = M.insert comment_id (TicketClaiming now user_id comment_id mnote) })
+                        (getMaxDepthDefault 0)
+                        True
+                    return (Just (comment_widget, form))
+        _ -> error "Error when submitting form."
+
+-- | Handle a POST to a /close URL.
+-- Permission checking should occur *PRIOR TO* this function.
+postCloseComment
+        :: Entity User
+        -> CommentId
+        -> Comment
+        -> (CommentMods -> CommentHandlerInfo)
+        -> Handler (Maybe (Widget, Widget))
+postCloseComment user@(Entity user_id _) comment_id comment make_comment_handler_info = do
+    ((result, _), _) <- runFormPost (closeCommentForm Nothing)
+    case result of
+        FormSuccess (NewClosure reason) -> do
+            now <- liftIO getCurrentTime
+            let closing = CommentClosing now user_id reason comment_id
+            lookupPostMode >>= \case
+                Just PostMode -> do
+                    runDB (insert_ closing)
+                    return Nothing
+                _ -> do
+                    (form, _) <- generateFormPost (closeCommentForm (Just reason))
+                    (comment_widget, _) <-
+                        makeCommentActionWidget
+                          can_close
                           mempty
                           (Entity comment_id comment)
                           user
-                          comment_handler_info
-                          (def { mod_closure_map = M.insert comment_id new_comment_closure })
+                          make_comment_handler_info
+                          (def { mod_closure_map = M.insert comment_id closing })
                           (getMaxDepthDefault 0)
                           True
 
@@ -316,8 +354,12 @@ postDeleteComment comment_id =
 -- | Handle a POST to an /edit URL. Returns Nothing if the comment was edited, or Just Widget
 -- if there's a preview widget to display (per POST param "mode").
 -- Permission checking should occur *PRIOR TO* this function.
-postEditComment :: Entity User -> Entity Comment -> CommentHandlerInfo -> Handler (Maybe Widget)
-postEditComment user comment@(Entity comment_id _) comment_handler_info = do
+postEditComment
+        :: Entity User
+        -> Entity Comment
+        -> (CommentMods -> CommentHandlerInfo)
+        -> Handler (Maybe (Widget, Widget))
+postEditComment user (Entity comment_id comment) make_comment_handler_info = do
     ((result, _), _) <- runFormPost (editCommentForm "")
     case result of
         FormSuccess (NewComment new_text _) -> lookupPostMode >>= \case
@@ -331,23 +373,21 @@ postEditComment user comment@(Entity comment_id _) comment_handler_info = do
                     makeCommentActionWidget
                       can_edit
                       mempty
-                      comment
+                      (Entity comment_id (comment { commentText = new_text }))
                       user
-                      comment_handler_info
-                      (def { mod_comment = \c -> c { commentText = new_text }
-                           -- Since an edit removes a flagging, don't show the flagged markup in preview.
-                           , mod_flag_map = M.delete comment_id
-                           })
+                      make_comment_handler_info
+                      -- Since an edit removes a flagging, don't show the flagged markup in preview.
+                      (def { mod_flag_map = M.delete comment_id })
                       (getMaxDepthDefault 0)
                       True
-                return (Just (previewWidget form "post" comment_widget))
+                return (Just (comment_widget, form))
         FormMissing -> error "Form missing."
         FormFailure msgs -> error $ "Error submitting form: " ++ T.unpack (T.intercalate "\n" msgs)
 
 -- | Handle a POST to a /flag URL.
 -- Permission checking should occur *PRIOR TO* this function.
-postFlagComment :: Entity User -> Entity Comment -> CommentHandlerInfo -> Handler (Maybe Widget)
-postFlagComment user@(Entity user_id _) comment@(Entity comment_id _) comment_handler_info = do
+postFlagComment :: Entity User -> Entity Comment -> (CommentMods -> CommentHandlerInfo) -> Handler (Maybe (Widget, Widget))
+postFlagComment user@(Entity user_id _) comment@(Entity comment_id _) make_comment_handler_info = do
     ((result, _), _) <- runFormPost (flagCommentForm Nothing Nothing)
     case result of
         -- TODO(mitchell): Change the form to just return [FlagReason], not Maybe [FlagReason]
@@ -355,7 +395,8 @@ postFlagComment user@(Entity user_id _) comment@(Entity comment_id _) comment_ha
         FormSuccess (Just [], _) -> flagFailure "Please check at least one Code of Conduct violation."
         FormSuccess (Just reasons, message) -> lookupPostMode >>= \case
             Just PostMode -> do
-                let permalink_route = comment_route_edit (commentHandlerRoutes comment_handler_info) comment_id
+                let comment_handler_info = make_comment_handler_info def
+                    permalink_route = comment_route_edit (commentHandlerRoutes comment_handler_info) comment_id
                 permalink_route_text <- getUrlRender <*> pure permalink_route
                 success <- runSYDB (flagCommentDB comment_id permalink_route_text user_id reasons message)
                 if success
@@ -363,41 +404,20 @@ postFlagComment user@(Entity user_id _) comment@(Entity comment_id _) comment_ha
                     else alertDanger "error: another user flagged this just before you"
                 return Nothing
             _ -> do
-                (form, _) <- generateFormPost $ flagCommentForm (Just (Just reasons)) (Just message)
-
-                let style_widget =
-                        -- the CSS below styles this particular flagging submit
-                        -- button. It would be ideal to have this in a more
-                        -- generalized place so it can be reused in other flagging
-                        -- buttons and be in just one place, but this works for
-                        -- now.
-                        toWidget [cassius|
-                            .preview-action-button[type=submit]
-                                background : dark-red
-                                background-image : linear-gradient(#ee2700, #bd1000)
-                                border-color: #a5022a
-
-                            .preview-action-button[type=submit]:hover, .preview-action-button[type=submit]:focus, .preview-action-button[type=submit]:active
-                                background : red
-                                background-image : linear-gradient(#d22935, #a5022a)
-                        |]
-                    form_with_header =
-                        [whamlet|
-                            <h4>Code of Conduct Violation(s):
-                            ^{form}
-                        |]
-
+                now <- liftIO getCurrentTime
+                let form = generateFlagCommentForm (Just (Just reasons)) (Just message)
+                    flagging = CommentFlagging now user_id comment_id message
                 (comment_widget, _) <-
                     makeCommentActionWidget
                       can_flag
                       mempty
                       comment
                       user
-                      comment_handler_info
-                      (def { mod_flag_map = M.insert comment_id (message, reasons) })
+                      make_comment_handler_info
+                      (def { mod_flag_map = M.insert comment_id (flagging, reasons) })
                       (getMaxDepthDefault 0)
                       True
-                return (Just (style_widget <> previewWidget form_with_header "flag comment" comment_widget))
+                return (Just (comment_widget, form))
 
         FormFailure errs -> flagFailure (T.intercalate ", " errs)
         _ -> flagFailure "Form missing."
@@ -431,6 +451,7 @@ postNewComment mparent_id (Entity user_id user) discussion_id make_permissions_m
                         return (Left comment_id)
             _ -> do
                 earlier_closures    <- earlierClosuresFromMaybeParentId mparent_id
+                earlier_retracts    <- earlierRetractsFromMaybeParentId mparent_id
                 depth               <- runDB (fetchCommentDepthFromMaybeParentIdDB mparent_id)
                 (form, _)           <- generateFormPost (commentForm (maybe "New Topic" (const "Reply") mparent_id) (Just contents))
                 now                 <- liftIO getCurrentTime
@@ -451,9 +472,12 @@ postNewComment mparent_id (Entity user_id user) discussion_id make_permissions_m
                           dummyCommentRoutes -- 'True' below, so routes aren't used.
                           make_permissions_map
                           earlier_closures
+                          earlier_retracts
                           (M.singleton user_id user)
                           mempty -- closure map
+                          mempty -- retract map
                           mempty -- ticket map - TODO(mitchell): this isn't right... if *this* comment is a ticket, we should display it as such.
+                          mempty -- claim map
                           mempty -- flag map
                           True
                           max_depth
@@ -530,6 +554,64 @@ postRethreadComment user_id comment_id comment = do
                     redirect new_parent_url
 
                 _ -> error "no preview for rethreads yet" -- TODO(david)
+        _ -> error "Error when submitting form."
+
+-- | Handle a POST to a /close URL.
+-- Permission checking should occur *PRIOR TO* this function.
+postRetractComment
+        :: Entity User
+        -> CommentId
+        -> Comment
+        -> (CommentMods -> CommentHandlerInfo)
+        -> Handler (Maybe (Widget, Widget))
+postRetractComment user comment_id comment make_comment_handler_info = do
+    ((result, _), _) <- runFormPost (retractCommentForm Nothing)
+    case result of
+        FormSuccess (NewClosure reason) -> do
+            now <- liftIO getCurrentTime
+            let retracting = CommentRetracting now reason comment_id
+            lookupPostMode >>= \case
+                Just PostMode -> do
+                    runDB (insert_ retracting)
+                    return Nothing
+                _ -> do
+                    (form, _) <- generateFormPost (retractCommentForm (Just reason))
+                    (comment_widget, _) <-
+                        makeCommentActionWidget
+                          can_retract
+                          mempty
+                          (Entity comment_id comment)
+                          user
+                          make_comment_handler_info
+                          (def { mod_retract_map = M.insert comment_id retracting })
+                          (getMaxDepthDefault 0)
+                          True
+
+                    return (Just (comment_widget, form))
+        _ -> error "Error when submitting form."
+
+postUnclaimComment :: Entity User -> CommentId -> Comment -> (CommentMods -> CommentHandlerInfo) -> Handler (Maybe (Widget, Widget))
+postUnclaimComment user@(Entity user_id _) comment_id comment make_comment_handler_info = do
+    ((result, _), _) <- runFormPost (claimCommentForm Nothing)
+    case result of
+        FormSuccess mnote -> do
+            lookupPostMode >>= \case
+                Just PostMode -> do
+                    runDB (userUnclaimCommentDB user_id comment_id mnote)
+                    return Nothing
+                _ -> do
+                    (form, _) <- generateFormPost (claimCommentForm (Just mnote))
+                    (comment_widget, _) <-
+                        makeCommentActionWidget
+                        can_unclaim
+                        mempty
+                        (Entity comment_id comment)
+                        user
+                        make_comment_handler_info
+                        (def { mod_claim_map = M.delete comment_id })
+                        (getMaxDepthDefault 0)
+                        True
+                    return (Just (comment_widget, form))
         _ -> error "Error when submitting form."
 
 getCommentTags :: CommentId -> Handler Html
@@ -623,7 +705,7 @@ deleteCommentDirectLinkR comment_id = do
     unless ok (permissionDenied "You don't have permission to delete that comment.")
 
 --------------------------------------------------------------------------------
--- /c/
+-- /c/#CommentId
 
 getCommentTagR :: CommentId -> TagId -> Handler Html
 getCommentTagR comment_id tag_id = do
@@ -637,4 +719,3 @@ getCommentTagR comment_id tag_id = do
     renderTag (AnnotatedTag tag _ _ user_votes) = do
         let tag_name = tagName $ entityVal tag
         defaultLayout $(widgetFile "tag")
-

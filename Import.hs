@@ -25,7 +25,6 @@ import           Data.Text                     as Import (Text)
 import qualified Data.Text                     as T
 import qualified Data.Text.Lazy                as TL
 import           Data.Time.Clock               as Import (UTCTime, diffUTCTime, getCurrentTime)
-import           Data.Time.Units
 import           Data.Typeable (Typeable)
 import           Database.Esqueleto            as Import hiding (on, valList)
 import qualified Database.Esqueleto
@@ -73,22 +72,30 @@ instance Count ShareCount where getCount (ShareCount c) = c
 newtype Color = Color Int deriving (Typeable, Num)
 
 -- from http://stackoverflow.com/questions/8066850/why-doesnt-haskells-prelude-read-return-a-maybe
-readMaybe        :: (Read a) => String -> Maybe a
-readMaybe s      =  case [x | (x,t) <- reads s, ("","") <- lex t] of
-                         [x] -> Just x
-                         _   -> Nothing
+readMaybe   :: (Read a) => String -> Maybe a
+readMaybe s = case [x | (x,t) <- reads s, ("","") <- lex t] of
+                  [x] -> Just x
+                  _   -> Nothing
 
+showDiffTime :: UTCTime -> UTCTime -> String
+showDiffTime x y =
+  let secs_ago = round (diffUTCTime x y)
+  in if | secs_ago < secsPerHour  -> go secs_ago secsPerMinute "m"
+        | secs_ago < secsPerDay   -> go secs_ago secsPerHour   "h"
+        | secs_ago < secsPerWeek  -> go secs_ago secsPerDay    "d"
+        | secs_ago < secsPerMonth -> go secs_ago secsPerWeek   "wk"
+        | secs_ago < secsPerYear  -> go secs_ago secsPerMonth  "mo"
+        | otherwise               -> go secs_ago secsPerYear   "yr"
+  where
+    go secs_ago divisor suffix = show (secs_ago `div` divisor) ++ suffix
 
-age :: UTCTime -> UTCTime -> String
-age a b = let s = round $ toRational $ diffUTCTime a b
-              f (t :: Second)
-                 | t > convertUnit (1 :: Fortnight) = show (convertUnit t :: Fortnight)
-                 | t > convertUnit (1 :: Week) = show (convertUnit t :: Week)
-                 | t > convertUnit (1 :: Day) = show (convertUnit t :: Day)
-                 | t > convertUnit (1 :: Hour) = show (convertUnit t :: Hour)
-                 | otherwise = show (convertUnit t :: Minute)
-           in f s
-
+    secsPerMinute, secsPerHour, secsPerDay, secsPerWeek, secsPerMonth, secsPerYear :: Integer
+    secsPerMinute = 60
+    secsPerHour   = 3600     -- 60*60
+    secsPerDay    = 86400    -- 60*60*24
+    secsPerWeek   = 604800   -- 60*60*24*7
+    secsPerMonth  = 2592000  -- 60*60*24*30
+    secsPerYear   = 31536000 -- 60*60*24*365
 
 entitiesMap :: [Entity t] -> Map (Key t) t
 entitiesMap = foldr (\(Entity k v) -> M.insert k v) mempty

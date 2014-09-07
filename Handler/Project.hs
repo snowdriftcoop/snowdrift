@@ -13,6 +13,7 @@ import Model.Application
 import Model.Comment
 import Model.Comment.ActionPermissions
 import Model.Comment.HandlerInfo
+import Model.Comment.Mods
 import Model.Comment.Sql
 import Model.Currency
 import Model.Discussion
@@ -116,8 +117,8 @@ checkProjectCommentActionPermission
         project_handle
         comment@(Entity comment_id _) = do
     action_permissions <-
-        lookupErr "checkWikiPageCommentActionPermission: comment id not found in map" comment_id
-          <$> makeProjectCommentActionPermissionsMap (Just user) project_handle [comment]
+        lookupErr "checkProjectCommentActionPermission: comment id not found in map" comment_id
+          <$> makeProjectCommentActionPermissionsMap (Just user) project_handle def [comment]
     unless (can_perform_action action_permissions)
            (permissionDenied "You don't have permission to perform this action.")
 
@@ -179,6 +180,11 @@ makeProjectCommentActionWidget make_comment_action_widget project_handle comment
       mods
       get_max_depth
       False
+
+projectDiscussionPage :: Text -> Widget -> Widget
+projectDiscussionPage project_handle widget = do
+    $(widgetFile "project_discussion_wrapper")
+    toWidget $(cassiusFile "templates/comment.cassius")
 
 -------------------------------------------------------------------------------
 --
@@ -434,7 +440,7 @@ getProjectCommentR project_handle comment_id = do
         Just (Entity user_id _) ->
             runDB (userMaybeViewProjectCommentsDB user_id project_id (map entityKey (Tree.flatten comment_tree)))
 
-    defaultLayout $(widgetFile "project_discussion_wrapper")
+    defaultLayout (projectDiscussionPage project_handle widget)
 
 --------------------------------------------------------------------------------
 -- /c/#CommentId/approve
@@ -448,7 +454,7 @@ getApproveProjectCommentR project_handle comment_id = do
           comment_id
           def
           getMaxDepth
-    defaultLayout $(widgetFile "project_discussion_wrapper")
+    defaultLayout (projectDiscussionPage project_handle widget)
 
 postApproveProjectCommentR :: Text -> CommentId -> Handler Html
 postApproveProjectCommentR project_handle comment_id = do
@@ -457,6 +463,34 @@ postApproveProjectCommentR project_handle comment_id = do
 
     postApproveComment user_id comment_id comment
     redirect (ProjectCommentR project_handle comment_id)
+
+--------------------------------------------------------------------------------
+-- /c/#CommentId/claim
+
+getClaimProjectCommentR :: Text -> CommentId -> Handler Html
+getClaimProjectCommentR project_handle comment_id = do
+    (widget, _) <-
+        makeProjectCommentActionWidget
+          makeClaimCommentWidget
+          project_handle
+          comment_id
+          def
+          getMaxDepth
+    defaultLayout (projectDiscussionPage project_handle widget)
+
+postClaimProjectCommentR :: Text -> CommentId -> Handler Html
+postClaimProjectCommentR project_handle comment_id = do
+    (user, (Entity project_id _), comment) <- checkCommentRequireAuth project_handle comment_id
+    checkProjectCommentActionPermission can_claim user project_handle (Entity comment_id comment)
+
+    postClaimComment
+      user
+      comment_id
+      comment
+      (projectCommentHandlerInfo (Just user) project_id project_handle)
+      >>= \case
+        Nothing -> redirect (ProjectCommentR project_handle comment_id)
+        Just (widget, form) -> defaultLayout $ previewWidget form "claim" (projectDiscussionPage project_handle widget)
 
 --------------------------------------------------------------------------------
 -- /c/#CommentId/close
@@ -470,7 +504,8 @@ getCloseProjectCommentR project_handle comment_id = do
           comment_id
           def
           getMaxDepth
-    defaultLayout $(widgetFile "project_discussion_wrapper")
+    defaultLayout (projectDiscussionPage project_handle widget)
+
 
 postCloseProjectCommentR :: Text -> CommentId -> Handler Html
 postCloseProjectCommentR project_handle comment_id = do
@@ -484,7 +519,7 @@ postCloseProjectCommentR project_handle comment_id = do
       (projectCommentHandlerInfo (Just user) project_id project_handle)
       >>= \case
         Nothing -> redirect (ProjectCommentR project_handle comment_id)
-        Just (widget, form) -> defaultLayout $ previewWidget form "close" ($(widgetFile "project_discussion_wrapper"))
+        Just (widget, form) -> defaultLayout $ previewWidget form "close" (projectDiscussionPage project_handle widget)
 
 --------------------------------------------------------------------------------
 -- /c/#CommentId/delete
@@ -498,7 +533,7 @@ getDeleteProjectCommentR project_handle comment_id = do
           comment_id
           def
           getMaxDepth
-    defaultLayout $(widgetFile "project_discussion_wrapper")
+    defaultLayout (projectDiscussionPage project_handle widget)
 
 postDeleteProjectCommentR :: Text -> CommentId -> Handler Html
 postDeleteProjectCommentR project_handle comment_id = do
@@ -522,7 +557,7 @@ getEditProjectCommentR project_handle comment_id = do
           comment_id
           def
           getMaxDepth
-    defaultLayout $(widgetFile "project_discussion_wrapper")
+    defaultLayout (projectDiscussionPage project_handle widget)
 
 postEditProjectCommentR :: Text -> CommentId -> Handler Html
 postEditProjectCommentR project_handle comment_id = do
@@ -535,7 +570,7 @@ postEditProjectCommentR project_handle comment_id = do
       (projectCommentHandlerInfo (Just user) project_id project_handle)
       >>= \case
         Nothing -> redirect (ProjectCommentR project_handle comment_id)         -- Edit made.
-        Just widget -> defaultLayout $(widgetFile "project_discussion_wrapper") -- Previewing edit.
+        Just (widget, form) -> defaultLayout $ previewWidget form "post" (projectDiscussionPage project_handle widget)
 
 --------------------------------------------------------------------------------
 -- /c/#CommentId/flag
@@ -549,7 +584,7 @@ getFlagProjectCommentR project_handle comment_id = do
           comment_id
           def
           getMaxDepth
-    defaultLayout $(widgetFile "project_discussion_wrapper")
+    defaultLayout (projectDiscussionPage project_handle widget)
 
 postFlagProjectCommentR :: Text -> CommentId -> Handler Html
 postFlagProjectCommentR project_handle comment_id = do
@@ -562,7 +597,7 @@ postFlagProjectCommentR project_handle comment_id = do
       (projectCommentHandlerInfo (Just user) project_id project_handle)
       >>= \case
         Nothing -> redirect (ProjectDiscussionR project_handle)
-        Just widget -> defaultLayout $(widgetFile "project_discussion_wrapper")
+        Just (widget, form) -> defaultLayout $ previewWidget form "flag" (projectDiscussionPage project_handle widget)
 
 --------------------------------------------------------------------------------
 -- /c/#CommentId/reply
@@ -576,7 +611,7 @@ getReplyProjectCommentR project_handle parent_id = do
           parent_id
           def
           getMaxDepth
-    defaultLayout $(widgetFile "project_discussion_wrapper")
+    defaultLayout (projectDiscussionPage project_handle widget)
 
 postReplyProjectCommentR :: Text -> CommentId -> Handler Html
 postReplyProjectCommentR project_handle parent_id = do
@@ -587,9 +622,9 @@ postReplyProjectCommentR project_handle parent_id = do
       (Just parent_id)
       user
       (projectDiscussion project)
-      (makeProjectCommentActionPermissionsMap (Just user) project_handle) >>= \case
+      (makeProjectCommentActionPermissionsMap (Just user) project_handle def) >>= \case
         Left _ -> redirect (ProjectCommentR project_handle parent_id)
-        Right (widget, form) -> defaultLayout $ previewWidget form "post" ($(widgetFile "project_discussion_wrapper"))
+        Right (widget, form) -> defaultLayout $ previewWidget form "post" (projectDiscussionPage project_handle widget)
 
 --------------------------------------------------------------------------------
 -- /c/#CommentId/rethread
@@ -603,7 +638,7 @@ getRethreadProjectCommentR project_handle comment_id = do
           comment_id
           def
           getMaxDepth
-    defaultLayout $(widgetFile "project_discussion_wrapper")
+    defaultLayout (projectDiscussionPage project_handle widget)
 
 postRethreadProjectCommentR :: Text -> CommentId -> Handler Html
 postRethreadProjectCommentR project_handle comment_id = do
@@ -623,7 +658,7 @@ getRetractProjectCommentR project_handle comment_id = do
           comment_id
           def
           getMaxDepth
-    defaultLayout $(widgetFile "project_discussion_wrapper")
+    defaultLayout (projectDiscussionPage project_handle widget)
 
 postRetractProjectCommentR :: Text -> CommentId -> Handler Html
 postRetractProjectCommentR project_handle comment_id = do
@@ -637,7 +672,7 @@ postRetractProjectCommentR project_handle comment_id = do
       (projectCommentHandlerInfo (Just user) project_id project_handle)
       >>= \case
         Nothing -> redirect (ProjectCommentR project_handle comment_id)
-        Just (widget, form) -> defaultLayout $ previewWidget form "retract" ($(widgetFile "project_discussion_wrapper"))
+        Just (widget, form) -> defaultLayout $ previewWidget form "retract" (projectDiscussionPage project_handle widget)
 
 --------------------------------------------------------------------------------
 -- /c/#CommentId/tags
@@ -676,6 +711,34 @@ getProjectCommentAddTagR project_handle comment_id = do
     (user@(Entity user_id _), Entity project_id _, comment) <- checkCommentRequireAuth project_handle comment_id
     checkProjectCommentActionPermission can_add_tag user project_handle (Entity comment_id comment)
     getProjectCommentAddTag comment_id project_id user_id
+
+--------------------------------------------------------------------------------
+-- /c/#CommentId/unclaim
+
+getUnclaimProjectCommentR :: Text -> CommentId -> Handler Html
+getUnclaimProjectCommentR project_handle comment_id = do
+    (widget, _) <-
+        makeProjectCommentActionWidget
+          makeUnclaimCommentWidget
+          project_handle
+          comment_id
+          def
+          getMaxDepth
+    defaultLayout (projectDiscussionPage project_handle widget)
+
+postUnclaimProjectCommentR :: Text -> CommentId -> Handler Html
+postUnclaimProjectCommentR project_handle comment_id = do
+    (user, (Entity project_id _), comment) <- checkCommentRequireAuth project_handle comment_id
+    checkProjectCommentActionPermission can_unclaim user project_handle (Entity comment_id comment)
+
+    postUnclaimComment
+      user
+      comment_id
+      comment
+      (projectCommentHandlerInfo (Just user) project_id project_handle)
+      >>= \case
+        Nothing -> redirect (ProjectCommentR project_handle comment_id)
+        Just (widget, form) -> defaultLayout $ previewWidget form "unclaim" (projectDiscussionPage project_handle widget)
 
 --------------------------------------------------------------------------------
 -- /contact
@@ -732,7 +795,7 @@ getProjectDiscussion project_handle get_root_comments = do
           project_handle
           root_comments
           def
-          (getMaxDepthDefault 0)
+          getMaxDepth
           False
           mempty
 
@@ -754,7 +817,7 @@ getNewProjectDiscussionR :: Text -> Handler Html
 getNewProjectDiscussionR project_handle = do
     void requireAuth
     let widget = commentNewTopicFormWidget
-    defaultLayout $(widgetFile "project_discussion_wrapper")
+    defaultLayout (projectDiscussionPage project_handle widget)
 
 postNewProjectDiscussionR :: Text -> Handler Html
 postNewProjectDiscussionR project_handle = do
@@ -765,9 +828,9 @@ postNewProjectDiscussionR project_handle = do
       Nothing
       user
       projectDiscussion
-      (makeProjectCommentActionPermissionsMap (Just user) project_handle) >>= \case
+      (makeProjectCommentActionPermissionsMap (Just user) project_handle def) >>= \case
         Left comment_id -> redirect (ProjectCommentR project_handle comment_id)
-        Right (widget, form) -> defaultLayout $ previewWidget form "post" ($(widgetFile "project_discussion_wrapper"))
+        Right (widget, form) -> defaultLayout $ previewWidget form "post" (projectDiscussionPage project_handle widget)
 
 --------------------------------------------------------------------------------
 -- /edit
@@ -806,7 +869,8 @@ getProjectFeedR project_handle = do
 
     (project, comments, rethreads, wiki_pages, wiki_edits, new_pledges,
      updated_pledges, deleted_pledges, discussion_map, wiki_page_map, user_map,
-     earlier_closures_map, closure_map, ticket_map, flag_map) <- runYDB $ do
+     earlier_closures_map, earlier_retracts_map, closure_map, retract_map,
+     ticket_map, claim_map, flag_map) <- runYDB $ do
 
         Entity project_id project <- getBy404 (UniqueProjectHandle project_handle)
 
@@ -840,16 +904,20 @@ getProjectFeedR project_handle = do
         user_map <- entitiesMap <$> fetchUsersInDB user_ids
 
         earlier_closures_map <- fetchCommentsAncestorClosuresDB comment_ids
-        closure_map          <- makeClosureMapDB comment_ids
-        ticket_map           <- makeTicketMapDB  comment_ids
-        flag_map             <- makeFlagMapDB    comment_ids
+        earlier_retracts_map <- fetchCommentsAncestorRetractsDB comment_ids
+        closure_map          <- makeCommentClosingMapDB         comment_ids
+        retract_map          <- makeCommentRetractingMapDB      comment_ids
+        ticket_map           <- makeTicketMapDB                 comment_ids
+        claim_map            <- makeClaimedTicketMapDB          comment_ids
+        flag_map             <- makeFlagMapDB                   comment_ids
 
         return (project, comments, rethreads, wiki_pages, wiki_edits,
                 new_pledges, updated_pledges, deleted_pledges, discussion_map,
-                wiki_page_map, user_map, earlier_closures_map, closure_map,
-                ticket_map, flag_map)
+                wiki_page_map, user_map, earlier_closures_map,
+                earlier_retracts_map, closure_map, retract_map, ticket_map,
+                claim_map, flag_map)
 
-    action_permissions_map <- makeProjectCommentActionPermissionsMap muser project_handle comments
+    action_permissions_map <- makeProjectCommentActionPermissionsMap muser project_handle def comments
 
     let all_unsorted_events = mconcat
             [ map (onEntity ECommentPosted)     comments

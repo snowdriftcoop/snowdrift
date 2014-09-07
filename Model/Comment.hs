@@ -1,11 +1,7 @@
 module Model.Comment
     -- Types
-    ( ClosureMap
-    , CommentMods(..)
-    , FlagMap
-    , MaxDepth(..)
+    ( MaxDepth(..)
     , NoCommentReason(..)
-    , TicketMap
     , addMaxDepth
     -- Utility functions
     , buildCommentForest
@@ -17,16 +13,17 @@ module Model.Comment
     , commentIsTopLevel
     , makeCommentUsersSet
     , makeApprovedComment
-    , newClosedCommentClosure
-    , newRetractedCommentClosure
     -- Database actions
     , approveCommentDB
     , deleteCommentDB
     , editCommentDB
     , flagCommentDB
     , fetchCommentAncestorClosuresDB
+    , fetchCommentAncestorRetractsDB
     , fetchCommentAncestorClosuresDB'
+    , fetchCommentAncestorRetractsDB'
     , fetchCommentsAncestorClosuresDB
+    , fetchCommentsAncestorRetractsDB
     , fetchCommentDB
     , fetchCommentAllDescendantsDB
     , fetchCommentAncestorsDB
@@ -45,7 +42,9 @@ module Model.Comment
     , fetchCommentsInDB
     , fetchCommentsWithChildrenInDB
     , filterCommentsDB
-    , makeClosureMapDB
+    , makeClaimedTicketMapDB
+    , makeCommentClosingMapDB
+    , makeCommentRetractingMapDB
     , makeCommentRouteDB
     , makeFlagMapDB
     , makeTicketMapDB
@@ -60,50 +59,30 @@ import Import
 import Model.Comment.Sql
 import Model.Discussion
 import Model.Notification
-import Model.Tag
 import Model.Utils
 
-import qualified Control.Monad.State         as State
-import           Control.Monad.Writer.Strict (tell)
-import           Data.Default                (Default, def)
-import           Data.Foldable               (Foldable)
-import qualified Data.Foldable               as F
-import qualified Data.Map                    as M
-import           Data.Maybe                  (fromJust)
-import qualified Data.Set                    as S
-import qualified Data.Text                   as T
+import qualified Control.Monad.State                  as State
+import           Control.Monad.Writer.Strict          (tell)
+import           Data.Foldable                        (Foldable)
+import qualified Data.Foldable                        as F
+import qualified Data.Map                             as M
+import           Data.Maybe                           (fromJust)
+import qualified Data.Set                             as S
+import qualified Data.Text                            as T
 import           Data.Tree
-import qualified Database.Persist            as P
-import           GHC.Exts                    (IsList(..))
-import qualified Prelude                     as Prelude
-import           Yesod.Markdown              (Markdown(..))
+import           Database.Esqueleto.Internal.Language (Insertion)
+import qualified Database.Persist                     as P
+import           GHC.Exts                             (IsList(..))
+import qualified Prelude                              as Prelude
+import           Yesod.Markdown                       (Markdown(..))
 
 --------------------------------------------------------------------------------
 -- Types
-
-type ClosureMap = Map CommentId CommentClosure
-type TicketMap  = Map CommentId (Entity Ticket)
-type FlagMap    = Map CommentId (Maybe Markdown, [FlagReason])
 
 -- | A root comment (with its own URL) might not be displayed. Why?
 data NoCommentReason
     = CommentNotFound
     | CommentPermissionDenied
-
--- | Data type used in makeCommentWidgetMod, containing modifications to comment-action-related
--- data structures.
-data CommentMods = CommentMods
-    { mod_comment          :: Comment          -> Comment
-    , mod_earlier_closures :: [CommentClosure] -> [CommentClosure]
-    , mod_user_map         :: Map UserId User  -> Map UserId User -- can't user UserMap here, circular dependency.
-    , mod_closure_map      :: ClosureMap       -> ClosureMap
-    , mod_ticket_map       :: TicketMap        -> TicketMap
-    , mod_flag_map         :: FlagMap          -> FlagMap
-    , mod_tag_map          :: TagMap           -> TagMap
-    }
-
-instance Default CommentMods where
-    def = CommentMods id id id id id id id
 
 data MaxDepth
     = NoMaxDepth
@@ -172,13 +151,13 @@ buildCommentForest :: [Entity Comment] -- root comments
                    -> Forest (Entity Comment)
 buildCommentForest roots replies = (map (flip buildCommentTree replies)) roots
 
-newClosedCommentClosure, newRetractedCommentClosure :: MonadIO m => UserId -> Markdown -> CommentId -> m CommentClosure
-newClosedCommentClosure    = newCommentClosure Closed
-newRetractedCommentClosure = newCommentClosure Retracted
+-- newClosedCommentClosure, newRetractedCommentClosure :: MonadIO m => UserId -> Markdown -> CommentId -> m CommentClosure
+-- newClosedCommentClosure    = newCommentClosure Closed
+-- newRetractedCommentClosure = newCommentClosure Retracted
 
-newCommentClosure :: MonadIO m => ClosureType -> UserId -> Markdown -> CommentId -> m CommentClosure
-newCommentClosure closure_type user_id reason comment_id =
-    (\now -> CommentClosure now user_id closure_type reason comment_id) `liftM` liftIO getCurrentTime
+-- newCommentClosure :: MonadIO m => ClosureType -> UserId -> Markdown -> CommentId -> m CommentClosure
+-- newCommentClosure closure_type user_id reason comment_id =
+--     (\now -> CommentClosure now user_id closure_type reason comment_id) `liftM` liftIO getCurrentTime
 
 -- | Construct a comment, auto-approved by 'this' User (because they are established).
 makeApprovedComment :: MonadIO m => UserId -> DiscussionId -> Maybe CommentId -> Markdown -> Int -> Visibility -> m Comment
@@ -416,39 +395,56 @@ filterCommentsDB comment_ids has_permission = fmap (map unValue) $
         has_permission c
     return (c ^. CommentId)
 
--- | Get all ancestors that have been closed.
-fetchCommentAncestorClosuresDB :: CommentId -> DB [CommentClosure]
-fetchCommentAncestorClosuresDB comment_id = fmap (map entityVal) $
-    select $
-    from $ \(ca `InnerJoin` cc) -> do
-    on_ (ca ^. CommentAncestorAncestor ==. cc ^. CommentClosureComment)
-    orderBy [asc (cc ^. CommentClosureComment)]
-    where_ (ca ^. CommentAncestorComment ==. val comment_id)
-    return cc
+-- | Get all ancestors that have been closed/retracted.
+fetchCommentAncestorClosuresDB :: CommentId -> DB [CommentClosing]
+fetchCommentAncestorRetractsDB :: CommentId -> DB [CommentRetracting]
+fetchCommentAncestorClosuresDB = commentClosuresOrRetracts CommentClosingComment
+fetchCommentAncestorRetractsDB = commentClosuresOrRetracts CommentRetractingComment
 
--- | Get all ancestors, including this comment, that have been closed.
-fetchCommentAncestorClosuresDB' :: CommentId -> DB [CommentClosure]
-fetchCommentAncestorClosuresDB' comment_id = do
+commentClosuresOrRetracts :: (PersistEntity val, PersistEntityBackend val ~ SqlBackend)
+                          => (EntityField val CommentId) -> CommentId -> DB [val]
+commentClosuresOrRetracts comment_field comment_id = fmap (map entityVal) $
+    select $
+    from $ \(ca `InnerJoin` table) -> do
+    on_ (ca ^. CommentAncestorAncestor ==. table ^. comment_field)
+    orderBy [asc (table ^. comment_field)]
+    where_ (ca ^. CommentAncestorComment ==. val comment_id)
+    return table
+
+-- | Get all ancestors, including this comment, that have been closed/retracted.
+fetchCommentAncestorClosuresDB' :: CommentId -> DB [CommentClosing]
+fetchCommentAncestorRetractsDB' :: CommentId -> DB [CommentRetracting]
+fetchCommentAncestorClosuresDB' = commentClosuresOrRetracts' CommentClosingComment
+fetchCommentAncestorRetractsDB' = commentClosuresOrRetracts' CommentRetractingComment
+
+commentClosuresOrRetracts' :: (PersistEntity val, PersistEntityBackend val ~ SqlBackend)
+                           => (EntityField val CommentId) -> CommentId -> DB [val]
+commentClosuresOrRetracts' comment_field comment_id = do
     all_comment_ids <- (comment_id :) <$> fetchCommentAncestorsDB comment_id
     fmap (map entityVal) $
         select $
-        from $ \cc -> do
-        where_ (cc ^. CommentClosureComment `in_` valList all_comment_ids)
-        return cc
+        from $ \table -> do
+        where_ (table ^. comment_field `in_` valList all_comment_ids)
+        return table
 
--- | Get all CommentClosures of any of the given Comments' ancestors, grouped by
+-- | Get all CommentClosings/CommentRetracts of any of the given Comments' ancestors, grouped by
 -- the given Comments.
-fetchCommentsAncestorClosuresDB :: [CommentId] -> DB (Map CommentId [CommentClosure])
-fetchCommentsAncestorClosuresDB comment_ids = fmap (foldr step mempty) $
+fetchCommentsAncestorClosuresDB :: [CommentId] -> DB (Map CommentId [CommentClosing])
+fetchCommentsAncestorRetractsDB :: [CommentId] -> DB (Map CommentId [CommentRetracting])
+fetchCommentsAncestorClosuresDB = commentsClosuresOrRetracts CommentClosingComment
+fetchCommentsAncestorRetractsDB = commentsClosuresOrRetracts CommentRetractingComment
+
+commentsClosuresOrRetracts :: (PersistEntity val, PersistEntityBackend val ~ SqlBackend)
+                           => EntityField val CommentId -> [CommentId] -> DB (Map CommentId [val])
+commentsClosuresOrRetracts comment_field comment_ids = fmap (foldr step mempty) $
     select $
-    from $ \(ca `InnerJoin` cc) -> do
-    on_ (ca ^. CommentAncestorAncestor ==. cc ^. CommentClosureComment)
-    orderBy [asc (cc ^. CommentClosureComment)]
+    from $ \(ca `InnerJoin` table) -> do
+    on_ (ca ^. CommentAncestorAncestor ==. table ^. comment_field)
+    orderBy [asc (table ^. comment_field)]
     where_ (ca ^. CommentAncestorComment `in_` valList comment_ids)
-    return (ca ^. CommentAncestorComment, cc)
+    return (ca ^. CommentAncestorComment, table)
   where
-    step :: (Value CommentId, Entity CommentClosure) -> Map CommentId [CommentClosure] -> Map CommentId [CommentClosure]
-    step (Value c, Entity _ cc) = M.insertWith (++) c [cc]
+    step (Value c, Entity _ v) = M.insertWith (++) c [v]
 
 -- | Get a comment's ancestors' ids.
 fetchCommentAncestorsDB :: CommentId -> DB [CommentId]
@@ -565,40 +561,59 @@ fetchCommentTagCommentTagsDB comment_id tag_id = fmap (map entityVal) $
         ct ^. CommentTagTag ==. val tag_id
     return ct
 
-makeClosureMapDB :: (IsList c, CommentId ~ Item c) => c -> DB ClosureMap
-makeClosureMapDB comment_ids = fmap (M.fromList . map ((commentClosureComment &&& id) . entityVal)) $
+makeCommentClosingMapDB    :: (IsList c, CommentId ~ Item c) => c -> DB (Map CommentId CommentClosing)
+makeCommentRetractingMapDB :: (IsList c, CommentId ~ Item c) => c -> DB (Map CommentId CommentRetracting)
+makeCommentClosingMapDB    = closeOrRetractMap CommentClosingComment    commentClosingComment
+makeCommentRetractingMapDB = closeOrRetractMap CommentRetractingComment commentRetractingComment
+
+closeOrRetractMap
+        :: (IsList c, CommentId ~ Item c, PersistEntity val, PersistEntityBackend val ~ SqlBackend)
+        => EntityField val CommentId
+        -> (val -> CommentId)
+        -> c
+        -> DB (Map CommentId val)
+closeOrRetractMap comment_field comment_projection comment_ids = fmap (foldr step mempty) $
     select $
     from $ \c -> do
-    where_ (c ^. CommentClosureComment `in_` valList comment_ids)
+    where_ (c ^. comment_field `in_` valList comment_ids)
     return c
+  where
+    -- step :: Entity val -> Map CommentId val -> Map CommentId val
+    step (Entity _ c) = M.insert (comment_projection c) c
 
 -- | Given a collection of CommentId, make a map from CommentId to Entity Ticket. Comments that
 -- are not tickets will simply not be in the map.
-makeTicketMapDB :: (IsList c, CommentId ~ Item c) => c -> DB TicketMap
-makeTicketMapDB comment_ids = fmap (M.fromList . map ((ticketComment . entityVal) &&& id)) $
+makeTicketMapDB :: (IsList c, CommentId ~ Item c) => c -> DB (Map CommentId (Entity Ticket))
+makeTicketMapDB comment_ids = fmap (foldr step mempty) $
     select $
     from $ \t -> do
     where_ (t ^. TicketComment `in_` valList comment_ids)
     return t
-
--- | Given a collection of CommentId, make a FlagMap. Comments that are not flagged
--- will simply not be in the map.
-makeFlagMapDB :: (IsList c, CommentId ~ Item c) => c -> DB FlagMap
-makeFlagMapDB comment_ids = mkFlagMap <$> getCommentFlaggings
   where
-    getCommentFlaggings :: DB [(CommentId, Maybe Markdown, FlagReason)]
-    getCommentFlaggings = fmap (map unwrapValues) $
-        select $
-        from $ \(cf `InnerJoin` cfr) -> do
-        on_ (cf ^. CommentFlaggingId ==. cfr ^. CommentFlaggingReasonFlagging)
-        where_ (cf ^. CommentFlaggingComment `in_` valList comment_ids)
-        return (cf ^. CommentFlaggingComment, cf ^. CommentFlaggingMessage, cfr ^. CommentFlaggingReasonReason)
+    step t = M.insert (ticketComment (entityVal t)) t
 
-    mkFlagMap :: [(CommentId, Maybe Markdown, FlagReason)] -> FlagMap
-    mkFlagMap = foldr (\(comment_id, message, reason) -> M.insertWith combine comment_id (message, [reason])) mempty
+makeClaimedTicketMapDB :: [CommentId] -> DB (Map CommentId TicketClaiming)
+makeClaimedTicketMapDB comment_ids = fmap (M.fromList . map (\(Value x, Entity _ y) -> (x, y))) $
+    select $
+    from $ \tc -> do
+    where_ (tc ^. TicketClaimingTicket `in_` valList comment_ids)
+    return (tc ^. TicketClaimingTicket, tc)
+
+-- | Given a collection of CommentId, make a flag map. Comments that are not flagged
+-- will simply not be in the map.
+makeFlagMapDB :: (IsList c, CommentId ~ Item c) => c -> DB (Map CommentId (CommentFlagging, [FlagReason]))
+makeFlagMapDB comment_ids = fmap (go . map (\(Entity _ x, Value y) -> (x, y))) $
+    select $
+    from $ \(cf `InnerJoin` cfr) -> do
+    on_ (cf ^. CommentFlaggingId ==. cfr ^. CommentFlaggingReasonFlagging)
+    where_ (cf ^. CommentFlaggingComment `in_` valList comment_ids)
+    return (cf, cfr ^. CommentFlaggingReasonReason)
+  where
+    go :: [(CommentFlagging, FlagReason)] -> Map CommentId (CommentFlagging, [FlagReason])
+    go = foldr (\(cf@(CommentFlagging _ _ comment_id _), reason) -> M.insertWith combine comment_id (cf, [reason])) mempty
       where
-        combine :: (Maybe Markdown, [FlagReason]) -> (Maybe Markdown, [FlagReason]) -> (Maybe Markdown, [FlagReason])
-        combine (message, reasons1) (_, reasons2) = (message, reasons1 <> reasons2)
+        combine :: (CommentFlagging, [FlagReason]) -> (CommentFlagging, [FlagReason]) -> (CommentFlagging, [FlagReason])
+        combine (cf, reasons1) (_, reasons2) = (cf, reasons1 <> reasons2)
 
 rethreadCommentDB :: Maybe CommentId -> DiscussionId -> CommentId -> UserId -> Text -> Int -> SDB ()
 rethreadCommentDB mnew_parent_id new_discussion_id root_comment_id user_id reason depth_offset = do
@@ -625,7 +640,6 @@ rethreadCommentDB mnew_parent_id new_discussion_id root_comment_id user_id reaso
 
         return (old_comment_ids, new_comment_ids)
 
-
     now <- liftIO getCurrentTime
 
     let new_root_comment_id = Prelude.head new_comment_ids -- This is kind of ugly, but it should be safe.
@@ -633,17 +647,22 @@ rethreadCommentDB mnew_parent_id new_discussion_id root_comment_id user_id reaso
     rethread_id <- lift (insert rethread)
     tell [ECommentRethreaded rethread_id rethread]
 
+    let updateForRethread :: (PersistEntity val, PersistEntityBackend val ~ SqlBackend)
+                          => EntityField val CommentId
+                          -> (SqlExpr (Entity val) -> SqlExpr (Entity CommentRethread) -> SqlExpr (Insertion val))
+                          -> DB ()
+        updateForRethread comment_field constructor =
+            insertSelect $
+            from $ \(table `InnerJoin` cr) -> do
+            on_ (table ^. comment_field ==. cr ^. CommentRethreadOldComment)
+            where_ (table ^. comment_field `in_` valList old_comment_ids)
+            return (constructor table cr)
+
     lift $ do
-        forM_ (zip old_comment_ids new_comment_ids) $ \ (comment_id, new_comment_id) -> do
-            update $ \ comment_tag -> do
-                where_ $ comment_tag ^. CommentTagComment ==. val comment_id
-                set comment_tag [ CommentTagComment =. val new_comment_id ]
+        forM_ (zip old_comment_ids new_comment_ids) $ \(old_comment_id, new_comment_id) -> do
+            insert_ (CommentRethread rethread_id old_comment_id new_comment_id)
 
-            update $ \ ticket -> do
-                where_ $ ticket ^. TicketComment ==. val comment_id
-                set ticket [ TicketComment =. val new_comment_id ]
-
-            insert_ $ CommentRethread rethread_id comment_id new_comment_id
+            -- TODO(mitchell, david): pull the stuff below out of the for-loop
 
             insertSelect $
              from $ \(c `InnerJoin` ca) -> do
@@ -659,19 +678,60 @@ rethreadCommentDB mnew_parent_id new_discussion_id root_comment_id user_id reaso
 
             maybe (return ()) (insert_ . CommentAncestor new_comment_id) maybe_new_parent_id
 
-        insertSelect $
-            from $ \(comment_closure `InnerJoin` comment_rethread) -> do
-            on_ $ comment_closure ^. CommentClosureComment ==. comment_rethread ^. CommentRethreadOldComment
-            return $ CommentClosure
-                        <#  (comment_closure ^. CommentClosureTs)
-                        <&> (comment_closure ^. CommentClosureClosedBy)
-                        <&> (comment_closure ^. CommentClosureType)
-                        <&> (comment_closure ^. CommentClosureReason)
-                        <&> (comment_rethread ^. CommentRethreadNewComment)
+        -- EVERYTHING with a foreign key on CommentId needs to be added here, for the
+        -- new comments. We don't want to update in-place because we *do* show the
+        -- rethreaded comments on Project feeds (for one thing).
 
-        delete $
-         from $ \ca ->
-         where_ $ ca ^. CommentAncestorComment `in_` valList old_comment_ids
+        updateForRethread CommentClosingComment
+                          (\cc cr -> CommentClosing
+                              <#  (cc  ^. CommentClosingTs)
+                              <&> (cc  ^. CommentClosingClosedBy)
+                              <&> (cc  ^. CommentClosingReason)
+                              <&> (cr  ^. CommentRethreadNewComment))
+
+        updateForRethread CommentFlaggingComment
+                          (\cf cr -> CommentFlagging
+                              <#  (cf  ^. CommentFlaggingTs)
+                              <&> (cf  ^. CommentFlaggingFlagger)
+                              <&> (cr  ^. CommentRethreadNewComment)
+                              <&> (cf  ^. CommentFlaggingMessage))
+
+        updateForRethread CommentRetractingComment
+                          (\r cr -> CommentRetracting
+                              <#  (r   ^. CommentRetractingTs)
+                              <&> (r   ^. CommentRetractingReason)
+                              <&> (cr  ^. CommentRethreadNewComment))
+
+        updateForRethread CommentTagComment
+                          (\ct cr -> CommentTag
+                              <#  (cr  ^. CommentRethreadNewComment)
+                              <&> (ct  ^. CommentTagTag)
+                              <&> (ct  ^. CommentTagUser)
+                              <&> (ct  ^. CommentTagCount))
+
+        updateForRethread TicketComment
+                          (\t cr -> Ticket
+                              <#  (t   ^. TicketCreatedTs)
+                              <&> (t   ^. TicketUpdatedTs)
+                              <&> (t   ^. TicketName)
+                              <&> (cr  ^. CommentRethreadNewComment))
+
+        updateForRethread TicketClaimingTicket
+                          (\tc cr -> TicketClaiming
+                              <#  (tc  ^. TicketClaimingTs)
+                              <&> (tc  ^. TicketClaimingUser)
+                              <&> (cr  ^. CommentRethreadNewComment)
+                              <&> (tc  ^. TicketClaimingNote))
+
+        updateForRethread UnapprovedCommentNotificationComment
+                          (\ucn cr -> UnapprovedCommentNotification
+                              <#  (cr  ^. CommentRethreadNewComment)
+                              <&> (ucn ^. UnapprovedCommentNotificationNotification))
+
+        updateForRethread ViewCommentComment
+                          (\vc cr -> ViewComment
+                              <#  (vc  ^. ViewCommentUser)
+                              <&> (cr  ^. CommentRethreadNewComment))
 
 makeCommentRouteDB :: CommentId -> DB (Maybe (Route App))
 makeCommentRouteDB comment_id = get comment_id >>= \case

@@ -1,0 +1,8 @@
+CREATe TABLE "comment_closing"("id" SERIAL PRIMARY KEY UNIQUE,"ts" TIMESTAMP NOT NULL,"closed_by" INT8 NOT NULL,"reason" VARCHAR NOT NULL,"comment" INT8 NOT NULL);
+ALTER TABLE "comment_closing" ADD CONSTRAINT "unique_comment_closing" UNIQUE("comment");
+ALTER TABLE "comment_closing" ADD CONSTRAINT "comment_closing_closed_by_fkey" FOREIGN KEY("closed_by") REFERENCES "user"("id");
+ALTER TABLE "comment_closing" ADD CONSTRAINT "comment_closing_comment_fkey" FOREIGN KEY("comment") REFERENCES "comment"("id");
+CREATe TABLE "a"("id" SERIAL PRIMARY KEY UNIQUE);
+CREATe TABLE "comment_retracting"("id" SERIAL PRIMARY KEY UNIQUE,"ts" TIMESTAMP NOT NULL,"reason" VARCHAR NOT NULL,"comment" INT8 NOT NULL);
+ALTER TABLE "comment_retracting" ADD CONSTRAINT "unique_comment_retracting" UNIQUE("comment");
+ALTER TABLE "comment_retracting" ADD CONSTRAINT "comment_retracting_comment_fkey" FOREIGN KEY("comment") REFERENCES "comment"("id");
