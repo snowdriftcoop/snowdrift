@@ -63,12 +63,12 @@
 
     $forall closure <- earlier_closures
         <div .closed>
-            A comment above this one was closed at ^{renderTime (commentClosingTs closure)}
+            A comment above was closed at ^{renderTime (commentClosingTs closure)}
             #{commentClosingReason closure}
 
     $forall retract <- earlier_retracts
         <div .retracted>
-            A comment above this one was retracted ^{renderTime (commentRetractingTs retract)}
+            A comment above was retracted ^{renderTime (commentRetractingTs retract)}
             #{commentRetractingReason retract}
 
     $maybe closure <- mclosure
