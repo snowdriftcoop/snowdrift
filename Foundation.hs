@@ -304,7 +304,7 @@ snowdriftAuthHashDB =
                     <form .form-horizontal method="post" action="@{toMaster loginRoute}">
                         <div .form-group>
                             <label .col-sm-4 .control-label>
-                                Username:
+                                E-mail or handle:
                             <div .col-sm-8>
                                 <input .form-control id="x" name="username" autofocus="" required>
                         <div .form-group>
