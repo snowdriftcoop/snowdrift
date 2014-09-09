@@ -4,6 +4,9 @@ module Handler.Project where
 
 import Import
 
+import Yesod.AtomFeed
+import Yesod.RssFeed
+
 import Data.Filter
 import Data.Order
 import Handler.Comment
@@ -318,8 +321,10 @@ getProjectPledgeButtonR project_handle = do
    pledges <- runYDB $ do
         Entity project_id _project <- getBy404 $ UniqueProjectHandle project_handle
         getProjectShares project_id
+
    let png = overlayImage blankPledgeButton $
         fillInPledgeCount (fromIntegral (length pledges))
+
    respond "image/png" png
 
 --------------------------------------------------------------------------------
@@ -858,7 +863,7 @@ getEditProjectR project_handle = do
 
 -- | This function is responsible for hitting every relevant event table. Nothing
 -- statically guarantees that.
-getProjectFeedR :: Text -> Handler Html
+getProjectFeedR :: Text -> Handler TypedContent
 getProjectFeedR project_handle = do
     let lim = 26 -- limit 'lim' from each table, then take 'lim - 1'
 
@@ -939,9 +944,79 @@ getProjectFeedR project_handle = do
           []             -> Nothing
           (next_event:_) -> (Just . T.pack . show . snowdriftEventTime) next_event
 
-    defaultLayout $ do
-        $(widgetFile "project_feed")
-        toWidget $(cassiusFile "templates/comment.cassius")
+    now <- liftIO getCurrentTime
+
+    Just route <- getCurrentRoute
+
+    render <- getUrlRender
+
+    -- If we need to look things up, see if we can grab them from above rather than putting the map in Handler
+    -- Eventually the html rendering here should be moved to the top level somewhere for sharing with notifications
+    let eventToFeedEntry (ECommentPosted comment_id comment) = Just $ FeedEntry
+            { feedEntryLink = CommentDirectLinkR comment_id
+            , feedEntryUpdated = maybe (commentCreatedTs comment) id $ commentApprovedTs comment
+            , feedEntryTitle = "new comment posted"
+            , feedEntryContent = [hamlet| |] render
+            }
+
+        eventToFeedEntry (ECommentRethreaded _ rethread) = Just $ FeedEntry
+            { feedEntryLink = CommentDirectLinkR $ rethreadNewComment rethread
+            , feedEntryUpdated = rethreadTs rethread
+            , feedEntryTitle = "comment rethreaded"
+            , feedEntryContent = [hamlet| |] render
+            }
+
+        eventToFeedEntry (EWikiPage _ wiki_page) =
+            let target = wikiPageTarget wiki_page
+             in Just $ FeedEntry
+                    { feedEntryLink = WikiR project_handle $ wikiPageTarget wiki_page
+                    , feedEntryUpdated = wikiPageCreatedTs wiki_page
+                    , feedEntryTitle = "new wiki page"
+                    , feedEntryContent =
+                        [hamlet|
+                            New wiki page: #{target}
+                        |] render
+                    }
+
+        eventToFeedEntry (EWikiEdit wiki_edit_id wiki_edit) =
+            let maybe_wiki_page =  M.lookup (wikiEditPage wiki_edit) wiki_page_map
+                target = maybe (error "missing wiki page for edit") wikiPageTarget maybe_wiki_page
+                user_id = wikiEditUser wiki_edit
+                maybe_user = M.lookup user_id user_map
+                username = maybe "<unknown user>" (userDisplayName . Entity user_id) maybe_user
+
+             in Just $ FeedEntry
+                    { feedEntryLink = WikiEditR project_handle target wiki_edit_id
+                    , feedEntryUpdated = wikiEditTs wiki_edit
+                    , feedEntryTitle = "edited wiki page"
+                    , feedEntryContent =
+                        [hamlet|
+                            Wiki page #{target} was edited by #{username}
+                        |] render
+                    }
+
+        -- We might want to show these, but I'm not sure.  Leaving them out now, at any rate.
+        eventToFeedEntry (ENewPledge _ _) = Nothing
+        eventToFeedEntry (EUpdatedPledge _ _ _) = Nothing
+        eventToFeedEntry (EDeletedPledge _ _ _ _) = Nothing
+
+        -- Graveyard of event types we don't want to put on the feed.
+        -- Don't match-all here, we don't want to accidentally not consider something.
+
+        eventToFeedEntry (ENotificationSent _ _) = Nothing
+        eventToFeedEntry (ECommentPending _ _) = Nothing
+
+
+    selectRep $ do
+        let feed = Feed "project feed" route HomeR "Snowdrift Community" "" "en" now $ mapMaybe eventToFeedEntry events
+
+        provideRep $ atomFeed feed
+        provideRep $ rssFeed feed
+
+        provideRep $ defaultLayout $ do
+            $(widgetFile "project_feed")
+            toWidget $(cassiusFile "templates/comment.cassius")
+
   where
     -- "event updated pledge to snowdrift event"
     eup2se :: (Int64, Entity SharesPledged) -> SnowdriftEvent
