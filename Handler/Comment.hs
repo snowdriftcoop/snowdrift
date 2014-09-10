@@ -124,11 +124,15 @@ makeCommentForestWidget
 
         earlier_closures_map <- fetchCommentsAncestorClosuresDB root_ids
         earlier_retracts_map <- fetchCommentsAncestorRetractsDB root_ids
-        user_map             <- entitiesMap <$> fetchUsersInDB (S.toList $ makeCommentUsersSet all_comments)
+
+        claim_map            <- makeClaimedTicketMapDB     all_comment_ids
+
+        let claiming_users_set = S.fromList $ map ticketClaimingUser $ M.elems claim_map
+
+        user_map             <- entitiesMap <$> fetchUsersInDB (S.toList $ makeCommentUsersSet all_comments <> claiming_users_set)
         closure_map          <- makeCommentClosingMapDB    all_comment_ids
         retract_map          <- makeCommentRetractingMapDB all_comment_ids
         ticket_map           <- makeTicketMapDB            all_comment_ids
-        claim_map            <- makeClaimedTicketMapDB     all_comment_ids
         flag_map             <- makeFlagMapDB              all_comment_ids
 
         return (children, user_map, earlier_closures_map, earlier_retracts_map,

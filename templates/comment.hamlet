@@ -39,18 +39,20 @@
 
         $else
             $maybe claim <- mclaim
-                <span .claimed-by>
-                    claimed
-                    ^{renderTime (ticketClaimingTs claim)}
-                    by
-                    <a href="@{UserR user_id}">#{userDisplayName (Entity user_id user)}#
-                    $maybe note <- ticketClaimingNote claim
-                        : #{note}
+                $with claiming_user_id <- ticketClaimingUser claim
+                    $maybe claiming_user <- M.lookup claiming_user_id user_map
+                        <span .claimed-by>
+                            claimed
+                            ^{renderTime (ticketClaimingTs claim)}
+                            by
+                            <a href="@{UserR claiming_user_id}">#{userDisplayName $ Entity claiming_user_id claiming_user}#
+                            $maybe note <- ticketClaimingNote claim
+                                : #{note}
 
-                $if can_unclaim
-                    <div :is_preview:.preview .comment-action>
-                        <a href="@{comment_route_unclaim comment_id}">
-                            (unclaim)
+                        $if can_unclaim
+                            <div :is_preview:.preview .comment-action>
+                                <a href="@{comment_route_unclaim comment_id}">
+                                    (unclaim)
 
     $if is_unapproved
         <div .awaiting-approval>
