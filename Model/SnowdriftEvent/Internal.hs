@@ -9,10 +9,14 @@ import Data.Time (UTCTime)
 
 -- A sum type of all events, each of which have their own database table.
 data SnowdriftEvent
-    -- Comment approved.
+    -- Comment posted, whether it was approved immediately
+    -- (because the poster is established), or approved by a moderator later.
+    -- In the latter case, an ECommentApproved event *also* fires.
     = ECommentPosted CommentId Comment
-    -- Comment unapproved (pending approval).
+    -- Comment posted by an unestablished user (pending approval).
     | ECommentPending CommentId Comment
+    -- Comment approved by a moderator.
+    | ECommentApproved CommentId Comment
     -- Comment rethreaded.
     | ECommentRethreaded RethreadId Rethread -- rethreaded-from-URL
     | ENotificationSent NotificationId Notification
