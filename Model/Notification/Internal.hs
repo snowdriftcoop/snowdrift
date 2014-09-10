@@ -11,9 +11,14 @@ data NotificationType
     | NotifEligEstablish
     -- Balance low (can't be ignored)
     | NotifBalanceLow
-    -- Alert moderators about an unapproved comment.
-    -- These notifications are auto-deleted when the comment is approved.
+    -- Alerts about unapproved comments. These are delivered to
+    -- the poster (to inform him/her about establishment, etc) and
+    -- to every moderator of the Project that the Comment was posted
+    -- on. The notifications sent to moderators are automatically
+    -- deleted when the comment is approved.
     | NotifUnapprovedComment
+    -- User's comment was approved.
+    | NotifApprovedComment
     -- User's comment was rethreaded.
     | NotifRethreadedComment
     -- Reply to a comment made.
@@ -31,6 +36,7 @@ showNotificationType :: NotificationType -> Text
 showNotificationType NotifWelcome           = "Snowdrift welcome message"
 showNotificationType NotifEligEstablish     = "You have become eligible for establishment"
 showNotificationType NotifUnapprovedComment = "Unapproved comments"
+showNotificationType NotifApprovedComment   = "Approved comments"
 showNotificationType NotifRethreadedComment = "Rethreaded comments"
 showNotificationType NotifBalanceLow        = "Balance low"
 showNotificationType NotifReply             = "Replies to my comments"

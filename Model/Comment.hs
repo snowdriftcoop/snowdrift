@@ -197,7 +197,9 @@ approveCommentDB user_id comment_id comment = do
     lift $ do
         updateComment now
         deleteUnapprovedCommentNotifications
-    tell [ECommentPosted comment_id updated_comment]
+    tell [ ECommentPosted comment_id updated_comment
+         , ECommentApproved comment_id updated_comment
+         ]
   where
     updateComment now =
         update $ \c -> do
