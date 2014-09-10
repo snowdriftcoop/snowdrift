@@ -270,6 +270,7 @@ fetchProjectCommentsIncludingRethreadedBeforeDB project_id muser_id before lim =
         ecp ^. EventCommentPostedTs <=. val before &&.
         exprCommentProjectPermissionFilterIncludingRethreaded muser_id (val project_id) c &&.
         c ^. CommentDiscussion `in_` valList project_discussions
+    orderBy [ desc $ ecp ^. EventCommentPostedTs, desc $ ecp ^. EventCommentPostedId ]
     limit lim
     return c
 
@@ -284,6 +285,7 @@ fetchProjectCommentRethreadsBeforeDB project_id muser_id before lim = fetchProje
         ecr ^. EventCommentRethreadedTs <=. val before &&.
         exprCommentProjectPermissionFilter muser_id (val project_id) c &&.
         c ^. CommentDiscussion `in_` valList project_discussions
+    orderBy [ desc $ ecr ^. EventCommentRethreadedTs, desc $ ecr ^. EventCommentRethreadedId ]
     limit lim
     return r
 
@@ -296,6 +298,7 @@ fetchProjectWikiPagesBeforeDB project_id before lim =
     where_ $
         ewp ^. EventWikiPageTs <=. val before &&.
         exprWikiPageOnProject wp project_id
+    orderBy [ desc $ ewp ^. EventWikiPageTs, desc $ ewp ^. EventWikiPageId ]
     limit lim
     return wp
 
@@ -309,6 +312,7 @@ fetchProjectWikiEditsBeforeDB project_id before lim =
     where_ $
         ewe ^. EventWikiEditTs <=. val before &&.
         exprWikiPageOnProject wp project_id
+    orderBy [ desc $ ewe ^. EventWikiEditTs, desc $ ewe ^. EventWikiEditId ]
     limit lim
     return we
 
@@ -321,6 +325,7 @@ fetchProjectNewPledgesBeforeDB project_id before lim =
     where_ $
         enp ^. EventNewPledgeTs <=. val before &&.
         sp ^. SharesPledgedProject ==. val project_id
+    orderBy [ desc $ enp ^. EventNewPledgeTs, desc $ enp ^. EventNewPledgeId ]
     limit lim
     return sp
 
@@ -333,6 +338,7 @@ fetchProjectUpdatedPledgesBeforeDB project_id before lim = fmap (map (\(Value n,
     where_ $
         eup ^. EventUpdatedPledgeTs <=. val before &&.
         sp ^. SharesPledgedProject ==. val project_id
+    orderBy [ desc $ eup ^. EventUpdatedPledgeTs, desc $ eup ^. EventUpdatedPledgeId ]
     limit lim
     return (eup ^. EventUpdatedPledgeOldShares, sp)
 
@@ -344,6 +350,7 @@ fetchProjectDeletedPledgesBeforeDB project_id before lim = fmap (map entityVal) 
     where_ $
         edp ^. EventDeletedPledgeTs      <=. val before &&.
         edp ^. EventDeletedPledgeProject ==. val project_id
+    orderBy [ desc $ edp ^. EventDeletedPledgeTs, desc $ edp ^. EventDeletedPledgeId ]
     limit lim
     return edp
 
