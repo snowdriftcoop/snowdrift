@@ -51,16 +51,23 @@ notificationEventHandler (ECommentPosted comment_id comment) = case commentParen
 -- Notify all moderators of the project the comment was posted on.
 -- Also notify the comment poster.
 notificationEventHandler (ECommentPending comment_id comment) = runSDB $ do
+    route_text <- (lift . lift) (routeToText (CommentDirectLinkR comment_id)) -- TODO(mitchell): don't use direct link?
+
     sendNotificationDB_ NotifUnapprovedComment (commentUser comment) Nothing $ mconcat
-        [ "You've made an unapproved comment."
-        , "TODO(aaron): this markdown"
+        [ "Your [comment]("
+        , Markdown route_text
+        , ") now awaits moderator approval."
+        , "<br><br>"
+        , "When a moderator acknowledges you as a legitimate user "
+        , "(such as after you have posted a few meaningful comments), "
+        , "you will become eligible for 'establishment'. "
+        , "Established users can post without moderation."
         ]
 
     (Entity project_id project) <- lift (fetchDiscussionDB (commentDiscussion comment)) >>= \case
         DiscussionOnProject  project                 -> return project
         DiscussionOnWikiPage (Entity _ WikiPage{..}) -> Entity wikiPageProject <$> getJust wikiPageProject
 
-    route_text <- (lift . lift) (routeToText (CommentDirectLinkR comment_id)) -- TODO(mitchell): don't use direct link?
     let content = mconcat
           [ "An unapproved comment has been posted on a "
           , Markdown (projectName project)
@@ -76,9 +83,11 @@ notificationEventHandler (ECommentPending comment_id comment) = runSDB $ do
                              >>= insert_ . UnapprovedCommentNotification comment_id)
 
 notificationEventHandler (ECommentApproved comment_id comment) = runSDB $ do
+    route_text <- (lift . lift) (routeToText (CommentDirectLinkR comment_id)) -- TODO(mitchell): don't use direct link?
     sendNotificationDB_ NotifApprovedComment (commentUser comment) Nothing $ mconcat
-        [ "Your comment has been approved."
-        , "TODO(aaron): this markdown"
+        [ "Your [comment]("
+        , Markdown route_text
+        , ") has been approved."
         ]
 
 -- Notify the rethreadee his/her comment has been rethreaded.
