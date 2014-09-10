@@ -51,8 +51,9 @@ notificationEventHandler (ECommentPosted comment_id comment) = case commentParen
 -- Notify all moderators of the project the comment was posted on.
 -- Also notify the comment poster.
 notificationEventHandler (ECommentPending comment_id comment) = runSDB $ do
-    sendNotificationDB NotifUnapprovedComment (commentUser comment) Nothing $ mconcat
-        [ "TODO(aaron): this markdown"
+    sendNotificationDB_ NotifUnapprovedComment (commentUser comment) Nothing $ mconcat
+        [ "You've made an unapproved comment."
+        , "TODO(aaron): this markdown"
         ]
 
     (Entity project_id project) <- lift (fetchDiscussionDB (commentDiscussion comment)) >>= \case
@@ -73,6 +74,12 @@ notificationEventHandler (ECommentPending comment_id comment) = runSDB $ do
         -- later delete it, when the comment is approved).
         mapM_ (\user_id -> sendNotificationDB NotifUnapprovedComment user_id Nothing content
                              >>= insert_ . UnapprovedCommentNotification comment_id)
+
+notificationEventHandler (ECommentApproved comment_id comment) = runSDB $ do
+    sendNotificationDB_ NotifApprovedComment (commentUser comment) Nothing $ mconcat
+        [ "Your comment has been approved."
+        , "TODO(aaron): this markdown"
+        ]
 
 -- Notify the rethreadee his/her comment has been rethreaded.
 notificationEventHandler (ECommentRethreaded _ Rethread{..}) = do
@@ -116,3 +123,5 @@ eventInserterHandler (EWikiEdit wiki_edit_id WikiEdit{..})                      
 eventInserterHandler (ENewPledge shares_pledged_id SharesPledged{..})                = runDB (insert_ (EventNewPledge sharesPledgedTs shares_pledged_id))
 eventInserterHandler (EUpdatedPledge old_shares shares_pledged_id SharesPledged{..}) = runDB (insert_ (EventUpdatedPledge sharesPledgedTs old_shares shares_pledged_id))
 eventInserterHandler (EDeletedPledge ts user_id project_id shares)                   = runDB (insert_ (EventDeletedPledge ts user_id project_id shares))
+-- We don't have a table for ECommentApproved, because ECommentPosted is fired at the same time.
+eventInserterHandler (ECommentApproved _ _) = return ()
