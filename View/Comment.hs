@@ -438,6 +438,13 @@ commentWidget (Entity comment_id comment)
           M.lookup comment_id <$>
             (fetchCommentCommentTagsDB comment_id >>= buildAnnotatedCommentTagsDB mviewer_id)
 
+    user_map <- case mclaim of
+        Nothing -> return M.empty
+        Just claim -> do
+            let claiming_user_id = ticketClaimingUser claim
+            Just claiming_user <- runDB $ get claiming_user_id
+            return $ M.singleton claiming_user_id claiming_user
+
     let ticket_str = case mticket of
             Just (Entity (Key (PersistInt64 tid)) _) -> T.pack $ show tid
             _ -> "???"
