@@ -107,7 +107,7 @@
 /p/#Text/w/#Text/perm                         EditWikiPermissionsR  GET POST
 
 /c/#CommentId            CommentDirectLinkR GET      DELETE
-/c/#CommentId/tag/#TagId CommentTagR        GET
+/c/#CommentId/tag/#TagId CommentTagR        GET POST
 
 -- Devs only!
 

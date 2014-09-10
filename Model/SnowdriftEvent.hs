@@ -17,6 +17,7 @@ snowdriftEventNewestToOldest :: SnowdriftEvent -> SnowdriftEvent -> Ordering
 snowdriftEventNewestToOldest x y  = compare (snowdriftEventTime y) (snowdriftEventTime x)
 
 snowdriftEventTime :: SnowdriftEvent -> UTCTime
+snowdriftEventTime (ECommentApproved _ Comment{..})       = commentCreatedTs
 snowdriftEventTime (ECommentPosted _ Comment{..})         = fromMaybe commentCreatedTs commentApprovedTs
 snowdriftEventTime (ECommentPending _ Comment{..})        = commentCreatedTs
 snowdriftEventTime (ECommentRethreaded _ Rethread{..})    = rethreadTs
@@ -90,5 +91,6 @@ snowdriftEventToFeedEntry _ _ _ _ _ (EDeletedPledge _ _ _ _) = Nothing
 -- Graveyard of event types we don't want to put on the feed.
 -- Don't match-all here, we don't want to accidentally not consider something.
 
-snowdriftEventToFeedEntry _ _ _ _ _ (ENotificationSent _ _) = Nothing
+snowdriftEventToFeedEntry _ _ _ _ _ (ECommentApproved _ _)  = Nothing
 snowdriftEventToFeedEntry _ _ _ _ _ (ECommentPending _ _)   = Nothing
+snowdriftEventToFeedEntry _ _ _ _ _ (ENotificationSent _ _) = Nothing
