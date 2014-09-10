@@ -405,10 +405,8 @@ getWikiCommentTagsR _ _ = getCommentTags
 getWikiCommentTagR :: Text -> Text -> CommentId -> TagId -> Handler Html
 getWikiCommentTagR _ _ = getCommentTagR
 
-postWikiCommentTagR :: Text -> Text -> CommentId -> TagId -> Handler Html
-postWikiCommentTagR project_handle target comment_id tag_id = do
-    postCommentTag comment_id tag_id
-    redirect (WikiCommentTagR project_handle target comment_id tag_id)
+postWikiCommentTagR :: Text -> Text -> CommentId -> TagId -> Handler ()
+postWikiCommentTagR _ _ = postCommentTagR
 
 --------------------------------------------------------------------------------
 -- /tag/apply, /tag/create
