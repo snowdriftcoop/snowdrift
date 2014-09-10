@@ -691,10 +691,8 @@ getProjectCommentTagsR _ = getCommentTags
 getProjectCommentTagR :: Text -> CommentId -> TagId -> Handler Html
 getProjectCommentTagR _ = getCommentTagR
 
-postProjectCommentTagR :: Text -> CommentId -> TagId -> Handler Html
-postProjectCommentTagR project_handle comment_id tag_id = do
-    postCommentTag comment_id tag_id
-    redirect (ProjectCommentTagR project_handle comment_id tag_id)
+postProjectCommentTagR :: Text -> CommentId -> TagId -> Handler ()
+postProjectCommentTagR _ = postCommentTagR
 
 --------------------------------------------------------------------------------
 -- /c/#CommentId/tag/apply, /c/#CommentId/tag/create
