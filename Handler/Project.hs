@@ -952,30 +952,37 @@ getProjectFeedR project_handle = do
 
     -- If we need to look things up, see if we can grab them from above rather than putting the map in Handler
     -- Eventually the html rendering here should be moved to the top level somewhere for sharing with notifications
-    let eventToFeedEntry (ECommentPosted comment_id comment) = Just $ FeedEntry
-            { feedEntryLink = CommentDirectLinkR comment_id
-            , feedEntryUpdated = maybe (commentCreatedTs comment) id $ commentApprovedTs comment
-            , feedEntryTitle = "new comment posted"
-            , feedEntryContent = [hamlet| |] render
-            }
+    let eventToFeedEntry (ECommentPosted comment_id comment) =
+            let user_id = commentUser comment
+                maybe_user = M.lookup user_id user_map
+                username = maybe "<unknown user>" (userDisplayName . Entity user_id) maybe_user
+                discussion = case M.lookup (commentDiscussion comment) discussion_map of
+                    Nothing -> "<unknown discussion>"
+                    Just (DiscussionOnProject _) -> "project discussion"
+                    Just (DiscussionOnWikiPage (Entity _ wiki_page)) -> "wiki discussion for \"" <> wikiPageTarget wiki_page <> "\""
 
-        eventToFeedEntry (ECommentRethreaded _ rethread) = Just $ FeedEntry
-            { feedEntryLink = CommentDirectLinkR $ rethreadNewComment rethread
-            , feedEntryUpdated = rethreadTs rethread
-            , feedEntryTitle = "comment rethreaded"
-            , feedEntryContent = [hamlet| |] render
-            }
+             in Just $ FeedEntry
+                    { feedEntryLink = CommentDirectLinkR comment_id
+                    , feedEntryUpdated = maybe (commentCreatedTs comment) id $ commentApprovedTs comment
+                    , feedEntryTitle = T.unwords [ T.snoc project_handle ':', "new comment posted on", discussion, "by", username ]
+                    , feedEntryContent = [hamlet| |] render
+                    }
+
+        eventToFeedEntry (ECommentRethreaded _ rethread) =
+             Just $ FeedEntry
+                { feedEntryLink = CommentDirectLinkR $ rethreadNewComment rethread
+                , feedEntryUpdated = rethreadTs rethread
+                , feedEntryTitle = T.unwords [ T.snoc project_handle ':', "comment rethreaded" ]
+                , feedEntryContent = [hamlet| |] render
+                }
 
         eventToFeedEntry (EWikiPage _ wiki_page) =
             let target = wikiPageTarget wiki_page
              in Just $ FeedEntry
                     { feedEntryLink = WikiR project_handle $ wikiPageTarget wiki_page
                     , feedEntryUpdated = wikiPageCreatedTs wiki_page
-                    , feedEntryTitle = "new wiki page"
-                    , feedEntryContent =
-                        [hamlet|
-                            New wiki page: #{target}
-                        |] render
+                    , feedEntryTitle = T.unwords [ T.snoc project_handle ':', "new wiki page", "\"" <> target <> "\"" ]
+                    , feedEntryContent = [hamlet| |] render
                     }
 
         eventToFeedEntry (EWikiEdit wiki_edit_id wiki_edit) =
@@ -988,11 +995,8 @@ getProjectFeedR project_handle = do
              in Just $ FeedEntry
                     { feedEntryLink = WikiEditR project_handle target wiki_edit_id
                     , feedEntryUpdated = wikiEditTs wiki_edit
-                    , feedEntryTitle = "edited wiki page"
-                    , feedEntryContent =
-                        [hamlet|
-                            Wiki page #{target} was edited by #{username}
-                        |] render
+                    , feedEntryTitle = T.unwords [ T.snoc project_handle ':', "wiki page", "\"" <> target <> "\"", "edited by", username ]
+                    , feedEntryContent = [hamlet| |] render
                     }
 
         -- We might want to show these, but I'm not sure.  Leaving them out now, at any rate.
