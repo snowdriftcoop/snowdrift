@@ -241,7 +241,7 @@ makeDeleteCommentWidget   = makeCommentActionWidget can_delete   deleteCommentFo
 makeReplyCommentWidget    = makeCommentActionWidget can_reply    commentReplyFormWidget
 makeRethreadCommentWidget = makeCommentActionWidget can_rethread rethreadCommentFormWidget
 makeRetractCommentWidget  = makeCommentActionWidget can_retract  (retractCommentFormWidget Nothing)
-makeUnclaimCommentWidget  = makeCommentActionWidget can_unclaim  (claimCommentFormWidget Nothing)
+makeUnclaimCommentWidget  = makeCommentActionWidget can_unclaim  (unclaimCommentFormWidget Nothing)
 
 makeEditCommentWidget
         comment
