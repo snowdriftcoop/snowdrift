@@ -15,6 +15,12 @@ import           Data.Maybe           (fromJust)
 import qualified Database.Persist
 import           Yesod.Markdown
 
+-- Given a CommentId, render its permalink route as Text, inside an SDB action.
+makeCommentRouteTextSDB :: CommentId -> SDB Text
+makeCommentRouteTextSDB comment_id = lift (makeCommentRouteDB comment_id >>= lift . routeToText . fromJust)
+
+--------------------------------------------------------------------------------
+
 -- Add more event handlers here.
 snowdriftEventHandlers :: [SnowdriftEvent -> Daemon ()]
 snowdriftEventHandlers =
@@ -33,9 +39,9 @@ notificationEventHandler (ECommentPosted comment_id comment) = case commentParen
             delivery <- fetchUserNotificationPrefDB parent_user_id NotifReply
             return (parent_user_id, delivery)
         -- Any non-Nothing delivery implies an internal Notification should be sent.
-        when (isJust delivery) $ do
-            parent_comment_route <- routeToText (CommentDirectLinkR parent_comment_id)
-            reply_comment_route  <- routeToText (CommentDirectLinkR comment_id)
+        when (isJust delivery) $ runSDB $ do
+            parent_comment_route <- makeCommentRouteTextSDB parent_comment_id
+            reply_comment_route  <- makeCommentRouteTextSDB comment_id
 
             let content = mconcat
                   [ "Someone replied to [your comment]("
@@ -46,52 +52,69 @@ notificationEventHandler (ECommentPosted comment_id comment) = case commentParen
                   , ""
                   , "*You can filter these notifications by adjusting the settings in your profile.*"
                   ]
-            runSDB (sendNotificationDB_ NotifReply parent_user_id Nothing content)
+
+            sendNotificationDB_ NotifReply parent_user_id Nothing content
 
 -- Notify all moderators of the project the comment was posted on.
-notificationEventHandler (ECommentPending comment_id comment) = do
-    runSDB $ do
-        (Entity project_id project) <- lift (fetchDiscussionDB (commentDiscussion comment)) >>= \case
-            DiscussionOnProject  project                 -> return project
-            DiscussionOnWikiPage (Entity _ WikiPage{..}) -> Entity wikiPageProject <$> getJust wikiPageProject
+-- Also notify the comment poster.
+notificationEventHandler (ECommentPending comment_id comment) = runSDB $ do
+    route_text <- makeCommentRouteTextSDB comment_id
 
-        route_text <- (lift . lift) (routeToText (CommentDirectLinkR comment_id)) -- TODO(mitchell): don't use direct link?
-        let content = mconcat
-              [ "An unapproved comment has been posted on a "
-              , Markdown (projectName project)
-              , " page. Please view it [here]("
-              , Markdown route_text
-              , ")."
-              ]
+    sendNotificationDB_ NotifUnapprovedComment (commentUser comment) Nothing $ mconcat
+        [ "Your [comment]("
+        , Markdown route_text
+        , ") now awaits moderator approval."
+        , "<br><br>"
+        , "When a moderator acknowledges you as a legitimate user "
+        , "(such as after you have posted a few meaningful comments), "
+        , "you will become eligible for 'establishment'. "
+        , "Established users can post without moderation."
+        ]
 
-        lift (fetchProjectModeratorsDB project_id) >>=
-            -- Send the notification, and record the fact that we send it (so we can
-            -- later delete it, when the comment is approved).
-            mapM_ (\user_id -> sendNotificationDB NotifUnapprovedComment user_id Nothing content
-                                 >>= insert_ . UnapprovedCommentNotification comment_id)
+    (Entity project_id project) <- lift (fetchDiscussionDB (commentDiscussion comment)) >>= \case
+        DiscussionOnProject  project                 -> return project
+        DiscussionOnWikiPage (Entity _ WikiPage{..}) -> Entity wikiPageProject <$> getJust wikiPageProject
+
+    let content = mconcat
+          [ "An unapproved comment has been posted on a "
+          , Markdown (projectName project)
+          , " page. Please view it [here]("
+          , Markdown route_text
+          , ")."
+          ]
+
+    lift (fetchProjectModeratorsDB project_id) >>=
+        -- Send the notification, and record the fact that we send it (so we can
+        -- later delete it, when the comment is approved).
+        mapM_ (\user_id -> sendNotificationDB NotifUnapprovedComment user_id Nothing content
+                             >>= insert_ . UnapprovedCommentNotification comment_id)
+
+notificationEventHandler (ECommentApproved comment_id comment) = runSDB $ do
+    route_text <- makeCommentRouteTextSDB comment_id
+    sendNotificationDB_ NotifApprovedComment (commentUser comment) Nothing $ mconcat
+        [ "Your [comment]("
+        , Markdown route_text
+        , ") has been approved."
+        ]
 
 -- Notify the rethreadee his/her comment has been rethreaded.
-notificationEventHandler (ECommentRethreaded _ Rethread{..}) = do
-    (comment, Just old_route, Just new_route) <- runDB $ (,,)
-        <$> getJust rethreadOldComment
-        <*> makeCommentRouteDB rethreadOldComment
-        <*> makeCommentRouteDB rethreadNewComment
-
-    rendered_old_route <- routeToText old_route
-    rendered_new_route <- routeToText new_route
+notificationEventHandler (ECommentRethreaded _ Rethread{..}) = runSDB $ do
+    comment <- lift (getJust rethreadOldComment)
+    old_route <- makeCommentRouteTextSDB rethreadOldComment
+    new_route <- makeCommentRouteTextSDB rethreadNewComment
 
     let content = mconcat
           [ "One of your comments has been rethreaded from ~~"
-          , Markdown rendered_old_route
+          , Markdown old_route
           , "~~ to ["
-          , Markdown rendered_new_route
+          , Markdown new_route
           , "]("
-          , Markdown rendered_new_route
+          , Markdown new_route
           , "): "
           , Markdown rethreadReason
           ]
 
-    runSDB (sendNotificationDB_ NotifRethreadedComment (commentUser comment) Nothing content)
+    sendNotificationDB_ NotifRethreadedComment (commentUser comment) Nothing content
 
 notificationEventHandler (ENotificationSent _ _)  = return ()
 notificationEventHandler (EWikiEdit _ _)          = return ()
@@ -112,3 +135,5 @@ eventInserterHandler (EWikiEdit wiki_edit_id WikiEdit{..})                      
 eventInserterHandler (ENewPledge shares_pledged_id SharesPledged{..})                = runDB (insert_ (EventNewPledge sharesPledgedTs shares_pledged_id))
 eventInserterHandler (EUpdatedPledge old_shares shares_pledged_id SharesPledged{..}) = runDB (insert_ (EventUpdatedPledge sharesPledgedTs old_shares shares_pledged_id))
 eventInserterHandler (EDeletedPledge ts user_id project_id shares)                   = runDB (insert_ (EventDeletedPledge ts user_id project_id shares))
+-- We don't have a table for ECommentApproved, because ECommentPosted is fired at the same time.
+eventInserterHandler (ECommentApproved _ _) = return ()
