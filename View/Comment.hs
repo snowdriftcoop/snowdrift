@@ -28,6 +28,7 @@ module View.Comment
     , flagCommentFormWidget
     , rethreadCommentFormWidget
     , retractCommentFormWidget
+    , unclaimCommentFormWidget
     -- Misc
     , orderingNewestFirst
     ) where
@@ -111,10 +112,11 @@ editCommentForm     = commentForm "Edit"      . Just
 
 claimCommentFormWidget    :: Maybe (Maybe Text) -> Widget
 closeCommentFormWidget    :: Maybe Markdown     -> Widget
-retractCommentFormWidget  :: Maybe Markdown     -> Widget
 commentNewTopicFormWidget ::                       Widget
 commentReplyFormWidget    ::                       Widget
 editCommentFormWidget     :: Markdown           -> Widget
+retractCommentFormWidget  :: Maybe Markdown     -> Widget
+unclaimCommentFormWidget  :: Maybe (Maybe Text) -> Widget
 
 closeCommentFormWidget    = closureFormWidget' "close" . closeCommentForm
 retractCommentFormWidget  = closureFormWidget' "retract" . retractCommentForm
@@ -123,6 +125,7 @@ claimCommentFormWidget    = commentFormWidget' "claim" . claimCommentForm
 commentNewTopicFormWidget = commentFormWidget' "post" commentNewTopicForm
 commentReplyFormWidget    = commentFormWidget' "post" commentReplyForm
 editCommentFormWidget     = commentFormWidget' "post" . editCommentForm
+unclaimCommentFormWidget  = commentFormWidget' "unclaim" . claimCommentForm
 
 approveCommentFormWidget :: Widget
 approveCommentFormWidget =
