@@ -15,6 +15,12 @@ import           Data.Maybe           (fromJust)
 import qualified Database.Persist
 import           Yesod.Markdown
 
+-- Given a CommentId, render its permalink route as Text, inside an SDB action.
+makeCommentRouteTextSDB :: CommentId -> SDB Text
+makeCommentRouteTextSDB comment_id = lift (makeCommentRouteDB comment_id >>= lift . routeToText . fromJust)
+
+--------------------------------------------------------------------------------
+
 -- Add more event handlers here.
 snowdriftEventHandlers :: [SnowdriftEvent -> Daemon ()]
 snowdriftEventHandlers =
@@ -33,9 +39,9 @@ notificationEventHandler (ECommentPosted comment_id comment) = case commentParen
             delivery <- fetchUserNotificationPrefDB parent_user_id NotifReply
             return (parent_user_id, delivery)
         -- Any non-Nothing delivery implies an internal Notification should be sent.
-        when (isJust delivery) $ do
-            parent_comment_route <- routeToText (CommentDirectLinkR parent_comment_id)
-            reply_comment_route  <- routeToText (CommentDirectLinkR comment_id)
+        when (isJust delivery) $ runSDB $ do
+            parent_comment_route <- makeCommentRouteTextSDB parent_comment_id
+            reply_comment_route  <- makeCommentRouteTextSDB comment_id
 
             let content = mconcat
                   [ "Someone replied to [your comment]("
@@ -46,12 +52,13 @@ notificationEventHandler (ECommentPosted comment_id comment) = case commentParen
                   , ""
                   , "*You can filter these notifications by adjusting the settings in your profile.*"
                   ]
-            runSDB (sendNotificationDB_ NotifReply parent_user_id Nothing content)
+
+            sendNotificationDB_ NotifReply parent_user_id Nothing content
 
 -- Notify all moderators of the project the comment was posted on.
 -- Also notify the comment poster.
 notificationEventHandler (ECommentPending comment_id comment) = runSDB $ do
-    route_text <- lift (makeCommentRouteDB comment_id >>= lift . routeToText . fromJust)
+    route_text <- makeCommentRouteTextSDB comment_id
 
     sendNotificationDB_ NotifUnapprovedComment (commentUser comment) Nothing $ mconcat
         [ "Your [comment]("
@@ -83,7 +90,7 @@ notificationEventHandler (ECommentPending comment_id comment) = runSDB $ do
                              >>= insert_ . UnapprovedCommentNotification comment_id)
 
 notificationEventHandler (ECommentApproved comment_id comment) = runSDB $ do
-    route_text <- lift (makeCommentRouteDB comment_id >>= lift . routeToText . fromJust)
+    route_text <- makeCommentRouteTextSDB comment_id
     sendNotificationDB_ NotifApprovedComment (commentUser comment) Nothing $ mconcat
         [ "Your [comment]("
         , Markdown route_text
@@ -91,27 +98,23 @@ notificationEventHandler (ECommentApproved comment_id comment) = runSDB $ do
         ]
 
 -- Notify the rethreadee his/her comment has been rethreaded.
-notificationEventHandler (ECommentRethreaded _ Rethread{..}) = do
-    (comment, Just old_route, Just new_route) <- runDB $ (,,)
-        <$> getJust rethreadOldComment
-        <*> makeCommentRouteDB rethreadOldComment
-        <*> makeCommentRouteDB rethreadNewComment
-
-    rendered_old_route <- routeToText old_route
-    rendered_new_route <- routeToText new_route
+notificationEventHandler (ECommentRethreaded _ Rethread{..}) = runSDB $ do
+    comment <- lift (getJust rethreadOldComment)
+    old_route <- makeCommentRouteTextSDB rethreadOldComment
+    new_route <- makeCommentRouteTextSDB rethreadNewComment
 
     let content = mconcat
           [ "One of your comments has been rethreaded from ~~"
-          , Markdown rendered_old_route
+          , Markdown old_route
           , "~~ to ["
-          , Markdown rendered_new_route
+          , Markdown new_route
           , "]("
-          , Markdown rendered_new_route
+          , Markdown new_route
           , "): "
           , Markdown rethreadReason
           ]
 
-    runSDB (sendNotificationDB_ NotifRethreadedComment (commentUser comment) Nothing content)
+    sendNotificationDB_ NotifRethreadedComment (commentUser comment) Nothing content
 
 notificationEventHandler (ENotificationSent _ _)  = return ()
 notificationEventHandler (EWikiEdit _ _)          = return ()
