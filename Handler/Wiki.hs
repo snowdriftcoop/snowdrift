@@ -7,7 +7,7 @@ import Import
 import Handler.Comment
 import Handler.Discussion
 import Handler.Utils
-import Handler.Wiki.Comment (makeWikiPageCommentForestWidget)
+import Handler.Wiki.Comment (makeWikiPageCommentForestWidget, wikiDiscussionPage)
 import Model.Comment
 import Model.Comment.ActionPermissions
 import Model.Comment.Sql
@@ -257,7 +257,7 @@ postNewWikiDiscussionR project_handle target = do
       wikiPageDiscussion
       (makeProjectCommentActionPermissionsMap (Just user) project_handle def) >>= \case
         Left comment_id -> redirect (WikiCommentR project_handle target comment_id)
-        Right (widget, form) -> defaultLayout $ previewWidget form "post" ($(widgetFile "wiki_discussion_wrapper"))
+        Right (widget, form) -> defaultLayout $ previewWidget form "post" (wikiDiscussionPage project_handle target widget)
 
 --------------------------------------------------------------------------------
 -- /#target/diff/#from/#to

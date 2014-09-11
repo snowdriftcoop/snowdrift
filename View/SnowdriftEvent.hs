@@ -133,11 +133,13 @@ renderWikiPageEvent :: Text -> WikiPageId -> WikiPage -> UserMap -> Widget
 renderWikiPageEvent project_handle _ wiki_page _ = do
 -- TODO(aaron)
 -- The commented stuff here (and in the whamlet commented part)
--- is because there's no wikiPageUser yet and the
--- user_map is also not needed until this is active--
+-- is because there's no wikiPageUser and the
+-- user_map is also not needed until that is active--
 --    let editor = fromMaybe
 --            (error "renderWikiPageEvent: wiki editor not found in user map")
 --            (M.lookup (wikiPageUser wiki_page) user_map)
+--perhaps instead of a wikiPageUser, we should just figure out how to pull
+--the user from the first wiki edit for the event of new pages
 --
     [whamlet|
         <div .event>
