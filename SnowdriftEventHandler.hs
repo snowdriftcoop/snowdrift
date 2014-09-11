@@ -51,7 +51,7 @@ notificationEventHandler (ECommentPosted comment_id comment) = case commentParen
 -- Notify all moderators of the project the comment was posted on.
 -- Also notify the comment poster.
 notificationEventHandler (ECommentPending comment_id comment) = runSDB $ do
-    route_text <- (lift . lift) (routeToText (CommentDirectLinkR comment_id)) -- TODO(mitchell): don't use direct link?
+    route_text <- lift (makeCommentRouteDB comment_id >>= lift . routeToText . fromJust)
 
     sendNotificationDB_ NotifUnapprovedComment (commentUser comment) Nothing $ mconcat
         [ "Your [comment]("
@@ -83,7 +83,7 @@ notificationEventHandler (ECommentPending comment_id comment) = runSDB $ do
                              >>= insert_ . UnapprovedCommentNotification comment_id)
 
 notificationEventHandler (ECommentApproved comment_id comment) = runSDB $ do
-    route_text <- (lift . lift) (routeToText (CommentDirectLinkR comment_id)) -- TODO(mitchell): don't use direct link?
+    route_text <- lift (makeCommentRouteDB comment_id >>= lift . routeToText . fromJust)
     sendNotificationDB_ NotifApprovedComment (commentUser comment) Nothing $ mconcat
         [ "Your [comment]("
         , Markdown route_text
