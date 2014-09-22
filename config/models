@@ -95,7 +95,7 @@ Project
     lastPayday  PaydayId     Maybe
     githubRepo  Text         Maybe
     discussion  DiscussionId       default=nextval('discussion_id_seq'::regclass)
-    public      Bool               default='t'
+    public      Bool               default=true
 
     UniqueProjectAccount account
     UniqueProjectHandle handle

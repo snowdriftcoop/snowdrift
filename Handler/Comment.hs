@@ -6,6 +6,7 @@ module Handler.Comment
     ( deleteCommentDirectLinkR
     , getCommentDirectLinkR
     , getCommentTagR
+    , postCommentTagR
     -- Utils
     , MakeCommentActionWidget
     , earlierClosuresFromMaybeParentId
@@ -26,7 +27,6 @@ module Handler.Comment
     , makeRethreadCommentWidget
     , makeRetractCommentWidget
     , makeUnclaimCommentWidget
-    , postCommentTag
     , postCommentApplyTag
     , postCommentCreateTag
     , postApproveComment
@@ -241,7 +241,7 @@ makeDeleteCommentWidget   = makeCommentActionWidget can_delete   deleteCommentFo
 makeReplyCommentWidget    = makeCommentActionWidget can_reply    commentReplyFormWidget
 makeRethreadCommentWidget = makeCommentActionWidget can_rethread rethreadCommentFormWidget
 makeRetractCommentWidget  = makeCommentActionWidget can_retract  (retractCommentFormWidget Nothing)
-makeUnclaimCommentWidget  = makeCommentActionWidget can_unclaim  (claimCommentFormWidget Nothing)
+makeUnclaimCommentWidget  = makeCommentActionWidget can_unclaim  (unclaimCommentFormWidget Nothing)
 
 makeEditCommentWidget
         comment
@@ -624,28 +624,6 @@ getCommentTags comment_id = do
     tags <- runDB $ M.findWithDefault [] comment_id <$> (fetchCommentCommentTagsDB comment_id >>= buildAnnotatedCommentTagsDB muser_id)
     defaultLayout $(widgetFile "tags")
 
-postCommentTag :: CommentId -> TagId -> Handler ()
-postCommentTag comment_id tag_id = do
-    user_id <- requireAuthId
-    direction <- lookupPostParam "direction"
-
-    let delta = case T.unpack <$> direction of
-            Just "+" -> 1
-            Just "-" -> -1
-            Just "\215" -> -1
-            Nothing -> error "direction unset"
-            Just str -> error $ "unrecognized direction: " ++ str
-
-    runDB $ do
-        maybe_comment_tag_entity <- getBy (UniqueCommentTag comment_id tag_id user_id)
-        case maybe_comment_tag_entity of
-            Nothing -> insert_ (CommentTag comment_id tag_id user_id delta)
-            Just (Entity comment_tag_id comment_tag) -> case commentTagCount comment_tag + delta of
-                0 -> delete $ from $ \ ct -> where_ $ ct ^. CommentTagId ==. val comment_tag_id
-                x -> void $ update $ \ ct -> do
-                    set ct [ CommentTagCount =. val x ]
-                    where_ $ ct ^. CommentTagId ==. val comment_tag_id
-
 postCommentApplyTag :: CommentId -> Handler ()
 postCommentApplyTag comment_id = do
     Entity user_id user <- requireAuth
@@ -723,3 +701,27 @@ getCommentTagR comment_id tag_id = do
     renderTag (AnnotatedTag tag _ _ user_votes) = do
         let tag_name = tagName $ entityVal tag
         defaultLayout $(widgetFile "tag")
+
+postCommentTagR :: CommentId -> TagId -> Handler ()
+postCommentTagR comment_id tag_id = do
+    user_id <- requireAuthId
+    direction <- lookupPostParam "direction"
+
+    let delta = case T.unpack <$> direction of
+            Just "+" -> 1
+            Just "-" -> -1
+            Just "\215" -> -1
+            Nothing -> error "direction unset"
+            Just str -> error $ "unrecognized direction: " ++ str
+
+    runDB $ do
+        maybe_comment_tag_entity <- getBy (UniqueCommentTag comment_id tag_id user_id)
+        case maybe_comment_tag_entity of
+            Nothing -> insert_ (CommentTag comment_id tag_id user_id delta)
+            Just (Entity comment_tag_id comment_tag) -> case commentTagCount comment_tag + delta of
+                0 -> delete $ from $ \ ct -> where_ $ ct ^. CommentTagId ==. val comment_tag_id
+                x -> void $ update $ \ ct -> do
+                    set ct [ CommentTagCount =. val x ]
+                    where_ $ ct ^. CommentTagId ==. val comment_tag_id
+
+    getCommentDirectLinkR comment_id

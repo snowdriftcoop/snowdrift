@@ -4,9 +4,6 @@ module Handler.Project where
 
 import Import
 
-import Yesod.AtomFeed
-import Yesod.RssFeed
-
 import Data.Filter
 import Data.Order
 import Handler.Comment
@@ -36,18 +33,21 @@ import View.SnowdriftEvent
 import Widgets.Preview
 import Widgets.Time
 
-import           Data.Default  (def)
-import qualified Data.Foldable as F
-import           Data.List     (sortBy)
-import qualified Data.Map      as M
-import           Data.Maybe    (maybeToList)
-import qualified Data.Set      as S
-import qualified Data.Text     as T
-import           Data.Tree     (Forest, Tree)
-import qualified Data.Tree     as Tree
-import           System.Random (randomIO)
-import           Text.Cassius  (cassiusFile)
+import           Data.Default   (def)
+import qualified Data.Foldable  as F
+import           Data.List      (sortBy)
+import qualified Data.Map       as M
+import           Data.Maybe     (maybeToList)
+import qualified Data.Set       as S
+import qualified Data.Text      as T
+import           Data.Tree      (Forest, Tree)
+import qualified Data.Tree      as Tree
+import           System.Random  (randomIO)
+import           Text.Cassius   (cassiusFile)
 import           Text.Printf
+import           Yesod.AtomFeed
+import           Yesod.RssFeed
+
 
 --------------------------------------------------------------------------------
 -- Utility functions
@@ -691,10 +691,8 @@ getProjectCommentTagsR _ = getCommentTags
 getProjectCommentTagR :: Text -> CommentId -> TagId -> Handler Html
 getProjectCommentTagR _ = getCommentTagR
 
-postProjectCommentTagR :: Text -> CommentId -> TagId -> Handler Html
-postProjectCommentTagR project_handle comment_id tag_id = do
-    postCommentTag comment_id tag_id
-    redirect (ProjectCommentTagR project_handle comment_id tag_id)
+postProjectCommentTagR :: Text -> CommentId -> TagId -> Handler ()
+postProjectCommentTagR _ = postCommentTagR
 
 --------------------------------------------------------------------------------
 -- /c/#CommentId/tag/apply, /c/#CommentId/tag/create
@@ -944,75 +942,20 @@ getProjectFeedR project_handle = do
           []             -> Nothing
           (next_event:_) -> (Just . T.pack . show . snowdriftEventTime) next_event
 
-    now <- liftIO getCurrentTime
-
+    now        <- liftIO getCurrentTime
     Just route <- getCurrentRoute
-
-    render <- getUrlRender
-
-    -- If we need to look things up, see if we can grab them from above rather than putting the map in Handler
-    -- Eventually the html rendering here should be moved to the top level somewhere for sharing with notifications
-    let eventToFeedEntry (ECommentPosted comment_id comment) = Just $ FeedEntry
-            { feedEntryLink = CommentDirectLinkR comment_id
-            , feedEntryUpdated = maybe (commentCreatedTs comment) id $ commentApprovedTs comment
-            , feedEntryTitle = "new comment posted"
-            , feedEntryContent = [hamlet| |] render
-            }
-
-        eventToFeedEntry (ECommentRethreaded _ rethread) = Just $ FeedEntry
-            { feedEntryLink = CommentDirectLinkR $ rethreadNewComment rethread
-            , feedEntryUpdated = rethreadTs rethread
-            , feedEntryTitle = "comment rethreaded"
-            , feedEntryContent = [hamlet| |] render
-            }
-
-        eventToFeedEntry (EWikiPage _ wiki_page) =
-            let target = wikiPageTarget wiki_page
-             in Just $ FeedEntry
-                    { feedEntryLink = WikiR project_handle $ wikiPageTarget wiki_page
-                    , feedEntryUpdated = wikiPageCreatedTs wiki_page
-                    , feedEntryTitle = "new wiki page"
-                    , feedEntryContent =
-                        [hamlet|
-                            New wiki page: #{target}
-                        |] render
-                    }
-
-        eventToFeedEntry (EWikiEdit wiki_edit_id wiki_edit) =
-            let maybe_wiki_page =  M.lookup (wikiEditPage wiki_edit) wiki_page_map
-                target = maybe (error "missing wiki page for edit") wikiPageTarget maybe_wiki_page
-                user_id = wikiEditUser wiki_edit
-                maybe_user = M.lookup user_id user_map
-                username = maybe "<unknown user>" (userDisplayName . Entity user_id) maybe_user
-
-             in Just $ FeedEntry
-                    { feedEntryLink = WikiEditR project_handle target wiki_edit_id
-                    , feedEntryUpdated = wikiEditTs wiki_edit
-                    , feedEntryTitle = "edited wiki page"
-                    , feedEntryContent =
-                        [hamlet|
-                            Wiki page #{target} was edited by #{username}
-                        |] render
-                    }
-
-        -- We might want to show these, but I'm not sure.  Leaving them out now, at any rate.
-        eventToFeedEntry (ENewPledge _ _) = Nothing
-        eventToFeedEntry (EUpdatedPledge _ _ _) = Nothing
-        eventToFeedEntry (EDeletedPledge _ _ _ _) = Nothing
-
-        -- Graveyard of event types we don't want to put on the feed.
-        -- Don't match-all here, we don't want to accidentally not consider something.
-
-        eventToFeedEntry (ENotificationSent _ _) = Nothing
-        eventToFeedEntry (ECommentPending _ _) = Nothing
-
+    render     <- getUrlRender
+    let feed = Feed "project feed" route HomeR "Snowdrift Community" "" "en" now $
+            mapMaybe (snowdriftEventToFeedEntry
+                        render
+                        project_handle
+                        user_map
+                        discussion_map
+                        wiki_page_map) events
 
     selectRep $ do
-        let feed = Feed "project feed" route HomeR "Snowdrift Community" "" "en" now $ mapMaybe eventToFeedEntry events
-
         provideRep $ atomFeed feed
         provideRep $ rssFeed feed
-
         provideRep $ defaultLayout $ do
             $(widgetFile "project_feed")
             toWidget $(cassiusFile "templates/comment.cassius")
