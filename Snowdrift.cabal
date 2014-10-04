@@ -191,7 +191,7 @@ library
                  , time-units
                  , transformers
                  , universe
-                 , unix
+                 , unix-compat >= 0.4.1.3
                  , vector
                  , wai-extra
                  , wai-logger
