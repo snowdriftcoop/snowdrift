@@ -128,8 +128,24 @@ cat file = proc "cat" [file]
 
 -- Database interaction.
 
+doesDBExist :: DBType a => a -> IO Bool
+doesDBExist dbType = do
+  dbs <- postgres ["psql", "-lqt"] -|- proc "cut" ["-d|", "-f1"]
+  return . elem (toString dbType) $ words dbs
+
+ifExists :: DBType a => a -> IO () -> IO ()
+ifExists dbType as = do
+  exists <- doesDBExist dbType
+  if exists
+    then as
+    else do
+      -- Don't error out or it won't check all 'dbs'.
+      pname <- getProgName
+      putStrLn $ pname <> ": " <> (toString dbType)
+              <> " does not exist; doing nothing"
+
 dropDB, createDB :: DBType a => a -> IO ()
-dropDB dbType   = psql $ "DROP DATABASE " <> toString dbType <> ";"
+dropDB   dbType = ifExists dbType . psql $ "DROP DATABASE " <> toString dbType <> ";"
 createDB dbType = psql $ "CREATE DATABASE " <> toString dbType <> ";"
 
 importDB :: DBType a => DBFile -> a -> IO ()
@@ -148,17 +164,13 @@ alterUser (DBUser u) password = psql $ "ALTER USER " <> u
                              <> " WITH ENCRYPTED PASSWORD '" <> password <> "';"
 
 template :: Bool -> DBTemp -> IO ()
-template b (DBTemp n) = psql $ "UPDATE pg_database SET datistemplate="
-                     <> show b <> " WHERE datname='" <> n <> "';"
+template b dbTemp = ifExists dbTemp .
+  psql $ "UPDATE pg_database SET datistemplate="
+      <> show b <> " WHERE datname='" <> toString dbTemp <> "';"
 
 setTemplate, unsetTemplate :: DBTemp -> IO ()
 setTemplate   = template True
 unsetTemplate = template False
-
-doesDBExist :: DBType a => a -> IO Bool
-doesDBExist dbType = do
-  dbs <- postgres ["psql", "-lqt"] -|- proc "cut" ["-d|", "-f1"]
-  return . elem (toString dbType) $ words dbs
 
 
 -- Actions.
@@ -212,17 +224,6 @@ init dbs = do
           setTemplate dbTemp'
           importDB dbFile dbTemp'
 
-ifExists :: DBType a => a -> IO () -> IO ()
-ifExists dbType as = do
-  exists <- doesDBExist dbType
-  if exists
-    then as
-    else do
-      -- Don't error out or it won't check all 'dbs'.
-      pname <- getProgName
-      putStrLn $ pname <> ": " <> (toString dbType)
-              <> " does not exist; doing nothing"
-
 clean dbs
   | length dbs == 1 =
       error $ "cannot clean a single database; try to reset it or to clean all"
@@ -231,19 +232,16 @@ clean dbs
       forM_ dbs clean'
   where
     dropDBAndRole db role = dropDB db >> dropRole role
-    clean' (Dev _ (DBInfo {..})) =
-      ifExists dbName $ dropDBAndRole dbName dbUser
+    clean' (Dev _ (DBInfo {..}))  = dropDBAndRole dbName dbUser
     clean' (Test _ (DBInfo {..})) = do
-      forM_ dbTemp $ \dbTemp' ->
-        ifExists dbTemp' $ do
-          unsetTemplate dbTemp'
-          dropDB dbTemp'
-      ifExists dbName $ dropDBAndRole dbName dbUser
+      forM_ dbTemp $ \dbTemp' -> do
+        unsetTemplate dbTemp'
+        dropDB dbTemp'
+      dropDBAndRole dbName dbUser
 
 reset dbs = forM_ dbs $ \db -> do
   let info    = dbInfo db
       dbName' = dbName info
-  ifExists dbName' $ do
-    dropDB dbName'
-    createDB dbName'
-    importDB (dbFile info) dbName'
+  dropDB dbName'
+  createDB dbName'
+  importDB (dbFile info) dbName'
