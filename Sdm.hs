@@ -59,10 +59,6 @@ parse s
 type Alias = String
 data DB = Dev Alias DBInfo | Test Alias DBInfo
 
-dbInfo :: DB -> DBInfo
-dbInfo (Dev _ i)  = i
-dbInfo (Test _ i) = i
-
 newtype DBFile = DBFile String
 newtype DBUser = DBUser String
 newtype DBName = DBName String
@@ -244,9 +240,16 @@ clean dbs
         dropDB dbTemp'
       dropDBAndRole dbName dbUser
 
-reset dbs = forM_ dbs $ \db -> do
-  let info    = dbInfo db
-      dbName' = dbName info
-  dropDB dbName'
-  createDB dbName'
-  importDB (dbFile info) dbName'
+reset dbs = forM_ dbs reset'
+ where
+   reset' (Dev _ (DBInfo {..})) = do
+     dropDB dbName
+     createDB dbName
+     importDB dbFile dbName
+   reset' (Test _ (DBInfo {..})) =
+     forM_ dbTemp $ \dbTemp' -> do
+       unsetTemplate dbTemp'
+       dropDB dbTemp'
+       createDB dbTemp'
+       setTemplate dbTemp'
+       importDB dbFile dbTemp'
