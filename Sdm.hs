@@ -20,6 +20,7 @@ main = do
   exists <- doesFileExist "Snowdrift.cabal"
   unless exists $ error "please run from the project's root directory"
   Sdm {..} <- getProgName >>= cmdArgs . sdm
+  run "sudo" ["-K"]  -- require a password the first time 'sudo' is run
   handle action db
 
 data Sdm = Sdm
