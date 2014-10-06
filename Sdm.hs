@@ -125,6 +125,14 @@ psql arg = putStr =<< proc "echo" [arg] -|- postgres ["psql"]
 cat :: String -> CreateProcess
 cat file = proc "cat" [file]
 
+leave :: String -> IO ()
+leave s = do
+  pname <- getProgName
+  putStr $ pname <> ": " <> s
+
+leaveLn :: String -> IO ()
+leaveLn s = leave s >> putStr "\n"
+
 
 -- Database interaction.
 
@@ -140,9 +148,7 @@ ifExists dbType as = do
     then as
     else do
       -- Don't error out or it won't check all 'dbs'.
-      pname <- getProgName
-      putStrLn $ pname <> ": " <> (toString dbType)
-              <> " does not exist; doing nothing"
+      leaveLn $ "'" <> toString dbType <> "' does not exist; doing nothing"
 
 dropDB, createDB :: DBType a => a -> IO ()
 dropDB   dbType = ifExists dbType . psql $ "DROP DATABASE " <> toString dbType <> ";"
@@ -178,10 +184,10 @@ unsetTemplate = template False
 config :: String
 config = "config/postgresql.yml"
 
-getPassword :: IO String
-getPassword =
+getPassword :: String -> IO String
+getPassword s =
   bracket (hGetEcho stdout) (hSetEcho stdout) . const $ do
-    putStr "Password: "
+    leave s
     hSetEcho stdout False
     hFlush stdout
     p <- getLine
@@ -195,8 +201,7 @@ init dbs = do
   when exists $ error "already initialized; doing nothing"
 
   -- Get a database password from a user.
-  putStrLn "Please specify a database password you would like to use."
-  password <- getPassword
+  password <- getPassword $ "database password: "
   when (null password) $ error "no password provided"
 
   -- Setup the databases.
