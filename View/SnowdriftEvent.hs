@@ -171,6 +171,16 @@ renderWikiEditEvent project_handle edit_id wiki_edit wiki_page_map user_map = do
                 see this edit version <!-- TODO: make this link to the diff instead -->
     |]
 
+renderBlogPostEvent :: BlogPost -> Widget
+renderBlogPostEvent (BlogPost {..}) =
+    [whamlet|
+        <div .event>
+            ^{renderTime blogPostTs}
+            New blog post: #
+            <a href=@{ProjectBlogR blogPostHandle}>
+                #{blogPostTitle}
+    |]
+
 renderNewPledgeEvent :: SharesPledgedId -> SharesPledged -> UserMap -> Widget
 renderNewPledgeEvent _ SharesPledged{..} user_map = do
     let pledger = lookupErr "renderNewPledgeEvent: pledger not found in user map" sharesPledgedUser user_map

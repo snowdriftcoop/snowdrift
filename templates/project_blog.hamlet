@@ -1,15 +1,15 @@
 $forall Entity _ post <- posts
     <div .post>
-        <a href=@{ProjectBlogPostR project_handle (projectBlogHandle post)}>
-            #{projectBlogTitle post}
+        <a href=@{ProjectBlogPostR project_handle (blogPostHandle post)}>
+            #{blogPostTitle post}
 
         \ - #
 
         <small>
-            ^{renderTime $ projectBlogTime post}
+            ^{renderTime $ blogPostTs post}
 
         <p>
-            ^{markdownWidgetWith (fixLinks project_handle) $ projectBlogTopContent post}
+            ^{markdownWidgetWith (fixLinks project_handle) $ blogPostTopContent post}
 
     <hr>
 

@@ -29,6 +29,7 @@ library
                      Import
                      Model
                      Model.Application
+                     Model.Blog
                      Model.CollapseState
                      Model.Comment
                      Model.Comment.ActionPermissions

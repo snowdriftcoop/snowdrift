@@ -10,6 +10,7 @@ import Handler.Comment
 import Handler.Discussion
 import Handler.Utils
 import Model.Application
+import Model.Blog
 import Model.Comment
 import Model.Comment.ActionPermissions
 import Model.Comment.HandlerInfo
@@ -32,6 +33,8 @@ import View.Project
 import View.SnowdriftEvent
 import Widgets.Preview
 import Widgets.Time
+
+import Yesod.Markdown
 
 import           Data.Default   (def)
 import qualified Data.Foldable  as F
@@ -336,13 +339,13 @@ getProjectBlogR project_handle = do
     post_count <- fromMaybe 10 <$> fmap (read . T.unpack) <$> lookupGetParam "from"
     Entity project_id project <- runYDB $ getBy404 $ UniqueProjectHandle project_handle
 
-    let apply_offset blog = maybe id (\ from_blog rest -> blog ^. ProjectBlogId >=. val from_blog &&. rest) maybe_from
+    let apply_offset blog = maybe id (\ from_blog rest -> blog ^. BlogPostId >=. val from_blog &&. rest) maybe_from
 
     (posts, next) <- fmap (splitAt post_count) $ runDB $
         select $
         from $ \blog -> do
-        where_ $ apply_offset blog $ blog ^. ProjectBlogProject ==. val project_id
-        orderBy [ desc $ blog ^. ProjectBlogTime, desc $ blog ^. ProjectBlogId ]
+        where_ $ apply_offset blog $ blog ^. BlogPostProject ==. val project_id
+        orderBy [ desc $ blog ^. BlogPostTs, desc $ blog ^. BlogPostId ]
         limit (fromIntegral post_count + 1)
         return blog
 
@@ -378,30 +381,21 @@ postNewProjectBlogPostR project_handle = do
     ((result, _), _) <- runFormPost $ projectBlogForm Nothing
 
     case result of
-        FormSuccess mk_blog_post -> do
+        FormSuccess (title, handle, Markdown content) -> do
             lookupPostMode >>= \case
                 Just PostMode -> do
-                    void $ runDB $ do
-                        discussion_id <- insert $ Discussion 0
-
-                        let blog_post :: ProjectBlog
-                            blog_post = mk_blog_post now viewer_id project_id discussion_id
-
-                        insert blog_post
-
+                    void $ runSDB $ postBlogPostDB title handle viewer_id project_id (Markdown content)
                     alertSuccess "posted"
                     redirect $ ProjectBlogR project_handle
 
                 _ -> do
-                    let blog_post :: ProjectBlog
-                        blog_post = mk_blog_post now viewer_id project_id (Key $ PersistInt64 0)
-                        title = projectBlogTitle blog_post
-                        handle = projectBlogHandle blog_post
-                        top_content = projectBlogTopContent blog_post
-                        bottom_content = fromMaybe "" $ projectBlogBottomContent blog_post
-                        content = top_content <> bottom_content
 
-                    (form, _) <- generateFormPost $ projectBlogForm $ Just (title, handle, content)
+                    let (top_content', bottom_content') = break (== "***") $ T.lines content
+                        top_content = T.unlines top_content'
+                        bottom_content = if bottom_content' == [] then Nothing else Just (Markdown $ T.unlines bottom_content')
+                        blog_post = BlogPost now title handle viewer_id project_id (Key $ PersistInt64 0) (Markdown top_content) bottom_content
+
+                    (form, _) <- generateFormPost $ projectBlogForm $ Just (title, handle, Markdown content)
 
                     defaultLayout $ previewWidget form "post" $ renderBlogPost project_handle blog_post
 
@@ -414,12 +408,12 @@ getProjectBlogPostR :: Text -> Text -> Handler Html
 getProjectBlogPostR project_handle blog_post_handle = do
     (project, blog_post) <- runYDB $ do
         Entity project_id project <- getBy404 $ UniqueProjectHandle project_handle
-        Entity _ blog_post <- getBy404 $ UniqueProjectBlogPost project_id blog_post_handle
+        Entity _ blog_post <- getBy404 $ UniqueBlogPost project_id blog_post_handle
 
         return (project, blog_post)
 
     defaultLayout $ do
-        setTitle . toHtml $ projectName project <> " Blog - " <> projectBlogTitle blog_post <> " | Snowdrift.coop"
+        setTitle . toHtml $ projectName project <> " Blog - " <> blogPostTitle blog_post <> " | Snowdrift.coop"
 
         renderBlogPost project_handle blog_post
 
@@ -870,7 +864,7 @@ getProjectFeedR project_handle = do
 
     before <- lookupGetUTCTimeDefaultNow "before"
 
-    (project, comments, rethreads, wiki_pages, wiki_edits, new_pledges,
+    (project, comments, rethreads, wiki_pages, wiki_edits, blog_posts, new_pledges,
      updated_pledges, deleted_pledges, discussion_map, wiki_page_map, user_map,
      earlier_closures_map, earlier_retracts_map, closure_map, retract_map,
      ticket_map, claim_map, flag_map) <- runYDB $ do
@@ -880,6 +874,7 @@ getProjectFeedR project_handle = do
         comments        <- fetchProjectCommentsIncludingRethreadedBeforeDB project_id muser_id before lim
         rethreads       <- fetchProjectCommentRethreadsBeforeDB            project_id muser_id before lim
         wiki_pages      <- fetchProjectWikiPagesBeforeDB                   project_id before lim
+        blog_posts      <- fetchProjectBlogPostsBeforeDB                   project_id before lim
         wiki_edits      <- fetchProjectWikiEditsBeforeDB                   project_id before lim
         new_pledges     <- fetchProjectNewPledgesBeforeDB                  project_id before lim
         updated_pledges <- fetchProjectUpdatedPledgesBeforeDB              project_id before lim
@@ -890,14 +885,17 @@ getProjectFeedR project_handle = do
 
         let (comment_ids, comment_users)       = F.foldMap (\c -> ([entityKey c], [commentUser (entityVal c)])) comments
             (wiki_edit_users, wiki_edit_pages) = F.foldMap (\(Entity _ e) -> ([wikiEditUser e], [wikiEditPage e])) wiki_edits
+            (blog_post_users) = F.foldMap (\(Entity _ e) -> ([blogPostUser e])) blog_posts
             shares_pledged                     = map entityVal (new_pledges <> (map snd updated_pledges))
             -- All users: comment posters, wiki page creators, etc.
-            user_ids = S.toList $
-                         S.fromList comment_users <>
-                         S.fromList (map (rethreadModerator . entityVal) rethreads) <>
-                         S.fromList wiki_edit_users <>
-                         S.fromList (map sharesPledgedUser shares_pledged) <>
-                         S.fromList (map eventDeletedPledgeUser deleted_pledges)
+            user_ids = S.toList $ mconcat
+                         [ S.fromList comment_users
+                         , S.fromList (map (rethreadModerator . entityVal) rethreads)
+                         , S.fromList wiki_edit_users
+                         , S.fromList blog_post_users
+                         , S.fromList (map sharesPledgedUser shares_pledged)
+                         , S.fromList (map eventDeletedPledgeUser deleted_pledges)
+                         ]
 
         discussion_map <- fetchProjectDiscussionsDB project_id >>= fetchDiscussionsDB
 
@@ -914,7 +912,7 @@ getProjectFeedR project_handle = do
         claim_map            <- makeClaimedTicketMapDB          comment_ids
         flag_map             <- makeFlagMapDB                   comment_ids
 
-        return (project, comments, rethreads, wiki_pages, wiki_edits,
+        return (project, comments, rethreads, wiki_pages, wiki_edits, blog_posts,
                 new_pledges, updated_pledges, deleted_pledges, discussion_map,
                 wiki_page_map, user_map, earlier_closures_map,
                 earlier_retracts_map, closure_map, retract_map, ticket_map,
@@ -927,6 +925,7 @@ getProjectFeedR project_handle = do
             , map (onEntity ECommentRethreaded) rethreads
             , map (onEntity EWikiPage)          wiki_pages
             , map (onEntity EWikiEdit)          wiki_edits
+            , map (onEntity EBlogPost)          blog_posts
             , map (onEntity ENewPledge)         new_pledges
             , map eup2se                        updated_pledges
             , map edp2se                        deleted_pledges

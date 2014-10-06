@@ -1,0 +1,11 @@
+ALTER TABLE project_blog RENAME COLUMN time TO ts;
+ALTER TABLE project_blog RENAME TO blog_post;
+ALTER TABLE role_event RENAME COLUMN time TO ts;
+ALTER TABLE doc_event RENAME COLUMN time TO ts;
+ALTER TABLE "blog_post" ADD CONSTRAINT "blog_post_user_fkey" FOREIGN KEY("user") REFERENCES "user"("id");
+ALTER TABLE "blog_post" ADD CONSTRAINT "blog_post_project_fkey" FOREIGN KEY("project") REFERENCES "project"("id");
+ALTER TABLE "blog_post" ADD CONSTRAINT "blog_post_discussion_fkey" FOREIGN KEY("discussion") REFERENCES "discussion"("id");
+ALTER TABLE "blog_post" ADD CONSTRAINT "unique_blog_post" UNIQUE("project","handle");
+ALTER TABLE "blog_post" DROP CONSTRAINT "unique_project_blog_post";
+CREATe TABLE "event_blog_post"("id" SERIAL PRIMARY KEY UNIQUE,"ts" TIMESTAMP NOT NULL,"post" INT8 NOT NULL);
+ALTER TABLE "event_blog_post" ADD CONSTRAINT "event_blog_post_post_fkey" FOREIGN KEY("post") REFERENCES "blog_post"("id");

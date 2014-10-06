@@ -14,6 +14,7 @@ module Model.Project
     , fetchProjectVolunteerApplicationsDB
     , fetchProjectWikiEditsBeforeDB
     , fetchProjectWikiPagesBeforeDB
+    , fetchProjectBlogPostsBeforeDB
     , fetchProjectWikiPageByNameDB
     , insertProjectPledgeDB
     -- TODO(mitchell): rename all these... prefix fetch, suffix DB
@@ -301,6 +302,19 @@ fetchProjectWikiPagesBeforeDB project_id before lim =
     orderBy [ desc $ ewp ^. EventWikiPageTs, desc $ ewp ^. EventWikiPageId ]
     limit lim
     return wp
+
+-- | Fetch all BlogPosts made on this Project before this time.
+fetchProjectBlogPostsBeforeDB :: ProjectId -> UTCTime -> Int64 -> DB [Entity BlogPost]
+fetchProjectBlogPostsBeforeDB project_id before lim =
+    select $
+    from $ \(ebp `InnerJoin` bp) -> do
+    on_ (ebp ^. EventBlogPostPost ==. bp ^. BlogPostId)
+    where_ $
+        ebp ^. EventBlogPostTs <=. val before &&.
+        bp ^. BlogPostProject ==. val project_id
+    orderBy [ desc $ ebp ^. EventBlogPostTs, desc $ ebp ^. EventBlogPostId ]
+    limit lim
+    return bp
 
 -- | Fetch all WikiEdits made on this Project before this time.
 fetchProjectWikiEditsBeforeDB :: ProjectId -> UTCTime -> Int64 -> DB [Entity WikiEdit]

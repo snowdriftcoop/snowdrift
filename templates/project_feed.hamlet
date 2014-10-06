@@ -23,6 +23,9 @@ $forall event <- events
         $of EDeletedPledge ts user_id _ shares
             ^{renderDeletedPledgeEvent ts user_id shares user_map}
 
+        $of EBlogPost _ blog_post
+            ^{renderBlogPostEvent blog_post}
+
         $# Graveyard of event types we don't want to put on the feed.
         $# Don't match-all here, we don't want to accidentally not consider something.
 
