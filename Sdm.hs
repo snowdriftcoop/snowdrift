@@ -28,6 +28,10 @@ data Sdm = Sdm
   , action :: String
   } deriving (Typeable, Data, Show)
 
+actions, databases :: String
+actions   = "init, clean, reset"
+databases = "dev, test, all (default)"
+
 sdm :: String -> Sdm
 sdm pname = Sdm
   { db = "all"                  -- operate on the dev and test databases
@@ -36,8 +40,8 @@ sdm pname = Sdm
       &= typ "DATABASE"
   , action = def &= argPos 0 &= typ "ACTION"
   } &= summary "Snowdrift database manager 0.1" &= program pname
-    &= details [ "Actions: init, clean, reset"
-               , "Databases: dev, test, all (default)" ]
+    &= details [ "Actions: " <> actions
+               , "Databases: " <> databases ]
 
 handle :: String -> String -> IO ()
 handle action db
@@ -46,7 +50,7 @@ handle action db
   | action == "clean" = clean $! parse db
   | action == "reset" = reset $! parse db
   | otherwise         = error $ "invalid action; must be one of: "
-                     <> "init, clean, reset"
+                     <> actions
 
 parse :: String -> NonEmpty DB
 parse s
@@ -54,7 +58,7 @@ parse s
   | s == "test" = fromList [test]
   | s == "all"  = fromList [dev, test]
   | otherwise   = error $ "invalid argument to 'db': "
-               <> "must be one of: all, dev, test"
+               <> "must be one of: " <> databases
 
 type Alias = String
 data DB = Dev Alias DBInfo | Test Alias DBInfo
