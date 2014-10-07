@@ -221,8 +221,10 @@ checkboxesField' ioptlist = (multiSelectField ioptlist)
     { fieldView =
         \theId name attrs value _ -> do
             opts <- fmap olOptions $ handlerToWidget ioptlist
+
             let optselected (Left _) _ = False
                 optselected (Right vals) opt = (optionInternalValue opt) `elem` vals
+
             [whamlet|
                 <span ##{theId}>
                     $forall opt <- opts
@@ -231,6 +233,7 @@ checkboxesField' ioptlist = (multiSelectField ioptlist)
                             #{optionDisplay opt}
                 |]
     }
+
 
 redirectParams :: (MonadHandler (HandlerT site m), MonadBaseControl IO m) => Route site -> [(Text, Text)] -> HandlerT site m a
 redirectParams route params = getUrlRenderParams >>= \ render -> redirect $ render route params
