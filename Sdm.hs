@@ -4,6 +4,7 @@
 import Prelude hiding (init, length)
 import Control.Exception (bracket)
 import Control.Monad hiding (forM_)
+import Data.Char (toLower)
 import Data.List.NonEmpty hiding (init, words, unwords)
 import Data.Foldable (forM_)
 import Data.Monoid ((<>))
@@ -29,7 +30,7 @@ data Sdm = Sdm
   } deriving (Typeable, Data, Show)
 
 actions, databases :: String
-actions   = "init, clean, reset"
+actions   = "init, clean, reset, export"
 databases = "dev, test, all (default)"
 
 sdm :: String -> Sdm
@@ -46,11 +47,12 @@ sdm pname = Sdm
 handle :: String -> String -> IO ()
 handle action db
   -- Force evaluation to check that the 'db' argument is valid.
-  | action == "init"  = init  $! parse db
-  | action == "clean" = clean $! parse db
-  | action == "reset" = reset $! parse db
-  | otherwise         = error $ "invalid action; must be one of: "
-                     <> actions
+  | action == "init"   = init   $! parse db
+  | action == "clean"  = clean  $! parse db
+  | action == "reset"  = reset  $! parse db
+  | action == "export" = export $! parse db
+  | otherwise          = error $ "invalid action; must be one of: "
+                      <> actions
 
 parse :: String -> NonEmpty DB
 parse s
@@ -158,6 +160,24 @@ importDB :: DBType a => DBFile -> a -> IO ()
 importDB (DBFile f) dbType = putStr =<< cat f
                          -|- postgres ["psql", toString dbType]
 
+exportDB :: DBType a => a -> DBFile -> IO ()
+exportDB dbType (DBFile f) = loop
+  where
+    loop = do
+      leave $ "overwrite '" <> f <> "'? (yes/No) "
+      hFlush stdout             -- send the question to 'stdout' immediately
+      answer <- getLine >>= return . fmap toLower
+      case () of
+        _| answer == "yes" -> do
+             (_, Just o, _, _) <-
+               createProcess (postgres ["pg_dump", toString dbType]) { std_out = CreatePipe }
+             dump <- hGetContents o
+             writeFile f dump
+         | answer == "no" || null answer -> leaveLn "doing nothing"
+         | otherwise -> do
+             leaveLn "invalid argument"
+             loop
+
 createUser :: DBUser -> [String] -> IO ()
 createUser (DBUser u) opts = psql $ "CREATE USER " <> u <> " "
                           <> unwords opts <> ";"
@@ -194,7 +214,7 @@ getPassword s =
     putStr "\n"
     return p
 
-init, clean, reset :: NonEmpty DB -> IO ()
+init, clean, reset, export :: NonEmpty DB -> IO ()
 init ((Test {}) :| []) = error "cannot initialize only test; try to init dev or all"
 init dbs = do
   exists <- doesFileExist config
@@ -257,3 +277,9 @@ reset dbs = forM_ dbs reset'
        createDB dbTemp'
        setTemplate dbTemp'
        importDB dbFile dbTemp'
+
+export dbs = forM_ dbs export'
+  where
+    export' (Dev _ (DBInfo {..}))  = exportDB dbName dbFile
+    export' (Test _ (DBInfo {..})) =
+      forM_ dbTemp $ \dbTemp' -> exportDB dbTemp' dbFile
