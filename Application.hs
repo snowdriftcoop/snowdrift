@@ -48,11 +48,13 @@ import Handler.Home
 import Handler.HonorPledge
 import Handler.Invitation
 import Handler.JsLicense
+import Handler.License
 import Handler.MarkdownTutorial
 import Handler.Notification
 import Handler.PostLogin
 import Handler.Privacy
 import Handler.Project
+import Handler.ProjectSignup
 import Handler.RepoFeed
 import Handler.ToU
 import Handler.User
@@ -95,6 +97,7 @@ makeApplication conf = do
     foundation <- makeFoundation conf
 
     -- Initialize the logging middleware
+    user_id <- requireAuthId
     logWare <- mkRequestLogger def
         { outputFormat =
             if development

@@ -1,0 +1,11 @@
+fieldset
+    padding: 1em
+    font: 80%/1 sans-serif
+    border-style: solid
+    border-width: 2px
+    width: inherit
+    padding:0 10px
+
+legend
+    width: auto
+    padding:0 10px

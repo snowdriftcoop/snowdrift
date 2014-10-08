@@ -56,10 +56,11 @@ postgres=# alter user snowdrift_development with encrypted password 'YOURPASSPHR
 postgres=# alter user snowdrift_test with encrypted password 'YOURPASSPHRASE';
 postgres=# grant all privileges on database snowdrift_development to snowdrift_development;
 postgres=# update pg_database set datistemplate=true where datname='snowdrift_test_template';
-vi config/postgres.yml // set 'password' to 'YOURPASSPHRASE', same as you chose above
+vi config/postgresql.yml // set 'password' to 'YOURPASSPHRASE', same as you chose above
 sudo -u postgres psql snowdrift_development <devDB.sql
 sudo -u postgres psql snowdrift_test_template <testDB.sql
 
 // Hack away
+cabal install yesod-bin
 yesod devel
 ```

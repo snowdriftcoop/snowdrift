@@ -102,6 +102,41 @@ Project
 
     deriving Eq Show
 
+ProjectSignup
+    name Text
+    handle Text
+    website Text Maybe
+    projectType [ProjectType]
+    projectTypeOther Text Maybe
+    license [LicenseId]
+    licenseOther Text Maybe
+    history Text
+    location Text
+    legalStatus LegalStatus
+    legalStatusComments Text Maybe
+    userRoleInProject Text
+    mission Textarea
+    goals Textarea
+    funds Textarea
+    otherInfo Textarea Maybe
+    user UserId
+    UniqueProjectSignupHandle handle
+
+ReviewerComments
+    ps_id ProjectSignupId
+    timestamp UTCTime
+    comment Text
+    status ProjectSignupStatus
+    reviewer UserId
+
+License
+    name Text
+    classification LicenseClassificationType
+    projectType LicenseProjectType
+    options Textarea Maybe
+    website Text 
+    image ByteString Maybe
+
 ProjectBlog
     time          UTCTime
     title         Text

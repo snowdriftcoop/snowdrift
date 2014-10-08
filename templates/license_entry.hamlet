@@ -1,0 +1,38 @@
+#{lefHtml}
+<div .row>
+    <div .form-group>
+        <div .col-md-2>
+            <label>
+                License Name:
+        <div .col-md-4>
+            ^{fvInput licenseNameView}
+        <div .col-md-offset-1 .col-md-2>
+            <label>
+                Classification:
+        <div .col-md-3>
+                ^{fvInput licenseClassificationView}
+<div .row>
+    <div .form-group>
+        <div .col-md-2>
+            <label>
+                Project Types:
+        <div .col-md-2>
+            ^{fvInput licenseProjectTypeView}
+        <div .col-md-offset-3 .col-md-2>
+            <label>
+                Options:
+        <div .col-md-3>
+            ^{fvInput licenseOptionsView}
+
+<div .row>
+    <div .form-group>
+        <div .col-md-2>
+            <label>
+                Link to Legal License Text:
+        <div .col-md-4>
+            ^{fvInput licenseWebsiteView}
+        <div .col-md-offset-1 .col-md-2>
+            <label>
+                Link to Legal Logo:
+        <div .col-md-3>
+            ^{fvInput licenseIconView}

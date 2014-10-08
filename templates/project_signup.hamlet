@@ -1,0 +1,111 @@
+<fieldset>
+    <legend>
+        General Project Info
+    <div .row>
+        <div .form-group>
+            <div .col-md-1>
+                <label>Project Name:
+            <div .col-md-4>
+                ^{fvInput projectNameView}
+            <div .col-md-offset-1 .col-md-1>
+                <label>Website:
+            <div .col-md-5>
+                ^{fvInput projectWebsiteView}
+    <div .row>
+        <div .form-group>
+            <div .col-md-1>
+                <label>Requested Site Handle:
+            <div .col-sm-4>
+                <div .row>
+                    <div .col-md-6 align=bottom>
+                        <font size=-1>
+                            http://snowdrift.coop/p/
+                    <div .col-md-6>
+                        ^{fvInput projectHandleView}
+                <div .row>
+                    <div .col-md-12 align=top>
+                        <font size=-1>
+                            (lower case, numbers & hyphens only)
+            <div .col-md-offset-1 .col-md-1>
+                <label>Length of time project's been active:
+            <div .col-md-5>
+                ^{fvInput projectHistoryView}
+    <div .row>
+        <div .form-group>
+            <div .col-md-1>
+                <label>
+                    Select Applicable Project License(s):
+            <div .col-md-4>
+                ^{fvInput projectLicenseView}
+            <div .col-md-offset-1 .col-md-1>
+                <label>
+                    Select Applicable Project Type(s):
+            <div .col-md-4>
+                ^{fvInput projectTypeView}
+    <div .row>
+        <div .form-group>
+            <div .col-md-1>
+                <label>If Other, please describe:
+            <div .col-md-4>
+                ^{fvInput projectLicenseOtherView}
+            <div .col-md-offset-1 .col-md-1>
+                <label>If Other, please describe:
+            <div .col-md-4>
+                ^{fvInput projectTypeOtherView}
+<br>
+<fieldset>
+    <legend>
+        Legal Information
+    <div .row>
+        <div .form-group>
+            <div .col-md-2>
+                <label>Location Project is legally based out of:
+            <div .col-md-3>
+                ^{fvInput projectLocationView}
+            <div .col-md-offset-1 .col-md-2>
+                <label>
+                    Legal Status:
+            <div .col-md-4>
+                ^{fvInput projectLegalStatusView}
+    <div .row>
+        <div .form-group>
+            <div .col-md-2>
+                <label>Additional Comments about Legal Status:
+            <div .col-md-10>
+                ^{fvInput projectLegalStatusCommentsView}
+
+<br>
+<fieldset>
+    <legend>
+        Project Intent
+    <div .row>
+        <div .form-group>
+            <div .col-md-2>
+                <label>Describe your role within the project
+            <div .col-md-10>
+                ^{fvInput projectUserRoleView}
+    <div .row>
+        <div .form-group>
+            <div .col-md-2>
+                <label>Describe your project's vision and mission:
+            <div .col-md-10>
+                ^{fvInput projectMissionView}
+    <div .row>
+        <div .form-group>
+            <div .col-md-2>
+                <label>Describe your project's short-term and long-term goals and deliverables:
+            <div .col-md-10>
+                ^{fvInput projectGoalsView}
+    <div .row>
+        <div .form-group>
+            <div .col-md-2>
+                <label>Describe how your project will benefit from and make use of funds raised through Snowdrift.coop:
+            <div .col-md-10>
+                ^{fvInput projectFundsView}
+    <div .row>
+        <div .form-group>
+            <div .col-md-2>
+                <label>Please provide any additional information you find pertinent here (e.g. other contacts affiliated with the project and their contact info)
+            <div .col-md-10>
+                ^{fvInput projectOtherInfoView}
+<br>

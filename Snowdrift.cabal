@@ -39,11 +39,13 @@ library
                      Model.Currency
                      Model.Discussion
                      Model.Issue
+                     Model.License
                      Model.Markdown
                      Model.Markdown.Diff
                      Model.Notification
                      Model.Permission
                      Model.Project
+                     Model.ProjectSignup
                      Model.Project.Sql
                      Model.Role
                      Model.Settings
@@ -70,11 +72,13 @@ library
                      Handler.HonorPledge
                      Handler.Invitation
                      Handler.JsLicense
+                     Handler.License
                      Handler.MarkdownTutorial
                      Handler.Notification
                      Handler.PostLogin
                      Handler.Privacy
                      Handler.Project
+                     Handler.ProjectSignup
                      Handler.RepoFeed
                      Handler.ToU
                      Handler.User
@@ -149,6 +153,7 @@ library
                  , bytestring
                  , clientsession
                  , conduit
+                 , conduit-extra
                  , containers
                  , data-default
                  , diagrams

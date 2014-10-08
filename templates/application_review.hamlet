@@ -1,0 +1,112 @@
+<h1 align=center>Snowdrift.coop
+<h3 align=center>Project Application Review
+<br>
+
+<fieldset>
+    <legend>
+        General Project Info
+    <div .row>
+        <div .form-group>
+            <div .col-md-1>
+                <label>Project Name:
+            <div .col-md-4>
+                <input type=text disabled readonly>#{ProjectSignupName project}
+            <div .col-md-offset-1 .col-md-1>
+                <label>Website:
+            <div .col-md-5>
+                <input type=url disabled readonly>#{ProjectSignupWebsite project}
+    <div .row>
+        <div .form-group>
+            <div .col-md-1>
+                <label>Requested Site Handle:
+            <div .col-sm-4>
+                <div .row>
+                    <div .col-md-6 align=bottom>
+                        <font size=-1>
+                            http://snowdrift.coop/p/#{ProjectSignupHandle project}
+            <div .col-md-offset-1 .col-md-1>
+                <label>Length of time project's been active:
+            <div .col-md-5>
+                <input type=text disabled readonly>#{ProjectSignupHistory project}
+    <div .row>
+        <div .form-group>
+            <div .col-md-1>
+                <label>
+                    Select Applicable Project License(s):
+            <div .col-md-4>
+                <ul>
+                    $forall license <- projectSignupLicense project
+                        <li>#{license}
+            <div .col-md-offset-1 .col-md-1>
+                <label>
+                    Select Applicable Project Type(s):
+            <div .col-md-4>
+                    <ul>
+                        $forall pt <- projectSignupType project
+                            <li>#{pt}
+    <div .row>
+        <div .form-group>
+            <div .col-md-1>
+                <label>If Other, please describe:
+            <div .col-md-4>
+                <input type=text disabled readonly>#{projectLicenseOther project}
+            <div .col-md-offset-1 .col-md-1>
+                <label>If Other, please describe:
+            <div .col-md-4>
+                <input type=text disabled readonly>#{projectTypeOther project}
+<br>
+<fieldset>
+    <legend>
+        Legal Information
+    <div .row>
+        <div .form-group>
+            <div .col-md-2>
+                <label>Location Project is legally based out of:
+            <div .col-md-3>
+                <input type=text disabled readonly>#{projectLocation project}
+            <div .col-md-offset-1 .col-md-2>
+                <label>
+                    Legal Status:
+            <div .col-md-4>
+                <input type=text disabled readonly>#{projectLegalStatus project}
+    <div .row>
+        <div .form-group>
+            <div .col-md-2>
+                <label>Additional Comments about Legal Status:
+            <div .col-md-10>
+                <input type=text disabled readonly>#{projectLegalStatusComments project}
+<br>
+<fieldset>
+    <legend>
+        Project Intent
+    <div .row>
+        <div .form-group>
+            <div .col-md-2>
+                <label>Describe your role within the project
+            <div .col-md-10>
+                <textarea disabled readonly>#{projectUserRole project}
+    <div .row>
+        <div .form-group>
+            <div .col-md-2>
+                <label>Describe your project's vision and mission:
+            <div .col-md-10>
+                <textarea disabled readonly>#{projectMission project}
+    <div .row>
+        <div .form-group>
+            <div .col-md-2>
+                <label>Describe your project's short-term and long-term goals and deliverables:
+            <div .col-md-10>
+                <textarea disabled readonly>#{projectGoals project}
+    <div .row>
+        <div .form-group>
+            <div .col-md-2>
+                <label>Describe how your project will benefit from and make use of funds raised through Snowdrift.coop:
+            <div .col-md-10>
+                <textarea disabled readonly>#{projectFunds project}
+    <div .row>
+        <div .form-group>
+            <div .col-md-2>
+                <label>Please provide any additional information you find pertinent here (e.g. other contacts affiliated with the project and their contact info)
+            <div .col-md-10>
+                <textarea disabled readonly>#{projectOtherInfo project}
+<br>
