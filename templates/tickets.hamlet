@@ -2,6 +2,10 @@
     ^{formWidget}
     <input type=submit value="update view">
 
+$with num_tickets <- length tagged_tickets
+    #{num_tickets} open #{plural num_tickets "ticket" "tickets"} on this project
+<hr>
+
 $if null issues
     <p> no tickets to display
 $else
