@@ -20,6 +20,8 @@ data SnowdriftEvent
     | EWikiEdit WikiEditId WikiEdit
     -- New WikiPage posted.
     | EWikiPage WikiPageId WikiPage
+    -- New blog post posted.
+    | EBlogPost BlogPostId BlogPost
     -- New pledge.
     | ENewPledge SharesPledgedId SharesPledged
     -- Pledge that has changed in value.

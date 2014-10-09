@@ -29,6 +29,7 @@ library
                      Import
                      Model
                      Model.Application
+                     Model.Blog
                      Model.CollapseState
                      Model.Comment
                      Model.Comment.ActionPermissions
@@ -254,6 +255,15 @@ executable         Snowdrift
 
     ghc-options:       -threaded -O2
 
+executable         sdm
+    main-is:           Sdm.hs
+    build-depends:     base
+                     , cmdargs
+                     , directory
+                     , process
+                     , semigroups
+    if flag(dev)
+       ghc-options:    -Wall
 
 test-suite test
     type:              exitcode-stdio-1.0

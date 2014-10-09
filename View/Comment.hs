@@ -157,11 +157,22 @@ createCommentTagForm = renderBootstrap3 $ areq' textField "" Nothing
 newCommentTagForm :: [Entity Tag] -> [Entity Tag] -> Form (Maybe [TagId], Maybe [TagId])
 newCommentTagForm project_tags other_tags = renderBootstrap3 $ (,)
     -- <$> fmap (\(Entity tag_id tag) -> aopt checkBoxField (tag_id) (tagName tag)) (project_tags <> other_tags)
-    <$> aopt (tagCloudField $ tags project_tags) "Tags used elsewhere in this project:" Nothing
-    <*> aopt (tagCloudField $ tags other_tags) "Tags used in other projects:" Nothing
+    <$> aopt (tagCloudFieldList project_tags) "Tags used elsewhere in this project:" Nothing
+    <*> aopt (tagCloudFieldList other_tags) "Tags used in other projects:" Nothing
 --    <*> areq hiddenField "" (Just "apply")
-    where tags = fmap (\(Entity tag_id tag) -> (tagName tag, tag_id))
-          tagCloudField = checkboxesFieldList' $ (\(PersistInt64 a) -> show a) . unKey
+  where
+    tagCloudFieldList tags =
+        let toOption (Entity tag_id tag) = Option
+                { optionDisplay = tagName tag
+                , optionInternalValue = tag_id
+                , optionExternalValue = (\ (Key (PersistInt64 i)) -> T.pack $ show i) tag_id
+                }
+
+            optlist = OptionList
+                { olOptions = map toOption tags
+                , olReadExternal = Just . Key . PersistInt64 . read . T.unpack
+                }
+         in checkboxesField' (return optlist)
 
 flagCommentForm :: Maybe (Maybe [FlagReason]) -> Maybe (Maybe Markdown) -> Form (Maybe [FlagReason], Maybe Markdown)
 flagCommentForm def_reasons def_message = renderBootstrap3 $ (,) <$> flagReasonsForm <*> additionalCommentsForm

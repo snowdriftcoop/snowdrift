@@ -23,6 +23,7 @@ snowdriftEventTime (ECommentRethreaded _ Rethread{..})    = rethreadTs
 snowdriftEventTime (ENotificationSent _ Notification{..}) = notificationCreatedTs
 snowdriftEventTime (EWikiEdit _ WikiEdit{..})             = wikiEditTs
 snowdriftEventTime (EWikiPage _ WikiPage{..})             = wikiPageCreatedTs
+snowdriftEventTime (EBlogPost _ BlogPost{..})             = blogPostTs
 snowdriftEventTime (ENewPledge _ SharesPledged{..})       = sharesPledgedTs
 snowdriftEventTime (EUpdatedPledge _ _ SharesPledged{..}) = sharesPledgedTs
 snowdriftEventTime (EDeletedPledge ts _ _ _)              = ts
@@ -81,6 +82,22 @@ snowdriftEventToFeedEntry render project_handle user_map _ wiki_page_map (EWikiE
             , feedEntryTitle   = T.unwords [ T.snoc project_handle ':', "wiki page", "\"" <> target <> "\"", "edited by", username ]
             , feedEntryContent = [hamlet| |] render
             }
+
+snowdriftEventToFeedEntry render project_handle _ _ _
+        ( EBlogPost _
+            BlogPost
+                { blogPostHandle = handle
+                , blogPostTs = ts
+                , blogPostTitle = title
+                }
+        ) =
+    Just $ FeedEntry
+        { feedEntryLink    = ProjectBlogR handle
+        , feedEntryUpdated = ts
+        , feedEntryTitle   = T.unwords [ T.snoc project_handle ':', "new blog post:", "\"" <> title <> "\"" ]
+        , feedEntryContent = [hamlet| |] render
+        }
+
 
 -- We might want to show these, but I'm not sure.  Leaving them out now, at any rate.
 snowdriftEventToFeedEntry _ _ _ _ _ (ENewPledge _ _)         = Nothing

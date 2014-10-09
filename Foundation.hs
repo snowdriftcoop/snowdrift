@@ -166,11 +166,11 @@ instance Yesod App where
     -- The page to be redirected to when authentication is required.
     authRoute _ = Just $ AuthR LoginR
 
-    errorHandler (PermissionDenied _) = do
+    errorHandler (PermissionDenied s) = do
         maybe_user <- maybeAuth
         selectRep $
             provideRep $ defaultLayout $ do
-                setTitle "Permission Denied"
+                setTitle $ "Permission Denied: " <> toHtml s
                 toWidget [hamlet|$newline never
                     <h1>Permission Denied
                     <p>

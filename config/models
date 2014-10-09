@@ -102,8 +102,8 @@ Project
 
     deriving Eq Show
 
-ProjectBlog
-    time          UTCTime
+BlogPost
+    ts            UTCTime
     title         Text
     handle        Text
     user          UserId
@@ -112,7 +112,7 @@ ProjectBlog
     topContent    Markdown
     bottomContent Markdown     Maybe
 
-    UniqueProjectBlogPost project handle
+    UniqueBlogPost project handle
 
     deriving Show
 
@@ -264,7 +264,7 @@ CommentClosing
 
     UniqueCommentClosing comment
 
-A comment-retracted relation.
+-- A comment-retracted relation.
 CommentRetracting
     ts      UTCTime
     reason  Markdown
@@ -371,7 +371,7 @@ DefaultTagColor
     UniqueDefaultTag tag
 
 RoleEvent
-    time    UTCTime
+    ts      UTCTime
     user    UserId
     role    Role
     project ProjectId
@@ -384,7 +384,7 @@ Doc
     UniqueDocName name
 
 DocEvent
-    time           UTCTime
+    ts             UTCTime
     doc            DocId
     blessedVersion WikiEditId
 
@@ -451,3 +451,8 @@ EventDeletedPledge
     user    UserId
     project ProjectId
     shares  Int64
+
+EventBlogPost
+    ts UTCTime
+    post BlogPostId
+
