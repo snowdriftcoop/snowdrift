@@ -8,6 +8,12 @@ $forall event <- events
         $of ECommentRethreaded _ rethread
             ^{renderCommentRethreadedEvent rethread user_map}
 
+        $of ETicketClaimed _ claim
+            ^{renderTicketClaimedEvent claim user_map ticket_map}
+
+        $of ETicketUnclaimed _ claim
+            ^{renderTicketUnclaimedEvent claim user_map ticket_map}
+
         $of EWikiPage wiki_page_id wiki_page
             ^{renderWikiPageEvent project_handle wiki_page_id wiki_page user_map}
 

@@ -333,10 +333,11 @@ Ticket
     deriving Eq Ord
 
 TicketClaiming
-    ts      UTCTime
-    user    UserId
-    ticket  CommentId
-    note    Text      Maybe
+    ts         UTCTime
+    user       UserId
+    ticket     CommentId
+    note       Text      Maybe
+    releasedTs UTCTime   Maybe
 
     UniqueTicketClaiming ticket
 
@@ -419,8 +420,16 @@ EventCommentPending
     comment CommentId
 
 EventCommentRethreaded
-    ts       UTCTime
+    ts      UTCTime
     rethread RethreadId
+
+EventTicketClaimed
+    ts      UTCTime
+    claim   TicketClaimingId
+
+EventTicketUnclaimed
+    ts      UTCTime
+    claim   TicketClaimingId
 
 -- Notification sent event.
 EventNotificationSent

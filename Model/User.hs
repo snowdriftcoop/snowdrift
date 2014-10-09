@@ -64,6 +64,7 @@ import Model.Wiki.Sql
 import qualified Data.Map       as M
 import qualified Data.Set       as S
 import qualified Data.Text      as T
+import           Control.Monad.Writer.Strict (tell)
 import           Yesod.Markdown (Markdown(..))
 
 -- anonymousUser is a special user for items posted by visitors who are not
@@ -390,14 +391,30 @@ userCanDeleteCommentDB user_id (Entity comment_id comment) =
               then return True
               else return False
 
--- TODO: claim event
-userClaimCommentDB :: UserId -> CommentId -> Maybe Text -> DB ()
-userClaimCommentDB user_id comment_id mnote = liftIO getCurrentTime >>= \now ->
-    insert_ (TicketClaiming now user_id comment_id mnote)
 
--- TODO: unclaim event
-userUnclaimCommentDB :: UserId -> CommentId -> Maybe Text -> DB ()
-userUnclaimCommentDB _ comment_id _ = deleteBy (UniqueTicketClaiming comment_id)
+userClaimCommentDB :: UserId -> CommentId -> Maybe Text -> SDB ()
+userClaimCommentDB user_id comment_id mnote = do
+    now <- liftIO getCurrentTime
+
+    let ticket_claiming = TicketClaiming now user_id comment_id mnote Nothing
+
+    ticket_claiming_id <- lift $ insert ticket_claiming
+    tell [ETicketClaimed ticket_claiming_id ticket_claiming]
+
+userUnclaimCommentDB :: UserId -> CommentId -> Maybe Text -> SDB ()
+userUnclaimCommentDB _ comment_id _ = do
+    maybe_ticket_claiming_entity <- getBy $ UniqueTicketClaiming comment_id
+    case maybe_ticket_claiming_entity of
+        Nothing -> return ()
+        Just (Entity ticket_claiming_id ticket_claiming) -> do
+            now <- liftIO getCurrentTime
+
+            lift $ update $ \ tc -> do
+                where_ $ tc ^. TicketClaimingId ==. val ticket_claiming_id
+                set tc [ TicketClaimingReleasedTs =. val (Just now) ]
+
+            tell [ ETicketUnclaimed ticket_claiming_id ticket_claiming { ticketClaimingReleasedTs = Just now } ]
+
 
 -- | Fetch a User's number of unviewed comments on each WikiPage of a Project.
 fetchNumUnviewedCommentsOnProjectWikiPagesDB :: UserId -> ProjectId -> DB (Map WikiPageId Int)

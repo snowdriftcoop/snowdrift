@@ -864,7 +864,7 @@ getProjectFeedR project_handle = do
 
     before <- lookupGetUTCTimeDefaultNow "before"
 
-    (project, comments, rethreads, wiki_pages, wiki_edits, blog_posts, new_pledges,
+    (project, comments, rethreads, claimings, unclaimings, wiki_pages, wiki_edits, blog_posts, new_pledges,
      updated_pledges, deleted_pledges, discussion_map, wiki_page_map, user_map,
      earlier_closures_map, earlier_retracts_map, closure_map, retract_map,
      ticket_map, claim_map, flag_map) <- runYDB $ do
@@ -873,6 +873,8 @@ getProjectFeedR project_handle = do
 
         comments        <- fetchProjectCommentsIncludingRethreadedBeforeDB project_id muser_id before lim
         rethreads       <- fetchProjectCommentRethreadsBeforeDB            project_id muser_id before lim
+        claimings       <- fetchProjectTicketClaimingsBeforeDB             project_id before lim
+        unclaimings     <- fetchProjectTicketUnclaimingsBeforeDB           project_id before lim
         wiki_pages      <- fetchProjectWikiPagesBeforeDB                   project_id before lim
         blog_posts      <- fetchProjectBlogPostsBeforeDB                   project_id before lim
         wiki_edits      <- fetchProjectWikiEditsBeforeDB                   project_id before lim
@@ -893,11 +895,14 @@ getProjectFeedR project_handle = do
                          , S.fromList (map (rethreadModerator . entityVal) rethreads)
                          , S.fromList wiki_edit_users
                          , S.fromList blog_post_users
+                         , S.fromList (map (ticketClaimingUser . entityVal) (claimings <> unclaimings))
                          , S.fromList (map sharesPledgedUser shares_pledged)
                          , S.fromList (map eventDeletedPledgeUser deleted_pledges)
                          ]
 
         discussion_map <- fetchProjectDiscussionsDB project_id >>= fetchDiscussionsDB
+
+        ticket_map <- fetchClaimedTicketsDB (claimings <> unclaimings)
 
         -- WikiPages keyed by their own IDs (contained in a WikiEdit)
         wiki_page_map <- entitiesMap <$> fetchWikiPagesInDB wiki_edit_pages
@@ -908,11 +913,10 @@ getProjectFeedR project_handle = do
         earlier_retracts_map <- fetchCommentsAncestorRetractsDB comment_ids
         closure_map          <- makeCommentClosingMapDB         comment_ids
         retract_map          <- makeCommentRetractingMapDB      comment_ids
-        ticket_map           <- makeTicketMapDB                 comment_ids
         claim_map            <- makeClaimedTicketMapDB          comment_ids
         flag_map             <- makeFlagMapDB                   comment_ids
 
-        return (project, comments, rethreads, wiki_pages, wiki_edits, blog_posts,
+        return (project, comments, rethreads, claimings, unclaimings, wiki_pages, wiki_edits, blog_posts,
                 new_pledges, updated_pledges, deleted_pledges, discussion_map,
                 wiki_page_map, user_map, earlier_closures_map,
                 earlier_retracts_map, closure_map, retract_map, ticket_map,
@@ -923,6 +927,8 @@ getProjectFeedR project_handle = do
     let all_unsorted_events = mconcat
             [ map (onEntity ECommentPosted)     comments
             , map (onEntity ECommentRethreaded) rethreads
+            , map (onEntity ETicketClaimed)     claimings
+            , map (onEntity ETicketUnclaimed)   unclaimings
             , map (onEntity EWikiPage)          wiki_pages
             , map (onEntity EWikiEdit)          wiki_edits
             , map (onEntity EBlogPost)          blog_posts
@@ -950,7 +956,8 @@ getProjectFeedR project_handle = do
                         project_handle
                         user_map
                         discussion_map
-                        wiki_page_map) events
+                        wiki_page_map
+                        ticket_map) events
 
     selectRep $ do
         provideRep $ atomFeed feed
@@ -1166,6 +1173,7 @@ getTicketsR project_handle = do
     defaultLayout $ do
         setTitle . toHtml $ projectName project <> " Tickets | Snowdrift.coop"
         $(widgetFile "tickets")
+
 
 --------------------------------------------------------------------------------
 -- /transactions

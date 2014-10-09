@@ -15,6 +15,8 @@ module Model.Project
     , fetchProjectWikiEditsBeforeDB
     , fetchProjectWikiPagesBeforeDB
     , fetchProjectBlogPostsBeforeDB
+    , fetchProjectTicketClaimingsBeforeDB
+    , fetchProjectTicketUnclaimingsBeforeDB
     , fetchProjectWikiPageByNameDB
     , insertProjectPledgeDB
     -- TODO(mitchell): rename all these... prefix fetch, suffix DB
@@ -244,8 +246,7 @@ getProjectTagList project_id = (,) <$> getProjectTags <*> getOtherTags
 -- | Get all of a Project's WikiPages, sorted alphabetically.
 getProjectWikiPages :: ProjectId ->  DB [Entity WikiPage]
 getProjectWikiPages project_id =
-    select $
-    from $ \ wp -> do
+    select $ from $ \ wp -> do
     where_ (exprWikiPageOnProject wp project_id)
     orderBy [asc (wp ^. WikiPageTarget)]
     return wp
@@ -254,9 +255,7 @@ getProjectWikiPages project_id =
 fetchProjectDiscussionsDB :: ProjectId -> DB [DiscussionId]
 fetchProjectDiscussionsDB project_id = do
     pd <- projectDiscussion <$> getJust project_id
-    wpds <- fmap (map unValue) $
-                select $
-                from $ \wp -> do
+    wpds <- fmap (map unValue) $ select $ from $ \wp -> do
                 where_ (wp ^. WikiPageProject ==. val project_id)
                 return (wp ^. WikiPageDiscussion)
     return (pd : wpds)
@@ -264,13 +263,11 @@ fetchProjectDiscussionsDB project_id = do
 -- | Get all (posted, not pending) Comments made *somewhere* on a Project, before the given time.
 fetchProjectCommentsIncludingRethreadedBeforeDB :: ProjectId -> Maybe UserId -> UTCTime -> Int64 -> DB [Entity Comment]
 fetchProjectCommentsIncludingRethreadedBeforeDB project_id muser_id before lim = fetchProjectDiscussionsDB project_id >>= \project_discussions ->
-    select $
-    from $ \(ecp `InnerJoin` c) -> do
+    select $ from $ \(ecp `InnerJoin` c) -> do
     on_ (ecp ^. EventCommentPostedComment ==. c ^. CommentId)
-    where_ $
-        ecp ^. EventCommentPostedTs <=. val before &&.
-        exprCommentProjectPermissionFilterIncludingRethreaded muser_id (val project_id) c &&.
-        c ^. CommentDiscussion `in_` valList project_discussions
+    where_ $ ecp ^. EventCommentPostedTs <=. val before
+        &&. exprCommentProjectPermissionFilterIncludingRethreaded muser_id (val project_id) c
+        &&. c ^. CommentDiscussion `in_` valList project_discussions
     orderBy [ desc $ ecp ^. EventCommentPostedTs, desc $ ecp ^. EventCommentPostedId ]
     limit lim
     return c
@@ -278,17 +275,42 @@ fetchProjectCommentsIncludingRethreadedBeforeDB project_id muser_id before lim =
 -- | Get all Rethreads whose *destinations* are on the given Project.
 fetchProjectCommentRethreadsBeforeDB :: ProjectId -> Maybe UserId -> UTCTime -> Int64 -> DB [Entity Rethread]
 fetchProjectCommentRethreadsBeforeDB project_id muser_id before lim = fetchProjectDiscussionsDB project_id >>= \project_discussions ->
-    select $
-    from $ \(ecr `InnerJoin` r `InnerJoin` c) -> do
-    on_ (r ^. RethreadNewComment ==. c ^. CommentId)
-    on_ (ecr ^. EventCommentRethreadedRethread ==. r ^. RethreadId)
-    where_ $
-        ecr ^. EventCommentRethreadedTs <=. val before &&.
-        exprCommentProjectPermissionFilter muser_id (val project_id) c &&.
-        c ^. CommentDiscussion `in_` valList project_discussions
-    orderBy [ desc $ ecr ^. EventCommentRethreadedTs, desc $ ecr ^. EventCommentRethreadedId ]
-    limit lim
-    return r
+    select $ from $ \(ecr `InnerJoin` r `InnerJoin` c) -> do
+        on_ (r ^. RethreadNewComment ==. c ^. CommentId)
+        on_ (ecr ^. EventCommentRethreadedRethread ==. r ^. RethreadId)
+        where_ $ ecr ^. EventCommentRethreadedTs <=. val before
+            &&. exprCommentProjectPermissionFilter muser_id (val project_id) c
+            &&.  c ^. CommentDiscussion `in_` valList project_discussions
+        orderBy [ desc $ ecr ^. EventCommentRethreadedTs, desc $ ecr ^. EventCommentRethreadedId ]
+        limit lim
+        return r
+
+fetchProjectTicketClaimingsBeforeDB :: ProjectId -> UTCTime -> Int64 -> DB [Entity TicketClaiming]
+fetchProjectTicketClaimingsBeforeDB project_id before lim = fetchProjectDiscussionsDB project_id >>= \project_discussions ->
+    select $ from $ \ (tc `InnerJoin` c `InnerJoin` t) -> do
+        on_ (t ^. TicketComment ==. c ^. CommentId)
+        on_ (tc ^. TicketClaimingTicket ==. c ^. CommentId)
+
+        where_ $ tc ^. TicketClaimingTs <=. val before
+            &&.  c ^. CommentDiscussion `in_` valList project_discussions
+
+        orderBy [ desc $ tc ^. TicketClaimingTs, desc $ tc ^. TicketClaimingId ]
+        limit lim
+        return tc
+
+fetchProjectTicketUnclaimingsBeforeDB :: ProjectId -> UTCTime -> Int64 -> DB [Entity TicketClaiming]
+fetchProjectTicketUnclaimingsBeforeDB project_id before lim = fetchProjectDiscussionsDB project_id >>= \project_discussions ->
+    select $ from $ \ (tc `InnerJoin` c `InnerJoin` t) -> do
+        on_ (t ^. TicketComment ==. c ^. CommentId)
+        on_ (tc ^. TicketClaimingTicket ==. c ^. CommentId)
+
+        where_ $ not_ (isNothing $ tc ^. TicketClaimingReleasedTs)
+            &&. tc ^. TicketClaimingReleasedTs <=. val (Just before)
+            &&.  c ^. CommentDiscussion `in_` valList project_discussions
+
+        orderBy [ desc $ tc ^. TicketClaimingReleasedTs, desc $ tc ^. TicketClaimingId ]
+        limit lim
+        return tc
 
 -- | Fetch all WikiPages made on this Project before this time.
 fetchProjectWikiPagesBeforeDB :: ProjectId -> UTCTime -> Int64 -> DB [Entity WikiPage]

@@ -13,6 +13,10 @@ data SnowdriftEvent
     = ECommentPosted CommentId Comment
     -- Comment unapproved (pending approval).
     | ECommentPending CommentId Comment
+    -- Ticket claimed
+    | ETicketClaimed TicketClaimingId TicketClaiming
+    -- Ticket unclaimed
+    | ETicketUnclaimed TicketClaimingId TicketClaiming
     -- Comment rethreaded.
     | ECommentRethreaded RethreadId Rethread -- rethreaded-from-URL
     | ENotificationSent NotificationId Notification

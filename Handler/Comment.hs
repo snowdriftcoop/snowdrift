@@ -291,7 +291,7 @@ postClaimComment user@(Entity user_id _) comment_id comment make_comment_handler
         FormSuccess mnote -> do
             lookupPostMode >>= \case
                 Just PostMode -> do
-                    runDB (userClaimCommentDB user_id comment_id mnote)
+                    runSDB (userClaimCommentDB user_id comment_id mnote)
                     return Nothing
                 _ -> do
                     now <- liftIO getCurrentTime
@@ -303,7 +303,7 @@ postClaimComment user@(Entity user_id _) comment_id comment make_comment_handler
                         (Entity comment_id comment)
                         user
                         make_comment_handler_info
-                        (def { mod_claim_map = M.insert comment_id (TicketClaiming now user_id comment_id mnote) })
+                        (def { mod_claim_map = M.insert comment_id (TicketClaiming now user_id comment_id mnote Nothing) })
                         (getMaxDepthDefault 0)
                         True
                     return (Just (comment_widget, form))
@@ -601,7 +601,7 @@ postUnclaimComment user@(Entity user_id _) comment_id comment make_comment_handl
         FormSuccess mnote -> do
             lookupPostMode >>= \case
                 Just PostMode -> do
-                    runDB (userUnclaimCommentDB user_id comment_id mnote)
+                    runSDB (userUnclaimCommentDB user_id comment_id mnote)
                     return Nothing
                 _ -> do
                     (form, _) <- generateFormPost (claimCommentForm (Just mnote))
