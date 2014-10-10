@@ -297,7 +297,7 @@ getUserTicketsR user_id = do
 
         where_ $ tc ^. TicketClaimingUser ==. val user_id
             &&. isNothing (tc ^. TicketClaimingReleasedTs)
-            -- &&. c ^. CommentId `notIn` (subList_select $ from $ return . (^. CommentClosingComment))
+            &&. c ^. CommentId `notIn` (subList_select $ from $ return . (^. CommentClosingComment))
 
         orderBy [ asc $ tc ^. TicketClaimingTs ]
 
