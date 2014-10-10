@@ -43,9 +43,16 @@ git clone [your remote address, e.g. git@gitorious.org:snowdrift/yourusername-sn
 cd snowdrift
 cabal sandbox init
 cabal install --only-dependencies --enable-tests
-cp config/postgresql.template config/postgresql.yml
 
-// Set up the database
+// Build the project
+cabal build
+
+// Set up the database.  The script will prompt you for a database
+// password (see YOURPASSPHRASE below) as well as your sudo password
+dist/build/sdm/sdm init
+
+// The sdm script will run the following commands or their equivalents
+cp config/postgresql.template config/postgresql.yml
 sudo -u postgres createuser -S -D -R snowdrift_development
 sudo -u postgres createdb snowdrift_development
 sudo -u postgres createuser -S -d -R snowdrift_test
@@ -60,6 +67,11 @@ vi config/postgres.yml // set 'password' to 'YOURPASSPHRASE', same as you chose 
 sudo -u postgres psql snowdrift_development <devDB.sql
 sudo -u postgres psql snowdrift_test_template <testDB.sql
 
-// Hack away
+// Launch the development site
+dist/build/Snowdrift/Snowdrift Development
+
+// If you want Yesod to automatically rebuild the project whenever you
+// change the code, use the yesod-bin package
+cabal install yesod-bin
 yesod devel
 ```
