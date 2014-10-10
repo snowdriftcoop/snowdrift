@@ -42,7 +42,7 @@ module Model.Comment
     , fetchCommentsDescendantsDB
     , fetchCommentsInDB
     , fetchCommentsWithChildrenInDB
-    , fetchClaimedTicketsDB
+    , fetchCommentTicketsDB
     , filterCommentsDB
     , makeClaimedTicketMapDB
     , makeCommentClosingMapDB
@@ -739,10 +739,10 @@ rethreadCommentDB mnew_parent_id new_discussion_id root_comment_id user_id reaso
                               <#  (vc  ^. ViewCommentUser)
                               <&> (cr  ^. CommentRethreadNewComment))
 
-fetchClaimedTicketsDB :: [Entity TicketClaiming] -> DB (Map CommentId (Entity Ticket))
-fetchClaimedTicketsDB ticket_claimings = do
+fetchCommentTicketsDB :: Set CommentId -> DB (Map CommentId (Entity Ticket))
+fetchCommentTicketsDB comment_ids = do
     ticket_entities <- select $ from $ \ t -> do
-        where_ $ t ^. TicketComment `in_` valList (map (ticketClaimingTicket . entityVal) ticket_claimings)
+        where_ $ t ^. TicketComment `in_` valList (S.toList comment_ids)
         return t
 
     return $ M.fromList $ map (ticketComment . entityVal &&& id) ticket_entities

@@ -8,6 +8,9 @@ $forall event <- events
         $of ECommentRethreaded _ rethread
             ^{renderCommentRethreadedEvent rethread user_map}
 
+        $of ECommentClosed _ comment_closing
+            ^{renderCommentClosedEvent comment_closing user_map ticket_map}
+
         $of ETicketClaimed _ claim
             ^{renderTicketClaimedEvent claim user_map ticket_map}
 

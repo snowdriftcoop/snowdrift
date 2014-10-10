@@ -864,7 +864,7 @@ getProjectFeedR project_handle = do
 
     before <- lookupGetUTCTimeDefaultNow "before"
 
-    (project, comments, rethreads, claimings, unclaimings, wiki_pages, wiki_edits, blog_posts, new_pledges,
+    (project, comments, rethreads, closings, claimings, unclaimings, wiki_pages, wiki_edits, blog_posts, new_pledges,
      updated_pledges, deleted_pledges, discussion_map, wiki_page_map, user_map,
      earlier_closures_map, earlier_retracts_map, closure_map, retract_map,
      ticket_map, claim_map, flag_map) <- runYDB $ do
@@ -873,6 +873,7 @@ getProjectFeedR project_handle = do
 
         comments        <- fetchProjectCommentsIncludingRethreadedBeforeDB project_id muser_id before lim
         rethreads       <- fetchProjectCommentRethreadsBeforeDB            project_id muser_id before lim
+        closings        <- fetchProjectCommentClosingsBeforeDB             project_id muser_id before lim
         claimings       <- fetchProjectTicketClaimingsBeforeDB             project_id before lim
         unclaimings     <- fetchProjectTicketUnclaimingsBeforeDB           project_id before lim
         wiki_pages      <- fetchProjectWikiPagesBeforeDB                   project_id before lim
@@ -892,6 +893,7 @@ getProjectFeedR project_handle = do
             -- All users: comment posters, wiki page creators, etc.
             user_ids = S.toList $ mconcat
                          [ S.fromList comment_users
+                         , S.fromList (map (commentClosingClosedBy . entityVal) closings)
                          , S.fromList (map (rethreadModerator . entityVal) rethreads)
                          , S.fromList wiki_edit_users
                          , S.fromList blog_post_users
@@ -902,7 +904,10 @@ getProjectFeedR project_handle = do
 
         discussion_map <- fetchProjectDiscussionsDB project_id >>= fetchDiscussionsDB
 
-        ticket_map <- fetchClaimedTicketsDB (claimings <> unclaimings)
+        ticket_map <- fetchCommentTicketsDB $ mconcat
+            [ S.fromList comment_ids
+            , S.fromList $ map (ticketClaimingTicket . entityVal) $ claimings <> unclaimings
+            ]
 
         -- WikiPages keyed by their own IDs (contained in a WikiEdit)
         wiki_page_map <- entitiesMap <$> fetchWikiPagesInDB wiki_edit_pages
@@ -916,7 +921,7 @@ getProjectFeedR project_handle = do
         claim_map            <- makeClaimedTicketMapDB          comment_ids
         flag_map             <- makeFlagMapDB                   comment_ids
 
-        return (project, comments, rethreads, claimings, unclaimings, wiki_pages, wiki_edits, blog_posts,
+        return (project, comments, rethreads, closings, claimings, unclaimings, wiki_pages, wiki_edits, blog_posts,
                 new_pledges, updated_pledges, deleted_pledges, discussion_map,
                 wiki_page_map, user_map, earlier_closures_map,
                 earlier_retracts_map, closure_map, retract_map, ticket_map,
@@ -927,6 +932,7 @@ getProjectFeedR project_handle = do
     let all_unsorted_events = mconcat
             [ map (onEntity ECommentPosted)     comments
             , map (onEntity ECommentRethreaded) rethreads
+            , map (onEntity ECommentClosed)     closings
             , map (onEntity ETicketClaimed)     claimings
             , map (onEntity ETicketUnclaimed)   unclaimings
             , map (onEntity EWikiPage)          wiki_pages

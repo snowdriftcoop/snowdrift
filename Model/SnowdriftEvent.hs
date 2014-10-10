@@ -22,6 +22,7 @@ snowdriftEventTime :: SnowdriftEvent -> UTCTime
 snowdriftEventTime (ECommentPosted _ Comment{..})          = fromMaybe commentCreatedTs commentApprovedTs
 snowdriftEventTime (ECommentPending _ Comment{..})         = commentCreatedTs
 snowdriftEventTime (ECommentRethreaded _ Rethread{..})     = rethreadTs
+snowdriftEventTime (ECommentClosed _ CommentClosing{..})   = commentClosingTs
 snowdriftEventTime (ETicketClaimed _ TicketClaiming{..})   = ticketClaimingTs
 snowdriftEventTime (ETicketUnclaimed _ TicketClaiming{..}) = fromMaybe (error "TicketUnclaimed event for TicketClaiming with no ReleasedTs") ticketClaimingReleasedTs
 snowdriftEventTime (ENotificationSent _ Notification{..})  = notificationCreatedTs
@@ -65,6 +66,37 @@ snowdriftEventToFeedEntry render project_handle _ _ _ _ (ECommentRethreaded _ re
         , feedEntryTitle   = T.unwords [ T.snoc project_handle ':', "comment rethreaded" ]
         , feedEntryContent = [hamlet| |] render
         }
+
+snowdriftEventToFeedEntry render project_handle user_map _ _ ticket_map (ECommentClosed _ CommentClosing{..}) =
+    let user_id    = commentClosingClosedBy
+        maybe_user = M.lookup user_id user_map
+        username   = maybe "<unknown user>" (userDisplayName . Entity user_id) maybe_user
+
+        mk_feed_entry title = Just $ FeedEntry
+            { feedEntryLink    = CommentDirectLinkR commentClosingComment
+            , feedEntryUpdated = commentClosingTs
+            , feedEntryTitle   = title
+            , feedEntryContent = [hamlet| |] render
+            }
+
+     in case M.lookup commentClosingComment ticket_map of
+            Just (Entity ticket_id Ticket{..}) ->
+                let ticket_str = case ticket_id of
+                        Key (PersistInt64 tid) -> T.pack $ show tid
+                        Key _ -> "<malformed id>"
+                 in mk_feed_entry $ T.unwords
+                        [ T.snoc project_handle ':'
+                        , "ticket closed by"
+                        , T.snoc username ':'
+                        , T.concat [ "SD-", ticket_str, ":" ]
+                        , ticketName
+                        ]
+
+            Nothing -> mk_feed_entry $ T.unwords
+                        [ T.snoc project_handle ':'
+                        , "comment thread closed by"
+                        , username
+                        ]
 
 snowdriftEventToFeedEntry render project_handle user_map _ _ ticket_map (ETicketClaimed _ TicketClaiming{..}) =
     let user_id    = ticketClaimingUser

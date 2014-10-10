@@ -423,6 +423,11 @@ EventCommentRethreaded
     ts      UTCTime
     rethread RethreadId
 
+-- An approved comment.
+EventCommentClosing
+    ts      UTCTime
+    comment_closing CommentClosingId
+
 EventTicketClaimed
     ts      UTCTime
     claim   TicketClaimingId

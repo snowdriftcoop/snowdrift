@@ -57,6 +57,8 @@ import           Model.Tag
 import           View.Comment
 import           Widgets.Tag
 
+import           Control.Monad.Writer            (tell)
+
 import           Data.Default                    (def)
 import           Data.Tree                       (Forest, Tree, rootLabel)
 import qualified Data.Map                        as M
@@ -325,7 +327,10 @@ postCloseComment user@(Entity user_id _) comment_id comment make_comment_handler
             let closing = CommentClosing now user_id reason comment_id
             lookupPostMode >>= \case
                 Just PostMode -> do
-                    runDB (insert_ closing)
+                    runSDB $ do
+                        closing_id <- insert closing
+                        tell [ECommentClosed closing_id closing]
+
                     return Nothing
                 _ -> do
                     (form, _) <- generateFormPost (closeCommentForm (Just reason))

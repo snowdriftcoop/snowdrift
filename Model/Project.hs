@@ -4,6 +4,7 @@ module Model.Project
     , fetchPublicProjectsDB
     , fetchProjectCommentRethreadsBeforeDB
     , fetchProjectCommentsIncludingRethreadedBeforeDB
+    , fetchProjectCommentClosingsBeforeDB
     , fetchProjectDeletedPledgesBeforeDB
     , fetchProjectDiscussionsDB
     , fetchProjectNewPledgesBeforeDB
@@ -284,6 +285,19 @@ fetchProjectCommentRethreadsBeforeDB project_id muser_id before lim = fetchProje
         orderBy [ desc $ ecr ^. EventCommentRethreadedTs, desc $ ecr ^. EventCommentRethreadedId ]
         limit lim
         return r
+
+-- | Get all Closings for comments on the current project
+fetchProjectCommentClosingsBeforeDB :: ProjectId -> Maybe UserId -> UTCTime -> Int64 -> DB [Entity CommentClosing]
+fetchProjectCommentClosingsBeforeDB project_id muser_id before lim = fetchProjectDiscussionsDB project_id >>= \project_discussions ->
+    select $ from $ \(closing `InnerJoin` comment) -> do
+        on_ (closing ^. CommentClosingComment ==. comment ^. CommentId)
+        where_ $ closing ^. CommentClosingTs <=. val before
+            &&. exprCommentProjectPermissionFilter muser_id (val project_id) comment
+            &&.  comment ^. CommentDiscussion `in_` valList project_discussions
+
+        orderBy [ desc $ closing ^. CommentClosingTs, desc $ closing ^. CommentClosingId ]
+        limit lim
+        return closing
 
 fetchProjectTicketClaimingsBeforeDB :: ProjectId -> UTCTime -> Int64 -> DB [Entity TicketClaiming]
 fetchProjectTicketClaimingsBeforeDB project_id before lim = fetchProjectDiscussionsDB project_id >>= \project_discussions ->
