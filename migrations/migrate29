@@ -1,0 +1,2 @@
+CREATe TABLE "event_comment_closing"("id" SERIAL PRIMARY KEY UNIQUE,"ts" TIMESTAMP NOT NULL,"comment_closing" INT8 NOT NULL);
+ALTER TABLE "event_comment_closing" ADD CONSTRAINT "event_comment_closing_comment_closing_fkey" FOREIGN KEY("comment_closing") REFERENCES "comment_closing"("id");
