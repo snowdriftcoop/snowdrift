@@ -1,0 +1,33 @@
+<table .table>
+    <tr>
+        <th>
+            Project
+        <th>
+            Discussion
+        <th>
+            Ticket
+        <th>
+            Title
+
+    $forall (Entity ticket_id ticket, w, Value project_handle) <- tickets
+        <tr>
+            <td>
+                #{project_handle}
+            <td>
+                $maybe Entity _ wiki_page <- w
+                    on page
+                    <a href=@{WikiR project_handle (wikiPageTarget wiki_page)}>
+                        #{wikiPageTarget wiki_page}
+                $nothing
+                    on project discussion
+                        
+            <td>
+                <a href=@{CommentDirectLinkR (ticketComment ticket)}>
+                    $case ticket_id
+                        $of Key (PersistInt64 tid)
+                            SD-#{tid}
+                        $of _
+                            SD-???
+                        
+            <td>
+                #{ticketName ticket}
