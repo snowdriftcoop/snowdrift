@@ -298,9 +298,8 @@ snowdriftAuthHashDB =
                 <div id="login">
                     <p .h3 .text-center> We also offer a built-in system
                         <br>
-                        <small>
-                            <a href="@{UserCreateR}">
-                                click here to create a new account
+                        <a href="@{UserCreateR}">
+                            <button>click here to create a new account
                     <form .form-horizontal method="post" action="@{toMaster loginRoute}">
                         <div .form-group>
                             <label .col-sm-4 .control-label>
