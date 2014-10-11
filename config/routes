@@ -22,6 +22,7 @@
 /u/#UserId         UserR            GET POST
 /u/#UserId/balance UserBalanceR     GET POST
 /u/#UserId/d       UserDiscussionR  GET POST
+/u/#UserId/t       UserTicketsR     GET
 /u/#UserId/edit    EditUserR        GET
 /u/#UserId/elig    UserEstEligibleR     POST
 /u/#UserId/pledges UserPledgesR     GET

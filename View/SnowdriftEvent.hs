@@ -13,6 +13,7 @@ import View.Comment
 import Widgets.Time
 
 import qualified Data.Map   as M
+import qualified Data.Text  as T
 
 renderCommentPostedEvent
         :: CommentId
@@ -127,6 +128,66 @@ renderCommentRethreadedEvent Rethread{..} user_map = do
             to
             <a href=@{new_route}>@{new_route}#
             : #{rethreadReason}
+    |]
+
+renderCommentClosedEvent :: CommentClosing -> UserMap -> Map CommentId (Entity Ticket) -> Widget
+renderCommentClosedEvent CommentClosing{..} user_map ticket_map = do
+    let user = lookupErr "renderCommentClosedEvent: closing user not found in user map" commentClosingClosedBy user_map
+
+    case M.lookup commentClosingComment ticket_map of
+        Just (Entity ticket_id Ticket{..}) -> do
+            let ticket_str = case ticket_id of
+                    Key (PersistInt64 tid) -> T.pack $ show tid
+                    Key _ -> "<malformed key>"
+
+            [whamlet|
+                <div .event>
+                    ^{renderTime commentClosingTs}
+                    <a href=@{UserR commentClosingClosedBy}> #{userDisplayName (Entity commentClosingClosedBy user)}
+                    closed ticket
+                    <a href=@{CommentDirectLinkR commentClosingComment}>
+                        <div .ticket-title>SD-#{ticket_str}: #{ticketName}
+            |]
+
+        Nothing -> do
+            [whamlet|
+                <div .event>
+                    ^{renderTime commentClosingTs}
+                    <a href=@{UserR commentClosingClosedBy}> #{userDisplayName (Entity commentClosingClosedBy user)}
+                    closed comment thread
+            |]
+
+renderTicketClaimedEvent :: TicketClaiming -> UserMap -> Map CommentId (Entity Ticket) -> Widget
+renderTicketClaimedEvent TicketClaiming{..} user_map ticket_map = do
+    let user = lookupErr "renderTicketClaimedEvent: claiming user not found in user map" ticketClaimingUser user_map
+        Entity ticket_id Ticket{..} = lookupErr "renderTicketClaimedEvent: ticket not found in map" ticketClaimingTicket ticket_map
+
+        ticket_str = case ticket_id of
+            Key (PersistInt64 tid) -> T.pack $ show tid
+            Key _ -> "<malformed key>"
+
+    [whamlet|
+        <div .event>
+            ^{renderTime ticketClaimingTs}
+            <a href=@{UserR ticketClaimingUser}> #{userDisplayName (Entity ticketClaimingUser user)}
+            claimed ticket
+            <a href=@{CommentDirectLinkR ticketClaimingTicket}>
+                <div .ticket-title>SD-#{ticket_str}: #{ticketName}
+    |]
+
+renderTicketUnclaimedEvent :: TicketClaiming -> UserMap -> Map CommentId (Entity Ticket) -> Widget
+renderTicketUnclaimedEvent TicketClaiming{..} _ ticket_map = do
+    let Entity ticket_id Ticket{..} = lookupErr "renderTicketClaimedEvent: ticket not found in map" ticketClaimingTicket ticket_map
+        ticket_str = case ticket_id of
+            Key (PersistInt64 tid) -> T.pack $ show tid
+            Key _ -> "<malformed key>"
+
+    [whamlet|
+        <div .event>
+            ^{renderTime ticketClaimingTs}
+            Claim released, ticket available:
+            <a href=@{CommentDirectLinkR ticketClaimingTicket}>
+                <div .ticket-title>SD-#{ticket_str}: #{ticketName}
     |]
 
 renderWikiPageEvent :: Text -> WikiPageId -> WikiPage -> UserMap -> Widget

@@ -186,7 +186,16 @@ This will take a *long* time but should ultimately tell you it installed Snowdri
 Setting up the database
 -----------------------
 
-*This can be done while building is in progress*
+Run a script that will setup the development database for you:
+
+    sdm init --db=dev
+
+It will prompt you for a database password (see somepassphrase below)
+as well as your sudo password.  After that, you can jump to the next
+section.
+
+Alternatively, you can invoke the following commands, which can be
+done *while building is in progress*.
 
 Go to the config/ directory within the project directory
 and make a copy of postgresql.template and name the new file postgresql.yml
@@ -322,6 +331,10 @@ you can use the following command to export the changes (which can then be commi
 
 While in your project directory:
 
+    sdm export --db=dev
+
+which is the same as running:
+
     sudo -u postgres pg_dump snowdrift_development >devDB.sql
 
 Resetting your database
@@ -329,8 +342,11 @@ Resetting your database
 
 To remove any changes and reset your database to the devDB default
 (such as when others have provided a new update you want to try
-or to start clean before making changes you plan to commit),
-follow these steps:
+or to start clean before making changes you plan to commit):
+
+    sdm reset --db=dev
+
+Or follow these steps:
 
 Start by deleting your database:
 
@@ -367,6 +383,21 @@ you will need to install some extra dependencies with the command:
 
 Like setting up the original development database,
 we then need to set up a database and user for testing.
+
+Currently, the sdm script is not allowed to initialize just the test
+database:
+
+    sdm init --db=test
+
+So this command will return a warning.  But there is a workaround.
+*Backup your changes* and run:
+
+    sdm clean
+    sdm init
+
+The last command will initialize both databases.
+
+Alternatively, you can run the following commands:
 
 Create database user *without* superuser or createrole priveleges but *with* createdb priveleges:
 
@@ -414,6 +445,10 @@ Updating to the latest test database
 ------------------------------------
 
 When the testDB.sql file is updated, you'll need to update your template.
+
+    sdm reset --db=test
+
+Or run these commands:
 
 Go to the postgres=# prompt:
 

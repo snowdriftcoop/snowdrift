@@ -4,6 +4,7 @@
 import Prelude hiding (init, length)
 import Control.Exception (bracket)
 import Control.Monad hiding (forM_)
+import Data.Char (toLower)
 import Data.List.NonEmpty hiding (init, words, unwords)
 import Data.Foldable (forM_)
 import Data.Monoid ((<>))
@@ -20,12 +21,17 @@ main = do
   exists <- doesFileExist "Snowdrift.cabal"
   unless exists $ error "please run from the project's root directory"
   Sdm {..} <- getProgName >>= cmdArgs . sdm
+  run "sudo" ["-K"]  -- require a password the first time 'sudo' is run
   handle action db
 
 data Sdm = Sdm
   { db     :: String
   , action :: String
   } deriving (Typeable, Data, Show)
+
+actions, databases :: String
+actions   = "init, clean, reset, export"
+databases = "dev, test, all (default)"
 
 sdm :: String -> Sdm
 sdm pname = Sdm
@@ -35,17 +41,18 @@ sdm pname = Sdm
       &= typ "DATABASE"
   , action = def &= argPos 0 &= typ "ACTION"
   } &= summary "Snowdrift database manager 0.1" &= program pname
-    &= details [ "Actions: init, clean, reset"
-               , "Databases: dev, test, all (default)" ]
+    &= details [ "Actions: " <> actions
+               , "Databases: " <> databases ]
 
 handle :: String -> String -> IO ()
 handle action db
   -- Force evaluation to check that the 'db' argument is valid.
-  | action == "init"  = init  $! parse db
-  | action == "clean" = clean $! parse db
-  | action == "reset" = reset $! parse db
-  | otherwise         = error $ "invalid action; must be one of: "
-                     <> "init, clean, reset"
+  | action == "init"   = init   $! parse db
+  | action == "clean"  = clean  $! parse db
+  | action == "reset"  = reset  $! parse db
+  | action == "export" = export $! parse db
+  | otherwise          = error $ "invalid action; must be one of: "
+                      <> actions
 
 parse :: String -> NonEmpty DB
 parse s
@@ -53,32 +60,49 @@ parse s
   | s == "test" = fromList [test]
   | s == "all"  = fromList [dev, test]
   | otherwise   = error $ "invalid argument to 'db': "
-               <> "must be one of: all, dev, test"
+               <> "must be one of: " <> databases
 
 type Alias = String
 data DB = Dev Alias DBInfo | Test Alias DBInfo
 
-dbAlias :: DB -> Alias
-dbAlias (Dev a _)  = a
-dbAlias (Test a _) = a
+newtype DBFile = DBFile String
+newtype DBUser = DBUser String
+newtype DBName = DBName String
+newtype DBTemp = DBTemp String
 
-dbInfo :: DB -> DBInfo
-dbInfo (Dev _ i)  = i
-dbInfo (Test _ i) = i
+data DBInfo = DBInfo { dbFile :: DBFile
+                     , dbUser :: DBUser
+                     , dbName :: DBName
+                     , dbTemp :: Maybe DBTemp }
 
-data DBInfo = DBInfo { dbFile  :: String
-                     , dbUser  :: String
-                     , dbName  :: String
-                     } deriving (Eq, Show)
+class ToString a => DBType a
+instance DBType DBName
+instance DBType DBTemp
+
+class ToString a where
+  toString :: a -> String
+
+instance ToString DBUser where
+  toString (DBUser u) = u
+
+instance ToString DBName where
+  toString (DBName n) = n
+
+instance ToString DBTemp where
+  toString (DBTemp n) = n
 
 dev, test :: DB
-dev = Dev "dev" $ DBInfo { dbFile = "devDB.sql"
-                         , dbUser = "snowdrift_development"
-                         , dbName = "snowdrift_development" }
+dev = Dev "dev" $
+  DBInfo { dbFile = DBFile "devDB.sql"
+         , dbUser = DBUser "snowdrift_development"
+         , dbName = DBName "snowdrift_development"
+         , dbTemp = Nothing }
 
-test = Test "test" $ DBInfo { dbFile = "testDB.sql"
-                            , dbUser = "snowdrift_test"
-                            , dbName = "snowdrift_test_template" }
+test = Test "test" $
+  DBInfo { dbFile = DBFile "testDB.sql"
+         , dbUser = DBUser "snowdrift_test"
+         , dbName = DBName "snowdrift_test"
+         , dbTemp = Just $ DBTemp "snowdrift_test_template" }
 
 
 -- Shell commands.
@@ -103,39 +127,76 @@ psql arg = putStr =<< proc "echo" [arg] -|- postgres ["psql"]
 cat :: String -> CreateProcess
 cat file = proc "cat" [file]
 
+leave :: String -> IO ()
+leave s = do
+  pname <- getProgName
+  putStr $ pname <> ": " <> s
+
+leaveLn :: String -> IO ()
+leaveLn s = leave s >> putStr "\n"
+
 
 -- Database interaction.
 
-dropDB, createDB :: DBInfo -> IO ()
-dropDB DBInfo {..}   = psql $ "DROP DATABASE " <> dbName <> ";"
-createDB DBInfo {..} = psql $ "CREATE DATABASE " <> dbName <> ";"
+doesDBExist :: DBType a => a -> IO Bool
+doesDBExist dbType = do
+  dbs <- postgres ["psql", "-lqt"] -|- proc "cut" ["-d|", "-f1"]
+  return . elem (toString dbType) $ words dbs
 
-importDB :: DBInfo -> IO ()
-importDB DBInfo {..} = putStr =<< cat dbFile -|- postgres ["psql", dbName]
+ifExists :: DBType a => a -> IO () -> IO ()
+ifExists dbType as = do
+  exists <- doesDBExist dbType
+  if exists
+    then as
+    else do
+      -- Don't error out or it won't check all 'dbs'.
+      leaveLn $ "'" <> toString dbType <> "' does not exist; doing nothing"
 
-createUser :: DBInfo -> [String] -> IO ()
-createUser DBInfo {..} opts = psql $ "CREATE USER " <> dbUser <> " "
-                           <> unwords opts <> ";"
+dropDB, createDB :: DBType a => a -> IO ()
+dropDB   dbType = ifExists dbType . psql $ "DROP DATABASE " <> toString dbType <> ";"
+createDB dbType = psql $ "CREATE DATABASE " <> toString dbType <> ";"
 
-dropRole :: DBInfo -> IO ()
-dropRole DBInfo {..} = psql $ "DROP ROLE " <> dbUser <> ";"
+importDB :: DBType a => DBFile -> a -> IO ()
+importDB (DBFile f) dbType = putStr =<< cat f
+                         -|- postgres ["psql", toString dbType]
 
-alterUser :: DBInfo -> String -> IO ()
-alterUser DBInfo {..} password = psql $ "ALTER USER " <> dbUser
-                              <> " WITH ENCRYPTED PASSWORD '" <> password <> "';"
+exportDB :: DBType a => a -> DBFile -> IO ()
+exportDB dbType (DBFile f) = loop
+  where
+    loop = do
+      leave $ "overwrite '" <> f <> "'? (yes/No) "
+      hFlush stdout             -- send the question to 'stdout' immediately
+      answer <- getLine >>= return . fmap toLower
+      case () of
+        _| answer == "yes" -> do
+             (_, Just o, _, _) <-
+               createProcess (postgres ["pg_dump", toString dbType]) { std_out = CreatePipe }
+             dump <- hGetContents o
+             writeFile f dump
+         | answer == "no" || null answer -> leaveLn "doing nothing"
+         | otherwise -> do
+             leaveLn "invalid argument"
+             loop
 
-template :: Bool -> DBInfo -> IO ()
-template b DBInfo {..}  = psql $ "UPDATE pg_database SET datistemplate=" <> show b
-                       <> " WHERE datname='" <> dbName <> "';"
+createUser :: DBUser -> [String] -> IO ()
+createUser (DBUser u) opts = psql $ "CREATE USER " <> u <> " "
+                          <> unwords opts <> ";"
 
-setTemplate, unsetTemplate :: DBInfo -> IO ()
+dropRole :: DBUser -> IO ()
+dropRole (DBUser u) = psql $ "DROP ROLE " <> u <> ";"
+
+alterUser :: DBUser -> String -> IO ()
+alterUser (DBUser u) password = psql $ "ALTER USER " <> u
+                             <> " WITH ENCRYPTED PASSWORD '" <> password <> "';"
+
+template :: Bool -> DBTemp -> IO ()
+template b dbTemp = ifExists dbTemp .
+  psql $ "UPDATE pg_database SET datistemplate="
+      <> show b <> " WHERE datname='" <> toString dbTemp <> "';"
+
+setTemplate, unsetTemplate :: DBTemp -> IO ()
 setTemplate   = template True
 unsetTemplate = template False
-
-doesDBExist :: DBInfo -> IO Bool
-doesDBExist DBInfo {..}  = do
-  dbs <- postgres ["psql", "-lqt"] -|- proc "cut" ["-d|", "-f1"]
-  return . elem dbName $ words dbs
 
 
 -- Actions.
@@ -143,25 +204,24 @@ doesDBExist DBInfo {..}  = do
 config :: String
 config = "config/postgresql.yml"
 
-getPassword :: IO String
-getPassword =
+getPassword :: String -> IO String
+getPassword s =
   bracket (hGetEcho stdout) (hSetEcho stdout) . const $ do
-    putStr "Password: "
+    leave s
     hSetEcho stdout False
     hFlush stdout
     p <- getLine
     putStr "\n"
     return p
 
-init, clean, reset :: NonEmpty DB -> IO ()
+init, clean, reset, export :: NonEmpty DB -> IO ()
 init ((Test {}) :| []) = error "cannot initialize only test; try to init dev or all"
 init dbs = do
   exists <- doesFileExist config
   when exists $ error "already initialized; doing nothing"
 
   -- Get a database password from a user.
-  putStrLn "Please specify a database password you would like to use."
-  password <- getPassword
+  password <- getPassword $ "database password: "
   when (null password) $ error "no password provided"
 
   -- Setup the databases.
@@ -173,30 +233,21 @@ init dbs = do
   run "sudo" ["chmod", "400", config]
     where
       init' :: DB -> String -> IO ()
-      init' (Dev _ info) password = do
-        createUser info ["NOSUPERUSER", "NOCREATEDB", "NOCREATEROLE"]
-        createDB info
-        alterUser info password
-        psql $ "GRANT ALL PRIVILEGES ON DATABASE " <> dbName info
-            <> " TO " <> dbUser info <> ";"
-        importDB info
+      init' (Dev _ (DBInfo {..})) password = do
+        createUser dbUser ["NOSUPERUSER", "NOCREATEDB", "NOCREATEROLE"]
+        createDB dbName
+        alterUser dbUser password
+        psql $ "GRANT ALL PRIVILEGES ON DATABASE " <> toString dbName
+            <> " TO " <> toString dbUser <> ";"
+        importDB dbFile dbName
 
-      init' (Test _ info) password = do
-        createUser info ["NOSUPERUSER", "CREATEDB", "NOCREATEROLE"]
-        createDB info
-        alterUser info password
-        setTemplate info
-        importDB info
-
-ifExists :: DB -> IO () -> IO ()
-ifExists db as = do
-  exists <- doesDBExist $ dbInfo db
-  if exists
-    then as
-    else do
-      -- Don't error out or it won't check all 'dbs'.
-      pname <- getProgName
-      putStrLn $ pname <> ": " <> dbAlias db <> " does not exist; doing nothing"
+      init' (Test _ (DBInfo {..})) password =
+        forM_ dbTemp $ \dbTemp' -> do
+          createUser dbUser ["NOSUPERUSER", "CREATEDB", "NOCREATEROLE"]
+          createDB dbTemp'
+          alterUser dbUser password
+          setTemplate dbTemp'
+          importDB dbFile dbTemp'
 
 clean dbs
   | length dbs == 1 =
@@ -205,15 +256,30 @@ clean dbs
       run "rm" ["-f", config]
       forM_ dbs clean'
   where
-    dropDBAndRole info = dropDB info >> dropRole info
-    clean' db@(Dev _ info)  = ifExists db $ dropDBAndRole info
-    clean' db@(Test _ info) = ifExists db $ do
-      unsetTemplate info
-      dropDBAndRole info
+    dropDBAndRole db role = dropDB db >> dropRole role
+    clean' (Dev _ (DBInfo {..}))  = dropDBAndRole dbName dbUser
+    clean' (Test _ (DBInfo {..})) = do
+      forM_ dbTemp $ \dbTemp' -> do
+        unsetTemplate dbTemp'
+        dropDB dbTemp'
+      dropDBAndRole dbName dbUser
 
-reset dbs = forM_ dbs $ \db -> do
-  let info = dbInfo db
-  ifExists db $ do
-    dropDB info
-    createDB info
-    importDB info
+reset dbs = forM_ dbs reset'
+ where
+   reset' (Dev _ (DBInfo {..})) = do
+     dropDB dbName
+     createDB dbName
+     importDB dbFile dbName
+   reset' (Test _ (DBInfo {..})) =
+     forM_ dbTemp $ \dbTemp' -> do
+       unsetTemplate dbTemp'
+       dropDB dbTemp'
+       createDB dbTemp'
+       setTemplate dbTemp'
+       importDB dbFile dbTemp'
+
+export dbs = forM_ dbs export'
+  where
+    export' (Dev _ (DBInfo {..}))  = exportDB dbName dbFile
+    export' (Test _ (DBInfo {..})) =
+      forM_ dbTemp $ \dbTemp' -> exportDB dbTemp' dbFile

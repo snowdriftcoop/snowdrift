@@ -93,6 +93,12 @@ notificationEventHandler (ECommentRethreaded _ Rethread{..}) = do
 
     runSDB (sendNotificationDB_ NotifRethreadedComment (commentUser comment) Nothing content)
 
+notificationEventHandler (ECommentClosed _ _)     = return ()
+
+-- TODO: Send notification to anyone watching thread
+notificationEventHandler (ETicketClaimed _ _)     = return ()
+notificationEventHandler (ETicketUnclaimed _ _)     = return ()
+
 notificationEventHandler (ENotificationSent _ _)  = return ()
 notificationEventHandler (EWikiEdit _ _)          = return ()
 notificationEventHandler (EWikiPage _ _)          = return ()
@@ -107,6 +113,13 @@ eventInserterHandler :: SnowdriftEvent -> Daemon ()
 eventInserterHandler (ECommentPosted comment_id Comment{..})                         = runDB (insert_ (EventCommentPosted (fromJust commentApprovedTs) comment_id))
 eventInserterHandler (ECommentPending comment_id Comment{..})                        = runDB (insert_ (EventCommentPending commentCreatedTs comment_id))
 eventInserterHandler (ECommentRethreaded rethread_id Rethread{..})                   = runDB (insert_ (EventCommentRethreaded rethreadTs rethread_id))
+eventInserterHandler (ECommentClosed comment_closing_id CommentClosing{..})          = runDB (insert_ (EventCommentClosing commentClosingTs comment_closing_id))
+eventInserterHandler (ETicketClaimed ticket_claiming_id TicketClaiming{..})          = runDB (insert_ (EventTicketClaimed ticketClaimingTs ticket_claiming_id))
+
+eventInserterHandler (ETicketUnclaimed ticket_claiming_id TicketClaiming{..})        =
+    let released = fromMaybe (error "TicketUnclaimed event for TicketClaiming without ReleasedTs") ticketClaimingReleasedTs
+     in runDB (insert_ (EventTicketUnclaimed released ticket_claiming_id))
+
 eventInserterHandler (ENotificationSent notif_id Notification{..})                   = runDB (insert_ (EventNotificationSent notificationCreatedTs notif_id))
 eventInserterHandler (EWikiPage wiki_page_id WikiPage{..})                           = runDB (insert_ (EventWikiPage wikiPageCreatedTs wiki_page_id))
 eventInserterHandler (EWikiEdit wiki_edit_id WikiEdit{..})                           = runDB (insert_ (EventWikiEdit wikiEditTs wiki_edit_id))

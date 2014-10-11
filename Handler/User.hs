@@ -281,3 +281,31 @@ getUserPledgesR user_id = do
 
         $(widgetFile "user_pledges")
 
+--------------------------------------------------------------------------------
+-- /#UserId/t
+
+getUserTicketsR :: UserId -> Handler Html
+getUserTicketsR user_id = do
+    user <- runYDB $ get404 user_id
+
+    -- TODO: abstract out grabbing the project
+    tickets <- runDB $ select $ from $ \ (c `InnerJoin` t `InnerJoin` tc `LeftOuterJoin` w `InnerJoin` p) -> do
+        on_ $ p ^. ProjectDiscussion ==. c ^. CommentDiscussion ||. w ?. WikiPageProject ==. just (p ^. ProjectId)
+        on_ $ w ?. WikiPageDiscussion ==. just (c ^. CommentDiscussion)
+        on_ $ tc ^. TicketClaimingTicket ==. c ^. CommentId
+        on_ $ t ^. TicketComment ==. c ^. CommentId
+
+        where_ $ tc ^. TicketClaimingUser ==. val user_id
+            &&. isNothing (tc ^. TicketClaimingReleasedTs)
+            &&. c ^. CommentId `notIn` (subList_select $ from $ return . (^. CommentClosingComment))
+
+        orderBy [ asc $ tc ^. TicketClaimingTs ]
+
+        return (t, w, p ^. ProjectHandle)
+
+    defaultLayout $ do
+        setTitle . toHtml $
+            "User Tickets - " <> userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
+
+        $(widgetFile "user_tickets")
+

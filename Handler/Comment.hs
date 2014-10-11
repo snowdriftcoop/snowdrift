@@ -57,6 +57,8 @@ import           Model.Tag
 import           View.Comment
 import           Widgets.Tag
 
+import           Control.Monad.Writer            (tell)
+
 import           Data.Default                    (def)
 import           Data.Tree                       (Forest, Tree, rootLabel)
 import qualified Data.Map                        as M
@@ -291,7 +293,7 @@ postClaimComment user@(Entity user_id _) comment_id comment make_comment_handler
         FormSuccess mnote -> do
             lookupPostMode >>= \case
                 Just PostMode -> do
-                    runDB (userClaimCommentDB user_id comment_id mnote)
+                    runSDB (userClaimCommentDB user_id comment_id mnote)
                     return Nothing
                 _ -> do
                     now <- liftIO getCurrentTime
@@ -303,7 +305,7 @@ postClaimComment user@(Entity user_id _) comment_id comment make_comment_handler
                         (Entity comment_id comment)
                         user
                         make_comment_handler_info
-                        (def { mod_claim_map = M.insert comment_id (TicketClaiming now user_id comment_id mnote) })
+                        (def { mod_claim_map = M.insert comment_id (TicketClaiming now user_id comment_id mnote Nothing) })
                         (getMaxDepthDefault 0)
                         True
                     return (Just (comment_widget, form))
@@ -325,7 +327,10 @@ postCloseComment user@(Entity user_id _) comment_id comment make_comment_handler
             let closing = CommentClosing now user_id reason comment_id
             lookupPostMode >>= \case
                 Just PostMode -> do
-                    runDB (insert_ closing)
+                    runSDB $ do
+                        closing_id <- insert closing
+                        tell [ECommentClosed closing_id closing]
+
                     return Nothing
                 _ -> do
                     (form, _) <- generateFormPost (closeCommentForm (Just reason))
@@ -601,7 +606,7 @@ postUnclaimComment user@(Entity user_id _) comment_id comment make_comment_handl
         FormSuccess mnote -> do
             lookupPostMode >>= \case
                 Just PostMode -> do
-                    runDB (userUnclaimCommentDB user_id comment_id mnote)
+                    runSDB (userUnclaimCommentDB user_id comment_id mnote)
                     return Nothing
                 _ -> do
                     (form, _) <- generateFormPost (claimCommentForm (Just mnote))
