@@ -142,10 +142,10 @@ On Debian-based GNU/Linux distros, the full install command is:
 
     sudo apt-get install ghc cabal-install haskell-platform postgresql zlib1g-dev libpq-dev happy alex llvm
 
-**Note: we are now using GHC 7.8.2**
-The Haskell Platform has not yet updated to it, but many systems have.
-If your system is still using an older version, you may need to manually upgrade.
-See <http://www.haskell.org/ghc/download>.
+**Note: we are now using GHC 7.8.3** (although 7.8.2 may work as well)
+The Haskell Platform needs to be the newer 2014.2.0.0 which includes GHC 7.8.3.
+If your system's version is not up to date, get the update from
+<http://www.haskell.org/platform>
 
 (There are also a few non-Haskell libraries with some dependencies which you may
 need to install and which presumably will be in your system's package manager.
