@@ -261,6 +261,7 @@ executable         sdm
         Buildable: False
 
     main-is:           Sdm.hs
+    hs-source-dirs:    dev
     build-depends:     base
                      , cmdargs
                      , directory
