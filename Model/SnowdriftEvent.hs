@@ -157,7 +157,12 @@ snowdriftEventToFeedEntry render project_handle user_map _ wiki_page_map _ (EWik
      in Just $ FeedEntry
             { feedEntryLink    = WikiEditR project_handle target wiki_edit_id
             , feedEntryUpdated = wikiEditTs wiki_edit
-            , feedEntryTitle   = T.unwords [ T.snoc project_handle ':', "wiki page", "\"" <> target <> "\"", "edited by", username ]
+            , feedEntryTitle   = T.unwords
+                [ T.snoc project_handle ':'
+                , "wiki page", "\"" <> target <> "\""
+                , "edited by", username
+                ] <> maybe "" (T.append ": ") (wikiEditComment wiki_edit)
+
             , feedEntryContent = [hamlet| |] render
             }
 
