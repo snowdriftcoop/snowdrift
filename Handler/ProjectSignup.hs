@@ -124,39 +124,45 @@ postProjectSignupR = do
                     <button>Submit Application
                 |]
 
-applicationReviewForm :: Entity ProjectSignup -> Html -> MForm Handler (FormResult ReviewerComments, Widget)
-applicationReviewForm project _ = do
+applicationReviewForm :: Entity ProjectSignup -> UserId -> Html -> MForm Handler (FormResult ReviewerComments, Widget)
+applicationReviewForm project user_id _ = do
     (reviewerCommentRes, reviewerCommentView) <- mopt textField (generateFieldSettings "Reviewer Comment" [("class", "form-control"), ("placecholder", "Enter Comments Here")]) Nothing 
-    (reviewerStatusRes, reviewerStatusView) <- mreq (selectFieldList projectSignupStatus) (generateFieldSettings "Reviewer Status" [("class", "form-control")]) Nothing
+    (reviewerStatusRes, reviewerStatusView) <- mreq (selectFieldList getProjectSignupStatuses) (generateFieldSettings "Reviewer Status" [("class", "form-control")]) Nothing
 
-    let reviewerCommentRes = ReviewerComment
-        <$> pure $ ProjectSignupId project
-        <*> lift (liftIO getCurrentTime)
-        <*> reviewerCommentRes
-        <*> reviewerStatusRes
-        <*> 
-
+    let reviewerCommentRes = ReviewerComments
+                        <$> pure $ ProjectSignupId project
+                        <*> lift (liftIO getCurrentTime)
+                        <*> reviewerCommentRes
+                        <*> reviewerStatusRes
+                        <*> pure user_id
     let widget = toWidget $(widgetFile "application_review")
-    defaultLayout $ do
-        setTitle "Application Review: #{ProjectSignupName project} | Snowdrift.coop"
-        ^{widget}
-        <button>Update
+    return (reviewerCommentRes, widget)
 
 getProjectApplicationR :: ProjectSignupId -> Handler Html
-getProjectApplicationR = do
+getProjectApplicationR ps_id = do
     user_id <- requireAuthId
-    if(userIsProjectAdminDB user_id (projectId getSiteProject))
-        then
-            project <- runDB $ select $ from \p -> do
-                where_ (p ^. ProjectSignupId ==. val (ps_id))
-                return p
-            ((_, widget), enctype) <- runFormGet project
+    project <- runDB $ select $ from $ \p -> do
+        where_ (p ^. ProjectSignupId ==. val (ps_id))
+        return p
+    ((_, widget), enctype) <- runFormGet applicationReviewForm project user_id
+    defaultLayout $ do
+        setTitle "Application Review: #{ProjectSignupName project} | Snowdrift.coop"
+        [whamlet|
+            ^{widget}
+            <button>Update
+        |]
 
 getProjectApplicationsR :: Handler Html
 getProjectApplicationsR = do
     user_id <- requireAuthId
-    project <- runDB $ select $ from \p -> do
-        where_ (p ^. ProjectSignupStatus ==. val (InReview))
+    project <- runDB $ select $ from $ \p -> do
+        where_ (p ^. ProjectSignupCurrentStatus ==. (val InReview))
         limit 1
         return p
-    ((_, widget), enctype) <- runFormGet project
+    ((_, widget), enctype) <- runFormGet applicationReviewForm project user_id
+    defaultLayout $ do
+        setTitle "Application Review: #{ProjectSignupName project} | Snowdrift.coop"
+        [whamlet|
+            ^{widget}
+            <button>Update
+        |]

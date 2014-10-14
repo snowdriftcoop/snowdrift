@@ -11,7 +11,7 @@ import Model.Permission.Internal    (PermissionLevel)
 import Model.Role.Internal          (Role)
 import Model.Settings.Internal      (UserSettingName)
 import Model.ViewType.Internal      (ViewType)
-import Model.ProjectSignup.Internal (ProjectType, ProjectSignupStatus)
+import Model.ProjectSignup.Internal (ProjectType, ProjectSignupStatus(..))
 import Model.License.Internal       (LicenseClassificationType, LicenseProjectType, LegalStatus)
 
 import Control.Exception            (Exception)

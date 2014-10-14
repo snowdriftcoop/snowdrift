@@ -120,6 +120,7 @@ ProjectSignup
     funds Textarea
     otherInfo Textarea Maybe
     user UserId
+    currentStatus ProjectSignupStatus
     UniqueProjectSignupHandle handle
 
 ReviewerComments

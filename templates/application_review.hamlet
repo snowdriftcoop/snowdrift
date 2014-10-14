@@ -42,18 +42,18 @@
                     Select Applicable Project Type(s):
             <div .col-md-4>
                     <ul>
-                        $forall pt <- projectSignupType project
+                        $forall pt <- projectSignupProjectType project
                             <li>#{pt}
     <div .row>
         <div .form-group>
             <div .col-md-1>
                 <label>If Other, please describe:
             <div .col-md-4>
-                <input type=text disabled readonly>#{projectLicenseOther project}
+                <input type=text disabled readonly>#{projectSignupLicenseOther project}
             <div .col-md-offset-1 .col-md-1>
                 <label>If Other, please describe:
             <div .col-md-4>
-                <input type=text disabled readonly>#{projectTypeOther project}
+                <input type=text disabled readonly>#{projectSignupProjectTypeOther project}
 <br>
 <fieldset>
     <legend>
@@ -63,18 +63,18 @@
             <div .col-md-2>
                 <label>Location Project is legally based out of:
             <div .col-md-3>
-                <input type=text disabled readonly>#{projectLocation project}
+                <input type=text disabled readonly>#{projectSignupLocation project}
             <div .col-md-offset-1 .col-md-2>
                 <label>
                     Legal Status:
             <div .col-md-4>
-                <input type=text disabled readonly>#{projectLegalStatus project}
+                <input type=text disabled readonly>#{projectSignupLegalStatus project}
     <div .row>
         <div .form-group>
             <div .col-md-2>
                 <label>Additional Comments about Legal Status:
             <div .col-md-10>
-                <input type=text disabled readonly>#{projectLegalStatusComments project}
+                <input type=text disabled readonly>#{projectSignupLegalStatusComments project}
 <br>
 <fieldset>
     <legend>
@@ -84,29 +84,29 @@
             <div .col-md-2>
                 <label>Describe your role within the project
             <div .col-md-10>
-                <textarea disabled readonly>#{projectUserRole project}
+                <textarea disabled readonly>#{projectSignupUserRoleInProject project}
     <div .row>
         <div .form-group>
             <div .col-md-2>
                 <label>Describe your project's vision and mission:
             <div .col-md-10>
-                <textarea disabled readonly>#{projectMission project}
+                <textarea disabled readonly>#{projectSignupMission project}
     <div .row>
         <div .form-group>
             <div .col-md-2>
                 <label>Describe your project's short-term and long-term goals and deliverables:
             <div .col-md-10>
-                <textarea disabled readonly>#{projectGoals project}
+                <textarea disabled readonly>#{projectSignupGoals project}
     <div .row>
         <div .form-group>
             <div .col-md-2>
                 <label>Describe how your project will benefit from and make use of funds raised through Snowdrift.coop:
             <div .col-md-10>
-                <textarea disabled readonly>#{projectFunds project}
+                <textarea disabled readonly>#{projectSignupFunds project}
     <div .row>
         <div .form-group>
             <div .col-md-2>
                 <label>Please provide any additional information you find pertinent here (e.g. other contacts affiliated with the project and their contact info)
             <div .col-md-10>
-                <textarea disabled readonly>#{projectOtherInfo project}
+                <textarea disabled readonly>#{projectSignupOtherInfo project}
 <br>

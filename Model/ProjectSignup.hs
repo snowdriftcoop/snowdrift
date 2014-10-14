@@ -21,6 +21,15 @@ getProjectTypeLabel pt = case pt of
 getProjectTypes :: [(Text, ProjectType)]
 getProjectTypes = L.map (getProjectTypeLabel &&& id) ([minBound .. maxBound] :: [ProjectType])
 
+getProjectSignupStatusLabel :: ProjectSignupStatus -> Text
+getProjectSignupStatusLabel pss = case pss of
+                                InReview -> "In Review"
+                                Approved -> "Approved"
+                                Denied -> "Denied"
+
+getProjectSignupStatuses :: [(Text, ProjectSignupStatus)]
+getProjectSignupStatuses = L.map (getProjectSignupStatusLabel &&& id) ([minBound .. maxBound] :: [ProjectSignupStatus])
+
 newProjectSignupStatus :: ProjectSignupStatus
 newProjectSignupStatus = InReview
 
