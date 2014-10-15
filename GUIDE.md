@@ -259,7 +259,8 @@ From now on, you can rebuild and start the server with:
     yesod devel
 
 After the server starts, it may print a bunch of text about creating tables,
-and it will then sit ready, waiting for connections.
+and it will then sit ready, waiting for connections.  Note that `yesod devel`
+builds just the library.  If you need to build an executable, use `cabal build`.
 
 For either build approach, access the server by directing your web browser to localhost:3000
 
