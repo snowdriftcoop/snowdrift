@@ -58,7 +58,9 @@ VIM users should also install
 [Syntax Highlighting Files for Haskell](https://github.com/pbrisbin/html-template-syntax).
 
 Emacs users should use a package manager (preferably Marmalade) to install
-[Haskell Mode](https://github.com/haskell/haskell-mode).
+[Haskell Mode](https://github.com/haskell/haskell-mode) and [Hamlet Mode](https://github.com/lightquake/hamlet-mode).
+The included [`.dir-locals.el`](https://www.gnu.org/software/emacs/manual/html_node/emacs/Directory-Variables.html) file
+makes Emacs use the recommended indentation style.
 
 
 Development guidelines and notes
