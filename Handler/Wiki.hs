@@ -69,7 +69,7 @@ pageInfoRequireAffiliation' :: Text -> Handler (Entity User, Entity Project)
 pageInfoRequireAffiliation' project_handle = do
     user@(Entity user_id _) <- requireAuth
     (project, ok) <- runYDB $ do
-        project@(Entity project_id _) <- getBy404 (UniqueProjectHandle project_handle)
+        project@(Entity project_id _) <- getBy (UniqueProjectHandle project_handle) >>= maybe (error $ "project hande not found: " ++ show project_handle) return
         ok <- userIsAffiliatedWithProjectDB user_id project_id
         return (project, ok)
     unless ok (permissionDenied "You don't have permission to access this page.")
@@ -346,13 +346,15 @@ getWikiHistoryR project_handle target = do
 
 getWikiEditR :: Text -> Text -> WikiEditId -> Handler Html
 getWikiEditR project_handle target edit_id = do
-    (Entity _ project, Entity page_id _) <- runYDB $ pageInfo project_handle target
+    (Entity _ project, Entity page_id page) <- runYDB $ pageInfo project_handle target
     edit <- runYDB $ do
         edit <- get404 edit_id
 
         when (page_id /= wikiEditPage edit) $ error "selected edit is not an edit of selected page"
 
         return edit
+
+    let discussion = DiscussionOnWikiPage $ Entity page_id page
 
     defaultLayout $ do
     -- TODO: prettier date format? or edit id?
@@ -374,6 +376,7 @@ getNewWikiR project_handle target = do
 postNewWikiR :: Text -> Text -> Handler Html
 postNewWikiR project_handle target = do
     (Entity user_id _, Entity project_id _) <- pageInfoRequireAffiliation' project_handle
+
     now <- liftIO getCurrentTime
     ((result, _), _) <- runFormPost $ newWikiForm Nothing
     case result of

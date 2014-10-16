@@ -15,6 +15,7 @@ import Import
 import           Data.Filter
 import           Data.Order
 import           Model.Currency
+import           Model.Discussion
 import           Model.Markdown
 import           Model.Project
 import           Model.Shares
@@ -31,7 +32,8 @@ renderProject maybe_project_id project pledges pledge = do
         users = fromIntegral $ length pledges
         shares = sum pledges
         project_value = share_value $* fromIntegral shares
-        description = markdownWidgetWith (fixLinks $ projectHandle project) $ projectDescription project
+        discussion = DiscussionOnProject $ Entity (fromMaybe (Key $ PersistInt64 (-1)) maybe_project_id) project
+        description = markdownWidgetWith (fixLinks (projectHandle project) discussion) $ projectDescription project
 
         maybe_shares = pledgeShares . entityVal <$> pledge
 
@@ -73,10 +75,13 @@ renderProject maybe_project_id project pledges pledge = do
 
 renderBlogPost :: Text -> BlogPost -> WidgetT App IO ()
 renderBlogPost project_handle blog_post = do
+    project <- handlerToWidget $ runYDB $ getBy404 $ UniqueProjectHandle project_handle
+
     let (Markdown top_content) = blogPostTopContent blog_post
         (Markdown bottom_content) = maybe (Markdown "") ("***\n" <>) $ blogPostBottomContent blog_post
         title = blogPostTitle blog_post
-        content = markdownWidgetWith (fixLinks project_handle) $ Markdown $ T.snoc top_content '\n' <> bottom_content
+        discussion = DiscussionOnProject project
+        content = markdownWidgetWith (fixLinks project_handle discussion) $ Markdown $ T.snoc top_content '\n' <> bottom_content
 
     $(widgetFile "blog_post")
 

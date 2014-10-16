@@ -60,3 +60,20 @@ wikiPageCommentRoutes project_handle target = CommentRoutes
     , comment_route_tag       = WikiCommentTagR      project_handle target
     , comment_route_unclaim   = UnclaimWikiCommentR  project_handle target
     }
+
+userCommentRoutes :: UserId -> CommentRoutes
+userCommentRoutes user_id = CommentRoutes
+    { comment_route_add_tag   = UserCommentAddTagR   user_id
+    , comment_route_approve   = ApproveUserCommentR  user_id
+    , comment_route_claim     = ClaimUserCommentR    user_id
+    , comment_route_close     = CloseUserCommentR    user_id
+    , comment_route_delete    = DeleteUserCommentR   user_id
+    , comment_route_edit      = EditUserCommentR     user_id
+    , comment_route_flag      = FlagUserCommentR     user_id
+    , comment_route_permalink = UserCommentR         user_id
+    , comment_route_reply     = ReplyUserCommentR    user_id
+    , comment_route_rethread  = RethreadUserCommentR user_id
+    , comment_route_retract   = RetractUserCommentR  user_id
+    , comment_route_tag       = UserCommentTagR      user_id
+    , comment_route_unclaim   = UnclaimUserCommentR  user_id
+    }

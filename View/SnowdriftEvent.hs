@@ -80,6 +80,13 @@ renderCommentPostedEvent
                         ^{comment_widget}
                 |])
 
+            DiscussionOnUser (Entity user_id _) ->
+                (userCommentRoutes user_id, [whamlet|
+                    <div .event>
+                        On your user discussion page:
+                        ^{comment_widget}
+                |])
+
         comment_widget =
             commentWidget
               (Entity comment_id comment)

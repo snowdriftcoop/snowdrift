@@ -23,12 +23,14 @@ import qualified Data.Map as M
 data DiscussionType
     = DiscussionTypeProject
     | DiscussionTypeWikiPage
+    | DiscussionTypeUser
     deriving (Bounded, Enum)
 
 -- | Similar to DiscussionType, but exported, and actually contains the data.
 data DiscussionOn
     = DiscussionOnProject  (Entity Project)
     | DiscussionOnWikiPage (Entity WikiPage)
+    | DiscussionOnUser     (Entity User)
 
 -- | Given a 'requested' DiscussionType, attempt to fetch the Discussion from that
 -- table. If, say, the requested DiscussionType is DiscussionTypeProject, but the
@@ -42,11 +44,19 @@ fetchDiscussionInternal discussion_id DiscussionTypeProject = fmap (fmap Discuss
     from $ \p -> do
     where_ (p ^. ProjectDiscussion ==. val discussion_id)
     return p
+
 fetchDiscussionInternal discussion_id DiscussionTypeWikiPage = fmap (fmap DiscussionOnWikiPage . listToMaybe) $
     select $
     from $ \wp -> do
     where_ (wp ^. WikiPageDiscussion ==. val discussion_id)
     return wp
+
+fetchDiscussionInternal discussion_id DiscussionTypeUser = fmap (fmap DiscussionOnUser . listToMaybe) $
+    select $
+    from $ \u -> do
+    where_ (u ^. UserDiscussion ==. val discussion_id)
+    return u
+
 
 fetchDiscussionsInternal :: [DiscussionId] -> DiscussionType -> DB (Map DiscussionId DiscussionOn)
 fetchDiscussionsInternal discussion_ids DiscussionTypeProject = fmap (foldr go mempty) $
@@ -57,6 +67,7 @@ fetchDiscussionsInternal discussion_ids DiscussionTypeProject = fmap (foldr go m
   where
     go :: Entity Project -> Map DiscussionId DiscussionOn -> Map DiscussionId DiscussionOn
     go p@(Entity _ Project{..}) = M.insert projectDiscussion (DiscussionOnProject p)
+
 fetchDiscussionsInternal discussion_ids DiscussionTypeWikiPage = fmap (foldr go mempty) $
     select $
     from $ \wp -> do
@@ -65,6 +76,15 @@ fetchDiscussionsInternal discussion_ids DiscussionTypeWikiPage = fmap (foldr go 
   where
     go :: Entity WikiPage -> Map DiscussionId DiscussionOn -> Map DiscussionId DiscussionOn
     go w@(Entity _ WikiPage{..}) = M.insert wikiPageDiscussion (DiscussionOnWikiPage w)
+
+fetchDiscussionsInternal discussion_ids DiscussionTypeUser = fmap (foldr go mempty) $
+    select $
+    from $ \u -> do
+    where_ (u ^. UserDiscussion `in_` valList discussion_ids)
+    return u
+  where
+    go :: Entity User -> Map DiscussionId DiscussionOn -> Map DiscussionId DiscussionOn
+    go u@(Entity _ User{..}) = M.insert userDiscussion (DiscussionOnUser u)
 
 -- | Fetch a single discussion, given its id.
 fetchDiscussionDB :: DiscussionId -> DB DiscussionOn

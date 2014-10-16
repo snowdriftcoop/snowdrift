@@ -56,6 +56,7 @@ import Handler.Project
 import Handler.RepoFeed
 import Handler.ToU
 import Handler.User
+import Handler.User.Comment
 import Handler.Volunteer
 import Handler.Who
 import Handler.Widget

@@ -14,4 +14,4 @@
     <div .page-tool>
         <a href="@{WikiDiscussionR project_handle target}">view discussion
 
-^{markdownWidgetWith (fixLinks project_handle) (wikiEditContent edit)}
+^{markdownWidgetWith (fixLinks project_handle discussion) (wikiEditContent edit)}

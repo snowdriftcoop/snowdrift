@@ -6,6 +6,7 @@ import Import
 import Data.List (sortBy)
 
 import Model.Markdown
+import Model.Discussion
 
 userShortName :: User -> Text
 userShortName user = fromMaybe (userIdent user) $ userName user
@@ -22,6 +23,7 @@ getWhoR project_handle = do
         return user
 
     let members = sortBy (compare `on` (userCreatedTs . entityVal)) team_members
+        discussion = DiscussionOnProject $ Entity project_id project
 
     defaultLayout $ do
         setTitle . toHtml $ projectName project <> " - Team | Snowdrift.coop"

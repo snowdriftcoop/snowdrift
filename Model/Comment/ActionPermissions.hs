@@ -3,6 +3,7 @@ module Model.Comment.ActionPermissions
     , CommentActionPermissions(..)
     , MakeActionPermissionsMap
     , makeProjectCommentActionPermissionsMap
+    , makeUserCommentActionPermissionsMap
     ) where
 
 import Import
@@ -89,6 +90,45 @@ makeProjectCommentActionPermissionsMap (Just (Entity viewer_id viewer)) project_
                        , can_unclaim   = maybe False
                                                (\t -> ticketClaimingUser t == viewer_id)
                                                (M.lookup comment_id claim_map)
+                       })
+
+        return (foldr step mempty comments)
+
+
+-- | Action permissions that apply to a User discussion
+makeUserCommentActionPermissionsMap :: Maybe (Entity User) -> UserId -> CommentMods -> MakeActionPermissionsMap
+makeUserCommentActionPermissionsMap Nothing _ _ comments = makeLoggedOutCommentActionPermissionsMap comments
+makeUserCommentActionPermissionsMap (Just (Entity viewer_id viewer)) user_id CommentMods{..} comments = do
+        --- for now, assumes no tickets on user pages
+        let comment_ids = map entityKey comments
+
+        (closing_map, retracting_map, flag_map, comments_with_children) <- runYDB $ (,,,)
+                <$> (mod_closure_map <$> makeCommentClosingMapDB comment_ids)
+                <*> (mod_retract_map <$> makeCommentRetractingMapDB comment_ids)
+                <*> (mod_flag_map <$> makeFlagMapDB comment_ids)
+                <*> (S.fromList <$> fetchCommentsWithChildrenInDB comment_ids)
+
+        let viewer_is_established = userIsEstablished viewer
+            viewer_can_close = userCanCloseComment viewer
+
+            step :: Entity Comment
+                 -> Map CommentId CommentActionPermissions
+                 -> Map CommentId CommentActionPermissions
+            step (Entity comment_id comment) =
+                let author_id = commentUser comment
+                 in M.insert comment_id (CommentActionPermissions
+                       { can_add_tag   = viewer_is_established
+                       , can_approve   = viewer_id == user_id
+                       , can_claim     = False
+                       , can_close     = viewer_can_close && M.notMember comment_id closing_map && commentIsApproved comment
+                       , can_delete    = viewer_id == author_id && S.notMember comment_id comments_with_children
+                       , can_edit      = userCanEditComment viewer_id comment
+                       , can_establish = False
+                       , can_flag      = viewer_is_established && viewer_id /= author_id && M.notMember comment_id flag_map
+                       , can_reply     = commentIsApproved comment
+                       , can_rethread  = viewer_id == user_id || viewer_id == author_id
+                       , can_retract   = viewer_id == author_id && M.notMember comment_id retracting_map && commentIsApproved comment
+                       , can_unclaim   = False
                        })
 
         return (foldr step mempty comments)

@@ -10,5 +10,5 @@
             <span .badge>
                 #{comment_count}
 
-^{markdownWidgetWith (fixLinks project_handle) (wikiPageContent page)}
+^{markdownWidgetWith (fixLinks project_handle discussion) (wikiPageContent page)}
 

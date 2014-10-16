@@ -2,6 +2,7 @@ module View.Wiki where
 
 import Import
 
+import           Model.Discussion
 import           Model.Permission
 import           Model.Markdown
 import           Widgets.Markdown
@@ -19,4 +20,7 @@ newWikiForm :: Maybe Markdown -> Form Markdown
 newWikiForm content = renderBootstrap3 $ areq' snowdriftMarkdownField "Page Content" content
 
 renderWiki :: Int -> Text -> Text -> Bool -> WikiPage -> Widget
-renderWiki comment_count project_handle target can_edit page = $(widgetFile "wiki")
+renderWiki comment_count project_handle target can_edit page = do
+    let discussion = DiscussionOnWikiPage (Entity (Key $ PersistInt64 (-1)) page)
+
+    $(widgetFile "wiki")

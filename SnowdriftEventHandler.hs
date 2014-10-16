@@ -51,24 +51,35 @@ notificationEventHandler (ECommentPosted comment_id comment) = case commentParen
 -- Notify all moderators of the project the comment was posted on.
 notificationEventHandler (ECommentPending comment_id comment) = do
     runSDB $ do
-        (Entity project_id project) <- lift (fetchDiscussionDB (commentDiscussion comment)) >>= \case
-            DiscussionOnProject  project                 -> return project
-            DiscussionOnWikiPage (Entity _ WikiPage{..}) -> Entity wikiPageProject <$> getJust wikiPageProject
+        discussion <- lift $ fetchDiscussionDB (commentDiscussion comment)
+        let projectComment (Entity project_id project) = do
+                route_text <- (lift . lift) (routeToText (CommentDirectLinkR comment_id)) -- TODO(mitchell): don't use direct link?
+                let content = mconcat
+                      [ "An unapproved comment has been posted on a "
+                      , Markdown (projectName project)
+                      , " page. Please view it [here]("
+                      , Markdown route_text
+                      , ")."
+                      ]
 
+                lift (fetchProjectModeratorsDB project_id) >>=
+                    -- Send the notification, and record the fact that we send it (so we can
+                    -- later delete it, when the comment is approved).
+                    mapM_ (\user_id -> sendNotificationDB NotifUnapprovedComment user_id Nothing content
+                                         >>= insert_ . UnapprovedCommentNotification comment_id)
+
+        case discussion of
+            DiscussionOnProject  project                 -> projectComment project
+            DiscussionOnWikiPage (Entity _ WikiPage{..}) -> projectComment =<< Entity wikiPageProject <$> getJust wikiPageProject
+            DiscussionOnUser _ -> error ""
+            -- TODO DiscussionOnUser user -> userComment user
+
+{-
+    userComment (Entity user_id user) = do
         route_text <- (lift . lift) (routeToText (CommentDirectLinkR comment_id)) -- TODO(mitchell): don't use direct link?
-        let content = mconcat
-              [ "An unapproved comment has been posted on a "
-              , Markdown (projectName project)
-              , " page. Please view it [here]("
-              , Markdown route_text
-              , ")."
-              ]
-
-        lift (fetchProjectModeratorsDB project_id) >>=
-            -- Send the notification, and record the fact that we send it (so we can
-            -- later delete it, when the comment is approved).
-            mapM_ (\user_id -> sendNotificationDB NotifUnapprovedComment user_id Nothing content
-                                 >>= insert_ . UnapprovedCommentNotification comment_id)
+        let content = "An unapproved comment has been posted on your user discussion page.  Please view it [here](" <> Markdown route_text <> ")."
+        sendNotificationDB NotifUnapprovedComment user_id Nothing content >>= insert_ . UnapprovedCommentNotification comment_id
+-}
 
 -- Notify the rethreadee his/her comment has been rethreaded.
 notificationEventHandler (ECommentRethreaded _ Rethread{..}) = do

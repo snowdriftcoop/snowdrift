@@ -352,6 +352,7 @@ getProjectBlogR project_handle = do
     renderRouteParams <- getUrlRenderParams
 
     let nextRoute next_id = renderRouteParams (ProjectBlogR project_handle) [("from", toPathPiece next_id)]
+        discussion = DiscussionOnProject $ Entity project_id project
 
     defaultLayout $ do
         setTitle . toHtml $ projectName project <> " Blog | Snowdrift.coop"

@@ -752,6 +752,10 @@ makeCommentRouteDB comment_id = get comment_id >>= \case
     Nothing -> return Nothing
     Just comment -> fetchDiscussionDB (commentDiscussion comment) >>= \case
         DiscussionOnProject (Entity _ project) -> return (Just (ProjectCommentR (projectHandle project) comment_id))
+
         DiscussionOnWikiPage (Entity _ wiki_page) -> do
             project <- getJust (wikiPageProject wiki_page)
             return (Just (WikiCommentR (projectHandle project) (wikiPageTarget wiki_page) comment_id))
+
+        DiscussionOnUser (Entity user_id _) -> do
+            return (Just (UserCommentR user_id comment_id))

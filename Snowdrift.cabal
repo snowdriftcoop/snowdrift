@@ -79,6 +79,7 @@ library
                      Handler.RepoFeed
                      Handler.ToU
                      Handler.User
+                     Handler.User.Comment
                      Handler.Utils
                      Handler.Volunteer
                      Handler.Who
@@ -108,6 +109,7 @@ library
                    Model.Role.Internal
                    Model.Settings.Internal
                    Model.ViewType.Internal
+                   TestHandler
 
     if flag(dev) || flag(library-only)
         cpp-options:   -DDEVELOPMENT

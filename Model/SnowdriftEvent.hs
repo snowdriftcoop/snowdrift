@@ -52,10 +52,11 @@ snowdriftEventToFeedEntry render project_handle user_map discussion_map _ _ (ECo
             Nothing                                          -> "<unknown discussion>"
             Just (DiscussionOnProject _)                     -> "project discussion"
             Just (DiscussionOnWikiPage (Entity _ wiki_page)) -> "wiki discussion for \"" <> wikiPageTarget wiki_page <> "\""
+            Just (DiscussionOnUser user_entity)              -> "user discussion for " <> userDisplayName user_entity
      in Just $ FeedEntry
             { feedEntryLink    = CommentDirectLinkR comment_id
             , feedEntryUpdated = maybe (commentCreatedTs comment) id $ commentApprovedTs comment
-            , feedEntryTitle   = T.unwords [ T.snoc project_handle ':', "new comment posted on", discussion, "by", username ]
+            , feedEntryTitle   = T.unwords [ T.snoc project_handle ':', username, "posted a new comment on", discussion ]
             , feedEntryContent = [hamlet| |] render
             }
 
@@ -63,7 +64,7 @@ snowdriftEventToFeedEntry render project_handle _ _ _ _ (ECommentRethreaded _ re
     Just $ FeedEntry
         { feedEntryLink    = CommentDirectLinkR $ rethreadNewComment rethread
         , feedEntryUpdated = rethreadTs rethread
-        , feedEntryTitle   = T.unwords [ T.snoc project_handle ':', "comment rethreaded" ]
+        , feedEntryTitle   = T.unwords [ T.snoc project_handle ':', "comment(s) rethreaded" ]
         , feedEntryContent = [hamlet| |] render
         }
 

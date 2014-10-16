@@ -15,6 +15,7 @@ module Handler.Comment
     , getMaxDepthDefault
     , getMaxDepthNoLimit
     , getProjectCommentAddTag
+    , getUserCommentAddTag
     , makeApproveCommentWidget
     , makeClaimCommentWidget
     , makeCloseCommentWidget
@@ -276,6 +277,22 @@ getProjectCommentAddTag comment_id project_id user_id = do
 
     let filter_tags = filter (\(Entity t _) -> not $ M.member t tag_map)
     (apply_form, _)  <- generateFormPost $ newCommentTagForm (filter_tags project_tags) (filter_tags other_tags)
+    (create_form, _) <- generateFormPost $ createCommentTagForm
+
+    defaultLayout $(widgetFile "new_comment_tag")
+
+-- | Handle a GET to a /tag/new URL on a User discussion's Comment.
+getUserCommentAddTag :: CommentId -> UserId -> Handler Html
+getUserCommentAddTag comment_id viewer_id = do
+    (tag_map, tags, all_tags) <- runDB $ do
+        comment_tags <- fetchCommentCommentTagsDB comment_id
+        tag_map      <- entitiesMap <$> fetchTagsInDB (map commentTagTag comment_tags)
+        tags         <- M.findWithDefault [] comment_id <$> buildAnnotatedCommentTagsDB (Just viewer_id) comment_tags
+        all_tags     <- select $ from $ return
+        return (tag_map, tags, all_tags)
+
+    let filter_tags = filter (\(Entity t _) -> not $ M.member t tag_map)
+    (apply_form, _)  <- generateFormPost $ newCommentTagForm [] (filter_tags all_tags)
     (create_form, _) <- generateFormPost $ createCommentTagForm
 
     defaultLayout $(widgetFile "new_comment_tag")

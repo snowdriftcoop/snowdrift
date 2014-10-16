@@ -3,10 +3,16 @@ module Handler.User where
 import Import
 
 import           Handler.Utils
+import           Handler.Comment
+import           Handler.Discussion
+import           Handler.User.Comment
+import           Model.Comment.ActionPermissions
 import           Model.Role
 import           Model.Transaction
 import           Model.User
+import           Model.Comment.Sql
 import           Widgets.Preview
+import           View.Comment
 import           View.User
 import           Widgets.ProjectPledges
 import           Widgets.Time
@@ -14,6 +20,9 @@ import           Widgets.Time
 import qualified Data.Map  as M
 import qualified Data.Set  as S
 import qualified Data.Text as T
+
+import           Data.Default         (def)
+import           Text.Cassius         (cassiusFile)
 
 --------------------------------------------------------------------------------
 -- Utility functions
@@ -188,11 +197,70 @@ postUserBalanceR user_id = do
 
         _ -> error "Error processing form."
 
+
 --------------------------------------------------------------------------------
 -- /#UserId/d
 
+-- | getUserDiscussionR generates the associated discussion page for each user
 getUserDiscussionR :: UserId -> Handler Html
-getUserDiscussionR _ = error "TODO(mitchell)"
+getUserDiscussionR user_id = getDiscussion (getUserDiscussionR' user_id)
+
+getUserDiscussionR'
+        :: UserId
+        -> (DiscussionId -> ExprCommentCond -> DB [Entity Comment])  -- ^ Root comment getter.
+        -> Handler Html
+getUserDiscussionR' user_id get_root_comments = do
+    mviewer <- maybeAuth
+    let mviewer_id = entityKey <$> mviewer
+
+    (user, root_comments) <- runYDB $ do
+        user <- get404 user_id
+        let has_permission = (exprCommentUserPermissionFilter mviewer_id (val user_id))
+        root_comments <- get_root_comments (userDiscussion user) has_permission
+        return (user, root_comments)
+
+    (comment_forest_no_css, _) <-
+        makeUserCommentForestWidget
+            mviewer
+            user_id
+            root_comments
+            def
+            getMaxDepth
+            False
+            mempty
+
+    let has_comments = not (null root_comments)
+        comment_forest = do
+            comment_forest_no_css
+            toWidget $(cassiusFile "templates/comment.cassius")
+
+    (comment_form, _) <- generateFormPost commentNewTopicForm
+
+    defaultLayout $ do
+        setTitle . toHtml $ userDisplayName (Entity user_id user) <> " User Discussion | Snowdrift.coop"
+        $(widgetFile "user_discuss")
+
+--------------------------------------------------------------------------------
+-- /#target/d/new
+
+getNewUserDiscussionR :: UserId -> Handler Html
+getNewUserDiscussionR user_id = do
+    void requireAuth
+    let widget = commentNewTopicFormWidget
+    defaultLayout $(widgetFile "user_discussion_wrapper")
+
+postNewUserDiscussionR :: UserId -> Handler Html
+postNewUserDiscussionR user_id = do
+    viewer <- requireAuth
+    User{..} <- runYDB $ get404 user_id
+
+    postNewComment
+      Nothing
+      viewer
+      userDiscussion
+      (makeUserCommentActionPermissionsMap (Just viewer) user_id def) >>= \case
+        Left comment_id -> redirect (UserCommentR user_id comment_id)
+        Right (widget, form) -> defaultLayout $ previewWidget form "post" (userDiscussionPage user_id widget)
 
 postUserDiscussionR :: UserId -> Handler Html
 postUserDiscussionR _ = error "TODO(mitchell)"

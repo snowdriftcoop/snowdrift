@@ -1,3 +1,5 @@
+{-# LANGUAGE RecordWildCards #-}
+
 module Model.Markdown where
 
 import Import
@@ -9,28 +11,63 @@ import           Text.Regex.TDFA
 import           Text.Regex.TDFA.ByteString
 import           Yesod.Markdown             (markdownToHtml, Markdown (..))
 
+import Model.Discussion
+
 
 -- TODO: we should probably put together some standard sets of these transforms for use in various places, rather than assembling ad-hoc
 
-fixLinks :: Text -> Text -> Handler Text
-fixLinks project' line' = do
-    let Right pattern = compile defaultCompOpt defaultExecOpt "(\\[[^]]*\\])\\(([a-z]+:)?([a-z0-9-]+)\\)"
-        project = encodeUtf8 project'
-        parse _   (Left err) = error err
-        parse str (Right Nothing) = str
-        parse _   (Right (Just (pre, _, post, [link, proj, page]))) = mconcat
-            [ pre
-            , link
-            , "("
-                , "/p/" <> if BS.null proj then project else BS.init proj
-                , "/w/" <> page
-            , ")"
-            ] <> parse post (regexec pattern post)
+fixLinks :: Text -> DiscussionOn -> Text -> Handler Text
+fixLinks project' discussion_on line' = do
+    render <- getUrlRender
 
-        parse _ (Right (Just _)) = error "strange match"
+    let Right pattern = compile defaultCompOpt defaultExecOpt $ mconcat
+            [ "(\\[[^]]*\\])" -- link
+            , "\\("
+            , "(" -- _
+                , "c/([0-9]+)" -- comment
+                , "|"
+                , "([a-z]+:)?" -- project
+                , "([a-z0-9-]+)" -- page
+            , ")"
+            , "(/[a-z0-9/]*)?" -- path
+            ] 
+
+        project = encodeUtf8 project'
+
+        expand_match (pre, _, post, matches) = pre <> build_link matches <> parse post
+
+        build_link [link, _, comment, "", "", path] =
+            let comment_id :: CommentId
+                comment_id = fromMaybe (error "bad comment id") $ fromPathPiece $ decodeUtf8 comment
+
+             in mconcat
+                    [ link
+                    , "("
+                        , let route = encodeUtf8 $ render $ case discussion_on of
+                                DiscussionOnProject (Entity _ Project{..}) -> ProjectCommentR projectHandle comment_id
+                                DiscussionOnWikiPage (Entity _ WikiPage{..}) -> WikiCommentR project' wikiPageTarget comment_id
+                                DiscussionOnUser (Entity user_id _) -> UserCommentR user_id comment_id
+
+                           in route <> path
+                    , ")"
+                    ]
+
+        build_link [link, _, "", proj, page, path] =
+            mconcat
+                [ link
+                , "("
+                    , "/p/" <> if BS.null proj then project else BS.init proj
+                    , "/w/" <> page <> path
+                , ")"
+                ]
+
+        build_link [_, content, _, _, _] = error $ "strange match: " <> show content
+        build_link _ = error $ "strange match"
+
+        parse str = either error (maybe str expand_match) (regexec pattern str)
 
         line = encodeUtf8 line'
-    return $ decodeUtf8 $ parse line (regexec pattern line)
+    return $ decodeUtf8 $ parse line
 
 
 linkTickets :: Text -> Handler Text
