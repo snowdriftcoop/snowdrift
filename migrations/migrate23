@@ -1,6 +1,6 @@
 INSERT INTO account (id, balance) VALUES (-1, 0);
 INSERT INTO discussion (id, nothing) VALUES (-1, 0);
-INSERT INTO "user" (id, ident, name, account, discussion, established) VALUES (-1, 'anonymous', 'anonymous user', -1, -1, 'EstEligable');
+INSERT INTO "user" (id, ident, name, account, discussion, established) VALUES (-1, 'anonymous', 'anonymous user', -1, -1, 'EstEligible 2014-08-29 02:20:29.479083 UTC "Anonymous User"');
 
 UPDATE "message" SET "from" = -1 WHERE "from" IS NULL;
 
