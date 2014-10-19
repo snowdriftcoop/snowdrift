@@ -1,9 +1,9 @@
 Snowdrift.coop
 ==============
 
-This guide is a thorough introduction to the [Snowdrift.coop](https://snowdrift.coop) codebase and development process.
+This guide covers the [Snowdrift.coop](https://snowdrift.coop) codebase and development process.
 
-We have written step-by-step instructions to be accessible to even beginning programmers and web designers.
+Step-by-step instructions require no more than beginning-level programming or web designer experience.
 
 This guide assumes you are running a GNU/Linux system and have at least a *basic* understanding of command-line operations.
 If you are on a different system or need any other help, come say "hi" at #snowdrift on [freenode.net](http://webchat.freenode.net/?channels=#snowdrift). We are always happy to assist and answer *any* questions!
@@ -12,18 +12,18 @@ If you are on a different system or need any other help, come say "hi" at #snowd
 About the frameworks and tools we use
 =====================================
 
-The Snowdrift.coop site uses the **[Yesod web framework](http://www.yesodweb.com/)**.
-Like the software itself, the associated book and documentation are all FLO and quite thorough.
+Snowdrift.coop uses the **[Yesod web framework](http://www.yesodweb.com/)**.
+Like the software itself, the associated book and documentation are all Free/Libre/Open (FLO) and quite thorough.
 
 Yesod uses the Haskell programming language alongside its
 [Shakespearean Templates](http://www.yesodweb.com/book/shakespearean-templates).
 With some minor variations (such as indentation instead of closing tags or bracketing),
-normal HTML/CSS/JavaScript can be used directly in the templates.
+these templates use standard HTML, CSS, and JavaScript.
 
 Our front-end uses **[Twitter Bootstrap](http://getbootstrap.com/)** for layout and styles,
-although there are many cases where we use our own custom CSS.
+although we use our own custom CSS in many cases.
 
-As a suggestion for beginners: Firefox's built-in developer tools
+A suggestion for beginners: Firefox's built-in developer tools
 and the [Firebug](https://getfirebug.com) plugin both offer great (and complementary) functions
 for testing and experimenting with the live site.
 
@@ -31,15 +31,17 @@ for testing and experimenting with the live site.
 Learning Haskell
 ----------------
 
-Because everything is integrated, some familiarity with the Haskell syntax is helpful
+Because everything is integrated, some familiarity with Haskell syntax is helpful
 even if you stay mostly with front-end development.
-We also encourage anyone interested to go deeper and learn how
-powerful and enjoyable programming in Haskell can be.
+At any rate, Haskell is a powerful and enjoyable programming language worth learning
+for anyone interested in programming.
 
-* To learn Haskell, check out the [Haskell Wikibook](https://en.wikibooks.org/wiki/Haskell), which is a great introduction and includes links to many additional resources.
-* Stack Overflow user postings are FLO (CC-BY-SA), see the tags for [yesod](http://stackoverflow.com/questions/tagged/yesod) and [haskell](http://stackoverflow.com/questions/tagged/yesod)
-* Alongside #snowdrift on freenode.net, the #yesod and #haskell channels are also active and helpful
-* A useful tool is "cabal repl" — a command that loads [ghci](https://en.wikibooks.org/wiki/Haskell/Using_GHCi_effectively) in a mode connected to the project. Using that, you can easily import files from the code and explore the functions.
+To learn Haskell, we recommend these FLO resources:
+
+* The [Haskell Wikibook](https://en.wikibooks.org/wiki/Haskell) offers a superb introductory overview and includes links to many additional resources.
+* At Stack Overflow, see the tags for [yesod](http://stackoverflow.com/questions/tagged/yesod) and [haskell](http://stackoverflow.com/questions/tagged/yesod)
+* Alongside #snowdrift on freenode.net, check out the channels #yesod #haskell and #haskell-beginners
+* A useful tool in development is "cabal repl" — a command that loads [ghci](https://en.wikibooks.org/wiki/Haskell/Using_GHCi_effectively) in a mode connected to the project. Using that, you can easily import files from the code and explore the functions.
 * To help write clean Haskell code and learn conventions, run hlint on your files to get suggestions for possible improvements.
     * Given a working Haskell installation, add hlint with the command "cabal install hlint"
 
@@ -59,8 +61,8 @@ VIM users should also install
 
 Emacs users should use a package manager (preferably Marmalade) to install
 [Haskell Mode](https://github.com/haskell/haskell-mode) and [Hamlet Mode](https://github.com/lightquake/hamlet-mode).
-The included [`.dir-locals.el`](https://www.gnu.org/software/emacs/manual/html_node/emacs/Directory-Variables.html) file
-makes Emacs use the recommended indentation style.
+Our included [`.dir-locals.el`](https://www.gnu.org/software/emacs/manual/html_node/emacs/Directory-Variables.html) file
+makes Emacs use the recommended indentation.
 
 
 Development guidelines and notes
@@ -69,7 +71,7 @@ Development guidelines and notes
 Overall, we strive to follow universal standards, be fully accessible, and avoid browser-specific code.
 
 We generally build with *progressive enhancement* in mind.
-Content and functions should be built with simple HTML/CSS along with Yesod/Haskell server-side functions.
+Content and functions should work with simple HTML/CSS along with Yesod/Haskell server-side functions.
 JavaScript may then added for enhancement.
 Consider the ideas of [Unobtrusive JavaScript](http://en.wikipedia.org/wiki/Unobtrusive_JavaScript).
 Use of NoScript should never causes a broken experience.
@@ -98,17 +100,17 @@ Cloning the repository
 ----------------------
 
 1. Have or make an account on Gitorious or GitHub
-2. Clone (Gitorious' term) / Fork (GitHub's term) the snowdrift repository to your account
+2. Clone (Gitorious' term) or Fork (GitHub's term) the snowdrift repository to your account
 3. Tell Gitorious/GitHub the public side of your local SSH key
     * If you don't yet have a key, create one on your local machine with the command "ssh-keygen"
     * The public part is in the .pub file (such as id_rsa.pub)
     * Both sites have further instructions if this isn't clear enough
-4. On your local machine, use the "git clone" command with the Gitorious or Github address for your account
+4. On your local machine, use the `git clone` command with the Gitorious or Github address for your account
 
 This will create a directory and download the code to it.
 In the future, when in the new directory,
-"git pull" will update your local machine from your Gitorious or GitHub account,
-and "git push" will go the other direction, sending any local commits to Gitorious or GitHub.
+`git pull` will update your local machine from your Gitorious or GitHub account,
+and `git push` will go the other direction, sending any local commits to Gitorious or GitHub.
 
 After pushing to your online account,
 alert us to the changes with Gitorious' "request merge" or GitHub's "pull request" commands on their websites.
@@ -125,7 +127,7 @@ To edit the new code before merging, you can do
 
     git checkout FETCH_HEAD
 
-To merge the update, make sure you are on the branch where you want the updates, then
+To merge the update, make sure you checkout the branch where you want the updates, then
 
     git merge FETCH_HEAD
 
@@ -137,16 +139,14 @@ and simply communicate by e-mail or IRC or other options about when to fetch upd
 Building
 --------
 
-Install ghc, cabal, and postgresql, however you do that on your system.
-Yesod also requires a few other items such as "happy" and "alex".
+Install the essential dependencies: ghc, cabal, postgresql, happy, alex, llvm, zlib1g, libpq-dev.
 
-On Debian-based GNU/Linux distros, the full install command is:
+On Debian-based GNU/Linux distros, use this command:
 
     sudo apt-get install ghc cabal-install haskell-platform postgresql zlib1g-dev libpq-dev happy alex llvm
 
 **Note: we are now using GHC 7.8.3** (although 7.8.2 may work as well)
-The Haskell Platform needs to be the newer 2014.2.0.0 which includes GHC 7.8.3.
-If your system's version is not up to date, get the update from
+If your system's GHC version is older, get the updated Haskell Platform 2014.2.0.0 from
 <http://www.haskell.org/platform>
 
 (There are also a few non-Haskell libraries with some dependencies which you may
@@ -161,7 +161,7 @@ After installing everything, update cabal's package list:
     cabal update
 
 Add ~/.cabal/bin locations to your PATH;
-for bash, edit your .bashrc (or equivalent) file and add the following line:
+for bash, edit your ~/.bashrc (or equivalent) file and add the following line:
 
     export PATH=.cabal-sandbox/bin:~/.cabal/bin:$PATH
 
@@ -171,9 +171,9 @@ Now, upgrade cabal itself:
 
     cabal install Cabal cabal-install
 
-**change to your snowdrift project directory (if you're not already working there).**
+**change to your snowdrift project directory (if not already there).**
 
-Initiate a cabal sandbox:
+Then, initiate a cabal sandbox:
 
     cabal sandbox init
 
@@ -188,69 +188,28 @@ This will take a *long* time but should ultimately tell you it installed Snowdri
 Setting up the database
 -----------------------
 
-Run a script that will setup the development database for you:
+We offer a simple script that will setup the PostgreSQL databases for you. Simply run:
 
-    sdm init --db=dev
+    sdm init
 
-It will prompt you for a database password (see somepassphrase below)
-as well as your sudo password.  After that, you can jump to the next
-section.
-
-Alternatively, you can invoke the following commands, which can be
-done *while building is in progress*.
-
-Go to the config/ directory within the project directory
-and make a copy of postgresql.template and name the new file postgresql.yml
-
-Create database user called "snowdrift_development" *without* superuser, createdb, or createuser priveleges:
-
-    sudo -u postgres createuser -S -D -R snowdrift_development
-
-Create snowdrift_development database:
-
-    sudo -u postgres createdb snowdrift_development
-
-Run postgres psql:
-
-    sudo -u postgres psql
-
-You should see a line that looks like:
-
-    postgres=#
-
-Add a password to the snowdrift_development user
-(you may substitute your chosen passphrase instead of 'somepassphrase'):
-
-    postgres=# alter user snowdrift_development with encrypted password 'somepassphrase';
-
-Then add user to database:
-
-    postgres=# grant all privileges on database snowdrift_development to snowdrift_development;
-
-Leave postgres (with ctrl-D).
-
-Edit config/postgresql.yml and update the password to match the one you entered.
-
-Import development database:
-
-    sudo -u postgres psql snowdrift_development <devDB.sql
+It will prompt you for your sudo password.
+Soon, we will have it generate a random database passphrase, but the script currently asks you to specify some random passphrase that the database will use internally (you don't need to remember it).
 
 
 Running the site
 ----------------
 
-Once snowdrift is built and assuming you're using a cabal sandbox,
-have set your PATH correctly, and are in your snowdrift directory,
-you can start the server with the command:
+After completing all the steps above,
+you can start the server from within your snowdrift directory with the command:
 
     Snowdrift Development
 
-To rebuild the site after changes to the code, run "cabal build" before starting the server.
-    
-Alternately, you may use the yesod devel command which does a combined rebuild and server start.
-In rare cases, an alternate build command may help with troubleshooting,
-but the main advantage to yesod devel is that it can be left running
-and will automatically update your build after each saved change to any file.
+To stop the running server, press ctrl-C
+
+To rebuild the site after changes to the code, run `cabal build` before starting the server.
+
+Alternately, you may use the `yesod devel` command which combines an efficient rebuild and server start.
+Leave yesod devel running, and it will automatically update your build after each saved change to any file.
                                              
 To enable yesod devel, first install yesod-bin:
 
@@ -260,34 +219,48 @@ From now on, you can rebuild and start the server with:
 
     yesod devel
 
-After the server starts, it may print a bunch of text about creating tables,
-and it will then sit ready, waiting for connections.  Note that `yesod devel`
-builds just the library.  If you need to build an executable, use `cabal build`.
+To stop yesod devel, press ENTER
 
-For either build approach, access the server by directing your web browser to localhost:3000
+After the server starts, it may print a bunch of text about creating tables,
+and it will then sit ready, waiting for connections.
+Note that `yesod devel` builds just the library.  If you need to update an executable, use `cabal build`.
 
 
 Using the live test site
 ------------------------
 
+Test the running site by directing your web browser to localhost:3000
+
 You can log into the site via the built-in system with user: admin pass: admin
 
-With that user, create wiki pages at localhost:3000/p/snowdrift/w/*pagename*/new
-
-See the documentation [about the wiki](https://snowdrift.coop/p/snowdrift/w/wiki) for more on how that works.
-
-That's all you need to get started!
-
-You can now register new users, make pledges, and test and work on all aspects of the site.
+You can now register new users, make pledges, add discussion comments, tickets, wiki pages, blog posts, and test and work on all aspects of the site.
 
 
-Additional notes about database and testing
-===========================================
+Running tests
+=============
+
+After making various changes to the code and running locally
+to verify that everything compiles and also appears to work as desired,
+best practice involves then running our automated tests before sharing your changes with the main project.
+
+To prepare for running tests, you will need to install some extra dependencies with the command:
+
+    cabal install --only-dependencies --enable-tests
+
+Assuming you ran `sdm init` when you first set up the databases, run the tests with:
+
+    yesod test
+
+If tests fail, try to figure out what is wrong. Ask us for help if needed.
+
+
+Additional notes about databases
+================================
 
 Database migrations
 -------------------
 
-After changing the database schema (in config/models),
+After any change to the database schema (in config/models),
 the first time you recompile and then start the server,
 a migration script will be automatically generated and placed in /migrations.
 
@@ -306,22 +279,31 @@ just copy the statements to the new migrateN file (creating it if necessary).
 
 If you don't want to lose the data
 (a column is being moved to a different table, a column is being renamed, &c),
-modify the migration file as appropriate.
+modify the migration file to use the appropriate intended SQL commands.
 
-If you try different things in the course of testing and/or reset your database,
-you might generate extra migrations.
-Be sure to clear and reset any migrations once you have a final version.
+In the course of testing and/or resetting your database, you might generate extra migrations.
+Be sure to clear and reset any migrations once you have a final version of the code.
 Then, you can run the site once to generate the correct final migration.
+Make sure any migration files you commit are precisely the way you intend.
 
-Committing database updates
----------------------------
+
+Committing database migrations
+------------------------------
 
 Add any valid new migrations/migrateN files to git when you commit the corresponding schema changes.
 
 When merging migrations, always put any you've added on the end.
 Don't merge them into migration files others may have already run.
 
-Although it will run the migrations anyway, it will be efficient to also update devDB.sql, as described below.
+
+Resetting or updating your development database
+-----------------------------------------------
+
+To remove any changes and reset your database to the devDB default
+(such as when others have provided a new update you want to try
+or to start clean before making changes you plan to commit) run:
+
+    sdm reset --db=dev
 
 
 Sharing updates to the devDB database
@@ -340,23 +322,84 @@ which is the same as running:
 
     sudo -u postgres pg_dump snowdrift_development >devDB.sql
 
-Resetting your database
----------------------------
 
-To remove any changes and reset your database to the devDB default
-(such as when others have provided a new update you want to try
-or to start clean before making changes you plan to commit):
+Updating to the latest test database
+------------------------------------
 
-    sdm reset --db=dev
+When the testDB.sql file is updated, you'll need to update your template.
 
-Or follow these steps:
+Although `sdm reset --db=test` ought to work, something is wrong with that script as of this writing.
+
+If you run `sdm clean` followed by `sdm init`,
+that will work, but it will reset both your development *and* test databases.
+
+If you don't want to reset your development database,
+you can *manually* reset only the test database.
+See the appendix section at the end of this guide.
+
+---
+
+Happy hacking!
+
+---
+
+
+APPENDIX: Manual database management
+====================================
+
+Our sdm script makes database management quick and easy,
+but here we explain what it does and how to handle databases manually if you prefer.
+
+
+Setting up the development database
+-----------------------------------
+
+Go to the config/ directory within the project directory,
+make a copy of postgresql.template, and name the new file postgresql.yml
+
+Create database user called "snowdrift_development" *without* superuser, createdb, or createuser priveleges:
+
+    sudo -u postgres createuser -S -D -R snowdrift_development
+
+Create snowdrift_development database:
+
+    sudo -u postgres createdb snowdrift_development
+
+Run postgres psql:
+
+    sudo -u postgres psql
+
+You should see a line that looks like:
+
+    postgres=#
+
+Add a password to the snowdrift_development user
+(you may substitute your any arbitrary passphrase instead of 'somepassphrase'):
+
+    postgres=# alter user snowdrift_development with encrypted password 'somepassphrase';
+
+Then add user to database:
+
+    postgres=# grant all privileges on database snowdrift_development to snowdrift_development;
+
+Leave postgres (with ctrl-D).
+
+Edit config/postgresql.yml and update the password to match the one you entered.
+
+Import development database:
+
+    sudo -u postgres psql snowdrift_development <devDB.sql
+
+
+Reset the development database
+------------------------------
 
 Start by deleting your database:
 
     sudo -u postgres psql <<<'drop database snowdrift_development'
 
 Then simply re-create the database by rerunning two of the commands
-from the "Setting up the database" section above.
+from the "Setting up" section above.
 
 First the "Create snowdrift database" command:
 
@@ -369,38 +412,11 @@ and then the "Import development database" command:
 That's it. You will *not* need to re-run the database user commands.
 
 
-Running tests
-=============
-
-After making various changes to the code and running locally
-to verify that everything compiles and also appears to work as desired,
-it is best to then run our automated tests before sharing your changes with the main project.
-
 Setting up the test template database
 -------------------------------------
 
-To prepare for running tests,
-you will need to install some extra dependencies with the command:
-
-    cabal install --only-dependencies --enable-tests
-
 Like setting up the original development database,
-we then need to set up a database and user for testing.
-
-Currently, the sdm script is not allowed to initialize just the test
-database:
-
-    sdm init --db=test
-
-So this command will return a warning.  But there is a workaround.
-*Backup your changes* and run:
-
-    sdm clean
-    sdm init
-
-The last command will initialize both databases.
-
-Alternatively, you can run the following commands:
+we need to set up a database and user for testing.
 
 Create database user *without* superuser or createrole priveleges but *with* createdb priveleges:
 
@@ -418,8 +434,8 @@ At the postgres=# prompt, mark the new database as a template:
 
     postgres=# update pg_database set datistemplate=true where datname='snowdrift_test_template';
 
-Then, add a password to the snowdrift_test user
-(as with snowdrift_development, you may substitute your chosen passphrase):
+Then, add any arbitrary passphrase to the snowdrift_test user
+(substitute whatever you like instead of somepassphrase):
 
     postgres=# alter user snowdrift_test with encrypted password 'somepassphrase';
 
@@ -434,24 +450,8 @@ Finally, import the testDB.sql to the new template database:
     sudo -u postgres psql snowdrift_test_template <testDB.sql
 
 
-Running the tests
------------------
-
-To run the tests, do
-
-    yesod test
-
-If tests fail, try to figure out what is wrong. Ask us for help if needed.
-
-
-Updating to the latest test database
-------------------------------------
-
-When the testDB.sql file is updated, you'll need to update your template.
-
-    sdm reset --db=test
-
-Or run these commands:
+Resetting the testDB
+--------------------
 
 Go to the postgres=# prompt:
 
@@ -469,14 +469,9 @@ Drop the template DB:
 
 Then we repeat the commands above for setting up the test DB,
 skipping the dependencies/user-creation/password parts (those don't need updating).
-In brief:
 
     sudo -u postgres createdb snowdrift_test_template
     sudo -u postgres psql
     postgres=# update pg_database set datistemplate=true where datname='snowdrift_test_template';
     sudo -u postgres psql snowdrift_test_template <testDB.sql
-
----
-
-Happy hacking!
 
