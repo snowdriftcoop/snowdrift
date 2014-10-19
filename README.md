@@ -40,7 +40,7 @@ and [Gitorious](https://gitorious.org/snowdrift/snowdrift) (which is FLO, licens
 It also contains links for learning Haskell, comments about our development methods, and more.
 
 For those experienced with Git, Haskell, PostgreSQL, and perhaps even Yesod,
-here's the quickest way to get started:
+here's some quick and dirty minimal instructions get started:
 
 ```
 // Install any dependencies you don't have:
@@ -57,16 +57,18 @@ cabal install --only-dependencies --enable-tests
 cabal build
 
 // Set up the database with our quick script.
-// To understand what the script does or to run the commands all
-// manually, see the GUIDE.md file
+// To understand what the script does or to run the commands manually, see GUIDE.md
 sdm init
 
 // Launch the development site
 Snowdrift Development
 
-// For fast, automatic rebuilding whenever you
-// change the code, use the yesod-bin package
+// For fast, automatic rebuilding whenever you change the code, use the yesod-bin package
 cabal install yesod-bin
 // then instead of "Snowdrift Development" run the site with
 yesod devel
+
+// Point browser to localhost:3000
 ```
+
+Ideally, read through GUIDE.md as that has more complete details.
