@@ -281,9 +281,9 @@ snowdriftAuthBrowserId =
         login toMaster = do
             let parentLogin = apLogin auth toMaster
             [whamlet|
-                <p>
-                    <strong>Mozilla Persona is a secure log-in that doesn't track you!
-                    ^{parentLogin}
+                <div .text-center>
+                    <strong>We support Mozilla Persona &mdash; a universal, secure log-in that doesn't track you!
+                ^{parentLogin}
                 <p>
                     The Persona sign-in button works for both new and existing accounts.
             |]
@@ -296,10 +296,12 @@ snowdriftAuthHashDB =
         login toMaster =
             [whamlet|
                 <div id="login">
-                    <p .h3 .text-center> We also offer a built-in system
+                    <div .text-center>
+                        <strong>We also offer a built-in system
                         <br>
                         <a href="@{UserCreateR}">
                             <button>click here to create a new account
+                        <p> or log-in below:
                     <form .form-horizontal method="post" action="@{toMaster loginRoute}">
                         <div .form-group>
                             <label .col-sm-4 .control-label>
