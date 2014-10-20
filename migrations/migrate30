@@ -1,0 +1,7 @@
+CREATe TABLE "image"("id" SERIAL PRIMARY KEY UNIQUE,"ts" TIMESTAMP NOT NULL,"uploader" INT8 NOT NULL,"project" INT8 NULL,"name" VARCHAR NOT NULL,"origin" VARCHAR NULL,"format" BYTEA NOT NULL,"data" BYTEA NOT NULL);
+ALTER TABLE "image" ADD CONSTRAINT "unique_image_handle" UNIQUE("name");
+ALTER TABLE "image" ADD CONSTRAINT "image_uploader_fkey" FOREIGN KEY("uploader") REFERENCES "user"("id");
+ALTER TABLE "image" ADD CONSTRAINT "image_project_fkey" FOREIGN KEY("project") REFERENCES "project"("id");
+CREATe TABLE "unnamed_image"("id" SERIAL PRIMARY KEY UNIQUE,"ts" TIMESTAMP NOT NULL,"uploader" INT8 NOT NULL,"project" INT8 NULL,"name" VARCHAR NULL,"origin" VARCHAR NULL,"format" BYTEA NOT NULL,"data" BYTEA NOT NULL);
+ALTER TABLE "unnamed_image" ADD CONSTRAINT "unnamed_image_uploader_fkey" FOREIGN KEY("uploader") REFERENCES "user"("id");
+ALTER TABLE "unnamed_image" ADD CONSTRAINT "unnamed_image_project_fkey" FOREIGN KEY("project") REFERENCES "project"("id");

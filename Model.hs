@@ -16,6 +16,7 @@ import Control.Exception           (Exception)
 import Data.Int                    (Int64)
 import Data.Function               (on)
 import Data.Text                   (Text)
+import Data.ByteString             (ByteString)
 import Data.Time.Clock             (UTCTime)
 import Data.Typeable               (Typeable)
 import Database.Persist.Quasi

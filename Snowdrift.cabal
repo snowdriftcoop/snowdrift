@@ -69,6 +69,7 @@ library
                      Handler.Discussion
                      Handler.Home
                      Handler.HonorPledge
+                     Handler.Image
                      Handler.Invitation
                      Handler.JsLicense
                      Handler.MarkdownTutorial

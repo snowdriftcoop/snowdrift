@@ -1,0 +1,8 @@
+<div>
+    ^{renderTime imageTs}
+
+<div>
+    #{imageName}
+
+<div>
+    <img src=@{ImageR imageName}>

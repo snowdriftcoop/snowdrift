@@ -46,6 +46,7 @@ import Handler.BuildFeed
 import Handler.Comment
 import Handler.Home
 import Handler.HonorPledge
+import Handler.Image
 import Handler.Invitation
 import Handler.JsLicense
 import Handler.MarkdownTutorial

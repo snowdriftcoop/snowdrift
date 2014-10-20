@@ -15,6 +15,11 @@
 /tou                ToUR              GET
 /tutorial/markdown  MarkdownTutorialR GET
 
+/img/!upload                UploadImageR      GET POST
+/img/!name/#UnnamedImageId  NameImageR        GET POST
+/img/#Text                  ImageR            GET
+/img/#Text/meta             ImageMetaR        GET
+
 -- User
 
 /u                                      UsersR                GET
