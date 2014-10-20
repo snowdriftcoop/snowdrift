@@ -323,3 +323,17 @@ tocTarget tag title =
             <a .toc_target name="toc_target#{tag}" href="#toc_entry#{tag}" title="Back to Table Of Contents">
                 ^
     |]
+
+--------------------------------------------------------------------------------
+-- Utility functions
+
+lookupParamDefault :: Read a => Text -> a -> Handler a
+lookupParamDefault name def = do
+    maybe_param <- lookup name <$> reqGetParams <$> getRequest
+    return $ fromMaybe def $ do
+        param_str <- maybe_param
+        param <- listToMaybe $ reads $ T.unpack param_str
+        return $ fst param
+
+--------------------------------------------------------------------------------
+-- /

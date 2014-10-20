@@ -24,19 +24,6 @@ import qualified Data.Text as T
 import           Data.Default         (def)
 import           Text.Cassius         (cassiusFile)
 
---------------------------------------------------------------------------------
--- Utility functions
-
-lookupParamDefault :: Read a => Text -> a -> Handler a
-lookupParamDefault name def = do
-    maybe_param <- lookup name <$> reqGetParams <$> getRequest
-    return $ fromMaybe def $ do
-        param_str <- maybe_param
-        param <- listToMaybe $ reads $ T.unpack param_str
-        return $ fst param
-
---------------------------------------------------------------------------------
--- /
 
 getUsersR :: Handler Html
 getUsersR = do
