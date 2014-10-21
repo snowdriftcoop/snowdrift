@@ -2,8 +2,11 @@
 {-# LANGUAGE RecordWildCards    #-}
 
 import Prelude hiding (init, length)
-import Control.Exception (bracket)
+import Control.Applicative ((<$>))
 import Control.Monad hiding (forM_)
+import qualified Data.ByteString as B
+import Data.ByteString.Internal (c2w, w2c)
+import qualified Data.ByteString.Char8 as C
 import Data.Char (toLower)
 import Data.List.NonEmpty hiding (init, words, unwords)
 import Data.Foldable (forM_)
@@ -13,6 +16,7 @@ import System.Directory
 import System.Environment
 import System.IO
 import System.Process
+import System.Random.MWC
 
 -- Command line interface.
 
@@ -204,15 +208,17 @@ unsetTemplate = template False
 config :: String
 config = "config/postgresql.yml"
 
-getPassword :: String -> IO String
-getPassword s =
-  bracket (hGetEcho stdout) (hSetEcho stdout) . const $ do
-    leave s
-    hSetEcho stdout False
-    hFlush stdout
-    p <- getLine
-    putStr "\n"
-    return p
+-- Do not use for important accounts.
+genPassword :: Int -> String -> IO String
+genPassword len cs =
+  C.unpack <$> (withSystemRandom . asGenIO $ go len (return B.empty))
+  where
+    go 0 acc _   = acc
+    go n acc gen = do
+      w <- uniformR (c2w ' ', c2w '~') gen
+      if (w2c w ==) `any` cs
+        then go (pred n) (B.cons w <$> acc) gen
+        else go n acc gen
 
 init, clean, reset, export :: NonEmpty DB -> IO ()
 init ((Test {}) :| []) = error "cannot initialize only test; try to init dev or all"
@@ -220,9 +226,7 @@ init dbs = do
   exists <- doesFileExist config
   when exists $ error "already initialized; doing nothing"
 
-  -- Get a database password from a user.
-  password <- getPassword $ "database password: "
-  when (null password) $ error "no password provided"
+  password <- genPassword 42 $ ['a'..'z'] <> ['A'..'Z'] <> ['0'..'9']
 
   -- Setup the databases.
   run "cp" ["config/postgresql.template", config]

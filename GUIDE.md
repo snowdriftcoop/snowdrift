@@ -193,7 +193,6 @@ We offer a simple script that will setup the PostgreSQL databases for you. Simpl
     sdm init
 
 It will prompt you for your sudo password.
-Soon, we will have it generate a random database passphrase, but the script currently asks you to specify some random passphrase that the database will use internally (you don't need to remember it).
 
 
 Running the site

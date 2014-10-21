@@ -267,8 +267,10 @@ executable         sdm
     main-is:           Sdm.hs
     hs-source-dirs:    dev
     build-depends:     base
+                     , bytestring
                      , cmdargs
                      , directory
+                     , mwc-random
                      , process
                      , semigroups
 
