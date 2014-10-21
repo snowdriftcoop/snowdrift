@@ -29,7 +29,8 @@ fixLinks project' discussion_on line' = do
                 , "([a-z]+:)?" -- project
                 , "([a-z0-9-]+)" -- page
             , ")"
-            , "(/[a-z0-9/]*)?" -- path
+            , "([a-z0-9/#-]*)?" -- path
+            , "\\)"
             ] 
 
         project = encodeUtf8 project'
