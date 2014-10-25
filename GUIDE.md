@@ -280,18 +280,17 @@ If you don't want to lose the data
 (a column is being moved to a different table, a column is being renamed, &c),
 modify the migration file to use the appropriate intended SQL commands.
 
-In the course of testing and/or resetting your database, you might generate extra migrations.
-Be sure to clear and reset any migrations once you have a final version of the code.
-Then, you can run the site once to generate the correct final migration.
-Make sure any migration files you commit are precisely the way you intend.
-
 
 Committing database migrations
 ------------------------------
 
+In the course of testing and/or resetting your database, you might generate extra migrations.
+When that happens, be sure to reset your database and remove any extraneous migration files.
+Once you have a final version of the code, you can run the site once to generate the correct final migration.
+
 Ideally consolidate all migrations so there is only one migration file per commit. 
 
-Make sure to add the associated migrationN file to git when you commit the corresponding schema changes.
+Make sure to add the associated migration file to git when you commit the corresponding schema changes.
 
 When merging migrations, always put any you've added on the end in separate file(s).
 Don't merge them into migration files others may have already run.
