@@ -289,9 +289,11 @@ Make sure any migration files you commit are precisely the way you intend.
 Committing database migrations
 ------------------------------
 
-Add any valid new migrations/migrateN files to git when you commit the corresponding schema changes.
+Ideally consolidate all migrations so there is only one migration file per commit. 
 
-When merging migrations, always put any you've added on the end.
+Make sure to add the associated migrationN file to git when you commit the corresponding schema changes.
+
+When merging migrations, always put any you've added on the end in separate file(s).
 Don't merge them into migration files others may have already run.
 
 
