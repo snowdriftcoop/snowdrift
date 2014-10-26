@@ -7,6 +7,11 @@ module Handler.Comment
     , getCommentDirectLinkR
     , getCommentTagR
     , postCommentTagR
+    , getCommentWatchR
+    , postCommentWatchR
+    , getCommentUnwatchR
+    , postCommentUnwatchR
+
     -- Utils
     , MakeCommentActionWidget
     , earlierClosuresFromMaybeParentId
@@ -322,7 +327,7 @@ postClaimComment user@(Entity user_id _) comment_id comment make_comment_handler
                         (Entity comment_id comment)
                         user
                         make_comment_handler_info
-                        (def { mod_claim_map = M.insert comment_id (TicketClaiming now user_id comment_id mnote Nothing) })
+                        (def { mod_claim_map = M.insert comment_id (TicketClaiming now user_id comment_id mnote) })
                         (getMaxDepthDefault 0)
                         True
                     return (Just (comment_widget, form))
@@ -747,3 +752,45 @@ postCommentTagR comment_id tag_id = do
                     where_ $ ct ^. CommentTagId ==. val comment_tag_id
 
     getCommentDirectLinkR comment_id
+
+
+
+-- todo: reify watches in routes?
+getCommentWatchR :: CommentId -> Handler Html
+getCommentWatchR _ = do
+    -- todo: check that it is not being watched by this user
+    -- todo: render comment
+    defaultLayout [whamlet|
+        watch subthread starting at this comment?
+
+        <form method=POST>
+            <input type=submit value=watch>
+    |]
+
+postCommentWatchR :: CommentId -> Handler Html
+postCommentWatchR comment_id = do
+    viewer_id <- requireAuthId
+    now <- liftIO getCurrentTime
+
+    runYDB $ insert_ $ WatchedSubthread now viewer_id comment_id
+
+    redirect $ CommentDirectLinkR comment_id
+
+getCommentUnwatchR :: CommentId -> Handler Html
+getCommentUnwatchR _ = do
+    -- todo: check that it is being watched
+    defaultLayout [whamlet|
+        stop watching subthread starting at this comment?
+
+        <form method=POST>
+            <input type=submit value=watch>
+    |]
+
+postCommentUnwatchR :: CommentId -> Handler Html
+postCommentUnwatchR comment_id = do
+    viewer_id <- requireAuthId
+    runYDB $ delete $ from $ \ ws -> do
+        where_ $ ws ^. WatchedSubthreadUser ==. val viewer_id
+            &&. ws ^. WatchedSubthreadRoot ==. val comment_id
+
+    redirect $ CommentDirectLinkR comment_id

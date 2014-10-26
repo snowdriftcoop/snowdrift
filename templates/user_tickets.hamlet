@@ -1,33 +1,87 @@
-<table .table>
-    <tr>
-        <th>
-            Project
-        <th>
-            Discussion
-        <th>
-            Ticket
-        <th>
-            Title
+<div>
+    $if mviewer_id == Just user_id
+        Your tickets:
+    $else
+        Tickets claimed by #{userDisplayName $ Entity user_id user}
 
-    $forall (Entity ticket_id ticket, w, Value project_handle) <- tickets
+    <table .table>
         <tr>
-            <td>
-                #{project_handle}
-            <td>
-                $maybe Entity _ wiki_page <- w
-                    on page
-                    <a href=@{WikiR project_handle (wikiPageTarget wiki_page)}>
-                        #{wikiPageTarget wiki_page}
-                $nothing
-                    on project discussion
-                        
-            <td>
-                <a href=@{CommentDirectLinkR (ticketComment ticket)}>
-                    $case ticket_id
-                        $of Key (PersistInt64 tid)
-                            SD-#{tid}
-                        $of _
-                            SD-???
-                        
-            <td>
-                #{ticketName ticket}
+            <th>
+                Project
+            <th>
+                Discussion
+            <th>
+                Ticket
+            <th>
+                Title
+
+        $forall (Entity ticket_id ticket, w, Value project_handle) <- claimed_tickets
+            <tr>
+                <td>
+                    #{project_handle}
+                <td>
+                    $maybe Entity _ wiki_page <- w
+                        on page
+                        <a href=@{WikiR project_handle (wikiPageTarget wiki_page)}>
+                            #{wikiPageTarget wiki_page}
+                    $nothing
+                        on project discussion
+
+                <td>
+                    <a href=@{CommentDirectLinkR (ticketComment ticket)}>
+                        $case ticket_id
+                            $of Key (PersistInt64 tid)
+                                SD-#{tid}
+                            $of _
+                                SD-???
+
+                <td>
+                    #{ticketName ticket}
+
+<div>
+    $if mviewer_id == Just user_id
+        Tickets in threads you are watching:
+    $else
+        Tickets in threads watched by #{userDisplayName $ Entity user_id user}
+
+
+    <table .table>
+        <tr>
+            <th>
+                Project
+            <th>
+                Discussion
+            <th>
+                Claimed by
+            <th>
+                Ticket
+            <th>
+                Title
+
+        $forall (Entity ticket_id ticket, u, w, Value project_handle) <- watched_tickets
+            <tr>
+                <td>
+                    #{project_handle}
+                <td>
+                    $maybe Entity _ wiki_page <- w
+                        on page
+                        <a href=@{WikiR project_handle (wikiPageTarget wiki_page)}>
+                            #{wikiPageTarget wiki_page}
+                    $nothing
+                        on project discussion
+
+                <td>
+                    $maybe user_entity <- u
+                        <a href=@{UserR $ entityKey user_entity}>
+                            #{userDisplayName user_entity}
+
+                <td>
+                    <a href=@{CommentDirectLinkR (ticketComment ticket)}>
+                        $case ticket_id
+                            $of Key (PersistInt64 tid)
+                                SD-#{tid}
+                            $of _
+                                SD-???
+
+                <td>
+                    #{ticketName ticket}

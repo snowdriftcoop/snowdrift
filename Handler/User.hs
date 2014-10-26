@@ -342,21 +342,49 @@ getUserPledgesR user_id = do
 getUserTicketsR :: UserId -> Handler Html
 getUserTicketsR user_id = do
     user <- runYDB $ get404 user_id
+    mviewer_id <- maybeAuthId
 
     -- TODO: abstract out grabbing the project
-    tickets <- runDB $ select $ from $ \ (c `InnerJoin` t `InnerJoin` tc `LeftOuterJoin` w `InnerJoin` p) -> do
+    claimed_tickets <- runDB $ select $ from $ \ (c `InnerJoin` t `InnerJoin` tc `LeftOuterJoin` w `InnerJoin` p) -> do
         on_ $ p ^. ProjectDiscussion ==. c ^. CommentDiscussion ||. w ?. WikiPageProject ==. just (p ^. ProjectId)
         on_ $ w ?. WikiPageDiscussion ==. just (c ^. CommentDiscussion)
         on_ $ tc ^. TicketClaimingTicket ==. c ^. CommentId
         on_ $ t ^. TicketComment ==. c ^. CommentId
 
         where_ $ tc ^. TicketClaimingUser ==. val user_id
-            &&. isNothing (tc ^. TicketClaimingReleasedTs)
             &&. c ^. CommentId `notIn` (subList_select $ from $ return . (^. CommentClosingComment))
 
         orderBy [ asc $ tc ^. TicketClaimingTs ]
 
         return (t, w, p ^. ProjectHandle)
+
+    watched_tickets <- runDB $ select $ from $ \
+        (
+                            c   -- Comment
+            `LeftOuterJoin` ca  -- CommentAncestor - link between comment and subthread root
+            `InnerJoin`     ws  -- WatchedSubthread
+            `InnerJoin`     t   -- Ticket
+            `LeftOuterJoin` tc  -- TicketClaiming for the ticket, if any (current only)
+            `LeftOuterJoin` u   -- User who claimed the ticket, if any
+            `LeftOuterJoin` w   -- Wiki page for discussion, if any
+            `InnerJoin` p       -- Project for discussion
+        ) -> do
+            on_ $ p ^. ProjectDiscussion ==. c ^. CommentDiscussion ||. w ?. WikiPageProject ==. just (p ^. ProjectId)
+            on_ $ w ?. WikiPageDiscussion ==. just (c ^. CommentDiscussion)
+            on_ $ u ?. UserId ==. tc ?. TicketClaimingUser
+            on_ $ tc ?. TicketClaimingTicket ==. just (c ^. CommentId)
+            on_ $ t ^. TicketComment ==. c ^. CommentId
+            on_ $ ws ^. WatchedSubthreadRoot ==. c ^. CommentId
+                ||. just (ws ^. WatchedSubthreadRoot) ==. ca ?. CommentAncestorAncestor
+            on_ $ ca ?. CommentAncestorComment ==. just (c ^. CommentId)
+
+            where_ $ (isNothing (tc ?. TicketClaimingId) ||. tc ?. TicketClaimingUser !=. just (val user_id))
+                &&. c ^. CommentId `notIn` (subList_select $ from $ return . (^. CommentClosingComment))
+                &&. ws ^. WatchedSubthreadUser ==. val user_id
+
+            orderBy [ asc $ t ^. TicketCreatedTs, asc $ t ^. TicketId ]
+
+            return (t, u, w, p ^. ProjectHandle)
 
     defaultLayout $ do
         setTitle . toHtml $

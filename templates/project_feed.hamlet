@@ -11,7 +11,7 @@ $forall event <- events
         $of ECommentClosed _ comment_closing
             ^{renderCommentClosedEvent comment_closing user_map ticket_map}
 
-        $of ETicketClaimed _ claim
+        $of ETicketClaimed claim
             ^{renderTicketClaimedEvent claim user_map ticket_map}
 
         $of ETicketUnclaimed _ claim

@@ -337,9 +337,19 @@ TicketClaiming
     user       UserId
     ticket     CommentId
     note       Text      Maybe
-    releasedTs UTCTime   Maybe
 
     UniqueTicketClaiming ticket
+
+    deriving Show
+
+
+TicketOldClaiming
+    claimTs     UTCTime
+    user        UserId
+    ticket      CommentId
+    note        Text      Maybe
+    releaseNote Text     Maybe
+    releasedTs  UTCTime
 
     deriving Show
 
@@ -406,7 +416,7 @@ SharesPledged
     render  PledgeFormRenderedId
 
 --------------------------------------------------------------------------------
--- Snowdrift events. These are all combined into a single sum time in 
+-- Snowdrift events. These are all combined into a single sum time in
 -- Model.SnowdriftEvent.
 
 -- An approved comment.
@@ -429,12 +439,13 @@ EventCommentClosing
     comment_closing CommentClosingId
 
 EventTicketClaimed
-    ts      UTCTime
-    claim   TicketClaimingId
+    ts          UTCTime
+    claim       TicketClaimingId    Maybe
+    old_claim   TicketOldClaimingId Maybe
 
 EventTicketUnclaimed
     ts      UTCTime
-    claim   TicketClaimingId
+    claim   TicketOldClaimingId
 
 -- Notification sent event.
 EventNotificationSent
@@ -488,4 +499,9 @@ UnnamedImage
     origin Text Maybe
     format ContentType
     data ByteString
+
+WatchedSubthread
+    ts UTCTime
+    user UserId
+    root CommentId
 

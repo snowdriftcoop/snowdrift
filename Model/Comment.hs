@@ -726,8 +726,16 @@ rethreadCommentDB mnew_parent_id new_discussion_id root_comment_id user_id reaso
                               <#  (tc  ^. TicketClaimingTs)
                               <&> (tc  ^. TicketClaimingUser)
                               <&> (cr  ^. CommentRethreadNewComment)
-                              <&> (tc  ^. TicketClaimingNote)
-                              <&> (tc  ^. TicketClaimingReleasedTs))
+                              <&> (tc  ^. TicketClaimingNote))
+
+        updateForRethread TicketOldClaimingTicket
+                          (\toc cr -> TicketOldClaiming
+                              <#  (toc  ^. TicketOldClaimingClaimTs)
+                              <&> (toc  ^. TicketOldClaimingUser)
+                              <&> (cr   ^. CommentRethreadNewComment)
+                              <&> (toc  ^. TicketOldClaimingNote)
+                              <&> (toc  ^. TicketOldClaimingReleaseNote)
+                              <&> (toc  ^. TicketOldClaimingReleasedTs))
 
         updateForRethread UnapprovedCommentNotificationComment
                           (\ucn cr -> UnapprovedCommentNotification

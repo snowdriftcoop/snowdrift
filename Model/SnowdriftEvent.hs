@@ -19,19 +19,20 @@ snowdriftEventNewestToOldest :: SnowdriftEvent -> SnowdriftEvent -> Ordering
 snowdriftEventNewestToOldest x y  = compare (snowdriftEventTime y) (snowdriftEventTime x)
 
 snowdriftEventTime :: SnowdriftEvent -> UTCTime
-snowdriftEventTime (ECommentPosted _ Comment{..})          = fromMaybe commentCreatedTs commentApprovedTs
-snowdriftEventTime (ECommentPending _ Comment{..})         = commentCreatedTs
-snowdriftEventTime (ECommentRethreaded _ Rethread{..})     = rethreadTs
-snowdriftEventTime (ECommentClosed _ CommentClosing{..})   = commentClosingTs
-snowdriftEventTime (ETicketClaimed _ TicketClaiming{..})   = ticketClaimingTs
-snowdriftEventTime (ETicketUnclaimed _ TicketClaiming{..}) = fromMaybe (error "TicketUnclaimed event for TicketClaiming with no ReleasedTs") ticketClaimingReleasedTs
-snowdriftEventTime (ENotificationSent _ Notification{..})  = notificationCreatedTs
-snowdriftEventTime (EWikiEdit _ WikiEdit{..})              = wikiEditTs
-snowdriftEventTime (EWikiPage _ WikiPage{..})              = wikiPageCreatedTs
-snowdriftEventTime (EBlogPost _ BlogPost{..})              = blogPostTs
-snowdriftEventTime (ENewPledge _ SharesPledged{..})        = sharesPledgedTs
-snowdriftEventTime (EUpdatedPledge _ _ SharesPledged{..})  = sharesPledgedTs
-snowdriftEventTime (EDeletedPledge ts _ _ _)               = ts
+snowdriftEventTime (ECommentPosted _ Comment{..})                       = fromMaybe commentCreatedTs commentApprovedTs
+snowdriftEventTime (ECommentPending _ Comment{..})                      = commentCreatedTs
+snowdriftEventTime (ECommentRethreaded _ Rethread{..})                  = rethreadTs
+snowdriftEventTime (ECommentClosed _ CommentClosing{..})                = commentClosingTs
+snowdriftEventTime (ETicketClaimed (Left (_,  TicketClaiming{..})))     = ticketClaimingTs
+snowdriftEventTime (ETicketClaimed (Right (_,  TicketOldClaiming{..}))) = ticketOldClaimingClaimTs
+snowdriftEventTime (ETicketUnclaimed _ TicketOldClaiming{..})           = ticketOldClaimingReleasedTs
+snowdriftEventTime (ENotificationSent _ Notification{..})               = notificationCreatedTs
+snowdriftEventTime (EWikiEdit _ WikiEdit{..})                           = wikiEditTs
+snowdriftEventTime (EWikiPage _ WikiPage{..})                           = wikiPageCreatedTs
+snowdriftEventTime (EBlogPost _ BlogPost{..})                           = blogPostTs
+snowdriftEventTime (ENewPledge _ SharesPledged{..})                     = sharesPledgedTs
+snowdriftEventTime (EUpdatedPledge _ _ SharesPledged{..})               = sharesPledgedTs
+snowdriftEventTime (EDeletedPledge ts _ _ _)                            = ts
 
 -- Eventually the html rendering here should be moved to the top level somewhere for sharing with notifications
 snowdriftEventToFeedEntry
@@ -99,7 +100,7 @@ snowdriftEventToFeedEntry render project_handle user_map _ _ ticket_map (ECommen
                         , username
                         ]
 
-snowdriftEventToFeedEntry render project_handle user_map _ _ ticket_map (ETicketClaimed _ TicketClaiming{..}) =
+snowdriftEventToFeedEntry render project_handle user_map _ _ ticket_map (ETicketClaimed (Left (_, TicketClaiming{..}))) =
     let user_id    = ticketClaimingUser
         maybe_user = M.lookup user_id user_map
         username   = maybe "<unknown user>" (userDisplayName . Entity user_id) maybe_user
@@ -121,15 +122,37 @@ snowdriftEventToFeedEntry render project_handle user_map _ _ ticket_map (ETicket
             , feedEntryContent = [hamlet| |] render
             }
 
-snowdriftEventToFeedEntry render project_handle _ _ _ ticket_map (ETicketUnclaimed _ TicketClaiming{..}) =
-    let Entity ticket_id Ticket{..} = lookupErr "snowdriftEventToFeedEntry: comment id not present in ticket map" ticketClaimingTicket ticket_map
+snowdriftEventToFeedEntry render project_handle user_map _ _ ticket_map (ETicketClaimed (Right (_, TicketOldClaiming{..}))) =
+    let user_id    = ticketOldClaimingUser
+        maybe_user = M.lookup user_id user_map
+        username   = maybe "<unknown user>" (userDisplayName . Entity user_id) maybe_user
+        Entity ticket_id Ticket{..} = lookupErr "snowdriftEventToFeedEntry: comment id not present in ticket map" ticketOldClaimingTicket ticket_map
         ticket_str = case ticket_id of
             Key (PersistInt64 tid) -> T.pack $ show tid
             Key _ -> "<malformed id>"
 
      in Just $ FeedEntry
-            { feedEntryLink    = CommentDirectLinkR ticketClaimingTicket
-            , feedEntryUpdated = ticketClaimingTs
+            { feedEntryLink    = CommentDirectLinkR ticketOldClaimingTicket
+            , feedEntryUpdated = ticketOldClaimingClaimTs
+            , feedEntryTitle   = T.unwords
+                [ T.snoc project_handle ':'
+                , "ticket claimed by"
+                , T.snoc username ':'
+                , T.concat [ "SD-", ticket_str, ":" ]
+                , ticketName
+                ]
+            , feedEntryContent = [hamlet| |] render
+            }
+
+snowdriftEventToFeedEntry render project_handle _ _ _ ticket_map (ETicketUnclaimed _ TicketOldClaiming{..}) =
+    let Entity ticket_id Ticket{..} = lookupErr "snowdriftEventToFeedEntry: comment id not present in ticket map" ticketOldClaimingTicket ticket_map
+        ticket_str = case ticket_id of
+            Key (PersistInt64 tid) -> T.pack $ show tid
+            Key _ -> "<malformed id>"
+
+     in Just $ FeedEntry
+            { feedEntryLink    = CommentDirectLinkR ticketOldClaimingTicket
+            , feedEntryUpdated = ticketOldClaimingReleasedTs
             , feedEntryTitle   = T.unwords
                 [ T.snoc project_handle ':'
                 , "ticket available:"

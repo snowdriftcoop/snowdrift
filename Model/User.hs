@@ -396,24 +396,32 @@ userClaimCommentDB :: UserId -> CommentId -> Maybe Text -> SDB ()
 userClaimCommentDB user_id comment_id mnote = do
     now <- liftIO getCurrentTime
 
-    let ticket_claiming = TicketClaiming now user_id comment_id mnote Nothing
+    let ticket_claiming = TicketClaiming now user_id comment_id mnote
 
     ticket_claiming_id <- lift $ insert ticket_claiming
-    tell [ETicketClaimed ticket_claiming_id ticket_claiming]
+    tell [ETicketClaimed (Left (ticket_claiming_id, ticket_claiming))]
 
 userUnclaimCommentDB :: UserId -> CommentId -> Maybe Text -> SDB ()
-userUnclaimCommentDB _ comment_id _ = do
+userUnclaimCommentDB _ comment_id release_note = do
     maybe_ticket_claiming_entity <- getBy $ UniqueTicketClaiming comment_id
     case maybe_ticket_claiming_entity of
         Nothing -> return ()
-        Just (Entity ticket_claiming_id ticket_claiming) -> do
+        Just (Entity ticket_claiming_id TicketClaiming{..}) -> do
             now <- liftIO getCurrentTime
 
-            lift $ update $ \ tc -> do
-                where_ $ tc ^. TicketClaimingId ==. val ticket_claiming_id
-                set tc [ TicketClaimingReleasedTs =. val (Just now) ]
+            delete $ from $ \ tc -> where_ $ tc ^. TicketClaimingId ==. val ticket_claiming_id
 
-            tell [ ETicketUnclaimed ticket_claiming_id ticket_claiming { ticketClaimingReleasedTs = Just now } ]
+            let ticket_old_claiming = TicketOldClaiming
+                    ticketClaimingTs
+                    ticketClaimingUser
+                    ticketClaimingTicket
+                    ticketClaimingNote
+                    release_note
+                    now
+
+            ticket_old_claiming_id <- insert ticket_old_claiming
+
+            tell [ ETicketUnclaimed ticket_old_claiming_id ticket_old_claiming ]
 
 
 -- | Fetch a User's number of unviewed comments on each WikiPage of a Project.

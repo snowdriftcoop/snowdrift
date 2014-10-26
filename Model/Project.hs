@@ -299,30 +299,38 @@ fetchProjectCommentClosingsBeforeDB project_id muser_id before lim = fetchProjec
         limit lim
         return closing
 
-fetchProjectTicketClaimingsBeforeDB :: ProjectId -> UTCTime -> Int64 -> DB [Entity TicketClaiming]
-fetchProjectTicketClaimingsBeforeDB project_id before lim = fetchProjectDiscussionsDB project_id >>= \project_discussions ->
-    select $ from $ \ (tc `InnerJoin` c `InnerJoin` t) -> do
+fetchProjectTicketClaimingsBeforeDB :: ProjectId -> UTCTime -> Int64 -> DB [Either (Entity TicketClaiming) (Entity TicketOldClaiming)]
+fetchProjectTicketClaimingsBeforeDB project_id before lim = do
+    project_discussions <- fetchProjectDiscussionsDB project_id
+    tuples <- select $ from $ \ (t `InnerJoin` c `LeftOuterJoin` toc `LeftOuterJoin` tc) -> do
+        on_ (tc ?. TicketClaimingTicket ==. just (c ^. CommentId))
+        on_ (toc ?. TicketOldClaimingTicket ==. just (c ^. CommentId))
         on_ (t ^. TicketComment ==. c ^. CommentId)
-        on_ (tc ^. TicketClaimingTicket ==. c ^. CommentId)
 
-        where_ $ tc ^. TicketClaimingTs <=. val before
-            &&.  c ^. CommentDiscussion `in_` valList project_discussions
+        where_ $ coalesce [tc ?. TicketClaimingTs, toc ?. TicketOldClaimingClaimTs] <=. just (val before)
+            &&. c ^. CommentDiscussion `in_` valList project_discussions
+            &&. not_ (isNothing $ coalesce [ tc ?. TicketClaimingTs, toc ?. TicketOldClaimingClaimTs ])
 
-        orderBy [ desc $ tc ^. TicketClaimingTs, desc $ tc ^. TicketClaimingId ]
+        orderBy [ desc $ coalesce [ tc ?. TicketClaimingTs, toc ?. TicketOldClaimingClaimTs ], desc $ tc ?. TicketClaimingId, desc $ toc ?. TicketOldClaimingId ]
         limit lim
-        return tc
+        return (tc, toc)
 
-fetchProjectTicketUnclaimingsBeforeDB :: ProjectId -> UTCTime -> Int64 -> DB [Entity TicketClaiming]
+    let tupleToMaybeEither (Just x, Nothing) = Just $ Left x
+        tupleToMaybeEither (Nothing, Just y) = Just $ Right y
+        tupleToMaybeEither _ = Nothing
+
+    return $ mapMaybe tupleToMaybeEither tuples
+
+fetchProjectTicketUnclaimingsBeforeDB :: ProjectId -> UTCTime -> Int64 -> DB [Entity TicketOldClaiming]
 fetchProjectTicketUnclaimingsBeforeDB project_id before lim = fetchProjectDiscussionsDB project_id >>= \project_discussions ->
     select $ from $ \ (tc `InnerJoin` c `InnerJoin` t) -> do
         on_ (t ^. TicketComment ==. c ^. CommentId)
-        on_ (tc ^. TicketClaimingTicket ==. c ^. CommentId)
+        on_ (tc ^. TicketOldClaimingTicket ==. c ^. CommentId)
 
-        where_ $ not_ (isNothing $ tc ^. TicketClaimingReleasedTs)
-            &&. tc ^. TicketClaimingReleasedTs <=. val (Just before)
+        where_ $ tc ^. TicketOldClaimingReleasedTs <=. val before
             &&.  c ^. CommentDiscussion `in_` valList project_discussions
 
-        orderBy [ desc $ tc ^. TicketClaimingReleasedTs, desc $ tc ^. TicketClaimingId ]
+        orderBy [ desc $ tc ^. TicketOldClaimingReleasedTs, desc $ tc ^. TicketOldClaimingId ]
         limit lim
         return tc
 

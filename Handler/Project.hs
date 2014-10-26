@@ -4,6 +4,8 @@ module Handler.Project where
 
 import Import
 
+import Prelude (writeFile, appendFile)
+
 import Data.Filter
 import Data.Order
 import Handler.Comment
@@ -863,6 +865,8 @@ getProjectFeedR project_handle = do
     muser <- maybeAuth
     let muser_id = entityKey <$> muser
 
+    liftIO $ writeFile "log" ""
+
     before <- lookupGetUTCTimeDefaultNow "before"
 
     (project, comments, rethreads, closings, claimings, unclaimings, wiki_pages, wiki_edits, blog_posts, new_pledges,
@@ -884,6 +888,8 @@ getProjectFeedR project_handle = do
         updated_pledges <- fetchProjectUpdatedPledgesBeforeDB              project_id before lim
         deleted_pledges <- fetchProjectDeletedPledgesBeforeDB              project_id before lim
 
+        liftIO $ forM_ claimings $ appendFile "log" . (++"\n") . show
+
         -- Suplementary maps for displaying the data. If something above requires extra
         -- data to display the project feed row, it MUST be used to fetch the data below!
 
@@ -898,7 +904,8 @@ getProjectFeedR project_handle = do
                          , S.fromList (map (rethreadModerator . entityVal) rethreads)
                          , S.fromList wiki_edit_users
                          , S.fromList blog_post_users
-                         , S.fromList (map (ticketClaimingUser . entityVal) (claimings <> unclaimings))
+                         , S.fromList (map (either (ticketClaimingUser . entityVal) (ticketOldClaimingUser . entityVal)) claimings)
+                         , S.fromList (map (ticketOldClaimingUser . entityVal) unclaimings)
                          , S.fromList (map sharesPledgedUser shares_pledged)
                          , S.fromList (map eventDeletedPledgeUser deleted_pledges)
                          ]
@@ -907,7 +914,8 @@ getProjectFeedR project_handle = do
 
         ticket_map <- fetchCommentTicketsDB $ mconcat
             [ S.fromList comment_ids
-            , S.fromList $ map (ticketClaimingTicket . entityVal) $ claimings <> unclaimings
+            , S.fromList $ map (either (ticketClaimingTicket . entityVal) (ticketOldClaimingTicket . entityVal)) claimings
+            , S.fromList $ map (ticketOldClaimingTicket . entityVal) unclaimings
             ]
 
         -- WikiPages keyed by their own IDs (contained in a WikiEdit)
@@ -930,11 +938,12 @@ getProjectFeedR project_handle = do
 
     action_permissions_map <- makeProjectCommentActionPermissionsMap muser project_handle def comments
 
+
     let all_unsorted_events = mconcat
             [ map (onEntity ECommentPosted)     comments
             , map (onEntity ECommentRethreaded) rethreads
             , map (onEntity ECommentClosed)     closings
-            , map (onEntity ETicketClaimed)     claimings
+            , map (ETicketClaimed . either (Left . onEntity (,)) (Right . onEntity (,)))         claimings
             , map (onEntity ETicketUnclaimed)   unclaimings
             , map (onEntity EWikiPage)          wiki_pages
             , map (onEntity EWikiEdit)          wiki_edits

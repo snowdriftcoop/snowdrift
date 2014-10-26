@@ -4,6 +4,7 @@ module Model.SnowdriftEvent.Internal
 
 import Model
 
+import Data.Either (Either)
 import Data.Int (Int64)
 import Data.Time (UTCTime)
 
@@ -19,10 +20,10 @@ data SnowdriftEvent
     | ECommentClosed CommentClosingId CommentClosing
 
     -- Ticket claimed
-    | ETicketClaimed TicketClaimingId TicketClaiming
+    | ETicketClaimed (Either (TicketClaimingId, TicketClaiming) (TicketOldClaimingId, TicketOldClaiming))
 
     -- Ticket unclaimed
-    | ETicketUnclaimed TicketClaimingId TicketClaiming
+    | ETicketUnclaimed TicketOldClaimingId TicketOldClaiming
 
     -- Comment rethreaded.
     | ECommentRethreaded RethreadId Rethread -- rethreaded-from-URL
