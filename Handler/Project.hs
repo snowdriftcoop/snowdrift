@@ -4,8 +4,6 @@ module Handler.Project where
 
 import Import
 
-import Prelude (writeFile, appendFile)
-
 import Data.Filter
 import Data.Order
 import Handler.Comment
@@ -865,8 +863,6 @@ getProjectFeedR project_handle = do
     muser <- maybeAuth
     let muser_id = entityKey <$> muser
 
-    liftIO $ writeFile "log" ""
-
     before <- lookupGetUTCTimeDefaultNow "before"
 
     (project, comments, rethreads, closings, claimings, unclaimings, wiki_pages, wiki_edits, blog_posts, new_pledges,
@@ -887,8 +883,6 @@ getProjectFeedR project_handle = do
         new_pledges     <- fetchProjectNewPledgesBeforeDB                  project_id before lim
         updated_pledges <- fetchProjectUpdatedPledgesBeforeDB              project_id before lim
         deleted_pledges <- fetchProjectDeletedPledgesBeforeDB              project_id before lim
-
-        liftIO $ forM_ claimings $ appendFile "log" . (++"\n") . show
 
         -- Suplementary maps for displaying the data. If something above requires extra
         -- data to display the project feed row, it MUST be used to fetch the data below!
