@@ -11,7 +11,7 @@ UPDATE event_ticket_claimed SET old_claim = ticket_old_claiming.id, claim = NULL
 
 ALTER TABLE event_ticket_unclaimed DROP CONSTRAINT event_ticket_unclaimed_claim_fkey;
 
-UPDATE event_ticket_unclaimed SET claim = ticket_old_claiming.id, claim = NULL FROM ticket_claiming, ticket_old_claiming WHERE event_ticket_unclaimed.claim = ticket_claiming.id AND ticket_claiming.ts = ticket_old_claiming.claim_ts AND ticket_claiming.ticket = ticket_old_claiming.ticket AND ticket_claiming.released_ts = ticket_old_claiming.released_ts;
+UPDATE event_ticket_unclaimed SET claim = ticket_old_claiming.id FROM ticket_claiming, ticket_old_claiming WHERE event_ticket_unclaimed.claim = ticket_claiming.id AND ticket_claiming.ts = ticket_old_claiming.claim_ts AND ticket_claiming.ticket = ticket_old_claiming.ticket AND ticket_claiming.released_ts = ticket_old_claiming.released_ts;
 
 ALTER TABLE "event_ticket_unclaimed" ADD CONSTRAINT "event_ticket_unclaimed_claim_fkey" FOREIGN KEY("claim") REFERENCES "ticket_old_claiming"("id");
 
