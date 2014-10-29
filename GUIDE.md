@@ -33,7 +33,7 @@ Learning Haskell
 
 Because everything is integrated, some familiarity with Haskell syntax is helpful
 even if you stay mostly with front-end development.
-At any rate, Haskell is a powerful and enjoyable programming language worth learning
+At any rate, Haskell is a powerful and enjoyable language worth learning
 for anyone interested in programming.
 
 To learn Haskell, we recommend these FLO resources:
@@ -41,7 +41,7 @@ To learn Haskell, we recommend these FLO resources:
 * The [Haskell Wikibook](https://en.wikibooks.org/wiki/Haskell) offers a superb introductory overview and includes links to many additional resources.
 * At Stack Overflow, see the tags for [yesod](http://stackoverflow.com/questions/tagged/yesod) and [haskell](http://stackoverflow.com/questions/tagged/yesod)
 * Alongside #snowdrift on freenode.net, check out the channels #yesod #haskell and #haskell-beginners
-* A useful tool in development is "cabal repl" — a command that loads [ghci](https://en.wikibooks.org/wiki/Haskell/Using_GHCi_effectively) in a mode connected to the project. Using that, you can easily import files from the code and explore the functions.
+* A useful development tool  is "cabal repl" — a command that loads [ghci](https://en.wikibooks.org/wiki/Haskell/Using_GHCi_effectively) in a mode connected to the project. Using that, you can easily import files from the code and explore the functions.
 * To help write clean Haskell code and learn conventions, run hlint on your files to get suggestions for possible improvements.
     * Given a working Haskell installation, add hlint with the command "cabal install hlint"
 
@@ -72,17 +72,16 @@ Overall, we strive to follow universal standards, be fully accessible, and avoid
 
 We generally build with *progressive enhancement* in mind.
 Content and functions should work with simple HTML/CSS along with Yesod/Haskell server-side functions.
-JavaScript may then added for enhancement.
+Later, we add JavaScript as appropriate for enhancement.
 Consider the ideas of [Unobtrusive JavaScript](http://en.wikipedia.org/wiki/Unobtrusive_JavaScript).
 Use of NoScript should never causes a broken experience.
 We also make sure all our JavaScript is recognized
 by the FSF's [LibreJS plugin](https://www.gnu.org/software/librejs/).
 
-We have a separate wiki and discussion page on the site
-for discussing specific [web-design issues](https://snowdrift.coop/p/snowdrift/w/site-design).
-We also have a complete [list of tickets](https://snowdrift.coop/p/snowdrift/t)
-with a range of front-end, back-end, and more or less technical items.
-We're also working to tag thing to clarify the types of skills needed for different tasks.
+We have a separate wiki and discussion pages on the site
+for [web-design issues](https://snowdrift.coop/p/snowdrift/w/site-design)
+and [coding issues](https://snowdrift.coop/p/snowdrift/w/coding).
+We also have a complete [list of tickets](https://snowdrift.coop/p/snowdrift/t) in all categories.
 
 Please consider adding concise comments to your code explaining to others anything you think may be unclear.
 Ideally, follow the syntax for
@@ -347,12 +346,13 @@ Happy hacking!
 APPENDIX: Manual database management
 ====================================
 
-Our sdm script makes database management quick and easy,
+Our sdm script makes database management quick and easy.
+All the steps below can be done simply with the sdm script,
 but here we explain what it does and how to handle databases manually if you prefer.
 
 
-Setting up the development database
------------------------------------
+Setting up the development database manually
+--------------------------------------------
 
 Go to the config/ directory within the project directory,
 make a copy of postgresql.template, and name the new file postgresql.yml
@@ -374,7 +374,8 @@ You should see a line that looks like:
     postgres=#
 
 Add a password to the snowdrift_development user
-(you may substitute your any arbitrary passphrase instead of 'somepassphrase'):
+(for reference, the sdm script generates a random passphrase for this step;
+you may substitute your any arbitrary passphrase instead of 'somepassphrase'):
 
     postgres=# alter user snowdrift_development with encrypted password 'somepassphrase';
 
@@ -391,8 +392,8 @@ Import development database:
     sudo -u postgres psql snowdrift_development <devDB.sql
 
 
-Reset the development database
-------------------------------
+Reset the development database manually
+---------------------------------------
 
 Start by deleting your database:
 
@@ -412,8 +413,8 @@ and then the "Import development database" command:
 That's it. You will *not* need to re-run the database user commands.
 
 
-Setting up the test template database
--------------------------------------
+Setting up the test template database manually
+----------------------------------------------
 
 Like setting up the original development database,
 we need to set up a database and user for testing.
@@ -450,8 +451,8 @@ Finally, import the testDB.sql to the new template database:
     sudo -u postgres psql snowdrift_test_template <testDB.sql
 
 
-Resetting the testDB
---------------------
+Resetting the testDB manually
+-----------------------------
 
 Go to the postgres=# prompt:
 
