@@ -73,8 +73,8 @@ blogSpecs = do
             statusIs 200
 
         {-
-            htmlNoneContain "#post" "Above fold."
-            htmlNoneContain "#post" "Below fold."
+            htmlNoneContain "#blog-post" "Above fold."
+            htmlNoneContain "#blog-post" "Below fold."
         -}
         |]
 
@@ -86,8 +86,8 @@ blogSpecs = do
 
             statusIs 200
 
-            htmlNoneContain ".post" "Above fold."
-            htmlNoneContain ".post" "Below fold."
+            htmlNoneContain ".blog-post" "Above fold."
+            htmlNoneContain ".blog-post" "Below fold."
         |]
 
 
@@ -95,8 +95,8 @@ blogSpecs = do
             adminLogin
 
             previewBlog (NewProjectBlogPostR "snowdrift") $ do
-                byLabel "Post Title" "Test"
-                byLabel "Post Handle" "test"
+                byLabel "Title for this blog post" "Test"
+                byLabel "Handle for the URL" "test"
                 byLabel "Content" "Above fold.\n***\nBelow fold."
 
             bodyContains "Above fold."
@@ -108,8 +108,8 @@ blogSpecs = do
             adminLogin
 
             postBlog (NewProjectBlogPostR "snowdrift") $ do
-                byLabel "Post Title" "Test"
-                byLabel "Post Handle" "test"
+                byLabel "Title for this blog post" "Test"
+                byLabel "Handle for the URL" "test"
                 byLabel "Content" "Above fold.\n***\nBelow fold."
 
             Just route <- extractLocation
@@ -118,13 +118,13 @@ blogSpecs = do
 
             statusIs 200
 
-            htmlAnyContain ".post" "Above fold."
-            htmlNoneContain ".post" "Below fold."
+            htmlAnyContain ".blog-post" "Above fold."
+            htmlNoneContain ".blog-post" "Below fold."
 
             get $ ProjectBlogPostR "snowdrift" "test"
 
-            htmlAnyContain ".post" "Above fold."
-            htmlAnyContain ".post" "Below fold."
+            htmlAnyContain ".blog-post" "Above fold."
+            htmlAnyContain ".blog-post" "Below fold."
         |]
 
         yit "loads the project blog - with blog post" $ [marked|
@@ -134,8 +134,8 @@ blogSpecs = do
 
             statusIs 200
 
-            htmlAnyContain ".post" "Above fold."
-            htmlNoneContain ".post" "Below fold."
+            htmlAnyContain ".blog-post" "Above fold."
+            htmlNoneContain ".blog-post" "Below fold."
         |]
 
     {-
@@ -146,8 +146,8 @@ blogSpecs = do
 
             statusIs 200
 
-            htmlAllContain "#post" "Above fold."
-            htmlNoneContain "#post" "Below fold."
+            htmlAllContain "#blog-post" "Above fold."
+            htmlNoneContain "#blog-post" "Below fold."
         |]
     -}
 

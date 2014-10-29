@@ -2,7 +2,7 @@ $if null posts
     No blog posts yet.
 
 $forall Entity _ post <- posts
-    <div .post>
+    <div .blog-post>
         <a href=@{ProjectBlogPostR project_handle (blogPostHandle post)}>
             #{blogPostTitle post}
 

@@ -20,7 +20,9 @@ import           Model.Markdown
 import           Model.Project
 import           Model.Shares
 import           Model.Role
+import           View.User (userNameWidget)
 import           Widgets.Markdown
+import           Widgets.Time
 
 import qualified Data.Text       as T
 import           Data.Time.Clock
@@ -80,6 +82,7 @@ renderBlogPost project_handle blog_post = do
     let (Markdown top_content) = blogPostTopContent blog_post
         (Markdown bottom_content) = maybe (Markdown "") ("***\n" <>) $ blogPostBottomContent blog_post
         title = blogPostTitle blog_post
+        author = blogPostUser blog_post
         discussion = DiscussionOnProject project
         content = markdownWidgetWith (fixLinks project_handle discussion) $ Markdown $ T.snoc top_content '\n' <> bottom_content
 
@@ -99,8 +102,8 @@ projectBlogForm defaults = renderBootstrap3 $
         getHandle (_, handle, _) = handle
         getContent (_, _, content) = content
      in (,,)
-        <$> areq' textField "Post Title" (getTitle <$> defaults)
-        <*> areq' textField "Post Handle" (getHandle <$> defaults)
+        <$> areq' textField "Title for this blog post" (getTitle <$> defaults)
+        <*> areq' textField "Handle for the URL" (getHandle <$> defaults)
         <*> areq' snowdriftMarkdownField "Content" (getContent <$> defaults)
 
 projectContactForm :: Form Markdown
