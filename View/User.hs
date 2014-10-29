@@ -121,6 +121,9 @@ hiddenMarkdown :: Maybe Markdown -> AForm Handler (Maybe Markdown)
 hiddenMarkdown Nothing               = fmap (fmap Markdown) $ aopt hiddenField "" Nothing
 hiddenMarkdown (Just (Markdown str)) = fmap (fmap Markdown) $ aopt hiddenField "" (Just $ Just str)
 
+
+-- | Fetch user by UserId and display with userDisplayName
+-- (try not to use where it means O(N) fetches of users)
 userNameWidget :: UserId -> Widget
 userNameWidget user_id = do
     maybe_user <- handlerToWidget $ runDB $ get user_id
