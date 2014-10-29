@@ -1,6 +1,6 @@
 
 <div .blog-post>
-    <h2>
+    <h1>
         #{title}
         <small>
             <span .author> by ^{userNameWidget author}
