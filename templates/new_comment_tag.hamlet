@@ -2,10 +2,17 @@ $# TODO: We should use type-safe URLs here... just got bit by this...
 
 <form class="tagcloud" method=post action="./apply">
     ^{apply_form}
-    <input type=submit value="apply">
+    <input type=submit value="apply selected tag(s)">
+
+<hr>
 
 <form method=post action="./create">
     ^{create_form}
     <input type=submit value="create & apply">
+
+$# TODO: as per SD-135, show the actual item being tagged
+$# that might include current tags and then we won't need the redundant showing of tags
+<hr>
+Current tags on this item:
 $forall tag <- tags
     ^{tagWidget tag}

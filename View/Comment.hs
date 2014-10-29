@@ -173,7 +173,7 @@ unwatchCommentForm :: Form ()
 unwatchCommentForm = renderBootstrap3 $ pure ()
 
 createCommentTagForm :: Form Text
-createCommentTagForm = renderBootstrap3 $ areq' textField "" Nothing
+createCommentTagForm = renderBootstrap3 $ areq' textField "Make a new tag:" Nothing
 
 newCommentTagForm :: [Entity Tag] -> [Entity Tag] -> Form (Maybe [TagId], Maybe [TagId])
 newCommentTagForm project_tags other_tags = renderBootstrap3 $ (,)
