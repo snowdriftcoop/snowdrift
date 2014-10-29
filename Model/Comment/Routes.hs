@@ -19,13 +19,15 @@ data CommentRoutes = CommentRoutes
     , comment_route_retract   :: CommentId -> Route App
     , comment_route_tag       :: CommentId -> TagId -> Route App
     , comment_route_unclaim   :: CommentId -> Route App
+    , comment_route_watch     :: CommentId -> Route App
+    , comment_route_unwatch   :: CommentId -> Route App
     }
 
 dummyCommentRoutes :: CommentRoutes
 dummyCommentRoutes =
     CommentRoutes (const HomeR) (const HomeR) (const HomeR) (const HomeR) (const HomeR) (const HomeR)
                   (const HomeR) (const HomeR) (const HomeR) (const HomeR) (const HomeR) (\_ _ -> HomeR)
-                  (const HomeR)
+                  (const HomeR) (const HomeR) (const HomeR)
 
 projectCommentRoutes :: Text -> CommentRoutes
 projectCommentRoutes project_handle = CommentRoutes
@@ -42,6 +44,8 @@ projectCommentRoutes project_handle = CommentRoutes
     , comment_route_retract   = RetractProjectCommentR  project_handle
     , comment_route_tag       = ProjectCommentTagR      project_handle
     , comment_route_unclaim   = UnclaimProjectCommentR  project_handle
+    , comment_route_watch     = WatchProjectCommentR    project_handle
+    , comment_route_unwatch   = UnwatchProjectCommentR  project_handle
     }
 
 wikiPageCommentRoutes :: Text -> Text -> CommentRoutes
@@ -59,6 +63,8 @@ wikiPageCommentRoutes project_handle target = CommentRoutes
     , comment_route_retract   = RetractWikiCommentR  project_handle target
     , comment_route_tag       = WikiCommentTagR      project_handle target
     , comment_route_unclaim   = UnclaimWikiCommentR  project_handle target
+    , comment_route_watch     = WatchWikiCommentR    project_handle target
+    , comment_route_unwatch   = UnwatchWikiCommentR  project_handle target
     }
 
 userCommentRoutes :: UserId -> CommentRoutes
@@ -76,4 +82,6 @@ userCommentRoutes user_id = CommentRoutes
     , comment_route_retract   = RetractUserCommentR  user_id
     , comment_route_tag       = UserCommentTagR      user_id
     , comment_route_unclaim   = UnclaimUserCommentR  user_id
+    , comment_route_watch     = WatchUserCommentR    user_id
+    , comment_route_unwatch   = UnwatchUserCommentR  user_id
     }

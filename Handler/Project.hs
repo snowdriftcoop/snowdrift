@@ -739,6 +739,54 @@ postUnclaimProjectCommentR project_handle comment_id = do
         Just (widget, form) -> defaultLayout $ previewWidget form "unclaim" (projectDiscussionPage project_handle widget)
 
 --------------------------------------------------------------------------------
+-- /c/#CommentId/watch
+
+getWatchProjectCommentR :: Text -> CommentId -> Handler Html
+getWatchProjectCommentR project_handle comment_id = do
+    (widget, _) <-
+        makeProjectCommentActionWidget
+          makeWatchCommentWidget
+          project_handle
+          comment_id
+          def
+          getMaxDepth
+
+    defaultLayout (projectDiscussionPage project_handle widget)
+
+postWatchProjectCommentR ::Text -> CommentId -> Handler Html
+postWatchProjectCommentR project_handle comment_id = do
+    (viewer@(Entity viewer_id _), _, comment) <- checkCommentRequireAuth project_handle comment_id
+    checkProjectCommentActionPermission can_watch viewer project_handle (Entity comment_id comment)
+
+    postWatchComment viewer_id comment_id
+
+    redirect (ProjectCommentR project_handle comment_id)
+
+--------------------------------------------------------------------------------
+-- /c/#CommentId/unwatch
+
+getUnwatchProjectCommentR :: Text -> CommentId -> Handler Html
+getUnwatchProjectCommentR project_handle comment_id = do
+    (widget, _) <-
+        makeProjectCommentActionWidget
+          makeUnwatchCommentWidget
+          project_handle
+          comment_id
+          def
+          getMaxDepth
+
+    defaultLayout (projectDiscussionPage project_handle widget)
+
+postUnwatchProjectCommentR ::Text -> CommentId -> Handler Html
+postUnwatchProjectCommentR project_handle comment_id = do
+    (viewer@(Entity viewer_id _), _, comment) <- checkCommentRequireAuth project_handle comment_id
+    checkProjectCommentActionPermission can_watch viewer project_handle (Entity comment_id comment)
+
+    postUnwatchComment viewer_id comment_id
+
+    redirect (ProjectCommentR project_handle comment_id)
+
+--------------------------------------------------------------------------------
 -- /contact
 
 -- ProjectContactR stuff posts a private new topic to project discussion

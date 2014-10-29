@@ -45,6 +45,8 @@
 /u/#UserId/c/#CommentId/tag/!apply      UserCommentApplyTagR      POST
 /u/#UserId/c/#CommentId/tag/!create     UserCommentCreateTagR     POST
 /u/#UserId/c/#CommentId/unclaim         UnclaimUserCommentR   GET POST
+/u/#UserId/c/#CommentId/watch           WatchUserCommentR     GET POST
+/u/#UserId/c/#CommentId/unwatch         UnwatchUserCommentR   GET POST
 /u/#UserId/edit                         EditUserR             GET
 /u/#UserId/elig                         UserEstEligibleR          POST
 /u/#UserId/pledges                      UserPledgesR          GET
@@ -81,6 +83,8 @@
 /p/#Text/c/#CommentId/tag/!apply             ProjectCommentApplyTagR      POST
 /p/#Text/c/#CommentId/tag/!create            ProjectCommentCreateTagR     POST
 /p/#Text/c/#CommentId/unclaim                UnclaimProjectCommentR   GET POST
+/p/#Text/c/#CommentId/watch                  WatchProjectCommentR     GET POST
+/p/#Text/c/#CommentId/unwatch                UnwatchProjectCommentR   GET POST
 /p/#Text/contact                             ProjectContactR          GET POST
 /p/#Text/d                                   ProjectDiscussionR       GET
 /p/#Text/d/new                               NewProjectDiscussionR    GET POST
@@ -128,9 +132,9 @@
 /p/#Text/w/#Text/h/#WikiEditId                WikiEditR             GET
 /p/#Text/w/#Text/new                          NewWikiR              GET POST
 /p/#Text/w/#Text/perm                         EditWikiPermissionsR  GET POST
+/p/#Text/w/#Text/c/#CommentId/watch           WatchWikiCommentR     GET POST
+/p/#Text/w/#Text/c/#CommentId/unwatch         UnwatchWikiCommentR   GET POST
 
-/c/#CommentId/unwatch    CommentUnwatchR    GET POST
-/c/#CommentId/watch      CommentWatchR      GET POST
 /c/#CommentId            CommentDirectLinkR GET      DELETE
 /c/#CommentId/tag/#TagId CommentTagR        GET POST
 

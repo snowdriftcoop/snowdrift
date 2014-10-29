@@ -16,8 +16,9 @@ data CommentMods = CommentMods
     , mod_claim_map        :: Map CommentId TicketClaiming                  -> Map CommentId TicketClaiming
     , mod_flag_map         :: Map CommentId (CommentFlagging, [FlagReason]) -> Map CommentId (CommentFlagging, [FlagReason])
     , mod_tag_map          :: Map TagId Tag                                 -> Map TagId Tag
+    , mod_watch_map        :: Map CommentId (Set WatchedSubthread)          -> Map CommentId (Set WatchedSubthread)
     }
 
 instance Default CommentMods where
-    def = CommentMods id id id id id id id id id
+    def = CommentMods id id id id id id id id id id
 

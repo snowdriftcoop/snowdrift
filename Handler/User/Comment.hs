@@ -473,3 +473,52 @@ postUnclaimUserCommentR user_id comment_id = do
         Nothing -> redirect (UserCommentR user_id comment_id)
         Just (widget, form) -> defaultLayout $ previewWidget form "unclaim" (userDiscussionPage user_id widget)
 
+
+--------------------------------------------------------------------------------
+-- /watch
+
+getWatchUserCommentR :: UserId -> CommentId -> Handler Html
+getWatchUserCommentR user_id comment_id = do
+    (widget, _) <-
+        makeUserCommentActionWidget
+          makeWatchCommentWidget
+          user_id
+          comment_id
+          def
+          getMaxDepth
+
+    defaultLayout (userDiscussionPage user_id widget)
+
+postWatchUserCommentR :: UserId -> CommentId -> Handler Html
+postWatchUserCommentR user_id comment_id = do
+    (viewer@(Entity viewer_id _), comment) <- checkCommentUrlRequireAuth user_id comment_id
+    checkUserCommentActionPermission can_watch viewer user_id (Entity comment_id comment)
+
+    postWatchComment viewer_id comment_id
+
+    redirect (UserCommentR user_id comment_id)
+
+--------------------------------------------------------------------------------
+-- /unwatch
+
+getUnwatchUserCommentR :: UserId -> CommentId -> Handler Html
+getUnwatchUserCommentR user_id comment_id = do
+    (widget, _) <-
+        makeUserCommentActionWidget
+          makeUnwatchCommentWidget
+          user_id
+          comment_id
+          def
+          getMaxDepth
+
+    defaultLayout (userDiscussionPage user_id widget)
+
+postUnwatchUserCommentR :: UserId -> CommentId -> Handler Html
+postUnwatchUserCommentR user_id comment_id = do
+    (viewer@(Entity viewer_id _), comment) <- checkCommentUrlRequireAuth user_id comment_id
+    checkUserCommentActionPermission can_unwatch viewer user_id (Entity comment_id comment)
+
+    postUnwatchComment viewer_id comment_id
+
+    redirect (UserCommentR user_id comment_id)
+

@@ -7,6 +7,9 @@ module View.Comment
     , disabledCommentForm
     -- Comment action forms
     , claimCommentForm
+    , unclaimCommentForm
+    , watchCommentForm
+    , unwatchCommentForm
     , closeCommentForm
     , commentNewTopicForm
     , commentReplyForm
@@ -29,6 +32,8 @@ module View.Comment
     , rethreadCommentFormWidget
     , retractCommentFormWidget
     , unclaimCommentFormWidget
+    , watchCommentFormWidget
+    , unwatchCommentFormWidget
     -- Misc
     , orderingNewestFirst
     ) where
@@ -70,7 +75,7 @@ commentForm label content = renderBootstrap3 $ NewComment
 --    toVisibility _ = VisPublic
 
 commentFormWidget :: Text -> SomeMessage App -> Maybe Markdown -> Widget
-commentFormWidget post_text label content = commentFormWidget' post_text (commentForm label content)
+commentFormWidget post_text label content = commentFormWidget' True post_text (commentForm label content)
 
 -- intentional duplication of commentFormWidget' because some aspects
 -- of closing and other markdown aren't identical (such as marking privacy)
@@ -85,14 +90,17 @@ closureFormWidget' post_text form = do
                 <button type="submit" name="mode" value="post">#{post_text}
     |]
 
-commentFormWidget' :: Text -> Form a -> Widget
-commentFormWidget' post_text form = do
+commentFormWidget' :: Bool -> Text -> Form a -> Widget
+commentFormWidget' can_preview post_text form = do
     (widget, enctype) <- handlerToWidget $ generateFormPost form
     [whamlet|
         <div>
             <form method="POST" enctype=#{enctype}>
                 ^{widget}
-                <button type="submit" name="mode" value="preview">preview
+
+                $if can_preview
+                    <button type="submit" name="mode" value="preview">preview
+
                 <button type="submit" name="mode" value="post">#{post_text}
     |]
 
@@ -117,15 +125,19 @@ commentReplyFormWidget    ::                       Widget
 editCommentFormWidget     :: Markdown           -> Widget
 retractCommentFormWidget  :: Maybe Markdown     -> Widget
 unclaimCommentFormWidget  :: Maybe (Maybe Text) -> Widget
+watchCommentFormWidget    ::                       Widget
+unwatchCommentFormWidget  ::                       Widget
 
 closeCommentFormWidget    = closureFormWidget' "close" . closeCommentForm
 retractCommentFormWidget  = closureFormWidget' "retract" . retractCommentForm
 
-claimCommentFormWidget    = commentFormWidget' "claim" . claimCommentForm
-commentNewTopicFormWidget = commentFormWidget' "post" commentNewTopicForm
-commentReplyFormWidget    = commentFormWidget' "post" commentReplyForm
-editCommentFormWidget     = commentFormWidget' "post" . editCommentForm
-unclaimCommentFormWidget  = commentFormWidget' "unclaim" . claimCommentForm
+claimCommentFormWidget    = commentFormWidget' False "claim" . claimCommentForm
+unclaimCommentFormWidget  = commentFormWidget' False "unclaim" . unclaimCommentForm
+commentNewTopicFormWidget = commentFormWidget' True  "post" commentNewTopicForm
+commentReplyFormWidget    = commentFormWidget' True  "post" commentReplyForm
+editCommentFormWidget     = commentFormWidget' True  "post" . editCommentForm
+watchCommentFormWidget    = commentFormWidget' False "watch" watchCommentForm
+unwatchCommentFormWidget  = commentFormWidget' False "unwatch" unwatchCommentForm
 
 approveCommentFormWidget :: Widget
 approveCommentFormWidget =
@@ -136,6 +148,9 @@ approveCommentFormWidget =
 
 claimCommentForm :: Maybe (Maybe Text) -> Form (Maybe Text)
 claimCommentForm = renderBootstrap3 . aopt' textField "Note (optional)"
+
+unclaimCommentForm :: Maybe (Maybe Text) -> Form (Maybe Text)
+unclaimCommentForm = renderBootstrap3 . aopt' textField "Note (optional)"
 
 rethreadCommentForm :: Form (Text, Text)
 rethreadCommentForm = renderBootstrap3 $ (,)
@@ -150,6 +165,12 @@ rethreadCommentFormWidget = do
             ^{form}
             <button type="submit" name="mode" value="post">rethread
     |]
+
+watchCommentForm :: Form ()
+watchCommentForm = renderBootstrap3 $ pure ()
+
+unwatchCommentForm :: Form ()
+unwatchCommentForm = renderBootstrap3 $ pure ()
 
 createCommentTagForm :: Form Text
 createCommentTagForm = renderBootstrap3 $ areq' textField "" Nothing

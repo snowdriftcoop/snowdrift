@@ -50,6 +50,7 @@ module Model.Comment
     , makeCommentRouteDB
     , makeFlagMapDB
     , makeTicketMapDB
+    , makeWatchMapDB
     , postApprovedCommentDB
     , postUnapprovedCommentDB
     , rethreadCommentDB
@@ -619,6 +620,23 @@ makeFlagMapDB comment_ids = fmap (go . map (\(Entity _ x, Value y) -> (x, y))) $
       where
         combine :: (CommentFlagging, [FlagReason]) -> (CommentFlagging, [FlagReason]) -> (CommentFlagging, [FlagReason])
         combine (cf, reasons1) (_, reasons2) = (cf, reasons1 <> reasons2)
+
+-- | Given a collection of CommentId, make a map from comment ids to sets of watches. Comments that are not watched
+-- will simply not be in the map.
+--
+-- TODO: Return enough info to link to the root of the watch
+makeWatchMapDB :: (IsList c, CommentId ~ Item c) => c -> DB (Map CommentId (Set WatchedSubthread))
+makeWatchMapDB comment_ids = fmap (M.fromListWith mappend . map (\(Value x, Entity _ y) -> (x, S.singleton y))) $ do
+    ancestral_watches <- select $ from $ \ (ws `InnerJoin` ca) -> do
+        on_ $ ws ^. WatchedSubthreadRoot ==. ca ^. CommentAncestorAncestor
+        where_ $ ca ^. CommentAncestorComment `in_` valList comment_ids
+        return (ca ^. CommentAncestorComment, ws)
+
+    current_watches <- select $ from $ \ ws -> do
+        where_ $ ws ^. WatchedSubthreadRoot `in_` valList comment_ids
+        return (ws ^. WatchedSubthreadRoot, ws)
+
+    return $ ancestral_watches <> current_watches
 
 rethreadCommentDB :: Maybe CommentId -> DiscussionId -> CommentId -> UserId -> Text -> Int -> SDB ()
 rethreadCommentDB mnew_parent_id new_discussion_id root_comment_id user_id reason depth_offset = do

@@ -461,6 +461,56 @@ postUnclaimWikiCommentR project_handle target comment_id = do
         Just (widget, form) -> defaultLayout $ previewWidget form "unclaim" (wikiDiscussionPage project_handle target widget)
 
 --------------------------------------------------------------------------------
+-- /watch
+
+getWatchWikiCommentR :: Text -> Text -> CommentId -> Handler Html
+getWatchWikiCommentR project_handle target comment_id = do
+    (widget, _) <-
+        makeWikiPageCommentActionWidget
+          makeWatchCommentWidget
+          project_handle
+          target
+          comment_id
+          def
+          getMaxDepth
+
+    defaultLayout (wikiDiscussionPage project_handle target widget)
+
+postWatchWikiCommentR :: Text -> Text -> CommentId -> Handler Html
+postWatchWikiCommentR project_handle target comment_id = do
+    (viewer@(Entity viewer_id _), _, _, comment) <- checkCommentPageRequireAuth project_handle target comment_id
+    checkProjectCommentActionPermission can_watch viewer project_handle (Entity comment_id comment)
+
+    postWatchComment viewer_id comment_id
+
+    redirect (WikiCommentR project_handle target comment_id)
+
+--------------------------------------------------------------------------------
+-- /unwatch
+
+getUnwatchWikiCommentR :: Text -> Text -> CommentId -> Handler Html
+getUnwatchWikiCommentR project_handle target comment_id = do
+    (widget, _) <-
+        makeWikiPageCommentActionWidget
+          makeUnwatchCommentWidget
+          project_handle
+          target
+          comment_id
+          def
+          getMaxDepth
+
+    defaultLayout (wikiDiscussionPage project_handle target widget)
+
+postUnwatchWikiCommentR :: Text -> Text -> CommentId -> Handler Html
+postUnwatchWikiCommentR project_handle target comment_id = do
+    (viewer@(Entity viewer_id _), _, _, comment) <- checkCommentPageRequireAuth project_handle target comment_id
+    checkProjectCommentActionPermission can_unwatch viewer project_handle (Entity comment_id comment)
+
+    postUnwatchComment viewer_id comment_id
+
+    redirect (WikiCommentR project_handle target comment_id)
+
+--------------------------------------------------------------------------------
 -- DEPRECATED
 
 -- This is just because we used to have "/comment/#" with that longer URL,

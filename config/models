@@ -504,4 +504,5 @@ WatchedSubthread
     ts UTCTime
     user UserId
     root CommentId
+    deriving Eq Ord
 

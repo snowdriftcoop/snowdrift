@@ -31,15 +31,17 @@ data CommentActionPermissions = CommentActionPermissions
     , can_rethread  :: Bool
     , can_retract   :: Bool
     , can_unclaim   :: Bool
+    , can_watch     :: Bool
+    , can_unwatch   :: Bool
     }
 
 emptyCommentActionPermissions :: CommentActionPermissions
 emptyCommentActionPermissions =
-    CommentActionPermissions False False False False False False False False False False False False
+    CommentActionPermissions False False False False False False False False False False False False False False
 
 -- | Comment action permissions for a logged out user.
 loggedOutCommentActionPermissions :: CommentActionPermissions
-loggedOutCommentActionPermissions = emptyCommentActionPermissions { can_reply = True }
+loggedOutCommentActionPermissions = emptyCommentActionPermissions { can_reply = True, can_watch = True }
 
 makeLoggedOutCommentActionPermissionsMap :: MakeActionPermissionsMap
 makeLoggedOutCommentActionPermissionsMap = return .
@@ -54,16 +56,17 @@ makeProjectCommentActionPermissionsMap (Just (Entity viewer_id viewer)) project_
 
             (comment_ids, user_ids) = map2 entityKey (commentUser . entityVal) comments
 
-        (viewer_is_mod, user_map, closing_map, retracting_map, ticket_map, claim_map, flag_map, comments_with_children) <- runYDB $ do
+        (viewer_is_mod, user_map, closing_map, retracting_map, ticket_map, claim_map, flag_map, watch_map, comments_with_children) <- runYDB $ do
             Entity project_id _ <- getBy404 (UniqueProjectHandle project_handle)
 
-            (,,,,,,,) <$> userIsProjectModeratorDB viewer_id project_id
+            (,,,,,,,,) <$> userIsProjectModeratorDB viewer_id project_id
                       <*> (mod_user_map . entitiesMap <$> fetchUsersInDB user_ids)
                       <*> (mod_closure_map <$> makeCommentClosingMapDB comment_ids)
                       <*> (mod_retract_map <$> makeCommentRetractingMapDB comment_ids)
                       <*> (mod_ticket_map <$> makeTicketMapDB comment_ids)
                       <*> (mod_claim_map <$> makeClaimedTicketMapDB comment_ids)
                       <*> (mod_flag_map <$> makeFlagMapDB comment_ids)
+                      <*> (mod_watch_map <$> makeWatchMapDB comment_ids)
                       <*> (S.fromList <$> fetchCommentsWithChildrenInDB comment_ids)
 
         let viewer_is_established = userIsEstablished viewer
@@ -90,6 +93,9 @@ makeProjectCommentActionPermissionsMap (Just (Entity viewer_id viewer)) project_
                        , can_unclaim   = maybe False
                                                (\t -> ticketClaimingUser t == viewer_id)
                                                (M.lookup comment_id claim_map)
+
+                       , can_watch     = M.notMember comment_id watch_map
+                       , can_unwatch   = maybe False (S.member comment_id . S.map watchedSubthreadRoot) $ M.lookup comment_id watch_map
                        })
 
         return (foldr step mempty comments)
@@ -102,10 +108,11 @@ makeUserCommentActionPermissionsMap (Just (Entity viewer_id viewer)) user_id Com
         --- for now, assumes no tickets on user pages
         let comment_ids = map entityKey comments
 
-        (closing_map, retracting_map, flag_map, comments_with_children) <- runYDB $ (,,,)
+        (closing_map, retracting_map, flag_map, watch_map, comments_with_children) <- runYDB $ (,,,,)
                 <$> (mod_closure_map <$> makeCommentClosingMapDB comment_ids)
                 <*> (mod_retract_map <$> makeCommentRetractingMapDB comment_ids)
                 <*> (mod_flag_map <$> makeFlagMapDB comment_ids)
+                <*> (mod_watch_map <$> makeWatchMapDB comment_ids)
                 <*> (S.fromList <$> fetchCommentsWithChildrenInDB comment_ids)
 
         let viewer_is_established = userIsEstablished viewer
@@ -129,6 +136,8 @@ makeUserCommentActionPermissionsMap (Just (Entity viewer_id viewer)) user_id Com
                        , can_rethread  = viewer_id == user_id || viewer_id == author_id
                        , can_retract   = viewer_id == author_id && M.notMember comment_id retracting_map && commentIsApproved comment
                        , can_unclaim   = False
+                       , can_watch     = M.notMember comment_id watch_map
+                       , can_unwatch   = maybe False (S.member comment_id . S.map watchedSubthreadRoot) $ M.lookup comment_id watch_map
                        })
 
         return (foldr step mempty comments)
