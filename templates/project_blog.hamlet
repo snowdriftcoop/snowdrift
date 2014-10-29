@@ -1,18 +1,18 @@
+<h1> #{projectName project} Blog 
+
 $if null posts
     No blog posts yet.
 
 $forall Entity _ post <- posts
     <div .blog-post>
-        <a href=@{ProjectBlogPostR project_handle (blogPostHandle post)}>
-            #{blogPostTitle post}
+        <h2>
+            <a href=@{ProjectBlogPostR project_handle (blogPostHandle post)}>
+                #{blogPostTitle post}
 
-        \ - #
+            <small>
+                <span .post-time>^{renderTime $ blogPostTs post}
 
-        <small>
-            ^{renderTime $ blogPostTs post}
-
-        <p>
-            ^{markdownWidgetWith (fixLinks project_handle discussion) $ blogPostTopContent post}
+        ^{markdownWidgetWith (fixLinks project_handle discussion) $ blogPostTopContent post}
 
     <hr>
 

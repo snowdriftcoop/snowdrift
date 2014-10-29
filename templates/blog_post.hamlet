@@ -3,8 +3,8 @@
     <h2>
         #{title}
         <small>
-            by ^{userNameWidget author}
-            ^{renderTime $ blogPostTs blog_post}
-
+            <span .author> by ^{userNameWidget author}
+            <span .post-time> ^{renderTime $ blogPostTs blog_post}
+            
     ^{content}
 
