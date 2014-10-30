@@ -140,7 +140,7 @@ dd
 
 .headshot
     margin-top : 0.5em
-    width : 8em
+    max-width : 8em
 
 .headshot_large
     margin-top : 0.5em
