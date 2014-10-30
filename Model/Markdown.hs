@@ -9,7 +9,8 @@ import qualified Data.Text                  as T
 import           Data.Text.Encoding
 import           Text.Regex.TDFA
 import           Text.Regex.TDFA.ByteString
-import           Yesod.Markdown             (markdownToHtml, Markdown (..))
+import           Text.Pandoc
+import           Yesod.Markdown (Markdown (..))
 
 import Model.Discussion
 
@@ -123,7 +124,7 @@ renderMarkdownWith transform (Markdown markdown) = do
 
     ls' <- mapM (transform <=< linkTickets) ls
 
-    return $ markdownToHtml $ Markdown $ T.unlines ls'
+    return $ writeHtml def { writerEmailObfuscation = NoObfuscation } $ readMarkdown def $ T.unpack $ T.unlines ls'
 
 
 markdownWidget :: Markdown -> Widget
