@@ -28,6 +28,7 @@ import           Data.Time.Clock               as Import (UTCTime, diffUTCTime, 
 import           Data.Typeable (Typeable)
 import           Database.Esqueleto            as Import hiding (on, valList)
 import qualified Database.Esqueleto
+import           Database.Esqueleto.Internal.Sql (unsafeSqlBinOp)
 import           Prelude                       as Import hiding (head, init, last, readFile, tail, writeFile)
 import           Text.Blaze.Html.Renderer.Text (renderHtml)
 import           Yesod                         as Import hiding (Route (..), (||.), (==.), (!=.), (<.), (<=.), (>.), (>=.), (=.), (+=.), (-=.), (*=.), (/=.), selectSource, delete, update, count, Value, runDB)
@@ -59,6 +60,11 @@ on_ = Database.Esqueleto.on
 -- Like Database.Esqueleto.valList, but more generic.
 valList :: (Esqueleto query expr backend, PersistField typ, IsList l, typ ~ Item l) => l -> expr (ValueList typ)
 valList = Database.Esqueleto.valList . toList
+
+infix 4 `notDistinctFrom`
+notDistinctFrom :: SqlExpr (Value a) -> SqlExpr (Value a)
+                -> SqlExpr (Value Bool)
+notDistinctFrom = unsafeSqlBinOp " IS NOT DISTINCT FROM "
 
 class Count a where
     getCount :: a -> Int64

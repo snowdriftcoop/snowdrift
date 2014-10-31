@@ -8,7 +8,6 @@ import qualified Control.Exception.Lifted     as Exception
 import           Control.Monad.Logger         (runLoggingT, LoggingT, defaultLogStr)
 import           Control.Monad.Trans.Resource (runResourceT)
 import           Database.Esqueleto
-import           Database.Esqueleto.Internal.Sql (unsafeSqlBinOp)
 import qualified Data.ByteString.Char8        as Char8
 import           Data.List                    (intercalate)
 import qualified Database.Persist             as Persist
@@ -97,11 +96,6 @@ selectWithEmails =
                 , notification_email ^. NotificationEmailTo
                 , notification_email ^. NotificationEmailProject
                 , notification_email ^. NotificationEmailContent ))
-
-infix 4 `notDistinctFrom`
-notDistinctFrom :: SqlExpr (Value a) -> SqlExpr (Value a)
-                -> SqlExpr (Value Bool)
-notDistinctFrom = unsafeSqlBinOp " IS NOT DISTINCT FROM "
 
 --- | Select all fields for users without email addresses such that
 --- they could be inserted into the "notification" table without

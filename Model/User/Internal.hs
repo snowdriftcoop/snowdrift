@@ -62,6 +62,14 @@ sendPreferredNotificationDB user_id notif_type mproject_id mcomment_id content =
         muser_email <- lift $ fetchUserEmail user_id
         -- XXX: Support 'NotifDeliverEmailDigest'.
         if | pref == NotifDeliverEmail && isJust muser_email ->
-             lift $ sendNotificationEmailDB notif_type user_id mproject_id content
-           | otherwise ->
-             sendNotificationDB_ notif_type user_id mproject_id mcomment_id content
+                 lift $ sendNotificationEmailDB notif_type user_id mproject_id content
+           | otherwise -> do
+                 r <- fmap (\[Value r] -> r :: Int) $
+                      select $ from $ \n -> do
+                          where_ $ n ^. NotificationType    ==. val notif_type
+                               &&. n ^. NotificationTo      ==. val user_id
+                               &&. n ^. NotificationProject `notDistinctFrom` val mproject_id
+                               &&. n ^. NotificationContent ==. val content
+                          return countRows
+                 when (r == 0) $
+                     sendNotificationDB_ notif_type user_id mproject_id mcomment_id content
