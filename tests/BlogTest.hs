@@ -118,8 +118,8 @@ blogSpecs = do
 
             statusIs 200
 
-            htmlAnyContain ".blog-post" "Above fold."
-            htmlNoneContain ".blog-post" "Below fold."
+            htmlAnyContain ".blog-post-top" "Above fold."
+            htmlNoneContain ".blog-post-top" "Below fold."
 
             get $ ProjectBlogPostR "snowdrift" "test"
 
@@ -134,8 +134,8 @@ blogSpecs = do
 
             statusIs 200
 
-            htmlAnyContain ".blog-post" "Above fold."
-            htmlNoneContain ".blog-post" "Below fold."
+            htmlAnyContain ".blog-post-top" "Above fold."
+            htmlNoneContain ".blog-post-top" "Below fold."
         |]
 
     {-
