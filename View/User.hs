@@ -6,30 +6,37 @@ module View.User
     , previewUserForm
     , renderUser
     , userNameWidget
+    , userNotificationsForm
     ) where
 
 import Import
 
 import           Model.Currency
 import           Model.Markdown
+import           Model.Notification     (NotificationDelivery (..))
 import           Model.Role
 import           Model.User
 import           Model.User.Internal
 import           Widgets.Markdown       (snowdriftMarkdownField)
 import           Widgets.ProjectPledges
 
+import           Data.List.NonEmpty     (NonEmpty)
+import qualified Data.List.NonEmpty     as N
 import qualified Data.Map               as M
 import qualified Data.Set               as S
+import           Yesod.Form.Bootstrap3  (BootstrapFormLayout (..), BootstrapGridOptions (..)) 
+import qualified Yesod.Form.Bootstrap3  as Y
 import           Yesod.Markdown
 
-createUserForm :: Maybe Text -> Form (Text, Text, Maybe Text, Maybe Text, Maybe Text)
+createUserForm :: Maybe Text -> Form (Text, Text, Maybe Text, Maybe Text, Maybe Text, Maybe Text)
 createUserForm ident extra = do
-    (identRes, identView) <- mreq textField "" ident
+    (identRes,   identView)   <- mreq textField     "" ident
     (passwd1Res, passwd1View) <- mreq passwordField "" Nothing
     (passwd2Res, passwd2View) <- mreq passwordField "" Nothing
-    (nameRes, nameView) <- mopt textField "" Nothing
-    (avatarRes, avatarView) <- mopt textField "" Nothing
-    (nickRes, nickView) <- mopt textField "" Nothing
+    (nameRes,    nameView)    <- mopt textField     "" Nothing
+    (emailRes,   emailView)   <- mopt emailField    "" Nothing
+    (avatarRes,  avatarView)  <- mopt textField     "" Nothing
+    (nickRes,    nickView)    <- mopt textField     "" Nothing
 
     let view = [whamlet|
         ^{extra}
@@ -40,7 +47,7 @@ createUserForm ident extra = do
         <table .table>
             <tr>
                 <td>
-                    E-mail or handle (private):
+                    Handle (private):
                 <td>
                     ^{fvInput identView}
             <tr>
@@ -60,6 +67,11 @@ createUserForm ident extra = do
                     ^{fvInput nameView}
             <tr>
                 <td>
+                    Email (private, optional):
+                <td>
+                    ^{fvInput emailView}
+            <tr>
+                <td>
                     Avatar (link, optional):
                 <td>
                     ^{fvInput avatarView}
@@ -75,7 +87,8 @@ createUserForm ident extra = do
             (FormSuccess _, x) -> x
             (x, _) -> x
 
-        result = (,,,,) <$> identRes <*> passwdRes <*> nameRes <*> avatarRes <*> nickRes
+        result = (,,,,,) <$> identRes <*> passwdRes <*> nameRes
+                         <*> emailRes <*> avatarRes <*> nickRes
 
     return (result, view)
 
@@ -84,10 +97,10 @@ editUserForm muser = renderBootstrap3 $
     UserUpdate
         <$> aopt' textField               "Public Name"                                    (userName                      <$> muser)
         <*> aopt' textField               "Avatar image (link)"                            (userAvatar                    <$> muser)
+        <*> aopt' emailField              "Email"                                          (userEmail                     <$> muser)
         <*> aopt' textField               "IRC nick @freenode.net)"                        (userIrcNick                   <$> muser)
         <*> aopt' snowdriftMarkdownField  "Blurb (used on listings of many people)"        (userBlurb                     <$> muser)
         <*> aopt' snowdriftMarkdownField  "Personal Statement (visible only on this page)" (userStatement                 <$> muser)
---      <*> error "TODO: notification preferences"
 
 -- | Form to mark a user as eligible for establishment. The user is fully established
 -- when s/he accepts the honor pledge.
@@ -99,10 +112,10 @@ previewUserForm User{..} = renderBootstrap3 $
     UserUpdate
         <$> aopt hiddenField "" (Just userName)
         <*> aopt hiddenField "" (Just userAvatar)
+        <*> aopt hiddenField "" (Just userEmail)
         <*> aopt hiddenField "" (Just userIrcNick)
         <*> hiddenMarkdown userBlurb
         <*> hiddenMarkdown userStatement
---      <*> error "TODO: notification preferences"
 
 -- | Render a User profile, including
 renderUser :: Maybe UserId -> UserId -> User -> Map (Entity Project) (Set Role) -> Widget
@@ -137,3 +150,34 @@ userNameWidget user_id = do
 
 addTestCashForm :: Form Milray
 addTestCashForm = renderBootstrap3 $ fromInteger . (10000 *) <$> areq' intField "Add (fake) money to your account (in whole dollars)" (Just 10)
+
+userNotificationsForm :: Maybe (NonEmpty NotificationDelivery)
+                      -> Maybe (NonEmpty NotificationDelivery)
+                      -> Maybe (NonEmpty NotificationDelivery)
+                      -> Maybe (NonEmpty NotificationDelivery)
+                      -> Maybe (NonEmpty NotificationDelivery)
+                      -> Maybe (NonEmpty NotificationDelivery)
+                      -> Maybe (NonEmpty NotificationDelivery)
+                      -> Form NotificationPref
+userNotificationsForm mbal mucom mrcom mrep mecon mflag mflagr =
+    -- Our 'renderBootstrap3' function does not render checkboxes properly.
+    Y.renderBootstrap3 (BootstrapHorizontalForm (ColSm 0) (ColSm 0) (ColSm 0) (ColSm 0)) $ NotificationPref
+        <$> req "Low balance"                  mbal
+        <*> req "Unapproved comment"           mucom
+        <*> opt "Rethreaded comment"           mrcom
+        <*> opt "Reply"                        mrep
+        <*> req "Edit conflict"                mecon
+        <*> req "Comment flagged"              mflag
+        <*> opt "Flagged comment was reposted" mflagr
+  where
+    -- 'checkboxesFieldList' does not allow to work with 'NonEmpty'
+    -- lists, so we have to work around that.
+    req s xs = N.fromList <$> areq checkboxes s (N.toList <$> xs)
+    opt s xs = fmap N.fromList <$> aopt checkboxes s (Just <$> N.toList <$> xs)
+    checkboxes = checkboxesFieldList methods
+    methods :: [(Text, NotificationDelivery)]
+    methods =
+        -- XXX: Support 'NotifDeliverEmailDigest'.
+        [ ("internal", NotifDeliverInternal)
+        , ("email",    NotifDeliverEmail)
+        ]

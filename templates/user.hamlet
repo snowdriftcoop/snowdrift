@@ -4,14 +4,23 @@
             #{userDisplayName user_entity}
         <h5>
             $if Just user_id == mviewer_id
-                <a href="@{EditUserR user_id}">
-                    edit profile
+                <div .col-md-2>
+                    <a href="@{EditUserR user_id}">
+                        edit profile
+                <div .col-md-2>
+                    <a href="@{UserNotificationsR user_id}">
+                        notification preferences
+        <p>
         <div .row>
             <div .col-xs-4>
                 $maybe avatar <- userAvatar user
                     <img .headshot_large src="#{avatar}">
                 $if userIsEstablished user
                     <small>established user
+            $if Just user_id == mviewer_id
+                <div .col-xs-8>
+                    $maybe email <- userEmail user
+                        #{email}
             <div .col-xs-8>
                 $maybe nick <- userIrcNick user
                     #{nick} on <a href="https://snowdrift.coop/p/snowdrift/w/irc">irc.freenode.net</a>

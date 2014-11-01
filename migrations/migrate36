@@ -1,0 +1,3 @@
+ALTER TABLE "notification_email" ADD COLUMN "type" VARCHAR NOT NULL;
+ALTER TABLE "notification_email" ADD COLUMN "project" INT8 NULL;
+ALTER TABLE "notification_email" ADD COLUMN "content" VARCHAR NOT NULL;

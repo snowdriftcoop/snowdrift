@@ -26,7 +26,9 @@ module Model.User
     , fetchUserProjectsAndRolesDB
     , fetchUserRolesDB
     , fetchUsersInDB
+    , sendPreferredNotificationDB
     , updateUserDB
+    , updateNotificationPrefDB
     , userCanDeleteCommentDB
     , userClaimCommentDB
     , userHasRoleDB
@@ -61,9 +63,10 @@ import Model.User.Internal
 import Model.User.Sql
 import Model.Wiki.Sql
 
-import qualified Data.Map       as M
-import qualified Data.Set       as S
-import qualified Data.Text      as T
+import qualified Data.Foldable      as F
+import qualified Data.Map           as M
+import qualified Data.Set           as S
+import qualified Data.Text          as T
 import           Control.Monad.Writer.Strict (tell)
 import           Yesod.Markdown (Markdown(..))
 
@@ -122,6 +125,7 @@ updateUserPreview :: UserUpdate -> User -> User
 updateUserPreview UserUpdate{..} user = user
     { userName               = userUpdateName
     , userAvatar             = userUpdateAvatar
+    , userEmail              = userUpdateEmail
     , userIrcNick            = userUpdateIrcNick
     , userStatement          = userUpdateStatement
     , userBlurb              = userUpdateBlurb
@@ -138,19 +142,12 @@ updateUserDB user_id UserUpdate{..} = do
     update $ \u -> do
      set u $ [ UserName               =. val userUpdateName
              , UserAvatar             =. val userUpdateAvatar
+             , UserEmail              =. val userUpdateEmail
              , UserIrcNick            =. val userUpdateIrcNick
              , UserStatement          =. val userUpdateStatement
              , UserBlurb              =. val userUpdateBlurb
              ]
      where_ (u ^. UserId ==. val user_id)
-
--- This stuff sets notification prefs (although might be only half-way
--- complete):
-    delete $
-     from $ \ump -> do
-     where_ (ump ^. UserNotificationPrefUser ==. val user_id)
---  let new_prefs = map (uncurry (UserNotificationPref user_id)) userUpdateNotificationPreferences
---  void (insertMany new_prefs)
 
 -- | Establish a user, given their eligible-timestamp and reason for
 -- eligibility. Mark all unapproved comments of theirs as approved.
@@ -177,8 +174,8 @@ establishUserDB user_id elig_time reason = do
 
 -- | Make a user eligible for establishment. Put a notification in their inbox
 -- instructing them to read and accept the honor pledge.
-eligEstablishUserDB :: UserId -> UserId -> Text -> SDB ()
-eligEstablishUserDB establisher_id user_id reason = do
+eligEstablishUserDB :: Text -> UserId -> UserId -> Text -> SDB ()
+eligEstablishUserDB honor_pledge establisher_id user_id reason = do
     elig_time <- liftIO getCurrentTime
     let est = EstEligible elig_time reason
     lift $
@@ -189,13 +186,15 @@ eligEstablishUserDB establisher_id user_id reason = do
     lift $ insert_ $ ManualEstablishment user_id establisher_id
 
     snowdrift_id <- lift getSnowdriftId
-    sendNotificationDB_ NotifEligEstablish user_id (Just snowdrift_id) content
+    sendPreferredNotificationDB user_id NotifEligEstablish
+        (Just snowdrift_id) Nothing content
   where
     content :: Markdown
     content = Markdown $ T.unlines
         [ "You are now eligible to become an *established* user."
         , ""
-        , "After you [accept the honor pledge](/honor-pledge), you can comment and take other actions on the site without moderation."
+        , "After you [accept the honor pledge](" <> honor_pledge <>
+          "), you can comment and take other actions on the site without moderation."
         ]
 
 -- | Get a User's Roles in a Project.
@@ -268,18 +267,6 @@ canMakeEligible establishee_id establisher_id = do
         <*> (elem Moderator <$> fetchAllUserRolesDB establisher_id)
     return $ userIsUnestablished establishee && establisher_is_mod
 
--- | How does this User prefer notifications of a certain type to be delivered (if at all)?
--- listToMaybe is appropriate here due to UniqueUserNotificationPref (list returned will
--- either be [] or [Value delivery])
-fetchUserNotificationPrefDB :: UserId -> NotificationType -> DB (Maybe NotificationDelivery)
-fetchUserNotificationPrefDB user_id notif_type = fmap (fmap unValue . listToMaybe) $
-    select $
-    from $ \unp -> do
-    where_ $
-        unp ^. UserNotificationPrefUser ==. val user_id &&.
-        unp ^. UserNotificationPrefType ==. val notif_type
-    return (unp ^. UserNotificationPrefDelivery)
-
 -- | Fetch a User's unarchived private Notifications.
 fetchUserNotificationsDB :: UserId -> DB [Entity Notification]
 fetchUserNotificationsDB = fetchNotifs (not_ . (^. NotificationArchived))
@@ -298,6 +285,28 @@ fetchNotifs cond user_id =
         cond n
     orderBy [desc (n ^. NotificationCreatedTs)]
     return n
+
+updateNotificationPrefDB :: UserId -> NotificationPref -> DB ()
+updateNotificationPrefDB user_id NotificationPref {..} = do
+    updateNotifPrefs         NotifBalanceLow        notifBalanceLow
+    updateNotifPrefs         NotifUnapprovedComment notifUnapprovedComment
+    deleteOrUpdateNotifPrefs NotifRethreadedComment notifRethreadedComment
+    deleteOrUpdateNotifPrefs NotifReply             notifReply
+    updateNotifPrefs         NotifEditConflict      notifEditConflict
+    updateNotifPrefs         NotifFlag              notifFlag
+    deleteOrUpdateNotifPrefs NotifFlagRepost        notifFlagRepost
+  where
+    delete' notif_type =
+        delete $ from $ \unp ->
+        where_ $ unp ^. UserNotificationPrefUser ==. val user_id
+             &&. unp ^. UserNotificationPrefType ==. val notif_type
+    updateNotifPrefs notif_type delivery = do
+        delete' notif_type
+        F.forM_ delivery $ insert_ . UserNotificationPref user_id notif_type
+    deleteOrUpdateNotifPrefs notif_type delivery =
+        maybe (delete' notif_type)
+              (updateNotifPrefs notif_type)
+              delivery
 
 userWatchProjectDB :: UserId -> ProjectId -> DB ()
 userWatchProjectDB user_id project_id = void (insertUnique (UserWatchingProject user_id project_id))

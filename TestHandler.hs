@@ -20,7 +20,7 @@ testHandler handler = do
 
     let extra = Extra "copyright" "sourcerepo" (Just "ghrepo") "siteproject" Nothing
         config = AppConfig Development 3000 "http://localhost:3000" (error "HostPreferences") extra
-        app = App (return ()) config (error "StaticSettings") (error "PersistConfigPool") (error "Manager") (error "PersistConf") (error "Logger") events []
+        app = App (return ()) config (error "StaticSettings") (error "PersistConfigPool") (error "Manager") (error "PersistConf") (error "Logger") events (const [])
 
     (date_getter, date_updater) <- Network.Wai.Logger.clockDateCacher
 

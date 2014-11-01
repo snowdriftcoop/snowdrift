@@ -7,6 +7,7 @@ import           Handler.Comment
 import           Handler.Discussion
 import           Handler.User.Comment
 import           Model.Comment.ActionPermissions
+import           Model.Notification.Internal (NotificationType (..))
 import           Model.Role
 import           Model.Transaction
 import           Model.User
@@ -75,10 +76,11 @@ postUserCreateR = do
     ((result, form), _) <- runFormPost $ createUserForm Nothing
 
     case result of
-        FormSuccess (ident, passwd, name, avatar, nick) -> do
-            createUser ident (Just passwd) name avatar nick >>= \ maybe_user_id -> when (isJust maybe_user_id) $ do
-                setCreds True $ Creds "HashDB" ident []
-                redirectUltDest HomeR
+        FormSuccess (ident, passwd, name, email, avatar, nick) -> do
+            createUser ident (Just passwd) name email avatar nick
+                >>= \ maybe_user_id -> when (isJust maybe_user_id) $ do
+                    setCreds True $ Creds "HashDB" ident []
+                    redirectUltDest HomeR
 
         FormMissing -> alertDanger "missing field"
         FormFailure strings -> alertDanger (mconcat strings)
@@ -316,7 +318,8 @@ postUserEstEligibleR user_id = do
             user <- runYDB (get404 user_id)
             case userEstablished user of
                 EstUnestablished -> do
-                    runSDB (eligEstablishUserDB establisher_id user_id reason)
+                    honor_pledge <- getUrlRender >>= \r -> return $ r HonorPledgeR
+                    runSDB $ eligEstablishUserDB honor_pledge establisher_id user_id reason
                     setMessage "This user is now eligible for establishment. Thanks!"
                     redirectUltDest HomeR
                 _ -> error "User not unestablished!"
@@ -392,3 +395,40 @@ getUserTicketsR user_id = do
 
         $(widgetFile "user_tickets")
 
+--------------------------------------------------------------------------------
+-- /#UserId/notifications
+
+getUserNotificationsR :: UserId -> Handler Html
+getUserNotificationsR user_id = do
+    void $ checkEditUser user_id
+    user <- runYDB $ get404 user_id
+    let fetchNotifPref = runYDB . fetchUserNotificationPrefDB user_id
+    mbal   <- fetchNotifPref NotifBalanceLow
+    mucom  <- fetchNotifPref NotifUnapprovedComment
+    mrcom  <- fetchNotifPref NotifRethreadedComment
+    mrep   <- fetchNotifPref NotifReply
+    mecon  <- fetchNotifPref NotifEditConflict
+    mflag  <- fetchNotifPref NotifFlag
+    mflagr <- fetchNotifPref NotifFlagRepost
+    (form, enctype) <- generateFormPost $
+        userNotificationsForm mbal mucom mrcom mrep mecon mflag mflagr
+    defaultLayout $ do
+        setTitle . toHtml $ "Notification preferences - " <>
+            userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
+        $(widgetFile "user_notifications")
+
+postUserNotificationsR :: UserId -> Handler Html
+postUserNotificationsR user_id = do
+    void $ checkEditUser user_id
+    ((result, form), enctype) <- runFormPost $
+        userNotificationsForm Nothing Nothing Nothing Nothing
+                              Nothing Nothing Nothing
+    case result of
+        FormSuccess notif_pref -> do
+            runDB $ updateNotificationPrefDB user_id notif_pref
+            alertSuccess "Successfully updated the notification preferences."
+            redirect $ UserR user_id
+        _ -> do
+            alertDanger $ "Failed to update the notification preferences. "
+                       <> "Please try again."
+            defaultLayout $(widgetFile "user_notifications")

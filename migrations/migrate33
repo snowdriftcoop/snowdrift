@@ -1,0 +1,2 @@
+CREATe TABLE "notification_email"("id" SERIAL PRIMARY KEY UNIQUE,"created_ts" TIMESTAMP NOT NULL,"to" INT8 NOT NULL,"message" VARCHAR NOT NULL);
+ALTER TABLE "notification_email" ADD CONSTRAINT "notification_email_to_fkey" FOREIGN KEY("to") REFERENCES "user"("id");

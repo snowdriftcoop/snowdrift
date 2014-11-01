@@ -64,7 +64,8 @@ data App = App
     , persistConfig    :: Settings.PersistConf
     , appLogger        :: Logger
     , appEventChan     :: TChan SnowdriftEvent
-    , appEventHandlers :: [SnowdriftEvent -> Daemon ()]
+    , appEventHandlers :: AppConfig DefaultEnv Extra
+                       -> [SnowdriftEvent -> Daemon ()]
     }
 
 plural :: Integral i => i -> Text -> Text -> Text
@@ -305,7 +306,7 @@ snowdriftAuthHashDB =
                     <form .form-horizontal method="post" action="@{toMaster loginRoute}">
                         <div .form-group>
                             <label .col-sm-4 .control-label>
-                                E-mail or handle:
+                                Handle:
                             <div .col-sm-8>
                                 <input .form-control id="x" name="username" autofocus="" required>
                         <div .form-group>
@@ -330,7 +331,7 @@ instance YesodAuth App where
         maybe_user_id <- runDB $ getBy $ UniqueUser $ credsIdent creds
         case maybe_user_id of
             Just (Entity user_id _) -> return $ Just user_id
-            Nothing -> createUser (credsIdent creds) Nothing Nothing Nothing Nothing
+            Nothing -> createUser (credsIdent creds) Nothing Nothing Nothing Nothing Nothing
 
     -- You can add other plugins like BrowserID, email or OAuth here
     authPlugins _ = [ snowdriftAuthBrowserId, snowdriftAuthHashDB ]
@@ -344,13 +345,14 @@ instance YesodAuth App where
         lift $ defaultLayout $(widgetFile "auth")
 
 
-createUser :: Text -> Maybe Text -> Maybe Text -> Maybe Text -> Maybe Text -> Handler (Maybe UserId)
-createUser ident passwd name avatar nick = do
+createUser :: Text -> Maybe Text -> Maybe Text -> Maybe Text -> Maybe Text
+           -> Maybe Text -> Handler (Maybe UserId)
+createUser ident passwd name email avatar nick = do
     now <- liftIO getCurrentTime
     handle (\DBException -> return Nothing) $ runYDB $ do
         account_id <- insert (Account 0)
         discussion_id <- insert (Discussion 0)
-        user <- maybe return setPassword passwd $ User ident (Just now) Nothing Nothing name account_id avatar Nothing Nothing nick now now EstUnestablished discussion_id
+        user <- maybe return setPassword passwd $ User ident email (Just now) Nothing Nothing name account_id avatar Nothing Nothing nick now now EstUnestablished discussion_id
         uid_maybe <- insertUnique user
         Entity snowdrift_id _ <- getBy404 $ UniqueProjectHandle "snowdrift"
         case uid_maybe of
@@ -375,11 +377,26 @@ createUser ident passwd name avatar nick = do
                 insert_ $ Notification now NotifWelcome user_id (Just snowdrift_id) notif_text False
                 return $ Just user_id
             Nothing -> do
-                lift $ addAlert "danger" "E-mail or handle already in use."
+                lift $ addAlert "danger" "Handle already in use."
                 throwIO DBException
   where
     insertDefaultNotificationPrefs :: UserId -> DB ()
-    insertDefaultNotificationPrefs user_id = insert_ (UserNotificationPref user_id NotifReply NotifDeliverInternal)
+    insertDefaultNotificationPrefs user_id =
+        void . insertMany $ uncurry (UserNotificationPref user_id) <$>
+            -- 'NotifWelcome' is not set since it is delivered when a
+            -- user is created.
+            [ (NotifEligEstablish,     NotifDeliverInternal)
+            , (NotifEligEstablish,     NotifDeliverEmail)
+            , (NotifBalanceLow,        NotifDeliverInternal)
+            , (NotifBalanceLow,        NotifDeliverEmail)
+            , (NotifUnapprovedComment, NotifDeliverEmail)
+            , (NotifRethreadedComment, NotifDeliverInternal)
+            , (NotifReply,             NotifDeliverEmail)
+            , (NotifEditConflict,      NotifDeliverInternal)
+            , (NotifFlag,              NotifDeliverInternal)
+            , (NotifFlag,              NotifDeliverEmail)
+            , (NotifFlagRepost,        NotifDeliverInternal)
+            ]
 
 instance YesodJquery App
 

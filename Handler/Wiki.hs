@@ -145,14 +145,15 @@ postWikiR project_handle target = do
                                 where_ $ edit ^. WikiEditId ==. val (wikiLastEditEdit last_edit)
                                 return $ edit ^. WikiEditUser
 
+                            wiki <- getUrlRender <*> (pure $ WikiR project_handle target)
                             let comment_body = Markdown $ T.unlines
                                     [ "ticket: edit conflict"
                                     , ""
-                                    , "[original version](" <> target <> "/h/" <> toPathPiece last_edit_id <> ")"
+                                    , "[original version](" <> wiki <> "/h/" <> toPathPiece last_edit_id <> ")"
                                     , ""
-                                    , "[my version](" <> target <> "/h/" <> toPathPiece edit_id <> ")"
+                                    , "[my version](" <> wiki <> "/h/" <> toPathPiece edit_id <> ")"
                                     , ""
-                                    , "[their version](" <> target <> "/h/" <> toPathPiece (wikiLastEditEdit last_edit) <> ")"
+                                    , "[their version](" <> wiki <> "/h/" <> toPathPiece (wikiLastEditEdit last_edit) <> ")"
                                     , ""
                                     , "(this ticket was automatically generated)"
                                     ]
@@ -167,8 +168,10 @@ postWikiR project_handle target = do
                                     , "<br>[**Ticket created**](" <> render (WikiCommentR project_handle target comment_id) [] <> ")"
                                     ]
 
-                            sendNotificationDB_ NotifEditConflict last_editor Nothing notif_text
-                            sendNotificationDB_ NotifEditConflict user_id     Nothing notif_text
+                            sendPreferredNotificationDB last_editor NotifEditConflict
+                                Nothing Nothing notif_text
+                            sendPreferredNotificationDB user_id NotifEditConflict
+                                Nothing Nothing notif_text
 
                             lift (lift (alertDanger "conflicting edits (ticket created, notification sent)"))
 

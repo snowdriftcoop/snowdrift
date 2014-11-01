@@ -16,6 +16,7 @@ Transaction
 
 User
     ident             Text
+    email             Text         Maybe
     createdTs         UTCTime      Maybe
     hash              Text         Maybe
     salt              Text         Maybe
@@ -45,8 +46,6 @@ UserNotificationPref
     user     UserId
     type     NotificationType
     delivery NotificationDelivery
-
-    UniqueUserNotificationPref user type
 
 -- User-watching-project relation
 UserWatchingProject
@@ -188,6 +187,17 @@ Notification
     project   ProjectId        Maybe -- An "associated" project.
     content   Markdown
     archived  Bool                   -- Put into the "trash bin".
+
+-- Notification emails that are sent by the email daemon.  'UserId's
+-- are used instead of email addresses to "force" the daemon to look
+-- up the actual email address.  If a user changes it, anything queued
+-- up goes to the right place.
+NotificationEmail
+    createdTs UTCTime
+    type      NotificationType
+    to        UserId
+    project   ProjectId        Maybe
+    content   Markdown
 
 -- A many-to-one relationship linking notifications sent to moderators about an
 -- unapproved comment. When the comment is approved, all such notifications are

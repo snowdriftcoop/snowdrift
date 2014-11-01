@@ -41,6 +41,7 @@ showNotificationType NotifFlagRepost        = "A comment you flagged was edited 
 data NotificationDelivery
     = NotifDeliverInternal     -- Only send notifications.
     | NotifDeliverEmail        -- Send email in addition to notifications.
-    | NotifDeliverEmailDigest  -- Send email digest in addition to notifications (sent immediately).
-    deriving (Read, Show)
+-- XXX: Not supported by 'userNotificationsForm'.
+--    | NotifDeliverEmailDigest  -- Send email digest in addition to notifications (sent immediately).
+    deriving (Read, Show, Eq)
 derivePersistField "NotificationDelivery"

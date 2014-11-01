@@ -1,0 +1,1 @@
+ALTER TABLE "notification_email" DROP COLUMN "message";

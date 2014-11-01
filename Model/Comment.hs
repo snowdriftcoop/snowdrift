@@ -62,6 +62,7 @@ import Import
 import Model.Comment.Sql
 import Model.Discussion
 import Model.Notification
+import Model.User.Internal (sendPreferredNotificationDB)
 import Model.Utils
 
 import qualified Control.Monad.State                  as State
@@ -319,7 +320,7 @@ editCommentDB comment_id text = do
             rendered_route <- lift (makeCommentRouteDB comment_id >>= lift . routeToText . fromJust)
             let notif_text = Markdown $ "A comment you flagged has been edited and reposted to the site. You can view it [here](" <> rendered_route <> ")."
             lift (deleteCascade comment_flagging_id) -- delete flagging and all flagging reasons with it.
-            sendNotificationDB_ NotifFlagRepost commentFlaggingFlagger Nothing notif_text
+            sendPreferredNotificationDB commentFlaggingFlagger NotifFlagRepost Nothing Nothing notif_text
   where
     updateCommentText =
         update $ \c -> do
@@ -346,7 +347,7 @@ flagCommentDB comment_id permalink_route flagger_id reasons message = do
                     , ""
                     , "[link to flagged comment](" <> permalink_route <> ")"
                     ]
-            sendNotificationDB_ NotifFlag poster_id Nothing notif_text
+            sendPreferredNotificationDB poster_id NotifFlag Nothing Nothing notif_text
             return True
 
 -- | Post an new (approved) Comment.

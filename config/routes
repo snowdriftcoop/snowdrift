@@ -49,6 +49,7 @@
 /u/#UserId/c/#CommentId/unwatch         UnwatchUserCommentR   GET POST
 /u/#UserId/edit                         EditUserR             GET
 /u/#UserId/elig                         UserEstEligibleR          POST
+/u/#UserId/notifications                UserNotificationsR    GET POST
 /u/#UserId/pledges                      UserPledgesR          GET
 
 -- Notifications

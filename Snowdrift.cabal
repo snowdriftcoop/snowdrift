@@ -184,6 +184,7 @@ library
                  , random
                  , regex-tdfa
                  , resourcet
+                 , semigroups
                  , shakespeare
                  , shakespeare-css
                  , shakespeare-js
@@ -258,6 +259,68 @@ executable         Snowdrift
                      , yesod
 
     ghc-options:       -threaded -O2
+
+executable         SnowdriftEmailDaemon
+    if flag(dev)
+       ghc-options: -Wall
+    if flag(library-only)
+        Buildable: False
+    main-is:           SnowdriftEmailDaemon.hs
+    build-depends:     base
+                     , authenticate
+                     , blaze-builder
+                     , blaze-html
+                     , blaze-markup
+                     , bytestring
+                     , containers
+                     , cmdargs
+                     , data-default
+                     , Diff
+                     , esqueleto
+                     , email-validate
+                     , fast-logger
+                     , hjsmin
+                     , http-conduit
+                     , lifted-base
+                     , mime-mail
+                     , monad-logger
+                     , mtl
+                     , path-pieces
+                     , persistent
+                     , persistent-postgresql
+                     , persistent-template
+                     , resourcet
+                     , shakespeare
+                     , stm
+                     , template-haskell
+                     , text
+                     , time
+                     , yaml
+                     , yesod
+                     , yesod-auth
+                     , yesod-auth-hashdb
+                     , yesod-core
+                     , yesod-form
+                     , yesod-markdown
+                     , yesod-static
+    extensions: BangPatterns
+                ConstraintKinds
+                DeriveDataTypeable
+                EmptyDataDecls
+                ExistentialQuantification
+                FlexibleContexts
+                FlexibleInstances
+                GeneralizedNewtypeDeriving
+                MultiParamTypeClasses
+                MultiWayIf
+                NoImplicitPrelude
+                QuasiQuotes
+                OverloadedStrings
+                RankNTypes
+                RecordWildCards
+                ScopedTypeVariables
+                TemplateHaskell
+                TypeFamilies
 
 executable         sdm
     if flag(dev)

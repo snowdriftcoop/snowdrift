@@ -1,0 +1,4 @@
+Notification preferences:
+<form method=POST action=@{UserNotificationsR user_id} enctype=#{enctype}>
+    ^{form}
+    <button>update
