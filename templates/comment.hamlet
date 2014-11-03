@@ -28,6 +28,22 @@
         $if is_private
             <i style="color: brown">private comment
 
+
+        $if can_watch
+            <div .comment-head-item :is_preview:.preview>
+                |
+            <div .comment-action :is_preview:.preview>
+                <a href="@{comment_route_watch comment_id}">
+                    watch
+
+        $if can_unwatch
+            <div .comment-head-item :is_preview:.preview>
+                |
+            <div .comment-action :is_preview:.preview>
+                <a href="@{comment_route_unwatch comment_id}">
+                    unwatch
+
+
     $maybe Entity (Key (PersistInt64 ticket_id))  _ <- mticket
         <span .glyphicon .glyphicon-tag>
         <span .ticket-num>SD-#{show ticket_id}
@@ -148,16 +164,6 @@
             <div .comment-action>
                 <a href="@{comment_route_reply comment_id}">
                     reply
-
-        $if can_watch
-            <div .comment-action>
-                <a href="@{comment_route_watch comment_id}">
-                    watch
-
-        $if can_unwatch
-            <div .comment-action>
-                <a href="@{comment_route_unwatch comment_id}">
-                    unwatch
 
     <div .inner-widget>
         ^{inner_widget}

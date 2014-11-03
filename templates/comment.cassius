@@ -1,6 +1,6 @@
 .comment
     padding : 0 1em
-    margin-top : 0.5em
+    margin: 2em
     border-bottom-left-radius : 0.8em
     font-size : small
 
@@ -26,6 +26,7 @@
 
 .comment-head-item, .comment-action
     display : inline-block
+    margin : 0 3px
 
 .comment-actions
     margin-bottom : 0.5em
