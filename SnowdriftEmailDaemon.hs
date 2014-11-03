@@ -153,7 +153,7 @@ deleteWhere ts notif_type to mproject content =
     delete $ fromNotificationEmail ts notif_type to mproject content
 
 insertWhere :: ( MonadResource m, PersistStore m, MonadSqlPersist m
-               , PersistMonadBackend m ~ SqlBackend)
+               , PersistMonadBackend m ~ SqlBackend )
             => UTCTime -> NotificationType -> UserId -> Maybe ProjectId
             -> Markdown -> m ()
 insertWhere ts notif_type to mproject content = do
