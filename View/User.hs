@@ -178,6 +178,6 @@ userNotificationsForm mbal mucom mrcom mrep mecon mflag mflagr =
     methods :: [(Text, NotificationDelivery)]
     methods =
         -- XXX: Support 'NotifDeliverEmailDigest'.
-        [ ("internal", NotifDeliverInternal)
-        , ("email",    NotifDeliverEmail)
+        [ ("website", NotifDeliverWebsite)
+        , ("email",   NotifDeliverEmail)
         ]
