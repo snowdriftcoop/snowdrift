@@ -97,9 +97,9 @@ selectWithEmails =
                 , notification_email ^. NotificationEmailProject
                 , notification_email ^. NotificationEmailContent ))
 
---- | Select all fields for users without email addresses such that
---- they could be inserted into the "notification" table without
---- creating duplicates.
+-- | Select all fields for users without email addresses such that
+-- they could be inserted into the "notification" table without
+-- creating duplicates.
 selectWithoutEmails :: (MonadResource m, MonadSqlPersist m)
                     => m [( Value UTCTime
                           , Value NotificationType
