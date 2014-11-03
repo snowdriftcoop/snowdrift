@@ -66,6 +66,11 @@ notDistinctFrom :: SqlExpr (Value a) -> SqlExpr (Value a)
                 -> SqlExpr (Value Bool)
 notDistinctFrom = unsafeSqlBinOp " IS NOT DISTINCT FROM "
 
+selectCount :: (MonadResource m, MonadSqlPersist m) => SqlQuery a -> m Int
+selectCount from_ =
+    fmap (\[Value n] -> n) $
+    select $ from_ >> return countRows
+
 class Count a where
     getCount :: a -> Int64
 

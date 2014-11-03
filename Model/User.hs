@@ -461,11 +461,10 @@ fetchNumUnviewedWikiEditsOnProjectDB user_id project_id = fmap (M.fromList . map
     return (wp ^. WikiPageId, countRows')
 
 fetchNumUnreadNotificationsDB :: UserId -> DB Int
-fetchNumUnreadNotificationsDB user_id = fmap (\[Value n] -> n) $
-    select $
+fetchNumUnreadNotificationsDB user_id =
+    selectCount $
     from $ \(u `InnerJoin` n) -> do
     on_ (u ^. UserId ==. n ^. NotificationTo)
     where_ $
         u ^. UserId ==. val user_id &&.
         n ^. NotificationCreatedTs >=. u ^. UserReadNotifications
-    return countRows

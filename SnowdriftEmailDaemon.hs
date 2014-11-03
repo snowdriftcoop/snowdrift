@@ -157,12 +157,9 @@ insertWhere :: ( MonadResource m, PersistStore m, MonadSqlPersist m
             => UTCTime -> NotificationType -> UserId -> Maybe ProjectId
             -> Markdown -> m ()
 insertWhere ts notif_type to mproject content = do
-    n <- fmap (\[Value n] -> n :: Int) $
-         select $ fromNotificationEmail ts notif_type to mproject content
-               >> return countRows
-    if n == 0
-        then insert_ $ NotificationEmail ts notif_type to mproject content
-        else return ()
+    n <- selectCount $ fromNotificationEmail ts notif_type to mproject content
+    when (n == 0) $
+        insert_ $ NotificationEmail ts notif_type to mproject content
 
 sendNotif :: (MonadResource m, MonadBaseControl IO m, MonadIO m, MonadLogger m)
           => PostgresConf -> PersistConfigPool PostgresConf
