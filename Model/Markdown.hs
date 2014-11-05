@@ -124,7 +124,10 @@ renderMarkdownWith transform (Markdown markdown) = do
 
     ls' <- mapM (transform <=< linkTickets) ls
 
-    return $ writeHtml def { writerEmailObfuscation = NoObfuscation } $ readMarkdown def $ T.unpack $ T.unlines ls'
+    return $ writeHtml def
+        { writerEmailObfuscation = NoObfuscation
+        , writerHtml5 = True
+        } $ readMarkdown def $ T.unpack $ T.unlines ls'
 
 
 markdownWidget :: Markdown -> Widget
