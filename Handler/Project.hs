@@ -6,6 +6,7 @@ import Import
 
 import Data.Filter
 import Data.Order
+import Data.Time.Format
 import Handler.Comment
 import Handler.Discussion
 import Handler.Utils
@@ -27,6 +28,7 @@ import Model.Shares
 import Model.SnowdriftEvent
 import Model.User
 import Model.Wiki
+import System.Locale (defaultTimeLocale)
 import View.Comment
 import View.PledgeButton
 import View.Project
