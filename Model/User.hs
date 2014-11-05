@@ -1,5 +1,6 @@
 module Model.User
     ( UserMap
+    , UserUpdate (..)
     -- Utility functions
     , anonymousUser
     , curUserIsEligibleEstablish
@@ -26,6 +27,7 @@ module Model.User
     , fetchUserProjectsAndRolesDB
     , fetchUserRolesDB
     , fetchUsersInDB
+    , fromEmailVerification
     , sendPreferredNotificationDB
     , updateUserDB
     , updateNotificationPrefDB
@@ -46,6 +48,7 @@ module Model.User
     , userViewCommentsDB
     , userViewWikiEditsDB
     , userWatchProjectDB
+    , verifyEmailDB
     -- Unsorted
     , canCurUserMakeEligible
     , canMakeEligible
@@ -63,6 +66,7 @@ import Model.User.Internal
 import Model.User.Sql
 import Model.Wiki.Sql
 
+import           Database.Esqueleto.Internal.Language (From)
 import qualified Data.Foldable      as F
 import qualified Data.Map           as M
 import qualified Data.Set           as S
@@ -148,6 +152,21 @@ updateUserDB user_id UserUpdate{..} = do
              , UserBlurb              =. val userUpdateBlurb
              ]
      where_ (u ^. UserId ==. val user_id)
+
+fromEmailVerification :: From query expr backend (expr (Entity EmailVerification))
+                      => Text -> UserId -> query ()
+fromEmailVerification ver_uri user_id =
+    from $ \ev -> do
+        where_ $ ev ^. EmailVerificationVer_uri ==. val ver_uri
+             &&. ev ^. EmailVerificationUser    ==. val user_id
+
+verifyEmailDB :: (MonadResource m, MonadSqlPersist m)
+              => Text -> UserId -> m ()
+verifyEmailDB ver_uri user_id = do
+    update $ \u -> do
+        set u $ [UserEmail_verified =. val True]
+        where_ $ u ^. UserId ==. val user_id
+    delete $ fromEmailVerification ver_uri user_id
 
 -- | Establish a user, given their eligible-timestamp and reason for
 -- eligibility. Mark all unapproved comments of theirs as approved.

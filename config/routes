@@ -51,6 +51,7 @@
 /u/#UserId/elig                         UserEstEligibleR          POST
 /u/#UserId/notifications                UserNotificationsR    GET POST
 /u/#UserId/pledges                      UserPledgesR          GET
+/u/#UserId/verify-email/#Text           UserVerifyEmailR      GET
 
 -- Notifications
 

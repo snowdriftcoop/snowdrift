@@ -18,13 +18,14 @@ import           View.User
 import           Widgets.ProjectPledges
 import           Widgets.Time
 
-import qualified Data.Map  as M
-import qualified Data.Set  as S
-import qualified Data.Text as T
-
 import           Data.Default         (def)
+import qualified Data.Map             as M
+import           Data.Maybe           (fromJust)
+import qualified Data.Set             as S
+import qualified Data.Text            as T
+import           Network.Mail.Mime    (randomString)
+import           System.Random        (newStdGen)
 import           Text.Cassius         (cassiusFile)
-
 
 getUsersR :: Handler Html
 getUsersR = do
@@ -71,14 +72,32 @@ getUserCreateR = do
                 <input type=submit>
         |]
 
+newHash :: IO Text
+newHash = T.pack . fst . randomString 42 <$> newStdGen
+
+startEmailVerification :: UserId -> Text -> HandlerT App IO ()
+startEmailVerification user_id user_email = do
+    hash    <- liftIO newHash
+    ver_uri <- getUrlRender <*> (pure $ UserVerifyEmailR user_id hash)
+    runDB $ do
+        insert_ $ EmailVerification ver_uri user_id
+        update $ \u -> do
+            set u $ [UserEmail_verified =. val False]
+            where_ $ u ^. UserId ==. val user_id
+    alertSuccess $ "Verification email has been sent to " <> user_email <> "."
+
 postUserCreateR :: Handler Html
 postUserCreateR = do
     ((result, form), _) <- runFormPost $ createUserForm Nothing
 
     case result of
-        FormSuccess (ident, passwd, name, email, avatar, nick) -> do
-            createUser ident (Just passwd) name email avatar nick
-                >>= \ maybe_user_id -> when (isJust maybe_user_id) $ do
+        FormSuccess (ident, passwd, name, memail, avatar, nick) -> do
+            createUser ident (Just passwd) name memail avatar nick
+                >>= \muser_id -> when (isJust muser_id) $ do
+                    when (isJust memail) $ do
+                        let email   = fromJust memail
+                            user_id = fromJust muser_id
+                        startEmailVerification user_id email
                     setCreds True $ Creds "HashDB" ident []
                     redirectUltDest HomeR
 
@@ -102,7 +121,9 @@ getUserR user_id = do
     user <- runYDB $ get404 user_id
 
     projects_and_roles <- runDB (fetchUserProjectsAndRolesDB user_id)
-
+    when (isJust (userEmail user) && not (userEmail_verified user)) $
+        alertWarning $ "Email address is not verified. Until you verify it, "
+                    <> "you will not be able to receive email notifications."
     defaultLayout $ do
         setTitle . toHtml $ "User Profile - " <> userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
         renderUser mviewer_id user_id user projects_and_roles
@@ -278,6 +299,10 @@ postUserR user_id = do
             lookupPostMode >>= \case
                 Just PostMode -> do
                     runDB (updateUserDB user_id user_update)
+                    let muser_email = userUpdateEmail user_update
+                    when (isJust muser_email) $ do
+                        let user_email = fromJust muser_email
+                        startEmailVerification user_id user_email
                     redirect (UserR user_id)
 
                 _ -> do
@@ -324,6 +349,20 @@ postUserEstEligibleR user_id = do
                     redirectUltDest HomeR
                 _ -> error "User not unestablished!"
         _ -> error "Error submitting form."
+
+--------------------------------------------------------------------------------
+-- /#UserId/email/#Text
+
+getUserVerifyEmailR :: UserId -> Text -> Handler Html
+getUserVerifyEmailR user_id hash = do
+    ver_uri <- getUrlRender <*> (pure $ UserVerifyEmailR user_id hash)
+    n       <- runDB $ selectCount $ fromEmailVerification ver_uri user_id
+    if n == 0
+        then notFound
+        else do
+            runDB $ verifyEmailDB ver_uri user_id
+            alertSuccess "Successfully verified the email address."
+            redirect HomeR
 
 --------------------------------------------------------------------------------
 -- /#UserId/pledges

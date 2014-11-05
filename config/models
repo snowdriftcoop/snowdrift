@@ -17,6 +17,7 @@ Transaction
 User
     ident             Text
     email             Text         Maybe
+    email_verified    Bool               default=false
     createdTs         UTCTime      Maybe
     hash              Text         Maybe
     salt              Text         Maybe
@@ -34,6 +35,12 @@ User
     UniqueUser ident
     UniqueUserAccount account
     deriving Show Typeable
+
+EmailVerification
+    ver_uri Text
+    user    UserId
+
+    UniqueEmailVerification ver_uri user
 
 -- A single notification preference. If some NotificationType does not appear in any
 -- row for a particular user, that means the user does not wish to be notified

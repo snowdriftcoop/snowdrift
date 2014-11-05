@@ -171,6 +171,7 @@ library
                  , http-types
                  , JuicyPixels
                  , lifted-base
+                 , mime-mail
                  , monad-control
                  , monad-logger
                  , mtl
@@ -267,6 +268,8 @@ executable         SnowdriftEmailDaemon
         Buildable: False
     main-is:           SnowdriftEmailDaemon.hs
     build-depends:     base
+                     , async
+                     , attoparsec
                      , authenticate
                      , blaze-builder
                      , blaze-html
@@ -279,6 +282,7 @@ executable         SnowdriftEmailDaemon
                      , esqueleto
                      , email-validate
                      , fast-logger
+                     , github
                      , hjsmin
                      , http-conduit
                      , lifted-base
@@ -290,11 +294,13 @@ executable         SnowdriftEmailDaemon
                      , persistent-postgresql
                      , persistent-template
                      , resourcet
+                     , semigroups
                      , shakespeare
                      , stm
                      , template-haskell
                      , text
                      , time
+                     , transformers
                      , yaml
                      , yesod
                      , yesod-auth
@@ -311,6 +317,7 @@ executable         SnowdriftEmailDaemon
                 FlexibleContexts
                 FlexibleInstances
                 GeneralizedNewtypeDeriving
+                LambdaCase
                 MultiParamTypeClasses
                 MultiWayIf
                 NoImplicitPrelude
@@ -320,6 +327,7 @@ executable         SnowdriftEmailDaemon
                 RecordWildCards
                 ScopedTypeVariables
                 TemplateHaskell
+                TupleSections
                 TypeFamilies
 
 executable         sdm
