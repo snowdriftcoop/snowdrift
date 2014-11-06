@@ -1,8 +1,18 @@
 <strong>Contact #{projectName project}
-<br>
-(To get a reply, be sure to include some contact info)
-<br>
-<br>
+<div .row>
+    <div .col-md-9 .col-lg-8>
+        <p>
+            Note: logged-in users can instead post
+            <em>publicly
+            at the 
+            <a href=@{ProjectDiscussionR (projectHandle project)}> project discussion page
+            or elsewhere (such as discussions connected to wiki pages).
+        <p>
+            This form posts 
+            <em>private
+            comments for the project team.
+        <p>
+            If you want a reply and are not logged in, include some contact info.
 
 <form method=POST>
     ^{project_contact_form}

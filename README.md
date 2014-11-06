@@ -51,10 +51,7 @@ here's some quick and dirty minimal instructions get started:
 git clone [your remote address, e.g. git@gitorious.org:snowdrift/yourusername-snowdrift.git]
 cd snowdrift
 cabal sandbox init
-cabal install --only-dependencies --enable-tests
-
-// Build the project
-cabal build
+cabal install --enable-tests
 
 // Set up the database with our quick script.
 // To understand what the script does or to run the commands manually, see GUIDE.md
@@ -63,12 +60,17 @@ sdm init
 // Launch the development site
 Snowdrift Development
 
-// For fast, automatic rebuilding whenever you change the code, use the yesod-bin package
+// To see the live site, point your browser to localhost:3000
+
+//To rebuild after making changes run
+cabal install
+
+// For fast, automatic rebuilding whenever you change the code, install the yesod-bin package
 cabal install yesod-bin
 // then instead of "Snowdrift Development" run the site with
 yesod devel
+// which can be left running in a terminal while working elsewhere
 
-// Point browser to localhost:3000
 ```
 
-Ideally, read through GUIDE.md as that has more complete details.
+Read through GUIDE.md for thorough details and more about development, testing, and so on.

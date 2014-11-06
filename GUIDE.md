@@ -178,7 +178,7 @@ Then, initiate a cabal sandbox:
 
 Install dependencies and build Snowdrift:
 
-    cabal install
+    cabal install --enable-tests
 
 This will take a *long* time but should ultimately tell you it installed Snowdrift.
 (Contact us for help if it says otherwise)
@@ -204,10 +204,10 @@ you can start the server from within your snowdrift directory with the command:
 
 To stop the running server, press ctrl-C
 
-To rebuild the site after changes to the code, run `cabal build` before starting the server.
+To rebuild the site after changes to the code, run `cabal install` before starting the server.
 
-Alternately, you may use the `yesod devel` command which combines an efficient rebuild and server start.
-Leave yesod devel running, and it will automatically update your build after each saved change to any file.
+Alternately, the `yesod devel` command combines an efficient rebuild and server start
+that will automatically update your build after each saved change to any file.
                                              
 To enable yesod devel, first install yesod-bin:
 
@@ -221,7 +221,8 @@ To stop yesod devel, press ENTER
 
 After the server starts, it may print a bunch of text about creating tables,
 and it will then sit ready, waiting for connections.
-Note that `yesod devel` builds just the library.  If you need to update an executable, use `cabal build`.
+Note that `yesod devel` builds just the library.
+When you need to update an executable, use `cabal install`.
 
 
 Using the live test site
@@ -240,10 +241,6 @@ Running tests
 After making various changes to the code and running locally
 to verify that everything compiles and also appears to work as desired,
 best practice involves then running our automated tests before sharing your changes with the main project.
-
-To prepare for running tests, you will need to install some extra dependencies with the command:
-
-    cabal install --only-dependencies --enable-tests
 
 Assuming you ran `sdm init` when you first set up the databases, run the tests with:
 
