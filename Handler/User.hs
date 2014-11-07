@@ -298,11 +298,13 @@ postUserR user_id = do
         FormSuccess user_update -> do
             lookupPostMode >>= \case
                 Just PostMode -> do
-                    runDB (updateUserDB user_id user_update)
                     let muser_email = userUpdateEmail user_update
                     when (isJust muser_email) $ do
                         let user_email = fromJust muser_email
-                        startEmailVerification user_id user_email
+                        mcurrent_email <- runDB $ fetchUserEmail user_id
+                        when (mcurrent_email /= Just user_email) $
+                            startEmailVerification user_id user_email
+                    runDB (updateUserDB user_id user_update)
                     redirect (UserR user_id)
 
                 _ -> do

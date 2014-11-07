@@ -22,6 +22,7 @@ module Model.User
     , fetchNumUnviewedCommentsOnProjectWikiPagesDB
     , fetchNumUnviewedWikiEditsOnProjectDB
     , fetchUserArchivedNotificationsDB
+    , fetchUserEmail
     , fetchUserNotificationsDB
     , fetchUserNotificationPrefDB
     , fetchUserProjectsAndRolesDB
