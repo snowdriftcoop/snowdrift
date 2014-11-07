@@ -233,11 +233,11 @@ deleteFromEmailVerification ver_uri user_id =
 
 insertIntoEmailVerification :: ( MonadResource m, PersistStore m, MonadSqlPersist m
                                , PersistMonadBackend m ~ SqlBackend )
-                            => Text -> UserId -> m ()
-insertIntoEmailVerification ver_uri user_id = do
+                            => Text -> Text -> UserId -> m ()
+insertIntoEmailVerification ver_uri user_email user_id = do
     n <- selectCount $ fromEmailVerification ver_uri user_id
     when (n == 0) $
-        insert_ $ EmailVerification ver_uri user_id
+        insert_ $ EmailVerification ver_uri user_email user_id
 
 sendVerification :: (MonadResource m, MonadBaseControl IO m, MonadIO m, MonadLogger m)
                  => PostgresConf -> PersistConfigPool PostgresConf
@@ -251,7 +251,7 @@ sendVerification dbConf poolConf verif_email user_email user_id ver_uri = do
         (return ())
         ("sending the email verification to " <> user_email <> " failed\n" <>
          "re-inserting data into the \"email_verification\" table")
-        (insertIntoEmailVerification ver_uri user_id)
+        (insertIntoEmailVerification ver_uri user_email user_id)
 
 withLogging :: MonadIO m => LoggingT m a -> m a
 withLogging m = runLoggingT m $ \loc src level str ->

@@ -28,6 +28,7 @@ module Model.User
     , fetchUserProjectsAndRolesDB
     , fetchUserRolesDB
     , fetchUsersInDB
+    , fetchVerEmail
     , fromEmailVerification
     , sendPreferredNotificationDB
     , updateUserDB
@@ -69,6 +70,7 @@ import Model.Wiki.Sql
 
 import           Database.Esqueleto.Internal.Language (From)
 import qualified Data.Foldable      as F
+import qualified Data.List          as L
 import qualified Data.Map           as M
 import qualified Data.Set           as S
 import qualified Data.Text          as T
@@ -160,6 +162,17 @@ fromEmailVerification ver_uri user_id =
     from $ \ev -> do
         where_ $ ev ^. EmailVerificationVer_uri ==. val ver_uri
              &&. ev ^. EmailVerificationUser    ==. val user_id
+
+fetchVerEmail :: Text -> UserId -> DB (Maybe Text)
+fetchVerEmail ver_uri user_id = do
+    emails <- fmap (map unValue) $
+              select $ from $ \ev -> do
+                  where_ $ ev ^. EmailVerificationVer_uri ==. val ver_uri
+                       &&. ev ^. EmailVerificationUser    ==. val user_id
+                  return $ ev ^. EmailVerificationVer_email
+    if L.null emails
+        then return $ Nothing
+        else return $ Just $ L.head emails
 
 verifyEmailDB :: (MonadResource m, MonadSqlPersist m)
               => Text -> UserId -> m ()

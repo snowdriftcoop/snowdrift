@@ -21,6 +21,7 @@ import           Widgets.Time
 import           Data.Default         (def)
 import qualified Data.Map             as M
 import           Data.Maybe           (fromJust)
+import qualified Data.Maybe           as Maybe
 import qualified Data.Set             as S
 import qualified Data.Text            as T
 import           Network.Mail.Mime    (randomString)
@@ -80,7 +81,7 @@ startEmailVerification user_id user_email = do
     hash    <- liftIO newHash
     ver_uri <- getUrlRender <*> (pure $ UserVerifyEmailR user_id hash)
     runDB $ do
-        insert_ $ EmailVerification ver_uri user_id
+        insert_ $ EmailVerification ver_uri user_email user_id
         update $ \u -> do
             set u $ [UserEmail_verified =. val False]
             where_ $ u ^. UserId ==. val user_id
@@ -357,14 +358,26 @@ postUserEstEligibleR user_id = do
 
 getUserVerifyEmailR :: UserId -> Text -> Handler Html
 getUserVerifyEmailR user_id hash = do
-    ver_uri <- getUrlRender <*> (pure $ UserVerifyEmailR user_id hash)
-    n       <- runDB $ selectCount $ fromEmailVerification ver_uri user_id
-    if n == 0
-        then notFound
-        else do
-            runDB $ verifyEmailDB ver_uri user_id
-            alertSuccess "Successfully verified the email address."
-            redirect HomeR
+    ver_uri     <- getUrlRender <*> (pure $ UserVerifyEmailR user_id hash)
+    mver_email  <- runDB $ fetchVerEmail ver_uri user_id
+    muser_email <- runDB $ fetchUserEmail user_id
+    if | Maybe.isNothing mver_email -> notFound
+       | Maybe.isNothing muser_email -> do
+             alertDanger $ "Failed to verify the email address since none is "
+                        <> "associated with the account."
+             redirect HomeR
+       | otherwise -> do
+             let ver_email  = fromJust mver_email
+                 user_email = fromJust muser_email
+             if ver_email == user_email
+                 then do
+                     runDB $ verifyEmailDB ver_uri user_id
+                     alertSuccess "Successfully verified the email address."
+                     redirect HomeR
+                 else do
+                     alertDanger $ "Current email address does not match the "
+                                <> "verification link."
+                     redirect HomeR
 
 --------------------------------------------------------------------------------
 -- /#UserId/pledges

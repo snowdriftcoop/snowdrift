@@ -37,8 +37,9 @@ User
     deriving Show Typeable
 
 EmailVerification
-    ver_uri Text
-    user    UserId
+    ver_uri   Text
+    ver_email Text     -- user's email at the time when 'ver_uri' was generated
+    user      UserId
 
     UniqueEmailVerification ver_uri user
 
