@@ -27,6 +27,7 @@ import qualified Data.Text            as T
 import           Network.Mail.Mime    (randomString)
 import           System.Random        (newStdGen)
 import           Text.Cassius         (cassiusFile)
+import           Yesod.Auth.HashDB    (setPassword, validateUser)
 
 getUsersR :: Handler Html
 getUsersR = do
@@ -275,6 +276,47 @@ postNewUserDiscussionR user_id = do
 
 postUserDiscussionR :: UserId -> Handler Html
 postUserDiscussionR _ = error "TODO(mitchell)"
+
+--------------------------------------------------------------------------------
+-- /#UserId/change-password
+
+getUserChangePasswordR :: UserId -> Handler Html
+getUserChangePasswordR user_id = do
+    void $ checkEditUser user_id
+    user <- runYDB $ get404 user_id
+    (form, enctype) <- generateFormPost changePasswordForm
+    defaultLayout $ do
+        setTitle . toHtml $ "Change Password - " <>
+            userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
+        $(widgetFile "change_password")
+
+postUserChangePasswordR :: UserId -> Handler Html
+postUserChangePasswordR user_id = do
+    void $ checkEditUser user_id
+    ((result, form), enctype) <- runFormPost changePasswordForm
+    case result of
+        FormSuccess ChangePassword {..} -> do
+            user <- runYDB $ get404 user_id
+            is_valid_password <- validateUser (UniqueUser $ userIdent user)
+                                     currentPassword
+            if is_valid_password
+                then if newPassword == newPassword'
+                         then do
+                             user' <- setPassword newPassword user
+                             runDB $ updateUserPasswordDB user_id
+                                 (userHash user') (userSalt user')
+                             alertSuccess "Successfully updated the password."
+                             redirect $ UserR user_id
+                         else do
+                             alertDanger "Passwords do not match."
+                             defaultLayout $(widgetFile "change_password")
+
+                else do
+                    alertDanger "Incorrect current password."
+                    defaultLayout $(widgetFile "change_password")
+        _ -> do
+            alertDanger "Failed to update the password."
+            defaultLayout $(widgetFile "change_password")
 
 --------------------------------------------------------------------------------
 -- /#UserId/edit

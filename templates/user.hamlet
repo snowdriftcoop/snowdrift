@@ -7,7 +7,10 @@
                 <div .col-md-2>
                     <a href="@{EditUserR user_id}">
                         edit profile
-                <div .col-md-2>
+                <div .col-md-3>
+                    <a href="@{UserChangePasswordR user_id}">
+                        change password
+                <div .col-md-4>
                     <a href="@{UserNotificationsR user_id}">
                         notification preferences
         <p>

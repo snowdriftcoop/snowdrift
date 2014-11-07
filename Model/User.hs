@@ -1,6 +1,7 @@
 module Model.User
     ( UserMap
     , UserUpdate (..)
+    , ChangePassword (..)
     -- Utility functions
     , anonymousUser
     , curUserIsEligibleEstablish
@@ -33,6 +34,7 @@ module Model.User
     , fromEmailVerification
     , sendPreferredNotificationDB
     , updateUserDB
+    , updateUserPasswordDB
     , updateNotificationPrefDB
     , userCanDeleteCommentDB
     , userClaimCommentDB
@@ -156,6 +158,13 @@ updateUserDB user_id UserUpdate{..} = do
              , UserBlurb              =. val userUpdateBlurb
              ]
      where_ (u ^. UserId ==. val user_id)
+
+updateUserPasswordDB :: UserId -> Maybe Text -> Maybe Text -> DB ()
+updateUserPasswordDB user_id hash salt =
+    update $ \u -> do
+        set u $ [ UserHash =. val hash
+                , UserSalt =. val salt ]
+        where_ $ u ^. UserId ==. val user_id
 
 fromEmailVerification :: From query expr backend (expr (Entity EmailVerification))
                       => UserId -> query ()

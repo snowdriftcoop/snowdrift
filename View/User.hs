@@ -1,6 +1,7 @@
 module View.User
     ( addTestCashForm
     , createUserForm
+    , changePasswordForm
     , editUserForm
     , establishUserForm
     , previewUserForm
@@ -101,6 +102,12 @@ editUserForm muser = renderBootstrap3 $
         <*> aopt' textField               "IRC nick @freenode.net)"                        (userIrcNick                   <$> muser)
         <*> aopt' snowdriftMarkdownField  "Blurb (used on listings of many people)"        (userBlurb                     <$> muser)
         <*> aopt' snowdriftMarkdownField  "Personal Statement (visible only on this page)" (userStatement                 <$> muser)
+
+changePasswordForm :: Form ChangePassword
+changePasswordForm = renderBootstrap3 $ ChangePassword
+    <$> areq' passwordField "Current password" Nothing
+    <*> areq' passwordField "New password"     Nothing
+    <*> areq' passwordField "Repeat"           Nothing
 
 -- | Form to mark a user as eligible for establishment. The user is fully established
 -- when s/he accepts the honor pledge.

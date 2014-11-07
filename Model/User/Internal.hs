@@ -20,6 +20,12 @@ data UserUpdate =
         , userUpdateStatement          :: Maybe Markdown
         }
 
+data ChangePassword = ChangePassword
+    { currentPassword :: Text
+    , newPassword     :: Text
+    , newPassword'    :: Text
+    }
+
 data NotificationPref = NotificationPref
     { -- 'NotifWelcome' and 'NotifEligEstablish' are not handled since
       -- they are delivered only once.
