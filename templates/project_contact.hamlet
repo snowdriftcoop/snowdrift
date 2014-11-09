@@ -4,11 +4,11 @@
         <p>
             Note: logged-in users can instead post
             <em>publicly
-            at the 
+            at the
             <a href=@{ProjectDiscussionR (projectHandle project)}> project discussion page
             or elsewhere (such as discussions connected to wiki pages).
         <p>
-            This form posts 
+            This form posts
             <em>private
             comments for the project team.
         <p>
