@@ -2,7 +2,7 @@ module Main where
 
 import Import hiding (on)
 import Model.Notification (NotificationType)
-import Model.User         (fromEmailVerification)
+import Model.User         (deleteFromEmailVerification)
 
 import           Control.Concurrent           (threadDelay)
 import qualified Control.Exception.Lifted     as Exception
@@ -223,11 +223,6 @@ deleteWithoutEmails = do
     no_emails <- selectWithoutEmails
     forM_ no_emails $ \user_id ->
         deleteFromEmailVerification user_id
-
-deleteFromEmailVerification :: (MonadResource m, MonadSqlPersist m)
-                            => UserId -> m ()
-deleteFromEmailVerification user_id =
-    delete $ fromEmailVerification user_id
 
 sendVerification :: (MonadResource m, MonadBaseControl IO m, MonadIO m, MonadLogger m)
                  => PostgresConf -> PersistConfigPool PostgresConf

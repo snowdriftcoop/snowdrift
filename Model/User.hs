@@ -14,6 +14,7 @@ module Model.User
     , userIsUnestablished
     , userDisplayName
     -- Database actions
+    , deleteFromEmailVerification
     , eligEstablishUserDB
     , establishUserDB
     , fetchAllUserRolesDB
@@ -161,6 +162,11 @@ fromEmailVerification :: From query expr backend (expr (Entity EmailVerification
 fromEmailVerification user_id =
     from $ \ev -> where_ $ ev ^. EmailVerificationUser ==. val user_id
 
+deleteFromEmailVerification :: (MonadResource m, MonadSqlPersist m)
+                            => UserId -> m ()
+deleteFromEmailVerification user_id =
+    delete $ fromEmailVerification user_id
+
 fetchVerEmail :: Text -> UserId -> DB (Maybe Text)
 fetchVerEmail ver_uri user_id = do
     emails <- fmap (map unValue) $
@@ -177,7 +183,7 @@ verifyEmailDB user_id = do
     update $ \u -> do
         set u $ [UserEmail_verified =. val True]
         where_ $ u ^. UserId ==. val user_id
-    delete $ fromEmailVerification user_id
+    deleteFromEmailVerification user_id
 
 -- | Establish a user, given their eligible-timestamp and reason for
 -- eligibility. Mark all unapproved comments of theirs as approved.
