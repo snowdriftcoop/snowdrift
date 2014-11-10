@@ -7,7 +7,7 @@ import Model.User         (deleteFromEmailVerification)
 import           Control.Concurrent           (threadDelay)
 import qualified Control.Exception.Lifted     as Exception
 import           Control.Monad.Logger         (runLoggingT, LoggingT, defaultLogStr)
-import           Control.Monad.Trans.Resource (runResourceT, ResourceT)
+import           Control.Monad.Trans.Resource (runResourceT)
 import           Database.Esqueleto
 import qualified Data.ByteString.Char8        as Char8
 import           Data.List                    (intercalate)
@@ -200,7 +200,8 @@ sendNotification dbConf poolConf notif_email user_email ts notif_type to mprojec
          "re-inserting data into the \"notification_email\" table")
         (insertIntoNotificationEmail ts notif_type to mproject content)
 
-selectWithEmails :: SqlPersistT (ResourceT (LoggingT IO)) [(Maybe Email, Text)]
+selectWithEmails :: (MonadResource m, MonadSqlPersist m)
+                 => m [(Maybe Email, Text)]
 selectWithEmails =
     fmap (map (\(Value email, Value ver_uri) -> (email, ver_uri))) $
     select $ from $ \(ev `InnerJoin` u) -> do
@@ -210,7 +211,7 @@ selectWithEmails =
         return ( u  ^. UserEmail
                , ev ^. EmailVerificationVer_uri )
 
-selectWithoutEmails :: SqlPersistT (ResourceT (LoggingT IO)) [UserId]
+selectWithoutEmails :: (MonadResource m, MonadSqlPersist m) => m [UserId]
 selectWithoutEmails =
     fmap (map (\(Value user_id) -> user_id)) $
     select $ from $ \(ev `InnerJoin` u) -> do
@@ -218,7 +219,7 @@ selectWithoutEmails =
         where_ $ isNothing $ u ^. UserEmail
         return $ ev ^. EmailVerificationUser
 
-deleteWithoutEmails :: SqlPersistT (ResourceT (LoggingT IO)) ()
+deleteWithoutEmails :: (MonadResource m, MonadSqlPersist m) => m ()
 deleteWithoutEmails = do
     no_emails <- selectWithoutEmails
     forM_ no_emails $ \user_id ->
