@@ -371,7 +371,7 @@ getUserVerifyEmailR user_id hash = do
                  user_email = fromJust muser_email
              if ver_email == user_email
                  then do
-                     runDB $ verifyEmailDB ver_uri user_id
+                     runDB $ verifyEmailDB user_id
                      alertSuccess "Successfully verified the email address."
                      redirect HomeR
                  else do

@@ -200,49 +200,39 @@ sendNotification dbConf poolConf notif_email user_email ts notif_type to mprojec
          "re-inserting data into the \"notification_email\" table")
         (insertIntoNotificationEmail ts notif_type to mproject content)
 
-selectWithEmails :: SqlPersistT (ResourceT (LoggingT IO)) [(Maybe Email, UserId, Text)]
+selectWithEmails :: SqlPersistT (ResourceT (LoggingT IO)) [(Maybe Email, Text)]
 selectWithEmails =
-    fmap (map (\(Value email, Value user_id, Value ver_uri) ->
-                (email, user_id, ver_uri))) $
+    fmap (map (\(Value email, Value ver_uri) -> (email, ver_uri))) $
     select $ from $ \(ev `InnerJoin` u) -> do
         on $ ev ^. EmailVerificationUser ==. u ^. UserId
-        where_ $ not_ $ isNothing $ u ^. UserEmail
+        where_ $ not_ (isNothing $ u ^. UserEmail)
+             &&. u ^. UserEmail ==. (just $ ev ^. EmailVerificationVer_email)
         return ( u  ^. UserEmail
-               , ev ^. EmailVerificationUser
                , ev ^. EmailVerificationVer_uri )
 
-selectWithoutEmails :: SqlPersistT (ResourceT (LoggingT IO)) [(UserId, Text)]
+selectWithoutEmails :: SqlPersistT (ResourceT (LoggingT IO)) [UserId]
 selectWithoutEmails =
-    fmap (map (\(Value user_id, Value ver_uri) -> (user_id, ver_uri))) $
+    fmap (map (\(Value user_id) -> user_id)) $
     select $ from $ \(ev `InnerJoin` u) -> do
         on $ ev ^. EmailVerificationUser ==. u ^. UserId
         where_ $ isNothing $ u ^. UserEmail
-        return ( ev ^. EmailVerificationUser
-               , ev ^. EmailVerificationVer_uri )
+        return $ ev ^. EmailVerificationUser
 
 deleteWithoutEmails :: SqlPersistT (ResourceT (LoggingT IO)) ()
 deleteWithoutEmails = do
     no_emails <- selectWithoutEmails
-    forM_ no_emails $ \(user_id, ver_uri) ->
-        deleteFromEmailVerification ver_uri user_id
+    forM_ no_emails $ \user_id ->
+        deleteFromEmailVerification user_id
 
 deleteFromEmailVerification :: (MonadResource m, MonadSqlPersist m)
-                            => Text -> UserId -> m ()
-deleteFromEmailVerification ver_uri user_id =
-    delete $ fromEmailVerification ver_uri user_id
-
-insertIntoEmailVerification :: ( MonadResource m, PersistStore m, MonadSqlPersist m
-                               , PersistMonadBackend m ~ SqlBackend )
-                            => Text -> Text -> UserId -> m ()
-insertIntoEmailVerification ver_uri user_email user_id = do
-    n <- selectCount $ fromEmailVerification ver_uri user_id
-    when (n == 0) $
-        insert_ $ EmailVerification ver_uri user_email user_id
+                            => UserId -> m ()
+deleteFromEmailVerification user_id =
+    delete $ fromEmailVerification user_id
 
 sendVerification :: (MonadResource m, MonadBaseControl IO m, MonadIO m, MonadLogger m)
                  => PostgresConf -> PersistConfigPool PostgresConf
-                 -> Email -> Email -> UserId -> Text -> m ()
-sendVerification dbConf poolConf verif_email user_email user_id ver_uri = do
+                 -> Email -> Email -> Text -> m ()
+sendVerification dbConf poolConf verif_email user_email ver_uri = do
     let content = "Please open this link to verify your email address: "
                <> ver_uri
     handleSendmail dbConf poolConf
@@ -250,8 +240,8 @@ sendVerification dbConf poolConf verif_email user_email user_id ver_uri = do
         verif_email user_email "Snowdrift.coop email verification" content
         (return ())
         ("sending the email verification to " <> user_email <> " failed\n" <>
-         "re-inserting data into the \"email_verification\" table")
-        (insertIntoEmailVerification ver_uri user_email user_id)
+         "will try again later")
+        (return ())
 
 withLogging :: MonadIO m => LoggingT m a -> m a
 withLogging m = runLoggingT m $ \loc src level str ->
@@ -291,5 +281,5 @@ main = withLogging $ do
                 deleteWithoutEmails
                 return with_emails
         verifs <- runPool dbConf action' poolConf
-        forM_ verifs $ \(Just user_email, user_id, ver_uri) ->
-            sendVerification dbConf poolConf notif_email user_email user_id ver_uri
+        forM_ verifs $ \(Just user_email, ver_uri) ->
+            sendVerification dbConf poolConf notif_email user_email ver_uri

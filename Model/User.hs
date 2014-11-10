@@ -157,11 +157,9 @@ updateUserDB user_id UserUpdate{..} = do
      where_ (u ^. UserId ==. val user_id)
 
 fromEmailVerification :: From query expr backend (expr (Entity EmailVerification))
-                      => Text -> UserId -> query ()
-fromEmailVerification ver_uri user_id =
-    from $ \ev -> do
-        where_ $ ev ^. EmailVerificationVer_uri ==. val ver_uri
-             &&. ev ^. EmailVerificationUser    ==. val user_id
+                      => UserId -> query ()
+fromEmailVerification user_id =
+    from $ \ev -> where_ $ ev ^. EmailVerificationUser ==. val user_id
 
 fetchVerEmail :: Text -> UserId -> DB (Maybe Text)
 fetchVerEmail ver_uri user_id = do
@@ -174,13 +172,12 @@ fetchVerEmail ver_uri user_id = do
         then return $ Nothing
         else return $ Just $ L.head emails
 
-verifyEmailDB :: (MonadResource m, MonadSqlPersist m)
-              => Text -> UserId -> m ()
-verifyEmailDB ver_uri user_id = do
+verifyEmailDB :: (MonadResource m, MonadSqlPersist m) => UserId -> m ()
+verifyEmailDB user_id = do
     update $ \u -> do
         set u $ [UserEmail_verified =. val True]
         where_ $ u ^. UserId ==. val user_id
-    delete $ fromEmailVerification ver_uri user_id
+    delete $ fromEmailVerification user_id
 
 -- | Establish a user, given their eligible-timestamp and reason for
 -- eligibility. Mark all unapproved comments of theirs as approved.
