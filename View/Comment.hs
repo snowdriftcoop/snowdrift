@@ -58,13 +58,13 @@ import           Data.Tree   (Forest, Tree(..))
 import qualified Data.Tree   as Tree
 
 disabledCommentForm :: Form Markdown
-disabledCommentForm = renderBootstrap3 $ areq snowdriftMarkdownField ("Reply" { fsAttrs = [("disabled",""), ("class","form-control")] }) Nothing
+disabledCommentForm = renderBootstrap3 BootstrapBasicForm $ areq snowdriftMarkdownField ("Reply" { fsAttrs = [("disabled",""), ("class","form-control")] }) Nothing
 
 closureForm :: SomeMessage App -> Maybe Markdown -> Form NewClosure
-closureForm label message = renderBootstrap3 $ NewClosure <$> areq' snowdriftMarkdownField label message
+closureForm label message = renderBootstrap3 BootstrapBasicForm $ NewClosure <$> areq' snowdriftMarkdownField label message
 
 commentForm :: SomeMessage App -> Maybe Markdown -> Form NewComment
-commentForm label content = renderBootstrap3 $ NewComment
+commentForm label content = renderBootstrap3 BootstrapBasicForm $ NewComment
     <$> areq' snowdriftMarkdownField label content
     <*> pure VisPublic
     --    TODO(aaron) turn below back on and delete the pure line above
@@ -147,13 +147,13 @@ approveCommentFormWidget =
     |]
 
 claimCommentForm :: Maybe (Maybe Text) -> Form (Maybe Text)
-claimCommentForm = renderBootstrap3 . aopt' textField "Note (optional)"
+claimCommentForm = renderBootstrap3 BootstrapBasicForm . aopt' textField "Note (optional)"
 
 unclaimCommentForm :: Maybe (Maybe Text) -> Form (Maybe Text)
-unclaimCommentForm = renderBootstrap3 . aopt' textField "Note (optional)"
+unclaimCommentForm = renderBootstrap3 BootstrapBasicForm . aopt' textField "Note (optional)"
 
 rethreadCommentForm :: Form (Text, Text)
-rethreadCommentForm = renderBootstrap3 $ (,)
+rethreadCommentForm = renderBootstrap3 BootstrapBasicForm $ (,)
     <$> areq' textField "New Parent Url" Nothing
     <*> areq' textField "Reason" Nothing
 
@@ -167,16 +167,16 @@ rethreadCommentFormWidget = do
     |]
 
 watchCommentForm :: Form ()
-watchCommentForm = renderBootstrap3 $ pure ()
+watchCommentForm = renderBootstrap3 BootstrapBasicForm $ pure ()
 
 unwatchCommentForm :: Form ()
-unwatchCommentForm = renderBootstrap3 $ pure ()
+unwatchCommentForm = renderBootstrap3 BootstrapBasicForm $ pure ()
 
 createCommentTagForm :: Form Text
-createCommentTagForm = renderBootstrap3 $ areq' textField "Make a new tag:" Nothing
+createCommentTagForm = renderBootstrap3 BootstrapBasicForm $ areq' textField "Make a new tag:" Nothing
 
 newCommentTagForm :: [Entity Tag] -> [Entity Tag] -> Form (Maybe [TagId], Maybe [TagId])
-newCommentTagForm project_tags other_tags = renderBootstrap3 $ (,)
+newCommentTagForm project_tags other_tags = renderBootstrap3 BootstrapBasicForm $ (,)
     -- <$> fmap (\(Entity tag_id tag) -> aopt checkBoxField (tag_id) (tagName tag)) (project_tags <> other_tags)
     <$> aopt (tagCloudFieldList project_tags) "Tags used elsewhere in this project:" Nothing
     <*> aopt (tagCloudFieldList other_tags) "Tags used in other projects:" Nothing
@@ -196,7 +196,7 @@ newCommentTagForm project_tags other_tags = renderBootstrap3 $ (,)
          in checkboxesField' (return optlist)
 
 flagCommentForm :: Maybe (Maybe [FlagReason]) -> Maybe (Maybe Markdown) -> Form (Maybe [FlagReason], Maybe Markdown)
-flagCommentForm def_reasons def_message = renderBootstrap3 $ (,) <$> flagReasonsForm <*> additionalCommentsForm
+flagCommentForm def_reasons def_message = renderBootstrap3 BootstrapBasicForm $ (,) <$> flagReasonsForm <*> additionalCommentsForm
   where
     flagReasonsForm :: AForm Handler (Maybe [FlagReason])
     flagReasonsForm = aopt (checkboxesFieldList reasons) "" def_reasons

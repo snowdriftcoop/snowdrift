@@ -4,7 +4,7 @@ import Import
 
 
 volunteerForm :: UTCTime -> ProjectId -> [Entity Interest] -> Entity User -> Form (VolunteerApplication, [InterestId])
-volunteerForm now project_id interests (Entity user_id user) = renderBootstrap3 $
+volunteerForm now project_id interests (Entity user_id user) = renderBootstrap3 BootstrapBasicForm $
     (\ name email contact website location experience interest_ids other ->
         (VolunteerApplication now project_id user_id name email contact website location experience other, interest_ids)
     )   <$> areq' textField "Name or Internet Handle:" Nothing
