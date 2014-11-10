@@ -224,6 +224,25 @@ deleteWithoutEmails = do
     forM_ no_emails $ \user_id ->
         deleteFromEmailVerification user_id
 
+selectWithNonMatchingEmails :: (MonadResource m, MonadSqlPersist m)
+                            => m [(UserId, Text)]
+selectWithNonMatchingEmails =
+    fmap (map (\(Value user, Value email) -> (user, email))) $
+    select $ from $ \(ev `InnerJoin` u) -> do
+        on $ ev ^. EmailVerificationUser ==. u ^. UserId
+        where_ $ not_ (isNothing $ u ^. UserEmail)
+             &&. u ^. UserEmail !=. just (ev ^. EmailVerificationVer_email)
+        return ( ev ^. EmailVerificationUser
+               , ev ^. EmailVerificationVer_email )
+
+deleteWithNonMatchingEmails :: (MonadResource m, MonadSqlPersist m) => m ()
+deleteWithNonMatchingEmails = do
+    non_matching <- selectWithNonMatchingEmails
+    forM_ non_matching $ \(user, email) ->
+        delete $ from $ \ev ->
+            where_ $ ev ^. EmailVerificationUser      ==. val user
+                 &&. ev ^. EmailVerificationVer_email ==. val email
+
 sendVerification :: (MonadResource m, MonadBaseControl IO m, MonadIO m, MonadLogger m)
                  => PostgresConf -> PersistConfigPool PostgresConf
                  -> Email -> Email -> Text -> m ()
@@ -273,6 +292,7 @@ main = withLogging $ do
             sendNotification dbConf poolConf notif_email user_email ts notif_type to mproject content
         let action' = do
                 with_emails <- selectWithEmails
+                deleteWithNonMatchingEmails
                 deleteWithoutEmails
                 return with_emails
         verifs <- runPool dbConf action' poolConf
