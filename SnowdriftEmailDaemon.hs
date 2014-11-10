@@ -254,7 +254,7 @@ sendVerification dbConf poolConf verif_email user_email ver_uri = do
         ("sending an email verification to " <> user_email <> "\n" <> content)
         verif_email user_email "Snowdrift.coop email verification" content
         (return ())
-        ("sending the email verification to " <> user_email <> " failed\n" <>
+        ("sending the email verification to " <> user_email <> " failed; " <>
          "will try again later")
         (return ())
 
