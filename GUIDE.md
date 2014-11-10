@@ -78,7 +78,7 @@ Use of NoScript should never causes a broken experience.
 We also make sure all our JavaScript is recognized
 by the FSF's [LibreJS plugin](https://www.gnu.org/software/librejs/).
 
-We have a separate wiki and discussion pages on the site
+We have separate wiki and discussion pages on the site
 for [web-design issues](https://snowdrift.coop/p/snowdrift/w/site-design)
 and [coding issues](https://snowdrift.coop/p/snowdrift/w/coding).
 We also have a complete [list of tickets](https://snowdrift.coop/p/snowdrift/t) in all categories.
