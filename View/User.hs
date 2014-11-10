@@ -24,8 +24,6 @@ import           Data.List.NonEmpty     (NonEmpty)
 import qualified Data.List.NonEmpty     as N
 import qualified Data.Map               as M
 import qualified Data.Set               as S
-import           Yesod.Form.Bootstrap3  (BootstrapFormLayout (..), BootstrapGridOptions (..)) 
-import qualified Yesod.Form.Bootstrap3  as Y
 import           Yesod.Markdown
 
 createUserForm :: Maybe Text -> Form (Text, Text, Maybe Text, Maybe Text, Maybe Text, Maybe Text)
@@ -93,7 +91,7 @@ createUserForm ident extra = do
     return (result, view)
 
 editUserForm :: Maybe User -> Form UserUpdate
-editUserForm muser = renderBootstrap3 $
+editUserForm muser = renderBootstrap3 BootstrapBasicForm $
     UserUpdate
         <$> aopt' textField               "Public Name"                                    (userName                      <$> muser)
         <*> aopt' textField               "Avatar image (link)"                            (userAvatar                    <$> muser)
@@ -105,10 +103,10 @@ editUserForm muser = renderBootstrap3 $
 -- | Form to mark a user as eligible for establishment. The user is fully established
 -- when s/he accepts the honor pledge.
 establishUserForm :: Form Text
-establishUserForm = renderBootstrap3 $ areq' textField "Reason" Nothing
+establishUserForm = renderBootstrap3 BootstrapBasicForm $ areq' textField "Reason" Nothing
 
 previewUserForm :: User -> Form UserUpdate
-previewUserForm User{..} = renderBootstrap3 $
+previewUserForm User{..} = renderBootstrap3 BootstrapBasicForm $
     UserUpdate
         <$> aopt hiddenField "" (Just userName)
         <*> aopt hiddenField "" (Just userAvatar)
@@ -149,7 +147,7 @@ userNameWidget user_id = do
             |]
 
 addTestCashForm :: Form Milray
-addTestCashForm = renderBootstrap3 $ fromInteger . (10000 *) <$> areq' intField "Add (fake) money to your account (in whole dollars)" (Just 10)
+addTestCashForm = renderBootstrap3 BootstrapBasicForm $ fromInteger . (10000 *) <$> areq' intField "Add (fake) money to your account (in whole dollars)" (Just 10)
 
 userNotificationsForm :: Maybe (NonEmpty NotificationDelivery)
                       -> Maybe (NonEmpty NotificationDelivery)
@@ -160,8 +158,7 @@ userNotificationsForm :: Maybe (NonEmpty NotificationDelivery)
                       -> Maybe (NonEmpty NotificationDelivery)
                       -> Form NotificationPref
 userNotificationsForm mbal mucom mrcom mrep mecon mflag mflagr =
-    -- Our 'renderBootstrap3' function does not render checkboxes properly.
-    Y.renderBootstrap3 (BootstrapHorizontalForm (ColSm 0) (ColSm 0) (ColSm 0) (ColSm 0)) $ NotificationPref
+    renderBootstrap3 (BootstrapHorizontalForm (ColSm 0) (ColSm 0) (ColSm 0) (ColSm 0)) $ NotificationPref
         <$> req "Low balance"                  mbal
         <*> req "Unapproved comment"           mucom
         <*> opt "Rethreaded comment"           mrcom

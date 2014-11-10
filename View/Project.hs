@@ -90,14 +90,14 @@ renderBlogPost project_handle blog_post = do
 
 editProjectForm :: Maybe (Project, [Text]) -> Form UpdateProject
 editProjectForm project =
-    renderBootstrap3 $ UpdateProject
+    renderBootstrap3 BootstrapBasicForm $ UpdateProject
         <$> areq' textField "Project Name" (projectName . fst <$> project)
         <*> areq' snowdriftMarkdownField "Description" (projectDescription . fst <$> project)
         <*> (maybe [] (map T.strip . T.splitOn ",") <$> aopt' textField "Tags" (Just . T.intercalate ", " . snd <$> project))
         <*> aopt' textField "Github Repository" (projectGithubRepo . fst <$> project)
 
 projectBlogForm :: Maybe (Text, Text, Markdown) -> Form (Text, Text, Markdown)
-projectBlogForm defaults = renderBootstrap3 $
+projectBlogForm defaults = renderBootstrap3 BootstrapBasicForm $
     let getTitle (title, _, _) = title
         getHandle (_, handle, _) = handle
         getContent (_, _, content) = content
@@ -107,17 +107,17 @@ projectBlogForm defaults = renderBootstrap3 $
         <*> areq' snowdriftMarkdownField "Content" (getContent <$> defaults)
 
 projectContactForm :: Form Markdown
-projectContactForm = renderBootstrap3 $ areq' snowdriftMarkdownField "" Nothing
+projectContactForm = renderBootstrap3 BootstrapBasicForm $ areq' snowdriftMarkdownField "" Nothing
 
 inviteForm :: Form (Text, Role)
-inviteForm = renderBootstrap3 $ (,)
+inviteForm = renderBootstrap3 BootstrapBasicForm $ (,)
     <$> areq' textField "About this invitation:" Nothing
     <*> areq roleField "Type of Invite:" (Just TeamMember)
 
 viewForm :: Form (Filterable -> Bool, Orderable -> [Double])
-viewForm = renderBootstrap3 $ (,)
+viewForm = renderBootstrap3 BootstrapBasicForm $ (,)
     <$> (either (const defaultFilter) id . parseFilterExpression . fromMaybe "" <$> aopt' textField "filter" Nothing)
     <*> (either (const defaultOrder) id . parseOrderExpression . fromMaybe "" <$> aopt' textField "sort" Nothing)
 
 projectConfirmSharesForm :: Maybe Int64 -> Form SharesPurchaseOrder
-projectConfirmSharesForm = renderBootstrap3 . fmap SharesPurchaseOrder . areq' hiddenField ""
+projectConfirmSharesForm = renderBootstrap3 BootstrapBasicForm . fmap SharesPurchaseOrder . areq' hiddenField ""

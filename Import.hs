@@ -23,16 +23,15 @@ import           Data.Maybe                    as Import (fromMaybe, listToMaybe
 import           Data.Set                      as Import (Set)
 import           Data.Text                     as Import (Text)
 import qualified Data.Text                     as T
-import qualified Data.Text.Lazy                as TL
 import           Data.Time.Clock               as Import (UTCTime, diffUTCTime, getCurrentTime)
 import           Data.Typeable (Typeable)
 import           Database.Esqueleto            as Import hiding (on, valList)
 import qualified Database.Esqueleto
 import           Prelude                       as Import hiding (head, init, last, readFile, tail, writeFile)
-import           Text.Blaze.Html.Renderer.Text (renderHtml)
 import           Yesod                         as Import hiding (Route (..), (||.), (==.), (!=.), (<.), (<=.), (>.), (>=.), (=.), (+=.), (-=.), (*=.), (/=.), selectSource, delete, update, count, Value, runDB)
 import           Yesod.Auth                    as Import
 import           Yesod.Markdown                as Import (Markdown)
+import           Yesod.Form.Bootstrap3         as Import
 
 import GHC.Exts (IsList(..))
 import qualified Data.Map as M
@@ -118,26 +117,6 @@ areq' :: (RenderMessage site FormMessage, HandlerSite m ~ site, MonadHandler m)
     -> AForm m a
 areq' a b = areq a (FieldSettings b Nothing Nothing Nothing [("class", "form-control")])
 
-renderBootstrap3 :: Monad m => FormRender m a
-renderBootstrap3 aform fragment = do
-    (res, views') <- aFormToForm aform
-    let views = views' []
-        has (Just _) = True
-        has Nothing  = False
-    let widget = [whamlet|
-                $newline never
-                \#{fragment}
-                $forall view <- views
-                    <div .form-group :fvRequired view:.required :not $ fvRequired view:.optional :has $ fvErrors view:.error>
-                        $if not ( TL.null ( Text.Blaze.Html.Renderer.Text.renderHtml ( fvLabel view )))
-                            <label for=#{fvId view}>#{fvLabel view}
-                        ^{fvInput view}
-                        $maybe tt <- fvTooltip view
-                            <span .help-block>#{tt}
-                        $maybe err <- fvErrors view
-                            <span .help-block>#{err}
-                |]
-    return (res, widget)
 
 radioField' :: (Eq a, RenderMessage site FormMessage)
            => HandlerT site IO (OptionList a)

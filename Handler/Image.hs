@@ -24,7 +24,7 @@ getImageMetaR image_handle = do
     defaultLayout $(widgetFile "image_metadata")
 
 uploadForm :: Form (Text, FileInfo)
-uploadForm = renderBootstrap3 $ (,)
+uploadForm = renderBootstrap3 BootstrapBasicForm $ (,)
     <$> areq textField "Image Name" Nothing
     <*> fileAFormReq "Image File"
 
@@ -60,7 +60,7 @@ postUploadImageR = do
 
 
 nameImageForm :: Maybe Text -> Form Text
-nameImageForm = renderBootstrap3 . areq textField "New Image Name"
+nameImageForm = renderBootstrap3 BootstrapBasicForm . areq textField "New Image Name"
 
 nameImage :: Text -> UnnamedImage -> Image
 nameImage name (UnnamedImage ts uploader project _ origin format contents) = Image ts uploader project name origin format contents
