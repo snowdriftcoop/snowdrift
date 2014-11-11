@@ -24,7 +24,7 @@ data NotificationPref = NotificationPref
     { -- 'NotifWelcome' and 'NotifEligEstablish' are not handled since
       -- they are delivered only once.
       notifBalanceLow        :: NonEmpty NotificationDelivery
-    , notifUnapprovedComment :: NonEmpty NotificationDelivery
+    , notifUnapprovedComment :: Maybe (NonEmpty NotificationDelivery)
     , notifRethreadedComment :: Maybe (NonEmpty NotificationDelivery)
     , notifReply             :: Maybe (NonEmpty NotificationDelivery)
     , notifEditConflict      :: NonEmpty NotificationDelivery
@@ -62,6 +62,12 @@ sendPreferredNotificationDB user_id notif_type mproject_id mcomment_id content =
         muser_email <- lift $ fetchUserEmail user_id
         -- XXX: Support 'NotifDeliverEmailDigest'.
         if | pref == NotifDeliverEmail && isJust muser_email ->
-             lift $ sendNotificationEmailDB notif_type user_id mproject_id content
-           | otherwise ->
-             sendNotificationDB_ notif_type user_id mproject_id mcomment_id content
+                 lift $ sendNotificationEmailDB notif_type user_id mproject_id content
+           | otherwise -> do
+                 r <- selectCount $ from $ \n -> do
+                          where_ $ n ^. NotificationType    ==. val notif_type
+                               &&. n ^. NotificationTo      ==. val user_id
+                               &&. n ^. NotificationProject `notDistinctFrom` val mproject_id
+                               &&. n ^. NotificationContent ==. val content
+                 when (r == 0) $
+                     sendNotificationDB_ notif_type user_id mproject_id mcomment_id content

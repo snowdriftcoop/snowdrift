@@ -410,8 +410,10 @@ getUserNotificationsR user_id = do
     mecon  <- fetchNotifPref NotifEditConflict
     mflag  <- fetchNotifPref NotifFlag
     mflagr <- fetchNotifPref NotifFlagRepost
+    is_moderator    <- runDB $ userIsModerator user_id
     (form, enctype) <- generateFormPost $
-        userNotificationsForm mbal mucom mrcom mrep mecon mflag mflagr
+        userNotificationsForm is_moderator
+            mbal mucom mrcom mrep mecon mflag mflagr
     defaultLayout $ do
         setTitle . toHtml $ "Notification preferences - " <>
             userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
@@ -420,9 +422,10 @@ getUserNotificationsR user_id = do
 postUserNotificationsR :: UserId -> Handler Html
 postUserNotificationsR user_id = do
     void $ checkEditUser user_id
+    is_moderator <- runDB $ userIsModerator user_id
     ((result, form), enctype) <- runFormPost $
-        userNotificationsForm Nothing Nothing Nothing Nothing
-                              Nothing Nothing Nothing
+        userNotificationsForm is_moderator
+            Nothing Nothing Nothing Nothing Nothing Nothing Nothing
     case result of
         FormSuccess notif_pref -> do
             runDB $ updateNotificationPrefDB user_id notif_pref

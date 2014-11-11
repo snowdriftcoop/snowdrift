@@ -8,7 +8,6 @@ import qualified Control.Exception.Lifted     as Exception
 import           Control.Monad.Logger         (runLoggingT, LoggingT, defaultLogStr)
 import           Control.Monad.Trans.Resource (runResourceT)
 import           Database.Esqueleto
-import           Database.Esqueleto.Internal.Sql (unsafeSqlBinOp)
 import qualified Data.ByteString.Char8        as Char8
 import           Data.List                    (intercalate)
 import qualified Database.Persist             as Persist
@@ -98,14 +97,9 @@ selectWithEmails =
                 , notification_email ^. NotificationEmailProject
                 , notification_email ^. NotificationEmailContent ))
 
-infix 4 `notDistinctFrom`
-notDistinctFrom :: SqlExpr (Value a) -> SqlExpr (Value a)
-                -> SqlExpr (Value Bool)
-notDistinctFrom = unsafeSqlBinOp " IS NOT DISTINCT FROM "
-
---- | Select all fields for users without email addresses such that
---- they could be inserted into the "notification" table without
---- creating duplicates.
+-- | Select all fields for users without email addresses such that
+-- they could be inserted into the "notification" table without
+-- creating duplicates.
 selectWithoutEmails :: (MonadResource m, MonadSqlPersist m)
                     => m [( Value UTCTime
                           , Value NotificationType
@@ -159,16 +153,13 @@ deleteWhere ts notif_type to mproject content =
     delete $ fromNotificationEmail ts notif_type to mproject content
 
 insertWhere :: ( MonadResource m, PersistStore m, MonadSqlPersist m
-               , PersistMonadBackend m ~ SqlBackend)
+               , PersistMonadBackend m ~ SqlBackend )
             => UTCTime -> NotificationType -> UserId -> Maybe ProjectId
             -> Markdown -> m ()
 insertWhere ts notif_type to mproject content = do
-    n <- fmap (\[Value n] -> n :: Int) $
-         select $ fromNotificationEmail ts notif_type to mproject content
-               >> return countRows
-    if n == 0
-        then insert_ $ NotificationEmail ts notif_type to mproject content
-        else return ()
+    n <- selectCount $ fromNotificationEmail ts notif_type to mproject content
+    when (n == 0) $
+        insert_ $ NotificationEmail ts notif_type to mproject content
 
 sendNotif :: (MonadResource m, MonadBaseControl IO m, MonadIO m, MonadLogger m)
           => PostgresConf -> PersistConfigPool PostgresConf

@@ -385,17 +385,17 @@ createUser ident passwd name email avatar nick = do
         void . insertMany $ uncurry (UserNotificationPref user_id) <$>
             -- 'NotifWelcome' is not set since it is delivered when a
             -- user is created.
-            [ (NotifEligEstablish,     NotifDeliverInternal)
+            [ (NotifEligEstablish,     NotifDeliverWebsite)
             , (NotifEligEstablish,     NotifDeliverEmail)
-            , (NotifBalanceLow,        NotifDeliverInternal)
+            , (NotifBalanceLow,        NotifDeliverWebsite)
             , (NotifBalanceLow,        NotifDeliverEmail)
             , (NotifUnapprovedComment, NotifDeliverEmail)
-            , (NotifRethreadedComment, NotifDeliverInternal)
+            , (NotifRethreadedComment, NotifDeliverWebsite)
             , (NotifReply,             NotifDeliverEmail)
-            , (NotifEditConflict,      NotifDeliverInternal)
-            , (NotifFlag,              NotifDeliverInternal)
+            , (NotifEditConflict,      NotifDeliverWebsite)
+            , (NotifFlag,              NotifDeliverWebsite)
             , (NotifFlag,              NotifDeliverEmail)
-            , (NotifFlagRepost,        NotifDeliverInternal)
+            , (NotifFlagRepost,        NotifDeliverWebsite)
             ]
 
 instance YesodJquery App

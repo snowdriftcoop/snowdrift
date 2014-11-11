@@ -149,7 +149,8 @@ userNameWidget user_id = do
 addTestCashForm :: Form Milray
 addTestCashForm = renderBootstrap3 BootstrapBasicForm $ fromInteger . (10000 *) <$> areq' intField "Add (fake) money to your account (in whole dollars)" (Just 10)
 
-userNotificationsForm :: Maybe (NonEmpty NotificationDelivery)
+userNotificationsForm :: Bool
+                      -> Maybe (NonEmpty NotificationDelivery)
                       -> Maybe (NonEmpty NotificationDelivery)
                       -> Maybe (NonEmpty NotificationDelivery)
                       -> Maybe (NonEmpty NotificationDelivery)
@@ -157,16 +158,20 @@ userNotificationsForm :: Maybe (NonEmpty NotificationDelivery)
                       -> Maybe (NonEmpty NotificationDelivery)
                       -> Maybe (NonEmpty NotificationDelivery)
                       -> Form NotificationPref
-userNotificationsForm mbal mucom mrcom mrep mecon mflag mflagr =
+userNotificationsForm is_moderator mbal mucom mrcom mrep mecon mflag mflagr =
     renderBootstrap3 (BootstrapHorizontalForm (ColSm 0) (ColSm 0) (ColSm 0) (ColSm 0)) $ NotificationPref
         <$> req "Low balance"                  mbal
-        <*> req "Unapproved comment"           mucom
+        <*> unapproved_comment
         <*> opt "Rethreaded comment"           mrcom
         <*> opt "Reply"                        mrep
         <*> req "Edit conflict"                mecon
         <*> req "Comment flagged"              mflag
         <*> opt "Flagged comment was reposted" mflagr
   where
+    unapproved_comment =
+        if is_moderator
+            then Just <$> req "Unapproved comment" mucom
+            else pure Nothing
     -- 'checkboxesFieldList' does not allow to work with 'NonEmpty'
     -- lists, so we have to work around that.
     req s xs = N.fromList <$> areq checkboxes s (N.toList <$> xs)
@@ -175,6 +180,6 @@ userNotificationsForm mbal mucom mrcom mrep mecon mflag mflagr =
     methods :: [(Text, NotificationDelivery)]
     methods =
         -- XXX: Support 'NotifDeliverEmailDigest'.
-        [ ("internal", NotifDeliverInternal)
-        , ("email",    NotifDeliverEmail)
+        [ ("website", NotifDeliverWebsite)
+        , ("email",   NotifDeliverEmail)
         ]

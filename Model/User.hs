@@ -10,6 +10,7 @@ module Model.User
     , userCanEditWikiPage
     , userIsEligibleEstablish
     , userIsEstablished
+    , userIsModerator
     , userIsUnestablished
     , userDisplayName
     -- Database actions
@@ -106,6 +107,9 @@ userIsEstablished = estIsEstablished . userEstablished
 -- | Is the user eligible for establishment?
 userIsEligibleEstablish :: User -> Bool
 userIsEligibleEstablish = estIsEligible . userEstablished
+
+userIsModerator :: UserId -> DB Bool
+userIsModerator user_id = elem Moderator <$> fetchAllUserRolesDB user_id
 
 -- | Is the user unestablished?
 userIsUnestablished :: User -> Bool
@@ -264,7 +268,7 @@ canMakeEligible :: UserId -> UserId -> Handler Bool
 canMakeEligible establishee_id establisher_id = do
     (establishee, establisher_is_mod) <- runYDB $ (,)
         <$> get404 establishee_id
-        <*> (elem Moderator <$> fetchAllUserRolesDB establisher_id)
+        <*> (userIsModerator establisher_id)
     return $ userIsUnestablished establishee && establisher_is_mod
 
 -- | Fetch a User's unarchived private Notifications.
@@ -289,7 +293,7 @@ fetchNotifs cond user_id =
 updateNotificationPrefDB :: UserId -> NotificationPref -> DB ()
 updateNotificationPrefDB user_id NotificationPref {..} = do
     updateNotifPrefs         NotifBalanceLow        notifBalanceLow
-    updateNotifPrefs         NotifUnapprovedComment notifUnapprovedComment
+    deleteOrUpdateNotifPrefs NotifUnapprovedComment notifUnapprovedComment
     deleteOrUpdateNotifPrefs NotifRethreadedComment notifRethreadedComment
     deleteOrUpdateNotifPrefs NotifReply             notifReply
     updateNotifPrefs         NotifEditConflict      notifEditConflict
@@ -461,11 +465,10 @@ fetchNumUnviewedWikiEditsOnProjectDB user_id project_id = fmap (M.fromList . map
     return (wp ^. WikiPageId, countRows')
 
 fetchNumUnreadNotificationsDB :: UserId -> DB Int
-fetchNumUnreadNotificationsDB user_id = fmap (\[Value n] -> n) $
-    select $
+fetchNumUnreadNotificationsDB user_id =
+    selectCount $
     from $ \(u `InnerJoin` n) -> do
     on_ (u ^. UserId ==. n ^. NotificationTo)
     where_ $
         u ^. UserId ==. val user_id &&.
         n ^. NotificationCreatedTs >=. u ^. UserReadNotifications
-    return countRows
