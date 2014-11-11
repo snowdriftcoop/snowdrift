@@ -941,16 +941,16 @@ getProjectFeedR project_handle = do
             shares_pledged                     = map entityVal (new_pledges <> (map snd updated_pledges))
             -- All users: comment posters, wiki page creators, etc.
             user_ids = S.toList $ mconcat
-                         [ S.fromList comment_users
-                         , S.fromList (map (commentClosingClosedBy . entityVal) closings)
-                         , S.fromList (map (rethreadModerator . entityVal) rethreads)
-                         , S.fromList wiki_edit_users
-                         , S.fromList blog_post_users
-                         , S.fromList (map (either (ticketClaimingUser . entityVal) (ticketOldClaimingUser . entityVal)) claimings)
-                         , S.fromList (map (ticketOldClaimingUser . entityVal) unclaimings)
-                         , S.fromList (map sharesPledgedUser shares_pledged)
-                         , S.fromList (map eventDeletedPledgeUser deleted_pledges)
-                         ]
+                        [ S.fromList comment_users
+                        , S.fromList (map (commentClosingClosedBy . entityVal) closings)
+                        , S.fromList (map (rethreadModerator . entityVal) rethreads)
+                        , S.fromList wiki_edit_users
+                        , S.fromList blog_post_users
+                        , S.fromList (map (either (ticketClaimingUser . entityVal) (ticketOldClaimingUser . entityVal)) claimings)
+                        , S.fromList (map (ticketOldClaimingUser . entityVal) unclaimings)
+                        , S.fromList (map sharesPledgedUser shares_pledged)
+                        , S.fromList (map eventDeletedPledgeUser deleted_pledges)
+                        ]
 
         discussion_map <- fetchProjectDiscussionsDB project_id >>= fetchDiscussionsDB
 

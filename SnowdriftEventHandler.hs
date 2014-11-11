@@ -46,36 +46,48 @@ notificationEventHandler AppConfig{..} (ECommentPosted comment_id comment) = cas
                         ]
 
 -- Notify all moderators of the project the comment was posted on.
-notificationEventHandler AppConfig{..} (ECommentPending comment_id comment) = do
-    runSDB $ do
-        discussion <- lift $ fetchDiscussionDB (commentDiscussion comment)
+-- Also notify the comment poster.
+notificationEventHandler AppConfig{..} (ECommentPending comment_id comment) = runSDB $ do
+    route_text <- lift (makeCommentRouteDB comment_id >>= lift . routeToText . fromJust)
 
-        let projectComment (Entity project_id project) = do
-                route_text <- (lift . lift) (routeToText (CommentDirectLinkR comment_id))
-                let content = mconcat
-                      [ "An unapproved comment has been posted on a "
-                      , Markdown (projectName project)
-                      , " page. Please view it [here]("
-                      , Markdown $ appRoot <> route_text
-                      , ")."
-                      ]
+    sendPreferredNotificationDB (commentUser comment) NotifUnapprovedComment Nothing Nothing $ mconcat
+        [ "Your [comment]("
+        , Markdown route_text
+        , ") now awaits moderator approval."
+        , "<br><br>"
+        , "When a moderator acknowledges you as a legitimate user "
+        , "(such as after you have posted a few meaningful comments), "
+        , "you will become eligible for 'establishment'. "
+        , "Established users can post without moderation."
+        ]
 
-                mods <- lift $ fetchProjectModeratorsDB project_id
-                F.forM_ mods $ \ user_id -> sendPreferredNotificationDB user_id NotifUnapprovedComment
-                    Nothing (Just comment_id) content
+    discussion <- lift $ fetchDiscussionDB $ commentDiscussion comment
 
-        case discussion of
-            DiscussionOnProject  project                 -> projectComment project
-            DiscussionOnWikiPage (Entity _ WikiPage{..}) -> projectComment =<< Entity wikiPageProject <$> getJust wikiPageProject
-            DiscussionOnUser _ -> error ""
-            -- TODO DiscussionOnUser user -> userComment user
+    let projectComment (Entity project_id project) = do
+            let content = mconcat
+                  [ "An unapproved comment has been posted on a "
+                  , Markdown (projectName project)
+                  , " page. Please view it [here]("
+                  , Markdown $ appRoot <> route_text
+                  , ")."
+                  ]
 
-{-
-    userComment (Entity user_id user) = do
-        route_text <- (lift . lift) (routeToText (CommentDirectLinkR comment_id)) -- TODO(mitchell): don't use direct link?
-        let content = "An unapproved comment has been posted on your user discussion page.  Please view it [here](" <> Markdown route_text <> ")."
-        sendNotificationDB NotifUnapprovedComment user_id Nothing content >>= insert_ . UnapprovedCommentNotification comment_id
--}
+            mods <- lift $ fetchProjectModeratorsDB project_id
+            F.forM_ mods $ \ user_id -> sendPreferredNotificationDB user_id NotifUnapprovedComment
+                Nothing (Just comment_id) content
+
+    case discussion of
+        DiscussionOnProject  project                 -> projectComment project
+        DiscussionOnWikiPage (Entity _ WikiPage{..}) -> projectComment =<< Entity wikiPageProject <$> getJust wikiPageProject
+        DiscussionOnUser _ -> error ""
+
+notificationEventHandler AppConfig{..} (ECommentApproved comment_id comment) = runSDB $ do
+    route_text <- lift (makeCommentRouteDB comment_id >>= lift . routeToText . fromJust)
+    sendPreferredNotificationDB (commentUser comment) NotifApprovedComment Nothing Nothing $ mconcat
+        [ "Your [comment]("
+        , Markdown route_text
+        , ") has been approved."
+        ]
 
 -- Notify the rethreadee his/her comment has been rethreaded.
 notificationEventHandler AppConfig{..} (ECommentRethreaded _ Rethread{..}) = do
@@ -136,3 +148,6 @@ eventInserterHandler (ENewPledge shares_pledged_id SharesPledged{..})           
 eventInserterHandler (EUpdatedPledge old_shares shares_pledged_id SharesPledged{..}) = runDB (insert_ (EventUpdatedPledge sharesPledgedTs old_shares shares_pledged_id))
 eventInserterHandler (EDeletedPledge ts user_id project_id shares)                   = runDB (insert_ (EventDeletedPledge ts user_id project_id shares))
 eventInserterHandler (EBlogPost post_id BlogPost{..})                                = runDB (insert_ (EventBlogPost blogPostTs post_id))
+
+-- We don't have a table for ECommentApproved, because ECommentPosted is fired at the same time.
+eventInserterHandler (ECommentApproved _ _) = return ()

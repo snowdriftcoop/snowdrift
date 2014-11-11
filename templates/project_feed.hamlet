@@ -38,8 +38,9 @@ $forall event <- events
         $# Graveyard of event types we don't want to put on the feed.
         $# Don't match-all here, we don't want to accidentally not consider something.
 
-        $of ENotificationSent _ _
+        $of ECommentApproved _ _
         $of ECommentPending _ _
+        $of ENotificationSent _ _
 
 $maybe next_before <- mnext_before
     <a href=@?{(ProjectFeedR project_handle, [("before", next_before)])}>next page
