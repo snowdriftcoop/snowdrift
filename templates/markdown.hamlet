@@ -6,9 +6,10 @@
     <em> Note: you can also use standard HTML within Markdown.
 <p>
     See
-    <a href="http://www.johnmacfarlane.net/pandoc/README#pandocs-markdown"> Pandoc's Markdown
+    <strong>
+        <a href="http://www.johnmacfarlane.net/pandoc/README#pandocs-markdown"> Pandoc's Markdown
     for more options and details,
-    such as <a href="http://www.johnmacfarlane.net/pandoc/README#verbatim-code-blocks"> code blocks</a>,
+    including <a href="http://www.johnmacfarlane.net/pandoc/README#verbatim"> verbatim spans</a>, <a href="http://www.johnmacfarlane.net/pandoc/README#verbatim-code-blocks"> code blocks</a>,
     <a href="http://www.johnmacfarlane.net/pandoc/README#pipe-tables"> tables
     (note: our site requires the "pipe" table format), and much more.
 <p>

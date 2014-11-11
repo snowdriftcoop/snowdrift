@@ -36,11 +36,12 @@ Note: our code is mirrored at
 [GitHub](https://github.com/dlthomas/snowdrift) (which is popular but proprietary)
 and [Gitorious](https://gitorious.org/snowdrift/snowdrift) (which is FLO, licensed AGPL, but less popular).
 
-**Our full [guide to our code](GUIDE.md) has step-by-step instructions that even a true beginner can follow.**
+**You really should read our full [guide to our code](GUIDE.md)
+which has step-by-step instructions that even a true beginner can follow.**
 It also contains links for learning Haskell, comments about our development methods, and more.
 
-For those experienced with Git, Haskell, PostgreSQL, and perhaps even Yesod,
-here's some quick and dirty minimal instructions get started:
+But for those experienced with Git, Haskell, PostgreSQL, and perhaps even Yesod,
+here's quick and dirty minimal instructions to get started:
 
 ```
 // Install any dependencies you don't have:

@@ -1,11 +1,11 @@
 .comment
     padding : 0 1em
-    margin: 2em
+    margin : 1.5em 0
     border-bottom-left-radius : 0.8em
     font-size : small
 
 .comment p, .comment ul, .comment ol, .comment h1, .comment h2, .comment h3, .comment h4, .comment h5, .comment h6
-    margin : 0
+    margin : unset
 
 .comment figure
     text-align : left

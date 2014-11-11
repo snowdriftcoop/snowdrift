@@ -6,8 +6,9 @@ This guide covers the [Snowdrift.coop](https://snowdrift.coop) codebase and deve
 Step-by-step instructions require no more than beginning-level programming or web designer experience.
 
 This guide assumes you are running a GNU/Linux system and have at least a *basic* understanding of command-line operations.
-If you are on a different system or need any other help, come say "hi" at #snowdrift on [freenode.net](http://webchat.freenode.net/?channels=#snowdrift). We are always happy to assist and answer *any* questions!
-                                                                                                                                        
+If you are on a different system or need *any* other help, come say "hi" at our freenode.net IRC channel [#snowdrift](https://snowdrift.coop/p/snowdrift/w/irc).
+We are always happy to assist and answer *any* questions!
+
 
 About the frameworks and tools we use
 =====================================
@@ -78,7 +79,7 @@ Use of NoScript should never causes a broken experience.
 We also make sure all our JavaScript is recognized
 by the FSF's [LibreJS plugin](https://www.gnu.org/software/librejs/).
 
-We have a separate wiki and discussion pages on the site
+We have separate wiki and discussion pages on the site
 for [web-design issues](https://snowdrift.coop/p/snowdrift/w/site-design)
 and [coding issues](https://snowdrift.coop/p/snowdrift/w/coding).
 We also have a complete [list of tickets](https://snowdrift.coop/p/snowdrift/t) in all categories.
@@ -176,12 +177,15 @@ Then, initiate a cabal sandbox:
 
     cabal sandbox init
 
-Install dependencies and build Snowdrift:
+Install dependencies and build Snowdrift (note: the -j flag makes faster by using all processor cores):
 
-    cabal install --enable-tests
+    cabal install --enable-tests -j
 
 This will take a *long* time but should ultimately tell you it installed Snowdrift.
-(Contact us for help if it says otherwise)
+Note: you can add the `-fdev` flag to the install command to skip optimization;
+then the live site will run slower, but the building will go faster.
+
+Contact us for help if the build is not successful.
 
 
 Setting up the database
@@ -204,16 +208,17 @@ you can start the server from within your snowdrift directory with the command:
 
 To stop the running server, press ctrl-C
 
-To rebuild the site after changes to the code, run `cabal install` before starting the server.
+To rebuild after code changes, run `cabal install -j` (perhaps with `-fdev` to skip optimization). 
 
-Alternately, the `yesod devel` command combines an efficient rebuild and server start
-that will automatically update your build after each saved change to any file.
-                                             
+Alternately, you can use `yesod devel` to start the server,
+and it can stay running and will automatically update the build after each saved change.
+(Although it fails to auto-recognize changes in some file types like .cassius) 
+
 To enable yesod devel, first install yesod-bin:
 
     cabal install yesod-bin
 
-From now on, you can rebuild and start the server with:
+Then, you can rebuild and start the server with:
 
     yesod devel
 
@@ -222,7 +227,7 @@ To stop yesod devel, press ENTER
 After the server starts, it may print a bunch of text about creating tables,
 and it will then sit ready, waiting for connections.
 Note that `yesod devel` builds just the library.
-When you need to update an executable, use `cabal install`.
+When you need to update an executable, use cabal install.
 
 
 Using the live test site
