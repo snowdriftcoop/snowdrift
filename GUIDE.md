@@ -95,7 +95,7 @@ Working on the code
 See the main [Git documentation](http://git-scm.com/documentation) if you are new to Git.
 You only need rudimentary understanding of Git to start contributing to our code.
 It will help to understand basic branching so that you can segregate work on different features.
-                                                                      
+
 Cloning the repository
 ----------------------
 
@@ -208,11 +208,11 @@ you can start the server from within your snowdrift directory with the command:
 
 To stop the running server, press ctrl-C
 
-To rebuild after code changes, run `cabal install -j` (perhaps with `-fdev` to skip optimization). 
+To rebuild after code changes, run `cabal install -j` (perhaps with `-fdev` to skip optimization).
 
 Alternately, you can use `yesod devel` to start the server,
 and it can stay running and will automatically update the build after each saved change.
-(Although it fails to auto-recognize changes in some file types like .cassius) 
+(Although it fails to auto-recognize changes in some file types like .cassius)
 
 To enable yesod devel, first install yesod-bin:
 
@@ -289,7 +289,7 @@ In the course of testing and/or resetting your database, you might generate extr
 When that happens, be sure to reset your database and remove any extraneous migration files.
 Once you have a final version of the code, you can run the site once to generate the correct final migration.
 
-Ideally consolidate all migrations so there is only one migration file per commit. 
+Ideally consolidate all migrations so there is only one migration file per commit.
 
 Make sure to add the associated migration file to git when you commit the corresponding schema changes.
 
@@ -407,7 +407,7 @@ from the "Setting up" section above.
 First the "Create snowdrift database" command:
 
     sudo -u postgres createdb snowdrift_development
-    
+
 and then the "Import development database" command:
 
     sudo -u postgres psql snowdrift_development <devDB.sql
@@ -463,7 +463,7 @@ Go to the postgres=# prompt:
 Unmark the template (don't include the postgres=# prompt part):
 
     postgres=# update pg_database set datistemplate=false where datname='snowdrift_test_template';
-          
+
 Use ctrl-D to leave the prompt.
 
 Drop the template DB:
