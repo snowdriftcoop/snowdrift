@@ -8,7 +8,6 @@ a:visited
     color : #2061F6
 
 img
-    padding : 0.8em
     max-width: 100%
     height: auto
 
@@ -142,12 +141,7 @@ dd
 
 
 .headshot
-    margin-top : 0.5em
-    max-width : 8em
-
-.headshot_large
-    margin-top : 0.5em
-    width : 12em
+    max-height : 10em
 
 .bio_name
     text-align : center
@@ -203,6 +197,7 @@ td
 
 figure
     text-align : center
+    padding : 5px
 
 .tagcloud span
     display : block
