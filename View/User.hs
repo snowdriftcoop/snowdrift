@@ -160,17 +160,18 @@ userNotificationsForm :: Bool
                       -> Form NotificationPref
 userNotificationsForm is_moderator mbal mucom mrcom mrep mecon mflag mflagr =
     renderBootstrap3 (BootstrapHorizontalForm (ColSm 0) (ColSm 0) (ColSm 0) (ColSm 0)) $ NotificationPref
-        <$> req "Low balance"                  mbal
+        <$> req "You have a low balance (less than 3 months funds at current pledge levels)"
+                                               mbal
         <*> unapproved_comment
-        <*> opt "Rethreaded comment"           mrcom
-        <*> opt "Reply"                        mrep
-        <*> req "Edit conflict"                mecon
-        <*> req "Comment flagged"              mflag
-        <*> opt "Flagged comment was reposted" mflagr
+        <*> opt "Your comment gets rethreaded/moved"           mrcom
+        <*> opt "Reply posted to watched thread"                        mrep
+        <*> req "Your wiki post has an edit conflict"                mecon
+        <*> req "Your comment gets flagged"              mflag
+        <*> opt "A comment you flagged gets reposted" mflagr
   where
     unapproved_comment =
         if is_moderator
-            then Just <$> req "Unapproved comment" mucom
+            then Just <$> req "An new comment awaits moderator approval" mucom
             else pure Nothing
     -- 'checkboxesFieldList' does not allow to work with 'NonEmpty'
     -- lists, so we have to work around that.
