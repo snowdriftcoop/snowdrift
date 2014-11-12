@@ -1,3 +1,6 @@
+<h1>
+    <div .text-center> Project Participants
+
 $forall Entity user_id user <- members
     <hr>
     <div .row>
