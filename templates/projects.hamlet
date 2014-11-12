@@ -1,3 +1,6 @@
+<h1> 
+    <center> Projects
+
 $if null projects
     <p> no projects to display
 $else
