@@ -38,6 +38,8 @@ getJsLicenseR = do
     defaultLayout $ do
         setTitle "Javascript Licenses | Snowdrift.coop"
         [whamlet|
+            <h1> Javascript Licenses
+                
             <table .table id="jslicense-labels1">
                 $forall lib <- libs
                     <tr>

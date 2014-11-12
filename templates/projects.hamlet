@@ -1,5 +1,5 @@
 <h1> 
-    Projects
+    <div .text-center> Projects
 
 $if null projects
     <p> no projects to display
