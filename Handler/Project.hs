@@ -1179,7 +1179,7 @@ getUpdateSharesR project_handle = do
 postUpdateSharesR :: Text -> Handler Html
 postUpdateSharesR project_handle = do
     ((result, _), _) <- runFormPost $ projectConfirmSharesForm Nothing
-    isConfirmed <- runInputPost $ ireq boolField "confirm"
+    isConfirmed <- maybe False (T.isPrefixOf "yes") <$> lookupPostParam "confirm"
 
     case result of
         FormSuccess (SharesPurchaseOrder shares) -> do
