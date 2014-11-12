@@ -9,7 +9,8 @@ $maybe Entity _ pledge <- mpledge
 
         <form method=POST action=@{UpdateSharesR project_handle}>
             ^{confirm_form}
-            <input type=submit value="Yes!">
+            <input type=submit name=confirm value="yes!">
+            <input type=submit name=confirm value="not yet, take me back&hellip;">
 
     $else
         <p>
@@ -24,7 +25,8 @@ $maybe Entity _ pledge <- mpledge
 
         <form method=POST action=@{UpdateSharesR project_handle}>
             ^{confirm_form}
-            <input type=submit value="Yes.">
+            <input type=submit name=confirm value="yes">
+            <input type=submit name=confirm value="nevermind, take me back">
 
 $nothing
     <p>
@@ -32,4 +34,5 @@ $nothing
 
     <form method=POST action=@{UpdateSharesR project_handle}>
         ^{confirm_form}
-        <input type=submit value="Yes!">
+        <input type=submit name=confirm value="yes!">
+        <input type=submit name=confirm value="not yet, take me back&hellip;">

@@ -257,12 +257,18 @@ renderWikiEditEvent project_handle edit_id wiki_edit wiki_page_map user_map = do
     |]
 
 renderBlogPostEvent :: BlogPost -> Widget
-renderBlogPostEvent (BlogPost {..}) =
+renderBlogPostEvent (BlogPost {..}) = do
+    maybe_project <- handlerToWidget $ runYDB $ get blogPostProject
+
     [whamlet|
         <div .event>
             ^{renderTime blogPostTs}
             New blog post: #
-            <a href=@{ProjectBlogR blogPostHandle}>
+            $maybe Project{projectHandle = project_handle} <- maybe_project
+                <a href=@{ProjectBlogPostR project_handle blogPostHandle}>
+                    #{blogPostTitle}
+
+            $nothing
                 #{blogPostTitle}
     |]
 
