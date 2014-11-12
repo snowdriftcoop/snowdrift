@@ -39,6 +39,9 @@ input[type=submit]:active, button:active
 input[type=text], input[type=email]
     width : 30em
 
+input[type=number]
+    width : unset
+
 .radio-inline
     width : 2em
     vertical-align : unset
