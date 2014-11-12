@@ -6,6 +6,7 @@ import Import
 
 import Data.Filter
 import Data.Order
+import Data.Time.Format
 import Handler.Comment
 import Handler.Discussion
 import Handler.Utils
@@ -27,6 +28,7 @@ import Model.Shares
 import Model.SnowdriftEvent
 import Model.User
 import Model.Wiki
+import System.Locale (defaultTimeLocale)
 import View.Comment
 import View.PledgeButton
 import View.Project
@@ -1177,31 +1179,34 @@ getUpdateSharesR project_handle = do
 postUpdateSharesR :: Text -> Handler Html
 postUpdateSharesR project_handle = do
     ((result, _), _) <- runFormPost $ projectConfirmSharesForm Nothing
+    isConfirmed <- runInputPost $ ireq boolField "confirm"
 
     case result of
         FormSuccess (SharesPurchaseOrder shares) -> do
             -- TODO - refuse negative
-            Just pledge_render_id <- fmap (read . T.unpack) <$> lookupSession pledgeRenderKey
+            if isConfirmed
+                then do
+                    Just pledge_render_id <- fmap (read . T.unpack) <$> lookupSession pledgeRenderKey
 
-            success <- runSYDB $ do
-                Entity user_id user <- lift (lift requireAuth)
-                Just account <- lift $ get (userAccount user)
-                Entity project_id project <- lift $ getBy404 (UniqueProjectHandle project_handle)
+                    success <- runSYDB $ do
+                        Entity user_id user <- lift (lift requireAuth)
+                        Just account <- lift $ get (userAccount user)
+                        Entity project_id project <- lift $ getBy404 (UniqueProjectHandle project_handle)
 
-                let user_outlay = projectShareValue project $* fromIntegral shares :: Milray
-                if accountBalance account < user_outlay $* 3
-                    then return False
-                    else do
-                        insertProjectPledgeDB user_id project_id shares pledge_render_id
-                        lift (updateShareValue project_id)
-                        return True
+                        let user_outlay = projectShareValue project $* fromIntegral shares :: Milray
+                        if accountBalance account < user_outlay $* 3
+                            then return False
+                            else do
+                                insertProjectPledgeDB user_id project_id shares pledge_render_id
+                                lift (updateShareValue project_id)
+                                return True
 
-            if success
-               then alertSuccess ("you have pledged " <> T.pack (show shares) <> " shares of support to this project")
-               else alertWarning "Sorry, you must have funds to support your pledge for at least 3 months at current share value. Please deposit additional funds to your account."
+                    if success
+                       then alertSuccess ("you have pledged " <> T.pack (show shares) <> " shares of support to this project")
+                       else alertWarning "Sorry, you must have funds to support your pledge for at least 3 months at current share value. Please deposit additional funds to your account."
 
-            redirect (ProjectR project_handle)
-
+                    redirect (ProjectR project_handle)
+                else redirect (ProjectR project_handle)
         _ -> do
             alertDanger "error occurred in form submission"
             redirect (UpdateSharesR project_handle)
