@@ -40,8 +40,9 @@ EmailVerification
     ver_uri   Text
     ver_email Text     -- user's email at the time when 'ver_uri' was generated
     user      UserId
+    sent      Bool   default=false  -- was it sent by the email daemon?
 
-    UniqueEmailVerification ver_uri user
+    UniqueEmailVerification user ver_email ver_uri
 
 -- A single notification preference. If some NotificationType does not appear in any
 -- row for a particular user, that means the user does not wish to be notified
