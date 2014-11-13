@@ -204,11 +204,11 @@ selectWithEmails =
     select $ from $ \(ev `InnerJoin` u) -> do
         on $ ev ^. EmailVerificationUser ==. u ^. UserId
         where_ $ not_ (isNothing $ u ^. UserEmail)
-             &&. u ^. UserEmail ==. (just $ ev ^. EmailVerificationVer_email)
+             &&. u ^. UserEmail ==. (just $ ev ^. EmailVerificationEmail)
              &&. not_ (ev ^. EmailVerificationSent)
         return ( u  ^. UserId
                , u  ^. UserEmail
-               , ev ^. EmailVerificationVer_uri )
+               , ev ^. EmailVerificationUri )
 
 selectWithoutEmails :: (MonadResource m, MonadSqlPersist m) => m [UserId]
 selectWithoutEmails =
@@ -231,26 +231,26 @@ selectWithNonMatchingEmails =
     select $ from $ \(ev `InnerJoin` u) -> do
         on $ ev ^. EmailVerificationUser ==. u ^. UserId
         where_ $ not_ (isNothing $ u ^. UserEmail)
-             &&. u ^. UserEmail !=. just (ev ^. EmailVerificationVer_email)
+             &&. u ^. UserEmail !=. just (ev ^. EmailVerificationEmail)
         return ( ev ^. EmailVerificationUser
-               , ev ^. EmailVerificationVer_email )
+               , ev ^. EmailVerificationEmail )
 
 deleteWithNonMatchingEmails :: (MonadResource m, MonadSqlPersist m) => m ()
 deleteWithNonMatchingEmails = do
     non_matching <- selectWithNonMatchingEmails
     forM_ non_matching $ \(user, email) ->
         delete $ from $ \ev ->
-            where_ $ ev ^. EmailVerificationUser      ==. val user
-                 &&. ev ^. EmailVerificationVer_email ==. val email
+            where_ $ ev ^. EmailVerificationUser  ==. val user
+                 &&. ev ^. EmailVerificationEmail ==. val email
 
 markAsSentVerification :: (MonadResource m, MonadSqlPersist m)
                        => UserId -> Email -> Text -> m ()
 markAsSentVerification user_id user_email ver_uri =
     update $ \v -> do
         set v [EmailVerificationSent =. val True]
-        where_ $ v ^. EmailVerificationUser      ==. val user_id
-             &&. v ^. EmailVerificationVer_email ==. val user_email
-             &&. v ^. EmailVerificationVer_uri   ==. val ver_uri
+        where_ $ v ^. EmailVerificationUser  ==. val user_id
+             &&. v ^. EmailVerificationEmail ==. val user_email
+             &&. v ^. EmailVerificationUri   ==. val ver_uri
 
 sendVerification :: (MonadResource m, MonadBaseControl IO m, MonadIO m, MonadLogger m)
                  => PostgresConf -> PersistConfigPool PostgresConf

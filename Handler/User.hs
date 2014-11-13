@@ -81,7 +81,7 @@ startEmailVerification user_id user_email = do
     hash    <- liftIO newHash
     ver_uri <- getUrlRender <*> (pure $ UserVerifyEmailR user_id hash)
     runDB $ do
-        insert_ $ EmailVerification ver_uri user_email user_id False
+        insert_ $ EmailVerification user_id user_email ver_uri False
         update $ \u -> do
             set u $ [UserEmail_verified =. val False]
             where_ $ u ^. UserId ==. val user_id

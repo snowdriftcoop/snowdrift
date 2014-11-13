@@ -171,9 +171,9 @@ fetchVerEmail :: Text -> UserId -> DB (Maybe Text)
 fetchVerEmail ver_uri user_id = do
     emails <- fmap (map unValue) $
               select $ from $ \ev -> do
-                  where_ $ ev ^. EmailVerificationVer_uri ==. val ver_uri
-                       &&. ev ^. EmailVerificationUser    ==. val user_id
-                  return $ ev ^. EmailVerificationVer_email
+                  where_ $ ev ^. EmailVerificationUser ==. val user_id
+                       &&. ev ^. EmailVerificationUri  ==. val ver_uri
+                  return $ ev ^. EmailVerificationEmail
     if L.null emails
         then return $ Nothing
         else return $ Just $ L.head emails

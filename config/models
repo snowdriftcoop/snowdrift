@@ -37,12 +37,12 @@ User
     deriving Show Typeable
 
 EmailVerification
-    ver_uri   Text
-    ver_email Text     -- user's email at the time when 'ver_uri' was generated
-    user      UserId
-    sent      Bool   default=false  -- was it sent by the email daemon?
+    user  UserId
+    email Text   -- user's email at the time when the 'uri' was generated
+    uri   Text                  -- verification link
+    sent  Bool   default=false  -- was it sent by the email daemon?
 
-    UniqueEmailVerification user ver_email ver_uri
+    UniqueEmailVerification user email uri
 
 -- A single notification preference. If some NotificationType does not appear in any
 -- row for a particular user, that means the user does not wish to be notified
