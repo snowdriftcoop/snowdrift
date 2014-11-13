@@ -46,6 +46,7 @@ library
                      Model.Permission
                      Model.Project
                      Model.Project.Sql
+                     Model.ResetPassword 
                      Model.Role
                      Model.Settings
                      Model.Shares
@@ -78,6 +79,7 @@ library
                      Handler.Privacy
                      Handler.Project
                      Handler.RepoFeed
+                     Handler.ResetPassword
                      Handler.ToU
                      Handler.User
                      Handler.User.Comment
@@ -93,6 +95,7 @@ library
                      View.Wiki
                      View.PledgeButton
                      View.Project
+                     View.ResetPassword
                      Version
                      Widgets.Doc
                      Widgets.Markdown
@@ -293,6 +296,7 @@ executable         SnowdriftEmailDaemon
                      , persistent
                      , persistent-postgresql
                      , persistent-template
+                     , random
                      , resourcet
                      , semigroups
                      , shakespeare

@@ -9,6 +9,7 @@ import           Handler.User.Comment
 import           Model.Comment.ActionPermissions
 import           Model.Notification.Internal (NotificationType (..))
 import           Model.Role
+import           Model.ResetPassword (fromResetPassword, deleteFromResetPassword)
 import           Model.Transaction
 import           Model.User
 import           Model.Comment.Sql
@@ -24,8 +25,6 @@ import           Data.Maybe           (fromJust)
 import qualified Data.Maybe           as Maybe
 import qualified Data.Set             as S
 import qualified Data.Text            as T
-import           Network.Mail.Mime    (randomString)
-import           System.Random        (newStdGen)
 import           Text.Cassius         (cassiusFile)
 import           Yesod.Auth.HashDB    (setPassword, validateUser)
 
@@ -73,9 +72,6 @@ getUserCreateR = do
                 ^{form}
                 <input type=submit>
         |]
-
-newHash :: IO Text
-newHash = T.pack . fst . randomString 42 <$> newStdGen
 
 startEmailVerification :: UserId -> Text -> HandlerT App IO ()
 startEmailVerification user_id user_email = do
@@ -290,6 +286,21 @@ getUserChangePasswordR user_id = do
             userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
         $(widgetFile "change_password")
 
+resetPassword :: RedirectUrl App route
+              => UserId -> User -> Text -> Text -> route -> Handler Html
+resetPassword user_id user password password' route =
+    if password == password'
+        then do
+            user' <- setPassword password user
+            runDB $ do
+                updateUserPasswordDB user_id (userHash user') (userSalt user')
+                deleteFromResetPassword user_id
+            alertSuccess "Successfully updated the password."
+            redirect $ AuthR LoginR
+        else do
+            alertDanger "Passwords do not match."
+            redirect route
+
 postUserChangePasswordR :: UserId -> Handler Html
 postUserChangePasswordR user_id = do
     void $ checkEditUser user_id
@@ -300,17 +311,8 @@ postUserChangePasswordR user_id = do
             is_valid_password <- validateUser (UniqueUser $ userIdent user)
                                      currentPassword
             if is_valid_password
-                then if newPassword == newPassword'
-                         then do
-                             user' <- setPassword newPassword user
-                             runDB $ updateUserPasswordDB user_id
-                                 (userHash user') (userSalt user')
-                             alertSuccess "Successfully updated the password."
-                             redirect $ UserR user_id
-                         else do
-                             alertDanger "Passwords do not match."
-                             defaultLayout $(widgetFile "change_password")
-
+                then resetPassword user_id user newPassword newPassword' $
+                         UserChangePasswordR user_id
                 else do
                     alertDanger "Incorrect current password."
                     defaultLayout $(widgetFile "change_password")
@@ -528,3 +530,31 @@ postUserNotificationsR user_id = do
             alertDanger $ "Failed to update the notification preferences. "
                        <> "Please try again."
             defaultLayout $(widgetFile "user_notifications")
+
+--------------------------------------------------------------------------------
+-- /#UserId/reset-password/#Text
+
+getUserResetPasswordR :: UserId -> Text -> Handler Html
+getUserResetPasswordR user_id hash = do
+    n <- runDB $ selectCount $ fromResetPassword user_id
+    if n == 0
+        then notFound
+        else do
+            user <- runYDB $ get404 user_id
+            (form, enctype) <- generateFormPost setPasswordForm
+            defaultLayout $ do
+                setTitle . toHtml $ "Set Password - " <>
+                    userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
+                $(widgetFile "set_password")
+
+postUserResetPasswordR :: UserId -> Text -> Handler Html
+postUserResetPasswordR user_id hash = do
+    ((result, form), enctype) <- runFormPost setPasswordForm
+    case result of
+        FormSuccess SetPassword {..} -> do
+            user <- runYDB $ get404 user_id
+            resetPassword user_id user password password' $
+                UserResetPasswordR user_id hash
+        _ -> do
+            alertDanger "Failed to set the password."
+            defaultLayout $(widgetFile "set_password")

@@ -26,6 +26,11 @@ data ChangePassword = ChangePassword
     , newPassword'    :: Text
     }
 
+data SetPassword = SetPassword
+    { password  :: Text
+    , password' :: Text
+    }
+
 data NotificationPref = NotificationPref
     { -- 'NotifWelcome' and 'NotifEligEstablish' are not handled since
       -- they are delivered only once.

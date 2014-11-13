@@ -12,6 +12,7 @@
 /honor-pledge       HonorPledgeR      GET POST
 /license/javascript JsLicenseR        GET
 /priv               PrivacyR          GET
+/reset-password     ResetPasswordR    GET POST
 /tou                ToUR              GET
 /tutorial/markdown  MarkdownTutorialR GET
 
@@ -52,6 +53,7 @@
 /u/#UserId/elig                         UserEstEligibleR          POST
 /u/#UserId/notifications                UserNotificationsR    GET POST
 /u/#UserId/pledges                      UserPledgesR          GET
+/u/#UserId/reset-password/#Text         UserResetPasswordR    GET POST
 /u/#UserId/verify-email/#Text           UserVerifyEmailR      GET
 
 -- Notifications

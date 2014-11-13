@@ -314,8 +314,11 @@ snowdriftAuthHashDB =
                                 Passphrase:
                             <div .col-sm-8>
                                 <input .form-control type="password" name="password" required>
-                        <figure>
-                            <input type="submit" value="Log in">
+                        <div .form-group>
+                            <div .col-sm-offset-4 .col-sm-8>
+                                <input type="submit" value="Log in">
+                                <a href="@{ResetPasswordR}" .text-nowrap>
+                                    forgot your password?
             |]
      in auth { apLogin = login }
 

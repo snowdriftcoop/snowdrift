@@ -6,6 +6,7 @@ module View.User
     , establishUserForm
     , previewUserForm
     , renderUser
+    , setPasswordForm
     , userNameWidget
     , userNotificationsForm
     ) where
@@ -136,6 +137,11 @@ renderUser mviewer_id user_id user projects_and_roles = do
             else return Nothing
 
     $(widgetFile "user")
+
+setPasswordForm :: Form SetPassword
+setPasswordForm = renderBootstrap3 $ SetPassword
+    <$> areq' passwordField "New password" Nothing
+    <*> areq' passwordField "Repeat"       Nothing
 
 hiddenMarkdown :: Maybe Markdown -> AForm Handler (Maybe Markdown)
 hiddenMarkdown Nothing               = fmap (fmap Markdown) $ aopt hiddenField "" Nothing

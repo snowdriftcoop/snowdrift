@@ -10,7 +10,8 @@ import           Control.Monad.Logger         (runLoggingT, LoggingT, defaultLog
 import           Control.Monad.Trans.Resource (runResourceT)
 import           Database.Esqueleto
 import qualified Data.ByteString.Char8        as Char8
-import           Data.List                    (intercalate)
+import qualified Data.Function                as Function
+import           Data.List                    (intercalate, nubBy)
 import qualified Database.Persist             as Persist
 import           Database.Persist.Postgresql  (PostgresConf)
 import qualified Data.Text                    as Text
@@ -266,6 +267,38 @@ sendVerification dbConf poolConf verif_email user_id user_email ver_uri = do
         ("sending the email verification message to " <> user_email <>
          " failed; will try again later")
 
+selectUnsentResetPassword :: (MonadResource m, MonadSqlPersist m)
+                          => m [(UserId, Email, Text)]
+selectUnsentResetPassword =
+    fmap (distinctFirst . map unwrapValues) $
+    select $ from $ \rp -> do
+        where_ $ not_ $ rp ^. ResetPasswordSent
+        return ( rp ^. ResetPasswordUser
+               , rp ^. ResetPasswordEmail
+               , rp ^. ResetPasswordUri )
+  where
+    -- 'nub' is O(n^2).
+    distinctFirst = nubBy ((==) `Function.on` (\(x,_,_) -> x))
+
+markAsSentResetPassword :: (MonadResource m, MonadSqlPersist m)
+                        => UserId -> m ()
+markAsSentResetPassword user_id =
+    update $ \rp -> do
+        set rp [ResetPasswordSent =. val True]
+        where_ $ rp ^. ResetPasswordUser ==. val user_id
+
+sendResetPassword :: (MonadResource m, MonadBaseControl IO m, MonadLogger m)
+                  => PostgresConf -> ConnectionPool -> Email -> Email
+                  -> UserId -> Text -> m ()
+sendResetPassword dbConf poolConf notif_email user_email user_id uri = do
+    let content = "Please open this link to set the new password: " <> uri
+    handleSendmail dbConf poolConf
+        ("sending a password reset message to " <> user_email <> "\n" <> content)
+        notif_email user_email "Snowdrift.coop password reset" content
+        (markAsSentResetPassword user_id)
+        ("sending the password reset message to " <> user_email <> " failed; " <>
+         "will try again later")
+
 withLogging :: MonadIO m => LoggingT m a -> m a
 withLogging m = runLoggingT m $ \loc src level str ->
     let out = if level == LevelError then stderr else stdout
@@ -307,3 +340,6 @@ main = withLogging $ do
         verifs <- runPool dbConf action' poolConf
         forM_ verifs $ \(user_id, Just user_email, ver_uri) ->
             sendVerification dbConf poolConf notif_email user_id user_email ver_uri
+        resets <- runPool dbConf selectUnsentResetPassword poolConf
+        forM_ resets $ \(user_id, user_email, uri) ->
+            sendResetPassword dbConf poolConf notif_email user_email user_id uri

@@ -2,6 +2,7 @@ module Model.User
     ( UserMap
     , UserUpdate (..)
     , ChangePassword (..)
+    , SetPassword (..)
     -- Utility functions
     , anonymousUser
     , curUserIsEligibleEstablish
