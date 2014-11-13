@@ -248,11 +248,12 @@ sendVerification dbConf poolConf verif_email user_email ver_uri = do
     let content = "Please open this link to verify your email address: "
                <> ver_uri
     handleSendmail dbConf poolConf
-        ("sending an email verification to " <> user_email <> "\n" <> content)
+        ("sending an email verification message to " <> user_email <> "\n" <>
+         content)
         verif_email user_email "Snowdrift.coop email verification" content
         (return ())
-        ("sending the email verification to " <> user_email <> " failed; " <>
-         "will try again later")
+        ("sending the email verification message to " <> user_email <>
+         " failed; will try again later")
 
 withLogging :: MonadIO m => LoggingT m a -> m a
 withLogging m = runLoggingT m $ \loc src level str ->
