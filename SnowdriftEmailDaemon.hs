@@ -168,23 +168,21 @@ insertIntoNotificationEmail ts notif_type to mproject content = do
 handleSendmail :: (MonadBaseControl IO m, MonadIO m, MonadLogger m)
                => PostgresConf -> PersistConfigPool PostgresConf
                -> Text -> Email -> Email -> Text -> Text
-               -> PersistConfigBackend PostgresConf m () -> Text
-               -> PersistConfigBackend PostgresConf m () -> m ()
+               -> PersistConfigBackend PostgresConf m () -> Text -> m ()
 handleSendmail dbConf poolConf info_msg from_ to subject body
-               delete_action warn_msg insert_action = do
+               action warn_msg = do
     $(logInfo) info_msg
-    Exception.handle handler $
+    Exception.handle handler $ do
         liftIO $ renderSendMail $ simpleMail'
             (Address Nothing to)
             (Address Nothing from_)
             subject
             (TextLazy.fromStrict body)
-    runPool dbConf delete_action poolConf
+        runPool dbConf action poolConf
     where
       handler = \(err :: Exception.ErrorCall) -> do
           $(logError) (Text.pack $ show err)
           $(logWarn) warn_msg
-          runPool dbConf insert_action poolConf
 
 sendNotification :: (MonadResource m, MonadBaseControl IO m, MonadIO m, MonadLogger m)
                  => PostgresConf -> PersistConfigPool PostgresConf
@@ -196,9 +194,8 @@ sendNotification dbConf poolConf notif_email user_email ts notif_type to mprojec
         ("sending a notification to " <> user_email <> "\n" <> content')
         notif_email user_email "Snowdrift.coop notification" content'
         (deleteFromNotificationEmail ts notif_type to mproject content)
-        ("sending the notification to " <> user_email <> " failed\n" <>
-         "re-inserting data into the \"notification_email\" table")
-        (insertIntoNotificationEmail ts notif_type to mproject content)
+        ("sending the notification to " <> user_email <> " failed; " <>
+         "will try again later")
 
 selectWithEmails :: (MonadResource m, MonadSqlPersist m)
                  => m [(Maybe Email, Text)]
@@ -256,7 +253,6 @@ sendVerification dbConf poolConf verif_email user_email ver_uri = do
         (return ())
         ("sending the email verification to " <> user_email <> " failed; " <>
          "will try again later")
-        (return ())
 
 withLogging :: MonadIO m => LoggingT m a -> m a
 withLogging m = runLoggingT m $ \loc src level str ->
