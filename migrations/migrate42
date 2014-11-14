@@ -1,0 +1,6 @@
+ALTER TABLE "email_verification" ADD COLUMN "email" VARCHAR NOT NULL;
+ALTER TABLE "email_verification" ADD COLUMN "uri" VARCHAR NOT NULL;
+ALTER TABLE "email_verification" DROP CONSTRAINT "unique_email_verification";
+ALTER TABLE "email_verification" ADD CONSTRAINT "unique_email_verification" UNIQUE("user","email","uri");
+ALTER TABLE "email_verification" DROP COLUMN "ver_email";
+ALTER TABLE "email_verification" DROP COLUMN "ver_uri";

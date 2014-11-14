@@ -44,8 +44,10 @@ library
                      Model.Markdown.Diff
                      Model.Notification
                      Model.Permission
+                     Model.Permission.Internal
                      Model.Project
                      Model.Project.Sql
+                     Model.ResetPassword
                      Model.Role
                      Model.Settings
                      Model.Shares
@@ -78,6 +80,7 @@ library
                      Handler.Privacy
                      Handler.Project
                      Handler.RepoFeed
+                     Handler.ResetPassword
                      Handler.ToU
                      Handler.User
                      Handler.User.Comment
@@ -93,6 +96,7 @@ library
                      View.Wiki
                      View.PledgeButton
                      View.Project
+                     View.ResetPassword
                      Version
                      Widgets.Doc
                      Widgets.Markdown
@@ -106,7 +110,6 @@ library
                    Model.Comment.Internal
                    Model.Established.Internal
                    Model.Notification.Internal
-                   Model.Permission.Internal
                    Model.Role.Internal
                    Model.Settings.Internal
                    Model.ViewType.Internal
@@ -171,6 +174,7 @@ library
                  , http-types
                  , JuicyPixels
                  , lifted-base
+                 , mime-mail
                  , monad-control
                  , monad-logger
                  , mtl
@@ -267,6 +271,8 @@ executable         SnowdriftEmailDaemon
         Buildable: False
     main-is:           SnowdriftEmailDaemon.hs
     build-depends:     base
+                     , async
+                     , attoparsec
                      , authenticate
                      , blaze-builder
                      , blaze-html
@@ -279,6 +285,7 @@ executable         SnowdriftEmailDaemon
                      , esqueleto
                      , email-validate
                      , fast-logger
+                     , github
                      , hjsmin
                      , http-conduit
                      , lifted-base
@@ -289,12 +296,15 @@ executable         SnowdriftEmailDaemon
                      , persistent
                      , persistent-postgresql
                      , persistent-template
+                     , random
                      , resourcet
+                     , semigroups
                      , shakespeare
                      , stm
                      , template-haskell
                      , text
                      , time
+                     , transformers
                      , yaml
                      , yesod
                      , yesod-auth
@@ -303,6 +313,7 @@ executable         SnowdriftEmailDaemon
                      , yesod-form
                      , yesod-markdown
                      , yesod-static
+
     extensions: BangPatterns
                 ConstraintKinds
                 DeriveDataTypeable
@@ -311,6 +322,7 @@ executable         SnowdriftEmailDaemon
                 FlexibleContexts
                 FlexibleInstances
                 GeneralizedNewtypeDeriving
+                LambdaCase
                 MultiParamTypeClasses
                 MultiWayIf
                 NoImplicitPrelude
@@ -320,6 +332,7 @@ executable         SnowdriftEmailDaemon
                 RecordWildCards
                 ScopedTypeVariables
                 TemplateHaskell
+                TupleSections
                 TypeFamilies
 
 executable         sdm

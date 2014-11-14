@@ -1,10 +1,12 @@
 module View.User
     ( addTestCashForm
     , createUserForm
+    , changePasswordForm
     , editUserForm
     , establishUserForm
     , previewUserForm
     , renderUser
+    , setPasswordForm
     , userNameWidget
     , userNotificationsForm
     ) where
@@ -100,6 +102,12 @@ editUserForm muser = renderBootstrap3 BootstrapBasicForm $
         <*> aopt' snowdriftMarkdownField  "Blurb (used on listings of many people)"        (userBlurb                     <$> muser)
         <*> aopt' snowdriftMarkdownField  "Personal Statement (visible only on this page)" (userStatement                 <$> muser)
 
+changePasswordForm :: Form ChangePassword
+changePasswordForm = renderBootstrap3 BootstrapBasicForm $ ChangePassword
+    <$> areq' passwordField "Current password" Nothing
+    <*> areq' passwordField "New password"     Nothing
+    <*> areq' passwordField "Repeat"           Nothing
+
 -- | Form to mark a user as eligible for establishment. The user is fully established
 -- when s/he accepts the honor pledge.
 establishUserForm :: Form Text
@@ -127,6 +135,11 @@ renderUser mviewer_id user_id user projects_and_roles = do
             else return Nothing
 
     $(widgetFile "user")
+
+setPasswordForm :: Form SetPassword
+setPasswordForm = renderBootstrap3 BootstrapBasicForm $ SetPassword
+    <$> areq' passwordField "New password" Nothing
+    <*> areq' passwordField "Repeat"       Nothing
 
 hiddenMarkdown :: Maybe Markdown -> AForm Handler (Maybe Markdown)
 hiddenMarkdown Nothing               = fmap (fmap Markdown) $ aopt hiddenField "" Nothing

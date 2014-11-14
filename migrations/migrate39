@@ -1,0 +1,4 @@
+ALTER TABLE "user" ADD COLUMN "email_verified" BOOLEAN NOT NULL DEFAULT false;
+CREATe TABLE "email_verification"("id" SERIAL PRIMARY KEY UNIQUE,"ver_uri" VARCHAR NOT NULL,"user" INT8 NOT NULL);
+ALTER TABLE "email_verification" ADD CONSTRAINT "unique_email_verification" UNIQUE("ver_uri","user");
+ALTER TABLE "email_verification" ADD CONSTRAINT "email_verification_user_fkey" FOREIGN KEY("user") REFERENCES "user"("id");

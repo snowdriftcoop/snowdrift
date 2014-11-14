@@ -7,6 +7,9 @@
                         <a href="@{EditUserR user_id}">
                             edit profile
                     <div .col-xs-6>
+                        <a href="@{UserChangePasswordR user_id}">
+                            change password
+                    <div .col-xs-6>
                         <a href="@{UserNotificationsR user_id}">
                             notification preferences
         <h1>
@@ -25,7 +28,7 @@
                         #{email} (not shown publicly)
                     <br>
                 $maybe nick <- userIrcNick user
-                    #{nick} on <a href="@{WikiR "snowdrift" "irc"}">irc.freenode.net</a>
+                    #{nick} on <a href=@{WikiR "snowdrift" "irc"}>irc.freenode.net</a>
 
     <div .col-md-6>
         $maybe blurb <- userBlurb user
