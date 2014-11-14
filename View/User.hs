@@ -24,6 +24,7 @@ import           Data.List.NonEmpty     (NonEmpty)
 import qualified Data.List.NonEmpty     as N
 import qualified Data.Map               as M
 import qualified Data.Set               as S
+import           Data.String            (fromString)
 import           Yesod.Markdown
 
 createUserForm :: Maybe Text -> Form (Text, Text, Maybe Text, Maybe Text, Maybe Text, Maybe Text)
@@ -160,13 +161,13 @@ userNotificationsForm :: Bool
                       -> Form NotificationPref
 userNotificationsForm is_moderator mbal mucom mrcom mrep mecon mflag mflagr =
     renderBootstrap3 BootstrapBasicForm $ NotificationPref
-        <$> req "You have a low balance (less than 3 months funds at current pledge levels)"
-                                               mbal
+        <$> req (fromString $ "You have a low balance (less than 3 months " <>
+                 "funds at current pledge levels)")   mbal
         <*> unapproved_comment
-        <*> opt "Your comment gets rethreaded/moved"           mrcom
-        <*> opt "Reply posted to watched thread"                        mrep
-        <*> req "Your wiki post has an edit conflict"                mecon
-        <*> req "Your comment gets flagged"              mflag
+        <*> opt "Your comment gets rethreaded/moved"  mrcom
+        <*> opt "Reply posted to watched thread"      mrep
+        <*> req "Your wiki post has an edit conflict" mecon
+        <*> req "Your comment gets flagged"           mflag
         <*> opt "A comment you flagged gets reposted" mflagr
   where
     unapproved_comment =
