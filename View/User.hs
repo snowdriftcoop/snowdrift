@@ -159,7 +159,7 @@ userNotificationsForm :: Bool
                       -> Maybe (NonEmpty NotificationDelivery)
                       -> Form NotificationPref
 userNotificationsForm is_moderator mbal mucom mrcom mrep mecon mflag mflagr =
-    renderBootstrap3 (BootstrapHorizontalForm (ColSm 0) (ColSm 0) (ColSm 0) (ColSm 0)) $ NotificationPref
+    renderBootstrap3 BootstrapBasicForm $ NotificationPref
         <$> req "You have a low balance (less than 3 months funds at current pledge levels)"
                                                mbal
         <*> unapproved_comment
@@ -173,14 +173,15 @@ userNotificationsForm is_moderator mbal mucom mrcom mrep mecon mflag mflagr =
         if is_moderator
             then Just <$> req "An new comment awaits moderator approval" mucom
             else pure Nothing
-    -- 'checkboxesFieldList' does not allow to work with 'NonEmpty'
+    -- 'selectFieldList' does not allow to work with 'NonEmpty'
     -- lists, so we have to work around that.
-    req s xs = N.fromList <$> areq checkboxes s (N.toList <$> xs)
-    opt s xs = fmap N.fromList <$> aopt checkboxes s (Just <$> N.toList <$> xs)
-    checkboxes = checkboxesFieldList methods
-    methods :: [(Text, NotificationDelivery)]
+    req s xs = N.fromList <$> areq' dropdown s (N.toList <$> xs)
+    opt s xs = fmap N.fromList <$> aopt' dropdown s (Just <$> N.toList <$> xs)
+    dropdown = selectFieldList methods
+    methods :: [(Text, [NotificationDelivery])]
     methods =
         -- XXX: Support 'NotifDeliverEmailDigest'.
-        [ ("website", NotifDeliverWebsite)
-        , ("email",   NotifDeliverEmail)
+        [ ("website",           [NotifDeliverWebsite])
+        , ("email",             [NotifDeliverEmail])
+        , ("website and email", [NotifDeliverWebsite, NotifDeliverEmail])
         ]
