@@ -171,7 +171,7 @@ userNotificationsForm is_moderator mbal mucom mrcom mrep mecon mflag mflagr =
   where
     unapproved_comment =
         if is_moderator
-            then Just <$> req "An new comment awaits moderator approval" mucom
+            then Just <$> req "A new comment awaits moderator approval" mucom
             else pure Nothing
     -- 'selectFieldList' does not allow to work with 'NonEmpty'
     -- lists, so we have to work around that.
