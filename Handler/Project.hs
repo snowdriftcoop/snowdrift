@@ -1165,11 +1165,14 @@ getUpdateSharesR project_handle = do
 
             runDB (getBy (UniquePledge user_id project_id)) >>= \case
                 Just (Entity _ pledge) | pledgeShares pledge == shares -> do
-                    alertWarning ("you've already pledged " <> T.pack (show shares) <> " shares of support to this project")
+                    -- TODO: use the function to insert the form that
+                    -- knows to use plural or not for share vs shares
+                    alertWarning ("Your pledge was already at " <> T.pack (show shares) <>
+                        " shares. Thank you for your support!")
                     redirect (ProjectR project_handle)
                 mpledge ->
                     defaultLayout $ do
-                        setTitle . toHtml $ projectName project <> " - Change Your Contribution | Snowdrift.coop"
+                        setTitle . toHtml $ projectName project <> " - update pledge | Snowdrift.coop"
                         $(widgetFile "update_shares")
 
         FormMissing -> defaultLayout [whamlet| form missing |]
@@ -1202,8 +1205,16 @@ postUpdateSharesR project_handle = do
                                 return True
 
                     if success
-                       then alertSuccess ("you have pledged " <> T.pack (show shares) <> " shares of support to this project")
-                       else alertWarning "Sorry, you must have funds to support your pledge for at least 3 months at current share value. Please deposit additional funds to your account."
+                        -- TODO: use full project name not project_handle
+                        then 
+                            if shares == 0
+                                then alertSuccess ("You have dropped your pledge and are no longer " <>
+                                                "a patron of " <> project_handle <> ".")
+                                else alertSuccess ("Your pledge is now " <> T.pack (show shares) <>
+                                    " share(s). Thank you for being a patron of " <> project_handle <> "!")
+                        else alertWarning ("Sorry, you must have funds to support your pledge " <> 
+                                "for at least 3 months at current share value. " <>
+                                "Please deposit additional funds to your account.")
 
                     redirect (ProjectR project_handle)
                 else redirect (ProjectR project_handle)
