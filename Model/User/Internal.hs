@@ -20,6 +20,17 @@ data UserUpdate =
         , userUpdateStatement          :: Maybe Markdown
         }
 
+data ChangePassword = ChangePassword
+    { currentPassword :: Text
+    , newPassword     :: Text
+    , newPassword'    :: Text
+    }
+
+data SetPassword = SetPassword
+    { password  :: Text
+    , password' :: Text
+    }
+
 data NotificationPref = NotificationPref
     { -- 'NotifWelcome' and 'NotifEligEstablish' are not handled since
       -- they are delivered only once.
@@ -52,6 +63,13 @@ fetchUserEmail user_id
            where_ $ user ^. UserId ==. val user_id
            return $ user ^. UserEmail)
 
+fetchUserEmailVerified :: UserId -> DB Bool
+fetchUserEmailVerified user_id =
+    fmap (\[Value b] -> b) $
+    select $ from $ \user -> do
+        where_ $ user ^. UserId ==. val user_id
+        return $ user ^. UserEmail_verified
+
 -- | Perform an action (or actions) according to the selected
 -- 'NotificationDelivery' method.
 sendPreferredNotificationDB :: UserId -> NotificationType -> Maybe ProjectId
@@ -59,10 +77,11 @@ sendPreferredNotificationDB :: UserId -> NotificationType -> Maybe ProjectId
 sendPreferredNotificationDB user_id notif_type mproject_id mcomment_id content = do
     mprefs <- lift $ fetchUserNotificationPrefDB user_id notif_type
     F.forM_ mprefs $ \prefs -> F.forM_ prefs $ \pref -> do
-        muser_email <- lift $ fetchUserEmail user_id
+        muser_email    <- lift $ fetchUserEmail user_id
+        email_verified <- lift $ fetchUserEmailVerified user_id
         -- XXX: Support 'NotifDeliverEmailDigest'.
-        if | pref == NotifDeliverEmail && isJust muser_email ->
-                 lift $ sendNotificationEmailDB notif_type user_id mproject_id content
+        if | pref == NotifDeliverEmail && isJust muser_email && email_verified ->
+                lift $ sendNotificationEmailDB notif_type user_id mproject_id content
            | otherwise -> do
                  r <- selectCount $ from $ \n -> do
                           where_ $ n ^. NotificationType    ==. val notif_type

@@ -28,7 +28,9 @@ import           Data.Typeable (Typeable)
 import           Database.Esqueleto            as Import hiding (on, valList)
 import qualified Database.Esqueleto
 import           Database.Esqueleto.Internal.Sql (unsafeSqlBinOp)
+import           Network.Mail.Mime               (randomString)
 import           Prelude                       as Import hiding (head, init, last, readFile, tail, writeFile)
+import           System.Random                 (newStdGen)
 import           Yesod                         as Import hiding (Route (..), (||.), (==.), (!=.), (<.), (<=.), (>.), (>=.), (=.), (+=.), (-=.), (*=.), (/=.), selectSource, delete, update, count, Value, runDB)
 import           Yesod.Auth                    as Import
 import           Yesod.Markdown                as Import (Markdown)
@@ -69,6 +71,9 @@ selectCount :: (MonadResource m, MonadSqlPersist m) => SqlQuery a -> m Int
 selectCount from_ =
     fmap (\[Value n] -> n) $
     select $ from_ >> return countRows
+
+newHash :: IO Text
+newHash = T.pack . fst . randomString 42 <$> newStdGen
 
 class Count a where
     getCount :: a -> Int64
