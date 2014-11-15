@@ -47,7 +47,7 @@ fixLinks project' discussion_on line' = do
                     , "("
                         , let route = encodeUtf8 $ render $ case discussion_on of
                                 DiscussionOnProject (Entity _ Project{..}) -> ProjectCommentR projectHandle comment_id
-                                DiscussionOnWikiPage (Entity _ WikiPage{..}) -> WikiCommentR project' wikiPageTarget comment_id
+                                DiscussionOnWikiPage _ (Entity _ WikiTarget{..}) -> WikiCommentR project' wikiTargetLanguage wikiTargetTarget comment_id
                                 DiscussionOnUser (Entity user_id _) -> UserCommentR user_id comment_id
 
                            in route <> path
@@ -77,16 +77,17 @@ linkTickets line' = do
     let Right pattern = compile defaultCompOpt defaultExecOpt "\\<SD-([0-9][0-9]*)" -- TODO word boundaries?
         getLinkForTicketComment :: TicketId -> Handler (Maybe Text)
         getLinkForTicketComment ticket_id = do
-            info <- runDB $ select $ from $ \ (ticket `InnerJoin` comment `LeftOuterJoin` page `LeftOuterJoin` project) -> do
+            info <- runDB $ select $ from $ \ (ticket `InnerJoin` comment `LeftOuterJoin` target `LeftOuterJoin` page `LeftOuterJoin` project) -> do
                 on_ $ project ?. ProjectId ==. page ?. WikiPageProject
                 on_ $ page ?. WikiPageDiscussion ==. just (comment ^. CommentDiscussion)
+                on_ $ page ?. WikiPageId ==. target ?. WikiTargetPage
                 on_ $ ticket ^. TicketComment ==. comment ^. CommentId
                 where_ $ ticket ^. TicketId ==. val ticket_id
 
                 return
                     ( comment ^. CommentId
                     , project ?. ProjectHandle
-                    , page ?. WikiPageTarget
+                    , target ?. WikiTargetTarget
                     )
 
             case map unwrapValues info of

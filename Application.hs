@@ -251,41 +251,6 @@ doMigration = do
 
     maybe (return ()) (\ newer_last_migration -> update $ flip set [ DatabaseVersionLastMigration =. val newer_last_migration ]) maybe_newer_last_migration
 
-    rolloutStagingWikiPages
-
-
-rolloutStagingWikiPages :: (MonadBaseControl IO m, MonadIO m, MonadLogger m, MonadResource m, MonadThrow m) => SqlPersistT m ()
-rolloutStagingWikiPages = do
-    pages <- select $ from $ \ page -> do
-        where_ ( page ^. WikiPageTarget `like` val "_staging_%" )
-        return page
-
-    forM_ pages $ \ (Entity staged_page_id staged_page) -> do
-        let (Just target) = stripPrefix "_staging_" $ wikiPageTarget staged_page
-        [ Value page_id ] <- select $ from $ \ page -> do
-            where_ ( page ^. WikiPageTarget ==. val target )
-            return $ page ^. WikiPageId
-
-        update $ \ edit -> do
-            set edit [ WikiEditPage =. val page_id ]
-            where_ ( edit ^. WikiEditPage ==. val staged_page_id )
-
-        update $ \ page -> do
-            set page [ WikiPageContent =. val (wikiPageContent staged_page) ]
-            where_ ( page ^. WikiPageId ==. val page_id )
-
-        [ Value last_staged_edit_edit ] <- select $ from $ \ last_staged_edit -> do
-            where_ ( last_staged_edit ^. WikiLastEditPage ==. val staged_page_id )
-            return $ last_staged_edit ^. WikiLastEditEdit
-
-        update $ \ last_edit -> do
-            set last_edit [ WikiLastEditEdit =. val last_staged_edit_edit ]
-            where_ ( last_edit ^. WikiLastEditPage ==. val page_id )
-
-        delete $ from $ \ last_edit -> where_ ( last_edit ^. WikiLastEditPage ==. val staged_page_id )
-
-        delete $ from $ \ page -> where_ ( page ^. WikiPageId ==. val staged_page_id )
-
 
 migrateTriggers :: (MonadSqlPersist m, MonadBaseControl IO m, MonadThrow m) => m ()
 migrateTriggers = runResourceT $ do

@@ -26,6 +26,7 @@ User
     blurb             Markdown     Maybe
     statement         Markdown     Maybe
     ircNick           Text         Maybe
+    languages         [Language]
     readNotifications UTCTime            default=now() -- The last time the user visited /notifications
     readApplications  UTCTime            default=now()
     established       Established        default='EstUnestablished'
@@ -33,6 +34,7 @@ User
 
     UniqueUser ident
     UniqueUserAccount account
+    UniqueUserDiscussion discussion
     deriving Show Typeable
 
 -- A single notification preference. If some NotificationType does not appear in any
@@ -98,6 +100,7 @@ Project
 
     UniqueProjectAccount account
     UniqueProjectHandle handle
+    UniqueProjectDiscussion discussion
 
     deriving Eq Show
 
@@ -112,6 +115,7 @@ BlogPost
     bottomContent Markdown     Maybe
 
     UniqueBlogPost project handle
+    UniqueBlogPostDiscussion discussion
 
     deriving Show
 
@@ -207,32 +211,42 @@ UnapprovedCommentNotification
     comment      CommentId
     notification NotificationId
 
+
 WikiPage
     createdTs       UTCTime         default=now()
-    target          Text
     project         ProjectId
-    content         Markdown
     discussion      DiscussionId
     permissionLevel PermissionLevel
 
-    UniqueWikiTarget project target
+    UniqueWikiPageDiscussion discussion
 
     deriving Eq
 
+
+WikiTarget
+    page            WikiPageId
+    project         ProjectId
+    target          Text
+    language        Language
+
+    UniqueWikiTarget project language target
+
 WikiEdit
-    ts      UTCTime
-    user    UserId
-    page    WikiPageId
-    content Markdown
-    comment Text       Maybe
+    ts          UTCTime
+    user        UserId
+    page        WikiPageId
+    language    Language
+    content     Markdown
+    comment     Text       Maybe
 
     deriving Eq
 
 WikiLastEdit
     page WikiPageId
     edit WikiEditId
+    language Language
 
-    UniqueWikiLastEdit page
+    UniqueWikiLastEdit page language
 
 Discussion
     nothing Int64

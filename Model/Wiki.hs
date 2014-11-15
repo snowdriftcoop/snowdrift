@@ -1,7 +1,7 @@
 module Model.Wiki
     ( createWikiEditDB
     , createWikiPageDB
-    , fetchWikiPagesInDB
+    , fetchWikiPageTargetsInDB
     , getAllWikiComments
     ) where
 
@@ -14,31 +14,41 @@ import Model.Project               (getProjectPages)
 
 import Control.Monad.Writer.Strict (tell)
 
-createWikiPageDB :: Text -> ProjectId -> Markdown -> PermissionLevel -> UserId -> SDB ()
-createWikiPageDB target project_id content permission_level user_id = do
+createWikiPageDB :: Language -> Text -> ProjectId -> Markdown -> PermissionLevel -> UserId -> SDB ()
+createWikiPageDB language target project_id content permission_level user_id = do
     now           <- liftIO getCurrentTime
     discussion_id <- lift createDiscussionDB
-    let wiki_page = WikiPage now target project_id content discussion_id permission_level
-    wiki_page_id <- lift (insert wiki_page)
-    -- Don't generate a WikiEdit event in addition to this WikiPage event.
-    wiki_edit_id <- lift (insert (WikiEdit now user_id wiki_page_id content (Just "Page created.")))
-    lift $ insert_ (WikiLastEdit wiki_page_id wiki_edit_id)
-    tell [EWikiPage wiki_page_id wiki_page]
 
-createWikiEditDB :: UserId -> WikiPageId -> Markdown -> Maybe Text -> SDB WikiEditId
-createWikiEditDB user_id wiki_page_id content mcomment = do
+    let wiki_page = WikiPage now project_id discussion_id permission_level
+    wiki_page_id <- lift $ insert wiki_page
+
+    let wiki_target = WikiTarget wiki_page_id project_id target language
+    lift $ insert_ wiki_target
+
+    -- Don't generate a WikiEdit event in addition to this WikiPage event.
+    wiki_edit_id <- lift $ insert $ WikiEdit now user_id wiki_page_id language content (Just "Page created.")
+    lift $ insert_ $ WikiLastEdit wiki_page_id wiki_edit_id language
+    tell [EWikiPage wiki_page_id wiki_page wiki_target]
+
+createWikiEditDB :: UserId -> WikiPageId -> Language -> Markdown -> Maybe Text -> SDB WikiEditId
+createWikiEditDB user_id wiki_page_id language content mcomment = do
     now <- liftIO getCurrentTime
-    let wiki_edit = WikiEdit now user_id wiki_page_id content mcomment
+    let wiki_edit = WikiEdit now user_id wiki_page_id language content mcomment
     wiki_edit_id <- lift (insert wiki_edit)
-    tell [EWikiEdit wiki_edit_id wiki_edit]
+
+    -- TODO - pick this better
+    [ Entity _ wiki_target ] <- lift $ select $ from $ \ wt -> do
+        where_ $ wt ^. WikiTargetPage ==. val wiki_page_id
+        limit 1
+        return wt
+
+    tell [EWikiEdit wiki_edit_id wiki_edit wiki_target]
     return wiki_edit_id
 
-fetchWikiPagesInDB :: [WikiPageId] -> DB [Entity WikiPage]
-fetchWikiPagesInDB wiki_page_ids =
-    select $
-    from $ \wp -> do
-    where_ (wp ^. WikiPageId `in_` valList wiki_page_ids)
-    return wp
+fetchWikiPageTargetsInDB :: [WikiPageId] -> DB [Entity WikiTarget]
+fetchWikiPageTargetsInDB wiki_page_ids = select $ from $ \ wt -> do
+    where_ $ wt ^. WikiTargetPage `in_` valList wiki_page_ids
+    return wt
 
 -- | Get the unapproved, new and old Comments on all WikiPages of Project. Takes a
 -- UTCTime 'since' to filter comments EARLIER than this time, and a CommentId

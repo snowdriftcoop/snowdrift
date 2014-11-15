@@ -1,14 +1,14 @@
 <div .page-toolbox>
     $if can_edit
         <div .page-tool>
-            <a href="@{EditWikiR project_handle target}">edit
+            <a href="@{EditWikiR project_handle language target}">edit
     <div .page-tool>
-        <a href="@{WikiHistoryR project_handle target}">history
+        <a href="@{WikiHistoryR project_handle language target}">history
     <div .page-tool>
-        <a href="@{WikiDiscussionR project_handle target}">
+        <a href="@{WikiDiscussionR project_handle language target}">
             discuss
             <span .badge>
                 #{comment_count}
 
-^{markdownWidgetWith (fixLinks project_handle discussion) (wikiPageContent page)}
+^{markdownWidgetWith (fixLinks project_handle discussion) (wikiEditContent wiki_edit)}
 

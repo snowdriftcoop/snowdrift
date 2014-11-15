@@ -319,7 +319,8 @@ editCommentDB comment_id text = do
     lift (fetchCommentFlaggingDB comment_id) >>= \case
         Nothing -> return ()
         Just (Entity comment_flagging_id CommentFlagging{..}) -> do
-            rendered_route <- lift (makeCommentRouteDB comment_id >>= lift . routeToText . fromJust)
+            langs <- lift $ lift getLanguages
+            rendered_route <- lift (makeCommentRouteDB langs comment_id >>= lift . routeToText . fromJust)
             let notif_text = Markdown $ "A comment you flagged has been edited and reposted to the site. You can view it [here](" <> rendered_route <> ")."
             lift (deleteCascade comment_flagging_id) -- delete flagging and all flagging reasons with it.
             sendPreferredNotificationDB commentFlaggingFlagger NotifFlagRepost Nothing Nothing notif_text
@@ -776,15 +777,15 @@ fetchCommentTicketsDB comment_ids = do
 
     return $ M.fromList $ map (ticketComment . entityVal &&& id) ticket_entities
 
-makeCommentRouteDB :: CommentId -> DB (Maybe (Route App))
-makeCommentRouteDB comment_id = get comment_id >>= \case
+makeCommentRouteDB :: [Language] -> CommentId -> DB (Maybe (Route App))
+makeCommentRouteDB langs comment_id = get comment_id >>= \case
     Nothing -> return Nothing
-    Just comment -> fetchDiscussionDB (commentDiscussion comment) >>= \case
+    Just comment -> fetchDiscussionDB langs (commentDiscussion comment) >>= \case
         DiscussionOnProject (Entity _ project) -> return (Just (ProjectCommentR (projectHandle project) comment_id))
 
-        DiscussionOnWikiPage (Entity _ wiki_page) -> do
-            project <- getJust (wikiPageProject wiki_page)
-            return (Just (WikiCommentR (projectHandle project) (wikiPageTarget wiki_page) comment_id))
+        DiscussionOnWikiPage _ (Entity _ wiki_target) -> do
+            project <- getJust (wikiTargetProject wiki_target)
+            return (Just (WikiCommentR (projectHandle project) (wikiTargetLanguage wiki_target) (wikiTargetTarget wiki_target) comment_id))
 
         DiscussionOnUser (Entity user_id _) -> do
             return (Just (UserCommentR user_id comment_id))

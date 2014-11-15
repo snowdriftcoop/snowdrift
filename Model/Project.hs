@@ -13,8 +13,8 @@ module Model.Project
     , fetchProjectOpenTicketsDB
     , fetchProjectUpdatedPledgesBeforeDB
     , fetchProjectVolunteerApplicationsDB
-    , fetchProjectWikiEditsBeforeDB
-    , fetchProjectWikiPagesBeforeDB
+    , fetchProjectWikiEditsWithTargetsBeforeDB
+    , fetchProjectWikiPagesWithTargetsBeforeDB
     , fetchProjectBlogPostsBeforeDB
     , fetchProjectTicketClaimingsBeforeDB
     , fetchProjectTicketUnclaimingsBeforeDB
@@ -53,6 +53,8 @@ import qualified Github.Issues                as GH
 import qualified Data.Map                     as M
 import qualified Data.Set                     as S
 import qualified Data.Text                    as T
+
+import           Data.List                    (sortBy)
 
 --------------------------------------------------------------------------------
 -- Types
@@ -245,12 +247,13 @@ getProjectTagList project_id = (,) <$> getProjectTags <*> getOtherTags
         return tag
 
 -- | Get all of a Project's WikiPages, sorted alphabetically.
-getProjectWikiPages :: ProjectId ->  DB [Entity WikiPage]
-getProjectWikiPages project_id =
-    select $ from $ \ wp -> do
-    where_ (exprWikiPageOnProject wp project_id)
-    orderBy [asc (wp ^. WikiPageTarget)]
-    return wp
+getProjectWikiPages :: [Language] -> ProjectId ->  DB [Entity WikiTarget]
+getProjectWikiPages languages project_id = do
+    targets <- select $ from $ \ wt -> do
+        where_ $ wt ^. WikiTargetProject ==. val project_id
+        return wt
+
+    return $ sortBy (compare `on` (wikiTargetTarget . entityVal)) $ pickTargetsByLanguage languages targets
 
 -- | Fetch all Discussions that are somewhere on the given Project.
 fetchProjectDiscussionsDB :: ProjectId -> DB [DiscussionId]
@@ -335,17 +338,25 @@ fetchProjectTicketUnclaimingsBeforeDB project_id before lim = fetchProjectDiscus
         return tc
 
 -- | Fetch all WikiPages made on this Project before this time.
-fetchProjectWikiPagesBeforeDB :: ProjectId -> UTCTime -> Int64 -> DB [Entity WikiPage]
-fetchProjectWikiPagesBeforeDB project_id before lim =
-    select $
-    from $ \(ewp `InnerJoin` wp) -> do
-    on_ (ewp ^. EventWikiPageWikiPage ==. wp ^. WikiPageId)
-    where_ $
-        ewp ^. EventWikiPageTs <=. val before &&.
-        exprWikiPageOnProject wp project_id
-    orderBy [ desc $ ewp ^. EventWikiPageTs, desc $ ewp ^. EventWikiPageId ]
-    limit lim
-    return wp
+fetchProjectWikiPagesWithTargetsBeforeDB :: [Language] -> ProjectId -> UTCTime -> Int64 -> DB [(Entity WikiPage, WikiTarget)]
+fetchProjectWikiPagesWithTargetsBeforeDB languages project_id before lim = do
+    pages <- select $ from $ \(ewp `InnerJoin` wp) -> do
+        on_ (ewp ^. EventWikiPageWikiPage ==. wp ^. WikiPageId)
+        where_ $ ewp ^. EventWikiPageTs <=. val before
+            &&. exprWikiPageOnProject wp project_id
+        orderBy [ desc $ ewp ^. EventWikiPageTs, desc $ ewp ^. EventWikiPageId ]
+        limit lim
+        return wp
+
+    targets <- select $ from $ \ wt -> do
+        where_ $ wt ^. WikiTargetPage `in_` valList (map entityKey pages)
+        return wt
+
+
+    let pages_map = M.fromList $ map (onEntity (,)) pages
+        targets_map = M.fromList $ map (\ (Entity _ wiki_target) -> (wikiTargetPage wiki_target, wiki_target)) $ pickTargetsByLanguage languages targets
+
+    return $ M.elems $ M.intersectionWithKey ( \ wiki_page_id wiki_page wiki_target -> (Entity wiki_page_id wiki_page, wiki_target) ) pages_map targets_map
 
 -- | Fetch all BlogPosts made on this Project before this time.
 fetchProjectBlogPostsBeforeDB :: ProjectId -> UTCTime -> Int64 -> DB [Entity BlogPost]
@@ -361,18 +372,30 @@ fetchProjectBlogPostsBeforeDB project_id before lim =
     return bp
 
 -- | Fetch all WikiEdits made on this Project before this time.
-fetchProjectWikiEditsBeforeDB :: ProjectId -> UTCTime -> Int64 -> DB [Entity WikiEdit]
-fetchProjectWikiEditsBeforeDB project_id before lim =
-    select $
-    from $ \(ewe `InnerJoin` we `InnerJoin` wp) -> do
-    on_ (wp ^. WikiPageId ==. we ^. WikiEditPage)
-    on_ (ewe ^. EventWikiEditWikiEdit ==. we ^. WikiEditId)
-    where_ $
-        ewe ^. EventWikiEditTs <=. val before &&.
-        exprWikiPageOnProject wp project_id
-    orderBy [ desc $ ewe ^. EventWikiEditTs, desc $ ewe ^. EventWikiEditId ]
-    limit lim
-    return we
+fetchProjectWikiEditsWithTargetsBeforeDB :: [Language] -> ProjectId -> UTCTime -> Int64 -> DB [(Entity WikiEdit, WikiTarget)]
+fetchProjectWikiEditsWithTargetsBeforeDB languages project_id before lim = do
+-- | Fetch all WikiPages made on this Project before this time.
+
+    edits <- select $ from $ \(ewe `InnerJoin` we `InnerJoin` wp) -> do
+        on_ (wp ^. WikiPageId ==. we ^. WikiEditPage)
+        on_ (ewe ^. EventWikiEditWikiEdit ==. we ^. WikiEditId)
+
+        where_ $ ewe ^. EventWikiEditTs <=. val before
+            &&.  exprWikiPageOnProject wp project_id
+
+        orderBy [ desc $ ewe ^. EventWikiEditTs, desc $ ewe ^. EventWikiEditId ]
+        limit lim
+        return we
+
+    targets <- select $ from $ \ wt -> do
+        where_ $ wt ^. WikiTargetPage `in_` valList (map (wikiEditPage . entityVal) edits)
+        return wt
+
+
+    let edits_map = M.fromList $ map (\ edit -> (wikiEditPage $ entityVal edit, edit)) edits
+        targets_map = M.fromList $ map (\ (Entity _ wiki_target) -> (wikiTargetPage wiki_target, wiki_target)) $ pickTargetsByLanguage languages targets
+
+    return $ M.elems $ M.intersectionWith (,) edits_map targets_map
 
 -- | Fetch all new SharesPledged made on this Project before this time.
 fetchProjectNewPledgesBeforeDB :: ProjectId -> UTCTime -> Int64 -> DB [Entity SharesPledged]
@@ -441,10 +464,12 @@ fetchProjectVolunteerApplicationsDB project_id =
 -- | Fetch a WikiPage (maybe), given the Project handle and WikiPage target.
 -- (Presumably, these Texts come from something like a rethread form,
 -- where the user types in URLs manually).
-fetchProjectWikiPageByNameDB :: Text -> Text -> DB (Maybe (Entity WikiPage))
-fetchProjectWikiPageByNameDB project_handle target = runMaybeT $ do
-    Entity project_id _ <- MaybeT (getBy (UniqueProjectHandle project_handle))
-    MaybeT (getBy (UniqueWikiTarget project_id target))
+fetchProjectWikiPageByNameDB :: Text -> Language -> Text -> DB (Maybe (Entity WikiPage))
+fetchProjectWikiPageByNameDB project_handle language target = runMaybeT $ do
+    Entity project_id _ <- MaybeT $ getBy $ UniqueProjectHandle project_handle
+    Entity _ wiki_target <- MaybeT $ getBy $ UniqueWikiTarget project_id language target
+    wiki_page <- MaybeT $ get $ wikiTargetPage wiki_target
+    return $ Entity (wikiTargetPage wiki_target) wiki_page
 
 fetchProjectOpenTicketsDB :: ProjectId -> Maybe UserId -> DB [TaggedTicket]
 fetchProjectOpenTicketsDB project_id muser_id = do

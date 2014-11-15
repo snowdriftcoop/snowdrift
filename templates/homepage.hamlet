@@ -21,13 +21,13 @@
     <div .col-md-4 .col-lg-3 .text-center>
         <h3> Our matching patronage system
         <strong>
-            <a href="@{WikiR "snowdrift" "intro"}"> Illustrated intro
+            <a href="@{WikiR "snowdrift" LangEn "intro"}"> Illustrated intro
             <br>
-            <a href="@{WikiR "snowdrift" "about"}"> Longer manifesto
+            <a href="@{WikiR "snowdrift" LangEn "about"}"> Longer manifesto
             <br>
-            <a href="@{WikiR "snowdrift" "faq"}"> FAQ
+            <a href="@{WikiR "snowdrift" LangEn "faq"}"> FAQ
             <br>
-            <a href="@{WikiR "snowdrift" "press"}"> Info for press
+            <a href="@{WikiR "snowdrift" LangEn "press"}"> Info for press
 
 <h2 style="margin-top: 0.5em">Join us!
 <p>
@@ -35,13 +35,13 @@
     <a href="@{WhoR "snowdrift"}"> team
     is supported by a growing community.
 <p>
-    <strong><a href="@{WikiR "snowdrift" "how-to-help"}">Come help</a>
+    <strong><a href="@{WikiR "snowdrift" LangEn "how-to-help"}">Come help</a>
     with site development, design, community organizing, or other tasks…
 
 <h2>Now recruiting projects
 <p>
     If your
-    <a href="@{WikiR "snowdrift" "project-requirements"}">free/libre/open
+    <a href="@{WikiR "snowdrift" LangEn "project-requirements"}">free/libre/open
     project needs funding, please <a href=@{ProjectContactR "snowdrift"}>contact us</a>.
     We want projects included as we develop to make sure things work well for you!
 
@@ -83,7 +83,7 @@
 <small>
     <p>
         We're working to add more
-        <a href="@{WikiR "snowdrift" "payment-services"}">payment options
+        <a href="@{WikiR "snowdrift" LangEn "payment-services"}">payment options
         soon.
     <p>
         <em>

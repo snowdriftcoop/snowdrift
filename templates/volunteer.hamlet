@@ -2,7 +2,7 @@
 <p>
     Welcome!
     Please read the
-    <a href=@{WikiR project_handle "how-to-help"}>How-to-help page
+    <a href=@{WikiR project_handle LangEn "how-to-help"}>How-to-help page
     to find out more about our particular needs at this time.
 
 <p>

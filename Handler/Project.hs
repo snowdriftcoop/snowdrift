@@ -910,35 +910,37 @@ getProjectFeedR :: Text -> Handler TypedContent
 getProjectFeedR project_handle = do
     let lim = 26 -- limit 'lim' from each table, then take 'lim - 1'
 
+    languages <- getLanguages
+
     muser <- maybeAuth
     let muser_id = entityKey <$> muser
 
     before <- lookupGetUTCTimeDefaultNow "before"
 
     (project, comments, rethreads, closings, claimings, unclaimings, wiki_pages, wiki_edits, blog_posts, new_pledges,
-     updated_pledges, deleted_pledges, discussion_map, wiki_page_map, user_map,
+     updated_pledges, deleted_pledges, discussion_map, wiki_target_map, user_map,
      earlier_closures_map, earlier_retracts_map, closure_map, retract_map,
      ticket_map, claim_map, flag_map) <- runYDB $ do
 
         Entity project_id project <- getBy404 (UniqueProjectHandle project_handle)
 
-        comments        <- fetchProjectCommentsIncludingRethreadedBeforeDB project_id muser_id before lim
-        rethreads       <- fetchProjectCommentRethreadsBeforeDB            project_id muser_id before lim
-        closings        <- fetchProjectCommentClosingsBeforeDB             project_id muser_id before lim
-        claimings       <- fetchProjectTicketClaimingsBeforeDB             project_id before lim
-        unclaimings     <- fetchProjectTicketUnclaimingsBeforeDB           project_id before lim
-        wiki_pages      <- fetchProjectWikiPagesBeforeDB                   project_id before lim
-        blog_posts      <- fetchProjectBlogPostsBeforeDB                   project_id before lim
-        wiki_edits      <- fetchProjectWikiEditsBeforeDB                   project_id before lim
-        new_pledges     <- fetchProjectNewPledgesBeforeDB                  project_id before lim
-        updated_pledges <- fetchProjectUpdatedPledgesBeforeDB              project_id before lim
-        deleted_pledges <- fetchProjectDeletedPledgesBeforeDB              project_id before lim
+        comments        <- fetchProjectCommentsIncludingRethreadedBeforeDB    project_id muser_id before lim
+        rethreads       <- fetchProjectCommentRethreadsBeforeDB               project_id muser_id before lim
+        closings        <- fetchProjectCommentClosingsBeforeDB                project_id muser_id before lim
+        claimings       <- fetchProjectTicketClaimingsBeforeDB                project_id before lim
+        unclaimings     <- fetchProjectTicketUnclaimingsBeforeDB              project_id before lim
+        wiki_pages      <- fetchProjectWikiPagesWithTargetsBeforeDB languages project_id before lim
+        blog_posts      <- fetchProjectBlogPostsBeforeDB                      project_id before lim
+        wiki_edits      <- fetchProjectWikiEditsWithTargetsBeforeDB languages project_id before lim
+        new_pledges     <- fetchProjectNewPledgesBeforeDB                     project_id before lim
+        updated_pledges <- fetchProjectUpdatedPledgesBeforeDB                 project_id before lim
+        deleted_pledges <- fetchProjectDeletedPledgesBeforeDB                 project_id before lim
 
         -- Suplementary maps for displaying the data. If something above requires extra
         -- data to display the project feed row, it MUST be used to fetch the data below!
 
         let (comment_ids, comment_users)       = F.foldMap (\c -> ([entityKey c], [commentUser (entityVal c)])) comments
-            (wiki_edit_users, wiki_edit_pages) = F.foldMap (\(Entity _ e) -> ([wikiEditUser e], [wikiEditPage e])) wiki_edits
+            (wiki_edit_users, wiki_edit_pages) = F.foldMap (\(Entity _ e, _) -> ([wikiEditUser e], [wikiEditPage e])) wiki_edits
             (blog_post_users) = F.foldMap (\(Entity _ e) -> ([blogPostUser e])) blog_posts
             shares_pledged                     = map entityVal (new_pledges <> (map snd updated_pledges))
             -- All users: comment posters, wiki page creators, etc.
@@ -954,7 +956,7 @@ getProjectFeedR project_handle = do
                         , S.fromList (map eventDeletedPledgeUser deleted_pledges)
                         ]
 
-        discussion_map <- fetchProjectDiscussionsDB project_id >>= fetchDiscussionsDB
+        discussion_map <- fetchProjectDiscussionsDB project_id >>= fetchDiscussionsDB languages
 
         ticket_map <- fetchCommentTicketsDB $ mconcat
             [ S.fromList comment_ids
@@ -963,7 +965,8 @@ getProjectFeedR project_handle = do
             ]
 
         -- WikiPages keyed by their own IDs (contained in a WikiEdit)
-        wiki_page_map <- entitiesMap <$> fetchWikiPagesInDB wiki_edit_pages
+        wiki_targets <- pickTargetsByLanguage languages <$> fetchWikiPageTargetsInDB wiki_edit_pages
+        let wiki_target_map = M.fromList $ map ((wikiTargetPage &&& id) . entityVal) wiki_targets
 
         user_map <- entitiesMap <$> fetchUsersInDB user_ids
 
@@ -976,7 +979,7 @@ getProjectFeedR project_handle = do
 
         return (project, comments, rethreads, closings, claimings, unclaimings, wiki_pages, wiki_edits, blog_posts,
                 new_pledges, updated_pledges, deleted_pledges, discussion_map,
-                wiki_page_map, user_map, earlier_closures_map,
+                wiki_target_map, user_map, earlier_closures_map,
                 earlier_retracts_map, closure_map, retract_map, ticket_map,
                 claim_map, flag_map)
 
@@ -984,17 +987,20 @@ getProjectFeedR project_handle = do
 
 
     let all_unsorted_events = mconcat
-            [ map (onEntity ECommentPosted)     comments
-            , map (onEntity ECommentRethreaded) rethreads
-            , map (onEntity ECommentClosed)     closings
-            , map (ETicketClaimed . either (Left . onEntity (,)) (Right . onEntity (,)))         claimings
-            , map (onEntity ETicketUnclaimed)   unclaimings
-            , map (onEntity EWikiPage)          wiki_pages
-            , map (onEntity EWikiEdit)          wiki_edits
-            , map (onEntity EBlogPost)          blog_posts
-            , map (onEntity ENewPledge)         new_pledges
-            , map eup2se                        updated_pledges
-            , map edp2se                        deleted_pledges
+            [ map (onEntity ECommentPosted)      comments
+            , map (onEntity ECommentRethreaded)  rethreads
+            , map (onEntity ECommentClosed)      closings
+
+            , map (ETicketClaimed . either (Left . onEntity (,)) (Right . onEntity (,)))
+                                                 claimings
+
+            , map (onEntity ETicketUnclaimed)    unclaimings
+            , map (uncurry $ onEntity EWikiPage) wiki_pages
+            , map (uncurry $ onEntity EWikiEdit) wiki_edits
+            , map (onEntity EBlogPost)           blog_posts
+            , map (onEntity ENewPledge)          new_pledges
+            , map eup2se                         updated_pledges
+            , map edp2se                         deleted_pledges
             ]
 
         (events, more_events) = splitAt (lim-1) (sortBy snowdriftEventNewestToOldest all_unsorted_events)
@@ -1016,7 +1022,7 @@ getProjectFeedR project_handle = do
                         project_handle
                         user_map
                         discussion_map
-                        wiki_page_map
+                        wiki_target_map
                         ticket_map) events
 
     selectRep $ do
@@ -1301,10 +1307,12 @@ getProjectTransactionsR project_handle = do
 getWikiPagesR :: Text -> Handler Html
 getWikiPagesR project_handle = do
     muser_id <- maybeAuthId
+    languages <- getLanguages
+
     -- TODO: should be be using unviewed_comments and unviewed_edits?
-    (project, pages, _, _) <- runYDB $ do
+    (project, wiki_targets, _, _) <- runYDB $ do
         Entity project_id project <- getBy404 $ UniqueProjectHandle project_handle
-        pages <- getProjectWikiPages project_id
+        wiki_targets <- getProjectWikiPages languages project_id
 
         -- If the user is not logged in or not watching the project, these maps are empty.
         (unviewed_comments, unviewed_edits) <- case muser_id of
@@ -1316,7 +1324,7 @@ getWikiPagesR project_handle = do
                         <$> fetchNumUnviewedCommentsOnProjectWikiPagesDB user_id project_id
                         <*> fetchNumUnviewedWikiEditsOnProjectDB         user_id project_id
                     else return (mempty, mempty)
-        return (project, pages, unviewed_comments, unviewed_edits)
+        return (project, wiki_targets, unviewed_comments, unviewed_edits)
     defaultLayout $ do
         setTitle . toHtml $ projectName project <> " Wiki | Snowdrift.coop"
         $(widgetFile "wiki_pages")

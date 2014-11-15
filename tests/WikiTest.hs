@@ -5,6 +5,8 @@ module WikiTest
 
 import TestImport
 
+import Model.Language
+
 wikiSpecs :: Spec
 wikiSpecs =
     ydescribe "wiki" $ do
@@ -13,12 +15,12 @@ wikiSpecs =
 
             login
 
-            get $ NewWikiR "snowdrift" "testpage"
+            get $ NewWikiR "snowdrift" LangEn "testpage"
             statusIs 200
 
             request $ do
                 addNonce
-                setUrl $ NewWikiR "snowdrift" "testpage"
+                setUrl $ NewWikiR "snowdrift" LangEn "testpage"
                 setMethod "POST"
                 byLabel "Page Content" "test"
                 addPostParam "mode" "preview"
@@ -27,7 +29,7 @@ wikiSpecs =
 
             request $ do
                 addNonce
-                setUrl $ NewWikiR "snowdrift" "testpage"
+                setUrl $ NewWikiR "snowdrift" LangEn "testpage"
                 setMethod "POST"
                 byLabel "Page Content" "test"
                 addPostParam "mode" "post"
@@ -40,13 +42,13 @@ wikiSpecs =
 
             login
 
-            get $ EditWikiR "snowdrift" "testpage"
+            get $ EditWikiR "snowdrift" LangEn "testpage"
             statusIs 200
 
 {- TODO - this needs to get the last_edit_id from the rendered page and pipe it through
             request $ do
                 addNonce
-                setUrl $ WikiR "snowdrift" "testpage"
+                setUrl $ WikiR "snowdrift" LangEn "testpage"
                 setMethod "POST"
                 byLabel "Page Content" "test after edit"
                 byLabel "Comment" "testing"
@@ -56,7 +58,7 @@ wikiSpecs =
 
             request $ do
                 addNonce
-                setUrl $ WikiR "snowdrift" "testpage"
+                setUrl $ WikiR "snowdrift" LangEn "testpage"
                 setMethod "POST"
                 byLabel "Page Content" "test after edit"
                 byLabel "Comment" "testing"

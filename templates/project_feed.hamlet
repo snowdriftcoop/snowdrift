@@ -17,11 +17,11 @@ $forall event <- events
         $of ETicketUnclaimed _ claim
             ^{renderTicketUnclaimedEvent claim user_map ticket_map}
 
-        $of EWikiPage wiki_page_id wiki_page
+        $of EWikiPage wiki_page_id wiki_page _
             ^{renderWikiPageEvent project_handle wiki_page_id wiki_page user_map}
 
-        $of EWikiEdit wiki_edit_id wiki_edit
-            ^{renderWikiEditEvent project_handle wiki_edit_id wiki_edit wiki_page_map user_map}
+        $of EWikiEdit wiki_edit_id wiki_edit _
+            ^{renderWikiEditEvent project_handle wiki_edit_id wiki_edit wiki_target_map user_map}
 
         $of ENewPledge shares_pledged_id shares_pledged
             ^{renderNewPledgeEvent shares_pledged_id shares_pledged user_map}

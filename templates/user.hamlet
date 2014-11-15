@@ -74,7 +74,7 @@ $maybe (est_form, est_form_enctype) <- mest_form_and_enctype
                 (e.g. they have posted several helpful, on-topic comments,
                 and are clearly not a spammer or malicious troll).
                 They will then become fully established after affirming
-                the <a href="@{WikiR "snowdrift" "honor"}">honor pledge</a>.
+                the <a href="@{WikiR "snowdrift" LangEn "honor"}">honor pledge</a>.
 
             <form action=@{UserEstEligibleR user_id} method=post enctype=#{est_form_enctype}>
                 ^{est_form}

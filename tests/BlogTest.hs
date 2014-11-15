@@ -10,16 +10,7 @@ import qualified Data.Map as M
 import qualified Text.XML as XML
 import qualified Text.HTML.DOM as HTML
 
-import Database.Esqueleto hiding (get)
-
-import Network.Wai.Test (SResponse (..))
-import Data.Text as T
 import Data.Text.Encoding
-import qualified Data.ByteString.Char8 as BSC
-
-import Control.Monad
-
-import Data.Maybe (fromMaybe)
 
 blogSpecs :: Spec
 blogSpecs = do

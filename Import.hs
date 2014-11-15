@@ -5,6 +5,7 @@ module Import (module Import) where
 
 import           Foundation                    as Import
 import           Model                         as Import
+import           Model.Language                as Import
 import           Model.Comment.Internal        as Import
 import           Model.Established.Internal    as Import
 import           Model.Role.Internal           as Import
@@ -29,10 +30,13 @@ import           Database.Esqueleto            as Import hiding (on, valList)
 import qualified Database.Esqueleto
 import           Database.Esqueleto.Internal.Sql (unsafeSqlBinOp)
 import           Prelude                       as Import hiding (head, init, last, readFile, tail, writeFile)
-import           Yesod                         as Import hiding (Route (..), (||.), (==.), (!=.), (<.), (<=.), (>.), (>=.), (=.), (+=.), (-=.), (*=.), (/=.), selectSource, delete, update, count, Value, runDB)
+import           Yesod                         as Import hiding (Route (..), (||.), (==.), (!=.), (<.), (<=.), (>.), (>=.), (=.), (+=.), (-=.), (*=.), (/=.), selectSource, delete, update, count, Value, runDB, languages)
 import           Yesod.Auth                    as Import
 import           Yesod.Markdown                as Import (Markdown)
 import           Yesod.Form.Bootstrap3         as Import
+
+import           Yesod (languages)
+import           Data.List (sortBy)
 
 import GHC.Exts (IsList(..))
 import qualified Data.Map as M
@@ -80,12 +84,6 @@ data ShareCount = ShareCount Int64
 instance Count ShareCount where getCount (ShareCount c) = c
 
 newtype Color = Color Int deriving (Typeable, Num)
-
--- from http://stackoverflow.com/questions/8066850/why-doesnt-haskells-prelude-read-return-a-maybe
-readMaybe   :: (Read a) => String -> Maybe a
-readMaybe s = case [x | (x,t) <- reads s, ("","") <- lex t] of
-                  [x] -> Just x
-                  _   -> Nothing
 
 showDiffTime :: UTCTime -> UTCTime -> String
 showDiffTime x y =
@@ -324,6 +322,24 @@ lookupParamDefault name def = do
         param_str <- maybe_param
         param <- listToMaybe $ reads $ T.unpack param_str
         return $ fst param
+
+
+getLanguages :: Handler [Language]
+getLanguages = cached $ mapMaybe (listToMaybe . map fst . reads . T.unpack) <$> languages
+
+
+languagePreferenceOrder :: [Language] -> (a -> Language) -> a -> a -> Ordering
+languagePreferenceOrder langs getLang = flip compare `on` (flip lookup (zip (reverse langs) [1 :: Integer ..]) . getLang)
+
+pickTargetsByLanguage :: [Language] -> [Entity WikiTarget] -> [Entity WikiTarget]
+pickTargetsByLanguage langs targets =
+    let target_map = M.fromListWith (++) $ map (wikiTargetPage . entityVal &&& (:[])) targets
+     in M.elems $ M.mapMaybe (listToMaybe . sortBy (languagePreferenceOrder langs (wikiTargetLanguage . entityVal))) target_map
+
+pickEditsByLanguage :: [Language] -> [Entity WikiEdit] -> [Entity WikiEdit]
+pickEditsByLanguage langs targets =
+    let target_map = M.fromListWith (++) $ map (wikiEditPage . entityVal &&& (:[])) targets
+     in M.elems $ M.mapMaybe (listToMaybe . sortBy (languagePreferenceOrder langs (wikiEditLanguage . entityVal))) target_map
 
 --------------------------------------------------------------------------------
 -- /

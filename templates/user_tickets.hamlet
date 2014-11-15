@@ -20,10 +20,10 @@
                 <td>
                     #{project_handle}
                 <td>
-                    $maybe Entity _ wiki_page <- w
+                    $maybe Entity _ wiki_target <- w
                         on page
-                        <a href=@{WikiR project_handle (wikiPageTarget wiki_page)}>
-                            #{wikiPageTarget wiki_page}
+                        <a href=@{WikiR project_handle (wikiTargetLanguage wiki_target) (wikiTargetTarget wiki_target)}>
+                            #{wikiTargetTarget wiki_target}
                     $nothing
                         on project discussion
 
@@ -63,10 +63,10 @@
                 <td>
                     #{project_handle}
                 <td>
-                    $maybe Entity _ wiki_page <- w
+                    $maybe Entity _ wiki_target <- w
                         on page
-                        <a href=@{WikiR project_handle (wikiPageTarget wiki_page)}>
-                            #{wikiPageTarget wiki_page}
+                        <a href=@{WikiR project_handle (wikiTargetLanguage wiki_target) (wikiTargetTarget wiki_target)}>
+                            #{wikiTargetTarget wiki_target}
                     $nothing
                         on project discussion
 

@@ -541,15 +541,15 @@ postRethreadComment user_id comment_id comment = do
             -- FIXME(mitchell,david): We shouldn't have to enumerate the routes like this.
             -- Luckily robust rethreading is not priority.
             (new_route, mnew_parent_id, new_discussion_id) <- case parseRoute (url, []) of
-                Just (new_route@(WikiCommentR new_project_handle new_target new_parent_id)) -> do
+                Just (new_route@(WikiCommentR new_project_handle new_language new_target new_parent_id)) -> do
                     new_discussion_id <-
                         maybe notfound (wikiPageDiscussion . entityVal) <$>
-                          runDB (fetchProjectWikiPageByNameDB new_project_handle new_target)
+                          runDB (fetchProjectWikiPageByNameDB new_project_handle new_language new_target)
                     return (new_route, Just new_parent_id, new_discussion_id)
-                Just (new_route@(WikiDiscussionR new_project_handle new_target)) -> do
+                Just (new_route@(WikiDiscussionR new_project_handle new_language new_target)) -> do
                     new_discussion_id <-
                         maybe notfound (wikiPageDiscussion . entityVal) <$>
-                          runDB (fetchProjectWikiPageByNameDB new_project_handle new_target)
+                          runDB (fetchProjectWikiPageByNameDB new_project_handle new_language new_target)
                     return (new_route, Nothing, new_discussion_id)
                 Just (new_route@(ProjectCommentR new_project_handle new_parent_id)) -> do
                     new_discussion_id <-
@@ -729,7 +729,11 @@ postCommentCreateTag comment_id = do
 -- /
 
 getCommentDirectLinkR :: CommentId -> Handler ()
-getCommentDirectLinkR comment_id = runDB (makeCommentRouteDB comment_id) >>= maybe notFound redirect
+getCommentDirectLinkR comment_id = do
+    langs <- getLanguages
+    route <- runDB $ makeCommentRouteDB langs comment_id
+
+    maybe notFound redirect route
 
 deleteCommentDirectLinkR :: CommentId -> Handler ()
 deleteCommentDirectLinkR comment_id = do

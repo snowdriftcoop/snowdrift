@@ -348,9 +348,10 @@ getUserTicketsR user_id = do
     mviewer_id <- maybeAuthId
 
     -- TODO: abstract out grabbing the project
-    claimed_tickets <- runDB $ select $ from $ \ (c `InnerJoin` t `InnerJoin` tc `LeftOuterJoin` w `InnerJoin` p) -> do
-        on_ $ p ^. ProjectDiscussion ==. c ^. CommentDiscussion ||. w ?. WikiPageProject ==. just (p ^. ProjectId)
-        on_ $ w ?. WikiPageDiscussion ==. just (c ^. CommentDiscussion)
+    claimed_tickets <- runDB $ select $ from $ \ (c `InnerJoin` t `InnerJoin` tc `LeftOuterJoin` wp `LeftOuterJoin` wt `InnerJoin` p) -> do
+        on_ $ p ^. ProjectDiscussion ==. c ^. CommentDiscussion ||. wp ?. WikiPageProject ==. just (p ^. ProjectId)
+        on_ $ wt ?. WikiTargetPage ==. wp ?. WikiPageId
+        on_ $ wp ?. WikiPageDiscussion ==. just (c ^. CommentDiscussion)
         on_ $ tc ^. TicketClaimingTicket ==. c ^. CommentId
         on_ $ t ^. TicketComment ==. c ^. CommentId
 
@@ -359,7 +360,7 @@ getUserTicketsR user_id = do
 
         orderBy [ asc $ tc ^. TicketClaimingTs ]
 
-        return (t, w, p ^. ProjectHandle)
+        return (t, wt, p ^. ProjectHandle)
 
     watched_tickets <- runDB $ select $ from $ \
         (
@@ -369,11 +370,13 @@ getUserTicketsR user_id = do
             `InnerJoin`     t   -- Ticket
             `LeftOuterJoin` tc  -- TicketClaiming for the ticket, if any (current only)
             `LeftOuterJoin` u   -- User who claimed the ticket, if any
-            `LeftOuterJoin` w   -- Wiki page for discussion, if any
+            `LeftOuterJoin` wp   -- Wiki page for discussion, if any
+            `LeftOuterJoin` wt   -- Wiki target for discussion, if any
             `InnerJoin` p       -- Project for discussion
         ) -> do
-            on_ $ p ^. ProjectDiscussion ==. c ^. CommentDiscussion ||. w ?. WikiPageProject ==. just (p ^. ProjectId)
-            on_ $ w ?. WikiPageDiscussion ==. just (c ^. CommentDiscussion)
+            on_ $ p ^. ProjectDiscussion ==. c ^. CommentDiscussion ||. wp ?. WikiPageProject ==. just (p ^. ProjectId)
+            on_ $ wt ?. WikiTargetPage ==. wp ?. WikiPageId
+            on_ $ wp ?. WikiPageDiscussion ==. just (c ^. CommentDiscussion)
             on_ $ u ?. UserId ==. tc ?. TicketClaimingUser
             on_ $ tc ?. TicketClaimingTicket ==. just (c ^. CommentId)
             on_ $ t ^. TicketComment ==. c ^. CommentId
@@ -387,7 +390,7 @@ getUserTicketsR user_id = do
 
             orderBy [ asc $ t ^. TicketCreatedTs, asc $ t ^. TicketId ]
 
-            return (t, u, w, p ^. ProjectHandle)
+            return (t, u, wt, p ^. ProjectHandle)
 
     defaultLayout $ do
         setTitle . toHtml $

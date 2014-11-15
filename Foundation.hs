@@ -5,6 +5,7 @@ import           Model.Currency
 import           Model.Established.Internal         (Established(..))
 import           Model.Notification.Internal        (NotificationType(..), NotificationDelivery(..))
 import           Model.SnowdriftEvent.Internal
+import           Model.Language
 import qualified Settings
 import           Settings                           (widgetFile, Extra (..))
 import           Settings.Development               (development)
@@ -22,7 +23,7 @@ import           Control.Monad.Writer.Strict        (WriterT, runWriterT)
 import qualified Data.ByteString.Lazy.Char8         as LB
 import           Data.Char                          (isSpace)
 import           Data.Int                           (Int64)
-import           Data.Maybe                         (fromJust)
+import           Data.Maybe                         (fromJust, mapMaybe)
 import           Data.Monoid
 import           Data.Time
 import           Data.Text                          as T
@@ -348,11 +349,12 @@ instance YesodAuth App where
 createUser :: Text -> Maybe Text -> Maybe Text -> Maybe Text -> Maybe Text
            -> Maybe Text -> Handler (Maybe UserId)
 createUser ident passwd name email avatar nick = do
+    langs <- mapMaybe (readMaybe . T.unpack) <$> languages
     now <- liftIO getCurrentTime
     handle (\DBException -> return Nothing) $ runYDB $ do
         account_id <- insert (Account 0)
         discussion_id <- insert (Discussion 0)
-        user <- maybe return setPassword passwd $ User ident email (Just now) Nothing Nothing name account_id avatar Nothing Nothing nick now now EstUnestablished discussion_id
+        user <- maybe return setPassword passwd $ User ident email (Just now) Nothing Nothing name account_id avatar Nothing Nothing nick langs now now EstUnestablished discussion_id
         uid_maybe <- insertUnique user
         Entity snowdrift_id _ <- getBy404 $ UniqueProjectHandle "snowdrift"
         case uid_maybe of
@@ -520,3 +522,10 @@ runSYDB w = do
     (a, events) <- runYDB (runWriterT w)
     pushEvents events
     return a
+
+-- from http://stackoverflow.com/questions/8066850/why-doesnt-haskells-prelude-read-return-a-maybe
+readMaybe   :: (Read a) => String -> Maybe a
+readMaybe s = case [x | (x,t) <- reads s, ("","") <- lex t] of
+                  [x] -> Just x
+                  _   -> Nothing
+

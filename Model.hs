@@ -5,6 +5,7 @@ module Model where
 import Model.Comment.Internal      (FlagReason, Visibility)
 import Model.Currency              (Milray)
 import Model.Established.Internal  (Established(..))
+import Model.Language
 import Model.Markdown.Diff         (MarkdownDiff)
 import Model.Notification.Internal (NotificationType, NotificationDelivery)
 import Model.Permission.Internal   (PermissionLevel)

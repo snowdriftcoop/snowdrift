@@ -140,7 +140,7 @@ pledgeForm project_id extra = do
                     One share means a monthly donation of 0.1&cent; per other patron
                     plus <i>some</i> extra for anyone donating extra shares.
                     <br>
-                    <a href=@{WikiR "snowdrift" "mechanism"}>
+                    <a href=@{WikiR "snowdrift" LangEn "mechanism"}>
                         <em> Read the details&hellip;
                 <h4 style="margin-top: 1em">
                     Your number of shares:

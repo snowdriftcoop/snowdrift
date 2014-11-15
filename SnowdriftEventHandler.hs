@@ -48,7 +48,7 @@ notificationEventHandler AppConfig{..} (ECommentPosted comment_id comment) = cas
 -- Notify all moderators of the project the comment was posted on.
 -- Also notify the comment poster.
 notificationEventHandler AppConfig{..} (ECommentPending comment_id comment) = runSDB $ do
-    route_text <- lift (makeCommentRouteDB comment_id >>= lift . routeToText . fromJust)
+    route_text <- lift (makeCommentRouteDB [LangEn] comment_id >>= lift . routeToText . fromJust)
 
     sendPreferredNotificationDB (commentUser comment) NotifUnapprovedComment Nothing Nothing $ mconcat
         [ "Your [comment]("
@@ -61,7 +61,7 @@ notificationEventHandler AppConfig{..} (ECommentPending comment_id comment) = ru
         , "Established users can post without moderation."
         ]
 
-    discussion <- lift $ fetchDiscussionDB $ commentDiscussion comment
+    discussion <- lift $ fetchDiscussionDB [LangEn] $ commentDiscussion comment
 
     let projectComment (Entity project_id project) = do
             let content = mconcat
@@ -78,11 +78,11 @@ notificationEventHandler AppConfig{..} (ECommentPending comment_id comment) = ru
 
     case discussion of
         DiscussionOnProject  project                 -> projectComment project
-        DiscussionOnWikiPage (Entity _ WikiPage{..}) -> projectComment =<< Entity wikiPageProject <$> getJust wikiPageProject
+        DiscussionOnWikiPage _ (Entity _ WikiTarget{..}) -> projectComment =<< Entity wikiTargetProject <$> getJust wikiTargetProject
         DiscussionOnUser _ -> error ""
 
 notificationEventHandler AppConfig{..} (ECommentApproved comment_id comment) = runSDB $ do
-    route_text <- lift (makeCommentRouteDB comment_id >>= lift . routeToText . fromJust)
+    route_text <- lift (makeCommentRouteDB [LangEn] comment_id >>= lift . routeToText . fromJust)
     sendPreferredNotificationDB (commentUser comment) NotifApprovedComment Nothing Nothing $ mconcat
         [ "Your [comment]("
         , Markdown route_text
@@ -93,8 +93,8 @@ notificationEventHandler AppConfig{..} (ECommentApproved comment_id comment) = r
 notificationEventHandler AppConfig{..} (ECommentRethreaded _ Rethread{..}) = do
     (comment, Just old_route, Just new_route) <- runDB $ (,,)
         <$> getJust rethreadOldComment
-        <*> makeCommentRouteDB rethreadOldComment
-        <*> makeCommentRouteDB rethreadNewComment
+        <*> makeCommentRouteDB [LangEn] rethreadOldComment
+        <*> makeCommentRouteDB [LangEn] rethreadNewComment
 
     rendered_old_route <- routeToText old_route
     rendered_new_route <- routeToText new_route
@@ -120,8 +120,8 @@ notificationEventHandler _ (ETicketClaimed _)       = return ()
 notificationEventHandler _ (ETicketUnclaimed _ _)   = return ()
 
 notificationEventHandler _ (ENotificationSent _ _)  = return ()
-notificationEventHandler _ (EWikiEdit _ _)          = return ()
-notificationEventHandler _ (EWikiPage _ _)          = return ()
+notificationEventHandler _ (EWikiEdit _ _ _)        = return ()
+notificationEventHandler _ (EWikiPage _ _ _)        = return ()
 notificationEventHandler _ (EBlogPost _ _)          = return ()
 notificationEventHandler _ (ENewPledge _ _)         = return ()
 notificationEventHandler _ (EUpdatedPledge _ _ _)   = return ()
@@ -142,8 +142,8 @@ eventInserterHandler (ETicketClaimed (Right (ticket_old_claiming_id, TicketOldCl
 eventInserterHandler (ETicketUnclaimed ticket_old_claiming_id TicketOldClaiming{..}) = runDB (insert_ (EventTicketUnclaimed ticketOldClaimingReleasedTs ticket_old_claiming_id))
 
 eventInserterHandler (ENotificationSent notif_id Notification{..})                   = runDB (insert_ (EventNotificationSent notificationCreatedTs notif_id))
-eventInserterHandler (EWikiPage wiki_page_id WikiPage{..})                           = runDB (insert_ (EventWikiPage wikiPageCreatedTs wiki_page_id))
-eventInserterHandler (EWikiEdit wiki_edit_id WikiEdit{..})                           = runDB (insert_ (EventWikiEdit wikiEditTs wiki_edit_id))
+eventInserterHandler (EWikiPage wiki_page_id WikiPage{..} _)                         = runDB (insert_ (EventWikiPage wikiPageCreatedTs wiki_page_id))
+eventInserterHandler (EWikiEdit wiki_edit_id WikiEdit{..} _)                         = runDB (insert_ (EventWikiEdit wikiEditTs wiki_edit_id))
 eventInserterHandler (ENewPledge shares_pledged_id SharesPledged{..})                = runDB (insert_ (EventNewPledge sharesPledgedTs shares_pledged_id))
 eventInserterHandler (EUpdatedPledge old_shares shares_pledged_id SharesPledged{..}) = runDB (insert_ (EventUpdatedPledge sharesPledgedTs old_shares shares_pledged_id))
 eventInserterHandler (EDeletedPledge ts user_id project_id shares)                   = runDB (insert_ (EventDeletedPledge ts user_id project_id shares))

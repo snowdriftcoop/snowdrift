@@ -70,11 +70,11 @@ renderCommentPostedEvent
                         ^{comment_widget}
                 |])
 
-            DiscussionOnWikiPage (Entity _ WikiPage{..}) ->
-                (wikiPageCommentRoutes project_handle wikiPageTarget, [whamlet|
+            DiscussionOnWikiPage _ (Entity _ WikiTarget{..}) ->
+                (wikiPageCommentRoutes project_handle wikiTargetLanguage wikiTargetTarget, [whamlet|
                     <div .event>
                         On the
-                        <a href=@{WikiDiscussionR project_handle wikiPageTarget}>#{wikiPageTarget}
+                        <a href=@{WikiDiscussionR project_handle wikiTargetLanguage wikiTargetTarget}>#{wikiTargetTarget}
                         wiki page:
 
                         ^{comment_widget}
@@ -120,9 +120,11 @@ renderCommentPendingEvent comment_id comment user_map = do
 
 renderCommentRethreadedEvent :: Rethread -> UserMap -> Widget
 renderCommentRethreadedEvent Rethread{..} user_map = do
+    langs <- handlerToWidget getLanguages
+
     (Just old_route, Just new_route) <- handlerToWidget $ runDB $ (,)
-        <$> makeCommentRouteDB rethreadOldComment
-        <*> makeCommentRouteDB rethreadNewComment
+        <$> makeCommentRouteDB langs rethreadOldComment
+        <*> makeCommentRouteDB langs rethreadNewComment
 
     let user = lookupErr "renderCommentRethreadedEvent: rethreader not found in user map" rethreadModerator user_map
 
@@ -215,7 +217,7 @@ renderTicketUnclaimedEvent TicketOldClaiming{..} _ ticket_map = do
     |]
 
 renderWikiPageEvent :: Text -> WikiPageId -> WikiPage -> UserMap -> Widget
-renderWikiPageEvent project_handle _ wiki_page _ = do
+renderWikiPageEvent project_handle wiki_page_id wiki_page _ = do
 -- TODO(aaron)
 -- The commented stuff here (and in the whamlet commented part)
 -- is because there's no wikiPageUser and the
@@ -225,7 +227,13 @@ renderWikiPageEvent project_handle _ wiki_page _ = do
 --            (M.lookup (wikiPageUser wiki_page) user_map)
 --perhaps instead of a wikiPageUser, we should just figure out how to pull
 --the user from the first wiki edit for the event of new pages
---
+
+-- TODO: pick language correctly
+    [Entity _ wiki_target] <- runDB $ select $ from $ \ wt -> do
+        where_ $ wt ^. WikiTargetPage ==. val wiki_page_id
+        limit 1
+        return wt
+
     [whamlet|
         <div .event>
             ^{renderTime $ wikiPageCreatedTs wiki_page}
@@ -234,25 +242,25 @@ renderWikiPageEvent project_handle _ wiki_page _ = do
                     #{userDisplayName (Entity (wikiPageUser wiki_page) editor)}
                 -->
             made a new wiki page: #
-            <a href=@{WikiR project_handle (wikiPageTarget wiki_page)}>#{wikiPageTarget wiki_page}
+            <a href=@{WikiR project_handle (wikiTargetLanguage wiki_target) (wikiTargetTarget wiki_target)}>#{wikiTargetTarget wiki_target}
     |]
 
-renderWikiEditEvent :: Text -> WikiEditId -> WikiEdit -> Map WikiPageId WikiPage -> UserMap -> Widget
-renderWikiEditEvent project_handle edit_id wiki_edit wiki_page_map user_map = do
-    let editor    = lookupErr "renderWikiEditEvent: wiki editor not found in user map"    (wikiEditUser wiki_edit) user_map
-        wiki_page = lookupErr "renderWikiEditEvent: wiki page not found in wiki page map" (wikiEditPage wiki_edit) wiki_page_map
+renderWikiEditEvent :: Text -> WikiEditId -> WikiEdit -> Map WikiPageId WikiTarget -> UserMap -> Widget
+renderWikiEditEvent project_handle edit_id wiki_edit wiki_target_map user_map = do
+    let editor      = lookupErr "renderWikiEditEvent: wiki editor not found in user map"         (wikiEditUser wiki_edit) user_map
+        wiki_target = lookupErr "renderWikiEditEvent: wiki page id not found in wiki target map" (wikiEditPage wiki_edit) wiki_target_map
     [whamlet|
         <div .event>
             ^{renderTime $ wikiEditTs wiki_edit}
             <a href=@{UserR (wikiEditUser wiki_edit)}>
                 #{userDisplayName (Entity (wikiEditUser wiki_edit) editor)}
             edited the
-            <a href=@{WikiR project_handle (wikiPageTarget wiki_page)}> #{wikiPageTarget wiki_page}
+            <a href=@{WikiR project_handle (wikiTargetLanguage wiki_target) (wikiTargetTarget wiki_target)}> #{wikiTargetTarget wiki_target}
             wiki page: #
             $maybe comment <- wikiEditComment wiki_edit
                 #{comment}
             <br>
-            <a href="@{WikiEditR project_handle (wikiPageTarget wiki_page) edit_id}">
+            <a href="@{WikiEditR project_handle (wikiTargetLanguage wiki_target) (wikiTargetTarget wiki_target) edit_id}">
                 see this edit version <!-- TODO: make this link to the diff instead -->
     |]
 

@@ -40,6 +40,8 @@ library
                      Model.Currency
                      Model.Discussion
                      Model.Issue
+                     Model.Language
+                     Model.Language.TH
                      Model.Markdown
                      Model.Markdown.Diff
                      Model.Notification
@@ -355,6 +357,7 @@ test-suite test
                  , persistent-postgresql
                  , resourcet
                  , monad-logger
+                 , monad-control
                  , transformers
                  , bytestring
                  , text

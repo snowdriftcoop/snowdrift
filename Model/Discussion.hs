@@ -9,6 +9,7 @@ module Model.Discussion
 
 import Import
 
+import Data.List (sortBy)
 import Model.Comment.Sql
 import Control.Monad.Trans.Maybe
 
@@ -29,7 +30,7 @@ data DiscussionType
 -- | Similar to DiscussionType, but exported, and actually contains the data.
 data DiscussionOn
     = DiscussionOnProject  (Entity Project)
-    | DiscussionOnWikiPage (Entity WikiPage)
+    | DiscussionOnWikiPage (Entity WikiPage) (Entity WikiTarget)
     | DiscussionOnUser     (Entity User)
 
 -- | Given a 'requested' DiscussionType, attempt to fetch the Discussion from that
@@ -38,28 +39,26 @@ data DiscussionOn
 -- will return Nothing.
 --
 -- TODO(mitchell): Make this function more type safe.
-fetchDiscussionInternal :: DiscussionId -> DiscussionType -> DB (Maybe DiscussionOn)
-fetchDiscussionInternal discussion_id DiscussionTypeProject = fmap (fmap DiscussionOnProject . listToMaybe) $
-    select $
-    from $ \p -> do
-    where_ (p ^. ProjectDiscussion ==. val discussion_id)
-    return p
+fetchDiscussionInternal :: [Language] -> DiscussionId -> DiscussionType -> DB (Maybe DiscussionOn)
+fetchDiscussionInternal _ discussion_id DiscussionTypeProject = fmap (fmap DiscussionOnProject) $ getBy $ UniqueProjectDiscussion discussion_id
+fetchDiscussionInternal langs discussion_id DiscussionTypeWikiPage = do
+    maybe_wiki_page <- getBy $ UniqueWikiPageDiscussion discussion_id
+    case maybe_wiki_page of
+        Nothing -> return Nothing
+        Just wiki_page@(Entity wiki_page_id _) -> do
+            targets <- select $ from $ \ wt -> do
+                   where_ (wt ^. WikiTargetPage ==. val wiki_page_id)
+                   return wt
 
-fetchDiscussionInternal discussion_id DiscussionTypeWikiPage = fmap (fmap DiscussionOnWikiPage . listToMaybe) $
-    select $
-    from $ \wp -> do
-    where_ (wp ^. WikiPageDiscussion ==. val discussion_id)
-    return wp
-
-fetchDiscussionInternal discussion_id DiscussionTypeUser = fmap (fmap DiscussionOnUser . listToMaybe) $
-    select $
-    from $ \u -> do
-    where_ (u ^. UserDiscussion ==. val discussion_id)
-    return u
+            case sortBy (languagePreferenceOrder langs (wikiTargetLanguage . entityVal)) targets of
+                [] -> return Nothing
+                target:_ -> return $ Just $ DiscussionOnWikiPage wiki_page target
+                
+fetchDiscussionInternal _ discussion_id DiscussionTypeUser = fmap (fmap DiscussionOnUser) $ getBy $ UniqueUserDiscussion discussion_id
 
 
-fetchDiscussionsInternal :: [DiscussionId] -> DiscussionType -> DB (Map DiscussionId DiscussionOn)
-fetchDiscussionsInternal discussion_ids DiscussionTypeProject = fmap (foldr go mempty) $
+fetchDiscussionsInternal :: [Language] -> [DiscussionId] -> DiscussionType -> DB (Map DiscussionId DiscussionOn)
+fetchDiscussionsInternal _ discussion_ids DiscussionTypeProject = fmap (foldr go mempty) $
     select $
     from $ \p -> do
     where_ (p ^. ProjectDiscussion `in_` valList discussion_ids)
@@ -68,16 +67,25 @@ fetchDiscussionsInternal discussion_ids DiscussionTypeProject = fmap (foldr go m
     go :: Entity Project -> Map DiscussionId DiscussionOn -> Map DiscussionId DiscussionOn
     go p@(Entity _ Project{..}) = M.insert projectDiscussion (DiscussionOnProject p)
 
-fetchDiscussionsInternal discussion_ids DiscussionTypeWikiPage = fmap (foldr go mempty) $
-    select $
-    from $ \wp -> do
-    where_ (wp ^. WikiPageDiscussion `in_` valList discussion_ids)
-    return wp
-  where
-    go :: Entity WikiPage -> Map DiscussionId DiscussionOn -> Map DiscussionId DiscussionOn
-    go w@(Entity _ WikiPage{..}) = M.insert wikiPageDiscussion (DiscussionOnWikiPage w)
+fetchDiscussionsInternal langs discussion_ids DiscussionTypeWikiPage = do
+    wiki_pages <- select $ from $ \ wp -> do
+        where_ $ wp ^. WikiPageDiscussion `in_` valList discussion_ids
+        return wp
 
-fetchDiscussionsInternal discussion_ids DiscussionTypeUser = fmap (foldr go mempty) $
+    wiki_targets <- select $ from $ \ wt -> do
+        where_ $ wt ^. WikiTargetPage `in_` valList (map entityKey wiki_pages)
+        return wt
+
+    let wiki_target_map =
+              M.mapMaybe (listToMaybe . sortBy (languagePreferenceOrder langs (wikiTargetLanguage . entityVal)))
+            $ M.fromListWith (++)
+            $ map (wikiTargetPage . entityVal &&& (:[])) wiki_targets
+
+    return $ M.fromList $ mapMaybe (\ wiki_page ->
+                (wikiPageDiscussion $ entityVal wiki_page,) . DiscussionOnWikiPage wiki_page <$> M.lookup (entityKey wiki_page) wiki_target_map
+            ) wiki_pages
+
+fetchDiscussionsInternal _ discussion_ids DiscussionTypeUser = fmap (foldr go mempty) $
     select $
     from $ \u -> do
     where_ (u ^. UserDiscussion `in_` valList discussion_ids)
@@ -87,18 +95,18 @@ fetchDiscussionsInternal discussion_ids DiscussionTypeUser = fmap (foldr go memp
     go u@(Entity _ User{..}) = M.insert userDiscussion (DiscussionOnUser u)
 
 -- | Fetch a single discussion, given its id.
-fetchDiscussionDB :: DiscussionId -> DB DiscussionOn
-fetchDiscussionDB discussion_id =
+fetchDiscussionDB :: [Language] -> DiscussionId -> DB DiscussionOn
+fetchDiscussionDB langs discussion_id =
     fromJustErr "fetchDiscussionDB: discussion not found" <$> runMaybeT (foldr mplus mzero f)
   where
     -- f :: [MaybeT DB DiscussionOn]
-    f = map (MaybeT . fetchDiscussionInternal discussion_id) [minBound..maxBound]
+    f = map (MaybeT . fetchDiscussionInternal langs discussion_id) [minBound..maxBound]
 
 -- | Fetch a list of discussions, given their ids. The returned map will have a key for
 -- every input DiscussionId.
-fetchDiscussionsDB :: [DiscussionId] -> DB (Map DiscussionId DiscussionOn)
-fetchDiscussionsDB discussion_ids = do
-    discussion_map <- mconcat <$> sequence (map (fetchDiscussionsInternal discussion_ids) [minBound..maxBound])
+fetchDiscussionsDB :: [Language] -> [DiscussionId] -> DB (Map DiscussionId DiscussionOn)
+fetchDiscussionsDB langs discussion_ids = do
+    discussion_map <- mconcat <$> sequence (map (fetchDiscussionsInternal langs discussion_ids) [minBound..maxBound])
     when (M.size discussion_map /= length discussion_ids) $
         error "fetchDiscussionsDB: some discussion not found"
     return discussion_map

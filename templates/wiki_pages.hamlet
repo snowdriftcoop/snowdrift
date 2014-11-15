@@ -1,4 +1,4 @@
-$if null pages
+$if null wiki_targets
     no pages to display
 $else
     <table .wiki-pages>
@@ -7,14 +7,14 @@ $else
             <th>Discussion
             <th>History
 
-        $forall Entity _ page <- pages
+        $forall Entity _ wiki_target <- wiki_targets
             <tr>
                 <td>
-                    <a href=@{WikiR project_handle (wikiPageTarget page)}>
-                        #{wikiPageTarget page}
+                    <a href=@{WikiR project_handle (wikiTargetLanguage wiki_target) (wikiTargetTarget wiki_target)}>
+                        #{wikiTargetTarget wiki_target}
                 <td>
-                    <a href=@{WikiDiscussionR project_handle (wikiPageTarget page)}>
+                    <a href=@{WikiDiscussionR project_handle (wikiTargetLanguage wiki_target) (wikiTargetTarget wiki_target)}>
                         <span .glyphicon .glyphicon-comment>&nbsp;
                 <td>
-                    <a href=@{WikiHistoryR project_handle (wikiPageTarget page)}>
+                    <a href=@{WikiHistoryR project_handle (wikiTargetLanguage wiki_target) (wikiTargetTarget wiki_target)}>
                         <span .glyphicon .glyphicon-list-alt>&nbsp;

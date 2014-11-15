@@ -28,8 +28,8 @@ snowdriftEventTime (ETicketClaimed (Left (_,  TicketClaiming{..})))     = ticket
 snowdriftEventTime (ETicketClaimed (Right (_,  TicketOldClaiming{..}))) = ticketOldClaimingClaimTs
 snowdriftEventTime (ETicketUnclaimed _ TicketOldClaiming{..})           = ticketOldClaimingReleasedTs
 snowdriftEventTime (ENotificationSent _ Notification{..})               = notificationCreatedTs
-snowdriftEventTime (EWikiEdit _ WikiEdit{..})                           = wikiEditTs
-snowdriftEventTime (EWikiPage _ WikiPage{..})                           = wikiPageCreatedTs
+snowdriftEventTime (EWikiEdit _ WikiEdit{..} _)                         = wikiEditTs
+snowdriftEventTime (EWikiPage _ WikiPage{..} _)                         = wikiPageCreatedTs
 snowdriftEventTime (EBlogPost _ BlogPost{..})                           = blogPostTs
 snowdriftEventTime (ENewPledge _ SharesPledged{..})                     = sharesPledgedTs
 snowdriftEventTime (EUpdatedPledge _ _ SharesPledged{..})               = sharesPledgedTs
@@ -42,7 +42,7 @@ snowdriftEventToFeedEntry
         -- -> Prefetch
         -> Map UserId User
         -> Map DiscussionId DiscussionOn
-        -> Map WikiPageId WikiPage
+        -> Map WikiPageId WikiTarget
         -> Map CommentId (Entity Ticket)
         -> SnowdriftEvent
         -> Maybe (FeedEntry (Route App))
@@ -53,7 +53,7 @@ snowdriftEventToFeedEntry render project_handle user_map discussion_map _ _ (ECo
         discussion = case M.lookup (commentDiscussion comment) discussion_map of
             Nothing                                          -> "<unknown discussion>"
             Just (DiscussionOnProject _)                     -> "project discussion"
-            Just (DiscussionOnWikiPage (Entity _ wiki_page)) -> "wiki discussion for \"" <> wikiPageTarget wiki_page <> "\""
+            Just (DiscussionOnWikiPage _ (Entity _ wiki_target)) -> "wiki discussion for \"" <> wikiTargetTarget wiki_target <> "\""
             Just (DiscussionOnUser user_entity)              -> "user discussion for " <> userDisplayName user_entity
      in Just $ FeedEntry
             { feedEntryLink    = CommentDirectLinkR comment_id
@@ -163,24 +163,25 @@ snowdriftEventToFeedEntry render project_handle _ _ _ ticket_map (ETicketUnclaim
             , feedEntryContent = [hamlet| |] render
             }
 
-snowdriftEventToFeedEntry render project_handle _ _ _ _ (EWikiPage _ wiki_page) =
-    let target = wikiPageTarget wiki_page
+snowdriftEventToFeedEntry render project_handle _ _ _ _ (EWikiPage _ wiki_page wiki_target) =
+    let language = wikiTargetLanguage wiki_target
+        target = wikiTargetTarget wiki_target
      in Just $ FeedEntry
-            { feedEntryLink    = WikiR project_handle $ wikiPageTarget wiki_page
+            { feedEntryLink    = WikiR project_handle language target
             , feedEntryUpdated = wikiPageCreatedTs wiki_page
             , feedEntryTitle   = T.unwords [ T.snoc project_handle ':', "new wiki page", "\"" <> target <> "\"" ]
             , feedEntryContent = [hamlet| |] render
             }
 
-snowdriftEventToFeedEntry render project_handle user_map _ wiki_page_map _ (EWikiEdit wiki_edit_id wiki_edit) =
-    let maybe_wiki_page = M.lookup (wikiEditPage wiki_edit) wiki_page_map
-        target          = maybe (error "missing wiki page for edit") wikiPageTarget maybe_wiki_page
+snowdriftEventToFeedEntry render project_handle user_map _ _ _ (EWikiEdit wiki_edit_id wiki_edit wiki_target) =
+    let target          = wikiTargetTarget wiki_target
+        language        = wikiTargetLanguage wiki_target
         user_id         = wikiEditUser wiki_edit
         maybe_user      = M.lookup user_id user_map
         username        = maybe "<unknown user>" (userDisplayName . Entity user_id) maybe_user
 
      in Just $ FeedEntry
-            { feedEntryLink    = WikiEditR project_handle target wiki_edit_id
+            { feedEntryLink    = WikiEditR project_handle language target wiki_edit_id
             , feedEntryUpdated = wikiEditTs wiki_edit
             , feedEntryTitle   = T.unwords
                 [ T.snoc project_handle ':'

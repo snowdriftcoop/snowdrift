@@ -36,10 +36,10 @@ data SnowdriftEvent
     | ENotificationSent NotificationId Notification
 
     -- New WikiEdit made.
-    | EWikiEdit WikiEditId WikiEdit
+    | EWikiEdit WikiEditId WikiEdit WikiTarget
 
     -- New WikiPage posted.
-    | EWikiPage WikiPageId WikiPage
+    | EWikiPage WikiPageId WikiPage WikiTarget
 
     -- New blog post posted.
     | EBlogPost BlogPostId BlogPost

@@ -48,23 +48,23 @@ projectCommentRoutes project_handle = CommentRoutes
     , comment_route_unwatch   = UnwatchProjectCommentR  project_handle
     }
 
-wikiPageCommentRoutes :: Text -> Text -> CommentRoutes
-wikiPageCommentRoutes project_handle target = CommentRoutes
-    { comment_route_add_tag   = WikiCommentAddTagR   project_handle target
-    , comment_route_approve   = ApproveWikiCommentR  project_handle target
-    , comment_route_claim     = ClaimWikiCommentR    project_handle target
-    , comment_route_close     = CloseWikiCommentR    project_handle target
-    , comment_route_delete    = DeleteWikiCommentR   project_handle target
-    , comment_route_edit      = EditWikiCommentR     project_handle target
-    , comment_route_flag      = FlagWikiCommentR     project_handle target
-    , comment_route_permalink = WikiCommentR         project_handle target
-    , comment_route_reply     = ReplyWikiCommentR    project_handle target
-    , comment_route_rethread  = RethreadWikiCommentR project_handle target
-    , comment_route_retract   = RetractWikiCommentR  project_handle target
-    , comment_route_tag       = WikiCommentTagR      project_handle target
-    , comment_route_unclaim   = UnclaimWikiCommentR  project_handle target
-    , comment_route_watch     = WatchWikiCommentR    project_handle target
-    , comment_route_unwatch   = UnwatchWikiCommentR  project_handle target
+wikiPageCommentRoutes :: Text -> Language -> Text -> CommentRoutes
+wikiPageCommentRoutes project_handle language target = CommentRoutes
+    { comment_route_add_tag   = WikiCommentAddTagR   project_handle language target
+    , comment_route_approve   = ApproveWikiCommentR  project_handle language target
+    , comment_route_claim     = ClaimWikiCommentR    project_handle language target
+    , comment_route_close     = CloseWikiCommentR    project_handle language target
+    , comment_route_delete    = DeleteWikiCommentR   project_handle language target
+    , comment_route_edit      = EditWikiCommentR     project_handle language target
+    , comment_route_flag      = FlagWikiCommentR     project_handle language target
+    , comment_route_permalink = WikiCommentR         project_handle language target
+    , comment_route_reply     = ReplyWikiCommentR    project_handle language target
+    , comment_route_rethread  = RethreadWikiCommentR project_handle language target
+    , comment_route_retract   = RetractWikiCommentR  project_handle language target
+    , comment_route_tag       = WikiCommentTagR      project_handle language target
+    , comment_route_unclaim   = UnclaimWikiCommentR  project_handle language target
+    , comment_route_watch     = WatchWikiCommentR    project_handle language target
+    , comment_route_unwatch   = UnwatchWikiCommentR  project_handle language target
     }
 
 userCommentRoutes :: UserId -> CommentRoutes
