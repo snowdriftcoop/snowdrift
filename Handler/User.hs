@@ -6,6 +6,7 @@ import           Handler.Utils
 import           Handler.Comment
 import           Handler.Discussion
 import           Handler.User.Comment
+import           Model.Currency
 import           Model.Comment.ActionPermissions
 import           Model.Notification.Internal (NotificationType (..))
 import           Model.Role
@@ -189,18 +190,27 @@ postUserBalanceR user_id = do
 
     now <- liftIO getCurrentTime
 
+    let balanceCap :: Milray
+        balanceCap = 100
+
     case result of
         FormSuccess amount -> do
             if amount < 10
                 then alertDanger "Sorry, minimum deposit is $10"
                 else do
-                    runDB $ do
-                        _ <- insert $ Transaction now (Just $ userAccount user) Nothing Nothing amount "Test Load" Nothing
-                        update $ \ account -> do
+                    success <- runDB $ do
+                        c <- updateCount $ \ account -> do
                             set account [ AccountBalance +=. val amount ]
-                            where_ ( account ^. AccountId ==. val (userAccount user) )
+                            where_ $ account ^. AccountId ==. val (userAccount user)
+                                &&. account ^. AccountBalance +. val amount <=. val balanceCap
 
-                    alertSuccess "Balance updated."
+                        when (c == 1) $ insert_ $ Transaction now (Just $ userAccount user) Nothing Nothing amount "Test Load" Nothing
+                        return (c == 1)
+
+                    if success
+                     then alertDanger $ "Balance would exceed (testing only) cap of " <> T.pack (show balanceCap)
+                     else alertSuccess "Balance updated."
+
             redirect (UserBalanceR user_id)
 
         _ -> error "Error processing form."
