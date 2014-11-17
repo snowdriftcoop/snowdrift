@@ -1,6 +1,5 @@
 <h1>
-    <center>
-        Notifications
+    <div .text-center> Notifications
 
 $if not (null notifs)
     $forall Entity _ notif <- notifs

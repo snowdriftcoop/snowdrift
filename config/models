@@ -17,6 +17,7 @@ Transaction
 User
     ident             Text
     email             Text         Maybe
+    email_verified    Bool               default=false
     createdTs         UTCTime      Maybe
     hash              Text         Maybe
     salt              Text         Maybe
@@ -36,6 +37,22 @@ User
     UniqueUserAccount account
     UniqueUserDiscussion discussion
     deriving Show Typeable
+
+ResetPassword
+    user  UserId
+    email Text
+    uri   Text
+    sent  Bool   default=false  -- for the email daemon
+
+    UniquePasswordReset user email uri
+
+EmailVerification
+    user  UserId
+    email Text   -- user's email at the time when the 'uri' was generated
+    uri   Text                  -- verification link
+    sent  Bool   default=false  -- was it sent by the email daemon?
+
+    UniqueEmailVerification user email uri
 
 -- A single notification preference. If some NotificationType does not appear in any
 -- row for a particular user, that means the user does not wish to be notified

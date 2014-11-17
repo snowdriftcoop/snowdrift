@@ -1171,11 +1171,11 @@ getUpdateSharesR project_handle = do
 
             runDB (getBy (UniquePledge user_id project_id)) >>= \case
                 Just (Entity _ pledge) | pledgeShares pledge == shares -> do
-                    alertWarning ("you've already pledged " <> T.pack (show shares) <> " shares of support to this project")
+                    alertWarning ("Your pledge was already at " <> T.pack (show shares) <> " " <> plural shares "share" "shares" <> ". Thank you for your support!")
                     redirect (ProjectR project_handle)
                 mpledge ->
                     defaultLayout $ do
-                        setTitle . toHtml $ projectName project <> " - Change Your Contribution | Snowdrift.coop"
+                        setTitle . toHtml $ projectName project <> " - update pledge | Snowdrift.coop"
                         $(widgetFile "update_shares")
 
         FormMissing -> defaultLayout [whamlet| form missing |]
@@ -1190,26 +1190,35 @@ postUpdateSharesR project_handle = do
     case result of
         FormSuccess (SharesPurchaseOrder shares) -> do
             -- TODO - refuse negative
+
             if isConfirmed
                 then do
                     Just pledge_render_id <- fmap (read . T.unpack) <$> lookupSession pledgeRenderKey
 
-                    success <- runSYDB $ do
+                    (success, project) <- runSYDB $ do
                         Entity user_id user <- lift (lift requireAuth)
                         Just account <- lift $ get (userAccount user)
                         Entity project_id project <- lift $ getBy404 (UniqueProjectHandle project_handle)
 
                         let user_outlay = projectShareValue project $* fromIntegral shares :: Milray
                         if accountBalance account < user_outlay $* 3
-                            then return False
+                            then return (False, project)
                             else do
                                 insertProjectPledgeDB user_id project_id shares pledge_render_id
                                 lift (updateShareValue project_id)
-                                return True
+                                return (True, project)
 
                     if success
-                       then alertSuccess ("you have pledged " <> T.pack (show shares) <> " shares of support to this project")
-                       else alertWarning "Sorry, you must have funds to support your pledge for at least 3 months at current share value. Please deposit additional funds to your account."
+                        then do
+                            if shares == 0
+                                then alertSuccess ("You have dropped your pledge and are no longer " <>
+                                                "a patron of " <> projectName project <> ".")
+                                else alertSuccess ("Your pledge is now " <> T.pack (show shares) <> " " <> plural shares "share" "shares"
+                                        <> ". Thank you for being a patron of " <> projectName project <> "!")
+
+                        else alertWarning ("Sorry, you must have funds to support your pledge "
+                                    <> "for at least 3 months at current share value. "
+                                    <> "Please deposit additional funds to your account.")
 
                     redirect (ProjectR project_handle)
                 else redirect (ProjectR project_handle)

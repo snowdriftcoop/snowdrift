@@ -1,3 +1,6 @@
+<h1>
+    <div .text-center> Tickets
+
 <form enctype=#{encType}>
     ^{formWidget}
     <input type=submit value="update view">

@@ -6,9 +6,11 @@ import           Handler.Utils
 import           Handler.Comment
 import           Handler.Discussion
 import           Handler.User.Comment
+import           Model.Currency
 import           Model.Comment.ActionPermissions
 import           Model.Notification.Internal (NotificationType (..))
 import           Model.Role
+import           Model.ResetPassword (fromResetPassword, deleteFromResetPassword)
 import           Model.Transaction
 import           Model.User
 import           Model.Comment.Sql
@@ -18,13 +20,14 @@ import           View.User
 import           Widgets.ProjectPledges
 import           Widgets.Time
 
-import qualified Data.Map  as M
-import qualified Data.Set  as S
-import qualified Data.Text as T
-
 import           Data.Default         (def)
+import qualified Data.Map             as M
+import           Data.Maybe           (fromJust)
+import qualified Data.Maybe           as Maybe
+import qualified Data.Set             as S
+import qualified Data.Text            as T
 import           Text.Cassius         (cassiusFile)
-
+import           Yesod.Auth.HashDB    (setPassword, validateUser)
 
 getUsersR :: Handler Html
 getUsersR = do
@@ -71,14 +74,29 @@ getUserCreateR = do
                 <input type=submit>
         |]
 
+startEmailVerification :: UserId -> Text -> HandlerT App IO ()
+startEmailVerification user_id user_email = do
+    hash    <- liftIO newHash
+    ver_uri <- getUrlRender <*> (pure $ UserVerifyEmailR user_id hash)
+    runDB $ do
+        insert_ $ EmailVerification user_id user_email ver_uri False
+        update $ \u -> do
+            set u $ [UserEmail_verified =. val False]
+            where_ $ u ^. UserId ==. val user_id
+    alertSuccess $ "Verification email has been sent to " <> user_email <> "."
+
 postUserCreateR :: Handler Html
 postUserCreateR = do
     ((result, form), _) <- runFormPost $ createUserForm Nothing
 
     case result of
-        FormSuccess (ident, passwd, name, email, avatar, nick) -> do
-            createUser ident (Just passwd) name email avatar nick
-                >>= \ maybe_user_id -> when (isJust maybe_user_id) $ do
+        FormSuccess (ident, passwd, name, memail, avatar, nick) -> do
+            createUser ident (Just passwd) name memail avatar nick
+                >>= \muser_id -> when (isJust muser_id) $ do
+                    when (isJust memail) $ do
+                        let email   = fromJust memail
+                            user_id = fromJust muser_id
+                        startEmailVerification user_id email
                     setCreds True $ Creds "HashDB" ident []
                     redirectUltDest HomeR
 
@@ -102,7 +120,9 @@ getUserR user_id = do
     user <- runYDB $ get404 user_id
 
     projects_and_roles <- runDB (fetchUserProjectsAndRolesDB user_id)
-
+    when (isJust (userEmail user) && not (userEmail_verified user)) $
+        alertWarning $ "Email address is not verified. Until you verify it, "
+                    <> "you will not be able to receive email notifications."
     defaultLayout $ do
         setTitle . toHtml $ "User Profile - " <> userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
         renderUser mviewer_id user_id user projects_and_roles
@@ -170,18 +190,27 @@ postUserBalanceR user_id = do
 
     now <- liftIO getCurrentTime
 
+    let balanceCap :: Milray
+        balanceCap = 100
+
     case result of
         FormSuccess amount -> do
             if amount < 10
                 then alertDanger "Sorry, minimum deposit is $10"
                 else do
-                    runDB $ do
-                        _ <- insert $ Transaction now (Just $ userAccount user) Nothing Nothing amount "Test Load" Nothing
-                        update $ \ account -> do
+                    success <- runDB $ do
+                        c <- updateCount $ \ account -> do
                             set account [ AccountBalance +=. val amount ]
-                            where_ ( account ^. AccountId ==. val (userAccount user) )
+                            where_ $ account ^. AccountId ==. val (userAccount user)
+                                &&. account ^. AccountBalance +. val amount <=. val balanceCap
 
-                    alertSuccess "Balance updated."
+                        when (c == 1) $ insert_ $ Transaction now (Just $ userAccount user) Nothing Nothing amount "Test Load" Nothing
+                        return (c == 1)
+
+                    if success
+                     then alertDanger $ "Balance would exceed (testing only) cap of " <> T.pack (show balanceCap)
+                     else alertSuccess "Balance updated."
+
             redirect (UserBalanceR user_id)
 
         _ -> error "Error processing form."
@@ -255,6 +284,53 @@ postUserDiscussionR :: UserId -> Handler Html
 postUserDiscussionR _ = error "TODO(mitchell)"
 
 --------------------------------------------------------------------------------
+-- /#UserId/change-password
+
+getUserChangePasswordR :: UserId -> Handler Html
+getUserChangePasswordR user_id = do
+    void $ checkEditUser user_id
+    user <- runYDB $ get404 user_id
+    (form, enctype) <- generateFormPost changePasswordForm
+    defaultLayout $ do
+        setTitle . toHtml $ "Change Password - " <>
+            userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
+        $(widgetFile "change_password")
+
+resetPassword :: RedirectUrl App route
+              => UserId -> User -> Text -> Text -> route -> Handler Html
+resetPassword user_id user password password' route =
+    if password == password'
+        then do
+            user' <- setPassword password user
+            runDB $ do
+                updateUserPasswordDB user_id (userHash user') (userSalt user')
+                deleteFromResetPassword user_id
+            alertSuccess "Successfully updated the password."
+            redirect $ AuthR LoginR
+        else do
+            alertDanger "Passwords do not match."
+            redirect route
+
+postUserChangePasswordR :: UserId -> Handler Html
+postUserChangePasswordR user_id = do
+    void $ checkEditUser user_id
+    ((result, form), enctype) <- runFormPost changePasswordForm
+    case result of
+        FormSuccess ChangePassword {..} -> do
+            user <- runYDB $ get404 user_id
+            is_valid_password <- validateUser (UniqueUser $ userIdent user)
+                                     currentPassword
+            if is_valid_password
+                then resetPassword user_id user newPassword newPassword' $
+                         UserChangePasswordR user_id
+                else do
+                    alertDanger "Incorrect current password."
+                    defaultLayout $(widgetFile "change_password")
+        _ -> do
+            alertDanger "Failed to update the password."
+            defaultLayout $(widgetFile "change_password")
+
+--------------------------------------------------------------------------------
 -- /#UserId/edit
 
 getEditUserR :: UserId -> Handler Html
@@ -277,6 +353,12 @@ postUserR user_id = do
         FormSuccess user_update -> do
             lookupPostMode >>= \case
                 Just PostMode -> do
+                    let muser_email = userUpdateEmail user_update
+                    when (isJust muser_email) $ do
+                        let user_email = fromJust muser_email
+                        mcurrent_email <- runDB $ fetchUserEmail user_id
+                        when (mcurrent_email /= Just user_email) $
+                            startEmailVerification user_id user_email
                     runDB (updateUserDB user_id user_update)
                     redirect (UserR user_id)
 
@@ -324,6 +406,32 @@ postUserEstEligibleR user_id = do
                     redirectUltDest HomeR
                 _ -> error "User not unestablished!"
         _ -> error "Error submitting form."
+
+--------------------------------------------------------------------------------
+-- /#UserId/email/#Text
+
+getUserVerifyEmailR :: UserId -> Text -> Handler Html
+getUserVerifyEmailR user_id hash = do
+    ver_uri     <- getUrlRender <*> (pure $ UserVerifyEmailR user_id hash)
+    mver_email  <- runDB $ fetchVerEmail ver_uri user_id
+    muser_email <- runDB $ fetchUserEmail user_id
+    if | Maybe.isNothing mver_email -> notFound
+       | Maybe.isNothing muser_email -> do
+             alertDanger $ "Failed to verify the email address since none is "
+                        <> "associated with the account."
+             redirect HomeR
+       | otherwise -> do
+             let ver_email  = fromJust mver_email
+                 user_email = fromJust muser_email
+             if ver_email == user_email
+                 then do
+                     runDB $ verifyEmailDB user_id
+                     alertSuccess "Successfully verified the email address."
+                     redirect HomeR
+                 else do
+                     alertDanger $ "Current email address does not match the "
+                                <> "verification link."
+                     redirect HomeR
 
 --------------------------------------------------------------------------------
 -- /#UserId/pledges
@@ -438,3 +546,31 @@ postUserNotificationsR user_id = do
             alertDanger $ "Failed to update the notification preferences. "
                        <> "Please try again."
             defaultLayout $(widgetFile "user_notifications")
+
+--------------------------------------------------------------------------------
+-- /#UserId/reset-password/#Text
+
+getUserResetPasswordR :: UserId -> Text -> Handler Html
+getUserResetPasswordR user_id hash = do
+    n <- runDB $ selectCount $ fromResetPassword user_id
+    if n == 0
+        then notFound
+        else do
+            user <- runYDB $ get404 user_id
+            (form, enctype) <- generateFormPost setPasswordForm
+            defaultLayout $ do
+                setTitle . toHtml $ "Set Password - " <>
+                    userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
+                $(widgetFile "set_password")
+
+postUserResetPasswordR :: UserId -> Text -> Handler Html
+postUserResetPasswordR user_id hash = do
+    ((result, form), enctype) <- runFormPost setPasswordForm
+    case result of
+        FormSuccess SetPassword {..} -> do
+            user <- runYDB $ get404 user_id
+            resetPassword user_id user password password' $
+                UserResetPasswordR user_id hash
+        _ -> do
+            alertDanger "Failed to set the password."
+            defaultLayout $(widgetFile "set_password")

@@ -1,5 +1,8 @@
 module Model.User
     ( UserMap
+    , UserUpdate (..)
+    , ChangePassword (..)
+    , SetPassword (..)
     -- Utility functions
     , anonymousUser
     , curUserIsEligibleEstablish
@@ -14,6 +17,7 @@ module Model.User
     , userIsUnestablished
     , userDisplayName
     -- Database actions
+    , deleteFromEmailVerification
     , eligEstablishUserDB
     , establishUserDB
     , fetchAllUserRolesDB
@@ -22,13 +26,17 @@ module Model.User
     , fetchNumUnviewedCommentsOnProjectWikiPagesDB
     , fetchNumUnviewedWikiEditsOnProjectDB
     , fetchUserArchivedNotificationsDB
+    , fetchUserEmail
     , fetchUserNotificationsDB
     , fetchUserNotificationPrefDB
     , fetchUserProjectsAndRolesDB
     , fetchUserRolesDB
     , fetchUsersInDB
+    , fetchVerEmail
+    , fromEmailVerification
     , sendPreferredNotificationDB
     , updateUserDB
+    , updateUserPasswordDB
     , updateNotificationPrefDB
     , userCanDeleteCommentDB
     , userClaimCommentDB
@@ -47,6 +55,7 @@ module Model.User
     , userViewCommentsDB
     , userViewWikiEditsDB
     , userWatchProjectDB
+    , verifyEmailDB
     -- Unsorted
     , canCurUserMakeEligible
     , canMakeEligible
@@ -64,7 +73,9 @@ import Model.User.Internal
 import Model.User.Sql
 import Model.Wiki.Sql
 
+import           Database.Esqueleto.Internal.Language (From)
 import qualified Data.Foldable      as F
+import qualified Data.List          as L
 import qualified Data.Map           as M
 import qualified Data.Set           as S
 import qualified Data.Text          as T
@@ -152,6 +163,41 @@ updateUserDB user_id UserUpdate{..} = do
              , UserBlurb              =. val userUpdateBlurb
              ]
      where_ (u ^. UserId ==. val user_id)
+
+updateUserPasswordDB :: UserId -> Maybe Text -> Maybe Text -> DB ()
+updateUserPasswordDB user_id hash salt =
+    update $ \u -> do
+        set u $ [ UserHash =. val hash
+                , UserSalt =. val salt ]
+        where_ $ u ^. UserId ==. val user_id
+
+fromEmailVerification :: From query expr backend (expr (Entity EmailVerification))
+                      => UserId -> query ()
+fromEmailVerification user_id =
+    from $ \ev -> where_ $ ev ^. EmailVerificationUser ==. val user_id
+
+deleteFromEmailVerification :: (MonadResource m, MonadSqlPersist m)
+                            => UserId -> m ()
+deleteFromEmailVerification user_id =
+    delete $ fromEmailVerification user_id
+
+fetchVerEmail :: Text -> UserId -> DB (Maybe Text)
+fetchVerEmail ver_uri user_id = do
+    emails <- fmap (map unValue) $
+              select $ from $ \ev -> do
+                  where_ $ ev ^. EmailVerificationUser ==. val user_id
+                       &&. ev ^. EmailVerificationUri  ==. val ver_uri
+                  return $ ev ^. EmailVerificationEmail
+    if L.null emails
+        then return $ Nothing
+        else return $ Just $ L.head emails
+
+verifyEmailDB :: (MonadResource m, MonadSqlPersist m) => UserId -> m ()
+verifyEmailDB user_id = do
+    update $ \u -> do
+        set u $ [UserEmail_verified =. val True]
+        where_ $ u ^. UserId ==. val user_id
+    deleteFromEmailVerification user_id
 
 -- | Establish a user, given their eligible-timestamp and reason for
 -- eligibility. Mark all unapproved comments of theirs as approved.

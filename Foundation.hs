@@ -315,8 +315,11 @@ snowdriftAuthHashDB =
                                 Passphrase:
                             <div .col-sm-8>
                                 <input .form-control type="password" name="password" required>
-                        <figure>
-                            <input type="submit" value="Log in">
+                        <div .form-group>
+                            <div .col-sm-offset-4 .col-sm-8>
+                                <input type="submit" value="Log in">
+                                <a href="@{ResetPasswordR}" .text-nowrap>
+                                    forgot your password?
             |]
      in auth { apLogin = login }
 
@@ -354,7 +357,7 @@ createUser ident passwd name email avatar nick = do
     handle (\DBException -> return Nothing) $ runYDB $ do
         account_id <- insert (Account 0)
         discussion_id <- insert (Discussion 0)
-        user <- maybe return setPassword passwd $ User ident email (Just now) Nothing Nothing name account_id avatar Nothing Nothing nick langs now now EstUnestablished discussion_id
+        user <- maybe return setPassword passwd $ User ident email False (Just now) Nothing Nothing name account_id avatar Nothing Nothing nick langs now now EstUnestablished discussion_id
         uid_maybe <- insertUnique user
         Entity snowdrift_id _ <- getBy404 $ UniqueProjectHandle "snowdrift"
         case uid_maybe of

@@ -8,7 +8,6 @@ a:visited
     color : #2061F6
 
 img
-    padding : 0.8em
     max-width: 100%
     height: auto
 
@@ -40,11 +39,11 @@ input[type=text], input[type=email]
     width : 30em
 
 input[type=number]
-    width : unset
+    width : inherit
 
 .radio-inline
     width : 2em
-    vertical-align : unset
+    vertical-align : inherit
 
 .markdown_wrapper textarea
     height : 12em
@@ -142,12 +141,7 @@ dd
 
 
 .headshot
-    margin-top : 0.5em
-    max-width : 8em
-
-.headshot_large
-    margin-top : 0.5em
-    width : 12em
+    max-height : 10em
 
 .bio_name
     text-align : center
@@ -161,7 +155,7 @@ h1, h2, h3, h4, h5, h6
 /* In case someone puts headers above the fold for a blog post, */
 /* this makes them look better on the multi-post blog page. */
 .blog-post-top h1, .blog-post-top h2, .blog-post-top h3, .blog-post-top h4, .blog-post-top h5, .blog-post-top h6
-    font-size : unset
+    font-size : inherit
     padding-left : 1em
 
 .blog-post hr, .blog-post-top hr
@@ -203,6 +197,7 @@ td
 
 figure
     text-align : center
+    padding : 5px
 
 .tagcloud span
     display : block

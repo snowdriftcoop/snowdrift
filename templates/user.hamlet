@@ -1,36 +1,41 @@
 <div .row>
     <div .col-md-6>
+        $if Just user_id == mviewer_id
+            <div .row>
+                <h5>
+                    <div .col-xs-6>
+                        <a href="@{EditUserR user_id}">
+                            edit profile
+                    <div .col-xs-6>
+                        <a href="@{UserChangePasswordR user_id}">
+                            change password
+                    <div .col-xs-6>
+                        <a href="@{UserNotificationsR user_id}">
+                            notification preferences
         <h1>
             #{userDisplayName user_entity}
-        <h5>
-            $if Just user_id == mviewer_id
-                <div .col-md-2>
-                    <a href="@{EditUserR user_id}">
-                        edit profile
-                <div .col-md-2>
-                    <a href="@{UserNotificationsR user_id}">
-                        notification preferences
-        <p>
         <div .row>
-            <div .col-xs-4>
-                $maybe avatar <- userAvatar user
-                    <img .headshot_large src="#{avatar}">
+            $maybe avatar <- userAvatar user
+                <div .col-sm-5>
+                    <figure>
+                        <img .headshot src="#{avatar}">
+            <div .col-sm-7>
                 $if userIsEstablished user
                     <small>established user
-            $if Just user_id == mviewer_id
-                <div .col-xs-8>
+                    <br>
+                $if Just user_id == mviewer_id
                     $maybe email <- userEmail user
-                        #{email}
-            <div .col-xs-8>
+                        #{email} (not shown publicly)
+                    <br>
                 $maybe nick <- userIrcNick user
-                    #{nick} on <a href="https://snowdrift.coop/p/snowdrift/w/irc">irc.freenode.net</a>
+                    #{nick} on <a href=@{WikiR "snowdrift" LangEn "irc"}>irc.freenode.net</a>
 
     <div .col-md-6>
         $maybe blurb <- userBlurb user
             ^{markdownWidget blurb}
         $nothing
             &nbsp;
-
+<hr>
 <div .row>
 
     <div .col-md-6>
@@ -66,11 +71,11 @@ $maybe (est_form, est_form_enctype) <- mest_form_and_enctype
         <div .col-md-6 #establish-form>
             <h4>Establish User
             <p>
-                As a project moderator, you have the ability to "establish" ordinary users.
+                As a project moderator, you can mark users eligible for "establishment".
                 Established users have additional permissions such as
                 flagging, tagging, and commenting without moderation.
             <p>
-                Approve users who you now trust to be legitimate
+                Approve of this user if you now trust them to be legitimate
                 (e.g. they have posted several helpful, on-topic comments,
                 and are clearly not a spammer or malicious troll).
                 They will then become fully established after affirming

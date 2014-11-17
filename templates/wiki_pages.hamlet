@@ -1,3 +1,6 @@
+<h1> 
+    <div .text-center> Project Index
+
 $if null wiki_targets
     no pages to display
 $else
