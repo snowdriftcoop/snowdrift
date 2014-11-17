@@ -13,7 +13,7 @@ wikiSpecs =
 
         yit "creates a new page" $ [marked|
 
-            login
+            loginAs TestUser
 
             get $ NewWikiR "snowdrift" LangEn "testpage"
             statusIs 200
@@ -40,7 +40,7 @@ wikiSpecs =
 
         yit "edits a wiki page" $ [marked|
 
-            login
+            loginAs TestUser
 
             get $ EditWikiR "snowdrift" LangEn "testpage"
             statusIs 200

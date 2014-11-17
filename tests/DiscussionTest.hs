@@ -45,14 +45,14 @@ discussionSpecs = do
 
     ydescribe "discussion" $ do
         yit "loads the discussion page" $ [marked|
-            login
+            loginAs TestUser
 
             get $ WikiDiscussionR "snowdrift" LangEn "about"
             statusIs 200
         |]
 
         yit "posts and moves some comments" $ [marked|
-            login
+            loginAs TestUser
 
             liftIO $ putStrLn "posting root comment"
 
@@ -122,7 +122,7 @@ discussionSpecs = do
 
 
         yit "can move newer comments under older" $ [marked|
-            login
+            loginAs TestUser
 
             get $ NewWikiDiscussionR "snowdrift" LangEn "about"
             statusIs 200
@@ -134,7 +134,7 @@ discussionSpecs = do
 
 
         yit "can move older comments under newer" $ [marked|
-            login
+            loginAs TestUser
 
             get $ NewWikiDiscussionR "snowdrift" LangEn "about"
             statusIs 200
@@ -145,7 +145,7 @@ discussionSpecs = do
         |]
 
         yit "can rethread across pages and the redirect still works" $ [marked|
-            login
+            loginAs TestUser
 
             postComment (NewWikiDiscussionR "snowdrift" LangEn "about") $ byLabel "New Topic" "posting on about page"
             originalId <- getLatestCommentId

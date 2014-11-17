@@ -17,7 +17,7 @@ Transaction
 User
     ident             Text
     email             Text         Maybe
-    email_verified    Bool               default=false
+    email_verified    Bool                  default=false
     createdTs         UTCTime      Maybe
     hash              Text         Maybe
     salt              Text         Maybe

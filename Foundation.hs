@@ -239,7 +239,7 @@ getSiteProjectHandle = extraSiteProject . appExtra . settings <$> getYesod
 authBrowserIdFixed :: AuthPlugin App
 authBrowserIdFixed =
     let complete = PluginR "browserid" []
-	login :: (Route Auth -> Route App) -> WidgetT App IO ()
+        login :: (Route Auth -> Route App) -> WidgetT App IO ()
         login toMaster = do
             addScriptRemote browserIdJs
 

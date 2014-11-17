@@ -11,6 +11,7 @@ import Yesod.Default.Config
 import Test.Hspec (hspec)
 import Application (makeFoundation)
 
+import UserTest
 import DiscussionTest
 import WikiTest
 import BlogTest
@@ -32,9 +33,8 @@ main = do
 
     hspec $ do
         yesodSpec foundation $ do
+            userSpecs
             wikiSpecs
-
             discussionSpecs
-
             blogSpecs
 

@@ -22,6 +22,7 @@ import qualified Data.ByteString as B
 
 import qualified Data.Text as T
 import Data.Text (Text)
+import Data.String
 
 import Data.Text.Encoding (decodeUtf8)
 import Foundation as TestImport
@@ -113,25 +114,43 @@ needsLogin method url = do
     mbloc <- firstRedirect method url
     maybe (assertFailure "Should have location header") (assertLoginPage . decodeUtf8) mbloc
 
--- Do a login (using hashdb auth).  This just attempts to go to the home
--- url, and follows through the login process.  It should probably be the
--- first thing in each "it" spec.
---
-login :: (Yesod site) => YesodExample site ()
-login = do
-    get $ urlPath $ testRoot `T.append` "/auth/login"
-    statusIs 200
-    submitLogin "test" "test"
+
+data NamedUser = Bob | Mary | Joe | Sue deriving (Eq, Bounded, Enum)
+data TestUser = TestUser
+data AdminUser = AdminUser
+
+class Login a where
+    username :: IsString name => a -> name
+    password :: IsString pass => a -> pass
+
+instance Login NamedUser where
+    username Bob =  "bob"
+    username Mary = "mary"
+    username Joe =  "joe"
+    username Sue =  "sue"
+
+    password Bob =  "bob password"
+    password Mary = "mary password"
+    password Joe =  "joe password"
+    password Sue =  "sue password"
+
+instance Login TestUser where
+    username _ = "test"
+    password _ = "test"
+
+instance Login AdminUser where
+    username _ = "admin"
+    password _ = "admin"
 
 -- Do a login (using hashdb auth).  This just attempts to go to the home
 -- url, and follows through the login process.  It should probably be the
 -- first thing in each "it" spec.
 --
-adminLogin :: (Yesod site) => YesodExample site ()
-adminLogin = do
+loginAs :: (Yesod site, Login user) => user -> YesodExample site ()
+loginAs user = do
     get $ urlPath $ testRoot `T.append` "/auth/login"
     statusIs 200
-    submitLogin "admin" "admin"
+    submitLogin (username user) (username user)
 
 
 statusIsResp :: Int -> YesodExample site ()

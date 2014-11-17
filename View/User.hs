@@ -44,40 +44,48 @@ createUserForm ident extra = do
             By registering, you agree to Snowdrift.coop's (amazingly ethical and ideal) #
                 <a href="@{ToUR}">Terms of Use
                 and <a href="@{PrivacyR}">Privacy Policy</a>.
+
         <table .table>
             <tr>
                 <td>
-                    Handle (private):
+                    <label for=#{fvId identView}>
+                        Handle (private):
                 <td>
                     ^{fvInput identView}
             <tr>
                 <td>
-                    Passphrase:
+                    <label for=#{fvId passwd1View}>
+                        Passphrase:
                 <td>
                     ^{fvInput passwd1View}
             <tr>
                 <td>
-                    Repeat passphrase:
+                    <label for=#{fvId passwd2View}>
+                        Repeat passphrase:
                 <td>
                     ^{fvInput passwd2View}
             <tr>
                 <td>
-                    Name (public, optional):
+                    <label for=#{fvId nameView}>
+                        Name (public, optional):
                 <td>
                     ^{fvInput nameView}
             <tr>
                 <td>
-                    Email (private, optional):
+                    <label for=#{fvId emailView}>
+                        Email (private, optional):
                 <td>
                     ^{fvInput emailView}
             <tr>
                 <td>
-                    Avatar (link, optional):
+                    <label for=#{fvId avatarView}>
+                        Avatar (link, optional):
                 <td>
                     ^{fvInput avatarView}
             <tr>
                 <td>
-                    IRC Nick (irc.freenode.net, optional):
+                    <label for=#{fvId nickView}>
+                        IRC Nick (irc.freenode.net, optional):
                 <td>
                     ^{fvInput nickView}
     |]

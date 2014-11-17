@@ -57,7 +57,7 @@ blogSpecs = do
     ydescribe "blog" $ do
 
         yit "loads the project page - no blog post" $ [marked|
-            login
+            loginAs TestUser
 
             get $ ProjectR "snowdrift"
 
@@ -71,7 +71,7 @@ blogSpecs = do
 
 
         yit "loads the project blog - no blog post" $ [marked|
-            login
+            loginAs TestUser
 
             get $ ProjectBlogR "snowdrift"
 
@@ -83,7 +83,7 @@ blogSpecs = do
 
 
         yit "previews blog post" $ [marked|
-            adminLogin
+            loginAs AdminUser
 
             previewBlog (NewProjectBlogPostR "snowdrift") $ do
                 byLabel "Title for this blog post" "Test"
@@ -96,7 +96,7 @@ blogSpecs = do
 
 
         yit "posts blog post" $ [marked|
-            adminLogin
+            loginAs AdminUser
 
             postBlog (NewProjectBlogPostR "snowdrift") $ do
                 byLabel "Title for this blog post" "Test"
@@ -119,7 +119,7 @@ blogSpecs = do
         |]
 
         yit "loads the project blog - with blog post" $ [marked|
-            login
+            loginAs TestUser
 
             get $ ProjectBlogR "snowdrift"
 
@@ -131,7 +131,7 @@ blogSpecs = do
 
     {-
         yit "loads the project page - with blog post" $ [marked|
-            login
+            loginAs TestUser
 
             get $ ProjectR "snowdrift"
 
