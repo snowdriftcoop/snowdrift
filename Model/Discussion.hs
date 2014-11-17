@@ -1,5 +1,6 @@
 module Model.Discussion
     ( DiscussionOn(..)
+    , DiscussionType(..)
     , createDiscussionDB
     , fetchDiscussionClosedOrRetractedRootCommentsDB
     , fetchDiscussionDB

@@ -32,7 +32,7 @@ fixLinks project' discussion_on line' = do
             , ")"
             , "([a-z0-9/#-]*)?" -- path
             , "\\)"
-            ] 
+            ]
 
         project = encodeUtf8 project'
 
@@ -138,4 +138,29 @@ markdownWidgetWith :: (Text -> Handler Text) -> Markdown -> Widget
 markdownWidgetWith transform markdown = do
     rendered <- handlerToWidget $ renderMarkdownWith transform markdown
     toWidget rendered
+
+
+fixTests :: [(DiscussionOn, [(Text, Text)])]
+fixTests = [minBound .. maxBound] >>= \case
+    DiscussionTypeProject -> [(DiscussionOnProject undefined,
+            [ ("[test](en/test)", "[test](/p/project/w/en/test)")
+            ]
+        )]
+
+    DiscussionTypeWikiPage -> [(DiscussionOnWikiPage undefined undefined,
+            [ ("[test](en/test)", "[test](/p/project/w/en/test)")
+            ]
+        )]
+
+    DiscussionTypeUser -> [(DiscussionOnUser undefined,
+            [ ]
+        )]
+
+testFixLinks :: Handler [(DiscussionOn, Text, Text, Text)]
+testFixLinks = do
+    fmap (concat . concat) $ forM fixTests $ \ (discussion, examples) -> forM examples $ \ (input, output) -> do
+        output' <- fixLinks "project" discussion input
+        if output == output'
+         then return []
+         else return [(discussion, input, output, output')]
 

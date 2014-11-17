@@ -108,6 +108,7 @@ library
                      Widgets.Tag
                      Widgets.Preview
                      Widgets.ProjectPledges
+                     TestHandler
 
     other-modules: Model.CollapseState.Internal
                    Model.Comment.Internal
@@ -115,7 +116,6 @@ library
                    Model.Role.Internal
                    Model.Settings.Internal
                    Model.ViewType.Internal
-                   TestHandler
 
     if flag(dev) || flag(library-only)
         cpp-options:   -DDEVELOPMENT
