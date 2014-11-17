@@ -45,6 +45,7 @@ library
                      Model.Markdown
                      Model.Markdown.Diff
                      Model.Notification
+                     Model.Notification.Internal
                      Model.Permission
                      Model.Permission.Internal
                      Model.Project
@@ -111,7 +112,6 @@ library
     other-modules: Model.CollapseState.Internal
                    Model.Comment.Internal
                    Model.Established.Internal
-                   Model.Notification.Internal
                    Model.Role.Internal
                    Model.Settings.Internal
                    Model.ViewType.Internal

@@ -29,7 +29,7 @@ data NotificationType
     | NotifFlag
     -- Flagged comment was reposted.
     | NotifFlagRepost
-    deriving (Eq, Read, Show)
+    deriving (Eq, Read, Show, Bounded, Enum)
 derivePersistField "NotificationType"
 
 showNotificationType :: NotificationType -> Text

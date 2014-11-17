@@ -12,6 +12,7 @@ import Test.Hspec (hspec)
 import Application (makeFoundation)
 
 import UserTest
+import NotifyTest
 import DiscussionTest
 import WikiTest
 import BlogTest
@@ -34,6 +35,7 @@ main = do
     hspec $ do
         yesodSpec foundation $ do
             userSpecs
+            notifySpecs
             wikiSpecs
             discussionSpecs
             blogSpecs
