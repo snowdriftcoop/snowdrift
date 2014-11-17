@@ -607,13 +607,6 @@ getMonolingualWikiR = redirectPolylingualWiki $ \case
         params <- reqGetParams <$> getRequest
         redirectParams url params
 
-
-postMonolingualWikiR :: Text -> Text -> [Text] -> Handler Html
-postMonolingualWikiR = redirectPolylingualWiki $ \case 
-    Nothing -> notFound
-    Just (MonolingualWikiR _ _ _) -> notFound
-    _ -> error $ "failed to parse url"
-
 redirectPolylingualWiki :: (Maybe (Route App) -> Handler Html) -> Text -> Text -> [Text] -> Handler Html
 redirectPolylingualWiki fn project_handle target rest = do
     render <- getUrlRender
