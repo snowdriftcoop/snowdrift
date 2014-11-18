@@ -269,20 +269,21 @@ Discussion
     nothing Int64
 
 Comment
-    createdTs  UTCTime
+    createdTs   UTCTime
 
     -- "Unestablished" users may still make comments, but they must be approved
     -- by a moderator. "Established" users' comments are marked as approved by
     -- themselves (though this does not mean they are a moderator).
-    approvedTs UTCTime      Maybe
-    approvedBy UserId       Maybe
+    approvedTs  UTCTime      Maybe
+    approvedBy  UserId       Maybe
 
-    discussion DiscussionId
-    parent     CommentId    Maybe
-    user       UserId
-    text       Markdown
-    depth      Int
-    visibility Visibility         default='VisPublic'
+    discussion  DiscussionId
+    parent      CommentId    Maybe
+    user        UserId
+    text        Markdown
+    depth       Int
+    visibility  Visibility         default='VisPublic'
+    language    Language
 
     deriving Eq Show
 

@@ -167,8 +167,8 @@ buildCommentForest roots replies = (map (flip buildCommentTree replies)) roots
 --     (\now -> CommentClosure now user_id closure_type reason comment_id) `liftM` liftIO getCurrentTime
 
 -- | Construct a comment, auto-approved by 'this' User (because they are established).
-makeApprovedComment :: MonadIO m => UserId -> DiscussionId -> Maybe CommentId -> Markdown -> Int -> Visibility -> m Comment
-makeApprovedComment user_id discussion_id parent_comment comment_text depth visibility = do
+makeApprovedComment :: MonadIO m => UserId -> DiscussionId -> Maybe CommentId -> Markdown -> Int -> Visibility -> Language -> m Comment
+makeApprovedComment user_id discussion_id parent_comment comment_text depth visibility language = do
     now <- liftIO getCurrentTime
     return $ Comment
                  now
@@ -180,6 +180,7 @@ makeApprovedComment user_id discussion_id parent_comment comment_text depth visi
                  comment_text
                  depth
                  visibility
+                 language
 
 -- | Get the set of Users that have posted the given Foldable of comments.
 makeCommentUsersSet :: Foldable f => f (Entity Comment) -> Set UserId
@@ -230,8 +231,9 @@ insertApprovedCommentDB
         -> Markdown
         -> Int
         -> Visibility
+        -> Language
         -> SDB CommentId
-insertApprovedCommentDB created_ts discussion_id mparent_id user_id text depth visibility =
+insertApprovedCommentDB created_ts discussion_id mparent_id user_id text depth visibility language =
     insertCommentDB
       (Just created_ts)
       (Just user_id)
@@ -243,6 +245,7 @@ insertApprovedCommentDB created_ts discussion_id mparent_id user_id text depth v
       text
       depth
       visibility
+      language
 
 insertUnapprovedCommentDB
         :: UTCTime
@@ -252,6 +255,7 @@ insertUnapprovedCommentDB
         -> Markdown
         -> Int
         -> Visibility
+        -> Language
         -> SDB CommentId
 insertUnapprovedCommentDB = insertCommentDB Nothing Nothing ECommentPending
 
@@ -265,8 +269,9 @@ insertCommentDB :: Maybe UTCTime
                 -> Markdown
                 -> Int
                 -> Visibility
+                -> Language
                 -> SDB CommentId
-insertCommentDB mapproved_ts mapproved_by mk_event created_ts discussion_id mparent_id user_id text depth visibility = do
+insertCommentDB mapproved_ts mapproved_by mk_event created_ts discussion_id mparent_id user_id text depth visibility language = do
     let comment = Comment
                     created_ts
                     mapproved_ts
@@ -277,6 +282,7 @@ insertCommentDB mapproved_ts mapproved_by mk_event created_ts discussion_id mpar
                     text
                     depth
                     visibility
+                    language
 
     comment_id <- lift $ insert comment
     tell [mk_event comment_id comment]
@@ -315,7 +321,7 @@ deleteCommentDB = deleteCascade
 -- notification to the flagger.
 editCommentDB :: CommentId -> Markdown -> SYDB ()
 editCommentDB comment_id text = do
-    lift updateCommentText
+    lift updateComment
     lift (fetchCommentFlaggingDB comment_id) >>= \case
         Nothing -> return ()
         Just (Entity comment_flagging_id CommentFlagging{..}) -> do
@@ -325,7 +331,7 @@ editCommentDB comment_id text = do
             lift (deleteCascade comment_flagging_id) -- delete flagging and all flagging reasons with it.
             sendPreferredNotificationDB commentFlaggingFlagger NotifFlagRepost Nothing Nothing notif_text
   where
-    updateCommentText =
+    updateComment =
         update $ \c -> do
         set c [ CommentText =. val text ]
         where_ (c ^. CommentId ==. val comment_id)
@@ -354,26 +360,27 @@ flagCommentDB comment_id permalink_route flagger_id reasons message = do
             return True
 
 -- | Post an new (approved) Comment.
-postApprovedCommentDB :: UserId -> Maybe CommentId -> DiscussionId -> Markdown -> Visibility -> SDB CommentId
+postApprovedCommentDB :: UserId -> Maybe CommentId -> DiscussionId -> Markdown -> Visibility -> Language -> SDB CommentId
 postApprovedCommentDB = postComment insertApprovedCommentDB
 
-postUnapprovedCommentDB :: UserId -> Maybe CommentId -> DiscussionId -> Markdown -> Visibility -> SDB CommentId
+postUnapprovedCommentDB :: UserId -> Maybe CommentId -> DiscussionId -> Markdown -> Visibility -> Language -> SDB CommentId
 postUnapprovedCommentDB = postComment insertUnapprovedCommentDB
 
 postComment
-        :: (UTCTime -> DiscussionId -> Maybe CommentId -> UserId -> Markdown -> Int -> Visibility -> SDB CommentId)
+        :: (UTCTime -> DiscussionId -> Maybe CommentId -> UserId -> Markdown -> Int -> Visibility -> Language -> SDB CommentId)
         -> UserId
         -> Maybe CommentId
         -> DiscussionId
         -> Markdown
         -> Visibility
+        -> Language
         -> SDB CommentId
-postComment insert_comment user_id mparent_id discussion_id contents visibility = do
+postComment insert_comment user_id mparent_id discussion_id contents visibility language = do
     (now, depth) <- lift $ (,)
         <$> liftIO getCurrentTime
         <*> fetchCommentDepthFromMaybeParentIdDB mparent_id
 
-    comment_id <- insert_comment now discussion_id mparent_id user_id contents depth visibility
+    comment_id <- insert_comment now discussion_id mparent_id user_id contents depth visibility language
 
     let content = T.lines (unMarkdown contents)
         tickets = map T.strip $ mapMaybe (T.stripPrefix "ticket:") content

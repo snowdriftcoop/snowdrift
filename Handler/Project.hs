@@ -810,8 +810,8 @@ postProjectContactR project_handle = do
     Entity _ project <- runYDB $ getBy404 (UniqueProjectHandle project_handle)
 
     case result of
-        FormSuccess content -> do
-            _ <- runSDB (postApprovedCommentDB (fromMaybe anonymousUser maybe_user_id) Nothing (projectDiscussion project) content VisPrivate)
+        FormSuccess (content, language) -> do
+            _ <- runSDB (postApprovedCommentDB (fromMaybe anonymousUser maybe_user_id) Nothing (projectDiscussion project) content VisPrivate language)
 
             alertSuccess "Comment submitted. Thank you for your input!"
 

@@ -182,7 +182,9 @@ postWikiR project_handle target_language target = do
                                     , "(this ticket was automatically generated)"
                                     ]
 
-                            comment_id <- lift $ insert =<< makeApprovedComment user_id (wikiPageDiscussion page) Nothing comment_body 0 VisPublic
+
+                            -- TODO LangEn here should be edit_language, once we actually translate the above
+                            comment_id <- lift $ insert =<< makeApprovedComment user_id (wikiPageDiscussion page) Nothing comment_body 0 VisPublic LangEn
 
                             lift $ insert_ $ Ticket now now "edit conflict" comment_id
 
@@ -379,7 +381,7 @@ getWikiHistoryR project_handle language target = do
 
 getWikiEditR :: Text -> Language -> Text -> WikiEditId -> Handler Html
 getWikiEditR project_handle language target wiki_edit_id = do
-    (Entity _ project, Entity wiki_page_id wiki_page, wiki_target) <- runYDB $ pageInfo project_handle language target
+    (Entity _ project, Entity wiki_page_id _, wiki_target) <- runYDB $ pageInfo project_handle language target
     wiki_edit <- runYDB $ do
         wiki_edit <- get404 wiki_edit_id
 

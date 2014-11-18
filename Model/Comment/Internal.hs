@@ -5,6 +5,8 @@ import Prelude
 import Database.Persist.TH
 import Data.Text           (Text)
 
+import Model.Language
+
 import Yesod.Markdown      (Markdown)
 
 -- VisPublic = visible to all | VisPrivate = visible to topic-poster and
@@ -15,7 +17,8 @@ data Visibility = VisPublic | VisPrivate | VisInternal deriving (Read, Show, Eq)
 derivePersistField "Visibility"
 
 newtype NewClosure = NewClosure Markdown
-data NewComment = NewComment Markdown Visibility
+data NewComment = NewComment Markdown Visibility Language
+data EditComment = EditComment Markdown
 
 data FlagReason
     = FlagPersonalAttack

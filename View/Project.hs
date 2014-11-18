@@ -106,8 +106,15 @@ projectBlogForm defaults = renderBootstrap3 BootstrapBasicForm $
         <*> areq' textField "Handle for the URL" (getHandle <$> defaults)
         <*> areq' snowdriftMarkdownField "Content" (getContent <$> defaults)
 
-projectContactForm :: Form Markdown
-projectContactForm = renderBootstrap3 BootstrapBasicForm $ areq' snowdriftMarkdownField "" Nothing
+projectContactForm :: Form (Markdown, Language)
+projectContactForm html = do
+    languages <- lift getLanguages
+
+    let form = renderBootstrap3 BootstrapBasicForm $ (,)
+            <$> areq' snowdriftMarkdownField "" Nothing
+            <*> areq' (selectFieldList $ makeLanguageOptions languages) "Language" (listToMaybe languages)
+
+    form html
 
 inviteForm :: Form (Text, Role)
 inviteForm = renderBootstrap3 BootstrapBasicForm $ (,)

@@ -397,7 +397,7 @@ postEditComment
 postEditComment user (Entity comment_id comment) make_comment_handler_info = do
     ((result, _), _) <- runFormPost (editCommentForm "")
     case result of
-        FormSuccess (NewComment new_text _) -> lookupPostMode >>= \case
+        FormSuccess (EditComment new_text) -> lookupPostMode >>= \case
             Just PostMode -> do
                 runSYDB (editCommentDB comment_id new_text)
                 alertSuccess "posted new edit"
@@ -406,16 +406,18 @@ postEditComment user (Entity comment_id comment) make_comment_handler_info = do
                 (form, _) <- generateFormPost (editCommentForm new_text)
                 (comment_widget, _) <-
                     makeCommentActionWidget
-                      can_edit
-                      mempty
-                      (Entity comment_id (comment { commentText = new_text }))
-                      user
-                      make_comment_handler_info
-                      -- Since an edit removes a flagging, don't show the flagged markup in preview.
-                      (def { mod_flag_map = M.delete comment_id })
-                      (getMaxDepthDefault 0)
-                      True
+                        can_edit
+                        mempty
+                        (Entity comment_id (comment { commentText = new_text }))
+                        user
+                        make_comment_handler_info
+                        -- Since an edit removes a flagging, don't show the flagged markup in preview.
+                        (def { mod_flag_map = M.delete comment_id })
+                        (getMaxDepthDefault 0)
+                        True
+
                 return (Just (comment_widget, form))
+
         FormMissing -> error "Form missing."
         FormFailure msgs -> error $ "Error submitting form: " ++ T.unpack (T.intercalate "\n" msgs)
 
@@ -473,15 +475,15 @@ postNewComment mparent_id (Entity user_id user) discussion_id make_permissions_m
     -- actually the same form with different titles.
     ((result, _), _) <- runFormPost commentReplyForm
     case result of
-        FormSuccess (NewComment contents visibility) -> lookupPostMode >>= \case
+        FormSuccess (NewComment contents visibility language) -> lookupPostMode >>= \case
             Just PostMode -> do
                 if userIsEstablished user
                     then do
-                        comment_id <- runSDB (postApprovedCommentDB user_id mparent_id discussion_id contents visibility)
+                        comment_id <- runSDB (postApprovedCommentDB user_id mparent_id discussion_id contents visibility language)
                         alertSuccess "comment posted"
                         return (Left comment_id)
                     else do
-                        comment_id <- runSDB (postUnapprovedCommentDB user_id mparent_id discussion_id contents visibility)
+                        comment_id <- runSDB (postUnapprovedCommentDB user_id mparent_id discussion_id contents visibility language)
                         alertSuccess "comment submitted for moderation"
                         return (Left comment_id)
             _ -> do
@@ -496,7 +498,7 @@ postNewComment mparent_id (Entity user_id user) discussion_id make_permissions_m
                                                        else (Nothing, Nothing)
                     comment = Entity
                                 (Key $ PersistInt64 0)
-                                (Comment now approved_ts approved_by discussion_id mparent_id user_id contents depth visibility)
+                                (Comment now approved_ts approved_by discussion_id mparent_id user_id contents depth visibility language)
 
                 max_depth <- getMaxDepthDefault 0
 

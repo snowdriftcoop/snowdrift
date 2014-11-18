@@ -330,7 +330,7 @@ lookupParamDefault name def = do
 
 
 getLanguages :: Handler [Language]
-getLanguages = cached $ mapMaybe (listToMaybe . map fst . reads . T.unpack) <$> languages
+getLanguages = cached $ mapMaybe fromPathPiece <$> languages
 
 
 languagePreferenceOrder :: [Language] -> (a -> Language) -> a -> a -> Ordering

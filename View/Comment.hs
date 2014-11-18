@@ -64,11 +64,17 @@ closureForm :: SomeMessage App -> Maybe Markdown -> Form NewClosure
 closureForm label message = renderBootstrap3 BootstrapBasicForm $ NewClosure <$> areq' snowdriftMarkdownField label message
 
 commentForm :: SomeMessage App -> Maybe Markdown -> Form NewComment
-commentForm label content = renderBootstrap3 BootstrapBasicForm $ NewComment
-    <$> areq' snowdriftMarkdownField label content
-    <*> pure VisPublic
-    --    TODO(aaron) turn below back on and delete the pure line above
-    --    to activate private commenting
+commentForm label content html = do
+    languages <- lift getLanguages
+
+    let form = renderBootstrap3 BootstrapBasicForm $ NewComment
+            <$> areq' snowdriftMarkdownField label content
+            <*> pure VisPublic
+            <*> areq' (selectFieldList $ makeLanguageOptions languages) "Language" (listToMaybe languages)
+
+    form html
+
+--    TODO(aaron) replace pure line above with below and uncomment where to activate private commenting
 --    <*> (toVisibility <$> areq' checkBoxField "Private?" Nothing)
 --  where
 --    toVisibility True = VisPrivate
@@ -109,14 +115,14 @@ retractCommentForm  :: Maybe Markdown -> Form NewClosure
 
 commentNewTopicForm ::               Form NewComment
 commentReplyForm    ::               Form NewComment
-editCommentForm     :: Markdown   -> Form NewComment
+editCommentForm     :: Markdown   -> Form EditComment
 
 closeCommentForm    = closureForm "Reason for closing:"
 retractCommentForm  = closureForm "Reason for retracting:"
 
 commentNewTopicForm = commentForm "New Topic" Nothing
 commentReplyForm    = commentForm "Reply"     Nothing
-editCommentForm     = commentForm "Edit"      . Just
+editCommentForm     = renderBootstrap3 BootstrapBasicForm . fmap EditComment . areq' snowdriftMarkdownField "Edit" . Just
 
 claimCommentFormWidget    :: Maybe (Maybe Text) -> Widget
 closeCommentFormWidget    :: Maybe Markdown     -> Widget
