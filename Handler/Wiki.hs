@@ -173,7 +173,6 @@ postWikiR project_handle target_language target = do
                                 return $ we ^. WikiEditUser
 
                             render <- getUrlRender
-
                             let wiki edit_id = render $ WikiEditR project_handle target_language target edit_id
                                 comment_body = Markdown $ T.unlines
                                     [ "ticket: edit conflict"
@@ -193,10 +192,9 @@ postWikiR project_handle target_language target = do
 
                             lift $ insert_ $ Ticket now now "edit conflict" comment_id
 
-                            render <- lift getUrlRenderParams
                             let notif_text = Markdown $ T.unlines
                                     [ "Edit conflict for wiki page *" <> target <> "*."
-                                    , "<br>[**Ticket created**](" <> render (WikiCommentR project_handle target_language target comment_id) [] <> ")"
+                                    , "<br>[**Ticket created**](" <> render (WikiCommentR project_handle target_language target comment_id) <> ")"
                                     ]
 
                             sendPreferredNotificationDB last_editor NotifEditConflict

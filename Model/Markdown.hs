@@ -77,10 +77,10 @@ linkTickets line' = do
     let Right pattern = compile defaultCompOpt defaultExecOpt "\\<SD-([0-9][0-9]*)" -- TODO word boundaries?
         getLinkForTicketComment :: TicketId -> Handler (Maybe Text)
         getLinkForTicketComment ticket_id = do
-            info <- runDB $ select $ from $ \ (ticket `InnerJoin` comment `LeftOuterJoin` target `LeftOuterJoin` page `LeftOuterJoin` project) -> do
+            info <- runDB $ select $ from $ \ (ticket `InnerJoin` comment `LeftOuterJoin` page `LeftOuterJoin` target `LeftOuterJoin` project) -> do
                 on_ $ project ?. ProjectId ==. page ?. WikiPageProject
-                on_ $ page ?. WikiPageDiscussion ==. just (comment ^. CommentDiscussion)
                 on_ $ page ?. WikiPageId ==. target ?. WikiTargetPage
+                on_ $ page ?. WikiPageDiscussion ==. just (comment ^. CommentDiscussion)
                 on_ $ ticket ^. TicketComment ==. comment ^. CommentId
                 where_ $ ticket ^. TicketId ==. val ticket_id
 
