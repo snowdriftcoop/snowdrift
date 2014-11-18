@@ -387,7 +387,7 @@ getWikiEditR project_handle language target wiki_edit_id = do
 
         return wiki_edit
 
-    let discussion = DiscussionOnWikiPage (Entity wiki_page_id wiki_page) wiki_target
+    let discussion = DiscussionOnWikiPage wiki_target
 
     defaultLayout $ do
     -- TODO: prettier date format? or edit id?

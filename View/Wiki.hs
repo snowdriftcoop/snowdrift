@@ -31,20 +31,13 @@ newWikiForm content = renderBootstrap3 BootstrapBasicForm $ areq' snowdriftMarkd
 
 renderWiki :: Int -> Text -> Language -> Text -> Bool -> WikiEdit -> Widget
 renderWiki comment_count project_handle language target can_edit wiki_edit = do
-    now <- liftIO getCurrentTime
-    let wiki_page_id = Key $ PersistInt64 (-1)
-        wiki_page = WikiPage now
-            (error "attempted to access project field of fake wiki page")
-            (error "attempted to access discussion field of fake wiki page")
-            (error "attempted to access permission level field of fake wiki page")
-
-        wiki_target_id = Key $ PersistInt64 (-1)
+    let wiki_target_id = Key $ PersistInt64 (-1)
         wiki_target = WikiTarget
             (error "attempted to access page field of fake wiki target")
             (error "attempted to access project field of fake wiki target")
             target
             language
 
-        discussion = DiscussionOnWikiPage (Entity wiki_page_id wiki_page) (Entity wiki_target_id wiki_target)
+        discussion = DiscussionOnWikiPage (Entity wiki_target_id wiki_target)
 
     $(widgetFile "wiki")

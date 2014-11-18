@@ -47,7 +47,7 @@ fixLinks project' discussion_on line' = do
                     , "("
                         , let route = encodeUtf8 $ render $ case discussion_on of
                                 DiscussionOnProject (Entity _ Project{..}) -> ProjectCommentR projectHandle comment_id
-                                DiscussionOnWikiPage _ (Entity _ WikiTarget{..}) -> WikiCommentR project' wikiTargetLanguage wikiTargetTarget comment_id
+                                DiscussionOnWikiPage (Entity _ WikiTarget{..}) -> WikiCommentR project' wikiTargetLanguage wikiTargetTarget comment_id
                                 DiscussionOnUser (Entity user_id _) -> UserCommentR user_id comment_id
 
                            in route <> path
@@ -147,7 +147,7 @@ fixTests = [minBound .. maxBound] >>= \case
             ]
         )]
 
-    DiscussionTypeWikiPage -> [(DiscussionOnWikiPage undefined undefined,
+    DiscussionTypeWikiPage -> [(DiscussionOnWikiPage undefined,
             [ ("[test](en/test)", "[test](/p/project/w/en/test)")
             ]
         )]

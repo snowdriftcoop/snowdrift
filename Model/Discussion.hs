@@ -31,7 +31,7 @@ data DiscussionType
 -- | Similar to DiscussionType, but exported, and actually contains the data.
 data DiscussionOn
     = DiscussionOnProject  (Entity Project)
-    | DiscussionOnWikiPage (Entity WikiPage) (Entity WikiTarget)
+    | DiscussionOnWikiPage (Entity WikiTarget)
     | DiscussionOnUser     (Entity User)
 
 -- | Given a 'requested' DiscussionType, attempt to fetch the Discussion from that
@@ -46,14 +46,14 @@ fetchDiscussionInternal langs discussion_id DiscussionTypeWikiPage = do
     maybe_wiki_page <- getBy $ UniqueWikiPageDiscussion discussion_id
     case maybe_wiki_page of
         Nothing -> return Nothing
-        Just wiki_page@(Entity wiki_page_id _) -> do
+        Just (Entity wiki_page_id _) -> do
             targets <- select $ from $ \ wt -> do
                    where_ (wt ^. WikiTargetPage ==. val wiki_page_id)
                    return wt
 
             case sortBy (languagePreferenceOrder langs (wikiTargetLanguage . entityVal)) targets of
                 [] -> return Nothing
-                target:_ -> return $ Just $ DiscussionOnWikiPage wiki_page target
+                target:_ -> return $ Just $ DiscussionOnWikiPage target
                 
 fetchDiscussionInternal _ discussion_id DiscussionTypeUser = fmap (fmap DiscussionOnUser) $ getBy $ UniqueUserDiscussion discussion_id
 
@@ -83,7 +83,7 @@ fetchDiscussionsInternal langs discussion_ids DiscussionTypeWikiPage = do
             $ map (wikiTargetPage . entityVal &&& (:[])) wiki_targets
 
     return $ M.fromList $ mapMaybe (\ wiki_page ->
-                (wikiPageDiscussion $ entityVal wiki_page,) . DiscussionOnWikiPage wiki_page <$> M.lookup (entityKey wiki_page) wiki_target_map
+                (wikiPageDiscussion $ entityVal wiki_page,) . DiscussionOnWikiPage <$> M.lookup (entityKey wiki_page) wiki_target_map
             ) wiki_pages
 
 fetchDiscussionsInternal _ discussion_ids DiscussionTypeUser = fmap (foldr go mempty) $

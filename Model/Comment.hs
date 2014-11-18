@@ -783,7 +783,7 @@ makeCommentRouteDB langs comment_id = get comment_id >>= \case
     Just comment -> fetchDiscussionDB langs (commentDiscussion comment) >>= \case
         DiscussionOnProject (Entity _ project) -> return (Just (ProjectCommentR (projectHandle project) comment_id))
 
-        DiscussionOnWikiPage _ (Entity _ wiki_target) -> do
+        DiscussionOnWikiPage (Entity _ wiki_target) -> do
             project <- getJust (wikiTargetProject wiki_target)
             return (Just (WikiCommentR (projectHandle project) (wikiTargetLanguage wiki_target) (wikiTargetTarget wiki_target) comment_id))
 

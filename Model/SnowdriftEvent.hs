@@ -53,7 +53,7 @@ snowdriftEventToFeedEntry render project_handle user_map discussion_map _ _ (ECo
         discussion = case M.lookup (commentDiscussion comment) discussion_map of
             Nothing                                          -> "<unknown discussion>"
             Just (DiscussionOnProject _)                     -> "project discussion"
-            Just (DiscussionOnWikiPage _ (Entity _ wiki_target)) -> "wiki discussion for \"" <> wikiTargetTarget wiki_target <> "\""
+            Just (DiscussionOnWikiPage (Entity _ wiki_target)) -> "wiki discussion for \"" <> wikiTargetTarget wiki_target <> "\""
             Just (DiscussionOnUser user_entity)              -> "user discussion for " <> userDisplayName user_entity
      in Just $ FeedEntry
             { feedEntryLink    = CommentDirectLinkR comment_id

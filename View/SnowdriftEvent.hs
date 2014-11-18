@@ -70,7 +70,7 @@ renderCommentPostedEvent
                         ^{comment_widget}
                 |])
 
-            DiscussionOnWikiPage _ (Entity _ WikiTarget{..}) ->
+            DiscussionOnWikiPage (Entity _ WikiTarget{..}) ->
                 (wikiPageCommentRoutes project_handle wikiTargetLanguage wikiTargetTarget, [whamlet|
                     <div .event>
                         On the
