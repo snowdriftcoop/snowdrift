@@ -38,7 +38,7 @@ import           Yesod.Markdown                as Import (Markdown)
 import           Yesod.Form.Bootstrap3         as Import
 
 import           Yesod (languages)
-import           Data.List (sortBy)
+import           Data.List (sortBy, (\\))
 
 import GHC.Exts (IsList(..))
 import qualified Data.Map as M
@@ -332,6 +332,20 @@ lookupParamDefault name def = do
 getLanguages :: Handler [Language]
 getLanguages = cached $ mapMaybe fromPathPiece <$> languages
 
+
+makeLanguageOptions :: Handler (OptionList Language)
+makeLanguageOptions = do
+    preferred_languages <- getLanguages
+    return $ OptionList
+        { olOptions = map mkOption $ preferred_languages ++ ([minBound..maxBound] \\ preferred_languages)
+        , olReadExternal = fromPathPiece
+        }
+  where
+    mkOption language = Option
+        { optionDisplay = toPathPiece language
+        , optionInternalValue = language
+        , optionExternalValue = toPathPiece language
+        }
 
 languagePreferenceOrder :: [Language] -> (a -> Language) -> a -> a -> Ordering
 languagePreferenceOrder langs getLang = flip compare `on` (flip lookup (zip (reverse langs) [1 :: Integer ..]) . getLang)

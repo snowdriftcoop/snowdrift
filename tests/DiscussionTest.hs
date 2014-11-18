@@ -34,6 +34,7 @@ discussionSpecs = do
                 setMethod "POST"
                 maybe (setUrl route) setUrl (M.lookup "action" $ getAttrs form)
                 addPostParam "mode" "post"
+                byLabel "Language" "en"
                 stmts
 
             statusIsResp 302

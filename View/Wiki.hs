@@ -7,21 +7,11 @@ import           Model.Permission
 import           Model.Markdown
 import           Widgets.Markdown
 
-import Data.List ((\\))
-
-editWikiForm :: WikiEditId -> Markdown -> Maybe Text -> Form (WikiEditId, Markdown, Text, Language)
-editWikiForm last_edit_id content comment html = do
-    languages <- lift getLanguages
-
-    let language_options = map (id &&& id) $ languages ++ ([minBound..maxBound] \\ languages)
-
-        form = renderBootstrap3 BootstrapBasicForm $ (,,,)
-                <$> areq' hiddenField "" (Just last_edit_id)
-                <*> areq' snowdriftMarkdownField "Page Content" (Just content)
-                <*> areq' textField "Comment" comment
-                <*> areq' (selectFieldList language_options) "Language" (listToMaybe languages)
-
-    form html
+editWikiForm :: WikiEditId -> Markdown -> Maybe Text -> Form (WikiEditId, Markdown, Text)
+editWikiForm last_edit_id content comment = renderBootstrap3 BootstrapBasicForm $ (,,)
+    <$> areq' hiddenField "" (Just last_edit_id)
+    <*> areq' snowdriftMarkdownField "Page Content" (Just content)
+    <*> areq' textField "Comment" comment
 
 editWikiPermissionsForm :: PermissionLevel -> Form PermissionLevel
 editWikiPermissionsForm level = renderBootstrap3 BootstrapBasicForm $ areq permissionLevelField "Permission Level" (Just level)

@@ -144,40 +144,45 @@ postWikiR project_handle target_language target = do
 
 
     case result of
-        FormSuccess (last_edit_id, content, comment, edit_language) -> do
-            lookupPostMode >>= \case
+        FormSuccess (prev_edit_id, content, comment) -> do
+            mode <- lookupPostMode
+
+            WikiEdit { wikiEditLanguage = edit_language } <- runYDB $ get404 prev_edit_id
+
+            case mode of
                 Just PostMode -> do
                     runSYDB $ do
+
                         [(Entity _ last_edit)] <- select $ from $ \ (we `InnerJoin` le) -> do
                             on_ $ we ^. WikiEditId ==. le ^. WikiLastEditEdit
                             where_ $ le ^. WikiLastEditPage ==. val page_id
                                 &&. le ^. WikiLastEditLanguage ==. val edit_language
 
-                            return (le)
+                            return le
 
                         new_edit_id <- createWikiEditDB user_id page_id edit_language content (Just comment)
 
                         -- TODO - I think there might be a race condition here...
                         either_last_edit <- lift $ insertBy $ WikiLastEdit page_id new_edit_id edit_language
 
-                        if last_edit_id == wikiLastEditEdit last_edit
-                         then lift (lift (alertSuccess "Updated."))
+                        if prev_edit_id == wikiLastEditEdit last_edit
+                         then lift $ lift $ alertSuccess "Updated."
                          else do
-                            [ Value last_editor ] <- lift $
-                                select $
-                                from $ \ we -> do
+                            [ Value last_editor ] <- lift $ select $ from $ \ we -> do
                                 where_ $ we ^. WikiEditId ==. val (wikiLastEditEdit last_edit)
                                 return $ we ^. WikiEditUser
 
-                            wiki <- getUrlRender <*> (pure $ WikiR project_handle target_language target)
-                            let comment_body = Markdown $ T.unlines
+                            render <- getUrlRender
+
+                            let wiki edit_id = render $ WikiEditR project_handle target_language target edit_id
+                                comment_body = Markdown $ T.unlines
                                     [ "ticket: edit conflict"
                                     , ""
-                                    , "[original version](" <> wiki <> "/h/" <> toPathPiece last_edit_id <> ")"
+                                    , "[original version](" <> wiki prev_edit_id <> ")"
                                     , ""
-                                    , "[my version](" <> wiki <> "/h/" <> toPathPiece new_edit_id <> ")"
+                                    , "[my version](" <> wiki new_edit_id <> ")"
                                     , ""
-                                    , "[their version](" <> wiki <> "/h/" <> toPathPiece (wikiLastEditEdit last_edit) <> ")"
+                                    , "[their version](" <> wiki (wikiLastEditEdit last_edit) <> ")"
                                     , ""
                                     , "(this ticket was automatically generated)"
                                     ]
@@ -199,19 +204,19 @@ postWikiR project_handle target_language target = do
                             sendPreferredNotificationDB user_id NotifEditConflict
                                 Nothing Nothing notif_text
 
-                            lift (lift (alertDanger "conflicting edits (ticket created, notification sent)"))
+                            lift $ lift $ alertDanger "conflicting edits (ticket created, notification sent)"
 
                         case either_last_edit of
-                            Left (Entity to_update _) -> lift $
-                                update $ \ l -> do
+                            Left (Entity to_update _) -> lift $ update $ \ l -> do
                                 set l [WikiLastEditEdit =. val new_edit_id]
                                 where_ $ l ^. WikiLastEditId ==. val to_update
+
                             Right _ -> return ()
 
                     redirect $ WikiR project_handle target_language target
 
                 _ -> do
-                    (form, _) <- generateFormPost $ editWikiForm last_edit_id content (Just comment)
+                    (form, _) <- generateFormPost $ editWikiForm prev_edit_id content (Just comment)
 
                     defaultLayout $ previewWidget form "update" $
                         renderWiki 0 project_handle target_language target False $

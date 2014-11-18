@@ -64,15 +64,10 @@ closureForm :: SomeMessage App -> Maybe Markdown -> Form NewClosure
 closureForm label message = renderBootstrap3 BootstrapBasicForm $ NewClosure <$> areq' snowdriftMarkdownField label message
 
 commentForm :: SomeMessage App -> Maybe Markdown -> Form NewComment
-commentForm label content html = do
-    languages <- lift getLanguages
-
-    let form = renderBootstrap3 BootstrapBasicForm $ NewComment
-            <$> areq' snowdriftMarkdownField label content
-            <*> pure VisPublic
-            <*> areq' (selectFieldList $ makeLanguageOptions languages) "Language" (listToMaybe languages)
-
-    form html
+commentForm label content = renderBootstrap3 BootstrapBasicForm $ NewComment
+    <$> areq' snowdriftMarkdownField label content
+    <*> pure VisPublic
+    <*> areq' (selectField makeLanguageOptions) "Language" Nothing
 
 --    TODO(aaron) replace pure line above with below and uncomment where to activate private commenting
 --    <*> (toVisibility <$> areq' checkBoxField "Private?" Nothing)
