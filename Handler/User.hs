@@ -409,7 +409,7 @@ postUserEstEligibleR user_id = do
         _ -> error "Error submitting form."
 
 --------------------------------------------------------------------------------
--- /#UserId/email/#Text
+-- /#UserId/verify-email/#Text
 
 getUserVerifyEmailR :: UserId -> Text -> Handler Html
 getUserVerifyEmailR user_id hash = do
