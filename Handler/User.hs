@@ -120,9 +120,12 @@ getUserR user_id = do
     user <- runYDB $ get404 user_id
 
     projects_and_roles <- runDB (fetchUserProjectsAndRolesDB user_id)
-    when (isJust (userEmail user) && not (userEmail_verified user)) $
-        alertWarning $ "Email address is not verified. Until you verify it, "
+    when ( Just user_id == mviewer_id
+        && isJust (userEmail user)
+        && not (userEmail_verified user)
+        ) $ alertWarning $ "Email address is not verified. Until you verify it, "
                     <> "you will not be able to receive email notifications."
+
     defaultLayout $ do
         setTitle . toHtml $ "User Profile - " <> userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
         renderUser mviewer_id user_id user projects_and_roles
