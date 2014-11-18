@@ -120,7 +120,8 @@ getUserR user_id = do
     user <- runYDB $ get404 user_id
 
     projects_and_roles <- runDB (fetchUserProjectsAndRolesDB user_id)
-    when (isJust (userEmail user) && not (userEmail_verified user)) $
+    when (isJust (userEmail user) && not (userEmail_verified user) &&
+          mviewer_id == Just user_id) $
         alertWarning $ "Email address is not verified. Until you verify it, "
                     <> "you will not be able to receive email notifications."
     defaultLayout $ do
