@@ -51,10 +51,6 @@ staticRoot conf = [st|#{appRoot conf}/static|]
 -- https://github.com/yesodweb/yesod/wiki/Overriding-widgetFile
 widgetFileSettings :: WidgetFileSettings
 widgetFileSettings = def
-    { wfsHamletSettings = defaultHamletSettings
-        { hamletNewlines = AlwaysNewlines
-        }
-    }
 
 
 widgetFile :: String -> Q Exp
