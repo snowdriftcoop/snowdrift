@@ -34,14 +34,13 @@ import           System.Log.FastLogger                (newStdoutLoggerSet, defau
 import           System.IO                            (stderr)
 import           Yesod.Core.Types                     (loggerSet, Logger (Logger))
 import           Yesod.Default.Config
-import           Yesod.Default.Handlers
 import           Yesod.Default.Main hiding (LogFunc)
 
 -- Import all relevant handler modules here.
 -- Don't forget to add new modules to your cabal file!
-
 import Handler.BuildFeed
 import Handler.Comment
+import Handler.Common
 import Handler.Home
 import Handler.Donate
 import Handler.Sponsors
