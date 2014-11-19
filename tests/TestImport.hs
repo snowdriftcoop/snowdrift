@@ -81,6 +81,10 @@ newtype FileName = FileName { unFileName :: Text }
 testDB :: SqlPersistM a -> Example a
 testDB query = do
     pool <- fmap connPool getTestYesod
+
+runDB :: SqlPersistM a -> Example a
+runDB query = do
+    pool <- fmap appConnPool getTestYesod
     liftIO $ runSqlPersistMPool query pool
 
 

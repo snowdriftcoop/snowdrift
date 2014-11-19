@@ -59,10 +59,10 @@ type Daemon a = ReaderT App (LoggingT (ResourceT IO)) a
 -- access to the data present here.
 data App = App
     { appNavbar        :: WidgetT App IO ()
-    , settings         :: AppConfig DefaultEnv Extra
-    , getStatic        :: Static -- ^ Settings for static file serving.
-    , connPool         :: Database.Persist.PersistConfigPool Settings.PersistConf -- ^ Database connection pool.
-    , httpManager      :: Manager
+    , appSettings      :: AppConfig DefaultEnv Extra
+    , appStatic        :: Static -- ^ Settings for static file serving.
+    , appConnPool      :: Database.Persist.PersistConfigPool Settings.PersistConf -- ^ Database connection pool.
+    , appHttpManager   :: Manager
     , persistConfig    :: Settings.PersistConf
     , appLogger        :: Logger
     , appEventChan     :: TChan SnowdriftEvent
@@ -222,10 +222,11 @@ instance Yesod App where
 -- How to run database actions.
 instance YesodPersist App where
     type YesodPersistBackend App = SqlBackend
-    runDB = defaultRunDB persistConfig connPool
-
+    runDB action = do
+        master <- getYesod
+        runSqlPool action $ appConnPool master
 instance YesodPersistRunner App where
-    getDBRunner = defaultGetDBRunner connPool
+    getDBRunner = defaultGetDBRunner appConnPool
 
 -- set which project in the site runs the site itself
 getSiteProject :: Handler (Entity Project)
@@ -363,7 +364,7 @@ instance YesodAuth App where
     -- You can add other plugins like BrowserID, email or OAuth here
     authPlugins _ = [ snowdriftAuthBrowserId, snowdriftAuthHashDB ]
 
-    authHttpManager = httpManager
+    authHttpManager = getHttpManager
 
     loginHandler = do
         app <- lift getYesod
