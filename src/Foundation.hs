@@ -211,9 +211,6 @@ instance Yesod App where
             let license = either Left (Right . LB.append licenseNotice)
              in addStaticContentExternal (license . minifym) base64md5 Settings.staticDir (StaticR . flip StaticRoute []) extension mime (LB.append licenseNotice content)
 
-    -- Place Javascript at bottom of the body tag so the rest of the page loads first
-    jsLoader _ = BottomOfBody
-
     -- What messages should be logged. The following includes all messages when
     -- in development, and warnings and errors in production.
     shouldLog _ _source level = development || level `elem` [LevelInfo, LevelWarn, LevelError]
