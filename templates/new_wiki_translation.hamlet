@@ -1,0 +1,4 @@
+<form method=POST enctype=#{enctype}>
+    ^{translation_form}
+    <input name="mode" type="submit" value="preview">
+
