@@ -44,7 +44,7 @@ pageInfo project_handle language target = do
 
     let wiki_page_id = wikiTargetPage wiki_target
     wiki_page                         <- get404 wiki_page_id
-       
+
     return (project, Entity wiki_page_id wiki_page, Entity wiki_target_id wiki_target)
 
 -- | Get the Project/WikiPage entities, but require some generic permissions,
@@ -92,7 +92,7 @@ pageInfoRequireCanEdit project_handle language target =
     pageInfoRequirePermission project_handle language target (\(Entity _ user) _ _ -> return (userCanEditWikiPage user))
 
 --------------------------------------------------------------------------------
--- /#target
+-- /#language/#target
 
 getWikiR :: Text -> Language -> Text -> Handler Html
 getWikiR project_handle language target = do
@@ -225,7 +225,7 @@ postWikiR project_handle target_language target = do
 
 
 --------------------------------------------------------------------------------
--- /#target/d
+-- /#language/#target/d
 
 -- | getWikiDiscussionR generates the associated discussion page for each wiki page
 getWikiDiscussionR :: Text -> Language -> Text -> Handler Html
@@ -272,7 +272,7 @@ getWikiDiscussionR' project_handle language target get_root_comments = do
         $(widgetFile "wiki_discuss")
 
 --------------------------------------------------------------------------------
--- /#target/d/new
+-- /#language/#target/d/new
 
 getNewWikiDiscussionR :: Text -> Language -> Text -> Handler Html
 getNewWikiDiscussionR project_handle language target = do
@@ -294,8 +294,8 @@ postNewWikiDiscussionR project_handle language target = do
         Right (widget, form) -> defaultLayout $ previewWidget form "post" (wikiDiscussionPage project_handle language target widget)
 
 --------------------------------------------------------------------------------
--- /#target/diff/#from/#to
--- /#target/diffp
+-- /#language/#target/diff/#from/#to
+-- /#language/#target/diffp
 
 getWikiDiffR :: Text -> Language -> Text -> WikiEditId -> WikiEditId -> Handler Html
 getWikiDiffR project_handle language target start_edit_id end_edit_id = do
@@ -334,7 +334,7 @@ getWikiDiffProxyR project_handle language target = do
         pairMay
 
 --------------------------------------------------------------------------------
--- /#target/edit
+-- /#language/#target/edit
 
 getEditWikiR :: Text -> Language -> Text -> Handler Html
 getEditWikiR project_handle language target = do
@@ -352,7 +352,7 @@ getEditWikiR project_handle language target = do
         $(widgetFile "edit_wiki")
 
 --------------------------------------------------------------------------------
--- /#target/h
+-- /#language/#target/h
 
 getWikiHistoryR :: Text -> Language -> Text -> Handler Html
 getWikiHistoryR project_handle language target = do
@@ -380,7 +380,7 @@ getWikiHistoryR project_handle language target = do
         $(widgetFile "wiki_history")
 
 --------------------------------------------------------------------------------
--- /#target/h/#edit
+-- /#language/#target/h/#edit
 
 getWikiEditR :: Text -> Language -> Text -> WikiEditId -> Handler Html
 getWikiEditR project_handle language target wiki_edit_id = do
@@ -400,7 +400,7 @@ getWikiEditR project_handle language target wiki_edit_id = do
         $(widgetFile "wiki_edit")
 
 --------------------------------------------------------------------------------
--- /#target/new
+-- /#language/#target/new
 
 getNewWikiR :: Text -> Language -> Text -> Handler Html
 getNewWikiR project_handle language target = do
@@ -438,7 +438,55 @@ postNewWikiR project_handle language target = do
         FormFailure msgs -> error $ "Error submitting form: " ++ T.unpack (T.concat msgs)
 
 --------------------------------------------------------------------------------
--- /#target/perm
+-- /#language/#target/translate
+
+getNewWikiTranslationR :: Text -> Language -> Text -> Handler Html
+getNewWikiTranslationR project_handle language target = do
+    (_, Entity _ project, Entity page_id _) <- pageInfoRequireAffiliation project_handle language target
+
+    languages <- getLanguages
+
+    edits <- runYDB $ select $ from $ \ we -> do
+        where_ $ we ^. WikiEditPage ==. val page_id
+        return we
+
+    let (Entity edit_id edit:_) = pickEditsByLanguage languages edits
+
+
+    (translation_form, enctype) <- generateFormPost $ newWikiTranslationForm (Just edit_id) (Just $ wikiEditContent edit) Nothing Nothing Nothing
+    defaultLayout $ do
+        setTitle . toHtml $ projectName project <> " Wiki - New Translation | Snowdrift.coop"
+        $(widgetFile "new_wiki_translation")
+
+
+postNewWikiTranslationR :: Text -> Language -> Text -> Handler Html
+postNewWikiTranslationR project_handle language target = do
+    (Entity user_id _, Entity project_id _, Entity page_id _) <- pageInfoRequireAffiliation project_handle language target
+
+    now <- liftIO getCurrentTime
+    ((result, _), _) <- runFormPost $ newWikiTranslationForm Nothing Nothing Nothing Nothing Nothing
+    case result of
+        FormSuccess (edit_id, new_content, new_language, new_target, complete) -> do
+            lookupPostMode >>= \case
+                Just PostMode -> do
+                    runSDB $ createWikiTranslationDB page_id new_language new_target project_id new_content user_id [(edit_id, complete)]
+
+                    alertSuccess "Created."
+                    redirect $ WikiR project_handle new_language new_target
+
+                _ -> do
+                    (form, _) <- generateFormPost $ newWikiTranslationForm (Just edit_id) (Just new_content) (Just new_language) (Just new_target) (Just complete)
+                    defaultLayout $ do
+                        let wiki_page_id = Key $ PersistInt64 (-1)
+                            edit = WikiEdit now user_id wiki_page_id language new_content (Just "page created")
+
+                        previewWidget form "create" $ renderWiki 0 project_handle language target False edit
+
+        FormMissing -> error "Form missing."
+        FormFailure msgs -> error $ "Error submitting form: " ++ T.unpack (T.concat msgs)
+
+--------------------------------------------------------------------------------
+-- /#language/#target/perm
 
 getEditWikiPermissionsR :: Text -> Language -> Text -> Handler Html
 getEditWikiPermissionsR project_handle language target = do
@@ -478,6 +526,7 @@ getMonolingualWikiR = redirectPolylingualWiki $ \case
 
     Just url@(WikiR _ _ _)                      -> redirectSameParams url
     Just url@(WikiCommentR _ _ _ _)             -> redirectSameParams url
+    Just url@(NewWikiTranslationR _ _ _)        -> redirectSameParams url
     Just url@(ClaimWikiCommentR _ _ _ _)        -> redirectSameParams url
     Just url@(CloseWikiCommentR _ _ _ _)        -> redirectSameParams url
     Just url@(DeleteWikiCommentR _ _ _ _)       -> redirectSameParams url

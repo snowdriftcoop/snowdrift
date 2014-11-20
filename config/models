@@ -265,6 +265,11 @@ WikiLastEdit
 
     UniqueWikiLastEdit page language
 
+WikiTranslation
+    edit WikiEditId
+    source WikiEditId
+    complete Bool
+
 Discussion
     nothing Int64
 

@@ -1,6 +1,7 @@
 module Model.Wiki
     ( createWikiEditDB
     , createWikiPageDB
+    , createWikiTranslationDB
     , fetchWikiPageTargetsInDB
     , getAllWikiComments
     ) where
@@ -29,6 +30,25 @@ createWikiPageDB language target project_id content permission_level user_id = d
     wiki_edit_id <- lift $ insert $ WikiEdit now user_id wiki_page_id language content (Just "Page created.")
     lift $ insert_ $ WikiLastEdit wiki_page_id wiki_edit_id language
     tell [EWikiPage wiki_page_id wiki_page wiki_target]
+
+createWikiTranslationDB :: WikiPageId -> Language -> Text -> ProjectId -> Markdown -> UserId -> [(WikiEditId, Bool)] -> SDB ()
+createWikiTranslationDB wiki_page_id language target project_id content user_id sources = do
+    now           <- liftIO getCurrentTime
+
+    let wiki_target = WikiTarget wiki_page_id project_id target language
+    lift $ insert_ wiki_target
+
+    -- Don't generate a WikiEdit event in addition to this WikiPage event.
+    let wiki_edit = WikiEdit now user_id wiki_page_id language content (Just "Translation created.")
+    wiki_edit_id <- lift $ insert wiki_edit
+
+    lift $ insert_ $ WikiLastEdit wiki_page_id wiki_edit_id language
+
+    forM_ sources $ \ (source_edit_id, complete) -> do
+        lift $ insert_ $ WikiTranslation wiki_edit_id source_edit_id complete
+
+    tell [EWikiEdit wiki_edit_id wiki_edit wiki_target]
+
 
 createWikiEditDB :: UserId -> WikiPageId -> Language -> Markdown -> Maybe Text -> SDB WikiEditId
 createWikiEditDB user_id wiki_page_id language content mcomment = do

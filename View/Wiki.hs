@@ -7,6 +7,8 @@ import           Model.Permission
 import           Model.Markdown
 import           Widgets.Markdown
 
+import qualified Data.Text as T
+
 editWikiForm :: WikiEditId -> Markdown -> Maybe Text -> Form (WikiEditId, Markdown, Text)
 editWikiForm last_edit_id content comment = renderBootstrap3 BootstrapBasicForm $ (,,)
     <$> areq' hiddenField "" (Just last_edit_id)
@@ -18,6 +20,18 @@ editWikiPermissionsForm level = renderBootstrap3 BootstrapBasicForm $ areq permi
 
 newWikiForm :: Maybe Markdown -> Form Markdown
 newWikiForm content = renderBootstrap3 BootstrapBasicForm $ areq' snowdriftMarkdownField "Page Content" content
+
+
+-- TODO: make this look not awful
+newWikiTranslationForm :: Maybe WikiEditId -> Maybe Markdown -> Maybe Language -> Maybe Text -> Maybe Bool -> Form (WikiEditId, Markdown, Language, Text, Bool)
+newWikiTranslationForm wiki_edit_id content language target complete = renderBootstrap3 BootstrapBasicForm $ (,,,,)
+    <$> areq' hiddenField "" wiki_edit_id
+    <*> areq' snowdriftMarkdownField (addClass "field-view" "Page Content") content
+    <*> areq' (selectField makeLanguageOptions) (addClass "field-view" "Language") language
+    <*> areq' textField (addClass "field-view" "Target") target
+    <*> areq' boolField (addClass "field-view" "Complete Translation") complete
+
+
 
 renderWiki :: Int -> Text -> Language -> Text -> Bool -> WikiEdit -> Widget
 renderWiki comment_count project_handle language target can_edit wiki_edit = do

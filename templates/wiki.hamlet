@@ -1,11 +1,13 @@
 <div .page-toolbox>
     $if can_edit
         <div .page-tool>
-            <a href="@{EditWikiR project_handle language target}">edit
+            <a href=@{EditWikiR project_handle language target}>edit
+        <div .page-tool>
+            <a href=@?{(NewWikiTranslationR project_handle language target, [("_LANG", toPathPiece $ wikiEditLanguage wiki_edit)])}>translate
     <div .page-tool>
-        <a href="@{WikiHistoryR project_handle language target}">history
+        <a href=@{WikiHistoryR project_handle language target}>history
     <div .page-tool>
-        <a href="@{WikiDiscussionR project_handle language target}">
+        <a href=@{WikiDiscussionR project_handle language target}>
             discuss
             <span .badge>
                 #{comment_count}

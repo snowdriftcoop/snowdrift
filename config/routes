@@ -112,6 +112,7 @@
 -- Project wiki
 
 /p/#Text/w/#Language/#Text                              WikiR                 GET POST
+/p/#Text/w/#Language/#Text/translate                    NewWikiTranslationR   GET POST
 /p/#Text/w/#Language/#Text/c/#CommentId                 WikiCommentR          GET
 /p/#Text/w/#Language/#Text/c/#CommentId/claim           ClaimWikiCommentR     GET POST
 /p/#Text/w/#Language/#Text/c/#CommentId/close           CloseWikiCommentR     GET POST
