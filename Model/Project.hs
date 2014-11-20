@@ -391,11 +391,10 @@ fetchProjectWikiEditsWithTargetsBeforeDB languages project_id before lim = do
         where_ $ wt ^. WikiTargetPage `in_` valList (map (wikiEditPage . entityVal) edits)
         return wt
 
-
-    let edits_map = M.fromList $ map (\ edit -> (wikiEditPage $ entityVal edit, edit)) edits
+    let edits_map = M.fromListWith (++) $ map (\ edit -> (wikiEditPage $ entityVal edit, [edit])) edits
         targets_map = M.fromList $ map (\ (Entity _ wiki_target) -> (wikiTargetPage wiki_target, wiki_target)) $ pickTargetsByLanguage languages targets
 
-    return $ M.elems $ M.intersectionWith (,) edits_map targets_map
+    return $ concat $ M.elems $ M.intersectionWith (\ xs y -> (,) <$> xs <*> pure y)  edits_map targets_map
 
 -- | Fetch all new SharesPledged made on this Project before this time.
 fetchProjectNewPledgesBeforeDB :: ProjectId -> UTCTime -> Int64 -> DB [Entity SharesPledged]
