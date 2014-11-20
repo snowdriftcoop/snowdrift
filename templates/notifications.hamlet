@@ -2,16 +2,25 @@
     <div .text-center> Notifications
 
 $if not (null notifs)
-    $forall Entity _ notif <- notifs
+    <form action="@{NotificationsProxyR}" method="GET">
         <div .row>
-            <div .col-sm-3 .well .well-sm>
-
-                $maybe project <- notificationProject notif
-                    <em>^{projectNameWidget project}
-
-                <br>
-
-                ^{renderTime (notificationCreatedTs notif)}
-
-            <div .col-sm-9>
-                #{notificationContent notif}
+            <div .col-sm-3>
+                <input type="checkbox" name="delete_all">
+                <input type="submit" value="delete">
+                <p>
+        $forall Entity notif_id notif <- notifs
+            <div .row>
+                <div .col-sm-3>
+                    <input type="checkbox" name="delete" value="#{toPathPiece notif_id}">
+                    <span .well .well-sm>
+                        ^{renderTime (notificationCreatedTs notif)}
+                <div .col-sm-9>
+                    $maybe project <- notificationProject notif
+                        ^{projectNameWidget project}
+                        <br>
+                    #{notificationContent notif}
+        <div .row>
+            <div .col-sm-3>
+                <input type="checkbox" name="delete_all">
+                <input type="submit" value="delete">
+    

@@ -59,6 +59,7 @@
 -- Notifications
 
 /notifications              NotificationsR         GET
+/notificationsp             NotificationsProxyR    GET
 /notifications/archived     ArchivedNotificationsR GET
 /n/#NotificationId/archive  ArchiveNotificationR       POST
 

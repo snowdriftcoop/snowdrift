@@ -6,6 +6,8 @@ module Model.User
     -- Utility functions
     , anonymousUser
     , curUserIsEligibleEstablish
+    , deleteNotificationDB
+    , deleteNotificationsDB
     , updateUserPreview
     , userCanAddTag
     , userCanCloseComment
@@ -335,6 +337,25 @@ fetchNotifs cond user_id =
         cond n
     orderBy [desc (n ^. NotificationCreatedTs)]
     return n
+
+deleteEventNotificationSentDB :: NotificationId -> DB ()
+deleteEventNotificationSentDB notif_id =
+    delete $ from $ \ens ->
+        where_ $ ens ^. EventNotificationSentNotification ==. val notif_id
+
+deleteNotificationDB :: NotificationId -> DB ()
+deleteNotificationDB notif_id = do
+    deleteEventNotificationSentDB notif_id
+    delete $ from $ \n ->
+        where_ $ n ^. NotificationId ==. val notif_id
+
+deleteNotificationsDB :: UserId -> DB ()
+deleteNotificationsDB user_id = do
+    notifs <- fetchUserNotificationsDB user_id
+    forM_ notifs $ \(Entity notif_id _) ->
+        deleteEventNotificationSentDB notif_id
+    delete $ from $ \n ->
+        where_ $ n ^. NotificationTo ==. val user_id
 
 updateNotificationPrefDB :: UserId -> NotificationPref -> DB ()
 updateNotificationPrefDB user_id NotificationPref {..} = do
