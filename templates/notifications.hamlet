@@ -1,7 +1,9 @@
 <h1>
     <div .text-center> Notifications
 
-$if not (null notifs)
+$if null notifs
+    No notifications
+$else
     <form action="@{NotificationsProxyR}" method="GET">
         <div .row>
             <div .col-sm-3>
@@ -23,4 +25,3 @@ $if not (null notifs)
             <div .col-sm-3>
                 <input type="checkbox" name="delete_all">
                 <input type="submit" value="delete">
-    
