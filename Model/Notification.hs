@@ -3,6 +3,7 @@ module Model.Notification
     , sendNotificationDB
     , sendNotificationDB_
     , sendNotificationEmailDB
+    , unarchiveNotificationDB
     , module Model.Notification.Internal
     ) where
 
@@ -18,6 +19,12 @@ archiveNotificationDB :: NotificationId -> DB ()
 archiveNotificationDB notif_id =
     update $ \n -> do
     set n [NotificationArchived =. val True]
+    where_ (n ^. NotificationId ==. val notif_id)
+
+unarchiveNotificationDB :: NotificationId -> DB ()
+unarchiveNotificationDB notif_id =
+    update $ \n -> do
+    set n [NotificationArchived =. val False]
     where_ (n ^. NotificationId ==. val notif_id)
 
 -- | Send a notification to a user.

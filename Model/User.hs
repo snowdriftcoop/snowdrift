@@ -39,6 +39,7 @@ module Model.User
     , fetchVerEmail
     , fromEmailVerification
     , sendPreferredNotificationDB
+    , unarchiveNotificationsDB
     , updateUserDB
     , updateUserPasswordDB
     , updateNotificationPrefDB
@@ -375,6 +376,12 @@ archiveNotificationsDB user_id = do
     notifs <- fetchUserNotificationsDB user_id
     forM_ notifs $ \(Entity notif_id _) ->
         archiveNotificationDB notif_id
+
+unarchiveNotificationsDB :: UserId -> DB ()
+unarchiveNotificationsDB user_id = do
+    notifs <- fetchUserArchivedNotificationsDB user_id
+    forM_ notifs $ \(Entity notif_id _) ->
+        unarchiveNotificationDB notif_id
 
 updateNotificationPrefDB :: UserId -> NotificationPref -> DB ()
 updateNotificationPrefDB user_id NotificationPref {..} = do

@@ -59,12 +59,21 @@ getArchivedNotificationsProxyR :: Handler Html
 getArchivedNotificationsProxyR = do
     user_id <- requireAuthId
     req <- getRequest
-    let params = reqGetParams req
-        delete = "delete" `elem` (fst `map` params)
-    when delete $ forM_ params $ \(name, value) ->
-        if | name == "all" -> runDB $ deleteArchivedNotificationsDB user_id
+    let params    = reqGetParams req
+        names     = fst `map` params
+        unarchive = "unarchive" `elem` names
+        delete    = "delete"    `elem` names
+        handleAction unarchive_action delete_action =
+            if | unarchive -> unarchive_action
+               | delete    -> delete_action
+               | otherwise -> return ()
+    forM_ params $ \(name, value) ->
+        if | name == "all" ->
+                 handleAction (runDB $ unarchiveNotificationsDB user_id)
+                              (runDB $ deleteArchivedNotificationsDB user_id)
            | name == "notification" ->
                  whenNotifId value $ \notif_id ->
-                     runDB $ deleteNotificationDB notif_id
+                     handleAction (runDB $ unarchiveNotificationDB notif_id)
+                                  (runDB $ deleteNotificationDB notif_id)
            | otherwise -> return ()
     redirect ArchivedNotificationsR

@@ -12,6 +12,7 @@ $else
             <div .col-sm-3>
                 <input type="checkbox" name="all">
                 <input type="submit" name="delete" value="delete">
+                <input type="submit" name="unarchive" value="unarchive">
                 <p>
         $forall Entity notif_id notif <- notifs
             <div .row>
@@ -28,3 +29,4 @@ $else
             <div .col-sm-3>
                 <input type="checkbox" name="all">
                 <input type="submit" name="delete" value="delete">
+                <input type="submit" name="unarchive" value="unarchive">
