@@ -24,28 +24,38 @@ whenNotifId value action =
     F.forM_ (readMaybe $ T.unpack value :: Maybe Int) $ \notif_id ->
         action $ Key $ toPersistValue notif_id
 
-getNotificationsProxyR :: Handler Html
-getNotificationsProxyR = do
+proxyNotifications :: RedirectUrl App route => Text -> Text
+                   -> (UserId -> DB ()) -> (UserId -> DB ())
+                   -> (NotificationId -> DB ()) -> (NotificationId -> DB ())
+                   -> route -> Handler Html
+proxyNotifications value1 value2 action_all1 action_all2
+                   action_notif1 action_notif2 route = do
     user_id <- requireAuthId
     req <- getRequest
-    let params  = reqGetParams req
-        names   = fst `map` params
-        archive = "archive" `elem` names
-        delete  = "delete"  `elem` names
-        handleAction archive_action delete_action =
-            if | archive   -> archive_action
-               | delete    -> delete_action
+    let params = reqGetParams req
+        names  = fst `map` params
+        handleAction :: DB () -> DB () -> DB ()
+        handleAction action1 action2 =
+            if | value1 `elem` names -> action1
+               | value2 `elem` names -> action2
                | otherwise -> return ()
     forM_ params $ \(name, value) ->
         if | name == "all" ->
-                 handleAction (runDB $ archiveNotificationsDB user_id)
-                              (runDB $ deleteNotificationsDB user_id)
+                 runDB $ handleAction (action_all1 user_id)
+                                      (action_all2 user_id)
            | name == "notification" ->
-                 whenNotifId value $ \notif_id ->
-                     handleAction (runDB $ archiveNotificationDB notif_id)
-                                  (runDB $ deleteNotificationDB notif_id)
+                 whenNotifId value $ \notif_id -> runDB $
+                     handleAction (action_notif1 notif_id)
+                                  (action_notif2 notif_id)
            | otherwise -> return ()
-    redirect NotificationsR
+    redirect route
+
+getNotificationsProxyR :: Handler Html
+getNotificationsProxyR =
+    proxyNotifications "archive" "delete"
+        archiveNotificationsDB deleteNotificationsDB
+        archiveNotificationDB  deleteNotificationDB
+        NotificationsR
 
 getArchivedNotificationsR :: Handler Html
 getArchivedNotificationsR = do
@@ -56,24 +66,8 @@ getArchivedNotificationsR = do
         $(widgetFile "archived_notifications")
 
 getArchivedNotificationsProxyR :: Handler Html
-getArchivedNotificationsProxyR = do
-    user_id <- requireAuthId
-    req <- getRequest
-    let params    = reqGetParams req
-        names     = fst `map` params
-        unarchive = "unarchive" `elem` names
-        delete    = "delete"    `elem` names
-        handleAction unarchive_action delete_action =
-            if | unarchive -> unarchive_action
-               | delete    -> delete_action
-               | otherwise -> return ()
-    forM_ params $ \(name, value) ->
-        if | name == "all" ->
-                 handleAction (runDB $ unarchiveNotificationsDB user_id)
-                              (runDB $ deleteArchivedNotificationsDB user_id)
-           | name == "notification" ->
-                 whenNotifId value $ \notif_id ->
-                     handleAction (runDB $ unarchiveNotificationDB notif_id)
-                                  (runDB $ deleteNotificationDB notif_id)
-           | otherwise -> return ()
-    redirect ArchivedNotificationsR
+getArchivedNotificationsProxyR =
+    proxyNotifications "unarchive" "delete"
+        unarchiveNotificationsDB deleteArchivedNotificationsDB
+        unarchiveNotificationDB  deleteNotificationDB
+        ArchivedNotificationsR
