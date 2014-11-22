@@ -58,10 +58,10 @@
 
 -- Notifications
 
-/notifications              NotificationsR         GET
-/notificationsp             NotificationsProxyR    GET
-/notifications/archived     ArchivedNotificationsR GET
-/n/#NotificationId/archive  ArchiveNotificationR       POST
+/notifications              NotificationsR              GET
+/notificationsp             NotificationsProxyR         GET
+/notifications/archived     ArchivedNotificationsR      GET
+/notifications/archivedp    ArchivedNotificationsProxyR GET
 
 -- Project
 

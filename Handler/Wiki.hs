@@ -559,7 +559,7 @@ getMonolingualWikiR = redirectPolylingualWiki $ \case
     Just NotificationsR                         -> error "the impossible happened"
     Just NotificationsProxyR                    -> error "the impossible happened"
     Just ArchivedNotificationsR                 -> error "the impossible happened"
-    Just (ArchiveNotificationR _)               -> error "the impossible happened"
+    Just ArchivedNotificationsProxyR            -> error "the impossible happened"
     Just ProjectsR                              -> error "the impossible happened"
     Just (ProjectR _)                           -> error "the impossible happened"
     Just (ApplicationsR _)                      -> error "the impossible happened"

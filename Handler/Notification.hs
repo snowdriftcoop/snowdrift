@@ -1,6 +1,6 @@
 module Handler.Notification where
 
-import Import
+import Import hiding (delete)
 
 import           Model.Notification
 import           Model.Project
@@ -19,17 +19,31 @@ getNotificationsR = do
         setTitle "Notifications | Snowdrift.coop"
         $(widgetFile "notifications")
 
+whenNotifId :: DBConstraint m => Text -> (NotificationId -> m ()) -> m ()
+whenNotifId value action =
+    F.forM_ (readMaybe $ T.unpack value :: Maybe Int) $ \notif_id ->
+        action $ Key $ toPersistValue notif_id
+
 getNotificationsProxyR :: Handler Html
 getNotificationsProxyR = do
     user_id <- requireAuthId
     req <- getRequest
-    let params = reqGetParams req
+    let params  = reqGetParams req
+        names   = fst `map` params
+        archive = "archive" `elem` names
+        delete  = "delete"  `elem` names
+        handleAction archive_action delete_action =
+            if | archive   -> archive_action
+               | delete    -> delete_action
+               | otherwise -> return ()
     forM_ params $ \(name, value) ->
-        if | name == "delete_all" ->
-                 runDB $ deleteNotificationsDB user_id
-           | name == "delete" ->
-                 F.forM_ (readMaybe $ T.unpack value :: Maybe Int) $ \notif_id ->
-                     runDB $ deleteNotificationDB $ Key $ toPersistValue notif_id
+        if | name == "all" ->
+                 handleAction (runDB $ archiveNotificationsDB user_id)
+                              (runDB $ deleteNotificationsDB user_id)
+           | name == "notification" ->
+                 whenNotifId value $ \notif_id ->
+                     handleAction (runDB $ archiveNotificationDB notif_id)
+                                  (runDB $ deleteNotificationDB notif_id)
            | otherwise -> return ()
     redirect NotificationsR
 
@@ -38,14 +52,19 @@ getArchivedNotificationsR = do
     user_id <- requireAuthId
     notifs <- runDB (fetchUserArchivedNotificationsDB user_id)
     defaultLayout $ do
-        setTitle "Notifications | Snowdrift.coop"
-        $(widgetFile "notifications")
+        setTitle "Archived Notifications | Snowdrift.coop"
+        $(widgetFile "archived_notifications")
 
-postArchiveNotificationR :: NotificationId -> Handler ()
-postArchiveNotificationR notif_id = do
+getArchivedNotificationsProxyR :: Handler Html
+getArchivedNotificationsProxyR = do
     user_id <- requireAuthId
-    runYDB $ do
-        notif <- get404 notif_id
-        unless (user_id == notificationTo notif) $
-            lift (permissionDenied "You can't archive this notification.")
-        archiveNotificationDB notif_id
+    req <- getRequest
+    let params = reqGetParams req
+        delete = "delete" `elem` (fst `map` params)
+    when delete $ forM_ params $ \(name, value) ->
+        if | name == "all" -> runDB $ deleteArchivedNotificationsDB user_id
+           | name == "notification" ->
+                 whenNotifId value $ \notif_id ->
+                     runDB $ deleteNotificationDB notif_id
+           | otherwise -> return ()
+    redirect ArchivedNotificationsR

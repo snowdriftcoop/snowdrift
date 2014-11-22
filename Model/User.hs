@@ -6,6 +6,7 @@ module Model.User
     -- Utility functions
     , anonymousUser
     , curUserIsEligibleEstablish
+    , deleteArchivedNotificationsDB
     , deleteNotificationDB
     , deleteNotificationsDB
     , updateUserPreview
@@ -19,6 +20,7 @@ module Model.User
     , userIsUnestablished
     , userDisplayName
     -- Database actions
+    , archiveNotificationsDB
     , deleteFromEmailVerification
     , eligEstablishUserDB
     , establishUserDB
@@ -359,11 +361,20 @@ deleteNotificationDB notif_id = do
 deleteNotificationsDB :: UserId -> DB ()
 deleteNotificationsDB user_id = do
     notifs <- fetchUserNotificationsDB user_id
-    forM_ notifs $ \(Entity notif_id _) -> do
-        deleteEventNotificationSentDB notif_id
-        deleteUnapprovedCommentNotificationDB notif_id
-    delete $ from $ \n ->
-        where_ $ n ^. NotificationTo ==. val user_id
+    forM_ notifs $ \(Entity notif_id _) ->
+        deleteNotificationDB notif_id
+
+deleteArchivedNotificationsDB :: UserId -> DB ()
+deleteArchivedNotificationsDB user_id = do
+    notifs <- fetchUserArchivedNotificationsDB user_id
+    forM_ notifs $ \(Entity notif_id _) ->
+        deleteNotificationDB notif_id
+
+archiveNotificationsDB :: UserId -> DB ()
+archiveNotificationsDB user_id = do
+    notifs <- fetchUserNotificationsDB user_id
+    forM_ notifs $ \(Entity notif_id _) ->
+        archiveNotificationDB notif_id
 
 updateNotificationPrefDB :: UserId -> NotificationPref -> DB ()
 updateNotificationPrefDB user_id NotificationPref {..} = do
