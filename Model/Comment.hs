@@ -319,8 +319,8 @@ deleteCommentDB = deleteCascade
 
 -- | Edit a comment's text. If the comment was flagged, unflag it and send a
 -- notification to the flagger.
-editCommentDB :: CommentId -> Markdown -> SYDB ()
-editCommentDB comment_id text = do
+editCommentDB :: CommentId -> Markdown -> Language -> SYDB ()
+editCommentDB comment_id text language = do
     lift updateComment
     lift (fetchCommentFlaggingDB comment_id) >>= \case
         Nothing -> return ()
@@ -333,7 +333,9 @@ editCommentDB comment_id text = do
   where
     updateComment =
         update $ \c -> do
-        set c [ CommentText =. val text ]
+        set c [ CommentText     =. val text
+              , CommentLanguage =. val language
+              ]
         where_ (c ^. CommentId ==. val comment_id)
 
 -- | Flag a comment. Send a notification to the poster about the flagging. Return whether

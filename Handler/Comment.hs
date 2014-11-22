@@ -262,9 +262,11 @@ makeEditCommentWidget
         mods
         get_max_depth
         is_preview = do
+    let commentVal = entityVal comment
     makeCommentActionWidget
       can_edit
-      (editCommentFormWidget (commentText (entityVal comment)))
+      (editCommentFormWidget (commentText commentVal)
+                             (commentLanguage commentVal))
       comment
       user
       make_comment_handler_info
@@ -395,15 +397,15 @@ postEditComment
         -> (CommentMods -> CommentHandlerInfo)
         -> Handler (Maybe (Widget, Widget))
 postEditComment user (Entity comment_id comment) make_comment_handler_info = do
-    ((result, _), _) <- runFormPost (editCommentForm "")
+    ((result, _), _) <- runFormPost (editCommentForm "" (commentLanguage comment))
     case result of
-        FormSuccess (EditComment new_text) -> lookupPostMode >>= \case
+        FormSuccess (EditComment new_text new_language) -> lookupPostMode >>= \case
             Just PostMode -> do
-                runSYDB (editCommentDB comment_id new_text)
+                runSYDB (editCommentDB comment_id new_text new_language)
                 alertSuccess "posted new edit"
                 return Nothing
             _ -> do
-                (form, _) <- generateFormPost (editCommentForm new_text)
+                (form, _) <- generateFormPost (editCommentForm new_text new_language)
                 (comment_widget, _) <-
                     makeCommentActionWidget
                         can_edit

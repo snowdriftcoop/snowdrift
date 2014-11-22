@@ -110,24 +110,30 @@ retractCommentForm  :: Maybe Markdown -> Form NewClosure
 
 commentNewTopicForm ::               Form NewComment
 commentReplyForm    ::               Form NewComment
-editCommentForm     :: Markdown   -> Form EditComment
+
+editCommentForm     :: Markdown -> Language -> Form EditComment
 
 closeCommentForm    = closureForm "Reason for closing:"
 retractCommentForm  = closureForm "Reason for retracting:"
 
 commentNewTopicForm = commentForm "New Topic" Nothing
 commentReplyForm    = commentForm "Reply"     Nothing
-editCommentForm     = renderBootstrap3 BootstrapBasicForm . fmap EditComment . areq' snowdriftMarkdownField "Edit" . Just
+
+editCommentForm content language =
+    renderBootstrap3 BootstrapBasicForm $ EditComment
+        <$> areq' snowdriftMarkdownField            "Edit"     (Just content)
+        <*> areq' (selectField makeLanguageOptions) "Language" (Just language)
 
 claimCommentFormWidget    :: Maybe (Maybe Text) -> Widget
 closeCommentFormWidget    :: Maybe Markdown     -> Widget
 commentNewTopicFormWidget ::                       Widget
 commentReplyFormWidget    ::                       Widget
-editCommentFormWidget     :: Markdown           -> Widget
 retractCommentFormWidget  :: Maybe Markdown     -> Widget
 unclaimCommentFormWidget  :: Maybe (Maybe Text) -> Widget
 watchCommentFormWidget    ::                       Widget
 unwatchCommentFormWidget  ::                       Widget
+
+editCommentFormWidget     :: Markdown -> Language -> Widget
 
 closeCommentFormWidget    = closureFormWidget' "close" . closeCommentForm
 retractCommentFormWidget  = closureFormWidget' "retract" . retractCommentForm
@@ -136,9 +142,11 @@ claimCommentFormWidget    = commentFormWidget' False "claim" . claimCommentForm
 unclaimCommentFormWidget  = commentFormWidget' False "unclaim" . unclaimCommentForm
 commentNewTopicFormWidget = commentFormWidget' True  "post" commentNewTopicForm
 commentReplyFormWidget    = commentFormWidget' True  "post" commentReplyForm
-editCommentFormWidget     = commentFormWidget' True  "post" . editCommentForm
 watchCommentFormWidget    = commentFormWidget' False "watch" watchCommentForm
 unwatchCommentFormWidget  = commentFormWidget' False "unwatch" unwatchCommentForm
+
+editCommentFormWidget content language =
+    commentFormWidget' True  "post" $ editCommentForm content language
 
 approveCommentFormWidget :: Widget
 approveCommentFormWidget =
