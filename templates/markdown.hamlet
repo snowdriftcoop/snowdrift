@@ -100,6 +100,8 @@
     ---
 <hr>
 <p>
+    *** asterisks also work and are used specifically to indicate the read-more fold for blog posts
+<p>
     <strong> \
     backslash before characters makes them show normally if they would otherwise be markdown commands
 <h2> Footnotes
