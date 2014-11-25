@@ -43,8 +43,8 @@ postResetPasswordR = do
                      if isJust muser_id_and_email
                          then let (user_id, email) = fromJust muser_id_and_email
                               in initResetPassword user_id email
-                         else alertAndRefresh $ "Either the handle is invalid "
-                                             <> "or the email is not verified."
+                         else alertAndRefresh $ "Sorry, either your handle is invalid "
+                                             <> "or we have no verified email for you."
                | isJust rpEmail -> do
                      let email = fromJust rpEmail
                      muser_id <-
