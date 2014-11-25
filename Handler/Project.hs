@@ -1254,6 +1254,20 @@ getTicketsR project_handle = do
 
 
 --------------------------------------------------------------------------------
+-- /t
+
+getTicketR :: Text -> TicketId -> Handler ()
+getTicketR project_handle ticket_id = do
+    Ticket{..} <- runYDB $ do
+        void $ getBy404 $ UniqueProjectHandle project_handle
+        get404 ticket_id
+
+    -- TODO - check that the comment is associated with the correct project
+
+    redirect $ CommentDirectLinkR ticketComment
+
+
+--------------------------------------------------------------------------------
 -- /transactions
 
 getProjectTransactionsR :: Text -> Handler Html

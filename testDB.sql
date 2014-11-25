@@ -2690,8 +2690,8 @@ SELECT pg_catalog.setval('transaction_id_seq', 1, false);
 --
 
 COPY "user" (id, ident, hash, salt, name, account, avatar, blurb, statement, irc_nick, read_messages, read_applications, read_comments, read_edits, created_ts, established) FROM stdin;
-1	admin	8bf2d491387febc07e5d8fd15a4140b28473566e	P^YTN3G:	Admin	1	\N	Admin is the name for the test user in our devDB database that comes with the code. Log in as admin with passphrase: admin	\N	\N	2014-01-21 22:58:23.380462	2013-11-23 19:31:18.982213	2013-11-23 19:31:18.982213	2013-11-23 19:31:18.982213	\N	EstUnestablished
-2	test	a090d14299acd2b596b64fb5a46d3587ece359d8	_>4icWF[	Test	3	\N	\N	\N	\N	2014-02-24 01:58:57.856901	2014-02-24 01:58:57.856901	2014-02-24 01:58:57.856901	2014-02-24 01:58:57.856901	2014-02-24 01:58:57.856901	EstUnestablished
+1	admin	8bf2d491387febc07e5d8fd15a4140b28473566e	P^YTN3G:	Admin	1	\N	Admin is the name for the test user in our devDB database that comes with the code. Log in as admin with passphrase: admin	\N	\N	2014-01-21 22:58:23.380462	2013-11-23 19:31:18.982213	2013-11-23 19:31:18.982213	2013-11-23 19:31:18.982213	\N	EstEstablished 2014-09-06 10:06:14.520014 2014-09-06 10:06:14.520014 "FOUNDATIONAL"
+2	test	a090d14299acd2b596b64fb5a46d3587ece359d8	_>4icWF[	Test	3	\N	\N	\N	\N	2014-02-24 01:58:57.856901	2014-02-24 01:58:57.856901	2014-02-24 01:58:57.856901	2014-02-24 01:58:57.856901	2014-02-24 01:58:57.856901	EstEstablished 2014-09-06 10:06:14.520014 2014-09-06 10:06:14.520014 "FOUNDATIONAL"
 \.
 
 
