@@ -295,7 +295,7 @@ getUserChangePasswordR user_id = do
     user <- runYDB $ get404 user_id
     (form, enctype) <- generateFormPost changePasswordForm
     defaultLayout $ do
-        setTitle . toHtml $ "Change Password - " <>
+        setTitle . toHtml $ "Change Passphrase - " <>
             userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
         $(widgetFile "change_password")
 
@@ -308,10 +308,10 @@ resetPassword user_id user password password' route =
             runDB $ do
                 updateUserPasswordDB user_id (userHash user') (userSalt user')
                 deleteFromResetPassword user_id
-            alertSuccess "Successfully updated the password."
-            redirect $ AuthR LoginR
+            alertSuccess "You successfully updated your passphrase."
+            redirect (UserR user_id)
         else do
-            alertDanger "Passwords do not match."
+            alertDanger "The passphrases you entered do not match."
             redirect route
 
 postUserChangePasswordR :: UserId -> Handler Html
@@ -327,10 +327,10 @@ postUserChangePasswordR user_id = do
                 then resetPassword user_id user newPassword newPassword' $
                          UserChangePasswordR user_id
                 else do
-                    alertDanger "Incorrect current password."
+                    alertDanger "Sorry, that is not the correct current passphrase."
                     defaultLayout $(widgetFile "change_password")
         _ -> do
-            alertDanger "Failed to update the password."
+            alertDanger "Oops, failed to update the passphrase."
             defaultLayout $(widgetFile "change_password")
 
 --------------------------------------------------------------------------------
@@ -544,7 +544,7 @@ postUserNotificationsR user_id = do
         FormSuccess notif_pref -> do
             runDB $ updateNotificationPrefDB user_id notif_pref
             alertSuccess "Successfully updated the notification preferences."
-            redirect $ UserR user_id
+            redirect (UserR user_id)
         _ -> do
             alertDanger $ "Failed to update the notification preferences. "
                        <> "Please try again."
@@ -562,7 +562,7 @@ getUserResetPasswordR user_id hash = do
             user <- runYDB $ get404 user_id
             (form, enctype) <- generateFormPost setPasswordForm
             defaultLayout $ do
-                setTitle . toHtml $ "Set Password - " <>
+                setTitle . toHtml $ "Set Passphrase - " <>
                     userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
                 $(widgetFile "set_password")
 
@@ -575,5 +575,5 @@ postUserResetPasswordR user_id hash = do
             resetPassword user_id user password password' $
                 UserResetPasswordR user_id hash
         _ -> do
-            alertDanger "Failed to set the password."
+            alertDanger "Oops, failed to set the passphase."
             defaultLayout $(widgetFile "set_password")
