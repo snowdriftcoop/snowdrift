@@ -100,6 +100,7 @@
 /p/#Text/patrons                             ProjectPatronsR          GET
 /p/#Text/shares                              UpdateSharesR            GET POST
 /p/#Text/t                                   TicketsR                 GET
+/p/#Text/t/#TicketId                         TicketR                  GET
 /p/#Text/transactions                        ProjectTransactionsR     GET
 /p/#Text/volunteer                           VolunteerR               GET POST
 /p/#Text/w                                   WikiPagesR               GET

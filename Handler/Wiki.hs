@@ -643,6 +643,7 @@ getMonolingualWikiR = redirectPolylingualWiki $ \case
     Just (InviteR _)                            -> error "the impossible happened"
     Just (ProjectPatronsR _)                    -> error "the impossible happened"
     Just (UpdateSharesR _)                      -> error "the impossible happened"
+    Just (TicketR _ _)                          -> error "the impossible happened"
     Just (TicketsR _)                           -> error "the impossible happened"
     Just (ProjectTransactionsR _)               -> error "the impossible happened"
     Just (VolunteerR _)                         -> error "the impossible happened"
