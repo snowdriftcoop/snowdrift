@@ -194,7 +194,7 @@ postUserBalanceR user_id = do
     now <- liftIO getCurrentTime
 
     let balanceCap :: Milray
-        balanceCap = 100
+        balanceCap = 1000000
 
     case result of
         FormSuccess amount -> do
@@ -211,8 +211,8 @@ postUserBalanceR user_id = do
                         return (c == 1)
 
                     if success
-                     then alertDanger $ "Balance would exceed (testing only) cap of " <> T.pack (show balanceCap)
-                     else alertSuccess "Balance updated."
+                     then alertSuccess "Balance updated."
+                     else alertDanger $ "Balance would exceed (testing only) cap of " <> T.pack (show balanceCap)
 
             redirect (UserBalanceR user_id)
 
