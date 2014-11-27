@@ -1,17 +1,16 @@
+$if Just user_id == mviewer_id
+    <div .user-prefs>
+        <div .user-pref>
+            <a href="@{EditUserR user_id}">
+                edit profile
+        <div .user-pref>
+            <a href="@{UserChangePasswordR user_id}">
+                change passphrase
+        <div .user-pref>
+            <a href="@{UserNotificationsR user_id}">
+                notification preferences
 <div .row>
     <div .col-md-6>
-        $if Just user_id == mviewer_id
-            <div .row>
-                <h5>
-                    <div .col-xs-6>
-                        <a href="@{EditUserR user_id}">
-                            edit profile
-                    <div .col-xs-6>
-                        <a href="@{UserChangePasswordR user_id}">
-                            change password
-                    <div .col-xs-6>
-                        <a href="@{UserNotificationsR user_id}">
-                            notification preferences
         <h1>
             #{userDisplayName user_entity}
         <div .row>

@@ -113,9 +113,9 @@ editUserForm muser = renderBootstrap3 BootstrapBasicForm $
 
 changePasswordForm :: Form ChangePassword
 changePasswordForm = renderBootstrap3 BootstrapBasicForm $ ChangePassword
-    <$> areq' passwordField "Current password" Nothing
-    <*> areq' passwordField "New password"     Nothing
-    <*> areq' passwordField "Repeat"           Nothing
+    <$> areq' passwordField "Current passphrase" Nothing
+    <*> areq' passwordField "New passphrase"      Nothing
+    <*> areq' passwordField "Repeat"     Nothing
 
 -- | Form to mark a user as eligible for establishment. The user is fully established
 -- when s/he accepts the honor pledge.
@@ -147,8 +147,8 @@ renderUser mviewer_id user_id user projects_and_roles = do
 
 setPasswordForm :: Form SetPassword
 setPasswordForm = renderBootstrap3 BootstrapBasicForm $ SetPassword
-    <$> areq' passwordField "New password" Nothing
-    <*> areq' passwordField "Repeat"       Nothing
+    <$> areq' passwordField "New passphrase" Nothing
+    <*> areq' passwordField "Repeat"         Nothing
 
 hiddenMarkdown :: Maybe Markdown -> AForm Handler (Maybe Markdown)
 hiddenMarkdown Nothing               = fmap (fmap Markdown) $ aopt hiddenField "" Nothing

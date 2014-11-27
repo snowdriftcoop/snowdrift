@@ -2,6 +2,7 @@
 <div .blog-post>
     <h1>
         #{title}
+        <br>
         <small>
             <span .author> by ^{userNameWidget author}
             <span .post-time> ^{renderTime $ blogPostTs blog_post}

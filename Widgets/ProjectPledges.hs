@@ -26,7 +26,7 @@ projectPledgeSummary user_id = do
 
     toWidget [hamlet|
         $if null project_summary
-            not supporting any projects
+            not pledged to any projects
         $else
             <a href="@{UserPledgesR user_id}">
                 $if (length project_summary) == 1
@@ -53,7 +53,7 @@ projectPledges user_id = do
 
     toWidget [hamlet|
         $if null project_summaries
-            not supporting any projects
+            not pledged to any projects
         $else
             <p>
                 Note: For testing purposes only.  No real money is changing hands yet.
