@@ -150,7 +150,7 @@ loginAs :: (Yesod site, Login user) => user -> YesodExample site ()
 loginAs user = do
     get $ urlPath $ testRoot `T.append` "/auth/login"
     statusIs 200
-    submitLogin (username user) (username user)
+    submitLogin (username user) (password user)
 
 
 statusIsResp :: Int -> YesodExample site ()
