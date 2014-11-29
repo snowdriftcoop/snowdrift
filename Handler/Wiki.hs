@@ -453,7 +453,7 @@ getNewWikiTranslationR project_handle language target = do
     let (Entity edit_id edit:_) = pickEditsByLanguage languages edits
 
 
-    (translation_form, enctype) <- generateFormPost $ newWikiTranslationForm (Just edit_id) (Just $ wikiEditContent edit) Nothing Nothing Nothing
+    (translation_form, enctype) <- generateFormPost $ newWikiTranslationForm (Just edit_id) Nothing Nothing (Just $ wikiEditContent edit) Nothing
     defaultLayout $ do
         setTitle . toHtml $ projectName project <> " Wiki - New Translation | Snowdrift.coop"
         $(widgetFile "new_wiki_translation")
@@ -466,7 +466,7 @@ postNewWikiTranslationR project_handle language target = do
     now <- liftIO getCurrentTime
     ((result, _), _) <- runFormPost $ newWikiTranslationForm Nothing Nothing Nothing Nothing Nothing
     case result of
-        FormSuccess (edit_id, new_content, new_language, new_target, complete) -> do
+        FormSuccess (edit_id, new_language, new_target, new_content, complete) -> do
             lookupPostMode >>= \case
                 Just PostMode -> do
                     runSDB $ createWikiTranslationDB page_id new_language new_target project_id new_content user_id [(edit_id, complete)]
@@ -475,7 +475,7 @@ postNewWikiTranslationR project_handle language target = do
                     redirect $ WikiR project_handle new_language new_target
 
                 _ -> do
-                    (form, _) <- generateFormPost $ newWikiTranslationForm (Just edit_id) (Just new_content) (Just new_language) (Just new_target) (Just complete)
+                    (form, _) <- generateFormPost $ newWikiTranslationForm (Just edit_id) (Just new_language) (Just new_target) (Just new_content) (Just complete)
                     defaultLayout $ do
                         let wiki_page_id = Key $ PersistInt64 (-1)
                             edit = WikiEdit now user_id wiki_page_id language new_content (Just "page created")

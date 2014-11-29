@@ -20,13 +20,12 @@ newWikiForm :: Maybe Markdown -> Form Markdown
 newWikiForm content = renderBootstrap3 BootstrapBasicForm $ areq' snowdriftMarkdownField "Page Content" content
 
 
--- TODO: make this look not awful
-newWikiTranslationForm :: Maybe WikiEditId -> Maybe Markdown -> Maybe Language -> Maybe Text -> Maybe Bool -> Form (WikiEditId, Markdown, Language, Text, Bool)
-newWikiTranslationForm wiki_edit_id content language target complete = renderBootstrap3 BootstrapBasicForm $ (,,,,)
+newWikiTranslationForm :: Maybe WikiEditId -> Maybe Language -> Maybe Text -> Maybe Markdown -> Maybe Bool -> Form (WikiEditId, Language, Text, Markdown, Bool)
+newWikiTranslationForm wiki_edit_id language target content complete = renderBootstrap3 BootstrapBasicForm $ (,,,,)
     <$> areq' hiddenField "" wiki_edit_id
-    <*> areq' snowdriftMarkdownField "Page content" content
     <*> areq' (selectField makeLanguageOptions) "New language" language
     <*> areq' textField "Target for URL" target
+    <*> areq' snowdriftMarkdownField "Page content" content
     <*> areq  boolField "Complete translation" complete
 
 
