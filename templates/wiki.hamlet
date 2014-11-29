@@ -2,8 +2,11 @@
     $if can_edit
         <div .page-tool>
             <a href=@{EditWikiR project_handle language target}>edit
+        <!-- don't show translate until we fix SD-387
         <div .page-tool>
             <a href=@?{(NewWikiTranslationR project_handle language target, [("_LANG", toPathPiece $ wikiEditLanguage wiki_edit)])}>translate
+        -->
+
     <div .page-tool>
         <a href=@{WikiHistoryR project_handle language target}>history
     <div .page-tool>
