@@ -133,15 +133,22 @@ pledgeForm project_id extra = do
 
     let view = [whamlet|
             #{extra}
+            <h3 .text-center style="margin-top: 1em">
+                Pledge your support!
+            <small>
+                Your pledge is a matching offer to other patrons, current and future.
+                At one share, you will donate 0.1&cent; per other patron
+                plus <i>some</i> extra when others pledge extra shares
+                (determined each month by the active pledges at that time).
             <div .text-center>
-                <h3 style="margin-top: 1em">
-                    Pledge your support!
                 <p>
-                    One share means a monthly donation of 0.1&cent; per other patron
-                    plus <i>some</i> extra for anyone donating extra shares.
+                    Read more:
                     <br>
                     <a href=@{WikiR "snowdrift" LangEn "mechanism"}>
-                        <em> Read the details&hellip;
+                        The pledge mechanism details
+                    <br>
+                    <a href=@{WikiR "snowdrift" LangEn "shares"}>
+                        How to choose your number of shares
                 <h4 style="margin-top: 1em">
                     Your number of shares:
                 <strong>
