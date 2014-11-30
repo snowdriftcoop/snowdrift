@@ -24,6 +24,7 @@ import View.Wiki
 
 import           Data.Algorithm.Diff  (getDiff, Diff (..))
 import           Data.Default         (def)
+import qualified Data.List            as L
 import qualified Data.Map             as M
 import qualified Data.Set             as S
 import qualified Data.Text            as T
@@ -100,7 +101,7 @@ getWikiR project_handle language target = do
 
     languages <- getLanguages
 
-    (project, edit, comment_count) <- runYDB $ do
+    (project, edit, comment_count, translations) <- runYDB $ do
         (Entity project_id project, Entity page_id page, _) <- pageInfo project_handle language target
 
         let muser_id      = entityKey <$> maybe_user
@@ -124,8 +125,9 @@ getWikiR project_handle language target = do
             return we
 
         let [Entity _ edit] = pickEditsByLanguage languages edits
+            translations = L.delete (wikiEditLanguage edit) $ map (wikiEditLanguage . entityVal) edits
 
-        return (project, edit, length roots_ids + num_children)
+        return (project, edit, length roots_ids + num_children, translations)
 
     let can_edit = fromMaybe False (userCanEditWikiPage . entityVal <$> maybe_user)
 
@@ -133,7 +135,7 @@ getWikiR project_handle language target = do
         setTitle . toHtml $
             projectName project <> " : " <> target <> " | Snowdrift.coop"
 
-        renderWiki comment_count project_handle language target can_edit edit
+        renderWiki comment_count project_handle language target can_edit translations edit
 
 postWikiR :: Text -> Language -> Text -> Handler Html
 postWikiR project_handle target_language target = do
@@ -214,10 +216,17 @@ postWikiR project_handle target_language target = do
                     redirect $ WikiR project_handle target_language target
 
                 _ -> do
+
+                    translations <- fmap unwrapValues $ runYDB $ select $ from $ \ (we `InnerJoin` le) -> do
+                        on_ $ we ^. WikiEditId ==. le ^. WikiLastEditEdit
+                        where_ $ we ^. WikiEditPage ==. val page_id
+                            &&. we ^. WikiEditLanguage !=. val edit_language
+                        return $ we ^. WikiEditLanguage
+
                     (form, _) <- generateFormPost $ editWikiForm prev_edit_id content (Just comment)
 
                     defaultLayout $ previewWidget form "update" $
-                        renderWiki 0 project_handle target_language target False $
+                        renderWiki 0 project_handle target_language target False translations $
                             WikiEdit now user_id page_id edit_language content (Just comment)
 
         FormMissing -> error "Form missing."
@@ -428,11 +437,12 @@ postNewWikiR project_handle language target = do
 
                 _ -> do
                     (form, _) <- generateFormPost $ newWikiForm (Just content)
+
                     defaultLayout $ do
                         let wiki_page_id = Key $ PersistInt64 (-1)
                             edit = WikiEdit now user_id wiki_page_id language content (Just "page created")
 
-                        previewWidget form "create" $ renderWiki 0 project_handle language target False edit
+                        previewWidget form "create" $ renderWiki 0 project_handle language target False [] edit
 
         FormMissing -> error "Form missing."
         FormFailure msgs -> error $ "Error submitting form: " ++ T.unpack (T.concat msgs)
@@ -472,15 +482,22 @@ postNewWikiTranslationR project_handle language target = do
                     runSDB $ createWikiTranslationDB page_id new_language new_target project_id new_content user_id [(edit_id, complete)]
 
                     alertSuccess "Created."
-                    redirect $ WikiR project_handle new_language new_target
+                    redirect (WikiR project_handle new_language new_target, [("_LANG", toPathPiece new_language)])
 
                 _ -> do
                     (form, _) <- generateFormPost $ newWikiTranslationForm (Just edit_id) (Just new_language) (Just new_target) (Just new_content) (Just complete)
+
+                    translations <- fmap unwrapValues $ runYDB $ select $ from $ \ (we `InnerJoin` le) -> do
+                        on_ $ we ^. WikiEditId ==. le ^. WikiLastEditEdit
+                        where_ $ we ^. WikiEditPage ==. val page_id
+                            &&. we ^. WikiEditLanguage !=. val new_language
+                        return $ we ^. WikiEditLanguage
+
                     defaultLayout $ do
                         let wiki_page_id = Key $ PersistInt64 (-1)
                             edit = WikiEdit now user_id wiki_page_id language new_content (Just "page created")
 
-                        previewWidget form "create" $ renderWiki 0 project_handle language target False edit
+                        previewWidget form "create" $ renderWiki 0 project_handle language target False translations edit
 
         FormMissing -> error "Form missing."
         FormFailure msgs -> error $ "Error submitting form: " ++ T.unpack (T.concat msgs)

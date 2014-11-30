@@ -2,10 +2,8 @@
     $if can_edit
         <div .page-tool>
             <a href=@{EditWikiR project_handle language target}>edit
-        <!-- don't show translate until we fix SD-387
         <div .page-tool>
             <a href=@?{(NewWikiTranslationR project_handle language target, [("_LANG", toPathPiece $ wikiEditLanguage wiki_edit)])}>translate
-        -->
 
     <div .page-tool>
         <a href=@{WikiHistoryR project_handle language target}>history
@@ -14,6 +12,14 @@
             discuss
             <span .badge>
                 #{comment_count}
+
+    $if not (null translations)
+        <ul>
+            $forall translation <- translations
+                <li>
+                    <a href=@?{(WikiR project_handle language target, [("_LANG", toPathPiece translation)])}>
+                        #{toPathPiece translation}
+
 
 ^{markdownWidgetWith (fixLinks project_handle discussion) (wikiEditContent wiki_edit)}
 
