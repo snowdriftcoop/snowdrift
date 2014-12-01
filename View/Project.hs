@@ -80,11 +80,11 @@ renderBlogPost project_handle blog_post = do
     project <- handlerToWidget $ runYDB $ getBy404 $ UniqueProjectHandle project_handle
 
     let (Markdown top_content) = blogPostTopContent blog_post
-        (Markdown bottom_content) = maybe (Markdown "") ("***\n" <>) $ blogPostBottomContent blog_post
+        (Markdown bottom_content) = maybe (Markdown "") id $ blogPostBottomContent blog_post
         title = blogPostTitle blog_post
         author = blogPostUser blog_post
         discussion = DiscussionOnProject project
-        content = markdownWidgetWith (fixLinks project_handle discussion) $ Markdown $ T.snoc top_content '\n' <> bottom_content
+        content = markdownWidgetWith (fixLinks project_handle discussion) $ Markdown $ top_content <> "\n\n***\n\n<a name=\"fold\"></a>\n\n" <> bottom_content
 
     $(widgetFile "blog_post")
 
