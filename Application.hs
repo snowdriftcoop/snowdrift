@@ -56,6 +56,7 @@ import Handler.Privacy
 import Handler.Project
 import Handler.RepoFeed
 import Handler.ResetPassword
+import Handler.SnowdriftEvent
 import Handler.ToU
 import Handler.User
 import Handler.User.Comment

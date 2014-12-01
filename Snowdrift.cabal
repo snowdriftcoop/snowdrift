@@ -84,6 +84,7 @@ library
                      Handler.Project
                      Handler.RepoFeed
                      Handler.ResetPassword
+                     Handler.SnowdriftEvent
                      Handler.ToU
                      Handler.User
                      Handler.User.Comment

@@ -917,51 +917,67 @@ getProjectFeedR project_handle = do
 
     before <- lookupGetUTCTimeDefaultNow "before"
 
-    (project, comments, rethreads, closings, claimings, unclaimings, wiki_pages, wiki_edits, blog_posts, new_pledges,
-     updated_pledges, deleted_pledges, discussion_map, wiki_target_map, user_map,
-     earlier_closures_map, earlier_retracts_map, closure_map, retract_map,
-     ticket_map, claim_map, flag_map) <- runYDB $ do
+    (
+        project,
+
+        comment_events, rethread_events, closing_events, claiming_events, unclaiming_events,
+        wiki_page_events, wiki_edit_events, blog_post_events, new_pledge_events,
+        updated_pledge_events, deleted_pledge_events,
+
+        discussion_map, wiki_target_map, user_map, earlier_closures_map, earlier_retracts_map,
+        closure_map, retract_map, ticket_map, claim_map, flag_map
+      ) <- runYDB $ do
 
         Entity project_id project <- getBy404 (UniqueProjectHandle project_handle)
 
-        comments        <- fetchProjectCommentsIncludingRethreadedBeforeDB    project_id muser_id before lim
-        rethreads       <- fetchProjectCommentRethreadsBeforeDB               project_id muser_id before lim
-        closings        <- fetchProjectCommentClosingsBeforeDB                project_id muser_id before lim
-        claimings       <- fetchProjectTicketClaimingsBeforeDB                project_id before lim
-        unclaimings     <- fetchProjectTicketUnclaimingsBeforeDB              project_id before lim
-        wiki_pages      <- fetchProjectWikiPagesWithTargetsBeforeDB languages project_id before lim
-        blog_posts      <- fetchProjectBlogPostsBeforeDB                      project_id before lim
-        wiki_edits      <- fetchProjectWikiEditsWithTargetsBeforeDB languages project_id before lim
-        new_pledges     <- fetchProjectNewPledgesBeforeDB                     project_id before lim
-        updated_pledges <- fetchProjectUpdatedPledgesBeforeDB                 project_id before lim
-        deleted_pledges <- fetchProjectDeletedPledgesBeforeDB                 project_id before lim
+        comment_events        <- fetchProjectCommentPostedEventsIncludingRethreadedBeforeDB   project_id muser_id before lim
+        rethread_events       <- fetchProjectCommentRethreadEventsBeforeDB               project_id muser_id before lim
+        closing_events        <- fetchProjectCommentClosingEventsBeforeDB                project_id muser_id before lim
+        claiming_events       <- fetchProjectTicketClaimingEventsBeforeDB                project_id before lim
+        unclaiming_events     <- fetchProjectTicketUnclaimingEventsBeforeDB              project_id before lim
+        wiki_page_events      <- fetchProjectWikiPageEventsWithTargetsBeforeDB languages project_id before lim
+        blog_post_events      <- fetchProjectBlogPostEventsBeforeDB                      project_id before lim
+        wiki_edit_events      <- fetchProjectWikiEditEventsWithTargetsBeforeDB languages project_id before lim
+        new_pledge_events     <- fetchProjectNewPledgeEventsBeforeDB                     project_id before lim
+        updated_pledge_events <- fetchProjectUpdatedPledgeEventsBeforeDB                 project_id before lim
+        deleted_pledge_events <- fetchProjectDeletedPledgeEventsBeforeDB                 project_id before lim
 
         -- Suplementary maps for displaying the data. If something above requires extra
         -- data to display the project feed row, it MUST be used to fetch the data below!
 
-        let (comment_ids, comment_users)       = F.foldMap (\c -> ([entityKey c], [commentUser (entityVal c)])) comments
-            (wiki_edit_users, wiki_edit_pages) = F.foldMap (\(Entity _ e, _) -> ([wikiEditUser e], [wikiEditPage e])) wiki_edits
-            (blog_post_users) = F.foldMap (\(Entity _ e) -> ([blogPostUser e])) blog_posts
-            shares_pledged                     = map entityVal (new_pledges <> (map snd updated_pledges))
+        let (comment_ids, comment_users)        = F.foldMap (\ (_, Entity comment_id comment) -> ([comment_id] , [commentUser comment])) comment_events
+            (wiki_edit_users, wiki_edit_pages)  = F.foldMap (\ (_, Entity _ e, _) -> ([wikiEditUser e], [wikiEditPage e])) wiki_edit_events
+            (blog_post_users)                   = F.foldMap (\ (_, Entity _ e) -> ([blogPostUser e])) blog_post_events
+            shares_pledged                      = map (entityVal . snd) new_pledge_events <> map (\ (_, _, x) -> entityVal x) updated_pledge_events
+            closing_users                       = map (commentClosingClosedBy . entityVal . snd) closing_events
+            rethreading_users                   = map (rethreadModerator . entityVal . snd) rethread_events
+            ticket_claiming_users               = map (either (ticketClaimingUser . entityVal) (ticketOldClaimingUser . entityVal) . snd) claiming_events
+            ticket_unclaiming_users             = map (ticketOldClaimingUser . entityVal . snd) unclaiming_events
+            pledging_users                      = map sharesPledgedUser shares_pledged
+            unpledging_users                    = map (eventDeletedPledgeUser . snd) deleted_pledge_events
+
             -- All users: comment posters, wiki page creators, etc.
             user_ids = S.toList $ mconcat
                         [ S.fromList comment_users
-                        , S.fromList (map (commentClosingClosedBy . entityVal) closings)
-                        , S.fromList (map (rethreadModerator . entityVal) rethreads)
+                        , S.fromList closing_users
+                        , S.fromList rethreading_users
                         , S.fromList wiki_edit_users
                         , S.fromList blog_post_users
-                        , S.fromList (map (either (ticketClaimingUser . entityVal) (ticketOldClaimingUser . entityVal)) claimings)
-                        , S.fromList (map (ticketOldClaimingUser . entityVal) unclaimings)
-                        , S.fromList (map sharesPledgedUser shares_pledged)
-                        , S.fromList (map eventDeletedPledgeUser deleted_pledges)
+                        , S.fromList ticket_claiming_users
+                        , S.fromList ticket_unclaiming_users
+                        , S.fromList pledging_users
+                        , S.fromList unpledging_users
                         ]
 
         discussion_map <- fetchProjectDiscussionsDB project_id >>= fetchDiscussionsDB languages
 
+        let claimed_comment_ids = map (either (ticketClaimingTicket . entityVal) (ticketOldClaimingTicket . entityVal) . snd) claiming_events
+            unclaimed_comment_ids = map (ticketOldClaimingTicket . entityVal . snd) unclaiming_events
+
         ticket_map <- fetchCommentTicketsDB $ mconcat
             [ S.fromList comment_ids
-            , S.fromList $ map (either (ticketClaimingTicket . entityVal) (ticketOldClaimingTicket . entityVal)) claimings
-            , S.fromList $ map (ticketOldClaimingTicket . entityVal) unclaimings
+            , S.fromList claimed_comment_ids
+            , S.fromList unclaimed_comment_ids
             ]
 
         -- WikiPages keyed by their own IDs (contained in a WikiEdit)
@@ -977,33 +993,45 @@ getProjectFeedR project_handle = do
         claim_map            <- makeClaimedTicketMapDB          comment_ids
         flag_map             <- makeFlagMapDB                   comment_ids
 
-        return (project, comments, rethreads, closings, claimings, unclaimings, wiki_pages, wiki_edits, blog_posts,
-                new_pledges, updated_pledges, deleted_pledges, discussion_map,
-                wiki_target_map, user_map, earlier_closures_map,
-                earlier_retracts_map, closure_map, retract_map, ticket_map,
-                claim_map, flag_map)
+        return (
+                project,
 
-    action_permissions_map <- makeProjectCommentActionPermissionsMap muser project_handle def comments
+                comment_events, rethread_events, closing_events, claiming_events, unclaiming_events, wiki_page_events,
+                wiki_edit_events, blog_post_events, new_pledge_events, updated_pledge_events, deleted_pledge_events,
+
+                discussion_map, wiki_target_map, user_map, earlier_closures_map, earlier_retracts_map,
+                closure_map, retract_map, ticket_map, claim_map, flag_map
+               )
+
+    action_permissions_map <- makeProjectCommentActionPermissionsMap muser project_handle def (map snd comment_events)
 
 
-    let all_unsorted_events = mconcat
-            [ map (onEntity ECommentPosted)      comments
-            , map (onEntity ECommentRethreaded)  rethreads
-            , map (onEntity ECommentClosed)      closings
+    let all_unsorted_events :: [(Route App, SnowdriftEvent)]
+        all_unsorted_events = mconcat
+            [ map (EventCommentPostedR      *** onEntity ECommentPosted)      comment_events
+            , map (EventCommentRethreadedR  *** onEntity ECommentRethreaded)  rethread_events
+            , map (EventCommentClosingR     *** onEntity ECommentClosed)      closing_events
 
-            , map (ETicketClaimed . either (Left . onEntity (,)) (Right . onEntity (,)))
-                                                 claimings
+            , map (EventTicketClaimedR      *** ETicketClaimed . (onEntity (,) +++ onEntity (,))) claiming_events
 
-            , map (onEntity ETicketUnclaimed)    unclaimings
-            , map (uncurry $ onEntity EWikiPage) wiki_pages
-            , map (uncurry $ onEntity EWikiEdit) wiki_edits
-            , map (onEntity EBlogPost)           blog_posts
-            , map (onEntity ENewPledge)          new_pledges
-            , map eup2se                         updated_pledges
-            , map edp2se                         deleted_pledges
+            , map (EventTicketUnclaimedR    *** onEntity ETicketUnclaimed)    unclaiming_events
+
+            , map (\ (eid, Entity wpid wp, wt)
+                    -> (EventWikiPageR eid, EWikiPage wpid wp wt))            wiki_page_events
+
+            , map (\ (eid, Entity weid we, wt)
+                    -> (EventWikiEditR eid, EWikiEdit weid we wt))            wiki_edit_events
+
+            , map (EventBlogPostR           *** onEntity EBlogPost)           blog_post_events
+            , map (EventNewPledgeR          *** onEntity ENewPledge)          new_pledge_events
+
+            , map (\ (eid, shares, pledge)
+                    -> (EventUpdatedPledgeR eid, eup2se shares pledge))       updated_pledge_events
+
+            , map (EventDeletedPledgeR      *** edp2se)                       deleted_pledge_events
             ]
 
-        (events, more_events) = splitAt (lim-1) (sortBy snowdriftEventNewestToOldest all_unsorted_events)
+        (events, more_events) = splitAt (lim-1) (sortBy (snowdriftEventNewestToOldest `on` snd) all_unsorted_events)
 
         -- For pagination: Nothing means no more pages, Just time means set the 'before'
         -- GET param to that time. Note that this means 'before' should be a <= relation,
@@ -1011,13 +1039,14 @@ getProjectFeedR project_handle = do
         mnext_before :: Maybe Text
         mnext_before = case more_events of
           []             -> Nothing
-          (next_event:_) -> (Just . T.pack . show . snowdriftEventTime) next_event
+          ((_, next_event):_) -> (Just . T.pack . show . snowdriftEventTime) next_event
 
     now        <- liftIO getCurrentTime
     Just route <- getCurrentRoute
     render     <- getUrlRender
+
     let feed = Feed "project feed" route HomeR "Snowdrift Community" "" "en" now $
-            mapMaybe (snowdriftEventToFeedEntry
+            mapMaybe (uncurry $ snowdriftEventToFeedEntry
                         render
                         project_handle
                         user_map
@@ -1034,8 +1063,8 @@ getProjectFeedR project_handle = do
 
   where
     -- "event updated pledge to snowdrift event"
-    eup2se :: (Int64, Entity SharesPledged) -> SnowdriftEvent
-    eup2se (old_shares, Entity shares_pledged_id shares_pledged) = EUpdatedPledge old_shares shares_pledged_id shares_pledged
+    eup2se :: Int64 -> Entity SharesPledged -> SnowdriftEvent
+    eup2se old_shares (Entity shares_pledged_id shares_pledged) = EUpdatedPledge old_shares shares_pledged_id shares_pledged
 
     -- "event deleted pledge to snowdrift event"
     edp2se :: EventDeletedPledge -> SnowdriftEvent

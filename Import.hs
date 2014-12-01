@@ -15,7 +15,7 @@ import           Settings.Development          as Import
 import           Settings.StaticFiles          as Import
 
 import           Control.Applicative           as Import (pure, (<$>), (<*>))
-import           Control.Arrow                 as Import ((***), (&&&), first, second)
+import           Control.Arrow                 as Import ((***), (&&&), (+++), first, second, (>>>), (<<<))
 import           Control.Monad                 as Import
 import           Data.Function                 as Import (on)
 import           Data.Int                      as Import (Int64)
@@ -249,9 +249,9 @@ class WrappedValues a where
     type Unwrapped a
     unwrapValues :: a -> Unwrapped a
 
-instance WrappedValues a => WrappedValues [a] where
-    type Unwrapped [a] = [Unwrapped a]
-    unwrapValues = map unwrapValues
+instance WrappedValues (Entity a) where
+    type Unwrapped (Entity a) = (Entity a)
+    unwrapValues = id
 
 instance WrappedValues (Value a) where
     type Unwrapped (Value a) = a
@@ -264,6 +264,14 @@ instance (WrappedValues a, WrappedValues b) => WrappedValues (a, b) where
 instance (WrappedValues a, WrappedValues b, WrappedValues c) => WrappedValues (a, b, c) where
     type Unwrapped (a, b, c) = (Unwrapped a, Unwrapped b, Unwrapped c)
     unwrapValues (a, b, c) = (unwrapValues a, unwrapValues b, unwrapValues c)
+
+instance WrappedValues a => WrappedValues [a] where
+    type Unwrapped [a] = [Unwrapped a]
+    unwrapValues = map unwrapValues
+
+instance WrappedValues a => WrappedValues (Maybe a) where
+    type Unwrapped (Maybe a) = Maybe (Unwrapped a)
+    unwrapValues = fmap unwrapValues
 
 -- | Convenience function for unwrapping an Entity and supplying both the key and value to another function.
 onEntity :: (Key a -> a -> b) -> Entity a -> b

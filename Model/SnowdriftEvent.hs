@@ -44,9 +44,11 @@ snowdriftEventToFeedEntry
         -> Map DiscussionId DiscussionOn
         -> Map WikiPageId WikiTarget
         -> Map CommentId (Entity Ticket)
+        -> Route App
         -> SnowdriftEvent
         -> Maybe (FeedEntry (Route App))
-snowdriftEventToFeedEntry render project_handle user_map discussion_map _ _ (ECommentPosted comment_id comment) =
+
+snowdriftEventToFeedEntry render project_handle user_map discussion_map _ _ url (ECommentPosted _ comment) =
     let user_id    = commentUser comment
         maybe_user = M.lookup user_id user_map
         username   = maybe "<unknown user>" (userDisplayName . Entity user_id) maybe_user
@@ -56,27 +58,27 @@ snowdriftEventToFeedEntry render project_handle user_map discussion_map _ _ (ECo
             Just (DiscussionOnWikiPage (Entity _ wiki_target)) -> "wiki discussion for \"" <> wikiTargetTarget wiki_target <> "\""
             Just (DiscussionOnUser user_entity)              -> "user discussion for " <> userDisplayName user_entity
      in Just $ FeedEntry
-            { feedEntryLink    = CommentDirectLinkR comment_id
+            { feedEntryLink    = url
             , feedEntryUpdated = maybe (commentCreatedTs comment) id $ commentApprovedTs comment
             , feedEntryTitle   = T.unwords [ T.snoc project_handle ':', username, "posted a new comment on", discussion ]
             , feedEntryContent = [hamlet| |] render
             }
 
-snowdriftEventToFeedEntry render project_handle _ _ _ _ (ECommentRethreaded _ rethread) =
+snowdriftEventToFeedEntry render project_handle _ _ _ _ url (ECommentRethreaded _ rethread) =
     Just $ FeedEntry
-        { feedEntryLink    = CommentDirectLinkR $ rethreadNewComment rethread
+        { feedEntryLink    = url
         , feedEntryUpdated = rethreadTs rethread
         , feedEntryTitle   = T.unwords [ T.snoc project_handle ':', "comment(s) rethreaded" ]
         , feedEntryContent = [hamlet| |] render
         }
 
-snowdriftEventToFeedEntry render project_handle user_map _ _ ticket_map (ECommentClosed _ CommentClosing{..}) =
+snowdriftEventToFeedEntry render project_handle user_map _ _ ticket_map url (ECommentClosed _ CommentClosing{..}) =
     let user_id    = commentClosingClosedBy
         maybe_user = M.lookup user_id user_map
         username   = maybe "<unknown user>" (userDisplayName . Entity user_id) maybe_user
 
         mk_feed_entry title = Just $ FeedEntry
-            { feedEntryLink    = CommentDirectLinkR commentClosingComment
+            { feedEntryLink    = url
             , feedEntryUpdated = commentClosingTs
             , feedEntryTitle   = title
             , feedEntryContent = [hamlet| |] render
@@ -101,7 +103,7 @@ snowdriftEventToFeedEntry render project_handle user_map _ _ ticket_map (ECommen
                         , username
                         ]
 
-snowdriftEventToFeedEntry render project_handle user_map _ _ ticket_map (ETicketClaimed (Left (_, TicketClaiming{..}))) =
+snowdriftEventToFeedEntry render project_handle user_map _ _ ticket_map url (ETicketClaimed (Left (_, TicketClaiming{..}))) =
     let user_id    = ticketClaimingUser
         maybe_user = M.lookup user_id user_map
         username   = maybe "<unknown user>" (userDisplayName . Entity user_id) maybe_user
@@ -111,7 +113,7 @@ snowdriftEventToFeedEntry render project_handle user_map _ _ ticket_map (ETicket
             Key _ -> "<malformed id>"
 
      in Just $ FeedEntry
-            { feedEntryLink    = CommentDirectLinkR ticketClaimingTicket
+            { feedEntryLink    = url
             , feedEntryUpdated = ticketClaimingTs
             , feedEntryTitle   = T.unwords
                 [ T.snoc project_handle ':'
@@ -123,7 +125,7 @@ snowdriftEventToFeedEntry render project_handle user_map _ _ ticket_map (ETicket
             , feedEntryContent = [hamlet| |] render
             }
 
-snowdriftEventToFeedEntry render project_handle user_map _ _ ticket_map (ETicketClaimed (Right (_, TicketOldClaiming{..}))) =
+snowdriftEventToFeedEntry render project_handle user_map _ _ ticket_map url (ETicketClaimed (Right (_, TicketOldClaiming{..}))) =
     let user_id    = ticketOldClaimingUser
         maybe_user = M.lookup user_id user_map
         username   = maybe "<unknown user>" (userDisplayName . Entity user_id) maybe_user
@@ -133,7 +135,7 @@ snowdriftEventToFeedEntry render project_handle user_map _ _ ticket_map (ETicket
             Key _ -> "<malformed id>"
 
      in Just $ FeedEntry
-            { feedEntryLink    = CommentDirectLinkR ticketOldClaimingTicket
+            { feedEntryLink    = url
             , feedEntryUpdated = ticketOldClaimingClaimTs
             , feedEntryTitle   = T.unwords
                 [ T.snoc project_handle ':'
@@ -145,14 +147,14 @@ snowdriftEventToFeedEntry render project_handle user_map _ _ ticket_map (ETicket
             , feedEntryContent = [hamlet| |] render
             }
 
-snowdriftEventToFeedEntry render project_handle _ _ _ ticket_map (ETicketUnclaimed _ TicketOldClaiming{..}) =
+snowdriftEventToFeedEntry render project_handle _ _ _ ticket_map url (ETicketUnclaimed _ TicketOldClaiming{..}) =
     let Entity ticket_id Ticket{..} = lookupErr "snowdriftEventToFeedEntry: comment id not present in ticket map" ticketOldClaimingTicket ticket_map
         ticket_str = case ticket_id of
             Key (PersistInt64 tid) -> T.pack $ show tid
             Key _ -> "<malformed id>"
 
      in Just $ FeedEntry
-            { feedEntryLink    = CommentDirectLinkR ticketOldClaimingTicket
+            { feedEntryLink    = url
             , feedEntryUpdated = ticketOldClaimingReleasedTs
             , feedEntryTitle   = T.unwords
                 [ T.snoc project_handle ':'
@@ -163,25 +165,23 @@ snowdriftEventToFeedEntry render project_handle _ _ _ ticket_map (ETicketUnclaim
             , feedEntryContent = [hamlet| |] render
             }
 
-snowdriftEventToFeedEntry render project_handle _ _ _ _ (EWikiPage _ wiki_page wiki_target) =
-    let language = wikiTargetLanguage wiki_target
-        target = wikiTargetTarget wiki_target
+snowdriftEventToFeedEntry render project_handle _ _ _ _ url (EWikiPage _ wiki_page wiki_target) =
+    let target = wikiTargetTarget wiki_target
      in Just $ FeedEntry
-            { feedEntryLink    = WikiR project_handle language target
+            { feedEntryLink    = url
             , feedEntryUpdated = wikiPageCreatedTs wiki_page
             , feedEntryTitle   = T.unwords [ T.snoc project_handle ':', "new wiki page", "\"" <> target <> "\"" ]
             , feedEntryContent = [hamlet| |] render
             }
 
-snowdriftEventToFeedEntry render project_handle user_map _ _ _ (EWikiEdit wiki_edit_id wiki_edit wiki_target) =
+snowdriftEventToFeedEntry render project_handle user_map _ _ _ url (EWikiEdit _ wiki_edit wiki_target) =
     let target          = wikiTargetTarget wiki_target
-        language        = wikiTargetLanguage wiki_target
         user_id         = wikiEditUser wiki_edit
         maybe_user      = M.lookup user_id user_map
         username        = maybe "<unknown user>" (userDisplayName . Entity user_id) maybe_user
 
      in Just $ FeedEntry
-            { feedEntryLink    = WikiEditR project_handle language target wiki_edit_id
+            { feedEntryLink    = url
             , feedEntryUpdated = wikiEditTs wiki_edit
             , feedEntryTitle   = T.unwords
                 [ T.snoc project_handle ':'
@@ -192,16 +192,15 @@ snowdriftEventToFeedEntry render project_handle user_map _ _ _ (EWikiEdit wiki_e
             , feedEntryContent = [hamlet| |] render
             }
 
-snowdriftEventToFeedEntry render project_handle _ _ _ _
+snowdriftEventToFeedEntry render project_handle _ _ _ _ url
         (EBlogPost _
             BlogPost
-                { blogPostHandle = handle
-                , blogPostTs = ts
+                { blogPostTs = ts
                 , blogPostTitle = title
                 }
         ) =
     Just $ FeedEntry
-        { feedEntryLink    = ProjectBlogR handle
+        { feedEntryLink    = url
         , feedEntryUpdated = ts
         , feedEntryTitle   = T.unwords [ T.snoc project_handle ':', "new blog post:", "\"" <> title <> "\"" ]
         , feedEntryContent = [hamlet| |] render
@@ -209,13 +208,13 @@ snowdriftEventToFeedEntry render project_handle _ _ _ _
 
 
 -- We might want to show these, but I'm not sure.  Leaving them out now, at any rate.
-snowdriftEventToFeedEntry _ _ _ _ _ _ (ENewPledge _ _)         = Nothing
-snowdriftEventToFeedEntry _ _ _ _ _ _ (EUpdatedPledge _ _ _)   = Nothing
-snowdriftEventToFeedEntry _ _ _ _ _ _ (EDeletedPledge _ _ _ _) = Nothing
+snowdriftEventToFeedEntry _ _ _ _ _ _ _ (ENewPledge _ _)         = Nothing
+snowdriftEventToFeedEntry _ _ _ _ _ _ _ (EUpdatedPledge _ _ _)   = Nothing
+snowdriftEventToFeedEntry _ _ _ _ _ _ _ (EDeletedPledge _ _ _ _) = Nothing
 
 -- Graveyard of event types we don't want to put on the feed.
 -- Don't match-all here, we don't want to accidentally not consider something.
 
-snowdriftEventToFeedEntry _ _ _ _ _ _ (ECommentApproved _ _)  = Nothing
-snowdriftEventToFeedEntry _ _ _ _ _ _ (ECommentPending _ _)   = Nothing
-snowdriftEventToFeedEntry _ _ _ _ _ _ (ENotificationSent _ _) = Nothing
+snowdriftEventToFeedEntry _ _ _ _ _ _ _ (ECommentApproved _ _)  = Nothing
+snowdriftEventToFeedEntry _ _ _ _ _ _ _ (ECommentPending _ _)   = Nothing
+snowdriftEventToFeedEntry _ _ _ _ _ _ _ (ENotificationSent _ _) = Nothing

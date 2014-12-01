@@ -15,6 +15,7 @@ import Model.Comment.Sql
 import Control.Monad.Trans.Maybe
 
 import qualified Data.Map as M
+-- import qualified Data.Set as S
 
 -- | An internal sum type that contains a constructer per database table that acts
 -- as a "Discussion". This way, we get a relatively type-safe way of ensuring that
@@ -54,16 +55,15 @@ fetchDiscussionInternal langs discussion_id DiscussionTypeWikiPage = do
             case sortBy (languagePreferenceOrder langs (wikiTargetLanguage . entityVal)) targets of
                 [] -> return Nothing
                 target:_ -> return $ Just $ DiscussionOnWikiPage target
-                
+
 fetchDiscussionInternal _ discussion_id DiscussionTypeUser = fmap (fmap DiscussionOnUser) $ getBy $ UniqueUserDiscussion discussion_id
 
 
 fetchDiscussionsInternal :: [Language] -> [DiscussionId] -> DiscussionType -> DB (Map DiscussionId DiscussionOn)
-fetchDiscussionsInternal _ discussion_ids DiscussionTypeProject = fmap (foldr go mempty) $
-    select $
-    from $ \p -> do
-    where_ (p ^. ProjectDiscussion `in_` valList discussion_ids)
-    return p
+fetchDiscussionsInternal _ discussion_ids DiscussionTypeProject =
+    fmap (foldr go mempty) $ select $ from $ \ p -> do
+        where_ $ p ^. ProjectDiscussion `in_` valList discussion_ids
+        return p
   where
     go :: Entity Project -> Map DiscussionId DiscussionOn -> Map DiscussionId DiscussionOn
     go p@(Entity _ Project{..}) = M.insert projectDiscussion (DiscussionOnProject p)
@@ -86,11 +86,10 @@ fetchDiscussionsInternal langs discussion_ids DiscussionTypeWikiPage = do
                 (wikiPageDiscussion $ entityVal wiki_page,) . DiscussionOnWikiPage <$> M.lookup (entityKey wiki_page) wiki_target_map
             ) wiki_pages
 
-fetchDiscussionsInternal _ discussion_ids DiscussionTypeUser = fmap (foldr go mempty) $
-    select $
-    from $ \u -> do
-    where_ (u ^. UserDiscussion `in_` valList discussion_ids)
-    return u
+fetchDiscussionsInternal _ discussion_ids DiscussionTypeUser =
+    fmap (foldr go mempty) $ select $ from $ \ u -> do
+        where_ $ u ^. UserDiscussion `in_` valList discussion_ids
+        return u
   where
     go :: Entity User -> Map DiscussionId DiscussionOn -> Map DiscussionId DiscussionOn
     go u@(Entity _ User{..}) = M.insert userDiscussion (DiscussionOnUser u)
@@ -108,8 +107,14 @@ fetchDiscussionDB langs discussion_id =
 fetchDiscussionsDB :: [Language] -> [DiscussionId] -> DB (Map DiscussionId DiscussionOn)
 fetchDiscussionsDB langs discussion_ids = do
     discussion_map <- mconcat <$> sequence (map (fetchDiscussionsInternal langs discussion_ids) [minBound..maxBound])
-    when (M.size discussion_map /= length discussion_ids) $
-        error "fetchDiscussionsDB: some discussion not found"
+
+    {- TODO - reintroduce check when we handle blog discussions
+    let missed_discussions = S.fromList discussion_ids S.\\ M.keysSet discussion_map
+
+    unless (S.null missed_discussions) $
+        error $ "fetchDiscussionsDB: some discussion not found: " ++ show missed_discussions
+    -}
+
     return discussion_map
 
 --------------------------------------------------------------------------------

@@ -483,12 +483,12 @@ EventCommentRethreaded
 -- An approved comment.
 EventCommentClosing
     ts      UTCTime
-    comment_closing CommentClosingId
+    commentClosing CommentClosingId
 
 EventTicketClaimed
     ts          UTCTime
     claim       TicketClaimingId    Maybe
-    old_claim   TicketOldClaimingId Maybe
+    oldClaim    TicketOldClaimingId Maybe
 
 EventTicketUnclaimed
     ts      UTCTime
