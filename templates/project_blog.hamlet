@@ -15,8 +15,9 @@ $forall Entity _ post <- posts
         ^{markdownWidgetWith (fixLinks project_handle discussion) $ blogPostTopContent post}
 
         $maybe _ <- blogPostBottomContent post
-            <a href=@{ProjectBlogPostR project_handle (blogPostHandle post)}#fold>
-                continued below fold&hellip;
+            <div .text-center>
+                <a href=@{ProjectBlogPostR project_handle (blogPostHandle post)}#fold>
+                    Continued, read more&hellip;
 
     <hr>
 
