@@ -139,15 +139,16 @@ and simply communicate by e-mail or IRC or other options about when to fetch upd
 Building
 --------
 
-Install the essential dependencies: ghc, cabal, postgresql, happy, alex, llvm, zlib1g, libpq-dev.
+Install the essential dependencies: ghc, cabal, postgresql, happy, alex, zlib1g, libpq-dev.
 
 On Debian-based GNU/Linux distros, use this command:
 
-    sudo apt-get install ghc cabal-install haskell-platform postgresql zlib1g-dev libpq-dev happy alex llvm
+    sudo apt-get install ghc cabal-install haskell-platform postgresql zlib1g-dev libpq-dev happy alex
 
 **Note: we are now using GHC 7.8.3** (although 7.8.2 may work as well)
 If your system's GHC version is older, get the updated Haskell Platform 2014.2.0.0 from
 <http://www.haskell.org/platform>
+
 
 (There are also a few non-Haskell libraries with some dependencies which you may
 need to install and which presumably will be in your system's package manager.
@@ -177,6 +178,10 @@ Then, initiate a cabal sandbox:
 
     cabal sandbox init
 
+Because there's a dependency bug, install arithmoi manually without llvm
+
+    cabal install arithmoi -f-llvm
+
 Install dependencies and build Snowdrift (note: the -j flag makes faster by using all processor cores):
 
     cabal install --enable-tests -j
@@ -196,6 +201,7 @@ We offer a simple script that will setup the PostgreSQL databases for you. Simpl
     sdm init
 
 It will prompt you for your sudo password.
+If you prefer to set up databases manually, see the appendix at the end of this guide.
 
 
 Running the site
