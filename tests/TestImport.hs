@@ -2,24 +2,28 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module TestImport (module TestImport) where
+module TestImport (module TestImport, marked) where
+import TestImport.Internal
 
 import Prelude hiding (exp)
 
 import Yesod (Yesod, RedirectUrl)
 import Yesod.Test as TestImport
+import Database.Esqueleto hiding (get)
 import Database.Persist as TestImport hiding (get)
-import Database.Persist.Sql (SqlPersistM, runSqlPersistMPool)
 import Control.Monad.IO.Class as TestImport (liftIO, MonadIO)
 
 import Network.URI (URI (uriPath), parseURI)
 import Network.HTTP.Types (StdMethod (..), renderStdMethod)
 import Network.Wai.Test (SResponse (..))
+import qualified Text.HTML.DOM as HTML
 import qualified Test.HUnit as HUnit
+import qualified Text.XML as XML
 import qualified Network.HTTP.Types as H
 
 import qualified Data.ByteString as B
 
+import qualified Data.Map as M
 import qualified Data.Text as T
 import Data.Text (Text)
 import Data.String
@@ -29,15 +33,6 @@ import Foundation as TestImport
 import Model as TestImport
 
 import Control.Monad (when)
-
-import qualified Language.Haskell.Meta.Parse as Exp
-import qualified Language.Haskell.TH as TH
-import           Language.Haskell.TH.Quote
-
-import qualified Language.Haskell.Exts.Parser as Src
-import qualified Language.Haskell.Exts.SrcLoc as Src
-import qualified Language.Haskell.Exts.Pretty as Src
-import qualified Language.Haskell.Exts.Annotated.Syntax as Src
 
 import System.IO (hPutStrLn, stderr)
 
@@ -172,44 +167,27 @@ statusIsResp number = withResponse $ \ SResponse { simpleStatus = s } -> do
 
     liftIO $ flip HUnit.assertBool (H.statusCode s == number) errMsg
 
+postComment :: RedirectUrl App url => url -> RequestBuilder App ()
+            -> YesodExample App ()
+postComment route stmts = [marked|
+    get200 route
 
-marked :: QuasiQuoter
-marked = QuasiQuoter
-    { quoteExp = decorate
-    , quotePat = fail "no pattern for marked"
-    , quoteType = fail "no type for marked"
-    , quoteDec = fail "no declaration for marked"
-    }
-  where
-    decorate input = do
-        loc <- TH.location
-        let file = TH.loc_filename loc
-            (line, _) = TH.loc_start loc
+    [ form ] <- htmlQuery "form"
 
-            fixup 1 = 0
-            fixup x = x - 2
+    let getAttrs = XML.elementAttributes . XML.documentRoot . HTML.parseLBS
 
-            onException_ l = Src.QVarOp l $ Src.Qual l (Src.ModuleName l "TestImport") (Src.Ident l "onException")
-            report l =
-                let str = file ++ ":" ++ show (line + fixup (Src.srcLine l)) ++ ": exception raised here"
-                 in Src.App l
-                        (Src.Var l $ Src.Qual l (Src.ModuleName l "TestImport") (Src.Ident l "liftIO"))
-                      $ Src.App l
-                            (Src.Var l $ Src.Qual l (Src.ModuleName l "Prelude") (Src.Ident l "putStrLn"))
-                            (Src.Lit l $ Src.String l str str)
+    withStatus 302 True $ request $ do
+        addNonce
+        setMethod "POST"
+        maybe (setUrl route) setUrl (M.lookup "action" $ getAttrs form)
+        addPostParam "mode" "post"
+        byLabel "Language" "en"
+        stmts
+|]
 
-            mark l e = Src.InfixApp l (Src.Paren l e) (onException_ l) (report l)
-
-            decorateExp :: Src.Exp Src.SrcLoc -> Src.Exp Src.SrcLoc
-            decorateExp (Src.Do l stmts) = mark l $ Src.Do l $ map decorateStmt stmts
-            decorateExp exp = mark (Src.ann exp) exp
-
-            decorateStmt :: Src.Stmt Src.SrcLoc -> Src.Stmt Src.SrcLoc
-            decorateStmt (Src.Generator l pat exp) = Src.Generator l pat $ decorateExp exp
-            decorateStmt (Src.Qualifier l exp) = Src.Qualifier l $ decorateExp exp
-            decorateStmt stmt = stmt
-
-        case Src.parse ("do\n" ++ input) of
-            Src.ParseOk a -> either fail return $ Exp.parseExp $ Src.prettyPrint $ decorateExp a
-            Src.ParseFailed _ e -> fail e
-
+getLatestCommentId :: YesodExample App CommentId
+getLatestCommentId = do
+    [Value (Just comment_id)] <-
+        testDB $ select $ from $ \comment ->
+            return (max_ $ comment ^. CommentId)
+    return comment_id

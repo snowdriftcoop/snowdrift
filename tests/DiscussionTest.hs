@@ -6,10 +6,6 @@ module DiscussionTest
 
 import TestImport
 import qualified Data.Map as M
-import qualified Text.XML as XML
-import qualified Text.HTML.DOM as HTML
-
-import Database.Esqueleto hiding (get)
 
 import Network.Wai.Test (SResponse (..))
 import Data.Text as T
@@ -21,26 +17,6 @@ import Control.Monad
 
 discussionSpecs :: Spec
 discussionSpecs = do
-    let postComment route stmts = [marked|
-            get200 route
-
-            [ form ] <- htmlQuery "form"
-
-            let getAttrs = XML.elementAttributes . XML.documentRoot . HTML.parseLBS
-
-            withStatus 302 True $ request $ do
-                addNonce
-                setMethod "POST"
-                maybe (setUrl route) setUrl (M.lookup "action" $ getAttrs form)
-                addPostParam "mode" "post"
-                byLabel "Language" "en"
-                stmts
-        |]
-
-        getLatestCommentId = do
-            [ Value (Just comment_id) ] <- testDB $ select $ from $ \ comment -> return (max_ $ comment ^. CommentId)
-            return comment_id
-
     ydescribe "discussion" $ do
         yit "loads the discussion page" $ [marked|
             loginAs TestUser

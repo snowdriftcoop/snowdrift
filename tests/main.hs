@@ -46,7 +46,7 @@ main = do
 
         yesodSpec foundation $ do
             userSpecs
-            notifySpecs
+            notifySpecs $ settings foundation
             wikiSpecs
             discussionSpecs
             blogSpecs

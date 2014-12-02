@@ -364,6 +364,8 @@ test-suite test
 
     build-depends: base
                  , Snowdrift
+                 , yesod-markdown
+                 , yesod-routes
                  , yesod-test
                  , yesod-core
                  , yesod
