@@ -15,26 +15,21 @@ wikiSpecs =
 
             loginAs TestUser
 
-            get $ NewWikiR "snowdrift" LangEn "testpage"
-            statusIs 200
+            get200 $ NewWikiR "snowdrift" LangEn "testpage"
 
-            request $ do
+            withStatus 200 False $ request $ do
                 addNonce
                 setUrl $ NewWikiR "snowdrift" LangEn "testpage"
                 setMethod "POST"
                 byLabel "Page Content" "test"
                 addPostParam "mode" "preview"
 
-            statusIs 200
-
-            request $ do
+            withStatus 302 False $ request $ do
                 addNonce
                 setUrl $ NewWikiR "snowdrift" LangEn "testpage"
                 setMethod "POST"
                 byLabel "Page Content" "test"
                 addPostParam "mode" "post"
-
-            statusIs 302
 
         |]
 
@@ -42,11 +37,10 @@ wikiSpecs =
 
             loginAs TestUser
 
-            get $ EditWikiR "snowdrift" LangEn "testpage"
-            statusIs 200
+            get200 $ EditWikiR "snowdrift" LangEn "testpage"
 
 {- TODO - this needs to get the last_edit_id from the rendered page and pipe it through
-            request $ do
+            withStatus 200 False $ request $ do
                 addNonce
                 setUrl $ WikiR "snowdrift" LangEn "testpage"
                 setMethod "POST"
@@ -54,9 +48,7 @@ wikiSpecs =
                 byLabel "Comment" "testing"
                 addPostParam "mode" "preview"
 
-            statusIs 200
-
-            request $ do
+            withStatus 302 False $ request $ do
                 addNonce
                 setUrl $ WikiR "snowdrift" LangEn "testpage"
                 setMethod "POST"
@@ -64,7 +56,5 @@ wikiSpecs =
                 byLabel "Comment" "testing"
                 addPostParam "mode" "post"
 
-            statusIs 302
 -}
-
         |]

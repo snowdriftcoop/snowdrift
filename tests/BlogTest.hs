@@ -15,41 +15,35 @@ import Data.Text.Encoding
 blogSpecs :: Spec
 blogSpecs = do
     let postBlog route stmts = [marked|
-            get route
-            statusIs 200
+            get200 route
 
             [ form ] <- htmlQuery "form"
 
             let getAttrs = XML.elementAttributes . XML.documentRoot . HTML.parseLBS
 
-            request $ do
+            withStatus 302 True $ request $ do
                 addNonce
                 setMethod "POST"
                 let route' = maybe (Left route) Right $ M.lookup "action" $ getAttrs form
                 either setUrl setUrl route'
                 addPostParam "mode" "post"
                 stmts
-
-            statusIsResp 302
         |]
 
         previewBlog route stmts = [marked|
-            get route
-            statusIs 200
+            get200 route
 
             [ form ] <- htmlQuery "form"
 
             let getAttrs = XML.elementAttributes . XML.documentRoot . HTML.parseLBS
 
-            request $ do
+            withStatus 200 False $ request $ do
                 addNonce
                 setMethod "POST"
                 maybe (setUrl route) setUrl $ M.lookup "action" $ getAttrs form
 
                 addPostParam "mode" "preview"
                 stmts
-
-            statusIs 200
         |]
 
 
@@ -59,9 +53,7 @@ blogSpecs = do
         yit "loads the project page - no blog post" $ [marked|
             loginAs TestUser
 
-            get $ ProjectR "snowdrift"
-
-            statusIs 200
+            get200 $ ProjectR "snowdrift"
 
         {-
             htmlNoneContain "#blog-post" "Above fold."
@@ -73,9 +65,7 @@ blogSpecs = do
         yit "loads the project blog - no blog post" $ [marked|
             loginAs TestUser
 
-            get $ ProjectBlogR "snowdrift"
-
-            statusIs 200
+            get200 $ ProjectBlogR "snowdrift"
 
             htmlNoneContain ".blog-post" "Above fold."
             htmlNoneContain ".blog-post" "Below fold."
@@ -105,9 +95,7 @@ blogSpecs = do
 
             Just route <- extractLocation
 
-            get $ decodeUtf8 route
-
-            statusIs 200
+            get200 $ decodeUtf8 route
 
             htmlAnyContain ".blog-post-top" "Above fold."
             htmlNoneContain ".blog-post-top" "Below fold."
@@ -121,9 +109,7 @@ blogSpecs = do
         yit "loads the project blog - with blog post" $ [marked|
             loginAs TestUser
 
-            get $ ProjectBlogR "snowdrift"
-
-            statusIs 200
+            get200 $ ProjectBlogR "snowdrift"
 
             htmlAnyContain ".blog-post-top" "Above fold."
             htmlNoneContain ".blog-post-top" "Below fold."
@@ -133,9 +119,7 @@ blogSpecs = do
         yit "loads the project page - with blog post" $ [marked|
             loginAs TestUser
 
-            get $ ProjectR "snowdrift"
-
-            statusIs 200
+            get200 $ ProjectR "snowdrift"
 
             htmlAllContain "#blog-post" "Above fold."
             htmlNoneContain "#blog-post" "Below fold."

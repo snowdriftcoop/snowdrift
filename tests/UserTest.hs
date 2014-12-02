@@ -15,18 +15,15 @@ userSpecs = do
     ydescribe "user" $ do
         yit "creates a user" $ [marked|
             forM_ users $ \ user -> do
-                get UserCreateR
-                statusIs 200
+                get200 UserCreateR
 
-                request $ do
+                withStatus 302 True $ request $ do
                     setUrl UserCreateR
                     addNonce
                     setMethod "POST"
                     byLabel "Handle (private):" (username user)
                     byLabel "Passphrase:" (password user)
                     byLabel "Repeat passphrase:" (password user)
-
-                statusIsResp 302
         |]
 
         yit "logs in as a user" $ [marked|

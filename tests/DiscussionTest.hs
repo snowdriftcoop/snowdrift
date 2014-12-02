@@ -22,22 +22,19 @@ import Control.Monad
 discussionSpecs :: Spec
 discussionSpecs = do
     let postComment route stmts = [marked|
-            get route
-            statusIs 200
+            get200 route
 
             [ form ] <- htmlQuery "form"
 
             let getAttrs = XML.elementAttributes . XML.documentRoot . HTML.parseLBS
 
-            request $ do
+            withStatus 302 True $ request $ do
                 addNonce
                 setMethod "POST"
                 maybe (setUrl route) setUrl (M.lookup "action" $ getAttrs form)
                 addPostParam "mode" "post"
                 byLabel "Language" "en"
                 stmts
-
-            statusIsResp 302
         |]
 
         getLatestCommentId = do
@@ -48,8 +45,7 @@ discussionSpecs = do
         yit "loads the discussion page" $ [marked|
             loginAs TestUser
 
-            get $ WikiDiscussionR "snowdrift" LangEn "about"
-            statusIs 200
+            get200 $ WikiDiscussionR "snowdrift" LangEn "about"
         |]
 
         yit "posts and moves some comments" $ [marked|
@@ -70,19 +66,15 @@ discussionSpecs = do
 
             let rethread_url = RethreadWikiCommentR "snowdrift" LangEn "about" $ comment_map M.! 4
 
-            get rethread_url
+            get200 rethread_url
 
-            statusIs 200
-
-            request $ do
+            withStatus 302 True $ request $ do
                 addNonce
                 setMethod "POST"
                 setUrl rethread_url
                 byLabel "New Parent Url" "/p/snowdrift/w/en/about/d"
                 byLabel "Reason" "testing"
                 addPostParam "mode" "post"
-
-            statusIsResp 302
         |]
 
 
@@ -99,10 +91,9 @@ discussionSpecs = do
             testRethread first second = [marked|
                 let rethread_url c = RethreadWikiCommentR "snowdrift" LangEn "about" c
 
-                get $ rethread_url first
-                statusIs 200
+                get200 $ rethread_url first
 
-                request $ do
+                withStatus 302 True $ request $ do
                     addNonce
                     setMethod "POST"
                     setUrl $ rethread_url first
@@ -110,10 +101,7 @@ discussionSpecs = do
                     byLabel "Reason" "testing"
                     addPostParam "mode" "post"
 
-                statusIsResp 302
-
-                get $ WikiCommentR "snowdrift" LangEn "about" second
-                statusIs 200
+                get200 $ WikiCommentR "snowdrift" LangEn "about" second
 
                 printBody
 
@@ -125,8 +113,7 @@ discussionSpecs = do
         yit "can move newer comments under older" $ [marked|
             loginAs TestUser
 
-            get $ NewWikiDiscussionR "snowdrift" LangEn "about"
-            statusIs 200
+            get200 $ NewWikiDiscussionR "snowdrift" LangEn "about"
 
             (first, second) <- createComments
 
@@ -137,8 +124,7 @@ discussionSpecs = do
         yit "can move older comments under newer" $ [marked|
             loginAs TestUser
 
-            get $ NewWikiDiscussionR "snowdrift" LangEn "about"
-            statusIs 200
+            get200 $ NewWikiDiscussionR "snowdrift" LangEn "about"
 
             (first, second) <- createComments
 
@@ -151,10 +137,9 @@ discussionSpecs = do
             postComment (NewWikiDiscussionR "snowdrift" LangEn "about") $ byLabel "New Topic" "posting on about page"
             originalId <- getLatestCommentId
 
-            get $ RethreadWikiCommentR "snowdrift" LangEn "about" originalId
-            statusIs 200
+            get200 $ RethreadWikiCommentR "snowdrift" LangEn "about" originalId
 
-            request $ do
+            withStatus 302 True $ request $ do
                 addNonce
                 setMethod "POST"
                 setUrl $ RethreadWikiCommentR "snowdrift" LangEn "about" originalId
@@ -162,10 +147,7 @@ discussionSpecs = do
                 byLabel "Reason" "testing cross-page rethreading"
                 addPostParam "mode" "post"
 
-            statusIsResp 302
-
-            get $ WikiCommentR "snowdrift" LangEn "about" originalId
-            statusIsResp 301
+            withStatus 301 True $ get $ WikiCommentR "snowdrift" LangEn "about" originalId
 
             Just location <- do
                 statusIsResp 301

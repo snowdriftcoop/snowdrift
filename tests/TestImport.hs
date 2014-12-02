@@ -79,13 +79,19 @@ firstRedirect method url = do
 
     extractLocation  -- We should get redirected to the login page
 
-assertLoginPage :: Yesod site => Text -> YesodExample site ()
+withStatus :: Int -> Bool -> YesodExample App () -> YesodExample App ()
+withStatus status resp req =
+    req >> (if resp then statusIsResp else statusIs) status
+
+get200 :: RedirectUrl App url => url -> YesodExample App ()
+get200 route = withStatus 200 False $ get route
+
+assertLoginPage :: Text -> YesodExample App ()
 assertLoginPage loc = do
     assertEqual "correct login redirection location"
                 (testRoot `T.append` "/auth/login") loc
 
-    get $ urlPath loc
-    statusIsResp 200
+    withStatus 200 True $ get $ urlPath loc
     bodyContains "Login"
 
 
@@ -109,7 +115,7 @@ extractLocation = do
 -- Check that accessing the url with the given method requires login, and
 -- that it redirects us to what looks like the login page.
 --
-needsLogin :: (RedirectUrl site url, Yesod site) => StdMethod -> url -> YesodExample site ()
+needsLogin :: RedirectUrl App url => StdMethod -> url -> YesodExample App ()
 needsLogin method url = do
     mbloc <- firstRedirect method url
     maybe (assertFailure "Should have location header") (assertLoginPage . decodeUtf8) mbloc
@@ -146,10 +152,9 @@ instance Login AdminUser where
 -- url, and follows through the login process.  It should probably be the
 -- first thing in each "it" spec.
 --
-loginAs :: (Yesod site, Login user) => user -> YesodExample site ()
+loginAs :: Login user => user -> YesodExample App ()
 loginAs user = do
-    get $ urlPath $ testRoot `T.append` "/auth/login"
-    statusIs 200
+    get200 $ urlPath $ testRoot `T.append` "/auth/login"
     submitLogin (username user) (password user)
 
 
