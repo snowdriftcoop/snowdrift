@@ -52,7 +52,7 @@ notificationEventHandler AppConfig{..} (ECommentPending comment_id comment) = ru
 
     sendPreferredNotificationDB (commentUser comment) NotifUnapprovedComment Nothing Nothing $ mconcat
         [ "Your [comment]("
-        , Markdown route_text
+        , Markdown $ appRoot <> route_text
         , ") now awaits moderator approval."
         , "<br><br>"
         , "When a moderator acknowledges you as a legitimate user "
@@ -85,7 +85,7 @@ notificationEventHandler AppConfig{..} (ECommentApproved comment_id comment) = r
     route_text <- lift (makeCommentRouteDB [LangEn] comment_id >>= lift . routeToText . fromJust)
     sendPreferredNotificationDB (commentUser comment) NotifApprovedComment Nothing Nothing $ mconcat
         [ "Your [comment]("
-        , Markdown route_text
+        , Markdown $ appRoot <> route_text
         , ") has been approved."
         ]
 

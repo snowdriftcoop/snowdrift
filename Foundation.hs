@@ -372,10 +372,14 @@ createUser ident passwd name email avatar nick = do
                 --
 
                 insertDefaultNotificationPrefs user_id
-
+                welcome_route <- getUrlRender
+                            -- 'MonolingualWikiR' is deprecated.
+                            <*> (pure $ MonolingualWikiR "snowdrift" "welcome" [])
                 let notif_text = Markdown $ T.unlines
                         [ "Thanks for registering!"
-                        , "<br> Please read our [**welcome message**](/p/snowdrift/w/welcome), and let us know any questions."
+                        , "<br> Please read our [**welcome message**](" <>
+                          welcome_route <>
+                          "), and let us know any questions."
                         ]
                 -- TODO: change snowdrift_id to the generated site-project id
                 -- TODO(mitchell): This notification doesn't get sent to the event channel. Is that okay?

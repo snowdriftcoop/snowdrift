@@ -63,7 +63,6 @@ import Model.Comment.Sql
 import Model.Discussion
 import Model.Notification
 import Model.User.Internal (sendPreferredNotificationDB)
-import Model.Utils
 
 import qualified Control.Monad.State                  as State
 import           Control.Monad.Writer.Strict          (tell)
@@ -326,7 +325,8 @@ editCommentDB comment_id text = do
         Nothing -> return ()
         Just (Entity comment_flagging_id CommentFlagging{..}) -> do
             langs <- lift $ lift getLanguages
-            rendered_route <- lift (makeCommentRouteDB langs comment_id >>= lift . routeToText . fromJust)
+            render <- getUrlRender
+            rendered_route <- lift $ makeCommentRouteDB langs comment_id >>= return . render . fromJust
             let notif_text = Markdown $ "A comment you flagged has been edited and reposted to the site. You can view it [here](" <> rendered_route <> ")."
             lift (deleteCascade comment_flagging_id) -- delete flagging and all flagging reasons with it.
             sendPreferredNotificationDB commentFlaggingFlagger NotifFlagRepost Nothing Nothing notif_text
