@@ -20,7 +20,7 @@ import Model.Discussion
 
 import Control.Monad
 
-import Yesod (Yesod, RedirectUrl)
+import Yesod (RedirectUrl)
 
 discussionSpecs :: Spec
 discussionSpecs = do
