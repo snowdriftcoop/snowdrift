@@ -5,6 +5,7 @@ module Model.User
     , SetPassword (..)
     -- Utility functions
     , anonymousUser
+    , deletedUser
     , curUserIsEligibleEstablish
     , deleteArchivedNotificationsDB
     , deleteNotificationDB
@@ -24,6 +25,8 @@ module Model.User
     -- Database actions
     , archiveNotificationsDB
     , deleteFromEmailVerification
+    , deleteCommentsDB
+    , deleteUserDB
     , eligEstablishUserDB
     , establishUserDB
     , fetchAllUserRolesDB
@@ -94,6 +97,11 @@ import           Control.Monad.Writer.Strict (tell)
 -- logged in, such as posting to /contact for a project
 anonymousUser :: UserId
 anonymousUser = key $ PersistInt64 (-1)
+
+-- When a user deletes the account, all their comments are assigned to
+-- this user.
+deletedUser :: UserId
+deletedUser = Key $ PersistInt64 (-2)
 
 type UserMap = Map UserId User
 
@@ -195,6 +203,19 @@ fromEmailVerification user_id =
 deleteFromEmailVerification :: MonadIO m => UserId -> SqlPersistT m ()
 deleteFromEmailVerification user_id =
     delete $ fromEmailVerification user_id
+
+deleteCommentsDB :: UserId -> DB ()
+deleteCommentsDB user_id = do
+    update $ \c -> do
+        set c $ [CommentUser =. val deletedUser]
+        where_ $ c ^. CommentUser ==. val user_id
+    delete $ from $ \c ->
+        where_ $ c ^. CommentUser ==. val user_id
+
+deleteUserDB :: UserId -> DB ()
+deleteUserDB user_id = do
+    deleteCommentsDB user_id
+    deleteCascade user_id
 
 fetchVerEmail :: Text -> UserId -> DB (Maybe Text)
 fetchVerEmail ver_uri user_id = do

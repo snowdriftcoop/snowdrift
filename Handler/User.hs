@@ -336,6 +336,24 @@ postUserChangePasswordR user_id = do
             defaultLayout $(widgetFile "change_password")
 
 --------------------------------------------------------------------------------
+-- /#UserId/delete
+
+getDeleteUserR :: UserId -> Handler Html
+getDeleteUserR user_id = do
+    void $ checkEditUser user_id
+    user <- runYDB $ get404 user_id
+    defaultLayout $ do
+        setTitle $ toHtml $ "User Profile - " <> userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
+        $(widgetFile "delete_user")
+
+postDeleteUserR :: UserId -> Handler Html
+postDeleteUserR user_id = do
+    void $ checkEditUser user_id
+    runDB $ deleteUserDB user_id
+    alertSuccess "Successfully deleted your account."
+    redirect HomeR
+
+--------------------------------------------------------------------------------
 -- /#UserId/edit
 
 getEditUserR :: UserId -> Handler Html
