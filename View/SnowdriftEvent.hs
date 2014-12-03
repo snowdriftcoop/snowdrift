@@ -87,6 +87,16 @@ renderCommentPostedEvent
                         ^{comment_widget}
                 |])
 
+            DiscussionOnBlogPost (Entity _ BlogPost{..}) ->
+                (blogPostCommentRoutes project_handle blogPostHandle, [whamlet|
+                    <div .event>
+                        On blog post
+                        <a href=@{BlogPostDiscussionR project_handle blogPostHandle}>#{blogPostTitle}
+                        :
+
+                        ^{comment_widget}
+                |])
+
         comment_widget =
             commentWidget
               (Entity comment_id comment)
@@ -273,7 +283,7 @@ renderBlogPostEvent (BlogPost {..}) = do
             ^{renderTime blogPostTs}
             New blog post: #
             $maybe Project{projectHandle = project_handle} <- maybe_project
-                <a href=@{ProjectBlogPostR project_handle blogPostHandle}>
+                <a href=@{BlogPostR project_handle blogPostHandle}>
                     #{blogPostTitle}
 
             $nothing

@@ -11,7 +11,6 @@ import Handler.Comment
 import Handler.Discussion
 import Handler.Utils
 import Model.Application
-import Model.Blog
 import Model.Comment
 import Model.Comment.ActionPermissions
 import Model.Comment.HandlerInfo
@@ -20,7 +19,6 @@ import Model.Comment.Sql
 import Model.Currency
 import Model.Discussion
 import Model.Issue
-import Model.Markdown
 import Model.Markdown.Diff
 import Model.Project
 import Model.Role
@@ -36,7 +34,6 @@ import View.SnowdriftEvent
 import Widgets.Preview
 import Widgets.Time
 
-import Yesod.Markdown
 
 import           Data.Default   (def)
 import qualified Data.Foldable  as F
@@ -181,18 +178,14 @@ makeProjectCommentActionWidget
         -> Handler (Widget, Tree (Entity Comment))
 makeProjectCommentActionWidget make_comment_action_widget project_handle comment_id mods get_max_depth = do
     (user, Entity project_id _, comment) <- checkCommentRequireAuth project_handle comment_id
-    make_comment_action_widget
-      (Entity comment_id comment)
-      user
-      (projectCommentHandlerInfo (Just user) project_id project_handle)
-      mods
-      get_max_depth
-      False
+    let handler_info = projectCommentHandlerInfo (Just user) project_id project_handle
+    make_comment_action_widget (Entity comment_id comment) user handler_info mods get_max_depth False
 
 projectDiscussionPage :: Text -> Widget -> Widget
 projectDiscussionPage project_handle widget = do
     $(widgetFile "project_discussion_wrapper")
     toWidget $(cassiusFile "templates/comment.cassius")
+
 
 -------------------------------------------------------------------------------
 --
@@ -275,8 +268,8 @@ postProjectR project_handle = do
                     defaultLayout $ previewWidget form "update" $ renderProject (Just project_id) preview_project [] Nothing
 
         x -> do
-            alertDanger (T.pack $ show x)
-            redirect (ProjectR project_handle)
+            alertDanger $ T.pack $ show x
+            redirect $ ProjectR project_handle
 
 --------------------------------------------------------------------------------
 -- /application
@@ -333,554 +326,6 @@ getProjectPledgeButtonR project_handle = do
    respond "image/png" png
 
 --------------------------------------------------------------------------------
--- /b
-
-getProjectBlogR :: Text -> Handler Html
-getProjectBlogR project_handle = do
-    maybe_from <- fmap (Key . PersistInt64 . read . T.unpack) <$> lookupGetParam "from"
-    post_count <- fromMaybe 10 <$> fmap (read . T.unpack) <$> lookupGetParam "from"
-    Entity project_id project <- runYDB $ getBy404 $ UniqueProjectHandle project_handle
-
-    let apply_offset blog = maybe id (\ from_blog rest -> blog ^. BlogPostId >=. val from_blog &&. rest) maybe_from
-
-    (posts, next) <- fmap (splitAt post_count) $ runDB $
-        select $
-        from $ \blog -> do
-        where_ $ apply_offset blog $ blog ^. BlogPostProject ==. val project_id
-        orderBy [ desc $ blog ^. BlogPostTs, desc $ blog ^. BlogPostId ]
-        limit (fromIntegral post_count + 1)
-        return blog
-
-    renderRouteParams <- getUrlRenderParams
-
-    let nextRoute next_id = renderRouteParams (ProjectBlogR project_handle) [("from", toPathPiece next_id)]
-        discussion = DiscussionOnProject $ Entity project_id project
-
-    defaultLayout $ do
-        setTitle . toHtml $ projectName project <> " Blog | Snowdrift.coop"
-
-        $(widgetFile "project_blog")
-
-
-getNewProjectBlogPostR :: Text -> Handler Html
-getNewProjectBlogPostR project_handle = do
-    (_, Entity _ project) <- requireRolesAny [Admin, TeamMember] project_handle "You do not have permission to post to this project's blog."
-
-    (blog_form, _) <- generateFormPost $ projectBlogForm Nothing
-
-    defaultLayout $ do
-        setTitle . toHtml $ "Post To " <> projectName project <> " Blog | Snowdrift.coop"
-
-        $(widgetFile "new_blog_post")
-
-
-postNewProjectBlogPostR :: Text -> Handler Html
-postNewProjectBlogPostR project_handle = do
-    (viewer_id, Entity project_id _) <-
-        requireRolesAny [Admin, TeamMember] project_handle "You do not have permission to post to this project's blog."
-
-    now <- liftIO getCurrentTime
-
-    ((result, _), _) <- runFormPost $ projectBlogForm Nothing
-
-    case result of
-        FormSuccess (title, handle, Markdown content) -> do
-            lookupPostMode >>= \case
-                Just PostMode -> do
-                    void $ runSDB $ postBlogPostDB title handle viewer_id project_id (Markdown content)
-                    alertSuccess "posted"
-                    redirect $ ProjectBlogR project_handle
-
-                _ -> do
-
-                    let (top_content', bottom_content') = break (== "***") $ T.lines content
-                        top_content = T.unlines top_content'
-                        bottom_content = if bottom_content' == [] then Nothing else Just (Markdown $ T.unlines bottom_content')
-                        blog_post = BlogPost now title handle viewer_id project_id (Key $ PersistInt64 0) (Markdown top_content) bottom_content
-
-                    (form, _) <- generateFormPost $ projectBlogForm $ Just (title, handle, Markdown content)
-
-                    defaultLayout $ previewWidget form "post" $ renderBlogPost project_handle blog_post
-
-        x -> do
-            alertDanger $ T.pack $ show x
-            redirect $ NewProjectBlogPostR project_handle
-
-
-getProjectBlogPostR :: Text -> Text -> Handler Html
-getProjectBlogPostR project_handle blog_post_handle = do
-    (project, blog_post) <- runYDB $ do
-        Entity project_id project <- getBy404 $ UniqueProjectHandle project_handle
-        Entity _ blog_post <- getBy404 $ UniqueBlogPost project_id blog_post_handle
-
-        return (project, blog_post)
-
-    defaultLayout $ do
-        setTitle . toHtml $ projectName project <> " Blog - " <> blogPostTitle blog_post <> " | Snowdrift.coop"
-
-        renderBlogPost project_handle blog_post
-
---------------------------------------------------------------------------------
--- /c/#CommentId
-
-getProjectCommentR :: Text -> CommentId -> Handler Html
-getProjectCommentR project_handle comment_id = do
-    (muser, Entity project_id _, comment) <- checkComment project_handle comment_id
-    (widget, comment_tree) <-
-        makeProjectCommentTreeWidget
-          muser
-          project_id
-          project_handle
-          (Entity comment_id comment)
-          def
-          getMaxDepth
-          False
-          mempty
-
-    case muser of
-        Nothing -> return ()
-        Just (Entity user_id _) ->
-            runDB (userMaybeViewProjectCommentsDB user_id project_id (map entityKey (Tree.flatten comment_tree)))
-
-    defaultLayout (projectDiscussionPage project_handle widget)
-
---------------------------------------------------------------------------------
--- /c/#CommentId/approve
-
-getApproveProjectCommentR :: Text -> CommentId -> Handler Html
-getApproveProjectCommentR project_handle comment_id = do
-    (widget, _) <-
-        makeProjectCommentActionWidget
-          makeApproveCommentWidget
-          project_handle
-          comment_id
-          def
-          getMaxDepth
-    defaultLayout (projectDiscussionPage project_handle widget)
-
-postApproveProjectCommentR :: Text -> CommentId -> Handler Html
-postApproveProjectCommentR project_handle comment_id = do
-    (user@(Entity user_id _), _, comment) <- checkCommentRequireAuth project_handle comment_id
-    checkProjectCommentActionPermission can_approve user project_handle (Entity comment_id comment)
-
-    postApproveComment user_id comment_id comment
-    redirect (ProjectCommentR project_handle comment_id)
-
---------------------------------------------------------------------------------
--- /c/#CommentId/claim
-
-getClaimProjectCommentR :: Text -> CommentId -> Handler Html
-getClaimProjectCommentR project_handle comment_id = do
-    (widget, _) <-
-        makeProjectCommentActionWidget
-          makeClaimCommentWidget
-          project_handle
-          comment_id
-          def
-          getMaxDepth
-    defaultLayout (projectDiscussionPage project_handle widget)
-
-postClaimProjectCommentR :: Text -> CommentId -> Handler Html
-postClaimProjectCommentR project_handle comment_id = do
-    (user, (Entity project_id _), comment) <- checkCommentRequireAuth project_handle comment_id
-    checkProjectCommentActionPermission can_claim user project_handle (Entity comment_id comment)
-
-    postClaimComment
-      user
-      comment_id
-      comment
-      (projectCommentHandlerInfo (Just user) project_id project_handle)
-      >>= \case
-        Nothing -> redirect (ProjectCommentR project_handle comment_id)
-        Just (widget, form) -> defaultLayout $ previewWidget form "claim" (projectDiscussionPage project_handle widget)
-
---------------------------------------------------------------------------------
--- /c/#CommentId/close
-
-getCloseProjectCommentR :: Text -> CommentId -> Handler Html
-getCloseProjectCommentR project_handle comment_id = do
-    (widget, _) <-
-        makeProjectCommentActionWidget
-          makeCloseCommentWidget
-          project_handle
-          comment_id
-          def
-          getMaxDepth
-    defaultLayout (projectDiscussionPage project_handle widget)
-
-
-postCloseProjectCommentR :: Text -> CommentId -> Handler Html
-postCloseProjectCommentR project_handle comment_id = do
-    (user, (Entity project_id _), comment) <- checkCommentRequireAuth project_handle comment_id
-    checkProjectCommentActionPermission can_close user project_handle (Entity comment_id comment)
-
-    postCloseComment
-      user
-      comment_id
-      comment
-      (projectCommentHandlerInfo (Just user) project_id project_handle)
-      >>= \case
-        Nothing -> redirect (ProjectCommentR project_handle comment_id)
-        Just (widget, form) -> defaultLayout $ previewWidget form "close" (projectDiscussionPage project_handle widget)
-
---------------------------------------------------------------------------------
--- /c/#CommentId/delete
-
-getDeleteProjectCommentR :: Text -> CommentId -> Handler Html
-getDeleteProjectCommentR project_handle comment_id = do
-    (widget, _) <-
-        makeProjectCommentActionWidget
-          makeDeleteCommentWidget
-          project_handle
-          comment_id
-          def
-          getMaxDepth
-    defaultLayout (projectDiscussionPage project_handle widget)
-
-postDeleteProjectCommentR :: Text -> CommentId -> Handler Html
-postDeleteProjectCommentR project_handle comment_id = do
-    (user, _, comment) <- checkCommentRequireAuth project_handle comment_id
-    checkProjectCommentActionPermission can_delete user project_handle (Entity comment_id comment)
-
-    was_deleted <- postDeleteComment comment_id
-    if was_deleted
-        then redirect (ProjectDiscussionR project_handle)
-        else redirect (ProjectCommentR project_handle comment_id)
-
---------------------------------------------------------------------------------
--- /c/#CommentId/edit
-
-getEditProjectCommentR :: Text -> CommentId -> Handler Html
-getEditProjectCommentR project_handle comment_id = do
-    (widget, _) <-
-        makeProjectCommentActionWidget
-          makeEditCommentWidget
-          project_handle
-          comment_id
-          def
-          getMaxDepth
-    defaultLayout (projectDiscussionPage project_handle widget)
-
-postEditProjectCommentR :: Text -> CommentId -> Handler Html
-postEditProjectCommentR project_handle comment_id = do
-    (user, Entity project_id _, comment) <- checkCommentRequireAuth project_handle comment_id
-    checkProjectCommentActionPermission can_edit user project_handle (Entity comment_id comment)
-
-    postEditComment
-      user
-      (Entity comment_id comment)
-      (projectCommentHandlerInfo (Just user) project_id project_handle)
-      >>= \case
-        Nothing -> redirect (ProjectCommentR project_handle comment_id)         -- Edit made.
-        Just (widget, form) -> defaultLayout $ previewWidget form "post" (projectDiscussionPage project_handle widget)
-
---------------------------------------------------------------------------------
--- /c/#CommentId/flag
-
-getFlagProjectCommentR :: Text -> CommentId -> Handler Html
-getFlagProjectCommentR project_handle comment_id = do
-    (widget, _) <-
-        makeProjectCommentActionWidget
-          makeFlagCommentWidget
-          project_handle
-          comment_id
-          def
-          getMaxDepth
-    defaultLayout (projectDiscussionPage project_handle widget)
-
-postFlagProjectCommentR :: Text -> CommentId -> Handler Html
-postFlagProjectCommentR project_handle comment_id = do
-    (user, Entity project_id _, comment) <- checkCommentRequireAuth project_handle comment_id
-    checkProjectCommentActionPermission can_flag user project_handle (Entity comment_id comment)
-
-    postFlagComment
-      user
-      (Entity comment_id comment)
-      (projectCommentHandlerInfo (Just user) project_id project_handle)
-      >>= \case
-        Nothing -> redirect (ProjectDiscussionR project_handle)
-        Just (widget, form) -> defaultLayout $ previewWidget form "flag" (projectDiscussionPage project_handle widget)
-
---------------------------------------------------------------------------------
--- /c/#CommentId/reply
-
-getReplyProjectCommentR :: Text -> CommentId -> Handler Html
-getReplyProjectCommentR project_handle parent_id = do
-    (widget, _) <-
-        makeProjectCommentActionWidget
-          makeReplyCommentWidget
-          project_handle
-          parent_id
-          def
-          getMaxDepth
-    defaultLayout (projectDiscussionPage project_handle widget)
-
-postReplyProjectCommentR :: Text -> CommentId -> Handler Html
-postReplyProjectCommentR project_handle parent_id = do
-    (user, Entity _ project, parent) <- checkCommentRequireAuth project_handle parent_id
-    checkProjectCommentActionPermission can_reply user project_handle (Entity parent_id parent)
-
-    postNewComment
-      (Just parent_id)
-      user
-      (projectDiscussion project)
-      (makeProjectCommentActionPermissionsMap (Just user) project_handle def) >>= \case
-        Left _ -> redirect (ProjectCommentR project_handle parent_id)
-        Right (widget, form) -> defaultLayout $ previewWidget form "post" (projectDiscussionPage project_handle widget)
-
---------------------------------------------------------------------------------
--- /c/#CommentId/rethread
-
-getRethreadProjectCommentR :: Text -> CommentId -> Handler Html
-getRethreadProjectCommentR project_handle comment_id = do
-    (widget, _) <-
-        makeProjectCommentActionWidget
-          makeRethreadCommentWidget
-          project_handle
-          comment_id
-          def
-          getMaxDepth
-    defaultLayout (projectDiscussionPage project_handle widget)
-
-postRethreadProjectCommentR :: Text -> CommentId -> Handler Html
-postRethreadProjectCommentR project_handle comment_id = do
-    (user@(Entity user_id _), _, comment) <- checkCommentRequireAuth project_handle comment_id
-    checkProjectCommentActionPermission can_rethread user project_handle (Entity comment_id comment)
-    postRethreadComment user_id comment_id comment
-
---------------------------------------------------------------------------------
--- /c/#CommentId/retract
-
-getRetractProjectCommentR :: Text -> CommentId -> Handler Html
-getRetractProjectCommentR project_handle comment_id = do
-    (widget, _) <-
-        makeProjectCommentActionWidget
-          makeRetractCommentWidget
-          project_handle
-          comment_id
-          def
-          getMaxDepth
-    defaultLayout (projectDiscussionPage project_handle widget)
-
-postRetractProjectCommentR :: Text -> CommentId -> Handler Html
-postRetractProjectCommentR project_handle comment_id = do
-    (user, Entity project_id _, comment) <- checkCommentRequireAuth project_handle comment_id
-    checkProjectCommentActionPermission can_retract user project_handle (Entity comment_id comment)
-
-    postRetractComment
-      user
-      comment_id
-      comment
-      (projectCommentHandlerInfo (Just user) project_id project_handle)
-      >>= \case
-        Nothing -> redirect (ProjectCommentR project_handle comment_id)
-        Just (widget, form) -> defaultLayout $ previewWidget form "retract" (projectDiscussionPage project_handle widget)
-
---------------------------------------------------------------------------------
--- /c/#CommentId/tags
-
-getProjectCommentTagsR :: Text -> CommentId -> Handler Html
-getProjectCommentTagsR _ = getCommentTags
-
---------------------------------------------------------------------------------
--- /c/#CommentId/tag/#TagId
-
-getProjectCommentTagR :: Text -> CommentId -> TagId -> Handler Html
-getProjectCommentTagR _ = getCommentTagR
-
-postProjectCommentTagR :: Text -> CommentId -> TagId -> Handler ()
-postProjectCommentTagR _ = postCommentTagR
-
---------------------------------------------------------------------------------
--- /c/#CommentId/tag/apply, /c/#CommentId/tag/create
-
-postProjectCommentApplyTagR, postProjectCommentCreateTagR:: Text -> CommentId -> Handler Html
-postProjectCommentApplyTagR  = applyOrCreate postCommentApplyTag
-postProjectCommentCreateTagR = applyOrCreate postCommentCreateTag
-
-applyOrCreate :: (CommentId -> Handler ()) -> Text -> CommentId -> Handler Html
-applyOrCreate action project_handle comment_id = do
-    action comment_id
-    redirect (ProjectCommentR project_handle comment_id)
-
---------------------------------------------------------------------------------
--- /c/#CommentId/tag/new
-
-getProjectCommentAddTagR :: Text -> CommentId -> Handler Html
-getProjectCommentAddTagR project_handle comment_id = do
-    (user@(Entity user_id _), Entity project_id _, comment) <- checkCommentRequireAuth project_handle comment_id
-    checkProjectCommentActionPermission can_add_tag user project_handle (Entity comment_id comment)
-    getProjectCommentAddTag comment_id project_id user_id
-
---------------------------------------------------------------------------------
--- /c/#CommentId/unclaim
-
-getUnclaimProjectCommentR :: Text -> CommentId -> Handler Html
-getUnclaimProjectCommentR project_handle comment_id = do
-    (widget, _) <-
-        makeProjectCommentActionWidget
-          makeUnclaimCommentWidget
-          project_handle
-          comment_id
-          def
-          getMaxDepth
-    defaultLayout (projectDiscussionPage project_handle widget)
-
-postUnclaimProjectCommentR :: Text -> CommentId -> Handler Html
-postUnclaimProjectCommentR project_handle comment_id = do
-    (user, (Entity project_id _), comment) <- checkCommentRequireAuth project_handle comment_id
-    checkProjectCommentActionPermission can_unclaim user project_handle (Entity comment_id comment)
-
-    postUnclaimComment
-      user
-      comment_id
-      comment
-      (projectCommentHandlerInfo (Just user) project_id project_handle)
-      >>= \case
-        Nothing -> redirect (ProjectCommentR project_handle comment_id)
-        Just (widget, form) -> defaultLayout $ previewWidget form "unclaim" (projectDiscussionPage project_handle widget)
-
---------------------------------------------------------------------------------
--- /c/#CommentId/watch
-
-getWatchProjectCommentR :: Text -> CommentId -> Handler Html
-getWatchProjectCommentR project_handle comment_id = do
-    (widget, _) <-
-        makeProjectCommentActionWidget
-          makeWatchCommentWidget
-          project_handle
-          comment_id
-          def
-          getMaxDepth
-
-    defaultLayout (projectDiscussionPage project_handle widget)
-
-postWatchProjectCommentR ::Text -> CommentId -> Handler Html
-postWatchProjectCommentR project_handle comment_id = do
-    (viewer@(Entity viewer_id _), _, comment) <- checkCommentRequireAuth project_handle comment_id
-    checkProjectCommentActionPermission can_watch viewer project_handle (Entity comment_id comment)
-
-    postWatchComment viewer_id comment_id
-
-    redirect (ProjectCommentR project_handle comment_id)
-
---------------------------------------------------------------------------------
--- /c/#CommentId/unwatch
-
-getUnwatchProjectCommentR :: Text -> CommentId -> Handler Html
-getUnwatchProjectCommentR project_handle comment_id = do
-    (widget, _) <-
-        makeProjectCommentActionWidget
-          makeUnwatchCommentWidget
-          project_handle
-          comment_id
-          def
-          getMaxDepth
-
-    defaultLayout (projectDiscussionPage project_handle widget)
-
-postUnwatchProjectCommentR ::Text -> CommentId -> Handler Html
-postUnwatchProjectCommentR project_handle comment_id = do
-    (viewer@(Entity viewer_id _), _, comment) <- checkCommentRequireAuth project_handle comment_id
-    checkProjectCommentActionPermission can_watch viewer project_handle (Entity comment_id comment)
-
-    postUnwatchComment viewer_id comment_id
-
-    redirect (ProjectCommentR project_handle comment_id)
-
---------------------------------------------------------------------------------
--- /contact
-
--- ProjectContactR stuff posts a private new topic to project discussion
-
-getProjectContactR :: Text -> Handler Html
-getProjectContactR project_handle = do
-    (project_contact_form, _) <- generateFormPost projectContactForm
-    Entity _ project <- runYDB $ getBy404 (UniqueProjectHandle project_handle)
-    defaultLayout $ do
-        setTitle . toHtml $ "Contact " <> projectName project <> " | Snowdrift.coop"
-        $(widgetFile "project_contact")
-
-postProjectContactR :: Text -> Handler Html
-postProjectContactR project_handle = do
-    maybe_user_id <- maybeAuthId
-
-    ((result, _), _) <- runFormPost projectContactForm
-
-    Entity _ project <- runYDB $ getBy404 (UniqueProjectHandle project_handle)
-
-    case result of
-        FormSuccess (content, language) -> do
-            _ <- runSDB (postApprovedCommentDB (fromMaybe anonymousUser maybe_user_id) Nothing (projectDiscussion project) content VisPrivate language)
-
-            alertSuccess "Comment submitted. Thank you for your input!"
-
-        _ -> alertDanger "Error occurred when submitting form."
-
-    redirect $ ProjectContactR project_handle
-
---------------------------------------------------------------------------------
--- /d
-
-getProjectDiscussionR :: Text -> Handler Html
-getProjectDiscussionR = getDiscussion . getProjectDiscussion
-
-getProjectDiscussion :: Text -> (DiscussionId -> ExprCommentCond -> DB [Entity Comment]) -> Handler Html
-getProjectDiscussion project_handle get_root_comments = do
-    muser <- maybeAuth
-    let muser_id = entityKey <$> muser
-
-    (Entity project_id project, root_comments) <- runYDB $ do
-        p@(Entity project_id project) <- getBy404 (UniqueProjectHandle project_handle)
-        let has_permission = exprCommentProjectPermissionFilter muser_id (val project_id)
-        root_comments <- get_root_comments (projectDiscussion project) has_permission
-        return (p, root_comments)
-
-    (comment_forest_no_css, _) <-
-        makeProjectCommentForestWidget
-          muser
-          project_id
-          project_handle
-          root_comments
-          def
-          getMaxDepth
-          False
-          mempty
-
-    let has_comments = not (null root_comments)
-        comment_forest = do
-            comment_forest_no_css
-            toWidget $(cassiusFile "templates/comment.cassius")
-
-    (comment_form, _) <- generateFormPost commentNewTopicForm
-
-    defaultLayout $ do
-        setTitle . toHtml $ projectName project <> " Discussion | Snowdrift.coop"
-        $(widgetFile "project_discuss")
-
---------------------------------------------------------------------------------
--- /d/new
-
-getNewProjectDiscussionR :: Text -> Handler Html
-getNewProjectDiscussionR project_handle = do
-    void requireAuth
-    let widget = commentNewTopicFormWidget
-    defaultLayout (projectDiscussionPage project_handle widget)
-
-postNewProjectDiscussionR :: Text -> Handler Html
-postNewProjectDiscussionR project_handle = do
-    user <- requireAuth
-    Entity _ Project{..} <- runYDB (getBy404 (UniqueProjectHandle project_handle))
-
-    postNewComment
-      Nothing
-      user
-      projectDiscussion
-      (makeProjectCommentActionPermissionsMap (Just user) project_handle def) >>= \case
-        Left comment_id -> redirect (ProjectCommentR project_handle comment_id)
-        Right (widget, form) -> defaultLayout $ previewWidget form "post" (projectDiscussionPage project_handle widget)
-
---------------------------------------------------------------------------------
 -- /edit
 
 getEditProjectR :: Text -> Handler Html
@@ -926,26 +371,26 @@ getProjectFeedR project_handle = do
 
         discussion_map, wiki_target_map, user_map, earlier_closures_map, earlier_retracts_map,
         closure_map, retract_map, ticket_map, claim_map, flag_map
-      ) <- runYDB $ do
+     ) <- runYDB $ do
 
         Entity project_id project <- getBy404 (UniqueProjectHandle project_handle)
 
-        comment_events        <- fetchProjectCommentPostedEventsIncludingRethreadedBeforeDB   project_id muser_id before lim
-        rethread_events       <- fetchProjectCommentRethreadEventsBeforeDB               project_id muser_id before lim
-        closing_events        <- fetchProjectCommentClosingEventsBeforeDB                project_id muser_id before lim
-        claiming_events       <- fetchProjectTicketClaimingEventsBeforeDB                project_id before lim
-        unclaiming_events     <- fetchProjectTicketUnclaimingEventsBeforeDB              project_id before lim
-        wiki_page_events      <- fetchProjectWikiPageEventsWithTargetsBeforeDB languages project_id before lim
-        blog_post_events      <- fetchProjectBlogPostEventsBeforeDB                      project_id before lim
-        wiki_edit_events      <- fetchProjectWikiEditEventsWithTargetsBeforeDB languages project_id before lim
-        new_pledge_events     <- fetchProjectNewPledgeEventsBeforeDB                     project_id before lim
-        updated_pledge_events <- fetchProjectUpdatedPledgeEventsBeforeDB                 project_id before lim
-        deleted_pledge_events <- fetchProjectDeletedPledgeEventsBeforeDB                 project_id before lim
+        comment_events        <- fetchProjectCommentPostedEventsIncludingRethreadedBeforeDB     project_id muser_id before lim
+        rethread_events       <- fetchProjectCommentRethreadEventsBeforeDB                      project_id muser_id before lim
+        closing_events        <- fetchProjectCommentClosingEventsBeforeDB                       project_id muser_id before lim
+        claiming_events       <- fetchProjectTicketClaimingEventsBeforeDB                       project_id before lim
+        unclaiming_events     <- fetchProjectTicketUnclaimingEventsBeforeDB                     project_id before lim
+        wiki_page_events      <- fetchProjectWikiPageEventsWithTargetsBeforeDB languages        project_id before lim
+        blog_post_events      <- fetchProjectBlogPostEventsBeforeDB                             project_id before lim
+        wiki_edit_events      <- fetchProjectWikiEditEventsWithTargetsBeforeDB languages        project_id before lim
+        new_pledge_events     <- fetchProjectNewPledgeEventsBeforeDB                            project_id before lim
+        updated_pledge_events <- fetchProjectUpdatedPledgeEventsBeforeDB                        project_id before lim
+        deleted_pledge_events <- fetchProjectDeletedPledgeEventsBeforeDB                        project_id before lim
 
         -- Suplementary maps for displaying the data. If something above requires extra
         -- data to display the project feed row, it MUST be used to fetch the data below!
 
-        let (comment_ids, comment_users)        = F.foldMap (\ (_, Entity comment_id comment) -> ([comment_id] , [commentUser comment])) comment_events
+        let (comment_ids, comment_users)        = F.foldMap (\ (_, Entity comment_id comment) -> ([comment_id], [commentUser comment])) comment_events
             (wiki_edit_users, wiki_edit_pages)  = F.foldMap (\ (_, Entity _ e, _) -> ([wikiEditUser e], [wikiEditPage e])) wiki_edit_events
             (blog_post_users)                   = F.foldMap (\ (_, Entity _ e) -> ([blogPostUser e])) blog_post_events
             shares_pledged                      = map (entityVal . snd) new_pledge_events <> map (\ (_, _, x) -> entityVal x) updated_pledge_events
@@ -993,7 +438,8 @@ getProjectFeedR project_handle = do
         claim_map            <- makeClaimedTicketMapDB          comment_ids
         flag_map             <- makeFlagMapDB                   comment_ids
 
-        return (
+        return
+            (
                 project,
 
                 comment_events, rethread_events, closing_events, claiming_events, unclaiming_events, wiki_page_events,
@@ -1001,34 +447,34 @@ getProjectFeedR project_handle = do
 
                 discussion_map, wiki_target_map, user_map, earlier_closures_map, earlier_retracts_map,
                 closure_map, retract_map, ticket_map, claim_map, flag_map
-               )
+            )
 
     action_permissions_map <- makeProjectCommentActionPermissionsMap muser project_handle def (map snd comment_events)
 
 
     let all_unsorted_events :: [(Route App, SnowdriftEvent)]
         all_unsorted_events = mconcat
-            [ map (EventCommentPostedR      *** onEntity ECommentPosted)      comment_events
-            , map (EventCommentRethreadedR  *** onEntity ECommentRethreaded)  rethread_events
-            , map (EventCommentClosingR     *** onEntity ECommentClosed)      closing_events
+            [ map (EventCommentPostedR      *** onEntity ECommentPosted)        comment_events
+            , map (EventCommentRethreadedR  *** onEntity ECommentRethreaded)    rethread_events
+            , map (EventCommentClosingR     *** onEntity ECommentClosed)        closing_events
 
             , map (EventTicketClaimedR      *** ETicketClaimed . (onEntity (,) +++ onEntity (,))) claiming_events
 
-            , map (EventTicketUnclaimedR    *** onEntity ETicketUnclaimed)    unclaiming_events
+            , map (EventTicketUnclaimedR    *** onEntity ETicketUnclaimed)      unclaiming_events
 
             , map (\ (eid, Entity wpid wp, wt)
-                    -> (EventWikiPageR eid, EWikiPage wpid wp wt))            wiki_page_events
+                    -> (EventWikiPageR eid, EWikiPage wpid wp wt))              wiki_page_events
 
             , map (\ (eid, Entity weid we, wt)
-                    -> (EventWikiEditR eid, EWikiEdit weid we wt))            wiki_edit_events
+                    -> (EventWikiEditR eid, EWikiEdit weid we wt))              wiki_edit_events
 
-            , map (EventBlogPostR           *** onEntity EBlogPost)           blog_post_events
-            , map (EventNewPledgeR          *** onEntity ENewPledge)          new_pledge_events
+            , map (EventBlogPostR           *** onEntity EBlogPost)             blog_post_events
+            , map (EventNewPledgeR          *** onEntity ENewPledge)            new_pledge_events
 
             , map (\ (eid, shares, pledge)
-                    -> (EventUpdatedPledgeR eid, eup2se shares pledge))       updated_pledge_events
+                    -> (EventUpdatedPledgeR eid, eup2se shares pledge))         updated_pledge_events
 
-            , map (EventDeletedPledgeR      *** edp2se)                       deleted_pledge_events
+            , map (EventDeletedPledgeR      *** edp2se)                         deleted_pledge_events
             ]
 
         (events, more_events) = splitAt (lim-1) (sortBy (snowdriftEventNewestToOldest `on` snd) all_unsorted_events)
@@ -1184,7 +630,7 @@ getProjectPatronsR project_handle = do
         $(widgetFile "project_patrons")
 
 --------------------------------------------------------------------------------
--- shares
+-- /shares
 
 getUpdateSharesR :: Text -> Handler Html
 getUpdateSharesR project_handle = do
@@ -1283,7 +729,7 @@ getTicketsR project_handle = do
 
 
 --------------------------------------------------------------------------------
--- /t
+-- /t/#TicketId
 
 getTicketR :: Text -> TicketId -> Handler ()
 getTicketR project_handle ticket_id = do
@@ -1396,3 +842,402 @@ watchOrUnwatchProject action msg project_id = do
         get404 project_id
     alertSuccess (msg <> projectName project)
     redirect HomeR
+
+--------------------------------------------------------------------------------
+-- /c/#CommentId
+
+getProjectCommentR :: Text -> CommentId -> Handler Html
+getProjectCommentR project_handle comment_id = do
+    (muser, Entity project_id _, comment) <- checkComment project_handle comment_id
+    (widget, comment_tree) <-
+        makeProjectCommentTreeWidget
+          muser
+          project_id
+          project_handle
+          (Entity comment_id comment)
+          def
+          getMaxDepth
+          False
+          mempty
+
+    case muser of
+        Nothing -> return ()
+        Just (Entity user_id _) ->
+            runDB (userMaybeViewProjectCommentsDB user_id project_id (map entityKey (Tree.flatten comment_tree)))
+
+    defaultLayout (projectDiscussionPage project_handle widget)
+
+--------------------------------------------------------------------------------
+-- /c/#CommentId/approve
+
+getApproveProjectCommentR :: Text -> CommentId -> Handler Html
+getApproveProjectCommentR project_handle comment_id = do
+    (widget, _) <- makeProjectCommentActionWidget makeApproveCommentWidget project_handle comment_id def getMaxDepth
+
+    defaultLayout (projectDiscussionPage project_handle widget)
+
+postApproveProjectCommentR :: Text -> CommentId -> Handler Html
+postApproveProjectCommentR project_handle comment_id = do
+    (user@(Entity user_id _), _, comment) <- checkCommentRequireAuth project_handle comment_id
+    checkProjectCommentActionPermission can_approve user project_handle (Entity comment_id comment)
+
+    postApproveComment user_id comment_id comment
+    redirect (ProjectCommentR project_handle comment_id)
+
+--------------------------------------------------------------------------------
+-- /c/#CommentId/claim
+
+getClaimProjectCommentR :: Text -> CommentId -> Handler Html
+getClaimProjectCommentR project_handle comment_id = do
+    (widget, _) <- makeProjectCommentActionWidget makeClaimCommentWidget project_handle comment_id def getMaxDepth
+
+    defaultLayout (projectDiscussionPage project_handle widget)
+
+postClaimProjectCommentR :: Text -> CommentId -> Handler Html
+postClaimProjectCommentR project_handle comment_id = do
+    (user, (Entity project_id _), comment) <- checkCommentRequireAuth project_handle comment_id
+    checkProjectCommentActionPermission can_claim user project_handle (Entity comment_id comment)
+
+    postClaimComment
+      user
+      comment_id
+      comment
+      (projectCommentHandlerInfo (Just user) project_id project_handle)
+      >>= \case
+        Nothing -> redirect (ProjectCommentR project_handle comment_id)
+        Just (widget, form) -> defaultLayout $ previewWidget form "claim" (projectDiscussionPage project_handle widget)
+
+--------------------------------------------------------------------------------
+-- /c/#CommentId/close
+
+getCloseProjectCommentR :: Text -> CommentId -> Handler Html
+getCloseProjectCommentR project_handle comment_id = do
+    (widget, _) <- makeProjectCommentActionWidget makeCloseCommentWidget project_handle comment_id def getMaxDepth
+
+    defaultLayout (projectDiscussionPage project_handle widget)
+
+
+postCloseProjectCommentR :: Text -> CommentId -> Handler Html
+postCloseProjectCommentR project_handle comment_id = do
+    (user, (Entity project_id _), comment) <- checkCommentRequireAuth project_handle comment_id
+    checkProjectCommentActionPermission can_close user project_handle (Entity comment_id comment)
+
+    postCloseComment
+      user
+      comment_id
+      comment
+      (projectCommentHandlerInfo (Just user) project_id project_handle)
+      >>= \case
+        Nothing -> redirect (ProjectCommentR project_handle comment_id)
+        Just (widget, form) -> defaultLayout $ previewWidget form "close" (projectDiscussionPage project_handle widget)
+
+--------------------------------------------------------------------------------
+-- /c/#CommentId/delete
+
+getDeleteProjectCommentR :: Text -> CommentId -> Handler Html
+getDeleteProjectCommentR project_handle comment_id = do
+    (widget, _) <- makeProjectCommentActionWidget makeDeleteCommentWidget project_handle comment_id def getMaxDepth
+
+    defaultLayout (projectDiscussionPage project_handle widget)
+
+postDeleteProjectCommentR :: Text -> CommentId -> Handler Html
+postDeleteProjectCommentR project_handle comment_id = do
+    (user, _, comment) <- checkCommentRequireAuth project_handle comment_id
+    checkProjectCommentActionPermission can_delete user project_handle (Entity comment_id comment)
+
+    was_deleted <- postDeleteComment comment_id
+    if was_deleted
+        then redirect (ProjectDiscussionR project_handle)
+        else redirect (ProjectCommentR project_handle comment_id)
+
+--------------------------------------------------------------------------------
+-- /c/#CommentId/edit
+
+getEditProjectCommentR :: Text -> CommentId -> Handler Html
+getEditProjectCommentR project_handle comment_id = do
+    (widget, _) <- makeProjectCommentActionWidget makeEditCommentWidget project_handle comment_id def getMaxDepth
+
+    defaultLayout (projectDiscussionPage project_handle widget)
+
+postEditProjectCommentR :: Text -> CommentId -> Handler Html
+postEditProjectCommentR project_handle comment_id = do
+    (user, Entity project_id _, comment) <- checkCommentRequireAuth project_handle comment_id
+    checkProjectCommentActionPermission can_edit user project_handle (Entity comment_id comment)
+
+    postEditComment
+      user
+      (Entity comment_id comment)
+      (projectCommentHandlerInfo (Just user) project_id project_handle)
+      >>= \case
+        Nothing -> redirect (ProjectCommentR project_handle comment_id)         -- Edit made.
+        Just (widget, form) -> defaultLayout $ previewWidget form "post" (projectDiscussionPage project_handle widget)
+
+--------------------------------------------------------------------------------
+-- /c/#CommentId/flag
+
+getFlagProjectCommentR :: Text -> CommentId -> Handler Html
+getFlagProjectCommentR project_handle comment_id = do
+    (widget, _) <- makeProjectCommentActionWidget makeFlagCommentWidget project_handle comment_id def getMaxDepth
+
+    defaultLayout (projectDiscussionPage project_handle widget)
+
+postFlagProjectCommentR :: Text -> CommentId -> Handler Html
+postFlagProjectCommentR project_handle comment_id = do
+    (user, Entity project_id _, comment) <- checkCommentRequireAuth project_handle comment_id
+    checkProjectCommentActionPermission can_flag user project_handle (Entity comment_id comment)
+
+    postFlagComment
+      user
+      (Entity comment_id comment)
+      (projectCommentHandlerInfo (Just user) project_id project_handle)
+      >>= \case
+        Nothing -> redirect (ProjectDiscussionR project_handle)
+        Just (widget, form) -> defaultLayout $ previewWidget form "flag" (projectDiscussionPage project_handle widget)
+
+--------------------------------------------------------------------------------
+-- /c/#CommentId/reply
+
+getReplyProjectCommentR :: Text -> CommentId -> Handler Html
+getReplyProjectCommentR project_handle parent_id = do
+    (widget, _) <- makeProjectCommentActionWidget makeReplyCommentWidget project_handle parent_id def getMaxDepth
+
+    defaultLayout (projectDiscussionPage project_handle widget)
+
+postReplyProjectCommentR :: Text -> CommentId -> Handler Html
+postReplyProjectCommentR project_handle parent_id = do
+    (user, Entity _ project, parent) <- checkCommentRequireAuth project_handle parent_id
+    checkProjectCommentActionPermission can_reply user project_handle (Entity parent_id parent)
+
+    postNewComment
+      (Just parent_id)
+      user
+      (projectDiscussion project)
+      (makeProjectCommentActionPermissionsMap (Just user) project_handle def) >>= \case
+        Left _ -> redirect (ProjectCommentR project_handle parent_id)
+        Right (widget, form) -> defaultLayout $ previewWidget form "post" (projectDiscussionPage project_handle widget)
+
+--------------------------------------------------------------------------------
+-- /c/#CommentId/rethread
+
+getRethreadProjectCommentR :: Text -> CommentId -> Handler Html
+getRethreadProjectCommentR project_handle comment_id = do
+    (widget, _) <- makeProjectCommentActionWidget makeRethreadCommentWidget project_handle comment_id def getMaxDepth
+
+    defaultLayout (projectDiscussionPage project_handle widget)
+
+postRethreadProjectCommentR :: Text -> CommentId -> Handler Html
+postRethreadProjectCommentR project_handle comment_id = do
+    (user@(Entity user_id _), _, comment) <- checkCommentRequireAuth project_handle comment_id
+    checkProjectCommentActionPermission can_rethread user project_handle (Entity comment_id comment)
+    postRethreadComment user_id comment_id comment
+
+--------------------------------------------------------------------------------
+-- /c/#CommentId/retract
+
+getRetractProjectCommentR :: Text -> CommentId -> Handler Html
+getRetractProjectCommentR project_handle comment_id = do
+    (widget, _) <- makeProjectCommentActionWidget makeRetractCommentWidget project_handle comment_id def getMaxDepth
+
+    defaultLayout (projectDiscussionPage project_handle widget)
+
+postRetractProjectCommentR :: Text -> CommentId -> Handler Html
+postRetractProjectCommentR project_handle comment_id = do
+    (user, Entity project_id _, comment) <- checkCommentRequireAuth project_handle comment_id
+    checkProjectCommentActionPermission can_retract user project_handle (Entity comment_id comment)
+
+    postRetractComment
+      user
+      comment_id
+      comment
+      (projectCommentHandlerInfo (Just user) project_id project_handle)
+      >>= \case
+        Nothing -> redirect (ProjectCommentR project_handle comment_id)
+        Just (widget, form) -> defaultLayout $ previewWidget form "retract" (projectDiscussionPage project_handle widget)
+
+--------------------------------------------------------------------------------
+-- /c/#CommentId/tags
+
+getProjectCommentTagsR :: Text -> CommentId -> Handler Html
+getProjectCommentTagsR _ = getCommentTags
+
+--------------------------------------------------------------------------------
+-- /c/#CommentId/tag/#TagId
+
+getProjectCommentTagR :: Text -> CommentId -> TagId -> Handler Html
+getProjectCommentTagR _ = getCommentTagR
+
+postProjectCommentTagR :: Text -> CommentId -> TagId -> Handler ()
+postProjectCommentTagR _ = postCommentTagR
+
+--------------------------------------------------------------------------------
+-- /c/#CommentId/tag/apply, /c/#CommentId/tag/create
+
+postProjectCommentApplyTagR, postProjectCommentCreateTagR:: Text -> CommentId -> Handler Html
+postProjectCommentApplyTagR  = applyOrCreate postCommentApplyTag
+postProjectCommentCreateTagR = applyOrCreate postCommentCreateTag
+
+applyOrCreate :: (CommentId -> Handler ()) -> Text -> CommentId -> Handler Html
+applyOrCreate action project_handle comment_id = do
+    action comment_id
+    redirect (ProjectCommentR project_handle comment_id)
+
+--------------------------------------------------------------------------------
+-- /c/#CommentId/tag/new
+
+getProjectCommentAddTagR :: Text -> CommentId -> Handler Html
+getProjectCommentAddTagR project_handle comment_id = do
+    (user@(Entity user_id _), Entity project_id _, comment) <- checkCommentRequireAuth project_handle comment_id
+    checkProjectCommentActionPermission can_add_tag user project_handle (Entity comment_id comment)
+    getProjectCommentAddTag comment_id project_id user_id
+
+--------------------------------------------------------------------------------
+-- /c/#CommentId/unclaim
+
+getUnclaimProjectCommentR :: Text -> CommentId -> Handler Html
+getUnclaimProjectCommentR project_handle comment_id = do
+    (widget, _) <- makeProjectCommentActionWidget makeUnclaimCommentWidget project_handle comment_id def getMaxDepth
+
+    defaultLayout (projectDiscussionPage project_handle widget)
+
+postUnclaimProjectCommentR :: Text -> CommentId -> Handler Html
+postUnclaimProjectCommentR project_handle comment_id = do
+    (user, (Entity project_id _), comment) <- checkCommentRequireAuth project_handle comment_id
+    checkProjectCommentActionPermission can_unclaim user project_handle (Entity comment_id comment)
+
+    postUnclaimComment
+      user
+      comment_id
+      comment
+      (projectCommentHandlerInfo (Just user) project_id project_handle)
+      >>= \case
+        Nothing -> redirect (ProjectCommentR project_handle comment_id)
+        Just (widget, form) -> defaultLayout $ previewWidget form "unclaim" (projectDiscussionPage project_handle widget)
+
+--------------------------------------------------------------------------------
+-- /c/#CommentId/watch
+
+getWatchProjectCommentR :: Text -> CommentId -> Handler Html
+getWatchProjectCommentR project_handle comment_id = do
+    (widget, _) <- makeProjectCommentActionWidget makeWatchCommentWidget project_handle comment_id def getMaxDepth
+
+    defaultLayout (projectDiscussionPage project_handle widget)
+
+postWatchProjectCommentR ::Text -> CommentId -> Handler Html
+postWatchProjectCommentR project_handle comment_id = do
+    (viewer@(Entity viewer_id _), _, comment) <- checkCommentRequireAuth project_handle comment_id
+    checkProjectCommentActionPermission can_watch viewer project_handle (Entity comment_id comment)
+
+    postWatchComment viewer_id comment_id
+
+    redirect (ProjectCommentR project_handle comment_id)
+
+--------------------------------------------------------------------------------
+-- /c/#CommentId/unwatch
+
+getUnwatchProjectCommentR :: Text -> CommentId -> Handler Html
+getUnwatchProjectCommentR project_handle comment_id = do
+    (widget, _) <- makeProjectCommentActionWidget makeUnwatchCommentWidget project_handle comment_id def getMaxDepth
+
+    defaultLayout (projectDiscussionPage project_handle widget)
+
+postUnwatchProjectCommentR ::Text -> CommentId -> Handler Html
+postUnwatchProjectCommentR project_handle comment_id = do
+    (viewer@(Entity viewer_id _), _, comment) <- checkCommentRequireAuth project_handle comment_id
+    checkProjectCommentActionPermission can_watch viewer project_handle (Entity comment_id comment)
+
+    postUnwatchComment viewer_id comment_id
+
+    redirect (ProjectCommentR project_handle comment_id)
+
+--------------------------------------------------------------------------------
+-- /contact
+
+-- ProjectContactR stuff posts a private new topic to project discussion
+
+getProjectContactR :: Text -> Handler Html
+getProjectContactR project_handle = do
+    (project_contact_form, _) <- generateFormPost projectContactForm
+    Entity _ project <- runYDB $ getBy404 (UniqueProjectHandle project_handle)
+    defaultLayout $ do
+        setTitle . toHtml $ "Contact " <> projectName project <> " | Snowdrift.coop"
+        $(widgetFile "project_contact")
+
+postProjectContactR :: Text -> Handler Html
+postProjectContactR project_handle = do
+    maybe_user_id <- maybeAuthId
+
+    ((result, _), _) <- runFormPost projectContactForm
+
+    Entity _ project <- runYDB $ getBy404 (UniqueProjectHandle project_handle)
+
+    case result of
+        FormSuccess (content, language) -> do
+            _ <- runSDB (postApprovedCommentDB (fromMaybe anonymousUser maybe_user_id) Nothing (projectDiscussion project) content VisPrivate language)
+
+            alertSuccess "Comment submitted. Thank you for your input!"
+
+        _ -> alertDanger "Error occurred when submitting form."
+
+    redirect $ ProjectContactR project_handle
+
+--------------------------------------------------------------------------------
+-- /d
+
+getProjectDiscussionR :: Text -> Handler Html
+getProjectDiscussionR = getDiscussion . getProjectDiscussion
+
+getProjectDiscussion :: Text -> (DiscussionId -> ExprCommentCond -> DB [Entity Comment]) -> Handler Html
+getProjectDiscussion project_handle get_root_comments = do
+    muser <- maybeAuth
+    let muser_id = entityKey <$> muser
+
+    (Entity project_id project, root_comments) <- runYDB $ do
+        p@(Entity project_id project) <- getBy404 (UniqueProjectHandle project_handle)
+        let has_permission = exprCommentProjectPermissionFilter muser_id (val project_id)
+        root_comments <- get_root_comments (projectDiscussion project) has_permission
+        return (p, root_comments)
+
+    (comment_forest_no_css, _) <-
+        makeProjectCommentForestWidget
+          muser
+          project_id
+          project_handle
+          root_comments
+          def
+          getMaxDepth
+          False
+          mempty
+
+    let has_comments = not (null root_comments)
+        comment_forest = do
+            comment_forest_no_css
+            toWidget $(cassiusFile "templates/comment.cassius")
+
+    (comment_form, _) <- generateFormPost commentNewTopicForm
+
+    defaultLayout $ do
+        setTitle . toHtml $ projectName project <> " Discussion | Snowdrift.coop"
+        $(widgetFile "project_discuss")
+
+--------------------------------------------------------------------------------
+-- /d/new
+
+getNewProjectDiscussionR :: Text -> Handler Html
+getNewProjectDiscussionR project_handle = do
+    void requireAuth
+    let widget = commentNewTopicFormWidget
+    defaultLayout (projectDiscussionPage project_handle widget)
+
+postNewProjectDiscussionR :: Text -> Handler Html
+postNewProjectDiscussionR project_handle = do
+    user <- requireAuth
+    Entity _ Project{..} <- runYDB (getBy404 (UniqueProjectHandle project_handle))
+
+    postNewComment
+      Nothing
+      user
+      projectDiscussion
+      (makeProjectCommentActionPermissionsMap (Just user) project_handle def) >>= \case
+        Left comment_id -> redirect (ProjectCommentR project_handle comment_id)
+        Right (widget, form) -> defaultLayout $ previewWidget form "post" (projectDiscussionPage project_handle widget)
+

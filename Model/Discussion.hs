@@ -15,7 +15,7 @@ import Model.Comment.Sql
 import Control.Monad.Trans.Maybe
 
 import qualified Data.Map as M
--- import qualified Data.Set as S
+import qualified Data.Set as S
 
 -- | An internal sum type that contains a constructer per database table that acts
 -- as a "Discussion". This way, we get a relatively type-safe way of ensuring that
@@ -27,6 +27,7 @@ data DiscussionType
     = DiscussionTypeProject
     | DiscussionTypeWikiPage
     | DiscussionTypeUser
+    | DiscussionTypeBlogPost
     deriving (Bounded, Enum)
 
 -- | Similar to DiscussionType, but exported, and actually contains the data.
@@ -34,6 +35,7 @@ data DiscussionOn
     = DiscussionOnProject  (Entity Project)
     | DiscussionOnWikiPage (Entity WikiTarget)
     | DiscussionOnUser     (Entity User)
+    | DiscussionOnBlogPost (Entity BlogPost)
 
 -- | Given a 'requested' DiscussionType, attempt to fetch the Discussion from that
 -- table. If, say, the requested DiscussionType is DiscussionTypeProject, but the
@@ -43,6 +45,7 @@ data DiscussionOn
 -- TODO(mitchell): Make this function more type safe.
 fetchDiscussionInternal :: [Language] -> DiscussionId -> DiscussionType -> DB (Maybe DiscussionOn)
 fetchDiscussionInternal _ discussion_id DiscussionTypeProject = fmap (fmap DiscussionOnProject) $ getBy $ UniqueProjectDiscussion discussion_id
+fetchDiscussionInternal _ discussion_id DiscussionTypeBlogPost = fmap (fmap DiscussionOnBlogPost) $ getBy $ UniqueBlogPostDiscussion discussion_id
 fetchDiscussionInternal langs discussion_id DiscussionTypeWikiPage = do
     maybe_wiki_page <- getBy $ UniqueWikiPageDiscussion discussion_id
     case maybe_wiki_page of
@@ -67,6 +70,14 @@ fetchDiscussionsInternal _ discussion_ids DiscussionTypeProject =
   where
     go :: Entity Project -> Map DiscussionId DiscussionOn -> Map DiscussionId DiscussionOn
     go p@(Entity _ Project{..}) = M.insert projectDiscussion (DiscussionOnProject p)
+
+fetchDiscussionsInternal _ discussion_ids DiscussionTypeBlogPost = fmap (foldr go mempty) $
+    select $ from $ \ bp -> do
+        where_ $ bp ^. BlogPostDiscussion `in_` valList discussion_ids
+        return bp
+  where
+    go :: Entity BlogPost -> Map DiscussionId DiscussionOn -> Map DiscussionId DiscussionOn
+    go p@(Entity _ BlogPost{..}) = M.insert blogPostDiscussion (DiscussionOnBlogPost p)
 
 fetchDiscussionsInternal langs discussion_ids DiscussionTypeWikiPage = do
     wiki_pages <- select $ from $ \ wp -> do
@@ -108,12 +119,10 @@ fetchDiscussionsDB :: [Language] -> [DiscussionId] -> DB (Map DiscussionId Discu
 fetchDiscussionsDB langs discussion_ids = do
     discussion_map <- mconcat <$> sequence (map (fetchDiscussionsInternal langs discussion_ids) [minBound..maxBound])
 
-    {- TODO - reintroduce check when we handle blog discussions
     let missed_discussions = S.fromList discussion_ids S.\\ M.keysSet discussion_map
 
     unless (S.null missed_discussions) $
         error $ "fetchDiscussionsDB: some discussion not found: " ++ show missed_discussions
-    -}
 
     return discussion_map
 

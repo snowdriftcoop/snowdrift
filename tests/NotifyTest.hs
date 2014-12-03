@@ -5,7 +5,7 @@
 
 module NotifyTest (notifySpecs) where
 
-import           TestImport                           hiding ((==.), (=.), update, notificationContent)
+import           TestImport                           hiding ((=.), update, notificationContent)
 import           Model.Language
 import           Model.Notification
 
@@ -163,12 +163,12 @@ notifySpecs AppConfig {..} = do
             testDB $ updateNotifPref mary_id NotifReply NotifDeliverWebsite
 
             loginAs Bob
-            comment_id <- getLatestCommentId
+            (comment_id, True) <- getLatestCommentId
             postComment
                 (snowdrift ReplyWikiCommentR comment_id) $
                     byLabel "Reply" "reply to the root comment"
 
-            reply_id <- getLatestCommentId
+            (reply_id, True) <- getLatestCommentId
             hasNotif mary_id NotifReply (render $ CommentDirectLinkR reply_id)
                 "reply notification not found" True
         |]
@@ -190,7 +190,7 @@ notifySpecs AppConfig {..} = do
             loginAs unestablished_user
             postComment (snowdrift NewWikiDiscussionR) $
                 byLabel "New Topic" "unapproved comment"
-            comment_id <- getLatestCommentId
+            (comment_id, False) <- getLatestCommentId
             user_id <- userId unestablished_user
             hasNotif user_id NotifUnapprovedComment
                 (render $ snowdrift WikiCommentR comment_id)
@@ -205,7 +205,7 @@ notifySpecs AppConfig {..} = do
             loginAs Mary
             postComment (snowdrift NewWikiDiscussionR) $
                 byLabel "New Topic" "parent comment"
-            parent_id <- getLatestCommentId
+            (parent_id, True) <- getLatestCommentId
 
             loginAs Bob
             bob_id <- userId Bob
@@ -213,7 +213,7 @@ notifySpecs AppConfig {..} = do
                 NotifRethreadedComment NotifDeliverWebsite
             postComment (snowdrift NewWikiDiscussionR) $
                 byLabel "New Topic" "rethreaded comment"
-            comment_id <- getLatestCommentId
+            (comment_id, True) <- getLatestCommentId
 
             loginAs AdminUser
             rethreadComment
@@ -233,7 +233,7 @@ notifySpecs AppConfig {..} = do
             loginAs Mary
             postComment (snowdrift NewWikiDiscussionR) $
                 byLabel "New Topic" "flagged comment"
-            comment_id <- getLatestCommentId
+            (comment_id, True) <- getLatestCommentId
             mary_id <- userId Mary
             testDB $ updateNotifPref mary_id NotifFlag NotifDeliverWebsite
 
@@ -251,7 +251,7 @@ notifySpecs AppConfig {..} = do
             testDB $ updateNotifPref bob_id NotifFlagRepost NotifDeliverWebsite
 
             loginAs Mary
-            comment_id <- getLatestCommentId
+            (comment_id, True) <- getLatestCommentId
             editComment $ render $ snowdrift EditWikiCommentR comment_id
 
             hasNotif bob_id NotifFlagRepost

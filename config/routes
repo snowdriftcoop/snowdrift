@@ -68,9 +68,6 @@
 /p/#Text                                     ProjectR                 GET POST
 /p/#Text/applications                        ApplicationsR            GET
 /p/#Text/application/#VolunteerApplicationId ApplicationR             GET
-/p/#Text/blog                                ProjectBlogR             GET
-/p/#Text/blog/!new                           NewProjectBlogPostR      GET POST
-/p/#Text/blog/#Text                          ProjectBlogPostR         GET
 /p/#Text/button.png                          ProjectPledgeButtonR     GET
 /p/#Text/c/#CommentId                        ProjectCommentR          GET
 /p/#Text/c/#CommentId/claim                  ClaimProjectCommentR     GET POST
@@ -141,6 +138,34 @@
 /p/#Text/w/#Language/#Text/perm                         EditWikiPermissionsR  GET POST
 /p/#Text/w/#Language/#Text/c/#CommentId/watch           WatchWikiCommentR     GET POST
 /p/#Text/w/#Language/#Text/c/#CommentId/unwatch         UnwatchWikiCommentR   GET POST
+
+-- Project blog
+
+/p/#Text/blog                                   ProjectBlogR                    GET
+/p/#Text/blog/!new                              NewBlogPostR                    GET POST
+/p/#Text/blog/#Text                             BlogPostR                       GET
+/p/#Text/blog/#Text/d                           BlogPostDiscussionR             GET
+/p/#Text/blog/#Text/d/new                       NewBlogPostDiscussionR          GET POST
+/p/#Text/blog/#Text/c/#CommentId                BlogPostCommentR                GET
+/p/#Text/blog/#Text/c/#CommentId/claim          ClaimBlogPostCommentR           GET POST
+/p/#Text/blog/#Text/c/#CommentId/close          CloseBlogPostCommentR           GET POST
+/p/#Text/blog/#Text/c/#CommentId/delete         DeleteBlogPostCommentR          GET POST
+/p/#Text/blog/#Text/c/#CommentId/edit           EditBlogPostCommentR            GET POST
+/p/#Text/blog/#Text/c/#CommentId/flag           FlagBlogPostCommentR            GET POST
+/p/#Text/blog/#Text/c/#CommentId/approve        ApproveBlogPostCommentR         GET POST
+/p/#Text/blog/#Text/c/#CommentId/reply          ReplyBlogPostCommentR           GET POST
+/p/#Text/blog/#Text/c/#CommentId/rethread       RethreadBlogPostCommentR        GET POST
+/p/#Text/blog/#Text/c/#CommentId/retract        RetractBlogPostCommentR         GET POST
+/p/#Text/blog/#Text/c/#CommentId/tag/!new       BlogPostCommentAddTagR          GET
+/p/#Text/blog/#Text/c/#CommentId/tags           BlogPostCommentTagsR            GET
+/p/#Text/blog/#Text/c/#CommentId/tag/#TagId     BlogPostCommentTagR             GET POST
+/p/#Text/blog/#Text/c/#CommentId/tag/!apply     BlogPostCommentApplyTagR            POST
+/p/#Text/blog/#Text/c/#CommentId/tag/!create    BlogPostCommentCreateTagR           POST
+/p/#Text/blog/#Text/c/#CommentId/unclaim        UnclaimBlogPostCommentR         GET POST
+/p/#Text/blog/#Text/c/#CommentId/watch          WatchBlogPostCommentR           GET POST
+/p/#Text/blog/#Text/c/#CommentId/unwatch        UnwatchBlogPostCommentR         GET POST
+
+
 
 /c/#CommentId            CommentDirectLinkR GET      DELETE
 /c/#CommentId/tag/#TagId CommentTagR        GET POST

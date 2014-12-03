@@ -290,7 +290,9 @@ insertCommentDB mapproved_ts mapproved_by mk_event created_ts discussion_id mpar
 -- | Fetch a comment from the DB, subject to viewing permissions.
 fetchCommentDB :: CommentId -> ExprCommentCond -> DB (Either NoCommentReason Comment)
 fetchCommentDB comment_id has_permission = get comment_id >>= \case
-    Nothing -> return (Left CommentNotFound)
+    Nothing -> do
+        liftIO $ appendFile "log" $ "comment not found: " ++ show comment_id ++ "\n"
+        return (Left CommentNotFound)
     -- Hooray, the comment exists, now toss it and re-query the database with the
     -- provided permission conditions. How else would we be able to differentiate
     -- a non-existent comment and a comment the user doesn't have permission to
@@ -788,11 +790,18 @@ makeCommentRouteDB :: [Language] -> CommentId -> DB (Maybe (Route App))
 makeCommentRouteDB langs comment_id = get comment_id >>= \case
     Nothing -> return Nothing
     Just comment -> fetchDiscussionDB langs (commentDiscussion comment) >>= \case
-        DiscussionOnProject (Entity _ project) -> return (Just (ProjectCommentR (projectHandle project) comment_id))
+        DiscussionOnProject (Entity _ project) -> return $ Just $ ProjectCommentR (projectHandle project) comment_id
 
         DiscussionOnWikiPage (Entity _ wiki_target) -> do
-            project <- getJust (wikiTargetProject wiki_target)
-            return (Just (WikiCommentR (projectHandle project) (wikiTargetLanguage wiki_target) (wikiTargetTarget wiki_target) comment_id))
+            project <- getJust $ wikiTargetProject wiki_target
+            return $ Just $ WikiCommentR (projectHandle project) (wikiTargetLanguage wiki_target) (wikiTargetTarget wiki_target) comment_id
 
         DiscussionOnUser (Entity user_id _) -> do
-            return (Just (UserCommentR user_id comment_id))
+            return $ Just $ UserCommentR user_id comment_id
+
+        DiscussionOnBlogPost (Entity _ blog_post) -> do
+            project <- getJust $ blogPostProject blog_post
+
+            return $ Just $ BlogPostCommentR (projectHandle project) (blogPostHandle blog_post) comment_id
+
+

@@ -53,10 +53,12 @@ snowdriftEventToFeedEntry render project_handle user_map discussion_map _ _ url 
         maybe_user = M.lookup user_id user_map
         username   = maybe "<unknown user>" (userDisplayName . Entity user_id) maybe_user
         discussion = case M.lookup (commentDiscussion comment) discussion_map of
-            Nothing                                          -> "<unknown discussion>"
-            Just (DiscussionOnProject _)                     -> "project discussion"
-            Just (DiscussionOnWikiPage (Entity _ wiki_target)) -> "wiki discussion for \"" <> wikiTargetTarget wiki_target <> "\""
-            Just (DiscussionOnUser user_entity)              -> "user discussion for " <> userDisplayName user_entity
+            Nothing                                             -> "<unknown discussion>"
+            Just (DiscussionOnProject _)                        -> "project discussion"
+            Just (DiscussionOnWikiPage (Entity _ wiki_target))  -> "wiki discussion for \"" <> wikiTargetTarget wiki_target <> "\""
+            Just (DiscussionOnUser user_entity)                 -> "user discussion for " <> userDisplayName user_entity
+            Just (DiscussionOnBlogPost (Entity _ blog_post))    -> "discussion on blog post \"" <> blogPostTitle blog_post <> "\""
+
      in Just $ FeedEntry
             { feedEntryLink    = url
             , feedEntryUpdated = maybe (commentCreatedTs comment) id $ commentApprovedTs comment

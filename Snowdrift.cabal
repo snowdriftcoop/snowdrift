@@ -82,6 +82,7 @@ library
                      Handler.PostLogin
                      Handler.Privacy
                      Handler.Project
+                     Handler.ProjectBlog
                      Handler.RepoFeed
                      Handler.ResetPassword
                      Handler.SnowdriftEvent

@@ -47,7 +47,7 @@ makeLoggedOutCommentActionPermissionsMap :: MakeActionPermissionsMap
 makeLoggedOutCommentActionPermissionsMap = return .
     foldr (\(Entity comment_id _) -> M.insert comment_id loggedOutCommentActionPermissions) mempty
 
--- | Action permissions that apply to both a Project discussion and a Projects WikiPage discussion.
+-- | Action permissions that apply to a Project discussion, and a Project's WikiPage discussion, and a Project's blog.
 makeProjectCommentActionPermissionsMap :: Maybe (Entity User) -> Text -> CommentMods -> MakeActionPermissionsMap
 makeProjectCommentActionPermissionsMap Nothing _ _ comments = makeLoggedOutCommentActionPermissionsMap comments
 makeProjectCommentActionPermissionsMap (Just (Entity viewer_id viewer)) project_handle CommentMods{..} comments = do

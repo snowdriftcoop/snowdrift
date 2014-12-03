@@ -5,7 +5,7 @@ $if null posts
 
 $forall Entity _ post <- posts
     <h2>
-        <a href=@{ProjectBlogPostR project_handle (blogPostHandle post)}>
+        <a href=@{BlogPostR project_handle (blogPostHandle post)}>
             #{blogPostTitle post}
 
         <small>
@@ -16,7 +16,7 @@ $forall Entity _ post <- posts
 
         $maybe _ <- blogPostBottomContent post
             <div .text-center>
-                <a href=@{ProjectBlogPostR project_handle (blogPostHandle post)}#fold>
+                <a href=@{BlogPostR project_handle (blogPostHandle post)}#fold>
                     Continued, read more&hellip;
 
     <hr>

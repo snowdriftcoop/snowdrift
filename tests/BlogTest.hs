@@ -75,7 +75,7 @@ blogSpecs = do
         yit "previews blog post" $ [marked|
             loginAs AdminUser
 
-            previewBlog (NewProjectBlogPostR "snowdrift") $ do
+            previewBlog (NewBlogPostR "snowdrift") $ do
                 byLabel "Title for this blog post" "Test"
                 byLabel "Handle for the URL" "test"
                 byLabel "Content" "Above fold.\n***\nBelow fold."
@@ -88,7 +88,7 @@ blogSpecs = do
         yit "posts blog post" $ [marked|
             loginAs AdminUser
 
-            postBlog (NewProjectBlogPostR "snowdrift") $ do
+            postBlog (NewBlogPostR "snowdrift") $ do
                 byLabel "Title for this blog post" "Test"
                 byLabel "Handle for the URL" "test"
                 byLabel "Content" "Above fold.\n***\nBelow fold."
@@ -100,7 +100,7 @@ blogSpecs = do
             htmlAnyContain ".blog-post-top" "Above fold."
             htmlNoneContain ".blog-post-top" "Below fold."
 
-            get $ ProjectBlogPostR "snowdrift" "test"
+            get $ BlogPostR "snowdrift" "test"
 
             htmlAnyContain ".blog-post" "Above fold."
             htmlAnyContain ".blog-post" "Below fold."
@@ -115,7 +115,7 @@ blogSpecs = do
             htmlNoneContain ".blog-post-top" "Below fold."
         |]
 
-    {-
+    {- TODO - enable if/when we include most recent blog post on project page (SD-284)
         yit "loads the project page - with blog post" $ [marked|
             loginAs TestUser
 

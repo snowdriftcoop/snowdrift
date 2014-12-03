@@ -1,6 +1,7 @@
 module Model.Comment.HandlerInfo
     ( CommentHandlerInfo(..)
     , projectCommentHandlerInfo
+    , projectBlogCommentHandlerInfo
     , wikiPageCommentHandlerInfo
     , userCommentHandlerInfo
     ) where
@@ -28,6 +29,9 @@ projectCommentHandlerInfo muser project_id project_handle mods =
         (exprCommentProjectPermissionFilter (entityKey <$> muser) (val project_id))
         (projectCommentRoutes project_handle)
         (makeProjectCommentActionPermissionsMap muser project_handle mods)
+
+projectBlogCommentHandlerInfo :: Maybe (Entity User) -> ProjectId -> Text -> Text -> CommentMods -> CommentHandlerInfo
+projectBlogCommentHandlerInfo muser project_id project_handle _ mods = projectCommentHandlerInfo muser project_id project_handle mods
 
 wikiPageCommentHandlerInfo :: Maybe (Entity User) -> ProjectId -> Text -> Language -> Text -> CommentMods -> CommentHandlerInfo
 wikiPageCommentHandlerInfo muser project_id project_handle language target mods =

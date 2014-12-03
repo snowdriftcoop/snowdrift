@@ -48,6 +48,6 @@ main = do
             userSpecs
             notifySpecs $ settings foundation
             wikiSpecs
-            discussionSpecs
             blogSpecs
+            discussionSpecs
 

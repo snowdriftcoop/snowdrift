@@ -7,10 +7,13 @@ import TestImport.Internal
 
 import Prelude hiding (exp)
 
+import Control.Monad.Logger as TestImport
+import Control.Arrow as TestImport
+
 import Yesod (Yesod, RedirectUrl)
 import Yesod.Test as TestImport
 import Database.Esqueleto hiding (get)
-import Database.Persist as TestImport hiding (get)
+import Database.Persist as TestImport hiding (get, (==.))
 import Control.Monad.IO.Class as TestImport (liftIO, MonadIO)
 
 import Network.URI (URI (uriPath), parseURI)
@@ -185,9 +188,12 @@ postComment route stmts = [marked|
         stmts
 |]
 
-getLatestCommentId :: YesodExample App CommentId
+getLatestCommentId :: YesodExample App (CommentId, Bool)
 getLatestCommentId = do
-    [Value (Just comment_id)] <-
-        testDB $ select $ from $ \comment ->
-            return (max_ $ comment ^. CommentId)
-    return comment_id
+    [ (Value comment_id, Value approved) ] <- testDB $ select $ from $ \ comment -> do
+        orderBy [ desc $ comment ^. CommentId ]
+        limit 1
+        return (comment ^. CommentId, not_ $ isNothing $ comment ^. CommentApprovedTs)
+
+    return (comment_id, approved)
+

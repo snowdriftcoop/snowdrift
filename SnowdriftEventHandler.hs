@@ -77,9 +77,10 @@ notificationEventHandler AppConfig{..} (ECommentPending comment_id comment) = ru
                 Nothing (Just comment_id) content
 
     case discussion of
-        DiscussionOnProject project                    -> projectComment project
-        DiscussionOnWikiPage (Entity _ WikiTarget{..}) -> projectComment =<< Entity wikiTargetProject <$> getJust wikiTargetProject
-        DiscussionOnUser _ -> error ""
+        DiscussionOnProject project                     -> projectComment project
+        DiscussionOnWikiPage (Entity _ WikiTarget{..})  -> projectComment =<< Entity wikiTargetProject <$> getJust wikiTargetProject
+        DiscussionOnUser _                              -> error ""
+        DiscussionOnBlogPost (Entity _ BlogPost{..})    -> projectComment =<< Entity blogPostProject <$> getJust blogPostProject
 
 notificationEventHandler AppConfig{..} (ECommentApproved comment_id comment) = runSDB $ do
     route_text <- lift (makeCommentRouteDB [LangEn] comment_id >>= lift . routeToText . fromJust)
