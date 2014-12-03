@@ -10,7 +10,7 @@
         <strong>
             <a href="@{WikiR "snowdrift" LangEn "intro"}"> Illustrated intro
             <br>
-            <a href="@{WikiR "snowdrift" LangEn "about"}"> Longer manifesto
+            <a href="@{WikiR "snowdrift" LangEn "about"}"> Longer explanation
             <br>
             <a href="@{WikiR "snowdrift" LangEn "faq"}"> FAQ
             <br>
