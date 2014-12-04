@@ -67,8 +67,6 @@ import Import
 import Model.Comment
 import Model.Comment.Sql
 import Model.Notification
-import Model.Project
-import Model.Project.Sql
 import Model.User.Internal
 import Model.User.Sql
 import Model.Wiki.Sql
@@ -359,28 +357,12 @@ updateNotificationPrefDB user_id NotificationPref {..} = do
               delivery
 
 userWatchProjectDB :: UserId -> ProjectId -> DB ()
-userWatchProjectDB user_id project_id = void (insertUnique (UserWatchingProject user_id project_id))
+userWatchProjectDB user_id project_id =
+    void $ insertUnique $ UserWatchingProject user_id project_id
 
 userUnwatchProjectDB :: UserId -> ProjectId -> DB ()
-userUnwatchProjectDB user_id project_id = do
-    delete_watching
-    delete_comment_views
-    delete_wiki_edit_views
-  where
-    delete_watching = deleteBy (UniqueUserWatchingProject user_id project_id)
-
-    delete_comment_views = delete_wiki_page_comment_views
-
-    delete_wiki_page_comment_views = fetchProjectDiscussionsDB project_id >>= \discussion_ids ->
-        delete $
-        from $ \(vc `InnerJoin` c) -> do
-        on_ (vc ^. ViewCommentComment ==. c ^. CommentId)
-        where_ (c ^. CommentDiscussion `in_` valList discussion_ids)
-
-    delete_wiki_edit_views =
-        delete $
-        from $ \vwe ->
-        where_ (vwe ^. ViewWikiEditEdit `in_` (subList_select (querProjectWikiEdits project_id)))
+userUnwatchProjectDB user_id project_id =
+    deleteBy $ UniqueUserWatchingProject user_id project_id
 
 userIsWatchingProjectDB :: UserId -> ProjectId -> DB Bool
 userIsWatchingProjectDB user_id project_id = maybe (False) (const True) <$> getBy (UniqueUserWatchingProject user_id project_id)

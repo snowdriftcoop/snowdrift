@@ -3,6 +3,14 @@
         <h1>
             #{projectName project}
         ^{description}
+        $if isJust maybe_project_id
+            $with project_id <- fromJust maybe_project_id
+                $if is_watching
+                    <form method=POST action=@{UnwatchProjectR project_id}>
+                        <input type=submit value="unwatch">
+                $else
+                    <form method=POST action=@{WatchProjectR project_id}>
+                        <input type=submit value="watch">
 
     <div .col-md-6>
         <div style="border-width: 2px; border-style: solid; border-color: red;" class="text-center">

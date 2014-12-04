@@ -13,6 +13,7 @@ module View.Project
 import Import
 
 import           Data.Filter
+import           Data.Maybe (fromJust)
 import           Data.Order
 import           Model.Currency
 import           Model.Discussion
@@ -28,8 +29,9 @@ import qualified Data.Text       as T
 import           Data.Time.Clock
 import           Yesod.Markdown
 
-renderProject :: Maybe ProjectId -> Project -> [Int64] -> Maybe (Entity Pledge) -> WidgetT App IO ()
-renderProject maybe_project_id project pledges pledge = do
+renderProject :: Maybe ProjectId -> Project -> Bool -> [Int64]
+              -> Maybe (Entity Pledge) -> WidgetT App IO ()
+renderProject maybe_project_id project is_watching pledges pledge = do
     let share_value = projectShareValue project
         users = fromIntegral $ length pledges
         shares = sum pledges
