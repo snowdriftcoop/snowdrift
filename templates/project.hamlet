@@ -3,7 +3,7 @@
         <h1>
             #{projectName project}
         ^{description}
-        $if isJust maybe_project_id
+        $if isJust mviewer_id && isJust maybe_project_id
             $with project_id <- fromJust maybe_project_id
                 $if is_watching
                     <form method=POST action=@{UnwatchProjectR project_id}>

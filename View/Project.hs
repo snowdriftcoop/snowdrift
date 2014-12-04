@@ -29,9 +29,9 @@ import qualified Data.Text       as T
 import           Data.Time.Clock
 import           Yesod.Markdown
 
-renderProject :: Maybe ProjectId -> Project -> Bool -> [Int64]
+renderProject :: Maybe ProjectId -> Project -> Maybe UserId -> Bool -> [Int64]
               -> Maybe (Entity Pledge) -> WidgetT App IO ()
-renderProject maybe_project_id project is_watching pledges pledge = do
+renderProject maybe_project_id project mviewer_id is_watching pledges pledge = do
     let share_value = projectShareValue project
         users = fromIntegral $ length pledges
         shares = sum pledges

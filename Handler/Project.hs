@@ -216,7 +216,7 @@ getProjectR project_handle = do
 
     defaultLayout $ do
         setTitle . toHtml $ projectName project <> " | Snowdrift.coop"
-        renderProject (Just project_id) project is_watching pledges pledge
+        renderProject (Just project_id) project mviewer_id is_watching pledges pledge
 
 postProjectR :: Text -> Handler Html
 postProjectR project_handle = do
@@ -266,7 +266,7 @@ postProjectR project_handle = do
                     let preview_project = project { projectName = name, projectDescription = description, projectGithubRepo = github_repo }
 
                     (form, _) <- generateFormPost $ editProjectForm (Just (preview_project, tags))
-                    defaultLayout $ previewWidget form "update" $ renderProject (Just project_id) preview_project False [] Nothing
+                    defaultLayout $ previewWidget form "update" $ renderProject (Just project_id) preview_project Nothing False [] Nothing
 
         x -> do
             alertDanger $ T.pack $ show x
