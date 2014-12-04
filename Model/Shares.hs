@@ -23,7 +23,7 @@ pledgeListKey = "pledge_list"
 pledgeRenderKey :: Text
 pledgeRenderKey = "pledge_render"
 
-data SharesPurchaseOrder = SharesPurchaseOrder Int64
+newtype SharesPurchaseOrder = SharesPurchaseOrder Int64
 
 pledgeField :: ProjectId -> Field Handler SharesPurchaseOrder
 pledgeField project_id = Field

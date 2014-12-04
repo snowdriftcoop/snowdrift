@@ -638,9 +638,11 @@ getUpdateSharesR project_handle = do
     Entity project_id project <- runYDB $ getBy404 $ UniqueProjectHandle project_handle
 
     ((result, _), _) <- runFormGet $ pledgeForm project_id
+    let dangerRedirect msg = do
+            alertDanger msg
+            redirect $ ProjectR project_handle
     case result of
         FormSuccess (SharesPurchaseOrder shares) -> do
-            -- TODO - refuse negative
             user_id <- requireAuthId
             (confirm_form, _) <- generateFormPost $ projectConfirmSharesForm (Just shares)
 
@@ -653,9 +655,9 @@ getUpdateSharesR project_handle = do
                         setTitle . toHtml $ projectName project <> " - update pledge | Snowdrift.coop"
                         $(widgetFile "update_shares")
 
-        FormMissing -> defaultLayout [whamlet| form missing |]
-        FormFailure _ -> defaultLayout [whamlet| form failure |]
-
+        FormMissing -> dangerRedirect "Form missing."
+        FormFailure errors ->
+            dangerRedirect $ T.snoc (T.intercalate "; " errors) '.'
 
 postUpdateSharesR :: Text -> Handler Html
 postUpdateSharesR project_handle = do
@@ -664,8 +666,6 @@ postUpdateSharesR project_handle = do
 
     case result of
         FormSuccess (SharesPurchaseOrder shares) -> do
-            -- TODO - refuse negative
-
             if isConfirmed
                 then do
                     Just pledge_render_id <- fmap (read . T.unpack) <$> lookupSession pledgeRenderKey
