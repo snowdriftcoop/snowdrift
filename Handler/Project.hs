@@ -830,7 +830,7 @@ watchOrUnwatchProject action msg project_id = do
         action user_id project_id
         get404 project_id
     alertSuccess (msg <> projectName project <> ".")
-    redirect HomeR
+    redirect $ ProjectR $ projectHandle project
 
 --------------------------------------------------------------------------------
 -- /c/#CommentId
