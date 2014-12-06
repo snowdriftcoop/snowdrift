@@ -21,6 +21,7 @@ import           Model.Project
 import           Model.Shares
 import           Model.Role
 import           View.User (userNameWidget)
+import           Widgets.Image
 import           Widgets.Markdown
 import           Widgets.Time
 
@@ -88,13 +89,14 @@ renderBlogPost project_handle blog_post = do
 
     $(widgetFile "blog_post")
 
-editProjectForm :: Maybe (Project, [Text]) -> Form UpdateProject
-editProjectForm project =
+editProjectForm :: Maybe (Project, [Text]) -> [Entity Image] -> Form UpdateProject
+editProjectForm project images =
     renderBootstrap3 BootstrapBasicForm $ UpdateProject
         <$> areq' textField "Project Name" (projectName . fst <$> project)
         <*> areq' snowdriftMarkdownField "Description" (projectDescription . fst <$> project)
         <*> (maybe [] (map T.strip . T.splitOn ",") <$> aopt' textField "Tags" (Just . T.intercalate ", " . snd <$> project))
         <*> aopt' textField "Github Repository" (projectGithubRepo . fst <$> project)
+        <*> areq' (imageSelectField images) "Select Image" (projectLogo . fst <$> project)
 
 projectBlogForm :: Maybe (Text, Text, Markdown) -> Form (Text, Text, Markdown)
 projectBlogForm defaults = renderBootstrap3 BootstrapBasicForm $

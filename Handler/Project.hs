@@ -895,7 +895,13 @@ getEditProjectR project_handle = do
         where_ (p_t ^. ProjectTagProject ==. val project_id)
         return tag
 
-    (project_form, _) <- generateFormPost $ editProjectForm (Just (project, map (tagName . entityVal) tags))
+    images <- runDB $
+        select $
+        from $ \image -> do
+        where_ (image ^. ImageName ==. val ("test")) 
+        return image
+
+    (project_form, _) <- generateFormPost $ editProjectForm (Just (project, map (tagName . entityVal) tags)) images
 
     defaultLayout $ do
         setTitle . toHtml $ projectName project <> " | Snowdrift.coop"

@@ -95,6 +95,7 @@ Project
     githubRepo  Text         Maybe
     discussion  DiscussionId       default=nextval('discussion_id_seq'::regclass)
     public      Bool               default=true
+    logo        Text         Maybe default=Nothing
 
     UniqueProjectAccount account
     UniqueProjectHandle handle
