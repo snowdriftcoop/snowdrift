@@ -1,0 +1,11 @@
+.imagescroller
+    overflow-y: auto
+    height: 400px
+    width: 250px
+
+.imagerow
+    display: -webkit-flex
+    -webkit-align-items: center
+    display: flex
+    align-items: center
+    margin: 10px 5px 10px 5px

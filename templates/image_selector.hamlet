@@ -1,0 +1,27 @@
+<fieldset>
+    <legend>
+        Select Project 
+    <div class="imagescroller">
+        $maybe prior <- prev_image 
+            <div class="imagerow">
+                <input type=radio id=#{idAttr} name="selected_image" value="None">None
+            <div class="imagerow">
+                <input type=radio id=#{idAttr} name="selected_image" value="New">Upload a New Image...
+            $forall image <- images
+                $if ((imageName image) == prior)
+                    <div class="imagerow">
+                        <input type=radio id=#{idAttr} name="selected_image" value=#{imageName image} selected>
+                            <img src=@{ImageR} $ imageName image height=200 width=200>
+                $else
+                    <div class="imagerow">
+                        <input type=radio id=#{idAttr} name="selected_image" value=#{imageName image}>
+                            <img src=@{ImageR} $ imageName image height=200 width=200>
+        $nothing
+            <div class="imagerow">
+                <input type=radio id=#{idAttr} name="selected_image" value="None">None
+            <div class="imagerow">
+                <input type=radio id=#{idAttr} name="selected_image" value="New">Upload a New Image...
+            $forall image <- images
+                <div class="imagerow">
+                    <input type=radio if=#{idAttr} name="selected_image" value=#{imageName image}>
+                        <img src=@{ImageR} $ imageName image height=200 width=200>
