@@ -1,19 +1,21 @@
 <div .row>
-    <div .col-md-8 .col-lg-9>
+    <div .col-md-6 .col-lg-8>
         <figure>
             <img alt="Snowdrift.coop &mdash; clearing the path to a Free/Libre/Open world" src=@{StaticR img_logo_png}>
             <figcaption style="color: #B22222; margin-top: -0.4em; font-size: 0.9em; padding: 0.4em;" class="text-right">
                 a work in progress:
                 <strong> public ALPHA — not functioning yet
-    <div .col-md-4 .col-lg-3 .text-center>
-        <h3> Our matching patronage system
-        <strong>
+    <div .col-md-6 .col-lg-4 .text-center>
+        <div #snowdrift-is>
+            <p> A matching patronage system funding freely-licensed works
+        <div style="margin: 8px auto; font-family: sans-serif; border-bottom: 1px solid gray; width: 10em;">About
+        <div .homep-about>
             <a href="@{WikiR "snowdrift" LangEn "intro"}"> Illustrated intro
-            <br>
+        <div .homep-about>
             <a href="@{WikiR "snowdrift" LangEn "about"}"> Longer explanation
-            <br>
+        <div .homep-about>
             <a href="@{WikiR "snowdrift" LangEn "faq"}"> FAQ
-            <br>
+        <div .homep-about>
             <a href="@{WikiR "snowdrift" LangEn "press"}"> Info for press
 
 <hr>

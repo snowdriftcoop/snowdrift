@@ -1,5 +1,5 @@
 <h1> 
-    <div .text-center> Project Index
+    <div .text-center> #{projectName project} wiki pages
 
 $if null wiki_targets
     no pages to display

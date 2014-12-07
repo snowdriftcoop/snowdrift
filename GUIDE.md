@@ -139,7 +139,21 @@ and simply communicate by e-mail or IRC or other options about when to fetch upd
 Building
 --------
 
-Install the essential dependencies: ghc, cabal, postgresql, happy, alex, zlib1g, libpq-dev.
+### Notes for different operating systems:
+
+We don't yet have all the details documented, but Snowdrift has been successfully built
+on Debian, Ubuntu, Arch, Gentoo, and related distros of GNU/Linux and should work on all
+other distros. 
+
+Snowdrift also has been built on Mac OS Yosemite.
+The Mac OS build process seems to have some issues with postgres user names being different;
+so until we address that, the database set-up for Mac OS will need to be done manually,
+and the precise commands may vary slightly from the ones we include here.
+
+
+### Build steps
+
+Install the essential dependencies: ghc, cabal, postgresql, happy, alex, zlib1g, libpq-dev
 
 On Debian-based GNU/Linux distros, use this command:
 
@@ -383,7 +397,7 @@ You should see a line that looks like:
 
 Add a password to the snowdrift_development user
 (for reference, the sdm script generates a random passphrase for this step;
-you may substitute your any arbitrary passphrase instead of 'somepassphrase'):
+you may substitute any arbitrary passphrase instead of 'somepassphrase'):
 
     postgres=# alter user snowdrift_development with encrypted password 'somepassphrase';
 

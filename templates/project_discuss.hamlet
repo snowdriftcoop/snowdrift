@@ -1,3 +1,5 @@
+<h1 .text-center> #{projectName project} general discussion
+
 <div .page-toolbox>
     <div .page-tool>
         <a href="@{ProjectR project_handle}"> back to main project page

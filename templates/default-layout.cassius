@@ -11,6 +11,9 @@ img
     max-width: 100%
     height: auto
 
+iframe
+    max-width: 100%
+
 input, textarea, button
     font-size : 15px
 
@@ -310,3 +313,5 @@ div.math
     font-size : small
     font-style : italic
 
+.homep-about
+    font-weight : bold
