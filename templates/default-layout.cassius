@@ -11,7 +11,7 @@ img
     max-width: 100%
     height: auto
 
-iframe
+iframe, video
     max-width: 100%
 
 input, textarea, button
