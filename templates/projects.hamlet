@@ -1,6 +1,13 @@
 <h1> 
     <div .text-center> Projects
 
+<p style="color: darkred">
+    Plans for this page include presenting more clear logos, stats about current patrons, and more.
+    The project sign-up process is in development currently.
+    The project listing now is mostly for testing, although these are real projects,
+    and tools such as discussion and wiki pages are already operating.
+
+
 $if null projects
     <p> no projects to display
 $else
