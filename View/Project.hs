@@ -94,7 +94,7 @@ editProjectForm project =
         <$> areq' textField "Project Name" (projectName . fst <$> project)
         <*> areq' snowdriftMarkdownField "Description" (projectDescription . fst <$> project)
         <*> (maybe [] (map T.strip . T.splitOn ",") <$> aopt' textField "Tags" (Just . T.intercalate ", " . snd <$> project))
-        <*> aopt' textField "Github Repository" (projectGithubRepo . fst <$> project)
+        <*> aopt' textField "GitHub Repository (to show GH tickets here at Snowdrift.coop)" (projectGithubRepo . fst <$> project)
 
 projectBlogForm :: Maybe (Text, Text, Markdown) -> Form (Text, Text, Markdown)
 projectBlogForm defaults = renderBootstrap3 BootstrapBasicForm $
