@@ -16,7 +16,7 @@
         <div .homep-about>
             <a href="@{WikiR "snowdrift" LangEn "faq"}"> FAQ
         <div .homep-about>
-            <a href="@{WikiR "snowdrift" LangEn "press"}"> Info for press
+            <a href="@{WikiR "snowdrift" LangEn "press"}"> Press
 
 <hr>
 <div .row>
