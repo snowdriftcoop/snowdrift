@@ -143,7 +143,7 @@ Building
 
 We don't yet have all the details documented, but Snowdrift has been successfully built
 on Debian, Ubuntu, Arch, Gentoo, and related distros of GNU/Linux and should work on all
-other distros. 
+other distros.
 
 Snowdrift also has been built on Mac OS Yosemite.
 The Mac OS build process seems to have some issues with postgres user names being different;
