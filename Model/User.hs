@@ -34,6 +34,7 @@ module Model.User
     , fetchUserProjectsAndRolesDB
     , fetchUserRolesDB
     , fetchUsersInDB
+    , fetchUsersByNotifPrefDB
     , fetchUserWatchingProjectsDB
     , fetchVerEmail
     , fromEmailVerification

@@ -123,7 +123,21 @@ notificationEventHandler _ (ETicketUnclaimed _ _)   = return ()
 notificationEventHandler _ (ENotificationSent _ _)  = return ()
 notificationEventHandler _ (EWikiEdit _ _ _)        = return ()
 notificationEventHandler _ (EWikiPage _ _ _)        = return ()
-notificationEventHandler _ (EBlogPost _ _)          = return ()
+
+notificationEventHandler AppConfig{..} (EBlogPost _ blog_post) = runSDB $ do
+    let project_id = blogPostProject blog_post
+    projects <- lift $ fetchProjectDB project_id
+    forM_ projects $ \(Entity _ project) -> do
+        route <- lift $ lift $ routeToText $
+            BlogPostR (projectHandle project) (blogPostHandle blog_post)
+        user_ids <- lift $ fetchUsersByNotifPrefDB NotifBlogPost (Just project_id)
+        forM_ user_ids $ \user_id -> do
+            is_watching <- lift $ userIsWatchingProjectDB user_id project_id
+            when is_watching $
+                sendPreferredNotificationDB user_id NotifBlogPost
+                    (Just project_id) Nothing
+                    ("New [blog post](" <> Markdown (appRoot <> route) <> ")")
+
 notificationEventHandler _ (ENewPledge _ _)         = return ()
 notificationEventHandler _ (EUpdatedPledge _ _ _)   = return ()
 notificationEventHandler _ (EDeletedPledge _ _ _ _) = return ()

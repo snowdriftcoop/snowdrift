@@ -92,6 +92,16 @@ fetchUserNotificationPrefDB user_id mproject_id notif_type
             &&. unp ^. UserNotificationPrefType ==. val notif_type
        return (unp ^. UserNotificationPrefDelivery))
 
+fetchUsersByNotifPrefDB :: NotificationType -> Maybe ProjectId -> DB [UserId]
+fetchUsersByNotifPrefDB notif_type mproject_id =
+    fmap unwrapValues $
+    -- A user may select multiple delivery methods, so this query will
+    -- return duplicates without 'distinct'.
+    selectDistinct $ from $ \unp -> do
+        where_ $ unp ^. UserNotificationPrefType ==. val notif_type
+             &&. unp ^. UserNotificationPrefProject `notDistinctFrom` val mproject_id
+        return $ unp ^. UserNotificationPrefUser
+
 fetchUserEmail :: UserId -> DB (Maybe Text)
 fetchUserEmail user_id
     = (\case []    -> Nothing
