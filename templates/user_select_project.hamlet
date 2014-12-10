@@ -1,0 +1,9 @@
+$if null projects
+    No watched projects
+$else
+    Select a project:
+        <form method=POST action=@{UserSelectProjectR user_id}>
+            <select name=project_id>
+                $forall Entity project_id project <- projects
+                    <option value=#{toPathPiece project_id}>#{projectName project}
+            <button>select

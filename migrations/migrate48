@@ -1,0 +1,2 @@
+ALTER TABLE "user_notification_pref" ADD COLUMN "project" INT8 NULL;
+ALTER TABLE "user_notification_pref" ADD CONSTRAINT "user_notification_pref_project_fkey" FOREIGN KEY("project") REFERENCES "project"("id");

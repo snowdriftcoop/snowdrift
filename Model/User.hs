@@ -6,6 +6,7 @@ module Model.User
     -- Utility functions
     , anonymousUser
     , curUserIsEligibleEstablish
+    , projectNotificationPref
     , updateUserPreview
     , userCanAddTag
     , userCanCloseComment
@@ -16,6 +17,7 @@ module Model.User
     , userIsModerator
     , userIsUnestablished
     , userDisplayName
+    , userNotificationPref
     -- Database actions
     , deleteFromEmailVerification
     , eligEstablishUserDB
@@ -32,6 +34,7 @@ module Model.User
     , fetchUserProjectsAndRolesDB
     , fetchUserRolesDB
     , fetchUsersInDB
+    , fetchUserWatchingProjectsDB
     , fetchVerEmail
     , fromEmailVerification
     , sendPreferredNotificationDB
@@ -67,13 +70,14 @@ import Import
 import Model.Comment
 import Model.Comment.Sql
 import Model.Notification
-import Model.User.Internal
+import Model.User.Internal hiding (UserNotificationPref)
 import Model.User.Sql
 import Model.Wiki.Sql
 
 import           Database.Esqueleto.Internal.Language (From)
 import qualified Data.Foldable      as F
 import qualified Data.List          as L
+import           Data.List.NonEmpty (NonEmpty)
 import qualified Data.Map           as M
 import qualified Data.Set           as S
 import qualified Data.Text          as T
@@ -149,6 +153,14 @@ updateUserPreview UserUpdate{..} user = user
 
 fetchUsersInDB :: [UserId] -> DB [Entity User]
 fetchUsersInDB user_ids = selectList [UserId <-. user_ids] []
+
+fetchUserWatchingProjectsDB :: UserId -> DB [Entity Project]
+fetchUserWatchingProjectsDB user_id =
+    select $ from $ \(uwp,p) -> do
+        where_ $ uwp ^. UserWatchingProjectUser    ==. val user_id
+             &&. uwp ^. UserWatchingProjectProject ==. p ^. ProjectId
+        
+        return p
 
 updateUserDB :: UserId -> UserUpdate -> DB ()
 updateUserDB user_id UserUpdate{..} = do
@@ -334,27 +346,26 @@ fetchNotifs cond user_id =
     orderBy [desc (n ^. NotificationCreatedTs)]
     return n
 
-updateNotificationPrefDB :: UserId -> NotificationPref -> DB ()
-updateNotificationPrefDB user_id NotificationPref {..} = do
-    updateNotifPrefs         NotifBalanceLow        notifBalanceLow
-    deleteOrUpdateNotifPrefs NotifUnapprovedComment notifUnapprovedComment
-    deleteOrUpdateNotifPrefs NotifRethreadedComment notifRethreadedComment
-    deleteOrUpdateNotifPrefs NotifReply             notifReply
-    updateNotifPrefs         NotifEditConflict      notifEditConflict
-    updateNotifPrefs         NotifFlag              notifFlag
-    deleteOrUpdateNotifPrefs NotifFlagRepost        notifFlagRepost
-  where
-    delete' notif_type =
-        delete $ from $ \unp ->
-        where_ $ unp ^. UserNotificationPrefUser ==. val user_id
-             &&. unp ^. UserNotificationPrefType ==. val notif_type
-    updateNotifPrefs notif_type delivery = do
-        delete' notif_type
-        F.forM_ delivery $ insert_ . UserNotificationPref user_id notif_type
-    deleteOrUpdateNotifPrefs notif_type delivery =
-        maybe (delete' notif_type)
-              (updateNotifPrefs notif_type)
-              delivery
+deleteNotifPrefs :: UserId -> Maybe ProjectId -> NotificationType -> DB ()
+deleteNotifPrefs user_id mproject_id notif_type =
+    delete $ from $ \unp ->
+    where_ $ unp ^. UserNotificationPrefUser ==. val user_id
+         &&. unp ^. UserNotificationPrefProject `notDistinctFrom` val mproject_id
+         &&. unp ^. UserNotificationPrefType ==. val notif_type
+
+updateNotifPrefs :: UserId -> Maybe ProjectId -> NotificationType
+                 -> NonEmpty NotificationDelivery -> DB ()
+updateNotifPrefs user_id mproject_id notif_type notif_delivs = do
+    deleteNotifPrefs user_id mproject_id notif_type
+    F.forM_ notif_delivs $
+        insert_ . UserNotificationPref user_id mproject_id notif_type
+
+updateNotificationPrefDB :: UserId -> Maybe ProjectId -> NotificationType
+                         -> Maybe (NonEmpty NotificationDelivery) -> DB ()
+updateNotificationPrefDB user_id mproject_id notif_type notif_delivs =
+    maybe (deleteNotifPrefs user_id mproject_id notif_type)
+          (updateNotifPrefs user_id mproject_id notif_type)
+          notif_delivs
 
 userWatchProjectDB :: UserId -> ProjectId -> DB ()
 userWatchProjectDB user_id project_id =

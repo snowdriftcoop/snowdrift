@@ -1,7 +1,7 @@
 module Model.User.Internal where
 
 import Prelude
-import Import
+import Import hiding (UserNotificationPref)
 import Model.Notification
     ( NotificationType (..), NotificationDelivery (..)
     , sendNotificationDB_, sendNotificationEmailDB )
@@ -31,7 +31,7 @@ data SetPassword = SetPassword
     , password' :: Text
     }
 
-data NotificationPref = NotificationPref
+data UserNotificationPref = UserNotificationPref
     { -- 'NotifWelcome' and 'NotifEligEstablish' are not handled since
       -- they are delivered only once.
       notifBalanceLow        :: NonEmpty NotificationDelivery
@@ -43,16 +43,53 @@ data NotificationPref = NotificationPref
     , notifFlagRepost        :: Maybe (NonEmpty NotificationDelivery)
     } deriving Show
 
+userNotificationPref
+    :: UserNotificationPref
+    -> [(NotificationType, Maybe (NonEmpty NotificationDelivery))]
+userNotificationPref UserNotificationPref {..} =
+    [ (NotifBalanceLow        , Just notifBalanceLow)
+    , (NotifUnapprovedComment , notifUnapprovedComment)
+    , (NotifRethreadedComment , notifRethreadedComment)
+    , (NotifReply             , notifReply)
+    , (NotifEditConflict      , Just notifEditConflict)
+    , (NotifFlag              , Just notifFlag)
+    , (NotifFlagRepost        , notifFlagRepost) ]
+
+data ProjectNotificationPref = ProjectNotificationPref
+    { notifTicketClaimed   :: Maybe (NonEmpty NotificationDelivery)
+    , notifTicketUnclaimed :: Maybe (NonEmpty NotificationDelivery)
+    , notifWikiEdit        :: Maybe (NonEmpty NotificationDelivery)
+    , notifWikiPage        :: Maybe (NonEmpty NotificationDelivery)
+    , notifBlogPost        :: Maybe (NonEmpty NotificationDelivery)
+    , notifNewPledge       :: Maybe (NonEmpty NotificationDelivery)
+    , notifUpdatedPledge   :: Maybe (NonEmpty NotificationDelivery)
+    , notifDeletedPledge   :: Maybe (NonEmpty NotificationDelivery)
+    } deriving Show
+
+projectNotificationPref
+    :: ProjectNotificationPref
+    -> [(NotificationType, Maybe (NonEmpty NotificationDelivery))]
+projectNotificationPref ProjectNotificationPref {..} =
+    [ (NotifTicketClaimed   , notifTicketClaimed)
+    , (NotifTicketUnclaimed , notifTicketUnclaimed)
+    , (NotifWikiEdit        , notifWikiEdit)
+    , (NotifWikiPage        , notifWikiPage)
+    , (NotifBlogPost        , notifBlogPost)
+    , (NotifNewPledge       , notifNewPledge)
+    , (NotifUpdatedPledge   , notifUpdatedPledge)
+    , (NotifDeletedPledge   , notifDeletedPledge) ]
+
 -- | How does this User prefer notifications of a certain type to be delivered?
-fetchUserNotificationPrefDB :: UserId -> NotificationType -> DB (Maybe (NonEmpty NotificationDelivery))
-fetchUserNotificationPrefDB user_id notif_type
+fetchUserNotificationPrefDB :: UserId -> Maybe ProjectId -> NotificationType
+                            -> DB (Maybe (NonEmpty NotificationDelivery))
+fetchUserNotificationPrefDB user_id mproject_id notif_type
     = (\case [] -> Nothing
              xs -> Just $ unValue <$> N.fromList xs)
   <$> (select $
        from $ \unp -> do
-       where_ $
-           unp ^. UserNotificationPrefUser ==. val user_id &&.
-           unp ^. UserNotificationPrefType ==. val notif_type
+       where_ $ unp ^. UserNotificationPrefUser ==. val user_id
+            &&. unp ^. UserNotificationPrefProject `notDistinctFrom` val mproject_id
+            &&. unp ^. UserNotificationPrefType ==. val notif_type
        return (unp ^. UserNotificationPrefDelivery))
 
 fetchUserEmail :: UserId -> DB (Maybe Text)
@@ -75,7 +112,7 @@ fetchUserEmailVerified user_id =
 sendPreferredNotificationDB :: UserId -> NotificationType -> Maybe ProjectId
                             -> Maybe CommentId-> Markdown -> SDB ()
 sendPreferredNotificationDB user_id notif_type mproject_id mcomment_id content = do
-    mprefs <- lift $ fetchUserNotificationPrefDB user_id notif_type
+    mprefs <- lift $ fetchUserNotificationPrefDB user_id mproject_id notif_type
     F.forM_ mprefs $ \prefs -> F.forM_ prefs $ \pref -> do
         muser_email    <- lift $ fetchUserEmail user_id
         email_verified <- lift $ fetchUserEmailVerified user_id

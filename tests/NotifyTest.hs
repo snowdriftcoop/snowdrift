@@ -258,3 +258,13 @@ notifySpecs AppConfig {..} = do
                 (render $ snowdrift WikiCommentR comment_id)
                 "flagged comment reposted notification not found" False
         |]
+
+    -- XXX: TODO.
+    testNotification NotifTicketClaimed   = return ()
+    testNotification NotifTicketUnclaimed = return ()
+    testNotification NotifWikiEdit        = return ()
+    testNotification NotifWikiPage        = return ()
+    testNotification NotifBlogPost        = return ()
+    testNotification NotifNewPledge       = return ()
+    testNotification NotifUpdatedPledge   = return ()
+    testNotification NotifDeletedPledge   = return ()

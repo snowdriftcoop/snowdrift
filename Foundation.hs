@@ -391,7 +391,7 @@ createUser ident passwd name email avatar nick = do
   where
     insertDefaultNotificationPrefs :: UserId -> DB ()
     insertDefaultNotificationPrefs user_id =
-        void . insertMany $ uncurry (UserNotificationPref user_id) <$>
+        void . insertMany $ uncurry (UserNotificationPref user_id Nothing) <$>
             -- 'NotifWelcome' is not set since it is delivered when a
             -- user is created.
             [ (NotifEligEstablish,     NotifDeliverWebsite)
