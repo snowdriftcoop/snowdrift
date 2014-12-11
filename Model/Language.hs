@@ -14,7 +14,7 @@ import Data.Data
 import qualified Data.Text as T
 import           Data.Text (Text)
 
-[makeLanguages| de en es fr nl pl |]
+[makeLanguages| de en es fr nl pl pt |]
 
 defaultLanguage :: Language
 defaultLanguage = LangEn
@@ -30,6 +30,7 @@ renderLanguage LangEn = \case
     LangFr -> "French"
     LangNl -> "Dutch"
     LangPl -> "Polish"
+    LangPt -> "Portuguese"
 
 renderLanguage _ = renderLanguage LangEn
 
