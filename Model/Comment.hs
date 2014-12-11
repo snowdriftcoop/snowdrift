@@ -166,9 +166,15 @@ buildCommentForest roots replies = (map (flip buildCommentTree replies)) roots
 --     (\now -> CommentClosure now user_id closure_type reason comment_id) `liftM` liftIO getCurrentTime
 
 -- | Construct a comment, auto-approved by 'this' User (because they are established).
-makeApprovedComment :: MonadIO m => UserId -> DiscussionId -> Maybe CommentId -> Markdown -> Int -> Visibility -> Language -> m Comment
+makeApprovedComment :: UserId -> DiscussionId -> Maybe CommentId -> Markdown -> Int -> Visibility -> Language -> YDB Comment
 makeApprovedComment user_id discussion_id parent_comment comment_text depth visibility language = do
     now <- liftIO getCurrentTime
+    maybe_parent_visibility <- case parent_comment of
+        Nothing -> return Nothing
+        Just parent_comment_id -> fmap (fmap commentVisibility) $ get parent_comment_id
+
+    let parent_visibility = fromMaybe VisPublic maybe_parent_visibility
+
     return $ Comment
                  now
                  (Just now)
@@ -178,7 +184,7 @@ makeApprovedComment user_id discussion_id parent_comment comment_text depth visi
                  user_id
                  comment_text
                  depth
-                 visibility
+                 (min visibility parent_visibility)
                  language
 
 -- | Get the set of Users that have posted the given Foldable of comments.
@@ -234,17 +240,17 @@ insertApprovedCommentDB
         -> SDB CommentId
 insertApprovedCommentDB created_ts discussion_id mparent_id user_id text depth visibility language =
     insertCommentDB
-      (Just created_ts)
-      (Just user_id)
-      ECommentPosted
-      created_ts
-      discussion_id
-      mparent_id
-      user_id
-      text
-      depth
-      visibility
-      language
+        (Just created_ts)
+        (Just user_id)
+        ECommentPosted
+        created_ts
+        discussion_id
+        mparent_id
+        user_id
+        text
+        depth
+        visibility
+        language
 
 insertUnapprovedCommentDB
         :: UTCTime
@@ -271,7 +277,12 @@ insertCommentDB :: Maybe UTCTime
                 -> Language
                 -> SDB CommentId
 insertCommentDB mapproved_ts mapproved_by mk_event created_ts discussion_id mparent_id user_id text depth visibility language = do
-    let comment = Comment
+    mparent <- case mparent_id of
+        Nothing -> return Nothing
+        Just parent_id -> get parent_id
+
+    let parent_visibility = maybe VisPublic commentVisibility mparent
+        comment = Comment
                     created_ts
                     mapproved_ts
                     mapproved_by
@@ -280,7 +291,7 @@ insertCommentDB mapproved_ts mapproved_by mk_event created_ts discussion_id mpar
                     user_id
                     text
                     depth
-                    visibility
+                    (min visibility parent_visibility)
                     language
 
     comment_id <- lift $ insert comment
