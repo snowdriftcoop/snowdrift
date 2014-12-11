@@ -69,7 +69,7 @@ commentForm label content = renderBootstrap3 BootstrapBasicForm $ NewComment
     <*> pure VisPublic
     <*> areq' (selectField makeLanguageOptions) "Language" Nothing
 
---    TODO(aaron) replace pure line above with below and uncomment where to activate private commenting
+--    TODO replace pure line above with below and uncomment where to activate private commenting
 --    <*> (toVisibility <$> areq' checkBoxField "Private?" Nothing)
 --  where
 --    toVisibility True = VisPrivate
@@ -389,7 +389,7 @@ commentTreeWidget'
         inner_widget =
             form_under_root_comment <>
             if MaxDepth depth >= max_depth && num_children > 0
-                then expandCommentWidget num_children (addMaxDepth max_depth 2) -- FIXME(mitchell): arbitrary '2' here
+                then expandCommentWidget num_children (addMaxDepth max_depth 2) -- FIXME: arbitrary '2' here
                 else forM_ children $ \child ->
                          commentTreeWidget'
                            child
@@ -467,7 +467,7 @@ commentWidget (Entity comment_id comment)
         is_odd_depth  = commentIsOddDepth  comment
         is_private    = commentIsPrivate   comment
 
-    -- TODO(mitchell): Lots of refactoring to lift this database hit up to the
+    -- TODO: Lots of refactoring to lift this database hit up to the
     -- controller layer. This currently has horrible performance - a hit *per* comment!
     tags <- handlerToWidget $ runDB $
         maybe [] sortAnnotTagsByName .
