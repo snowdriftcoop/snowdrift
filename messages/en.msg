@@ -6,3 +6,5 @@ NewMessages messages@Int: #{show messages} New #{plural messages "Message" "Mess
 NewApplications applications@Int: #{show applications} New #{plural applications "Application" "Applications"}
 NewComments comments@Int: #{show comments} New #{plural comments "Comment" "Comments"}
 NewWikiEdits edits@Int: #{show edits} New #{plural edits "Wiki Edit" "Wiki Edits"}
+
+LangName lang@Language: #{renderLanguage LangEn lang}

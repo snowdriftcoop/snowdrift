@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase #-}
 
 module Model.Language where
 
@@ -11,6 +12,7 @@ import Database.Persist.Sql
 import Data.Data
 
 import qualified Data.Text as T
+import           Data.Text (Text)
 
 [makeLanguages| de en es fr nl pl |]
 
@@ -19,4 +21,15 @@ defaultLanguage = LangEn
 
 instance RenderMessage app Language where
     renderMessage _ _ = T.pack . show
+
+renderLanguage :: Language -> Language -> Text
+renderLanguage LangEn = \case
+    LangDe -> "German"
+    LangEn -> "English"
+    LangEs -> "Spanish"
+    LangFr -> "French"
+    LangNl -> "Dutch"
+    LangPl -> "Polish"
+
+renderLanguage _ = renderLanguage LangEn
 

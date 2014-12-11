@@ -345,16 +345,23 @@ makeLanguageOptions :: Handler (OptionList Language)
 makeLanguageOptions = do
     preferred_languages <- getLanguages
 
+    app <- getYesod
+
+    langs <- languages
+
+    let render :: Language -> Text
+        render = renderMessage app langs . MsgLangName
+
     return $ OptionList
-        { olOptions = map mkOption $ preferred_languages ++ ([minBound..maxBound] \\ preferred_languages)
+        { olOptions = map (mkOption render) $ preferred_languages ++ (sortBy (compare `on` render) $ [minBound..maxBound] \\ preferred_languages)
         , olReadExternal = fromPathPiece
         }
   where
-    mkOption language = Option
-        { optionDisplay = toPathPiece language
-        , optionInternalValue = language
-        , optionExternalValue = toPathPiece language
-        }
+    mkOption render language = Option
+            { optionDisplay = render language
+            , optionInternalValue = language
+            , optionExternalValue = toPathPiece language
+            }
 
 languagePreferenceOrder :: [Language] -> (a -> Language) -> a -> a -> Ordering
 languagePreferenceOrder langs getLang = flip compare `on` (flip lookup (zip (reverse langs) [1 :: Integer ..]) . getLang)
