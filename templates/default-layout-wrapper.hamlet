@@ -71,17 +71,20 @@ $newline never
                     <div .col-md-3>
                         &copy; #{extraCopyright $ appExtra $ settings master}
                     <div .col-md-3>
-                        Released&nbsp;under&nbsp;
-                        <a rel="license" title="Affero GPL version 3.0 or newer" href="https://www.gnu.org/licenses/agpl">
-                            AGPLv3+
-                        &nbsp;and&nbsp;
+                        Writings and images here are free to use and share under #
                         <a rel="license" title="Creative Commons Attribution Share-Alike 4.0 International" href="https://creativecommons.org/licenses/by-sa/4.0">
                             CC&nbsp;BY-SA
 
                     <div .col-md-3>
-                        <a href="/license/javascript" rel="jslicense">JavaScript licenses
+                        This website's #
+                        <a href="#{extraSourceRepo $ appExtra $ settings master}">source code
+                        \ is free under the terms of the #
+                        <a rel="license" title="Affero GPL version 3.0 or later" href="https://www.gnu.org/licenses/agpl">
+                            GNU&nbsp;AGPLv3+
                     <div .col-md-3>
-                        <a href="#{extraSourceRepo $ appExtra $ settings master}">Check out the source!
+                        The #
+                        <a href="/license/javascript" rel="jslicense">licenses for any JavaScript
+                        \ we use are all free/libre/open also
 
         $maybe analytics <- extraAnalytics $ appExtra $ settings master
             <script>
