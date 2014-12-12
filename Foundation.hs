@@ -23,7 +23,7 @@ import           Control.Monad.Writer.Strict        (WriterT, runWriterT)
 import qualified Data.ByteString.Lazy.Char8         as LB
 import           Data.Char                          (isSpace)
 import           Data.Int                           (Int64)
-import           Data.Maybe                         (fromJust, mapMaybe)
+import           Data.Maybe                         (mapMaybe)
 import           Data.Monoid
 import           Data.Time
 import           Data.Text                          as T
@@ -467,11 +467,6 @@ getAlert = do
     mmsg <- liftM (fmap preEscapedToMarkup) $ lookupSession alertKey
     deleteSession alertKey
     return mmsg
-
--- | Get the ProjectId for the "snowdrift" project. Partial function. Possibly this should
--- be replaced by a hard-coded key? We're hard-coding "snowdrift", anyways.
-getSnowdriftId :: DB ProjectId
-getSnowdriftId = entityKey . fromJust <$> getBy (UniqueProjectHandle "snowdrift")
 
 -- | Write a list of SnowdriftEvent to the event channel.
 pushEvents :: (MonadIO m, MonadReader App m) => [SnowdriftEvent] -> m ()

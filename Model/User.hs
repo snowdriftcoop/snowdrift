@@ -245,10 +245,8 @@ eligEstablishUserDB honor_pledge establisher_id user_id reason = do
         where_ (u ^. UserId ==. val user_id)
 
     lift $ insert_ $ ManualEstablishment user_id establisher_id
-
-    snowdrift_id <- lift getSnowdriftId
     sendPreferredNotificationDB user_id NotifEligEstablish
-        (Just snowdrift_id) Nothing content
+        Nothing Nothing content
   where
     content :: Markdown
     content = Markdown $ T.unlines
