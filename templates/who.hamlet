@@ -1,5 +1,5 @@
 <h1>
-    <div .text-center> Project Participants
+    <div .text-center> #{projectName project} Team
 
 $forall Entity user_id user <- members
     <hr>
