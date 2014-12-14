@@ -583,17 +583,14 @@ getProjectNotificationsR user_id project_id = do
     project <- runYDB $ get404 project_id
     let fetchNotifPref =
             runYDB . fetchUserNotificationPrefDB user_id (Just project_id)
-    mticket_claimed   <- fetchNotifPref NotifTicketClaimed
-    mticket_unclaimed <- fetchNotifPref NotifTicketUnclaimed
-    mwiki_edit        <- fetchNotifPref NotifWikiEdit
     mwiki_page        <- fetchNotifPref NotifWikiPage
+    mwiki_edit        <- fetchNotifPref NotifWikiEdit
     mblog_post        <- fetchNotifPref NotifBlogPost
     mnew_pledge       <- fetchNotifPref NotifNewPledge
     mupdated_pledge   <- fetchNotifPref NotifUpdatedPledge
     mdeleted_pledge   <- fetchNotifPref NotifDeletedPledge
     (form, enctype) <- generateFormPost $
-        projectNotificationsForm mticket_claimed mticket_unclaimed
-                                 mwiki_edit mwiki_page mblog_post
+        projectNotificationsForm mwiki_page mwiki_edit mblog_post
                                  mnew_pledge mupdated_pledge mdeleted_pledge
     defaultLayout $ do
         setTitle $ toHtml $ "Notification Preferences for " <>
@@ -605,8 +602,8 @@ postProjectNotificationsR :: UserId -> ProjectId -> Handler Html
 postProjectNotificationsR user_id project_id = do
     void $ checkEditUser user_id
     ((result, form), enctype) <- runFormPost $
-        projectNotificationsForm Nothing Nothing Nothing Nothing
-                                 Nothing Nothing Nothing Nothing
+        projectNotificationsForm Nothing Nothing Nothing
+                                 Nothing Nothing Nothing
     case result of
         FormSuccess notif_pref -> do
             forM_ (projectNotificationPref notif_pref) $ \(ntype, ndelivs) ->

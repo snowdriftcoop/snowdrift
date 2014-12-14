@@ -224,17 +224,12 @@ projectNotificationsForm :: Maybe (NonEmpty NotificationDelivery)
                          -> Maybe (NonEmpty NotificationDelivery)
                          -> Maybe (NonEmpty NotificationDelivery)
                          -> Maybe (NonEmpty NotificationDelivery)
-                         -> Maybe (NonEmpty NotificationDelivery)
-                         -> Maybe (NonEmpty NotificationDelivery)
                          -> Form ProjectNotificationPref
-projectNotificationsForm mticket_claimed mticket_unclaimed
-                         mwiki_edit mwiki_page mblog_post
+projectNotificationsForm mwiki_page mwiki_edit mblog_post
                          mnew_pledge mupdated_pledge mdeleted_pledge =
     renderBootstrap3 BootstrapBasicForm $ ProjectNotificationPref
-        <$> opt "Ticket claimed"    mticket_claimed
-        <*> opt "Ticket unclaimed"  mticket_unclaimed
+        <$> opt "Wiki page created" mwiki_page
         <*> opt "Wiki page edited"  mwiki_edit
-        <*> opt "Wiki page created" mwiki_page
         <*> opt "New blog post"     mblog_post
         <*> opt "New pledge"        mnew_pledge
         <*> opt "Pledge updated"    mupdated_pledge

@@ -29,11 +29,9 @@ data NotificationType
     | NotifFlag
     -- Flagged comment was reposted.
     | NotifFlagRepost
-    | NotifTicketClaimed
-    | NotifTicketUnclaimed
-    | NotifWikiEdit
     -- New wiki page.
     | NotifWikiPage
+    | NotifWikiEdit
     -- New blog post.
     | NotifBlogPost
     | NotifNewPledge
@@ -54,8 +52,6 @@ showNotificationType NotifEditConflict      = "Edit conflict"
 showNotificationType NotifFlag              = "A comment of yours was flagged"
 showNotificationType NotifFlagRepost        = "A comment you flagged was edited and reposted"
 showNotificationType NotifBlogPost          = "New blog post"
-showNotificationType NotifTicketClaimed     = "Ticket claimed"
-showNotificationType NotifTicketUnclaimed   = "Ticket unclaimed"
 showNotificationType NotifWikiEdit          = "Wiki page was edited"
 showNotificationType NotifWikiPage          = "New wiki page"
 showNotificationType NotifNewPledge         = "New pledge"

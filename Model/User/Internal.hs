@@ -56,10 +56,8 @@ userNotificationPref UserNotificationPref {..} =
     , (NotifFlagRepost        , notifFlagRepost) ]
 
 data ProjectNotificationPref = ProjectNotificationPref
-    { notifTicketClaimed   :: Maybe (NonEmpty NotificationDelivery)
-    , notifTicketUnclaimed :: Maybe (NonEmpty NotificationDelivery)
+    { notifWikiPage        :: Maybe (NonEmpty NotificationDelivery)
     , notifWikiEdit        :: Maybe (NonEmpty NotificationDelivery)
-    , notifWikiPage        :: Maybe (NonEmpty NotificationDelivery)
     , notifBlogPost        :: Maybe (NonEmpty NotificationDelivery)
     , notifNewPledge       :: Maybe (NonEmpty NotificationDelivery)
     , notifUpdatedPledge   :: Maybe (NonEmpty NotificationDelivery)
@@ -70,9 +68,7 @@ projectNotificationPref
     :: ProjectNotificationPref
     -> [(NotificationType, Maybe (NonEmpty NotificationDelivery))]
 projectNotificationPref ProjectNotificationPref {..} =
-    [ (NotifTicketClaimed   , notifTicketClaimed)
-    , (NotifTicketUnclaimed , notifTicketUnclaimed)
-    , (NotifWikiEdit        , notifWikiEdit)
+    [ (NotifWikiEdit        , notifWikiEdit)
     , (NotifWikiPage        , notifWikiPage)
     , (NotifBlogPost        , notifBlogPost)
     , (NotifNewPledge       , notifNewPledge)
