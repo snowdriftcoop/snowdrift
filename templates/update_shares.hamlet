@@ -25,7 +25,7 @@
 
             <form method=POST action=@{UpdateSharesR project_handle}>
                 ^{confirm_form}
-                <input type=submit name=confirm value="yes">
+                <input type=submit name=confirm value="yes!">
                 <input type=submit name=confirm value="nevermind, take me back">
 
     $nothing
