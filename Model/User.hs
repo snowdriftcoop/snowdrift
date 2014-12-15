@@ -27,6 +27,7 @@ module Model.User
     , deleteFromEmailVerification
     , deleteCommentsDB
     , deleteBlogPostsDB
+    , deleteWikiEditsDB
     , deleteUserDB
     , eligEstablishUserDB
     , establishUserDB
@@ -219,10 +220,14 @@ deleteCommentsDB = replaceWithDeletedUser CommentUser
 deleteBlogPostsDB :: UserId -> DB ()
 deleteBlogPostsDB = replaceWithDeletedUser BlogPostUser
 
+deleteWikiEditsDB :: UserId -> DB ()
+deleteWikiEditsDB = replaceWithDeletedUser WikiEditUser
+
 deleteUserDB :: UserId -> DB ()
 deleteUserDB user_id = do
     deleteCommentsDB user_id
     deleteBlogPostsDB user_id
+    deleteWikiEditsDB user_id
     deleteCascade user_id
 
 fetchVerEmail :: Text -> UserId -> DB (Maybe Text)
