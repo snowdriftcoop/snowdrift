@@ -26,6 +26,7 @@ module Model.User
     , archiveNotificationsDB
     , deleteFromEmailVerification
     , deleteCommentsDB
+    , deleteBlogPostsDB
     , deleteUserDB
     , eligEstablishUserDB
     , establishUserDB
@@ -204,15 +205,24 @@ deleteFromEmailVerification :: MonadIO m => UserId -> SqlPersistT m ()
 deleteFromEmailVerification user_id =
     delete $ fromEmailVerification user_id
 
-deleteCommentsDB :: UserId -> DB ()
-deleteCommentsDB user_id = do
+replaceWithDeletedUser
+    :: (PersistEntity val, PersistEntityBackend val ~ SqlBackend)
+    => EntityField val UserId -> UserId -> DB ()
+replaceWithDeletedUser con user_id =
     update $ \c -> do
-        set c $ [CommentUser =. val deletedUser]
-        where_ $ c ^. CommentUser ==. val user_id
+        set c $ [con =. val deletedUser]
+        where_ $ c ^. con ==. val user_id
+
+deleteCommentsDB :: UserId -> DB ()
+deleteCommentsDB = replaceWithDeletedUser CommentUser
+
+deleteBlogPostsDB :: UserId -> DB ()
+deleteBlogPostsDB = replaceWithDeletedUser BlogPostUser
 
 deleteUserDB :: UserId -> DB ()
 deleteUserDB user_id = do
     deleteCommentsDB user_id
+    deleteBlogPostsDB user_id
     deleteCascade user_id
 
 fetchVerEmail :: Text -> UserId -> DB (Maybe Text)
