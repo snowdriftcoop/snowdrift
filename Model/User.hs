@@ -209,8 +209,6 @@ deleteCommentsDB user_id = do
     update $ \c -> do
         set c $ [CommentUser =. val deletedUser]
         where_ $ c ^. CommentUser ==. val user_id
-    delete $ from $ \c ->
-        where_ $ c ^. CommentUser ==. val user_id
 
 deleteUserDB :: UserId -> DB ()
 deleteUserDB user_id = do
