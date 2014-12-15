@@ -21,6 +21,7 @@ import           Widgets.ProjectPledges
 import           Widgets.Time
 
 import           Data.Default         (def)
+import           Data.List            (head)
 import qualified Data.Map             as M
 import           Data.Maybe           (fromJust)
 import qualified Data.Maybe           as Maybe
@@ -560,10 +561,12 @@ getUserSelectProjectR user_id = do
     void $ checkEditUser user_id
     user <- runYDB $ get404 user_id
     projects <- runDB $ fetchUserWatchingProjectsDB user_id
-    defaultLayout $ do
-        setTitle $ toHtml $ "Select Project - " <>
-            userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
-        $(widgetFile "user_select_project")
+    if length projects == 1
+        then redirect $ ProjectNotificationsR user_id $ entityKey $ head projects
+        else defaultLayout $ do
+            setTitle $ toHtml $ "Select Project - " <>
+                userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
+            $(widgetFile "user_select_project")
 
 postUserSelectProjectR :: UserId -> Handler Html
 postUserSelectProjectR user_id = do
