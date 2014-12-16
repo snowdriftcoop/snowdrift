@@ -22,10 +22,17 @@ import System.Log.FastLogger
 import qualified Data.ByteString as BS
 
 import Data.Time
+import Data.Typeable
 
 import Blaze.ByteString.Builder (toByteString)
 
+import Control.Exception.Lifted (throw, catch, Exception)
+
 retry x = x >>= \ x' -> unless x' $ retry x
+
+data NegativeBalances = NegativeBalances ProjectId [UserId] deriving (Show, Typeable)
+
+instance Exception NegativeBalances
 
 main :: IO ()
 main = do
@@ -35,71 +42,67 @@ main = do
 
     p <- Database.Persist.Sql.createPoolConfig (dbconf :: Settings.PersistConf)
 
+    now <- liftIO getCurrentTime
+
     let runDB :: (MonadIO m, MonadBaseControl IO m, MonadLogger m) => SqlPersistT m a -> m a
         runDB sql = Database.Persist.Sql.runPool dbconf sql p
 
-    now <- getCurrentTime
-
-    runStdoutLoggingT $ runResourceT $ do
-        projects <- runDB $ select $ from return
-
-        forM_ projects $ \ (Entity project_id project) -> retry $ runDB $ do
+        payout (Entity project_id project, Entity payday_id payday) = runDB $ do
             let project_name = projectName project
 
             liftIO $ putStrLn $ T.unpack project_name
 
-            now <- liftIO getCurrentTime
-
             pledges <- select $ from $ \ pledge -> do
                 where_ $ pledge ^. PledgeProject ==. val project_id
                     &&. pledge ^. PledgeFundedShares >. val 0
+
                 return pledge
 
-            paydays <- select $ from $ \ payday -> do
-                where_ $ case projectLastPayday project of
-                    Nothing -> payday ^. PaydayDate <. val now
-                    Just last_payday -> payday ^. PaydayDate <. val now &&. payday ^. PaydayId >. val last_payday
-                orderBy [ asc $ payday ^. PaydayId ]
-                return payday
+            user_balances <- forM pledges $ \ (Entity pledge_id pledge) -> do
+                Just user <- get $ pledgeUser pledge
+                let amount = projectShareValue project $* fromIntegral (pledgeFundedShares pledge)
+                    user_account_id = userAccount user
+                    project_account_id = projectAccount project
 
-            fmap and $ forM paydays $ \ (Entity payday_id payday) -> do
-                user_balances <- forM pledges $ \ (Entity pledge_id pledge) -> do
-                    Just user <- get $ pledgeUser pledge
-                    let amount = projectShareValue project $* fromIntegral (pledgeFundedShares pledge)
-                        user_account_id = userAccount user
-                        project_account_id = projectAccount project
+                insert $ Transaction now (Just project_account_id) (Just user_account_id) (Just payday_id) amount "Project Payout" Nothing
 
-                    insert $ Transaction now (Just project_account_id) (Just user_account_id) (Just payday_id) amount "Project Payout" Nothing
+                user_account <- updateGet user_account_id [AccountBalance Database.Persist.Sql.-=. amount]
+                _            <- updateGet project_account_id [AccountBalance Database.Persist.Sql.+=. amount]
 
-                    user_account <- updateGet user_account_id [AccountBalance Database.Persist.Sql.-=. amount]
-                    project_account <- updateGet project_account_id [AccountBalance Database.Persist.Sql.+=. amount]
+                return (pledgeUser pledge, accountBalance user_account)
 
-                    return (pledgeUser pledge, accountBalance user_account)
+            let negative_balances = filter ((< 0) . snd) user_balances
 
-                let negative_balances = filter ((< 0) . snd) user_balances
+            when (not $ null negative_balances) $ throw $ NegativeBalances project_id $ map fst negative_balances
 
-                if null negative_balances
-                 then do
-                    update $ \ p -> do
-                        set p [ ProjectLastPayday =. val (Just payday_id) ]
-                        where_ $ p ^. ProjectId ==. val project_id
+            update $ \ p -> do
+                set p [ ProjectLastPayday =. val (Just payday_id) ]
+                where_ $ p ^. ProjectId ==. val project_id
 
-                    transactionSave
+            return True
 
-                    return True
-                 else do
-                    transactionUndo
 
-                    update $ \ p -> do
-                        set p [ PledgeFundedShares -=. val 1 ]
-                        where_ $ p ^. PledgeUser `in_` valList (map fst negative_balances)
-                            &&. p ^. PledgeFundedShares >. val 0
+        dropPledges (NegativeBalances project_id negative_balances) = runDB $ do
+            update $ \ p -> do
+                set p [ PledgeFundedShares -=. val 1 ]
+                where_ $ p ^. PledgeUser `in_` valList negative_balances
+                    &&. p ^. PledgeFundedShares >. val 0
 
-                    updateShareValue project_id
+            updateShareValue project_id
 
-                    transactionSave
+            return False
 
-                    return False
+    runStdoutLoggingT $ runResourceT $ do
+        projects <- runDB $ select $ from $ \ (project `LeftOuterJoin` last_payday `InnerJoin` payday) -> do
+            on_ $ payday ^. PaydayDate >. coalesceDefault [ last_payday ?. PaydayDate ] (project ^. ProjectCreatedTs)
+            on_ $ project ^. ProjectLastPayday ==. last_payday ?. PaydayId
 
-        return ()
+            where_ $ payday ^. PaydayDate <=. val now
+
+            orderBy [ asc $ payday ^. PaydayDate, desc $ project ^. ProjectShareValue ]
+
+            return (project, payday)
+
+        forM_ projects $ retry . flip catch dropPledges . payout
+
 

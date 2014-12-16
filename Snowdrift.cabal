@@ -239,6 +239,7 @@ executable         SnowdriftProcessPayments
                      , blaze-builder
                      , resourcet
                      , mtl
+                     , lifted-base
 
     ghc-options:       -threaded -O2
 
