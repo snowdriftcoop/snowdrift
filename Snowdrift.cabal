@@ -95,6 +95,7 @@ library
                      View.Project
                      Version
                      Widgets.Doc
+                     Widgets.Image
                      Widgets.Markdown
                      Widgets.Navbar
                      Widgets.Time

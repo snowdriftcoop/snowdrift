@@ -229,12 +229,18 @@ postProjectR project_handle = do
     (viewer_id, Entity project_id project) <-
         requireRolesAny [Admin] project_handle "You do not have permission to edit this project."
 
-    ((result, _), _) <- runFormPost $ editProjectForm Nothing
+    images <- runDB $
+        select $
+        from $ \image -> do
+--        where_ (image ^. ImageName `like` val ("test%")) 
+        return image
+
+    ((result, _), _) <- runFormPost $ editProjectForm Nothing images
 
     now <- liftIO getCurrentTime
 
     case result of
-        FormSuccess (UpdateProject name description tags github_repo) ->
+        FormSuccess (UpdateProject name description tags github_repo logo) ->
             lookupPostMode >>= \case
                 Just PostMode -> do
                     runDB $ do
@@ -246,7 +252,7 @@ postProjectR project_handle = do
                                 Nothing -> void $ insert $ ProjectLastUpdate project_id project_update
 
                         update $ \ p -> do
-                            set p [ ProjectName =. val name, ProjectDescription =. val description, ProjectGithubRepo =. val github_repo ]
+                            set p [ ProjectName =. val name, ProjectDescription =. val description, ProjectGithubRepo =. val github_repo, ProjectLogo =. val logo ]
                             where_ (p ^. ProjectId ==. val project_id)
 
                         tag_ids <- forM tags $ \ tag_name -> do
@@ -269,9 +275,9 @@ postProjectR project_handle = do
                     redirect $ ProjectR project_handle
 
                 _ -> do
-                    let preview_project = project { projectName = name, projectDescription = description, projectGithubRepo = github_repo }
+                    let preview_project = project { projectName = name, projectDescription = description, projectGithubRepo = github_repo, projectLogo = logo }
 
-                    (form, _) <- generateFormPost $ editProjectForm (Just (preview_project, tags))
+                    (form, _) <- generateFormPost $ editProjectForm (Just (preview_project, tags)) images
                     defaultLayout $ previewWidget form "update" $ renderProject (Just project_id) preview_project [] Nothing
 
         x -> do
@@ -898,7 +904,7 @@ getEditProjectR project_handle = do
     images <- runDB $
         select $
         from $ \image -> do
-        where_ (image ^. ImageName ==. val ("test")) 
+--        where_ (image ^. ImageName `like` val ("test%")) 
         return image
 
     (project_form, _) <- generateFormPost $ editProjectForm (Just (project, map (tagName . entityVal) tags)) images

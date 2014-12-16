@@ -70,6 +70,7 @@ data UpdateProject = UpdateProject
     , updateProjectDescription :: Markdown
     , updateProjectTags        :: [Text]
     , updateProjectGithubRepo  :: Maybe Text
+    , updateProjectLogo        :: Maybe Text
     } deriving Show
 
 newtype TaggedTicket = TaggedTicket ((Entity Ticket), [AnnotatedTag])

@@ -96,7 +96,7 @@ editProjectForm project images =
         <*> areq' snowdriftMarkdownField "Description" (projectDescription . fst <$> project)
         <*> (maybe [] (map T.strip . T.splitOn ",") <$> aopt' textField "Tags" (Just . T.intercalate ", " . snd <$> project))
         <*> aopt' textField "Github Repository" (projectGithubRepo . fst <$> project)
-        <*> areq' (imageSelectField images) "Select Image" (projectLogo . fst <$> project)
+        <*> aopt' (imageSelectField images) "Select Image" Nothing -- Need to fix, changed for initial testing purposes -- (projectLogo . fst <$> project)
 
 projectBlogForm :: Maybe (Text, Text, Markdown) -> Form (Text, Text, Markdown)
 projectBlogForm defaults = renderBootstrap3 BootstrapBasicForm $

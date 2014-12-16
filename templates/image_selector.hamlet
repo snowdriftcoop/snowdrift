@@ -1,27 +1,31 @@
 <fieldset>
-    <legend>
-        Select Project 
+    $case result
+        $of Right x
+            <p>result = Right #{x}
+        $of Left y
+            <p>result = Left #{y}
     <div class="imagescroller">
-        $maybe prior <- prev_image 
-            <div class="imagerow">
-                <input type=radio id=#{idAttr} name="selected_image" value="None">None
-            <div class="imagerow">
-                <input type=radio id=#{idAttr} name="selected_image" value="New">Upload a New Image...
-            $forall image <- images
-                $if ((imageName image) == prior)
-                    <div class="imagerow">
-                        <input type=radio id=#{idAttr} name="selected_image" value=#{imageName image} selected>
-                            <img src=@{ImageR} $ imageName image height=200 width=200>
-                $else
-                    <div class="imagerow">
-                        <input type=radio id=#{idAttr} name="selected_image" value=#{imageName image}>
-                            <img src=@{ImageR} $ imageName image height=200 width=200>
-        $nothing
-            <div class="imagerow">
-                <input type=radio id=#{idAttr} name="selected_image" value="None">None
-            <div class="imagerow">
-                <input type=radio id=#{idAttr} name="selected_image" value="New">Upload a New Image...
-            $forall image <- images
+        $case result
+            $of Right prior
                 <div class="imagerow">
-                    <input type=radio if=#{idAttr} name="selected_image" value=#{imageName image}>
-                        <img src=@{ImageR} $ imageName image height=200 width=200>
+                    <input type=radio id=#{idAttr} name=#{nameAttr} value="None" *{attrs}>None
+                <div class="imagerow">
+                    <input type=radio id=#{idAttr} name=#{nameAttr} value="New" *{attrs}>Upload a New Image...
+                $forall Entity _ image <- images
+                    $if ((imageName image) == prior)
+                        <div class="imagerow">
+                            <input type=radio id=#{idAttr} name=#{nameAttr} value=#{imageName image} *{attrs} selected>
+                                <img src=@{ImageR $ imageName image} name=#{imageName image} height=200 width=200>
+                    $else
+                        <div class="imagerow">
+                            <input type=radio id=#{idAttr} name=#{nameAttr} value=#{imageName image} *{attrs}>
+                                <img src=@{ImageR $ imageName image} name=#{imageName image} height=200 width=200>
+            $of Left _
+                <div class="imagerow">
+                    <input type=radio id=#{idAttr} name=#{nameAttr} value="None" *{attrs}>None
+                <div class="imagerow">
+                    <input type=radio id=#{idAttr} name=#{nameAttr} value="New" *{attrs}>Upload a New Image...
+                $forall Entity _ image <- images
+                    <div class="imagerow">
+                        <input type=radio id=#{idAttr} name=#nameAttr} value=#{imageName image} *{attrs}>
+                            <img src=@{ImageR $ imageName image} name=#{imageName image} height=200 width=200>
