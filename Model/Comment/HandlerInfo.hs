@@ -31,7 +31,11 @@ projectCommentHandlerInfo muser project_id project_handle mods =
         (makeProjectCommentActionPermissionsMap muser project_handle mods)
 
 projectBlogCommentHandlerInfo :: Maybe (Entity User) -> ProjectId -> Text -> Text -> CommentMods -> CommentHandlerInfo
-projectBlogCommentHandlerInfo muser project_id project_handle _ mods = projectCommentHandlerInfo muser project_id project_handle mods
+projectBlogCommentHandlerInfo muser project_id project_handle post_name mods =
+    CommentHandlerInfo
+        (exprCommentProjectPermissionFilter (entityKey <$> muser) (val project_id))
+        (blogPostCommentRoutes project_handle post_name)
+        (makeProjectCommentActionPermissionsMap muser project_handle mods)
 
 wikiPageCommentHandlerInfo :: Maybe (Entity User) -> ProjectId -> Text -> Language -> Text -> CommentMods -> CommentHandlerInfo
 wikiPageCommentHandlerInfo muser project_id project_handle language target mods =
