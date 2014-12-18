@@ -186,7 +186,7 @@ userNotificationsForm is_moderator mbal mucom mrcom mrep mecon mflag mflagr =
                  "funds at current pledge levels)")   mbal
         <*> unapproved_comment
         <*> opt "Your comment gets rethreaded/moved"  mrcom
-        <*> opt "Reply posted to watched thread"      mrep
+        <*> opt "Reply posted to your comment"        mrep
         <*> req "Your wiki post has an edit conflict" mecon
         <*> req "Your comment gets flagged"           mflag
         <*> opt "A comment you flagged gets reposted" mflagr
