@@ -3,6 +3,7 @@ module Model.Notification
     , sendNotificationDB
     , sendNotificationDB_
     , sendNotificationEmailDB
+    , unarchiveNotificationDB
     , module Model.Notification.Internal
     ) where
 
@@ -13,12 +14,18 @@ import Model.Notification.Internal
 import Control.Monad.Writer.Strict (tell)
 import Data.Maybe (fromJust)
 
+updateNotificationArchived :: Bool -> NotificationId -> DB ()
+updateNotificationArchived bool notif_id =
+    update $ \n -> do
+    set n [NotificationArchived =. val bool]
+    where_ (n ^. NotificationId ==. val notif_id)
+
 -- | Archive a notification.
 archiveNotificationDB :: NotificationId -> DB ()
-archiveNotificationDB notif_id =
-    update $ \n -> do
-    set n [NotificationArchived =. val True]
-    where_ (n ^. NotificationId ==. val notif_id)
+archiveNotificationDB = updateNotificationArchived True
+
+unarchiveNotificationDB :: NotificationId -> DB ()
+unarchiveNotificationDB = updateNotificationArchived False
 
 -- | Send a notification to a user.
 sendNotificationDB :: NotificationType -> UserId -> Maybe ProjectId
