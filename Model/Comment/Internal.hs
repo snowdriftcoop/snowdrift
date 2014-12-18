@@ -18,7 +18,7 @@ derivePersistField "Visibility"
 
 newtype NewClosure = NewClosure Markdown
 data NewComment = NewComment Markdown Visibility Language
-data EditComment = EditComment Markdown
+data EditComment = EditComment Markdown Language
 
 data FlagReason
     = FlagPersonalAttack
