@@ -125,6 +125,7 @@ editComment route = [marked|
         setMethod "POST"
         setUrl route
         byLabel "Edit" "testing"
+        byLabel "Language" "en"
         addPostParam "mode" "post"
 |]
 

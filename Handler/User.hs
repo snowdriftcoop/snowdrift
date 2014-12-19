@@ -309,7 +309,7 @@ resetPassword user_id user password password' route =
                 updateUserPasswordDB user_id (userHash user') (userSalt user')
                 deleteFromResetPassword user_id
             alertSuccess "You successfully updated your passphrase."
-            redirect (UserR user_id)
+            redirect $ UserR user_id
         else do
             alertDanger "The passphrases you entered do not match."
             redirect route
@@ -411,7 +411,7 @@ postUserEstEligibleR user_id = do
         _ -> error "Error submitting form."
 
 --------------------------------------------------------------------------------
--- /#UserId/email/#Text
+-- /#UserId/verify-email/#Text
 
 getUserVerifyEmailR :: UserId -> Text -> Handler Html
 getUserVerifyEmailR user_id hash = do
@@ -544,7 +544,7 @@ postUserNotificationsR user_id = do
         FormSuccess notif_pref -> do
             runDB $ updateNotificationPrefDB user_id notif_pref
             alertSuccess "Successfully updated the notification preferences."
-            redirect (UserR user_id)
+            redirect $ UserR user_id
         _ -> do
             alertDanger $ "Failed to update the notification preferences. "
                        <> "Please try again."
@@ -575,5 +575,5 @@ postUserResetPasswordR user_id hash = do
             resetPassword user_id user password password' $
                 UserResetPasswordR user_id hash
         _ -> do
-            alertDanger "Oops, failed to set the passphase."
+            alertDanger "Oops, failed to set the passphrase."
             defaultLayout $(widgetFile "set_password")

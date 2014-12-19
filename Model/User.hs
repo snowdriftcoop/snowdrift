@@ -6,6 +6,9 @@ module Model.User
     -- Utility functions
     , anonymousUser
     , curUserIsEligibleEstablish
+    , deleteArchivedNotificationsDB
+    , deleteNotificationDB
+    , deleteNotificationsDB
     , updateUserPreview
     , userCanAddTag
     , userCanCloseComment
@@ -17,6 +20,7 @@ module Model.User
     , userIsUnestablished
     , userDisplayName
     -- Database actions
+    , archiveNotificationsDB
     , deleteFromEmailVerification
     , eligEstablishUserDB
     , establishUserDB
@@ -35,6 +39,7 @@ module Model.User
     , fetchVerEmail
     , fromEmailVerification
     , sendPreferredNotificationDB
+    , unarchiveNotificationsDB
     , updateUserDB
     , updateUserPasswordDB
     , updateNotificationPrefDB
@@ -335,6 +340,48 @@ fetchNotifs cond user_id =
         cond n
     orderBy [desc (n ^. NotificationCreatedTs)]
     return n
+
+deleteEventNotificationSentDB :: NotificationId -> DB ()
+deleteEventNotificationSentDB notif_id =
+    delete $ from $ \ens ->
+        where_ $ ens ^. EventNotificationSentNotification ==. val notif_id
+
+deleteUnapprovedCommentNotificationDB :: NotificationId -> DB ()
+deleteUnapprovedCommentNotificationDB notif_id =
+    delete $ from $ \ucn ->
+        where_ $ ucn ^. UnapprovedCommentNotificationNotification ==.
+                 val notif_id
+
+deleteNotificationDB :: NotificationId -> DB ()
+deleteNotificationDB notif_id = do
+    deleteEventNotificationSentDB notif_id
+    deleteUnapprovedCommentNotificationDB notif_id
+    delete $ from $ \n ->
+        where_ $ n ^. NotificationId ==. val notif_id
+
+deleteNotificationsDB :: UserId -> DB ()
+deleteNotificationsDB user_id = do
+    notifs <- fetchUserNotificationsDB user_id
+    forM_ notifs $ \(Entity notif_id _) ->
+        deleteNotificationDB notif_id
+
+deleteArchivedNotificationsDB :: UserId -> DB ()
+deleteArchivedNotificationsDB user_id = do
+    notifs <- fetchUserArchivedNotificationsDB user_id
+    forM_ notifs $ \(Entity notif_id _) ->
+        deleteNotificationDB notif_id
+
+archiveNotificationsDB :: UserId -> DB ()
+archiveNotificationsDB user_id = do
+    notifs <- fetchUserNotificationsDB user_id
+    forM_ notifs $ \(Entity notif_id _) ->
+        archiveNotificationDB notif_id
+
+unarchiveNotificationsDB :: UserId -> DB ()
+unarchiveNotificationsDB user_id = do
+    notifs <- fetchUserArchivedNotificationsDB user_id
+    forM_ notifs $ \(Entity notif_id _) ->
+        unarchiveNotificationDB notif_id
 
 updateNotificationPrefDB :: UserId -> NotificationPref -> DB ()
 updateNotificationPrefDB user_id NotificationPref {..} = do

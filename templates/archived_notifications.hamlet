@@ -1,18 +1,18 @@
-<a href="@{ArchivedNotificationsR}">
-    archived notifications
+<a href="@{NotificationsR}">
+    notifications
 
 <h1>
-    <div .text-center> Notifications
+    <div .text-center> Archived notifications
 
 $if null notifs
-    No notifications
+    No archived notifications
 $else
-    <form action="@{NotificationsProxyR}" method="GET">
+    <form action="@{ArchivedNotificationsProxyR}" method="GET">
         <div .row>
             <div .col-sm-3>
                 <input type="checkbox" name="all">
                 <input type="submit" name="delete" value="delete">
-                <input type="submit" name="archive" value="archive">
+                <input type="submit" name="unarchive" value="unarchive">
                 <p>
         $forall Entity notif_id notif <- notifs
             <div .row>
@@ -29,4 +29,4 @@ $else
             <div .col-sm-3>
                 <input type="checkbox" name="all">
                 <input type="submit" name="delete" value="delete">
-                <input type="submit" name="archive" value="archive">
+                <input type="submit" name="unarchive" value="unarchive">
