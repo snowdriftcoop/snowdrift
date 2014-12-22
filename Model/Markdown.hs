@@ -78,23 +78,15 @@ linkTickets line' = do
     let Right pattern = compile defaultCompOpt defaultExecOpt "\\<SD-([0-9][0-9]*)" -- TODO word boundaries?
         getLinkForTicketComment :: TicketId -> Handler (Maybe Text)
         getLinkForTicketComment ticket_id = do
-            info <- runDB $ select $ from $ \ (ticket `InnerJoin` comment `LeftOuterJoin` page `LeftOuterJoin` target `LeftOuterJoin` project) -> do
-                on_ $ project ?. ProjectId ==. page ?. WikiPageProject
-                on_ $ page ?. WikiPageId ==. target ?. WikiTargetPage
-                on_ $ page ?. WikiPageDiscussion ==. just (comment ^. CommentDiscussion)
-                on_ $ ticket ^. TicketComment ==. comment ^. CommentId
+            info <- runDB $ select $ from $ \ ticket -> do
                 where_ $ ticket ^. TicketId ==. val ticket_id
 
-                return
-                    ( comment ^. CommentId
-                    , project ?. ProjectHandle
-                    , target ?. WikiTargetTarget
-                    )
+                return $ ticket ^. TicketComment
 
             case map unwrapValues info of
                 [] -> return Nothing
-                (Key (PersistInt64 comment_id), Just handle, Just target) : _ -> return $ Just $ mconcat
-                    [ "/p/", handle, "/w/", target, "/c/",  T.pack (show comment_id) ]
+                (Key (PersistInt64 comment_id)) : _ -> return $ Just $ mconcat
+                    [ "/c/",  T.pack (show comment_id) ]
 
                 _ -> error "Unexpected result for ticket reference"
 
