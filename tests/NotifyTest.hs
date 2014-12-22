@@ -15,7 +15,6 @@ import           Control.Concurrent                   (threadDelay)
 import           Control.Monad                        (unless)
 import           Database.Esqueleto                   hiding (get, isNothing)
 import           Database.Esqueleto.Internal.Language (From)
-import           Data.Int                             (Int64)
 import           Data.Foldable                        (forM_)
 import qualified Data.List                            as L
 import           Data.Monoid                          ((<>))
@@ -49,13 +48,6 @@ selectUserId ident
 
 userId :: NamedUser -> Example UserId
 userId = testDB . selectUserId . username
-
-snowdrift :: Text
-snowdrift = "snowdrift"
-
-snowdriftId :: Example ProjectId
-snowdriftId =
-    testDB $ fmap entityKey $ getOrError $ UniqueProjectHandle snowdrift
 
 acceptHonorPledge :: YesodExample App ()
 acceptHonorPledge = [marked|
@@ -144,56 +136,6 @@ watch route = [marked|
      withStatus 302 False $ request $ do
          setMethod "POST"
          setUrl route
-|]
-
--- XXX: Move to 'TestImport' and use in 'WikiTest'.
-newWiki :: Route App -> YesodExample App ()
-newWiki route = [marked|
-    get200 route
-
-    withStatus 302 False $ request $ do
-        addNonce
-        setMethod "POST"
-        setUrl route
-        addPostParam "f1" "testing"
-        addPostParam "mode" "post"
-|]
-
-getOrError :: ( PersistEntity val, PersistUnique f, Functor f
-              , PersistEntityBackend val ~ PersistMonadBackend f)
-           => Unique val -> f (Entity val)
-getOrError x = match <$> (getBy x)
-  where
-    -- XXX: Prettier error message.
-    match Nothing  = error $ "cannot get " <> (show $ persistUniqueToValues x)
-    match (Just v) = v
-
-keyToInt64 :: KeyBackend backend entity -> Int64
-keyToInt64 k = let PersistInt64 i = unKey k in i
-
-shpack :: Show a => a -> Text
-shpack = T.pack . show
-
--- XXX: Move to 'TestImport' and use in 'WikiTest'.
-editWiki :: Text -> YesodExample App ()
-editWiki page = [marked|
-    get200 $ EditWikiR snowdrift LangEn page
-
-    snowdrift_id <- snowdriftId
-    wiki_target <- testDB $ getOrError $ UniqueWikiTarget snowdrift_id LangEn page
-    let page_id = wikiTargetPage $ entityVal $ wiki_target
-    wiki_last_edit <- testDB $ getOrError $ UniqueWikiLastEdit page_id LangEn
-    let last_edit = entityVal wiki_last_edit
-
-    withStatus 302 False $ request $ do
-        addNonce
-        setUrl $ WikiR snowdrift LangEn page
-        setMethod "POST"
-
-        addPostParam "f1" $ shpack $ keyToInt64 $ wikiLastEditEdit last_edit
-        addPostParam "f2" "test after edit"
-        addPostParam "f3" "testing"
-        addPostParam "mode" "post"
 |]
 
 newBlogPost :: Text -> YesodExample App ()
@@ -383,7 +325,7 @@ notifySpecs AppConfig {..} = do
                 NotifWikiPage NotifDeliverWebsite
 
             loginAs Bob
-            newWiki $ enRoute NewWikiR wiki_page
+            newWiki snowdrift LangEn wiki_page "testing NotifWikiPage"
 
             hasNotif mary_id NotifWikiPage (render $ enRoute WikiR wiki_page)
                 "new wiki page notification not found" True
@@ -398,7 +340,7 @@ notifySpecs AppConfig {..} = do
                 NotifWikiEdit NotifDeliverWebsite
 
             loginAs Bob
-            editWiki wiki_page
+            editWiki snowdrift LangEn wiki_page "testing NotifWikiEdit" "testing"
 
             hasNotif mary_id NotifWikiEdit (render $ enRoute WikiR wiki_page)
                 "wiki page edited notification not found" True

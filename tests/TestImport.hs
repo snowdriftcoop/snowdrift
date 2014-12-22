@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE GADTs #-}
 
 module TestImport (module TestImport, marked) where
 import TestImport.Internal
@@ -25,6 +26,7 @@ import qualified Text.XML as XML
 import qualified Network.HTTP.Types as H
 
 import qualified Data.ByteString as B
+import           Data.Int        (Int64)
 
 import qualified Data.Map as M
 import qualified Data.Text as T
@@ -35,7 +37,10 @@ import Data.Text.Encoding (decodeUtf8)
 import Foundation as TestImport
 import Model as TestImport
 
+import Control.Applicative ((<$>))
 import Control.Monad (when)
+import Data.Monoid ((<>))
+import Model.Language
 
 import System.IO (hPutStrLn, stderr)
 
@@ -197,3 +202,70 @@ getLatestCommentId = do
 
     return (comment_id, approved)
 
+snowdrift :: Text
+snowdrift = "snowdrift"
+
+snowdriftId :: Example ProjectId
+snowdriftId =
+    testDB $ fmap entityKey $ getOrError $ UniqueProjectHandle snowdrift
+
+getOrError :: ( PersistEntity val, PersistUnique f, Functor f
+              , PersistEntityBackend val ~ PersistMonadBackend f)
+           => Unique val -> f (Entity val)
+getOrError x = match <$> (getBy x)
+  where
+    -- XXX: Prettier error message.
+    match Nothing  = error $ "cannot get " <> (show $ persistUniqueToValues x)
+    match (Just v) = v
+
+newWiki :: Text -> Language -> Text -> Text -> YesodExample App ()
+newWiki project language page content = do
+    get200 $ NewWikiR project language page
+
+    withStatus 200 False $ request $ do
+        addNonce
+        setUrl $ NewWikiR project language page
+        setMethod "POST"
+        byLabel "Page Content" content
+        addPostParam "mode" "preview"
+
+    withStatus 302 False $ request $ do
+        addNonce
+        setUrl $ NewWikiR project language page
+        setMethod "POST"
+        byLabel "Page Content" content
+        addPostParam "mode" "post"
+
+keyToInt64 :: KeyBackend backend entity -> Int64
+keyToInt64 k = let PersistInt64 i = unKey k in i
+
+shpack :: Show a => a -> Text
+shpack = T.pack . show
+
+editWiki :: Text -> Language -> Text -> Text -> Text -> YesodExample App ()
+editWiki project language page content comment = do
+    get200 $ EditWikiR project language page
+
+    snowdrift_id <- snowdriftId
+    wiki_target <- testDB $ getOrError $ UniqueWikiTarget snowdrift_id LangEn page
+    let page_id = wikiTargetPage $ entityVal $ wiki_target
+    wiki_last_edit <- testDB $ getOrError $ UniqueWikiLastEdit page_id LangEn
+    let last_edit = entityVal wiki_last_edit
+
+    withStatus 200 False $ request $ do
+        addNonce
+        setUrl $ WikiR project language page
+        setMethod "POST"
+        byLabel "Page Content" content
+        byLabel "Comment" comment
+        addPostParam "f1" $ shpack $ keyToInt64 $ wikiLastEditEdit last_edit
+        addPostParam "mode" "preview"
+
+    withStatus 302 False $ request $ do
+        addNonce
+        setUrl $ WikiR project language page
+        setMethod "POST"
+        byLabel "Page Content" content
+        byLabel "Comment" comment
+        addPostParam "mode" "post"
+        addPostParam "f1" $ shpack $ keyToInt64 $ wikiLastEditEdit last_edit
