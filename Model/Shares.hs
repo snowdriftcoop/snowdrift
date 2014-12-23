@@ -136,7 +136,10 @@ pledgeForm project_id extra = do
             <h3 .text-center style="margin-top: 1em">
                 Pledge your support!
             <small>
-                Your pledge is a matching offer to other patrons, current and future.
+                Your pledge is a matching offer to other patrons, current and future
+                (although you can adjust or drop your pledge at any time).
+                <br>
+                <br>
                 At one share, you will donate 0.1&cent; per other patron
                 plus <i>some</i> extra when others pledge extra shares
                 (determined each month by the active pledges at that time).
