@@ -386,6 +386,7 @@ test-suite test
                  , resourcet
                  , monad-logger
                  , monad-control
+                 , semigroups
                  , transformers
                  , bytestring
                  , text

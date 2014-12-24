@@ -6,7 +6,8 @@
 
 module NotifyTest (notifySpecs) where
 
-import           TestImport                           hiding ((=.), update, notificationContent)
+import           Import                               (notDistinctFrom)
+import           TestImport                           hiding ((=.), update, notificationContent, delete)
 import           Model.Language
 import           Model.Notification
 
@@ -17,6 +18,8 @@ import           Database.Esqueleto                   hiding (get, isNothing)
 import           Database.Esqueleto.Internal.Language (From)
 import           Data.Foldable                        (forM_)
 import qualified Data.List                            as L
+import           Data.List.NonEmpty                   (NonEmpty)
+import qualified Data.List.NonEmpty                   as NonEmpty
 import           Data.Monoid                          ((<>))
 import           Data.Text                            (Text)
 import qualified Data.Text                            as T
@@ -56,15 +59,24 @@ acceptHonorPledge = [marked|
         setUrl HonorPledgeR
 |]
 
-updateNotifPref :: UserId -> Maybe ProjectId -> NotificationType -> NotificationDelivery
-                -> SqlPersistM ()
-updateNotifPref user_id mproject_id notif_type notif_deliv =
-    update $ \unp -> do
-        set unp [ UserNotificationPrefProject  =. val mproject_id
-                , UserNotificationPrefType     =. val notif_type
-                , UserNotificationPrefDelivery =. val notif_deliv
-                ]
-        where_ $ unp ^. UserNotificationPrefUser ==. val user_id
+-- Copied from 'Model.User' but without the constraint in the result.
+deleteNotifPrefs :: UserId -> Maybe ProjectId -> NotificationType -> SqlPersistM ()
+deleteNotifPrefs user_id mproject_id notif_type =
+    delete $ from $ \unp ->
+    where_ $ unp ^. UserNotificationPrefUser ==. val user_id
+         &&. unp ^. UserNotificationPrefProject `notDistinctFrom` val mproject_id
+         &&. unp ^. UserNotificationPrefType ==. val notif_type
+
+-- Copied from 'Model.User' but without the constraint in the result.
+updateNotifPrefs :: UserId -> Maybe ProjectId -> NotificationType
+                 -> NonEmpty NotificationDelivery -> SqlPersistM ()
+updateNotifPrefs user_id mproject_id notif_type notif_delivs = do
+    deleteNotifPrefs user_id mproject_id notif_type
+    forM_ notif_delivs $
+        insert_ . UserNotificationPref user_id mproject_id notif_type
+
+singleton :: a -> NonEmpty a
+singleton = flip (NonEmpty.:|) []
 
 notificationContent :: From query expr backend (expr (Entity Notification))
                     => KeyBackend SqlBackend User -> NotificationType
@@ -213,7 +225,8 @@ notifySpecs AppConfig {..} = do
                 byLabel "New Topic" "root comment"
 
             mary_id <- userId Mary
-            testDB $ updateNotifPref mary_id Nothing NotifReply NotifDeliverWebsite
+            testDB $ updateNotifPrefs mary_id Nothing NotifReply $
+                singleton NotifDeliverWebsite
 
             loginAs Bob
             (comment_id, True) <- getLatestCommentId
@@ -262,8 +275,8 @@ notifySpecs AppConfig {..} = do
 
             loginAs Bob
             bob_id <- userId Bob
-            testDB $ updateNotifPref bob_id Nothing
-                NotifRethreadedComment NotifDeliverWebsite
+            testDB $ updateNotifPrefs bob_id Nothing NotifRethreadedComment $
+                singleton NotifDeliverWebsite
             postComment (enRoute NewWikiDiscussionR "about") $
                 byLabel "New Topic" "rethreaded comment"
             (comment_id, True) <- getLatestCommentId
@@ -288,8 +301,8 @@ notifySpecs AppConfig {..} = do
                 byLabel "New Topic" "flagged comment"
             (comment_id, True) <- getLatestCommentId
             mary_id <- userId Mary
-            testDB $ updateNotifPref mary_id Nothing
-                NotifFlag NotifDeliverWebsite
+            testDB $ updateNotifPrefs mary_id Nothing NotifFlag $
+                singleton NotifDeliverWebsite
 
             loginAs Bob
             flagComment $ render $ enRoute FlagWikiCommentR "about" comment_id
@@ -303,8 +316,8 @@ notifySpecs AppConfig {..} = do
     testNotification NotifFlagRepost =
         yit "notifies when a flagged comment gets reposted" $ [marked|
             bob_id <- userId Bob
-            testDB $ updateNotifPref bob_id Nothing
-                NotifFlagRepost NotifDeliverWebsite
+            testDB $ updateNotifPrefs bob_id Nothing NotifFlagRepost $
+                singleton NotifDeliverWebsite
 
             loginAs Mary
             (comment_id, True) <- getLatestCommentId
@@ -321,8 +334,8 @@ notifySpecs AppConfig {..} = do
             snowdrift_id <- snowdriftId
             loginAs Mary
             watch $ WatchProjectR snowdrift_id
-            testDB $ updateNotifPref mary_id (Just snowdrift_id)
-                NotifWikiPage NotifDeliverWebsite
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifWikiPage $
+                singleton NotifDeliverWebsite
 
             loginAs Bob
             newWiki snowdrift LangEn wiki_page "testing NotifWikiPage"
@@ -336,8 +349,8 @@ notifySpecs AppConfig {..} = do
         yit "notifies when a wiki page is edited" $ [marked|
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
-            testDB $ updateNotifPref mary_id (Just snowdrift_id)
-                NotifWikiEdit NotifDeliverWebsite
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifWikiEdit $
+                singleton NotifDeliverWebsite
 
             loginAs Bob
             editWiki snowdrift LangEn wiki_page "testing NotifWikiEdit" "testing"
@@ -350,8 +363,8 @@ notifySpecs AppConfig {..} = do
         yit "notifies when a blog post is created" $ [marked|
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
-            testDB $ updateNotifPref mary_id (Just snowdrift_id)
-                NotifBlogPost NotifDeliverWebsite
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifBlogPost $
+                singleton NotifDeliverWebsite
 
             loginAs AdminUser
             let blog_handle = "testing"
@@ -366,8 +379,8 @@ notifySpecs AppConfig {..} = do
         yit "notifies when there is a new pledge" $ [marked|
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
-            testDB $ updateNotifPref mary_id (Just snowdrift_id)
-                NotifNewPledge NotifDeliverWebsite
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifNewPledge $
+                singleton NotifDeliverWebsite
 
             loginAs Bob
             let tshares = shpack shares
@@ -384,8 +397,8 @@ notifySpecs AppConfig {..} = do
         yit "notifies when the pledge is updated" $ [marked|
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
-            testDB $ updateNotifPref mary_id (Just snowdrift_id)
-                NotifUpdatedPledge NotifDeliverWebsite
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifUpdatedPledge $
+                singleton NotifDeliverWebsite
 
             loginAs Bob
             let tshares = shpack shares'
@@ -403,8 +416,8 @@ notifySpecs AppConfig {..} = do
         yit "notifies when a user stops supporting the project" $ [marked|
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
-            testDB $ updateNotifPref mary_id (Just snowdrift_id)
-                NotifDeletedPledge NotifDeliverWebsite
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifDeletedPledge $
+                singleton NotifDeliverWebsite
 
             loginAs Bob
             pledge $ shpack (0 :: Int)
