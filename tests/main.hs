@@ -13,6 +13,7 @@ import Application (makeFoundation)
 
 import UserTest
 import NotifyTest
+import EmailTest
 import DiscussionTest
 import WikiTest
 import BlogTest
@@ -44,10 +45,11 @@ main = do
                     Right [] -> True
                     _ -> False
 
+        let app_config = settings foundation
         yesodSpec foundation $ do
             userSpecs
-            notifySpecs $ settings foundation
+            notifySpecs app_config
+            emailSpecs app_config
             wikiSpecs
             blogSpecs
             discussionSpecs
-
