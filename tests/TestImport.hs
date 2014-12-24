@@ -2,8 +2,11 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE LambdaCase #-}
 
 module TestImport (module TestImport, marked) where
+
+import Import (notDistinctFrom)
 import TestImport.Internal
 
 import Prelude hiding (exp)
@@ -14,7 +17,7 @@ import Control.Arrow as TestImport
 import Yesod (Yesod, RedirectUrl)
 import Yesod.Test as TestImport
 import Database.Esqueleto hiding (get)
-import Database.Persist as TestImport hiding (get, (==.))
+import Database.Persist as TestImport hiding (get, (==.), delete)
 import Control.Monad.IO.Class as TestImport (liftIO, MonadIO)
 
 import Network.URI (URI (uriPath), parseURI)
@@ -28,25 +31,34 @@ import qualified Network.HTTP.Types as H
 import qualified Data.ByteString as B
 import           Data.Int        (Int64)
 
+import Data.Foldable (forM_)
+import qualified Data.List as L
+import Data.List.NonEmpty (NonEmpty)
+import qualified Data.List.NonEmpty as NonEmpty
 import qualified Data.Map as M
 import qualified Data.Text as T
 import Data.Text (Text)
 import Data.String
+import Database.Esqueleto.Internal.Language (From)
 
 import Data.Text.Encoding (decodeUtf8)
 import Foundation as TestImport
-import Model as TestImport
+import Model as TestImport hiding (notificationContent)
 
 import Control.Applicative ((<$>))
-import Control.Monad (when)
+import Control.Concurrent (threadDelay)
+import Control.Monad (when, unless)
 import Data.Monoid ((<>))
 import Model.Language
+import Model.Notification (NotificationType(..), NotificationDelivery(..))
 
 import System.IO (hPutStrLn, stderr)
 
 import Control.Monad.Trans.Control
 import Control.Exception.Lifted as Lifted
 
+import Yesod.Markdown (unMarkdown, Markdown)
+import Yesod.Routes.Class
 
 onException :: MonadBaseControl IO m => m a -> m b -> m a
 onException = Lifted.onException
@@ -269,3 +281,163 @@ editWiki project language page content comment = do
         byLabel "Comment" comment
         addPostParam "mode" "post"
         addPostParam "f1" $ shpack $ keyToInt64 $ wikiLastEditEdit last_edit
+
+establish :: UserId -> YesodExample App ()
+establish user_id = [marked|
+    get200 $ UserR user_id
+
+    withStatus 302 False $ request $ do
+        addNonce
+        setMethod "POST"
+        setUrl $ UserEstEligibleR user_id
+        byLabel "Reason" "testing"
+|]
+
+selectUserId :: Text -> SqlPersistM UserId
+selectUserId ident
+    = (\case []    -> error $ "user not found: " <> T.unpack ident
+             [uid] -> unValue uid
+             uids  -> error $ "ident " <> T.unpack ident <> " must be unique, "
+                           <> "but it matches these user ids: "
+                           <> (L.intercalate ", " $ map (show . unValue) uids))
+  <$> (select $ from $ \u -> do
+           where_ $ u ^. UserIdent ==. val ident
+           return $ u ^. UserId)
+
+userId :: NamedUser -> Example UserId
+userId = testDB . selectUserId . username
+
+acceptHonorPledge :: YesodExample App ()
+acceptHonorPledge = [marked|
+    withStatus 302 False $ request $ do
+        setMethod "POST"
+        setUrl HonorPledgeR
+|]
+
+-- Copied from 'Model.User' but without the constraint in the result.
+deleteNotifPrefs :: UserId -> Maybe ProjectId -> NotificationType -> SqlPersistM ()
+deleteNotifPrefs user_id mproject_id notif_type =
+    delete $ from $ \unp ->
+    where_ $ unp ^. UserNotificationPrefUser ==. val user_id
+         &&. unp ^. UserNotificationPrefProject `notDistinctFrom` val mproject_id
+         &&. unp ^. UserNotificationPrefType ==. val notif_type
+
+-- Copied from 'Model.User' but without the constraint in the result.
+updateNotifPrefs :: UserId -> Maybe ProjectId -> NotificationType
+                 -> NonEmpty NotificationDelivery -> SqlPersistM ()
+updateNotifPrefs user_id mproject_id notif_type notif_delivs = do
+    deleteNotifPrefs user_id mproject_id notif_type
+    forM_ notif_delivs $
+        insert_ . UserNotificationPref user_id mproject_id notif_type
+
+singleton :: a -> NonEmpty a
+singleton = flip (NonEmpty.:|) []
+
+notificationContent :: From query expr backend (expr (Entity Notification))
+                    => KeyBackend SqlBackend User -> NotificationType
+                    -> query (expr (Value Markdown))
+notificationContent user_id notif_type =
+    from $ \n -> do
+        where_ $ n ^. NotificationTo   ==. val user_id
+             &&. n ^. NotificationType ==. val notif_type
+        return $ n ^. NotificationContent
+
+-- 'forkEventHandler' sleeps for one second in between
+-- runs, so some tests will fail without this delay.
+withDelay :: MonadIO m => m a -> m a
+withDelay action = liftIO (threadDelay 1000000) >> action
+
+unlessM :: Monad m => m Bool -> m () -> m ()
+unlessM mb a = mb >>= (`unless` a)
+
+hasNotif :: UserId -> NotificationType -> Text -> String -> Bool
+         -> YesodExample App ()
+hasNotif user_id notif_type text err with_delay =
+    if with_delay then withDelay hasNotif' else hasNotif'
+  where
+    hasNotif' =
+        unlessM (testDB $ fmap (any $ T.isInfixOf text . unMarkdown . unValue)
+                        $ select $ notificationContent user_id notif_type)
+                (error err)
+
+rethreadComment :: Text -> Text -> YesodExample App ()
+rethreadComment rethread_route parent_route = [marked|
+    get200 rethread_route
+
+    withStatus 302 True $ request $ do
+        addNonce
+        setMethod "POST"
+        setUrl rethread_route
+        byLabel "New Parent Url" parent_route
+        byLabel "Reason" "testing"
+        addPostParam "mode" "post"
+|]
+
+flagComment :: Text -> YesodExample App ()
+flagComment route = [marked|
+    get200 route
+
+    withStatus 302 True $ request $ do
+        addNonce
+        setMethod "POST"
+        setUrl route
+        addPostParam "f1" "1"
+        addPostParam "f2" ""
+        addPostParam "mode" "post"
+|]
+
+editComment :: Text -> YesodExample App ()
+editComment route = [marked|
+    get200 route
+
+    withStatus 302 True $ request $ do
+        addNonce
+        setMethod "POST"
+        setUrl route
+        byLabel "Edit" "testing"
+        addPostParam "mode" "post"
+|]
+
+watch :: Route App -> YesodExample App ()
+watch route = [marked|
+     withStatus 302 False $ request $ do
+         setMethod "POST"
+         setUrl route
+|]
+
+newBlogPost :: Text -> YesodExample App ()
+newBlogPost page = [marked|
+    let route = NewBlogPostR snowdrift
+    get200 route
+
+    withStatus 302 False $ request $ do
+        addNonce
+        setMethod "POST"
+        setUrl route
+        byLabel "Title for this blog post" "testing"
+        byLabel "Handle for the URL" page
+        byLabel "Content" "testing"
+        addPostParam "mode" "post"
+|]
+
+pledge :: Text -> YesodExample App ()
+pledge shares = [marked|
+    get200 $ ProjectR snowdrift
+
+    let route = UpdateSharesR snowdrift
+    withStatus 200 False $ request $ do
+        setUrl route
+        setMethod "GET"
+        addGetParam "_hasdata" ""
+        addGetParam "f1" shares
+
+    withStatus 302 False $ request $ do
+        addNonce
+        setMethod "POST"
+        setUrl route
+        addPostParam "f1" shares
+        addPostParam "confirm" "yes!"
+|]
+
+named_users :: [NamedUser]
+named_users = [minBound .. maxBound]
