@@ -389,6 +389,7 @@ test-suite test
                  , semigroups
                  , transformers
                  , bytestring
+                 , directory
                  , text
                  , hspec
                  , network

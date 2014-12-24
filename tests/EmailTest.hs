@@ -7,8 +7,8 @@ import Model.Notification (NotificationType(..))
 
 import Yesod.Default.Config (AppConfig (..), DefaultEnv (..))
 
-emailSpecs :: AppConfig DefaultEnv a -> Spec
-emailSpecs AppConfig {..} = do
+emailSpecs :: AppConfig DefaultEnv a -> FilePath -> Spec
+emailSpecs AppConfig {..} _ = do
     ydescribe "email notifications" $ do
         mapM_ testEmail [minBound .. maxBound]
 
