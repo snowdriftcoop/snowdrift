@@ -77,6 +77,8 @@ emailSpecs AppConfig {..} file = do
             establish mary_id
             liftIO $ withEmailDaemon file $ flip errUnlessEmailNotif
                 "You are now eligible to become an *established* user"
+            loginAs Mary
+            acceptHonorPledge
         |]
 
     -- XXX: Not triggered anywhere.
