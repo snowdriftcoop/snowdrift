@@ -390,6 +390,8 @@ test-suite test
                  , transformers
                  , bytestring
                  , directory
+                 , filepath
+                 , process
                  , text
                  , hspec
                  , network
