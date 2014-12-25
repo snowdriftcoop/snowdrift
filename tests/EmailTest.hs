@@ -4,7 +4,7 @@
 module EmailTest (emailSpecs) where
 
 import Import (Established(..))
-import TestImport hiding ((=.), update, Update)
+import TestImport hiding ((=.), update, Update, (</>))
 import Model.Notification (NotificationType(..))
 
 import Control.Applicative ((<$>))

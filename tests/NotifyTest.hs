@@ -12,9 +12,7 @@ import           Model.Notification
 import           Data.Foldable                        (forM_)
 import qualified Data.List                            as L
 import           Data.Monoid                          ((<>))
-import qualified Data.Text                            as T
 import           Yesod.Default.Config                 (AppConfig (..), DefaultEnv (..))
-import           Yesod.Routes.Class
 
 notifySpecs :: AppConfig DefaultEnv a -> Spec
 notifySpecs AppConfig {..} = do
@@ -30,9 +28,6 @@ notifySpecs AppConfig {..} = do
     shares, shares' :: Int
     shares         = 2
     shares'        = succ shares
-    enRoute con    = con snowdrift LangEn
-    absolute route = appRoot <> "/" <> route
-    render         = absolute . T.intercalate "/" . fst . renderRoute
 
     testNotification NotifEligEstablish =
         yit "notifies on establishment" $ [marked|
@@ -41,7 +36,8 @@ notifySpecs AppConfig {..} = do
                 loginAs AdminUser
                 establish user_id
 
-                hasNotif user_id NotifEligEstablish (render HonorPledgeR)
+                hasNotif user_id NotifEligEstablish
+                    (render appRoot $ HonorPledgeR)
                     "establishment notification not found" False
                 loginAs user
                 acceptHonorPledge
@@ -64,7 +60,8 @@ notifySpecs AppConfig {..} = do
                     byLabel "Reply" "reply to the root comment"
 
             (reply_id, True) <- getLatestCommentId
-            hasNotif mary_id NotifReply (render $ CommentDirectLinkR reply_id)
+            hasNotif mary_id NotifReply
+                (render appRoot $ CommentDirectLinkR reply_id)
                 "reply notification not found" True
         |]
 
@@ -88,7 +85,7 @@ notifySpecs AppConfig {..} = do
             (comment_id, False) <- getLatestCommentId
             user_id <- userId unestablished_user
             hasNotif user_id NotifUnapprovedComment
-                (render $ enRoute WikiCommentR "about" comment_id)
+                (render appRoot $ enRoute WikiCommentR "about" comment_id)
                 "unapproved comment notification not found" True
         |]
 
@@ -112,11 +109,11 @@ notifySpecs AppConfig {..} = do
 
             loginAs AdminUser
             rethreadComment
-                (render $ enRoute RethreadWikiCommentR "about" comment_id)
-                (render $ enRoute WikiCommentR "about" parent_id)
+                (render appRoot $ enRoute RethreadWikiCommentR "about" comment_id)
+                (render appRoot $ enRoute WikiCommentR "about" parent_id)
 
             hasNotif bob_id NotifRethreadedComment
-                (render $ enRoute WikiCommentR "about" comment_id)
+                (render appRoot $ enRoute WikiCommentR "about" comment_id)
                 "rethreaded comment notification not found" True
         |]
 
@@ -134,10 +131,10 @@ notifySpecs AppConfig {..} = do
                 singleton NotifDeliverWebsite
 
             loginAs Bob
-            flagComment $ render $ enRoute FlagWikiCommentR "about" comment_id
+            flagComment $ render appRoot $ enRoute FlagWikiCommentR "about" comment_id
 
             hasNotif mary_id NotifFlag
-                (render $ enRoute EditWikiCommentR "about" comment_id)
+                (render appRoot $ enRoute EditWikiCommentR "about" comment_id)
                 "flagged comment notification not found" False
         |]
 
@@ -150,10 +147,10 @@ notifySpecs AppConfig {..} = do
 
             loginAs Mary
             (comment_id, True) <- getLatestCommentId
-            editComment $ render $ enRoute EditWikiCommentR "about" comment_id
+            editComment $ render appRoot $ enRoute EditWikiCommentR "about" comment_id
 
             hasNotif bob_id NotifFlagRepost
-                (render $ enRoute WikiCommentR "about" comment_id)
+                (render appRoot $ enRoute WikiCommentR "about" comment_id)
                 "flagged comment reposted notification not found" False
         |]
 
@@ -169,7 +166,8 @@ notifySpecs AppConfig {..} = do
             loginAs Bob
             newWiki snowdrift LangEn wiki_page "testing NotifWikiPage"
 
-            hasNotif mary_id NotifWikiPage (render $ enRoute WikiR wiki_page)
+            hasNotif mary_id NotifWikiPage
+                (render appRoot $ enRoute WikiR wiki_page)
                 "new wiki page notification not found" True
         |]
 
@@ -184,7 +182,8 @@ notifySpecs AppConfig {..} = do
             loginAs Bob
             editWiki snowdrift LangEn wiki_page "testing NotifWikiEdit" "testing"
 
-            hasNotif mary_id NotifWikiEdit (render $ enRoute WikiR wiki_page)
+            hasNotif mary_id NotifWikiEdit
+                (render appRoot $ enRoute WikiR wiki_page)
                 "wiki page edited notification not found" True
         |]
 
@@ -200,7 +199,7 @@ notifySpecs AppConfig {..} = do
             newBlogPost blog_handle
 
             hasNotif mary_id NotifBlogPost
-                (render $ BlogPostR snowdrift blog_handle)
+                (render appRoot $ BlogPostR snowdrift blog_handle)
                 "new blog post notification not found" True
         |]
 

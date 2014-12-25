@@ -441,3 +441,12 @@ pledge shares = [marked|
 
 named_users :: [NamedUser]
 named_users = [minBound .. maxBound]
+
+(</>) :: Text -> Text -> Text
+xs </> ys = xs <> "/" <> ys
+
+render :: Text -> Route App -> Text
+render appRoot = (appRoot </>) . T.intercalate "/" . fst . renderRoute
+
+enRoute :: (Text -> Language -> a) -> a
+enRoute c = c snowdrift LangEn
