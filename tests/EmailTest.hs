@@ -5,7 +5,7 @@ module EmailTest (emailSpecs) where
 
 import Import (Established(..))
 import TestImport hiding ((=.), update, Update, (</>))
-import Model.Notification (NotificationType(..))
+import Model.Notification (NotificationType(..), NotificationDelivery(..))
 
 import Control.Applicative ((<$>))
 import Control.Exception (bracket)
@@ -40,7 +40,7 @@ addAndVerifyEmail user_id email =
 withEmailDaemon :: FilePath -> (FilePath -> IO a) -> IO ()
 withEmailDaemon file action = do
     let prefix = "dist/build"
-    bracket
+    withDelay $ bracket
         (spawnProcess
              (prefix </> "SnowdriftEmailDaemon/SnowdriftEmailDaemon")
              [ "--sendmail=" <> prefix </> "SnowdriftSendmail/SnowdriftSendmail"
@@ -91,7 +91,30 @@ emailSpecs AppConfig {..} file = do
     -- XXX: Not triggered anywhere.
     testEmail NotifApprovedComment   = return ()
 
-    testEmail NotifRethreadedComment = return ()
+    testEmail NotifRethreadedComment =
+        yit "sends an email when a comment is rethreaded" $ [marked|
+            loginAs Mary
+            postComment (enRoute NewWikiDiscussionR "about") $
+                byLabel "New Topic" "parent comment (email)"
+            (parent_id, True) <- getLatestCommentId
+
+            loginAs Bob
+            bob_id <- userId Bob
+            testDB $ addAndVerifyEmail bob_id "bob@localhost"
+            testDB $ updateNotifPrefs bob_id Nothing NotifRethreadedComment $
+                singleton NotifDeliverEmail
+            postComment (enRoute NewWikiDiscussionR "about") $
+                byLabel "New Topic" "rethreaded comment (email)"
+            (comment_id, True) <- getLatestCommentId
+
+            loginAs AdminUser
+            rethreadComment
+                (render appRoot $ enRoute RethreadWikiCommentR "about" comment_id)
+                (render appRoot $ enRoute WikiCommentR "about" parent_id)
+
+            liftIO $ withEmailDaemon file $ flip errUnlessEmailNotif
+                (render appRoot $ enRoute WikiCommentR "about" comment_id)
+        |]
 
     testEmail NotifReply             = return ()
 
