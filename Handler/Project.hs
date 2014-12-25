@@ -638,17 +638,50 @@ getUpdateSharesR project_handle = do
     Entity project_id project <- runYDB $ getBy404 $ UniqueProjectHandle project_handle
 
     ((result, _), _) <- runFormGet $ pledgeForm project_id
+
     case result of
-        FormSuccess (SharesPurchaseOrder shares) -> do
+        FormSuccess (SharesPurchaseOrder new_user_shares) -> do
             -- TODO - refuse negative
             user_id <- requireAuthId
-            (confirm_form, _) <- generateFormPost $ projectConfirmSharesForm (Just shares)
 
-            runDB (getBy (UniquePledge user_id project_id)) >>= \case
-                Just (Entity _ pledge) | pledgeShares pledge == shares -> do
-                    alertWarning ("Your pledge was already at " <> T.pack (show shares) <> " " <> plural shares "share" "shares" <> ". Thank you for your support!")
+            (confirm_form, _) <- generateFormPost $ projectConfirmSharesForm (Just new_user_shares)
+
+            (mpledge, other_shares) <- runDB $ do
+                mpledge <- getBy $ UniquePledge user_id project_id
+                other_shares <- fmap unwrapValues $ select $ from $ \ p -> do
+                    where_ $ p ^. PledgeProject ==. val project_id
+                        &&. p ^. PledgeUser !=. val user_id
+
+                    return $ p ^. PledgeShares
+
+                return (mpledge, other_shares)
+
+            case mpledge of
+                Just (Entity _ pledge) | pledgeShares pledge == new_user_shares -> do
+                    alertWarning $ T.unwords
+                        [ "Your pledge was already at"
+                        , T.pack (show new_user_shares)
+                        , plural new_user_shares "share" "shares" <> "."
+                        , "Thank you for your support!"
+                        ]
+
                     redirect (ProjectR project_handle)
-                mpledge ->
+
+                _ -> do
+                    let old_user_shares = maybe 0 (pledgeShares . entityVal) mpledge
+
+                        new_project_shares = (filter (>0) [new_user_shares]) ++ other_shares
+                        old_project_shares = (filter (>0) [old_user_shares]) ++ other_shares
+
+                        new_share_value = projectComputeShareValue new_project_shares
+                        old_share_value = projectComputeShareValue old_project_shares
+
+                        new_user_amount = new_share_value $* fromIntegral new_user_shares
+                        old_user_amount = old_share_value $* fromIntegral old_user_shares
+
+                        new_project_amount = new_share_value $* fromIntegral (sum new_project_shares)
+                        old_project_amount = old_share_value $* fromIntegral (sum old_project_shares)
+
                     defaultLayout $ do
                         setTitle . toHtml $ projectName project <> " - update pledge | Snowdrift.coop"
                         $(widgetFile "update_shares")

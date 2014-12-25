@@ -26,6 +26,7 @@ module Model.Comment
     , fetchCommentsAncestorClosuresDB
     , fetchCommentsAncestorRetractsDB
     , fetchCommentDB
+    , fetchCommentAllCurrentDescendantsDB
     , fetchCommentAllDescendantsDB
     , fetchCommentAncestorsDB
     , fetchCommentCommentTagsDB
@@ -523,6 +524,15 @@ fetchCommentCommentTagsInDB comment_ids = fmap (map entityVal) $
     return ct
 
 -- | Get a Comment's descendants' ids (don't filter hidden or unapproved comments).
+fetchCommentAllCurrentDescendantsDB :: CommentId -> DB [CommentId]
+fetchCommentAllCurrentDescendantsDB comment_id = fmap (map unValue) $
+    select $ from $ \ ca -> do
+        where_ $ ca ^. CommentAncestorAncestor ==. val comment_id
+            &&. ca ^. CommentAncestorComment `notIn` (subList_select $ from $ return . (^. CommentRethreadOldComment))
+        orderBy [asc (ca ^. CommentAncestorComment)]
+        return (ca ^. CommentAncestorComment)
+
+-- | Get a Comment's descendants' ids (don't filter hidden or unapproved comments).
 fetchCommentAllDescendantsDB :: CommentId -> DB [CommentId]
 fetchCommentAllDescendantsDB comment_id = fmap (map unValue) $
     select $
@@ -667,7 +677,7 @@ makeWatchMapDB comment_ids = fmap (M.fromListWith mappend . map (\(Value x, Enti
 rethreadCommentDB :: Maybe CommentId -> DiscussionId -> CommentId -> UserId -> Text -> Int -> SDB ()
 rethreadCommentDB mnew_parent_id new_discussion_id root_comment_id user_id reason depth_offset = do
     (old_comment_ids, new_comment_ids) <- lift $ do
-        descendants_ids <- fetchCommentAllDescendantsDB root_comment_id
+        descendants_ids <- fetchCommentAllCurrentDescendantsDB root_comment_id
         let old_comment_ids = root_comment_id : descendants_ids
 
         new_comment_ids <- flip State.evalStateT mempty $ forM old_comment_ids $ \comment_id -> do
