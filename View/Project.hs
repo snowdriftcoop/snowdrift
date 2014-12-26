@@ -122,4 +122,4 @@ viewForm = renderBootstrap3 BootstrapBasicForm $ (,)
     <*> (either (const defaultOrder) id . parseOrderExpression . fromMaybe "" <$> aopt' textField "sort" Nothing)
 
 projectConfirmSharesForm :: Maybe Int64 -> Form SharesPurchaseOrder
-projectConfirmSharesForm = renderBootstrap3 BootstrapBasicForm . fmap SharesPurchaseOrder . areq' hiddenField ""
+projectConfirmSharesForm = renderBootstrap3 BootstrapBasicForm . fmap SharesPurchaseOrder . areq hiddenField ""
