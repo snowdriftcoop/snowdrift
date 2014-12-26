@@ -157,7 +157,21 @@ emailSpecs AppConfig {..} file = do
                 render appRoot $ enRoute EditWikiCommentR "about" comment_id
         |]
 
-    testEmail NotifFlagRepost        = return ()
+    -- Relies on the 'NotifFlag' test.
+    testEmail NotifFlagRepost =
+        yit "sends an email when a flagged comment gets reposted" $ [marked|
+            bob_id <- userId Bob
+            testDB $ updateNotifPrefs bob_id Nothing NotifFlagRepost $
+                singleton NotifDeliverEmail
+
+            loginAs Mary
+            (comment_id, True) <- getLatestCommentId
+            editComment $ render appRoot $ enRoute EditWikiCommentR "about" comment_id
+
+            liftIO $ withEmailDaemon file $ flip errUnlessEmailNotif $
+                render appRoot $ enRoute WikiCommentR "about" comment_id
+        |]
+
     testEmail NotifWikiPage          = return ()
     testEmail NotifWikiEdit          = return ()
     testEmail NotifBlogPost          = return ()
