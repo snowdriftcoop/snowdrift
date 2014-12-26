@@ -116,7 +116,26 @@ emailSpecs AppConfig {..} file = do
                 (render appRoot $ enRoute WikiCommentR "about" comment_id)
         |]
 
-    testEmail NotifReply             = return ()
+    testEmail NotifReply =
+        yit "sends an email on reply" $ [marked|
+            loginAs Mary
+            postComment (enRoute NewWikiDiscussionR "about") $
+                byLabel "New Topic" "root comment (email)"
+
+            mary_id <- userId Mary
+            testDB $ updateNotifPrefs mary_id Nothing NotifReply $
+                singleton NotifDeliverEmail
+
+            loginAs Bob
+            (comment_id, True) <- getLatestCommentId
+            postComment
+                (enRoute ReplyWikiCommentR "about" comment_id) $
+                    byLabel "Reply" "reply to the root comment (email)"
+
+            (reply_id, True) <- getLatestCommentId
+            liftIO $ withEmailDaemon file $ flip errUnlessEmailNotif $
+                render appRoot $ CommentDirectLinkR reply_id
+        |]
 
     -- XXX: TODO.
     testEmail NotifEditConflict      = return ()
