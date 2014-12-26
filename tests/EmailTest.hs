@@ -207,7 +207,21 @@ emailSpecs AppConfig {..} file = do
                 render appRoot $ enRoute WikiR wiki_page
         |]
 
-    testEmail NotifBlogPost          = return ()
+    testEmail NotifBlogPost =
+        yit "sends an email when a blog post is created" $ [marked|
+            mary_id      <- userId Mary
+            snowdrift_id <- snowdriftId
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifBlogPost $
+                singleton NotifDeliverEmail
+
+            loginAs AdminUser
+            let blog_handle = "testing-email"
+            newBlogPost blog_handle
+
+            liftIO $ withEmailDaemon file $ flip errUnlessEmailNotif $
+                render appRoot $ BlogPostR snowdrift blog_handle
+        |]
+
     testEmail NotifNewPledge         = return ()
     testEmail NotifUpdatedPledge     = return ()
     testEmail NotifDeletedPledge     = return ()
