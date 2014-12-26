@@ -67,8 +67,9 @@ emailSpecs AppConfig {..} file = do
 
   where
     wiki_page = "testing-email"
-    shares    :: Int
+    shares, shares' :: Int
     shares    = 3
+    shares'   = succ shares
 
     -- Not delivered by email.
     testEmail NotifWelcome           = return ()
@@ -241,5 +242,22 @@ emailSpecs AppConfig {..} file = do
                 " pledged [" <> tshares <> " shares]"
         |]
 
-    testEmail NotifUpdatedPledge     = return ()
+    testEmail NotifUpdatedPledge =
+        yit "sends an email when the pledge is updated" $ [marked|
+            mary_id      <- userId Mary
+            snowdrift_id <- snowdriftId
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifUpdatedPledge $
+                singleton NotifDeliverEmail
+
+            loginAs Bob
+            let tshares = shpack shares'
+            pledge tshares
+
+            bob_id <- userId Bob
+            liftIO $ withEmailDaemon file $ flip errUnlessEmailNotif $
+                "user" <> (shpack $ keyToInt64 bob_id) <>
+                " added " <> (shpack $ shares' - shares) <>
+                " share, changing the total to [" <> tshares <> " shares]"
+        |]
+
     testEmail NotifDeletedPledge     = return ()
