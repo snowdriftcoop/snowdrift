@@ -5,6 +5,7 @@ module EmailTest (emailSpecs) where
 
 import Import (Established(..))
 import TestImport hiding ((=.), update, Update, (</>))
+import Model.Language
 import Model.Notification (NotificationType(..), NotificationDelivery(..))
 
 import Control.Applicative ((<$>))
@@ -65,6 +66,8 @@ emailSpecs AppConfig {..} file = do
         mapM_ testEmail [minBound .. maxBound]
 
   where
+    wiki_page = "testing-email"
+
     -- Not delivered by email.
     testEmail NotifWelcome           = return ()
 
@@ -172,7 +175,22 @@ emailSpecs AppConfig {..} file = do
                 render appRoot $ enRoute WikiCommentR "about" comment_id
         |]
 
-    testEmail NotifWikiPage          = return ()
+    testEmail NotifWikiPage =
+        yit "sends an email when a wiki page is created" $ [marked|
+            mary_id      <- userId Mary
+            snowdrift_id <- snowdriftId
+            loginAs Mary
+            watch $ WatchProjectR snowdrift_id
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifWikiPage $
+                singleton NotifDeliverEmail
+
+            loginAs Bob
+            newWiki snowdrift LangEn wiki_page "testing NotifWikiPage (email)"
+
+            liftIO $ withEmailDaemon file $ flip errUnlessEmailNotif $
+                render appRoot $ enRoute WikiR wiki_page
+        |]
+
     testEmail NotifWikiEdit          = return ()
     testEmail NotifBlogPost          = return ()
     testEmail NotifNewPledge         = return ()
