@@ -140,7 +140,23 @@ emailSpecs AppConfig {..} file = do
     -- XXX: TODO.
     testEmail NotifEditConflict      = return ()
 
-    testEmail NotifFlag              = return ()
+    testEmail NotifFlag =
+        yit "sends an email when a comment gets flagged" $ [marked|
+            loginAs Mary
+            postComment (enRoute NewWikiDiscussionR "about") $
+                byLabel "New Topic" "flagged comment (email)"
+            (comment_id, True) <- getLatestCommentId
+            mary_id <- userId Mary
+            testDB $ updateNotifPrefs mary_id Nothing NotifFlag $
+                singleton NotifDeliverEmail
+
+            loginAs Bob
+            flagComment $ render appRoot $ enRoute FlagWikiCommentR "about" comment_id
+
+            liftIO $ withEmailDaemon file $ flip errUnlessEmailNotif $
+                render appRoot $ enRoute EditWikiCommentR "about" comment_id
+        |]
+
     testEmail NotifFlagRepost        = return ()
     testEmail NotifWikiPage          = return ()
     testEmail NotifWikiEdit          = return ()
