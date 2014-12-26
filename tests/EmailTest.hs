@@ -260,4 +260,18 @@ emailSpecs AppConfig {..} file = do
                 " share, changing the total to [" <> tshares <> " shares]"
         |]
 
-    testEmail NotifDeletedPledge     = return ()
+    testEmail NotifDeletedPledge =
+        yit "sends an email when a user stops supporting the project" $ [marked|
+            mary_id      <- userId Mary
+            snowdrift_id <- snowdriftId
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifDeletedPledge $
+                singleton NotifDeliverEmail
+
+            loginAs Bob
+            pledge $ shpack (0 :: Int)
+
+            bob_id <- userId Bob
+            liftIO $ withEmailDaemon file $ flip errUnlessEmailNotif $
+                "user" <> (shpack $ keyToInt64 bob_id) <>
+                " is no longer supporting the [project]"
+        |]
