@@ -191,7 +191,22 @@ emailSpecs AppConfig {..} file = do
                 render appRoot $ enRoute WikiR wiki_page
         |]
 
-    testEmail NotifWikiEdit          = return ()
+    -- Relies on the 'NotifWikiPage' test.
+    testEmail NotifWikiEdit =
+        yit "sends an email when a wiki page is edited" $ [marked|
+            mary_id      <- userId Mary
+            snowdrift_id <- snowdriftId
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifWikiEdit $
+                singleton NotifDeliverEmail
+
+            loginAs Bob
+            editWiki snowdrift LangEn wiki_page "testing NotifWikiEdit (email)"
+                "testing"
+
+            liftIO $ withEmailDaemon file $ flip errUnlessEmailNotif $
+                render appRoot $ enRoute WikiR wiki_page
+        |]
+
     testEmail NotifBlogPost          = return ()
     testEmail NotifNewPledge         = return ()
     testEmail NotifUpdatedPledge     = return ()
