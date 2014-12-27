@@ -85,6 +85,9 @@ notifySpecs AppConfig {..} file = do
     shares_email    = shares
     shares_email'   = succ shares'
 
+    errUnlessUniqueEmailNotif' =
+        liftIO . withEmailDaemon file . flip errUnlessUniqueEmailNotif
+
     testNotification NotifEligEstablish = do
         yit "notifies on establishment" $ [marked|
             forM_ (L.init named_users) $ \user -> do
@@ -105,7 +108,7 @@ notifySpecs AppConfig {..} file = do
             testDB $ addAndVerifyEmail mary_id "mary@localhost"
             loginAs AdminUser
             establish mary_id
-            liftIO $ withEmailDaemon file $ flip errUnlessUniqueEmailNotif
+            errUnlessUniqueEmailNotif'
                 "You are now eligible to become an *established* user"
             loginAs Mary
             acceptHonorPledge
@@ -149,7 +152,7 @@ notifySpecs AppConfig {..} file = do
                     byLabel "Reply" "reply to the root comment (email)"
 
             (reply_id, True) <- getLatestCommentId
-            liftIO $ withEmailDaemon file $ flip errUnlessUniqueEmailNotif $
+            errUnlessUniqueEmailNotif' $
                 render appRoot $ CommentDirectLinkR reply_id
         |]
 
@@ -228,8 +231,8 @@ notifySpecs AppConfig {..} file = do
                 (render appRoot $ enRoute RethreadWikiCommentR "about" comment_id)
                 (render appRoot $ enRoute WikiCommentR "about" parent_id)
 
-            liftIO $ withEmailDaemon file $ flip errUnlessUniqueEmailNotif
-                (render appRoot $ enRoute WikiCommentR "about" comment_id)
+            errUnlessUniqueEmailNotif' $
+                render appRoot $ enRoute WikiCommentR "about" comment_id
         |]
 
     -- XXX: TODO.
@@ -265,7 +268,7 @@ notifySpecs AppConfig {..} file = do
             loginAs Bob
             flagComment $ render appRoot $ enRoute FlagWikiCommentR "about" comment_id
 
-            liftIO $ withEmailDaemon file $ flip errUnlessUniqueEmailNotif $
+            errUnlessUniqueEmailNotif' $
                 render appRoot $ enRoute EditWikiCommentR "about" comment_id
         |]
 
@@ -294,7 +297,7 @@ notifySpecs AppConfig {..} file = do
             (comment_id, True) <- getLatestCommentId
             editComment $ render appRoot $ enRoute EditWikiCommentR "about" comment_id
 
-            liftIO $ withEmailDaemon file $ flip errUnlessUniqueEmailNotif $
+            errUnlessUniqueEmailNotif' $
                 render appRoot $ enRoute WikiCommentR "about" comment_id
         |]
 
@@ -326,7 +329,7 @@ notifySpecs AppConfig {..} file = do
             loginAs Bob
             newWiki snowdrift LangEn wiki_page_email "testing NotifWikiPage (email)"
 
-            liftIO $ withEmailDaemon file $ flip errUnlessUniqueEmailNotif $
+            errUnlessUniqueEmailNotif' $
                 render appRoot $ enRoute WikiR wiki_page_email
         |]
 
@@ -356,7 +359,7 @@ notifySpecs AppConfig {..} file = do
             editWiki snowdrift LangEn wiki_page "testing NotifWikiEdit (email)"
                 "testing"
 
-            liftIO $ withEmailDaemon file $ flip errUnlessUniqueEmailNotif $
+            errUnlessUniqueEmailNotif' $
                 render appRoot $ enRoute WikiR wiki_page
         |]
 
@@ -386,7 +389,7 @@ notifySpecs AppConfig {..} file = do
             let blog_handle = "testing-email"
             newBlogPost blog_handle
 
-            liftIO $ withEmailDaemon file $ flip errUnlessUniqueEmailNotif $
+            errUnlessUniqueEmailNotif' $
                 render appRoot $ BlogPostR snowdrift blog_handle
         |]
 
@@ -420,7 +423,7 @@ notifySpecs AppConfig {..} file = do
             pledge tshares
 
             bob_id <- userId Bob
-            liftIO $ withEmailDaemon file $ flip errUnlessUniqueEmailNotif $
+            errUnlessUniqueEmailNotif' $
                 "user" <> (shpack $ keyToInt64 bob_id) <>
                 " pledged [" <> tshares <> " shares]"
         |]
@@ -455,7 +458,7 @@ notifySpecs AppConfig {..} file = do
             pledge tshares
 
             bob_id <- userId Bob
-            liftIO $ withEmailDaemon file $ flip errUnlessUniqueEmailNotif $
+            errUnlessUniqueEmailNotif' $
                 "user" <> (shpack $ keyToInt64 bob_id) <>
                 " added " <> (shpack $ shares' - shares) <>
                 " share, changing the total to [" <> tshares <> " shares]"
@@ -489,7 +492,7 @@ notifySpecs AppConfig {..} file = do
             pledge $ shpack (0 :: Int)
 
             bob_id <- userId Bob
-            liftIO $ withEmailDaemon file $ flip errUnlessUniqueEmailNotif $
+            errUnlessUniqueEmailNotif' $
                 "user" <> (shpack $ keyToInt64 bob_id) <>
                 " is no longer supporting the [project]"
         |]
