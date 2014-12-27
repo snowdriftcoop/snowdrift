@@ -22,9 +22,7 @@ import TestHandler
 import Model.Markdown
 
 import Control.Exception (bracket)
-import Data.Maybe (fromJust)
 import System.Directory (removeFile, getTemporaryDirectory)
-import System.Environment (lookupEnv)
 import System.IO
 import System.IO.Unsafe
 
@@ -41,21 +39,16 @@ main = do
 
     liftIO $ hPutStrLn stderr "running test" >> hFlush stderr
 
-    -- We have to use an environment variable because 'hspec' does not
-    -- allow to use command line options.
-    options <- maybe [] words <$> lookupEnv "SNOWDRIFT_TESTING_OPTIONS"
-    if "test-email-daemon" `elem` options
-        then withTempFile $ spec foundation
-        else spec foundation Nothing
+    withTempFile $ spec foundation
 
-withTempFile :: (Maybe FilePath -> IO a) -> IO ()
+withTempFile :: (FilePath -> IO a) -> IO ()
 withTempFile f = bracket
     (do tmp <- getTemporaryDirectory; openTempFile tmp "emails")
     (removeFile . fst)
-    (\(file, handle) -> do hClose handle; void $ f $ Just file)
+    (\(file, handle) -> do hClose handle; void $ f file)
 
-spec :: App -> Maybe FilePath -> IO ()
-spec foundation mfile =
+spec :: App -> FilePath -> IO ()
+spec foundation file =
     hspec $ do
         describe "fix links" $ do
             it "works correctly on all examples" $ do
@@ -68,9 +61,7 @@ spec foundation mfile =
         yesodSpec foundation $ do
             userSpecs
             notifySpecs app_config
-            if isJust mfile
-                then emailSpecs app_config $ fromJust mfile
-                else return ()
+            emailSpecs app_config file
             wikiSpecs
             blogSpecs
             discussionSpecs
