@@ -39,7 +39,6 @@ import qualified Data.Map as M
 import qualified Data.Text as T
 import Data.Text (Text)
 import Data.String
-import Database.Esqueleto.Internal.Language (From)
 
 import Data.Text.Encoding (decodeUtf8)
 import Foundation as TestImport
@@ -47,7 +46,7 @@ import Model as TestImport hiding (notificationContent)
 
 import Control.Applicative ((<$>))
 import Control.Concurrent (threadDelay)
-import Control.Monad (when, unless)
+import Control.Monad (when)
 import Data.Monoid ((<>))
 import Model.Language
 import Model.Notification (NotificationType(..), NotificationDelivery(..))
@@ -57,7 +56,6 @@ import System.IO (hPutStrLn, stderr)
 import Control.Monad.Trans.Control
 import Control.Exception.Lifted as Lifted
 
-import Yesod.Markdown (unMarkdown, Markdown)
 import Yesod.Routes.Class
 
 onException :: MonadBaseControl IO m => m a -> m b -> m a
@@ -333,32 +331,10 @@ updateNotifPrefs user_id mproject_id notif_type notif_delivs = do
 singleton :: a -> NonEmpty a
 singleton = flip (NonEmpty.:|) []
 
-notificationContent :: From query expr backend (expr (Entity Notification))
-                    => KeyBackend SqlBackend User -> NotificationType
-                    -> query (expr (Value Markdown))
-notificationContent user_id notif_type =
-    from $ \n -> do
-        where_ $ n ^. NotificationTo   ==. val user_id
-             &&. n ^. NotificationType ==. val notif_type
-        return $ n ^. NotificationContent
-
 -- 'forkEventHandler' sleeps for one second in between
 -- runs, so some tests will fail without this delay.
 withDelay :: MonadIO m => m a -> m a
 withDelay action = liftIO (threadDelay 1000000) >> action
-
-unlessM :: Monad m => m Bool -> m () -> m ()
-unlessM mb a = mb >>= (`unless` a)
-
-hasNotif :: UserId -> NotificationType -> Text -> String -> Bool
-         -> YesodExample App ()
-hasNotif user_id notif_type text err with_delay =
-    if with_delay then withDelay hasNotif' else hasNotif'
-  where
-    hasNotif' =
-        unlessM (testDB $ fmap (any $ T.isInfixOf text . unMarkdown . unValue)
-                        $ select $ notificationContent user_id notif_type)
-                (error err)
 
 rethreadComment :: Text -> Text -> YesodExample App ()
 rethreadComment rethread_route parent_route = [marked|

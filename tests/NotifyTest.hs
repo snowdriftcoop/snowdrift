@@ -6,14 +6,14 @@
 module NotifyTest (notifySpecs) where
 
 import           Import                               (Established(..))
-import           TestImport                           hiding ((=.), update, notificationContent, (</>), Update)
+import           TestImport                           hiding ((=.), update, (</>), Update)
 import           Model.Language
 import           Model.Notification
 
 import           Control.Exception                    (bracket)
 import           Control.Monad                        (void, unless)
 import           Database.Esqueleto
-import           Database.Esqueleto.Internal.Language (Update)
+import           Database.Esqueleto.Internal.Language (Update, From)
 import           Data.Foldable                        (forM_)
 import qualified Data.List                            as L
 import           Data.Monoid                          ((<>))
@@ -23,6 +23,7 @@ import qualified Data.Text.IO                         as Text
 import           System.FilePath                      ((</>))
 import           System.Process                       (spawnProcess, terminateProcess)
 import           Yesod.Default.Config                 (AppConfig (..), DefaultEnv (..))
+import           Yesod.Markdown                       (unMarkdown, Markdown)
 
 updateUser :: UserId -> [SqlExpr (Update User)] -> SqlPersistM ()
 updateUser user_id xs =
@@ -54,17 +55,44 @@ withEmailDaemon file action = do
         terminateProcess
         (const $ withDelay $ void $ action file)
 
+countWebsiteNotif :: Bool -> UserId -> NotificationType -> Text
+                  -> SqlPersistM Int
+countWebsiteNotif with_delay user_id notif_type text =
+    (if with_delay then withDelay else id) $ do
+        contents <- fmap (Text.unwords . map (unMarkdown . unValue)) $
+                    select $ notificationContent user_id notif_type
+        return $ Text.count text contents
+
+notificationContent :: From query expr backend (expr (Entity Notification))
+                    => KeyBackend SqlBackend User -> NotificationType
+                    -> query (expr (Value Markdown))
+notificationContent user_id notif_type =
+    from $ \n -> do
+        where_ $ n ^. NotificationTo   ==. val user_id
+             &&. n ^. NotificationType ==. val notif_type
+        return $ n ^. NotificationContent
+
 countEmailNotif :: FilePath -> Text -> IO Int
 countEmailNotif file text = do
     contents <- Text.readFile file
     return $ Text.count text contents
 
+errUnlessUnique :: Monad m => Int -> String -> String -> m ()
+errUnlessUnique c text loc =
+    unless (c == 1) $
+        error $ "'" <> text <> "' appears " <> show c <> " times "
+             <> "in " <> loc
+
+errUnlessUniqueWebsiteNotif :: Bool -> UserId -> NotificationType -> Text
+                            -> SqlPersistM ()
+errUnlessUniqueWebsiteNotif with_delay user_id notif_type text = do
+    c <- countWebsiteNotif with_delay user_id notif_type text
+    errUnlessUnique c (Text.unpack text) "the notification table"
+
 errUnlessUniqueEmailNotif :: FilePath -> Text -> IO ()
 errUnlessUniqueEmailNotif file text = do
     c <- countEmailNotif file text
-    unless (c == 1) $
-        error $ "'" <> Text.unpack text <> "' appears " <> show c <> " times "
-             <> "in " <> file
+    errUnlessUnique c (Text.unpack text) file
 
 notifySpecs :: AppConfig DefaultEnv a -> FilePath -> Spec
 notifySpecs AppConfig {..} file = do
@@ -86,6 +114,8 @@ notifySpecs AppConfig {..} file = do
     shares_email    = shares
     shares_email'   = succ shares'
 
+    errUnlessUniqueWebsiteNotif' with_delay user_id notif_type text =
+        testDB $ errUnlessUniqueWebsiteNotif with_delay user_id notif_type text
     errUnlessUniqueEmailNotif' =
         liftIO . withEmailDaemon file . flip errUnlessUniqueEmailNotif
 
@@ -96,9 +126,8 @@ notifySpecs AppConfig {..} file = do
                 loginAs AdminUser
                 establish user_id
 
-                hasNotif user_id NotifEligEstablish
-                    (render appRoot $ HonorPledgeR)
-                    "establishment notification not found" False
+                errUnlessUniqueWebsiteNotif' False user_id NotifEligEstablish $
+                    render appRoot $ HonorPledgeR
                 loginAs user
                 acceptHonorPledge
         |]
@@ -132,9 +161,8 @@ notifySpecs AppConfig {..} file = do
                     byLabel "Reply" "reply to the root comment"
 
             (reply_id, True) <- getLatestCommentId
-            hasNotif mary_id NotifReply
-                (render appRoot $ CommentDirectLinkR reply_id)
-                "reply notification not found" True
+            errUnlessUniqueWebsiteNotif' True mary_id NotifReply $
+                render appRoot $ CommentDirectLinkR reply_id
         |]
 
         yit "sends an email on reply" $ [marked|
@@ -162,8 +190,8 @@ notifySpecs AppConfig {..} file = do
         yit "sends the welcome message when a user is created" $ [marked|
             forM_ named_users $ \user -> do
                  user_id <- userId user
-                 hasNotif user_id NotifWelcome "Thanks for registering!"
-                     "welcome notification not found" False
+                 errUnlessUniqueWebsiteNotif' False user_id NotifWelcome $
+                     "Thanks for registering!"
         |]
 
     -- XXX: Not triggered anywhere.
@@ -179,9 +207,8 @@ notifySpecs AppConfig {..} file = do
                 byLabel "New Topic" "unapproved comment"
             (comment_id, False) <- getLatestCommentId
             user_id <- userId unestablished_user
-            hasNotif user_id NotifUnapprovedComment
-                (render appRoot $ enRoute WikiCommentR "about" comment_id)
-                "unapproved comment notification not found" True
+            errUnlessUniqueWebsiteNotif' True user_id NotifUnapprovedComment $
+                render appRoot $ enRoute WikiCommentR "about" comment_id
         |]
 
     -- XXX: Not triggered anywhere.
@@ -207,9 +234,8 @@ notifySpecs AppConfig {..} file = do
                 (render appRoot $ enRoute RethreadWikiCommentR "about" comment_id)
                 (render appRoot $ enRoute WikiCommentR "about" parent_id)
 
-            hasNotif bob_id NotifRethreadedComment
-                (render appRoot $ enRoute WikiCommentR "about" comment_id)
-                "rethreaded comment notification not found" True
+            errUnlessUniqueWebsiteNotif' True bob_id NotifRethreadedComment $
+                render appRoot $ enRoute WikiCommentR "about" comment_id
         |]
 
         yit "sends an email when a comment is rethreaded" $ [marked|
@@ -252,9 +278,8 @@ notifySpecs AppConfig {..} file = do
             loginAs Bob
             flagComment $ render appRoot $ enRoute FlagWikiCommentR "about" comment_id
 
-            hasNotif mary_id NotifFlag
-                (render appRoot $ enRoute EditWikiCommentR "about" comment_id)
-                "flagged comment notification not found" False
+            errUnlessUniqueWebsiteNotif' False mary_id NotifFlag $
+                render appRoot $ enRoute EditWikiCommentR "about" comment_id
         |]
 
         yit "sends an email when a comment gets flagged" $ [marked|
@@ -284,9 +309,8 @@ notifySpecs AppConfig {..} file = do
             (comment_id, True) <- getLatestCommentId
             editComment $ render appRoot $ enRoute EditWikiCommentR "about" comment_id
 
-            hasNotif bob_id NotifFlagRepost
-                (render appRoot $ enRoute WikiCommentR "about" comment_id)
-                "flagged comment reposted notification not found" False
+            errUnlessUniqueWebsiteNotif' False bob_id NotifFlagRepost $
+                render appRoot $ enRoute WikiCommentR "about" comment_id
         |]
 
         yit "sends an email when a flagged comment gets reposted" $ [marked|
@@ -314,9 +338,8 @@ notifySpecs AppConfig {..} file = do
             loginAs Bob
             newWiki snowdrift LangEn wiki_page "testing NotifWikiPage"
 
-            hasNotif mary_id NotifWikiPage
-                (render appRoot $ enRoute WikiR wiki_page)
-                "new wiki page notification not found" True
+            errUnlessUniqueWebsiteNotif' True mary_id NotifWikiPage $
+                render appRoot $ enRoute WikiR wiki_page
         |]
 
         yit "sends an email when a wiki page is created" $ [marked|
@@ -345,9 +368,8 @@ notifySpecs AppConfig {..} file = do
             loginAs Bob
             editWiki snowdrift LangEn wiki_page "testing NotifWikiEdit" "testing"
 
-            hasNotif mary_id NotifWikiEdit
-                (render appRoot $ enRoute WikiR wiki_page)
-                "wiki page edited notification not found" True
+            errUnlessUniqueWebsiteNotif' True mary_id NotifWikiEdit $
+                render appRoot $ enRoute WikiR wiki_page
         |]
 
         yit "sends an email when a wiki page is edited" $ [marked|
@@ -375,9 +397,8 @@ notifySpecs AppConfig {..} file = do
             let blog_handle = "testing"
             newBlogPost blog_handle
 
-            hasNotif mary_id NotifBlogPost
-                (render appRoot $ BlogPostR snowdrift blog_handle)
-                "new blog post notification not found" True
+            errUnlessUniqueWebsiteNotif' True mary_id NotifBlogPost $
+                render appRoot $ BlogPostR snowdrift blog_handle
         |]
 
         yit "sends an email when a blog post is created" $ [marked|
@@ -406,10 +427,9 @@ notifySpecs AppConfig {..} file = do
             pledge tshares
 
             bob_id <- userId Bob
-            hasNotif mary_id NotifNewPledge
-                ("user" <> (shpack $ keyToInt64 bob_id) <>
-                 " pledged [" <> tshares <> " shares]")
-                "new pledge notification not found" True
+            errUnlessUniqueWebsiteNotif' True mary_id NotifNewPledge $
+                "user" <> (shpack $ keyToInt64 bob_id) <>
+                " pledged [" <> tshares <> " shares]"
         |]
 
         yit "sends an email when there is a new pledge" $ [marked|
@@ -441,11 +461,10 @@ notifySpecs AppConfig {..} file = do
             pledge tshares
 
             bob_id <- userId Bob
-            hasNotif mary_id NotifUpdatedPledge
-                ("user" <> (shpack $ keyToInt64 bob_id) <>
-                 " added " <> (shpack $ shares' - shares) <>
-                 " share, changing the total to [" <> tshares <> " shares]")
-                "pledge updated notification not found" True
+            errUnlessUniqueWebsiteNotif' True mary_id NotifUpdatedPledge $
+                "user" <> (shpack $ keyToInt64 bob_id) <>
+                " added " <> (shpack $ shares' - shares) <>
+                " share, changing the total to [" <> tshares <> " shares]"
         |]
 
         yit "sends an email when the pledge is updated" $ [marked|
@@ -476,10 +495,9 @@ notifySpecs AppConfig {..} file = do
             pledge $ shpack (0 :: Int)
 
             bob_id <- userId Bob
-            hasNotif mary_id NotifDeletedPledge
-                ("user" <> (shpack $ keyToInt64 bob_id) <>
-                 " is no longer supporting the [project]")
-                "pledge deleted notification not found" True
+            errUnlessUniqueWebsiteNotif' True mary_id NotifDeletedPledge $
+                "user" <> (shpack $ keyToInt64 bob_id) <>
+                " is no longer supporting the [project]"
         |]
 
         yit "sends an email when a user stops supporting the project" $ [marked|
