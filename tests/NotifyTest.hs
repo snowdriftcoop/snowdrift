@@ -54,16 +54,17 @@ withEmailDaemon file action = do
         terminateProcess
         (const $ withDelay $ void $ action file)
 
-hasUniqueEmailNotif :: FilePath -> Text -> IO Bool
-hasUniqueEmailNotif file text = do
+countEmailNotif :: FilePath -> Text -> IO Int
+countEmailNotif file text = do
     contents <- Text.readFile file
-    return $ Text.count text contents == 1
+    return $ Text.count text contents
 
 errUnlessUniqueEmailNotif :: FilePath -> Text -> IO ()
 errUnlessUniqueEmailNotif file text = do
-    has_notif <- hasUniqueEmailNotif file text
-    unless has_notif $
-        error $ "could not find " <> Text.unpack text <> " in " <> file
+    c <- countEmailNotif file text
+    unless (c == 1) $
+        error $ "'" <> Text.unpack text <> "' appears " <> show c <> " times "
+             <> "in " <> file
 
 notifySpecs :: AppConfig DefaultEnv a -> FilePath -> Spec
 notifySpecs AppConfig {..} file = do
