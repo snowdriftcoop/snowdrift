@@ -8,7 +8,6 @@ import TestImport hiding ((=.), update, Update, (</>))
 import Model.Language
 import Model.Notification (NotificationType(..), NotificationDelivery(..))
 
-import Control.Applicative ((<$>))
 import Control.Exception (bracket)
 import Control.Monad (void, unless)
 import Database.Esqueleto
@@ -51,12 +50,14 @@ withEmailDaemon file action = do
         terminateProcess
         (const $ withDelay $ void $ action file)
 
-hasEmailNotif :: FilePath -> Text -> IO Bool
-hasEmailNotif file text = (text `Text.isInfixOf`) <$> (Text.readFile file)
+hasUniqueEmailNotif :: FilePath -> Text -> IO Bool
+hasUniqueEmailNotif file text = do
+    contents <- Text.readFile file
+    return $ Text.count text contents == 1
 
-errUnlessEmailNotif :: FilePath -> Text -> IO ()
-errUnlessEmailNotif file text = do
-    has_notif <- hasEmailNotif file text
+errUnlessUniqueEmailNotif :: FilePath -> Text -> IO ()
+errUnlessUniqueEmailNotif file text = do
+    has_notif <- hasUniqueEmailNotif file text
     unless has_notif $
         error $ "could not find " <> Text.unpack text <> " in " <> file
 
@@ -81,7 +82,7 @@ emailSpecs AppConfig {..} file = do
             testDB $ addAndVerifyEmail mary_id "mary@localhost"
             loginAs AdminUser
             establish mary_id
-            liftIO $ withEmailDaemon file $ flip errUnlessEmailNotif
+            liftIO $ withEmailDaemon file $ flip errUnlessUniqueEmailNotif
                 "You are now eligible to become an *established* user"
             loginAs Mary
             acceptHonorPledge
@@ -118,7 +119,7 @@ emailSpecs AppConfig {..} file = do
                 (render appRoot $ enRoute RethreadWikiCommentR "about" comment_id)
                 (render appRoot $ enRoute WikiCommentR "about" parent_id)
 
-            liftIO $ withEmailDaemon file $ flip errUnlessEmailNotif
+            liftIO $ withEmailDaemon file $ flip errUnlessUniqueEmailNotif
                 (render appRoot $ enRoute WikiCommentR "about" comment_id)
         |]
 
@@ -139,7 +140,7 @@ emailSpecs AppConfig {..} file = do
                     byLabel "Reply" "reply to the root comment (email)"
 
             (reply_id, True) <- getLatestCommentId
-            liftIO $ withEmailDaemon file $ flip errUnlessEmailNotif $
+            liftIO $ withEmailDaemon file $ flip errUnlessUniqueEmailNotif $
                 render appRoot $ CommentDirectLinkR reply_id
         |]
 
@@ -159,7 +160,7 @@ emailSpecs AppConfig {..} file = do
             loginAs Bob
             flagComment $ render appRoot $ enRoute FlagWikiCommentR "about" comment_id
 
-            liftIO $ withEmailDaemon file $ flip errUnlessEmailNotif $
+            liftIO $ withEmailDaemon file $ flip errUnlessUniqueEmailNotif $
                 render appRoot $ enRoute EditWikiCommentR "about" comment_id
         |]
 
@@ -174,7 +175,7 @@ emailSpecs AppConfig {..} file = do
             (comment_id, True) <- getLatestCommentId
             editComment $ render appRoot $ enRoute EditWikiCommentR "about" comment_id
 
-            liftIO $ withEmailDaemon file $ flip errUnlessEmailNotif $
+            liftIO $ withEmailDaemon file $ flip errUnlessUniqueEmailNotif $
                 render appRoot $ enRoute WikiCommentR "about" comment_id
         |]
 
@@ -190,7 +191,7 @@ emailSpecs AppConfig {..} file = do
             loginAs Bob
             newWiki snowdrift LangEn wiki_page "testing NotifWikiPage (email)"
 
-            liftIO $ withEmailDaemon file $ flip errUnlessEmailNotif $
+            liftIO $ withEmailDaemon file $ flip errUnlessUniqueEmailNotif $
                 render appRoot $ enRoute WikiR wiki_page
         |]
 
@@ -206,7 +207,7 @@ emailSpecs AppConfig {..} file = do
             editWiki snowdrift LangEn wiki_page "testing NotifWikiEdit (email)"
                 "testing"
 
-            liftIO $ withEmailDaemon file $ flip errUnlessEmailNotif $
+            liftIO $ withEmailDaemon file $ flip errUnlessUniqueEmailNotif $
                 render appRoot $ enRoute WikiR wiki_page
         |]
 
@@ -221,7 +222,7 @@ emailSpecs AppConfig {..} file = do
             let blog_handle = "testing-email"
             newBlogPost blog_handle
 
-            liftIO $ withEmailDaemon file $ flip errUnlessEmailNotif $
+            liftIO $ withEmailDaemon file $ flip errUnlessUniqueEmailNotif $
                 render appRoot $ BlogPostR snowdrift blog_handle
         |]
 
@@ -237,7 +238,7 @@ emailSpecs AppConfig {..} file = do
             pledge tshares
 
             bob_id <- userId Bob
-            liftIO $ withEmailDaemon file $ flip errUnlessEmailNotif $
+            liftIO $ withEmailDaemon file $ flip errUnlessUniqueEmailNotif $
                 "user" <> (shpack $ keyToInt64 bob_id) <>
                 " pledged [" <> tshares <> " shares]"
         |]
@@ -254,7 +255,7 @@ emailSpecs AppConfig {..} file = do
             pledge tshares
 
             bob_id <- userId Bob
-            liftIO $ withEmailDaemon file $ flip errUnlessEmailNotif $
+            liftIO $ withEmailDaemon file $ flip errUnlessUniqueEmailNotif $
                 "user" <> (shpack $ keyToInt64 bob_id) <>
                 " added " <> (shpack $ shares' - shares) <>
                 " share, changing the total to [" <> tshares <> " shares]"
@@ -271,7 +272,7 @@ emailSpecs AppConfig {..} file = do
             pledge $ shpack (0 :: Int)
 
             bob_id <- userId Bob
-            liftIO $ withEmailDaemon file $ flip errUnlessEmailNotif $
+            liftIO $ withEmailDaemon file $ flip errUnlessUniqueEmailNotif $
                 "user" <> (shpack $ keyToInt64 bob_id) <>
                 " is no longer supporting the [project]"
         |]
