@@ -1,0 +1,4 @@
+ALTER TABLE "user" ADD COLUMN "email_verified" BOOLEAN NOT NULL DEFAULT false;
+CREATe TABLE "wiki_translation"("id" SERIAL PRIMARY KEY UNIQUE,"edit" INT8 NOT NULL,"source" INT8 NOT NULL,"complete" BOOLEAN NOT NULL);
+ALTER TABLE "wiki_translation" ADD CONSTRAINT "wiki_translation_edit_fkey" FOREIGN KEY("edit") REFERENCES "wiki_edit"("id");
+ALTER TABLE "wiki_translation" ADD CONSTRAINT "wiki_translation_source_fkey" FOREIGN KEY("source") REFERENCES "wiki_edit"("id");
