@@ -173,7 +173,9 @@ renderCommentClosedEvent CommentClosing{..} user_map ticket_map = do
                 <div .event>
                     ^{renderTime commentClosingTs}
                     <a href=@{UserR commentClosingClosedBy}> #{userDisplayName (Entity commentClosingClosedBy user)}
-                    closed comment thread
+                    closed
+                    <a href=@{CommentDirectLinkR commentClosingComment}>
+                        comment thread
             |]
 
 renderTicketClaimedEvent :: Either (TicketClaimingId, TicketClaiming) (TicketOldClaimingId, TicketOldClaiming) -> UserMap -> Map CommentId (Entity Ticket) -> Widget
