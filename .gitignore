@@ -13,3 +13,11 @@ yesod-devel/
 *.chs.h
 codex.tags
 hscope.out
+/migrations
+
+# Intellij IDEA:
+.idea
+*.iml
+
+# EclipseFP:
+/.dist-buildwrapper/

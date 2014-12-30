@@ -418,11 +418,13 @@ getProjectFeedR project_handle = do
 
         let claimed_comment_ids = map (either (ticketClaimingTicket . entityVal) (ticketOldClaimingTicket . entityVal) . snd) claiming_events
             unclaimed_comment_ids = map (ticketOldClaimingTicket . entityVal . snd) unclaiming_events
+            closed_comment_ids = map (commentClosingComment . entityVal . snd) closing_events
 
         ticket_map <- fetchCommentTicketsDB $ mconcat
             [ S.fromList comment_ids
             , S.fromList claimed_comment_ids
             , S.fromList unclaimed_comment_ids
+            , S.fromList closed_comment_ids
             ]
 
         -- WikiPages keyed by their own IDs (contained in a WikiEdit)
