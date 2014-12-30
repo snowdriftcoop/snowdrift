@@ -16,6 +16,7 @@ import Model.Markdown
 import Model.User
 import View.Comment
 import View.Project
+import View.User
 
 import Widgets.Preview
 import Widgets.Time
