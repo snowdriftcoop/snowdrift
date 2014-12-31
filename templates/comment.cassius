@@ -12,6 +12,7 @@
 
 .comment h1
     font-size : large
+    margin-bottom : .5em
 
 .comment h2
     font-size : medium
