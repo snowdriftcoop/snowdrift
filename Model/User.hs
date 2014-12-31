@@ -515,8 +515,6 @@ userUnclaimCommentDB _ comment_id release_note = do
         Just (Entity ticket_claiming_id TicketClaiming{..}) -> do
             now <- liftIO getCurrentTime
 
-            delete $ from $ \ tc -> where_ $ tc ^. TicketClaimingId ==. val ticket_claiming_id
-
             let ticket_old_claiming = TicketOldClaiming
                     ticketClaimingTs
                     ticketClaimingUser
@@ -526,6 +524,13 @@ userUnclaimCommentDB _ comment_id release_note = do
                     now
 
             ticket_old_claiming_id <- insert ticket_old_claiming
+
+            update $ \etc -> do
+                set etc [ EventTicketClaimedClaim    =. val Nothing
+                        , EventTicketClaimedOldClaim =. val (Just ticket_old_claiming_id) ]
+                where_ $ etc ^. EventTicketClaimedClaim ==. val (Just ticket_claiming_id)
+
+            delete $ from $ \ tc -> where_ $ tc ^. TicketClaimingId ==. val ticket_claiming_id
 
             tell [ ETicketUnclaimed ticket_old_claiming_id ticket_old_claiming ]
 
