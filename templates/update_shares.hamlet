@@ -64,7 +64,7 @@ $nothing
                 from the existing patrons.
             <p>
                 Note that share value will change as others pledge,
-                and you may change your pledge at any time. 
+                and you may change your pledge at any time.
 
     <form .text-center method=POST action=@{UpdateSharesR project_handle}>
         ^{confirm_form}
