@@ -23,38 +23,40 @@
 
 -- User
 
-/u                                      UsersR                GET
-/u/!new                                 UserCreateR           GET POST
-/u/#UserId                              UserR                 GET POST
-/u/#UserId/balance                      UserBalanceR          GET POST
-/u/#UserId/d                            UserDiscussionR       GET POST
-/u/#UserId/d/new                        NewUserDiscussionR    GET POST
-/u/#UserId/t                            UserTicketsR          GET
-/u/#UserId/c/#CommentId                 UserCommentR          GET
-/u/#UserId/c/#CommentId/claim           ClaimUserCommentR     GET POST
-/u/#UserId/c/#CommentId/close           CloseUserCommentR     GET POST
-/u/#UserId/c/#CommentId/delete          DeleteUserCommentR    GET POST
-/u/#UserId/c/#CommentId/edit            EditUserCommentR      GET POST
-/u/#UserId/c/#CommentId/flag            FlagUserCommentR      GET POST
-/u/#UserId/c/#CommentId/approve         ApproveUserCommentR   GET POST
-/u/#UserId/c/#CommentId/reply           ReplyUserCommentR     GET POST
-/u/#UserId/c/#CommentId/rethread        RethreadUserCommentR  GET POST
-/u/#UserId/c/#CommentId/retract         RetractUserCommentR   GET POST
-/u/#UserId/c/#CommentId/tag/!new        UserCommentAddTagR    GET
-/u/#UserId/c/#CommentId/tags            UserCommentTagsR      GET
-/u/#UserId/c/#CommentId/tag/#TagId      UserCommentTagR       GET POST
-/u/#UserId/c/#CommentId/tag/!apply      UserCommentApplyTagR      POST
-/u/#UserId/c/#CommentId/tag/!create     UserCommentCreateTagR     POST
-/u/#UserId/c/#CommentId/unclaim         UnclaimUserCommentR   GET POST
-/u/#UserId/c/#CommentId/watch           WatchUserCommentR     GET POST
-/u/#UserId/c/#CommentId/unwatch         UnwatchUserCommentR   GET POST
-/u/#UserId/change-password              UserChangePasswordR   GET POST
-/u/#UserId/edit                         EditUserR             GET
-/u/#UserId/elig                         UserEstEligibleR          POST
-/u/#UserId/notifications                UserNotificationsR    GET POST
-/u/#UserId/pledges                      UserPledgesR          GET
-/u/#UserId/reset-password/#Text         UserResetPasswordR    GET POST
-/u/#UserId/verify-email/#Text           UserVerifyEmailR      GET
+/u                                          UsersR                       GET
+/u/!new                                     UserCreateR                  GET POST
+/u/#UserId                                  UserR                        GET POST
+/u/#UserId/balance                          UserBalanceR                 GET POST
+/u/#UserId/d                                UserDiscussionR              GET POST
+/u/#UserId/d/new                            NewUserDiscussionR           GET POST
+/u/#UserId/t                                UserTicketsR                 GET
+/u/#UserId/c/#CommentId                     UserCommentR                 GET
+/u/#UserId/c/#CommentId/claim               ClaimUserCommentR            GET POST
+/u/#UserId/c/#CommentId/close               CloseUserCommentR            GET POST
+/u/#UserId/c/#CommentId/delete              DeleteUserCommentR           GET POST
+/u/#UserId/c/#CommentId/edit                EditUserCommentR             GET POST
+/u/#UserId/c/#CommentId/flag                FlagUserCommentR             GET POST
+/u/#UserId/c/#CommentId/approve             ApproveUserCommentR          GET POST
+/u/#UserId/c/#CommentId/reply               ReplyUserCommentR            GET POST
+/u/#UserId/c/#CommentId/rethread            RethreadUserCommentR         GET POST
+/u/#UserId/c/#CommentId/retract             RetractUserCommentR          GET POST
+/u/#UserId/c/#CommentId/tag/!new            UserCommentAddTagR           GET
+/u/#UserId/c/#CommentId/tags                UserCommentTagsR             GET
+/u/#UserId/c/#CommentId/tag/#TagId          UserCommentTagR              GET POST
+/u/#UserId/c/#CommentId/tag/!apply          UserCommentApplyTagR             POST
+/u/#UserId/c/#CommentId/tag/!create         UserCommentCreateTagR            POST
+/u/#UserId/c/#CommentId/unclaim             UnclaimUserCommentR          GET POST
+/u/#UserId/c/#CommentId/watch               WatchUserCommentR            GET POST
+/u/#UserId/c/#CommentId/unwatch             UnwatchUserCommentR          GET POST
+/u/#UserId/change-password                  UserChangePasswordR          GET POST
+/u/#UserId/edit                             EditUserR                    GET
+/u/#UserId/elig                             UserEstEligibleR                 POST
+/u/#UserId/user-notifications               UserNotificationsR           GET POST
+/u/#UserId/pledges                          UserPledgesR                 GET
+/u/#UserId/project-notifications/#ProjectId ProjectNotificationsR        GET POST
+/u/#UserId/reset-password/#Text             UserResetPasswordR           GET POST
+/u/#UserId/select-project                   UserSelectProjectR           GET POST
+/u/#UserId/verify-email/#Text               UserVerifyEmailR             GET
 
 -- Notifications
 

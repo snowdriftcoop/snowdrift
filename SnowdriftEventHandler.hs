@@ -13,6 +13,7 @@ import Model.Utils
 
 import qualified Data.Foldable        as F
 import           Data.Maybe           (fromJust)
+import qualified Data.Text            as T
 import qualified Database.Persist
 import           Yesod.Default.Config (AppConfig (..), DefaultEnv (..))
 import           Yesod.Markdown
@@ -115,18 +116,86 @@ notificationEventHandler AppConfig{..} (ECommentRethreaded _ Rethread{..}) = do
         NotifRethreadedComment Nothing Nothing content
 
 notificationEventHandler _ (ECommentClosed _ _)     = return ()
+notificationEventHandler _ (ENotificationSent _ _)  = return ()
 
 -- TODO: Send notification to anyone watching thread
 notificationEventHandler _ (ETicketClaimed _)       = return ()
 notificationEventHandler _ (ETicketUnclaimed _ _)   = return ()
 
-notificationEventHandler _ (ENotificationSent _ _)  = return ()
-notificationEventHandler _ (EWikiEdit _ _ _)        = return ()
-notificationEventHandler _ (EWikiPage _ _ _)        = return ()
-notificationEventHandler _ (EBlogPost _ _)          = return ()
-notificationEventHandler _ (ENewPledge _ _)         = return ()
-notificationEventHandler _ (EUpdatedPledge _ _ _)   = return ()
-notificationEventHandler _ (EDeletedPledge _ _ _ _) = return ()
+notificationEventHandler AppConfig{..} (EWikiEdit wiki_edit_id _ wiki_target) =
+    runSDB $ handleWatched appRoot (wikiTargetProject wiki_target)
+        (\ project_handle -> WikiEditR project_handle
+                                      (wikiTargetLanguage wiki_target)
+                                      (wikiTargetTarget wiki_target)
+                                      wiki_edit_id)
+        NotifWikiEdit
+        (\ route -> "Wiki page [edited](" <> route <> ")")
+
+notificationEventHandler AppConfig{..} (EWikiPage _ wiki_page wiki_target) =
+    runSDB $ handleWatched appRoot (wikiPageProject wiki_page)
+        (\ project_handle -> WikiR project_handle
+                                  (wikiTargetLanguage wiki_target)
+                                  (wikiTargetTarget wiki_target))
+        NotifWikiPage
+        (\ route -> "New [wiki page](" <> route <> ")")
+
+notificationEventHandler AppConfig{..} (EBlogPost _ blog_post) =
+    runSDB $ handleWatched appRoot (blogPostProject blog_post)
+        (\ project_handle -> BlogPostR project_handle $ blogPostHandle blog_post)
+        NotifBlogPost
+        (\ route -> "New [blog post](" <> route <> ")")
+
+notificationEventHandler AppConfig{..} (ENewPledge _ shares_pledged) = runSDB $ do
+    users <- lift $ fetchUsersInDB [sharesPledgedUser shares_pledged]
+    let shares = sharesPledgedShares shares_pledged
+    forM_ users $ \ user_entity ->
+        handleWatched appRoot (sharesPledgedProject shares_pledged)
+            ProjectPatronsR NotifNewPledge
+            (\ route -> T.concat
+                 [ userDisplayName user_entity
+                 , " pledged ["
+                 , T.pack $ show $ shares, " ", pluralShares shares
+                 , "](", route, ")"
+                 ])
+
+notificationEventHandler AppConfig{..} (EUpdatedPledge old_shares _ shares_pledged) = runSDB $ do
+    users <- lift $ fetchUsersInDB [sharesPledgedUser shares_pledged]
+    let new_shares = sharesPledgedShares shares_pledged
+        delta      = abs $ old_shares - new_shares
+    forM_ users $ \ user_entity ->
+        handleWatched appRoot (sharesPledgedProject shares_pledged)
+            ProjectPatronsR NotifUpdatedPledge
+            (\ route -> T.concat
+                 [ userDisplayName user_entity
+                 , (if old_shares > new_shares then " dropped " else " added ")
+                <> (T.pack $ show $ delta), " ", pluralShares delta
+                 , ", changing the total to [", T.pack $ show $ new_shares, " "
+                 , pluralShares new_shares, "](", route, ")"
+                 ])
+
+notificationEventHandler AppConfig{..} (EDeletedPledge _ user_id project_id _) = runSDB $ do
+    users <- lift $ fetchUsersInDB [user_id]
+    forM_ users $ \ user_entity ->
+        handleWatched appRoot project_id ProjectPatronsR NotifDeletedPledge
+            (\ route -> userDisplayName user_entity
+                   <> " is no longer supporting the [project](" <> route <> ")")
+
+pluralShares :: Integral i => i -> Text
+pluralShares n = plural n "share" "shares"
+
+handleWatched :: Text -> ProjectId -> (Text -> Route App) -> NotificationType
+              -> (Text -> Text) -> SDB ()
+handleWatched appRoot project_id mkRoute notif_type mkMsg = do
+    projects <- lift $ fetchProjectDB project_id
+    forM_ projects $ \ (Entity _ project) -> do
+        route <- lift $ lift $ routeToText $ mkRoute $ projectHandle project
+        user_ids <- lift $ fetchUsersByNotifPrefDB notif_type (Just project_id)
+        forM_ user_ids $ \ user_id -> do
+            is_watching <- lift $ userIsWatchingProjectDB user_id project_id
+            when is_watching $
+                sendPreferredNotificationDB user_id notif_type
+                    (Just project_id) Nothing
+                    (Markdown $ mkMsg $ appRoot <> route)
 
 -- | Handler in charge of inserting events (stripped down) into a separate table for each type.
 eventInserterHandler :: SnowdriftEvent -> Daemon ()

@@ -1,7 +1,7 @@
 module Model.User.Internal where
 
 import Prelude
-import Import
+import Import hiding (UserNotificationPref)
 import Model.Notification
     ( NotificationType (..), NotificationDelivery (..)
     , sendNotificationDB_, sendNotificationEmailDB )
@@ -33,7 +33,7 @@ data SetPassword = SetPassword
     , password' :: Text
     }
 
-data NotificationPref = NotificationPref
+data UserNotificationPref = UserNotificationPref
     { -- 'NotifWelcome' and 'NotifEligEstablish' are not handled since
       -- they are delivered only once.
       notifBalanceLow        :: NonEmpty NotificationDelivery
@@ -45,10 +45,42 @@ data NotificationPref = NotificationPref
     , notifFlagRepost        :: Maybe (NonEmpty NotificationDelivery)
     } deriving Show
 
+userNotificationPref
+    :: UserNotificationPref
+    -> [(NotificationType, Maybe (NonEmpty NotificationDelivery))]
+userNotificationPref UserNotificationPref {..} =
+    [ (NotifBalanceLow        , Just notifBalanceLow)
+    , (NotifUnapprovedComment , notifUnapprovedComment)
+    , (NotifRethreadedComment , notifRethreadedComment)
+    , (NotifReply             , notifReply)
+    , (NotifEditConflict      , Just notifEditConflict)
+    , (NotifFlag              , Just notifFlag)
+    , (NotifFlagRepost        , notifFlagRepost) ]
+
+data ProjectNotificationPref = ProjectNotificationPref
+    { notifWikiPage        :: Maybe (NonEmpty NotificationDelivery)
+    , notifWikiEdit        :: Maybe (NonEmpty NotificationDelivery)
+    , notifBlogPost        :: Maybe (NonEmpty NotificationDelivery)
+    , notifNewPledge       :: Maybe (NonEmpty NotificationDelivery)
+    , notifUpdatedPledge   :: Maybe (NonEmpty NotificationDelivery)
+    , notifDeletedPledge   :: Maybe (NonEmpty NotificationDelivery)
+    } deriving Show
+
+projectNotificationPref
+    :: ProjectNotificationPref
+    -> [(NotificationType, Maybe (NonEmpty NotificationDelivery))]
+projectNotificationPref ProjectNotificationPref {..} =
+    [ (NotifWikiEdit        , notifWikiEdit)
+    , (NotifWikiPage        , notifWikiPage)
+    , (NotifBlogPost        , notifBlogPost)
+    , (NotifNewPledge       , notifNewPledge)
+    , (NotifUpdatedPledge   , notifUpdatedPledge)
+    , (NotifDeletedPledge   , notifDeletedPledge) ]
+
 
 forcedNotification :: NotificationType -> Maybe (NonEmpty NotificationDelivery)
 forcedNotification NotifWelcome             = Just $ return NotifDeliverWebsite
-forcedNotification NotifEligEstablish       = Just $ return NotifDeliverWebsite
+forcedNotification NotifEligEstablish       = Just $ N.fromList [ NotifDeliverWebsite, NotifDeliverEmail ]
 forcedNotification NotifBalanceLow          = Nothing
 forcedNotification NotifUnapprovedComment   = Nothing
 forcedNotification NotifApprovedComment     = Nothing
@@ -57,19 +89,36 @@ forcedNotification NotifReply               = Nothing
 forcedNotification NotifEditConflict        = Nothing
 forcedNotification NotifFlag                = Nothing
 forcedNotification NotifFlagRepost          = Nothing
+forcedNotification NotifWikiEdit            = Nothing
+forcedNotification NotifWikiPage            = Nothing
+forcedNotification NotifBlogPost            = Nothing
+forcedNotification NotifUpdatedPledge       = Nothing
+forcedNotification NotifDeletedPledge       = Nothing
+forcedNotification NotifNewPledge           = Nothing
 
 
 -- | How does this User prefer notifications of a certain type to be delivered?
-fetchUserNotificationPrefDB :: UserId -> NotificationType -> DB (Maybe (NonEmpty NotificationDelivery))
-fetchUserNotificationPrefDB user_id notif_type = runMaybeT $ mplus forced pulled
+fetchUserNotificationPrefDB :: UserId -> Maybe ProjectId -> NotificationType
+                            -> DB (Maybe (NonEmpty NotificationDelivery))
+fetchUserNotificationPrefDB user_id mproject_id notif_type = runMaybeT $ mplus forced pulled
   where
     forced = MaybeT $ return $ forcedNotification notif_type
 
     pulled = MaybeT $ fmap (N.nonEmpty . unwrapValues) $ select $ from $ \ unp -> do
         where_ $ unp ^. UserNotificationPrefUser ==. val user_id
+            &&. unp ^. UserNotificationPrefProject `notDistinctFrom` val mproject_id
             &&. unp ^. UserNotificationPrefType ==. val notif_type
         return $ unp ^. UserNotificationPrefDelivery
 
+fetchUsersByNotifPrefDB :: NotificationType -> Maybe ProjectId -> DB [UserId]
+fetchUsersByNotifPrefDB notif_type mproject_id =
+    fmap unwrapValues $
+    -- A user may select multiple delivery methods, so this query will
+    -- return duplicates without 'distinct'.
+    selectDistinct $ from $ \ unp -> do
+        where_ $ unp ^. UserNotificationPrefType ==. val notif_type
+             &&. unp ^. UserNotificationPrefProject `notDistinctFrom` val mproject_id
+        return $ unp ^. UserNotificationPrefUser
 
 fetchUserEmail :: UserId -> DB (Maybe Text)
 fetchUserEmail user_id
@@ -91,7 +140,7 @@ fetchUserEmailVerified user_id =
 sendPreferredNotificationDB :: UserId -> NotificationType -> Maybe ProjectId
                             -> Maybe CommentId-> Markdown -> SDB ()
 sendPreferredNotificationDB user_id notif_type mproject_id mcomment_id content = do
-    mprefs <- lift $ fetchUserNotificationPrefDB user_id notif_type
+    mprefs <- lift $ fetchUserNotificationPrefDB user_id mproject_id notif_type
 
     F.forM_ mprefs $ \ prefs -> F.forM_ prefs $ \ pref -> do
         muser_email    <- lift $ fetchUserEmail user_id

@@ -7,8 +7,9 @@ $forall Entity _ post <- posts
     <h2>
         <a href=@{BlogPostR project_handle (blogPostHandle post)}>
             #{blogPostTitle post}
-
+        <br>
         <small>
+            <span .author> by ^{userNameWidget (blogPostUser post)}
             <span .post-time>^{renderTime $ blogPostTs post}
 
     <div .blog-post-top>

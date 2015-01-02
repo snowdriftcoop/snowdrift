@@ -1,0 +1,4 @@
+Notification preferences for #{projectName project}:
+<form method=POST action=@{ProjectNotificationsR user_id project_id} enctype=#{enctype}>
+    ^{form}
+    <button>update

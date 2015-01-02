@@ -21,11 +21,13 @@ import           Widgets.ProjectPledges
 import           Widgets.Time
 
 import           Data.Default         (def)
+import           Data.List            (head)
 import qualified Data.Map             as M
 import           Data.Maybe           (fromJust)
 import qualified Data.Maybe           as Maybe
 import qualified Data.Set             as S
 import qualified Data.Text            as T
+import qualified Data.Traversable     as Traversable
 import           Text.Cassius         (cassiusFile)
 import           Yesod.Auth.HashDB    (setPassword, validateUser)
 
@@ -510,13 +512,13 @@ getUserTicketsR user_id = do
         $(widgetFile "user_tickets")
 
 --------------------------------------------------------------------------------
--- /#UserId/notifications
+-- /#UserId/user-notifications
 
 getUserNotificationsR :: UserId -> Handler Html
 getUserNotificationsR user_id = do
     void $ checkEditUser user_id
     user <- runYDB $ get404 user_id
-    let fetchNotifPref = runYDB . fetchUserNotificationPrefDB user_id
+    let fetchNotifPref = runYDB . fetchUserNotificationPrefDB user_id Nothing
     mbal   <- fetchNotifPref NotifBalanceLow
     mucom  <- fetchNotifPref NotifUnapprovedComment
     mrcom  <- fetchNotifPref NotifRethreadedComment
@@ -542,13 +544,80 @@ postUserNotificationsR user_id = do
             Nothing Nothing Nothing Nothing Nothing Nothing Nothing
     case result of
         FormSuccess notif_pref -> do
-            runDB $ updateNotificationPrefDB user_id notif_pref
+            forM_ (userNotificationPref notif_pref) $ \ (ntype, ndelivs) ->
+                runDB $ updateNotificationPrefDB user_id Nothing ntype ndelivs
             alertSuccess "Successfully updated the notification preferences."
             redirect $ UserR user_id
         _ -> do
             alertDanger $ "Failed to update the notification preferences. "
                        <> "Please try again."
             defaultLayout $(widgetFile "user_notifications")
+
+--------------------------------------------------------------------------------
+-- /#UserId/select-project
+
+getUserSelectProjectR :: UserId -> Handler Html
+getUserSelectProjectR user_id = do
+    void $ checkEditUser user_id
+    user <- runYDB $ get404 user_id
+    projects <- runDB $ fetchUserWatchingProjectsDB user_id
+    if length projects == 1
+        then redirect $ ProjectNotificationsR user_id $ entityKey $ head projects
+        else defaultLayout $ do
+            setTitle $ toHtml $ "Select Project - " <>
+                userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
+            $(widgetFile "user_select_project")
+
+postUserSelectProjectR :: UserId -> Handler Html
+postUserSelectProjectR user_id = do
+    void $ checkEditUser user_id
+    mproject_id <- lookupPostParam "project_id"
+    maybe (redirect $ UserR user_id)
+          (redirect . ProjectNotificationsR user_id . Key . PersistInt64)
+          (join $ Traversable.forM mproject_id $ readMaybe . T.unpack)
+
+--------------------------------------------------------------------------------
+-- /#UserId/project-notifications
+
+getProjectNotificationsR :: UserId -> ProjectId -> Handler Html
+getProjectNotificationsR user_id project_id = do
+    void $ checkEditUser user_id
+    user    <- runYDB $ get404 user_id
+    project <- runYDB $ get404 project_id
+    let fetchNotifPref =
+            runYDB . fetchUserNotificationPrefDB user_id (Just project_id)
+    mwiki_page        <- fetchNotifPref NotifWikiPage
+    mwiki_edit        <- fetchNotifPref NotifWikiEdit
+    mblog_post        <- fetchNotifPref NotifBlogPost
+    mnew_pledge       <- fetchNotifPref NotifNewPledge
+    mupdated_pledge   <- fetchNotifPref NotifUpdatedPledge
+    mdeleted_pledge   <- fetchNotifPref NotifDeletedPledge
+    (form, enctype) <- generateFormPost $
+        projectNotificationsForm mwiki_page mwiki_edit mblog_post
+                                 mnew_pledge mupdated_pledge mdeleted_pledge
+    defaultLayout $ do
+        setTitle $ toHtml $ "Notification Preferences for " <>
+            projectName project <> " - " <> userDisplayName (Entity user_id user) <>
+            " | Snowdrift.coop"
+        $(widgetFile "project_notifications")
+
+postProjectNotificationsR :: UserId -> ProjectId -> Handler Html
+postProjectNotificationsR user_id project_id = do
+    void $ checkEditUser user_id
+    ((result, form), enctype) <- runFormPost $
+        projectNotificationsForm Nothing Nothing Nothing
+                                 Nothing Nothing Nothing
+    case result of
+        FormSuccess notif_pref -> do
+            forM_ (projectNotificationPref notif_pref) $ \ (ntype, ndelivs) ->
+                runDB $ updateNotificationPrefDB
+                    user_id (Just project_id) ntype ndelivs
+            alertSuccess "Successfully updated the notification preferences."
+            redirect (UserR user_id)
+        _ -> do
+            project <- runYDB $ get404 project_id
+            alertDanger $ "Failed to update the notification preferences."
+            defaultLayout $(widgetFile "project_notifications")
 
 --------------------------------------------------------------------------------
 -- /#UserId/reset-password/#Text

@@ -20,6 +20,8 @@ import BlogTest
 import TestHandler
 import Model.Markdown
 
+import Control.Exception (bracket)
+import System.Directory (removeFile, getTemporaryDirectory)
 import System.IO
 import System.IO.Unsafe
 
@@ -36,6 +38,16 @@ main = do
 
     liftIO $ hPutStrLn stderr "running test" >> hFlush stderr
 
+    withTempFile $ spec foundation
+
+withTempFile :: (FilePath -> IO a) -> IO ()
+withTempFile f = bracket
+    (do tmp <- getTemporaryDirectory; openTempFile tmp "emails")
+    (removeFile . fst)
+    (\ (file, handle) -> do hClose handle; void $ f file)
+
+spec :: App -> FilePath -> IO ()
+spec foundation file =
     hspec $ do
         describe "fix links" $ do
             it "works correctly on all examples" $ do
@@ -46,8 +58,7 @@ main = do
 
         yesodSpec foundation $ do
             userSpecs
-            notifySpecs $ settings foundation
+            notifySpecs (settings foundation) file
             wikiSpecs
             blogSpecs
             discussionSpecs
-

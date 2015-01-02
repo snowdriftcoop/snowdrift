@@ -2,6 +2,7 @@ module Model.Project
     ( ProjectSummary(..)
     , UpdateProject(..)
     , fetchPublicProjectsDB
+    , fetchProjectDB
     , fetchProjectCommentRethreadEventsBeforeDB
     , fetchProjectCommentPostedEventsIncludingRethreadedBeforeDB
     , fetchProjectCommentClosingEventsBeforeDB
@@ -119,6 +120,12 @@ fetchPublicProjectsDB :: DB [Entity Project]
 fetchPublicProjectsDB = select $ from $ \ p -> do
     where_ $ p ^. ProjectPublic
     return p
+
+fetchProjectDB :: ProjectId -> DB [Entity Project]
+fetchProjectDB project_id =
+    select $ from $ \ p -> do
+        where_ $ p ^. ProjectId ==. val project_id
+        return p
 
 insertProjectPledgeDB :: UserId
                       -> ProjectId
@@ -312,12 +319,13 @@ fetchProjectCommentClosingEventsBeforeDB project_id muser_id before lim = fetchP
 fetchProjectTicketClaimingEventsBeforeDB :: ProjectId -> UTCTime -> Int64 -> DB [(EventTicketClaimedId, Either (Entity TicketClaiming) (Entity TicketOldClaiming))]
 fetchProjectTicketClaimingEventsBeforeDB project_id before lim = do
     project_discussions <- fetchProjectDiscussionsDB project_id
-    tuples <- fmap unwrapValues $ select $ from $ \ ((t `InnerJoin` c `LeftOuterJoin` toc `LeftOuterJoin` tc) `InnerJoin` etc) -> do
-        on_ $ etc ^. EventTicketClaimedClaim ==. tc ?. TicketClaimingId
-            ||. etc ^. EventTicketClaimedOldClaim ==. toc ?. TicketOldClaimingId
-        on_ $ tc ?. TicketClaimingTicket ==. just (c ^. CommentId)
-        on_ $ toc ?. TicketOldClaimingTicket ==. just (c ^. CommentId)
-        on_ $ t ^. TicketComment ==. c ^. CommentId
+
+    tuples <- fmap unwrapValues $ select $ from $ \ (etc `LeftOuterJoin` tc `LeftOuterJoin` toc `LeftOuterJoin` c `InnerJoin` t) -> do
+        on_ $ t ^. TicketComment                ==. c   ^. CommentId
+        on_ $ just (c ^. CommentId)             ==. tc  ?. TicketClaimingTicket
+          ||. just (c ^. CommentId)             ==. toc ?. TicketOldClaimingTicket
+        on_ $ etc ^. EventTicketClaimedOldClaim ==. toc ?. TicketOldClaimingId
+        on_ $ etc ^. EventTicketClaimedClaim    ==. tc  ?. TicketClaimingId
 
         where_ $ etc ^. EventTicketClaimedTs <=. val before
             &&. c ^. CommentDiscussion `in_` valList project_discussions

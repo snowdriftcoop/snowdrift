@@ -9,6 +9,7 @@ module Model.User
     , deleteArchivedNotificationsDB
     , deleteNotificationDB
     , deleteNotificationsDB
+    , projectNotificationPref
     , updateUserPreview
     , userCanAddTag
     , userCanCloseComment
@@ -19,6 +20,7 @@ module Model.User
     , userIsModerator
     , userIsUnestablished
     , userDisplayName
+    , userNotificationPref
     -- Database actions
     , archiveNotificationsDB
     , deleteFromEmailVerification
@@ -36,6 +38,8 @@ module Model.User
     , fetchUserProjectsAndRolesDB
     , fetchUserRolesDB
     , fetchUsersInDB
+    , fetchUsersByNotifPrefDB
+    , fetchUserWatchingProjectsDB
     , fetchVerEmail
     , fromEmailVerification
     , sendPreferredNotificationDB
@@ -72,15 +76,14 @@ import Import
 import Model.Comment
 import Model.Comment.Sql
 import Model.Notification
-import Model.Project
-import Model.Project.Sql
-import Model.User.Internal
+import Model.User.Internal hiding (UserNotificationPref)
 import Model.User.Sql
 import Model.Wiki.Sql
 
 import           Database.Esqueleto.Internal.Language (From)
 import qualified Data.Foldable      as F
 import qualified Data.List          as L
+import           Data.List.NonEmpty (NonEmpty)
 import qualified Data.Map           as M
 import qualified Data.Set           as S
 import qualified Data.Text          as T
@@ -156,6 +159,14 @@ updateUserPreview UserUpdate{..} user = user
 
 fetchUsersInDB :: [UserId] -> DB [Entity User]
 fetchUsersInDB user_ids = selectList [UserId <-. user_ids] []
+
+fetchUserWatchingProjectsDB :: UserId -> DB [Entity Project]
+fetchUserWatchingProjectsDB user_id =
+    select $ from $ \ (uwp,p) -> do
+        where_ $ uwp ^. UserWatchingProjectUser    ==. val user_id
+             &&. uwp ^. UserWatchingProjectProject ==. p ^. ProjectId
+
+        return p
 
 updateUserDB :: UserId -> UserUpdate -> DB ()
 updateUserDB user_id UserUpdate{..} = do
@@ -239,10 +250,8 @@ eligEstablishUserDB honor_pledge establisher_id user_id reason = do
         where_ (u ^. UserId ==. val user_id)
 
     lift $ insert_ $ ManualEstablishment user_id establisher_id
-
-    snowdrift_id <- lift getSnowdriftId
     sendPreferredNotificationDB user_id NotifEligEstablish
-        (Just snowdrift_id) Nothing content
+        Nothing Nothing content
   where
     content :: Markdown
     content = Markdown $ T.unlines
@@ -383,51 +392,34 @@ unarchiveNotificationsDB user_id = do
     forM_ notifs $ \(Entity notif_id _) ->
         unarchiveNotificationDB notif_id
 
-updateNotificationPrefDB :: UserId -> NotificationPref -> DB ()
-updateNotificationPrefDB user_id NotificationPref {..} = do
-    updateNotifPrefs         NotifBalanceLow        notifBalanceLow
-    deleteOrUpdateNotifPrefs NotifUnapprovedComment notifUnapprovedComment
-    deleteOrUpdateNotifPrefs NotifRethreadedComment notifRethreadedComment
-    deleteOrUpdateNotifPrefs NotifReply             notifReply
-    updateNotifPrefs         NotifEditConflict      notifEditConflict
-    updateNotifPrefs         NotifFlag              notifFlag
-    deleteOrUpdateNotifPrefs NotifFlagRepost        notifFlagRepost
-  where
-    delete' notif_type =
-        delete $ from $ \unp ->
+deleteNotifPrefs :: UserId -> Maybe ProjectId -> NotificationType -> DB ()
+deleteNotifPrefs user_id mproject_id notif_type =
+    delete $ from $ \ unp ->
         where_ $ unp ^. UserNotificationPrefUser ==. val user_id
+             &&. unp ^. UserNotificationPrefProject `notDistinctFrom` val mproject_id
              &&. unp ^. UserNotificationPrefType ==. val notif_type
-    updateNotifPrefs notif_type delivery = do
-        delete' notif_type
-        F.forM_ delivery $ insert_ . UserNotificationPref user_id notif_type
-    deleteOrUpdateNotifPrefs notif_type delivery =
-        maybe (delete' notif_type)
-              (updateNotifPrefs notif_type)
-              delivery
+
+updateNotifPrefs :: UserId -> Maybe ProjectId -> NotificationType
+                 -> NonEmpty NotificationDelivery -> DB ()
+updateNotifPrefs user_id mproject_id notif_type notif_delivs = do
+    deleteNotifPrefs user_id mproject_id notif_type
+    F.forM_ notif_delivs $
+        insert_ . UserNotificationPref user_id mproject_id notif_type
+
+updateNotificationPrefDB :: UserId -> Maybe ProjectId -> NotificationType
+                         -> Maybe (NonEmpty NotificationDelivery) -> DB ()
+updateNotificationPrefDB user_id mproject_id notif_type notif_delivs =
+    maybe (deleteNotifPrefs user_id mproject_id notif_type)
+          (updateNotifPrefs user_id mproject_id notif_type)
+          notif_delivs
 
 userWatchProjectDB :: UserId -> ProjectId -> DB ()
-userWatchProjectDB user_id project_id = void (insertUnique (UserWatchingProject user_id project_id))
+userWatchProjectDB user_id project_id =
+    void $ insertUnique $ UserWatchingProject user_id project_id
 
 userUnwatchProjectDB :: UserId -> ProjectId -> DB ()
-userUnwatchProjectDB user_id project_id = do
-    delete_watching
-    delete_comment_views
-    delete_wiki_edit_views
-  where
-    delete_watching = deleteBy (UniqueUserWatchingProject user_id project_id)
-
-    delete_comment_views = delete_wiki_page_comment_views
-
-    delete_wiki_page_comment_views = fetchProjectDiscussionsDB project_id >>= \discussion_ids ->
-        delete $
-        from $ \(vc `InnerJoin` c) -> do
-        on_ (vc ^. ViewCommentComment ==. c ^. CommentId)
-        where_ (c ^. CommentDiscussion `in_` valList discussion_ids)
-
-    delete_wiki_edit_views =
-        delete $
-        from $ \vwe ->
-        where_ (vwe ^. ViewWikiEditEdit `in_` (subList_select (querProjectWikiEdits project_id)))
+userUnwatchProjectDB user_id project_id =
+    deleteBy $ UniqueUserWatchingProject user_id project_id
 
 userIsWatchingProjectDB :: UserId -> ProjectId -> DB Bool
 userIsWatchingProjectDB user_id project_id = maybe (False) (const True) <$> getBy (UniqueUserWatchingProject user_id project_id)
@@ -515,8 +507,6 @@ userUnclaimCommentDB _ comment_id release_note = do
         Just (Entity ticket_claiming_id TicketClaiming{..}) -> do
             now <- liftIO getCurrentTime
 
-            delete $ from $ \ tc -> where_ $ tc ^. TicketClaimingId ==. val ticket_claiming_id
-
             let ticket_old_claiming = TicketOldClaiming
                     ticketClaimingTs
                     ticketClaimingUser
@@ -526,6 +516,13 @@ userUnclaimCommentDB _ comment_id release_note = do
                     now
 
             ticket_old_claiming_id <- insert ticket_old_claiming
+
+            update $ \ etc -> do
+                set etc [ EventTicketClaimedClaim    =. val Nothing
+                        , EventTicketClaimedOldClaim =. val (Just ticket_old_claiming_id) ]
+                where_ $ etc ^. EventTicketClaimedClaim ==. val (Just ticket_claiming_id)
+
+            delete $ from $ \ tc -> where_ $ tc ^. TicketClaimingId ==. val ticket_claiming_id
 
             tell [ ETicketUnclaimed ticket_old_claiming_id ticket_old_claiming ]
 

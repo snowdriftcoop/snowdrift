@@ -287,6 +287,7 @@ executable         SnowdriftEmailDaemon
                      , cmdargs
                      , data-default
                      , Diff
+                     , directory
                      , esqueleto
                      , email-validate
                      , fast-logger
@@ -356,6 +357,17 @@ executable         sdm
                      , process
                      , semigroups
 
+executable         SnowdriftSendmail
+    if flag(dev)
+       ghc-options: -Wall
+    if flag(library-only)
+        Buildable: False
+
+    main-is:           SnowdriftSendmail.hs
+    build-depends:     base
+                     , bytestring
+                     , mime
+
 test-suite test
     type:              exitcode-stdio-1.0
     main-is:           main.hs
@@ -376,8 +388,12 @@ test-suite test
                  , resourcet
                  , monad-logger
                  , monad-control
+                 , semigroups
                  , transformers
                  , bytestring
+                 , directory
+                 , filepath
+                 , process
                  , text
                  , hspec
                  , network
