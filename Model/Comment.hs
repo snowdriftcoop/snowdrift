@@ -385,7 +385,8 @@ postUnapprovedCommentDB :: UserId -> Maybe CommentId -> DiscussionId -> Markdown
 postUnapprovedCommentDB = postComment insertUnapprovedCommentDB
 
 tickets :: Text -> [Text]
-tickets = map T.strip . mapMaybe (T.stripPrefix "ticket:") . T.lines
+tickets = filter (not . T.null) . map T.strip
+        . mapMaybe (T.stripPrefix "ticket:") . T.lines
 
 insertTicketsDB :: UTCTime -> CommentId -> Text -> DB ()
 insertTicketsDB now comment_id content =
@@ -393,7 +394,7 @@ insertTicketsDB now comment_id content =
         insert_ $ Ticket now now ticket comment_id
 
 tags :: Text -> [Text]
-tags = map T.strip . mconcat . map (T.splitOn ",")
+tags = filter (not . T.null) . map T.strip . mconcat . map (T.splitOn ",")
      . mapMaybe (T.stripPrefix "tags:") . T.lines
 
 insertTagsDB :: UserId -> CommentId -> Text -> DB ()
