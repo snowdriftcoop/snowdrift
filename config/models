@@ -63,6 +63,7 @@ EmailVerification
 -- sends such notifications needn't query it.
 UserNotificationPref
     user     UserId
+    project  ProjectId            Maybe
     type     NotificationType
     delivery NotificationDelivery
 

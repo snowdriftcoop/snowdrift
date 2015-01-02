@@ -1,67 +1,67 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE RecordWildCards   #-}
-{-# LANGUAGE LambdaCase        #-}
+{-# LANGUAGE GADTs             #-}
 
 module NotifyTest (notifySpecs) where
 
-import           TestImport                           hiding ((=.), update, notificationContent)
+import           Import                               (Established(..))
+import           TestImport                           hiding ((=.), update, (</>), Update)
 import           Model.Language
 import           Model.Notification
 
-import           Control.Applicative                  ((<$>))
-import           Control.Concurrent                   (threadDelay)
-import           Control.Monad                        (unless)
-import           Database.Esqueleto                   hiding (get)
-import           Database.Esqueleto.Internal.Language (From)
+import           Control.Exception                    (bracket)
+import           Control.Monad                        (void, unless)
+import           Database.Esqueleto
+import           Database.Esqueleto.Internal.Language (Update, From)
 import           Data.Foldable                        (forM_)
 import qualified Data.List                            as L
 import           Data.Monoid                          ((<>))
 import           Data.Text                            (Text)
 import qualified Data.Text                            as T
+import qualified Data.Text.IO                         as T
+import           System.FilePath                      ((</>))
+import           System.Process                       (spawnProcess, terminateProcess)
 import           Yesod.Default.Config                 (AppConfig (..), DefaultEnv (..))
 import           Yesod.Markdown                       (unMarkdown, Markdown)
-import           Yesod.Routes.Class
 
-establish :: UserId -> YesodExample App ()
-establish user_id = [marked|
-    get200 $ UserR user_id
+updateUser :: UserId -> [SqlExpr (Update User)] -> SqlPersistM ()
+updateUser user_id xs =
+    update $ \ u -> do
+        set u xs
+        where_ $ u ^. UserId ==. val user_id
 
-    withStatus 302 False $ request $ do
-        addNonce
-        setMethod "POST"
-        setUrl $ UserEstEligibleR user_id
-        byLabel "Reason" "testing"
-|]
+unestablish :: UserId -> SqlPersistM ()
+unestablish user_id = do
+    delete $ from $ \ me ->
+        where_ $ me ^. ManualEstablishmentEstablishedUser ==. val user_id
+    updateUser user_id [UserEstablished =. val EstUnestablished]
 
-selectUserId :: Text -> SqlPersistM UserId
-selectUserId ident
-    = (\case []    -> error $ "user not found: " <> T.unpack ident
-             [uid] -> unValue uid
-             uids  -> error $ "ident " <> T.unpack ident <> " must be unique, "
-                           <> "but it matches these user ids: "
-                           <> (L.intercalate ", " $ map (show . unValue) uids))
-  <$> (select $ from $ \u -> do
-           where_ $ u ^. UserIdent ==. val ident
-           return $ u ^. UserId)
+addAndVerifyEmail :: UserId -> Text -> SqlPersistM ()
+addAndVerifyEmail user_id email =
+    updateUser user_id [ UserEmail =. val (Just email)
+                       , UserEmail_verified =. val True ]
 
-userId :: NamedUser -> Example UserId
-userId = testDB . selectUserId . username
+withEmailDaemon :: FilePath -> (FilePath -> IO a) -> IO ()
+withEmailDaemon file action = do
+    let prefix = "dist/build"
+    withDelay $ bracket
+        (spawnProcess
+             (prefix </> "SnowdriftEmailDaemon/SnowdriftEmailDaemon")
+             [ "--sendmail=" <> prefix </> "SnowdriftSendmail/SnowdriftSendmail"
+             , "--sendmail-file=" <> file
+             , "--db=testing"
+             ])
+        terminateProcess
+        (const $ withDelay $ void $ action file)
 
-acceptHonorPledge :: YesodExample App ()
-acceptHonorPledge = [marked|
-    withStatus 302 False $ request $ do
-        setMethod "POST"
-        setUrl HonorPledgeR
-|]
-
-updateNotifPref :: UserId -> NotificationType -> NotificationDelivery
-                -> SqlPersistM ()
-updateNotifPref user_id notif_type notif_deliv =
-    update $ \unp -> do
-        set unp [ UserNotificationPrefType     =. val notif_type
-                , UserNotificationPrefDelivery =. val notif_deliv ]
-        where_ $ unp ^. UserNotificationPrefUser ==. val user_id
+countWebsiteNotif :: Bool -> UserId -> NotificationType -> Text
+                  -> SqlPersistM Int
+countWebsiteNotif with_delay user_id notif_type text =
+    (if with_delay then withDelay else id) $ do
+        contents <- fmap (T.unwords . map (unMarkdown . unValue)) $
+                    select $ notificationContent user_id notif_type
+        return $ T.count text contents
 
 notificationContent :: From query expr backend (expr (Entity Notification))
                     => KeyBackend SqlBackend User -> NotificationType
@@ -72,190 +72,446 @@ notificationContent user_id notif_type =
              &&. n ^. NotificationType ==. val notif_type
         return $ n ^. NotificationContent
 
--- 'forkEventHandler' sleeps for one second in between
--- runs, so some tests will fail without this delay.
-withDelay :: MonadIO m => m a -> m a
-withDelay action = liftIO (threadDelay 1000000) >> action
+countEmailNotif :: FilePath -> Text -> IO Int
+countEmailNotif file text = do
+    contents <- T.readFile file
+    return $ T.count text contents
 
-unlessM :: Monad m => m Bool -> m () -> m ()
-unlessM mb a = mb >>= (`unless` a)
+errUnlessUnique :: Monad m => Int -> String -> String -> m ()
+errUnlessUnique c text loc =
+    unless (c == 1) $
+        error $ "'" <> text <> "' appears " <> show c <> " times "
+             <> "in " <> loc
 
-hasNotif :: UserId -> NotificationType -> Text -> String -> Bool
-         -> YesodExample App ()
-hasNotif user_id notif_type text err with_delay =
-    if with_delay then withDelay hasNotif' else hasNotif'
-  where
-    hasNotif' =
-        unlessM (testDB $ fmap (any $ T.isInfixOf text . unMarkdown . unValue)
-                        $ select $ notificationContent user_id notif_type)
-                (error err)
+errUnlessUniqueWebsiteNotif :: Bool -> UserId -> NotificationType -> Text
+                            -> SqlPersistM ()
+errUnlessUniqueWebsiteNotif with_delay user_id notif_type text = do
+    c <- countWebsiteNotif with_delay user_id notif_type text
+    errUnlessUnique c (T.unpack text) "the notification table"
 
-rethreadComment :: Text -> Text -> YesodExample App ()
-rethreadComment rethread_route parent_route = [marked|
-    get200 rethread_route
+errUnlessUniqueEmailNotif :: FilePath -> Text -> IO ()
+errUnlessUniqueEmailNotif file text = do
+    c <- countEmailNotif file text
+    errUnlessUnique c (T.unpack text) file
 
-    withStatus 302 True $ request $ do
-        addNonce
-        setMethod "POST"
-        setUrl rethread_route
-        byLabel "New Parent Url" parent_route
-        byLabel "Reason" "testing"
-        addPostParam "mode" "post"
-|]
-
-flagComment :: Text -> YesodExample App ()
-flagComment route = [marked|
-    get200 route
-
-    withStatus 302 True $ request $ do
-        addNonce
-        setMethod "POST"
-        setUrl route
-        addPostParam "f1" "1"
-        addPostParam "f2" ""
-        addPostParam "mode" "post"
-|]
-
-editComment :: Text -> YesodExample App ()
-editComment route = [marked|
-    get200 route
-
-    withStatus 302 True $ request $ do
-        addNonce
-        setMethod "POST"
-        setUrl route
-        byLabel "Edit" "testing"
-        byLabel "Language" "en"
-        addPostParam "mode" "post"
-|]
-
-named_users :: [NamedUser]
-named_users = [minBound .. maxBound]
-
-notifySpecs :: AppConfig DefaultEnv a -> Spec
-notifySpecs AppConfig {..} = do
+notifySpecs :: AppConfig DefaultEnv a -> FilePath -> Spec
+notifySpecs AppConfig {..} file = do
+    -- Note that since we rely on 'Bounded' here, the order of the
+    -- 'NotificationType' value constructors is important for some of
+    -- these tests.  For example, 'NotifWikiEdit' must not be tested
+    -- prior to 'NotifWikiPage'.  Otherwise, there will be nothing to
+    -- edit.
     ydescribe "notifications" $ mapM_ testNotification [minBound .. maxBound]
 
   where
-    snowdrift route = route "snowdrift" LangEn "about"
-    absolute route = appRoot <> "/" <> route
-    render = absolute . T.intercalate "/" . fst . renderRoute
+    wiki_page      = "testing"
+    shares, shares' :: Int
+    shares         = 2
+    shares'        = succ shares
 
-    testNotification NotifEligEstablish =
+    wiki_page_email = "testing-email"
+    shares_email, shares_email' :: Int
+    shares_email    = shares
+    shares_email'   = succ shares'
+
+    errUnlessUniqueWebsiteNotif' with_delay user_id notif_type text =
+        testDB $ errUnlessUniqueWebsiteNotif with_delay user_id notif_type text
+    errUnlessUniqueEmailNotif' =
+        liftIO . withEmailDaemon file . flip errUnlessUniqueEmailNotif
+
+    testNotification NotifEligEstablish = do
         yit "notifies on establishment" $ [marked|
             forM_ (L.init named_users) $ \user -> do
                 user_id <- userId user
                 loginAs AdminUser
                 establish user_id
 
-                hasNotif user_id NotifEligEstablish (render HonorPledgeR)
-                    "establishment notification not found" False
+                errUnlessUniqueWebsiteNotif' False user_id NotifEligEstablish $
+                    render appRoot $ HonorPledgeR
                 loginAs user
                 acceptHonorPledge
         |]
 
-    testNotification NotifReply =
+        yit "send an email when a user is eligible for establishment" $ [marked|
+            mary_id <- userId Mary
+            testDB $ unestablish mary_id
+            testDB $ addAndVerifyEmail mary_id "mary@localhost"
+            loginAs AdminUser
+            establish mary_id
+            errUnlessUniqueEmailNotif'
+                "You are now eligible to become an *established* user"
+            loginAs Mary
+            acceptHonorPledge
+        |]
+
+    testNotification NotifReply = do
         yit "notifies on reply" $ [marked|
             loginAs Mary
-            postComment (snowdrift NewWikiDiscussionR) $
+            postComment (enRoute NewWikiDiscussionR "about") $
                 byLabel "New Topic" "root comment"
 
             mary_id <- userId Mary
-            testDB $ updateNotifPref mary_id NotifReply NotifDeliverWebsite
+            testDB $ updateNotifPrefs mary_id Nothing NotifReply $
+                singleton NotifDeliverWebsite
 
             loginAs Bob
             (comment_id, True) <- getLatestCommentId
             postComment
-                (snowdrift ReplyWikiCommentR comment_id) $
+                (enRoute ReplyWikiCommentR "about" comment_id) $
                     byLabel "Reply" "reply to the root comment"
 
             (reply_id, True) <- getLatestCommentId
-            hasNotif mary_id NotifReply (render $ CommentDirectLinkR reply_id)
-                "reply notification not found" True
+            errUnlessUniqueWebsiteNotif' True mary_id NotifReply $
+                render appRoot $ CommentDirectLinkR reply_id
         |]
 
+        yit "sends an email on reply" $ [marked|
+            loginAs Mary
+            postComment (enRoute NewWikiDiscussionR "about") $
+                byLabel "New Topic" "root comment (email)"
+
+            mary_id <- userId Mary
+            testDB $ updateNotifPrefs mary_id Nothing NotifReply $
+                singleton NotifDeliverEmail
+
+            loginAs Bob
+            (comment_id, True) <- getLatestCommentId
+            postComment
+                (enRoute ReplyWikiCommentR "about" comment_id) $
+                    byLabel "Reply" "reply to the root comment (email)"
+
+            (reply_id, True) <- getLatestCommentId
+            errUnlessUniqueEmailNotif' $
+                render appRoot $ CommentDirectLinkR reply_id
+        |]
+
+    -- Not delivered by email.
     testNotification NotifWelcome =
         yit "sends the welcome message when a user is created" $ [marked|
             forM_ named_users $ \user -> do
                  user_id <- userId user
-                 hasNotif user_id NotifWelcome "Thanks for registering!"
-                     "welcome notification not found" False
+                 errUnlessUniqueWebsiteNotif' False user_id NotifWelcome $
+                     "Thanks for registering!"
         |]
 
     -- XXX: Not triggered anywhere.
     testNotification NotifBalanceLow = return ()
 
+    -- XXX: Cannot be set by a user, so it should not be delivered by
+    -- email.
     testNotification NotifUnapprovedComment =
         yit "notifies when a comment needs to be approved" $ [marked|
             let unestablished_user = L.last named_users
             loginAs unestablished_user
-            postComment (snowdrift NewWikiDiscussionR) $
+            postComment (enRoute NewWikiDiscussionR "about") $
                 byLabel "New Topic" "unapproved comment"
             (comment_id, False) <- getLatestCommentId
             user_id <- userId unestablished_user
-            hasNotif user_id NotifUnapprovedComment
-                (render $ snowdrift WikiCommentR comment_id)
-                "unapproved comment notification not found" True
+            errUnlessUniqueWebsiteNotif' True user_id NotifUnapprovedComment $
+                render appRoot $ enRoute WikiCommentR "about" comment_id
         |]
 
     -- XXX: Not triggered anywhere.
     testNotification NotifApprovedComment = return ()
 
-    testNotification NotifRethreadedComment =
+    testNotification NotifRethreadedComment = do
         yit "notifies when a comment is rethreaded" $ [marked|
             loginAs Mary
-            postComment (snowdrift NewWikiDiscussionR) $
+            postComment (enRoute NewWikiDiscussionR "about") $
                 byLabel "New Topic" "parent comment"
             (parent_id, True) <- getLatestCommentId
 
             loginAs Bob
             bob_id <- userId Bob
-            testDB $ updateNotifPref bob_id
-                NotifRethreadedComment NotifDeliverWebsite
-            postComment (snowdrift NewWikiDiscussionR) $
+            testDB $ updateNotifPrefs bob_id Nothing NotifRethreadedComment $
+                singleton NotifDeliverWebsite
+            postComment (enRoute NewWikiDiscussionR "about") $
                 byLabel "New Topic" "rethreaded comment"
             (comment_id, True) <- getLatestCommentId
 
             loginAs AdminUser
             rethreadComment
-                (render $ snowdrift RethreadWikiCommentR comment_id)
-                (render $ snowdrift WikiCommentR parent_id)
+                (render appRoot $ enRoute RethreadWikiCommentR "about" comment_id)
+                (render appRoot $ enRoute WikiCommentR "about" parent_id)
 
-            hasNotif bob_id NotifRethreadedComment
-                (render $ snowdrift WikiCommentR comment_id)
-                "rethreaded comment notification not found" True
+            errUnlessUniqueWebsiteNotif' True bob_id NotifRethreadedComment $
+                render appRoot $ enRoute WikiCommentR "about" comment_id
+        |]
+
+        yit "sends an email when a comment is rethreaded" $ [marked|
+            loginAs Mary
+            postComment (enRoute NewWikiDiscussionR "about") $
+                byLabel "New Topic" "parent comment (email)"
+            (parent_id, True) <- getLatestCommentId
+
+            loginAs Bob
+            bob_id <- userId Bob
+            testDB $ addAndVerifyEmail bob_id "bob@localhost"
+            testDB $ updateNotifPrefs bob_id Nothing NotifRethreadedComment $
+                singleton NotifDeliverEmail
+            postComment (enRoute NewWikiDiscussionR "about") $
+                byLabel "New Topic" "rethreaded comment (email)"
+            (comment_id, True) <- getLatestCommentId
+
+            loginAs AdminUser
+            rethreadComment
+                (render appRoot $ enRoute RethreadWikiCommentR "about" comment_id)
+                (render appRoot $ enRoute WikiCommentR "about" parent_id)
+
+            errUnlessUniqueEmailNotif' $
+                render appRoot $ enRoute WikiCommentR "about" comment_id
         |]
 
     -- XXX: TODO.
     testNotification NotifEditConflict = return ()
 
-    testNotification NotifFlag =
+    testNotification NotifFlag = do
         yit "notifies when a comment gets flagged" $ [marked|
             loginAs Mary
-            postComment (snowdrift NewWikiDiscussionR) $
+            postComment (enRoute NewWikiDiscussionR "about") $
                 byLabel "New Topic" "flagged comment"
             (comment_id, True) <- getLatestCommentId
             mary_id <- userId Mary
-            testDB $ updateNotifPref mary_id NotifFlag NotifDeliverWebsite
+            testDB $ updateNotifPrefs mary_id Nothing NotifFlag $
+                singleton NotifDeliverWebsite
 
             loginAs Bob
-            flagComment $ render $ snowdrift FlagWikiCommentR comment_id
+            flagComment $ render appRoot $ enRoute FlagWikiCommentR "about" comment_id
 
-            hasNotif mary_id NotifFlag (render $ snowdrift EditWikiCommentR comment_id)
-                "flagged comment notification not found" False
+            errUnlessUniqueWebsiteNotif' False mary_id NotifFlag $
+                render appRoot $ enRoute EditWikiCommentR "about" comment_id
+        |]
+
+        yit "sends an email when a comment gets flagged" $ [marked|
+            loginAs Mary
+            postComment (enRoute NewWikiDiscussionR "about") $
+                byLabel "New Topic" "flagged comment (email)"
+            (comment_id, True) <- getLatestCommentId
+            mary_id <- userId Mary
+            testDB $ updateNotifPrefs mary_id Nothing NotifFlag $
+                singleton NotifDeliverEmail
+
+            loginAs Bob
+            flagComment $ render appRoot $ enRoute FlagWikiCommentR "about" comment_id
+
+            errUnlessUniqueEmailNotif' $
+                render appRoot $ enRoute EditWikiCommentR "about" comment_id
         |]
 
     -- Relies on the 'NotifFlag' test.
-    testNotification NotifFlagRepost =
+    testNotification NotifFlagRepost = do
         yit "notifies when a flagged comment gets reposted" $ [marked|
             bob_id <- userId Bob
-            testDB $ updateNotifPref bob_id NotifFlagRepost NotifDeliverWebsite
+            testDB $ updateNotifPrefs bob_id Nothing NotifFlagRepost $
+                singleton NotifDeliverWebsite
 
             loginAs Mary
             (comment_id, True) <- getLatestCommentId
-            editComment $ render $ snowdrift EditWikiCommentR comment_id
+            editComment $ render appRoot $ enRoute EditWikiCommentR "about" comment_id
 
-            hasNotif bob_id NotifFlagRepost
-                (render $ snowdrift WikiCommentR comment_id)
-                "flagged comment reposted notification not found" False
+            errUnlessUniqueWebsiteNotif' False bob_id NotifFlagRepost $
+                render appRoot $ enRoute WikiCommentR "about" comment_id
+        |]
+
+        yit "sends an email when a flagged comment gets reposted" $ [marked|
+            bob_id <- userId Bob
+            testDB $ updateNotifPrefs bob_id Nothing NotifFlagRepost $
+                singleton NotifDeliverEmail
+
+            loginAs Mary
+            (comment_id, True) <- getLatestCommentId
+            editComment $ render appRoot $ enRoute EditWikiCommentR "about" comment_id
+
+            errUnlessUniqueEmailNotif' $
+                render appRoot $ enRoute WikiCommentR "about" comment_id
+        |]
+
+    testNotification NotifWikiPage = do
+        yit "notifies when a wiki page is created" $ [marked|
+            mary_id      <- userId Mary
+            snowdrift_id <- snowdriftId
+            loginAs Mary
+            watch $ WatchProjectR snowdrift_id
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifWikiPage $
+                singleton NotifDeliverWebsite
+
+            loginAs Bob
+            newWiki snowdrift LangEn wiki_page "testing NotifWikiPage"
+
+            errUnlessUniqueWebsiteNotif' True mary_id NotifWikiPage $
+                render appRoot $ enRoute WikiR wiki_page
+        |]
+
+        yit "sends an email when a wiki page is created" $ [marked|
+            mary_id      <- userId Mary
+            snowdrift_id <- snowdriftId
+            loginAs Mary
+            watch $ WatchProjectR snowdrift_id
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifWikiPage $
+                singleton NotifDeliverEmail
+
+            loginAs Bob
+            newWiki snowdrift LangEn wiki_page_email "testing NotifWikiPage (email)"
+
+            errUnlessUniqueEmailNotif' $
+                render appRoot $ enRoute WikiR wiki_page_email
+        |]
+
+    -- Relies on the 'NotifWikiPage' test.
+    testNotification NotifWikiEdit = do
+        yit "notifies when a wiki page is edited" $ [marked|
+            mary_id      <- userId Mary
+            snowdrift_id <- snowdriftId
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifWikiEdit $
+                singleton NotifDeliverWebsite
+
+            loginAs Bob
+            editWiki snowdrift LangEn wiki_page "testing NotifWikiEdit" "testing"
+
+            errUnlessUniqueWebsiteNotif' True mary_id NotifWikiEdit $
+                render appRoot $ enRoute WikiR wiki_page
+        |]
+
+        yit "sends an email when a wiki page is edited" $ [marked|
+            mary_id      <- userId Mary
+            snowdrift_id <- snowdriftId
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifWikiEdit $
+                singleton NotifDeliverEmail
+
+            loginAs Bob
+            editWiki snowdrift LangEn wiki_page "testing NotifWikiEdit (email)"
+                "testing"
+
+            errUnlessUniqueEmailNotif' $
+                render appRoot $ enRoute WikiR wiki_page
+        |]
+
+    testNotification NotifBlogPost = do
+        yit "notifies when a blog post is created" $ [marked|
+            mary_id      <- userId Mary
+            snowdrift_id <- snowdriftId
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifBlogPost $
+                singleton NotifDeliverWebsite
+
+            loginAs AdminUser
+            let blog_handle = "testing"
+            newBlogPost blog_handle
+
+            errUnlessUniqueWebsiteNotif' True mary_id NotifBlogPost $
+                render appRoot $ BlogPostR snowdrift blog_handle
+        |]
+
+        yit "sends an email when a blog post is created" $ [marked|
+            mary_id      <- userId Mary
+            snowdrift_id <- snowdriftId
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifBlogPost $
+                singleton NotifDeliverEmail
+
+            loginAs AdminUser
+            let blog_handle = "testing-email"
+            newBlogPost blog_handle
+
+            errUnlessUniqueEmailNotif' $
+                render appRoot $ BlogPostR snowdrift blog_handle
+        |]
+
+    testNotification NotifNewPledge = do
+        yit "notifies when there is a new pledge" $ [marked|
+            mary_id      <- userId Mary
+            snowdrift_id <- snowdriftId
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifNewPledge $
+                singleton NotifDeliverWebsite
+
+            loginAs Bob
+            let tshares = shpack shares
+            pledge tshares
+
+            bob_id <- userId Bob
+            errUnlessUniqueWebsiteNotif' True mary_id NotifNewPledge $
+                "user" <> (shpack $ keyToInt64 bob_id) <>
+                " pledged [" <> tshares <> " shares]"
+        |]
+
+        yit "sends an email when there is a new pledge" $ [marked|
+            mary_id      <- userId Mary
+            snowdrift_id <- snowdriftId
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifNewPledge $
+                singleton NotifDeliverEmail
+
+            loginAs Bob
+            pledge $ shpack (0 :: Int)  -- drop it first
+            let tshares = shpack shares_email
+            pledge tshares
+
+            bob_id <- userId Bob
+            errUnlessUniqueEmailNotif' $
+                "user" <> (shpack $ keyToInt64 bob_id) <>
+                " pledged [" <> tshares <> " shares]"
+        |]
+
+    testNotification NotifUpdatedPledge = do
+        yit "notifies when the pledge is updated" $ [marked|
+            mary_id      <- userId Mary
+            snowdrift_id <- snowdriftId
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifUpdatedPledge $
+                singleton NotifDeliverWebsite
+
+            loginAs Bob
+            let tshares = shpack shares'
+            pledge tshares
+
+            bob_id <- userId Bob
+            errUnlessUniqueWebsiteNotif' True mary_id NotifUpdatedPledge $
+                "user" <> (shpack $ keyToInt64 bob_id) <>
+                " added " <> (shpack $ shares' - shares) <>
+                " share, changing the total to [" <> tshares <> " shares]"
+        |]
+
+        yit "sends an email when the pledge is updated" $ [marked|
+            mary_id      <- userId Mary
+            snowdrift_id <- snowdriftId
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifUpdatedPledge $
+                singleton NotifDeliverEmail
+
+            loginAs Bob
+            let tshares = shpack shares_email'
+            pledge tshares
+
+            bob_id <- userId Bob
+            errUnlessUniqueEmailNotif' $
+                "user" <> (shpack $ keyToInt64 bob_id) <>
+                " added " <> (shpack $ shares' - shares) <>
+                " share, changing the total to [" <> tshares <> " shares]"
+        |]
+
+    testNotification NotifDeletedPledge = do
+        yit "notifies when a user stops supporting the project" $ [marked|
+            mary_id      <- userId Mary
+            snowdrift_id <- snowdriftId
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifDeletedPledge $
+                singleton NotifDeliverWebsite
+
+            loginAs Bob
+            pledge $ shpack (0 :: Int)
+
+            bob_id <- userId Bob
+            errUnlessUniqueWebsiteNotif' True mary_id NotifDeletedPledge $
+                "user" <> (shpack $ keyToInt64 bob_id) <>
+                " is no longer supporting the [project]"
+        |]
+
+        yit "sends an email when a user stops supporting the project" $ [marked|
+            mary_id      <- userId Mary
+            snowdrift_id <- snowdriftId
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifDeletedPledge $
+                singleton NotifDeliverEmail
+
+            loginAs Bob
+            pledge $ shpack shares  -- pledge again before dropping
+            pledge $ shpack (0 :: Int)
+
+            bob_id <- userId Bob
+            errUnlessUniqueEmailNotif' $
+                "user" <> (shpack $ keyToInt64 bob_id) <>
+                " is no longer supporting the [project]"
         |]

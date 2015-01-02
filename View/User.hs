@@ -5,13 +5,14 @@ module View.User
     , editUserForm
     , establishUserForm
     , previewUserForm
+    , projectNotificationsForm
     , renderUser
     , setPasswordForm
     , userNameWidget
     , userNotificationsForm
     ) where
 
-import Import
+import Import hiding (UserNotificationPref)
 
 import           Model.Currency
 import           Model.Markdown
@@ -171,6 +172,27 @@ userNameWidget user_id = do
 addTestCashForm :: Form Milray
 addTestCashForm = renderBootstrap3 BootstrapBasicForm $ fromInteger . (10000 *) <$> areq' intField "Add (fake) money to your account (in whole dollars)" (Just 10)
 
+-- 'selectFieldList' does not allow to work with 'NonEmpty'
+-- lists, so we have to work around that.
+req :: SomeMessage App -> Maybe (NonEmpty NotificationDelivery)
+    -> AForm (HandlerT App IO) (NonEmpty NotificationDelivery)
+req s xs = N.fromList <$> areq' dropdown s (N.toList <$> xs)
+
+opt :: SomeMessage App -> Maybe (NonEmpty NotificationDelivery)
+    -> AForm (HandlerT App IO) (Maybe (NonEmpty NotificationDelivery))
+opt s xs = fmap N.fromList <$> aopt' dropdown s (Just <$> N.toList <$> xs)
+
+dropdown :: Field (HandlerT App IO) [NotificationDelivery]
+dropdown = selectFieldList methods
+
+methods :: [(Text, [NotificationDelivery])]
+methods =
+    -- XXX: Support 'NotifDeliverEmailDigest'.
+    [ ("website",           [NotifDeliverWebsite])
+    , ("email",             [NotifDeliverEmail])
+    , ("website and email", [NotifDeliverWebsite, NotifDeliverEmail])
+    ]
+
 userNotificationsForm :: Bool
                       -> Maybe (NonEmpty NotificationDelivery)
                       -> Maybe (NonEmpty NotificationDelivery)
@@ -179,9 +201,9 @@ userNotificationsForm :: Bool
                       -> Maybe (NonEmpty NotificationDelivery)
                       -> Maybe (NonEmpty NotificationDelivery)
                       -> Maybe (NonEmpty NotificationDelivery)
-                      -> Form NotificationPref
+                      -> Form UserNotificationPref
 userNotificationsForm is_moderator mbal mucom mrcom mrep mecon mflag mflagr =
-    renderBootstrap3 BootstrapBasicForm $ NotificationPref
+    renderBootstrap3 BootstrapBasicForm $ UserNotificationPref
         <$> req (fromString $ "You have a low balance (less than 3 months " <>
                  "funds at current pledge levels)")   mbal
         <*> unapproved_comment
@@ -195,15 +217,20 @@ userNotificationsForm is_moderator mbal mucom mrcom mrep mecon mflag mflagr =
         if is_moderator
             then Just <$> req "A new comment awaits moderator approval" mucom
             else pure Nothing
-    -- 'selectFieldList' does not allow to work with 'NonEmpty'
-    -- lists, so we have to work around that.
-    req s xs = N.fromList <$> areq' dropdown s (N.toList <$> xs)
-    opt s xs = fmap N.fromList <$> aopt' dropdown s (Just <$> N.toList <$> xs)
-    dropdown = selectFieldList methods
-    methods :: [(Text, [NotificationDelivery])]
-    methods =
-        -- XXX: Support 'NotifDeliverEmailDigest'.
-        [ ("website",           [NotifDeliverWebsite])
-        , ("email",             [NotifDeliverEmail])
-        , ("website and email", [NotifDeliverWebsite, NotifDeliverEmail])
-        ]
+
+projectNotificationsForm :: Maybe (NonEmpty NotificationDelivery)
+                         -> Maybe (NonEmpty NotificationDelivery)
+                         -> Maybe (NonEmpty NotificationDelivery)
+                         -> Maybe (NonEmpty NotificationDelivery)
+                         -> Maybe (NonEmpty NotificationDelivery)
+                         -> Maybe (NonEmpty NotificationDelivery)
+                         -> Form ProjectNotificationPref
+projectNotificationsForm mwiki_page mwiki_edit mblog_post
+                         mnew_pledge mupdated_pledge mdeleted_pledge =
+    renderBootstrap3 BootstrapBasicForm $ ProjectNotificationPref
+        <$> opt "Wiki page created" mwiki_page
+        <*> opt "Wiki page edited"  mwiki_edit
+        <*> opt "New blog post"     mblog_post
+        <*> opt "New pledge"        mnew_pledge
+        <*> opt "Pledge updated"    mupdated_pledge
+        <*> opt "Pledge deleted"    mdeleted_pledge

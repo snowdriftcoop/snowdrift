@@ -204,18 +204,19 @@ getProjectR :: Text -> Handler Html
 getProjectR project_handle = do
     mviewer_id <- maybeAuthId
 
-    (project_id, project, pledges, pledge) <- runYDB $ do
+    (project_id, project, is_watching, pledges, pledge) <- runYDB $ do
         Entity project_id project <- getBy404 $ UniqueProjectHandle project_handle
         pledges <- getProjectShares project_id
-        pledge <- case mviewer_id of
-            Nothing -> return Nothing
-            Just viewer_id -> getBy $ UniquePledge viewer_id project_id
-
-        return (project_id, project, pledges, pledge)
+        (pledge, is_watching) <- case mviewer_id of
+            Nothing -> return (Nothing, False)
+            Just viewer_id -> (,)
+                <$> (getBy $ UniquePledge viewer_id project_id)
+                <*> userIsWatchingProjectDB viewer_id project_id
+        return (project_id, project, is_watching, pledges, pledge)
 
     defaultLayout $ do
         setTitle . toHtml $ projectName project <> " | Snowdrift.coop"
-        renderProject (Just project_id) project pledges pledge
+        renderProject (Just project_id) project mviewer_id is_watching pledges pledge
 
 postProjectR :: Text -> Handler Html
 postProjectR project_handle = do
@@ -265,7 +266,7 @@ postProjectR project_handle = do
                     let preview_project = project { projectName = name, projectDescription = description, projectGithubRepo = github_repo }
 
                     (form, _) <- generateFormPost $ editProjectForm (Just (preview_project, tags))
-                    defaultLayout $ previewWidget form "update" $ renderProject (Just project_id) preview_project [] Nothing
+                    defaultLayout $ previewWidget form "update" $ renderProject (Just project_id) preview_project Nothing False [] Nothing
 
         x -> do
             alertDanger $ T.pack $ show x
@@ -839,25 +840,13 @@ getProjectTransactionsR project_handle = do
 
 getWikiPagesR :: Text -> Handler Html
 getWikiPagesR project_handle = do
-    muser_id <- maybeAuthId
+    void $ maybeAuthId
     languages <- getLanguages
 
-    -- TODO: should be be using unviewed_comments and unviewed_edits?
-    (project, wiki_targets, _, _) <- runYDB $ do
+    (project, wiki_targets) <- runYDB $ do
         Entity project_id project <- getBy404 $ UniqueProjectHandle project_handle
         wiki_targets <- getProjectWikiPages languages project_id
-
-        -- If the user is not logged in or not watching the project, these maps are empty.
-        (unviewed_comments, unviewed_edits) <- case muser_id of
-            Nothing -> return (mempty, mempty)
-            Just user_id -> do
-                is_watching <- userIsWatchingProjectDB user_id project_id
-                if is_watching
-                    then (,)
-                        <$> fetchNumUnviewedCommentsOnProjectWikiPagesDB user_id project_id
-                        <*> fetchNumUnviewedWikiEditsOnProjectDB         user_id project_id
-                    else return (mempty, mempty)
-        return (project, wiki_targets, unviewed_comments, unviewed_edits)
+        return (project, wiki_targets)
     defaultLayout $ do
         setTitle . toHtml $ projectName project <> " Wiki | Snowdrift.coop"
         $(widgetFile "wiki_pages")
@@ -866,8 +855,8 @@ getWikiPagesR project_handle = do
 -- /watch, /unwatch
 
 postWatchProjectR, postUnwatchProjectR :: ProjectId -> Handler ()
-postWatchProjectR   = watchOrUnwatchProject userWatchProjectDB   "watching "
-postUnwatchProjectR = watchOrUnwatchProject userUnwatchProjectDB "no longer watching "
+postWatchProjectR   = watchOrUnwatchProject userWatchProjectDB   "Watching "
+postUnwatchProjectR = watchOrUnwatchProject userUnwatchProjectDB "No longer watching "
 
 watchOrUnwatchProject :: (UserId -> ProjectId -> DB ()) -> Text -> ProjectId -> Handler ()
 watchOrUnwatchProject action msg project_id = do
@@ -875,8 +864,8 @@ watchOrUnwatchProject action msg project_id = do
     project <- runYDB $ do
         action user_id project_id
         get404 project_id
-    alertSuccess (msg <> projectName project)
-    redirect HomeR
+    alertSuccess (msg <> projectName project <> ".")
+    redirect $ ProjectR $ projectHandle project
 
 --------------------------------------------------------------------------------
 -- /c/#CommentId

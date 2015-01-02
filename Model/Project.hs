@@ -2,6 +2,7 @@ module Model.Project
     ( ProjectSummary(..)
     , UpdateProject(..)
     , fetchPublicProjectsDB
+    , fetchProjectDB
     , fetchProjectCommentRethreadEventsBeforeDB
     , fetchProjectCommentPostedEventsIncludingRethreadedBeforeDB
     , fetchProjectCommentClosingEventsBeforeDB
@@ -119,6 +120,12 @@ fetchPublicProjectsDB :: DB [Entity Project]
 fetchPublicProjectsDB = select $ from $ \ p -> do
     where_ $ p ^. ProjectPublic
     return p
+
+fetchProjectDB :: ProjectId -> DB [Entity Project]
+fetchProjectDB project_id =
+    select $ from $ \ p -> do
+        where_ $ p ^. ProjectId ==. val project_id
+        return p
 
 insertProjectPledgeDB :: UserId
                       -> ProjectId
