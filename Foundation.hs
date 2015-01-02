@@ -185,7 +185,7 @@ instance Yesod App where
                             <a href="@{HomeR}">main page
                             .
                         $nothing
-                            You are not logged in, and this page is not publically visible. #
+                            You are not logged in, and this page is not publicly visible. #
                             <a href="@{AuthR LoginR}">Log in or create an account #
                             or return to our #
                             <a href="@{HomeR}">main page
@@ -394,9 +394,7 @@ createUser ident passwd name email avatar nick = do
         void . insertMany $ uncurry (UserNotificationPref user_id) <$>
             -- 'NotifWelcome' is not set since it is delivered when a
             -- user is created.
-            [ (NotifEligEstablish,     NotifDeliverWebsite)
-            , (NotifEligEstablish,     NotifDeliverEmail)
-            , (NotifBalanceLow,        NotifDeliverWebsite)
+            [ (NotifBalanceLow,        NotifDeliverWebsite)
             , (NotifBalanceLow,        NotifDeliverEmail)
             , (NotifUnapprovedComment, NotifDeliverEmail)
             , (NotifRethreadedComment, NotifDeliverWebsite)
@@ -535,4 +533,3 @@ readMaybe   :: (Read a) => String -> Maybe a
 readMaybe s = case [x | (x,t) <- reads s, ("","") <- lex t] of
                   [x] -> Just x
                   _   -> Nothing
-

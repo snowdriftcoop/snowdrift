@@ -10,6 +10,8 @@ import qualified Data.Foldable      as F
 import qualified Data.List.NonEmpty as N
 import Data.List.NonEmpty (NonEmpty)
 
+import Control.Monad.Trans.Maybe
+
 data UserUpdate =
     UserUpdate
         { userUpdateName               :: Maybe Text
@@ -43,17 +45,31 @@ data NotificationPref = NotificationPref
     , notifFlagRepost        :: Maybe (NonEmpty NotificationDelivery)
     } deriving Show
 
+
+forcedNotification :: NotificationType -> Maybe (NonEmpty NotificationDelivery)
+forcedNotification NotifWelcome             = Just $ return NotifDeliverWebsite
+forcedNotification NotifEligEstablish       = Just $ return NotifDeliverWebsite
+forcedNotification NotifBalanceLow          = Nothing
+forcedNotification NotifUnapprovedComment   = Nothing
+forcedNotification NotifApprovedComment     = Nothing
+forcedNotification NotifRethreadedComment   = Nothing
+forcedNotification NotifReply               = Nothing
+forcedNotification NotifEditConflict        = Nothing
+forcedNotification NotifFlag                = Nothing
+forcedNotification NotifFlagRepost          = Nothing
+
+
 -- | How does this User prefer notifications of a certain type to be delivered?
 fetchUserNotificationPrefDB :: UserId -> NotificationType -> DB (Maybe (NonEmpty NotificationDelivery))
-fetchUserNotificationPrefDB user_id notif_type
-    = (\case [] -> Nothing
-             xs -> Just $ unValue <$> N.fromList xs)
-  <$> (select $
-       from $ \unp -> do
-       where_ $
-           unp ^. UserNotificationPrefUser ==. val user_id &&.
-           unp ^. UserNotificationPrefType ==. val notif_type
-       return (unp ^. UserNotificationPrefDelivery))
+fetchUserNotificationPrefDB user_id notif_type = runMaybeT $ mplus forced pulled
+  where
+    forced = MaybeT $ return $ forcedNotification notif_type
+
+    pulled = MaybeT $ fmap (N.nonEmpty . unwrapValues) $ select $ from $ \ unp -> do
+        where_ $ unp ^. UserNotificationPrefUser ==. val user_id
+            &&. unp ^. UserNotificationPrefType ==. val notif_type
+        return $ unp ^. UserNotificationPrefDelivery
+
 
 fetchUserEmail :: UserId -> DB (Maybe Text)
 fetchUserEmail user_id
@@ -76,7 +92,8 @@ sendPreferredNotificationDB :: UserId -> NotificationType -> Maybe ProjectId
                             -> Maybe CommentId-> Markdown -> SDB ()
 sendPreferredNotificationDB user_id notif_type mproject_id mcomment_id content = do
     mprefs <- lift $ fetchUserNotificationPrefDB user_id notif_type
-    F.forM_ mprefs $ \prefs -> F.forM_ prefs $ \pref -> do
+
+    F.forM_ mprefs $ \ prefs -> F.forM_ prefs $ \ pref -> do
         muser_email    <- lift $ fetchUserEmail user_id
         email_verified <- lift $ fetchUserEmailVerified user_id
         -- XXX: Support 'NotifDeliverEmailDigest'.
