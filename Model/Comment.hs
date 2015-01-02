@@ -45,6 +45,8 @@ module Model.Comment
     , fetchCommentsWithChildrenInDB
     , fetchCommentTicketsDB
     , filterCommentsDB
+    , insertTagsDB
+    , insertTicketsDB
     , makeClaimedTicketMapDB
     , makeCommentClosingMapDB
     , makeCommentRetractingMapDB
@@ -381,6 +383,24 @@ postApprovedCommentDB = postComment insertApprovedCommentDB
 postUnapprovedCommentDB :: UserId -> Maybe CommentId -> DiscussionId -> Markdown -> Visibility -> Language -> SDB CommentId
 postUnapprovedCommentDB = postComment insertUnapprovedCommentDB
 
+tickets :: Text -> [Text]
+tickets = map T.strip . mapMaybe (T.stripPrefix "ticket:") . T.lines
+
+insertTicketsDB :: UTCTime -> CommentId -> Text -> DB ()
+insertTicketsDB now comment_id content =
+    forM_ (tickets content) $ \ticket ->
+        insert_ $ Ticket now now ticket comment_id
+
+tags :: Text -> [Text]
+tags = map T.strip . mconcat . map (T.splitOn ",")
+     . mapMaybe (T.stripPrefix "tags:") . T.lines
+
+insertTagsDB :: UserId -> CommentId -> Text -> DB ()
+insertTagsDB user_id comment_id content =
+    forM_ (tags content) $ \tag -> do
+        tag_id <- either entityKey id <$> insertBy (Tag tag)
+        insert_ $ CommentTag comment_id tag_id user_id 1
+
 postComment
         :: (UTCTime -> DiscussionId -> Maybe CommentId -> UserId -> Markdown -> Int -> Visibility -> Language -> SDB CommentId)
         -> UserId
@@ -397,15 +417,11 @@ postComment insert_comment user_id mparent_id discussion_id contents visibility 
 
     comment_id <- insert_comment now discussion_id mparent_id user_id contents depth visibility language
 
-    let content = T.lines (unMarkdown contents)
-        tickets = map T.strip $ mapMaybe (T.stripPrefix "ticket:") content
-        tags    = map T.strip $ mconcat $ map (T.splitOn ",") $ mapMaybe (T.stripPrefix "tags:") content
+    let content = unMarkdown contents
 
     lift $ do
-        forM_ tickets $ \ticket -> insert_ (Ticket now now ticket comment_id)
-        forM_ tags $ \tag -> do
-            tag_id <- either entityKey id <$> insertBy (Tag tag)
-            insert_ (CommentTag comment_id tag_id user_id 1)
+        insertTicketsDB now comment_id content
+        insertTagsDB user_id comment_id content
 
         case mparent_id of
             Nothing -> return ()
