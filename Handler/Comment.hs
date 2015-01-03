@@ -630,13 +630,13 @@ postRetractComment user comment_id comment make_comment_handler_info = do
         _ -> error "Error when submitting form."
 
 postUnclaimComment :: Entity User -> CommentId -> Comment -> (CommentMods -> CommentHandlerInfo) -> Handler (Maybe (Widget, Widget))
-postUnclaimComment user@(Entity user_id _) comment_id comment make_comment_handler_info = do
+postUnclaimComment user comment_id comment make_comment_handler_info = do
     ((result, _), _) <- runFormPost (claimCommentForm Nothing)
     case result of
         FormSuccess mnote -> do
             lookupPostMode >>= \case
                 Just PostMode -> do
-                    runSDB (userUnclaimCommentDB user_id comment_id mnote)
+                    runSDB (userUnclaimCommentDB comment_id mnote)
                     return Nothing
                 _ -> do
                     (form, _) <- generateFormPost (claimCommentForm (Just mnote))
