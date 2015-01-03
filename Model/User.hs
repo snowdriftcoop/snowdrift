@@ -48,7 +48,6 @@ module Model.User
     , updateUserPasswordDB
     , updateNotificationPrefDB
     , userCanDeleteCommentDB
-    , userClaimCommentDB
     , userHasRoleDB
     , userHasRolesAnyDB
     , userIsAffiliatedWithProjectDB
@@ -59,7 +58,6 @@ module Model.User
     , userMaybeViewProjectCommentsDB
     , userReadNotificationsDB
     , userReadVolunteerApplicationsDB
-    , userUnclaimCommentDB
     , userUnwatchProjectDB
     , userViewCommentsDB
     , userViewWikiEditsDB
@@ -87,7 +85,6 @@ import           Data.List.NonEmpty (NonEmpty)
 import qualified Data.Map           as M
 import qualified Data.Set           as S
 import qualified Data.Text          as T
-import           Control.Monad.Writer.Strict (tell)
 import           Yesod.Markdown (Markdown(..))
 
 -- anonymousUser is a special user for items posted by visitors who are not
@@ -488,44 +485,6 @@ userCanDeleteCommentDB user_id (Entity comment_id comment) =
           if null descendants_ids
               then return True
               else return False
-
-
-userClaimCommentDB :: UserId -> CommentId -> Maybe Text -> SDB ()
-userClaimCommentDB user_id comment_id mnote = do
-    now <- liftIO getCurrentTime
-
-    let ticket_claiming = TicketClaiming now user_id comment_id mnote
-
-    ticket_claiming_id <- lift $ insert ticket_claiming
-    tell [ETicketClaimed (Left (ticket_claiming_id, ticket_claiming))]
-
-userUnclaimCommentDB :: CommentId -> Maybe Text -> SDB ()
-userUnclaimCommentDB comment_id release_note = do
-    maybe_ticket_claiming_entity <- getBy $ UniqueTicketClaiming comment_id
-    case maybe_ticket_claiming_entity of
-        Nothing -> return ()
-        Just (Entity ticket_claiming_id TicketClaiming{..}) -> do
-            now <- liftIO getCurrentTime
-
-            let ticket_old_claiming = TicketOldClaiming
-                    ticketClaimingTs
-                    ticketClaimingUser
-                    ticketClaimingTicket
-                    ticketClaimingNote
-                    release_note
-                    now
-
-            ticket_old_claiming_id <- insert ticket_old_claiming
-
-            update $ \ etc -> do
-                set etc [ EventTicketClaimedClaim    =. val Nothing
-                        , EventTicketClaimedOldClaim =. val (Just ticket_old_claiming_id) ]
-                where_ $ etc ^. EventTicketClaimedClaim ==. val (Just ticket_claiming_id)
-
-            delete $ from $ \ tc -> where_ $ tc ^. TicketClaimingId ==. val ticket_claiming_id
-
-            tell [ ETicketUnclaimed ticket_old_claiming_id ticket_old_claiming ]
-
 
 -- | Fetch a User's number of unviewed comments on each WikiPage of a Project.
 fetchNumUnviewedCommentsOnProjectWikiPagesDB :: UserId -> ProjectId -> DB (Map WikiPageId Int)
