@@ -17,6 +17,10 @@ module Model.Comment
     -- Database actions
     , approveCommentDB
     , deleteCommentDB
+    , deleteTagDB
+    , deleteTagsDB
+    , deleteTicketDB
+    , deleteTicketsDB
     , editCommentDB
     , flagCommentDB
     , fetchCommentAncestorClosuresDB
@@ -44,6 +48,9 @@ module Model.Comment
     , fetchCommentsInDB
     , fetchCommentsWithChildrenInDB
     , fetchCommentTicketsDB
+    , fetchTagIdsDB
+    , fetchTagNamesDB
+    , fetchTicketNamesDB
     , filterCommentsDB
     , insertTagsDB
     , insertTicketsDB
@@ -71,6 +78,7 @@ import qualified Control.Monad.State                  as State
 import           Control.Monad.Writer.Strict          (tell)
 import           Data.Foldable                        (Foldable)
 import qualified Data.Foldable                        as F
+import           Data.List                            ((\\))
 import qualified Data.Map                             as M
 import           Data.Maybe                           (fromJust)
 import qualified Data.Set                             as S
@@ -331,10 +339,64 @@ fetchCommentsInDB comment_ids has_permission =
 deleteCommentDB :: CommentId -> DB ()
 deleteCommentDB = deleteCascade
 
+fetchTicketNamesDB :: CommentId -> DB [Text]
+fetchTicketNamesDB comment_id =
+    fmap unwrapValues $
+    select $ from $ \t -> do
+        where_ $ t ^. TicketComment ==. val comment_id
+        return $ t ^. TicketName
+
+fetchTagNamesDB :: CommentId -> DB [Text]
+fetchTagNamesDB comment_id =
+    fmap unwrapValues $
+    select $ from $ \(t `InnerJoin` ct) -> do
+        on_ $ t ^. TagId ==. ct ^. CommentTagTag
+        where_ $ ct ^. CommentTagComment ==. val comment_id
+        return $ t ^. TagName
+
+fetchTagIdsDB :: Text -> DB [TagId]
+fetchTagIdsDB tag_name =
+    fmap unwrapValues $
+    select $ from $ \t -> do
+        where_ $ t ^. TagName ==. val tag_name
+        return $ t ^. TagId
+
+deleteTagDB :: CommentId -> TagId -> DB ()
+deleteTagDB comment_id tag_id = do
+    delete $ from $ \ct ->
+        where_ $ ct ^. CommentTagComment ==. val comment_id
+             &&. ct ^. CommentTagTag     ==. val tag_id
+    exists_ct <- selectExists $ from $ \ct ->
+                    where_ $ ct ^. CommentTagTag ==. val tag_id
+    exists_pt <- selectExists $ from $ \pt ->
+                     where_ $ pt ^. ProjectTagTag ==. val tag_id
+    exists_tc <- selectExists $ from $ \tc ->
+                     where_ $ tc ^. TagColorTag ==. val tag_id
+    exists_dtc <- selectExists $ from $ \dtc ->
+                      where_ $ dtc ^. DefaultTagColorTag ==. val tag_id
+    unless (exists_ct || exists_pt || exists_tc || exists_dtc) $
+        delete $ from $ \t ->
+            where_ $ t ^. TagId ==. val tag_id
+
+deleteTagsDB :: CommentId -> [Text] -> DB ()
+deleteTagsDB comment_id tags =
+    forM_ tags $ \tag -> do
+        tag_ids <- fetchTagIdsDB tag
+        forM_ tag_ids $ deleteTagDB comment_id
+
+deleteTicketDB :: CommentId -> Text -> DB ()
+deleteTicketDB comment_id ticket_name =
+    delete $ from $ \t ->
+        where_ $ t ^. TicketName    ==. val ticket_name
+             &&. t ^. TicketComment ==. val comment_id
+
+deleteTicketsDB :: CommentId -> [Text] -> DB ()
+deleteTicketsDB comment_id = mapM_ $ deleteTicketDB comment_id
+
 -- | Edit a comment's text. If the comment was flagged, unflag it and send a
 -- notification to the flagger.
-editCommentDB :: CommentId -> Markdown -> Language -> SYDB ()
-editCommentDB comment_id text language = do
+editCommentDB :: UserId -> CommentId -> Markdown -> Language -> SYDB ()
+editCommentDB user_id comment_id text language = do
     lift updateComment
     lift (fetchCommentFlaggingDB comment_id) >>= \case
         Nothing -> return ()
@@ -346,7 +408,22 @@ editCommentDB comment_id text language = do
             lift (deleteCascade comment_flagging_id) -- delete flagging and all flagging reasons with it.
             sendPreferredNotificationDB commentFlaggingFlagger NotifFlagRepost Nothing Nothing notif_text
   where
-    updateComment =
+    updateComment = do
+        existent_tickets <- fetchTicketNamesDB comment_id
+        existent_tags    <- fetchTagNamesDB comment_id
+        let content          = unMarkdown text
+            content_tickets  = parseTickets content
+            content_tags     = parseTags content
+            new_tickets      = content_tickets \\ existent_tickets
+            obsolete_tickets = existent_tickets \\ content_tickets
+            new_tags         = content_tags \\ existent_tags
+            obsolete_tags    = existent_tags \\ content_tags
+        now <- liftIO getCurrentTime
+        insertTicketsDB now comment_id new_tickets
+        insertTagsDB user_id comment_id new_tags
+        deleteTicketsDB comment_id obsolete_tickets
+        deleteTagsDB comment_id obsolete_tags
+
         update $ \c -> do
         set c [ CommentText     =. val text
               , CommentLanguage =. val language
@@ -383,22 +460,24 @@ postApprovedCommentDB = postComment insertApprovedCommentDB
 postUnapprovedCommentDB :: UserId -> Maybe CommentId -> DiscussionId -> Markdown -> Visibility -> Language -> SDB CommentId
 postUnapprovedCommentDB = postComment insertUnapprovedCommentDB
 
-tickets :: Text -> [Text]
-tickets = filter (not . T.null) . map T.strip
-        . mapMaybe (T.stripPrefix "ticket:") . T.lines
+parseTickets :: Text -> [Text]
+parseTickets =
+    filter (not . T.null) . map T.strip .
+    mapMaybe (T.stripPrefix "ticket:") . T.lines
 
-insertTicketsDB :: UTCTime -> CommentId -> Text -> DB ()
-insertTicketsDB now comment_id content =
-    forM_ (tickets content) $ \ticket ->
+insertTicketsDB :: UTCTime -> CommentId -> [Text] -> DB ()
+insertTicketsDB now comment_id tickets =
+    forM_ tickets $ \ticket ->
         insert_ $ Ticket now now ticket comment_id
 
-tags :: Text -> [Text]
-tags = filter (not . T.null) . map T.strip . mconcat . map (T.splitOn ",")
-     . mapMaybe (T.stripPrefix "tags:") . T.lines
+parseTags :: Text -> [Text]
+parseTags =
+    filter (not . T.null) . map T.strip . mconcat . map (T.splitOn ",") .
+    mapMaybe (T.stripPrefix "tags:") . T.lines
 
-insertTagsDB :: UserId -> CommentId -> Text -> DB ()
-insertTagsDB user_id comment_id content =
-    forM_ (tags content) $ \tag -> do
+insertTagsDB :: UserId -> CommentId -> [Text] -> DB ()
+insertTagsDB user_id comment_id tags =
+    forM_ tags $ \tag -> do
         tag_id <- either entityKey id <$> insertBy (Tag tag)
         insert_ $ CommentTag comment_id tag_id user_id 1
 
@@ -421,8 +500,8 @@ postComment insert_comment user_id mparent_id discussion_id contents visibility 
     let content = unMarkdown contents
 
     lift $ do
-        insertTicketsDB now comment_id content
-        insertTagsDB user_id comment_id content
+        insertTicketsDB now comment_id $ parseTickets content
+        insertTagsDB user_id comment_id $ parseTags content
 
         case mparent_id of
             Nothing -> return ()

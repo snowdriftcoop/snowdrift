@@ -86,6 +86,9 @@ selectCount from_ =
     fmap (\[Value n] -> n) $
     select $ from_ >> return countRows
 
+selectExists :: SqlQuery a -> DB Bool
+selectExists query = selectCount query >>= \n -> return $ n > 0
+
 -- XXX: Will this always succeed?
 key :: PersistEntity record => PersistValue -> Key record
 key v = let Right k = keyFromValues [v] in k
