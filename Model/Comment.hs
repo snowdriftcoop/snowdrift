@@ -65,6 +65,8 @@ module Model.Comment
     , postUnapprovedCommentDB
     , rethreadCommentDB
     , subFetchCommentAncestorsDB
+    , userClaimCommentDB
+    , userUnclaimCommentDB
     ) where
 
 import Import
@@ -308,6 +310,42 @@ insertCommentDB mapproved_ts mapproved_by mk_event created_ts discussion_id mpar
     tell [mk_event comment_id comment]
     return comment_id
 
+userClaimCommentDB :: UserId -> CommentId -> Maybe Text -> SDB ()
+userClaimCommentDB user_id comment_id mnote = do
+    now <- liftIO getCurrentTime
+
+    let ticket_claiming = TicketClaiming now user_id comment_id mnote
+
+    ticket_claiming_id <- lift $ insert ticket_claiming
+    tell [ETicketClaimed (Left (ticket_claiming_id, ticket_claiming))]
+
+userUnclaimCommentDB :: CommentId -> Maybe Text -> SDB ()
+userUnclaimCommentDB comment_id release_note = do
+    maybe_ticket_claiming_entity <- getBy $ UniqueTicketClaiming comment_id
+    case maybe_ticket_claiming_entity of
+        Nothing -> return ()
+        Just (Entity ticket_claiming_id TicketClaiming{..}) -> do
+            now <- liftIO getCurrentTime
+
+            let ticket_old_claiming = TicketOldClaiming
+                    ticketClaimingTs
+                    ticketClaimingUser
+                    ticketClaimingTicket
+                    ticketClaimingNote
+                    release_note
+                    now
+
+            ticket_old_claiming_id <- insert ticket_old_claiming
+
+            update $ \ etc -> do
+                set etc [ EventTicketClaimedClaim    =. val Nothing
+                        , EventTicketClaimedOldClaim =. val (Just ticket_old_claiming_id) ]
+                where_ $ etc ^. EventTicketClaimedClaim ==. val (Just ticket_claiming_id)
+
+            delete $ from $ \ tc -> where_ $ tc ^. TicketClaimingId ==. val ticket_claiming_id
+
+            tell [ ETicketUnclaimed ticket_old_claiming_id ticket_old_claiming ]
+
 -- | Fetch a comment from the DB, subject to viewing permissions.
 fetchCommentDB :: CommentId -> ExprCommentCond -> DB (Either NoCommentReason Comment)
 fetchCommentDB comment_id has_permission = get comment_id >>= \case
@@ -384,20 +422,21 @@ deleteTagsDB comment_id tags =
         tag_ids <- fetchTagIdsDB tag
         forM_ tag_ids $ deleteTagDB comment_id
 
-deleteTicketDB :: CommentId -> Text -> DB ()
-deleteTicketDB comment_id ticket_name =
+deleteTicketDB :: CommentId -> Text -> SDB ()
+deleteTicketDB comment_id ticket_name = do
     delete $ from $ \t ->
         where_ $ t ^. TicketName    ==. val ticket_name
              &&. t ^. TicketComment ==. val comment_id
+    userUnclaimCommentDB comment_id Nothing
 
-deleteTicketsDB :: CommentId -> [Text] -> DB ()
+deleteTicketsDB :: CommentId -> [Text] -> SDB ()
 deleteTicketsDB comment_id = mapM_ $ deleteTicketDB comment_id
 
 -- | Edit a comment's text. If the comment was flagged, unflag it and send a
 -- notification to the flagger.
 editCommentDB :: UserId -> CommentId -> Markdown -> Language -> SYDB ()
 editCommentDB user_id comment_id text language = do
-    lift updateComment
+    updateComment
     lift (fetchCommentFlaggingDB comment_id) >>= \case
         Nothing -> return ()
         Just (Entity comment_flagging_id CommentFlagging{..}) -> do
@@ -409,8 +448,8 @@ editCommentDB user_id comment_id text language = do
             sendPreferredNotificationDB commentFlaggingFlagger NotifFlagRepost Nothing Nothing notif_text
   where
     updateComment = do
-        existent_tickets <- fetchTicketNamesDB comment_id
-        existent_tags    <- fetchTagNamesDB comment_id
+        existent_tickets <- lift $ fetchTicketNamesDB comment_id
+        existent_tags    <- lift $ fetchTagNamesDB comment_id
         let content          = unMarkdown text
             content_tickets  = parseTickets content
             content_tags     = parseTags content
@@ -418,13 +457,13 @@ editCommentDB user_id comment_id text language = do
             obsolete_tickets = existent_tickets \\ content_tickets
             new_tags         = content_tags \\ existent_tags
             obsolete_tags    = existent_tags \\ content_tags
-        now <- liftIO getCurrentTime
-        insertTicketsDB now comment_id new_tickets
-        insertTagsDB user_id comment_id new_tags
+        now <- lift $ liftIO getCurrentTime
+        lift $ insertTicketsDB now comment_id new_tickets
+        lift $ insertTagsDB user_id comment_id new_tags
         deleteTicketsDB comment_id obsolete_tickets
-        deleteTagsDB comment_id obsolete_tags
+        lift $ deleteTagsDB comment_id obsolete_tags
 
-        update $ \c -> do
+        lift $ update $ \c -> do
         set c [ CommentText     =. val text
               , CommentLanguage =. val language
               ]
