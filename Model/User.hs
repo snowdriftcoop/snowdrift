@@ -498,8 +498,8 @@ userClaimCommentDB user_id comment_id mnote = do
     ticket_claiming_id <- lift $ insert ticket_claiming
     tell [ETicketClaimed (Left (ticket_claiming_id, ticket_claiming))]
 
-userUnclaimCommentDB :: UserId -> CommentId -> Maybe Text -> SDB ()
-userUnclaimCommentDB _ comment_id release_note = do
+userUnclaimCommentDB :: CommentId -> Maybe Text -> SDB ()
+userUnclaimCommentDB comment_id release_note = do
     maybe_ticket_claiming_entity <- lift $ getBy $ UniqueTicketClaiming comment_id
     case maybe_ticket_claiming_entity of
         Nothing -> return ()
