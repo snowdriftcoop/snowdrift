@@ -457,17 +457,18 @@ editCommentDB user_id comment_id text language = do
             obsolete_tickets = existent_tickets \\ content_tickets
             new_tags         = content_tags \\ existent_tags
             obsolete_tags    = existent_tags \\ content_tags
-        now <- lift $ liftIO getCurrentTime
-        lift $ insertTicketsDB now comment_id new_tickets
-        lift $ insertTagsDB user_id comment_id new_tags
         deleteTicketsDB comment_id obsolete_tickets
-        lift $ deleteTagsDB comment_id obsolete_tags
+        lift $ do
+            deleteTagsDB comment_id obsolete_tags
+            now <- liftIO getCurrentTime
+            insertTicketsDB now comment_id new_tickets
+            insertTagsDB user_id comment_id new_tags
 
-        lift $ update $ \c -> do
-        set c [ CommentText     =. val text
-              , CommentLanguage =. val language
-              ]
-        where_ (c ^. CommentId ==. val comment_id)
+            update $ \c -> do
+            set c [ CommentText     =. val text
+                  , CommentLanguage =. val language
+                  ]
+            where_ (c ^. CommentId ==. val comment_id)
 
 -- | Flag a comment. Send a notification to the poster about the flagging. Return whether
 -- or not the flag was successful (fails if the comment was already flagged.)
