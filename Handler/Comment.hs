@@ -396,12 +396,12 @@ postEditComment
         -> Entity Comment
         -> (CommentMods -> CommentHandlerInfo)
         -> Handler (Maybe (Widget, Widget))
-postEditComment user (Entity comment_id comment) make_comment_handler_info = do
+postEditComment user@(Entity user_id _) (Entity comment_id comment) make_comment_handler_info = do
     ((result, _), _) <- runFormPost (editCommentForm "" (commentLanguage comment))
     case result of
         FormSuccess (EditComment new_text new_language) -> lookupPostMode >>= \case
             Just PostMode -> do
-                runSYDB (editCommentDB comment_id new_text new_language)
+                runSYDB (editCommentDB user_id comment_id new_text new_language)
                 alertSuccess "posted new edit"
                 return Nothing
             _ -> do

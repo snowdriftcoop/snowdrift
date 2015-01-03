@@ -76,6 +76,9 @@ selectCount from_ =
     fmap (\[Value n] -> n) $
     select $ from_ >> return countRows
 
+selectExists :: SqlQuery a -> DB Bool
+selectExists query = selectCount query >>= \n -> return $ n > 0
+
 newHash :: IO Text
 newHash = T.pack . fst . randomString 42 <$> newStdGen
 
