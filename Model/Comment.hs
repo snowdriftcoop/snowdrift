@@ -80,7 +80,7 @@ import qualified Control.Monad.State                  as State
 import           Control.Monad.Writer.Strict          (tell)
 import           Data.Foldable                        (Foldable)
 import qualified Data.Foldable                        as F
-import           Data.List                            ((\\))
+import           Data.List                            ((\\), nub)
 import qualified Data.Map                             as M
 import           Data.Maybe                           (fromJust)
 import qualified Data.Set                             as S
@@ -513,7 +513,7 @@ insertTicketsDB now comment_id tickets =
 
 parseTags :: Text -> [Text]
 parseTags =
-    filter (not . T.null) . map T.strip . mconcat . map (T.splitOn ",") .
+    nub . filter (not . T.null) . map T.strip . mconcat . map (T.splitOn ",") .
     mapMaybe (T.stripPrefix "tags:") . T.lines
 
 insertTagsDB :: UserId -> CommentId -> [Text] -> DB ()
