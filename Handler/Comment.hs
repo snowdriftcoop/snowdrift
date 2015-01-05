@@ -72,6 +72,7 @@ import qualified Data.Set                        as S
 import qualified Data.Text                       as T
 import           Network.HTTP.Types.Status       (movedPermanently301)
 import           Yesod.Default.Config            (appRoot)
+import           Yesod.Markdown                  (unMarkdown)
 
 --------------------------------------------------------------------------------
 -- Utility functions
@@ -401,8 +402,15 @@ postEditComment user@(Entity user_id _) (Entity comment_id comment) make_comment
     case result of
         FormSuccess (EditComment new_text new_language) -> lookupPostMode >>= \case
             Just PostMode -> do
-                runSYDB (editCommentDB user_id comment_id new_text new_language)
-                alertSuccess "posted new edit"
+                let c = countMatches T.isPrefixOf "ticket:" $
+                            T.lines $ unMarkdown new_text
+                if c > 1
+                    then alertDanger $
+                        "each comment must contain at most one ticket; " <>
+                        "found " <> T.pack (show c)
+                    else do
+                        runSYDB (editCommentDB user_id comment_id new_text new_language)
+                        alertSuccess "posted new edit"
                 return Nothing
             _ -> do
                 (form, _) <- generateFormPost (editCommentForm new_text new_language)
