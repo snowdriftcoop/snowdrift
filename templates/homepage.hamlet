@@ -24,15 +24,17 @@
 <div .row>
     <div .col-md-6>
         <div .text-center style="background: whitesmoke; padding: 10px; margin-bottom: 10px;">
-            <h2 style="margin-top: 10px">Help us launch
+            <h2 style="margin-top: 10px">Our
+            <a href="https://snowdrift.tilt.com">
+                launch fund-drive
+            succeeded!
             <video poster="https://snowdrift.coop/img/fund-drive-intro-still" controls>
                 <source type="video/mp4" src="https://archive.org/download/snowdrift-fund-drive-intro/snowdrift-fund-drive-intro.mp4">
                 <source type="video/ogg" src="https://archive.org/download/snowdrift-fund-drive-intro/snowdrift-fund-drive-intro.ogv">
                 <track src="https://archive.org/download/snowdrift-fund-drive-intro/snowdrift-fund-drive-intro_en.vtt" label="English captions" kind="captions" srclang="en-us">
-            <br>
-            <a href="https://snowdrift.tilt.com">
-                <button style="font-size: large">
-                    Visit the campaign at Snowdrift.Tilt.com
+            <p>
+                The campaign video is still a good introduction to the site.
+                We plan to make newer videos too, stay tuned…
 
     <div .col-sm-6>
         <div .text-center style="background: whitesmoke; padding: 10px; margin-bottom: 10px;">
