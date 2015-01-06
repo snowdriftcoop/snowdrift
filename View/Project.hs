@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -fno-warn-warnings-deprecations #-}
+
 module View.Project
     ( editProjectForm
     , projectContactForm
