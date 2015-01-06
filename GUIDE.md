@@ -184,7 +184,7 @@ for bash, edit your ~/.bashrc (or equivalent) file and add the following line:
 
 Now, upgrade cabal itself:
 
-    cabal install Cabal cabal-install -j
+    cabal install cabal-install
 
 **change to your snowdrift project directory (if not already there).**
 
@@ -194,11 +194,11 @@ Then, initiate a cabal sandbox:
 
 Because there's a dependency bug, install arithmoi manually without llvm
 
-    cabal install arithmoi -f-llvm -j
+    cabal install arithmoi -f-llvm
 
-Install dependencies and build Snowdrift (note: the -j flag makes faster by using all processor cores):
+Install dependencies and build Snowdrift
 
-    cabal install --enable-tests --force-reinstalls -j
+    cabal install --enable-tests
 
 This will take a *long* time but should ultimately tell you it installed Snowdrift.
 Note: you can add the `-fdev` flag to the install command to skip optimization;
@@ -242,7 +242,7 @@ Then, you can rebuild and start the server with:
 
     yesod devel
 
-To stop yesod devel, press ENTER
+To stop yesod devel, press ENTER a couple times
 
 After the server starts, it may print a bunch of text about creating tables,
 and it will then sit ready, waiting for connections.
