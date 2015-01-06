@@ -13,7 +13,7 @@ widgetLayout widget = do
     pc <- widgetToPageContent $ do
         addStylesheet $ StaticR css_bootstrap_min_css
         widget
-    giveUrlRenderer $(hamletFile "templates/widget-wrapper.hamlet")
+    withUrlRenderer $(hamletFile "templates/widget-wrapper.hamlet")
 
 
 getWidgetR :: Text -> Handler Html
