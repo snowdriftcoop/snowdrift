@@ -18,6 +18,7 @@ import           Control.Applicative           as Import (pure, (<$>), (<*>))
 import           Control.Arrow                 as Import ((***), (&&&), (+++), first, second, (>>>), (<<<))
 import           Control.Monad                 as Import
 import           Control.Monad.Trans.Reader    (ReaderT)
+import           Data.Foldable                 as Import (Foldable, toList)
 import           Data.Function                 as Import (on)
 import           Data.Int                      as Import (Int64)
 import           Data.Map                      as Import (Map)
@@ -41,9 +42,7 @@ import           Yesod.Form.Bootstrap3         as Import
 import           Yesod (languages)
 import           Data.List (sortBy, (\\), nub)
 
-import GHC.Exts (IsList(..))
 import qualified Data.Map as M
-import qualified Data.Set as S
 
 #if __GLASGOW_HASKELL__ >= 704
 import           Data.Monoid          as Import (Monoid (mappend, mempty, mconcat), (<>))
@@ -54,11 +53,6 @@ infixr 5 <>
 (<>) :: Monoid m => m -> m -> m
 (<>) = mappend
 #endif
-
-instance Ord a => IsList (Set a) where
-    type Item (Set a) = a
-    fromList = S.fromList
-    toList = S.toList
 
 instance ToContent Markdown where
     toContent (Markdown text) = toContent $ text <> "\n"
@@ -73,7 +67,7 @@ on_ :: Esqueleto query expr backend => expr (Value Bool) -> query ()
 on_ = Database.Esqueleto.on
 
 -- Like Database.Esqueleto.valList, but more generic.
-valList :: (Esqueleto query expr backend, PersistField typ, IsList l, typ ~ Item l) => l -> expr (ValueList typ)
+valList :: (Esqueleto query expr backend, PersistField typ, Foldable l) => l typ -> expr (ValueList typ)
 valList = Database.Esqueleto.valList . toList
 
 infix 4 `notDistinctFrom`
