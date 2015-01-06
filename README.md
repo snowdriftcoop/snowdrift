@@ -45,15 +45,17 @@ here's quick and dirty minimal instructions to get started:
 
 ```
 // Install any dependencies you don't have:
-// GHC **7.8.3** (7.8.2 should be ok), cabal, PostgreSQL, zlib1g-dev, libpq-dev, happy, alex
+// GHC **7.8.x**, cabal, PostgreSQL, zlib1g-dev, libpq-dev, happy, alex
+//     libglib2.0-dev libcairo2-dev libpango1.0-dev
 // update cabal, set PATH, etc. — see GUIDE.md for more detailed instructions
 
 // Fork, clone and install
 git clone [your remote address, e.g. git@gitorious.org:snowdrift/yourusername-snowdrift.git]
+cabal install gtk2hs-buildtools
 cd snowdrift
 cabal sandbox init
 cabal install arithmoi -f-llvm
-cabal install --enable-tests -j
+cabal install --enable-tests
 
 // Set up the database with our quick script.
 // To understand what the script does or to run the commands manually, see GUIDE.md

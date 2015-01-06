@@ -153,25 +153,16 @@ and the precise commands may vary slightly from the ones we include here.
 
 ### Build steps
 
-Install the essential dependencies: ghc, cabal, postgresql, happy, alex, zlib1g, libpq-dev
+Install the essential dependencies: ghc, cabal, postgresql, happy, alex, zlib1g, libpq-dev, libglib2.0-dev, libcairo2-dev, libpango1.0-dev
 
 On Debian-based GNU/Linux distros, use this command:
 
-    sudo apt-get install ghc cabal-install haskell-platform postgresql zlib1g-dev libpq-dev happy alex
+    sudo apt-get install ghc cabal-install haskell-platform postgresql zlib1g-dev libpq-dev happy alex libglib2.0-dev libcairo2-dev libpango1.0-dev
 
-**Note: we are now using GHC 7.8.3** (although 7.8.2 may work as well)
-If your system's GHC version is older, get the updated Haskell Platform 2014.2.0.0 from
-<http://www.haskell.org/platform>
+**Note: we are now using GHC 7.8.x**
+If your system's GHC version is older, get the update from <https://www.haskell.org/ghc/>
 
-
-(There are also a few non-Haskell libraries with some dependencies which you may
-need to install and which presumably will be in your system's package manager.
-We don't have a full list compiled yet, but they can be picked out of the error
-messages if the commands below fail. If you make a list,
-please update this guide and send a pull request!)
-
-
-After installing everything, update cabal's package list:
+Next, update cabal's package list:
 
     cabal update
 
@@ -185,6 +176,10 @@ for bash, edit your ~/.bashrc (or equivalent) file and add the following line:
 Now, upgrade cabal itself:
 
     cabal install cabal-install
+
+Then, run
+
+    cabal install gtk2hs-buildtools
 
 **change to your snowdrift project directory (if not already there).**
 
@@ -236,7 +231,7 @@ and it can stay running and will automatically update the build after each saved
 
 To enable yesod devel, first install yesod-bin:
 
-    cabal install yesod-bin -j
+    cabal install yesod-bin
 
 Then, you can rebuild and start the server with:
 
