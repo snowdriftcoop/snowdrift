@@ -470,12 +470,20 @@ getUserTicketsR user_id = do
 
         where_ $ tc ^. TicketClaimingUser ==. val user_id
             &&. c ^. CommentId `notIn` (subList_select $ from $ return . (^. CommentClosingComment))
+            &&. c ^. CommentId `notIn` (subList_select $ from $ return . (^. CommentRethreadOldComment))
 
         orderBy [ asc $ tc ^. TicketClaimingTs ]
 
         return (t, wt, p ^. ProjectHandle)
 
-    watched_tickets <- runDB $ select $ from $ \
+    -- XXX: There are two known issues with this query:
+    -- 1. If a watched comment is a ticket and the nth child, the
+    -- query will return the same ticket n times.
+    -- 2. If there are n watched comments in the same thread, each
+    -- child ticket in the thread will be returned n times.
+    -- 'selectDistinct' just hides these problems from the user's
+    -- eyes.
+    watched_tickets <- runDB $ selectDistinct $ from $ \
         (
                             c   -- Comment
             `LeftOuterJoin` ca  -- CommentAncestor - link between comment and subthread root
@@ -499,6 +507,7 @@ getUserTicketsR user_id = do
 
             where_ $ (isNothing (tc ?. TicketClaimingId) ||. tc ?. TicketClaimingUser !=. just (val user_id))
                 &&. c ^. CommentId `notIn` (subList_select $ from $ return . (^. CommentClosingComment))
+                &&. c ^. CommentId `notIn` (subList_select $ from $ return . (^. CommentRethreadOldComment))
                 &&. ws ^. WatchedSubthreadUser ==. val user_id
 
             orderBy [ asc $ t ^. TicketCreatedTs, asc $ t ^. TicketId ]
