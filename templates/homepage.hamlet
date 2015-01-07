@@ -24,10 +24,10 @@
 <div .row>
     <div .col-md-6>
         <div .text-center style="background: whitesmoke; padding: 10px; margin-bottom: 10px;">
-            <h2 style="margin-top: 10px">Our
-            <a href="https://snowdrift.tilt.com">
-                launch fund-drive
-            succeeded!
+            <h2 style="margin-top: 10px">
+                Our
+                <a href="https://snowdrift.tilt.com"> launch fund-drive
+                succeeded!
             <video poster="https://snowdrift.coop/img/fund-drive-intro-still" controls>
                 <source type="video/mp4" src="https://archive.org/download/snowdrift-fund-drive-intro/snowdrift-fund-drive-intro.mp4">
                 <source type="video/ogg" src="https://archive.org/download/snowdrift-fund-drive-intro/snowdrift-fund-drive-intro.ogv">

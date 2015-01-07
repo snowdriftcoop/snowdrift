@@ -153,7 +153,9 @@ and the precise commands may vary slightly from the ones we include here.
 
 ### Build steps
 
-Install the essential dependencies: ghc, cabal, postgresql, happy, alex, zlib1g, libpq-dev, libglib2.0-dev, libcairo2-dev, libpango1.0-dev
+Install the essential dependencies: ghc, cabal, postgresql, happy, alex, zlib1g
+
+Some additional dependencies (which may vary for different systems) include: libpq-dev, libglib2.0-dev, libcairo2-dev, libpango1.0-dev
 
 On Debian-based GNU/Linux distros, use this command:
 
@@ -223,7 +225,9 @@ you can start the server from within your snowdrift directory with the command:
 
 To stop the running server, press ctrl-C
 
-To rebuild after code changes, run `cabal install -j` (perhaps with `-fdev` to skip optimization).
+To rebuild after code changes, run `cabal install` (perhaps with `-fdev` to skip optimization).
+
+(note `cabal build` works as well but fails to recognize changes to template files)
 
 Alternately, you can use `yesod devel` to start the server,
 and it can stay running and will automatically update the build after each saved change.
