@@ -937,6 +937,12 @@ rethreadCommentDB mnew_parent_id new_discussion_id root_comment_id user_id reaso
                               <#  (vc  ^. ViewCommentUser)
                               <&> (cr  ^. CommentRethreadNewComment))
 
+        updateForRethread WatchedSubthreadRoot
+                          (\ws cr -> WatchedSubthread
+                              <#  (ws ^. WatchedSubthreadTs)
+                              <&> (ws ^. WatchedSubthreadUser)
+                              <&> (cr ^. CommentRethreadNewComment))
+
 fetchCommentTicketsDB :: Set CommentId -> DB (Map CommentId (Entity Ticket))
 fetchCommentTicketsDB comment_ids = do
     ticket_entities <- select $ from $ \ t -> do
