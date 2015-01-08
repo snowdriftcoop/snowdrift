@@ -189,10 +189,6 @@ Then, initiate a cabal sandbox:
 
     cabal sandbox init
 
-Because there's a dependency bug, install arithmoi manually without llvm
-
-    cabal install arithmoi -f-llvm
-
 Install dependencies and build Snowdrift
 
     cabal install --enable-tests

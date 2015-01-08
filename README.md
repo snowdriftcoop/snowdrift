@@ -54,7 +54,6 @@ git clone [your remote address, e.g. git@gitorious.org:snowdrift/yourusername-sn
 cabal install gtk2hs-buildtools
 cd snowdrift
 cabal sandbox init
-cabal install arithmoi -f-llvm
 cabal install --enable-tests
 
 // Set up the database with our quick script.
