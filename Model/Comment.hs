@@ -78,7 +78,6 @@ import           Database.Esqueleto.Internal.Language (Insertion)
 import qualified Database.Persist                     as P
 import           GHC.Exts                             (IsList(..))
 import qualified Prelude                              as Prelude
-import           Yesod.Markdown                       (Markdown(..))
 
 --------------------------------------------------------------------------------
 -- Types

@@ -21,8 +21,6 @@ import View.User
 import Widgets.Preview
 import Widgets.Time
 
-import Yesod.Markdown
-
 import           Data.Default
 import qualified Data.Text      as T
 import           Data.Tree      (Forest, Tree)

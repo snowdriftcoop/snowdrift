@@ -10,7 +10,6 @@ import           Data.Text.Encoding
 import           Text.Regex.TDFA
 import           Text.Regex.TDFA.ByteString
 import           Text.Pandoc
-import           Yesod.Markdown (Markdown (..))
 
 import Model.Discussion
 

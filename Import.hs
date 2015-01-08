@@ -34,7 +34,7 @@ import           Prelude                       as Import hiding (head, init, las
 import           System.Random                 (newStdGen)
 import           Yesod                         as Import hiding (Route (..), (||.), (==.), (!=.), (<.), (<=.), (>.), (>=.), (=.), (+=.), (-=.), (*=.), (/=.), selectSource, delete, update, count, Value, runDB, languages)
 import           Yesod.Auth                    as Import
-import           Yesod.Markdown                as Import (Markdown)
+import           Yesod.Markdown                as Import (Markdown (..))
 import           Yesod.Form.Bootstrap3         as Import
 
 import           Yesod (languages)
@@ -58,6 +58,15 @@ instance Ord a => IsList (Set a) where
     type Item (Set a) = a
     fromList = S.fromList
     toList = S.toList
+
+instance ToContent Markdown where
+    toContent (Markdown text) = toContent $ text <> "\n"
+
+instance ToTypedContent Markdown where
+    toTypedContent markdown = TypedContent "text/markdown" $ toContent markdown
+
+instance HasContentType Markdown where
+    getContentType _ = "text/markdown"
 
 on_ :: Esqueleto query expr backend => expr (Value Bool) -> query ()
 on_ = Database.Esqueleto.on

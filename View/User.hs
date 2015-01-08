@@ -28,7 +28,6 @@ import qualified Data.List.NonEmpty     as N
 import qualified Data.Map               as M
 import qualified Data.Set               as S
 import           Data.String            (fromString)
-import           Yesod.Markdown
 
 createUserForm :: Maybe Text -> Form (Text, Text, Maybe Text, Maybe Text, Maybe Text, Maybe Text)
 createUserForm ident extra = do

@@ -30,7 +30,6 @@ import qualified Data.Set             as S
 import qualified Data.Text            as T
 import           Text.Blaze.Html5     (ins, del, br)
 import           Text.Cassius         (cassiusFile)
-import           Yesod.Markdown
 
 import           Yesod.Default.Config            (appRoot)
 
@@ -100,47 +99,54 @@ pageInfoRequireCanEdit project_handle language target =
 --------------------------------------------------------------------------------
 -- /#language/#target
 
-getWikiR :: Text -> Language -> Text -> Handler Html
+getWikiR :: Text -> Language -> Text -> Handler TypedContent
 getWikiR project_handle language target = do
-    maybe_user <- maybeAuth
-
     languages <- getLanguages
 
-    (project, edit, comment_count, translations) <- runYDB $ do
-        (Entity project_id project, Entity page_id page, _) <- pageInfo project_handle language target
-
-        let muser_id      = entityKey <$> maybe_user
-            discussion_id = wikiPageDiscussion page
-
-        case muser_id of
-            Nothing -> return ()
-            Just user_id -> do
-                is_watching <- userIsWatchingProjectDB user_id project_id
-                when is_watching $
-                    userViewWikiEditsDB user_id page_id
-
-        let has_permission = exprCommentProjectPermissionFilter muser_id (val project_id)
-
-        roots_ids    <- map entityKey <$> fetchDiscussionRootCommentsDB discussion_id has_permission
-        num_children <- length <$> fetchCommentsDescendantsDB roots_ids has_permission
+    (Entity project_id project, Entity page_id page, edits) <- runYDB $ do
+        (project, Entity page_id page, _) <- pageInfo project_handle language target
 
         edits <- select $ from $ \ (we `InnerJoin` le) -> do
             on_ $ we ^. WikiEditId ==. le ^. WikiLastEditEdit
             where_ $ we ^. WikiEditPage ==. val page_id
             return we
 
-        let [Entity _ edit] = pickEditsByLanguage languages edits
-            translations = L.delete (wikiEditLanguage edit) $ map (wikiEditLanguage . entityVal) edits
+        return (project, Entity page_id page, edits)
 
-        return (project, edit, length roots_ids + num_children, translations)
+    selectRep $ do
+        let Entity _ edit:_ = pickEditsByLanguage languages edits
 
-    let can_edit = fromMaybe False (userCanEditWikiPage . entityVal <$> maybe_user)
+        provideRep $ return $ wikiEditContent edit
+        provideRep $ do
+            maybe_user <- maybeAuth
 
-    defaultLayout $ do
-        setTitle . toHtml $
-            projectName project <> " : " <> target <> " | Snowdrift.coop"
+            let can_edit = fromMaybe False (userCanEditWikiPage . entityVal <$> maybe_user)
 
-        renderWiki comment_count project_handle language target can_edit translations edit
+            (comment_count, translations) <- runYDB $ do
+                let muser_id      = entityKey <$> maybe_user
+                    discussion_id = wikiPageDiscussion page
+
+                case muser_id of
+                    Nothing -> return ()
+                    Just user_id -> do
+                        is_watching <- userIsWatchingProjectDB user_id project_id
+                        when is_watching $
+                            userViewWikiEditsDB user_id page_id
+
+                let has_permission = exprCommentProjectPermissionFilter muser_id (val project_id)
+
+                roots_ids    <- map entityKey <$> fetchDiscussionRootCommentsDB discussion_id has_permission
+                num_children <- length <$> fetchCommentsDescendantsDB roots_ids has_permission
+
+                let translations = L.delete (wikiEditLanguage edit) $ map (wikiEditLanguage . entityVal) edits
+
+                return (length roots_ids + num_children, translations)
+
+            defaultLayout $ do
+                setTitle . toHtml $
+                    projectName project <> " : " <> target <> " | Snowdrift.coop"
+
+                renderWiki comment_count project_handle language target can_edit translations edit
 
 postWikiR :: Text -> Language -> Text -> Handler Html
 postWikiR project_handle target_language target = do

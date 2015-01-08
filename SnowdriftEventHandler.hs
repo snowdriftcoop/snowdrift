@@ -16,7 +16,6 @@ import           Data.Maybe           (fromJust)
 import qualified Data.Text            as T
 import qualified Database.Persist
 import           Yesod.Default.Config (AppConfig (..), DefaultEnv (..))
-import           Yesod.Markdown
 
 -- Add more event handlers here.
 snowdriftEventHandlers :: AppConfig DefaultEnv Extra

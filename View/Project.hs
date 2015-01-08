@@ -29,7 +29,6 @@ import           Widgets.Time
 
 import qualified Data.Text       as T
 import           Data.Time.Clock
-import           Yesod.Markdown
 
 renderProject :: Maybe ProjectId -> Project -> Maybe UserId -> Bool -> [Int64]
               -> Maybe (Entity Pledge) -> WidgetT App IO ()

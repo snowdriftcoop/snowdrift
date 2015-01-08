@@ -2,8 +2,6 @@ module Widgets.Markdown where
 
 import Import
 
-import Yesod.Markdown
-
 import qualified Data.Text as T
 
 

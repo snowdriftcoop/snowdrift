@@ -4,8 +4,6 @@ import Import
 
 import           Control.Monad.Writer.Strict          (tell)
 
-import           Yesod.Markdown
-
 import qualified Data.Text as T
 
 
