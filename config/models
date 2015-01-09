@@ -369,6 +369,11 @@ CommentTag
 
     UniqueCommentTag comment tag user
 
+DeprecatedTag
+    project ProjectId
+    tag TagId
+    reason Text
+
 -- A Comment can have at most one Ticket (i.e. the comment can be marked as a ticket)
 Ticket
     createdTs UTCTime

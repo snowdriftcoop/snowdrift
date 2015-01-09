@@ -232,24 +232,26 @@ getProjectTagList :: ProjectId -> DB ([Entity Tag], [Entity Tag])
 getProjectTagList project_id = (,) <$> getProjectTags <*> getOtherTags
   where
     getProjectTags :: DB [Entity Tag]
-    getProjectTags =
-        selectDistinct $
-        from $ \ (tag `InnerJoin` rel `InnerJoin` comment `InnerJoin` page) -> do
-        on_ ( page ^. WikiPageDiscussion ==. comment ^. CommentDiscussion )
-        on_ ( comment ^. CommentId ==. rel ^. CommentTagComment )
-        on_ ( rel ^. CommentTagTag ==. tag ^. TagId )
-        where_ ( page ^. WikiPageProject ==. val project_id )
+    getProjectTags = selectDistinct $ from $ \ (tag `InnerJoin` rel `InnerJoin` comment `InnerJoin` page) -> do
+        on_ $ page ^. WikiPageDiscussion ==. comment ^. CommentDiscussion
+        on_ $ comment ^. CommentId ==. rel ^. CommentTagComment
+        on_ $ rel ^. CommentTagTag ==. tag ^. TagId
+
+        where_ $ page ^. WikiPageProject ==. val project_id
+            &&. tag ^. TagId `notIn` deprecatedTags
         orderBy [ desc (tag ^. TagName) ]
         return tag
 
+    deprecatedTags = subList_select $ from $ \ dt -> do
+        where_ $ dt ^. DeprecatedTagProject ==. val project_id
+        return $ dt ^. DeprecatedTagTag
+
     getOtherTags :: DB [Entity Tag]
-    getOtherTags =
-        selectDistinct $
-        from $ \ (tag `InnerJoin` rel `InnerJoin` comment `InnerJoin` page) -> do
-        on_ ( page ^. WikiPageDiscussion ==. comment ^. CommentDiscussion )
-        on_ ( comment ^. CommentId ==. rel ^. CommentTagComment )
-        on_ ( rel ^. CommentTagTag ==. tag ^. TagId )
-        where_ ( page ^. WikiPageProject !=. val project_id )
+    getOtherTags = selectDistinct $ from $ \ (tag `InnerJoin` rel `InnerJoin` comment `InnerJoin` page) -> do
+        on_ $ page ^. WikiPageDiscussion ==. comment ^. CommentDiscussion
+        on_ $ comment ^. CommentId ==. rel ^. CommentTagComment
+        on_ $ rel ^. CommentTagTag ==. tag ^. TagId
+        where_ $ page ^. WikiPageProject !=. val project_id
         orderBy [ desc (tag ^. TagName) ]
         return tag
 
