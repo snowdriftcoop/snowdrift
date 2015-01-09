@@ -2,6 +2,8 @@
 
 module Model where
 
+import Model.TH
+
 import Model.Comment.Internal      (FlagReason, Visibility)
 import Model.Currency              (Milray)
 import Model.Discussion.TH         (mkDiscussionTypes)
@@ -35,6 +37,7 @@ share [ mkPersist sqlOnlySettings
       , mkMigrate "migrateAll"
       , mkDeleteCascade sqlOnlySettings
       , mkDiscussionTypes
+      , mkReferences "Comment"
       ]
     $(persistFileWith lowerCaseSettings "config/models")
 

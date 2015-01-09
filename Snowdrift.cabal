@@ -57,6 +57,7 @@ library
                      Model.Shares
                      Model.SnowdriftEvent
                      Model.SnowdriftEvent.Internal
+                     Model.TH
                      Model.Tag
                      Model.Transaction
                      Model.User
