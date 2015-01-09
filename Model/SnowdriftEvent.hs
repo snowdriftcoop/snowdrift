@@ -8,7 +8,6 @@ module Model.SnowdriftEvent
 
 import Import
 
-import Model.Discussion
 import Model.User
 
 import qualified Data.Map   as M

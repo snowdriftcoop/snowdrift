@@ -7,7 +7,6 @@ import Import
 import Model.Comment
 import Model.Comment.ActionPermissions
 import Model.Comment.Routes
-import Model.Discussion
 import Model.User
 import View.Comment
 import Widgets.Time

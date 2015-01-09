@@ -4,6 +4,7 @@ module Model where
 
 import Model.Comment.Internal      (FlagReason, Visibility)
 import Model.Currency              (Milray)
+import Model.Discussion.TH         (mkDiscussionTypes)
 import Model.Established.Internal  (Established(..))
 import Model.Language
 import Model.Markdown.Diff         (MarkdownDiff)
@@ -33,6 +34,7 @@ import Yesod.Markdown              (Markdown)
 share [ mkPersist sqlOnlySettings
       , mkMigrate "migrateAll"
       , mkDeleteCascade sqlOnlySettings
+      , mkDiscussionTypes
       ]
     $(persistFileWith lowerCaseSettings "config/models")
 

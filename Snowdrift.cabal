@@ -39,6 +39,7 @@ library
                      Model.Comment.Sql
                      Model.Currency
                      Model.Discussion
+                     Model.Discussion.TH
                      Model.Issue
                      Model.Language
                      Model.Language.TH

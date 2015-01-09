@@ -11,7 +11,6 @@ import Model.Comment.ActionPermissions
 import Model.Comment.HandlerInfo
 import Model.Comment.Mods
 import Model.Comment.Sql
-import Model.Discussion
 import Model.Markdown
 import Model.User
 import View.Comment

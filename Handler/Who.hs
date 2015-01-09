@@ -6,7 +6,6 @@ import Import
 import Data.List (sortBy)
 
 import Model.Markdown
-import Model.Discussion
 
 userShortName :: User -> Text
 userShortName user = fromMaybe (userIdent user) $ userName user

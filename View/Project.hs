@@ -18,7 +18,6 @@ import           Data.Filter
 import           Data.Maybe (fromJust)
 import           Data.Order
 import           Model.Currency
-import           Model.Discussion
 import           Model.Markdown
 import           Model.Project
 import           Model.Shares

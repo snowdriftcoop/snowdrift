@@ -2,7 +2,6 @@ module View.Wiki where
 
 import Import
 
-import           Model.Discussion
 import           Model.Permission
 import           Model.Markdown
 import           Widgets.Markdown

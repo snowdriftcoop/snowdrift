@@ -17,26 +17,6 @@ import Control.Monad.Trans.Maybe
 import qualified Data.Map as M
 import qualified Data.Set as S
 
--- | An internal sum type that contains a constructer per database table that acts
--- as a "Discussion". This way, we get a relatively type-safe way of ensuring that
--- all possible such tables are referenced when fetching the data associated with
--- some arbitrary Discussion.
---
--- Any new Discussion-ey tables MUST have a constructor added here! (and below, too)
-data DiscussionType
-    = DiscussionTypeProject
-    | DiscussionTypeWikiPage
-    | DiscussionTypeUser
-    | DiscussionTypeBlogPost
-    deriving (Bounded, Enum)
-
--- | Similar to DiscussionType, but exported, and actually contains the data.
-data DiscussionOn
-    = DiscussionOnProject  (Entity Project)
-    | DiscussionOnWikiPage (Entity WikiTarget)
-    | DiscussionOnUser     (Entity User)
-    | DiscussionOnBlogPost (Entity BlogPost)
-
 -- | Given a 'requested' DiscussionType, attempt to fetch the Discussion from that
 -- table. If, say, the requested DiscussionType is DiscussionTypeProject, but the
 -- given DiscussionId corresponds to a discussion on a WikiPage, this function

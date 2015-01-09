@@ -11,8 +11,6 @@ import           Text.Regex.TDFA
 import           Text.Regex.TDFA.ByteString
 import           Text.Pandoc
 
-import Model.Discussion
-
 
 -- TODO: we should probably put together some standard sets of these transforms for use in various places, rather than assembling ad-hoc
 
