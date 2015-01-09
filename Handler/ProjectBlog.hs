@@ -49,10 +49,7 @@ checkComment' muser_id project_handle post_name comment_id = do
     redirectIfRethreaded comment_id
 
     (project, blog_post, ecomment) <- runYDB $ do
-        liftIO $ appendFile "log" $ unwords [ "getting project with handle", show project_handle ] ++ "\n"
         project@(Entity project_id _)   <- getBy404 $ UniqueProjectHandle project_handle
-
-        liftIO $ appendFile "log" $ unwords [ "getting post for project", show project_id, "with handle", show post_name ] ++ "\n"
         Entity _ blog_post              <- getBy404 $ UniqueBlogPost project_id post_name
 
         let has_permission = exprCommentProjectPermissionFilter muser_id (val project_id)
@@ -61,23 +58,11 @@ checkComment' muser_id project_handle post_name comment_id = do
         return (project, blog_post, ecomment)
 
     case ecomment of
-        Left CommentNotFound         -> do
-            liftIO $ appendFile "log" "comment not found"
-            notFound
-
+        Left CommentNotFound         -> notFound
         Left CommentPermissionDenied -> permissionDenied "You don't have permission to view this comment."
         Right comment                ->
             if commentDiscussion comment /= blogPostDiscussion blog_post
-                then do
-                    liftIO $ appendFile "log" $ unwords
-                        [ "comment discussion"
-                        , show $ commentDiscussion comment
-                        , "does not match blog post discussion"
-                        , show $ blogPostDiscussion blog_post
-                        ]
-
-                    notFound
-
+                then notFound
                 else return (project, comment)
 
 
