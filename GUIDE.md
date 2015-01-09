@@ -225,19 +225,23 @@ To rebuild after code changes, run `cabal install` (perhaps with `-fdev` to skip
 
 (note `cabal build` works as well but fails to recognize changes to template files)
 
-Alternately, you can use `yesod devel` to start the server,
-and it can stay running and will automatically update the build after each saved change.
-(Although it fails to auto-recognize changes in some file types like .cassius)
-
-To enable yesod devel, first install yesod-bin:
-
-    cabal install yesod-bin
-
-Then, you can rebuild and start the server with:
-
-    yesod devel
-
-To stop yesod devel, press ENTER a couple times
+<!-- yesod-bin will not currently build in the same sandbox, and things get complicated - will restore this when it applies again
+--
+-- Alternately, you can use `yesod devel` to start the server,
+-- and it can stay running and will automatically update the build after each saved change.
+-- (Although it fails to auto-recognize changes in some file types like .cassius)
+--
+-- To enable yesod devel, first install yesod-bin:
+--
+--     cabal install yesod-bin
+--
+-- Then, you can rebuild and start the server with:
+--
+--     yesod devel
+--
+-- To stop yesod devel, press ENTER a couple times
+--
+-->
 
 After the server starts, it may print a bunch of text about creating tables,
 and it will then sit ready, waiting for connections.

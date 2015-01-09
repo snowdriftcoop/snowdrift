@@ -68,11 +68,13 @@ Snowdrift Development
 //To rebuild after making changes run
 cabal install
 
-// For fast, automatic rebuilding whenever you change the code, install the yesod-bin package
-cabal install yesod-bin
-// then instead of "Snowdrift Development" run the site with
-yesod devel
-// which can be left running in a terminal while working elsewhere
+<!-- yesod-bin has issues building with our stuff - will restore this when that is resolved
+-- // For fast, automatic rebuilding whenever you change the code, install the yesod-bin package
+-- cabal install yesod-bin
+-- // then instead of "Snowdrift Development" run the site with
+-- yesod devel
+-- // which can be left running in a terminal while working elsewhere
+-->
 
 ```
 
