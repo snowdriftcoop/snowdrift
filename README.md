@@ -68,6 +68,8 @@ Snowdrift Development
 //To rebuild after making changes run
 cabal install
 
+```
+
 <!-- yesod-bin has issues building with our stuff - will restore this when that is resolved
 -- // For fast, automatic rebuilding whenever you change the code, install the yesod-bin package
 -- cabal install yesod-bin
@@ -76,6 +78,5 @@ cabal install
 -- // which can be left running in a terminal while working elsewhere
 -->
 
-```
 
 Read through GUIDE.md for thorough details and more about development, testing, and so on.
