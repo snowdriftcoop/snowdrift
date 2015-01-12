@@ -199,6 +199,19 @@ then the live site will run slower, but the building will go faster.
 
 Contact us for help if the build is not successful.
 
+Nixos
+-----
+
+prior to running the database init script, below, nixos users can install postgres by adding these lines to /etc/nixos/configuration.nix:
+
+  services.postgresql.enable = true;
+  services.postgresql.package = pkgs.postgresql94;
+
+Then issue "sudo nixos-rebuild switch" to install.  Afterwards you may need to create the postgres user, like so:
+
+  > sudo -su root
+  > createuser -s -r postgres
+
 
 Setting up the database
 -----------------------
