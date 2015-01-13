@@ -199,29 +199,32 @@ then the live site will run slower, but the building will go faster.
 
 Contact us for help if the build is not successful.
 
-Nixos
------
-
-prior to running the database init script, below, nixos users can install postgres by adding these lines to /etc/nixos/configuration.nix:
-
-  services.postgresql.enable = true;
-  services.postgresql.package = pkgs.postgresql94;
-
-Then issue "sudo nixos-rebuild switch" to install.  Afterwards you may need to create the postgres user, like so:
-
-  > sudo -su root
-  > createuser -s -r postgres
-
-
 Setting up the database
 -----------------------
 
-We offer a simple script that will setup the PostgreSQL databases for you. Simply run:
+We offer a simple script that will setup the PostgreSQL databases for you.
+Some systems may need some extra set-up, but for most GNU/Linux systems, simply run:
 
     sdm init
 
 It will prompt you for your sudo password.
+
 If you prefer to set up databases manually, see the appendix at the end of this guide.
+
+
+Note for users of NixOS
+-----------------------
+
+To get the sdm script to work, NixOS users should install postgres by adding these lines to /etc/nixos/configuration.nix:
+
+  services.postgresql.enable = true;
+  services.postgresql.package = pkgs.postgresql94;
+
+Then issue `sudo nixos-rebuild switch` to install.
+Afterwards you may need to create the postgres user, like so:
+
+    sudo -su root
+    createuser -s -r postgres
 
 
 Running the site
