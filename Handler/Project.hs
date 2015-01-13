@@ -273,7 +273,7 @@ postProjectR project_handle = do
             redirect $ ProjectR project_handle
 
 --------------------------------------------------------------------------------
--- /application
+-- /applications (List of submitted applications)
 
 getApplicationsR :: Text -> Handler Html
 getApplicationsR project_handle = do
@@ -292,6 +292,9 @@ getApplicationsR project_handle = do
     defaultLayout $ do
         setTitle . toHtml $ projectName project <> " Volunteer Applications | Snowdrift.coop"
         $(widgetFile "applications")
+
+--------------------------------------------------------------------------------
+-- /application (Form for new application)
 
 getApplicationR :: Text -> VolunteerApplicationId -> Handler Html
 getApplicationR project_handle application_id = do
@@ -1264,4 +1267,3 @@ postNewProjectDiscussionR project_handle = do
       (makeProjectCommentActionPermissionsMap (Just user) project_handle def) >>= \case
         Left comment_id -> redirect (ProjectCommentR project_handle comment_id)
         Right (widget, form) -> defaultLayout $ previewWidget form "post" (projectDiscussionPage project_handle widget)
-

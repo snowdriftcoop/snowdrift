@@ -386,6 +386,13 @@ APPENDIX: Manual database management
 Our sdm script makes database management quick and easy.
 All the steps below can be done simply with the sdm script,
 but here we explain what it does and how to handle databases manually if you prefer.
+The commands below are written with GNU/Linux in mind.
+
+Notes for Mac OS X
+------------------
+
+Assuming the postgres server is running, where `sudo -u postgres psql` is seen below, run `psql postgres` instead.
+The commands that don't use psql can be adapted to run within the psql command line.
 
 
 Setting up the development database manually
@@ -512,4 +519,3 @@ skipping the dependencies/user-creation/password parts (those don't need updatin
     sudo -u postgres psql
     postgres=# update pg_database set datistemplate=true where datname='snowdrift_test_template';
     sudo -u postgres psql snowdrift_test_template <testDB.sql
-
