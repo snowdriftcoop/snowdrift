@@ -26,6 +26,7 @@ import           Model.Project
 import           Model.Shares
 import           Model.Role
 import           View.User (userNameWidget)
+import           Widgets.Image
 import           Widgets.Markdown
 import           Widgets.Preview
 import           Widgets.Time
@@ -113,13 +114,14 @@ previewBlogPost viewer_id project_handle project_blog@ProjectBlog {..} = do
     defaultLayout $ previewWidget form "post" $
         renderBlogPost project_handle blog_post Preview
 
-editProjectForm :: Maybe (Project, [Text]) -> Form UpdateProject
-editProjectForm project =
+editProjectForm :: Maybe (Project, [Text]) -> [Entity Image] -> Form UpdateProject
+editProjectForm project images =
     renderBootstrap3 BootstrapBasicForm $ UpdateProject
         <$> areq' textField "Project Name" (projectName . fst <$> project)
         <*> areq' snowdriftMarkdownField "Description" (projectDescription . fst <$> project)
         <*> (maybe [] (map T.strip . T.splitOn ",") <$> aopt' textField "Tags" (Just . T.intercalate ", " . snd <$> project))
         <*> aopt' textField "GitHub Repository (to show GH tickets here at Snowdrift.coop)" (projectGithubRepo . fst <$> project)
+        <*> aopt' (imageSelectField images) "Select Image" (projectLogo . fst <$> project)
 
 data ProjectBlog = ProjectBlog
     { projectBlogTitle   :: Text

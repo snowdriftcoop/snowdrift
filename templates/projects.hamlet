@@ -1,17 +1,50 @@
 <h1> 
     <div .text-center> Projects
 
-<p style="color: darkred">
-    Plans for this page include presenting more clear logos, stats about current patrons, and more.
-    The project sign-up process is in development currently.
-    The project listing now is mostly for testing, although these are real projects,
-    and tools such as discussion and wiki pages are already operating.
-
-
 $if null projects
     <p> no projects to display
 $else
-    <table .projects>
+    <!-- add project_id back in -->
+    $forall Entity _ project <- projects
+        <fieldset>
+            <!-- 
+                Project Type could be added as a legend here, but is not
+                currently in Project table.  We'd have to link to the
+                ProjectSignup table or add to Project table.
+            -->
+            <div class="row">
+                <div class="col-md-2">
+                   <img src=@{ImageR $ fetchProjectLogoDB (projectLogo project)}>
+                <div class="col-md-10">
+                    <a href=@{ProjectR (projectHandle project)}>
+                        <H1 align="center">
+                            #{projectName project}
+                    <font size="-1">
+                        <p align="left">
+                            #{projectDescription project}
+                    <!--<div class="row">
+                        <div class="col-md-6">
+                           _{MsgPatrons (fromIntegral $ length (getProjectShares project_id)) }
+                        <div class="col-md-6">
+                            _{lift $ getProjectShares project_id} Total Shares @ #{show (projectShareValue project)}/share
+                        -->
+                    <div class="row">
+                        <div class="col-md-8">
+                        <div class="col-md-1">
+                            <a href=@{ProjectFeedR (projectHandle project)}>
+                                <span .glyphicon .glyphicon-list>
+                        <div class="col-md-1">
+                            <a href=@{ProjectDiscussionR (projectHandle project)}>
+                                <span .glyphicon .glyphicon-comment>
+                        <div class="col-md-1">
+                            <a href=@{WikiPagesR (projectHandle project)}>
+                                <span .glyphicon .glyphicon-book>
+                        <div class="col-md-1">
+                                <span .glyphicon .glyphicon-tag>
+                        
+
+
+<!--    <table .projects>
         <tr>
             <th> Project
             <th> Feed
@@ -20,6 +53,8 @@ $else
             <th> Share value
 
         $forall Entity _ project <- projects
+            
+
             <tr>
                 <td>
                     <a href=@{ProjectR (projectHandle project)}>
@@ -35,3 +70,4 @@ $else
                         <span .glyphicon .glyphicon-book>&nbsp;
                 <td>
                     #{show (projectShareValue project)}/share
+-->

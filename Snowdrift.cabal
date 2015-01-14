@@ -115,6 +115,7 @@ library
                      View.ResetPassword
                      Version
                      Widgets.Doc
+                     Widgets.Image
                      Widgets.Markdown
                      Widgets.Navbar
                      Widgets.Time
