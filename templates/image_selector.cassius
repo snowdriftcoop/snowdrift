@@ -1,0 +1,8 @@
+.imagescroller
+    overflow-y: auto
+    height: 400px
+    width: 250px
+
+.imagerow
+    display: flex
+    margin: 10px 5px 10px 5px

@@ -1,0 +1,5 @@
+fieldset
+    border-bottom-left-radius: 25px;
+    border-top-right-radius:   25px;
+    border-style: inset outset outset inset;
+    border-width: medium;
