@@ -298,7 +298,7 @@ renderNewPledgeEvent _ SharesPledged{..} user_map = do
         <div .event>
             ^{renderTime sharesPledgedTs}
             <a href=@{UserR sharesPledgedUser}> #{userDisplayName (Entity sharesPledgedUser pledger)}
-            pledged #{show sharesPledgedShares} new shares!
+            made new pledge of _{MsgShares sharesPledgedShares}!
     |]
 
 renderUpdatedPledgeEvent :: Int64 -> SharesPledgedId -> SharesPledged -> UserMap -> Widget
@@ -311,7 +311,7 @@ renderUpdatedPledgeEvent old_shares _ SharesPledged{..} user_map = do
         <div .event>
             ^{renderTime sharesPledgedTs}
             <a href=@{UserR sharesPledgedUser}> #{userDisplayName (Entity sharesPledgedUser pledger)}
-            #{verb} their pledge from #{show old_shares} to #{show sharesPledgedShares} shares#{punc}
+            #{verb} their pledge from _{MsgShares old_shares} to _{MsgShares sharesPledgedShares}#{punc}
     |]
 
 renderDeletedPledgeEvent :: UTCTime -> UserId -> Int64 -> UserMap -> Widget
