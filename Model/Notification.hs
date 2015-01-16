@@ -37,7 +37,7 @@ sendNotificationDB notif_type user_id mproject_id mcomment_id content = do
     -- Record the fact that we send this notification, so we can
     -- delete it when the comment is approved.
     when (notif_type == NotifUnapprovedComment && isJust mcomment_id) $
-        insert_ $ UnapprovedCommentNotification (fromJust mcomment_id) notif_id
+        lift $ insert_ $ UnapprovedCommentNotification (fromJust mcomment_id) notif_id
     tell [ENotificationSent notif_id notif]
     return notif_id
 

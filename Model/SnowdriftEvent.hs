@@ -87,9 +87,9 @@ snowdriftEventToFeedEntry render project_handle user_map _ _ ticket_map url (ECo
 
      in case M.lookup commentClosingComment ticket_map of
             Just (Entity ticket_id Ticket{..}) ->
-                let ticket_str = case ticket_id of
-                        Key (PersistInt64 tid) -> T.pack $ show tid
-                        Key _ -> "<malformed id>"
+                let ticket_str = case toPersistValue ticket_id of
+                        PersistInt64 tid -> T.pack $ show tid
+                        _ -> "<malformed id>"
                  in mk_feed_entry $ T.unwords
                         [ T.snoc project_handle ':'
                         , "ticket closed by"
@@ -109,9 +109,9 @@ snowdriftEventToFeedEntry render project_handle user_map _ _ ticket_map url (ETi
         maybe_user = M.lookup user_id user_map
         username   = maybe "<unknown user>" (userDisplayName . Entity user_id) maybe_user
         Entity ticket_id Ticket{..} = lookupErr "snowdriftEventToFeedEntry: comment id not present in ticket map" ticketClaimingTicket ticket_map
-        ticket_str = case ticket_id of
-            Key (PersistInt64 tid) -> T.pack $ show tid
-            Key _ -> "<malformed id>"
+        ticket_str = case toPersistValue ticket_id of
+            PersistInt64 tid -> T.pack $ show tid
+            _ -> "<malformed id>"
 
      in Just $ FeedEntry
             { feedEntryLink    = url
@@ -131,9 +131,9 @@ snowdriftEventToFeedEntry render project_handle user_map _ _ ticket_map url (ETi
         maybe_user = M.lookup user_id user_map
         username   = maybe "<unknown user>" (userDisplayName . Entity user_id) maybe_user
         Entity ticket_id Ticket{..} = lookupErr "snowdriftEventToFeedEntry: comment id not present in ticket map" ticketOldClaimingTicket ticket_map
-        ticket_str = case ticket_id of
-            Key (PersistInt64 tid) -> T.pack $ show tid
-            Key _ -> "<malformed id>"
+        ticket_str = case toPersistValue ticket_id of
+            PersistInt64 tid -> T.pack $ show tid
+            _ -> "<malformed id>"
 
      in Just $ FeedEntry
             { feedEntryLink    = url
@@ -150,9 +150,9 @@ snowdriftEventToFeedEntry render project_handle user_map _ _ ticket_map url (ETi
 
 snowdriftEventToFeedEntry render project_handle _ _ _ ticket_map url (ETicketUnclaimed _ TicketOldClaiming{..}) =
     let Entity ticket_id Ticket{..} = lookupErr "snowdriftEventToFeedEntry: comment id not present in ticket map" ticketOldClaimingTicket ticket_map
-        ticket_str = case ticket_id of
-            Key (PersistInt64 tid) -> T.pack $ show tid
-            Key _ -> "<malformed id>"
+        ticket_str = case toPersistValue ticket_id of
+            PersistInt64 tid -> T.pack $ show tid
+            _ -> "<malformed id>"
 
      in Just $ FeedEntry
             { feedEntryLink    = url

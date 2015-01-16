@@ -14,11 +14,12 @@ import Prelude hiding (exp)
 import Control.Monad.Logger as TestImport
 import Control.Arrow as TestImport
 
-import Yesod (Yesod, RedirectUrl)
+import Yesod (Yesod, RedirectUrl, Route, RenderRoute, renderRoute)
 import Yesod.Test as TestImport
 import Database.Esqueleto hiding (get)
 import Database.Persist as TestImport hiding (get, (==.), delete)
 import Control.Monad.IO.Class as TestImport (liftIO, MonadIO)
+import Control.Monad.Trans.Reader (ReaderT)
 
 import Network.URI (URI (uriPath), parseURI)
 import Network.HTTP.Types (StdMethod (..), renderStdMethod)
@@ -55,8 +56,6 @@ import System.IO (hPutStrLn, stderr)
 
 import Control.Monad.Trans.Control
 import Control.Exception.Lifted as Lifted
-
-import Yesod.Routes.Class
 
 onException :: MonadBaseControl IO m => m a -> m b -> m a
 onException = Lifted.onException
@@ -120,7 +119,7 @@ submitLogin user pass = do
 
 extractLocation :: YesodExample site (Maybe B.ByteString)
 extractLocation = do
-    statusIsResp 302
+    statusIsResp 303
     withResponse ( \ SResponse { simpleHeaders = h } ->
                         return $ lookup "Location" h
                  )
@@ -194,7 +193,7 @@ postComment route stmts = [marked|
 
     let getAttrs = XML.elementAttributes . XML.documentRoot . HTML.parseLBS
 
-    withStatus 302 True $ request $ do
+    withStatus 303 True $ request $ do
         addNonce
         setMethod "POST"
         maybe (setUrl route) setUrl (M.lookup "action" $ getAttrs form)
@@ -219,9 +218,10 @@ snowdriftId :: Example ProjectId
 snowdriftId =
     testDB $ fmap entityKey $ getOrError $ UniqueProjectHandle snowdrift
 
-getOrError :: ( PersistEntity val, PersistUnique f, Functor f
-              , PersistEntityBackend val ~ PersistMonadBackend f)
-           => Unique val -> f (Entity val)
+getOrError :: ( PersistEntity val
+              , PersistUnique (PersistEntityBackend val)
+              , MonadIO m, Functor m )
+           => Unique val -> ReaderT (PersistEntityBackend val) m (Entity val)
 getOrError x = match <$> (getBy x)
   where
     -- XXX: Prettier error message.
@@ -239,15 +239,15 @@ newWiki project language page content = do
         byLabel "Page Content" content
         addPostParam "mode" "preview"
 
-    withStatus 302 False $ request $ do
+    withStatus 303 False $ request $ do
         addNonce
         setUrl $ NewWikiR project language page
         setMethod "POST"
         byLabel "Page Content" content
         addPostParam "mode" "post"
 
-keyToInt64 :: KeyBackend backend entity -> Int64
-keyToInt64 k = let PersistInt64 i = unKey k in i
+keyToInt64 :: PersistField a => a -> Int64
+keyToInt64 k = let PersistInt64 i = toPersistValue k in i
 
 shpack :: Show a => a -> Text
 shpack = T.pack . show
@@ -271,7 +271,7 @@ editWiki project language page content comment = do
         addPostParam "f1" $ shpack $ keyToInt64 $ wikiLastEditEdit last_edit
         addPostParam "mode" "preview"
 
-    withStatus 302 False $ request $ do
+    withStatus 303 False $ request $ do
         addNonce
         setUrl $ WikiR project language page
         setMethod "POST"
@@ -284,7 +284,7 @@ establish :: UserId -> YesodExample App ()
 establish user_id = [marked|
     get200 $ UserR user_id
 
-    withStatus 302 False $ request $ do
+    withStatus 303 False $ request $ do
         addNonce
         setMethod "POST"
         setUrl $ UserEstEligibleR user_id
@@ -307,7 +307,7 @@ userId = testDB . selectUserId . username
 
 acceptHonorPledge :: YesodExample App ()
 acceptHonorPledge = [marked|
-    withStatus 302 False $ request $ do
+    withStatus 303 False $ request $ do
         setMethod "POST"
         setUrl HonorPledgeR
 |]
@@ -340,7 +340,7 @@ rethreadComment :: Text -> Text -> YesodExample App ()
 rethreadComment rethread_route parent_route = [marked|
     get200 rethread_route
 
-    withStatus 302 True $ request $ do
+    withStatus 303 True $ request $ do
         addNonce
         setMethod "POST"
         setUrl rethread_route
@@ -353,7 +353,7 @@ flagComment :: Text -> YesodExample App ()
 flagComment route = [marked|
     get200 route
 
-    withStatus 302 True $ request $ do
+    withStatus 303 True $ request $ do
         addNonce
         setMethod "POST"
         setUrl route
@@ -366,7 +366,7 @@ editComment :: Text -> YesodExample App ()
 editComment route = [marked|
     get200 route
 
-    withStatus 302 True $ request $ do
+    withStatus 303 True $ request $ do
         addNonce
         setMethod "POST"
         setUrl route
@@ -375,9 +375,9 @@ editComment route = [marked|
         addPostParam "mode" "post"
 |]
 
-watch :: Route App -> YesodExample App ()
+watch :: RedirectUrl App url => url -> YesodExample App ()
 watch route = [marked|
-     withStatus 302 False $ request $ do
+     withStatus 303 False $ request $ do
          setMethod "POST"
          setUrl route
 |]
@@ -387,7 +387,7 @@ newBlogPost page = [marked|
     let route = NewBlogPostR snowdrift
     get200 route
 
-    withStatus 302 False $ request $ do
+    withStatus 303 False $ request $ do
         addNonce
         setMethod "POST"
         setUrl route
@@ -408,7 +408,7 @@ pledge shares = [marked|
         addGetParam "_hasdata" ""
         addGetParam "f1" shares
 
-    withStatus 302 False $ request $ do
+    withStatus 303 False $ request $ do
         addNonce
         setMethod "POST"
         setUrl route
@@ -422,7 +422,7 @@ named_users = [minBound .. maxBound]
 (</>) :: Text -> Text -> Text
 xs </> ys = xs <> "/" <> ys
 
-render :: Text -> Route App -> Text
+render :: RenderRoute App => Text -> Route App -> Text
 render appRoot = (appRoot </>) . T.intercalate "/" . fst . renderRoute
 
 enRoute :: (Text -> Language -> a) -> a

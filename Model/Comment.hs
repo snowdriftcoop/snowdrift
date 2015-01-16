@@ -279,7 +279,7 @@ insertCommentDB :: Maybe UTCTime
 insertCommentDB mapproved_ts mapproved_by mk_event created_ts discussion_id mparent_id user_id text depth visibility language = do
     mparent <- case mparent_id of
         Nothing -> return Nothing
-        Just parent_id -> get parent_id
+        Just parent_id -> lift $ get parent_id
 
     let parent_visibility = maybe VisPublic commentVisibility mparent
         comment = Comment
@@ -682,11 +682,11 @@ rethreadCommentDB mnew_parent_id new_discussion_id root_comment_id user_id reaso
         new_comment_ids <- flip State.evalStateT mempty $ forM old_comment_ids $ \comment_id -> do
             rethread_map <- State.get
 
-            Just comment <- get comment_id
+            Just comment <- lift $ get comment_id
 
             let new_parent_id = maybe mnew_parent_id Just $ M.lookup (commentParent comment) rethread_map
 
-            new_comment_id <- insert $ comment
+            new_comment_id <- lift $ insert $ comment
                 { commentDepth      = commentDepth comment - depth_offset
                 , commentParent     = new_parent_id
                 , commentDiscussion = new_discussion_id

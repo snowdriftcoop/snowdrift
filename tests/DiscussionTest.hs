@@ -8,6 +8,7 @@ module DiscussionTest
     ) where
 
 import TestImport
+import Import (key)
 
 import qualified Data.Map as M
 
@@ -16,7 +17,6 @@ import qualified Data.Text as T
 import qualified Data.ByteString.Char8 as BSC
 
 import Model.Language
-import Model.Discussion
 
 import Control.Monad
 
@@ -48,7 +48,7 @@ discussionSpecs = do
             (RethreadProjectCommentR "snowdrift")
 
         DiscussionTypeUser ->
-            let user_id = Key $ PersistInt64 1
+            let user_id = key $ PersistInt64 1
              in runDiscussionTest "user"
                     (UserDiscussionR user_id)
                     (UserCommentR user_id)
@@ -91,7 +91,7 @@ runDiscussionTest label discussion_page_url comment_url new_thread_url comment_r
 
             get200 $ comment_rethread_url reply_comment
 
-            withStatus 302 True $ request $ do
+            withStatus 303 True $ request $ do
                 addNonce
                 setMethod "POST"
                 setUrl $ comment_rethread_url reply_comment
@@ -115,11 +115,11 @@ runDiscussionTest label discussion_page_url comment_url new_thread_url comment_r
 
                 get200 $ comment_rethread_url first_message
 
-                withStatus 302 True $ request $ do
+                withStatus 303 True $ request $ do
                     addNonce
                     setMethod "POST"
                     setUrl $ comment_rethread_url first_message
-                    byLabel "New Parent Url" $ T.pack $ "/p/snowdrift/w/en/about/c/" ++ (\ (PersistInt64 i) -> show i) (unKey second_message)
+                    byLabel "New Parent Url" $ T.pack $ "/p/snowdrift/w/en/about/c/" ++ (\ (PersistInt64 i) -> show i) (toPersistValue second_message)
                     byLabel "Reason" "testing"
                     addPostParam "mode" "post"
 
@@ -161,7 +161,7 @@ runDiscussionTest label discussion_page_url comment_url new_thread_url comment_r
 
             get200 $ comment_rethread_url originalId
 
-            withStatus 302 True $ request $ do
+            withStatus 303 True $ request $ do
                 addNonce
                 setMethod "POST"
                 setUrl $ comment_rethread_url originalId
@@ -179,8 +179,8 @@ runDiscussionTest label discussion_page_url comment_url new_thread_url comment_r
 
             (newId, True) <- getLatestCommentId
             let new_url = BSC.unpack location
-                -- desired_url = "http://localhost:3000/p/snowdrift/w/intro/c/" ++ (\ (PersistInt64 i) -> show i) (unKey newId)
-                desired_url = "http://localhost:3000/c/" ++ (\ (PersistInt64 i) -> show i) (unKey newId)
+                -- desired_url = "http://localhost:3000/p/snowdrift/w/intro/c/" ++ (\ (PersistInt64 i) -> show i) (toPersistValue newId)
+                desired_url = "http://localhost:3000/c/" ++ (\ (PersistInt64 i) -> show i) (toPersistValue newId)
 
             assertEqual ("Redirect not matching! (" ++ show new_url ++ " /=  " ++ show desired_url ++ ")") new_url desired_url
         |]

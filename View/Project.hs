@@ -36,7 +36,7 @@ renderProject maybe_project_id project mviewer_id is_watching pledges pledge = d
         users = fromIntegral $ length pledges
         shares = sum pledges
         project_value = share_value $* fromIntegral shares
-        discussion = DiscussionOnProject $ Entity (fromMaybe (Key $ PersistInt64 (-1)) maybe_project_id) project
+        discussion = DiscussionOnProject $ Entity (fromMaybe (key $ PersistInt64 (-1)) maybe_project_id) project
         description = markdownWidgetWith (fixLinks (projectHandle project) discussion) $ projectDescription project
 
         maybe_shares = pledgeShares . entityVal <$> pledge

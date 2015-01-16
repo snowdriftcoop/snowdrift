@@ -21,7 +21,7 @@ blogSpecs = do
 
             let getAttrs = XML.elementAttributes . XML.documentRoot . HTML.parseLBS
 
-            withStatus 302 True $ request $ do
+            withStatus 303 True $ request $ do
                 addNonce
                 setMethod "POST"
                 let route' = maybe (Left route) Right $ M.lookup "action" $ getAttrs form

@@ -356,7 +356,7 @@ postCloseComment user@(Entity user_id _) comment_id comment make_comment_handler
             lookupPostMode >>= \case
                 Just PostMode -> do
                     runSDB $ do
-                        closing_id <- insert closing
+                        closing_id <- lift $ insert closing
                         tell [ECommentClosed closing_id closing]
 
                     return Nothing
@@ -499,7 +499,7 @@ postNewComment mparent_id (Entity user_id user) discussion_id make_permissions_m
                                                        then (Just now, Just user_id)
                                                        else (Nothing, Nothing)
                     comment = Entity
-                                (Key $ PersistInt64 0)
+                                (key $ PersistInt64 0)
                                 (Comment now approved_ts approved_by discussion_id mparent_id user_id contents depth visibility language)
 
                 max_depth <- getMaxDepthDefault 0

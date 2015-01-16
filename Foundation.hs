@@ -222,7 +222,7 @@ instance Yesod App where
 
 -- How to run database actions.
 instance YesodPersist App where
-    type YesodPersistBackend App = SqlPersistT
+    type YesodPersistBackend App = SqlBackend
     runDB = defaultRunDB persistConfig connPool
 
 instance YesodPersistRunner App where
@@ -348,6 +348,7 @@ instance YesodAuth App where
 
         lift $ defaultLayout $(widgetFile "auth")
 
+instance YesodAuthPersist App
 
 createUser :: Text -> Maybe Text -> Maybe Text -> Maybe Text -> Maybe Text
            -> Maybe Text -> Handler (Maybe UserId)

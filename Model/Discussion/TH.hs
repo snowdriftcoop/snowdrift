@@ -15,7 +15,7 @@ import Data.Monoid
 import qualified Data.Text as T
 import qualified Data.Map as M
 
-mkDiscussionTypes :: [EntityDef sqlType] -> Q [Dec]
+mkDiscussionTypes :: [EntityDef] -> Q [Dec]
 mkDiscussionTypes defs = do
     let discussion_types = flip mapMaybe defs $ \ EntityDef {..} -> do
             guard $ entityHaskell /= HaskellName "Comment"

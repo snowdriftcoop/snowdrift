@@ -44,7 +44,7 @@
                     unwatch
 
 
-    $maybe Entity (Key (PersistInt64 ticket_id))  _ <- mticket
+    $maybe PersistInt64 ticket_id <- fmap (toPersistValue . entityKey) mticket
         <span .glyphicon .glyphicon-tag>
         <span .ticket-num>SD-#{show ticket_id}
 

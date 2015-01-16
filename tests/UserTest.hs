@@ -17,7 +17,7 @@ userSpecs = do
             forM_ users $ \ user -> do
                 get200 UserCreateR
 
-                withStatus 302 True $ request $ do
+                withStatus 303 True $ request $ do
                     setUrl UserCreateR
                     addNonce
                     setMethod "POST"

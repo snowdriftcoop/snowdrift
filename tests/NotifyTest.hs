@@ -64,7 +64,7 @@ countWebsiteNotif with_delay user_id notif_type text =
         return $ T.count text contents
 
 notificationContent :: From query expr backend (expr (Entity Notification))
-                    => KeyBackend SqlBackend User -> NotificationType
+                    => Key User -> NotificationType
                     -> query (expr (Value Markdown))
 notificationContent user_id notif_type =
     from $ \n -> do

@@ -87,12 +87,13 @@ import           Data.List.NonEmpty (NonEmpty)
 import qualified Data.Map           as M
 import qualified Data.Set           as S
 import qualified Data.Text          as T
+import           Control.Monad.Trans.Reader (ReaderT)
 import           Control.Monad.Writer.Strict (tell)
 
 -- anonymousUser is a special user for items posted by visitors who are not
 -- logged in, such as posting to /contact for a project
 anonymousUser :: UserId
-anonymousUser = Key $ PersistInt64 (-1)
+anonymousUser = key $ PersistInt64 (-1)
 
 type UserMap = Map UserId User
 
@@ -191,8 +192,7 @@ fromEmailVerification :: From query expr backend (expr (Entity EmailVerification
 fromEmailVerification user_id =
     from $ \ev -> where_ $ ev ^. EmailVerificationUser ==. val user_id
 
-deleteFromEmailVerification :: (MonadResource m, MonadSqlPersist m)
-                            => UserId -> m ()
+deleteFromEmailVerification :: MonadIO m => UserId -> SqlPersistT m ()
 deleteFromEmailVerification user_id =
     delete $ fromEmailVerification user_id
 
@@ -207,7 +207,7 @@ fetchVerEmail ver_uri user_id = do
         then return $ Nothing
         else return $ Just $ L.head emails
 
-verifyEmailDB :: (MonadResource m, MonadSqlPersist m) => UserId -> m ()
+verifyEmailDB :: MonadIO m => UserId -> ReaderT SqlBackend m ()
 verifyEmailDB user_id = do
     update $ \u -> do
         set u $ [UserEmail_verified =. val True]
@@ -500,7 +500,7 @@ userClaimCommentDB user_id comment_id mnote = do
 
 userUnclaimCommentDB :: UserId -> CommentId -> Maybe Text -> SDB ()
 userUnclaimCommentDB _ comment_id release_note = do
-    maybe_ticket_claiming_entity <- getBy $ UniqueTicketClaiming comment_id
+    maybe_ticket_claiming_entity <- lift $ getBy $ UniqueTicketClaiming comment_id
     case maybe_ticket_claiming_entity of
         Nothing -> return ()
         Just (Entity ticket_claiming_id TicketClaiming{..}) -> do
@@ -514,14 +514,14 @@ userUnclaimCommentDB _ comment_id release_note = do
                     release_note
                     now
 
-            ticket_old_claiming_id <- insert ticket_old_claiming
+            ticket_old_claiming_id <- lift $ insert ticket_old_claiming
 
-            update $ \ etc -> do
+            lift $ update $ \ etc -> do
                 set etc [ EventTicketClaimedClaim    =. val Nothing
                         , EventTicketClaimedOldClaim =. val (Just ticket_old_claiming_id) ]
                 where_ $ etc ^. EventTicketClaimedClaim ==. val (Just ticket_claiming_id)
 
-            delete $ from $ \ tc -> where_ $ tc ^. TicketClaimingId ==. val ticket_claiming_id
+            lift $ delete $ from $ \ tc -> where_ $ tc ^. TicketClaimingId ==. val ticket_claiming_id
 
             tell [ ETicketUnclaimed ticket_old_claiming_id ticket_old_claiming ]
 

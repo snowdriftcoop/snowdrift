@@ -14,7 +14,7 @@ import Data.Char
 import qualified Data.Text as T
 import qualified Data.List as L
 
-mkReferences :: String -> [EntityDef sqlType] -> Q [Dec]
+mkReferences :: String -> [EntityDef] -> Q [Dec]
 mkReferences name defs = do
     let references = do
             EntityDef {..} <- defs

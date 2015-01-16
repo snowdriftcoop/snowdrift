@@ -29,8 +29,8 @@
 
                 <td>
                     <a href=@{CommentDirectLinkR (ticketComment ticket)}>
-                        $case ticket_id
-                            $of Key (PersistInt64 tid)
+                        $case toPersistValue ticket_id
+                            $of PersistInt64 tid
                                 SD-#{tid}
                             $of _
                                 SD-???
@@ -77,8 +77,8 @@
 
                 <td>
                     <a href=@{CommentDirectLinkR (ticketComment ticket)}>
-                        $case ticket_id
-                            $of Key (PersistInt64 tid)
+                        $case toPersistValue ticket_id
+                            $of PersistInt64 tid
                                 SD-#{tid}
                             $of _
                                 SD-???

@@ -166,7 +166,7 @@ postWikiR project_handle target_language target = do
                 Just PostMode -> do
                     runSYDB $ do
 
-                        [(Entity _ last_edit)] <- select $ from $ \ (we `InnerJoin` le) -> do
+                        [(Entity _ last_edit)] <- lift $ select $ from $ \ (we `InnerJoin` le) -> do
                             on_ $ we ^. WikiEditId ==. le ^. WikiLastEditEdit
                             where_ $ le ^. WikiLastEditPage ==. val page_id
                                 &&. le ^. WikiLastEditLanguage ==. val edit_language
@@ -450,7 +450,7 @@ postNewWikiR project_handle language target = do
                     (form, _) <- generateFormPost $ newWikiForm (Just content)
 
                     defaultLayout $ do
-                        let wiki_page_id = Key $ PersistInt64 (-1)
+                        let wiki_page_id = key $ PersistInt64 (-1)
                             edit = WikiEdit now user_id wiki_page_id language content (Just "page created")
 
                         previewWidget form "create" $ renderWiki 0 project_handle language target False [] edit
@@ -505,7 +505,7 @@ postNewWikiTranslationR project_handle language target = do
                         return $ we ^. WikiEditLanguage
 
                     defaultLayout $ do
-                        let wiki_page_id = Key $ PersistInt64 (-1)
+                        let wiki_page_id = key $ PersistInt64 (-1)
                             edit = WikiEdit now user_id wiki_page_id language new_content (Just "page created")
 
                         previewWidget form "create" $ renderWiki 0 project_handle language target False translations edit

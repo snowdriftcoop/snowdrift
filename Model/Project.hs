@@ -136,7 +136,7 @@ insertProjectPledgeDB user_id project_id shares pledge_render_id = do
     now <- liftIO getCurrentTime
     let shares_pledged = SharesPledged now user_id project_id shares pledge_render_id
     shares_pledged_id <- lift (insert shares_pledged)
-    getBy (UniquePledge user_id project_id) >>= \case
+    lift (getBy (UniquePledge user_id project_id)) >>= \case
         Nothing -> do
             lift $ insert_ (Pledge now user_id project_id shares shares)
             tell [ENewPledge shares_pledged_id shares_pledged]

@@ -174,7 +174,7 @@ requireRolesAny roles project_handle err_msg = do
 
 getProjectBlogR :: Text -> Handler Html
 getProjectBlogR project_handle = do
-    maybe_from <- fmap (Key . PersistInt64 . read . T.unpack) <$> lookupGetParam "from"
+    maybe_from <- fmap (key . PersistInt64 . read . T.unpack) <$> lookupGetParam "from"
     post_count <- fromMaybe 10 <$> fmap (read . T.unpack) <$> lookupGetParam "from"
     Entity project_id project <- runYDB $ getBy404 $ UniqueProjectHandle project_handle
 
@@ -236,7 +236,7 @@ postNewBlogPostR project_handle = do
                     let (top_content', bottom_content') = break (== "***") $ T.lines content
                         top_content = T.unlines top_content'
                         bottom_content = if bottom_content' == [] then Nothing else Just (Markdown $ T.unlines bottom_content')
-                        blog_post = BlogPost now title handle viewer_id project_id (Key $ PersistInt64 0) (Markdown top_content) bottom_content
+                        blog_post = BlogPost now title handle viewer_id project_id (key $ PersistInt64 0) (Markdown top_content) bottom_content
 
                     (form, _) <- generateFormPost $ projectBlogForm $ Just (title, handle, Markdown content)
 

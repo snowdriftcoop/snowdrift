@@ -236,7 +236,7 @@ postProjectR project_handle = do
                             project_update <- insert $ ProjectUpdate now project_id viewer_id $ diffMarkdown (projectDescription project) description
                             last_update <- getBy $ UniqueProjectLastUpdate project_id
                             case last_update of
-                                Just (Entity key _) -> repsert key $ ProjectLastUpdate project_id project_update
+                                Just (Entity k _) -> repsert k $ ProjectLastUpdate project_id project_update
                                 Nothing -> void $ insert $ ProjectLastUpdate project_id project_update
 
                         update $ \ p -> do

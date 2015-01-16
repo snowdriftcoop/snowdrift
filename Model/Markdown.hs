@@ -80,9 +80,9 @@ linkTickets line' = do
 
                 return $ ticket ^. TicketComment
 
-            case map unwrapValues info of
+            case map (toPersistValue . unwrapValues) info of
                 [] -> return Nothing
-                (Key (PersistInt64 comment_id)) : _ -> return $ Just $ mconcat
+                ((PersistInt64 comment_id) : _) -> return $ Just $ mconcat
                     [ "/c/",  T.pack (show comment_id) ]
 
                 _ -> error "Unexpected result for ticket reference"
@@ -91,7 +91,8 @@ linkTickets line' = do
         parse str (Right Nothing) = return str
         parse _   (Right (Just (pre, _, post, [ticket_number]))) = do
             $(logError) $ T.pack $ show $  T.unpack $ decodeUtf8 ticket_number
-            maybe_link <- getLinkForTicketComment $ Key $ PersistInt64 $ read $ T.unpack $ decodeUtf8 ticket_number
+            maybe_link <- getLinkForTicketComment $ key $
+                PersistInt64 $ read $ T.unpack $ decodeUtf8 ticket_number
             rest <- parse post (regexec pattern post)
             return $ mconcat
                 [ pre

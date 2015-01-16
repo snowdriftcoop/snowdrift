@@ -154,9 +154,9 @@ renderCommentClosedEvent CommentClosing{..} user_map ticket_map = do
 
     case M.lookup commentClosingComment ticket_map of
         Just (Entity ticket_id Ticket{..}) -> do
-            let ticket_str = case ticket_id of
-                    Key (PersistInt64 tid) -> T.pack $ show tid
-                    Key _ -> "<malformed key>"
+            let ticket_str = case toPersistValue ticket_id of
+                    PersistInt64 tid -> T.pack $ show tid
+                    _ -> "<malformed key>"
 
             [whamlet|
                 <div .event>
@@ -182,9 +182,9 @@ renderTicketClaimedEvent (Left (_, TicketClaiming{..})) user_map ticket_map = do
     let user = lookupErr "renderTicketClaimedEvent: claiming user not found in user map" ticketClaimingUser user_map
         Entity ticket_id Ticket{..} = lookupErr "renderTicketClaimedEvent: ticket not found in map" ticketClaimingTicket ticket_map
 
-        ticket_str = case ticket_id of
-            Key (PersistInt64 tid) -> T.pack $ show tid
-            Key _ -> "<malformed key>"
+        ticket_str = case toPersistValue ticket_id of
+            PersistInt64 tid -> T.pack $ show tid
+            _ -> "<malformed key>"
 
     [whamlet|
         <div .event>
@@ -199,9 +199,9 @@ renderTicketClaimedEvent (Right (_, TicketOldClaiming{..})) user_map ticket_map 
     let user = lookupErr "renderTicketClaimedEvent: claiming user not found in user map" ticketOldClaimingUser user_map
         Entity ticket_id Ticket{..} = lookupErr "renderTicketClaimedEvent: ticket not found in map" ticketOldClaimingTicket ticket_map
 
-        ticket_str = case ticket_id of
-            Key (PersistInt64 tid) -> T.pack $ show tid
-            Key _ -> "<malformed key>"
+        ticket_str = case toPersistValue ticket_id of
+            PersistInt64 tid -> T.pack $ show tid
+            _ -> "<malformed key>"
 
     [whamlet|
         <div .event>
@@ -215,9 +215,9 @@ renderTicketClaimedEvent (Right (_, TicketOldClaiming{..})) user_map ticket_map 
 renderTicketUnclaimedEvent :: TicketOldClaiming -> UserMap -> Map CommentId (Entity Ticket) -> Widget
 renderTicketUnclaimedEvent TicketOldClaiming{..} _ ticket_map = do
     let Entity ticket_id Ticket{..} = lookupErr "renderTicketUnclaimedEvent: ticket not found in map" ticketOldClaimingTicket ticket_map
-        ticket_str = case ticket_id of
-            Key (PersistInt64 tid) -> T.pack $ show tid
-            Key _ -> "<malformed key>"
+        ticket_str = case toPersistValue ticket_id of
+            PersistInt64 tid -> T.pack $ show tid
+            _ -> "<malformed key>"
 
     [whamlet|
         <div .event>

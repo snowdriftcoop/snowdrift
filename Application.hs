@@ -37,7 +37,7 @@ import           System.Posix.Env.ByteString
 import           Yesod.Core.Types                     (loggerSet, Logger (Logger))
 import           Yesod.Default.Config
 import           Yesod.Default.Handlers
-import           Yesod.Default.Main
+import           Yesod.Default.Main hiding (LogFunc)
 
 -- Import all relevant handler modules here.
 -- Don't forget to add new modules to your cabal file!
@@ -69,7 +69,7 @@ import Handler.Wiki.Comment
 
 import Widgets.Navbar
 
-runSql :: MonadSqlPersist m => Text -> m ()
+runSql :: MonadIO m => Text -> ReaderT SqlBackend m ()
 runSql = flip rawExecute [] -- TODO quasiquoter?
 
 version :: (Text, Text)
@@ -154,12 +154,10 @@ makeFoundation conf = do
     -- Perform database migration using our application's logging settings.
     case appEnv conf of
         Testing -> withEnv "PGDATABASE" "template1" (applyEnv $ persistConfig foundation) >>= \ dbconf' -> do
-                let runDBNoTransaction (SqlPersistT r) = runReaderT r
-
                 options <- maybe [] L.words <$> lookupEnv "SNOWDRIFT_TESTING_OPTIONS"
 
                 unless (elem "nodrop" options) $ do
-                    runStderrLoggingT $ runResourceT $ withPostgresqlConn (pgConnStr dbconf') $ runDBNoTransaction $ do
+                    runStderrLoggingT $ runResourceT $ withPostgresqlConn (pgConnStr dbconf') $ runReaderT $ do
                         liftIO $ putStrLn "dropping database..."
                         runSql "DROP DATABASE IF EXISTS snowdrift_test;"
                         liftIO $ putStrLn "creating database..."
@@ -172,7 +170,7 @@ makeFoundation conf = do
         runSqlPool migrateTriggers p
 
 
-    runLoggingT
+    void $ runLoggingT
         migration
         (messageLoggerSource foundation logger)
 
@@ -255,8 +253,8 @@ doMigration = do
     maybe (return ()) (\ newer_last_migration -> update $ flip set [ DatabaseVersionLastMigration =. val newer_last_migration ]) maybe_newer_last_migration
 
 
-migrateTriggers :: (MonadSqlPersist m, MonadBaseControl IO m, MonadThrow m) => m ()
-migrateTriggers = runResourceT $ do
+migrateTriggers :: MonadIO m => ReaderT SqlBackend m ()
+migrateTriggers = do
     runSql $ T.unlines
         [ "CREATE OR REPLACE FUNCTION log_role_event_trigger() RETURNS trigger AS $role_event$"
         , "    BEGIN"

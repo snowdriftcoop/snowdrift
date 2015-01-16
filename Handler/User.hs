@@ -56,7 +56,7 @@ getUsersR = do
         userProjects :: Entity User -> Maybe (Map (Text, Text) (Set (Role)))
         userProjects u = M.lookup (entityKey u) allProjects
         getUserKey :: Entity User -> Text
-        getUserKey (Entity key _) = either (error . T.unpack) id . fromPersistValue . unKey $ key
+        getUserKey = either (error . T.unpack) id . fromPersistValue . toPersistValue . entityKey
 
     defaultLayout $ do
         setTitle "Users | Snowdrift.coop"
@@ -573,7 +573,7 @@ postUserSelectProjectR user_id = do
     void $ checkEditUser user_id
     mproject_id <- lookupPostParam "project_id"
     maybe (redirect $ UserR user_id)
-          (redirect . ProjectNotificationsR user_id . Key . PersistInt64)
+          (redirect . ProjectNotificationsR user_id . key . PersistInt64)
           (join $ Traversable.forM mproject_id $ readMaybe . T.unpack)
 
 --------------------------------------------------------------------------------

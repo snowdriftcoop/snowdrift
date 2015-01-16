@@ -22,7 +22,7 @@ getNotificationsR = do
 whenNotifId :: DBConstraint m => Text -> (NotificationId -> m ()) -> m ()
 whenNotifId value action =
     F.forM_ (readMaybe $ T.unpack value :: Maybe Int) $ \notif_id ->
-        action $ Key $ toPersistValue notif_id
+        action $ key $ toPersistValue notif_id
 
 proxyNotifications :: RedirectUrl App route => Text -> Text
                    -> (UserId -> DB ()) -> (UserId -> DB ())

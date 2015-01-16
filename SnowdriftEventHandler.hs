@@ -35,7 +35,7 @@ notificationEventHandler AppConfig{..} (ECommentPosted comment_id comment) = cas
         parent_comment_route <- routeToText $ CommentDirectLinkR parent_comment_id
         reply_comment_route  <- routeToText $ CommentDirectLinkR comment_id
         runSDB $ do
-            parent_user_id <- commentUser <$> Database.Persist.getJust parent_comment_id
+            parent_user_id <- commentUser <$> lift (Database.Persist.getJust parent_comment_id)
             sendPreferredNotificationDB parent_user_id NotifReply Nothing Nothing $
                 mconcat [ "Someone replied to [your comment]("
                         , Markdown $ appRoot <> parent_comment_route
@@ -78,9 +78,9 @@ notificationEventHandler AppConfig{..} (ECommentPending comment_id comment) = ru
 
     case discussion of
         DiscussionOnProject project                     -> projectComment project
-        DiscussionOnWikiPage (Entity _ WikiTarget{..})  -> projectComment =<< Entity wikiTargetProject <$> getJust wikiTargetProject
+        DiscussionOnWikiPage (Entity _ WikiTarget{..})  -> projectComment =<< Entity wikiTargetProject <$> lift (getJust wikiTargetProject)
         DiscussionOnUser _                              -> error ""
-        DiscussionOnBlogPost (Entity _ BlogPost{..})    -> projectComment =<< Entity blogPostProject <$> getJust blogPostProject
+        DiscussionOnBlogPost (Entity _ BlogPost{..})    -> projectComment =<< Entity blogPostProject <$> lift (getJust blogPostProject)
 
 notificationEventHandler AppConfig{..} (ECommentApproved comment_id comment) = runSDB $ do
     route_text <- lift (makeCommentRouteDB [LangEn] comment_id >>= lift . routeToText . fromJust)

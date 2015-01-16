@@ -149,7 +149,7 @@ sendPreferredNotificationDB user_id notif_type mproject_id mcomment_id content =
         if | pref == NotifDeliverEmail && isJust muser_email && email_verified ->
                 lift $ sendNotificationEmailDB notif_type user_id mproject_id content
            | otherwise -> do
-                 r <- selectCount $ from $ \n -> do
+                 r <- lift $ selectCount $ from $ \n -> do
                           where_ $ n ^. NotificationType    ==. val notif_type
                                &&. n ^. NotificationTo      ==. val user_id
                                &&. n ^. NotificationProject `notDistinctFrom` val mproject_id

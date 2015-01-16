@@ -7,7 +7,8 @@ import Model.User         (deleteFromEmailVerification)
 import           Control.Concurrent           (threadDelay)
 import qualified Control.Exception.Lifted     as Exception
 import           Control.Monad.Logger         (runLoggingT, LoggingT, defaultLogStr)
-import           Control.Monad.Trans.Resource (runResourceT)
+import           Control.Monad.Reader
+import           Control.Monad.Trans.Resource (runResourceT, ResourceT)
 import           Database.Esqueleto
 import qualified Data.ByteString.Lazy         as L
 import qualified Data.ByteString.Char8        as Char8
@@ -26,7 +27,6 @@ import           System.Environment           (getEnv, getProgName)
 import           System.Log.FastLogger        (toLogStr, fromLogStr)
 import qualified Text.Email.Validate          as Email
 import           Yesod.Default.Config         (withYamlEnvironment, DefaultEnv (..))
-import           Yesod.Markdown               (unMarkdown)
 
 data Arguments = Arguments
     { db_arg            :: Text
@@ -112,15 +112,15 @@ parse db_arg email_arg delay_arg sendmail_exec_arg sendmail_file_arg = do
         then error $ "negative delay: " <> show delay_arg
         else delay_arg
     errUnlessExists file = do
-        exists <- doesFileExist file
-        if exists
-            then return $ file
+        file_exists <- doesFileExist file
+        if file_exists
+            then return file
             else error $ "file does not exist: " <> file
 
 -- | Select messages to users with verified email addresses.
-selectWithVerifiedEmails :: (MonadResource m, MonadSqlPersist m)
-                        => m [( Maybe Email, UTCTime, NotificationType
-                            , UserId, Maybe ProjectId, Markdown )]
+selectWithVerifiedEmails :: ReaderT SqlBackend (ResourceT (LoggingT IO))
+                            [( Maybe Email, UTCTime, NotificationType
+                             , UserId, Maybe ProjectId, Markdown )]
 selectWithVerifiedEmails =
     (map (\(Value memail, Value ts, Value notif_type, Value to, Value mproject, Value content) ->
            (memail, ts, notif_type, to, mproject, content))) <$>
@@ -140,12 +140,12 @@ selectWithVerifiedEmails =
 -- | Select all fields for users without email addresses or verified
 -- email addresses such that they could be inserted into the
 -- "notification" table without creating duplicates.
-selectWithoutEmailsOrVerifiedEmails :: (MonadResource m, MonadSqlPersist m)
-                    => m [( Value UTCTime
-                          , Value NotificationType
-                          , Value UserId
-                          , Value (Maybe ProjectId)
-                          , Value Markdown )]
+selectWithoutEmailsOrVerifiedEmails :: SqlPersistT (ResourceT (LoggingT IO))
+                                       [( Value UTCTime
+                                        , Value NotificationType
+                                        , Value UserId
+                                        , Value (Maybe ProjectId)
+                                        , Value Markdown )]
 selectWithoutEmailsOrVerifiedEmails =
     select $ from $ \(ne, user) -> do
         where_ $ ne ^. NotificationEmailTo ==. user ^. UserId
@@ -169,8 +169,8 @@ selectWithoutEmailsOrVerifiedEmails =
                , ne ^. NotificationEmailProject
                , ne ^. NotificationEmailContent )
 
-insertWithoutEmailsOrVerifiedEmails :: ( MonadResource m, PersistMonadBackend m ~ SqlBackend
-                                       , PersistStore m, MonadSqlPersist m ) => m ()
+insertWithoutEmailsOrVerifiedEmails
+    :: ReaderT SqlBackend (ResourceT (LoggingT IO)) ()
 insertWithoutEmailsOrVerifiedEmails = do
     no_emails_or_not_verified <- selectWithoutEmailsOrVerifiedEmails
     forM_ no_emails_or_not_verified $
@@ -188,16 +188,15 @@ fromNotificationEmail ts notif_type to mproject content =
              &&. ne ^. NotificationEmailProject `notDistinctFrom` val mproject
              &&. ne ^. NotificationEmailContent   ==. val content
 
-deleteFromNotificationEmail :: (MonadResource m, MonadSqlPersist m)
-                            => UTCTime -> NotificationType -> UserId -> Maybe ProjectId
-                            -> Markdown -> m ()
+deleteFromNotificationEmail :: MonadIO m => UTCTime -> NotificationType -> UserId
+                            -> Maybe ProjectId -> Markdown -> SqlPersistT m ()
 deleteFromNotificationEmail ts notif_type to mproject content =
     delete $ fromNotificationEmail ts notif_type to mproject content
 
-insertIntoNotificationEmail :: ( MonadResource m, PersistStore m, MonadSqlPersist m
-                               , PersistMonadBackend m ~ SqlBackend )
+insertIntoNotificationEmail :: (MonadIO m, Functor m)
                             => UTCTime -> NotificationType -> UserId
-                            -> Maybe ProjectId -> Markdown -> m ()
+                            -> Maybe ProjectId -> Markdown
+                            -> ReaderT SqlBackend m ()
 insertIntoNotificationEmail ts notif_type to mproject content = do
     n <- selectCount $ fromNotificationEmail ts notif_type to mproject content
     when (n == 0) $
@@ -233,7 +232,7 @@ handleSendmail sendmail_exec sendmail_file dbConf poolConf info_msg from_ to sub
           $(logError) (Text.pack $ show err)
           $(logWarn) warn_msg
 
-sendNotification :: (MonadResource m, MonadBaseControl IO m, MonadIO m, MonadLogger m)
+sendNotification :: (MonadBaseControl IO m, MonadIO m, MonadLogger m)
                  => FileName -> FileName -> PostgresConf
                  -> PersistConfigPool PostgresConf -> Email -> Email -> UTCTime
                  -> NotificationType -> UserId -> Maybe ProjectId -> Markdown
@@ -248,8 +247,8 @@ sendNotification sendmail_exec sendmail_file dbConf poolConf notif_email
         ("sending the notification to " <> user_email <> " failed; " <>
          "will try again later")
 
-selectWithEmails :: (MonadResource m, MonadSqlPersist m)
-                 => m [(UserId, Maybe Email, Text)]
+selectWithEmails :: ReaderT SqlBackend (ResourceT (LoggingT IO))
+                    [(UserId, Maybe Email, Text)]
 selectWithEmails =
     fmap (map unwrapValues) $
     select $ from $ \(ev `InnerJoin` u) -> do
@@ -261,7 +260,7 @@ selectWithEmails =
                , u  ^. UserEmail
                , ev ^. EmailVerificationUri )
 
-selectWithoutEmails :: (MonadResource m, MonadSqlPersist m) => m [UserId]
+selectWithoutEmails :: ReaderT SqlBackend (ResourceT (LoggingT IO)) [UserId]
 selectWithoutEmails =
     fmap (map (\(Value user_id) -> user_id)) $
     select $ from $ \(ev `InnerJoin` u) -> do
@@ -269,14 +268,14 @@ selectWithoutEmails =
         where_ $ isNothing $ u ^. UserEmail
         return $ ev ^. EmailVerificationUser
 
-deleteWithoutEmails :: (MonadResource m, MonadSqlPersist m) => m ()
+deleteWithoutEmails :: ReaderT SqlBackend (ResourceT (LoggingT IO)) ()
 deleteWithoutEmails = do
     no_emails <- selectWithoutEmails
     forM_ no_emails $ \user_id ->
         deleteFromEmailVerification user_id
 
-selectWithNonMatchingEmails :: (MonadResource m, MonadSqlPersist m)
-                            => m [(UserId, Text)]
+selectWithNonMatchingEmails :: ReaderT SqlBackend (ResourceT (LoggingT IO))
+                               [(UserId, Text)]
 selectWithNonMatchingEmails =
     fmap (map (\(Value user, Value email) -> (user, email))) $
     select $ from $ \(ev `InnerJoin` u) -> do
@@ -286,7 +285,7 @@ selectWithNonMatchingEmails =
         return ( ev ^. EmailVerificationUser
                , ev ^. EmailVerificationEmail )
 
-deleteWithNonMatchingEmails :: (MonadResource m, MonadSqlPersist m) => m ()
+deleteWithNonMatchingEmails :: ReaderT SqlBackend (ResourceT (LoggingT IO)) ()
 deleteWithNonMatchingEmails = do
     non_matching <- selectWithNonMatchingEmails
     forM_ non_matching $ \(user, email) ->
@@ -294,8 +293,8 @@ deleteWithNonMatchingEmails = do
             where_ $ ev ^. EmailVerificationUser  ==. val user
                  &&. ev ^. EmailVerificationEmail ==. val email
 
-markAsSentVerification :: (MonadResource m, MonadSqlPersist m)
-                       => UserId -> Email -> Text -> m ()
+markAsSentVerification :: MonadIO m => UserId -> Email -> Text
+                       -> SqlPersistT m ()
 markAsSentVerification user_id user_email ver_uri =
     update $ \v -> do
         set v [EmailVerificationSent =. val True]
@@ -303,7 +302,7 @@ markAsSentVerification user_id user_email ver_uri =
              &&. v ^. EmailVerificationEmail ==. val user_email
              &&. v ^. EmailVerificationUri   ==. val ver_uri
 
-sendVerification :: (MonadResource m, MonadBaseControl IO m, MonadIO m, MonadLogger m)
+sendVerification :: (MonadBaseControl IO m, MonadIO m, MonadLogger m)
                  => FileName -> FileName -> PostgresConf
                  -> PersistConfigPool PostgresConf -> Email -> UserId -> Email
                  -> Text -> m ()
@@ -318,8 +317,8 @@ sendVerification sendmail_exec sendmail_file dbConf poolConf verif_email user_id
         ("sending the email verification message to " <> user_email <>
          " failed; will try again later")
 
-selectUnsentResetPassword :: (MonadResource m, MonadSqlPersist m)
-                          => m [(UserId, Email, Text)]
+selectUnsentResetPassword :: ReaderT SqlBackend (ResourceT (LoggingT IO))
+                             [(UserId, Email, Text)]
 selectUnsentResetPassword =
     fmap (distinctFirst . map unwrapValues) $
     select $ from $ \rp -> do
@@ -331,14 +330,13 @@ selectUnsentResetPassword =
     -- 'nub' is O(n^2).
     distinctFirst = nubBy ((==) `Function.on` (\(x,_,_) -> x))
 
-markAsSentResetPassword :: (MonadResource m, MonadSqlPersist m)
-                        => UserId -> m ()
+markAsSentResetPassword :: MonadIO m => UserId -> SqlPersistT m ()
 markAsSentResetPassword user_id =
     update $ \rp -> do
         set rp [ResetPasswordSent =. val True]
         where_ $ rp ^. ResetPasswordUser ==. val user_id
 
-sendResetPassword :: (MonadResource m, MonadBaseControl IO m, MonadLogger m)
+sendResetPassword :: ( MonadBaseControl IO m, MonadLogger m, MonadIO m)
                   => FileName -> FileName -> PostgresConf -> ConnectionPool
                   -> Email -> Email -> UserId -> Text -> m ()
 sendResetPassword sendmail_exec sendmail_file dbConf poolConf notif_email
