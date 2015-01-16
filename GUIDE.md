@@ -51,14 +51,24 @@ Text-editor settings
 --------------------
 
 We recommend setting your text editor to have the TAB key do indentation of four spaces.
-For VIM, for example, the config file .vimrc should have these three lines:
+
+### vim
+
+For vim users, your config file .vimrc should include these three lines:
 
     set expandtab
     set shiftwidth=4
     set tabstop=4
 
-VIM users should also install
-[Syntax Highlighting Files for Haskell](https://github.com/pbrisbin/html-template-syntax).
+You should also install
+[Shakespearean Syntax Highlighting for vim](https://github.com/pbrisbin/vim-syntax-shakespeare)
+
+Some other optional vim plugins to consider (among many available):
+[Haskell-Vim extra syntax](https://github.com/raichoo/haskell-vim) and
+[vim2hs](https://github.com/dag/vim2hs)
+
+
+### Emacs
 
 Emacs users should use a package manager (preferably Marmalade) to install
 [Haskell Mode](https://github.com/haskell/haskell-mode) and [Hamlet Mode](https://github.com/lightquake/hamlet-mode).
