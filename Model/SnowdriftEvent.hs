@@ -187,7 +187,7 @@ snowdriftEventToFeedEntry render project_handle user_map _ _ _ url (EWikiEdit _ 
             , feedEntryUpdated = wikiEditTs wiki_edit
             , feedEntryTitle   = T.unwords
                 [ T.snoc project_handle ':'
-                , renderLanguage LangEn language
+                , renderLanguage LangEn edit_language
                 , "version of wiki page", "\"" <> target <> "\""
                 , "edited by", username
                 ] <> maybe "" (T.append ": ") (wikiEditComment wiki_edit)
