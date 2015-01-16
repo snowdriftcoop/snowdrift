@@ -45,7 +45,7 @@ here's quick and dirty minimal instructions to get started:
 
 ```
 // Install any dependencies you don't have:
-// GHC **7.8.x**, cabal, PostgreSQL, zlib1g-dev, libpq-dev, happy, alex
+// GHC **7.8.x**, cabal **<1.22**, PostgreSQL, zlib1g-dev, libpq-dev, happy, alex
 //     libglib2.0-dev libcairo2-dev libpango1.0-dev
 // update cabal, set PATH, etc. — see GUIDE.md for more detailed instructions
 
