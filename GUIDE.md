@@ -187,7 +187,7 @@ for bash, edit your ~/.bashrc (or equivalent) file and add the following line:
 
 Now, upgrade cabal itself:
 
-    cabal install cabal-install-1.20.0.6
+    cabal install cabal-install
 
 Then, run
 
