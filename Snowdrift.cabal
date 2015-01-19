@@ -1,5 +1,5 @@
 name:              Snowdrift
-version:           0.0.2
+version:           0.1.0
 license:           OtherLicense
 license-file:      LICENSE
 author:            David L. L. Thomas
@@ -174,8 +174,9 @@ library
                  , file-embed
                  , github
                  , hamlet
-                 , hit < 0.6
+                 , hit
                  , hjsmin
+                 , hourglass
                  , http-conduit
                  , http-types
                  , JuicyPixels
@@ -204,16 +205,14 @@ library
                  , temporary
                  , text
                  , time
-                 , time-units
                  , transformers
-                 , universe
                  , unix
                  , vector
                  , wai-extra
                  , wai-logger
                  , warp
                  , yaml
-                 , yesod >= 1.2 && < 1.3
+                 , yesod >= 1.4 && < 1.5
                  , yesod-auth
                  , yesod-auth-hashdb
                  , yesod-core
@@ -295,6 +294,7 @@ executable         SnowdriftEmailDaemon
                      , fast-logger
                      , github
                      , hjsmin
+                     , hourglass
                      , http-conduit
                      , lifted-base
                      , mime-mail
@@ -342,6 +342,7 @@ executable         SnowdriftEmailDaemon
                 TemplateHaskell
                 TupleSections
                 TypeFamilies
+                ViewPatterns
 
 executable         sdm
     if flag(dev)
@@ -397,7 +398,7 @@ test-suite test
                  , filepath
                  , process
                  , text
-                 , hspec <2
+                 , hspec
                  , network
                  , network-uri
                  , http-types
