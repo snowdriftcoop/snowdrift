@@ -75,10 +75,9 @@ pageInfoRequireAffiliation project_handle language target =
       userIsAffiliatedWithProjectDB user_id project_id)
 
 
--- | Like pageInfoRequireAffiliation, but this is for creating a new WikiPage, so one doesn't
--- already exist. TODO(mitchell): Make a better abstraction here.
-pageInfoRequireEstablished :: Text -> Handler (Entity User, Entity Project)
-pageInfoRequireEstablished project_handle = do
+-- | Like pageInfoRequireAffiliation, but requires a user to be established.
+pageInfoRequireEstablished :: Text -> Language -> Text -> Handler (Entity User, Entity Project, Entity WikiPage)
+pageInfoRequireEstablished project_handle language target = do
     Entity user_id user <- requireAuth
 
     case userEstablished user of
@@ -86,9 +85,15 @@ pageInfoRequireEstablished project_handle = do
         EstEligible _ _ -> permissionDenied "You must accept the honor agreement before you can create a new wiki page"
         EstUnestablished -> permissionDenied "You must be an established user to create a new wiki page"
 
-    project <- runYDB $ getBy (UniqueProjectHandle project_handle) >>= maybe (error $ "project hande not found: " ++ show project_handle) return
+    (project, page) <- runYDB $ do
+        project     <- getBy404 $ UniqueProjectHandle project_handle
+        wiki_target <- getBy404 $ UniqueWikiTarget (entityKey project) language target
 
-    return (Entity user_id user, project)
+        let wiki_page_id = wikiTargetPage $ entityVal wiki_target
+        wiki_page   <- get404 wiki_page_id
+        return (project, Entity wiki_page_id wiki_page)
+
+    return (Entity user_id user, project, page)
 
 
 -- | Like pageInfoRequirePermission, but specialized to requiring that the User can edit a WikiPage.
@@ -432,7 +437,8 @@ getWikiEditR project_handle language target wiki_edit_id = do
 
 getNewWikiR :: Text -> Language -> Text -> Handler Html
 getNewWikiR project_handle language target = do
-    (_, Entity _ project) <- pageInfoRequireEstablished project_handle
+    (_, Entity _ project, _) <-
+        pageInfoRequireEstablished project_handle language target
     (wiki_form, _) <- generateFormPost $ newWikiForm Nothing
     defaultLayout $ do
         setTitle . toHtml $ projectName project <> " Wiki - New Page | Snowdrift.coop"
@@ -441,7 +447,8 @@ getNewWikiR project_handle language target = do
 
 postNewWikiR :: Text -> Language -> Text -> Handler Html
 postNewWikiR project_handle language target = do
-    (Entity user_id _, Entity project_id _) <- pageInfoRequireEstablished project_handle
+    (Entity user_id _, Entity project_id _, _) <-
+        pageInfoRequireEstablished project_handle language target
 
     now <- liftIO getCurrentTime
     ((result, _), _) <- runFormPost $ newWikiForm Nothing
@@ -471,7 +478,7 @@ postNewWikiR project_handle language target = do
 
 getNewWikiTranslationR :: Text -> Language -> Text -> Handler Html
 getNewWikiTranslationR project_handle language target = do
-    (_, Entity _ project, Entity page_id _) <- pageInfoRequireAffiliation project_handle language target
+    (_, Entity _ project, Entity page_id _) <- pageInfoRequireEstablished project_handle language target
 
     languages <- getLanguages
 
@@ -490,7 +497,7 @@ getNewWikiTranslationR project_handle language target = do
 
 postNewWikiTranslationR :: Text -> Language -> Text -> Handler Html
 postNewWikiTranslationR project_handle language target = do
-    (Entity user_id _, Entity project_id _, Entity page_id _) <- pageInfoRequireAffiliation project_handle language target
+    (Entity user_id _, Entity project_id _, Entity page_id _) <- pageInfoRequireEstablished project_handle language target
 
     now <- liftIO getCurrentTime
     ((result, _), _) <- runFormPost $ newWikiTranslationForm Nothing Nothing Nothing Nothing Nothing
