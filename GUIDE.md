@@ -153,49 +153,37 @@ and the precise commands may vary slightly from the ones we include here.
 
 ### Build steps
 
-Install the essential dependencies: ghc, cabal, postgresql, happy, alex, zlib1g
+#### Setting up Nix package manager
 
-Some additional dependencies (which may vary for different systems) include: libpq-dev, libglib2.0-dev, libcairo2-dev, libpango1.0-dev
+We're now using Nix as a reliable, simple way to manage packages for Snowdrift.
 
-On Debian-based GNU/Linux distros, use this command:
+* To install Nix, visit [NixOS.org/nix](https://nixos.org/nix/) and following the Get Nix instructions (works for GNU/Linux and Mac OS).
 
-    sudo apt-get install ghc cabal-install haskell-platform postgresql zlib1g-dev libpq-dev happy alex libglib2.0-dev libcairo2-dev libpango1.0-dev
+* Note: Nix can take a *lot* of drive space, so if you do not have many GB of free space on your root partition, you may need to find another approach, free up space, or put the nix directory somewhere else with more space and bind it to mount at /nix (this involves editing /etc/fstab)
 
-**Note: we are now using GHC 7.8.x**
-If your system's GHC version is older, get the update from <https://www.haskell.org/ghc/>
+Next, log out and back into your whole system (The environment variables command shown at the end of the install script's output works for the immediate terminal session for a temporary fix)
 
-Next, update cabal's package list:
+Within your project directory,
 
-    cabal update
+Run `nix-shell --pure -j4 shell.nix` to get necessary libraries and set path
 
-Add ~/.cabal/bin locations to your PATH;
-for bash, edit your ~/.bashrc (or equivalent) file and add the following line:
+(the -j4 part should be adapted to fit the number of cores on your machine)
 
-    export PATH=.cabal-sandbox/bin:~/.cabal/bin:$PATH
+The first time this is run, it will take a long time, but then will present you a new prompt within nix-shell.
 
-(you'll need to start a new terminal or run "source ~/.bashrc" to make the PATH active)
+Within the nix shell, run `cabal configure -fdev --enable-tests && cabal build -j4`
 
-Now, upgrade cabal itself:
-
-    cabal install cabal-install
-
-Then, run
-
-    cabal install gtk2hs-buildtools
-
-**change to your snowdrift project directory (if not already there).**
-
-Then, initiate a cabal sandbox:
-
-    cabal sandbox init
-
-Install dependencies and build Snowdrift
-
-    cabal install --enable-tests
+(Note the -fdev argument speeds up the build by bypassing optimization, which means the site runs slower, but that's not a problem for development work)
 
 This will take a *long* time but should ultimately tell you it installed Snowdrift.
-Note: you can add the `-fdev` flag to the install command to skip optimization;
-then the live site will run slower, but the building will go faster.
+
+
+Add SOMETHING ELSE (WHAT?) to your PATH;
+for bash, edit your ~/.bashrc (or equivalent) file and add the following line:
+
+    SOMETHING SO THAT WE DON'T NEED THE FULL /dist/build/ part to run things…?
+
+(you'll need to start a new terminal or run "source ~/.bashrc" to make the PATH active)
 
 Contact us for help if the build is not successful.
 
@@ -203,7 +191,9 @@ Contact us for help if the build is not successful.
 Setting up the database
 -----------------------
 
-We offer a simple script that will setup the PostgreSQL databases for you. Simply run:
+Install postgresql however you do that on your system
+
+We offer a simple script that will setup the PostgreSQL databases for you. Simply run (NOT IN THE NIX SHELL):
 
     sdm init
 
@@ -221,7 +211,7 @@ you can start the server from within your snowdrift directory with the command:
 
 To stop the running server, press ctrl-C
 
-To rebuild after code changes, run `cabal install` (perhaps with `-fdev` to skip optimization).
+To rebuild after code changes, enter the nix-shell and run `cabal install` (perhaps with `-fdev` to skip optimization).
 
 (note `cabal build` works as well but fails to recognize changes to template files)
 
@@ -266,9 +256,12 @@ After making various changes to the code and running locally
 to verify that everything compiles and also appears to work as desired,
 best practice involves then running our automated tests before sharing your changes with the main project.
 
-Assuming you ran `sdm init` when you first set up the databases, run the tests with:
+Assuming you ran `sdm init` when you first set up the databases, run the tests INSIDE THE NIX-SHELL with:
 
     yesod test
+or
+    cabal test
+
 
 If tests fail, try to figure out what is wrong. Ask us for help if needed.
 
