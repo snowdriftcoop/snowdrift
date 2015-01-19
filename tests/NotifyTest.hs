@@ -45,9 +45,9 @@ addAndVerifyEmail user_id email =
 
 withEmailDaemon :: FilePath -> (FilePath -> IO a) -> IO ()
 withEmailDaemon file action = do
-    [ subdir ] <- fmap (filter $ L.isPrefixOf "dist-sandbox-") $ getDirectoryContents "dist"
-
-    let prefix = "dist" </> subdir </> "build"
+    subdirs <- fmap (filter $ L.isPrefixOf "dist-sandbox-") $ getDirectoryContents "dist"
+    let subdir = case subdirs of [x] -> x; _ -> ""
+        prefix = "dist" </> subdir </> "build"
 
     withDelay $ bracket
         (spawnProcess
