@@ -334,7 +334,7 @@ singleton = flip (NonEmpty.:|) []
 -- 'forkEventHandler' sleeps for one second in between
 -- runs, so some tests will fail without this delay.
 withDelay :: MonadIO m => m a -> m a
-withDelay action = liftIO (threadDelay 1000000) >> action
+withDelay action = liftIO (threadDelay 1500000) >> action
 
 rethreadComment :: Text -> Text -> YesodExample App ()
 rethreadComment rethread_route parent_route = [marked|
