@@ -19,4 +19,5 @@ postHonorPledgeR = do
             runDB $ establishUserDB user_id elig_time reason
             setMessage "Congratulations, you are now a fully established user!"
             redirect HomeR
+        --TODO: add "already established" error for that case
         _ -> error "You're not eligible for establishment."

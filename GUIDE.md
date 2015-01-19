@@ -51,14 +51,24 @@ Text-editor settings
 --------------------
 
 We recommend setting your text editor to have the TAB key do indentation of four spaces.
-For VIM, for example, the config file .vimrc should have these three lines:
+
+### vim
+
+For vim users, your config file .vimrc should include these three lines:
 
     set expandtab
     set shiftwidth=4
     set tabstop=4
 
-VIM users should also install
-[Syntax Highlighting Files for Haskell](https://github.com/pbrisbin/html-template-syntax).
+You should also install
+[Shakespearean Syntax Highlighting for vim](https://github.com/pbrisbin/vim-syntax-shakespeare)
+
+Some other optional vim plugins to consider (among many available):
+[Haskell-Vim extra syntax](https://github.com/raichoo/haskell-vim) and
+[vim2hs](https://github.com/dag/vim2hs)
+
+
+### Emacs
 
 Emacs users should use a package manager (preferably Marmalade) to install
 [Haskell Mode](https://github.com/haskell/haskell-mode) and [Hamlet Mode](https://github.com/lightquake/hamlet-mode).
@@ -167,6 +177,7 @@ Within your project directory,
 
 Run `nix-shell --pure -j4 shell.nix` to get necessary libraries and set path
 
+<<<<<<< HEAD
 (the -j4 part should be adapted to fit the number of cores on your machine)
 
 The first time this is run, it will take a long time, but then will present you a new prompt within nix-shell.
@@ -187,18 +198,37 @@ for bash, edit your ~/.bashrc (or equivalent) file and add the following line:
 
 Contact us for help if the build is not successful.
 
-
 Setting up the database
 -----------------------
 
 Install postgresql however you do that on your system
 
 We offer a simple script that will setup the PostgreSQL databases for you. Simply run (NOT IN THE NIX SHELL):
+=======
+We offer a simple script that will setup the PostgreSQL databases for you.
+Some systems may need some extra set-up, but for most GNU/Linux systems, simply run:
+>>>>>>> origin/fix-testsuite
 
     sdm init
 
 It will prompt you for your sudo password.
+
 If you prefer to set up databases manually, see the appendix at the end of this guide.
+
+
+Note for users of NixOS
+-----------------------
+
+To get the sdm script to work, NixOS users should install postgres by adding these lines to /etc/nixos/configuration.nix:
+
+  services.postgresql.enable = true;
+  services.postgresql.package = pkgs.postgresql94;
+
+Then issue `sudo nixos-rebuild switch` to install.
+Afterwards you may need to create the postgres user, like so:
+
+    sudo -su root
+    createuser -s -r postgres
 
 
 Running the site
@@ -363,6 +393,13 @@ APPENDIX: Manual database management
 Our sdm script makes database management quick and easy.
 All the steps below can be done simply with the sdm script,
 but here we explain what it does and how to handle databases manually if you prefer.
+The commands below are written with GNU/Linux in mind.
+
+Notes for Mac OS X
+------------------
+
+Assuming the postgres server is running, where `sudo -u postgres psql` is seen below, run `psql postgres` instead.
+The commands that don't use psql can be adapted to run within the psql command line.
 
 
 Setting up the development database manually
@@ -489,4 +526,3 @@ skipping the dependencies/user-creation/password parts (those don't need updatin
     sudo -u postgres psql
     postgres=# update pg_database set datistemplate=true where datname='snowdrift_test_template';
     sudo -u postgres psql snowdrift_test_template <testDB.sql
-

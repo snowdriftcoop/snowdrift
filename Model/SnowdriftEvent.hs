@@ -178,6 +178,7 @@ snowdriftEventToFeedEntry render project_handle _ _ _ _ url (EWikiPage _ wiki_pa
 snowdriftEventToFeedEntry render project_handle user_map _ _ _ url (EWikiEdit _ wiki_edit wiki_target) =
     let target          = wikiTargetTarget wiki_target
         user_id         = wikiEditUser wiki_edit
+        edit_language   = wikiEditLanguage wiki_edit
         maybe_user      = M.lookup user_id user_map
         username        = maybe "<unknown user>" (userDisplayName . Entity user_id) maybe_user
 
@@ -186,7 +187,8 @@ snowdriftEventToFeedEntry render project_handle user_map _ _ _ url (EWikiEdit _ 
             , feedEntryUpdated = wikiEditTs wiki_edit
             , feedEntryTitle   = T.unwords
                 [ T.snoc project_handle ':'
-                , "wiki page", "\"" <> target <> "\""
+                , renderLanguage LangEn edit_language
+                , "version of wiki page", "\"" <> target <> "\""
                 , "edited by", username
                 ] <> maybe "" (T.append ": ") (wikiEditComment wiki_edit)
 

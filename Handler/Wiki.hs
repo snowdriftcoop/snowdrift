@@ -205,9 +205,17 @@ postWikiR project_handle target_language target = do
 
                             lift $ insert_ $ Ticket now now "edit conflict" comment_id
 
-                            let notif_text = Markdown $ T.unlines
-                                    [ "Edit conflict for wiki page *" <> target <> "*."
-                                    , "<br>[**Ticket created**](" <> render (WikiCommentR project_handle target_language target comment_id) <> ")"
+                            let notif_text = Markdown $ T.intercalate "\n\n"
+                                    [ T.unwords
+                                        [ "Edit conflict for"
+                                        , renderLanguage LangEn target_language
+                                        , "version of wiki page"
+                                        , "*" <> target <> "*"
+                                        , "on project"
+                                        , project_handle
+                                        ] <> "."
+
+                                    , "[**Ticket created**](" <> render (WikiCommentR project_handle target_language target comment_id) <> ")"
                                     ]
 
                             sendPreferredNotificationDB last_editor NotifEditConflict
