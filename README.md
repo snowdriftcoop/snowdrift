@@ -54,7 +54,7 @@ git clone [your remote address, e.g. git@gitorious.org:snowdrift/yourusername-sn
 cabal install gtk2hs-buildtools
 cd snowdrift
 cabal sandbox init
-cabal install --enable-tests
+cabal install --enable-tests -fdev
 
 // Set up the database with our quick script.
 // To understand what the script does or to run the commands manually, see GUIDE.md
@@ -66,17 +66,6 @@ Snowdrift Development
 // To see the live site, point your browser to localhost:3000
 
 //To rebuild after making changes run
-cabal install
-
-```
-
-<!-- yesod-bin has issues building with our stuff - will restore this when that is resolved
--- // For fast, automatic rebuilding whenever you change the code, install the yesod-bin package
--- cabal install yesod-bin
--- // then instead of "Snowdrift Development" run the site with
--- yesod devel
--- // which can be left running in a terminal while working elsewhere
--->
-
+cabal install -fdev
 
 Read through GUIDE.md for thorough details and more about development, testing, and so on.
