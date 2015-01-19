@@ -1,5 +1,5 @@
 name:              Snowdrift
-version:           0.0.2
+version:           0.1.0
 license:           OtherLicense
 license-file:      LICENSE
 author:            David L. L. Thomas
@@ -212,7 +212,7 @@ library
                  , wai-logger
                  , warp
                  , yaml
-                 , yesod
+                 , yesod >= 1.4 && < 1.5
                  , yesod-auth
                  , yesod-auth-hashdb
                  , yesod-core
