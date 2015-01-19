@@ -25,7 +25,11 @@ newWikiTranslationForm wiki_edit_id language target content complete = renderBoo
     <*> areq' (selectField makeLanguageOptions) "New language" language
     <*> areq' textField "Target for URL" target
     <*> areq' snowdriftMarkdownField "Page content" content
-    <*> areq  boolField "Complete translation" complete
+    -- This should be a 'boolField', but it's not rendered properly.
+    <*> areq' (selectFieldList yesno) "Complete translation" complete
+  where
+    yesno :: [(Text, Bool)]
+    yesno = [("Yes", True), ("No", False)]
 
 
 
