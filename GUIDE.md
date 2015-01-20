@@ -265,7 +265,7 @@ After making various changes to the code and running locally
 to verify that everything compiles and also appears to work as desired,
 best practice involves then running our automated tests before sharing your changes with the main project.
 
-Assuming you ran `sdm init` when you first set up the databases, run the tests INSIDE THE NIX-SHELL with:
+Assuming you ran `sdm init` when you first set up the databases, run the tests with:
 
     yesod test
 
