@@ -20,12 +20,14 @@ module Model.Project
     , fetchProjectTicketClaimingEventsBeforeDB
     , fetchProjectTicketUnclaimingEventsBeforeDB
     , fetchProjectWikiPageByNameDB
+    , fetchProjectPledgesDB
+    , fetchProjectSharesDB
     , insertProjectPledgeDB
     , fetchProjectLogoDB
     -- TODO(mitchell): rename all these... prefix fetch, suffix DB
     , getGithubIssues
     , getProjectPages
-    , getProjectShares
+--    , getProjectShares
     , getProjectTagList
     , getProjectWikiPages
     , projectComputeShareValue
@@ -195,14 +197,29 @@ summarizeProject project pledges = do
 
     return $ ProjectSummary (projectName $ entityVal project) (projectHandle $ entityVal project) user_count share_count share_value
 
+fetchProjectPledgesDB :: (MonadThrow m, MonadIO m, MonadBaseControl IO m, MonadLogger m, MonadResource m) => ProjectId -> SqlPersistT m [Entity Pledge]
+fetchProjectPledgesDB project_id = do
+    pledges <- select $ from $ \ pledge -> do
+        where_ ( pledge ^. PledgeProject ==. val project_id &&. pledge ^. PledgeFundedShares >. val 0)
+        return pledge
 
-getProjectShares :: (MonadThrow m, MonadIO m, MonadBaseControl IO m, MonadLogger m, MonadResource m) => ProjectId -> SqlPersistT m [Int64]
-getProjectShares project_id = do
+    return pledges
+
+fetchProjectSharesDB :: (MonadThrow m, MonadIO m, MonadBaseControl IO m, MonadLogger m, MonadResource m) => ProjectId -> SqlPersistT m [Int64]
+fetchProjectSharesDB project_id = do
     pledges <- select $ from $ \ pledge -> do
         where_ ( pledge ^. PledgeProject ==. val project_id &&. pledge ^. PledgeFundedShares >. val 0)
         return pledge
 
     return $ map (pledgeFundedShares . entityVal) pledges
+
+-- getProjectShares :: (MonadThrow m, MonadIO m, MonadBaseControl IO m, MonadLogger m, MonadResource m) => ProjectId -> SqlPersistT m [Int64]
+-- getProjectShares project_id = do
+--     pledges <- select $ from $ \ pledge -> do
+--         where_ ( pledge ^. PledgeProject ==. val project_id &&. pledge ^. PledgeFundedShares >. val 0)
+--         return pledge
+--
+--     return $ map (pledgeFundedShares . entityVal) pledges
 
 -- | Get all WikiPages for a Project.
 getProjectPages :: ProjectId -> DB [Entity WikiPage]
@@ -225,7 +242,8 @@ projectComputeShareValue pledges =
 -- signature needs to remain generic, for SnowdriftProcessPayments
 updateShareValue :: (MonadThrow m, MonadIO m, MonadBaseControl IO m, MonadLogger m, MonadResource m) => ProjectId -> SqlPersistT m ()
 updateShareValue project_id = do
-    pledges <- getProjectShares project_id
+    pledges <- fetchProjectSharesDB project_id
+--    pledges <- getProjectShares project_id
 
     update $ \ project -> do
         set project  [ ProjectShareValue =. val (projectComputeShareValue pledges) ]

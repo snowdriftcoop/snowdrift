@@ -1,11 +1,11 @@
 <h1> 
     <div .text-center> Projects
 
-$if null projects
+$if null project_pledges
     <p> no projects to display
 $else
     <!-- add project_id back in -->
-    $forall Entity _ project <- projects
+    $forall (Entity project_id project, Entity _ pledges) <- project_pledges
         <fieldset>
             <!-- 
                 Project Type could be added as a legend here, but is not
@@ -22,12 +22,15 @@ $else
                     <font size="-1">
                         <p align="left">
                             #{projectDescription project}
-                    <!--<div class="row">
-                        <div class="col-md-6">
-                           _{MsgPatrons (fromIntegral $ length (getProjectShares project_id)) }
-                        <div class="col-md-6">
-                            _{lift $ getProjectShares project_id} Total Shares @ #{show (projectShareValue project)}/share
-                        -->
+                    <div class="row">
+                        <div class="col-md-4">
+                            #{summaryUsers . lookup} pledgers
+                           
+                        <div class="col-md-4">
+                            pledged _{MsgPatrons (fromIntegral $ length (fetchProjectSharesDB project_id)) } shares
+                            
+                        <div class="col-md-4">
+                            at _{lift $ fetchProjectSharesDB project_id} Total Shares @ #{show (projectShareValue project)}/share
                     <div class="row">
                         <div class="col-md-8">
                         <div class="col-md-1">
@@ -41,33 +44,3 @@ $else
                                 <span .glyphicon .glyphicon-book>
                         <div class="col-md-1">
                                 <span .glyphicon .glyphicon-tag>
-                        
-
-
-<!--    <table .projects>
-        <tr>
-            <th> Project
-            <th> Feed
-            <th> Discussion
-            <th> Wiki
-            <th> Share value
-
-        $forall Entity _ project <- projects
-            
-
-            <tr>
-                <td>
-                    <a href=@{ProjectR (projectHandle project)}>
-                        #{projectName project}
-                <td>
-                    <a href=@{ProjectFeedR (projectHandle project)}>
-                        <span .glyphicon .glyphicon-list>&nbsp;
-                <td>
-                    <a href=@{ProjectDiscussionR (projectHandle project)}>
-                        <span .glyphicon .glyphicon-comment>&nbsp;
-                <td>
-                    <a href=@{WikiPagesR (projectHandle project)}>
-                        <span .glyphicon .glyphicon-book>&nbsp;
-                <td>
-                    #{show (projectShareValue project)}/share
--->

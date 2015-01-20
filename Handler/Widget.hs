@@ -20,7 +20,8 @@ getWidgetR :: Text -> Handler Html
 getWidgetR project_handle = do
     (project, pledges) <- runYDB $ do
         Entity project_id project <- getBy404 $ UniqueProjectHandle project_handle
-        pledges <- getProjectShares project_id
+        pledges <- fetchProjectSharesDB project_id
+--        pledges <- getProjectShares project_id
         return (project, pledges)
 
     let share_value = projectShareValue project
