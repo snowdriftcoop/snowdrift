@@ -191,17 +191,15 @@ projectDiscussionPage project_handle widget = do
 
 getProjectsR :: Handler Html
 getProjectsR = do
-    project_pledges <- runDB $ do
+    project_summaries <- runDB $ do
         projects <- fetchPublicProjectsDB
-        project_pledges <- mapM (\p -> (p,) <$> fetchProjectPledgesDB (entityKey p)) projects
-        return project_pledges
+        forM projects $ \project -> do
+            pledges <- fetchProjectPledgesDB $ entityKey project
+            summary <- summarizeProject project pledges
+            return (project, summary)
 
-    projectsummaries <- forM project_pledges $ \(project, pledges) ->
-         runDB $ summarizeProject project pledges
-
-    project_summaries <- M.fromList projectsummaries
-
-    defaultLayout $ do    
+    let sharesCount = getCount . summaryShares
+    defaultLayout $ do
         setTitle "Projects | Snowdrift.coop"
         $(widgetFile "projects")
 

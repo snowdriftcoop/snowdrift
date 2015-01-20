@@ -1,11 +1,11 @@
 <h1> 
     <div .text-center> Projects
 
-$if null project_pledges
+$if null project_summaries
     <p> no projects to display
 $else
     <!-- add project_id back in -->
-    $forall (Entity project_id project, Entity _ pledges) <- project_pledges
+    $forall (Entity _ project, summary) <- project_summaries
         <fieldset>
             <!-- 
                 Project Type could be added as a legend here, but is not
@@ -24,13 +24,11 @@ $else
                             #{projectDescription project}
                     <div class="row">
                         <div class="col-md-4">
-                            #{summaryUsers . lookup} pledgers
-                           
+                            #{show $ getCount $ summaryUsers summary}
                         <div class="col-md-4">
-                            pledged _{MsgPatrons (fromIntegral $ length (fetchProjectSharesDB project_id)) } shares
-                            
+                            pledged #{show $ sharesCount summary} #{plural (sharesCount summary) "share" "shares"}
                         <div class="col-md-4">
-                            at _{lift $ fetchProjectSharesDB project_id} Total Shares @ #{show (projectShareValue project)}/share
+                            at #{show $ summaryShareCost summary}/share
                     <div class="row">
                         <div class="col-md-8">
                         <div class="col-md-1">
