@@ -1,5 +1,4 @@
-<h1> 
-    <div .text-center> Projects
+<p class="h1 text-center">Projects
 
 $if null project_summaries
     <p> no projects to display
@@ -13,32 +12,34 @@ $else
                 ProjectSignup table or add to Project table.
             -->
             <div class="row">
-                <div class="col-md-2">
+                <div class="col-xs-2 col-sm-2 col-md-2 col-lg-2">
                    <img src=@{ImageR $ fetchProjectLogoDB (projectLogo project)}>
-                <div class="col-md-10">
-                    <a href=@{ProjectR (projectHandle project)}>
-                        <H1 align="center">
-                            #{projectName project}
-                    <font size="-1">
-                        <p align="left">
-                            #{projectDescription project}
+                <div class="col-xs-10 col-sm-10 col-md-10 col-lg-10">
                     <div class="row">
-                        <div class="col-md-4">
-                            #{show $ getCount $ summaryUsers summary}
-                        <div class="col-md-4">
-                            pledged #{show $ sharesCount summary} #{plural (sharesCount summary) "share" "shares"}
-                        <div class="col-md-4">
-                            at #{show $ summaryShareCost summary}/share
+                        <div class="col-xs-10 col-sm-10 col-md-9 col-lg-9">
+                            <a href=@{ProjectR (projectHandle project)}>
+                                <p class="h2 text-center">
+                                    #{projectName project}
                     <div class="row">
-                        <div class="col-md-8">
-                        <div class="col-md-1">
-                            <a href=@{ProjectFeedR (projectHandle project)}>
-                                <span .glyphicon .glyphicon-list>
-                        <div class="col-md-1">
-                            <a href=@{ProjectDiscussionR (projectHandle project)}>
-                                <span .glyphicon .glyphicon-comment>
-                        <div class="col-md-1">
+                        <div class="col-xs-10 col-sm-10 col-md-9 col-lg-9">
+                            <font size="-1">
+                                <p align="left">
+                                    #{projectDescription project}
+                    <div class="row">
+                        <!-- Add highlighting for when User is already a patron -->
+                        <div class="col-xs-offset-2 col-xs-2 col-sm-offset-2 col-sm-2 col-md-offset-6 col-md-2 col-lg-offset-6 col-lg-2">
+                            <a href=@{ProjectPatronsR (projectHandle project)}>
+                                <img src=@{ImageR "DefaultPatronIcon"}> #{show $ getCount $ summaryUsers summary}
+                        <div class="col-xs-2 col-sm-2 col-md-1 col-lg-1">
                             <a href=@{WikiPagesR (projectHandle project)}>
                                 <span .glyphicon .glyphicon-book>
-                        <div class="col-md-1">
-                                <span .glyphicon .glyphicon-tag>
+                        <div class="col-xs-2 col-sm-2 col-md-1 col-lg-1">
+                            <a href=@{ProjectFeedR (projectHandle project)}>
+                                <span .glyphicon .glyphicon-list> 1
+                        <div class="col-xs-2 col-sm-2 col-md-1 col-lg-1">
+                            <a href=@{ProjectDiscussionR (projectHandle project)}>
+                                <span .glyphicon .glyphicon-comment> 1 
+                        <div class="col-xs-2 col-sm-2 col-md-1 col-lg-1">
+                            <a href=@{TicketsR (projectHandle project)}>
+                                <span .glyphicon .glyphicon-tag> 1
+        <br>
