@@ -43,9 +43,15 @@ pledgeField project_id = Field
         | otherwise = return $ parseValue x
 
     parseValue v =
-        case T.decimal v of
-            Right (a, "") -> Right $ Just $ SharesPurchaseOrder a
-            _ -> Left $ SomeMessage $ MsgInvalidInteger v
+        let shares         = Right . Just . SharesPurchaseOrder
+            invalidInteger = Left . SomeMessage . MsgInvalidInteger
+        in case T.decimal v of
+            Right (a, "") -> shares a
+            Right (a, bs) ->
+                if T.all (== '0') $ T.tail bs
+                    then shares a
+                    else invalidInteger v
+            _ -> invalidInteger v
 
     view ident name attrs v req = do
         now <- liftIO getCurrentTime
