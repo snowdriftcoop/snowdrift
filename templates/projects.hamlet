@@ -4,7 +4,7 @@ $if null project_summaries
     <p> no projects to display
 $else
     <!-- add project_id back in -->
-    $forall (Entity _ project, summary) <- project_summaries
+    $forall (Entity project_id project, summary) <- project_summaries
         <fieldset>
             <!-- 
                 Project Type could be added as a legend here, but is not
@@ -35,10 +35,10 @@ $else
                                 <span .glyphicon .glyphicon-book>
                         <div class="col-xs-2 col-sm-2 col-md-1 col-lg-1">
                             <a href=@{ProjectFeedR (projectHandle project)}>
-                                <span .glyphicon .glyphicon-list> 1
+                                <span .glyphicon .glyphicon-list>
                         <div class="col-xs-2 col-sm-2 col-md-1 col-lg-1">
                             <a href=@{ProjectDiscussionR (projectHandle project)}>
-                                <span .glyphicon .glyphicon-comment> 1 
+                                <span .glyphicon .glyphicon-comment> #{show $ getCount $ fetchProjectDiscussionsDB project_id }
                         <div class="col-xs-2 col-sm-2 col-md-1 col-lg-1">
                             <a href=@{TicketsR (projectHandle project)}>
                                 <span .glyphicon .glyphicon-tag> 1

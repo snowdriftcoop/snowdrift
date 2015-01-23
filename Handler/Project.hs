@@ -199,7 +199,7 @@ getProjectsR = do
             return (project, summary)
 
     -- let sharesCount = getCount . summaryShares
-    -- let discussionsCount = getCount . fetchProjectDiscussionsDB
+    let discussionsCount = getCount . (liftM . runDB . fetchProjectDiscussionsDB)
     defaultLayout $ do
         setTitle "Projects | Snowdrift.coop"
         $(widgetFile "projects")
