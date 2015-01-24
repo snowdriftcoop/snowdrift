@@ -2,7 +2,7 @@ Default: &defaults
   host: "127.0.0.1"
   port: 3000
   approot: "http://localhost:3000"
-  copyright: "2012-2015 Snowdrift.coop"
+  copyright: "2012-2015 various contributors"
   source: "https://gitorious.org/snowdrift/snowdrift"
   githubrepo: "dlthomas/snowdrift"
   siteproject: "snowdrift"
