@@ -102,6 +102,12 @@ instance Count UserCount where getCount (UserCount c) = c
 data ShareCount = ShareCount Int64
 instance Count ShareCount where getCount (ShareCount c) = c
 
+data DiscussionCount = DiscussionCount Int64
+instance Count DiscussionCount where getCount (DiscussionCount c) = c
+
+data TicketCount = TicketCount Int64
+instance Count TicketCount where getCount (TicketCount c) = c                
+
 newtype Color = Color Int deriving (Typeable, Num)
 
 showDiffTime :: UTCTime -> UTCTime -> String

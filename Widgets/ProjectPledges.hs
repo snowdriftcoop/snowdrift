@@ -22,7 +22,8 @@ projectPledgeSummary user_id = do
                 where_ $ pledge ^. PledgeUser ==. val user_id
                 return (project, pledge)
 
-        mapM (uncurry summarizeProject) projects_pledges
+        -- Discussion Counts & Ticket Counts not needed for this view
+        mapM (uncurry (\p -> summarizeProject p [] [])) projects_pledges
 
     toWidget [hamlet|
         $if null project_summary
@@ -45,6 +46,7 @@ projectPledges user_id = do
                 where_ $ pledge ^. PledgeUser ==. val user_id
                 return (project, pledge)
 
+        -- Discussion Counts & Ticket Counts not needed for this view
         mapM (uncurry summarizeProject) projects_pledges
 
     let cost = summaryShareCost

@@ -64,11 +64,13 @@ import           Data.List                    (sortBy)
 -- Types
 
 data ProjectSummary = ProjectSummary
-    { summaryName          :: Text
-    , summaryProjectHandle :: Text
-    , summaryUsers         :: UserCount
-    , summaryShares        :: ShareCount
-    , summaryShareCost     :: Milray
+    { summaryName            :: Text
+    , summaryProjectHandle   :: Text
+    , summaryUsers           :: UserCount
+    , summaryShares          :: ShareCount
+    , summaryShareCost       :: Milray
+    , summaryDiscussionCount :: DiscussionCount
+    , summaryTicketCount     :: TicketCount
     }
 
 data UpdateProject = UpdateProject
@@ -189,13 +191,15 @@ getGithubIssues project =
     parsedProjectGithubRepo :: Maybe (String, String)
     parsedProjectGithubRepo = second (drop 1) . break (== '/') . T.unpack <$> projectGithubRepo project
 
-summarizeProject :: Monad m => Entity Project -> [Entity Pledge] -> m ProjectSummary
-summarizeProject project pledges = do
+summarizeProject :: Monad m => Entity Project -> [Entity Pledge] -> [Entity Discussion] -> [Entity TaggedTicket]-> m ProjectSummary
+summarizeProject project pledges discussions tickets = do
     let share_value = projectShareValue $ entityVal project
         share_count = ShareCount $ sum . map (pledgeFundedShares . entityVal) $ pledges
         user_count = UserCount $ fromIntegral $ length pledges
+        discussion_count = DiscussionCount $ fromIntegral $ length discussions
+        ticket_count = TicketCount $ fromIntegral $ length tickets
 
-    return $ ProjectSummary (projectName $ entityVal project) (projectHandle $ entityVal project) user_count share_count share_value
+    return $ ProjectSummary (projectName $ entityVal project) (projectHandle $ entityVal project) user_count share_count share_value discussion_count ticket_count
 
 fetchProjectPledgesDB :: (MonadThrow m, MonadIO m, MonadBaseControl IO m, MonadLogger m, MonadResource m) => ProjectId -> SqlPersistT m [Entity Pledge]
 fetchProjectPledgesDB project_id = do
