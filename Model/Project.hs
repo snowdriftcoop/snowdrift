@@ -191,7 +191,7 @@ getGithubIssues project =
     parsedProjectGithubRepo :: Maybe (String, String)
     parsedProjectGithubRepo = second (drop 1) . break (== '/') . T.unpack <$> projectGithubRepo project
 
-summarizeProject :: Monad m => Entity Project -> [Entity Pledge] -> [Entity Discussion] -> [Entity TaggedTicket]-> m ProjectSummary
+summarizeProject :: Monad m => Entity Project -> [Entity Pledge] -> [DiscussionId] -> [TaggedTicket]-> m ProjectSummary
 summarizeProject project pledges discussions tickets = do
     let share_value = projectShareValue $ entityVal project
         share_count = ShareCount $ sum . map (pledgeFundedShares . entityVal) $ pledges

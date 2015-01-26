@@ -25,7 +25,7 @@ projectPledgeSummary user_id = do
 --                return (project, pledge)
 
         -- Discussion Counts & Ticket Counts not needed for this view
-        mapM (uncurry (\(a, b) -> summarizeProject (a, b) [] [])) projects_pledges
+        mapM (\(a, b) -> summarizeProject a b [] []) projects_pledges
 
     toWidget [hamlet|
         $if null project_summary
@@ -50,7 +50,7 @@ projectPledges user_id = do
 --                return (project, pledge)
 
         -- Discussion Counts & Ticket Counts not needed for this view
-        mapM (uncurry (\(a, b) -> summarizeProject (a, b) [] [])) projects_pledges
+        mapM (\(a, b) -> summarizeProject a b [] []) projects_pledges
 
     let cost = summaryShareCost
         shares = getCount . summaryShares

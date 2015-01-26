@@ -4,7 +4,7 @@ $if null project_summaries
     <p> no projects to display
 $else
     <!-- add project_id back in -->
-    $forall (Entity project_id project, summary) <- project_summaries
+    $forall (Entity _ project, summary) <- project_summaries
         <fieldset>
             <!-- 
                 Project Type could be added as a legend here, but is not
