@@ -1,4 +1,6 @@
-{ haskellPackages ? (import <nixpkgs> {}).haskellPackages }:
+{ pkgs ? (import <nixpkgs> {})
+, haskellPackages ? pkgs.haskellPackages
+}:
 
 haskellPackages.cabal.mkDerivation (self: {
   pname = "Snowdrift";
@@ -26,7 +28,9 @@ haskellPackages.cabal.mkDerivation (self: {
     text transformers waiExtra waiTest xmlConduit yesod yesodCore
     yesodMarkdown yesodRoutes yesodTest
   ];
-  buildTools = with haskellPackages; [ cabalInstall ];
+  buildTools =
+    (with pkgs; [ git ]) ++
+    (with haskellPackages; [ cabalInstall ]);
   meta = {
     homepage = "https://snowdrift.coop";
     description = "Infrastructure for Snowdrift fundrasing site";
