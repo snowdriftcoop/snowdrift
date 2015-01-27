@@ -9,25 +9,27 @@ import Data.Attoparsec.Text
 import qualified Text.Blaze.Html5.Attributes as Attr
 import qualified Text.Blaze.Html5 as Html
 
-import Data.Either
-
 import Data.List as L
 import Data.String
 import Data.Text as T
 
 import Control.Applicative
 
-
 unlinesHtml :: [Html] -> Html
 unlinesHtml = sequence_ . L.intersperse Html.br
+
+-- | Single step of a 'Data.List.foldr' to concatenate 'Right's in an 'Either'
+--   and remove empty 'Right's.
+concatRights :: Either a T.Text -> [Either a T.Text] -> [Either a T.Text]
+concatRights (Right y) xs | T.null y = xs
+concatRights (Right y) (Right x : xs) = Right (y `T.append` x) : xs
+concatRights y xs = y : xs
 
 prettyHtml :: (Monad m, HasGithubRepo (HandlerT site m)) => [Parser Pretty] -> Text -> HandlerT site m Html
 prettyHtml filters text =
     case parseOnly (many $ (Left <$> choice filters) <|> (Right . T.singleton <$> anyChar)) text of
         Right result -> do
-            let regroup = L.concatMap $ \(a, b) -> L.map Left a ++ [Right b | T.length b > 0]
-                splitUp = fmap (fmap T.concat . partitionEithers) . L.groupBy ((==) `on` isRight)
-                pieces = regroup . splitUp $ result
+            let pieces = L.foldr concatRights [] result
 
             fmap sequence_ $ forM pieces $ either renderPretty (return . toHtml)
 
