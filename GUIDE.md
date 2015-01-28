@@ -399,33 +399,49 @@ APPENDIX B: Using the Nix package manager
 
 We're now testing the use of Nix as a reliable, simple way to manage packages for Snowdrift.
 Once we have it fully working, it should help simplify building overall.
+
 **The instructions in this appendix are just draft and need cleaning up.**
+
 We're not sure each of these commands is best, it may change as we continue testing.
 
-* To install Nix, visit [NixOS.org/nix](https://nixos.org/nix/) and follow the Get Nix instructions (works for GNU/Linux and Mac OS).
+To install Nix, visit [NixOS.org/nix](https://nixos.org/nix/) and follow the "Get Nix" instructions (works for GNU/Linux and Mac OS).
 
-* Note: Nix can take a *lot* of drive space, so if you do not have many GB of free space on your root partition, you may need to find another approach, free up space, or put the nix directory somewhere else with more space and edit /etc/fstab to bind the location to mount at /nix 
+*Note: Nix can take a lot of drive space, so if you do not have many GB of free space on your root partition, you may need to find another approach.
+Free up space or put the `nix` directory somewhere else with more space and edit `/etc/fstab` to bind the location to mount at `/nix`.*
 
-Next, log out and back into your whole system (The environment variables command shown at the end of the install script's output works for the immediate terminal session for a temporary fix)
+Next, log out and back into your whole system (the environment variables command shown at the end of the install script's output works for the immediate terminal session for a temporary fix).
 
-Within the snowdrift project directory,
+[Nixpkgs](https://nixos.org/nixpkgs/), a collection of packages used by Nix, usually has only the latest packaged version and is a rolling-release distribution, which leaves us with two options:
 
-Run `nix-shell --pure -j4 shell.nix` to get necessary libraries and set path
+* Update our code and dependencies whenever the unstable channel (or the master branch) is changed.
+  
+* Maintain our own collection of package versions that are known to work.
 
-(the -j4 part should be adapted to fit the number of cores on your machine)
+The former is clearly too much work and is not reliable anyway, so we use the latter approach.
+Get a copy of our repository with this command:
 
-The first time this is run, it will take a long time, but then will present you a new prompt within nix-shell.
+    git clone https://github.com/nkaretnikov/nixpkgs.git -b snowdrift
+    
+It automatically switches to the right branch, so the only thing left is to point the [`NIX_PATH`](https://nixos.org/nix/manual/#sec-common-env) environment variable to the directory *containing* the `nixpkgs` repository.
+For example, if a user cloned it to `/home/user`, that's the value they need to use:
+
+    export NIX_PATH=/home/user
+
+Within the snowdrift project directory, run `nix-shell --pure -j4 shell.nix` to get necessary libraries and set `PATH` (the `-j4` part should be adapted to fit the number of cores on your machine).
+
+The first time this is run, it will take a long time, but then will present you a new prompt within `nix-shell`.
 
 Within the nix shell, run `cabal configure -fdev --enable-tests && cabal build -j4`
 
-(Note the -fdev argument speeds up the build by bypassing optimization, which means the site runs slower, but that's not a problem for development work)
+*Note the `-fdev` argument speeds up the build by bypassing optimization, which means the site runs slower, but that's not a problem for development work.*
 
-This will take a *long* time but should ultimately tell you it installed Snowdrift.
+This will take a *long* time but should ultimately tell you it built `Snowdrift`.
 
-TODO: someone should figure out still if the path stuff for .bashrc is the same as the plain cabal process or something else.
-If the path is not set right, you will need a longer command with /dist/… in order to run Snowdrift Development and sdm
+Since the `nix-shell` command changed your `PATH`, it doesn't have things like `sudo`, which is used by the `sdm` script.
+Run `dist/build/sdm/sdm init` *outside* the nix shell (in a different terminal window) if you need to setup the databases.
+Then, you can go back to the nix shell to run `cabal test`, which runs the testsuite.
 
-Note: all this may work as is, but there may be value in installing the [nixpkgs](https://github.com/NixOS/nixpkgs) and setting the path to use that when running nix-shell.
+You can run the application with `dist/build/Snowdrift/Snowdrift Development`.
 
 
 Note for users of NixOS
