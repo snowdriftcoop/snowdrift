@@ -71,7 +71,6 @@
 /p/#Text                                     ProjectR                 GET POST
 /p/#Text/applications                        ApplicationsR            GET
 /p/#Text/application/#VolunteerApplicationId ApplicationR             GET
-/p/#Text/button.png                          ProjectPledgeButtonR     GET
 /p/#Text/c/#CommentId                        ProjectCommentR          GET
 /p/#Text/c/#CommentId/claim                  ClaimProjectCommentR     GET POST
 /p/#Text/c/#CommentId/close                  CloseProjectCommentR     GET POST

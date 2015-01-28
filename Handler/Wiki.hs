@@ -654,7 +654,6 @@ getMonolingualWikiR = redirectPolylingualWiki $ \case
     Just (ProjectBlogR _)                       -> error "the impossible happened"
     Just (NewBlogPostR _)                       -> error "the impossible happened"
     Just (BlogPostR _ _)                        -> error "the impossible happened"
-    Just (ProjectPledgeButtonR _)               -> error "the impossible happened"
     Just (ProjectCommentR _ _)                  -> error "the impossible happened"
     Just (ClaimProjectCommentR _ _)             -> error "the impossible happened"
     Just (CloseProjectCommentR _ _)             -> error "the impossible happened"

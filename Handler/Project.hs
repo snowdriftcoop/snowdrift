@@ -28,7 +28,6 @@ import Model.User
 import Model.Wiki
 import System.Locale (defaultTimeLocale)
 import View.Comment
-import View.PledgeButton
 import View.Project
 import View.SnowdriftEvent
 import Widgets.Preview
@@ -314,20 +313,6 @@ getApplicationR project_handle application_id = do
     defaultLayout $ do
         setTitle . toHtml $ projectName project <> " Volunteer Application - " <> userDisplayName user <> " | Snowdrift.coop"
         $(widgetFile "application")
-
---------------------------------------------------------------------------------
--- /button.png
-
-getProjectPledgeButtonR :: Text -> Handler TypedContent
-getProjectPledgeButtonR project_handle = do
-   pledges <- runYDB $ do
-        Entity project_id _project <- getBy404 $ UniqueProjectHandle project_handle
-        getProjectShares project_id
-
-   let png = overlayImage blankPledgeButton $
-        fillInPledgeCount (fromIntegral (length pledges))
-
-   respond "image/png" png
 
 --------------------------------------------------------------------------------
 -- /edit

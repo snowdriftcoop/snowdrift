@@ -101,7 +101,6 @@ library
                      View.SnowdriftEvent
                      View.User
                      View.Wiki
-                     View.PledgeButton
                      View.Project
                      View.ResetPassword
                      Version
@@ -152,7 +151,6 @@ library
                 ViewPatterns
 
     build-depends: base                          >= 4          && < 5
-                 , aeson
                  , async
                  , attoparsec
                  , authenticate
@@ -160,29 +158,21 @@ library
                  , blaze-html
                  , blaze-markup
                  , bytestring
-                 , clientsession
                  , conduit
                  , containers
                  , data-default
-                 , diagrams
-                 , diagrams-lib
-                 , diagrams-rasterific
                  , Diff
                  , directory
                  , esqueleto
                  , fast-logger
-                 , file-embed
                  , github
-                 , hamlet
                  , hit
                  , hjsmin
                  , hourglass
                  , http-conduit
                  , http-types
-                 , JuicyPixels
                  , lifted-base
                  , mime-mail
-                 , monad-control
                  , monad-logger
                  , mtl
                  , old-locale
@@ -197,9 +187,6 @@ library
                  , resourcet
                  , semigroups
                  , shakespeare
-                 , shakespeare-css
-                 , shakespeare-js
-                 , shakespeare-text
                  , stm
                  , template-haskell
                  , temporary
@@ -207,10 +194,8 @@ library
                  , time
                  , transformers
                  , unix
-                 , vector
                  , wai-extra
                  , wai-logger
-                 , warp
                  , yaml
                  , yesod >= 1.4 && < 1.5
                  , yesod-auth
@@ -239,7 +224,6 @@ executable         SnowdriftProcessPayments
                      , fast-logger
                      , blaze-builder
                      , resourcet
-                     , mtl
                      , lifted-base
 
     ghc-options:       -threaded -O2
@@ -277,8 +261,6 @@ executable         SnowdriftEmailDaemon
         Buildable: False
     main-is:           SnowdriftEmailDaemon.hs
     build-depends:     base
-                     , async
-                     , attoparsec
                      , authenticate
                      , blaze-builder
                      , blaze-html
@@ -292,9 +274,7 @@ executable         SnowdriftEmailDaemon
                      , esqueleto
                      , email-validate
                      , fast-logger
-                     , github
                      , hjsmin
-                     , hourglass
                      , http-conduit
                      , lifted-base
                      , mime-mail
@@ -382,13 +362,9 @@ test-suite test
     build-depends: base
                  , Snowdrift
                  , yesod-markdown
-                 , yesod-routes
                  , yesod-test
-                 , yesod-core
                  , yesod
                  , persistent
-                 , persistent-postgresql
-                 , resourcet
                  , monad-logger
                  , monad-control
                  , semigroups
@@ -399,13 +375,9 @@ test-suite test
                  , process
                  , text
                  , hspec
-                 , network
                  , network-uri
                  , http-types
-                 , wai-test
                  , wai-extra
-                 , unix
-                 , mtl
                  , containers
                  , html-conduit
                  , xml-conduit

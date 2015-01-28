@@ -9,24 +9,20 @@ haskellPackages.cabal.mkDerivation (self: {
   isLibrary = true;
   isExecutable = true;
   buildDepends = with haskellPackages; [
-    aeson async attoparsec authenticate blazeBuilder blazeHtml
-    blazeMarkup clientsession cmdargs conduit dataDefault diagrams
-    diagramsLib diagramsRasterific Diff emailValidate esqueleto
-    fastLogger fileEmbed github hamlet hit hjsmin hourglass httpConduit
-    httpTypes JuicyPixels liftedBase mime mimeMail monadControl
-    monadLogger mtl mwcRandom pandoc pathPieces persistent
+    async attoparsec authenticate blazeBuilder blazeHtml blazeMarkup
+    cmdargs conduit dataDefault Diff emailValidate esqueleto fastLogger
+    github hit hjsmin hourglass httpConduit httpTypes liftedBase mime
+    mimeMail monadLogger mtl mwcRandom pandoc pathPieces persistent
     persistentPostgresql persistentTemplate random regexTdfa resourcet
-    semigroups shakespeare shakespeareCss shakespeareJs shakespeareText
-    stm temporary text time transformers vector waiExtra waiLogger warp
-    yaml yesod yesodAuth yesodAuthHashdb yesodCore yesodForm
-    yesodMarkdown yesodNewsfeed yesodStatic
+    semigroups shakespeare stm temporary text time transformers
+    waiExtra waiLogger yaml yesod yesodAuth yesodAuthHashdb yesodCore
+    yesodForm yesodMarkdown yesodNewsfeed yesodStatic
   ];
   testDepends = with haskellPackages; [
     esqueleto filepath haskellSrcExts haskellSrcMeta hspec htmlConduit
-    httpTypes HUnit liftedBase monadControl monadLogger mtl network
-    networkUri persistent persistentPostgresql resourcet semigroups
-    text transformers waiExtra waiTest xmlConduit yesod yesodCore
-    yesodMarkdown yesodRoutes yesodTest
+    httpTypes HUnit liftedBase monadControl monadLogger networkUri
+    persistent semigroups text transformers waiExtra xmlConduit yesod
+    yesodMarkdown yesodTest
   ];
   buildTools =
     (with pkgs; [ git ]) ++
