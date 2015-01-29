@@ -17,16 +17,22 @@ import Control.Monad.Trans.Resource (runResourceT, ResourceT)
 --
 -- It can probably be improved upon. Maybe more specific types for
 -- different types of queries?
-type Query a = SqlPersistT (ResourceT IO) a
+type Q a = SqlPersistT (ResourceT IO) a
+
+-- | Synonym for Q within this module
+--
+-- Q is a bit too brief for actual code, and shouldn't be confused with TH
+-- stuff.
+type Query a = Q a
 
 -- | Run an esqueleto query in ghci.
 --
 -- Two examples:
 --
--- >>> dbdev ((select $ from $ \p -> return (p ^. UserIdent)) :: Query [Value Text])
+-- >>> dbdev ((select $ from $ \p -> return (p ^. UserIdent)) :: Q [Value Text])
 -- [Value "admin",Value "anonymous"]
 --
--- >>> fmap (map entityVal) $ dbdev (select $ from $ return :: Query [Entity User])
+-- >>> fmap (map entityVal) $ dbdev (select $ from $ return :: Q [Entity User])
 -- [User {userIdent = "admin", userEmail = ...
 dbdev :: Show a => Query a -> IO a
 dbdev = dbtest Development
