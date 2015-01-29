@@ -1,5 +1,6 @@
 <!-- Please note that there are some images assumed to be uploaded into the database
-     for this to display correctly.  One image must be named "DefaultLogo", which
+     for this to display correctly, which are not currently in the snowdrift_develop
+     database at this time.  One image must be named "DefaultLogo", which
      displays a logo when the project doesn't have its own logo already defined,
      the other must be named "DefaultPatronIcon", which will display the little icon
      next to the number of patrons that each project has.  The images I was using for
