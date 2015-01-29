@@ -6,10 +6,7 @@ import qualified Database.Persist
 import Settings
 import Control.Monad.Trans.Resource (runResourceT, ResourceT)
 
-type Query a =
-    SqlPersistT
-        (ResourceT IO)
-        a
+type Query a = SqlPersistT (ResourceT IO) a
 
 -- | Run an esqueleto query in ghci. Two examples:
 --
