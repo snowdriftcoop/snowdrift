@@ -1,45 +1,62 @@
+<!-- Please note that there are some images assumed to be uploaded into the database
+     for this to display correctly.  One image must be named "DefaultLogo", which
+     displays a logo when the project doesn't have its own logo already defined,
+     the other must be named "DefaultPatronIcon", which will display the little icon
+     next to the number of patrons that each project has.  The images I was using for
+     testing will be named "defaultlogo.png" and "defaultpatronlogo.png" respectively
+     in the /snowdrift directory.  Should everyone agree, we can use these as the
+     official images (they were created by wolftune, anyway), but that hasn't been
+     agreed upon at this point of time.
+-->
+
 <p class="h1 text-center">Projects
 
 $if null project_summaries
     <p> no projects to display
 $else
-    <!-- add project_id back in -->
     $forall (Entity _ project, summary) <- project_summaries
-        <fieldset>
-            <!-- 
-                Project Type could be added as a legend here, but is not
-                currently in Project table.  We'd have to link to the
-                ProjectSignup table or add to Project table.
-            -->
-            <div class="row">
-                <div class="col-xs-2 col-sm-2 col-md-2 col-lg-2">
-                   <img src=@{ImageR $ fetchProjectLogoDB (projectLogo project)}>
-                <div class="col-xs-10 col-sm-10 col-md-10 col-lg-10">
-                    <div class="row">
-                        <div class="col-xs-10 col-sm-10 col-md-9 col-lg-9">
-                            <a href=@{ProjectR (projectHandle project)}>
-                                <p class="h2 text-center">
-                                    #{projectName project}
-                    <div class="row">
-                        <div class="col-xs-10 col-sm-10 col-md-9 col-lg-9">
-                            <font size="-1">
-                                <p align="left">
-                                    #{projectDescription project}
-                    <div class="row">
-                        <!-- Add highlighting for when User is already a patron -->
-                        <div class="col-xs-offset-2 col-xs-2 col-sm-offset-2 col-sm-2 col-md-offset-6 col-md-2 col-lg-offset-6 col-lg-2">
-                            <a href=@{ProjectPatronsR (projectHandle project)}>
-                                <img src=@{ImageR "DefaultPatronIcon"}> #{show $ getCount $ summaryUsers summary}
-                        <div class="col-xs-2 col-sm-2 col-md-1 col-lg-1">
-                            <a href=@{WikiPagesR (projectHandle project)}>
-                                <span .glyphicon .glyphicon-book>
-                        <div class="col-xs-2 col-sm-2 col-md-1 col-lg-1">
-                            <a href=@{ProjectFeedR (projectHandle project)}>
-                                <span .glyphicon .glyphicon-list>
-                        <div class="col-xs-2 col-sm-2 col-md-1 col-lg-1">
-                            <a href=@{ProjectDiscussionR (projectHandle project)}>
-                                <span .glyphicon .glyphicon-comment> 1
-                        <div class="col-xs-2 col-sm-2 col-md-1 col-lg-1">
-                            <a href=@{TicketsR (projectHandle project)}>
-                                <span .glyphicon .glyphicon-tag> 1
+        <div .panel>
+            <div .panel-header .h3 .text-center>
+                <a href=@{ProjectR (projectHandle project)}>
+                    #{projectName project}
+            <div .panel-body .container-fluid>
+                <!-- 
+                    Project Type could be added as a legend here, but is not
+                    currently in Project table.  We'd have to link to the
+                    ProjectSignup table or add to Project table.
+                -->
+                <div .row>
+                    <div .col-sm-2>
+                        <figure>
+                            <img src=@{ImageR $ fetchProjectLogoDB (projectLogo project)}>
+                    <div .col-sm-10>
+                        <!-- <div .row>
+                            <div .col-sm-10>
+                                <a href=@{ProjectR (projectHandle project)}>
+                                    <p .h2 .text-centecenterr>
+                                        #{projectName project}
+                        -->
+                        <div .row>
+                            <div .col-sm-10 .small .text-muted>
+                                #{projectDescription project}
+                        <div .row .vertical-align>
+                            <!-- Add highlighting for when User is already a patron -->
+                            <div .col-xs-offset-0 .col-xs-5 .col-sm-offset-4 .col-sm-3>
+                                <a href=@{ProjectPatronsR (projectHandle project)}>
+                                    <figure>
+                                        <img src=@{ImageR "DefaultPatronIcon"} .img-padding-r>#{show $ getCount $ summaryUsers summary}
+                            <div .col-xs-offset-1 .col-xs-1>
+                                <a href=@{WikiPagesR (projectHandle project)}>
+                                    <span .glyphicon .glyphicon-book>
+                            <div .col-xs-1>
+                                <a href=@{ProjectFeedR (projectHandle project)}>
+                                    <span .glyphicon .glyphicon-list>
+                            <div .col-xs-1>
+                                <a href=@{ProjectDiscussionR (projectHandle project)}>
+                                    <span .glyphicon .glyphicon-comment>
+                                    <span .img-padding-l>#{discussionsCount summary}
+                            <div .col-xs-1>
+                                <a href=@{TicketsR (projectHandle project)}>
+                                    <span .glyphicon .glyphicon-tag>
+                                    <span .img-padding-l">#{ticketsCount summary}
         <br>
