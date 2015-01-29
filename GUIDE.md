@@ -167,13 +167,11 @@ and the precise commands may vary slightly from the ones we include here.
 
 Install the essential dependencies: ghc, cabal, postgresql, happy, alex, zlib1g
 
-Some additional dependencies (which may vary for different systems) include: libpq-dev, libglib2.0-dev, libcairo2-dev, libpango1.0-dev
-
-TODO: determine whether all the dependencies, even the libs, are still required with our new Yesod 1.4 update.
+Additional dependency (which may vary for different systems): libpq-dev
 
 On Debian-based GNU/Linux distros, use this command:
 
-    sudo apt-get install ghc cabal-install postgresql zlib1g-dev libpq-dev happy alex libglib2.0-dev libcairo2-dev libpango1.0-dev
+    sudo apt-get install ghc cabal-install postgresql zlib1g-dev libpq-dev happy alex
 
 **Note: we are now using GHC 7.8.x**
 If your system's GHC version is older, get the update from <https://www.haskell.org/ghc/>
@@ -192,12 +190,6 @@ for bash, edit your ~/.bashrc (or equivalent) file and add the following line:
 Now, upgrade cabal itself:
 
     cabal install cabal-install
-
-Then, run
-
-    cabal install gtk2hs-buildtools
-
-TODO: test if that gtk2hs thing is still needed to be separately installed given updated Yesod 1.4 dependencies.
 
 **change to your snowdrift project directory (if not already there).**
 

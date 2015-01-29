@@ -46,12 +46,10 @@ here's quick and dirty minimal instructions to get started:
 ```
 // Install any dependencies you don't have:
 // GHC **7.8.x**, cabal, PostgreSQL, zlib1g-dev, libpq-dev, happy, alex
-//     libglib2.0-dev libcairo2-dev libpango1.0-dev
 // update cabal, set PATH, etc. — see GUIDE.md for more detailed instructions
 
 // Fork, clone and install
 git clone [your remote address, e.g. git@gitorious.org:snowdrift/yourusername-snowdrift.git]
-cabal install gtk2hs-buildtools
 cd snowdrift
 cabal sandbox init
 cabal install --enable-tests -fdev
