@@ -40,7 +40,7 @@ dbdev = dbtest Development
 -- | Small generalization of dbdev over the different execution environments.
 --
 -- May be useful later.
-dbtest :: (Show a, Show env) => env -> Query a -> IO a
+dbtest :: Show a => DefaultEnv -> Query a -> IO a
 dbtest env query = do
     conf <- Yesod.Default.Config.loadConfig (configSettings env)
     dbconf <- withYamlEnvironment "config/postgresql.yml" (appEnv conf)
