@@ -167,7 +167,7 @@ renderCommentClosedEvent CommentClosing{..} user_map ticket_map = do
                         <div .ticket-title>SD-#{ticket_str}: #{ticketName}
             |]
 
-        Nothing -> do
+        Nothing ->
             [whamlet|
                 <div .event>
                     ^{renderTime commentClosingTs}

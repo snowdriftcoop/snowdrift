@@ -152,7 +152,7 @@ ifExists dbType as = do
   exists <- doesDBExist dbType
   if exists
     then as
-    else do
+    else
       -- Don't error out or it won't check all 'dbs'.
       leaveLn $ "'" <> toString dbType <> "' does not exist; doing nothing"
 

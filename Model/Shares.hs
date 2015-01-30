@@ -122,7 +122,7 @@ pledgeForm project_id extra = do
     muser <- lift maybeAuthId
     shares <- case muser of
         Nothing -> return 0
-        Just user_id -> do
+        Just user_id ->
             fmap (sum . map unValue) $ lift $ runDB $ select $ from $ \ pledge -> do
                 where_ $ pledge ^. PledgeProject ==. val project_id
                     &&. pledge ^. PledgeUser ==. val user_id

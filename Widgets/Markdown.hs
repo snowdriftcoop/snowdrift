@@ -10,8 +10,7 @@ snowdriftMarkdownField = Field
     { fieldParse = parseHelper $ Right . Markdown . T.filter (/= '\r')
     , fieldView  = \theId name attrs value _isReq -> do
             render <- getUrlRender
-            let tutorial = render MarkdownTutorialR
-             in do
+            let tutorial = render MarkdownTutorialR in
                 [whamlet|
                     <div .markdown_label>
                         Use
