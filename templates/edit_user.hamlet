@@ -2,6 +2,6 @@
 <em>These fields are all optional
 <br>
 
-<form method=POST action=@{UserR user_id} enctype=#{enctype}>
+<form method=POST action=@{EditUserR user_id} enctype=#{enctype}>
     ^{form}
     <input type=submit name=mode value=preview>

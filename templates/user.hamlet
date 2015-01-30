@@ -29,6 +29,9 @@ $if Just user_id == mviewer_id
                 $if Just user_id == mviewer_id
                     $maybe email <- userEmail user
                         #{email} (not shown publicly)
+                        $if isJust (userEmail user) && not (userEmail_verified user)
+                            <form method=POST action=@{UserR user_id}>
+                                <button>resend verification email
                     <br>
                 $maybe nick <- userIrcNick user
                     #{nick} on <a href=@{WikiR "snowdrift" LangEn "irc"}>irc.freenode.net</a>
