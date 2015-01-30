@@ -58,7 +58,7 @@ snowdriftEventToFeedEntry render project_handle user_map discussion_map _ _ url 
             Just (DiscussionOnUser user_entity)                 -> "user discussion for " <> userDisplayName user_entity
             Just (DiscussionOnBlogPost (Entity _ blog_post))    -> "discussion on blog post \"" <> blogPostTitle blog_post <> "\""
 
-     in Just $ FeedEntry
+     in Just FeedEntry
             { feedEntryLink    = url
             , feedEntryUpdated = maybe (commentCreatedTs comment) id $ commentApprovedTs comment
             , feedEntryTitle   = T.unwords [ T.snoc project_handle ':', username, "posted a new comment on", discussion ]
@@ -66,7 +66,7 @@ snowdriftEventToFeedEntry render project_handle user_map discussion_map _ _ url 
             }
 
 snowdriftEventToFeedEntry render project_handle _ _ _ _ url (ECommentRethreaded _ rethread) =
-    Just $ FeedEntry
+    Just FeedEntry
         { feedEntryLink    = url
         , feedEntryUpdated = rethreadTs rethread
         , feedEntryTitle   = T.unwords [ T.snoc project_handle ':', "comment(s) rethreaded" ]
@@ -78,7 +78,7 @@ snowdriftEventToFeedEntry render project_handle user_map _ _ ticket_map url (ECo
         maybe_user = M.lookup user_id user_map
         username   = maybe "<unknown user>" (userDisplayName . Entity user_id) maybe_user
 
-        mk_feed_entry title = Just $ FeedEntry
+        mk_feed_entry title = Just FeedEntry
             { feedEntryLink    = url
             , feedEntryUpdated = commentClosingTs
             , feedEntryTitle   = title
@@ -113,7 +113,7 @@ snowdriftEventToFeedEntry render project_handle user_map _ _ ticket_map url (ETi
             Key (PersistInt64 tid) -> T.pack $ show tid
             Key _ -> "<malformed id>"
 
-     in Just $ FeedEntry
+     in Just FeedEntry
             { feedEntryLink    = url
             , feedEntryUpdated = ticketClaimingTs
             , feedEntryTitle   = T.unwords
@@ -135,7 +135,7 @@ snowdriftEventToFeedEntry render project_handle user_map _ _ ticket_map url (ETi
             Key (PersistInt64 tid) -> T.pack $ show tid
             Key _ -> "<malformed id>"
 
-     in Just $ FeedEntry
+     in Just FeedEntry
             { feedEntryLink    = url
             , feedEntryUpdated = ticketOldClaimingClaimTs
             , feedEntryTitle   = T.unwords
@@ -154,7 +154,7 @@ snowdriftEventToFeedEntry render project_handle _ _ _ ticket_map url (ETicketUnc
             Key (PersistInt64 tid) -> T.pack $ show tid
             Key _ -> "<malformed id>"
 
-     in Just $ FeedEntry
+     in Just FeedEntry
             { feedEntryLink    = url
             , feedEntryUpdated = ticketOldClaimingReleasedTs
             , feedEntryTitle   = T.unwords
@@ -168,7 +168,7 @@ snowdriftEventToFeedEntry render project_handle _ _ _ ticket_map url (ETicketUnc
 
 snowdriftEventToFeedEntry render project_handle _ _ _ _ url (EWikiPage _ wiki_page wiki_target) =
     let target = wikiTargetTarget wiki_target
-     in Just $ FeedEntry
+     in Just FeedEntry
             { feedEntryLink    = url
             , feedEntryUpdated = wikiPageCreatedTs wiki_page
             , feedEntryTitle   = T.unwords [ T.snoc project_handle ':', "new wiki page", "\"" <> target <> "\"" ]
@@ -182,7 +182,7 @@ snowdriftEventToFeedEntry render project_handle user_map _ _ _ url (EWikiEdit _ 
         maybe_user      = M.lookup user_id user_map
         username        = maybe "<unknown user>" (userDisplayName . Entity user_id) maybe_user
 
-     in Just $ FeedEntry
+     in Just FeedEntry
             { feedEntryLink    = url
             , feedEntryUpdated = wikiEditTs wiki_edit
             , feedEntryTitle   = T.unwords
@@ -202,7 +202,7 @@ snowdriftEventToFeedEntry render project_handle _ _ _ _ url
                 , blogPostTitle = title
                 }
         ) =
-    Just $ FeedEntry
+    Just FeedEntry
         { feedEntryLink    = url
         , feedEntryUpdated = ts
         , feedEntryTitle   = T.unwords [ T.snoc project_handle ':', "new blog post:", "\"" <> title <> "\"" ]

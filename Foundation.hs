@@ -374,7 +374,7 @@ createUser ident passwd name email avatar nick = do
                 insertDefaultNotificationPrefs user_id
                 welcome_route <- getUrlRender
                             -- 'MonolingualWikiR' is deprecated.
-                            <*> (pure $ MonolingualWikiR "snowdrift" "welcome" [])
+                            <*> pure (MonolingualWikiR "snowdrift" "welcome" [])
                 let notif_text = Markdown $ T.unlines
                         [ "Thanks for registering!"
                         , "<br> Please read our [**welcome message**](" <>

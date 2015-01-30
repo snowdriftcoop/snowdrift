@@ -28,6 +28,6 @@ navbar = do
             let pledged = sum $ map (\ (project, pledge) ->
                     ((projectShareValue (entityVal project) $*) . fromIntegral . pledgeFundedShares . entityVal) pledge) pledges
 
-            return $ (Just (balance, pledged), num_unread_notifs)
+            return (Just (balance, pledged), num_unread_notifs)
 
     $(widgetFile "navbar")

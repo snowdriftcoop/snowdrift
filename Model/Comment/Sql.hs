@@ -84,8 +84,8 @@ exprCommentPostedBy user_id c = c ^. CommentUser ==. val user_id
 
 exprCommentViewedBy :: UserId -> ExprCommentCond
 exprCommentViewedBy user_id c = c ^. CommentId `in_`
-    (subList_select $
-     from $ \vc -> do
+    subList_select
+     (from $ \vc -> do
      where_ (vc ^. ViewCommentUser ==. val user_id)
      return (vc ^. ViewCommentComment))
 
