@@ -1,5 +1,5 @@
 Delete your account by pressing the button below.
 <br>
-<span class="text-warning">Note that we will not be able to restore it.
+<span .text-warning>Note that we will not be able to restore it.
 <form method=POST action=@{DeleteUserR user_id}>
     <button>delete
