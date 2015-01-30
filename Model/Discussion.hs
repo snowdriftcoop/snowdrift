@@ -88,7 +88,7 @@ fetchDiscussionsInternal _ discussion_ids DiscussionTypeUser =
 -- | Fetch a single discussion, given its id.
 fetchDiscussionDB :: [Language] -> DiscussionId -> DB DiscussionOn
 fetchDiscussionDB langs discussion_id =
-    fromJustErr "fetchDiscussionDB: discussion not found" <$> runMaybeT (foldr mplus mzero f)
+    fromJustErr "fetchDiscussionDB: discussion not found" <$> runMaybeT (msum f)
   where
     -- f :: [MaybeT DB DiscussionOn]
     f = map (MaybeT . fetchDiscussionInternal langs discussion_id) [minBound..maxBound]
