@@ -170,7 +170,7 @@ exportDB dbType (DBFile f) = loop
     loop = do
       leave $ "overwrite '" <> f <> "'? (yes/No) "
       hFlush stdout             -- send the question to 'stdout' immediately
-      answer <- getLine >>= return . fmap toLower
+      answer <- fmap (fmap toLower) getLine
       case () of
         _| answer == "yes" -> do
              (_, Just o, _, _) <-
