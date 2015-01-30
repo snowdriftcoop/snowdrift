@@ -78,7 +78,7 @@ makeProjectCommentActionPermissionsMap (Just (Entity viewer_id viewer)) project_
             step (Entity comment_id comment) =
                 let user_id = commentUser comment
                     user = lookupErr "makeProjectCommentActionPermissions: user id not found in map" user_id user_map
-                in M.insert comment_id (CommentActionPermissions
+                in M.insert comment_id CommentActionPermissions
                        { can_add_tag   = viewer_is_established
                        , can_approve   = viewer_is_mod && not (commentIsApproved comment)
                        , can_claim     = M.member comment_id ticket_map && M.notMember comment_id claim_map
@@ -96,7 +96,7 @@ makeProjectCommentActionPermissionsMap (Just (Entity viewer_id viewer)) project_
 
                        , can_watch     = M.notMember comment_id watch_map
                        , can_unwatch   = maybe False (S.member comment_id . S.map watchedSubthreadRoot) $ M.lookup comment_id watch_map
-                       })
+                       }
 
         return (foldr step mempty comments)
 
@@ -123,7 +123,7 @@ makeUserCommentActionPermissionsMap (Just (Entity viewer_id viewer)) user_id Com
                  -> Map CommentId CommentActionPermissions
             step (Entity comment_id comment) =
                 let author_id = commentUser comment
-                 in M.insert comment_id (CommentActionPermissions
+                 in M.insert comment_id CommentActionPermissions
                        { can_add_tag   = viewer_is_established
                        , can_approve   = viewer_id == user_id
                        , can_claim     = False
@@ -138,6 +138,6 @@ makeUserCommentActionPermissionsMap (Just (Entity viewer_id viewer)) user_id Com
                        , can_unclaim   = False
                        , can_watch     = M.notMember comment_id watch_map
                        , can_unwatch   = maybe False (S.member comment_id . S.map watchedSubthreadRoot) $ M.lookup comment_id watch_map
-                       })
+                       }
 
         return (foldr step mempty comments)

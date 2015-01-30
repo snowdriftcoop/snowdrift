@@ -47,7 +47,7 @@ overlayImage img@(DImage _ w _ _) overlay = renderByteStringPng w dia
 	dia = overlay <> image img # sized Absolute
 
 blankPledgeButton :: DImage Embedded
-blankPledgeButton =  (DImage (ImageRaster img) w h mempty)
+blankPledgeButton = DImage (ImageRaster img) w h mempty
   where
 	img = either (error "bad static/img/pledge-button.png") id $
 		decodePng blankPledgeButtonPng
