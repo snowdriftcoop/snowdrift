@@ -82,7 +82,7 @@ renderBlogPost project_handle blog_post = do
     project <- handlerToWidget $ runYDB $ getBy404 $ UniqueProjectHandle project_handle
 
     let (Markdown top_content) = blogPostTopContent blog_post
-        (Markdown bottom_content) = maybe (Markdown "") id $ blogPostBottomContent blog_post
+        (Markdown bottom_content) = fromMaybe (Markdown "") $ blogPostBottomContent blog_post
         title = blogPostTitle blog_post
         author = blogPostUser blog_post
         discussion = DiscussionOnProject project

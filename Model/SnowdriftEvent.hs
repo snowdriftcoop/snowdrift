@@ -60,7 +60,7 @@ snowdriftEventToFeedEntry render project_handle user_map discussion_map _ _ url 
 
      in Just FeedEntry
             { feedEntryLink    = url
-            , feedEntryUpdated = maybe (commentCreatedTs comment) id $ commentApprovedTs comment
+            , feedEntryUpdated = fromMaybe (commentCreatedTs comment) $ commentApprovedTs comment
             , feedEntryTitle   = T.unwords [ T.snoc project_handle ':', username, "posted a new comment on", discussion ]
             , feedEntryContent = [hamlet| |] render
             }
