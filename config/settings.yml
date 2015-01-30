@@ -13,7 +13,6 @@ Development:
   <<: *defaults
 
 Testing:
-  approot: "http://localhost:3000"
   <<: *defaults
 
 Staging:
