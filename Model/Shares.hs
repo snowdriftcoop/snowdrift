@@ -56,7 +56,7 @@ pledgeField project_id = Field
         handlerToWidget $ setSession pledgeRenderKey $ T.pack $ show render_key
 
         let value = either (const 2) (\ (SharesPurchaseOrder s) -> s) v
-            hasValue = any (== value) list
+            hasValue = value `elem` list
             otherValue = if hasValue then "" else show value
 
         [whamlet|
