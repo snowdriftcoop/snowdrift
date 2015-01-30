@@ -97,7 +97,7 @@ fetchDiscussionDB langs discussion_id =
 -- every input DiscussionId.
 fetchDiscussionsDB :: [Language] -> [DiscussionId] -> DB (Map DiscussionId DiscussionOn)
 fetchDiscussionsDB langs discussion_ids = do
-    discussion_map <- mconcat <$> sequence (map (fetchDiscussionsInternal langs discussion_ids) [minBound..maxBound])
+    discussion_map <- mconcat <$> mapM (fetchDiscussionsInternal langs discussion_ids) [minBound..maxBound]
 
     let missed_discussions = S.fromList discussion_ids S.\\ M.keysSet discussion_map
 
