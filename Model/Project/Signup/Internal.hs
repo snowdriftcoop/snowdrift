@@ -22,7 +22,7 @@ data ProjectSignupCategoryEnum = CreativeWriting
                                | Software
                                | Video
                                | VisualArt
-                         deriving (Eq, Show, Read, Enum, Bounded)
+                               deriving (Eq, Show, Read, Enum, Bounded)
 derivePersistField "ProjectSignupCategoryEnum"
 
 data ProjectSignupCategory = ProjectSignupCategory ProjectSignupCategoryEnum
