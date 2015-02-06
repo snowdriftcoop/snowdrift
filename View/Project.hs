@@ -24,6 +24,7 @@ import           Model.Currency
 import           Model.Markdown
 import           Model.Project
 import           Model.Shares
+import           Model.User
 import           Model.Role
 import           View.User (userNameWidget)
 import           Widgets.Image
@@ -45,6 +46,10 @@ renderProject maybe_project_id project mviewer_id is_watching pledges pledge = d
         description = markdownWidgetWith (fixLinks (projectHandle project) discussion) $ projectDescription project
 
         maybe_shares = pledgeShares . entityVal <$> pledge
+
+    userIsAdmin <- case maybe_project_id of
+        Just project_id -> maybe (pure False) (\u -> runDB $ userIsProjectAdminDB u project_id) mviewer_id
+        Nothing -> (pure False)
 
     now <- liftIO getCurrentTime
 
