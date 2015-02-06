@@ -1,4 +1,4 @@
-{-# LANGUAGE TypeSynonymInstances, FlexibleInstances #-}
+{-# LANGUAGE TypeSynonymInstances, FlexibleInstances, StandaloneDeriving #-}
 
 module Model where
 
@@ -9,9 +9,17 @@ import Model.Currency              (Milray)
 import Model.Discussion.TH         (mkDiscussionTypes)
 import Model.Established.Internal  (Established(..))
 import Model.Language
+import Model.License.Internal      (LicenseName, LicenseType, LicenseProjectType, LicenseText, LicenseWebsite)
 import Model.Markdown.Diff         (MarkdownDiff)
 import Model.Notification.Internal (NotificationType, NotificationDelivery)
 import Model.Permission.Internal   (PermissionLevel)
+import Model.Project.Signup
+    ( ProjectSignupName, ProjectSignupWebsite, ProjectSignupHandle
+    , ProjectSignupStartDate, ProjectSignupLocation, ProjectSignupApplicantRole
+    , ProjectSignupMission, ProjectSignupGoals, ProjectSignupFundsUse
+    , ProjectSignupAdditionalInfo )
+import Model.Project.Signup.Internal
+    (ProjectSignupCategory , ProjectSignupLegalStatus)
 import Model.Role.Internal         (Role)
 import Model.Settings.Internal     (UserSettingName)
 import Model.ViewType.Internal     (ViewType)
@@ -52,3 +60,14 @@ instance Exception DBException where
 
 instance Ord Project where
     compare = compare `on` projectName
+
+deriving instance Eq License
+deriving instance Show License
+deriving instance Read License
+
+data ProjectSignupLicense = ProjectSignupLicense License
+                          | OtherProjectSignupLicense Text
+                          deriving (Eq, Show, Read)
+derivePersistField "ProjectSignupLicense"
+
+deriving instance Show ProjectSignup

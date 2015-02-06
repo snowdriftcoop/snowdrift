@@ -43,6 +43,8 @@ library
                      Model.Issue
                      Model.Language
                      Model.Language.TH
+                     Model.License
+                     Model.License.Internal
                      Model.Markdown
                      Model.Markdown.Diff
                      Model.Notification
@@ -50,6 +52,8 @@ library
                      Model.Permission
                      Model.Permission.Internal
                      Model.Project
+                     Model.Project.Signup
+                     Model.Project.Signup.Internal
                      Model.Project.Sql
                      Model.ResetPassword
                      Model.Role
@@ -84,6 +88,7 @@ library
                      Handler.PostLogin
                      Handler.Privacy
                      Handler.Project
+                     Handler.Project.Signup
                      Handler.ProjectBlog
                      Handler.RepoFeed
                      Handler.ResetPassword
@@ -102,6 +107,7 @@ library
                      View.User
                      View.Wiki
                      View.Project
+                     View.Project.Signup
                      View.ResetPassword
                      Version
                      Widgets.Doc

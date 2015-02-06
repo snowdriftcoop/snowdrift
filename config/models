@@ -104,6 +104,13 @@ ViewWikiEdit
 
     UniqueViewWikiEdit user edit
 
+License
+    name        LicenseName
+    type        LicenseType
+    projectType LicenseProjectType
+    text        LicenseText
+    website     LicenseWebsite
+
 Project
     createdTs   UTCTime
     name        Text
@@ -121,6 +128,21 @@ Project
     UniqueProjectDiscussion discussion
 
     deriving Eq Show
+
+ProjectSignup
+    name           ProjectSignupName
+    website        ProjectSignupWebsite        Maybe
+    handle         ProjectSignupHandle
+    startDate      ProjectSignupStartDate
+    licenses       [ProjectSignupLicense]
+    categories     [ProjectSignupCategory]
+    location       ProjectSignupLocation       Maybe
+    legalStatus    ProjectSignupLegalStatus
+    applicantRole  ProjectSignupApplicantRole
+    mission        ProjectSignupMission
+    goals          ProjectSignupGoals
+    fundsUse       ProjectSignupFundsUse
+    additionalInfo ProjectSignupAdditionalInfo Maybe
 
 BlogPost
     ts            UTCTime
