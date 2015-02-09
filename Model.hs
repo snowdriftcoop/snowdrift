@@ -17,7 +17,7 @@ import Model.Project.Signup
     ( ProjectSignupName, ProjectSignupWebsite, ProjectSignupHandle
     , ProjectSignupStartDate, ProjectSignupLocation, ProjectSignupApplicantRole
     , ProjectSignupMission, ProjectSignupGoals, ProjectSignupFundsUse
-    , ProjectSignupAdditionalInfo )
+    , ProjectSignupAdditionalInfo, ProjectSignupLicenseComment )
 import Model.Project.Signup.Internal
     ( ProjectSignupCategory, ProjectSignupCategoryComment
     , ProjectSignupLegalStatus, ProjectSignupLegalStatusComment )
@@ -67,7 +67,7 @@ deriving instance Show License
 deriving instance Read License
 
 data ProjectSignupLicense = ProjectSignupLicense License
-                          | OtherProjectSignupLicense Text
+                          | OtherProjectSignupLicense
                           deriving (Eq, Show, Read)
 derivePersistField "ProjectSignupLicense"
 

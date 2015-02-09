@@ -135,6 +135,7 @@ ProjectSignup
     handle             ProjectSignupHandle
     startDate          ProjectSignupStartDate
     licenses           [ProjectSignupLicense]
+    licensesComment    ProjectSignupLicenseComment      Maybe
     categories         [ProjectSignupCategory]
     categoriesComment  ProjectSignupCategoryComment     Maybe
     location           ProjectSignupLocation            Maybe

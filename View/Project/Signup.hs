@@ -24,10 +24,10 @@ projectSignupForm ls = renderBootstrap3 BootstrapBasicForm $ ProjectSignup
     <*> optc ProjectSignupWebsite   urlField  "Website"
     <*> reqc ProjectSignupHandle    textField "Desired handle on the site"
     <*> reqc ProjectSignupStartDate dateField "Project start date"
-    <*> (((?:) project_licenses)
-              <$> optn (multiSelectFieldList $ licenses ls) project_licenses
-              <*> optc OtherProjectSignupLicense textField
-                      "If other, please describe")
+    <*> reqn (multiSelectFieldList $ licenses ls)
+            "Project licenses (multiple can be selected)"
+    <*> optc ProjectSignupLicenseComment textField
+            "If other license, please describe"
     <*> reqn (multiSelectFieldList categories)
             "Primary project categories (multiple can be selected)"
     <*> optc ProjectSignupCategoryComment textField
@@ -49,8 +49,6 @@ projectSignupForm ls = renderBootstrap3 BootstrapBasicForm $ ProjectSignup
     <*> optc ProjectSignupAdditionalInfo textareaField
             (fromString $ "Please provide any additional information, like " <>
              "contacts of others affiliated with the project")
-  where
-    project_licenses = "Project licenses"
 
 dateField :: Field Handler (Year, Month)
 dateField = Field
@@ -93,15 +91,6 @@ optc :: MonadHandler m
      -> AForm m (Maybe b)
 optc c f s = (c <$>) <$> (optn f s)
 
--- XXX: Maybe use custom fields for these, so errors could be shown as
--- alerts.
-
-(?:) :: Text -> Maybe [a] -> Maybe a -> [a]
-(?:) t Nothing   Nothing  = error $ "at least one " <> show t <> " value is required"
-(?:) _ (Just xs) (Just x) = x:xs
-(?:) _ (Just xs) Nothing  = xs
-(?:) _ Nothing   (Just x) = [x]
-
 years :: Handler (OptionList Year)
 years = do
     current_year <- liftIO $ dateYear . timeGetDate <$> timeCurrent
@@ -131,10 +120,14 @@ ppProjectLegalStatus ForProfitCoop  = "for-profit coop"
 ppProjectLegalStatus OtherNonProfit = "other non-profit"
 ppProjectLegalStatus OtherForProfit = "other for-profit"
 
+ppProjectSignupLicense :: ProjectSignupLicense -> Text
+ppProjectSignupLicense (ProjectSignupLicense l)  = unLicenseName $ licenseName l
+ppProjectSignupLicense OtherProjectSignupLicense = "other"
+
 licenses :: [License] -> [(Text, ProjectSignupLicense)]
-licenses ls =
-    flip map ls $ \l ->
-        (unLicenseName $ licenseName l, ProjectSignupLicense l)
+licenses ls = flip map ls' $ \l -> (ppProjectSignupLicense l, l)
+  where
+    ls' = map ProjectSignupLicense ls <> [OtherProjectSignupLicense]
 
 categories :: [(Text, ProjectSignupCategory)]
 categories =

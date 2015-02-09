@@ -40,3 +40,6 @@ newtype ProjectSignupFundsUse       = ProjectSignupFundsUse       Textarea deriv
 derivePersistField "ProjectSignupFundsUse"
 newtype ProjectSignupAdditionalInfo = ProjectSignupAdditionalInfo Textarea deriving (Show, Read)
 derivePersistField "ProjectSignupAdditionalInfo"
+
+newtype ProjectSignupLicenseComment = ProjectSignupLicenseComment Text deriving (Eq, Show, Read)
+derivePersistField "ProjectSignupLicenseComment"
