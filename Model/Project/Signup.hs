@@ -7,7 +7,7 @@ import Prelude             (Int, Show, Eq, Read)
 import Data.Hourglass      (Month (..))
 import Data.Text           (Text)
 import Database.Persist.TH
-import Yesod.Form.Fields   (Textarea)
+import Yesod.Markdown      (Markdown)
 
 newtype ProjectSignupName    = ProjectSignupName    Text deriving (Show, Read)
 derivePersistField "ProjectSignupName"
@@ -32,13 +32,13 @@ derivePersistField "ProjectSignupLocation"
 newtype ProjectSignupApplicantRole  = ProjectSignupApplicantRole Text deriving (Show, Read)
 derivePersistField "ProjectSignupApplicantRole"
 
-newtype ProjectSignupMission        = ProjectSignupMission        Textarea deriving (Show, Read)
+newtype ProjectSignupMission        = ProjectSignupMission        Markdown deriving (Show, Read)
 derivePersistField "ProjectSignupMission"
-newtype ProjectSignupGoals          = ProjectSignupGoals          Textarea deriving (Show, Read)
+newtype ProjectSignupGoals          = ProjectSignupGoals          Markdown deriving (Show, Read)
 derivePersistField "ProjectSignupGoals"
-newtype ProjectSignupFundsUse       = ProjectSignupFundsUse       Textarea deriving (Show, Read)
+newtype ProjectSignupFundsUse       = ProjectSignupFundsUse       Markdown deriving (Show, Read)
 derivePersistField "ProjectSignupFundsUse"
-newtype ProjectSignupAdditionalInfo = ProjectSignupAdditionalInfo Textarea deriving (Show, Read)
+newtype ProjectSignupAdditionalInfo = ProjectSignupAdditionalInfo Markdown deriving (Show, Read)
 derivePersistField "ProjectSignupAdditionalInfo"
 
 newtype ProjectSignupLicenseComment = ProjectSignupLicenseComment Text deriving (Eq, Show, Read)

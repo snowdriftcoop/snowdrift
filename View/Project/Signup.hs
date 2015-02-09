@@ -10,6 +10,7 @@ import Import hiding
 import Model.License.Internal
 import Model.Project.Signup
 import Model.Project.Signup.Internal
+import Widgets.Markdown
 
 import           Control.Applicative (liftA2)
 import qualified Data.Text           as Text
@@ -39,14 +40,14 @@ projectSignupForm ls = renderBootstrap3 BootstrapBasicForm $ ProjectSignup
             "Optional details about legal status"
     <*> reqc ProjectSignupApplicantRole  textField
             "What role do you have with this project?"
-    <*> reqc ProjectSignupMission        textareaField
+    <*> reqc ProjectSignupMission        snowdriftMarkdownField
             "What is your project's mission?"
-    <*> reqc ProjectSignupGoals          textareaField
+    <*> reqc ProjectSignupGoals          snowdriftMarkdownField
             "What are the project's goals in the near- and medium-term?"
-    <*> reqc ProjectSignupFundsUse       textareaField
+    <*> reqc ProjectSignupFundsUse       snowdriftMarkdownField
             (fromString $ "How will the project benefit from and " <>
              "make use of funds raised through Snowdrift.coop?")
-    <*> optc ProjectSignupAdditionalInfo textareaField
+    <*> optc ProjectSignupAdditionalInfo snowdriftMarkdownField
             (fromString $ "Please provide any additional information, like " <>
              "contacts of others affiliated with the project")
 
