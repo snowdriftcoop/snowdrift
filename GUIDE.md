@@ -180,12 +180,13 @@ Next, update cabal's package list:
 
     cabal update
 
-Add ~/.cabal/bin locations to your PATH;
-for bash, edit your ~/.bashrc (or equivalent) file and add the following line:
+Add cabal location(s) to your PATH; the location may vary by system and set-up. Below are the most common situations:
 
-    export PATH=.cabal-sandbox/bin:~/.cabal/bin:$PATH
+* for GNU/Linux, just add `export PATH=.cabal-sandbox/bin:~/.cabal/bin:$PATH` to your ~/.bashrc (or equivalent) file
 
-(you'll need to start a new terminal or run "source ~/.bashrc" to make the PATH active)
+* for Mac OS, try adding `export PATH="$HOME/Library/Haskell/bin:$PATH"` to ~/.bash_profile
+
+Start a new terminal (or run `source ~/.bashrc` or similar) to make the PATH active.
 
 Now, upgrade cabal itself:
 
