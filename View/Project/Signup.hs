@@ -27,10 +27,9 @@ projectSignupForm ls = renderBootstrap3 BootstrapBasicForm $ ProjectSignup
               <$> optn (multiSelectFieldList $ licenses ls) project_licenses
               <*> optc OtherProjectSignupLicense textField
                       "If other, please describe")
-    <*> (((?:) project_categories)
-              <$> optn (multiSelectFieldList categories) project_categories
-              <*> optc OtherProjectSignupCategory textField
-                      "If other, please describe")
+    <*> reqn (multiSelectFieldList categories) "Primary project categories"
+    <*> optc ProjectSignupCategoryComment textField
+            "Optional comments about project categories"
     <*> optc ProjectSignupLocation textField
             "Location project is legally based out of"
     <*> (((?<|>) project_legal_status)
@@ -51,7 +50,6 @@ projectSignupForm ls = renderBootstrap3 BootstrapBasicForm $ ProjectSignup
              "contacts of others affiliated with the project")
   where
     project_licenses     = "Project licenses"
-    project_categories   = "Project categories"
     project_legal_status = "Project legal status"
 
 dateField :: Field Handler (Year, Month)
@@ -128,17 +126,16 @@ months :: [(Text, Month)]
 months = map (\x -> (Text.pack $ show x, x)) $ enumFrom January
 
 ppProjectCategory :: ProjectSignupCategory -> Text
-ppProjectCategory (ProjectSignupCategory      CreativeWriting) = "creative writing"
-ppProjectCategory (ProjectSignupCategory      Education)       = "education"
-ppProjectCategory (ProjectSignupCategory      Games)           = "games"
-ppProjectCategory (ProjectSignupCategory      HardwareDesign)  = "hardware design"
-ppProjectCategory (ProjectSignupCategory      Journalism)      = "journalism"
-ppProjectCategory (ProjectSignupCategory      Music)           = "music"
-ppProjectCategory (ProjectSignupCategory      Research)        = "research"
-ppProjectCategory (ProjectSignupCategory      Software)        = "software"
-ppProjectCategory (ProjectSignupCategory      Video)           = "video"
-ppProjectCategory (ProjectSignupCategory      VisualArt)       = "visual art"
-ppProjectCategory (OtherProjectSignupCategory s)               = s
+ppProjectCategory CreativeWriting = "creative writing"
+ppProjectCategory Education       = "education"
+ppProjectCategory Games           = "games"
+ppProjectCategory HardwareDesign  = "hardware design"
+ppProjectCategory Journalism      = "journalism"
+ppProjectCategory Music           = "music"
+ppProjectCategory Research        = "research"
+ppProjectCategory Software        = "software"
+ppProjectCategory Video           = "video"
+ppProjectCategory VisualArt       = "visual art"
 
 ppProjectLegalStatus :: ProjectSignupLegalStatus -> Text
 ppProjectLegalStatus (ProjectSignupLegalStatus      Unincorporated) = "unincorporated"
@@ -158,7 +155,7 @@ licenses ls =
         (unLicenseName $ licenseName l, ProjectSignupLicense l)
 
 categories :: [(Text, ProjectSignupCategory)]
-categories = ppMap ProjectSignupCategory ppProjectCategory
+categories = ppMap id ppProjectCategory
 
 legalStatuses :: [(Text, ProjectSignupLegalStatus)]
 legalStatuses = ppMap ProjectSignupLegalStatus ppProjectLegalStatus

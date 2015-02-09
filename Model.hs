@@ -19,7 +19,7 @@ import Model.Project.Signup
     , ProjectSignupMission, ProjectSignupGoals, ProjectSignupFundsUse
     , ProjectSignupAdditionalInfo )
 import Model.Project.Signup.Internal
-    (ProjectSignupCategory, ProjectSignupLegalStatus)
+    (ProjectSignupCategory, ProjectSignupCategoryComment, ProjectSignupLegalStatus)
 import Model.Role.Internal         (Role)
 import Model.Settings.Internal     (UserSettingName)
 import Model.ViewType.Internal     (ViewType)
