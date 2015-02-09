@@ -20,7 +20,7 @@ import           Text.Blaze.Internal (preEscapedText)
 projectSignupForm :: [License] -> Form ProjectSignup
 projectSignupForm ls = renderBootstrap3 BootstrapBasicForm $ ProjectSignup
     <$> reqc ProjectSignupName      textField "Project name"
-    <*> optc ProjectSignupWebsite   textField "Website"
+    <*> optc ProjectSignupWebsite   urlField  "Website"
     <*> reqc ProjectSignupHandle    textField "Desired handle on the site"
     <*> reqc ProjectSignupStartDate dateField "Project start date"
     <*> (((?:) project_licenses)
