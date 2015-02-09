@@ -4,7 +4,8 @@ import Import hiding
     ( ProjectSignupName, ProjectSignupWebsite, ProjectSignupHandle
     , ProjectSignupStartDate, ProjectSignupLocation, ProjectSignupApplicantRole
     , ProjectSignupMission, ProjectSignupGoals, ProjectSignupFundsUse
-    , ProjectSignupAdditionalInfo, ProjectSignupLegalStatus )
+    , ProjectSignupAdditionalInfo, ProjectSignupLegalStatus
+    , ProjectSignupLegalStatusComment )
 
 import Model.License.Internal
 import Model.Project.Signup
@@ -33,10 +34,9 @@ projectSignupForm ls = renderBootstrap3 BootstrapBasicForm $ ProjectSignup
             "Optional comments about project categories"
     <*> optc ProjectSignupLocation textField
             "Location project is legally based out of"
-    <*> (((?<|>) project_legal_status)
-              <$> optn (selectFieldList legalStatuses) project_legal_status
-              <*> optc OtherProjectSignupLegalStatus textField
-                      "If other, please describe")
+    <*> reqn (selectFieldList legalStatuses) "Project legal status"
+    <*> optc ProjectSignupLegalStatusComment textField
+            "Optional details about legal status"
     <*> reqc ProjectSignupApplicantRole  textField
             "What role do you have with this project?"
     <*> reqc ProjectSignupMission        textareaField
@@ -50,8 +50,7 @@ projectSignupForm ls = renderBootstrap3 BootstrapBasicForm $ ProjectSignup
             (fromString $ "Please provide any additional information, like " <>
              "contacts of others affiliated with the project")
   where
-    project_licenses     = "Project licenses"
-    project_legal_status = "Project legal status"
+    project_licenses = "Project licenses"
 
 dateField :: Field Handler (Year, Month)
 dateField = Field
@@ -103,20 +102,6 @@ optc c f s = (c <$>) <$> (optn f s)
 (?:) _ (Just xs) Nothing  = xs
 (?:) _ Nothing   (Just x) = [x]
 
-(?<|>) :: Text
-       -> Maybe ProjectSignupLegalStatus
-       -> Maybe ProjectSignupLegalStatus
-       -> ProjectSignupLegalStatus
-(?<|>) t Nothing  Nothing  =
-    error $ show t <> " value is required"
-(?<|>) t (Just x) (Just y) =
-    error $
-        "one " <> show t <> " value is required, but got two: " <>
-        Text.unpack (ppProjectLegalStatus x) <> ", " <>
-        Text.unpack (ppProjectLegalStatus y)
-(?<|>) _ (Just x) Nothing  = x
-(?<|>) _ Nothing  (Just y) = y
-
 years :: Handler (OptionList Year)
 years = do
     current_year <- liftIO $ dateYear . timeGetDate <$> timeCurrent
@@ -139,16 +124,12 @@ ppProjectCategory Video           = "video"
 ppProjectCategory VisualArt       = "visual art"
 
 ppProjectLegalStatus :: ProjectSignupLegalStatus -> Text
-ppProjectLegalStatus (ProjectSignupLegalStatus      Unincorporated) = "unincorporated"
-ppProjectLegalStatus (ProjectSignupLegalStatus      BenefitCorp)    = "benefit corp"
-ppProjectLegalStatus (ProjectSignupLegalStatus      NonProfitCoop)  = "non-profit coop"
-ppProjectLegalStatus (ProjectSignupLegalStatus      ForProfitCoop)  = "for-profit coop"
-ppProjectLegalStatus (OtherProjectSignupLegalStatus s)              = s
-
-ppMap :: (Enum c, Bounded c) => (c -> t) -> (t -> p) -> [(p, t)]
-ppMap c f =
-    flip map [minBound .. maxBound] $ \x ->
-        let y = c x in (f y, y)
+ppProjectLegalStatus Unincorporated = "unincorporated"
+ppProjectLegalStatus BenefitCorp    = "benefit corp"
+ppProjectLegalStatus NonProfitCoop  = "non-profit coop"
+ppProjectLegalStatus ForProfitCoop  = "for-profit coop"
+ppProjectLegalStatus OtherNonProfit = "other non-profit"
+ppProjectLegalStatus OtherForProfit = "other for-profit"
 
 licenses :: [License] -> [(Text, ProjectSignupLicense)]
 licenses ls =
@@ -156,7 +137,9 @@ licenses ls =
         (unLicenseName $ licenseName l, ProjectSignupLicense l)
 
 categories :: [(Text, ProjectSignupCategory)]
-categories = ppMap id ppProjectCategory
+categories =
+    flip map [minBound .. maxBound] $ \x -> (ppProjectCategory x, x)
 
 legalStatuses :: [(Text, ProjectSignupLegalStatus)]
-legalStatuses = ppMap ProjectSignupLegalStatus ppProjectLegalStatus
+legalStatuses =
+    flip map [minBound .. maxBound] $ \x -> (ppProjectLegalStatus x, x)

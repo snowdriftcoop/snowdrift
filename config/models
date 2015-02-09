@@ -130,20 +130,21 @@ Project
     deriving Eq Show
 
 ProjectSignup
-    name              ProjectSignupName
-    website           ProjectSignupWebsite          Maybe
-    handle            ProjectSignupHandle
-    startDate         ProjectSignupStartDate
-    licenses          [ProjectSignupLicense]
-    categories        [ProjectSignupCategory]
-    categoriesComment ProjectSignupCategoryComment  Maybe
-    location          ProjectSignupLocation         Maybe
-    legalStatus       ProjectSignupLegalStatus
-    applicantRole     ProjectSignupApplicantRole
-    mission           ProjectSignupMission
-    goals             ProjectSignupGoals
-    fundsUse          ProjectSignupFundsUse
-    additionalInfo    ProjectSignupAdditionalInfo   Maybe
+    name               ProjectSignupName
+    website            ProjectSignupWebsite             Maybe
+    handle             ProjectSignupHandle
+    startDate          ProjectSignupStartDate
+    licenses           [ProjectSignupLicense]
+    categories         [ProjectSignupCategory]
+    categoriesComment  ProjectSignupCategoryComment     Maybe
+    location           ProjectSignupLocation            Maybe
+    legalStatus        ProjectSignupLegalStatus
+    legalStatusComment ProjectSignupLegalStatusComment  Maybe
+    applicantRole      ProjectSignupApplicantRole
+    mission            ProjectSignupMission
+    goals              ProjectSignupGoals
+    fundsUse           ProjectSignupFundsUse
+    additionalInfo     ProjectSignupAdditionalInfo      Maybe
 
 BlogPost
     ts            UTCTime
