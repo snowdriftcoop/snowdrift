@@ -42,7 +42,7 @@ projectSignupForm ls = renderBootstrap3 BootstrapBasicForm $ ProjectSignup
     <*> reqc ProjectSignupMission        textareaField
             "What is your project's mission?"
     <*> reqc ProjectSignupGoals          textareaField
-            "What are the project's goals?"
+            "What are the project's goals in the near- and medium-term?"
     <*> reqc ProjectSignupFundsUse       textareaField
             (fromString $ "How will the project benefit from and " <>
              "make use of funds raised through Snowdrift.coop?")
