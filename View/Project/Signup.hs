@@ -27,7 +27,8 @@ projectSignupForm ls = renderBootstrap3 BootstrapBasicForm $ ProjectSignup
               <$> optn (multiSelectFieldList $ licenses ls) project_licenses
               <*> optc OtherProjectSignupLicense textField
                       "If other, please describe")
-    <*> reqn (multiSelectFieldList categories) "Primary project categories"
+    <*> reqn (multiSelectFieldList categories)
+            "Primary project categories (multiple can be selected)"
     <*> optc ProjectSignupCategoryComment textField
             "Optional comments about project categories"
     <*> optc ProjectSignupLocation textField
