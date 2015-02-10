@@ -19,11 +19,13 @@ import           Data.Hourglass      (timeGetDate, dateYear, Month (..))
 import           System.Hourglass    (timeCurrent)
 import           Text.Blaze.Internal (preEscapedText)
 
-projectSignupForm :: [License] -> Form ProjectSignup
-projectSignupForm ls = renderBootstrap3 BootstrapBasicForm $ ProjectSignup
+projectSignupForm :: (Route App -> Text) -> [License] -> Form ProjectSignup
+projectSignupForm render ls = renderBootstrap3 BootstrapBasicForm $ ProjectSignup
     <$> reqc ProjectSignupName      textField "Project name"
     <*> optc ProjectSignupWebsite   textField "Website"
-    <*> reqc ProjectSignupHandle    textField "Desired handle on the site"
+    <*> reqc ProjectSignupHandle    textField
+            (fromString $ "Desired project handle (will be shown at " <>
+             handle <> ")")
     <*> reqc ProjectSignupStartDate dateField "Project start date"
     <*> reqn (multiSelectFieldList $ licenses ls)
             "Project licenses (multiple can be selected)"
@@ -50,6 +52,8 @@ projectSignupForm ls = renderBootstrap3 BootstrapBasicForm $ ProjectSignup
     <*> optc ProjectSignupAdditionalInfo snowdriftMarkdownField
             (fromString $ "Please provide any additional information, like " <>
              "contacts of others affiliated with the project")
+  where
+    handle = Text.unpack $ render $ ProjectR "handle"
 
 dateField :: Field Handler (Year, Month)
 dateField = Field

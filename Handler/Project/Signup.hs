@@ -8,7 +8,9 @@ import View.Project.Signup (projectSignupForm)
 getProjectSignupR :: Handler Html
 getProjectSignupR = do
     licenses <- runDB fetchLicensesDB
-    (project_signup_form, _) <- generateFormPost $ projectSignupForm licenses
+    render   <- getUrlRender
+    (project_signup_form, _) <- generateFormPost $
+        projectSignupForm render licenses
     defaultLayout $ do
         setTitle "Project sign up | Snowdrift.coop"
         $(widgetFile "project_signup")
@@ -16,7 +18,9 @@ getProjectSignupR = do
 postProjectSignupR :: Handler Html
 postProjectSignupR = do
     licenses <- runDB fetchLicensesDB
-    ((result, project_signup_form), _) <- runFormPost $ projectSignupForm licenses
+    render   <- getUrlRender
+    ((result, project_signup_form), _) <- runFormPost $
+        projectSignupForm render licenses
     case result of
         FormSuccess res  -> do
             runDB $ insert_ res
