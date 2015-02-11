@@ -50,8 +50,9 @@ projectSignupForm render ls = renderBootstrap3 BootstrapBasicForm $ ProjectSignu
             (fromString $ "How will the project benefit from and " <>
              "make use of funds raised through Snowdrift.coop?")
     <*> optc ProjectSignupAdditionalInfo snowdriftMarkdownField
-            (fromString $ "Please provide any additional information, like " <>
-             "contacts of others affiliated with the project")
+            (fromString $ "Any additional comments, questions, or " <>
+             "information? Consider providing contact info for others " <>
+             "affiliated with the project")
   where
     handle = Text.unpack $ render $ ProjectR "handle"
 
