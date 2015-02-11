@@ -1,13 +1,16 @@
 <h1 class="text-center">The Snowdrift.coop honor pledge
 
 <p>
+    Users who accept the following pledge may freely edit wiki pages,
+    post discussion comments, and more, without requiring moderator approval each time.
+
+<p>
     <strong>
-        “I will participate at Snowdrift.coop with honesty and good faith,
-        respecting the community rules and guidelines.
-        I recognize that these standards are an integral part of my participation.
-        If at any time I fail to live up to this commitment,
-        I will take initiative to rectify the situation and will ask for guidance when needed.
-        I will also ask others to rectify their own infractions.” 
+        "I will participate at Snowdrift.coop with honesty and good faith.
+        I will follow the
+        <a href="@{WikiR "snowdrift" LangEn "conduct"}">Code of Conduct
+        and strive to meet further <a href="@{WikiR "snowdrift" LangEn "honor-users"}">honorable ideals</a>.
+        I will do my part to promote these community values and to help others meet them as well."
 
 <p>
     <em>
@@ -16,3 +19,4 @@
 $if is_elig
     <form class="text-center" action=@{HonorPledgeR} method=post>
         <input type="submit" value="Accept">
+
