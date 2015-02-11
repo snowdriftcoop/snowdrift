@@ -40,6 +40,7 @@ projectSignupForm render ls = renderBootstrap3 BootstrapBasicForm $ ProjectSignu
     <*> reqn (selectFieldList legalStatuses) "Project legal status"
     <*> optc ProjectSignupLegalStatusComment textField
             "Optional details about legal status"
+    <*> reqn (selectFieldList coopStatuses) "Is your project a co-op?"
     <*> reqc ProjectSignupApplicantRole  textField
             "What role do you have with this project?"
     <*> reqc ProjectSignupMission        snowdriftMarkdownField
@@ -130,6 +131,10 @@ ppProjectLegalStatus ForProfitSocial =
 ppProjectLegalStatus ForProfitTraditional = "traditional for-profit"
 ppProjectLegalStatus Unincorporated = "unincorporated"
 
+ppProjectCoopStatus :: ProjectSignupCoopStatus -> Text
+ppProjectCoopStatus Coop    = "yes"
+ppProjectCoopStatus NotCoop = "no"
+
 ppProjectSignupLicense :: ProjectSignupLicense -> Text
 ppProjectSignupLicense (ProjectSignupLicense l)  = unLicenseName $ licenseName l
 ppProjectSignupLicense OtherProjectSignupLicense = "other"
@@ -139,10 +144,14 @@ licenses ls = flip map ls' $ \l -> (ppProjectSignupLicense l, l)
   where
     ls' = map ProjectSignupLicense ls <> [OtherProjectSignupLicense]
 
+mapBounds :: (Enum b, Bounded b) => (b -> a) -> [(a, b)]
+mapBounds f = flip map [minBound .. maxBound] $ \x -> (f x, x)
+
 categories :: [(Text, ProjectSignupCategory)]
-categories =
-    flip map [minBound .. maxBound] $ \x -> (ppProjectCategory x, x)
+categories = mapBounds ppProjectCategory
 
 legalStatuses :: [(Text, ProjectSignupLegalStatus)]
-legalStatuses =
-    flip map [minBound .. maxBound] $ \x -> (ppProjectLegalStatus x, x)
+legalStatuses = mapBounds ppProjectLegalStatus
+
+coopStatuses :: [(Text, ProjectSignupCoopStatus)]
+coopStatuses = mapBounds ppProjectCoopStatus

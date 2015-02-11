@@ -32,3 +32,8 @@ derivePersistField "ProjectSignupLegalStatus"
 
 newtype ProjectSignupLegalStatusComment = ProjectSignupLegalStatusComment Text deriving (Eq, Show, Read)
 derivePersistField "ProjectSignupLegalStatusComment"
+
+data ProjectSignupCoopStatus = Coop
+                             | NotCoop
+                             deriving (Eq, Show, Read, Enum, Bounded)
+derivePersistField "ProjectSignupCoopStatus"
