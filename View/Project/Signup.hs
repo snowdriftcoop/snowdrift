@@ -119,12 +119,16 @@ ppProjectCategory Video           = "video"
 ppProjectCategory VisualArt       = "visual art"
 
 ppProjectLegalStatus :: ProjectSignupLegalStatus -> Text
+ppProjectLegalStatus NonProfitTaxDeductible =
+    "public-benefit with tax-deductible donations, as in 501(c)(3) in US"
+ppProjectLegalStatus NonProfitNotTaxDeductible =
+    "other public-benefit status, such as 501(c)(4) and/or state-level designation"
+ppProjectLegalStatus TradeOrganization =
+    "trade organization serving business interests, as in 501(c)(6)"
+ppProjectLegalStatus ForProfitSocial =
+    "benefit corp or similar for-profit with added social mission"
+ppProjectLegalStatus ForProfitTraditional = "traditional for-profit"
 ppProjectLegalStatus Unincorporated = "unincorporated"
-ppProjectLegalStatus BenefitCorp    = "benefit corp"
-ppProjectLegalStatus NonProfitCoop  = "non-profit coop"
-ppProjectLegalStatus ForProfitCoop  = "for-profit coop"
-ppProjectLegalStatus OtherNonProfit = "other non-profit"
-ppProjectLegalStatus OtherForProfit = "other for-profit"
 
 ppProjectSignupLicense :: ProjectSignupLicense -> Text
 ppProjectSignupLicense (ProjectSignupLicense l)  = unLicenseName $ licenseName l

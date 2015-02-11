@@ -21,12 +21,12 @@ derivePersistField "ProjectSignupCategory"
 newtype ProjectSignupCategoryComment = ProjectSignupCategoryComment Text deriving (Eq, Show, Read)
 derivePersistField "ProjectSignupCategoryComment"
 
-data ProjectSignupLegalStatus = Unincorporated
-                              | BenefitCorp
-                              | NonProfitCoop
-                              | ForProfitCoop
-                              | OtherNonProfit
-                              | OtherForProfit
+data ProjectSignupLegalStatus = NonProfitTaxDeductible
+                              | NonProfitNotTaxDeductible
+                              | TradeOrganization
+                              | ForProfitSocial
+                              | ForProfitTraditional
+                              | Unincorporated
                               deriving (Eq, Show, Read, Enum, Bounded)
 derivePersistField "ProjectSignupLegalStatus"
 
