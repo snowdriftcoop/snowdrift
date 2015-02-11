@@ -49,7 +49,7 @@ getUsersR = do
         return (user, ((project ^. ProjectName, project ^. ProjectHandle), role ^. ProjectUserRoleRole))
 
 
-    let users = map (\u -> (getUserKey u, u)) users'
+    let users = map (\u -> (getUserKey u, u)) $ filter ((/= anonymousUser) . entityKey) users'
         infos' :: [(UserId, ((Text, Text), Role))] = map (entityKey *** unwrapValues) infos
         infos'' :: [(UserId, Map (Text, Text) (Set Role))] = map (second $ uncurry M.singleton . second S.singleton) infos'
         allProjects :: Map UserId (Map (Text, Text) (Set Role)) = M.fromListWith (M.unionWith S.union) infos''
