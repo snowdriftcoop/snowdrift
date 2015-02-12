@@ -54,6 +54,7 @@ library
                      Model.Project
                      Model.Project.Signup
                      Model.Project.Signup.Internal
+                     Model.Project.Signup.TH
                      Model.Project.Sql
                      Model.ResetPassword
                      Model.Role

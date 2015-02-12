@@ -9,14 +9,14 @@ import Data.Text           (Text)
 import Database.Persist.TH
 import Yesod.Markdown      (Markdown)
 
+import Model.Project.Signup.TH
+
 newtype ProjectSignupName    = ProjectSignupName    Text deriving (Show, Read)
-derivePersistField "ProjectSignupName"
-
+derivePersistFieldText ''ProjectSignupName
 newtype ProjectSignupWebsite = ProjectSignupWebsite Text deriving (Show, Read)
-derivePersistField "ProjectSignupWebsite"
-
+derivePersistFieldText ''ProjectSignupWebsite
 newtype ProjectSignupHandle  = ProjectSignupHandle  Text deriving (Show, Read)
-derivePersistField "ProjectSignupHandle"
+derivePersistFieldText ''ProjectSignupHandle
 
 newtype Year = Year Int deriving (Show, Eq)
 
@@ -26,20 +26,20 @@ deriving instance Read Month
 newtype ProjectSignupStartDate = ProjectSignupStartDate (Year, Month) deriving (Show, Read)
 derivePersistField "ProjectSignupStartDate"
 
-data ProjectSignupLocation = ProjectSignupLocation Text deriving (Show, Read)
-derivePersistField "ProjectSignupLocation"
+newtype ProjectSignupLocation = ProjectSignupLocation Text deriving (Show, Read)
+derivePersistFieldText ''ProjectSignupLocation
 
 newtype ProjectSignupApplicantRole  = ProjectSignupApplicantRole Text deriving (Show, Read)
-derivePersistField "ProjectSignupApplicantRole"
+derivePersistFieldText ''ProjectSignupApplicantRole
 
 newtype ProjectSignupMission        = ProjectSignupMission        Markdown deriving (Show, Read)
-derivePersistField "ProjectSignupMission"
+derivePersistFieldMarkdown ''ProjectSignupMission
 newtype ProjectSignupGoals          = ProjectSignupGoals          Markdown deriving (Show, Read)
-derivePersistField "ProjectSignupGoals"
+derivePersistFieldMarkdown ''ProjectSignupGoals
 newtype ProjectSignupFundsUse       = ProjectSignupFundsUse       Markdown deriving (Show, Read)
-derivePersistField "ProjectSignupFundsUse"
+derivePersistFieldMarkdown ''ProjectSignupFundsUse
 newtype ProjectSignupAdditionalInfo = ProjectSignupAdditionalInfo Markdown deriving (Show, Read)
-derivePersistField "ProjectSignupAdditionalInfo"
+derivePersistFieldMarkdown ''ProjectSignupAdditionalInfo
 
 newtype ProjectSignupLicenseComment = ProjectSignupLicenseComment Text deriving (Eq, Show, Read)
-derivePersistField "ProjectSignupLicenseComment"
+derivePersistFieldText ''ProjectSignupLicenseComment
