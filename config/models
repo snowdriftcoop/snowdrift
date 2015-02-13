@@ -105,11 +105,11 @@ ViewWikiEdit
     UniqueViewWikiEdit user edit
 
 License
-    name        LicenseName
-    type        LicenseType
-    projectType LicenseProjectType
-    text        LicenseText
-    website     LicenseWebsite
+    name         LicenseName
+    type         LicenseType
+    projectTypes [LicenseProjectType]
+    text         LicenseText
+    website      LicenseWebsite
 
 Project
     createdTs   UTCTime
