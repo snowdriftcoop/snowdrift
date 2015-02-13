@@ -26,7 +26,7 @@ deriving instance Read Month
 newtype ProjectSignupStartDate = ProjectSignupStartDate (Year, Month) deriving (Show, Read)
 derivePersistField "ProjectSignupStartDate"
 
-data ProjectSignupLocation = ProjectSignupLocation Text deriving (Show, Read)
+newtype ProjectSignupLocation = ProjectSignupLocation Text deriving (Show, Read)
 derivePersistField "ProjectSignupLocation"
 
 newtype ProjectSignupApplicantRole  = ProjectSignupApplicantRole Text deriving (Show, Read)
