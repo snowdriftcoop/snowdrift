@@ -282,6 +282,7 @@ executable         SnowdriftEmailDaemon
                      , email-validate
                      , fast-logger
                      , hjsmin
+                     , hourglass
                      , http-conduit
                      , lifted-base
                      , mime-mail
