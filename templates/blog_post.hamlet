@@ -12,4 +12,6 @@
 <div .text-center>
     <a href=@{BlogPostDiscussionR project_handle (blogPostHandle blog_post)}>
         discuss this post
+        <span .badge>
+            #{comment_count}
 

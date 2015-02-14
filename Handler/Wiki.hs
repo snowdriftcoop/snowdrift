@@ -11,7 +11,7 @@ import Handler.Wiki.Comment (makeWikiPageCommentForestWidget, wikiDiscussionPage
 import Model.Comment
 import Model.Comment.ActionPermissions
 import Model.Comment.Sql
-import Model.Discussion
+import Model.Discussion (fetchDiscussionRootCommentsDB)
 import Model.Markdown
 import Model.Notification
 import Model.Permission
@@ -133,20 +133,28 @@ getWikiR project_handle language target = do
                         when is_watching $
                             userViewWikiEditsDB user_id page_id
 
-                let has_permission = exprCommentProjectPermissionFilter muser_id (val project_id)
-
-                roots_ids    <- map entityKey <$> fetchDiscussionRootCommentsDB discussion_id has_permission
-                num_children <- length <$> fetchCommentsDescendantsDB roots_ids has_permission
+                comment_count <- countDiscussionAllCommentsDB muser_id project_id discussion_id
 
                 let translations = L.delete (wikiEditLanguage edit) $ map (wikiEditLanguage . entityVal) edits
 
-                return (length roots_ids + num_children, translations)
+                return (comment_count, translations)
 
             defaultLayout $ do
                 setTitle . toHtml $
                     projectName project <> " : " <> target <> " | Snowdrift.coop"
 
                 renderWiki comment_count project_handle language target can_edit translations edit
+
+-- This function should be in Model.Discussion?
+-- Duplicate in View.Project
+-- TODO: move to other module!
+countDiscussionAllCommentsDB :: Maybe (Key User) -> Key Project -> Key Discussion -> DB Int
+countDiscussionAllCommentsDB muser_id project_id discussion_id = do
+    let has_permission = exprCommentProjectPermissionFilter muser_id (val project_id)
+
+    roots_ids    <- map entityKey <$> fetchDiscussionRootCommentsDB discussion_id has_permission
+    num_children <- length <$> fetchCommentsDescendantsDB roots_ids has_permission
+    return $ length roots_ids + num_children
 
 postWikiR :: Text -> Language -> Text -> Handler Html
 postWikiR project_handle target_language target = do
