@@ -407,14 +407,14 @@ Next, log out and back into your whole system (the environment variables command
 [Nixpkgs](https://nixos.org/nixpkgs/), a collection of packages used by Nix, usually has only the latest packaged version and is a rolling-release distribution, which leaves us with two options:
 
 * Update our code and dependencies whenever the unstable channel (or the master branch) is changed.
-  
+
 * Maintain our own collection of package versions that are known to work.
 
 The former is clearly too much work and is not reliable anyway, so we use the latter approach.
 Get a copy of our repository with this command:
 
     git clone https://github.com/nkaretnikov/nixpkgs.git -b snowdrift
-    
+
 It automatically switches to the right branch, so the only thing left is to point the [`NIX_PATH`](https://nixos.org/nix/manual/#sec-common-env) environment variable to the directory *containing* the `nixpkgs` repository.
 For example, if a user cloned it to `/home/user`, that's the value they need to use:
 
@@ -460,11 +460,22 @@ All the steps below can be done simply with the sdm script,
 but here we explain what it does and how to handle databases manually if you prefer.
 The commands below are written with GNU/Linux in mind.
 
+***
+
 Notes for Mac OS X
 ------------------
 
 Assuming the postgres server is running, where `sudo -u postgres psql` is seen below, run `psql postgres` instead.
 The commands that don't use psql can be adapted to run within the psql command line.
+
+For Mac OS, instead of `sudo -u postgres psql snowdrift_development <devDB.sql` follow these steps:
+
+1) Run `psql snowdrift_development`
+2) At snowdrift_development=# prompt, run `\i devDB.sql`
+
+Similar adjustments will be needed for the test database setup and resetting databases.
+
+***
 
 
 Setting up the development database manually
@@ -473,13 +484,9 @@ Setting up the development database manually
 Go to the config/ directory within the project directory,
 make a copy of postgresql.template, and name the new file postgresql.yml
 
-Create database user called "snowdrift_development" *without* superuser, createdb, or createuser priveleges:
+Create database user called "snowdrift_development" *without* superuser, createdb, or createuser privileges:
 
     sudo -u postgres createuser -S -D -R snowdrift_development
-
-Create snowdrift_development database:
-
-    sudo -u postgres createdb snowdrift_development
 
 Run postgres psql:
 
@@ -488,6 +495,12 @@ Run postgres psql:
 You should see a line that looks like:
 
     postgres=#
+
+(NOTE: all of the commands run from the postgres shell must end with a `;`)
+
+Create snowdrift_development database:
+
+    postgres=# create database snowdrift_development;
 
 Add a password to the snowdrift_development user
 (for reference, the sdm script generates a random passphrase for this step;
