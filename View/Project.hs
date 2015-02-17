@@ -4,8 +4,10 @@ module View.Project
     ( editProjectForm
     , projectContactForm
     , inviteForm
+    , ProjectBlog (..)
     , projectBlogForm
     , projectConfirmSharesForm
+    , previewBlogPost
     , renderBlogPost
     , renderProject
     , viewForm
@@ -24,6 +26,7 @@ import           Model.Shares
 import           Model.Role
 import           View.User (userNameWidget)
 import           Widgets.Markdown
+import           Widgets.Preview
 import           Widgets.Time
 
 import qualified Data.Text       as T
@@ -90,6 +93,23 @@ renderBlogPost project_handle blog_post = do
 
     $(widgetFile "blog_post")
 
+previewBlogPost :: UserId -> Text -> ProjectBlog -> Handler Html
+previewBlogPost viewer_id project_handle project_blog@ProjectBlog {..} = do
+    now <- liftIO getCurrentTime
+    Entity project_id _ <- runYDB $ getBy404 $ UniqueProjectHandle project_handle
+    let (top_content', bottom_content') = break (== "***") $ T.lines $
+                                              unMarkdown projectBlogContent
+        top_content = T.unlines top_content'
+        bottom_content = if bottom_content' == []
+                             then Nothing
+                             else Just $ Markdown $ T.unlines bottom_content'
+        blog_post = BlogPost now projectBlogTitle projectBlogHandle
+                             viewer_id project_id (key $ PersistInt64 0)
+                             (Markdown top_content) bottom_content
+    (form, _) <- generateFormPost $ projectBlogForm $ Just project_blog
+    defaultLayout $ previewWidget form "post" $
+        renderBlogPost project_handle blog_post
+
 editProjectForm :: Maybe (Project, [Text]) -> Form UpdateProject
 editProjectForm project =
     renderBootstrap3 BootstrapBasicForm $ UpdateProject
@@ -98,15 +118,21 @@ editProjectForm project =
         <*> (maybe [] (map T.strip . T.splitOn ",") <$> aopt' textField "Tags" (Just . T.intercalate ", " . snd <$> project))
         <*> aopt' textField "GitHub Repository (to show GH tickets here at Snowdrift.coop)" (projectGithubRepo . fst <$> project)
 
-projectBlogForm :: Maybe (Text, Text, Markdown) -> Form (Text, Text, Markdown)
-projectBlogForm defaults = renderBootstrap3 BootstrapBasicForm $
-    let getTitle (title, _, _) = title
-        getHandle (_, handle, _) = handle
-        getContent (_, _, content) = content
-     in (,,)
-        <$> areq' textField "Title for this blog post" (getTitle <$> defaults)
-        <*> areq' textField "Handle for the URL" (getHandle <$> defaults)
-        <*> areq' snowdriftMarkdownField "Content" (getContent <$> defaults)
+data ProjectBlog = ProjectBlog
+    { projectBlogTitle   :: Text
+    , projectBlogHandle  :: Text
+    , projectBlogContent :: Markdown
+    } deriving Show
+
+projectBlogForm :: Maybe ProjectBlog -> Form ProjectBlog
+projectBlogForm mproject_blog =
+    renderBootstrap3 BootstrapBasicForm $ ProjectBlog
+        <$> areq' textField "Title for this blog post"
+                (projectBlogTitle <$> mproject_blog)
+        <*> areq' textField "Handle for the URL"
+                (projectBlogHandle <$> mproject_blog)
+        <*> areq' snowdriftMarkdownField "Content"
+                (projectBlogContent <$> mproject_blog)
 
 projectContactForm :: Form (Markdown, Language)
 projectContactForm = renderBootstrap3 BootstrapBasicForm $ (,)

@@ -11,6 +11,7 @@ $forall Entity _ post <- posts
         <small>
             <span .author> by ^{userNameWidget (blogPostUser post)}
             <span .post-time>^{renderTime $ blogPostTs post}
+            <a href=@{EditBlogPostR project_handle (blogPostHandle post)}> edit
 
     <div .blog-post-top>
         ^{markdownWidgetWith (fixLinks project_handle discussion) $ blogPostTopContent post}

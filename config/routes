@@ -146,6 +146,7 @@
 /p/#Text/blog                                   ProjectBlogR                    GET
 /p/#Text/blog/!new                              NewBlogPostR                    GET POST
 /p/#Text/blog/#Text                             BlogPostR                       GET
+/p/#Text/blog/#Text/edit                        EditBlogPostR                   GET POST
 /p/#Text/blog/#Text/d                           BlogPostDiscussionR             GET
 /p/#Text/blog/#Text/d/new                       NewBlogPostDiscussionR          GET POST
 /p/#Text/blog/#Text/c/#CommentId                BlogPostCommentR                GET

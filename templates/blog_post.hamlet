@@ -6,7 +6,7 @@
         <small>
             <span .author> by ^{userNameWidget author}
             <span .post-time> ^{renderTime $ blogPostTs blog_post}
-            
+            <a href=@{EditBlogPostR project_handle (blogPostHandle blog_post)}> edit
     ^{content}
 
 <div .text-center>
