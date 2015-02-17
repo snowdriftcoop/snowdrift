@@ -67,3 +67,4 @@ Snowdrift Development
 cabal install -fdev
 
 Read through GUIDE.md for thorough details and more about development, testing, and so on.
+```
