@@ -1,5 +1,4 @@
 {-# LANGUAGE TypeSynonymInstances, FlexibleInstances, StandaloneDeriving #-}
-{-# OPTIONS_GHC -fno-warn-unused-imports #-}
 
 module Model where
 
