@@ -262,7 +262,7 @@ getEditBlogPostR project_handle blog_post_handle = do
     (Entity _ project, Entity _ BlogPost {..}) <-
         runYDB $ fetchProjectBlogPostDB project_handle blog_post_handle
     void $ checkEditBlogPostPermissions project_handle
-    (blog_form, _) <- generateFormPost $ projectBlogForm $
+    (blog_form, enctype) <- generateFormPost $ projectBlogForm $
         Just $ ProjectBlog blogPostTitle blog_post_handle $
             concatContent blogPostTopContent blogPostBottomContent
     defaultLayout $ do
