@@ -12,7 +12,8 @@ import qualified Data.Set as S
 -- import Data.Time
 
 data Orderable = Orderable
-    { hasTag :: Text -> Bool
+    { isClaimed :: Text -> Bool
+    , hasTag :: Text -> Bool
     , getNamedTs :: Text -> Set UTCTime
     , searchLiteral :: Text -> Bool
     }
@@ -57,11 +58,21 @@ expTermP = stripP $ foldl (c (**)) <$> termP <*> many (stripP "^" *> termP)
 
 termP :: Parser (Orderable -> Double)
 termP = stripP $
-    tagP
+    claimedP
+    <|> unclaimedP
+    <|> tagP
     <|> const <$> double
     <|> timeValueP
     <|> "(" *> expressionP <* ")"
 
+(<?$>) :: (Orderable -> a -> Bool) -> Parser a -> Parser (Orderable -> Double)
+f <?$> p = (\x y -> if f y x then 1 else 0) <$> p
+
+claimedP :: Parser (Orderable -> Double)
+claimedP = isClaimed <?$> stripP "CLAIMED"
+
+unclaimedP :: Parser (Orderable -> Double)
+unclaimedP = (\y x -> not $ isClaimed y x) <?$> stripP "UNCLAIMED"
 
 toTimeValue :: UTCTime -> Double
 toTimeValue = (/ 86400 {- seconds per day -}) . fromIntegral . (id :: Integer -> Integer) . round . diffUTCTime epoch
@@ -101,7 +112,5 @@ timeConstraintP =
 timeP :: Parser UTCTime
 timeP = fmap (`UTCTime` 0) $ stripP $ fromGregorian <$> (read <$> A.count 4 digit) <* "-" <*> (read <$> A.count 2 digit) <* "-" <*> (read <$> A.count 2 digit)
 
-
 tagP :: Parser (Orderable -> Double)
-tagP = (\ x y -> if hasTag y x then 1 else 0) <$> takeWhile1 (inClass "a-z-")
-
+tagP = hasTag <?$> takeWhile1 (inClass "a-z-")

@@ -12,7 +12,8 @@ import qualified Data.Set as S
 -- TODO: allow for building custom SQL queries based on filters
 
 data Filterable = Filterable
-    { hasTag :: Text -> Bool
+    { isClaimed :: Text -> Bool
+    , hasTag :: Text -> Bool
     , getNamedTs :: Text -> Set UTCTime
     , searchLiteral :: Text -> Bool
     }
@@ -44,9 +45,17 @@ notTermP = stripP $ (not.) <$> (notP *> termP) <|> termP
 
 termP :: Parser (Filterable -> Bool)
 termP = stripP $
-    tagP
+    claimedP
+    <|> unclaimedP
+    <|> tagP
     <|> timeConstraintP
     <|> "(" *> expressionP <* ")"
+
+claimedP :: Parser (Filterable -> Bool)
+claimedP = flip isClaimed <$> stripP "CLAIMED"
+
+unclaimedP :: Parser (Filterable -> Bool)
+unclaimedP = (\x y -> not $ isClaimed y x) <$> stripP "UNCLAIMED"
 
 timeConstraintP :: Parser (Filterable -> Bool)
 timeConstraintP =
