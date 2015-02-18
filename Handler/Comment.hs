@@ -72,7 +72,6 @@ import qualified Data.Set                        as S
 import qualified Data.Text                       as T
 import           Network.HTTP.Types.Status       (movedPermanently301)
 import           Yesod.Default.Config            (appRoot)
-import           Yesod.Markdown                  (unMarkdown)
 
 --------------------------------------------------------------------------------
 -- Utility functions

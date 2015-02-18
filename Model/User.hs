@@ -85,12 +85,7 @@ import           Data.List.NonEmpty (NonEmpty)
 import qualified Data.Map           as M
 import qualified Data.Set           as S
 import qualified Data.Text          as T
-<<<<<<< HEAD
 import           Control.Monad.Trans.Reader (ReaderT)
-import           Control.Monad.Writer.Strict (tell)
-=======
-import           Yesod.Markdown (Markdown(..))
->>>>>>> 1dbe4b427d4117b820378b2b60756d6311cc677e
 
 -- anonymousUser is a special user for items posted by visitors who are not
 -- logged in, such as posting to /contact for a project
