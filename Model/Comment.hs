@@ -321,7 +321,7 @@ userClaimCommentDB user_id comment_id mnote = do
 
 userUnclaimCommentDB :: CommentId -> Maybe Text -> SDB ()
 userUnclaimCommentDB comment_id release_note = do
-    maybe_ticket_claiming_entity <- getBy $ UniqueTicketClaiming comment_id
+    maybe_ticket_claiming_entity <- lift $ getBy $ UniqueTicketClaiming comment_id
     case maybe_ticket_claiming_entity of
         Nothing -> return ()
         Just (Entity ticket_claiming_id TicketClaiming{..}) -> do
@@ -335,14 +335,14 @@ userUnclaimCommentDB comment_id release_note = do
                     release_note
                     now
 
-            ticket_old_claiming_id <- insert ticket_old_claiming
+            ticket_old_claiming_id <- lift $ insert ticket_old_claiming
 
-            update $ \ etc -> do
+            lift $ update $ \ etc -> do
                 set etc [ EventTicketClaimedClaim    =. val Nothing
                         , EventTicketClaimedOldClaim =. val (Just ticket_old_claiming_id) ]
                 where_ $ etc ^. EventTicketClaimedClaim ==. val (Just ticket_claiming_id)
 
-            delete $ from $ \ tc -> where_ $ tc ^. TicketClaimingId ==. val ticket_claiming_id
+            lift $ delete $ from $ \ tc -> where_ $ tc ^. TicketClaimingId ==. val ticket_claiming_id
 
             tell [ ETicketUnclaimed ticket_old_claiming_id ticket_old_claiming ]
 
@@ -424,7 +424,7 @@ deleteTagsDB comment_id tags =
 
 deleteTicketDB :: CommentId -> Text -> SDB ()
 deleteTicketDB comment_id ticket_name = do
-    delete $ from $ \t ->
+    lift $ delete $ from $ \t ->
         where_ $ t ^. TicketName    ==. val ticket_name
              &&. t ^. TicketComment ==. val comment_id
     userUnclaimCommentDB comment_id Nothing
