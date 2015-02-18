@@ -554,7 +554,7 @@ getUserNotificationsR user_id = do
         userNotificationsForm is_moderator
             mbal mucom mrcom mrep mecon mflag mflagr
     defaultLayout $ do
-        setTitle $ toHtml $ "Notification preferences - " <>
+        setTitle $ toHtml $ "Notification Preferences - " <>
             userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
         $(widgetFile "user_notifications")
 
