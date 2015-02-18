@@ -254,8 +254,8 @@ getBlogPostR project_handle blog_post_handle = do
 
 checkEditBlogPostPermissions :: Text -> Handler UserId
 checkEditBlogPostPermissions project_handle = do
-    let msg = "only the admin or a team member can edit a blog post"
-    fst <$> requireRolesAny [Admin, TeamMember] project_handle msg
+    fst <$> requireRolesAny [Admin, TeamMember] project_handle
+        "only the admin or a team member can edit a blog post"
 
 getEditBlogPostR :: Text -> Text -> Handler Html
 getEditBlogPostR project_handle blog_post_handle = do
