@@ -100,7 +100,7 @@ previewBlogPost viewer_id project_handle project_blog@ProjectBlog {..} = do
     let (top_content', bottom_content') = break (== "***") $ T.lines $
                                               unMarkdown projectBlogContent
         top_content = T.unlines top_content'
-        bottom_content = if bottom_content' == []
+        bottom_content = if null bottom_content'
                              then Nothing
                              else Just $ Markdown $ T.unlines bottom_content'
         blog_post = BlogPost now projectBlogTitle projectBlogHandle
