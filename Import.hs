@@ -40,6 +40,7 @@ import           Yesod.Form.Bootstrap3         as Import
 
 import           Yesod (languages)
 import           Data.List (sortBy, (\\), nub)
+import qualified Data.List as L
 
 import GHC.Exts (IsList(..))
 import qualified Data.Map as M
@@ -90,8 +91,16 @@ selectCount from_ =
 key :: PersistEntity record => PersistValue -> Key record
 key v = let Right k = keyFromValues [v] in k
 
+selectExists :: SqlQuery a -> DB Bool
+selectExists = fmap (>0) . selectCount
+
 newHash :: IO Text
 newHash = T.pack . fst . randomString 42 <$> newStdGen
+
+countMatches :: (a -> a -> Bool) -> a -> [a] -> Int
+countMatches p x xs = L.foldl' go 0 xs
+  where
+    go c t = if x `p` t then succ c else c
 
 class Count a where
     getCount :: a -> Int64

@@ -499,5 +499,7 @@ fetchProjectOpenTicketsDB project_id muser_id = do
         on_ (t ^. TicketComment ==. c ^. CommentId)
         where_ $
             c ^. CommentDiscussion `in_` valList discussion_ids &&.
-            exprCommentOpen c
+            exprCommentOpen c &&.
+            c ^. CommentId `notIn`
+                (subList_select $ from $ return . (^. CommentRethreadOldComment))
         return t
