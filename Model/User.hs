@@ -103,7 +103,7 @@ anonymousUser = key $ PersistInt64 (-1)
 -- When a user deletes the account, all their comments are assigned to
 -- this user.
 deletedUser :: UserId
-deletedUser = Key $ PersistInt64 (-2)
+deletedUser = key $ PersistInt64 (-2)
 
 type UserMap = Map UserId User
 
