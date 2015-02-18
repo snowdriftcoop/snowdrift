@@ -129,7 +129,8 @@ getUserR user_id = do
                     <> "you will not be able to receive email notifications."
 
     defaultLayout $ do
-        setTitle . toHtml $ "User Profile - " <> userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
+        setTitle $ toHtml $ "User Profile - " <>
+            userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
         renderUser mviewer_id user_id user projects_and_roles
 
 --------------------------------------------------------------------------------
@@ -181,7 +182,8 @@ getUserBalanceR' user_id = do
     (add_funds_form, _) <- generateFormPost addTestCashForm
 
     defaultLayout $ do
-        setTitle . toHtml $ "User Balance - " <> userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
+        setTitle $ toHtml $ "User Balance - " <>
+            userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
         $(widgetFile "user_balance")
 
 postUserBalanceR :: UserId -> Handler Html
@@ -260,7 +262,8 @@ getUserDiscussionR' user_id get_root_comments = do
     (comment_form, _) <- generateFormPost commentNewTopicForm
 
     defaultLayout $ do
-        setTitle . toHtml $ userDisplayName (Entity user_id user) <> " User Discussion | Snowdrift.coop"
+        setTitle $ toHtml $ userDisplayName (Entity user_id user) <>
+            " User Discussion | Snowdrift.coop"
         $(widgetFile "user_discuss")
 
 --------------------------------------------------------------------------------
@@ -297,7 +300,7 @@ getUserChangePasswordR user_id = do
     user <- runYDB $ get404 user_id
     (form, enctype) <- generateFormPost changePasswordForm
     defaultLayout $ do
-        setTitle . toHtml $ "Change Passphrase - " <>
+        setTitle $ toHtml $ "Change Passphrase - " <>
             userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
         $(widgetFile "change_password")
 
@@ -343,7 +346,8 @@ getDeleteUserR user_id = do
     void $ checkEditUser user_id
     user <- runYDB $ get404 user_id
     defaultLayout $ do
-        setTitle $ toHtml $ "User Profile - " <> userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
+        setTitle $ toHtml $ "User Profile - " <>
+            userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
         $(widgetFile "delete_user")
 
 postDeleteUserR :: UserId -> Handler Html
@@ -363,7 +367,8 @@ getEditUserR user_id = do
 
     (form, enctype) <- generateFormPost $ editUserForm (Just user)
     defaultLayout $ do
-        setTitle . toHtml $ "User Profile - " <> userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
+        setTitle $ toHtml $ "User Profile - " <>
+            userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
         $(widgetFile "edit_user")
 
 postUserR :: UserId -> Handler Html
@@ -465,8 +470,8 @@ getUserPledgesR user_id = do
     _ <- requireAuthId
     user <- runYDB $ get404 user_id
     defaultLayout $ do
-        setTitle . toHtml $
-            "User Pledges - " <> userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
+        setTitle $ toHtml $ "User Pledges - " <>
+            userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
 
         $(widgetFile "user_pledges")
 
@@ -524,8 +529,8 @@ getUserTicketsR user_id = do
             return (t, u, wt, p ^. ProjectHandle)
 
     defaultLayout $ do
-        setTitle . toHtml $
-            "User Tickets - " <> userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
+        setTitle $ toHtml $ "User Tickets - " <>
+            userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
 
         $(widgetFile "user_tickets")
 
@@ -549,7 +554,7 @@ getUserNotificationsR user_id = do
         userNotificationsForm is_moderator
             mbal mucom mrcom mrep mecon mflag mflagr
     defaultLayout $ do
-        setTitle . toHtml $ "Notification preferences - " <>
+        setTitle $ toHtml $ "Notification preferences - " <>
             userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
         $(widgetFile "user_notifications")
 
@@ -649,8 +654,9 @@ getUserResetPasswordR user_id hash = do
             user <- runYDB $ get404 user_id
             (form, enctype) <- generateFormPost setPasswordForm
             defaultLayout $ do
-                setTitle . toHtml $ "Set Passphrase - " <>
-                    userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
+                setTitle $ toHtml $ "Set Passphrase - " <>
+                    userDisplayName (Entity user_id user) <>
+                    " | Snowdrift.coop"
                 $(widgetFile "set_password")
 
 postUserResetPasswordR :: UserId -> Text -> Handler Html
