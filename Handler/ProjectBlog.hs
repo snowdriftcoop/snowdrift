@@ -266,7 +266,7 @@ getEditBlogPostR project_handle blog_post_handle = do
         Just $ ProjectBlog blogPostTitle blog_post_handle $
             concatContent blogPostTopContent blogPostBottomContent
     defaultLayout $ do
-        setTitle $ toHtml $ projectName project <> " Blog - edit | Snowdrift.coop"
+        setTitle $ toHtml $ projectName project <> " Blog - Edit | Snowdrift.coop"
         $(widgetFile "edit_blog_post")
 
 postEditBlogPostR :: Text -> Text -> Handler Html
