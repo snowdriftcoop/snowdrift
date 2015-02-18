@@ -12,7 +12,7 @@ getProjectSignupR = do
     (project_signup_form, _) <- generateFormPost $
         projectSignupForm render licenses
     defaultLayout $ do
-        setTitle "Project sign up | Snowdrift.coop"
+        setTitle "Project Sign Up | Snowdrift.coop"
         $(widgetFile "project_signup")
 
 postProjectSignupR :: Handler Html
