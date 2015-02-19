@@ -181,7 +181,7 @@ library
                  , persistent
                  , persistent-postgresql
                  , persistent-template
-                 , process
+                 , process >= 1.2.0.0
                  , random
                  , regex-tdfa
                  , resourcet
@@ -337,7 +337,7 @@ executable         sdm
                      , cmdargs
                      , directory
                      , mwc-random
-                     , process
+                     , process >= 1.2.0.0
                      , semigroups
 
 executable         SnowdriftSendmail
@@ -372,7 +372,7 @@ test-suite test
                  , bytestring
                  , directory
                  , filepath
-                 , process
+                 , process >= 1.2.0.0
                  , text
                  , hspec
                  , network-uri
