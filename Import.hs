@@ -40,7 +40,6 @@ import           Yesod.Form.Bootstrap3         as Import
 
 import           Yesod (languages)
 import           Data.List (sortBy, (\\), nub)
-import qualified Data.List as L
 
 import GHC.Exts (IsList(..))
 import qualified Data.Map as M
@@ -86,9 +85,6 @@ selectCount :: (MonadIO m, Functor m) => SqlQuery a -> ReaderT SqlBackend m Int
 selectCount from_ =
     fmap (\[Value n] -> n) $
     select $ from_ >> return countRows
-
-selectExists :: SqlQuery a -> DB Bool
-selectExists query = selectCount query >>= \n -> return $ n > 0
 
 -- XXX: Will this always succeed?
 key :: PersistEntity record => PersistValue -> Key record
