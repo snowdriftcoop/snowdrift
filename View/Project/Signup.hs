@@ -40,7 +40,8 @@ projectSignupForm render ls = renderBootstrap3 BootstrapBasicForm $ ProjectSignu
     <*> reqn (selectFieldList legalStatuses) "Project legal status"
     <*> optc ProjectSignupLegalStatusComment textField
             "Optional details about legal status"
-    <*> reqn (selectFieldList coopStatuses) "Is your project a co-op?"
+    <*> reqn (selectFieldList coopStatuses)
+            "Are you structured or governed as a cooperative?"
     <*> reqc ProjectSignupApplicantRole  textField
             "What role do you have with this project?"
     <*> reqc ProjectSignupMission        snowdriftMarkdownField
