@@ -99,7 +99,7 @@ errUnlessUniqueEmailNotif file text = do
     errUnlessUnique c (T.unpack text) file
 
 notifySpecs :: AppConfig DefaultEnv a -> FilePath -> Spec
-notifySpecs AppConfig {..} file = do
+notifySpecs AppConfig {..} file =
     -- Note that since we rely on 'Bounded' here, the order of the
     -- 'NotificationType' value constructors is important for some of
     -- these tests.  For example, 'NotifWikiEdit' must not be tested

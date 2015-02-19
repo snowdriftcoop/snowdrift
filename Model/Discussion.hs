@@ -88,7 +88,7 @@ fetchDiscussionsInternal _ discussion_ids DiscussionTypeUser =
 -- | Fetch a single discussion, given its id.
 fetchDiscussionDB :: [Language] -> DiscussionId -> DB DiscussionOn
 fetchDiscussionDB langs discussion_id =
-    fromJustErr "fetchDiscussionDB: discussion not found" <$> runMaybeT (foldr mplus mzero f)
+    fromJustErr "fetchDiscussionDB: discussion not found" <$> runMaybeT (msum f)
   where
     -- f :: [MaybeT DB DiscussionOn]
     f = map (MaybeT . fetchDiscussionInternal langs discussion_id) [minBound..maxBound]
@@ -97,7 +97,7 @@ fetchDiscussionDB langs discussion_id =
 -- every input DiscussionId.
 fetchDiscussionsDB :: [Language] -> [DiscussionId] -> DB (Map DiscussionId DiscussionOn)
 fetchDiscussionsDB langs discussion_ids = do
-    discussion_map <- mconcat <$> sequence (map (fetchDiscussionsInternal langs discussion_ids) [minBound..maxBound])
+    discussion_map <- mconcat <$> mapM (fetchDiscussionsInternal langs discussion_ids) [minBound..maxBound]
 
     let missed_discussions = S.fromList discussion_ids S.\\ M.keysSet discussion_map
 

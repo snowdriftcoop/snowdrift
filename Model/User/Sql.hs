@@ -16,7 +16,7 @@ exprUserIsTeamMember = exprHasRole TeamMember
 exprHasRole :: Role -> UserId -> SqlExpr (Value ProjectId) -> SqlExpr (Value Bool)
 exprHasRole role user_id project_id =
     exists $
-    from $ \r -> do
+    from $ \r ->
     where_ $
         r ^. ProjectUserRoleProject  ==. project_id  &&.
         r ^. ProjectUserRoleUser     ==. val user_id &&.

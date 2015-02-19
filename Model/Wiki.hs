@@ -44,7 +44,7 @@ createWikiTranslationDB wiki_page_id language target project_id content user_id 
 
     lift $ insert_ $ WikiLastEdit wiki_page_id wiki_edit_id language
 
-    forM_ sources $ \ (source_edit_id, complete) -> do
+    forM_ sources $ \ (source_edit_id, complete) ->
         lift $ insert_ $ WikiTranslation wiki_edit_id source_edit_id complete
 
     tell [EWikiEdit wiki_edit_id wiki_edit wiki_target]

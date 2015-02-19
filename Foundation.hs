@@ -23,7 +23,7 @@ import           Control.Monad.Writer.Strict        (WriterT, runWriterT)
 import qualified Data.ByteString.Lazy.Char8         as LB
 import           Data.Char                          (isSpace)
 import           Data.Int                           (Int64)
-import           Data.Maybe                         (mapMaybe)
+import           Data.Maybe                         (mapMaybe, fromMaybe)
 import           Data.Monoid
 import           Data.Time
 import           Data.Text                          as T
@@ -230,7 +230,7 @@ instance YesodPersistRunner App where
 
 -- set which project in the site runs the site itself
 getSiteProject :: Handler (Entity Project)
-getSiteProject = maybe (error "No project has been defined as the owner of this website.") id <$>
+getSiteProject = fromMaybe (error "No project has been defined as the owner of this website.") <$>
     (getSiteProjectHandle >>= runYDB . getBy . UniqueProjectHandle)
 
 getSiteProjectHandle :: Handler Text
@@ -375,7 +375,7 @@ createUser ident passwd name email avatar nick = do
                 insertDefaultNotificationPrefs user_id
                 welcome_route <- getUrlRender
                             -- 'MonolingualWikiR' is deprecated.
-                            <*> (pure $ MonolingualWikiR "snowdrift" "welcome" [])
+                            <*> pure (MonolingualWikiR "snowdrift" "welcome" [])
                 let notif_text = Markdown $ T.unlines
                         [ "Thanks for registering!"
                         , "<br> Please read our [**welcome message**](" <>

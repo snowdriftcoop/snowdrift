@@ -153,7 +153,7 @@ notificationEventHandler AppConfig{..} (ENewPledge _ shares_pledged) = runSDB $ 
             (\ route -> T.concat
                  [ userDisplayName user_entity
                  , " pledged ["
-                 , T.pack $ show $ shares, " ", pluralShares shares
+                 , T.pack $ show shares, " ", pluralShares shares
                  , "](", route, ")"
                  ])
 
@@ -167,8 +167,8 @@ notificationEventHandler AppConfig{..} (EUpdatedPledge old_shares _ shares_pledg
             (\ route -> T.concat
                  [ userDisplayName user_entity
                  , (if old_shares > new_shares then " dropped " else " added ")
-                <> (T.pack $ show $ delta), " ", pluralShares delta
-                 , ", changing the total to [", T.pack $ show $ new_shares, " "
+                <> T.pack (show delta), " ", pluralShares delta
+                 , ", changing the total to [", T.pack $ show new_shares, " "
                  , pluralShares new_shares, "](", route, ")"
                  ])
 

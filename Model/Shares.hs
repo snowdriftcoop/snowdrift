@@ -56,7 +56,7 @@ pledgeField project_id = Field
         handlerToWidget $ setSession pledgeRenderKey $ T.pack $ show render_key
 
         let value = either (const 2) (\ (SharesPurchaseOrder s) -> s) v
-            hasValue = any (== value) list
+            hasValue = value `elem` list
             otherValue = if hasValue then "" else show value
 
         [whamlet|
@@ -122,7 +122,7 @@ pledgeForm project_id extra = do
     muser <- lift maybeAuthId
     shares <- case muser of
         Nothing -> return 0
-        Just user_id -> do
+        Just user_id ->
             fmap (sum . map unValue) $ lift $ runDB $ select $ from $ \ pledge -> do
                 where_ $ pledge ^. PledgeProject ==. val project_id
                     &&. pledge ^. PledgeUser ==. val user_id

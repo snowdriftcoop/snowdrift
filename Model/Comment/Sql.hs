@@ -84,14 +84,14 @@ exprCommentPostedBy user_id c = c ^. CommentUser ==. val user_id
 
 exprCommentViewedBy :: UserId -> ExprCommentCond
 exprCommentViewedBy user_id c = c ^. CommentId `in_`
-    (subList_select $
-     from $ \vc -> do
+    subList_select
+     (from $ \vc -> do
      where_ (vc ^. ViewCommentUser ==. val user_id)
      return (vc ^. ViewCommentComment))
 
 -- Is the root (earliest ancestor) of this comment posted by the given user?
 exprCommentRootPostedBy :: UserId -> ExprCommentCond
-exprCommentRootPostedBy user_id c = ((isNothing (c ^. CommentParent)) &&. c ^. CommentUser ==. val user_id) ||. c ^. CommentId `in_` sublist
+exprCommentRootPostedBy user_id c = (isNothing (c ^. CommentParent) &&. c ^. CommentUser ==. val user_id) ||. c ^. CommentId `in_` sublist
   where
     sublist = subList_select $ from $ \ (comment_ancestor `InnerJoin` root) -> do
         on_ $ root ^. CommentId ==. comment_ancestor ^. CommentAncestorAncestor
