@@ -132,6 +132,15 @@ getUserR user_id = do
         setTitle . toHtml $ "User Profile - " <> userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
         renderUser mviewer_id user_id user projects_and_roles
 
+postUserR :: UserId -> Handler Html
+postUserR user_id = do
+    void $ checkEditUser user_id
+    memail <- runDB $ fetchUserEmail user_id
+    case memail of
+        Nothing    -> alertDanger "No email address is associated with your account."
+        Just email -> startEmailVerification user_id email
+    redirect $ UserR user_id
+
 --------------------------------------------------------------------------------
 -- /#UserId/balance
 
@@ -348,8 +357,8 @@ getEditUserR user_id = do
         setTitle . toHtml $ "User Profile - " <> userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
         $(widgetFile "edit_user")
 
-postUserR :: UserId -> Handler Html
-postUserR user_id = do
+postEditUserR :: UserId -> Handler Html
+postEditUserR user_id = do
     viewer_id <- checkEditUser user_id
 
     ((result, _), _) <- runFormPost $ editUserForm Nothing

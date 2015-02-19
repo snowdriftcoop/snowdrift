@@ -49,7 +49,7 @@
 /u/#UserId/c/#CommentId/watch               WatchUserCommentR            GET POST
 /u/#UserId/c/#CommentId/unwatch             UnwatchUserCommentR          GET POST
 /u/#UserId/change-password                  UserChangePasswordR          GET POST
-/u/#UserId/edit                             EditUserR                    GET
+/u/#UserId/edit                             EditUserR                    GET POST
 /u/#UserId/elig                             UserEstEligibleR                 POST
 /u/#UserId/user-notifications               UserNotificationsR           GET POST
 /u/#UserId/pledges                          UserPledgesR                 GET
