@@ -6,7 +6,7 @@ module Import (module Import) where
 import           Foundation                    as Import
 import           Model                         as Import
 import           Model.Language                as Import
-import           Model.Comment.Internal        as Import
+import           Model.Comment.Internal        as Import hiding (TagName, TicketName)
 import           Model.Established.Internal    as Import
 import           Model.Role.Internal           as Import
 import           Model.SnowdriftEvent.Internal as Import

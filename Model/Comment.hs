@@ -71,10 +71,11 @@ module Model.Comment
 
 import Import
 
-import Model.Comment.Sql
-import Model.Discussion
-import Model.Notification
-import Model.User.Internal (sendPreferredNotificationDB)
+import qualified Model.Comment.Internal as Internal
+import           Model.Comment.Sql
+import           Model.Discussion
+import           Model.Notification
+import           Model.User.Internal (sendPreferredNotificationDB)
 
 import qualified Control.Monad.State                  as State
 import           Control.Monad.Writer.Strict          (tell)
@@ -377,23 +378,23 @@ fetchCommentsInDB comment_ids has_permission =
 deleteCommentDB :: CommentId -> DB ()
 deleteCommentDB = deleteCascade
 
-fetchTicketNamesDB :: CommentId -> DB [Text]
+fetchTicketNamesDB :: CommentId -> DB [Internal.TicketName]
 fetchTicketNamesDB comment_id =
-    fmap unwrapValues $
+    fmap (map Internal.TicketName . unwrapValues) $
     select $ from $ \t -> do
         where_ $ t ^. TicketComment ==. val comment_id
         return $ t ^. TicketName
 
-fetchTagNamesDB :: CommentId -> DB [Text]
+fetchTagNamesDB :: CommentId -> DB [Internal.TagName]
 fetchTagNamesDB comment_id =
-    fmap unwrapValues $
+    fmap (map Internal.TagName . unwrapValues) $
     select $ from $ \(t `InnerJoin` ct) -> do
         on_ $ t ^. TagId ==. ct ^. CommentTagTag
         where_ $ ct ^. CommentTagComment ==. val comment_id
         return $ t ^. TagName
 
-fetchTagIdsDB :: Text -> DB [TagId]
-fetchTagIdsDB tag_name =
+fetchTagIdsDB :: Internal.TagName -> DB [TagId]
+fetchTagIdsDB (Internal.TagName tag_name) =
     fmap unwrapValues $
     select $ from $ \t -> do
         where_ $ t ^. TagName ==. val tag_name
@@ -416,20 +417,20 @@ deleteTagDB comment_id tag_id = do
         delete $ from $ \t ->
             where_ $ t ^. TagId ==. val tag_id
 
-deleteTagsDB :: CommentId -> [Text] -> DB ()
+deleteTagsDB :: CommentId -> [Internal.TagName] -> DB ()
 deleteTagsDB comment_id tags =
     forM_ tags $ \tag -> do
         tag_ids <- fetchTagIdsDB tag
         forM_ tag_ids $ deleteTagDB comment_id
 
-deleteTicketDB :: CommentId -> Text -> SDB ()
-deleteTicketDB comment_id ticket_name = do
+deleteTicketDB :: CommentId -> Internal.TicketName -> SDB ()
+deleteTicketDB comment_id (Internal.TicketName ticket_name) = do
     lift $ delete $ from $ \t ->
         where_ $ t ^. TicketName    ==. val ticket_name
              &&. t ^. TicketComment ==. val comment_id
     userUnclaimCommentDB comment_id Nothing
 
-deleteTicketsDB :: CommentId -> [Text] -> SDB ()
+deleteTicketsDB :: CommentId -> [Internal.TicketName] -> SDB ()
 deleteTicketsDB comment_id = mapM_ $ deleteTicketDB comment_id
 
 -- | Edit a comment's text. If the comment was flagged, unflag it and send a
@@ -500,24 +501,26 @@ postApprovedCommentDB = postComment insertApprovedCommentDB
 postUnapprovedCommentDB :: UserId -> Maybe CommentId -> DiscussionId -> Markdown -> Visibility -> Language -> SDB CommentId
 postUnapprovedCommentDB = postComment insertUnapprovedCommentDB
 
-parseTickets :: Text -> [Text]
+parseTickets :: Text -> [Internal.TicketName]
 parseTickets =
-    filter (not . T.null) . map T.strip .
+    filter (\(Internal.TicketName ticket) -> not $ T.null ticket) .
+    map (Internal.TicketName . T.strip) .
     mapMaybe (T.stripPrefix "ticket:") . T.lines
 
-insertTicketsDB :: UTCTime -> CommentId -> [Text] -> DB ()
+insertTicketsDB :: UTCTime -> CommentId -> [Internal.TicketName] -> DB ()
 insertTicketsDB now comment_id tickets =
-    forM_ tickets $ \ticket ->
+    forM_ tickets $ \(Internal.TicketName ticket) ->
         insert_ $ Ticket now now ticket comment_id
 
-parseTags :: Text -> [Text]
+parseTags :: Text -> [Internal.TagName]
 parseTags =
-    nub . filter (not . T.null) . map T.strip . mconcat . map (T.splitOn ",") .
+    nub . filter (\(Internal.TagName tag) -> not $ T.null tag) .
+    map (Internal.TagName . T.strip) . mconcat . map (T.splitOn ",") .
     mapMaybe (T.stripPrefix "tags:") . T.lines
 
-insertTagsDB :: UserId -> CommentId -> [Text] -> DB ()
+insertTagsDB :: UserId -> CommentId -> [Internal.TagName] -> DB ()
 insertTagsDB user_id comment_id tags =
-    forM_ tags $ \tag -> do
+    forM_ tags $ \(Internal.TagName tag) -> do
         tag_id <- either entityKey id <$> insertBy (Tag tag)
         insert_ $ CommentTag comment_id tag_id user_id 1
 
