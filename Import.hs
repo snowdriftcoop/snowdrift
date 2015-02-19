@@ -6,7 +6,7 @@ module Import (module Import) where
 import           Foundation                    as Import
 import           Model                         as Import
 import           Model.Language                as Import
-import           Model.Comment.Internal        as Import
+import           Model.Comment.Internal        as Import hiding (TagName, TicketName)
 import           Model.Established.Internal    as Import
 import           Model.Role.Internal           as Import
 import           Model.SnowdriftEvent.Internal as Import
@@ -87,6 +87,9 @@ selectCount from_ =
     fmap (\[Value n] -> n) $
     select $ from_ >> return countRows
 
+selectExists :: SqlQuery a -> DB Bool
+selectExists query = selectCount query >>= \n -> return $ n > 0
+
 -- XXX: Will this always succeed?
 key :: PersistEntity record => PersistValue -> Key record
 key v = let Right k = keyFromValues [v] in k
@@ -98,9 +101,7 @@ newHash :: IO Text
 newHash = T.pack . fst . randomString 42 <$> newStdGen
 
 countMatches :: (a -> a -> Bool) -> a -> [a] -> Int
-countMatches p x xs = L.foldl' go 0 xs
-  where
-    go c t = if x `p` t then succ c else c
+countMatches p x = length . filter (p x)
 
 class Count a where
     getCount :: a -> Int64
