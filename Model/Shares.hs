@@ -5,6 +5,7 @@ module Model.Shares where
 import Import
 
 import System.Random (randomIO)
+import Data.String (fromString)
 import qualified Data.Text as T
 import qualified Data.Text.Read as T
 
@@ -43,8 +44,9 @@ pledgeField project_id = Field
         | otherwise = return $ parseValue x
 
     parseValue v =
-        let shares         = Right . Just . SharesPurchaseOrder
-            invalidInteger = Left . SomeMessage . MsgInvalidInteger
+        let shares           = Right . Just . SharesPurchaseOrder
+            invalidInteger i = Left $ SomeMessage $ fromString
+                "Pledge value must be an integer: " <> i
         in case T.decimal v of
             Right (a, "") -> shares a
             Right (a, bs) ->
