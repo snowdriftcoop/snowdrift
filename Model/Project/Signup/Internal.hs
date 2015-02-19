@@ -11,6 +11,7 @@ data ProjectSignupCategory = CreativeWriting
                            | HardwareDesign
                            | Journalism
                            | Music
+                           | OnlineService
                            | Research
                            | Software
                            | Video
