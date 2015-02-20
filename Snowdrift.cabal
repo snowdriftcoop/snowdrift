@@ -362,7 +362,8 @@ test-suite test
     build-depends: base
                  , Snowdrift
                  , yesod-markdown
-                 , yesod-test
+                 -- After 1.4.3, addNonce must be replaced with addToken
+                 , yesod-test < 1.4.3
                  , yesod
                  , persistent
                  , monad-logger

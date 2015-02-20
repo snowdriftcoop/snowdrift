@@ -22,7 +22,7 @@ blogSpecs = do
             let getAttrs = XML.elementAttributes . XML.documentRoot . HTML.parseLBS
 
             withStatus 303 True $ request $ do
-                addToken
+                addNonce
                 setMethod "POST"
                 let route' = maybe (Left route) Right $ M.lookup "action" $ getAttrs form
                 either setUrl setUrl route'
@@ -38,7 +38,7 @@ blogSpecs = do
             let getAttrs = XML.elementAttributes . XML.documentRoot . HTML.parseLBS
 
             withStatus 200 False $ request $ do
-                addToken
+                addNonce
                 setMethod "POST"
                 maybe (setUrl route) setUrl $ M.lookup "action" $ getAttrs form
 
