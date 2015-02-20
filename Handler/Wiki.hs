@@ -458,7 +458,8 @@ getNewWikiR project_handle language target = do
         projectInfoRequireEstablished project_handle
     (wiki_form, _) <- generateFormPost $ newWikiForm Nothing
     defaultLayout $ do
-        setTitle . toHtml $ projectName project <> " Wiki - New Page | Snowdrift.coop"
+        setTitle . toHtml $
+            projectName project <> " Wiki - New Page | Snowdrift.coop"
         $(widgetFile "new_wiki")
 
 
@@ -473,7 +474,13 @@ postNewWikiR project_handle language target = do
         FormSuccess content -> do
             lookupPostMode >>= \case
                 Just PostMode -> do
-                    runSDB (createWikiPageDB language target project_id content Normal user_id)
+                    runSDB
+                        (createWikiPageDB language
+                                          target
+                                          project_id
+                                          content
+                                          Normal
+                                          user_id)
 
                     alertSuccess "Created."
                     redirect $ WikiR project_handle language target
@@ -483,12 +490,25 @@ postNewWikiR project_handle language target = do
 
                     defaultLayout $ do
                         let wiki_page_id = key $ PersistInt64 (-1)
-                            edit = WikiEdit now user_id wiki_page_id language content (Just "page created")
+                            edit = WikiEdit now
+                                            user_id
+                                            wiki_page_id
+                                            language
+                                            content
+                                            (Just "page created")
 
-                        previewWidget form "create" $ renderWiki 0 project_handle language target False [] edit
+                        previewWidget form "create" $
+                            renderWiki 0
+                                       project_handle
+                                       language
+                                       target
+                                       False
+                                       []
+                                       edit
 
         FormMissing -> error "Form missing."
-        FormFailure msgs -> error $ "Error submitting form: " ++ T.unpack (T.concat msgs)
+        FormFailure msgs -> error $
+            "Error submitting form: " ++ T.unpack (T.concat msgs)
 
 --------------------------------------------------------------------------------
 -- /#language/#target/translate
