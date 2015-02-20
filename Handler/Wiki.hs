@@ -36,6 +36,23 @@ import           Yesod.Default.Config            (appRoot)
 --------------------------------------------------------------------------------
 -- Utility functions
 
+-- | Get the Project entity, requiring established users.
+projectInfoRequireEstablished :: Text -- ^ Project handle
+                              -> Handler (Entity User, Entity Project)
+projectInfoRequireEstablished project_handle = do
+    user@(Entity _ user') <- requireAuth
+
+    case userEstablished user' of
+        EstEstablished _ _ _ -> return ()
+        EstEligible _ _ -> permissionDenied $
+            "You must accept the honor agreement before you can create a new"
+            <> " wiki page"
+        EstUnestablished -> permissionDenied $
+            "You must be an established user to create a new wiki page"
+
+    project <- runYDB $ getBy404 $ UniqueProjectHandle project_handle
+    return (user, project)
+
 -- | Get the Project/WikiPage entities.
 pageInfo :: Text -> Language -> Text -> YDB (Entity Project, Entity WikiPage, Entity WikiTarget)
 pageInfo project_handle language target = do
@@ -437,8 +454,8 @@ getWikiEditR project_handle language target wiki_edit_id = do
 
 getNewWikiR :: Text -> Language -> Text -> Handler Html
 getNewWikiR project_handle language target = do
-    (_, Entity _ project, _) <-
-        pageInfoRequireEstablished project_handle language target
+    (_, Entity _ project) <-
+        projectInfoRequireEstablished project_handle
     (wiki_form, _) <- generateFormPost $ newWikiForm Nothing
     defaultLayout $ do
         setTitle . toHtml $ projectName project <> " Wiki - New Page | Snowdrift.coop"
@@ -447,8 +464,8 @@ getNewWikiR project_handle language target = do
 
 postNewWikiR :: Text -> Language -> Text -> Handler Html
 postNewWikiR project_handle language target = do
-    (Entity user_id _, Entity project_id _, _) <-
-        pageInfoRequireEstablished project_handle language target
+    (Entity user_id _, Entity project_id _) <-
+        projectInfoRequireEstablished project_handle
 
     now <- liftIO getCurrentTime
     ((result, _), _) <- runFormPost $ newWikiForm Nothing
