@@ -19,7 +19,7 @@ userSpecs = do
 
                 withStatus 303 True $ request $ do
                     setUrl UserCreateR
-                    addNonce
+                    addToken
                     setMethod "POST"
                     byLabel "Handle (private):" (username user)
                     byLabel "Passphrase:" (password user)

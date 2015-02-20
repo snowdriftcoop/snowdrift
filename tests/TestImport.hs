@@ -194,7 +194,7 @@ postComment route stmts = [marked|
     let getAttrs = XML.elementAttributes . XML.documentRoot . HTML.parseLBS
 
     withStatus 303 True $ request $ do
-        addNonce
+        addToken
         setMethod "POST"
         maybe (setUrl route) setUrl (M.lookup "action" $ getAttrs form)
         addPostParam "mode" "post"
@@ -233,14 +233,14 @@ newWiki project language page content = do
     get200 $ NewWikiR project language page
 
     withStatus 200 False $ request $ do
-        addNonce
+        addToken
         setUrl $ NewWikiR project language page
         setMethod "POST"
         byLabel "Page Content" content
         addPostParam "mode" "preview"
 
     withStatus 303 False $ request $ do
-        addNonce
+        addToken
         setUrl $ NewWikiR project language page
         setMethod "POST"
         byLabel "Page Content" content
@@ -263,7 +263,7 @@ editWiki project language page content comment = do
     let last_edit = entityVal wiki_last_edit
 
     withStatus 200 False $ request $ do
-        addNonce
+        addToken
         setUrl $ WikiR project language page
         setMethod "POST"
         byLabel "Page Content" content
@@ -272,7 +272,7 @@ editWiki project language page content comment = do
         addPostParam "mode" "preview"
 
     withStatus 303 False $ request $ do
-        addNonce
+        addToken
         setUrl $ WikiR project language page
         setMethod "POST"
         byLabel "Page Content" content
@@ -285,7 +285,7 @@ establish user_id = [marked|
     get200 $ UserR user_id
 
     withStatus 303 False $ request $ do
-        addNonce
+        addToken
         setMethod "POST"
         setUrl $ UserEstEligibleR user_id
         byLabel "Reason" "testing"
@@ -341,7 +341,7 @@ rethreadComment rethread_route parent_route = [marked|
     get200 rethread_route
 
     withStatus 303 True $ request $ do
-        addNonce
+        addToken
         setMethod "POST"
         setUrl rethread_route
         byLabel "New Parent Url" parent_route
@@ -354,7 +354,7 @@ flagComment route = [marked|
     get200 route
 
     withStatus 303 True $ request $ do
-        addNonce
+        addToken
         setMethod "POST"
         setUrl route
         addPostParam "f1" "1"
@@ -367,7 +367,7 @@ editComment route = [marked|
     get200 route
 
     withStatus 303 True $ request $ do
-        addNonce
+        addToken
         setMethod "POST"
         setUrl route
         byLabel "Edit" "testing"
@@ -388,7 +388,7 @@ newBlogPost page = [marked|
     get200 route
 
     withStatus 303 False $ request $ do
-        addNonce
+        addToken
         setMethod "POST"
         setUrl route
         byLabel "Title for this blog post" "testing"
@@ -409,7 +409,7 @@ pledge shares = [marked|
         addGetParam "f1" shares
 
     withStatus 303 False $ request $ do
-        addNonce
+        addToken
         setMethod "POST"
         setUrl route
         addPostParam "f1" shares
