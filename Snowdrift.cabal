@@ -122,7 +122,7 @@ library
 
     if flag(dev) || flag(library-only)
         cpp-options:   -DDEVELOPMENT
-        ghc-options:   -Wall -O0 -fhpc
+        ghc-options:   -Wall -O0 -fobject-code
     else
         ghc-options:   -Werror -Wall -O2
 
