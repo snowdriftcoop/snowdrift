@@ -33,7 +33,7 @@ Essential build instructions
 ----------------------------
 
 Note: our code is mirrored at
-[GitHub](https://github.com/dlthomas/snowdrift) (which is popular but proprietary)
+[GitHub](https://github.com/snowdriftcoop/snowdrift) (which is popular but proprietary)
 and [Gitorious](https://gitorious.org/snowdrift/snowdrift) (which is FLO, licensed AGPL, but less popular).
 
 **You really should read our full [guide to our code](GUIDE.md)
