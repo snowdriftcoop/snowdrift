@@ -10,6 +10,8 @@ import Model.Language
 
 wikiSpecs :: Spec
 wikiSpecs =
+    -- FIXME: This only works because it uses leftover database state from
+    -- earlier tests.
     ydescribe "wiki" $ do
 
         yit "Unestablished user can't create" $ [marked|
