@@ -167,6 +167,7 @@
 /p/#Text/blog/#Text/c/#CommentId/watch          WatchBlogPostCommentR           GET POST
 /p/#Text/blog/#Text/c/#CommentId/unwatch        UnwatchBlogPostCommentR         GET POST
 
+/project-signup ProjectSignupR GET POST
 
 
 /c/#CommentId            CommentDirectLinkR GET      DELETE

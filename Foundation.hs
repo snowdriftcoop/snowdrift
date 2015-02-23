@@ -99,8 +99,8 @@ mkYesodData "App" $(parseRoutesFile "config/routes")
 
 type Form x = Html -> MForm (HandlerT App IO) (FormResult x, Widget)
 
-licenseText :: LB.ByteString
-licenseText = E.encodeUtf8 $ renderJavascriptUrl (\ _ _ -> T.empty) [julius|
+licenseNotice :: LB.ByteString
+licenseNotice = E.encodeUtf8 $ renderJavascriptUrl (\ _ _ -> T.empty) [julius|
     /*
      @licstart  The following is the entire license notice for the JavaScript code in this page.
 
@@ -206,8 +206,8 @@ instance Yesod App where
         if LB.all isSpace content
          then return Nothing
          else
-            let license = either Left (Right . LB.append licenseText)
-             in addStaticContentExternal (license . minifym) base64md5 Settings.staticDir (StaticR . flip StaticRoute []) extension mime (LB.append licenseText content)
+            let license = either Left (Right . LB.append licenseNotice)
+             in addStaticContentExternal (license . minifym) base64md5 Settings.staticDir (StaticR . flip StaticRoute []) extension mime (LB.append licenseNotice content)
 
     -- Place Javascript at bottom of the body tag so the rest of the page loads first
     jsLoader _ = BottomOfBody
