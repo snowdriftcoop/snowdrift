@@ -248,8 +248,11 @@ postWikiR project_handle target_language target = do
                         return $ we ^. WikiEditLanguage
 
                     (form, _) <- generateFormPost $ editWikiForm prev_edit_id content (Just comment)
-
-                    defaultLayout $ previewWidget form "update" $
+                    defaultLayout $ previewWidgetWithAgreement
+                        ("By clicking the \"update\" button, you agree to irrevocably "
+                      <> "release your contribution under the CC-BY-SA 4.0 License. "
+                      <> "You agree that a hyperlink or URL is sufficient attribution under the Creative Commons license.")
+                        form "update" $
                         renderWiki 0 project_handle target_language target False translations $
                             WikiEdit now user_id page_id edit_language content (Just comment)
 
