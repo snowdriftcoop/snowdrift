@@ -9,7 +9,8 @@ import qualified Data.Text                  as T
 import           Data.Text.Encoding
 import           Text.Regex.TDFA
 import           Text.Regex.TDFA.ByteString
-import           Yesod.Markdown             (markdownToHtml)
+import           Text.Pandoc
+import           Yesod.Markdown
 
 
 -- TODO: we should probably put together some standard sets of these transforms for use in various places, rather than assembling ad-hoc
@@ -116,7 +117,10 @@ renderMarkdownWith transform (Markdown markdown) = do
 
     ls' <- mapM (transform <=< linkTickets) ls
 
-    return $ markdownToHtml (Markdown (T.unlines ls'))
+    return $ writePandoc yesodDefaultWriterOptions
+        { writerEmailObfuscation = NoObfuscation
+        } $ parseMarkdown yesodDefaultReaderOptions
+        $ Markdown $ T.unlines ls'
 
 markdownWidget :: Markdown -> Widget
 markdownWidget = markdownWidgetWith return
