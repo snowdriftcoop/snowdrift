@@ -417,9 +417,11 @@ postUserEstEligibleR user_id = do
 
 getUserVerifyEmailR :: UserId -> Text -> Handler Html
 getUserVerifyEmailR user_id hash = do
-    ver_uri     <- getUrlRender <*> (pure $ UserVerifyEmailR user_id hash)
-    mver_email  <- runDB $ fetchVerEmail ver_uri user_id
-    muser_email <- runDB $ fetchUserEmail user_id
+    void $ checkEditUser user_id
+    ver_uri <- getUrlRender <*> (pure $ UserVerifyEmailR user_id hash)
+    (mver_email, muser_email) <- runDB $ (,)
+        <$> fetchVerEmail ver_uri user_id
+        <*> fetchUserEmail user_id
     if | Maybe.isNothing mver_email -> notFound
        | Maybe.isNothing muser_email -> do
              alertDanger $ "Failed to verify the email address since none is "
