@@ -5,6 +5,7 @@ module Model.User
     , SetPassword (..)
     -- Utility functions
     , anonymousUser
+    , deletedUser
     , curUserIsEligibleEstablish
     , deleteArchivedNotificationsDB
     , deleteNotificationDB
@@ -24,6 +25,10 @@ module Model.User
     -- Database actions
     , archiveNotificationsDB
     , deleteFromEmailVerification
+    , deleteCommentsDB
+    , deleteBlogPostsDB
+    , deleteWikiEditsDB
+    , deleteUserDB
     , eligEstablishUserDB
     , establishUserDB
     , fetchAllUserRolesDB
@@ -33,6 +38,7 @@ module Model.User
     , fetchNumUnviewedWikiEditsOnProjectDB
     , fetchUserArchivedNotificationsDB
     , fetchUserEmail
+    , fetchUserEmailVerified
     , fetchUserNotificationsDB
     , fetchUserNotificationPrefDB
     , fetchUserProjectsAndRolesDB
@@ -91,6 +97,11 @@ import           Control.Monad.Trans.Reader (ReaderT)
 -- logged in, such as posting to /contact for a project
 anonymousUser :: UserId
 anonymousUser = key $ PersistInt64 (-1)
+
+-- When a user deletes the account, all their comments are assigned to
+-- this user.
+deletedUser :: UserId
+deletedUser = key $ PersistInt64 (-2)
 
 type UserMap = Map UserId User
 
@@ -192,6 +203,30 @@ fromEmailVerification user_id =
 deleteFromEmailVerification :: MonadIO m => UserId -> SqlPersistT m ()
 deleteFromEmailVerification user_id =
     delete $ fromEmailVerification user_id
+
+replaceWithDeletedUser
+    :: (PersistEntity val, PersistEntityBackend val ~ SqlBackend)
+    => EntityField val UserId -> UserId -> DB ()
+replaceWithDeletedUser con user_id =
+    update $ \c -> do
+        set c $ [con =. val deletedUser]
+        where_ $ c ^. con ==. val user_id
+
+deleteCommentsDB :: UserId -> DB ()
+deleteCommentsDB = replaceWithDeletedUser CommentUser
+
+deleteBlogPostsDB :: UserId -> DB ()
+deleteBlogPostsDB = replaceWithDeletedUser BlogPostUser
+
+deleteWikiEditsDB :: UserId -> DB ()
+deleteWikiEditsDB = replaceWithDeletedUser WikiEditUser
+
+deleteUserDB :: UserId -> DB ()
+deleteUserDB user_id = do
+    deleteCommentsDB user_id
+    deleteBlogPostsDB user_id
+    deleteWikiEditsDB user_id
+    deleteCascade user_id
 
 fetchVerEmail :: Text -> UserId -> DB (Maybe Text)
 fetchVerEmail ver_uri user_id = do

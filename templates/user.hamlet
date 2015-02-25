@@ -4,6 +4,9 @@ $if Just user_id == mviewer_id
             <a href="@{EditUserR user_id}">
                 edit profile
         <div .user-pref>
+            <a href="@{DeleteUserR user_id}">
+                delete account
+        <div .user-pref>
             <a href="@{UserChangePasswordR user_id}">
                 change passphrase
         <div .user-pref>
