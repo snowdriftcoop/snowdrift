@@ -54,6 +54,14 @@ EmailVerification
 
     UniqueEmailVerification user email uri
 
+DeleteConfirmation
+    user  UserId
+    email Text
+    uri   Text
+    sent  Bool   default=false  -- for the email daemon
+
+    UniqueDeleteConfirmation user email uri
+
 -- A single notification preference. If some NotificationType does not appear in any
 -- row for a particular user, that means the user does not wish to be notified
 -- of those notifications.

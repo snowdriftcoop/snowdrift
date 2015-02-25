@@ -326,9 +326,10 @@ selectUnsentResetPassword =
         return ( rp ^. ResetPasswordUser
                , rp ^. ResetPasswordEmail
                , rp ^. ResetPasswordUri )
-  where
-    -- 'nub' is O(n^2).
-    distinctFirst = nubBy ((==) `Function.on` (\(x,_,_) -> x))
+
+-- XXX: 'nub' is O(n^2).
+distinctFirst :: [(UserId, a, b)] -> [(UserId, a, b)]
+distinctFirst = nubBy ((==) `Function.on` (\(x,_,_) -> x))
 
 markAsSentResetPassword :: MonadIO m => UserId -> SqlPersistT m ()
 markAsSentResetPassword user_id =
@@ -347,6 +348,36 @@ sendResetPassword sendmail_exec sendmail_file dbConf poolConf notif_email
         notif_email user_email "Snowdrift.coop password reset" content
         (markAsSentResetPassword user_id)
         ("sending the password reset message to " <> user_email <> " failed; " <>
+         "will try again later")
+
+selectUnsentDeleteConfirmation :: ReaderT SqlBackend (ResourceT (LoggingT IO))
+                                  [(UserId, Email, Text)]
+selectUnsentDeleteConfirmation =
+    fmap (distinctFirst . map unwrapValues) $
+    select $ from $ \dc -> do
+        where_ $ not_ $ dc ^. DeleteConfirmationSent
+        return ( dc ^. DeleteConfirmationUser
+               , dc ^. DeleteConfirmationEmail
+               , dc ^. DeleteConfirmationUri )
+
+markAsSentDeleteConfirmation :: MonadIO m => UserId -> SqlPersistT m ()
+markAsSentDeleteConfirmation user_id =
+    update $ \dc -> do
+        set dc [DeleteConfirmationSent =. val True]
+        where_ $ dc ^. DeleteConfirmationUser ==. val user_id
+
+sendDeleteConfirmation :: ( MonadBaseControl IO m, MonadLogger m, MonadIO m)
+                       => FileName -> FileName -> PostgresConf -> ConnectionPool
+                       -> Email -> UserId -> Email -> Text -> m ()
+sendDeleteConfirmation sendmail_exec sendmail_file dbConf poolConf notif_email
+                       user_id user_email uri = do
+    let content = "Please open this link to delete your account: " <> uri
+    handleSendmail sendmail_exec sendmail_file dbConf poolConf
+        ("sending a delete confirmation message to " <> user_email <> "\n" <>
+         content)
+        notif_email user_email "Snowdrift.coop delete confirmation" content
+        (markAsSentDeleteConfirmation user_id)
+        ("sending the delete confirmation message to " <> user_email <> " failed; " <>
          "will try again later")
 
 withLogging :: MonadIO m => LoggingT m a -> m a
@@ -397,3 +428,7 @@ main = withLogging $ do
         forM_ resets $ \(user_id, user_email, uri) ->
             sendResetPassword sendmail_exec sendmail_file dbConf poolConf
                 notif_email user_email user_id uri
+        confirms <- runPool dbConf selectUnsentDeleteConfirmation poolConf
+        forM_ confirms $ \(user_id, user_email, uri) ->
+            sendDeleteConfirmation sendmail_exec sendmail_file dbConf poolConf
+                notif_email user_id user_email uri

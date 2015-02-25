@@ -50,6 +50,7 @@
 /u/#UserId/c/#CommentId/unwatch             UnwatchUserCommentR          GET POST
 /u/#UserId/change-password                  UserChangePasswordR          GET POST
 /u/#UserId/delete                           DeleteUserR                  GET POST
+/u/#UserId/confirm-delete/#Text             UserConfirmDeleteR           GET POST
 /u/#UserId/edit                             EditUserR                    GET
 /u/#UserId/elig                             UserEstEligibleR                 POST
 /u/#UserId/user-notifications               UserNotificationsR           GET POST

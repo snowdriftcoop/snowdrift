@@ -1,5 +1,9 @@
-Delete your account by pressing the button below.
-<br>
-<span .text-warning>Note that we will not be able to restore it.
+<h1>Delete Account
+
+We will delete your profile but keep your submissions (like comments
+and wiki edits). Since the process is <span class="text-warning">irreversible</span>,
+we need to send you a confirmation email first. In order to do that, click
+on the button below.
+
 <form method=POST action=@{DeleteUserR user_id}>
-    <button>delete
+    <button>confirm

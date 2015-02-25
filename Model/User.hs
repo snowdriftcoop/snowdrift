@@ -38,6 +38,7 @@ module Model.User
     , fetchNumUnviewedWikiEditsOnProjectDB
     , fetchUserArchivedNotificationsDB
     , fetchUserEmail
+    , fetchUserEmailVerified
     , fetchUserNotificationsDB
     , fetchUserNotificationPrefDB
     , fetchUserProjectsAndRolesDB

@@ -638,6 +638,7 @@ getMonolingualWikiR = redirectPolylingualWiki $ \case
     Just (UserChangePasswordR _)                -> error "the impossible happened"
     Just (EditUserR _)                          -> error "the impossible happened"
     Just (DeleteUserR _)                        -> error "the impossible happened"
+    Just (UserConfirmDeleteR _ _)               -> error "the impossible happened"
     Just (UserEstEligibleR _)                   -> error "the impossible happened"
     Just (UserNotificationsR _)                 -> error "the impossible happened"
     Just (ProjectNotificationsR _ _)            -> error "the impossible happened"
