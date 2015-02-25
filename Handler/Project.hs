@@ -495,6 +495,8 @@ getProjectFeedR project_handle = do
         provideRep $ atomFeed feed
         provideRep $ rssFeed feed
         provideRep $ defaultLayout $ do
+            setTitle . toHtml $
+                projectName project <> " - Feed | Snowdrift.coop"
             $(widgetFile "project_feed")
             toWidget $(cassiusFile "templates/comment.cassius")
 
