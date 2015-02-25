@@ -10,7 +10,7 @@ import           Model.Currency
 import           Model.Comment.ActionPermissions
 import           Model.Notification.Internal (NotificationType (..))
 import           Model.Role
-import           Model.ResetPassword (fromResetPassword, deleteFromResetPassword)
+import           Model.ResetPassword (deleteFromResetPassword)
 import           Model.Transaction
 import           Model.User
 import           Model.Comment.Sql
@@ -426,9 +426,11 @@ postUserEstEligibleR user_id = do
 
 getUserVerifyEmailR :: UserId -> Text -> Handler Html
 getUserVerifyEmailR user_id hash = do
-    ver_uri     <- getUrlRender <*> (pure $ UserVerifyEmailR user_id hash)
-    mver_email  <- runDB $ fetchVerEmail ver_uri user_id
-    muser_email <- runDB $ fetchUserEmail user_id
+    void $ checkEditUser user_id
+    ver_uri <- getUrlRender <*> (pure $ UserVerifyEmailR user_id hash)
+    (mver_email, muser_email) <- runDB $ (,)
+        <$> fetchVerEmail ver_uri user_id
+        <*> fetchUserEmail user_id
     if | Maybe.isNothing mver_email -> notFound
        | Maybe.isNothing muser_email -> do
              alertDanger $ "Failed to verify the email address since none is "
@@ -640,25 +642,33 @@ postProjectNotificationsR user_id project_id = do
 --------------------------------------------------------------------------------
 -- /#UserId/reset-password/#Text
 
+checkResetPassword :: UserId -> Text -> Handler User
+checkResetPassword user_id hash = do
+    uri    <- getUrlRender <*> (pure $ UserResetPasswordR user_id hash)
+    memail <- runDB $ fetchUserEmail user_id
+    case memail of
+        Nothing    -> notFound
+        Just email -> do
+            runYDB $ do
+                -- Check whether the hash is in the DB.
+                void $ getBy404 $ UniquePasswordReset user_id email uri
+                get404 user_id
+
 getUserResetPasswordR :: UserId -> Text -> Handler Html
 getUserResetPasswordR user_id hash = do
-    n <- runDB $ selectCount $ fromResetPassword user_id
-    if n == 0
-        then notFound
-        else do
-            user <- runYDB $ get404 user_id
-            (form, enctype) <- generateFormPost setPasswordForm
-            defaultLayout $ do
-                setTitle . toHtml $ "Set Passphrase - " <>
-                    userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
-                $(widgetFile "set_password")
+    user <- checkResetPassword user_id hash
+    (form, enctype) <- generateFormPost setPasswordForm
+    defaultLayout $ do
+        setTitle . toHtml $ "Set Passphrase - " <>
+            userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
+        $(widgetFile "set_password")
 
 postUserResetPasswordR :: UserId -> Text -> Handler Html
 postUserResetPasswordR user_id hash = do
+    user <- checkResetPassword user_id hash
     ((result, form), enctype) <- runFormPost setPasswordForm
     case result of
         FormSuccess SetPassword {..} -> do
-            user <- runYDB $ get404 user_id
             resetPassword user_id user password password' $
                 UserResetPasswordR user_id hash
         _ -> do
