@@ -31,12 +31,11 @@
         <div .panel-header>
             <H1 .text-center>
                 #{projectName project}
+            <H2 .text-center>
+                <small>
+                    <^{description>
         <div .panel-body>
             <div .row>
-                <div .col-md-10>
-                    <H2 .text-left>
-                        <small>
-                            ^{description}
                 <div .col-md-2>
                     $if isJust mviewer_id && isJust maybe_project_id
                         $with project_id <- fromJust maybe_project_id
