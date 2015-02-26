@@ -43,7 +43,7 @@ renderProject maybe_project_id project mviewer_id is_watching pledges pledge = d
         shares = sum pledges
         project_value = share_value $* fromIntegral shares
         discussion = DiscussionOnProject $ Entity (fromMaybe (key $ PersistInt64 (-1)) maybe_project_id) project
-        description = markdownWidgetWith (fixLinks (projectHandle project) discussion) $ projectDescription project
+        description = markdownWidgetWith (fixLinks (projectHandle project) discussion) $ projectBlurb project
 
         maybe_shares = pledgeShares . entityVal <$> pledge
 
@@ -123,7 +123,9 @@ editProjectForm :: Maybe (Project, [Text]) -> [Entity Image] -> Form UpdateProje
 editProjectForm project images =
     renderBootstrap3 BootstrapBasicForm $ UpdateProject
         <$> areq' textField "Project Name" (projectName . fst <$> project)
-        <*> areq' snowdriftMarkdownField "Description" (projectDescription . fst <$> project)
+        <*> areq' textField "Description" (projectDescription . fst <$> project)
+        <*> areq' snowdriftMarkdownField "Blurb" (projectBlurb . fst <$> project)
+        -- <*> areq' snowdriftMarkdownField "Description" (projectDescription . fst <$> project)
         <*> (maybe [] (map T.strip . T.splitOn ",") <$> aopt' textField "Tags" (Just . T.intercalate ", " . snd <$> project))
         <*> aopt' textField "GitHub Repository (to show GH tickets here at Snowdrift.coop)" (projectGithubRepo . fst <$> project)
         <*> aopt' (imageSelectField images) "Select Image" (projectLogo . fst <$> project)

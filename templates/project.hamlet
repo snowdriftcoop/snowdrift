@@ -1,5 +1,5 @@
 <div .row>
-    <div .col-md-2>
+    <div .col-xs-2>
         <figure>
             <img src=@{ImageR $ fromMaybe "DefaultLogo" (projectLogo project)}>
         <ul .list-group>
@@ -27,16 +27,16 @@
                 <a href=@{VolunteerR $ projectHandle project}>Volunteer
             <li .list-group-item>
                 <a href=@{WikiPagesR $ projectHandle project}>Wiki
-    <div .col-md-10 .panel>
+    <div .col-xs-10 .panel>
         <div .panel-header>
             <H1 .text-center>
                 #{projectName project}
             <H2 .text-center>
                 <small>
-                    <^{description>
+                    #{projectDescription project}
         <div .panel-body>
             <div .row>
-                <div .col-md-2>
+                <div .col-xs-2>
                     $if isJust mviewer_id && isJust maybe_project_id
                         $with project_id <- fromJust maybe_project_id
                             $if is_watching
@@ -46,9 +46,46 @@
                                 <form method=POST action=@{WatchProjectR project_id}>
                                     <input type=submit value="watch">
             <div .row>
-                <div .col-md-6>
-                    This space reserved for future project blurb. 
-                <div .col-md-6>
+                <div .col-xs-6>
+                    ^{description}
+                <div .col-xs-6>
+                    <table>
+                        <tr>
+                            <th> Current patrons
+                        <tr>
+                            <td>
+                                $maybe _ <- maybe_project_id
+                                    <a href="@{ProjectPatronsR $ projectHandle project}">
+                                    _{MsgPatrons users}
+                                $nothing
+                                    _{MsgPatrons users}
+                            <tr>
+                                <td>
+                                    _{MsgShares shares}
+                            <tr>
+                                <td>
+                                    #{show share_value}&nbsp;per&nbsp;share
+                            <tr>
+                                <td>
+                                    Total: #{show project_value}&nbsp;per&nbsp;month
+                    <hr>
+                    <div .row>
+                        <div .col-xs-6>
+                        <div .col-xs-6>
+                            <table>
+                                <tr>
+                                    <th> History
+                                $maybe (last, year, total) <- amounts
+                                    <tr>
+                                        <td>
+                                            #{last} on the last payday
+                                    <tr>
+                                        <td>
+                                            #{year} in the past year
+                                    <tr>
+                                        <td>
+                                            #{total} total
+                    <br>
                     <div style="border-width: 2px; border-style: solid; border-color: red;" .text-center>
                         <em>
                             currently
@@ -65,39 +102,3 @@
                     $nothing
                         ^{update_shares}
 
-                    <hr>
-                    <div .row>
-                        <div .col-sm-6>
-                            <table>
-                                <tr>
-                                    <th> Current patrons
-                                <tr>
-                                    <td>
-                                        $maybe _ <- maybe_project_id
-                                            <a href="@{ProjectPatronsR $ projectHandle project}">
-                                                _{MsgPatrons users}
-                                        $nothing
-                                            _{MsgPatrons users}
-                                <tr>
-                                    <td>
-                                        _{MsgShares shares}
-                                <tr>
-                                    <td>
-                                        #{show share_value}&nbsp;per&nbsp;share
-                                <tr>
-                                    <td>
-                                        Total: #{show project_value}&nbsp;per&nbsp;month
-                        <div .col-sm-6>
-                            <table>
-                                <tr>
-                                    <th> History
-                                $maybe (last, year, total) <- amounts
-                                    <tr>
-                                        <td>
-                                            #{last} on the last payday
-                                    <tr>
-                                        <td>
-                                            #{year} in the past year
-                                    <tr>
-                                        <td>
-                                            #{total} total

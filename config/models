@@ -123,7 +123,8 @@ Project
     createdTs   UTCTime
     name        Text
     handle      Text
-    description Markdown
+    description Text
+    blurb       Markdown
     account     AccountId
     shareValue  Milray
     lastPayday  PaydayId     Maybe
@@ -185,7 +186,8 @@ ProjectUpdate
     updatedTs   UTCTime
     project     ProjectId
     author      UserId
-    description MarkdownDiff
+    description Text
+    blurb       MarkdownDiff
 
 ProjectLastUpdate
     project ProjectId
