@@ -10,6 +10,7 @@ import           Data.Text.Encoding
 import           Text.Regex.TDFA
 import           Text.Regex.TDFA.ByteString
 import           Text.Pandoc
+import           Yesod.Markdown
 
 
 -- TODO: we should probably put together some standard sets of these transforms for use in various places, rather than assembling ad-hoc
@@ -116,11 +117,10 @@ renderMarkdownWith transform (Markdown markdown) = do
 
     ls' <- mapM (transform <=< linkTickets) ls
 
-    return $ writeHtml def
+    return $ writePandoc yesodDefaultWriterOptions
         { writerEmailObfuscation = NoObfuscation
-        , writerHtml5 = True
-        } $ readMarkdown def $ T.unpack $ T.unlines ls'
-
+        } $ parseMarkdown yesodDefaultReaderOptions
+        $ Markdown $ T.unlines ls'
 
 markdownWidget :: Markdown -> Widget
 markdownWidget = markdownWidgetWith return
