@@ -129,7 +129,8 @@ getUserR user_id = do
                     <> "you will not be able to receive email notifications."
 
     defaultLayout $ do
-        setTitle . toHtml $ "User Profile - " <> userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
+        setTitle $ toHtml $ "User Profile - " <>
+            userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
         renderUser mviewer_id user_id user projects_and_roles
 
 postUserR :: UserId -> Handler Html
@@ -190,7 +191,8 @@ getUserBalanceR' user_id = do
     (add_funds_form, _) <- generateFormPost addTestCashForm
 
     defaultLayout $ do
-        setTitle . toHtml $ "User Balance - " <> userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
+        setTitle $ toHtml $ "User Balance - " <>
+            userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
         $(widgetFile "user_balance")
 
 postUserBalanceR :: UserId -> Handler Html
@@ -269,7 +271,8 @@ getUserDiscussionR' user_id get_root_comments = do
     (comment_form, _) <- generateFormPost commentNewTopicForm
 
     defaultLayout $ do
-        setTitle . toHtml $ userDisplayName (Entity user_id user) <> " User Discussion | Snowdrift.coop"
+        setTitle $ toHtml $ userDisplayName (Entity user_id user) <>
+            " User Discussion | Snowdrift.coop"
         $(widgetFile "user_discuss")
 
 --------------------------------------------------------------------------------
@@ -306,7 +309,7 @@ getUserChangePasswordR user_id = do
     user <- runYDB $ get404 user_id
     (form, enctype) <- generateFormPost changePasswordForm
     defaultLayout $ do
-        setTitle . toHtml $ "Change Passphrase - " <>
+        setTitle $ toHtml $ "Change Passphrase - " <>
             userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
         $(widgetFile "change_password")
 
@@ -345,6 +348,70 @@ postUserChangePasswordR user_id = do
             defaultLayout $(widgetFile "change_password")
 
 --------------------------------------------------------------------------------
+-- /#UserId/delete
+
+startDeleteConfirmation :: UserId -> Handler ()
+startDeleteConfirmation user_id = do
+    hash        <- liftIO newHash
+    confirm_uri <- getUrlRender <*> (pure $ UserConfirmDeleteR user_id hash)
+    muser_email <- runDB $ fetchUserEmailVerified user_id
+    case muser_email of
+        Nothing -> alertDanger $
+            "Cannot continue without a verified email address. " <>
+            "Please add one to your profile and verify it."
+        Just user_email -> do
+            runDB $ insert_ $
+                DeleteConfirmation user_id user_email confirm_uri False
+            alertSuccess $
+                "Confirmation email has been sent to " <> user_email <> "."
+
+getDeleteUserR :: UserId -> Handler Html
+getDeleteUserR user_id = do
+    void $ checkEditUser user_id
+    user <- runYDB $ get404 user_id
+    defaultLayout $ do
+        setTitle $ toHtml $ "Delete Account - " <>
+            userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
+        $(widgetFile "delete_user")
+
+postDeleteUserR :: UserId -> Handler Html
+postDeleteUserR user_id = do
+    void $ checkEditUser user_id
+    startDeleteConfirmation user_id
+    redirect $ UserR user_id
+
+--------------------------------------------------------------------------------
+-- /#UserId/confirm-delete/#Text
+
+checkConfirmDelete :: UserId -> Text -> Handler User
+checkConfirmDelete user_id hash = do
+    confirm_uri <- getUrlRender <*> (pure $ UserConfirmDeleteR user_id hash)
+    muser_email <- runDB $ fetchUserEmail user_id
+    case muser_email of
+        Nothing    -> notFound
+        Just email -> runYDB $ do
+            -- Check whether the hash is in the DB.
+            void $ getBy404 $ UniqueDeleteConfirmation user_id email confirm_uri
+            get404 user_id
+
+getUserConfirmDeleteR :: UserId -> Text -> Handler Html
+getUserConfirmDeleteR user_id hash = do
+    void $ checkEditUser user_id
+    user <- checkConfirmDelete user_id hash
+    defaultLayout $ do
+        setTitle $ toHtml $ "Delete Account - " <>
+            userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
+        $(widgetFile "user_confirm_delete")
+
+postUserConfirmDeleteR :: UserId -> Text -> Handler Html
+postUserConfirmDeleteR user_id hash = do
+    void $ checkEditUser user_id
+    void $ checkConfirmDelete user_id hash
+    runDB $ deleteUserDB user_id
+    alertSuccess "Successfully deleted your account."
+    redirect HomeR
+
+--------------------------------------------------------------------------------
 -- /#UserId/edit
 
 getEditUserR :: UserId -> Handler Html
@@ -354,7 +421,8 @@ getEditUserR user_id = do
 
     (form, enctype) <- generateFormPost $ editUserForm (Just user)
     defaultLayout $ do
-        setTitle . toHtml $ "User Profile - " <> userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
+        setTitle $ toHtml $ "User Profile - " <>
+            userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
         $(widgetFile "edit_user")
 
 postEditUserR :: UserId -> Handler Html
@@ -458,8 +526,8 @@ getUserPledgesR user_id = do
     _ <- requireAuthId
     user <- runYDB $ get404 user_id
     defaultLayout $ do
-        setTitle . toHtml $
-            "User Pledges - " <> userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
+        setTitle $ toHtml $ "User Pledges - " <>
+            userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
 
         $(widgetFile "user_pledges")
 
@@ -526,8 +594,8 @@ getUserTicketsR user_id = do
             return (t, u, wt, p ^. ProjectHandle)
 
     defaultLayout $ do
-        setTitle . toHtml $
-            "User Tickets - " <> userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
+        setTitle $ toHtml $ "User Tickets - " <>
+            userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
 
         $(widgetFile "user_tickets")
 
@@ -551,7 +619,7 @@ getUserNotificationsR user_id = do
         userNotificationsForm is_moderator
             mbal mucom mrcom mrep mecon mflag mflagr
     defaultLayout $ do
-        setTitle . toHtml $ "Notification preferences - " <>
+        setTitle $ toHtml $ "Notification Preferences - " <>
             userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
         $(widgetFile "user_notifications")
 
