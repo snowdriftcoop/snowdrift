@@ -4,6 +4,7 @@ module View.Project
     ( editProjectForm
     , projectContactForm
     , inviteForm
+    , Preview (..)
     , ProjectBlog (..)
     , projectBlogForm
     , projectConfirmSharesForm
@@ -80,8 +81,10 @@ renderProject maybe_project_id project mviewer_id is_watching pledges pledge = d
 
     $(widgetFile "project")
 
-renderBlogPost :: Text -> BlogPost -> WidgetT App IO ()
-renderBlogPost project_handle blog_post = do
+data Preview = Preview | NotPreview deriving Eq
+
+renderBlogPost :: Text -> BlogPost -> Preview -> WidgetT App IO ()
+renderBlogPost project_handle blog_post preview = do
     project <- handlerToWidget $ runYDB $ getBy404 $ UniqueProjectHandle project_handle
 
     let (Markdown top_content) = blogPostTopContent blog_post
@@ -108,7 +111,7 @@ previewBlogPost viewer_id project_handle project_blog@ProjectBlog {..} = do
                              (Markdown top_content) bottom_content
     (form, _) <- generateFormPost $ projectBlogForm $ Just project_blog
     defaultLayout $ previewWidget form "post" $
-        renderBlogPost project_handle blog_post
+        renderBlogPost project_handle blog_post Preview
 
 editProjectForm :: Maybe (Project, [Text]) -> Form UpdateProject
 editProjectForm project =

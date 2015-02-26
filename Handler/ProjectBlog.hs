@@ -246,7 +246,7 @@ getBlogPostR project_handle blog_post_handle = do
     defaultLayout $ do
         setTitle . toHtml $ projectName project <> " Blog - " <> blogPostTitle blog_post <> " | Snowdrift.coop"
 
-        renderBlogPost project_handle blog_post
+        renderBlogPost project_handle blog_post NotPreview
 
 
 --------------------------------------------------------------------------------
