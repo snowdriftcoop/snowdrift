@@ -42,6 +42,7 @@ module Model.Comment
     , fetchCommentDestinationDB
     , fetchCommentFlaggingDB
     , fetchCommentRethreadDB
+    , fetchCommentRethreadLastDB
     , fetchCommentTagsDB
     , fetchCommentTagCommentTagsDB
     , fetchCommentsDescendantsDB
@@ -646,6 +647,16 @@ fetchCommentRethreadDB comment_id = fmap unValue . listToMaybe <$> (
     where_ $ cr ^. CommentRethreadOldComment ==. val comment_id
     return $ cr ^. CommentRethreadNewComment)
 
+-- | Get the last CommentId this CommentId was rethreaded to, if it was.
+fetchCommentRethreadLastDB :: CommentId -> DB (Maybe CommentId)
+fetchCommentRethreadLastDB comment_id = go Nothing comment_id
+  where
+    go mlast_comment comment = do
+        mnew_comment <- fetchCommentRethreadDB comment
+        case mnew_comment of
+            Nothing          -> return mlast_comment
+            Just new_comment -> go mnew_comment new_comment
+
 -- | Get a Comment's CommentTags.
 fetchCommentCommentTagsDB :: CommentId -> DB [CommentTag]
 fetchCommentCommentTagsDB comment_id = fmap (map entityVal) $
@@ -875,9 +886,17 @@ rethreadCommentDB mnew_parent_id new_discussion_id root_comment_id user_id reaso
 
             maybe (return ()) (insert_ . CommentAncestor new_comment_id) maybe_new_parent_id
 
+            update $ \t -> do
+                set t [ TicketComment =. val new_comment_id ]
+                where_ $ t ^. TicketComment ==. val old_comment_id
+
         -- EVERYTHING with a foreign key on CommentId needs to be added here, for the
         -- new comments. We don't want to update in-place because we *do* show the
         -- rethreaded comments on Project feeds (for one thing).
+        --
+        -- The only table that's updated in-place is Ticket (see
+        -- above) because we don't want to change the ticket number
+        -- when we rethread a comment.
 
         updateForRethread CommentClosingComment
                           (\cc cr -> CommentClosing
@@ -905,13 +924,6 @@ rethreadCommentDB mnew_parent_id new_discussion_id root_comment_id user_id reaso
                               <&> (ct  ^. CommentTagTag)
                               <&> (ct  ^. CommentTagUser)
                               <&> (ct  ^. CommentTagCount))
-
-        updateForRethread TicketComment
-                          (\t cr -> Ticket
-                              <#  (t   ^. TicketCreatedTs)
-                              <&> (t   ^. TicketUpdatedTs)
-                              <&> (t   ^. TicketName)
-                              <&> (cr  ^. CommentRethreadNewComment))
 
         updateForRethread TicketClaimingTicket
                           (\tc cr -> TicketClaiming
