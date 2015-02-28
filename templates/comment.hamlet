@@ -44,11 +44,11 @@
                     unwatch
 
 
-    $maybe Entity (Key (PersistInt64 ticket_id))  _ <- mticket
+    $maybe PersistInt64 ticket_id <- fmap (toPersistValue . entityKey) mticket
         <span .glyphicon .glyphicon-tag>
         <span .ticket-num>SD-#{show ticket_id}
 
-        $if can_claim
+        $if can_claim && not is_closed
             <div :is_preview:.preview .comment-action>
                 <a href="@{comment_route_claim comment_id}">
                     claim
@@ -65,7 +65,7 @@
                             $maybe note <- ticketClaimingNote claim
                                 : #{note}
 
-                        $if can_unclaim
+                        $if can_unclaim && not is_closed
                             <div :is_preview:.preview .comment-action>
                                 <a href="@{comment_route_unclaim comment_id}">
                                     (unclaim)

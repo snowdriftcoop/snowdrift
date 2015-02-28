@@ -58,15 +58,15 @@ snowdriftEventToFeedEntry render project_handle user_map discussion_map _ _ url 
             Just (DiscussionOnUser user_entity)                 -> "user discussion for " <> userDisplayName user_entity
             Just (DiscussionOnBlogPost (Entity _ blog_post))    -> "discussion on blog post \"" <> blogPostTitle blog_post <> "\""
 
-     in Just $ FeedEntry
+     in Just FeedEntry
             { feedEntryLink    = url
-            , feedEntryUpdated = maybe (commentCreatedTs comment) id $ commentApprovedTs comment
+            , feedEntryUpdated = fromMaybe (commentCreatedTs comment) $ commentApprovedTs comment
             , feedEntryTitle   = T.unwords [ T.snoc project_handle ':', username, "posted a new comment on", discussion ]
             , feedEntryContent = [hamlet| |] render
             }
 
 snowdriftEventToFeedEntry render project_handle _ _ _ _ url (ECommentRethreaded _ rethread) =
-    Just $ FeedEntry
+    Just FeedEntry
         { feedEntryLink    = url
         , feedEntryUpdated = rethreadTs rethread
         , feedEntryTitle   = T.unwords [ T.snoc project_handle ':', "comment(s) rethreaded" ]
@@ -78,7 +78,7 @@ snowdriftEventToFeedEntry render project_handle user_map _ _ ticket_map url (ECo
         maybe_user = M.lookup user_id user_map
         username   = maybe "<unknown user>" (userDisplayName . Entity user_id) maybe_user
 
-        mk_feed_entry title = Just $ FeedEntry
+        mk_feed_entry title = Just FeedEntry
             { feedEntryLink    = url
             , feedEntryUpdated = commentClosingTs
             , feedEntryTitle   = title
@@ -87,9 +87,9 @@ snowdriftEventToFeedEntry render project_handle user_map _ _ ticket_map url (ECo
 
      in case M.lookup commentClosingComment ticket_map of
             Just (Entity ticket_id Ticket{..}) ->
-                let ticket_str = case ticket_id of
-                        Key (PersistInt64 tid) -> T.pack $ show tid
-                        Key _ -> "<malformed id>"
+                let ticket_str = case toPersistValue ticket_id of
+                        PersistInt64 tid -> T.pack $ show tid
+                        _ -> "<malformed id>"
                  in mk_feed_entry $ T.unwords
                         [ T.snoc project_handle ':'
                         , "ticket closed by"
@@ -109,11 +109,11 @@ snowdriftEventToFeedEntry render project_handle user_map _ _ ticket_map url (ETi
         maybe_user = M.lookup user_id user_map
         username   = maybe "<unknown user>" (userDisplayName . Entity user_id) maybe_user
         Entity ticket_id Ticket{..} = lookupErr "snowdriftEventToFeedEntry: comment id not present in ticket map" ticketClaimingTicket ticket_map
-        ticket_str = case ticket_id of
-            Key (PersistInt64 tid) -> T.pack $ show tid
-            Key _ -> "<malformed id>"
+        ticket_str = case toPersistValue ticket_id of
+            PersistInt64 tid -> T.pack $ show tid
+            _ -> "<malformed id>"
 
-     in Just $ FeedEntry
+     in Just FeedEntry
             { feedEntryLink    = url
             , feedEntryUpdated = ticketClaimingTs
             , feedEntryTitle   = T.unwords
@@ -131,11 +131,11 @@ snowdriftEventToFeedEntry render project_handle user_map _ _ ticket_map url (ETi
         maybe_user = M.lookup user_id user_map
         username   = maybe "<unknown user>" (userDisplayName . Entity user_id) maybe_user
         Entity ticket_id Ticket{..} = lookupErr "snowdriftEventToFeedEntry: comment id not present in ticket map" ticketOldClaimingTicket ticket_map
-        ticket_str = case ticket_id of
-            Key (PersistInt64 tid) -> T.pack $ show tid
-            Key _ -> "<malformed id>"
+        ticket_str = case toPersistValue ticket_id of
+            PersistInt64 tid -> T.pack $ show tid
+            _ -> "<malformed id>"
 
-     in Just $ FeedEntry
+     in Just FeedEntry
             { feedEntryLink    = url
             , feedEntryUpdated = ticketOldClaimingClaimTs
             , feedEntryTitle   = T.unwords
@@ -150,11 +150,11 @@ snowdriftEventToFeedEntry render project_handle user_map _ _ ticket_map url (ETi
 
 snowdriftEventToFeedEntry render project_handle _ _ _ ticket_map url (ETicketUnclaimed _ TicketOldClaiming{..}) =
     let Entity ticket_id Ticket{..} = lookupErr "snowdriftEventToFeedEntry: comment id not present in ticket map" ticketOldClaimingTicket ticket_map
-        ticket_str = case ticket_id of
-            Key (PersistInt64 tid) -> T.pack $ show tid
-            Key _ -> "<malformed id>"
+        ticket_str = case toPersistValue ticket_id of
+            PersistInt64 tid -> T.pack $ show tid
+            _ -> "<malformed id>"
 
-     in Just $ FeedEntry
+     in Just FeedEntry
             { feedEntryLink    = url
             , feedEntryUpdated = ticketOldClaimingReleasedTs
             , feedEntryTitle   = T.unwords
@@ -168,7 +168,7 @@ snowdriftEventToFeedEntry render project_handle _ _ _ ticket_map url (ETicketUnc
 
 snowdriftEventToFeedEntry render project_handle _ _ _ _ url (EWikiPage _ wiki_page wiki_target) =
     let target = wikiTargetTarget wiki_target
-     in Just $ FeedEntry
+     in Just FeedEntry
             { feedEntryLink    = url
             , feedEntryUpdated = wikiPageCreatedTs wiki_page
             , feedEntryTitle   = T.unwords [ T.snoc project_handle ':', "new wiki page", "\"" <> target <> "\"" ]
@@ -178,15 +178,17 @@ snowdriftEventToFeedEntry render project_handle _ _ _ _ url (EWikiPage _ wiki_pa
 snowdriftEventToFeedEntry render project_handle user_map _ _ _ url (EWikiEdit _ wiki_edit wiki_target) =
     let target          = wikiTargetTarget wiki_target
         user_id         = wikiEditUser wiki_edit
+        edit_language   = wikiEditLanguage wiki_edit
         maybe_user      = M.lookup user_id user_map
         username        = maybe "<unknown user>" (userDisplayName . Entity user_id) maybe_user
 
-     in Just $ FeedEntry
+     in Just FeedEntry
             { feedEntryLink    = url
             , feedEntryUpdated = wikiEditTs wiki_edit
             , feedEntryTitle   = T.unwords
                 [ T.snoc project_handle ':'
-                , "wiki page", "\"" <> target <> "\""
+                , renderLanguage LangEn edit_language
+                , "version of wiki page", "\"" <> target <> "\""
                 , "edited by", username
                 ] <> maybe "" (T.append ": ") (wikiEditComment wiki_edit)
 
@@ -200,7 +202,7 @@ snowdriftEventToFeedEntry render project_handle _ _ _ _ url
                 , blogPostTitle = title
                 }
         ) =
-    Just $ FeedEntry
+    Just FeedEntry
         { feedEntryLink    = url
         , feedEntryUpdated = ts
         , feedEntryTitle   = T.unwords [ T.snoc project_handle ':', "new blog post:", "\"" <> title <> "\"" ]

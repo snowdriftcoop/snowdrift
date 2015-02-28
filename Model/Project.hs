@@ -75,10 +75,12 @@ data UpdateProject = UpdateProject
     , updateProjectGithubRepo  :: Maybe Text
     } deriving Show
 
-newtype TaggedTicket = TaggedTicket ((Entity Ticket), [AnnotatedTag])
+newtype TaggedTicket = TaggedTicket ( (Entity Ticket)
+                                    , Bool  -- claimed?
+                                    , [AnnotatedTag] )
 
 instance Issue TaggedTicket where
-    issueWidget (TaggedTicket ((Entity ticket_id ticket),tags)) =
+    issueWidget (TaggedTicket ((Entity ticket_id ticket),_,tags)) =
         [whamlet|
           <tr>
             <td>
@@ -94,8 +96,13 @@ instance Issue TaggedTicket where
     issueOrderable = ticketToOrderable
 
 ticketToFilterable :: TaggedTicket -> Filterable
-ticketToFilterable (TaggedTicket (Entity _ ticket, tags)) = Filterable has_tag get_named_ts search_literal
+ticketToFilterable (TaggedTicket (Entity _ ticket, is_claimed, tags)) =
+    Filterable isClaimed has_tag get_named_ts search_literal
   where
+    isClaimed "CLAIMED"   = is_claimed
+    isClaimed "UNCLAIMED" = is_claimed  -- inverted in 'Data.Filter'
+    isClaimed cmd         = error $ "Unrecognized command " <> T.unpack cmd
+
     has_tag t = any (\ tag -> annotTagName tag == t && annotTagScore tag > 0) tags
 
     get_named_ts "CREATED" = S.singleton $ ticketCreatedTs ticket
@@ -105,12 +112,19 @@ ticketToFilterable (TaggedTicket (Entity _ ticket, tags)) = Filterable has_tag g
     search_literal str = (not . null . T.breakOnAll str) (ticketName ticket)
 
 ticketToOrderable :: TaggedTicket -> Orderable
-ticketToOrderable (TaggedTicket ((Entity _ ticket),tags)) = Orderable has_tag get_named_ts search_literal
+ticketToOrderable (TaggedTicket ((Entity _ ticket), is_claimed, tags)) =
+    Orderable isClaimed has_tag get_named_ts search_literal
   where
+    isClaimed "CLAIMED"   = is_claimed
+    isClaimed "UNCLAIMED" = is_claimed  -- inverted in 'Data.Order'
+    isClaimed cmd         = error $ "Unrecognized command " <> T.unpack cmd
+
     has_tag t = elem t $ map annotTagName tags
+
     get_named_ts "CREATED" = S.singleton $ ticketCreatedTs ticket
     get_named_ts "LAST UPDATED" = S.singleton $ ticketUpdatedTs ticket
     get_named_ts name = error $ "Unrecognized time name " ++ T.unpack name
+
     search_literal str = (not . null . T.breakOnAll str) (ticketName ticket)
 
 --------------------------------------------------------------------------------
@@ -136,7 +150,7 @@ insertProjectPledgeDB user_id project_id shares pledge_render_id = do
     now <- liftIO getCurrentTime
     let shares_pledged = SharesPledged now user_id project_id shares pledge_render_id
     shares_pledged_id <- lift (insert shares_pledged)
-    getBy (UniquePledge user_id project_id) >>= \case
+    lift (getBy (UniquePledge user_id project_id)) >>= \case
         Nothing -> do
             lift $ insert_ (Pledge now user_id project_id shares shares)
             tell [ENewPledge shares_pledged_id shares_pledged]
@@ -488,16 +502,24 @@ fetchProjectWikiPageByNameDB project_handle language target = runMaybeT $ do
 fetchProjectOpenTicketsDB :: ProjectId -> Maybe UserId -> DB [TaggedTicket]
 fetchProjectOpenTicketsDB project_id muser_id = do
     tickets <- fetchProjectDiscussionsDB project_id >>= fetch_tickets
-    annot_tags_map <- fetchCommentCommentTagsInDB (map (ticketComment . entityVal) tickets) >>= buildAnnotatedCommentTagsDB muser_id
-    let tagTicket :: Entity Ticket -> TaggedTicket
-        tagTicket t@(Entity _ ticket) = TaggedTicket (t, M.findWithDefault [] (ticketComment ticket) annot_tags_map)
+    annot_tags_map <- fetchCommentCommentTagsInDB (map (ticketComment . entityVal . fst) tickets) >>= buildAnnotatedCommentTagsDB muser_id
+    let tagTicket :: (Entity Ticket, Bool) -> TaggedTicket
+        tagTicket (t@(Entity _ ticket),is_claimed) = TaggedTicket (t, is_claimed, M.findWithDefault [] (ticketComment ticket) annot_tags_map)
     return (map tagTicket tickets)
   where
-    fetch_tickets discussion_ids =
-        select $
-        from $ \ (t `InnerJoin` c) -> do
-        on_ (t ^. TicketComment ==. c ^. CommentId)
-        where_ $
-            c ^. CommentDiscussion `in_` valList discussion_ids &&.
-            exprCommentOpen c
-        return t
+    fetch_tickets :: [DiscussionId] -> DB [(Entity Ticket, Bool)]
+    fetch_tickets discussion_ids = do
+        ts <- select $
+              from $ \ (t `InnerJoin` c) -> do
+              on_ (t ^. TicketComment ==. c ^. CommentId)
+              where_ $
+                  c ^. CommentDiscussion `in_` valList discussion_ids &&.
+                  exprCommentOpen c &&.
+                  c ^. CommentId `notIn`
+                      (subList_select $ from $ return . (^. CommentRethreadOldComment))
+              return t
+        forM ts $ \t@(Entity _ ticket) -> do
+            c <- selectCount $ from $ \tc -> do
+                 where_ $ val (ticketComment ticket) ==. tc ^. TicketClaimingTicket
+                 return tc
+            return $ if c == 0 then (t, False) else (t, True)

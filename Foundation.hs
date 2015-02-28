@@ -23,7 +23,7 @@ import           Control.Monad.Writer.Strict        (WriterT, runWriterT)
 import qualified Data.ByteString.Lazy.Char8         as LB
 import           Data.Char                          (isSpace)
 import           Data.Int                           (Int64)
-import           Data.Maybe                         (mapMaybe)
+import           Data.Maybe                         (mapMaybe, fromMaybe)
 import           Data.Monoid
 import           Data.Time
 import           Data.Text                          as T
@@ -99,8 +99,8 @@ mkYesodData "App" $(parseRoutesFile "config/routes")
 
 type Form x = Html -> MForm (HandlerT App IO) (FormResult x, Widget)
 
-licenseText :: LB.ByteString
-licenseText = E.encodeUtf8 $ renderJavascriptUrl (\ _ _ -> T.empty) [julius|
+licenseNotice :: LB.ByteString
+licenseNotice = E.encodeUtf8 $ renderJavascriptUrl (\ _ _ -> T.empty) [julius|
     /*
      @licstart  The following is the entire license notice for the JavaScript code in this page.
 
@@ -206,8 +206,8 @@ instance Yesod App where
         if LB.all isSpace content
          then return Nothing
          else
-            let license = either Left (Right . LB.append licenseText)
-             in addStaticContentExternal (license . minifym) base64md5 Settings.staticDir (StaticR . flip StaticRoute []) extension mime (LB.append licenseText content)
+            let license = either Left (Right . LB.append licenseNotice)
+             in addStaticContentExternal (license . minifym) base64md5 Settings.staticDir (StaticR . flip StaticRoute []) extension mime (LB.append licenseNotice content)
 
     -- Place Javascript at bottom of the body tag so the rest of the page loads first
     jsLoader _ = BottomOfBody
@@ -222,7 +222,7 @@ instance Yesod App where
 
 -- How to run database actions.
 instance YesodPersist App where
-    type YesodPersistBackend App = SqlPersistT
+    type YesodPersistBackend App = SqlBackend
     runDB = defaultRunDB persistConfig connPool
 
 instance YesodPersistRunner App where
@@ -230,7 +230,7 @@ instance YesodPersistRunner App where
 
 -- set which project in the site runs the site itself
 getSiteProject :: Handler (Entity Project)
-getSiteProject = maybe (error "No project has been defined as the owner of this website.") id <$>
+getSiteProject = fromMaybe (error "No project has been defined as the owner of this website.") <$>
     (getSiteProjectHandle >>= runYDB . getBy . UniqueProjectHandle)
 
 getSiteProjectHandle :: Handler Text
@@ -348,6 +348,7 @@ instance YesodAuth App where
 
         lift $ defaultLayout $(widgetFile "auth")
 
+instance YesodAuthPersist App
 
 createUser :: Text -> Maybe Text -> Maybe Text -> Maybe Text -> Maybe Text
            -> Maybe Text -> Handler (Maybe UserId)
@@ -374,7 +375,7 @@ createUser ident passwd name email avatar nick = do
                 insertDefaultNotificationPrefs user_id
                 welcome_route <- getUrlRender
                             -- 'MonolingualWikiR' is deprecated.
-                            <*> (pure $ MonolingualWikiR "snowdrift" "welcome" [])
+                            <*> pure (MonolingualWikiR "snowdrift" "welcome" [])
                 let notif_text = Markdown $ T.unlines
                         [ "Thanks for registering!"
                         , "<br> Please read our [**welcome message**](" <>

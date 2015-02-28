@@ -18,7 +18,9 @@ import Data.Text.PrettyHtml
 
 import Prelude (head)
 
-import Data.Time (addUTCTime) 
+import Data.Time (addUTCTime, secondsToDiffTime, UTCTime(..), fromGregorian)
+import Data.Hourglass ( timeGetDate, dateYear, dateMonth, dateDay
+                      , timeGetTimeOfDay, todHour, todMin, todSec, toSeconds )
 import Data.List (sortBy)
 
 import Data.Tree (unfoldTreeM_BF, levels)
@@ -43,7 +45,6 @@ getRepoFeedR = do
         author = "Snowdrift.coop Team"
         description = "Commits to the Snowdrift.coop repository."
         lang = "en"
-        -- commitTime = toUTCTime . personTime . commitAuthor
         time = commitTime $ head commits
 
     entries <- forM commits $ \ commit -> do
@@ -53,9 +54,24 @@ getRepoFeedR = do
 
     newsFeed $ Feed title feed_url home_url author description lang time entries
 
+-- Remove as soon as it's available in hit:
+-- https://github.com/vincenthz/hit/pull/20
+gitTimeToUTC :: GitTime -> UTCTime
+gitTimeToUTC gt = UTCTime utcDay diffTime
+    where
+      date     = timeGetDate gt
+      year     = toInteger $ dateYear date
+      month    = succ $ fromEnum $ dateMonth date
+      day      = dateDay date
+      utcDay   = fromGregorian year month day
+      tod      = timeGetTimeOfDay gt
+      hours    = toInteger $ toSeconds $ todHour tod
+      minutes  = toInteger $ toSeconds $ todMin tod
+      seconds  = toInteger $ todSec tod
+      diffTime = secondsToDiffTime $ hours + minutes + seconds
 
 commitTime :: Commit -> UTCTime
-commitTime = toUTCTime . personTime . commitAuthor
+commitTime = gitTimeToUTC . personTime . commitAuthor
 
 getCommits :: Git -> Ref -> UTCTime -> IO [Commit]
 getCommits repo ref bound = do

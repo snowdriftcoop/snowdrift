@@ -56,7 +56,7 @@ getUsersR = do
         userProjects :: Entity User -> Maybe (Map (Text, Text) (Set (Role)))
         userProjects u = M.lookup (entityKey u) allProjects
         getUserKey :: Entity User -> Text
-        getUserKey (Entity key _) = either (error . T.unpack) id . fromPersistValue . unKey $ key
+        getUserKey = either (error . T.unpack) id . fromPersistValue . toPersistValue . entityKey
 
     defaultLayout $ do
         setTitle "Users | Snowdrift.coop"
@@ -129,8 +129,18 @@ getUserR user_id = do
                     <> "you will not be able to receive email notifications."
 
     defaultLayout $ do
-        setTitle . toHtml $ "User Profile - " <> userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
+        setTitle $ toHtml $ "User Profile - " <>
+            userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
         renderUser mviewer_id user_id user projects_and_roles
+
+postUserR :: UserId -> Handler Html
+postUserR user_id = do
+    void $ checkEditUser user_id
+    memail <- runDB $ fetchUserEmail user_id
+    case memail of
+        Nothing    -> alertDanger "No email address is associated with your account."
+        Just email -> startEmailVerification user_id email
+    redirect $ UserR user_id
 
 --------------------------------------------------------------------------------
 -- /#UserId/balance
@@ -181,7 +191,8 @@ getUserBalanceR' user_id = do
     (add_funds_form, _) <- generateFormPost addTestCashForm
 
     defaultLayout $ do
-        setTitle . toHtml $ "User Balance - " <> userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
+        setTitle $ toHtml $ "User Balance - " <>
+            userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
         $(widgetFile "user_balance")
 
 postUserBalanceR :: UserId -> Handler Html
@@ -260,7 +271,8 @@ getUserDiscussionR' user_id get_root_comments = do
     (comment_form, _) <- generateFormPost commentNewTopicForm
 
     defaultLayout $ do
-        setTitle . toHtml $ userDisplayName (Entity user_id user) <> " User Discussion | Snowdrift.coop"
+        setTitle $ toHtml $ userDisplayName (Entity user_id user) <>
+            " User Discussion | Snowdrift.coop"
         $(widgetFile "user_discuss")
 
 --------------------------------------------------------------------------------
@@ -297,7 +309,7 @@ getUserChangePasswordR user_id = do
     user <- runYDB $ get404 user_id
     (form, enctype) <- generateFormPost changePasswordForm
     defaultLayout $ do
-        setTitle . toHtml $ "Change Passphrase - " <>
+        setTitle $ toHtml $ "Change Passphrase - " <>
             userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
         $(widgetFile "change_password")
 
@@ -336,6 +348,70 @@ postUserChangePasswordR user_id = do
             defaultLayout $(widgetFile "change_password")
 
 --------------------------------------------------------------------------------
+-- /#UserId/delete
+
+startDeleteConfirmation :: UserId -> Handler ()
+startDeleteConfirmation user_id = do
+    hash        <- liftIO newHash
+    confirm_uri <- getUrlRender <*> (pure $ UserConfirmDeleteR user_id hash)
+    muser_email <- runDB $ fetchUserEmailVerified user_id
+    case muser_email of
+        Nothing -> alertDanger $
+            "Cannot continue without a verified email address. " <>
+            "Please add one to your profile and verify it."
+        Just user_email -> do
+            runDB $ insert_ $
+                DeleteConfirmation user_id user_email confirm_uri False
+            alertSuccess $
+                "Confirmation email has been sent to " <> user_email <> "."
+
+getDeleteUserR :: UserId -> Handler Html
+getDeleteUserR user_id = do
+    void $ checkEditUser user_id
+    user <- runYDB $ get404 user_id
+    defaultLayout $ do
+        setTitle $ toHtml $ "Delete Account - " <>
+            userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
+        $(widgetFile "delete_user")
+
+postDeleteUserR :: UserId -> Handler Html
+postDeleteUserR user_id = do
+    void $ checkEditUser user_id
+    startDeleteConfirmation user_id
+    redirect $ UserR user_id
+
+--------------------------------------------------------------------------------
+-- /#UserId/confirm-delete/#Text
+
+checkConfirmDelete :: UserId -> Text -> Handler User
+checkConfirmDelete user_id hash = do
+    confirm_uri <- getUrlRender <*> (pure $ UserConfirmDeleteR user_id hash)
+    muser_email <- runDB $ fetchUserEmail user_id
+    case muser_email of
+        Nothing    -> notFound
+        Just email -> runYDB $ do
+            -- Check whether the hash is in the DB.
+            void $ getBy404 $ UniqueDeleteConfirmation user_id email confirm_uri
+            get404 user_id
+
+getUserConfirmDeleteR :: UserId -> Text -> Handler Html
+getUserConfirmDeleteR user_id hash = do
+    void $ checkEditUser user_id
+    user <- checkConfirmDelete user_id hash
+    defaultLayout $ do
+        setTitle $ toHtml $ "Delete Account - " <>
+            userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
+        $(widgetFile "user_confirm_delete")
+
+postUserConfirmDeleteR :: UserId -> Text -> Handler Html
+postUserConfirmDeleteR user_id hash = do
+    void $ checkEditUser user_id
+    void $ checkConfirmDelete user_id hash
+    runDB $ deleteUserDB user_id
+    alertSuccess "Successfully deleted your account."
+    redirect HomeR
+
+--------------------------------------------------------------------------------
 -- /#UserId/edit
 
 getEditUserR :: UserId -> Handler Html
@@ -345,11 +421,12 @@ getEditUserR user_id = do
 
     (form, enctype) <- generateFormPost $ editUserForm (Just user)
     defaultLayout $ do
-        setTitle . toHtml $ "User Profile - " <> userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
+        setTitle $ toHtml $ "User Profile - " <>
+            userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
         $(widgetFile "edit_user")
 
-postUserR :: UserId -> Handler Html
-postUserR user_id = do
+postEditUserR :: UserId -> Handler Html
+postEditUserR user_id = do
     viewer_id <- checkEditUser user_id
 
     ((result, _), _) <- runFormPost $ editUserForm Nothing
@@ -449,8 +526,8 @@ getUserPledgesR user_id = do
     _ <- requireAuthId
     user <- runYDB $ get404 user_id
     defaultLayout $ do
-        setTitle . toHtml $
-            "User Pledges - " <> userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
+        setTitle $ toHtml $ "User Pledges - " <>
+            userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
 
         $(widgetFile "user_pledges")
 
@@ -472,12 +549,20 @@ getUserTicketsR user_id = do
 
         where_ $ tc ^. TicketClaimingUser ==. val user_id
             &&. c ^. CommentId `notIn` (subList_select $ from $ return . (^. CommentClosingComment))
+            &&. c ^. CommentId `notIn` (subList_select $ from $ return . (^. CommentRethreadOldComment))
 
         orderBy [ asc $ tc ^. TicketClaimingTs ]
 
         return (t, wt, p ^. ProjectHandle)
 
-    watched_tickets <- runDB $ select $ from $ \
+    -- XXX: There are two known issues with this query:
+    -- 1. If a watched comment is a ticket and the nth child, the
+    -- query will return the same ticket n times.
+    -- 2. If there are n watched comments in the same thread, each
+    -- child ticket in the thread will be returned n times.
+    -- 'selectDistinct' just hides these problems from the user's
+    -- eyes.
+    watched_tickets <- runDB $ selectDistinct $ from $ \
         (
                             c   -- Comment
             `LeftOuterJoin` ca  -- CommentAncestor - link between comment and subthread root
@@ -501,6 +586,7 @@ getUserTicketsR user_id = do
 
             where_ $ (isNothing (tc ?. TicketClaimingId) ||. tc ?. TicketClaimingUser !=. just (val user_id))
                 &&. c ^. CommentId `notIn` (subList_select $ from $ return . (^. CommentClosingComment))
+                &&. c ^. CommentId `notIn` (subList_select $ from $ return . (^. CommentRethreadOldComment))
                 &&. ws ^. WatchedSubthreadUser ==. val user_id
 
             orderBy [ asc $ t ^. TicketCreatedTs, asc $ t ^. TicketId ]
@@ -508,8 +594,8 @@ getUserTicketsR user_id = do
             return (t, u, wt, p ^. ProjectHandle)
 
     defaultLayout $ do
-        setTitle . toHtml $
-            "User Tickets - " <> userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
+        setTitle $ toHtml $ "User Tickets - " <>
+            userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
 
         $(widgetFile "user_tickets")
 
@@ -533,7 +619,7 @@ getUserNotificationsR user_id = do
         userNotificationsForm is_moderator
             mbal mucom mrcom mrep mecon mflag mflagr
     defaultLayout $ do
-        setTitle . toHtml $ "Notification preferences - " <>
+        setTitle $ toHtml $ "Notification Preferences - " <>
             userDisplayName (Entity user_id user) <> " | Snowdrift.coop"
         $(widgetFile "user_notifications")
 
@@ -575,7 +661,7 @@ postUserSelectProjectR user_id = do
     void $ checkEditUser user_id
     mproject_id <- lookupPostParam "project_id"
     maybe (redirect $ UserR user_id)
-          (redirect . ProjectNotificationsR user_id . Key . PersistInt64)
+          (redirect . ProjectNotificationsR user_id . key . PersistInt64)
           (join $ Traversable.forM mproject_id $ readMaybe . T.unpack)
 
 --------------------------------------------------------------------------------

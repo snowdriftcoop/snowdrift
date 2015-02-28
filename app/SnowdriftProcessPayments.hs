@@ -1,14 +1,10 @@
-import Import
+import Import hiding (runDB)
 
 import Settings
-import Application
 import Yesod.Default.Config
-
-import Database.Persist.Sql (loadConfig, applyEnv, createPoolConfig, runPool, transactionUndo)
 
 import qualified Data.Text as T
 
-import Model
 import Model.Project
 import Model.Currency
 
@@ -17,17 +13,11 @@ import qualified Database.Persist.Sql
 import Control.Monad.Logger
 import Control.Monad.Trans.Resource
 
-import System.Log.FastLogger
-
-import qualified Data.ByteString as BS
-
-import Data.Time
 import Data.Typeable
-
-import Blaze.ByteString.Builder (toByteString)
 
 import Control.Exception.Lifted (throw, catch, Exception)
 
+retry :: Monad m => m Bool -> m ()
 retry x = x >>= \ x' -> unless x' $ retry x
 
 data NegativeBalances = NegativeBalances ProjectId [UserId] deriving (Show, Typeable)
@@ -40,14 +30,14 @@ main = do
     dbconf <- withYamlEnvironment "config/postgresql.yml" (appEnv conf)
         Database.Persist.Sql.loadConfig >>= Database.Persist.Sql.applyEnv
 
-    p <- Database.Persist.Sql.createPoolConfig (dbconf :: Settings.PersistConf)
+    pool_conf <- Database.Persist.Sql.createPoolConfig (dbconf :: Settings.PersistConf)
 
     now <- liftIO getCurrentTime
 
     let runDB :: (MonadIO m, MonadBaseControl IO m, MonadLogger m) => SqlPersistT m a -> m a
-        runDB sql = Database.Persist.Sql.runPool dbconf sql p
+        runDB sql = Database.Persist.Sql.runPool dbconf sql pool_conf
 
-        payout (Entity project_id project, Entity payday_id payday) = runDB $ do
+        payout (Entity project_id project, Entity payday_id _) = runDB $ do
             let project_name = projectName project
 
             liftIO $ putStrLn $ T.unpack project_name
@@ -58,13 +48,13 @@ main = do
 
                 return pledge
 
-            user_balances <- forM pledges $ \ (Entity pledge_id pledge) -> do
+            user_balances <- forM pledges $ \ (Entity _ pledge) -> do
                 Just user <- get $ pledgeUser pledge
                 let amount = projectShareValue project $* fromIntegral (pledgeFundedShares pledge)
                     user_account_id = userAccount user
                     project_account_id = projectAccount project
 
-                insert $ Transaction now (Just project_account_id) (Just user_account_id) (Just payday_id) amount "Project Payout" Nothing
+                void $ insert $ Transaction now (Just project_account_id) (Just user_account_id) (Just payday_id) amount "Project Payout" Nothing
 
                 user_account <- updateGet user_account_id [AccountBalance Database.Persist.Sql.-=. amount]
                 _            <- updateGet project_account_id [AccountBalance Database.Persist.Sql.+=. amount]

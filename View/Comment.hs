@@ -195,12 +195,14 @@ newCommentTagForm project_tags other_tags = renderBootstrap3 BootstrapBasicForm 
         let toOption (Entity tag_id tag) = Option
                 { optionDisplay = tagName tag
                 , optionInternalValue = tag_id
-                , optionExternalValue = (\ (Key (PersistInt64 i)) -> T.pack $ show i) tag_id
+                , optionExternalValue =
+                    (\(PersistInt64 i) -> T.pack $ show i) $
+                        toPersistValue tag_id
                 }
 
             optlist = OptionList
                 { olOptions = map toOption tags
-                , olReadExternal = Just . Key . PersistInt64 . read . T.unpack
+                , olReadExternal = Just . key . PersistInt64 . read . T.unpack
                 }
          in checkboxesField' (return optlist)
 
@@ -474,6 +476,7 @@ commentWidget (Entity comment_id comment)
         is_even_depth = commentIsEvenDepth comment
         is_odd_depth  = commentIsOddDepth  comment
         is_private    = commentIsPrivate   comment
+        is_closed     = isJust mclosure
 
     -- TODO: Lots of refactoring to lift this database hit up to the
     -- controller layer. This currently has horrible performance - a hit *per* comment!
@@ -489,8 +492,8 @@ commentWidget (Entity comment_id comment)
             Just claiming_user <- runDB $ get claiming_user_id
             return $ M.singleton claiming_user_id claiming_user
 
-    let ticket_str = case mticket of
-            Just (Entity (Key (PersistInt64 tid)) _) -> T.pack $ show tid
+    let ticket_str = case fmap (toPersistValue . entityKey) mticket of
+            Just (PersistInt64 tid) -> T.pack $ show tid
             _ -> "???"
 
         prettyTicketLine line =

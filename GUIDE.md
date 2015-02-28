@@ -51,14 +51,24 @@ Text-editor settings
 --------------------
 
 We recommend setting your text editor to have the TAB key do indentation of four spaces.
-For VIM, for example, the config file .vimrc should have these three lines:
+
+### vim
+
+For vim users, your config file .vimrc should include these three lines:
 
     set expandtab
     set shiftwidth=4
     set tabstop=4
 
-VIM users should also install
-[Syntax Highlighting Files for Haskell](https://github.com/pbrisbin/html-template-syntax).
+You should also install
+[Shakespearean Syntax Highlighting for vim](https://github.com/pbrisbin/vim-syntax-shakespeare)
+
+Some other optional vim plugins to consider (among many available):
+[Haskell-Vim extra syntax](https://github.com/raichoo/haskell-vim) and
+[vim2hs](https://github.com/dag/vim2hs)
+
+
+### Emacs
 
 Emacs users should use a package manager (preferably Marmalade) to install
 [Haskell Mode](https://github.com/haskell/haskell-mode) and [Hamlet Mode](https://github.com/lightquake/hamlet-mode).
@@ -145,6 +155,8 @@ We don't yet have all the details documented, but Snowdrift has been successfull
 on Debian, Ubuntu, Arch, Gentoo, and related distros of GNU/Linux and should work on all
 other distros.
 
+For NixOS, see the notes in the appendix here under the section about Nix package manager.
+
 Snowdrift also has been built on Mac OS Yosemite.
 The Mac OS build process seems to have some issues with postgres user names being different;
 so until we address that, the database set-up for Mac OS will need to be done manually,
@@ -155,11 +167,11 @@ and the precise commands may vary slightly from the ones we include here.
 
 Install the essential dependencies: ghc, cabal, postgresql, happy, alex, zlib1g
 
-Some additional dependencies (which may vary for different systems) include: libpq-dev, libglib2.0-dev, libcairo2-dev, libpango1.0-dev
+Additional dependency (which may vary for different systems): libpq-dev
 
 On Debian-based GNU/Linux distros, use this command:
 
-    sudo apt-get install ghc cabal-install haskell-platform postgresql zlib1g-dev libpq-dev happy alex libglib2.0-dev libcairo2-dev libpango1.0-dev
+    sudo apt-get install ghc cabal-install postgresql zlib1g-dev libpq-dev happy alex
 
 **Note: we are now using GHC 7.8.x**
 If your system's GHC version is older, get the update from <https://www.haskell.org/ghc/>
@@ -168,20 +180,17 @@ Next, update cabal's package list:
 
     cabal update
 
-Add ~/.cabal/bin locations to your PATH;
-for bash, edit your ~/.bashrc (or equivalent) file and add the following line:
+Add cabal location(s) to your PATH; the location may vary by system and set-up. Below are the most common situations:
 
-    export PATH=.cabal-sandbox/bin:~/.cabal/bin:$PATH
+* for GNU/Linux, just add `export PATH=.cabal-sandbox/bin:~/.cabal/bin:$PATH` to your ~/.bashrc (or equivalent) file
 
-(you'll need to start a new terminal or run "source ~/.bashrc" to make the PATH active)
+* for Mac OS, try adding `export PATH="$HOME/Library/Haskell/bin:$PATH"` to ~/.bash_profile
+
+Start a new terminal (or run `source ~/.bashrc` or similar) to make the PATH active.
 
 Now, upgrade cabal itself:
 
     cabal install cabal-install
-
-Then, run
-
-    cabal install gtk2hs-buildtools
 
 **change to your snowdrift project directory (if not already there).**
 
@@ -191,11 +200,10 @@ Then, initiate a cabal sandbox:
 
 Install dependencies and build Snowdrift
 
-    cabal install --enable-tests
+    cabal install --enable-tests -fdev
 
 This will take a *long* time but should ultimately tell you it installed Snowdrift.
-Note: you can add the `-fdev` flag to the install command to skip optimization;
-then the live site will run slower, but the building will go faster.
+Note: the `-fdev` flag skips optimization to make build faster. It should be ommited for building the actual live site.
 
 Contact us for help if the build is not successful.
 
@@ -203,11 +211,13 @@ Contact us for help if the build is not successful.
 Setting up the database
 -----------------------
 
-We offer a simple script that will setup the PostgreSQL databases for you. Simply run:
+We offer a simple script that will setup the PostgreSQL databases for you.
+Some systems may need some extra set-up, but for most GNU/Linux systems, simply run:
 
     sdm init
 
 It will prompt you for your sudo password.
+
 If you prefer to set up databases manually, see the appendix at the end of this guide.
 
 
@@ -225,27 +235,9 @@ To rebuild after code changes, run `cabal install` (perhaps with `-fdev` to skip
 
 (note `cabal build` works as well but fails to recognize changes to template files)
 
-<!-- yesod-bin will not currently build in the same sandbox, and things get complicated - will restore this when it applies again
---
--- Alternately, you can use `yesod devel` to start the server,
--- and it can stay running and will automatically update the build after each saved change.
--- (Although it fails to auto-recognize changes in some file types like .cassius)
---
--- To enable yesod devel, first install yesod-bin:
---
---     cabal install yesod-bin
---
--- Then, you can rebuild and start the server with:
---
---     yesod devel
---
--- To stop yesod devel, press ENTER a couple times
---
--->
 
 After the server starts, it may print a bunch of text about creating tables,
 and it will then sit ready, waiting for connections.
-Note that `yesod devel` builds just the library.
 When you need to update an executable, use cabal install.
 
 
@@ -363,13 +355,127 @@ Happy hacking!
 
 ---
 
+APPENDIX A: Using yesod devel
+=============================
 
-APPENDIX: Manual database management
-====================================
+A useful development tool, `yesod devel` will rebuild snowdrift, start the server,
+*and* can stay running and will automatically update the build after each saved change
+(although it fails to auto-recognize changes in some file types like .cassius).
+
+To enable yesod devel, you must first install yesod-bin.
+Unforunately, yesod-bin will not currently build in the same sandbox with the main site.
+
+So, at this time, to enable yesod devel, first make a new directory for yesod-bin.
+Call it "yesod-bin-sandbox" perhaps.
+
+Then, inside the new directory, run `cabal sandbox init` followed by `cabal install yesod-bin`.
+
+Next, add to the new directory to your PATH. Put in your .bashrc the line:
+
+    export PATH=~/yesod-bin-sandbox/.cabal-sandbox/bin:$PATH
+
+(change the ~/ to wherever you actually put the directory)
+
+In a new terminal (so it recognizes the new path),
+you can rebuild and start the server in your snowdrift directory by running
+
+     yesod devel
+
+To stop yesod devel, press ENTER a couple times
+
+Note that `yesod devel` builds just the library,
+so `cabal install` and related commands are needed to update other resources like sdm or the payment processing script.
+
+
+APPENDIX B: Using the Nix package manager
+=========================================
+
+We're now testing the use of Nix as a reliable, simple way to manage packages for Snowdrift.
+Once we have it fully working, it should help simplify building overall.
+
+**The instructions in this appendix are just draft and need cleaning up.**
+
+We're not sure each of these commands is best, it may change as we continue testing.
+
+To install Nix, visit [NixOS.org/nix](https://nixos.org/nix/) and follow the "Get Nix" instructions (works for GNU/Linux and Mac OS).
+
+*Note: Nix can take a lot of drive space, so if you do not have many GB of free space on your root partition, you may need to find another approach.
+Free up space or put the `nix` directory somewhere else with more space and edit `/etc/fstab` to bind the location to mount at `/nix`.*
+
+Next, log out and back into your whole system (the environment variables command shown at the end of the install script's output works for the immediate terminal session for a temporary fix).
+
+[Nixpkgs](https://nixos.org/nixpkgs/), a collection of packages used by Nix, usually has only the latest packaged version and is a rolling-release distribution, which leaves us with two options:
+
+* Update our code and dependencies whenever the unstable channel (or the master branch) is changed.
+
+* Maintain our own collection of package versions that are known to work.
+
+The former is clearly too much work and is not reliable anyway, so we use the latter approach.
+Get a copy of our repository with this command:
+
+    git clone https://github.com/nkaretnikov/nixpkgs.git -b snowdrift
+
+It automatically switches to the right branch, so the only thing left is to point the [`NIX_PATH`](https://nixos.org/nix/manual/#sec-common-env) environment variable to the directory *containing* the `nixpkgs` repository.
+For example, if a user cloned it to `/home/user`, that's the value they need to use:
+
+    export NIX_PATH=/home/user
+
+Within the snowdrift project directory, run `nix-shell --pure -j4 shell.nix` to get necessary libraries and set `PATH` (the `-j4` part should be adapted to fit the number of cores on your machine).
+
+The first time this is run, it will take a long time, but then will present you a new prompt within `nix-shell`.
+
+Within the nix shell, run `cabal configure -fdev --enable-tests && cabal build -j4`
+
+*Note the `-fdev` argument speeds up the build by bypassing optimization, which means the site runs slower, but that's not a problem for development work.*
+
+This will take a *long* time but should ultimately tell you it built `Snowdrift`.
+
+Since the `nix-shell` command changed your `PATH`, it doesn't have things like `sudo`, which is used by the `sdm` script.
+Run `dist/build/sdm/sdm init` *outside* the nix shell (in a different terminal window) if you need to setup the databases.
+Then, you can go back to the nix shell to run `cabal test`, which runs the testsuite.
+
+You can run the application with `dist/build/Snowdrift/Snowdrift Development`.
+
+
+Note for users of NixOS
+-----------------------
+
+To get the sdm script to work, NixOS users should install postgres by adding these lines to /etc/nixos/configuration.nix:
+
+  services.postgresql.enable = true;
+  services.postgresql.package = pkgs.postgresql94;
+
+Then issue `sudo nixos-rebuild switch` to install.
+Afterwards you may need to create the postgres user, like so:
+
+    sudo -su root
+    createuser -s -r postgres
+
+
+APPENDIX C: Manual database management
+======================================
 
 Our sdm script makes database management quick and easy.
 All the steps below can be done simply with the sdm script,
 but here we explain what it does and how to handle databases manually if you prefer.
+The commands below are written with GNU/Linux in mind.
+
+***
+
+Notes for Mac OS X
+------------------
+
+Assuming the postgres server is running, where `sudo -u postgres psql` is seen below, run `psql postgres` instead.
+The commands that don't use psql can be adapted to run within the psql command line.
+
+For Mac OS, instead of `sudo -u postgres psql snowdrift_development <devDB.sql` follow these steps:
+
+1) Run `psql snowdrift_development`
+2) At snowdrift_development=# prompt, run `\i devDB.sql`
+
+Similar adjustments will be needed for the test database setup and resetting databases.
+
+***
 
 
 Setting up the development database manually
@@ -378,13 +484,9 @@ Setting up the development database manually
 Go to the config/ directory within the project directory,
 make a copy of postgresql.template, and name the new file postgresql.yml
 
-Create database user called "snowdrift_development" *without* superuser, createdb, or createuser priveleges:
+Create database user called "snowdrift_development" *without* superuser, createdb, or createuser privileges:
 
     sudo -u postgres createuser -S -D -R snowdrift_development
-
-Create snowdrift_development database:
-
-    sudo -u postgres createdb snowdrift_development
 
 Run postgres psql:
 
@@ -393,6 +495,12 @@ Run postgres psql:
 You should see a line that looks like:
 
     postgres=#
+
+(NOTE: all of the commands run from the postgres shell must end with a `;`)
+
+Create snowdrift_development database:
+
+    postgres=# create database snowdrift_development;
 
 Add a password to the snowdrift_development user
 (for reference, the sdm script generates a random passphrase for this step;
@@ -496,4 +604,3 @@ skipping the dependencies/user-creation/password parts (those don't need updatin
     sudo -u postgres psql
     postgres=# update pg_database set datistemplate=true where datname='snowdrift_test_template';
     sudo -u postgres psql snowdrift_test_template <testDB.sql
-

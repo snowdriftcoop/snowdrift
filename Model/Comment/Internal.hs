@@ -39,3 +39,6 @@ descFlagReason FlagDefensiveness           = "Defensiveness"
 descFlagReason FlagSpamming                = "Spamming"
 descFlagReason FlagPrivacyViolation        = "Privacy violation"
 descFlagReason FlagHateSpeech              = "Hate speech"
+
+newtype TicketName = TicketName { unTicketName :: Text } deriving Eq
+newtype TagName    = TagName    { unTagName    :: Text } deriving Eq

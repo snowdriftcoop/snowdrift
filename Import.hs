@@ -6,7 +6,7 @@ module Import (module Import) where
 import           Foundation                    as Import
 import           Model                         as Import
 import           Model.Language                as Import
-import           Model.Comment.Internal        as Import
+import           Model.Comment.Internal        as Import hiding (TagName, TicketName)
 import           Model.Established.Internal    as Import
 import           Model.Role.Internal           as Import
 import           Model.SnowdriftEvent.Internal as Import
@@ -17,6 +17,7 @@ import           Settings.StaticFiles          as Import
 import           Control.Applicative           as Import (pure, (<$>), (<*>))
 import           Control.Arrow                 as Import ((***), (&&&), (+++), first, second, (>>>), (<<<))
 import           Control.Monad                 as Import
+import           Control.Monad.Trans.Reader    (ReaderT)
 import           Data.Function                 as Import (on)
 import           Data.Int                      as Import (Int64)
 import           Data.Map                      as Import (Map)
@@ -80,13 +81,23 @@ notDistinctFrom :: SqlExpr (Value a) -> SqlExpr (Value a)
                 -> SqlExpr (Value Bool)
 notDistinctFrom = unsafeSqlBinOp " IS NOT DISTINCT FROM "
 
-selectCount :: (MonadResource m, MonadSqlPersist m) => SqlQuery a -> m Int
+selectCount :: (MonadIO m, Functor m) => SqlQuery a -> ReaderT SqlBackend m Int
 selectCount from_ =
     fmap (\[Value n] -> n) $
     select $ from_ >> return countRows
 
+-- XXX: Will this always succeed?
+key :: PersistEntity record => PersistValue -> Key record
+key v = let Right k = keyFromValues [v] in k
+
+selectExists :: SqlQuery a -> DB Bool
+selectExists = fmap (>0) . selectCount
+
 newHash :: IO Text
 newHash = T.pack . fst . randomString 42 <$> newStdGen
+
+countMatches :: (a -> a -> Bool) -> a -> [a] -> Int
+countMatches p x = length . filter (p x)
 
 class Count a where
     getCount :: a -> Int64
@@ -119,7 +130,7 @@ showDiffTime x y =
     secsPerMonth  = 2592000  -- 60*60*24*30
     secsPerYear   = 31536000 -- 60*60*24*365
 
-entitiesMap :: [Entity t] -> Map (Key t) t
+entitiesMap :: Ord (Key t) => [Entity t] -> Map (Key t) t
 entitiesMap = foldr (\(Entity k v) -> M.insert k v) mempty
 
 -- allow easier creation of pretty bootstrap 3 forms. there has to be an easier way -_-

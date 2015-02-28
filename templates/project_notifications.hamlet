@@ -1,4 +1,7 @@
-Notification preferences for #{projectName project}:
+<h1 .text-center>Notification preferences for #{projectName project}
+
+<em>Note: email sending requires a verified email address
+<br>
 <form method=POST action=@{ProjectNotificationsR user_id project_id} enctype=#{enctype}>
     ^{form}
     <button>update

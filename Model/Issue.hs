@@ -66,9 +66,14 @@ instance Issue GH.Issue where
     issueFilterable = mkFromGithubIssue Filterable
     issueOrderable = mkFromGithubIssue Orderable
 
-mkFromGithubIssue :: ((Text -> Bool) -> (Text -> Set UTCTime) -> (Text -> Bool) -> t) -> GH.Issue -> t
-mkFromGithubIssue c i = c has_tag get_named_ts search_literal
+mkFromGithubIssue :: ((Text -> Bool) -> (Text -> Bool) -> (Text -> Set UTCTime) -> (Text -> Bool) -> t) -> GH.Issue -> t
+mkFromGithubIssue c i = c is_claimed has_tag get_named_ts search_literal
   where
+    has_issue_assignee = isJust $ GH.issueAssignee i
+    is_claimed "CLAIMED"   = has_issue_assignee
+    is_claimed "UNCLAIMED" = has_issue_assignee  -- inverted in 'Data.Filter' and 'Data.Order'
+    is_claimed cmd         = error $ "Unrecognized command " <> T.unpack cmd
+
     has_tag t = elem (T.unpack t) $ map GH.labelName $ GH.issueLabels i
 
     get_named_ts "CREATED" = S.singleton $ GH.fromGithubDate $ GH.issueCreatedAt i

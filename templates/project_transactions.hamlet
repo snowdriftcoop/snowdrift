@@ -41,7 +41,7 @@ $else
                                                 #{projectName $ entityVal project}
 
                                         $of Nothing
-                                                unaffiliated account ##{either error id $ fromPersistValueText $ unKey other_account_id}
+                                                unaffiliated account ##{either (error . T.unpack) id $ fromPersistValueText $ toPersistValue other_account_id}
 
                             <td>
                                 #{transactionReason transaction}

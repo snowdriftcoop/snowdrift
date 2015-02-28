@@ -36,6 +36,23 @@ import           Yesod.Default.Config            (appRoot)
 --------------------------------------------------------------------------------
 -- Utility functions
 
+-- | Get the Project entity, requiring established users.
+projectInfoRequireEstablished :: Text -- ^ Project handle
+                              -> Handler (Entity User, Entity Project)
+projectInfoRequireEstablished project_handle = do
+    user@(Entity _ user') <- requireAuth
+
+    case userEstablished user' of
+        EstEstablished _ _ _ -> return ()
+        EstEligible _ _ -> permissionDenied $
+            "You must accept the honor agreement before you can create a new"
+            <> " wiki page"
+        EstUnestablished -> permissionDenied $
+            "You must be an established user to create a new wiki page"
+
+    project <- runYDB $ getBy404 $ UniqueProjectHandle project_handle
+    return (user, project)
+
 -- | Get the Project/WikiPage entities.
 pageInfo :: Text -> Language -> Text -> YDB (Entity Project, Entity WikiPage, Entity WikiTarget)
 pageInfo project_handle language target = do
@@ -75,10 +92,9 @@ pageInfoRequireAffiliation project_handle language target =
       userIsAffiliatedWithProjectDB user_id project_id)
 
 
--- | Like pageInfoRequireAffiliation, but this is for creating a new WikiPage, so one doesn't
--- already exist. TODO(mitchell): Make a better abstraction here.
-pageInfoRequireEstablished :: Text -> Handler (Entity User, Entity Project)
-pageInfoRequireEstablished project_handle = do
+-- | Like pageInfoRequireAffiliation, but requires a user to be established.
+pageInfoRequireEstablished :: Text -> Language -> Text -> Handler (Entity User, Entity Project, Entity WikiPage)
+pageInfoRequireEstablished project_handle language target = do
     Entity user_id user <- requireAuth
 
     case userEstablished user of
@@ -86,9 +102,15 @@ pageInfoRequireEstablished project_handle = do
         EstEligible _ _ -> permissionDenied "You must accept the honor agreement before you can create a new wiki page"
         EstUnestablished -> permissionDenied "You must be an established user to create a new wiki page"
 
-    project <- runYDB $ getBy (UniqueProjectHandle project_handle) >>= maybe (error $ "project hande not found: " ++ show project_handle) return
+    (project, page) <- runYDB $ do
+        project     <- getBy404 $ UniqueProjectHandle project_handle
+        wiki_target <- getBy404 $ UniqueWikiTarget (entityKey project) language target
 
-    return (Entity user_id user, project)
+        let wiki_page_id = wikiTargetPage $ entityVal wiki_target
+        wiki_page   <- get404 wiki_page_id
+        return (project, Entity wiki_page_id wiki_page)
+
+    return (Entity user_id user, project, page)
 
 
 -- | Like pageInfoRequirePermission, but specialized to requiring that the User can edit a WikiPage.
@@ -166,7 +188,7 @@ postWikiR project_handle target_language target = do
                 Just PostMode -> do
                     runSYDB $ do
 
-                        [(Entity _ last_edit)] <- select $ from $ \ (we `InnerJoin` le) -> do
+                        [(Entity _ last_edit)] <- lift $ select $ from $ \ (we `InnerJoin` le) -> do
                             on_ $ we ^. WikiEditId ==. le ^. WikiLastEditEdit
                             where_ $ le ^. WikiLastEditPage ==. val page_id
                                 &&. le ^. WikiLastEditLanguage ==. val edit_language
@@ -205,9 +227,17 @@ postWikiR project_handle target_language target = do
 
                             lift $ insert_ $ Ticket now now "edit conflict" comment_id
 
-                            let notif_text = Markdown $ T.unlines
-                                    [ "Edit conflict for wiki page *" <> target <> "*."
-                                    , "<br>[**Ticket created**](" <> render (WikiCommentR project_handle target_language target comment_id) <> ")"
+                            let notif_text = Markdown $ T.intercalate "\n\n"
+                                    [ T.unwords
+                                        [ "Edit conflict for"
+                                        , renderLanguage LangEn target_language
+                                        , "version of wiki page"
+                                        , "*" <> target <> "*"
+                                        , "on project"
+                                        , project_handle
+                                        ] <> "."
+
+                                    , "[**Ticket created**](" <> render (WikiCommentR project_handle target_language target comment_id) <> ")"
                                     ]
 
                             sendPreferredNotificationDB last_editor NotifEditConflict
@@ -235,8 +265,11 @@ postWikiR project_handle target_language target = do
                         return $ we ^. WikiEditLanguage
 
                     (form, _) <- generateFormPost $ editWikiForm prev_edit_id content (Just comment)
-
-                    defaultLayout $ previewWidget form "update" $
+                    defaultLayout $ previewWidgetWithAgreement
+                        ("By clicking the \"update\" button, you agree to irrevocably "
+                      <> "release your contribution under the CC-BY-SA 4.0 License. "
+                      <> "You agree that a hyperlink or URL is sufficient attribution under the Creative Commons license.")
+                        form "update" $
                         renderWiki 0 project_handle target_language target False translations $
                             WikiEdit now user_id page_id edit_language content (Just comment)
 
@@ -424,16 +457,19 @@ getWikiEditR project_handle language target wiki_edit_id = do
 
 getNewWikiR :: Text -> Language -> Text -> Handler Html
 getNewWikiR project_handle language target = do
-    (_, Entity _ project) <- pageInfoRequireEstablished project_handle
+    (_, Entity _ project) <-
+        projectInfoRequireEstablished project_handle
     (wiki_form, _) <- generateFormPost $ newWikiForm Nothing
     defaultLayout $ do
-        setTitle . toHtml $ projectName project <> " Wiki - New Page | Snowdrift.coop"
+        setTitle . toHtml $
+            projectName project <> " Wiki - New Page | Snowdrift.coop"
         $(widgetFile "new_wiki")
 
 
 postNewWikiR :: Text -> Language -> Text -> Handler Html
 postNewWikiR project_handle language target = do
-    (Entity user_id _, Entity project_id _) <- pageInfoRequireEstablished project_handle
+    (Entity user_id _, Entity project_id _) <-
+        projectInfoRequireEstablished project_handle
 
     now <- liftIO getCurrentTime
     ((result, _), _) <- runFormPost $ newWikiForm Nothing
@@ -441,7 +477,13 @@ postNewWikiR project_handle language target = do
         FormSuccess content -> do
             lookupPostMode >>= \case
                 Just PostMode -> do
-                    runSDB (createWikiPageDB language target project_id content Normal user_id)
+                    runSDB
+                        (createWikiPageDB language
+                                          target
+                                          project_id
+                                          content
+                                          Normal
+                                          user_id)
 
                     alertSuccess "Created."
                     redirect $ WikiR project_handle language target
@@ -450,20 +492,33 @@ postNewWikiR project_handle language target = do
                     (form, _) <- generateFormPost $ newWikiForm (Just content)
 
                     defaultLayout $ do
-                        let wiki_page_id = Key $ PersistInt64 (-1)
-                            edit = WikiEdit now user_id wiki_page_id language content (Just "page created")
+                        let wiki_page_id = key $ PersistInt64 (-1)
+                            edit = WikiEdit now
+                                            user_id
+                                            wiki_page_id
+                                            language
+                                            content
+                                            (Just "page created")
 
-                        previewWidget form "create" $ renderWiki 0 project_handle language target False [] edit
+                        previewWidget form "create" $
+                            renderWiki 0
+                                       project_handle
+                                       language
+                                       target
+                                       False
+                                       []
+                                       edit
 
         FormMissing -> error "Form missing."
-        FormFailure msgs -> error $ "Error submitting form: " ++ T.unpack (T.concat msgs)
+        FormFailure msgs -> error $
+            "Error submitting form: " ++ T.unpack (T.concat msgs)
 
 --------------------------------------------------------------------------------
 -- /#language/#target/translate
 
 getNewWikiTranslationR :: Text -> Language -> Text -> Handler Html
 getNewWikiTranslationR project_handle language target = do
-    (_, Entity _ project, Entity page_id _) <- pageInfoRequireAffiliation project_handle language target
+    (_, Entity _ project, Entity page_id _) <- pageInfoRequireEstablished project_handle language target
 
     languages <- getLanguages
 
@@ -482,7 +537,7 @@ getNewWikiTranslationR project_handle language target = do
 
 postNewWikiTranslationR :: Text -> Language -> Text -> Handler Html
 postNewWikiTranslationR project_handle language target = do
-    (Entity user_id _, Entity project_id _, Entity page_id _) <- pageInfoRequireAffiliation project_handle language target
+    (Entity user_id _, Entity project_id _, Entity page_id _) <- pageInfoRequireEstablished project_handle language target
 
     now <- liftIO getCurrentTime
     ((result, _), _) <- runFormPost $ newWikiTranslationForm Nothing Nothing Nothing Nothing Nothing
@@ -505,7 +560,7 @@ postNewWikiTranslationR project_handle language target = do
                         return $ we ^. WikiEditLanguage
 
                     defaultLayout $ do
-                        let wiki_page_id = Key $ PersistInt64 (-1)
+                        let wiki_page_id = key $ PersistInt64 (-1)
                             edit = WikiEdit now user_id wiki_page_id language new_content (Just "page created")
 
                         previewWidget form "create" $ renderWiki 0 project_handle language target False translations edit
@@ -629,6 +684,8 @@ getMonolingualWikiR = redirectPolylingualWiki $ \case
     Just (UnwatchUserCommentR _ _)              -> error "the impossible happened"
     Just (UserChangePasswordR _)                -> error "the impossible happened"
     Just (EditUserR _)                          -> error "the impossible happened"
+    Just (DeleteUserR _)                        -> error "the impossible happened"
+    Just (UserConfirmDeleteR _ _)               -> error "the impossible happened"
     Just (UserEstEligibleR _)                   -> error "the impossible happened"
     Just (UserNotificationsR _)                 -> error "the impossible happened"
     Just (ProjectNotificationsR _ _)            -> error "the impossible happened"
@@ -641,12 +698,13 @@ getMonolingualWikiR = redirectPolylingualWiki $ \case
     Just ArchivedNotificationsProxyR            -> error "the impossible happened"
     Just ProjectsR                              -> error "the impossible happened"
     Just (ProjectR _)                           -> error "the impossible happened"
+    Just ProjectSignupR                         -> error "the impossible happened"
     Just (ApplicationsR _)                      -> error "the impossible happened"
     Just (ApplicationR _ _)                     -> error "the impossible happened"
     Just (ProjectBlogR _)                       -> error "the impossible happened"
     Just (NewBlogPostR _)                       -> error "the impossible happened"
+    Just (EditBlogPostR _ _)                    -> error "the impossible happened"
     Just (BlogPostR _ _)                        -> error "the impossible happened"
-    Just (ProjectPledgeButtonR _)               -> error "the impossible happened"
     Just (ProjectCommentR _ _)                  -> error "the impossible happened"
     Just (ClaimProjectCommentR _ _)             -> error "the impossible happened"
     Just (CloseProjectCommentR _ _)             -> error "the impossible happened"

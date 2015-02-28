@@ -154,9 +154,9 @@ renderCommentClosedEvent CommentClosing{..} user_map ticket_map = do
 
     case M.lookup commentClosingComment ticket_map of
         Just (Entity ticket_id Ticket{..}) -> do
-            let ticket_str = case ticket_id of
-                    Key (PersistInt64 tid) -> T.pack $ show tid
-                    Key _ -> "<malformed key>"
+            let ticket_str = case toPersistValue ticket_id of
+                    PersistInt64 tid -> T.pack $ show tid
+                    _ -> "<malformed key>"
 
             [whamlet|
                 <div .event>
@@ -167,7 +167,7 @@ renderCommentClosedEvent CommentClosing{..} user_map ticket_map = do
                         <div .ticket-title>SD-#{ticket_str}: #{ticketName}
             |]
 
-        Nothing -> do
+        Nothing ->
             [whamlet|
                 <div .event>
                     ^{renderTime commentClosingTs}
@@ -182,9 +182,9 @@ renderTicketClaimedEvent (Left (_, TicketClaiming{..})) user_map ticket_map = do
     let user = lookupErr "renderTicketClaimedEvent: claiming user not found in user map" ticketClaimingUser user_map
         Entity ticket_id Ticket{..} = lookupErr "renderTicketClaimedEvent: ticket not found in map" ticketClaimingTicket ticket_map
 
-        ticket_str = case ticket_id of
-            Key (PersistInt64 tid) -> T.pack $ show tid
-            Key _ -> "<malformed key>"
+        ticket_str = case toPersistValue ticket_id of
+            PersistInt64 tid -> T.pack $ show tid
+            _ -> "<malformed key>"
 
     [whamlet|
         <div .event>
@@ -199,9 +199,9 @@ renderTicketClaimedEvent (Right (_, TicketOldClaiming{..})) user_map ticket_map 
     let user = lookupErr "renderTicketClaimedEvent: claiming user not found in user map" ticketOldClaimingUser user_map
         Entity ticket_id Ticket{..} = lookupErr "renderTicketClaimedEvent: ticket not found in map" ticketOldClaimingTicket ticket_map
 
-        ticket_str = case ticket_id of
-            Key (PersistInt64 tid) -> T.pack $ show tid
-            Key _ -> "<malformed key>"
+        ticket_str = case toPersistValue ticket_id of
+            PersistInt64 tid -> T.pack $ show tid
+            _ -> "<malformed key>"
 
     [whamlet|
         <div .event>
@@ -215,9 +215,9 @@ renderTicketClaimedEvent (Right (_, TicketOldClaiming{..})) user_map ticket_map 
 renderTicketUnclaimedEvent :: TicketOldClaiming -> UserMap -> Map CommentId (Entity Ticket) -> Widget
 renderTicketUnclaimedEvent TicketOldClaiming{..} _ ticket_map = do
     let Entity ticket_id Ticket{..} = lookupErr "renderTicketUnclaimedEvent: ticket not found in map" ticketOldClaimingTicket ticket_map
-        ticket_str = case ticket_id of
-            Key (PersistInt64 tid) -> T.pack $ show tid
-            Key _ -> "<malformed key>"
+        ticket_str = case toPersistValue ticket_id of
+            PersistInt64 tid -> T.pack $ show tid
+            _ -> "<malformed key>"
 
     [whamlet|
         <div .event>
@@ -298,7 +298,7 @@ renderNewPledgeEvent _ SharesPledged{..} user_map = do
         <div .event>
             ^{renderTime sharesPledgedTs}
             <a href=@{UserR sharesPledgedUser}> #{userDisplayName (Entity sharesPledgedUser pledger)}
-            pledged #{show sharesPledgedShares} new shares!
+            made new pledge of _{MsgShares sharesPledgedShares}!
     |]
 
 renderUpdatedPledgeEvent :: Int64 -> SharesPledgedId -> SharesPledged -> UserMap -> Widget
@@ -311,7 +311,7 @@ renderUpdatedPledgeEvent old_shares _ SharesPledged{..} user_map = do
         <div .event>
             ^{renderTime sharesPledgedTs}
             <a href=@{UserR sharesPledgedUser}> #{userDisplayName (Entity sharesPledgedUser pledger)}
-            #{verb} their pledge from #{show old_shares} to #{show sharesPledgedShares} shares#{punc}
+            #{verb} their pledge from _{MsgShares old_shares} to _{MsgShares sharesPledgedShares}#{punc}
     |]
 
 renderDeletedPledgeEvent :: UTCTime -> UserId -> Int64 -> UserMap -> Widget

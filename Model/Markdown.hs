@@ -10,6 +10,7 @@ import           Data.Text.Encoding
 import           Text.Regex.TDFA
 import           Text.Regex.TDFA.ByteString
 import           Text.Pandoc
+import           Yesod.Markdown
 
 
 -- TODO: we should probably put together some standard sets of these transforms for use in various places, rather than assembling ad-hoc
@@ -80,9 +81,9 @@ linkTickets line' = do
 
                 return $ ticket ^. TicketComment
 
-            case map unwrapValues info of
+            case map (toPersistValue . unwrapValues) info of
                 [] -> return Nothing
-                (Key (PersistInt64 comment_id)) : _ -> return $ Just $ mconcat
+                ((PersistInt64 comment_id) : _) -> return $ Just $ mconcat
                     [ "/c/",  T.pack (show comment_id) ]
 
                 _ -> error "Unexpected result for ticket reference"
@@ -91,7 +92,8 @@ linkTickets line' = do
         parse str (Right Nothing) = return str
         parse _   (Right (Just (pre, _, post, [ticket_number]))) = do
             $(logError) $ T.pack $ show $  T.unpack $ decodeUtf8 ticket_number
-            maybe_link <- getLinkForTicketComment $ Key $ PersistInt64 $ read $ T.unpack $ decodeUtf8 ticket_number
+            maybe_link <- getLinkForTicketComment $ key $
+                PersistInt64 $ read $ T.unpack $ decodeUtf8 ticket_number
             rest <- parse post (regexec pattern post)
             return $ mconcat
                 [ pre
@@ -115,11 +117,10 @@ renderMarkdownWith transform (Markdown markdown) = do
 
     ls' <- mapM (transform <=< linkTickets) ls
 
-    return $ writeHtml def
+    return $ writePandoc yesodDefaultWriterOptions
         { writerEmailObfuscation = NoObfuscation
-        , writerHtml5 = True
-        } $ readMarkdown def $ T.unpack $ T.unlines ls'
-
+        } $ parseMarkdown yesodDefaultReaderOptions
+        $ Markdown $ T.unlines ls'
 
 markdownWidget :: Markdown -> Widget
 markdownWidget = markdownWidgetWith return

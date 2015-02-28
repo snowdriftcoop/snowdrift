@@ -13,7 +13,9 @@ yesod-devel/
 *.chs.h
 codex.tags
 hscope.out
-/migrations
+*.tix
+.hpc/
+TAGS
 
 # Intellij IDEA:
 .idea

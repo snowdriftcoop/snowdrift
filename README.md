@@ -33,7 +33,7 @@ Essential build instructions
 ----------------------------
 
 Note: our code is mirrored at
-[GitHub](https://github.com/dlthomas/snowdrift) (which is popular but proprietary)
+[GitHub](https://github.com/snowdriftcoop/snowdrift) (which is popular but proprietary)
 and [Gitorious](https://gitorious.org/snowdrift/snowdrift) (which is FLO, licensed AGPL, but less popular).
 
 **You really should read our full [guide to our code](GUIDE.md)
@@ -46,15 +46,13 @@ here's quick and dirty minimal instructions to get started:
 ```
 // Install any dependencies you don't have:
 // GHC **7.8.x**, cabal, PostgreSQL, zlib1g-dev, libpq-dev, happy, alex
-//     libglib2.0-dev libcairo2-dev libpango1.0-dev
 // update cabal, set PATH, etc. — see GUIDE.md for more detailed instructions
 
 // Fork, clone and install
 git clone [your remote address, e.g. git@gitorious.org:snowdrift/yourusername-snowdrift.git]
-cabal install gtk2hs-buildtools
 cd snowdrift
 cabal sandbox init
-cabal install --enable-tests
+cabal install --enable-tests -fdev
 
 // Set up the database with our quick script.
 // To understand what the script does or to run the commands manually, see GUIDE.md
@@ -66,17 +64,7 @@ Snowdrift Development
 // To see the live site, point your browser to localhost:3000
 
 //To rebuild after making changes run
-cabal install
-
-```
-
-<!-- yesod-bin has issues building with our stuff - will restore this when that is resolved
--- // For fast, automatic rebuilding whenever you change the code, install the yesod-bin package
--- cabal install yesod-bin
--- // then instead of "Snowdrift Development" run the site with
--- yesod devel
--- // which can be left running in a terminal while working elsewhere
--->
-
+cabal install -fdev
 
 Read through GUIDE.md for thorough details and more about development, testing, and so on.
+```

@@ -49,7 +49,9 @@
 /u/#UserId/c/#CommentId/watch               WatchUserCommentR            GET POST
 /u/#UserId/c/#CommentId/unwatch             UnwatchUserCommentR          GET POST
 /u/#UserId/change-password                  UserChangePasswordR          GET POST
-/u/#UserId/edit                             EditUserR                    GET
+/u/#UserId/delete                           DeleteUserR                  GET POST
+/u/#UserId/confirm-delete/#Text             UserConfirmDeleteR           GET POST
+/u/#UserId/edit                             EditUserR                    GET POST
 /u/#UserId/elig                             UserEstEligibleR                 POST
 /u/#UserId/user-notifications               UserNotificationsR           GET POST
 /u/#UserId/pledges                          UserPledgesR                 GET
@@ -71,7 +73,6 @@
 /p/#Text                                     ProjectR                 GET POST
 /p/#Text/applications                        ApplicationsR            GET
 /p/#Text/application/#VolunteerApplicationId ApplicationR             GET
-/p/#Text/button.png                          ProjectPledgeButtonR     GET
 /p/#Text/c/#CommentId                        ProjectCommentR          GET
 /p/#Text/c/#CommentId/claim                  ClaimProjectCommentR     GET POST
 /p/#Text/c/#CommentId/close                  CloseProjectCommentR     GET POST
@@ -147,6 +148,7 @@
 /p/#Text/blog                                   ProjectBlogR                    GET
 /p/#Text/blog/!new                              NewBlogPostR                    GET POST
 /p/#Text/blog/#Text                             BlogPostR                       GET
+/p/#Text/blog/#Text/edit                        EditBlogPostR                   GET POST
 /p/#Text/blog/#Text/d                           BlogPostDiscussionR             GET
 /p/#Text/blog/#Text/d/new                       NewBlogPostDiscussionR          GET POST
 /p/#Text/blog/#Text/c/#CommentId                BlogPostCommentR                GET
@@ -168,6 +170,7 @@
 /p/#Text/blog/#Text/c/#CommentId/watch          WatchBlogPostCommentR           GET POST
 /p/#Text/blog/#Text/c/#CommentId/unwatch        UnwatchBlogPostCommentR         GET POST
 
+/project-signup ProjectSignupR GET POST
 
 
 /c/#CommentId            CommentDirectLinkR GET      DELETE

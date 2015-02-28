@@ -62,6 +62,12 @@ input[type=number]
 .markdown_label
     font-size : small
 
+.notice
+    font-size : small
+    width : 50em
+    color : #6F6F6F
+    margin-bottom : 8px
+
 .alert
     text-align : center
 

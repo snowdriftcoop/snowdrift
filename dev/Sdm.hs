@@ -96,13 +96,13 @@ instance ToString DBTemp where
   toString (DBTemp n) = n
 
 dev, test :: DB
-dev = Dev "dev" $
+dev = Dev "dev"
   DBInfo { dbFile = DBFile "devDB.sql"
          , dbUser = DBUser "snowdrift_development"
          , dbName = DBName "snowdrift_development"
          , dbTemp = Nothing }
 
-test = Test "test" $
+test = Test "test"
   DBInfo { dbFile = DBFile "testDB.sql"
          , dbUser = DBUser "snowdrift_test"
          , dbName = DBName "snowdrift_test"
@@ -152,7 +152,7 @@ ifExists dbType as = do
   exists <- doesDBExist dbType
   if exists
     then as
-    else do
+    else
       -- Don't error out or it won't check all 'dbs'.
       leaveLn $ "'" <> toString dbType <> "' does not exist; doing nothing"
 
@@ -170,7 +170,7 @@ exportDB dbType (DBFile f) = loop
     loop = do
       leave $ "overwrite '" <> f <> "'? (yes/No) "
       hFlush stdout             -- send the question to 'stdout' immediately
-      answer <- getLine >>= return . fmap toLower
+      answer <- fmap (fmap toLower) getLine
       case () of
         _| answer == "yes" -> do
              (_, Just o, _, _) <-
@@ -255,7 +255,7 @@ init dbs = do
 
 clean dbs
   | length dbs == 1 =
-      error $ "cannot clean a single database; try to reset it or to clean all"
+      error "cannot clean a single database; try to reset it or to clean all"
   | otherwise = do
       run "rm" ["-f", config]
       forM_ dbs clean'

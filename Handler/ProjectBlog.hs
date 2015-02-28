@@ -49,8 +49,8 @@ checkComment' muser_id project_handle post_name comment_id = do
     redirectIfRethreaded comment_id
 
     (project, blog_post, ecomment) <- runYDB $ do
-        project@(Entity project_id _)   <- getBy404 $ UniqueProjectHandle project_handle
-        Entity _ blog_post              <- getBy404 $ UniqueBlogPost project_id post_name
+        (project@(Entity project_id _), Entity _ blog_post) <-
+            fetchProjectBlogPostDB project_handle post_name
 
         let has_permission = exprCommentProjectPermissionFilter muser_id (val project_id)
 
@@ -174,7 +174,7 @@ requireRolesAny roles project_handle err_msg = do
 
 getProjectBlogR :: Text -> Handler Html
 getProjectBlogR project_handle = do
-    maybe_from <- fmap (Key . PersistInt64 . read . T.unpack) <$> lookupGetParam "from"
+    maybe_from <- fmap (key . PersistInt64 . read . T.unpack) <$> lookupGetParam "from"
     post_count <- fromMaybe 10 <$> fmap (read . T.unpack) <$> lookupGetParam "from"
     Entity project_id project <- runYDB $ getBy404 $ UniqueProjectHandle project_handle
 
@@ -219,29 +219,18 @@ postNewBlogPostR project_handle = do
     (viewer_id, Entity project_id _) <-
         requireRolesAny [Admin, TeamMember] project_handle "You do not have permission to post to this project's blog."
 
-    now <- liftIO getCurrentTime
-
     ((result, _), _) <- runFormPost $ projectBlogForm Nothing
 
     case result of
-        FormSuccess (title, handle, Markdown content) -> do
+        FormSuccess project_blog@ProjectBlog {..} -> do
             lookupPostMode >>= \case
                 Just PostMode -> do
-                    void $ runSDB $ postBlogPostDB title handle viewer_id project_id (Markdown content)
+                    void $ runSDB $ postBlogPostDB
+                        projectBlogTitle projectBlogHandle
+                        viewer_id project_id projectBlogContent
                     alertSuccess "posted"
                     redirect $ ProjectBlogR project_handle
-
-                _ -> do
-
-                    let (top_content', bottom_content') = break (== "***") $ T.lines content
-                        top_content = T.unlines top_content'
-                        bottom_content = if bottom_content' == [] then Nothing else Just (Markdown $ T.unlines bottom_content')
-                        blog_post = BlogPost now title handle viewer_id project_id (Key $ PersistInt64 0) (Markdown top_content) bottom_content
-
-                    (form, _) <- generateFormPost $ projectBlogForm $ Just (title, handle, Markdown content)
-
-                    defaultLayout $ previewWidget form "post" $ renderBlogPost project_handle blog_post
-
+                _ -> previewBlogPost viewer_id project_handle project_blog
         x -> do
             alertDanger $ T.pack $ show x
             redirect $ NewBlogPostR project_handle
@@ -252,16 +241,54 @@ postNewBlogPostR project_handle = do
 
 getBlogPostR :: Text -> Text -> Handler Html
 getBlogPostR project_handle blog_post_handle = do
-    (project, blog_post) <- runYDB $ do
-        Entity project_id project <- getBy404 $ UniqueProjectHandle project_handle
-        Entity _ blog_post <- getBy404 $ UniqueBlogPost project_id blog_post_handle
-
-        return (project, blog_post)
-
+    (Entity _ project, Entity _ blog_post) <-
+        runYDB $ fetchProjectBlogPostDB project_handle blog_post_handle
     defaultLayout $ do
         setTitle . toHtml $ projectName project <> " Blog - " <> blogPostTitle blog_post <> " | Snowdrift.coop"
 
-        renderBlogPost project_handle blog_post
+        renderBlogPost project_handle blog_post NotPreview
+
+
+--------------------------------------------------------------------------------
+-- /p/#Text/blog/#Text/edit
+
+checkEditBlogPostPermissions :: Text -> Handler UserId
+checkEditBlogPostPermissions project_handle = do
+    fst <$> requireRolesAny [Admin, TeamMember] project_handle
+        "only the admin or a team member can edit a blog post"
+
+getEditBlogPostR :: Text -> Text -> Handler Html
+getEditBlogPostR project_handle blog_post_handle = do
+    (Entity _ project, Entity _ BlogPost {..}) <-
+        runYDB $ fetchProjectBlogPostDB project_handle blog_post_handle
+    void $ checkEditBlogPostPermissions project_handle
+    (blog_form, enctype) <- generateFormPost $ projectBlogForm $
+        Just $ ProjectBlog blogPostTitle blog_post_handle $
+            concatContent blogPostTopContent blogPostBottomContent
+    defaultLayout $ do
+        setTitle $ toHtml $ projectName project <> " Blog - Edit | Snowdrift.coop"
+        $(widgetFile "edit_blog_post")
+
+postEditBlogPostR :: Text -> Text -> Handler Html
+postEditBlogPostR project_handle blog_post_handle = do
+    (_, Entity blog_post_id BlogPost {..}) <-
+        runYDB $ fetchProjectBlogPostDB project_handle blog_post_handle
+    viewer_id <- checkEditBlogPostPermissions project_handle
+    ((result, _), _) <- runFormPost $ projectBlogForm Nothing
+    case result of
+      FormSuccess project_blog@ProjectBlog {..} -> do
+          lookupPostMode >>= \case
+              Just PostMode -> do
+                  runDB $ updateBlogPostDB viewer_id blog_post_id project_blog
+                  alertSuccess "Blog post updated"
+                  redirect $ BlogPostR project_handle projectBlogHandle
+              _ -> previewBlogPost viewer_id project_handle project_blog
+      FormMissing -> do
+          alertDanger "No data provided"
+          redirect $ BlogPostR project_handle blog_post_handle
+      FormFailure errs -> do
+          alertDanger $ "Form failure: " <> (T.intercalate ", " errs)
+          redirect $ BlogPostR project_handle blog_post_handle
 
 --------------------------------------------------------------------------------
 -- /p/#Text/blog/#Text/c/#CommentId

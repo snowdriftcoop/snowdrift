@@ -28,7 +28,6 @@ import Model.User
 import Model.Wiki
 import System.Locale (defaultTimeLocale)
 import View.Comment
-import View.PledgeButton
 import View.Project
 import View.SnowdriftEvent
 import Widgets.Preview
@@ -236,7 +235,7 @@ postProjectR project_handle = do
                             project_update <- insert $ ProjectUpdate now project_id viewer_id $ diffMarkdown (projectDescription project) description
                             last_update <- getBy $ UniqueProjectLastUpdate project_id
                             case last_update of
-                                Just (Entity key _) -> repsert key $ ProjectLastUpdate project_id project_update
+                                Just (Entity k _) -> repsert k $ ProjectLastUpdate project_id project_update
                                 Nothing -> void $ insert $ ProjectLastUpdate project_id project_update
 
                         update $ \ p -> do
@@ -273,7 +272,7 @@ postProjectR project_handle = do
             redirect $ ProjectR project_handle
 
 --------------------------------------------------------------------------------
--- /application
+-- /applications (List of submitted applications)
 
 getApplicationsR :: Text -> Handler Html
 getApplicationsR project_handle = do
@@ -293,6 +292,9 @@ getApplicationsR project_handle = do
         setTitle . toHtml $ projectName project <> " Volunteer Applications | Snowdrift.coop"
         $(widgetFile "applications")
 
+--------------------------------------------------------------------------------
+-- /application (Form for new application)
+
 getApplicationR :: Text -> VolunteerApplicationId -> Handler Html
 getApplicationR project_handle application_id = do
     viewer_id <- requireAuthId
@@ -311,20 +313,6 @@ getApplicationR project_handle application_id = do
     defaultLayout $ do
         setTitle . toHtml $ projectName project <> " Volunteer Application - " <> userDisplayName user <> " | Snowdrift.coop"
         $(widgetFile "application")
-
---------------------------------------------------------------------------------
--- /button.png
-
-getProjectPledgeButtonR :: Text -> Handler TypedContent
-getProjectPledgeButtonR project_handle = do
-   pledges <- runYDB $ do
-        Entity project_id _project <- getBy404 $ UniqueProjectHandle project_handle
-        getProjectShares project_id
-
-   let png = overlayImage blankPledgeButton $
-        fillInPledgeCount (fromIntegral (length pledges))
-
-   respond "image/png" png
 
 --------------------------------------------------------------------------------
 -- /edit
@@ -507,6 +495,8 @@ getProjectFeedR project_handle = do
         provideRep $ atomFeed feed
         provideRep $ rssFeed feed
         provideRep $ defaultLayout $ do
+            setTitle . toHtml $
+                projectName project <> " - Feed | Snowdrift.coop"
             $(widgetFile "project_feed")
             toWidget $(cassiusFile "templates/comment.cassius")
 
@@ -641,10 +631,11 @@ getUpdateSharesR project_handle = do
     Entity project_id project <- runYDB $ getBy404 $ UniqueProjectHandle project_handle
 
     ((result, _), _) <- runFormGet $ pledgeForm project_id
-
+    let dangerRedirect msg = do
+            alertDanger msg
+            redirect $ ProjectR project_handle
     case result of
         FormSuccess (SharesPurchaseOrder new_user_shares) -> do
-            -- TODO - refuse negative
             user_id <- requireAuthId
 
             (confirm_form, _) <- generateFormPost $ projectConfirmSharesForm (Just new_user_shares)
@@ -689,9 +680,9 @@ getUpdateSharesR project_handle = do
                         setTitle . toHtml $ projectName project <> " - update pledge | Snowdrift.coop"
                         $(widgetFile "update_shares")
 
-        FormMissing -> defaultLayout [whamlet| form missing |]
-        FormFailure _ -> defaultLayout [whamlet| form failure |]
-
+        FormMissing -> dangerRedirect "Form missing."
+        FormFailure errors ->
+            dangerRedirect $ T.snoc (T.intercalate "; " errors) '.'
 
 postUpdateSharesR :: Text -> Handler Html
 postUpdateSharesR project_handle = do
@@ -700,8 +691,6 @@ postUpdateSharesR project_handle = do
 
     case result of
         FormSuccess (SharesPurchaseOrder shares) -> do
-            -- TODO - refuse negative
-
             if isConfirmed
                 then do
                     Just pledge_render_id <- fmap (read . T.unpack) <$> lookupSession pledgeRenderKey
@@ -1264,4 +1253,3 @@ postNewProjectDiscussionR project_handle = do
       (makeProjectCommentActionPermissionsMap (Just user) project_handle def) >>= \case
         Left comment_id -> redirect (ProjectCommentR project_handle comment_id)
         Right (widget, form) -> defaultLayout $ previewWidget form "post" (projectDiscussionPage project_handle widget)
-

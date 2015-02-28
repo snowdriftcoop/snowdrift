@@ -13,7 +13,8 @@ $newline never
             /*
             @licstart  The following is the entire license notice for the JavaScript code in this page.
 
-            Copyright (C) 2012-2014  Snowdrift.coop
+            Copyrights on the code are held by the respective authors,
+            see git commit history where not otherwise specified.
 
             The JavaScript code in this page is free software: you can
             redistribute it and/or modify it under the terms of the GNU Affero
@@ -68,20 +69,18 @@ $newline never
         <div .container>
             <footer>
                 <div .row>
-                    <div .col-md-3>
-                        &copy; #{extraCopyright $ appExtra $ settings master}
-                    <div .col-md-3>
+                    <div .col-md-4>
                         Writings and images here are free to use and share under #
                         <a rel="license" title="Creative Commons Attribution Share-Alike 4.0 International" href="https://creativecommons.org/licenses/by-sa/4.0">
                             CC&nbsp;BY-SA
 
-                    <div .col-md-3>
+                    <div .col-md-4>
                         This website's #
                         <a href="#{extraSourceRepo $ appExtra $ settings master}">source code
                         \ is free under the terms of the #
                         <a rel="license" title="Affero GPL version 3.0 or later" href="https://www.gnu.org/licenses/agpl">
                             GNU&nbsp;AGPLv3+
-                    <div .col-md-3>
+                    <div .col-md-4>
                         The #
                         <a href="/license/javascript" rel="jslicense">licenses for any JavaScript
                         \ we use are all free/libre/open also

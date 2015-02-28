@@ -17,6 +17,10 @@ module Model.Comment
     -- Database actions
     , approveCommentDB
     , deleteCommentDB
+    , deleteTagDB
+    , deleteTagsDB
+    , deleteTicketDB
+    , deleteTicketsDB
     , editCommentDB
     , flagCommentDB
     , fetchCommentAncestorClosuresDB
@@ -44,7 +48,12 @@ module Model.Comment
     , fetchCommentsInDB
     , fetchCommentsWithChildrenInDB
     , fetchCommentTicketsDB
+    , fetchTagIdsDB
+    , fetchTagNamesDB
+    , fetchTicketNamesDB
     , filterCommentsDB
+    , insertTagsDB
+    , insertTicketsDB
     , makeClaimedTicketMapDB
     , makeCommentClosingMapDB
     , makeCommentRetractingMapDB
@@ -56,19 +65,23 @@ module Model.Comment
     , postUnapprovedCommentDB
     , rethreadCommentDB
     , subFetchCommentAncestorsDB
+    , userClaimCommentDB
+    , userUnclaimCommentDB
     ) where
 
 import Import
 
-import Model.Comment.Sql
-import Model.Discussion
-import Model.Notification
-import Model.User.Internal (sendPreferredNotificationDB)
+import qualified Model.Comment.Internal as Internal
+import           Model.Comment.Sql
+import           Model.Discussion
+import           Model.Notification
+import           Model.User.Internal (sendPreferredNotificationDB)
 
 import qualified Control.Monad.State                  as State
 import           Control.Monad.Writer.Strict          (tell)
 import           Data.Foldable                        (Foldable)
 import qualified Data.Foldable                        as F
+import           Data.List                            ((\\), nub)
 import qualified Data.Map                             as M
 import           Data.Maybe                           (fromJust)
 import qualified Data.Set                             as S
@@ -279,7 +292,7 @@ insertCommentDB :: Maybe UTCTime
 insertCommentDB mapproved_ts mapproved_by mk_event created_ts discussion_id mparent_id user_id text depth visibility language = do
     mparent <- case mparent_id of
         Nothing -> return Nothing
-        Just parent_id -> get parent_id
+        Just parent_id -> lift $ get parent_id
 
     let parent_visibility = maybe VisPublic commentVisibility mparent
         comment = Comment
@@ -297,6 +310,42 @@ insertCommentDB mapproved_ts mapproved_by mk_event created_ts discussion_id mpar
     comment_id <- lift $ insert comment
     tell [mk_event comment_id comment]
     return comment_id
+
+userClaimCommentDB :: UserId -> CommentId -> Maybe Text -> SDB ()
+userClaimCommentDB user_id comment_id mnote = do
+    now <- liftIO getCurrentTime
+
+    let ticket_claiming = TicketClaiming now user_id comment_id mnote
+
+    ticket_claiming_id <- lift $ insert ticket_claiming
+    tell [ETicketClaimed (Left (ticket_claiming_id, ticket_claiming))]
+
+userUnclaimCommentDB :: CommentId -> Maybe Text -> SDB ()
+userUnclaimCommentDB comment_id release_note = do
+    maybe_ticket_claiming_entity <- lift $ getBy $ UniqueTicketClaiming comment_id
+    case maybe_ticket_claiming_entity of
+        Nothing -> return ()
+        Just (Entity ticket_claiming_id TicketClaiming{..}) -> do
+            now <- liftIO getCurrentTime
+
+            let ticket_old_claiming = TicketOldClaiming
+                    ticketClaimingTs
+                    ticketClaimingUser
+                    ticketClaimingTicket
+                    ticketClaimingNote
+                    release_note
+                    now
+
+            ticket_old_claiming_id <- lift $ insert ticket_old_claiming
+
+            lift $ update $ \ etc -> do
+                set etc [ EventTicketClaimedClaim    =. val Nothing
+                        , EventTicketClaimedOldClaim =. val (Just ticket_old_claiming_id) ]
+                where_ $ etc ^. EventTicketClaimedClaim ==. val (Just ticket_claiming_id)
+
+            lift $ delete $ from $ \ tc -> where_ $ tc ^. TicketClaimingId ==. val ticket_claiming_id
+
+            tell [ ETicketUnclaimed ticket_old_claiming_id ticket_old_claiming ]
 
 -- | Fetch a comment from the DB, subject to viewing permissions.
 fetchCommentDB :: CommentId -> ExprCommentCond -> DB (Either NoCommentReason Comment)
@@ -329,11 +378,66 @@ fetchCommentsInDB comment_ids has_permission =
 deleteCommentDB :: CommentId -> DB ()
 deleteCommentDB = deleteCascade
 
+fetchTicketNamesDB :: CommentId -> DB [Internal.TicketName]
+fetchTicketNamesDB comment_id =
+    fmap (map Internal.TicketName . unwrapValues) $
+    select $ from $ \t -> do
+        where_ $ t ^. TicketComment ==. val comment_id
+        return $ t ^. TicketName
+
+fetchTagNamesDB :: CommentId -> DB [Internal.TagName]
+fetchTagNamesDB comment_id =
+    fmap (map Internal.TagName . unwrapValues) $
+    select $ from $ \(t `InnerJoin` ct) -> do
+        on_ $ t ^. TagId ==. ct ^. CommentTagTag
+        where_ $ ct ^. CommentTagComment ==. val comment_id
+        return $ t ^. TagName
+
+fetchTagIdsDB :: Internal.TagName -> DB [TagId]
+fetchTagIdsDB (Internal.TagName tag_name) =
+    fmap unwrapValues $
+    select $ from $ \t -> do
+        where_ $ t ^. TagName ==. val tag_name
+        return $ t ^. TagId
+
+deleteTagDB :: CommentId -> TagId -> DB ()
+deleteTagDB comment_id tag_id = do
+    delete $ from $ \ct ->
+        where_ $ ct ^. CommentTagComment ==. val comment_id
+             &&. ct ^. CommentTagTag     ==. val tag_id
+    exists_ct <- selectExists $ from $ \ct ->
+                    where_ $ ct ^. CommentTagTag ==. val tag_id
+    exists_pt <- selectExists $ from $ \pt ->
+                     where_ $ pt ^. ProjectTagTag ==. val tag_id
+    exists_tc <- selectExists $ from $ \tc ->
+                     where_ $ tc ^. TagColorTag ==. val tag_id
+    exists_dtc <- selectExists $ from $ \dtc ->
+                      where_ $ dtc ^. DefaultTagColorTag ==. val tag_id
+    unless (exists_ct || exists_pt || exists_tc || exists_dtc) $
+        delete $ from $ \t ->
+            where_ $ t ^. TagId ==. val tag_id
+
+deleteTagsDB :: CommentId -> [Internal.TagName] -> DB ()
+deleteTagsDB comment_id tags =
+    forM_ tags $ \tag -> do
+        tag_ids <- fetchTagIdsDB tag
+        forM_ tag_ids $ deleteTagDB comment_id
+
+deleteTicketDB :: CommentId -> Internal.TicketName -> SDB ()
+deleteTicketDB comment_id (Internal.TicketName ticket_name) = do
+    lift $ delete $ from $ \t ->
+        where_ $ t ^. TicketName    ==. val ticket_name
+             &&. t ^. TicketComment ==. val comment_id
+    userUnclaimCommentDB comment_id Nothing
+
+deleteTicketsDB :: CommentId -> [Internal.TicketName] -> SDB ()
+deleteTicketsDB comment_id = mapM_ $ deleteTicketDB comment_id
+
 -- | Edit a comment's text. If the comment was flagged, unflag it and send a
 -- notification to the flagger.
-editCommentDB :: CommentId -> Markdown -> Language -> SYDB ()
-editCommentDB comment_id text language = do
-    lift updateComment
+editCommentDB :: UserId -> CommentId -> Markdown -> Language -> SYDB ()
+editCommentDB user_id comment_id text language = do
+    updateComment
     lift (fetchCommentFlaggingDB comment_id) >>= \case
         Nothing -> return ()
         Just (Entity comment_flagging_id CommentFlagging{..}) -> do
@@ -344,12 +448,28 @@ editCommentDB comment_id text language = do
             lift (deleteCascade comment_flagging_id) -- delete flagging and all flagging reasons with it.
             sendPreferredNotificationDB commentFlaggingFlagger NotifFlagRepost Nothing Nothing notif_text
   where
-    updateComment =
-        update $ \c -> do
-        set c [ CommentText     =. val text
-              , CommentLanguage =. val language
-              ]
-        where_ (c ^. CommentId ==. val comment_id)
+    updateComment = do
+        existent_tickets <- lift $ fetchTicketNamesDB comment_id
+        existent_tags    <- lift $ fetchTagNamesDB comment_id
+        let content          = unMarkdown text
+            content_tickets  = parseTickets content
+            content_tags     = parseTags content
+            new_tickets      = content_tickets \\ existent_tickets
+            obsolete_tickets = existent_tickets \\ content_tickets
+            new_tags         = content_tags \\ existent_tags
+            obsolete_tags    = existent_tags \\ content_tags
+        deleteTicketsDB comment_id obsolete_tickets
+        lift $ do
+            deleteTagsDB comment_id obsolete_tags
+            now <- liftIO getCurrentTime
+            insertTicketsDB now comment_id new_tickets
+            insertTagsDB user_id comment_id new_tags
+
+            update $ \c -> do
+            set c [ CommentText     =. val text
+                  , CommentLanguage =. val language
+                  ]
+            where_ (c ^. CommentId ==. val comment_id)
 
 -- | Flag a comment. Send a notification to the poster about the flagging. Return whether
 -- or not the flag was successful (fails if the comment was already flagged.)
@@ -381,6 +501,29 @@ postApprovedCommentDB = postComment insertApprovedCommentDB
 postUnapprovedCommentDB :: UserId -> Maybe CommentId -> DiscussionId -> Markdown -> Visibility -> Language -> SDB CommentId
 postUnapprovedCommentDB = postComment insertUnapprovedCommentDB
 
+parseTickets :: Text -> [Internal.TicketName]
+parseTickets =
+    filter (\(Internal.TicketName ticket) -> not $ T.null ticket) .
+    map (Internal.TicketName . T.strip) .
+    mapMaybe (T.stripPrefix "ticket:") . T.lines
+
+insertTicketsDB :: UTCTime -> CommentId -> [Internal.TicketName] -> DB ()
+insertTicketsDB now comment_id tickets =
+    forM_ tickets $ \(Internal.TicketName ticket) ->
+        insert_ $ Ticket now now ticket comment_id
+
+parseTags :: Text -> [Internal.TagName]
+parseTags =
+    nub . filter (\(Internal.TagName tag) -> not $ T.null tag) .
+    map (Internal.TagName . T.strip) . mconcat . map (T.splitOn ",") .
+    mapMaybe (T.stripPrefix "tags:") . T.lines
+
+insertTagsDB :: UserId -> CommentId -> [Internal.TagName] -> DB ()
+insertTagsDB user_id comment_id tags =
+    forM_ tags $ \(Internal.TagName tag) -> do
+        tag_id <- either entityKey id <$> insertBy (Tag tag)
+        insert_ $ CommentTag comment_id tag_id user_id 1
+
 postComment
         :: (UTCTime -> DiscussionId -> Maybe CommentId -> UserId -> Markdown -> Int -> Visibility -> Language -> SDB CommentId)
         -> UserId
@@ -397,15 +540,11 @@ postComment insert_comment user_id mparent_id discussion_id contents visibility 
 
     comment_id <- insert_comment now discussion_id mparent_id user_id contents depth visibility language
 
-    let content = T.lines (unMarkdown contents)
-        tickets = map T.strip $ mapMaybe (T.stripPrefix "ticket:") content
-        tags    = map T.strip $ mconcat $ map (T.splitOn ",") $ mapMaybe (T.stripPrefix "tags:") content
+    let content = unMarkdown contents
 
     lift $ do
-        forM_ tickets $ \ticket -> insert_ (Ticket now now ticket comment_id)
-        forM_ tags $ \tag -> do
-            tag_id <- either entityKey id <$> insertBy (Tag tag)
-            insert_ (CommentTag comment_id tag_id user_id 1)
+        insertTicketsDB now comment_id $ parseTickets content
+        insertTagsDB user_id comment_id $ parseTags content
 
         case mparent_id of
             Nothing -> return ()
@@ -682,11 +821,11 @@ rethreadCommentDB mnew_parent_id new_discussion_id root_comment_id user_id reaso
         new_comment_ids <- flip State.evalStateT mempty $ forM old_comment_ids $ \comment_id -> do
             rethread_map <- State.get
 
-            Just comment <- get comment_id
+            Just comment <- lift $ get comment_id
 
             let new_parent_id = maybe mnew_parent_id Just $ M.lookup (commentParent comment) rethread_map
 
-            new_comment_id <- insert $ comment
+            new_comment_id <- lift $ insert $ comment
                 { commentDepth      = commentDepth comment - depth_offset
                 , commentParent     = new_parent_id
                 , commentDiscussion = new_discussion_id
@@ -799,6 +938,12 @@ rethreadCommentDB mnew_parent_id new_discussion_id root_comment_id user_id reaso
                           (\vc cr -> ViewComment
                               <#  (vc  ^. ViewCommentUser)
                               <&> (cr  ^. CommentRethreadNewComment))
+
+        updateForRethread WatchedSubthreadRoot
+                          (\ws cr -> WatchedSubthread
+                              <#  (ws ^. WatchedSubthreadTs)
+                              <&> (ws ^. WatchedSubthreadUser)
+                              <&> (cr ^. CommentRethreadNewComment))
 
 fetchCommentTicketsDB :: Set CommentId -> DB (Map CommentId (Entity Ticket))
 fetchCommentTicketsDB comment_ids = do
