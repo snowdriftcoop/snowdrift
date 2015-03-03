@@ -1,0 +1,77 @@
+<h1> Donate to Snowdrift.coop
+
+<p>
+    Once we launch fully, we will raise funds via the same mechanims as all other projects.
+    For now, we gratefully accept any donations you care to send to help get us to the launch.
+<p>
+    We ran a
+    <a href="https://snowdrift.tilt.com">successful campaign
+    at the end of 2014, and the co-founders have continued to donate personally.
+    This support currently provides us a budget just barely enough to fund a couple (underpaid)
+    developers, cover legal expenses, and a few other misc. items.
+    Our
+    <a href=@{WikiR "snowdrift" LangEn "accounting"}> accounting page
+    provides details about our budget and how we use the funds.
+<p>
+    Further donations will help us make faster progress and get launched in the best shape.
+    To donate, see the options below. Although this is not formally part of our fund-drive,
+    we can potentially provide comparable rewards still.
+    Please <a href=@{ProjectContactR "snowdrift"}>contact&nbsp;us</a> with any questions.
+<hr>
+<p>
+    <em>
+        Note: Snowdrift.coop is incorporated as a Michigan non-profit cooperative
+        but does not have federal tax-exempt status.
+        Unlike a 501(c)(3) charity, donations to us are not tax-deductible.
+<hr>
+
+<figure>
+    <img alt="Paypal" src=@{StaticR img_external_PayPal_logo_gif}>
+    <form abframeid="iframe.0.4323007988200692" abineguid="E620BEBBFF4F4B1695F2E9204A329253" action="https://www.paypal.com/cgi-bin/webscr" method="post" style="margin: 0 auto;" target="_top"><input name="cmd" type="hidden" value="_s-xclick"> <input name="hosted_button_id" type="hidden" value="M24Z4DFEW4SQL"> <input alt="PayPal donation option" name="submit" src=@{StaticR img_external_paypal_donate_gif} type="image">
+
+<p>
+    The Donate button above goes to an easy form,
+    but you can also log-in to Paypal and send funds directly to aaron@snowdrift.coop
+    (and if you donate that way and mark it as a gift, it will avoid costing us extra fees).
+
+<hr>
+
+<figure>
+    <a href="https://www.dwolla.com/hub/snowdrift">
+        <img alt="Donate with Dwolla" src=@{StaticR img_external_dwolla_png}>
+<p>
+    Dwolla is U.S.-only and requires some set up and connecting a bank account
+    but charges no fee at all for donations under $10 and otherwise charges only 25&cent;.
+    Dwolla uses some proprietary JavaScript, but we like that they avoid credit cards and associated fees.
+
+<hr>
+
+<figure>
+    <img alt="Bitcoin" src=@{StaticR img_external_Bitcoin_png} style="height: 4em">
+
+<div .row>
+    <div .col-md-9 .col-md-offset-2 .col-lg-8> 
+        <pre>
+            -----BEGIN PGP SIGNED MESSAGE-----
+            Hash: SHA256
+
+            Please use this address to publicly contribute to Snowdrift.coop:
+            1Bty8tCJDYGK2f5v5g71oLfL2qPTNv<wbr />sDmB
+
+            We prefer you use the above address to help us with transparency, but if
+            you would like us to generate an address specifically for your payment
+            we will do so on request.
+
+            If you would like to be acknowledged or receive rewards, send us a
+            message identifying yourself signed with the address you used to pay.
+
+            -----BEGIN PGP SIGNATURE-----
+            Version: GnuPG v1
+
+            iF4EAREIAAYFAlSOQskACgkQuHM2OD<wbr />J01/<wbr />L2fQEApnLrKteMemNbVBFpsfbKu+Ea
+            NYxSl4UfcZw8V0U5gwQBAJspPE1wRz<wbr />89ed9RtsC11osgZdD47NZrhCAHR2Pz<wbr />lMD/
+            =lB8a
+            -----END PGP SIGNATURE-----
+<hr>
+
+<div .text-center>Thank you for your support!
