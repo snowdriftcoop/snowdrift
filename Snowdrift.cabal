@@ -79,6 +79,7 @@ library
                      Handler.Comment
                      Handler.Discussion
                      Handler.Home
+                     Handler.Donate
                      Handler.HonorPledge
                      Handler.Image
                      Handler.Invitation

@@ -45,6 +45,7 @@ import           Yesod.Default.Main hiding (LogFunc)
 import Handler.BuildFeed
 import Handler.Comment
 import Handler.Home
+import Handler.Donate
 import Handler.HonorPledge
 import Handler.Image
 import Handler.Invitation
