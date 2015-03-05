@@ -15,6 +15,9 @@ Flag dev
     Description:   Turn on development settings, like auto-reload templates.
     Default:       False
 
+Flag merge
+    Description:   Similar to dev, except with -Werror added.
+    Default:        False
 Flag library-only
     Description:   Build for use with "yesod devel"
     Default:       False
@@ -79,6 +82,7 @@ library
                      Handler.Comment
                      Handler.Discussion
                      Handler.Home
+                     Handler.Donate
                      Handler.HonorPledge
                      Handler.Image
                      Handler.Invitation
@@ -218,6 +222,8 @@ executable         SnowdriftProcessPayments
         Buildable: False
     if flag(dev)
         ghc-options: -Wall -O0 -fobject-code
+    if flag(merge)
+        ghc-options: -Wall -Werror -O0 -fobject-code
 
     main-is:           SnowdriftProcessPayments.hs
     hs-source-dirs:    app
@@ -253,6 +259,8 @@ executable         SnowdriftProcessPayments
 executable         Snowdrift
     if flag(dev)
         ghc-options: -Wall -O0 -fobject-code
+    if flag(merge)
+        ghc-options: -Wall -Werror -O0 -fobject-code
     if flag(library-only)
         Buildable: False
 
@@ -267,6 +275,8 @@ executable         Snowdrift
 executable         SnowdriftEmailDaemon
     if flag(dev)
        ghc-options: -Wall -O0 -fobject-code
+    if flag(merge)
+        ghc-options: -Wall -Werror -O0 -fobject-code
     if flag(library-only)
         Buildable: False
     main-is:           SnowdriftEmailDaemon.hs
@@ -338,6 +348,8 @@ executable         SnowdriftEmailDaemon
 executable         sdm
     if flag(dev)
        ghc-options: -Wall -O0 -fobject-code
+    if flag(merge)
+        ghc-options: -Wall -Werror -O0 -fobject-code
     if flag(library-only)
         Buildable: False
 
@@ -354,6 +366,8 @@ executable         sdm
 executable         SnowdriftSendmail
     if flag(dev)
        ghc-options: -Wall -O0 -fobject-code
+    if flag(merge)
+        ghc-options: -Wall -Werror -O0 -fobject-code
     if flag(library-only)
         Buildable: False
 
@@ -366,7 +380,7 @@ test-suite test
     type:              exitcode-stdio-1.0
     main-is:           main.hs
     hs-source-dirs:    tests
-    ghc-options:       -Wall -O0 -fobject-code
+    ghc-options:       -Werror -Wall -O0 -fobject-code
 
     extensions: QuasiQuotes
 

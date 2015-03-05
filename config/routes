@@ -15,6 +15,7 @@
 /reset-password     ResetPasswordR    GET POST
 /tou                ToUR              GET
 /tutorial/markdown  MarkdownTutorialR GET
+/donate             DonateR           GET
 
 /img/!upload                UploadImageR      GET POST
 /img/!name/#UnnamedImageId  NameImageR        GET POST
