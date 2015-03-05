@@ -8,7 +8,6 @@ module Application
     ) where
 
 import Import
-import Settings
 import SnowdriftEventHandler
 import Version
 
@@ -33,6 +32,7 @@ import qualified Network.Wai.Middleware.RequestLogger as RequestLogger
 import           System.Directory
 import           System.Environment                   (lookupEnv)
 import           System.Log.FastLogger                (newStdoutLoggerSet, defaultBufSize, flushLogStr)
+import           System.IO                            (stderr)
 import           System.Posix.Env.ByteString
 import           Yesod.Core.Types                     (loggerSet, Logger (Logger))
 import           Yesod.Default.Config
@@ -123,7 +123,7 @@ makeFoundation conf = do
     dbconf <- withYamlEnvironment "config/postgresql.yml" (appEnv conf)
               Database.Persist.loadConfig >>=
               Database.Persist.applyEnv
-    p <- Database.Persist.createPoolConfig (dbconf :: Settings.PersistConf)
+    pool <- Database.Persist.createPoolConfig dbconf
 
     loggerSet' <- newStdoutLoggerSet defaultBufSize
     (getter, updater) <- clockDateCacher
@@ -145,7 +145,7 @@ makeFoundation conf = do
                        navbar
                        conf
                        s
-                       p
+                       pool
                        manager
                        dbconf
                        logger
@@ -166,10 +166,9 @@ makeFoundation conf = do
                         liftIO $ putStrLn "ready."
         _ -> return ()
 
-    let migration = runResourceT $ do
-        Database.Persist.runPool dbconf doMigration p
-        runSqlPool migrateTriggers p
-
+    let migration = runSqlPool
+            (doManualMigration >> runMigration migrateAll >> migrateTriggers)
+            pool
 
     void $ runLoggingT
         migration
@@ -178,7 +177,10 @@ makeFoundation conf = do
     now <- getCurrentTime
     let (base, diff) = version
     runLoggingT
-        (runResourceT $ Database.Persist.runPool dbconf (insert_ $ Build now base diff) p)
+        (Database.Persist.runPool
+            dbconf
+            (insert_ $ Build now base diff)
+            pool)
         (messageLoggerSource foundation logger)
 
     forkEventHandler foundation
@@ -194,8 +196,16 @@ getApplicationDev =
         { csParseExtra = parseExtra
         }
 
-doMigration :: (MonadResource m, MonadBaseControl IO m, MonadIO m, MonadLogger m, MonadThrow m) => SqlPersistT m ()
-doMigration = do
+doManualMigration :: (MonadIO m, MonadLogger m, Functor m)
+                  => SqlPersistT m ()
+doManualMigration = do
+    deprecatedApplyManualMigrations
+    saveUnsafeMigrations
+
+deprecatedApplyManualMigrations
+    :: (MonadLogger m, MonadIO m)
+    => ReaderT SqlBackend m ()
+deprecatedApplyManualMigrations = do
     $(logInfo) "creating version table"
 
     runSql "CREATE TABLE IF NOT EXISTS \"database_version\" (\"id\" SERIAL PRIMARY KEY UNIQUE, \"last_migration\" INT8 NOT NULL);"
@@ -224,34 +234,31 @@ doMigration = do
 
     update $ flip set [ DatabaseVersionLastMigration =. val new_last_migration ]
 
-    migrations <- parseMigration' migrateAll
+    -- This is where new safe migrations used to be recorded.
 
-    let (unsafe, safe) = L.partition fst migrations
-
-    maybe_newer_last_migration <-
-        if (L.null $ L.map snd safe)
-         then return Nothing
-         else do
-            let filename = "migrations/migrate" <> show (new_last_migration + 1)
-
-            liftIO $ T.writeFile filename $ T.unlines $ L.map ((`snoc` ';') . snd) safe
-
-            $(logWarn) $ "wrote " <> T.pack (show $ L.length safe) <> " safe statements to " <> T.pack filename
-
-            mapM_ (runSql . snd) migrations
-
-            return $ Just $ new_last_migration + 1
-
+-- | Automatically save unsafe migrations, if they exist.
+--
+-- We'll still blow up with runMigration, but we'll be one step closer to
+-- storing the necessary sql statements to commit and share.
+saveUnsafeMigrations :: (MonadIO m, Functor m) => ReaderT SqlBackend m ()
+saveUnsafeMigrations = do
+    unsafe <- (L.filter fst) <$> parseMigration' migrateAll
     unless (L.null $ L.map snd unsafe) $ do
-        let filename = "migrations/migrate.unsafe"
-
         liftIO $ T.writeFile filename $ T.unlines $ L.map ((`snoc` ';') . snd) unsafe
-
-        $(logWarn) $ "wrote " <> T.pack (show $ L.length unsafe) <> " safe statements to " <> T.pack filename
-
-        error "Some migration steps were unsafe.  Aborting."
-
-    maybe (return ()) (\ newer_last_migration -> update $ flip set [ DatabaseVersionLastMigration =. val newer_last_migration ]) maybe_newer_last_migration
+        liftIO $ mapM_ (T.hPutStrLn stderr) unsafeMigMessages
+  where
+    filename = "migrations/migrate.unsafe"
+    unsafeMigMessages =
+      [ ""
+      , "*** UNSAFE MIGRATIONS EXIST"
+      , ""
+      , "The application will now exit. But first, unsafe migrations have been"
+      , "stored in «" <> filename <> "». Please review them, rename them"
+      , "appropriately, and commit them with your change."
+      , ""
+      , "More information follows."
+      , ""
+      ]
 
 
 migrateTriggers :: MonadIO m => ReaderT SqlBackend m ()
