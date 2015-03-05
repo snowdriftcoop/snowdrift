@@ -79,7 +79,6 @@ import           Model.User.Internal (sendPreferredNotificationDB)
 
 import qualified Control.Monad.State                  as State
 import           Control.Monad.Writer.Strict          (tell)
-import           Data.Foldable                        (Foldable)
 import qualified Data.Foldable                        as F
 import           Data.List                            ((\\), nub)
 import qualified Data.Map                             as M
@@ -89,7 +88,6 @@ import qualified Data.Text                            as T
 import           Data.Tree
 import           Database.Esqueleto.Internal.Language (Insertion)
 import qualified Database.Persist                     as P
-import           GHC.Exts                             (IsList(..))
 import qualified Prelude                              as Prelude
 
 --------------------------------------------------------------------------------
@@ -741,16 +739,16 @@ fetchCommentTagCommentTagsDB comment_id tag_id = fmap (map entityVal) $
         ct ^. CommentTagTag ==. val tag_id
     return ct
 
-makeCommentClosingMapDB    :: (IsList c, CommentId ~ Item c) => c -> DB (Map CommentId CommentClosing)
-makeCommentRetractingMapDB :: (IsList c, CommentId ~ Item c) => c -> DB (Map CommentId CommentRetracting)
+makeCommentClosingMapDB    :: (Foldable c) => c CommentId -> DB (Map CommentId CommentClosing)
+makeCommentRetractingMapDB :: (Foldable c) => c CommentId -> DB (Map CommentId CommentRetracting)
 makeCommentClosingMapDB    = closeOrRetractMap CommentClosingComment    commentClosingComment
 makeCommentRetractingMapDB = closeOrRetractMap CommentRetractingComment commentRetractingComment
 
 closeOrRetractMap
-        :: (IsList c, CommentId ~ Item c, PersistEntity val, PersistEntityBackend val ~ SqlBackend)
+        :: (Foldable c, PersistEntity val, PersistEntityBackend val ~ SqlBackend)
         => EntityField val CommentId
         -> (val -> CommentId)
-        -> c
+        -> c CommentId
         -> DB (Map CommentId val)
 closeOrRetractMap comment_field comment_projection comment_ids = fmap (foldr step mempty) $
     select $
@@ -763,7 +761,7 @@ closeOrRetractMap comment_field comment_projection comment_ids = fmap (foldr ste
 
 -- | Given a collection of CommentId, make a map from CommentId to Entity Ticket. Comments that
 -- are not tickets will simply not be in the map.
-makeTicketMapDB :: (IsList c, CommentId ~ Item c) => c -> DB (Map CommentId (Entity Ticket))
+makeTicketMapDB :: (Foldable c) => c CommentId -> DB (Map CommentId (Entity Ticket))
 makeTicketMapDB comment_ids = fmap (foldr step mempty) $
     select $
     from $ \t -> do
@@ -781,7 +779,7 @@ makeClaimedTicketMapDB comment_ids = fmap (M.fromList . map (\(Value x, Entity _
 
 -- | Given a collection of CommentId, make a flag map. Comments that are not flagged
 -- will simply not be in the map.
-makeFlagMapDB :: (IsList c, CommentId ~ Item c) => c -> DB (Map CommentId (CommentFlagging, [FlagReason]))
+makeFlagMapDB :: (Foldable c) => c CommentId -> DB (Map CommentId (CommentFlagging, [FlagReason]))
 makeFlagMapDB comment_ids = fmap (go . map (\(Entity _ x, Value y) -> (x, y))) $
     select $
     from $ \(cf `InnerJoin` cfr) -> do
@@ -799,7 +797,7 @@ makeFlagMapDB comment_ids = fmap (go . map (\(Entity _ x, Value y) -> (x, y))) $
 -- will simply not be in the map.
 --
 -- TODO: Return enough info to link to the root of the watch
-makeWatchMapDB :: (IsList c, CommentId ~ Item c) => c -> DB (Map CommentId (Set WatchedSubthread))
+makeWatchMapDB :: (Foldable c) => c CommentId -> DB (Map CommentId (Set WatchedSubthread))
 makeWatchMapDB comment_ids = fmap (M.fromListWith mappend . map (\(Value x, Entity _ y) -> (x, S.singleton y))) $ do
     ancestral_watches <- select $ from $ \ (ws `InnerJoin` ca) -> do
         on_ $ ws ^. WatchedSubthreadRoot ==. ca ^. CommentAncestorAncestor
