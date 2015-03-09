@@ -1,32 +1,59 @@
 <div .row>
-    <div .col-xs-2>
+    <div .col-xs-12 .col-sm-2>
         <figure>
             <img src=@{ImageR $ fromMaybe "DefaultLogo" (projectLogo project)}>
-        <ul .list-group>
+        <ul .snowdrift-sidebar>
             $if userIsAdmin
-                <li .list-group-item>
-                    <a href=@{EditProjectR $ projectHandle project}>Edit Project
-                <li .list-group-item>
-                    <a href=@{InviteR $ projectHandle project}>Invite
-                <li .list-group-item>
-                    <a href=@{ProjectTransactionsR $ projectHandle project}>Transactions
+                <li .snowdrift-sidebar-item>
+                    <a href=@{EditProjectR $ projectHandle project}>
+                        <span .glyphicon .glyphicon-cog>
+                        Edit Project
+                <li .snowdrift-sidebar-item>
+                    <a href=@{InviteR $ projectHandle project}>
+                        <span .glyphicon .glyphicon-check>
+                        Invite
+                <li .snowdrift-sidebar-item>
+                    <a href=@{ProjectTransactionsR $ projectHandle project}>
+                        <span .glyphicon .glyphicon-signal>
+                        Transactions
                 <br>
-            <li .list-group-item>
-                <a href=@{ProjectContactR $ projectHandle project}>Contact Project
-            <li .list-group-item>
-                <a href=@{ProjectDiscussionR $ projectHandle project}>Discussion Board
-            <li .list-group-item>
-                <a href=@{ProjectPatronsR $ projectHandle project}>Patrons
-            <li .list-group-item>
-                <a href=@{ProjectFeedR $ projectHandle project}>Project Feed
-            <li .list-group-item>
-                <a href=@{WhoR $ projectHandle project}>Team Members
-            <li .list-group-item>
-                <a href=@{TicketsR $ projectHandle project}>Tickets
-            <li .list-group-item>
-                <a href=@{VolunteerR $ projectHandle project}>Volunteer
-            <li .list-group-item>
-                <a href=@{WikiPagesR $ projectHandle project}>Wiki
+            <li .snowdrift-sidebar-item>
+                <a href=@{ProjectR $ projectHandle project}>
+                    <span .glyphicon .glyphicon-home>
+                    Project Home Page
+            <br>
+            <li .snowdrift-sidebar-item>
+                <a href=@{ProjectFeedR $ projectHandle project}>
+                    <span  .glyphicon .glyphicon-th-list>
+                    Activity Feed
+            <li .snowdrift-sidebar-item>
+                <a href=@{ProjectContactR $ projectHandle project}>
+                    <span .glyphicon .glyphicon-bullhorn>
+                    Contact Project
+            <li .snowdrift-sidebar-item>
+                <a href=@{ProjectDiscussionR $ projectHandle project}>
+                    <span .glyphicon .glyphicon-comment>
+                    Discussion Board
+            <li .snowdrift-sidebar-item>
+                <a href=@{ProjectPatronsR $ projectHandle project}>
+                    <span .glyphicon .glyphicon-user>
+                    Patrons
+            <li .snowdrift-sidebar-item>
+                <a href=@{WhoR $ projectHandle project}>
+                    <span .glyphicon .glyphicon-cloud-upload>
+                    Team Members
+            <li .snowdrift-sidebar-item>
+                <a href=@{TicketsR $ projectHandle project}>
+                    <span .glyphicon .glyphicon-tag>
+                    Tickets
+            <li .snowdrift-sidebar-item>
+                <a href=@{VolunteerR $ projectHandle project}>
+                    <span .glyphicon .glyphicon-link>
+                    Volunteer
+            <li .snowdrift-sidebar-item>
+                <a href=@{WikiPagesR $ projectHandle project}>
+                    <span .glyphicon .glyphicon-book>
+                    Wiki
     <div .col-xs-10 .panel>
         <div .panel-header>
             <H1 .text-center>
@@ -70,21 +97,19 @@
                                     Total: #{show project_value}&nbsp;per&nbsp;month
                     <hr>
                     <div .row>
-                        <div .col-xs-6>
-                        <div .col-xs-6>
-                            <table>
+                        <table>
+                            <tr>
+                                <th> History
+                            $maybe (last, year, total) <- amounts
                                 <tr>
-                                    <th> History
-                                $maybe (last, year, total) <- amounts
-                                    <tr>
-                                        <td>
-                                            #{last} on the last payday
-                                    <tr>
-                                        <td>
-                                            #{year} in the past year
-                                    <tr>
-                                        <td>
-                                            #{total} total
+                                    <td>
+                                        #{last} on the last payday
+                                <tr>
+                                    <td>
+                                        #{year} in the past year
+                                <tr>
+                                    <td>
+                                        #{total} total
                     <br>
                     <div style="border-width: 2px; border-style: solid; border-color: red;" .text-center>
                         <em>
