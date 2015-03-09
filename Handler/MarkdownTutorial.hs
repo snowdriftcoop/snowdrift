@@ -6,5 +6,5 @@ import Import
 
 getMarkdownTutorialR :: Handler Html
 getMarkdownTutorialR = defaultLayout $ do
-    setTitle "Markdown Tutorial | Snowdrift.coop"
+    snowdriftTitle "Markdown Tutorial"
     $(widgetFile "markdown")

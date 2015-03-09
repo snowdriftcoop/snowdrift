@@ -23,7 +23,9 @@ getInvitationR project_handle code = do
     let redeemed = inviteRedeemed invite || isJust (inviteRedeemedBy invite)
 
     defaultLayout $ do
-        setTitle . toHtml $ projectName project <> " Invitation - " <> (T.pack . show $ inviteRole invite) <> " | Snowdrift.coop"
+        snowdriftDashTitle
+            (projectName project <> " Invitation")
+            (T.pack . show $ inviteRole invite)
         $(widgetFile "invitation")
 
 

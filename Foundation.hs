@@ -73,6 +73,15 @@ plural :: Integral i => i -> Text -> Text -> Text
 plural 1 x _ = x
 plural _ _ y = y
 
+snowdriftTitle :: MonadWidget m => Text -> m ()
+snowdriftTitle t =
+    setTitle $ toHtml $ t <> " | Snowdrift.coop"
+
+snowdriftDashTitle :: MonadWidget m => Text -> Text -> m ()
+snowdriftDashTitle x y =
+    setTitle $ toHtml $
+    x <> " — " <> y <> " | Snowdrift.coop"
+
 -- Set up i18n messages. See the message folder.
 mkMessage "App" "messages" "en"
 
@@ -172,7 +181,7 @@ instance Yesod App where
         maybe_user <- maybeAuth
         selectRep $
             provideRep $ defaultLayout $ do
-                setTitle $ "Permission Denied: " <> toHtml s
+                snowdriftTitle $ "Permission Denied: " <> s
                 toWidget [hamlet|$newline never
                     <h1>Permission Denied
                     <p>

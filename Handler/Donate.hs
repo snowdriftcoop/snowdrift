@@ -6,5 +6,5 @@ import Import
 getDonateR :: Handler Html
 getDonateR =
     defaultLayout $ do
-        setTitle "Donate to Snowdrift.coop"
+        snowdriftTitle "Donate"
         $(widgetFile "donatepage")

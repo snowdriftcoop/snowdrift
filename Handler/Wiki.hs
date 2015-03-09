@@ -165,9 +165,7 @@ getWikiR project_handle language target = do
                 return (length roots_ids + num_children, translations)
 
             defaultLayout $ do
-                setTitle . toHtml $
-                    projectName project <> " : " <> target <> " | Snowdrift.coop"
-
+                snowdriftDashTitle (projectName project) target
                 renderWiki comment_count project_handle language target can_edit translations edit
 
 postWikiR :: Text -> Language -> Text -> Handler Html
@@ -321,7 +319,9 @@ getWikiDiscussionR' project_handle language target get_root_comments = do
     (comment_form, _) <- generateFormPost commentNewTopicForm
 
     defaultLayout $ do
-        setTitle . toHtml $ projectName project <> " Wiki Discussion - " <> target <> " | Snowdrift.coop"
+        snowdriftDashTitle
+            (projectName project <> " Wiki Discussion")
+            target
         $(widgetFile "wiki_discuss")
 
 --------------------------------------------------------------------------------
@@ -365,7 +365,7 @@ getWikiDiffR project_handle language target start_edit_id end_edit_id = do
         renderDiff = mconcat . map (\ a -> (case a of Both x _ -> toHtml x; First x -> del (toHtml x); Second x -> ins (toHtml x)) >> br)
 
     defaultLayout $ do
-        setTitle . toHtml $ projectName project <> " Wiki Diff - " <> target <> " | Snowdrift.coop"
+        snowdriftDashTitle (projectName project <> " Wiki Diff") target
         $(widgetFile "wiki_diff")
 
 -- | A proxy handler that redirects "ugly" to "pretty" diff URLs,
@@ -401,7 +401,7 @@ getEditWikiR project_handle language target = do
     (wiki_form, _) <- generateFormPost $ editWikiForm (wikiLastEditEdit last_edit) (wikiEditContent edit) Nothing
 
     defaultLayout $ do
-        setTitle . toHtml $ projectName project <> " Wiki - " <> target <> " | Snowdrift.coop"
+        snowdriftDashTitle (projectName project <> " Wiki") target
         $(widgetFile "edit_wiki")
 
 --------------------------------------------------------------------------------
@@ -429,7 +429,7 @@ getWikiHistoryR project_handle language target = do
 
     let editsIndexed = zip ([0..] :: [Int]) edits
     defaultLayout $ do
-        setTitle . toHtml $ projectName project <> " Wiki History - " <> target <> " | Snowdrift.coop"
+        snowdriftDashTitle (projectName project <> " Wiki History") target
         $(widgetFile "wiki_history")
 
 --------------------------------------------------------------------------------
@@ -449,7 +449,9 @@ getWikiEditR project_handle language target wiki_edit_id = do
 
     defaultLayout $ do
     -- TODO: prettier date format? or edit id?
-        setTitle . toHtml $ projectName project <> " Wiki - " <> target <> " at " <> T.pack (show $ wikiEditTs wiki_edit) <> " | Snowdrift.coop"
+        snowdriftDashTitle
+            (projectName project <> " Wiki")
+            (target <> " at " <> T.pack (show $ wikiEditTs wiki_edit))
         $(widgetFile "wiki_edit")
 
 --------------------------------------------------------------------------------
@@ -461,8 +463,9 @@ getNewWikiR project_handle language target = do
         projectInfoRequireEstablished project_handle
     (wiki_form, _) <- generateFormPost $ newWikiForm Nothing
     defaultLayout $ do
-        setTitle . toHtml $
-            projectName project <> " Wiki - New Page | Snowdrift.coop"
+        snowdriftDashTitle
+            (projectName project <> " Wiki")
+            "New Page"
         $(widgetFile "new_wiki")
 
 
@@ -531,7 +534,9 @@ getNewWikiTranslationR project_handle language target = do
 
     (translation_form, enctype) <- generateFormPost $ newWikiTranslationForm (Just edit_id) Nothing Nothing (Just $ wikiEditContent edit) Nothing
     defaultLayout $ do
-        setTitle . toHtml $ projectName project <> " Wiki - New Translation | Snowdrift.coop"
+        snowdriftDashTitle
+            (projectName project <> " Wiki")
+            "New Translation"
         $(widgetFile "new_wiki_translation")
 
 
@@ -577,7 +582,9 @@ getEditWikiPermissionsR project_handle language target = do
     (wiki_form, _) <- generateFormPost $ editWikiPermissionsForm (wikiPagePermissionLevel page)
 
     defaultLayout $ do
-        setTitle . toHtml $ projectName project <> " Wiki Permissions - " <> target <> " | Snowdrift.coop"
+        snowdriftDashTitle
+            (projectName project <> " Wiki Permissions")
+            target
         $(widgetFile "edit_wiki_perm")
 
 postEditWikiPermissionsR :: Text -> Language -> Text -> Handler Html
