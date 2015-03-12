@@ -1,3 +1,0 @@
-INSERT INTO account (id, balance) VALUES (-2, 0);
-INSERT INTO discussion (id, nothing) VALUES (-2, 0);
-INSERT INTO "user" (id, ident, name, account, discussion, established, languages) VALUES (-2, 'deleted', 'deleted user', -2, -2, 'EstUnestablished', '["sen"]');
