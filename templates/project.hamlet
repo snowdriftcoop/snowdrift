@@ -1,5 +1,5 @@
 <div .row>
-    <div .col-xs-12 .col-sm-2>
+    <div .col-xs-2>
         <figure>
             <img src=@{ImageR $ fromMaybe "DefaultLogo" (projectLogo project)}>
         <ul .snowdrift-sidebar>
@@ -10,25 +10,21 @@
                         Edit Project
                 <li .snowdrift-sidebar-item>
                     <a href=@{InviteR $ projectHandle project}>
-                        <span .glyphicon .glyphicon-check>
+                        <span .glyphicon .glyphicon-link>
                         Invite
                 <li .snowdrift-sidebar-item>
                     <a href=@{ProjectTransactionsR $ projectHandle project}>
-                        <span .glyphicon .glyphicon-signal>
+                        <span .glyphicon .glyphicon-stats>
                         Transactions
                 <br>
             <li .snowdrift-sidebar-item>
                 <a href=@{ProjectR $ projectHandle project}>
                     <span .glyphicon .glyphicon-home>
-                    Project Home Page
+                    #{projectName project} Home
             <br>
             <li .snowdrift-sidebar-item>
-                <a href=@{ProjectFeedR $ projectHandle project}>
-                    <span  .glyphicon .glyphicon-th-list>
-                    Activity Feed
-            <li .snowdrift-sidebar-item>
                 <a href=@{ProjectContactR $ projectHandle project}>
-                    <span .glyphicon .glyphicon-bullhorn>
+                    <span .glyphicon .glyphicon-envelope>
                     Contact Project
             <li .snowdrift-sidebar-item>
                 <a href=@{ProjectDiscussionR $ projectHandle project}>
@@ -36,11 +32,15 @@
                     Discussion Board
             <li .snowdrift-sidebar-item>
                 <a href=@{ProjectPatronsR $ projectHandle project}>
-                    <span .glyphicon .glyphicon-user>
+                    <span .glyphicon .glyphicon-globe>
                     Patrons
             <li .snowdrift-sidebar-item>
+                <a href=@{ProjectFeedR $ projectHandle project}>
+                    <span .glyphicon .glyphicon-th-list>
+                    Project Feed
+            <li .snowdrift-sidebar-item>
                 <a href=@{WhoR $ projectHandle project}>
-                    <span .glyphicon .glyphicon-cloud-upload>
+                    <span .glyphicon .glyphicon-user>
                     Team Members
             <li .snowdrift-sidebar-item>
                 <a href=@{TicketsR $ projectHandle project}>
@@ -48,7 +48,7 @@
                     Tickets
             <li .snowdrift-sidebar-item>
                 <a href=@{VolunteerR $ projectHandle project}>
-                    <span .glyphicon .glyphicon-link>
+                    <span .glyphicon .glyphicon-check>
                     Volunteer
             <li .snowdrift-sidebar-item>
                 <a href=@{WikiPagesR $ projectHandle project}>
@@ -97,19 +97,21 @@
                                     Total: #{show project_value}&nbsp;per&nbsp;month
                     <hr>
                     <div .row>
-                        <table>
-                            <tr>
-                                <th> History
-                            $maybe (last, year, total) <- amounts
+                        <div .col-xs-6>
+                        <div .col-xs-6>
+                            <table>
                                 <tr>
-                                    <td>
-                                        #{last} on the last payday
-                                <tr>
-                                    <td>
-                                        #{year} in the past year
-                                <tr>
-                                    <td>
-                                        #{total} total
+                                    <th> History
+                                $maybe (last, year, total) <- amounts
+                                    <tr>
+                                        <td>
+                                            #{last} on the last payday
+                                    <tr>
+                                        <td>
+                                            #{year} in the past year
+                                    <tr>
+                                        <td>
+                                            #{total} total
                     <br>
                     <div style="border-width: 2px; border-style: solid; border-color: red;" .text-center>
                         <em>

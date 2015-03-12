@@ -324,17 +324,16 @@ div.math
 
 /* This section is for the project sidebar which will show on all project pages */
 .snowdrift-sidebar
-    background-color : #0066FF
+    background : #0066FF
     list-style-type : none
+    buffer : 0
     padding : 0
-    margin : 0
 
 .snowdrift-sidebar-item
     font-size : small
-    font-weight : bold
 
 .snowdrift-sidebar-item a:link
     color : #FFFFFF
-
+    
 .snowdrift-sidebar-item a:visited
-    color : #AAAAFF
+    color: #AAAAFF
