@@ -35,6 +35,10 @@
             <p>
                 The campaign video is still a good introduction to the site.
                 We plan to make newer videos too, stay tuned…
+            <p>
+                Even with the fund-drive, we're still on a very tight budget, and you can still
+                <a href=@{DonateR}>donate
+                to help us get launched sooner.
 
     <div .col-sm-6>
         <div .text-center style="background: whitesmoke; padding: 10px; margin-bottom: 10px;">

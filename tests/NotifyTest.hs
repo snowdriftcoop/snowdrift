@@ -468,7 +468,7 @@ notifySpecs AppConfig {..} file =
             errUnlessUniqueWebsiteNotif' True mary_id NotifUpdatedPledge $
                 "user" <> (shpack $ keyToInt64 bob_id) <>
                 " added " <> (shpack $ shares' - shares) <>
-                " share, changing the total to [" <> tshares <> " shares]"
+                " share, changing their total to [" <> tshares <> " shares]"
         |]
 
         yit "sends an email when the pledge is updated" $ [marked|
@@ -485,7 +485,7 @@ notifySpecs AppConfig {..} file =
             errUnlessUniqueEmailNotif' $
                 "user" <> (shpack $ keyToInt64 bob_id) <>
                 " added " <> (shpack $ shares' - shares) <>
-                " share, changing the total to [" <> tshares <> " shares]"
+                " share, changing their total to [" <> tshares <> " shares]"
         |]
 
     testNotification NotifDeletedPledge = do
