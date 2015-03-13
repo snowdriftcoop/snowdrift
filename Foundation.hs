@@ -29,6 +29,7 @@ import           Data.Time
 import           Data.Text                          as T
 import qualified Data.Text.Lazy                     as TL
 import qualified Data.Text.Lazy.Encoding            as E
+import           Data.Text.Titlecase
 import           Database.Esqueleto
 import qualified Database.Persist
 import           Network.HTTP.Conduit               (Manager)
@@ -74,13 +75,14 @@ plural 1 x _ = x
 plural _ _ y = y
 
 snowdriftTitle :: MonadWidget m => Text -> m ()
-snowdriftTitle t =
-    setTitle $ toHtml $ t <> " | Snowdrift.coop"
+snowdriftTitle t = setTitle $
+    (toHtml $ titlecase $ toLower $ t) <>
+    (toHtml (" | Snowdrift.coop" :: Text))
 
 snowdriftDashTitle :: MonadWidget m => Text -> Text -> m ()
-snowdriftDashTitle x y =
-    setTitle $ toHtml $
-    x <> " — " <> y <> " | Snowdrift.coop"
+snowdriftDashTitle x y = setTitle $
+    (toHtml $ titlecase $ toLower $ x <> " — " <> y) <>
+    (toHtml (" | Snowdrift.coop" :: Text))
 
 -- Set up i18n messages. See the message folder.
 mkMessage "App" "messages" "en"
