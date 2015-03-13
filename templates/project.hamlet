@@ -1,7 +1,12 @@
 <div .row>
-    <div .col-xs-2>
+    <div .col-sm-3 .col-lg-2>
         <figure>
             <img src=@{ImageR $ fromMaybe "DefaultLogo" (projectLogo project)}>
+    <div .col-sm-9 .col-lg-10>
+        <h1 .text-center>
+            #{projectName project}
+<div .row>
+    <div .col-sm-3 .col-lg-2>
         <ul .snowdrift-sidebar>
             $if userIsAdmin
                 <li .snowdrift-sidebar-item>
@@ -12,27 +17,22 @@
                     <a href=@{InviteR $ projectHandle project}>
                         <span .glyphicon .glyphicon-link>
                         Invite
-                <li .snowdrift-sidebar-item>
-                    <a href=@{ProjectTransactionsR $ projectHandle project}>
-                        <span .glyphicon .glyphicon-stats>
-                        Transactions
-                <br>
+                <hr>
             <li .snowdrift-sidebar-item>
                 <a href=@{ProjectR $ projectHandle project}>
                     <span .glyphicon .glyphicon-home>
-                    #{projectName project} Home
-            <br>
+                    Website
             <li .snowdrift-sidebar-item>
                 <a href=@{ProjectContactR $ projectHandle project}>
                     <span .glyphicon .glyphicon-envelope>
-                    Contact Project
+                    Contact
             <li .snowdrift-sidebar-item>
                 <a href=@{ProjectDiscussionR $ projectHandle project}>
                     <span .glyphicon .glyphicon-comment>
                     Discussion Board
             <li .snowdrift-sidebar-item>
                 <a href=@{ProjectPatronsR $ projectHandle project}>
-                    <span .glyphicon .glyphicon-globe>
+                    <span .glyphicon .glyphicon-heart>
                     Patrons
             <li .snowdrift-sidebar-item>
                 <a href=@{ProjectFeedR $ projectHandle project}>
@@ -47,6 +47,10 @@
                     <span .glyphicon .glyphicon-tag>
                     Tickets
             <li .snowdrift-sidebar-item>
+                <a href=@{ProjectTransactionsR $ projectHandle project}>
+                    <span .glyphicon .glyphicon-stats>
+                    Transactions
+            <li .snowdrift-sidebar-item>
                 <a href=@{VolunteerR $ projectHandle project}>
                     <span .glyphicon .glyphicon-check>
                     Volunteer
@@ -54,50 +58,44 @@
                 <a href=@{WikiPagesR $ projectHandle project}>
                     <span .glyphicon .glyphicon-book>
                     Wiki
-    <div .col-xs-10 .panel>
-        <div .panel-header>
-            <H1 .text-center>
-                #{projectName project}
-            <H2 .text-center>
-                <small>
-                    #{projectDescription project}
+        $if isJust mviewer_id && isJust maybe_project_id
+            $with project_id <- fromJust maybe_project_id
+                $if is_watching
+                    <form method=POST action=@{UnwatchProjectR project_id}>
+                        <input type=submit value="unwatch">
+                $else
+                    <form method=POST action=@{WatchProjectR project_id}>
+                        <input type=submit value="watch">
+
+    <div .col-sm-9 .col-lg-10 .panel>
+        <div .panel-header .text-center>
+            #{projectDescription project}
         <div .panel-body>
             <div .row>
-                <div .col-xs-2>
-                    $if isJust mviewer_id && isJust maybe_project_id
-                        $with project_id <- fromJust maybe_project_id
-                            $if is_watching
-                                <form method=POST action=@{UnwatchProjectR project_id}>
-                                    <input type=submit value="unwatch">
-                            $else
-                                <form method=POST action=@{WatchProjectR project_id}>
-                                    <input type=submit value="watch">
-            <div .row>
-                <div .col-xs-6>
+                <div .col-md-6>
                     ^{description}
-                <div .col-xs-6>
-                    <table>
-                        <tr>
-                            <th> Current patrons
-                        <tr>
-                            <td>
-                                $maybe _ <- maybe_project_id
-                                    <a href="@{ProjectPatronsR $ projectHandle project}">
-                                    _{MsgPatrons users}
-                                $nothing
-                                    _{MsgPatrons users}
-                            <tr>
-                                <td>
-                                    _{MsgShares shares}
-                            <tr>
-                                <td>
-                                    #{show share_value}&nbsp;per&nbsp;share
-                            <tr>
-                                <td>
-                                    Total: #{show project_value}&nbsp;per&nbsp;month
-                    <hr>
+                <div .col-md-6>
                     <div .row>
                         <div .col-xs-6>
+                            <table>
+                                <tr>
+                                    <th> Current patrons
+                                <tr>
+                                    <td>
+                                        $maybe _ <- maybe_project_id
+                                            <a href="@{ProjectPatronsR $ projectHandle project}">
+                                            _{MsgPatrons users}
+                                        $nothing
+                                            _{MsgPatrons users}
+                                    <tr>
+                                        <td>
+                                            _{MsgShares shares}
+                                    <tr>
+                                        <td>
+                                            #{show share_value}&nbsp;per&nbsp;share
+                                    <tr>
+                                        <td>
+                                            Total: #{show project_value}&nbsp;per&nbsp;month
                         <div .col-xs-6>
                             <table>
                                 <tr>
@@ -112,7 +110,7 @@
                                     <tr>
                                         <td>
                                             #{total} total
-                    <br>
+                    <hr>
                     <div style="border-width: 2px; border-style: solid; border-color: red;" .text-center>
                         <em>
                             currently

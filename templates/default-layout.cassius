@@ -324,7 +324,7 @@ div.math
 
 /* This section is for the project sidebar which will show on all project pages */
 .snowdrift-sidebar
-    background : #0066FF
+    background : #3981B3
     list-style-type : none
     buffer : 0
     padding : 0
@@ -332,8 +332,6 @@ div.math
 .snowdrift-sidebar-item
     font-size : small
 
-.snowdrift-sidebar-item a:link
+.snowdrift-sidebar-item a
     color : #FFFFFF
     
-.snowdrift-sidebar-item a:visited
-    color: #AAAAFF
