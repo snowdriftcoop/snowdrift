@@ -25,8 +25,6 @@ import           Model.Markdown
 import           Model.Project
 import           Model.Shares
 import           Model.Role
-import           Model.Discussion
-import           Model.Comment.Sql
 import           Model.Comment
 import           View.User (userNameWidget)
 import           Widgets.Markdown
@@ -91,7 +89,7 @@ renderBlogPost project_handle blog_post preview = do
     (comment_count, project) <- handlerToWidget $ runYDB $ do
         project@(Entity project_id _) <- getBy404 $ UniqueProjectHandle project_handle
 
-        comment_count <- countDiscussionAllCommentsDB Nothing project_id (blogPostDiscussion blog_post)
+        comment_count <- fetchCommentCountDB Nothing project_id (blogPostDiscussion blog_post)
         return (comment_count, project)
 
     let (Markdown top_content) = blogPostTopContent blog_post
@@ -102,17 +100,6 @@ renderBlogPost project_handle blog_post preview = do
         content = markdownWidgetWith (fixLinks project_handle discussion) $ Markdown $ top_content <> "\n\n***\n\n<a name=\"fold\"></a>\n\n" <> bottom_content
 
     $(widgetFile "blog_post")
-
--- This function should be in Model.Discussion?
--- Duplicate in Handler.Wiki
--- TODO: move to other module!
-countDiscussionAllCommentsDB :: Maybe (Key User) -> Key Project -> Key Discussion -> DB Int
-countDiscussionAllCommentsDB muser_id project_id discussion_id = do
-    let has_permission = exprCommentProjectPermissionFilter muser_id (val project_id)
-
-    roots_ids    <- map entityKey <$> fetchDiscussionRootCommentsDB discussion_id has_permission
-    num_children <- length <$> fetchCommentsDescendantsDB roots_ids has_permission
-    return $ length roots_ids + num_children
 
 previewBlogPost :: UserId -> Text -> ProjectBlog -> Handler Html
 previewBlogPost viewer_id project_handle project_blog@ProjectBlog {..} = do

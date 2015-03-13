@@ -35,6 +35,7 @@ module Model.Comment
     , fetchCommentAncestorsDB
     , fetchCommentCommentTagsDB
     , fetchCommentCommentTagsInDB
+    , fetchCommentCountDB
     , fetchCommentDepthDB
     , fetchCommentDepthFromMaybeParentIdDB
     , fetchCommentDepth404DB
@@ -206,6 +207,7 @@ makeCommentUsersSet = F.foldMap (S.singleton . commentUser . entityVal)
 --------------------------------------------------------------------------------
 -- Database actions
 
+
 approveCommentDB :: UserId -> CommentId -> Comment -> SDB ()
 approveCommentDB user_id comment_id comment = do
     now <- liftIO getCurrentTime
@@ -363,6 +365,17 @@ fetchCommentDB comment_id has_permission = get comment_id >>= \case
                       c ^. CommentId ==. val comment_id &&.
                       has_permission c
                   return c
+
+-- | Count the visible comments in a given discussion.
+--
+-- Visibility depends on who the user is.
+fetchCommentCountDB :: Maybe (Key User) -> Key Project -> Key Discussion -> DB Int
+fetchCommentCountDB muser_id project_id discussion_id = do
+    let has_permission = exprCommentProjectPermissionFilter muser_id (val project_id)
+
+    roots_ids    <- map entityKey <$> fetchDiscussionRootCommentsDB discussion_id has_permission
+    num_children <- length <$> fetchCommentsDescendantsDB roots_ids has_permission
+    return $ length roots_ids + num_children
 
 fetchCommentsInDB :: [CommentId] -> ExprCommentCond -> DB [Entity Comment]
 fetchCommentsInDB comment_ids has_permission =
