@@ -2,7 +2,6 @@ dist/
 static/tmp/
 config/client_session_key.aes
 config/postgresql.yml
-config/settings.yml
 cabal-dev
 .cabal-sandbox/
 .directory
@@ -26,4 +25,4 @@ TAGS
 /.dist-buildwrapper/
 
 # vim swap files
-#.swp
+*.swp
