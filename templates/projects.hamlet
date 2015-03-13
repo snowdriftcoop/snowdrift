@@ -10,54 +10,49 @@
      agreed upon at this point of time.
 -->
 
-<p class="h1 text-center">Projects
+<h1 class="text-center">Projects
 
 $if null project_summaries
     <p> no projects to display
 $else
     $forall (Entity _ project, summary) <- project_summaries
-        <div .panel>
-            <div .panel-header .h3 .text-center>
+        <div .panel .container>
+            <div .row .panel-header>
                 <a href=@{ProjectR (projectHandle project)}>
-                    #{projectName project}
+                    <div .col-sm-3 .col-md-2>
+                        <figure .project-logo>
+                            <img src=@{ImageR $ fetchProjectLogoDB (projectLogo project)}>
+                    <div .col-sm-9 .col-md-8 .h3 .hidden-xs>
+                            #{projectName project}
+                    <div .col-xs-12 .text-center .h3 .visible-xs-block>
+                            #{projectName project}
             <div .panel-body .container-fluid>
                 <!-- 
                     Project Type could be added as a legend here, but is not
                     currently in Project table.  We'd have to link to the
                     ProjectSignup table or add to Project table.
                 -->
+                <p .small>
+                    #{projectDescription project}
                 <div .row>
-                    <div .col-sm-2>
+                    <!-- Add highlighting for when User is already a patron -->
+                    <div .col-sm-offset-2 .col-md-offset-3 .col-sm-3>
                         <figure>
-                            <img src=@{ImageR $ fetchProjectLogoDB (projectLogo project)}>
-                    <div .col-sm-10>
-                        <!-- <div .row>
-                            <div .col-sm-10>
-                                <a href=@{ProjectR (projectHandle project)}>
-                                    <p .h2 .text-centecenterr>
-                                        #{projectName project}
-                        -->
+                            <img src=@{ImageR "DefaultPatronIcon"} .img-padding-r>#{show $ getCount $ summaryUsers summary}
+                    <div .col-sm-6>
                         <div .row>
-                            <div .col-sm-10 .small .text-muted>
-                                #{projectDescription project}
-                        <div .row .vertical-align>
-                            <!-- Add highlighting for when User is already a patron -->
-                            <div .col-xs-offset-0 .col-xs-5 .col-sm-offset-4 .col-sm-3>
-                                <a href=@{ProjectPatronsR (projectHandle project)}>
-                                    <figure>
-                                        <img src=@{ImageR "DefaultPatronIcon"} .img-padding-r>#{show $ getCount $ summaryUsers summary}
-                            <div .col-xs-offset-1 .col-xs-1>
+                            <div .project-icons .col-xs-3>
                                 <a href=@{WikiPagesR (projectHandle project)}>
                                     <span .glyphicon .glyphicon-book>
-                            <div .col-xs-1>
+                            <div .project-icons .col-xs-3>
                                 <a href=@{ProjectFeedR (projectHandle project)}>
                                     <span .glyphicon .glyphicon-list>
-                            <div .col-xs-1>
+                            <div .project-icons .col-xs-3>
                                 <a href=@{ProjectDiscussionR (projectHandle project)}>
                                     <span .glyphicon .glyphicon-comment>
                                     <span .img-padding-l>#{discussionsCount summary}
-                            <div .col-xs-1>
+                            <div .project-icons .col-xs-3>
                                 <a href=@{TicketsR (projectHandle project)}>
                                     <span .glyphicon .glyphicon-tag>
                                     <span .img-padding-l">#{ticketsCount summary}
-        <br>
+    <br>

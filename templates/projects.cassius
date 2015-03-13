@@ -1,17 +1,22 @@
 .panel
     border: 2px solid
-    border-bottom-left-radius: 25px;
-    border-top-right-radius:   25px;
-    border-style: inset outset outset inset;
-    border-width: medium;
-    border-color: blue;
+    border-bottom-left-radius: 25px
+    border-top-right-radius:   25px
+    border-style: inset outset outset inset
+    border-width: medium
+    border-color: #4477bb
 
-.vertical-align
-    display: flex;
-    align-items: center;
+.panel-body
+    padding: 0
 
 .img-padding-r
-    padding-right: 3px;
+    padding-right: 3px
 
 .img-padding-l
-    padding-left: 3px;
+    padding-left: 3px
+
+.project-logo
+    padding: 10px
+
+.project-icons
+    white-space: nowrap
