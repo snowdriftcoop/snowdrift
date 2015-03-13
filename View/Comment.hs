@@ -51,11 +51,12 @@ import Widgets.Markdown
 import Widgets.Tag
 import Widgets.Time
 
-import qualified Data.List   as L
-import qualified Data.Map    as M
-import qualified Data.Text   as T
-import           Data.Tree   (Forest, Tree(..))
-import qualified Data.Tree   as Tree
+import qualified Data.List        as L
+import qualified Data.Map         as M
+import qualified Data.Text        as T
+import qualified Data.Traversable as Traversable
+import           Data.Tree        (Forest, Tree(..))
+import qualified Data.Tree        as Tree
 
 disabledCommentForm :: Form Markdown
 disabledCommentForm = renderBootstrap3 BootstrapBasicForm $ areq snowdriftMarkdownField ("Reply" { fsAttrs = [("disabled",""), ("class","form-control")] }) Nothing
@@ -492,11 +493,20 @@ commentWidget (Entity comment_id comment)
             Just claiming_user <- runDB $ get claiming_user_id
             return $ M.singleton claiming_user_id claiming_user
 
-    let ticket_str = case fmap (toPersistValue . entityKey) mticket of
-            Just (PersistInt64 tid) -> T.pack $ show tid
-            _ -> "???"
+    let shpack       = T.pack . show
+        persistValue = toPersistValue . entityKey
+    ticket_str <- case persistValue <$> mticket of
+        Just (PersistInt64 tid) -> return $ shpack tid
+        _ -> do
+            mrethread_ticket <- fmap join $ runDB $ do
+                mcomment_rethread <- fetchCommentRethreadLastDB comment_id
+                Traversable.forM mcomment_rethread $ \comment_rethread ->
+                    getBy $ UniqueTicket comment_rethread
+            return $ case persistValue <$> mrethread_ticket of
+                Just (PersistInt64 rtid) -> shpack rtid
+                _ -> "???"
 
-        prettyTicketLine line =
+    let prettyTicketLine line =
             let pretty title = "<div class='ticket-title'>SD-" <> ticket_str <> ": " <> title <> "</div>"
              in return $ maybe line pretty $ T.stripPrefix "ticket: " line
 
