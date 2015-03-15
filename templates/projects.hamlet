@@ -34,8 +34,10 @@ $else
                 #{projectDescription project}
             <div .row>
                 <div .col-sm-3>
-                    <figure>
-                        <img src=@{ImageR "DefaultPatronIcon"} .img-padding-r>#{show $ getCount $ summaryUsers summary}
+                    <figure .project-icon>
+                        <img src=@{StaticR img_patrons_png}>
+                        <span .img-padding-l>#{show $ getCount $ summaryUsers summary}
+
                     <!-- Add highlighting for when User is already a patron -->
                 <div .project-icons .col-sm-9>
                     <div .row>
