@@ -1,4 +1,4 @@
-.panel
+.project-list-container
     border: 2px solid
     border-bottom-left-radius: 25px
     border-top-right-radius:   25px
@@ -6,17 +6,23 @@
     border-width: medium
     border-color: #4477bb
 
-.panel-body
-    padding: 0
-
 .img-padding-r
     padding-right: 3px
 
 .img-padding-l
     padding-left: 3px
 
-.project-logo
-    padding: 10px
+@media (max-width: 767px)
+    .project-list-container .project-title
+        text-align: center
 
-.project-icons
+@media (min-width: 767px)
+    .project-icons
+        position: absolute
+        bottom: 0
+        right: 0
+
+.project-icon
     white-space: nowrap
+    text-align: center
+    display: block
