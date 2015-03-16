@@ -139,7 +139,7 @@ pledgeForm project_id extra = do
 
     (result, pledge_view) <- mreq (pledgeField project_id) "" (if shares > 0 then Just (SharesPurchaseOrder shares) else Nothing)
 
-    let view = $(whamletFile "templates/pledge-form.hamlet")
+    let view = $(widgetFile "pledge-form")
     return (result, view)
 
 -- |previewPledgeForm is used for previewing a project page when editing
