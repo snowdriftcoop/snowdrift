@@ -1,64 +1,66 @@
-<div .row>
-    <div .col-sm-3 .col-lg-2>
-        <figure>
+<nav .snowdrift-sidebar>
+    <a href=@{ProjectR $ projectHandle project}>
+        <figure .project-logo>
             <img src=@{ImageR $ fromMaybe "DefaultLogo" (projectLogo project)}>
-    <div .col-sm-9 .col-lg-10>
-        <h1 .text-center>
-            #{projectName project}
-<div .row>
-    <div .col-sm-3 .col-lg-2>
-        <ul .snowdrift-sidebar>
-            $if userIsAdmin
-                <li .snowdrift-sidebar-item>
-                    <a href=@{EditProjectR $ projectHandle project}>
-                        <span .glyphicon .glyphicon-cog>
-                        Edit Project
-                <li .snowdrift-sidebar-item>
-                    <a href=@{InviteR $ projectHandle project}>
-                        <span .glyphicon .glyphicon-link>
-                        Invite
-                <hr>
+    <ul .project-nav>
+        $if userIsAdmin
             <li .snowdrift-sidebar-item>
-                <a href=@{ProjectR $ projectHandle project}>
+                <a href=@{EditProjectR $ projectHandle project}>
+                    <span .glyphicon .glyphicon-cog>
+                    Edit Project
+            <li .snowdrift-sidebar-item>
+                <a href=@{InviteR $ projectHandle project}>
+                    <span .glyphicon .glyphicon-link>
+                    Invite
+            <hr>
+        <!-- Needs the website field added to projects first
+            <li .snowdrift-sidebar-item>
+                <a href=@{ProjectWebsiteR $ projectHandle project}>
                     <span .glyphicon .glyphicon-home>
                     Website
-            <li .snowdrift-sidebar-item>
-                <a href=@{ProjectContactR $ projectHandle project}>
-                    <span .glyphicon .glyphicon-envelope>
-                    Contact
-            <li .snowdrift-sidebar-item>
-                <a href=@{ProjectDiscussionR $ projectHandle project}>
-                    <span .glyphicon .glyphicon-comment>
-                    Discussion Board
-            <li .snowdrift-sidebar-item>
-                <a href=@{ProjectPatronsR $ projectHandle project}>
-                    <span .glyphicon .glyphicon-heart>
-                    Patrons
-            <li .snowdrift-sidebar-item>
-                <a href=@{ProjectFeedR $ projectHandle project}>
-                    <span .glyphicon .glyphicon-th-list>
-                    Project Feed
-            <li .snowdrift-sidebar-item>
-                <a href=@{WhoR $ projectHandle project}>
-                    <span .glyphicon .glyphicon-user>
-                    Team Members
-            <li .snowdrift-sidebar-item>
-                <a href=@{TicketsR $ projectHandle project}>
-                    <span .glyphicon .glyphicon-tag>
-                    Tickets
-            <li .snowdrift-sidebar-item>
-                <a href=@{ProjectTransactionsR $ projectHandle project}>
-                    <span .glyphicon .glyphicon-stats>
-                    Transactions
-            <li .snowdrift-sidebar-item>
-                <a href=@{VolunteerR $ projectHandle project}>
-                    <span .glyphicon .glyphicon-check>
-                    Volunteer
-            <li .snowdrift-sidebar-item>
-                <a href=@{WikiPagesR $ projectHandle project}>
-                    <span .glyphicon .glyphicon-book>
-                    Wiki
-        $if isJust mviewer_id && isJust maybe_project_id
+        -->
+        <li .snowdrift-sidebar-item>
+            <a href=@{ProjectBlogR $ projectHandle project}>
+                <span .glyphicon .glyphicon-edit>
+                Blog
+        <li .snowdrift-sidebar-item>
+            <a href=@{ProjectContactR $ projectHandle project}>
+                <span .glyphicon .glyphicon-envelope>
+                Contact
+        <li .snowdrift-sidebar-item>
+            <a href=@{ProjectDiscussionR $ projectHandle project}>
+                <span .glyphicon .glyphicon-comment>
+                Discussion Board
+        <li .snowdrift-sidebar-item>
+            <a href=@{ProjectPatronsR $ projectHandle project}>
+                <span .glyphicon .glyphicon-heart>
+                Patrons
+        <li .snowdrift-sidebar-item>
+            <a href=@{ProjectFeedR $ projectHandle project}>
+                <span .glyphicon .glyphicon-th-list>
+                Project Feed
+        <li .snowdrift-sidebar-item>
+            <a href=@{WhoR $ projectHandle project}>
+                <span .glyphicon .glyphicon-user>
+                Team Members
+        <li .snowdrift-sidebar-item>
+            <a href=@{TicketsR $ projectHandle project}>
+                <span .glyphicon .glyphicon-tag>
+                Tickets
+        <li .snowdrift-sidebar-item>
+            <a href=@{ProjectTransactionsR $ projectHandle project}>
+                <span .glyphicon .glyphicon-stats>
+                Transactions
+        <li .snowdrift-sidebar-item>
+            <a href=@{VolunteerR $ projectHandle project}>
+                <span .glyphicon .glyphicon-check>
+                Volunteer
+        <li .snowdrift-sidebar-item>
+            <a href=@{WikiPagesR $ projectHandle project}>
+                <span .glyphicon .glyphicon-book>
+                Wiki
+    $if isJust mviewer_id && isJust maybe_project_id
+        <div .text-center>
             $with project_id <- fromJust maybe_project_id
                 $if is_watching
                     <form method=POST action=@{UnwatchProjectR project_id}>
@@ -67,63 +69,54 @@
                     <form method=POST action=@{WatchProjectR project_id}>
                         <input type=submit value="watch">
 
-    <div .col-sm-9 .col-lg-10 .panel>
-        <div .panel-header .text-center>
-            #{projectDescription project}
-        <div .panel-body>
-            <div .row>
-                <div .col-md-6>
-                    ^{description}
-                <div .col-md-6>
-                    <div .row>
-                        <div .col-xs-6>
-                            <table>
-                                <tr>
-                                    <th> Current patrons
-                                <tr>
-                                    <td>
-                                        $maybe _ <- maybe_project_id
-                                            <a href="@{ProjectPatronsR $ projectHandle project}">
-                                            _{MsgPatrons users}
-                                        $nothing
-                                            _{MsgPatrons users}
-                                    <tr>
-                                        <td>
-                                            _{MsgShares shares}
-                                    <tr>
-                                        <td>
-                                            #{show share_value}&nbsp;per&nbsp;share
-                                    <tr>
-                                        <td>
-                                            Total: #{show project_value}&nbsp;per&nbsp;month
-                        <div .col-xs-6>
-                            <table>
-                                <tr>
-                                    <th> History
-                                $maybe (last, year, total) <- amounts
-                                    <tr>
-                                        <td>
-                                            #{last} on the last payday
-                                    <tr>
-                                        <td>
-                                            #{year} in the past year
-                                    <tr>
-                                        <td>
-                                            #{total} total
-                    <hr>
-                    <div style="border-width: 2px; border-style: solid; border-color: red;" .text-center>
-                        <em>
-                            currently
-                            <strong>testing with fake money
-                            and daily instead of monthly
+<div .row>
+    <div .col-md-7 .col-sm-8 .col-xs-12>
+        <h1 .text-center> #{projectName project}
+        <p> #{projectDescription project}
+        ^{description}
+        <hr>
+        <div>
+            $maybe _ <- maybe_project_id
+                <form method=GET action=@{UpdateSharesR $ projectHandle project}>
+                    ^{update_shares}
+                    $if isJust maybe_shares
+                        <input .pledge type=submit value="update pledge">
+                    $else
+                        <input .pledge type=submit value="enter pledge">
+            $nothing
+                ^{update_shares}
 
+    <div .project-stats .col-md-3 .col-xs-12>
+        <table>
+            <tr>
+                <th> Current patrons
+            <tr>
+                <td>
                     $maybe _ <- maybe_project_id
-                        <form method=GET action=@{UpdateSharesR $ projectHandle project}>
-                            ^{update_shares}
-                            $if isJust maybe_shares
-                                <input .pledge type=submit value="update pledge">
-                            $else
-                                <input .pledge type=submit value="enter pledge">
+                        <a href="@{ProjectPatronsR $ projectHandle project}">
+                        _{MsgPatrons users}
                     $nothing
-                        ^{update_shares}
+                        _{MsgPatrons users}
+                <tr>
+                    <td>
+                        _{MsgShares shares}
+                <tr>
+                    <td>
+                        #{show share_value}&nbsp;per&nbsp;share
+                <tr>
+                    <td>
+                        Total: #{show project_value}&nbsp;per&nbsp;month
+        <table>
+            <tr>
+                <th> History
+            $maybe (last, year, total) <- amounts
+                <tr>
+                    <td>
+                        #{last} on the last payday
+                <tr>
+                    <td>
+                        #{year} in the past year
+                <tr>
+                    <td>
+                        #{total} total
 

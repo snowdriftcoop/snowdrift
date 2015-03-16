@@ -322,12 +322,21 @@ div.math
 .homep-about
     font-weight : bold
 
+.project-logo
+    max-width: 200px
+    margin: 0 auto
+
 /* This section is for the project sidebar which will show on all project pages */
 .snowdrift-sidebar
+    padding : 0
+    float : left
+    max-width : 200px
+
+.project-nav
+    padding : 5px
     background : #3981B3
     list-style-type : none
     buffer : 0
-    padding : 0
 
 .snowdrift-sidebar-item
     font-size : small
