@@ -202,6 +202,7 @@ library
                  , temporary
                  , text
                  , time
+                 , titlecase
                  , transformers
                  , unix
                  , wai-extra
@@ -313,6 +314,7 @@ executable         SnowdriftEmailDaemon
                      , template-haskell
                      , text
                      , time
+                     , titlecase
                      , transformers
                      , yaml
                      , yesod

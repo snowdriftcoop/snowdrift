@@ -193,7 +193,7 @@ getProjectsR :: Handler Html
 getProjectsR = do
     projects <- runDB fetchPublicProjectsDB
     defaultLayout $ do
-        setTitle "Projects | Snowdrift.coop"
+        snowdriftTitle "Projects"
         $(widgetFile "projects")
 
 --------------------------------------------------------------------------------
@@ -214,7 +214,7 @@ getProjectR project_handle = do
         return (project_id, project, is_watching, pledges, pledge)
 
     defaultLayout $ do
-        setTitle . toHtml $ projectName project <> " | Snowdrift.coop"
+        snowdriftTitle $ projectName project
         renderProject (Just project_id) project mviewer_id is_watching pledges pledge
 
 postProjectR :: Text -> Handler Html
@@ -289,7 +289,7 @@ getApplicationsR project_handle = do
         return (project, applications)
 
     defaultLayout $ do
-        setTitle . toHtml $ projectName project <> " Volunteer Applications | Snowdrift.coop"
+        snowdriftTitle $ projectName project <> " Volunteer Applications"
         $(widgetFile "applications")
 
 --------------------------------------------------------------------------------
@@ -311,7 +311,9 @@ getApplicationR project_handle application_id = do
         return (project, Entity user_id user, application, interests, num_interests)
 
     defaultLayout $ do
-        setTitle . toHtml $ projectName project <> " Volunteer Application - " <> userDisplayName user <> " | Snowdrift.coop"
+        snowdriftDashTitle
+            (projectName project <> " Volunteer Application")
+            (userDisplayName user)
         $(widgetFile "application")
 
 --------------------------------------------------------------------------------
@@ -332,7 +334,7 @@ getEditProjectR project_handle = do
     (project_form, _) <- generateFormPost $ editProjectForm (Just (project, map (tagName . entityVal) tags))
 
     defaultLayout $ do
-        setTitle . toHtml $ projectName project <> " | Snowdrift.coop"
+        snowdriftTitle $ projectName project
         $(widgetFile "edit_project")
 
 --------------------------------------------------------------------------------
@@ -495,8 +497,7 @@ getProjectFeedR project_handle = do
         provideRep $ atomFeed feed
         provideRep $ rssFeed feed
         provideRep $ defaultLayout $ do
-            setTitle . toHtml $
-                projectName project <> " - Feed | Snowdrift.coop"
+            snowdriftDashTitle (projectName project) "Feed"
             $(widgetFile "project_feed")
             toWidget $(cassiusFile "templates/comment.cassius")
 
@@ -559,7 +560,7 @@ getInviteR project_handle = do
                                         (M.lookup user_id users)
 
     defaultLayout $ do
-        setTitle . toHtml $ projectName project <> " - Send Invite | Snowdrift.coop"
+        snowdriftDashTitle (projectName project) "Send Invite"
         $(widgetFile "invite")
 
 postInviteR :: Text -> Handler Html
@@ -619,7 +620,7 @@ getProjectPatronsR project_handle = do
         return (project, pledges, M.fromList $ map ((\ (Value x :: Value UserId) -> x) *** (\ (Value x :: Value Int) -> x)) user_payouts)
 
     defaultLayout $ do
-        setTitle . toHtml $ projectName project <> " Patrons | Snowdrift.coop"
+        snowdriftTitle $ projectName project <> " Patrons"
         $(widgetFile "project_patrons")
 
 --------------------------------------------------------------------------------
@@ -677,7 +678,9 @@ getUpdateSharesR project_handle = do
                         old_project_amount = old_share_value $* fromIntegral (sum old_project_shares)
 
                     defaultLayout $ do
-                        setTitle . toHtml $ projectName project <> " - update pledge | Snowdrift.coop"
+                        snowdriftDashTitle
+                            (projectName project)
+                            "update pledge"
                         $(widgetFile "update_shares")
 
         FormMissing -> dangerRedirect "Form missing."
@@ -749,7 +752,7 @@ getTicketsR project_handle = do
                       map mkSomeIssue tagged_tickets ++ map mkSomeIssue github_issues
 
     defaultLayout $ do
-        setTitle . toHtml $ projectName project <> " Tickets | Snowdrift.coop"
+        snowdriftTitle $ projectName project <> " Tickets"
         $(widgetFile "tickets")
 
 
@@ -808,7 +811,7 @@ getProjectTransactionsR project_handle = do
             | otherwise = Nothing
 
     defaultLayout $ do
-        setTitle . toHtml $ projectName project <> " Transactions | Snowdrift.coop"
+        snowdriftTitle $ projectName project <> " Transactions"
         $(widgetFile "project_transactions")
 
   where
@@ -837,7 +840,7 @@ getWikiPagesR project_handle = do
         wiki_targets <- getProjectWikiPages languages project_id
         return (project, wiki_targets)
     defaultLayout $ do
-        setTitle . toHtml $ projectName project <> " Wiki | Snowdrift.coop"
+        snowdriftTitle $ projectName project <> " Wiki"
         $(widgetFile "wiki_pages")
 
 --------------------------------------------------------------------------------
@@ -1172,7 +1175,7 @@ getProjectContactR project_handle = do
     (project_contact_form, _) <- generateFormPost projectContactForm
     Entity _ project <- runYDB $ getBy404 (UniqueProjectHandle project_handle)
     defaultLayout $ do
-        setTitle . toHtml $ "Contact " <> projectName project <> " | Snowdrift.coop"
+        snowdriftTitle $ "Contact " <> projectName project
         $(widgetFile "project_contact")
 
 postProjectContactR :: Text -> Handler Html
@@ -1229,7 +1232,7 @@ getProjectDiscussion project_handle get_root_comments = do
     (comment_form, _) <- generateFormPost commentNewTopicForm
 
     defaultLayout $ do
-        setTitle . toHtml $ projectName project <> " Discussion | Snowdrift.coop"
+        snowdriftTitle $ projectName project <> " Discussion"
         $(widgetFile "project_discuss")
 
 --------------------------------------------------------------------------------

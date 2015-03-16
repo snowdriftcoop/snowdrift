@@ -25,7 +25,7 @@ getVolunteerR project_handle = do
     interests <- runDB $ select $ from return
     (volunteer_form, _) <- generateFormPost $ volunteerForm now project_id interests user
     defaultLayout $ do
-        setTitle . toHtml $ projectName project <> " - Volunteer | Snowdrift.coop"
+        snowdriftDashTitle (projectName project) "Volunteer"
         $(widgetFile "volunteer")
 
 

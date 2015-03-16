@@ -14,7 +14,7 @@ haskellPackages.cabal.mkDerivation (self: {
     github hit hjsmin hourglass httpConduit httpTypes liftedBase mime
     mimeMail monadLogger mtl mwcRandom pandoc pathPieces persistent
     persistentPostgresql persistentTemplate random regexTdfa resourcet
-    semigroups shakespeare stm temporary text time transformers
+    semigroups shakespeare stm temporary text time titlecase transformers
     waiExtra waiLogger yaml yesod yesodAuth yesodAuthHashdb yesodCore
     yesodForm yesodMarkdown yesodNewsfeed yesodStatic
   ];

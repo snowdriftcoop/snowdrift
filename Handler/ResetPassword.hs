@@ -12,7 +12,7 @@ getResetPasswordR :: Handler Html
 getResetPasswordR = do
     (form, enctype) <- generateFormPost resetPasswordForm
     defaultLayout $ do
-        setTitle "Reset Password | Snowdrift.coop"
+        snowdriftTitle "Reset Password"
         $(widgetFile "reset_password")
 
 initResetPassword :: UserId -> Text -> Handler Html

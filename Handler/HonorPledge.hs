@@ -8,7 +8,7 @@ getHonorPledgeR :: Handler Html
 getHonorPledgeR = do
     is_elig <- curUserIsEligibleEstablish
     defaultLayout $ do
-        setTitle "Honor Pledge | Snowdrift.coop"
+        snowdriftTitle "Honor Pledge"
         $(widgetFile "honor-pledge")
 
 postHonorPledgeR :: Handler Html
