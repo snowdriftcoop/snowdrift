@@ -80,9 +80,7 @@ snowdriftTitle t = setTitle $
     (toHtml (" | Snowdrift.coop" :: Text))
 
 snowdriftDashTitle :: MonadWidget m => Text -> Text -> m ()
-snowdriftDashTitle x y = setTitle $
-    (toHtml $ titlecase $ toLower $ x <> " — " <> y) <>
-    (toHtml (" | Snowdrift.coop" :: Text))
+snowdriftDashTitle x y = snowdriftTitle $ x <> " — " <> y
 
 -- Set up i18n messages. See the message folder.
 mkMessage "App" "messages" "en"
