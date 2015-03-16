@@ -49,14 +49,16 @@ getUsersR = do
         return (user, ((project ^. ProjectName, project ^. ProjectHandle), role ^. ProjectUserRoleRole))
 
 
-    let users = map (\u -> (getUserKey u, u)) users'
+    let users = map (\u -> (getUserKey u :: Text, u)) $ filter isVisible users'
         infos' :: [(UserId, ((Text, Text), Role))] = map (entityKey *** unwrapValues) infos
         infos'' :: [(UserId, Map (Text, Text) (Set Role))] = map (second $ uncurry M.singleton . second S.singleton) infos'
         allProjects :: Map UserId (Map (Text, Text) (Set Role)) = M.fromListWith (M.unionWith S.union) infos''
         userProjects :: Entity User -> Maybe (Map (Text, Text) (Set (Role)))
         userProjects u = M.lookup (entityKey u) allProjects
-        getUserKey :: Entity User -> Text
+        getUserKey :: PersistField a => Entity User -> a
         getUserKey = either (error . T.unpack) id . fromPersistValue . toPersistValue . entityKey
+        isVisible :: Entity User -> Bool
+        isVisible = (>= (0::Int)) . getUserKey
 
     defaultLayout $ do
         setTitle "Users | Snowdrift.coop"

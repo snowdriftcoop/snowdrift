@@ -11,7 +11,6 @@ import Handler.Wiki.Comment (makeWikiPageCommentForestWidget, wikiDiscussionPage
 import Model.Comment
 import Model.Comment.ActionPermissions
 import Model.Comment.Sql
-import Model.Discussion
 import Model.Markdown
 import Model.Notification
 import Model.Permission
@@ -155,14 +154,11 @@ getWikiR project_handle language target = do
                         when is_watching $
                             userViewWikiEditsDB user_id page_id
 
-                let has_permission = exprCommentProjectPermissionFilter muser_id (val project_id)
-
-                roots_ids    <- map entityKey <$> fetchDiscussionRootCommentsDB discussion_id has_permission
-                num_children <- length <$> fetchCommentsDescendantsDB roots_ids has_permission
+                comment_count <- fetchCommentCountDB muser_id project_id discussion_id
 
                 let translations = L.delete (wikiEditLanguage edit) $ map (wikiEditLanguage . entityVal) edits
 
-                return (length roots_ids + num_children, translations)
+                return (comment_count, translations)
 
             defaultLayout $ do
                 setTitle . toHtml $

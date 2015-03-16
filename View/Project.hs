@@ -25,6 +25,7 @@ import           Model.Markdown
 import           Model.Project
 import           Model.Shares
 import           Model.Role
+import           Model.Comment
 import           View.User (userNameWidget)
 import           Widgets.Markdown
 import           Widgets.Preview
@@ -85,7 +86,11 @@ data Preview = Preview | NotPreview deriving Eq
 
 renderBlogPost :: Text -> BlogPost -> Preview -> WidgetT App IO ()
 renderBlogPost project_handle blog_post preview = do
-    project <- handlerToWidget $ runYDB $ getBy404 $ UniqueProjectHandle project_handle
+    (comment_count, project) <- handlerToWidget $ runYDB $ do
+        project@(Entity project_id _) <- getBy404 $ UniqueProjectHandle project_handle
+
+        comment_count <- fetchCommentCountDB Nothing project_id (blogPostDiscussion blog_post)
+        return (comment_count, project)
 
     let (Markdown top_content) = blogPostTopContent blog_post
         (Markdown bottom_content) = fromMaybe (Markdown "") $ blogPostBottomContent blog_post
