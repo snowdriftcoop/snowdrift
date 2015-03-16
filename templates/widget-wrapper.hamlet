@@ -4,7 +4,7 @@ $newline never
 \<!--[if IE 7]>    <html class="no-js ie7 oldie" lang="en"> <![endif]-->
 \<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="en"> <![endif]-->
 \<!--[if gt IE 8]><!-->
-<html class="no-js" lang="en"> <!--<![endif]-->
+<html .no-js lang="en"> <!--<![endif]-->
     <head>
         <meta charset="UTF-8">
 
@@ -23,7 +23,7 @@ $newline never
         <script>
           document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/,'js');
     <body>
-        <div class="container">
+        <div .container>
             <header>
             <div id="main" role="main">
               ^{pageBody pc}

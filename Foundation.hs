@@ -446,7 +446,7 @@ addAlertEm level msg em = do
 
     setSession alertKey $ maybe id mappend prev $ TL.toStrict $ renderHtml $ [hamlet|
         $newline never
-        <div class="alert alert-#{level}">
+        <div .alert .alert-#{level}>
             <em>
                 #{em}
             #{msg}
@@ -460,7 +460,7 @@ addAlert level msg = do
 
     setSession alertKey $ maybe id mappend prev $ TL.toStrict $ renderHtml $ [hamlet|
         $newline never
-        <div class="alert alert-#{level}">
+        <div .alert .alert-#{level}>
             #{msg}
     |] render
 
