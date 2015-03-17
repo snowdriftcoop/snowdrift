@@ -27,7 +27,6 @@ import           Model.Shares
 import           Model.User
 import           Model.Role
 import           View.User (userNameWidget)
-import           Widgets.Image
 import           Widgets.Markdown
 import           Widgets.Preview
 import           Widgets.Time
@@ -119,15 +118,17 @@ previewBlogPost viewer_id project_handle project_blog@ProjectBlog {..} = do
     defaultLayout $ previewWidget form "post" $
         renderBlogPost project_handle blog_post Preview
 
-editProjectForm :: Maybe (Project, [Text]) -> [Entity Image] -> Form UpdateProject
-editProjectForm project images =
+editProjectForm :: Maybe (Project, [Text]) -> Form UpdateProject
+editProjectForm project =
     renderBootstrap3 BootstrapBasicForm $ UpdateProject
         <$> areq' textField "Project Name" (projectName . fst <$> project)
         <*> areq' textField "Description" (projectDescription . fst <$> project)
         <*> areq' snowdriftMarkdownField "Blurb" (projectBlurb . fst <$> project)
         <*> (maybe [] (map T.strip . T.splitOn ",") <$> aopt' textField "Tags" (Just . T.intercalate ", " . snd <$> project))
         <*> aopt' textField "GitHub Repository (to show GH tickets here at Snowdrift.coop)" (projectGithubRepo . fst <$> project)
-        <*> aopt' (imageSelectField images) "Select Image" (projectLogo . fst <$> project)
+        -- TODO: system to upload project logo as in SD-543
+        -- the following <*> pure Nothing line inserts default logo for now.
+        <*> pure Nothing
 
 data ProjectBlog = ProjectBlog
     { projectBlogTitle   :: Text

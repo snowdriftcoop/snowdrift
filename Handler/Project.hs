@@ -235,12 +235,7 @@ postProjectR project_handle = do
     (viewer_id, Entity project_id project) <-
         requireRolesAny [Admin] project_handle "You do not have permission to edit this project."
 
-    images <- runDB $
-        select $
-        from $ \image -> do
-        return image
-
-    ((result, _), _) <- runFormPost $ editProjectForm Nothing images
+    ((result, _), _) <- runFormPost $ editProjectForm Nothing
 
     now <- liftIO getCurrentTime
 
@@ -282,7 +277,7 @@ postProjectR project_handle = do
                 _ -> do
                     let preview_project = project { projectName = name, projectDescription = description, projectBlurb = blurb, projectGithubRepo = github_repo, projectLogo = logo }
 
-                    (form, _) <- generateFormPost $ editProjectForm (Just (preview_project, tags)) images
+                    (form, _) <- generateFormPost $ editProjectForm (Just (preview_project, tags))
                     defaultLayout $ previewWidget form "update" $ renderProject (Just project_id) preview_project Nothing False [] Nothing
 
         x -> do
@@ -347,12 +342,7 @@ getEditProjectR project_handle = do
         where_ (p_t ^. ProjectTagProject ==. val project_id)
         return tag
 
-    images <- runDB $
-        select $
-        from $ \image -> do
-        return image
-
-    (project_form, _) <- generateFormPost $ editProjectForm (Just (project, map (tagName . entityVal) tags)) images
+    (project_form, _) <- generateFormPost $ editProjectForm (Just (project, map (tagName . entityVal) tags))
 
     defaultLayout $ do
         setTitle . toHtml $ projectName project <> " | Snowdrift.coop"
