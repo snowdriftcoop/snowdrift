@@ -23,11 +23,9 @@ module Model.Project
     , fetchProjectPledgesDB
     , fetchProjectSharesDB
     , insertProjectPledgeDB
-    , fetchProjectLogoDB
     -- TODO(mitchell): rename all these... prefix fetch, suffix DB
     , getGithubIssues
     , getProjectPages
---    , getProjectShares
     , getProjectTagList
     , getProjectWikiPages
     , projectComputeShareValue
@@ -548,12 +546,3 @@ fetchProjectOpenTicketsDB project_id muser_id = do
                  where_ $ val (ticketComment ticket) ==. tc ^. TicketClaimingTicket
                  return tc
             return $ if c == 0 then (t, False) else (t, True)
-
--- This function determines if there is a logo affiliated with the project.
--- If so, it returns the image name of the logo.
--- If not, it returns the image name "DefaultLogo"
--- Note: At this time, it assumes there is a DefaultLogo.  We will need to
---       somehow ensure that there is a DefaultLogo.
-fetchProjectLogoDB :: Maybe Text -> Text
-fetchProjectLogoDB logo = fromMaybe "DefaultLogo" logo
-
