@@ -23,6 +23,3 @@ TAGS
 
 # EclipseFP:
 /.dist-buildwrapper/
-
-# vim swap files
-*.swp
