@@ -1,7 +1,10 @@
 <nav .snowdrift-sidebar>
     <a href=@{ProjectR $ projectHandle project}>
         <figure .project-logo>
-            <img src=@{ImageR $ fromMaybe "DefaultLogo" (projectLogo project)}>
+            $maybe logo <- projectLogo project
+                <img src=@{ImageR logo}>
+            $nothing
+                <img src=@{StaticR img_default_project_logo_png}>
     <ul .project-nav>
         $if userIsAdmin
             <li .snowdrift-sidebar-item>

@@ -350,7 +350,6 @@ getEditProjectR project_handle = do
     images <- runDB $
         select $
         from $ \image -> do
---        where_ (image ^. ImageName `like` val ("test%")) 
         return image
 
     (project_form, _) <- generateFormPost $ editProjectForm (Just (project, map (tagName . entityVal) tags)) images

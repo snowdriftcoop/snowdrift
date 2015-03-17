@@ -20,7 +20,10 @@ $else
         <div .project-logo .col-sm-3 .col-md-2>
             <a href=@{ProjectR (projectHandle project)}>
                 <figure>
-                    <img src=@{ImageR $ fetchProjectLogoDB (projectLogo project)}>
+                    $maybe logo <- projectLogo project
+                        <img src=@{ImageR logo}>
+                    $nothing
+                        <img src=@{StaticR img_default_project_logo_png}>
         <div .col-sm-9 .col-md-10>
             <div .project-title .h3>
                 <a href=@{ProjectR (projectHandle project)}>
