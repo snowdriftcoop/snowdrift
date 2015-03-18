@@ -1,5 +1,5 @@
 .event
-    padding : 5px    
-    max-width : 42em
-    margin : auto
-    border-top : thin solid
+    padding: 5px    
+    max-width: 42em
+    margin: auto
+    border-top: thin solid
