@@ -123,13 +123,15 @@ Project
     createdTs   UTCTime
     name        Text
     handle      Text
-    description Markdown
+    description Text
+    blurb       Markdown
     account     AccountId
     shareValue  Milray
     lastPayday  PaydayId     Maybe
     githubRepo  Text         Maybe
     discussion  DiscussionId       default=nextval('discussion_id_seq'::regclass)
     public      Bool               default=true
+    logo        Text         Maybe
 
     UniqueProjectAccount account
     UniqueProjectHandle handle
@@ -184,7 +186,8 @@ ProjectUpdate
     updatedTs   UTCTime
     project     ProjectId
     author      UserId
-    description MarkdownDiff
+    description Text
+    blurb       MarkdownDiff
 
 ProjectLastUpdate
     project ProjectId

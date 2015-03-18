@@ -1,0 +1,41 @@
+<!--  <fieldset> -->
+<div .imagescroller>
+    $case result
+        $of Right prior
+            <div .imagerow>
+                <input type=radio id=#{idAttr} name=#{nameAttr} value="None" *{attrs}>
+                    <span style="width: 100%">
+                        None
+            <!--
+            <div .imagerow>
+                <input type=radio id=#{idAttr} name=#{nameAttr} value="New" *{attrs}>
+                    <span style="width: 100%">
+                        Upload a New Image...
+
+                    Note:  To be implemented later...
+            -->
+            $forall Entity _ image <- images
+                $if ((imageName image) == prior)
+                    <div .imagerow>
+                        <input type=radio id=#{idAttr} name=#{nameAttr} value=#{imageName image} *{attrs} checked>
+                            <img src=@{ImageR $ imageName image} name=#{imageName image} height=200 width=200>
+                $else
+                    <div .imagerow>
+                        <input type=radio id=#{idAttr} name=#{nameAttr} value=#{imageName image} *{attrs}>
+                            <img src=@{ImageR $ imageName image} name=#{imageName image} height=200 width=200>
+        $of Left _
+            <div .imagerow>
+                <input type=radio id=#{idAttr} name=#{nameAttr} value="None" *{attrs} checked>
+                    <span style="width: 100%">
+                        None
+            <!--
+            <div .imagerow>
+                <input type=radio id=#{idAttr} name=#{nameAttr} value="New" *{attrs}>
+                    <span style="width: 100%">
+                        Upload a New Image...  
+                    Note: To be implemented later...
+            -->
+            $forall Entity _ image <- images
+                <div .imagerow>
+                    <input type=radio id=#{idAttr} name=#{nameAttr} value=#{imageName image} *{attrs}>
+                        <img src=@{ImageR $ imageName image} name=#{imageName image} height=200 width=200>

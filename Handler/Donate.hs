@@ -1,4 +1,3 @@
-{-# LANGUAGE TupleSections, OverloadedStrings #-}
 module Handler.Donate where
 
 import Import

@@ -1,8 +1,7 @@
-
 td
-    padding : 1em
+    padding: 1em
 
 .blurb p
-    padding : 0
-    margin : 0
-    max-width : 38em
+    padding: 0
+    margin: 0
+    max-width: 38em

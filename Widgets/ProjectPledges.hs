@@ -3,6 +3,7 @@ module Widgets.ProjectPledges where
 
 import Import
 
+import Model.User (fetchUserProjectsPatronDB)
 import Model.Project
 import Model.Currency
 
@@ -15,14 +16,16 @@ be useful, such as putting the summary number at /u listing perhaps-}
 -- |The summary of pledging to projects shown on user's page
 projectPledgeSummary :: UserId -> Widget
 projectPledgeSummary user_id = do
-    project_summary :: [ProjectSummary] <- handlerToWidget $ runDB $ do
-        projects_pledges <- fmap (map (second return)) $ select $ from $
-            \ (project `InnerJoin` pledge) -> do
-                on_ $ project ^. ProjectId ==. pledge ^. PledgeProject
-                where_ $ pledge ^. PledgeUser ==. val user_id
-                return (project, pledge)
+    project_summary <- handlerToWidget $ runDB $ do
+        projects_pledges <- fetchUserProjectsPatronDB user_id
+--        projects_pledges <- fmap (map (second return)) $ select $ from $
+--            \ (project `InnerJoin` pledge) -> do
+--                on_ $ project ^. ProjectId ==. pledge ^. PledgeProject
+--                where_ $ pledge ^. PledgeUser ==. val user_id
+--                return (project, pledge)
 
-        mapM (uncurry summarizeProject) projects_pledges
+        -- Discussion Counts & Ticket Counts not needed for this view
+        mapM (\(a, b) -> summarizeProject a b [] []) projects_pledges
 
     toWidget [hamlet|
         $if null project_summary
@@ -39,13 +42,15 @@ projectPledgeSummary user_id = do
 projectPledges :: UserId -> Widget
 projectPledges user_id = do
     project_summaries :: [ProjectSummary] <- handlerToWidget $ runDB $ do
-        projects_pledges <- fmap (map (second return)) $ select $ from $
-            \ (project `InnerJoin` pledge) -> do
-                on_ $ project ^. ProjectId ==. pledge ^. PledgeProject
-                where_ $ pledge ^. PledgeUser ==. val user_id
-                return (project, pledge)
+        projects_pledges <- fetchUserProjectsPatronDB user_id
+--        projects_pledges <- fmap (map (second return)) $ select $ from $
+--            \ (project `InnerJoin` pledge) -> do
+--                on_ $ project ^. ProjectId ==. pledge ^. PledgeProject
+--                where_ $ pledge ^. PledgeUser ==. val user_id
+--                return (project, pledge)
 
-        mapM (uncurry summarizeProject) projects_pledges
+        -- Discussion Counts & Ticket Counts not needed for this view
+        mapM (\(a, b) -> summarizeProject a b [] []) projects_pledges
 
     let cost = summaryShareCost
         shares = getCount . summaryShares

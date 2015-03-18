@@ -1,112 +1,112 @@
 .comment
-    padding : 0 1em
-    margin : 1.5em 0
-    border-bottom-left-radius : 0.8em
-    font-size : small
+    padding: 0 1em
+    margin: 1.5em 0
+    border-bottom-left-radius: 0.8em
+    font-size: small
 
 .comment p, .comment ul, .comment ol, .comment h1, .comment h2, .comment h3, .comment h4, .comment h5, .comment h6
-    margin : 0
+    margin: 0
 
 .comment figure
-    text-align : left
+    text-align: left
 
 .comment h1
-    font-size : large
-    margin-bottom : .5em
+    font-size: large
+    margin-bottom: .5em
 
 .comment h2
-    font-size : medium
+    font-size: medium
 
 .comment blockquote
-    font-size : 14px
-    margin : 1em
+    font-size: 14px
+    margin: 1em
 
 .comment-date span
-    color : gray
-    font-style : italic
+    color: gray
+    font-style: italic
 
 .comment-head-item, .comment-action
-    display : inline-block
-    margin : 0 3px
+    display: inline-block
+    margin: 0 3px
 
 .comment-actions
-    margin-bottom : 0.5em
+    margin-bottom: 0.5em
 
 .comment-action a, .comment-action a:visited
-    color : gray
-    margin-right : 1px
+    color: gray
+    margin-right: 1px
 
 .comment-body
-    font-size : 1.12em
-    margin : 0.5em 0
+    font-size: 1.12em
+    margin: 0.5em 0
 
 .ticket-num
-    color : gray
+    color: gray
 
 .inner-widget
     margin-top: 1em
 
 .awaiting-approval
-    color : green
-    font-style : italic
+    color: green
+    font-style: italic
 
 .claimed-by
-    color : gray
+    color: gray
 
 .top_level
-    border-left : solid black 0.2em
+    border-left: solid black 0.2em
 
 .even_depth
-    border-left : solid lightblue 0.2em
+    border-left: solid lightblue 0.2em
 
 .odd_depth
-    border-left : solid steelblue 0.2em
+    border-left: solid steelblue 0.2em
 
 .small_avatar
-    width : 2.5em
-    height : 2.5em
-    padding : 0em
-    margin-right : 0.3em
-    border-radius : 5px
+    width: 2.5em
+    height: 2.5em
+    padding: 0em
+    margin-right: 0.3em
+    border-radius: 5px
 
 .ticket-title
-    background-color : #CCDDFF
-    border-radius : 1em
-    padding : 0.5em
-    display : inline-block
-    max-width : 35em
-    margin : 0 1em
-    text-align : center
+    background-color: #CCDDFF
+    border-radius: 1em
+    padding: 0.5em
+    display: inline-block
+    max-width: 35em
+    margin: 0 1em
+    text-align: center
 
 .closed
-    color : goldenrod
-    border-left : solid goldenrod 0.25em
-    padding-left : 0.5em
+    color: goldenrod
+    border-left: solid goldenrod 0.25em
+    padding-left: 0.5em
 
 .retracted
-    color : darkred
-    border-left : solid darkred 0.25em
-    padding-left : 0.5em
+    color: darkred
+    border-left: solid darkred 0.25em
+    padding-left: 0.5em
 
 .flagged
-    border : thin solid darkred
-    border-left : solid red
-    padding : .5em
-    margin : .5em 0
-    display : table
+    border: thin solid darkred
+    border-left: solid red
+    padding: .5em
+    margin: .5em 0
+    display: table
 
 .flag-reasons
-    color : darkred
-    max-width : 41em
+    color: darkred
+    max-width: 41em
 
 .flag-reasons, .flag-markdown
-    background : whitesmoke
-    padding : .5em
-    margin : .5em 0
-    display : table
+    background: whitesmoke
+    padding: .5em
+    margin: .5em 0
+    display: table
 
 .expand
-    font-style : italic
+    font-style: italic
 
 .preview a
     pointer-events: none

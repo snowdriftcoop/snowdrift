@@ -41,6 +41,7 @@ module Model.User
     , fetchUserEmailVerified
     , fetchUserNotificationsDB
     , fetchUserNotificationPrefDB
+    , fetchUserProjectsPatronDB
     , fetchUserProjectsAndRolesDB
     , fetchUserRolesDB
     , fetchUsersInDB
@@ -322,6 +323,16 @@ userHasRoleDB role user_id = fmap (elem role) . fetchUserRolesDB user_id
 -- | Does this User have any of these Roles in this Project?
 userHasRolesAnyDB :: [Role] -> UserId -> ProjectId -> DB Bool
 userHasRolesAnyDB roles user_id project_id = (or . flip map roles . flip elem) <$> fetchUserRolesDB user_id project_id
+
+-- | Gets all Projects in which the User is a patron (has at least one
+-- pledge).  For summarizeProject, returns pledges as well.
+fetchUserProjectsPatronDB :: UserId -> DB [(Entity Project, [Entity Pledge])]
+fetchUserProjectsPatronDB user_id =
+    fmap (map (second return)) $ do
+    select $ from $ \(project `InnerJoin` pledge) -> do
+        on_ $ project ^. ProjectId ==. pledge ^. PledgeProject
+        where_ $ pledge ^. PledgeUser ==. val user_id
+        return (project, pledge)
 
 -- | Get all Projects this User is affiliated with, along with each Role.
 fetchUserProjectsAndRolesDB :: UserId -> DB (Map (Entity Project) (Set Role))
