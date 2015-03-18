@@ -99,6 +99,7 @@ library
                      Handler.ResetPassword
                      Handler.SnowdriftEvent
                      Handler.ToU
+                     Handler.Trademarks
                      Handler.User
                      Handler.User.Comment
                      Handler.Utils
