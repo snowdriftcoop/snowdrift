@@ -216,14 +216,6 @@ fetchProjectSharesDB project_id = do
 
     return $ map (pledgeFundedShares . entityVal) pledges
 
--- getProjectShares :: (MonadThrow m, MonadIO m, MonadBaseControl IO m, MonadLogger m, MonadResource m) => ProjectId -> SqlPersistT m [Int64]
--- getProjectShares project_id = do
---     pledges <- select $ from $ \ pledge -> do
---         where_ ( pledge ^. PledgeProject ==. val project_id &&. pledge ^. PledgeFundedShares >. val 0)
---         return pledge
---
---     return $ map (pledgeFundedShares . entityVal) pledges
-
 -- | Get all WikiPages for a Project.
 getProjectPages :: ProjectId -> DB [Entity WikiPage]
 getProjectPages project_id =
@@ -246,7 +238,6 @@ projectComputeShareValue pledges =
 updateShareValue :: (MonadThrow m, MonadIO m, MonadBaseControl IO m, MonadLogger m, MonadResource m) => ProjectId -> SqlPersistT m ()
 updateShareValue project_id = do
     pledges <- fetchProjectSharesDB project_id
---    pledges <- getProjectShares project_id
 
     update $ \ project -> do
         set project  [ ProjectShareValue =. val (projectComputeShareValue pledges) ]

@@ -97,7 +97,7 @@ hr
         float: none
         display: inline-flex
         margin-left: 0
-        
+
 .page-tool
     margin: 8px
     padding: 2px 5px

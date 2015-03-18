@@ -16,12 +16,6 @@
                     <span .glyphicon .glyphicon-link>
                     Invite
             <hr>
-        <!-- Needs the website field added to projects first
-            <li .snowdrift-sidebar-item>
-                <a href=@{ProjectWebsiteR $ projectHandle project}>
-                    <span .glyphicon .glyphicon-home>
-                    Website
-        -->
         <li .snowdrift-sidebar-item>
             <a href=@{ProjectBlogR $ projectHandle project}>
                 <span .glyphicon .glyphicon-edit>

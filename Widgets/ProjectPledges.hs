@@ -18,11 +18,6 @@ projectPledgeSummary :: UserId -> Widget
 projectPledgeSummary user_id = do
     project_summary <- handlerToWidget $ runDB $ do
         projects_pledges <- fetchUserProjectsPatronDB user_id
---        projects_pledges <- fmap (map (second return)) $ select $ from $
---            \ (project `InnerJoin` pledge) -> do
---                on_ $ project ^. ProjectId ==. pledge ^. PledgeProject
---                where_ $ pledge ^. PledgeUser ==. val user_id
---                return (project, pledge)
 
         -- Discussion Counts & Ticket Counts not needed for this view
         mapM (\(a, b) -> summarizeProject a b [] []) projects_pledges
@@ -43,11 +38,6 @@ projectPledges :: UserId -> Widget
 projectPledges user_id = do
     project_summaries :: [ProjectSummary] <- handlerToWidget $ runDB $ do
         projects_pledges <- fetchUserProjectsPatronDB user_id
---        projects_pledges <- fmap (map (second return)) $ select $ from $
---            \ (project `InnerJoin` pledge) -> do
---                on_ $ project ^. ProjectId ==. pledge ^. PledgeProject
---                where_ $ pledge ^. PledgeUser ==. val user_id
---                return (project, pledge)
 
         -- Discussion Counts & Ticket Counts not needed for this view
         mapM (\(a, b) -> summarizeProject a b [] []) projects_pledges

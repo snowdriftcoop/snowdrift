@@ -189,7 +189,6 @@ projectDiscussionPage project_handle widget = do
 -------------------------------------------------------------------------------
 --
 
-
 getProjectsR :: Handler Html
 getProjectsR = do
     project_summaries <- runDB $ do
@@ -201,7 +200,6 @@ getProjectsR = do
             summary <- summarizeProject project pledges discussions tickets
             return (project, summary)
 
-    -- let sharesCount = getCount . summaryShares
     let discussionsCount = getCount . summaryDiscussionCount
     let ticketsCount = getCount . summaryTicketCount
 
@@ -218,7 +216,7 @@ getProjectR project_handle = do
 
     (project_id, project, is_watching, pledges, pledge) <- runYDB $ do
         Entity project_id project <- getBy404 $ UniqueProjectHandle project_handle
-        pledges <- fetchProjectSharesDB project_id  -- getProjectShares project_id
+        pledges <- fetchProjectSharesDB project_id
         (pledge, is_watching) <- case mviewer_id of
             Nothing -> return (Nothing, False)
             Just viewer_id -> (,)
