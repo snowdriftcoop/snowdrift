@@ -1,15 +1,3 @@
-<!-- Please note that there are some images assumed to be uploaded into the database
-     for this to display correctly, which are not currently in the snowdrift_develop
-     database at this time.  One image must be named "DefaultLogo", which
-     displays a logo when the project doesn't have its own logo already defined,
-     the other must be named "DefaultPatronIcon", which will display the little icon
-     next to the number of patrons that each project has.  The images I was using for
-     testing will be named "defaultlogo.png" and "defaultpatronlogo.png" respectively
-     in the /snowdrift directory.  Should everyone agree, we can use these as the
-     official images (they were created by wolftune, anyway), but that hasn't been
-     agreed upon at this point of time.
--->
-
 <h1 .text-center>Projects
 
 $if null project_summaries
