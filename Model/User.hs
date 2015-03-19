@@ -41,7 +41,7 @@ module Model.User
     , fetchUserEmailVerified
     , fetchUserNotificationsDB
     , fetchUserNotificationPrefDB
-    , fetchUserProjectsPatronDB
+    , fetchUserPledgesDB
     , fetchUserProjectsAndRolesDB
     , fetchUserRolesDB
     , fetchUsersInDB
@@ -324,10 +324,11 @@ userHasRoleDB role user_id = fmap (elem role) . fetchUserRolesDB user_id
 userHasRolesAnyDB :: [Role] -> UserId -> ProjectId -> DB Bool
 userHasRolesAnyDB roles user_id project_id = (or . flip map roles . flip elem) <$> fetchUserRolesDB user_id project_id
 
--- | Gets all Projects in which the User is a patron (has at least one
--- pledge).  For summarizeProject, returns pledges as well.
-fetchUserProjectsPatronDB :: UserId -> DB [(Entity Project, [Entity Pledge])]
-fetchUserProjectsPatronDB user_id =
+-- | Like the name says.
+-- TODO: Why does it run map (second return) on the result? That's just
+-- creating a bunch of 1-element lists.
+fetchUserPledgesDB :: UserId -> DB [(Entity Project, [Entity Pledge])]
+fetchUserPledgesDB user_id =
     fmap (map (second return)) $ do
     select $ from $ \(project `InnerJoin` pledge) -> do
         on_ $ project ^. ProjectId ==. pledge ^. PledgeProject

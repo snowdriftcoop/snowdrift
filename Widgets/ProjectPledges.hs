@@ -3,7 +3,7 @@ module Widgets.ProjectPledges where
 
 import Import
 
-import Model.User (fetchUserProjectsPatronDB)
+import Model.User (fetchUserPledgesDB)
 import Model.Project
 import Model.Currency
 
@@ -15,7 +15,7 @@ summarizeProject' a b = summarizeProject a b [] []
 projectPledgeSummary :: UserId -> Widget
 projectPledgeSummary user_id = do
     project_summary <- handlerToWidget $ runDB $
-        map (uncurry summarizeProject') <$> fetchUserProjectsPatronDB user_id
+        map (uncurry summarizeProject') <$> fetchUserPledgesDB user_id
 
     toWidget [hamlet|
         $if null project_summary
@@ -32,7 +32,7 @@ projectPledgeSummary user_id = do
 projectPledges :: UserId -> Widget
 projectPledges user_id = do
     project_summaries <- handlerToWidget $ runDB $
-        map (uncurry summarizeProject') <$> fetchUserProjectsPatronDB user_id
+        map (uncurry summarizeProject') <$> fetchUserPledgesDB user_id
 
     let cost = summaryShareCost
         shares = getCount . summaryShares
