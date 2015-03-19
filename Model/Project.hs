@@ -84,6 +84,16 @@ newtype TaggedTicket = TaggedTicket ( (Entity Ticket)
                                     , Bool  -- claimed?
                                     , [AnnotatedTag] )
 
+newtype DiscussionCount = DiscussionCount Int64
+
+instance Count DiscussionCount where
+    getCount (DiscussionCount c) = c
+
+newtype TicketCount = TicketCount Int64
+
+instance Count TicketCount where
+    getCount (TicketCount c) = c
+
 instance Issue TaggedTicket where
     issueWidget (TaggedTicket ((Entity ticket_id ticket),_,tags)) =
         [whamlet|
