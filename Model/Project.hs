@@ -190,25 +190,52 @@ getGithubIssues project =
     parsedProjectGithubRepo :: Maybe (String, String)
     parsedProjectGithubRepo = second (drop 1) . break (== '/') . T.unpack <$> projectGithubRepo project
 
-summarizeProject :: Monad m => Entity Project -> [Entity Pledge] -> [DiscussionId] -> [TaggedTicket]-> m ProjectSummary
+summarizeProject :: Monad m
+                 => Entity Project
+                 -> [Entity Pledge]
+                 -> [DiscussionId]
+                 -> [TaggedTicket]
+                 -> m ProjectSummary
 summarizeProject project pledges discussions tickets = do
     let share_value = projectShareValue $ entityVal project
-        share_count = ShareCount $ sum . map (pledgeFundedShares . entityVal) $ pledges
+        share_count = ShareCount $
+            sum . map (pledgeFundedShares . entityVal) $ pledges
         user_count = UserCount $ fromIntegral $ length pledges
-        discussion_count = DiscussionCount $ fromIntegral $ length discussions
+        discussion_count = DiscussionCount $
+            fromIntegral $ length discussions
         ticket_count = TicketCount $ fromIntegral $ length tickets
 
-    return $ ProjectSummary (projectName $ entityVal project) (projectHandle $ entityVal project) user_count share_count share_value discussion_count ticket_count
+    return $ ProjectSummary
+        (projectName $ entityVal project)
+        (projectHandle $ entityVal project)
+        user_count
+        share_count
+        share_value
+        discussion_count
+        ticket_count
 
-fetchProjectPledgesDB :: (MonadThrow m, MonadIO m, MonadBaseControl IO m, MonadLogger m, MonadResource m) => ProjectId -> SqlPersistT m [Entity Pledge]
+fetchProjectPledgesDB :: ( MonadThrow m
+                         , MonadIO m
+                         , MonadBaseControl IO m
+                         , MonadLogger m
+                         , MonadResource m)
+                      => ProjectId
+                      -> SqlPersistT m [Entity Pledge]
 fetchProjectPledgesDB project_id = do
     pledges <- select $ from $ \ pledge -> do
-        where_ ( pledge ^. PledgeProject ==. val project_id &&. pledge ^. PledgeFundedShares >. val 0)
+        where_
+            (pledge ^. PledgeProject ==. val project_id
+             &&. pledge ^. PledgeFundedShares >. val 0)
         return pledge
 
     return pledges
 
-fetchProjectSharesDB :: (MonadThrow m, MonadIO m, MonadBaseControl IO m, MonadLogger m, MonadResource m) => ProjectId -> SqlPersistT m [Int64]
+fetchProjectSharesDB :: ( MonadThrow m
+                        , MonadIO m
+                        , MonadBaseControl IO m
+                        , MonadLogger m
+                        , MonadResource m)
+                     => ProjectId -> SqlPersistT m [Int64]
 fetchProjectSharesDB project_id = do
     pledges <- select $ from $ \ pledge -> do
         where_ ( pledge ^. PledgeProject ==. val project_id &&. pledge ^. PledgeFundedShares >. val 0)

@@ -124,16 +124,26 @@ previewBlogPost viewer_id project_handle project_blog@ProjectBlog {..} = do
         renderBlogPost project_handle blog_post Preview
 
 editProjectForm :: Maybe (Project, [Text]) -> Form UpdateProject
-editProjectForm project =
+editProjectForm mProjTags =
     renderBootstrap3 BootstrapBasicForm $ UpdateProject
-        <$> areq' textField "Project Name" (projectName . fst <$> project)
-        <*> areq' textField "Description" (projectDescription . fst <$> project)
-        <*> areq' snowdriftMarkdownField "Blurb" (projectBlurb . fst <$> project)
-        <*> (maybe [] (map T.strip . T.splitOn ",") <$> aopt' textField "Tags" (Just . T.intercalate ", " . snd <$> project))
-        <*> aopt' textField "GitHub Repository (to show GH tickets here at Snowdrift.coop)" (projectGithubRepo . fst <$> project)
+        <$> areq' textField "Project Name"
+            (projectName <$> mProj)
+        <*> areq' textField "Description"
+            (projectDescription <$> mProj)
+        <*> areq' snowdriftMarkdownField "Blurb"
+            (projectBlurb <$> mProj)
+        <*> (maybe [] (map T.strip . T.splitOn ",") <$>
+            aopt' textField "Tags"
+                (Just . T.intercalate ", " <$> mTags))
+        <*> aopt' textField
+            "GitHub Repository (to show GH tickets here at Snowdrift.coop)"
+            (projectGithubRepo <$> mProj)
         -- TODO: system to upload project logo as in SD-543
         -- the following <*> pure Nothing line inserts default logo for now.
         <*> pure Nothing
+  where
+    mProj = fst <$> mProjTags
+    mTags = snd <$> mProjTags
 
 data ProjectBlog = ProjectBlog
     { projectBlogTitle   :: Text

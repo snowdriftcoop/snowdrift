@@ -10,52 +10,61 @@
      agreed upon at this point of time.
 -->
 
-<h1 class="text-center">Projects
+<h1 .text-center>Projects
 
 $if null project_summaries
-    <p> no projects to display
+  <p> no projects to display
 $else
   $forall (Entity _ project, summary) <- project_summaries
     <div .project-list-container .row>
-        <div .project-logo .col-sm-3 .col-md-2>
-            <a href=@{ProjectR (projectHandle project)}>
-                <figure>
-                    $maybe logo <- projectLogo project
-                        <img src=@{ImageR logo}>
-                    $nothing
-                        <img src=@{StaticR img_default_project_logo_png}>
-        <div .col-sm-9 .col-md-10>
-            <div .project-title .h3>
-                <a href=@{ProjectR (projectHandle project)}>
-                    #{projectName project}
-            <!-- 
-                Project Type could be added as a legend here, but is not
-                currently in Project table.  We'd have to link to the
-                ProjectSignup table or add to Project table.
-            -->
-            <p .small>
-                #{projectDescription project}
-            <div .row>
-                <div .col-sm-3>
-                    <figure .project-icon>
-                        <img src=@{StaticR img_patrons_png}>
-                        <span .img-padding-l>#{show $ getCount $ summaryUsers summary}
+      <div .project-logo .col-sm-3 .col-md-2>
+        <a href=@{ProjectR (projectHandle project)}>
+          <figure>
+            $maybe logo <- projectLogo project
+              <img src=@{ImageR logo}>
+            $nothing
+              <img src=@{StaticR img_default_project_logo_png}>
+      <div .col-sm-9 .col-md-10>
+        <div .project-title .h3>
+          <a href=@{ProjectR (projectHandle project)}>
+            #{projectName project}
+        <!--
+          Project Type could be added as a legend here, but is not
+          currently in Project table.  We'd have to link to the
+          ProjectSignup table or add to Project table.
+        -->
+        <p .small>
+          #{projectDescription project}
+        <div .row>
+          <div .col-sm-3>
+            <figure .project-icon>
+              <img src=@{StaticR img_patrons_png}>
+              <span .img-padding-l>
+                #{show $ getCount $ summaryUsers summary}
 
-                    <!-- Add highlighting for when User is already a patron -->
-                <div .project-icons .col-sm-9>
-                    <div .row>
-                        <div .col-xs-3>
-                            <a .project-icon href=@{ProjectFeedR (projectHandle project)} title="activity feed">
-                                <span .glyphicon .glyphicon-list>
-                        <div .col-xs-3>
-                            <a .project-icon href=@{ProjectDiscussionR (projectHandle project)} title="discussion board">
-                                <span .glyphicon .glyphicon-comment>
-                                <span .img-padding-l>#{discussionsCount summary}
-                        <div .col-xs-3>
-                            <a .project-icon href=@{WikiPagesR (projectHandle project)} title="wiki pages">
-                                <span .glyphicon .glyphicon-book>
-                        <div .col-xs-3>
-                            <a .project-icon href=@{TicketsR (projectHandle project)} title="tickets">
-                                <span .glyphicon .glyphicon-tag>
-                                <span .img-padding-l">#{ticketsCount summary}
-    <br>
+            <!-- Add highlighting for when User is already a patron -->
+          <div .project-icons .col-sm-9>
+            <div .row>
+              <div .col-xs-3>
+                <a  .project-icon
+                    href=@{ProjectFeedR (projectHandle project)}
+                    title="activity feed">
+                  <span .glyphicon .glyphicon-list>
+              <div .col-xs-3>
+                <a  .project-icon
+                    href=@{ProjectDiscussionR (projectHandle project)}
+                    title="discussion board">
+                  <span .glyphicon .glyphicon-comment>
+                  <span .img-padding-l>#{discussionsCount summary}
+              <div .col-xs-3>
+                <a  .project-icon
+                    href=@{WikiPagesR (projectHandle project)}
+                    title="wiki pages">
+                  <span .glyphicon .glyphicon-book>
+              <div .col-xs-3>
+                <a  .project-icon
+                    href=@{TicketsR (projectHandle project)}
+                    title="tickets">
+                  <span .glyphicon .glyphicon-tag>
+                  <span .img-padding-l">#{ticketsCount summary}
+  <br>

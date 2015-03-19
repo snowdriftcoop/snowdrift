@@ -326,7 +326,8 @@ div.math
     max-width: 200px
     margin: 0 auto
 
-/* This section is for the project sidebar which will show on all project pages */
+/* This section is for the project sidebar which will show on all project
+ * pages */
 .snowdrift-sidebar
     padding: 0
     float: left
