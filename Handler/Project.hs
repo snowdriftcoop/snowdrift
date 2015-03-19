@@ -197,7 +197,7 @@ getProjectsR = do
             pledges <- fetchProjectPledgesDB $ entityKey project
             discussions <- fetchProjectDiscussionsDB $ entityKey project
             tickets <- fetchProjectOpenTicketsDB (entityKey project) Nothing
-            summary <- summarizeProject project pledges discussions tickets
+            let summary = summarizeProject project pledges discussions tickets
             return (project, summary)
 
     let discussionsCount = getCount . summaryDiscussionCount

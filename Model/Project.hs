@@ -200,13 +200,12 @@ getGithubIssues project =
     parsedProjectGithubRepo :: Maybe (String, String)
     parsedProjectGithubRepo = second (drop 1) . break (== '/') . T.unpack <$> projectGithubRepo project
 
-summarizeProject :: Monad m
-                 => Entity Project
+summarizeProject :: Entity Project
                  -> [Entity Pledge]
                  -> [DiscussionId]
                  -> [TaggedTicket]
-                 -> m ProjectSummary
-summarizeProject project pledges discussions tickets = do
+                 -> ProjectSummary
+summarizeProject project pledges discussions tickets =
     let share_value = projectShareValue $ entityVal project
         share_count = ShareCount $
             sum . map (pledgeFundedShares . entityVal) $ pledges
@@ -214,8 +213,7 @@ summarizeProject project pledges discussions tickets = do
         discussion_count = DiscussionCount $
             fromIntegral $ length discussions
         ticket_count = TicketCount $ fromIntegral $ length tickets
-
-    return $ ProjectSummary
+    in ProjectSummary
         (projectName $ entityVal project)
         (projectHandle $ entityVal project)
         user_count
