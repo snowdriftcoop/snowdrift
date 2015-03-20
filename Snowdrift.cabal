@@ -1,9 +1,9 @@
 name:              Snowdrift
-version:           0.1.0.1
+version:           0.1.1
 license:           OtherLicense
 license-file:      LICENSE
 author:            David L. L. Thomas
-maintainer:        David L. L. Thomas
+maintainer:        Snowdrift.coop
 synopsis:          Infrastructure for Snowdrift fundrasing site.
 category:          Web
 stability:         Experimental
