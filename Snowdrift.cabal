@@ -18,6 +18,7 @@ Flag dev
 Flag merge
     Description:   Similar to dev, except with -Werror added.
     Default:        False
+
 Flag library-only
     Description:   Build for use with "yesod devel"
     Default:       False
@@ -130,9 +131,13 @@ library
                    Model.Settings.Internal
                    Model.ViewType.Internal
 
-    if flag(dev) || flag(library-only)
+    if flag(dev) || flag(library-only) || flag(merge)
         cpp-options:   -DDEVELOPMENT
+
+    if flag(dev) || flag(library-only) || flag(merge)
         ghc-options:   -Wall -O0 -fobject-code
+    else if flag(merge)
+        ghc-options:   -Wall -Werror -O0 -fobject-code
     else
         ghc-options:   -Werror -Wall -O2
 
@@ -216,7 +221,6 @@ library
                  , yesod-markdown
                  , yesod-newsfeed
                  , yesod-static
-
 
 executable         SnowdriftProcessPayments
     if flag(library-only)
