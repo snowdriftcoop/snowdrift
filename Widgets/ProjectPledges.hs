@@ -3,26 +3,19 @@ module Widgets.ProjectPledges where
 
 import Import
 
+import Model.User (fetchUserPledgesDB)
 import Model.Project
 import Model.Currency
 
-{- projectPledgeSummary and projectPledges are most redundant with just
-different widgets. We should probably just have one function and move
-the widget stuff into two different hamlet files or something.
-There are additional places that using the generalized function would
-be useful, such as putting the summary number at /u listing perhaps-}
+-- | A summary without ticket or discussion counts.
+summarizeProject' :: Entity Project -> [Entity Pledge] -> ProjectSummary
+summarizeProject' a b = summarizeProject a b [] []
 
 -- |The summary of pledging to projects shown on user's page
 projectPledgeSummary :: UserId -> Widget
 projectPledgeSummary user_id = do
-    project_summary :: [ProjectSummary] <- handlerToWidget $ runDB $ do
-        projects_pledges <- fmap (map (second return)) $ select $ from $
-            \ (project `InnerJoin` pledge) -> do
-                on_ $ project ^. ProjectId ==. pledge ^. PledgeProject
-                where_ $ pledge ^. PledgeUser ==. val user_id
-                return (project, pledge)
-
-        mapM (uncurry summarizeProject) projects_pledges
+    project_summary <- handlerToWidget $ runDB $
+        map (uncurry summarizeProject') <$> fetchUserPledgesDB user_id
 
     toWidget [hamlet|
         $if null project_summary
@@ -38,14 +31,8 @@ projectPledgeSummary user_id = do
 -- |The listing of all pledges for a given user, shown on u/#/pledges
 projectPledges :: UserId -> Widget
 projectPledges user_id = do
-    project_summaries :: [ProjectSummary] <- handlerToWidget $ runDB $ do
-        projects_pledges <- fmap (map (second return)) $ select $ from $
-            \ (project `InnerJoin` pledge) -> do
-                on_ $ project ^. ProjectId ==. pledge ^. PledgeProject
-                where_ $ pledge ^. PledgeUser ==. val user_id
-                return (project, pledge)
-
-        mapM (uncurry summarizeProject) projects_pledges
+    project_summaries <- handlerToWidget $ runDB $
+        map (uncurry summarizeProject') <$> fetchUserPledgesDB user_id
 
     let cost = summaryShareCost
         shares = getCount . summaryShares

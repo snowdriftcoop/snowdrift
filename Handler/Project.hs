@@ -191,7 +191,18 @@ projectDiscussionPage project_handle widget = do
 
 getProjectsR :: Handler Html
 getProjectsR = do
-    projects <- runDB fetchPublicProjectsDB
+    project_summaries <- runDB $ do
+        projects <- fetchPublicProjectsDB
+        forM projects $ \project -> do
+            pledges <- fetchProjectPledgesDB $ entityKey project
+            discussions <- fetchProjectDiscussionsDB $ entityKey project
+            tickets <- fetchProjectOpenTicketsDB (entityKey project) Nothing
+            let summary = summarizeProject project pledges discussions tickets
+            return (project, summary)
+
+    let discussionsCount = getCount . summaryDiscussionCount
+    let ticketsCount = getCount . summaryTicketCount
+
     defaultLayout $ do
         snowdriftTitle "Projects"
         $(widgetFile "projects")
@@ -205,7 +216,7 @@ getProjectR project_handle = do
 
     (project_id, project, is_watching, pledges, pledge) <- runYDB $ do
         Entity project_id project <- getBy404 $ UniqueProjectHandle project_handle
-        pledges <- getProjectShares project_id
+        pledges <- fetchProjectSharesDB project_id
         (pledge, is_watching) <- case mviewer_id of
             Nothing -> return (Nothing, False)
             Just viewer_id -> (,)
@@ -227,19 +238,37 @@ postProjectR project_handle = do
     now <- liftIO getCurrentTime
 
     case result of
-        FormSuccess (UpdateProject name description tags github_repo) ->
+        FormSuccess (UpdateProject
+                     name
+                     description
+                     blurb
+                     tags
+                     github_repo
+                     logo) ->
             lookupPostMode >>= \case
                 Just PostMode -> do
                     runDB $ do
                         when (projectDescription project /= description) $ do
-                            project_update <- insert $ ProjectUpdate now project_id viewer_id $ diffMarkdown (projectDescription project) description
+                            project_update <- insert $
+                                ProjectUpdate now
+                                              project_id
+                                              viewer_id
+                                              description
+                                              (diffMarkdown
+                                                  (projectBlurb project)
+                                                  blurb)
                             last_update <- getBy $ UniqueProjectLastUpdate project_id
                             case last_update of
                                 Just (Entity k _) -> repsert k $ ProjectLastUpdate project_id project_update
                                 Nothing -> void $ insert $ ProjectLastUpdate project_id project_update
 
                         update $ \ p -> do
-                            set p [ ProjectName =. val name, ProjectDescription =. val description, ProjectGithubRepo =. val github_repo ]
+                            set p [ ProjectName =. val name
+                                  , ProjectDescription =. val description
+                                  , ProjectBlurb =. val blurb
+                                  , ProjectGithubRepo =. val github_repo
+                                  , ProjectLogo =. val logo
+                                  ]
                             where_ (p ^. ProjectId ==. val project_id)
 
                         tag_ids <- forM tags $ \ tag_name -> do
@@ -262,7 +291,14 @@ postProjectR project_handle = do
                     redirect $ ProjectR project_handle
 
                 _ -> do
-                    let preview_project = project { projectName = name, projectDescription = description, projectGithubRepo = github_repo }
+                    let
+                        preview_project = project
+                            { projectName = name
+                            , projectDescription = description
+                            , projectBlurb = blurb
+                            , projectGithubRepo = github_repo
+                            , projectLogo = logo
+                            }
 
                     (form, _) <- generateFormPost $ editProjectForm (Just (preview_project, tags))
                     defaultLayout $ previewWidget form "update" $ renderProject (Just project_id) preview_project Nothing False [] Nothing

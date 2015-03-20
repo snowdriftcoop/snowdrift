@@ -20,11 +20,12 @@ module Model.Project
     , fetchProjectTicketClaimingEventsBeforeDB
     , fetchProjectTicketUnclaimingEventsBeforeDB
     , fetchProjectWikiPageByNameDB
+    , fetchProjectPledgesDB
+    , fetchProjectSharesDB
     , insertProjectPledgeDB
     -- TODO(mitchell): rename all these... prefix fetch, suffix DB
     , getGithubIssues
     , getProjectPages
-    , getProjectShares
     , getProjectTagList
     , getProjectWikiPages
     , projectComputeShareValue
@@ -61,23 +62,37 @@ import           Data.List                    (sortBy)
 -- Types
 
 data ProjectSummary = ProjectSummary
-    { summaryName          :: Text
-    , summaryProjectHandle :: Text
-    , summaryUsers         :: UserCount
-    , summaryShares        :: ShareCount
-    , summaryShareCost     :: Milray
+    { summaryName            :: Text
+    , summaryProjectHandle   :: Text
+    , summaryUsers           :: UserCount
+    , summaryShares          :: ShareCount
+    , summaryShareCost       :: Milray
+    , summaryDiscussionCount :: DiscussionCount
+    , summaryTicketCount     :: TicketCount
     }
 
 data UpdateProject = UpdateProject
     { updateProjectName        :: Text
-    , updateProjectDescription :: Markdown
+    , updateProjectDescription :: Text
+    , updateProjectBlurb       :: Markdown
     , updateProjectTags        :: [Text]
     , updateProjectGithubRepo  :: Maybe Text
+    , updateProjectLogo        :: Maybe Text
     } deriving Show
 
 newtype TaggedTicket = TaggedTicket ( (Entity Ticket)
                                     , Bool  -- claimed?
                                     , [AnnotatedTag] )
+
+newtype DiscussionCount = DiscussionCount Int64
+
+instance Count DiscussionCount where
+    getCount (DiscussionCount c) = c
+
+newtype TicketCount = TicketCount Int64
+
+instance Count TicketCount where
+    getCount (TicketCount c) = c
 
 instance Issue TaggedTicket where
     issueWidget (TaggedTicket ((Entity ticket_id ticket),_,tags)) =
@@ -185,17 +200,51 @@ getGithubIssues project =
     parsedProjectGithubRepo :: Maybe (String, String)
     parsedProjectGithubRepo = second (drop 1) . break (== '/') . T.unpack <$> projectGithubRepo project
 
-summarizeProject :: Monad m => Entity Project -> [Entity Pledge] -> m ProjectSummary
-summarizeProject project pledges = do
+summarizeProject :: Entity Project
+                 -> [Entity Pledge]
+                 -> [DiscussionId]
+                 -> [TaggedTicket]
+                 -> ProjectSummary
+summarizeProject project pledges discussions tickets =
     let share_value = projectShareValue $ entityVal project
-        share_count = ShareCount $ sum . map (pledgeFundedShares . entityVal) $ pledges
+        share_count = ShareCount $
+            sum . map (pledgeFundedShares . entityVal) $ pledges
         user_count = UserCount $ fromIntegral $ length pledges
+        discussion_count = DiscussionCount $
+            fromIntegral $ length discussions
+        ticket_count = TicketCount $ fromIntegral $ length tickets
+    in ProjectSummary
+        (projectName $ entityVal project)
+        (projectHandle $ entityVal project)
+        user_count
+        share_count
+        share_value
+        discussion_count
+        ticket_count
 
-    return $ ProjectSummary (projectName $ entityVal project) (projectHandle $ entityVal project) user_count share_count share_value
+fetchProjectPledgesDB :: ( MonadThrow m
+                         , MonadIO m
+                         , MonadBaseControl IO m
+                         , MonadLogger m
+                         , MonadResource m)
+                      => ProjectId
+                      -> SqlPersistT m [Entity Pledge]
+fetchProjectPledgesDB project_id = do
+    pledges <- select $ from $ \ pledge -> do
+        where_
+            (pledge ^. PledgeProject ==. val project_id
+             &&. pledge ^. PledgeFundedShares >. val 0)
+        return pledge
 
+    return pledges
 
-getProjectShares :: (MonadThrow m, MonadIO m, MonadBaseControl IO m, MonadLogger m, MonadResource m) => ProjectId -> SqlPersistT m [Int64]
-getProjectShares project_id = do
+fetchProjectSharesDB :: ( MonadThrow m
+                        , MonadIO m
+                        , MonadBaseControl IO m
+                        , MonadLogger m
+                        , MonadResource m)
+                     => ProjectId -> SqlPersistT m [Int64]
+fetchProjectSharesDB project_id = do
     pledges <- select $ from $ \ pledge -> do
         where_ ( pledge ^. PledgeProject ==. val project_id &&. pledge ^. PledgeFundedShares >. val 0)
         return pledge
@@ -223,7 +272,7 @@ projectComputeShareValue pledges =
 -- signature needs to remain generic, for SnowdriftProcessPayments
 updateShareValue :: (MonadThrow m, MonadIO m, MonadBaseControl IO m, MonadLogger m, MonadResource m) => ProjectId -> SqlPersistT m ()
 updateShareValue project_id = do
-    pledges <- getProjectShares project_id
+    pledges <- fetchProjectSharesDB project_id
 
     update $ \ project -> do
         set project  [ ProjectShareValue =. val (projectComputeShareValue pledges) ]

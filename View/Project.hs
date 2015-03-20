@@ -24,6 +24,7 @@ import           Model.Currency
 import           Model.Markdown
 import           Model.Project
 import           Model.Shares
+import           Model.User
 import           Model.Role
 import           Model.Comment
 import           View.User (userNameWidget)
@@ -42,9 +43,13 @@ renderProject maybe_project_id project mviewer_id is_watching pledges pledge = d
         shares = sum pledges
         project_value = share_value $* fromIntegral shares
         discussion = DiscussionOnProject $ Entity (fromMaybe (key $ PersistInt64 (-1)) maybe_project_id) project
-        description = markdownWidgetWith (fixLinks (projectHandle project) discussion) $ projectDescription project
+        description = markdownWidgetWith (fixLinks (projectHandle project) discussion) $ projectBlurb project
 
         maybe_shares = pledgeShares . entityVal <$> pledge
+
+    userIsAdmin <- case maybe_project_id of
+        Just project_id -> maybe (pure False) (\u -> runDB $ userIsProjectAdminDB u project_id) mviewer_id
+        Nothing -> (pure False)
 
     now <- liftIO getCurrentTime
 
@@ -119,12 +124,26 @@ previewBlogPost viewer_id project_handle project_blog@ProjectBlog {..} = do
         renderBlogPost project_handle blog_post Preview
 
 editProjectForm :: Maybe (Project, [Text]) -> Form UpdateProject
-editProjectForm project =
+editProjectForm mProjTags =
     renderBootstrap3 BootstrapBasicForm $ UpdateProject
-        <$> areq' textField "Project Name" (projectName . fst <$> project)
-        <*> areq' snowdriftMarkdownField "Description" (projectDescription . fst <$> project)
-        <*> (maybe [] (map T.strip . T.splitOn ",") <$> aopt' textField "Tags" (Just . T.intercalate ", " . snd <$> project))
-        <*> aopt' textField "GitHub Repository (to show GH tickets here at Snowdrift.coop)" (projectGithubRepo . fst <$> project)
+        <$> areq' textField "Project Name"
+            (projectName <$> mProj)
+        <*> areq' textField "Description"
+            (projectDescription <$> mProj)
+        <*> areq' snowdriftMarkdownField "Blurb"
+            (projectBlurb <$> mProj)
+        <*> (maybe [] (map T.strip . T.splitOn ",") <$>
+            aopt' textField "Tags"
+                (Just . T.intercalate ", " <$> mTags))
+        <*> aopt' textField
+            "GitHub Repository (to show GH tickets here at Snowdrift.coop)"
+            (projectGithubRepo <$> mProj)
+        -- TODO: system to upload project logo as in SD-543
+        -- the following <*> pure Nothing line inserts default logo for now.
+        <*> pure Nothing
+  where
+    mProj = fst <$> mProjTags
+    mTags = snd <$> mProjTags
 
 data ProjectBlog = ProjectBlog
     { projectBlogTitle   :: Text
