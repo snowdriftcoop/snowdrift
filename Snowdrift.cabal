@@ -134,12 +134,13 @@ library
     if flag(dev) || flag(library-only) || flag(merge)
         cpp-options:   -DDEVELOPMENT
 
-    if flag(dev) || flag(library-only) || flag(merge)
+    if flag(dev) || flag(library-only)
         ghc-options:   -Wall -O0 -fobject-code
-    else if flag(merge)
-        ghc-options:   -Wall -Werror -O0 -fobject-code
     else
-        ghc-options:   -Werror -Wall -O2
+        if flag(merge)
+            ghc-options:   -Wall -Werror -O0 -fobject-code
+        else
+            ghc-options:   -Werror -Wall -O2
 
     extensions: ConstraintKinds
                 DeriveDataTypeable
