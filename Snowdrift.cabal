@@ -1,9 +1,9 @@
 name:              Snowdrift
-version:           0.1.0.1
+version:           0.1.1
 license:           OtherLicense
 license-file:      LICENSE
 author:            David L. L. Thomas
-maintainer:        David L. L. Thomas
+maintainer:        Snowdrift.coop
 synopsis:          Infrastructure for Snowdrift fundrasing site.
 category:          Web
 stability:         Experimental
@@ -18,6 +18,7 @@ Flag dev
 Flag merge
     Description:   Similar to dev, except with -Werror added.
     Default:        False
+
 Flag library-only
     Description:   Build for use with "yesod devel"
     Default:       False
@@ -130,11 +131,16 @@ library
                    Model.Settings.Internal
                    Model.ViewType.Internal
 
-    if flag(dev) || flag(library-only)
+    if flag(dev) || flag(library-only) || flag(merge)
         cpp-options:   -DDEVELOPMENT
+
+    if flag(dev) || flag(library-only)
         ghc-options:   -Wall -O0 -fobject-code
     else
-        ghc-options:   -Werror -Wall -O2
+        if flag(merge)
+            ghc-options:   -Wall -Werror -O0 -fobject-code
+        else
+            ghc-options:   -Werror -Wall -O2
 
     extensions: ConstraintKinds
                 DeriveDataTypeable
@@ -216,7 +222,6 @@ library
                  , yesod-markdown
                  , yesod-newsfeed
                  , yesod-static
-
 
 executable         SnowdriftProcessPayments
     if flag(library-only)
@@ -385,6 +390,7 @@ test-suite test
     ghc-options:       -Werror -Wall -O0 -fobject-code
 
     extensions: QuasiQuotes
+                TemplateHaskell
 
     build-depends: base
                  , Snowdrift
