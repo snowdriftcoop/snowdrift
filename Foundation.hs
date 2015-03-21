@@ -29,6 +29,7 @@ import           Data.Time
 import           Data.Text                          as T
 import qualified Data.Text.Lazy                     as TL
 import qualified Data.Text.Lazy.Encoding            as E
+import           Data.Text.Titlecase
 import           Database.Esqueleto
 import qualified Database.Persist
 import           Network.HTTP.Conduit               (Manager)
@@ -72,6 +73,14 @@ data App = App
 plural :: Integral i => i -> Text -> Text -> Text
 plural 1 x _ = x
 plural _ _ y = y
+
+snowdriftTitle :: MonadWidget m => Text -> m ()
+snowdriftTitle t = setTitle $
+    (toHtml $ titlecase $ toLower $ t) <>
+    (toHtml (" | Snowdrift.coop" :: Text))
+
+snowdriftDashTitle :: MonadWidget m => Text -> Text -> m ()
+snowdriftDashTitle x y = snowdriftTitle $ x <> " — " <> y
 
 -- Set up i18n messages. See the message folder.
 mkMessage "App" "messages" "en"
@@ -172,7 +181,7 @@ instance Yesod App where
         maybe_user <- maybeAuth
         selectRep $
             provideRep $ defaultLayout $ do
-                setTitle $ "Permission Denied: " <> toHtml s
+                snowdriftTitle $ "Permission Denied: " <> s
                 toWidget [hamlet|$newline never
                     <h1>Permission Denied
                     <p>
@@ -437,7 +446,7 @@ addAlertEm level msg em = do
 
     setSession alertKey $ maybe id mappend prev $ TL.toStrict $ renderHtml $ [hamlet|
         $newline never
-        <div class="alert alert-#{level}">
+        <div .alert .alert-#{level}>
             <em>
                 #{em}
             #{msg}
@@ -451,7 +460,7 @@ addAlert level msg = do
 
     setSession alertKey $ maybe id mappend prev $ TL.toStrict $ renderHtml $ [hamlet|
         $newline never
-        <div class="alert alert-#{level}">
+        <div .alert .alert-#{level}>
             #{msg}
     |] render
 

@@ -1,0 +1,4 @@
+@media (min-width: 992px)
+    .project-stats
+        position: absolute
+        right: 0

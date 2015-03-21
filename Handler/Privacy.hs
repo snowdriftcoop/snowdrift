@@ -6,5 +6,5 @@ import Widgets.Doc
 
 getPrivacyR :: Handler Html
 getPrivacyR = defaultLayout $ do
-    setTitle "Privacy Policy | Snowdrift.coop"
+    snowdriftTitle "Privacy Policy"
     renderDoc "Privacy Policy"

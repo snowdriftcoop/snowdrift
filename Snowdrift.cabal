@@ -1,9 +1,9 @@
 name:              Snowdrift
-version:           0.1.0.1
+version:           0.1.1
 license:           OtherLicense
 license-file:      LICENSE
 author:            David L. L. Thomas
-maintainer:        David L. L. Thomas
+maintainer:        Snowdrift.coop
 synopsis:          Infrastructure for Snowdrift fundrasing site.
 category:          Web
 stability:         Experimental
@@ -14,6 +14,10 @@ homepage:          https://snowdrift.coop
 Flag dev
     Description:   Turn on development settings, like auto-reload templates.
     Default:       False
+
+Flag merge
+    Description:   Similar to dev, except with -Werror added.
+    Default:        False
 
 Flag library-only
     Description:   Build for use with "yesod devel"
@@ -79,6 +83,7 @@ library
                      Handler.Comment
                      Handler.Discussion
                      Handler.Home
+                     Handler.Donate
                      Handler.HonorPledge
                      Handler.Image
                      Handler.Invitation
@@ -126,11 +131,16 @@ library
                    Model.Settings.Internal
                    Model.ViewType.Internal
 
-    if flag(dev) || flag(library-only)
+    if flag(dev) || flag(library-only) || flag(merge)
         cpp-options:   -DDEVELOPMENT
+
+    if flag(dev) || flag(library-only)
         ghc-options:   -Wall -O0 -fobject-code
     else
-        ghc-options:   -Werror -Wall -O2
+        if flag(merge)
+            ghc-options:   -Wall -Werror -O0 -fobject-code
+        else
+            ghc-options:   -Werror -Wall -O2
 
     extensions: ConstraintKinds
                 DeriveDataTypeable
@@ -198,6 +208,7 @@ library
                  , temporary
                  , text
                  , time
+                 , titlecase
                  , transformers
                  , unix
                  , wai-extra
@@ -212,12 +223,13 @@ library
                  , yesod-newsfeed
                  , yesod-static
 
-
 executable         SnowdriftProcessPayments
     if flag(library-only)
         Buildable: False
     if flag(dev)
         ghc-options: -Wall -O0 -fobject-code
+    if flag(merge)
+        ghc-options: -Wall -Werror -O0 -fobject-code
 
     main-is:           SnowdriftProcessPayments.hs
     hs-source-dirs:    app
@@ -253,6 +265,8 @@ executable         SnowdriftProcessPayments
 executable         Snowdrift
     if flag(dev)
         ghc-options: -Wall -O0 -fobject-code
+    if flag(merge)
+        ghc-options: -Wall -Werror -O0 -fobject-code
     if flag(library-only)
         Buildable: False
 
@@ -267,6 +281,8 @@ executable         Snowdrift
 executable         SnowdriftEmailDaemon
     if flag(dev)
        ghc-options: -Wall -O0 -fobject-code
+    if flag(merge)
+        ghc-options: -Wall -Werror -O0 -fobject-code
     if flag(library-only)
         Buildable: False
     main-is:           SnowdriftEmailDaemon.hs
@@ -303,6 +319,7 @@ executable         SnowdriftEmailDaemon
                      , template-haskell
                      , text
                      , time
+                     , titlecase
                      , transformers
                      , yaml
                      , yesod
@@ -338,6 +355,8 @@ executable         SnowdriftEmailDaemon
 executable         sdm
     if flag(dev)
        ghc-options: -Wall -O0 -fobject-code
+    if flag(merge)
+        ghc-options: -Wall -Werror -O0 -fobject-code
     if flag(library-only)
         Buildable: False
 
@@ -354,6 +373,8 @@ executable         sdm
 executable         SnowdriftSendmail
     if flag(dev)
        ghc-options: -Wall -O0 -fobject-code
+    if flag(merge)
+        ghc-options: -Wall -Werror -O0 -fobject-code
     if flag(library-only)
         Buildable: False
 
@@ -366,9 +387,10 @@ test-suite test
     type:              exitcode-stdio-1.0
     main-is:           main.hs
     hs-source-dirs:    tests
-    ghc-options:       -Wall -O0 -fobject-code
+    ghc-options:       -Werror -Wall -O0 -fobject-code
 
     extensions: QuasiQuotes
+                TemplateHaskell
 
     build-depends: base
                  , Snowdrift

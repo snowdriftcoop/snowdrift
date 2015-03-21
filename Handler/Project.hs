@@ -191,9 +191,20 @@ projectDiscussionPage project_handle widget = do
 
 getProjectsR :: Handler Html
 getProjectsR = do
-    projects <- runDB fetchPublicProjectsDB
+    project_summaries <- runDB $ do
+        projects <- fetchPublicProjectsDB
+        forM projects $ \project -> do
+            pledges <- fetchProjectPledgesDB $ entityKey project
+            discussions <- fetchProjectDiscussionsDB $ entityKey project
+            tickets <- fetchProjectOpenTicketsDB (entityKey project) Nothing
+            let summary = summarizeProject project pledges discussions tickets
+            return (project, summary)
+
+    let discussionsCount = getCount . summaryDiscussionCount
+    let ticketsCount = getCount . summaryTicketCount
+
     defaultLayout $ do
-        setTitle "Projects | Snowdrift.coop"
+        snowdriftTitle "Projects"
         $(widgetFile "projects")
 
 --------------------------------------------------------------------------------
@@ -205,7 +216,7 @@ getProjectR project_handle = do
 
     (project_id, project, is_watching, pledges, pledge) <- runYDB $ do
         Entity project_id project <- getBy404 $ UniqueProjectHandle project_handle
-        pledges <- getProjectShares project_id
+        pledges <- fetchProjectSharesDB project_id
         (pledge, is_watching) <- case mviewer_id of
             Nothing -> return (Nothing, False)
             Just viewer_id -> (,)
@@ -214,7 +225,7 @@ getProjectR project_handle = do
         return (project_id, project, is_watching, pledges, pledge)
 
     defaultLayout $ do
-        setTitle . toHtml $ projectName project <> " | Snowdrift.coop"
+        snowdriftTitle $ projectName project
         renderProject (Just project_id) project mviewer_id is_watching pledges pledge
 
 postProjectR :: Text -> Handler Html
@@ -227,19 +238,37 @@ postProjectR project_handle = do
     now <- liftIO getCurrentTime
 
     case result of
-        FormSuccess (UpdateProject name description tags github_repo) ->
+        FormSuccess (UpdateProject
+                     name
+                     description
+                     blurb
+                     tags
+                     github_repo
+                     logo) ->
             lookupPostMode >>= \case
                 Just PostMode -> do
                     runDB $ do
                         when (projectDescription project /= description) $ do
-                            project_update <- insert $ ProjectUpdate now project_id viewer_id $ diffMarkdown (projectDescription project) description
+                            project_update <- insert $
+                                ProjectUpdate now
+                                              project_id
+                                              viewer_id
+                                              description
+                                              (diffMarkdown
+                                                  (projectBlurb project)
+                                                  blurb)
                             last_update <- getBy $ UniqueProjectLastUpdate project_id
                             case last_update of
                                 Just (Entity k _) -> repsert k $ ProjectLastUpdate project_id project_update
                                 Nothing -> void $ insert $ ProjectLastUpdate project_id project_update
 
                         update $ \ p -> do
-                            set p [ ProjectName =. val name, ProjectDescription =. val description, ProjectGithubRepo =. val github_repo ]
+                            set p [ ProjectName =. val name
+                                  , ProjectDescription =. val description
+                                  , ProjectBlurb =. val blurb
+                                  , ProjectGithubRepo =. val github_repo
+                                  , ProjectLogo =. val logo
+                                  ]
                             where_ (p ^. ProjectId ==. val project_id)
 
                         tag_ids <- forM tags $ \ tag_name -> do
@@ -262,7 +291,14 @@ postProjectR project_handle = do
                     redirect $ ProjectR project_handle
 
                 _ -> do
-                    let preview_project = project { projectName = name, projectDescription = description, projectGithubRepo = github_repo }
+                    let
+                        preview_project = project
+                            { projectName = name
+                            , projectDescription = description
+                            , projectBlurb = blurb
+                            , projectGithubRepo = github_repo
+                            , projectLogo = logo
+                            }
 
                     (form, _) <- generateFormPost $ editProjectForm (Just (preview_project, tags))
                     defaultLayout $ previewWidget form "update" $ renderProject (Just project_id) preview_project Nothing False [] Nothing
@@ -289,7 +325,7 @@ getApplicationsR project_handle = do
         return (project, applications)
 
     defaultLayout $ do
-        setTitle . toHtml $ projectName project <> " Volunteer Applications | Snowdrift.coop"
+        snowdriftTitle $ projectName project <> " Volunteer Applications"
         $(widgetFile "applications")
 
 --------------------------------------------------------------------------------
@@ -311,7 +347,9 @@ getApplicationR project_handle application_id = do
         return (project, Entity user_id user, application, interests, num_interests)
 
     defaultLayout $ do
-        setTitle . toHtml $ projectName project <> " Volunteer Application - " <> userDisplayName user <> " | Snowdrift.coop"
+        snowdriftDashTitle
+            (projectName project <> " Volunteer Application")
+            (userDisplayName user)
         $(widgetFile "application")
 
 --------------------------------------------------------------------------------
@@ -332,7 +370,7 @@ getEditProjectR project_handle = do
     (project_form, _) <- generateFormPost $ editProjectForm (Just (project, map (tagName . entityVal) tags))
 
     defaultLayout $ do
-        setTitle . toHtml $ projectName project <> " | Snowdrift.coop"
+        snowdriftTitle $ projectName project
         $(widgetFile "edit_project")
 
 --------------------------------------------------------------------------------
@@ -495,8 +533,7 @@ getProjectFeedR project_handle = do
         provideRep $ atomFeed feed
         provideRep $ rssFeed feed
         provideRep $ defaultLayout $ do
-            setTitle . toHtml $
-                projectName project <> " - Feed | Snowdrift.coop"
+            snowdriftDashTitle (projectName project) "Feed"
             $(widgetFile "project_feed")
             toWidget $(cassiusFile "templates/comment.cassius")
 
@@ -559,7 +596,7 @@ getInviteR project_handle = do
                                         (M.lookup user_id users)
 
     defaultLayout $ do
-        setTitle . toHtml $ projectName project <> " - Send Invite | Snowdrift.coop"
+        snowdriftDashTitle (projectName project) "Send Invite"
         $(widgetFile "invite")
 
 postInviteR :: Text -> Handler Html
@@ -619,7 +656,7 @@ getProjectPatronsR project_handle = do
         return (project, pledges, M.fromList $ map ((\ (Value x :: Value UserId) -> x) *** (\ (Value x :: Value Int) -> x)) user_payouts)
 
     defaultLayout $ do
-        setTitle . toHtml $ projectName project <> " Patrons | Snowdrift.coop"
+        snowdriftTitle $ projectName project <> " Patrons"
         $(widgetFile "project_patrons")
 
 --------------------------------------------------------------------------------
@@ -677,7 +714,9 @@ getUpdateSharesR project_handle = do
                         old_project_amount = old_share_value $* fromIntegral (sum old_project_shares)
 
                     defaultLayout $ do
-                        setTitle . toHtml $ projectName project <> " - update pledge | Snowdrift.coop"
+                        snowdriftDashTitle
+                            (projectName project)
+                            "update pledge"
                         $(widgetFile "update_shares")
 
         FormMissing -> dangerRedirect "Form missing."
@@ -749,7 +788,7 @@ getTicketsR project_handle = do
                       map mkSomeIssue tagged_tickets ++ map mkSomeIssue github_issues
 
     defaultLayout $ do
-        setTitle . toHtml $ projectName project <> " Tickets | Snowdrift.coop"
+        snowdriftTitle $ projectName project <> " Tickets"
         $(widgetFile "tickets")
 
 
@@ -808,7 +847,7 @@ getProjectTransactionsR project_handle = do
             | otherwise = Nothing
 
     defaultLayout $ do
-        setTitle . toHtml $ projectName project <> " Transactions | Snowdrift.coop"
+        snowdriftTitle $ projectName project <> " Transactions"
         $(widgetFile "project_transactions")
 
   where
@@ -837,7 +876,7 @@ getWikiPagesR project_handle = do
         wiki_targets <- getProjectWikiPages languages project_id
         return (project, wiki_targets)
     defaultLayout $ do
-        setTitle . toHtml $ projectName project <> " Wiki | Snowdrift.coop"
+        snowdriftTitle $ projectName project <> " Wiki"
         $(widgetFile "wiki_pages")
 
 --------------------------------------------------------------------------------
@@ -1172,7 +1211,7 @@ getProjectContactR project_handle = do
     (project_contact_form, _) <- generateFormPost projectContactForm
     Entity _ project <- runYDB $ getBy404 (UniqueProjectHandle project_handle)
     defaultLayout $ do
-        setTitle . toHtml $ "Contact " <> projectName project <> " | Snowdrift.coop"
+        snowdriftTitle $ "Contact " <> projectName project
         $(widgetFile "project_contact")
 
 postProjectContactR :: Text -> Handler Html
@@ -1229,7 +1268,7 @@ getProjectDiscussion project_handle get_root_comments = do
     (comment_form, _) <- generateFormPost commentNewTopicForm
 
     defaultLayout $ do
-        setTitle . toHtml $ projectName project <> " Discussion | Snowdrift.coop"
+        snowdriftTitle $ projectName project <> " Discussion"
         $(widgetFile "project_discuss")
 
 --------------------------------------------------------------------------------

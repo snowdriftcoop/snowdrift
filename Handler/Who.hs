@@ -25,5 +25,5 @@ getWhoR project_handle = do
         discussion = DiscussionOnProject $ Entity project_id project
 
     defaultLayout $ do
-        setTitle . toHtml $ projectName project <> " - Team | Snowdrift.coop"
+        snowdriftDashTitle (projectName project) "Team"
         $(widgetFile "who")

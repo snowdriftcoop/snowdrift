@@ -36,7 +36,7 @@ getJsLicenseR = do
             ]
 
     defaultLayout $ do
-        setTitle "Javascript Licenses | Snowdrift.coop"
+        snowdriftTitle "Javascript Licenses"
         [whamlet|
             <h1> Javascript Licenses
                 

@@ -11,7 +11,6 @@ import Handler.Wiki.Comment (makeWikiPageCommentForestWidget, wikiDiscussionPage
 import Model.Comment
 import Model.Comment.ActionPermissions
 import Model.Comment.Sql
-import Model.Discussion
 import Model.Markdown
 import Model.Notification
 import Model.Permission
@@ -155,19 +154,14 @@ getWikiR project_handle language target = do
                         when is_watching $
                             userViewWikiEditsDB user_id page_id
 
-                let has_permission = exprCommentProjectPermissionFilter muser_id (val project_id)
-
-                roots_ids    <- map entityKey <$> fetchDiscussionRootCommentsDB discussion_id has_permission
-                num_children <- length <$> fetchCommentsDescendantsDB roots_ids has_permission
+                comment_count <- fetchCommentCountDB muser_id project_id discussion_id
 
                 let translations = L.delete (wikiEditLanguage edit) $ map (wikiEditLanguage . entityVal) edits
 
-                return (length roots_ids + num_children, translations)
+                return (comment_count, translations)
 
             defaultLayout $ do
-                setTitle . toHtml $
-                    projectName project <> " : " <> target <> " | Snowdrift.coop"
-
+                snowdriftDashTitle (projectName project) target
                 renderWiki comment_count project_handle language target can_edit translations edit
 
 postWikiR :: Text -> Language -> Text -> Handler Html
@@ -321,7 +315,9 @@ getWikiDiscussionR' project_handle language target get_root_comments = do
     (comment_form, _) <- generateFormPost commentNewTopicForm
 
     defaultLayout $ do
-        setTitle . toHtml $ projectName project <> " Wiki Discussion - " <> target <> " | Snowdrift.coop"
+        snowdriftDashTitle
+            (projectName project <> " Wiki Discussion")
+            target
         $(widgetFile "wiki_discuss")
 
 --------------------------------------------------------------------------------
@@ -365,7 +361,7 @@ getWikiDiffR project_handle language target start_edit_id end_edit_id = do
         renderDiff = mconcat . map (\ a -> (case a of Both x _ -> toHtml x; First x -> del (toHtml x); Second x -> ins (toHtml x)) >> br)
 
     defaultLayout $ do
-        setTitle . toHtml $ projectName project <> " Wiki Diff - " <> target <> " | Snowdrift.coop"
+        snowdriftDashTitle (projectName project <> " Wiki Diff") target
         $(widgetFile "wiki_diff")
 
 -- | A proxy handler that redirects "ugly" to "pretty" diff URLs,
@@ -401,7 +397,7 @@ getEditWikiR project_handle language target = do
     (wiki_form, _) <- generateFormPost $ editWikiForm (wikiLastEditEdit last_edit) (wikiEditContent edit) Nothing
 
     defaultLayout $ do
-        setTitle . toHtml $ projectName project <> " Wiki - " <> target <> " | Snowdrift.coop"
+        snowdriftDashTitle (projectName project <> " Wiki") target
         $(widgetFile "edit_wiki")
 
 --------------------------------------------------------------------------------
@@ -429,7 +425,7 @@ getWikiHistoryR project_handle language target = do
 
     let editsIndexed = zip ([0..] :: [Int]) edits
     defaultLayout $ do
-        setTitle . toHtml $ projectName project <> " Wiki History - " <> target <> " | Snowdrift.coop"
+        snowdriftDashTitle (projectName project <> " Wiki History") target
         $(widgetFile "wiki_history")
 
 --------------------------------------------------------------------------------
@@ -449,7 +445,9 @@ getWikiEditR project_handle language target wiki_edit_id = do
 
     defaultLayout $ do
     -- TODO: prettier date format? or edit id?
-        setTitle . toHtml $ projectName project <> " Wiki - " <> target <> " at " <> T.pack (show $ wikiEditTs wiki_edit) <> " | Snowdrift.coop"
+        snowdriftDashTitle
+            (projectName project <> " Wiki")
+            (target <> " at " <> T.pack (show $ wikiEditTs wiki_edit))
         $(widgetFile "wiki_edit")
 
 --------------------------------------------------------------------------------
@@ -461,8 +459,9 @@ getNewWikiR project_handle language target = do
         projectInfoRequireEstablished project_handle
     (wiki_form, _) <- generateFormPost $ newWikiForm Nothing
     defaultLayout $ do
-        setTitle . toHtml $
-            projectName project <> " Wiki - New Page | Snowdrift.coop"
+        snowdriftDashTitle
+            (projectName project <> " Wiki")
+            "New Page"
         $(widgetFile "new_wiki")
 
 
@@ -531,7 +530,9 @@ getNewWikiTranslationR project_handle language target = do
 
     (translation_form, enctype) <- generateFormPost $ newWikiTranslationForm (Just edit_id) Nothing Nothing (Just $ wikiEditContent edit) Nothing
     defaultLayout $ do
-        setTitle . toHtml $ projectName project <> " Wiki - New Translation | Snowdrift.coop"
+        snowdriftDashTitle
+            (projectName project <> " Wiki")
+            "New Translation"
         $(widgetFile "new_wiki_translation")
 
 
@@ -577,7 +578,9 @@ getEditWikiPermissionsR project_handle language target = do
     (wiki_form, _) <- generateFormPost $ editWikiPermissionsForm (wikiPagePermissionLevel page)
 
     defaultLayout $ do
-        setTitle . toHtml $ projectName project <> " Wiki Permissions - " <> target <> " | Snowdrift.coop"
+        snowdriftDashTitle
+            (projectName project <> " Wiki Permissions")
+            target
         $(widgetFile "edit_wiki_perm")
 
 postEditWikiPermissionsR :: Text -> Language -> Text -> Handler Html
@@ -640,145 +643,7 @@ getMonolingualWikiR = redirectPolylingualWiki $ \case
     Just url@(OldWikiEditR _ _ _ _)             -> redirectSameParams url
 
     -- These routes are higher in the tree - can't possibly have been generated by inserting the language
-    Just (StaticR _)                            -> error "the impossible happened"
-    Just (AuthR _)                              -> error "the impossible happened"
-    Just FaviconR                               -> error "the impossible happened"
-    Just RobotsR                                -> error "the impossible happened"
-    Just HomeR                                  -> error "the impossible happened"
-    Just PostLoginR                             -> error "the impossible happened"
-    Just HonorPledgeR                           -> error "the impossible happened"
-    Just JsLicenseR                             -> error "the impossible happened"
-    Just PrivacyR                               -> error "the impossible happened"
-    Just ResetPasswordR                         -> error "the impossible happened"
-    Just ToUR                                   -> error "the impossible happened"
-    Just MarkdownTutorialR                      -> error "the impossible happened"
-    Just UploadImageR                           -> error "the impossible happened"
-    Just (NameImageR _)                         -> error "the impossible happened"
-    Just (ImageR _)                             -> error "the impossible happened"
-    Just (ImageMetaR _)                         -> error "the impossible happened"
-    Just UsersR                                 -> error "the impossible happened"
-    Just UserCreateR                            -> error "the impossible happened"
-    Just (UserR _)                              -> error "the impossible happened"
-    Just (UserBalanceR _)                       -> error "the impossible happened"
-    Just (UserDiscussionR _)                    -> error "the impossible happened"
-    Just (NewUserDiscussionR _)                 -> error "the impossible happened"
-    Just (UserTicketsR _)                       -> error "the impossible happened"
-    Just (UserCommentR _ _)                     -> error "the impossible happened"
-    Just (UserSelectProjectR _)                 -> error "the impossible happened"
-    Just (ClaimUserCommentR _ _)                -> error "the impossible happened"
-    Just (CloseUserCommentR _ _)                -> error "the impossible happened"
-    Just (DeleteUserCommentR _ _)               -> error "the impossible happened"
-    Just (EditUserCommentR _ _)                 -> error "the impossible happened"
-    Just (FlagUserCommentR _ _)                 -> error "the impossible happened"
-    Just (ApproveUserCommentR _ _)              -> error "the impossible happened"
-    Just (ReplyUserCommentR _ _)                -> error "the impossible happened"
-    Just (RethreadUserCommentR _ _)             -> error "the impossible happened"
-    Just (RetractUserCommentR _ _)              -> error "the impossible happened"
-    Just (UserCommentAddTagR _ _)               -> error "the impossible happened"
-    Just (UserCommentTagsR _ _)                 -> error "the impossible happened"
-    Just (UserCommentTagR _ _ _)                -> error "the impossible happened"
-    Just (UserCommentApplyTagR _ _)             -> error "the impossible happened"
-    Just (UserCommentCreateTagR _ _)            -> error "the impossible happened"
-    Just (UnclaimUserCommentR _ _)              -> error "the impossible happened"
-    Just (WatchUserCommentR _ _)                -> error "the impossible happened"
-    Just (UnwatchUserCommentR _ _)              -> error "the impossible happened"
-    Just (UserChangePasswordR _)                -> error "the impossible happened"
-    Just (EditUserR _)                          -> error "the impossible happened"
-    Just (DeleteUserR _)                        -> error "the impossible happened"
-    Just (UserConfirmDeleteR _ _)               -> error "the impossible happened"
-    Just (UserEstEligibleR _)                   -> error "the impossible happened"
-    Just (UserNotificationsR _)                 -> error "the impossible happened"
-    Just (ProjectNotificationsR _ _)            -> error "the impossible happened"
-    Just (UserPledgesR _)                       -> error "the impossible happened"
-    Just (UserResetPasswordR _ _)               -> error "the impossible happened"
-    Just (UserVerifyEmailR _ _)                 -> error "the impossible happened"
-    Just NotificationsR                         -> error "the impossible happened"
-    Just NotificationsProxyR                    -> error "the impossible happened"
-    Just ArchivedNotificationsR                 -> error "the impossible happened"
-    Just ArchivedNotificationsProxyR            -> error "the impossible happened"
-    Just ProjectsR                              -> error "the impossible happened"
-    Just (ProjectR _)                           -> error "the impossible happened"
-    Just ProjectSignupR                         -> error "the impossible happened"
-    Just (ApplicationsR _)                      -> error "the impossible happened"
-    Just (ApplicationR _ _)                     -> error "the impossible happened"
-    Just (ProjectBlogR _)                       -> error "the impossible happened"
-    Just (NewBlogPostR _)                       -> error "the impossible happened"
-    Just (EditBlogPostR _ _)                    -> error "the impossible happened"
-    Just (BlogPostR _ _)                        -> error "the impossible happened"
-    Just (ProjectCommentR _ _)                  -> error "the impossible happened"
-    Just (ClaimProjectCommentR _ _)             -> error "the impossible happened"
-    Just (CloseProjectCommentR _ _)             -> error "the impossible happened"
-    Just (DeleteProjectCommentR _ _)            -> error "the impossible happened"
-    Just (EditProjectCommentR _ _)              -> error "the impossible happened"
-    Just (FlagProjectCommentR _ _)              -> error "the impossible happened"
-    Just (ApproveProjectCommentR _ _)           -> error "the impossible happened"
-    Just (ReplyProjectCommentR _ _)             -> error "the impossible happened"
-    Just (RethreadProjectCommentR _ _)          -> error "the impossible happened"
-    Just (RetractProjectCommentR _ _)           -> error "the impossible happened"
-    Just (ProjectCommentAddTagR _ _)            -> error "the impossible happened"
-    Just (ProjectCommentTagsR _ _)              -> error "the impossible happened"
-    Just (ProjectCommentTagR _ _ _)             -> error "the impossible happened"
-    Just (ProjectCommentApplyTagR _ _)          -> error "the impossible happened"
-    Just (ProjectCommentCreateTagR _ _)         -> error "the impossible happened"
-    Just (UnclaimProjectCommentR _ _)           -> error "the impossible happened"
-    Just (WatchProjectCommentR _ _)             -> error "the impossible happened"
-    Just (UnwatchProjectCommentR _ _)           -> error "the impossible happened"
-    Just (ProjectContactR _)                    -> error "the impossible happened"
-    Just (ProjectDiscussionR _)                 -> error "the impossible happened"
-    Just (NewProjectDiscussionR _)              -> error "the impossible happened"
-    Just (EditProjectR _)                       -> error "the impossible happened"
-    Just (ProjectFeedR _)                       -> error "the impossible happened"
-    Just (InvitationR _ _)                      -> error "the impossible happened"
-    Just (InviteR _)                            -> error "the impossible happened"
-    Just (ProjectPatronsR _)                    -> error "the impossible happened"
-    Just (UpdateSharesR _)                      -> error "the impossible happened"
-    Just (TicketR _ _)                          -> error "the impossible happened"
-    Just (TicketsR _)                           -> error "the impossible happened"
-    Just (ProjectTransactionsR _)               -> error "the impossible happened"
-    Just (VolunteerR _)                         -> error "the impossible happened"
-    Just (WikiPagesR _)                         -> error "the impossible happened"
-    Just (WhoR _)                               -> error "the impossible happened"
-    Just (WidgetR _)                            -> error "the impossible happened"
-    Just (WatchProjectR _)                      -> error "the impossible happened"
-    Just (UnwatchProjectR _)                    -> error "the impossible happened"
-    Just (CommentDirectLinkR _)                 -> error "the impossible happened"
-    Just (CommentTagR _ _)                      -> error "the impossible happened"
-    Just (EventCommentPostedR _)                -> error "the impossible happened"
-    Just (EventCommentPendingR _)               -> error "the impossible happened"
-    Just (EventCommentRethreadedR _)            -> error "the impossible happened"
-    Just (EventCommentClosingR _)               -> error "the impossible happened"
-    Just (EventTicketClaimedR _)                -> error "the impossible happened"
-    Just (EventTicketUnclaimedR _)              -> error "the impossible happened"
-    Just (EventNotificationSentR _)             -> error "the impossible happened"
-    Just (EventWikiPageR _)                     -> error "the impossible happened"
-    Just (EventWikiEditR _)                     -> error "the impossible happened"
-    Just (EventNewPledgeR _)                    -> error "the impossible happened"
-    Just (EventUpdatedPledgeR _)                -> error "the impossible happened"
-    Just (EventDeletedPledgeR _)                -> error "the impossible happened"
-    Just (EventBlogPostR _)                     -> error "the impossible happened"
-    Just RepoFeedR                              -> error "the impossible happened"
-    Just BuildFeedR                             -> error "the impossible happened"
-    Just (BlogPostDiscussionR _ _)              -> error "the impossible happened"
-    Just (NewBlogPostDiscussionR _ _)           -> error "the impossible happened"
-    Just (BlogPostCommentR _ _ _)               -> error "the impossible happened"
-    Just (ClaimBlogPostCommentR _ _ _)          -> error "the impossible happened"
-    Just (CloseBlogPostCommentR _ _ _)          -> error "the impossible happened"
-    Just (DeleteBlogPostCommentR _ _ _)         -> error "the impossible happened"
-    Just (EditBlogPostCommentR _ _ _)           -> error "the impossible happened"
-    Just (FlagBlogPostCommentR _ _ _)           -> error "the impossible happened"
-    Just (ApproveBlogPostCommentR _ _ _)        -> error "the impossible happened"
-    Just (ReplyBlogPostCommentR _ _ _)          -> error "the impossible happened"
-    Just (RethreadBlogPostCommentR _ _ _)       -> error "the impossible happened"
-    Just (RetractBlogPostCommentR _ _ _)        -> error "the impossible happened"
-    Just (BlogPostCommentAddTagR _ _ _)         -> error "the impossible happened"
-    Just (BlogPostCommentTagsR _ _ _)           -> error "the impossible happened"
-    Just (BlogPostCommentTagR _ _ _ _)          -> error "the impossible happened"
-    Just (BlogPostCommentApplyTagR _ _ _)       -> error "the impossible happened"
-    Just (BlogPostCommentCreateTagR _ _ _)      -> error "the impossible happened"
-    Just (UnclaimBlogPostCommentR _ _ _)        -> error "the impossible happened"
-    Just (WatchBlogPostCommentR _ _ _)          -> error "the impossible happened"
-    Just (UnwatchBlogPostCommentR _ _ _)        -> error "the impossible happened"
-
+    _                                           -> error "the impossible happened"
 
   where
     redirectSameParams url = do

@@ -35,6 +35,7 @@ module Model.Comment
     , fetchCommentAncestorsDB
     , fetchCommentCommentTagsDB
     , fetchCommentCommentTagsInDB
+    , fetchCommentCountDB
     , fetchCommentDepthDB
     , fetchCommentDepthFromMaybeParentIdDB
     , fetchCommentDepth404DB
@@ -42,6 +43,7 @@ module Model.Comment
     , fetchCommentDestinationDB
     , fetchCommentFlaggingDB
     , fetchCommentRethreadDB
+    , fetchCommentRethreadLastDB
     , fetchCommentTagsDB
     , fetchCommentTagCommentTagsDB
     , fetchCommentsDescendantsDB
@@ -79,7 +81,6 @@ import           Model.User.Internal (sendPreferredNotificationDB)
 
 import qualified Control.Monad.State                  as State
 import           Control.Monad.Writer.Strict          (tell)
-import           Data.Foldable                        (Foldable)
 import qualified Data.Foldable                        as F
 import           Data.List                            ((\\), nub)
 import qualified Data.Map                             as M
@@ -89,7 +90,6 @@ import qualified Data.Text                            as T
 import           Data.Tree
 import           Database.Esqueleto.Internal.Language (Insertion)
 import qualified Database.Persist                     as P
-import           GHC.Exts                             (IsList(..))
 import qualified Prelude                              as Prelude
 
 --------------------------------------------------------------------------------
@@ -206,6 +206,7 @@ makeCommentUsersSet = F.foldMap (S.singleton . commentUser . entityVal)
 
 --------------------------------------------------------------------------------
 -- Database actions
+
 
 approveCommentDB :: UserId -> CommentId -> Comment -> SDB ()
 approveCommentDB user_id comment_id comment = do
@@ -364,6 +365,17 @@ fetchCommentDB comment_id has_permission = get comment_id >>= \case
                       c ^. CommentId ==. val comment_id &&.
                       has_permission c
                   return c
+
+-- | Count the visible comments in a given discussion.
+--
+-- Visibility depends on who the user is.
+fetchCommentCountDB :: Maybe (Key User) -> Key Project -> Key Discussion -> DB Int
+fetchCommentCountDB muser_id project_id discussion_id = do
+    let has_permission = exprCommentProjectPermissionFilter muser_id (val project_id)
+
+    roots_ids    <- map entityKey <$> fetchDiscussionRootCommentsDB discussion_id has_permission
+    num_children <- length <$> fetchCommentsDescendantsDB roots_ids has_permission
+    return $ length roots_ids + num_children
 
 fetchCommentsInDB :: [CommentId] -> ExprCommentCond -> DB [Entity Comment]
 fetchCommentsInDB comment_ids has_permission =
@@ -646,6 +658,16 @@ fetchCommentRethreadDB comment_id = fmap unValue . listToMaybe <$> (
     where_ $ cr ^. CommentRethreadOldComment ==. val comment_id
     return $ cr ^. CommentRethreadNewComment)
 
+-- | Get the last CommentId this CommentId was rethreaded to, if it was.
+fetchCommentRethreadLastDB :: CommentId -> DB (Maybe CommentId)
+fetchCommentRethreadLastDB comment_id = go Nothing comment_id
+  where
+    go mlast_comment comment = do
+        mnew_comment <- fetchCommentRethreadDB comment
+        case mnew_comment of
+            Nothing          -> return mlast_comment
+            Just new_comment -> go mnew_comment new_comment
+
 -- | Get a Comment's CommentTags.
 fetchCommentCommentTagsDB :: CommentId -> DB [CommentTag]
 fetchCommentCommentTagsDB comment_id = fmap (map entityVal) $
@@ -741,16 +763,16 @@ fetchCommentTagCommentTagsDB comment_id tag_id = fmap (map entityVal) $
         ct ^. CommentTagTag ==. val tag_id
     return ct
 
-makeCommentClosingMapDB    :: (IsList c, CommentId ~ Item c) => c -> DB (Map CommentId CommentClosing)
-makeCommentRetractingMapDB :: (IsList c, CommentId ~ Item c) => c -> DB (Map CommentId CommentRetracting)
+makeCommentClosingMapDB    :: (Foldable c) => c CommentId -> DB (Map CommentId CommentClosing)
+makeCommentRetractingMapDB :: (Foldable c) => c CommentId -> DB (Map CommentId CommentRetracting)
 makeCommentClosingMapDB    = closeOrRetractMap CommentClosingComment    commentClosingComment
 makeCommentRetractingMapDB = closeOrRetractMap CommentRetractingComment commentRetractingComment
 
 closeOrRetractMap
-        :: (IsList c, CommentId ~ Item c, PersistEntity val, PersistEntityBackend val ~ SqlBackend)
+        :: (Foldable c, PersistEntity val, PersistEntityBackend val ~ SqlBackend)
         => EntityField val CommentId
         -> (val -> CommentId)
-        -> c
+        -> c CommentId
         -> DB (Map CommentId val)
 closeOrRetractMap comment_field comment_projection comment_ids = fmap (foldr step mempty) $
     select $
@@ -763,7 +785,7 @@ closeOrRetractMap comment_field comment_projection comment_ids = fmap (foldr ste
 
 -- | Given a collection of CommentId, make a map from CommentId to Entity Ticket. Comments that
 -- are not tickets will simply not be in the map.
-makeTicketMapDB :: (IsList c, CommentId ~ Item c) => c -> DB (Map CommentId (Entity Ticket))
+makeTicketMapDB :: (Foldable c) => c CommentId -> DB (Map CommentId (Entity Ticket))
 makeTicketMapDB comment_ids = fmap (foldr step mempty) $
     select $
     from $ \t -> do
@@ -781,7 +803,7 @@ makeClaimedTicketMapDB comment_ids = fmap (M.fromList . map (\(Value x, Entity _
 
 -- | Given a collection of CommentId, make a flag map. Comments that are not flagged
 -- will simply not be in the map.
-makeFlagMapDB :: (IsList c, CommentId ~ Item c) => c -> DB (Map CommentId (CommentFlagging, [FlagReason]))
+makeFlagMapDB :: (Foldable c) => c CommentId -> DB (Map CommentId (CommentFlagging, [FlagReason]))
 makeFlagMapDB comment_ids = fmap (go . map (\(Entity _ x, Value y) -> (x, y))) $
     select $
     from $ \(cf `InnerJoin` cfr) -> do
@@ -799,7 +821,7 @@ makeFlagMapDB comment_ids = fmap (go . map (\(Entity _ x, Value y) -> (x, y))) $
 -- will simply not be in the map.
 --
 -- TODO: Return enough info to link to the root of the watch
-makeWatchMapDB :: (IsList c, CommentId ~ Item c) => c -> DB (Map CommentId (Set WatchedSubthread))
+makeWatchMapDB :: (Foldable c) => c CommentId -> DB (Map CommentId (Set WatchedSubthread))
 makeWatchMapDB comment_ids = fmap (M.fromListWith mappend . map (\(Value x, Entity _ y) -> (x, S.singleton y))) $ do
     ancestral_watches <- select $ from $ \ (ws `InnerJoin` ca) -> do
         on_ $ ws ^. WatchedSubthreadRoot ==. ca ^. CommentAncestorAncestor
@@ -875,9 +897,17 @@ rethreadCommentDB mnew_parent_id new_discussion_id root_comment_id user_id reaso
 
             maybe (return ()) (insert_ . CommentAncestor new_comment_id) maybe_new_parent_id
 
+            update $ \t -> do
+                set t [ TicketComment =. val new_comment_id ]
+                where_ $ t ^. TicketComment ==. val old_comment_id
+
         -- EVERYTHING with a foreign key on CommentId needs to be added here, for the
         -- new comments. We don't want to update in-place because we *do* show the
         -- rethreaded comments on Project feeds (for one thing).
+        --
+        -- The only table that's updated in-place is Ticket (see
+        -- above) because we don't want to change the ticket number
+        -- when we rethread a comment.
 
         updateForRethread CommentClosingComment
                           (\cc cr -> CommentClosing
@@ -905,13 +935,6 @@ rethreadCommentDB mnew_parent_id new_discussion_id root_comment_id user_id reaso
                               <&> (ct  ^. CommentTagTag)
                               <&> (ct  ^. CommentTagUser)
                               <&> (ct  ^. CommentTagCount))
-
-        updateForRethread TicketComment
-                          (\t cr -> Ticket
-                              <#  (t   ^. TicketCreatedTs)
-                              <&> (t   ^. TicketUpdatedTs)
-                              <&> (t   ^. TicketName)
-                              <&> (cr  ^. CommentRethreadNewComment))
 
         updateForRethread TicketClaimingTicket
                           (\tc cr -> TicketClaiming

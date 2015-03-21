@@ -16,7 +16,7 @@ getNotificationsR = do
         userReadNotificationsDB user_id
         fetchUserNotificationsDB user_id
     defaultLayout $ do
-        setTitle "Notifications | Snowdrift.coop"
+        snowdriftTitle "Notifications"
         $(widgetFile "notifications")
 
 whenNotifId :: DBConstraint m => Text -> (NotificationId -> m ()) -> m ()
@@ -62,7 +62,7 @@ getArchivedNotificationsR = do
     user_id <- requireAuthId
     notifs <- runDB (fetchUserArchivedNotificationsDB user_id)
     defaultLayout $ do
-        setTitle "Archived Notifications | Snowdrift.coop"
+        snowdriftTitle "Archived Notifications"
         $(widgetFile "archived_notifications")
 
 getArchivedNotificationsProxyR :: Handler Html

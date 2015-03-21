@@ -168,7 +168,7 @@ notificationEventHandler AppConfig{..} (EUpdatedPledge old_shares _ shares_pledg
                  [ userDisplayName user_entity
                  , (if old_shares > new_shares then " dropped " else " added ")
                 <> T.pack (show delta), " ", pluralShares delta
-                 , ", changing the total to [", T.pack $ show new_shares, " "
+                 , ", changing their total to [", T.pack $ show new_shares, " "
                  , pluralShares new_shares, "](", route, ")"
                  ])
 

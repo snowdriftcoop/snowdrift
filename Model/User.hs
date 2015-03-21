@@ -41,6 +41,7 @@ module Model.User
     , fetchUserEmailVerified
     , fetchUserNotificationsDB
     , fetchUserNotificationPrefDB
+    , fetchUserPledgesDB
     , fetchUserProjectsAndRolesDB
     , fetchUserRolesDB
     , fetchUsersInDB
@@ -322,6 +323,17 @@ userHasRoleDB role user_id = fmap (elem role) . fetchUserRolesDB user_id
 -- | Does this User have any of these Roles in this Project?
 userHasRolesAnyDB :: [Role] -> UserId -> ProjectId -> DB Bool
 userHasRolesAnyDB roles user_id project_id = (or . flip map roles . flip elem) <$> fetchUserRolesDB user_id project_id
+
+-- | Like the name says.
+-- TODO: Why does it run map (second return) on the result? That's just
+-- creating a bunch of 1-element lists.
+fetchUserPledgesDB :: UserId -> DB [(Entity Project, [Entity Pledge])]
+fetchUserPledgesDB user_id =
+    fmap (map (second return)) $ do
+    select $ from $ \(project `InnerJoin` pledge) -> do
+        on_ $ project ^. ProjectId ==. pledge ^. PledgeProject
+        where_ $ pledge ^. PledgeUser ==. val user_id
+        return (project, pledge)
 
 -- | Get all Projects this User is affiliated with, along with each Role.
 fetchUserProjectsAndRolesDB :: UserId -> DB (Map (Entity Project) (Set Role))

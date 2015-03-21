@@ -1,6 +1,6 @@
 $# TODO: We should use type-safe URLs here... just got bit by this...
 
-<form class="tagcloud" method=post action="./apply">
+<form .tagcloud method=post action="./apply">
     ^{apply_form}
     <input type=submit value="apply selected tag(s)">
 

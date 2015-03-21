@@ -194,7 +194,7 @@ getProjectBlogR project_handle = do
         discussion = DiscussionOnProject $ Entity project_id project
 
     defaultLayout $ do
-        setTitle . toHtml $ projectName project <> " Blog | Snowdrift.coop"
+        snowdriftTitle $ projectName project <> " Blog"
 
         $(widgetFile "project_blog")
 
@@ -209,7 +209,7 @@ getNewBlogPostR project_handle = do
     (blog_form, _) <- generateFormPost $ projectBlogForm Nothing
 
     defaultLayout $ do
-        setTitle . toHtml $ "Post To " <> projectName project <> " Blog | Snowdrift.coop"
+        snowdriftTitle $ "Post To " <> projectName project <> " Blog"
 
         $(widgetFile "new_blog_post")
 
@@ -244,7 +244,9 @@ getBlogPostR project_handle blog_post_handle = do
     (Entity _ project, Entity _ blog_post) <-
         runYDB $ fetchProjectBlogPostDB project_handle blog_post_handle
     defaultLayout $ do
-        setTitle . toHtml $ projectName project <> " Blog - " <> blogPostTitle blog_post <> " | Snowdrift.coop"
+        snowdriftDashTitle
+            (projectName project <> " Blog")
+            (blogPostTitle blog_post)
 
         renderBlogPost project_handle blog_post NotPreview
 
@@ -266,7 +268,7 @@ getEditBlogPostR project_handle blog_post_handle = do
         Just $ ProjectBlog blogPostTitle blog_post_handle $
             concatContent blogPostTopContent blogPostBottomContent
     defaultLayout $ do
-        setTitle $ toHtml $ projectName project <> " Blog - Edit | Snowdrift.coop"
+        snowdriftDashTitle (projectName project <> " Blog") "Edit"
         $(widgetFile "edit_blog_post")
 
 postEditBlogPostR :: Text -> Text -> Handler Html
@@ -643,7 +645,7 @@ getBlogPostDiscussion project_handle post_name get_root_comments = do
     (comment_form, _) <- generateFormPost commentNewTopicForm
 
     defaultLayout $ do
-        setTitle . toHtml $ projectName project <> " Discussion | Snowdrift.coop"
+        snowdriftTitle $ projectName project <> " Discussion"
         $(widgetFile "project_blog_discuss")
 
 --------------------------------------------------------------------------------
