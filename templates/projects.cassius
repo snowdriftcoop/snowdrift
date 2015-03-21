@@ -5,6 +5,7 @@
     border-style: inset outset outset inset
     border-width: medium
     border-color: #4477bb
+    margin-bottom: 1em
 
 .img-padding-r
     padding-right: 3px
