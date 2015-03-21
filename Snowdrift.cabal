@@ -390,6 +390,7 @@ test-suite test
     ghc-options:       -Werror -Wall -O0 -fobject-code
 
     extensions: QuasiQuotes
+                TemplateHaskell
 
     build-depends: base
                  , Snowdrift
