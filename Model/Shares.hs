@@ -76,7 +76,7 @@ pledgeField project_id = Field
 
                 <div>
                     <input id="#{ident}-other" .radio-inline name="#{name}" *{attrs} type="radio" :req:required value="#{name}-other" :not hasValue:checked>other:&nbsp;
-                    <input id="#{ident}-other-val" .form-inline style="width : 2.5em; text-align : center" name="#{name}-other" *{attrs} type="number" step="1" min="1" value="#{otherValue}">
+                    <input id="#{ident}-other-val" .form-inline style="width : 2.5em; text-align : center" name="#{name}-other" *{attrs} type="number" step="1" min="0" value="#{otherValue}">
         |]
 
         toWidget [julius|
