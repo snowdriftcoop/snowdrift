@@ -1,0 +1,25 @@
+$newline never
+<fieldset>
+  $forall amount <- list
+    <input .radio-inline :req:required *{attrs} 
+      type=radio 
+      id=#{ident}-#{amount} 
+      name=#{name} 
+      value=#{amount}
+      :amount == value:checked>
+    #{amount}
+
+  <div>
+    <input .radio-inline *{attrs}
+      type=radio 
+      id=#{ident}-other
+      name=#{name}
+      value=#{name}-other 
+      :req:required :not hasValue:checked>
+        other:&nbsp;
+    <input .form-inline .other-share-value *{attrs} step=1 min=0 
+      type=number 
+      id=#{ident}-other-val
+      name=#{name}-other 
+      value=#{otherValue}>
+
