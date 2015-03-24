@@ -16,7 +16,7 @@ $newline never
       name=#{name}
       value=#{name}-other 
       :req:required :not hasValue:checked>
-        other:&nbsp;
+    other:
     <input .form-inline .other-share-value *{attrs} step=1 min=0 
       type=number 
       id=#{ident}-other-val
