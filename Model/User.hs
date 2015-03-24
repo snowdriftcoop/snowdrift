@@ -3,6 +3,8 @@ module Model.User
     , UserUpdate (..)
     , ChangePassword (..)
     , SetPassword (..)
+    , NotificationSender (..)
+    , NotificationReceiver (..)
     -- Utility functions
     , anonymousUser
     , deletedUser
@@ -281,8 +283,10 @@ eligEstablishUserDB honor_pledge establisher_id user_id reason = do
         where_ (u ^. UserId ==. val user_id)
 
     lift $ insert_ $ ManualEstablishment user_id establisher_id
-    sendPreferredNotificationDB user_id NotifEligEstablish
-        Nothing Nothing content
+    sendPreferredNotificationDB
+        (Just $ NotificationSender establisher_id)
+        (NotificationReceiver user_id)
+        NotifEligEstablish Nothing Nothing content
   where
     content :: Markdown
     content = Markdown $ T.unlines

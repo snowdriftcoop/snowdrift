@@ -266,6 +266,7 @@ UnapprovedCommentNotification
 
 WikiPage
     createdTs       UTCTime         default=now()
+    user            UserId
     project         ProjectId
     discussion      DiscussionId
     permissionLevel PermissionLevel

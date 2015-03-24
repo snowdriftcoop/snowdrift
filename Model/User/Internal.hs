@@ -137,23 +137,42 @@ fetchUserEmailVerified user_id
                 &&. user ^. UserEmail_verified
            return $ user ^. UserEmail)
 
+-- Distinguish the user who receives a notification from the one who
+-- triggers it, so the notification is not delivered when the two are
+-- the same user.
+data NotificationSender   = NotificationSender
+    { notificationSender   :: UserId }
+data NotificationReceiver = NotificationReceiver
+    { notificationReceiver :: UserId }
+
 -- | Perform an action (or actions) according to the selected
 -- 'NotificationDelivery' method.
-sendPreferredNotificationDB :: UserId -> NotificationType -> Maybe ProjectId
+sendPreferredNotificationDB :: Maybe NotificationSender -> NotificationReceiver
+                            -> NotificationType -> Maybe ProjectId
                             -> Maybe CommentId-> Markdown -> SDB ()
-sendPreferredNotificationDB user_id notif_type mproject_id mcomment_id content = do
-    mprefs <- lift $ fetchUserNotificationPrefDB user_id mproject_id notif_type
+sendPreferredNotificationDB mnotif_sender (NotificationReceiver notif_receiver)
+                            notif_type mproject_id mcomment_id content =
+    when (notificationSender `fmap` mnotif_sender /= Just notif_receiver) $ do
+        mprefs <- lift $
+            fetchUserNotificationPrefDB notif_receiver mproject_id notif_type
 
-    F.forM_ mprefs $ \ prefs -> F.forM_ prefs $ \ pref -> do
-        muser_email <- lift $ fetchUserEmailVerified user_id
-        -- XXX: Support 'NotifDeliverEmailDigest'.
-        if | pref == NotifDeliverEmail && isJust muser_email ->
-                lift $ sendNotificationEmailDB notif_type user_id mproject_id content
-           | otherwise -> do
-                 r <- lift $ selectCount $ from $ \n -> do
-                          where_ $ n ^. NotificationType    ==. val notif_type
-                               &&. n ^. NotificationTo      ==. val user_id
-                               &&. n ^. NotificationProject `notDistinctFrom` val mproject_id
-                               &&. n ^. NotificationContent ==. val content
-                 when (r == 0) $
-                     sendNotificationDB_ notif_type user_id mproject_id mcomment_id content
+        F.forM_ mprefs $ \ prefs -> F.forM_ prefs $ \ pref -> do
+            muser_email <- lift $ fetchUserEmailVerified notif_receiver
+            -- XXX: Support 'NotifDeliverEmailDigest'.
+            if | pref == NotifDeliverEmail && isJust muser_email ->
+                    lift $ sendNotificationEmailDB
+                               notif_type notif_receiver mproject_id content
+               | otherwise -> do
+                     r <- lift $ selectCount $ from $ \n -> do
+                              where_ $ n ^. NotificationType
+                                        ==. val notif_type
+                                   &&. n ^. NotificationTo
+                                        ==. val notif_receiver
+                                   &&. n ^. NotificationProject
+                                       `notDistinctFrom` val mproject_id
+                                   &&. n ^. NotificationContent
+                                        ==. val content
+                     when (r == 0) $
+                         sendNotificationDB_
+                             notif_type notif_receiver mproject_id
+                             mcomment_id content

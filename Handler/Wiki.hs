@@ -234,10 +234,14 @@ postWikiR project_handle target_language target = do
                                     , "[**Ticket created**](" <> render (WikiCommentR project_handle target_language target comment_id) <> ")"
                                     ]
 
-                            sendPreferredNotificationDB last_editor NotifEditConflict
-                                Nothing Nothing notif_text
-                            sendPreferredNotificationDB user_id NotifEditConflict
-                                Nothing Nothing notif_text
+                            sendPreferredNotificationDB
+                                (Just $ NotificationSender user_id)
+                                (NotificationReceiver last_editor)
+                                NotifEditConflict Nothing Nothing notif_text
+                            sendPreferredNotificationDB
+                                (Just $ NotificationSender last_editor)
+                                (NotificationReceiver user_id)
+                                NotifEditConflict Nothing Nothing notif_text
 
                             lift $ lift $ alertDanger "conflicting edits (ticket created, notification sent)"
 
