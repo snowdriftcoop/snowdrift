@@ -313,34 +313,38 @@ snowdriftAuthHashDB =
                   <div .text-center>
                     <strong>
                       We also offer a built-in system
-                    <br>
-                    <a href="@{UserCreateR}">
-                      <button>click here to create a new account
+                    <div #new-account-button> 
+                      <a href=@{UserCreateR}>
+                        <button>click here to create a new account
                     <p> or log-in below:
                   <form .form-horizontal
                     method=post
                     action=@{toMaster loginRoute}>
                       <div .form-group>
-                        <label .col-sm-4 .control-label>
+                        <label .col-sm-4 .control-label
+                          for=handle>
                           Handle:
                         <div .col-sm-8>
                           <input .form-control
-                            id=x
+                            id=handle
                             name=username
-                            autofocus=""
+                            autofocus
                             required>
                       <div .form-group>
-                        <label .col-sm-4 .control-label>
+                        <label .col-sm-4 .control-label
+                          for=password>
                           Passphrase:
                         <div .col-sm-8>
                           <input .form-control
+                            id=password
                             type=password
                             name=password
                             required>
                       <div .form-group .text-center>
-                        <div .col-sm-offset-4 .col-sm-8>
-                          <input type="submit" value="Log in">
-                        <a href=@{ResetPasswordR} .text-nowrap>
+                        <div #login-button>
+                          <button type=submit>
+                            Log in
+                        <a href=@{ResetPasswordR}>
                           forgot your password?
             |]
      in auth { apLogin = login }
