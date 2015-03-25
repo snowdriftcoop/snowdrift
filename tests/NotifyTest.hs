@@ -592,6 +592,23 @@ notifySpecs AppConfig {..} file =
                 render appRoot $ BlogPostR snowdrift blog_handle
         |]
 
+        yit "doesn't notify when a blog post is created by you" $ [marked|
+            mary_id      <- userId Mary
+            snowdrift_id <- snowdriftId
+            testDB $ insertRole snowdrift_id mary_id TeamMember
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifBlogPost $
+                singleton NotifDeliverWebsite
+
+            loginAs Mary
+            let blog_handle = "testing-self"
+            newBlogPost blog_handle
+
+            errWhenExistsWebsiteNotif' True mary_id NotifBlogPost $
+                render appRoot $ BlogPostR snowdrift blog_handle
+
+            testDB $ deleteRole snowdrift_id mary_id TeamMember
+        |]
+
         yit "sends an email when a blog post is created" $ [marked|
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
@@ -604,6 +621,23 @@ notifySpecs AppConfig {..} file =
 
             errUnlessUniqueEmailNotif' $
                 render appRoot $ BlogPostR snowdrift blog_handle
+        |]
+
+        yit "doesn't send an email when a blog post is created by you" $ [marked|
+            mary_id      <- userId Mary
+            snowdrift_id <- snowdriftId
+            testDB $ insertRole snowdrift_id mary_id TeamMember
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifBlogPost $
+                singleton NotifDeliverEmail
+
+            loginAs Mary
+            let blog_handle = "testing-self-email"
+            newBlogPost blog_handle
+
+            errWhenExistsEmailNotif' $
+                render appRoot $ BlogPostR snowdrift blog_handle
+
+            testDB $ deleteRole snowdrift_id mary_id TeamMember
         |]
 
     testNotification NotifNewPledge = do
