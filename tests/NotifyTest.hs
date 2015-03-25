@@ -81,22 +81,39 @@ countEmailNotif file text = do
     contents <- T.readFile file
     return $ T.count text contents
 
-errUnlessUnique :: Monad m => Int -> String -> String -> m ()
-errUnlessUnique c text loc =
-    unless (c == 1) $
-        error $ "'" <> text <> "' appears " <> show c <> " times "
-             <> "in " <> loc
+errUnless :: Monad m => Int -> Int -> String -> String -> m ()
+errUnless expected actual text loc =
+    unless (expected == actual) $
+        error $ "'" <> text <> "' appears " <> show actual <> " times "
+             <> "in " <> loc <> "; expected " <> show expected
 
-errUnlessUniqueWebsiteNotif :: Bool -> UserId -> NotificationType -> Text
-                            -> SqlPersistM ()
-errUnlessUniqueWebsiteNotif with_delay user_id notif_type text = do
+errUnlessUnique, errWhenExists :: Monad m => Int -> String -> String -> m ()
+errUnlessUnique = errUnless 1
+errWhenExists   = errUnless 0
+
+errWebsiteNotif :: (Int -> String -> String -> SqlPersistM ())
+                -> Bool -> UserId -> NotificationType -> Text
+                -> SqlPersistM ()
+errWebsiteNotif f with_delay user_id notif_type text = do
     c <- countWebsiteNotif with_delay user_id notif_type text
-    errUnlessUnique c (T.unpack text) "the notification table"
+    f c (T.unpack text) "the notification table"
 
-errUnlessUniqueEmailNotif :: FilePath -> Text -> IO ()
-errUnlessUniqueEmailNotif file text = do
+errUnlessUniqueWebsiteNotif, errWhenExistsWebsiteNotif
+    :: Bool -> UserId -> NotificationType -> Text
+    -> SqlPersistM ()
+errUnlessUniqueWebsiteNotif = errWebsiteNotif errUnlessUnique
+errWhenExistsWebsiteNotif   = errWebsiteNotif errWhenExists
+
+errEmailNotif :: (Int -> String -> String -> IO ())
+              -> FilePath -> Text -> IO ()
+errEmailNotif f file text = do
     c <- countEmailNotif file text
-    errUnlessUnique c (T.unpack text) file
+    f c (T.unpack text) file
+
+errUnlessUniqueEmailNotif, errWhenExistsEmailNotif
+    :: FilePath -> Text -> IO ()
+errUnlessUniqueEmailNotif = errEmailNotif errUnlessUnique
+errWhenExistsEmailNotif   = errEmailNotif errWhenExists
 
 notifySpecs :: AppConfig DefaultEnv a -> FilePath -> Spec
 notifySpecs AppConfig {..} file =
@@ -118,10 +135,15 @@ notifySpecs AppConfig {..} file =
     shares_email    = shares
     shares_email'   = succ shares'
 
-    errUnlessUniqueWebsiteNotif' with_delay user_id notif_type text =
-        testDB $ errUnlessUniqueWebsiteNotif with_delay user_id notif_type text
-    errUnlessUniqueEmailNotif' =
-        liftIO . withEmailDaemon file . flip errUnlessUniqueEmailNotif
+    errWebsiteNotif' f with_delay user_id notif_type text =
+        testDB $ f with_delay user_id notif_type text
+    errEmailNotif'   f = liftIO . withEmailDaemon file . flip f
+
+    errWhenExistsWebsiteNotif' = errWebsiteNotif' errWhenExistsWebsiteNotif
+    errWhenExistsEmailNotif'   = errEmailNotif'   errWhenExistsEmailNotif
+
+    errUnlessUniqueWebsiteNotif' = errWebsiteNotif' errUnlessUniqueWebsiteNotif
+    errUnlessUniqueEmailNotif'   = errEmailNotif'   errUnlessUniqueEmailNotif
 
     testNotification NotifEligEstablish = do
         yit "notifies on establishment" $ [marked|
@@ -169,6 +191,25 @@ notifySpecs AppConfig {..} file =
                 render appRoot $ CommentDirectLinkR reply_id
         |]
 
+        yit "doesn't notify when replying to yourself" $ [marked|
+            loginAs Mary
+            postComment (enRoute NewWikiDiscussionR "about") $
+                byLabel "New Topic" "root comment (self)"
+
+            mary_id <- userId Mary
+            testDB $ updateNotifPrefs mary_id Nothing NotifReply $
+                singleton NotifDeliverWebsite
+
+            (comment_id, True) <- getLatestCommentId
+            postComment
+                (enRoute ReplyWikiCommentR "about" comment_id) $
+                    byLabel "Reply" "reply to the root comment (self)"
+
+            (reply_id, True) <- getLatestCommentId
+            errWhenExistsWebsiteNotif' True mary_id NotifReply $
+                render appRoot $ CommentDirectLinkR reply_id
+        |]
+
         yit "sends an email on reply" $ [marked|
             loginAs Mary
             postComment (enRoute NewWikiDiscussionR "about") $
@@ -186,6 +227,25 @@ notifySpecs AppConfig {..} file =
 
             (reply_id, True) <- getLatestCommentId
             errUnlessUniqueEmailNotif' $
+                render appRoot $ CommentDirectLinkR reply_id
+        |]
+
+        yit "doesn't send an email when replying to yourself" $ [marked|
+            loginAs Mary
+            postComment (enRoute NewWikiDiscussionR "about") $
+                byLabel "New Topic" "root comment (email, self)"
+
+            mary_id <- userId Mary
+            testDB $ updateNotifPrefs mary_id Nothing NotifReply $
+                singleton NotifDeliverEmail
+
+            (comment_id, True) <- getLatestCommentId
+            postComment
+                (enRoute ReplyWikiCommentR "about" comment_id) $
+                    byLabel "Reply" "reply to the root comment (email, self)"
+
+            (reply_id, True) <- getLatestCommentId
+            errWhenExistsEmailNotif' $
                 render appRoot $ CommentDirectLinkR reply_id
         |]
 
