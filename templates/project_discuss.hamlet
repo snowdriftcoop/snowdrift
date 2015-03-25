@@ -8,19 +8,19 @@
 
 <div .page-toolbox>
   <div .page-tool>
-    <a href="@{ProjectR project_handle}"> back to main project page
+    <a href=@{ProjectR project_handle}> back to main project page
   $if has_comments
     <div .page-tool>
-      <a href="@{NewProjectDiscussionR project_handle}"> new topic
+      <a href=@{NewProjectDiscussionR project_handle}> new topic
   <div .page-tool>
-    <a href="@{ProjectDiscussionR project_handle}?state=closed">
+    <a href=@{ProjectDiscussionR project_handle}?state=closed>
       closed threads
 
 ^{comment_forest}
 
 $if not has_comments
   $if isJust muser
-    <form action="@{NewProjectDiscussionR project_handle}" method="POST">
+    <form action=@{NewProjectDiscussionR project_handle} method="POST">
       ^{comment_form}
       <input type="submit" name="mode" value="preview">
   $else
