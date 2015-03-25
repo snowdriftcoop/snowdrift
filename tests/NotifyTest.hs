@@ -146,6 +146,9 @@ notifySpecs AppConfig {..} file =
     shares_email    = shares
     shares_email'   = succ shares'
 
+    wiki_page_self       = "testing-self"
+    wiki_page_self_email = "testing-self-email"
+
     errWebsiteNotif' f with_delay user_id notif_type text =
         testDB $ f with_delay user_id notif_type text
     errEmailNotif'   f = liftIO . withEmailDaemon file . flip f
@@ -469,6 +472,20 @@ notifySpecs AppConfig {..} file =
                 render appRoot $ enRoute WikiR wiki_page
         |]
 
+        yit "doesn't notify when a wiki page is created by you" $ [marked|
+            mary_id      <- userId Mary
+            snowdrift_id <- snowdriftId
+            loginAs Mary
+            watch $ WatchProjectR snowdrift_id
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifWikiPage $
+                singleton NotifDeliverWebsite
+
+            newWiki snowdrift LangEn wiki_page_self "testing NotifWikiPage (self)"
+
+            errWhenExistsWebsiteNotif' True mary_id NotifWikiPage $
+                render appRoot $ enRoute WikiR wiki_page_self
+        |]
+
         yit "sends an email when a wiki page is created" $ [marked|
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
@@ -482,6 +499,20 @@ notifySpecs AppConfig {..} file =
 
             errUnlessUniqueEmailNotif' $
                 render appRoot $ enRoute WikiR wiki_page_email
+        |]
+
+        yit "doesn't send an email when a wiki page is created by you" $ [marked|
+            mary_id      <- userId Mary
+            snowdrift_id <- snowdriftId
+            loginAs Mary
+            watch $ WatchProjectR snowdrift_id
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifWikiPage $
+                singleton NotifDeliverEmail
+
+            newWiki snowdrift LangEn wiki_page_self_email "testing NotifWikiPage (email, self)"
+
+            errWhenExistsEmailNotif' $
+                render appRoot $ enRoute WikiR wiki_page_self_email
         |]
 
     -- Relies on the 'NotifWikiPage' test.
