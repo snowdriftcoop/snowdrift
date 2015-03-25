@@ -5,7 +5,7 @@
 
 module NotifyTest (notifySpecs) where
 
-import           Import                               (Established(..))
+import           Import                               (Established(..), Role (..))
 import           TestImport                           hiding ((=.), update, (</>), Update)
 import           Model.Language
 import           Model.Notification
@@ -114,6 +114,17 @@ errUnlessUniqueEmailNotif, errWhenExistsEmailNotif
     :: FilePath -> Text -> IO ()
 errUnlessUniqueEmailNotif = errEmailNotif errUnlessUnique
 errWhenExistsEmailNotif   = errEmailNotif errWhenExists
+
+insertRole, deleteRole
+    :: ProjectId -> UserId -> Role -> SqlPersistM ()
+insertRole project_id user_id role =
+    insert_ $ ProjectUserRole project_id user_id role
+
+deleteRole project_id user_id role =
+    delete $ from $ \p -> do
+        where_ $ p ^. ProjectUserRoleProject ==. val project_id
+             &&. p ^. ProjectUserRoleUser    ==. val user_id
+             &&. p ^. ProjectUserRoleRole    ==. val role
 
 notifySpecs :: AppConfig DefaultEnv a -> FilePath -> Spec
 notifySpecs AppConfig {..} file =
@@ -302,6 +313,32 @@ notifySpecs AppConfig {..} file =
                 render appRoot $ enRoute WikiCommentR "about" comment_id
         |]
 
+        yit "doesn't notify when rethreading your own comment" $ [marked|
+            loginAs Mary
+            mary_id      <- userId Mary
+            snowdrift_id <- snowdriftId
+            testDB $ insertRole snowdrift_id mary_id Moderator
+
+            postComment (enRoute NewWikiDiscussionR "about") $
+                byLabel "New Topic" "parent comment (self)"
+            (parent_id, True) <- getLatestCommentId
+
+            testDB $ updateNotifPrefs mary_id Nothing NotifRethreadedComment $
+                singleton NotifDeliverWebsite
+            postComment (enRoute NewWikiDiscussionR "about") $
+                byLabel "New Topic" "rethreaded comment (self)"
+            (comment_id, True) <- getLatestCommentId
+
+            rethreadComment
+                (render appRoot $ enRoute RethreadWikiCommentR "about" comment_id)
+                (render appRoot $ enRoute WikiCommentR "about" parent_id)
+
+            errWhenExistsWebsiteNotif' True mary_id NotifRethreadedComment $
+                render appRoot $ enRoute WikiCommentR "about" comment_id
+
+            testDB $ deleteRole snowdrift_id mary_id Moderator
+            |]
+
         yit "sends an email when a comment is rethreaded" $ [marked|
             loginAs Mary
             postComment (enRoute NewWikiDiscussionR "about") $
@@ -325,6 +362,32 @@ notifySpecs AppConfig {..} file =
             errUnlessUniqueEmailNotif' $
                 render appRoot $ enRoute WikiCommentR "about" comment_id
         |]
+
+        yit "doesn't send an email when rethreading your own comment" $ [marked|
+            loginAs Mary
+            mary_id      <- userId Mary
+            snowdrift_id <- snowdriftId
+            testDB $ insertRole snowdrift_id mary_id Moderator
+
+            postComment (enRoute NewWikiDiscussionR "about") $
+                byLabel "New Topic" "parent comment (email, self)"
+            (parent_id, True) <- getLatestCommentId
+
+            testDB $ updateNotifPrefs mary_id Nothing NotifRethreadedComment $
+                singleton NotifDeliverEmail
+            postComment (enRoute NewWikiDiscussionR "about") $
+                byLabel "New Topic" "rethreaded comment (email, self)"
+            (comment_id, True) <- getLatestCommentId
+
+            rethreadComment
+                (render appRoot $ enRoute RethreadWikiCommentR "about" comment_id)
+                (render appRoot $ enRoute WikiCommentR "about" parent_id)
+
+            errWhenExistsEmailNotif' $
+                render appRoot $ enRoute WikiCommentR "about" comment_id
+
+            testDB $ deleteRole snowdrift_id mary_id Moderator
+            |]
 
     -- XXX: TODO.
     testNotification NotifEditConflict = return ()
