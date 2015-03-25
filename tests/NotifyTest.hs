@@ -530,6 +530,22 @@ notifySpecs AppConfig {..} file =
                 render appRoot $ enRoute WikiR wiki_page
         |]
 
+        yit "doesn't notify when a wiki page is edited by you" $ [marked|
+            mary_id      <- userId Mary
+            snowdrift_id <- snowdriftId
+            testDB $ insertRole snowdrift_id mary_id Moderator
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifWikiEdit $
+                singleton NotifDeliverWebsite
+
+            loginAs Mary
+            editWiki snowdrift LangEn wiki_page_self "testing NotifWikiEdit" "testing (self)"
+
+            errWhenExistsWebsiteNotif' True mary_id NotifWikiEdit $
+                render appRoot $ enRoute WikiR wiki_page_self
+
+            testDB $ deleteRole snowdrift_id mary_id Moderator
+        |]
+
         yit "sends an email when a wiki page is edited" $ [marked|
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
@@ -542,6 +558,23 @@ notifySpecs AppConfig {..} file =
 
             errUnlessUniqueEmailNotif' $
                 render appRoot $ enRoute WikiR wiki_page
+        |]
+
+        yit "doesn't send an email when a wiki page is edited by you" $ [marked|
+            mary_id      <- userId Mary
+            snowdrift_id <- snowdriftId
+            testDB $ insertRole snowdrift_id mary_id Moderator
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifWikiEdit $
+                singleton NotifDeliverEmail
+
+            loginAs Mary
+            editWiki snowdrift LangEn wiki_page_self "testing NotifWikiEdit (email, self)"
+                "testing"
+
+            errWhenExistsEmailNotif' $
+                render appRoot $ enRoute WikiR wiki_page_self
+
+            testDB $ deleteRole snowdrift_id mary_id Moderator
         |]
 
     testNotification NotifBlogPost = do
