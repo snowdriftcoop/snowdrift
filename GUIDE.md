@@ -622,8 +622,8 @@ Setting up the test template database manually
 Like setting up the original development database,
 we need to set up a database and user for testing.
 
-Create database user *without* superuser or createrole priveleges
-but *with* createdb priveleges:
+Create database user *without* superuser or createrole privileges
+but *with* createdb privileges:
 
     sudo -u postgres createuser -S -d -R snowdrift_test
 
