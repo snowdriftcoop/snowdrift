@@ -126,6 +126,18 @@ deleteRole project_id user_id role =
              &&. p ^. ProjectUserRoleUser    ==. val user_id
              &&. p ^. ProjectUserRoleRole    ==. val role
 
+loadFunds :: UserId -> Int -> Example ()
+loadFunds user_id n = [marked|
+    let route = UserBalanceR user_id
+    get200 route
+
+    withStatus 303 False $ request $ do
+        addNonce
+        setMethod "POST"
+        setUrl route
+        addPostParam "f1" $ shpack n
+    |]
+
 notifySpecs :: AppConfig DefaultEnv a -> FilePath -> Spec
 notifySpecs AppConfig {..} file =
     -- Note that since we rely on 'Bounded' here, the order of the
@@ -657,6 +669,21 @@ notifySpecs AppConfig {..} file =
                 " pledged [" <> tshares <> " shares]"
         |]
 
+        yit "doesn't notify when you make a new pledge" $ [marked|
+            mary_id      <- userId Mary
+            snowdrift_id <- snowdriftId
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifNewPledge $
+                singleton NotifDeliverWebsite
+
+            loginAs Mary
+            let tshares = shpack shares
+            pledge tshares
+
+            errWhenExistsWebsiteNotif' True mary_id NotifNewPledge $
+                "user" <> (shpack $ keyToInt64 mary_id) <>
+                " pledged [" <> tshares <> " shares]"
+        |]
+
         yit "sends an email when there is a new pledge" $ [marked|
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
@@ -674,6 +701,22 @@ notifySpecs AppConfig {..} file =
                 " pledged [" <> tshares <> " shares]"
         |]
 
+        yit "doesn't send an email when you make a new pledge" $ [marked|
+            mary_id      <- userId Mary
+            snowdrift_id <- snowdriftId
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifNewPledge $
+                singleton NotifDeliverEmail
+
+            loginAs Mary
+            pledge $ shpack (0 :: Int)  -- drop it first
+            let tshares = shpack shares_email
+            pledge tshares
+
+            errWhenExistsEmailNotif' $
+                "user" <> (shpack $ keyToInt64 mary_id) <>
+                " pledged [" <> tshares <> " shares]"
+        |]
+
     testNotification NotifUpdatedPledge = do
         yit "notifies when the pledge is updated" $ [marked|
             mary_id      <- userId Mary
@@ -682,10 +725,11 @@ notifySpecs AppConfig {..} file =
                 singleton NotifDeliverWebsite
 
             loginAs Bob
+            bob_id <- userId Bob
+            loadFunds bob_id 10
             let tshares = shpack shares'
             pledge tshares
 
-            bob_id <- userId Bob
             errUnlessUniqueWebsiteNotif' True mary_id NotifUpdatedPledge $
                 "user" <> (shpack $ keyToInt64 bob_id) <>
                 " added " <> (shpack $ shares' - shares) <>
