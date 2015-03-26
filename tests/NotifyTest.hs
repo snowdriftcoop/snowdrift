@@ -736,6 +736,23 @@ notifySpecs AppConfig {..} file =
                 " share, changing their total to [" <> tshares <> " shares]"
         |]
 
+        yit "doesn't notify when the pledge is updated by you" $ [marked|
+            mary_id      <- userId Mary
+            snowdrift_id <- snowdriftId
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifUpdatedPledge $
+                singleton NotifDeliverWebsite
+
+            loginAs Mary
+            loadFunds mary_id 10
+            let tshares = shpack shares'
+            pledge tshares
+
+            errWhenExistsWebsiteNotif' True mary_id NotifUpdatedPledge $
+                "user" <> (shpack $ keyToInt64 mary_id) <>
+                " added " <> (shpack $ shares' - shares) <>
+                " share, changing their total to [" <> tshares <> " shares]"
+        |]
+
         yit "sends an email when the pledge is updated" $ [marked|
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
@@ -749,6 +766,22 @@ notifySpecs AppConfig {..} file =
             bob_id <- userId Bob
             errUnlessUniqueEmailNotif' $
                 "user" <> (shpack $ keyToInt64 bob_id) <>
+                " added " <> (shpack $ shares' - shares) <>
+                " share, changing their total to [" <> tshares <> " shares]"
+        |]
+
+        yit "doesn't send an email when the pledge is updated by you" $ [marked|
+            mary_id      <- userId Mary
+            snowdrift_id <- snowdriftId
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifUpdatedPledge $
+                singleton NotifDeliverEmail
+
+            loginAs Mary
+            let tshares = shpack shares_email'
+            pledge tshares
+
+            errWhenExistsEmailNotif' $
+                "user" <> (shpack $ keyToInt64 mary_id) <>
                 " added " <> (shpack $ shares' - shares) <>
                 " share, changing their total to [" <> tshares <> " shares]"
         |]
