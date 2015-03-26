@@ -80,7 +80,7 @@ For vim users, your config file .vimrc should include these four lines:
     set expandtab
     set shiftwidth=4
     set tabstop=4
-    au FileType python setl sw=2 sts=2 et
+    au FileType hamlet setl sw=2 sts=2 et
 
 You should also install
 [vim Shakespearean Highlighting](https://github.com/pbrisbin/vim-syntax-shakespeare)
