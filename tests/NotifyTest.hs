@@ -802,6 +802,20 @@ notifySpecs AppConfig {..} file =
                 " is no longer supporting the [project]"
         |]
 
+        yit "doesn't notify when you stop supporting the project" $ [marked|
+            mary_id      <- userId Mary
+            snowdrift_id <- snowdriftId
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifDeletedPledge $
+                singleton NotifDeliverWebsite
+
+            loginAs Mary
+            pledge $ shpack (0 :: Int)
+
+            errWhenExistsWebsiteNotif' True mary_id NotifDeletedPledge $
+                "user" <> (shpack $ keyToInt64 mary_id) <>
+                " is no longer supporting the [project]"
+        |]
+
         yit "sends an email when a user stops supporting the project" $ [marked|
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
@@ -815,5 +829,20 @@ notifySpecs AppConfig {..} file =
             bob_id <- userId Bob
             errUnlessUniqueEmailNotif' $
                 "user" <> (shpack $ keyToInt64 bob_id) <>
+                " is no longer supporting the [project]"
+        |]
+
+        yit "doesn't send an email when you stop supporting the project" $ [marked|
+            mary_id      <- userId Mary
+            snowdrift_id <- snowdriftId
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifDeletedPledge $
+                singleton NotifDeliverEmail
+
+            loginAs Mary
+            pledge $ shpack shares  -- pledge again before dropping
+            pledge $ shpack (0 :: Int)
+
+            errWhenExistsEmailNotif' $
+                "user" <> (shpack $ keyToInt64 mary_id) <>
                 " is no longer supporting the [project]"
         |]
