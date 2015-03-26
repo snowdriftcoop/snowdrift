@@ -199,17 +199,24 @@ See the appendix at the end of this file for more.
 
 Install the essential dependencies: ghc, cabal, postgresql, happy, alex, zlib1g
 
-Additional dependency (which may vary for different systems): libpq-dev
-
-On Debian-based GNU/Linux distros, use this command:
-
-    sudo apt-get install ghc cabal-install postgresql zlib1g-dev libpq-dev happy alex
+Additional dependency (which may vary for different systems): libpq
 
 **Note: we are now using GHC 7.8.x**
-If your system's GHC version is older,
-get the update from <https://www.haskell.org/ghc/>
 
-Next, update cabal's package list:
+As the details vary by system, we may not have the complete instructions
+correct for every case. Come ask for help at #snowdrift on freenode.net IRC
+if you have any trouble. Help us improve this guide when you can.
+
+**<https://www.haskell.org/downloads/linux>** has instructions for
+installing ghc, cabal, happy, and alex on Ubuntu, Fedora, and Arch
+along with manual install instructions for other systems.
+
+You will need to install postgresql and the other libraries separately.
+For example, on Debian-based GNU/Linux distros, use this command:
+
+    sudo apt-get install postgresql zlib1g-dev libpq-dev
+
+If you didn't run it as part of installation, update cabal's package list:
 
     cabal update
 
