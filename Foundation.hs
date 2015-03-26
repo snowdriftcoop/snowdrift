@@ -313,7 +313,7 @@ snowdriftAuthHashDB =
                   <div .text-center>
                     <strong>
                       We also offer a built-in system
-                    <div #new-account-button> 
+                    <div #new-account-button>
                       <a href=@{UserCreateR}>
                         <button>click here to create a new account
                     <p> or log-in below:
