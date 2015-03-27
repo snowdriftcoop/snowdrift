@@ -43,7 +43,7 @@ addAndVerifyEmail user_id email =
     updateUser user_id [ UserEmail =. val (Just email)
                        , UserEmail_verified =. val True ]
 
-withEmailDaemon :: FilePath -> (FilePath -> IO a) -> IO ()
+withEmailDaemon :: FileName -> (FileName -> IO a) -> IO ()
 withEmailDaemon file action = do
     subdirs <- fmap (filter $ L.isPrefixOf "dist-sandbox-") $ getDirectoryContents "dist"
     let subdir = case subdirs of [x] -> x; _ -> ""
@@ -53,7 +53,7 @@ withEmailDaemon file action = do
         (spawnProcess
              (prefix </> "SnowdriftEmailDaemon/SnowdriftEmailDaemon")
              [ "--sendmail=" <> prefix </> "SnowdriftSendmail/SnowdriftSendmail"
-             , "--sendmail-file=" <> file
+             , "--sendmail-file=" <> T.unpack (unFileName file)
              , "--db=testing"
              ])
         terminateProcess
@@ -76,9 +76,9 @@ notificationContent user_id notif_type =
              &&. n ^. NotificationType ==. val notif_type
         return $ n ^. NotificationContent
 
-countEmailNotif :: FilePath -> Text -> IO Int
+countEmailNotif :: FileName -> Text -> IO Int
 countEmailNotif file text = do
-    contents <- T.readFile file
+    contents <- T.readFile $ T.unpack $ unFileName file
     return $ T.count text contents
 
 errUnless :: Monad m => Int -> Int -> String -> String -> m ()
@@ -105,13 +105,13 @@ errUnlessUniqueWebsiteNotif = errWebsiteNotif errUnlessUnique
 errWhenExistsWebsiteNotif   = errWebsiteNotif errWhenExists
 
 errEmailNotif :: (Int -> String -> String -> IO ())
-              -> FilePath -> Text -> IO ()
+              -> FileName -> Text -> IO ()
 errEmailNotif f file text = do
     c <- countEmailNotif file text
-    f c (T.unpack text) file
+    f c (T.unpack text) $ T.unpack $ unFileName file
 
 errUnlessUniqueEmailNotif, errWhenExistsEmailNotif
-    :: FilePath -> Text -> IO ()
+    :: FileName -> Text -> IO ()
 errUnlessUniqueEmailNotif = errEmailNotif errUnlessUnique
 errWhenExistsEmailNotif   = errEmailNotif errWhenExists
 
@@ -138,7 +138,7 @@ loadFunds user_id n = [marked|
         addPostParam "f1" $ shpack n
     |]
 
-notifySpecs :: AppConfig DefaultEnv a -> FilePath -> Spec
+notifySpecs :: AppConfig DefaultEnv a -> FileName -> Spec
 notifySpecs AppConfig {..} file =
     -- Note that since we rely on 'Bounded' here, the order of the
     -- 'NotificationType' value constructors is important for some of
