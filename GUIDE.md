@@ -135,8 +135,8 @@ Working on the code
 See the [Git documentation](http://git-scm.com/documentation) if new to Git.
 You only need basic understanding to start contributing to our code.
 
-Cloning the repository
-----------------------
+Cloning the repository and working with Git
+-------------------------------------------
 
 1. Have or make an account on Gitorious or GitHub
 2. Clone (Gitorious) or Fork (GitHub) the snowdrift repository to your account
@@ -145,34 +145,48 @@ Cloning the repository
     * The public part is in the .pub file (such as id_rsa.pub)
     * Both sites have further instructions if this isn't clear enough
 4. On your local machine, use the `git clone` command
-   with the Gitorious or Github address for your account
+   with the Gitorious or Github address for *your* account
 
 This will create a directory and download the code to it.
-In the future, when in the new directory,
-`git pull` will update your local machine from the Gitorious or GitHub account,
-and `git push` will go the other direction.
 
-After pushing to your online account,
-alert us to the changes with Gitorious' "request merge"
-or GitHub's "pull request" commands on their websites.
-
-To get updates from our main code, run
+You should also set a remote for the main code with
 
     git remote add snowdrift-main git@gitorious.org:snowdrift/snowdrift.git
 
-Then you can get the latest updates with
+The same sort of command can be used to add remotes for other contributors you
+may collaborate with.
 
-    git fetch snowdrift-main
+### Making changes to the code
 
-Then, to see the diff for the updates, use
+We suggest that all work be done on separate *branches*.
+So, to make changes to the code, first run `git checkout -b [branchname]`
+with an appropriate "branchname" for the work you plan to do.
+Use as many branches as needed for all work that functions independently 
+(you can remove merged branches later).
 
-    git diff snowdrift-main/master
+When sharing your changes, it is best to first rebase them onto the latest
+master code. So, after you have made commits on a branch, update your master
+by running `git checkout master` followed by `git pull snowdrift-main`.
 
-To merge the updates, checkout a branch where you want the updates, then
+Next, rebase your work onto master with `git checkout [branchname]`
+followed by `git rebase master`.
 
-    git merge snowdrift-main/master
+Let us know if you have trouble with any conflicts that may arise,
+and we can help work through them.
 
-Note: when working with others, you can use the same fetch process
+To upload your changes after rebase, run `git push`
+(it will tell you the command needed if you haven't pushed that branch yet).
+
+After pushing, alert us to the changes with Gitorious' "request merge"
+or GitHub's "pull request" commands on their websites.
+Make sure to choose the correct source branch.
+
+Note: as a rule, don't rebase any work that you have already pushed.
+In the case that you know others have not pulled the work, you can *force*
+push, and there are other advanced git management tools, but we won't get into
+those here.
+
+Note: when working with other contributors, you can use the same process
 to set up remotes for each of collaborator and send them merge-requests /
 pull-requests by choosing their repository as the target. Alternatively,
 simply communicate by e-mail or IRC or other options about fetching updates.
@@ -211,17 +225,13 @@ if you have any trouble. Help us improve this guide when you can.
 installing ghc, cabal, happy, and alex on Ubuntu, Fedora, and Arch
 along with manual install instructions for other systems.
 
-You will need to install postgresql and the other libraries separately.
-For example, on Debian-based GNU/Linux distros, use this command:
-
-    sudo apt-get install postgresql zlib1g-dev libpq-dev
+You will need to also install postgresql and the other libraries.
 
 If you didn't run it as part of installation, update cabal's package list:
 
     cabal update
 
-Add cabal location(s) to your PATH;
-the location may vary by system and set-up.
+Add cabal location(s) to your PATH; the location may vary by system and set-up.
 Below are the most common situations:
 
 * for GNU/Linux, add `export PATH=.cabal-sandbox/bin:~/.cabal/bin:$PATH`
