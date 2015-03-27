@@ -59,10 +59,14 @@ withEmailDaemon file action = do
         terminateProcess
         (const $ withDelay $ void $ action file)
 
-countWebsiteNotif :: Bool -> UserId -> NotificationType -> Text
+data DelayStatus = WithDelay | WithoutDelay
+
+countWebsiteNotif :: DelayStatus -> UserId -> NotificationType -> Text
                   -> SqlPersistM Int
-countWebsiteNotif with_delay user_id notif_type text =
-    (if with_delay then withDelay else id) $ do
+countWebsiteNotif delay_status user_id notif_type text =
+    (case delay_status of
+         WithDelay    -> withDelay
+         WithoutDelay -> id) $ do
         contents <- fmap (T.unwords . map (unMarkdown . unValue)) $
                     select $ notificationContent user_id notif_type
         return $ T.count text contents
@@ -92,14 +96,14 @@ errUnlessUnique = errUnless 1
 errWhenExists   = errUnless 0
 
 errWebsiteNotif :: (Int -> String -> String -> SqlPersistM ())
-                -> Bool -> UserId -> NotificationType -> Text
+                -> DelayStatus -> UserId -> NotificationType -> Text
                 -> SqlPersistM ()
-errWebsiteNotif f with_delay user_id notif_type text = do
-    c <- countWebsiteNotif with_delay user_id notif_type text
+errWebsiteNotif f delay_status user_id notif_type text = do
+    c <- countWebsiteNotif delay_status user_id notif_type text
     f c (T.unpack text) "the notification table"
 
 errUnlessUniqueWebsiteNotif, errWhenExistsWebsiteNotif
-    :: Bool -> UserId -> NotificationType -> Text
+    :: DelayStatus -> UserId -> NotificationType -> Text
     -> SqlPersistM ()
 errUnlessUniqueWebsiteNotif = errWebsiteNotif errUnlessUnique
 errWhenExistsWebsiteNotif   = errWebsiteNotif errWhenExists
@@ -139,17 +143,17 @@ loadFunds user_id n = [marked|
     |]
 
 errWebsiteNotif'
-    :: (Bool -> UserId -> NotificationType -> Text -> SqlPersistM ())
-    -> Bool -> UserId -> NotificationType -> Text -> Example ()
-errWebsiteNotif' function with_delay user_id notif_type text =
-    testDB $ function with_delay user_id notif_type text
+    :: (DelayStatus -> UserId -> NotificationType -> Text -> SqlPersistM ())
+    -> DelayStatus -> UserId -> NotificationType -> Text -> Example ()
+errWebsiteNotif' function delay_status user_id notif_type text =
+    testDB $ function delay_status user_id notif_type text
 
 errEmailNotif'
     :: MonadIO m => FileName -> (FileName -> Text -> IO ()) -> Text -> m ()
 errEmailNotif' file function = liftIO . withEmailDaemon file . flip function
 
 errWhenExistsWebsiteNotif', errUnlessUniqueWebsiteNotif'
-    :: Bool -> UserId -> NotificationType -> Text -> Example ()
+    :: DelayStatus -> UserId -> NotificationType -> Text -> Example ()
 errWhenExistsWebsiteNotif'   = errWebsiteNotif' errWhenExistsWebsiteNotif
 errUnlessUniqueWebsiteNotif' = errWebsiteNotif' errUnlessUniqueWebsiteNotif
 
@@ -188,8 +192,9 @@ notifySpecs AppConfig {..} file =
                 loginAs AdminUser
                 establish user_id
 
-                errUnlessUniqueWebsiteNotif' False user_id NotifEligEstablish $
-                    render appRoot $ HonorPledgeR
+                errUnlessUniqueWebsiteNotif'
+                    WithoutDelay user_id NotifEligEstablish $
+                        render appRoot $ HonorPledgeR
                 loginAs user
                 acceptHonorPledge
         |]
@@ -223,7 +228,7 @@ notifySpecs AppConfig {..} file =
                     byLabel "Reply" "reply to the root comment"
 
             (reply_id, True) <- getLatestCommentId
-            errUnlessUniqueWebsiteNotif' True mary_id NotifReply $
+            errUnlessUniqueWebsiteNotif' WithDelay mary_id NotifReply $
                 render appRoot $ CommentDirectLinkR reply_id
         |]
 
@@ -242,7 +247,7 @@ notifySpecs AppConfig {..} file =
                     byLabel "Reply" "reply to the root comment (self)"
 
             (reply_id, True) <- getLatestCommentId
-            errWhenExistsWebsiteNotif' True mary_id NotifReply $
+            errWhenExistsWebsiteNotif' WithDelay mary_id NotifReply $
                 render appRoot $ CommentDirectLinkR reply_id
         |]
 
@@ -290,7 +295,7 @@ notifySpecs AppConfig {..} file =
         yit "sends the welcome message when a user is created" $ [marked|
             forM_ named_users $ \user -> do
                  user_id <- userId user
-                 errUnlessUniqueWebsiteNotif' False user_id NotifWelcome $
+                 errUnlessUniqueWebsiteNotif' WithoutDelay user_id NotifWelcome $
                      "Thanks for registering!"
         |]
 
@@ -307,8 +312,9 @@ notifySpecs AppConfig {..} file =
                 byLabel "New Topic" "unapproved comment"
             (comment_id, False) <- getLatestCommentId
             user_id <- userId unestablished_user
-            errUnlessUniqueWebsiteNotif' True user_id NotifUnapprovedComment $
-                render appRoot $ enRoute WikiCommentR "about" comment_id
+            errUnlessUniqueWebsiteNotif'
+                WithDelay user_id NotifUnapprovedComment $
+                    render appRoot $ enRoute WikiCommentR "about" comment_id
         |]
 
     -- XXX: Not triggered anywhere.
@@ -334,8 +340,9 @@ notifySpecs AppConfig {..} file =
                 (render appRoot $ enRoute RethreadWikiCommentR "about" comment_id)
                 (render appRoot $ enRoute WikiCommentR "about" parent_id)
 
-            errUnlessUniqueWebsiteNotif' True bob_id NotifRethreadedComment $
-                render appRoot $ enRoute WikiCommentR "about" comment_id
+            errUnlessUniqueWebsiteNotif'
+                WithDelay bob_id NotifRethreadedComment $
+                    render appRoot $ enRoute WikiCommentR "about" comment_id
         |]
 
         yit "doesn't notify when rethreading your own comment" $ [marked|
@@ -358,8 +365,9 @@ notifySpecs AppConfig {..} file =
                 (render appRoot $ enRoute RethreadWikiCommentR "about" comment_id)
                 (render appRoot $ enRoute WikiCommentR "about" parent_id)
 
-            errWhenExistsWebsiteNotif' True mary_id NotifRethreadedComment $
-                render appRoot $ enRoute WikiCommentR "about" comment_id
+            errWhenExistsWebsiteNotif'
+                WithDelay mary_id NotifRethreadedComment $
+                    render appRoot $ enRoute WikiCommentR "about" comment_id
 
             testDB $ deleteRole snowdrift_id mary_id Moderator
             |]
@@ -430,7 +438,7 @@ notifySpecs AppConfig {..} file =
             loginAs Bob
             flagComment $ render appRoot $ enRoute FlagWikiCommentR "about" comment_id
 
-            errUnlessUniqueWebsiteNotif' False mary_id NotifFlag $
+            errUnlessUniqueWebsiteNotif' WithoutDelay mary_id NotifFlag $
                 render appRoot $ enRoute EditWikiCommentR "about" comment_id
         |]
 
@@ -461,7 +469,7 @@ notifySpecs AppConfig {..} file =
             (comment_id, True) <- getLatestCommentId
             editComment $ render appRoot $ enRoute EditWikiCommentR "about" comment_id
 
-            errUnlessUniqueWebsiteNotif' False bob_id NotifFlagRepost $
+            errUnlessUniqueWebsiteNotif' WithoutDelay bob_id NotifFlagRepost $
                 render appRoot $ enRoute WikiCommentR "about" comment_id
         |]
 
@@ -490,7 +498,7 @@ notifySpecs AppConfig {..} file =
             loginAs Bob
             newWiki snowdrift LangEn wiki_page "testing NotifWikiPage"
 
-            errUnlessUniqueWebsiteNotif' True mary_id NotifWikiPage $
+            errUnlessUniqueWebsiteNotif' WithDelay mary_id NotifWikiPage $
                 render appRoot $ enRoute WikiR wiki_page
         |]
 
@@ -504,8 +512,9 @@ notifySpecs AppConfig {..} file =
 
             newWiki snowdrift LangEn wiki_page_self "testing NotifWikiPage (self)"
 
-            errWhenExistsWebsiteNotif' True mary_id NotifWikiPage $
-                render appRoot $ enRoute WikiR wiki_page_self
+            errWhenExistsWebsiteNotif'
+                WithDelay mary_id NotifWikiPage $
+                    render appRoot $ enRoute WikiR wiki_page_self
         |]
 
         yit "sends an email when a wiki page is created" $ [marked|
@@ -548,7 +557,7 @@ notifySpecs AppConfig {..} file =
             loginAs Bob
             editWiki snowdrift LangEn wiki_page "testing NotifWikiEdit" "testing"
 
-            errUnlessUniqueWebsiteNotif' True mary_id NotifWikiEdit $
+            errUnlessUniqueWebsiteNotif' WithDelay mary_id NotifWikiEdit $
                 render appRoot $ enRoute WikiR wiki_page
         |]
 
@@ -562,7 +571,7 @@ notifySpecs AppConfig {..} file =
             loginAs Mary
             editWiki snowdrift LangEn wiki_page_self "testing NotifWikiEdit" "testing (self)"
 
-            errWhenExistsWebsiteNotif' True mary_id NotifWikiEdit $
+            errWhenExistsWebsiteNotif' WithDelay mary_id NotifWikiEdit $
                 render appRoot $ enRoute WikiR wiki_page_self
 
             testDB $ deleteRole snowdrift_id mary_id Moderator
@@ -610,7 +619,7 @@ notifySpecs AppConfig {..} file =
             let blog_handle = "testing"
             newBlogPost blog_handle
 
-            errUnlessUniqueWebsiteNotif' True mary_id NotifBlogPost $
+            errUnlessUniqueWebsiteNotif' WithDelay mary_id NotifBlogPost $
                 render appRoot $ BlogPostR snowdrift blog_handle
         |]
 
@@ -625,7 +634,7 @@ notifySpecs AppConfig {..} file =
             let blog_handle = "testing-self"
             newBlogPost blog_handle
 
-            errWhenExistsWebsiteNotif' True mary_id NotifBlogPost $
+            errWhenExistsWebsiteNotif' WithDelay mary_id NotifBlogPost $
                 render appRoot $ BlogPostR snowdrift blog_handle
 
             testDB $ deleteRole snowdrift_id mary_id TeamMember
@@ -674,7 +683,7 @@ notifySpecs AppConfig {..} file =
             pledge tshares
 
             bob_id <- userId Bob
-            errUnlessUniqueWebsiteNotif' True mary_id NotifNewPledge $
+            errUnlessUniqueWebsiteNotif' WithDelay mary_id NotifNewPledge $
                 "user" <> (shpack $ keyToInt64 bob_id) <>
                 " pledged [" <> tshares <> " shares]"
         |]
@@ -689,7 +698,7 @@ notifySpecs AppConfig {..} file =
             let tshares = shpack shares
             pledge tshares
 
-            errWhenExistsWebsiteNotif' True mary_id NotifNewPledge $
+            errWhenExistsWebsiteNotif' WithDelay mary_id NotifNewPledge $
                 "user" <> (shpack $ keyToInt64 mary_id) <>
                 " pledged [" <> tshares <> " shares]"
         |]
@@ -740,7 +749,7 @@ notifySpecs AppConfig {..} file =
             let tshares = shpack shares'
             pledge tshares
 
-            errUnlessUniqueWebsiteNotif' True mary_id NotifUpdatedPledge $
+            errUnlessUniqueWebsiteNotif' WithDelay mary_id NotifUpdatedPledge $
                 "user" <> (shpack $ keyToInt64 bob_id) <>
                 " added " <> (shpack $ shares' - shares) <>
                 " share, changing their total to [" <> tshares <> " shares]"
@@ -757,7 +766,7 @@ notifySpecs AppConfig {..} file =
             let tshares = shpack shares'
             pledge tshares
 
-            errWhenExistsWebsiteNotif' True mary_id NotifUpdatedPledge $
+            errWhenExistsWebsiteNotif' WithDelay mary_id NotifUpdatedPledge $
                 "user" <> (shpack $ keyToInt64 mary_id) <>
                 " added " <> (shpack $ shares' - shares) <>
                 " share, changing their total to [" <> tshares <> " shares]"
@@ -807,7 +816,7 @@ notifySpecs AppConfig {..} file =
             pledge $ shpack (0 :: Int)
 
             bob_id <- userId Bob
-            errUnlessUniqueWebsiteNotif' True mary_id NotifDeletedPledge $
+            errUnlessUniqueWebsiteNotif' WithDelay mary_id NotifDeletedPledge $
                 "user" <> (shpack $ keyToInt64 bob_id) <>
                 " is no longer supporting the [project]"
         |]
@@ -821,7 +830,7 @@ notifySpecs AppConfig {..} file =
             loginAs Mary
             pledge $ shpack (0 :: Int)
 
-            errWhenExistsWebsiteNotif' True mary_id NotifDeletedPledge $
+            errWhenExistsWebsiteNotif' WithDelay mary_id NotifDeletedPledge $
                 "user" <> (shpack $ keyToInt64 mary_id) <>
                 " is no longer supporting the [project]"
         |]
