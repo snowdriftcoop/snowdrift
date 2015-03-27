@@ -174,8 +174,7 @@ followed by `git rebase master`.
 Let us know if you have trouble with any conflicts that may arise,
 and we can help work through them.
 
-To upload your changes after rebase, run `git push`
-(it will tell you the command needed if you haven't pushed that branch yet).
+To upload your changes after rebase, run `git push origin [branchname]`.
 
 After pushing, alert us to the changes with Gitorious' "request merge"
 or GitHub's "pull request" commands on their websites.
@@ -185,11 +184,6 @@ Note: as a rule, don't rebase any work that you have already pushed.
 In the case that you know others have not pulled the work, you can 
 rebase and then *force* push, and there are other advanced git management tools,
 but we won't get into those here.
-
-Note: when working with other contributors, you can use the same process
-to set up remotes for each of collaborator and send them merge-requests /
-pull-requests by choosing their repository as the target. Alternatively,
-simply communicate by e-mail or IRC or other options about fetching updates.
 
 
 Building
