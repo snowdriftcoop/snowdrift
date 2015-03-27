@@ -182,9 +182,9 @@ or GitHub's "pull request" commands on their websites.
 Make sure to choose the correct source branch.
 
 Note: as a rule, don't rebase any work that you have already pushed.
-In the case that you know others have not pulled the work, you can *force*
-push, and there are other advanced git management tools, but we won't get into
-those here.
+In the case that you know others have not pulled the work, you can 
+rebase and then *force* push, and there are other advanced git management tools,
+but we won't get into those here.
 
 Note: when working with other contributors, you can use the same process
 to set up remotes for each of collaborator and send them merge-requests /
