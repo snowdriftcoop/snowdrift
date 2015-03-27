@@ -138,6 +138,26 @@ loadFunds user_id n = [marked|
         addPostParam "f1" $ shpack n
     |]
 
+errWebsiteNotif'
+    :: (Bool -> UserId -> NotificationType -> Text -> SqlPersistM ())
+    -> Bool -> UserId -> NotificationType -> Text -> Example ()
+errWebsiteNotif' function with_delay user_id notif_type text =
+    testDB $ function with_delay user_id notif_type text
+
+errEmailNotif'
+    :: MonadIO m => FileName -> (FileName -> Text -> IO ()) -> Text -> m ()
+errEmailNotif' file function = liftIO . withEmailDaemon file . flip function
+
+errWhenExistsWebsiteNotif', errUnlessUniqueWebsiteNotif'
+    :: Bool -> UserId -> NotificationType -> Text -> Example ()
+errWhenExistsWebsiteNotif'   = errWebsiteNotif' errWhenExistsWebsiteNotif
+errUnlessUniqueWebsiteNotif' = errWebsiteNotif' errUnlessUniqueWebsiteNotif
+
+errWhenExistsEmailNotif', errUnlessUniqueEmailNotif'
+    :: MonadIO m => FileName -> Text -> m ()
+errWhenExistsEmailNotif'   file = errEmailNotif' file errWhenExistsEmailNotif
+errUnlessUniqueEmailNotif' file = errEmailNotif' file errUnlessUniqueEmailNotif
+
 notifySpecs :: AppConfig DefaultEnv a -> FileName -> Spec
 notifySpecs AppConfig {..} file =
     -- Note that since we rely on 'Bounded' here, the order of the
@@ -161,16 +181,6 @@ notifySpecs AppConfig {..} file =
     wiki_page_self       = "testing-self"
     wiki_page_self_email = "testing-self-email"
 
-    errWebsiteNotif' f with_delay user_id notif_type text =
-        testDB $ f with_delay user_id notif_type text
-    errEmailNotif'   f = liftIO . withEmailDaemon file . flip f
-
-    errWhenExistsWebsiteNotif' = errWebsiteNotif' errWhenExistsWebsiteNotif
-    errWhenExistsEmailNotif'   = errEmailNotif'   errWhenExistsEmailNotif
-
-    errUnlessUniqueWebsiteNotif' = errWebsiteNotif' errUnlessUniqueWebsiteNotif
-    errUnlessUniqueEmailNotif'   = errEmailNotif'   errUnlessUniqueEmailNotif
-
     testNotification NotifEligEstablish = do
         yit "notifies on establishment" $ [marked|
             forM_ (L.init named_users) $ \user -> do
@@ -190,7 +200,7 @@ notifySpecs AppConfig {..} file =
             testDB $ addAndVerifyEmail mary_id "mary@localhost"
             loginAs AdminUser
             establish mary_id
-            errUnlessUniqueEmailNotif'
+            errUnlessUniqueEmailNotif' file
                 "You are now eligible to become an *established* user"
             loginAs Mary
             acceptHonorPledge
@@ -252,7 +262,7 @@ notifySpecs AppConfig {..} file =
                     byLabel "Reply" "reply to the root comment (email)"
 
             (reply_id, True) <- getLatestCommentId
-            errUnlessUniqueEmailNotif' $
+            errUnlessUniqueEmailNotif' file $
                 render appRoot $ CommentDirectLinkR reply_id
         |]
 
@@ -271,7 +281,7 @@ notifySpecs AppConfig {..} file =
                     byLabel "Reply" "reply to the root comment (email, self)"
 
             (reply_id, True) <- getLatestCommentId
-            errWhenExistsEmailNotif' $
+            errWhenExistsEmailNotif' file $
                 render appRoot $ CommentDirectLinkR reply_id
         |]
 
@@ -374,7 +384,7 @@ notifySpecs AppConfig {..} file =
                 (render appRoot $ enRoute RethreadWikiCommentR "about" comment_id)
                 (render appRoot $ enRoute WikiCommentR "about" parent_id)
 
-            errUnlessUniqueEmailNotif' $
+            errUnlessUniqueEmailNotif' file $
                 render appRoot $ enRoute WikiCommentR "about" comment_id
         |]
 
@@ -398,7 +408,7 @@ notifySpecs AppConfig {..} file =
                 (render appRoot $ enRoute RethreadWikiCommentR "about" comment_id)
                 (render appRoot $ enRoute WikiCommentR "about" parent_id)
 
-            errWhenExistsEmailNotif' $
+            errWhenExistsEmailNotif' file $
                 render appRoot $ enRoute WikiCommentR "about" comment_id
 
             testDB $ deleteRole snowdrift_id mary_id Moderator
@@ -436,7 +446,7 @@ notifySpecs AppConfig {..} file =
             loginAs Bob
             flagComment $ render appRoot $ enRoute FlagWikiCommentR "about" comment_id
 
-            errUnlessUniqueEmailNotif' $
+            errUnlessUniqueEmailNotif' file $
                 render appRoot $ enRoute EditWikiCommentR "about" comment_id
         |]
 
@@ -464,7 +474,7 @@ notifySpecs AppConfig {..} file =
             (comment_id, True) <- getLatestCommentId
             editComment $ render appRoot $ enRoute EditWikiCommentR "about" comment_id
 
-            errUnlessUniqueEmailNotif' $
+            errUnlessUniqueEmailNotif' file $
                 render appRoot $ enRoute WikiCommentR "about" comment_id
         |]
 
@@ -509,7 +519,7 @@ notifySpecs AppConfig {..} file =
             loginAs Bob
             newWiki snowdrift LangEn wiki_page_email "testing NotifWikiPage (email)"
 
-            errUnlessUniqueEmailNotif' $
+            errUnlessUniqueEmailNotif' file $
                 render appRoot $ enRoute WikiR wiki_page_email
         |]
 
@@ -523,7 +533,7 @@ notifySpecs AppConfig {..} file =
 
             newWiki snowdrift LangEn wiki_page_self_email "testing NotifWikiPage (email, self)"
 
-            errWhenExistsEmailNotif' $
+            errWhenExistsEmailNotif' file $
                 render appRoot $ enRoute WikiR wiki_page_self_email
         |]
 
@@ -568,7 +578,7 @@ notifySpecs AppConfig {..} file =
             editWiki snowdrift LangEn wiki_page "testing NotifWikiEdit (email)"
                 "testing"
 
-            errUnlessUniqueEmailNotif' $
+            errUnlessUniqueEmailNotif' file $
                 render appRoot $ enRoute WikiR wiki_page
         |]
 
@@ -583,7 +593,7 @@ notifySpecs AppConfig {..} file =
             editWiki snowdrift LangEn wiki_page_self "testing NotifWikiEdit (email, self)"
                 "testing"
 
-            errWhenExistsEmailNotif' $
+            errWhenExistsEmailNotif' file $
                 render appRoot $ enRoute WikiR wiki_page_self
 
             testDB $ deleteRole snowdrift_id mary_id Moderator
@@ -631,7 +641,7 @@ notifySpecs AppConfig {..} file =
             let blog_handle = "testing-email"
             newBlogPost blog_handle
 
-            errUnlessUniqueEmailNotif' $
+            errUnlessUniqueEmailNotif' file $
                 render appRoot $ BlogPostR snowdrift blog_handle
         |]
 
@@ -646,7 +656,7 @@ notifySpecs AppConfig {..} file =
             let blog_handle = "testing-self-email"
             newBlogPost blog_handle
 
-            errWhenExistsEmailNotif' $
+            errWhenExistsEmailNotif' file $
                 render appRoot $ BlogPostR snowdrift blog_handle
 
             testDB $ deleteRole snowdrift_id mary_id TeamMember
@@ -696,7 +706,7 @@ notifySpecs AppConfig {..} file =
             pledge tshares
 
             bob_id <- userId Bob
-            errUnlessUniqueEmailNotif' $
+            errUnlessUniqueEmailNotif' file $
                 "user" <> (shpack $ keyToInt64 bob_id) <>
                 " pledged [" <> tshares <> " shares]"
         |]
@@ -712,7 +722,7 @@ notifySpecs AppConfig {..} file =
             let tshares = shpack shares_email
             pledge tshares
 
-            errWhenExistsEmailNotif' $
+            errWhenExistsEmailNotif' file $
                 "user" <> (shpack $ keyToInt64 mary_id) <>
                 " pledged [" <> tshares <> " shares]"
         |]
@@ -764,7 +774,7 @@ notifySpecs AppConfig {..} file =
             pledge tshares
 
             bob_id <- userId Bob
-            errUnlessUniqueEmailNotif' $
+            errUnlessUniqueEmailNotif' file $
                 "user" <> (shpack $ keyToInt64 bob_id) <>
                 " added " <> (shpack $ shares' - shares) <>
                 " share, changing their total to [" <> tshares <> " shares]"
@@ -780,7 +790,7 @@ notifySpecs AppConfig {..} file =
             let tshares = shpack shares_email'
             pledge tshares
 
-            errWhenExistsEmailNotif' $
+            errWhenExistsEmailNotif' file $
                 "user" <> (shpack $ keyToInt64 mary_id) <>
                 " added " <> (shpack $ shares' - shares) <>
                 " share, changing their total to [" <> tshares <> " shares]"
@@ -827,7 +837,7 @@ notifySpecs AppConfig {..} file =
             pledge $ shpack (0 :: Int)
 
             bob_id <- userId Bob
-            errUnlessUniqueEmailNotif' $
+            errUnlessUniqueEmailNotif' file $
                 "user" <> (shpack $ keyToInt64 bob_id) <>
                 " is no longer supporting the [project]"
         |]
@@ -842,7 +852,7 @@ notifySpecs AppConfig {..} file =
             pledge $ shpack shares  -- pledge again before dropping
             pledge $ shpack (0 :: Int)
 
-            errWhenExistsEmailNotif' $
+            errWhenExistsEmailNotif' file $
                 "user" <> (shpack $ keyToInt64 mary_id) <>
                 " is no longer supporting the [project]"
         |]
