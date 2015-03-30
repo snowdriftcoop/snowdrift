@@ -193,15 +193,6 @@ deleteFromNotificationEmail :: MonadIO m => UTCTime -> NotificationType -> UserI
 deleteFromNotificationEmail ts notif_type to mproject content =
     delete $ fromNotificationEmail ts notif_type to mproject content
 
-insertIntoNotificationEmail :: (MonadIO m, Functor m)
-                            => UTCTime -> NotificationType -> UserId
-                            -> Maybe ProjectId -> Markdown
-                            -> ReaderT SqlBackend m ()
-insertIntoNotificationEmail ts notif_type to mproject content = do
-    n <- selectCount $ fromNotificationEmail ts notif_type to mproject content
-    when (n == 0) $
-        insert_ $ NotificationEmail ts notif_type to mproject content
-
 sendmail :: FileName -> FileName -> L.ByteString -> IO ()
 sendmail sendmail_exec sendmail_file =
     sendmailCustom (Text.unpack sendmail_exec) $
