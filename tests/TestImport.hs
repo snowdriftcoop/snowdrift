@@ -32,7 +32,6 @@ import qualified Network.HTTP.Types as H
 import qualified Data.ByteString as B
 import           Data.Int        (Int64)
 
-import Data.Foldable (forM_)
 import qualified Data.List as L
 import Data.List.NonEmpty (NonEmpty)
 import qualified Data.List.NonEmpty as NonEmpty
@@ -324,11 +323,10 @@ deleteNotifPrefs user_id mproject_id notif_type =
 
 -- Copied from 'Model.User' but without the constraint in the result.
 updateNotifPrefs :: UserId -> Maybe ProjectId -> NotificationType
-                 -> NonEmpty NotificationDelivery -> SqlPersistM ()
-updateNotifPrefs user_id mproject_id notif_type notif_delivs = do
+                 -> NotificationDelivery -> SqlPersistM ()
+updateNotifPrefs user_id mproject_id notif_type notif_deliv = do
     deleteNotifPrefs user_id mproject_id notif_type
-    forM_ notif_delivs $
-        insert_ . UserNotificationPref user_id mproject_id notif_type
+    insert_ $ UserNotificationPref user_id mproject_id notif_type notif_deliv
 
 singleton :: a -> NonEmpty a
 singleton = flip (NonEmpty.:|) []

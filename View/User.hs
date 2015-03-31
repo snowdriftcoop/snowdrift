@@ -23,8 +23,6 @@ import           Model.User.Internal
 import           Widgets.Markdown       (snowdriftMarkdownField)
 import           Widgets.ProjectPledges
 
-import           Data.List.NonEmpty     (NonEmpty)
-import qualified Data.List.NonEmpty     as N
 import qualified Data.Map               as M
 import qualified Data.Set               as S
 import           Data.String            (fromString)
@@ -172,35 +170,33 @@ userNameWidget user_id = do
 addTestCashForm :: Form Milray
 addTestCashForm = renderBootstrap3 BootstrapBasicForm $ fromInteger . (10000 *) <$> areq' intField "Add (fake) money to your account (in whole dollars)" (Just 10)
 
--- 'selectFieldList' does not allow to work with 'NonEmpty'
--- lists, so we have to work around that.
-req :: SomeMessage App -> Maybe (NonEmpty NotificationDelivery)
-    -> AForm (HandlerT App IO) (NonEmpty NotificationDelivery)
-req s xs = N.fromList <$> areq' dropdown s (N.toList <$> xs)
+req :: SomeMessage App -> Maybe NotificationDelivery
+    -> AForm (HandlerT App IO) NotificationDelivery
+req s xs = areq' dropdown s xs
 
-opt :: SomeMessage App -> Maybe (NonEmpty NotificationDelivery)
-    -> AForm (HandlerT App IO) (Maybe (NonEmpty NotificationDelivery))
-opt s xs = fmap N.fromList <$> aopt' dropdown s (Just <$> N.toList <$> xs)
+opt :: SomeMessage App -> Maybe NotificationDelivery
+    -> AForm (HandlerT App IO) (Maybe NotificationDelivery)
+opt s xs = aopt' dropdown s (Just xs)
 
-dropdown :: Field (HandlerT App IO) [NotificationDelivery]
+dropdown :: Field (HandlerT App IO) NotificationDelivery
 dropdown = selectFieldList methods
 
-methods :: [(Text, [NotificationDelivery])]
+methods :: [(Text, NotificationDelivery)]
 methods =
     -- XXX: Support 'NotifDeliverEmailDigest'.
-    [ ("website",           [NotifDeliverWebsite])
-    , ("email",             [NotifDeliverEmail])
-    , ("website and email", [NotifDeliverWebsite, NotifDeliverEmail])
+    [ ("website",           NotifDeliverWebsite)
+    , ("email",             NotifDeliverEmail)
+    , ("website and email", NotifDeliverWebsiteAndEmail)
     ]
 
 userNotificationsForm :: Bool
-                      -> Maybe (NonEmpty NotificationDelivery)
-                      -> Maybe (NonEmpty NotificationDelivery)
-                      -> Maybe (NonEmpty NotificationDelivery)
-                      -> Maybe (NonEmpty NotificationDelivery)
-                      -> Maybe (NonEmpty NotificationDelivery)
-                      -> Maybe (NonEmpty NotificationDelivery)
-                      -> Maybe (NonEmpty NotificationDelivery)
+                      -> Maybe NotificationDelivery
+                      -> Maybe NotificationDelivery
+                      -> Maybe NotificationDelivery
+                      -> Maybe NotificationDelivery
+                      -> Maybe NotificationDelivery
+                      -> Maybe NotificationDelivery
+                      -> Maybe NotificationDelivery
                       -> Form UserNotificationPref
 userNotificationsForm is_moderator mbal mucom mrcom mrep mecon mflag mflagr =
     renderBootstrap3 BootstrapBasicForm $ UserNotificationPref
@@ -218,12 +214,12 @@ userNotificationsForm is_moderator mbal mucom mrcom mrep mecon mflag mflagr =
             then Just <$> req "A new comment awaits moderator approval" mucom
             else pure Nothing
 
-projectNotificationsForm :: Maybe (NonEmpty NotificationDelivery)
-                         -> Maybe (NonEmpty NotificationDelivery)
-                         -> Maybe (NonEmpty NotificationDelivery)
-                         -> Maybe (NonEmpty NotificationDelivery)
-                         -> Maybe (NonEmpty NotificationDelivery)
-                         -> Maybe (NonEmpty NotificationDelivery)
+projectNotificationsForm :: Maybe NotificationDelivery
+                         -> Maybe NotificationDelivery
+                         -> Maybe NotificationDelivery
+                         -> Maybe NotificationDelivery
+                         -> Maybe NotificationDelivery
+                         -> Maybe NotificationDelivery
                          -> Form ProjectNotificationPref
 projectNotificationsForm mwiki_page mwiki_edit mblog_post
                          mnew_pledge mupdated_pledge mdeleted_pledge =
