@@ -61,6 +61,7 @@ showNotificationType NotifDeletedPledge     = "Pledge deleted"
 data NotificationDelivery
     = NotifDeliverWebsite
     | NotifDeliverEmail
+    | NotifDeliverWebsiteAndEmail
 -- XXX: Not supported by 'userNotificationsForm'.
 --    | NotifDeliverEmailDigest
     deriving (Read, Show, Eq)

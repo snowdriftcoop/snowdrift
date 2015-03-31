@@ -88,9 +88,7 @@ import Model.User.Sql
 import Model.Wiki.Sql
 
 import           Database.Esqueleto.Internal.Language (From)
-import qualified Data.Foldable      as F
 import qualified Data.List          as L
-import           Data.List.NonEmpty (NonEmpty)
 import qualified Data.Map           as M
 import qualified Data.Set           as S
 import qualified Data.Text          as T
@@ -450,18 +448,17 @@ deleteNotifPrefs user_id mproject_id notif_type =
              &&. unp ^. UserNotificationPrefType ==. val notif_type
 
 updateNotifPrefs :: UserId -> Maybe ProjectId -> NotificationType
-                 -> NonEmpty NotificationDelivery -> DB ()
-updateNotifPrefs user_id mproject_id notif_type notif_delivs = do
+                 -> NotificationDelivery -> DB ()
+updateNotifPrefs user_id mproject_id notif_type notif_deliv = do
     deleteNotifPrefs user_id mproject_id notif_type
-    F.forM_ notif_delivs $
-        insert_ . UserNotificationPref user_id mproject_id notif_type
+    insert_ $ UserNotificationPref user_id mproject_id notif_type notif_deliv
 
 updateNotificationPrefDB :: UserId -> Maybe ProjectId -> NotificationType
-                         -> Maybe (NonEmpty NotificationDelivery) -> DB ()
-updateNotificationPrefDB user_id mproject_id notif_type notif_delivs =
+                         -> Maybe NotificationDelivery -> DB ()
+updateNotificationPrefDB user_id mproject_id notif_type notif_deliv =
     maybe (deleteNotifPrefs user_id mproject_id notif_type)
           (updateNotifPrefs user_id mproject_id notif_type)
-          notif_delivs
+          notif_deliv
 
 userWatchProjectDB :: UserId -> ProjectId -> DB ()
 userWatchProjectDB user_id project_id =

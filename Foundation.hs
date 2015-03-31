@@ -421,14 +421,12 @@ createUser ident passwd name email avatar nick = do
         void . insertMany $ uncurry (UserNotificationPref user_id Nothing) <$>
             -- 'NotifWelcome' is not set since it is delivered when a
             -- user is created.
-            [ (NotifBalanceLow,        NotifDeliverWebsite)
-            , (NotifBalanceLow,        NotifDeliverEmail)
+            [ (NotifBalanceLow,        NotifDeliverWebsiteAndEmail)
             , (NotifUnapprovedComment, NotifDeliverEmail)
             , (NotifRethreadedComment, NotifDeliverWebsite)
             , (NotifReply,             NotifDeliverEmail)
             , (NotifEditConflict,      NotifDeliverWebsite)
-            , (NotifFlag,              NotifDeliverWebsite)
-            , (NotifFlag,              NotifDeliverEmail)
+            , (NotifFlag,              NotifDeliverWebsiteAndEmail)
             , (NotifFlagRepost,        NotifDeliverWebsite)
             ]
 

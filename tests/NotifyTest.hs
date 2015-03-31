@@ -218,8 +218,8 @@ notifySpecs AppConfig {..} file =
                 byLabel "New Topic" "root comment"
 
             mary_id <- userId Mary
-            testDB $ updateNotifPrefs mary_id Nothing NotifReply $
-                singleton NotifDeliverWebsite
+            testDB $ updateNotifPrefs mary_id Nothing NotifReply
+                NotifDeliverWebsite
 
             loginAs Bob
             (comment_id, True) <- getLatestCommentId
@@ -238,8 +238,8 @@ notifySpecs AppConfig {..} file =
                 byLabel "New Topic" "root comment (self)"
 
             mary_id <- userId Mary
-            testDB $ updateNotifPrefs mary_id Nothing NotifReply $
-                singleton NotifDeliverWebsite
+            testDB $ updateNotifPrefs mary_id Nothing NotifReply
+                NotifDeliverWebsite
 
             (comment_id, True) <- getLatestCommentId
             postComment
@@ -257,8 +257,8 @@ notifySpecs AppConfig {..} file =
                 byLabel "New Topic" "root comment (email)"
 
             mary_id <- userId Mary
-            testDB $ updateNotifPrefs mary_id Nothing NotifReply $
-                singleton NotifDeliverEmail
+            testDB $ updateNotifPrefs mary_id Nothing NotifReply
+                NotifDeliverEmail
 
             loginAs Bob
             (comment_id, True) <- getLatestCommentId
@@ -277,8 +277,8 @@ notifySpecs AppConfig {..} file =
                 byLabel "New Topic" "root comment (email, self)"
 
             mary_id <- userId Mary
-            testDB $ updateNotifPrefs mary_id Nothing NotifReply $
-                singleton NotifDeliverEmail
+            testDB $ updateNotifPrefs mary_id Nothing NotifReply
+                NotifDeliverEmail
 
             (comment_id, True) <- getLatestCommentId
             postComment
@@ -329,8 +329,8 @@ notifySpecs AppConfig {..} file =
 
             loginAs Bob
             bob_id <- userId Bob
-            testDB $ updateNotifPrefs bob_id Nothing NotifRethreadedComment $
-                singleton NotifDeliverWebsite
+            testDB $ updateNotifPrefs bob_id Nothing NotifRethreadedComment
+                NotifDeliverWebsite
             postComment (enRoute NewWikiDiscussionR "about") $
                 byLabel "New Topic" "rethreaded comment"
             (comment_id, True) <- getLatestCommentId
@@ -355,8 +355,8 @@ notifySpecs AppConfig {..} file =
                 byLabel "New Topic" "parent comment (self)"
             (parent_id, True) <- getLatestCommentId
 
-            testDB $ updateNotifPrefs mary_id Nothing NotifRethreadedComment $
-                singleton NotifDeliverWebsite
+            testDB $ updateNotifPrefs mary_id Nothing NotifRethreadedComment
+                NotifDeliverWebsite
             postComment (enRoute NewWikiDiscussionR "about") $
                 byLabel "New Topic" "rethreaded comment (self)"
             (comment_id, True) <- getLatestCommentId
@@ -381,8 +381,8 @@ notifySpecs AppConfig {..} file =
             loginAs Bob
             bob_id <- userId Bob
             testDB $ addAndVerifyEmail bob_id "bob@localhost"
-            testDB $ updateNotifPrefs bob_id Nothing NotifRethreadedComment $
-                singleton NotifDeliverEmail
+            testDB $ updateNotifPrefs bob_id Nothing NotifRethreadedComment
+                NotifDeliverEmail
             postComment (enRoute NewWikiDiscussionR "about") $
                 byLabel "New Topic" "rethreaded comment (email)"
             (comment_id, True) <- getLatestCommentId
@@ -406,8 +406,8 @@ notifySpecs AppConfig {..} file =
                 byLabel "New Topic" "parent comment (email, self)"
             (parent_id, True) <- getLatestCommentId
 
-            testDB $ updateNotifPrefs mary_id Nothing NotifRethreadedComment $
-                singleton NotifDeliverEmail
+            testDB $ updateNotifPrefs mary_id Nothing NotifRethreadedComment
+                NotifDeliverEmail
             postComment (enRoute NewWikiDiscussionR "about") $
                 byLabel "New Topic" "rethreaded comment (email, self)"
             (comment_id, True) <- getLatestCommentId
@@ -432,8 +432,8 @@ notifySpecs AppConfig {..} file =
                 byLabel "New Topic" "flagged comment"
             (comment_id, True) <- getLatestCommentId
             mary_id <- userId Mary
-            testDB $ updateNotifPrefs mary_id Nothing NotifFlag $
-                singleton NotifDeliverWebsite
+            testDB $ updateNotifPrefs mary_id Nothing NotifFlag
+                NotifDeliverWebsite
 
             loginAs Bob
             flagComment $ render appRoot $ enRoute FlagWikiCommentR "about" comment_id
@@ -448,8 +448,8 @@ notifySpecs AppConfig {..} file =
                 byLabel "New Topic" "flagged comment (email)"
             (comment_id, True) <- getLatestCommentId
             mary_id <- userId Mary
-            testDB $ updateNotifPrefs mary_id Nothing NotifFlag $
-                singleton NotifDeliverEmail
+            testDB $ updateNotifPrefs mary_id Nothing NotifFlag
+                NotifDeliverEmail
 
             loginAs Bob
             flagComment $ render appRoot $ enRoute FlagWikiCommentR "about" comment_id
@@ -462,8 +462,8 @@ notifySpecs AppConfig {..} file =
     testNotification NotifFlagRepost = do
         yit "notifies when a flagged comment gets reposted" $ [marked|
             bob_id <- userId Bob
-            testDB $ updateNotifPrefs bob_id Nothing NotifFlagRepost $
-                singleton NotifDeliverWebsite
+            testDB $ updateNotifPrefs bob_id Nothing NotifFlagRepost
+                NotifDeliverWebsite
 
             loginAs Mary
             (comment_id, True) <- getLatestCommentId
@@ -475,8 +475,8 @@ notifySpecs AppConfig {..} file =
 
         yit "sends an email when a flagged comment gets reposted" $ [marked|
             bob_id <- userId Bob
-            testDB $ updateNotifPrefs bob_id Nothing NotifFlagRepost $
-                singleton NotifDeliverEmail
+            testDB $ updateNotifPrefs bob_id Nothing NotifFlagRepost
+                NotifDeliverEmail
 
             loginAs Mary
             (comment_id, True) <- getLatestCommentId
@@ -492,8 +492,8 @@ notifySpecs AppConfig {..} file =
             snowdrift_id <- snowdriftId
             loginAs Mary
             watch $ WatchProjectR snowdrift_id
-            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifWikiPage $
-                singleton NotifDeliverWebsite
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifWikiPage
+                NotifDeliverWebsite
 
             loginAs Bob
             newWiki snowdrift LangEn wiki_page "testing NotifWikiPage"
@@ -507,8 +507,8 @@ notifySpecs AppConfig {..} file =
             snowdrift_id <- snowdriftId
             loginAs Mary
             watch $ WatchProjectR snowdrift_id
-            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifWikiPage $
-                singleton NotifDeliverWebsite
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifWikiPage
+                NotifDeliverWebsite
 
             newWiki snowdrift LangEn wiki_page_self "testing NotifWikiPage (self)"
 
@@ -522,8 +522,8 @@ notifySpecs AppConfig {..} file =
             snowdrift_id <- snowdriftId
             loginAs Mary
             watch $ WatchProjectR snowdrift_id
-            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifWikiPage $
-                singleton NotifDeliverEmail
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifWikiPage
+                NotifDeliverEmail
 
             loginAs Bob
             newWiki snowdrift LangEn wiki_page_email "testing NotifWikiPage (email)"
@@ -537,8 +537,8 @@ notifySpecs AppConfig {..} file =
             snowdrift_id <- snowdriftId
             loginAs Mary
             watch $ WatchProjectR snowdrift_id
-            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifWikiPage $
-                singleton NotifDeliverEmail
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifWikiPage
+                NotifDeliverEmail
 
             newWiki snowdrift LangEn wiki_page_self_email "testing NotifWikiPage (email, self)"
 
@@ -551,8 +551,8 @@ notifySpecs AppConfig {..} file =
         yit "notifies when a wiki page is edited" $ [marked|
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
-            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifWikiEdit $
-                singleton NotifDeliverWebsite
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifWikiEdit
+                NotifDeliverWebsite
 
             loginAs Bob
             editWiki snowdrift LangEn wiki_page "testing NotifWikiEdit" "testing"
@@ -565,8 +565,8 @@ notifySpecs AppConfig {..} file =
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
             testDB $ insertRole snowdrift_id mary_id Moderator
-            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifWikiEdit $
-                singleton NotifDeliverWebsite
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifWikiEdit
+                NotifDeliverWebsite
 
             loginAs Mary
             editWiki snowdrift LangEn wiki_page_self "testing NotifWikiEdit" "testing (self)"
@@ -580,8 +580,8 @@ notifySpecs AppConfig {..} file =
         yit "sends an email when a wiki page is edited" $ [marked|
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
-            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifWikiEdit $
-                singleton NotifDeliverEmail
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifWikiEdit
+                NotifDeliverEmail
 
             loginAs Bob
             editWiki snowdrift LangEn wiki_page "testing NotifWikiEdit (email)"
@@ -595,8 +595,8 @@ notifySpecs AppConfig {..} file =
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
             testDB $ insertRole snowdrift_id mary_id Moderator
-            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifWikiEdit $
-                singleton NotifDeliverEmail
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifWikiEdit
+                NotifDeliverEmail
 
             loginAs Mary
             editWiki snowdrift LangEn wiki_page_self "testing NotifWikiEdit (email, self)"
@@ -612,8 +612,8 @@ notifySpecs AppConfig {..} file =
         yit "notifies when a blog post is created" $ [marked|
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
-            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifBlogPost $
-                singleton NotifDeliverWebsite
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifBlogPost
+                NotifDeliverWebsite
 
             loginAs AdminUser
             let blog_handle = "testing"
@@ -627,8 +627,8 @@ notifySpecs AppConfig {..} file =
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
             testDB $ insertRole snowdrift_id mary_id TeamMember
-            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifBlogPost $
-                singleton NotifDeliverWebsite
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifBlogPost
+                NotifDeliverWebsite
 
             loginAs Mary
             let blog_handle = "testing-self"
@@ -643,8 +643,8 @@ notifySpecs AppConfig {..} file =
         yit "sends an email when a blog post is created" $ [marked|
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
-            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifBlogPost $
-                singleton NotifDeliverEmail
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifBlogPost
+                NotifDeliverEmail
 
             loginAs AdminUser
             let blog_handle = "testing-email"
@@ -658,8 +658,8 @@ notifySpecs AppConfig {..} file =
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
             testDB $ insertRole snowdrift_id mary_id TeamMember
-            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifBlogPost $
-                singleton NotifDeliverEmail
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifBlogPost
+                NotifDeliverEmail
 
             loginAs Mary
             let blog_handle = "testing-self-email"
@@ -675,8 +675,8 @@ notifySpecs AppConfig {..} file =
         yit "notifies when there is a new pledge" $ [marked|
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
-            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifNewPledge $
-                singleton NotifDeliverWebsite
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifNewPledge
+                NotifDeliverWebsite
 
             loginAs Bob
             let tshares = shpack shares
@@ -691,8 +691,8 @@ notifySpecs AppConfig {..} file =
         yit "doesn't notify when you make a new pledge" $ [marked|
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
-            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifNewPledge $
-                singleton NotifDeliverWebsite
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifNewPledge
+                NotifDeliverWebsite
 
             loginAs Mary
             let tshares = shpack shares
@@ -706,8 +706,8 @@ notifySpecs AppConfig {..} file =
         yit "sends an email when there is a new pledge" $ [marked|
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
-            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifNewPledge $
-                singleton NotifDeliverEmail
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifNewPledge
+                NotifDeliverEmail
 
             loginAs Bob
             pledge $ shpack (0 :: Int)  -- drop it first
@@ -723,8 +723,8 @@ notifySpecs AppConfig {..} file =
         yit "doesn't send an email when you make a new pledge" $ [marked|
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
-            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifNewPledge $
-                singleton NotifDeliverEmail
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifNewPledge
+                NotifDeliverEmail
 
             loginAs Mary
             pledge $ shpack (0 :: Int)  -- drop it first
@@ -740,8 +740,8 @@ notifySpecs AppConfig {..} file =
         yit "notifies when the pledge is updated" $ [marked|
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
-            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifUpdatedPledge $
-                singleton NotifDeliverWebsite
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifUpdatedPledge
+                NotifDeliverWebsite
 
             loginAs Bob
             bob_id <- userId Bob
@@ -758,8 +758,8 @@ notifySpecs AppConfig {..} file =
         yit "doesn't notify when the pledge is updated by you" $ [marked|
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
-            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifUpdatedPledge $
-                singleton NotifDeliverWebsite
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifUpdatedPledge
+                NotifDeliverWebsite
 
             loginAs Mary
             loadFunds mary_id 10
@@ -775,8 +775,8 @@ notifySpecs AppConfig {..} file =
         yit "sends an email when the pledge is updated" $ [marked|
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
-            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifUpdatedPledge $
-                singleton NotifDeliverEmail
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifUpdatedPledge
+                NotifDeliverEmail
 
             loginAs Bob
             let tshares = shpack shares_email'
@@ -792,8 +792,8 @@ notifySpecs AppConfig {..} file =
         yit "doesn't send an email when the pledge is updated by you" $ [marked|
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
-            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifUpdatedPledge $
-                singleton NotifDeliverEmail
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifUpdatedPledge
+                NotifDeliverEmail
 
             loginAs Mary
             let tshares = shpack shares_email'
@@ -809,8 +809,8 @@ notifySpecs AppConfig {..} file =
         yit "notifies when a user stops supporting the project" $ [marked|
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
-            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifDeletedPledge $
-                singleton NotifDeliverWebsite
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifDeletedPledge
+                NotifDeliverWebsite
 
             loginAs Bob
             pledge $ shpack (0 :: Int)
@@ -824,8 +824,8 @@ notifySpecs AppConfig {..} file =
         yit "doesn't notify when you stop supporting the project" $ [marked|
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
-            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifDeletedPledge $
-                singleton NotifDeliverWebsite
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifDeletedPledge
+                NotifDeliverWebsite
 
             loginAs Mary
             pledge $ shpack (0 :: Int)
@@ -838,8 +838,8 @@ notifySpecs AppConfig {..} file =
         yit "sends an email when a user stops supporting the project" $ [marked|
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
-            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifDeletedPledge $
-                singleton NotifDeliverEmail
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifDeletedPledge
+                NotifDeliverEmail
 
             loginAs Bob
             pledge $ shpack shares  -- pledge again before dropping
@@ -854,8 +854,8 @@ notifySpecs AppConfig {..} file =
         yit "doesn't send an email when you stop supporting the project" $ [marked|
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
-            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifDeletedPledge $
-                singleton NotifDeliverEmail
+            testDB $ updateNotifPrefs mary_id (Just snowdrift_id) NotifDeletedPledge
+                NotifDeliverEmail
 
             loginAs Mary
             pledge $ shpack shares  -- pledge again before dropping
