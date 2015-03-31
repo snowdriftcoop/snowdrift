@@ -137,45 +137,79 @@ selectWithVerifiedEmails =
                 , notification_email ^. NotificationEmailProject
                 , notification_email ^. NotificationEmailContent ))
 
--- | Select all fields for users without email addresses or verified
--- email addresses such that they could be inserted into the
--- "notification" table without creating duplicates.
-selectWithoutEmailsOrVerifiedEmails :: SqlPersistT (ResourceT (LoggingT IO))
+selectWithoutEmailsOrVerifiedEmails :: (    SqlExpr (Value UserId)
+                                         -> SqlExpr (ValueList UserId)
+                                         -> SqlExpr (Value Bool) )
+                                    -> SqlPersistT (ResourceT (LoggingT IO))
                                        [( Value UTCTime
                                         , Value NotificationType
                                         , Value UserId
                                         , Value (Maybe ProjectId)
                                         , Value Markdown )]
-selectWithoutEmailsOrVerifiedEmails =
+selectWithoutEmailsOrVerifiedEmails inOrNotIn =
     select $ from $ \(ne, user) -> do
-        where_ $ ne ^. NotificationEmailTo ==. user ^. UserId
-             &&. (isNothing $ user ^. UserEmail)
-             ||. (not_ (isNothing $ user ^. UserEmail) &&.
-                  not_ (user ^. UserEmail_verified))
-             &&. ne ^. NotificationEmailTo
-             `notIn` (subList_select $ from $ \n -> do
-                          where_ $ n  ^. NotificationType
-                               ==. ne ^. NotificationEmailType
-                               &&. n  ^. NotificationTo
-                               ==. ne ^. NotificationEmailTo
-                               &&. n  ^. NotificationProject `notDistinctFrom`
-                                   ne ^. NotificationEmailProject
-                               &&. n  ^. NotificationContent
-                               ==. ne ^. NotificationEmailContent
-                          return (ne ^. NotificationEmailTo))
+        where_ $ (     ne ^. NotificationEmailTo ==. user ^. UserId
+                   &&. (     (isNothing $ user ^. UserEmail)
+                         ||. not_ (isNothing $ user ^. UserEmail)
+                         &&. not_ (user ^. UserEmail_verified)
+                       )
+                 ) &&. ne ^. NotificationEmailTo `inOrNotIn`
+                       (subList_select $ from $ \n -> do
+                             where_ $ n  ^. NotificationType
+                                  ==. ne ^. NotificationEmailType
+                                  &&. n  ^. NotificationTo
+                                  ==. ne ^. NotificationEmailTo
+                                  &&. n  ^. NotificationProject `notDistinctFrom`
+                                      ne ^. NotificationEmailProject
+                                  &&. n  ^. NotificationContent
+                                  ==. ne ^. NotificationEmailContent
+                             return (ne ^. NotificationEmailTo))
         return ( ne ^. NotificationEmailCreatedTs
                , ne ^. NotificationEmailType
                , ne ^. NotificationEmailTo
                , ne ^. NotificationEmailProject
                , ne ^. NotificationEmailContent )
 
+-- | Select all fields for users without email addresses or verified
+-- email addresses such that they could be inserted into the
+-- "notification" table without creating duplicates.
+selectUniqueWithoutEmailsOrVerifiedEmails :: SqlPersistT (ResourceT (LoggingT IO))
+                                             [( Value UTCTime
+                                              , Value NotificationType
+                                              , Value UserId
+                                              , Value (Maybe ProjectId)
+                                              , Value Markdown )]
+selectUniqueWithoutEmailsOrVerifiedEmails =
+    selectWithoutEmailsOrVerifiedEmails notIn
+
+-- | Select all fields for users without email addresses or verified
+-- email addresses, which appear in both the "notification" and
+-- "notification_email" tables, so they could be deleted from the
+-- latter.
+selectDuplicatesWithoutEmailsOrVerifiedEmails :: SqlPersistT (ResourceT (LoggingT IO))
+                                                 [( Value UTCTime
+                                                  , Value NotificationType
+                                                  , Value UserId
+                                                  , Value (Maybe ProjectId)
+                                                  , Value Markdown )]
+selectDuplicatesWithoutEmailsOrVerifiedEmails =
+    selectWithoutEmailsOrVerifiedEmails in_
+
 insertWithoutEmailsOrVerifiedEmails
     :: ReaderT SqlBackend (ResourceT (LoggingT IO)) ()
 insertWithoutEmailsOrVerifiedEmails = do
-    no_emails_or_not_verified <- selectWithoutEmailsOrVerifiedEmails
+    no_emails_or_not_verified <- selectUniqueWithoutEmailsOrVerifiedEmails
     forM_ no_emails_or_not_verified $
         \(Value ts, Value notif_type, Value to, Value mproject, Value content) -> do
             insert_ $ Notification ts notif_type to mproject content False
+            deleteFromNotificationEmail ts notif_type to mproject content
+
+deleteDuplicatesWithoutEmailsOrVerifiedEmails
+    :: ReaderT SqlBackend (ResourceT (LoggingT IO)) ()
+deleteDuplicatesWithoutEmailsOrVerifiedEmails = do
+    duplicates <- selectDuplicatesWithoutEmailsOrVerifiedEmails
+    forM_ duplicates $
+        \(Value ts, Value notif_type, Value to, Value mproject, Value content) ->
             deleteFromNotificationEmail ts notif_type to mproject content
 
 fromNotificationEmail :: UTCTime -> NotificationType -> UserId
@@ -399,6 +433,7 @@ main = withLogging $ do
     void $ forever $ runResourceT $ withDelay loop_delay $ do
         let action = do
                 with_emails <- selectWithVerifiedEmails
+                deleteDuplicatesWithoutEmailsOrVerifiedEmails
                 insertWithoutEmailsOrVerifiedEmails
                 return with_emails
 
