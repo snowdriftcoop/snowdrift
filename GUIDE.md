@@ -72,11 +72,13 @@ Text-editor settings
 
 We recommend setting your text editor to have the TAB key do indentation of
 four spaces generally. However, we use 2-space indentation for .hamlet files.
+We also use 80-character maximum line widths.
 
 ### vim
 
 For vim users, your config file .vimrc should include these four lines:
 
+    set textwidth=80
     set expandtab
     set shiftwidth=4
     set tabstop=4
