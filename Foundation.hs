@@ -195,8 +195,8 @@ instance Yesod App where
                             .
                         $nothing
                             You are not logged in, and this page is not publicly visible. #
-                            <a href="@{AuthR LoginR}">Log in or create an account #
-                            or return to our #
+                            <a href="@{AuthR LoginR}">Log in or create an account
+                            \ or return to our #
                             <a href="@{HomeR}">main page
                             .
                 |]
@@ -280,8 +280,8 @@ authBrowserIdFixed =
             toWidget [hamlet|
                 $newline never
                 <figure>
-                    <a href="javascript:persona_login()">
-                        <img src="https://browserid.org/i/persona_sign_in_blue.png">
+                  <a href="javascript:persona_login()">
+                    <img src="https://browserid.org/i/persona_sign_in_blue.png">
             |]
 
      in (authBrowserId def) { apLogin = login }
@@ -293,10 +293,13 @@ snowdriftAuthBrowserId =
             let parentLogin = apLogin auth toMaster
             [whamlet|
                 <div .text-center>
-                    <strong>We support Mozilla Persona &mdash; a universal, secure log-in that doesn't track you!
+                  <strong>
+                    We support Mozilla Persona — a universal,
+                    secure log-in that doesn't track you!
                 ^{parentLogin}
                 <p>
-                    The Persona sign-in button works for both new and existing accounts.
+                  The Persona sign-in button works for
+                  both new and existing accounts.
             |]
      in auth { apLogin = login }
 
@@ -306,29 +309,43 @@ snowdriftAuthHashDB =
         loginRoute = PluginR "hashdb" ["login"]
         login toMaster =
             [whamlet|
-                <div id="login">
-                    <div .text-center>
-                        <strong>We also offer a built-in system
-                        <br>
-                        <a href="@{UserCreateR}">
-                            <button>click here to create a new account
-                        <p> or log-in below:
-                    <form .form-horizontal method="post" action="@{toMaster loginRoute}">
-                        <div .form-group>
-                            <label .col-sm-4 .control-label>
-                                Handle:
-                            <div .col-sm-8>
-                                <input .form-control id="x" name="username" autofocus="" required>
-                        <div .form-group>
-                            <label .col-sm-4 .control-label>
-                                Passphrase:
-                            <div .col-sm-8>
-                                <input .form-control type="password" name="password" required>
-                        <div .form-group>
-                            <div .col-sm-offset-4 .col-sm-8>
-                                <input type="submit" value="Log in">
-                                <a href="@{ResetPasswordR}" .text-nowrap>
-                                    forgot your password?
+                <div #login>
+                  <div .text-center>
+                    <strong>
+                      We also offer a built-in system
+                    <div #new-account-button>
+                      <a href=@{UserCreateR}>
+                        <button>click here to create a new account
+                    <p> or log-in below:
+                  <form .form-horizontal
+                    method=post
+                    action=@{toMaster loginRoute}>
+                      <div .form-group>
+                        <label .col-sm-4 .control-label
+                          for=handle>
+                          Handle:
+                        <div .col-sm-8>
+                          <input .form-control
+                            id=handle
+                            name=username
+                            autofocus
+                            required>
+                      <div .form-group>
+                        <label .col-sm-4 .control-label
+                          for=password>
+                          Passphrase:
+                        <div .col-sm-8>
+                          <input .form-control
+                            id=password
+                            type=password
+                            name=password
+                            required>
+                      <div .form-group .text-center>
+                        <div #login-button>
+                          <button type=submit>
+                            Log in
+                        <a href=@{ResetPasswordR}>
+                          forgot your password?
             |]
      in auth { apLogin = login }
 
@@ -373,7 +390,7 @@ createUser ident passwd name email avatar nick = do
         case uid_maybe of
             Just user_id -> do
 
-                -- TODO refactor back to insertSelect when quoting issue is resolved
+                -- TODO: refactor back to insertSelect when quoting issue is resolved
                 --
                 -- insertSelect $ from $ \ p -> return $ TagColor <# (p ^. DefaultTagColorTag) <&> val user_id <&> (p ^. DefaultTagColorColor)
                 --
@@ -392,7 +409,7 @@ createUser ident passwd name email avatar nick = do
                           "), and let us know any questions."
                         ]
                 -- TODO: change snowdrift_id to the generated site-project id
-                -- TODO(mitchell): This notification doesn't get sent to the event channel. Is that okay?
+                -- TODO: This notification doesn't get sent to the event channel. Is that okay?
                 insert_ $ Notification now NotifWelcome user_id (Just snowdrift_id) notif_text False
                 return $ Just user_id
             Nothing -> do
@@ -452,7 +469,7 @@ addAlertEm level msg em = do
             #{msg}
     |] render
 
--- TODO(mitchell): don't export this
+-- TODO: don't export this
 addAlert :: Text -> Text -> Handler ()
 addAlert level msg = do
     render <- getUrlRenderParams

@@ -61,6 +61,7 @@ import Handler.RepoFeed
 import Handler.ResetPassword
 import Handler.SnowdriftEvent
 import Handler.ToU
+import Handler.Trademarks
 import Handler.User
 import Handler.User.Comment
 import Handler.Volunteer

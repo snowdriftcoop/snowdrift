@@ -128,6 +128,7 @@ entitiesMap :: Ord (Key t) => [Entity t] -> Map (Key t) t
 entitiesMap = foldr (\(Entity k v) -> M.insert k v) mempty
 
 -- allow easier creation of pretty bootstrap 3 forms. there has to be an easier way -_-
+-- see SD-463
 --fieldSettings :: forall master . SomeMessage master -> [(Text, Text)] -> FieldSettings master
 --fieldSettings label attrs = FieldSettings label Nothing Nothing Nothing attrs
 

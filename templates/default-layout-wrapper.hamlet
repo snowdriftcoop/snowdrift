@@ -6,12 +6,13 @@ $newline never
 \<!--[if gt IE 8]><!-->
 <html .no-js lang="en"> <!--<![endif]-->
     <head>
-        <link rel="shortcut icon" href="@{FaviconR}">
+        <link rel="shortcut icon" href=@{FaviconR}>
         <meta charset="UTF-8">
 
         <script>
             /*
-            @licstart  The following is the entire license notice for the JavaScript code in this page.
+            @licstart  The following is the entire license notice for the
+            JavaScript code in this page.
 
             Copyrights on the code are held by the respective authors,
             see git commit history where not otherwise specified.
@@ -31,7 +32,8 @@ $newline never
             through which recipients can access the Corresponding Source.
 
 
-            @licend  The above is the entire license notice for the JavaScript code in this page.
+            @licend  The above is the entire license notice for the JavaScript
+            code in this page.
             */
 
         <title>#{pageTitle pc}
@@ -43,12 +45,14 @@ $newline never
         ^{pageHead pc}
 
         \<!--[if lt IE 9]>
-        \<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+        \<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js">
+        \</script>
         \<![endif]-->
 
         <script src=@{StaticR js_modernizr_js}>
         <script>
-          document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/,'js');
+          document.documentElement.className
+            = document.documentElement.className.replace(/\bno-js\b/,'js');
 
           function fixup_logo() {
               var head = document.getElementById("head");
@@ -70,20 +74,24 @@ $newline never
             <footer>
                 <div .row>
                     <div .col-md-4>
-                        Writings and images here are free to use and share under #
+                        Aside from
+                        <a href=@{TrademarksR}> trademarks
+                        , writings and images here #
+                        are free to use and share under #
                         <a rel="license" title="Creative Commons Attribution Share-Alike 4.0 International" href="https://creativecommons.org/licenses/by-sa/4.0">
                             CC&nbsp;BY-SA
 
                     <div .col-md-4>
-                        This website's #
-                        <a href="#{extraSourceRepo $ appExtra $ settings master}">source code
+                        This site's #
+                        <a href=#{extraSourceRepo $ appExtra $ settings master}>
+                            source code
                         \ is free under the terms of the #
-                        <a rel="license" title="Affero GPL version 3.0 or later" href="https://www.gnu.org/licenses/agpl">
+                        <a rel="license" title="Affero GPL v3 or later" href="https://www.gnu.org/licenses/agpl">
                             GNU&nbsp;AGPLv3+
                     <div .col-md-4>
-                        The #
-                        <a href="/license/javascript" rel="jslicense">licenses for any JavaScript
-                        \ we use are all free/libre/open also
+                        All JavaScript on this site is #
+                        <a href=@{JsLicenseR} rel="jslicense">
+                            freely-licensed
 
         $maybe analytics <- extraAnalytics $ appExtra $ settings master
             <script>

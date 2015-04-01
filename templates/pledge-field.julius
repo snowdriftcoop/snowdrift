@@ -1,0 +1,24 @@
+(function () {
+    var button = document.getElementById("#{rawJS ident}-other");
+    var field = document.getElementById("#{rawJS ident}-other-val");
+
+    function setup_other_field() {
+        if(button.checked) {
+            field.disabled = false;
+            field.required = true;
+        } else {
+            field.disabled = true;
+            field.required = false;
+            field.value = "";
+        }
+    }
+
+    var buttons = document.getElementsByName("#{rawJS name}");
+
+    for(var i = 0; i < buttons.length; i++) {
+        buttons[i].onchange = setup_other_field;
+    }
+
+    setup_other_field();
+})();
+
