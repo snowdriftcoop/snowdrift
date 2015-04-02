@@ -1,1 +1,4 @@
+<h1 .text-center>
+    Current Total Monthly Pledges
+
 ^{projectPledges user_id}
