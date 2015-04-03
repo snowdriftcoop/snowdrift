@@ -238,6 +238,11 @@ renderSendmail :: FileName -> FileName -> Mail -> IO ()
 renderSendmail sendmail_exec sendmail_file =
     sendmail sendmail_exec sendmail_file <=< renderMail'
 
+runSql :: (MonadBaseControl IO m, MonadIO m)
+       => PostgresConf -> PersistConfigPool PostgresConf
+       -> PersistConfigBackend PostgresConf m a -> m a
+runSql dbConf poolConf action = runPool dbConf action poolConf
+
 handleSendmail :: (MonadBaseControl IO m, MonadIO m, MonadLogger m)
                => FileName -> FileName -> PostgresConf -> PersistConfigPool PostgresConf
                -> Text -> Email -> Email -> Text -> Text
@@ -251,7 +256,7 @@ handleSendmail sendmail_exec sendmail_file dbConf poolConf info_msg from_ to sub
             (Address Nothing from_)
             subject
             (TextLazy.fromStrict body)
-        runPool dbConf action poolConf
+        runSql dbConf poolConf action
     where
       handler = \(err :: Exception.ErrorCall) -> do
           $(logError) (Text.pack $ show err)
@@ -431,30 +436,30 @@ main = withLogging $ do
         return (dbConf, poolConf)
     $(logInfo) "starting the main loop"
     void $ forever $ runResourceT $ withDelay loop_delay $ do
-        let action = do
-                with_emails <- selectWithVerifiedEmails
-                deleteDuplicatesWithoutEmailsOrVerifiedEmails
-                insertWithoutEmailsOrVerifiedEmails
-                return with_emails
-
-        notifs <- runPool dbConf action poolConf
+        notifs <- runSql dbConf poolConf $ do
+            with_emails <- selectWithVerifiedEmails
+            deleteDuplicatesWithoutEmailsOrVerifiedEmails
+            insertWithoutEmailsOrVerifiedEmails
+            return with_emails
         forM_ notifs $ \(Just user_email, ts, notif_type, to, mproject, content) ->
             sendNotification sendmail_exec sendmail_file dbConf poolConf
                 notif_email user_email ts notif_type to mproject content
-        let action' = do
-                with_emails <- selectWithEmails
-                deleteWithNonMatchingEmails
-                deleteWithoutEmails
-                return with_emails
-        verifs <- runPool dbConf action' poolConf
+
+        verifs <- runSql dbConf poolConf $ do
+            with_emails <- selectWithEmails
+            deleteWithNonMatchingEmails
+            deleteWithoutEmails
+            return with_emails
         forM_ verifs $ \(user_id, Just user_email, ver_uri) ->
             sendVerification sendmail_exec sendmail_file dbConf poolConf
                 notif_email user_id user_email ver_uri
-        resets <- runPool dbConf selectUnsentResetPassword poolConf
+
+        resets <- runSql dbConf poolConf selectUnsentResetPassword
         forM_ resets $ \(user_id, user_email, uri) ->
             sendResetPassword sendmail_exec sendmail_file dbConf poolConf
                 notif_email user_email user_id uri
-        confirms <- runPool dbConf selectUnsentDeleteConfirmation poolConf
+
+        confirms <- runSql dbConf poolConf selectUnsentDeleteConfirmation
         forM_ confirms $ \(user_id, user_email, uri) ->
             sendDeleteConfirmation sendmail_exec sendmail_file dbConf poolConf
                 notif_email user_id user_email uri
