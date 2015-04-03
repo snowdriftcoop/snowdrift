@@ -1,6 +1,5 @@
-<h1>
-    <center>
-        Users
+<h1 .text-center>
+    Users
 <table>
     <thead>
         <tr>
