@@ -1,3 +1,5 @@
+<h1 .text-center>
+    Contact
 <strong>Contact #{projectName project}
 <div .row>
     <div .col-md-9 .col-lg-8>

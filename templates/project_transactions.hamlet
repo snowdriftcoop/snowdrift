@@ -1,3 +1,5 @@
+<h1 .text-center>
+    Transactions
 <div .row>
     <div .col-sm-3>
         Account balance:
