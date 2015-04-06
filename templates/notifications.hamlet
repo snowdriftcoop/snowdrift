@@ -14,17 +14,26 @@ $else
                 <input type="submit" name="delete" value="delete">
                 <input type="submit" name="archive" value="archive">
                 <p>
-        $forall Entity notif_id notif <- notifs
+        $forall notif <- notifs
             <div .row>
                 <div .col-sm-3>
-                    <input type="checkbox" name="notification" value="#{toPathPiece notif_id}">
-                    <span .well .well-sm>
-                        ^{renderTime (notificationCreatedTs notif)}
+                    $case notif
+                        $of UNotification user_notif_id user_notif
+                            <input type="checkbox" name="user_notification" value="#{toPathPiece user_notif_id}">
+                            <span .well .well-sm>
+                                ^{renderTime (userNotificationCreatedTs user_notif)}
+                        $of PNotification project_notif_id project_notif
+                            <input type="checkbox" name="project_notification" value="#{toPathPiece project_notif_id}">
+                            <span .well .well-sm>
+                                ^{renderTime (projectNotificationCreatedTs project_notif)}
                 <div .col-sm-9>
-                    $maybe project <- notificationProject notif
-                        ^{projectNameWidget project}
-                        <br>
-                    #{notificationContent notif}
+                    $case notif
+                        $of UNotification _ user_notif
+                                #{userNotificationContent user_notif}
+                        $of PNotification _ project_notif
+                                ^{projectNameWidget (projectNotificationProject project_notif)}
+                                <br>
+                                #{projectNotificationContent project_notif}
         <div .row>
             <div .col-sm-3>
                 <input type="checkbox" name="all">

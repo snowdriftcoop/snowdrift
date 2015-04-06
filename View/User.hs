@@ -12,11 +12,11 @@ module View.User
     , userNotificationsForm
     ) where
 
-import Import hiding (UserNotificationPref)
+import Import hiding (UserNotificationPref, ProjectNotificationPref)
 
 import           Model.Currency
 import           Model.Markdown
-import           Model.Notification     (NotificationDelivery (..))
+import           Model.Notification     (UserNotificationDelivery (..), ProjectNotificationDelivery (..))
 import           Model.Role
 import           Model.User
 import           Model.User.Internal
@@ -170,63 +170,75 @@ userNameWidget user_id = do
 addTestCashForm :: Form Milray
 addTestCashForm = renderBootstrap3 BootstrapBasicForm $ fromInteger . (10000 *) <$> areq' intField "Add (fake) money to your account (in whole dollars)" (Just 10)
 
-req :: SomeMessage App -> Maybe NotificationDelivery
-    -> AForm (HandlerT App IO) NotificationDelivery
-req s xs = areq' dropdown s xs
+req :: Eq a => [(Text, a)] -> SomeMessage App -> Maybe a
+    -> AForm (HandlerT App IO) a
+req methods s xs = areq' (dropdown methods) s xs
 
-opt :: SomeMessage App -> Maybe NotificationDelivery
-    -> AForm (HandlerT App IO) (Maybe NotificationDelivery)
-opt s xs = aopt' dropdown s (Just xs)
+opt :: Eq a => [(Text, a)] -> SomeMessage App -> Maybe a
+    -> AForm (HandlerT App IO) (Maybe a)
+opt methods s xs = aopt' (dropdown methods) s (Just xs)
 
-dropdown :: Field (HandlerT App IO) NotificationDelivery
-dropdown = selectFieldList methods
+dropdown :: Eq a => [(Text, a)] -> Field (HandlerT App IO) a
+dropdown methods = selectFieldList methods
 
-methods :: [(Text, NotificationDelivery)]
-methods =
+userMethods :: [(Text, UserNotificationDelivery)]
+userMethods =
     -- XXX: Support 'NotifDeliverEmailDigest'.
-    [ ("website",           NotifDeliverWebsite)
-    , ("email",             NotifDeliverEmail)
-    , ("website and email", NotifDeliverWebsiteAndEmail)
+    [ ("website",           UserNotifDeliverWebsite)
+    , ("email",             UserNotifDeliverEmail)
+    , ("website and email", UserNotifDeliverWebsiteAndEmail)
+    ]
+
+projectMethods :: [(Text, ProjectNotificationDelivery)]
+projectMethods =
+    -- XXX: Support 'NotifDeliverEmailDigest'.
+    [ ("website",           ProjectNotifDeliverWebsite)
+    , ("email",             ProjectNotifDeliverEmail)
+    , ("website and email", ProjectNotifDeliverWebsiteAndEmail)
     ]
 
 userNotificationsForm :: Bool
-                      -> Maybe NotificationDelivery
-                      -> Maybe NotificationDelivery
-                      -> Maybe NotificationDelivery
-                      -> Maybe NotificationDelivery
-                      -> Maybe NotificationDelivery
-                      -> Maybe NotificationDelivery
-                      -> Maybe NotificationDelivery
+                      -> Maybe UserNotificationDelivery
+                      -> Maybe UserNotificationDelivery
+                      -> Maybe UserNotificationDelivery
+                      -> Maybe UserNotificationDelivery
+                      -> Maybe UserNotificationDelivery
+                      -> Maybe UserNotificationDelivery
+                      -> Maybe UserNotificationDelivery
                       -> Form UserNotificationPref
 userNotificationsForm is_moderator mbal mucom mrcom mrep mecon mflag mflagr =
     renderBootstrap3 BootstrapBasicForm $ UserNotificationPref
-        <$> req (fromString $ "You have a low balance (less than 3 months " <>
-                 "funds at current pledge levels)")   mbal
+        <$> userReq (fromString $ "You have a low balance (less than 3 months " <>
+                    "funds at current pledge levels)")    mbal
         <*> unapproved_comment
-        <*> opt "Your comment gets rethreaded/moved"  mrcom
-        <*> opt "Reply posted to your comment"        mrep
-        <*> req "Your wiki post has an edit conflict" mecon
-        <*> req "Your comment gets flagged"           mflag
-        <*> opt "A comment you flagged gets reposted" mflagr
+        <*> userOpt "Your comment gets rethreaded/moved"  mrcom
+        <*> userOpt "Reply posted to your comment"        mrep
+        <*> userReq "Your wiki post has an edit conflict" mecon
+        <*> userReq "Your comment gets flagged"           mflag
+        <*> userOpt "A comment you flagged gets reposted" mflagr
   where
+    userReq = req userMethods
+    userOpt = opt userMethods
     unapproved_comment =
         if is_moderator
-            then Just <$> req "A new comment awaits moderator approval" mucom
+            then Just <$> userReq "A new comment awaits moderator approval" mucom
             else pure Nothing
 
-projectNotificationsForm :: Maybe NotificationDelivery
-                         -> Maybe NotificationDelivery
-                         -> Maybe NotificationDelivery
-                         -> Maybe NotificationDelivery
-                         -> Maybe NotificationDelivery
-                         -> Maybe NotificationDelivery
-                         -> Form ProjectNotificationPref
+projectNotificationsForm :: Maybe ProjectNotificationDelivery
+                                -> Maybe ProjectNotificationDelivery
+                                -> Maybe ProjectNotificationDelivery
+                                -> Maybe ProjectNotificationDelivery
+                                -> Maybe ProjectNotificationDelivery
+                                -> Maybe ProjectNotificationDelivery
+                                -> Form ProjectNotificationPref
 projectNotificationsForm mwiki_page mwiki_edit mblog_post
                          mnew_pledge mupdated_pledge mdeleted_pledge =
     renderBootstrap3 BootstrapBasicForm $ ProjectNotificationPref
-        <$> opt "Wiki page created" mwiki_page
-        <*> opt "Wiki page edited"  mwiki_edit
-        <*> opt "New blog post"     mblog_post
-        <*> opt "New pledge"        mnew_pledge
-        <*> opt "Pledge updated"    mupdated_pledge
-        <*> opt "Pledge deleted"    mdeleted_pledge
+        <$> projectOpt "Wiki page created" mwiki_page
+        <*> projectOpt "Wiki page edited"  mwiki_edit
+        <*> projectOpt "New blog post"     mblog_post
+        <*> projectOpt "New pledge"        mnew_pledge
+        <*> projectOpt "Pledge updated"    mupdated_pledge
+        <*> projectOpt "Pledge deleted"    mdeleted_pledge
+  where
+    projectOpt = opt projectMethods

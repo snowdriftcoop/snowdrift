@@ -6,7 +6,6 @@
 
 module TestImport (module TestImport, marked) where
 
-import Import (notDistinctFrom)
 import TestImport.Internal
 
 import Prelude hiding (exp)
@@ -33,8 +32,6 @@ import qualified Data.ByteString as B
 import           Data.Int        (Int64)
 
 import qualified Data.List as L
-import Data.List.NonEmpty (NonEmpty)
-import qualified Data.List.NonEmpty as NonEmpty
 import qualified Data.Map as M
 import qualified Data.Text as T
 import Data.Text (Text)
@@ -42,14 +39,17 @@ import Data.String
 
 import Data.Text.Encoding (decodeUtf8)
 import Foundation as TestImport
-import Model as TestImport hiding (notificationContent)
+import Model as TestImport hiding
+    (userNotificationContent, projectNotificationContent)
 
 import Control.Applicative ((<$>))
 import Control.Concurrent (threadDelay)
 import Control.Monad (when)
 import Data.Monoid ((<>))
 import Model.Language
-import Model.Notification (NotificationType(..), NotificationDelivery(..))
+import Model.Notification
+    ( UserNotificationType(..), UserNotificationDelivery(..)
+    , ProjectNotificationType(..), ProjectNotificationDelivery(..) )
 
 import System.IO (hPutStrLn, stderr)
 
@@ -314,22 +314,34 @@ acceptHonorPledge = [marked|
 |]
 
 -- Copied from 'Model.User' but without the constraint in the result.
-deleteNotifPrefs :: UserId -> Maybe ProjectId -> NotificationType -> SqlPersistM ()
-deleteNotifPrefs user_id mproject_id notif_type =
-    delete $ from $ \ unp ->
+deleteUserNotifPrefs :: UserId -> UserNotificationType -> SqlPersistM ()
+deleteUserNotifPrefs user_id notif_type =
+    delete $ from $ \unp ->
         where_ $ unp ^. UserNotificationPrefUser ==. val user_id
-             &&. unp ^. UserNotificationPrefProject `notDistinctFrom` val mproject_id
              &&. unp ^. UserNotificationPrefType ==. val notif_type
 
 -- Copied from 'Model.User' but without the constraint in the result.
-updateNotifPrefs :: UserId -> Maybe ProjectId -> NotificationType
-                 -> NotificationDelivery -> SqlPersistM ()
-updateNotifPrefs user_id mproject_id notif_type notif_deliv = do
-    deleteNotifPrefs user_id mproject_id notif_type
-    insert_ $ UserNotificationPref user_id mproject_id notif_type notif_deliv
+deleteProjectNotifPrefs :: UserId -> ProjectId -> ProjectNotificationType
+                        -> SqlPersistM ()
+deleteProjectNotifPrefs user_id project_id notif_type =
+    delete $ from $ \pnp ->
+        where_ $ pnp ^. ProjectNotificationPrefUser    ==. val user_id
+             &&. pnp ^. ProjectNotificationPrefProject ==. val project_id
+             &&. pnp ^. ProjectNotificationPrefType    ==. val notif_type
 
-singleton :: a -> NonEmpty a
-singleton = flip (NonEmpty.:|) []
+-- Copied from 'Model.User' but without the constraint in the result.
+updateUserNotifPrefs :: UserId -> UserNotificationType
+                     -> UserNotificationDelivery -> SqlPersistM ()
+updateUserNotifPrefs user_id notif_type notif_deliv = do
+    deleteUserNotifPrefs user_id notif_type
+    insert_ $ UserNotificationPref user_id notif_type notif_deliv
+
+-- Copied from 'Model.User' but without the constraint in the result.
+updateProjectNotifPrefs :: UserId -> ProjectId -> ProjectNotificationType
+                        -> ProjectNotificationDelivery -> SqlPersistM ()
+updateProjectNotifPrefs user_id project_id notif_type notif_deliv = do
+    deleteProjectNotifPrefs user_id project_id notif_type
+    insert_ $ ProjectNotificationPref user_id project_id notif_type notif_deliv
 
 -- 'forkEventHandler' sleeps for one second in between
 -- runs, so some tests will fail without this delay.

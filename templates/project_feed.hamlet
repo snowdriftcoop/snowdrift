@@ -40,7 +40,8 @@ $forall (_, event) <- events
 
         $of ECommentApproved _ _
         $of ECommentPending _ _
-        $of ENotificationSent _ _
+        $of EUserNotificationSent _ _
+        $of EProjectNotificationSent _ _
 
 $maybe next_before <- mnext_before
     <a href=@?{(ProjectFeedR project_handle, [("before", next_before)])}>next page
