@@ -8,7 +8,8 @@ import           Handler.Discussion
 import           Handler.User.Comment
 import           Model.Currency
 import           Model.Comment.ActionPermissions
-import           Model.Notification.Internal (NotificationType (..))
+import           Model.Notification.Internal
+    (UserNotificationType (..), ProjectNotificationType (..))
 import           Model.Role
 import           Model.ResetPassword (deleteFromResetPassword)
 import           Model.Transaction
@@ -609,7 +610,7 @@ getUserNotificationsR :: UserId -> Handler Html
 getUserNotificationsR user_id = do
     void $ checkEditUser user_id
     user <- runYDB $ get404 user_id
-    let fetchNotifPref = runYDB . fetchUserNotificationPrefDB user_id Nothing
+    let fetchNotifPref = runYDB . fetchUserNotificationPrefDB user_id
     mbal   <- fetchNotifPref NotifBalanceLow
     mucom  <- fetchNotifPref NotifUnapprovedComment
     mrcom  <- fetchNotifPref NotifRethreadedComment
@@ -635,8 +636,8 @@ postUserNotificationsR user_id = do
             Nothing Nothing Nothing Nothing Nothing Nothing Nothing
     case result of
         FormSuccess notif_pref -> do
-            forM_ (userNotificationPref notif_pref) $ \ (ntype, ndelivs) ->
-                runDB $ updateNotificationPrefDB user_id Nothing ntype ndelivs
+            forM_ (userNotificationPref notif_pref) $ \ (ntype, ndeliv) ->
+                runDB $ updateUserNotificationPrefDB user_id ntype ndeliv
             alertSuccess "Successfully updated the notification preferences."
             redirect $ UserR user_id
         _ -> do
@@ -676,7 +677,7 @@ getProjectNotificationsR user_id project_id = do
     user    <- runYDB $ get404 user_id
     project <- runYDB $ get404 project_id
     let fetchNotifPref =
-            runYDB . fetchUserNotificationPrefDB user_id (Just project_id)
+            runYDB . fetchProjectNotificationPrefDB user_id project_id
     mwiki_page        <- fetchNotifPref NotifWikiPage
     mwiki_edit        <- fetchNotifPref NotifWikiEdit
     mblog_post        <- fetchNotifPref NotifBlogPost
@@ -700,9 +701,9 @@ postProjectNotificationsR user_id project_id = do
                                  Nothing Nothing Nothing
     case result of
         FormSuccess notif_pref -> do
-            forM_ (projectNotificationPref notif_pref) $ \ (ntype, ndelivs) ->
-                runDB $ updateNotificationPrefDB
-                    user_id (Just project_id) ntype ndelivs
+            forM_ (projectNotificationPref notif_pref) $ \ (ntype, ndeliv) ->
+                runDB $ updateProjectNotificationPrefDB
+                    user_id project_id ntype ndeliv
             alertSuccess "Successfully updated the notification preferences."
             redirect (UserR user_id)
         _ -> do

@@ -1,7 +1,7 @@
 module Main where
 
 import Import hiding (on)
-import Model.Notification (NotificationType)
+import Model.Notification (UserNotificationType, ProjectNotificationType)
 import Model.User         (deleteFromEmailVerification)
 
 import           Control.Concurrent           (threadDelay)
@@ -117,115 +117,197 @@ parse db_arg email_arg delay_arg sendmail_exec_arg sendmail_file_arg = do
             then return file
             else error $ "file does not exist: " <> file
 
--- | Select messages to users with verified email addresses.
-selectWithVerifiedEmails :: ReaderT SqlBackend (ResourceT (LoggingT IO))
-                            [( Maybe Email, UTCTime, NotificationType
-                             , UserId, Maybe ProjectId, Markdown )]
-selectWithVerifiedEmails =
-    (map (\(Value memail, Value ts, Value notif_type, Value to, Value mproject, Value content) ->
-           (memail, ts, notif_type, to, mproject, content))) <$>
+selectWithVerifiedEmailsUser :: ReaderT SqlBackend (ResourceT (LoggingT IO))
+                                [( Maybe Email, UTCTime, UserNotificationType
+                                 , UserId, Markdown )]
+selectWithVerifiedEmailsUser =
+    (map (\(Value memail, Value ts, Value notif_type, Value to, Value content) ->
+           (memail, ts, notif_type, to, content))) <$>
     (select $
      from $ \(notification_email `InnerJoin` user) -> do
-         on $ notification_email ^. NotificationEmailTo ==.
+         on $ notification_email ^. UserNotificationEmailTo ==.
               user ^. UserId
          where_ $ (not_ $ isNothing $ user ^. UserEmail)
               &&. user ^. UserEmail_verified
          return ( user ^. UserEmail
-                , notification_email ^. NotificationEmailCreatedTs
-                , notification_email ^. NotificationEmailType
-                , notification_email ^. NotificationEmailTo
-                , notification_email ^. NotificationEmailProject
-                , notification_email ^. NotificationEmailContent ))
+                , notification_email ^. UserNotificationEmailCreatedTs
+                , notification_email ^. UserNotificationEmailType
+                , notification_email ^. UserNotificationEmailTo
+                , notification_email ^. UserNotificationEmailContent ))
 
-selectWithoutEmailsOrVerifiedEmails :: (    SqlExpr (Value UserId)
-                                         -> SqlExpr (ValueList UserId)
-                                         -> SqlExpr (Value Bool) )
-                                    -> SqlPersistT (ResourceT (LoggingT IO))
-                                       [( Value UTCTime
-                                        , Value NotificationType
-                                        , Value UserId
-                                        , Value (Maybe ProjectId)
-                                        , Value Markdown )]
-selectWithoutEmailsOrVerifiedEmails inOrNotIn =
+selectWithVerifiedEmailsProject :: ReaderT SqlBackend (ResourceT (LoggingT IO))
+                                   [( Maybe Email, UTCTime
+                                    , ProjectNotificationType, UserId
+                                    , ProjectId, Markdown )]
+selectWithVerifiedEmailsProject =
+    (map (\(Value memail, Value ts, Value notif_type, Value to, Value mproject, Value content) ->
+           (memail, ts, notif_type, to, mproject, content))) <$>
+    (select $
+     from $ \(notification_email `InnerJoin` user) -> do
+         on $ notification_email ^. ProjectNotificationEmailTo ==.
+              user ^. UserId
+         where_ $ (not_ $ isNothing $ user ^. UserEmail)
+              &&. user ^. UserEmail_verified
+         return ( user ^. UserEmail
+                , notification_email ^. ProjectNotificationEmailCreatedTs
+                , notification_email ^. ProjectNotificationEmailType
+                , notification_email ^. ProjectNotificationEmailTo
+                , notification_email ^. ProjectNotificationEmailProject
+                , notification_email ^. ProjectNotificationEmailContent ))
+
+selectWithoutEmailsOrVerifiedEmailsUser :: (    SqlExpr (Value UserId)
+                                             -> SqlExpr (ValueList UserId)
+                                             -> SqlExpr (Value Bool) )
+                                        -> SqlPersistT (ResourceT (LoggingT IO))
+                                           [( Value UTCTime
+                                            , Value UserNotificationType
+                                            , Value UserId
+                                            , Value Markdown )]
+selectWithoutEmailsOrVerifiedEmailsUser inOrNotIn =
     select $ from $ \(ne, user) -> do
-        where_ $ (     ne ^. NotificationEmailTo ==. user ^. UserId
+        where_ $ (     ne ^. UserNotificationEmailTo ==. user ^. UserId
                    &&. (     (isNothing $ user ^. UserEmail)
                          ||. not_ (isNothing $ user ^. UserEmail)
                          &&. not_ (user ^. UserEmail_verified)
                        )
-                 ) &&. ne ^. NotificationEmailTo `inOrNotIn`
+                 ) &&. ne ^. UserNotificationEmailTo `inOrNotIn`
                        (subList_select $ from $ \n -> do
-                             where_ $ n  ^. NotificationType
-                                  ==. ne ^. NotificationEmailType
-                                  &&. n  ^. NotificationTo
-                                  ==. ne ^. NotificationEmailTo
-                                  &&. n  ^. NotificationProject `notDistinctFrom`
-                                      ne ^. NotificationEmailProject
-                                  &&. n  ^. NotificationContent
-                                  ==. ne ^. NotificationEmailContent
-                             return (ne ^. NotificationEmailTo))
-        return ( ne ^. NotificationEmailCreatedTs
-               , ne ^. NotificationEmailType
-               , ne ^. NotificationEmailTo
-               , ne ^. NotificationEmailProject
-               , ne ^. NotificationEmailContent )
+                             where_ $ n  ^. UserNotificationType
+                                  ==. ne ^. UserNotificationEmailType
+                                  &&. n  ^. UserNotificationTo
+                                  ==. ne ^. UserNotificationEmailTo
+                                  &&. n  ^. UserNotificationContent
+                                  ==. ne ^. UserNotificationEmailContent
+                             return $ ne ^. UserNotificationEmailTo)
+        return ( ne ^. UserNotificationEmailCreatedTs
+               , ne ^. UserNotificationEmailType
+               , ne ^. UserNotificationEmailTo
+               , ne ^. UserNotificationEmailContent )
+
+selectWithoutEmailsOrVerifiedEmailsProject :: (    SqlExpr (Value UserId)
+                                                -> SqlExpr (ValueList UserId)
+                                                -> SqlExpr (Value Bool) )
+                                           -> SqlPersistT (ResourceT (LoggingT IO))
+                                              [( Value UTCTime
+                                               , Value ProjectNotificationType
+                                               , Value UserId
+                                               , Value ProjectId
+                                               , Value Markdown )]
+selectWithoutEmailsOrVerifiedEmailsProject inOrNotIn =
+    select $ from $ \(ne, user) -> do
+        where_ $ (     ne ^. ProjectNotificationEmailTo ==. user ^. UserId
+                   &&. (     (isNothing $ user ^. UserEmail)
+                         ||. not_ (isNothing $ user ^. UserEmail)
+                         &&. not_ (user ^. UserEmail_verified)
+                       )
+                 ) &&. ne ^. ProjectNotificationEmailTo `inOrNotIn`
+                       (subList_select $ from $ \n -> do
+                             where_ $ n  ^. ProjectNotificationType
+                                  ==. ne ^. ProjectNotificationEmailType
+                                  &&. n  ^. ProjectNotificationTo
+                                  ==. ne ^. ProjectNotificationEmailTo
+                                  &&. n  ^. ProjectNotificationProject
+                                  ==. ne ^. ProjectNotificationEmailProject
+                                  &&. n  ^. ProjectNotificationContent
+                                  ==. ne ^. ProjectNotificationEmailContent
+                             return $ ne ^. ProjectNotificationEmailTo)
+        return ( ne ^. ProjectNotificationEmailCreatedTs
+               , ne ^. ProjectNotificationEmailType
+               , ne ^. ProjectNotificationEmailTo
+               , ne ^. ProjectNotificationEmailProject
+               , ne ^. ProjectNotificationEmailContent )
 
 -- | Select all fields for users without email addresses or verified
 -- email addresses such that they could be inserted into the
 -- "notification" table without creating duplicates.
-selectUniqueWithoutEmailsOrVerifiedEmails :: SqlPersistT (ResourceT (LoggingT IO))
-                                             [( Value UTCTime
-                                              , Value NotificationType
-                                              , Value UserId
-                                              , Value (Maybe ProjectId)
-                                              , Value Markdown )]
-selectUniqueWithoutEmailsOrVerifiedEmails =
-    selectWithoutEmailsOrVerifiedEmails notIn
+selectUniqueWithoutEmailsOrVerifiedEmailsUser
+    -- | Select all fields for users without email addresses or verified
+    -- email addresses, which appear in both the "notification" and
+    -- "notification_email" tables, so they could be deleted from the
+    -- latter.
+    , selectDuplicatesWithoutEmailsOrVerifiedEmailsUser
+    :: SqlPersistT (ResourceT (LoggingT IO))
+       [( Value UTCTime
+        , Value UserNotificationType
+        , Value UserId
+        , Value Markdown )]
+selectUniqueWithoutEmailsOrVerifiedEmailsUser =
+    selectWithoutEmailsOrVerifiedEmailsUser notIn
+selectDuplicatesWithoutEmailsOrVerifiedEmailsUser =
+    selectWithoutEmailsOrVerifiedEmailsUser in_
 
--- | Select all fields for users without email addresses or verified
--- email addresses, which appear in both the "notification" and
--- "notification_email" tables, so they could be deleted from the
--- latter.
-selectDuplicatesWithoutEmailsOrVerifiedEmails :: SqlPersistT (ResourceT (LoggingT IO))
-                                                 [( Value UTCTime
-                                                  , Value NotificationType
-                                                  , Value UserId
-                                                  , Value (Maybe ProjectId)
-                                                  , Value Markdown )]
-selectDuplicatesWithoutEmailsOrVerifiedEmails =
-    selectWithoutEmailsOrVerifiedEmails in_
+selectUniqueWithoutEmailsOrVerifiedEmailsProject
+    , selectDuplicatesWithoutEmailsOrVerifiedEmailsProject
+    :: SqlPersistT (ResourceT (LoggingT IO))
+       [( Value UTCTime
+        , Value ProjectNotificationType
+        , Value UserId
+        , Value ProjectId
+        , Value Markdown )]
+selectUniqueWithoutEmailsOrVerifiedEmailsProject =
+    selectWithoutEmailsOrVerifiedEmailsProject notIn
+selectDuplicatesWithoutEmailsOrVerifiedEmailsProject =
+    selectWithoutEmailsOrVerifiedEmailsProject in_
 
-insertWithoutEmailsOrVerifiedEmails
+insertWithoutEmailsOrVerifiedEmailsUser
+    , insertWithoutEmailsOrVerifiedEmailsProject
     :: ReaderT SqlBackend (ResourceT (LoggingT IO)) ()
-insertWithoutEmailsOrVerifiedEmails = do
-    no_emails_or_not_verified <- selectUniqueWithoutEmailsOrVerifiedEmails
+insertWithoutEmailsOrVerifiedEmailsUser = do
+    no_emails_or_not_verified <- selectUniqueWithoutEmailsOrVerifiedEmailsUser
     forM_ no_emails_or_not_verified $
-        \(Value ts, Value notif_type, Value to, Value mproject, Value content) -> do
-            insert_ $ Notification ts notif_type to mproject content False
-            deleteFromNotificationEmail ts notif_type to mproject content
+        \(Value ts, Value notif_type, Value to, Value content) -> do
+            insert_ $ UserNotification ts notif_type to content False
+            deleteFromUserNotificationEmail ts notif_type to content
+insertWithoutEmailsOrVerifiedEmailsProject = do
+    no_emails_or_not_verified <- selectUniqueWithoutEmailsOrVerifiedEmailsProject
+    forM_ no_emails_or_not_verified $
+        \(Value ts, Value notif_type, Value to, Value project, Value content) -> do
+            insert_ $ ProjectNotification ts notif_type to project content False
+            deleteFromProjectNotificationEmail ts notif_type to project content
 
-deleteDuplicatesWithoutEmailsOrVerifiedEmails
+deleteDuplicatesWithoutEmailsOrVerifiedEmailsUser
+    , deleteDuplicatesWithoutEmailsOrVerifiedEmailsProject
     :: ReaderT SqlBackend (ResourceT (LoggingT IO)) ()
-deleteDuplicatesWithoutEmailsOrVerifiedEmails = do
-    duplicates <- selectDuplicatesWithoutEmailsOrVerifiedEmails
+deleteDuplicatesWithoutEmailsOrVerifiedEmailsUser = do
+    duplicates <- selectDuplicatesWithoutEmailsOrVerifiedEmailsUser
     forM_ duplicates $
-        \(Value ts, Value notif_type, Value to, Value mproject, Value content) ->
-            deleteFromNotificationEmail ts notif_type to mproject content
+        \(Value ts, Value notif_type, Value to, Value content) ->
+            deleteFromUserNotificationEmail ts notif_type to content
+deleteDuplicatesWithoutEmailsOrVerifiedEmailsProject = do
+    duplicates <- selectDuplicatesWithoutEmailsOrVerifiedEmailsProject
+    forM_ duplicates $
+        \(Value ts, Value notif_type, Value to, Value project, Value content) ->
+            deleteFromProjectNotificationEmail ts notif_type to project content
 
-fromNotificationEmail :: UTCTime -> NotificationType -> UserId
-                      -> Maybe ProjectId -> Markdown -> SqlQuery ()
-fromNotificationEmail ts notif_type to mproject content =
+fromUserNotificationEmail :: UTCTime -> UserNotificationType -> UserId
+                          -> Markdown -> SqlQuery ()
+fromUserNotificationEmail ts notif_type to content =
     from $ \ne -> do
-        where_ $ ne ^. NotificationEmailCreatedTs ==. val ts
-             &&. ne ^. NotificationEmailType      ==. val notif_type
-             &&. ne ^. NotificationEmailTo        ==. val to
-             &&. ne ^. NotificationEmailProject `notDistinctFrom` val mproject
-             &&. ne ^. NotificationEmailContent   ==. val content
+        where_ $ ne ^. UserNotificationEmailCreatedTs ==. val ts
+             &&. ne ^. UserNotificationEmailType      ==. val notif_type
+             &&. ne ^. UserNotificationEmailTo        ==. val to
+             &&. ne ^. UserNotificationEmailContent   ==. val content
 
-deleteFromNotificationEmail :: MonadIO m => UTCTime -> NotificationType -> UserId
-                            -> Maybe ProjectId -> Markdown -> SqlPersistT m ()
-deleteFromNotificationEmail ts notif_type to mproject content =
-    delete $ fromNotificationEmail ts notif_type to mproject content
+fromProjectNotificationEmail :: UTCTime -> ProjectNotificationType -> UserId
+                             -> ProjectId -> Markdown -> SqlQuery ()
+fromProjectNotificationEmail ts notif_type to project content =
+    from $ \ne -> do
+        where_ $ ne ^. ProjectNotificationEmailCreatedTs ==. val ts
+             &&. ne ^. ProjectNotificationEmailType      ==. val notif_type
+             &&. ne ^. ProjectNotificationEmailTo        ==. val to
+             &&. ne ^. ProjectNotificationEmailProject   ==. val project
+             &&. ne ^. ProjectNotificationEmailContent   ==. val content
+
+deleteFromUserNotificationEmail :: MonadIO m => UTCTime -> UserNotificationType
+                                -> UserId -> Markdown -> SqlPersistT m ()
+deleteFromUserNotificationEmail ts notif_type to content =
+    delete $ fromUserNotificationEmail ts notif_type to content
+
+deleteFromProjectNotificationEmail :: MonadIO m => UTCTime -> ProjectNotificationType
+                                   -> UserId -> ProjectId -> Markdown
+                                   -> SqlPersistT m ()
+deleteFromProjectNotificationEmail ts notif_type to project content =
+    delete $ fromProjectNotificationEmail ts notif_type to project content
 
 sendmail :: FileName -> FileName -> L.ByteString -> IO ()
 sendmail sendmail_exec sendmail_file =
@@ -262,19 +344,34 @@ handleSendmail sendmail_exec sendmail_file dbConf poolConf info_msg from_ to sub
           $(logError) (Text.pack $ show err)
           $(logWarn) warn_msg
 
-sendNotification :: (MonadBaseControl IO m, MonadIO m, MonadLogger m)
-                 => FileName -> FileName -> PostgresConf
-                 -> PersistConfigPool PostgresConf -> Email -> Email -> UTCTime
-                 -> NotificationType -> UserId -> Maybe ProjectId -> Markdown
-                 -> m ()
-sendNotification sendmail_exec sendmail_file dbConf poolConf notif_email
-                 user_email ts notif_type to mproject content = do
+sendUserNotification :: (MonadBaseControl IO m, MonadIO m, MonadLogger m)
+                     => FileName -> FileName -> PostgresConf
+                     -> PersistConfigPool PostgresConf -> Email -> Email
+                     -> UTCTime -> UserNotificationType -> UserId -> Markdown
+                     -> m ()
+sendUserNotification sendmail_exec sendmail_file dbConf poolConf notif_email
+                 user_email ts notif_type to content = do
     let content' = unMarkdown content
     handleSendmail sendmail_exec sendmail_file dbConf poolConf
-        ("sending a notification to " <> user_email <> "\n" <> content')
+        ("sending a user notification to " <> user_email <> "\n" <> content')
         notif_email user_email "Snowdrift.coop notification" content'
-        (deleteFromNotificationEmail ts notif_type to mproject content)
-        ("sending the notification to " <> user_email <> " failed; " <>
+        (deleteFromUserNotificationEmail ts notif_type to content)
+        ("sending the user notification to " <> user_email <> " failed; " <>
+         "will try again later")
+
+sendProjectNotification :: (MonadBaseControl IO m, MonadIO m, MonadLogger m)
+                        => FileName -> FileName -> PostgresConf
+                        -> PersistConfigPool PostgresConf -> Email -> Email
+                        -> UTCTime -> ProjectNotificationType -> UserId
+                        -> ProjectId -> Markdown -> m ()
+sendProjectNotification sendmail_exec sendmail_file dbConf poolConf notif_email
+                 user_email ts notif_type to project content = do
+    let content' = unMarkdown content
+    handleSendmail sendmail_exec sendmail_file dbConf poolConf
+        ("sending a project notification to " <> user_email <> "\n" <> content')
+        notif_email user_email "Snowdrift.coop notification" content'
+        (deleteFromProjectNotificationEmail ts notif_type to project content)
+        ("sending the project notification to " <> user_email <> " failed; " <>
          "will try again later")
 
 selectWithEmails :: ReaderT SqlBackend (ResourceT (LoggingT IO))
@@ -436,14 +533,23 @@ main = withLogging $ do
         return (dbConf, poolConf)
     $(logInfo) "starting the main loop"
     void $ forever $ runResourceT $ withDelay loop_delay $ do
-        notifs <- runSql dbConf poolConf $ do
-            with_emails <- selectWithVerifiedEmails
-            deleteDuplicatesWithoutEmailsOrVerifiedEmails
-            insertWithoutEmailsOrVerifiedEmails
-            return with_emails
-        forM_ notifs $ \(Just user_email, ts, notif_type, to, mproject, content) ->
-            sendNotification sendmail_exec sendmail_file dbConf poolConf
-                notif_email user_email ts notif_type to mproject content
+        user_notifs <- runSql dbConf poolConf $ do
+            with_emails_user <- selectWithVerifiedEmailsUser
+            deleteDuplicatesWithoutEmailsOrVerifiedEmailsUser
+            insertWithoutEmailsOrVerifiedEmailsUser
+            return with_emails_user
+        forM_ user_notifs $ \(Just user_email, ts, notif_type, to, content) ->
+            sendUserNotification sendmail_exec sendmail_file dbConf poolConf
+                notif_email user_email ts notif_type to content
+
+        project_notifs <- runSql dbConf poolConf $ do
+            with_emails_project <- selectWithVerifiedEmailsProject
+            deleteDuplicatesWithoutEmailsOrVerifiedEmailsProject
+            insertWithoutEmailsOrVerifiedEmailsProject
+            return with_emails_project
+        forM_ project_notifs $ \(Just user_email, ts, notif_type, to, project, content) ->
+            sendProjectNotification sendmail_exec sendmail_file dbConf poolConf
+                notif_email user_email ts notif_type to project content
 
         verifs <- runSql dbConf poolConf $ do
             with_emails <- selectWithEmails

@@ -178,19 +178,18 @@
 /c/#CommentId            CommentDirectLinkR GET      DELETE
 /c/#CommentId/tag/#TagId CommentTagR        GET POST
 
-/ev/commentposted/#EventCommentPostedId             EventCommentPostedR     GET
-/ev/commentpending/#EventCommentPendingId           EventCommentPendingR    GET
-/ev/commentrethreaded/#EventCommentRethreadedId     EventCommentRethreadedR GET
-/ev/commentclosing/#EventCommentClosingId           EventCommentClosingR    GET
-/ev/ticketclaimed/#EventTicketClaimedId             EventTicketClaimedR     GET
-/ev/ticketunclaimed/#EventTicketUnclaimedId         EventTicketUnclaimedR   GET
-/ev/notificationsent/#EventNotificationSentId       EventNotificationSentR  GET
-/ev/wikipage/#EventWikiPageId                       EventWikiPageR          GET
-/ev/wikiedit/#EventWikiEditId                       EventWikiEditR          GET
-/ev/newpledge/#EventNewPledgeId                     EventNewPledgeR         GET
-/ev/updatedpledge/#EventUpdatedPledgeId             EventUpdatedPledgeR     GET
-/ev/deletedpledge/#EventDeletedPledgeId             EventDeletedPledgeR     GET
-/ev/blogpost/#EventBlogPostId                       EventBlogPostR          GET
+/ev/commentposted/#EventCommentPostedId                     EventCommentPostedR           GET
+/ev/commentpending/#EventCommentPendingId                   EventCommentPendingR          GET
+/ev/commentrethreaded/#EventCommentRethreadedId             EventCommentRethreadedR       GET
+/ev/commentclosing/#EventCommentClosingId                   EventCommentClosingR          GET
+/ev/ticketclaimed/#EventTicketClaimedId                     EventTicketClaimedR           GET
+/ev/ticketunclaimed/#EventTicketUnclaimedId                 EventTicketUnclaimedR         GET
+/ev/wikipage/#EventWikiPageId                               EventWikiPageR                GET
+/ev/wikiedit/#EventWikiEditId                               EventWikiEditR                GET
+/ev/newpledge/#EventNewPledgeId                             EventNewPledgeR               GET
+/ev/updatedpledge/#EventUpdatedPledgeId                     EventUpdatedPledgeR           GET
+/ev/deletedpledge/#EventDeletedPledgeId                     EventDeletedPledgeR           GET
+/ev/blogpost/#EventBlogPostId                               EventBlogPostR                GET
 
 -- Devs only!
 
