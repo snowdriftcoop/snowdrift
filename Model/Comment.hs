@@ -463,7 +463,10 @@ editCommentDB user_id comment_id text language = do
             sendPreferredNotificationDB
                 (Just $ NotificationSender user_id)
                 (NotificationReceiver commentFlaggingFlagger)
-                NotifFlagRepost Nothing Nothing notif_text
+                NotifFlagRepost
+                Nothing
+                Nothing
+                notif_text
   where
     updateComment = do
         existent_tickets <- lift $ fetchTicketNamesDB comment_id
@@ -511,7 +514,10 @@ flagCommentDB comment_id permalink_route flagger_id reasons message = do
             sendPreferredNotificationDB
                 (Just $ NotificationSender flagger_id)
                 (NotificationReceiver poster_id)
-                NotifFlag Nothing Nothing notif_text
+                NotifFlag
+                Nothing
+                Nothing
+                notif_text
             return True
 
 -- | Post an new (approved) Comment.

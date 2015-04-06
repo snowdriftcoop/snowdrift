@@ -39,14 +39,17 @@ notificationEventHandler AppConfig{..} (ECommentPosted comment_id comment) = cas
             sendPreferredNotificationDB
                 (Just $ NotificationSender $ commentUser comment)
                 (NotificationReceiver parent_user_id)
-                NotifReply Nothing Nothing $
-                mconcat [ "Someone replied to [your comment]("
-                        , Markdown $ appRoot <> parent_comment_route
-                        , ")! You can view the reply [here]("
-                        , Markdown $ appRoot <> reply_comment_route
-                        , "). *You can filter these notifications by " <>
-                          "adjusting the settings in your profile.*"
-                        ]
+                NotifReply
+                Nothing
+                Nothing
+                (mconcat
+                    [ "Someone replied to [your comment]("
+                    , Markdown $ appRoot <> parent_comment_route
+                    , ")! You can view the reply [here]("
+                    , Markdown $ appRoot <> reply_comment_route
+                    , "). *You can filter these notifications by " <>
+                    "adjusting the settings in your profile.*"
+                    ])
 
 -- Notify all moderators of the project the comment was posted on.
 -- Also notify the comment poster.
@@ -55,7 +58,10 @@ notificationEventHandler AppConfig{..} (ECommentPending comment_id comment) = ru
     let user_id = commentUser comment
     sendPreferredNotificationDB
         Nothing (NotificationReceiver user_id)
-        NotifUnapprovedComment Nothing Nothing $ mconcat
+        NotifUnapprovedComment
+        Nothing
+        Nothing
+        (mconcat
             [ "Your [comment]("
             , Markdown $ appRoot <> route_text
             , ") now awaits moderator approval."
@@ -64,7 +70,7 @@ notificationEventHandler AppConfig{..} (ECommentPending comment_id comment) = ru
             , "(such as after you have posted a few meaningful comments), "
             , "you will become eligible for 'establishment'. "
             , "Established users can post without moderation."
-            ]
+            ])
 
     discussion <- lift $ fetchDiscussionDB [LangEn] $ commentDiscussion comment
 
@@ -81,8 +87,11 @@ notificationEventHandler AppConfig{..} (ECommentPending comment_id comment) = ru
             F.forM_ mods $ \mod_id ->
                 sendPreferredNotificationDB
                     (Just $ NotificationSender user_id)
-                    (NotificationReceiver mod_id) NotifUnapprovedComment
-                    Nothing (Just comment_id) content
+                    (NotificationReceiver mod_id)
+                    NotifUnapprovedComment
+                    Nothing
+                    (Just comment_id)
+                    content
 
     case discussion of
         DiscussionOnProject project                     -> projectComment project
@@ -95,11 +104,14 @@ notificationEventHandler AppConfig{..} (ECommentApproved comment_id comment) = r
     sendPreferredNotificationDB
         (fmap NotificationSender $ commentApprovedBy comment)
         (NotificationReceiver $ commentUser comment)
-        NotifApprovedComment Nothing Nothing $ mconcat
+        NotifApprovedComment
+        Nothing
+        Nothing
+        (mconcat
             [ "Your [comment]("
             , Markdown $ appRoot <> route_text
             , ") has been approved."
-            ]
+            ])
 
 -- Notify the rethreadee his/her comment has been rethreaded.
 notificationEventHandler AppConfig{..} (ECommentRethreaded _ Rethread{..}) = do
@@ -125,7 +137,10 @@ notificationEventHandler AppConfig{..} (ECommentRethreaded _ Rethread{..}) = do
     runSDB $ sendPreferredNotificationDB
         (Just $ NotificationSender rethreadModerator)
         (NotificationReceiver $ commentUser comment)
-        NotifRethreadedComment Nothing Nothing content
+        NotifRethreadedComment
+        Nothing
+        Nothing
+        content
 
 notificationEventHandler _ (ECommentClosed _ _)     = return ()
 notificationEventHandler _ (ENotificationSent _ _)  = return ()
@@ -138,30 +153,35 @@ notificationEventHandler AppConfig{..} (EWikiEdit wiki_edit_id wiki_edit wiki_ta
     runSDB $ handleWatched
         (Just $ NotificationSender $ wikiEditUser wiki_edit)
         appRoot (wikiTargetProject wiki_target)
-        (\ project_handle -> WikiEditR project_handle
-                                      (wikiTargetLanguage wiki_target)
-                                      (wikiTargetTarget wiki_target)
-                                      wiki_edit_id)
+        (\project_handle ->
+            WikiEditR
+                project_handle
+                (wikiTargetLanguage wiki_target)
+                (wikiTargetTarget wiki_target)
+                wiki_edit_id)
         NotifWikiEdit
-        (\ route -> "Wiki page [edited](" <> route <> ")")
+        (\route -> "Wiki page [edited](" <> route <> ")")
 
 notificationEventHandler AppConfig{..} (EWikiPage _ wiki_page wiki_target) =
     runSDB $ handleWatched
         (Just $ NotificationSender $ wikiPageUser wiki_page)
         appRoot (wikiPageProject wiki_page)
-        (\ project_handle -> WikiR project_handle
-                                  (wikiTargetLanguage wiki_target)
-                                  (wikiTargetTarget wiki_target))
+        (\project_handle ->
+            WikiR
+                project_handle
+                (wikiTargetLanguage wiki_target)
+                (wikiTargetTarget wiki_target))
         NotifWikiPage
-        (\ route -> "New [wiki page](" <> route <> ")")
+        (\route -> "New [wiki page](" <> route <> ")")
 
 notificationEventHandler AppConfig{..} (EBlogPost _ blog_post) =
     runSDB $ handleWatched
         (Just $ NotificationSender $ blogPostUser blog_post)
-        appRoot (blogPostProject blog_post)
-        (\ project_handle -> BlogPostR project_handle $ blogPostHandle blog_post)
+        appRoot
+        (blogPostProject blog_post)
+        (\project_handle -> BlogPostR project_handle $ blogPostHandle blog_post)
         NotifBlogPost
-        (\ route -> "New [blog post](" <> route <> ")")
+        (\route -> "New [blog post](" <> route <> ")")
 
 notificationEventHandler AppConfig{..} (ENewPledge _ shares_pledged) = runSDB $ do
     users <- lift $ fetchUsersInDB [sharesPledgedUser shares_pledged]
@@ -169,9 +189,11 @@ notificationEventHandler AppConfig{..} (ENewPledge _ shares_pledged) = runSDB $ 
     forM_ users $ \ user_entity ->
         handleWatched
             (Just $ NotificationSender $ entityKey user_entity)
-            appRoot (sharesPledgedProject shares_pledged)
-            ProjectPatronsR NotifNewPledge
-            (\ route -> T.concat
+            appRoot
+            (sharesPledgedProject shares_pledged)
+            ProjectPatronsR
+            NotifNewPledge
+            (\route -> T.concat
                  [ userDisplayName user_entity
                  , " pledged ["
                  , T.pack $ show shares, " ", pluralShares shares
@@ -185,12 +207,15 @@ notificationEventHandler AppConfig{..} (EUpdatedPledge old_shares _ shares_pledg
     forM_ users $ \ user_entity ->
         handleWatched
             (Just $ NotificationSender $ entityKey user_entity)
-            appRoot (sharesPledgedProject shares_pledged)
-            ProjectPatronsR NotifUpdatedPledge
-            (\ route -> T.concat
+            appRoot
+            (sharesPledgedProject shares_pledged)
+            ProjectPatronsR
+            NotifUpdatedPledge
+            (\route -> T.concat
                  [ userDisplayName user_entity
                  , (if old_shares > new_shares then " dropped " else " added ")
-                <> T.pack (show delta), " ", pluralShares delta
+                 , T.pack (show delta)
+                 , " ", pluralShares delta
                  , ", changing their total to [", T.pack $ show new_shares, " "
                  , pluralShares new_shares, "](", route, ")"
                  ])
@@ -200,7 +225,10 @@ notificationEventHandler AppConfig{..} (EDeletedPledge _ user_id project_id _) =
     forM_ users $ \ user_entity ->
         handleWatched
             (Just $ NotificationSender user_id)
-            appRoot project_id ProjectPatronsR NotifDeletedPledge
+            appRoot
+            project_id
+            ProjectPatronsR
+            NotifDeletedPledge
             (\ route -> userDisplayName user_entity
                    <> " is no longer supporting the [project](" <> route <> ")")
 
@@ -219,8 +247,11 @@ handleWatched mnotif_sender appRoot project_id mkRoute notif_type mkMsg = do
             is_watching <- lift $ userIsWatchingProjectDB user_id project_id
             when is_watching $
                 sendPreferredNotificationDB
-                    mnotif_sender (NotificationReceiver user_id)
-                    notif_type (Just project_id) Nothing
+                    mnotif_sender
+                    (NotificationReceiver user_id)
+                    notif_type
+                    (Just project_id)
+                    Nothing
                     (Markdown $ mkMsg $ appRoot <> route)
 
 -- | Handler in charge of inserting events (stripped down) into a separate table for each type.

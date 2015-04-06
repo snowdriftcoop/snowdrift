@@ -286,7 +286,10 @@ eligEstablishUserDB honor_pledge establisher_id user_id reason = do
     sendPreferredNotificationDB
         (Just $ NotificationSender establisher_id)
         (NotificationReceiver user_id)
-        NotifEligEstablish Nothing Nothing content
+        NotifEligEstablish
+        Nothing
+        Nothing
+        content
   where
     content :: Markdown
     content = Markdown $ T.unlines
