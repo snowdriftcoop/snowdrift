@@ -1,0 +1,566 @@
+<h1 .text-center>Snowdrift.coop Launch Sponsors
+<p>
+  We especially thank the following sponsors for their generous support of
+  Snowdrift.coop initial development. Most donated during our
+  formal <a href="https://snowdrift.tilt.com/">fund-drive</a>,
+  but have and will continue to accept traditional donations
+  until we fully launch. See our
+  <a href=@{DonateR}>
+    donation page
+  to become a launch sponsor and join the list below.
+
+<!--
+  This list depends on the snowdrift.coop database, the links to user pages won't
+  work for any other deployment of this software, of course; although the names
+  could stay and be valid, but the links should be stripped. Alternatively, we
+  could hardcode the full URLs…
+-->
+
+<h2 .text-center>Key sponsors
+<ul .key-sponsors>
+  <li>
+    <a href="https://www.alephobjects.com/">
+      Aleph Objects, Inc.
+  <li>
+    <a href="/u/213">
+      Philip Horger
+  <li>
+    <a href="/u/380">
+      jamessan
+  <li>
+    <a href="/u/551">
+      Tanu Kaskinen
+  <li>
+    <a href="http://linuxfund.org/">
+      Linux Fund
+  <li>
+    Pat McGee
+  <li>
+    <a href="/u/529">
+      Tomasz Muras
+  <li>
+    Paul Phillips
+  <li>
+    <a href="/u/31">
+      Kate & Ira Pohl
+
+<h2 .text-center>General pre-launch donors
+<ul .sponsors>
+  <li>
+    Mateusz A.
+  <li>
+    Carlos Aguayo
+  <li>
+    Blaise Alleyne
+  <li>
+    Chris Aniszczyk
+  <li>
+    <a href="/u/503">
+      Jorge Aranda
+  <li>
+    <a href="/u/527">
+      Pierre Arlais, Bearstech
+  <li>
+    <a href="/u/869">
+      Christopher Armstrong
+  <li>
+    Xavier Antoviaque, OpenCraft
+  <li>
+    <a href="/u/868">
+      Artyom
+  <li>
+    <a href="/u/17">
+      Greg Austic
+  <li>
+    Autious
+  <li>
+    Kenneth Ballenegger
+  <li>
+    <a href="/u/866">
+      Moritz Bartl
+  <li>
+    Brennen Bearnes
+  <li>
+    Marcis Berzins
+  <li>
+    Michael Baldry
+  <li>
+    Nick Barry
+  <li>
+    <a href="/u/520">
+      Ingo Blechschmidt
+  <li>
+    <a href="/u/560">
+      Eduard Bopp
+  <li>
+    <a href="/u/464">
+      Nathan Bouscal
+  <li>
+    Jeremy Bowers
+  <li>
+    <a href="/u/304">
+      Bret Comnes
+  <li>
+    Tim Bunce
+  <li>
+    Brit Butler
+  <li>
+    Lee Butts
+  <li>
+    <a href="/u/883">
+      Javier Merino Cacho
+  <li>
+    Scott Calvert & family
+  <li>
+    Mike Chaberski
+  <li>
+    <a href="/u/337">
+      Chato
+  <li>
+    <a href="/u/284">
+      Paul Chiusano
+  <li>
+    Jesper Cockx
+  <li>
+    CommonKarma.org
+  <li>
+    Antoine Comte
+  <li>
+    Noah Cornwell
+  <li>
+    Daniel
+  <li>
+    Debian KDE
+  <li>
+    <a href="/u/393">
+      Jeroen Dekkers
+  <li>
+    Holger Dell
+  <li>
+    <a href="/u/362">
+      Sebastian Dröge
+  <li>
+    <a href="http://andrewdurham.com/">
+      Andrew Durham
+  <li>
+    <a href="/u/397">
+      Christoph Egger
+  <li>
+    Carol Ann Emerick
+  <li>
+    <a href="/u/374">
+      Victor Engmark
+  <li>
+    Eric Entzel
+  <li>
+    <a href="/u/315">
+      Kent Fenwick
+  <li>
+    <a href="/u/629">
+      John Feras
+  <li>
+    <a href="/u/279">
+      Karl Fogel / QuestionCopyright.org
+  <li>
+    <a href="http://fossetcon.org/">
+      Fossetcon
+  <li>
+    Christian Frank
+  <li>
+    Craig Fratrik
+  <li>
+    CrowdsourcingKC
+  <li>
+    <a href="https://thefnf.org/">
+      The Free Network Foundation
+  <li>
+    freespace
+  <li>
+    FTL Software
+  <li>
+    <a href="/u/218">
+      Curtis Gagliardi
+  <li>
+    Luis Gasca
+  <li>
+    Denver Gingrich
+  <li>
+    <a href="/u/369">
+      Daniel Glassey
+  <li>
+    Brook Heisler
+  <li>
+    Raphaël Hertzog
+  <li>
+    <a href="/u/240">
+      Joey Hess
+  <li>
+    Joshua Hoblitt
+  <li>
+    Claudio Hoffmann
+  <li>
+    <a href="/u/349">
+      Thomas Hochstein
+  <li>
+    Martin Höcker
+  <li>
+    holdenweb
+  <li>
+    Lance Holton
+  <li>
+    <a href="/u/630">
+      hotzeplotz
+  <li>
+    <a href="u/623">
+      Karl Ove Hufthammer
+  <li>
+    Eskild Hustvedt
+  <li>
+    Arya Irani
+  <li>
+    <a href="/u/371">
+      Geoffrey Irving
+  <li>
+    <a href="/u/543">
+      Seth de l'Isle
+  <li>
+    Ethan Johnson
+  <li>
+    H. Ryan Jones
+  <li>
+    <a href="/u/419">
+      Ollie Jones
+  <li>
+    <a href="/u/157">
+      Michiel de Jong
+  <li>
+    <a href="/u/633">
+      Hasen el Judy | حسن الجودي | ハセン
+  <li>
+    Alan Keefer
+  <li>
+    <a href="/u/247">
+      Ian Kelling
+  <li>
+    Andrew Klofas
+  <li>
+    Fabrice Knevez
+  <li>
+    Georg Kolling
+  <li>
+    <a href="/u/246">
+      Eric Kow
+  <li>
+    Alanna Krause
+  <li>
+    <a href="/u/651">
+      Michael F. Lamb
+  <li>
+    Daniel Landau
+  <li>
+    <a href="/u/875">
+      Brianna Laugher
+  <li>
+    Jean-Pierre Laurin
+  <li>
+    Alexander Lang
+  <li>
+    <a href="/u/524">
+      Kirsten Larsen
+  <li>
+    Matt Lee
+  <li>
+   <a href="/u/510">
+    Nathan Lee
+  <li>
+    <a href="/u/28">
+      Randall Leeds
+  <li>
+    <a href="/u/183">
+      Charles Lehner
+  <li>
+    <a href="/u/454">
+      R. Diaz de Leon
+  <li>
+    Federico Leva
+  <li>
+    Aaron Levin
+  <li>
+    <a href="/u/90">
+      Carl Lewis
+  <li>
+    <a href="/u/167">
+      John A. Lewis
+  <li>
+    Katrin Leinweber
+  <li>
+    <a href="/u/428">
+      Greg Lindahl
+  <li>
+    <a href="/u/566">
+      Thorbjørn Lindeijer
+  <li>
+    <a href="/u/40">
+      Mike Linksvayer
+  <li>
+    Yun-Mei Lo
+  <li>
+    <a href="/u/532">
+      Brendan Long
+  <li>
+    Hans Lub
+  <li>
+    DJ Madeira
+  <li>
+    Magan Adam
+  <li>
+    <a href="/u/852">
+      Patrick Masson
+  <li>
+    <a href="/u/564">
+      Martin Mauch
+  <li>
+    <a href="/u/341">
+      Francois Marier
+  <li>
+    <a href="/u/152">
+      Sean McGregor
+  <li>
+    Ewen McNeill
+  <li>
+    Jan Mechtel
+  <li>
+    <a href="/u/354">
+      Simon Michael
+  <li>
+    Florin Mihaila
+  <li>
+    Matthew Miller (mattdm)
+  <li>
+    Scott Milliken
+  <li>
+    Havard Moen
+  <li>
+    <a href="/u/384">
+      Ramakrishnan Muthukrishnan
+  <li>
+    <a href="/u/556">
+      Lauro Gripa Neto
+  <li>
+    <a href="/u/340">
+      Perry Nguyen
+  <li>
+    <a href="/u/828">
+      Nmlgc
+  <li>
+    Lachlan O'Dea
+  <li>
+    <a href="/u/636">
+      Robert Orzanna
+  <li>
+    <a href="/u/467">
+      Étienne Vallette d'Osia
+  <li>
+    Tom Paluck
+  <li>
+    <a href="/u/232">
+      Răzvan Panda
+  <li>
+    Fabian Peters
+  <li>
+    Quinlan "The Cobra" Pfiffer
+  <li>
+    Karl Pietrzak
+  <li>
+    <a href="/u/347">
+      Steve Phillips / elimisteve
+  <li>
+    <a href="/u/873">
+      Pini
+  <li>
+    <a href="/u/877">
+      Josh Poimboeuf
+  <li>
+    <a href="/u/230">
+      Timotheus Pokorra
+  <li>
+    Michał Politowski
+  <li>
+    <a href="/u/507">
+      Shuwen Qian
+  <li>
+    Aaron Quamme
+  <li>
+    <a href="/u/879">
+      Lane Rasberry
+  <li>
+    Olav Reinert
+  <li>
+    Dan Revel
+  <li>
+    <a href="/u/446">
+      Kevin Riggle
+  <li>
+    <a href="/u/437">
+      Matt Ritter
+  <li>
+    <a href="/u/106">
+      Sage Ross
+  <li>
+    <a href="http://www.roundware.org/">
+      Roundware.org
+  <li>
+    <a href="/u/367">
+      Hugo Roy (FSFE)
+  <li>
+    Noé Rubinstein
+  <li>
+    Michel S.
+  <li>
+    Marc Saegesser
+  <li>
+    <a href="/u/95">
+      Chris Sakkas, livinglibre.com
+  <li>
+    Olli Savolainen
+  <li>
+    Tobias Schachman
+  <li>
+    <a href="/u/867">
+      Brian Schroeder
+  <li>
+    <a href="/u/459">
+      Sean Seefried
+  <li>
+    Paul Sexton
+  <li>
+    Kendrick Shaw
+  <li>
+    <a href="/u/501">
+      Howard Lewis Ship
+  <li>
+    <a href="/u/870">
+      Juan Raphael Diaz Simões
+  <li>
+    <a href="/u/418">
+      Brandon Skari
+  <li>
+    Don Smith
+  <li>
+    <a href="/u/634">
+      Leon P Smith
+  <li>
+    <a href="/u/544">
+      Nick Smith
+  <li>
+    Jim Snow
+  <li>
+    Khaled Soliman
+  <li>
+    <a href="/u/316">
+      Rodrigo Souto
+  <li>
+    <a href="/u/297">
+      Adam Souzis
+  <li>
+    Adam Spitz
+  <li>
+    Charles Stanhope
+  <li>
+    <a href="/u/606">
+      Stephen Starkey
+  <li>
+    <a href="/u/482">
+      Startifact
+  <li>
+    statuszer0
+  <li>
+    <a href="/u/568">
+      Bob Steffes
+  <li>
+    Hugh Stimson
+  <li>
+    Morgan Stuart
+  <li>
+    Simon Tegg
+  <li>
+    Álvaro Tejero-Cantero
+  <li>
+    Zachary Tellman
+  <li>
+    <a href="/u/874">
+      Seth Tisue
+  <li>
+    <a href="/u/263">
+      Frank Thomas
+  <li>
+    Greg Tomei
+  <li>
+    Kevin Turner
+  <li>
+    Christian Uhl
+  <li>
+    <a href="/u/423">
+      Vakranas
+  <li>
+    Timothy Vollmer
+  <li>
+    Wouter Vos
+  <li>
+    Markus Vuorio (Maakuth)
+  <li>
+    <a href="/u/590">
+      Tobias Gulbrandsen Waaler
+  <li>
+    <a href="/u/614">
+      Albert Wavering
+  <li>
+    <a href="/u/640">
+      Christopher Webber, GNU MediaGoblin
+  <li>
+    <a href="/u/351">
+      Stephen Paul Weber (singpolyma)
+  <li>
+    <a href="/u/399">
+      Patrick Weemeeuw
+  <li>
+    David Whitman
+  <li>
+    <a href="/u/495">
+      Kevin Wichmann
+  <li>
+    <a href="/u/458">
+      Alex Willemsma
+  <li>
+    Carl Witty
+  <li>
+    <a href="/u/23">
+      Barry & Devorah Wolf
+  <li>
+    <a href="/u/321">
+      Nicolas Wormser
+  <li>
+    <a href="/u/415">
+      Thomas Wrenn
+  <li>
+    <a href="/u/488">
+      Daniel Yokomizo
+  <li>
+    <a href="/u/272">
+      Brent Yorgey
+  <li>
+    Philip Young
+  <li>
+    Shafiq Akram Zakaria
+  <li>
+    <a href="/u/406">
+      Massimo Zaniboni
+  <li>
+    Jan Zernisch
+  <li>
+    Jake Zieve
+  <li>
+    Guido Zuidhof
+
+<div .text-center>and 19 anonymous sponsors
+

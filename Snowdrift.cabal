@@ -99,6 +99,7 @@ library
                      Handler.Discussion
                      Handler.Home
                      Handler.Donate
+                     Handler.Sponsors
                      Handler.HonorPledge
                      Handler.Image
                      Handler.Invitation
