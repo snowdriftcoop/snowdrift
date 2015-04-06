@@ -63,6 +63,8 @@ onException = Lifted.onException
 type Spec = YesodSpec App
 type Example = YesodExample App
 
+newtype FileName = FileName { unFileName :: Text }
+
 testDB :: SqlPersistM a -> Example a
 testDB query = do
     pool <- fmap connPool getTestYesod
