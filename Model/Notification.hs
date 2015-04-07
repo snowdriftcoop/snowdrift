@@ -19,17 +19,24 @@ import Model.Notification.Internal
 import Control.Monad.Writer.Strict (tell)
 import Data.Maybe (fromJust)
 
-updateUserNotificationArchived :: Bool -> UserNotificationId -> DB ()
-updateUserNotificationArchived bool notif_id =
+updateNotificationArchived
+    :: ( MonadIO m, PersistField a, PersistField b
+       , PersistEntity val, PersistEntityBackend val ~ SqlBackend )
+    => EntityField val a -> EntityField val b -> a -> b
+    -> SqlPersistT m ()
+updateNotificationArchived notif_archived_con notif_id_con
+                           notif_archived_val notif_id_val =
     update $ \n -> do
-    set n [UserNotificationArchived =. val bool]
-    where_ (n ^. UserNotificationId ==. val notif_id)
+        set n [notif_archived_con =. val notif_archived_val]
+        where_ $ n ^. notif_id_con ==. val notif_id_val
+
+updateUserNotificationArchived :: Bool -> UserNotificationId -> DB ()
+updateUserNotificationArchived =
+    updateNotificationArchived UserNotificationArchived UserNotificationId
 
 updateProjectNotificationArchived :: Bool -> ProjectNotificationId -> DB ()
-updateProjectNotificationArchived bool notif_id =
-    update $ \n -> do
-    set n [ProjectNotificationArchived =. val bool]
-    where_ (n ^. ProjectNotificationId ==. val notif_id)
+updateProjectNotificationArchived =
+    updateNotificationArchived ProjectNotificationArchived ProjectNotificationId
 
 archiveUserNotificationDB :: UserNotificationId -> DB ()
 archiveUserNotificationDB = updateUserNotificationArchived True
