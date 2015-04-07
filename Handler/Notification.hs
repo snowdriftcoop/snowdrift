@@ -32,6 +32,13 @@ compareCreatedTs (PNotification _ pn1) (PNotification _ pn2)
     = compare (projectNotificationCreatedTs pn2)
               (projectNotificationCreatedTs pn1)
 
+appendNotifications :: [Entity UserNotification] -> [Entity ProjectNotification]
+                    -> [Notification]
+appendNotifications uns pns =
+    sortBy compareCreatedTs $
+        ((\(Entity un_id un) -> UNotification un_id un) <$> uns) <>
+        ((\(Entity pn_id pn) -> PNotification pn_id pn) <$> pns)
+
 getNotificationsR :: Handler Html
 getNotificationsR = do
     user_id <- requireAuthId
@@ -40,9 +47,7 @@ getNotificationsR = do
         user_notifs    <- fetchUserNotificationsDB user_id
         project_notifs <- fetchProjectNotificationsDB user_id
         return (user_notifs, project_notifs)
-    let notifs = sortBy compareCreatedTs
-               $ ((\(Entity un_id un) -> UNotification un_id un) <$> user_notifs)
-              <> ((\(Entity pn_id pn) -> PNotification pn_id pn) <$> project_notifs)
+    let notifs = appendNotifications user_notifs project_notifs
     defaultLayout $ do
         snowdriftTitle "Notifications"
         $(widgetFile "notifications")
@@ -105,9 +110,7 @@ getArchivedNotificationsR = do
     (user_notifs, project_notifs) <- runDB $ (,)
         <$> fetchArchivedUserNotificationsDB user_id
         <*> fetchArchivedProjectNotificationsDB user_id
-    let notifs = sortBy compareCreatedTs
-               $ ((\(Entity un_id un) -> UNotification un_id un) <$> user_notifs)
-              <> ((\(Entity pn_id pn) -> PNotification pn_id pn) <$> project_notifs)
+    let notifs = appendNotifications user_notifs project_notifs
     defaultLayout $ do
         snowdriftTitle "Archived Notifications"
         $(widgetFile "archived_notifications")

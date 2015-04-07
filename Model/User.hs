@@ -407,29 +407,30 @@ fetchArchivedUserNotificationsDB = fetchUserNotifs (^. UserNotificationArchived)
 fetchArchivedProjectNotificationsDB :: UserId -> DB [Entity ProjectNotification]
 fetchArchivedProjectNotificationsDB = fetchProjectNotifs (^. ProjectNotificationArchived)
 
+-- | Abstract fetching archived/unarchived notifications. Unexported.
+fetchNotifs :: ( MonadIO m, PersistEntity val, PersistField a
+               , PersistEntityBackend val ~ SqlBackend )
+            => EntityField val UserId -> EntityField val a
+            -> (SqlExpr (Entity val) -> SqlExpr (Value Bool))
+            -> UserId -> SqlPersistT m [Entity val]
+fetchNotifs notif_to notif_created_ts cond user_id =
+    select $ from $ \n -> do
+        where_ $ n ^. notif_to ==. val user_id
+             &&. cond n
+        orderBy [desc $ n ^. notif_created_ts]
+        return n
+
 -- | Abstract fetching archived/unarchived user notifications. Unexported.
 fetchUserNotifs :: (SqlExpr (Entity UserNotification) -> SqlExpr (Value Bool))
                 -> UserId -> DB [Entity UserNotification]
-fetchUserNotifs cond user_id =
-    select $
-    from $ \n -> do
-    where_ $
-        n ^. UserNotificationTo ==. val user_id &&.
-        cond n
-    orderBy [desc (n ^. UserNotificationCreatedTs)]
-    return n
+fetchUserNotifs =
+    fetchNotifs UserNotificationTo UserNotificationCreatedTs
 
 -- | Abstract fetching archived/unarchived project notifications. Unexported.
 fetchProjectNotifs :: (SqlExpr (Entity ProjectNotification) -> SqlExpr (Value Bool))
                    -> UserId -> DB [Entity ProjectNotification]
-fetchProjectNotifs cond user_id =
-    select $
-    from $ \n -> do
-    where_ $
-        n ^. ProjectNotificationTo ==. val user_id &&.
-        cond n
-    orderBy [desc (n ^. ProjectNotificationCreatedTs)]
-    return n
+fetchProjectNotifs =
+    fetchNotifs ProjectNotificationTo ProjectNotificationCreatedTs
 
 deleteEventUserNotificationSentDB :: UserNotificationId -> DB ()
 deleteEventUserNotificationSentDB notif_id =
@@ -677,20 +678,23 @@ fetchNumUnreadNotificationsDB user_id = do
     y <- fetchNumUnreadProjectNotificationsDB user_id
     return $ x + y
 
+-- Internal helper.
+fetchNumUnreadNotifications :: ( PersistEntity val
+                               , PersistEntityBackend val ~ SqlBackend )
+                            => EntityField val UserId -> EntityField val UTCTime
+                            -> UserId -> DB Int
+fetchNumUnreadNotifications notif_to notif_created_ts user_id =
+    selectCount $ from $ \(u `InnerJoin` n) -> do
+        on_ (u ^. UserId ==. n ^. notif_to)
+        where_ $ u ^. UserId ==. val user_id
+             &&. n ^. notif_created_ts >=. u ^. UserReadNotifications
+
 fetchNumUnreadUserNotificationsDB :: UserId -> DB Int
-fetchNumUnreadUserNotificationsDB user_id =
-    selectCount $
-    from $ \(u `InnerJoin` n) -> do
-    on_ (u ^. UserId ==. n ^. UserNotificationTo)
-    where_ $
-        u ^. UserId ==. val user_id &&.
-        n ^. UserNotificationCreatedTs >=. u ^. UserReadNotifications
+fetchNumUnreadUserNotificationsDB =
+    fetchNumUnreadNotifications
+        UserNotificationTo UserNotificationCreatedTs
 
 fetchNumUnreadProjectNotificationsDB :: UserId -> DB Int
-fetchNumUnreadProjectNotificationsDB user_id =
-    selectCount $
-    from $ \(u `InnerJoin` n) -> do
-    on_ (u ^. UserId ==. n ^. ProjectNotificationTo)
-    where_ $
-        u ^. UserId ==. val user_id &&.
-        n ^. ProjectNotificationCreatedTs >=. u ^. UserReadNotifications
+fetchNumUnreadProjectNotificationsDB =
+    fetchNumUnreadNotifications
+        ProjectNotificationTo ProjectNotificationCreatedTs
