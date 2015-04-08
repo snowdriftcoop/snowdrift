@@ -32,6 +32,8 @@ module Model.Project
     , projectNameWidget
     , summarizeProject
     , updateShareValue
+    , updateUserShares
+    , rebalanceProjectPledges
     ) where
 
 import Import
@@ -43,6 +45,7 @@ import Model.Comment.Sql
 import Model.Currency
 import Model.Issue
 import Model.Tag
+import Model.Shares (pledgeRenderKey)
 import Model.Wiki.Sql
 import Widgets.Tag
 
@@ -277,12 +280,6 @@ updateShareValue project_id = do
     update $ \ project -> do
         set project  [ ProjectShareValue =. val (projectComputeShareValue pledges) ]
         where_ (project ^. ProjectId ==. val project_id)
-
-{-
- - TODO
- -  Unfund shares
- -  Fix algorithm
- -}
 
 projectNameWidget :: ProjectId -> Widget
 projectNameWidget project_id = do
@@ -572,3 +569,49 @@ fetchProjectOpenTicketsDB project_id muser_id = do
                  where_ $ val (ticketComment ticket) ==. tc ^. TicketClaimingTicket
                  return tc
             return $ if c == 0 then (t, False) else (t, True)
+
+updateUserShares :: Text -> Int64 -> HandlerT App IO ()
+updateUserShares project_handle shares = do
+    Just pledge_render_id <-
+        fmap (read . T.unpack) <$> lookupSession pledgeRenderKey
+
+    (success, project) <- runSYDB $ do
+        Entity user_id user <- lift (lift requireAuth)
+        Just account <- lift $ get (userAccount user)
+        Entity project_id project <-
+            lift $ getBy404 (UniqueProjectHandle project_handle)
+
+        let user_outlay = projectShareValue project $* fromIntegral shares
+            success = accountBalance account < user_outlay $* 3
+
+        when success $ do
+            insertProjectPledgeDB
+                user_id
+                project_id
+                shares
+                pledge_render_id
+            lift (updateShareValue project_id)
+        return (success, project)
+
+    if success
+        then alertSuccess $ T.concat $
+            if shares == 0
+            then
+                [ "You have dropped your pledge and are no longer "
+                , "a patron of " <> projectName project <> "."
+                ]
+            else
+                [ "Your pledge is now " <> T.pack (show shares)
+                , " " <> plural shares "share" "shares" <> ". "
+                , "Thank you for being a patron of "
+                , projectName project <> "!"
+                ]
+
+        else alertWarning $ T.concat
+            [ "Sorry, you must have funds to support your pledge "
+            , "for at least 3 months at current share value. "
+            , "Please deposit additional funds to your account."
+            ]
+
+rebalanceProjectPledges :: Monad m => m ()
+rebalanceProjectPledges = return ()

@@ -730,37 +730,10 @@ postUpdateSharesR project_handle = do
 
     case result of
         FormSuccess (SharesPurchaseOrder shares) -> do
-            if isConfirmed
-                then do
-                    Just pledge_render_id <- fmap (read . T.unpack) <$> lookupSession pledgeRenderKey
-
-                    (success, project) <- runSYDB $ do
-                        Entity user_id user <- lift (lift requireAuth)
-                        Just account <- lift $ get (userAccount user)
-                        Entity project_id project <- lift $ getBy404 (UniqueProjectHandle project_handle)
-
-                        let user_outlay = projectShareValue project $* fromIntegral shares :: Milray
-                        if accountBalance account < user_outlay $* 3
-                            then return (False, project)
-                            else do
-                                insertProjectPledgeDB user_id project_id shares pledge_render_id
-                                lift (updateShareValue project_id)
-                                return (True, project)
-
-                    if success
-                        then do
-                            if shares == 0
-                                then alertSuccess ("You have dropped your pledge and are no longer " <>
-                                                "a patron of " <> projectName project <> ".")
-                                else alertSuccess ("Your pledge is now " <> T.pack (show shares) <> " " <> plural shares "share" "shares"
-                                        <> ". Thank you for being a patron of " <> projectName project <> "!")
-
-                        else alertWarning ("Sorry, you must have funds to support your pledge "
-                                    <> "for at least 3 months at current share value. "
-                                    <> "Please deposit additional funds to your account.")
-
-                    redirect (ProjectR project_handle)
-                else redirect (ProjectR project_handle)
+            when isConfirmed $ do
+                updateUserShares project_handle shares
+                rebalanceProjectPledges
+            redirect (ProjectR project_handle)
         _ -> do
             alertDanger "error occurred in form submission"
             redirect (UpdateSharesR project_handle)
