@@ -590,7 +590,7 @@ updateUserShares project_handle shares = do
                 project_id
                 shares
                 pledge_render_id
-            lift (updateShareValue project_id)
+            rebalanceProjectPledges project_id
         return (success, project)
 
     if success
@@ -613,5 +613,6 @@ updateUserShares project_handle shares = do
             , "Please deposit additional funds to your account."
             ]
 
-rebalanceProjectPledges :: Monad m => m ()
-rebalanceProjectPledges = return ()
+rebalanceProjectPledges :: ProjectId -> SYDB ()
+rebalanceProjectPledges project_id =
+    lift (updateShareValue project_id)

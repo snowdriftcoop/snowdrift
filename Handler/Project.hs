@@ -730,9 +730,7 @@ postUpdateSharesR project_handle = do
 
     case result of
         FormSuccess (SharesPurchaseOrder shares) -> do
-            when isConfirmed $ do
-                updateUserShares project_handle shares
-                rebalanceProjectPledges
+            when isConfirmed $ updateUserShares project_handle shares
             redirect (ProjectR project_handle)
         _ -> do
             alertDanger "error occurred in form submission"
