@@ -85,6 +85,11 @@
         ^{update_shares}
 
   <div .project-stats .col-md-3 .col-xs-12>
+    <div .testing-notice>
+      currently
+      <strong>testing with fake money
+      and daily instead of monthly
+
     <table>
       <tr>
         <th> Current patrons
