@@ -75,3 +75,6 @@ data ProjectSignupLicense = ProjectSignupLicense License
 derivePersistField "ProjectSignupLicense"
 
 deriving instance Show ProjectSignup
+
+deriving instance Eq UserNotification
+deriving instance Eq ProjectNotification

@@ -15,27 +15,28 @@ import           Widgets.Time
 data Notification
     = UNotification UserNotificationId    UserNotification
     | PNotification ProjectNotificationId ProjectNotification
+    deriving Eq
 
--- The arguments of 'compare' are intentionally swapped, so the newest
--- notifications are listed first.
-compareCreatedTs :: Notification -> Notification -> Ordering
-compareCreatedTs (UNotification _ un1) (UNotification _ un2)
-    = compare (userNotificationCreatedTs un2)
-              (userNotificationCreatedTs un1)
-compareCreatedTs (UNotification _ un) (PNotification _ pn)
-    = compare (projectNotificationCreatedTs pn)
-              (userNotificationCreatedTs un)
-compareCreatedTs (PNotification _ pn) (UNotification _ un)
-    = compare (userNotificationCreatedTs un)
-              (projectNotificationCreatedTs pn)
-compareCreatedTs (PNotification _ pn1) (PNotification _ pn2)
-    = compare (projectNotificationCreatedTs pn2)
-              (projectNotificationCreatedTs pn1)
+instance Ord Notification where
+    -- The arguments of 'compare' are intentionally swapped, so the
+    -- newest notifications are listed first.
+    compare (UNotification _ un1) (UNotification _ un2)
+        = compare (userNotificationCreatedTs un2)
+                  (userNotificationCreatedTs un1)
+    compare (UNotification _ un) (PNotification _ pn)
+        = compare (projectNotificationCreatedTs pn)
+                  (userNotificationCreatedTs un)
+    compare (PNotification _ pn) (UNotification _ un)
+        = compare (userNotificationCreatedTs un)
+                  (projectNotificationCreatedTs pn)
+    compare (PNotification _ pn1) (PNotification _ pn2)
+        = compare (projectNotificationCreatedTs pn2)
+                  (projectNotificationCreatedTs pn1)
 
 appendNotifications :: [Entity UserNotification] -> [Entity ProjectNotification]
                     -> [Notification]
 appendNotifications uns pns =
-    sortBy compareCreatedTs $
+    sortBy compare $
         ((\(Entity un_id un) -> UNotification un_id un) <$> uns) <>
         ((\(Entity pn_id pn) -> PNotification pn_id pn) <$> pns)
 
