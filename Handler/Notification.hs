@@ -33,9 +33,9 @@ instance Ord Notification where
         = compare (projectNotificationCreatedTs pn2)
                   (projectNotificationCreatedTs pn1)
 
-appendNotifications :: [Entity UserNotification] -> [Entity ProjectNotification]
-                    -> [Notification]
-appendNotifications uns pns =
+buildNotificationsList :: [Entity UserNotification]
+                       -> [Entity ProjectNotification] -> [Notification]
+buildNotificationsList uns pns =
     sortBy compare $
         ((\(Entity un_id un) -> UNotification un_id un) <$> uns) <>
         ((\(Entity pn_id pn) -> PNotification pn_id pn) <$> pns)
@@ -48,7 +48,7 @@ getNotificationsR = do
         user_notifs    <- fetchUserNotificationsDB user_id
         project_notifs <- fetchProjectNotificationsDB user_id
         return (user_notifs, project_notifs)
-    let notifs = appendNotifications user_notifs project_notifs
+    let notifs = buildNotificationsList user_notifs project_notifs
     defaultLayout $ do
         snowdriftTitle "Notifications"
         $(widgetFile "notifications")
@@ -111,7 +111,7 @@ getArchivedNotificationsR = do
     (user_notifs, project_notifs) <- runDB $ (,)
         <$> fetchArchivedUserNotificationsDB user_id
         <*> fetchArchivedProjectNotificationsDB user_id
-    let notifs = appendNotifications user_notifs project_notifs
+    let notifs = buildNotificationsList user_notifs project_notifs
     defaultLayout $ do
         snowdriftTitle "Archived Notifications"
         $(widgetFile "archived_notifications")
