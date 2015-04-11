@@ -1,3 +1,5 @@
+<h1 .text-center>
+    Invite Users for New Roles for #{projectName project}
 $maybe link <- maybe_link
     <p>
         Your invitation code has been generated.

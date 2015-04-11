@@ -1,3 +1,5 @@
+<h1 .text-center>
+    Current Balance
 <div .row>
     <div .col-md-3>
         Account balance:
