@@ -160,33 +160,15 @@ may collaborate with.
 
 ### Making changes to the code
 
-We suggest that all work be done on separate *branches*.
-So, to make changes to the code, first run `git checkout -b [branchname]`
-with an appropriate "branchname" for the work you plan to do.
-Use as many branches as needed for all work that functions independently 
-(you can remove merged branches later).
+You are welcome to make changes to the code. (That is, after all, the
+point of FLO software). If you want the changes merged with our code,
+use Gitorious's "merge request" feature or GitHub's "pull request"
+feature.
 
-When sharing your changes, it is best to first rebase them onto the latest
-master code. So, after you have made commits on a branch, update your master
-by running `git checkout master` followed by `git pull snowdrift-main`.
-
-Next, rebase your work onto master with `git checkout [branchname]`
-followed by `git rebase master`.
-
-Let us know if you have trouble with any conflicts that may arise,
-and we can help work through them.
-
-To upload your changes after rebase, run `git push origin [branchname]`.
-
-After pushing, alert us to the changes with Gitorious' "request merge"
-or GitHub's "pull request" commands on their websites.
-Make sure to choose the correct source branch.
-
-Note: as a rule, don't rebase any work that you have already pushed.
-In the case that you know others have not pulled the work, you can 
-rebase and then *force* push, and there are other advanced git management tools,
-but we won't get into those here.
-
+If you committed to a branch that isn't `master`, be sure to select the
+correct source branch in your (merge|pull) request. (Hint: you should
+commit your own branch that isn't `master`, on the off chance that your
+change is rejected).
 
 Building
 --------
