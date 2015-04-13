@@ -98,6 +98,7 @@ fetchUserNotificationPrefDB user_id notif_type = do
     pulled <- fmap (listToMaybe . unwrapValues) $ select $ from $ \ unp -> do
         where_ $ unp ^. UserNotificationPrefUser ==. val user_id
              &&. unp ^. UserNotificationPrefType ==. val notif_type
+        limit 1
         return $ unp ^. UserNotificationPrefDelivery
     -- 'mplus' throws away the second element if there are two
     -- 'Just's, but it shouldn't be an issue since forced
@@ -116,6 +117,7 @@ fetchProjectNotificationPrefDB user_id project_id notif_type =
         where_ $ pnp ^. ProjectNotificationPrefUser    ==. val user_id
              &&. pnp ^. ProjectNotificationPrefProject ==. val project_id
              &&. pnp ^. ProjectNotificationPrefType    ==. val notif_type
+        limit 1
         return $ pnp ^. ProjectNotificationPrefDelivery
 
 fetchUsersByUserNotifPrefDB :: UserNotificationType -> DB [UserId]
