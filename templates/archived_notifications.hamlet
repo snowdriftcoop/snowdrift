@@ -31,7 +31,6 @@ $else
                                 ^{renderTime (projectNotificationCreatedTs project_notif)}
                         <div .col-sm-9>
                             ^{projectNameWidget $ projectNotificationProject project_notif}
-                            <br>
                             #{projectNotificationContent project_notif}
         <div .row>
             <div .col-sm-3>

@@ -32,7 +32,6 @@ $else
                                 #{userNotificationContent user_notif}
                         $of PNotification _ project_notif
                                 ^{projectNameWidget (projectNotificationProject project_notif)}
-                                <br>
                                 #{projectNotificationContent project_notif}
         <div .row>
             <div .col-sm-3>
