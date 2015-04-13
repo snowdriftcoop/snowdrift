@@ -673,10 +673,9 @@ fetchNumUnviewedWikiEditsOnProjectDB user_id project_id = fmap (M.fromList . map
     return (wp ^. WikiPageId, countRows')
 
 fetchNumUnreadNotificationsDB :: UserId -> DB Int
-fetchNumUnreadNotificationsDB user_id = do
-    x <- fetchNumUnreadUserNotificationsDB user_id
-    y <- fetchNumUnreadProjectNotificationsDB user_id
-    return $ x + y
+fetchNumUnreadNotificationsDB user_id = (+)
+    <$> fetchNumUnreadUserNotificationsDB user_id
+    <*> fetchNumUnreadProjectNotificationsDB user_id
 
 -- Internal helper.
 fetchNumUnreadNotifications :: ( PersistEntity val
