@@ -43,12 +43,11 @@ buildNotificationsList uns pns =
 getNotificationsR :: Handler Html
 getNotificationsR = do
     user_id <- requireAuthId
-    (user_notifs, project_notifs) <- runDB $ do
+    notifs  <- runDB $ do
         userReadNotificationsDB user_id
         user_notifs    <- fetchUserNotificationsDB user_id
         project_notifs <- fetchProjectNotificationsDB user_id
-        return (user_notifs, project_notifs)
-    let notifs = buildNotificationsList user_notifs project_notifs
+        return $ buildNotificationsList user_notifs project_notifs
     defaultLayout $ do
         snowdriftTitle "Notifications"
         $(widgetFile "notifications")
@@ -108,10 +107,9 @@ getNotificationsProxyR =
 getArchivedNotificationsR :: Handler Html
 getArchivedNotificationsR = do
     user_id <- requireAuthId
-    (user_notifs, project_notifs) <- runDB $ (,)
+    notifs  <- runDB $ buildNotificationsList
         <$> fetchArchivedUserNotificationsDB user_id
         <*> fetchArchivedProjectNotificationsDB user_id
-    let notifs = buildNotificationsList user_notifs project_notifs
     defaultLayout $ do
         snowdriftTitle "Archived Notifications"
         $(widgetFile "archived_notifications")
