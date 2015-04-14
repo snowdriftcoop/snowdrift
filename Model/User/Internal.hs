@@ -174,9 +174,9 @@ sendPreferredUserNotificationDB mnotif_sender
     when (notificationSender `fmap` mnotif_sender /= Just notif_receiver) $ do
         mpref <- lift $
             fetchUserNotificationPrefDB notif_receiver notif_type
+        muser_email <- lift $ fetchUserEmailVerified notif_receiver
 
         F.forM_ mpref $ \pref -> do
-            muser_email <- lift $ fetchUserEmailVerified notif_receiver
             let sendEmailNotif   =
                     lift $ sendUserNotificationEmailDB
                                notif_type notif_receiver content
@@ -213,9 +213,9 @@ sendPreferredProjectNotificationDB mnotif_sender
     when (notificationSender `fmap` mnotif_sender /= Just notif_receiver) $ do
         mpref <- lift $
             fetchProjectNotificationPrefDB notif_receiver project_id notif_type
+        muser_email <- lift $ fetchUserEmailVerified notif_receiver
 
         F.forM_ mpref $ \pref -> do
-            muser_email <- lift $ fetchUserEmailVerified notif_receiver
             let sendEmailNotif   =
                     lift $ sendProjectNotificationEmailDB
                                notif_type notif_receiver project_id content
