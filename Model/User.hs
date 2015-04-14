@@ -432,34 +432,11 @@ fetchProjectNotifs :: (SqlExpr (Entity ProjectNotification) -> SqlExpr (Value Bo
 fetchProjectNotifs =
     fetchNotifs ProjectNotificationTo ProjectNotificationCreatedTs
 
-deleteEventUserNotificationSentDB :: UserNotificationId -> DB ()
-deleteEventUserNotificationSentDB notif_id =
-    delete $ from $ \ens ->
-        where_ $ ens ^. EventUserNotificationSentNotification ==. val notif_id
-
-deleteEventProjectNotificationSentDB :: ProjectNotificationId -> DB ()
-deleteEventProjectNotificationSentDB notif_id =
-    delete $ from $ \ens ->
-        where_ $ ens ^. EventProjectNotificationSentNotification ==. val notif_id
-
-deleteUnapprovedCommentNotificationDB :: UserNotificationId -> DB ()
-deleteUnapprovedCommentNotificationDB notif_id =
-    delete $ from $ \ucn ->
-        where_ $ ucn ^. UnapprovedCommentNotificationNotification ==.
-                 val notif_id
-
 deleteUserNotificationDB :: UserNotificationId -> DB ()
-deleteUserNotificationDB notif_id = do
-    deleteEventUserNotificationSentDB notif_id
-    deleteUnapprovedCommentNotificationDB notif_id
-    delete $ from $ \n ->
-        where_ $ n ^. UserNotificationId ==. val notif_id
+deleteUserNotificationDB = deleteCascade
 
 deleteProjectNotificationDB :: ProjectNotificationId -> DB ()
-deleteProjectNotificationDB notif_id = do
-    deleteEventProjectNotificationSentDB notif_id
-    delete $ from $ \n ->
-        where_ $ n ^. ProjectNotificationId ==. val notif_id
+deleteProjectNotificationDB = deleteCascade
 
 deleteNotificationsDB :: UserId -> DB ()
 deleteNotificationsDB user_id = do
@@ -469,14 +446,12 @@ deleteNotificationsDB user_id = do
 deleteUserNotificationsDB :: UserId -> DB ()
 deleteUserNotificationsDB user_id = do
     notifs <- fetchUserNotificationsDB user_id
-    forM_ notifs $ \(Entity notif_id _) ->
-        deleteUserNotificationDB notif_id
+    deleteCascadeWhere [UserNotificationId <-. (entityKey <$> notifs)]
 
 deleteProjectNotificationsDB :: UserId -> DB ()
 deleteProjectNotificationsDB user_id = do
     notifs <- fetchProjectNotificationsDB user_id
-    forM_ notifs $ \(Entity notif_id _) ->
-        deleteProjectNotificationDB notif_id
+    deleteCascadeWhere [ProjectNotificationId <-. (entityKey <$> notifs)]
 
 deleteArchivedNotificationsDB :: UserId -> DB ()
 deleteArchivedNotificationsDB user_id = do
@@ -486,14 +461,12 @@ deleteArchivedNotificationsDB user_id = do
 deleteArchivedUserNotificationsDB :: UserId -> DB ()
 deleteArchivedUserNotificationsDB user_id = do
     notifs <- fetchArchivedUserNotificationsDB user_id
-    forM_ notifs $ \(Entity notif_id _) ->
-        deleteUserNotificationDB notif_id
+    deleteCascadeWhere [UserNotificationId <-. (entityKey <$> notifs)]
 
 deleteArchivedProjectNotificationsDB :: UserId -> DB ()
 deleteArchivedProjectNotificationsDB user_id = do
     notifs <- fetchArchivedProjectNotificationsDB user_id
-    forM_ notifs $ \(Entity notif_id _) ->
-        deleteProjectNotificationDB notif_id
+    deleteCascadeWhere [ProjectNotificationId <-. (entityKey <$> notifs)]
 
 archiveNotificationsDB :: UserId -> DB ()
 archiveNotificationsDB user_id = do
