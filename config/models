@@ -74,7 +74,7 @@ UserNotificationPref
     type     UserNotificationType
     delivery UserNotificationDelivery
 
-	UniqueUserNotificationPref user type
+    UniqueUserNotificationPref user type
 
 -- Preferences for projects watched by a user.
 ProjectNotificationPref
@@ -83,7 +83,7 @@ ProjectNotificationPref
     type     ProjectNotificationType
     delivery ProjectNotificationDelivery
 
-	UniqueProjectNotificationPref user project type
+    UniqueProjectNotificationPref user project type
 
 -- User-watching-project relation
 UserWatchingProject
@@ -256,7 +256,7 @@ UserNotification
     content   Markdown
     archived  Bool                   -- Put into the "trash bin".
 
-	UniqueUserNotification createdTs type to
+    UniqueUserNotification createdTs type to
 
 -- Notifications by projects watched by a user.
 ProjectNotification
@@ -267,7 +267,7 @@ ProjectNotification
     content   Markdown
     archived  Bool                   -- Put into the "trash bin".
 
-	UniqueProjectNotification createdTs type to project
+    UniqueProjectNotification createdTs type to project
 
 -- Notification emails that are sent by the email daemon.  'UserId's
 -- are used instead of email addresses to "force" the daemon to look
@@ -279,7 +279,7 @@ UserNotificationEmail
     to        UserId
     content   Markdown
 
-	UniqueUserNotificationEmail createdTs type to
+    UniqueUserNotificationEmail createdTs type to
 
 -- Email notifications by projects watched by a user.
 ProjectNotificationEmail
@@ -289,7 +289,7 @@ ProjectNotificationEmail
     project   ProjectId
     content   Markdown
 
-	UniqueProjectNotificationEmail createdTs type to project
+    UniqueProjectNotificationEmail createdTs type to project
 
 -- A many-to-one relationship linking notifications sent to moderators about an
 -- unapproved comment. When the comment is approved, all such notifications are
