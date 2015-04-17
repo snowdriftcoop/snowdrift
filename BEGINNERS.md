@@ -55,11 +55,10 @@ line:
 
 Save the file and close the editor.
 
-Now, because the change is not active immediately, you must also enter and run
-that same line above in your terminal once.
+Next, back in the terminal, run these commands:
+(yes, the first is the same as the line you added in the editor)
 
-Next, run these commands:
-
+    export PATH=$PATH:$HOME/cabal/bin:.cabal-sandbox/bin
     git clone https://github.com/snowdriftcoop/snowdrift.git
     cd snowdrift
     cabal sandbox init
@@ -227,15 +226,15 @@ here are some resources:
     + [Git Wikibook](https://en.wikibooks.org/wiki/Git)
     + [SQL Wikibook](https://en.wikibooks.org/wiki/Structured_Query_Language)
 
+*   [w3schools](http://www.w3schools.com/) is a very good way to learn
+    HTML, CSS, and JavaScript. Unfortunately it is proprietary.
+
 *   Web browsers today have built-in developer tools which enable testing
     and experimenting with live websites. The [Firebug](https://getfirebug.com)
     plugin offers some additional functions as well.
 
 *   We use [Twitter Bootstrap](http://getbootstrap.com/) for much (but not all)
     of our CSS.
-
-*   [w3schools](http://www.w3schools.com/) is a very good way to learn
-    HTML, CSS, and JavaScript. Unfortunately it is proprietary.
 
 *   [The Git Book](https://git-scm.com/book/) uses the CC-BY-NC-SA license,
     so it is shareable but is not fully FLO, unfortunately.
