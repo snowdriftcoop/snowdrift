@@ -195,15 +195,6 @@ Someone will probably comment on it within an hour or two.
 If you want a deeper understanding of all this stuff, here are some
 things you can read:
 
-*   The respective WikiBooks on
-
-    + [HTML](https://en.wikibooks.org/wiki/HyperText_Markup_Language),
-    + [CSS](https://en.wikibooks.org/wiki/Cascading_Style_Sheets), and
-    + [JavaScript](https://en.wikibooks.org/wiki/JavaScript).
-
-    These books are FLO, but I haven't looked to see if they are any
-    good. WikiBooks in general are top-notch.
-
 *   [w3schools](http://www.w3schools.com/) is a very good way to learn
     HTML, CSS, and JavaScript. Unfortunately it is proprietary.
 
