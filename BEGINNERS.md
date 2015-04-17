@@ -219,6 +219,6 @@ things you can read:
     information.
 
     We don't know of any good FLO resources for learning about
-    Yesod. Yesod itself is FLO.
+    Yesod. Yesod itself is FLO, though.
 
 [unix]: https://www.freebsd.org/doc/en_US.ISO8859-1/books/handbook/basics.html
