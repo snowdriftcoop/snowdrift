@@ -46,10 +46,11 @@ would work.
 A simple editor will pop up. Go to the end of the file, and add this
 line:
 
-    PATH=$PATH:$HOME/cabal/bin:.cabal-sandbox/bin
+    export PATH=$PATH:$HOME/cabal/bin:.cabal-sandbox/bin
 
 Then run these commands:
 
+    export PATH=$PATH:$HOME/cabal/bin:.cabal-sandbox/bin
     git clone https://github.com/snowdriftcoop/snowdrift.git
     cd snowdrift
     cabal sandbox init
