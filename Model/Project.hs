@@ -51,7 +51,7 @@ import Widgets.Tag
 
 import           Control.Monad.Trans.Maybe    (MaybeT(..), runMaybeT)
 import           Control.Monad.Trans.Resource (MonadThrow)
-import           Control.Monad.Writer.Strict  (tell)
+import           Control.Monad.Writer.Strict  (WriterT, tell, execWriterT)
 import           Control.Concurrent.Async     (Async, async, wait)
 import qualified Github.Data                  as GH
 import qualified Github.Issues                as GH
@@ -613,6 +613,57 @@ updateUserShares project_handle shares = do
             , "Please deposit additional funds to your account."
             ]
 
+newtype DropShare = DropShare PledgeId
+type DropShares = [DropShare]
+
+-- | Drop one share from each pledge.
+dropShares :: [PledgeId] -> DB ()
+dropShares = undefined
+
+-- | Find pledges in a given project (if supplied), from a given set of
+-- users, that have the greatest number of shares.
+maxShares :: Maybe ProjectId -> [UserId] -> DB [PledgeId]
+maxShares = undefined
+
+-- | Find underfunded patrons.
+underfundedPatrons :: DB [UserId]
+underfundedPatrons = undefined
+
+-- | Drop one share from each highest-shared underfunded pledges to a
+-- particular project. Return which ones got dropped.
+-- FIXME: doesn't check that underfunded pledges have >0 shares. What to do
+-- with them?
+decrementUnderfunded :: ProjectId -> DB DropShares
+decrementUnderfunded projId = do
+    droppers <- join $ maxShares (Just projId) <$> underfundedPatrons
+    dropShares droppers
+    return $ map DropShare droppers
+
+-- | Keep dropping shares, until there are no underfunded patrons.
+-- (Recursion alert.)
+dropAllUnderfunded :: DBConstraint m
+                   => ProjectId -> WriterT DropShares (SqlPersistT m) ()
+dropAllUnderfunded projId = do
+    unders <- lift $ decrementUnderfunded projId
+    case unders of
+        [] -> return ()
+        _  -> do
+            tell unders
+            dropAllUnderfunded projId
+
+-- | Fold some DropShares into EventDeactivatedPledges, one per affected
+-- pledge.
+-- FIXME
+foldDrops :: UTCTime -> DropShares -> [SnowdriftEvent]
+foldDrops _ts = map snd . toList . foldr insertOrAdd M.empty
+  where
+    insertOrAdd = flip const
+
+-- | After a patron modifies their pledge, some other patrons may be
+-- underfunded. This method deactivates shares from those underfunded
+-- pledges until all pledges are funded.
 rebalanceProjectPledges :: ProjectId -> SYDB ()
-rebalanceProjectPledges project_id =
-    lift (updateShareValue project_id)
+rebalanceProjectPledges project_id = do
+    allDrops <- lift . execWriterT $ dropAllUnderfunded project_id
+    now <- liftIO getCurrentTime
+    tell $ foldDrops now allDrops
