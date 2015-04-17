@@ -3,7 +3,7 @@ Default: &defaults
   port: 3000
   approot: "http://localhost:3000"
   copyright: "2012-2015 snowdrift contributors"
-  source: "https://gitorious.org/snowdrift/snowdrift"
+  source: "https://github.com/snowdriftcoop/snowdrift"
   githubrepo: "snowdriftcoop/snowdrift"
   siteproject: "snowdrift"
   #analytics: UA-YOURCODE
