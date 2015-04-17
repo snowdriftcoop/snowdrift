@@ -43,35 +43,36 @@ Hop on #snowdrift at
 Essential build instructions
 ----------------------------
 
-Note: our code is mirrored at
-[Gitorious](https://gitorious.org/snowdrift/snowdrift)
-(which is FLO, licensed AGPL, but is shutting down soon and we haven't finalized
-our move to another FLO service yet) and
-[GitHub](https://github.com/snowdriftcoop/snowdrift)
-(which is popular but proprietary).
+Currently, our code is hosted at
+[GitHub](https://github.com/snowdriftcoop/snowdrift),
+a popular but proprietary platform.
+We plan to mirror at a platform more aligned with our values but details are
+not set yet.
 
-**You really should read our full [guide to our code](GUIDE.md)
-which has step-by-step instructions that even a true beginner can follow.**
-It also contains links for learning Haskell, comments about development methods,
-and more.
+**Our full [guide to our code](GUIDE.md) has precise setup details
+and clarifications about technical items.
 
-But for those experienced with Git, Haskell, PostgreSQL, and perhaps even Yesod,
-here's quick and dirty minimal instructions to get started:
+Beginners with minimal technical background can get set up by following our
+[Beginners' Snowdrift Set Up](BEGINNERS.md) which can get anyone started for
+making basic contributions along with links and info to help learn more about
+the tools we use.
+
+For advanced programmers experienced with Git, Haskell, PostgreSQL,
+and perhaps even Yesod, here's quick and dirty minimal start instructions:
 
 ```
 // Install any dependencies you don't have:
-// GHC **7.8.x**, cabal, PostgreSQL, zlib1g-dev, libpq-dev, happy, alex
+// GHC **7.8.x**, cabal, PostgreSQL, happy, alex, git
 // update cabal, set PATH, etc. — see GUIDE.md for more detailed instructions
 
 // Fork, clone and install
 git clone [your remote address]
-// your remote looks like git@gitorious.org:snowdrift/yourusername-snowdrift.git]
 cd snowdrift
 cabal sandbox init
 cabal install --enable-tests -fdev
 
 // Set up the database with our quick script.
-// To understand what the script does or to run the commands manually, see GUIDE.md
+// To understand the script does or to run the commands manually, see GUIDE.md
 sdm init
 
 // Launch the development site
@@ -82,5 +83,5 @@ Snowdrift Development
 // To rebuild after making changes run
 cabal install -fdev
 
-Read through GUIDE.md for thorough details about development, testing, and so on.
+Read GUIDE.md for thorough details about development, testing, and so on.
 ```

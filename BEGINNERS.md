@@ -12,6 +12,11 @@ to get started.
 Advanced users should adapt any of these instructions as seen fit.
 
 These instructions assume you use Debian testing or some variant of Ubuntu.
+Our general [GUIDE](GUIDE.md) has some notes for other systems.
+
+If you need *any* help at any point, come say "hi" at our freenode.net IRC
+channel [#snowdrift](https://snowdrift.coop/p/snowdrift/w/irc).
+We are always happy to assist and answer *any* questions!
 
 ## Installing
 
@@ -46,9 +51,14 @@ would work.
 A simple editor will pop up. Go to the end of the file, and add this
 line:
 
-    PATH=$PATH:$HOME/cabal/bin:.cabal-sandbox/bin
+    export PATH=$PATH:$HOME/cabal/bin:.cabal-sandbox/bin
 
-Then run these commands:
+Save the file and close the editor.
+
+Now, because the change is not active immediately, you must also enter and run
+that same line above in your terminal once.
+
+Next, run these commands:
 
     git clone https://github.com/snowdriftcoop/snowdrift.git
     cd snowdrift
@@ -60,6 +70,9 @@ Then run these commands:
 Open up http://localhost:3000 in your browser to see the Snowdrift site.
 
 Now you can play with Snowdrift locally.
+To log into the site, use  the built-in system with
+user: `admin` pass: `admin`
+
 
 ## Basic Git setup
 
@@ -129,7 +142,10 @@ Until you understand more about the Yesod web framework, you probably
 don't want to edit the nitty-gritty parts of the source code.  However,
 the files in the project's `templates` directory are comparable to basic
 HTML, CSS, and JavaScript. Beginners can quickly learn how to make basic
-changes to those files. For more, see the documentation on
+changes to those files. Basically, Hamlet=HTML and Cassius=CSS but with
+easier, more concise syntax that uses indentation instead of closing tags.
+Julius files are simply containers for JavaScript.
+For more details, see the documentation on
 [Shakespearean Templates](http://www.yesodweb.com/book/shakespearean-templates).
 
 Never edit files with a traditional word processor like LibreOffice.
@@ -189,44 +205,81 @@ for submitting the pull request. Fill out the form, and send it.
 
 Someone will probably comment on it within an hour or two.
 
-## Further reading
 
-If you want a deeper understanding of all this stuff, here are some
-things you can read:
+## Learning resources and helpful tools
 
-*   The respective WikiBooks on
+Besides reading the content on the Snowdrift.coop site itself,
+we suggest reviewing the [GUIDE.md](GUIDE.md) sections on
+"Development guidelines and notes" and "Additional notes about databases".
 
-    + [HTML](https://en.wikibooks.org/wiki/HyperText_Markup_Language),
-    + [CSS](https://en.wikibooks.org/wiki/Cascading_Style_Sheets), and
-    + [JavaScript](https://en.wikibooks.org/wiki/JavaScript).
+If you want a deeper understanding of various elements in our development,
+here are some resources:
 
-    These books are FLO, but I haven't looked to see if they are any
-    good. WikiBooks in general are top-notch.
+*   The following WikiBooks are fully FLO, excellent quality,
+    and include links to further resources as well.
+    Of course, you can and should *improve* them further yourself
+    as you read!
+
+    + [HTML Wikibook](https://en.wikibooks.org/wiki/HyperText_Markup_Language)
+    + [CSS Wikibook](https://en.wikibooks.org/wiki/Cascading_Style_Sheets)
+    + [JavaScript Wikibook](https://en.wikibooks.org/wiki/JavaScript)
+    + [Haskell Wikibook](https://en.wikibooks.org/wiki/Haskell)
+    + [Git Wikibook](https://en.wikibooks.org/wiki/Git)
+    + [SQL Wikibook](https://en.wikibooks.org/wiki/Structured_Query_Language)
+
+*   Web browsers today have built-in developer tools which enable testing
+    and experimenting with live websites. The [Firebug](https://getfirebug.com)
+    plugin offers some additional functions as well.
+
+*   We use [Twitter Bootstrap](http://getbootstrap.com/) for much (but not all)
+    of our CSS.
 
 *   [w3schools](http://www.w3schools.com/) is a very good way to learn
     HTML, CSS, and JavaScript. Unfortunately it is proprietary.
 
-*   [The Git Book](https://git-scm.com/book/) for learning about Git. It
-    is very good. It is technically not FLO, but it is close. The
-    license forbids commercial use.
+*   [The Git Book](https://git-scm.com/book/) uses the CC-BY-NC-SA license,
+    so it is shareable but is not fully FLO, unfortunately.
 
-*   If you're using Mac OS X, Linux, or BSD, you might want to read up
-    on [the basics of UNIX][unix]. It's very good, albeit a bit dense,
-    and FLO.
+*   [The Basics of UNIX][unix] is FLO and good reading, albiet a bit dense,
+    relevant to all UNIX-style systems including Mac OS X, GNU/Linux, and BSD.
 
-*   [The Haskell WikiBook](https://en.wikibooks.org/wiki/Haskell) for
-    learning about Haskell. It's very good, and FLO.
+*   [The Yesod Book](http://www.yesodweb.com/book/) is the primary resource
+    for learning about Yesod, the web framework we use to develop Snowdrift.
+    
+    Quite unfortunately, the Yesod book is not FLO (it uses the CC-BY-NC-ND
+    license). Perhaps complaints to the publisher, O'Reilly media may help,
+    as the author of both Yesod and the Yesod book is otherwise willing
+    to use a FLO license…
+    At least Yesod itself is FLO, including the internal documentation that
+    comes with the code in Haddock format.
 
-*   [The Yesod Book](http://www.yesodweb.com/book/) for learning about
-    Yesod, the web stack we use to develop Snowdrift. The Yesod book is
-    technically not FLO, but it's close. The license forbids commercial
-    use of the book.
+    The Yesod book is thorough, but you must read it carefully.
+    When skimming, you can easily miss critical information.
 
-    The book is very thorough, although you have to read it
-    carefully. If you skim it, you will likely miss critical
-    information.
+*   The [School of Haskell](https://www.fpcomplete.com/school) includes
+    basic and advanced topics including some Yesod sections.
+    In April 2015, they announced plans to change to using FLO terms
+    (the FLO release has not been done yet as of this writing).
 
-    We don't know of any good FLO resources for learning about
-    Yesod. Yesod itself is FLO.
+*   At Stack Overflow (which uses FLO licensing for content), see tag for
+    [yesod](http://stackoverflow.com/questions/tagged/yesod) and
+    [haskell](http://stackoverflow.com/questions/tagged/yesod)
+
+*   Alongside #snowdrift on freenode.net, check out #yesod #haskell
+    and #haskell-beginners
+
+*   A useful development tool is "cabal repl" — a command that loads
+    [ghci](https://en.wikibooks.org/wiki/Haskell/Using_GHCi_effectively)
+    in a mode connected to the project. Using that, you can easily import
+    files from the code and explore the functions.
+
+*   To help write clean Haskell code and learn conventions, run hlint on your
+    files to get suggestions for possible improvements.
+    Add hlint to your system with the command `cabal install hlint`
+
+*   The [PostgreSQL Documention](http://www.postgresql.org/docs/9.4/interactive/index.html)
+    is not FLO but is quite thorough. You will not really need to know all
+    details, but familiarity with PotgreSQL will enhance your ability to help
+    with various parts of the Snowdrift code.
 
 [unix]: https://www.freebsd.org/doc/en_US.ISO8859-1/books/handbook/basics.html
