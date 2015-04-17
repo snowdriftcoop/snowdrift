@@ -6,7 +6,7 @@ import           Model.Notification
 import           Model.Project
 import           Model.User
 import qualified Data.Foldable as F
-import           Data.List (sortBy)
+import           Data.List (sort)
 import qualified Data.Text as T
 import           Widgets.Time
 
@@ -36,9 +36,8 @@ instance Ord Notification where
 buildNotificationsList :: [Entity UserNotification]
                        -> [Entity ProjectNotification] -> [Notification]
 buildNotificationsList uns pns =
-    sortBy compare $
-        ((\(Entity un_id un) -> UNotification un_id un) <$> uns) <>
-        ((\(Entity pn_id pn) -> PNotification pn_id pn) <$> pns)
+    sort $ ((\(Entity un_id un) -> UNotification un_id un) <$> uns)
+        <> ((\(Entity pn_id pn) -> PNotification pn_id pn) <$> pns)
 
 getNotificationsR :: Handler Html
 getNotificationsR = do
