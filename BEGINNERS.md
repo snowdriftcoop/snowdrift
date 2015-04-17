@@ -75,17 +75,17 @@ user: `admin` pass: `admin`
 
 ## Basic Git setup
 
-We use a program called [Git](https://git-scm.com/) to make and share
+We use a program called [Git](http://git-scm.com/) to make and share
 changes while keeping the versions tracked and organized. Right now,
 we use a proprietary website called [GitHub](https://github.com/)
 to share the Git data. We plan to switch to gitlab.gnu.io when it is ready.
 
-To get set to contribute changes to the project,
-first [create an account on GitHub](https://github.com/join)
+To contribute changes to the project, first
+[create an account on GitHub](https://github.com/join)
 if you don't already have one.
 
-Once signed in, go to <https://github.com/snowdriftcoop/snowdrift>, and
-click the "Fork" button on the top right:
+Once signed in, go to <https://github.com/snowdriftcoop/snowdrift>,
+and click the "Fork" button on the top right:
 
 ![](https://a.pomf.se/jrarfe.png)
 
@@ -106,9 +106,9 @@ Copy the address in the box, and type this in your local terminal
 
     git remote add my-snow
 
-Use Ctrl+Shift+V to paste the address in the terminal. For historical
-reasons, Ctrl+V does something else in most terminals.  The final
-command should look like this:
+Use Ctrl+Shift+V to paste the address in the terminal.
+For historical reasons, Ctrl+V does something else in most terminals.
+The final command should look like this:
 
     git remote add my-snow https://github.com/YOURNAME/snowdrift.git
 
@@ -135,12 +135,14 @@ Replace `some_branch` with a one- or two-word description of your planned
 changes. For example, when fixing a problem in the header, a good branch name
 would be `header-fix`.
 
-## Editing
+### Editing
+
+#### Notes about editing and files
 
 Until you understand more about the Yesod web framework, you probably
-don't want to edit the nitty-gritty parts of the source code.  However,
+don't want to touch the nitty-gritty parts of the source code.  However,
 the files in the project's `templates` directory are comparable to basic
-HTML, CSS, and JavaScript. Beginners can quickly learn how to make basic
+HTML, CSS, and JavaScript. Beginners can quickly learn how to make
 changes to those files. Basically, Hamlet=HTML and Cassius=CSS but with
 easier, more concise syntax that uses indentation instead of closing tags.
 Julius files are simply containers for JavaScript.
@@ -154,6 +156,8 @@ Advanced programmers often use Vim or Emacs.
 When making edits, follow our
 [code style guide](https://snowdrift.coop/p/snowdrift/w/en/coding#code-style-guide).
 
+#### Building your updates
+
 After making and saving changes, you can use `cabal install` followed by
 `Snowdrift Development` recompile and run the updates.  If you prefer,
 `yesod devel` is a command that does both of these and can stay running,
@@ -165,7 +169,21 @@ updates.
 In the respective terminal window, you can quit `Snowdrift Development`
 with Ctrl+C or stop `yesod devel` by hitting ENTER a few times.
 
-After successfully compiling and seeing that the changes seem good,
+### Saving and staging work
+
+Save your work regularly. Review your changes regularly with these commands:
+
+* `git status` — list changed files, see the branch you are on, and more
+* `git diff` — show unstaged changes
+
+When your work has reached a point that is a candidate for committing
+the changes, running `git add FILENAME` will "stage" the current state
+(replace FILENAME with the path and name of a file you updated).
+You can repeat this command as you make later changes.
+
+### Testing changes
+
+After successfully compiling and checking that the changes seem good,
 do a final test with:
 
     yesod test
@@ -175,40 +193,45 @@ and you don't know how to fix the issue or don't understand the error,
 ask on the [IRC channel](https://snowdrift.coop/p/snowdrift/w/en/irc),
 and someone will probably help you.
 
-## Committing your changes
+### Committing your changes
 
-When you have saved changes and everything seems fine, commit your changes with:
+When you have changes that all compile, pass tests,
+seem complete to you, and have been staged with `git add`,
+(you can review all staged changes with `git diff --cached`)
+finalize the staged changes by running
 
-    git commit -a
+    git commit
 
-An editor will pop open asking you to summarize your changes.
-The Erlang people have a nice guide to
+An editor will show asking you to summarize your changes.
+Make the message one that will be meaningful to people skimming
+all the commits in the future. Then save and close the editor.
+For reference, here's a decent guide to
 [writing good commit messages](https://github.com/erlang/otp/wiki/Writing-good-commit-messages).
 
 ## Getting your changes merged
 
-Now you can send your changes to your github account with:
+After committing, send your changes to your github account with:
 
     git push -u my-snow some_branch
 
 Change `some_branch` to the name of the branch where you made the
 commit(s).
 
-Reload the GitHub page with your fork.  You should see something like
-this:
+Reload the GitHub page with your fork.
+You should see something like this:
 
 ![](https://a.pomf.se/paqzzx.png)
     
 Click the "Pull request" button. There'll be a nice little form there
 for submitting the pull request. Fill out the form, and send it.
 
-Someone will probably comment on it within an hour or two.
+Someone should comment on it soon (hopefully within a few hours).
 
 
 ## Learning resources and helpful tools
 
 Besides reading the content on the Snowdrift.coop site itself,
-we suggest reviewing the [GUIDE.md](GUIDE.md) sections on
+we suggest reviewing our [GUIDE.md](GUIDE.md), specifically sections on
 "Development guidelines and notes" and "Additional notes about databases".
 
 If you want a deeper understanding of various elements in our development,
@@ -236,8 +259,9 @@ here are some resources:
 *   We use [Twitter Bootstrap](http://getbootstrap.com/) for much (but not all)
     of our CSS.
 
-*   [The Git Book](https://git-scm.com/book/) uses the CC-BY-NC-SA license,
-    so it is shareable but is not fully FLO, unfortunately.
+*   The [Git Docs](http://git-scm.com/doc/) page includes many links, an online
+    version of the core Git manuals, and the Pro Git book which uses the
+    CC-BY-NC-SA license, so it is shareable but not fully FLO, unfortunately.
 
 *   [The Basics of UNIX][unix] is FLO and good reading, albiet a bit dense,
     relevant to all UNIX-style systems including Mac OS X, GNU/Linux, and BSD.
@@ -260,9 +284,10 @@ here are some resources:
     In April 2015, they announced plans to change to using FLO terms
     (the FLO release has not been done yet as of this writing).
 
-*   At Stack Overflow (which uses FLO licensing for content), see tag for
+*   At Stack Overflow (which uses FLO licensing for content), see tags for
     [yesod](http://stackoverflow.com/questions/tagged/yesod) and
     [haskell](http://stackoverflow.com/questions/tagged/yesod)
+    (and, of course, other topics like HTML, CSS, Git, and so on)
 
 *   Alongside #snowdrift on freenode.net, check out #yesod #haskell
     and #haskell-beginners
@@ -272,8 +297,8 @@ here are some resources:
     in a mode connected to the project. Using that, you can easily import
     files from the code and explore the functions.
 
-*   To help write clean Haskell code and learn conventions, run hlint on your
-    files to get suggestions for possible improvements.
+*   To help write clean Haskell code and learn conventions, run `hlint`
+    on your files to get suggestions for possible improvements.
     Add hlint to your system with the command `cabal install hlint`
 
 *   The [PostgreSQL Documention](http://www.postgresql.org/docs/9.4/interactive/index.html)
