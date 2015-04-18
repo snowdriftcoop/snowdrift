@@ -621,9 +621,30 @@ dropShares :: [PledgeId] -> DB ()
 dropShares = undefined
 
 -- | Find pledges in a given project (if supplied), from a given set of
--- users, that have the greatest number of shares.
+-- users, that have the greatest number of shares (greater than 0)
 maxShares :: Maybe ProjectId -> [UserId] -> DB [PledgeId]
-maxShares = undefined
+maxShares mproj uids = do
+    -- Can I do subquery joins? Doesn't seem so
+    -- select...max_ :: m [Value (Maybe a)]
+    [Value mmaxCt] <-
+        select $
+        from $ \p -> do
+        where_ $ (p ^. PledgeUser `in_` valList uids)
+            &&. p ^. PledgeFundedShares >. val 0
+        return $ max_ $ p ^. PledgeFundedShares
+
+    case mmaxCt of
+        Nothing -> return []
+        Just maxCt -> do
+            let projConstraint pledge = case mproj of
+                    Just proj -> pledge ^. PledgeProject ==. val proj
+                    _         -> val True
+
+            fmap (map unValue) $ select $ from $ \p -> do
+                where_ $ (p ^. PledgeUser `in_` valList uids)
+                    &&. projConstraint p
+                    &&. p ^. PledgeFundedShares ==. val maxCt
+                return $ p ^. PledgeId
 
 -- | Find underfunded patrons.
 underfundedPatrons :: DB [UserId]
