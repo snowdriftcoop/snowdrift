@@ -169,18 +169,6 @@ updates.
 In the respective terminal window, you can quit `Snowdrift Development`
 with Ctrl+C or stop `yesod devel` by hitting ENTER a few times.
 
-### Saving and staging work
-
-Save your work regularly. Review your changes regularly with these commands:
-
-* `git status` — list changed files, see the branch you are on, and more
-* `git diff` — show unstaged changes
-
-When your work has reached a point that is a candidate for committing
-the changes, running `git add FILENAME` will "stage" the current state
-(replace FILENAME with the path and name of a file you updated).
-You can repeat this command as you make later changes.
-
 ### Testing changes
 
 After successfully compiling and checking that the changes seem good,
@@ -195,12 +183,19 @@ and someone will probably help you.
 
 ### Committing your changes
 
-When you have changes that all compile, pass tests,
-seem complete to you, and have been staged with `git add`,
-(you can review all staged changes with `git diff --cached`)
-finalize the staged changes by running
+When your updates all compile, tests pass,
+and you are ready to submit to the main Snowdrift project,
+you can *commit* your changes.
 
-    git commit
+If you don't already know git basics, we urge you to learn
+about the process of staging with `git add` before committing
+and build good review habits with tools like `git status` and `git diff`.
+See the links for learning resources at the end of this file.
+
+For now, though it isn't best practice, you can quickly commit
+all your changes with the command:
+
+    git commit -a
 
 An editor will show asking you to summarize your changes.
 Make the message one that will be meaningful to people skimming
@@ -237,17 +232,20 @@ we suggest reviewing our [GUIDE.md](GUIDE.md), specifically sections on
 If you want a deeper understanding of various elements in our development,
 here are some resources:
 
-*   The following WikiBooks are fully FLO, excellent quality,
-    and include links to further resources as well.
-    Of course, you can and should *improve* them further yourself
-    as you read!
+*   The following WikiBooks are fully FLO and include links to
+    further resources as well. As they are wikis, you can and should
+    *improve* them further yourself as you read!
 
     + [HTML Wikibook](https://en.wikibooks.org/wiki/HyperText_Markup_Language)
     + [CSS Wikibook](https://en.wikibooks.org/wiki/Cascading_Style_Sheets)
     + [JavaScript Wikibook](https://en.wikibooks.org/wiki/JavaScript)
     + [Haskell Wikibook](https://en.wikibooks.org/wiki/Haskell)
-    + [Git Wikibook](https://en.wikibooks.org/wiki/Git)
     + [SQL Wikibook](https://en.wikibooks.org/wiki/Structured_Query_Language)
+      is a complete book and good general overview
+    + [A Quick Introduction to Unix](https://en.wikibooks.org/wiki/A_Quick_Introduction_to_Unix)
+      is a good overview to command-line and Unix basics
+    + [Git Wikibook](https://en.wikibooks.org/wiki/Git) is only half-done
+      but has some useful bits
 
 *   [w3schools](http://www.w3schools.com/) is a very good way to learn
     HTML, CSS, and JavaScript. Unfortunately it is proprietary.
@@ -262,6 +260,8 @@ here are some resources:
 *   The [Git Docs](http://git-scm.com/doc/) page includes many links, an online
     version of the core Git manuals, and the Pro Git book which uses the
     CC-BY-NC-SA license, so it is shareable but not fully FLO, unfortunately.
+    [Git Magic](http://www-cs-students.stanford.edu/~blynn/gitmagic/)
+    is a fully-FLO book written in a more narrative style.
 
 *   [The Basics of UNIX][unix] is FLO and good reading, albiet a bit dense,
     relevant to all UNIX-style systems including Mac OS X, GNU/Linux, and BSD.
