@@ -26,9 +26,7 @@ would work.
 
     sudo aptitude update
     sudo aptitude install curl git postgresql postgresql-client
-    cd /usr/lib/x86_64-linux-gnu
-    sudo ln -s libgmp.so.10 libgmp.so
-    exit
+    sudo ln -s /usr/share/x86_64-linux-gnu/libgmp.so.10 /usr/share/x86_64-linux-gnu/libgmp.so
     mkdir builds
     cd builds
     curl -ssL \
