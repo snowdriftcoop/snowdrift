@@ -24,11 +24,10 @@ Open up a terminal, and run these commands, exactly as you see them. You
 could even copy and paste all of them into your terminal at once, and it
 would work.
 
-    sudo -i
-    aptitude update
-    aptitude install curl git postgresql postgresql-client
+    sudo aptitude update
+    sudo aptitude install curl git postgresql postgresql-client
     cd /usr/lib/x86_64-linux-gnu
-    ln -s libgmp.so.10 libgmp.so
+    sudo ln -s libgmp.so.10 libgmp.so
     exit
     mkdir builds
     cd builds
@@ -46,19 +45,8 @@ would work.
     cd ..
     cabal update
     cabal install cabal-install alex happy haddock yesod-bin
-    nano ~/.bashrc
-
-A simple editor will pop up. Go to the end of the file, and add this
-line:
-
-    export PATH=$PATH:$HOME/cabal/bin:.cabal-sandbox/bin
-
-Save the file and close the editor.
-
-Next, back in the terminal, run these commands:
-(yes, the first is the same as the line you added in the editor)
-
-    export PATH=$PATH:$HOME/cabal/bin:.cabal-sandbox/bin
+    echo 'export PATH=$PATH:$HOME/cabal/bin:.cabal-sandbox/bin' >> ~/.bashrc
+    . ~/.bashrc
     git clone https://github.com/snowdriftcoop/snowdrift.git
     cd snowdrift
     cabal sandbox init
@@ -66,10 +54,10 @@ Next, back in the terminal, run these commands:
     sdm init
     Snowdrift Development
 
-Open up http://localhost:3000 in your browser to see the Snowdrift site.
+Go to http://localhost:3000 in your web browser to see the Snowdrift site.
 
 Now you can play with Snowdrift locally.
-To log into the site, use  the built-in system with
+To log into the site, use the built-in system with
 user: `admin` pass: `admin`
 
 
@@ -236,19 +224,19 @@ here are some resources:
     further resources as well. As they are wikis, you can and should
     *improve* them further yourself as you read!
 
+    + [Haskell Wikibook](https://en.wikibooks.org/wiki/Haskell)
+      — one of the few *featured* Wikibooks, the Haskell Wikibook
+      is exceptionally high quality and arguably the best overall
+      introduction to Haskell anywhere.
     + [HTML Wikibook](https://en.wikibooks.org/wiki/HyperText_Markup_Language)
     + [CSS Wikibook](https://en.wikibooks.org/wiki/Cascading_Style_Sheets)
     + [JavaScript Wikibook](https://en.wikibooks.org/wiki/JavaScript)
-    + [Haskell Wikibook](https://en.wikibooks.org/wiki/Haskell)
     + [SQL Wikibook](https://en.wikibooks.org/wiki/Structured_Query_Language)
       is a complete book and good general overview
     + [A Quick Introduction to Unix](https://en.wikibooks.org/wiki/A_Quick_Introduction_to_Unix)
-      is a good overview to command-line and Unix basics
+      is a decent overview of command-line and Unix basics
     + [Git Wikibook](https://en.wikibooks.org/wiki/Git) is only half-done
       but has some useful bits
-
-*   [w3schools](http://www.w3schools.com/) is a very good way to learn
-    HTML, CSS, and JavaScript. Unfortunately it is proprietary.
 
 *   Web browsers today have built-in developer tools which enable testing
     and experimenting with live websites. The [Firebug](https://getfirebug.com)
@@ -260,7 +248,8 @@ here are some resources:
 *   The [Git Docs](http://git-scm.com/doc/) page includes many links, an online
     version of the core Git manuals, and the Pro Git book which uses the
     CC-BY-NC-SA license, so it is shareable but not fully FLO, unfortunately.
-    [Git Magic](http://www-cs-students.stanford.edu/~blynn/gitmagic/)
+
+*   [Git Magic](http://www-cs-students.stanford.edu/~blynn/gitmagic/)
     is a fully-FLO book written in a more narrative style.
 
 *   [The Basics of UNIX][unix] is FLO and good reading, albiet a bit dense,
@@ -290,7 +279,7 @@ here are some resources:
     (and, of course, other topics like HTML, CSS, Git, and so on)
 
 *   Alongside #snowdrift on freenode.net, check out #yesod #haskell
-    and #haskell-beginners
+    and #haskell-beginners (among other relevant channels)
 
 *   A useful development tool is "cabal repl" — a command that loads
     [ghci](https://en.wikibooks.org/wiki/Haskell/Using_GHCi_effectively)
