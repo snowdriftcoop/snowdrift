@@ -276,10 +276,10 @@ here are some resources:
     [haskell](http://stackoverflow.com/questions/tagged/yesod)
     (and, of course, other topics like HTML, CSS, Git, and so on)
 
-*   Alongside #snowdrift on freenode.net, check out #yesod #haskell
-    and #haskell-beginners (among other relevant channels)
+*   Alongside `#snowdrift` on freenode.net, check out `#yesod`, `#haskell`,
+    and `#haskell-beginners` (among other relevant channels).
 
-*   A useful development tool is "cabal repl" — a command that loads
+*   A useful development tool is `cabal repl` — a command that loads
     [ghci](https://en.wikibooks.org/wiki/Haskell/Using_GHCi_effectively)
     in a mode connected to the project. Using that, you can easily import
     files from the code and explore the functions.
