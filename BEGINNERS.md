@@ -63,7 +63,7 @@ user: `admin` pass: `admin`
 We use a program called [Git](http://git-scm.com/) to make and share
 changes while keeping the versions tracked and organized. Right now,
 we use a proprietary website called [GitHub](https://github.com/)
-to share the Git data. We plan to switch to gitlab.gnu.io when it is ready.
+to share the Git data. We plan to switch to git.gnu.io when it is ready.
 
 To contribute changes to the project, first
 [create an account on GitHub](https://github.com/join)
