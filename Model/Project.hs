@@ -618,7 +618,9 @@ type DropShares = [DropShare]
 
 -- | Drop one share from each pledge.
 dropShares :: [PledgeId] -> DB ()
-dropShares = undefined
+dropShares ps = update $ \p -> do
+    set p [ PledgeFundedShares -=. val 1 ]
+    where_ $ p ^. PledgeId `in_` valList ps
 
 -- | Find pledges in a given project (if supplied), from a given set of
 -- users, that have the greatest number of shares (greater than 0)
