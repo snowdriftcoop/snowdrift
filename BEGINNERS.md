@@ -239,6 +239,10 @@ here are some resources:
     and experimenting with live websites. The [Firebug](https://getfirebug.com)
     plugin offers some additional functions as well.
 
+*   [CanIUse.com](http://caniuse.com/) is a reference website to check that all
+    web features you use are compatible with various browsers and standards.
+    The CanIUse data is fully FLO under a CC-BY license.
+
 *   We use [Twitter Bootstrap](http://getbootstrap.com/) for much (but not all)
     of our CSS.
 
