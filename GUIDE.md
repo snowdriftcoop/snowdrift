@@ -51,7 +51,8 @@ Working on the code
 ===================
 
 Again, see our [Beginners' Guide](BEGINNERS.md) for the simplest setup
-if you have only minimal development experience.
+if you have only minimal development experience and are running Debian or
+Ubuntu GNU/Linux or a related derivative.
 The Beginners' Guide also has links to various support and learning resources.
 
 The details below specify more advanced and particular items.
@@ -127,7 +128,7 @@ Install the essential dependencies: ghc, cabal, postgresql
 **Note: we are now using GHC 7.8.x**
 
 **<https://www.haskell.org/downloads/linux>** has instructions for
-installing ghc, cabal, happy, and alex on Ubuntu, Fedora, and Arch
+installing ghc, cabal, happy, and alex on Ubuntu, Fedora, and Arch,
 along with manual install instructions for other systems.
 
 Depending on system, additional dependencies may be needed.
@@ -148,7 +149,7 @@ Below are the most common situations:
 * for Mac OS, try adding `export PATH="$HOME/Library/Haskell/bin:$PATH"`
   to ~/.bash_profile
 
-(You will need to run the line in your terminal also or Start a new terminal
+(You will need to also run the line in your terminal or start a new terminal
 to make the new PATH active.)
 
 Now, upgrade cabal itself:

@@ -288,9 +288,4 @@ here are some resources:
     on your files to get suggestions for possible improvements.
     Add hlint to your system with the command `cabal install hlint`
 
-*   The [PostgreSQL Documention](http://www.postgresql.org/docs/9.4/interactive/index.html)
-    is not FLO but is quite thorough. You will not really need to know all
-    details, but familiarity with PotgreSQL will enhance your ability to help
-    with various parts of the Snowdrift code.
-
 [unix]: https://www.freebsd.org/doc/en_US.ISO8859-1/books/handbook/basics.html
