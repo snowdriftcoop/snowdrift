@@ -219,21 +219,24 @@ here are some resources:
 
 *   The following WikiBooks are fully FLO and include links to
     further resources as well. As they are wikis, you can and should
-    *improve* them further yourself as you read!
+    *improve* them yourself as you read!
 
-    + [Haskell Wikibook](https://en.wikibooks.org/wiki/Haskell)
+    + [**Haskell Wikibook**](https://en.wikibooks.org/wiki/Haskell)
       — one of the few *featured* Wikibooks, the Haskell Wikibook
-      is exceptionally high quality and arguably the best overall
+      is *exceptionally* high quality and arguably the best overall
       introduction to Haskell anywhere.
-    + [HTML Wikibook](https://en.wikibooks.org/wiki/HyperText_Markup_Language)
-    + [CSS Wikibook](https://en.wikibooks.org/wiki/Cascading_Style_Sheets)
-    + [JavaScript Wikibook](https://en.wikibooks.org/wiki/JavaScript)
-    + [SQL Wikibook](https://en.wikibooks.org/wiki/Structured_Query_Language)
-      is a complete book and good general overview
     + [A Quick Introduction to Unix](https://en.wikibooks.org/wiki/A_Quick_Introduction_to_Unix)
-      is a decent overview of command-line and Unix basics
-    + [Git Wikibook](https://en.wikibooks.org/wiki/Git) is only half-done
-      but has some useful bits
+      is a practical overview of command-line and Unix basics.
+    + [SQL Wikibook](https://en.wikibooks.org/wiki/Structured_Query_Language)
+      is a good general overview
+    + [Git Wikibook](https://en.wikibooks.org/wiki/Git)
+      is an incomplete book but has some useful bits.
+    + [HTML Wikibook](https://en.wikibooks.org/wiki/HyperText_Markup_Language)
+      is a workable but dated intro (of course, countless HTML guides exist)
+    + [CSS Wikibook](https://en.wikibooks.org/wiki/Cascading_Style_Sheets)
+      is pretty thorough though needs updating.
+    + [JavaScript Wikibook](https://en.wikibooks.org/wiki/JavaScript)
+      is incomplete, but seems a decent intro.
 
 *   Web browsers today have built-in developer tools which enable testing
     and experimenting with live websites. The [Firebug](https://getfirebug.com)
@@ -247,14 +250,11 @@ here are some resources:
     of our CSS.
 
 *   The [Git Docs](http://git-scm.com/doc/) page includes many links, an online
-    version of the core Git manuals, and the Pro Git book which uses the
+    version of the core Git manuals, and the full Pro Git book which uses the
     CC-BY-NC-SA license, so it is shareable but not fully FLO, unfortunately.
 
 *   [Git Magic](http://www-cs-students.stanford.edu/~blynn/gitmagic/)
     is a fully-FLO book written in a more narrative style.
-
-*   [The Basics of UNIX][unix] is FLO and good reading, albiet a bit dense,
-    relevant to all UNIX-style systems including Mac OS X, GNU/Linux, and BSD.
 
 *   [The Yesod Book](http://www.yesodweb.com/book/) is the primary resource
     for learning about Yesod, the web framework we use to develop Snowdrift.
@@ -265,9 +265,6 @@ here are some resources:
     to use a FLO license…
     At least Yesod itself is FLO, including the internal documentation that
     comes with the code in Haddock format.
-
-    The Yesod book is thorough, but you must read it carefully.
-    When skimming, you can easily miss critical information.
 
 *   The [School of Haskell](https://www.fpcomplete.com/school) includes
     basic and advanced topics including some Yesod sections.
@@ -290,5 +287,3 @@ here are some resources:
 *   To help write clean Haskell code and learn conventions, run `hlint`
     on your files to get suggestions for possible improvements.
     Add hlint to your system with the command `cabal install hlint`
-
-[unix]: https://www.freebsd.org/doc/en_US.ISO8859-1/books/handbook/basics.html
