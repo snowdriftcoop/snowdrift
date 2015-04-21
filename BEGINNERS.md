@@ -143,13 +143,12 @@ When making edits, follow our
 
 #### Building your updates
 
-After making and saving changes, you can use `cabal install` followed by
-`Snowdrift Development` recompile and run the updates.  If you prefer,
+After making and saving changes, you can use `cabal install` to recompile
+followed by `Snowdrift Development` to run the site.  If you prefer,
 `yesod devel` is a command that does both of these and can stay running,
-and it will automatically recompile after most changes (you can use
-`cabal install` in cases where `yesod devel` fails to recognize a
-change).  Refresh your browser view at localhost:3000 to see the
-updates.
+and it will automatically recompile and restart the site after most changes
+(use `cabal install` in cases where `yesod devel` fails to recognize a change).
+Refresh your browser view at localhost:3000 to see the updates.
 
 In the respective terminal window, you can quit `Snowdrift Development`
 with Ctrl+C or stop `yesod devel` by hitting ENTER a few times.
