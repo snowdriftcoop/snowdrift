@@ -520,7 +520,7 @@ fetchProjectModeratorsDB = fetchProjectRoleDB Moderator
 
 -- | Abstract fetching Project Admins, TeamMembers, etc. Not exported.
 fetchProjectRoleDB :: Role -> ProjectId -> DB [UserId]
-fetchProjectRoleDB role project_id = fmap (map unValue) $
+fetchProjectRoleDB role project_id = fmap unwrapValues $
     select $
     from $ \ pur -> do
     where_ $
@@ -620,7 +620,8 @@ type DropShares = [DropShare]
 
 -- | Drop one share from each pledge.
 dropShares :: [PledgeId] -> DB ()
-dropShares ps = update $ \p -> do
+dropShares ps =
+    update $ \p -> do
     set p [ PledgeFundedShares -=. val 1 ]
     where_ $ p ^. PledgeId `in_` valList ps
 
@@ -644,7 +645,7 @@ maxShares mproj uids = do
                     Just proj -> pledge ^. PledgeProject ==. val proj
                     _         -> val True
 
-            fmap (map unValue) $ select $ from $ \p -> do
+            fmap unwrapValues $ select $ from $ \p -> do
                 where_ $ (p ^. PledgeUser `in_` valList uids)
                     &&. projConstraint p
                     &&. p ^. PledgeFundedShares ==. val maxCt
@@ -688,12 +689,12 @@ underfundedPatrons = do
     outlaySum (u, shareValue, fundedShares) =
         M.singleton u (Sum $ (Milray fundedShares) * shareValue)
 
-    -- | Returns the absolute value of a difference, but just if that
+    -- | Given "a - b", return just the absolute value (≡ b - a) if the
     -- difference is negative.
     maybeNegSubtract :: (Ord s, Num s) => s -> s -> Maybe s
-    maybeNegSubtract minuend subtrahend
-        | subtrahend < minuend = Just $ minuend - subtrahend
-        | otherwise            = Nothing
+    maybeNegSubtract a b
+        | a < b     = Just $ b - a
+        | otherwise = Nothing
 
 -- | Drop one share from each highest-shared underfunded pledges to a
 -- particular project, and update the project share value. Return which
