@@ -55,7 +55,9 @@ import           Control.Monad.Writer.Strict  (WriterT, tell, execWriterT)
 import           Control.Concurrent.Async     (Async, async, wait)
 import qualified Github.Data                  as GH
 import qualified Github.Issues                as GH
+import           Data.Foldable                (foldMap)
 import qualified Data.Map                     as M
+import           Data.Monoid                  (Sum(..))
 import qualified Data.Set                     as S
 import qualified Data.Text                    as T
 
@@ -649,8 +651,49 @@ maxShares mproj uids = do
                 return $ p ^. PledgeId
 
 -- | Find underfunded patrons.
+-- This would be a lot nicer if we actually used the database as a
+-- database.
 underfundedPatrons :: DB [UserId]
-underfundedPatrons = undefined
+underfundedPatrons = do
+    -- :: DB [(UserId, Milray, Int64)]
+    pledgeList <- fmap unwrapValues $
+        select $
+        from $ \(usr `InnerJoin` plg `InnerJoin` prj) -> do
+        on_ $ prj ^. ProjectId  ==. plg ^. PledgeProject
+        on_ $ plg ^. PledgeUser ==. usr ^. UserId
+        return
+            ( usr ^. UserId
+            , prj ^. ProjectShareValue
+            , plg ^. PledgeFundedShares
+            )
+
+    -- :: DB (Map UserId Milray)
+    balances <- fmap (M.fromList . unwrapValues) $
+        select $
+        from $ \(u `InnerJoin` a) -> do
+        on_ $ u ^. UserAccount ==. a ^. AccountId
+        return (u ^. UserId, a ^. AccountBalance)
+
+    -- Sum outlays over the pledge list.
+    let userOutlays :: M.Map UserId Milray
+        userOutlays = fmap getSum $ foldMap outlaySum pledgeList
+
+    -- Filter out non-negative (balance - outlay) and return
+    return $ M.keys $ M.differenceWith maybeNegSubtract balances userOutlays
+
+  where
+
+    -- | Create something with a summable type.
+    outlaySum :: (UserId, Milray, Int64) -> M.Map UserId (Sum Milray)
+    outlaySum (u, shareValue, fundedShares) =
+        M.singleton u (Sum $ (Milray fundedShares) * shareValue)
+
+    -- | Returns the absolute value of a difference, but just if that
+    -- difference is negative.
+    maybeNegSubtract :: (Ord s, Num s) => s -> s -> Maybe s
+    maybeNegSubtract minuend subtrahend
+        | subtrahend < minuend = Just $ minuend - subtrahend
+        | otherwise            = Nothing
 
 -- | Drop one share from each highest-shared underfunded pledges to a
 -- particular project, and update the project share value. Return which
