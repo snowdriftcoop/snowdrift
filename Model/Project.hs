@@ -653,13 +653,13 @@ underfundedPatrons :: DB [UserId]
 underfundedPatrons = undefined
 
 -- | Drop one share from each highest-shared underfunded pledges to a
--- particular project. Return which ones got dropped.
--- FIXME: doesn't check that underfunded pledges have >0 shares. What to do
--- with them?
+-- particular project, and update the project share value. Return which
+-- ones got dropped.
 decrementUnderfunded :: ProjectId -> DB DropShares
 decrementUnderfunded projId = do
     droppers <- join $ maxShares (Just projId) <$> underfundedPatrons
     dropShares droppers
+    updateShareValue projId
     return $ map DropShare droppers
 
 -- | Keep dropping shares, until there are no underfunded patrons.
