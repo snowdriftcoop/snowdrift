@@ -66,31 +66,30 @@ changes while keeping the versions tracked and organized.
 We further manage the code and collaborate via the free/libre/open site
 [Git.GNU.io](https://git.gnu.io/snowdrift/snowdrift).
 We also mirror on the popular but proprietary site
-[GitHub](https://github.com/snowdriftcoop/snowdrift)
-
-For now, our instructions cover using GitHub:
+[GitHub](https://github.com/snowdriftcoop/snowdrift), which you may
+use if you already have an account.
+We still encourage everyone to go with Git.GNU.io to embrace more
+free/libre/open tools.
 
 To contribute changes to the project, first
-[create an account on GitHub](https://github.com/join)
-if you don't already have one.
+[create an account on Git.GNU.io](https://git.gnu.io/users/sign_in)
+(or sign in if you already have an account).
 
-Once signed in, go to <https://github.com/snowdriftcoop/snowdrift>,
-and click the "Fork" button on the top right:
+Once signed in, go to <https://git.gnu.io/snowdrift/snowdrift>,
+and click the "Fork" button on the top right.
 
-![](https://a.pomf.se/jrarfe.png)
+After choosing your account for the fork, you should be at the page
+for your fork of the project. To check, see that the header
+at the top of the page has has your account name followed by "/Snowdrift".
+At the right side, middle way down, you should also see
+"Forked from: snowdrift / Snowdrift".
 
-GitHub should redirect you to your fork. To check, see that the header
-at the top of the page looks something like this:
+At the top of the main page, below the header,
+you'll see a box with an address that looks like
+"https://git.gnu.io/YOURNAME/snowdrift.git"
 
-![](https://a.pomf.se/fivuqa.png)
+Where `YOURNAME` is your Git.GNU.io username.
 
-The important bit is the "forked from snowdriftcoop/snowdrift".
-
-On the right side of the GitHub page for your fork, about halfway down,
-you'll see "HTTPS clone URL".\*
-
-![](https://a.pomf.se/cmtfif.png)
- 
 Copy the address in the box, and type this in your local terminal
 (don't hit enter yet)
 
@@ -100,10 +99,8 @@ Use Ctrl+Shift+V to paste the address in the terminal.
 For historical reasons, Ctrl+V does something else in most terminals.
 The final command should look like this:
 
-    git remote add my-snow https://github.com/YOURNAME/snowdrift.git
-
-Where `YOURNAME` is your GitHub username.
-
+    git remote add my-snow https://git.gnu.io/YOURNAME/snowdrift.git
+ 
 Finally, run these additional Git setup commands, replace `YOUR NAME
 GOES HERE` and `YOUR EMAIL GOES HERE` with your actual name and email.
 
@@ -112,7 +109,7 @@ GOES HERE` and `YOUR EMAIL GOES HERE` with your actual name and email.
     git config --global core.editor "nano"
 
 \* Note that overall, we recommend that you use SSH rather than HTTPS.
-However, [SSH setup](https://help.github.com/articles/generating-ssh-keys/)
+However, [SSH setup](https://git.gnu.io/help/ssh/README)
 is kind of tricky, especially for those new to SSH.
 
 ## Branching and committing
@@ -194,17 +191,14 @@ For reference, here's a decent guide to
 
 ## Getting your changes merged
 
-After committing, send your changes to your github account with:
+After committing, send your changes to your git.gnu.io account with:
 
     git push -u my-snow some_branch
 
 Change `some_branch` to the name of the branch where you made the
 commit(s).
 
-Reload the GitHub page with your fork.
-You should see something like this:
-
-![](https://a.pomf.se/paqzzx.png)
+Reload the Git.GNU.io page with your fork.
     
 Click the "Pull request" button. There'll be a nice little form there
 for submitting the pull request. Fill out the form, and send it.
