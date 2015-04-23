@@ -25,7 +25,7 @@ could even copy and paste all of them into your terminal at once, and it
 would work.
 
     sudo aptitude update
-    sudo aptitude install curl git postgresql postgresql-client libgmp-dev zlib1g-dev
+    sudo aptitude install curl git postgresql postgresql-client libgmp-dev zlib1g-dev libpq-dev
     mkdir builds
     cd builds
     curl -ssL \
