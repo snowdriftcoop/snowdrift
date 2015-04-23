@@ -107,10 +107,14 @@ WHERE "id" IN (
 INSERT INTO "project_notification_pref" (
     "id", "user", "project", "type", "delivery"
 ) (
-    SELECT "id", "user", "project", "type", "delivery"
+    SELECT "id", "user", "project", "type", 'Project' || "delivery"
     FROM "user_notification_pref"
     WHERE "project" IS NOT NULL
 );
+
+-- Rename "delivery" values in the original table.
+UPDATE "user_notification_pref"
+SET "delivery" = 'User' || "delivery";
 
 -- Clean up.
 DELETE
