@@ -44,7 +44,7 @@ would work.
     cabal install cabal-install alex happy haddock yesod-bin
     echo 'export PATH=$PATH:$HOME/cabal/bin:.cabal-sandbox/bin' >> ~/.bashrc
     . ~/.bashrc
-    git clone https://github.com/snowdriftcoop/snowdrift.git
+    git clone https://git.gnu.io/snowdrift/snowdrift.git
     cd snowdrift
     cabal sandbox init
     cabal install --enable-tests -fdev
@@ -61,9 +61,14 @@ user: `admin` pass: `admin`
 ## Basic Git setup
 
 We use a program called [Git](http://git-scm.com/) to make and share
-changes while keeping the versions tracked and organized. Right now,
-we use a proprietary website called [GitHub](https://github.com/)
-to share the Git data. We plan to switch to git.gnu.io when it is ready.
+changes while keeping the versions tracked and organized.
+
+We further manage the code and collaborate via the free/libre/open site
+[Git.GNU.io](https://git.gnu.io/snowdrift/snowdrift).
+We also mirror on the popular but proprietary site
+[GitHub](https://github.com/snowdriftcoop/snowdrift)
+
+For now, our instructions cover using GitHub:
 
 To contribute changes to the project, first
 [create an account on GitHub](https://github.com/join)
