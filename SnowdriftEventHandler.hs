@@ -36,11 +36,10 @@ notificationEventHandler AppConfig{..} (ECommentPosted comment_id comment) = cas
         reply_comment_route  <- routeToText $ CommentDirectLinkR comment_id
         runSDB $ do
             parent_user_id <- commentUser <$> lift (Database.Persist.getJust parent_comment_id)
-            sendPreferredNotificationDB
+            sendPreferredUserNotificationDB
                 (Just $ NotificationSender $ commentUser comment)
                 (NotificationReceiver parent_user_id)
                 NotifReply
-                Nothing
                 Nothing
                 (mconcat
                     [ "Someone replied to [your comment]("
@@ -56,10 +55,9 @@ notificationEventHandler AppConfig{..} (ECommentPosted comment_id comment) = cas
 notificationEventHandler AppConfig{..} (ECommentPending comment_id comment) = runSDB $ do
     route_text <- lift (makeCommentRouteDB [LangEn] comment_id >>= lift . routeToText . fromJust)
     let user_id = commentUser comment
-    sendPreferredNotificationDB
+    sendPreferredUserNotificationDB
         Nothing (NotificationReceiver user_id)
         NotifUnapprovedComment
-        Nothing
         Nothing
         (mconcat
             [ "Your [comment]("
@@ -85,11 +83,10 @@ notificationEventHandler AppConfig{..} (ECommentPending comment_id comment) = ru
 
             mods <- lift $ fetchProjectModeratorsDB project_id
             F.forM_ mods $ \mod_id ->
-                sendPreferredNotificationDB
+                sendPreferredUserNotificationDB
                     (Just $ NotificationSender user_id)
                     (NotificationReceiver mod_id)
                     NotifUnapprovedComment
-                    Nothing
                     (Just comment_id)
                     content
 
@@ -101,11 +98,10 @@ notificationEventHandler AppConfig{..} (ECommentPending comment_id comment) = ru
 
 notificationEventHandler AppConfig{..} (ECommentApproved comment_id comment) = runSDB $ do
     route_text <- lift (makeCommentRouteDB [LangEn] comment_id >>= lift . routeToText . fromJust)
-    sendPreferredNotificationDB
+    sendPreferredUserNotificationDB
         (fmap NotificationSender $ commentApprovedBy comment)
         (NotificationReceiver $ commentUser comment)
         NotifApprovedComment
-        Nothing
         Nothing
         (mconcat
             [ "Your [comment]("
@@ -134,16 +130,17 @@ notificationEventHandler AppConfig{..} (ECommentRethreaded _ Rethread{..}) = do
           , Markdown rethreadReason
           ]
 
-    runSDB $ sendPreferredNotificationDB
+    runSDB $ sendPreferredUserNotificationDB
         (Just $ NotificationSender rethreadModerator)
         (NotificationReceiver $ commentUser comment)
         NotifRethreadedComment
         Nothing
-        Nothing
         content
 
 notificationEventHandler _ (ECommentClosed _ _)     = return ()
-notificationEventHandler _ (ENotificationSent _ _)  = return ()
+
+notificationEventHandler _ (EUserNotificationSent _ _)    = return ()
+notificationEventHandler _ (EProjectNotificationSent _ _) = return ()
 
 -- TODO: Send notification to anyone watching thread
 notificationEventHandler _ (ETicketClaimed _)       = return ()
@@ -236,22 +233,22 @@ pluralShares :: Integral i => i -> Text
 pluralShares n = plural n "share" "shares"
 
 handleWatched :: Maybe NotificationSender -> Text -> ProjectId
-              -> (Text -> Route App) -> NotificationType
+              -> (Text -> Route App) -> ProjectNotificationType
               -> (Text -> Text) -> SDB ()
 handleWatched mnotif_sender appRoot project_id mkRoute notif_type mkMsg = do
     projects <- lift $ fetchProjectDB project_id
     forM_ projects $ \ (Entity _ project) -> do
         route <- lift $ lift $ routeToText $ mkRoute $ projectHandle project
-        user_ids <- lift $ fetchUsersByNotifPrefDB notif_type (Just project_id)
+        user_ids <- lift $
+            fetchUsersByProjectNotifPrefDB notif_type project_id
         forM_ user_ids $ \ user_id -> do
             is_watching <- lift $ userIsWatchingProjectDB user_id project_id
             when is_watching $
-                sendPreferredNotificationDB
+                sendPreferredProjectNotificationDB
                     mnotif_sender
                     (NotificationReceiver user_id)
                     notif_type
-                    (Just project_id)
-                    Nothing
+                    project_id
                     (Markdown $ mkMsg $ appRoot <> route)
 
 -- | Handler in charge of inserting events (stripped down) into a separate table for each type.
@@ -268,7 +265,9 @@ eventInserterHandler (ETicketClaimed (Right (ticket_old_claiming_id, TicketOldCl
 
 eventInserterHandler (ETicketUnclaimed ticket_old_claiming_id TicketOldClaiming{..}) = runDB (insert_ (EventTicketUnclaimed ticketOldClaimingReleasedTs ticket_old_claiming_id))
 
-eventInserterHandler (ENotificationSent notif_id Notification{..})                   = runDB (insert_ (EventNotificationSent notificationCreatedTs notif_id))
+eventInserterHandler (EUserNotificationSent notif_id UserNotification{..})           = runDB (insert_ (EventUserNotificationSent userNotificationCreatedTs notif_id))
+eventInserterHandler (EProjectNotificationSent notif_id ProjectNotification{..})     = runDB (insert_ (EventProjectNotificationSent projectNotificationCreatedTs notif_id))
+
 eventInserterHandler (EWikiPage wiki_page_id WikiPage{..} _)                         = runDB (insert_ (EventWikiPage wikiPageCreatedTs wiki_page_id))
 eventInserterHandler (EWikiEdit wiki_edit_id WikiEdit{..} _)                         = runDB (insert_ (EventWikiEdit wikiEditTs wiki_edit_id))
 eventInserterHandler (ENewPledge shares_pledged_id SharesPledged{..})                = runDB (insert_ (EventNewPledge sharesPledgedTs shares_pledged_id))

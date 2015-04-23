@@ -11,7 +11,9 @@ import Model.Established.Internal  (Established(..))
 import Model.Language
 import Model.License.Internal      (LicenseName, LicenseType, LicenseProjectType, LicenseText, LicenseWebsite)
 import Model.Markdown.Diff         (MarkdownDiff)
-import Model.Notification.Internal (NotificationType, NotificationDelivery)
+import Model.Notification.Internal
+    ( UserNotificationType, UserNotificationDelivery
+    , ProjectNotificationType, ProjectNotificationDelivery )
 import Model.Permission.Internal   (PermissionLevel)
 import Model.Project.Signup
     ( ProjectSignupName, ProjectSignupWebsite, ProjectSignupHandle
@@ -73,3 +75,6 @@ data ProjectSignupLicense = ProjectSignupLicense License
 derivePersistField "ProjectSignupLicense"
 
 deriving instance Show ProjectSignup
+
+deriving instance Eq UserNotification
+deriving instance Eq ProjectNotification

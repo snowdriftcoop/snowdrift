@@ -1,0 +1,200 @@
+-- First, clear existing duplicate notifications.
+-- (see https://wiki.postgresql.org/wiki/Deleting_duplicates).
+DELETE FROM "notification"
+WHERE "id" IN (
+    SELECT "id"
+    FROM (
+        SELECT "id", row_number() OVER win AS rnum
+        FROM "notification"
+        WINDOW win AS (
+            PARTITION BY "created_ts", "type", "to"
+        )
+    ) subq
+    WHERE subq.rnum > 1
+);
+
+-- Create the needed tables.
+CREATE TABLE "project_notification" (
+    "id" SERIAL PRIMARY KEY UNIQUE NOT NULL,
+    "created_ts" TIMESTAMP WITH TIME ZONE NOT NULL,
+    "type" VARCHAR NOT NULL,
+    "to" INT8 NOT NULL,
+    "project" INT8 NOT NULL,
+    "content" VARCHAR NOT NULL,
+    "archived" BOOLEAN NOT NULL
+);
+
+CREATE TABLE "project_notification_email" (
+    "id" SERIAL PRIMARY KEY UNIQUE NOT NULL,
+    "created_ts" TIMESTAMP WITH TIME ZONE NOT NULL,
+    "type" VARCHAR NOT NULL,
+    "to" INT8 NOT NULL,
+    "project" INT8 NOT NULL,
+    "content" VARCHAR NOT NULL
+);
+
+CREATE TABLE "project_notification_pref" (
+    "id" SERIAL PRIMARY KEY UNIQUE NOT NULL,
+    "user" INT8 NOT NULL,
+    "project" INT8 NOT NULL,
+    "type" VARCHAR NOT NULL,
+    "delivery" VARCHAR NOT NULL
+);
+
+CREATE TABLE "user_notification" (
+    "id" SERIAL PRIMARY KEY UNIQUE NOT NULL,
+    "created_ts" TIMESTAMP WITH TIME ZONE NOT NULL,
+    "type" VARCHAR NOT NULL,
+    "to" INT8 NOT NULL,
+    "content" VARCHAR NOT NULL,
+    "archived" BOOLEAN NOT NULL
+);
+
+CREATE TABLE "user_notification_email" (
+    "id" SERIAL PRIMARY KEY UNIQUE NOT NULL,
+    "created_ts" TIMESTAMP WITH TIME ZONE NOT NULL,
+    "type" VARCHAR NOT NULL,
+    "to" INT8 NOT NULL,
+    "content" VARCHAR NOT NULL
+);
+
+CREATE TABLE "event_user_notification_sent" (
+    "id" SERIAL PRIMARY KEY UNIQUE NOT NULL,
+    "ts" TIMESTAMP WITH TIME ZONE NOT NULL,
+    "notification" INT8 NOT NULL
+);
+
+CREATE TABLE "event_project_notification_sent" (
+    "id" SERIAL PRIMARY KEY UNIQUE NOT NULL,
+    "ts" TIMESTAMP WITH TIME ZONE NOT NULL,
+    "notification" INT8 NOT NULL
+);
+
+
+-- Change preferences having both 'NotifDeliverWebsite' and
+-- 'NotifDeliverEmail' to 'NotifDeliverWebsiteAndEmail'.
+UPDATE "user_notification_pref" unp
+SET "delivery" = 'NotifDeliverWebsiteAndEmail'
+FROM (
+    SELECT "user", "type", "project"
+    FROM "user_notification_pref"
+    GROUP BY "user", "type", "project"
+    HAVING bool_or("delivery" = 'NotifDeliverEmail')
+       AND bool_or("delivery" = 'NotifDeliverWebsite')
+) AS subq
+WHERE subq.user = unp.user
+  AND subq.type = unp.type
+  AND subq.project IS NOT DISTINCT FROM unp.project
+;
+
+-- Remove the resulting duplicates
+-- (see https://wiki.postgresql.org/wiki/Deleting_duplicates).
+DELETE FROM "user_notification_pref"
+WHERE "id" IN (
+    SELECT "id"
+    FROM (SELECT "id",
+                 row_number() OVER (PARTITION BY "user",
+                                                 "project",
+                                                 "type",
+                                                 "delivery"
+                                    ORDER BY "id") AS rnum
+          FROM "user_notification_pref") unp
+    WHERE unp.rnum > 1
+);
+
+
+-- Move project-specific preferences to 'project_notification_pref'.
+INSERT INTO "project_notification_pref" (
+    "id", "user", "project", "type", "delivery"
+) (
+    SELECT "id", "user", "project", "type", 'Project' || "delivery"
+    FROM "user_notification_pref"
+    WHERE "project" IS NOT NULL
+);
+
+-- Rename "delivery" values in the original table.
+UPDATE "user_notification_pref"
+SET "delivery" = 'User' || "delivery";
+
+-- Clean up.
+DELETE
+FROM "user_notification_pref"
+WHERE "project" IS NOT NULL
+;
+ALTER TABLE "user_notification_pref"
+DROP COLUMN "project"
+;
+
+
+-- Split 'notification' into 'user_notification' and 'project_notification'.
+INSERT INTO "user_notification" (
+    "id", "created_ts", "type", "to", "content", "archived"
+) (
+    SELECT "id", "created_ts", "type", "to", "content", "archived"
+    FROM "notification"
+    WHERE "project" IS NULL
+);
+
+INSERT INTO "project_notification" (
+    "id", "created_ts", "type", "to", "project", "content", "archived"
+) (
+    SELECT "id", "created_ts", "type", "to", "project", "content", "archived"
+    FROM "notification"
+    WHERE "project" IS NOT NULL
+);
+
+
+-- Split 'notification_email' into 'user_notification_email' and
+-- 'project_notification_email'.
+INSERT INTO "user_notification_email" (
+    "id", "created_ts", "type", "to", "content"
+) (
+    SELECT "id", "created_ts", "type", "to", "content"
+    FROM "notification_email"
+    WHERE "project" IS NULL
+);
+
+INSERT INTO "project_notification_email" (
+    "id", "created_ts", "type", "to", "project", "content"
+) (
+    SELECT "id", "created_ts", "type", "to", "project", "content"
+    FROM "notification_email"
+    WHERE "project" IS NOT NULL
+);
+
+-- Split 'event_notification_sent' into 'event_user_notification_sent'
+-- and 'event_project_notification_sent'.
+INSERT INTO "event_user_notification_sent" (
+    "id", "ts", "notification"
+) (
+    SELECT "id", "ts", "notification"
+    FROM "event_notification_sent"
+    WHERE "notification" IN (
+        SELECT "id"
+        FROM "user_notification"
+    )
+);
+
+INSERT INTO "event_project_notification_sent" (
+    "id", "ts", "notification"
+) (
+    SELECT "id", "ts", "notification"
+    FROM "event_notification_sent"
+    WHERE "notification" IN (
+        SELECT "id"
+        FROM "project_notification"
+    )
+);
+
+
+-- Clean up.  Note that new tables will get these constraints (with
+-- updated ids) back automatically.
+ALTER TABLE "unapproved_comment_notification"
+DROP CONSTRAINT "unapproved_comment_notification_notification_fkey"
+;
+ALTER TABLE "event_notification_sent"
+DROP CONSTRAINT "event_notification_sent_notification_fkey"
+;
+DROP TABLE "notification";
+DROP TABLE "notification_email";
+DROP TABLE "event_notification_sent";
