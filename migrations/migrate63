@@ -1,3 +1,18 @@
+-- First, clear existing duplicate notifications.
+-- (see https://wiki.postgresql.org/wiki/Deleting_duplicates).
+DELETE FROM "notification"
+WHERE "id" IN (
+    SELECT "id"
+    FROM (
+        SELECT "id", row_number() OVER win AS rnum
+        FROM "notification"
+        WINDOW win AS (
+            PARTITION BY "created_ts", "type", "to"
+        )
+    ) subq
+    WHERE subq.rnum > 1
+);
+
 -- Create the needed tables.
 CREATE TABLE "project_notification" (
     "id" SERIAL PRIMARY KEY UNIQUE NOT NULL,
