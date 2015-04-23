@@ -24,6 +24,9 @@ Open up a terminal, and run these commands, exactly as you see them. You
 could even copy and paste all of them into your terminal at once, and it
 would work.
 
+Note that you must use Ctrl+Shift+V to paste something into the terminal.
+For historical reasons, Ctrl+V does something else in most terminals.
+
     sudo aptitude update
     sudo aptitude install curl git postgresql postgresql-client libgmp-dev zlib1g-dev
     mkdir builds
@@ -66,10 +69,10 @@ changes while keeping the versions tracked and organized.
 We further manage the code and collaborate via the free/libre/open site
 [Git.GNU.io](https://git.gnu.io/snowdrift/snowdrift).
 We also mirror on the popular but proprietary site
-[GitHub](https://github.com/snowdriftcoop/snowdrift), which you may
-use if you already have an account.
-We still encourage everyone to go with Git.GNU.io to embrace more
-free/libre/open tools.
+[GitHub](https://github.com/snowdriftcoop/snowdrift),
+which you may use if you already have an account there.
+We still encourage everyone to use free/libre/open tools,
+so the instructions below assume git.gnu.io.
 
 To contribute changes to the project, first
 [create an account on Git.GNU.io](https://git.gnu.io/users/sign_in)
@@ -90,14 +93,7 @@ you'll see a box with an address that looks like
 
 Where `YOURNAME` is your Git.GNU.io username.
 
-Copy the address in the box, and type this in your local terminal
-(don't hit enter yet)
-
-    git remote add my-snow
-
-Use Ctrl+Shift+V to paste the address in the terminal.
-For historical reasons, Ctrl+V does something else in most terminals.
-The final command should look like this:
+Paste that address into your terminal as part of the following command:
 
     git remote add my-snow https://git.gnu.io/YOURNAME/snowdrift.git
  
@@ -199,11 +195,13 @@ Change `some_branch` to the name of the branch where you made the
 commit(s).
 
 Reload the Git.GNU.io page with your fork.
+You should see a button **"Create Merge Request"**
     
-Click the "Pull request" button. There'll be a nice little form there
-for submitting the pull request. Fill out the form, and send it.
+Clicking that will bring up a form where you can add further notes about your
+work (especially useful if you are merging multiple requests).
+You may ignore "Assign to", "Milestone", and "Labels" at this point.
 
-Someone should comment on it soon (hopefully within a few hours).
+Someone should comment on your submission soon (hopefully within a few hours).
 
 
 ## Learning resources and helpful tools
