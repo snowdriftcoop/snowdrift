@@ -91,7 +91,6 @@ linkTickets line' = do
         parse _   (Left err) = error err
         parse str (Right Nothing) = return str
         parse _   (Right (Just (pre, _, post, [ticket_number]))) = do
-            $(logError) $ T.pack $ show $  T.unpack $ decodeUtf8 ticket_number
             maybe_link <- getLinkForTicketComment $ key $
                 PersistInt64 $ read $ T.unpack $ decodeUtf8 ticket_number
             rest <- parse post (regexec pattern post)
