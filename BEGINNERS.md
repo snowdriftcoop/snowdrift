@@ -106,7 +106,8 @@ When making edits, follow our
 
 #### Building your updates
 
-After making and saving changes, you can use `cabal install` to recompile
+After making and saving changes, you can use
+`cabal install --enable-tests -fdev` to recompile
 followed by `Snowdrift Development` to run the site.  If you prefer,
 `yesod devel` is a command that does both of these and can stay running,
 and it will automatically recompile and restart the site after most changes
