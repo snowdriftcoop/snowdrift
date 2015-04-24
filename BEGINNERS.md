@@ -67,7 +67,7 @@ We use a program called [Git](http://git-scm.com/) to make and share
 changes while keeping the versions tracked and organized.
 
 We further manage the code and collaborate via the free/libre/open site
-[Git.GNU.io](https://git.gnu.io/snowdrift/snowdrift).
+[git.gnu.io](https://git.gnu.io/snowdrift/snowdrift).
 We also mirror on the popular but proprietary site
 [GitHub](https://github.com/snowdriftcoop/snowdrift),
 which you may use if you already have an account there.
@@ -75,7 +75,7 @@ We still encourage everyone to use free/libre/open tools,
 so the instructions below assume git.gnu.io.
 
 To contribute changes to the project, first
-[create an account on Git.GNU.io](https://git.gnu.io/users/sign_in)
+[create an account on git.gnu.io](https://git.gnu.io/users/sign_in)
 (or sign in if you already have an account).
 
 Once signed in, go to <https://git.gnu.io/snowdrift/snowdrift>,
@@ -91,7 +91,7 @@ At the top of the main page, below the header,
 you'll see a box with an address that looks like
 "https://git.gnu.io/YOURNAME/snowdrift.git"
 
-Where `YOURNAME` is your Git.GNU.io username.
+Where `YOURNAME` is your git.gnu.io username.
 
 Paste that address into your terminal as part of the following command:
 
@@ -194,7 +194,7 @@ After committing, send your changes to your git.gnu.io account with:
 Change `some_branch` to the name of the branch where you made the
 commit(s).
 
-Reload the Git.GNU.io page with your fork.
+Reload the git.gnu.io page with your fork.
 You should see a button **"Create Merge Request"**
     
 Clicking that will bring up a form where you can add further notes about your
