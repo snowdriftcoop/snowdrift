@@ -11,9 +11,6 @@ to get started.
 
 Advanced users should adapt any of these instructions as seen fit.
 
-These instructions assume you use Debian testing or some variant of Ubuntu.
-Our general [GUIDE](GUIDE.md) has some notes for other systems.
-
 If you need *any* help at any point, come say "hi" at our freenode.net IRC
 channel [#snowdrift](https://snowdrift.coop/p/snowdrift/w/irc).
 We are always happy to assist and answer *any* questions!
@@ -21,10 +18,13 @@ We are always happy to assist and answer *any* questions!
 ## Installing
 
 To get a pre-set-up virtual machine with everything you need,
-[follow the Vagrant instructions](SETUP_VAGRANT.md).
+[follow the Vagrant instructions](SETUP_VAGRANT.md).  This is the best
+option for casual users or Windows users.
 
 Debian or Ubuntu users may wish to
 [follow the Debian-based instructions](SETUP_DEBIAN.md) instead.
+
+Our general [GUIDE](GUIDE.md) has some notes for other systems.
 
 ## Basic Git setup
 
