@@ -38,9 +38,6 @@ getEventTicketClaimedR = redirectCommentEvent
 getEventTicketUnclaimedR :: EventTicketUnclaimedId -> Handler ()
 getEventTicketUnclaimedR = redirectCommentEvent (get404 >=> eventTicketUnclaimedClaim >>> get404) ticketOldClaimingTicket
 
-getEventNotificationSentR :: EventNotificationSentId -> Handler ()
-getEventNotificationSentR = error "no page associated with event type NotificationSent"
-        
 getEventWikiPageR :: EventWikiPageId -> Handler ()
 getEventWikiPageR event_wiki_page_id = do
     languages <- getLanguages

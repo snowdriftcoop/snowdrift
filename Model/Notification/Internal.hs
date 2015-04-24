@@ -5,7 +5,7 @@ import Prelude
 import Database.Persist.TH
 import Data.Text (Text)
 
-data NotificationType
+data UserNotificationType
     = NotifWelcome
     -- User has become eligible for establishment.
     | NotifEligEstablish
@@ -29,8 +29,12 @@ data NotificationType
     | NotifFlag
     -- Flagged comment was reposted.
     | NotifFlagRepost
+    deriving (Eq, Read, Show, Bounded, Enum)
+derivePersistField "UserNotificationType"
+
+data ProjectNotificationType
     -- New wiki page.
-    | NotifWikiPage
+    = NotifWikiPage
     | NotifWikiEdit
     -- New blog post.
     | NotifBlogPost
@@ -38,30 +42,38 @@ data NotificationType
     | NotifUpdatedPledge
     | NotifDeletedPledge
     deriving (Eq, Read, Show, Bounded, Enum)
-derivePersistField "NotificationType"
+derivePersistField "ProjectNotificationType"
 
-showNotificationType :: NotificationType -> Text
-showNotificationType NotifWelcome           = "Snowdrift welcome message"
-showNotificationType NotifEligEstablish     = "You have become eligible for establishment"
-showNotificationType NotifUnapprovedComment = "Unapproved comments"
-showNotificationType NotifApprovedComment   = "Approved comments"
-showNotificationType NotifRethreadedComment = "Rethreaded comments"
-showNotificationType NotifBalanceLow        = "Balance low"
-showNotificationType NotifReply             = "Replies to my comments"
-showNotificationType NotifEditConflict      = "Edit conflict"
-showNotificationType NotifFlag              = "A comment of yours was flagged"
-showNotificationType NotifFlagRepost        = "A comment you flagged was edited and reposted"
-showNotificationType NotifBlogPost          = "New blog post"
-showNotificationType NotifWikiEdit          = "Wiki page was edited"
-showNotificationType NotifWikiPage          = "New wiki page"
-showNotificationType NotifNewPledge         = "New pledge"
-showNotificationType NotifUpdatedPledge     = "Pledge updated"
-showNotificationType NotifDeletedPledge     = "Pledge deleted"
+showUserNotificationType :: UserNotificationType -> Text
+showUserNotificationType NotifWelcome           = "Snowdrift welcome message"
+showUserNotificationType NotifEligEstablish     = "You have become eligible for establishment"
+showUserNotificationType NotifUnapprovedComment = "Unapproved comments"
+showUserNotificationType NotifApprovedComment   = "Approved comments"
+showUserNotificationType NotifRethreadedComment = "Rethreaded comments"
+showUserNotificationType NotifBalanceLow        = "Balance low"
+showUserNotificationType NotifReply             = "Replies to my comments"
+showUserNotificationType NotifEditConflict      = "Edit conflict"
+showUserNotificationType NotifFlag              = "A comment of yours was flagged"
+showUserNotificationType NotifFlagRepost        = "A comment you flagged was edited and reposted"
 
-data NotificationDelivery
-    = NotifDeliverWebsite
-    | NotifDeliverEmail
--- XXX: Not supported by 'userNotificationsForm'.
---    | NotifDeliverEmailDigest
+showProjectNotificationType :: ProjectNotificationType -> Text
+showProjectNotificationType NotifWikiEdit          = "Wiki page was edited"
+showProjectNotificationType NotifWikiPage          = "New wiki page"
+showProjectNotificationType NotifBlogPost          = "New blog post"
+showProjectNotificationType NotifNewPledge         = "New pledge"
+showProjectNotificationType NotifUpdatedPledge     = "Pledge updated"
+showProjectNotificationType NotifDeletedPledge     = "Pledge deleted"
+
+data UserNotificationDelivery
+    = UserNotifDeliverWebsite
+    | UserNotifDeliverEmail
+    | UserNotifDeliverWebsiteAndEmail
     deriving (Read, Show, Eq)
-derivePersistField "NotificationDelivery"
+derivePersistField "UserNotificationDelivery"
+data ProjectNotificationDelivery
+    = ProjectNotifDeliverWebsite
+    | ProjectNotifDeliverEmail
+    | ProjectNotifDeliverWebsiteAndEmail
+    deriving (Read, Show, Eq)
+derivePersistField "ProjectNotificationDelivery"
+

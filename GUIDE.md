@@ -4,104 +4,20 @@ Snowdrift.coop
 This guide covers the [Snowdrift.coop](https://snowdrift.coop) codebase
 and development process.
 
-Step-by-step instructions require no more than beginning-level programming
-or web designer experience.
-
-This guide assumes you are running a GNU/Linux system and have at least a
-*basic* understanding of command-line operations.
-
-If you are on a different system or need *any* other help,
-come say "hi" at our freenode.net IRC channel
-[#snowdrift](https://snowdrift.coop/p/snowdrift/w/irc).
-We are always happy to assist and answer *any* questions!
+For step-by-step instructions that require no real programming experience,
+see our [Beginners' Guide](BEGINNERS.md).
 
 
 About the frameworks and tools we use
 =====================================
 
-Snowdrift.coop uses the **[Yesod web framework](http://www.yesodweb.com/)**.
-Like the software itself, the associated book and documentation are all
-Free/Libre/Open (FLO) and quite thorough.
+Snowdrift uses the **[Yesod web framework](http://www.yesodweb.com/)**.
 
 Yesod uses the Haskell programming language alongside its
 [Shakespearean Templates](http://www.yesodweb.com/book/shakespearean-templates).
-With some minor variations (mainly use of indentation instead of closing tags),
-these templates use standard HTML, CSS, and JavaScript.
 
 Our front-end uses **[Twitter Bootstrap](http://getbootstrap.com/)**,
 although we use our own custom CSS in many cases.
-
-A suggestion for beginners: Firefox's built-in developer tools
-and the [Firebug](https://getfirebug.com) plugin both offer great
-(and complementary) functions for testing and experimenting with the live site.
-
-
-Learning Haskell
-----------------
-
-Because everything is integrated, some familiarity with Haskell syntax
-is helpful even if you stay mostly with front-end development.
-At any rate, Haskell is a powerful and enjoyable language worth learning
-for anyone interested in programming.
-
-To learn Haskell, we recommend these FLO resources:
-
-* The [Haskell Wikibook](https://en.wikibooks.org/wiki/Haskell) offers a superb
-  introductory overview and includes links to many additional resources.
-
-* At Stack Overflow, see the tags for
-  [yesod](http://stackoverflow.com/questions/tagged/yesod) and
-  [haskell](http://stackoverflow.com/questions/tagged/yesod)
-
-* Alongside #snowdrift on freenode.net, check out #yesod #haskell
-  and #haskell-beginners
-
-* A useful development tool  is "cabal repl" — a command that loads
-  [ghci](https://en.wikibooks.org/wiki/Haskell/Using_GHCi_effectively)
-  in a mode connected to the project. Using that, you can easily import
-  files from the code and explore the functions.
-
-* To help write clean Haskell code and learn conventions, run hlint on your
-  files to get suggestions for possible improvements.
-    * Given a working Haskell installation,
-      add hlint with the command "cabal install hlint"
-
-
-Text-editor settings
---------------------
-
-We recommend setting your text editor to have the TAB key do indentation of
-four spaces generally. However, we use 2-space indentation for .hamlet files.
-We also use 80-character maximum line widths.
-
-### vim
-
-For vim users, your config file .vimrc should include these four lines:
-
-    set textwidth=80
-    set expandtab
-    set shiftwidth=4
-    set tabstop=4
-    au FileType hamlet setl sw=2 sts=2 et
-
-You should also install
-[vim Shakespearean Highlighting](https://github.com/pbrisbin/vim-syntax-shakespeare)
-
-Some other optional vim plugins to consider (among many available):
-[Haskell-Vim extra syntax](https://github.com/raichoo/haskell-vim)
-and
-[vim2hs](https://github.com/dag/vim2hs)
-
-
-### Emacs
-
-Emacs users should use a package manager (preferably Marmalade) to install
-[Haskell Mode](https://github.com/haskell/haskell-mode)
-and
-[Hamlet Mode](https://github.com/lightquake/hamlet-mode).
-
-Our included [`.dir-locals.el`](https://www.gnu.org/software/emacs/manual/html_node/emacs/Directory-Variables.html) file
-makes Emacs use the recommended 4-space indentation.
 
 
 Development guidelines and notes
@@ -134,58 +50,59 @@ Consider adding concise comments to your code following the syntax for
 Working on the code
 ===================
 
-See the [Git documentation](http://git-scm.com/documentation) if new to Git.
-You only need basic understanding to start contributing to our code.
+Again, see our [Beginners' Guide](BEGINNERS.md) for the simplest setup
+if you have only minimal development experience and are running Debian or
+Ubuntu GNU/Linux or a related derivative.
+The Beginners' Guide also has links to various support and learning resources.
 
-Cloning the repository and working with Git
--------------------------------------------
+The details below specify more advanced and particular items.
 
-1. Have or make an account on Gitorious or GitHub
-2. Clone (Gitorious) or Fork (GitHub) the snowdrift repository to your account
-3. Tell Gitorious/GitHub the public side of your local SSH key
-    * If not done already, create a key on your local machine with `ssh-keygen`
-    * The public part is in the .pub file (such as id_rsa.pub)
-    * Both sites have further instructions if this isn't clear enough
-4. On your local machine, use the `git clone` command
-   with the Gitorious or Github address for *your* account
+Text-editor settings
+--------------------
 
-This will create a directory and download the code to it.
+We recommend setting your text editor to have the TAB key do indentation of
+four spaces generally. However, we use 2-space indentation for .hamlet files.
+We also use 80-character maximum line widths. See our
+[code style guide](https://snowdrift.coop/p/snowdrift/w/en/coding#code-style-guide)
+for more details.
 
-You should also set a remote for the main code with
+### vim
 
-    git remote add snowdrift-main git@gitorious.org:snowdrift/snowdrift.git
+For vim users, your config file .vimrc should include these lines:
 
-The same sort of command can be used to add remotes for other contributors you
-may collaborate with.
+    set textwidth=80
+    set expandtab
+    set shiftwidth=4
+    set tabstop=4
+    au FileType hamlet setl sw=2 sts=2 et
 
-### Making changes to the code
+You should also install
+[vim Shakespearean Highlighting](https://github.com/pbrisbin/vim-syntax-shakespeare)
 
-We suggest that all work be done on separate *branches*.
-So, to make changes to the code, first run `git checkout -b [branchname]`
-with an appropriate "branchname" for the work you plan to do.
-Use as many branches as needed for all work that functions independently 
-(you can remove merged branches later).
+Some other optional vim plugins to consider (among many available):
+[Haskell-Vim extra syntax](https://github.com/raichoo/haskell-vim)
+and
+[vim2hs](https://github.com/dag/vim2hs)
 
-When sharing your changes, it is best to first rebase them onto the latest
-master code. So, after you have made commits on a branch, update your master
-by running `git checkout master` followed by `git pull snowdrift-main`.
 
-Next, rebase your work onto master with `git checkout [branchname]`
-followed by `git rebase master`.
+### Emacs
 
-Let us know if you have trouble with any conflicts that may arise,
-and we can help work through them.
+Emacs users should use a package manager (preferably Marmalade) to install
+[Haskell Mode](https://github.com/haskell/haskell-mode)
+and
+[Hamlet Mode](https://github.com/lightquake/hamlet-mode).
 
-To upload your changes after rebase, run `git push origin [branchname]`.
+Our included [`.dir-locals.el`](https://www.gnu.org/software/emacs/manual/html_node/emacs/Directory-Variables.html) file
+makes Emacs use the recommended 4-space indentation.
 
-After pushing, alert us to the changes with Gitorious' "request merge"
-or GitHub's "pull request" commands on their websites.
-Make sure to choose the correct source branch.
 
-Note: as a rule, don't rebase any work that you have already pushed.
-In the case that you know others have not pulled the work, you can 
-rebase and then *force* push, and there are other advanced git management tools,
-but we won't get into those here.
+Git branching
+-------------
+
+We suggest keeping your local master matched to the main project master,
+and do all editing on separate git branches.
+Use as many branches as needed to separate all work that functions
+independently (you can, of course, remove merged branches later).
 
 
 Building
@@ -194,8 +111,8 @@ Building
 ### Notes for different operating systems:
 
 We don't yet have everything documented, but Snowdrift has been built
-successfully on Debian, Ubuntu, Arch, Gentoo, and related distros of GNU/Linux
-and should work on all other distros.
+successfully on Debian, Ubuntu, Arch, Gentoo, and similar distros of GNU/Linux
+and should work on all other distros as well.
 
 For NixOS, see the notes in the appendix here.
 
@@ -207,21 +124,17 @@ See the appendix at the end of this file for more.
 
 ### Build steps
 
-Install the essential dependencies: ghc, cabal, postgresql, happy, alex, zlib1g
-
-Additional dependency (which may vary for different systems): libpq
-
+Install the essential dependencies: ghc, cabal, postgresql
 **Note: we are now using GHC 7.8.x**
 
-As the details vary by system, we may not have the complete instructions
-correct for every case. Come ask for help at #snowdrift on freenode.net IRC
-if you have any trouble. Help us improve this guide when you can.
-
 **<https://www.haskell.org/downloads/linux>** has instructions for
-installing ghc, cabal, happy, and alex on Ubuntu, Fedora, and Arch
+installing ghc, cabal, happy, and alex on Ubuntu, Fedora, and Arch,
 along with manual install instructions for other systems.
 
-You will need to also install postgresql and the other libraries.
+Depending on system, additional dependencies may be needed.
+Please help update this guide if you discover something certain about that.
+Come ask for help at #snowdrift on freenode.net IRC
+if you have any trouble or questions (or want to help others who might!).
 
 If you didn't run it as part of installation, update cabal's package list:
 
@@ -230,20 +143,28 @@ If you didn't run it as part of installation, update cabal's package list:
 Add cabal location(s) to your PATH; the location may vary by system and set-up.
 Below are the most common situations:
 
-* for GNU/Linux, add `export PATH=.cabal-sandbox/bin:~/.cabal/bin:$PATH`
+* for GNU/Linux, add `export PATH=$PATH:$HOME/cabal/bin:.cabal-sandbox/bin`
   to your ~/.bashrc (or equivalent) file
 
 * for Mac OS, try adding `export PATH="$HOME/Library/Haskell/bin:$PATH"`
   to ~/.bash_profile
 
-Start a new terminal (or run `source ~/.bashrc` or similar)
-to make the PATH active.
+(You will need to also run the line in your terminal or start a new terminal
+to make the new PATH active.)
 
 Now, upgrade cabal itself:
 
     cabal install cabal-install
 
-**change to your snowdrift project directory (if not already there).**
+If not done already in earlier steps, install alex and happy:
+
+    cabal install alex happy
+
+The following items are suggested but not strictly required:
+
+    cabal install haddock hlint yesod-bin
+
+**Now, change to your snowdrift project directory (if not already there).**
 
 Then, initiate a cabal sandbox:
 
@@ -283,15 +204,20 @@ start the server from within your snowdrift directory with the command:
 
 To stop the running server, press ctrl-C
 
-To rebuild after code changes, run `cabal install`
-(perhaps with `-fdev` to skip optimization).
+To rebuild after code changes, run `cabal install -fdev`
 
-(`cabal build` works also but fails to recognize changes to template files)
-
+(`cabal build -fdev` can work but won't recognize changes to template files)
 
 After the server starts, it may print a bunch of text about creating tables,
 and it will then sit ready, waiting for connections.
-When you need to update an executable, use cabal install.
+
+Note: if you installed the optional yesod-bin above, you can use `yesod devel`
+which automatically re-compiles and runs the site whenever it detects changes.
+In some cases (such as .cassius files), where yesod devel fails to recognize
+changes, use `cabal install -fdev` as above. See the appendix for how to
+install yesod-bin in a separate sandbox if you don't want it installed to
+the system generally. At this time, it cannot install in the main Snowdrift
+sandbox because of some dependency conflicts.
 
 
 Using the live test site
@@ -439,8 +365,8 @@ you can rebuild and start the server in your snowdrift directory by running
 To stop yesod devel, press ENTER a couple times
 
 Note that `yesod devel` builds just the library,
-so `cabal install` and related commands are needed to update other resources
-like sdm or the payment processing script.
+so `cabal install -fdev` and related commands are needed to update other
+resources like sdm or the payment processing script.
 
 
 APPENDIX B: Using the Nix package manager

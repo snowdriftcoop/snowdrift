@@ -3,7 +3,7 @@ module Foundation where
 import           Model
 import           Model.Currency
 import           Model.Established.Internal         (Established(..))
-import           Model.Notification.Internal        (NotificationType(..), NotificationDelivery(..))
+import           Model.Notification.Internal        (UserNotificationType(..), UserNotificationDelivery(..))
 import           Model.SnowdriftEvent.Internal
 import           Model.Language
 import qualified Settings
@@ -386,7 +386,6 @@ createUser ident passwd name email avatar nick = do
         discussion_id <- insert (Discussion 0)
         user <- maybe return setPassword passwd $ User ident email False (Just now) Nothing Nothing name account_id avatar Nothing Nothing nick langs now now EstUnestablished discussion_id
         uid_maybe <- insertUnique user
-        Entity snowdrift_id _ <- getBy404 $ UniqueProjectHandle "snowdrift"
         case uid_maybe of
             Just user_id -> do
 
@@ -408,9 +407,8 @@ createUser ident passwd name email avatar nick = do
                           welcome_route <>
                           "), and let us know any questions."
                         ]
-                -- TODO: change snowdrift_id to the generated site-project id
-                -- TODO: This notification doesn't get sent to the event channel. Is that okay?
-                insert_ $ Notification now NotifWelcome user_id (Just snowdrift_id) notif_text False
+
+                insert_ $ UserNotification now NotifWelcome user_id notif_text False
                 return $ Just user_id
             Nothing -> do
                 lift $ addAlert "danger" "Handle already in use."
@@ -418,18 +416,16 @@ createUser ident passwd name email avatar nick = do
   where
     insertDefaultNotificationPrefs :: UserId -> DB ()
     insertDefaultNotificationPrefs user_id =
-        void . insertMany $ uncurry (UserNotificationPref user_id Nothing) <$>
+        void . insertMany $ uncurry (UserNotificationPref user_id) <$>
             -- 'NotifWelcome' is not set since it is delivered when a
             -- user is created.
-            [ (NotifBalanceLow,        NotifDeliverWebsite)
-            , (NotifBalanceLow,        NotifDeliverEmail)
-            , (NotifUnapprovedComment, NotifDeliverEmail)
-            , (NotifRethreadedComment, NotifDeliverWebsite)
-            , (NotifReply,             NotifDeliverEmail)
-            , (NotifEditConflict,      NotifDeliverWebsite)
-            , (NotifFlag,              NotifDeliverWebsite)
-            , (NotifFlag,              NotifDeliverEmail)
-            , (NotifFlagRepost,        NotifDeliverWebsite)
+            [ (NotifBalanceLow,        UserNotifDeliverWebsiteAndEmail)
+            , (NotifUnapprovedComment, UserNotifDeliverEmail)
+            , (NotifRethreadedComment, UserNotifDeliverWebsite)
+            , (NotifReply,             UserNotifDeliverEmail)
+            , (NotifEditConflict,      UserNotifDeliverWebsite)
+            , (NotifFlag,              UserNotifDeliverWebsiteAndEmail)
+            , (NotifFlagRepost,        UserNotifDeliverWebsite)
             ]
 
 instance YesodJquery App

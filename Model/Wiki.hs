@@ -20,7 +20,7 @@ createWikiPageDB language target project_id content permission_level user_id = d
     now           <- liftIO getCurrentTime
     discussion_id <- lift createDiscussionDB
 
-    let wiki_page = WikiPage now project_id discussion_id permission_level
+    let wiki_page = WikiPage now user_id project_id discussion_id permission_level
     wiki_page_id <- lift $ insert wiki_page
 
     let wiki_target = WikiTarget wiki_page_id project_id target language

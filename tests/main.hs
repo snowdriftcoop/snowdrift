@@ -21,6 +21,7 @@ import TestHandler
 import Model.Markdown
 
 import Control.Exception (bracket)
+import qualified Data.Text as Text
 import System.Directory (removeFile, getTemporaryDirectory)
 import System.IO
 import System.IO.Unsafe
@@ -40,13 +41,13 @@ main = do
 
     withTempFile $ spec foundation
 
-withTempFile :: (FilePath -> IO a) -> IO ()
+withTempFile :: (FileName -> IO a) -> IO ()
 withTempFile f = bracket
     (do tmp <- getTemporaryDirectory; openTempFile tmp "emails")
     (removeFile . fst)
-    (\ (file, handle) -> do hClose handle; void $ f file)
+    (\(file, handle) -> do hClose handle; void $ f $ FileName $ Text.pack file)
 
-spec :: App -> FilePath -> IO ()
+spec :: App -> FileName -> IO ()
 spec foundation file =
     hspec $ do
         describe "fix links" $ do

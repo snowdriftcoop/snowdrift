@@ -77,7 +77,9 @@ import qualified Model.Comment.Internal as Internal
 import           Model.Comment.Sql
 import           Model.Discussion
 import           Model.Notification
-import           Model.User.Internal (sendPreferredNotificationDB)
+import           Model.User.Internal
+    ( sendPreferredUserNotificationDB, NotificationSender (..)
+    , NotificationReceiver (..) )
 
 import qualified Control.Monad.State                  as State
 import           Control.Monad.Writer.Strict          (tell)
@@ -240,7 +242,7 @@ approveCommentDB user_id comment_id comment = do
                          from $ \unc -> do
                          where_ (unc ^. UnapprovedCommentNotificationComment ==. val comment_id)
                          return (unc ^. UnapprovedCommentNotificationNotification)
-        deleteCascadeWhere [NotificationId P.<-. notif_ids]
+        deleteCascadeWhere [UserNotificationId P.<-. notif_ids]
 
 insertApprovedCommentDB
         :: UTCTime
@@ -458,7 +460,12 @@ editCommentDB user_id comment_id text language = do
             rendered_route <- lift $ makeCommentRouteDB langs comment_id >>= return . render . fromJust
             let notif_text = Markdown $ "A comment you flagged has been edited and reposted to the site. You can view it [here](" <> rendered_route <> ")."
             lift (deleteCascade comment_flagging_id) -- delete flagging and all flagging reasons with it.
-            sendPreferredNotificationDB commentFlaggingFlagger NotifFlagRepost Nothing Nothing notif_text
+            sendPreferredUserNotificationDB
+                (Just $ NotificationSender user_id)
+                (NotificationReceiver commentFlaggingFlagger)
+                NotifFlagRepost
+                Nothing
+                notif_text
   where
     updateComment = do
         existent_tickets <- lift $ fetchTicketNamesDB comment_id
@@ -503,7 +510,12 @@ flagCommentDB comment_id permalink_route flagger_id reasons message = do
                     , ""
                     , "[link to flagged comment](" <> permalink_route <> ")"
                     ]
-            sendPreferredNotificationDB poster_id NotifFlag Nothing Nothing notif_text
+            sendPreferredUserNotificationDB
+                (Just $ NotificationSender flagger_id)
+                (NotificationReceiver poster_id)
+                NotifFlag
+                Nothing
+                notif_text
             return True
 
 -- | Post an new (approved) Comment.

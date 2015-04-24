@@ -1,0 +1,3 @@
+ALTER TABLE "wiki_page" ADD COLUMN "user" INT8;
+UPDATE "wiki_page" SET "user" = 1;
+ALTER TABLE "wiki_page" ALTER COLUMN "user" SET NOT NULL;

@@ -26,7 +26,8 @@ snowdriftEventTime (ECommentClosed _ CommentClosing{..})                = commen
 snowdriftEventTime (ETicketClaimed (Left (_,  TicketClaiming{..})))     = ticketClaimingTs
 snowdriftEventTime (ETicketClaimed (Right (_,  TicketOldClaiming{..}))) = ticketOldClaimingClaimTs
 snowdriftEventTime (ETicketUnclaimed _ TicketOldClaiming{..})           = ticketOldClaimingReleasedTs
-snowdriftEventTime (ENotificationSent _ Notification{..})               = notificationCreatedTs
+snowdriftEventTime (EUserNotificationSent _ UserNotification{..})       = userNotificationCreatedTs
+snowdriftEventTime (EProjectNotificationSent _ ProjectNotification{..}) = projectNotificationCreatedTs
 snowdriftEventTime (EWikiEdit _ WikiEdit{..} _)                         = wikiEditTs
 snowdriftEventTime (EWikiPage _ WikiPage{..} _)                         = wikiPageCreatedTs
 snowdriftEventTime (EBlogPost _ BlogPost{..})                           = blogPostTs
@@ -220,4 +221,6 @@ snowdriftEventToFeedEntry _ _ _ _ _ _ _ (EDeletedPledge _ _ _ _) = Nothing
 
 snowdriftEventToFeedEntry _ _ _ _ _ _ _ (ECommentApproved _ _)  = Nothing
 snowdriftEventToFeedEntry _ _ _ _ _ _ _ (ECommentPending _ _)   = Nothing
-snowdriftEventToFeedEntry _ _ _ _ _ _ _ (ENotificationSent _ _) = Nothing
+
+snowdriftEventToFeedEntry _ _ _ _ _ _ _ (EUserNotificationSent _ _)    = Nothing
+snowdriftEventToFeedEntry _ _ _ _ _ _ _ (EProjectNotificationSent _ _) = Nothing

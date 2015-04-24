@@ -33,7 +33,9 @@ data SnowdriftEvent
     -- Comment rethreaded.
     | ECommentRethreaded RethreadId Rethread -- rethreaded-from-URL
 
-    | ENotificationSent NotificationId Notification
+    | EUserNotificationSent UserNotificationId UserNotification
+
+    | EProjectNotificationSent ProjectNotificationId ProjectNotification
 
     -- New WikiEdit made.
     | EWikiEdit WikiEditId WikiEdit WikiTarget
