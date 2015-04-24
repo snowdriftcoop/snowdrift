@@ -217,7 +217,7 @@ here are some resources:
     further resources as well. As they are wikis, you can and should
     *improve* them yourself as you read!
 
-    + [**Haskell Wikibook**](https://en.wikibooks.org/wiki/Haskell)
+    + [Haskell Wikibook](https://en.wikibooks.org/wiki/Haskell)
       — one of the few *featured* Wikibooks, the Haskell Wikibook
       is *exceptionally* high quality and arguably the best overall
       introduction to Haskell anywhere.
