@@ -182,7 +182,7 @@ library
                  , directory
                  , esqueleto
                  , fast-logger
-                 , github
+                 , github >=0.13.2
                  , hit
                  , hjsmin
                  , hourglass

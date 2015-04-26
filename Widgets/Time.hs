@@ -1,12 +1,15 @@
+{-# LANGUAGE CPP #-}
 
 module Widgets.Time where
 
 -- TODO make this prettier
 
 import Import
-
 import Data.Time
-import System.Locale
+
+#if !(MIN_VERSION_time(1, 5, 0))
+import System.Locale (defaultTimeLocale)
+#endif
 
 import Data.List
 
