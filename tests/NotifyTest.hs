@@ -215,6 +215,14 @@ errWhenExistsEmailNotif', errUnlessUniqueEmailNotif'
 errWhenExistsEmailNotif'   file = errEmailNotif' file errWhenExistsEmailNotif
 errUnlessUniqueEmailNotif' file = errEmailNotif' file errUnlessUniqueEmailNotif
 
+watchProject :: Login user => user -> ProjectId -> Example () -> Example ()
+watchProject user project_id action = do
+    loginAs user
+    changeWatchStatus $ WatchProjectR project_id
+    action
+    loginAs user
+    changeWatchStatus $ UnwatchProjectR project_id
+
 notifySpecs :: AppConfig DefaultEnv a -> FileName -> Spec
 notifySpecs AppConfig {..} file = do
     -- Note that since we rely on 'Bounded' here, the order of the
@@ -424,7 +432,7 @@ notifySpecs AppConfig {..} file = do
                     render appRoot $ enRoute WikiCommentR "about" comment_id
 
             testDB $ deleteRole snowdrift_id mary_id Moderator
-            |]
+        |]
 
         yit "sends an email when a comment is rethreaded" $ [marked|
             loginAs Mary
@@ -474,7 +482,7 @@ notifySpecs AppConfig {..} file = do
                 render appRoot $ enRoute WikiCommentR "about" comment_id
 
             testDB $ deleteRole snowdrift_id mary_id Moderator
-            |]
+        |]
 
     -- XXX: TODO.
     testUserNotification NotifEditConflict = return ()
@@ -544,60 +552,56 @@ notifySpecs AppConfig {..} file = do
         yit "notifies when a wiki page is created" $ [marked|
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
-            loginAs Mary
-            watch $ WatchProjectR snowdrift_id
-            testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifWikiPage
-                ProjectNotifDeliverWebsite
+            watchProject Mary snowdrift_id $ do
+                testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifWikiPage
+                    ProjectNotifDeliverWebsite
 
-            loginAs Bob
-            newWiki snowdrift LangEn wiki_page "testing NotifWikiPage"
+                loginAs Bob
+                newWiki snowdrift LangEn wiki_page "testing NotifWikiPage"
 
-            errUnlessUniqueProjectWebsiteNotif' WithDelay mary_id NotifWikiPage $
-                render appRoot $ enRoute WikiR wiki_page
+                errUnlessUniqueProjectWebsiteNotif' WithDelay mary_id NotifWikiPage $
+                    render appRoot $ enRoute WikiR wiki_page
         |]
 
         yit "doesn't notify when a wiki page is created by you" $ [marked|
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
-            loginAs Mary
-            watch $ WatchProjectR snowdrift_id
-            testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifWikiPage
-                ProjectNotifDeliverWebsite
+            watchProject Mary snowdrift_id $ do
+                testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifWikiPage
+                    ProjectNotifDeliverWebsite
 
-            newWiki snowdrift LangEn wiki_page_self "testing NotifWikiPage (self)"
+                newWiki snowdrift LangEn wiki_page_self "testing NotifWikiPage (self)"
 
-            errWhenExistsProjectWebsiteNotif'
-                WithDelay mary_id NotifWikiPage $
-                    render appRoot $ enRoute WikiR wiki_page_self
+                errWhenExistsProjectWebsiteNotif'
+                    WithDelay mary_id NotifWikiPage $
+                        render appRoot $ enRoute WikiR wiki_page_self
         |]
 
         yit "sends an email when a wiki page is created" $ [marked|
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
-            loginAs Mary
-            watch $ WatchProjectR snowdrift_id
-            testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifWikiPage
-                ProjectNotifDeliverEmail
+            watchProject Mary snowdrift_id $ do
+                testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifWikiPage
+                    ProjectNotifDeliverEmail
 
-            loginAs Bob
-            newWiki snowdrift LangEn wiki_page_email "testing NotifWikiPage (email)"
+                loginAs Bob
+                newWiki snowdrift LangEn wiki_page_email "testing NotifWikiPage (email)"
 
-            errUnlessUniqueEmailNotif' file $
-                render appRoot $ enRoute WikiR wiki_page_email
+                errUnlessUniqueEmailNotif' file $
+                    render appRoot $ enRoute WikiR wiki_page_email
         |]
 
         yit "doesn't send an email when a wiki page is created by you" $ [marked|
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
-            loginAs Mary
-            watch $ WatchProjectR snowdrift_id
-            testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifWikiPage
-                ProjectNotifDeliverEmail
+            watchProject Mary snowdrift_id $ do
+                testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifWikiPage
+                    ProjectNotifDeliverEmail
 
-            newWiki snowdrift LangEn wiki_page_self_email "testing NotifWikiPage (email, self)"
+                newWiki snowdrift LangEn wiki_page_self_email "testing NotifWikiPage (email, self)"
 
-            errWhenExistsEmailNotif' file $
-                render appRoot $ enRoute WikiR wiki_page_self_email
+                errWhenExistsEmailNotif' file $
+                    render appRoot $ enRoute WikiR wiki_page_self_email
         |]
 
     -- Relies on the 'NotifWikiPage' test.
@@ -605,317 +609,337 @@ notifySpecs AppConfig {..} file = do
         yit "notifies when a wiki page is edited" $ [marked|
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
-            testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifWikiEdit
-                ProjectNotifDeliverWebsite
+            watchProject Mary snowdrift_id $ do
+                testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifWikiEdit
+                    ProjectNotifDeliverWebsite
 
-            loginAs Bob
-            editWiki snowdrift LangEn wiki_page "testing NotifWikiEdit" "testing"
+                loginAs Bob
+                editWiki snowdrift LangEn wiki_page "testing NotifWikiEdit" "testing"
 
-            errUnlessUniqueProjectWebsiteNotif' WithDelay mary_id NotifWikiEdit $
-                render appRoot $ enRoute WikiR wiki_page
+                errUnlessUniqueProjectWebsiteNotif' WithDelay mary_id NotifWikiEdit $
+                    render appRoot $ enRoute WikiR wiki_page
         |]
 
         yit "doesn't notify when a wiki page is edited by you" $ [marked|
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
-            testDB $ insertRole snowdrift_id mary_id Moderator
-            testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifWikiEdit
-                ProjectNotifDeliverWebsite
+            watchProject Mary snowdrift_id $ do
+                testDB $ insertRole snowdrift_id mary_id Moderator
+                testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifWikiEdit
+                    ProjectNotifDeliverWebsite
 
-            loginAs Mary
-            editWiki snowdrift LangEn wiki_page_self "testing NotifWikiEdit" "testing (self)"
+                loginAs Mary
+                editWiki snowdrift LangEn wiki_page_self "testing NotifWikiEdit" "testing (self)"
 
-            errWhenExistsProjectWebsiteNotif' WithDelay mary_id NotifWikiEdit $
-                render appRoot $ enRoute WikiR wiki_page_self
+                errWhenExistsProjectWebsiteNotif' WithDelay mary_id NotifWikiEdit $
+                    render appRoot $ enRoute WikiR wiki_page_self
 
-            testDB $ deleteRole snowdrift_id mary_id Moderator
+                testDB $ deleteRole snowdrift_id mary_id Moderator
         |]
 
         yit "sends an email when a wiki page is edited" $ [marked|
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
-            testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifWikiEdit
-                ProjectNotifDeliverEmail
+            watchProject Mary snowdrift_id $ do
+                testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifWikiEdit
+                    ProjectNotifDeliverEmail
 
-            loginAs Bob
-            editWiki snowdrift LangEn wiki_page "testing NotifWikiEdit (email)"
-                "testing"
+                loginAs Bob
+                editWiki snowdrift LangEn wiki_page "testing NotifWikiEdit (email)"
+                    "testing"
 
-            errUnlessUniqueEmailNotif' file $
-                render appRoot $ enRoute WikiR wiki_page
+                errUnlessUniqueEmailNotif' file $
+                    render appRoot $ enRoute WikiR wiki_page
         |]
 
         yit "doesn't send an email when a wiki page is edited by you" $ [marked|
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
-            testDB $ insertRole snowdrift_id mary_id Moderator
-            testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifWikiEdit
-                ProjectNotifDeliverEmail
+            watchProject Mary snowdrift_id $ do
+                testDB $ insertRole snowdrift_id mary_id Moderator
+                testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifWikiEdit
+                    ProjectNotifDeliverEmail
 
-            loginAs Mary
-            editWiki snowdrift LangEn wiki_page_self "testing NotifWikiEdit (email, self)"
-                "testing"
+                loginAs Mary
+                editWiki snowdrift LangEn wiki_page_self "testing NotifWikiEdit (email, self)"
+                    "testing"
 
-            errWhenExistsEmailNotif' file $
-                render appRoot $ enRoute WikiR wiki_page_self
+                errWhenExistsEmailNotif' file $
+                    render appRoot $ enRoute WikiR wiki_page_self
 
-            testDB $ deleteRole snowdrift_id mary_id Moderator
+                testDB $ deleteRole snowdrift_id mary_id Moderator
         |]
 
     testProjectNotification NotifBlogPost = do
         yit "notifies when a blog post is created" $ [marked|
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
-            testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifBlogPost
-                ProjectNotifDeliverWebsite
+            watchProject Mary snowdrift_id $ do
+                testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifBlogPost
+                    ProjectNotifDeliverWebsite
 
-            loginAs AdminUser
-            let blog_handle = "testing"
-            newBlogPost blog_handle
+                loginAs AdminUser
+                let blog_handle = "testing"
+                newBlogPost blog_handle
 
-            errUnlessUniqueProjectWebsiteNotif' WithDelay mary_id NotifBlogPost $
-                render appRoot $ BlogPostR snowdrift blog_handle
+                errUnlessUniqueProjectWebsiteNotif' WithDelay mary_id NotifBlogPost $
+                    render appRoot $ BlogPostR snowdrift blog_handle
         |]
 
         yit "doesn't notify when a blog post is created by you" $ [marked|
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
-            testDB $ insertRole snowdrift_id mary_id TeamMember
-            testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifBlogPost
-                ProjectNotifDeliverWebsite
+            watchProject Mary snowdrift_id $ do
+                testDB $ insertRole snowdrift_id mary_id TeamMember
+                testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifBlogPost
+                    ProjectNotifDeliverWebsite
 
-            loginAs Mary
-            let blog_handle = "testing-self"
-            newBlogPost blog_handle
+                loginAs Mary
+                let blog_handle = "testing-self"
+                newBlogPost blog_handle
 
-            errWhenExistsProjectWebsiteNotif' WithDelay mary_id NotifBlogPost $
-                render appRoot $ BlogPostR snowdrift blog_handle
+                errWhenExistsProjectWebsiteNotif' WithDelay mary_id NotifBlogPost $
+                    render appRoot $ BlogPostR snowdrift blog_handle
 
-            testDB $ deleteRole snowdrift_id mary_id TeamMember
+                testDB $ deleteRole snowdrift_id mary_id TeamMember
         |]
 
         yit "sends an email when a blog post is created" $ [marked|
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
-            testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifBlogPost
-                ProjectNotifDeliverEmail
+            watchProject Mary snowdrift_id $ do
+                testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifBlogPost
+                    ProjectNotifDeliverEmail
 
-            loginAs AdminUser
-            let blog_handle = "testing-email"
-            newBlogPost blog_handle
+                loginAs AdminUser
+                let blog_handle = "testing-email"
+                newBlogPost blog_handle
 
-            errUnlessUniqueEmailNotif' file $
-                render appRoot $ BlogPostR snowdrift blog_handle
+                errUnlessUniqueEmailNotif' file $
+                    render appRoot $ BlogPostR snowdrift blog_handle
         |]
 
         yit "doesn't send an email when a blog post is created by you" $ [marked|
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
-            testDB $ insertRole snowdrift_id mary_id TeamMember
-            testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifBlogPost
-                ProjectNotifDeliverEmail
+            watchProject Mary snowdrift_id $ do
+                testDB $ insertRole snowdrift_id mary_id TeamMember
+                testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifBlogPost
+                    ProjectNotifDeliverEmail
 
-            loginAs Mary
-            let blog_handle = "testing-self-email"
-            newBlogPost blog_handle
+                loginAs Mary
+                let blog_handle = "testing-self-email"
+                newBlogPost blog_handle
 
-            errWhenExistsEmailNotif' file $
-                render appRoot $ BlogPostR snowdrift blog_handle
+                errWhenExistsEmailNotif' file $
+                    render appRoot $ BlogPostR snowdrift blog_handle
 
-            testDB $ deleteRole snowdrift_id mary_id TeamMember
+                testDB $ deleteRole snowdrift_id mary_id TeamMember
         |]
 
     testProjectNotification NotifNewPledge = do
         yit "notifies when there is a new pledge" $ [marked|
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
-            testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifNewPledge
-                ProjectNotifDeliverWebsite
+            watchProject Mary snowdrift_id $ do
+                testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifNewPledge
+                    ProjectNotifDeliverWebsite
 
-            loginAs Bob
-            let tshares = shpack shares
-            pledge tshares
+                loginAs Bob
+                let tshares = shpack shares
+                pledge tshares
 
-            bob_id <- userId Bob
-            errUnlessUniqueProjectWebsiteNotif' WithDelay mary_id NotifNewPledge $
-                "user" <> (shpack $ keyToInt64 bob_id) <>
-                " pledged [" <> tshares <> " shares]"
+                bob_id <- userId Bob
+                errUnlessUniqueProjectWebsiteNotif' WithDelay mary_id NotifNewPledge $
+                    "user" <> (shpack $ keyToInt64 bob_id) <>
+                    " pledged [" <> tshares <> " shares]"
         |]
 
         yit "doesn't notify when you make a new pledge" $ [marked|
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
-            testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifNewPledge
-                ProjectNotifDeliverWebsite
+            watchProject Mary snowdrift_id $ do
+                testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifNewPledge
+                    ProjectNotifDeliverWebsite
 
-            loginAs Mary
-            let tshares = shpack shares
-            pledge tshares
+                loginAs Mary
+                let tshares = shpack shares
+                pledge tshares
 
-            errWhenExistsProjectWebsiteNotif' WithDelay mary_id NotifNewPledge $
-                "user" <> (shpack $ keyToInt64 mary_id) <>
-                " pledged [" <> tshares <> " shares]"
+                errWhenExistsProjectWebsiteNotif' WithDelay mary_id NotifNewPledge $
+                    "user" <> (shpack $ keyToInt64 mary_id) <>
+                    " pledged [" <> tshares <> " shares]"
         |]
 
         yit "sends an email when there is a new pledge" $ [marked|
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
-            testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifNewPledge
-                ProjectNotifDeliverEmail
+            watchProject Mary snowdrift_id $ do
+                testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifNewPledge
+                    ProjectNotifDeliverEmail
 
-            loginAs Bob
-            pledge $ shpack (0 :: Int)  -- drop it first
-            let tshares = shpack shares_email
-            pledge tshares
+                loginAs Bob
+                pledge $ shpack (0 :: Int)  -- drop it first
+                let tshares = shpack shares_email
+                pledge tshares
 
-            bob_id <- userId Bob
-            errUnlessUniqueEmailNotif' file $
-                "user" <> (shpack $ keyToInt64 bob_id) <>
-                " pledged [" <> tshares <> " shares]"
+                bob_id <- userId Bob
+                errUnlessUniqueEmailNotif' file $
+                    "user" <> (shpack $ keyToInt64 bob_id) <>
+                    " pledged [" <> tshares <> " shares]"
         |]
 
         yit "doesn't send an email when you make a new pledge" $ [marked|
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
-            testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifNewPledge
-                ProjectNotifDeliverEmail
+            watchProject Mary snowdrift_id $ do
+                testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifNewPledge
+                    ProjectNotifDeliverEmail
 
-            loginAs Mary
-            pledge $ shpack (0 :: Int)  -- drop it first
-            let tshares = shpack shares_email
-            pledge tshares
+                loginAs Mary
+                pledge $ shpack (0 :: Int)  -- drop it first
+                let tshares = shpack shares_email
+                pledge tshares
 
-            errWhenExistsEmailNotif' file $
-                "user" <> (shpack $ keyToInt64 mary_id) <>
-                " pledged [" <> tshares <> " shares]"
+                errWhenExistsEmailNotif' file $
+                    "user" <> (shpack $ keyToInt64 mary_id) <>
+                    " pledged [" <> tshares <> " shares]"
         |]
 
     testProjectNotification NotifUpdatedPledge = do
         yit "notifies when the pledge is updated" $ [marked|
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
-            testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifUpdatedPledge
-                ProjectNotifDeliverWebsite
+            watchProject Mary snowdrift_id $ do
+                testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifUpdatedPledge
+                    ProjectNotifDeliverWebsite
 
-            loginAs Bob
-            bob_id <- userId Bob
-            loadFunds bob_id 10
-            let tshares = shpack shares'
-            pledge tshares
+                loginAs Bob
+                bob_id <- userId Bob
+                loadFunds bob_id 10
+                let tshares = shpack shares'
+                pledge tshares
 
-            errUnlessUniqueProjectWebsiteNotif' WithDelay mary_id NotifUpdatedPledge $
-                "user" <> (shpack $ keyToInt64 bob_id) <>
-                " added " <> (shpack $ shares' - shares) <>
-                " share, changing their total to [" <> tshares <> " shares]"
+                errUnlessUniqueProjectWebsiteNotif' WithDelay mary_id NotifUpdatedPledge $
+                    "user" <> (shpack $ keyToInt64 bob_id) <>
+                    " added " <> (shpack $ shares' - shares) <>
+                    " share, changing their total to [" <> tshares <> " shares]"
         |]
 
         yit "doesn't notify when the pledge is updated by you" $ [marked|
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
-            testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifUpdatedPledge
-                ProjectNotifDeliverWebsite
+            watchProject Mary snowdrift_id $ do
+                testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifUpdatedPledge
+                    ProjectNotifDeliverWebsite
 
-            loginAs Mary
-            loadFunds mary_id 10
-            let tshares = shpack shares'
-            pledge tshares
+                loginAs Mary
+                loadFunds mary_id 10
+                let tshares = shpack shares'
+                pledge tshares
 
-            errWhenExistsProjectWebsiteNotif' WithDelay mary_id NotifUpdatedPledge $
-                "user" <> (shpack $ keyToInt64 mary_id) <>
-                " added " <> (shpack $ shares' - shares) <>
-                " share, changing their total to [" <> tshares <> " shares]"
+                errWhenExistsProjectWebsiteNotif' WithDelay mary_id NotifUpdatedPledge $
+                    "user" <> (shpack $ keyToInt64 mary_id) <>
+                    " added " <> (shpack $ shares' - shares) <>
+                    " share, changing their total to [" <> tshares <> " shares]"
         |]
 
         yit "sends an email when the pledge is updated" $ [marked|
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
-            testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifUpdatedPledge
-                ProjectNotifDeliverEmail
+            watchProject Mary snowdrift_id $ do
+                testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifUpdatedPledge
+                    ProjectNotifDeliverEmail
 
-            loginAs Bob
-            let tshares = shpack shares_email'
-            pledge tshares
+                loginAs Bob
+                let tshares = shpack shares_email'
+                pledge tshares
 
-            bob_id <- userId Bob
-            errUnlessUniqueEmailNotif' file $
-                "user" <> (shpack $ keyToInt64 bob_id) <>
-                " added " <> (shpack $ shares' - shares) <>
-                " share, changing their total to [" <> tshares <> " shares]"
+                bob_id <- userId Bob
+                errUnlessUniqueEmailNotif' file $
+                    "user" <> (shpack $ keyToInt64 bob_id) <>
+                    " added " <> (shpack $ shares' - shares) <>
+                    " share, changing their total to [" <> tshares <> " shares]"
         |]
 
         yit "doesn't send an email when the pledge is updated by you" $ [marked|
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
-            testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifUpdatedPledge
-                ProjectNotifDeliverEmail
+            watchProject Mary snowdrift_id $ do
+                testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifUpdatedPledge
+                    ProjectNotifDeliverEmail
 
-            loginAs Mary
-            let tshares = shpack shares_email'
-            pledge tshares
+                loginAs Mary
+                let tshares = shpack shares_email'
+                pledge tshares
 
-            errWhenExistsEmailNotif' file $
-                "user" <> (shpack $ keyToInt64 mary_id) <>
-                " added " <> (shpack $ shares' - shares) <>
-                " share, changing their total to [" <> tshares <> " shares]"
+                errWhenExistsEmailNotif' file $
+                    "user" <> (shpack $ keyToInt64 mary_id) <>
+                    " added " <> (shpack $ shares' - shares) <>
+                    " share, changing their total to [" <> tshares <> " shares]"
         |]
 
     testProjectNotification NotifDeletedPledge = do
         yit "notifies when a user stops supporting the project" $ [marked|
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
-            testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifDeletedPledge
-                ProjectNotifDeliverWebsite
+            watchProject Mary snowdrift_id $ do
+                testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifDeletedPledge
+                    ProjectNotifDeliverWebsite
 
-            loginAs Bob
-            pledge $ shpack (0 :: Int)
+                loginAs Bob
+                pledge $ shpack (0 :: Int)
 
-            bob_id <- userId Bob
-            errUnlessUniqueProjectWebsiteNotif' WithDelay mary_id NotifDeletedPledge $
-                "user" <> (shpack $ keyToInt64 bob_id) <>
-                " is no longer supporting the [project]"
+                bob_id <- userId Bob
+                errUnlessUniqueProjectWebsiteNotif' WithDelay mary_id NotifDeletedPledge $
+                    "user" <> (shpack $ keyToInt64 bob_id) <>
+                    " is no longer supporting the [project]"
         |]
 
         yit "doesn't notify when you stop supporting the project" $ [marked|
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
-            testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifDeletedPledge
-                ProjectNotifDeliverWebsite
+            watchProject Mary snowdrift_id $ do
+                testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifDeletedPledge
+                    ProjectNotifDeliverWebsite
 
-            loginAs Mary
-            pledge $ shpack (0 :: Int)
+                loginAs Mary
+                pledge $ shpack (0 :: Int)
 
-            errWhenExistsProjectWebsiteNotif' WithDelay mary_id NotifDeletedPledge $
-                "user" <> (shpack $ keyToInt64 mary_id) <>
-                " is no longer supporting the [project]"
+                errWhenExistsProjectWebsiteNotif' WithDelay mary_id NotifDeletedPledge $
+                    "user" <> (shpack $ keyToInt64 mary_id) <>
+                    " is no longer supporting the [project]"
         |]
 
         yit "sends an email when a user stops supporting the project" $ [marked|
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
-            testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifDeletedPledge
-                ProjectNotifDeliverEmail
+            watchProject Mary snowdrift_id $ do
+                testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifDeletedPledge
+                    ProjectNotifDeliverEmail
 
-            loginAs Bob
-            pledge $ shpack shares  -- pledge again before dropping
-            pledge $ shpack (0 :: Int)
+                loginAs Bob
+                pledge $ shpack shares  -- pledge again before dropping
+                pledge $ shpack (0 :: Int)
 
-            bob_id <- userId Bob
-            errUnlessUniqueEmailNotif' file $
-                "user" <> (shpack $ keyToInt64 bob_id) <>
-                " is no longer supporting the [project]"
+                bob_id <- userId Bob
+                errUnlessUniqueEmailNotif' file $
+                    "user" <> (shpack $ keyToInt64 bob_id) <>
+                    " is no longer supporting the [project]"
         |]
 
         yit "doesn't send an email when you stop supporting the project" $ [marked|
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
-            testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifDeletedPledge
-                ProjectNotifDeliverEmail
+            watchProject Mary snowdrift_id $ do
+                testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifDeletedPledge
+                    ProjectNotifDeliverEmail
 
-            loginAs Mary
-            pledge $ shpack shares  -- pledge again before dropping
-            pledge $ shpack (0 :: Int)
+                loginAs Mary
+                pledge $ shpack shares  -- pledge again before dropping
+                pledge $ shpack (0 :: Int)
 
-            errWhenExistsEmailNotif' file $
-                "user" <> (shpack $ keyToInt64 mary_id) <>
-                " is no longer supporting the [project]"
+                errWhenExistsEmailNotif' file $
+                    "user" <> (shpack $ keyToInt64 mary_id) <>
+                    " is no longer supporting the [project]"
         |]
