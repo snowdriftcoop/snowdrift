@@ -26,7 +26,7 @@ For historical reasons, Ctrl+V does something else in most terminals.
     sudo ./bootstrap.sh
     cd ..
     cabal update
-    cabal install cabal-install alex happy haddock yesod-bin
+    cabal install alex happy haddock yesod-bin
     echo 'export PATH=$PATH:$HOME/cabal/bin:.cabal-sandbox/bin' >> ~/.bashrc
     . ~/.bashrc
     git clone https://git.gnu.io/snowdrift/snowdrift.git
