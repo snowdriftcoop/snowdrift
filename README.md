@@ -22,7 +22,7 @@ and more.
 
 
 Contributing
-===========
+============
 
 Our [how-to-help page](https://snowdrift.coop/p/snowdrift/w/how-to-help)
 includes further notes about the site and info about volunteering (including
@@ -32,7 +32,7 @@ in non-programming ways). We also have an in-progress, self-hosted
 Snowdrift.coop is built with **Haskell** and the
 **[Yesod web framework](http://www.yesodweb.com/)**,
 but even if you don't yet know Haskell,
-you may still put your HTML/CSS/Javascript skills to work!
+you may still contribute basic HTML/CSS/Javascript work!
 We welcome contributions from developers of all skill levels.
 
 Whatever your background, we're happy to answer questions or get any comments.
@@ -45,43 +45,21 @@ Essential build instructions
 
 Our code is hosted at the fully free/libre/open site
 [Git.GNU.io/snowdrift/snowdrift](https://git.gnu.io/snowdrift/snowdrift)
-but for convenience and redundancy we also mirror at
+but, for convenience and redundancy, we also mirror at
 [GitHub](https://github.com/snowdriftcoop/snowdrift),
 a popular but proprietary platform.
 
-**Our full [guide to our code](GUIDE.md) has precise setup details
-and clarifications about technical items.
+Beginners with minimal technical background should follow our
+[Beginners' Snowdrift Set Up](BEGINNERS.md) which can get anyone started
+making basic contributions.
+It also includes links and info to help learn more about the tools we use.
 
-Beginners with minimal technical background can get set up by following our
-[Beginners' Snowdrift Set Up](BEGINNERS.md) which can get anyone started for
-making basic contributions along with links and info to help learn more about
-the tools we use.
+The easiest way to build the site is to use a virtual machine via our
+[Vagrant setup](SETUP_VAGRANT.md).
+Vagrant works for nearly all operating systems.
 
-For advanced programmers experienced with Git, Haskell, PostgreSQL,
-and perhaps even Yesod, here's quick and dirty minimal start instructions:
-
-```
-// Install any dependencies you don't have:
-// GHC **7.8.x**, cabal, PostgreSQL, happy, alex, git
-// update cabal, set PATH, etc. — see GUIDE.md for more detailed instructions
-
-// Fork, clone and install
-git clone [your remote address]
-cd snowdrift
-cabal sandbox init
-cabal install --enable-tests -fdev
-
-// Set up the database with our quick script.
-// To understand the script does or to run the commands manually, see GUIDE.md
-sdm init
-
-// Launch the development site
-Snowdrift Development
-
-// To see the live site, point your browser to localhost:3000
-
-// To rebuild after making changes run
-cabal install -fdev
-
-Read GUIDE.md for thorough details about development, testing, and so on.
-```
+If you prefer to install locally, see our
+[Debian/Ubuntu setup instructions](SETUP_DEBIAN.md)
+or the [GUIDE.md](GUIDE.md) file for other systems
+(including other GNU/Linux distros and Mac OS X).
+The GUIDE also includes further technical notes.

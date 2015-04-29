@@ -2,12 +2,8 @@
 
 ## Installing
 
-Open up a terminal, and run these commands, exactly as you see them. You
-could even copy and paste all of them into your terminal at once, and it
-would work.
-
-Note that you must use Ctrl+Shift+V to paste something into the terminal.
-For historical reasons, Ctrl+V does something else in most terminals.
+For Debian-based systems (including Ubuntu-based systems),
+run these commands:
 
     sudo aptitude update
     sudo aptitude install curl git postgresql postgresql-client libgmp-dev zlib1g-dev libpq-dev
@@ -34,6 +30,7 @@ For historical reasons, Ctrl+V does something else in most terminals.
     cabal sandbox init
     cabal install -fdev
     sdm init
+    cabal install -fdev --enable-tests
     Snowdrift Development
 
 Go to http://localhost:3000 in your web browser to see the Snowdrift site.
@@ -41,3 +38,23 @@ Go to http://localhost:3000 in your web browser to see the Snowdrift site.
 Now you can play with Snowdrift locally.
 To log into the site, use the built-in system with
 user: `admin` pass: `admin`
+
+Ctrl+C will stop the server.
+
+## Workflow
+
+To work on the site from now on,
+Go to the snowdrift directory and run `yesod devel`.
+That can be left running and will automatically rebuild
+and rerun the site whenever it detects file changes.
+
+To quit yesod devel, hit ENTER a few times.
+
+In rare cases, you may need to touch certain files
+or run `cabal install -fdev` if a yesod devel fails to recognize a change.
+
+## More resources
+
+See [BEGINNERS.md](BEGINNERS.md) for general info about contributing
+and learning about the tools we use,
+and see [GUIDE.md](GUIDE.md) for more technical details.
