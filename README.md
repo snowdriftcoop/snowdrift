@@ -44,7 +44,7 @@ Essential build instructions
 ----------------------------
 
 Our code is hosted at the fully free/libre/open site
-[Git.GNU.io/snowdrift/snowdrift](https://git.gnu.io/snowdrift/snowdrift)
+[git.gnu.io/snowdrift/snowdrift](https://git.gnu.io/snowdrift/snowdrift)
 but, for convenience and redundancy, we also mirror at
 [GitHub](https://github.com/snowdriftcoop/snowdrift),
 a popular but proprietary platform.

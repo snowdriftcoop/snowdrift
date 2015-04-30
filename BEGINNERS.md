@@ -23,7 +23,7 @@ and know how to use a terminal to enter commands in the command-line.
 
 In general, when you see a list of commands to enter,
 you may enter them in one-at-a-time exactly as you see them,
-or you can copy and paste a collection of commands all of them at once.
+or you can copy and paste a collection of commands all at once.
 
 Note that, in most cases, you must use Ctrl+Shift+V to paste into the terminal.
 For historical reasons, Ctrl+V does something else in most terminals.
@@ -36,7 +36,7 @@ We use a program called [Git](http://git-scm.com/) to make and share
 changes while keeping the versions tracked and organized.
 
 Whatever system you use, you will need Git installed
-before installing snowdrift otherwise.
+before installing snowdrift.
 If you don't have Git installed locally already, install it now.
 
 Most systems will have Git in their software repositories.
@@ -54,7 +54,7 @@ follow the [Vagrant setup instructions](SETUP_VAGRANT.md).
 **This is the best and easiest option for all systems including
 GNU/Linux, BSD, Mac OS X, and Windows.**
 
-For reference, we have instructions for local install for more advanged users.
+As an alternative option, we also have instructions for local installation.
 [Debian-based instructions](SETUP_DEBIAN.md) work for Debian or Ubuntu or
 related, and our general [GUIDE](GUIDE.md) has some notes for other systems.
 
