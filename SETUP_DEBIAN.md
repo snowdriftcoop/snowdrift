@@ -51,7 +51,7 @@ and rerun the site whenever it detects file changes.
 To quit yesod devel, hit ENTER a few times.
 
 In rare cases, you may need to touch certain files
-or run `cabal install -fdev` if a yesod devel fails to recognize a change.
+or run `cabal install -fdev` if yesod devel fails to recognize a change.
 
 ## More resources
 

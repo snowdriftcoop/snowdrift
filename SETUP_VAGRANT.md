@@ -44,7 +44,7 @@ open a terminal and run the following commands
 `yesod devel` will automatically rebuild and rerun the site
 whenever it detects changes.
 In rare cases, you may need to touch certain files
-or run `cabal install -fdev` if a yesod devel fails to recognize a change.
+or run `cabal install -fdev` if yesod devel fails to recognize a change.
 
 To stop yesod devel, press ENTER a few times.
 
