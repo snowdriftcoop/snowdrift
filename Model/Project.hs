@@ -677,7 +677,7 @@ underfundedPatrons = do
 
     -- Sum outlays over the pledge list.
     let userOutlays :: M.Map UserId Milray
-        userOutlays = fmap getSum $ foldMap outlaySum pledgeList
+        userOutlays = getSum <$> foldMap outlaySum pledgeList
 
     -- Filter out non-negative (balance - outlay) and return
     return $ M.keys $ M.differenceWith maybeNegSubtract balances userOutlays
@@ -687,7 +687,7 @@ underfundedPatrons = do
     -- | Create something with a summable type.
     outlaySum :: (UserId, Milray, Int64) -> M.Map UserId (Sum Milray)
     outlaySum (u, shareValue, fundedShares) =
-        M.singleton u (Sum $ (Milray fundedShares) * shareValue)
+        M.singleton u (Sum $ Milray fundedShares * shareValue)
 
     -- | Given "a - b", return just the absolute value (≡ b - a) if the
     -- difference is negative.
