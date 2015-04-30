@@ -33,7 +33,6 @@ module Model.Project
     , summarizeProject
     , updateShareValue
     , updateUserShares
-    , rebalanceProjectPledges
     ) where
 
 import Import
