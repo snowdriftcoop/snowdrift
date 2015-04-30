@@ -51,8 +51,7 @@ Working on the code
 ===================
 
 Again, see our [Beginners' Guide](BEGINNERS.md) for the simplest setup
-if you have only minimal development experience and are running Debian or
-Ubuntu GNU/Linux or a related derivative.
+if you have only minimal development experience.
 The Beginners' Guide also has links to various support and learning resources.
 
 The details below specify more advanced and particular items.
@@ -124,19 +123,33 @@ See the appendix at the end of this file for more.
 
 ### Build steps
 
-Install the essential dependencies: ghc, cabal, postgresql
+The easiest install which works on *any* OS
+is with a virtual machine using our
+[Vagrant installation instructions](SETUP_VAGRANT.md).
+
+We also have a complete set of steps for
+[Debian/Ubuntu installation](SETUP_DEBIAN.md)
+
+Neither of those explain what every command does.
+Below, we discuss more of these details.
+
+#### General installation process
+
+For more advanced users, the following instructions do not include every single
+detail. Instead, these cover the issues you will need to know in a general
+enough way to adapt to various systems.
+
+First install the core dependencies:
+ghc, cabal, postgresql, and git.
 **Note: we are now using GHC 7.8.x**
+
+Various systems may need some libraries and other dependencies.
 
 **<https://www.haskell.org/downloads/linux>** has instructions for
 installing ghc, cabal, happy, and alex on Ubuntu, Fedora, and Arch,
 along with manual install instructions for other systems.
 
-Depending on system, additional dependencies may be needed.
-Please help update this guide if you discover something certain about that.
-Come ask for help at #snowdrift on freenode.net IRC
-if you have any trouble or questions (or want to help others who might!).
-
-If you didn't run it as part of installation, update cabal's package list:
+After installing the core dependencies, you should update cabal's package list:
 
     cabal update
 
@@ -172,7 +185,7 @@ Then, initiate a cabal sandbox:
 
 Install dependencies and build Snowdrift
 
-    cabal install --enable-tests -fdev
+    cabal install -fdev
 
 This will take a *long* time but should ultimately tell you it installed.
 Note: the `-fdev` flag skips optimization to make build faster.
@@ -204,20 +217,26 @@ start the server from within your snowdrift directory with the command:
 
 To stop the running server, press ctrl-C
 
-To rebuild after code changes, run `cabal install -fdev`
+To rebuild after code changes, run `cabal build -fdev`
 
-(`cabal build -fdev` can work but won't recognize changes to template files)
+In some cases, certain files will need to be touched to be recognized for
+rebuilding.
+`cabal install -fdev` can work in some cases where `cabal build -fdev` does not.
 
 After the server starts, it may print a bunch of text about creating tables,
 and it will then sit ready, waiting for connections.
 
 Note: if you installed the optional yesod-bin above, you can use `yesod devel`
 which automatically re-compiles and runs the site whenever it detects changes.
-In some cases (such as .cassius files), where yesod devel fails to recognize
-changes, use `cabal install -fdev` as above. See the appendix for how to
-install yesod-bin in a separate sandbox if you don't want it installed to
-the system generally. At this time, it cannot install in the main Snowdrift
-sandbox because of some dependency conflicts.
+
+As with `cabal build -fdev`, there are cases (such as .cassius files),
+where yesod devel fails to recognize changes, and then touching certain files
+or using `cabal install -fdev` will fix the issue.
+
+See the appendix for how to install yesod-bin in a separate sandbox
+if you don't want it installed to the system generally.
+At this time, it cannot install in the main Snowdrift sandbox because of some
+dependency conflicts.
 
 
 Using the live test site
@@ -240,7 +259,12 @@ to verify that everything compiles and also appears to work as desired,
 best practice involves then running our automated tests before sharing
 your changes with the main project.
 
-Assuming you ran `sdm init` to set up the databases, run the tests with:
+Assuming you ran `sdm init` to set up the databases,
+you can now enable the tests with:
+
+    cabal install --enable-tests -fdev
+
+That only needs to be done once. From now on, you can run the tests with:
 
     yesod test
 
@@ -345,7 +369,13 @@ APPENDIX A: Using yesod devel
 To enable yesod devel, you must first install yesod-bin.
 However, yesod-bin will not currently build in the main sandbox.
 
-So, at this time, to enable yesod devel, make a new directory for yesod-bin.
+Our main install instructions for [Vagrant](SETUP_VAGRANT.md) and
+[Debian/Ubuntu](SETUP_DEBIAN.md) include yesod-bin system-wide, so yesod devel
+is all set to go.
+
+Alternatively, if you want to keep yesod-bin out of the main system,
+you can install it to its own sandbox.
+Start by making a new directory for yesod-bin.
 Call it "yesod-bin-sandbox" perhaps.
 
 Then, inside the new directory, run `cabal sandbox init`
