@@ -720,7 +720,8 @@ dropAllUnderfunded projId = do
 
 -- | Fold some DropShares into EventDeactivatedPledges, one per affected
 -- pledge.
--- FIXME
+--
+-- To be implemented for SD-603.
 foldDrops :: UTCTime -> DropShares -> [SnowdriftEvent]
 foldDrops _ts = map snd . toList . foldr insertOrAdd M.empty
   where
