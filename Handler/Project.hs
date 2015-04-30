@@ -1,4 +1,4 @@
-{-# LANGUAGE CPP, TupleSections, OverloadedStrings #-}
+{-# LANGUAGE TupleSections, OverloadedStrings #-}
 
 module Handler.Project where
 
