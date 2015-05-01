@@ -2,27 +2,10 @@
 
 ## Install Vagrant
 
-[Grab the latest version](https://www.vagrantup.com/downloads.html) of
-Vagrant for your system.
+[Grab the latest Vagrant version](https://www.vagrantup.com/downloads.html)
+for your system.
 
-## Install Git
-
-Most systems will have git in their software repositories.  For example,
-on Debian or Ubuntu you can enter the following in a terminal:
-
-    sudo apt-get install git
-
-If you are on a system that does not package git yet, you may choose to
-[get it from the git website](https://git-scm.herokuapp.com/downloads).
-
-## First run
-
-Open up a terminal, and run these commands, exactly as you see them. You
-could even copy and paste all of them into your terminal at once, and it
-would work.
-
-Note that you must use Ctrl+Shift+V to paste something into the terminal.
-For historical reasons, Ctrl+V does something else in most terminals.
+## Install and run Snowdrift
 
     git clone https://git.gnu.io/snowdrift/snowdrift.git
     cd snowdrift
@@ -31,7 +14,8 @@ For historical reasons, Ctrl+V does something else in most terminals.
     cd /vagrant
     cabal install -fdev
     sdm init
-    Snowdrift Development
+    cabal install --enable-tests -fdev
+    yesod devel
 
 Go to http://localhost:3000 in your web browser to see the Snowdrift site.
 
@@ -39,21 +23,39 @@ Now you can play with Snowdrift locally.
 To log into the site, use the built-in system with
 user: `admin` pass: `admin`
 
+To stop the site, use Ctrl+C
+and to quit vagrant, run:
+
+    exit
+    vagrant halt
+
+
 ## Workflow
 
-When you want to work on the site, open a terminal and run the following
-commands from your snowdrift directory to start the environment:
+After your initial setup, when you want to later work on the site,
+open a terminal and run the following commands
+**from your snowdrift directory**:
 
     vagrant up
     vagrant ssh
     cd /vagrant
+    yesod devel
 
-When you want to test changes, run the following:
+`yesod devel` can stay running in one terminal while work is done elsewhere.
+It will automatically rebuild and rerun the site whenever it detects changes.
 
-    cabal install --enable-tests -fdev
-    Snowdrift Development
+In rare cases, you may need to run `cabal clean` if yesod devel
+fails to recognize a change.
 
-When you are done, kill the server and run:
+To stop yesod devel, press ENTER a few times.
+
+As stated above, to fully quit vagrant, run:
 
     exit
     vagrant halt
+
+## More resources
+
+See [BEGINNERS.md](BEGINNERS.md) for general info about contributing
+and learning about the tools we use,
+and see [GUIDE.md](GUIDE.md) for more technical details.
