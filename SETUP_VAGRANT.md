@@ -15,7 +15,7 @@ for your system.
     cabal install -fdev
     sdm init
     cabal install --enable-tests -fdev
-    Snowdrift Development
+    yesod devel
 
 Go to http://localhost:3000 in your web browser to see the Snowdrift site.
 
@@ -41,10 +41,11 @@ open a terminal and run the following commands
     cd /vagrant
     yesod devel
 
-`yesod devel` will automatically rebuild and rerun the site
-whenever it detects changes.
-In rare cases, you may need to touch certain files
-or run `cabal install -fdev` if yesod devel fails to recognize a change.
+`yesod devel` can stay running in one terminal while work is done elsewhere.
+It will automatically rebuild and rerun the site whenever it detects changes.
+
+In rare cases, you may need to run `cabal clean` if yesod devel
+fails to recognize a change.
 
 To stop yesod devel, press ENTER a few times.
 

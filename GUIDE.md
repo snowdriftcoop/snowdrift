@@ -169,13 +169,15 @@ Now, upgrade cabal itself:
 
     cabal install cabal-install
 
-If not done already in earlier steps, install alex and happy:
+Install  alex, happy, and yesod-bin
+(some of which may have been installed, depending on which system and
+instructions you used, it won't hurt to reinstall):
 
-    cabal install alex happy
+    cabal install alex happy yesod-bin
 
 The following items are suggested but not strictly required:
 
-    cabal install haddock hlint yesod-bin
+    cabal install haddock hlint
 
 **Now, change to your snowdrift project directory (if not already there).**
 
@@ -210,34 +212,34 @@ To set up databases manually, see the appendix at the end of this guide.
 Running the site
 ----------------
 
-After completing all the steps above,
-start the server from within your snowdrift directory with the command:
+### Yesod devel
+
+The standard approach for running and working on the site is to run
+`yesod devel` from the project directory.
+It can stay running in one terminal while work is done elsewhere.
+It will automatically rebuild and rerun the site whenever it detects changes.
+
+In rare cases, you may need to run `cabal clean` if yesod devel
+fails to recognize a change.
+
+To stop yesod devel, press ENTER a few times.
+
+Note that `yesod devel` builds just the library,
+so `cabal install -fdev` and related commands are needed to update other
+resources like sdm or the payment processing script.
+
+### Alternative option to run the site
+
+We recommend `yesod devel` in almost all cases, but another approach is
+available which separates the running the site from recompiling.
+
+To just start the server, go to your snowdrift directory and run:
 
     Snowdrift Development
 
 To stop the running server, press ctrl-C
 
-To rebuild after code changes, run `cabal build`
-
-In some cases, certain files will need to be touched to be recognized for
-rebuilding.
-`cabal install -fdev` can work in some cases where `cabal build` does not.
-
-After the server starts, it may print a bunch of text about creating tables,
-and it will then sit ready, waiting for connections.
-
-Note: if you installed the optional yesod-bin above, you can use `yesod devel`
-which automatically re-compiles and runs the site whenever it detects changes.
-
-As with `cabal build`, there are cases (such as .cassius files),
-where yesod devel fails to recognize changes, and then touching certain files
-or using `cabal install -fdev` will fix the issue.
-
-See the appendix for how to install yesod-bin in a separate sandbox
-if you don't want it installed to the system generally.
-At this time, it cannot install in the main Snowdrift sandbox because of some
-dependency conflicts.
-
+To separately recompile, you can use `cabal build` and related commands.
 
 Using the live test site
 ------------------------
@@ -359,47 +361,7 @@ Happy hacking!
 
 ---
 
-APPENDIX A: Using yesod devel
-=============================
-
-`yesod devel` is a command that will rebuild snowdrift, start the server,
-*and* can stay running and automatically update the build after file changes
-(although it fails to auto-recognize changes in some file types like .cassius).
-
-To enable yesod devel, you must first install yesod-bin.
-However, yesod-bin will not currently build in the main sandbox.
-
-Our main install instructions for [Vagrant](SETUP_VAGRANT.md) and
-[Debian/Ubuntu](SETUP_DEBIAN.md) include yesod-bin system-wide, so yesod devel
-is all set to go.
-
-Alternatively, if you want to keep yesod-bin out of the main system,
-you can install it to its own sandbox.
-Start by making a new directory for yesod-bin.
-Call it "yesod-bin-sandbox" perhaps.
-
-Then, inside the new directory, run `cabal sandbox init`
-followed by `cabal install yesod-bin`.
-
-Next, add to the new directory to your PATH. Put in your .bashrc the line:
-
-    export PATH=~/yesod-bin-sandbox/.cabal-sandbox/bin:$PATH
-
-(change the ~/ to wherever you actually put the directory)
-
-In a new terminal (so it recognizes the new path),
-you can rebuild and start the server in your snowdrift directory by running
-
-     yesod devel
-
-To stop yesod devel, press ENTER a couple times
-
-Note that `yesod devel` builds just the library,
-so `cabal install -fdev` and related commands are needed to update other
-resources like sdm or the payment processing script.
-
-
-APPENDIX B: Using the Nix package manager
+APPENDIX A: Using the Nix package manager
 =========================================
 
 We're now testing the use of Nix as a reliable, simple way
@@ -472,7 +434,6 @@ which runs the testsuite.
 
 You can run the application with `dist/build/Snowdrift/Snowdrift Development`.
 
-
 Note for users of NixOS
 -----------------------
 
@@ -489,7 +450,7 @@ Afterwards you may need to create the postgres user, like so:
     createuser -s -r postgres
 
 
-APPENDIX C: Manual database management
+APPENDIX B: Manual database management
 ======================================
 
 Our sdm script makes database management quick and easy.
