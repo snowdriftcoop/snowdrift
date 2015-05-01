@@ -702,7 +702,6 @@ decrementUnderfunded :: ProjectId -> DB DropShares
 decrementUnderfunded projId = do
     droppers <- join $ maxShares (Just projId) <$> underfundedPatrons
     dropShares droppers
-    updateShareValue projId
     return $ map DropShare droppers
 
 -- | Keep dropping shares, until there are no underfunded patrons.
@@ -710,6 +709,8 @@ decrementUnderfunded projId = do
 dropAllUnderfunded :: DBConstraint m
                    => ProjectId -> WriterT DropShares (SqlPersistT m) ()
 dropAllUnderfunded projId = do
+    -- Update share value before each run.
+    lift $ updateShareValue projId
     unders <- lift $ decrementUnderfunded projId
     case unders of
         [] -> return ()
