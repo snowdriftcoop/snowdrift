@@ -619,6 +619,7 @@ type DropShares = [DropShare]
 
 -- | Drop one share from each pledge.
 dropShares :: [PledgeId] -> DB ()
+dropShares [] = return ()
 dropShares ps =
     update $ \p -> do
     set p [ PledgeFundedShares -=. val 1 ]
@@ -627,6 +628,7 @@ dropShares ps =
 -- | Find pledges in a given project (if supplied), from a given set of
 -- users, that have the greatest number of shares (greater than 0)
 maxShares :: Maybe ProjectId -> [UserId] -> DB [PledgeId]
+maxShares _     []   = return []
 maxShares mproj uids = do
     -- Can I do subquery joins? Doesn't seem so
     -- select...max_ :: m [Value (Maybe a)]
