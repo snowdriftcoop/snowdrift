@@ -583,7 +583,7 @@ updateUserShares project_handle shares = do
             lift $ getBy404 (UniqueProjectHandle project_handle)
 
         let user_outlay = projectShareValue project $* fromIntegral shares
-            success = accountBalance account < user_outlay $* 3
+            success = accountBalance account >= user_outlay $* 3
 
         when success $ do
             insertProjectPledgeDB
