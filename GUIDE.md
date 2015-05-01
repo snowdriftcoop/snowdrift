@@ -217,11 +217,11 @@ start the server from within your snowdrift directory with the command:
 
 To stop the running server, press ctrl-C
 
-To rebuild after code changes, run `cabal build -fdev`
+To rebuild after code changes, run `cabal build`
 
 In some cases, certain files will need to be touched to be recognized for
 rebuilding.
-`cabal install -fdev` can work in some cases where `cabal build -fdev` does not.
+`cabal install -fdev` can work in some cases where `cabal build` does not.
 
 After the server starts, it may print a bunch of text about creating tables,
 and it will then sit ready, waiting for connections.
@@ -229,7 +229,7 @@ and it will then sit ready, waiting for connections.
 Note: if you installed the optional yesod-bin above, you can use `yesod devel`
 which automatically re-compiles and runs the site whenever it detects changes.
 
-As with `cabal build -fdev`, there are cases (such as .cassius files),
+As with `cabal build`, there are cases (such as .cassius files),
 where yesod devel fails to recognize changes, and then touching certain files
 or using `cabal install -fdev` will fix the issue.
 
