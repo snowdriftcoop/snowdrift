@@ -76,12 +76,12 @@ For vim users, your config file .vimrc should include these lines:
     au FileType hamlet setl sw=2 sts=2 et
 
 You should also install
-[vim Shakespearean Highlighting](https://github.com/pbrisbin/vim-syntax-shakespeare)
+[vim Shakespearean Highlighting](https://github.com/pbrisbin/vim-syntax-shakespeare).
 
 Some other optional vim plugins to consider (among many available):
 [Haskell-Vim extra syntax](https://github.com/raichoo/haskell-vim)
 and
-[vim2hs](https://github.com/dag/vim2hs)
+[vim2hs](https://github.com/dag/vim2hs).
 
 
 ### Emacs
@@ -91,7 +91,8 @@ Emacs users should use a package manager (preferably Marmalade) to install
 and
 [Hamlet Mode](https://github.com/lightquake/hamlet-mode).
 
-Our included [`.dir-locals.el`](https://www.gnu.org/software/emacs/manual/html_node/emacs/Directory-Variables.html) file
+Our included file
+[`.dir-locals.el`](https://www.gnu.org/software/emacs/manual/html_node/emacs/Directory-Variables.html)
 makes Emacs use the recommended 4-space indentation.
 
 
@@ -128,18 +129,17 @@ is with a virtual machine using our
 [Vagrant installation instructions](SETUP_VAGRANT.md).
 
 We also have a complete set of steps for
-[Debian/Ubuntu installation](SETUP_DEBIAN.md)
+[Debian/Ubuntu installation](SETUP_DEBIAN.md).
 
 Neither of those explain what every command does.
 Below, we discuss more of these details.
 
 #### General installation process
 
-For more advanced users, the following instructions do not include every single
-detail. Instead, these cover the issues you will need to know in a general
-enough way to adapt to various systems.
+The following instructions include more explanation of each step
+and references for multiple approaches and different systems.
 
-First install the core dependencies:
+For any system, you must first install the core dependencies:
 ghc, cabal, postgresql, and git.
 **Note: we are now using GHC 7.8.x**
 
