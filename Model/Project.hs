@@ -646,7 +646,9 @@ maxShares mproj uids = do
                     Just proj -> pledge ^. PledgeProject ==. val proj
                     _         -> val True
 
-            fmap unwrapValues $ select $ from $ \p -> do
+            fmap unwrapValues $
+                select $
+                from $ \p -> do
                 where_ $ (p ^. PledgeUser `in_` valList uids)
                     &&. projConstraint p
                     &&. p ^. PledgeFundedShares ==. val maxCt
