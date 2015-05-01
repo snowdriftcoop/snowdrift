@@ -87,7 +87,7 @@ instance Read Milray where
 #if MIN_VERSION_base(4,8,0)
                                 span (`elem` (",0123456789" :: String)) s
 #else
-                                span (`elem` (",0123456789") s
+                                span (`elem` (",0123456789")) s
 #endif
                               (fpart, rest) = case more of 
                                                   '.' : more' -> 
