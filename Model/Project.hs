@@ -595,24 +595,21 @@ updateUserShares project_handle shares = do
         return (success, project)
 
     if success
-        then alertSuccess $ T.concat $
+        then alertSuccess $
             if shares == 0
             then
-                [ "You have dropped your pledge and are no longer "
-                , "a patron of " <> projectName project <> "."
-                ]
+                "You have dropped your pledge and are no longer "
+                <> "a patron of " <> projectName project <> "."
             else
-                [ "Your pledge is now " <> T.pack (show shares)
-                , " " <> plural shares "share" "shares" <> ". "
-                , "Thank you for being a patron of "
-                , projectName project <> "!"
-                ]
+                "Your pledge is now " <> T.pack (show shares)
+                <> " " <> plural shares "share" "shares" <> ". "
+                <> "Thank you for being a patron of "
+                <> projectName project <> "!"
 
-        else alertWarning $ T.concat
-            [ "Sorry, you must have funds to support your pledge "
-            , "for at least 3 months at current share value. "
-            , "Please deposit additional funds to your account."
-            ]
+        else alertWarning $
+            "Sorry, you must have funds to support your pledge "
+            <> "for at least 3 months at current share value. "
+            <> "Please deposit additional funds to your account."
 
 newtype DropShare = DropShare PledgeId
 type DropShares = [DropShare]
@@ -630,7 +627,6 @@ dropShares ps =
 maxShares :: Maybe ProjectId -> [UserId] -> DB [PledgeId]
 maxShares _     []   = return []
 maxShares mproj uids = do
-    -- Can I do subquery joins? Doesn't seem so
     -- select...max_ :: m [Value (Maybe a)]
     [Value mmaxCt] <-
         select $
@@ -719,11 +715,10 @@ dropAllUnderfunded projId = do
     -- Update share value before each run.
     lift $ updateShareValue projId
     unders <- lift $ decrementUnderfunded projId
-    case unders of
-        [] -> return ()
-        _  -> do
-            tell unders
-            dropAllUnderfunded projId
+
+    unless (null unders) $ do
+        tell unders
+        dropAllUnderfunded projId
 
 -- | Fold some DropShares into EventDeactivatedPledges, one per affected
 -- pledge.
