@@ -686,7 +686,7 @@ underfundedPatrons = do
     -- | Create something with a summable type.
     outlaySum :: (UserId, Milray, Int64) -> M.Map UserId (Sum Milray)
     outlaySum (u, shareValue, fundedShares) =
-        M.singleton u (Sum $ Milray fundedShares * shareValue)
+        M.singleton u (Sum $ fromIntegral fundedShares *$ shareValue)
 
     -- | Given "a - b", return just the absolute value (≡ b - a) if the
     -- difference is negative.
