@@ -667,11 +667,14 @@ underfundedPatrons = do
             , plg ^. PledgeFundedShares
             )
 
+    let uids = map (\(i,_,_) -> i) pledgeList
+
     -- :: DB (Map UserId Milray)
     balances <- fmap (M.fromList . unwrapValues) $
         select $
         from $ \(u `InnerJoin` a) -> do
         on_ $ u ^. UserAccount ==. a ^. AccountId
+        where_ $ u ^. UserId `in_` valList uids
         return (u ^. UserId, a ^. AccountBalance)
 
     -- Sum outlays over the pledge list.
