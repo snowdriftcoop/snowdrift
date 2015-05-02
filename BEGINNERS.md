@@ -9,34 +9,63 @@ Although we recommend deeper study to understand how all of this works,
 you *can* simply follow the steps below, and it will work well enough
 to get started.
 
-Advanced users should adapt any of these instructions as seen fit.
+Advanced users may, of course, adapt these instructions as they see fit.
 
 If you need *any* help at any point, come say "hi" at our freenode.net IRC
 channel [#snowdrift](https://snowdrift.coop/p/snowdrift/w/irc).
 We are always happy to assist and answer *any* questions!
 
+## Prerequisites
+
+To get started, the only absolute requirements are that you have a reasonably
+new laptop or desktop computer system (less than 10 years old generally),
+and know how to use a terminal to enter commands in the command-line.
+
+In general, when you see a list of commands to enter,
+you may enter them in one-at-a-time exactly as you see them,
+or you can copy and paste a collection of commands all at once.
+
+Note that, in most cases, you must use Ctrl+Shift+V to paste into the terminal.
+For historical reasons, Ctrl+V does something else in most terminals.
+
 ## Installing
 
-To get a pre-set-up virtual machine with everything you need,
-[follow the Vagrant instructions](SETUP_VAGRANT.md).  This is the best
-option for casual users or Windows users.
-
-Debian or Ubuntu users may wish to
-[follow the Debian-based instructions](SETUP_DEBIAN.md) instead.
-
-Our general [GUIDE](GUIDE.md) has some notes for other systems.
-
-## Basic Git setup
+### Install Git
 
 We use a program called [Git](http://git-scm.com/) to make and share
 changes while keeping the versions tracked and organized.
 
-We further manage the code and collaborate via the free/libre/open site
+Whatever system you use, you will need Git installed
+before installing snowdrift.
+If you don't have Git installed locally already, install it now.
+
+Most systems will have Git in their software repositories.
+For example, on Debian or Ubuntu you can enter the following in a terminal:
+
+    sudo apt-get install git
+
+If you are on a system that does not package git yet, you may choose to
+[download Git from the website](https://git-scm.herokuapp.com/downloads).
+
+### Installing Snowdrift
+
+To get a quick virtual machine with the core dependencies for snowdrift,
+follow the [Vagrant setup instructions](SETUP_VAGRANT.md).
+**This is the best and easiest option for all systems including
+GNU/Linux, BSD, Mac OS X, and Windows.**
+
+As an alternative option, we also have instructions for local installation.
+[Debian-based instructions](SETUP_DEBIAN.md) work for Debian or Ubuntu or
+related, and our general [GUIDE](GUIDE.md) has some notes for other systems.
+
+## Basic Git setup
+
+We collaborate on the code via the free/libre/open site
 [git.gnu.io](https://git.gnu.io/snowdrift/snowdrift).
 We also mirror on the popular but proprietary site
 [GitHub](https://github.com/snowdriftcoop/snowdrift),
 which you may use if you already have an account there.
-We still encourage everyone to use free/libre/open tools,
+We encourage everyone to use free/libre/open tools,
 so the instructions below assume git.gnu.io.
 
 To contribute changes to the project, first
@@ -106,16 +135,16 @@ When making edits, follow our
 
 #### Building your updates
 
-After making and saving changes, you can use
-`cabal install --enable-tests -fdev` to recompile
-followed by `Snowdrift Development` to run the site.  If you prefer,
-`yesod devel` is a command that does both of these and can stay running,
-and it will automatically recompile and restart the site after most changes
-(use `cabal install` in cases where `yesod devel` fails to recognize a change).
+The `yesod devel` command can be left running in a terminal while work is
+done elsewhere. It will automatically recompile and restart the site
+whenever it detects file changes.
+
 Refresh your browser view at localhost:3000 to see the updates.
 
-In the respective terminal window, you can quit `Snowdrift Development`
-with Ctrl+C or stop `yesod devel` by hitting ENTER a few times.
+In rare cases, you may need to run `cabal clean` if yesod devel
+fails to recognize a change.
+
+To stop yesod devel, press ENTER a few times.
 
 ### Testing changes
 
@@ -157,8 +186,7 @@ After committing, send your changes to your git.gnu.io account with:
 
     git push -u my-snow some_branch
 
-Change `some_branch` to the name of the branch where you made the
-commit(s).
+Change `some_branch` to the name of the branch where you made the commit(s).
 
 Reload the git.gnu.io page with your fork.
 You should see a button **"Create Merge Request"**
