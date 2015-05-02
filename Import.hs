@@ -55,7 +55,7 @@ import           Data.Monoid          as Import ((<>)
 #if MIN_VERSION_base(4,8,0)
                                                 )
 #else
-                                                , mempty)
+                                                ,mconcat, mappend, mempty)
 #endif
 
 instance ToContent Markdown where
