@@ -51,7 +51,12 @@ import           Data.List (sortBy, (\\), nub)
 
 import qualified Data.Map as M
 
-import           Data.Monoid          as Import ((<>))
+import           Data.Monoid          as Import ((<>)
+#if MIN_VERSION_base(4,8,0)
+                                                )
+#else
+                                                , mempty)
+#endif
 
 instance ToContent Markdown where
     toContent (Markdown text) = toContent $ text <> "\n"
