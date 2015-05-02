@@ -125,7 +125,6 @@ See the appendix at the end of this file for more.
 ### Build steps
 
 Install the essential dependencies: ghc, cabal, postgresql
-**Note: we are now using GHC 7.8.x**
 
 **<https://www.haskell.org/downloads/linux>** has instructions for
 installing ghc, cabal, happy, and alex on Ubuntu, Fedora, and Arch,
