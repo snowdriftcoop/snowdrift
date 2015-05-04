@@ -387,8 +387,8 @@ editComment route = [marked|
         addPostParam "mode" "post"
 |]
 
-watch :: RedirectUrl App url => url -> YesodExample App ()
-watch route = [marked|
+changeWatchStatus :: RedirectUrl App url => url -> YesodExample App ()
+changeWatchStatus route = [marked|
      withStatus 303 False $ request $ do
          setMethod "POST"
          setUrl route

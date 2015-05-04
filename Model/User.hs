@@ -543,8 +543,20 @@ updateProjectNotificationPrefDB user_id project_id notif_type mnotif_deliv =
           (updateProjectNotifPrefs user_id project_id notif_type)
           mnotif_deliv
 
+insertDefaultProjectNotifPrefs :: UserId -> ProjectId -> DB ()
+insertDefaultProjectNotifPrefs user_id project_id =
+    void $ insertMany $ uncurry (ProjectNotificationPref user_id project_id) <$>
+        [ (NotifWikiEdit,      ProjectNotifDeliverWebsite)
+        , (NotifWikiPage,      ProjectNotifDeliverWebsite)
+        , (NotifBlogPost,      ProjectNotifDeliverWebsiteAndEmail)
+        , (NotifNewPledge,     ProjectNotifDeliverWebsite)
+        , (NotifUpdatedPledge, ProjectNotifDeliverWebsite)
+        , (NotifDeletedPledge, ProjectNotifDeliverWebsite)
+        ]
+
 userWatchProjectDB :: UserId -> ProjectId -> DB ()
-userWatchProjectDB user_id project_id =
+userWatchProjectDB user_id project_id = do
+    insertDefaultProjectNotifPrefs user_id project_id
     void $ insertUnique $ UserWatchingProject user_id project_id
 
 userUnwatchProjectDB :: UserId -> ProjectId -> DB ()
