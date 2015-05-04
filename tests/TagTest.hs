@@ -6,7 +6,7 @@
 module TagTest (tagSpecs) where
 
 import           Import (pprint)
-import           TestImport hiding (get, editComment)
+import           TestImport hiding (get)
 
 import           Control.Monad (when)
 import           Database.Esqueleto
@@ -96,20 +96,6 @@ tagSpecs AppConfig {..} = ydescribe "tags" $
         get comment_id >>=
             maybe (error $ "comment " <> pprint comment_id <> " not found")
                   (return . commentText)
-
--- XXX: Merge with 'editComment' from 'TestImport'.
-editComment :: Text -> Text -> YesodExample App ()
-editComment route comment_text = [marked|
-    get200 route
-
-    withStatus 303 True $ request $ do
-        addNonce
-        setMethod "POST"
-        setUrl route
-        addPostParam "f1" comment_text
-        addPostParam "f2" "en"
-        addPostParam "mode" "post"
-    |]
 
 errorUnlessUniqueTag :: CommentId -> UserId -> Text -> SqlPersistM ()
 errorUnlessUniqueTag comment_id user_id tag_name = do

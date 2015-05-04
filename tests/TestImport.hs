@@ -374,18 +374,18 @@ flagComment route = [marked|
         addPostParam "mode" "post"
 |]
 
-editComment :: Text -> YesodExample App ()
-editComment route = [marked|
+editComment :: Text -> Text -> YesodExample App ()
+editComment route comment_text = [marked|
     get200 route
 
     withStatus 303 True $ request $ do
         addNonce
         setMethod "POST"
         setUrl route
-        byLabel "Edit" "testing"
+        byLabel "Edit" comment_text
         byLabel "Language" "en"
         addPostParam "mode" "post"
-|]
+    |]
 
 watch :: RedirectUrl App url => url -> YesodExample App ()
 watch route = [marked|
