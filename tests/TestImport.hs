@@ -321,9 +321,9 @@ deleteUserNotifPrefs user_id notif_type =
              &&. unp ^. UserNotificationPrefType ==. val notif_type
 
 -- Copied from 'Model.User' but without the constraint in the result.
-deleteProjectNotifPrefsByType :: UserId -> ProjectId -> ProjectNotificationType
-                              -> SqlPersistM ()
-deleteProjectNotifPrefsByType user_id project_id notif_type =
+deleteProjectNotifPrefs :: UserId -> ProjectId -> ProjectNotificationType
+                        -> SqlPersistM ()
+deleteProjectNotifPrefs user_id project_id notif_type =
     delete $ from $ \pnp ->
         where_ $ pnp ^. ProjectNotificationPrefUser    ==. val user_id
              &&. pnp ^. ProjectNotificationPrefProject ==. val project_id
@@ -340,7 +340,7 @@ updateUserNotifPrefs user_id notif_type notif_deliv = do
 updateProjectNotifPrefs :: UserId -> ProjectId -> ProjectNotificationType
                         -> ProjectNotificationDelivery -> SqlPersistM ()
 updateProjectNotifPrefs user_id project_id notif_type notif_deliv = do
-    deleteProjectNotifPrefsByType user_id project_id notif_type
+    deleteProjectNotifPrefs user_id project_id notif_type
     insert_ $ ProjectNotificationPref user_id project_id notif_type notif_deliv
 
 -- 'forkEventHandler' sleeps for one second in between

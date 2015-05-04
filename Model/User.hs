@@ -508,15 +508,9 @@ deleteUserNotifPrefs user_id notif_type =
         where_ $ unp ^. UserNotificationPrefUser ==. val user_id
              &&. unp ^. UserNotificationPrefType ==. val notif_type
 
-deleteProjectNotifPrefs :: UserId -> ProjectId -> DB ()
-deleteProjectNotifPrefs user_id project_id =
-    delete $ from $ \pnp ->
-        where_ $ pnp ^. ProjectNotificationPrefUser    ==. val user_id
-             &&. pnp ^. ProjectNotificationPrefProject ==. val project_id
-
-deleteProjectNotifPrefsByType :: UserId -> ProjectId -> ProjectNotificationType
-                              -> DB ()
-deleteProjectNotifPrefsByType user_id project_id notif_type =
+deleteProjectNotifPrefs :: UserId -> ProjectId -> ProjectNotificationType
+                        -> DB ()
+deleteProjectNotifPrefs user_id project_id notif_type =
     delete $ from $ \pnp ->
         where_ $ pnp ^. ProjectNotificationPrefUser    ==. val user_id
              &&. pnp ^. ProjectNotificationPrefProject ==. val project_id
@@ -531,7 +525,7 @@ updateUserNotifPrefs user_id notif_type notif_deliv = do
 updateProjectNotifPrefs :: UserId -> ProjectId -> ProjectNotificationType
                         -> ProjectNotificationDelivery -> DB ()
 updateProjectNotifPrefs user_id project_id notif_type notif_deliv = do
-    deleteProjectNotifPrefsByType user_id project_id notif_type
+    deleteProjectNotifPrefs user_id project_id notif_type
     insert_ $ ProjectNotificationPref user_id project_id notif_type notif_deliv
 
 updateUserNotificationPrefDB :: UserId -> UserNotificationType
@@ -545,7 +539,7 @@ updateProjectNotificationPrefDB :: UserId -> ProjectId
                                 -> ProjectNotificationType
                                 -> Maybe ProjectNotificationDelivery -> DB ()
 updateProjectNotificationPrefDB user_id project_id notif_type mnotif_deliv =
-    maybe (deleteProjectNotifPrefsByType user_id project_id notif_type)
+    maybe (deleteProjectNotifPrefs user_id project_id notif_type)
           (updateProjectNotifPrefs user_id project_id notif_type)
           mnotif_deliv
 
@@ -566,9 +560,8 @@ userWatchProjectDB user_id project_id = do
     void $ insertUnique $ UserWatchingProject user_id project_id
 
 userUnwatchProjectDB :: UserId -> ProjectId -> DB ()
-userUnwatchProjectDB user_id project_id = do
+userUnwatchProjectDB user_id project_id =
     deleteBy $ UniqueUserWatchingProject user_id project_id
-    deleteProjectNotifPrefs user_id project_id
 
 userIsWatchingProjectDB :: UserId -> ProjectId -> DB Bool
 userIsWatchingProjectDB user_id project_id = maybe (False) (const True) <$> getBy (UniqueUserWatchingProject user_id project_id)
