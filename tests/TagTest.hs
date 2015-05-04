@@ -5,6 +5,7 @@
 
 module TagTest (tagSpecs) where
 
+import           Import (pprint)
 import           TestImport hiding (get, editComment)
 
 import           Control.Monad (when)
@@ -95,21 +96,6 @@ tagSpecs AppConfig {..} = ydescribe "tags" $
         get comment_id >>=
             maybe (error $ "comment " <> pprint comment_id <> " not found")
                   (return . commentText)
-
-class Show a => PPrint a where
-    pprint :: a -> String
-
-instance PPrint CommentId where
-    pprint = show . unSqlBackendKey . unCommentKey
-
-instance PPrint UserId where
-    pprint = show . unSqlBackendKey . unUserKey
-
-instance PPrint TagId where
-    pprint = show . unSqlBackendKey . unTagKey
-
-instance PPrint Text where
-    pprint = Text.unpack
 
 -- XXX: Merge with 'editComment' from 'TestImport'.
 editComment :: Text -> Text -> YesodExample App ()
