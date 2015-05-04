@@ -42,8 +42,8 @@ tagSpecs AppConfig {..} = ydescribe "tags" $
     errorWhenInfixOf tags_line comment_text
 
 
-    -- Test that 'tags:' adds tags when a comment is edited".
-    ---------------------------------------------------------
+    -- Test that 'tags:' adds tags when a comment is edited.
+    --------------------------------------------------------
     -- Add more tags.
     editComment comment_route $
         comment_text <> "\n" <>
