@@ -32,6 +32,7 @@ module Model.Project
     , projectNameWidget
     , summarizeProject
     , updateShareValue
+    , updateUserShares
     ) where
 
 import Import
@@ -43,16 +44,19 @@ import Model.Comment.Sql
 import Model.Currency
 import Model.Issue
 import Model.Tag
+import Model.Shares (pledgeRenderKey)
 import Model.Wiki.Sql
 import Widgets.Tag
 
 import           Control.Monad.Trans.Maybe    (MaybeT(..), runMaybeT)
 import           Control.Monad.Trans.Resource (MonadThrow)
-import           Control.Monad.Writer.Strict  (tell)
+import           Control.Monad.Writer.Strict  (WriterT, tell, execWriterT)
 import           Control.Concurrent.Async     (Async, async, wait)
 import qualified Github.Data                  as GH
 import qualified Github.Issues                as GH
+import           Data.Foldable                (foldMap)
 import qualified Data.Map                     as M
+import           Data.Monoid                  (Sum(..))
 import qualified Data.Set                     as S
 import qualified Data.Text                    as T
 
@@ -277,12 +281,6 @@ updateShareValue project_id = do
     update $ \ project -> do
         set project  [ ProjectShareValue =. val (projectComputeShareValue pledges) ]
         where_ (project ^. ProjectId ==. val project_id)
-
-{-
- - TODO
- -  Unfund shares
- -  Fix algorithm
- -}
 
 projectNameWidget :: ProjectId -> Widget
 projectNameWidget project_id = do
@@ -521,7 +519,7 @@ fetchProjectModeratorsDB = fetchProjectRoleDB Moderator
 
 -- | Abstract fetching Project Admins, TeamMembers, etc. Not exported.
 fetchProjectRoleDB :: Role -> ProjectId -> DB [UserId]
-fetchProjectRoleDB role project_id = fmap (map unValue) $
+fetchProjectRoleDB role project_id = fmap unwrapValues $
     select $
     from $ \ pur -> do
     where_ $
@@ -572,3 +570,170 @@ fetchProjectOpenTicketsDB project_id muser_id = do
                  where_ $ val (ticketComment ticket) ==. tc ^. TicketClaimingTicket
                  return tc
             return $ if c == 0 then (t, False) else (t, True)
+
+updateUserShares :: Text -> Int64 -> HandlerT App IO ()
+updateUserShares project_handle shares = do
+    Just pledge_render_id <-
+        fmap (read . T.unpack) <$> lookupSession pledgeRenderKey
+
+    (success, project) <- runSYDB $ do
+        Entity user_id user <- lift (lift requireAuth)
+        Just account <- lift $ get (userAccount user)
+        Entity project_id project <-
+            lift $ getBy404 (UniqueProjectHandle project_handle)
+
+        let user_outlay = projectShareValue project $* fromIntegral shares
+            success = accountBalance account >= user_outlay $* 3
+
+        when success $ do
+            insertProjectPledgeDB
+                user_id
+                project_id
+                shares
+                pledge_render_id
+            rebalanceProjectPledges project_id
+        return (success, project)
+
+    if success
+        then alertSuccess $
+            if shares == 0
+            then
+                "You have dropped your pledge and are no longer "
+                <> "a patron of " <> projectName project <> "."
+            else
+                "Your pledge is now " <> T.pack (show shares)
+                <> " " <> plural shares "share" "shares" <> ". "
+                <> "Thank you for being a patron of "
+                <> projectName project <> "!"
+
+        else alertWarning $
+            "Sorry, you must have funds to support your pledge "
+            <> "for at least 3 months at current share value. "
+            <> "Please deposit additional funds to your account."
+
+newtype DropShare = DropShare PledgeId
+type DropShares = [DropShare]
+
+-- | Drop one share from each pledge.
+dropShares :: [PledgeId] -> DB ()
+dropShares [] = return ()
+dropShares ps =
+    update $ \p -> do
+    set p [ PledgeFundedShares -=. val 1 ]
+    where_ $ p ^. PledgeId `in_` valList ps
+
+-- | Find pledges in a given project (if supplied), from a given set of
+-- users, that have the greatest number of shares (greater than 0)
+maxShares :: Maybe ProjectId -> [UserId] -> DB [PledgeId]
+maxShares _     []   = return []
+maxShares mproj uids = do
+    -- select...max_ :: m [Value (Maybe a)]
+    [Value mmaxCt] <-
+        select $
+        from $ \p -> do
+        where_ $ (p ^. PledgeUser `in_` valList uids)
+            &&. p ^. PledgeFundedShares >. val 0
+        return $ max_ $ p ^. PledgeFundedShares
+
+    case mmaxCt of
+        Nothing -> return []
+        Just maxCt -> do
+            let projConstraint pledge = case mproj of
+                    Just proj -> pledge ^. PledgeProject ==. val proj
+                    _         -> val True
+
+            fmap unwrapValues $
+                select $
+                from $ \p -> do
+                where_ $ (p ^. PledgeUser `in_` valList uids)
+                    &&. projConstraint p
+                    &&. p ^. PledgeFundedShares ==. val maxCt
+                return $ p ^. PledgeId
+
+-- | Find underfunded patrons.
+-- This would be a lot nicer if we actually used the database as a
+-- database.
+underfundedPatrons :: DB [UserId]
+underfundedPatrons = do
+    -- :: DB [(UserId, Milray, Int64)]
+    pledgeList <- fmap unwrapValues $
+        select $
+        from $ \(usr `InnerJoin` plg `InnerJoin` prj) -> do
+        on_ $ prj ^. ProjectId  ==. plg ^. PledgeProject
+        on_ $ plg ^. PledgeUser ==. usr ^. UserId
+        return
+            ( usr ^. UserId
+            , prj ^. ProjectShareValue
+            , plg ^. PledgeFundedShares
+            )
+
+    let uids = map (\(i,_,_) -> i) pledgeList
+
+    -- :: DB (Map UserId Milray)
+    balances <- fmap (M.fromList . unwrapValues) $
+        select $
+        from $ \(u `InnerJoin` a) -> do
+        on_ $ u ^. UserAccount ==. a ^. AccountId
+        where_ $ u ^. UserId `in_` valList uids
+        return (u ^. UserId, a ^. AccountBalance)
+
+    -- Sum outlays over the pledge list.
+    let userOutlays :: M.Map UserId Milray
+        userOutlays = getSum <$> foldMap outlaySum pledgeList
+
+    -- Filter out non-negative (balance - outlay) and return
+    return $ M.keys $ M.differenceWith maybeNegSubtract balances userOutlays
+
+  where
+
+    -- | Create something with a summable type.
+    outlaySum :: (UserId, Milray, Int64) -> M.Map UserId (Sum Milray)
+    outlaySum (u, shareValue, fundedShares) =
+        M.singleton u (Sum $ fromIntegral fundedShares *$ shareValue)
+
+    -- | Given "a - b", return just the absolute value (≡ b - a) if the
+    -- difference is negative.
+    maybeNegSubtract :: (Ord s, Num s) => s -> s -> Maybe s
+    maybeNegSubtract a b
+        | a < b     = Just $ b - a
+        | otherwise = Nothing
+
+-- | Drop one share from each highest-shared underfunded pledges to a
+-- particular project, and update the project share value. Return which
+-- ones got dropped.
+decrementUnderfunded :: ProjectId -> DB DropShares
+decrementUnderfunded projId = do
+    droppers <- join $ maxShares (Just projId) <$> underfundedPatrons
+    dropShares droppers
+    return $ map DropShare droppers
+
+-- | Keep dropping shares, until there are no underfunded patrons.
+-- (Recursion alert.)
+dropAllUnderfunded :: DBConstraint m
+                   => ProjectId -> WriterT DropShares (SqlPersistT m) ()
+dropAllUnderfunded projId = do
+    -- Update share value before each run.
+    lift $ updateShareValue projId
+    unders <- lift $ decrementUnderfunded projId
+
+    unless (null unders) $ do
+        tell unders
+        dropAllUnderfunded projId
+
+-- | Fold some DropShares into EventDeactivatedPledges, one per affected
+-- pledge.
+--
+-- To be implemented for SD-603.
+foldDrops :: UTCTime -> DropShares -> [SnowdriftEvent]
+foldDrops _ts = map snd . toList . foldr insertOrAdd M.empty
+  where
+    insertOrAdd = flip const
+
+-- | After a patron modifies their pledge, some other patrons may be
+-- underfunded. This method deactivates shares from those underfunded
+-- pledges until all pledges are funded.
+rebalanceProjectPledges :: ProjectId -> SYDB ()
+rebalanceProjectPledges project_id = do
+    allDrops <- lift . execWriterT $ dropAllUnderfunded project_id
+    now <- liftIO getCurrentTime
+    tell $ foldDrops now allDrops
