@@ -556,8 +556,13 @@ insertDefaultProjectNotifPrefs user_id project_id =
 
 userWatchProjectDB :: UserId -> ProjectId -> DB ()
 userWatchProjectDB user_id project_id = do
-    insertDefaultProjectNotifPrefs user_id project_id
     void $ insertUnique $ UserWatchingProject user_id project_id
+    prefs <-
+        select $
+        from $ \pnp -> do
+        where_ $ pnp ^. ProjectNotificationPrefUser ==. val user_id
+    when (null prefs) $
+        insertDefaultProjectNotifPrefs user_id project_id
 
 userUnwatchProjectDB :: UserId -> ProjectId -> DB ()
 userUnwatchProjectDB user_id project_id =
