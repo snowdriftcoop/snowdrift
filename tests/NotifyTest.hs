@@ -249,6 +249,8 @@ notifySpecs AppConfig {..} file = do
     wiki_page_self       = "testing-self"
     wiki_page_self_email = "testing-self-email"
 
+    editComment' route = editComment route "testing"
+
     testUserNotification NotifEligEstablish = do
         yit "notifies on establishment" $ [marked|
             forM_ (L.init named_users) $ \user -> do
@@ -529,7 +531,7 @@ notifySpecs AppConfig {..} file = do
 
             loginAs Mary
             (comment_id, True) <- getLatestCommentId
-            editComment $ render appRoot $ enRoute EditWikiCommentR "about" comment_id
+            editComment' $ render appRoot $ enRoute EditWikiCommentR "about" comment_id
 
             errUnlessUniqueUserWebsiteNotif' WithoutDelay bob_id NotifFlagRepost $
                 render appRoot $ enRoute WikiCommentR "about" comment_id
@@ -542,7 +544,7 @@ notifySpecs AppConfig {..} file = do
 
             loginAs Mary
             (comment_id, True) <- getLatestCommentId
-            editComment $ render appRoot $ enRoute EditWikiCommentR "about" comment_id
+            editComment' $ render appRoot $ enRoute EditWikiCommentR "about" comment_id
 
             errUnlessUniqueEmailNotif' file $
                 render appRoot $ enRoute WikiCommentR "about" comment_id

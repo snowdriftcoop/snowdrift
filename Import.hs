@@ -54,6 +54,21 @@ infixr 5 <>
 (<>) = mappend
 #endif
 
+class Show a => PPrint a where
+    pprint :: a -> String
+
+instance PPrint CommentId where
+    pprint = show . unSqlBackendKey . unCommentKey
+
+instance PPrint UserId where
+    pprint = show . unSqlBackendKey . unUserKey
+
+instance PPrint TagId where
+    pprint = show . unSqlBackendKey . unTagKey
+
+instance PPrint Text where
+    pprint = T.unpack
+
 instance ToContent Markdown where
     toContent (Markdown text) = toContent $ text <> "\n"
 

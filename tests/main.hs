@@ -16,6 +16,7 @@ import NotifyTest
 import DiscussionTest
 import WikiTest
 import BlogTest
+import TagTest
 
 import TestHandler
 import Model.Markdown
@@ -58,8 +59,10 @@ spec foundation file =
                     _ -> False
 
         yesodSpec foundation $ do
+            let config = settings foundation
             userSpecs
-            notifySpecs (settings foundation) file
+            notifySpecs config file
             wikiSpecs
             blogSpecs
             discussionSpecs
+            tagSpecs config

@@ -470,22 +470,21 @@ editCommentDB user_id comment_id text language = do
     updateComment = do
         existent_tickets <- lift $ fetchTicketNamesDB comment_id
         existent_tags    <- lift $ fetchTagNamesDB comment_id
-        let content          = unMarkdown text
-            content_tickets  = parseTickets content
-            content_tags     = parseTags content
-            new_tickets      = content_tickets \\ existent_tickets
-            obsolete_tickets = existent_tickets \\ content_tickets
-            new_tags         = content_tags \\ existent_tags
-            obsolete_tags    = existent_tags \\ content_tags
+        let content_with_tags    = unMarkdown text
+            content_without_tags = Markdown $ stripTags content_with_tags
+            content_tickets      = parseTickets content_with_tags
+            content_tags         = parseTags    content_with_tags
+            new_tickets          = content_tickets \\ existent_tickets
+            obsolete_tickets     = existent_tickets \\ content_tickets
+            new_tags             = content_tags \\ existent_tags
         deleteTicketsDB comment_id obsolete_tickets
         lift $ do
-            deleteTagsDB comment_id obsolete_tags
             now <- liftIO getCurrentTime
             insertTicketsDB now comment_id new_tickets
             insertTagsDB user_id comment_id new_tags
 
             update $ \c -> do
-            set c [ CommentText     =. val text
+            set c [ CommentText     =. val content_without_tags
                   , CommentLanguage =. val language
                   ]
             where_ (c ^. CommentId ==. val comment_id)
@@ -542,6 +541,10 @@ parseTags =
     map (Internal.TagName . T.strip) . mconcat . map (T.splitOn ",") .
     mapMaybe (T.stripPrefix "tags:") . T.lines
 
+-- | Remove all lines starting with the "tags:" prefix.
+stripTags :: Text -> Text
+stripTags = T.unlines . filter (not . ("tags:" `T.isPrefixOf`)) . T.lines
+
 insertTagsDB :: UserId -> CommentId -> [Internal.TagName] -> DB ()
 insertTagsDB user_id comment_id tags =
     forM_ tags $ \(Internal.TagName tag) -> do
@@ -562,13 +565,15 @@ postComment insert_comment user_id mparent_id discussion_id contents visibility 
         <$> liftIO getCurrentTime
         <*> fetchCommentDepthFromMaybeParentIdDB mparent_id
 
-    comment_id <- insert_comment now discussion_id mparent_id user_id contents depth visibility language
+    let content_with_tags    = unMarkdown contents
+        content_without_tags = Markdown $ stripTags content_with_tags
 
-    let content = unMarkdown contents
+    comment_id <- insert_comment now discussion_id mparent_id user_id
+                      content_without_tags depth visibility language
 
     lift $ do
-        insertTicketsDB now comment_id $ parseTickets content
-        insertTagsDB user_id comment_id $ parseTags content
+        insertTicketsDB now comment_id $ parseTickets content_with_tags
+        insertTagsDB user_id comment_id $ parseTags content_with_tags
 
         case mparent_id of
             Nothing -> return ()
