@@ -141,7 +141,6 @@ and references for multiple approaches and different systems.
 
 For any system, you must first install the core dependencies:
 ghc, cabal, postgresql, and git.
-**Note: we are now using GHC 7.8.x**
 
 Various systems may need some libraries and other dependencies.
 

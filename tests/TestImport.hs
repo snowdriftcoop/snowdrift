@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE TemplateHaskell #-}
@@ -42,7 +43,10 @@ import Foundation as TestImport
 import Model as TestImport hiding
     (userNotificationContent, projectNotificationContent)
 
+#if !(MIN_VERSION_base(4,8,0))
 import Control.Applicative ((<$>))
+#endif
+
 import Control.Concurrent (threadDelay)
 import Control.Monad (when)
 import Data.Monoid ((<>))

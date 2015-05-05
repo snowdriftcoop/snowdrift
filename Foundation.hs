@@ -1,3 +1,5 @@
+{-# LANGUAGE CPP #-}
+
 module Foundation where
 
 import           Model
@@ -514,7 +516,11 @@ runDaemon app daemon =
         (messageLoggerSource app (appLogger app))
 
 -- A basic database action.
+#if MIN_VERSION_base(4,8,0)
+type DB a = forall m. DBConstraint m => SqlPersistT m a
+#else
 type DB a = DBConstraint m => SqlPersistT m a
+#endif
 
 runDB :: DBConstraint m => DB a -> m a
 runDB action = do
@@ -529,7 +535,11 @@ runYDB :: YDB a -> Handler a
 runYDB = Y.runDB
 
 -- A database action that writes [SnowdriftEvent], to be run after the transaction is complete.
+#if MIN_VERSION_base(4,8,0)
+type SDB a  = forall m. DBConstraint m => WriterT [SnowdriftEvent] (SqlPersistT m) a
+#else
 type SDB a  = DBConstraint m => WriterT [SnowdriftEvent] (SqlPersistT m) a
+#endif
 
 runSDB :: DBConstraint m => SDB a -> m a
 runSDB w = do

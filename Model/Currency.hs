@@ -1,3 +1,9 @@
+{-# LANGUAGE CPP #-}
+
+#if MIN_VERSION_base(4,8,0)
+{-# LANGUAGE FlexibleContexts #-}
+#endif
+
 module Model.Currency where
 
 import Data.Int (Int64)
@@ -77,9 +83,19 @@ instance ToMarkup Milray where
 
 instance Read Milray where
     readsPrec p ('$':'-':s) = map (\ (Milray i, rest) -> (Milray $ -i, rest)) $ readsPrec p ('$':s)
-    readsPrec _ ('$':s) = let (ipart, more) = span (`elem` ",0123456789") s
+    readsPrec _ ('$':s) = let (ipart, more) = 
+#if MIN_VERSION_base(4,8,0)
+                                span (`elem` (",0123456789" :: String)) s
+#else
+                                span (`elem` (",0123456789")) s
+#endif
                               (fpart, rest) = case more of 
-                                                  '.' : more' -> span (`elem` "0123456789") more'
+                                                  '.' : more' -> 
+#if MIN_VERSION_base(4,8,0)
+                                                        span (`elem` ("0123456789" :: String)) more'
+#else
+                                                        span (`elem` "0123456789") more'
+#endif
                                                   _ -> ("", more)
                                               
                               result = Milray $ read $ filter (/= ',') ipart ++ take 4 (fpart ++ repeat '0')
