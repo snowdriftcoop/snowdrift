@@ -94,7 +94,7 @@ module Model.User
     , canMakeEligible
     ) where
 
-import Import
+import Import hiding (exists)
 
 
 import Model.Comment
@@ -557,11 +557,12 @@ insertDefaultProjectNotifPrefs user_id project_id =
 userWatchProjectDB :: UserId -> ProjectId -> DB ()
 userWatchProjectDB user_id project_id = do
     void $ insertUnique $ UserWatchingProject user_id project_id
-    prefs <-
-        select $
+    exists <-
+        selectExists $
         from $ \pnp -> do
-        where_ $ pnp ^. ProjectNotificationPrefUser ==. val user_id
-    when (null prefs) $
+        where_ $ pnp ^. ProjectNotificationPrefUser    ==. val user_id
+             &&. pnp ^. ProjectNotificationPrefProject ==. val project_id
+    unless exists $
         insertDefaultProjectNotifPrefs user_id project_id
 
 userUnwatchProjectDB :: UserId -> ProjectId -> DB ()

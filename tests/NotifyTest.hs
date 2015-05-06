@@ -5,18 +5,20 @@
 
 module NotifyTest (notifySpecs) where
 
-import           Import                               (Established(..), Role (..))
+import           Import                               (Established(..), Role (..), pprint, selectExists, key)
 import           TestImport                           hiding ((=.), update, (</>), Update)
+import           Model.Currency                       (Milray (..))
 import           Model.Language
 import           Model.Notification
 
 import           Control.Exception                    (bracket)
 import           Control.Monad                        (void, unless)
-import           Database.Esqueleto
+import           Database.Esqueleto                   hiding (exists)
 import           Database.Esqueleto.Internal.Language (Update, From)
 import           Data.Foldable                        (forM_)
 import qualified Data.List                            as L
 import           Data.Monoid                          ((<>))
+import           Data.Time                            (getCurrentTime)
 import           Data.Text                            (Text)
 import qualified Data.Text                            as T
 import qualified Data.Text.IO                         as T
@@ -24,7 +26,7 @@ import           System.FilePath                      ((</>))
 import           System.Directory                     (getDirectoryContents)
 import           System.Process                       (spawnProcess, terminateProcess)
 import           Yesod.Default.Config                 (AppConfig (..), DefaultEnv (..))
-import           Yesod.Markdown                       (unMarkdown, Markdown)
+import           Yesod.Markdown                       (unMarkdown, Markdown (..))
 
 updateUser :: UserId -> [SqlExpr (Update User)] -> SqlPersistM ()
 updateUser user_id xs =
@@ -222,6 +224,28 @@ watchProject user project_id action = do
     action
     loginAs user
     changeWatchStatus $ UnwatchProjectR project_id
+
+errorUnlessExistDefaultProjectNotifPrefs :: UserId -> ProjectId -> SqlPersistM ()
+errorUnlessExistDefaultProjectNotifPrefs user_id project_id =
+    forM_ [ (NotifWikiEdit,      ProjectNotifDeliverWebsite)
+          , (NotifWikiPage,      ProjectNotifDeliverWebsite)
+          , (NotifBlogPost,      ProjectNotifDeliverWebsiteAndEmail)
+          , (NotifNewPledge,     ProjectNotifDeliverWebsite)
+          , (NotifUpdatedPledge, ProjectNotifDeliverWebsite)
+          , (NotifDeletedPledge, ProjectNotifDeliverWebsite) ] $
+        \(notif_type, notif_deliv) -> do
+            exists <- selectExists $ from $ \pnp ->
+                where_ $ pnp ^. ProjectNotificationPrefUser     ==. val user_id
+                     &&. pnp ^. ProjectNotificationPrefProject  ==. val project_id
+                     &&. pnp ^. ProjectNotificationPrefType     ==. val notif_type
+                     &&. pnp ^. ProjectNotificationPrefDelivery ==. val notif_deliv
+            unless exists $
+                error $ "project notification preference with"
+                     <> " user "      <> pprint user_id
+                     <> ", project "  <> pprint project_id
+                     <> ", type "     <> pprint notif_type
+                     <> ", delivery " <> pprint notif_deliv
+                     <> " does not exist"
 
 notifySpecs :: AppConfig DefaultEnv a -> FileName -> Spec
 notifySpecs AppConfig {..} file = do
@@ -944,4 +968,35 @@ notifySpecs AppConfig {..} file = do
                 errWhenExistsEmailNotif' file $
                     "user" <> (shpack $ keyToInt64 mary_id) <>
                     " is no longer supporting the [project]"
+        |]
+
+        yit ("project notification preferences are checked per-project " <>
+             "before inserting the defaults on 'watch'") [marked|
+            mary_id <- userId Mary
+            -- Start watching the Snowdrift.coop project without doing
+            -- anything.
+            snowdrift_id <- snowdriftId
+            watchProject Mary snowdrift_id $ return ()
+            -- Check that some (not necessarily default) notification
+            -- preferences are already there.
+            testDB $ do
+                exists <- selectExists $ from $ \pnp ->
+                              where_ $ pnp ^. ProjectNotificationPrefUser
+                                   ==. val mary_id
+                                   &&. pnp ^. ProjectNotificationPrefProject
+                                   ==. val snowdrift_id
+                unless exists $
+                    error $ "cannot find project notification preferences for"
+                         <> " user "     <> pprint mary_id
+                         <> ", project " <> pprint snowdrift_id
+
+            -- Start watching another project and check that the
+            -- default notification preferences are there.
+            test_project_id <- testDB $ do
+                now <- liftIO $ getCurrentTime
+                insert $ Project now "test" "test" "test" (Markdown "test")
+                                 (key $ PersistInt64 1) (Milray 42) Nothing
+                                 Nothing (key $ PersistInt64 1) True Nothing
+            watchProject Mary test_project_id $ return ()
+            testDB $ errorUnlessExistDefaultProjectNotifPrefs mary_id test_project_id
         |]
