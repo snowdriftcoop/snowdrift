@@ -8,6 +8,7 @@ import           Model                         as Import
 import           Model.Language                as Import
 import           Model.Comment.Internal        as Import hiding (TagName, TicketName)
 import           Model.Established.Internal    as Import
+import           Model.Notification.Internal   (ProjectNotificationType, ProjectNotificationDelivery)
 import           Model.Role.Internal           as Import
 import           Model.SnowdriftEvent.Internal as Import
 import           Settings                      as Import
@@ -63,8 +64,17 @@ instance PPrint CommentId where
 instance PPrint UserId where
     pprint = show . unSqlBackendKey . unUserKey
 
+instance PPrint ProjectId where
+    pprint = show . unSqlBackendKey . unProjectKey
+
 instance PPrint TagId where
     pprint = show . unSqlBackendKey . unTagKey
+
+instance PPrint ProjectNotificationType where
+    pprint = show
+
+instance PPrint ProjectNotificationDelivery where
+    pprint = show
 
 instance PPrint Text where
     pprint = T.unpack
@@ -99,7 +109,8 @@ selectCount from_ =
 key :: PersistEntity record => PersistValue -> Key record
 key v = let Right k = keyFromValues [v] in k
 
-selectExists :: SqlQuery a -> DB Bool
+selectExists :: (MonadIO m, Functor m)
+             => SqlQuery a -> ReaderT SqlBackend m Bool
 selectExists = fmap (>0) . selectCount
 
 newHash :: IO Text
