@@ -78,7 +78,8 @@ projectNotificationPref ProjectNotificationPref {..} =
 
 forcedNotification :: UserNotificationType -> Maybe UserNotificationDelivery
 forcedNotification NotifWelcome             = Just UserNotifDeliverWebsite
-forcedNotification NotifEligEstablish       = Just UserNotifDeliverWebsiteAndEmail
+forcedNotification NotifEligEstablish       =
+    Just UserNotifDeliverWebsiteAndEmail
 forcedNotification NotifBalanceLow          = Nothing
 forcedNotification NotifUnapprovedComment   = Nothing
 forcedNotification NotifApprovedComment     = Nothing
@@ -192,7 +193,8 @@ sendPreferredUserNotificationDB mnotif_sender
                         sendUserNotificationDB_
                             notif_type notif_receiver mcomment_id content
             case (pref, muser_email) of
-                (UserNotifDeliverWebsiteAndEmail, Just _)  -> sendWebsiteNotif >> sendEmailNotif
+                (UserNotifDeliverWebsiteAndEmail, Just _)  ->
+                    sendWebsiteNotif >> sendEmailNotif
                 (UserNotifDeliverWebsiteAndEmail, Nothing) -> sendWebsiteNotif
 
                 (UserNotifDeliverEmail          , Just _)  -> sendEmailNotif
@@ -233,11 +235,15 @@ sendPreferredProjectNotificationDB mnotif_sender
                         sendProjectNotificationDB_
                             notif_type notif_receiver project_id content
             case (pref, muser_email) of
-                (ProjectNotifDeliverWebsiteAndEmail, Just _)  -> sendWebsiteNotif >> sendEmailNotif
-                (ProjectNotifDeliverWebsiteAndEmail, Nothing) -> sendWebsiteNotif
-
-                (ProjectNotifDeliverEmail          , Just _)  -> sendEmailNotif
-                (ProjectNotifDeliverEmail          , Nothing) -> sendWebsiteNotif
-
-                (ProjectNotifDeliverWebsite        , Just _)  -> sendWebsiteNotif
-                (ProjectNotifDeliverWebsite        , Nothing) -> sendWebsiteNotif
+                (ProjectNotifDeliverWebsiteAndEmail, Just _)  ->
+                    sendWebsiteNotif >> sendEmailNotif
+                (ProjectNotifDeliverWebsiteAndEmail, Nothing) ->
+                    sendWebsiteNotif
+                (ProjectNotifDeliverEmail          , Just _)  ->
+                    sendEmailNotif
+                (ProjectNotifDeliverEmail          , Nothing) ->
+                    sendWebsiteNotif
+                (ProjectNotifDeliverWebsite        , Just _)  ->
+                    sendWebsiteNotif
+                (ProjectNotifDeliverWebsite        , Nothing) ->
+                    sendWebsiteNotif
