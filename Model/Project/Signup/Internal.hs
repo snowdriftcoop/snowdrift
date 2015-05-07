@@ -19,7 +19,8 @@ data ProjectSignupCategory = CreativeWriting
                            deriving (Eq, Show, Read, Enum, Bounded)
 derivePersistField "ProjectSignupCategory"
 
-newtype ProjectSignupCategoryComment = ProjectSignupCategoryComment Text deriving (Eq, Show, Read)
+newtype ProjectSignupCategoryComment = ProjectSignupCategoryComment Text
+    deriving (Eq, Show, Read)
 derivePersistField "ProjectSignupCategoryComment"
 
 data ProjectSignupLegalStatus = NonProfitTaxDeductible
@@ -31,7 +32,8 @@ data ProjectSignupLegalStatus = NonProfitTaxDeductible
                               deriving (Eq, Show, Read, Enum, Bounded)
 derivePersistField "ProjectSignupLegalStatus"
 
-newtype ProjectSignupLegalStatusComment = ProjectSignupLegalStatusComment Text deriving (Eq, Show, Read)
+newtype ProjectSignupLegalStatusComment = ProjectSignupLegalStatusComment Text
+    deriving (Eq, Show, Read)
 derivePersistField "ProjectSignupLegalStatusComment"
 
 data ProjectSignupCoopStatus = Coop
