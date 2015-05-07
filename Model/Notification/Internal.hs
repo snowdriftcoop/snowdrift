@@ -45,16 +45,17 @@ data ProjectNotificationType
 derivePersistField "ProjectNotificationType"
 
 showUserNotificationType :: UserNotificationType -> Text
-showUserNotificationType NotifWelcome           = "Snowdrift welcome message"
-showUserNotificationType NotifEligEstablish     = "You have become eligible for establishment"
-showUserNotificationType NotifUnapprovedComment = "Unapproved comments"
-showUserNotificationType NotifApprovedComment   = "Approved comments"
-showUserNotificationType NotifRethreadedComment = "Rethreaded comments"
-showUserNotificationType NotifBalanceLow        = "Balance low"
-showUserNotificationType NotifReply             = "Replies to my comments"
-showUserNotificationType NotifEditConflict      = "Edit conflict"
-showUserNotificationType NotifFlag              = "A comment of yours was flagged"
-showUserNotificationType NotifFlagRepost        = "A comment you flagged was edited and reposted"
+showUserNotificationType = \case
+    NotifWelcome           -> "Snowdrift welcome message"
+    NotifEligEstablish     -> "You have become eligible for establishment"
+    NotifUnapprovedComment -> "Unapproved comments"
+    NotifApprovedComment   -> "Approved comments"
+    NotifRethreadedComment -> "Rethreaded comments"
+    NotifBalanceLow        -> "Balance low"
+    NotifReply             -> "Replies to my comments"
+    NotifEditConflict      -> "Edit conflict"
+    NotifFlag              -> "A comment of yours was flagged"
+    NotifFlagRepost        -> "A comment you flagged was edited and reposted"
 
 showProjectNotificationType :: ProjectNotificationType -> Text
 showProjectNotificationType NotifWikiEdit          = "Wiki page was edited"
