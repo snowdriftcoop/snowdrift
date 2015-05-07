@@ -13,7 +13,11 @@ import Yesod.Markdown      (Markdown)
 -- those with provenance over the discussion (e.g. project team for project
 -- discussion ) | VisInternal = visible only to those with provenance over
 -- the discussion
-data Visibility = VisInternal | VisPrivate | VisPublic deriving (Read, Show, Eq, Ord)
+data Visibility
+    = VisInternal
+    | VisPrivate
+    | VisPublic
+    deriving (Read, Show, Eq, Ord)
 derivePersistField "Visibility"
 
 newtype NewClosure = NewClosure Markdown
