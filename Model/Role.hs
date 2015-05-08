@@ -18,7 +18,9 @@ roleAbbrev TeamMember = "T"
 roleAbbrev Moderator  = "M"
 roleAbbrev Admin      = "A"
 
-roleField :: (RenderMessage (HandlerSite m) FormMessage, m ~ HandlerT site IO) => Field m Role
+roleField
+    :: (RenderMessage (HandlerSite m) FormMessage, m ~ HandlerT site IO)
+    => Field m Role
 roleField = (radioField' . optionsPairs) $ map (roleLabel &&& id) [minBound ..]
 
 presentationRoles :: [Role]

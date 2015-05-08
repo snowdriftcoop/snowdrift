@@ -59,7 +59,13 @@ pledgeField project_id = Field
         now <- liftIO getCurrentTime
         list <- handlerToWidget get_list
         muser <- handlerToWidget maybeAuthId
-        render_key <- handlerToWidget $ runDB $ insert $ PledgeFormRendered now (T.pack $ show list) project_id muser
+        render_key <- handlerToWidget $ runDB $
+            insert $
+                PledgeFormRendered
+                    now
+                    (T.pack $ show list)
+                    project_id
+                    muser
 
         handlerToWidget $ setSession pledgeRenderKey $ T.pack $ show render_key
 
@@ -94,13 +100,17 @@ pledgeForm project_id extra = do
     shares <- case muser of
         Nothing -> return 0
         Just user_id ->
-            fmap (sum . map unValue) $ lift $ runDB $ select $ from $ \ pledge -> do
+            fmap (sum . map unValue) $ lift $ runDB $
+                select $ from $ \ pledge -> do
                 where_ $ pledge ^. PledgeProject ==. val project_id
                     &&. pledge ^. PledgeUser ==. val user_id
                 return $ pledge ^. PledgeShares
 
 
-    (result, pledge_view) <- mreq (pledgeField project_id) "" (if shares > 0 then Just (SharesPurchaseOrder shares) else Nothing)
+    (result, pledge_view) <-
+        mreq (pledgeField project_id)
+             ""
+             (if shares > 0 then Just (SharesPurchaseOrder shares) else Nothing)
 
     let view = $(widgetFile "pledge-form")
     return (result, view)

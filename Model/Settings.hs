@@ -22,10 +22,13 @@ getUserSettings = cached $ do
                 where_ $ user_setting ^. UserSettingUser ==. val user_id
                 return user_setting
 
-            return $ foldl applyUserSetting defaultUserSettings $ map entityVal ss
+            return $
+                foldl applyUserSetting defaultUserSettings $ map entityVal ss
 
 
 applyUserSetting :: UserSettings -> UserSetting -> UserSettings
-applyUserSetting user_settings setting@(UserSetting { userSettingSetting = ShowTagVotes }) =
-        user_settings { userSettingsShowTagVotes = read (userSettingValue setting) }
+applyUserSetting
+        user_settings
+        setting@(UserSetting { userSettingSetting = ShowTagVotes }) =
 
+    user_settings { userSettingsShowTagVotes = read (userSettingValue setting) }

@@ -20,12 +20,22 @@ mkReferences name defs = do
             EntityDef {..} <- defs
             FieldDef {..} <- entityFields
             guard $ fieldType == FTTypeCon Nothing (T.pack name <> "Id")
-            return $ map (ucHead . T.unpack . unHaskellName) [entityHaskell, fieldHaskell]
+            return $
+                map (ucHead . T.unpack . unHaskellName)
+                    [entityHaskell, fieldHaskell]
 
         ucHead [] = []
         ucHead (c:cs) = toUpper c : cs
 
-        mkTypeConstructor names = NormalC (mkName $ L.intercalate "_" $ name <> "Ref" : names) []
+        mkTypeConstructor names =
+            NormalC (mkName $ L.intercalate "_" $ name <> "Ref" : names) []
 
-    return [ DataD [] (mkName $ name <> "Reference") [] (map mkTypeConstructor references) [mkName "Bounded", mkName "Enum"] ]
-
+    return
+        [ DataD
+            []
+            (mkName $ name <> "Reference")
+            []
+            (map
+                mkTypeConstructor
+                references)
+            [mkName "Bounded", mkName "Enum"]]

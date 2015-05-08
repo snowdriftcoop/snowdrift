@@ -16,5 +16,6 @@ data Role
 derivePersistField "Role"
 
 instance PathPiece Role where
-    fromPathPiece s = if T.null s then Nothing else Just (read $ traceShow s $ T.unpack s)
+    fromPathPiece s =
+        if T.null s then Nothing else Just (read $ traceShow s $ T.unpack s)
     toPathPiece = T.pack . show
