@@ -35,7 +35,7 @@ createWikiPageDB
     discussion_id <- lift createDiscussionDB
 
     let wiki_page =
-        WikiPage now user_id project_id discussion_id permission_level
+            WikiPage now user_id project_id discussion_id permission_level
     wiki_page_id <- lift $ insert wiki_page
 
     let wiki_target = WikiTarget wiki_page_id project_id target language
@@ -79,12 +79,12 @@ createWikiTranslationDB
 
     -- Don't generate a WikiEdit event in addition to this WikiPage event.
     let wiki_edit =
-        WikiEdit now
-                 user_id
-                 wiki_page_id
-                 language
-                 content
-                 (Just "Translation created.")
+            WikiEdit now
+                     user_id
+                     wiki_page_id
+                     language
+                     content
+                     (Just "Translation created.")
     wiki_edit_id <- lift $ insert wiki_edit
 
     lift $ insert_ $ WikiLastEdit wiki_page_id wiki_edit_id language
