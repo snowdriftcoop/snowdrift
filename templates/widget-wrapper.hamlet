@@ -21,12 +21,12 @@ $newline never
         \<![endif]-->
 
         <script>
-          document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/,'js');
+            document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/,'js');
     <body>
         <div .container>
             <header>
             <div id="main" role="main">
-              ^{pageBody pc}
+                ^{pageBody pc}
 
         \<!-- Prompt IE 6 users to install Chrome Frame. Remove this if you want to support IE 6.  chromium.org/developers/how-tos/chrome-frame-getting-started -->
         \<!--[if lt IE 7 ]>

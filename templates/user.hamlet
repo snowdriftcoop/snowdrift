@@ -54,9 +54,9 @@ $if Just user_id == mviewer_id
         <table>
             <thead>
                 <tr>
-                   <th>Project
-                   $forall role <- presentationRoles
-                     <th>#{ roleLabel role }
+                    <th>Project
+                        $forall role <- presentationRoles
+                        <th>#{ roleLabel role }
             <tbody>
                 $forall (Entity _ project, roles) <- M.toAscList projects_and_roles
                     <tr>
