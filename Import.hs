@@ -270,7 +270,7 @@ checkboxesField' ioptlist = (multiSelectField ioptlist)
 
 
 redirectParams :: (MonadHandler (HandlerT site m), MonadBaseControl IO m) => Route site -> [(Text, Text)] -> HandlerT site m a
-redirectParams route params = getUrlRenderParams >>= \ render -> redirect $ render route params
+redirectParams route params = getUrlRenderParams >>= \render -> redirect $ render route params
 
 getByErr :: (PersistEntity val, PersistEntityBackend val ~ SqlBackend)
          => String -> Unique val -> Handler (Entity val)

@@ -69,7 +69,7 @@ pledgeField project_id = Field
 
         handlerToWidget $ setSession pledgeRenderKey $ T.pack $ show render_key
 
-        let value = either (const 2) (\ (SharesPurchaseOrder s) -> s) v
+        let value = either (const 2) (\(SharesPurchaseOrder s) -> s) v
             hasValue = value `elem` list
             otherValue = if hasValue then "" else show value
 
@@ -101,7 +101,7 @@ pledgeForm project_id extra = do
         Nothing -> return 0
         Just user_id ->
             fmap (sum . map unValue) $ lift $ runDB $
-                select $ from $ \ pledge -> do
+                select $ from $ \pledge -> do
                 where_ $ pledge ^. PledgeProject ==. val project_id
                     &&. pledge ^. PledgeUser ==. val user_id
                 return $ pledge ^. PledgeShares

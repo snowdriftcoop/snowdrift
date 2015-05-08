@@ -35,7 +35,7 @@ stripP :: Parser a -> Parser a
 stripP p = let ws = A.takeWhile (inClass " \t") in ws *> p <* ws
 
 seqP :: Parser (Orderable -> [Double])
-seqP = (\ fs ord -> map ($ ord) fs) <$> seqP'
+seqP = (\fs ord -> map ($ ord) fs) <$> seqP'
     where seqP' = (:) <$> expressionP <* stripP ";" <*> seqP' <|> return <$> expressionP
 
 expressionP :: Parser (Orderable -> Double)
@@ -88,13 +88,13 @@ timeConstraintP =
             void $ A.string name
             void $ stripP "BEFORE"
             end <- timeP
-            return $ \ x -> fromIntegral $ fromEnum $ not $ S.null $ fst $ S.split end $ getNamedTs x name
+            return $ \x -> fromIntegral $ fromEnum $ not $ S.null $ fst $ S.split end $ getNamedTs x name
 
         after name = do
             void $ A.string name
             void $ stripP "AFTER"
             start <- timeP
-            return $ \ x -> fromIntegral $ fromEnum $ not $ S.null $ snd $ S.split start $ getNamedTs x name
+            return $ \x -> fromIntegral $ fromEnum $ not $ S.null $ snd $ S.split start $ getNamedTs x name
 
         between name = do
             void $ A.string name
@@ -102,12 +102,12 @@ timeConstraintP =
             start <- timeP
             void $ stripP "AND"
             end <- timeP
-            return $ \ x -> fromIntegral $ fromEnum $ not $ S.null $ snd $ S.split start $ fst $ S.split end $ getNamedTs x name
+            return $ \x -> fromIntegral $ fromEnum $ not $ S.null $ snd $ S.split start $ fst $ S.split end $ getNamedTs x name
 
         time name = do
             void $ A.string name
             void $ stripP "TIME"
-            return $ \ x -> maybe (-1) (toTimeValue . fst) $ S.maxView $ getNamedTs x name
+            return $ \x -> maybe (-1) (toTimeValue . fst) $ S.maxView $ getNamedTs x name
 
 timeP :: Parser UTCTime
 timeP = fmap (`UTCTime` 0) $ stripP $ fromGregorian <$> (read <$> A.count 4 digit) <* "-" <*> (read <$> A.count 2 digit) <* "-" <*> (read <$> A.count 2 digit)

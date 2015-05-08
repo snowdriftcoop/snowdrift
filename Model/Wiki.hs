@@ -89,7 +89,7 @@ createWikiTranslationDB
 
     lift $ insert_ $ WikiLastEdit wiki_page_id wiki_edit_id language
 
-    forM_ sources $ \ (source_edit_id, complete) ->
+    forM_ sources $ \(source_edit_id, complete) ->
         lift $ insert_ $ WikiTranslation wiki_edit_id source_edit_id complete
 
     tell [EWikiEdit wiki_edit_id wiki_edit wiki_target]
@@ -108,7 +108,7 @@ createWikiEditDB user_id wiki_page_id language content mcomment = do
     wiki_edit_id <- lift (insert wiki_edit)
 
     -- TODO - pick this better
-    [ Entity _ wiki_target ] <- lift $ select $ from $ \ wt -> do
+    [ Entity _ wiki_target ] <- lift $ select $ from $ \wt -> do
         where_ $ wt ^. WikiTargetPage ==. val wiki_page_id
         limit 1
         return wt
@@ -117,7 +117,7 @@ createWikiEditDB user_id wiki_page_id language content mcomment = do
     return wiki_edit_id
 
 fetchWikiPageTargetsInDB :: [WikiPageId] -> DB [Entity WikiTarget]
-fetchWikiPageTargetsInDB wiki_page_ids = select $ from $ \ wt -> do
+fetchWikiPageTargetsInDB wiki_page_ids = select $ from $ \wt -> do
     where_ $ wt ^. WikiTargetPage `in_` valList wiki_page_ids
     return wt
 

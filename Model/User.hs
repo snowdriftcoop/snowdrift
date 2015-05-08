@@ -192,7 +192,7 @@ fetchUsersInDB user_ids = selectList [UserId <-. user_ids] []
 
 fetchUserWatchingProjectsDB :: UserId -> DB [Entity Project]
 fetchUserWatchingProjectsDB user_id =
-    select $ from $ \ (uwp,p) -> do
+    select $ from $ \(uwp,p) -> do
         where_ $ uwp ^. UserWatchingProjectUser    ==. val user_id
              &&. uwp ^. UserWatchingProjectProject ==. p ^. ProjectId
 

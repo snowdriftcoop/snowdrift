@@ -30,13 +30,13 @@ import           Yesod.Markdown                       (unMarkdown, Markdown (..)
 
 updateUser :: UserId -> [SqlExpr (Update User)] -> SqlPersistM ()
 updateUser user_id xs =
-    update $ \ u -> do
+    update $ \u -> do
         set u xs
         where_ $ u ^. UserId ==. val user_id
 
 unestablish :: UserId -> SqlPersistM ()
 unestablish user_id = do
-    delete $ from $ \ me ->
+    delete $ from $ \me ->
         where_ $ me ^. ManualEstablishmentEstablishedUser ==. val user_id
     updateUser user_id [UserEstablished =. val EstUnestablished]
 

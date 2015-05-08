@@ -70,19 +70,19 @@ donutSharesChart patrons_list = do
 
         (legend, caption_renderers) :: ([Text], [Int -> Double -> Double -> String]) = unzip
             [ ( "new pledge amount"
-              , \ patron_count addition total_funding ->
+              , \patron_count addition total_funding ->
                       printf "When the %s patron joins at one share, they contribute $%0.4f. The project's total funding is now $%0.4f per month."
                         (suffixed patron_count)
                         addition
                         total_funding
               )
             , ( "extra 0.01\162 from one earlier patron"
-              , \ _ addition _ ->
+              , \_ addition _ ->
                     printf "With each new one-share patron, a single earlier patron always adds $%0.4f; and with more patrons, this is a continually smaller portion of the total increased funding." 
                         addition
               )
             , ( "increase from remaining earlier patrons"
-              , \ patron_count _ total_funding ->
+              , \patron_count _ total_funding ->
                     printf "When the %s patron joins, the earlier patrons together match the new patron's pledge. The project's total funding is now $%0.4f per month."
                         (suffixed patron_count)
                         total_funding
@@ -100,7 +100,7 @@ donutSharesChart patrons_list = do
         drawRing pass (index, patrons, amounts) = do
             let (colors', amounts') = unzip $ filter ((>0) . snd) $ zip chart_colors amounts
                 total = sum amounts'
-                segments = map apply_margin $ tail $ scanl (\ segment (render_caption, amount) ->
+                segments = map apply_margin $ tail $ scanl (\segment (render_caption, amount) ->
                                                                 Segment { segmentTitle = T.pack $ render_caption patrons amount (0.0001 * fromIntegral patrons * fromIntegral (patrons - 1))
                                                                         , segmentStart = segmentEnd segment
                                                                         , segmentEnd = segmentEnd segment + 2 * pi * amount / total
@@ -167,11 +167,11 @@ donutSharesChart patrons_list = do
     let shares = map (share_value 1) patrons_list
         prev = map (share_value 1 . (-1 +) . fromIntegral) patrons_list
         increase = zipWith (-) shares prev
-        remaining_patrons = zipWith (\ d i -> fromIntegral (d - 2) * i) patrons_list increase
+        remaining_patrons = zipWith (\d i -> fromIntegral (d - 2) * i) patrons_list increase
 
-        rings = reverse $ zip3 [1..] patrons_list $ zipWith3 (\ a b c -> [a, b, c]) shares increase remaining_patrons
+        rings = reverse $ zip3 [1..] patrons_list $ zipWith3 (\a b c -> [a, b, c]) shares increase remaining_patrons
 
-        list_desc = conjoin "and" $ map (\ n -> show n ++ number_suffix n) patrons_list
+        list_desc = conjoin "and" $ map (\n -> show n ++ number_suffix n) patrons_list
 
     toWidget [whamlet|
         <a name="donut">
@@ -243,7 +243,7 @@ shareValueChart = do
         max_y = share_value 1 max_x :: Double
         xs = [1, (div max_x 10) .. max_x] :: [Int]
         ys = map (share_value 1) xs
-        merge = zipWith $ \ x y -> [fromIntegral x, y]
+        merge = zipWith $ \x y -> [fromIntegral x, y]
         ticks = [0 .. max_y]
 
         plots = [merge xs ys] :: [[[Double]]]
@@ -276,7 +276,7 @@ projectValueChart = do
         max_x = 50000 :: Int
         xs = [2, 1000 .. max_x] :: [Int]
         ys = map (project_value 1) xs :: [Double]
-        merge = zipWith $ \ x y -> [fromIntegral x, y]
+        merge = zipWith $ \x y -> [fromIntegral x, y]
 
         plots = [ merge xs ys ]
 

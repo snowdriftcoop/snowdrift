@@ -25,8 +25,8 @@ getBuildFeedR = do
 
     render <- getUrlRender
 
-    entries :: [FeedEntry (Route App)] <- forM builds $ \ build -> do
-        let prettyDiff = mapM_ (\ line -> toHtml line >> br) $ T.lines $ buildDiff build
+    entries :: [FeedEntry (Route App)] <- forM builds $ \build -> do
+        let prettyDiff = mapM_ (\line -> toHtml line >> br) $ T.lines $ buildDiff build
             html = [hamlet|
                        <pre>
                             #{prettyDiff}

@@ -17,11 +17,11 @@ import qualified Data.Map as M
 
 mkDiscussionTypes :: [EntityDef] -> Q [Dec]
 mkDiscussionTypes defs = do
-    let discussion_types = flip mapMaybe defs $ \ EntityDef {..} -> do
+    let discussion_types = flip mapMaybe defs $ \EntityDef {..} -> do
             guard $ entityHaskell /= HaskellName "Comment"
             guard
                 (any
-                    (\ FieldDef {..} ->
+                    (\FieldDef {..} ->
                         fieldType == FTTypeCon Nothing "DiscussionId")
                     entityFields)
             return $ T.unpack $ unHaskellName entityHaskell
@@ -51,7 +51,7 @@ mkDiscussionTypes defs = do
                            (ConT $ mkName entity_name))]
 
         grabEntityName name =
-            state $ \ exceptions -> case M.lookup name exceptions of
+            state $ \exceptions -> case M.lookup name exceptions of
                 Just name' -> (name', M.delete name exceptions)
                 Nothing -> (name, exceptions)
 

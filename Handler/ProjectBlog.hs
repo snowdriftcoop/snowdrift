@@ -178,7 +178,7 @@ getProjectBlogR project_handle = do
     post_count <- fromMaybe 10 <$> fmap (read . T.unpack) <$> lookupGetParam "from"
     Entity project_id project <- runYDB $ getBy404 $ UniqueProjectHandle project_handle
 
-    let apply_offset blog = maybe id (\ from_blog rest -> blog ^. BlogPostId >=. val from_blog &&. rest) maybe_from
+    let apply_offset blog = maybe id (\from_blog rest -> blog ^. BlogPostId >=. val from_blog &&. rest) maybe_from
 
     (posts, next) <- fmap (splitAt post_count) $ runDB $
         select $

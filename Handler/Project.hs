@@ -262,7 +262,7 @@ postProjectR project_handle = do
                                 Just (Entity k _) -> repsert k $ ProjectLastUpdate project_id project_update
                                 Nothing -> void $ insert $ ProjectLastUpdate project_id project_update
 
-                        update $ \ p -> do
+                        update $ \p -> do
                             set p [ ProjectName =. val name
                                   , ProjectDescription =. val description
                                   , ProjectBlurb =. val blurb
@@ -271,8 +271,8 @@ postProjectR project_handle = do
                                   ]
                             where_ (p ^. ProjectId ==. val project_id)
 
-                        tag_ids <- forM tags $ \ tag_name -> do
-                            tag_entity_list <- select $ from $ \ tag -> do
+                        tag_ids <- forM tags $ \tag_name -> do
+                            tag_entity_list <- select $ from $ \tag -> do
                                 where_ (tag ^. TagName ==. val tag_name)
                                 return tag
 
@@ -362,7 +362,7 @@ getEditProjectR project_handle = do
 
     tags <- runDB $
         select $
-        from $ \ (p_t `InnerJoin` tag) -> do
+        from $ \(p_t `InnerJoin` tag) -> do
         on_ (p_t ^. ProjectTagTag ==. tag ^. TagId)
         where_ (p_t ^. ProjectTagProject ==. val project_id)
         return tag
@@ -417,10 +417,10 @@ getProjectFeedR project_handle = do
         -- Suplementary maps for displaying the data. If something above requires extra
         -- data to display the project feed row, it MUST be used to fetch the data below!
 
-        let (comment_ids, comment_users)        = F.foldMap (\ (_, Entity comment_id comment) -> ([comment_id], [commentUser comment])) comment_events
-            (wiki_edit_users, wiki_edit_pages)  = F.foldMap (\ (_, Entity _ e, _) -> ([wikiEditUser e], [wikiEditPage e])) wiki_edit_events
-            (blog_post_users)                   = F.foldMap (\ (_, Entity _ e) -> ([blogPostUser e])) blog_post_events
-            shares_pledged                      = map (entityVal . snd) new_pledge_events <> map (\ (_, _, x) -> entityVal x) updated_pledge_events
+        let (comment_ids, comment_users)        = F.foldMap (\(_, Entity comment_id comment) -> ([comment_id], [commentUser comment])) comment_events
+            (wiki_edit_users, wiki_edit_pages)  = F.foldMap (\(_, Entity _ e, _) -> ([wikiEditUser e], [wikiEditPage e])) wiki_edit_events
+            (blog_post_users)                   = F.foldMap (\(_, Entity _ e) -> ([blogPostUser e])) blog_post_events
+            shares_pledged                      = map (entityVal . snd) new_pledge_events <> map (\(_, _, x) -> entityVal x) updated_pledge_events
             closing_users                       = map (commentClosingClosedBy . entityVal . snd) closing_events
             rethreading_users                   = map (rethreadModerator . entityVal . snd) rethread_events
             ticket_claiming_users               = map (either (ticketClaimingUser . entityVal) (ticketOldClaimingUser . entityVal) . snd) claiming_events
@@ -491,16 +491,16 @@ getProjectFeedR project_handle = do
 
             , map (EventTicketUnclaimedR    *** onEntity ETicketUnclaimed)      unclaiming_events
 
-            , map (\ (eid, Entity wpid wp, wt)
+            , map (\(eid, Entity wpid wp, wt)
                     -> (EventWikiPageR eid, EWikiPage wpid wp wt))              wiki_page_events
 
-            , map (\ (eid, Entity weid we, wt)
+            , map (\(eid, Entity weid we, wt)
                     -> (EventWikiEditR eid, EWikiEdit weid we wt))              wiki_edit_events
 
             , map (EventBlogPostR           *** onEntity EBlogPost)             blog_post_events
             , map (EventNewPledgeR          *** onEntity ENewPledge)            new_pledge_events
 
-            , map (\ (eid, shares, pledge)
+            , map (\(eid, shares, pledge)
                     -> (EventUpdatedPledgeR eid, eup2se shares pledge))         updated_pledge_events
 
             , map (EventDeletedPledgeR      *** edp2se)                         deleted_pledge_events
@@ -563,14 +563,14 @@ getInviteR project_handle = do
 
     outstanding_invites <- runDB $
         select $
-        from $ \ invite -> do
+        from $ \invite -> do
         where_ ( invite ^. InviteRedeemed ==. val False )
         orderBy [ desc (invite ^. InviteCreatedTs) ]
         return invite
 
     redeemed_invites <- runDB $
         select $
-        from $ \ invite -> do
+        from $ \invite -> do
         where_ ( invite ^. InviteRedeemed ==. val True )
         orderBy [ desc (invite ^. InviteCreatedTs) ]
         limit 20
@@ -630,7 +630,7 @@ getProjectPatronsR project_handle = do
 
     (project, pledges, user_payouts_map) <- runYDB $ do
         Entity project_id project <- getBy404 $ UniqueProjectHandle project_handle
-        pledges <- select $ from $ \ (pledge `InnerJoin` user) -> do
+        pledges <- select $ from $ \(pledge `InnerJoin` user) -> do
             on_ $ pledge ^. PledgeUser ==. user ^. UserId
             where_ $ pledge ^. PledgeProject ==. val project_id
                 &&. pledge ^. PledgeFundedShares >. val 0
@@ -641,19 +641,19 @@ getProjectPatronsR project_handle = do
 
         last_paydays <- case projectLastPayday project of
             Nothing -> return []
-            Just last_payday -> select $ from $ \ payday -> do
+            Just last_payday -> select $ from $ \payday -> do
                 where_ $ payday ^. PaydayId <=. val last_payday
                 orderBy [ desc $ payday ^. PaydayId ]
                 limit 2
                 return payday
 
-        user_payouts <- select $ from $ \ (transaction `InnerJoin` user) -> do
+        user_payouts <- select $ from $ \(transaction `InnerJoin` user) -> do
             where_ $ transaction ^. TransactionPayday `in_` valList (map (Just . entityKey) last_paydays)
             on_ $ transaction ^. TransactionDebit ==. just (user ^. UserAccount)
             groupBy $ user ^. UserId
             return (user ^. UserId, count $ transaction ^. TransactionId)
 
-        return (project, pledges, M.fromList $ map ((\ (Value x :: Value UserId) -> x) *** (\ (Value x :: Value Int) -> x)) user_payouts)
+        return (project, pledges, M.fromList $ map ((\(Value x :: Value UserId) -> x) *** (\(Value x :: Value Int) -> x)) user_payouts)
 
     defaultLayout $ do
         snowdriftTitle $ projectName project <> " Patrons"
@@ -679,7 +679,7 @@ getUpdateSharesR project_handle = do
 
             (mpledge, other_shares) <- runDB $ do
                 mpledge <- getBy $ UniquePledge user_id project_id
-                other_shares <- fmap unwrapValues $ select $ from $ \ p -> do
+                other_shares <- fmap unwrapValues $ select $ from $ \p -> do
                     where_ $ p ^. PledgeProject ==. val project_id
                         &&. p ^. PledgeUser !=. val user_id
 
@@ -787,26 +787,26 @@ getProjectTransactionsR project_handle = do
 
         account <- get404 $ projectAccount project
 
-        transactions <- select $ from $ \ t -> do
+        transactions <- select $ from $ \t -> do
             where_ $ t ^. TransactionCredit ==. val (Just $ projectAccount project)
                     ||. t ^. TransactionDebit ==. val (Just $ projectAccount project)
 
             orderBy [ desc $ t ^. TransactionTs ]
             return t
 
-        let accounts = S.toList $ S.fromList $ concatMap (\ (Entity _ t) -> maybeToList (transactionCredit t) <> maybeToList (transactionDebit t)) transactions
+        let accounts = S.toList $ S.fromList $ concatMap (\(Entity _ t) -> maybeToList (transactionCredit t) <> maybeToList (transactionDebit t)) transactions
 
-        users_by_account <- fmap (M.fromList . map (userAccount . entityVal &&& Right)) $ select $ from $ \ u -> do
+        users_by_account <- fmap (M.fromList . map (userAccount . entityVal &&& Right)) $ select $ from $ \u -> do
             where_ $ u ^. UserAccount `in_` valList accounts
             return u
 
-        projects_by_account <- fmap (M.fromList . map (projectAccount . entityVal &&& Left)) $ select $ from $ \ p -> do
+        projects_by_account <- fmap (M.fromList . map (projectAccount . entityVal &&& Left)) $ select $ from $ \p -> do
             where_ $ p ^. ProjectAccount `in_` valList accounts
             return p
 
         let account_map = projects_by_account `M.union` users_by_account
 
-        payday_map <- fmap (M.fromList . map (entityKey &&& id)) $ select $ from $ \ pd -> do
+        payday_map <- fmap (M.fromList . map (entityKey &&& id)) $ select $ from $ \pd -> do
             where_ $ pd ^. PaydayId `in_` valList (S.toList $ S.fromList $ mapMaybe (transactionPayday . entityVal) transactions)
             return pd
 

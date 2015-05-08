@@ -18,7 +18,7 @@ getUserSettings = cached $ do
     case maybe_user_id of
         Nothing -> return defaultUserSettings
         Just user_id -> do
-            ss <- runDB $ select $ from $ \ user_setting -> do
+            ss <- runDB $ select $ from $ \user_setting -> do
                 where_ $ user_setting ^. UserSettingUser ==. val user_id
                 return user_setting
 

@@ -123,7 +123,7 @@ ticketToFilterable (TaggedTicket (Entity _ ticket, is_claimed, tags)) =
     isClaimed cmd         = error $ "Unrecognized command " <> T.unpack cmd
 
     has_tag t =
-        any (\ tag -> annotTagName tag == t && annotTagScore tag > 0) tags
+        any (\tag -> annotTagName tag == t && annotTagScore tag > 0) tags
 
     get_named_ts "CREATED" = S.singleton $ ticketCreatedTs ticket
     get_named_ts "LAST UPDATED" = S.singleton $ ticketUpdatedTs ticket
@@ -151,13 +151,13 @@ ticketToOrderable (TaggedTicket ((Entity _ ticket), is_claimed, tags)) =
 -- Database actions
 
 fetchPublicProjectsDB :: DB [Entity Project]
-fetchPublicProjectsDB = select $ from $ \ p -> do
+fetchPublicProjectsDB = select $ from $ \p -> do
     where_ $ p ^. ProjectPublic
     return p
 
 fetchProjectDB :: ProjectId -> DB [Entity Project]
 fetchProjectDB project_id =
-    select $ from $ \ p -> do
+    select $ from $ \p -> do
         where_ $ p ^. ProjectId ==. val project_id
         return p
 
@@ -185,7 +185,7 @@ insertProjectPledgeDB user_id project_id shares pledge_render_id = do
                                          (pledgeShares old_pledge)]
                 else do
                     lift $
-                        update $ \ p -> do
+                        update $ \p -> do
                         set p [ PledgeShares       =. val shares
                               , PledgeFundedShares =. val shares
                               ]
@@ -198,7 +198,7 @@ getGithubIssues :: Project -> Handler [GH.Issue]
 getGithubIssues project =
     getGithubIssues'
     >>= liftIO . wait
-    >>= either (\ _ -> addAlert "danger" eMsg >> return [])
+    >>= either (\_ -> addAlert "danger" eMsg >> return [])
                return
   where
     eMsg = "failed to fetch GitHub tickets\n"
@@ -206,7 +206,7 @@ getGithubIssues project =
     getGithubIssues' = liftIO . async $
         maybe
             (return $ Right [])
-            (\ (account, repo) -> GH.issuesForRepo account repo [])
+            (\(account, repo) -> GH.issuesForRepo account repo [])
             parsedProjectGithubRepo
 
     parsedProjectGithubRepo :: Maybe (String, String)
@@ -244,7 +244,7 @@ fetchProjectPledgesDB :: ( MonadThrow m
                       => ProjectId
                       -> SqlPersistT m [Entity Pledge]
 fetchProjectPledgesDB project_id = do
-    pledges <- select $ from $ \ pledge -> do
+    pledges <- select $ from $ \pledge -> do
         where_
             (pledge ^. PledgeProject ==. val project_id
              &&. pledge ^. PledgeFundedShares >. val 0)
@@ -261,7 +261,7 @@ fetchProjectSharesDB :: ( MonadThrow m
 fetchProjectSharesDB project_id = do
     pledges <-
         select $
-        from $ \ pledge -> do
+        from $ \pledge -> do
         where_ $
             pledge ^. PledgeProject ==. val project_id
             &&. pledge ^. PledgeFundedShares >. val 0
@@ -273,7 +273,7 @@ fetchProjectSharesDB project_id = do
 getProjectPages :: ProjectId -> DB [Entity WikiPage]
 getProjectPages project_id =
     select $
-    from $ \ page -> do
+    from $ \page -> do
     where_ $ page ^. WikiPageProject ==. val project_id
     return page
 
@@ -299,7 +299,7 @@ updateShareValue
 updateShareValue project_id = do
     pledges <- fetchProjectSharesDB project_id
 
-    update $ \ project -> do
+    update $ \project -> do
         set project
             [ ProjectShareValue =. val (projectComputeShareValue pledges) ]
         where_ (project ^. ProjectId ==. val project_id)
@@ -328,7 +328,7 @@ getProjectTagList project_id = (,) <$> getProjectTags <*> getOtherTags
         orderBy [ desc (tag ^. TagName) ]
         return tag
 
-    deprecatedTags = subList_select $ from $ \ dt -> do
+    deprecatedTags = subList_select $ from $ \dt -> do
         where_ $ dt ^. DeprecatedTagProject ==. val project_id
         return $ dt ^. DeprecatedTagTag
 
@@ -346,7 +346,7 @@ getProjectTagList project_id = (,) <$> getProjectTags <*> getOtherTags
 -- | Get all of a Project's WikiPages, sorted alphabetically.
 getProjectWikiPages :: [Language] -> ProjectId ->  DB [Entity WikiTarget]
 getProjectWikiPages languages project_id = do
-    targets <- select $ from $ \ wt -> do
+    targets <- select $ from $ \wt -> do
         where_ $ wt ^. WikiTargetProject ==. val project_id
         return wt
 
@@ -358,11 +358,11 @@ fetchProjectDiscussionsDB :: ProjectId -> DB [DiscussionId]
 fetchProjectDiscussionsDB project_id = do
     pd <- projectDiscussion <$> getJust project_id
 
-    wpds <- fmap unwrapValues $ select $ from $ \ wp -> do
+    wpds <- fmap unwrapValues $ select $ from $ \wp -> do
         where_ $ wp ^. WikiPageProject ==. val project_id
         return $ wp ^. WikiPageDiscussion
 
-    bpds <- fmap unwrapValues $ select $ from $ \ bp -> do
+    bpds <- fmap unwrapValues $ select $ from $ \bp -> do
         where_ $ bp ^. BlogPostProject ==. val project_id
         return $ bp ^. BlogPostDiscussion
 
@@ -381,10 +381,10 @@ fetchProjectCommentPostedEventsIncludingRethreadedBeforeDB
         muser_id
         before lim =
 
-    fetchProjectDiscussionsDB project_id >>= \ project_discussions ->
+    fetchProjectDiscussionsDB project_id >>= \project_discussions ->
     fmap unwrapValues $
         select $
-        from $ \ (ecp `InnerJoin` c) -> do
+        from $ \(ecp `InnerJoin` c) -> do
         on_ $ ecp ^. EventCommentPostedComment ==. c ^. CommentId
         where_ $
             ecp ^. EventCommentPostedTs <=. val before
@@ -407,10 +407,10 @@ fetchProjectCommentRethreadEventsBeforeDB
     -> Int64
     -> DB [(EventCommentRethreadedId, Entity Rethread)]
 fetchProjectCommentRethreadEventsBeforeDB project_id muser_id before lim =
-    fetchProjectDiscussionsDB project_id >>= \ project_discussions ->
+    fetchProjectDiscussionsDB project_id >>= \project_discussions ->
     fmap unwrapValues $
         select $
-        from $ \ (ecr `InnerJoin` r `InnerJoin` c) -> do
+        from $ \(ecr `InnerJoin` r `InnerJoin` c) -> do
         on_ $ r ^. RethreadNewComment ==. c ^. CommentId
         on_ $ ecr ^. EventCommentRethreadedRethread ==. r ^. RethreadId
         where_ $ ecr ^. EventCommentRethreadedTs <=. val before
@@ -430,9 +430,9 @@ fetchProjectCommentClosingEventsBeforeDB
     -> Int64
     -> DB [(EventCommentClosingId, Entity CommentClosing)]
 fetchProjectCommentClosingEventsBeforeDB project_id muser_id before lim =
-    fetchProjectDiscussionsDB project_id >>= \ project_discussions ->
+    fetchProjectDiscussionsDB project_id >>= \project_discussions ->
     fmap unwrapValues $
-        select $ from $ \ (ecc `InnerJoin` cc `InnerJoin` c) -> do
+        select $ from $ \(ecc `InnerJoin` cc `InnerJoin` c) -> do
         on_ $ cc ^. CommentClosingComment ==. c ^. CommentId
         on_ $
             ecc ^. EventCommentClosingCommentClosing ==. cc ^. CommentClosingId
@@ -492,10 +492,10 @@ fetchProjectTicketUnclaimingEventsBeforeDB
     -> Int64
     -> DB [(EventTicketUnclaimedId, Entity TicketOldClaiming)]
 fetchProjectTicketUnclaimingEventsBeforeDB project_id before lim =
-    fetchProjectDiscussionsDB project_id >>= \ project_discussions ->
+    fetchProjectDiscussionsDB project_id >>= \project_discussions ->
     fmap unwrapValues $
         select $
-        from $ \ (etu `InnerJoin` toc `InnerJoin` c `InnerJoin` t) -> do
+        from $ \(etu `InnerJoin` toc `InnerJoin` c `InnerJoin` t) -> do
         on_ $ t ^. TicketComment ==. c ^. CommentId
         on_ $ toc ^. TicketOldClaimingTicket ==. c ^. CommentId
         on_ $ etu ^. EventTicketUnclaimedClaim ==. toc ^. TicketOldClaimingId
@@ -521,7 +521,7 @@ fetchProjectWikiPageEventsWithTargetsBeforeDB
         before
         lim = do
 
-    pages <- fmap unwrapValues $ select $ from $ \ (ewp `InnerJoin` wp) -> do
+    pages <- fmap unwrapValues $ select $ from $ \(ewp `InnerJoin` wp) -> do
         on_ (ewp ^. EventWikiPageWikiPage ==. wp ^. WikiPageId)
         where_ $ ewp ^. EventWikiPageTs <=. val before
             &&. exprWikiPageOnProject wp project_id
@@ -530,7 +530,7 @@ fetchProjectWikiPageEventsWithTargetsBeforeDB
         limit lim
         return (ewp ^. EventWikiPageId, wp)
 
-    targets <- select $ from $ \ wt -> do
+    targets <- select $ from $ \wt -> do
         where_ $
             wt ^. WikiTargetPage `in_` valList (map (entityKey . snd) pages)
         return wt
@@ -540,13 +540,13 @@ fetchProjectWikiPageEventsWithTargetsBeforeDB
         pages_map = M.fromList $ map ((entityKey &&& id) . snd) pages
         targets_map =
             M.fromList $
-                map (\ (Entity _ wiki_target) ->
+                map (\(Entity _ wiki_target) ->
                         (wikiTargetPage wiki_target, wiki_target))
                     (pickTargetsByLanguage languages targets)
 
     return $
         mapMaybe
-            (\ (ewp_id, page_id) ->
+            (\(ewp_id, page_id) ->
                 (ewp_id,,)
                     <$> M.lookup page_id pages_map
                     <*> M.lookup page_id targets_map)
@@ -559,7 +559,7 @@ fetchProjectBlogPostEventsBeforeDB
     -> Int64
     -> DB [(EventBlogPostId, Entity BlogPost)]
 fetchProjectBlogPostEventsBeforeDB project_id before lim =
-    fmap unwrapValues $ select $ from $ \ (ebp `InnerJoin` bp) -> do
+    fmap unwrapValues $ select $ from $ \(ebp `InnerJoin` bp) -> do
         on_ $ ebp ^. EventBlogPostPost ==. bp ^. BlogPostId
         where_ $ ebp ^. EventBlogPostTs <=. val before
             &&. bp ^. BlogPostProject ==. val project_id
@@ -583,7 +583,7 @@ fetchProjectWikiEditEventsWithTargetsBeforeDB
 
     edits <- fmap unwrapValues $
         select $
-        from $ \ (ewe `InnerJoin` we `InnerJoin` wp) -> do
+        from $ \(ewe `InnerJoin` we `InnerJoin` wp) -> do
         on_ $ wp ^. WikiPageId ==. we ^. WikiEditPage
         on_ $ ewe ^. EventWikiEditWikiEdit ==. we ^. WikiEditId
 
@@ -594,7 +594,7 @@ fetchProjectWikiEditEventsWithTargetsBeforeDB
         limit lim
         return (ewe ^. EventWikiEditId, we)
 
-    targets <- select $ from $ \ wt -> do
+    targets <- select $ from $ \wt -> do
         where_ $
             wt ^. WikiTargetPage
                 `in_` valList (map (wikiEditPage . entityVal . snd) edits)
@@ -609,7 +609,7 @@ fetchProjectWikiEditEventsWithTargetsBeforeDB
 
     return $
         mapMaybe
-            (\ (ewe_id, (edit_id, page_id)) ->
+            (\(ewe_id, (edit_id, page_id)) ->
                 (ewe_id,,)
                     <$> M.lookup edit_id edits_map
                     <*> M.lookup page_id targets_map)
@@ -622,7 +622,7 @@ fetchProjectNewPledgeEventsBeforeDB
     -> Int64
     -> DB [(EventNewPledgeId, Entity SharesPledged)]
 fetchProjectNewPledgeEventsBeforeDB project_id before lim =
-    fmap unwrapValues $ select $ from $ \ (enp `InnerJoin` sp) -> do
+    fmap unwrapValues $ select $ from $ \(enp `InnerJoin` sp) -> do
         on_ $ enp ^. EventNewPledgeSharesPledged ==. sp ^. SharesPledgedId
         where_ $ enp ^. EventNewPledgeTs <=. val before
             &&. sp ^. SharesPledgedProject ==. val project_id
@@ -639,7 +639,7 @@ fetchProjectUpdatedPledgeEventsBeforeDB
     -> Int64
     -> DB [(EventUpdatedPledgeId, Int64, Entity SharesPledged)]
 fetchProjectUpdatedPledgeEventsBeforeDB project_id before lim =
-    fmap unwrapValues $ select $ from $ \ (eup `InnerJoin` sp) -> do
+    fmap unwrapValues $ select $ from $ \(eup `InnerJoin` sp) -> do
         on_ $ eup ^. EventUpdatedPledgeSharesPledged ==. sp ^. SharesPledgedId
         where_ $ eup ^. EventUpdatedPledgeTs <=. val before
             &&. sp ^. SharesPledgedProject ==. val project_id
@@ -657,7 +657,7 @@ fetchProjectDeletedPledgeEventsBeforeDB
     -> Int64
     -> DB [(EventDeletedPledgeId, EventDeletedPledge)]
 fetchProjectDeletedPledgeEventsBeforeDB project_id before lim =
-    fmap (map $ onEntity (,)) $ select $ from $ \ edp -> do
+    fmap (map $ onEntity (,)) $ select $ from $ \edp -> do
         where_ $ edp ^. EventDeletedPledgeTs <=. val before
             &&. edp ^. EventDeletedPledgeProject ==. val project_id
 
@@ -677,7 +677,7 @@ fetchProjectModeratorsDB = fetchProjectRoleDB Moderator
 fetchProjectRoleDB :: Role -> ProjectId -> DB [UserId]
 fetchProjectRoleDB role project_id = fmap unwrapValues $
     select $
-    from $ \ pur -> do
+    from $ \pur -> do
     where_ $
         pur ^. ProjectUserRoleProject ==. val project_id &&.
         pur ^. ProjectUserRoleRole    ==. val role
@@ -689,7 +689,7 @@ fetchProjectVolunteerApplicationsDB
     -> DB [Entity VolunteerApplication]
 fetchProjectVolunteerApplicationsDB project_id =
     select $
-    from $ \ va -> do
+    from $ \va -> do
     where_ (va ^. VolunteerApplicationProject ==. val project_id)
     orderBy [desc (va ^. VolunteerApplicationCreatedTs)]
     return va
@@ -727,7 +727,7 @@ fetchProjectOpenTicketsDB project_id muser_id = do
     fetch_tickets :: [DiscussionId] -> DB [(Entity Ticket, Bool)]
     fetch_tickets discussion_ids = do
         ts <- select $
-              from $ \ (t `InnerJoin` c) -> do
+              from $ \(t `InnerJoin` c) -> do
               on_ (t ^. TicketComment ==. c ^. CommentId)
               where_ $
                   c ^. CommentDiscussion `in_` valList discussion_ids &&.

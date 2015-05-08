@@ -240,7 +240,7 @@ renderWikiPageEvent project_handle wiki_page_id wiki_page _ = do
 --the user from the first wiki edit for the event of new pages
 
 -- TODO: pick language correctly
-    [Entity _ wiki_target] <- runDB $ select $ from $ \ wt -> do
+    [Entity _ wiki_target] <- runDB $ select $ from $ \wt -> do
         where_ $ wt ^. WikiTargetPage ==. val wiki_page_id
         limit 1
         return wt

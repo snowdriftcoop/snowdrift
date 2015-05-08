@@ -80,7 +80,7 @@ instance ToMarkup Milray where
 
 instance Read Milray where
     readsPrec p ('$':'-':s) =
-        map (\ (Milray i, rest) -> (Milray $ -i, rest)) $ readsPrec p ('$':s)
+        map (\(Milray i, rest) -> (Milray $ -i, rest)) $ readsPrec p ('$':s)
     readsPrec _ ('$':s) = [ (result, rest) ]
       where
         (ipart, more) = span (`elem` ",0123456789") s

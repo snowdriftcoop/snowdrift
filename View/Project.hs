@@ -59,7 +59,7 @@ renderProject maybe_project_id project mviewer_id is_watching pledges pledge = d
             -- This assumes there were transactions associated with the last payday
             [Value (Just last) :: Value (Maybe Rational)] <-
                 select $
-                from $ \ transaction -> do
+                from $ \transaction -> do
                 where_ $
                     transaction ^. TransactionPayday ==. val (Just last_payday) &&.
                     transaction ^. TransactionCredit ==. val (Just $ projectAccount project)
@@ -67,7 +67,7 @@ renderProject maybe_project_id project mviewer_id is_watching pledges pledge = d
 
             [Value (Just year) :: Value (Maybe Rational)] <-
                 select $
-                from $ \ (transaction `InnerJoin` payday) -> do
+                from $ \(transaction `InnerJoin` payday) -> do
                 where_ $
                     payday ^. PaydayDate >. val (addUTCTime (-365 * 24 * 60 * 60) now) &&.
                     transaction ^. TransactionCredit ==. val (Just $ projectAccount project)
@@ -76,7 +76,7 @@ renderProject maybe_project_id project mviewer_id is_watching pledges pledge = d
 
             [Value (Just total) :: Value (Maybe Rational)] <-
                 select $
-                from $ \ transaction -> do
+                from $ \transaction -> do
                 where_ $ transaction ^. TransactionCredit ==. val (Just $ projectAccount project)
                 return $ sum_ $ transaction ^. TransactionAmount
 

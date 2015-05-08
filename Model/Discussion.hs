@@ -44,7 +44,7 @@ fetchDiscussionInternal langs discussion_id DiscussionTypeWikiPage = do
     case maybe_wiki_page of
         Nothing -> return Nothing
         Just (Entity wiki_page_id _) -> do
-            targets <- select $ from $ \ wt -> do
+            targets <- select $ from $ \wt -> do
                    where_ (wt ^. WikiTargetPage ==. val wiki_page_id)
                    return wt
 
@@ -62,7 +62,7 @@ fetchDiscussionsInternal
     -> DiscussionType
     -> DB (Map DiscussionId DiscussionOn)
 fetchDiscussionsInternal _ discussion_ids DiscussionTypeProject =
-    fmap (foldr go mempty) $ select $ from $ \ p -> do
+    fmap (foldr go mempty) $ select $ from $ \p -> do
         where_ $ p ^. ProjectDiscussion `in_` valList discussion_ids
         return p
   where
@@ -75,7 +75,7 @@ fetchDiscussionsInternal _ discussion_ids DiscussionTypeProject =
 fetchDiscussionsInternal _ discussion_ids DiscussionTypeBlogPost =
     fmap (foldr go mempty) $
     select $
-    from $ \ bp -> do
+    from $ \bp -> do
     where_ $ bp ^. BlogPostDiscussion `in_` valList discussion_ids
     return bp
   where
@@ -88,13 +88,13 @@ fetchDiscussionsInternal _ discussion_ids DiscussionTypeBlogPost =
 fetchDiscussionsInternal langs discussion_ids DiscussionTypeWikiPage = do
     wiki_pages <-
         select $
-        from $ \ wp -> do
+        from $ \wp -> do
         where_ $ wp ^. WikiPageDiscussion `in_` valList discussion_ids
         return wp
 
     wiki_targets <-
         select $
-        from $ \ wt -> do
+        from $ \wt -> do
         where_ $ wt ^. WikiTargetPage `in_` valList (map entityKey wiki_pages)
         return wt
 
@@ -108,7 +108,7 @@ fetchDiscussionsInternal langs discussion_ids DiscussionTypeWikiPage = do
     return $
         M.fromList $
             mapMaybe
-                (\ wiki_page ->
+                (\wiki_page ->
                     fmap
                         ((wikiPageDiscussion $ entityVal wiki_page,)
                             . DiscussionOnWikiPage)
@@ -116,7 +116,7 @@ fetchDiscussionsInternal langs discussion_ids DiscussionTypeWikiPage = do
                 wiki_pages
 
 fetchDiscussionsInternal _ discussion_ids DiscussionTypeUser =
-    fmap (foldr go mempty) $ select $ from $ \ u -> do
+    fmap (foldr go mempty) $ select $ from $ \u -> do
         where_ $ u ^. UserDiscussion `in_` valList discussion_ids
         return u
   where

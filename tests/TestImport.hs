@@ -121,7 +121,7 @@ submitLogin user pass = do
 extractLocation :: YesodExample site (Maybe B.ByteString)
 extractLocation = do
     statusIsResp 303
-    withResponse ( \ SResponse { simpleHeaders = h } ->
+    withResponse ( \SResponse { simpleHeaders = h } ->
                         return $ lookup "Location" h
                  )
 
@@ -172,7 +172,7 @@ loginAs user = do
 
 
 statusIsResp :: Int -> YesodExample site ()
-statusIsResp number = withResponse $ \ SResponse { simpleStatus = s } -> do
+statusIsResp number = withResponse $ \SResponse { simpleStatus = s } -> do
     let errMsg = concat
             [ "Expected status was ", show number
             , " but received status was ", show $ H.statusCode s
@@ -205,7 +205,7 @@ postComment route stmts = [marked|
 
 getLatestCommentId :: YesodExample App (CommentId, Bool)
 getLatestCommentId = do
-    [ (Value comment_id, Value approved) ] <- testDB $ select $ from $ \ comment -> do
+    [ (Value comment_id, Value approved) ] <- testDB $ select $ from $ \comment -> do
         orderBy [ desc $ comment ^. CommentId ]
         limit 1
         return (comment ^. CommentId, not_ $ isNothing $ comment ^. CommentApprovedTs)
@@ -299,7 +299,7 @@ selectUserId ident
              uids  -> error $ "ident " <> T.unpack ident <> " must be unique, "
                            <> "but it matches these user ids: "
                            <> (L.intercalate ", " $ map (show . unValue) uids))
-  <$> (select $ from $ \ u -> do
+  <$> (select $ from $ \u -> do
            where_ $ u ^. UserIdent ==. val ident
            return $ u ^. UserId)
 

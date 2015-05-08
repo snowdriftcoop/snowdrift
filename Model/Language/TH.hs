@@ -18,7 +18,7 @@ makeLanguages = QuasiQuoter
     , quotePat  = fail "no pattern expansion of langs"
     , quoteType = fail "no type expansion of langs"
     , quoteDec  =
-        words >>> \ langs -> return
+        words >>> \langs -> return
             [ DataD
                 []
                 language
@@ -39,7 +39,7 @@ makeLanguages = QuasiQuoter
                         langs)
                 , FunD
                     (mkName "fromPersistValue")
-                    (map (\ lang -> Clause [ConP persistText
+                    (map (\lang -> Clause [ConP persistText
                                                  [LitP $ StringL lang]]
                                            (NormalB $ rightE $ lang2conE lang)
                                            [])
@@ -52,13 +52,13 @@ makeLanguages = QuasiQuoter
                 (AppT (ConT $ mkName "PathPiece") (ConT language))
                 [ FunD
                     (mkName "toPathPiece")
-                    (map (\ lang -> Clause [lang2conP lang]
+                    (map (\lang -> Clause [lang2conP lang]
                                            (NormalB $ LitE $ StringL lang)
                                            [])
                          langs)
                 , FunD
                     (mkName "fromPathPiece")
-                    (map (\ lang -> Clause [LitP $ StringL lang]
+                    (map (\lang -> Clause [LitP $ StringL lang]
                                            (NormalB $ justE $ lang2conE lang)
                                            [])
                          langs
@@ -87,9 +87,9 @@ makeLanguages = QuasiQuoter
                     leftE $ LitE $ StringL "bad persistent type for Language")
                []
     langName = uc1 >>> ("Lang" ++) >>> mkName
-    lang2conE = langName >>> \ name -> ConE name
-    lang2conP = langName >>> \ name -> ConP name []
-    lang2conC = langName >>> \ name -> NormalC name []
+    lang2conE = langName >>> \name -> ConE name
+    lang2conP = langName >>> \name -> ConP name []
+    lang2conC = langName >>> \name -> NormalC name []
     rightE = AppE (ConE $ mkName "Right")
     leftE = AppE (ConE $ mkName "Left")
     justE = AppE (ConE $ mkName "Just")

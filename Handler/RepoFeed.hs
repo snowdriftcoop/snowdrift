@@ -47,7 +47,7 @@ getRepoFeedR = do
         lang = "en"
         time = commitTime $ head commits
 
-    entries <- forM commits $ \ commit -> do
+    entries <- forM commits $ \commit -> do
             let ls = T.lines $ decodeUtf8 $ commitMessage commit
             html <- unlinesHtml <$> mapM (prettyHtml prettyThings) ls
             return $ FeedEntry (ProjectR "snowdrift") (commitTime commit) (fromMaybe "empty commit message" $ listToMaybe ls) html
@@ -75,11 +75,11 @@ commitTime = gitTimeToUTC . personTime . commitAuthor
 
 getCommits :: Git -> Ref -> UTCTime -> IO [Commit]
 getCommits repo ref bound = do
-        tree <- flip unfoldTreeM_BF ref $ \ ref' -> do
+        tree <- flip unfoldTreeM_BF ref $ \ref' -> do
             commit <- getCommit repo ref'
             return $ if commitTime commit < bound
                       then (commit, [])
                       else (commit, commitParents commit)
 
-        return $ sortBy (flip compare `on` commitTime) $ filter (\ a -> length (commitParents a) <= 1) $ concat $ levels tree
+        return $ sortBy (flip compare `on` commitTime) $ filter (\a -> length (commitParents a) <= 1) $ concat $ levels tree
 

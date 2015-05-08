@@ -40,7 +40,7 @@ postInvitationR _ code = do
          then return Nothing
          else do
             -- TODO make sure project handle matches invite
-            update $ \ i -> do
+            update $ \i -> do
                 set i [ InviteRedeemed =. val True
                       , InviteRedeemedTs =. val (Just now)
                       , InviteRedeemedBy =. val (Just viewer_id)

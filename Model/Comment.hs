@@ -383,7 +383,7 @@ userUnclaimCommentDB comment_id release_note = do
             ticket_old_claiming_id <- lift $ insert ticket_old_claiming
 
             lift $
-                update $ \ etc -> do
+                update $ \etc -> do
                 set etc
                     [ EventTicketClaimedClaim    =. val Nothing
                     , EventTicketClaimedOldClaim =.
@@ -394,7 +394,7 @@ userUnclaimCommentDB comment_id release_note = do
 
             lift $
                 delete $
-                from $ \ tc ->
+                from $ \tc ->
                 where_ $ tc ^. TicketClaimingId ==. val ticket_claiming_id
 
             tell [ ETicketUnclaimed ticket_old_claiming_id ticket_old_claiming ]
@@ -841,7 +841,7 @@ fetchCommentCommentTagsInDB comment_ids = fmap (map entityVal) $
 fetchCommentAllCurrentDescendantsDB :: CommentId -> DB [CommentId]
 fetchCommentAllCurrentDescendantsDB comment_id = fmap (map unValue) $
     select $
-    from $ \ ca -> do
+    from $ \ca -> do
     where_ $
         ca ^. CommentAncestorAncestor ==. val comment_id
         &&. ca ^. CommentAncestorComment `notIn`
@@ -1008,12 +1008,12 @@ makeWatchMapDB
     :: (Foldable c)
     => c CommentId -> DB (Map CommentId (Set WatchedSubthread))
 makeWatchMapDB comment_ids = fmap unwrapTheThings $ do
-    ancestral_watches <- select $ from $ \ (ws `InnerJoin` ca) -> do
+    ancestral_watches <- select $ from $ \(ws `InnerJoin` ca) -> do
         on_ $ ws ^. WatchedSubthreadRoot ==. ca ^. CommentAncestorAncestor
         where_ $ ca ^. CommentAncestorComment `in_` valList comment_ids
         return (ca ^. CommentAncestorComment, ws)
 
-    current_watches <- select $ from $ \ ws -> do
+    current_watches <- select $ from $ \ws -> do
         where_ $ ws ^. WatchedSubthreadRoot `in_` valList comment_ids
         return (ws ^. WatchedSubthreadRoot, ws)
 
@@ -1174,7 +1174,7 @@ rethreadCommentDB
 
 fetchCommentTicketsDB :: Set CommentId -> DB (Map CommentId (Entity Ticket))
 fetchCommentTicketsDB comment_ids = do
-    ticket_entities <- select $ from $ \ t -> do
+    ticket_entities <- select $ from $ \t -> do
         where_ $ t ^. TicketComment `in_` valList (S.toList comment_ids)
         return t
 

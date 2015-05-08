@@ -70,7 +70,7 @@ annotTagName = tagName . entityVal . annotTagTag
 annotTagScore :: AnnotatedTag -> Double
 annotTagScore =
     sum
-    . map (\ (_, x) ->
+    . map (\(_, x) ->
         if x == 0
             then 0
             else fromIntegral

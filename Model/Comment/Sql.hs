@@ -107,7 +107,7 @@ exprCommentRootPostedBy user_id c =
   where
     sublist =
         subList_select $
-        from $ \ (comment_ancestor `InnerJoin` root) -> do
+        from $ \(comment_ancestor `InnerJoin` root) -> do
         on_ $ root ^. CommentId ==. comment_ancestor ^. CommentAncestorAncestor
         where_ $ isNothing (root ^. CommentParent)
             &&. root ^. CommentUser ==. val user_id

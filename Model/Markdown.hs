@@ -87,7 +87,7 @@ linkTickets line' =
     Right pattern = compile defaultCompOpt defaultExecOpt "\\<SD-([0-9][0-9]*)"
     getLinkForTicketComment :: TicketId -> Handler (Maybe Text)
     getLinkForTicketComment ticket_id = do
-        info <- runDB $ select $ from $ \ ticket -> do
+        info <- runDB $ select $ from $ \ticket -> do
             where_ $ ticket ^. TicketId ==. val ticket_id
 
             return $ ticket ^. TicketComment
@@ -163,8 +163,8 @@ fixTests = [minBound .. maxBound] >>= \case
 testFixLinks :: Handler [(DiscussionOn, Text, Text, Text)]
 testFixLinks =
     fmap (concat . concat)
-         (forM fixTests $ \ (discussion, examples) ->
-          forM examples $ \ (input, output) -> do
+         (forM fixTests $ \(discussion, examples) ->
+          forM examples $ \(input, output) -> do
             output' <- fixLinks "project" discussion input
             return $
                 if output == output'

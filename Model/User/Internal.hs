@@ -96,7 +96,7 @@ fetchUserNotificationPrefDB user_id notif_type = do
     -- Returned values should be unique, so it's okay to use
     -- 'listToMaybe' here, which keeps only the head of a list if it's
     -- not empty.
-    pulled <- fmap (listToMaybe . unwrapValues) $ select $ from $ \ unp -> do
+    pulled <- fmap (listToMaybe . unwrapValues) $ select $ from $ \unp -> do
         where_ $ unp ^. UserNotificationPrefUser ==. val user_id
              &&. unp ^. UserNotificationPrefType ==. val notif_type
         limit 1
@@ -114,7 +114,7 @@ fetchProjectNotificationPrefDB user_id project_id notif_type =
     -- Returned values should be unique, so it's okay to use
     -- 'listToMaybe' here, which keeps only the head of a list if it's
     -- not empty.
-    fmap (listToMaybe . unwrapValues) $ select $ from $ \ pnp -> do
+    fmap (listToMaybe . unwrapValues) $ select $ from $ \pnp -> do
         where_ $ pnp ^. ProjectNotificationPrefUser    ==. val user_id
              &&. pnp ^. ProjectNotificationPrefProject ==. val project_id
              &&. pnp ^. ProjectNotificationPrefType    ==. val notif_type
@@ -124,7 +124,7 @@ fetchProjectNotificationPrefDB user_id project_id notif_type =
 fetchUsersByUserNotifPrefDB :: UserNotificationType -> DB [UserId]
 fetchUsersByUserNotifPrefDB notif_type =
     fmap unwrapValues $
-    select $ from $ \ unp -> do
+    select $ from $ \unp -> do
         where_ $ unp ^. UserNotificationPrefType ==. val notif_type
         return $ unp ^. UserNotificationPrefUser
 
@@ -132,7 +132,7 @@ fetchUsersByProjectNotifPrefDB :: ProjectNotificationType -> ProjectId
                                -> DB [UserId]
 fetchUsersByProjectNotifPrefDB notif_type project_id =
     fmap unwrapValues $
-    select $ from $ \ pnp -> do
+    select $ from $ \pnp -> do
         where_ $ pnp ^. ProjectNotificationPrefType
              ==. val notif_type
              &&. pnp ^. ProjectNotificationPrefProject
