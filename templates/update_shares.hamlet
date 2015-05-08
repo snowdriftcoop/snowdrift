@@ -1,75 +1,75 @@
 <h1> Update your pledge to #{projectName project}
 
 $maybe _ <- mpledge
-    $# TODO: include funding amounts
-    <p>
-        You have already pledged _{MsgShares old_user_shares}.
-        At current share value, that means you give #{old_user_amount}/month
-    $# TODO: add number of other patrons
-        as your part of the #{old_project_amount}/month
-        that the project receives from all patrons together.
+  $# TODO: include funding amounts
+  <p>
+    You have already pledged _{MsgShares old_user_shares}.
+    At current share value, that means you give #{old_user_amount}/month
+  $# TODO: add number of other patrons
+    as your part of the #{old_project_amount}/month
+    that the project receives from all patrons together.
 
-    $if old_user_shares < new_user_shares
-        $with user_increase <- new_user_amount - old_user_amount
-            $with project_increase <- new_project_amount - old_project_amount
-                <p>
-                    At this point, if you add _{MsgShares (new_user_shares - old_user_shares)}
-                    you will give an additional #{user_increase}/month,
-                    matched by an extra #{project_increase - user_increase}/month from others.
-                <p>
-                    Keep in mind that the <em>best</em> way to give more is by recruiting new patrons!
+  $if old_user_shares < new_user_shares
+    $with user_increase <- new_user_amount - old_user_amount
+      $with project_increase <- new_project_amount - old_project_amount
+        <p>
+          At this point, if you add _{MsgShares (new_user_shares - old_user_shares)}
+          you will give an additional #{user_increase}/month,
+          matched by an extra #{project_increase - user_increase}/month from others.
+        <p>
+          Keep in mind that the <em>best</em> way to give more is by recruiting new patrons!
 
-        <form .text-center method=POST action=@{UpdateSharesR project_handle}>
+    <form .text-center method=POST action=@{UpdateSharesR project_handle}>
+      ^{confirm_form}
+      Increase your total pledge to _{MsgShares new_user_shares}?
+      <br .visible-xs .visible-sm>
+      <input type=submit name=confirm value="yes!">
+      <input type=submit name=confirm value="not yet, take me back&hellip;">
+
+  $else
+    $with user_decrease <- old_user_amount - new_user_amount
+      $with project_decrease <- old_project_amount - new_project_amount
+        $if new_user_shares == 0
+          <p>
+            At this point, if you drop your _{MsgShares old_user_shares},
+            other patrons will no longer match you and
+            so will reduce their donations by #{project_decrease - user_decrease}/month.
+          <form .text-center method=POST action=@{UpdateSharesR project_handle}>
             ^{confirm_form}
-            Increase your total pledge to _{MsgShares new_user_shares}?
+            Drop your shares and stop supporting this project?
             <br .visible-xs .visible-sm>
-            <input type=submit name=confirm value="yes!">
-            <input type=submit name=confirm value="not yet, take me back&hellip;">
-
-    $else
-        $with user_decrease <- old_user_amount - new_user_amount
-            $with project_decrease <- old_project_amount - new_project_amount
-                $if new_user_shares == 0
-                    <p>
-                        At this point, if you drop your _{MsgShares old_user_shares},
-                        other patrons will no longer match you and
-                        so will reduce their donations by #{project_decrease - user_decrease}/month.
-                    <form .text-center method=POST action=@{UpdateSharesR project_handle}>
-                        ^{confirm_form}
-                        Drop your shares and stop supporting this project?
-                        <br .visible-xs .visible-sm>
-                        <input type=submit name=confirm value="yes">
-                        <input type=submit name=confirm value="nevermind, take me back">
-                $else
-                    <p>
-                        At this point, if you drop _{MsgShares (old_user_shares - new_user_shares)},
-                        you will give #{user_decrease} less per month,
-                        and the donations from others will go down by a further #{project_decrease - user_decrease}.
-                    <form .text-center method=POST action=@{UpdateSharesR project_handle}>
-                        ^{confirm_form}
-                        Reduce your pledge from _{MsgShares old_user_shares} to _{MsgShares new_user_shares}?
-                        <br .visible-xs .visible-sm>
-                        <input type=submit name=confirm value="yes">
-                        <input type=submit name=confirm value="nevermind, take me back">
+            <input type=submit name=confirm value="yes">
+            <input type=submit name=confirm value="nevermind, take me back">
+        $else
+          <p>
+            At this point, if you drop _{MsgShares (old_user_shares - new_user_shares)},
+            you will give #{user_decrease} less per month,
+            and the donations from others will go down by a further #{project_decrease - user_decrease}.
+          <form .text-center method=POST action=@{UpdateSharesR project_handle}>
+            ^{confirm_form}
+            Reduce your pledge from _{MsgShares old_user_shares} to _{MsgShares new_user_shares}?
+            <br .visible-xs .visible-sm>
+            <input type=submit name=confirm value="yes">
+            <input type=submit name=confirm value="nevermind, take me back">
 
 
 
 $nothing
-    $with user_increase <- new_user_amount - old_user_amount
-        $with project_increase <- new_project_amount - old_project_amount
-            <p>
-                At this point, a pledge of _{MsgShares new_user_shares}
-                means you will give #{user_increase}/month,
-                matched by an extra #{project_increase - user_increase}/month
-                from the existing patrons.
-            <p>
-                Note that share value will change as others pledge,
-                and you may change your pledge at any time.
+  $with user_increase <- new_user_amount - old_user_amount
+    $with project_increase <- new_project_amount - old_project_amount
+      <p>
+        At this point, a pledge of _{MsgShares new_user_shares}
+        means you will give #{user_increase}/month,
+        matched by an extra #{project_increase - user_increase}/month
+        from the existing patrons.
+      <p>
+        Note that share value will change as others pledge,
+        and you may change your pledge at any time.
 
-    <form .text-center method=POST action=@{UpdateSharesR project_handle}>
-        ^{confirm_form}
-        Pledge _{MsgShares new_user_shares} to #{projectName project}?
-        <br .visible-xs .visible-sm>
-        <input type=submit name=confirm value="yes!">
-        <input type=submit name=confirm value="not yet, take me back&hellip;">
+  <form .text-center method=POST action=@{UpdateSharesR project_handle}>
+    ^{confirm_form}
+    Pledge _{MsgShares new_user_shares} to #{projectName project}?
+    <br .visible-xs .visible-sm>
+    <input type=submit name=confirm value="yes!">
+    <input type=submit name=confirm value="not yet, take me back&hellip;">
 

@@ -1,33 +1,33 @@
 <div .row>
-    <div .col-md-3>
-        Account balance:
-    <div .col-md-5>
-        #{show (accountBalance account)}
+  <div .col-md-3>
+    Account balance:
+  <div .col-md-5>
+    #{show (accountBalance account)}
 <form method="POST">
-    ^{add_funds_form}
-    <input type="submit" value="load funds">
+  ^{add_funds_form}
+  <input type="submit" value="load funds">
 
 $if null transactions
-    <p> no transactions recorded
+  <p> no transactions recorded
 $else
-    <table>
-        <th>
-            <td>
+  <table>
+    <th>
+      <td>
 
-        $forall Entity _ transaction <- transactions
-            $with is_credit <- transactionCredit transaction == Just (userAccount user)
-                <tr>
-                    <td>
-                        ^{renderTime (transactionTs transaction)}
+    $forall Entity _ transaction <- transactions
+      $with is_credit <- transactionCredit transaction == Just (userAccount user)
+        <tr>
+          <td>
+            ^{renderTime (transactionTs transaction)}
 
-                    <td>
-                        ^{renderOtherAccount is_credit transaction user_accounts project_accounts}
+          <td>
+            ^{renderOtherAccount is_credit transaction user_accounts project_accounts}
 
-                    <td>
-                        $if is_credit
-                            #{show (transactionAmount transaction)}
-                        $else
-                            (#{show (transactionAmount transaction)})
+          <td>
+            $if is_credit
+              #{show (transactionAmount transaction)}
+            $else
+              (#{show (transactionAmount transaction)})
 
-                    <td>
-                        #{transactionReason transaction}
+          <td>
+            #{transactionReason transaction}

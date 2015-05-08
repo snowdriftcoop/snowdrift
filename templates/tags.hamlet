@@ -1,23 +1,23 @@
 $if null tags
-    no tags to display
+  no tags to display
 $else
-    <table>
-        $forall tag <- tags
-            <tr>
-                <td>
-                    #{annotTagName tag}
+  <table>
+    $forall tag <- tags
+      <tr>
+        <td>
+          #{annotTagName tag}
 
-                <td>
+        <td>
 
-                <td>
-                    #{annotTagScoreString tag}
+        <td>
+          #{annotTagScoreString tag}
 
-            $forall (user, votes) <- annotTagUserVotes tag
-                <tr>
-                    <td>
+      $forall (user, votes) <- annotTagUserVotes tag
+        <tr>
+          <td>
 
-                    <td>
-                        #{userDisplayName user}
+          <td>
+            #{userDisplayName user}
 
-                    <td>
-                        #{show votes}
+          <td>
+            #{show votes}

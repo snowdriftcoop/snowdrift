@@ -1,37 +1,37 @@
 <h1>
-    <center>
-        Users
+  <center>
+    Users
 <table>
-    <thead>
-        <tr>
-            <th>
-                Name
-            <th>
-                IRC Nick
-            <th>
-                Established
-            <th>
-                Project roles
+  <thead>
+    <tr>
+      <th>
+        Name
+      <th>
+        IRC Nick
+      <th>
+        Established
+      <th>
+        Project roles
 
-    <tbody>
-        $if null users
-            <tr>
-                <td>
-                    no users to display
-        $else
-            $forall (_, user) <- users
-                <tr>
-                    <td>
-                        <a href=@{UserR $ entityKey user}>
-                            #{userDisplayName user}
-                    <td>
-                        $maybe nick <- userIrcNick $ entityVal user
-                            #{nick}
-                    <td>
-                        $if userIsEstablished (entityVal user)
-                            &#10004;
-                    <td>
-                        $forall ((projectName, projectHandle), roles) <- M.toAscList (fromMaybe mempty (userProjects user))
-                            <a href=@{ProjectR $ projectHandle}>
-                                #{projectName} (#{T.intercalate "/" (map roleAbbrev $ S.toList roles)})
+  <tbody>
+    $if null users
+      <tr>
+        <td>
+          no users to display
+    $else
+      $forall (_, user) <- users
+        <tr>
+          <td>
+            <a href=@{UserR $ entityKey user}>
+              #{userDisplayName user}
+          <td>
+            $maybe nick <- userIrcNick $ entityVal user
+              #{nick}
+          <td>
+            $if userIsEstablished (entityVal user)
+              &#10004;
+          <td>
+            $forall ((projectName, projectHandle), roles) <- M.toAscList (fromMaybe mempty (userProjects user))
+              <a href=@{ProjectR $ projectHandle}>
+                #{projectName} (#{T.intercalate "/" (map roleAbbrev $ S.toList roles)})
 

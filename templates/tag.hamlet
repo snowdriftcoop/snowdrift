@@ -2,19 +2,19 @@ $newline never
 
 #{tag_name}
 <form method=post>
-    <input type=submit method=post value="-">
-    <input type=submit method=post value="+">
+  <input type=submit method=post value="-">
+  <input type=submit method=post value="+">
 
 $if null user_votes
-    tag does not appear on this comment
+  tag does not appear on this comment
 $else
-    <table>
-        $forall (user, votes) <- user_votes
-            <tr>
-                <td>
-                    <a href=@{UserR (entityKey user)}>
-                        #{userDisplayName user}
+  <table>
+    $forall (user, votes) <- user_votes
+      <tr>
+        <td>
+          <a href=@{UserR (entityKey user)}>
+            #{userDisplayName user}
 
-                <td>
-                    #{show votes}
+        <td>
+          #{show votes}
 

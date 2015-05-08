@@ -1,5 +1,5 @@
 <div .page-toolbox>
-    <div .page-tool>
-        <a href=@{ProjectDiscussionR project_handle}> back to full discussion
+  <div .page-tool>
+    <a href=@{ProjectDiscussionR project_handle}> back to full discussion
 
 ^{widget}

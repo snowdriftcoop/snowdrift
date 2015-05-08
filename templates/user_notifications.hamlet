@@ -3,5 +3,5 @@
 <em>Note: email sending requires a verified email address
 <br>
 <form method=POST action=@{UserNotificationsR user_id} enctype=#{enctype}>
-    ^{form}
-    <button>update
+  ^{form}
+  <button>update

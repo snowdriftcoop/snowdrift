@@ -1,39 +1,39 @@
 <a href="@{NotificationsR}">
-    notifications
+  notifications
 
 <h1>
-    <div .text-center> Archived notifications
+  <div .text-center> Archived notifications
 
 $if null notifs
-    No archived notifications
+  No archived notifications
 $else
-    <form action="@{ArchivedNotificationsProxyR}" method="GET">
-        <div .row>
+  <form action="@{ArchivedNotificationsProxyR}" method="GET">
+    <div .row>
+      <div .col-sm-3>
+        <input type="checkbox" name="all">
+        <input type="submit" name="delete" value="delete">
+        <input type="submit" name="unarchive" value="unarchive">
+        <p>
+    $forall notif <- notifs
+      <div .row>
+        $case notif
+          $of UNotification user_notif_id user_notif
             <div .col-sm-3>
-                <input type="checkbox" name="all">
-                <input type="submit" name="delete" value="delete">
-                <input type="submit" name="unarchive" value="unarchive">
-                <p>
-        $forall notif <- notifs
-            <div .row>
-                $case notif
-                    $of UNotification user_notif_id user_notif
-                        <div .col-sm-3>
-                            <input type="checkbox" name="user_notification" value="#{toPathPiece user_notif_id}">
-                            <span .well .well-sm>
-                                ^{renderTime (userNotificationCreatedTs user_notif)}
-                        <div .col-sm-9>
-                            #{userNotificationContent user_notif}
-                    $of PNotification project_notif_id project_notif
-                        <div .col-sm-3>
-                            <input type="checkbox" name="project_notification" value="#{toPathPiece project_notif_id}">
-                            <span .well .well-sm>
-                                ^{renderTime (projectNotificationCreatedTs project_notif)}
-                        <div .col-sm-9>
-                            ^{projectNameWidget $ projectNotificationProject project_notif}
-                            #{projectNotificationContent project_notif}
-        <div .row>
+              <input type="checkbox" name="user_notification" value="#{toPathPiece user_notif_id}">
+              <span .well .well-sm>
+                ^{renderTime (userNotificationCreatedTs user_notif)}
+            <div .col-sm-9>
+              #{userNotificationContent user_notif}
+          $of PNotification project_notif_id project_notif
             <div .col-sm-3>
-                <input type="checkbox" name="all">
-                <input type="submit" name="delete" value="delete">
-                <input type="submit" name="unarchive" value="unarchive">
+              <input type="checkbox" name="project_notification" value="#{toPathPiece project_notif_id}">
+              <span .well .well-sm>
+                ^{renderTime (projectNotificationCreatedTs project_notif)}
+            <div .col-sm-9>
+              ^{projectNameWidget $ projectNotificationProject project_notif}
+              #{projectNotificationContent project_notif}
+    <div .row>
+      <div .col-sm-3>
+        <input type="checkbox" name="all">
+        <input type="submit" name="delete" value="delete">
+        <input type="submit" name="unarchive" value="unarchive">

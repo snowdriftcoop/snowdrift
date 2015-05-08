@@ -1,100 +1,100 @@
 $maybe link <- maybe_link
+  <p>
+    Your invitation code has been generated.
+    The code adds a new project role to an existing snowdrift.coop account.
+  <p>
+    <strong>Send the code below to the invitee along with a personal note.
+  <p>
+    <em>
+      Note: each code can only be used once.
+      You must generate a new code for each invitation.
+  <blockquote>
+    $maybe invite_role <- maybe_invite_role
+      $case invite_role
+        $of Admin
+          You are invited to be an administrator for #{projectName project}.
+
+        $of TeamMember
+          You are invited to be a member of the #{projectName project} team.
+
+        $of Moderator
+          You are invited to be a moderator for #{projectName project}.
+
+    $nothing
+      <strong>
+        No role selected?  This is almost certainly an error!
+
     <p>
-        Your invitation code has been generated.
-        The code adds a new project role to an existing snowdrift.coop account.
-    <p>
-        <strong>Send the code below to the invitee along with a personal note.
-    <p>
-        <em>
-            Note: each code can only be used once.
-            You must generate a new code for each invitation.
-    <blockquote>
-        $maybe invite_role <- maybe_invite_role
-            $case invite_role
-                $of Admin
-                    You are invited to be an administrator for #{projectName project}.
-
-                $of TeamMember
-                    You are invited to be a member of the #{projectName project} team.
-
-                $of Moderator
-                    You are invited to be a moderator for #{projectName project}.
-
-        $nothing
-            <strong>
-                No role selected?  This is almost certainly an error!
-
-        <p>
-            <strong>
-                Use this link to redeem your invitation:
-                <br>
-                @{link}
-    <hr>
+      <strong>
+        Use this link to redeem your invitation:
+        <br>
+        @{link}
+  <hr>
 $nothing
-    <p>
-        Our invitation system generates private codes which users can redeem to gain further roles on the site.
-    <p>
-        Permissions are project-specific, so users can have different roles for different projects.
-    <p>
-        To invite others:
-    <ul>
-        <li>
-            Enter information below about who you are inviting and why.
-        <li>
-            After you click "generate", you will be given a link to send.
-        <li>
-            Note: each invitation can only be used once. You must generate a new link for each person you wish to invite.
+  <p>
+    Our invitation system generates private codes which users can redeem to gain further roles on the site.
+  <p>
+    Permissions are project-specific, so users can have different roles for different projects.
+  <p>
+    To invite others:
+  <ul>
+    <li>
+      Enter information below about who you are inviting and why.
+    <li>
+      After you click "generate", you will be given a link to send.
+    <li>
+      Note: each invitation can only be used once. You must generate a new link for each person you wish to invite.
 
 <form method=post action=@{InviteR project_handle}>
-    ^{invite_form}
-    <input type=submit value="generate invitation">
+  ^{invite_form}
+  <input type=submit value="generate invitation">
 
 <hr>
 $if null outstanding_invites
-    no outstanding invites
+  no outstanding invites
 $else
-    outstanding invitations:
-    <table>
-        <tr>
-            <th>Created
-            <th>Invited By
-            <th>Info
-            <th>Role
-            <th>Code
-        $forall Entity _ invite <- outstanding_invites
-            <tr>
-                <td>^{renderTime (inviteCreatedTs invite)}
-                $with user_id <- inviteUser invite
-                    <td>
-                        <a href="@{UserR user_id}">
-                            #{format_inviter user_id}
-                <td>#{inviteTag invite}
-                <td>#{roleAbbrev (inviteRole invite)}
-                <td>@{InvitationR project_handle (inviteCode invite)}
+  outstanding invitations:
+  <table>
+    <tr>
+      <th>Created
+      <th>Invited By
+      <th>Info
+      <th>Role
+      <th>Code
+    $forall Entity _ invite <- outstanding_invites
+      <tr>
+        <td>^{renderTime (inviteCreatedTs invite)}
+        $with user_id <- inviteUser invite
+          <td>
+            <a href="@{UserR user_id}">
+              #{format_inviter user_id}
+        <td>#{inviteTag invite}
+        <td>#{roleAbbrev (inviteRole invite)}
+        <td>@{InvitationR project_handle (inviteCode invite)}
 
 <hr>
 $if null redeemed_invites
-    no recently redeemed invites
+  no recently redeemed invites
 $else
-    recent redemptions:
-    <table>
-        <tr>
-            <th>Redeemed
-            <th>Redeemed By
-            <th>Invited By
-            <th>Info
-            <th>Role
-            <th>Code
-        $forall Entity _ invite <- redeemed_invites
-            <tr>
-                <td>^{renderTime (fromMaybe now (inviteRedeemedTs invite))}
-                <td>#{format_user (inviteRedeemedBy invite)}
-                $with user_id <- inviteUser invite
-                    <td>
-                        <a href="@{UserR user_id}">
-                            #{format_inviter user_id}
+  recent redemptions:
+  <table>
+    <tr>
+      <th>Redeemed
+      <th>Redeemed By
+      <th>Invited By
+      <th>Info
+      <th>Role
+      <th>Code
+    $forall Entity _ invite <- redeemed_invites
+      <tr>
+        <td>^{renderTime (fromMaybe now (inviteRedeemedTs invite))}
+        <td>#{format_user (inviteRedeemedBy invite)}
+        $with user_id <- inviteUser invite
+          <td>
+            <a href="@{UserR user_id}">
+              #{format_inviter user_id}
 
-                <td>#{inviteTag invite}
-                <td>#{roleAbbrev (inviteRole invite)}
-                <td>@{InvitationR project_handle (inviteCode invite)}
+        <td>#{inviteTag invite}
+        <td>#{roleAbbrev (inviteRole invite)}
+        <td>@{InvitationR project_handle (inviteCode invite)}
 

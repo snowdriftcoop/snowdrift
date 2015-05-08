@@ -1,6 +1,6 @@
 $if null tags
-    no tags to display
+  no tags to display
 $else
-    <table>
-        $forall tag <- tags
-            ^{tagWidget tag}
+  <table>
+    $forall tag <- tags
+      ^{tagWidget tag}
