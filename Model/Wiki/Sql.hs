@@ -9,5 +9,8 @@ exprEditViewedBy user_id we = we ^. WikiEditId `in_`
      where_ (vwe ^. ViewWikiEditUser ==. val user_id)
      return (vwe ^. ViewWikiEditEdit))
 
-exprWikiPageOnProject :: SqlExpr (Entity WikiPage) -> ProjectId -> SqlExpr (Value Bool)
+exprWikiPageOnProject
+    :: SqlExpr (Entity WikiPage)
+    -> ProjectId
+    -> SqlExpr (Value Bool)
 exprWikiPageOnProject wp project_id = wp ^. WikiPageProject ==. val project_id
