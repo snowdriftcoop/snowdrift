@@ -1,47 +1,47 @@
 <h1>#{projectName project} activity feed:
 
 $forall (_, event) <- events
-    $case event
-        $of ECommentPosted comment_id comment
-            ^{renderCommentPostedEvent comment_id comment muser_id project_handle discussion_map action_permissions_map earlier_closures_map earlier_retracts_map user_map closure_map retract_map ticket_map claim_map flag_map}
+  $case event
+    $of ECommentPosted comment_id comment
+      ^{renderCommentPostedEvent comment_id comment muser_id project_handle discussion_map action_permissions_map earlier_closures_map earlier_retracts_map user_map closure_map retract_map ticket_map claim_map flag_map}
 
-        $of ECommentRethreaded _ rethread
-            ^{renderCommentRethreadedEvent rethread user_map}
+    $of ECommentRethreaded _ rethread
+      ^{renderCommentRethreadedEvent rethread user_map}
 
-        $of ECommentClosed _ comment_closing
-            ^{renderCommentClosedEvent comment_closing user_map ticket_map}
+    $of ECommentClosed _ comment_closing
+      ^{renderCommentClosedEvent comment_closing user_map ticket_map}
 
-        $of ETicketClaimed claim
-            ^{renderTicketClaimedEvent claim user_map ticket_map}
+    $of ETicketClaimed claim
+      ^{renderTicketClaimedEvent claim user_map ticket_map}
 
-        $of ETicketUnclaimed _ claim
-            ^{renderTicketUnclaimedEvent claim user_map ticket_map}
+    $of ETicketUnclaimed _ claim
+      ^{renderTicketUnclaimedEvent claim user_map ticket_map}
 
-        $of EWikiPage wiki_page_id wiki_page _
-            ^{renderWikiPageEvent project_handle wiki_page_id wiki_page user_map}
+    $of EWikiPage wiki_page_id wiki_page _
+      ^{renderWikiPageEvent project_handle wiki_page_id wiki_page user_map}
 
-        $of EWikiEdit wiki_edit_id wiki_edit _
-            ^{renderWikiEditEvent project_handle wiki_edit_id wiki_edit wiki_target_map user_map}
+    $of EWikiEdit wiki_edit_id wiki_edit _
+      ^{renderWikiEditEvent project_handle wiki_edit_id wiki_edit wiki_target_map user_map}
 
-        $of ENewPledge shares_pledged_id shares_pledged
-            ^{renderNewPledgeEvent shares_pledged_id shares_pledged user_map}
+    $of ENewPledge shares_pledged_id shares_pledged
+      ^{renderNewPledgeEvent shares_pledged_id shares_pledged user_map}
 
-        $of EUpdatedPledge old_shares shares_pledged_id shares_pledged
-            ^{renderUpdatedPledgeEvent old_shares shares_pledged_id shares_pledged user_map}
+    $of EUpdatedPledge old_shares shares_pledged_id shares_pledged
+      ^{renderUpdatedPledgeEvent old_shares shares_pledged_id shares_pledged user_map}
 
-        $of EDeletedPledge ts user_id _ shares
-            ^{renderDeletedPledgeEvent ts user_id shares user_map}
+    $of EDeletedPledge ts user_id _ shares
+      ^{renderDeletedPledgeEvent ts user_id shares user_map}
 
-        $of EBlogPost _ blog_post
-            ^{renderBlogPostEvent blog_post}
+    $of EBlogPost _ blog_post
+      ^{renderBlogPostEvent blog_post}
 
-        $# Graveyard of event types we don't want to put on the feed.
-        $# Don't match-all here, we don't want to accidentally not consider something.
+    $# Graveyard of event types we don't want to put on the feed.
+    $# Don't match-all here, we don't want to accidentally not consider something.
 
-        $of ECommentApproved _ _
-        $of ECommentPending _ _
-        $of EUserNotificationSent _ _
-        $of EProjectNotificationSent _ _
+    $of ECommentApproved _ _
+    $of ECommentPending _ _
+    $of EUserNotificationSent _ _
+    $of EProjectNotificationSent _ _
 
 $maybe next_before <- mnext_before
-    <a href=@?{(ProjectFeedR project_handle, [("before", next_before)])}>next page
+  <a href=@?{(ProjectFeedR project_handle, [("before", next_before)])}>next page

@@ -1,21 +1,21 @@
 <h1>
-    #{projectName project}
+  #{projectName project}
 
 $if null pledges
-    <p> no patrons yet
+  <p> no patrons yet
 $else
-    <table>
-        $forall (pledge, user) <- pledges
-            <tr>
-                <td>
-                    <a href="@{UserR (entityKey user)}">
-                        #{userDisplayName user}
-                <td>
-                    #{show (pledgeFundedShares (entityVal pledge))}&nbsp;shares
-                <td>
-                    $maybe count <- M.lookup (entityKey user) user_payouts_map
-                        $if count < 2
-                            (pending)
-                    $nothing
-                        (pending)
+  <table>
+    $forall (pledge, user) <- pledges
+      <tr>
+        <td>
+          <a href="@{UserR (entityKey user)}">
+            #{userDisplayName user}
+        <td>
+          #{show (pledgeFundedShares (entityVal pledge))}&nbsp;shares
+        <td>
+          $maybe count <- M.lookup (entityKey user) user_payouts_map
+            $if count < 2
+              (pending)
+          $nothing
+            (pending)
 

@@ -1,8 +1,8 @@
 <div>
-    ^{renderTime imageTs}
+  ^{renderTime imageTs}
 
 <div>
-    #{imageName}
+  #{imageName}
 
 <div>
-    <img src=@{ImageR imageName}>
+  <img src=@{ImageR imageName}>

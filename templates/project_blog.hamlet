@@ -1,32 +1,32 @@
 <h1> #{projectName project} Blog 
 
 $if null posts
-    No blog posts yet.
+  No blog posts yet.
 
 $forall Entity _ post <- posts
-    <h2>
-        <a href=@{BlogPostR project_handle (blogPostHandle post)}>
-            #{blogPostTitle post}
-        <br>
-        <small>
-            <span .author> by ^{userNameWidget (blogPostUser post)}
-            <span .post-time>^{renderTime $ blogPostTs post}
-            <a href=@{EditBlogPostR project_handle (blogPostHandle post)}> edit
+  <h2>
+    <a href=@{BlogPostR project_handle (blogPostHandle post)}>
+      #{blogPostTitle post}
+    <br>
+    <small>
+      <span .author> by ^{userNameWidget (blogPostUser post)}
+      <span .post-time>^{renderTime $ blogPostTs post}
+      <a href=@{EditBlogPostR project_handle (blogPostHandle post)}> edit
 
-    <div .blog-post-top>
-        ^{markdownWidgetWith (fixLinks project_handle discussion) $ blogPostTopContent post}
+  <div .blog-post-top>
+    ^{markdownWidgetWith (fixLinks project_handle discussion) $ blogPostTopContent post}
 
-        $maybe _ <- blogPostBottomContent post
-            <div .text-center>
-                <a href=@{BlogPostR project_handle (blogPostHandle post)}#fold>
-                    Continued, read more&hellip;
+    $maybe _ <- blogPostBottomContent post
+      <div .text-center>
+        <a href=@{BlogPostR project_handle (blogPostHandle post)}#fold>
+          Continued, read more&hellip;
 
-    <hr>
+  <hr>
 
 $case next
-    $of [Entity next_id _]
-        <a href=#{nextRoute next_id}>
-            next posts
+  $of [Entity next_id _]
+    <a href=#{nextRoute next_id}>
+      next posts
 
-    $of _
+  $of _
 

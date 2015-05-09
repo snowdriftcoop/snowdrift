@@ -1,96 +1,96 @@
 $if Just user_id == mviewer_id
-    <div .user-prefs>
-        <div .user-pref>
-            <a href="@{EditUserR user_id}">
-                edit profile
-        <div .user-pref>
-            <a href="@{DeleteUserR user_id}">
-                delete account
-        <div .user-pref>
-            <a href="@{UserChangePasswordR user_id}">
-                change passphrase
-        <div .user-pref>
-            <a href="@{UserNotificationsR user_id}">
-                user notification preferences
-        <div .user-pref>
-            <a href="@{UserSelectProjectR user_id}">
-                watched projects notification preferences
+  <div .user-prefs>
+    <div .user-pref>
+      <a href="@{EditUserR user_id}">
+        edit profile
+    <div .user-pref>
+      <a href="@{DeleteUserR user_id}">
+        delete account
+    <div .user-pref>
+      <a href="@{UserChangePasswordR user_id}">
+        change passphrase
+    <div .user-pref>
+      <a href="@{UserNotificationsR user_id}">
+        user notification preferences
+    <div .user-pref>
+      <a href="@{UserSelectProjectR user_id}">
+        watched projects notification preferences
 
 <div .row>
-    <div .col-md-6>
-        <h1>
-            #{userDisplayName user_entity}
-        <div .row>
-            $maybe avatar <- userAvatar user
-                <div .col-sm-5>
-                    <figure>
-                        <img .headshot src="#{avatar}">
-            <div .col-sm-7>
-                $if userIsEstablished user
-                    <small>established user
-                    <br>
-                $if Just user_id == mviewer_id
-                    $maybe email <- userEmail user
-                        #{email} (not shown publicly)
-                        $if isJust (userEmail user) && not (userEmail_verified user)
-                            <form method=POST action=@{UserR user_id}>
-                                <button>resend verification email
-                    <br>
-                $maybe nick <- userIrcNick user
-                    #{nick} on <a href=@{WikiR "snowdrift" LangEn "irc"}>irc.freenode.net</a>
+  <div .col-md-6>
+    <h1>
+      #{userDisplayName user_entity}
+    <div .row>
+      $maybe avatar <- userAvatar user
+        <div .col-sm-5>
+          <figure>
+            <img .headshot src="#{avatar}">
+      <div .col-sm-7>
+        $if userIsEstablished user
+          <small>established user
+          <br>
+        $if Just user_id == mviewer_id
+          $maybe email <- userEmail user
+            #{email} (not shown publicly)
+            $if isJust (userEmail user) && not (userEmail_verified user)
+              <form method=POST action=@{UserR user_id}>
+                <button>resend verification email
+          <br>
+        $maybe nick <- userIrcNick user
+          #{nick} on <a href=@{WikiR "snowdrift" LangEn "irc"}>irc.freenode.net</a>
 
-    <div .col-md-6>
-        $maybe blurb <- userBlurb user
-            ^{markdownWidget blurb}
-        $nothing
-            &nbsp;
+  <div .col-md-6>
+    $maybe blurb <- userBlurb user
+      ^{markdownWidget blurb}
+    $nothing
+      &nbsp;
 <hr>
 <div .row>
 
-    <div .col-md-6>
-        ^{projectPledgeSummary user_id}
+  <div .col-md-6>
+    ^{projectPledgeSummary user_id}
 
-        <h4>Project Roles
-        <table>
-            <thead>
-                <tr>
-                   <th>Project
-                   $forall role <- presentationRoles
-                     <th>#{ roleLabel role }
-            <tbody>
-                $forall (Entity _ project, roles) <- M.toAscList projects_and_roles
-                    <tr>
-                    <td><a href=@{ProjectR (projectHandle project)}>
-                        #{projectName project}
+    <h4>Project Roles
+    <table>
+      <thead>
+        <tr>
+          <th>Project
+            $forall role <- presentationRoles
+              <th>#{ roleLabel role }
+      <tbody>
+        $forall (Entity _ project, roles) <- M.toAscList projects_and_roles
+          <tr>
+          <td><a href=@{ProjectR (projectHandle project)}>
+            #{projectName project}
 
-                    $forall role' <- presentationRoles
-                        <td>
-                            $if S.member role' roles
-                                $# check mark
-                                &#10004;
+          $forall role' <- presentationRoles
+            <td>
+              $if S.member role' roles
+                $# check mark
+                &#10004;
 
-    <div .col-md-6>
-        $maybe statement <- userStatement user
-            <h3>Personal Statement
-            <div .well .well-sm .scroll .capped>
-                ^{markdownWidget statement}
+  <div .col-md-6>
+    $maybe statement <- userStatement user
+      <h3>Personal Statement
+      <div .well .well-sm .scroll .capped>
+        ^{markdownWidget statement}
 
 $maybe (est_form, est_form_enctype) <- mest_form_and_enctype
-    <div .row>
-        <div .col-md-6 #establish-form>
-            <h4>Establish User
-            <p>
-                As a project moderator, you can mark users eligible for "establishment".
-                Established users have additional permissions such as
-                flagging, tagging, and commenting without moderation.
-            <p>
-                Approve of this user if you now trust them to be legitimate
-                (e.g. they have posted helpful, on-topic comment(s),
-                and are clearly not a spammer or malicious troll).
-                They will then become fully established after affirming
-                the <a href="@{WikiR "snowdrift" LangEn "honor"}">honor pledge</a>.
+  <div .row>
+    <div .col-md-6 #establish-form>
+      <h4>Establish User
+      <p>
+        As a project moderator, you can mark users eligible for "establishment".
+        Established users have additional permissions such as
+        flagging, tagging, and commenting without moderation.
+      <p>
+        Approve of this user if you now trust them to be legitimate
+        (e.g. they have posted helpful, on-topic comment(s),
+        and are clearly not a spammer or malicious troll).
+        They will then become fully established after affirming
+        the <a href="@{WikiR "snowdrift" LangEn "honor"}">honor pledge</a>.
 
-            <form action=@{UserEstEligibleR user_id} method=post enctype=#{est_form_enctype}>
-                ^{est_form}
-                <input type=submit value="Approve">
+      <form action=@{UserEstEligibleR user_id} method=post enctype=#{est_form_enctype}>
+        ^{est_form}
+        <input type=submit value="Approve">
 

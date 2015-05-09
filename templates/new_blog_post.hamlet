@@ -1,5 +1,5 @@
 <form method=POST>
-    ^{blog_form}
+  ^{blog_form}
 
-    <input type=submit name=mode value=preview>
-    <input type=submit name=mode value=post>
+  <input type=submit name=mode value=preview>
+  <input type=submit name=mode value=post>

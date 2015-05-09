@@ -5,107 +5,107 @@ $newline never
 \<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="en"> <![endif]-->
 \<!--[if gt IE 8]><!-->
 <html .no-js lang="en"> <!--<![endif]-->
-    <head>
-        <link rel="shortcut icon" href=@{FaviconR}>
-        <meta charset="UTF-8">
+  <head>
+    <link rel="shortcut icon" href=@{FaviconR}>
+    <meta charset="UTF-8">
 
-        <script>
-            /*
-            @licstart  The following is the entire license notice for the
-            JavaScript code in this page.
+    <script>
+      /*
+      @licstart  The following is the entire license notice for the
+      JavaScript code in this page.
 
-            Copyrights on the code are held by the respective authors,
-            see git commit history where not otherwise specified.
+      Copyrights on the code are held by the respective authors,
+      see git commit history where not otherwise specified.
 
-            The JavaScript code in this page is free software: you can
-            redistribute it and/or modify it under the terms of the GNU Affero
-            General Public License (AGPL) as published by the Free Software
-            Foundation, either version 3 of the License, or (at your option)
-            any later version.  The code is distributed WITHOUT ANY WARRANTY;
-            without even the implied warranty of MERCHANTABILITY or FITNESS
-            FOR A PARTICULAR PURPOSE.  See the GNU AGPL for more details.
+      The JavaScript code in this page is free software: you can
+      redistribute it and/or modify it under the terms of the GNU Affero
+      General Public License (AGPL) as published by the Free Software
+      Foundation, either version 3 of the License, or (at your option)
+      any later version.  The code is distributed WITHOUT ANY WARRANTY;
+      without even the implied warranty of MERCHANTABILITY or FITNESS
+      FOR A PARTICULAR PURPOSE.  See the GNU AGPL for more details.
 
-            As additional permission under GNU AGPL version 3 section 7, you
-            may distribute non-source (e.g., minimized or compacted) forms of
-            that code without the copy of the GNU AGPL normally required by
-            section 4, provided you include this license notice and a URL
-            through which recipients can access the Corresponding Source.
+      As additional permission under GNU AGPL version 3 section 7, you
+      may distribute non-source (e.g., minimized or compacted) forms of
+      that code without the copy of the GNU AGPL normally required by
+      section 4, provided you include this license notice and a URL
+      through which recipients can access the Corresponding Source.
 
 
-            @licend  The above is the entire license notice for the JavaScript
-            code in this page.
-            */
+      @licend  The above is the entire license notice for the JavaScript
+      code in this page.
+      */
 
-        <title>#{pageTitle pc}
-        <meta name="description" content="">
-        <meta name="author" content="">
+    <title>#{pageTitle pc}
+    <meta name="description" content="">
+    <meta name="author" content="">
 
-        <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
 
-        ^{pageHead pc}
+    ^{pageHead pc}
 
-        \<!--[if lt IE 9]>
-        \<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js">
-        \</script>
-        \<![endif]-->
+    \<!--[if lt IE 9]>
+    \<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js">
+    \</script>
+    \<![endif]-->
 
-        <script src=@{StaticR js_modernizr_js}>
-        <script>
-          document.documentElement.className
-            = document.documentElement.className.replace(/\bno-js\b/,'js');
+    <script src=@{StaticR js_modernizr_js}>
+    <script>
+      document.documentElement.className
+        = document.documentElement.className.replace(/\bno-js\b/,'js');
 
-          function fixup_logo() {
-              var head = document.getElementById("head");
-              var logo = document.createElement("img");
+      function fixup_logo() {
+        var head = document.getElementById("head");
+        var logo = document.createElement("img");
 
-              logo.id = "logo";
+        logo.id = "logo";
 
-              if(Modernizr.svg) {
-                  logo.src = "@{StaticR img_snowdriftcoop_svg}";
-              } else {
-                  logo.src = "@{StaticR img_snowdriftcoop_png}";
-              }
+        if(Modernizr.svg) {
+          logo.src = "@{StaticR img_snowdriftcoop_svg}";
+        } else {
+          logo.src = "@{StaticR img_snowdriftcoop_png}";
+        }
 
-              head.replaceChild(logo, head.firstChild);
-          }
-    <body>
-        ^{pageBody pc}
-        <div .container>
-            <footer>
-                <div .row>
-                    <div .col-md-4>
-                        Aside from
-                        <a href=@{TrademarksR}> trademarks
-                        , writings and images here #
-                        are free to use and share under #
-                        <a rel="license" title="Creative Commons Attribution Share-Alike 4.0 International" href="https://creativecommons.org/licenses/by-sa/4.0">
-                            CC&nbsp;BY-SA
+        head.replaceChild(logo, head.firstChild);
+      }
+  <body>
+    ^{pageBody pc}
+    <div .container>
+      <footer>
+        <div .row>
+          <div .col-md-4>
+            Aside from
+            <a href=@{TrademarksR}> trademarks
+            , writings and images here #
+            are free to use and share under #
+            <a rel="license" title="Creative Commons Attribution Share-Alike 4.0 International" href="https://creativecommons.org/licenses/by-sa/4.0">
+              CC&nbsp;BY-SA
 
-                    <div .col-md-4>
-                        This site's #
-                        <a href=#{extraSourceRepo $ appExtra $ settings master}>
-                            source code
-                        \ is free under the terms of the #
-                        <a rel="license" title="Affero GPL v3 or later" href="https://www.gnu.org/licenses/agpl">
-                            GNU&nbsp;AGPLv3+
-                    <div .col-md-4>
-                        All JavaScript on this site is #
-                        <a href=@{JsLicenseR} rel="jslicense">
-                            freely-licensed
+          <div .col-md-4>
+            This site's #
+            <a href=#{extraSourceRepo $ appExtra $ settings master}>
+              source code
+            \ is free under the terms of the #
+            <a rel="license" title="Affero GPL v3 or later" href="https://www.gnu.org/licenses/agpl">
+              GNU&nbsp;AGPLv3+
+          <div .col-md-4>
+            All JavaScript on this site is #
+            <a href=@{JsLicenseR} rel="jslicense">
+              freely-licensed
 
-        $maybe analytics <- extraAnalytics $ appExtra $ settings master
-            <script>
-              if(!window.location.href.match(/localhost/)){
-                window._gaq = [['_setAccount','#{analytics}'],['_trackPageview'],['_trackPageLoadTime']];
-                (function() {
-                \  var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-                \  ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-                \  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-                })();
-              }
-        \<!-- Prompt IE 6 users to install Chrome Frame. Remove this if you want to support IE 6.  chromium.org/developers/how-tos/chrome-frame-getting-started -->
-        \<!--[if lt IE 7 ]>
-            <script src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.3/CFInstall.min.js">
-            <script>
-                window.attachEvent('onload',function(){CFInstall.check({mode:'overlay'})})
-        \<![endif]-->
+    $maybe analytics <- extraAnalytics $ appExtra $ settings master
+      <script>
+        if(!window.location.href.match(/localhost/)){
+          window._gaq = [['_setAccount','#{analytics}'],['_trackPageview'],['_trackPageLoadTime']];
+          (function() {
+          \  var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+          \  ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+          \  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+          })();
+        }
+    \<!-- Prompt IE 6 users to install Chrome Frame. Remove this if you want to support IE 6.  chromium.org/developers/how-tos/chrome-frame-getting-started -->
+    \<!--[if lt IE 7 ]>
+      <script src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.3/CFInstall.min.js">
+      <script>
+        window.attachEvent('onload',function(){CFInstall.check({mode:'overlay'})})
+    \<![endif]-->
