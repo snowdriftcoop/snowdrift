@@ -224,22 +224,33 @@ fails to recognize a change.
 
 To stop yesod devel, press ENTER a few times.
 
-Note that `yesod devel` builds just the library,
-so `cabal install -fdev` and related commands are needed to update other
-resources like sdm or the payment processing script.
+Note that `yesod devel` builds just the library.
 
 ### Alternative option to run the site
 
-We recommend `yesod devel` in almost all cases, but another approach is
-available which separates the running the site from recompiling.
+We recommend `yesod devel` in almost all cases, but an alternate approach is
+to separately build with `cabal build` and run the site with
+`Snowdrift Development`.
 
-To just start the server, go to your snowdrift directory and run:
+This method is *necessary* when updating extra binaries such as the payment
+processing script, the sdm database configuration script, or the email daemon.
+
+For the first time with this method, you should run `cabal configure -fdev`
+before `cabal build`. Afterward, the configuration will be remembered.
+
+However, if you run `cabal clean` to get a full fresh build, you will need to
+run `cabal configure -fdev` again before `cabal build` (or use
+`cabal clean --save-config`)
+
+As before, ommit -fdev to optimize for building the final executables for a live
+operating site. 
+
+When `cabal build` is done, you can start the server with:
 
     Snowdrift Development
 
 To stop the running server, press ctrl-C
 
-To separately recompile, you can use `cabal build` and related commands.
 
 Using the live test site
 ------------------------
@@ -272,6 +283,12 @@ That only needs to be done once. From now on, you can run the tests with:
 
 If tests fail, try to figure out what is wrong. Ask us for help if needed.
 
+Sometimes, the tests will need updating, and for that you should run:
+
+    cabal clean
+    cabal configure -fdev
+    cabal build
+    yesod test
 
 Additional notes about databases
 ================================
