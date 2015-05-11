@@ -1,21 +1,20 @@
-<h1>#{projectName project} activity feed:
+<h1 .text-center>#{projectName project} activity feed:
 
-<p .small>
-  $case mis_watching
-    $of Nothing
-      <a href=@{AuthR LoginR}>Sign in
-      to set up receiving notifications
-    $of (Just True)
+<div .feed-watching>
+  $maybe user_id <- muser_id
+    $if is_watching
       You are watching this project.
-      $case muser_id
-        $of (Just user_id)
-          <a href=@{UserSelectProjectR user_id}>
-            Edit notification preferences
+      <a href=@{ProjectNotificationsR user_id project_id}>
+        Edit notification preferences
       <form method=POST action=@{UnwatchProjectR project_id}>
         <input type=submit value="unwatch">
-    $of (Just False)
+    $else
+      Receive selected event notifications:
       <form method=POST action=@{WatchProjectR project_id}>
         <input type=submit value="watch">
+  $nothing
+    <a href=@{AuthR LoginR}>Sign in
+    to set up receiving notifications of various events
 
 $forall (_, event) <- events
   $case event
