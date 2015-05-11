@@ -1,19 +1,19 @@
 $if Just user_id == mviewer_id
   <div .user-prefs>
     <div .user-pref>
-      <a href="@{EditUserR user_id}">
+      <a href=@{EditUserR user_id}>
         edit profile
     <div .user-pref>
-      <a href="@{DeleteUserR user_id}">
+      <a href=@{DeleteUserR user_id}>
         delete account
     <div .user-pref>
-      <a href="@{UserChangePasswordR user_id}">
+      <a href=@{UserChangePasswordR user_id}>
         change passphrase
     <div .user-pref>
-      <a href="@{UserNotificationsR user_id}">
+      <a href=@{UserNotificationsR user_id}>
         user notification preferences
     <div .user-pref>
-      <a href="@{UserSelectProjectR user_id}">
+      <a href=@{UserSelectProjectR user_id}>
         watched projects notification preferences
 
 <div .row>
@@ -24,7 +24,7 @@ $if Just user_id == mviewer_id
       $maybe avatar <- userAvatar user
         <div .col-sm-5>
           <figure>
-            <img .headshot src="#{avatar}">
+            <img .headshot src=#{avatar}>
       <div .col-sm-7>
         $if userIsEstablished user
           <small>established user
@@ -88,7 +88,7 @@ $maybe (est_form, est_form_enctype) <- mest_form_and_enctype
         (e.g. they have posted helpful, on-topic comment(s),
         and are clearly not a spammer or malicious troll).
         They will then become fully established after affirming
-        the <a href="@{WikiR "snowdrift" LangEn "honor"}">honor pledge</a>.
+        the <a href=@{WikiR "snowdrift" LangEn "honor"}>honor pledge</a>.
 
       <form action=@{UserEstEligibleR user_id} method=post enctype=#{est_form_enctype}>
         ^{est_form}
