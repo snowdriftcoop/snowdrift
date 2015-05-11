@@ -1,11 +1,10 @@
-<div .logo>
-  <figure>
-    <img
-      alt="Snowdrift.coop — clearing the path to a Free/Libre/Open world"
-      src=@{StaticR img_logo_png}>
-    <figcaption>
-      a work in progress — #
-      <strong>public ALPHA
+<figure .logo>
+  <img
+    alt="Snowdrift.coop — clearing the path to a Free/Libre/Open world"
+    src=@{StaticR img_logo_png}>
+  <figcaption>
+    a work in progress — #
+    <strong>public ALPHA
 
 <div .row .homepage-sections>
   <div .homepage-section .col-md-6>
