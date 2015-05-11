@@ -158,6 +158,10 @@ and you don't know how to fix the issue or don't understand the error,
 ask on the [IRC channel](https://snowdrift.coop/p/snowdrift/w/en/irc),
 and someone will probably help you.
 
+Sometimes the tests just need updating, and for that run:
+
+    cabal clean && cabal configure -fdev && cabal build && yesod test
+
 ### Committing your changes
 
 When your updates all compile, tests pass,
