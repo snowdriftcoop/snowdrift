@@ -1,5 +1,21 @@
 <h1>#{projectName project} activity feed:
 
+<p .small>
+  $if isJust mviewer_id && isJust maybe_project_id
+    $with project_id <- fromJust maybe_project_id
+      $if is_watching
+        You are watching this project.
+        <a href=@{UserSelectProjectR user_id}>
+          Edit notification preferences
+        <form method=POST action=@{UnwatchProjectR project_id}>
+          <input type=submit value="unwatch">
+      $else
+        <form method=POST action=@{WatchProjectR project_id}>
+          <input type=submit value="watch">
+  $else
+    <a href=@{AuthR LoginR}>Sign in
+    to set up receiving notifications
+
 $forall (_, event) <- events
   $case event
     $of ECommentPosted comment_id comment
