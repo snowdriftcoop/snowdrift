@@ -47,7 +47,7 @@ For example, on Debian or Ubuntu you can enter the following in a terminal:
 If you are on a system that does not package git yet, you may choose to
 [download Git from the website](https://git-scm.herokuapp.com/downloads).
 
-### Installing Snowdrift
+### Install Snowdrift
 
 To get a quick virtual machine with the core dependencies for snowdrift,
 follow the [Vagrant setup instructions](SETUP_VAGRANT.md).
@@ -58,7 +58,9 @@ As an alternative option, we also have instructions for local installation.
 [Debian-based instructions](SETUP_DEBIAN.md) work for Debian or Ubuntu or
 related, and our general [GUIDE](GUIDE.md) has some notes for other systems.
 
-## Basic Git setup
+## Working on the code
+
+### Basic Git setup
 
 We collaborate on the code via the free/libre/open site
 [git.gnu.io](https://git.gnu.io/snowdrift/snowdrift).
@@ -102,9 +104,37 @@ GOES HERE` and `YOUR EMAIL GOES HERE` with your actual name and email.
 However, [SSH setup](https://git.gnu.io/help/ssh/README)
 is kind of tricky, especially for those new to SSH.
 
-## Branching and committing
+### Updating your local code to snowdrift master
 
-When planning edits, first create a new branch:
+Whenever you begin new work, you should generally start with the latest
+master code from the Snowdrift project.
+
+If you do not have it yet, setup a remote for the main Snowdrift code:
+
+    git remote add snowdrift-main https://git.gnu.io/snowdrift/snowdrift.git
+
+*Note:* if you have set up ssh with git.gnu.io (mentioned above),
+use `git@git.gnu.io:snowdrift/snowdrift.git` as the remote address
+instead of the https version.
+
+From now on, you can download all the latest master code via:
+
+    git fetch snowdrift-main
+
+You should then update your own master branch to match the main code.
+If not already on your local master branch, run `git checkout master`.
+Then run:
+
+    git merge snowdrift-main/master
+
+You should have no conflicts because this is the only situation where you
+should ever change your local master. All your work should be done on
+other branches. 
+
+### Branching and committing
+
+Given you are on an up-to-date master branch and you want to start making edits,
+first create a new branch:
 
     git checkout -b some_branch
 
@@ -112,9 +142,7 @@ Replace `some_branch` with a one- or two-word description of your planned
 changes. For example, when fixing a problem in the header, a good branch name
 would be `header-fix`.
 
-### Editing
-
-#### Notes about editing and files
+### Notes about editing and files
 
 Until you understand more about the Yesod web framework, you probably
 don't want to touch the nitty-gritty parts of the source code.  However,
@@ -133,7 +161,7 @@ Advanced programmers often use Vim or Emacs.
 When making edits, follow our
 [code style guide](https://snowdrift.coop/p/snowdrift/w/en/coding#code-style-guide).
 
-#### Building your updates
+### Building your updates
 
 The `yesod devel` command can be left running in a terminal while work is
 done elsewhere. It will automatically recompile and restart the site
@@ -180,7 +208,7 @@ all the commits in the future. Then save and close the editor.
 For reference, here's a decent guide to
 [writing good commit messages](https://github.com/erlang/otp/wiki/Writing-good-commit-messages).
 
-## Getting your changes merged
+### Getting your changes merged
 
 After committing, send your changes to your git.gnu.io account with:
 
@@ -196,7 +224,6 @@ work (especially useful if you are merging multiple requests).
 You may ignore "Assign to", "Milestone", and "Labels" at this point.
 
 Someone should comment on your submission soon (hopefully within a few hours).
-
 
 ## Learning resources and helpful tools
 
