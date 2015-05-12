@@ -2,7 +2,7 @@ figcaption
     color: #B22222
     margin-top: -0.4em
     font-size: 0.9em
-    padding: 0.4em 
+    padding: 0.4em
     text-align: right
 
 .homepage-sections
