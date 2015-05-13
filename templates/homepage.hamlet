@@ -1,60 +1,86 @@
-<div .row>
-  <div .col-md-8>
-    <figure>
-      <img alt="Snowdrift.coop &mdash; clearing the path to a Free/Libre/Open world" src=@{StaticR img_logo_png}>
-      <figcaption style="color: #B22222; margin-top: -0.4em; font-size: 0.9em; padding: 0.4em;" .text-right>
-        a work in progress:
-        <strong> public ALPHA — not functioning yet
-  <div .col-md-4 .text-center>
-    <div #snowdrift-is>
-      <p> A matching patronage system funding freely-licensed works
-    <div style="margin: 8px auto; font-family: sans-serif; border-bottom: 1px solid gray; width: 10em;">About
-    <div .homep-about>
-      <a href="@{WikiR "snowdrift" LangEn "intro"}"> Illustrated intro
-    <div .homep-about>
-      <a href="@{WikiR "snowdrift" LangEn "about"}"> Longer explanation
-    <div .homep-about>
-      <a href="@{WikiR "snowdrift" LangEn "faq"}"> FAQ
-    <div .homep-about>
-      <a href="@{WikiR "snowdrift" LangEn "press"}"> Press
-    <div .homep-about>
-      <a href="@{ProjectBlogR "snowdrift"}"> Blog
+<figure .logo>
+  <img
+    alt="Snowdrift.coop — clearing the path to a Free/Libre/Open world"
+    src=@{StaticR img_logo_png}>
+  <figcaption>
+    a work in progress — #
+    <strong>public ALPHA
 
-<hr>
-<div .row>
-  <div .col-md-6>
-    <div .text-center style="background: whitesmoke; padding: 10px; margin-bottom: 10px;">
-      <h2 style="margin-top: 10px">
-        Our
-        <a href="https://snowdrift.tilt.com"> launch fund-drive
-        succeeded!
-      <video poster="https://snowdrift.coop/img/fund-drive-intro-still" controls>
-        <source type="video/mp4" src="https://archive.org/download/snowdrift-fund-drive-intro/snowdrift-fund-drive-intro.mp4">
-        <source type="video/ogg" src="https://archive.org/download/snowdrift-fund-drive-intro/snowdrift-fund-drive-intro.ogv">
-        <track src="https://archive.org/download/snowdrift-fund-drive-intro/snowdrift-fund-drive-intro_en.vtt" label="English captions" kind="captions" srclang="en-us">
-      <p>
-        The campaign video is still a good introduction to the site.
-        We plan to make newer videos too, stay tuned…
-      <p>
-        Even with the fund-drive, we're still on a very tight budget, and you can still
-        <a href=@{DonateR}>donate
-        to help us get launched sooner.
+<div .row .homepage-sections>
+  <div .homepage-section .col-md-6>
+    <h2>About
+    <p>
+      We're building a sustainable funding platform for freely-licensed works.
+      Our innovative matching pledge creates a network effect
+      where we all work together to support these public goods.
+    <div .homep-link>
+      <a href=@{WikiR "snowdrift" LangEn "intro"}>
+        Illustrated intro
+    <div .homep-link>
+      <a href=@{WikiR "snowdrift" LangEn "about"}>
+        Longer explanation
+    <div .homep-link>
+      <a href=@{WikiR "snowdrift" LangEn "press"}>
+        Press
+    <div .homep-link>
+      <a href=@{WhoR "snowdrift"}>
+        Who we are
+    <div .homep-link>
+      <a href=@{WikiR "snowdrift" LangEn "faq"}>
+        FAQ
 
-  <div .col-sm-6>
-    <div .text-center style="background: whitesmoke; padding: 10px; margin-bottom: 10px;">
-      <h2 style="margin-top: 10px">Join us
-      <p>
-        Our core
-        <a href="@{WhoR "snowdrift"}"> team
-        is supported by a growing community.
-        <strong><a href="@{WikiR "snowdrift" LangEn "how-to-help"}">Come help</a>
-        with site development, design, community organizing, or other tasks.
+  <div .homepage-section .col-md-6>
+    <h2>
+      Our
+      <a href="https://snowdrift.tilt.com">launch fund-drive
+      succeeded!
+    <p>
+      The campaign video remains a good introduction.
+    <video poster="https://snowdrift.coop/img/fund-drive-intro-still" controls>
+      <source type="video/mp4"
+        src="https://archive.org/download/snowdrift-fund-drive-intro/snowdrift-fund-drive-intro.mp4">
+      <source type="video/ogg"
+        src="https://archive.org/download/snowdrift-fund-drive-intro/snowdrift-fund-drive-intro.ogv">
+      <track label="English captions" kind="captions" srclang="en-us"
+        src="https://archive.org/download/snowdrift-fund-drive-intro/snowdrift-fund-drive-intro_en.vtt">
+    <p>
+      Despite the fund-drive, we're on a tight budget. You can still
+      <a href=@{DonateR}>donate
+      to help us launch sooner.
 
-  <div .col-sm-6>
-    <div .text-center style="background: whitesmoke; padding: 10px; margin-bottom: 10px;">
-      <h2 style="margin-top: 10px">Now recruiting projects
-      <p>
-        If your
-        <a href="@{WikiR "snowdrift" LangEn "project-requirements"}">free/libre/open
-        project needs funding, please <a href=@{ProjectContactR "snowdrift"}>contact&nbsp;us</a>.
+  <div .homepage-section .col-md-6>
+    <h2>News and Activity
+    <p>
+      We're continually working to get Snowdrift.coop going.
+      Keep up with our activity:
+    <div .homep-link>
+      <a href=@{ProjectBlogR "snowdrift"}>
+        Blog
+    <div .homep-link>
+      <a href=@{ProjectFeedR "snowdrift"}>
+        Activity feed for the Snowdrift project at Snowdrift.coop
+    <div .homep-link>
+      <a href="http://lists.snowdrift.coop">
+        Email lists
+    <div .homep-link>
+      <a href="https://git.gnu.io/snowdrift/snowdrift#tab-activity">
+        Code activity at git.gnu.io
+    <div .homep-link>
+      <a href=@{WikiR "snowdrift" LangEn "irc"}>
+        Chat at our IRC channel
+
+  <div .homepage-section .col-md-6>
+    <h2>Volunteer
+    <p>
+      Our core team
+      is supported by a growing community.
+      <strong><a href=@{WikiR "snowdrift" LangEn "how-to-help"}>Come help</a>
+      with site development, design, community organizing, or other tasks.
+    <h2>Get your project listed
+    <p>
+      We're still in preliminary stages, but if your
+      <a href=@{WikiR "snowdrift" LangEn "project-requirements"}>free/libre/open
+      project needs funding,
+      please <a href=@{ProjectContactR "snowdrift"}>contact&nbsp;us</a>
+      to discuss whether you are a good fit for our early testing and launch.
 

@@ -89,7 +89,7 @@ and
 Emacs users should use a package manager (preferably Marmalade) to install
 [Haskell Mode](https://github.com/haskell/haskell-mode)
 and
-[Hamlet Mode](https://github.com/lightquake/hamlet-mode).
+[Shakespeare Mode](https://github.com/CodyReichert/shakespeare-mode).
 
 Our included file
 [`.dir-locals.el`](https://www.gnu.org/software/emacs/manual/html_node/emacs/Directory-Variables.html)

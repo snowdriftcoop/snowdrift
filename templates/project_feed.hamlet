@@ -1,4 +1,4 @@
-<h1>#{projectName project} activity feed:
+<h1>#{projectName project} activity feed
 
 $forall (_, event) <- events
   $case event
