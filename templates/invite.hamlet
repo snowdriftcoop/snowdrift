@@ -66,7 +66,7 @@ $else
         <td>^{renderTime (inviteCreatedTs invite)}
         $with user_id <- inviteUser invite
           <td>
-            <a href="@{UserR user_id}">
+            <a href=@{UserR user_id}>
               #{format_inviter user_id}
         <td>#{inviteTag invite}
         <td>#{roleAbbrev (inviteRole invite)}
@@ -91,7 +91,7 @@ $else
         <td>#{format_user (inviteRedeemedBy invite)}
         $with user_id <- inviteUser invite
           <td>
-            <a href="@{UserR user_id}">
+            <a href=@{UserR user_id}>
               #{format_inviter user_id}
 
         <td>#{inviteTag invite}

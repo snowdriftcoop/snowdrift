@@ -21,7 +21,7 @@ projectPledgeSummary user_id = do
         $if null project_summary
             not pledged to any projects
         $else
-            <a href="@{UserPledgesR user_id}">
+            <a href=@{UserPledgesR user_id}>
                 $if (length project_summary) == 1
                     <p>Patron to 1 project
                 $else
@@ -48,7 +48,7 @@ projectPledges user_id = do
                 $forall summary <- project_summaries
                     <tr>
                         <td>
-                            <a href="@{ProjectR (summaryProjectHandle summary)}">
+                            <a href=@{ProjectR (summaryProjectHandle summary)}>
                                 #{summaryName summary}
                         <td>#{show (cost summary)}/share
                         <td>

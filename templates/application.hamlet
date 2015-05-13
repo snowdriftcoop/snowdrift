@@ -3,7 +3,7 @@
     <td>
       Account:
     <td>
-      <a href="@{UserR (volunteerApplicationUser application)}">
+      <a href=@{UserR (volunteerApplicationUser application)}>
         #{userDisplayName user}
 
   <tr>

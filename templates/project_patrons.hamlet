@@ -8,7 +8,7 @@ $else
     $forall (pledge, user) <- pledges
       <tr>
         <td>
-          <a href="@{UserR (entityKey user)}">
+          <a href=@{UserR (entityKey user)}>
             #{userDisplayName user}
         <td>
           #{show (pledgeFundedShares (entityVal pledge))}&nbsp;shares

@@ -1,4 +1,4 @@
-<a href="@{ArchivedNotificationsR}">
+<a href=@{ArchivedNotificationsR}>
   archived notifications
 
 <h1>
@@ -7,7 +7,7 @@
 $if null notifs
   No notifications
 $else
-  <form action="@{NotificationsProxyR}" method="GET">
+  <form action=@{NotificationsProxyR} method="GET">
     <div .row>
       <div .col-sm-3>
         <input type="checkbox" name="all">
@@ -19,11 +19,11 @@ $else
         <div .col-sm-3>
           $case notif
             $of UNotification user_notif_id user_notif
-              <input type="checkbox" name="user_notification" value="#{toPathPiece user_notif_id}">
+              <input type="checkbox" name="user_notification" value=#{toPathPiece user_notif_id}>
               <span .well .well-sm>
                 ^{renderTime (userNotificationCreatedTs user_notif)}
             $of PNotification project_notif_id project_notif
-              <input type="checkbox" name="project_notification" value="#{toPathPiece project_notif_id}">
+              <input type="checkbox" name="project_notification" value=#{toPathPiece project_notif_id}>
               <span .well .well-sm>
                 ^{renderTime (projectNotificationCreatedTs project_notif)}
         <div .col-sm-9>

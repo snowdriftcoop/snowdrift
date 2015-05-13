@@ -1,6 +1,6 @@
-<a href="@{WikiR project_handle language target}"> back to current page
+<a href=@{WikiR project_handle language target}> back to current page
 
-<form action="@{WikiDiffProxyR project_handle language target}" method="GET">
+<form action=@{WikiDiffProxyR project_handle language target} method="GET">
   <table>
     <tr>
       <td colspan="3">
@@ -9,19 +9,19 @@
     $forall (index, Entity edit_id edit) <- editsIndexed
       <tr>
         <td>
-          <a href="@{WikiEditR project_handle language target edit_id}">
+          <a href=@{WikiEditR project_handle language target edit_id}>
             ^{renderTime (wikiEditTs edit)}
         <td>
           $with user_id <- wikiEditUser edit
             $maybe user <- M.lookup user_id users
-              <a href="@{UserR user_id}">
+              <a href=@{UserR user_id}>
                 #{userDisplayName user}
         <td>
           $maybe comment <- wikiEditComment edit
             #{comment}
         <td>
-          <input type="radio" name="start" value="#{toPathPiece edit_id}" :(index == 1):checked>
-          <input type="radio" name="end" value="#{toPathPiece edit_id}" :(index == 0):checked>
+          <input type="radio" name="start" value=#{toPathPiece edit_id} :(index == 1):checked>
+          <input type="radio" name="end" value=#{toPathPiece edit_id} :(index == 0):checked>
     <tr>
       <td colspan="3">
       <td>

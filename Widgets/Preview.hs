@@ -15,7 +15,7 @@ previewWidget' maybeAgreement form action widget =
     [whamlet|
         <div .alert .alert-danger>
             This is a preview; changes have <em>not</em> been saved!
-            Edit and/or submit your posting <a href="#edit-preview">below</a>.
+            Edit and/or submit your posting <a href=#edit-preview>below</a>.
 
         ^{widget}
 

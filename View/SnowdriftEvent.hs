@@ -271,7 +271,7 @@ renderWikiEditEvent project_handle edit_id wiki_edit wiki_target_map user_map = 
             $maybe comment <- wikiEditComment wiki_edit
                 #{comment}
             <br>
-            <a href="@{WikiEditR project_handle (wikiTargetLanguage wiki_target) (wikiTargetTarget wiki_target) edit_id}">
+            <a href=@{WikiEditR project_handle (wikiTargetLanguage wiki_target) (wikiTargetTarget wiki_target) edit_id}>
                 see this edit version <!-- TODO: make this link to the diff instead -->
     |]
 

@@ -9,9 +9,9 @@ $forall Entity user_id user <- members
         #{userShortName user}
         <br>
         $maybe avatar <- userAvatar user
-          <img .headshot src="#{avatar}">
+          <img .headshot src=#{avatar}>
         $nothing
-          <img .headshot src="@{StaticR img_placeholder_png}">
+          <img .headshot src=@{StaticR img_placeholder_png}>
     <div .blurb .col-sm-9>
       $maybe blurb <- userBlurb user
         ^{markdownWidgetWith (fixLinks project_handle discussion) blurb}
