@@ -18,7 +18,6 @@ module View.Project
 import Import
 
 import           Data.Filter
-import           Data.Maybe (fromJust)
 import           Data.Order
 import           Model.Currency
 import           Model.Markdown

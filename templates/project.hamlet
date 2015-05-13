@@ -56,9 +56,9 @@
       <a href=@{WikiPagesR $ projectHandle project}>
         <span .glyphicon .glyphicon-book>
         Wiki
-  $if isJust mviewer_id && isJust maybe_project_id
+  $if isJust mviewer_id
     <div .text-center>
-      $with project_id <- fromJust maybe_project_id
+      $maybe project_id <- maybe_project_id
         $if is_watching
           <form method=POST action=@{UnwatchProjectR project_id}>
             <input type=submit value="unwatch">

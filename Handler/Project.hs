@@ -390,8 +390,8 @@ getProjectFeedR project_handle = do
     before <- lookupGetUTCTimeDefaultNow "before"
 
     (
-        project,
-
+        project_id, project,
+        is_watching,
         comment_events, rethread_events, closing_events, claiming_events, unclaiming_events,
         wiki_page_events, wiki_edit_events, blog_post_events, new_pledge_events,
         updated_pledge_events, deleted_pledge_events,
@@ -401,7 +401,7 @@ getProjectFeedR project_handle = do
      ) <- runYDB $ do
 
         Entity project_id project <- getBy404 (UniqueProjectHandle project_handle)
-
+        is_watching <- maybe (pure False) (flip userIsWatchingProjectDB project_id) muser_id
         comment_events        <- fetchProjectCommentPostedEventsIncludingRethreadedBeforeDB     project_id muser_id before lim
         rethread_events       <- fetchProjectCommentRethreadEventsBeforeDB                      project_id muser_id before lim
         closing_events        <- fetchProjectCommentClosingEventsBeforeDB                       project_id muser_id before lim
@@ -469,8 +469,8 @@ getProjectFeedR project_handle = do
 
         return
             (
-                project,
-
+                project_id, project,
+                is_watching,
                 comment_events, rethread_events, closing_events, claiming_events, unclaiming_events, wiki_page_events,
                 wiki_edit_events, blog_post_events, new_pledge_events, updated_pledge_events, deleted_pledge_events,
 
