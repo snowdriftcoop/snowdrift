@@ -16,6 +16,7 @@ import           Control.Monad                        (void, unless)
 import           Database.Esqueleto                   hiding (exists)
 import           Database.Esqueleto.Internal.Language (Update, From)
 import           Data.Foldable                        (forM_)
+import           Data.Int                             (Int64)
 import qualified Data.List                            as L
 import           Data.Monoid                          ((<>))
 import           Data.Time                            (getCurrentTime)
@@ -261,12 +262,12 @@ notifySpecs AppConfig {..} file = do
 
   where
     wiki_page      = "testing"
-    shares, shares' :: Int
+    shares, shares' :: Int64
     shares         = 2
     shares'        = succ shares
 
     wiki_page_email = "testing-email"
-    shares_email, shares_email' :: Int
+    shares_email, shares_email' :: Int64
     shares_email    = shares
     shares_email'   = succ shares'
 
@@ -773,7 +774,7 @@ notifySpecs AppConfig {..} file = do
 
                 loginAs Bob
                 let tshares = shpack shares
-                pledge tshares
+                pledge snowdrift_id shares
 
                 bob_id <- userId Bob
                 errUnlessUniqueProjectWebsiteNotif' WithDelay mary_id NotifNewPledge $
@@ -790,7 +791,7 @@ notifySpecs AppConfig {..} file = do
 
                 loginAs Mary
                 let tshares = shpack shares
-                pledge tshares
+                pledge snowdrift_id shares
 
                 errWhenExistsProjectWebsiteNotif' WithDelay mary_id NotifNewPledge $
                     "user" <> (shpack $ keyToInt64 mary_id) <>
@@ -805,9 +806,9 @@ notifySpecs AppConfig {..} file = do
                     ProjectNotifDeliverEmail
 
                 loginAs Bob
-                pledge $ shpack (0 :: Int)  -- drop it first
+                pledge snowdrift_id 0  -- drop it first
                 let tshares = shpack shares_email
-                pledge tshares
+                pledge snowdrift_id shares_email
 
                 bob_id <- userId Bob
                 errUnlessUniqueEmailNotif' file $
@@ -823,9 +824,9 @@ notifySpecs AppConfig {..} file = do
                     ProjectNotifDeliverEmail
 
                 loginAs Mary
-                pledge $ shpack (0 :: Int)  -- drop it first
+                pledge snowdrift_id 0  -- drop it first
                 let tshares = shpack shares_email
-                pledge tshares
+                pledge snowdrift_id shares_email
 
                 errWhenExistsEmailNotif' file $
                     "user" <> (shpack $ keyToInt64 mary_id) <>
@@ -844,7 +845,7 @@ notifySpecs AppConfig {..} file = do
                 bob_id <- userId Bob
                 loadFunds bob_id 10
                 let tshares = shpack shares'
-                pledge tshares
+                pledge snowdrift_id shares'
 
                 errUnlessUniqueProjectWebsiteNotif' WithDelay mary_id NotifUpdatedPledge $
                     "user" <> (shpack $ keyToInt64 bob_id) <>
@@ -862,7 +863,7 @@ notifySpecs AppConfig {..} file = do
                 loginAs Mary
                 loadFunds mary_id 10
                 let tshares = shpack shares'
-                pledge tshares
+                pledge snowdrift_id shares'
 
                 errWhenExistsProjectWebsiteNotif' WithDelay mary_id NotifUpdatedPledge $
                     "user" <> (shpack $ keyToInt64 mary_id) <>
@@ -879,7 +880,7 @@ notifySpecs AppConfig {..} file = do
 
                 loginAs Bob
                 let tshares = shpack shares_email'
-                pledge tshares
+                pledge snowdrift_id shares_email'
 
                 bob_id <- userId Bob
                 errUnlessUniqueEmailNotif' file $
@@ -897,7 +898,7 @@ notifySpecs AppConfig {..} file = do
 
                 loginAs Mary
                 let tshares = shpack shares_email'
-                pledge tshares
+                pledge snowdrift_id shares_email'
 
                 errWhenExistsEmailNotif' file $
                     "user" <> (shpack $ keyToInt64 mary_id) <>
@@ -914,7 +915,7 @@ notifySpecs AppConfig {..} file = do
                     ProjectNotifDeliverWebsite
 
                 loginAs Bob
-                pledge $ shpack (0 :: Int)
+                pledge snowdrift_id 0
 
                 bob_id <- userId Bob
                 errUnlessUniqueProjectWebsiteNotif' WithDelay mary_id NotifDeletedPledge $
@@ -930,7 +931,7 @@ notifySpecs AppConfig {..} file = do
                     ProjectNotifDeliverWebsite
 
                 loginAs Mary
-                pledge $ shpack (0 :: Int)
+                pledge snowdrift_id 0
 
                 errWhenExistsProjectWebsiteNotif' WithDelay mary_id NotifDeletedPledge $
                     "user" <> (shpack $ keyToInt64 mary_id) <>
@@ -945,8 +946,8 @@ notifySpecs AppConfig {..} file = do
                     ProjectNotifDeliverEmail
 
                 loginAs Bob
-                pledge $ shpack shares  -- pledge again before dropping
-                pledge $ shpack (0 :: Int)
+                pledge snowdrift_id shares  -- pledge again before dropping
+                pledge snowdrift_id 0
 
                 bob_id <- userId Bob
                 errUnlessUniqueEmailNotif' file $
@@ -962,8 +963,8 @@ notifySpecs AppConfig {..} file = do
                     ProjectNotifDeliverEmail
 
                 loginAs Mary
-                pledge $ shpack shares  -- pledge again before dropping
-                pledge $ shpack (0 :: Int)
+                pledge snowdrift_id shares  -- pledge again before dropping
+                pledge snowdrift_id 0
 
                 errWhenExistsEmailNotif' file $
                     "user" <> (shpack $ keyToInt64 mary_id) <>

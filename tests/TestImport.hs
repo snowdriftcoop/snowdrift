@@ -6,6 +6,7 @@
 
 module TestImport (module TestImport, marked) where
 
+import Import (pprint)
 import TestImport.Internal
 
 import Prelude hiding (exp)
@@ -16,6 +17,7 @@ import Control.Arrow as TestImport
 import Yesod (Yesod, RedirectUrl, Route, RenderRoute, renderRoute)
 import Yesod.Test as TestImport
 import Database.Esqueleto hiding (get)
+import qualified Database.Esqueleto as Esqueleto
 import Database.Persist as TestImport hiding (get, (==.), delete)
 import Control.Monad.IO.Class as TestImport (liftIO, MonadIO)
 import Control.Monad.Trans.Reader (ReaderT)
@@ -33,6 +35,7 @@ import           Data.Int        (Int64)
 
 import qualified Data.List as L
 import qualified Data.Map as M
+import Data.Maybe (fromMaybe)
 import qualified Data.Text as T
 import Data.Text (Text)
 import Data.String
@@ -54,7 +57,7 @@ import Model.Notification
 import System.IO (hPutStrLn, stderr)
 
 import Control.Monad.Trans.Control
-import Control.Exception.Lifted as Lifted
+import Control.Exception.Lifted as Lifted hiding (handle)
 
 onException :: MonadBaseControl IO m => m a -> m b -> m a
 onException = Lifted.onException
@@ -409,22 +412,27 @@ newBlogPost page = [marked|
         addPostParam "mode" "post"
 |]
 
-pledge :: Text -> YesodExample App ()
-pledge shares = [marked|
-    get200 $ ProjectR snowdrift
+pledge :: ProjectId -> Int64 -> Example ()
+pledge project_id shares = [marked|
+    project <-
+        testDB (Esqueleto.get project_id) >>= return .
+            fromMaybe (error $ "cannot find project " <> pprint project_id)
+    let handle  = projectHandle project
+        tshares = shpack shares
+    get200 $ ProjectR handle
 
-    let route = UpdateSharesR snowdrift
+    let route = UpdateSharesR handle
     withStatus 200 False $ request $ do
         setUrl route
         setMethod "GET"
         addGetParam "_hasdata" ""
-        addGetParam "f1" shares
+        addGetParam "f1" tshares
 
     withStatus 303 False $ request $ do
         addNonce
         setMethod "POST"
         setUrl route
-        addPostParam "f1" shares
+        addPostParam "f1" tshares
         addPostParam "confirm" "yes!"
 |]
 
