@@ -1,5 +1,5 @@
 <tr>
-    <td>
-        $maybe _ <- maybe_tag_id
-            #{tagName $ tag_map M.! tag_id}
+  <td>
+    $maybe _ <- maybe_tag_id
+      #{tagName $ tag_map M.! tag_id}
 

@@ -31,10 +31,17 @@ splitContent (Markdown text) = case break (== "***") (T.lines text) of
     -- TODO: reject empty content above the fold?
     (top, []) -> (Markdown $ T.unlines top, Nothing)
     (top, ["***"]) -> (Markdown $ T.unlines top, Nothing)
-    (top, "***":bottom) -> (Markdown $ T.unlines top, Just $ Markdown $ T.unlines bottom)
+    (top, "***":bottom) ->
+        (Markdown $ T.unlines top, Just $ Markdown $ T.unlines bottom)
     (_, _) -> error "cannot result from a break"
 
-postBlogPostDB :: Text -> Text -> UserId -> ProjectId -> Markdown -> SDB BlogPostId
+postBlogPostDB
+    :: Text
+    -> Text
+    -> UserId
+    -> ProjectId
+    -> Markdown
+    -> SDB BlogPostId
 postBlogPostDB title handle user_id project_id content = do
     let (top_content, bottom_content) = splitContent content
 
@@ -44,10 +51,21 @@ postBlogPostDB title handle user_id project_id content = do
         discussion_id <- insert $ Discussion 0
 
         let doInsert counter = do
-                let modifier = maybe "" (T.cons '~' . T.pack . show) (counter :: Maybe Integer)
+                let modifier = maybe
+                        ""
+                        (T.cons '~' . T.pack . show)
+                        (counter :: Maybe Integer)
                     next_counter = Just $ maybe 2 (+1) counter
 
-                    post = BlogPost now title (handle <> modifier) user_id project_id discussion_id top_content bottom_content
+                    post = BlogPost
+                        now
+                        title
+                        (handle <> modifier)
+                        user_id
+                        project_id
+                        discussion_id
+                        top_content
+                        bottom_content
 
                 maybe_post_id <- insertUnique post
 

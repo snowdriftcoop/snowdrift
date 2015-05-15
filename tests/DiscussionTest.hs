@@ -119,7 +119,7 @@ runDiscussionTest label discussion_page_url comment_url new_thread_url comment_r
                     addNonce
                     setMethod "POST"
                     setUrl $ comment_rethread_url first_message
-                    byLabel "New Parent Url" $ T.pack $ "/p/snowdrift/w/en/about/c/" ++ (\ (PersistInt64 i) -> show i) (toPersistValue second_message)
+                    byLabel "New Parent Url" $ T.pack $ "/p/snowdrift/w/en/about/c/" ++ (\(PersistInt64 i) -> show i) (toPersistValue second_message)
                     byLabel "Reason" "testing"
                     addPostParam "mode" "post"
 
@@ -173,14 +173,14 @@ runDiscussionTest label discussion_page_url comment_url new_thread_url comment_r
 
             Just location <- do
                 statusIsResp 301
-                withResponse ( \ SResponse { simpleHeaders = h } ->
+                withResponse ( \SResponse { simpleHeaders = h } ->
                                     return $ lookup "Location" h
                              )
 
             (newId, True) <- getLatestCommentId
             let new_url = BSC.unpack location
-                -- desired_url = "http://localhost:3000/p/snowdrift/w/intro/c/" ++ (\ (PersistInt64 i) -> show i) (toPersistValue newId)
-                desired_url = "http://localhost:3000/c/" ++ (\ (PersistInt64 i) -> show i) (toPersistValue newId)
+                -- desired_url = "http://localhost:3000/p/snowdrift/w/intro/c/" ++ (\(PersistInt64 i) -> show i) (toPersistValue newId)
+                desired_url = "http://localhost:3000/c/" ++ (\(PersistInt64 i) -> show i) (toPersistValue newId)
 
             assertEqual ("Redirect not matching! (" ++ show new_url ++ " /=  " ++ show desired_url ++ ")") new_url desired_url
         |]

@@ -98,7 +98,7 @@ postNameImageR unnamed_image_id = do
                 Nothing -> do
                     setMessage "that name is also already taken, try another"
 
-                    runYDB $ update $ \ ui -> do
+                    runYDB $ update $ \ui -> do
                         where_ $ ui ^. UnnamedImageId ==. val unnamed_image_id
                         set ui [ UnnamedImageName =. val (Just name) ]
 

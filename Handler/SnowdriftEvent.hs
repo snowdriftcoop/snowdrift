@@ -47,11 +47,11 @@ getEventWikiPageR event_wiki_page_id = do
         WikiPage{..}        <- get404 eventWikiPageWikiPage
         Project{..}         <- get404 wikiPageProject
 
-        targets <- select $ from $ \ wt -> do
+        targets <- select $ from $ \wt -> do
             where_ $ wt ^. WikiTargetPage ==. val eventWikiPageWikiPage
             return wt
 
-        [ wiki_edit_id ] <- fmap unwrapValues $ select $ from $ \ we -> do
+        [ wiki_edit_id ] <- fmap unwrapValues $ select $ from $ \we -> do
             where_ $ we ^. WikiEditPage ==. val eventWikiPageWikiPage
             orderBy [ asc $ we ^. WikiEditTs ]
             limit 1

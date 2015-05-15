@@ -28,7 +28,8 @@ User
     statement         Markdown     Maybe
     ircNick           Text         Maybe
     languages         [Language]
-    readNotifications UTCTime            default=now() -- The last time the user visited /notifications
+    readNotifications UTCTime            default=now()
+    -- ^ The last time the user visited /notifications
     readApplications  UTCTime            default=now()
     established       Established        default='EstUnestablished'
     discussion        DiscussionId       default=nextval('discussion_id_seq'::regclass)
@@ -62,9 +63,9 @@ DeleteConfirmation
 
     UniqueDeleteConfirmation user email uri
 
--- A single notification preference. If some NotificationType does not appear in any
--- row for a particular user, that means the user does not wish to be notified
--- of those notifications.
+-- A single notification preference. If some NotificationType does not appear
+-- in any row for a particular user, that means the user does not wish to be
+-- notified of those notifications.
 --
 -- Notifications that "must" be delivered (e.g. administrative notifications
 -- directly from Snowdrift) don't need an entry in this table, as the code that
@@ -114,8 +115,9 @@ ViewComment
 
     UniqueViewComment user comment
 
--- A viewing of a single wiki page edit. The existence of this of a row here indicates
--- the edit has been viewed by the user; the absence indicates it hasnt.
+-- A viewing of a single wiki page edit. The existence of this of a row here
+-- indicates the edit has been viewed by the user; the absence indicates it
+-- hasnt.
 ViewWikiEdit
     user UserId
     edit WikiEditId
@@ -293,8 +295,8 @@ ProjectNotificationEmail
 
 -- A many-to-one relationship linking notifications sent to moderators about an
 -- unapproved comment. When the comment is approved, all such notifications are
--- deleted automatically (as they are no longer relevant) - this table
--- allows us to keep track of which notifications to delete.
+-- deleted automatically (as they are no longer relevant) - this table allows
+-- us to keep track of which notifications to delete.
 UnapprovedCommentNotification
     comment      CommentId
     notification UserNotificationId
@@ -410,11 +412,11 @@ CommentFlaggingReason
 
 -- A rethread event. Moderators may move comment threads around as they wish.
 Rethread
-    ts         UTCTime                     -- Timestamp.
-    moderator  UserId                      -- The moderator that rethreaded.
-    oldComment CommentId                   -- The old comment that was rethreaded.
+    ts         UTCTime                  -- Timestamp.
+    moderator  UserId                   -- The moderator that rethreaded.
+    oldComment CommentId                -- The old comment that was rethreaded.
     newComment CommentId
-    reason     Text                        -- The reason for rethreading.
+    reason     Text                     -- The reason for rethreading.
 
 -- An individual comment-rethread relation.
 CommentRethread
@@ -445,7 +447,8 @@ DeprecatedTag
     tag TagId
     reason Text
 
--- A Comment can have at most one Ticket (i.e. the comment can be marked as a ticket)
+-- A Comment can have at most one Ticket (i.e. the comment can be marked as a
+-- ticket)
 Ticket
     createdTs UTCTime
     updatedTs UTCTime
@@ -482,8 +485,8 @@ Build
     base     Text
     diff     Text
 
--- A User may be established by a number of different ways. Manual establishment
--- by a moderator is one of them.
+-- A User may be established by a number of different ways. Manual
+-- establishment by a moderator is one of them.
 ManualEstablishment
     establishedUser  UserId
     establishingUser UserId
@@ -539,7 +542,7 @@ SharesPledged
     shares  Int64
     render  PledgeFormRenderedId
 
---------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
 -- Snowdrift events. These are all combined into a single sum time in
 -- Model.SnowdriftEvent.
 

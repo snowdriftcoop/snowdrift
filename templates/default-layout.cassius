@@ -317,9 +317,6 @@ div.math
     font-size: small
     font-style: italic
 
-.homep-about
-    font-weight: bold
-
 .project-logo
     max-width: 200px
     margin: 0 auto

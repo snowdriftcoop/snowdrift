@@ -1,15 +1,15 @@
 $if not (null applications)
-    <table>
-        $forall Entity application_id application <- applications
-            <tr>
-                <td>
-                        #{formatTime defaultTimeLocale "%b %d, %Y" (volunteerApplicationCreatedTs application) }
-                <td>
-                    <a href="@{ApplicationR project_handle application_id}">#{volunteerApplicationName application}
-                <td>
-                    $maybe website <- volunteerApplicationWebsite application
-                        #{website}
-                <td>
-                    $maybe location <- volunteerApplicationLocation application
-                        #{location}
+  <table>
+    $forall Entity application_id application <- applications
+      <tr>
+        <td>
+            #{formatTime defaultTimeLocale "%b %d, %Y" (volunteerApplicationCreatedTs application) }
+        <td>
+          <a href="@{ApplicationR project_handle application_id}">#{volunteerApplicationName application}
+        <td>
+          $maybe website <- volunteerApplicationWebsite application
+            #{website}
+        <td>
+          $maybe location <- volunteerApplicationLocation application
+            #{location}
 

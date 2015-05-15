@@ -169,7 +169,7 @@ getUserBalanceR' user_id = do
     limit' <- lookupParamDefault "count" 20
 
     (transactions, user_accounts, project_accounts) <- runDB $ do
-        transactions <- select $ from $ \ transaction -> do
+        transactions <- select $ from $ \transaction -> do
             where_ ( transaction ^. TransactionCredit ==. val (Just (userAccount user))
                     ||. transaction ^. TransactionDebit ==. val (Just (userAccount user)))
             orderBy [ desc (transaction ^. TransactionTs) ]
@@ -183,7 +183,7 @@ getUserBalanceR' user_id = do
         projects <- selectList [ ProjectAccount <-. accounts ] []
 
         let mkMapBy :: Ord b => (a -> b) -> [a] -> M.Map b a
-            mkMapBy f = M.fromList . map (\ e -> (f e, e))
+            mkMapBy f = M.fromList . map (\e -> (f e, e))
 
         return
             ( transactions
@@ -218,7 +218,7 @@ postUserBalanceR user_id = do
                 then alertDanger "Sorry, minimum deposit is $10"
                 else do
                     success <- runDB $ do
-                        c <- updateCount $ \ account -> do
+                        c <- updateCount $ \account -> do
                             set account [ AccountBalance +=. val amount ]
                             where_ $ account ^. AccountId ==. val (userAccount user)
                                 &&. account ^. AccountBalance +. val amount <=. val balanceCap
@@ -544,7 +544,7 @@ getUserTicketsR user_id = do
     mviewer_id <- maybeAuthId
 
     -- TODO: abstract out grabbing the project
-    claimed_tickets <- runDB $ select $ from $ \ (c `InnerJoin` t `InnerJoin` tc `LeftOuterJoin` wp `LeftOuterJoin` wt `InnerJoin` p) -> do
+    claimed_tickets <- runDB $ select $ from $ \(c `InnerJoin` t `InnerJoin` tc `LeftOuterJoin` wp `LeftOuterJoin` wt `InnerJoin` p) -> do
         on_ $ p ^. ProjectDiscussion ==. c ^. CommentDiscussion ||. wp ?. WikiPageProject ==. just (p ^. ProjectId)
         on_ $ wt ?. WikiTargetPage ==. wp ?. WikiPageId
         on_ $ wp ?. WikiPageDiscussion ==. just (c ^. CommentDiscussion)
@@ -636,7 +636,7 @@ postUserNotificationsR user_id = do
             Nothing Nothing Nothing Nothing Nothing Nothing Nothing
     case result of
         FormSuccess notif_pref -> do
-            forM_ (userNotificationPref notif_pref) $ \ (ntype, ndeliv) ->
+            forM_ (userNotificationPref notif_pref) $ \(ntype, ndeliv) ->
                 runDB $ updateUserNotificationPrefDB user_id ntype ndeliv
             alertSuccess "Successfully updated the notification preferences."
             redirect $ UserR user_id
@@ -701,7 +701,7 @@ postProjectNotificationsR user_id project_id = do
                                  Nothing Nothing Nothing
     case result of
         FormSuccess notif_pref -> do
-            forM_ (projectNotificationPref notif_pref) $ \ (ntype, ndeliv) ->
+            forM_ (projectNotificationPref notif_pref) $ \(ntype, ndeliv) ->
                 runDB $ updateProjectNotificationPrefDB
                     user_id project_id ntype ndeliv
             alertSuccess "Successfully updated the notification preferences."

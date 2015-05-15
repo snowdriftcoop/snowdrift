@@ -25,7 +25,10 @@ data SnowdriftEvent
     | ECommentClosed CommentClosingId CommentClosing
 
     -- Ticket claimed
-    | ETicketClaimed (Either (TicketClaimingId, TicketClaiming) (TicketOldClaimingId, TicketOldClaiming))
+    | ETicketClaimed
+        (Either
+            (TicketClaimingId, TicketClaiming)
+            (TicketOldClaimingId, TicketOldClaiming))
 
     -- Ticket unclaimed
     | ETicketUnclaimed TicketOldClaimingId TicketOldClaiming

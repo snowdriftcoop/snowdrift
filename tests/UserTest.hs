@@ -14,7 +14,7 @@ userSpecs = do
 
     ydescribe "user" $ do
         yit "creates a user" $ [marked|
-            forM_ users $ \ user -> do
+            forM_ users $ \user -> do
                 get200 UserCreateR
 
                 withStatus 303 True $ request $ do
@@ -27,6 +27,6 @@ userSpecs = do
         |]
 
         yit "logs in as a user" $ [marked|
-            forM_ users $ \ user -> do
+            forM_ users $ \user -> do
                 loginAs user
         |]

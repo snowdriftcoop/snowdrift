@@ -45,11 +45,11 @@ checkCommentUrl' mviewer_id user_id comment_id = do
 
         let has_permission :: SqlExpr (Entity Comment) -> SqlExpr (Value Bool)
             has_permission = if mviewer_id == Just user_id
-                then \ _ -> val True
-                else \ c -> c ^. CommentVisibility ==. val VisPublic
+                then \_ -> val True
+                else \c -> c ^. CommentVisibility ==. val VisPublic
                         ||. just (c ^. CommentUser) ==. val mviewer_id
                         ||. ( c ^. CommentId `in_`
-                                ( subList_select $ from $ \ (ca `InnerJoin` c2) -> do
+                                ( subList_select $ from $ \(ca `InnerJoin` c2) -> do
                                     on_ $ ca ^. CommentAncestorAncestor ==. c2 ^. CommentId
                                     where_ $ just (c2 ^. CommentUser) ==. val mviewer_id
 

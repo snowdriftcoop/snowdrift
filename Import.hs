@@ -8,6 +8,7 @@ import           Model                         as Import
 import           Model.Language                as Import
 import           Model.Comment.Internal        as Import hiding (TagName, TicketName)
 import           Model.Established.Internal    as Import
+import           Model.Notification.Internal   (ProjectNotificationType, ProjectNotificationDelivery)
 import           Model.Role.Internal           as Import
 import           Model.SnowdriftEvent.Internal as Import
 import           Settings                      as Import
@@ -58,6 +59,30 @@ import           Data.Monoid          as Import ((<>)
                                                 ,mconcat, mappend, mempty)
 #endif
 
+class Show a => PPrint a where
+    pprint :: a -> String
+
+instance PPrint CommentId where
+    pprint = show . unSqlBackendKey . unCommentKey
+
+instance PPrint UserId where
+    pprint = show . unSqlBackendKey . unUserKey
+
+instance PPrint ProjectId where
+    pprint = show . unSqlBackendKey . unProjectKey
+
+instance PPrint TagId where
+    pprint = show . unSqlBackendKey . unTagKey
+
+instance PPrint ProjectNotificationType where
+    pprint = show
+
+instance PPrint ProjectNotificationDelivery where
+    pprint = show
+
+instance PPrint Text where
+    pprint = T.unpack
+
 instance ToContent Markdown where
     toContent (Markdown text) = toContent $ text <> "\n"
 
@@ -88,7 +113,8 @@ selectCount from_ =
 key :: PersistEntity record => PersistValue -> Key record
 key v = let Right k = keyFromValues [v] in k
 
-selectExists :: SqlQuery a -> DB Bool
+selectExists :: (MonadIO m, Functor m)
+             => SqlQuery a -> ReaderT SqlBackend m Bool
 selectExists = fmap (>0) . selectCount
 
 newHash :: IO Text
@@ -248,7 +274,7 @@ checkboxesField' ioptlist = (multiSelectField ioptlist)
 
 
 redirectParams :: (MonadHandler (HandlerT site m), MonadBaseControl IO m) => Route site -> [(Text, Text)] -> HandlerT site m a
-redirectParams route params = getUrlRenderParams >>= \ render -> redirect $ render route params
+redirectParams route params = getUrlRenderParams >>= \render -> redirect $ render route params
 
 getByErr :: (PersistEntity val, PersistEntityBackend val ~ SqlBackend)
          => String -> Unique val -> Handler (Entity val)

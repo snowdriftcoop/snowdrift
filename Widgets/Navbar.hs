@@ -17,7 +17,7 @@ navbar = do
         Just (Entity user_id user) -> do
             (pledges, balance, num_unread_notifs) <- handlerToWidget $ runDB $ do
                 pledges :: [(Entity Project, Entity Pledge)] <- select $ from $
-                    \ (project `InnerJoin` pledge) -> do
+                    \(project `InnerJoin` pledge) -> do
                         on_ $ pledge ^. PledgeProject ==. project ^. ProjectId
                         where_ $ pledge ^. PledgeUser ==. val user_id
                         return (project, pledge)
@@ -25,7 +25,7 @@ navbar = do
                 num_unread_notifs <- fetchNumUnreadNotificationsDB user_id
                 return (pledges, accountBalance account, num_unread_notifs)
 
-            let pledged = sum $ map (\ (project, pledge) ->
+            let pledged = sum $ map (\(project, pledge) ->
                     ((projectShareValue (entityVal project) $*) . fromIntegral . pledgeFundedShares . entityVal) pledge) pledges
 
             return (Just (balance, pledged), num_unread_notifs)

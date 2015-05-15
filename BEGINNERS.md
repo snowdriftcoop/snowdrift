@@ -47,7 +47,7 @@ For example, on Debian or Ubuntu you can enter the following in a terminal:
 If you are on a system that does not package git yet, you may choose to
 [download Git from the website](https://git-scm.herokuapp.com/downloads).
 
-### Installing Snowdrift
+### Install Snowdrift
 
 To get a quick virtual machine with the core dependencies for snowdrift,
 follow the [Vagrant setup instructions](SETUP_VAGRANT.md).
@@ -58,7 +58,12 @@ As an alternative option, we also have instructions for local installation.
 [Debian-based instructions](SETUP_DEBIAN.md) work for Debian or Ubuntu or
 related, and our general [GUIDE](GUIDE.md) has some notes for other systems.
 
-## Basic Git setup
+## Working on the code
+
+All the following assumes you have done the initial clone and install
+according to the instructions linked above.
+
+### Basic Git setup
 
 We collaborate on the code via the free/libre/open site
 [git.gnu.io](https://git.gnu.io/snowdrift/snowdrift).
@@ -87,10 +92,13 @@ you'll see a box with an address that looks like
 
 Where `YOURNAME` is your git.gnu.io username.
 
-Paste that address into your terminal as part of the following command:
+Copy that address to your clipboard.
+
+In your snowdrift directory, paste the address into your terminal
+as part of the following command:
 
     git remote add my-snow https://git.gnu.io/YOURNAME/snowdrift.git
- 
+
 Finally, run these additional Git setup commands, replace `YOUR NAME
 GOES HERE` and `YOUR EMAIL GOES HERE` with your actual name and email.
 
@@ -102,9 +110,32 @@ GOES HERE` and `YOUR EMAIL GOES HERE` with your actual name and email.
 However, [SSH setup](https://git.gnu.io/help/ssh/README)
 is kind of tricky, especially for those new to SSH.
 
-## Branching and committing
+### Updating your local code to snowdrift master
 
-When planning edits, first create a new branch:
+Whenever you begin new work, you should generally start with the latest
+master code from the Snowdrift project.
+
+The following assumes you originally downloaded the code via
+`git clone https://git.gnu.io/snowdrift/snowdrift.git`,
+as described in the SETUP docs linked above.
+That automatically sets the main snowdrift code as your "origin".
+
+To download the latest updates of the snowdrift code:
+
+* Go to your snowdrift directory, if not there already
+* checkout your master branch, if not there already, via `git checkout master`
+* run `git pull origin/master`
+
+You should have no conflicts because this is the only situation where you
+should ever change your local master.
+All your work should be done on other branches. 
+
+### Branching and committing
+
+To start making edits:
+
+Given you are on your master branch and have pulled the latest updates,
+as described above, create a new branch:
 
     git checkout -b some_branch
 
@@ -112,13 +143,11 @@ Replace `some_branch` with a one- or two-word description of your planned
 changes. For example, when fixing a problem in the header, a good branch name
 would be `header-fix`.
 
-### Editing
-
-#### Notes about editing and files
+### Notes about editing and files
 
 Until you understand more about the Yesod web framework, you probably
-don't want to touch the nitty-gritty parts of the source code.  However,
-the files in the project's `templates` directory are comparable to basic
+don't want to touch the nitty-gritty parts of the source code.
+However, the files in the `templates` directory are comparable to basic
 HTML, CSS, and JavaScript. Beginners can quickly learn how to make
 changes to those files. Basically, Hamlet=HTML and Cassius=CSS but with
 easier, more concise syntax that uses indentation instead of closing tags.
@@ -133,7 +162,7 @@ Advanced programmers often use Vim or Emacs.
 When making edits, follow our
 [code style guide](https://snowdrift.coop/p/snowdrift/w/en/coding#code-style-guide).
 
-#### Building your updates
+### Building your updates
 
 The `yesod devel` command can be left running in a terminal while work is
 done elsewhere. It will automatically recompile and restart the site
@@ -158,6 +187,10 @@ and you don't know how to fix the issue or don't understand the error,
 ask on the [IRC channel](https://snowdrift.coop/p/snowdrift/w/en/irc),
 and someone will probably help you.
 
+Sometimes the tests just need updating, and for that run:
+
+    cabal clean && cabal configure -fdev && cabal build && yesod test
+
 ### Committing your changes
 
 When your updates all compile, tests pass,
@@ -177,10 +210,8 @@ all your changes with the command:
 An editor will show asking you to summarize your changes.
 Make the message one that will be meaningful to people skimming
 all the commits in the future. Then save and close the editor.
-For reference, here's a decent guide to
-[writing good commit messages](https://github.com/erlang/otp/wiki/Writing-good-commit-messages).
 
-## Getting your changes merged
+### Getting your changes merged
 
 After committing, send your changes to your git.gnu.io account with:
 
@@ -188,9 +219,12 @@ After committing, send your changes to your git.gnu.io account with:
 
 Change `some_branch` to the name of the branch where you made the commit(s).
 
-Reload the git.gnu.io page with your fork.
+Note: if you make additional changes to the same branch later,
+you can push those new updates with just `git push`.
+
+To notify the snowdrift team about your updates,
+go to your web browser and visit the git.gnu.io page with your fork.
 You should see a button **"Create Merge Request"**
-    
 Clicking that will bring up a form where you can add further notes about your
 work (especially useful if you are merging multiple requests).
 You may ignore "Assign to", "Milestone", and "Labels" at this point.
@@ -276,4 +310,4 @@ here are some resources:
 
 *   To help write clean Haskell code and learn conventions, run `hlint`
     on your files to get suggestions for possible improvements.
-    Add hlint to your system with the command `cabal install hlint`
+    Add hlint to your system with the command `cabal install hlint`.

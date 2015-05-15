@@ -59,7 +59,9 @@ sendUserNotificationDB notif_type user_id mcomment_id content = do
     -- Record the fact that we send this notification, so we can
     -- delete it when the comment is approved.
     when (notif_type == NotifUnapprovedComment && isJust mcomment_id) $
-        lift $ insert_ $ UnapprovedCommentNotification (fromJust mcomment_id) notif_id
+        lift $
+            insert_ $
+                UnapprovedCommentNotification (fromJust mcomment_id) notif_id
     tell [EUserNotificationSent notif_id notif]
     return notif_id
 
@@ -67,7 +69,8 @@ sendProjectNotificationDB :: ProjectNotificationType -> UserId -> ProjectId
                           -> Markdown -> SDB ProjectNotificationId
 sendProjectNotificationDB notif_type user_id project_id content = do
     now <- liftIO getCurrentTime
-    let notif = ProjectNotification now notif_type user_id project_id content False
+    let notif =
+            ProjectNotification now notif_type user_id project_id content False
     notif_id <- lift (insert notif)
     tell [EProjectNotificationSent notif_id notif]
     return notif_id
@@ -82,7 +85,11 @@ sendProjectNotificationDB_ :: ProjectNotificationType -> UserId -> ProjectId
 sendProjectNotificationDB_ notif_type user_id project_id content =
     void $ sendProjectNotificationDB notif_type user_id project_id content
 
-sendUserNotificationEmailDB :: UserNotificationType -> UserId -> Markdown -> DB ()
+sendUserNotificationEmailDB
+    :: UserNotificationType
+    -> UserId
+    -> Markdown
+    -> DB ()
 sendUserNotificationEmailDB notif_type user_id content = do
     now <- liftIO getCurrentTime
     insert_ $ UserNotificationEmail now notif_type user_id content

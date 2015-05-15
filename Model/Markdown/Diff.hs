@@ -16,7 +16,8 @@ import qualified Data.Text as T
 data DiffInfo = S | B | F deriving (Eq, Ord, Read, Show)
 
 
-data MarkdownDiff = MarkdownDiff [(DiffInfo, T.Text)] deriving (Show, Read, Eq, Ord)
+data MarkdownDiff = MarkdownDiff [(DiffInfo, T.Text)]
+    deriving (Show, Read, Eq, Ord)
 
 derivePersistField "MarkdownDiff"
 
@@ -36,5 +37,5 @@ diffToDiffInfo (Both _ x) = (B, x)
 diffToDiffInfo (Second x) = (S, x)
 
 diffMarkdown :: Markdown -> Markdown -> MarkdownDiff
-diffMarkdown (Markdown m1) (Markdown m2) = MarkdownDiff $ map diffToDiffInfo $ getDiff (T.lines m1) (T.lines m2) 
-
+diffMarkdown (Markdown m1) (Markdown m2) =
+    MarkdownDiff $ map diffToDiffInfo $ getDiff (T.lines m1) (T.lines m2)

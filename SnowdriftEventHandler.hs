@@ -183,7 +183,7 @@ notificationEventHandler AppConfig{..} (EBlogPost _ blog_post) =
 notificationEventHandler AppConfig{..} (ENewPledge _ shares_pledged) = runSDB $ do
     users <- lift $ fetchUsersInDB [sharesPledgedUser shares_pledged]
     let shares = sharesPledgedShares shares_pledged
-    forM_ users $ \ user_entity ->
+    forM_ users $ \user_entity ->
         handleWatched
             (Just $ NotificationSender $ entityKey user_entity)
             appRoot
@@ -201,7 +201,7 @@ notificationEventHandler AppConfig{..} (EUpdatedPledge old_shares _ shares_pledg
     users <- lift $ fetchUsersInDB [sharesPledgedUser shares_pledged]
     let new_shares = sharesPledgedShares shares_pledged
         delta      = abs $ old_shares - new_shares
-    forM_ users $ \ user_entity ->
+    forM_ users $ \user_entity ->
         handleWatched
             (Just $ NotificationSender $ entityKey user_entity)
             appRoot
@@ -219,14 +219,14 @@ notificationEventHandler AppConfig{..} (EUpdatedPledge old_shares _ shares_pledg
 
 notificationEventHandler AppConfig{..} (EDeletedPledge _ user_id project_id _) = runSDB $ do
     users <- lift $ fetchUsersInDB [user_id]
-    forM_ users $ \ user_entity ->
+    forM_ users $ \user_entity ->
         handleWatched
             (Just $ NotificationSender user_id)
             appRoot
             project_id
             ProjectPatronsR
             NotifDeletedPledge
-            (\ route -> userDisplayName user_entity
+            (\route -> userDisplayName user_entity
                    <> " is no longer supporting the [project](" <> route <> ")")
 
 pluralShares :: Integral i => i -> Text
@@ -237,11 +237,11 @@ handleWatched :: Maybe NotificationSender -> Text -> ProjectId
               -> (Text -> Text) -> SDB ()
 handleWatched mnotif_sender appRoot project_id mkRoute notif_type mkMsg = do
     projects <- lift $ fetchProjectDB project_id
-    forM_ projects $ \ (Entity _ project) -> do
+    forM_ projects $ \(Entity _ project) -> do
         route <- lift $ lift $ routeToText $ mkRoute $ projectHandle project
         user_ids <- lift $
             fetchUsersByProjectNotifPrefDB notif_type project_id
-        forM_ user_ids $ \ user_id -> do
+        forM_ user_ids $ \user_id -> do
             is_watching <- lift $ userIsWatchingProjectDB user_id project_id
             when is_watching $
                 sendPreferredProjectNotificationDB

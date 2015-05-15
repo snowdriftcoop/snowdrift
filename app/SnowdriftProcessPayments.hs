@@ -18,7 +18,7 @@ import Data.Typeable
 import Control.Exception.Lifted (throw, catch, Exception)
 
 retry :: Monad m => m Bool -> m ()
-retry x = x >>= \ x' -> unless x' $ retry x
+retry x = x >>= \x' -> unless x' $ retry x
 
 data NegativeBalances = NegativeBalances ProjectId [UserId] deriving (Show, Typeable)
 
@@ -42,13 +42,13 @@ main = do
 
             liftIO $ putStrLn $ T.unpack project_name
 
-            pledges <- select $ from $ \ pledge -> do
+            pledges <- select $ from $ \pledge -> do
                 where_ $ pledge ^. PledgeProject ==. val project_id
                     &&. pledge ^. PledgeFundedShares >. val 0
 
                 return pledge
 
-            user_balances <- forM pledges $ \ (Entity _ pledge) -> do
+            user_balances <- forM pledges $ \(Entity _ pledge) -> do
                 Just user <- get $ pledgeUser pledge
                 let amount = projectShareValue project $* fromIntegral (pledgeFundedShares pledge)
                     user_account_id = userAccount user
@@ -65,7 +65,7 @@ main = do
 
             when (not $ null negative_balances) $ throw $ NegativeBalances project_id $ map fst negative_balances
 
-            update $ \ p -> do
+            update $ \p -> do
                 set p [ ProjectLastPayday =. val (Just payday_id) ]
                 where_ $ p ^. ProjectId ==. val project_id
 
@@ -73,7 +73,7 @@ main = do
 
 
         dropPledges (NegativeBalances project_id negative_balances) = runDB $ do
-            update $ \ p -> do
+            update $ \p -> do
                 set p [ PledgeFundedShares -=. val 1 ]
                 where_ $ p ^. PledgeUser `in_` valList negative_balances
                     &&. p ^. PledgeFundedShares >. val 0
@@ -83,7 +83,7 @@ main = do
             return False
 
     runStdoutLoggingT $ runResourceT $ do
-        projects <- runDB $ select $ from $ \ (project `LeftOuterJoin` last_payday `InnerJoin` payday) -> do
+        projects <- runDB $ select $ from $ \(project `LeftOuterJoin` last_payday `InnerJoin` payday) -> do
             on_ $ payday ^. PaydayDate >. coalesceDefault [ last_payday ?. PaydayDate ] (project ^. ProjectCreatedTs)
             on_ $ project ^. ProjectLastPayday ==. last_payday ?. PaydayId
 

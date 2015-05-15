@@ -6,4 +6,4 @@ we need to send you a confirmation email first. In order to do that, click
 on the button below.
 
 <form method=POST action=@{DeleteUserR user_id}>
-    <button>confirm
+  <button>confirm
