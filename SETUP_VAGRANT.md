@@ -5,6 +5,9 @@
 [Grab the latest Vagrant version](https://www.vagrantup.com/downloads.html)
 for your system.
 
+If you do not have a virtual machine program installed yet,
+[install VirtualBox](https://www.virtualbox.org/wiki/Downloads).
+
 ## Install and run Snowdrift
 
     git clone https://git.gnu.io/snowdrift/snowdrift.git
