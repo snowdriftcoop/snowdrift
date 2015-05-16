@@ -1,23 +1,23 @@
 <h1> 
-    <div .text-center> #{projectName project} wiki pages
+  <div .text-center> #{projectName project} wiki pages
 
 $if null wiki_targets
-    no pages to display
+  no pages to display
 $else
-    <table .wiki-pages>
-        <tr>
-            <th>Title
-            <th>Discussion
-            <th>History
+  <table .wiki-pages>
+    <tr>
+      <th>Title
+      <th>Discussion
+      <th>History
 
-        $forall Entity _ wiki_target <- wiki_targets
-            <tr>
-                <td>
-                    <a href=@{WikiR project_handle (wikiTargetLanguage wiki_target) (wikiTargetTarget wiki_target)}>
-                        #{wikiTargetTarget wiki_target}
-                <td>
-                    <a href=@{WikiDiscussionR project_handle (wikiTargetLanguage wiki_target) (wikiTargetTarget wiki_target)}>
-                        <span .glyphicon .glyphicon-comment>&nbsp;
-                <td>
-                    <a href=@{WikiHistoryR project_handle (wikiTargetLanguage wiki_target) (wikiTargetTarget wiki_target)}>
-                        <span .glyphicon .glyphicon-list-alt>&nbsp;
+    $forall Entity _ wiki_target <- wiki_targets
+      <tr>
+        <td>
+          <a href=@{WikiR project_handle (wikiTargetLanguage wiki_target) (wikiTargetTarget wiki_target)}>
+            #{wikiTargetTarget wiki_target}
+        <td>
+          <a href=@{WikiDiscussionR project_handle (wikiTargetLanguage wiki_target) (wikiTargetTarget wiki_target)}>
+            <span .glyphicon .glyphicon-comment>&nbsp;
+        <td>
+          <a href=@{WikiHistoryR project_handle (wikiTargetLanguage wiki_target) (wikiTargetTarget wiki_target)}>
+            <span .glyphicon .glyphicon-list-alt>&nbsp;

@@ -5,7 +5,7 @@ import Import
 
 volunteerForm :: UTCTime -> ProjectId -> [Entity Interest] -> Entity User -> Form (VolunteerApplication, [InterestId])
 volunteerForm now project_id interests (Entity user_id user) = renderBootstrap3 BootstrapBasicForm $
-    (\ name email contact website location experience interest_ids other ->
+    (\name email contact website location experience interest_ids other ->
         (VolunteerApplication now project_id user_id name email contact website location experience other, interest_ids)
     )   <$> areq' textField "Name or Internet Handle:" Nothing
         <*> areq' emailField "E-mail:" (Just . userIdent $ user)
@@ -41,7 +41,7 @@ postVolunteerR project_handle = do
         FormSuccess (application, interest_ids) -> do
             runDB $ do
                 application_id <- insert application
-                forM_ interest_ids $ \ interest_id -> insert $ VolunteerInterest application_id interest_id
+                forM_ interest_ids $ \interest_id -> insert $ VolunteerInterest application_id interest_id
 
             alertSuccess "application submitted"
             redirect (VolunteerR project_handle)

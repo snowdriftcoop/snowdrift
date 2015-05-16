@@ -11,7 +11,7 @@ import Text.Printf
 import Model.Settings
 
 pickForegroundColor :: Int -> Int
-pickForegroundColor bg = maximumBy (compare `on` \ a -> colorDiff a bg) [0x111111, 0xeeeeee]
+pickForegroundColor bg = maximumBy (compare `on` \a -> colorDiff a bg) [0x111111, 0xeeeeee]
   where
     colorDiff a b = sum $ map abs $ zipWith (-) (bytelist a) (bytelist b)
     bytelist a = map ((.&. 255) . shiftR a) [0, 8, 16]
@@ -34,9 +34,9 @@ tagWidget t = do
     let maybe_user_score = maybe_user_id >>= annotTagUserScore t
 
     let bg :: String
-        bg = printf "%06x" $ (\ (Color c) -> c) $ annotTagColor t
+        bg = printf "%06x" $ (\(Color c) -> c) $ annotTagColor t
         fg :: String
-        fg = printf "%06x" $ pickForegroundColor $ (\ (Color c) -> c) $ annotTagColor t
+        fg = printf "%06x" $ pickForegroundColor $ (\(Color c) -> c) $ annotTagColor t
 
     toWidget [hamlet|
         <form .tag action=@{annotTagUrl t} style="background-color:##{bg};color:##{fg}" method=post>

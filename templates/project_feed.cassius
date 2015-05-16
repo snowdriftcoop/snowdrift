@@ -3,3 +3,17 @@
     max-width: 42em
     margin: auto
     border-top: thin solid
+
+.feed-watching
+    text-align: center
+    font-size: smaller
+    background: whitesmoke
+    max-width: 40em
+    margin: 0 auto 2em
+
+.feed-watching a
+    white-space: nowrap
+
+.feed-watching form
+    display: inline
+

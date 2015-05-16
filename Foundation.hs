@@ -109,7 +109,7 @@ mkYesodData "App" $(parseRoutesFile "config/routes")
 type Form x = Html -> MForm (HandlerT App IO) (FormResult x, Widget)
 
 licenseNotice :: LB.ByteString
-licenseNotice = E.encodeUtf8 $ renderJavascriptUrl (\ _ _ -> T.empty) [julius|
+licenseNotice = E.encodeUtf8 $ renderJavascriptUrl (\_ _ -> T.empty) [julius|
     /*
      @licstart  The following is the entire license notice for the JavaScript code in this page.
 
@@ -196,7 +196,7 @@ instance Yesod App where
                         $nothing
                             You are not logged in, and this page is not publicly visible. #
                             <a href="@{AuthR LoginR}">Log in or create an account
-                            \ or return to our #
+                            \or return to our #
                             <a href="@{HomeR}">main page
                             .
                 |]
@@ -391,10 +391,10 @@ createUser ident passwd name email avatar nick = do
 
                 -- TODO: refactor back to insertSelect when quoting issue is resolved
                 --
-                -- insertSelect $ from $ \ p -> return $ TagColor <# (p ^. DefaultTagColorTag) <&> val user_id <&> (p ^. DefaultTagColorColor)
+                -- insertSelect $ from $ \p -> return $ TagColor <# (p ^. DefaultTagColorTag) <&> val user_id <&> (p ^. DefaultTagColorColor)
                 --
                 default_tag_colors <- select $ from return
-                forM_ default_tag_colors $ \ (Entity _ (DefaultTagColor tag color)) -> insert $ TagColor tag user_id color
+                forM_ default_tag_colors $ \(Entity _ (DefaultTagColor tag color)) -> insert $ TagColor tag user_id color
                 --
 
                 insertDefaultNotificationPrefs user_id

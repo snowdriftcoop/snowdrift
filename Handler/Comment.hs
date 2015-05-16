@@ -679,7 +679,7 @@ postUnwatchComment viewer_id comment_id = do
 
     case result of
         FormSuccess () -> do
-            runYDB $ delete $ from $ \ ws -> do
+            runYDB $ delete $ from $ \ws -> do
                 where_ $ ws ^. WatchedSubthreadUser ==. val viewer_id
                     &&. ws ^. WatchedSubthreadRoot ==. val comment_id
 
@@ -791,8 +791,8 @@ postCommentTagR comment_id tag_id = do
         case maybe_comment_tag_entity of
             Nothing -> insert_ (CommentTag comment_id tag_id user_id delta)
             Just (Entity comment_tag_id comment_tag) -> case commentTagCount comment_tag + delta of
-                0 -> delete $ from $ \ ct -> where_ $ ct ^. CommentTagId ==. val comment_tag_id
-                x -> void $ update $ \ ct -> do
+                0 -> delete $ from $ \ct -> where_ $ ct ^. CommentTagId ==. val comment_tag_id
+                x -> void $ update $ \ct -> do
                     set ct [ CommentTagCount =. val x ]
                     where_ $ ct ^. CommentTagId ==. val comment_tag_id
 

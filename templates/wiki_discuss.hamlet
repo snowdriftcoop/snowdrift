@@ -1,22 +1,22 @@
 <div .page-toolbox>
+  <div .page-tool>
+    <a href="@{WikiR project_handle language target}"> back to wiki page
+  $if has_comments
     <div .page-tool>
-        <a href="@{WikiR project_handle language target}"> back to wiki page
-    $if has_comments
-        <div .page-tool>
-            <a href="@{NewWikiDiscussionR project_handle language target}"> new topic
-    <div .page-tool>
-        <a href="@{WikiDiscussionR project_handle language target}?state=closed">
-            closed threads
+      <a href="@{NewWikiDiscussionR project_handle language target}"> new topic
+  <div .page-tool>
+    <a href="@{WikiDiscussionR project_handle language target}?state=closed">
+      closed threads
 
 ^{comment_forest}
 
 $if not has_comments
-    $if isJust muser
-        <form action="@{NewWikiDiscussionR project_handle language target}" method="POST">
-            ^{comment_form}
-            <input type="submit" name="mode" value="preview">
-    $else
-        <p>
-            There is no discussion here yet.
-            <a href=@{AuthR LoginR}>Sign in
-            to start a new topic.
+  $if isJust muser
+    <form action="@{NewWikiDiscussionR project_handle language target}" method="POST">
+      ^{comment_form}
+      <input type="submit" name="mode" value="preview">
+  $else
+    <p>
+      There is no discussion here yet.
+      <a href=@{AuthR LoginR}>Sign in
+      to start a new topic.

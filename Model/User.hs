@@ -94,13 +94,14 @@ module Model.User
     , canMakeEligible
     ) where
 
-import Import
+import Import hiding (exists)
 
 
 import Model.Comment
 import Model.Comment.Sql
 import Model.Notification
-import Model.User.Internal hiding (UserNotificationPref, ProjectNotificationPref)
+import Model.User.Internal
+    hiding (UserNotificationPref, ProjectNotificationPref)
 import Model.User.Sql
 import Model.Wiki.Sql
 
@@ -162,11 +163,14 @@ userIsUnestablished = estIsUnestablished . userEstablished
 
 -- | Is the current user eligible for establishment?
 curUserIsEligibleEstablish :: Handler Bool
-curUserIsEligibleEstablish = maybe False (userIsEligibleEstablish . entityVal) <$> maybeAuth
+curUserIsEligibleEstablish =
+    maybe False (userIsEligibleEstablish . entityVal) <$> maybeAuth
 
--- | Get a User's public display name (defaults to userN if no name has been set).
+-- | Get a User's public display name (defaults to userN if no name has
+-- been set).
 userDisplayName :: Entity User -> Text
-userDisplayName (Entity user_id user) = fromMaybe ("user" <> toPathPiece user_id) (userName user)
+userDisplayName (Entity user_id user) =
+    fromMaybe ("user" <> toPathPiece user_id) (userName user)
 
 -- | Apply a UserUpdate in memory, for preview. For this reason,
 -- userUpdateNotificationPreferences doesn't need to be touched.
@@ -188,7 +192,7 @@ fetchUsersInDB user_ids = selectList [UserId <-. user_ids] []
 
 fetchUserWatchingProjectsDB :: UserId -> DB [Entity Project]
 fetchUserWatchingProjectsDB user_id =
-    select $ from $ \ (uwp,p) -> do
+    select $ from $ \(uwp,p) -> do
         where_ $ uwp ^. UserWatchingProjectUser    ==. val user_id
              &&. uwp ^. UserWatchingProjectProject ==. p ^. ProjectId
 
@@ -213,8 +217,9 @@ updateUserPasswordDB user_id hash salt =
                 , UserSalt =. val salt ]
         where_ $ u ^. UserId ==. val user_id
 
-fromEmailVerification :: From query expr backend (expr (Entity EmailVerification))
-                      => UserId -> query ()
+fromEmailVerification
+    :: From query expr backend (expr (Entity EmailVerification))
+    => UserId -> query ()
 fromEmailVerification user_id =
     from $ \ev -> where_ $ ev ^. EmailVerificationUser ==. val user_id
 
@@ -311,7 +316,8 @@ eligEstablishUserDB honor_pledge establisher_id user_id reason = do
         [ "You are now eligible to become an *established* user."
         , ""
         , "After you [accept the honor pledge](" <> honor_pledge <>
-          "), you can comment and take other actions on the site without moderation."
+          "), you can comment and take other actions on the site without "
+          <> "moderation."
         ]
 
 -- | Get a User's Roles in a Project.
@@ -343,7 +349,8 @@ userHasRoleDB role user_id = fmap (elem role) . fetchUserRolesDB user_id
 
 -- | Does this User have any of these Roles in this Project?
 userHasRolesAnyDB :: [Role] -> UserId -> ProjectId -> DB Bool
-userHasRolesAnyDB roles user_id project_id = (or . flip map roles . flip elem) <$> fetchUserRolesDB user_id project_id
+userHasRolesAnyDB roles user_id project_id =
+    (or . flip map roles . flip elem) <$> fetchUserRolesDB user_id project_id
 
 -- | Like the name says.
 -- TODO: Why does it run map (second return) on the result? That's just
@@ -365,8 +372,10 @@ fetchUserProjectsAndRolesDB user_id = fmap buildMap $
         where_ (pur ^. ProjectUserRoleUser ==. val user_id)
         return (p, pur ^. ProjectUserRoleRole)
   where
-    buildMap :: [(Entity Project, Value Role)] -> Map (Entity Project) (Set Role)
-    buildMap = foldr (\(p, Value r) -> M.insertWith (<>) p (S.singleton r)) mempty
+    buildMap :: [(Entity Project, Value Role)]
+             -> Map (Entity Project) (Set Role)
+    buildMap =
+        foldr (\(p, Value r) -> M.insertWith (<>) p (S.singleton r)) mempty
 
 userIsProjectAdminDB :: UserId -> ProjectId -> DB Bool
 userIsProjectAdminDB = userHasRoleDB Admin
@@ -381,13 +390,15 @@ userIsProjectModeratorDB = userHasRoleDB Moderator
 userIsAffiliatedWithProjectDB :: UserId -> ProjectId -> DB Bool
 userIsAffiliatedWithProjectDB = userHasRolesAnyDB [minBound..maxBound]
 
--- | Check if the current User can make the given User eligible for establishment.
--- This is True if the current User is a Moderator of any Project, and the given User
--- is Unestablished.
+-- | Check if the current User can make the given User eligible for
+-- establishment. This is True if the current User is a Moderator of any
+-- Project, and the given User is Unestablished.
 canCurUserMakeEligible :: UserId -> Handler Bool
-canCurUserMakeEligible user_id = maybeAuthId >>= maybe (return False) (canMakeEligible user_id)
+canCurUserMakeEligible user_id =
+    maybeAuthId >>= maybe (return False) (canMakeEligible user_id)
 
--- | Check if a User (FIRST ARG) can be made eligible by another User (SECOND ARG).
+-- | Check if a User (FIRST ARG) can be made eligible by another User
+-- (SECOND ARG).
 canMakeEligible :: UserId -> UserId -> Handler Bool
 canMakeEligible establishee_id establisher_id = do
     (establishee, establisher_is_mod) <- runYDB $ (,)
@@ -396,16 +407,19 @@ canMakeEligible establishee_id establisher_id = do
     return $ userIsUnestablished establishee && establisher_is_mod
 
 fetchUserNotificationsDB :: UserId -> DB [Entity UserNotification]
-fetchUserNotificationsDB = fetchUserNotifs (not_ . (^. UserNotificationArchived))
+fetchUserNotificationsDB =
+    fetchUserNotifs (not_ . (^. UserNotificationArchived))
 
 fetchProjectNotificationsDB :: UserId -> DB [Entity ProjectNotification]
-fetchProjectNotificationsDB = fetchProjectNotifs (not_ . (^. ProjectNotificationArchived))
+fetchProjectNotificationsDB =
+    fetchProjectNotifs (not_ . (^. ProjectNotificationArchived))
 
 fetchArchivedUserNotificationsDB :: UserId -> DB [Entity UserNotification]
 fetchArchivedUserNotificationsDB = fetchUserNotifs (^. UserNotificationArchived)
 
 fetchArchivedProjectNotificationsDB :: UserId -> DB [Entity ProjectNotification]
-fetchArchivedProjectNotificationsDB = fetchProjectNotifs (^. ProjectNotificationArchived)
+fetchArchivedProjectNotificationsDB =
+    fetchProjectNotifs (^. ProjectNotificationArchived)
 
 -- | Abstract fetching archived/unarchived notifications. Unexported.
 fetchNotifs :: ( MonadIO m, PersistEntity val, PersistField a
@@ -427,8 +441,11 @@ fetchUserNotifs =
     fetchNotifs UserNotificationTo UserNotificationCreatedTs
 
 -- | Abstract fetching archived/unarchived project notifications. Unexported.
-fetchProjectNotifs :: (SqlExpr (Entity ProjectNotification) -> SqlExpr (Value Bool))
-                   -> UserId -> DB [Entity ProjectNotification]
+fetchProjectNotifs
+    :: (SqlExpr (Entity ProjectNotification)
+    -> SqlExpr (Value Bool))
+    -> UserId
+    -> DB [Entity ProjectNotification]
 fetchProjectNotifs =
     fetchNotifs ProjectNotificationTo ProjectNotificationCreatedTs
 
@@ -543,20 +560,41 @@ updateProjectNotificationPrefDB user_id project_id notif_type mnotif_deliv =
           (updateProjectNotifPrefs user_id project_id notif_type)
           mnotif_deliv
 
+insertDefaultProjectNotifPrefs :: UserId -> ProjectId -> DB ()
+insertDefaultProjectNotifPrefs user_id project_id =
+    void $ insertMany $ uncurry (ProjectNotificationPref user_id project_id) <$>
+        [ (NotifWikiEdit,      ProjectNotifDeliverWebsite)
+        , (NotifWikiPage,      ProjectNotifDeliverWebsite)
+        , (NotifBlogPost,      ProjectNotifDeliverWebsiteAndEmail)
+        , (NotifNewPledge,     ProjectNotifDeliverWebsite)
+        , (NotifUpdatedPledge, ProjectNotifDeliverWebsite)
+        , (NotifDeletedPledge, ProjectNotifDeliverWebsite)
+        ]
+
 userWatchProjectDB :: UserId -> ProjectId -> DB ()
-userWatchProjectDB user_id project_id =
+userWatchProjectDB user_id project_id = do
     void $ insertUnique $ UserWatchingProject user_id project_id
+    exists <-
+        selectExists $
+        from $ \pnp -> do
+        where_ $ pnp ^. ProjectNotificationPrefUser    ==. val user_id
+             &&. pnp ^. ProjectNotificationPrefProject ==. val project_id
+    unless exists $
+        insertDefaultProjectNotifPrefs user_id project_id
 
 userUnwatchProjectDB :: UserId -> ProjectId -> DB ()
 userUnwatchProjectDB user_id project_id =
     deleteBy $ UniqueUserWatchingProject user_id project_id
 
 userIsWatchingProjectDB :: UserId -> ProjectId -> DB Bool
-userIsWatchingProjectDB user_id project_id = maybe (False) (const True) <$> getBy (UniqueUserWatchingProject user_id project_id)
+userIsWatchingProjectDB user_id project_id =
+    maybe (False) (const True)
+        <$> getBy (UniqueUserWatchingProject user_id project_id)
 
 -- | Mark all given Comments as viewed by the given User.
 userViewCommentsDB :: UserId -> [CommentId] -> DB ()
-userViewCommentsDB user_id unfiltered_comment_ids = filteredCommentIds >>= userViewCommentsDB'
+userViewCommentsDB user_id unfiltered_comment_ids =
+    filteredCommentIds >>= userViewCommentsDB'
   where
     filteredCommentIds = fmap (map unValue) $
         select $
@@ -567,7 +605,8 @@ userViewCommentsDB user_id unfiltered_comment_ids = filteredCommentIds >>= userV
         return (vc ^. ViewCommentComment)
 
     userViewCommentsDB' :: [CommentId] -> DB ()
-    userViewCommentsDB' comment_ids = void (insertMany (map (ViewComment user_id) comment_ids))
+    userViewCommentsDB' comment_ids =
+        void (insertMany (map (ViewComment user_id) comment_ids))
 
 -- | Mark all given Comments as viewed by the given User, if they are watching
 -- the given Project.
@@ -619,8 +658,12 @@ userCanDeleteCommentDB user_id (Entity comment_id comment) =
               else return False
 
 -- | Fetch a User's number of unviewed comments on each WikiPage of a Project.
-fetchNumUnviewedCommentsOnProjectWikiPagesDB :: UserId -> ProjectId -> DB (Map WikiPageId Int)
-fetchNumUnviewedCommentsOnProjectWikiPagesDB user_id project_id = fmap (M.fromList . map unwrapValues) $
+fetchNumUnviewedCommentsOnProjectWikiPagesDB
+    :: UserId
+    -> ProjectId
+    -> DB (Map WikiPageId Int)
+fetchNumUnviewedCommentsOnProjectWikiPagesDB user_id project_id =
+    fmap (M.fromList . map unwrapValues) $
     select $
     from $ \(c `InnerJoin` wp) -> do
     on_ (c ^. CommentDiscussion ==. wp ^. WikiPageDiscussion)
@@ -632,8 +675,12 @@ fetchNumUnviewedCommentsOnProjectWikiPagesDB user_id project_id = fmap (M.fromLi
     having (countRows' >. val 0)
     return (wp ^. WikiPageId, countRows')
 
-fetchNumUnviewedWikiEditsOnProjectDB :: UserId -> ProjectId -> DB (Map WikiPageId Int)
-fetchNumUnviewedWikiEditsOnProjectDB user_id project_id = fmap (M.fromList . map unwrapValues) $
+fetchNumUnviewedWikiEditsOnProjectDB
+    :: UserId
+    -> ProjectId
+    -> DB (Map WikiPageId Int)
+fetchNumUnviewedWikiEditsOnProjectDB user_id project_id =
+    fmap (M.fromList . map unwrapValues) $
     select $
     from $ \(wp `InnerJoin` we) -> do
     on_ (wp ^. WikiPageId ==. we ^. WikiEditPage)

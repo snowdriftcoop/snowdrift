@@ -90,7 +90,7 @@ withEnv k v action = do
 
     liftIO $ setEnv k v True
     result <- action
-    liftIO $ maybe (unsetEnv k) (\ v' -> setEnv k v' True) original
+    liftIO $ maybe (unsetEnv k) (\v' -> setEnv k v' True) original
 
     return result
 
@@ -156,7 +156,7 @@ makeFoundation conf = do
 
     -- Perform database migration using our application's logging settings.
     case appEnv conf of
-        Testing -> withEnv "PGDATABASE" "template1" (applyEnv $ persistConfig foundation) >>= \ dbconf' -> do
+        Testing -> withEnv "PGDATABASE" "template1" (applyEnv $ persistConfig foundation) >>= \dbconf' -> do
                 options <- maybe [] L.words <$> lookupEnv "SNOWDRIFT_TESTING_OPTIONS"
 
                 unless (elem "nodrop" options) $ do
@@ -224,10 +224,10 @@ deprecatedApplyManualMigrations = do
     let migration_files :: [(Int, String)]
         migration_files = L.sort
             $ L.filter ((> migration_number) . fst)
-            $ mapMaybe (\ s -> fmap (,s) $ readMaybe =<< L.stripPrefix "migrate" s)
+            $ mapMaybe (\s -> fmap (,s) $ readMaybe =<< L.stripPrefix "migrate" s)
             unfiltered_migration_files
 
-    forM_ (L.map (("migrations/" <>) . snd) migration_files) $ \ file -> do
+    forM_ (L.map (("migrations/" <>) . snd) migration_files) $ \file -> do
         $(logWarn) $ "running " <> T.pack file <> "..."
         migration <- liftIO $ T.readFile file
         runSql migration

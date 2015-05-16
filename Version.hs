@@ -13,7 +13,7 @@ import Data.Char
 
 
 getVersion :: IO (String, String)
-getVersion = withSystemTempFile "version" $ \ filename handle -> do
+getVersion = withSystemTempFile "version" $ \filename handle -> do
     hClose handle
     base <- takeWhile (not . isSpace) <$> readFile ".git/refs/heads/master"
     ExitSuccess <- system $ "git diff " ++ base ++ " -- . >" ++ filename

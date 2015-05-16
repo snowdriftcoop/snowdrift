@@ -127,7 +127,7 @@ getWikiR project_handle language target = do
     (Entity project_id project, Entity page_id page, edits) <- runYDB $ do
         (project, Entity page_id page, _) <- pageInfo project_handle language target
 
-        edits <- select $ from $ \ (we `InnerJoin` le) -> do
+        edits <- select $ from $ \(we `InnerJoin` le) -> do
             on_ $ we ^. WikiEditId ==. le ^. WikiLastEditEdit
             where_ $ we ^. WikiEditPage ==. val page_id
             return we
@@ -182,7 +182,7 @@ postWikiR project_handle target_language target = do
                 Just PostMode -> do
                     runSYDB $ do
 
-                        [(Entity _ last_edit)] <- lift $ select $ from $ \ (we `InnerJoin` le) -> do
+                        [(Entity _ last_edit)] <- lift $ select $ from $ \(we `InnerJoin` le) -> do
                             on_ $ we ^. WikiEditId ==. le ^. WikiLastEditEdit
                             where_ $ le ^. WikiLastEditPage ==. val page_id
                                 &&. le ^. WikiLastEditLanguage ==. val edit_language
@@ -197,7 +197,7 @@ postWikiR project_handle target_language target = do
                         if prev_edit_id == wikiLastEditEdit last_edit
                          then lift $ lift $ alertSuccess "Updated."
                          else do
-                            [ Value last_editor ] <- lift $ select $ from $ \ we -> do
+                            [ Value last_editor ] <- lift $ select $ from $ \we -> do
                                 where_ $ we ^. WikiEditId ==. val (wikiLastEditEdit last_edit)
                                 return $ we ^. WikiEditUser
 
@@ -250,7 +250,7 @@ postWikiR project_handle target_language target = do
                             lift $ lift $ alertDanger "conflicting edits (ticket created, notification sent)"
 
                         case either_last_edit of
-                            Left (Entity to_update _) -> lift $ update $ \ l -> do
+                            Left (Entity to_update _) -> lift $ update $ \l -> do
                                 set l [WikiLastEditEdit =. val new_edit_id]
                                 where_ $ l ^. WikiLastEditId ==. val to_update
 
@@ -260,7 +260,7 @@ postWikiR project_handle target_language target = do
 
                 _ -> do
 
-                    translations <- fmap unwrapValues $ runYDB $ select $ from $ \ (we `InnerJoin` le) -> do
+                    translations <- fmap unwrapValues $ runYDB $ select $ from $ \(we `InnerJoin` le) -> do
                         on_ $ we ^. WikiEditId ==. le ^. WikiLastEditEdit
                         where_ $ we ^. WikiEditPage ==. val page_id
                             &&. we ^. WikiEditLanguage !=. val edit_language
@@ -365,8 +365,8 @@ getWikiDiffR project_handle language target start_edit_id end_edit_id = do
     when (page_id /= wikiEditPage start_edit) $ error "selected 'start' edit is not an edit of selected page"
     when (page_id /= wikiEditPage end_edit)   $ error "selected 'end' edit is not an edit of selected page"
 
-    let diffEdits = getDiff `on` ((\ (Markdown text) -> T.lines text) . wikiEditContent)
-        renderDiff = mconcat . map (\ a -> (case a of Both x _ -> toHtml x; First x -> del (toHtml x); Second x -> ins (toHtml x)) >> br)
+    let diffEdits = getDiff `on` ((\(Markdown text) -> T.lines text) . wikiEditContent)
+        renderDiff = mconcat . map (\a -> (case a of Both x _ -> toHtml x; First x -> del (toHtml x); Second x -> ins (toHtml x)) >> br)
 
     defaultLayout $ do
         snowdriftDashTitle (projectName project <> " Wiki Diff") target
@@ -418,14 +418,14 @@ getWikiHistoryR project_handle language target = do
     (edits, users) <- runDB $ do
         edits <-
             select $
-            from $ \ edit -> do
+            from $ \edit -> do
             where_ ( edit ^. WikiEditPage ==. val page_id )
             orderBy [ desc (edit ^. WikiEditId) ]
             return edit
 
         let user_id_list = S.toList $ S.fromList $ map (wikiEditUser . entityVal) edits
 
-        users <- fmap (M.fromList . map (entityKey &&& id)) $ select $ from $ \ user -> do
+        users <- fmap (M.fromList . map (entityKey &&& id)) $ select $ from $ \user -> do
             where_ ( user ^. UserId `in_` valList user_id_list )
             return user
 
@@ -529,7 +529,7 @@ getNewWikiTranslationR project_handle language target = do
 
     languages <- getLanguages
 
-    edits <- runYDB $ select $ from $ \ we -> do
+    edits <- runYDB $ select $ from $ \we -> do
         where_ $ we ^. WikiEditPage ==. val page_id
         return we
 
@@ -562,7 +562,7 @@ postNewWikiTranslationR project_handle language target = do
                 _ -> do
                     (form, _) <- generateFormPost $ newWikiTranslationForm (Just edit_id) (Just new_language) (Just new_target) (Just new_content) (Just complete)
 
-                    translations <- fmap unwrapValues $ runYDB $ select $ from $ \ (we `InnerJoin` le) -> do
+                    translations <- fmap unwrapValues $ runYDB $ select $ from $ \(we `InnerJoin` le) -> do
                         on_ $ we ^. WikiEditId ==. le ^. WikiLastEditEdit
                         where_ $ we ^. WikiEditPage ==. val page_id
                             &&. we ^. WikiEditLanguage !=. val new_language
@@ -599,7 +599,7 @@ postEditWikiPermissionsR project_handle language target = do
     case result of
         FormSuccess level -> do
             runDB $
-                update $ \ p -> do
+                update $ \p -> do
                 where_ $ p ^. WikiPageId ==. val page_id
                 set p [ WikiPagePermissionLevel =. val level ]
 

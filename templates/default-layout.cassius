@@ -40,6 +40,7 @@ input[type=submit]:active, button:active
 
 input[type=text], input[type=email]
     width: 30em
+    max-width: 100%
 
 /* removes the seemingly problematic width: 100% from bootstrap */
 .form-control
@@ -315,9 +316,6 @@ div.math
 #establish-form p
     font-size: small
     font-style: italic
-
-.homep-about
-    font-weight: bold
 
 .project-logo
     max-width: 200px

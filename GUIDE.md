@@ -51,8 +51,7 @@ Working on the code
 ===================
 
 Again, see our [Beginners' Guide](BEGINNERS.md) for the simplest setup
-if you have only minimal development experience and are running Debian or
-Ubuntu GNU/Linux or a related derivative.
+if you have only minimal development experience.
 The Beginners' Guide also has links to various support and learning resources.
 
 The details below specify more advanced and particular items.
@@ -77,12 +76,12 @@ For vim users, your config file .vimrc should include these lines:
     au FileType hamlet setl sw=2 sts=2 et
 
 You should also install
-[vim Shakespearean Highlighting](https://github.com/pbrisbin/vim-syntax-shakespeare)
+[vim Shakespearean Highlighting](https://github.com/pbrisbin/vim-syntax-shakespeare).
 
 Some other optional vim plugins to consider (among many available):
 [Haskell-Vim extra syntax](https://github.com/raichoo/haskell-vim)
 and
-[vim2hs](https://github.com/dag/vim2hs)
+[vim2hs](https://github.com/dag/vim2hs).
 
 
 ### Emacs
@@ -90,9 +89,10 @@ and
 Emacs users should use a package manager (preferably Marmalade) to install
 [Haskell Mode](https://github.com/haskell/haskell-mode)
 and
-[Hamlet Mode](https://github.com/lightquake/hamlet-mode).
+[Shakespeare Mode](https://github.com/CodyReichert/shakespeare-mode).
 
-Our included [`.dir-locals.el`](https://www.gnu.org/software/emacs/manual/html_node/emacs/Directory-Variables.html) file
+Our included file
+[`.dir-locals.el`](https://www.gnu.org/software/emacs/manual/html_node/emacs/Directory-Variables.html)
 makes Emacs use the recommended 4-space indentation.
 
 
@@ -124,19 +124,32 @@ See the appendix at the end of this file for more.
 
 ### Build steps
 
-Install the essential dependencies: ghc, cabal, postgresql
+The easiest install which works on *any* OS
+is with a virtual machine using our
+[Vagrant installation instructions](SETUP_VAGRANT.md).
+
+We also have a complete set of steps for
+[Debian/Ubuntu installation](SETUP_DEBIAN.md).
+
+Neither of those explain what every command does.
+Below, we discuss more of these details.
+
+#### General installation process
+
+The following instructions include more explanation of each step
+and references for multiple approaches and different systems.
+
+For any system, you must first install the core dependencies:
+ghc, cabal, postgresql, and git.
 **Note: we are now using GHC 7.8.x**
+
+Various systems may need some libraries and other dependencies.
 
 **<https://www.haskell.org/downloads/linux>** has instructions for
 installing ghc, cabal, happy, and alex on Ubuntu, Fedora, and Arch,
 along with manual install instructions for other systems.
 
-Depending on system, additional dependencies may be needed.
-Please help update this guide if you discover something certain about that.
-Come ask for help at #snowdrift on freenode.net IRC
-if you have any trouble or questions (or want to help others who might!).
-
-If you didn't run it as part of installation, update cabal's package list:
+After installing the core dependencies, you should update cabal's package list:
 
     cabal update
 
@@ -156,13 +169,15 @@ Now, upgrade cabal itself:
 
     cabal install cabal-install
 
-If not done already in earlier steps, install alex and happy:
+Install  alex, happy, and yesod-bin
+(some of which may have been installed, depending on which system and
+instructions you used, it won't hurt to reinstall):
 
-    cabal install alex happy
+    cabal install alex happy yesod-bin
 
 The following items are suggested but not strictly required:
 
-    cabal install haddock hlint yesod-bin
+    cabal install haddock hlint
 
 **Now, change to your snowdrift project directory (if not already there).**
 
@@ -172,7 +187,7 @@ Then, initiate a cabal sandbox:
 
 Install dependencies and build Snowdrift
 
-    cabal install --enable-tests -fdev
+    cabal install -fdev
 
 This will take a *long* time but should ultimately tell you it installed.
 Note: the `-fdev` flag skips optimization to make build faster.
@@ -197,27 +212,44 @@ To set up databases manually, see the appendix at the end of this guide.
 Running the site
 ----------------
 
-After completing all the steps above,
-start the server from within your snowdrift directory with the command:
+### Yesod devel
+
+The standard approach for running and working on the site is to run
+`yesod devel` from the project directory.
+It can stay running in one terminal while work is done elsewhere.
+It will automatically rebuild and rerun the site whenever it detects changes.
+
+In rare cases, you may need to run `cabal clean` if yesod devel
+fails to recognize a change.
+
+To stop yesod devel, press ENTER a few times.
+
+Note that `yesod devel` builds just the library.
+
+### Alternative option to run the site
+
+We recommend `yesod devel` in almost all cases, but an alternate approach is
+to separately build with `cabal build` and run the site with
+`Snowdrift Development`.
+
+This method is *necessary* when updating extra binaries such as the payment
+processing script, the sdm database configuration script, or the email daemon.
+
+For the first time with this method, you should run `cabal configure -fdev`
+before `cabal build`. Afterward, the configuration will be remembered.
+
+However, if you run `cabal clean` to get a full fresh build, you will need to
+run `cabal configure -fdev` again before `cabal build` (or use
+`cabal clean --save-config`)
+
+As before, ommit -fdev to optimize for building the final executables for a live
+operating site. 
+
+When `cabal build` is done, you can start the server with:
 
     Snowdrift Development
 
 To stop the running server, press ctrl-C
-
-To rebuild after code changes, run `cabal install -fdev`
-
-(`cabal build -fdev` can work but won't recognize changes to template files)
-
-After the server starts, it may print a bunch of text about creating tables,
-and it will then sit ready, waiting for connections.
-
-Note: if you installed the optional yesod-bin above, you can use `yesod devel`
-which automatically re-compiles and runs the site whenever it detects changes.
-In some cases (such as .cassius files), where yesod devel fails to recognize
-changes, use `cabal install -fdev` as above. See the appendix for how to
-install yesod-bin in a separate sandbox if you don't want it installed to
-the system generally. At this time, it cannot install in the main Snowdrift
-sandbox because of some dependency conflicts.
 
 
 Using the live test site
@@ -240,12 +272,23 @@ to verify that everything compiles and also appears to work as desired,
 best practice involves then running our automated tests before sharing
 your changes with the main project.
 
-Assuming you ran `sdm init` to set up the databases, run the tests with:
+Assuming you ran `sdm init` to set up the databases,
+you can now enable the tests with:
+
+    cabal install --enable-tests -fdev
+
+That only needs to be done once. From now on, you can run the tests with:
 
     yesod test
 
 If tests fail, try to figure out what is wrong. Ask us for help if needed.
 
+Sometimes, the tests will need updating, and for that you should run:
+
+    cabal clean
+    cabal configure -fdev
+    cabal build
+    yesod test
 
 Additional notes about databases
 ================================
@@ -335,41 +378,7 @@ Happy hacking!
 
 ---
 
-APPENDIX A: Using yesod devel
-=============================
-
-`yesod devel` is a command that will rebuild snowdrift, start the server,
-*and* can stay running and automatically update the build after file changes
-(although it fails to auto-recognize changes in some file types like .cassius).
-
-To enable yesod devel, you must first install yesod-bin.
-However, yesod-bin will not currently build in the main sandbox.
-
-So, at this time, to enable yesod devel, make a new directory for yesod-bin.
-Call it "yesod-bin-sandbox" perhaps.
-
-Then, inside the new directory, run `cabal sandbox init`
-followed by `cabal install yesod-bin`.
-
-Next, add to the new directory to your PATH. Put in your .bashrc the line:
-
-    export PATH=~/yesod-bin-sandbox/.cabal-sandbox/bin:$PATH
-
-(change the ~/ to wherever you actually put the directory)
-
-In a new terminal (so it recognizes the new path),
-you can rebuild and start the server in your snowdrift directory by running
-
-     yesod devel
-
-To stop yesod devel, press ENTER a couple times
-
-Note that `yesod devel` builds just the library,
-so `cabal install -fdev` and related commands are needed to update other
-resources like sdm or the payment processing script.
-
-
-APPENDIX B: Using the Nix package manager
+APPENDIX A: Using the Nix package manager
 =========================================
 
 We're now testing the use of Nix as a reliable, simple way
@@ -442,7 +451,6 @@ which runs the testsuite.
 
 You can run the application with `dist/build/Snowdrift/Snowdrift Development`.
 
-
 Note for users of NixOS
 -----------------------
 
@@ -459,7 +467,7 @@ Afterwards you may need to create the postgres user, like so:
     createuser -s -r postgres
 
 
-APPENDIX C: Manual database management
+APPENDIX B: Manual database management
 ======================================
 
 Our sdm script makes database management quick and easy.

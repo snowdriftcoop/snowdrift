@@ -9,69 +9,68 @@ Although we recommend deeper study to understand how all of this works,
 you *can* simply follow the steps below, and it will work well enough
 to get started.
 
-Advanced users should adapt any of these instructions as seen fit.
-
-These instructions assume you use Debian testing or some variant of Ubuntu.
-Our general [GUIDE](GUIDE.md) has some notes for other systems.
+Advanced users may, of course, adapt these instructions as they see fit.
 
 If you need *any* help at any point, come say "hi" at our freenode.net IRC
 channel [#snowdrift](https://snowdrift.coop/p/snowdrift/w/irc).
 We are always happy to assist and answer *any* questions!
 
-## Installing
+## Prerequisites
 
-Open up a terminal, and run these commands, exactly as you see them. You
-could even copy and paste all of them into your terminal at once, and it
-would work.
+To get started, the only absolute requirements are that you have a reasonably
+new laptop or desktop computer system (less than 10 years old generally),
+and know how to use a terminal to enter commands in the command-line.
 
-Note that you must use Ctrl+Shift+V to paste something into the terminal.
+In general, when you see a list of commands to enter,
+you may enter them in one-at-a-time exactly as you see them,
+or you can copy and paste a collection of commands all at once.
+
+Note that, in most cases, you must use Ctrl+Shift+V to paste into the terminal.
 For historical reasons, Ctrl+V does something else in most terminals.
 
-    sudo aptitude update
-    sudo aptitude install curl git postgresql postgresql-client libgmp-dev zlib1g-dev libpq-dev
-    mkdir builds
-    cd builds
-    curl -ssL \
-      https://www.haskell.org/ghc/dist/7.8.4/ghc-7.8.4-x86_64-unknown-linux-deb7.tar.xz |
-      tar xJv
-    cd ghc-7.8.4
-    ./configure && make && sudo make install
-    cd ..
-    curl -ssL \
-      https://www.haskell.org/cabal/release/cabal-install-1.22.2.0/cabal-install-1.22.2.0.tar.gz |
-      tar xzv
-    cd cabal-install-1.22.2.0
-    sudo ./bootstrap.sh
-    cd ..
-    cabal update
-    cabal install cabal-install alex happy haddock yesod-bin
-    echo 'export PATH=$PATH:$HOME/cabal/bin:.cabal-sandbox/bin' >> ~/.bashrc
-    . ~/.bashrc
-    git clone https://git.gnu.io/snowdrift/snowdrift.git
-    cd snowdrift
-    cabal sandbox init
-    cabal install --enable-tests -fdev
-    sdm init
-    Snowdrift Development
+## Installing
 
-Go to http://localhost:3000 in your web browser to see the Snowdrift site.
-
-Now you can play with Snowdrift locally.
-To log into the site, use the built-in system with
-user: `admin` pass: `admin`
-
-
-## Basic Git setup
+### Install Git
 
 We use a program called [Git](http://git-scm.com/) to make and share
 changes while keeping the versions tracked and organized.
 
-We further manage the code and collaborate via the free/libre/open site
+Whatever system you use, you will need Git installed
+before installing snowdrift.
+If you don't have Git installed locally already, install it now.
+
+Most systems will have Git in their software repositories.
+For example, on Debian or Ubuntu you can enter the following in a terminal:
+
+    sudo apt-get install git
+
+If you are on a system that does not package git yet, you may choose to
+[download Git from the website](https://git-scm.herokuapp.com/downloads).
+
+### Install Snowdrift
+
+To get a quick virtual machine with the core dependencies for snowdrift,
+follow the [Vagrant setup instructions](SETUP_VAGRANT.md).
+**This is the best and easiest option for all systems including
+GNU/Linux, BSD, Mac OS X, and Windows.**
+
+As an alternative option, we also have instructions for local installation.
+[Debian-based instructions](SETUP_DEBIAN.md) work for Debian or Ubuntu or
+related, and our general [GUIDE](GUIDE.md) has some notes for other systems.
+
+## Working on the code
+
+All the following assumes you have done the initial clone and install
+according to the instructions linked above.
+
+### Basic Git setup
+
+We collaborate on the code via the free/libre/open site
 [git.gnu.io](https://git.gnu.io/snowdrift/snowdrift).
 We also mirror on the popular but proprietary site
 [GitHub](https://github.com/snowdriftcoop/snowdrift),
 which you may use if you already have an account there.
-We still encourage everyone to use free/libre/open tools,
+We encourage everyone to use free/libre/open tools,
 so the instructions below assume git.gnu.io.
 
 To contribute changes to the project, first
@@ -93,10 +92,13 @@ you'll see a box with an address that looks like
 
 Where `YOURNAME` is your git.gnu.io username.
 
-Paste that address into your terminal as part of the following command:
+Copy that address to your clipboard.
+
+In your snowdrift directory, paste the address into your terminal
+as part of the following command:
 
     git remote add my-snow https://git.gnu.io/YOURNAME/snowdrift.git
- 
+
 Finally, run these additional Git setup commands, replace `YOUR NAME
 GOES HERE` and `YOUR EMAIL GOES HERE` with your actual name and email.
 
@@ -108,9 +110,32 @@ GOES HERE` and `YOUR EMAIL GOES HERE` with your actual name and email.
 However, [SSH setup](https://git.gnu.io/help/ssh/README)
 is kind of tricky, especially for those new to SSH.
 
-## Branching and committing
+### Updating your local code to snowdrift master
 
-When planning edits, first create a new branch:
+Whenever you begin new work, you should generally start with the latest
+master code from the Snowdrift project.
+
+The following assumes you originally downloaded the code via
+`git clone https://git.gnu.io/snowdrift/snowdrift.git`,
+as described in the SETUP docs linked above.
+That automatically sets the main snowdrift code as your "origin".
+
+To download the latest updates of the snowdrift code:
+
+* Go to your snowdrift directory, if not there already
+* checkout your master branch, if not there already, via `git checkout master`
+* run `git pull origin/master`
+
+You should have no conflicts because this is the only situation where you
+should ever change your local master.
+All your work should be done on other branches. 
+
+### Branching and committing
+
+To start making edits:
+
+Given you are on your master branch and have pulled the latest updates,
+as described above, create a new branch:
 
     git checkout -b some_branch
 
@@ -118,13 +143,11 @@ Replace `some_branch` with a one- or two-word description of your planned
 changes. For example, when fixing a problem in the header, a good branch name
 would be `header-fix`.
 
-### Editing
-
-#### Notes about editing and files
+### Notes about editing and files
 
 Until you understand more about the Yesod web framework, you probably
-don't want to touch the nitty-gritty parts of the source code.  However,
-the files in the project's `templates` directory are comparable to basic
+don't want to touch the nitty-gritty parts of the source code.
+However, the files in the `templates` directory are comparable to basic
 HTML, CSS, and JavaScript. Beginners can quickly learn how to make
 changes to those files. Basically, Hamlet=HTML and Cassius=CSS but with
 easier, more concise syntax that uses indentation instead of closing tags.
@@ -139,17 +162,18 @@ Advanced programmers often use Vim or Emacs.
 When making edits, follow our
 [code style guide](https://snowdrift.coop/p/snowdrift/w/en/coding#code-style-guide).
 
-#### Building your updates
+### Building your updates
 
-After making and saving changes, you can use `cabal install` to recompile
-followed by `Snowdrift Development` to run the site.  If you prefer,
-`yesod devel` is a command that does both of these and can stay running,
-and it will automatically recompile and restart the site after most changes
-(use `cabal install` in cases where `yesod devel` fails to recognize a change).
+The `yesod devel` command can be left running in a terminal while work is
+done elsewhere. It will automatically recompile and restart the site
+whenever it detects file changes.
+
 Refresh your browser view at localhost:3000 to see the updates.
 
-In the respective terminal window, you can quit `Snowdrift Development`
-with Ctrl+C or stop `yesod devel` by hitting ENTER a few times.
+In rare cases, you may need to run `cabal clean` if yesod devel
+fails to recognize a change.
+
+To stop yesod devel, press ENTER a few times.
 
 ### Testing changes
 
@@ -162,6 +186,10 @@ If there are any failures either when compiling or testing,
 and you don't know how to fix the issue or don't understand the error,
 ask on the [IRC channel](https://snowdrift.coop/p/snowdrift/w/en/irc),
 and someone will probably help you.
+
+Sometimes the tests just need updating, and for that run:
+
+    cabal clean && cabal configure -fdev && cabal build && yesod test
 
 ### Committing your changes
 
@@ -182,21 +210,21 @@ all your changes with the command:
 An editor will show asking you to summarize your changes.
 Make the message one that will be meaningful to people skimming
 all the commits in the future. Then save and close the editor.
-For reference, here's a decent guide to
-[writing good commit messages](https://github.com/erlang/otp/wiki/Writing-good-commit-messages).
 
-## Getting your changes merged
+### Getting your changes merged
 
 After committing, send your changes to your git.gnu.io account with:
 
     git push -u my-snow some_branch
 
-Change `some_branch` to the name of the branch where you made the
-commit(s).
+Change `some_branch` to the name of the branch where you made the commit(s).
 
-Reload the git.gnu.io page with your fork.
+Note: if you make additional changes to the same branch later,
+you can push those new updates with just `git push`.
+
+To notify the snowdrift team about your updates,
+go to your web browser and visit the git.gnu.io page with your fork.
 You should see a button **"Create Merge Request"**
-    
 Clicking that will bring up a form where you can add further notes about your
 work (especially useful if you are merging multiple requests).
 You may ignore "Assign to", "Milestone", and "Labels" at this point.
@@ -282,4 +310,4 @@ here are some resources:
 
 *   To help write clean Haskell code and learn conventions, run `hlint`
     on your files to get suggestions for possible improvements.
-    Add hlint to your system with the command `cabal install hlint`
+    Add hlint to your system with the command `cabal install hlint`.
