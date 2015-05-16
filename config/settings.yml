@@ -19,6 +19,6 @@ Staging:
   <<: *defaults
 
 Production:
-  approot: "http://localhost:4003"
+  approot: "https://snowdrift.coop"
   port: 4003
   <<: *defaults
