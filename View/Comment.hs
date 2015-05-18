@@ -277,7 +277,7 @@ expandCommentWidget num_replies new_max_depth = do
                         NoMaxDepth -> (cur_route, [])
                         MaxDepth n -> (cur_route, [("maxdepth", T.pack (show n))])
     [whamlet|
-        <a .expand href="@?{new_route}">
+        <a .expand href=@?{new_route}>
             #{num_replies} more #{plural num_replies "reply" "replies"}
     |]
 

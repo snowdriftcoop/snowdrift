@@ -103,7 +103,7 @@ instance Issue TaggedTicket where
         [whamlet|
           <tr>
             <td>
-              <a href="@{CommentDirectLinkR (ticketComment ticket)}">
+              <a href=@{CommentDirectLinkR (ticketComment ticket)}>
                 SD-#{toPathPiece ticket_id}
             <td>
               #{ticketName ticket}

@@ -191,13 +191,13 @@ instance Yesod App where
                             $# TODO
                             and we'll fix it for you or everyone. #
                             Otherwise, you can always go to our #
-                            <a href="@{HomeR}">main page
+                            <a href=@{HomeR}>main page
                             .
                         $nothing
                             You are not logged in, and this page is not publicly visible. #
-                            <a href="@{AuthR LoginR}">Log in or create an account
+                            <a href=@{AuthR LoginR}>Log in or create an account
                             \or return to our #
-                            <a href="@{HomeR}">main page
+                            <a href=@{HomeR}>main page
                             .
                 |]
 

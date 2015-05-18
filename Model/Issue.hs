@@ -38,7 +38,7 @@ instance Issue GH.Issue where
           <tr>
             <td>
               $maybe url <- GH.issueHtmlUrl github_issue
-                <a href="#{url}">
+                <a href=#{url}>
                   GH-#{GH.issueNumber github_issue}
               $nothing
                 GH-#{GH.issueNumber github_issue}

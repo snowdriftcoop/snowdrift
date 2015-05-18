@@ -143,7 +143,7 @@ donutSharesChart patrons_list = do
                 drawSegment color segment =
                     let path = segmentPath 10 segment
                      in toWidget [whamlet|
-                            <path d="#{path} Z" title="#{segmentTitle segment}" fill="#{color}" stroke=none >
+                            <path d="#{path} Z" title=#{segmentTitle segment} fill=#{color} stroke=none >
                         |]
 
                 drawShadow segment =
@@ -229,7 +229,7 @@ addChart route = do
         <div .chart_container>
             <div ##{ident}>
             <noscript>
-                <img .chart src="@{route}">
+                <img .chart src=@{route}>
     |]
 
     return ident

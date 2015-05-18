@@ -1,5 +1,5 @@
 <div .page-toolbox>
   <div .page-tool>
-    <a href="@{BlogPostDiscussionR project_handle post_name}"> back to full discussion
+    <a href=@{BlogPostDiscussionR project_handle post_name}> back to full discussion
 
 ^{widget}

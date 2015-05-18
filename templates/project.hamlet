@@ -96,7 +96,7 @@
       <tr>
         <td>
           $maybe _ <- maybe_project_id
-            <a href="@{ProjectPatronsR $ projectHandle project}">
+            <a href=@{ProjectPatronsR $ projectHandle project}>
             _{MsgPatrons users}
           $nothing
             _{MsgPatrons users}

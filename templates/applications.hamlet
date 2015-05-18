@@ -5,7 +5,7 @@ $if not (null applications)
         <td>
             #{formatTime defaultTimeLocale "%b %d, %Y" (volunteerApplicationCreatedTs application) }
         <td>
-          <a href="@{ApplicationR project_handle application_id}">#{volunteerApplicationName application}
+          <a href=@{ApplicationR project_handle application_id}>#{volunteerApplicationName application}
         <td>
           $maybe website <- volunteerApplicationWebsite application
             #{website}

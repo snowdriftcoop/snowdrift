@@ -44,15 +44,15 @@ getJsLicenseR = do
                 $forall lib <- libs
                     <tr>
                         <td>
-                            <a href="#{libRoute lib}">
+                            <a href=#{libRoute lib}>
                                 #{libName lib}
 
                         <td>
-                            <a href="#{libLicenseRoute lib}">
+                            <a href=#{libLicenseRoute lib}>
                                 #{libLicenseName lib}
 
                         <td>
-                            <a href="#{libOrigRoute lib}">
+                            <a href=#{libOrigRoute lib}>
                                 #{libOrigName lib}
         |]
 

@@ -30,13 +30,13 @@ renderOtherAccount is_credit transaction user_accounts project_accounts = do
                 <> "this shouldn't happen"
         (Just (Entity _ project), Nothing) ->
             [hamlet|
-                <a href="@{ProjectR (projectHandle project)}">
+                <a href=@{ProjectR (projectHandle project)}>
                     #{projectName project}
             |]
 
         (Nothing, Just (Entity user_id user)) ->
             [hamlet|
-                <a href="@{UserR user_id}">
+                <a href=@{UserR user_id}>
                     #{userDisplayName (Entity user_id user)}
             |]
 
