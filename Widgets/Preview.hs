@@ -13,18 +13,18 @@ previewWidgetWithAgreement agreement form action widget
 previewWidget' :: Maybe Text -> Widget -> Text -> Widget -> Widget
 previewWidget' maybeAgreement form action widget =
     [whamlet|
-        <div .alert .alert-danger>
-            This is a preview; changes have <em>not</em> been saved!
-            Edit and/or submit your posting <a href=#edit-preview>below</a>.
+      <div .alert .alert-danger>
+        This is a preview; changes have <em>not</em> been saved!
+        Edit and/or submit your posting <a href="#edit-preview">below</a>.
 
-        ^{widget}
+      ^{widget}
 
-        <form #edit-preview method="POST">
-            ^{form}
-            $maybe agreement <- maybeAgreement
-                <div .notice>#{agreement}
-            <button type="submit" name="mode" value="preview">preview
-            <button .preview-action-button type="submit" name="mode" value="post">#{action}
+      <form #edit-preview method="POST">
+        ^{form}
+        $maybe agreement <- maybeAgreement
+          <div .notice>#{agreement}
+        <button type="submit" name="mode" value="preview">preview
+        <button .preview-action-button type="submit" name="mode" value="post">#{action}
     |]
 
 previewWidget :: Widget -> Text -> Widget -> Widget
