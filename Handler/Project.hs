@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE TupleSections, OverloadedStrings #-}
 
 module Handler.Project where
@@ -47,6 +48,9 @@ import           Text.Printf
 import           Yesod.AtomFeed
 import           Yesod.RssFeed
 
+#if !(MIN_VERSION_base(4,8,0))
+import System.Locale (defaultTimeLocale)
+#endif
 
 --------------------------------------------------------------------------------
 -- Utility functions
