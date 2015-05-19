@@ -3,7 +3,7 @@ version:           0.1.4
 license:           AGPL-3
 license-file:      LICENSE
 author:            David L. L. Thomas
-maintainer:        Snowdrift.coop
+maintainer:        bryan.richter@gmail.com
 synopsis:          Infrastructure for Snowdrift fundrasing site.
 category:          Web
 stability:         Experimental
