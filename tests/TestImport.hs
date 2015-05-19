@@ -220,13 +220,13 @@ snowdrift = "snowdrift"
 
 snowdriftId :: Example ProjectId
 snowdriftId =
-    testDB $ fmap entityKey $ getOrError $ UniqueProjectHandle snowdrift
+    testDB $ fmap entityKey $ getByOrError $ UniqueProjectHandle snowdrift
 
-getOrError :: ( PersistEntity val
-              , PersistUnique (PersistEntityBackend val)
-              , MonadIO m, Functor m )
-           => Unique val -> ReaderT (PersistEntityBackend val) m (Entity val)
-getOrError x = match <$> (getBy x)
+getByOrError :: ( PersistEntity val
+                , PersistUnique (PersistEntityBackend val)
+                , MonadIO m, Functor m )
+             => Unique val -> ReaderT (PersistEntityBackend val) m (Entity val)
+getByOrError x = match <$> (getBy x)
   where
     -- XXX: Prettier error message.
     match Nothing  = error $ "cannot get " <> (show $ persistUniqueToValues x)
@@ -261,9 +261,9 @@ editWiki project language page content comment = do
     get200 $ EditWikiR project language page
 
     snowdrift_id <- snowdriftId
-    wiki_target <- testDB $ getOrError $ UniqueWikiTarget snowdrift_id LangEn page
+    wiki_target <- testDB $ getByOrError $ UniqueWikiTarget snowdrift_id LangEn page
     let page_id = wikiTargetPage $ entityVal $ wiki_target
-    wiki_last_edit <- testDB $ getOrError $ UniqueWikiLastEdit page_id LangEn
+    wiki_last_edit <- testDB $ getByOrError $ UniqueWikiLastEdit page_id LangEn
     let last_edit = entityVal wiki_last_edit
 
     withStatus 200 False $ request $ do
