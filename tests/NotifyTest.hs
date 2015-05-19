@@ -181,18 +181,6 @@ deleteRole project_id user_id role =
              &&. p ^. ProjectUserRoleUser    ==. val user_id
              &&. p ^. ProjectUserRoleRole    ==. val role
 
-loadFunds :: UserId -> Int -> Example ()
-loadFunds user_id n = [marked|
-    let route = UserBalanceR user_id
-    get200 route
-
-    withStatus 303 False $ request $ do
-        addNonce
-        setMethod "POST"
-        setUrl route
-        addPostParam "f1" $ shpack n
-    |]
-
 errWebsiteNotif'
     :: (DelayStatus -> UserId -> a -> Text -> SqlPersistM ())
     -> DelayStatus -> UserId -> a -> Text -> Example ()
