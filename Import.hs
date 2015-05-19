@@ -15,11 +15,18 @@ import           Settings                      as Import
 import           Settings.Development          as Import
 import           Settings.StaticFiles          as Import
 
+#if !(MIN_VERSION_base(4,8,0))
 import           Control.Applicative           as Import (pure, (<$>), (<*>))
+#endif
+
 import           Control.Arrow                 as Import ((***), (&&&), (+++), first, second, (>>>), (<<<))
 import           Control.Monad                 as Import
 import           Control.Monad.Trans.Reader    (ReaderT)
+#if MIN_VERSION_base(4,8,0)
+import           Data.Foldable                 as Import (toList)
+#else
 import           Data.Foldable                 as Import (Foldable, toList)
+#endif
 import           Data.Function                 as Import (on)
 import           Data.Int                      as Import (Int64)
 import           Data.Map                      as Import (Map)
@@ -45,14 +52,11 @@ import           Data.List (sortBy, (\\), nub)
 
 import qualified Data.Map as M
 
-#if __GLASGOW_HASKELL__ >= 704
-import           Data.Monoid          as Import (Monoid (mappend, mempty, mconcat), (<>))
+import           Data.Monoid          as Import ((<>)
+#if MIN_VERSION_base(4,8,0)
+                                                )
 #else
-import           Data.Monoid          as Import (Monoid (mappend, mempty, mconcat))
-
-infixr 5 <>
-(<>) :: Monoid m => m -> m -> m
-(<>) = mappend
+                                                ,mconcat, mappend, mempty)
 #endif
 
 class Show a => PPrint a where
