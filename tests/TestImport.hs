@@ -47,14 +47,17 @@ import Model as TestImport hiding
 
 import Control.Applicative ((<$>))
 import Control.Concurrent (threadDelay)
-import Control.Monad (when)
+import Control.Monad (void, when)
 import Data.Monoid ((<>))
 import Model.Language
 import Model.Notification
     ( UserNotificationType(..), UserNotificationDelivery(..)
     , ProjectNotificationType(..), ProjectNotificationDelivery(..) )
 
+import System.Directory (getDirectoryContents)
+import System.FilePath ((</>))
 import System.IO (hPutStrLn, stderr)
+import System.Process (spawnProcess, terminateProcess)
 
 import Control.Monad.Trans.Control
 import Control.Exception.Lifted as Lifted hiding (handle)
@@ -351,6 +354,22 @@ updateProjectNotifPrefs user_id project_id notif_type notif_deliv = do
 withDelay :: MonadIO m => m a -> m a
 withDelay action = liftIO (threadDelay 1500000) >> action
 
+withEmailDaemon :: FileName -> (FileName -> IO a) -> IO ()
+withEmailDaemon file action = do
+    subdirs <- fmap (filter $ L.isPrefixOf "dist-sandbox-") $ getDirectoryContents "dist"
+    let subdir = case subdirs of [x] -> x; _ -> ""
+        prefix = "dist" </> subdir </> "build"
+
+    withDelay $ bracket
+        (spawnProcess
+             (prefix </> "SnowdriftEmailDaemon/SnowdriftEmailDaemon")
+             [ "--sendmail=" <> prefix </> "SnowdriftSendmail/SnowdriftSendmail"
+             , "--sendmail-file=" <> T.unpack (unFileName file)
+             , "--db=testing"
+             ])
+        terminateProcess
+        (const $ withDelay $ void $ action file)
+
 rethreadComment :: Text -> Text -> YesodExample App ()
 rethreadComment rethread_route parent_route = [marked|
     get200 rethread_route
@@ -451,11 +470,8 @@ pledge project_id shares = [marked|
 named_users :: [NamedUser]
 named_users = [minBound .. maxBound]
 
-(</>) :: Text -> Text -> Text
-xs </> ys = xs <> "/" <> ys
-
 render :: RenderRoute App => Text -> Route App -> Text
-render appRoot = (appRoot </>) . T.intercalate "/" . fst . renderRoute
+render appRoot = ((appRoot <> "/") <>) . T.intercalate "/" . fst . renderRoute
 
 enRoute :: (Text -> Language -> a) -> a
 enRoute c = c snowdrift LangEn

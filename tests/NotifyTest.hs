@@ -6,13 +6,12 @@
 module NotifyTest (notifySpecs) where
 
 import           Import                               (Established(..), Role (..), pprint, selectExists, key)
-import           TestImport                           hiding ((=.), update, (</>), Update)
+import           TestImport                           hiding ((=.), update, Update)
 import           Model.Currency                       (Milray (..))
 import           Model.Language
 import           Model.Notification
 
-import           Control.Exception                    (bracket)
-import           Control.Monad                        (void, unless)
+import           Control.Monad                        (unless)
 import           Database.Esqueleto                   hiding (exists)
 import           Database.Esqueleto.Internal.Language (Update, From)
 import           Data.Foldable                        (forM_)
@@ -23,9 +22,6 @@ import           Data.Time                            (getCurrentTime)
 import           Data.Text                            (Text)
 import qualified Data.Text                            as T
 import qualified Data.Text.IO                         as T
-import           System.FilePath                      ((</>))
-import           System.Directory                     (getDirectoryContents)
-import           System.Process                       (spawnProcess, terminateProcess)
 import           Yesod.Default.Config                 (AppConfig (..), DefaultEnv (..))
 import           Yesod.Markdown                       (unMarkdown, Markdown (..))
 
@@ -45,22 +41,6 @@ addAndVerifyEmail :: UserId -> Text -> SqlPersistM ()
 addAndVerifyEmail user_id email =
     updateUser user_id [ UserEmail =. val (Just email)
                        , UserEmail_verified =. val True ]
-
-withEmailDaemon :: FileName -> (FileName -> IO a) -> IO ()
-withEmailDaemon file action = do
-    subdirs <- fmap (filter $ L.isPrefixOf "dist-sandbox-") $ getDirectoryContents "dist"
-    let subdir = case subdirs of [x] -> x; _ -> ""
-        prefix = "dist" </> subdir </> "build"
-
-    withDelay $ bracket
-        (spawnProcess
-             (prefix </> "SnowdriftEmailDaemon/SnowdriftEmailDaemon")
-             [ "--sendmail=" <> prefix </> "SnowdriftSendmail/SnowdriftSendmail"
-             , "--sendmail-file=" <> T.unpack (unFileName file)
-             , "--db=testing"
-             ])
-        terminateProcess
-        (const $ withDelay $ void $ action file)
 
 data DelayStatus = WithDelay | WithoutDelay
 
