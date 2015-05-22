@@ -28,6 +28,21 @@ run these commands:
     git clone https://git.gnu.io/snowdrift/snowdrift.git
     cd snowdrift
     cabal sandbox init
+
+At this point, run `ghc --version`. If the version is 7.8.something, run
+
+    ln -s cabal.config.7.8 cabal.config
+
+If the version is 7.10.something, run
+
+    ln -s cabal.config.7.10 cabal.config
+
+If you have an older version of GHC, you should upgrade to 7.10. You are
+more than welcome to try to build Snowdrift with your moldy software,
+but we have no plans to support older versions of GHC.
+
+Anyway, after you do the linking, do this stuff:
+
     cabal install -fdev
     sdm init
     cabal install -fdev --enable-tests
