@@ -28,6 +28,10 @@
     <div .homep-link>
       <a href=@{WikiR "snowdrift" LangEn "faq"}>
         FAQ
+    <div .homep-link>
+      This website is itself a
+      <a href=@{ProjectR "snowdrift"}>
+        Snowdrift.coop project
 
   <div .homepage-section .col-md-6>
     <h2>
