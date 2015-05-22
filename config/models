@@ -256,7 +256,7 @@ UserNotification
     type      UserNotificationType
     to        UserId
     content   Markdown
-    archived  Bool                   -- Put into the "trash bin".
+    archived  Bool         -- Marked "archived", shown separately, not deleted
 
     UniqueUserNotification createdTs type to
 
@@ -265,9 +265,9 @@ ProjectNotification
     createdTs UTCTime
     type      ProjectNotificationType
     to        UserId
-    project   ProjectId              -- An "associated" project.
+    project   ProjectId    -- An "associated" project.
     content   Markdown
-    archived  Bool                   -- Put into the "trash bin".
+    archived  Bool         -- Marked "archived", shown separately, not deleted
 
     UniqueProjectNotification createdTs type to project
 
