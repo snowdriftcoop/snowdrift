@@ -15,20 +15,7 @@ If you do not have a virtual machine program installed yet,
     vagrant up
     vagrant ssh
     cd /vagrant
-
-At this point, run `ghc --version`. If it's 7.8.something, run
-
     ln -s cabal.config.7.8 cabal.config
-
-If it's 7.10.something, run
-
-    ln -s cabal.config.7.10 cabal.config
-
-If it's an older version, you're welcome to try to build Snowdrift with
-your moldy software, but we recommend upgrading to 7.10.
-
-After that, run
-
     cabal install -fdev
     sdm init
     cabal install --enable-tests -fdev
