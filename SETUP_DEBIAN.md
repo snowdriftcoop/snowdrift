@@ -1,5 +1,10 @@
 # Debian-based Setup for Snowdrift
 
+**Note**: As of 2015-05-22, if you need support for GHC 7.10 (this
+  hasn't made it to any of the Debian-based systems yet), you should use
+  Peter Harpending's branch:
+  <https://github.com/pharpend/snowdrift.git>.
+
 ## Installing
 
 For Debian-based systems (including Ubuntu-based systems),
