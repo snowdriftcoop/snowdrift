@@ -54,6 +54,7 @@ import           Control.Monad.Writer.Strict  (WriterT, tell, execWriterT)
 import           Control.Concurrent.Async     (Async, async, wait)
 import qualified Github.Data                  as GH
 import qualified Github.Issues                as GH
+import           Data.Either                  (isRight)
 import           Data.Foldable                (foldMap)
 import qualified Data.Map                     as M
 import           Data.Monoid                  (Sum(..))
@@ -754,14 +755,49 @@ updateUserShares project_handle shares = do
     Just pledge_render_id <-
         fmap (read . T.unpack) <$> lookupSession pledgeRenderKey
 
-    (success, project) <- runSYDB $ do
+    status <- runSYDB $ do
         Entity user_id user <- lift (lift requireAuth)
         Just account <- lift $ get (userAccount user)
         Entity project_id project <-
             lift $ getBy404 (UniqueProjectHandle project_handle)
+        mold_shares <- lift $ do
+            mpledge <- getBy $ UniquePledge user_id project_id
+            return $ case mpledge of
+                Nothing                -> Nothing
+                Just (Entity _ pledge) -> Just (pledgeFundedShares pledge)
+        let mnew_shares  = if shares == 0 then Nothing else Just shares
+            user_outlay  = projectShareValue project $* fromIntegral shares
+            enough_money = accountBalance account >= user_outlay $* 3
+            -- At the time of writing this comment, pledging
+            -- multiple times breaks 'renderProject' and
+            -- 'SnowdriftProcessPayments'.  In any case, there
+            -- is no need to allow pledging the same amount
+            -- multiple times ever.
+            new_amount   = mold_shares /= mnew_shares
 
-        let user_outlay = projectShareValue project $* fromIntegral shares
-            success = accountBalance account >= user_outlay $* 3
+            pledge_dropped   = "You have dropped your pledge and are no longer "
+                            <> "a patron of " <> projectName project <> "."
+            pledge_updated   = "Your pledge is now " <> T.pack (show shares)
+                            <> " " <> plural shares "share" "shares" <> ". "
+                            <> "Thank you for being a patron of "
+                            <> projectName project <> "!"
+            same_amount      = "you cannot pledge the same amount"
+            not_enough_money = "you must have funds to support your pledge "
+                            <> "for at least 3 months at current share value. "
+                            <> "Please deposit additional funds to your account"
+            status = case (enough_money, new_amount) of
+                (True, True)   ->
+                    if shares == 0
+                        then Right pledge_dropped
+                        else Right pledge_updated
+                (True, False)  ->
+                    Left $ "Sorry, " <> same_amount <> "."
+                (False, True)  ->
+                    Left $ "Sorry, " <> not_enough_money <> "."
+                (False, False) ->
+                    Left $ "Sorry, " <> same_amount <> " and "
+                        <> not_enough_money <> "."
+            success = isRight status
 
         when success $ do
             insertProjectPledgeDB
@@ -770,24 +806,12 @@ updateUserShares project_handle shares = do
                 shares
                 pledge_render_id
             rebalanceProjectPledges project_id
-        return (success, project)
 
-    if success
-        then alertSuccess $
-            if shares == 0
-            then
-                "You have dropped your pledge and are no longer "
-                <> "a patron of " <> projectName project <> "."
-            else
-                "Your pledge is now " <> T.pack (show shares)
-                <> " " <> plural shares "share" "shares" <> ". "
-                <> "Thank you for being a patron of "
-                <> projectName project <> "!"
+        return status
 
-        else alertWarning $
-            "Sorry, you must have funds to support your pledge "
-            <> "for at least 3 months at current share value. "
-            <> "Please deposit additional funds to your account."
+    case status of
+        Right msg -> alertSuccess msg
+        Left  msg -> alertWarning msg
 
 newtype DropShare = DropShare PledgeId
 type DropShares = [DropShare]
