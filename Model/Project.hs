@@ -309,7 +309,10 @@ projectNameWidget project_id = do
     maybe_project <- handlerToWidget $ runDB $ get project_id
     case maybe_project of
         Nothing -> [whamlet| (unknown project) |]
-        Just project -> [whamlet| #{projectName project} |]
+        Just project -> [whamlet|
+                            <a href=@{ProjectR $ projectHandle project}>
+                              #{projectName project}
+                        |]
 
 getProjectTagList :: ProjectId -> DB ([Entity Tag], [Entity Tag])
 getProjectTagList project_id = (,) <$> getProjectTags <*> getOtherTags
