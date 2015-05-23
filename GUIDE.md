@@ -116,9 +116,9 @@ distros of GNU/Linux and should work on all other distros as well.
 
 For NixOS, see the notes in the appendix here.
 
-Snowdrift also has been built on Mac OS Yosemite.
-The Mac OS build process seems to have some issues with postgres user names;
-so for now, the database set-up for Mac OS will need to be done manually.
+Snowdrift also has been built on OS X Yosemite.
+The OS X build process seems to have some issues with postgres user names;
+so for now, the database set-up will need to be done manually.
 See the appendix at the end of this file for more.
 
 
@@ -144,9 +144,16 @@ ghc, cabal, postgresql, and git.
 
 Various systems may need some libraries and other dependencies.
 
-**<https://www.haskell.org/downloads/linux>** has instructions for
+* **<https://www.haskell.org/downloads/linux>** has instructions for
 installing ghc, cabal, happy, and alex on Ubuntu, Fedora, and Arch,
-along with manual install instructions for other systems.
+along with manual install instructions for other Linux systems.
+
+* For OS X, see <https://ghcformacosx.github.io/>
+
+* For Windows, see <https://github.com/fpco/minghc#readme>
+  (please tell us if you successfully build directly on Windows,
+  we have no reports of that so far; we know that Windows users can
+  work with the Vagrant option linked above.)
 
 After installing the core dependencies, you should update cabal's package list:
 
@@ -158,7 +165,7 @@ Below are the most common situations:
 * for GNU/Linux, add `export PATH=$PATH:$HOME/cabal/bin:.cabal-sandbox/bin`
   to your ~/.bashrc (or equivalent) file
 
-* for Mac OS, try adding `export PATH="$HOME/Library/Haskell/bin:$PATH"`
+* for OS X, try adding `export PATH="$HOME/Library/Haskell/bin:$PATH"`
   to ~/.bash_profile
 
 (You will need to also run the line in your terminal or start a new terminal
@@ -390,7 +397,7 @@ We're not sure each of these commands is best,
 it may change as we continue testing.
 
 To install Nix, visit [NixOS.org/nix](https://nixos.org/nix/)
-and follow the "Get Nix" instructions (works for GNU/Linux and Mac OS).
+and follow the "Get Nix" instructions (works for GNU/Linux and OS X).
 
 *Note: Nix can take a lot of drive space, so if you do not have many GB
 of free space on your root partition, you may need to find another approach.
@@ -476,7 +483,7 @@ The commands below are written with GNU/Linux in mind.
 
 ***
 
-Notes for Mac OS X
+Notes for OS X
 ------------------
 
 Assuming the postgres server is running,
@@ -485,7 +492,7 @@ run `psql postgres` instead.
 The commands that don't use psql can be adapted
 to run within the psql command line.
 
-For Mac OS, instead of `sudo -u postgres psql snowdrift_development <devDB.sql`
+For OS X, instead of `sudo -u postgres psql snowdrift_development <devDB.sql`
 follow these steps:
 
 1) Run `psql snowdrift_development`
