@@ -145,8 +145,8 @@ ghc, cabal, postgresql, and git.
 Various systems may need some libraries and other dependencies.
 
 * **<https://www.haskell.org/downloads/linux>** has instructions for
-installing ghc, cabal, happy, and alex on Ubuntu, Fedora, and Arch,
-along with manual install instructions for other Linux systems.
+  installing ghc, cabal, happy, and alex on Ubuntu, Fedora, and Arch,
+  along with manual install instructions for other Linux systems.
 
 * For OS X, see <https://ghcformacosx.github.io/>
 
