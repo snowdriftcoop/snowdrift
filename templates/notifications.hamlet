@@ -1,40 +1,54 @@
-<a href=@{ArchivedNotificationsR}>
-  archived notifications
+<h1 .text-center>Notifications
 
-<h1>
-  <div .text-center> Notifications
+<div .user-prefs .text-center>
+  <div .user-pref>
+    <a href=@{UserNotificationsR user_id}>
+      system notification preferences
+  <div .user-pref>
+    <a href=@{UserSelectProjectR user_id}>
+      watched projects notification preferences
 
 $if null notifs
-  No notifications
+  <div .text-center>No notifications
 $else
-  <form action=@{NotificationsProxyR} method="GET">
-    <div .row>
-      <div .col-sm-3>
-        <input type="checkbox" name="all">
-        <input type="submit" name="delete" value="delete">
-        <input type="submit" name="archive" value="archive">
-        <p>
-    $forall notif <- notifs
-      <div .row>
-        <div .col-sm-3>
-          $case notif
-            $of UNotification user_notif_id user_notif
-              <input type="checkbox" name="user_notification" value=#{toPathPiece user_notif_id}>
-              <span .well .well-sm>
-                ^{renderTime (userNotificationCreatedTs user_notif)}
-            $of PNotification project_notif_id project_notif
-              <input type="checkbox" name="project_notification" value=#{toPathPiece project_notif_id}>
-              <span .well .well-sm>
-                ^{renderTime (projectNotificationCreatedTs project_notif)}
-        <div .col-sm-9>
-          $case notif
-            $of UNotification _ user_notif
+  <form .text-center action=@{NotificationsProxyR} method="GET">
+    <div .notif-actions style="margin: 1em 0 -1em">
+      Actions for selected notifications:
+      <input type="submit" name="delete" value="delete">
+      <input type="submit" name="archive" value="archive">
+    <table>
+      <tr>
+        <th>
+          select all
+          <br>
+          <input type="checkbox" name="all">
+        <th>time
+        <th>project
+        <th>message
+      $forall notif <- notifs
+        $case notif
+          $of UNotification user_notif_id user_notif
+            <tr>
+              <td>
+                <input type="checkbox" name="user_notification"
+                  value=#{toPathPiece user_notif_id}>
+              <td>
+                ^{renderTime $ userNotificationCreatedTs user_notif}
+              <td>
+              <td>
                 #{userNotificationContent user_notif}
-            $of PNotification _ project_notif
-                ^{projectNameWidget (projectNotificationProject project_notif)}
+          $of PNotification project_notif_id project_notif
+            <tr>
+              <td>
+                <input type="checkbox" name="project_notification"
+                  value=#{toPathPiece project_notif_id}>
+              <td>
+                ^{renderTime $ projectNotificationCreatedTs project_notif}
+              <td>
+                ^{projectNameWidget $ projectNotificationProject project_notif}
+              <td>
                 #{projectNotificationContent project_notif}
-    <div .row>
-      <div .col-sm-3>
-        <input type="checkbox" name="all">
-        <input type="submit" name="delete" value="delete">
-        <input type="submit" name="archive" value="archive">
+
+<nav .text-center>
+  <a href=@{ArchivedNotificationsR}>
+    view archived notifications

@@ -206,6 +206,9 @@ td
     padding: 0.3em 0.5em
     border-top: 1px solid #DDDDDD
 
+table p
+    text-align: left
+
 figure
     text-align: center
     padding: 5px
@@ -339,3 +342,10 @@ div.math
 
 .snowdrift-sidebar-item a
     color: #FFFFFF
+
+.user-pref
+    display: inline
+    font-size: smaller
+    padding: 2px 4px
+    margin: 8px
+    background: whitesmoke
