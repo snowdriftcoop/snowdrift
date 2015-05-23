@@ -111,8 +111,8 @@ Building
 ### Notes for different operating systems:
 
 We don't yet have everything documented, but Snowdrift has been built
-successfully on Debian, Ubuntu, Arch, Gentoo, and similar distros of GNU/Linux
-and should work on all other distros as well.
+successfully on FreeBSD, Debian, Ubuntu, Arch, Gentoo, and similar
+distros of GNU/Linux and should work on all other distros as well.
 
 For NixOS, see the notes in the appendix here.
 
