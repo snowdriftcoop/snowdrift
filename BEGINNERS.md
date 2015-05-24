@@ -51,7 +51,7 @@ If you are on a system that does not package git yet, you may choose to
 
 To get a quick virtual machine with the core dependencies for snowdrift,
 follow the [Vagrant setup instructions](SETUP_VAGRANT.md).
-**This is the best and easiest option for all systems including
+**This is the easiest option for all systems including
 GNU/Linux, BSD, OS X, and Windows.**
 
 If you prefer to install locally, see our
