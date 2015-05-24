@@ -54,12 +54,13 @@ Beginners with minimal technical background should follow our
 making basic contributions.
 It also includes links and info to help learn more about the tools we use.
 
-The easiest way to build the site is to use a virtual machine via our
+### Install options
+
+An easy way to build the site is to use a virtual machine via our
 [Vagrant setup](SETUP_VAGRANT.md).
 Vagrant works for nearly all operating systems.
 
 If you prefer to install locally, see our
-[Debian/Ubuntu setup instructions](SETUP_DEBIAN.md)
-or the [GUIDE.md](GUIDE.md) file for other systems
-(including other GNU/Linux distros and Mac OS X).
-The GUIDE also includes further technical notes.
+[Debian/Ubuntu setup instructions](SETUP_DEBIAN.md) or our
+[GUIDE.md](GUIDE.md) file for other systems (including other GNU/Linux
+distros and OS X). The GUIDE also includes technical notes and details.
