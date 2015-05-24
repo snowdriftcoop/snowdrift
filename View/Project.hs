@@ -42,7 +42,7 @@ renderProject maybe_project_id project mviewer_id is_watching pledges pledge = d
         shares = sum pledges
         project_value = share_value $* fromIntegral shares
         discussion = DiscussionOnProject $ Entity (fromMaybe (key $ PersistInt64 (-1)) maybe_project_id) project
-        description = markdownWidgetWith (fixLinks (projectHandle project) discussion) $ projectBlurb project
+        description = markdownWidgetWith (fixLinks (projectHandle project) discussion) $ projectDescription project
 
         maybe_shares = pledgeShares . entityVal <$> pledge
 
@@ -127,10 +127,10 @@ editProjectForm mProjTags =
     renderBootstrap3 BootstrapBasicForm $ UpdateProject
         <$> areq' textField "Project Name"
             (projectName <$> mProj)
-        <*> areq' textField "Description"
-            (projectDescription <$> mProj)
-        <*> areq' snowdriftMarkdownField "Blurb"
+        <*> areq' textField "Blurb"
             (projectBlurb <$> mProj)
+        <*> areq' snowdriftMarkdownField "Description"
+            (projectDescription <$> mProj)
         <*> (maybe [] (map T.strip . T.splitOn ",") <$>
             aopt' textField "Tags"
                 (Just . T.intercalate ", " <$> mTags))
