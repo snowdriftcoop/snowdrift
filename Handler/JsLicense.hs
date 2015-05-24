@@ -28,7 +28,7 @@ getJsLicenseR = do
         libs :: [Lib]
         libs =
             [ Lib "jquery.min.js" jqueryUrl "Expat License" "http://www.jclark.com/xml/copying.txt" "jquery.js" (unMin jqueryUrl)
-            , Lib "bootstrap.min.js" (render $ StaticR js_bootstrap_min_js) "Apache License, Version 2.0" "http://www.apache.org/licenses/LICENSE-2.0" "bootstrap.js" (render $ StaticR js_bootstrap_js)
+            , Lib "bootstrap.min.js" (render $ StaticR js_bootstrap_min_js) "Expat License" "http://www.jclark.com/xml/copying.txt" "bootstrap.js" (render $ StaticR js_bootstrap_js)
             , Lib "modernizr.js" (render $ StaticR js_modernizr_js) "Expat License" "http://www.jclark.com/xml/copying.txt" "modernizr.js" (render $ StaticR js_modernizr_js)
             , Lib "include.js" "https://browserid.org/include.js" "Mozilla Public License Version 2.0" "http://www.mozilla.org/MPL/2.0/" "include.orig.js" "https://login.persona.org/include.orig.js"
             , Lib "jquery.jqplot.min.js" (render $ StaticR js_jquery_jqplot_min_js) "Expat License" "http://www.jclark.com/xml/copying.txt" "jquery.jqplot.js" (render $ StaticR js_jquery_jqplot_js)
