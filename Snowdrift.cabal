@@ -7,7 +7,7 @@ maintainer:        dev@lists.snowdrift.coop
 synopsis:          Infrastructure for Snowdrift fundrasing site.
 category:          Web
 stability:         Experimental
-cabal-version:     >= 1.8
+cabal-version:     >= 1.20
 build-type:        Simple
 homepage:          https://snowdrift.coop
 
