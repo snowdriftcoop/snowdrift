@@ -34,7 +34,7 @@ run these commands:
     cabal install -fdev --enable-tests
     yesod devel
 
-Go to http://localhost:3000 in your web browser to see the Snowdrift site.
+The site should now be running on <http://localhost:3000>.
 
 Now you can play with Snowdrift locally.
 To log into the site, use the built-in system with
@@ -42,13 +42,21 @@ user: `admin` pass: `admin`
 
 ## Workflow
 
-`yesod devel` can stay running in one terminal while work is done elsewhere.
-It will automatically rebuild and rerun the site whenever it detects changes.
+Once going, `yesod devel` can stay running in one terminal while
+you do work elsewhere.
+It will rebuild and rerun the site whenever it detects file changes.
 
-In rare cases, you may need to run `cabal clean` if yesod devel
-fails to recognize a change.
+To stop the site, hit the ENTER key (sometimes takes a few repeats).
 
-To stop yesod devel, press ENTER a few times.
+In cases where `yesod devel` fails to detect changes,
+stop it with the Enter key, then run:
+
+    cabal clean && yesod devel
+
+If you add new dependencies (i.e. edit the `build-depends` field in
+`Snowdrift.cabal`), you will need to run:
+
+    cabal install -fdev
 
 ## More resources
 
