@@ -225,15 +225,22 @@ snowdriftId :: Example ProjectId
 snowdriftId =
     testDB $ fmap entityKey $ getByOrError $ UniqueProjectHandle snowdrift
 
+getfOrError :: (Show a, Functor f)
+            => (t -> f (Maybe b)) -> (t -> a) -> t -> f b
+getfOrError getf ppf x =
+    fromMaybe (error $ "cannot get " <> show (ppf x)) <$> getf x
+
+getOrError :: ( PersistEntity val
+              , PersistStore (PersistEntityBackend val)
+              , MonadIO m, Functor m )
+           => Key val -> ReaderT (PersistEntityBackend val) m val
+getOrError = getfOrError Esqueleto.get id
+
 getByOrError :: ( PersistEntity val
                 , PersistUnique (PersistEntityBackend val)
                 , MonadIO m, Functor m )
              => Unique val -> ReaderT (PersistEntityBackend val) m (Entity val)
-getByOrError x = match <$> (getBy x)
-  where
-    -- XXX: Prettier error message.
-    match Nothing  = error $ "cannot get " <> (show $ persistUniqueToValues x)
-    match (Just v) = v
+getByOrError = getfOrError getBy persistUniqueToValues
 
 newWiki :: Text -> Language -> Text -> Text -> YesodExample App ()
 newWiki project language page content = do
@@ -354,12 +361,15 @@ updateProjectNotifPrefs user_id project_id notif_type notif_deliv = do
 withDelay :: MonadIO m => m a -> m a
 withDelay action = liftIO (threadDelay 1500000) >> action
 
-withEmailDaemon :: FileName -> (FileName -> IO a) -> IO ()
-withEmailDaemon file action = do
+distPrefix :: IO FilePath
+distPrefix = do
     subdirs <- fmap (filter $ L.isPrefixOf "dist-sandbox-") $ getDirectoryContents "dist"
     let subdir = case subdirs of [x] -> x; _ -> ""
-        prefix = "dist" </> subdir </> "build"
+    return $ "dist" </> subdir </> "build"
 
+withEmailDaemon :: FileName -> (FileName -> IO a) -> IO ()
+withEmailDaemon file action = do
+    prefix <- distPrefix
     withDelay $ bracket
         (spawnProcess
              (prefix </> "SnowdriftEmailDaemon/SnowdriftEmailDaemon")
@@ -369,6 +379,16 @@ withEmailDaemon file action = do
              ])
         terminateProcess
         (const $ withDelay $ void $ action file)
+
+processPayments :: IO ()
+processPayments = do
+    prefix <- distPrefix
+    bracket
+        (spawnProcess
+             (prefix </> "SnowdriftProcessPayments/SnowdriftProcessPayments")
+             ["Testing"])
+        terminateProcess
+        (const $ withDelay $ return ())
 
 rethreadComment :: Text -> Text -> YesodExample App ()
 rethreadComment rethread_route parent_route = [marked|
@@ -443,8 +463,8 @@ loadFunds user_id n = [marked|
         addPostParam "f1" $ shpack n
     |]
 
-pledge :: ProjectId -> Int64 -> Example ()
-pledge project_id shares = [marked|
+pledgeStatus :: ProjectId -> Int64 -> Int -> Example ()
+pledgeStatus project_id shares status = [marked|
     project <-
         testDB (Esqueleto.get project_id) >>= return .
             fromMaybe (error $ "cannot find project " <> pprint project_id)
@@ -453,19 +473,26 @@ pledge project_id shares = [marked|
     get200 $ ProjectR handle
 
     let route = UpdateSharesR handle
-    withStatus 200 False $ request $ do
+    withStatus status False $ request $ do
         setUrl route
         setMethod "GET"
         addGetParam "_hasdata" ""
         addGetParam "f1" tshares
 
-    withStatus 303 False $ request $ do
-        addNonce
-        setMethod "POST"
-        setUrl route
-        addPostParam "f1" tshares
-        addPostParam "confirm" "yes!"
+    when (status == 200) $
+        withStatus 303 False $ request $ do
+            addNonce
+            setMethod "POST"
+            setUrl route
+            addPostParam "f1" tshares
+            addPostParam "confirm" "yes!"
 |]
+
+pledge :: ProjectId -> Int64 -> Example ()
+pledge project_id shares = pledgeStatus project_id shares 200
+
+pledgeFail :: ProjectId -> Int64 -> Example ()
+pledgeFail project_id shares = pledgeStatus project_id shares 303
 
 named_users :: [NamedUser]
 named_users = [minBound .. maxBound]
