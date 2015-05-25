@@ -26,7 +26,7 @@ Now you can play with Snowdrift locally.
 To log into the site, use the built-in system with
 user: `admin` pass: `admin`
 
-To stop the site, hit the ENTER key (sometimes takes a few repeats).
+To stop the site, hit the Enter key
 
 To then quit vagrant, run:
 

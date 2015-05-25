@@ -222,7 +222,7 @@ It will automatically rebuild and rerun the site whenever it detects changes.
 In rare cases, you may need to run `cabal clean` if yesod devel
 fails to recognize a change.
 
-To stop yesod devel, press ENTER a few times.
+To stop yesod devel, press the Enter key.
 
 Note that `yesod devel` builds just the library.
 
