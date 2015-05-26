@@ -174,7 +174,7 @@ Refresh your browser view at localhost:3000 to see the updates.
 In rare cases, you may need to run `cabal clean` if yesod devel
 fails to recognize a change.
 
-To stop yesod devel, press ENTER a few times.
+To stop yesod devel, press the Enter key.
 
 ### Testing changes
 

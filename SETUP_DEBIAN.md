@@ -46,7 +46,7 @@ Once going, `yesod devel` can stay running in one terminal while
 you do work elsewhere.
 It will rebuild and rerun the site whenever it detects file changes.
 
-To stop the site, hit the ENTER key (sometimes takes a few repeats).
+To stop the site, hit the Enter key.
 
 In cases where `yesod devel` fails to detect changes,
 stop it with the Enter key, then run:
