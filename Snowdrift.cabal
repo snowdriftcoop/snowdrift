@@ -7,6 +7,7 @@ maintainer:        dev@lists.snowdrift.coop
 synopsis:          Infrastructure for Snowdrift fundrasing site.
 category:          Web
 stability:         Experimental
+-- Cabal>=1.20 is required in order to use cabal.config files.
 cabal-version:     >= 1.20
 build-type:        Simple
 homepage:          https://snowdrift.coop
