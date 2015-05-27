@@ -67,22 +67,27 @@ for more details.
 
 ### vim
 
-For vim users, your config file .vimrc should include these lines:
+For [vim](http://www.vim.org/) users,
+your config file .vimrc should include these lines:
 
     set textwidth=80
     set expandtab
     set shiftwidth=4
     set tabstop=4
     au FileType hamlet setl sw=2 sts=2 et
+    syntax on
+    set number
 
-You should also install
-[vim Shakespearean Highlighting](https://github.com/pbrisbin/vim-syntax-shakespeare).
+Among many other vim plugins available, we recommend using a
+[vim plugin manager](https://github.com/gmarik/Vundle.vim)
+and the following plugins particularly relevant to snowdrift:
 
-Some other optional vim plugins to consider (among many available):
-[Haskell-Vim extra syntax](https://github.com/raichoo/haskell-vim)
-and
-[vim2hs](https://github.com/dag/vim2hs).
-
+* [vim Shakespearean syntax](https://github.com/pbrisbin/vim-syntax-shakespeare)
+* [Haskell-Vim extra syntax](https://github.com/raichoo/haskell-vim)
+* [vim-markdown](https://github.com/hallison/vim-markdown)
+* [vim-gitgutter](https://github.com/airblade/vim-gitgutter)
+* [vim2hs](https://github.com/dag/vim2hs).
+    * optionally add `set nofoldenable` to .vimrc skip the folding of functions
 
 ### Emacs
 
@@ -242,8 +247,8 @@ However, if you run `cabal clean` to get a full fresh build, you will need to
 run `cabal configure -fdev` again before `cabal build` (or use
 `cabal clean --save-config`)
 
-As before, ommit -fdev to optimize for building the final executables for a live
-operating site. 
+As before, ommit -fdev to optimize for building the final executables
+for a live operating site.
 
 When `cabal build` is done, you can start the server with:
 
