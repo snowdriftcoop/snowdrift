@@ -13,7 +13,3 @@
 <span .pledge-text>You pledge each month:
 ^{fvInput pledge_view}
 <span .pledge-text>per patron to this project
-<div .testing-notice>
-  currently
-  <strong>testing with fake money
-  and daily instead of monthly
