@@ -141,8 +141,9 @@ dd
 
 
 /* .scroll and .capped are used currently just for the well on user pages
-/* where longer personal statement is. Not sure about this long-term or whether
-/* we'll use them elsewhere. */
+ * where longer personal statement is. Not sure about this long-term or whether
+ * we'll use them elsewhere.
+ */
 
 .scroll
     overflow: auto
@@ -163,8 +164,9 @@ h1, h2, h3, h4, h5, h6
     margin: 1.6em auto 0.8em
     max-width: 780px
 
-/* In case someone puts headers above the fold for a blog post, */
-/* this makes them look better on the multi-post blog page. */
+/* In case someone puts headers above the fold for a blog post,
+ * this makes them look better on the multi-post blog page.
+ */
 .blog-post-top
     h1, h2, h3, h4, h5, h6
         font-size: inherit
@@ -248,7 +250,8 @@ input.pledge
     margin: 1em auto
 
 /* .tag-input stuff has to do with voting on tags,
-/* which is currently inactive as the feature isn't finalized */
+ * which is currently inactive as the feature isn't finalized
+ */
 input.tag-input
     background: none
     border: solid lightgrey 1px
@@ -269,7 +272,8 @@ pre
     margin: 1em
 
 /* The following @media stuff positions headers around
-centered paragraphs and such in wider enough divs*/
+ * centered paragraphs and such in wider enough divs
+ */
 
 @media (min-width: 992px)
     article
@@ -307,7 +311,9 @@ centered paragraphs and such in wider enough divs*/
             margin-left: 38px
 
 
-/* This math stuff is used for showing our formula, but other math could use it too */
+/* This math stuff is used for showing our formula,
+ * but other math could use it too
+ */
 
 .math
     font-family: serif
@@ -334,8 +340,7 @@ div.math
     max-width: 200px
     margin: 0 auto
 
-/* This section is for the project sidebar which will show on all project
- * pages */
+/* This is the project sidebar which shows on all project pages */
 .snowdrift-sidebar
     padding: 0
     float: left
