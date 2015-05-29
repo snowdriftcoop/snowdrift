@@ -200,8 +200,7 @@ library
                  , persistent
                  , persistent-postgresql
                  , persistent-template
-                 -- (bound added before comment explanation requirement)
-                 , process >= 1.2.0.0
+                 , process
                  , random
                  , regex-tdfa
                  , resourcet
@@ -372,7 +371,7 @@ executable         sdm
                      , cmdargs
                      , directory
                      , mwc-random
-                     , process >= 1.2.0.0
+                     , process
                      , semigroups
 
 executable         SnowdriftSendmail
@@ -411,7 +410,7 @@ test-suite test
                  , bytestring
                  , directory
                  , filepath
-                 -- (bound added before comment requirement)
+                 -- we use spawnProcess in tests and it was added in 1.2
                  , process >= 1.2.0.0
                  , time
                  , text
