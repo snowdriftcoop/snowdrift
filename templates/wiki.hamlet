@@ -26,5 +26,6 @@
     <div .page-tool>
       <a href=@?{(NewWikiTranslationR project_handle language target, [("_LANG", toPathPiece $ wikiEditLanguage wiki_edit)])}>start new translation
 
-^{markdownWidgetWith (fixLinks project_handle discussion) (wikiEditContent wiki_edit)}
+<article>
+  ^{markdownWidgetWith (fixLinks project_handle discussion) (wikiEditContent wiki_edit)}
 
