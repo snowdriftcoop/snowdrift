@@ -1,7 +1,0 @@
-.testing-notice
-    border: 2px solid red
-    text-align: center
-    font-style: italic
-
-.pledge-explanation
-    font-size: 0.8em

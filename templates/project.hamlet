@@ -73,8 +73,7 @@
       <p>#{projectBlurb project}
     <section .p-description>
       ^{description}
-    <hr>
-    <div>
+    <section .pledge-form>
       $maybe _ <- maybe_project_id
         <form method=GET
               action=@{UpdateSharesR $ projectHandle project}>
