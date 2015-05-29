@@ -29,10 +29,6 @@
         <span .glyphicon .glyphicon-comment>
         Discussion Board
     <li .snowdrift-sidebar-item>
-      <a href=@{ProjectPatronsR $ projectHandle project}>
-        <span .glyphicon .glyphicon-heart>
-        Patrons
-    <li .snowdrift-sidebar-item>
       <a href=@{ProjectFeedR $ projectHandle project}>
         <span .glyphicon .glyphicon-th-list>
         Project Feed
@@ -97,7 +93,7 @@
 
     <table>
       <tr>
-        <th> Current patrons
+        <th>Current patrons
       <tr>
         <td>
           $maybe _ <- maybe_project_id
@@ -110,13 +106,13 @@
             _{MsgShares shares}
         <tr>
           <td>
-            #{show share_value}&nbsp;per&nbsp;share
+            current base pledge value: #{show share_value}
         <tr>
           <td>
-            Total: #{show project_value}&nbsp;per&nbsp;month
+            total value of all pledges: #{show project_value}&nbsp;per&nbsp;month
     <table>
       <tr>
-        <th> History
+        <th>History
       $maybe (last, year, total) <- amounts
         <tr>
           <td>
