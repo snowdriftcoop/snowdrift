@@ -660,10 +660,10 @@ getProjectPatronsR project_handle = do
         $(widgetFile "project_patrons")
 
 --------------------------------------------------------------------------------
--- /shares
+-- /pledge
 
-getUpdateSharesR :: Text -> Handler Html
-getUpdateSharesR project_handle = do
+getUpdatePledgeR :: Text -> Handler Html
+getUpdatePledgeR project_handle = do
     _ <- requireAuthId
     Entity project_id project <- runYDB $ getBy404 $ UniqueProjectHandle project_handle
 
@@ -675,7 +675,7 @@ getUpdateSharesR project_handle = do
         FormSuccess (SharesPurchaseOrder new_user_shares) -> do
             user_id <- requireAuthId
 
-            (confirm_form, _) <- generateFormPost $ projectConfirmSharesForm (Just new_user_shares)
+            (confirm_form, _) <- generateFormPost $ projectConfirmPledgeForm (Just new_user_shares)
 
             (mpledge, other_shares) <- runDB $ do
                 mpledge <- getBy $ UniquePledge user_id project_id
@@ -717,24 +717,24 @@ getUpdateSharesR project_handle = do
                         snowdriftDashTitle
                             (projectName project)
                             "update pledge"
-                        $(widgetFile "update_shares")
+                        $(widgetFile "update_pledge")
 
         FormMissing -> dangerRedirect "Form missing."
         FormFailure errors ->
             dangerRedirect $ T.snoc (T.intercalate "; " errors) '.'
 
-postUpdateSharesR :: Text -> Handler Html
-postUpdateSharesR project_handle = do
-    ((result, _), _) <- runFormPost $ projectConfirmSharesForm Nothing
+postUpdatePledgeR :: Text -> Handler Html
+postUpdatePledgeR project_handle = do
+    ((result, _), _) <- runFormPost $ projectConfirmPledgeForm Nothing
     isConfirmed <- maybe False (T.isPrefixOf "yes") <$> lookupPostParam "confirm"
 
     case result of
         FormSuccess (SharesPurchaseOrder shares) -> do
-            when isConfirmed $ updateUserShares project_handle shares
+            when isConfirmed $ updateUserPledge project_handle shares
             redirect (ProjectR project_handle)
         _ -> do
             alertDanger "error occurred in form submission"
-            redirect (UpdateSharesR project_handle)
+            redirect (UpdatePledgeR project_handle)
 
 --------------------------------------------------------------------------------
 -- /t

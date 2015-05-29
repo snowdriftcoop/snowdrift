@@ -32,7 +32,7 @@ module Model.Project
     , projectNameWidget
     , summarizeProject
     , updateShareValue
-    , updateUserShares
+    , updateUserPledge
     ) where
 
 import Import
@@ -746,8 +746,8 @@ fetchProjectOpenTicketsDB project_id muser_id = do
                 return tc
             return $ if c == 0 then (t, False) else (t, True)
 
-updateUserShares :: Text -> Int64 -> HandlerT App IO ()
-updateUserShares project_handle shares = do
+updateUserPledge :: Text -> Int64 -> HandlerT App IO ()
+updateUserPledge project_handle shares = do
     Just pledge_render_id <-
         fmap (read . T.unpack) <$> lookupSession pledgeRenderKey
 
@@ -779,7 +779,7 @@ updateUserShares project_handle shares = do
                             <> projectName project <> "!"
             same_amount      = "you cannot pledge the same amount"
             not_enough_money = "you must have funds to support your pledge "
-                            <> "for at least 3 months at current share value. "
+                            <> "for at least 3 months at current pledge value. "
                             <> "Please deposit additional funds to your account"
             status = case (enough_money, new_amount) of
                 (True, True)   ->

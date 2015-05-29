@@ -101,7 +101,7 @@
 /p/#Text/invitation/#Text                    InvitationR              GET POST
 /p/#Text/invite                              InviteR                  GET POST
 /p/#Text/patrons                             ProjectPatronsR          GET
-/p/#Text/shares                              UpdateSharesR            GET POST
+/p/#Text/pledge                              UpdatePledgeR            GET POST
 /p/#Text/t                                   TicketsR                 GET
 /p/#Text/t/#TicketId                         TicketR                  GET
 /p/#Text/transactions                        ProjectTransactionsR     GET

@@ -472,7 +472,7 @@ pledgeStatus project_id shares status = [marked|
         tshares = shpack shares
     get200 $ ProjectR handle
 
-    let route = UpdateSharesR handle
+    let route = UpdatePledgeR handle
     withStatus status False $ request $ do
         setUrl route
         setMethod "GET"
