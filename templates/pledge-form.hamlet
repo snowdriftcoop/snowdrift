@@ -15,5 +15,4 @@
 
 <span .pledge-text>You pledge each month to donate:
 ^{fvInput pledge_view}
-<span .pledge-text>for each patron of this project who donates with you
-  (and for each doubling of their pledge beyond the minimum).
+<span .pledge-text>for each patron to this project.
