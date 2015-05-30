@@ -166,6 +166,10 @@ library
                 TypeFamilies
                 ViewPatterns
 
+-- Only add version bounds that reflect specific known issues.
+-- Provide a comment above the entry explaining any bounds added.
+
+-- base bounds reflect a core dependency
     build-depends: base                          >= 4          && < 5
                  , async
                  , attoparsec
@@ -197,7 +201,7 @@ library
                  , persistent
                  , persistent-postgresql
                  , persistent-template
-                 , process >= 1.2.0.0
+                 , process
                  , random
                  , regex-tdfa
                  , resourcet
@@ -214,6 +218,7 @@ library
                  , wai-extra
                  , wai-logger
                  , yaml
+                 -- extra caution for our primary dependency on Yesod
                  , yesod >= 1.4 && < 1.5
                  , yesod-auth
                  , yesod-auth-hashdb
@@ -367,7 +372,7 @@ executable         sdm
                      , cmdargs
                      , directory
                      , mwc-random
-                     , process >= 1.2.0.0
+                     , process
                      , semigroups
 
 executable         SnowdriftSendmail
@@ -406,6 +411,7 @@ test-suite test
                  , bytestring
                  , directory
                  , filepath
+                 -- we use spawnProcess in tests and it was added in 1.2
                  , process >= 1.2.0.0
                  , time
                  , text
