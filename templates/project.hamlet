@@ -69,7 +69,7 @@
 <div .row>
   <div .col-md-7 .col-sm-8 .col-xs-12>
     <h1 .text-center> #{projectName project}
-    <p> #{projectDescription project}
+    <p> #{projectBlurb project}
     ^{description}
     <hr>
     <div>
@@ -122,4 +122,3 @@
         <tr>
           <td>
             #{total} total
-

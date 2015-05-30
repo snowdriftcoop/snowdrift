@@ -1,0 +1,1 @@
+UPDATE project AS p1 SET blurb = p2.description, description = p2.blurb FROM project AS p2 WHERE p1.id = p2.id;
