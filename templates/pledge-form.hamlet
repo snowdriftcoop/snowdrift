@@ -1,7 +1,9 @@
 #{extra}
 <h3>Pledge your support!
 <p .pledge-explanation>
-  When you pledge, other patrons will donate more as well!
+  Your pledge is a matching offering inviting others to come help,
+  and when you pledge, existing patrons will donate more as well!
+
 <h4>Read the details:
 <ul>
   <li>
@@ -10,6 +12,8 @@
   <li>
     <a href=@{WikiR "snowdrift" LangEn "pledging"}>
       Setting your pledge level
-<span .pledge-text>You pledge each month:
+
+<span .pledge-text>You pledge each month to donate:
 ^{fvInput pledge_view}
-<span .pledge-text>per patron to this project
+<span .pledge-text>for each patron of this project who donates with you
+  (and for each doubling of their pledge beyond the minimum).

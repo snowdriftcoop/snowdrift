@@ -1,13 +1,13 @@
 $newline never
 <fieldset>
-  $forall amount <- list
+  $forall (shareNumber, centView) <- pledgeOptions
     <input .radio-inline :req:required *{attrs}
       type=radio
-      id=#{ident}-#{amount}
+      id=#{ident}-#{shareNumber}
       name=#{name}
-      value=#{amount}
-      :amount == value:checked>
-    #{amount}
+      value=#{shareNumber}
+      :shareNumber == value:checked>
+    #{centView}¢
 
   <div>
     <input .radio-inline *{attrs}
@@ -16,7 +16,7 @@ $newline never
       name=#{name}
       value=#{name}-other
       :req:required :not hasValue:checked>
-    other:
+    other (in tenths of a cent):
     <input .form-inline .other-share-value *{attrs} step=1 min=0
       type=number
       id=#{ident}-other-val

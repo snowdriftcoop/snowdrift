@@ -23,7 +23,7 @@ module Model.Project
     , fetchProjectPledgesDB
     , fetchProjectSharesDB
     , insertProjectPledgeDB
-    -- TODO(mitchell): rename all these... prefix fetch, suffix DB
+    -- TODO: rename all these... prefix fetch, suffix DB
     , getGithubIssues
     , getProjectPages
     , getProjectTagList
@@ -773,9 +773,10 @@ updateUserPledge project_handle shares = do
 
             pledge_dropped   = "You have dropped your pledge and are no longer "
                             <> "a patron of " <> projectName project <> "."
-            pledge_updated   = "Your pledge is now " <> T.pack (show shares)
-                            <> " " <> plural shares "share" "shares" <> ". "
-                            <> "Thank you for being a patron of "
+            pledge_updated   = "You have now pledged a base rate of "
+                            <> T.pack (show $ fromIntegral shares * 0.1)
+                            <> "¢ per patron. "
+                            <> "Thank you for supporting "
                             <> projectName project <> "!"
             same_amount      = "you cannot pledge the same amount"
             not_enough_money = "you must have funds to support your pledge "
