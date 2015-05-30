@@ -196,7 +196,7 @@ Install dependencies and build Snowdrift
 
 This will take a *long* time but should ultimately tell you it installed.
 Note: the `-fdev` flag skips optimization to make build faster.
-It should be ommited for building the actual live site.
+It should be omitted for building the actual live site.
 
 Contact us for help if the build is not successful.
 
@@ -247,7 +247,7 @@ However, if you run `cabal clean` to get a full fresh build, you will need to
 run `cabal configure -fdev` again before `cabal build` (or use
 `cabal clean --save-config`)
 
-As before, ommit -fdev to optimize for building the final executables
+As before, omit -fdev to optimize for building the final executables
 for a live operating site.
 
 When `cabal build` is done, you can start the server with:
