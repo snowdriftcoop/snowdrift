@@ -774,7 +774,7 @@ updateUserPledge project_handle shares = do
             pledge_dropped   = "You have dropped your pledge and are no longer "
                             <> "a patron of " <> projectName project <> "."
             pledge_updated   = "You have now pledged a base rate of "
-                            <> T.pack (show $ fromIntegral shares * 0.1)
+                            <> T.pack (show $ fromRational $ toRational shares * 0.1)
                             <> "¢ per patron. "
                             <> "Thank you for supporting "
                             <> projectName project <> "!"

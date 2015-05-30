@@ -1,4 +1,4 @@
-<h1> Update your pledge to #{projectName project}
+<h1>Update your pledge to #{projectName project}
 
 $maybe _ <- mpledge
   $# TODO: include funding amounts
