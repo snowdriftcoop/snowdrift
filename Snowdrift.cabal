@@ -7,8 +7,8 @@ maintainer:        dev@lists.snowdrift.coop
 synopsis:          Infrastructure for Snowdrift fundrasing site.
 category:          Web
 stability:         Experimental
--- Cabal>=1.20 is required in order to use cabal.config files.
-cabal-version:     >= 1.20
+-- Cabal>=1.18 is required for sandboxes.
+cabal-version:     >= 1.18
 build-type:        Simple
 homepage:          https://snowdrift.coop
 
@@ -25,6 +25,7 @@ Flag library-only
     Default:       False
 
 library
+    default-language:  Haskell98
     exposed-modules: Application
                      Data.Filter
                      Data.Order
@@ -142,7 +143,7 @@ library
         else
             ghc-options:   -Werror -Wall -O2
 
-    extensions: ConstraintKinds
+    default-extensions: ConstraintKinds
                 DeriveDataTypeable
                 DeriveFunctor
                 EmptyDataDecls
@@ -236,6 +237,7 @@ executable         SnowdriftProcessPayments
     if flag(merge)
         ghc-options: -Wall -Werror -O0 -fobject-code
 
+    default-language:  Haskell98
     main-is:           SnowdriftProcessPayments.hs
     hs-source-dirs:    app
     build-depends:     base
@@ -253,7 +255,7 @@ executable         SnowdriftProcessPayments
 
     ghc-options:       -threaded -O2
 
-    extensions: TemplateHaskell
+    default-extensions: TemplateHaskell
                 QuasiQuotes
                 OverloadedStrings
                 NoImplicitPrelude
@@ -275,6 +277,7 @@ executable         Snowdrift
     if flag(library-only)
         Buildable: False
 
+    default-language:  Haskell98
     main-is:           main.hs
     hs-source-dirs:    app
     build-depends:     base
@@ -290,6 +293,7 @@ executable         SnowdriftEmailDaemon
         ghc-options: -Wall -Werror -O0 -fobject-code
     if flag(library-only)
         Buildable: False
+    default-language:  Haskell98
     main-is:           SnowdriftEmailDaemon.hs
     build-depends:     base
                      , authenticate
@@ -335,7 +339,7 @@ executable         SnowdriftEmailDaemon
                      , yesod-markdown
                      , yesod-static
 
-    extensions: BangPatterns
+    default-extensions: BangPatterns
                 ConstraintKinds
                 DeriveDataTypeable
                 EmptyDataDecls
@@ -365,6 +369,7 @@ executable         sdm
     if flag(library-only)
         Buildable: False
 
+    default-language:  Haskell98
     main-is:           Sdm.hs
     hs-source-dirs:    dev
     build-depends:     base
@@ -383,18 +388,20 @@ executable         SnowdriftSendmail
     if flag(library-only)
         Buildable: False
 
+    default-language:  Haskell98
     main-is:           SnowdriftSendmail.hs
     build-depends:     base
                      , bytestring
                      , mime
 
 test-suite test
+    default-language:  Haskell98
     type:              exitcode-stdio-1.0
     main-is:           main.hs
     hs-source-dirs:    tests
     ghc-options:       -Werror -Wall -O0 -fobject-code
 
-    extensions: QuasiQuotes
+    default-extensions: QuasiQuotes
                 TemplateHaskell
 
     build-depends: base
