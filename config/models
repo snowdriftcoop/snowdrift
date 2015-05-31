@@ -135,8 +135,8 @@ Project
     createdTs   UTCTime
     name        Text
     handle      Text
-    description Text
-    blurb       Markdown
+    blurb       Text
+    description Markdown
     account     AccountId
     shareValue  Milray
     lastPayday  PaydayId     Maybe
@@ -198,8 +198,8 @@ ProjectUpdate
     updatedTs   UTCTime
     project     ProjectId
     author      UserId
-    description Text
-    blurb       MarkdownDiff
+    blurb       Text
+    description MarkdownDiff
 
 ProjectLastUpdate
     project ProjectId
@@ -635,4 +635,3 @@ WatchedSubthread
     user UserId
     root CommentId
     deriving Eq Ord
-

@@ -22,7 +22,7 @@ $else
           ProjectSignup table or add to Project table.
         -->
         <p .small>
-          #{projectDescription project}
+          #{projectBlurb project}
         <div .row>
           <div .col-sm-3>
             <figure .project-icon>

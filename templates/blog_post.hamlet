@@ -1,5 +1,4 @@
-
-<div .blog-post>
+<article .blog-post>
   <h1>
     #{title}
     <br>

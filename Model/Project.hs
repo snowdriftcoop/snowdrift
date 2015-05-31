@@ -77,8 +77,8 @@ data ProjectSummary = ProjectSummary
 
 data UpdateProject = UpdateProject
     { updateProjectName        :: Text
-    , updateProjectDescription :: Text
-    , updateProjectBlurb       :: Markdown
+    , updateProjectBlurb       :: Text
+    , updateProjectDescription :: Markdown
     , updateProjectTags        :: [Text]
     , updateProjectGithubRepo  :: Maybe Text
     , updateProjectLogo        :: Maybe Text

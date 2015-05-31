@@ -64,7 +64,7 @@
       <a href=@{ProjectFeedR "snowdrift"}>
         Activity feed for the Snowdrift project at Snowdrift.coop
     <div .homep-link>
-      <a href="http://lists.snowdrift.coop">
+      <a href="https://lists.snowdrift.coop">
         Email lists
     <div .homep-link>
       <a href="https://git.gnu.io/snowdrift/snowdrift#tab-activity">

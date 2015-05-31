@@ -140,9 +140,10 @@ dd
     padding: 0 2em
 
 
-/* .scroll and .capped are used currently just for the well on user pages */
-/* where longer personal statement is. Not sure this is long-term good or whether */
-/* we'll use them elsewhere. */
+/* .scroll and .capped are used currently just for the well on user pages
+ * where longer personal statement is. Not sure about this long-term or whether
+ * we'll use them elsewhere.
+ */
 
 .scroll
     overflow: auto
@@ -160,14 +161,16 @@ dd
 
 h1, h2, h3, h4, h5, h6
     font-weight: bold
-    margin: 1.6em 0 0.8em
+    margin: 1.6em auto 0.8em
     max-width: 780px
 
-/* In case someone puts headers above the fold for a blog post, */
-/* this makes them look better on the multi-post blog page. */
-.blog-post-top h1, .blog-post-top h2, .blog-post-top h3, .blog-post-top h4, .blog-post-top h5, .blog-post-top h6
-    font-size: inherit
-    padding-left: 1em
+/* In case someone puts headers above the fold for a blog post,
+ * this makes them look better on the multi-post blog page.
+ */
+.blog-post-top
+    h1, h2, h3, h4, h5, h6
+        font-size: inherit
+        padding-left: 1em
 
 .blog-post hr, .blog-post-top hr
     max-width: 40em
@@ -213,27 +216,23 @@ figure
     text-align: center
     padding: 5px
 
-.tagcloud span
-    display: block
-
-.tagcloud input[type=checkbox]
-    display: none
-
-.tagcloud span label
-    background-color: #eee
-    transition: background-color 0.25s
-
-.tagcloud span label:hover
-    background-color: #adf
-    transition: background-color 0.25s
-
-.tagcloud span input[type=checkbox]:checked + label
-    background-color: #7ad
-    transition: background-color 0.25s
-
-.tagcloud span input[type=checkbox]:checked + label:hover
-    background-color: #8bd
-    transition: background-color 0.25s
+.tagcloud
+    span
+        display: block
+    input[type=checkbox]
+        display: none
+    span label
+        background-color: #eee
+        transition: background-color 0.25s
+    span label:hover
+        background-color: #adf
+        transition: background-color 0.25s
+    span input[type=checkbox]:checked + label
+        background-color: #7ad
+        transition: background-color 0.25s
+    span input[type=checkbox]:checked + label:hover
+        background-color: #8bd
+        transition: background-color 0.25s
 
 .tagcloud span label, form.tag
     padding: 2px 4px
@@ -250,7 +249,9 @@ input.pledge
     display: block
     margin: 1em auto
 
-/* .tag-input stuff has to do with voting on tags, which is currently inactive as the feature isn't finalized */
+/* .tag-input stuff has to do with voting on tags,
+ * which is currently inactive as the feature isn't finalized
+ */
 input.tag-input
     background: none
     border: solid lightgrey 1px
@@ -270,34 +271,49 @@ input.tag.input[type="submit"]:active
 pre
     margin: 1em
 
-/* The following @media stuff keeps good positioning for h1 type headers around otherwise
-centered paragraphs and such, but only in wide enough divs to be appropriate */
+/* The following @media stuff positions headers around
+ * centered paragraphs and such in wider enough divs
+ */
 
 @media (min-width: 992px)
-    h1, h2, h3, h4, h5, h6 { margin-left: 88px; }
-    div[class*="col-"]
-        h1, h2, h3, h4, h5, h6 { margin-left: 0; }
-    div[class*="-12"]
-        h1, h2, h3, h4, h5, h6 { margin-left: 88px; }
-    div[class*="-11"]
-        h1, h2, h3, h4, h5, h6 { margin-left: 48px; }
-
+    article
+        h1, h2, h3, h4, h5, h6
+            margin-left: 88px
+        div[class*="col-"]
+            h1, h2, h3, h4, h5, h6
+                margin-left: 0
+        div[class*="-12"]
+            h1, h2, h3, h4, h5, h6
+                margin-left: 88px
+        div[class*="-11"]
+            h1, h2, h3, h4, h5, h6
+                margin-left: 48px
 @media (min-width: 1200px)
-    a:only-child { white-space: nowrap; }
-    h1, h2, h3, h4, h5, h6 { margin-left: 188px; }
-    div[class*="col-"]
-        h1, h2, h3, h4, h5, h6 { margin-left: 0; }
-    div[class*="-12"]
-        h1, h2, h3, h4, h5, h6 { margin-left: 188px; }
-    div[class*="-11"]
-        h1, h2, h3, h4, h5, h6 { margin-left: 138px; }
-    div[class*="-10"]
-        h1, h2, h3, h4, h5, h6 { margin-left: 88px; }
-    div[class*="-9"]
-        h1, h2, h3, h4, h5, h6 { margin-left: 38px; }
+    article
+        a:only-child
+            white-space: nowrap
+        h1, h2, h3, h4, h5, h6
+            margin-left: 188px
+        div[class*="col-"]
+            h1, h2, h3, h4, h5, h6
+                margin-left: 0
+        div[class*="-12"]
+            h1, h2, h3, h4, h5, h6
+                margin-left: 188px
+        div[class*="-11"]
+            h1, h2, h3, h4, h5, h6
+                margin-left: 138px
+        div[class*="-10"]
+            h1, h2, h3, h4, h5, h6
+                margin-left: 88px
+        div[class*="-9"]
+            h1, h2, h3, h4, h5, h6
+            margin-left: 38px
 
 
-/* This math stuff is used for showing our formula, but other math could use it too */
+/* This math stuff is used for showing our formula,
+ * but other math could use it too
+ */
 
 .math
     font-family: serif
@@ -324,8 +340,7 @@ div.math
     max-width: 200px
     margin: 0 auto
 
-/* This section is for the project sidebar which will show on all project
- * pages */
+/* This is the project sidebar which shows on all project pages */
 .snowdrift-sidebar
     padding: 0
     float: left

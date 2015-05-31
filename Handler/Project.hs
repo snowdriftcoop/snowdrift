@@ -242,23 +242,23 @@ postProjectR project_handle = do
     case result of
         FormSuccess (UpdateProject
                      name
-                     description
                      blurb
+                     description
                      tags
                      github_repo
                      logo) ->
             lookupPostMode >>= \case
                 Just PostMode -> do
                     runDB $ do
-                        when (projectDescription project /= description) $ do
+                        when (projectBlurb project /= blurb) $ do
                             project_update <- insert $
                                 ProjectUpdate now
                                               project_id
                                               viewer_id
-                                              description
+                                              blurb
                                               (diffMarkdown
-                                                  (projectBlurb project)
-                                                  blurb)
+                                                  (projectDescription project)
+                                                  description)
                             last_update <- getBy $ UniqueProjectLastUpdate project_id
                             case last_update of
                                 Just (Entity k _) -> repsert k $ ProjectLastUpdate project_id project_update
@@ -266,8 +266,8 @@ postProjectR project_handle = do
 
                         update $ \p -> do
                             set p [ ProjectName =. val name
-                                  , ProjectDescription =. val description
                                   , ProjectBlurb =. val blurb
+                                  , ProjectDescription =. val description
                                   , ProjectGithubRepo =. val github_repo
                                   , ProjectLogo =. val logo
                                   ]
@@ -296,8 +296,8 @@ postProjectR project_handle = do
                     let
                         preview_project = project
                             { projectName = name
-                            , projectDescription = description
                             , projectBlurb = blurb
+                            , projectDescription = description
                             , projectGithubRepo = github_repo
                             , projectLogo = logo
                             }
