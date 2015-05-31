@@ -124,12 +124,12 @@ That automatically sets the main snowdrift code as your "origin".
 To download the latest updates of the snowdrift code:
 
 * Go to your snowdrift directory, if not there already
-* checkout your master branch, if not there already, via `git checkout master`
+* if not already on your master branch, run `git checkout master`
 * run `git pull origin/master`
 
 You should have no conflicts because this is the only situation where you
 should ever change your local master.
-All your work should be done on other branches. 
+All your work should be done on other branches.
 
 ### Branching and committing
 
@@ -200,7 +200,7 @@ you can *commit* your changes.
 
 If you don't already know git basics, we urge you to learn
 about the process of staging with `git add` before committing
-and build good review habits with tools like `git status` and `git diff`.
+and about review tools like `git status` and `git diff`.
 See the links for learning resources at the end of this file.
 
 For now, though it isn't best practice, you can quickly commit
@@ -283,7 +283,7 @@ here are some resources:
 
 *   [The Yesod Book](http://www.yesodweb.com/book/) is the primary resource
     for learning about Yesod, the web framework we use to develop Snowdrift.
-    
+
     Quite unfortunately, the Yesod book is not FLO (it uses the CC-BY-NC-ND
     license). Perhaps complaints to the publisher, O'Reilly media may help,
     as the author of both Yesod and the Yesod book is otherwise willing
