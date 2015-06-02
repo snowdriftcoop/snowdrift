@@ -27,7 +27,9 @@ import qualified Data.Map             as M
 import           Data.Maybe           (fromJust)
 import qualified Data.Maybe           as Maybe
 import qualified Data.Set             as S
+import           System.Locale
 import qualified Data.Text            as T
+import           Data.Time.Format
 import qualified Data.Traversable     as Traversable
 import           Text.Cassius         (cassiusFile)
 import           Yesod.Auth.HashDB    (setPassword, validateUser)
@@ -60,7 +62,7 @@ getUsersR = do
         getUserKey = either (error . T.unpack) id . fromPersistValue . toPersistValue . entityKey
         isVisible :: Entity User -> Bool
         isVisible = (>= (0::Int)) . getUserKey
-
+    
     defaultLayout $ do
         snowdriftTitle "Users"
         $(widgetFile "users")

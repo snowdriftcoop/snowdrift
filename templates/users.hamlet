@@ -11,6 +11,8 @@
       <th>
         Established
       <th>
+        User Since
+      <th>
         Project roles
 
   <tbody>
@@ -30,6 +32,8 @@
           <td>
             $if userIsEstablished (entityVal user)
               &#10004;
+          <td>
+            #{formatTime defaultTimeLocale "%F" $ userCreatedTs (entityVal user)}
           <td>
             $forall ((projectName, projectHandle), roles) <- M.toAscList (fromMaybe mempty (userProjects user))
               <a href=@{ProjectR $ projectHandle}>
