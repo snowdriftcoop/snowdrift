@@ -21,70 +21,30 @@ mechanismSpecs = ydescribe "mechanism" $ do
     testFormula
     testPledges
 
-newtype PosExp = PosExp Int deriving Show
-
-instance Arbitrary PosExp where
-    arbitrary         = PosExp <$> choose (1,63)
-    shrink (PosExp p) = (PosExp . getPositive) <$> shrink (Positive p)
-
 testFormula :: Spec
 testFormula = yit "formula" $ do
     -- See the "Examples" section at
     -- https://snowdrift.coop/p/snowdrift/w/en/formula
     errorUnlessExpected "100 patrons @ 1 share = 10¢"
         (Milray 1000) $ projectComputeShareValue $ replicate 100 1
-    errorUnlessExpected "100 patrons @ 4 shares = 30¢"
-        (Milray 3000) $ projectComputeShareValue $ replicate 100 4
-    errorUnlessExpected "200 patrons @ 4 shares = 60¢"
-        (Milray 6000) $ projectComputeShareValue $ replicate 200 4
-    errorUnlessExpected "200 patrons @ 4 shares + 1 patron @ 1 share = 60.1¢"
-        (Milray 6010) $ projectComputeShareValue $ 1 : replicate 200 4
+    -- The number of shares is not taken into account when the project
+    -- share value is computed.
+    errorUnlessExpected "100 patrons @ 4 shares = 10¢"
+        (Milray 1000) $ projectComputeShareValue $ replicate 100 4
+    errorUnlessExpected "200 patrons @ 4 shares = 20¢"
+        (Milray 2000) $ projectComputeShareValue $ replicate 200 4
+    errorUnlessExpected "200 patrons @ 4 shares + 1 patron @ 1 share = 20.1¢"
+        (Milray 2010) $ projectComputeShareValue $ 1 : replicate 200 4
     errorUnlessExpected "no shares = 0¢"
         (Milray 0) $ projectComputeShareValue []
 
     testProperty "any number of 0 shares returns 0" $
         \n -> (projectComputeShareValue $ replicate n 0) === (Milray 0)
-    -- The following two properties are specified separately to make
-    -- it easier for QuickCheck to generate test cases.  Otherwise, it
-    -- gives up.
-    testProperty ("any number of 1 share pledges is the same " <>
+    testProperty ("any number of pledges is the same " <>
                   "as the product of that number and 0.1¢") $
-        \(Positive n) ->
-              (projectComputeShareValue $ replicate n 1) ===
+        \(Positive n) (Positive m) ->
+              (projectComputeShareValue $ replicate n m) ===
               (Milray $ fromIntegral n * 10)
-    testProperty ("any number of 2 share pledges is the same " <>
-                  "as the product of that number and 0.2¢") $
-        \(Positive n) ->
-              (projectComputeShareValue $ replicate n 2) ===
-              (Milray $ fromIntegral n * 20)
-    {-
-    > projectComputeShareValue [1] -- 2^0
-    Milray 10
-
-    > projectComputeShareValue [2] -- 2^1
-    Milray 20
-    > projectComputeShareValue [1,1]
-    Milray 20
-
-    > projectComputeShareValue [4] -- 2^2
-    Milray 30
-    > projectComputeShareValue [1,1,1]
-    Milray 30
-
-    > projectComputeShareValue [8] -- 2^3
-    Milray 40
-    > projectComputeShareValue [1,1,1,1]
-    Milray 40
-
-    And so on.
-    -}
-    testProperty "the impact of extra shares follows the powers of 2" $
-        -- Otherwise, the second call to 'projectComputeShareValue'
-        -- overflows 'Int64'.
-        \(PosExp n) ->
-              let shares = replicate n 1 in
-              (projectComputeShareValue shares) ===
-              (projectComputeShareValue [2^(pred $ length shares)])
 
 testPledges :: Spec
 testPledges = ydescribe "pledges" $ do

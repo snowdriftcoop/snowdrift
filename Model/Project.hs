@@ -278,15 +278,11 @@ getProjectPages project_id =
     where_ $ page ^. WikiPageProject ==. val project_id
     return page
 
+-- | Project's monthly share value: 0.1¢ × number of patrons.
+-- https://snowdrift.coop/p/snowdrift/w/en/formula
 projectComputeShareValue :: [Int64] -> Milray
-projectComputeShareValue pledges =
-    let lg x = logBase 2 x :: Double
-        num_users = fromIntegral $ length pledges
-        geomean :: [Double] -> Double
-        geomean xs = exp $ sum (map log xs) / fromIntegral (length xs)
-        multiplier = lg (geomean (map fromIntegral pledges) * 2)
-     in Milray 10 $* (multiplier * (num_users - 1))
-
+projectComputeShareValue patrons =
+    Milray 10 $* (fromIntegral $ length $ filter (/= 0) patrons)
 
 -- signature needs to remain generic, for SnowdriftProcessPayments
 updateShareValue
