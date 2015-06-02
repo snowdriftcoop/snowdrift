@@ -11,6 +11,12 @@ import qualified Data.Text.Read as T
 
 import Text.Julius (rawJS)
 
+baseAmount :: Rational
+baseAmount = 0.1
+
+multiplyByBaseAmount :: Real a => a -> Double
+multiplyByBaseAmount shares = fromRational $ toRational shares * baseAmount
+
 pledgeSizes :: [[Int64]]
 pledgeSizes =
     [ [1,2,4,8]
@@ -73,7 +79,7 @@ pledgeField project_id = Field
         let value = either (const 2) (\(SharesPurchaseOrder s) -> s) v
             hasValue = value `elem` list
             otherValue = if hasValue then "" else show value
-            pledgeOptions = zip list $ map (show . fromRational . (0.1 *) . toRational) list
+            pledgeOptions = zip list $ map (show . multiplyByBaseAmount) list
 
         $(widgetFile "pledge-field")
 
