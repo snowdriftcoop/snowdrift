@@ -62,7 +62,7 @@ getUsersR = do
         getUserKey = either (error . T.unpack) id . fromPersistValue . toPersistValue . entityKey
         isVisible :: Entity User -> Bool
         isVisible = (>= (0::Int)) . getUserKey
-    
+
     defaultLayout $ do
         snowdriftTitle "Users"
         $(widgetFile "users")

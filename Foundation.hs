@@ -384,7 +384,9 @@ createUser ident passwd name email avatar nick = do
     handle (\DBException -> return Nothing) $ runYDB $ do
         account_id <- insert (Account 0)
         discussion_id <- insert (Discussion 0)
-        user <- maybe return setPassword passwd $ User ident email False now Nothing Nothing name account_id avatar Nothing Nothing nick langs now now EstUnestablished discussion_id
+        user <- maybe return setPassword passwd $
+            User ident email False now Nothing Nothing name account_id avatar
+            Nothing Nothing nick langs now now EstUnestablished discussion_id
         uid_maybe <- insertUnique user
         case uid_maybe of
             Just user_id -> do
