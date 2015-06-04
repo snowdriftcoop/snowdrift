@@ -10,7 +10,7 @@ p.navbar-text
     margin-top: 2px
     margin-bottom: 0
     padding: 0
- 
+
 .nav li .glyphicon
     top: 2px
     line-height: 14px
