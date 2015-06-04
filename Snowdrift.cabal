@@ -130,7 +130,7 @@ library
                    Model.Settings.Internal
                    Model.ViewType.Internal
 
-    if flag(dev) || flag(library-only) || flag(merge)
+    if flag(dev) || flag(library-only)
         cpp-options:   -DDEVELOPMENT
 
     if flag(dev) || flag(library-only)
