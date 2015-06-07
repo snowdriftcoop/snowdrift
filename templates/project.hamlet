@@ -69,8 +69,10 @@
 <div .row>
   <div .col-md-7 .col-sm-8 .col-xs-12>
     <h1 .text-center> #{projectName project}
-    <p> #{projectBlurb project}
-    ^{description}
+    <section .p-blurb>
+      <p>#{projectBlurb project}
+    <section .p-description>
+      ^{description}
     <hr>
     <div>
       $maybe _ <- maybe_project_id
