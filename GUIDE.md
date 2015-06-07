@@ -262,8 +262,11 @@ Using the live test site
 
 Test the running site by directing your web browser to localhost:3000
 
-You can log into the site via the built-in system with
-user: `admin` pass: `admin`
+The Dev DB comes with several users to log in with using the built-in system:
+(username and passphrase are the same)
+`admin`; `guest`; `established`.
+
+
 
 You can now register new users, make pledges, add discussion comments,
 tickets, wiki pages, blog posts, and test and work on all aspects of the site.
