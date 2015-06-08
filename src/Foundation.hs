@@ -92,6 +92,10 @@ mkMessage "App" "messages" "en"
 -- Note that this is really half the story; in Application.hs, mkYesodDispatch
 -- generates the rest of the code. Please see the linked documentation for an
 -- explanation for this split.
+--
+-- This function also generates the following type synonyms:
+-- type Handler = HandlerT App IO
+-- type Widget = WidgetT App IO ()
 mkYesodData "App" $(parseRoutesFile "config/routes")
 
 type Form x = Html -> MForm (HandlerT App IO) (FormResult x, Widget)
