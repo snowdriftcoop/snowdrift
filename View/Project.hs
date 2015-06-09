@@ -55,10 +55,11 @@ renderProject maybe_project_id project mviewer_id is_watching pledges pledge = d
     amounts <- case projectLastPayday project of
         Nothing -> return Nothing
         Just last_payday -> handlerToWidget $ runDB $ do
+            let extractRational = \case
+                    [Value (Just (r :: Rational))] -> r
+                    _                              -> 0
             -- This assumes there were transactions associated with the last payday
-            last <- fmap (\case [Value (Just (last :: Rational))]
-                                    -> last
-                                _   -> 0) $
+            last <- fmap extractRational $
                 select $
                 from $ \transaction -> do
                 where_ $
@@ -66,9 +67,7 @@ renderProject maybe_project_id project mviewer_id is_watching pledges pledge = d
                     transaction ^. TransactionCredit ==. val (Just $ projectAccount project)
                 return $ sum_ $ transaction ^. TransactionAmount
 
-            year <- fmap (\case [Value (Just (year :: Rational))]
-                                    -> year
-                                _   -> 0) $
+            year <- fmap extractRational $
                 select $
                 from $ \(transaction `InnerJoin` payday) -> do
                 where_ $
@@ -77,9 +76,7 @@ renderProject maybe_project_id project mviewer_id is_watching pledges pledge = d
                 on_ $ transaction ^. TransactionPayday ==. just (payday ^. PaydayId)
                 return $ sum_ $ transaction ^. TransactionAmount
 
-            total <- fmap (\case [Value (Just (total :: Rational))]
-                                     -> total
-                                 _   -> 0) $
+            total <- fmap extractRational $
                 select $
                 from $ \transaction -> do
                 where_ $ transaction ^. TransactionCredit ==. val (Just $ projectAccount project)
