@@ -52,7 +52,6 @@ module Model.Comment
     , fetchCommentTicketsDB
     , fetchTagIdsDB
     , fetchTagNamesDB
-    , fetchTicketNamesDB
     , filterCommentsDB
     , insertTagsDB
     , insertTicketsDB
@@ -456,13 +455,6 @@ fetchCommentsInDB comment_ids has_permission =
 deleteCommentDB :: CommentId -> DB ()
 deleteCommentDB = deleteCascade
 
-fetchTicketNamesDB :: CommentId -> DB [Internal.TicketName]
-fetchTicketNamesDB comment_id =
-    fmap (map Internal.TicketName . unwrapValues) $
-    select $ from $ \t -> do
-        where_ $ t ^. TicketComment ==. val comment_id
-        return $ t ^. TicketName
-
 fetchTagNamesDB :: CommentId -> DB [Internal.TagName]
 fetchTagNamesDB comment_id =
     fmap (map Internal.TagName . unwrapValues) $
@@ -539,20 +531,35 @@ editCommentDB user_id comment_id text language = do
                 notif_text
   where
     updateComment = do
-        existent_tickets <- lift $ fetchTicketNamesDB comment_id
+        mexistent_ticket <- lift $ getBy $ UniqueTicket comment_id
         existent_tags    <- lift $ fetchTagNamesDB comment_id
         let content_with_tags    = unMarkdown text
             content_without_tags = Markdown $ stripTags content_with_tags
             content_tickets      = parseTickets content_with_tags
             content_tags         = parseTags    content_with_tags
-            new_tickets          = content_tickets \\ existent_tickets
-            obsolete_tickets     = existent_tickets \\ content_tickets
             new_tags             = content_tags \\ existent_tags
-        deleteTicketsDB comment_id obsolete_tickets
         lift $ do
             now <- liftIO getCurrentTime
-            insertTicketsDB now comment_id new_tickets
             insertTagsDB user_id comment_id new_tags
+
+            let mnew_ticket = case content_tickets of
+                    []  -> Nothing
+                    [x] -> Just $ unTicketName x
+                    -- I don't see a way to show this error as an
+                    -- alert.  Would be nice, though.
+                    xs  -> error $ "too many tickets: expected 1, but got "
+                                <> show (length xs)
+
+            case (mexistent_ticket, mnew_ticket) of
+                (Just existing_ticket, Just new_ticket) ->
+                    update $ \t -> do
+                        set t [ TicketUpdatedTs =. val now
+                              , TicketName      =. val new_ticket ]
+                        where_ $ t ^. TicketId ==. val (entityKey existing_ticket)
+                (Nothing, Just new_ticket) ->
+                    insert_ $ Ticket now now new_ticket comment_id
+                (Just _,  Nothing) -> deleteBy $ UniqueTicket comment_id
+                (Nothing, Nothing) -> return ()
 
             update $ \c -> do
             set c [ CommentText     =. val content_without_tags

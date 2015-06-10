@@ -16,7 +16,7 @@ import NotifyTest
 import DiscussionTest
 import WikiTest
 import BlogTest
-import TagTest
+import CommentTest
 
 import TestHandler
 import Model.Markdown
@@ -65,4 +65,4 @@ spec foundation file =
             wikiSpecs
             blogSpecs
             discussionSpecs
-            tagSpecs config
+            commentSpecs config
