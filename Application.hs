@@ -255,7 +255,7 @@ saveUnsafeMigrations = do
       , "*** UNSAFE MIGRATIONS EXIST"
       , ""
       , "The application will now exit. But first, unsafe migrations have been"
-      , "stored in «" <> filename <> "». Please review them, rename them"
+      , "stored in '" <> filename <> "'. Please review them, rename them"
       , "appropriately, and commit them with your change."
       , ""
       , "More information follows."
