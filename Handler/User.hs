@@ -298,8 +298,14 @@ postNewUserDiscussionR user_id = do
       viewer
       userDiscussion
       (makeUserCommentActionPermissionsMap (Just viewer) user_id def) >>= \case
-        Left comment_id -> redirect (UserCommentR user_id comment_id)
-        Right (widget, form) -> defaultLayout $ previewWidget form "post" (userDiscussionPage user_id widget)
+           Left (Left err) -> do
+               alertDanger err
+               redirect $ NewUserDiscussionR user_id
+           Left (Right comment_id) ->
+               redirect $ UserCommentR user_id comment_id
+           Right (widget, form) ->
+               defaultLayout $ previewWidget form "post" $
+                   userDiscussionPage user_id widget
 
 postUserDiscussionR :: UserId -> Handler Html
 postUserDiscussionR _ = error "TODO(mitchell)"

@@ -54,7 +54,6 @@ module Model.Comment
     , fetchTagNamesDB
     , filterCommentsDB
     , insertTagsDB
-    , insertTicketsDB
     , makeClaimedTicketMapDB
     , makeCommentClosingMapDB
     , makeCommentRetractingMapDB
@@ -505,67 +504,67 @@ deleteTicketsDB comment_id = mapM_ $ deleteTicketDB comment_id
 
 -- | Edit a comment's text. If the comment was flagged, unflag it and send a
 -- notification to the flagger.
-editCommentDB :: UserId -> CommentId -> Markdown -> Language -> SYDB ()
-editCommentDB user_id comment_id text language = do
-    updateComment
-    lift (fetchCommentFlaggingDB comment_id) >>= \case
-        Nothing -> return ()
-        Just (Entity comment_flagging_id CommentFlagging{..}) -> do
-            langs <- lift $ lift getLanguages
-            render <- getUrlRender
-            rendered_route <-
-                lift $
-                    makeCommentRouteDB langs comment_id
-                    >>= return . render . fromJust
-            let notif_text = Markdown $
-                    "A comment you flagged has been edited and reposted to "
-                    <> "the site. You can view it [here]("
-                    <> rendered_route <> ")."
-            -- delete flagging and all flagging reasons with it.
-            lift $ deleteCascade comment_flagging_id
-            sendPreferredUserNotificationDB
-                (Just $ NotificationSender user_id)
-                (NotificationReceiver commentFlaggingFlagger)
-                NotifFlagRepost
-                Nothing
-                notif_text
+editCommentDB :: UserId -> CommentId -> Markdown -> Language
+              -> SYDB (Either Text ())
+editCommentDB user_id comment_id text language =
+    updateComment >>= \case
+        Left err -> return $ Left err
+        Right () -> do
+            lift (fetchCommentFlaggingDB comment_id) >>= \case
+                Nothing -> return ()
+                Just (Entity comment_flagging_id CommentFlagging{..}) -> do
+                    langs <- lift $ lift getLanguages
+                    render <- getUrlRender
+                    rendered_route <-
+                        lift $
+                            makeCommentRouteDB langs comment_id
+                            >>= return . render . fromJust
+                    let notif_text = Markdown $
+                            "A comment you flagged has been edited and reposted to "
+                            <> "the site. You can view it [here]("
+                            <> rendered_route <> ")."
+                    -- delete flagging and all flagging reasons with it.
+                    lift $ deleteCascade comment_flagging_id
+                    sendPreferredUserNotificationDB
+                        (Just $ NotificationSender user_id)
+                        (NotificationReceiver commentFlaggingFlagger)
+                        NotifFlagRepost
+                        Nothing
+                        notif_text
+            return $ Right ()
   where
     updateComment = do
         mexistent_ticket <- lift $ getBy $ UniqueTicket comment_id
         existent_tags    <- lift $ fetchTagNamesDB comment_id
         let content_with_tags    = unMarkdown text
             content_without_tags = Markdown $ stripTags content_with_tags
-            content_tickets      = parseTickets content_with_tags
             content_tags         = parseTags    content_with_tags
             new_tags             = content_tags \\ existent_tags
-        lift $ do
-            now <- liftIO getCurrentTime
-            insertTagsDB user_id comment_id new_tags
+        case parseTicket content_with_tags of
+            Left err -> return $ Left err
+            Right mnew_ticket-> do
+                lift $ do
+                    now <- liftIO getCurrentTime
+                    insertTagsDB user_id comment_id new_tags
 
-            let mnew_ticket = case content_tickets of
-                    []  -> Nothing
-                    [x] -> Just $ unTicketName x
-                    -- I don't see a way to show this error as an
-                    -- alert.  Would be nice, though.
-                    xs  -> error $ "too many tickets: expected 1, but got "
-                                <> show (length xs)
+                    case (mexistent_ticket, mnew_ticket) of
+                        (Just existing_ticket, Just new_ticket) ->
+                            update $ \t -> do
+                                set t [ TicketUpdatedTs =. val now
+                                      , TicketName      =. val (unTicketName new_ticket) ]
+                                where_ $ t ^. TicketId ==. val (entityKey existing_ticket)
+                        (Nothing, Just new_ticket) ->
+                            insert_ $ Ticket now now (unTicketName new_ticket) comment_id
+                        (Just _,  Nothing) -> deleteBy $ UniqueTicket comment_id
+                        (Nothing, Nothing) -> return ()
 
-            case (mexistent_ticket, mnew_ticket) of
-                (Just existing_ticket, Just new_ticket) ->
-                    update $ \t -> do
-                        set t [ TicketUpdatedTs =. val now
-                              , TicketName      =. val new_ticket ]
-                        where_ $ t ^. TicketId ==. val (entityKey existing_ticket)
-                (Nothing, Just new_ticket) ->
-                    insert_ $ Ticket now now new_ticket comment_id
-                (Just _,  Nothing) -> deleteBy $ UniqueTicket comment_id
-                (Nothing, Nothing) -> return ()
+                    update $ \c -> do
+                    set c [ CommentText     =. val content_without_tags
+                          , CommentLanguage =. val language
+                          ]
+                    where_ (c ^. CommentId ==. val comment_id)
 
-            update $ \c -> do
-            set c [ CommentText     =. val content_without_tags
-                  , CommentLanguage =. val language
-                  ]
-            where_ (c ^. CommentId ==. val comment_id)
+                return $ Right ()
 
 -- | Flag a comment. Send a notification to the poster about the flagging.
 -- Return whether or not the flag was successful (fails if the comment was
@@ -621,7 +620,7 @@ postApprovedCommentDB
     -> Markdown
     -> Visibility
     -> Language
-    -> SDB CommentId
+    -> SDB (Either Text CommentId)
 postApprovedCommentDB = postComment insertApprovedCommentDB
 
 postUnapprovedCommentDB
@@ -631,19 +630,17 @@ postUnapprovedCommentDB
     -> Markdown
     -> Visibility
     -> Language
-    -> SDB CommentId
+    -> SDB (Either Text CommentId)
 postUnapprovedCommentDB = postComment insertUnapprovedCommentDB
 
-parseTickets :: Text -> [Internal.TicketName]
-parseTickets =
-    filter (\(Internal.TicketName ticket) -> not $ T.null ticket) .
-    map (Internal.TicketName . T.strip) .
-    mapMaybe (T.stripPrefix "ticket:") . T.lines
-
-insertTicketsDB :: UTCTime -> CommentId -> [Internal.TicketName] -> DB ()
-insertTicketsDB now comment_id tickets =
-    forM_ tickets $ \(Internal.TicketName ticket) ->
-        insert_ $ Ticket now now ticket comment_id
+parseTicket :: Text -> Either Text (Maybe Internal.TicketName)
+parseTicket t = case res of
+    []  -> Right Nothing
+    [x] -> Right $ Just x
+    xs  -> Left $ "expected 1 ticket, but got " <> T.pack (show $ length xs)
+  where res = filter (\(Internal.TicketName ticket) -> not $ T.null ticket) $
+              map (Internal.TicketName . T.strip) $
+              mapMaybe (T.stripPrefix "ticket:") $ T.lines t
 
 parseTags :: Text -> [Internal.TagName]
 parseTags =
@@ -677,7 +674,7 @@ postComment
     -> Markdown
     -> Visibility
     -> Language
-    -> SDB CommentId
+    -> SDB (Either Text CommentId)
 postComment
         insert_comment
         user_id
@@ -686,32 +683,35 @@ postComment
         contents
         visibility
         language = do
+    case parseTicket $ unMarkdown contents of
+        Left err -> return $ Left err
+        Right mnew_ticket -> do
+            (now, depth) <- lift $ (,)
+                <$> liftIO getCurrentTime
+                <*> fetchCommentDepthFromMaybeParentIdDB mparent_id
 
-    (now, depth) <- lift $ (,)
-        <$> liftIO getCurrentTime
-        <*> fetchCommentDepthFromMaybeParentIdDB mparent_id
+            let content_with_tags    = unMarkdown contents
+                content_without_tags = Markdown $ stripTags content_with_tags
 
-    let content_with_tags    = unMarkdown contents
-        content_without_tags = Markdown $ stripTags content_with_tags
+            comment_id <- insert_comment now discussion_id mparent_id user_id
+                              content_without_tags depth visibility language
 
-    comment_id <- insert_comment now discussion_id mparent_id user_id
-                      content_without_tags depth visibility language
+            lift $ do
+                F.forM_ mnew_ticket $ \new_ticket ->
+                    insert_ $ Ticket now now (unTicketName new_ticket) comment_id
+                insertTagsDB user_id comment_id $ parseTags content_with_tags
 
-    lift $ do
-        insertTicketsDB now comment_id $ parseTickets content_with_tags
-        insertTagsDB user_id comment_id $ parseTags content_with_tags
+                case mparent_id of
+                    Nothing -> return ()
+                    Just parent_id ->
+                        mapM_ (insert_ . CommentAncestor comment_id)
+                        =<< (parent_id:) <$> fetchCommentAncestorsDB parent_id
 
-        case mparent_id of
-            Nothing -> return ()
-            Just parent_id ->
-                mapM_ (insert_ . CommentAncestor comment_id)
-                =<< (parent_id:) <$> fetchCommentAncestorsDB parent_id
+                update $ \t -> do
+                 set t [TicketUpdatedTs =. val now]
+                 where_ (t ^. TicketComment `in_` subFetchCommentAncestorsDB comment_id)
 
-        update $ \t -> do
-         set t [TicketUpdatedTs =. val now]
-         where_ (t ^. TicketComment `in_` subFetchCommentAncestorsDB comment_id)
-
-    return comment_id
+            return $ Right comment_id
 
 -- | Filter a list of comments per the provided permission filter.
 filterCommentsDB :: [CommentId] -> ExprCommentCond -> DB [CommentId]

@@ -1035,9 +1035,16 @@ postReplyProjectCommentR project_handle parent_id = do
       (Just parent_id)
       user
       (projectDiscussion project)
-      (makeProjectCommentActionPermissionsMap (Just user) project_handle def) >>= \case
-        Left _ -> redirect (ProjectCommentR project_handle parent_id)
-        Right (widget, form) -> defaultLayout $ previewWidget form "post" (projectDiscussionPage project_handle widget)
+      (makeProjectCommentActionPermissionsMap (Just user) project_handle def)
+      >>= \case
+          Left (Left err) -> do
+              alertDanger err
+              redirect $ ReplyProjectCommentR project_handle parent_id
+          Left (Right _) ->
+              redirect $ ProjectCommentR project_handle parent_id
+          Right (widget, form) ->
+              defaultLayout $ previewWidget form "post" $
+                  projectDiscussionPage project_handle widget
 
 --------------------------------------------------------------------------------
 -- /c/#CommentId/rethread
@@ -1260,6 +1267,13 @@ postNewProjectDiscussionR project_handle = do
       Nothing
       user
       projectDiscussion
-      (makeProjectCommentActionPermissionsMap (Just user) project_handle def) >>= \case
-        Left comment_id -> redirect (ProjectCommentR project_handle comment_id)
-        Right (widget, form) -> defaultLayout $ previewWidget form "post" (projectDiscussionPage project_handle widget)
+      (makeProjectCommentActionPermissionsMap (Just user) project_handle def)
+      >>= \case
+          Left (Left err) -> do
+              alertDanger err
+              redirect $ NewProjectDiscussionR project_handle
+          Left (Right comment_id) ->
+              redirect $ ProjectCommentR project_handle comment_id
+          Right (widget, form) ->
+              defaultLayout $ previewWidget form "post" $
+                  projectDiscussionPage project_handle widget

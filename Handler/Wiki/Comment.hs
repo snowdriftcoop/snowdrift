@@ -360,9 +360,17 @@ postReplyWikiCommentR project_handle language target parent_id = do
       (Just parent_id)
       user
       (wikiPageDiscussion page)
-      (makeProjectCommentActionPermissionsMap (Just user) project_handle def) >>= \case
-        Left _ -> redirect (WikiCommentR project_handle language target parent_id)
-        Right (widget, form) -> defaultLayout $ previewWidget form "post" (wikiDiscussionPage project_handle language target widget)
+      (makeProjectCommentActionPermissionsMap (Just user) project_handle def)
+      >>= \case
+          Left (Left err) -> do
+              alertDanger err
+              redirect $ ReplyWikiCommentR
+                  project_handle language target parent_id
+          Left (Right _)->
+              redirect $ WikiCommentR project_handle language target parent_id
+          Right (widget, form) ->
+              defaultLayout $ previewWidget form "post" $
+                  wikiDiscussionPage project_handle language target widget
 
 --------------------------------------------------------------------------------
 -- /rethread

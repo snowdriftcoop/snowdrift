@@ -401,15 +401,10 @@ postEditComment user@(Entity user_id _) (Entity comment_id comment) make_comment
     case result of
         FormSuccess (EditComment new_text new_language) -> lookupPostMode >>= \case
             Just PostMode -> do
-                let c = countMatches T.isPrefixOf "ticket:" $
-                            T.lines $ unMarkdown new_text
-                if c > 1
-                    then alertDanger $
-                        "each comment must contain at most one ticket; " <>
-                        "found " <> T.pack (show c)
-                    else do
-                        runSYDB (editCommentDB user_id comment_id new_text new_language)
-                        alertSuccess "posted new edit"
+                runSYDB (editCommentDB user_id comment_id new_text new_language)
+                    >>= \case
+                        Left err -> alertDanger err
+                        Right () -> alertSuccess "posted new edit"
                 return Nothing
             _ -> do
                 (form, _) <- generateFormPost (editCommentForm new_text new_language)
@@ -478,7 +473,9 @@ postFlagComment user@(Entity user_id _) comment@(Entity comment_id _) make_comme
 -- "mode" key - could either be a "post" (posts the comment and returns its id) or a "preview"
 -- (returns the comment tree and form, to wrap in a preview). Permission checking should occur
 -- *PRIOR TO* this function.
-postNewComment :: Maybe CommentId -> Entity User -> DiscussionId -> MakeActionPermissionsMap -> Handler (Either CommentId (Widget, Widget))
+postNewComment :: Maybe CommentId -> Entity User -> DiscussionId
+               -> MakeActionPermissionsMap
+               -> Handler (Either (Either Text CommentId) (Widget, Widget))
 postNewComment mparent_id (Entity user_id user) discussion_id make_permissions_map = do
     -- commentReplyForm is OK here (the alternative is commentNewTopicForm) because they're
     -- actually the same form with different titles.
@@ -488,13 +485,23 @@ postNewComment mparent_id (Entity user_id user) discussion_id make_permissions_m
             Just PostMode -> do
                 if userIsEstablished user
                     then do
-                        comment_id <- runSDB (postApprovedCommentDB user_id mparent_id discussion_id contents visibility language)
-                        alertSuccess "comment posted"
-                        return (Left comment_id)
+                        ecomment_id <- runSDB $ postApprovedCommentDB
+                            user_id mparent_id discussion_id contents
+                            visibility language
+                        case ecomment_id of
+                            Left err -> return $ Left $ Left err
+                            Right comment_id -> do
+                                alertSuccess "comment posted"
+                                return $ Left $ Right comment_id
                     else do
-                        comment_id <- runSDB (postUnapprovedCommentDB user_id mparent_id discussion_id contents visibility language)
-                        alertSuccess "comment submitted for moderation"
-                        return (Left comment_id)
+                        ecomment_id <- runSDB $ postUnapprovedCommentDB
+                            user_id mparent_id discussion_id contents
+                            visibility language
+                        case ecomment_id of
+                            Left err -> return $ Left $ Left err
+                            Right comment_id -> do
+                                alertSuccess "comment submitted for moderation"
+                                return $ Left $ Right comment_id
             _ -> do
                 earlier_closures    <- earlierClosuresFromMaybeParentId mparent_id
                 earlier_retracts    <- earlierRetractsFromMaybeParentId mparent_id
