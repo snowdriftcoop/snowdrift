@@ -96,10 +96,7 @@
         <th>Current patrons
       <tr>
         <td>
-          $maybe _ <- maybe_project_id
-            <a href=@{ProjectPatronsR $ projectHandle project}>
-            _{MsgPatrons users}
-          $nothing
+          <a href=@{ProjectPatronsR $ projectHandle project}>
             _{MsgPatrons users}
         <tr>
           <td>
