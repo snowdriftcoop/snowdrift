@@ -1,0 +1,41 @@
+#!/bin/bash
+
+# This script runs in production and provides a stable location at which to
+# reach the app, which is running in a Keter-defined working directory.
+
+# The stable location is $KETER/run/Snowdrift, specified relatively
+LINK=../../run/Snowdrift
+TARGET=.
+
+# Make sure the link points to us.
+verifySymlink () {
+    # I am sure someone will come along and tell me the right way to do
+    # this. Surely.
+    current=$(basename $(ls -l $LINK | sed 's/.*-> //'))
+    desired=$(basename $(dirname $(dirname $0)))
+    if [ "$current" = "$desired" ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+mkSymlink () {
+    rm -f $LINK
+    ln -rs $TARGET $LINK
+}
+
+main () {
+    # If we're activating a new version of the app, let's wait for the old
+    # version to get its TERM signal.
+    sleep 30
+
+    # Make and maintain the link.
+    mkSymlink
+    while sleep 120
+    do
+        verifySymlink || mkSymlink
+    done
+}
+
+main
