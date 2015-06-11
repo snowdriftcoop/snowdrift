@@ -1,0 +1,25 @@
+stanzas:
+    - type: webapp
+      exec: ../dist/build/Snowdrift/Snowdrift
+      args:
+          - production
+      forward-env:
+          - PGPASS
+      hosts:
+          - snowdrift.coop
+
+    - type: background
+      exec: ../dist/build/SnowdriftEmailDaemon/SnowdriftEmailDaemon
+      args: --db=production --email=notifications@snowdrift.coop
+
+    - type: background
+      exec: manage-symlink
+
+extraFiles:
+    - ../migrations
+    # FIXME: This shouldn't be needed.
+    - ../templates
+
+# Use the following to automatically copy your bundle upon creation via `yesod
+# keter`. Uses `scp` internally, so you can set it to a remote destination
+copy-to: snowdrift.coop:/opt/keter/incoming
