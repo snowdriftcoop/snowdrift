@@ -3,24 +3,23 @@
 $maybe _ <- mpledge
   $# TODO: include funding amounts
   <p>
-    You already pledged _{MsgShares old_user_shares}.
+    You previously pledged _{MsgShares old_user_shares}.
   $# TODO: add number of other patrons
-    With current patrons, that means #{old_user_amount}/month
-    is your part of the #{old_project_amount}/month
+    Given current patrons, that means #{old_user_amount}/month
+    as your part of the #{old_project_amount}/month
     total pledges to #{projectName project}.
 
   $if old_user_shares < new_user_shares
     $with user_increase <- new_user_amount - old_user_amount
-      $with project_increase <- new_project_amount - old_project_amount
         <p>
-          At this point, by adding
-          _{MsgShares (new_user_shares - old_user_shares)}
-          to your pledge, you will give an additional #{user_increase}/month,
-          matched by an extra #{project_increase - user_increase}/month
-          from others.
+          Increasing your pledge to _{MsgShares new_user_shares}
+          will mean giving an additional #{user_increase}/month
+          for a total of #{new_user_amount}/month.
         <p>
           Keep in mind that the <em>best</em> way to give more
           is by recruiting new patrons!
+          Of course, within reason, your higher pledge provides
+          more generous matching for encouraging others to join.
 
     <form .text-center method=POST action=@{UpdatePledgeR project_handle}>
       ^{confirm_form}
@@ -34,10 +33,8 @@ $maybe _ <- mpledge
       $with project_decrease <- old_project_amount - new_project_amount
         $if new_user_shares == 0
           <p>
-            At this point, if you drop your pledge of
-            _{MsgShares old_user_shares},
-            other patrons will no longer match you and
-            so will reduce their donations by
+            If you drop your pledge, you will no longer count as a patron.
+            So, donations from other patrons will drop by
             #{project_decrease - user_decrease}/month.
           <form .text-center method=POST action=@{UpdatePledgeR project_handle}>
             ^{confirm_form}
@@ -47,11 +44,10 @@ $maybe _ <- mpledge
             <input type=submit name=confirm value="nevermind, take me back">
         $else
           <p>
-            At this point, if you reduce your pledge from
+            Given current number of patrons, if you reduce your pledge from
             _{MsgShares old_user_shares} to _{MsgShares new_user_shares},
-            you will give #{user_decrease} less per month,
-            and the donations from others will go down by a further
-            #{project_decrease - user_decrease}.
+            you will give #{user_decrease} less per month for a new total of
+            #{new_user_amount}/month.
           <form .text-center method=POST action=@{UpdatePledgeR project_handle}>
             ^{confirm_form}
             Set your pledge to the new lower level of
@@ -60,19 +56,16 @@ $maybe _ <- mpledge
             <input type=submit name=confirm value="yes">
             <input type=submit name=confirm value="nevermind, take me back">
 
-
-
 $nothing
-  $with user_increase <- new_user_amount - old_user_amount
-    $with project_increase <- new_project_amount - old_project_amount
-      <p>
-        Given current patrons, a pledge of _{MsgShares new_user_shares}
-        means you will give #{user_increase}/month,
-        matched by an extra #{project_increase - user_increase}/month
-        from others.
-      <p>
-        Note that your pledge value will change as others pledge,
-        and you may change your pledge at any time.
+  $with project_increase <- new_project_amount - old_project_amount
+    <p>
+      Given current patrons, a pledge of _{MsgShares new_user_shares}
+      means you will give #{new_user_amount}/month,
+      matched by an extra #{project_increase - new_user_amount}/month
+      from others.
+    <p>
+      Note that your pledge value will change as others pledge,
+      and you may change your pledge at any time.
 
   <form .text-center method=POST action=@{UpdatePledgeR project_handle}>
     ^{confirm_form}
