@@ -385,23 +385,24 @@ createUser ident passwd name email avatar nick = do
         account_id <- insert (Account 0)
         discussion_id <- insert (Discussion 0)
         user <- maybe return setPassword passwd $
-            (User ident
-                  email
-                  False
-                  now
-                  Nothing
-                  Nothing
-                  name
-                  account_id
-                  avatar
-                  Nothing
-                  Nothing
-                  nick
-                  langs
-                  now
-                  now
-                  EstUnestablished
-                  discussion_id)
+            User { userIdent = ident
+                 , userEmail = email
+                 , userEmail_verified = False
+                 , userCreatedTs = now
+                 , userHash = Nothing
+                 , userSalt = Nothing
+                 , userName = name
+                 , userAccount = account_id
+                 , userAvatar = avatar
+                 , userBlurb = Nothing
+                 , userStatement = Nothing
+                 , userIrcNick = nick
+                 , userLanguages = langs
+                 , userReadNotifications = now
+                 , userReadApplications = now
+                 , userEstablished = EstUnestablished
+                 , userDiscussion = discussion_id
+                 }
         uid_maybe <- insertUnique user
         case uid_maybe of
             Just user_id -> do
