@@ -1,0 +1,4 @@
+<div>
+    ^{claimedView} Claimed ^{unclaimedView} Unclaimed
+    Tags: ^{tagsView}
+<div>

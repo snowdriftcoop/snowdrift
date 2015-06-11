@@ -31,6 +31,7 @@ import View.Comment
 import View.Project
 import View.SnowdriftEvent
 import Widgets.Preview
+import Widgets.Search
 import Widgets.Time
 
 
@@ -747,9 +748,16 @@ getTicketsR project_handle = do
         tagged_tickets <- fetchProjectOpenTicketsDB project_id muser_id
         return (project, tagged_tickets)
 
-    ((result, formWidget), encType) <- runFormGet viewForm
+    -- ((result, formWidget), encType) <- runFormGet viewForm
+    ((result, formWidget), encType) <- runFormGet searchWidget
     let (filter_expression, order_expression) = case result of
-            FormSuccess x -> x
+            -- FormSuccess x -> x
+            --FormSuccess x -> (parseFilterExpression $ searchString x, defaultOrder)
+            FormSuccess x -> ((either
+                                (const defaultFilter)
+                                id
+                                (parseFilterExpression $ searchString x)),
+                             defaultOrder)
             _ -> (defaultFilter, defaultOrder)
 
     github_issues <- getGithubIssues project

@@ -120,6 +120,7 @@ library
                      Widgets.Doc
                      Widgets.Markdown
                      Widgets.Navbar
+                     Widgets.Search
                      Widgets.Time
                      Widgets.Tag
                      Widgets.Preview
