@@ -3,14 +3,25 @@ stanzas:
       exec: ../dist/build/Snowdrift/Snowdrift
       args:
           - production
+      env:
+          APPROOT: https://snowdrift.coop
+          PGDATABASE: snowdrift_production
+          PGUSER: snowdrift_production
       forward-env:
           - PGPASS
       hosts:
           - snowdrift.coop
 
-    - type: background
-      exec: ../dist/build/SnowdriftEmailDaemon/SnowdriftEmailDaemon
-      args: --db=production --email=notifications@snowdrift.coop
+    # - type: background
+    #   exec: ../dist/build/SnowdriftEmailDaemon/SnowdriftEmailDaemon
+    #   env:
+    #       PGDATABASE: snowdrift_production
+    #       PGUSER: snowdrift_production
+    #   forward-env:
+    #       - PGPASS
+    #   args:
+    #       - '--db=production'
+    #       - '--email=notifications@snowdrift.coop'
 
     - type: background
       exec: manage-symlink
