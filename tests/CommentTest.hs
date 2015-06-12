@@ -2,6 +2,7 @@
 {-# LANGUAGE RecordWildCards      #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE FlexibleInstances    #-}
+{-# LANGUAGE FlexibleContexts     #-}
 
 module CommentTest (commentSpecs) where
 
@@ -14,6 +15,7 @@ import           Data.Foldable (forM_)
 import           Data.Monoid ((<>))
 import           Data.Text (Text)
 import qualified Data.Text as Text
+import           Yesod (RedirectUrl, Route)
 import           Yesod.Default.Config (AppConfig (..), DefaultEnv (..))
 import           Yesod.Markdown (unMarkdown)
 
@@ -122,38 +124,71 @@ errorUnlessUniqueTag comment_id user_id tag_name = do
           mtag_id
 
 ticketSpecs :: AppConfig DefaultEnv a -> Spec
-ticketSpecs AppConfig {..} = ydescribe "ticket" $
-    yit "'ticket:' syntax" [marked|
+ticketSpecs conf = ydescribe "ticket" $
+    yit "'ticket:' syntax" $ do
+        testTicket conf Mary
+            (enRoute NewWikiDiscussionR "about")
+            (enRoute ReplyWikiCommentR "about")
+            (enRoute EditWikiCommentR "about")
+
+        mary_id <- userId Mary
+        testTicket conf Mary
+            (NewUserDiscussionR mary_id)
+            (ReplyUserCommentR mary_id)
+            (EditUserCommentR mary_id)
+
+        testTicket conf Mary
+            (NewProjectDiscussionR "snowdrift")
+            (ReplyProjectCommentR "snowdrift")
+            (EditProjectCommentR "snowdrift")
+
+        -- Depends on the blog test from 'NotifyTest'.
+        testTicket conf Mary
+            (NewBlogPostDiscussionR "snowdrift" "testing")
+            (ReplyBlogPostCommentR "snowdrift" "testing")
+            (EditBlogPostCommentR "snowdrift" "testing")
+
+testTicket
+    :: (RedirectUrl App url1, RedirectUrl App url2, Login user)
+    => AppConfig DefaultEnv a
+    -> user -> url1 -> (CommentId -> url2) -> (CommentId -> Route App)
+    -> Example ()
+testTicket AppConfig {..} user new_route reply_route edit_route = [marked|
     -- Ticket number is not changed when ticket is edited.
     ------------------------------------------------------
     -- Create a ticket.
-    loginAs Mary
-    let ticket_line = "ticket: this is a test ticket"
-    postComment (enRoute NewWikiDiscussionR "about") $
+    loginAs user
+    let new_ticket_line = "ticket: this is a new ticket"
+    postComment new_route $
         byLabel "New Topic" $
             "Testing the 'ticket:' syntax.\n" <>
-            ticket_line <> "\n" <>
+            new_ticket_line <> "\n" <>
             "One more line, just in case."
-    (comment_id, True) <- getLatestCommentId
-    let comment_route =
-            render appRoot $ enRoute EditWikiCommentR "about" comment_id
-    mticket1 <- testDB $ getBy $ UniqueTicket comment_id
+    (new_comment_id, True) <- getLatestCommentId
+    mnew_ticket <- testDB $ getBy $ UniqueTicket new_comment_id
+    when (mnew_ticket == Nothing) $ error "new ticket not found"
 
-    -- Edit it.
-    let new_ticket_line = "ticket: this is a changed ticket"
-    editComment comment_route new_ticket_line
-    mticket2 <- testDB $ getBy $ UniqueTicket comment_id
-    case (mticket1, mticket2) of
-        (Just (Entity ticket_id1 _), Just (Entity ticket_id2 _)) ->
-            when (ticket_id1 /= ticket_id2) $
-                error "ticket id changed"
+    -- Reply to it.
+    let reply_ticket_line = "ticket: this is a replied ticket"
+    postComment (reply_route new_comment_id) $
+        byLabel "Reply" $ "Replying\n" <> reply_ticket_line
+    (reply_comment_id, True) <- getLatestCommentId
+    mreply_ticket <- testDB $ getBy $ UniqueTicket reply_comment_id
+    let comment_route = render appRoot $ edit_route reply_comment_id
+
+    -- Edit the reply.
+    let edit_ticket_line = "ticket: this is an edited ticket"
+    editComment comment_route edit_ticket_line
+    medit_ticket <- testDB $ getBy $ UniqueTicket reply_comment_id
+    case (mreply_ticket, medit_ticket) of
+        (Just (Entity reply_ticket_id _), Just (Entity edit_ticket_id _)) ->
+            when (reply_ticket_id /= edit_ticket_id) $ error "ticket id changed"
         _ -> error "ticket not found"
 
 
     -- Removing the 'ticket:' line removes the ticket from the DB.
     --------------------------------------------------------------
     editComment comment_route "no tickets here"
-    mticket3 <- testDB $ getBy $ UniqueTicket comment_id
-    unless (mticket3 == Nothing) $
-        error "ticket not deleted"
+    medit_ticket2 <- testDB $ getBy $ UniqueTicket reply_comment_id
+    unless (medit_ticket2 == Nothing) $ error "ticket not deleted"
 |]
