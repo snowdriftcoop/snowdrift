@@ -279,7 +279,6 @@ getProjectPages project_id =
     return page
 
 -- | Project's monthly share value: 0.1¢ × number of patrons.
--- https://snowdrift.coop/p/snowdrift/w/en/formula
 projectComputeShareValue :: [Int64] -> Milray
 projectComputeShareValue patrons =
     Milray 10 $* (fromIntegral $ length $ filter (/= 0) patrons)
