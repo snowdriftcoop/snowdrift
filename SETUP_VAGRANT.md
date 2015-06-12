@@ -17,7 +17,7 @@ If you do not have a virtual machine program installed yet,
     cd /vagrant
     ln -s cabal.config.7.8 cabal.config
     cabal install -fdev
-    ./.cabal-sandbox/bin/sdm init
+    sdm init
     cabal install --enable-tests -fdev
     yesod devel
 

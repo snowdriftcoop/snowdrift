@@ -373,6 +373,10 @@ which is the same as running:
 
     sudo -u postgres pg_dump snowdrift_development >devDB.sql
 
+You can test that the export worked by running `sdm reset` and verifying
+in the running site that everything is as expected.
+
+Then, the new devDB.sql file may be committed and shared like other changes.
 
 Updating to the latest test database
 ------------------------------------
