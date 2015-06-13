@@ -11,6 +11,16 @@ stanzas:
           - PGPASS
       hosts:
           - snowdrift.coop
+      # Require (and redirect to) secure site
+      ssl: true
+      requires-secure: true
+
+    # Friendly link for www.snowdrift.coop
+    - type: redirect
+      host: www.snowdrift.coop
+      actions:
+          - host: snowdrift.coop
+            secure: true
 
     # - type: background
     #   exec: ../dist/build/SnowdriftEmailDaemon/SnowdriftEmailDaemon
