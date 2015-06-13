@@ -510,8 +510,9 @@ test database setup and resetting databases.
 Setting up the development database manually
 --------------------------------------------
 
-Go to the config/ directory within the project directory,
-make a copy of postgresql.template, and name the new file postgresql.yml
+Copy the config/postgresql.template to a new config/postgresql.yml file:
+
+    cp config/postgresql.template config/postgresql.yml
 
 Create database user called "snowdrift_development"
 *without* superuser, createdb, or createuser privileges:
