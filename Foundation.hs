@@ -359,9 +359,14 @@ instance YesodAuth App where
 
     getAuthId creds = do
         maybe_user_id <- runDB $ getBy $ UniqueUser $ credsIdent creds
-        case maybe_user_id of
-            Just (Entity user_id _) -> return $ Just user_id
-            Nothing -> createUser (credsIdent creds) Nothing Nothing Nothing Nothing Nothing
+        case (credsPlugin creds, maybe_user_id) of
+            (_, Just (Entity user_id _)) -> return $ Just user_id
+            ("hashdb",    _) -> error "Used credentials that no longer exist"
+            ("browserid", _) ->
+                createUser (credsIdent creds) Nothing Nothing emailStuff Nothing Nothing
+            _ -> error "Unhandled credentials plugin"
+      where
+        emailStuff = Just $ NewEmail True $ credsIdent creds
 
     -- You can add other plugins like BrowserID, email or OAuth here
     authPlugins _ = [ snowdriftAuthBrowserId, snowdriftAuthHashDB ]
@@ -376,15 +381,20 @@ instance YesodAuth App where
 
 instance YesodAuthPersist App
 
-createUser :: Text -> Maybe Text -> Maybe Text -> Maybe Text -> Maybe Text
+data NewEmail = NewEmail
+    { neVerified :: Bool
+    , neAddr :: Text
+    }
+
+createUser :: Text -> Maybe Text -> Maybe Text -> Maybe NewEmail -> Maybe Text
            -> Maybe Text -> Handler (Maybe UserId)
-createUser ident passwd name email avatar nick = do
+createUser ident passwd name newEmail avatar nick = do
     langs <- mapMaybe (readMaybe . T.unpack) <$> languages
     now <- liftIO getCurrentTime
     handle (\DBException -> return Nothing) $ runYDB $ do
         account_id <- insert (Account 0)
         discussion_id <- insert (Discussion 0)
-        user <- maybe return setPassword passwd $ User ident email False (Just now) Nothing Nothing name account_id avatar Nothing Nothing nick langs now now EstUnestablished discussion_id
+        user <- maybe return setPassword passwd $ newUser langs now account_id discussion_id
         uid_maybe <- insertUnique user
         case uid_maybe of
             Just user_id -> do
@@ -414,6 +424,8 @@ createUser ident passwd name email avatar nick = do
                 lift $ addAlert "danger" "Handle already in use."
                 throwIO DBException
   where
+    newUser langs now account_id discussion_id =
+        User ident (neAddr <$> newEmail) (maybe False neVerified newEmail) (Just now) Nothing Nothing name account_id avatar Nothing Nothing nick langs now now EstUnestablished discussion_id
     insertDefaultNotificationPrefs :: UserId -> DB ()
     insertDefaultNotificationPrefs user_id =
         void . insertMany $ uncurry (UserNotificationPref user_id) <$>
