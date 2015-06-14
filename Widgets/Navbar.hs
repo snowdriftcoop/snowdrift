@@ -30,4 +30,7 @@ navbar = do
 
             return (Just (balance, pledged), num_unread_notifs)
 
+    -- TODO: https://snowdrift.coop/p/snowdrift/w/en/site-design/c/1148
+    let hasUnderfunded = False
+
     $(widgetFile "navbar")

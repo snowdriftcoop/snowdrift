@@ -17,7 +17,7 @@
                 <a .navbar-link title="Current total monthly pledge" href=@{UserPledgesR user_id}>
                   #{milrayCents pledged}
                 /
-                <a .navbar-link title="Current balance" href=@{UserBalanceR user_id}>
+                <a .navbar-link :hasUnderfunded:.has-underfunded title="Current balance" href=@{UserBalanceR user_id}>
                   #{milrayCents balance}
           <li>
             <a href=@{NotificationsR}>
