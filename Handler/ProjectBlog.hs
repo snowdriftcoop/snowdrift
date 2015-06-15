@@ -106,19 +106,12 @@ makeBlogPostCommentForestWidget
         project_id
         project_handle
         post_name
-        comments
-        comment_mods
-        get_max_depth
-        is_preview
-        widget_under_root_comment = do
+        comments =
+
     makeCommentForestWidget
       (projectBlogCommentHandlerInfo muser project_id project_handle post_name)
       comments
       muser
-      comment_mods
-      get_max_depth
-      is_preview
-      widget_under_root_comment
 
 makeBlogPostCommentTreeWidget
         :: Maybe (Entity User)
@@ -247,7 +240,7 @@ postNewBlogPostR project_handle = do
     ((result, _), _) <- runFormPost $ projectBlogForm Nothing
 
     case result of
-        FormSuccess project_blog@ProjectBlog {..} -> do
+        FormSuccess project_blog@ProjectBlog {..} ->
             lookupPostMode >>= \case
                 Just PostMode -> do
                     void $ runSDB $ postBlogPostDB
@@ -280,7 +273,7 @@ getBlogPostR project_handle blog_post_handle = do
 -- /p/#Text/blog/#Text/edit
 
 checkEditBlogPostPermissions :: Text -> Handler UserId
-checkEditBlogPostPermissions project_handle = do
+checkEditBlogPostPermissions project_handle =
     fst <$> requireRolesAny [Admin, TeamMember] project_handle
         "only the admin or a team member can edit a blog post"
 
@@ -303,7 +296,7 @@ postEditBlogPostR project_handle blog_post_handle = do
     viewer_id <- checkEditBlogPostPermissions project_handle
     ((result, _), _) <- runFormPost $ projectBlogForm Nothing
     case result of
-      FormSuccess project_blog@ProjectBlog {..} -> do
+      FormSuccess project_blog@ProjectBlog {..} ->
           lookupPostMode >>= \case
               Just PostMode -> do
                   runDB $ updateBlogPostDB viewer_id blog_post_id project_blog
@@ -314,7 +307,7 @@ postEditBlogPostR project_handle blog_post_handle = do
           alertDanger "No data provided"
           redirect $ BlogPostR project_handle blog_post_handle
       FormFailure errs -> do
-          alertDanger $ "Form failure: " <> (T.intercalate ", " errs)
+          alertDanger $ "Form failure: " <> T.intercalate ", " errs
           redirect $ BlogPostR project_handle blog_post_handle
 
 --------------------------------------------------------------------------------
@@ -370,7 +363,7 @@ getClaimBlogPostCommentR project_handle post_name comment_id = do
 
 postClaimBlogPostCommentR :: Text -> Text -> CommentId -> Handler Html
 postClaimBlogPostCommentR project_handle post_name comment_id = do
-    (user, (Entity project_id _), comment) <- checkCommentRequireAuth project_handle post_name comment_id
+    (user, Entity project_id _, comment) <- checkCommentRequireAuth project_handle post_name comment_id
 
     checkBlogPostCommentActionPermission can_claim user project_handle (Entity comment_id comment)
 
@@ -402,7 +395,7 @@ getCloseBlogPostCommentR project_handle post_name comment_id = do
 
 postCloseBlogPostCommentR :: Text -> Text -> CommentId -> Handler Html
 postCloseBlogPostCommentR project_handle post_name comment_id = do
-    (user, (Entity project_id _), comment) <- checkCommentRequireAuth project_handle post_name comment_id
+    (user, Entity project_id _, comment) <- checkCommentRequireAuth project_handle post_name comment_id
     checkBlogPostCommentActionPermission can_close user project_handle (Entity comment_id comment)
 
     postCloseComment
@@ -552,11 +545,15 @@ postBlogPostCommentTagR :: Text -> Text -> CommentId -> TagId -> Handler ()
 postBlogPostCommentTagR _ _ = postCommentTagR
 
 --------------------------------------------------------------------------------
--- /p/#Text/blog/#Text/c/#CommentId/tag/apply, /p/#Text/blog/c/#CommentId/tag/create
+-- /p/#Text/blog/#Text/c/#CommentId/tag/apply,
+-- /p/#Text/blog/c/#CommentId/tag/create
 
-postBlogPostCommentApplyTagR, postBlogPostCommentCreateTagR:: Text -> Text -> CommentId -> Handler Html
-postBlogPostCommentApplyTagR project_handle _ comment_id = applyOrCreate postCommentApplyTag project_handle comment_id
-postBlogPostCommentCreateTagR project_handle _ comment_id = applyOrCreate postCommentCreateTag project_handle comment_id
+postBlogPostCommentApplyTagR, postBlogPostCommentCreateTagR
+    :: Text -> Text -> CommentId -> Handler Html
+postBlogPostCommentApplyTagR project_handle _ =
+    applyOrCreate postCommentApplyTag project_handle
+postBlogPostCommentCreateTagR project_handle _ =
+    applyOrCreate postCommentCreateTag project_handle
 
 applyOrCreate :: (CommentId -> Handler ()) -> Text -> CommentId -> Handler Html
 applyOrCreate action project_handle comment_id = do
@@ -583,7 +580,7 @@ getUnclaimBlogPostCommentR project_handle post_name comment_id = do
 
 postUnclaimBlogPostCommentR :: Text -> Text -> CommentId -> Handler Html
 postUnclaimBlogPostCommentR project_handle post_name comment_id = do
-    (user, (Entity project_id _), comment) <- checkCommentRequireAuth project_handle post_name comment_id
+    (user, Entity project_id _, comment) <- checkCommentRequireAuth project_handle post_name comment_id
     checkBlogPostCommentActionPermission can_unclaim user project_handle (Entity comment_id comment)
 
     postUnclaimComment
