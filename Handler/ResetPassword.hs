@@ -18,7 +18,7 @@ getResetPasswordR = do
 initResetPassword :: UserId -> Text -> Handler Html
 initResetPassword user_id email = do
     hash <- liftIO newHash
-    uri  <- getUrlRender <*> (pure $ UserResetPasswordR user_id hash)
+    uri  <- getUrlRender <*> pure (UserResetPasswordR user_id hash)
     runDB $ insert_ $ ResetPassword user_id email uri False
     alertSuccess "Sent an email with further instructions."
     redirect HomeR
@@ -30,7 +30,7 @@ postResetPasswordR = do
             alertDanger msg
             defaultLayout $(widgetFile "reset_password")
     case result of
-        FormSuccess View.ResetPassword {..} -> do
+        FormSuccess View.ResetPassword {..} ->
             if | isNothing rpHandle && isNothing rpEmail ->
                      alertAndRefresh $ "Neither the handle nor the email "
                                     <> "is specified."

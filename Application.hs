@@ -167,7 +167,7 @@ makeFoundation conf = do
                            runSql "DROP DATABASE IF EXISTS snowdrift_test;"
                            liftIO $ putStrLn "creating database..."
                            runSql $ "CREATE DATABASE snowdrift_test "
-                                 <> "WITH TEMPLATE snowdrift_test_template;"
+                                    <> "WITH TEMPLATE snowdrift_test_template;"
                            liftIO $ putStrLn "ready."
         _ -> return ()
 

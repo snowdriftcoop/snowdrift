@@ -210,7 +210,7 @@ notificationEventHandler AppConfig{..} (EUpdatedPledge old_shares _ shares_pledg
             NotifUpdatedPledge
             (\route -> T.concat
                  [ userDisplayName user_entity
-                 , (if old_shares > new_shares then " dropped " else " added ")
+                 , if old_shares > new_shares then " dropped " else " added "
                  , T.pack (show delta)
                  , " ", pluralShares delta
                  , ", changing their total to [", T.pack $ show new_shares, " "

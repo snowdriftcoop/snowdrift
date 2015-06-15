@@ -127,8 +127,8 @@ makeCommentForestWidget
 
     (children, user_map, earlier_closures_map, earlier_retracts_map,
      closure_map, retract_map, ticket_map, claim_map, flag_map) <- runDB $ do
-        children <- fetchCommentsDescendantsDB
-                    root_ids commentHandlerHasPermission
+        children <- fetchCommentsDescendantsDB root_ids
+                                               commentHandlerHasPermission
 
         let all_comments    = roots ++ children
             all_comment_ids = map entityKey all_comments

@@ -140,13 +140,13 @@ selectWithVerifiedEmailsProject :: ReaderT SqlBackend (ResourceT (LoggingT IO))
                                     , ProjectNotificationType, UserId
                                     , ProjectId, Markdown )]
 selectWithVerifiedEmailsProject =
-    (map (\(Value memail, Value ts, Value notif_type, Value to, Value mproject, Value content) ->
-           (memail, ts, notif_type, to, mproject, content))) <$>
+    map (\(Value memail, Value ts, Value notif_type, Value to, Value mproject, Value content) ->
+      (memail, ts, notif_type, to, mproject, content)) <$>
     (select $
      from $ \(notification_email `InnerJoin` user) -> do
          on $ notification_email ^. ProjectNotificationEmailTo ==.
               user ^. UserId
-         where_ $ (not_ $ isNothing $ user ^. UserEmail)
+         where_ $ not_ (isNothing $ user ^. UserEmail)
               &&. user ^. UserEmail_verified
          return ( user ^. UserEmail
                 , notification_email ^. ProjectNotificationEmailCreatedTs
@@ -166,7 +166,7 @@ selectWithoutEmailsOrVerifiedEmailsUser :: (    SqlExpr (Value UserId)
 selectWithoutEmailsOrVerifiedEmailsUser inOrNotIn =
     select $ from $ \(ne, user) -> do
         where_ $ (     ne ^. UserNotificationEmailTo ==. user ^. UserId
-                   &&. (     (isNothing $ user ^. UserEmail)
+                   &&. (     isNothing (user ^. UserEmail)
                          ||. not_ (isNothing $ user ^. UserEmail)
                          &&. not_ (user ^. UserEmail_verified)
                        )
@@ -196,7 +196,7 @@ selectWithoutEmailsOrVerifiedEmailsProject :: (    SqlExpr (Value UserId)
 selectWithoutEmailsOrVerifiedEmailsProject inOrNotIn =
     select $ from $ \(ne, user) -> do
         where_ $ (     ne ^. ProjectNotificationEmailTo ==. user ^. UserId
-                   &&. (     (isNothing $ user ^. UserEmail)
+                   &&. (     isNothing (user ^. UserEmail)
                          ||. not_ (isNothing $ user ^. UserEmail)
                          &&. not_ (user ^. UserEmail_verified)
                        )
@@ -281,8 +281,7 @@ deleteDuplicatesWithoutEmailsOrVerifiedEmailsProject = do
 
 fromUserNotificationEmail :: UTCTime -> UserNotificationType -> UserId
                           -> Markdown -> SqlQuery ()
-fromUserNotificationEmail ts notif_type to content =
-    from $ \ne -> do
+fromUserNotificationEmail ts notif_type to content = from $ \ne ->
         where_ $ ne ^. UserNotificationEmailCreatedTs ==. val ts
              &&. ne ^. UserNotificationEmailType      ==. val notif_type
              &&. ne ^. UserNotificationEmailTo        ==. val to
@@ -290,8 +289,7 @@ fromUserNotificationEmail ts notif_type to content =
 
 fromProjectNotificationEmail :: UTCTime -> ProjectNotificationType -> UserId
                              -> ProjectId -> Markdown -> SqlQuery ()
-fromProjectNotificationEmail ts notif_type to project content =
-    from $ \ne -> do
+fromProjectNotificationEmail ts notif_type to project content = from $ \ne ->
         where_ $ ne ^. ProjectNotificationEmailCreatedTs ==. val ts
              &&. ne ^. ProjectNotificationEmailType      ==. val notif_type
              &&. ne ^. ProjectNotificationEmailTo        ==. val to
@@ -340,7 +338,7 @@ handleSendmail sendmail_exec sendmail_file dbConf poolConf info_msg from_ to sub
             (TextLazy.fromStrict body)
         runSql dbConf poolConf action
     where
-      handler = \(err :: Exception.ErrorCall) -> do
+      handler (err :: Exception.ErrorCall) = do
           $(logError) (Text.pack $ show err)
           $(logWarn) warn_msg
 
@@ -381,7 +379,7 @@ selectWithEmails =
     select $ from $ \(ev `InnerJoin` u) -> do
         on $ ev ^. EmailVerificationUser ==. u ^. UserId
         where_ $ not_ (isNothing $ u ^. UserEmail)
-             &&. u ^. UserEmail ==. (just $ ev ^. EmailVerificationEmail)
+             &&. u ^. UserEmail ==. just (ev ^. EmailVerificationEmail)
              &&. not_ (ev ^. EmailVerificationSent)
         return ( u  ^. UserId
                , u  ^. UserEmail
@@ -514,18 +512,18 @@ withLogging m = runLoggingT m $ \loc src level str ->
            fromLogStr $ defaultLogStr loc src level $ toLogStr str
 
 withDelay :: MonadIO m => Delay -> m a -> m ()
-withDelay delay action = action >> (liftIO $ threadDelay $ 1000000 * delay)
+withDelay delay action = action >> liftIO (threadDelay $ 1000000 * delay)
 
 main :: IO ()
 main = withLogging $ do
-    pname <- liftIO $ getProgName
+    pname <- liftIO getProgName
     userv <- liftIO $ getEnv "USER"
     Arguments {..} <- liftIO $ cmdArgs $ arguments pname userv
     Parsed {..} <-
         liftIO $ parse db_arg email_arg delay_arg sendmail_exec_arg sendmail_file_arg
     $(logInfo) "starting the daemon"
     $(logDebug) ("running with --db=" <> db_arg <> " --email=" <> notif_email <>
-                 " --delay=" <> (Text.pack $ show loop_delay))
+                 " --delay=" <> Text.pack (show loop_delay))
     (dbConf, poolConf) <- liftIO $ do
         dbConf   <- withYamlEnvironment "config/postgresql.yml" env
                         Persist.loadConfig >>= Persist.applyEnv :: IO PostgresConf

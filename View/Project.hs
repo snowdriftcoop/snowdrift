@@ -48,7 +48,7 @@ renderProject maybe_project_id project mviewer_id is_watching pledges pledge = d
 
     userIsAdmin <- case maybe_project_id of
         Just project_id -> maybe (pure False) (\u -> runDB $ userIsProjectAdminDB u project_id) mviewer_id
-        Nothing -> (pure False)
+        Nothing -> pure False
 
     now <- liftIO getCurrentTime
 

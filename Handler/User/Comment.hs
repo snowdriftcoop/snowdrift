@@ -96,22 +96,8 @@ makeUserCommentForestWidget
         -> Bool
         -> Widget
         -> Handler (Widget, Forest (Entity Comment))
-makeUserCommentForestWidget
-        muser
-        user_id
-        comments
-        comment_mods
-        get_max_depth
-        is_preview
-        widget_under_root_comment = do
-    makeCommentForestWidget
-      (userCommentHandlerInfo muser user_id)
-      comments
-      muser
-      comment_mods
-      get_max_depth
-      is_preview
-      widget_under_root_comment
+makeUserCommentForestWidget muser user_id comments =
+    makeCommentForestWidget (userCommentHandlerInfo muser user_id) comments muser
 
 makeUserCommentTreeWidget
         :: Maybe (Entity User)

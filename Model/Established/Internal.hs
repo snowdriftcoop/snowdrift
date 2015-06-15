@@ -13,8 +13,8 @@ data Established
     deriving (Read, Show)
 
 estIsEstablished :: Established -> Bool
-estIsEstablished (EstEstablished _ _ _) = True
-estIsEstablished _                      = False
+estIsEstablished (EstEstablished{}) = True
+estIsEstablished _                  = False
 
 estIsEligible :: Established -> Bool
 estIsEligible (EstEligible _ _) = True
