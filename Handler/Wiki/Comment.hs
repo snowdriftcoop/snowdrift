@@ -79,19 +79,11 @@ makeWikiPageCommentForestWidget
         project_handle
         language
         target
-        comments
-        comment_mods
-        get_max_depth
-        is_preview
-        widget_under_root_comment = do
+        comments =
     makeCommentForestWidget
       (wikiPageCommentHandlerInfo muser project_id project_handle language target)
       comments
       muser
-      comment_mods
-      get_max_depth
-      is_preview
-      widget_under_root_comment
 
 makeWikiPageCommentTreeWidget
         :: Maybe (Entity User)
@@ -178,7 +170,7 @@ getClaimWikiCommentR project_handle language target comment_id = do
 
 postClaimWikiCommentR :: Text -> Language -> Text -> CommentId -> Handler Html
 postClaimWikiCommentR project_handle language target comment_id = do
-    (user, (Entity project_id _), _, comment) <- checkCommentPageRequireAuth project_handle language target comment_id
+    (user, Entity project_id _, _, comment) <- checkCommentPageRequireAuth project_handle language target comment_id
     checkProjectCommentActionPermission can_claim user project_handle (Entity comment_id comment)
 
     postClaimComment
@@ -234,7 +226,7 @@ getCloseWikiCommentR project_handle language target comment_id = do
 
 postCloseWikiCommentR :: Text -> Language -> Text -> CommentId -> Handler Html
 postCloseWikiCommentR project_handle language target comment_id = do
-    (user, (Entity project_id _), _, comment) <- checkCommentPageRequireAuth project_handle language target comment_id
+    (user, Entity project_id _, _, comment) <- checkCommentPageRequireAuth project_handle language target comment_id
     checkProjectCommentActionPermission can_close user project_handle (Entity comment_id comment)
 
     postCloseComment
@@ -474,7 +466,7 @@ getUnclaimWikiCommentR project_handle language target comment_id = do
 
 postUnclaimWikiCommentR :: Text -> Language -> Text -> CommentId -> Handler Html
 postUnclaimWikiCommentR project_handle language target comment_id = do
-    (user, (Entity project_id _), _, comment) <- checkCommentPageRequireAuth project_handle language target comment_id
+    (user, Entity project_id _, _, comment) <- checkCommentPageRequireAuth project_handle language target comment_id
     checkProjectCommentActionPermission can_unclaim user project_handle (Entity comment_id comment)
 
     postUnclaimComment
