@@ -23,7 +23,6 @@ navbar = do
 
             return (Just (balance, pledged), num_unread_notifs, pledgeStat)
 
-    -- TODO: https://snowdrift.coop/p/snowdrift/w/en/site-design/c/1148
     let hasUnderfunded = case pledgeStat of
             ExistsUnderfunded -> True
             AllFunded -> False
