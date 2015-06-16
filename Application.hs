@@ -16,7 +16,6 @@ import           Control.Concurrent.STM               (atomically, newTChanIO, t
 import           Control.Monad.Logger                 (runLoggingT, runStderrLoggingT)
 import           Control.Monad.Reader
 import           Control.Monad.Trans.Resource
-import           Data.ByteString                      (ByteString)
 import           Data.Default                         (def)
 import qualified Data.List                            as L
 import           Data.Text                            as T
@@ -30,10 +29,9 @@ import           Network.Wai.Middleware.RequestLogger ( mkRequestLogger, outputF
 import           Network.Wai.Logger                   (clockDateCacher)
 import qualified Network.Wai.Middleware.RequestLogger as RequestLogger
 import           System.Directory
-import           System.Environment                   (lookupEnv)
+import           System.Environment
 import           System.Log.FastLogger                (newStdoutLoggerSet, defaultBufSize, flushLogStr)
 import           System.IO                            (stderr)
-import           System.Posix.Env.ByteString
 import           Yesod.Core.Types                     (loggerSet, Logger (Logger))
 import           Yesod.Default.Config
 import           Yesod.Default.Handlers
@@ -84,13 +82,13 @@ version = $(mkVersion)
 mkYesodDispatch "App" resourcesApp
 
 -- probably not thread safe
-withEnv :: (MonadIO m) => ByteString -> ByteString -> m a -> m a
+withEnv :: (MonadIO m) => String -> String -> m a -> m a
 withEnv k v action = do
-    original <- liftIO $ getEnv k
+    original <- liftIO $ lookupEnv k
 
-    liftIO $ setEnv k v True
+    liftIO $ setEnv k v
     result <- action
-    liftIO $ maybe (unsetEnv k) (\v' -> setEnv k v' True) original
+    liftIO $ maybe (unsetEnv k) (setEnv k) original
 
     return result
 
@@ -244,7 +242,7 @@ deprecatedApplyManualMigrations = do
 -- storing the necessary sql statements to commit and share.
 saveUnsafeMigrations :: (MonadIO m, Functor m) => ReaderT SqlBackend m ()
 saveUnsafeMigrations = do
-    unsafe <- (L.filter fst) <$> parseMigration' migrateAll
+    unsafe <- L.filter fst <$> parseMigration' migrateAll
     unless (L.null $ L.map snd unsafe) $ do
         liftIO $ T.writeFile filename $ T.unlines $ L.map ((`snoc` ';') . snd) unsafe
         liftIO $ mapM_ (T.hPutStrLn stderr) unsafeMigMessages

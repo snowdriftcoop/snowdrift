@@ -193,6 +193,9 @@ getProjectBlogR project_handle = do
     let nextRoute next_id = renderRouteParams (ProjectBlogR project_handle) [("from", toPathPiece next_id)]
         discussion = DiscussionOnProject $ Entity project_id project
 
+    mviewer_id <- maybeAuthId
+    userIsTeamMember <- maybe (pure False) (\u -> runDB $ userIsProjectTeamMemberDB u project_id) mviewer_id
+
     defaultLayout $ do
         snowdriftTitle $ projectName project <> " Blog"
 
@@ -671,4 +674,3 @@ postNewBlogPostDiscussionR project_handle post_name = do
         (makeProjectCommentActionPermissionsMap (Just user) project_handle def) >>= \case
             Left comment_id -> redirect $ BlogPostCommentR project_handle post_name comment_id
             Right (widget, form) -> defaultLayout $ previewWidget form "post" $ projectBlogDiscussionPage project_handle post_name widget
-

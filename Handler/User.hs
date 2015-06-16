@@ -96,13 +96,13 @@ postUserCreateR = do
 
     case result of
         FormSuccess (ident, passwd, name, memail, avatar, nick) -> do
-            createUser ident (Just passwd) name memail avatar nick
+            createUser ident (Just passwd) name (NewEmail False <$> memail) avatar nick
                 >>= \muser_id -> when (isJust muser_id) $ do
                     when (isJust memail) $ do
                         let email   = fromJust memail
                             user_id = fromJust muser_id
                         startEmailVerification user_id email
-                    setCreds True $ Creds "HashDB" ident []
+                    setCreds True $ Creds "hashdb" ident []
                     redirectUltDest HomeR
 
         FormMissing -> alertDanger "missing field"

@@ -2,3 +2,9 @@
     .project-stats
         position: absolute
         right: 0
+
+.p-blurb
+    max-width: 80%
+    font-size: smaller
+    border-bottom: 1px solid #3981B3
+    margin: 0 auto
