@@ -92,6 +92,8 @@ module Model.User
     -- Unsorted
     , canCurUserMakeEligible
     , canMakeEligible
+    , pledgeStatus
+    , PledgeStatus(..)
     ) where
 
 import Import hiding (exists)
@@ -105,7 +107,7 @@ import Model.User.Internal
 import Model.User.Sql
 import Model.Wiki.Sql
 
-import           Database.Esqueleto.Internal.Language (From)
+import           Database.Esqueleto.Internal.Language (From, exists)
 import qualified Data.List          as L
 import qualified Data.Map           as M
 import qualified Data.Set           as S
@@ -574,12 +576,12 @@ insertDefaultProjectNotifPrefs user_id project_id =
 userWatchProjectDB :: UserId -> ProjectId -> DB ()
 userWatchProjectDB user_id project_id = do
     void $ insertUnique $ UserWatchingProject user_id project_id
-    exists <-
+    exists' <-
         selectExists $
         from $ \pnp -> do
         where_ $ pnp ^. ProjectNotificationPrefUser    ==. val user_id
              &&. pnp ^. ProjectNotificationPrefProject ==. val project_id
-    unless exists $
+    unless exists' $
         insertDefaultProjectNotifPrefs user_id project_id
 
 userUnwatchProjectDB :: UserId -> ProjectId -> DB ()
@@ -717,3 +719,21 @@ fetchNumUnreadProjectNotificationsDB :: UserId -> DB Int
 fetchNumUnreadProjectNotificationsDB =
     fetchNumUnreadNotifications
         ProjectNotificationTo ProjectNotificationCreatedTs
+
+
+data PledgeStatus = AllFunded | ExistsUnderfunded
+
+pledgeStatus :: UserId -> DB PledgeStatus
+pledgeStatus uid = do
+    underfunded <-
+        select $
+        from $ \u -> do
+        where_ $ u ^. UserId ==. val uid
+            &&. (exists $
+                from $ \plg -> do
+                where_ $ plg ^. PledgeShares >. plg ^. PledgeFundedShares
+                    &&. plg ^. PledgeUser ==. val uid)
+        return $ u ^. UserId
+    return $ case underfunded of
+        [] -> AllFunded
+        _ -> ExistsUnderfunded
