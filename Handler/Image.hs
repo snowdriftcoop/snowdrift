@@ -1,14 +1,17 @@
-{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE CPP, RecordWildCards #-}
 
 module Handler.Image where
 
+#if MIN_VERSION_base(4,8,0)
+import Import hiding (foldMap)
+#else
 import Import
+#endif
 
 import Yesod.Core.Types
 import Data.Conduit
 import Data.Conduit.List (foldMap)
 import Control.Monad.Trans.Resource
-
 import Data.Text.Encoding
 
 import Widgets.Time

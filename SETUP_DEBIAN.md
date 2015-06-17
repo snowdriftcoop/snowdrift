@@ -10,9 +10,9 @@ run these commands:
     mkdir builds
     cd builds
     curl -ssL \
-      https://www.haskell.org/ghc/dist/7.8.4/ghc-7.8.4-x86_64-unknown-linux-deb7.tar.xz |
+      https://www.haskell.org/ghc/dist/7.10.1/ghc-7.10.1-x86_64-unknown-linux-deb7.tar.xz |
       tar xJv
-    cd ghc-7.8.4
+    cd ghc-7.10.1
     ./configure && make && sudo make install
     cd ..
     curl -ssL \
@@ -28,6 +28,7 @@ run these commands:
     git clone https://git.gnu.io/snowdrift/snowdrift.git
     cd snowdrift
     cabal sandbox init
+    ln -s cabal.config.7.10 cabal.config
     cabal install -fdev
     sdm init
     cabal install -fdev --enable-tests

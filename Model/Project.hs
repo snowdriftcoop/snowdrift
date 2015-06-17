@@ -1,3 +1,5 @@
+{-# LANGUAGE CPP #-}
+
 module Model.Project
     ( ProjectSummary(..)
     , UpdateProject(..)
@@ -54,7 +56,9 @@ import           Control.Monad.Writer.Strict  (WriterT, tell, execWriterT)
 import           Control.Concurrent.Async     (Async, async, wait)
 import qualified Github.Data                  as GH
 import qualified Github.Issues                as GH
+#if !(MIN_VERSION_base (4,8,0))
 import           Data.Foldable                (foldMap)
+#endif
 import qualified Data.Map                     as M
 import           Data.Monoid                  (Sum(..))
 import qualified Data.Set                     as S

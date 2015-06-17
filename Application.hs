@@ -166,9 +166,14 @@ makeFoundation conf = do
                         liftIO $ putStrLn "ready."
         _ -> return ()
 
-    let migration = runSqlPool
-            (doManualMigration >> runMigration migrateAll >> migrateTriggers)
-            pool
+    -- Automatic migrations use up memory. See
+    -- <https://github.com/yesodweb/persistent/issues/403>. They aren't
+    -- really great practice either. For now, they're commented out. In
+    -- the future, we'll likely just delete them.
+    let migration = runSqlPool (do doManualMigration
+                                   -- runMigration migrateAll      
+                                   migrateTriggers)             
+                               pool
 
     void $ runLoggingT
         migration
@@ -242,23 +247,31 @@ deprecatedApplyManualMigrations = do
 -- storing the necessary sql statements to commit and share.
 saveUnsafeMigrations :: (MonadIO m, Functor m) => ReaderT SqlBackend m ()
 saveUnsafeMigrations = do
-    unsafe <- L.filter fst <$> parseMigration' migrateAll
-    unless (L.null $ L.map snd unsafe) $ do
-        liftIO $ T.writeFile filename $ T.unlines $ L.map ((`snoc` ';') . snd) unsafe
-        liftIO $ mapM_ (T.hPutStrLn stderr) unsafeMigMessages
-  where
-    filename = "migrations/migrate.unsafe"
-    unsafeMigMessages =
-      [ ""
-      , "*** UNSAFE MIGRATIONS EXIST"
-      , ""
-      , "The application will now exit. But first, unsafe migrations have been"
-      , "stored in «" <> filename <> "». Please review them, rename them"
-      , "appropriately, and commit them with your change."
-      , ""
-      , "More information follows."
-      , ""
-      ]
+     -- Automatic migrations use up memory. See
+     -- <https://github.com/yesodweb/persistent/issues/403>. They aren't
+     -- really great practice either. For now, they're commented out. In
+     -- the future, we'll likely just delete them.
+     -- 
+     -- unsafe <- L.filter fst <$> parseMigration' migrateAll
+    let unsafe = []
+    unless (L.null unsafe)
+      (liftIO (do T.writeFile filename
+                    (mconcat
+                     (L.map ((<> ";\n") . snd) unsafe))
+                  forM_ unsafeMigMessages
+                    (\message ->
+                       T.hPutStrLn stderr message)))
+  where filename = "migrations/migrate.unsafe"
+        unsafeMigMessages =
+          [""
+          ,"*** UNSAFE MIGRATIONS EXIST"
+          ,""
+          ,"The application will now exit. But first, unsafe migrations have been"
+          ,"stored in «" <> filename <> "». Please review them, rename them"
+          ,"appropriately, and commit them with your change."
+          ,""
+          ,"More information follows."
+          ,""]
 
 
 migrateTriggers :: MonadIO m => ReaderT SqlBackend m ()

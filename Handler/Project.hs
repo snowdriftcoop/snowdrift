@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE TupleSections, OverloadedStrings #-}
 
 module Handler.Project where
@@ -26,13 +27,11 @@ import Model.Shares
 import Model.SnowdriftEvent
 import Model.User
 import Model.Wiki
-import System.Locale (defaultTimeLocale)
 import View.Comment
 import View.Project
 import View.SnowdriftEvent
 import Widgets.Preview
 import Widgets.Time
-
 
 import           Data.Default   (def)
 import qualified Data.Foldable  as F
@@ -49,6 +48,9 @@ import           Text.Printf
 import           Yesod.AtomFeed
 import           Yesod.RssFeed
 
+#if !(MIN_VERSION_base(4,8,0))
+import System.Locale (defaultTimeLocale)
+#endif
 
 --------------------------------------------------------------------------------
 -- Utility functions

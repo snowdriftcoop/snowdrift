@@ -15,6 +15,7 @@ If you do not have a virtual machine program installed yet,
     vagrant up
     vagrant ssh
     cd /vagrant
+    ln -s cabal.config.7.8 cabal.config
     cabal install -fdev
     sdm init
     cabal install --enable-tests -fdev

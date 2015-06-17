@@ -23,4 +23,5 @@ TAGS
 
 # EclipseFP:
 /.dist-buildwrapper/
+cabal.config
 .stack-work
