@@ -102,9 +102,8 @@ redirectIfRethreaded comment_id = runDB (fetchCommentRethreadDB comment_id) >>= 
     Just new_comment_id -> redirectWith movedPermanently301 (CommentDirectLinkR new_comment_id)
 
 -- | Make a Comment forest Widget.
--- Also returns the comment forest directly,
--- so that additional actions may be taken on the comments
--- (such as marking them all as viewed).
+-- Also returns the comment forest directly, so further actions may be taken
+-- (such as marking all comments as viewed).
 makeCommentForestWidget
         :: (CommentMods -> CommentHandlerInfo)
         -> [Entity Comment]
@@ -138,12 +137,9 @@ makeCommentForestWidget
 
         claim_map            <- makeClaimedTicketMapDB     all_comment_ids
 
-        let claiming_users_set = S.fromList $
-                                 map ticketClaimingUser $ M.elems claim_map
+        let claiming_users_set = S.fromList $ map ticketClaimingUser $ M.elems claim_map
 
-        user_map             <- entitiesMap <$> fetchUsersInDB (S.toList $
-                                  makeCommentUsersSet
-                                  all_comments <> claiming_users_set)
+        user_map <- entitiesMap <$> fetchUsersInDB (S.toList $ makeCommentUsersSet all_comments <> claiming_users_set)
         closure_map          <- makeCommentClosingMapDB    all_comment_ids
         retract_map          <- makeCommentRetractingMapDB all_comment_ids
         ticket_map           <- makeTicketMapDB            all_comment_ids
@@ -155,16 +151,12 @@ makeCommentForestWidget
     max_depth <- get_max_depth
 
     let user_map_with_viewer = maybe id (onEntity M.insert) mviewer user_map
-        comment_forest = Tree.sortForestBy
-                         orderingNewestFirst
-                         (buildCommentForest roots children)
+        comment_forest = Tree.sortForestBy orderingNewestFirst (buildCommentForest roots children)
         comment_forest_widget =
             forM_ comment_forest $ \comment_tree -> do
                 let root_id = entityKey (rootLabel comment_tree)
-                    earlier_closures = M.findWithDefault
-                                       [] root_id earlier_closures_map
-                    earlier_retracts = M.findWithDefault
-                                       [] root_id earlier_retracts_map
+                    earlier_closures = M.findWithDefault [] root_id earlier_closures_map
+                    earlier_retracts = M.findWithDefault [] root_id earlier_retracts_map
 
                 commentTreeWidget
                     comment_tree
@@ -187,9 +179,8 @@ makeCommentForestWidget
     return (comment_forest_widget, comment_forest)
 
 -- | Make a Comment tree Widget.
--- Also returns the comment tree directly,
--- so that additional actions may be taken on the comments
--- (such as marking them all as viewed).
+-- Also returns the tree directly, so that additional actions may be taken
+-- (such as marking all comments as viewed).
 makeCommentTreeWidget
         :: (CommentMods -> CommentHandlerInfo)
         -> Entity Comment           -- ^ Root comment.
@@ -358,8 +349,7 @@ postClaimComment
                         (Entity comment_id comment)
                         user
                         make_comment_handler_info
-                        (def { mod_claim_map = M.insert comment_id
-                            (TicketClaiming now user_id comment_id mnote) })
+                        (def { mod_claim_map = M.insert comment_id (TicketClaiming now user_id comment_id mnote) })
                         (getMaxDepthDefault 0)
                         True
                     return (Just (comment_widget, form))
@@ -406,8 +396,9 @@ postCloseComment
                     return (Just (comment_widget, form))
         _ -> error "Error when submitting form."
 
--- | Handle a POST to a /delete URL. Returns whether the Comment was deleted,
--- per the "mode" POST param (True = deleted, False = not deleted).
+-- | Handle a POST to a /delete URL.
+-- Returns whether the Comment was deleted, per the "mode" POST param.
+-- (True = deleted, False = not deleted).
 -- Permission checking should occur *PRIOR TO* this function.
 postDeleteComment :: CommentId -> Handler Bool
 postDeleteComment comment_id =
@@ -419,8 +410,8 @@ postDeleteComment comment_id =
         _ -> return False
 
 -- | Handle a POST to an /edit URL.
--- Returns Nothing if the comment was edited or
--- Just Widget if there's a preview widget to display (per POST param "mode").
+-- Returns Nothing if the comment was edited.
+-- Returns Just Widget to display a preview widget per the "mode" POST param.
 -- Permission checking should occur *PRIOR TO* this function.
 postEditComment
         :: Entity User

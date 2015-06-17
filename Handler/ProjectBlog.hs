@@ -87,8 +87,7 @@ checkBlogPostCommentActionPermission
         lookupErr "checkBlogPostCommentActionPermission: comment id not found in map" comment_id
             <$> makeProjectCommentActionPermissionsMap (Just user) project_handle def [comment]
 
-    unless (can_perform_action action_permissions) $
-           permissionDenied "You don't have permission to perform this action."
+    unless (can_perform_action action_permissions) $ permissionDenied "You don't have permission to perform this action."
 
 makeBlogPostCommentForestWidget
         :: Maybe (Entity User)
@@ -173,19 +172,11 @@ requireRolesAny roles project_handle err_msg = do
 
 getProjectBlogR :: Text -> Handler Html
 getProjectBlogR project_handle = do
-    maybe_from <- fmap (key . PersistInt64 . read . T.unpack)
-                       <$> lookupGetParam "from"
-    post_count <- fromMaybe 10 <$> fmap (read . T.unpack)
-                                        <$> lookupGetParam "from"
-    Entity project_id project <- runYDB $ getBy404 $
-                                          UniqueProjectHandle project_handle
+    maybe_from <- fmap (key . PersistInt64 . read . T.unpack) <$> lookupGetParam "from"
+    post_count <- fromMaybe 10 <$> fmap (read . T.unpack) <$> lookupGetParam "from"
+    Entity project_id project <- runYDB $ getBy404 $ UniqueProjectHandle project_handle
 
-    let apply_offset blog = maybe id (\from_blog rest ->
-                                     blog
-                                     ^. BlogPostId
-                                     >=. val from_blog
-                                     &&. rest)
-                                     maybe_from
+    let apply_offset blog = maybe id (\from_blog rest -> blog ^. BlogPostId >=. val from_blog &&. rest) maybe_from
 
     (posts, next) <- fmap (splitAt post_count) $ runDB $
         select $
@@ -202,10 +193,7 @@ getProjectBlogR project_handle = do
         discussion = DiscussionOnProject $ Entity project_id project
 
     mviewer_id <- maybeAuthId
-    userIsTeamMember <- maybe (pure False)
-                              (\u -> runDB $
-                                userIsProjectTeamMemberDB u project_id)
-                              mviewer_id
+    userIsTeamMember <- maybe (pure False) (\u -> runDB $ userIsProjectTeamMemberDB u project_id) mviewer_id
 
     defaultLayout $ do
         snowdriftTitle $ projectName project <> " Blog"
@@ -218,11 +206,7 @@ getProjectBlogR project_handle = do
 
 getNewBlogPostR :: Text -> Handler Html
 getNewBlogPostR project_handle = do
-    (_, Entity _ project) <- requireRolesAny
-                             [Admin, TeamMember]
-                             project_handle $
-                             "You do not have permission "
-                             <> "to post to this project's blog."
+    (_, Entity _ project) <- requireRolesAny [Admin, TeamMember] project_handle $ "You do not have permission to post to this project's blog."
 
     (blog_form, _) <- generateFormPost $ projectBlogForm Nothing
 
