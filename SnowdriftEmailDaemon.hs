@@ -61,7 +61,7 @@ arguments pname user = Arguments
                         &= explicit &= name "sendmail-file"
                         &= typ "FILE"
     } &= summary "Snowdrift email daemon 0.1" &= program pname
-      &= details ["Databases: " <> (intercalate ", " $ fst <$> databases)]
+      &= details ["Databases: " <> intercalate ", " (fst <$> databases)]
   where
     default_db       = "development"
     defaultEmail     = (<> "@localhost")
@@ -99,10 +99,10 @@ parse db_arg email_arg delay_arg sendmail_exec_arg sendmail_file_arg = do
     return $ Parsed env' notif_email' loop_delay'
         (Text.pack sendmail_exec') (Text.pack sendmail_file')
   where
-    env' = case lookup (Text.unpack $ Text.toLower db_arg) databases
-           of Nothing -> error $ "unsupported database: "
-                              <> Text.unpack db_arg <> "; try '--help'"
-              Just v  -> v
+    env' = fromMaybe 
+               (error $ "unsupported database: "
+                     <> Text.unpack db_arg <> "; try '--help'")
+               (lookup (Text.unpack $ Text.toLower db_arg) databases)
     notif_email' =
         if Email.isValid $ Text.encodeUtf8 email_arg
         then email_arg
@@ -121,8 +121,8 @@ selectWithVerifiedEmailsUser :: ReaderT SqlBackend (ResourceT (LoggingT IO))
                                 [( Maybe Email, UTCTime, UserNotificationType
                                  , UserId, Markdown )]
 selectWithVerifiedEmailsUser =
-    (map (\(Value memail, Value ts, Value notif_type, Value to, Value content) ->
-           (memail, ts, notif_type, to, content))) <$>
+    map (\(Value memail, Value ts, Value notif_type, Value to, Value content) ->
+      (memail, ts, notif_type, to, content)) <$>
     (select $
      from $ \(notification_email `InnerJoin` user) -> do
          on $ notification_email ^. UserNotificationEmailTo ==.

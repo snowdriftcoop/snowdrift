@@ -206,7 +206,7 @@ getProjectBlogR project_handle = do
 
 getNewBlogPostR :: Text -> Handler Html
 getNewBlogPostR project_handle = do
-    (_, Entity _ project) <- requireRolesAny [Admin, TeamMember] project_handle $ "You do not have permission to post to this project's blog."
+    (_, Entity _ project) <- requireRolesAny [Admin, TeamMember] project_handle "You do not have permission to post to this project's blog."
 
     (blog_form, _) <- generateFormPost $ projectBlogForm Nothing
 
