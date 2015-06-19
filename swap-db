@@ -1,0 +1,4 @@
+dump=/tmp/snowdrift_production--switchover
+
+ssh -t snowdrift.coop -- sudo -u postgres pg_dump -Fc snowdrift_production -f $dump
+ssh -C snowdrift.coop cat $dump | ssh  -C dev.snowdrift.coop -- sudo -u postgres pg_restore -c -d snowdrift_production

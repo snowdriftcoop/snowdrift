@@ -4,23 +4,16 @@ stanzas:
       args:
           - production
       env:
-          APPROOT: https://snowdrift.coop
+          # FIXME: Remove dev after DNS switchover
+          APPROOT: https://dev.snowdrift.coop
           PGDATABASE: snowdrift_production
           PGUSER: snowdrift_production
       forward-env:
           - PGPASS
       hosts:
           - snowdrift.coop
-      # Require (and redirect to) secure site
-      ssl: true
-      requires-secure: true
-
-    # Friendly link for www.snowdrift.coop
-    - type: redirect
-      host: www.snowdrift.coop
-      actions:
-          - host: snowdrift.coop
-            secure: true
+          # FIXME: Remove after dns switchover
+          - dev.snowdrift.coop
 
     # - type: background
     #   exec: ../dist/build/SnowdriftEmailDaemon/SnowdriftEmailDaemon
@@ -41,6 +34,5 @@ extraFiles:
     # FIXME: This shouldn't be needed.
     - ../templates
 
-# Use the following to automatically copy your bundle upon creation via `yesod
-# keter`. Uses `scp` internally, so you can set it to a remote destination
-copy-to: snowdrift.coop:/opt/keter/incoming
+# FIXME: Remove dev after DNS switchover
+copy-to: dev.snowdrift.coop:/opt/keter/incoming
