@@ -713,6 +713,12 @@ getUpdatePledgeR project_handle = do
                         new_project_amount = new_share_value $* fromIntegral (sum new_project_shares)
                         old_project_amount = old_share_value $* fromIntegral (sum old_project_shares)
 
+                        user_decrease    = old_user_amount - new_user_amount
+                        project_decrease = old_project_amount - new_project_amount
+                        project_increase = new_project_amount - old_project_amount
+                        donations_drop   = project_decrease - user_decrease
+                        matched_extra    = project_increase - new_user_amount
+
                     defaultLayout $ do
                         snowdriftDashTitle
                             (projectName project)
