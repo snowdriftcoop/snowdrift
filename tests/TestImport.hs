@@ -11,6 +11,7 @@ import TestImport.Internal
 
 import Prelude hiding (exp)
 
+import Control.Monad (unless)
 import Control.Monad.Logger as TestImport
 import Control.Arrow as TestImport
 
@@ -61,6 +62,8 @@ import System.Process (spawnProcess, terminateProcess)
 
 import Control.Monad.Trans.Control
 import Control.Exception.Lifted as Lifted hiding (handle)
+
+import Test.QuickCheck
 
 onException :: MonadBaseControl IO m => m a -> m b -> m a
 onException = Lifted.onException
@@ -241,6 +244,20 @@ getByOrError :: ( PersistEntity val
                 , MonadIO m, Functor m )
              => Unique val -> ReaderT (PersistEntityBackend val) m (Entity val)
 getByOrError = getfOrError getBy persistUniqueToValues
+
+errorUnlessExpected :: (Show a, Eq a) => Text -> a -> a -> Example ()
+errorUnlessExpected msg expected actual =
+    unless (expected == actual) $
+        error $ T.unpack msg
+             <> ": expected " <> show expected
+             <> ", but got " <> show actual
+
+testProperty :: Testable prop => Text -> prop -> Example ()
+testProperty msg prop = do
+    res <- liftIO $ verboseCheckResult prop
+    case res of
+        Success {} -> return ()
+        err        -> error $ T.unpack msg <> ": " <> show err
 
 newWiki :: Text -> Language -> Text -> Text -> YesodExample App ()
 newWiki project language page content = do
