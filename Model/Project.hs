@@ -280,8 +280,8 @@ getProjectPages project_id =
 
 -- | Project's monthly share value: 0.1¢ × number of patrons.
 projectComputeShareValue :: [Int64] -> Milray
-projectComputeShareValue patrons =
-    Milray 10 $* (fromIntegral $ length $ filter (/= 0) patrons)
+projectComputeShareValue patronPledgeLevel =
+    Milray 10 $* (fromIntegral $ length $ filter (/= 0) patronPledgeLevel)
 
 -- signature needs to remain generic, for SnowdriftProcessPayments
 updateShareValue
