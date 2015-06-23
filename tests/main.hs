@@ -16,7 +16,6 @@ import NotifyTest
 import DiscussionTest
 import WikiTest
 import BlogTest
-import TagTest
 import MechanismTest
 import CommentTest
 
@@ -67,6 +66,5 @@ spec foundation file =
             wikiSpecs
             blogSpecs
             discussionSpecs
-            tagSpecs config
             mechanismSpecs
             commentSpecs config
