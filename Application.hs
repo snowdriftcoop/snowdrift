@@ -159,16 +159,18 @@ makeFoundation conf = do
                 options <- maybe [] L.words <$> lookupEnv
                                                     "SNOWDRIFT_TESTING_OPTIONS"
 
-                unless (elem "nodrop" options) $
-                    runStderrLoggingT $ runResourceT $
-                    withPostgresqlConn (pgConnStr dbconf') $
-                    runReaderT $ do
-                        liftIO $ putStrLn "dropping database..."
-                        runSql "DROP DATABASE IF EXISTS snowdrift_test;"
-                        liftIO $ putStrLn "creating database..."
-                        runSql $ "CREATE DATABASE snowdrift_test "
-                                 <> "WITH TEMPLATE snowdrift_test_template;"
-                        liftIO $ putStrLn "ready."
+                unless
+                    (elem "nodrop" options)
+                    (runStderrLoggingT $
+                        runResourceT $
+                            withPostgresqlConn (pgConnStr dbconf') $
+                                runReaderT $ do
+                                    liftIO $ putStrLn "dropping database..."
+                                    runSql "DROP DATABASE IF EXISTS snowdrift_test;"
+                                    liftIO $ putStrLn "creating database..."
+                                    runSql $ "CREATE DATABASE snowdrift_test "
+                                             <> "WITH TEMPLATE snowdrift_test_template;"
+                                    liftIO $ putStrLn "ready.")
         _ -> return ()
 
     let migration = runSqlPool

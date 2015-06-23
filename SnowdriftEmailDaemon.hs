@@ -99,9 +99,10 @@ parse db_arg email_arg delay_arg sendmail_exec_arg sendmail_file_arg = do
     return $ Parsed env' notif_email' loop_delay'
         (Text.pack sendmail_exec') (Text.pack sendmail_file')
   where
-    env' = fromMaybe 
-               (error $ "unsupported database: "
-                     <> Text.unpack db_arg <> "; try '--help'")
+    env' = fromMaybe
+               (error $
+                   "unsupported database: "
+                   <> Text.unpack db_arg <> "; try '--help'")
                (lookup (Text.unpack $ Text.toLower db_arg) databases)
     notif_email' =
         if Email.isValid $ Text.encodeUtf8 email_arg
@@ -121,8 +122,7 @@ selectWithVerifiedEmailsUser :: ReaderT SqlBackend (ResourceT (LoggingT IO))
                                 [( Maybe Email, UTCTime, UserNotificationType
                                  , UserId, Markdown )]
 selectWithVerifiedEmailsUser =
-    map (\(Value memail, Value ts, Value notif_type, Value to, Value content) ->
-      (memail, ts, notif_type, to, content)) <$>
+    unwrapValues <$>
     (select $
      from $ \(notification_email `InnerJoin` user) -> do
          on $ notification_email ^. UserNotificationEmailTo ==.
@@ -140,8 +140,7 @@ selectWithVerifiedEmailsProject :: ReaderT SqlBackend (ResourceT (LoggingT IO))
                                     , ProjectNotificationType, UserId
                                     , ProjectId, Markdown )]
 selectWithVerifiedEmailsProject =
-    map (\(Value memail, Value ts, Value notif_type, Value to, Value mproject, Value content) ->
-      (memail, ts, notif_type, to, mproject, content)) <$>
+    unwrapValues <$>
     (select $
      from $ \(notification_email `InnerJoin` user) -> do
          on $ notification_email ^. ProjectNotificationEmailTo ==.
@@ -282,19 +281,19 @@ deleteDuplicatesWithoutEmailsOrVerifiedEmailsProject = do
 fromUserNotificationEmail :: UTCTime -> UserNotificationType -> UserId
                           -> Markdown -> SqlQuery ()
 fromUserNotificationEmail ts notif_type to content = from $ \ne ->
-        where_ $ ne ^. UserNotificationEmailCreatedTs ==. val ts
-             &&. ne ^. UserNotificationEmailType      ==. val notif_type
-             &&. ne ^. UserNotificationEmailTo        ==. val to
-             &&. ne ^. UserNotificationEmailContent   ==. val content
+    where_ $ ne ^. UserNotificationEmailCreatedTs ==. val ts
+         &&. ne ^. UserNotificationEmailType      ==. val notif_type
+         &&. ne ^. UserNotificationEmailTo        ==. val to
+         &&. ne ^. UserNotificationEmailContent   ==. val content
 
 fromProjectNotificationEmail :: UTCTime -> ProjectNotificationType -> UserId
                              -> ProjectId -> Markdown -> SqlQuery ()
 fromProjectNotificationEmail ts notif_type to project content = from $ \ne ->
-        where_ $ ne ^. ProjectNotificationEmailCreatedTs ==. val ts
-             &&. ne ^. ProjectNotificationEmailType      ==. val notif_type
-             &&. ne ^. ProjectNotificationEmailTo        ==. val to
-             &&. ne ^. ProjectNotificationEmailProject   ==. val project
-             &&. ne ^. ProjectNotificationEmailContent   ==. val content
+    where_ $ ne ^. ProjectNotificationEmailCreatedTs ==. val ts
+         &&. ne ^. ProjectNotificationEmailType      ==. val notif_type
+         &&. ne ^. ProjectNotificationEmailTo        ==. val to
+         &&. ne ^. ProjectNotificationEmailProject   ==. val project
+         &&. ne ^. ProjectNotificationEmailContent   ==. val content
 
 deleteFromUserNotificationEmail :: MonadIO m => UTCTime -> UserNotificationType
                                 -> UserId -> Markdown -> SqlPersistT m ()
