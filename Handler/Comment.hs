@@ -469,16 +469,19 @@ postFlagComment user@(Entity user_id _) comment@(Entity comment_id _) make_comme
         Just route <- getCurrentRoute
         redirect route
 
--- | Handle a POST to either a /reply or /d URL (reply, or new topic). Checks the POST params for
--- "mode" key - could either be a "post" (posts the comment and returns its id) or a "preview"
--- (returns the comment tree and form, to wrap in a preview). Permission checking should occur
--- *PRIOR TO* this function.
-postNewComment :: Maybe CommentId -> Entity User -> DiscussionId
+-- | Handle a POST to either a /reply or /d URL (reply, or new topic).
+-- Checks the POST params for "mode" key - could either be a "post" (posts
+-- the comment and returns its id) or a "preview" (returns the comment tree
+-- and form, to wrap in a preview). Permission checking should occur *PRIOR
+-- TO* this function.
+postNewComment :: Maybe CommentId
+               -> Entity User
+               -> DiscussionId
                -> MakeActionPermissionsMap
                -> Handler (Either (Either Text CommentId) (Widget, Widget))
 postNewComment mparent_id (Entity user_id user) discussion_id make_permissions_map = do
-    -- commentReplyForm is OK here (the alternative is commentNewTopicForm) because they're
-    -- actually the same form with different titles.
+    -- commentReplyForm is OK here (the alternative is commentNewTopicForm)
+    -- because they're actually the same form with different titles.
     ((result, _), _) <- runFormPost commentReplyForm
     case result of
         FormSuccess (NewComment contents visibility language) -> lookupPostMode >>= \case
