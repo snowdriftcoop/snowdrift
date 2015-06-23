@@ -4,7 +4,7 @@ module Handler.Wiki where
 
 import Import
 
-import Handler.Comment
+import Handler.Comment as Com
 import Handler.Discussion
 import Handler.Utils
 import Handler.Wiki.Comment (makeWikiPageCommentForestWidget, wikiDiscussionPage)
@@ -346,9 +346,16 @@ postNewWikiDiscussionR project_handle language target = do
       Nothing
       user
       wikiPageDiscussion
-      (makeProjectCommentActionPermissionsMap (Just user) project_handle def) >>= \case
-        Left comment_id -> redirect (WikiCommentR project_handle language target comment_id)
-        Right (widget, form) -> defaultLayout $ previewWidget form "post" (wikiDiscussionPage project_handle language target widget)
+      (makeProjectCommentActionPermissionsMap (Just user) project_handle def)
+      >>= \case
+          ConfirmedPost (Left err) -> do
+               alertDanger err
+               redirect $ NewWikiDiscussionR project_handle language target
+          ConfirmedPost (Right comment_id) ->
+              redirect $ WikiCommentR project_handle language target comment_id
+          Com.Preview (widget, form) ->
+              defaultLayout $ previewWidget form "post" $
+                  wikiDiscussionPage project_handle language target widget
 
 --------------------------------------------------------------------------------
 -- /#language/#target/diff/#from/#to

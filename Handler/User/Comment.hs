@@ -356,8 +356,14 @@ postReplyUserCommentR user_id parent_id = do
       viewer
       (userDiscussion user)
       (makeUserCommentActionPermissionsMap (Just viewer) user_id def) >>= \case
-        Left _ -> redirect (UserCommentR user_id parent_id)
-        Right (widget, form) -> defaultLayout $ previewWidget form "post" (userDiscussionPage user_id widget)
+           ConfirmedPost (Left err) -> do
+               alertDanger err
+               redirect $ ReplyUserCommentR user_id parent_id
+           ConfirmedPost (Right _) ->
+               redirect $ UserCommentR user_id parent_id
+           Preview (widget, form) ->
+               defaultLayout $ previewWidget form "post" $
+                   userDiscussionPage user_id widget
 
 --------------------------------------------------------------------------------
 -- /rethread

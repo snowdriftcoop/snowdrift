@@ -2,7 +2,7 @@ module Handler.ProjectBlog where
 
 import Import
 
-import Handler.Comment
+import Handler.Comment as Com
 import Handler.Discussion
 import Handler.Utils
 import Model.Blog
@@ -472,9 +472,17 @@ postReplyBlogPostCommentR project_handle post_name parent_id = do
     Entity _ BlogPost{..} <- runYDB $ getBy404 $ UniqueBlogPost project_id post_name
     checkBlogPostCommentActionPermission can_reply user project_handle (Entity parent_id parent)
 
-    postNewComment (Just parent_id) user blogPostDiscussion (makeProjectCommentActionPermissionsMap (Just user) project_handle def) >>= \case
-        Left _ -> redirect $ BlogPostCommentR project_handle post_name parent_id
-        Right (widget, form) -> defaultLayout $ previewWidget form "post" $ projectBlogDiscussionPage project_handle post_name widget
+    postNewComment (Just parent_id) user blogPostDiscussion
+        (makeProjectCommentActionPermissionsMap
+             (Just user) project_handle def) >>= \case
+        ConfirmedPost (Left err) -> do
+            alertDanger err
+            redirect $ ReplyBlogPostCommentR project_handle post_name parent_id
+        ConfirmedPost (Right _) ->
+            redirect $ BlogPostCommentR project_handle post_name parent_id
+        Com.Preview (widget, form) ->
+            defaultLayout $ previewWidget form "post" $
+                projectBlogDiscussionPage project_handle post_name widget
 
 --------------------------------------------------------------------------------
 -- /p/#Text/blog/#Text/c/#CommentId/rethread
@@ -671,6 +679,13 @@ postNewBlogPostDiscussionR project_handle post_name = do
         Nothing
         user
         blogPostDiscussion
-        (makeProjectCommentActionPermissionsMap (Just user) project_handle def) >>= \case
-            Left comment_id -> redirect $ BlogPostCommentR project_handle post_name comment_id
-            Right (widget, form) -> defaultLayout $ previewWidget form "post" $ projectBlogDiscussionPage project_handle post_name widget
+        (makeProjectCommentActionPermissionsMap (Just user) project_handle def)
+        >>= \case
+            ConfirmedPost (Left err) -> do
+                alertDanger err
+                redirect $ NewBlogPostDiscussionR project_handle post_name
+            ConfirmedPost (Right comment_id) ->
+                redirect $ BlogPostCommentR project_handle post_name comment_id
+            Com.Preview (widget, form) ->
+                defaultLayout $ previewWidget form "post" $
+                    projectBlogDiscussionPage project_handle post_name widget

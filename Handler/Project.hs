@@ -7,7 +7,7 @@ import Import
 import Data.Filter
 import Data.Order
 import Data.Time.Format
-import Handler.Comment
+import Handler.Comment as Com
 import Handler.Discussion
 import Handler.Utils
 import Model.Application
@@ -1041,9 +1041,16 @@ postReplyProjectCommentR project_handle parent_id = do
       (Just parent_id)
       user
       (projectDiscussion project)
-      (makeProjectCommentActionPermissionsMap (Just user) project_handle def) >>= \case
-        Left _ -> redirect (ProjectCommentR project_handle parent_id)
-        Right (widget, form) -> defaultLayout $ previewWidget form "post" (projectDiscussionPage project_handle widget)
+      (makeProjectCommentActionPermissionsMap (Just user) project_handle def)
+      >>= \case
+          ConfirmedPost (Left err) -> do
+              alertDanger err
+              redirect $ ReplyProjectCommentR project_handle parent_id
+          ConfirmedPost (Right _) ->
+              redirect $ ProjectCommentR project_handle parent_id
+          Com.Preview (widget, form) ->
+              defaultLayout $ previewWidget form "post" $
+                  projectDiscussionPage project_handle widget
 
 --------------------------------------------------------------------------------
 -- /c/#CommentId/rethread
@@ -1266,6 +1273,13 @@ postNewProjectDiscussionR project_handle = do
       Nothing
       user
       projectDiscussion
-      (makeProjectCommentActionPermissionsMap (Just user) project_handle def) >>= \case
-        Left comment_id -> redirect (ProjectCommentR project_handle comment_id)
-        Right (widget, form) -> defaultLayout $ previewWidget form "post" (projectDiscussionPage project_handle widget)
+      (makeProjectCommentActionPermissionsMap (Just user) project_handle def)
+      >>= \case
+          ConfirmedPost (Left err) -> do
+              alertDanger err
+              redirect $ NewProjectDiscussionR project_handle
+          ConfirmedPost (Right comment_id) ->
+              redirect $ ProjectCommentR project_handle comment_id
+          Com.Preview (widget, form) ->
+              defaultLayout $ previewWidget form "post" $
+                  projectDiscussionPage project_handle widget

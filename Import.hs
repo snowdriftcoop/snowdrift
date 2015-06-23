@@ -116,9 +116,6 @@ selectExists = fmap (>0) . selectCount
 newHash :: IO Text
 newHash = T.pack . fst . randomString 42 <$> newStdGen
 
-countMatches :: (a -> a -> Bool) -> a -> [a] -> Int
-countMatches p x = length . filter (p x)
-
 class Count a where
     getCount :: a -> Int64
 

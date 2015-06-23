@@ -18,6 +18,7 @@ import WikiTest
 import BlogTest
 import TagTest
 import MechanismTest
+import CommentTest
 
 import TestHandler
 import Model.Markdown
@@ -68,3 +69,4 @@ spec foundation file =
             discussionSpecs
             tagSpecs config
             mechanismSpecs
+            commentSpecs config

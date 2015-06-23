@@ -3,7 +3,7 @@ module Handler.User where
 import Import
 
 import           Handler.Utils
-import           Handler.Comment
+import           Handler.Comment as Com
 import           Handler.Discussion
 import           Handler.User.Comment
 import           Model.Currency
@@ -298,8 +298,14 @@ postNewUserDiscussionR user_id = do
       viewer
       userDiscussion
       (makeUserCommentActionPermissionsMap (Just viewer) user_id def) >>= \case
-        Left comment_id -> redirect (UserCommentR user_id comment_id)
-        Right (widget, form) -> defaultLayout $ previewWidget form "post" (userDiscussionPage user_id widget)
+           ConfirmedPost (Left err) -> do
+               alertDanger err
+               redirect $ NewUserDiscussionR user_id
+           ConfirmedPost (Right comment_id) ->
+               redirect $ UserCommentR user_id comment_id
+           Com.Preview (widget, form) ->
+               defaultLayout $ previewWidget form "post" $
+                   userDiscussionPage user_id widget
 
 postUserDiscussionR :: UserId -> Handler Html
 postUserDiscussionR _ = error "TODO(mitchell)"

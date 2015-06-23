@@ -2,20 +2,27 @@
 {-# LANGUAGE RecordWildCards      #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE FlexibleInstances    #-}
+{-# LANGUAGE FlexibleContexts     #-}
 
-module TagTest (tagSpecs) where
+module CommentTest (commentSpecs) where
 
 import           Import (pprint)
 import           TestImport hiding (get)
 
-import           Control.Monad (when)
+import           Control.Monad (when, unless)
 import           Database.Esqueleto
 import           Data.Foldable (forM_)
 import           Data.Monoid ((<>))
 import           Data.Text (Text)
 import qualified Data.Text as Text
+import           Yesod (RedirectUrl, Route)
 import           Yesod.Default.Config (AppConfig (..), DefaultEnv (..))
 import           Yesod.Markdown (unMarkdown)
+
+commentSpecs :: AppConfig DefaultEnv a -> Spec
+commentSpecs conf = do
+    tagSpecs conf
+    ticketSpecs conf
 
 tagSpecs :: AppConfig DefaultEnv a -> Spec
 tagSpecs AppConfig {..} = ydescribe "tags" $
@@ -115,3 +122,73 @@ errorUnlessUniqueTag comment_id user_id tag_name = do
                                     <> " not unique")
                       mcomment_tag)
           mtag_id
+
+ticketSpecs :: AppConfig DefaultEnv a -> Spec
+ticketSpecs conf = ydescribe "ticket" $
+    yit "'ticket:' syntax" $ do
+        testTicket conf Mary
+            (enRoute NewWikiDiscussionR "about")
+            (enRoute ReplyWikiCommentR "about")
+            (enRoute EditWikiCommentR "about")
+
+        mary_id <- userId Mary
+        testTicket conf Mary
+            (NewUserDiscussionR mary_id)
+            (ReplyUserCommentR mary_id)
+            (EditUserCommentR mary_id)
+
+        testTicket conf Mary
+            (NewProjectDiscussionR "snowdrift")
+            (ReplyProjectCommentR "snowdrift")
+            (EditProjectCommentR "snowdrift")
+
+        -- Depends on the blog test from 'NotifyTest'.
+        testTicket conf Mary
+            (NewBlogPostDiscussionR "snowdrift" "testing")
+            (ReplyBlogPostCommentR "snowdrift" "testing")
+            (EditBlogPostCommentR "snowdrift" "testing")
+
+testTicket
+    :: (RedirectUrl App url1, RedirectUrl App url2, Login user)
+    => AppConfig DefaultEnv a
+    -> user -> url1 -> (CommentId -> url2) -> (CommentId -> Route App)
+    -> Example ()
+testTicket AppConfig {..} user new_route reply_route edit_route = [marked|
+    -- Ticket number is not changed when ticket is edited.
+    ------------------------------------------------------
+    -- Create a ticket.
+    loginAs user
+    let new_ticket_line = "ticket: this is a new ticket"
+    postComment new_route $
+        byLabel "New Topic" $
+            "Testing the 'ticket:' syntax.\n" <>
+            new_ticket_line <> "\n" <>
+            "One more line, just in case."
+    (new_comment_id, True) <- getLatestCommentId
+    mnew_ticket <- testDB $ getBy $ UniqueTicket new_comment_id
+    when (mnew_ticket == Nothing) $ error "new ticket not found"
+
+    -- Reply to it.
+    let reply_ticket_line = "ticket: this is a replied ticket"
+    postComment (reply_route new_comment_id) $
+        byLabel "Reply" $ "Replying\n" <> reply_ticket_line
+    (reply_comment_id, True) <- getLatestCommentId
+    mreply_ticket <- testDB $ getBy $ UniqueTicket reply_comment_id
+    let comment_route = render appRoot $ edit_route reply_comment_id
+
+    -- Edit the reply.
+    let edit_ticket_line = "ticket: this is an edited ticket"
+    editComment comment_route edit_ticket_line
+    medit_ticket <- testDB $ getBy $ UniqueTicket reply_comment_id
+    case (mreply_ticket, medit_ticket) of
+        (Just (Entity reply_ticket_id _), Just (Entity edit_ticket_id _)) ->
+            when (reply_ticket_id /= edit_ticket_id) $ error "ticket id changed"
+        _ -> error "ticket not found"
+
+
+    -- Removing the 'ticket:' line removes the ticket from the DB.
+    --------------------------------------------------------------
+    editComment comment_route "no tickets here"
+    medit_ticket2 <- testDB $ getBy $ UniqueTicket reply_comment_id
+    unless (medit_ticket2 == Nothing) $ error "ticket not deleted"
+|]
