@@ -102,16 +102,17 @@ redirectIfRethreaded comment_id = runDB (fetchCommentRethreadDB comment_id) >>= 
     Nothing -> return ()
     Just new_comment_id -> redirectWith movedPermanently301 (CommentDirectLinkR new_comment_id)
 
--- | Make a Comment forest Widget. Also returns the comment forest directly, so that additional
--- actions may be taken on the comments (such as marking them all as viewed).
+-- | Make a Comment forest Widget.
+-- Also returns the comment forest directly, so further actions may be taken
+-- (such as marking all comments as viewed).
 makeCommentForestWidget
         :: (CommentMods -> CommentHandlerInfo)
         -> [Entity Comment]
         -> Maybe (Entity User)
-        -> CommentMods                  -- ^ Comment structure modifications.
-        -> Handler MaxDepth             -- ^ Max depth getter.
-        -> Bool                         -- ^ Is this a preview?
-        -> Widget                       -- ^ Widget to display under root comment.
+        -> CommentMods              -- ^ Comment structure modifications.
+        -> Handler MaxDepth         -- ^ Max depth getter.
+        -> Bool                     -- ^ Is this a preview?
+        -> Widget                   -- ^ Widget to display under root comment.
         -> Handler (Widget, Forest (Entity Comment))
 makeCommentForestWidget
         make_comment_handler_info
@@ -126,7 +127,8 @@ makeCommentForestWidget
 
     (children, user_map, earlier_closures_map, earlier_retracts_map,
      closure_map, retract_map, ticket_map, claim_map, flag_map) <- runDB $ do
-        children <- fetchCommentsDescendantsDB root_ids commentHandlerHasPermission
+        children <- fetchCommentsDescendantsDB root_ids
+                                               commentHandlerHasPermission
 
         let all_comments    = roots ++ children
             all_comment_ids = map entityKey all_comments
@@ -138,7 +140,7 @@ makeCommentForestWidget
 
         let claiming_users_set = S.fromList $ map ticketClaimingUser $ M.elems claim_map
 
-        user_map             <- entitiesMap <$> fetchUsersInDB (S.toList $ makeCommentUsersSet all_comments <> claiming_users_set)
+        user_map <- entitiesMap <$> fetchUsersInDB (S.toList $ makeCommentUsersSet all_comments <> claiming_users_set)
         closure_map          <- makeCommentClosingMapDB    all_comment_ids
         retract_map          <- makeCommentRetractingMapDB all_comment_ids
         ticket_map           <- makeTicketMapDB            all_comment_ids
@@ -149,7 +151,7 @@ makeCommentForestWidget
 
     max_depth <- get_max_depth
 
-    let user_map_with_viewer = (maybe id (onEntity M.insert) mviewer) user_map
+    let user_map_with_viewer = maybe id (onEntity M.insert) mviewer user_map
         comment_forest = Tree.sortForestBy orderingNewestFirst (buildCommentForest roots children)
         comment_forest_widget =
             forM_ comment_forest $ \comment_tree -> do
@@ -177,16 +179,17 @@ makeCommentForestWidget
 
     return (comment_forest_widget, comment_forest)
 
--- | Make a Comment tree Widget. Also returns the comment tree directly, so that additional
--- actions may be taken on the comments (such as marking them all as viewed).
+-- | Make a Comment tree Widget.
+-- Also returns the tree directly, so that additional actions may be taken
+-- (such as marking all comments as viewed).
 makeCommentTreeWidget
         :: (CommentMods -> CommentHandlerInfo)
-        -> Entity Comment               -- ^ Root comment.
+        -> Entity Comment           -- ^ Root comment.
         -> Maybe (Entity User)
-        -> CommentMods                  -- ^ Comment structure modifications.
+        -> CommentMods              -- ^ Comment structure modifications.
         -> Handler MaxDepth
-        -> Bool                         -- ^ Is this a preview?
-        -> Widget                       -- ^ Widget to display under root comment.
+        -> Bool                     -- ^ Is this a preview?
+        -> Widget                   -- ^ Widget to display under root comment.
         -> Handler (Widget, Tree (Entity Comment))
 makeCommentTreeWidget a b c d e f g  = do
     (widget, [tree]) <- makeCommentForestWidget a [b] c d e f g
@@ -201,9 +204,12 @@ type MakeCommentActionWidget
    -> Bool -- is preview?
    -> Handler (Widget, Tree (Entity Comment))
 
--- | Make a comment action widget (close, delete, etc.). Unexported. Call one of
--- makeCloseCommentWidget, makeDeleteCommentWidget, etc. directly.
-makeCommentActionWidget :: (CommentActionPermissions -> Bool) -> Widget -> MakeCommentActionWidget
+-- | Make a comment action widget (close, delete, etc.).
+-- Unexported. Call makeCloseCommentWidget, makeDeleteCommentWidget, etc. directly.
+makeCommentActionWidget
+    :: (CommentActionPermissions -> Bool)
+    -> Widget
+    -> MakeCommentActionWidget
 makeCommentActionWidget
         can_perform_action
         form_widget
@@ -289,7 +295,7 @@ getProjectCommentAddTag comment_id project_id user_id = do
 
     let filter_tags = filter (\(Entity t _) -> not $ M.member t tag_map)
     (apply_form, _)  <- generateFormPost $ newCommentTagForm (filter_tags project_tags) (filter_tags other_tags)
-    (create_form, _) <- generateFormPost $ createCommentTagForm
+    (create_form, _) <- generateFormPost createCommentTagForm
 
     defaultLayout $(widgetFile "new_comment_tag")
 
@@ -300,26 +306,36 @@ getUserCommentAddTag comment_id viewer_id = do
         comment_tags <- fetchCommentCommentTagsDB comment_id
         tag_map      <- entitiesMap <$> fetchTagsInDB (map commentTagTag comment_tags)
         tags         <- M.findWithDefault [] comment_id <$> buildAnnotatedCommentTagsDB (Just viewer_id) comment_tags
-        all_tags     <- select $ from $ return
+        all_tags     <- select $ from return
         return (tag_map, tags, all_tags)
 
     let filter_tags = filter (\(Entity t _) -> not $ M.member t tag_map)
     (apply_form, _)  <- generateFormPost $ newCommentTagForm [] (filter_tags all_tags)
-    (create_form, _) <- generateFormPost $ createCommentTagForm
+    (create_form, _) <- generateFormPost createCommentTagForm
 
     defaultLayout $(widgetFile "new_comment_tag")
 
--- | Handle a POST to a /approve URL. Permission checking should occur *PRIOR TO* this function.
+-- | Handle a POST to a /approve URL.
+-- Permission checking should occur *PRIOR TO* this function.
 postApproveComment :: UserId -> CommentId -> Comment -> Handler ()
 postApproveComment user_id comment_id comment = do
     runSDB (approveCommentDB user_id comment_id comment)
     alertSuccess "comment approved"
 
-postClaimComment :: Entity User -> CommentId -> Comment -> (CommentMods -> CommentHandlerInfo) -> Handler (Maybe (Widget, Widget))
-postClaimComment user@(Entity user_id _) comment_id comment make_comment_handler_info = do
+postClaimComment
+    :: Entity User
+    -> CommentId
+    -> Comment
+    -> (CommentMods -> CommentHandlerInfo)
+    -> Handler (Maybe (Widget, Widget))
+postClaimComment
+    user@(Entity user_id _)
+    comment_id
+    comment
+    make_comment_handler_info = do
     ((result, _), _) <- runFormPost (claimCommentForm Nothing)
     case result of
-        FormSuccess mnote -> do
+        FormSuccess mnote ->
             lookupPostMode >>= \case
                 Just PostMode -> do
                     runSDB (userClaimCommentDB user_id comment_id mnote)
@@ -348,7 +364,11 @@ postCloseComment
         -> Comment
         -> (CommentMods -> CommentHandlerInfo)
         -> Handler (Maybe (Widget, Widget))
-postCloseComment user@(Entity user_id _) comment_id comment make_comment_handler_info = do
+postCloseComment
+    user@(Entity user_id _)
+    comment_id
+    comment
+    make_comment_handler_info = do
     ((result, _), _) <- runFormPost (closeCommentForm Nothing)
     case result of
         FormSuccess (NewClosure reason) -> do
@@ -377,8 +397,9 @@ postCloseComment user@(Entity user_id _) comment_id comment make_comment_handler
                     return (Just (comment_widget, form))
         _ -> error "Error when submitting form."
 
--- | Handle a POST to a /delete URL. Returns whether or not the Comment was deleted,
--- per the "mode" POST param (True = deleted, False = not deleted).
+-- | Handle a POST to a /delete URL.
+-- Returns whether the Comment was deleted, per the "mode" POST param.
+-- (True = deleted, False = not deleted).
 -- Permission checking should occur *PRIOR TO* this function.
 postDeleteComment :: CommentId -> Handler Bool
 postDeleteComment comment_id =
@@ -389,15 +410,19 @@ postDeleteComment comment_id =
             return True
         _ -> return False
 
--- | Handle a POST to an /edit URL. Returns Nothing if the comment was edited, or Just Widget
--- if there's a preview widget to display (per POST param "mode").
+-- | Handle a POST to an /edit URL.
+-- Returns Nothing if the comment was edited.
+-- Returns Just Widget to display a preview widget per the "mode" POST param.
 -- Permission checking should occur *PRIOR TO* this function.
 postEditComment
         :: Entity User
         -> Entity Comment
         -> (CommentMods -> CommentHandlerInfo)
         -> Handler (Maybe (Widget, Widget))
-postEditComment user@(Entity user_id _) (Entity comment_id comment) make_comment_handler_info = do
+postEditComment
+        user@(Entity user_id _)
+        (Entity comment_id comment)
+        make_comment_handler_info = do
     ((result, _), _) <- runFormPost (editCommentForm "" (commentLanguage comment))
     case result of
         FormSuccess (EditComment new_text new_language) -> lookupPostMode >>= \case
@@ -432,7 +457,7 @@ postFlagComment :: Entity User -> Entity Comment -> (CommentMods -> CommentHandl
 postFlagComment user@(Entity user_id _) comment@(Entity comment_id _) make_comment_handler_info = do
     ((result, _), _) <- runFormPost (flagCommentForm Nothing Nothing)
     case result of
-        -- TODO(mitchell): Change the form to just return [FlagReason], not Maybe [FlagReason]
+        -- TODO: Change the form to just return [FlagReason], not Maybe [FlagReason]
         FormSuccess (Nothing, _) -> flagFailure "Please check at least one Code of Conduct violation."
         FormSuccess (Just [], _) -> flagFailure "Please check at least one Code of Conduct violation."
         FormSuccess (Just reasons, message) -> lookupPostMode >>= \case
@@ -477,20 +502,25 @@ data CommentPostResult a b = ConfirmedPost a | Preview b
 -- the comment and returns its id) or a "preview" (returns the comment tree
 -- and form, to wrap in a preview). Permission checking should occur *PRIOR
 -- TO* this function.
-postNewComment :: Maybe CommentId
-               -> Entity User
-               -> DiscussionId
-               -> MakeActionPermissionsMap
-               -> Handler
-                      (CommentPostResult (Either Text CommentId)
-                                         (Widget, Widget))
-postNewComment mparent_id (Entity user_id user) discussion_id make_permissions_map = do
+postNewComment
+    :: Maybe CommentId
+    -> Entity User
+    -> DiscussionId
+    -> MakeActionPermissionsMap
+    -> Handler
+           (CommentPostResult (Either Text CommentId)
+                              (Widget, Widget))
+postNewComment
+        mparent_id
+        (Entity user_id user)
+        discussion_id
+        make_permissions_map = do
     -- commentReplyForm is OK here (the alternative is commentNewTopicForm)
     -- because they're actually the same form with different titles.
     ((result, _), _) <- runFormPost commentReplyForm
     case result of
         FormSuccess (NewComment contents visibility language) -> lookupPostMode >>= \case
-            Just PostMode -> do
+            Just PostMode ->
                 if userIsEstablished user
                     then do
                         ecomment_id <- runSDB $ postApprovedCommentDB
@@ -537,7 +567,7 @@ postNewComment mparent_id (Entity user_id user) discussion_id make_permissions_m
                           (M.singleton user_id user)
                           mempty -- closure map
                           mempty -- retract map
-                          mempty -- ticket map - TODO(mitchell): this isn't right... if *this* comment is a ticket, we should display it as such.
+                          mempty -- ticket map - TODO: this isn't right... if *this* comment is a ticket, we should display it as such.
                           mempty -- claim map
                           mempty -- flag map
                           True
@@ -551,7 +581,7 @@ postNewComment mparent_id (Entity user_id user) discussion_id make_permissions_m
 
 postRethreadComment :: UserId -> CommentId -> Comment -> Handler Html
 postRethreadComment user_id comment_id comment = do
-    -- TODO(david): AVOID CYCLES
+    -- TODO: AVOID CYCLES
 
     ((result, _), _) <- runFormPost rethreadCommentForm
     case result of
@@ -564,7 +594,7 @@ postRethreadComment user_id comment_id comment = do
 
             let notfound = error "could not find discussion for that URL"
 
-            -- FIXME(mitchell,david): We shouldn't have to enumerate the routes like this.
+            -- FIXME: We shouldn't have to enumerate the routes like this.
             -- Luckily robust rethreading is not priority.
             (new_route, mnew_parent_id, new_discussion_id) <- case parseRoute (url, []) of
                 Just (new_route@(WikiCommentR new_project_handle new_language new_target new_parent_id)) -> do
@@ -614,7 +644,7 @@ postRethreadComment user_id comment_id comment = do
                     alertSuccess ("comment rethreaded to " <> new_route_text)
                     redirect new_parent_url
 
-                _ -> error "no preview for rethreads yet" -- TODO(david)
+                _ -> error "no preview for rethreads yet" -- TODO
         _ -> error "Error when submitting form."
 
 -- | Handle a POST to a /close URL.
@@ -651,11 +681,16 @@ postRetractComment user comment_id comment make_comment_handler_info = do
                     return (Just (comment_widget, form))
         _ -> error "Error when submitting form."
 
-postUnclaimComment :: Entity User -> CommentId -> Comment -> (CommentMods -> CommentHandlerInfo) -> Handler (Maybe (Widget, Widget))
+postUnclaimComment
+    :: Entity User
+    -> CommentId
+    -> Comment
+    -> (CommentMods -> CommentHandlerInfo)
+    -> Handler (Maybe (Widget, Widget))
 postUnclaimComment user comment_id comment make_comment_handler_info = do
     ((result, _), _) <- runFormPost (claimCommentForm Nothing)
     case result of
-        FormSuccess mnote -> do
+        FormSuccess mnote ->
             lookupPostMode >>= \case
                 Just PostMode -> do
                     runSDB (userUnclaimCommentDB comment_id mnote)
@@ -683,7 +718,7 @@ postWatchComment viewer_id comment_id = do
     now <- liftIO getCurrentTime
 
     case result of
-        FormSuccess () -> do
+        FormSuccess () ->
             runYDB $ insert_ $ WatchedSubthread now viewer_id comment_id
 
         _ -> error "Error when submitting form."
@@ -693,8 +728,8 @@ postUnwatchComment viewer_id comment_id = do
     ((result, _), _) <- runFormPost watchCommentForm
 
     case result of
-        FormSuccess () -> do
-            runYDB $ delete $ from $ \ws -> do
+        FormSuccess () ->
+            runYDB $ delete $ from $ \ws ->
                 where_ $ ws ^. WatchedSubthreadUser ==. val viewer_id
                     &&. ws ^. WatchedSubthreadRoot ==. val comment_id
 
@@ -738,7 +773,7 @@ postCommentCreateTag comment_id = do
     unless (userCanAddTag user) $
         permissionDenied "You must be an established user to add tags"
 
-    ((result_create, _), _) <- runFormPost $ createCommentTagForm
+    ((result_create, _), _) <- runFormPost createCommentTagForm
     case result_create of
         FormSuccess tag_name -> do
             tag_exists <- runDB $ getBy (UniqueTag tag_name) >>= \case

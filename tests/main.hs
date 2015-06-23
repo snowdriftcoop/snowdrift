@@ -52,7 +52,7 @@ withTempFile f = bracket
 spec :: App -> FileName -> IO ()
 spec foundation file =
     hspec $ do
-        describe "fix links" $ do
+        describe "fix links" $
             it "works correctly on all examples" $ do
                 let mismatches = unsafePerformIO $ testHandler testFixLinks
                 case mismatches of

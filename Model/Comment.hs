@@ -90,7 +90,7 @@ import qualified Data.Text                            as T
 import           Data.Tree
 import           Database.Esqueleto.Internal.Language (Insertion)
 import qualified Database.Persist                     as P
-import qualified Prelude                              as Prelude
+import qualified Prelude
 
 --------------------------------------------------------------------------------
 -- Types
@@ -175,7 +175,7 @@ buildCommentTree r rs = unfoldTree step (r,rs)
 buildCommentForest :: [Entity Comment] -- root comments
                    -> [Entity Comment] -- replies comments
                    -> Forest (Entity Comment)
-buildCommentForest roots replies = (map (flip buildCommentTree replies)) roots
+buildCommentForest roots replies = map (flip buildCommentTree replies) roots
 
 -- | Construct a comment, auto-approved by 'this' User (because they are
 -- established).
@@ -275,11 +275,7 @@ insertApprovedCommentDB
         created_ts
         discussion_id
         mparent_id
-        user_id
-        text
-        depth
-        visibility
-        language =
+        user_id =
 
     insertCommentDB
         (Just created_ts)
@@ -289,10 +285,6 @@ insertApprovedCommentDB
         discussion_id
         mparent_id
         user_id
-        text
-        depth
-        visibility
-        language
 
 insertUnapprovedCommentDB
     :: UTCTime
@@ -733,7 +725,7 @@ fetchCommentAncestorRetractsDB =
 
 commentClosuresOrRetracts
     :: (PersistEntity val, PersistEntityBackend val ~ SqlBackend)
-    => (EntityField val CommentId) -> CommentId -> DB [val]
+    => EntityField val CommentId -> CommentId -> DB [val]
 commentClosuresOrRetracts comment_field comment_id = fmap (map entityVal) $
     select $
     from $ \(ca `InnerJoin` table) -> do
@@ -752,7 +744,7 @@ fetchCommentAncestorRetractsDB' =
 
 commentClosuresOrRetracts'
     :: (PersistEntity val, PersistEntityBackend val ~ SqlBackend)
-    => (EntityField val CommentId) -> CommentId -> DB [val]
+    => EntityField val CommentId -> CommentId -> DB [val]
 commentClosuresOrRetracts' comment_field comment_id = do
     all_comment_ids <- (comment_id :) <$> fetchCommentAncestorsDB comment_id
     fmap (map entityVal) $
@@ -1205,7 +1197,7 @@ makeCommentRouteDB langs comment_id = get comment_id >>= \case
                         (wikiTargetTarget wiki_target)
                         comment_id
 
-            DiscussionOnUser (Entity user_id _) -> do
+            DiscussionOnUser (Entity user_id _) ->
                 return $ Just $ UserCommentR user_id comment_id
 
             DiscussionOnBlogPost (Entity _ blog_post) -> do
