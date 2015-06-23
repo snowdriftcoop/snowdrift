@@ -356,12 +356,12 @@ postReplyUserCommentR user_id parent_id = do
       viewer
       (userDiscussion user)
       (makeUserCommentActionPermissionsMap (Just viewer) user_id def) >>= \case
-           Left (Left err) -> do
+           ConfirmedPost (Left err) -> do
                alertDanger err
                redirect $ ReplyUserCommentR user_id parent_id
-           Left (Right _) ->
+           ConfirmedPost (Right _) ->
                redirect $ UserCommentR user_id parent_id
-           Right (widget, form) ->
+           Preview (widget, form) ->
                defaultLayout $ previewWidget form "post" $
                    userDiscussionPage user_id widget
 

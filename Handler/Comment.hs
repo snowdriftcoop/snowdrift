@@ -10,6 +10,7 @@ module Handler.Comment
 
     -- Utils
     , MakeCommentActionWidget
+    , CommentPostResult(..)
     , earlierClosuresFromMaybeParentId
     , getCommentTags
     , getMaxDepth
@@ -469,6 +470,8 @@ postFlagComment user@(Entity user_id _) comment@(Entity comment_id _) make_comme
         Just route <- getCurrentRoute
         redirect route
 
+data CommentPostResult a b = ConfirmedPost a | Preview b
+
 -- | Handle a POST to either a /reply or /d URL (reply, or new topic).
 -- Checks the POST params for "mode" key - could either be a "post" (posts
 -- the comment and returns its id) or a "preview" (returns the comment tree
@@ -478,7 +481,9 @@ postNewComment :: Maybe CommentId
                -> Entity User
                -> DiscussionId
                -> MakeActionPermissionsMap
-               -> Handler (Either (Either Text CommentId) (Widget, Widget))
+               -> Handler
+                      (CommentPostResult (Either Text CommentId)
+                                         (Widget, Widget))
 postNewComment mparent_id (Entity user_id user) discussion_id make_permissions_map = do
     -- commentReplyForm is OK here (the alternative is commentNewTopicForm)
     -- because they're actually the same form with different titles.
@@ -492,19 +497,19 @@ postNewComment mparent_id (Entity user_id user) discussion_id make_permissions_m
                             user_id mparent_id discussion_id contents
                             visibility language
                         case ecomment_id of
-                            Left err -> return $ Left $ Left err
+                            Left err -> return $ ConfirmedPost $ Left err
                             Right comment_id -> do
                                 alertSuccess "comment posted"
-                                return $ Left $ Right comment_id
+                                return $ ConfirmedPost $ Right comment_id
                     else do
                         ecomment_id <- runSDB $ postUnapprovedCommentDB
                             user_id mparent_id discussion_id contents
                             visibility language
                         case ecomment_id of
-                            Left err -> return $ Left $ Left err
+                            Left err -> return $ ConfirmedPost $ Left err
                             Right comment_id -> do
                                 alertSuccess "comment submitted for moderation"
-                                return $ Left $ Right comment_id
+                                return $ ConfirmedPost $ Right comment_id
             _ -> do
                 earlier_closures    <- earlierClosuresFromMaybeParentId mparent_id
                 earlier_retracts    <- earlierRetractsFromMaybeParentId mparent_id
@@ -540,7 +545,7 @@ postNewComment mparent_id (Entity user_id user) discussion_id make_permissions_m
                           0
                           mempty
 
-                return (Right (comment_tree, form))
+                return (Preview (comment_tree, form))
         FormMissing -> error "Form missing."
         FormFailure msgs -> error $ "Error submitting form: " ++ T.unpack (T.intercalate "\n" msgs)
 

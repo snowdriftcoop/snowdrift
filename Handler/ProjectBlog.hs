@@ -2,7 +2,7 @@ module Handler.ProjectBlog where
 
 import Import
 
-import Handler.Comment
+import Handler.Comment as Com
 import Handler.Discussion
 import Handler.Utils
 import Model.Blog
@@ -472,12 +472,12 @@ postReplyBlogPostCommentR project_handle post_name parent_id = do
     postNewComment (Just parent_id) user blogPostDiscussion
         (makeProjectCommentActionPermissionsMap
              (Just user) project_handle def) >>= \case
-        Left (Left err) -> do
+        ConfirmedPost (Left err) -> do
             alertDanger err
             redirect $ ReplyBlogPostCommentR project_handle post_name parent_id
-        Left (Right _) ->
+        ConfirmedPost (Right _) ->
             redirect $ BlogPostCommentR project_handle post_name parent_id
-        Right (widget, form) ->
+        Com.Preview (widget, form) ->
             defaultLayout $ previewWidget form "post" $
                 projectBlogDiscussionPage project_handle post_name widget
 
@@ -678,12 +678,12 @@ postNewBlogPostDiscussionR project_handle post_name = do
         blogPostDiscussion
         (makeProjectCommentActionPermissionsMap (Just user) project_handle def)
         >>= \case
-            Left (Left err) -> do
+            ConfirmedPost (Left err) -> do
                 alertDanger err
                 redirect $ NewBlogPostDiscussionR project_handle post_name
-            Left (Right comment_id) ->
+            ConfirmedPost (Right comment_id) ->
                 redirect $ BlogPostCommentR project_handle post_name comment_id
-            Right (widget, form) ->
+            Com.Preview (widget, form) ->
                 defaultLayout $ previewWidget form "post" $
                     projectBlogDiscussionPage project_handle post_name widget
 

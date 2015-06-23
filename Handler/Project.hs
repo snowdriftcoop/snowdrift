@@ -7,7 +7,7 @@ import Import
 import Data.Filter
 import Data.Order
 import Data.Time.Format
-import Handler.Comment
+import Handler.Comment as Com
 import Handler.Discussion
 import Handler.Utils
 import Model.Application
@@ -1037,12 +1037,12 @@ postReplyProjectCommentR project_handle parent_id = do
       (projectDiscussion project)
       (makeProjectCommentActionPermissionsMap (Just user) project_handle def)
       >>= \case
-          Left (Left err) -> do
+          ConfirmedPost (Left err) -> do
               alertDanger err
               redirect $ ReplyProjectCommentR project_handle parent_id
-          Left (Right _) ->
+          ConfirmedPost (Right _) ->
               redirect $ ProjectCommentR project_handle parent_id
-          Right (widget, form) ->
+          Com.Preview (widget, form) ->
               defaultLayout $ previewWidget form "post" $
                   projectDiscussionPage project_handle widget
 
@@ -1269,11 +1269,11 @@ postNewProjectDiscussionR project_handle = do
       projectDiscussion
       (makeProjectCommentActionPermissionsMap (Just user) project_handle def)
       >>= \case
-          Left (Left err) -> do
+          ConfirmedPost (Left err) -> do
               alertDanger err
               redirect $ NewProjectDiscussionR project_handle
-          Left (Right comment_id) ->
+          ConfirmedPost (Right comment_id) ->
               redirect $ ProjectCommentR project_handle comment_id
-          Right (widget, form) ->
+          Com.Preview (widget, form) ->
               defaultLayout $ previewWidget form "post" $
                   projectDiscussionPage project_handle widget

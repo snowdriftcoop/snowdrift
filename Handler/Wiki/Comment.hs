@@ -4,7 +4,7 @@ module Handler.Wiki.Comment where
 
 import Import
 
-import           Handler.Comment
+import           Handler.Comment as Com
 import           Handler.Project (checkProjectCommentActionPermission)
 import           Model.Comment
 import           Model.Comment.ActionPermissions
@@ -362,13 +362,13 @@ postReplyWikiCommentR project_handle language target parent_id = do
       (wikiPageDiscussion page)
       (makeProjectCommentActionPermissionsMap (Just user) project_handle def)
       >>= \case
-          Left (Left err) -> do
+          ConfirmedPost (Left err) -> do
               alertDanger err
               redirect $ ReplyWikiCommentR
                   project_handle language target parent_id
-          Left (Right _)->
+          ConfirmedPost (Right _)->
               redirect $ WikiCommentR project_handle language target parent_id
-          Right (widget, form) ->
+          Com.Preview (widget, form) ->
               defaultLayout $ previewWidget form "post" $
                   wikiDiscussionPage project_handle language target widget
 
