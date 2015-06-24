@@ -743,16 +743,16 @@ getTicketsR :: Text -> Handler Html
 getTicketsR project_handle = do
     muser_id <- maybeAuthId
 
-    -- ((result, formWidget), encType) <- runFormGet viewForm
     ((result, formWidget), encType) <- runFormGet searchWidget
     let (filter_expression, order_expression) = case result of
-            -- FormSuccess x -> x
-            --FormSuccess x -> (parseFilterExpression $ searchString x, defaultOrder)
             FormSuccess x -> ((either
                                 (const defaultFilter)
                                 id
-                                (parseFilterExpression $ searchString x)),
-                             defaultOrder)
+                                (parseFilterExpression $ searchFilterString x)),
+                              (either
+                                (const defaultOrder)
+                                id
+                                (parseOrderExpression $ searchSortString x)))
             _ -> (defaultFilter, defaultOrder)
 
     (project, tagged_tickets) <- runYDB $ do

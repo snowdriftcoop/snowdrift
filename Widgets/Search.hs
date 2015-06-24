@@ -1,24 +1,28 @@
 module Widgets.Search where
 
 import Import
-import Data.Text
+import qualified Data.Text as T
 
 data SearchParameters = SearchParameters
     { claimed :: Bool
     , unclaimed :: Bool
     , tags :: Maybe Text
+    , sort :: Maybe Text
     }
+
 
 searchWidget :: Html -> MForm Handler (FormResult SearchParameters, Widget)
 searchWidget extra = do
     (claimedRes, claimedView) <- mreq checkBoxField "Claimed" Nothing
     (unclaimedRes, unclaimedView) <- mreq checkBoxField "Unclaimed" Nothing
     (tagsRes, tagsView) <- mopt textField "Tags" Nothing
+    (sortRes, sortView) <- mopt textField "Sort" Nothing
 
     let searchRes = SearchParameters 
                     <$> claimedRes
                     <*> unclaimedRes
                     <*> tagsRes
+                    <*> sortRes
 
     let widget = do
           [whamlet|
@@ -28,32 +32,24 @@ searchWidget extra = do
                  ^{fvInput unclaimedView} Unclaimed
               <p>Tags: ^{fvInput tagsView}
             <div>
+              <p>Sort: ^{fvInput sortView}
           |]
 
     return (searchRes, widget)
 
---    where
---        checkBoxValField = (checkBool
---                               (\x -> validateField x claimedRes unclaimedRes)
---                               "Both \"Claimed Only\" and \"Unclaimed Only\"\
---                               \Checkboxes cannot be checked at the same time."
---                               checkBoxField)
---
---        validateField _ x y = not (x && y)
-
-searchString :: SearchParameters -> Text
-searchString (SearchParameters claimed unclaimed tags) = 
+searchFilterString :: SearchParameters -> Text
+searchFilterString (SearchParameters claimed unclaimed tags _ ) = 
     if (claimed)
         then
             if (unclaimed)
-                then append empty (fromMaybe empty tags)
-                else append "CLAIMED " (fromMaybe empty tags)
+                then T.append T.empty $ parseTags tags
+                else T.append "CLAIMED AND " $ parseTags tags 
         else
             if (unclaimed)
-                then append "UNCLAIMED " (fromMaybe "" tags)
-                else append empty (fromMaybe "" tags)
+                then T.append "UNCLAIMED AND " $ parseTags tags
+                else T.append T.empty $ parseTags tags
+    where
+        parseTags t = T.replace " " " AND " (fromMaybe T.empty t)
 
--- Note:  To add list of tags (assuming we can get to that point, don't forget
---        to use intercalate from Data.Text.  Although the "append empty" in
---        the last line is not needed, it's set up to remember to use 
---        intercalate later when I have Maybe [Text].
+searchSortString :: SearchParameters -> Text
+searchSortString (SearchParameters _ _ _ sortString) = fromMaybe T.empty sortString
