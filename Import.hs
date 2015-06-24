@@ -116,9 +116,6 @@ selectExists = fmap (>0) . selectCount
 newHash :: IO Text
 newHash = T.pack . fst . randomString 42 <$> newStdGen
 
-countMatches :: (a -> a -> Bool) -> a -> [a] -> Int
-countMatches p x = length . filter (p x)
-
 class Count a where
     getCount :: a -> Int64
 
@@ -305,6 +302,55 @@ instance (WrappedValues a, WrappedValues b) => WrappedValues (a, b) where
 instance (WrappedValues a, WrappedValues b, WrappedValues c) => WrappedValues (a, b, c) where
     type Unwrapped (a, b, c) = (Unwrapped a, Unwrapped b, Unwrapped c)
     unwrapValues (a, b, c) = (unwrapValues a, unwrapValues b, unwrapValues c)
+
+instance (WrappedValues a, WrappedValues b, WrappedValues c, WrappedValues d) => WrappedValues (a, b, c, d) where
+    type Unwrapped (a, b, c, d) = (Unwrapped a, Unwrapped b, Unwrapped c, Unwrapped d)
+    unwrapValues (a, b, c, d) = (unwrapValues a, unwrapValues b, unwrapValues c, unwrapValues d)
+
+instance ( WrappedValues a
+         , WrappedValues b
+         , WrappedValues c
+         , WrappedValues d
+         , WrappedValues e
+         ) => WrappedValues (a, b, c, d, e) where
+    type Unwrapped (a, b, c, d, e) =
+        ( Unwrapped a
+        , Unwrapped b
+        , Unwrapped c
+        , Unwrapped d
+        , Unwrapped e
+        )
+    unwrapValues (a, b, c, d, e) =
+        ( unwrapValues a
+        , unwrapValues b
+        , unwrapValues c
+        , unwrapValues d
+        , unwrapValues e
+        )
+
+instance ( WrappedValues a
+         , WrappedValues b
+         , WrappedValues c
+         , WrappedValues d
+         , WrappedValues e
+         , WrappedValues f
+         ) => WrappedValues (a, b, c, d, e, f) where
+    type Unwrapped (a, b, c, d, e, f) =
+        ( Unwrapped a
+        , Unwrapped b
+        , Unwrapped c
+        , Unwrapped d
+        , Unwrapped e
+        , Unwrapped f
+        )
+    unwrapValues (a, b, c, d, e, f) =
+        ( unwrapValues a
+        , unwrapValues b
+        , unwrapValues c
+        , unwrapValues d
+        , unwrapValues e
+        , unwrapValues f
+        )
 
 instance WrappedValues a => WrappedValues [a] where
     type Unwrapped [a] = [Unwrapped a]

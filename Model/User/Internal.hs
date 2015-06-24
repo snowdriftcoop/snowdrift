@@ -182,7 +182,7 @@ sendPreferredUserNotificationDB mnotif_sender
                     lift $ sendUserNotificationEmailDB
                                notif_type notif_receiver content
                 sendWebsiteNotif = do
-                    r <- lift $ selectCount $ from $ \n -> do
+                    r <- lift $ selectCount $ from $ \n ->
                              where_ $ n ^. UserNotificationType
                                        ==. val notif_type
                                   &&. n ^. UserNotificationTo
@@ -222,7 +222,7 @@ sendPreferredProjectNotificationDB mnotif_sender
                     lift $ sendProjectNotificationEmailDB
                                notif_type notif_receiver project_id content
                 sendWebsiteNotif = do
-                    r <- lift $ selectCount $ from $ \n -> do
+                    r <- lift $ selectCount $ from $ \n ->
                              where_ $ n ^. ProjectNotificationType
                                        ==. val notif_type
                                   &&. n ^. ProjectNotificationTo

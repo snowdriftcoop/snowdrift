@@ -71,7 +71,7 @@ fixLinks project' discussion_on line' = do
 
         build_link [_, content, _, _, _] =
             error $ "strange match: " <> show content
-        build_link _ = error $ "strange match"
+        build_link _ = error "strange match"
 
         parse str = either error (maybe str expand_match) (regexec pattern str)
 
@@ -94,7 +94,7 @@ linkTickets line' =
 
         case map (toPersistValue . unwrapValues) info of
             [] -> return Nothing
-            ((PersistInt64 comment_id) : _) -> return $ Just $ mconcat
+            (PersistInt64 comment_id : _) -> return $ Just $ mconcat
                 [ "/c/",  T.pack (show comment_id) ]
 
             _ -> error "Unexpected result for ticket reference"

@@ -7,7 +7,7 @@ import Import
 import Data.Filter
 import Data.Order
 import Data.Time.Format
-import Handler.Comment
+import Handler.Comment as Com
 import Handler.Discussion
 import Handler.Utils
 import Model.Application
@@ -141,19 +141,12 @@ makeProjectCommentForestWidget
         muser
         project_id
         project_handle
-        comments
-        comment_mods
-        get_max_depth
-        is_preview
-        widget_under_root_comment = do
+        comments =
+
     makeCommentForestWidget
       (projectCommentHandlerInfo muser project_id project_handle)
       comments
       muser
-      comment_mods
-      get_max_depth
-      is_preview
-      widget_under_root_comment
 
 makeProjectCommentTreeWidget
         :: Maybe (Entity User)
@@ -221,7 +214,7 @@ getProjectR project_handle = do
         (pledge, is_watching) <- case mviewer_id of
             Nothing -> return (Nothing, False)
             Just viewer_id -> (,)
-                <$> (getBy $ UniquePledge viewer_id project_id)
+                <$> getBy (UniquePledge viewer_id project_id)
                 <*> userIsWatchingProjectDB viewer_id project_id
         return (project_id, project, is_watching, pledges, pledge)
 
@@ -420,7 +413,7 @@ getProjectFeedR project_handle = do
 
         let (comment_ids, comment_users)        = F.foldMap (\(_, Entity comment_id comment) -> ([comment_id], [commentUser comment])) comment_events
             (wiki_edit_users, wiki_edit_pages)  = F.foldMap (\(_, Entity _ e, _) -> ([wikiEditUser e], [wikiEditPage e])) wiki_edit_events
-            (blog_post_users)                   = F.foldMap (\(_, Entity _ e) -> ([blogPostUser e])) blog_post_events
+            (blog_post_users)                   = F.foldMap (\(_, Entity _ e) -> [blogPostUser e]) blog_post_events
             shares_pledged                      = map (entityVal . snd) new_pledge_events <> map (\(_, _, x) -> entityVal x) updated_pledge_events
             closing_users                       = map (commentClosingClosedBy . entityVal . snd) closing_events
             rethreading_users                   = map (rethreadModerator . entityVal . snd) rethread_events
@@ -661,10 +654,10 @@ getProjectPatronsR project_handle = do
         $(widgetFile "project_patrons")
 
 --------------------------------------------------------------------------------
--- /shares
+-- /pledge
 
-getUpdateSharesR :: Text -> Handler Html
-getUpdateSharesR project_handle = do
+getUpdatePledgeR :: Text -> Handler Html
+getUpdatePledgeR project_handle = do
     _ <- requireAuthId
     Entity project_id project <- runYDB $ getBy404 $ UniqueProjectHandle project_handle
 
@@ -676,7 +669,7 @@ getUpdateSharesR project_handle = do
         FormSuccess (SharesPurchaseOrder new_user_shares) -> do
             user_id <- requireAuthId
 
-            (confirm_form, _) <- generateFormPost $ projectConfirmSharesForm (Just new_user_shares)
+            (confirm_form, _) <- generateFormPost $ projectConfirmPledgeForm (Just new_user_shares)
 
             (mpledge, other_shares) <- runDB $ do
                 mpledge <- getBy $ UniquePledge user_id project_id
@@ -702,8 +695,8 @@ getUpdateSharesR project_handle = do
                 _ -> do
                     let old_user_shares = maybe 0 (pledgeShares . entityVal) mpledge
 
-                        new_project_shares = (filter (>0) [new_user_shares]) ++ other_shares
-                        old_project_shares = (filter (>0) [old_user_shares]) ++ other_shares
+                        new_project_shares = filter (>0) [new_user_shares] ++ other_shares
+                        old_project_shares = filter (>0) [old_user_shares] ++ other_shares
 
                         new_share_value = projectComputeShareValue new_project_shares
                         old_share_value = projectComputeShareValue old_project_shares
@@ -714,28 +707,34 @@ getUpdateSharesR project_handle = do
                         new_project_amount = new_share_value $* fromIntegral (sum new_project_shares)
                         old_project_amount = old_share_value $* fromIntegral (sum old_project_shares)
 
+                        user_decrease    = old_user_amount - new_user_amount
+                        project_decrease = old_project_amount - new_project_amount
+                        project_increase = new_project_amount - old_project_amount
+                        donations_drop   = project_decrease - user_decrease
+                        matched_extra    = project_increase - new_user_amount
+
                     defaultLayout $ do
                         snowdriftDashTitle
                             (projectName project)
                             "update pledge"
-                        $(widgetFile "update_shares")
+                        $(widgetFile "update_pledge")
 
         FormMissing -> dangerRedirect "Form missing."
         FormFailure errors ->
             dangerRedirect $ T.snoc (T.intercalate "; " errors) '.'
 
-postUpdateSharesR :: Text -> Handler Html
-postUpdateSharesR project_handle = do
-    ((result, _), _) <- runFormPost $ projectConfirmSharesForm Nothing
+postUpdatePledgeR :: Text -> Handler Html
+postUpdatePledgeR project_handle = do
+    ((result, _), _) <- runFormPost $ projectConfirmPledgeForm Nothing
     isConfirmed <- maybe False (T.isPrefixOf "yes") <$> lookupPostParam "confirm"
 
     case result of
         FormSuccess (SharesPurchaseOrder shares) -> do
-            when isConfirmed $ updateUserShares project_handle shares
+            when isConfirmed $ updateUserPledge project_handle shares
             redirect (ProjectR project_handle)
         _ -> do
             alertDanger "error occurred in form submission"
-            redirect (UpdateSharesR project_handle)
+            redirect (UpdatePledgeR project_handle)
 
 --------------------------------------------------------------------------------
 -- /t
@@ -848,7 +847,7 @@ getProjectTransactionsR project_handle = do
 
 getWikiPagesR :: Text -> Handler Html
 getWikiPagesR project_handle = do
-    void $ maybeAuthId
+    void maybeAuthId
     languages <- getLanguages
 
     (project, wiki_targets) <- runYDB $ do
@@ -927,7 +926,7 @@ getClaimProjectCommentR project_handle comment_id = do
 
 postClaimProjectCommentR :: Text -> CommentId -> Handler Html
 postClaimProjectCommentR project_handle comment_id = do
-    (user, (Entity project_id _), comment) <- checkCommentRequireAuth project_handle comment_id
+    (user, Entity project_id _, comment) <- checkCommentRequireAuth project_handle comment_id
     checkProjectCommentActionPermission can_claim user project_handle (Entity comment_id comment)
 
     postClaimComment
@@ -951,7 +950,7 @@ getCloseProjectCommentR project_handle comment_id = do
 
 postCloseProjectCommentR :: Text -> CommentId -> Handler Html
 postCloseProjectCommentR project_handle comment_id = do
-    (user, (Entity project_id _), comment) <- checkCommentRequireAuth project_handle comment_id
+    (user, Entity project_id _, comment) <- checkCommentRequireAuth project_handle comment_id
     checkProjectCommentActionPermission can_close user project_handle (Entity comment_id comment)
 
     postCloseComment
@@ -1044,9 +1043,16 @@ postReplyProjectCommentR project_handle parent_id = do
       (Just parent_id)
       user
       (projectDiscussion project)
-      (makeProjectCommentActionPermissionsMap (Just user) project_handle def) >>= \case
-        Left _ -> redirect (ProjectCommentR project_handle parent_id)
-        Right (widget, form) -> defaultLayout $ previewWidget form "post" (projectDiscussionPage project_handle widget)
+      (makeProjectCommentActionPermissionsMap (Just user) project_handle def)
+      >>= \case
+          ConfirmedPost (Left err) -> do
+              alertDanger err
+              redirect $ ReplyProjectCommentR project_handle parent_id
+          ConfirmedPost (Right _) ->
+              redirect $ ProjectCommentR project_handle parent_id
+          Com.Preview (widget, form) ->
+              defaultLayout $ previewWidget form "post" $
+                  projectDiscussionPage project_handle widget
 
 --------------------------------------------------------------------------------
 -- /c/#CommentId/rethread
@@ -1133,7 +1139,7 @@ getUnclaimProjectCommentR project_handle comment_id = do
 
 postUnclaimProjectCommentR :: Text -> CommentId -> Handler Html
 postUnclaimProjectCommentR project_handle comment_id = do
-    (user, (Entity project_id _), comment) <- checkCommentRequireAuth project_handle comment_id
+    (user, Entity project_id _, comment) <- checkCommentRequireAuth project_handle comment_id
     checkProjectCommentActionPermission can_unclaim user project_handle (Entity comment_id comment)
 
     postUnclaimComment
@@ -1269,6 +1275,13 @@ postNewProjectDiscussionR project_handle = do
       Nothing
       user
       projectDiscussion
-      (makeProjectCommentActionPermissionsMap (Just user) project_handle def) >>= \case
-        Left comment_id -> redirect (ProjectCommentR project_handle comment_id)
-        Right (widget, form) -> defaultLayout $ previewWidget form "post" (projectDiscussionPage project_handle widget)
+      (makeProjectCommentActionPermissionsMap (Just user) project_handle def)
+      >>= \case
+          ConfirmedPost (Left err) -> do
+              alertDanger err
+              redirect $ NewProjectDiscussionR project_handle
+          ConfirmedPost (Right comment_id) ->
+              redirect $ ProjectCommentR project_handle comment_id
+          Com.Preview (widget, form) ->
+              defaultLayout $ previewWidget form "post" $
+                  projectDiscussionPage project_handle widget

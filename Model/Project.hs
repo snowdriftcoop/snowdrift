@@ -23,7 +23,7 @@ module Model.Project
     , fetchProjectPledgesDB
     , fetchProjectSharesDB
     , insertProjectPledgeDB
-    -- TODO(mitchell): rename all these... prefix fetch, suffix DB
+    -- TODO: rename all these... prefix fetch, suffix DB
     , getGithubIssues
     , getProjectPages
     , getProjectTagList
@@ -32,7 +32,7 @@ module Model.Project
     , projectNameWidget
     , summarizeProject
     , updateShareValue
-    , updateUserShares
+    , updateUserPledge
     ) where
 
 import Import
@@ -44,7 +44,7 @@ import Model.Comment.Sql
 import Model.Currency
 import Model.Issue
 import Model.Tag
-import Model.Shares (pledgeRenderKey)
+import Model.Shares (pledgeRenderKey, multiplyByBaseAmount)
 import Model.Wiki.Sql
 import Widgets.Tag
 
@@ -54,6 +54,7 @@ import           Control.Monad.Writer.Strict  (WriterT, tell, execWriterT)
 import           Control.Concurrent.Async     (Async, async, wait)
 import qualified Github.Data                  as GH
 import qualified Github.Issues                as GH
+import           Data.Either                  (isRight)
 import           Data.Foldable                (foldMap)
 import qualified Data.Map                     as M
 import           Data.Monoid                  (Sum(..))
@@ -277,15 +278,10 @@ getProjectPages project_id =
     where_ $ page ^. WikiPageProject ==. val project_id
     return page
 
+-- | Project's monthly share value: 0.1¢ × number of patrons.
 projectComputeShareValue :: [Int64] -> Milray
-projectComputeShareValue pledges =
-    let lg x = logBase 2 x :: Double
-        num_users = fromIntegral $ length pledges
-        geomean :: [Double] -> Double
-        geomean xs = exp $ sum (map log xs) / fromIntegral (length xs)
-        multiplier = lg (geomean (map fromIntegral pledges) * 2)
-     in Milray 10 $* (multiplier * (num_users - 1))
-
+projectComputeShareValue patronPledgeLevel =
+    Milray 10 $* (fromIntegral $ length $ filter (/= 0) patronPledgeLevel)
 
 -- signature needs to remain generic, for SnowdriftProcessPayments
 updateShareValue
@@ -749,19 +745,55 @@ fetchProjectOpenTicketsDB project_id muser_id = do
                 return tc
             return $ if c == 0 then (t, False) else (t, True)
 
-updateUserShares :: Text -> Int64 -> HandlerT App IO ()
-updateUserShares project_handle shares = do
+updateUserPledge :: Text -> Int64 -> HandlerT App IO ()
+updateUserPledge project_handle shares = do
     Just pledge_render_id <-
         fmap (read . T.unpack) <$> lookupSession pledgeRenderKey
 
-    (success, project) <- runSYDB $ do
+    status <- runSYDB $ do
         Entity user_id user <- lift (lift requireAuth)
         Just account <- lift $ get (userAccount user)
         Entity project_id project <-
             lift $ getBy404 (UniqueProjectHandle project_handle)
+        mold_shares <- lift $ do
+            mpledge <- getBy $ UniquePledge user_id project_id
+            return $ case mpledge of
+                Nothing                -> Nothing
+                Just (Entity _ pledge) -> Just (pledgeFundedShares pledge)
+        let mnew_shares  = if shares == 0 then Nothing else Just shares
+            user_outlay  = projectShareValue project $* fromIntegral shares
+            enough_money = accountBalance account >= user_outlay $* 3
+            -- At the time of writing this comment, pledging
+            -- multiple times breaks 'renderProject' and
+            -- 'SnowdriftProcessPayments'.  In any case, there
+            -- is no need to allow pledging the same amount
+            -- multiple times ever.
+            new_amount   = mold_shares /= mnew_shares
 
-        let user_outlay = projectShareValue project $* fromIntegral shares
-            success = accountBalance account >= user_outlay $* 3
+            pledge_dropped   = "You have dropped your pledge and are no longer "
+                            <> "a patron of " <> projectName project <> "."
+            pledge_updated   = "You have now pledged a base rate of "
+                            <> T.pack (show $ multiplyByBaseAmount shares)
+                            <> "¢ per patron. "
+                            <> "Thank you for supporting "
+                            <> projectName project <> "!"
+            same_amount      = "you cannot pledge the same amount"
+            not_enough_money = "you must have funds to support your pledge "
+                            <> "for at least 3 months at current pledge value. "
+                            <> "Please deposit additional funds to your account"
+            status = case (enough_money, new_amount) of
+                (True, True)   ->
+                    if shares == 0
+                        then Right pledge_dropped
+                        else Right pledge_updated
+                (True, False)  ->
+                    Left $ "Sorry, " <> same_amount <> "."
+                (False, True)  ->
+                    Left $ "Sorry, " <> not_enough_money <> "."
+                (False, False) ->
+                    Left $ "Sorry, " <> same_amount <> " and "
+                        <> not_enough_money <> "."
+            success = isRight status
 
         when success $ do
             insertProjectPledgeDB
@@ -770,24 +802,12 @@ updateUserShares project_handle shares = do
                 shares
                 pledge_render_id
             rebalanceProjectPledges project_id
-        return (success, project)
 
-    if success
-        then alertSuccess $
-            if shares == 0
-            then
-                "You have dropped your pledge and are no longer "
-                <> "a patron of " <> projectName project <> "."
-            else
-                "Your pledge is now " <> T.pack (show shares)
-                <> " " <> plural shares "share" "shares" <> ". "
-                <> "Thank you for being a patron of "
-                <> projectName project <> "!"
+        return status
 
-        else alertWarning $
-            "Sorry, you must have funds to support your pledge "
-            <> "for at least 3 months at current share value. "
-            <> "Please deposit additional funds to your account."
+    case status of
+        Right msg -> alertSuccess msg
+        Left  msg -> alertWarning msg
 
 newtype DropShare = DropShare PledgeId
 type DropShares = [DropShare]

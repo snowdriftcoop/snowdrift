@@ -133,8 +133,7 @@ The easiest install which works on *any* OS
 is with a virtual machine using our
 [Vagrant installation instructions](SETUP_VAGRANT.md).
 
-We also have a complete set of steps for
-[Debian/Ubuntu installation](SETUP_DEBIAN.md).
+We also have complete sets of steps for [Debian/Ubuntu installation](SETUP_DEBIAN.md) and [Windows](SETUP_WINDOWS.md)
 
 Neither of those explain what every command does.
 Below, we discuss more of these details.
@@ -262,8 +261,11 @@ Using the live test site
 
 Test the running site by directing your web browser to localhost:3000
 
-You can log into the site via the built-in system with
-user: `admin` pass: `admin`
+The Dev DB comes with several users to log in with using the built-in system:
+(username and passphrase are the same)
+`admin`; `guest`; `established`.
+
+
 
 You can now register new users, make pledges, add discussion comments,
 tickets, wiki pages, blog posts, and test and work on all aspects of the site.
@@ -367,6 +369,10 @@ which is the same as running:
 
     sudo -u postgres pg_dump snowdrift_development >devDB.sql
 
+You can test that the export worked by running `sdm reset` and verifying
+in the running site that everything is as expected.
+
+Then, the new devDB.sql file may be committed and shared like other changes.
 
 Updating to the latest test database
 ------------------------------------
@@ -506,8 +512,9 @@ test database setup and resetting databases.
 Setting up the development database manually
 --------------------------------------------
 
-Go to the config/ directory within the project directory,
-make a copy of postgresql.template, and name the new file postgresql.yml
+Copy the config/postgresql.template to a new config/postgresql.yml file:
+
+    cp config/postgresql.template config/postgresql.yml
 
 Create database user called "snowdrift_development"
 *without* superuser, createdb, or createuser privileges:
@@ -544,7 +551,7 @@ Edit config/postgresql.yml and update the password to match the one you entered.
 
 Import development database:
 
-    sudo -u postgres psql snowdrift_development <devDB.sql
+    sudo -u postgres psql snowdrift_development < devDB.sql
 
 
 Reset the development database manually

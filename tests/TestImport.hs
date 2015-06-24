@@ -6,16 +6,19 @@
 
 module TestImport (module TestImport, marked) where
 
+import Import (pprint)
 import TestImport.Internal
 
 import Prelude hiding (exp)
 
+import Control.Monad (unless)
 import Control.Monad.Logger as TestImport
 import Control.Arrow as TestImport
 
 import Yesod (Yesod, RedirectUrl, Route, RenderRoute, renderRoute)
 import Yesod.Test as TestImport
 import Database.Esqueleto hiding (get)
+import qualified Database.Esqueleto as Esqueleto
 import Database.Persist as TestImport hiding (get, (==.), delete)
 import Control.Monad.IO.Class as TestImport (liftIO, MonadIO)
 import Control.Monad.Trans.Reader (ReaderT)
@@ -33,6 +36,7 @@ import           Data.Int        (Int64)
 
 import qualified Data.List as L
 import qualified Data.Map as M
+import Data.Maybe (fromMaybe)
 import qualified Data.Text as T
 import Data.Text (Text)
 import Data.String
@@ -44,17 +48,22 @@ import Model as TestImport hiding
 
 import Control.Applicative ((<$>))
 import Control.Concurrent (threadDelay)
-import Control.Monad (when)
+import Control.Monad (void, when)
 import Data.Monoid ((<>))
 import Model.Language
 import Model.Notification
     ( UserNotificationType(..), UserNotificationDelivery(..)
     , ProjectNotificationType(..), ProjectNotificationDelivery(..) )
 
+import System.Directory (getDirectoryContents)
+import System.FilePath ((</>))
 import System.IO (hPutStrLn, stderr)
+import System.Process (spawnProcess, terminateProcess)
 
 import Control.Monad.Trans.Control
-import Control.Exception.Lifted as Lifted
+import Control.Exception.Lifted as Lifted hiding (handle)
+
+import Test.QuickCheck
 
 onException :: MonadBaseControl IO m => m a -> m b -> m a
 onException = Lifted.onException
@@ -217,17 +226,38 @@ snowdrift = "snowdrift"
 
 snowdriftId :: Example ProjectId
 snowdriftId =
-    testDB $ fmap entityKey $ getOrError $ UniqueProjectHandle snowdrift
+    testDB $ fmap entityKey $ getByOrError $ UniqueProjectHandle snowdrift
+
+getfOrError :: (Show a, Functor f)
+            => (t -> f (Maybe b)) -> (t -> a) -> t -> f b
+getfOrError getf ppf x =
+    fromMaybe (error $ "cannot get " <> show (ppf x)) <$> getf x
 
 getOrError :: ( PersistEntity val
-              , PersistUnique (PersistEntityBackend val)
+              , PersistStore (PersistEntityBackend val)
               , MonadIO m, Functor m )
-           => Unique val -> ReaderT (PersistEntityBackend val) m (Entity val)
-getOrError x = match <$> (getBy x)
-  where
-    -- XXX: Prettier error message.
-    match Nothing  = error $ "cannot get " <> (show $ persistUniqueToValues x)
-    match (Just v) = v
+           => Key val -> ReaderT (PersistEntityBackend val) m val
+getOrError = getfOrError Esqueleto.get id
+
+getByOrError :: ( PersistEntity val
+                , PersistUnique (PersistEntityBackend val)
+                , MonadIO m, Functor m )
+             => Unique val -> ReaderT (PersistEntityBackend val) m (Entity val)
+getByOrError = getfOrError getBy persistUniqueToValues
+
+errorUnlessExpected :: (Show a, Eq a) => Text -> a -> a -> Example ()
+errorUnlessExpected msg expected actual =
+    unless (expected == actual) $
+        error $ T.unpack msg
+             <> ": expected " <> show expected
+             <> ", but got " <> show actual
+
+testProperty :: Testable prop => Text -> prop -> Example ()
+testProperty msg prop = do
+    res <- liftIO $ verboseCheckResult prop
+    case res of
+        Success {} -> return ()
+        err        -> error $ T.unpack msg <> ": " <> show err
 
 newWiki :: Text -> Language -> Text -> Text -> YesodExample App ()
 newWiki project language page content = do
@@ -258,9 +288,9 @@ editWiki project language page content comment = do
     get200 $ EditWikiR project language page
 
     snowdrift_id <- snowdriftId
-    wiki_target <- testDB $ getOrError $ UniqueWikiTarget snowdrift_id LangEn page
+    wiki_target <- testDB $ getByOrError $ UniqueWikiTarget snowdrift_id LangEn page
     let page_id = wikiTargetPage $ entityVal $ wiki_target
-    wiki_last_edit <- testDB $ getOrError $ UniqueWikiLastEdit page_id LangEn
+    wiki_last_edit <- testDB $ getByOrError $ UniqueWikiLastEdit page_id LangEn
     let last_edit = entityVal wiki_last_edit
 
     withStatus 200 False $ request $ do
@@ -348,6 +378,35 @@ updateProjectNotifPrefs user_id project_id notif_type notif_deliv = do
 withDelay :: MonadIO m => m a -> m a
 withDelay action = liftIO (threadDelay 1500000) >> action
 
+distPrefix :: IO FilePath
+distPrefix = do
+    subdirs <- fmap (filter $ L.isPrefixOf "dist-sandbox-") $ getDirectoryContents "dist"
+    let subdir = case subdirs of [x] -> x; _ -> ""
+    return $ "dist" </> subdir </> "build"
+
+withEmailDaemon :: FileName -> (FileName -> IO a) -> IO ()
+withEmailDaemon file action = do
+    prefix <- distPrefix
+    withDelay $ bracket
+        (spawnProcess
+             (prefix </> "SnowdriftEmailDaemon/SnowdriftEmailDaemon")
+             [ "--sendmail=" <> prefix </> "SnowdriftSendmail/SnowdriftSendmail"
+             , "--sendmail-file=" <> T.unpack (unFileName file)
+             , "--db=testing"
+             ])
+        terminateProcess
+        (const $ withDelay $ void $ action file)
+
+processPayments :: IO ()
+processPayments = do
+    prefix <- distPrefix
+    bracket
+        (spawnProcess
+             (prefix </> "SnowdriftProcessPayments/SnowdriftProcessPayments")
+             ["Testing"])
+        terminateProcess
+        (const $ withDelay $ return ())
+
 rethreadComment :: Text -> Text -> YesodExample App ()
 rethreadComment rethread_route parent_route = [marked|
     get200 rethread_route
@@ -409,33 +468,54 @@ newBlogPost page = [marked|
         addPostParam "mode" "post"
 |]
 
-pledge :: Text -> YesodExample App ()
-pledge shares = [marked|
-    get200 $ ProjectR snowdrift
-
-    let route = UpdateSharesR snowdrift
-    withStatus 200 False $ request $ do
-        setUrl route
-        setMethod "GET"
-        addGetParam "_hasdata" ""
-        addGetParam "f1" shares
+loadFunds :: UserId -> Int -> Example ()
+loadFunds user_id n = [marked|
+    let route = UserBalanceR user_id
+    get200 route
 
     withStatus 303 False $ request $ do
         addNonce
         setMethod "POST"
         setUrl route
-        addPostParam "f1" shares
-        addPostParam "confirm" "yes!"
+        addPostParam "f1" $ shpack n
+    |]
+
+pledgeStatus :: ProjectId -> Int64 -> Int -> Example ()
+pledgeStatus project_id shares status = [marked|
+    project <-
+        testDB (Esqueleto.get project_id) >>= return .
+            fromMaybe (error $ "cannot find project " <> pprint project_id)
+    let handle  = projectHandle project
+        tshares = shpack shares
+    get200 $ ProjectR handle
+
+    let route = UpdatePledgeR handle
+    withStatus status False $ request $ do
+        setUrl route
+        setMethod "GET"
+        addGetParam "_hasdata" ""
+        addGetParam "f1" tshares
+
+    when (status == 200) $
+        withStatus 303 False $ request $ do
+            addNonce
+            setMethod "POST"
+            setUrl route
+            addPostParam "f1" tshares
+            addPostParam "confirm" "yes!"
 |]
+
+pledge :: ProjectId -> Int64 -> Example ()
+pledge project_id shares = pledgeStatus project_id shares 200
+
+pledgeFail :: ProjectId -> Int64 -> Example ()
+pledgeFail project_id shares = pledgeStatus project_id shares 303
 
 named_users :: [NamedUser]
 named_users = [minBound .. maxBound]
 
-(</>) :: Text -> Text -> Text
-xs </> ys = xs <> "/" <> ys
-
 render :: RenderRoute App => Text -> Route App -> Text
-render appRoot = (appRoot </>) . T.intercalate "/" . fst . renderRoute
+render appRoot = ((appRoot <> "/") <>) . T.intercalate "/" . fst . renderRoute
 
 enRoute :: (Text -> Language -> a) -> a
 enRoute c = c snowdrift LangEn

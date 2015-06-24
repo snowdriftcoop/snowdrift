@@ -9,14 +9,14 @@
   We ran a
   <a href="https://snowdrift.tilt.com">
     successful campaign
-  at the end of 2014, and the co-founders have continued to donate personally
-  (and to volunteer substantial time without compensation).
-  Currently, we have a budget just barely enough to fund a couple (underpaid)
+  at the end of 2014, and the co-founders continue to donate personally
+  and volunteer substantial time without compensation.
+  We currently have a budget just barely enough to fund a couple (underpaid)
   developers and cover some legal expenses along with a few other misc. items.
-  Our
+  See our
   <a href=@{WikiR "snowdrift" LangEn "accounting"}>
     accounting page
-  provides details about our budget and how we use the funds.
+  for details about our budget and how we use the funds.
 <p>
   Although the formal fund-drive is over, we can still provide comparable
   rewards for new donors. Please
@@ -42,7 +42,7 @@
     target="_top">
     <input name="cmd" type="hidden" value="_s-xclick">
     <input name="hosted_button_id" type="hidden" value="M24Z4DFEW4SQL">
-    <input 
+    <input
       alt="PayPal donation option"
       name="submit"
       src=@{StaticR img_external_paypal_donate_gif}
@@ -63,9 +63,9 @@
     <img alt="Donate with Dwolla" src=@{StaticR img_external_dwolla_png}>
 <p>
   Dwolla is U.S.-only and requires some delay and set up with a bank account
-  but charges only 25¢ per transaction over $10 and no charge otherwise.
-  They use some proprietary JavaScript, but we like their rejection of credit
-  cards and associated fees.
+  (no option for credit cards)
+  but charges <strong>no fees at all</strong>.
+  They do seem to use some proprietary JavaScript, unfortunately.
 
 <hr>
 
@@ -75,7 +75,7 @@
     style="height: 4em">
 
 <div .row>
-  <div .col-md-9 .col-md-offset-2 .col-lg-8> 
+  <div .col-md-9 .col-md-offset-2 .col-lg-8>
     <pre>
       -----BEGIN PGP SIGNED MESSAGE-----
       Hash: SHA256

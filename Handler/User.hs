@@ -3,7 +3,7 @@ module Handler.User where
 import Import
 
 import           Handler.Utils
-import           Handler.Comment
+import           Handler.Comment as Com
 import           Handler.Discussion
 import           Handler.User.Comment
 import           Model.Currency
@@ -96,13 +96,13 @@ postUserCreateR = do
 
     case result of
         FormSuccess (ident, passwd, name, memail, avatar, nick) -> do
-            createUser ident (Just passwd) name memail avatar nick
+            createUser ident (Just passwd) name (NewEmail False <$> memail) avatar nick
                 >>= \muser_id -> when (isJust muser_id) $ do
                     when (isJust memail) $ do
                         let email   = fromJust memail
                             user_id = fromJust muser_id
                         startEmailVerification user_id email
-                    setCreds True $ Creds "HashDB" ident []
+                    setCreds True $ Creds "hashdb" ident []
                     redirectUltDest HomeR
 
         FormMissing -> alertDanger "missing field"
@@ -298,8 +298,14 @@ postNewUserDiscussionR user_id = do
       viewer
       userDiscussion
       (makeUserCommentActionPermissionsMap (Just viewer) user_id def) >>= \case
-        Left comment_id -> redirect (UserCommentR user_id comment_id)
-        Right (widget, form) -> defaultLayout $ previewWidget form "post" (userDiscussionPage user_id widget)
+           ConfirmedPost (Left err) -> do
+               alertDanger err
+               redirect $ NewUserDiscussionR user_id
+           ConfirmedPost (Right comment_id) ->
+               redirect $ UserCommentR user_id comment_id
+           Com.Preview (widget, form) ->
+               defaultLayout $ previewWidget form "post" $
+                   userDiscussionPage user_id widget
 
 postUserDiscussionR :: UserId -> Handler Html
 postUserDiscussionR _ = error "TODO(mitchell)"

@@ -16,7 +16,8 @@ import NotifyTest
 import DiscussionTest
 import WikiTest
 import BlogTest
-import TagTest
+import MechanismTest
+import CommentTest
 
 import TestHandler
 import Model.Markdown
@@ -51,7 +52,7 @@ withTempFile f = bracket
 spec :: App -> FileName -> IO ()
 spec foundation file =
     hspec $ do
-        describe "fix links" $ do
+        describe "fix links" $
             it "works correctly on all examples" $ do
                 let mismatches = unsafePerformIO $ testHandler testFixLinks
                 case mismatches of
@@ -65,4 +66,5 @@ spec foundation file =
             wikiSpecs
             blogSpecs
             discussionSpecs
-            tagSpecs config
+            mechanismSpecs
+            commentSpecs config

@@ -18,7 +18,7 @@ Flag dev
 
 Flag merge
     Description:   Similar to dev, except with -Werror added.
-    Default:        False
+    Default:       False
 
 Flag library-only
     Description:   Build for use with "yesod devel"
@@ -216,9 +216,9 @@ library
                  , time
                  , titlecase
                  , transformers
-                 , unix
                  , wai-extra
                  , wai-logger
+                 , warp
                  , yaml
                  -- extra caution for our primary dependency on Yesod
                  , yesod >= 1.4 && < 1.5
@@ -436,3 +436,4 @@ test-suite test
                  , haskell-src-exts
                  , haskell-src-meta
                  , lifted-base
+                 , QuickCheck

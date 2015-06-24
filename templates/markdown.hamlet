@@ -7,12 +7,12 @@
 <p>
   See
   <strong>
-    <a href="http://www.johnmacfarlane.net/pandoc/README#pandocs-markdown">
+    <a href="http://pandoc.org/README#pandocs-markdown">
       Pandoc's Markdown
   for more options and details, including
-  \<a href="http://www.johnmacfarlane.net/pandoc/README#verbatim">verbatim spans</a>,
-  \<a href="http://www.johnmacfarlane.net/pandoc/README#verbatim-code-blocks">code blocks</a>,
-  <a href="http://www.johnmacfarlane.net/pandoc/README#pipe-tables">tables
+  \<a href="http://pandoc.org/README#verbatim">verbatim spans</a>,
+  \<a href="http://pandoc.org/README#verbatim-code-blocks">code blocks</a>,
+  <a href="http://pandoc.org/README#pipe-tables">tables
   (note: our site requires the "pipe" table format), and much more.
 <p>
   <em>Note: most Markdown formatting is nestable
@@ -38,10 +38,14 @@
 <p><strong>[</strong>weblink-text<strong>](</strong>URL<strong>)</strong>
 <p>
   <em>note:
-  internal links do not need full URL, see
-  \<a href="http://snowdrift.coop/p/snowdrift/w/wiki">about the snowdrift.coop wiki system</a>.
-  External links do require the http:// part of the URL,
-  and for external cases where you don't want distinct link text,
+  internal links do not need full URL.
+  See
+  <a href="http://snowdrift.coop/p/snowdrift/w/wiki">
+    about the snowdrift.coop wiki system
+  for notes about linking between pages on the site.
+
+  External links <em>require</em> the http:// part of the URL.
+  For external cases where the text to show is simply the URL,
   you can use: <strong>&lt;</strong>URL<strong>&gt;</strong>
 
 <h2>Images

@@ -4,7 +4,7 @@ module Handler.Wiki where
 
 import Import
 
-import Handler.Comment
+import Handler.Comment as Com
 import Handler.Discussion
 import Handler.Utils
 import Handler.Wiki.Comment (makeWikiPageCommentForestWidget, wikiDiscussionPage)
@@ -42,12 +42,12 @@ projectInfoRequireEstablished project_handle = do
     user@(Entity _ user') <- requireAuth
 
     case userEstablished user' of
-        EstEstablished _ _ _ -> return ()
+        EstEstablished{} -> return ()
         EstEligible _ _ -> permissionDenied $
-            "You must accept the honor agreement before you can create a new"
-            <> " wiki page"
-        EstUnestablished -> permissionDenied $
-            "You must be an established user to create a new wiki page"
+            "You must accept the honor pledge to become an established user"
+            <> "before you can create a new wiki page."
+        EstUnestablished -> permissionDenied
+            "You must be an established user to create a new wiki page."
 
     project <- runYDB $ getBy404 $ UniqueProjectHandle project_handle
     return (user, project)
@@ -97,7 +97,7 @@ pageInfoRequireEstablished project_handle language target = do
     Entity user_id user <- requireAuth
 
     case userEstablished user of
-        EstEstablished _ _ _ -> return ()
+        EstEstablished{} -> return ()
         EstEligible _ _ -> permissionDenied "You must accept the honor agreement before you can create a new wiki page"
         EstUnestablished -> permissionDenied "You must be an established user to create a new wiki page"
 
@@ -182,7 +182,7 @@ postWikiR project_handle target_language target = do
                 Just PostMode -> do
                     runSYDB $ do
 
-                        [(Entity _ last_edit)] <- lift $ select $ from $ \(we `InnerJoin` le) -> do
+                        [Entity _ last_edit] <- lift $ select $ from $ \(we `InnerJoin` le) -> do
                             on_ $ we ^. WikiEditId ==. le ^. WikiLastEditEdit
                             where_ $ le ^. WikiLastEditPage ==. val page_id
                                 &&. le ^. WikiLastEditLanguage ==. val edit_language
@@ -298,7 +298,7 @@ getWikiDiscussionR' project_handle language target get_root_comments = do
 
     (Entity project_id project, root_comments) <- runYDB $ do
         (project@(Entity project_id _), Entity _ page, _) <- pageInfo project_handle language target
-        let has_permission = (exprCommentProjectPermissionFilter muser_id (val project_id))
+        let has_permission = exprCommentProjectPermissionFilter muser_id (val project_id)
         root_comments <- get_root_comments (wikiPageDiscussion page) has_permission
         return (project, root_comments)
 
@@ -346,9 +346,16 @@ postNewWikiDiscussionR project_handle language target = do
       Nothing
       user
       wikiPageDiscussion
-      (makeProjectCommentActionPermissionsMap (Just user) project_handle def) >>= \case
-        Left comment_id -> redirect (WikiCommentR project_handle language target comment_id)
-        Right (widget, form) -> defaultLayout $ previewWidget form "post" (wikiDiscussionPage project_handle language target widget)
+      (makeProjectCommentActionPermissionsMap (Just user) project_handle def)
+      >>= \case
+          ConfirmedPost (Left err) -> do
+               alertDanger err
+               redirect $ NewWikiDiscussionR project_handle language target
+          ConfirmedPost (Right comment_id) ->
+              redirect $ WikiCommentR project_handle language target comment_id
+          Com.Preview (widget, form) ->
+              defaultLayout $ previewWidget form "post" $
+                  wikiDiscussionPage project_handle language target widget
 
 --------------------------------------------------------------------------------
 -- /#language/#target/diff/#from/#to
@@ -481,7 +488,7 @@ postNewWikiR project_handle language target = do
     now <- liftIO getCurrentTime
     ((result, _), _) <- runFormPost $ newWikiForm Nothing
     case result of
-        FormSuccess content -> do
+        FormSuccess content ->
             lookupPostMode >>= \case
                 Just PostMode -> do
                     runSDB
@@ -551,7 +558,7 @@ postNewWikiTranslationR project_handle language target = do
     now <- liftIO getCurrentTime
     ((result, _), _) <- runFormPost $ newWikiTranslationForm Nothing Nothing Nothing Nothing Nothing
     case result of
-        FormSuccess (edit_id, new_language, new_target, new_content, complete) -> do
+        FormSuccess (edit_id, new_language, new_target, new_content, complete) ->
             lookupPostMode >>= \case
                 Just PostMode -> do
                     runSDB $ createWikiTranslationDB page_id new_language new_target project_id new_content user_id [(edit_id, complete)]
@@ -616,39 +623,39 @@ postEditWikiPermissionsR project_handle language target = do
 getMonolingualWikiR :: Text -> Text -> [Text] -> Handler Html
 getMonolingualWikiR = redirectPolylingualWiki $ \case
     Nothing -> notFound
-    Just url@(MonolingualWikiR _ _ _) -> error $ "not found: " ++ show url
+    Just url@(MonolingualWikiR{}) -> error $ "not found: " ++ show url
 
-    Just url@(WikiR _ _ _)                      -> redirectSameParams url
-    Just url@(WikiCommentR _ _ _ _)             -> redirectSameParams url
-    Just url@(NewWikiTranslationR _ _ _)        -> redirectSameParams url
-    Just url@(ClaimWikiCommentR _ _ _ _)        -> redirectSameParams url
-    Just url@(CloseWikiCommentR _ _ _ _)        -> redirectSameParams url
-    Just url@(DeleteWikiCommentR _ _ _ _)       -> redirectSameParams url
-    Just url@(EditWikiCommentR _ _ _ _)         -> redirectSameParams url
-    Just url@(FlagWikiCommentR _ _ _ _)         -> redirectSameParams url
-    Just url@(ApproveWikiCommentR _ _ _ _)      -> redirectSameParams url
-    Just url@(ReplyWikiCommentR _ _ _ _)        -> redirectSameParams url
-    Just url@(RethreadWikiCommentR _ _ _ _)     -> redirectSameParams url
-    Just url@(RetractWikiCommentR _ _ _ _)      -> redirectSameParams url
-    Just url@(WikiCommentAddTagR _ _ _ _)       -> redirectSameParams url
-    Just url@(WikiCommentTagsR _ _ _ _)         -> redirectSameParams url
-    Just url@(WikiCommentTagR _ _ _ _ _)        -> redirectSameParams url
-    Just url@(WikiCommentApplyTagR _ _ _ _)     -> redirectSameParams url
-    Just url@(WikiCommentCreateTagR _ _ _ _)    -> redirectSameParams url
-    Just url@(UnclaimWikiCommentR _ _ _ _)      -> redirectSameParams url
-    Just url@(WikiDiscussionR _ _ _)            -> redirectSameParams url
-    Just url@(NewWikiDiscussionR _ _ _)         -> redirectSameParams url
-    Just url@(WikiDiffR _ _ _ _ _)              -> redirectSameParams url
-    Just url@(WikiDiffProxyR _ _ _)             -> redirectSameParams url
-    Just url@(EditWikiR _ _ _)                  -> redirectSameParams url
-    Just url@(WikiHistoryR _ _ _)               -> redirectSameParams url
-    Just url@(WikiEditR _ _ _ _)                -> redirectSameParams url
-    Just url@(NewWikiR _ _ _)                   -> redirectSameParams url
-    Just url@(EditWikiPermissionsR _ _ _)       -> redirectSameParams url
-    Just url@(WatchWikiCommentR _ _ _ _)        -> redirectSameParams url
-    Just url@(UnwatchWikiCommentR _ _ _ _)      -> redirectSameParams url
-    Just url@(OldDiscussCommentR _ _ _ _)       -> redirectSameParams url
-    Just url@(OldWikiEditR _ _ _ _)             -> redirectSameParams url
+    Just url@(WikiR{})                    -> redirectSameParams url
+    Just url@(WikiCommentR{})                -> redirectSameParams url
+    Just url@(NewWikiTranslationR{})      -> redirectSameParams url
+    Just url@(ClaimWikiCommentR{})        -> redirectSameParams url
+    Just url@(CloseWikiCommentR{})        -> redirectSameParams url
+    Just url@(DeleteWikiCommentR{})       -> redirectSameParams url
+    Just url@(EditWikiCommentR{})         -> redirectSameParams url
+    Just url@(FlagWikiCommentR{})         -> redirectSameParams url
+    Just url@(ApproveWikiCommentR{})      -> redirectSameParams url
+    Just url@(ReplyWikiCommentR{})        -> redirectSameParams url
+    Just url@(RethreadWikiCommentR{})     -> redirectSameParams url
+    Just url@(RetractWikiCommentR{})      -> redirectSameParams url
+    Just url@(WikiCommentAddTagR{})       -> redirectSameParams url
+    Just url@(WikiCommentTagsR{})         -> redirectSameParams url
+    Just url@(WikiCommentTagR{})          -> redirectSameParams url
+    Just url@(WikiCommentApplyTagR{})     -> redirectSameParams url
+    Just url@(WikiCommentCreateTagR{})    -> redirectSameParams url
+    Just url@(UnclaimWikiCommentR{})      -> redirectSameParams url
+    Just url@(WikiDiscussionR{})          -> redirectSameParams url
+    Just url@(NewWikiDiscussionR{})       -> redirectSameParams url
+    Just url@(WikiDiffR{})                -> redirectSameParams url
+    Just url@(WikiDiffProxyR{})           -> redirectSameParams url
+    Just url@(EditWikiR{})                -> redirectSameParams url
+    Just url@(WikiHistoryR{})             -> redirectSameParams url
+    Just url@(WikiEditR{})                -> redirectSameParams url
+    Just url@(NewWikiR{})                 -> redirectSameParams url
+    Just url@(EditWikiPermissionsR{})     -> redirectSameParams url
+    Just url@(WatchWikiCommentR{})        -> redirectSameParams url
+    Just url@(UnwatchWikiCommentR{})      -> redirectSameParams url
+    Just url@(OldDiscussCommentR{})       -> redirectSameParams url
+    Just url@(OldWikiEditR{})             -> redirectSameParams url
 
     -- These routes are higher in the tree - can't possibly have been generated by inserting the language
     _                                           -> error "the impossible happened"

@@ -298,7 +298,7 @@ renderNewPledgeEvent _ SharesPledged{..} user_map = do
         <div .event>
             ^{renderTime sharesPledgedTs}
             <a href=@{UserR sharesPledgedUser}> #{userDisplayName (Entity sharesPledgedUser pledger)}
-            made new pledge of _{MsgShares sharesPledgedShares}!
+            made a new pledge of _{MsgShares sharesPledgedShares}!
     |]
 
 renderUpdatedPledgeEvent :: Int64 -> SharesPledgedId -> SharesPledged -> UserMap -> Widget

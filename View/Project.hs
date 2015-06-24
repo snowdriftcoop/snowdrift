@@ -7,7 +7,7 @@ module View.Project
     , Preview (..)
     , ProjectBlog (..)
     , projectBlogForm
-    , projectConfirmSharesForm
+    , projectConfirmPledgeForm
     , previewBlogPost
     , renderBlogPost
     , renderProject
@@ -48,15 +48,18 @@ renderProject maybe_project_id project mviewer_id is_watching pledges pledge = d
 
     userIsAdmin <- case maybe_project_id of
         Just project_id -> maybe (pure False) (\u -> runDB $ userIsProjectAdminDB u project_id) mviewer_id
-        Nothing -> (pure False)
+        Nothing -> pure False
 
     now <- liftIO getCurrentTime
 
     amounts <- case projectLastPayday project of
         Nothing -> return Nothing
         Just last_payday -> handlerToWidget $ runDB $ do
+            let extractRational = \case
+                    [Value (Just (r :: Rational))] -> r
+                    _                              -> 0
             -- This assumes there were transactions associated with the last payday
-            [Value (Just last) :: Value (Maybe Rational)] <-
+            last <- fmap extractRational $
                 select $
                 from $ \transaction -> do
                 where_ $
@@ -64,7 +67,7 @@ renderProject maybe_project_id project mviewer_id is_watching pledges pledge = d
                     transaction ^. TransactionCredit ==. val (Just $ projectAccount project)
                 return $ sum_ $ transaction ^. TransactionAmount
 
-            [Value (Just year) :: Value (Maybe Rational)] <-
+            year <- fmap extractRational $
                 select $
                 from $ \(transaction `InnerJoin` payday) -> do
                 where_ $
@@ -73,7 +76,7 @@ renderProject maybe_project_id project mviewer_id is_watching pledges pledge = d
                 on_ $ transaction ^. TransactionPayday ==. just (payday ^. PaydayId)
                 return $ sum_ $ transaction ^. TransactionAmount
 
-            [Value (Just total) :: Value (Maybe Rational)] <-
+            total <- fmap extractRational $
                 select $
                 from $ \transaction -> do
                 where_ $ transaction ^. TransactionCredit ==. val (Just $ projectAccount project)
@@ -82,7 +85,7 @@ renderProject maybe_project_id project mviewer_id is_watching pledges pledge = d
             return $ Just (Milray $ round last, Milray $ round year, Milray $ round total)
 
 
-    ((_, update_shares), _) <- handlerToWidget $ generateFormGet $ maybe previewPledgeForm pledgeForm maybe_project_id
+    ((_, update_pledge), _) <- handlerToWidget $ generateFormGet $ maybe previewPledgeForm pledgeForm maybe_project_id
 
     $(widgetFile "project")
 
@@ -175,5 +178,5 @@ viewForm = renderBootstrap3 BootstrapBasicForm $ (,)
     <$> (either (const defaultFilter) id . parseFilterExpression . fromMaybe "" <$> aopt' textField "filter" Nothing)
     <*> (either (const defaultOrder) id . parseOrderExpression . fromMaybe "" <$> aopt' textField "sort" Nothing)
 
-projectConfirmSharesForm :: Maybe Int64 -> Form SharesPurchaseOrder
-projectConfirmSharesForm = renderBootstrap3 BootstrapBasicForm . fmap SharesPurchaseOrder . areq hiddenField ""
+projectConfirmPledgeForm :: Maybe Int64 -> Form SharesPurchaseOrder
+projectConfirmPledgeForm = renderBootstrap3 BootstrapBasicForm . fmap SharesPurchaseOrder . areq hiddenField ""

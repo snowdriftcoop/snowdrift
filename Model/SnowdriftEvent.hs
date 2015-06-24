@@ -306,9 +306,9 @@ snowdriftEventToFeedEntry
         , feedEntryUpdated = wikiEditTs wiki_edit
         , feedEntryTitle   = T.unwords
             [ T.snoc project_handle ':'
-            , renderLanguage LangEn edit_language
-            , "version of wiki page", "\"" <> target <> "\""
-            , "edited by", username
+            , "(" <> renderLanguage LangEn edit_language <> ")"
+            , "wiki page", "\"" <> target <> "\""
+            , "ed. by", username
             ] <> maybe "" (T.append ": ") (wikiEditComment wiki_edit)
         , feedEntryContent = [hamlet| |] render
         }

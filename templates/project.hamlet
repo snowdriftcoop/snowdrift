@@ -29,10 +29,6 @@
         <span .glyphicon .glyphicon-comment>
         Discussion Board
     <li .snowdrift-sidebar-item>
-      <a href=@{ProjectPatronsR $ projectHandle project}>
-        <span .glyphicon .glyphicon-heart>
-        Patrons
-    <li .snowdrift-sidebar-item>
       <a href=@{ProjectFeedR $ projectHandle project}>
         <span .glyphicon .glyphicon-th-list>
         Project Feed
@@ -69,20 +65,25 @@
 <div .row>
   <div .col-md-7 .col-sm-8 .col-xs-12>
     <h1 .text-center> #{projectName project}
-    <p> #{projectBlurb project}
-    ^{description}
-    <hr>
-    <div>
+    <section .p-blurb>
+      <p>#{projectBlurb project}
+    <section .p-description>
+      ^{description}
+    <section .pledge-form>
       $maybe _ <- maybe_project_id
         <form method=GET
-              action=@{UpdateSharesR $ projectHandle project}>
-          ^{update_shares}
+              action=@{UpdatePledgeR $ projectHandle project}>
+          ^{update_pledge}
           $if isJust maybe_shares
             <input .pledge type=submit value="update pledge">
           $else
             <input .pledge type=submit value="enter pledge">
       $nothing
-        ^{update_shares}
+        ^{update_pledge}
+      <div .testing-notice>
+        currently
+        <strong>testing with fake money
+        and updating daily instead of monthly
 
   <div .project-stats .col-md-3 .col-xs-12>
     <div .testing-notice>
@@ -92,26 +93,23 @@
 
     <table>
       <tr>
-        <th> Current patrons
+        <th>Current patrons
       <tr>
         <td>
-          $maybe _ <- maybe_project_id
-            <a href=@{ProjectPatronsR $ projectHandle project}>
-            _{MsgPatrons users}
-          $nothing
+          <a href=@{ProjectPatronsR $ projectHandle project}>
             _{MsgPatrons users}
         <tr>
           <td>
             _{MsgShares shares}
         <tr>
           <td>
-            #{show share_value}&nbsp;per&nbsp;share
+            current base pledge value: #{show share_value}
         <tr>
           <td>
-            Total: #{show project_value}&nbsp;per&nbsp;month
+            total value of all pledges: #{show project_value}&nbsp;per&nbsp;month
     <table>
       <tr>
-        <th> History
+        <th>History
       $maybe (last, year, total) <- amounts
         <tr>
           <td>

@@ -1,28 +1,18 @@
 #{extra}
-<h3 .text-center style="margin: 1em">
-  Pledge your support!
-<div .testing-notice>
-  currently
-  <strong>testing with fake money
-  and daily instead of monthly
-<div .pledge-explanation>
-  <p>
-    Each pledge is a matching offer to other patrons, current and future.
-    So, when you pledge, others will help by donating more as well!
-  <p>
-    For each share, you will donate a monthly 0.1&cent; per other patron
-    plus <em>some</em> more to help match extra shares that others pledge.
-    You can adjust or drop your pledge at any time.
-<div .text-center>
-  <p>
-    Read more:
-    <br>
+<h3>Pledge your support!
+<p .pledge-explanation>
+  Your pledge is a matching offer inviting others to come help,
+  and when you pledge, existing patrons will donate more as well!
+
+<h4>Read the details:
+<ul>
+  <li>
     <a href=@{WikiR "snowdrift" LangEn "mechanism"}>
-      The pledge mechanism details
-    <br>
-    <a href=@{WikiR "snowdrift" LangEn "shares"}>
-      How to choose your number of shares
-  <h4 style="margin: 1em">
-    Your shares:
-  <strong>
-    ^{fvInput pledge_view}
+      The pledge mechanism
+  <li>
+    <a href=@{WikiR "snowdrift" LangEn "pledging"}>
+      Setting your pledge level
+
+<span .pledge-text>You pledge each month to donate:
+^{fvInput pledge_view}
+<span .pledge-text>for each patron to this project.

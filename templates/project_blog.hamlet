@@ -1,4 +1,8 @@
-<h1> #{projectName project} Blog 
+<h1>#{projectName project} Blog
+
+$if userIsTeamMember
+  <div>
+    <a href=@{NewBlogPostR project_handle}>Create new blog post
 
 $if null posts
   No blog posts yet.
@@ -29,4 +33,3 @@ $case next
       next posts
 
   $of _
-

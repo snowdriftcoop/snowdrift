@@ -92,6 +92,8 @@ module Model.User
     -- Unsorted
     , canCurUserMakeEligible
     , canMakeEligible
+    , pledgeStatus
+    , PledgeStatus(..)
     ) where
 
 import Import hiding (exists)
@@ -105,7 +107,7 @@ import Model.User.Internal
 import Model.User.Sql
 import Model.Wiki.Sql
 
-import           Database.Esqueleto.Internal.Language (From)
+import           Database.Esqueleto.Internal.Language (From, exists)
 import qualified Data.List          as L
 import qualified Data.Map           as M
 import qualified Data.Set           as S
@@ -199,22 +201,21 @@ fetchUserWatchingProjectsDB user_id =
         return p
 
 updateUserDB :: UserId -> UserUpdate -> DB ()
-updateUserDB user_id UserUpdate{..} = do
-    update $ \u -> do
-     set u $ [ UserName               =. val userUpdateName
-             , UserAvatar             =. val userUpdateAvatar
-             , UserEmail              =. val userUpdateEmail
-             , UserIrcNick            =. val userUpdateIrcNick
-             , UserStatement          =. val userUpdateStatement
-             , UserBlurb              =. val userUpdateBlurb
-             ]
+updateUserDB user_id UserUpdate{..} = update $ \u -> do
+     set u [ UserName               =. val userUpdateName
+           , UserAvatar             =. val userUpdateAvatar
+           , UserEmail              =. val userUpdateEmail
+           , UserIrcNick            =. val userUpdateIrcNick
+           , UserStatement          =. val userUpdateStatement
+           , UserBlurb              =. val userUpdateBlurb
+           ]
      where_ (u ^. UserId ==. val user_id)
 
 updateUserPasswordDB :: UserId -> Maybe Text -> Maybe Text -> DB ()
 updateUserPasswordDB user_id hash salt =
     update $ \u -> do
-        set u $ [ UserHash =. val hash
-                , UserSalt =. val salt ]
+        set u [ UserHash =. val hash
+              , UserSalt =. val salt ]
         where_ $ u ^. UserId ==. val user_id
 
 fromEmailVerification
@@ -232,7 +233,7 @@ replaceWithDeletedUser
     => EntityField val UserId -> UserId -> DB ()
 replaceWithDeletedUser con user_id =
     update $ \c -> do
-        set c $ [con =. val deletedUser]
+        set c [con =. val deletedUser]
         where_ $ c ^. con ==. val user_id
 
 deleteCommentsDB :: UserId -> DB ()
@@ -259,13 +260,13 @@ fetchVerEmail ver_uri user_id = do
                        &&. ev ^. EmailVerificationUri  ==. val ver_uri
                   return $ ev ^. EmailVerificationEmail
     if L.null emails
-        then return $ Nothing
+        then return Nothing
         else return $ Just $ L.head emails
 
 verifyEmailDB :: MonadIO m => UserId -> ReaderT SqlBackend m ()
 verifyEmailDB user_id = do
     update $ \u -> do
-        set u $ [UserEmail_verified =. val True]
+        set u [UserEmail_verified =. val True]
         where_ $ u ^. UserId ==. val user_id
     deleteFromEmailVerification user_id
 
@@ -357,7 +358,7 @@ userHasRolesAnyDB roles user_id project_id =
 -- creating a bunch of 1-element lists.
 fetchUserPledgesDB :: UserId -> DB [(Entity Project, [Entity Pledge])]
 fetchUserPledgesDB user_id =
-    fmap (map (second return)) $ do
+    fmap (map (second return)) $
     select $ from $ \(project `InnerJoin` pledge) -> do
         on_ $ project ^. ProjectId ==. pledge ^. PledgeProject
         where_ $ pledge ^. PledgeUser ==. val user_id
@@ -403,7 +404,7 @@ canMakeEligible :: UserId -> UserId -> Handler Bool
 canMakeEligible establishee_id establisher_id = do
     (establishee, establisher_is_mod) <- runYDB $ (,)
         <$> get404 establishee_id
-        <*> (userIsModerator establisher_id)
+        <*> userIsModerator establisher_id
     return $ userIsUnestablished establishee && establisher_is_mod
 
 fetchUserNotificationsDB :: UserId -> DB [Entity UserNotification]
@@ -547,18 +548,16 @@ updateProjectNotifPrefs user_id project_id notif_type notif_deliv = do
 
 updateUserNotificationPrefDB :: UserId -> UserNotificationType
                              -> Maybe UserNotificationDelivery -> DB ()
-updateUserNotificationPrefDB user_id notif_type mnotif_deliv =
+updateUserNotificationPrefDB user_id notif_type =
     maybe (deleteUserNotifPrefs user_id notif_type)
           (updateUserNotifPrefs user_id notif_type)
-          mnotif_deliv
 
 updateProjectNotificationPrefDB :: UserId -> ProjectId
                                 -> ProjectNotificationType
                                 -> Maybe ProjectNotificationDelivery -> DB ()
-updateProjectNotificationPrefDB user_id project_id notif_type mnotif_deliv =
+updateProjectNotificationPrefDB user_id project_id notif_type =
     maybe (deleteProjectNotifPrefs user_id project_id notif_type)
           (updateProjectNotifPrefs user_id project_id notif_type)
-          mnotif_deliv
 
 insertDefaultProjectNotifPrefs :: UserId -> ProjectId -> DB ()
 insertDefaultProjectNotifPrefs user_id project_id =
@@ -574,12 +573,12 @@ insertDefaultProjectNotifPrefs user_id project_id =
 userWatchProjectDB :: UserId -> ProjectId -> DB ()
 userWatchProjectDB user_id project_id = do
     void $ insertUnique $ UserWatchingProject user_id project_id
-    exists <-
+    exists' <-
         selectExists $
-        from $ \pnp -> do
+        from $ \pnp ->
         where_ $ pnp ^. ProjectNotificationPrefUser    ==. val user_id
              &&. pnp ^. ProjectNotificationPrefProject ==. val project_id
-    unless exists $
+    unless exists' $
         insertDefaultProjectNotifPrefs user_id project_id
 
 userUnwatchProjectDB :: UserId -> ProjectId -> DB ()
@@ -588,7 +587,7 @@ userUnwatchProjectDB user_id project_id =
 
 userIsWatchingProjectDB :: UserId -> ProjectId -> DB Bool
 userIsWatchingProjectDB user_id project_id =
-    maybe (False) (const True)
+    maybe False (const True)
         <$> getBy (UniqueUserWatchingProject user_id project_id)
 
 -- | Mark all given Comments as viewed by the given User.
@@ -633,14 +632,14 @@ userViewWikiEditsDB user_id wiki_page_id = unviewedWikiEdits >>= viewWikiEdits
     viewWikiEdits = mapM_ (insert_ . ViewWikiEdit user_id)
 
 userReadNotificationsDB :: UserId -> DB ()
-userReadNotificationsDB user_id = liftIO getCurrentTime >>= \now -> do
+userReadNotificationsDB user_id = liftIO getCurrentTime >>= \now ->
     update $ \u -> do
     set u [UserReadNotifications =. val now]
     where_ (u ^. UserId ==. val user_id)
 
 -- | Update this User's read applications timestamp.
 userReadVolunteerApplicationsDB :: UserId -> DB ()
-userReadVolunteerApplicationsDB user_id = liftIO getCurrentTime >>= \now -> do
+userReadVolunteerApplicationsDB user_id = liftIO getCurrentTime >>= \now ->
     update $ \u -> do
     set u [UserReadApplications =. val now]
     where_ (u ^. UserId ==. val user_id)
@@ -717,3 +716,21 @@ fetchNumUnreadProjectNotificationsDB :: UserId -> DB Int
 fetchNumUnreadProjectNotificationsDB =
     fetchNumUnreadNotifications
         ProjectNotificationTo ProjectNotificationCreatedTs
+
+
+data PledgeStatus = AllFunded | ExistsUnderfunded
+
+pledgeStatus :: UserId -> DB PledgeStatus
+pledgeStatus uid = do
+    underfunded <-
+        select $
+        from $ \u -> do
+        where_ $ u ^. UserId ==. val uid
+            &&. (exists $
+                from $ \plg -> do
+                where_ $ plg ^. PledgeShares >. plg ^. PledgeFundedShares
+                    &&. plg ^. PledgeUser ==. val uid)
+        return $ u ^. UserId
+    return $ case underfunded of
+        [] -> AllFunded
+        _ -> ExistsUnderfunded

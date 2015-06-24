@@ -4,7 +4,7 @@ module Handler.Wiki.Comment where
 
 import Import
 
-import           Handler.Comment
+import           Handler.Comment as Com
 import           Handler.Project (checkProjectCommentActionPermission)
 import           Model.Comment
 import           Model.Comment.ActionPermissions
@@ -79,19 +79,11 @@ makeWikiPageCommentForestWidget
         project_handle
         language
         target
-        comments
-        comment_mods
-        get_max_depth
-        is_preview
-        widget_under_root_comment = do
+        comments =
     makeCommentForestWidget
       (wikiPageCommentHandlerInfo muser project_id project_handle language target)
       comments
       muser
-      comment_mods
-      get_max_depth
-      is_preview
-      widget_under_root_comment
 
 makeWikiPageCommentTreeWidget
         :: Maybe (Entity User)
@@ -178,7 +170,7 @@ getClaimWikiCommentR project_handle language target comment_id = do
 
 postClaimWikiCommentR :: Text -> Language -> Text -> CommentId -> Handler Html
 postClaimWikiCommentR project_handle language target comment_id = do
-    (user, (Entity project_id _), _, comment) <- checkCommentPageRequireAuth project_handle language target comment_id
+    (user, Entity project_id _, _, comment) <- checkCommentPageRequireAuth project_handle language target comment_id
     checkProjectCommentActionPermission can_claim user project_handle (Entity comment_id comment)
 
     postClaimComment
@@ -234,7 +226,7 @@ getCloseWikiCommentR project_handle language target comment_id = do
 
 postCloseWikiCommentR :: Text -> Language -> Text -> CommentId -> Handler Html
 postCloseWikiCommentR project_handle language target comment_id = do
-    (user, (Entity project_id _), _, comment) <- checkCommentPageRequireAuth project_handle language target comment_id
+    (user, Entity project_id _, _, comment) <- checkCommentPageRequireAuth project_handle language target comment_id
     checkProjectCommentActionPermission can_close user project_handle (Entity comment_id comment)
 
     postCloseComment
@@ -360,9 +352,17 @@ postReplyWikiCommentR project_handle language target parent_id = do
       (Just parent_id)
       user
       (wikiPageDiscussion page)
-      (makeProjectCommentActionPermissionsMap (Just user) project_handle def) >>= \case
-        Left _ -> redirect (WikiCommentR project_handle language target parent_id)
-        Right (widget, form) -> defaultLayout $ previewWidget form "post" (wikiDiscussionPage project_handle language target widget)
+      (makeProjectCommentActionPermissionsMap (Just user) project_handle def)
+      >>= \case
+          ConfirmedPost (Left err) -> do
+              alertDanger err
+              redirect $ ReplyWikiCommentR
+                  project_handle language target parent_id
+          ConfirmedPost (Right _)->
+              redirect $ WikiCommentR project_handle language target parent_id
+          Com.Preview (widget, form) ->
+              defaultLayout $ previewWidget form "post" $
+                  wikiDiscussionPage project_handle language target widget
 
 --------------------------------------------------------------------------------
 -- /rethread
@@ -474,7 +474,7 @@ getUnclaimWikiCommentR project_handle language target comment_id = do
 
 postUnclaimWikiCommentR :: Text -> Language -> Text -> CommentId -> Handler Html
 postUnclaimWikiCommentR project_handle language target comment_id = do
-    (user, (Entity project_id _), _, comment) <- checkCommentPageRequireAuth project_handle language target comment_id
+    (user, Entity project_id _, _, comment) <- checkCommentPageRequireAuth project_handle language target comment_id
     checkProjectCommentActionPermission can_unclaim user project_handle (Entity comment_id comment)
 
     postUnclaimComment

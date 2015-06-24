@@ -97,7 +97,7 @@ reqc c f s = c <$> reqn f s
 optc :: MonadHandler m
      => (a -> b) -> Field m a -> SomeMessage (HandlerSite m)
      -> AForm m (Maybe b)
-optc c f s = (c <$>) <$> (optn f s)
+optc c f s = (c <$>) <$> optn f s
 
 years :: Handler (OptionList Year)
 years = do

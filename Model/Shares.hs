@@ -11,9 +11,16 @@ import qualified Data.Text.Read as T
 
 import Text.Julius (rawJS)
 
+baseAmount :: Rational
+baseAmount = 0.1
+
+multiplyByBaseAmount :: Real a => a -> Double
+multiplyByBaseAmount shares = fromRational $ toRational shares * baseAmount
+
 pledgeSizes :: [[Int64]]
 pledgeSizes =
     [ [1,2,4,8]
+    , [1,2,4,8,16]
     , [1,2,3,5,10]
     , [1,2,5,10]
     ]
@@ -46,7 +53,7 @@ pledgeField project_id = Field
     parseValue v =
         let shares           = Right . Just . SharesPurchaseOrder
             invalidInteger i = Left $ SomeMessage $ fromString
-                "Pledge value must be an integer: " <> i
+                "Number of shares must be an integer: " <> i
         in case T.decimal v of
             Right (a, "") -> shares a
             Right (a, bs) ->
@@ -72,6 +79,7 @@ pledgeField project_id = Field
         let value = either (const 2) (\(SharesPurchaseOrder s) -> s) v
             hasValue = value `elem` list
             otherValue = if hasValue then "" else show value
+            pledgeOptions = zip list $ map (show . multiplyByBaseAmount) list
 
         $(widgetFile "pledge-field")
 
