@@ -31,6 +31,9 @@ searchWidget extra = do
               <p>^{fvInput claimedView} Claimed
                  ^{fvInput unclaimedView} Unclaimed
               <p>Tags: ^{fvInput tagsView}
+              <small>
+                <i>
+                  * Tags should be separated using AND, OR, NOT, and/or ().
             <div>
               <p>Sort: ^{fvInput sortView}
           |]
@@ -49,7 +52,7 @@ searchFilterString (SearchParameters claimed unclaimed tags _ ) =
                 then T.append "UNCLAIMED AND " $ parseTags tags
                 else T.append T.empty $ parseTags tags
     where
-        parseTags t = T.replace " " " AND " (fromMaybe T.empty t)
+        parseTags t = fromMaybe T.empty t
 
 searchSortString :: SearchParameters -> Text
 searchSortString (SearchParameters _ _ _ sortString) = fromMaybe T.empty sortString

@@ -41,8 +41,6 @@ data ProjectNotificationType
     | NotifNewPledge
     | NotifUpdatedPledge
     | NotifDeletedPledge
-    -- New Volunteer Application Submission
-    | NotifVolunteerApp
     deriving (Eq, Read, Show, Bounded, Enum)
 derivePersistField "ProjectNotificationType"
 
@@ -66,7 +64,6 @@ showProjectNotificationType NotifBlogPost          = "New blog post"
 showProjectNotificationType NotifNewPledge         = "New pledge"
 showProjectNotificationType NotifUpdatedPledge     = "Pledge updated"
 showProjectNotificationType NotifDeletedPledge     = "Pledge deleted"
-showProjectNotificationType NotifVolunteerApp      = "New Volunteer Application submitted"
 
 data UserNotificationDelivery
     = UserNotifDeliverWebsite
