@@ -743,10 +743,6 @@ postUpdateSharesR project_handle = do
 getTicketsR :: Text -> Handler Html
 getTicketsR project_handle = do
     muser_id <- maybeAuthId
-    (project, tagged_tickets) <- runYDB $ do
-        Entity project_id project <- getBy404 (UniqueProjectHandle project_handle)
-        tagged_tickets <- fetchProjectOpenTicketsDB project_id muser_id
-        return (project, tagged_tickets)
 
     -- ((result, formWidget), encType) <- runFormGet viewForm
     ((result, formWidget), encType) <- runFormGet searchWidget
@@ -759,6 +755,11 @@ getTicketsR project_handle = do
                                 (parseFilterExpression $ searchString x)),
                              defaultOrder)
             _ -> (defaultFilter, defaultOrder)
+
+    (project, tagged_tickets) <- runYDB $ do
+        Entity project_id project <- getBy404 (UniqueProjectHandle project_handle)
+        tagged_tickets <- fetchProjectOpenTicketsDB project_id muser_id
+        return (project, tagged_tickets)
 
     github_issues <- getGithubIssues project
 
