@@ -22,7 +22,7 @@ import qualified Data.Text.Lazy               as TextLazy
 import           Network.Mail.Mime            (simpleMail', Address (..), sendmailCustom, Mail, renderMail')
 import           System.Console.CmdArgs
 import           System.Directory             (doesFileExist)
-import           System.IO                    (stdout, stderr)
+import           System.IO                    (hFlush, stdout, stderr)
 import           System.Environment           (getEnv, getProgName)
 import           System.Log.FastLogger        (toLogStr, fromLogStr)
 import qualified Text.Email.Validate          as Email
@@ -324,11 +324,13 @@ runSql dbConf poolConf action = runPool dbConf action poolConf
 
 handleSendmail :: (MonadBaseControl IO m, MonadIO m, MonadLogger m)
                => FileName -> FileName -> PostgresConf -> PersistConfigPool PostgresConf
-               -> Text -> Email -> Email -> Text -> Text
+               -> Text -> Text -> Email -> Email -> Text -> Text
                -> PersistConfigBackend PostgresConf m () -> Text -> m ()
-handleSendmail sendmail_exec sendmail_file dbConf poolConf info_msg from_ to subject body
+handleSendmail sendmail_exec sendmail_file dbConf poolConf
+               info_msg_before info_msg_after from_ to subject body
                action warn_msg = do
-    $(logInfo) info_msg
+    $(logInfo) info_msg_before
+    liftIO $ hFlush stdout
     Exception.handle handler $ do
         liftIO $ renderSendmail sendmail_exec sendmail_file $ simpleMail'
             (Address Nothing to)
@@ -336,6 +338,8 @@ handleSendmail sendmail_exec sendmail_file dbConf poolConf info_msg from_ to sub
             subject
             (TextLazy.fromStrict body)
         runSql dbConf poolConf action
+    $(logInfo) info_msg_after
+    liftIO $ hFlush stdout
     where
       handler (err :: Exception.ErrorCall) = do
           $(logError) (Text.pack $ show err)
@@ -351,6 +355,7 @@ sendUserNotification sendmail_exec sendmail_file dbConf poolConf notif_email
     let content' = unMarkdown content
     handleSendmail sendmail_exec sendmail_file dbConf poolConf
         ("sending a user notification to " <> user_email <> "\n" <> content')
+        ("sent the user notification to " <> user_email <> "\n" <> content')
         notif_email user_email "Snowdrift.coop notification" content'
         (deleteFromUserNotificationEmail ts notif_type to content)
         ("sending the user notification to " <> user_email <> " failed; " <>
@@ -366,6 +371,7 @@ sendProjectNotification sendmail_exec sendmail_file dbConf poolConf notif_email
     let content' = unMarkdown content
     handleSendmail sendmail_exec sendmail_file dbConf poolConf
         ("sending a project notification to " <> user_email <> "\n" <> content')
+        ("sent the project notification to " <> user_email <> "\n" <> content')
         notif_email user_email "Snowdrift.coop notification" content'
         (deleteFromProjectNotificationEmail ts notif_type to project content)
         ("sending the project notification to " <> user_email <> " failed; " <>
@@ -436,6 +442,8 @@ sendVerification sendmail_exec sendmail_file dbConf poolConf verif_email user_id
     handleSendmail sendmail_exec sendmail_file dbConf poolConf
         ("sending an email verification message to " <> user_email <> "\n" <>
          content)
+        ("sent the email verification message to " <> user_email <> "\n" <>
+         content)
         verif_email user_email "Snowdrift.coop email verification" content
         (markAsSentVerification user_id user_email ver_uri)
         ("sending the email verification message to " <> user_email <>
@@ -469,6 +477,7 @@ sendResetPassword sendmail_exec sendmail_file dbConf poolConf notif_email
     let content = "Please open this link to set the new password: " <> uri
     handleSendmail sendmail_exec sendmail_file dbConf poolConf
         ("sending a password reset message to " <> user_email <> "\n" <> content)
+        ("sent the password reset message to " <> user_email <> "\n" <> content)
         notif_email user_email "Snowdrift.coop password reset" content
         (markAsSentResetPassword user_id)
         ("sending the password reset message to " <> user_email <> " failed; " <>
@@ -499,6 +508,8 @@ sendDeleteConfirmation sendmail_exec sendmail_file dbConf poolConf notif_email
     handleSendmail sendmail_exec sendmail_file dbConf poolConf
         ("sending a delete confirmation message to " <> user_email <> "\n" <>
          content)
+        ("sent the delete confirmation message to " <> user_email <> "\n" <>
+         content)
         notif_email user_email "Snowdrift.coop delete confirmation" content
         (markAsSentDeleteConfirmation user_id)
         ("sending the delete confirmation message to " <> user_email <> " failed; " <>
@@ -521,6 +532,7 @@ main = withLogging $ do
     Parsed {..} <-
         liftIO $ parse db_arg email_arg delay_arg sendmail_exec_arg sendmail_file_arg
     $(logInfo) "starting the daemon"
+    liftIO $ hFlush stdout
     $(logDebug) ("running with --db=" <> db_arg <> " --email=" <> notif_email <>
                  " --delay=" <> Text.pack (show loop_delay))
     (dbConf, poolConf) <- liftIO $ do
@@ -529,6 +541,7 @@ main = withLogging $ do
         poolConf <- Persist.createPoolConfig dbConf
         return (dbConf, poolConf)
     $(logInfo) "starting the main loop"
+    liftIO $ hFlush stdout
     void $ forever $ runResourceT $ withDelay loop_delay $ do
         user_notifs <- runSql dbConf poolConf $ do
             with_emails_user <- selectWithVerifiedEmailsUser
@@ -566,3 +579,5 @@ main = withLogging $ do
         forM_ confirms $ \(user_id, user_email, uri) ->
             sendDeleteConfirmation sendmail_exec sendmail_file dbConf poolConf
                 notif_email user_id user_email uri
+        $(logInfo) "iteration finished"
+        liftIO $ hFlush stdout
