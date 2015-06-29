@@ -24,7 +24,7 @@ stanzas:
           - '--email=notifications@snowdrift.coop'
 
     - type: background
-      exec: manage-symlink
+      exec: ../ops/manage-symlink
 
     # Redirect the https version of www. Since we're load-balanced, it
     # comes in on 80.
