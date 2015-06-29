@@ -34,5 +34,7 @@ extraFiles:
     # FIXME: This shouldn't be needed.
     - ../templates
 
-# FIXME: Remove dev after DNS switchover
-copy-to: dev.snowdrift.coop:/opt/keter/incoming
+# Assuming you have an awscli profile named 'snowdrift' that refers to the
+# Snowdrift account, the server to copy to can be acquired with:
+# $ aws --profile snowdrift ec2 describe-instances --instance-ids i-81a6df28 --query 'Reservations[].Instances[].PublicDnsName'
+copy-to: ec2-54-152-177-195.compute-1.amazonaws.com:/opt/keter/incoming
