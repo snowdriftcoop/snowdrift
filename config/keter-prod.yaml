@@ -29,6 +29,15 @@ stanzas:
     - type: background
       exec: manage-symlink
 
+    # Redirect the https version of www. Since we're load-balanced, it
+    # comes in on 80.
+    - type: redirect
+      hosts:
+        - www.snowdrift.coop
+      actions:
+        - host: snowdrift.coop
+          secure: true
+
 extraFiles:
     - ../migrations
     # FIXME: This shouldn't be needed.
