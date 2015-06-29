@@ -1,0 +1,5 @@
+dump=/tmp/snowdrift_production--switchover
+
+dev_host=$(aws --profile snowdrift ec2 describe-instances --instance-ids i-81a6df28 --query 'Reservations[].Instances[].PublicDnsName')
+ssh -t snowdrift.coop -- sudo -u postgres pg_dump -Fc snowdrift_production -f $dump
+ssh snowdrift.coop cat $dump | ssh $dev_host -- sudo -u postgres pg_restore -c -d snowdrift_production

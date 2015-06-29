@@ -1,0 +1,50 @@
+stanzas:
+    - type: webapp
+      hosts:
+          - snowdrift.coop
+      exec: ../dist/build/Snowdrift/Snowdrift
+      args:
+          - production
+      env:
+          # I feel like these should be coming from the 1.2-era scaffolding
+          # code we have. They may be unnecessary here.
+          APPROOT: https://snowdrift.coop
+          PGDATABASE: snowdrift_production
+          PGUSER: snowdrift_production
+      forward-env:
+          - PGPASS
+
+    - type: background
+      exec: ../dist/build/SnowdriftEmailDaemon/SnowdriftEmailDaemon
+      env:
+          PGDATABASE: snowdrift_production
+          PGUSER: snowdrift_production
+      forward-env:
+          - PGPASS
+      args:
+          - '--db=production'
+          - '--email=notifications@snowdrift.coop'
+
+    - type: background
+      exec: ../ops/manage-symlink
+
+    # Redirect the https version of www.
+    - type: redirect
+      hosts:
+          - www.snowdrift.coop
+      actions:
+          - host: snowdrift.coop
+            secure: true
+
+extraFiles:
+    - ../migrations
+    # FIXME: templates shouldn't be needed.
+    - ../templates
+    # Apps for cron to run
+    - ../ops/run-process-payments
+    - ../dist/build/SnowdriftProcessPayments/SnowdriftProcessPayments
+
+# Assuming you have an awscli profile named 'snowdrift' that refers to the
+# Snowdrift account, the server to copy to can be acquired with:
+# $ aws --profile snowdrift ec2 describe-instances --instance-ids i-81a6df28 --query 'Reservations[].Instances[].PublicDnsName'
+copy-to: ec2-54-152-177-195.compute-1.amazonaws.com:/opt/keter/incoming
