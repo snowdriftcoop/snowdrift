@@ -43,6 +43,10 @@ Hop on #snowdrift at
 Essential build instructions
 ----------------------------
 
+**Note**: As of 2015-05-22, if you need support for GHC 7.10, you should
+  use Peter Harpending's branch:
+  <https://github.com/pharpend/snowdrift.git>.
+
 Our code is hosted at the fully free/libre/open site
 [git.gnu.io/snowdrift/snowdrift](https://git.gnu.io/snowdrift/snowdrift)
 but, for convenience and redundancy, we also mirror at
