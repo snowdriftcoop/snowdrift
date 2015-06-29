@@ -4,27 +4,24 @@ stanzas:
       args:
           - production
       env:
-          # FIXME: Remove dev after DNS switchover
-          APPROOT: https://dev.snowdrift.coop
+          APPROOT: https://snowdrift.coop
           PGDATABASE: snowdrift_production
           PGUSER: snowdrift_production
       forward-env:
           - PGPASS
       hosts:
           - snowdrift.coop
-          # FIXME: Remove after dns switchover
-          - dev.snowdrift.coop
 
-    # - type: background
-    #   exec: ../dist/build/SnowdriftEmailDaemon/SnowdriftEmailDaemon
-    #   env:
-    #       PGDATABASE: snowdrift_production
-    #       PGUSER: snowdrift_production
-    #   forward-env:
-    #       - PGPASS
-    #   args:
-    #       - '--db=production'
-    #       - '--email=notifications@snowdrift.coop'
+    - type: background
+      exec: ../dist/build/SnowdriftEmailDaemon/SnowdriftEmailDaemon
+      env:
+          PGDATABASE: snowdrift_production
+          PGUSER: snowdrift_production
+      forward-env:
+          - PGPASS
+      args:
+          - '--db=production'
+          - '--email=notifications@snowdrift.coop'
 
     - type: background
       exec: manage-symlink
