@@ -6,8 +6,6 @@ stanzas:
       args:
           - production
       env:
-          # I feel like these should be coming from the 1.2-era scaffolding
-          # code we have. They may be unnecessary here.
           APPROOT: https://snowdrift.coop
           PGDATABASE: snowdrift_production
           PGUSER: snowdrift_production
