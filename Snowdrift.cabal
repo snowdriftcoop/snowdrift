@@ -96,7 +96,6 @@ library
                      Handler.Project
                      Handler.Project.Signup
                      Handler.ProjectBlog
-                     Handler.RepoFeed
                      Handler.ResetPassword
                      Handler.SnowdriftEvent
                      Handler.ToU

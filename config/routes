@@ -193,7 +193,6 @@
 
 -- Devs only!
 
-/dev/repo  RepoFeedR  GET
 /dev/build BuildFeedR GET
 
 -- DEPRECATED
