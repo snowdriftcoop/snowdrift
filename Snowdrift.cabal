@@ -378,6 +378,7 @@ executable         sdm
                      , mwc-random
                      , process
                      , semigroups
+                     , mtl
 
 executable         SnowdriftSendmail
     if flag(dev)

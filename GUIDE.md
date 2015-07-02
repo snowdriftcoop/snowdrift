@@ -126,6 +126,13 @@ The Mac OS build process seems to have some issues with postgres user names;
 so for now, the database set-up for Mac OS will need to be done manually.
 See the appendix at the end of this file for more.
 
+*BSD:
+  The BSDs use different postgres configurations than the common GNU/Linux distros,
+  which require passing different paramaters to sdm.
+  
+  OpenBSD: `sdm init --sudoUser _postgresql`
+  FreeBSD: Untested but we believe `sdm init --sudoUser pgsql --pgUser pgsql`
+           will work.
 
 ### Build steps
 

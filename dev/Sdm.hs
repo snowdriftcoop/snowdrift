@@ -4,6 +4,7 @@
 import Prelude hiding (init, length)
 import Control.Applicative ((<$>))
 import Control.Monad hiding (forM_)
+import Control.Monad.Reader hiding (forM_)
 import qualified Data.ByteString as B
 import Data.ByteString.Internal (c2w, w2c)
 import qualified Data.ByteString.Char8 as C
@@ -20,18 +21,29 @@ import System.Random.MWC
 
 -- Command line interface.
 
+type PgAction = ReaderT UserConfig IO
+
 main :: IO ()
 main = do
   exists <- doesFileExist "Snowdrift.cabal"
   unless exists $ error "please run from the project's root directory"
   Sdm {..} <- getProgName >>= cmdArgs . sdm
   run "sudo" ["-K"]  -- require a password the first time 'sudo' is run
-  handle action db
+  runReaderT (handle sdmAction sdmDB)
+             (UserConfig { pgUser   = sdmPgUser
+                         , sudoUser = sdmSudoUser })
 
 data Sdm = Sdm
-  { db     :: String
-  , action :: String
+  { sdmDB     :: String
+  , sdmAction :: String
+  , sdmPgUser :: String
+  , sdmSudoUser :: String
   } deriving (Typeable, Data, Show)
+
+data UserConfig = UserConfig
+  { pgUser   :: String
+  , sudoUser :: String
+  }
 
 actions, databases :: String
 actions   = "init, clean, reset, export"
@@ -39,16 +51,22 @@ databases = "dev, test, all (default)"
 
 sdm :: String -> Sdm
 sdm pname = Sdm
-  { db = "all"                  -- operate on the dev and test databases
+  { sdmDB = "all"                  -- operate on the dev and test databases
       &= help "Database to operate on"
       &= explicit &= name "db"
       &= typ "DATABASE"
-  , action = def &= argPos 0 &= typ "ACTION"
+  , sdmAction = def &= argPos 0 &= typ "ACTION"
+  , sdmPgUser = "postgres"
+            &= help "Postgres superuser used to create/modify databases"
+            &= explicit &= name "pgUser"
+  , sdmSudoUser = "postgres"
+            &= help "System user used for peer authentication"
+            &= explicit &= name "sudoUser"
   } &= summary "Snowdrift database manager 0.1" &= program pname
     &= details [ "Actions: " <> actions
                , "Databases: " <> databases ]
 
-handle :: String -> String -> IO ()
+handle :: String -> String -> PgAction ()
 handle action db
   -- Force evaluation to check that the 'db' argument is valid.
   | action == "init"   = init   $! parse db
@@ -122,11 +140,13 @@ x -|- y = do
 run :: String -> [String] -> IO ()
 run cmd args = void $ rawSystem cmd args
 
-postgres :: [String] -> CreateProcess
-postgres args = proc "sudo" $ ["-u", "postgres"] ++ args
+sudoed :: String -> [String] -> CreateProcess
+sudoed sudoUser args = proc "sudo" $ ["-u", sudoUser] ++ args
 
-psql :: String -> IO ()
-psql arg = putStr =<< proc "echo" [arg] -|- postgres ["psql"]
+psql :: String -> PgAction ()
+psql arg = do
+  UserConfig{..} <- ask
+  liftIO (putStr =<< proc "echo" [arg] -|- sudoed sudoUser ["psql", "-U", pgUser])
 
 cat :: String -> CreateProcess
 cat file = proc "cat" [file]
@@ -139,69 +159,74 @@ leave s = do
 leaveLn :: String -> IO ()
 leaveLn s = leave s >> putStr "\n"
 
-
 -- Database interaction.
-
-doesDBExist :: DBType a => a -> IO Bool
+doesDBExist :: DBType a => a -> PgAction Bool
 doesDBExist dbType = do
-  dbs <- postgres ["psql", "-lqt"] -|- proc "cut" ["-d|", "-f1"]
+  UserConfig{..} <- ask
+  dbs <- liftIO (sudoed sudoUser ["psql", "-lqt", "-U", pgUser] -|- proc "cut" ["-d|", "-f1"])
   return . elem (toString dbType) $ words dbs
 
-ifExists :: DBType a => a -> IO () -> IO ()
+ifExists :: DBType a => a -> PgAction () -> PgAction ()
 ifExists dbType as = do
   exists <- doesDBExist dbType
   if exists
     then as
     else
       -- Don't error out or it won't check all 'dbs'.
-      leaveLn $ "'" <> toString dbType <> "' does not exist; doing nothing"
+      liftIO $ leaveLn $ "'" <> toString dbType <> "' does not exist; doing nothing"
 
-dropDB, createDB :: DBType a => a -> IO ()
-dropDB   dbType = ifExists dbType . psql $ "DROP DATABASE " <> toString dbType <> ";"
+dropDB, createDB :: DBType a => a -> PgAction ()
+dropDB  dbType =
+ ifExists dbType . psql $ "DROP DATABASE " <> toString dbType <> ";"
+
 createDB dbType = psql $ "CREATE DATABASE " <> toString dbType <> ";"
 
-importDB :: DBType a => DBFile -> a -> IO ()
-importDB (DBFile f) dbType = putStr =<< cat f
-                         -|- postgres ["psql", toString dbType]
+importDB :: DBType a => DBFile -> a -> PgAction ()
+importDB (DBFile f) dbType = do
+  UserConfig{..} <- ask
+  liftIO (putStr =<< cat f -|- sudoed sudoUser ["psql", "-U", pgUser, toString dbType])
 
-exportDB :: DBType a => a -> DBFile -> IO ()
-exportDB dbType (DBFile f) = loop
+exportDB :: DBType a => a -> DBFile -> PgAction ()
+exportDB dbType (DBFile f) = do
+  UserConfig{..} <- ask
+  liftIO $ loop sudoUser pgUser
   where
-    loop = do
+    loop sudoUser pgUser = do
       leave $ "overwrite '" <> f <> "'? (yes/No) "
       hFlush stdout             -- send the question to 'stdout' immediately
       answer <- fmap (fmap toLower) getLine
       case () of
         _| answer == "yes" -> do
              (_, Just o, _, _) <-
-               createProcess (postgres ["pg_dump", toString dbType]) { std_out = CreatePipe }
+               createProcess (sudoed sudoUser ["pg_dump", "-U", pgUser, toString dbType]) {
+                 std_out = CreatePipe
+               }
              dump <- hGetContents o
              writeFile f dump
          | answer == "no" || null answer -> leaveLn "doing nothing"
          | otherwise -> do
              leaveLn "invalid argument"
-             loop
+             loop sudoUser pgUser
 
-createUser :: DBUser -> [String] -> IO ()
+createUser :: DBUser -> [String] -> PgAction ()
 createUser (DBUser u) opts = psql $ "CREATE USER " <> u <> " "
                           <> unwords opts <> ";"
 
-dropRole :: DBUser -> IO ()
+dropRole :: DBUser -> PgAction ()
 dropRole (DBUser u) = psql $ "DROP ROLE " <> u <> ";"
 
-alterUser :: DBUser -> String -> IO ()
+alterUser :: DBUser -> String -> PgAction ()
 alterUser (DBUser u) password = psql $ "ALTER USER " <> u
                              <> " WITH ENCRYPTED PASSWORD '" <> password <> "';"
 
-template :: Bool -> DBTemp -> IO ()
+template :: Bool -> DBTemp -> PgAction ()
 template b dbTemp = ifExists dbTemp .
   psql $ "UPDATE pg_database SET datistemplate="
       <> show b <> " WHERE datname='" <> toString dbTemp <> "';"
 
-setTemplate, unsetTemplate :: DBTemp -> IO ()
+setTemplate, unsetTemplate :: DBTemp -> PgAction ()
 setTemplate   = template True
 unsetTemplate = template False
-
 
 -- Actions.
 
@@ -220,23 +245,24 @@ genPassword len cs =
         then go (pred n) (B.cons w <$> acc) gen
         else go n acc gen
 
-init, clean, reset, export :: NonEmpty DB -> IO ()
+init, clean, reset, export :: NonEmpty DB -> PgAction ()
 init ((Test {}) :| []) = error "cannot initialize only test; try to init dev or all"
 init dbs = do
-  exists <- doesFileExist config
+  exists <- liftIO $ doesFileExist config
   when exists $ error "already initialized; doing nothing"
 
-  password <- genPassword 42 $ ['a'..'z'] <> ['A'..'Z'] <> ['0'..'9']
+  password <- liftIO $ genPassword 42 $ ['a'..'z'] <> ['A'..'Z'] <> ['0'..'9']
 
   -- Setup the databases.
-  run "cp" ["config/postgresql.template", config]
+  liftIO $ run "cp" ["config/postgresql.template", config]
   forM_ dbs $ \db -> init' db password
 
-  run "sed" [ "-i", "s/REPLACE WITH YOUR PASSPHRASE/" <> password <> "/"
+  -- sed -i isn't supported on *BSD
+  liftIO $ run "perl" [ "-pi", "-e", "s/REPLACE WITH YOUR PASSPHRASE/" <> password <> "/"
             , config ]
-  run "sudo" ["chmod", "400", config]
+  liftIO $ run "sudo" ["chmod", "400", config]
     where
-      init' :: DB -> String -> IO ()
+      init' :: DB -> String -> PgAction ()
       init' (Dev _ (DBInfo {..})) password = do
         createUser dbUser ["NOSUPERUSER", "NOCREATEDB", "NOCREATEROLE"]
         createDB dbName
@@ -257,7 +283,7 @@ clean dbs
   | length dbs == 1 =
       error "cannot clean a single database; try to reset it or to clean all"
   | otherwise = do
-      run "rm" ["-f", config]
+      liftIO $ run "rm" ["-f", config]
       forM_ dbs clean'
   where
     dropDBAndRole db role = dropDB db >> dropRole role
