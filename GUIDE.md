@@ -131,7 +131,7 @@ See the appendix at the end of this file for more.
   which require passing different paramaters to sdm.
   
   OpenBSD: `sdm init --sudoUser _postgresql`
-  FreeBSD: Untested but I believe `sdm init --sudoUser pgsql --pgUser pgsql`
+  FreeBSD: Untested but we believe `sdm init --sudoUser pgsql --pgUser pgsql`
            will work.
 
 ### Build steps
