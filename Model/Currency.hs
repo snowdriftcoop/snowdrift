@@ -18,15 +18,27 @@ class Currency a where
 
 data Cent = Cent Int64 deriving (Eq, Ord)
 
+instance Currency Cent where
+    (Cent a) $* b = Cent $ floor $ fromIntegral a * b
+    b *$ (Cent a) = Cent $ floor $ fromIntegral a * b
+
+dropLeftZeros :: String -> String
+dropLeftZeros = dropWhile (== '0')
+
 instance Show Cent where
     show (Cent c) =
-        "$" ++ sign ++ (if null ipart then "0" else ipart) ++ "." ++ fpart
+        if null ipart
+        then if null fpart'
+             then "$0.00"
+             else sign ++ fpart' ++ "¢"
+        else "$" ++ sign ++ ipart ++ "." ++ fpart
       where
         splitPieces [] = []
         splitPieces s = case splitAt 3 s of (a, b) -> a : splitPieces b
         sign = if c < 0 then "-" else ""
         (f,i) = splitAt 2 $ reverse $ show $ abs c
         fpart = reverse $ take 2 $ f ++ repeat '0'
+        fpart' = dropLeftZeros fpart
         ipart = intercalate "," $ reverse $ map reverse $ splitPieces i
 
 instance ToMarkup Cent where
