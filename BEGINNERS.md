@@ -165,13 +165,13 @@ When making edits, follow our
 
 ### Building your updates
 
-The `yesod devel` command can be left running in a terminal while work is
-done elsewhere. It will automatically recompile and restart the site
-whenever it detects file changes.
+The `stack exec yesod devel` command can be left running in a terminal
+while work is done elsewhere. It will automatically recompile and restart
+the site whenever it detects file changes.
 
 Refresh your browser view at localhost:3000 to see the updates.
 
-In rare cases, you may need to run `cabal clean` if yesod devel
+In rare cases, you may need to run `stack clean` if yesod devel
 fails to recognize a change.
 
 To stop yesod devel, press the Enter key.
@@ -181,7 +181,7 @@ To stop yesod devel, press the Enter key.
 After successfully compiling and checking that the changes seem good,
 do a final test with:
 
-    yesod test
+    stack test
 
 If there are any failures either when compiling or testing,
 and you don't know how to fix the issue or don't understand the error,
@@ -190,7 +190,7 @@ and someone will probably help you.
 
 Sometimes the tests just need updating, and for that run:
 
-    cabal clean && cabal configure -fdev && cabal build && yesod test
+    stack clean && stack test
 
 ### Committing your changes
 
@@ -304,11 +304,11 @@ here are some resources:
 *   Alongside #snowdrift on freenode.net, check out #yesod , #haskell ,
     and #haskell-beginners (among other relevant channels).
 
-*   A useful development tool is `cabal repl` — a command that loads
+*   A useful development tool is `stack ghci` — a command that loads
     [ghci](https://en.wikibooks.org/wiki/Haskell/Using_GHCi_effectively)
     in a mode connected to the project. Using that, you can easily import
     files from the code and explore the functions.
 
 *   To help write clean Haskell code and learn conventions, run `hlint`
     on your files to get suggestions for possible improvements.
-    Add hlint to your system with the command `cabal install hlint`.
+    Add hlint to your system with the command `stack install hlint`.
