@@ -1,5 +1,4 @@
-Snowdrift.coop
-==============
+# [Snowdrift.coop]
 
 A non-profit, cooperative platform for funding Free/Libre/Open (FLO) works.
 Using a many-to-many matching pledge, we aim to empower the global
@@ -12,8 +11,7 @@ research on issues like the [economics of FLO projects], the [incentives
 behind donations], and how our model departs from that of [other funding
 sites].
 
-Contributing
-------------
+## Contributing
 
 Snowdrift.coop welcomes contributions of all types, from people of all
 technical ability. Our [how-to-help page] includes further notes about the
@@ -29,17 +27,15 @@ developers of all skill levels.
 Whatever your background, we're happy to answer questions or get any
 comments. Hop on #snowdrift on [Freenode IRC], and say hello!
 
-Where to Get the Code
----------------------
+## Where to Get the Code
 
 If you're reading this, you probably already have it. :)
 
-The canonical location for our code is
-[git.gnu.io/snowdrift/snowdrift].[^git.gnu] For convenience and redundancy,
-we also mirror at [GitHub], a popular but proprietary platform.
+The canonical location for our code is [git.gnu.io/snowdrift/snowdrift],
+which is hosted on a completely free/libre/open system. For convenience and
+redundancy, we also mirror at [GitHub], a popular but proprietary platform.
 
-Building and Testing the Website
---------------------------------
+## Building and Testing the Website
 
 Here we provide a quick overview. In-depth documentation is also available,
 and will be listed later.
@@ -55,8 +51,8 @@ Vagrant works for nearly all operating systems.
 ### Installing System Dependencies
 
 Installing Postgres and stack depends heavily on your operating system.
-Consult their documentation listed above, and feel free to come ask us
-questions on IRC.
+Consult their documentation listed above, or read further instructions in
+[Guide.md].
 
 ### Building the Project
 
@@ -85,17 +81,8 @@ Beginners with minimal technical background should follow our [Beginners'
 Snowdrift Set Up], which can get anyone started making basic contributions.
 It also includes links and info to help learn more about the tools we use.
 
-Operating system-specific instructions are found here:
-
-* [Debian/Ubuntu]
-* [Windows]
-* [more tbd]
-
-Finally, there is a comprehensive [GUIDE.md] with an excess of gory
-details.
-
-[^git.gnu]: [https://git.gnu.io](https://git.gnu.io) is a fully-FLO service
-for hosting code.
+As mentioned, there is a comprehensive [GUIDE.md] that describes the
+particular steps for getting started with each supported operating system.
 
 [Beginners' Snowdrift Set Up]: BEGINNERS.md
 [Debian/Ubuntu]: SETUP_DEBIAN.md
