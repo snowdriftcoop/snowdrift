@@ -126,7 +126,7 @@ The Mac OS build process seems to have some issues with postgres user names;
 so for now, the database set-up for Mac OS will need to be done manually.
 See the appendix at the end of this file for more.
 
-*BSD:
+* BSD:
   The BSDs use different postgres configurations than the common GNU/Linux distros,
   which require passing different paramaters to sdm.
   
@@ -151,61 +151,23 @@ The following instructions include more explanation of each step
 and references for multiple approaches and different systems.
 
 For any system, you must first install the core dependencies:
-ghc, cabal, postgresql, and git.
-**Note: we are now using GHC 7.8.x**
+stack, postgresql, and git.
 
 Various systems may need some libraries and other dependencies.
 
-**<https://www.haskell.org/downloads/linux>** has instructions for
-installing ghc, cabal, happy, and alex on Ubuntu, Fedora, and Arch,
-along with manual install instructions for other systems.
-
-After installing the core dependencies, you should update cabal's package list:
-
-    cabal update
-
-Add cabal location(s) to your PATH; the location may vary by system and set-up.
-Below are the most common situations:
-
-* for GNU/Linux, add `export PATH=$PATH:$HOME/cabal/bin:.cabal-sandbox/bin`
-  to your ~/.bashrc (or equivalent) file
-
-* for Mac OS, try adding `export PATH="$HOME/Library/Haskell/bin:$PATH"`
-  to ~/.bash_profile
-
-(You will need to also run the line in your terminal or start a new terminal
-to make the new PATH active.)
-
-Now, upgrade cabal itself:
-
-    cabal install cabal-install
-
-Install  alex, happy, and yesod-bin
-(some of which may have been installed, depending on which system and
-instructions you used, it won't hurt to reinstall):
-
-    cabal install alex happy yesod-bin
-
-The following items are suggested but not strictly required:
-
-    cabal install haddock hlint
-
 **Now, change to your snowdrift project directory (if not already there).**
-
-Then, initiate a cabal sandbox:
-
-    cabal sandbox init
 
 Install dependencies and build Snowdrift
 
-    cabal install -fdev
+    stack setup && stack build
 
 This will take a *long* time but should ultimately tell you it installed.
-Note: the `-fdev` flag skips optimization to make build faster.
-It should be omitted for building the actual live site.
 
 Contact us for help if the build is not successful.
 
+The following utilities are suggested but not strictly required:
+
+    stack install haddock hlint
 
 Setting up the database
 -----------------------
@@ -213,7 +175,7 @@ Setting up the database
 We offer a simple script that will setup the PostgreSQL databases for you.
 Some systems may need extra set-up, but for most GNU/Linux systems, simply run:
 
-    sdm init
+    stack exec sdm init
 
 It will prompt you for your sudo password.
 
@@ -223,45 +185,32 @@ To set up databases manually, see the appendix at the end of this guide.
 Running the site
 ----------------
 
-### Yesod devel
+### Running the development version of the site
 
 The standard approach for running and working on the site is to run
-`yesod devel` from the project directory.
+`stack exec yesod devel` from the project directory.
 It can stay running in one terminal while work is done elsewhere.
 It will automatically rebuild and rerun the site whenever it detects changes.
 
-In rare cases, you may need to run `cabal clean` if yesod devel
+In rare cases, you may need to run `stack clean` if the development site
 fails to recognize a change.
 
-To stop yesod devel, press the Enter key.
-
-Note that `yesod devel` builds just the library.
+To stop the development site, press the Enter key.
 
 ### Alternative option to run the site
 
-We recommend `yesod devel` in almost all cases, but an alternate approach is
-to separately build with `cabal build` and run the site with
-`Snowdrift Development`.
+We recommend the development site in almost all cases, but an alternate
+approach is to separately build with `stack build` and run the site with
+`stack exec Snowdrift Development`.
 
 This method is *necessary* when updating extra binaries such as the payment
 processing script, the sdm database configuration script, or the email daemon.
 
-For the first time with this method, you should run `cabal configure -fdev`
-before `cabal build`. Afterward, the configuration will be remembered.
+When `stack build` is done, you can start the server with:
 
-However, if you run `cabal clean` to get a full fresh build, you will need to
-run `cabal configure -fdev` again before `cabal build` (or use
-`cabal clean --save-config`)
-
-As before, omit -fdev to optimize for building the final executables
-for a live operating site.
-
-When `cabal build` is done, you can start the server with:
-
-    Snowdrift Development
+    stack exec Snowdrift Development
 
 To stop the running server, press ctrl-C
-
 
 Using the live test site
 ------------------------
@@ -287,22 +236,16 @@ best practice involves then running our automated tests before sharing
 your changes with the main project.
 
 Assuming you ran `sdm init` to set up the databases,
-you can now enable the tests with:
+you can now run the tests with:
 
-    cabal install --enable-tests -fdev
-
-That only needs to be done once. From now on, you can run the tests with:
-
-    yesod test
+    stack test
 
 If tests fail, try to figure out what is wrong. Ask us for help if needed.
 
 Sometimes, the tests will need updating, and for that you should run:
 
-    cabal clean
-    cabal configure -fdev
-    cabal build
-    yesod test
+    stack clean
+    stack test
 
 Additional notes about databases
 ================================
@@ -370,7 +313,7 @@ you can use the following command to export the changes
 
 While in your project directory:
 
-    sdm export --db=dev
+    stack exec -- sdm export --db=dev
 
 which is the same as running:
 
@@ -386,7 +329,7 @@ Updating to the latest test database
 
 When the testDB.sql file is updated, you'll need to update your template.
 
-Simply run `sdm reset --db=test` to reset/update your test databases.
+Simply run `stack exec -- sdm reset --db=test` to reset/update your test databases.
 
 See the appendix section of this guide for how to reset manually.
 

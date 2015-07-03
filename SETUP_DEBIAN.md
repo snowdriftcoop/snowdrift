@@ -7,31 +7,11 @@ run these commands:
 
     sudo aptitude update
     sudo aptitude install curl git postgresql postgresql-client libgmp-dev zlib1g-dev libpq-dev
-    mkdir builds
-    cd builds
-    curl -ssL \
-      https://www.haskell.org/ghc/dist/7.8.4/ghc-7.8.4-x86_64-unknown-linux-deb7.tar.xz |
-      tar xJv
-    cd ghc-7.8.4
-    ./configure && make && sudo make install
-    cd ..
-    curl -ssL \
-      https://www.haskell.org/cabal/release/cabal-install-1.22.2.0/cabal-install-1.22.2.0.tar.gz |
-      tar xzv
-    cd cabal-install-1.22.2.0
-    sudo ./bootstrap.sh
-    cd ..
-    cabal update
-    cabal install alex happy haddock yesod-bin
-    echo 'export PATH=$PATH:$HOME/cabal/bin:.cabal-sandbox/bin' >> ~/.bashrc
-    . ~/.bashrc
     git clone https://git.gnu.io/snowdrift/snowdrift.git
     cd snowdrift
-    cabal sandbox init
-    cabal install -fdev
-    sdm init
-    cabal install -fdev --enable-tests
-    yesod devel
+    stack setup && stack build # && get some coffee
+    stack exec sdm init
+    stack exec yesod devel
 
 The site should now be running on <http://localhost:3000>.
 
@@ -41,21 +21,23 @@ user: `admin` pass: `admin`
 
 ## Workflow
 
-Once going, `yesod devel` can stay running in one terminal while
-you do work elsewhere.
-It will rebuild and rerun the site whenever it detects file changes.
+Once going, the development site can stay running in one terminal while you
+do work elsewhere. It will rebuild and rerun the site whenever it detects
+file changes.
 
 To stop the site, hit the Enter key.
 
-In cases where `yesod devel` fails to detect changes,
-stop it with the Enter key, then run:
+In cases where the development site fails to detect changes, stop it with
+the Enter key, then run:
 
-    cabal clean && yesod devel
+    stack clean && stack exec yesod devel
 
 If you add new dependencies (i.e. edit the `build-depends` field in
 `Snowdrift.cabal`), you will need to run:
 
-    cabal install -fdev
+    stack build
+
+TODO: Is that still true with stack?
 
 ## More resources
 
