@@ -90,21 +90,6 @@ instance Show Milray where
 instance ToMarkup Milray where
     toMarkup = toMarkup . show
 
-instance Read Milray where
-    readsPrec p ('$':'-':s) =
-        map (\(Milray i, rest) -> (Milray $ -i, rest)) $ readsPrec p ('$':s)
-    readsPrec _ ('$':s) = [ (result, rest) ]
-      where
-        (ipart, more) = span (`elem` ",0123456789") s
-        (fpart, rest) =
-            case more of
-                '.' : more' -> span (`elem` "0123456789") more'
-                _ -> ("", more)
-        result =
-            Milray
-                (read (filter (/= ',') ipart ++ take 4 (fpart ++ repeat '0')))
-    readsPrec _ _ = []
-
 -- TODO: Define 'newtype Mill = Int64' and use it instead of 'Int64'.
 millMilray :: Int64 -> Milray
 millMilray = Milray . (10 *)
