@@ -199,7 +199,7 @@ To stop the development site, press the Enter key.
 
 ### Alternative option to run the site
 
-We recommend the development site in almost all cases, but an alternate
+We recommend `stack exec yesod devel` in almost all cases, but an alternate
 approach is to separately build with `stack build` and run the site with
 `stack exec Snowdrift Development`.
 

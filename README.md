@@ -20,10 +20,10 @@ site and info about volunteering (including in non-programming ways).
 
 For bugs and feature requests, we have a self-hosted [ticket system].
 
-Snowdrift.coop is built with the **[Haskell]** programming language, and **[Yesod
-framework]** for building web apps. Even if you don't know Haskell,
-however, you can still contribute front-end design or content! We welcome
-contributions from developers of all skill levels.
+Snowdrift.coop is built with the **[Haskell]** programming language, and
+**[Yesod web framework]**. Even if you don't know Haskell, however, you can
+still contribute front-end design or content! We welcome contributions from
+developers of all skill levels.
 
 Whatever your background, we're happy to answer questions or get any
 comments. Hop on our active chat channel, [#snowdrift on Freenode IRC], and
@@ -37,15 +37,18 @@ The canonical location for our code is [git.gnu.io/snowdrift/snowdrift],
 which is hosted on a completely free/libre/open system. For convenience and
 redundancy, we also mirror at [GitHub], a popular but proprietary platform.
 
+If you are unsure how to fetch the code, refer to the [Further
+Information](#further-information) section below.
+
 ## Building and Testing the Website
 
 Here we provide a quick overview. In-depth documentation is also available,
 and will be listed later.
 
 1. Install system dependencies: [Git], [Postgres] and [Stack]
-2. Build the project
+2. Initialize the project
 3. Set up the test and development databases
-4. Run the site in development-mode
+4. Run the site in development mode
 
 An alternative process is to use a virtual machine, via our [Vagrant setup].
 Vagrant works for nearly all operating systems.
@@ -53,22 +56,30 @@ Vagrant works for nearly all operating systems.
 ### Installing System Dependencies
 
 Installing Git, Postgres, and Stack depends heavily on your operating system.
-Consult their documentation listed above, or read further instructions in
-[Guide.md].
+Consult their documentation linked above, or read further instructions in
+[GUIDE.md].
 
-### Building the Project
+### Initializing the Project
 
-To get started, run `stack setup` followed by `stack build`. Do this from
-within the Snowdrift code directory. Both of these steps will take a while
-the first time.
+There are two phases to initializing.
 
-Afterwards, `stack build` is all that is needed to rebuild the project.
+#### Doing the Initial Build
 
-### Setting Up and Running Snowdrift
+    stack setup &&
+    stack build yesod-bin-1.4.11 .
 
-To set up the database, run `stack exec sdm init`.
+Do this from within the Snowdrift code directory. Don't forget the last
+period in the second command.
 
-Now you can do the following actions:
+NB: this will take a while!
+
+#### Setting up the database
+
+    stack exec sdm init
+
+### Useful Development Commands
+
+Once the project is initialized, you can use the following commands.
 
 * `stack exec yesod devel`: run the site in development mode
 * `stack test`: run the test suite
@@ -79,14 +90,14 @@ Now you can do the following actions:
 Further Information
 -------------------
 
-Beginners with minimal technical background should follow our [Beginners'
-Snowdrift Set Up], which can get anyone started making basic contributions.
+Beginners with minimal technical background should follow our [Beginner's
+Guide], which can get anyone started making basic contributions.
 It also includes links and info to help learn more about the tools we use.
 
-As mentioned, there is a comprehensive [GUIDE.md] that describes the
+As mentioned, there is also a comprehensive [GUIDE.md] that describes the
 particular steps for getting started with each supported operating system.
 
-[Beginners' Snowdrift Set Up]: BEGINNERS.md
+[Beginner's Guide]: BEGINNERS.md
 [Debian/Ubuntu]: SETUP_DEBIAN.md
 [economics of FLO projects]: https://snowdrift.coop/p/snowdrift/w/en/economics
 [#snowdrift on Freenode IRC]: http://webchat.freenode.net/?channels=#snowdrift
@@ -106,4 +117,4 @@ particular steps for getting started with each supported operating system.
 [ticket system]: http://snowdrift.coop/p/snowdrift/t
 [Vagrant setup]: SETUP_VAGRANT.md
 [Windows]: SETUP_WINDOWS.md
-[Yesod framework]: http://www.yesodweb.com/
+[Yesod web framework]: http://www.yesodweb.com/
