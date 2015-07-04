@@ -37,8 +37,6 @@ If you add new dependencies (i.e. edit the `build-depends` field in
 
     stack build
 
-TODO: Is that still true with stack?
-
 ## More resources
 
 See [BEGINNERS.md](BEGINNERS.md) for general info about contributing
