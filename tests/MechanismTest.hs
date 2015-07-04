@@ -12,6 +12,7 @@ import Database.Esqueleto hiding (delete, val)
 import Data.Int (Int64)
 import Data.List (delete)
 import Data.Monoid ((<>))
+import Data.Text (Text)
 import qualified Data.Text as Text
 import Data.Time (getCurrentTime)
 import Test.QuickCheck
@@ -20,6 +21,7 @@ mechanismSpecs :: Spec
 mechanismSpecs = ydescribe "mechanism" $ do
     testFormula
     testPledges
+    testPPrinters
 
 testFormula :: Spec
 testFormula = yit "formula" $ do
@@ -258,3 +260,81 @@ testPledge named_user project_id shares = do
     errorUnlessExpected "project balance"
         expected_project_balance $
         accountBalance project_account'
+
+data Symbol = SDollar | SCent
+
+pprintSymbol :: Symbol -> String -> String
+pprintSymbol SDollar str = "$" <> str
+pprintSymbol SCent   str = str <> "¢"
+
+errorUnlessExpectedPosAndNeg :: (Num a)
+                             => Text -> Symbol -> String -> (Milray -> String)
+                             -> (a -> Milray) -> a -> Example ()
+errorUnlessExpectedPosAndNeg msg symbol expected ppr con val = do
+    errorUnlessExpected msg
+        (pprintSymbol symbol expected)
+        (ppr $ con val)
+    errorUnlessExpected (msg <> ", negative amount")
+        (pprintSymbol symbol ("-" <> expected))
+        (ppr $ con $ negate val)
+
+testPPrinters :: Spec
+testPPrinters = ydescribe "pretty-printers" $ do
+    yit "Milray" $ do
+        errorUnlessExpected "0 is printed correctly"
+            "$0.00" $ show $ Milray 0
+        errorUnlessExpectedPosAndNeg "milrays: leading zero is not removed"
+            SCent "0.01" show Milray 1
+        errorUnlessExpectedPosAndNeg "milrays: trailing zero is removed"
+            SCent "0.1" show Milray 10
+
+        errorUnlessExpectedPosAndNeg "cents: trailing zeros are removed"
+            SCent "1" show Milray 100
+        errorUnlessExpectedPosAndNeg
+            ("cents: trailing zero is removed without " <>
+             "affecting the second digit")
+            SCent "1.2" show Milray 120
+        errorUnlessExpectedPosAndNeg "cents: leading zero is not removed"
+            SCent "1.03" show Milray 103
+        errorUnlessExpectedPosAndNeg "cents: all digits are printed"
+            SCent "1.23" show Milray 123
+        errorUnlessExpectedPosAndNeg
+            ("cents: trailing zeros are removed without " <>
+             "affecting the second zero digit")
+            SCent "10" show Milray 1000
+        errorUnlessExpectedPosAndNeg
+            ("cents: trailing zeros are removed without " <>
+             "affecting the second non-zero digit")
+            SCent "12" show Milray 1200
+        errorUnlessExpectedPosAndNeg
+            ("cents: trailing zero is removed without " <>
+             "affecting the third digit")
+            SCent "12.3" show Milray 1230
+        errorUnlessExpectedPosAndNeg "cents: nothing is removed"
+            SCent "12.34" show Milray 1234
+        errorUnlessExpectedPosAndNeg
+            "cents: leading zero is not removed (four digits)"
+            SCent "12.04" show Milray 1204
+        errorUnlessExpectedPosAndNeg
+            "cents: first zero is not removed (four digits)"
+            SCent "10.3" show Milray 1030
+        errorUnlessExpectedPosAndNeg
+            "cents: zeros in the middle are not removed"
+            SCent "10.04" show Milray 1004
+
+        errorUnlessExpectedPosAndNeg "dollars: trailing zeros are removed"
+            SDollar "1.00" show Milray 10000
+        errorUnlessExpectedPosAndNeg
+            ("dollars: trailing zeros are removed without " <>
+             "affecting the third zero digit")
+            SDollar "1.20" show Milray 12000
+        errorUnlessExpectedPosAndNeg
+            ("dollars: trailing zeros are removed without " <>
+             "affecting the third non-zero digit")
+            SDollar "1.23" show Milray 12300
+        errorUnlessExpectedPosAndNeg
+            ("dollars: trailing zeros are removed without " <>
+             "affecting the fourth digit")
+            SDollar "1.234" show Milray 12340
+        errorUnlessExpectedPosAndNeg "dollars: nothing is removed"
+            SDollar "1.2345" show Milray 12345
