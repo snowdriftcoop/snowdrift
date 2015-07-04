@@ -4,7 +4,7 @@
 module MechanismTest (mechanismSpecs) where
 
 import TestImport hiding (get)
-import Model.Currency (Currency, Cent (..), Milray (..), millMilray)
+import Model.Currency (Milray (..), millMilray)
 import Model.Project (projectComputeShareValue, fetchProjectSharesDB)
 
 import Control.Applicative ((<$>))
@@ -12,7 +12,6 @@ import Database.Esqueleto hiding (delete, val)
 import Data.Int (Int64)
 import Data.List (delete)
 import Data.Monoid ((<>))
-import Data.Text (Text)
 import qualified Data.Text as Text
 import Data.Time (getCurrentTime)
 import Test.QuickCheck
@@ -21,7 +20,6 @@ mechanismSpecs :: Spec
 mechanismSpecs = ydescribe "mechanism" $ do
     testFormula
     testPledges
-    testPPrinters
 
 testFormula :: Spec
 testFormula = yit "formula" $ do
@@ -260,31 +258,3 @@ testPledge named_user project_id shares = do
     errorUnlessExpected "project balance"
         expected_project_balance $
         accountBalance project_account'
-
-errorUnlessExpectedPosAndNeg :: (Num a, Currency c)
-                             => Text -> String -> (c -> String)
-                             -> (a -> c) -> a -> Example ()
-errorUnlessExpectedPosAndNeg msg expected ppr con val = do
-    errorUnlessExpected msg
-        expected $
-        ppr $ con val
-    errorUnlessExpected (msg <> ", negative amount")
-        (addMinus expected) $
-        ppr $ con $ negate val
-  where
-    addMinus []        = error "addMinus: empty list"
-    addMinus xs@(x:xt) = if x == '$' then x : '-' : xt else '-' : xs
-
-testPPrinters :: Spec
-testPPrinters = ydescribe "pretty-printers" $ do
-    yit "Cent" $ do
-        errorUnlessExpected "0 is printed correctly"
-            "$0.00" $ show $ Cent 0
-        errorUnlessExpectedPosAndNeg "cents: leading zero is removed"
-            "1¢"  show Cent 1
-        errorUnlessExpectedPosAndNeg "cents: trailing zero is not removed"
-            "10¢" show Cent 10
-        errorUnlessExpectedPosAndNeg "dollars: leading zero is not removed"
-            "$1.02" show Cent 102
-        errorUnlessExpectedPosAndNeg "dollars: trailing zero is not removed"
-            "$1.00" show Cent 100

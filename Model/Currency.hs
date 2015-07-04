@@ -11,42 +11,6 @@ import Database.Persist.Sql
 
 import Text.Blaze
 
-
-class Currency a where
-   ($*) :: a -> Double -> a
-   (*$) :: Double -> a -> a
-
-data Cent = Cent Int64 deriving (Eq, Ord)
-
-instance Currency Cent where
-    (Cent a) $* b = Cent $ floor $ fromIntegral a * b
-    b *$ (Cent a) = Cent $ floor $ fromIntegral a * b
-
-dropLeftZeros :: String -> String
-dropLeftZeros = dropWhile (== '0')
-
-instance Show Cent where
-    show (Cent c) =
-        if null ipart
-        then if null fpart'
-             then "$0.00"
-             else sign ++ fpart' ++ "¢"
-        else "$" ++ sign ++ ipart ++ "." ++ fpart
-      where
-        splitPieces [] = []
-        splitPieces s = case splitAt 3 s of (a, b) -> a : splitPieces b
-        sign = if c < 0 then "-" else ""
-        (f,i) = splitAt 2 $ reverse $ show $ abs c
-        fpart = reverse $ take 2 $ f ++ repeat '0'
-        fpart' = dropLeftZeros fpart
-        ipart = intercalate "," $ reverse $ map reverse $ splitPieces i
-
-instance ToMarkup Cent where
-    toMarkup = toMarkup . show
-
-milrayCents :: Milray -> Cent
-milrayCents (Milray a) = Cent (round $ fromIntegral a / (100 :: Double))
-
 {-
  - Milray - 1/100th of 1 cent
  -  from "A Connecticut Yankee In King Arthur's Court"
@@ -63,9 +27,11 @@ instance PersistField Milray where
 instance PersistFieldSql Milray where
     sqlType _ = SqlInt64
 
-instance Currency Milray where
-    (Milray a) $* b = Milray $ floor $ fromIntegral a * b
-    b *$ (Milray a) = Milray $ floor $ fromIntegral a * b
+($*) :: Milray -> Double -> Milray
+(Milray a) $* b = Milray $ floor $ fromIntegral a * b
+
+(*$) :: Double -> Milray -> Milray
+b *$ (Milray a) = Milray $ floor $ fromIntegral a * b
 
 instance Num Milray where
     (Milray a) + (Milray b) = Milray $ a + b
