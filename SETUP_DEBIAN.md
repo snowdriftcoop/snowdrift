@@ -9,7 +9,7 @@ run these commands:
     sudo aptitude install curl git postgresql postgresql-client libgmp-dev zlib1g-dev libpq-dev
     git clone https://git.gnu.io/snowdrift/snowdrift.git
     cd snowdrift
-    stack setup && stack build # && get some coffee
+    stack setup && stack build yesod-bin-1.4.11 . # && get some coffee
     stack exec sdm init
     stack exec yesod devel
 

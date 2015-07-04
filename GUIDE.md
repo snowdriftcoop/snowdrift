@@ -158,7 +158,7 @@ Various systems may need some libraries and other dependencies.
 
 Install dependencies and build Snowdrift
 
-    stack setup && stack build
+    stack setup && stack build yesod-bin-1.4.11 .
 
 This will take a *long* time but should ultimately tell you it installed.
 
