@@ -1,5 +1,6 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE RecordWildCards    #-}
+{-# LANGUAGE MultiWayIf    #-}
 
 import           Control.Applicative      ((<$>))
 import           Control.Monad            hiding (forM_)
@@ -45,14 +46,14 @@ databases = "dev, test, all (default)"
 
 mkSdm :: String -> Sdm
 mkSdm pname = Sdm
-    { db = "all"                  -- operate on the dev and test databases
+    { db = "all" -- operate on the dev and test databases
         &= help "Database to operate on"
         &= explicit &= name "db"
         &= typ "DATABASE"
     , action = def &= argPos 0 &= typ "ACTION"
     , pgUser = "postgres"
-              &= help "Postgres superuser used to create/modify databases"
-              &= explicit &= name "pgUser"
+            &= help "Postgres superuser used to create/modify databases"
+            &= explicit &= name "pgUser"
     , sudoUser = "postgres"
               &= help "System user used for peer authentication"
               &= explicit &= name "sudoUser"
@@ -143,7 +144,7 @@ psql :: String -> PgAction ()
 psql cmd = do
     Sdm{..} <- ask
     liftIO $ putStr =<< proc "echo" [cmd] -|-
-             sudoed sudoUser ["psql", "-U", pgUser]
+                        sudoed sudoUser ["psql", "-U", pgUser]
 
 cat :: String -> CreateProcess
 cat file = proc "cat" [file]
@@ -162,21 +163,20 @@ doesDBExist dbType = do
     Sdm{..} <- ask
     dbs <- liftIO $ sudoed sudoUser ["psql", "-lqt", "-U", pgUser] -|-
                     proc "cut" ["-d|", "-f1"]
-    return . elem (toString dbType) $ words dbs
+    return $ elem (toString dbType) (words dbs)
 
 ifExists :: DBType a => a -> PgAction () -> PgAction ()
 ifExists dbType as = do
     exists <- doesDBExist dbType
-    if exists
-      then as
-      else
-        -- Don't error out or it won't check all 'dbs'.
-        liftIO $
-          leaveLn $ "'" <> toString dbType <> "' does not exist; doing nothing"
+    if | exists    -> as
+       | otherwise ->
+           liftIO $ leaveLn $ mconcat ["'"
+                                      ,toString dbType
+                                      ,"' does not exist; doing nothing"]
 
 dropDB, createDB :: DBType a => a -> PgAction ()
 dropDB  dbType =
-   ifExists dbType . psql $ "DROP DATABASE " <> toString dbType <> ";"
+   ifExists dbType (psql $ "DROP DATABASE " <> toString dbType <> ";")
 
 createDB dbType = psql $ "CREATE DATABASE " <> toString dbType <> ";"
 
@@ -192,31 +192,32 @@ exportDB dbType (DBFile f) = do
     liftIO $ loop sudoUser pgUser
   where
     loop sudoUser pgUser = do
-      leave $ "overwrite '" <> f <> "'? (yes/No) "
-      hFlush stdout             -- send the question to 'stdout' immediately
-      answer <- fmap (fmap toLower) getLine
-      case () of
-        _| answer == "yes" -> do
-             (_, Just o, _, _) <-
-               createProcess (sudoed sudoUser ["pg_dump"
-                                              ,"-U"
-                                              ,pgUser
-                                              ,toString dbType]) {
-                 std_out = CreatePipe
-               }
-             dump <- hGetContents o
-             writeFile f dump
-         | answer == "no" || null answer -> leaveLn "doing nothing"
-         | otherwise -> do
-             leaveLn "invalid argument"
-             loop sudoUser pgUser
+        leave $ "overwrite '" <> f <> "'? (yes/No) "
+        -- send the question to 'stdout' immediately
+        hFlush stdout
+        answer <- fmap (fmap toLower) getLine
+        if | answer == "yes" -> do
+                 (_, Just o, _, _) <-
+                   createProcess
+                       (sudoed sudoUser ["pg_dump"
+                                        ,"-U"
+                                        ,pgUser
+                                        ,toString dbType]) {
+                           std_out = CreatePipe
+                       }
+                 dump <- hGetContents o
+                 writeFile f dump
+           | answer == "no" || null answer -> leaveLn "doing nothing"
+           | otherwise -> do
+                 leaveLn "invalid argument"
+                 loop sudoUser pgUser
 
 createUser :: DBUser -> [String] -> PgAction ()
 createUser (DBUser u) opts = psql $ mconcat ["CREATE USER "
                                             ,u
                                             ," "
                                             ,unwords opts
-                                            ,";" ]
+                                            ,";"]
 
 dropRole :: DBUser -> PgAction ()
 dropRole (DBUser u) = psql $ "DROP ROLE " <> u <> ";"
@@ -226,7 +227,7 @@ alterUser (DBUser u) password = psql $ mconcat ["ALTER USER "
                                                ,u
                                                ," WITH ENCRYPTED PASSWORD '"
                                                ,password
-                                               ,"';" ]
+                                               ,"';"]
 
 template :: Bool -> DBTemp -> PgAction ()
 template b dbTemp = ifExists dbTemp .
@@ -252,10 +253,10 @@ genPassword len cs =
   where
     go 0 acc _   = acc
     go n acc gen = do
-      w <- uniformR (c2w ' ', c2w '~') gen
-      if (w2c w ==) `any` cs
-        then go (pred n) (B.cons w <$> acc) gen
-        else go n acc gen
+        w <- uniformR (c2w ' ', c2w '~') gen
+        if (w2c w ==) `any` cs
+            then go (pred n) (B.cons w <$> acc) gen
+            else go n acc gen
 
 init, clean, reset, export :: NonEmpty DB -> PgAction ()
 init ((Test {}) :| []) =
@@ -282,20 +283,23 @@ init dbs = do
   where
     init' :: DB -> String -> PgAction ()
     init' (Dev _ (DBInfo {..})) password = do
-      createUser dbUser ["NOSUPERUSER", "NOCREATEDB", "NOCREATEROLE"]
-      createDB dbName
-      alterUser dbUser password
-      psql $ "GRANT ALL PRIVILEGES ON DATABASE " <> toString dbName
-          <> " TO " <> toString dbUser <> ";"
-      importDB dbFile dbName
+        createUser dbUser ["NOSUPERUSER", "NOCREATEDB", "NOCREATEROLE"]
+        createDB dbName
+        alterUser dbUser password
+        psql $ mconcat ["GRANT ALL PRIVILEGES ON DATABASE "
+                       ,toString dbName
+                       ," TO "
+                       ,toString dbUser
+                       ,";"]
+        importDB dbFile dbName
 
     init' (Test _ (DBInfo {..})) password =
-      forM_ dbTemp $ \dbTemp' -> do
-        createUser dbUser ["NOSUPERUSER", "CREATEDB", "NOCREATEROLE"]
-        createDB dbTemp'
-        alterUser dbUser password
-        setTemplate dbTemp'
-        importDB dbFile dbTemp'
+        forM_ dbTemp $ \dbTemp' -> do
+            createUser dbUser ["NOSUPERUSER", "CREATEDB", "NOCREATEROLE"]
+            createDB dbTemp'
+            alterUser dbUser password
+            setTemplate dbTemp'
+            importDB dbFile dbTemp'
 
 clean dbs
     | length dbs == 1 =
@@ -308,8 +312,8 @@ clean dbs
     clean' (Dev _ (DBInfo {..}))  = dropDBAndRole dbName dbUser
     clean' (Test _ (DBInfo {..})) = do
       forM_ dbTemp $ \dbTemp' -> do
-        unsetTemplate dbTemp'
-        dropDB dbTemp'
+          unsetTemplate dbTemp'
+          dropDB dbTemp'
       dropDBAndRole dbName dbUser
 
 reset dbs = forM_ dbs reset'
@@ -330,4 +334,4 @@ export dbs = forM_ dbs export'
   where
     export' (Dev _ (DBInfo {..}))  = exportDB dbName dbFile
     export' (Test _ (DBInfo {..})) =
-      forM_ dbTemp $ \dbTemp' -> exportDB dbTemp' dbFile
+        forM_ dbTemp $ \dbTemp' -> exportDB dbTemp' dbFile
