@@ -32,9 +32,14 @@ data Arguments = Arguments
     { db_arg            :: Text
     , email_arg         :: Text
     , delay_arg         :: Int
-    , sendmail_exec_arg :: Text
+    , sendmail_command_arg :: Text
     , sendmail_file_arg :: Text
     } deriving (Typeable, Data, Show)
+
+data Command = Command
+    { theCommand :: !Text
+    , commandArgs :: ![Text]
+    }
 
 arguments :: String -> String -> Arguments
 arguments pname user = Arguments
@@ -52,8 +57,8 @@ arguments pname user = Arguments
                &= help "Time between each iteration of the loop"
                &= explicit &= name "delay"
                &= typ "SECONDS"
-    , sendmail_exec_arg  = default_sendmail
-                        &= help "Location of the sendmail program"
+    , sendmail_command_arg  = default_sendmail
+                        &= help "Command line to run the sendmail program"
                         &= explicit &= name "sendmail"
                         &= typ "FILE"
     , sendmail_file_arg  = Text.empty
@@ -85,20 +90,21 @@ data Parsed = Parsed
     { env           :: !DefaultEnv
     , notif_email   :: !Email
     , loop_delay    :: !Delay
-    , sendmail_exec :: !FileName
+    , sendmail_command :: !Command
     , sendmail_file :: !FileName
     }
 
-parse :: Text -> Email -> Int -> FileName -> FileName -> IO Parsed
-parse db_arg email_arg delay_arg sendmail_exec_arg sendmail_file_arg = do
-    sendmail_exec' <- errUnlessExists $ Text.unpack sendmail_exec_arg
+parse :: Arguments -> IO Parsed
+parse Arguments{..} = do
+    sendmail_command' <- parseCommand sendmail_command_arg
     let sendmail_file_arg' = Text.unpack sendmail_file_arg
     sendmail_file' <- if null sendmail_file_arg'
                           then return sendmail_file_arg'
                           else errUnlessExists sendmail_file_arg'
     return $ Parsed env' notif_email' loop_delay'
-        (Text.pack sendmail_exec') (Text.pack sendmail_file')
+        sendmail_command' (Text.pack sendmail_file')
   where
+    parseCommand = undefined
     env' = fromMaybe
                (error $
                    "unsupported database: "
@@ -306,16 +312,16 @@ deleteFromProjectNotificationEmail :: MonadIO m => UTCTime -> ProjectNotificatio
 deleteFromProjectNotificationEmail ts notif_type to project content =
     delete $ fromProjectNotificationEmail ts notif_type to project content
 
-sendmail :: FileName -> FileName -> L.ByteString -> IO ()
-sendmail sendmail_exec sendmail_file =
-    sendmailCustom (Text.unpack sendmail_exec) $
-        if | sendmail_exec == default_sendmail -> ["-t"]
-           | Text.null sendmail_file           -> []
-           | otherwise                         -> [Text.unpack sendmail_file]
+sendmail :: Command -> FileName -> L.ByteString -> IO ()
+sendmail Command{..} sendmail_file =
+    sendmailCustom (Text.unpack theCommand) $ (map Text.unpack commandArgs) ++
+        if | theCommand == default_sendmail -> ["-t"]
+           | Text.null sendmail_file        -> []
+           | otherwise                      -> [Text.unpack sendmail_file]
 
-renderSendmail :: FileName -> FileName -> Mail -> IO ()
-renderSendmail sendmail_exec sendmail_file =
-    sendmail sendmail_exec sendmail_file <=< renderMail'
+renderSendmail :: Command -> FileName -> Mail -> IO ()
+renderSendmail sendmail_command sendmail_file =
+    sendmail sendmail_command sendmail_file <=< renderMail'
 
 runSql :: (MonadBaseControl IO m, MonadIO m)
        => PostgresConf -> PersistConfigPool PostgresConf
@@ -323,14 +329,14 @@ runSql :: (MonadBaseControl IO m, MonadIO m)
 runSql dbConf poolConf action = runPool dbConf action poolConf
 
 handleSendmail :: (MonadBaseControl IO m, MonadIO m, MonadLogger m)
-               => FileName -> FileName -> PostgresConf -> PersistConfigPool PostgresConf
+               => Command -> FileName -> PostgresConf -> PersistConfigPool PostgresConf
                -> Text -> Email -> Email -> Text -> Text
                -> PersistConfigBackend PostgresConf m () -> Text -> m ()
-handleSendmail sendmail_exec sendmail_file dbConf poolConf info_msg from_ to subject body
+handleSendmail sendmail_command sendmail_file dbConf poolConf info_msg from_ to subject body
                action warn_msg = do
     $(logInfo) info_msg
     Exception.handle handler $ do
-        liftIO $ renderSendmail sendmail_exec sendmail_file $ simpleMail'
+        liftIO $ renderSendmail sendmail_command sendmail_file $ simpleMail'
             (Address Nothing to)
             (Address Nothing from_)
             subject
@@ -342,14 +348,14 @@ handleSendmail sendmail_exec sendmail_file dbConf poolConf info_msg from_ to sub
           $(logWarn) warn_msg
 
 sendUserNotification :: (MonadBaseControl IO m, MonadIO m, MonadLogger m)
-                     => FileName -> FileName -> PostgresConf
+                     => Command -> FileName -> PostgresConf
                      -> PersistConfigPool PostgresConf -> Email -> Email
                      -> UTCTime -> UserNotificationType -> UserId -> Markdown
                      -> m ()
-sendUserNotification sendmail_exec sendmail_file dbConf poolConf notif_email
+sendUserNotification sendmail_command sendmail_file dbConf poolConf notif_email
                  user_email ts notif_type to content = do
     let content' = unMarkdown content
-    handleSendmail sendmail_exec sendmail_file dbConf poolConf
+    handleSendmail sendmail_command sendmail_file dbConf poolConf
         ("sending a user notification to " <> user_email <> "\n" <> content')
         notif_email user_email "Snowdrift.coop notification" content'
         (deleteFromUserNotificationEmail ts notif_type to content)
@@ -357,14 +363,14 @@ sendUserNotification sendmail_exec sendmail_file dbConf poolConf notif_email
          "will try again later")
 
 sendProjectNotification :: (MonadBaseControl IO m, MonadIO m, MonadLogger m)
-                        => FileName -> FileName -> PostgresConf
+                        => Command -> FileName -> PostgresConf
                         -> PersistConfigPool PostgresConf -> Email -> Email
                         -> UTCTime -> ProjectNotificationType -> UserId
                         -> ProjectId -> Markdown -> m ()
-sendProjectNotification sendmail_exec sendmail_file dbConf poolConf notif_email
+sendProjectNotification sendmail_command sendmail_file dbConf poolConf notif_email
                  user_email ts notif_type to project content = do
     let content' = unMarkdown content
-    handleSendmail sendmail_exec sendmail_file dbConf poolConf
+    handleSendmail sendmail_command sendmail_file dbConf poolConf
         ("sending a project notification to " <> user_email <> "\n" <> content')
         notif_email user_email "Snowdrift.coop notification" content'
         (deleteFromProjectNotificationEmail ts notif_type to project content)
@@ -427,13 +433,13 @@ markAsSentVerification user_id user_email ver_uri =
              &&. v ^. EmailVerificationUri   ==. val ver_uri
 
 sendVerification :: (MonadBaseControl IO m, MonadIO m, MonadLogger m)
-                 => FileName -> FileName -> PostgresConf
+                 => Command -> FileName -> PostgresConf
                  -> PersistConfigPool PostgresConf -> Email -> UserId -> Email
                  -> Text -> m ()
-sendVerification sendmail_exec sendmail_file dbConf poolConf verif_email user_id user_email ver_uri = do
+sendVerification sendmail_command sendmail_file dbConf poolConf verif_email user_id user_email ver_uri = do
     let content = "Please open this link to verify your email address: "
                <> ver_uri
-    handleSendmail sendmail_exec sendmail_file dbConf poolConf
+    handleSendmail sendmail_command sendmail_file dbConf poolConf
         ("sending an email verification message to " <> user_email <> "\n" <>
          content)
         verif_email user_email "Snowdrift.coop email verification" content
@@ -462,12 +468,12 @@ markAsSentResetPassword user_id =
         where_ $ rp ^. ResetPasswordUser ==. val user_id
 
 sendResetPassword :: ( MonadBaseControl IO m, MonadLogger m, MonadIO m)
-                  => FileName -> FileName -> PostgresConf -> ConnectionPool
+                  => Command -> FileName -> PostgresConf -> ConnectionPool
                   -> Email -> Email -> UserId -> Text -> m ()
-sendResetPassword sendmail_exec sendmail_file dbConf poolConf notif_email
+sendResetPassword sendmail_command sendmail_file dbConf poolConf notif_email
                   user_email user_id uri = do
     let content = "Please open this link to set the new password: " <> uri
-    handleSendmail sendmail_exec sendmail_file dbConf poolConf
+    handleSendmail sendmail_command sendmail_file dbConf poolConf
         ("sending a password reset message to " <> user_email <> "\n" <> content)
         notif_email user_email "Snowdrift.coop password reset" content
         (markAsSentResetPassword user_id)
@@ -491,12 +497,12 @@ markAsSentDeleteConfirmation user_id =
         where_ $ dc ^. DeleteConfirmationUser ==. val user_id
 
 sendDeleteConfirmation :: ( MonadBaseControl IO m, MonadLogger m, MonadIO m)
-                       => FileName -> FileName -> PostgresConf -> ConnectionPool
+                       => Command -> FileName -> PostgresConf -> ConnectionPool
                        -> Email -> UserId -> Email -> Text -> m ()
-sendDeleteConfirmation sendmail_exec sendmail_file dbConf poolConf notif_email
+sendDeleteConfirmation sendmail_command sendmail_file dbConf poolConf notif_email
                        user_id user_email uri = do
     let content = "Please open this link to delete your account: " <> uri
-    handleSendmail sendmail_exec sendmail_file dbConf poolConf
+    handleSendmail sendmail_command sendmail_file dbConf poolConf
         ("sending a delete confirmation message to " <> user_email <> "\n" <>
          content)
         notif_email user_email "Snowdrift.coop delete confirmation" content
@@ -517,11 +523,11 @@ main :: IO ()
 main = withLogging $ do
     pname <- liftIO getProgName
     userv <- liftIO $ getEnv "USER"
-    Arguments {..} <- liftIO $ cmdArgs $ arguments pname userv
+    args' <- liftIO $ cmdArgs $ arguments pname userv
     Parsed {..} <-
-        liftIO $ parse db_arg email_arg delay_arg sendmail_exec_arg sendmail_file_arg
+        liftIO $ parse args'
     $(logInfo) "starting the daemon"
-    $(logDebug) ("running with --db=" <> db_arg <> " --email=" <> notif_email <>
+    $(logDebug) ("running with --db=" <> (db_arg args') <> " --email=" <> notif_email <>
                  " --delay=" <> Text.pack (show loop_delay))
     (dbConf, poolConf) <- liftIO $ do
         dbConf   <- withYamlEnvironment "config/postgresql.yml" env
@@ -536,7 +542,7 @@ main = withLogging $ do
             insertWithoutEmailsOrVerifiedEmailsUser
             return with_emails_user
         forM_ user_notifs $ \(Just user_email, ts, notif_type, to, content) ->
-            sendUserNotification sendmail_exec sendmail_file dbConf poolConf
+            sendUserNotification sendmail_command sendmail_file dbConf poolConf
                 notif_email user_email ts notif_type to content
 
         project_notifs <- runSql dbConf poolConf $ do
@@ -545,8 +551,16 @@ main = withLogging $ do
             insertWithoutEmailsOrVerifiedEmailsProject
             return with_emails_project
         forM_ project_notifs $ \(Just user_email, ts, notif_type, to, project, content) ->
-            sendProjectNotification sendmail_exec sendmail_file dbConf poolConf
-                notif_email user_email ts notif_type to project content
+            sendProjectNotification sendmail_command
+                                    sendmail_file
+                                    dbConf
+                                    poolConf
+                                    notif_email
+                                    user_email
+                                    ts
+                                    notif_type
+                                    to
+                                    project content
 
         verifs <- runSql dbConf poolConf $ do
             with_emails <- selectWithEmails
@@ -554,15 +568,15 @@ main = withLogging $ do
             deleteWithoutEmails
             return with_emails
         forM_ verifs $ \(user_id, Just user_email, ver_uri) ->
-            sendVerification sendmail_exec sendmail_file dbConf poolConf
+            sendVerification sendmail_command sendmail_file dbConf poolConf
                 notif_email user_id user_email ver_uri
 
         resets <- runSql dbConf poolConf selectUnsentResetPassword
         forM_ resets $ \(user_id, user_email, uri) ->
-            sendResetPassword sendmail_exec sendmail_file dbConf poolConf
+            sendResetPassword sendmail_command sendmail_file dbConf poolConf
                 notif_email user_email user_id uri
 
         confirms <- runSql dbConf poolConf selectUnsentDeleteConfirmation
         forM_ confirms $ \(user_id, user_email, uri) ->
-            sendDeleteConfirmation sendmail_exec sendmail_file dbConf poolConf
+            sendDeleteConfirmation sendmail_command sendmail_file dbConf poolConf
                 notif_email user_id user_email uri
