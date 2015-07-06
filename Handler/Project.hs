@@ -670,7 +670,8 @@ getUpdatePledgeR project_handle = do
 
             (confirm_form, _) <- generateFormPost $ projectConfirmPledgeForm (Just new_user_shares)
 
-            (mpledge, other_shares) <- runDB $ do
+            (mpledge, other_shares, pledges) <- runDB $ do
+                pledges <- fetchProjectSharesDB project_id
                 mpledge <- getBy $ UniquePledge user_id project_id
                 other_shares <- fmap unwrapValues $ select $ from $ \p -> do
                     where_ $ p ^. PledgeProject ==. val project_id
@@ -678,7 +679,7 @@ getUpdatePledgeR project_handle = do
 
                     return $ p ^. PledgeShares
 
-                return (mpledge, other_shares)
+                return (mpledge, other_shares, pledges)
 
             let new_user_mills = millMilray new_user_shares
             case mpledge of
@@ -695,7 +696,10 @@ getUpdatePledgeR project_handle = do
                     let old_user_shares = maybe 0 (pledgeShares . entityVal) mpledge
                         old_user_mills  = millMilray old_user_shares
 
+                        numPatrons = toInteger $ length pledges
+
                         new_project_shares = filter (>0) [new_user_shares] ++ other_shares
+
                         old_project_shares = filter (>0) [old_user_shares] ++ other_shares
 
                         new_share_value = projectComputeShareValue new_project_shares
@@ -708,9 +712,10 @@ getUpdatePledgeR project_handle = do
                         old_project_amount = old_share_value $* fromIntegral (sum old_project_shares)
 
                         user_decrease    = old_user_amount - new_user_amount
+                        user_increase    = new_user_amount - old_user_amount
                         project_decrease = old_project_amount - new_project_amount
                         project_increase = new_project_amount - old_project_amount
-                        donations_drop   = project_decrease - user_decrease
+                        matching_drop   = project_decrease - user_decrease
                         matched_extra    = project_increase - new_user_amount
 
                     defaultLayout $ do
