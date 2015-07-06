@@ -66,10 +66,10 @@ There are two phases to initializing.
 #### Doing the Initial Build
 
     stack setup &&
-    stack build cabal-install yesod-bin-1.4.11 .
+    stack build cabal-install yesod-bin-1.4.11 &&
+    stack test
 
-Do this from within the Snowdrift code directory. Don't forget the last
-period in the second command.
+Do this from within the Snowdrift code directory.
 
 NB: this will take a while!
 

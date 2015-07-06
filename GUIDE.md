@@ -159,7 +159,8 @@ Various systems may need some libraries and other dependencies.
 Install dependencies and build Snowdrift
 
     stack setup &&
-    stack build cabal-install yesod-bin-1.4.11 .
+    stack build cabal-install yesod-bin-1.4.11
+    stack test
 
 This will take a *long* time but should ultimately tell you it installed.
 
@@ -197,20 +198,18 @@ fails to recognize a change.
 
 To stop the development site, press the Enter key.
 
-### Alternative option to run the site
+### Alternative development option
 
 We recommend `stack exec yesod devel` in almost all cases, but an alternate
-approach is to separately build with `stack build` and run the site with
-`stack exec Snowdrift Development`.
+approach is to build with `stack build` and run the executable with `stack
+exec Snowdrift Development`.
 
-This method is *necessary* when updating extra binaries such as the payment
-processing script, the sdm database configuration script, or the email daemon.
+Using `stack build` is *necessary* when updating extra binaries such as the
+payment processing script, the sdm database configuration script, or the
+email daemon.
 
-When `stack build` is done, you can start the server with:
-
-    stack exec Snowdrift Development
-
-To stop the running server, press ctrl-C
+One you are running the executable with `stack exec Snowdrift Development`,
+you can stop it by pressing ctrl-C.
 
 Using the live test site
 ------------------------
@@ -221,11 +220,8 @@ The Dev DB comes with several users to log in with using the built-in system:
 (username and passphrase are the same)
 `admin`; `guest`; `established`.
 
-
-
 You can now register new users, make pledges, add discussion comments,
 tickets, wiki pages, blog posts, and test and work on all aspects of the site.
-
 
 Running tests
 =============
