@@ -63,6 +63,9 @@ Consult their documentation linked above, or read further instructions in
 
 There are two phases to initializing.
 
+***The following instructions are in "beta". Please try them out and report
+any issues!***
+
 #### Doing the Initial Build
 
     stack setup &&

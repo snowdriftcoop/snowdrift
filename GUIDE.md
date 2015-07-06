@@ -156,6 +156,9 @@ Various systems may need some libraries and other dependencies.
 
 **Now, change to your snowdrift project directory (if not already there).**
 
+***The following instructions are in "beta". Please try them out and report
+any issues!***
+
 Install dependencies and build Snowdrift
 
     stack setup &&
