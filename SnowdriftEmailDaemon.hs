@@ -78,7 +78,7 @@ arguments pname user = Arguments
     defaultEmail     = (<> "@localhost")
     default_delay    = 10
 
-default_sendmail :: FileName
+default_sendmail :: Text
 default_sendmail = "/usr/sbin/sendmail"
 
 databases :: [(String, DefaultEnv)]
@@ -102,15 +102,22 @@ data Parsed = Parsed
 
 parse :: Arguments -> IO Parsed
 parse Arguments{..} = do
-    sendmail_command' <- parseCommand sendmail_command_arg
     let sendmail_file_arg' = Text.unpack sendmail_file_arg
     sendmail_file' <- if null sendmail_file_arg'
                           then return sendmail_file_arg'
                           else errUnlessExists sendmail_file_arg'
-    return $ Parsed env' notif_email' loop_delay'
-        sendmail_command' (Text.pack sendmail_file')
+    return $ Parsed env'
+                    notif_email'
+                    loop_delay'
+                    (parseCommand sendmail_command_arg)
+                    (Text.pack sendmail_file')
   where
-    parseCommand = undefined
+    parseCommand cmdStr =
+        if Text.any (== '\\') cmdStr
+        then error "Backslashes within command strings are not supported"
+        else case Text.splitOn " " cmdStr of
+            h:t -> Command h t
+            _ -> error "You asked to specify a sendmail command, but didn't supply one"
     env' = fromMaybe
         (error $ "unsupported database: "
                   <> Text.unpack db_arg <> "; try '--help'")
