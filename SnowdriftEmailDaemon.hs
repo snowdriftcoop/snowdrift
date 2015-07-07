@@ -43,29 +43,35 @@ data Command = Command
 
 arguments :: String -> String -> Arguments
 arguments pname user = Arguments
-    { db_arg    = Text.pack default_db
-               &= help ("Database to operate on " <>
-                        "(default: " <> default_db <> ")")
-               &= explicit &= name "db"
-               &= typ "DATABASE"
+    { db_arg = Text.pack default_db
+        &= help ("Database to operate on " <>
+                 "(default: " <> default_db <> ")")
+        &= explicit
+        &= name "db"
+        &= typ "DATABASE"
     , email_arg = Text.pack (defaultEmail user)
-               &= help ("Send notifications from this address " <>
-                        "(default: " <> defaultEmail user <> ")")
-               &= explicit &= name "email"
-               &= typ "EMAIL"
+        &= help ("Send notifications from this address " <>
+                 "(default: " <> defaultEmail user <> ")")
+        &= explicit
+        &= name "email"
+        &= typ "EMAIL"
     , delay_arg = default_delay
-               &= help "Time between each iteration of the loop"
-               &= explicit &= name "delay"
-               &= typ "SECONDS"
-    , sendmail_command_arg  = default_sendmail
-                        &= help "Command line to run the sendmail program"
-                        &= explicit &= name "sendmail"
-                        &= typ "FILE"
+        &= help "Time between each iteration of the loop"
+        &= explicit
+        &= name "delay"
+        &= typ "SECONDS"
+    , sendmail_command_arg = default_sendmail
+        &= help "Command line to run the sendmail program"
+        &= explicit
+        &= name "sendmail"
+        &= typ "FILE"
     , sendmail_file_arg  = Text.empty
-                        &= help "Name of the temporary file (for SnowdriftSendmail)"
-                        &= explicit &= name "sendmail-file"
-                        &= typ "FILE"
-    } &= summary "Snowdrift email daemon 0.1" &= program pname
+        &= help "Name of the temporary file (for SnowdriftSendmail)"
+        &= explicit
+        &= name "sendmail-file"
+        &= typ "FILE"
+    } &= summary "Snowdrift email daemon 0.1"
+      &= program pname
       &= details ["Databases: " <> intercalate ", " (fst <$> databases)]
   where
     default_db       = "development"
@@ -106,10 +112,9 @@ parse Arguments{..} = do
   where
     parseCommand = undefined
     env' = fromMaybe
-               (error $
-                   "unsupported database: "
-                   <> Text.unpack db_arg <> "; try '--help'")
-               (lookup (Text.unpack $ Text.toLower db_arg) databases)
+        (error $ "unsupported database: "
+                  <> Text.unpack db_arg <> "; try '--help'")
+        (lookup (Text.unpack $ Text.toLower db_arg) databases)
     notif_email' =
         if Email.isValid $ Text.encodeUtf8 email_arg
         then email_arg
@@ -125,40 +130,46 @@ parse Arguments{..} = do
             else error $ "file does not exist: " <> file
 
 selectWithVerifiedEmailsUser :: ReaderT SqlBackend (ResourceT (LoggingT IO))
-                                [( Maybe Email, UTCTime, UserNotificationType
-                                 , UserId, Markdown )]
-selectWithVerifiedEmailsUser =
-    unwrapValues <$>
-    (select $
-     from $ \(notification_email `InnerJoin` user) -> do
-         on $ notification_email ^. UserNotificationEmailTo ==.
-              user ^. UserId
-         where_ $ (not_ $ isNothing $ user ^. UserEmail)
-              &&. user ^. UserEmail_verified
-         return ( user ^. UserEmail
-                , notification_email ^. UserNotificationEmailCreatedTs
-                , notification_email ^. UserNotificationEmailType
-                , notification_email ^. UserNotificationEmailTo
-                , notification_email ^. UserNotificationEmailContent ))
+                                [( Maybe Email
+                                 , UTCTime
+                                 , UserNotificationType
+                                 , UserId
+                                 , Markdown )]
+selectWithVerifiedEmailsUser = fmap unwrapValues $
+    select $
+    from $ \(email `InnerJoin` user) -> do
+    on $
+        email ^. UserNotificationEmailTo ==. user ^. UserId
+    where_ $
+        (not_ $ isNothing $ user ^. UserEmail)
+        &&. user ^. UserEmail_verified
+    return
+        ( user ^. UserEmail
+        , email ^. UserNotificationEmailCreatedTs
+        , email ^. UserNotificationEmailType
+        , email ^. UserNotificationEmailTo
+        , email ^. UserNotificationEmailContent
+        )
 
 selectWithVerifiedEmailsProject :: ReaderT SqlBackend (ResourceT (LoggingT IO))
-                                   [( Maybe Email, UTCTime
-                                    , ProjectNotificationType, UserId
-                                    , ProjectId, Markdown )]
-selectWithVerifiedEmailsProject =
-    unwrapValues <$>
-    (select $
-     from $ \(notification_email `InnerJoin` user) -> do
-         on $ notification_email ^. ProjectNotificationEmailTo ==.
-              user ^. UserId
-         where_ $ not_ (isNothing $ user ^. UserEmail)
-              &&. user ^. UserEmail_verified
-         return ( user ^. UserEmail
-                , notification_email ^. ProjectNotificationEmailCreatedTs
-                , notification_email ^. ProjectNotificationEmailType
-                , notification_email ^. ProjectNotificationEmailTo
-                , notification_email ^. ProjectNotificationEmailProject
-                , notification_email ^. ProjectNotificationEmailContent ))
+                                   [( Maybe Email
+                                    , UTCTime
+                                    , ProjectNotificationType
+                                    , UserId
+                                    , ProjectId
+                                    , Markdown )]
+selectWithVerifiedEmailsProject = fmap unwrapValues $
+    select $
+    from $ \(email `InnerJoin` user) -> do
+    on $ email ^. ProjectNotificationEmailTo ==. user ^. UserId
+    where_ $ not_ (isNothing $ user ^. UserEmail)
+             &&. user ^. UserEmail_verified
+    return ( user ^. UserEmail
+           , email ^. ProjectNotificationEmailCreatedTs
+           , email ^. ProjectNotificationEmailType
+           , email ^. ProjectNotificationEmailTo
+           , email ^. ProjectNotificationEmailProject
+           , email ^. ProjectNotificationEmailContent )
 
 selectWithoutEmailsOrVerifiedEmailsUser :: (    SqlExpr (Value UserId)
                                              -> SqlExpr (ValueList UserId)
@@ -169,25 +180,26 @@ selectWithoutEmailsOrVerifiedEmailsUser :: (    SqlExpr (Value UserId)
                                             , Value UserId
                                             , Value Markdown )]
 selectWithoutEmailsOrVerifiedEmailsUser inOrNotIn =
-    select $ from $ \(ne, user) -> do
-        where_ $ (     ne ^. UserNotificationEmailTo ==. user ^. UserId
-                   &&. (     isNothing (user ^. UserEmail)
-                         ||. not_ (isNothing $ user ^. UserEmail)
-                         &&. not_ (user ^. UserEmail_verified)
-                       )
-                 ) &&. ne ^. UserNotificationEmailTo `inOrNotIn`
-                       (subList_select $ from $ \n -> do
-                             where_ $ n  ^. UserNotificationType
-                                  ==. ne ^. UserNotificationEmailType
-                                  &&. n  ^. UserNotificationTo
-                                  ==. ne ^. UserNotificationEmailTo
-                                  &&. n  ^. UserNotificationContent
-                                  ==. ne ^. UserNotificationEmailContent
-                             return $ ne ^. UserNotificationEmailTo)
-        return ( ne ^. UserNotificationEmailCreatedTs
-               , ne ^. UserNotificationEmailType
-               , ne ^. UserNotificationEmailTo
-               , ne ^. UserNotificationEmailContent )
+    select $
+    from $ \(ne, user) -> do
+    where_ $ (     ne ^. UserNotificationEmailTo ==. user ^. UserId
+               &&. (     isNothing (user ^. UserEmail)
+                     ||. not_ (isNothing $ user ^. UserEmail)
+                     &&. not_ (user ^. UserEmail_verified)
+                   )
+             ) &&. ne ^. UserNotificationEmailTo `inOrNotIn`
+                   (subList_select $ from $ \n -> do
+                         where_ $ n  ^. UserNotificationType
+                              ==. ne ^. UserNotificationEmailType
+                              &&. n  ^. UserNotificationTo
+                              ==. ne ^. UserNotificationEmailTo
+                              &&. n  ^. UserNotificationContent
+                              ==. ne ^. UserNotificationEmailContent
+                         return $ ne ^. UserNotificationEmailTo)
+    return ( ne ^. UserNotificationEmailCreatedTs
+           , ne ^. UserNotificationEmailType
+           , ne ^. UserNotificationEmailTo
+           , ne ^. UserNotificationEmailContent )
 
 selectWithoutEmailsOrVerifiedEmailsProject :: (    SqlExpr (Value UserId)
                                                 -> SqlExpr (ValueList UserId)
@@ -200,27 +212,27 @@ selectWithoutEmailsOrVerifiedEmailsProject :: (    SqlExpr (Value UserId)
                                                , Value Markdown )]
 selectWithoutEmailsOrVerifiedEmailsProject inOrNotIn =
     select $ from $ \(ne, user) -> do
-        where_ $ (     ne ^. ProjectNotificationEmailTo ==. user ^. UserId
-                   &&. (     isNothing (user ^. UserEmail)
-                         ||. not_ (isNothing $ user ^. UserEmail)
-                         &&. not_ (user ^. UserEmail_verified)
-                       )
-                 ) &&. ne ^. ProjectNotificationEmailTo `inOrNotIn`
-                       (subList_select $ from $ \n -> do
-                             where_ $ n  ^. ProjectNotificationType
-                                  ==. ne ^. ProjectNotificationEmailType
-                                  &&. n  ^. ProjectNotificationTo
-                                  ==. ne ^. ProjectNotificationEmailTo
-                                  &&. n  ^. ProjectNotificationProject
-                                  ==. ne ^. ProjectNotificationEmailProject
-                                  &&. n  ^. ProjectNotificationContent
-                                  ==. ne ^. ProjectNotificationEmailContent
-                             return $ ne ^. ProjectNotificationEmailTo)
-        return ( ne ^. ProjectNotificationEmailCreatedTs
-               , ne ^. ProjectNotificationEmailType
-               , ne ^. ProjectNotificationEmailTo
-               , ne ^. ProjectNotificationEmailProject
-               , ne ^. ProjectNotificationEmailContent )
+    where_ $ (     ne ^. ProjectNotificationEmailTo ==. user ^. UserId
+               &&. (     isNothing (user ^. UserEmail)
+                     ||. not_ (isNothing $ user ^. UserEmail)
+                     &&. not_ (user ^. UserEmail_verified)
+                   )
+             ) &&. ne ^. ProjectNotificationEmailTo `inOrNotIn`
+                   (subList_select $ from $ \n -> do
+                         where_ $ n  ^. ProjectNotificationType
+                              ==. ne ^. ProjectNotificationEmailType
+                              &&. n  ^. ProjectNotificationTo
+                              ==. ne ^. ProjectNotificationEmailTo
+                              &&. n  ^. ProjectNotificationProject
+                              ==. ne ^. ProjectNotificationEmailProject
+                              &&. n  ^. ProjectNotificationContent
+                              ==. ne ^. ProjectNotificationEmailContent
+                         return $ ne ^. ProjectNotificationEmailTo)
+    return ( ne ^. ProjectNotificationEmailCreatedTs
+           , ne ^. ProjectNotificationEmailType
+           , ne ^. ProjectNotificationEmailTo
+           , ne ^. ProjectNotificationEmailProject
+           , ne ^. ProjectNotificationEmailContent )
 
 -- | Select all fields for users without email addresses or verified
 -- email addresses such that they could be inserted into the
@@ -284,16 +296,23 @@ deleteDuplicatesWithoutEmailsOrVerifiedEmailsProject = do
         \(Value ts, Value notif_type, Value to, Value project, Value content) ->
             deleteFromProjectNotificationEmail ts notif_type to project content
 
-fromUserNotificationEmail :: UTCTime -> UserNotificationType -> UserId
-                          -> Markdown -> SqlQuery ()
+fromUserNotificationEmail :: UTCTime
+                          -> UserNotificationType
+                          -> UserId
+                          -> Markdown
+                          -> SqlQuery ()
 fromUserNotificationEmail ts notif_type to content = from $ \ne ->
     where_ $ ne ^. UserNotificationEmailCreatedTs ==. val ts
          &&. ne ^. UserNotificationEmailType      ==. val notif_type
          &&. ne ^. UserNotificationEmailTo        ==. val to
          &&. ne ^. UserNotificationEmailContent   ==. val content
 
-fromProjectNotificationEmail :: UTCTime -> ProjectNotificationType -> UserId
-                             -> ProjectId -> Markdown -> SqlQuery ()
+fromProjectNotificationEmail :: UTCTime
+                             -> ProjectNotificationType
+                             -> UserId
+                             -> ProjectId
+                             -> Markdown
+                             -> SqlQuery ()
 fromProjectNotificationEmail ts notif_type to project content = from $ \ne ->
     where_ $ ne ^. ProjectNotificationEmailCreatedTs ==. val ts
          &&. ne ^. ProjectNotificationEmailType      ==. val notif_type
@@ -301,13 +320,21 @@ fromProjectNotificationEmail ts notif_type to project content = from $ \ne ->
          &&. ne ^. ProjectNotificationEmailProject   ==. val project
          &&. ne ^. ProjectNotificationEmailContent   ==. val content
 
-deleteFromUserNotificationEmail :: MonadIO m => UTCTime -> UserNotificationType
-                                -> UserId -> Markdown -> SqlPersistT m ()
+deleteFromUserNotificationEmail :: MonadIO m
+                                => UTCTime
+                                -> UserNotificationType
+                                -> UserId
+                                -> Markdown
+                                -> SqlPersistT m ()
 deleteFromUserNotificationEmail ts notif_type to content =
     delete $ fromUserNotificationEmail ts notif_type to content
 
-deleteFromProjectNotificationEmail :: MonadIO m => UTCTime -> ProjectNotificationType
-                                   -> UserId -> ProjectId -> Markdown
+deleteFromProjectNotificationEmail :: MonadIO m
+                                   => UTCTime
+                                   -> ProjectNotificationType
+                                   -> UserId
+                                   -> ProjectId
+                                   -> Markdown
                                    -> SqlPersistT m ()
 deleteFromProjectNotificationEmail ts notif_type to project content =
     delete $ fromProjectNotificationEmail ts notif_type to project content
@@ -324,16 +351,37 @@ renderSendmail sendmail_command sendmail_file =
     sendmail sendmail_command sendmail_file <=< renderMail'
 
 runSql :: (MonadBaseControl IO m, MonadIO m)
-       => PostgresConf -> PersistConfigPool PostgresConf
-       -> PersistConfigBackend PostgresConf m a -> m a
+       => PostgresConf
+       -> PersistConfigPool PostgresConf
+       -> PersistConfigBackend PostgresConf m a
+       -> m a
 runSql dbConf poolConf action = runPool dbConf action poolConf
 
 handleSendmail :: (MonadBaseControl IO m, MonadIO m, MonadLogger m)
-               => Command -> FileName -> PostgresConf -> PersistConfigPool PostgresConf
-               -> Text -> Email -> Email -> Text -> Text
-               -> PersistConfigBackend PostgresConf m () -> Text -> m ()
-handleSendmail sendmail_command sendmail_file dbConf poolConf info_msg from_ to subject body
-               action warn_msg = do
+               => Command
+               -> FileName
+               -> PostgresConf
+               -> PersistConfigPool PostgresConf
+               -> Text
+               -> Email
+               -> Email
+               -> Text
+               -> Text
+               -> PersistConfigBackend PostgresConf m ()
+               -> Text
+               -> m ()
+handleSendmail
+        sendmail_command
+        sendmail_file
+        dbConf
+        poolConf
+        info_msg
+        from_
+        to
+        subject
+        body
+        action
+        warn_msg = do
     $(logInfo) info_msg
     Exception.handle handler $ do
         liftIO $ renderSendmail sendmail_command sendmail_file $ simpleMail'
@@ -348,12 +396,28 @@ handleSendmail sendmail_command sendmail_file dbConf poolConf info_msg from_ to 
           $(logWarn) warn_msg
 
 sendUserNotification :: (MonadBaseControl IO m, MonadIO m, MonadLogger m)
-                     => Command -> FileName -> PostgresConf
-                     -> PersistConfigPool PostgresConf -> Email -> Email
-                     -> UTCTime -> UserNotificationType -> UserId -> Markdown
+                     => Command
+                     -> FileName
+                     -> PostgresConf
+                     -> PersistConfigPool PostgresConf
+                     -> Email
+                     -> Email
+                     -> UTCTime
+                     -> UserNotificationType
+                     -> UserId
+                     -> Markdown
                      -> m ()
-sendUserNotification sendmail_command sendmail_file dbConf poolConf notif_email
-                 user_email ts notif_type to content = do
+sendUserNotification
+        sendmail_command
+        sendmail_file
+        dbConf
+        poolConf
+        notif_email
+        user_email
+        ts
+        notif_type
+        to
+        content = do
     let content' = unMarkdown content
     handleSendmail sendmail_command sendmail_file dbConf poolConf
         ("sending a user notification to " <> user_email <> "\n" <> content')
@@ -363,12 +427,30 @@ sendUserNotification sendmail_command sendmail_file dbConf poolConf notif_email
          "will try again later")
 
 sendProjectNotification :: (MonadBaseControl IO m, MonadIO m, MonadLogger m)
-                        => Command -> FileName -> PostgresConf
-                        -> PersistConfigPool PostgresConf -> Email -> Email
-                        -> UTCTime -> ProjectNotificationType -> UserId
-                        -> ProjectId -> Markdown -> m ()
-sendProjectNotification sendmail_command sendmail_file dbConf poolConf notif_email
-                 user_email ts notif_type to project content = do
+                        => Command
+                        -> FileName
+                        -> PostgresConf
+                        -> PersistConfigPool PostgresConf
+                        -> Email
+                        -> Email
+                        -> UTCTime
+                        -> ProjectNotificationType
+                        -> UserId
+                        -> ProjectId
+                        -> Markdown
+                        -> m ()
+sendProjectNotification
+        sendmail_command
+        sendmail_file
+        dbConf
+        poolConf
+        notif_email
+        user_email
+        ts
+        notif_type
+        to
+        project
+        content = do
     let content' = unMarkdown content
     handleSendmail sendmail_command sendmail_file dbConf poolConf
         ("sending a project notification to " <> user_email <> "\n" <> content')
@@ -379,24 +461,22 @@ sendProjectNotification sendmail_command sendmail_file dbConf poolConf notif_ema
 
 selectWithEmails :: ReaderT SqlBackend (ResourceT (LoggingT IO))
                     [(UserId, Maybe Email, Text)]
-selectWithEmails =
-    fmap (map unwrapValues) $
+selectWithEmails = fmap unwrapValues $
     select $ from $ \(ev `InnerJoin` u) -> do
-        on $ ev ^. EmailVerificationUser ==. u ^. UserId
-        where_ $ not_ (isNothing $ u ^. UserEmail)
-             &&. u ^. UserEmail ==. just (ev ^. EmailVerificationEmail)
-             &&. not_ (ev ^. EmailVerificationSent)
-        return ( u  ^. UserId
-               , u  ^. UserEmail
-               , ev ^. EmailVerificationUri )
+    on $ ev ^. EmailVerificationUser ==. u ^. UserId
+    where_ $ not_ (isNothing $ u ^. UserEmail)
+         &&. u ^. UserEmail ==. just (ev ^. EmailVerificationEmail)
+         &&. not_ (ev ^. EmailVerificationSent)
+    return ( u  ^. UserId
+           , u  ^. UserEmail
+           , ev ^. EmailVerificationUri )
 
 selectWithoutEmails :: ReaderT SqlBackend (ResourceT (LoggingT IO)) [UserId]
-selectWithoutEmails =
-    fmap (map (\(Value user_id) -> user_id)) $
+selectWithoutEmails = fmap unwrapValues $
     select $ from $ \(ev `InnerJoin` u) -> do
-        on $ ev ^. EmailVerificationUser ==. u ^. UserId
-        where_ $ isNothing $ u ^. UserEmail
-        return $ ev ^. EmailVerificationUser
+    on $ ev ^. EmailVerificationUser ==. u ^. UserId
+    where_ $ isNothing $ u ^. UserEmail
+    return $ ev ^. EmailVerificationUser
 
 deleteWithoutEmails :: ReaderT SqlBackend (ResourceT (LoggingT IO)) ()
 deleteWithoutEmails = do
@@ -406,56 +486,79 @@ deleteWithoutEmails = do
 
 selectWithNonMatchingEmails :: ReaderT SqlBackend (ResourceT (LoggingT IO))
                                [(UserId, Text)]
-selectWithNonMatchingEmails =
-    fmap (map (\(Value user, Value email) -> (user, email))) $
+selectWithNonMatchingEmails = fmap unwrapValues $
     select $ from $ \(ev `InnerJoin` u) -> do
-        on $ ev ^. EmailVerificationUser ==. u ^. UserId
-        where_ $ not_ (isNothing $ u ^. UserEmail)
-             &&. u ^. UserEmail !=. just (ev ^. EmailVerificationEmail)
-        return ( ev ^. EmailVerificationUser
-               , ev ^. EmailVerificationEmail )
+    on $ ev ^. EmailVerificationUser ==. u ^. UserId
+    where_ $ not_ (isNothing $ u ^. UserEmail)
+        &&. u ^. UserEmail !=. just (ev ^. EmailVerificationEmail)
+    return ( ev ^. EmailVerificationUser
+           , ev ^. EmailVerificationEmail )
 
 deleteWithNonMatchingEmails :: ReaderT SqlBackend (ResourceT (LoggingT IO)) ()
 deleteWithNonMatchingEmails = do
     non_matching <- selectWithNonMatchingEmails
     forM_ non_matching $ \(user, email) ->
-        delete $ from $ \ev ->
-            where_ $ ev ^. EmailVerificationUser  ==. val user
-                 &&. ev ^. EmailVerificationEmail ==. val email
+        delete $
+        from $ \ev ->
+        where_ $ ev ^. EmailVerificationUser  ==. val user
+            &&. ev ^. EmailVerificationEmail ==. val email
 
-markAsSentVerification :: MonadIO m => UserId -> Email -> Text
+markAsSentVerification :: MonadIO m
+                       => UserId
+                       -> Email
+                       -> Text
                        -> SqlPersistT m ()
 markAsSentVerification user_id user_email ver_uri =
     update $ \v -> do
-        set v [EmailVerificationSent =. val True]
-        where_ $ v ^. EmailVerificationUser  ==. val user_id
-             &&. v ^. EmailVerificationEmail ==. val user_email
-             &&. v ^. EmailVerificationUri   ==. val ver_uri
+    set v [EmailVerificationSent =. val True]
+    where_ $ v ^. EmailVerificationUser  ==. val user_id
+        &&. v ^. EmailVerificationEmail ==. val user_email
+        &&. v ^. EmailVerificationUri   ==. val ver_uri
 
 sendVerification :: (MonadBaseControl IO m, MonadIO m, MonadLogger m)
-                 => Command -> FileName -> PostgresConf
-                 -> PersistConfigPool PostgresConf -> Email -> UserId -> Email
-                 -> Text -> m ()
-sendVerification sendmail_command sendmail_file dbConf poolConf verif_email user_id user_email ver_uri = do
+                 => Command
+                 -> FileName
+                 -> PostgresConf
+                 -> PersistConfigPool PostgresConf
+                 -> Email
+                 -> UserId
+                 -> Email
+                 -> Text
+                 -> m ()
+sendVerification
+        sendmail_command
+        sendmail_file
+        dbConf
+        poolConf
+        verif_email
+        user_id
+        user_email
+        ver_uri = do
     let content = "Please open this link to verify your email address: "
                <> ver_uri
-    handleSendmail sendmail_command sendmail_file dbConf poolConf
+    handleSendmail
+        sendmail_command
+        sendmail_file
+        dbConf
+        poolConf
         ("sending an email verification message to " <> user_email <> "\n" <>
          content)
-        verif_email user_email "Snowdrift.coop email verification" content
+        verif_email
+        user_email
+        "Snowdrift.coop email verification"
+        content
         (markAsSentVerification user_id user_email ver_uri)
         ("sending the email verification message to " <> user_email <>
          " failed; will try again later")
 
 selectUnsentResetPassword :: ReaderT SqlBackend (ResourceT (LoggingT IO))
                              [(UserId, Email, Text)]
-selectUnsentResetPassword =
-    fmap (distinctFirst . map unwrapValues) $
+selectUnsentResetPassword = fmap (distinctFirst . unwrapValues) $
     select $ from $ \rp -> do
-        where_ $ not_ $ rp ^. ResetPasswordSent
-        return ( rp ^. ResetPasswordUser
-               , rp ^. ResetPasswordEmail
-               , rp ^. ResetPasswordUri )
+    where_ $ not_ $ rp ^. ResetPasswordSent
+    return ( rp ^. ResetPasswordUser
+           , rp ^. ResetPasswordEmail
+           , rp ^. ResetPasswordUri )
 
 -- XXX: 'nub' is O(n^2).
 distinctFirst :: [(UserId, a, b)] -> [(UserId, a, b)]
@@ -464,48 +567,89 @@ distinctFirst = nubBy ((==) `Function.on` (\(x,_,_) -> x))
 markAsSentResetPassword :: MonadIO m => UserId -> SqlPersistT m ()
 markAsSentResetPassword user_id =
     update $ \rp -> do
-        set rp [ResetPasswordSent =. val True]
-        where_ $ rp ^. ResetPasswordUser ==. val user_id
+    set rp [ResetPasswordSent =. val True]
+    where_ $ rp ^. ResetPasswordUser ==. val user_id
 
 sendResetPassword :: ( MonadBaseControl IO m, MonadLogger m, MonadIO m)
-                  => Command -> FileName -> PostgresConf -> ConnectionPool
-                  -> Email -> Email -> UserId -> Text -> m ()
-sendResetPassword sendmail_command sendmail_file dbConf poolConf notif_email
-                  user_email user_id uri = do
+                  => Command
+                  -> FileName
+                  -> PostgresConf
+                  -> ConnectionPool
+                  -> Email
+                  -> Email
+                  -> UserId
+                  -> Text
+                  -> m ()
+sendResetPassword
+        sendmail_command
+        sendmail_file
+        dbConf
+        poolConf
+        notif_email
+        user_email
+        user_id
+        uri = do
     let content = "Please open this link to set the new password: " <> uri
-    handleSendmail sendmail_command sendmail_file dbConf poolConf
+    handleSendmail
+        sendmail_command
+        sendmail_file
+        dbConf
+        poolConf
         ("sending a password reset message to " <> user_email <> "\n" <> content)
-        notif_email user_email "Snowdrift.coop password reset" content
+        notif_email
+        user_email
+        "Snowdrift.coop password reset"
+        content
         (markAsSentResetPassword user_id)
         ("sending the password reset message to " <> user_email <> " failed; " <>
          "will try again later")
 
 selectUnsentDeleteConfirmation :: ReaderT SqlBackend (ResourceT (LoggingT IO))
                                   [(UserId, Email, Text)]
-selectUnsentDeleteConfirmation =
-    fmap (distinctFirst . map unwrapValues) $
+selectUnsentDeleteConfirmation = fmap (distinctFirst . map unwrapValues) $
     select $ from $ \dc -> do
-        where_ $ not_ $ dc ^. DeleteConfirmationSent
-        return ( dc ^. DeleteConfirmationUser
-               , dc ^. DeleteConfirmationEmail
-               , dc ^. DeleteConfirmationUri )
+    where_ $ not_ $ dc ^. DeleteConfirmationSent
+    return ( dc ^. DeleteConfirmationUser
+           , dc ^. DeleteConfirmationEmail
+           , dc ^. DeleteConfirmationUri )
 
 markAsSentDeleteConfirmation :: MonadIO m => UserId -> SqlPersistT m ()
 markAsSentDeleteConfirmation user_id =
     update $ \dc -> do
-        set dc [DeleteConfirmationSent =. val True]
-        where_ $ dc ^. DeleteConfirmationUser ==. val user_id
+    set dc [DeleteConfirmationSent =. val True]
+    where_ $ dc ^. DeleteConfirmationUser ==. val user_id
 
 sendDeleteConfirmation :: ( MonadBaseControl IO m, MonadLogger m, MonadIO m)
-                       => Command -> FileName -> PostgresConf -> ConnectionPool
-                       -> Email -> UserId -> Email -> Text -> m ()
-sendDeleteConfirmation sendmail_command sendmail_file dbConf poolConf notif_email
-                       user_id user_email uri = do
+                       => Command
+                       -> FileName
+                       -> PostgresConf
+                       -> ConnectionPool
+                       -> Email
+                       -> UserId
+                       -> Email
+                       -> Text
+                       -> m ()
+sendDeleteConfirmation
+        sendmail_command
+        sendmail_file
+        dbConf
+        poolConf
+        notif_email
+        user_id
+        user_email
+        uri = do
     let content = "Please open this link to delete your account: " <> uri
-    handleSendmail sendmail_command sendmail_file dbConf poolConf
+    handleSendmail
+        sendmail_command
+        sendmail_file
+        dbConf
+        poolConf
         ("sending a delete confirmation message to " <> user_email <> "\n" <>
          content)
-        notif_email user_email "Snowdrift.coop delete confirmation" content
+        notif_email
+        user_email
+        "Snowdrift.coop delete confirmation"
+        content
         (markAsSentDeleteConfirmation user_id)
         ("sending the delete confirmation message to " <> user_email <> " failed; " <>
          "will try again later")
@@ -513,8 +657,8 @@ sendDeleteConfirmation sendmail_command sendmail_file dbConf poolConf notif_emai
 withLogging :: MonadIO m => LoggingT m a -> m a
 withLogging m = runLoggingT m $ \loc src level str ->
     let out = if level == LevelError then stderr else stdout
-    in Char8.hPutStrLn out $
-           fromLogStr $ defaultLogStr loc src level $ toLogStr str
+    in Char8.hPutStrLn out
+                       (fromLogStr (defaultLogStr loc src level (toLogStr str)))
 
 withDelay :: MonadIO m => Delay -> m a -> m ()
 withDelay delay action = action >> liftIO (threadDelay $ 1000000 * delay)
@@ -542,8 +686,16 @@ main = withLogging $ do
             insertWithoutEmailsOrVerifiedEmailsUser
             return with_emails_user
         forM_ user_notifs $ \(Just user_email, ts, notif_type, to, content) ->
-            sendUserNotification sendmail_command sendmail_file dbConf poolConf
-                notif_email user_email ts notif_type to content
+            sendUserNotification sendmail_command
+                                 sendmail_file
+                                 dbConf
+                                 poolConf
+                                 notif_email
+                                 user_email
+                                 ts
+                                 notif_type
+                                 to
+                                 content
 
         project_notifs <- runSql dbConf poolConf $ do
             with_emails_project <- selectWithVerifiedEmailsProject
@@ -568,15 +720,31 @@ main = withLogging $ do
             deleteWithoutEmails
             return with_emails
         forM_ verifs $ \(user_id, Just user_email, ver_uri) ->
-            sendVerification sendmail_command sendmail_file dbConf poolConf
-                notif_email user_id user_email ver_uri
+            sendVerification sendmail_command
+                             sendmail_file
+                             dbConf
+                             poolConf
+                             notif_email
+                             user_id
+                             user_email
+                             ver_uri
 
         resets <- runSql dbConf poolConf selectUnsentResetPassword
         forM_ resets $ \(user_id, user_email, uri) ->
-            sendResetPassword sendmail_command sendmail_file dbConf poolConf
-                notif_email user_email user_id uri
+            sendResetPassword sendmail_command
+                              sendmail_file dbConf poolConf
+                              notif_email
+                              user_email
+                              user_id
+                              uri
 
         confirms <- runSql dbConf poolConf selectUnsentDeleteConfirmation
         forM_ confirms $ \(user_id, user_email, uri) ->
-            sendDeleteConfirmation sendmail_command sendmail_file dbConf poolConf
-                notif_email user_id user_email uri
+            sendDeleteConfirmation sendmail_command
+                                   sendmail_file
+                                   dbConf
+                                   poolConf
+                                   notif_email
+                                   user_id
+                                   user_email
+                                   uri
