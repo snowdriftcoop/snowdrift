@@ -13,7 +13,7 @@ import Prelude hiding (exp)
 
 import Control.Monad (unless)
 import Control.Monad.Logger as TestImport
-import Control.Arrow as TestImport
+import Control.Arrow as TestImport hiding (app)
 
 import Yesod (Yesod, RedirectUrl, Route, RenderRoute, renderRoute)
 import Yesod.Test as TestImport
@@ -54,11 +54,8 @@ import Model.Language
 import Model.Notification
     ( UserNotificationType(..), UserNotificationDelivery(..)
     , ProjectNotificationType(..), ProjectNotificationDelivery(..) )
-
-import System.Directory (getDirectoryContents)
-import System.FilePath ((</>))
 import System.IO (hPutStrLn, stderr)
-import System.Process (spawnProcess, terminateProcess)
+import System.Process (spawnProcess, terminateProcess, ProcessHandle)
 
 import Control.Monad.Trans.Control
 import Control.Exception.Lifted as Lifted hiding (handle)
@@ -378,19 +375,15 @@ updateProjectNotifPrefs user_id project_id notif_type notif_deliv = do
 withDelay :: MonadIO m => m a -> m a
 withDelay action = liftIO (threadDelay 1500000) >> action
 
-distPrefix :: IO FilePath
-distPrefix = do
-    subdirs <- fmap (filter $ L.isPrefixOf "dist-sandbox-") $ getDirectoryContents "dist"
-    let subdir = case subdirs of [x] -> x; _ -> ""
-    return $ "dist" </> subdir </> "build"
+stackExec :: FilePath -> [String] -> IO ProcessHandle
+stackExec app args = spawnProcess "stack" $ ["exec", "--", app] ++ args
 
 withEmailDaemon :: FileName -> (FileName -> IO a) -> IO ()
 withEmailDaemon file action = do
-    prefix <- distPrefix
     withDelay $ bracket
-        (spawnProcess
-             (prefix </> "SnowdriftEmailDaemon/SnowdriftEmailDaemon")
-             [ "--sendmail=" <> prefix </> "SnowdriftSendmail/SnowdriftSendmail"
+        (stackExec
+             "SnowdriftEmailDaemon"
+             [ "--sendmail=stack exec SnowdriftSendmail"
              , "--sendmail-file=" <> T.unpack (unFileName file)
              , "--db=testing"
              ])
@@ -399,10 +392,9 @@ withEmailDaemon file action = do
 
 processPayments :: IO ()
 processPayments = do
-    prefix <- distPrefix
     bracket
-        (spawnProcess
-             (prefix </> "SnowdriftProcessPayments/SnowdriftProcessPayments")
+        (stackExec
+             "SnowdriftProcessPayments"
              ["Testing"])
         terminateProcess
         (const $ withDelay $ return ())
