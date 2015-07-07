@@ -12,6 +12,7 @@ cabal-version:     >= 1.18
 build-type:        Simple
 homepage:          https://snowdrift.coop
 
+-- flags -- {{{1
 Flag dev
     Description:   Turn on development settings, like auto-reload templates.
     Default:       False
@@ -24,9 +25,20 @@ Flag library-only
     Description:   Build for use with "yesod devel"
     Default:       False
 
-library
+library -- {{{1
     default-language:  Haskell98
-    exposed-modules: Application
+    if flag(dev) || flag(library-only)
+        cpp-options:   -DDEVELOPMENT
+
+    if flag(dev) || flag(library-only)
+        ghc-options:   -Wall -O0 -fobject-code
+    else
+        if flag(merge)
+            ghc-options:   -Wall -Werror -O0 -fobject-code
+        else
+            ghc-options:   -Werror -Wall -O2
+
+    exposed-modules: Application -- {{{2
                      Data.Filter
                      Data.Order
                      Data.Text.PrettyHtml
@@ -125,24 +137,13 @@ library
                      Widgets.ProjectPledges
                      TestHandler
 
-    other-modules: Model.Comment.Internal
+    other-modules: Model.Comment.Internal -- {{{2
                    Model.Established.Internal
                    Model.Role.Internal
                    Model.Settings.Internal
                    Model.ViewType.Internal
 
-    if flag(dev) || flag(library-only)
-        cpp-options:   -DDEVELOPMENT
-
-    if flag(dev) || flag(library-only)
-        ghc-options:   -Wall -O0 -fobject-code
-    else
-        if flag(merge)
-            ghc-options:   -Wall -Werror -O0 -fobject-code
-        else
-            ghc-options:   -Werror -Wall -O2
-
-    default-extensions: ConstraintKinds
+    default-extensions: ConstraintKinds -- {{{2
                 DeriveDataTypeable
                 DeriveFunctor
                 EmptyDataDecls
@@ -169,8 +170,9 @@ library
 -- Only add version bounds that reflect specific known issues.
 -- Provide a comment above the entry explaining any bounds added.
 
--- base bounds reflect a core dependency
-    build-depends: base                          >= 4          && < 5
+    build-depends: -- {{{2
+                   -- base bounds reflect a core dependency
+                   base >= 4 && < 5
                  , async
                  , attoparsec
                  , authenticate
@@ -228,7 +230,24 @@ library
                  , yesod-newsfeed
                  , yesod-static
 
-executable         SnowdriftProcessPayments
+executable Snowdrift -- {{{1
+    if flag(dev)
+        ghc-options: -Wall -O0 -fobject-code
+    if flag(merge)
+        ghc-options: -Wall -Werror -O0 -fobject-code
+    if flag(library-only)
+        Buildable: False
+
+    default-language:  Haskell98
+    main-is:           main.hs
+    hs-source-dirs:    app
+    build-depends:     base
+                     , Snowdrift
+                     , yesod
+
+    ghc-options:       -threaded -O2
+
+executable SnowdriftProcessPayments -- {{{1
     if flag(library-only)
         Buildable: False
     if flag(dev)
@@ -268,24 +287,7 @@ executable         SnowdriftProcessPayments
                 DeriveDataTypeable
                 ScopedTypeVariables
 
-executable         Snowdrift
-    if flag(dev)
-        ghc-options: -Wall -O0 -fobject-code
-    if flag(merge)
-        ghc-options: -Wall -Werror -O0 -fobject-code
-    if flag(library-only)
-        Buildable: False
-
-    default-language:  Haskell98
-    main-is:           main.hs
-    hs-source-dirs:    app
-    build-depends:     base
-                     , Snowdrift
-                     , yesod
-
-    ghc-options:       -threaded -O2
-
-executable         SnowdriftEmailDaemon
+executable SnowdriftEmailDaemon -- {{{1
     if flag(dev)
        ghc-options: -Wall -O0 -fobject-code
     if flag(merge)
@@ -294,7 +296,7 @@ executable         SnowdriftEmailDaemon
         Buildable: False
     default-language:  Haskell98
     main-is:           SnowdriftEmailDaemon.hs
-    build-depends:     base
+    build-depends:     base -- {{{2
                      , authenticate
                      , blaze-builder
                      , blaze-html
@@ -338,7 +340,7 @@ executable         SnowdriftEmailDaemon
                      , yesod-markdown
                      , yesod-static
 
-    default-extensions: BangPatterns
+    default-extensions: BangPatterns -- {{{2
                 ConstraintKinds
                 DeriveDataTypeable
                 EmptyDataDecls
@@ -360,7 +362,7 @@ executable         SnowdriftEmailDaemon
                 TypeFamilies
                 ViewPatterns
 
-executable         sdm
+executable sdm -- {{{1
     if flag(dev)
        ghc-options: -Wall -O0 -fobject-code
     if flag(merge)
@@ -380,7 +382,7 @@ executable         sdm
                      , process
                      , semigroups
 
-executable         SnowdriftSendmail
+executable SnowdriftSendmail -- {{{1
     if flag(dev)
        ghc-options: -Wall -O0 -fobject-code
     if flag(merge)
@@ -394,7 +396,7 @@ executable         SnowdriftSendmail
                      , bytestring
                      , mime
 
-test-suite test
+test-suite test -- {{{1
     default-language:  Haskell98
     type:              exitcode-stdio-1.0
     main-is:           main.hs
@@ -413,7 +415,7 @@ test-suite test
     default-extensions: QuasiQuotes
                 TemplateHaskell
 
-    build-depends: base
+    build-depends: base -- {{{2
                  , Snowdrift
                  , yesod-markdown
                  -- After 1.4.3, addNonce must be replaced with addToken
@@ -445,3 +447,8 @@ test-suite test
                  , haskell-src-meta
                  , lifted-base
                  , QuickCheck
+
+-- }}}1
+
+-- Enables folds in vim.
+-- vim: fdm=marker cms=\ --\ %s :
