@@ -1,4 +1,6 @@
-flags: {}
+flags:
+    Snowdrift:
+        dev: true
 packages:
 - '.'
 extra-deps:
