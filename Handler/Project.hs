@@ -745,14 +745,14 @@ getTicketsR project_handle = do
 
     ((result, formWidget), encType) <- runFormGet searchWidget
     let (filter_expression, order_expression) = case result of
-            FormSuccess x -> ((either
+            FormSuccess x -> (either
                                 (const defaultFilter)
                                 id
-                                (parseFilterExpression $ searchFilterString x)),
-                              (either
+                                (parseFilterExpression $ searchFilterString x),
+                              either
                                 (const defaultOrder)
                                 id
-                                (parseOrderExpression $ searchSortString x)))
+                                (parseOrderExpression $ searchSortString x))
             _ -> (defaultFilter, defaultOrder)
 
     (project, tagged_tickets) <- runYDB $ do
