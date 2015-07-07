@@ -401,6 +401,15 @@ test-suite test
     hs-source-dirs:    tests
     ghc-options:       -Werror -Wall -O0 -fobject-code
 
+    other-modules: TestImport
+                   BlogTest
+                   UserTest
+                   MechanismTest
+                   CommentTest
+                   TestImport.Internal
+                   NotifyTest
+                   DiscussionTest
+                   WikiTest
     default-extensions: QuasiQuotes
                 TemplateHaskell
 
