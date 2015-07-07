@@ -1,6 +1,7 @@
 module Widgets.Search where
 
 import Import
+-- import Model.Project
 import qualified Data.Text as T
 
 data FilterClaimStatus = Claimed | Unclaimed | All deriving Eq
@@ -16,11 +17,13 @@ searchWidget extra = do
     let claimedList = [("All" :: Text, All),
                     ("Claimed", Claimed),
                     ("Unclaimed", Unclaimed)]
+
     (claimedRes, claimedView) <- mreq 
         (radioFieldList claimedList)
         "Claimed"
         (Just All)
-    (tagsRes, tagsView) <- mopt textField "Tags" Nothing
+    --(tagsRes, tagsView) <- mopt textField "Tags" Nothing
+    (tagsRes, _) <- mopt textField "Tags" Nothing
     (sortRes, sortView) <- mopt textField "Sort" Nothing
 
     let searchRes = SearchParameters 
@@ -33,8 +36,28 @@ searchWidget extra = do
             #{extra}
             <div>
               <p>^{fvInput claimedView}
-              <p>Tags: ^{fvInput tagsView}
-              <p>* Tags can be separated using AND, OR, NOT and ()
+              <p>
+                <select>
+                  <option>
+                  <option>BEFORE
+                  <option>AFTER
+                  <option>BETWEEN
+                <input type="date">
+                <select>
+                  <option>
+                  <option>AND
+                <input type="date">
+              <p>tags:
+              <p>
+                <input type="radio" name="sql">include
+                <input type="radio" name="sql">exclude
+                <input type="radio" name="sql" checked="yes">doesn't matter
+                sql 
+              <p>
+                <input type="radio" name="newbie-friendly">include
+                <input type="radio" name="newbie-friendly">exclude
+                <input type="radio" name="newbie-friendly" checked="yes">doesn't matter
+                newbie-friendly
             <div>
               <p>Sort: ^{fvInput sortView}
           |]
