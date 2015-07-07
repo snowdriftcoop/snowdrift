@@ -2,7 +2,7 @@ GNU Affero General Public License
 =================================
 
 _Version 3, 19 November 2007_
-_Copyright © 2007 Free Software Foundation, Inc. &lt;<http://fsf.org/>&gt;_
+_Copyright © 2007 Free Software Foundation, Inc. <http://fsf.org/>_
 
 Everyone is permitted to copy and distribute verbatim copies
 of this license document, but changing it is not allowed.
@@ -648,4 +648,4 @@ specific requirements.
 You should also get your employer (if you work as a programmer) or school,
 if any, to sign a “copyright disclaimer” for the program, if necessary.
 For more information on this, and how to apply and follow the GNU AGPL, see
-&lt;<http://www.gnu.org/licenses/>&gt;.
+<http://www.gnu.org/licenses/>.
