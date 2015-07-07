@@ -177,16 +177,12 @@ To stop yesod devel, press the Enter key.
 After successfully compiling and checking that the changes seem good,
 do a final test with:
 
-    stack test
+    stack build && stack test
 
 If there are any failures either when compiling or testing,
 and you don't know how to fix the issue or don't understand the error,
 ask on the [IRC channel](https://snowdrift.coop/p/snowdrift/w/en/irc),
 and someone will probably help you.
-
-Sometimes the tests just need updating, and for that run:
-
-    stack clean && stack test
 
 ### Committing your changes
 

@@ -76,7 +76,7 @@ With everything initialized, you can now use the following commands:
     * access the site in your browser at <http://localhost:3000>
     * log in as admin with built-in system and user: `admin` pass: `admin`
     * press Enter key in terminal to stop the site
-* `stack test`: run the test suite
+* `stack build && stack test`: run the test suite
 * `stack build`: rebuild manually (usually running the site in development
   mode is sufficient, however)
 * `stack ghci`: Start the REPL

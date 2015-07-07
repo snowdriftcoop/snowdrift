@@ -286,14 +286,9 @@ your changes with the main project.
 Assuming you ran `sdm init` to set up the databases,
 you can now run the tests with:
 
-    stack test
+    stack build && stack test
 
 If tests fail, try to figure out what is wrong. Ask us for help if needed.
-
-Sometimes, the tests will need updating, and for that you should run:
-
-    stack clean
-    stack test
 
 Additional notes about databases
 ================================
