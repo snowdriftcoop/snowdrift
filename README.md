@@ -92,6 +92,19 @@ As mentioned, the comprehensive [GUIDE.md] describes further technical details
 including notes for various operating systems, manual database operations, and
 more.
 
+License
+-------
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+[GNU Affero General Public License](LICENSE.md) for more details.
+
 [Beginner's Guide]: BEGINNERS.md
 [economics of FLO projects]: https://snowdrift.coop/p/snowdrift/w/en/economics
 [#snowdrift on Freenode IRC]: http://webchat.freenode.net/?channels=#snowdrift
