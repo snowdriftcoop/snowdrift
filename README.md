@@ -85,7 +85,7 @@ NB: this will take a while!
 Once the project is initialized, you can use the following commands.
 
 * `stack exec yesod devel`: run the site in development mode
-* `stack test`: run the test suite
+* `stack build && stack test`: run the test suite
 * `stack build`: rebuild manually (usually running the site in development
   mode is sufficient, however)
 * `stack ghci`: Start the REPL
@@ -101,7 +101,6 @@ As mentioned, there is also a comprehensive [GUIDE.md] that describes the
 particular steps for getting started with each supported operating system.
 
 [Beginner's Guide]: BEGINNERS.md
-[Debian/Ubuntu]: SETUP_DEBIAN.md
 [economics of FLO projects]: https://snowdrift.coop/p/snowdrift/w/en/economics
 [#snowdrift on Freenode IRC]: http://webchat.freenode.net/?channels=#snowdrift
 [git.gnu.io/snowdrift/snowdrift]: https://git.gnu.io/snowdrift/snowdrift
