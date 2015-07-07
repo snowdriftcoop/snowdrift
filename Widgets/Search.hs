@@ -3,22 +3,23 @@ module Widgets.Search where
 import Import
 import qualified Data.Text as T
 
+data FilterClaimStatus = Claimed | Unclaimed | All deriving Eq
+
 data SearchParameters = SearchParameters
-    { claimed :: Text
+    { claimed :: FilterClaimStatus
     , tags :: Maybe Text
     , sort :: Maybe Text
     }
 
-
 searchWidget :: Form SearchParameters
 searchWidget extra = do
-    let claimedList = [("All" :: Text, "all"),
-                    ("Claimed", "claimed"),
-                    ("Unclaimed", "unclaimed")]
+    let claimedList = [("All" :: Text, All),
+                    ("Claimed", Claimed),
+                    ("Unclaimed", Unclaimed)]
     (claimedRes, claimedView) <- mreq 
         (radioFieldList claimedList)
         "Claimed"
-        (Just "all")
+        (Just All)
     (tagsRes, tagsView) <- mopt textField "Tags" Nothing
     (sortRes, sortView) <- mopt textField "Sort" Nothing
 
@@ -41,11 +42,11 @@ searchWidget extra = do
     return (searchRes, widget)
 
 searchFilterString :: SearchParameters -> Text
-searchFilterString (SearchParameters "claimed" tags _ ) = 
+searchFilterString (SearchParameters Claimed tags _ ) = 
         T.append "CLAIMED AND " $ parseTags tags
-searchFilterString (SearchParameters "unclaimed" tags _ ) =
+searchFilterString (SearchParameters Unclaimed tags _ ) =
         T.append "UNCLAIMED AND " $ parseTags tags
-searchFilterString (SearchParameters _ tags _) =
+searchFilterString (SearchParameters All tags _) =
         T.append T.empty $ parseTags tags
 
 parseTags :: Maybe Text -> Text
