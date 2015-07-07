@@ -375,10 +375,10 @@ executable         sdm
                      , bytestring
                      , cmdargs
                      , directory
+                     , mtl
                      , mwc-random
                      , process
                      , semigroups
-                     , mtl
 
 executable         SnowdriftSendmail
     if flag(dev)
