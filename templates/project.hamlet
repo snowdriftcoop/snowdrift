@@ -100,7 +100,7 @@
             _{MsgPatrons users}
         <tr>
           <td>
-            _{MsgShares shares}
+            #{show mills}
         <tr>
           <td>
             current base pledge value: #{show share_value}

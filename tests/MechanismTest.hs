@@ -4,7 +4,7 @@
 module MechanismTest (mechanismSpecs) where
 
 import TestImport hiding (get)
-import Model.Currency (Milray (..))
+import Model.Currency (Milray (..), millMilray)
 import Model.Project (projectComputeShareValue, fetchProjectSharesDB)
 
 import Control.Applicative ((<$>))
@@ -44,7 +44,7 @@ testFormula = yit "formula" $ do
                   "as the product of that number and 0.1¢") $
         \(Positive n) (Positive m) ->
               (projectComputeShareValue $ replicate n m) ===
-              (Milray $ fromIntegral n * 10)
+              (millMilray $ fromIntegral n)
 
 testPledges :: Spec
 testPledges = ydescribe "pledges" $ do

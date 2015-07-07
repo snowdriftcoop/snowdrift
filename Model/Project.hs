@@ -44,7 +44,7 @@ import Model.Comment.Sql
 import Model.Currency
 import Model.Issue
 import Model.Tag
-import Model.Shares (pledgeRenderKey, multiplyByBaseAmount)
+import Model.Shares (pledgeRenderKey)
 import Model.Wiki.Sql
 import Widgets.Tag
 
@@ -773,8 +773,8 @@ updateUserPledge project_handle shares = do
             pledge_dropped   = "You have dropped your pledge and are no longer "
                             <> "a patron of " <> projectName project <> "."
             pledge_updated   = "You have now pledged a base rate of "
-                            <> T.pack (show $ multiplyByBaseAmount shares)
-                            <> "¢ per patron. "
+                            <> (T.pack $ show $ millMilray shares)
+                            <> " per patron. "
                             <> "Thank you for supporting "
                             <> projectName project <> "!"
             same_amount      = "you cannot pledge the same amount"

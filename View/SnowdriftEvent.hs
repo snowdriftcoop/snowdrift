@@ -7,6 +7,7 @@ import Import
 import Model.Comment
 import Model.Comment.ActionPermissions
 import Model.Comment.Routes
+import Model.Currency
 import Model.User
 import View.Comment
 import Widgets.Time
@@ -294,11 +295,12 @@ renderBlogPostEvent (BlogPost {..}) = do
 renderNewPledgeEvent :: SharesPledgedId -> SharesPledged -> UserMap -> Widget
 renderNewPledgeEvent _ SharesPledged{..} user_map = do
     let pledger = lookupErr "renderNewPledgeEvent: pledger not found in user map" sharesPledgedUser user_map
+        mills   = millMilray sharesPledgedShares
     [whamlet|
         <div .event>
             ^{renderTime sharesPledgedTs}
             <a href=@{UserR sharesPledgedUser}> #{userDisplayName (Entity sharesPledgedUser pledger)}
-            made a new pledge of _{MsgShares sharesPledgedShares}!
+            made a new pledge of #{show mills}!
     |]
 
 renderUpdatedPledgeEvent :: Int64 -> SharesPledgedId -> SharesPledged -> UserMap -> Widget
@@ -307,19 +309,22 @@ renderUpdatedPledgeEvent old_shares _ SharesPledged{..} user_map = do
         (verb, punc) = if old_shares < sharesPledgedShares
                            then ("increased", "!")
                            else ("decreased", ".") :: (Text, Text)
+        old_mills = millMilray old_shares
+        new_mills = millMilray sharesPledgedShares
     [whamlet|
         <div .event>
             ^{renderTime sharesPledgedTs}
             <a href=@{UserR sharesPledgedUser}> #{userDisplayName (Entity sharesPledgedUser pledger)}
-            #{verb} their pledge from _{MsgShares old_shares} to _{MsgShares sharesPledgedShares}#{punc}
+            #{verb} their pledge from #{show old_mills} to #{show new_mills}#{punc}
     |]
 
 renderDeletedPledgeEvent :: UTCTime -> UserId -> Int64 -> UserMap -> Widget
 renderDeletedPledgeEvent ts user_id shares user_map = do
     let pledger = lookupErr "renderDeletedPledgeEvent: pledger not found in user map" user_id user_map
+        mills   = millMilray shares
     [whamlet|
         <div .event>
             ^{renderTime ts}
             <a href=@{UserR user_id}>#{userDisplayName (Entity user_id pledger)}
-            withdrew their #{show shares}-share pledge.
+            withdrew their #{show mills} pledge.
     |]

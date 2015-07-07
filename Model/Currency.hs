@@ -93,4 +93,6 @@ instance Read Milray where
                 (read (filter (/= ',') ipart ++ take 4 (fpart ++ repeat '0')))
     readsPrec _ _ = []
 
-
+-- TODO: Define 'newtype Mill = Int64' and use it instead of 'Int64'.
+millMilray :: Int64 -> Milray
+millMilray = Milray . (10 *)

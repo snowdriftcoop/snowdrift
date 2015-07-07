@@ -5,6 +5,7 @@ module SnowdriftEventHandler
 import Import
 
 import Model.Comment
+import Model.Currency
 import Model.Discussion
 import Model.Notification
 import Model.Project
@@ -193,7 +194,7 @@ notificationEventHandler AppConfig{..} (ENewPledge _ shares_pledged) = runSDB $ 
             (\route -> T.concat
                  [ userDisplayName user_entity
                  , " pledged ["
-                 , T.pack $ show shares, " ", pluralShares shares
+                 , T.pack $ show $ millMilray shares
                  , "](", route, ")"
                  ])
 
@@ -211,10 +212,10 @@ notificationEventHandler AppConfig{..} (EUpdatedPledge old_shares _ shares_pledg
             (\route -> T.concat
                  [ userDisplayName user_entity
                  , if old_shares > new_shares then " dropped " else " added "
-                 , T.pack (show delta)
-                 , " ", pluralShares delta
-                 , ", changing their total to [", T.pack $ show new_shares, " "
-                 , pluralShares new_shares, "](", route, ")"
+                 , T.pack $ show $ millMilray delta
+                 , ", changing their total to ["
+                 , T.pack $ show $ millMilray new_shares
+                 , "](", route, ")"
                  ])
 
 notificationEventHandler AppConfig{..} (EDeletedPledge _ user_id project_id _) = runSDB $ do
@@ -228,9 +229,6 @@ notificationEventHandler AppConfig{..} (EDeletedPledge _ user_id project_id _) =
             NotifDeletedPledge
             (\route -> userDisplayName user_entity
                    <> " is no longer supporting the [project](" <> route <> ")")
-
-pluralShares :: Integral i => i -> Text
-pluralShares n = plural n "share" "shares"
 
 handleWatched :: Maybe NotificationSender -> Text -> ProjectId
               -> (Text -> Route App) -> ProjectNotificationType

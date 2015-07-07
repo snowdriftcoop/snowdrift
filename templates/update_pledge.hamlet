@@ -3,7 +3,7 @@
 $maybe _ <- mpledge
   $# TODO: include funding amounts
   <p>
-    You previously pledged _{MsgShares old_user_shares}.
+    You previously pledged #{show old_user_mills}.
   $# TODO: add number of other patrons
     Given current patrons, that means #{old_user_amount}/month
     as your part of the #{old_project_amount}/month
@@ -12,7 +12,7 @@ $maybe _ <- mpledge
   $if old_user_shares < new_user_shares
     $with user_increase <- new_user_amount - old_user_amount
         <p>
-          Increasing your pledge to _{MsgShares new_user_shares}
+          Increasing your pledge to #{show new_user_mills}
           will mean giving an additional #{user_increase}/month
           for a total of #{new_user_amount}/month.
         <p>
@@ -23,7 +23,7 @@ $maybe _ <- mpledge
 
     <form .text-center method=POST action=@{UpdatePledgeR project_handle}>
       ^{confirm_form}
-      Increase your total pledge to _{MsgShares new_user_shares}?
+      Increase your total pledge to #{show new_user_mills}?
       <br .visible-xs .visible-sm>
       <input type=submit name=confirm value="yes!">
       <input type=submit name=confirm value="not yet, take me back&hellip;">
@@ -44,20 +44,20 @@ $maybe _ <- mpledge
     $else
       <p>
         Given current number of patrons, if you reduce your pledge from
-        _{MsgShares old_user_shares} to _{MsgShares new_user_shares},
+        #{show old_user_mills} to #{show new_user_mills},
         you will give #{user_decrease} less per month for a new total of
         #{new_user_amount}/month.
       <form .text-center method=POST action=@{UpdatePledgeR project_handle}>
         ^{confirm_form}
         Set your pledge to the new lower level of
-        _{MsgShares new_user_shares}?
+        #{show new_user_mills}?
         <br .visible-xs .visible-sm>
         <input type=submit name=confirm value="yes">
         <input type=submit name=confirm value="nevermind, take me back">
 
 $nothing
   <p>
-    Given current patrons, a pledge of _{MsgShares new_user_shares}
+    Given current patrons, a pledge of #{show new_user_mills}
     means you will give #{new_user_amount}/month
     $if not (null other_shares)
       , matched by an extra #{matched_extra}/month
@@ -69,7 +69,7 @@ $nothing
 
   <form .text-center method=POST action=@{UpdatePledgeR project_handle}>
     ^{confirm_form}
-    Pledge _{MsgShares new_user_shares} to #{projectName project}?
+    Pledge #{show new_user_mills} to #{projectName project}?
     <br .visible-xs .visible-sm>
     <input type=submit name=confirm value="yes!">
     <input type=submit name=confirm value="not yet, take me back&hellip;">

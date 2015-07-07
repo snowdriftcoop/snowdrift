@@ -680,12 +680,12 @@ getUpdatePledgeR project_handle = do
 
                 return (mpledge, other_shares)
 
+            let new_user_mills = millMilray new_user_shares
             case mpledge of
                 Just (Entity _ pledge) | pledgeShares pledge == new_user_shares -> do
                     alertWarning $ T.unwords
                         [ "Your pledge was already at"
-                        , T.pack (show new_user_shares)
-                        , plural new_user_shares "share" "shares" <> "."
+                        , T.pack (show new_user_mills) <> "."
                         , "Thank you for your support!"
                         ]
 
@@ -693,6 +693,7 @@ getUpdatePledgeR project_handle = do
 
                 _ -> do
                     let old_user_shares = maybe 0 (pledgeShares . entityVal) mpledge
+                        old_user_mills  = millMilray old_user_shares
 
                         new_project_shares = filter (>0) [new_user_shares] ++ other_shares
                         old_project_shares = filter (>0) [old_user_shares] ++ other_shares
