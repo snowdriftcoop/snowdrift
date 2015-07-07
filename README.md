@@ -29,62 +29,53 @@ Whatever your background, we're happy to answer questions or get any
 comments. Hop on our active chat channel, [#snowdrift on Freenode IRC], and
 say hello!
 
-## Where to Get the Code
+## Building and testing the website
 
-If you're reading this, you probably already have it. :)
+### Install System Dependencies
 
-The canonical location for our code is [git.gnu.io/snowdrift/snowdrift],
-which is hosted on a completely free/libre/open system. For convenience and
-redundancy, we also mirror at [GitHub], a popular but proprietary platform.
+Install [Git], [Postgres] and [Stack].
 
-If you are unsure how to fetch the code, refer to the [Further
-Information](#further-information) section below.
+See [GUIDE.md#Building] for specifics for various operating systems.
 
-## Building and Testing the Website
-
-Here we provide a quick overview. In-depth documentation is also available,
-and will be listed later.
-
-1. Install system dependencies: [Git], [Postgres] and [Stack]
-2. Initialize the project
-3. Set up the test and development databases
-4. Run the site in development mode
-
-An alternative process is to use a virtual machine, via our [Vagrant setup].
+An alternative process is to use a virtual machine via our [Vagrant setup].
 Vagrant works for nearly all operating systems.
 
-### Installing System Dependencies
+## Get the code
 
-Installing Git, Postgres, and Stack depends heavily on your operating system.
-Consult their documentation linked above, or read further instructions in
-[GUIDE.md].
+Since you are reading this, you surely know where to get the code already.
 
-### Initializing the Project
+For reference, we primarily use a completely free/libre/open host for our code:
+[git.gnu.io/snowdrift/snowdrift]. For convenience and redundancy, we also mirror
+at [GitHub], a popular but proprietary platform.
 
-There are two phases to initializing.
+The standard command to clone the code to your local system is:
 
-***The following instructions are in "beta". Please try them out and report
-any issues!***
+    git clone https://git.gnu.io/snowdrift/snowdrift.git
 
-#### Doing the Initial Build
+### Initial Build
+
+From within the snowdrift code directory (`cd snowdrift`) run:
 
     stack setup &&
     stack build cabal-install yesod-bin-1.4.11 &&
     stack test
 
-Do this from within the Snowdrift code directory.
-
 NB: this will take a while!
 
-#### Setting up the database
+### Set up the database
+
+(This works on plainly on GNU/Linux, see [GUIDE.md#Building] for other systems)
 
     stack exec sdm init
 
 ### Useful Development Commands
 
-Once the project is initialized, you can use the following commands.
+With everything initialized, you can now use the following commands:
 
 * `stack exec yesod devel`: run the site in development mode
+    * access the site in your browser at <http://localhost:3000>
+    * log in as admin with built-in system and user: `admin` pass: `admin`
+    * press Enter key in terminal to stop the site
 * `stack test`: run the test suite
 * `stack build`: rebuild manually (usually running the site in development
   mode is sufficient, however)
@@ -93,21 +84,22 @@ Once the project is initialized, you can use the following commands.
 Further Information
 -------------------
 
-Beginners with minimal technical background should follow our [Beginner's
-Guide], which can get anyone started making basic contributions.
-It also includes links and info to help learn more about the tools we use.
+Those with minimal technical background should follow our [Beginner's Guide],
+which can get anyone started making basic contributions and also includes
+educational links and other info about the tools we use.
 
-As mentioned, there is also a comprehensive [GUIDE.md] that describes the
-particular steps for getting started with each supported operating system.
+As mentioned, the comprehensive [GUIDE.md] describes further technical details
+including notes for various operating systems, manual database operations, and
+more.
 
 [Beginner's Guide]: BEGINNERS.md
-[Debian/Ubuntu]: SETUP_DEBIAN.md
 [economics of FLO projects]: https://snowdrift.coop/p/snowdrift/w/en/economics
 [#snowdrift on Freenode IRC]: http://webchat.freenode.net/?channels=#snowdrift
 [git.gnu.io/snowdrift/snowdrift]: https://git.gnu.io/snowdrift/snowdrift
 [Git]: http://www.git-scm.com/downloads
 [GitHub]: https://github.com/snowdriftcoop/snowdrift
 [GUIDE.md]: GUIDE.md
+[GUIDE.md#Building]: GUIDE.md#Building
 [Haskell]: https://www.haskell.org/
 [how-to-help page]: https://snowdrift.coop/p/snowdrift/w/how-to-help
 [illustrated intro]: https://snowdrift.coop/p/snowdrift/w/en/intro
@@ -119,5 +111,4 @@ particular steps for getting started with each supported operating system.
 [Stack]: https://github.com/commercialhaskell/stack#how-to-install
 [ticket system]: http://snowdrift.coop/p/snowdrift/t
 [Vagrant setup]: SETUP_VAGRANT.md
-[Windows]: SETUP_WINDOWS.md
 [Yesod web framework]: http://www.yesodweb.com/

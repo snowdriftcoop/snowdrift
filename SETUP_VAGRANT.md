@@ -15,9 +15,9 @@ If you do not have a virtual machine program installed yet,
     vagrant up
     vagrant ssh
     cd /vagrant
-    cabal install -fdev
+    cabal install
     sdm init
-    cabal install --enable-tests -fdev
+    cabal install --enable-tests
     yesod devel
 
 The site should now be running on <http://localhost:3000>.
@@ -56,7 +56,7 @@ stop it with the Enter key, then run:
 If you add new dependencies (i.e. edit the `build-depends` field in
 `Snowdrift.cabal`), you will need to run:
 
-    cabal install -fdev
+    cabal install
 
 ## More resources
 
