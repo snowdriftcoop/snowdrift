@@ -4,7 +4,8 @@
 module MechanismTest (mechanismSpecs) where
 
 import TestImport hiding (get)
-import Model.Currency (Milray (..), millMilray, dropRightZeros)
+import Model.Currency
+    (Milray (..), millMilray, dropRightZeros, pprintThousands)
 import Model.Project (projectComputeShareValue, fetchProjectSharesDB)
 
 import Control.Applicative ((<$>))
@@ -307,18 +308,29 @@ dropRightZerosDollar s = i <> "." <> f''
       f'    = dropRightZeros f
       (i,f) = intAndFrac s
 
+-- | Return the sign (if exists) and absolute value.
+signAndAbs :: String -> (String, String)
+signAndAbs ('-':xs) = ("-",xs)
+signAndAbs xs       = ([] ,xs)
+
 testCurrency :: Symbol -> Gen Int64 -> Int -> Int64 -> Property
 testCurrency symbol gen len d =
     forAll gen $ \n ->
     let res = fromIntegral n / fromIntegral d :: Double
-        pres = (case symbol of
-                    SCent   -> dropRightZerosCent
-                    SDollar -> dropRightZerosDollar) $
-                   formatRealFloat res
+        (i,f) = intAndFrac $
+                    formatRealFloat res
                        -- Do not use scientific notation for values
                        -- like 0.06.
                        (FieldFormat
                             Nothing (Just len) Nothing Nothing False "" 'f') ""
+        (sign, absi) = signAndAbs i
+        i' = sign <>
+             (case symbol of
+                  SCent   -> id
+                  SDollar -> pprintThousands) absi
+        pres = (case symbol of
+                    SCent   -> dropRightZerosCent
+                    SDollar -> dropRightZerosDollar) $ i' <> "." <> f
     in (show $ Milray n) ===
        pprintSymbol symbol pres
 
@@ -388,6 +400,15 @@ testPPrinters = ydescribe "pretty-printers" $ do
             SDollar "1.234" show Milray 12340
         errorUnlessExpectedPosAndNeg "dollars: nothing is removed"
             SDollar "1.2345" show Milray 12345
+
+        errorUnlessExpectedPosAndNeg "hundreds are not delimited"
+            SDollar "123.45" show Milray 1234500
+        errorUnlessExpectedPosAndNeg "thousands are delimited: 1"
+            SDollar "1,234.56" show Milray 12345600
+        errorUnlessExpectedPosAndNeg "thousands are delimited: 10"
+            SDollar "12,345.6709" show Milray 123456709
+        errorUnlessExpectedPosAndNeg "thousands are delimited: 100"
+            SDollar "123,456.789" show Milray 1234567890
 
         testProperty "dollars are printed correctly" $
             testCurrency SDollar (genStep 10000 10001 bound) 4 10000

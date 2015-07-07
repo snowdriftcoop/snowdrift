@@ -2,7 +2,7 @@ module Model.Currency where
 
 import Control.Lens (over, both)
 import Data.Int (Int64)
-import Data.List (dropWhileEnd)
+import Data.List (dropWhileEnd, intercalate)
 import Data.Monoid ((<>))
 import qualified Data.Text as T
 
@@ -87,6 +87,15 @@ sign i = if i < 0 then MinusSign else NoSign
 dropRightZeros :: String -> String
 dropRightZeros = dropWhileEnd (== '0')
 
+splitByThree :: [a] -> [[a]]
+splitByThree [] = []
+splitByThree s  = case splitAt 3 s of
+    (a, b) -> a : splitByThree b
+
+pprintThousands :: String -> String
+pprintThousands =
+    reverse . intercalate "," . splitByThree . reverse
+
 -- Always show at least two fractional digits for dollars, and drop
 -- zeros for cents, like so:
 --
@@ -113,8 +122,10 @@ toCurrency (Milray m)
     = let (f,i) = over both reverse $ splitAt 4 $ reverse sam
           -- Always print at least two fractional digits.
           (cents, milrays) = splitAt 2 f
-      in Dollar (sign m) (IntPart i) (FracPart $ cents
-                                              <> dropRightZeros milrays)
+      in Dollar
+             (sign m)
+             (IntPart $ pprintThousands i)
+             (FracPart $ cents <> dropRightZeros milrays)
   where
     am  = abs m
     sam = show am
