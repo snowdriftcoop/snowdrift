@@ -55,7 +55,7 @@ import Model.Notification
     ( UserNotificationType(..), UserNotificationDelivery(..)
     , ProjectNotificationType(..), ProjectNotificationDelivery(..) )
 import System.IO (hPutStrLn, stderr)
-import System.Process (spawnProcess, terminateProcess, ProcessHandle)
+import System.Process (interruptProcessGroupOf, ProcessHandle, CreateProcess(..), createProcess, proc)
 
 import Control.Monad.Trans.Control
 import Control.Exception.Lifted as Lifted hiding (handle)
@@ -376,7 +376,11 @@ withDelay :: MonadIO m => m a -> m a
 withDelay action = liftIO (threadDelay 1500000) >> action
 
 stackExec :: FilePath -> [String] -> IO ProcessHandle
-stackExec app args = spawnProcess "stack" $ ["exec", "--", app] ++ args
+stackExec app args = do
+    (_,_,_,h) <- createProcess stack { create_group = True }
+    return h
+  where
+    stack = proc "stack" (["exec", "--", app] ++ args)
 
 withEmailDaemon :: FileName -> (FileName -> IO a) -> IO ()
 withEmailDaemon file action = do
@@ -387,7 +391,7 @@ withEmailDaemon file action = do
              , "--sendmail-file=" <> T.unpack (unFileName file)
              , "--db=testing"
              ])
-        terminateProcess
+        interruptProcessGroupOf
         (const $ withDelay $ void $ action file)
 
 processPayments :: IO ()
@@ -396,7 +400,7 @@ processPayments = do
         (stackExec
              "SnowdriftProcessPayments"
              ["Testing"])
-        terminateProcess
+        interruptProcessGroupOf
         (const $ withDelay $ return ())
 
 rethreadComment :: Text -> Text -> YesodExample App ()
