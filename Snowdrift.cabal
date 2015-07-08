@@ -294,6 +294,10 @@ executable SnowdriftEmailDaemon -- {{{1
         ghc-options: -Wall -Werror -O0 -fobject-code
     if flag(library-only)
         Buildable: False
+    -- Building on Windows is broken. See
+    -- https://github.com/commercialhaskell/stack/issues/466
+    if os(windows)
+        Buildable: False
     default-language:  Haskell98
     main-is:           SnowdriftEmailDaemon.hs
     build-depends:     base -- {{{2
