@@ -4,7 +4,8 @@ Snowdrift.coop
 This guide covers the [Snowdrift.coop](https://snowdrift.coop) codebase
 and development process.
 
-For those with little or no real programming experience, start with our
+For those with little programming experience or new to Git
+(or just wanting to review basics), start with our
 [Beginners' Guide](BEGINNERS.md).
 
 
@@ -269,7 +270,7 @@ exec Snowdrift Development` (to stop the site in this case, use ctrl-C).
 Using the live test site
 ------------------------
 
-Test the running site by directing your web browser to <http://localhost:3000>
+Test the running site by directing your web browser to <http://localhost:3000>.
 
 The Dev DB comes with several users via the built-in log-in:
 (username and passphrase are the same)

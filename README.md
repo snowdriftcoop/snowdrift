@@ -42,9 +42,7 @@ Vagrant works for nearly all operating systems.
 
 ## Get the code
 
-Since you are reading this, you surely know where to get the code already.
-
-For reference, we primarily use a completely free/libre/open host for our code:
+We primarily use a completely free/libre/open host for our code:
 [git.gnu.io/snowdrift/snowdrift]. For convenience and redundancy, we also mirror
 at [GitHub], a popular but proprietary platform.
 
@@ -112,7 +110,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 [Git]: http://www.git-scm.com/downloads
 [GitHub]: https://github.com/snowdriftcoop/snowdrift
 [GUIDE.md]: GUIDE.md
-[GUIDE.md#Building]: GUIDE.md#Building
+[GUIDE.md#Building]: GUIDE.md#building
 [Haskell]: https://www.haskell.org/
 [how-to-help page]: https://snowdrift.coop/p/snowdrift/w/how-to-help
 [illustrated intro]: https://snowdrift.coop/p/snowdrift/w/en/intro
