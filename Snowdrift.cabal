@@ -40,7 +40,7 @@ library
             ghc-options:   -Werror -Wall -O2
 
     -- exposed-modules -- {{{2
-    exposed-modules: Application 
+    exposed-modules: Application
                      Data.Filter
                      Data.Order
                      Data.Text.PrettyHtml
@@ -140,14 +140,14 @@ library
                      TestHandler
 
     -- other-modules -- {{{2
-    other-modules: Model.Comment.Internal 
+    other-modules: Model.Comment.Internal
                    Model.Established.Internal
                    Model.Role.Internal
                    Model.Settings.Internal
                    Model.ViewType.Internal
 
     -- default-extensions -- {{{2
-    default-extensions: ConstraintKinds 
+    default-extensions: ConstraintKinds
                 DeriveDataTypeable
                 DeriveFunctor
                 EmptyDataDecls
