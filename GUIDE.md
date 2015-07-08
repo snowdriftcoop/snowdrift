@@ -4,8 +4,9 @@ Snowdrift.coop
 This guide covers the [Snowdrift.coop](https://snowdrift.coop) codebase
 and development process.
 
-For step-by-step instructions that require no real programming experience,
-see our [Beginners' Guide](BEGINNERS.md).
+For those with little programming experience or new to Git
+(or just wanting to review basics), start with our
+[Beginners' Guide](BEGINNERS.md).
 
 
 About the frameworks and tools we use
@@ -15,6 +16,10 @@ Snowdrift uses the **[Yesod web framework](http://www.yesodweb.com/)**.
 
 Yesod uses the Haskell programming language alongside its
 [Shakespearean Templates](http://www.yesodweb.com/book/shakespearean-templates).
+
+We use the [PostgreSQL](http://www.postgresql.org/) database system.
+
+We handle version control via [Git](https://git-scm.com/).
 
 Our front-end uses **[Twitter Bootstrap](http://getbootstrap.com/)**,
 although we use our own custom CSS in many cases.
@@ -32,9 +37,9 @@ along with Yesod/Haskell server-side functions.
 Later, we add JavaScript as appropriate for enhancement.
 Consider the ideas of
 [Unobtrusive JavaScript](http://en.wikipedia.org/wiki/Unobtrusive_JavaScript).
-Use of NoScript should never causes a broken experience.
-We also make sure all our JavaScript is recognized
-by the FSF's [LibreJS plugin](https://www.gnu.org/software/librejs/).
+Use of NoScript should never cause a broken experience.
+All our JavaScript should be recognized by the FSF's
+[LibreJS plugin](https://www.gnu.org/software/librejs/).
 
 We have separate wiki and discussion pages on the site
 for [web-design issues](https://snowdrift.coop/p/snowdrift/w/site-design)
@@ -67,8 +72,8 @@ for more details.
 
 ### vim
 
-For [vim](http://www.vim.org/) users,
-your config file .vimrc should include these lines:
+For [vim](http://www.vim.org/) users, we recommend that your
+.vimrc file include these lines:
 
     set textwidth=80
     set expandtab
@@ -78,7 +83,7 @@ your config file .vimrc should include these lines:
     syntax on
     set number
 
-Among many other vim plugins available, we recommend using a
+Among many vim plugins available, we recommend using a
 [vim plugin manager](https://github.com/gmarik/Vundle.vim)
 and the following plugins particularly relevant to snowdrift:
 
@@ -87,7 +92,11 @@ and the following plugins particularly relevant to snowdrift:
 * [vim-markdown](https://github.com/hallison/vim-markdown)
 * [vim-gitgutter](https://github.com/airblade/vim-gitgutter)
 * [vim2hs](https://github.com/dag/vim2hs).
-    * optionally add `set nofoldenable` to .vimrc skip the folding of functions
+    * optionally add `set nofoldenable` to .vimrc to skip folding of functions
+
+*Many* other plugins make sense, but preferences vary. Those listed above mostly
+do syntax highlighting and do not affect any commands or basic operations, so
+they are safe for everyone to use without hesitation or learning process.
 
 ### Emacs
 
@@ -105,79 +114,120 @@ Git branching
 -------------
 
 We suggest keeping your local master matched to the main project master,
-and do all editing on separate git branches.
+and do *all* editing on separate git branches.
 Use as many branches as needed to separate all work that functions
 independently (you can, of course, remove merged branches later).
 
 
 Building
---------
+========
 
-### Notes for different operating systems:
+See our [README] for basic build process.
 
-We don't yet have everything documented, but Snowdrift has been built
-successfully on Debian, Ubuntu, Arch, Gentoo, and similar distros of GNU/Linux
-and should work on all other distros as well.
+Snowdrift has been built successfully on Debian, Ubuntu, Arch, Fedora, Gentoo,
+NixOS, and other distros of GNU/Linux as well as on OpenBSD.
+Snowdrift also has been built on OS X and Windows, although some manual
+adjustments may be needed for those systems.
 
-For NixOS, see the notes in the appendix here.
+System-specific notes
+---------------------
 
-Snowdrift also has been built on Mac OS Yosemite.
-The Mac OS build process seems to have some issues with postgres user names;
-so for now, the database set-up for Mac OS will need to be done manually.
-See the appendix at the end of this file for more.
+(incomplete at this time, please help us document more)
 
-\*BSD: The BSDs use different postgres configurations than the common
-GNU/Linux distros, which require passing different paramaters to sdm.
+### Debian, Ubuntu, and related
+
+To install dependencies, run the following commands:
+
+    sudo apt-get update &&
+    sudo apt-get install git postgresql postgresql-client libgmp-dev zlib1g-dev libpq-dev
+
+Then follow the
+[Debian Stack install](https://github.com/commercialhaskell/stack/wiki/Downloads#debian)
+or
+[Ubuntu Stack install](https://github.com/commercialhaskell/stack/wiki/Downloads#ubuntu)
+instructions as appropriate.
+
+Next, follow the rest of the basic [README] instructions for building
+and running snowdrift.
+
+### NixOS / GuixSD
+
+See the Nix notes in the appendix at the end of this guide.
+As of this writing, they reflect using Nix instead of Stack, so updates and
+reconsideration of this process is called for.
+
+### \*BSD
+
+*Not yet documented: installing dependencies on \*BSD*
+
+The BSDs use different postgres configurations than the common
+GNU/Linux distros, so we must pass different paramaters to sdm.
+Where our instructions say `sdm init` add arguments as shown below:
 
 * OpenBSD: `sdm init --sudoUser _postgresql`
 * FreeBSD: Untested but we believe `sdm init --sudoUser pgsql --pgUser
   pgsql` will work.
 
-### Build steps
+### OS X
 
-The easiest install which works on *any* OS
-is with a virtual machine using our
-[Vagrant installation instructions](SETUP_VAGRANT.md).
+The links in the [README] should have instructions for each of the
+dependencies. We don't think any extras are needed otherwise.
 
-We also have complete sets of steps for [Debian/Ubuntu installation](SETUP_DEBIAN.md) and [Windows](SETUP_WINDOWS.md)
+The OS X build process seems to have some issues with postgres user names;
+until we update sdm to accept special arguments for OS X, the database set-up
+will need to be done manually. See the appendix at the end of this file.
 
-Neither of those explain what every command does.
-Below, we discuss more of these details.
+### Windows
 
-#### General installation process
+Install 32 bit PostgreSQL from
+<http://www.enterprisedb.com/products-services-training/pgdownload#windows>
 
-The following instructions include more explanation of each step
-and references for multiple approaches and different systems.
+Add the PostgreSQL bin directory to the path
+`C:\Program Files (x86)\PostgreSQL\9.4\bin`
 
-For any system, you must first install the core dependencies:
-stack, postgresql, and git.
+Instead of using sdm, follow the appendix at the end of this file for setting up
+the development database manually. Some of the precise commands may need slight
+adapting such as using `psql -U postgres` to enter the psql prompt.
 
-Various systems may need some libraries and other dependencies.
+The rest of the [README] instructions should work (although we're not sure about
+the use of Stack reliably on Windows yet).
 
-**Now, change to your snowdrift project directory (if not already there).**
+*Note:* SnowdriftEmailDaemon won't build on Windows, so `stack test` will fail.
+Building, running, and working on the site still works otherwise.
 
-***The following instructions are in "beta". Please try them out and report
-any issues!***
+### Virtual Machine options / Vagrant
 
-Install dependencies and build Snowdrift
+Anyone could use a Virtual Machine to run a system known to work and then
+follow the steps for that system. To make this much easier and *integrated* with
+your existing system, we offer an option with Vagrant.
 
-    stack setup &&
-    stack build cabal-install yesod-bin-1.4.11
-    stack test
+Our Vagrant instance uses a Debian system preset with our core dependencies.
+Vagrant then allows the build to work in the virtual machine while you continue
+using your regular text editor, file system, web browser etc.
 
-This will take a *long* time but should ultimately tell you it installed.
+To use this option, see our [Vagrant instructions](SETUP_VAGRANT.md).
 
-Contact us for help if the build is not successful.
+General installation process
+============================
 
-The following utilities are suggested but not strictly required:
+While the [README] has all the core install instructions,
+here we document the details more thoroughly.
+
+## Extra tools
+
+In addition to the required tools, we also suggest:
 
     stack install haddock hlint
+
+`hlint` followed by a filename will show suggestions for Haskell style.
+
+`haddock` is used for internal code documentation.
 
 Setting up the database
 -----------------------
 
 We offer a simple script that will setup the PostgreSQL databases for you.
-Some systems may need extra set-up, but for most GNU/Linux systems, simply run:
+For most GNU/Linux systems, simply run:
 
     stack exec sdm init
 
@@ -193,33 +243,36 @@ Running the site
 
 The standard approach for running and working on the site is to run
 `stack exec yesod devel` from the project directory.
-It can stay running in one terminal while work is done elsewhere.
+It can stay running in one terminal while you work elsewhere.
 It will automatically rebuild and rerun the site whenever it detects changes.
+
+To stop the development site, press the Enter key.
 
 In rare cases, you may need to run `stack clean` if the development site
 fails to recognize a change.
 
-To stop the development site, press the Enter key.
+### Using `stack build`
 
-### Alternative development option
+You must run `stack build` whenever you:
+
+* add new dependencies (i.e. edit the `build-depends` field in
+  `Snowdrift.cabal`)
+* update any extra binaries such as the payment processing script, the sdm
+  database configuration script, or the email daemon.
+
+#### Alternative development option
 
 We recommend `stack exec yesod devel` in almost all cases, but an alternate
 approach is to build with `stack build` and run the executable with `stack
-exec Snowdrift Development`.
+exec Snowdrift Development` (to stop the site in this case, use ctrl-C).
 
-Using `stack build` is *necessary* when updating extra binaries such as the
-payment processing script, the sdm database configuration script, or the
-email daemon.
-
-One you are running the executable with `stack exec Snowdrift Development`,
-you can stop it by pressing ctrl-C.
 
 Using the live test site
 ------------------------
 
-Test the running site by directing your web browser to localhost:3000
+Test the running site by directing your web browser to <http://localhost:3000>.
 
-The Dev DB comes with several users to log in with using the built-in system:
+The Dev DB comes with several users via the built-in log-in:
 (username and passphrase are the same)
 `admin`; `guest`; `established`.
 
@@ -336,10 +389,6 @@ Happy hacking!
 APPENDIX A: Using the Nix package manager
 =========================================
 
-We're now testing the use of Nix as a reliable, simple way
-to manage packages for Snowdrift.
-Once we have it fully working, it should help simplify building overall.
-
 **The instructions in this appendix are just draft and need cleaning up.**
 
 We're not sure each of these commands is best,
@@ -432,7 +481,7 @@ The commands below are written with GNU/Linux in mind.
 
 ***
 
-Notes for Mac OS X
+Notes for OS X
 ------------------
 
 Assuming the postgres server is running,
@@ -441,7 +490,7 @@ run `psql postgres` instead.
 The commands that don't use psql can be adapted
 to run within the psql command line.
 
-For Mac OS, instead of `sudo -u postgres psql snowdrift_development <devDB.sql`
+For OS X, instead of `sudo -u postgres psql snowdrift_development <devDB.sql`
 follow these steps:
 
 1) Run `psql snowdrift_development`
@@ -584,3 +633,5 @@ skipping the dependencies/user-creation/password parts (those don't need updatin
     sudo -u postgres psql
     postgres=# update pg_database set datistemplate=true where datname='snowdrift_test_template';
     sudo -u postgres psql snowdrift_test_template <testDB.sql
+
+[README]: README.md

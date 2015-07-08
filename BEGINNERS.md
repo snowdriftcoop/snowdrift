@@ -49,15 +49,11 @@ If you are on a system that does not package git yet, you may choose to
 
 ### Install Snowdrift
 
-To get a quick virtual machine with the core dependencies for snowdrift,
-follow the [Vagrant setup instructions](SETUP_VAGRANT.md).
-**This is the easiest option for all systems including
-GNU/Linux, BSD, OS X, and Windows.**
+To install locally, see the [README] for basics, and
+the [GUIDE.md] for system-specific notes and other details.
 
-If you prefer to install locally, see our
-[Debian/Ubuntu setup instructions](SETUP_DEBIAN.md).
-The [GUIDE.md](GUIDE.md) has info for other systems
-along with further technical notes and details.
+To use a virtual machine preset with the core dependencies for snowdrift,
+follow the [Vagrant setup instructions](SETUP_VAGRANT.md).
 
 ## Working on the code
 
@@ -116,10 +112,9 @@ is kind of tricky, especially for those new to SSH.
 Whenever you begin new work, you should generally start with the latest
 master code from the Snowdrift project.
 
-The following assumes you originally downloaded the code via
-`git clone https://git.gnu.io/snowdrift/snowdrift.git`,
-as described in the SETUP docs linked above.
-That automatically sets the main snowdrift code as your "origin".
+The following assumes you originally cloned the code from one of our main hosts
+(not from your own fork on the host), so you will have the main snowdrift code
+as your "origin".
 
 To download the latest updates of the snowdrift code:
 
@@ -232,7 +227,7 @@ Someone should comment on your submission soon (hopefully within a few hours).
 ## Learning resources and helpful tools
 
 Besides reading the content on the Snowdrift.coop site itself,
-we suggest reviewing our [GUIDE.md](GUIDE.md), specifically sections on
+we suggest reviewing our [GUIDE.md], specifically sections on
 "Development guidelines and notes" and "Additional notes about databases".
 
 If you want a deeper understanding of various elements in our development,
@@ -308,3 +303,6 @@ here are some resources:
 *   To help write clean Haskell code and learn conventions, run `hlint`
     on your files to get suggestions for possible improvements.
     Add hlint to your system with the command `stack install hlint`.
+
+[README]: README.md
+[GUIDE.md]: GUIDE.md
