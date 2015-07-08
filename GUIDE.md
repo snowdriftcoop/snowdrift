@@ -191,6 +191,9 @@ adapting such as using `psql -U postgres` to enter the psql prompt.
 The rest of the [README] instructions should work (although we're not sure about
 the use of Stack reliably on Windows yet).
 
+*Note:* SnowdriftEmailDaemon won't build on Windows, so `stack test` will fail.
+Building, running, and working on the site still works otherwise.
+
 ### Virtual Machine options / Vagrant
 
 Anyone could use a Virtual Machine to run a system known to work and then
