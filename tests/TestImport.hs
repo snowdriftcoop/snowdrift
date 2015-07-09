@@ -13,7 +13,7 @@ import Prelude hiding (exp)
 
 import Control.Monad (unless)
 import Control.Monad.Logger as TestImport
-import Control.Arrow as TestImport
+import Control.Arrow as TestImport hiding (loop)
 
 import Yesod (Yesod, RedirectUrl, Route, RenderRoute, renderRoute)
 import Yesod.Test as TestImport
@@ -35,6 +35,7 @@ import qualified Data.ByteString as B
 import           Data.Int        (Int64)
 
 import qualified Data.List as L
+import Data.List (isInfixOf)
 import qualified Data.Map as M
 import Data.Maybe (fromMaybe)
 import qualified Data.Text as T
@@ -48,8 +49,9 @@ import Model as TestImport hiding
 
 import Control.Applicative ((<$>))
 import Control.Concurrent (threadDelay)
-import Control.Monad (void, when)
+import Control.Monad (when)
 import Data.Monoid ((<>))
+import Data.Time (getCurrentTime, addUTCTime)
 import Model.Language
 import Model.Notification
     ( UserNotificationType(..), UserNotificationDelivery(..)
@@ -57,8 +59,10 @@ import Model.Notification
 
 import System.Directory (getDirectoryContents)
 import System.FilePath ((</>))
-import System.IO (hPutStrLn, stderr)
-import System.Process (spawnProcess, terminateProcess)
+import System.IO (hPutStrLn, hGetLine, stderr)
+import System.Process
+    ( CreateProcess(..), StdStream(CreatePipe)
+    , createProcess, proc, terminateProcess )
 
 import Control.Monad.Trans.Control
 import Control.Exception.Lifted as Lifted hiding (handle)
@@ -384,28 +388,51 @@ distPrefix = do
     let subdir = case subdirs of [x] -> x; _ -> ""
     return $ "dist" </> subdir </> "build"
 
-withEmailDaemon :: FileName -> (FileName -> IO a) -> IO ()
-withEmailDaemon file action = do
-    prefix <- distPrefix
-    withDelay $ bracket
-        (spawnProcess
-             (prefix </> "SnowdriftEmailDaemon/SnowdriftEmailDaemon")
-             [ "--sendmail=" <> prefix </> "SnowdriftSendmail/SnowdriftSendmail"
-             , "--sendmail-file=" <> T.unpack (unFileName file)
-             , "--db=testing"
-             ])
-        terminateProcess
-        (const $ withDelay $ void $ action file)
+withExecutable :: String -> (String -> [String]) -> String -> Example () -> Example ()
+withExecutable exec_name args str test_action = do
+    prefix <- liftIO distPrefix
+    (_, Just hout, _, hproc) <-
+        liftIO $ createProcess
+            (proc (prefix </> exec_name </> exec_name) $ args prefix)
+            { std_out = CreatePipe }
+    now <- liftIO getCurrentTime
+    -- 4 seconds should be enough, the daemon loops every two seconds.
+    loop now (4 :: Int) exec_name hproc hout str
+  where
+    loop start_time = go start_time start_time
+      where
+        go start cur lim en hp ho s = do
+            if cur >= addUTCTime (fromIntegral lim) start
+                then liftIO $ do
+                         terminateProcess hp
+                         error $ show lim <> " seconds elapsed; killed " <> en
+                else do
+                    line <- liftIO $ hGetLine ho
+                    if s `isInfixOf` line
+                        then do test_action
+                                liftIO $ terminateProcess hp
+                        else do
+                             cur' <- liftIO getCurrentTime
+                             go start cur' lim en hp ho str
 
-processPayments :: IO ()
-processPayments = do
-    prefix <- distPrefix
-    bracket
-        (spawnProcess
-             (prefix </> "SnowdriftProcessPayments/SnowdriftProcessPayments")
-             ["Testing"])
-        terminateProcess
-        (const $ withDelay $ return ())
+withEmailDaemon :: String -> FileName -> (FileName -> Example ()) -> Example ()
+withEmailDaemon str file test_action =
+    withExecutable
+        "SnowdriftEmailDaemon"
+        (\prefix -> [ "--sendmail=" <> prefix </> "SnowdriftSendmail/SnowdriftSendmail"
+                    , "--sendmail-file=" <> T.unpack (unFileName file)
+                    , "--delay=2"
+                    , "--db=testing" ])
+        str
+        (test_action file)
+
+processPayments :: String -> Example () -> Example ()
+processPayments str test_action =
+    withExecutable
+        "SnowdriftProcessPayments"
+        (const ["Testing"])
+        str
+        test_action
 
 rethreadComment :: Text -> Text -> YesodExample App ()
 rethreadComment rethread_route parent_route = [marked|
