@@ -413,6 +413,7 @@ test-suite test
                  , persistent
                  , monad-logger
                  , monad-control
+                 , mtl
                  , semigroups
                  , transformers
                  , bytestring
@@ -420,6 +421,7 @@ test-suite test
                  , filepath
                  -- we use spawnProcess in tests and it was added in 1.2
                  , process >= 1.2.0.0
+                 , resourcet
                  , time
                  , text
                  , hspec

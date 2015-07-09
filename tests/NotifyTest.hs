@@ -12,6 +12,8 @@ import           Model.Language
 import           Model.Notification
 
 import           Control.Monad                        (unless)
+import           Control.Monad.Reader                 (ReaderT)
+import           Control.Monad.Trans.Resource         (ResourceT)
 import           Database.Esqueleto                   hiding (exists)
 import           Database.Esqueleto.Internal.Language (Update, From)
 import           Data.Foldable                        (forM_)
@@ -217,6 +219,26 @@ errorUnlessExistDefaultProjectNotifPrefs user_id project_id =
                      <> ", delivery " <> pprint notif_deliv
                      <> " does not exist"
 
+-- | Update user notification preferences and delete the present ones,
+-- so they don't affect the tests.
+resetUserNotifPrefs :: UserId -> UserNotificationType
+                    -> UserNotificationDelivery
+                    -> ReaderT SqlBackend (NoLoggingT (ResourceT IO)) ()
+resetUserNotifPrefs user_id notif_type notif_deliv = do
+    delete $ from $ \unp ->
+        where_ $ unp ^. UserNotificationPrefUser ==. val user_id
+    updateUserNotifPrefs user_id notif_type notif_deliv
+
+-- | Update project notification preferences and delete the present ones,
+-- so they don't affect the tests.
+resetProjectNotifPrefs :: UserId -> ProjectId -> ProjectNotificationType
+                       -> ProjectNotificationDelivery
+                       -> ReaderT SqlBackend (NoLoggingT (ResourceT IO)) ()
+resetProjectNotifPrefs user_id project_id notif_type notif_deliv = do
+    delete $ from $ \pnp ->
+        where_ $ pnp ^. ProjectNotificationPrefUser ==. val user_id
+    updateProjectNotifPrefs user_id project_id notif_type notif_deliv
+
 notifySpecs :: AppConfig DefaultEnv a -> FileName -> Spec
 notifySpecs AppConfig {..} file = do
     -- Note that since we rely on 'Bounded' here, the order of the
@@ -280,7 +302,7 @@ notifySpecs AppConfig {..} file = do
                 byLabel "New Topic" "root comment"
 
             mary_id <- userId Mary
-            testDB $ updateUserNotifPrefs mary_id NotifReply
+            testDB $ resetUserNotifPrefs mary_id NotifReply
                 UserNotifDeliverWebsite
 
             loginAs Bob
@@ -300,7 +322,7 @@ notifySpecs AppConfig {..} file = do
                 byLabel "New Topic" "root comment (self)"
 
             mary_id <- userId Mary
-            testDB $ updateUserNotifPrefs mary_id NotifReply
+            testDB $ resetUserNotifPrefs mary_id NotifReply
                 UserNotifDeliverWebsite
 
             (comment_id, True) <- getLatestCommentId
@@ -319,7 +341,7 @@ notifySpecs AppConfig {..} file = do
                 byLabel "New Topic" "root comment (email)"
 
             mary_id <- userId Mary
-            testDB $ updateUserNotifPrefs mary_id NotifReply
+            testDB $ resetUserNotifPrefs mary_id NotifReply
                 UserNotifDeliverEmail
 
             loginAs Bob
@@ -341,7 +363,7 @@ notifySpecs AppConfig {..} file = do
                 byLabel "New Topic" "root comment (email, self)"
 
             mary_id <- userId Mary
-            testDB $ updateUserNotifPrefs mary_id NotifReply
+            testDB $ resetUserNotifPrefs mary_id NotifReply
                 UserNotifDeliverEmail
 
             (comment_id, True) <- getLatestCommentId
@@ -393,7 +415,7 @@ notifySpecs AppConfig {..} file = do
 
             loginAs Bob
             bob_id <- userId Bob
-            testDB $ updateUserNotifPrefs bob_id NotifRethreadedComment
+            testDB $ resetUserNotifPrefs bob_id NotifRethreadedComment
                 UserNotifDeliverWebsite
             postComment (enRoute NewWikiDiscussionR "about") $
                 byLabel "New Topic" "rethreaded comment"
@@ -418,7 +440,7 @@ notifySpecs AppConfig {..} file = do
                 byLabel "New Topic" "parent comment (self)"
             (parent_id, True) <- getLatestCommentId
 
-            testDB $ updateUserNotifPrefs mary_id NotifRethreadedComment
+            testDB $ resetUserNotifPrefs mary_id NotifRethreadedComment
                 UserNotifDeliverWebsite
             postComment (enRoute NewWikiDiscussionR "about") $
                 byLabel "New Topic" "rethreaded comment (self)"
@@ -444,7 +466,7 @@ notifySpecs AppConfig {..} file = do
             loginAs Bob
             bob_id <- userId Bob
             testDB $ addAndVerifyEmail bob_id "bob@localhost"
-            testDB $ updateUserNotifPrefs bob_id NotifRethreadedComment
+            testDB $ resetUserNotifPrefs bob_id NotifRethreadedComment
                 UserNotifDeliverEmail
             postComment (enRoute NewWikiDiscussionR "about") $
                 byLabel "New Topic" "rethreaded comment (email)"
@@ -471,7 +493,7 @@ notifySpecs AppConfig {..} file = do
                 byLabel "New Topic" "parent comment (email, self)"
             (parent_id, True) <- getLatestCommentId
 
-            testDB $ updateUserNotifPrefs mary_id NotifRethreadedComment
+            testDB $ resetUserNotifPrefs mary_id NotifRethreadedComment
                 UserNotifDeliverEmail
             postComment (enRoute NewWikiDiscussionR "about") $
                 byLabel "New Topic" "rethreaded comment (email, self)"
@@ -498,7 +520,7 @@ notifySpecs AppConfig {..} file = do
                 byLabel "New Topic" "flagged comment"
             (comment_id, True) <- getLatestCommentId
             mary_id <- userId Mary
-            testDB $ updateUserNotifPrefs mary_id NotifFlag
+            testDB $ resetUserNotifPrefs mary_id NotifFlag
                 UserNotifDeliverWebsite
 
             loginAs Bob
@@ -514,7 +536,7 @@ notifySpecs AppConfig {..} file = do
                 byLabel "New Topic" "flagged comment (email)"
             (comment_id, True) <- getLatestCommentId
             mary_id <- userId Mary
-            testDB $ updateUserNotifPrefs mary_id NotifFlag
+            testDB $ resetUserNotifPrefs mary_id NotifFlag
                 UserNotifDeliverEmail
 
             loginAs Bob
@@ -530,7 +552,7 @@ notifySpecs AppConfig {..} file = do
     testUserNotification NotifFlagRepost = do
         yit "notifies when a flagged comment gets reposted" $ [marked|
             bob_id <- userId Bob
-            testDB $ updateUserNotifPrefs bob_id NotifFlagRepost
+            testDB $ resetUserNotifPrefs bob_id NotifFlagRepost
                 UserNotifDeliverWebsite
 
             loginAs Mary
@@ -544,7 +566,7 @@ notifySpecs AppConfig {..} file = do
         yit "sends an email when a flagged comment gets reposted" $ [marked|
             bob_id <- userId Bob
             loginAs Bob
-            testDB $ updateUserNotifPrefs bob_id NotifFlagRepost
+            testDB $ resetUserNotifPrefs bob_id NotifFlagRepost
                 UserNotifDeliverEmail
             (comment_id, True) <- getLatestCommentId
             flagComment $ render appRoot $ enRoute FlagWikiCommentR "about" comment_id
@@ -563,7 +585,7 @@ notifySpecs AppConfig {..} file = do
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
             watchProject Mary snowdrift_id $ do
-                testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifWikiPage
+                testDB $ resetProjectNotifPrefs mary_id snowdrift_id NotifWikiPage
                     ProjectNotifDeliverWebsite
 
                 loginAs Bob
@@ -577,7 +599,7 @@ notifySpecs AppConfig {..} file = do
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
             watchProject Mary snowdrift_id $ do
-                testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifWikiPage
+                testDB $ resetProjectNotifPrefs mary_id snowdrift_id NotifWikiPage
                     ProjectNotifDeliverWebsite
 
                 newWiki snowdrift LangEn wiki_page_self "testing NotifWikiPage (self)"
@@ -591,7 +613,7 @@ notifySpecs AppConfig {..} file = do
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
             watchProject Mary snowdrift_id $ do
-                testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifWikiPage
+                testDB $ resetProjectNotifPrefs mary_id snowdrift_id NotifWikiPage
                     ProjectNotifDeliverEmail
 
                 loginAs Bob
@@ -607,7 +629,7 @@ notifySpecs AppConfig {..} file = do
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
             watchProject Mary snowdrift_id $ do
-                testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifWikiPage
+                testDB $ resetProjectNotifPrefs mary_id snowdrift_id NotifWikiPage
                     ProjectNotifDeliverEmail
 
                 newWiki snowdrift LangEn wiki_page_self_email "testing NotifWikiPage (email, self)"
@@ -624,7 +646,7 @@ notifySpecs AppConfig {..} file = do
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
             watchProject Mary snowdrift_id $ do
-                testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifWikiEdit
+                testDB $ resetProjectNotifPrefs mary_id snowdrift_id NotifWikiEdit
                     ProjectNotifDeliverWebsite
 
                 loginAs Bob
@@ -639,7 +661,7 @@ notifySpecs AppConfig {..} file = do
             snowdrift_id <- snowdriftId
             watchProject Mary snowdrift_id $ do
                 testDB $ insertRole snowdrift_id mary_id Moderator
-                testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifWikiEdit
+                testDB $ resetProjectNotifPrefs mary_id snowdrift_id NotifWikiEdit
                     ProjectNotifDeliverWebsite
 
                 loginAs Mary
@@ -655,7 +677,7 @@ notifySpecs AppConfig {..} file = do
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
             watchProject Mary snowdrift_id $ do
-                testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifWikiEdit
+                testDB $ resetProjectNotifPrefs mary_id snowdrift_id NotifWikiEdit
                     ProjectNotifDeliverEmail
 
                 loginAs Bob
@@ -673,7 +695,7 @@ notifySpecs AppConfig {..} file = do
             snowdrift_id <- snowdriftId
             watchProject Mary snowdrift_id $ do
                 testDB $ insertRole snowdrift_id mary_id Moderator
-                testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifWikiEdit
+                testDB $ resetProjectNotifPrefs mary_id snowdrift_id NotifWikiEdit
                     ProjectNotifDeliverEmail
 
                 loginAs Mary
@@ -692,7 +714,7 @@ notifySpecs AppConfig {..} file = do
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
             watchProject Mary snowdrift_id $ do
-                testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifBlogPost
+                testDB $ resetProjectNotifPrefs mary_id snowdrift_id NotifBlogPost
                     ProjectNotifDeliverWebsite
 
                 loginAs AdminUser
@@ -708,7 +730,7 @@ notifySpecs AppConfig {..} file = do
             snowdrift_id <- snowdriftId
             watchProject Mary snowdrift_id $ do
                 testDB $ insertRole snowdrift_id mary_id TeamMember
-                testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifBlogPost
+                testDB $ resetProjectNotifPrefs mary_id snowdrift_id NotifBlogPost
                     ProjectNotifDeliverWebsite
 
                 loginAs Mary
@@ -725,7 +747,7 @@ notifySpecs AppConfig {..} file = do
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
             watchProject Mary snowdrift_id $ do
-                testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifBlogPost
+                testDB $ resetProjectNotifPrefs mary_id snowdrift_id NotifBlogPost
                     ProjectNotifDeliverEmail
 
                 loginAs AdminUser
@@ -743,7 +765,7 @@ notifySpecs AppConfig {..} file = do
             snowdrift_id <- snowdriftId
             watchProject Mary snowdrift_id $ do
                 testDB $ insertRole snowdrift_id mary_id TeamMember
-                testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifBlogPost
+                testDB $ resetProjectNotifPrefs mary_id snowdrift_id NotifBlogPost
                     ProjectNotifDeliverEmail
 
                 loginAs Mary
@@ -762,7 +784,7 @@ notifySpecs AppConfig {..} file = do
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
             watchProject Mary snowdrift_id $ do
-                testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifNewPledge
+                testDB $ resetProjectNotifPrefs mary_id snowdrift_id NotifNewPledge
                     ProjectNotifDeliverWebsite
 
                 loginAs Bob
@@ -779,7 +801,7 @@ notifySpecs AppConfig {..} file = do
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
             watchProject Mary snowdrift_id $ do
-                testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifNewPledge
+                testDB $ resetProjectNotifPrefs mary_id snowdrift_id NotifNewPledge
                     ProjectNotifDeliverWebsite
 
                 loginAs Mary
@@ -795,7 +817,7 @@ notifySpecs AppConfig {..} file = do
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
             watchProject Mary snowdrift_id $ do
-                testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifNewPledge
+                testDB $ resetProjectNotifPrefs mary_id snowdrift_id NotifNewPledge
                     ProjectNotifDeliverEmail
 
                 loginAs Bob
@@ -815,7 +837,7 @@ notifySpecs AppConfig {..} file = do
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
             watchProject Mary snowdrift_id $ do
-                testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifNewPledge
+                testDB $ resetProjectNotifPrefs mary_id snowdrift_id NotifNewPledge
                     ProjectNotifDeliverEmail
 
                 loginAs Mary
@@ -834,7 +856,7 @@ notifySpecs AppConfig {..} file = do
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
             watchProject Mary snowdrift_id $ do
-                testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifUpdatedPledge
+                testDB $ resetProjectNotifPrefs mary_id snowdrift_id NotifUpdatedPledge
                     ProjectNotifDeliverWebsite
 
                 loginAs Bob
@@ -853,7 +875,7 @@ notifySpecs AppConfig {..} file = do
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
             watchProject Mary snowdrift_id $ do
-                testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifUpdatedPledge
+                testDB $ resetProjectNotifPrefs mary_id snowdrift_id NotifUpdatedPledge
                     ProjectNotifDeliverWebsite
 
                 loginAs Mary
@@ -871,7 +893,7 @@ notifySpecs AppConfig {..} file = do
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
             watchProject Mary snowdrift_id $ do
-                testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifUpdatedPledge
+                testDB $ resetProjectNotifPrefs mary_id snowdrift_id NotifUpdatedPledge
                     ProjectNotifDeliverEmail
 
                 loginAs Bob
@@ -891,7 +913,7 @@ notifySpecs AppConfig {..} file = do
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
             watchProject Mary snowdrift_id $ do
-                testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifUpdatedPledge
+                testDB $ resetProjectNotifPrefs mary_id snowdrift_id NotifUpdatedPledge
                     ProjectNotifDeliverEmail
 
                 loginAs Mary
@@ -910,7 +932,7 @@ notifySpecs AppConfig {..} file = do
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
             watchProject Mary snowdrift_id $ do
-                testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifDeletedPledge
+                testDB $ resetProjectNotifPrefs mary_id snowdrift_id NotifDeletedPledge
                     ProjectNotifDeliverWebsite
 
                 loginAs Bob
@@ -926,7 +948,7 @@ notifySpecs AppConfig {..} file = do
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
             watchProject Mary snowdrift_id $ do
-                testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifDeletedPledge
+                testDB $ resetProjectNotifPrefs mary_id snowdrift_id NotifDeletedPledge
                     ProjectNotifDeliverWebsite
 
                 loginAs Mary
@@ -941,8 +963,7 @@ notifySpecs AppConfig {..} file = do
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
             watchProject Mary snowdrift_id $ do
-                testDB $ deleteProjectNotifPrefs mary_id snowdrift_id NotifNewPledge
-                testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifDeletedPledge
+                testDB $ resetProjectNotifPrefs mary_id snowdrift_id NotifDeletedPledge
                     ProjectNotifDeliverEmail
 
                 loginAs Bob
@@ -961,7 +982,7 @@ notifySpecs AppConfig {..} file = do
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
             watchProject Mary snowdrift_id $ do
-                testDB $ updateProjectNotifPrefs mary_id snowdrift_id NotifDeletedPledge
+                testDB $ resetProjectNotifPrefs mary_id snowdrift_id NotifDeletedPledge
                     ProjectNotifDeliverEmail
 
                 loginAs Mary
