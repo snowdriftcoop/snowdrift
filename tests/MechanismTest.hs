@@ -269,9 +269,8 @@ pprintSymbol :: Symbol -> String -> String
 pprintSymbol SDollar str = "$" <> str
 pprintSymbol SCent   str = str <> "¢"
 
-errorUnlessExpectedPosAndNeg :: (Num a)
-                             => Text -> Symbol -> String -> (Milray -> String)
-                             -> (a -> Milray) -> a -> Example ()
+errorUnlessExpectedPosAndNeg :: Text -> Symbol -> String -> (Milray -> String)
+                             -> (Int64 -> Milray) -> Int64 -> Example ()
 errorUnlessExpectedPosAndNeg msg symbol expected ppr con val = do
     errorUnlessExpected msg
         (pprintSymbol symbol expected)
