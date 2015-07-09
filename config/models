@@ -18,7 +18,7 @@ User
     ident             Text
     email             Text         Maybe
     email_verified    Bool                  default=false
-    createdTs         UTCTime      Maybe
+    createdTs         UTCTime
     hash              Text         Maybe
     salt              Text         Maybe
     name              Text         Maybe

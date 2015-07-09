@@ -425,7 +425,25 @@ createUser ident passwd name newEmail avatar nick = do
                 throwIO DBException
   where
     newUser langs now account_id discussion_id =
-        User ident (neAddr <$> newEmail) (maybe False neVerified newEmail) (Just now) Nothing Nothing name account_id avatar Nothing Nothing nick langs now now EstUnestablished discussion_id
+        User { userIdent = ident
+             , userEmail = (neAddr <$> newEmail)
+             , userEmail_verified = (maybe False neVerified newEmail)
+             , userCreatedTs = now
+             , userHash = Nothing
+             , userSalt = Nothing
+             , userName = name
+             , userAccount = account_id
+             , userAvatar = avatar
+             , userBlurb = Nothing
+             , userStatement = Nothing
+             , userIrcNick = nick
+             , userLanguages = langs
+             , userReadNotifications = now
+             , userReadApplications = now
+             , userEstablished = EstUnestablished
+             , userDiscussion = discussion_id
+             }
+
     insertDefaultNotificationPrefs :: UserId -> DB ()
     insertDefaultNotificationPrefs user_id =
         void . insertMany $ uncurry (UserNotificationPref user_id) <$>
