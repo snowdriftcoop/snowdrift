@@ -106,20 +106,20 @@ pprintThousands =
 -- 10000 milray = $1.00
 toCurrency :: Milray -> Currency
 toCurrency (Milray m)
-    | m == 0
-    = Dollar NoSign (IntPart "0") (FracPart "00")
-    | am > 0 && am < 10         -- [1..9], 1 digit, milray
-    = Cent (sign m) (IntPart "0") (FracPart $ "0" <> sam)
-    | am >= 10 && am < 100      -- [10..99], 2 digits, mill
-    = Cent (sign m) (IntPart "0") (FracPart $ dropRightZeros sam)
-    | am >= 100 && am < 1000    -- [100..999], 3 digits, cent
-    = let (i,f) = splitAt 1 sam
+    | m == 0 =
+      Dollar NoSign (IntPart "0") (FracPart "00")
+    | am > 0 && am < 10 =         -- [1..9], 1 digit, milray
+      Cent (sign m) (IntPart "0") (FracPart $ "0" <> sam)
+    | am >= 10 && am < 100 =      -- [10..99], 2 digits, mill
+      Cent (sign m) (IntPart "0") (FracPart $ dropRightZeros sam)
+    | am >= 100 && am < 1000 =    -- [100..999], 3 digits, cent
+      let (i,f) = splitAt 1 sam
       in Cent (sign m) (IntPart i) (FracPart $ dropRightZeros f)
-    | am >= 1000 && am < 10000  -- [1000..9999], 4 digits, cent
-    = let (i,f) = splitAt 2 sam
+    | am >= 1000 && am < 10000 =  -- [1000..9999], 4 digits, cent
+      let (i,f) = splitAt 2 sam
       in Cent (sign m) (IntPart i) (FracPart $ dropRightZeros f)
-    | otherwise                 -- 5 or more digits, dollars
-    = let (f,i) = over both reverse $ splitAt 4 $ reverse sam
+    | otherwise =                 -- 5 or more digits, dollars
+      let (f,i) = over both reverse $ splitAt 4 $ reverse sam
           -- Always print at least two fractional digits.
           (cents, milrays) = splitAt 2 f
       in Dollar
