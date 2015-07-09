@@ -269,6 +269,8 @@ pprintSymbol :: Symbol -> String -> String
 pprintSymbol SDollar str = "$" <> str
 pprintSymbol SCent   str = str <> "¢"
 
+-- | Test whether the results of applying a function to a positive value
+-- and a negative value match the expectations.
 errorUnlessExpectedPosAndNeg :: Text -> Symbol -> String -> (Milray -> String)
                              -> (Int64 -> Milray) -> Int64 -> Example ()
 errorUnlessExpectedPosAndNeg msg symbol expected ppr con val = do
