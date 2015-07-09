@@ -134,11 +134,8 @@ getWikiR project_handle language target = do
 
         return (project, Entity page_id page, edits)
 
-    selectRep $ do
-        let Entity _ edit:_ = pickEditsByLanguage languages edits
-
-        provideRep $ return $ wikiEditContent edit
-        provideRep $ do
+    let Entity _ edit:_ = pickEditsByLanguage languages edits
+        htmlWiki = do
             maybe_user <- maybeAuth
 
             let can_edit = fromMaybe False (userCanEditWikiPage . entityVal <$> maybe_user)
@@ -163,6 +160,10 @@ getWikiR project_handle language target = do
             defaultLayout $ do
                 snowdriftDashTitle (projectName project) target
                 renderWiki comment_count project_handle language target can_edit translations edit
+
+    selectRep $ do
+        provideRep $ htmlWiki
+        provideRep $ return $ wikiEditContent edit
 
 postWikiR :: Text -> Language -> Text -> Handler Html
 postWikiR project_handle target_language target = do
