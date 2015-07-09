@@ -33,7 +33,7 @@ instance PersistFieldSql Milray where
 (Milray a) $* b = Milray $ floor $ fromIntegral a * b
 
 (*$) :: Double -> Milray -> Milray
-b *$ (Milray a) = Milray $ floor $ fromIntegral a * b
+(*$) = flip ($*)
 
 instance Num Milray where
     (Milray a) + (Milray b) = Milray $ a + b
