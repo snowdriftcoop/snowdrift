@@ -22,7 +22,7 @@ import qualified Data.Text.Lazy               as TextLazy
 import           Network.Mail.Mime            (simpleMail', Address (..), sendmailCustom, Mail, renderMail')
 import           System.Console.CmdArgs
 import           System.Directory             (doesFileExist)
-import           System.IO                    (stdout, stderr)
+import           System.IO                    (hFlush, stdout, stderr)
 import           System.Environment           (getEnv, getProgName)
 import           System.Log.FastLogger        (toLogStr, fromLogStr)
 import qualified Text.Email.Validate          as Email
@@ -370,6 +370,7 @@ handleSendmail :: (MonadBaseControl IO m, MonadIO m, MonadLogger m)
                -> PostgresConf
                -> PersistConfigPool PostgresConf
                -> Text
+               -> Text
                -> Email
                -> Email
                -> Text
@@ -383,6 +384,7 @@ handleSendmail
         dbConf
         poolConf
         info_msg
+        info_msg_after
         from_
         to
         subject
@@ -390,6 +392,7 @@ handleSendmail
         action
         warn_msg = do
     $(logInfo) info_msg
+    liftIO $ hFlush stdout
     Exception.handle handler $ do
         liftIO $ renderSendmail sendmail_command sendmail_file $ simpleMail'
             (Address Nothing to)
@@ -397,6 +400,8 @@ handleSendmail
             subject
             (TextLazy.fromStrict body)
         runSql dbConf poolConf action
+    $(logInfo) info_msg_after
+    liftIO $ hFlush stdout
     where
       handler (err :: Exception.ErrorCall) = do
           $(logError) (Text.pack $ show err)
@@ -428,6 +433,7 @@ sendUserNotification
     let content' = unMarkdown content
     handleSendmail sendmail_command sendmail_file dbConf poolConf
         ("sending a user notification to " <> user_email <> "\n" <> content')
+        ("sent the user notification to " <> user_email <> "\n" <> content')
         notif_email user_email "Snowdrift.coop notification" content'
         (deleteFromUserNotificationEmail ts notif_type to content)
         ("sending the user notification to " <> user_email <> " failed; " <>
@@ -461,6 +467,7 @@ sendProjectNotification
     let content' = unMarkdown content
     handleSendmail sendmail_command sendmail_file dbConf poolConf
         ("sending a project notification to " <> user_email <> "\n" <> content')
+        ("sent the project notification to " <> user_email <> "\n" <> content')
         notif_email user_email "Snowdrift.coop notification" content'
         (deleteFromProjectNotificationEmail ts notif_type to project content)
         ("sending the project notification to " <> user_email <> " failed; " <>
@@ -550,6 +557,8 @@ sendVerification
         poolConf
         ("sending an email verification message to " <> user_email <> "\n" <>
          content)
+        ("sent the email verification message to " <> user_email <> "\n" <>
+         content)
         verif_email
         user_email
         "Snowdrift.coop email verification"
@@ -603,6 +612,7 @@ sendResetPassword
         dbConf
         poolConf
         ("sending a password reset message to " <> user_email <> "\n" <> content)
+        ("sent the password reset message to " <> user_email <> "\n" <> content)
         notif_email
         user_email
         "Snowdrift.coop password reset"
@@ -653,6 +663,8 @@ sendDeleteConfirmation
         poolConf
         ("sending a delete confirmation message to " <> user_email <> "\n" <>
          content)
+        ("sent the delete confirmation message to " <> user_email <> "\n" <>
+         content)
         notif_email
         user_email
         "Snowdrift.coop delete confirmation"
@@ -678,6 +690,7 @@ main = withLogging $ do
     Parsed {..} <-
         liftIO $ parse args'
     $(logInfo) "starting the daemon"
+    liftIO $ hFlush stdout
     $(logDebug) ("running with --db=" <> (db_arg args') <> " --email=" <> notif_email <>
                  " --delay=" <> Text.pack (show loop_delay))
     (dbConf, poolConf) <- liftIO $ do
@@ -686,6 +699,7 @@ main = withLogging $ do
         poolConf <- Persist.createPoolConfig dbConf
         return (dbConf, poolConf)
     $(logInfo) "starting the main loop"
+    liftIO $ hFlush stdout
     void $ forever $ runResourceT $ withDelay loop_delay $ do
         user_notifs <- runSql dbConf poolConf $ do
             with_emails_user <- selectWithVerifiedEmailsUser
@@ -755,3 +769,5 @@ main = withLogging $ do
                                    user_id
                                    user_email
                                    uri
+        $(logInfo) "iteration finished"
+        liftIO $ hFlush stdout

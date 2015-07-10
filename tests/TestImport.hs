@@ -13,7 +13,7 @@ import Prelude hiding (exp)
 
 import Control.Monad (unless)
 import Control.Monad.Logger as TestImport
-import Control.Arrow as TestImport hiding (app)
+import Control.Arrow as TestImport hiding (app, loop)
 
 import Yesod (Yesod, RedirectUrl, Route, RenderRoute, renderRoute)
 import Yesod.Test as TestImport
@@ -35,6 +35,7 @@ import qualified Data.ByteString as B
 import           Data.Int        (Int64)
 
 import qualified Data.List as L
+import Data.List (isInfixOf)
 import qualified Data.Map as M
 import Data.Maybe (fromMaybe)
 import qualified Data.Text as T
@@ -48,14 +49,21 @@ import Model as TestImport hiding
 
 import Control.Applicative ((<$>))
 import Control.Concurrent (threadDelay)
-import Control.Monad (void, when)
+import Control.Monad (when)
 import Data.Monoid ((<>))
+import Data.Time (getCurrentTime, addUTCTime)
 import Model.Language
 import Model.Notification
     ( UserNotificationType(..), UserNotificationDelivery(..)
     , ProjectNotificationType(..), ProjectNotificationDelivery(..) )
-import System.IO (hPutStrLn, stderr)
-import System.Process (interruptProcessGroupOf, ProcessHandle, CreateProcess(..), createProcess, proc)
+import System.IO (hPutStrLn, hGetLine, stderr, Handle)
+import System.Process
+    ( CreateProcess(..)
+    , StdStream(CreatePipe)
+    , createProcess
+    , proc
+    , interruptProcessGroupOf
+    , ProcessHandle)
 
 import Control.Monad.Trans.Control
 import Control.Exception.Lifted as Lifted hiding (handle)
@@ -375,33 +383,60 @@ updateProjectNotifPrefs user_id project_id notif_type notif_deliv = do
 withDelay :: MonadIO m => m a -> m a
 withDelay action = liftIO (threadDelay 1500000) >> action
 
-stackExec :: FilePath -> [String] -> IO ProcessHandle
-stackExec app args = do
-    (_,_,_,h) <- createProcess stack { create_group = True }
-    return h
+stackExec :: FilePath
+          -> [String]
+          -> IO (Maybe Handle
+                ,Maybe Handle
+                ,Maybe Handle
+                ,ProcessHandle)
+stackExec app args = createProcess stack
+                         { create_group = True
+                         , std_out = CreatePipe
+                         }
   where
     stack = proc "stack" (["exec", "--", app] ++ args)
 
-withEmailDaemon :: FileName -> (FileName -> IO a) -> IO ()
-withEmailDaemon file action = do
-    withDelay $ bracket
-        (stackExec
-             "SnowdriftEmailDaemon"
-             [ "--sendmail=stack exec SnowdriftSendmail"
-             , "--sendmail-file=" <> T.unpack (unFileName file)
-             , "--db=testing"
-             ])
-        interruptProcessGroupOf
-        (const $ withDelay $ void $ action file)
+withExecutable :: String -> [String] -> String -> Example () -> Example ()
+withExecutable exec_name args str test_action = do
+    (_, Just hout, _, hproc) <- liftIO $ stackExec exec_name args
+    now <- liftIO getCurrentTime
+    -- 4 seconds should be enough, the daemon loops every two seconds.
+    loop now (4 :: Int) exec_name hproc hout str
+  where
+    loop start_time = go start_time start_time
+      where
+        go start cur lim en hp ho s = do
+            if cur >= addUTCTime (fromIntegral lim) start
+                then liftIO $ do
+                         interruptProcessGroupOf hp
+                         error $ show lim <> " seconds elapsed; killed " <> en
+                else do
+                    line <- liftIO $ hGetLine ho
+                    if s `isInfixOf` line
+                        then do test_action
+                                liftIO $ interruptProcessGroupOf hp
+                        else do
+                             cur' <- liftIO getCurrentTime
+                             go start cur' lim en hp ho str
 
-processPayments :: IO ()
-processPayments = do
-    bracket
-        (stackExec
-             "SnowdriftProcessPayments"
-             ["Testing"])
-        interruptProcessGroupOf
-        (const $ withDelay $ return ())
+withEmailDaemon :: String -> FileName -> (FileName -> Example ()) -> Example ()
+withEmailDaemon str file test_action =
+    withExecutable
+        "SnowdriftEmailDaemon"
+        [ "--sendmail=stack exec SnowdriftSendmail"
+        , "--sendmail-file=" <> T.unpack (unFileName file)
+        , "--delay=2"
+        , "--db=testing" ]
+        str
+        (test_action file)
+
+processPayments :: String -> Example () -> Example ()
+processPayments str test_action =
+    withExecutable
+        "SnowdriftProcessPayments"
+        ["Testing"]
+        str
+        test_action
 
 rethreadComment :: Text -> Text -> YesodExample App ()
 rethreadComment rethread_route parent_route = [marked|

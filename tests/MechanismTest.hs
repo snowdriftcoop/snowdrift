@@ -194,7 +194,7 @@ testPledge named_user project_id shares = do
     user_id <- userId named_user
 
     -- Get the values before the actual pledge and payout.
-    ( project_account, user_account, old_shares,
+    ( project_name, project_account, user_account, old_shares,
       new_project_shares, expected_share_value ) <- testDB $ do
         old_project_shares <- fetchProjectSharesDB project_id
         old_user_shares    <- getBy (UniquePledge user_id project_id) >>= \case
@@ -211,7 +211,10 @@ testPledge named_user project_id shares = do
         (project_account, user_account) <-
             projectAccountAndUserAccount project_id user_id
 
-        return ( project_account
+        project <- getOrError project_id
+
+        return ( projectName project
+               , project_account
                , user_account
                , old_user_shares
                , new_project_shares
@@ -234,27 +237,26 @@ testPledge named_user project_id shares = do
     -- It's necessary to insert into the 'payday' table before running
     -- 'SnowdriftProcessPayments'.
     testDB $ insert_ $ Payday now
-    liftIO processPayments
+    processPayments (Text.unpack $ "paid to " <> project_name) $ do
+        -- Get the values after the payout.
+        (project_account', user_account') <-
+            testDB $ projectAccountAndUserAccount project_id user_id
 
-    -- Get the values after the payout.
-    (project_account', user_account') <-
-        testDB $ projectAccountAndUserAccount project_id user_id
+        -- Check the project's share value.
+        actual_share_value <-
+            testDB $ fetchProjectSharesDB project_id >>=
+                return . projectComputeShareValue
 
-    -- Check the project's share value.
-    actual_share_value <-
-        testDB $ fetchProjectSharesDB project_id >>=
-            return . projectComputeShareValue
+        errorUnlessExpected "project share value"
+            expected_share_value
+            actual_share_value
 
-    errorUnlessExpected "project share value"
-        expected_share_value
-        actual_share_value
+        -- Check the user's balance.
+        errorUnlessExpected "user balance"
+            expected_user_balance $
+            accountBalance user_account'
 
-    -- Check the user's balance.
-    errorUnlessExpected "user balance"
-        expected_user_balance $
-        accountBalance user_account'
-
-    -- Check the project's balance.
-    errorUnlessExpected "project balance"
-        expected_project_balance $
-        accountBalance project_account'
+        -- Check the project's balance.
+        errorUnlessExpected "project balance"
+            expected_project_balance $
+            accountBalance project_account'

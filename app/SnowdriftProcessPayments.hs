@@ -40,8 +40,6 @@ main = do
         payout (Entity project_id project, Entity payday_id _) = runDB $ do
             let project_name = projectName project
 
-            liftIO $ putStrLn $ T.unpack project_name
-
             pledges <- select $ from $ \pledge -> do
                 where_ $ pledge ^. PledgeProject ==. val project_id
                     &&. pledge ^. PledgeFundedShares >. val 0
@@ -68,6 +66,8 @@ main = do
             update $ \p -> do
                 set p [ ProjectLastPayday =. val (Just payday_id) ]
                 where_ $ p ^. ProjectId ==. val project_id
+
+            liftIO $ putStrLn $ "paid to " <> T.unpack project_name
 
             return True
 
