@@ -97,16 +97,18 @@
       <tr>
         <td>
           <a href=@{ProjectPatronsR $ projectHandle project}>
-            _{MsgPatrons users}
+            _{MsgPatrons numPatrons}
         <tr>
           <td>
-            _{MsgShares shares}
+            Matching the next new patron will get: #{show mills}
         <tr>
           <td>
-            current base pledge value: #{show share_value}
+            A new minimum pledge of 0.1¢ per patron means donating
+            #{show share_value} per month
         <tr>
           <td>
-            total value of all pledges: #{show project_value}&nbsp;per&nbsp;month
+            total donations given current pledges:
+            #{show project_value}&nbsp;per&nbsp;month
     <table>
       <tr>
         <th>History

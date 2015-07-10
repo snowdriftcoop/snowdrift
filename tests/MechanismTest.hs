@@ -4,22 +4,26 @@
 module MechanismTest (mechanismSpecs) where
 
 import TestImport hiding (get)
-import Model.Currency (Milray (..))
+import Model.Currency
+    (Milray (..), millMilray, dropRightZeros, pprintThousands)
 import Model.Project (projectComputeShareValue, fetchProjectSharesDB)
 
 import Control.Applicative ((<$>))
-import Database.Esqueleto hiding (delete)
+import Database.Esqueleto hiding (delete, val)
 import Data.Int (Int64)
 import Data.List (delete)
 import Data.Monoid ((<>))
+import Data.Text (Text)
 import qualified Data.Text as Text
 import Data.Time (getCurrentTime)
 import Test.QuickCheck
+import Text.Printf (formatRealFloat, FieldFormat(..))
 
 mechanismSpecs :: Spec
 mechanismSpecs = ydescribe "mechanism" $ do
     testFormula
     testPledges
+    testPPrinters
 
 testFormula :: Spec
 testFormula = yit "formula" $ do
@@ -44,7 +48,7 @@ testFormula = yit "formula" $ do
                   "as the product of that number and 0.1¢") $
         \(Positive n) (Positive m) ->
               (projectComputeShareValue $ replicate n m) ===
-              (Milray $ fromIntegral n * 10)
+              (millMilray $ fromIntegral n)
 
 testPledges :: Spec
 testPledges = ydescribe "pledges" $ do
@@ -260,3 +264,163 @@ testPledge named_user project_id shares = do
         errorUnlessExpected "project balance"
             expected_project_balance $
             accountBalance project_account'
+
+data Symbol = SDollar | SCent
+
+pprintSymbol :: Symbol -> String -> String
+pprintSymbol SDollar str = "$" <> str
+pprintSymbol SCent   str = str <> "¢"
+
+-- | Test whether the results of applying a function to a positive value
+-- and a negative value match the expectations.
+errorUnlessExpectedPosAndNeg :: Text -> Symbol -> String -> (Milray -> String)
+                             -> (Int64 -> Milray) -> Int64 -> Example ()
+errorUnlessExpectedPosAndNeg msg symbol expected ppr con val = do
+    errorUnlessExpected msg
+        (pprintSymbol symbol expected)
+        (ppr $ con val)
+    errorUnlessExpected (msg <> ", negative amount")
+        (pprintSymbol symbol ("-" <> expected))
+        (ppr $ con $ negate val)
+
+-- Using something like 'maxBound :: Int64' would be expensive because
+-- of the way bounds are used in generators, and would lead to
+-- rounding errors when divided.
+bound :: Int64
+bound = 10000000
+
+-- | Split a string into the integral and fractional parts.
+intAndFrac :: String -> (String, String)
+intAndFrac = fmap (dropWhile (== '.')) . break (== '.')
+
+-- | Drop zeros on the right and the dot if it's the last character.
+dropRightZerosCent :: String -> String
+dropRightZerosCent s = i <> (if null f' then "" else '.':f')
+  where
+    f'    = dropRightZeros f
+    (i,f) = intAndFrac s
+
+-- | Always show at least two decimal digits.
+dropRightZerosDollar :: String -> String
+dropRightZerosDollar s = i <> "." <> f''
+    where
+      f''   = if len < 2
+              then f' <> replicate (2 - len) '0'
+              else f'
+      len   = length f'
+      f'    = dropRightZeros f
+      (i,f) = intAndFrac s
+
+-- | Return the sign (if exists) and absolute value.
+signAndAbs :: String -> (String, String)
+signAndAbs ('-':xs) = ("-",xs)
+signAndAbs xs       = ([] ,xs)
+
+testCurrency :: Symbol -> Gen Int64 -> Int -> Int64 -> Property
+testCurrency symbol gen len d =
+    forAll gen $ \n ->
+    let res = fromIntegral n / fromIntegral d :: Double
+        (i,f) = intAndFrac $
+                    formatRealFloat res
+                       -- Do not use scientific notation for values
+                       -- like 0.06.
+                       (FieldFormat
+                            Nothing (Just len) Nothing Nothing False "" 'f') ""
+        (sign, absi) = signAndAbs i
+        i' = sign <>
+             (case symbol of
+                  SCent   -> id
+                  SDollar -> pprintThousands) absi
+        pres = (case symbol of
+                    SCent   -> dropRightZerosCent
+                    SDollar -> dropRightZerosDollar) $ i' <> "." <> f
+    in (show $ Milray n) ===
+       pprintSymbol symbol pres
+
+genStep :: Int64 -> Int64 -> Int64 -> Gen Int64
+genStep start next end = elements $ sx <> xs
+  where
+    xs = [start, next .. end]
+    sx = negate <$> reverse xs
+
+testPPrinters :: Spec
+testPPrinters = ydescribe "pretty-printers" $ do
+    yit "Milray" $ do
+        errorUnlessExpected "0 is printed correctly"
+            "$0.00" $ show $ Milray 0
+        errorUnlessExpectedPosAndNeg "milrays: leading zero is not removed"
+            SCent "0.01" show Milray 1
+        errorUnlessExpectedPosAndNeg "milrays: trailing zero is removed"
+            SCent "0.1" show Milray 10
+
+        errorUnlessExpectedPosAndNeg "cents: trailing zeros are removed"
+            SCent "1" show Milray 100
+        errorUnlessExpectedPosAndNeg
+            ("cents: trailing zero is removed without " <>
+             "affecting the second digit")
+            SCent "1.2" show Milray 120
+        errorUnlessExpectedPosAndNeg "cents: leading zero is not removed"
+            SCent "1.03" show Milray 103
+        errorUnlessExpectedPosAndNeg "cents: all digits are printed"
+            SCent "1.23" show Milray 123
+        errorUnlessExpectedPosAndNeg
+            ("cents: trailing zeros are removed without " <>
+             "affecting the second zero digit")
+            SCent "10" show Milray 1000
+        errorUnlessExpectedPosAndNeg
+            ("cents: trailing zeros are removed without " <>
+             "affecting the second non-zero digit")
+            SCent "12" show Milray 1200
+        errorUnlessExpectedPosAndNeg
+            ("cents: trailing zero is removed without " <>
+             "affecting the third digit")
+            SCent "12.3" show Milray 1230
+        errorUnlessExpectedPosAndNeg "cents: nothing is removed"
+            SCent "12.34" show Milray 1234
+        errorUnlessExpectedPosAndNeg
+            "cents: leading zero is not removed (four digits)"
+            SCent "12.04" show Milray 1204
+        errorUnlessExpectedPosAndNeg
+            "cents: first zero is not removed (four digits)"
+            SCent "10.3" show Milray 1030
+        errorUnlessExpectedPosAndNeg
+            "cents: zeros in the middle are not removed"
+            SCent "10.04" show Milray 1004
+
+        errorUnlessExpectedPosAndNeg "dollars: trailing zeros are removed"
+            SDollar "1.00" show Milray 10000
+        errorUnlessExpectedPosAndNeg
+            ("dollars: trailing zeros are removed without " <>
+             "affecting the third zero digit")
+            SDollar "1.20" show Milray 12000
+        errorUnlessExpectedPosAndNeg
+            ("dollars: trailing zeros are removed without " <>
+             "affecting the third non-zero digit")
+            SDollar "1.23" show Milray 12300
+        errorUnlessExpectedPosAndNeg
+            ("dollars: trailing zeros are removed without " <>
+             "affecting the fourth digit")
+            SDollar "1.234" show Milray 12340
+        errorUnlessExpectedPosAndNeg "dollars: nothing is removed"
+            SDollar "1.2345" show Milray 12345
+
+        errorUnlessExpectedPosAndNeg "hundreds are not delimited"
+            SDollar "123.45" show Milray 1234500
+        errorUnlessExpectedPosAndNeg "thousands are delimited: 1"
+            SDollar "1,234.56" show Milray 12345600
+        errorUnlessExpectedPosAndNeg "thousands are delimited: 10"
+            SDollar "12,345.6709" show Milray 123456709
+        errorUnlessExpectedPosAndNeg "thousands are delimited: 100"
+            SDollar "123,456.789" show Milray 1234567890
+
+        testProperty "dollars are printed correctly" $
+            testCurrency SDollar (genStep 10000 10001 bound) 4 10000
+        testProperty "cents are printed correctly" $
+           testCurrency SCent (genStep 1 2 9999) 2 100
+        -- Whole cents are rarely generated by the above test, so it
+        -- makes sense to explicitly check them.
+        testProperty "whole cents are printed correctly" $
+            testCurrency SCent (genStep 100 200 9900) 2 100
+        -- Ditto.
+        testProperty "whole dollars are printed correctly" $
+            testCurrency SDollar (genStep 10000 20000 bound) 4 10000

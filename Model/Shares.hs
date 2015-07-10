@@ -3,6 +3,7 @@
 module Model.Shares where
 
 import Import
+import Model.Currency
 
 import System.Random (randomIO)
 import Data.String (fromString)
@@ -10,12 +11,6 @@ import qualified Data.Text as T
 import qualified Data.Text.Read as T
 
 import Text.Julius (rawJS)
-
-baseAmount :: Rational
-baseAmount = 0.1
-
-multiplyByBaseAmount :: Real a => a -> Double
-multiplyByBaseAmount shares = fromRational $ toRational shares * baseAmount
 
 pledgeSizes :: [[Int64]]
 pledgeSizes =
@@ -79,7 +74,7 @@ pledgeField project_id = Field
         let value = either (const 2) (\(SharesPurchaseOrder s) -> s) v
             hasValue = value `elem` list
             otherValue = if hasValue then "" else show value
-            pledgeOptions = zip list $ map (show . multiplyByBaseAmount) list
+            pledgeOptions = zip list $ map (show . millMilray) list
 
         $(widgetFile "pledge-field")
 

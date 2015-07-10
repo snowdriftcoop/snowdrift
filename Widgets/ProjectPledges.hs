@@ -36,6 +36,7 @@ projectPledges user_id = do
 
     let cost = summaryShareCost
         shares = getCount . summaryShares
+        mills = millMilray . shares
         total x = cost x $* fromIntegral (shares x)
 
     toWidget [hamlet|
@@ -50,12 +51,8 @@ projectPledges user_id = do
                         <td>
                             <a href=@{ProjectR (summaryProjectHandle summary)}>
                                 #{summaryName summary}
-                        <td>#{show (cost summary)}/share
-                        <td>
-                            $if (shares summary) == 1
-                                #{show (shares summary)} share
-                            $else
-                                #{show (shares summary)} shares
+                        <td>#{show (cost summary)}/pledge
+                        <td>#{show (mills summary)}
                         <td>#{show (total summary)}
      |]
 

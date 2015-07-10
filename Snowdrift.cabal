@@ -198,6 +198,8 @@ library
                  , hourglass
                  , http-conduit
                  , http-types
+                 -- Oh yeah!
+                 , lens
                  , lifted-base
                  , mime-mail
                  , monad-logger
@@ -326,6 +328,7 @@ executable SnowdriftEmailDaemon
                      , hjsmin
                      , hourglass
                      , http-conduit
+                     , lens
                      , lifted-base
                      , mime-mail
                      , monad-logger

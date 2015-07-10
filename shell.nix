@@ -11,7 +11,7 @@ haskellPackages.cabal.mkDerivation (self: {
   buildDepends = with haskellPackages; [
     async attoparsec authenticate blazeBuilder blazeHtml blazeMarkup
     cmdargs conduit dataDefault Diff emailValidate esqueleto fastLogger
-    github hit hjsmin hourglass httpConduit httpTypes liftedBase mime
+    github hit hjsmin hourglass httpConduit httpTypes lens liftedBase mime
     mimeMail monadLogger mtl mwcRandom pandoc pathPieces persistent
     persistentPostgresql persistentTemplate random regexTdfa resourcet
     semigroups shakespeare stm temporary text time titlecase transformers

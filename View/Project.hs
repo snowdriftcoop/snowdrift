@@ -38,8 +38,9 @@ renderProject :: Maybe ProjectId -> Project -> Maybe UserId -> Bool -> [Int64]
               -> Maybe (Entity Pledge) -> WidgetT App IO ()
 renderProject maybe_project_id project mviewer_id is_watching pledges pledge = do
     let share_value = projectShareValue project
-        users = fromIntegral $ length pledges
+        numPatrons = fromIntegral $ length pledges
         shares = sum pledges
+        mills = millMilray shares
         project_value = share_value $* fromIntegral shares
         discussion = DiscussionOnProject $ Entity (fromMaybe (key $ PersistInt64 (-1)) maybe_project_id) project
         description = markdownWidgetWith (fixLinks (projectHandle project) discussion) $ projectDescription project

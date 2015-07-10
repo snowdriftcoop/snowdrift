@@ -15,10 +15,10 @@
                 Pledges / Funds 
                 <br>
                 <a .navbar-link title="Current total monthly pledge" href=@{UserPledgesR user_id}>
-                  #{milrayCents pledged}
+                  #{pledged}
                 /
                 <a .navbar-link :hasUnderfunded:.has-underfunded title="Current balance" href=@{UserBalanceR user_id}>
-                  #{milrayCents balance}
+                  #{balance}
           <li>
             <a href=@{NotificationsR}>
               $if num_unread_notifs /= 0

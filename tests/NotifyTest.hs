@@ -7,7 +7,7 @@ module NotifyTest (notifySpecs) where
 
 import           Import                               (Established(..), Role (..), pprint, selectExists, key)
 import           TestImport                           hiding ((=.), update, Update)
-import           Model.Currency                       (Milray (..))
+import           Model.Currency                       (Milray (..), millMilray)
 import           Model.Language
 import           Model.Notification
 
@@ -788,13 +788,13 @@ notifySpecs AppConfig {..} file = do
                     ProjectNotifDeliverWebsite
 
                 loginAs Bob
-                let tshares = shpack shares
+                let mills = shpack $ millMilray shares
                 pledge snowdrift_id shares
 
                 bob_id <- userId Bob
                 errUnlessUniqueProjectWebsiteNotif' WithDelay mary_id NotifNewPledge $
                     "user" <> (shpack $ keyToInt64 bob_id) <>
-                    " pledged [" <> tshares <> " shares]"
+                    " pledged [" <> mills <> "]"
         |]
 
         yit "doesn't notify when you make a new pledge" $ [marked|
@@ -805,12 +805,12 @@ notifySpecs AppConfig {..} file = do
                     ProjectNotifDeliverWebsite
 
                 loginAs Mary
-                let tshares = shpack shares
+                let mills = shpack $ millMilray shares
                 pledge snowdrift_id shares
 
                 errWhenExistsProjectWebsiteNotif' WithDelay mary_id NotifNewPledge $
                     "user" <> (shpack $ keyToInt64 mary_id) <>
-                    " pledged [" <> tshares <> " shares]"
+                    " pledged [" <> mills <> "]"
         |]
 
         yit "sends an email when there is a new pledge" $ [marked|
@@ -822,7 +822,7 @@ notifySpecs AppConfig {..} file = do
 
                 loginAs Bob
                 pledge snowdrift_id 0  -- drop it first
-                let tshares = shpack shares_email
+                let mills = shpack $ millMilray shares_email
                 pledge snowdrift_id shares_email
 
                 bob_id <- userId Bob
@@ -830,7 +830,7 @@ notifySpecs AppConfig {..} file = do
                     "sent the project notification to mary@localhost"
                     file $
                     "user" <> (shpack $ keyToInt64 bob_id) <>
-                    " pledged [" <> tshares <> " shares]"
+                    " pledged [" <> mills <> "]"
         |]
 
         yit "doesn't send an email when you make a new pledge" $ [marked|
@@ -842,13 +842,13 @@ notifySpecs AppConfig {..} file = do
 
                 loginAs Mary
                 pledge snowdrift_id 0  -- drop it first
-                let tshares = shpack shares_email
+                let mills = shpack $ millMilray shares_email
                 pledge snowdrift_id shares_email
 
                 errWhenExistsEmailNotif'
                     "iteration finished" file $
                     "user" <> (shpack $ keyToInt64 mary_id) <>
-                    " pledged [" <> tshares <> " shares]"
+                    " pledged [" <> mills <> "]"
         |]
 
     testProjectNotification NotifUpdatedPledge = do
@@ -862,13 +862,14 @@ notifySpecs AppConfig {..} file = do
                 loginAs Bob
                 bob_id <- userId Bob
                 loadFunds bob_id 10
-                let tshares = shpack shares'
+                let mills = shpack $ millMilray shares'
                 pledge snowdrift_id shares'
 
                 errUnlessUniqueProjectWebsiteNotif' WithDelay mary_id NotifUpdatedPledge $
                     "user" <> (shpack $ keyToInt64 bob_id) <>
-                    " added " <> (shpack $ shares' - shares) <>
-                    " share, changing their total to [" <> tshares <> " shares]"
+                    " added " <> (shpack $ millMilray shares' -
+                                           millMilray shares_email) <>
+                    ", changing their total to [" <> mills <> "]"
         |]
 
         yit "doesn't notify when the pledge is updated by you" $ [marked|
@@ -880,13 +881,14 @@ notifySpecs AppConfig {..} file = do
 
                 loginAs Mary
                 loadFunds mary_id 10
-                let tshares = shpack shares'
+                let mills = shpack $ millMilray shares'
                 pledge snowdrift_id shares'
 
                 errWhenExistsProjectWebsiteNotif' WithDelay mary_id NotifUpdatedPledge $
                     "user" <> (shpack $ keyToInt64 mary_id) <>
-                    " added " <> (shpack $ shares' - shares) <>
-                    " share, changing their total to [" <> tshares <> " shares]"
+                    " added " <> (shpack $ millMilray shares' -
+                                           millMilray shares_email) <>
+                    ", changing their total to [" <> mills <> "]"
         |]
 
         yit "sends an email when the pledge is updated" $ [marked|
@@ -897,7 +899,7 @@ notifySpecs AppConfig {..} file = do
                     ProjectNotifDeliverEmail
 
                 loginAs Bob
-                let tshares = shpack shares_email'
+                let mills = shpack $ millMilray shares_email'
                 pledge snowdrift_id shares_email'
 
                 bob_id <- userId Bob
@@ -905,8 +907,9 @@ notifySpecs AppConfig {..} file = do
                     "sent the project notification to mary@localhost"
                     file $
                     "user" <> (shpack $ keyToInt64 bob_id) <>
-                    " added " <> (shpack $ shares' - shares) <>
-                    " share, changing their total to [" <> tshares <> " shares]"
+                    " added " <> (shpack $ millMilray shares_email' -
+                                           millMilray shares') <>
+                    ", changing their total to [" <> mills <> "]"
         |]
 
         yit "doesn't send an email when the pledge is updated by you" $ [marked|
@@ -917,14 +920,15 @@ notifySpecs AppConfig {..} file = do
                     ProjectNotifDeliverEmail
 
                 loginAs Mary
-                let tshares = shpack shares_email'
+                let mills = shpack $ millMilray shares_email'
                 pledge snowdrift_id shares_email'
 
                 errWhenExistsEmailNotif'
                     "iteration finished" file $
                     "user" <> (shpack $ keyToInt64 mary_id) <>
-                    " added " <> (shpack $ shares' - shares) <>
-                    " share, changing their total to [" <> tshares <> " shares]"
+                    " added " <> (shpack $ millMilray shares_email' -
+                                           millMilray shares') <>
+                    ", changing their total to [" <> mills <> "]"
         |]
 
     testProjectNotification NotifDeletedPledge = do

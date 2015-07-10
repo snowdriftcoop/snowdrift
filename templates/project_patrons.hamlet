@@ -11,7 +11,7 @@ $else
           <a href=@{UserR (entityKey user)}>
             #{userDisplayName user}
         <td>
-          #{show (pledgeFundedShares (entityVal pledge))}&nbsp;shares
+          #{show $ millMilray $ pledgeFundedShares $ entityVal pledge}
         <td>
           $maybe count <- M.lookup (entityKey user) user_payouts_map
             $if count < 2
