@@ -39,7 +39,7 @@ tagWidget t = do
         fg = printf "%06x" $ pickForegroundColor $ (\(Color c) -> c) $ annotTagColor t
 
     toWidget [hamlet|
-        <form .tag action=@{annotTagUrl t} style="background-color:##{bg};color:##{fg}" method=post>
+        <form .p-category .tag action=@{annotTagUrl t} style="background-color:##{bg};color:##{fg}" method=post>
             <small>
                 #{annotTagName t}
                 $if show_tag_voting

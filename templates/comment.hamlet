@@ -1,10 +1,9 @@
-<div .comment :is_unapproved:.unapproved :is_top_level:.top_level :is_even_depth:.even_depth :is_odd_depth:.odd_depth>
+<div .h-entry .comment :is_unapproved:.unapproved :is_top_level:.top_level :is_even_depth:.even_depth :is_odd_depth:.odd_depth>
   <div .comment-head>
-    <div .comment-head-item>
-      $maybe author_avatar <- userAvatar user
-        <a href=@{UserR user_id}>
-          <img .small_avatar src=#{author_avatar}> #
-      <a href=@{UserR user_id}>
+    <div .h-card .p-author .comment-head-item>
+      <a .u-url .p-name href=@{UserR user_id}>
+        $maybe author_avatar <- userAvatar user
+          <img .u-photo .small_avatar src=#{author_avatar}> #
         #{userDisplayName (Entity user_id user)}
 
     $if can_establish
@@ -12,12 +11,13 @@
         <a href=@{UserR user_id}>
           (establish user)
 
-    <div .comment-head-item .comment-date>
-      ^{renderTime (fromMaybe (commentCreatedTs comment) (commentApprovedTs comment))}
+    $with ts <- fromMaybe (commentCreatedTs comment) (commentApprovedTs comment)
+      <time .dt-modified datetime=#{iso8601 ts} .comment-head-item .comment-date>
+        ^{renderTime ts}
     <div .comment-head-item :is_preview:.preview>
       |
     <div .comment-head-item :is_preview:.preview>
-      <a href=@{comment_route_permalink comment_id}>
+      <a .u-url href=@{comment_route_permalink comment_id}>
         permalink
     $maybe parent_id <- commentParent comment
       <div .comment-head-item :is_preview:.preview>
@@ -117,7 +117,7 @@
           #{flag_markdown}
       <i>Please edit to address these concerns and repost.
 
-  <div .comment-body>
+  <div .e-content .p-name .comment-body>
     ^{markdownWidgetWith commentTextTransform (commentText comment)}
 
   <div>

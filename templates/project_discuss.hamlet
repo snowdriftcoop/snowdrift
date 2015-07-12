@@ -16,7 +16,8 @@
     <a href=@{ProjectDiscussionR project_handle}?state=closed>
       closed threads
 
-^{comment_forest}
+<div .p-feed>
+  ^{comment_forest}
 
 $if not has_comments
   $if isJust muser
