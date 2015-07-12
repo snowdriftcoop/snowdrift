@@ -10,7 +10,7 @@ import Model.Comment.Routes
 import Model.Currency
 import Model.User
 import View.Comment
-import Widgets.Time
+import View.Time
 
 import qualified Data.Map   as M
 import qualified Data.Text  as T

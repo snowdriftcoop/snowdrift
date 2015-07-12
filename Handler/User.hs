@@ -17,9 +17,9 @@ import           Model.User
 import           Model.Comment.Sql
 import           Widgets.Preview
 import           View.Comment
+import           View.Time
 import           View.User
 import           Widgets.ProjectPledges
-import           Widgets.Time
 
 import           Data.Default         (def)
 import           Data.List            (head)

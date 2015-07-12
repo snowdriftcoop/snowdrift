@@ -11,7 +11,7 @@ import Control.Monad.Trans.Resource
 
 import Data.Text.Encoding
 
-import Widgets.Time
+import View.Time
 
 getImageR :: Text -> Handler TypedContent
 getImageR image_handle = do

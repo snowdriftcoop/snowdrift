@@ -124,6 +124,7 @@ library
                      Handler.Wiki.Comment
                      View.Comment
                      View.SnowdriftEvent
+                     View.Time
                      View.User
                      View.Wiki
                      View.Project
@@ -133,7 +134,6 @@ library
                      Widgets.Doc
                      Widgets.Markdown
                      Widgets.Navbar
-                     Widgets.Time
                      Widgets.Tag
                      Widgets.Preview
                      Widgets.ProjectPledges
