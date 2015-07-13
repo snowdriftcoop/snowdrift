@@ -156,6 +156,33 @@ See the Nix notes in the appendix at the end of this guide.
 As of this writing, they reflect using Nix instead of Stack, so updates and
 reconsideration of this process is called for.
 
+### Arch Linux
+
+To install dependencies, run this command as `root`:
+
+    pacman -S git ghc cabal-install alex happy haddock postgresql
+
+To initialize the PostgreSQL database, first become the `postgres` user.
+
+    sudo -i -u postgres
+
+As the `postgres` user, run this command:
+
+    initdb --locale en_US.UTF-8 -E UTF8 -D '/var/lib/postgres/data'
+
+Then, as `root`:
+
+    systemctl enable postgresql.service
+    systemctl start postgresql.service
+
+Install the
+[haskell-stack-git](https://aur4.archlinux.org/packages/haskell-stack-git/)
+package from the AUR. Run:
+
+    stack upgrade --git
+
+Follow the rest of the instructions in the [README].
+
 ### \*BSD
 
 *Not yet documented: installing dependencies on \*BSD*
