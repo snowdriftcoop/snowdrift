@@ -255,7 +255,7 @@ executable Snowdrift
 
     ghc-options:       -threaded -O2
 
- -- executable SnowdriftProcessPayments -- {{{1
+-- executable SnowdriftProcessPayments -- {{{1
 executable SnowdriftProcessPayments
     if flag(library-only)
         Buildable: False
@@ -296,7 +296,7 @@ executable SnowdriftProcessPayments
                 DeriveDataTypeable
                 ScopedTypeVariables
 
- -- executable SnowdriftEmailDaemon -- {{{1
+-- executable SnowdriftEmailDaemon -- {{{1
 executable SnowdriftEmailDaemon
     if flag(dev)
        ghc-options: -Wall -O0 -fobject-code
@@ -379,7 +379,7 @@ executable SnowdriftEmailDaemon
                 TypeFamilies
                 ViewPatterns
 
- -- executable sdm -- {{{1
+-- executable sdm -- {{{1
 executable sdm
     if flag(dev)
        ghc-options: -Wall -O0 -fobject-code
@@ -400,7 +400,7 @@ executable sdm
                      , process
                      , semigroups
 
- -- executable SnowdriftSendmail -- {{{1
+-- executable SnowdriftSendmail -- {{{1
 executable SnowdriftSendmail
     if flag(dev)
        ghc-options: -Wall -O0 -fobject-code
@@ -415,7 +415,7 @@ executable SnowdriftSendmail
                      , bytestring
                      , mime
 
- -- test-suite test -- {{{1
+-- test-suite test -- {{{1
 test-suite test
     default-language:  Haskell98
     type:              exitcode-stdio-1.0
