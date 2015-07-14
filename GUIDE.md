@@ -160,7 +160,7 @@ reconsideration of this process is called for.
 
 To install dependencies, run this command as `root`:
 
-    pacman -S git ghc cabal-install alex happy haddock postgresql
+    pacman -S git postgresql
 
 To initialize the PostgreSQL database, first become the `postgres` user.
 
