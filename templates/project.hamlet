@@ -100,20 +100,21 @@
             _{MsgPatrons numPatrons}
       <tr>
         <td>
-          total donations set for next payment:
           <span .pledge-stat>#{show project_value}&nbsp;per&nbsp;month
     <table>
       <tr>
         <th>Next new patron
       <tr>
         <td>
-          will get
-          <span .pledge-stat>#{show mills}
-          in matching from others
+          minimum new pledge:
+          <span .pledge-stat>#{show $ share_value + 10}
+          per month
       <tr>
         <td>
-          min. pledge (0.1¢ per patron per month) current value:
-          <span .pledge-stat>#{show $ share_value + 10}
+
+          matching from others:
+          <span .pledge-stat>#{show mills}
+          per month
     <table>
       <tr>
         <th>History
