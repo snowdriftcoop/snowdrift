@@ -17,8 +17,8 @@ import Model.Permission
 import Model.User
 import Model.Wiki
 import Widgets.Preview
-import Widgets.Time
 import View.Comment
+import View.Time
 import View.Wiki
 
 import           Data.Algorithm.Diff  (getDiff, Diff (..))

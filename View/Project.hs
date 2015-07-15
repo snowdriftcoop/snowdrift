@@ -26,10 +26,10 @@ import           Model.Shares
 import           Model.User
 import           Model.Role
 import           Model.Comment
+import           View.Time
 import           View.User (userNameWidget)
 import           Widgets.Markdown
 import           Widgets.Preview
-import           Widgets.Time
 
 import qualified Data.Text       as T
 import           Data.Time.Clock

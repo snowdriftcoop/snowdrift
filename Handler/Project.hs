@@ -30,8 +30,8 @@ import System.Locale (defaultTimeLocale)
 import View.Comment
 import View.Project
 import View.SnowdriftEvent
+import View.Time
 import Widgets.Preview
-import Widgets.Time
 
 
 import           Data.Default   (def)

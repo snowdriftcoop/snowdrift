@@ -47,9 +47,9 @@ import Model.Tag
 import Model.User
 import Model.Markdown
 import View.User
+import View.Time
 import Widgets.Markdown
 import Widgets.Tag
-import Widgets.Time
 
 import qualified Data.List        as L
 import qualified Data.Map         as M
