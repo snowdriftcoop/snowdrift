@@ -6,7 +6,7 @@ $newline never
 \<!--[if gt IE 8]><!-->
 <html .no-js lang="en"> <!--<![endif]-->
   <head>
-    <link rel="shortcut-icon" href=@{FaviconR}>
+    <link rel="shortcut icon" href=@{FaviconR}>
     <meta charset="UTF-8">
 
     <script>
