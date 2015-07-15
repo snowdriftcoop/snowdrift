@@ -174,7 +174,7 @@ Install Stack to your user profile:
 
 Stack can fetch and build the required version of GHC, but this
 doesn't work great on NixOS due to an unusual filesystem hierarchy,
-among other things.  Instead, just use `nix-shell` to get into an
+among other things. Instead, just use `nix-shell` to get into an
 environment with the right compiler version:
 
     nix-shell -p haskell.compiler.ghc784
@@ -182,7 +182,7 @@ environment with the right compiler version:
 Then you should be able to build the project as described in the
 [README], but Stack will likely complain about missing system
 libraries (like zlib), which you'll need to install manually via
-`nix-env` or `nox`.  Once installed, you can specify the
+`nix-env` or `nox`. Once installed, you can specify the
 location of such libraries like this:
 
     stack build --extra-include-dirs ~/.nix-profile/include \
