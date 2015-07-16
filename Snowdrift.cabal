@@ -432,6 +432,7 @@ test-suite test
                    NotifyTest
                    DiscussionTest
                    WikiTest
+                   TimedYesodTest
     default-extensions: QuasiQuotes
                 TemplateHaskell
 

@@ -16,7 +16,7 @@ import Control.Monad.Logger as TestImport
 import Control.Arrow as TestImport hiding (app, loop)
 
 import Yesod (Yesod, RedirectUrl, Route, RenderRoute, renderRoute)
-import Yesod.Test as TestImport
+import TimedYesodTest as TestImport
 import Database.Esqueleto hiding (get)
 import qualified Database.Esqueleto as Esqueleto
 import Database.Persist as TestImport hiding (get, (==.), delete)
