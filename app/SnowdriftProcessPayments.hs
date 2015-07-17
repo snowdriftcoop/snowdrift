@@ -128,7 +128,6 @@ main = do
               => SqlPersistT m a -> m a
         runDB sql = Database.Persist.Sql.runPool dbconf sql pool_conf
 
-    runStdoutLoggingT $ runResourceT $ do
-        projects <- runDB $ projectsToPay now
-
-        forM_ projects $ retry . flip catch (runDB . dropPledges) . runDB . payout now
+    runStdoutLoggingT $ runResourceT $ runDB $ do
+        projects <- projectsToPay now
+        forM_ projects $ retry . flip catch dropPledges . payout now
