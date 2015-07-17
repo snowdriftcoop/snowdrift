@@ -25,6 +25,64 @@ data NegativeBalances = NegativeBalances ProjectId [UserId]
 
 instance Exception NegativeBalances
 
+payout :: (MonadIO m, Functor m)
+       => UTCTime
+       -> (Entity Project, Entity Payday)
+       -> SqlPersistT m Bool
+payout now (Entity project_id project, Entity payday_id _) = do
+
+
+    let project_name = projectName project
+
+    pledges <- select $ from $ \pledge -> do
+        where_ $ pledge ^. PledgeProject ==. val project_id
+            &&. pledge ^. PledgeFundedShares >. val 0
+
+        return pledge
+
+    user_balances <- forM pledges $ \(Entity _ pledge) -> do
+        Just user <- get $ pledgeUser pledge
+        let amount =
+                projectShareValue project
+                $* fromIntegral (pledgeFundedShares pledge)
+            user_account_id = userAccount user
+            project_account_id = projectAccount project
+
+        void $
+            insert $
+                Transaction now
+                            (Just project_account_id)
+                            (Just user_account_id)
+                            (Just payday_id)
+                            amount
+                            "Project Payout"
+                            Nothing
+
+        user_account <-
+            updateGet
+                user_account_id
+                [AccountBalance Database.Persist.Sql.-=. amount]
+        _            <-
+            updateGet
+                project_account_id
+                [AccountBalance Database.Persist.Sql.+=. amount]
+
+        return (pledgeUser pledge, accountBalance user_account)
+
+    let negative_balances = filter ((< 0) . snd) user_balances
+
+    when (not $ null negative_balances)
+         (throw $
+            NegativeBalances project_id $ map fst negative_balances)
+
+    update $ \p -> do
+        set p [ ProjectLastPayday =. val (Just payday_id) ]
+        where_ $ p ^. ProjectId ==. val project_id
+
+    liftIO $ putStrLn $ "paid to " <> T.unpack project_name
+
+    return True
+
 main :: IO ()
 main = do
     conf <- fromArgs parseExtra
@@ -39,59 +97,6 @@ main = do
     let runDB :: (MonadIO m, MonadBaseControl IO m, MonadLogger m)
               => SqlPersistT m a -> m a
         runDB sql = Database.Persist.Sql.runPool dbconf sql pool_conf
-
-        payout (Entity project_id project, Entity payday_id _) = runDB $ do
-            let project_name = projectName project
-
-            pledges <- select $ from $ \pledge -> do
-                where_ $ pledge ^. PledgeProject ==. val project_id
-                    &&. pledge ^. PledgeFundedShares >. val 0
-
-                return pledge
-
-            user_balances <- forM pledges $ \(Entity _ pledge) -> do
-                Just user <- get $ pledgeUser pledge
-                let amount =
-                        projectShareValue project
-                        $* fromIntegral (pledgeFundedShares pledge)
-                    user_account_id = userAccount user
-                    project_account_id = projectAccount project
-
-                void $
-                    insert $
-                        Transaction now
-                                    (Just project_account_id)
-                                    (Just user_account_id)
-                                    (Just payday_id)
-                                    amount
-                                    "Project Payout"
-                                    Nothing
-
-                user_account <-
-                    updateGet
-                        user_account_id
-                        [AccountBalance Database.Persist.Sql.-=. amount]
-                _            <-
-                    updateGet
-                        project_account_id
-                        [AccountBalance Database.Persist.Sql.+=. amount]
-
-                return (pledgeUser pledge, accountBalance user_account)
-
-            let negative_balances = filter ((< 0) . snd) user_balances
-
-            when (not $ null negative_balances)
-                 (throw $
-                    NegativeBalances project_id $ map fst negative_balances)
-
-            update $ \p -> do
-                set p [ ProjectLastPayday =. val (Just payday_id) ]
-                where_ $ p ^. ProjectId ==. val project_id
-
-            liftIO $ putStrLn $ "paid to " <> T.unpack project_name
-
-            return True
-
 
         dropPledges (NegativeBalances project_id negative_balances) = runDB $ do
             update $ \p -> do
@@ -122,6 +127,6 @@ main = do
 
             return (project, payday)
 
-        forM_ projects $ retry . flip catch dropPledges . payout
+        forM_ projects $ retry . flip catch dropPledges . runDB . payout now
 
 
