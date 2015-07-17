@@ -1,21 +1,16 @@
 import Import hiding (runDB)
 
-import Settings
-import Yesod.Default.Config
-
+import           Control.Exception.Lifted (throw, catch, Exception)
+import           Control.Monad.Logger
+import           Control.Monad.Trans.Resource
 import qualified Data.Text as T
+import           Data.Typeable
+import qualified Database.Persist.Sql
+import           Yesod.Default.Config
 
 import Model.Project
 import Model.Currency
-
-import qualified Database.Persist.Sql
-
-import Control.Monad.Logger
-import Control.Monad.Trans.Resource
-
-import Data.Typeable
-
-import Control.Exception.Lifted (throw, catch, Exception)
+import Settings
 
 retry :: Monad m => m Bool -> m ()
 retry x = x >>= \x' -> unless x' $ retry x
