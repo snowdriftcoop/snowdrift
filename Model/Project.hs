@@ -285,9 +285,7 @@ projectComputeShareValue patronPledgeLevel =
 
 -- signature needs to remain generic, for SnowdriftProcessPayments
 updateShareValue
-    :: ( MonadThrow m
-       , MonadIO m
-       , MonadBaseControl IO m
+    :: ( MonadBaseControl IO m
        , MonadLogger m
        , MonadResource m)
     => ProjectId
