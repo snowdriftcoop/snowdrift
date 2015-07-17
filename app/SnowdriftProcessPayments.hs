@@ -95,6 +95,24 @@ dropPledges (NegativeBalances project_id negative_balances) = do
 
     return False
 
+projectsToPay :: MonadIO m
+              => UTCTime
+              -> SqlPersistT m [(Entity Project, Entity Payday)]
+projectsToPay now =
+    select $
+    from $ \(project
+        `LeftOuterJoin` last_payday
+        `InnerJoin` payday) -> do
+    on_ $ payday ^. PaydayDate
+        >. coalesceDefault
+            [ last_payday ?. PaydayDate ]
+            (project ^. ProjectCreatedTs)
+    on_ $ project ^. ProjectLastPayday ==. last_payday ?. PaydayId
+    where_ $ payday ^. PaydayDate <=. val now
+    orderBy [ asc $ payday ^. PaydayDate
+            , desc $ project ^. ProjectShareValue ]
+    return (project, payday)
+
 main :: IO ()
 main = do
     conf <- fromArgs parseExtra
@@ -111,24 +129,6 @@ main = do
         runDB sql = Database.Persist.Sql.runPool dbconf sql pool_conf
 
     runStdoutLoggingT $ runResourceT $ do
-        projects <- runDB $
-            select $
-            from $ \(project
-                `LeftOuterJoin` last_payday
-                `InnerJoin` payday) -> do
-            on_ $ payday ^. PaydayDate
-                >. coalesceDefault
-                    [ last_payday ?. PaydayDate ]
-                    (project ^. ProjectCreatedTs)
-            on_ $ project ^. ProjectLastPayday ==. last_payday ?. PaydayId
-
-            where_ $ payday ^. PaydayDate <=. val now
-
-            orderBy [ asc $ payday ^. PaydayDate
-                    , desc $ project ^. ProjectShareValue ]
-
-            return (project, payday)
+        projects <- runDB $ projectsToPay now
 
         forM_ projects $ retry . flip catch (runDB . dropPledges) . runDB . payout now
-
-
