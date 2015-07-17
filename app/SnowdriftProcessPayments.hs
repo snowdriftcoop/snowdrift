@@ -82,6 +82,19 @@ payout now (Entity project_id project, Entity payday_id _) = do
 
     return True
 
+dropPledges :: (MonadBaseControl IO m, MonadLogger m, MonadResource m)
+            => NegativeBalances
+            -> SqlPersistT m Bool
+dropPledges (NegativeBalances project_id negative_balances) = do
+    update $ \p -> do
+        set p [ PledgeFundedShares -=. val 1 ]
+        where_ $ p ^. PledgeUser `in_` valList negative_balances
+            &&. p ^. PledgeFundedShares >. val 0
+
+    updateShareValue project_id
+
+    return False
+
 main :: IO ()
 main = do
     conf <- fromArgs parseExtra
@@ -96,16 +109,6 @@ main = do
     let runDB :: (MonadIO m, MonadBaseControl IO m, MonadLogger m)
               => SqlPersistT m a -> m a
         runDB sql = Database.Persist.Sql.runPool dbconf sql pool_conf
-
-        dropPledges (NegativeBalances project_id negative_balances) = runDB $ do
-            update $ \p -> do
-                set p [ PledgeFundedShares -=. val 1 ]
-                where_ $ p ^. PledgeUser `in_` valList negative_balances
-                    &&. p ^. PledgeFundedShares >. val 0
-
-            updateShareValue project_id
-
-            return False
 
     runStdoutLoggingT $ runResourceT $ do
         projects <- runDB $
@@ -126,6 +129,6 @@ main = do
 
             return (project, payday)
 
-        forM_ projects $ retry . flip catch dropPledges . runDB . payout now
+        forM_ projects $ retry . flip catch (runDB . dropPledges) . runDB . payout now
 
 
