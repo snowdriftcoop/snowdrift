@@ -71,9 +71,8 @@ payout now (Entity project_id project, Entity payday_id _) = do
 
     let negative_balances = filter ((< 0) . snd) user_balances
 
-    when (not $ null negative_balances)
-         (throw $
-            NegativeBalances project_id $ map fst negative_balances)
+    unless (null negative_balances)
+           (throw $ NegativeBalances project_id $ map fst negative_balances)
 
     update $ \p -> do
         set p [ ProjectLastPayday =. val (Just payday_id) ]
