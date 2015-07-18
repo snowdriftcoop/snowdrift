@@ -743,7 +743,17 @@ getTicketsR :: Text -> Handler Html
 getTicketsR project_handle = do
     muser_id <- maybeAuthId
 
-    ((result, formWidget), encType) <- runFormGet searchWidget
+    (project_id, project, tagged_tickets) <- runYDB $ do
+        Entity project_id project <- getBy404 (UniqueProjectHandle project_handle)
+        tagged_tickets <- fetchProjectOpenTicketsDB project_id muser_id
+        return (project_id, project, tagged_tickets)
+
+    github_issues <- getGithubIssues project
+
+    (ptags, otags) <- runDB $ getProjectTagList project_id
+    let tags = (map (tagName . entityVal) ptags) ++ (map (tagName . entityVal) otags)
+    
+    ((result, formWidget), encType) <- runFormGet $ searchForm tags
     let (filter_expression, order_expression) = case result of
             FormSuccess x -> (either
                                 (const defaultFilter)
@@ -755,12 +765,6 @@ getTicketsR project_handle = do
                                 (parseOrderExpression $ searchSortString x))
             _ -> (defaultFilter, defaultOrder)
 
-    (project, tagged_tickets) <- runYDB $ do
-        Entity project_id project <- getBy404 (UniqueProjectHandle project_handle)
-        tagged_tickets <- fetchProjectOpenTicketsDB project_id muser_id
-        return (project, tagged_tickets)
-
-    github_issues <- getGithubIssues project
 
     let issues = sortBy (flip compare `on` order_expression . issueOrderable) $
                    filter (filter_expression . issueFilterable) $

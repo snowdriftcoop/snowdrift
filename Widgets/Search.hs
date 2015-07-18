@@ -1,19 +1,18 @@
 module Widgets.Search where
 
 import Import
--- import Model.Project
 import qualified Data.Text as T
 
 data FilterClaimStatus = Claimed | Unclaimed | All deriving Eq
 
 data SearchParameters = SearchParameters
     { claimed :: FilterClaimStatus
-    , tags :: Maybe Text
+    , tags :: [(Text, Text)]
     , sort :: Maybe Text
     }
 
-searchWidget :: Form SearchParameters
-searchWidget extra = do
+searchForm :: [Text] -> Form SearchParameters
+searchForm tags extra = do
     let claimedList = [("All" :: Text, All),
                     ("Claimed", Claimed),
                     ("Unclaimed", Unclaimed)]
@@ -22,8 +21,7 @@ searchWidget extra = do
         (radioFieldList claimedList)
         "Claimed"
         (Just All)
-    --(tagsRes, tagsView) <- mopt textField "Tags" Nothing
-    (tagsRes, _) <- mopt textField "Tags" Nothing
+    (tagsRes, tagsView) <- mreq (tagWidget tags) "Tags" Nothing
     (sortRes, sortView) <- mopt textField "Sort" Nothing
 
     let searchRes = SearchParameters 
@@ -48,21 +46,35 @@ searchWidget extra = do
                   <option>AND
                 <input type="date">
               <p>tags:
-              <p>
-                <input type="radio" name="sql">include
-                <input type="radio" name="sql">exclude
-                <input type="radio" name="sql" checked="yes">doesn't matter
-                sql 
-              <p>
-                <input type="radio" name="newbie-friendly">include
-                <input type="radio" name="newbie-friendly">exclude
-                <input type="radio" name="newbie-friendly" checked="yes">doesn't matter
-                newbie-friendly
+              ^{fvInput tagsView}
             <div>
               <p>Sort: ^{fvInput sortView}
           |]
 
     return (searchRes, widget)
+
+tagWidget :: [Text] -> Field Handler [(Text, Text)]
+tagWidget tags = Field
+    { fieldParse = \tagSelectValues _ ->
+          if (length tagSelectValues > 0) then
+              return $ Right $ Just $ zip tags tagSelectValues
+          else
+              return $ Left "Error with tag selection: No input."
+    , fieldView = \_ _ otherAttrs _ _ ->
+                    [whamlet|
+                        $forall tag <- tags
+                          <div .row>
+                            <div .col-md-2>
+                                <input type=radio name=#{tag} *{otherAttrs}>include
+                            <div .col-md-2>
+                                <input type=radio name=#{tag} *{otherAttrs}>exclude
+                            <div .col-md-2>
+                                <input type=radio name=#{tag} checked *{otherAttrs}>doesn't matter
+                            <div .col-md-offset-2 .col-md-4>
+                                #{tag}
+                    |]
+    , fieldEnctype = UrlEncoded
+    }
 
 searchFilterString :: SearchParameters -> Text
 searchFilterString (SearchParameters Claimed tags _ ) = 
@@ -72,8 +84,8 @@ searchFilterString (SearchParameters Unclaimed tags _ ) =
 searchFilterString (SearchParameters All tags _) =
         T.append T.empty $ parseTags tags
 
-parseTags :: Maybe Text -> Text
-parseTags t = fromMaybe T.empty t
+parseTags :: [(Text, Text)] -> Text
+parseTags t = T.concat $ map fst t
 
 searchSortString :: SearchParameters -> Text
 searchSortString (SearchParameters _ _ sortString) = fromMaybe T.empty sortString
