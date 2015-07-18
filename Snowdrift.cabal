@@ -268,17 +268,18 @@ executable SnowdriftProcessPayments
     main-is:           SnowdriftProcessPayments.hs
     hs-source-dirs:    app
     build-depends:     base
-                     , Snowdrift
-                     , yesod
-                     , time
-                     , text
-                     , persistent
-                     , monad-logger
+                     , blaze-builder
                      , bytestring
                      , fast-logger
-                     , blaze-builder
-                     , resourcet
                      , lifted-base
+                     , monad-logger
+                     , mtl
+                     , persistent
+                     , resourcet
+                     , Snowdrift
+                     , text
+                     , time
+                     , yesod
 
     ghc-options:       -threaded -O2
 

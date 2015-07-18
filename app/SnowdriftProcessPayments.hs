@@ -1,8 +1,10 @@
-import Import hiding (runDB)
+import Import hiding (runDB, runSDB)
 
-import           Control.Exception.Lifted (throw, catch, Exception)
+import           Control.Exception.Lifted (throw, Exception)
 import           Control.Monad.Logger
+import           Control.Monad.Reader
 import           Control.Monad.Trans.Resource
+import           Control.Monad.Writer
 import qualified Data.Text as T
 import           Data.Typeable
 import qualified Database.Persist.Sql
@@ -12,8 +14,8 @@ import Model.Project
 import Model.Currency
 import Settings
 
-retry :: Monad m => m Bool -> m ()
-retry x = x >>= \x' -> unless x' $ retry x
+-- retry :: Monad m => m Bool -> m ()
+-- retry x = x >>= \x' -> unless x' $ retry x
 
 data NegativeBalances = NegativeBalances ProjectId [UserId]
     deriving (Show, Typeable)
@@ -25,8 +27,6 @@ payout :: (MonadIO m, Functor m)
        -> (Entity Project, Entity Payday)
        -> SqlPersistT m Bool
 payout now (Entity project_id project, Entity payday_id _) = do
-
-
     let project_name = projectName project
 
     pledges <- select $ from $ \pledge -> do
@@ -77,19 +77,6 @@ payout now (Entity project_id project, Entity payday_id _) = do
 
     return True
 
-dropPledges :: (MonadBaseControl IO m, MonadLogger m, MonadResource m)
-            => NegativeBalances
-            -> SqlPersistT m Bool
-dropPledges (NegativeBalances project_id negative_balances) = do
-    update $ \p -> do
-        set p [ PledgeFundedShares -=. val 1 ]
-        where_ $ p ^. PledgeUser `in_` valList negative_balances
-            &&. p ^. PledgeFundedShares >. val 0
-
-    updateShareValue project_id
-
-    return False
-
 projectsToPay :: MonadIO m
               => UTCTime
               -> SqlPersistT m [(Entity Project, Entity Payday)]
@@ -108,6 +95,46 @@ projectsToPay now =
             , desc $ project ^. ProjectShareValue ]
     return (project, payday)
 
+rebalanceAllPledges :: (MonadWriter [PledgeId] (t (ReaderT SqlBackend m))
+                       ,MonadTrans t
+                       ,MonadBaseControl IO m
+                       ,MonadLogger m
+                       ,MonadResource m
+                       )
+                    => t (SqlPersistT m) ()
+rebalanceAllPledges = do
+    unders <- lift underfundedPatrons
+    unless (null unders) $ do
+        maxUnders <- lift $ maxShares Nothing unders
+        lift $ dropShares maxUnders
+        lift $ mapM_ updateShareValue =<< updatedProjects maxUnders
+        tell maxUnders
+        rebalanceAllPledges
+
+updatedProjects :: (MonadIO m, Functor m)
+                => [PledgeId]
+                -> SqlPersistT m [ProjectId]
+updatedProjects pledges = fmap (map (pledgeProject . entityVal))
+                               (selectList [PledgeId <-. pledges] [])
+
+runDB :: (PersistConfig c, MonadBaseControl IO m, MonadIO m)
+      => c
+      -> PersistConfigPool c
+      -> PersistConfigBackend c (ResourceT (LoggingT m)) a
+      -> m a
+runDB dbconf poolconf sql =
+    runStdoutLoggingT $
+        runResourceT $ Database.Persist.Sql.runPool dbconf sql poolconf
+
+runSDB :: (PersistConfig c, MonadBaseControl IO m, MonadIO m)
+      => c
+      -> PersistConfigPool c
+      -> WriterT t (PersistConfigBackend c (ResourceT (LoggingT m))) b
+      -> m b
+runSDB dbconf poolconf sql = do
+    (a, _w) <- runDB dbconf poolconf (runWriterT sql)
+    return a
+
 main :: IO ()
 main = do
     conf <- fromArgs parseExtra
@@ -119,10 +146,8 @@ main = do
 
     now <- liftIO getCurrentTime
 
-    let runDB :: (MonadIO m, MonadBaseControl IO m, MonadLogger m)
-              => SqlPersistT m a -> m a
-        runDB sql = Database.Persist.Sql.runPool dbconf sql pool_conf
-
-    runStdoutLoggingT $ runResourceT $ runDB $ do
-        projects <- projectsToPay now
-        forM_ projects $ retry . flip catch dropPledges . payout now
+    return ()
+    runSDB dbconf pool_conf $ do
+        projects <- lift $ projectsToPay now
+        lift $ mapM_ (payout now) projects
+        rebalanceAllPledges
