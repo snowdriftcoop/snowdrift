@@ -11,6 +11,4 @@ extra-deps:
 - yesod-markdown-0.9.4
 # Transitive dep of github
 - failure-0.2.0.3
-# Constrained to different version by cabal file
-- yesod-test-1.4.2.2
 resolver: lts-2.13

@@ -92,7 +92,7 @@ runDiscussionTest label discussion_page_url comment_url new_thread_url comment_r
             get200 $ comment_rethread_url reply_comment
 
             withStatus 303 True $ request $ do
-                addNonce
+                addToken
                 setMethod "POST"
                 setUrl $ comment_rethread_url reply_comment
                 byLabel "New Parent Url" "/p/snowdrift/w/en/about/d"
@@ -116,7 +116,7 @@ runDiscussionTest label discussion_page_url comment_url new_thread_url comment_r
                 get200 $ comment_rethread_url first_message
 
                 withStatus 303 True $ request $ do
-                    addNonce
+                    addToken
                     setMethod "POST"
                     setUrl $ comment_rethread_url first_message
                     byLabel "New Parent Url" $ T.pack $ "/p/snowdrift/w/en/about/c/" ++ (\(PersistInt64 i) -> show i) (toPersistValue second_message)
@@ -162,7 +162,7 @@ runDiscussionTest label discussion_page_url comment_url new_thread_url comment_r
             get200 $ comment_rethread_url originalId
 
             withStatus 303 True $ request $ do
-                addNonce
+                addToken
                 setMethod "POST"
                 setUrl $ comment_rethread_url originalId
                 byLabel "New Parent Url" "/p/snowdrift/w/en/intro/d"
