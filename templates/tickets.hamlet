@@ -7,18 +7,15 @@
       <input type=submit value="update view">
   <div .col-sm-6>
     <p>
-      <strong>To make a new ticket: #
-      Post a comment on the general
+      To post new issues, comment on the general
       <a href=@{ProjectDiscussionR $ projectHandle project}>
         #{projectName project} discussion
-      or at the discussion for a relevant
+      or the discussion for a relevant
       <a href=@{WikiPagesR $ projectHandle project}>
-        wiki page
-      and include a line with the text <code>ticket: </code>
-      followed by an appropriate ticket title.
-      <em>
-        You could also post a plain comment, and related
-        ticket(s) can be worked out in discussion…
+        wiki page</a>.
+      More details at the
+      <a href=@{WikiR "snowdrift" LangEn "tickets"}>
+        Snowdrift.coop tickets wiki page</a>.
 
 <div .text-center>
   $with num_tickets <- length tagged_tickets
