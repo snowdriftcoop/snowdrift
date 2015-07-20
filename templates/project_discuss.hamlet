@@ -1,17 +1,19 @@
-<h1 .text-center> #{projectName project} general discussion
+<h1 .text-center>#{projectName project} general discussion
 
 <p>
-  Note: see additional discussion alongside project
-  <a href=@{WikiPagesR (projectHandle project)}> wiki pages
+  Note: We have additional discussion boards for project
+  <a href=@{WikiPagesR $ projectHandle project}>wiki pages
   and
-  <a href=@{ProjectBlogR $ projectHandle project}> blog posts
+  <a href=@{ProjectBlogR $ projectHandle project}>blog posts</a>.
+  Moderators may move comments from this general board to other appropriate
+  areas.
 
 <div .page-toolbox>
   <div .page-tool>
-    <a href=@{ProjectR project_handle}> back to main project page
+    <a href=@{ProjectR project_handle}>back to main project page
   $if has_comments
     <div .page-tool>
-      <a href=@{NewProjectDiscussionR project_handle}> new topic
+      <a href=@{NewProjectDiscussionR project_handle}>new topic
   <div .page-tool>
     <a href=@{ProjectDiscussionR project_handle}?state=closed>
       closed threads
@@ -21,11 +23,11 @@
 
 $if not has_comments
   $if isJust muser
-    <form action=@{NewProjectDiscussionR project_handle} method="POST">
+    <form action=@{NewProjectDiscussionR project_handle} method=POST>
       ^{comment_form}
-      <input type="submit" name="mode" value="preview">
+      <input type=submit name=mode value=preview>
   $else
     <p>
       There is no discussion here yet.
-      <a href=@{AuthR LoginR}> Sign in
+      <a href=@{AuthR LoginR}>Sign in
       to start a new topic.
