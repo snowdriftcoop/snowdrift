@@ -754,8 +754,9 @@ getTicketsR project_handle = do
     let tags = (map (tagName . entityVal) ptags) ++ (map (tagName . entityVal) otags)
     
     ((result, formWidget), encType) <- runFormGet $ searchForm tags
-    let (filter_expression, order_expression) = case result of
-            FormSuccess x -> (either
+    let (filter_string, filter_expression, order_expression) = case result of
+            FormSuccess x -> (searchFilterString x, 
+                              either
                                 (const defaultFilter)
                                 id
                                 (parseFilterExpression $ searchFilterString x),
@@ -763,7 +764,7 @@ getTicketsR project_handle = do
                                 (const defaultOrder)
                                 id
                                 (parseOrderExpression $ searchSortString x))
-            _ -> (defaultFilter, defaultOrder)
+            _ -> (T.empty, defaultFilter, defaultOrder)
 
 
     let issues = sortBy (flip compare `on` order_expression . issueOrderable) $
@@ -772,6 +773,9 @@ getTicketsR project_handle = do
 
     defaultLayout $ do
         snowdriftTitle $ projectName project <> " Tickets"
+        [whamlet|
+          <p>Filter String: #{filter_string}
+        |]
         $(widgetFile "tickets")
 
 

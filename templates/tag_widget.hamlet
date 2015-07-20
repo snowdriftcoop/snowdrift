@@ -1,0 +1,10 @@
+<div .container-fluid>
+$forall tag <- tags
+  <div .row>
+    <div .col-xs-6>
+      #{tag}:
+    <div .col-xs-6>
+      <select name=#{tag} .form-control>
+        <option>include
+        <option>exclude
+        <option selected>doesn't matter

@@ -1,0 +1,19 @@
+<div .container-fluid>
+  <div .row>
+    <div .col-xs-2>
+      <select .form-control>
+        <option>
+        <option>Created
+        <option>Last Updated
+    <div .col-xs-2>
+      <select .form-control>
+        <option>
+        <option>before
+        <option>after
+        <option>between
+    <div .col-xs-3>
+        <input type="date" name="start" .form-control>
+    <div .col-xs-2>
+        and
+    <div .col-xs-3>
+        <input type="date" name="end" .form-control>

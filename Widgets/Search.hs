@@ -1,12 +1,22 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Widgets.Search where
 
-import Import
+import Import hiding (parseTime)
 import qualified Data.Text as T
 
 data FilterClaimStatus = Claimed | Unclaimed | All deriving Eq
 
+data TimeParameters = TimeParameters
+    { basedON :: Text
+    , criteria :: Text
+    , startTime :: Text
+    , endTime :: Text
+    }
+
 data SearchParameters = SearchParameters
     { claimed :: FilterClaimStatus
+    , time :: TimeParameters
     , tags :: [(Text, Text)]
     , sort :: Maybe Text
     }
@@ -21,11 +31,13 @@ searchForm tags extra = do
         (radioFieldList claimedList)
         "Claimed"
         (Just All)
+    (timeRes, timeView) <- mreq timeWidget "Time" Nothing
     (tagsRes, tagsView) <- mreq (tagWidget tags) "Tags" Nothing
     (sortRes, sortView) <- mopt textField "Sort" Nothing
 
     let searchRes = SearchParameters 
                     <$> claimedRes
+                    <*> timeRes
                     <*> tagsRes
                     <*> sortRes
 
@@ -34,17 +46,8 @@ searchForm tags extra = do
             #{extra}
             <div>
               <p>^{fvInput claimedView}
-              <p>
-                <select>
-                  <option>
-                  <option>BEFORE
-                  <option>AFTER
-                  <option>BETWEEN
-                <input type="date">
-                <select>
-                  <option>
-                  <option>AND
-                <input type="date">
+              <p>time:
+              ^{fvInput timeView}
               <p>tags:
               ^{fvInput tagsView}
             <div>
@@ -53,6 +56,16 @@ searchForm tags extra = do
 
     return (searchRes, widget)
 
+timeWidget :: Field Handler TimeParameters
+timeWidget = Field
+    { fieldParse = \timeSelectValues _ ->
+        case timeSelectValues of
+            [a, b, c, d] -> return $ Right $ Just $ TimeParameters a b c d
+            _ -> return $ Left "Error with time selection: Missing/Too Much input."
+    , fieldView = \_ _ _ _ _ -> $(widgetFile "time_widget")
+    , fieldEnctype = UrlEncoded
+    }
+
 tagWidget :: [Text] -> Field Handler [(Text, Text)]
 tagWidget tags = Field
     { fieldParse = \tagSelectValues _ ->
@@ -60,32 +73,48 @@ tagWidget tags = Field
               return $ Right $ Just $ zip tags tagSelectValues
           else
               return $ Left "Error with tag selection: No input."
-    , fieldView = \_ _ otherAttrs _ _ ->
-                    [whamlet|
-                        $forall tag <- tags
-                          <div .row>
-                            <div .col-md-2>
-                                <input type=radio name=#{tag} *{otherAttrs}>include
-                            <div .col-md-2>
-                                <input type=radio name=#{tag} *{otherAttrs}>exclude
-                            <div .col-md-2>
-                                <input type=radio name=#{tag} checked *{otherAttrs}>doesn't matter
-                            <div .col-md-offset-2 .col-md-4>
-                                #{tag}
-                    |]
+    , fieldView = \_ _ _ _ _ -> $(widgetFile "tag_widget")
     , fieldEnctype = UrlEncoded
     }
 
 searchFilterString :: SearchParameters -> Text
-searchFilterString (SearchParameters Claimed tags _ ) = 
-        T.append "CLAIMED AND " $ parseTags tags
-searchFilterString (SearchParameters Unclaimed tags _ ) =
-        T.append "UNCLAIMED AND " $ parseTags tags
-searchFilterString (SearchParameters All tags _) =
-        T.append T.empty $ parseTags tags
+searchFilterString (SearchParameters Claimed time tags _ ) = 
+        T.intercalate " " 
+            [(T.pack "CLAIMED AND"),
+             (parseTime time),
+             (parseTags tags)
+            ]
+        -- T.append "CLAIMED AND " $ parseTags tags
+searchFilterString (SearchParameters Unclaimed time tags _ ) =
+        T.intercalate " "
+            [(T.pack "UNCLAIMED AND"),
+             (parseTime time),
+             (parseTags tags)
+            ]
+        --T.append "UNCLAIMED AND " $ parseTags tags
+searchFilterString (SearchParameters All time tags _) =
+        T.intercalate " "
+            [(parseTime time),
+             (parseTags tags)
+            ]
+        --T.append T.empty $ parseTags tags
+
+parseTime :: TimeParameters -> Text
+parseTime (TimeParameters base crit start end)
+        | (base == "Created") || (base == "Last Updated") = T.toUpper $
+                if (crit == "between") then
+                    T.intercalate " " [base, crit, start, "AND", end]
+                else
+                    T.intercalate " " [base, crit, start]
+        | otherwise = T.empty
 
 parseTags :: [(Text, Text)] -> Text
-parseTags t = T.concat $ map fst t
+parseTags t = T.intercalate " AND " $ map parseTag t
+    where parseTag (tag, response)
+              | (tag == T.empty) = T.empty
+              | (response == "include") = "(" <> tag <> ")"
+              | (response == "exclude") = "(NOT " <> tag <> ")"
+              | otherwise = T.empty
 
 searchSortString :: SearchParameters -> Text
-searchSortString (SearchParameters _ _ sortString) = fromMaybe T.empty sortString
+searchSortString (SearchParameters _ _ _ sortString) = fromMaybe T.empty sortString
