@@ -9,7 +9,8 @@ import Model.Currency
 import Model.Project (projectComputeShareValue, fetchProjectSharesDB)
 
 import Control.Applicative ((<$>))
-import Database.Esqueleto hiding (delete, val)
+import Database.Esqueleto hiding (delete)
+import qualified Database.Esqueleto as E
 import Data.Int (Int64)
 import Data.List (delete)
 import Data.Monoid ((<>))
@@ -24,6 +25,7 @@ mechanismSpecs = ydescribe "mechanism" $ do
     testFormula
     testPledges
     testPPrinters
+    testUnderfunded
 
 testFormula :: Spec
 testFormula = yit "formula" $ do
@@ -275,13 +277,13 @@ pprintSymbol SCent   str = str <> "¢"
 -- and a negative value match the expectations.
 errorUnlessExpectedPosAndNeg :: Text -> Symbol -> String -> (Milray -> String)
                              -> (Int64 -> Milray) -> Int64 -> Example ()
-errorUnlessExpectedPosAndNeg msg symbol expected ppr con val = do
+errorUnlessExpectedPosAndNeg msg symbol expected ppr con value = do
     errorUnlessExpected msg
         (pprintSymbol symbol expected)
-        (ppr $ con val)
+        (ppr $ con value)
     errorUnlessExpected (msg <> ", negative amount")
         (pprintSymbol symbol ("-" <> expected))
-        (ppr $ con $ negate val)
+        (ppr $ con $ negate value)
 
 -- Using something like 'maxBound :: Int64' would be expensive because
 -- of the way bounds are used in generators, and would lead to
@@ -424,3 +426,102 @@ testPPrinters = ydescribe "pretty-printers" $ do
         -- Ditto.
         testProperty "whole dollars are printed correctly" $
             testCurrency SDollar (genStep 10000 20000 bound) 4 10000
+
+fundedShares :: (Functor m, MonadIO m)
+             => UserId -> ProjectId -> SqlPersistT m [Int64]
+fundedShares user_id project_id =
+    fmap (fmap unValue) $
+    select $ from $ \p -> do
+        where_ $ p ^. PledgeUser    ==. val user_id
+             &&. p ^. PledgeProject ==. val project_id
+        return $ p ^. PledgeFundedShares
+
+-- | Delete all pledges to a project and set the share value to zero.
+dropPledgesAndShareValue :: (Functor m, MonadIO m)
+                         => ProjectId -> SqlPersistT m ()
+dropPledgesAndShareValue project_id = do
+    E.delete $ from $ \p ->
+        where_ $ p ^. PledgeProject ==. val project_id
+    E.update $ \p -> do
+        set p [ProjectShareValue E.=. val (Milray 0)]
+        where_ $ p ^. ProjectId ==. val project_id
+
+errorUnlessFundedShares :: Text -> NamedUser -> ProjectId -> Int64
+                        -> Example ()
+errorUnlessFundedShares msg user project_id value = do
+    user_id <- userId user
+    testDB (fundedShares user_id project_id) >>=
+        errorUnlessExpected msg [value]
+
+setBalanceAndPledge :: NamedUser -> Milray -> ProjectId -> Int64 -> Example ()
+setBalanceAndPledge user balance project_id pledge_value = do
+    user_id <- userId user
+    testDB $ setBalance user_id balance
+
+    loginAs user
+    pledge project_id pledge_value
+
+    errorUnlessFundedShares
+        (shpack user <> "'s shares")
+        user project_id pledge_value
+
+-- | Test whether user's pledge gets decreased when they can no longer
+-- support the project because another patron joins.
+testUnderfunded :: Spec
+testUnderfunded = ydescribe "underfunded" $ do
+    yit "one underfunded patron, two patrons" $ do
+        snowdrift_id <- snowdriftId
+        testDB $ dropPledgesAndShareValue snowdrift_id
+
+        -- Set Mary's balance to $1.00 and pledge $1.00.
+        setBalanceAndPledge Mary (Milray 10000) snowdrift_id 1000
+        -- Set Bob's balance to $20.00 and pledge $1.00.
+        setBalanceAndPledge Bob (Milray 200000) snowdrift_id 1000
+
+        errorUnlessFundedShares
+            "Mary's shares after correction"
+            Mary snowdrift_id 500
+
+    yit "one underfunded patron, three patrons" $ do
+        snowdrift_id <- snowdriftId
+        testDB $ dropPledgesAndShareValue snowdrift_id
+
+        -- Set Mary's balance to $2.00 and pledge $1.00.
+        setBalanceAndPledge Mary (Milray 20000) snowdrift_id 1000
+        -- Set Bob's balance to $12.00 and pledge $2.00.
+        setBalanceAndPledge Bob (Milray 120000) snowdrift_id 2000
+        -- Set Sue's balance to $27.00 and pledge $3.00.
+        setBalanceAndPledge Sue (Milray 270000) snowdrift_id 3000
+
+        errorUnlessFundedShares
+            "Mary's shares after correction"
+            Mary snowdrift_id 666
+
+        errorUnlessFundedShares
+            "Bob's shares after correction"
+            Bob snowdrift_id 2000
+
+    yit "one underfunded patron, four patrons" $ do
+        snowdrift_id <- snowdriftId
+        testDB $ dropPledgesAndShareValue snowdrift_id
+
+        -- Set Mary's balance to $2.00 and pledge $1.00.
+        setBalanceAndPledge Mary (Milray 20000) snowdrift_id 1000
+        -- Set Bob's balance to $12.00 and pledge $2.00.
+        setBalanceAndPledge Bob (Milray 120000) snowdrift_id 2000
+        -- Set Sue's balance to $27.00 and pledge $3.00.
+        setBalanceAndPledge Sue (Milray 270000) snowdrift_id 3000
+        -- Set Joe's balance to $54.00 and pledge $4.00.
+        setBalanceAndPledge Joe (Milray 540000) snowdrift_id 4000
+
+        errorUnlessFundedShares
+            "Mary's shares after correction"
+            Mary snowdrift_id 500
+
+        errorUnlessFundedShares
+            "Bob's shares after correction"
+            Bob snowdrift_id 2000
+
+        errorUnlessFundedShares
+            "Sue's shares after correction"
+            Sue snowdrift_id 3000
