@@ -23,7 +23,6 @@ module Model.Project
     , fetchProjectPledgesDB
     , fetchProjectSharesDB
     , insertProjectPledgeDB
-    -- TODO: rename all these... prefix fetch, suffix DB
     , getGithubIssues
     , getProjectPages
     , getProjectTagList
@@ -33,6 +32,10 @@ module Model.Project
     , summarizeProject
     , updateShareValue
     , updateUserPledge
+    -- * Balancing/deactivating pledges
+    , dropShares
+    , maxShares
+    , underfundedPatrons
     ) where
 
 import Import
@@ -285,9 +288,7 @@ projectComputeShareValue patronPledgeLevel =
 
 -- signature needs to remain generic, for SnowdriftProcessPayments
 updateShareValue
-    :: ( MonadThrow m
-       , MonadIO m
-       , MonadBaseControl IO m
+    :: ( MonadBaseControl IO m
        , MonadLogger m
        , MonadResource m)
     => ProjectId
@@ -813,7 +814,7 @@ newtype DropShare = DropShare PledgeId
 type DropShares = [DropShare]
 
 -- | Drop one share from each pledge.
-dropShares :: [PledgeId] -> DB ()
+dropShares :: MonadIO m => [PledgeId] -> SqlPersistT m ()
 dropShares [] = return ()
 dropShares ps =
     update $ \p -> do
@@ -822,7 +823,10 @@ dropShares ps =
 
 -- | Find pledges in a given project (if supplied), from a given set of
 -- users, that have the greatest number of shares (greater than 0)
-maxShares :: Maybe ProjectId -> [UserId] -> DB [PledgeId]
+maxShares :: (MonadIO m, Functor m)
+          => Maybe ProjectId
+          -> [UserId]
+          -> SqlPersistT m [PledgeId]
 maxShares _     []   = return []
 maxShares mproj uids = do
     -- select...max_ :: m [Value (Maybe a)]
@@ -849,9 +853,8 @@ maxShares mproj uids = do
                 return $ p ^. PledgeId
 
 -- | Find underfunded patrons.
--- This would be a lot nicer if we actually used the database as a
--- database.
-underfundedPatrons :: DB [UserId]
+underfundedPatrons :: (MonadIO m, Functor m)
+                   => SqlPersistT m [UserId]
 underfundedPatrons = do
     -- :: DB [(UserId, Milray, Int64)]
     pledgeList <- fmap unwrapValues $
