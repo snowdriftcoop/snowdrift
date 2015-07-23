@@ -22,10 +22,11 @@
           <li>
             <a href=@{NotificationsR}>
               $if num_unread_notifs /= 0
-                <span .glyphicon .glyphicon-envelope>&nbsp;
-                  #{num_unread_notifs}
+                <span .unread-notifs .glyphicon .glyphicon-envelope>
+                  <span .num-notifs>#{num_unread_notifs}
               $else
                 <span .glyphicon .glyphicon-envelope>
+
           $with name <- fromMaybe (userIdent user) $ userName user 
             <li>
               <a href=@{UserR user_id}>#{name}
