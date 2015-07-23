@@ -143,7 +143,6 @@ main = do
 
     now <- liftIO getCurrentTime
 
-    return ()
     runSDB dbconf pool_conf $ do
         projects <- lift $ projectsToPay now
         lift $ mapM_ (payout now) projects
