@@ -14,9 +14,6 @@ import Model.Project
 import Model.Currency
 import Settings
 
--- retry :: Monad m => m Bool -> m ()
--- retry x = x >>= \x' -> unless x' $ retry x
-
 data NegativeBalances = NegativeBalances ProjectId [UserId]
     deriving (Show, Typeable)
 
