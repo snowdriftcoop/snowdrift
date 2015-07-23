@@ -128,9 +128,7 @@ runSDB :: (PersistConfig c, MonadBaseControl IO m, MonadIO m)
       -> PersistConfigPool c
       -> WriterT t (PersistConfigBackend c (ResourceT (LoggingT m))) b
       -> m b
-runSDB dbconf poolconf sql = do
-    (a, _w) <- runDB dbconf poolconf (runWriterT sql)
-    return a
+runSDB dbconf poolconf = fmap fst . runDB dbconf poolconf . runWriterT
 
 main :: IO ()
 main = do
