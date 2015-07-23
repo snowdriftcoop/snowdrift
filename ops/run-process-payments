@@ -9,7 +9,7 @@ kyaml=/opt/keter/etc/keter-config.yaml
 if [ -e $spp -a -e $kyaml ]
 then
     # Extract PGPASS var from Keter's own config
-    pass=$(perl -ne "/PGPASS:\s*'([^']*)'/ and print \$1" $kyaml)
+    pass=$(sudo perl -ne "/PGPASS:\s*'([^']*)'/ and print \$1" $kyaml)
     # More sanity
     if [ -n "$pass" ]
     then
