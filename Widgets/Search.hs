@@ -4,6 +4,7 @@ module Widgets.Search where
 
 import Import hiding (parseTime)
 import qualified Data.Text as T
+import Debug.Trace
 
 data FilterClaimStatus = Claimed | Unclaimed | All deriving Eq
 
@@ -59,9 +60,12 @@ searchForm tags extra = do
 timeWidget :: Field Handler TimeParameters
 timeWidget = Field
     { fieldParse = \timeSelectValues _ ->
-        case timeSelectValues of
-            [a, b, c, d] -> return $ Right $ Just $ TimeParameters a b c d
-            _ -> return $ Left "Error with time selection: Missing/Too Much input."
+        trace "timeWidget fieldParse\n"
+        (case timeSelectValues of
+            [a, b, c, d] ->
+                    trace (show a ++ " " ++ show b ++ " " ++ show c ++ " " ++ show d)
+                      (return $ Right $ Just $ TimeParameters a b c d)
+            _ -> return $ Left "Error with time selection: Missing/Too Much input.")
     , fieldView = \_ _ _ _ _ -> $(widgetFile "time_widget")
     , fieldEnctype = UrlEncoded
     }
@@ -69,31 +73,33 @@ timeWidget = Field
 tagWidget :: [Text] -> Field Handler [(Text, Text)]
 tagWidget tags = Field
     { fieldParse = \tagSelectValues _ ->
-          if (length tagSelectValues > 0) then
-              return $ Right $ Just $ zip tags tagSelectValues
-          else
-              return $ Left "Error with tag selection: No input."
+          trace "tagWidget fieldParse\n"
+            (if (length tagSelectValues > 0) then
+                traceShow (zip tags tagSelectValues)
+                (return $ Right $ Just $ zip tags tagSelectValues)
+             else
+                return $ Left "Error with tag selection: No input.")
     , fieldView = \_ _ _ _ _ -> $(widgetFile "tag_widget")
     , fieldEnctype = UrlEncoded
     }
 
 searchFilterString :: SearchParameters -> Text
 searchFilterString (SearchParameters Claimed time tags _ ) = 
-        T.intercalate " " 
-            [(T.pack "CLAIMED AND"),
+        T.intercalate " AND " $ filter (not . T.null)
+            [(T.pack "CLAIMED"),
              (parseTime time),
              (parseTags tags)
             ]
         -- T.append "CLAIMED AND " $ parseTags tags
 searchFilterString (SearchParameters Unclaimed time tags _ ) =
-        T.intercalate " "
-            [(T.pack "UNCLAIMED AND"),
+        T.intercalate " AND " $ filter (not . T.null)
+            [(T.pack "UNCLAIMED"),
              (parseTime time),
              (parseTags tags)
             ]
         --T.append "UNCLAIMED AND " $ parseTags tags
 searchFilterString (SearchParameters All time tags _) =
-        T.intercalate " "
+        T.intercalate " AND " $ filter (not . T.null)
             [(parseTime time),
              (parseTags tags)
             ]
@@ -109,7 +115,7 @@ parseTime (TimeParameters base crit start end)
         | otherwise = T.empty
 
 parseTags :: [(Text, Text)] -> Text
-parseTags t = T.intercalate " AND " $ map parseTag t
+parseTags t = T.intercalate " AND " $ filter (not . T.null) (map parseTag t)
     where parseTag (tag, response)
               | (tag == T.empty) = T.empty
               | (response == "include") = "(" <> tag <> ")"
