@@ -52,6 +52,7 @@ import Control.Concurrent (threadDelay)
 import Control.Monad (when)
 import Data.Monoid ((<>))
 import Data.Time (getCurrentTime, addUTCTime)
+import Model.Currency (Milray (..))
 import Model.Language
 import Model.Notification
     ( UserNotificationType(..), UserNotificationDelivery(..)
@@ -148,7 +149,7 @@ needsLogin method url = do
     maybe (assertFailure "Should have location header") (assertLoginPage . decodeUtf8) mbloc
 
 
-data NamedUser = Bob | Mary | Joe | Sue deriving (Eq, Bounded, Enum)
+data NamedUser = Bob | Mary | Joe | Sue deriving (Eq, Bounded, Enum, Show)
 data TestUser = TestUser
 data AdminUser = AdminUser
 
@@ -510,6 +511,15 @@ loadFunds user_id n = [marked|
         setUrl route
         addPostParam "f1" $ shpack n
     |]
+
+-- | Set the user's balance to a specified value.
+setBalance :: (MonadIO m, Functor m)
+           => UserId -> Milray -> ReaderT SqlBackend m ()
+setBalance user_id n = do
+    account_id <- userAccount <$> getOrError user_id
+    Esqueleto.update $ \a -> do
+        set a [AccountBalance Esqueleto.=. val n]
+        where_ $ a ^. AccountId ==. val account_id
 
 pledgeStatus :: ProjectId -> Int64 -> Int -> Example ()
 pledgeStatus project_id shares status = [marked|
