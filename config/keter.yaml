@@ -2,7 +2,7 @@ stanzas:
     - type: webapp
       hosts:
           - snowdrift.coop
-      exec: ../dist/build/Snowdrift/Snowdrift
+      exec: ../dist/bin/Snowdrift
       args:
           - production
       env:
@@ -13,7 +13,7 @@ stanzas:
           - PGPASS
 
     - type: background
-      exec: ../dist/build/SnowdriftEmailDaemon/SnowdriftEmailDaemon
+      exec: ../dist/bin/SnowdriftEmailDaemon
       env:
           PGDATABASE: snowdrift_production
           PGUSER: snowdrift_production
@@ -40,7 +40,7 @@ extraFiles:
     - ../templates
     # Apps for cron to run
     - ../ops/run-process-payments
-    - ../dist/build/SnowdriftProcessPayments/SnowdriftProcessPayments
+    - ../dist/bin/SnowdriftProcessPayments
 
 # Assuming you have an awscli profile named 'snowdrift' that refers to the
 # Snowdrift account, the server to copy to can be acquired with:

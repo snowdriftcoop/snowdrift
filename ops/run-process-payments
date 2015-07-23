@@ -1,6 +1,6 @@
 #!/bin/bash
 
-spp=./dist/build/SnowdriftProcessPayments/SnowdriftProcessPayments
+spp=./dist/bin/SnowdriftProcessPayments
 kyaml=/opt/keter/etc/keter-config.yaml
 
 # Sanity checks
