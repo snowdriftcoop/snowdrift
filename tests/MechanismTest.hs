@@ -474,6 +474,11 @@ setBalanceAndPledge user balance project_id pledge_value = do
 -- support the project because another patron joins.
 testUnderfunded :: Spec
 testUnderfunded = ydescribe "underfunded" $ do
+    ydescribe "after new pledge" underfundedAfterPledge
+    ydescribe "after payout" underfundedAfterPayout
+
+underfundedAfterPledge :: Spec
+underfundedAfterPledge = do
     yit "one underfunded patron, two patrons" $ do
         snowdrift_id <- snowdriftId
         testDB $ dropPledgesAndShareValue snowdrift_id
@@ -530,3 +535,23 @@ testUnderfunded = ydescribe "underfunded" $ do
         errorUnlessFundedShares
             "Sue's shares after correction"
             Sue snowdrift_id 3000
+
+underfundedAfterPayout :: Spec
+underfundedAfterPayout = do
+    yit "one patron, one project" $ do
+        sid <- snowdriftId
+        now <- liftIO getCurrentTime
+        testDB $ dropPledgesAndShareValue sid
+        -- Set balance to $1.00 and pledge 60¢
+        setBalanceAndPledge Mary (Milray 10000) sid 600
+        errorUnlessFundedShares
+            "Mary's shares before payout"
+            Mary sid 600
+        -- Do the payment
+        testDB $ insert_ $ Payday now
+        processPayments "paid to Snowdrift" $ do
+            -- Check Mary's funded_shares
+            errorUnlessFundedShares
+                "Mary's shares before payout"
+                Mary sid 400
+    -- yit "pay one project, defund another" $ return ()
