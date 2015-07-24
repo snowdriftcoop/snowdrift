@@ -552,6 +552,6 @@ underfundedAfterPayout = do
         processPayments "paid to Snowdrift" $ do
             -- Check Mary's funded_shares
             errorUnlessFundedShares
-                "Mary's shares before payout"
+                "Mary's shares after payout"
                 Mary sid 400
     -- yit "pay one project, defund another" $ return ()
