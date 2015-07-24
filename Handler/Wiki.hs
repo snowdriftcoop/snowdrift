@@ -137,6 +137,7 @@ getWikiR project_handle language target = do
     let Entity _ edit:_ = pickEditsByLanguage languages edits
         htmlWiki = do
             maybe_user <- maybeAuth
+            langGetParam <- lookupGetParam "_LANG"
 
             let can_edit = fromMaybe False (userCanEditWikiPage . entityVal <$> maybe_user)
 
@@ -165,6 +166,7 @@ getWikiR project_handle language target = do
                     , language = language
                     , target = target
                     , can_edit = can_edit
+                    , lang_param = langGetParam
                     , translations = translations
                     , wiki_edit = edit
                     }
@@ -287,6 +289,7 @@ postWikiR project_handle target_language target = do
                             , language = target_language
                             , target = target
                             , can_edit = False
+                            , lang_param = Nothing
                             , translations = translations
                             , wiki_edit = WikiEdit now
                                                    user_id
@@ -542,6 +545,7 @@ postNewWikiR project_handle language target = do
                                 , language = language
                                 , target = target
                                 , can_edit = False
+                                , lang_param = Nothing
                                 , translations = []
                                 , wiki_edit = edit
                                 }
@@ -612,6 +616,7 @@ postNewWikiTranslationR project_handle language target = do
                                 , language = language
                                 , target = target
                                 , can_edit = False
+                                , lang_param = Nothing
                                 , translations = translations
                                 , wiki_edit = edit
                                 }

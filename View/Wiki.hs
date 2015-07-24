@@ -39,6 +39,7 @@ data RenderWikiArgs = RenderWikiArgs
     , language :: Language
     , target :: Text
     , can_edit :: Bool
+    , lang_param :: Maybe Text
     , translations :: [Language]
     , wiki_edit :: WikiEdit
     }
