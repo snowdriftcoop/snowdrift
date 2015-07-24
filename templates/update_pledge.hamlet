@@ -63,9 +63,9 @@ $maybe _ <- mpledge
           ^{confirm_form}
       $else
         <p>
-          If you reduce your pledge from #{show old_user_mills} to
-          #{show new_user_mills} per patron, your monthly donation will decrease
-          by #{user_decrease} to a new donation level of #{new_user_amount}.
+          If you reduce your pledge to #{show new_user_mills} per patron, your
+          monthly donation will decrease by #{user_decrease} to a new donation
+          level of #{new_user_amount}.
         <form .text-center method=POST action=@{UpdatePledgeR project_handle}>
           Lower your monthly pledge to #{show new_user_mills} per patron?
           <br>
