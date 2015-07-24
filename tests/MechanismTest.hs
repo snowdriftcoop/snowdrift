@@ -3,6 +3,7 @@
 
 module MechanismTest (mechanismSpecs) where
 
+import Prelude
 import TestImport hiding (get)
 import Model.Currency
     (Milray (..), millMilray, dropRightZeros, pprintThousands)
@@ -200,8 +201,12 @@ testPledge named_user project_id shares = do
     user_id <- userId named_user
 
     -- Get the values before the actual pledge and payout.
-    ( project_name, project_account, user_account, old_shares,
-      new_project_shares, expected_share_value ) <- testDB $ do
+    ( project_name
+     ,project_account
+     ,user_account
+     ,old_shares
+     ,new_project_shares
+     ,expected_share_value ) <- testDB $ do
         old_project_shares <- fetchProjectSharesDB project_id
         old_user_shares    <- getBy (UniquePledge user_id project_id) >>= \case
             Nothing -> return 0
