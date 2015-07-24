@@ -4,6 +4,7 @@ module TimedYesodTest
     ) where
 
 
+import Prelude
 import Yesod.Test hiding (yit)
 import qualified Yesod.Test as Y
 
