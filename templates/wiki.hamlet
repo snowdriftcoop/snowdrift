@@ -21,12 +21,6 @@
         <li>
           <a href=@?{(WikiR project_handle language target, [("_LANG", toPathPiece translation)])}>
             #{toPathPiece translation}
-
-  $if can_edit
-    <div .page-tool>
-      <a href=@?{(NewWikiTranslationR project_handle language target, [("_LANG", toPathPiece $ wikiEditLanguage wiki_edit)])}>
-        start new translation
-
 <article>
   ^{markdownWidgetWith (fixLinks project_handle discussion) (wikiEditContent wiki_edit)}
 
