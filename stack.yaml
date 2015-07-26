@@ -11,4 +11,6 @@ extra-deps:
 - yesod-markdown-0.9.4
 # Transitive dep of github
 - failure-0.2.0.3
+# Required for Windows build
+- Win32-notify-0.3.0.1
 resolver: lts-2.13
