@@ -33,8 +33,19 @@ newWikiTranslationForm wiki_edit_id language target content complete = renderBoo
 
 
 
-renderWiki :: Int -> Text -> Language -> Text -> Bool -> [Language] -> WikiEdit -> Widget
-renderWiki comment_count project_handle language target can_edit translations wiki_edit = do
+data RenderWikiArgs = RenderWikiArgs
+    { comment_count :: Int
+    , project_handle :: Text
+    , language :: Language
+    , target :: Text
+    , can_edit :: Bool
+    , lang_param :: Maybe Text
+    , translations :: [Language]
+    , wiki_edit :: WikiEdit
+    }
+
+renderWiki :: RenderWikiArgs -> Widget
+renderWiki RenderWikiArgs{..} = do
     let wiki_target_id = key $ PersistInt64 (-1)
         wiki_target = WikiTarget
             (error "attempted to access page field of fake wiki target")

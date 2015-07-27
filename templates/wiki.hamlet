@@ -6,14 +6,18 @@
         #{comment_count}
   $if can_edit
     <div .page-tool>
-      <a href=@{EditWikiR project_handle language target}>edit
+      $maybe _ <- lang_param
+        <a href=@{WikiR project_handle LangEn target}>
+          View original
+      $nothing
+        <a href=@{EditWikiR project_handle language target}>edit
 
   <div .page-tool>
     <a href=@{WikiHistoryR project_handle language target}>history
 
-  <hr>
 
   $if not (null translations)
+    <hr>
     <div .page-tool>
       translations
     <ul>
@@ -21,12 +25,6 @@
         <li>
           <a href=@?{(WikiR project_handle language target, [("_LANG", toPathPiece translation)])}>
             #{toPathPiece translation}
-
-  $if can_edit
-    <div .page-tool>
-      <a href=@?{(NewWikiTranslationR project_handle language target, [("_LANG", toPathPiece $ wikiEditLanguage wiki_edit)])}>
-        start new translation
-
 <article>
   ^{markdownWidgetWith (fixLinks project_handle discussion) (wikiEditContent wiki_edit)}
 

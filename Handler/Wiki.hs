@@ -137,6 +137,7 @@ getWikiR project_handle language target = do
     let Entity _ edit:_ = pickEditsByLanguage languages edits
         htmlWiki = do
             maybe_user <- maybeAuth
+            langGetParam <- lookupGetParam "_LANG"
 
             let can_edit = fromMaybe False (userCanEditWikiPage . entityVal <$> maybe_user)
 
@@ -159,7 +160,16 @@ getWikiR project_handle language target = do
 
             defaultLayout $ do
                 snowdriftDashTitle (projectName project) target
-                renderWiki comment_count project_handle language target can_edit translations edit
+                renderWiki
+                    RenderWikiArgs { comment_count = comment_count
+                                   , project_handle = project_handle
+                                   , language = language
+                                   , target = target
+                                   , can_edit = can_edit
+                                   , lang_param = langGetParam
+                                   , translations = translations
+                                   , wiki_edit = edit
+                                   }
 
     selectRep $ do
         provideRep $ htmlWiki
@@ -273,8 +283,21 @@ postWikiR project_handle target_language target = do
                       <> "release your contribution under the CC-BY-SA 4.0 License. "
                       <> "You agree that a hyperlink or URL is sufficient attribution under the Creative Commons license.")
                         form "update" $
-                        renderWiki 0 project_handle target_language target False translations $
-                            WikiEdit now user_id page_id edit_language content (Just comment)
+                        renderWiki
+                            RenderWikiArgs { comment_count = 0
+                                           , project_handle = project_handle
+                                           , language = target_language
+                                           , target = target
+                                           , can_edit = False
+                                           , lang_param = Nothing
+                                           , translations = translations
+                                           , wiki_edit = WikiEdit now
+                                                                  user_id
+                                                                  page_id
+                                                                  edit_language
+                                                                  content
+                                                                  (Just comment)
+                                           }
 
         FormMissing -> error "Form missing."
         FormFailure msgs -> error $ "Error submitting form: " ++ T.unpack (T.concat msgs)
@@ -516,13 +539,16 @@ postNewWikiR project_handle language target = do
                                             (Just "page created")
 
                         previewWidget form "create" $
-                            renderWiki 0
-                                       project_handle
-                                       language
-                                       target
-                                       False
-                                       []
-                                       edit
+                            renderWiki
+                                RenderWikiArgs { comment_count = 0
+                                               , project_handle = project_handle
+                                               , language = language
+                                               , target = target
+                                               , can_edit = False
+                                               , lang_param = Nothing
+                                               , translations = []
+                                               , wiki_edit = edit
+                                               }
 
         FormMissing -> error "Form missing."
         FormFailure msgs -> error $
@@ -578,9 +604,24 @@ postNewWikiTranslationR project_handle language target = do
 
                     defaultLayout $ do
                         let wiki_page_id = key $ PersistInt64 (-1)
-                            edit = WikiEdit now user_id wiki_page_id language new_content (Just "page created")
+                            edit = WikiEdit now
+                                            user_id
+                                            wiki_page_id
+                                            language
+                                            new_content
+                                            (Just "page created")
+                            wikiOpts =
+                                RenderWikiArgs { comment_count = 0
+                                               , project_handle = project_handle
+                                               , language = language
+                                               , target = target
+                                               , can_edit = False
+                                               , lang_param = Nothing
+                                               , translations = translations
+                                               , wiki_edit = edit
+                                               }
 
-                        previewWidget form "create" $ renderWiki 0 project_handle language target False translations edit
+                        previewWidget form "create" $ renderWiki wikiOpts
 
         FormMissing -> error "Form missing."
         FormFailure msgs -> error $ "Error submitting form: " ++ T.unpack (T.concat msgs)
