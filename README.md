@@ -37,9 +37,6 @@ Install [Git], [Postgres] and [Stack].
 
 See [GUIDE.md#Building] for specifics for various operating systems.
 
-An alternative process is to use a virtual machine via our [Vagrant setup].
-Vagrant works for nearly all operating systems.
-
 ## Get the code
 
 We primarily use a completely free/libre/open host for our code:
@@ -121,5 +118,4 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 [Snowdrift.coop]: https://snowdrift.coop
 [Stack]: https://github.com/commercialhaskell/stack#how-to-install
 [ticket system]: http://snowdrift.coop/p/snowdrift/t
-[Vagrant setup]: SETUP_VAGRANT.md
 [Yesod web framework]: http://www.yesodweb.com/

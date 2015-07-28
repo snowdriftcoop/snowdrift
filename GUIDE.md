@@ -150,6 +150,34 @@ instructions as appropriate.
 Next, follow the rest of the basic [README] instructions for building
 and running snowdrift.
 
+
+### Arch Linux
+
+To install dependencies, run this command as `root`:
+
+    pacman -S git postgresql
+
+To initialize the PostgreSQL database, first become the `postgres` user.
+
+    sudo -i -u postgres
+
+As the `postgres` user, run this command:
+
+    initdb --locale en_US.UTF-8 -E UTF8 -D '/var/lib/postgres/data'
+
+Then, as `root`:
+
+    systemctl enable postgresql.service
+    systemctl start postgresql.service
+
+Install the
+[haskell-stack-git](https://aur4.archlinux.org/packages/haskell-stack-git/)
+package from the AUR. Run:
+
+    stack upgrade --git
+
+Follow the rest of the instructions in the [README].
+
 ### NixOS
 
 #### Installing Stack
@@ -202,32 +230,6 @@ Afterwards you may need to create the postgres user, like so:
     sudo -su root
     createuser -s -r postgres
 
-### Arch Linux
-
-To install dependencies, run this command as `root`:
-
-    pacman -S git postgresql
-
-To initialize the PostgreSQL database, first become the `postgres` user.
-
-    sudo -i -u postgres
-
-As the `postgres` user, run this command:
-
-    initdb --locale en_US.UTF-8 -E UTF8 -D '/var/lib/postgres/data'
-
-Then, as `root`:
-
-    systemctl enable postgresql.service
-    systemctl start postgresql.service
-
-Install the
-[haskell-stack-git](https://aur4.archlinux.org/packages/haskell-stack-git/)
-package from the AUR. Run:
-
-    stack upgrade --git
-
-Follow the rest of the instructions in the [README].
 
 ### \*BSD
 
@@ -241,6 +243,7 @@ Where our instructions say `sdm init` add arguments as shown below:
 * FreeBSD: Untested but we believe `sdm init --sudoUser pgsql --pgUser
   pgsql` will work.
 
+
 ### OS X
 
 The links in the [README] should have instructions for each of the
@@ -250,9 +253,15 @@ The OS X build process seems to have some issues with postgres user names;
 until we update sdm to accept special arguments for OS X, the database set-up
 will need to be done manually. See the appendix at the end of this file.
 
+Another option is a VM via Vagrant (see below).
+
+
 ### Windows
 
-Install 32 bit PostgreSQL from
+Note: At this time, Windows builds have some issues but can work.
+Alternatively, use a GNU/Linux VM via Vagrant (see below).
+
+To install PostgreSQL, get the 32-bit version from
 <http://www.enterprisedb.com/products-services-training/pgdownload#windows>
 
 Add the PostgreSQL bin directory to the path
@@ -268,17 +277,20 @@ the use of Stack reliably on Windows yet).
 *Note:* SnowdriftEmailDaemon won't build on Windows, so `stack test` will fail.
 Building, running, and working on the site still works otherwise.
 
+
 ### Virtual Machine options / Vagrant
 
-Anyone could use a Virtual Machine to run a system known to work and then
-follow the steps for that system. To make this much easier and *integrated* with
-your existing system, we offer an option with Vagrant.
+Anyone could use a Virtual Machine with a system known to work and then
+follow the steps for that system, working entirely within the VM.
+However, to make this easier and *integrated* with your existing system,
+we offer an option with Vagrant.
 
 Our Vagrant instance uses a Debian system preset with our core dependencies.
 Vagrant then allows the build to work in the virtual machine while you continue
 using your regular text editor, file system, web browser etc.
 
 To use this option, see our [Vagrant instructions](SETUP_VAGRANT.md).
+
 
 General installation process
 ============================
@@ -307,7 +319,6 @@ For most GNU/Linux systems, simply run:
 It will prompt you for your sudo password.
 
 To set up databases manually, see the appendix at the end of this guide.
-
 
 Running the site
 ----------------
@@ -338,7 +349,6 @@ You must run `stack build` whenever you:
 We recommend `stack exec yesod devel` in almost all cases, but an alternate
 approach is to build with `stack build` and run the executable with `stack
 exec Snowdrift Development` (to stop the site in this case, use ctrl-C).
-
 
 Using the live test site
 ------------------------

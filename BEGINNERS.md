@@ -49,11 +49,11 @@ If you are on a system that does not package git yet, you may choose to
 
 ### Install Snowdrift
 
-To install locally, see the [README] for basics, and
-the [GUIDE.md] for system-specific notes and other details.
+We recommend installing locally with Stack.
+See the [README] for basics, and [GUIDE.md] for system-specific notes and other
+details.
 
-To use a virtual machine preset with the core dependencies for snowdrift,
-follow the [Vagrant setup instructions](SETUP_VAGRANT.md).
+We also have an a virtual machine option via [Vagrant](SETUP_VAGRANT.md).
 
 ## Working on the code
 
