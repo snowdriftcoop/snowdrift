@@ -5,6 +5,15 @@
         <img src=@{ImageR logo}>
       $nothing
         <img src=@{StaticR img_default_project_logo_png}>
+  $if isJust mviewer_id
+    <div .text-center>
+      $maybe project_id <- maybe_project_id
+        $if is_watching
+          <form method=POST action=@{UnwatchProjectR project_id}>
+            <input type=submit value="unwatch">
+        $else
+          <form method=POST action=@{WatchProjectR project_id}>
+            <input type=submit value="watch">
   <ul .project-nav>
     $if userIsAdmin
       <li .snowdrift-sidebar-item>
@@ -52,15 +61,6 @@
       <a href=@{WikiPagesR $ projectHandle project}>
         <span .glyphicon .glyphicon-book>
         Wiki
-  $if isJust mviewer_id
-    <div .text-center>
-      $maybe project_id <- maybe_project_id
-        $if is_watching
-          <form method=POST action=@{UnwatchProjectR project_id}>
-            <input type=submit value="unwatch">
-        $else
-          <form method=POST action=@{WatchProjectR project_id}>
-            <input type=submit value="watch">
 
 <div .row>
   <div .col-md-7 .col-sm-8 .col-xs-12>
