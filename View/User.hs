@@ -26,6 +26,8 @@ import           Widgets.ProjectPledges
 import qualified Data.Map               as M
 import qualified Data.Set               as S
 import           Data.String            (fromString)
+import qualified Data.Text              as T
+import           Network.Libravatar     (avatarUrl)
 
 createUserForm :: Maybe Text -> Form (Text, Text, Maybe Text, Maybe Text, Maybe Text, Maybe Text)
 createUserForm ident extra = do
@@ -141,6 +143,15 @@ renderUser mviewer_id user_id user projects_and_roles = do
         if should_show_est_form
             then Just <$> handlerToWidget (generateFormPost establishUserForm)
             else return Nothing
+
+    let libravatar email = avatarUrl (Left email) False Nothing Nothing
+    avatarFinal <- liftIO $
+        case (userAvatar user, userEmail user, userEmail_verified user) of
+            (Just url, _, _)            -> return $ Just url
+            (Nothing, Just email, True) -> do
+                murl <- libravatar $ T.unpack email
+                return $ murl >>= return . fromString
+            _                           -> return Nothing
 
     $(widgetFile "user")
 

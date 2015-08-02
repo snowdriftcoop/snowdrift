@@ -5,8 +5,10 @@ packages:
 - '.'
 extra-deps:
 # Absent from LTS 2.13
+- dns-2.0.0
 - mime-0.4.0.2
 - github-0.13.2
+- libravatar-0.1.0.1
 - titlecase-0.1.0.1
 - yesod-markdown-0.9.4
 # Transitive dep of github

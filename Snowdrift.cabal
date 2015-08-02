@@ -200,6 +200,7 @@ library
                  , http-types
                  -- Oh yeah!
                  , lens
+                 , libravatar
                  , lifted-base
                  , mime-mail
                  , monad-logger
