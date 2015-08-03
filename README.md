@@ -57,7 +57,7 @@ The standard command to clone the code to your local system is:
 From within the snowdrift code directory (`cd snowdrift`) run:
 
     stack setup &&
-    stack build cabal-install yesod-bin-1.4.11 &&
+    stack build cabal-install yesod-bin-1.4.11 . &&
     stack test
 
 NB: this will take a while!
@@ -73,6 +73,7 @@ NB: this will take a while!
 With everything initialized, you can now use the following commands:
 
 * `stack exec yesod devel`: run the site in development mode
+    * NB: this may take a while when first run, faster after that
     * access the site in your browser at <http://localhost:3000>
     * log in as admin with built-in system and user: `admin` pass: `admin`
     * press Enter key in terminal to stop the site

@@ -57,8 +57,8 @@ We also have an a virtual machine option via [Vagrant](SETUP_VAGRANT.md).
 
 ## Working on the code
 
-All the following assumes you have done the initial clone and install
-according to the instructions linked above.
+**All the following assumes you have done the initial clone and install
+according to the instructions linked above.**
 
 ### Basic Git setup
 
@@ -75,16 +75,19 @@ To contribute changes to the project, first
 (or sign in if you already have an account).
 
 Once signed in, go to <https://git.gnu.io/snowdrift/snowdrift>,
-and click the "Fork" button on the top right.
+and click the "Fork" link on the top right.
 
 After choosing your account for the fork, you should be at the page
 for your fork of the project. To check, see that the header
 at the top of the page has has your account name followed by "/Snowdrift".
-At the right side, middle way down, you should also see
-"Forked from: snowdrift / Snowdrift".
 
 At the top of the main page, below the header,
-you'll see a box with an address that looks like
+you'll see a box with an address.
+By default, the SSH option is selected, and we recommend SSH ideally.
+However, [SSH setup](https://git.gnu.io/help/ssh/README)
+is kind of tricky, especially for those new to SSH.
+The easier and faster way for now is to click "HTTPS" and use that address which
+will look like:
 "https://git.gnu.io/YOURNAME/snowdrift.git"
 
 Where `YOURNAME` is your git.gnu.io username.
@@ -103,9 +106,6 @@ GOES HERE` and `YOUR EMAIL GOES HERE` with your actual name and email.
     git config --global user.email "YOUR EMAIL GOES HERE"
     git config --global core.editor "nano"
 
-\* Note that overall, we recommend that you use SSH rather than HTTPS.
-However, [SSH setup](https://git.gnu.io/help/ssh/README)
-is kind of tricky, especially for those new to SSH.
 
 ### Updating your local code to snowdrift master
 
@@ -120,7 +120,7 @@ To download the latest updates of the snowdrift code:
 
 * Go to your snowdrift directory, if not there already
 * if not already on your master branch, run `git checkout master`
-* run `git pull origin/master`
+* run `git pull origin`
 
 You should have no conflicts because this is the only situation where you
 should ever change your local master.
