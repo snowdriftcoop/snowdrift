@@ -31,6 +31,11 @@ say hello!
 
 ## Building and testing the website
 
+Those with minimal technical background or new to Git or Haskell should follow
+our [Beginner's Guide], which can get anyone started making basic contributions.
+
+Otherwise, here are quick install instructions:
+
 ### Install System Dependencies
 
 Install [Git], [Postgres] and [Stack].
@@ -79,13 +84,12 @@ With everything initialized, you can now use the following commands:
 Further Information
 -------------------
 
-Those with minimal technical background should follow our [Beginner's Guide],
-which can get anyone started making basic contributions and also includes
-educational links and other info about the tools we use.
-
 As mentioned, the comprehensive [GUIDE.md] describes further technical details
 including notes for various operating systems, manual database operations, and
 more.
+
+Also, the [Beginner's Guide] includes educational links and other info about the
+tools we use.
 
 License
 -------
