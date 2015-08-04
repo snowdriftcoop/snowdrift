@@ -150,8 +150,8 @@ renderUser mviewer_id user_id user projects_and_roles = do
             (Just url, _, _)            -> return $ Just url
             (Nothing, Just email, True) -> do
                 murl <- libravatar $ T.unpack email
-                return $ murl >>= return . fromString
-            _                           -> return Nothing
+                return (fmap fromString murl)
+            _ -> return Nothing
 
     $(widgetFile "user")
 
