@@ -11,11 +11,11 @@
 ^{comment_forest}
 
 $if not has_comments
-  $if isJust muser
+  $maybe _ <- muser
     <form action=@{NewWikiDiscussionR project_handle language target} method="POST">
       ^{comment_form}
       <input type="submit" name="mode" value="preview">
-  $else
+  $nothing
     <p>
       There is no discussion here yet.
       <a href=@{AuthR LoginR}>Sign in
