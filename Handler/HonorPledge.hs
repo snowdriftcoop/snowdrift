@@ -7,6 +7,7 @@ import Model.User (establishUserDB, curUserIsEligibleEstablish)
 getHonorPledgeR :: Handler Html
 getHonorPledgeR = do
     is_elig <- curUserIsEligibleEstablish
+    muser <- maybeAuth
     defaultLayout $ do
         snowdriftTitle "Honor Pledge"
         $(widgetFile "honor-pledge")

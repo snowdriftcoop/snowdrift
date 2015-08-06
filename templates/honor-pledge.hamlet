@@ -1,25 +1,38 @@
 <h1 .text-center>The Snowdrift.coop honor pledge
 
-<p>
-  Users who accept the following pledge may freely edit wiki pages,
-  post discussion comments, and more, without requiring moderator approval each time.
+<p .honor-pledge-description>
+  After accepting the following pledge, users gain permissions including the
+  ability to edit wiki pages and post discussion comments without moderator
+  approval.
 
-<strong>
+<div .honor-pledge>
   <p>
     "I will participate at Snowdrift.coop with honesty and good faith.
     I will follow the
     <a href=@{WikiR "snowdrift" LangEn "conduct"}>Code of Conduct
-    and strive to meet further <a href=@{WikiR "snowdrift" LangEn "honor-users"}>honorable ideals</a>.
+    and strive toward further
+    <a href=@{WikiR "snowdrift" LangEn "honor-users"}>honorable ideals</a>.
   <p>
-    "If at any time I fail to live up to this commitment,
-    I will take initiative to rectify the situation and will ask for guidance as needed.
-    I will also do my part to promote these community values and assist others in meeting them."
+    "If at any time I fail to live up to this commitment, I will take initiative
+    to rectify the situation and will ask for guidance as needed. I will also
+    do my part to promote these community values and assist others in meeting
+    them."
 
 <p>
   <em>
-    See further details at the <a href=@{WikiR "snowdrift" LangEn "honor"}>honor system wiki page</a>.
+    See further explanation at the
+    <a href=@{WikiR "snowdrift" LangEn "honor"}>honor system wiki page</a>.
 
-$if is_elig
-  <form .text-center action=@{HonorPledgeR} method=post>
-    <input type="submit" value="Accept">
+$if isJust muser
+
+  $if is_elig
+    <form .text-center action=@{HonorPledgeR} method=post>
+      <input type="submit" value="Accept">
+
+$else
+  <p .not-logged-in>
+    Note: if you got to this page via an email notification of eligibility,
+    please
+    <a href=@{AuthR LoginR}>sign-in
+    and then reload this page to see the accept button.
 

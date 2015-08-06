@@ -1,0 +1,11 @@
+.honor-pledge
+    background: #EEE
+    font-weight: bold
+    margin: 1em
+    padding: 1em
+
+.not-logged-in
+    margin-top: 2em
+    background: #FED
+
+
