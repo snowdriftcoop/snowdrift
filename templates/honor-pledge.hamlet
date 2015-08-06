@@ -23,13 +23,13 @@
     See further explanation at the
     <a href=@{WikiR "snowdrift" LangEn "honor"}>honor system wiki page</a>.
 
-$if isJust muser
+$maybe _ <-  muser
 
   $if is_elig
     <form .text-center action=@{HonorPledgeR} method=post>
       <input type="submit" value="Accept">
 
-$else
+$nothing
   <p .not-logged-in>
     Note: if you got to this page via an email notification of eligibility,
     please
