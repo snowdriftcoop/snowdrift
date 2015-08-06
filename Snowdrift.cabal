@@ -37,7 +37,7 @@ library
         if flag(merge)
             ghc-options:   -Wall -Werror -O0 -fobject-code
         else
-            ghc-options:   -Werror -Wall -O2
+            ghc-options:   -Werror -Wall
 
     -- exposed-modules -- {{{2
     exposed-modules: Application
@@ -254,7 +254,7 @@ executable Snowdrift
                      , Snowdrift
                      , yesod
 
-    ghc-options:       -threaded -O2
+    ghc-options:       -threaded
 
 -- executable SnowdriftProcessPayments -- {{{1
 executable SnowdriftProcessPayments
@@ -282,7 +282,7 @@ executable SnowdriftProcessPayments
                      , time
                      , yesod
 
-    ghc-options:       -threaded -O2
+    ghc-options:       -threaded
 
     default-extensions: TemplateHaskell
                 QuasiQuotes
@@ -423,7 +423,7 @@ test-suite test
     type:              exitcode-stdio-1.0
     main-is:           main.hs
     hs-source-dirs:    tests
-    ghc-options:       -Werror -Wall -O0 -fobject-code
+    ghc-options:       -Wall -O0 -fobject-code
 
     other-modules: TestImport
                    BlogTest
