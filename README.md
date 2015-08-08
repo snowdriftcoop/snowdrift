@@ -40,7 +40,8 @@ Otherwise, here are quick install instructions:
 
 Install [Git], [Postgres] and [Stack].
 
-See [GUIDE.md#Building] for specifics for various operating systems.
+See [GUIDE.md#Building] for specifics for various operating systems and further
+notes.
 
 ## Get the code
 
