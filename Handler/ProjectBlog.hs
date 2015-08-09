@@ -24,8 +24,11 @@ import           Data.Default
 import qualified Data.Text      as T
 import           Data.Tree      (Forest, Tree)
 import qualified Data.Tree      as Tree
+import           Data.List
 
 import           Text.Cassius   (cassiusFile)
+import           Yesod.Feed
+import           Yesod.Markdown
 
 
 -- | Sanity check for Project Comment pages.
@@ -200,6 +203,49 @@ getProjectBlogR project_handle = do
 
         $(widgetFile "project_blog")
 
+--------------------------------------------------------------------------------
+-- /p/#Text/blog/!feed
+
+getProjectBlogFeedR :: Text -> Handler TypedContent
+getProjectBlogFeedR project_handle = do
+    Entity project_id project <- runYDB $ getBy404 $ UniqueProjectHandle project_handle
+
+    posts :: [Entity BlogPost] <- runDB $
+        select $
+        from $ \blog -> do
+        where_ (blog ^. BlogPostProject ==. val project_id)
+        orderBy [ desc $ blog ^. BlogPostTs, desc $ blog ^. BlogPostId ]
+        limit 10
+        return blog
+
+    entries <- forM posts $ \post -> do
+        let entry = FeedEntry {
+              feedEntryLink = BlogPostR project_handle (blogPostHandle $ entityVal post)
+            , feedEntryUpdated = (blogPostTs $ entityVal post)
+            , feedEntryTitle = (blogPostTitle $ entityVal post)
+            , feedEntryContent = markdownToHtml $ blogPostTopContent $ entityVal post
+            }
+
+        return entry
+
+    time <- lift getCurrentTime
+
+    let firstEntry = find (\_ -> True) entries
+
+    let afeed = Feed {
+          feedTitle = projectName project <> " Blog"
+        , feedLinkSelf = ProjectBlogFeedR project_handle
+        , feedLinkHome = ProjectBlogR project_handle
+        , feedAuthor = projectName project <> " authors"
+        , feedDescription = markdownToHtml $ projectDescription project
+        , feedLanguage = "en"
+        , feedUpdated = case firstEntry of
+              Nothing -> time
+              Just anEntry -> feedEntryUpdated anEntry
+        , feedEntries = entries
+        }
+
+    newsFeed afeed
 
 --------------------------------------------------------------------------------
 -- /p/#Text/blog/!new
