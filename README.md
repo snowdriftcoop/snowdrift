@@ -43,7 +43,7 @@ Install [Git], [Postgres] and [Stack].
 See [GUIDE.md#Building] for specifics for various operating systems and further
 notes.
 
-## Get the code
+### Get the code
 
 We primarily use a completely free/libre/open host for our code:
 [git.gnu.io/snowdrift/snowdrift]. For convenience and redundancy, we also mirror
@@ -55,19 +55,21 @@ The standard command to clone the code to your local system is:
 
 ### Initial Build
 
-From within the snowdrift code directory (`cd snowdrift`) run:
+1.  First fetch all Haskell dependencies and build everything. From within
+    the snowdrift code directory (`cd snowdrift`) run:
 
-    stack setup &&
-    stack build cabal-install yesod-bin-1.4.11 . &&
-    stack test
+        stack setup &&
+        stack build cabal-install yesod-bin-1.4.11 &&
+        stack build
 
-NB: this will take a while!
+    NB: this will take a while!
 
-### Set up the database
+2.  Now do the initial database setup and test run:
 
-(This works on plainly on GNU/Linux, see [GUIDE.md#Building] for other systems)
+    (This works on plainly on GNU/Linux. See [GUIDE.md#Building] for other systems.)
 
-    stack exec sdm init
+        stack exec sdm init &&
+        stack test
 
 ### Useful Development Commands
 
@@ -79,6 +81,10 @@ With everything initialized, you can now use the following commands:
     * log in as admin with built-in system and user: `admin` pass: `admin`
     * press Enter key in terminal to stop the site
 * `stack build && stack test`: run the test suite
+
+    Note that `stack build` must be run since the tests depend on
+    executables like SnowdriftProcessPayments. Cabal is not clever enough
+    to notice test dependencies on executables.
 * `stack build`: rebuild manually (usually running the site in development
   mode is sufficient, however)
 * `stack ghci`: Start the REPL
