@@ -81,6 +81,10 @@ With everything initialized, you can now use the following commands:
     * log in as admin with built-in system and user: `admin` pass: `admin`
     * press Enter key in terminal to stop the site
 * `stack build && stack test`: run the test suite
+
+    Note that `stack build` must be run since the tests depend on
+    executables like SnowdriftProcessPayments. Cabal is not clever enough
+    to notice test dependencies on executables.
 * `stack build`: rebuild manually (usually running the site in development
   mode is sufficient, however)
 * `stack ghci`: Start the REPL
