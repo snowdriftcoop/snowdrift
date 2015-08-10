@@ -5,6 +5,7 @@ module BlogTest
     ( blogSpecs
     ) where
 
+import Prelude
 import TestImport
 import qualified Data.Map as M
 import qualified Text.XML as XML
