@@ -5,6 +5,7 @@
 
 module NotifyTest (notifySpecs) where
 
+import           Prelude
 import           Import                               (Established(..), Role (..), pprint, selectExists, key)
 import           TestImport                           hiding ((=.), update, Update)
 import           Model.Currency                       (Milray (..), millMilray)

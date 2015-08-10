@@ -6,6 +6,7 @@
 
 module CommentTest (commentSpecs) where
 
+import           Prelude
 import           Import (pprint)
 import           TestImport hiding (get)
 

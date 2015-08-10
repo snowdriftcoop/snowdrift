@@ -7,6 +7,7 @@ module DiscussionTest
     ( discussionSpecs
     ) where
 
+import Prelude
 import TestImport
 import Import (key)
 

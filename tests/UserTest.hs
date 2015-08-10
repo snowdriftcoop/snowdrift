@@ -3,6 +3,7 @@ module UserTest
     ( userSpecs
     ) where
 
+import Prelude
 import TestImport
 
 import Control.Monad

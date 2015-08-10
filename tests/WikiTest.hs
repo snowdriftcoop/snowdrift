@@ -4,6 +4,7 @@ module WikiTest
     ( wikiSpecs
     ) where
 
+import Prelude
 import TestImport
 
 import Model.Language
