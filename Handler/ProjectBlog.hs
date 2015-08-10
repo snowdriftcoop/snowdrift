@@ -239,14 +239,12 @@ getProjectBlogFeedR project_handle = do
 
     let firstEntry = find (\_ -> True) entries
 
-    description <- renderMarkdown $ projectDescription project
-
     newsFeed Feed {
           feedTitle = projectName project <> " Blog"
         , feedLinkSelf = ProjectBlogFeedR project_handle
         , feedLinkHome = ProjectBlogR project_handle
         , feedAuthor = projectName project <> " authors"
-        , feedDescription = description
+        , feedDescription = toHtml $ projectBlurb project
         , feedLanguage = "en"
         , feedUpdated = case firstEntry of
               Nothing -> time
