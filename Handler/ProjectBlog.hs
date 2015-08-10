@@ -28,7 +28,6 @@ import           Data.List
 
 import           Text.Cassius   (cassiusFile)
 import           Yesod.Feed
-import           Yesod.Markdown
 
 
 -- | Sanity check for Project Comment pages.
@@ -218,12 +217,20 @@ getProjectBlogFeedR project_handle = do
         limit 10
         return blog
 
-    entries <- forM posts $ \post -> do
+    entries <- forM posts $ \postEntity -> do
+        let post = entityVal postEntity
+
+        -- The RSS feed contains the full post content, not just the part
+        -- above the fold.
+        entryContent <- renderMarkdown $
+                            (blogPostTopContent $ post) <>
+                            (fromMaybe (Markdown "") $ blogPostBottomContent post)
+
         let entry = FeedEntry {
-              feedEntryLink = BlogPostR project_handle (blogPostHandle $ entityVal post)
-            , feedEntryUpdated = (blogPostTs $ entityVal post)
-            , feedEntryTitle = (blogPostTitle $ entityVal post)
-            , feedEntryContent = markdownToHtml $ blogPostTopContent $ entityVal post
+              feedEntryLink = (BlogPostR project_handle) (blogPostHandle post)
+            , feedEntryUpdated = blogPostTs post
+            , feedEntryTitle = blogPostTitle post
+            , feedEntryContent = entryContent
             }
 
         return entry
@@ -232,20 +239,20 @@ getProjectBlogFeedR project_handle = do
 
     let firstEntry = find (\_ -> True) entries
 
-    let afeed = Feed {
+    description <- renderMarkdown $ projectDescription project
+
+    newsFeed Feed {
           feedTitle = projectName project <> " Blog"
         , feedLinkSelf = ProjectBlogFeedR project_handle
         , feedLinkHome = ProjectBlogR project_handle
         , feedAuthor = projectName project <> " authors"
-        , feedDescription = markdownToHtml $ projectDescription project
+        , feedDescription = description
         , feedLanguage = "en"
         , feedUpdated = case firstEntry of
               Nothing -> time
               Just anEntry -> feedEntryUpdated anEntry
         , feedEntries = entries
         }
-
-    newsFeed afeed
 
 --------------------------------------------------------------------------------
 -- /p/#Text/blog/!new
