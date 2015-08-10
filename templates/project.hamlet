@@ -5,9 +5,9 @@
         <img src=@{ImageR logo}>
       $nothing
         <img src=@{StaticR img_default_project_logo_png}>
-  $if isJust mviewer_id
-    <div .text-center>
-      $maybe project_id <- maybe_project_id
+  $maybe _ <- mviewer_id
+    $maybe project_id <- maybe_project_id
+      <div .text-center>
         $if is_watching
           <form method=POST action=@{UnwatchProjectR project_id}>
             <input type=submit value="unwatch">
@@ -74,9 +74,9 @@
         <form method=GET
               action=@{UpdatePledgeR $ projectHandle project}>
           ^{update_pledge}
-          $if isJust maybe_shares
+          $maybe _ <- maybe_shares
             <input .pledge type=submit value="update pledge">
-          $else
+          $nothing
             <input .pledge type=submit value="enter pledge">
       $nothing
         ^{update_pledge}

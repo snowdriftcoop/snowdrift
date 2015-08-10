@@ -11,11 +11,11 @@
 ^{comment_forest}
 
 $if not has_comments
-  $if isJust mviewer
+  $maybe _ <- mviewer
     <form action=@{NewUserDiscussionR user_id} method="POST">
       ^{comment_form}
       <input type="submit" name="mode" value="preview">
-  $else
+  $nothing
     <p>
       There is no discussion here yet.
       <a href=@{AuthR LoginR}>Sign in
