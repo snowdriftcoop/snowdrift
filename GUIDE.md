@@ -123,16 +123,20 @@ Building
 ========
 
 See our [README] for basic build process.
+The only core dependencies are Git, PostgreSQL, and Stack.
+However, some system-specific libraries may be needed (see below)
+
+Note: You do *not* need to install GHC or Haskell Platform.
+Stack will automatically install the correct GHC version if you don't have it,
+and this won't affect any installation you already have of other verisons.
+
+System-specific notes
+---------------------
 
 Snowdrift has been built successfully on Debian, Ubuntu, Arch, Fedora, Gentoo,
 NixOS, and other distros of GNU/Linux as well as on OpenBSD.
 Snowdrift also has been built on OS X and Windows, although some manual
 adjustments may be needed for those systems.
-
-System-specific notes
----------------------
-
-(incomplete at this time, please help us document more)
 
 ### Debian, Ubuntu, and related
 
@@ -177,6 +181,7 @@ package from the AUR. Run:
     stack upgrade --git
 
 Follow the rest of the instructions in the [README].
+
 
 ### NixOS
 
@@ -258,10 +263,12 @@ Another option is a VM via Vagrant (see below).
 
 ### Windows
 
-Note: At this time, Windows builds have some issues but can work.
-Alternatively, use a GNU/Linux VM via Vagrant (see below).
+Note: At this time, Windows builds have some issues.
+The guaranteed approach is to use a GNU/Linux Virtual Machine,
+perhaps via Vagrant (see below).
+To test building directly on Windows:
 
-To install PostgreSQL, get the 32-bit version from
+Install PostgreSQL 32-bit version from
 <http://www.enterprisedb.com/products-services-training/pgdownload#windows>
 
 Add the PostgreSQL bin directory to the path
@@ -275,14 +282,15 @@ The rest of the [README] instructions should work (although we're not sure about
 the use of Stack reliably on Windows yet).
 
 *Note:* SnowdriftEmailDaemon won't build on Windows, so `stack test` will fail.
-Building, running, and working on the site still works otherwise.
+Building, running, and working on the site might still work otherwise.
 
 
 ### Virtual Machine options / Vagrant
 
 Anyone could use a Virtual Machine with a system known to work and then
 follow the steps for that system, working entirely within the VM.
-However, to make this easier and *integrated* with your existing system,
+
+Alternatively, to better *integrate* with your existing system,
 we offer an option with Vagrant.
 
 Our Vagrant instance uses a Debian system preset with our core dependencies.
