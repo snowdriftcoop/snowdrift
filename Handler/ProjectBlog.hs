@@ -24,7 +24,6 @@ import           Data.Default
 import qualified Data.Text      as T
 import           Data.Tree      (Forest, Tree)
 import qualified Data.Tree      as Tree
-import           Data.List
 
 import           Text.Cassius   (cassiusFile)
 import           Yesod.Feed
@@ -235,9 +234,9 @@ getProjectBlogFeedR project_handle = do
 
         return entry
 
-    time <- lift getCurrentTime
-
-    let firstEntry = find (\_ -> True) entries
+    updatedTime <- case entries of
+              (e:_) -> return (feedEntryUpdated e)
+              []    -> lift getCurrentTime
 
     newsFeed Feed {
           feedTitle = projectName project <> " Blog"
@@ -246,9 +245,7 @@ getProjectBlogFeedR project_handle = do
         , feedAuthor = projectName project <> " authors"
         , feedDescription = toHtml $ projectBlurb project
         , feedLanguage = "en"
-        , feedUpdated = case firstEntry of
-              Nothing -> time
-              Just anEntry -> feedEntryUpdated anEntry
+        , feedUpdated = updatedTime
         , feedEntries = entries
         }
 
