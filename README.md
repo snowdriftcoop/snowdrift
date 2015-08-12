@@ -59,7 +59,7 @@ The standard command to clone the code to your local system is:
     the snowdrift code directory (`cd snowdrift`) run:
 
         stack setup &&
-        stack build cabal-install yesod-bin-1.4.11 &&
+        stack build cabal-install yesod-bin &&
         stack build
 
     NB: this will take a while!
