@@ -36,3 +36,10 @@ wikiSpecs =
             loginAs TestUser
             editWiki snowdrift LangEn "wiki-test" "wiki test: edit page" "testing"
         |]
+
+        yit "cannot create an existent wiki page" $ [marked|
+            loginAs TestUser
+            newWiki snowdrift LangEn "wiki-foo" "wiki foo: new page"
+            get $ NewWikiR snowdrift LangEn "wiki-foo"
+            statusIs 400
+        |]
