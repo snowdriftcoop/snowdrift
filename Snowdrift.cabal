@@ -311,40 +311,8 @@ executable SnowdriftEmailDaemon
     if os(windows)
         Buildable: False
     default-language:  Haskell98
-    main-is:           SnowdriftEmailDaemon.hs
-    -- other-modules -- {{{2
-    other-modules:
-        Foundation
-        Import
-        Model
-        Model.Comment
-        Model.Comment.Internal
-        Model.Comment.Sql
-        Model.Currency
-        Model.Discussion
-        Model.Discussion.TH
-        Model.Established.Internal
-        Model.Language
-        Model.Language.TH
-        Model.License.Internal
-        Model.Markdown.Diff
-        Model.Notification
-        Model.Notification.Internal
-        Model.Permission.Internal
-        Model.Project.Signup
-        Model.Project.Signup.Internal
-        Model.Role.Internal
-        Model.Settings.Internal
-        Model.SnowdriftEvent.Internal
-        Model.TH
-        Model.User
-        Model.User.Internal
-        Model.User.Sql
-        Model.ViewType.Internal
-        Model.Wiki.Sql
-        Settings
-        Settings.Development
-        Settings.StaticFiles
+    hs-source-dirs: app
+    main-is: SnowdriftEmailDaemon.hs
     -- build-depends -- {{{2
     build-depends:     base
                      , authenticate
@@ -376,6 +344,7 @@ executable SnowdriftEmailDaemon
                      , resourcet
                      , semigroups
                      , shakespeare
+                     , Snowdrift
                      , stm
                      , template-haskell
                      , text
