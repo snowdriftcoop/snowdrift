@@ -312,6 +312,39 @@ executable SnowdriftEmailDaemon
         Buildable: False
     default-language:  Haskell98
     main-is:           SnowdriftEmailDaemon.hs
+    -- other-modules -- {{{2
+    other-modules:
+        Foundation
+        Import
+        Model
+        Model.Comment
+        Model.Comment.Internal
+        Model.Comment.Sql
+        Model.Currency
+        Model.Discussion
+        Model.Discussion.TH
+        Model.Established.Internal
+        Model.Language
+        Model.Language.TH
+        Model.License.Internal
+        Model.Markdown.Diff
+        Model.Notification
+        Model.Notification.Internal
+        Model.Permission.Internal
+        Model.Project.Signup
+        Model.Project.Signup.Internal
+        Model.Role.Internal
+        Model.Settings.Internal
+        Model.SnowdriftEvent.Internal
+        Model.TH
+        Model.User
+        Model.User.Internal
+        Model.User.Sql
+        Model.ViewType.Internal
+        Model.Wiki.Sql
+        Settings
+        Settings.Development
+        Settings.StaticFiles
     -- build-depends -- {{{2
     build-depends:     base
                      , authenticate
@@ -358,7 +391,7 @@ executable SnowdriftEmailDaemon
                      , yesod-markdown
                      , yesod-static
 
-     -- default-extensions: BangPatterns -- {{{2
+    -- default-extensions -- {{{2
     default-extensions: BangPatterns
                 ConstraintKinds
                 DeriveDataTypeable
