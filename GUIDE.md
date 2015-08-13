@@ -354,9 +354,14 @@ You must run `stack build` whenever you:
 
 #### Alternative development option
 
-We recommend `stack exec yesod devel` in almost all cases, but an alternate
-approach is to build with `stack build` and run the executable with `stack
-exec Snowdrift Development` (to stop the site in this case, use ctrl-C).
+A more manual approach to building and running the site:
+
+* Run the site with `stack exec Snowdrift Development`
+  (to stop the site in this case, use ctrl-C).
+* This does not automatically rebuild, so you must manually run `stack build`
+  whenever you want to compile any updates to the code.
+* Advantages to this approach: less running processes (no need to watch for file
+  changes) and no need to do extra compiling into special yesod-devel directory.
 
 Using the live test site
 ------------------------
