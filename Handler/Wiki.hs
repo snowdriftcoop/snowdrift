@@ -494,6 +494,7 @@ getWikiEditR project_handle language target wiki_edit_id = do
 
 getNewWikiR :: Text -> Language -> Text -> Handler Html
 getNewWikiR project_handle language target = do
+    runYDB (coPageInfo project_handle language target)
     (_, Entity _ project) <-
         projectInfoRequireEstablished project_handle
     (wiki_form, _) <- generateFormPost $ newWikiForm Nothing
@@ -502,6 +503,22 @@ getNewWikiR project_handle language target = do
             (projectName project <> " Wiki")
             "New Page"
         $(widgetFile "new_wiki")
+  where
+    -- |Get the page info, returning a 400 code if the wiki page already exists, or
+    -- if the project does not exist.
+    coPageInfo :: Text -> Language -> Text -> YDB ()
+    coPageInfo projectHandle language' target' = do
+        project <-
+            getBy (UniqueProjectHandle projectHandle) >>= \case
+                Just x -> return x
+                Nothing ->
+                    invalidArgs [mappend "Project does not exist: "
+                                         projectHandle]
+        getBy (UniqueWikiTarget (entityKey project) language' target') >>= \case
+            Nothing -> return ()
+            Just _ ->
+                invalidArgs [mappend "Wiki page already exists: " target']
+
 
 
 postNewWikiR :: Text -> Language -> Text -> Handler Html
