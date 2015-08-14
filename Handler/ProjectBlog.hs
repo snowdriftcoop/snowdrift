@@ -26,6 +26,7 @@ import           Data.Tree      (Forest, Tree)
 import qualified Data.Tree      as Tree
 
 import           Text.Cassius   (cassiusFile)
+import           Yesod.Feed
 
 
 -- | Sanity check for Project Comment pages.
@@ -200,6 +201,53 @@ getProjectBlogR project_handle = do
 
         $(widgetFile "project_blog")
 
+--------------------------------------------------------------------------------
+-- /p/#Text/blog/!feed
+
+getProjectBlogFeedR :: Text -> Handler TypedContent
+getProjectBlogFeedR project_handle = do
+    Entity project_id project <- runYDB $ getBy404 $ UniqueProjectHandle project_handle
+
+    posts :: [Entity BlogPost] <- runDB $
+        select $
+        from $ \blog -> do
+        where_ (blog ^. BlogPostProject ==. val project_id)
+        orderBy [ desc $ blog ^. BlogPostTs, desc $ blog ^. BlogPostId ]
+        limit 10
+        return blog
+
+    entries <- forM posts $ \postEntity -> do
+        let post = entityVal postEntity
+
+        -- The RSS feed contains the full post content, not just the part
+        -- above the fold.
+        entryContent <- renderMarkdown $
+                            (blogPostTopContent $ post) <>
+                            (fromMaybe (Markdown "") $ blogPostBottomContent post)
+
+        let entry = FeedEntry {
+              feedEntryLink = (BlogPostR project_handle) (blogPostHandle post)
+            , feedEntryUpdated = blogPostTs post
+            , feedEntryTitle = blogPostTitle post
+            , feedEntryContent = entryContent
+            }
+
+        return entry
+
+    updatedTime <- case entries of
+              (e:_) -> return (feedEntryUpdated e)
+              []    -> lift getCurrentTime
+
+    newsFeed Feed {
+          feedTitle = projectName project <> " Blog"
+        , feedLinkSelf = ProjectBlogFeedR project_handle
+        , feedLinkHome = ProjectBlogR project_handle
+        , feedAuthor = projectName project <> " authors"
+        , feedDescription = toHtml $ projectBlurb project
+        , feedLanguage = "en"
+        , feedUpdated = updatedTime
+        , feedEntries = entries
+        }
 
 --------------------------------------------------------------------------------
 -- /p/#Text/blog/!new
