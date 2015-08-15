@@ -197,6 +197,9 @@
 
 -- DEPRECATED
 
+-- This catches instances such as
+-- <https://github.com/snowdriftcoop/snowdrift/issues/302>.
+/p/#Text/w/#Language					ProjectWikiLangR      GET
 /p/#Text/w/!#Text/*[Text]                               MonolingualWikiR      GET
 
 /p/#Text/w/#Language/#Text/comment/#CommentId  OldDiscussCommentR GET
