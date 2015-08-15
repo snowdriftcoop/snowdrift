@@ -677,6 +677,13 @@ postEditWikiPermissionsR project_handle language target = do
         FormFailure msgs -> error $ "Error submitting form: " ++ T.unpack (T.concat msgs)
 
 --------------------------------------------------------------------------------
+--  /#language
+-- 
+-- |This should fix GH-302: <https://github.com/snowdriftcoop/snowdrift/issues/302>
+getProjectWikiLangR :: Text -> Language -> Handler Html
+getProjectWikiLangR prjName _ = redirect $ WikiPagesR prjName
+
+--------------------------------------------------------------------------------
 -- DEPRECATED
 
 getMonolingualWikiR :: Text -> Text -> [Text] -> Handler Html
