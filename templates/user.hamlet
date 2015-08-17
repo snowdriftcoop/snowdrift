@@ -30,6 +30,11 @@ $if Just user_id == mviewer_id
           <small>established user
           <br>
         $if Just user_id == mviewer_id
+          $if userIsEligibleEstablish user
+            <p>
+              Accept the
+              <a href=@{HonorPledgeR}>honor pledge
+              to become a fully established user.
           $maybe email <- userEmail user
             #{email} (not shown publicly)
             $if isJust (userEmail user) && not (userEmail_verified user)
