@@ -17,6 +17,7 @@
 /trademarks         TrademarksR       GET
 /tutorial/markdown  MarkdownTutorialR GET
 /donate             DonateR           GET
+/sponsors           SponsorsR         GET
 
 /img/!upload                UploadImageR      GET POST
 /img/!name/#UnnamedImageId  NameImageR        GET POST
