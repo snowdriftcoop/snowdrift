@@ -169,7 +169,7 @@ Refresh your browser view at localhost:3000 to see the updates.
 In rare cases, you may need to run `stack clean` if yesod devel
 fails to recognize a change.
 
-To stop yesod devel, press the Enter key.
+To stop yesod devel, type `quit` and then hit the Enter key.
 
 ### Testing changes
 

@@ -338,7 +338,7 @@ The standard approach for running and working on the site is to run
 It can stay running in one terminal while you work elsewhere.
 It will automatically rebuild and rerun the site whenever it detects changes.
 
-To stop the development site, press the Enter key.
+To stop the development site, type `quit`, then press the Enter key.
 
 In rare cases, you may need to run `stack clean` if the development site
 fails to recognize a change.

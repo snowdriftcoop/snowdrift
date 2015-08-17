@@ -79,7 +79,7 @@ With everything initialized, you can now use the following commands:
     * NB: this may take a while when first run, faster after that
     * access the site in your browser at <http://localhost:3000>
     * log in as admin with built-in system and user: `admin` pass: `admin`
-    * press Enter key in terminal to stop the site
+    * type `quit` and then press Enter in terminal to stop the site
 * `stack build && stack test`: run the test suite
 
     Note that `stack build` must be run since the tests depend on
