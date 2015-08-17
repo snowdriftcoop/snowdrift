@@ -11,10 +11,9 @@ figcaption
 .homepage-section
     padding: 10px
     margin-bottom: 10px
-
-.homepage-section h2
-    margin: 10px
-    text-align: center
+    h2, h3
+        margin: 10px
+        text-align: center
 
 .homep-link
     font-weight: bold

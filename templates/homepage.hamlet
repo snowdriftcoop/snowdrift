@@ -38,8 +38,11 @@
       Our
       <a href="https://snowdrift.tilt.com">launch fund-drive
       succeeded!
+    <h3>
+      Thanks to all our
+      <a href=@{SponsorsR}>sponsors</a>!
     <p>
-      The campaign video remains a good introduction.
+      The campaign video remains a good introduction:
     <video poster="https://snowdrift.coop/img/fund-drive-intro-still" controls>
       <source type="video/mp4"
         src="https://archive.org/download/snowdrift-fund-drive-intro/snowdrift-fund-drive-intro.mp4">

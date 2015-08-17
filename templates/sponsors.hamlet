@@ -4,10 +4,12 @@
   Snowdrift.coop initial development. Most donated during our
   formal <a href="https://snowdrift.tilt.com/">fund-drive</a>,
   but we have and will continue to accept traditional donations
-  until we fully launch. See our
-  <a href=@{DonateR}>
-    donation page
-  to become a launch sponsor and join the list below.
+  until we fully launch.
+  <strong>
+    See our
+    <a href=@{DonateR}>
+      donation page
+    to become a launch sponsor and join the list below.
 
 <!--
   This list depends on the snowdrift.coop database, the links to user pages won't
