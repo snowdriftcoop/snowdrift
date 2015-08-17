@@ -1,3 +1,8 @@
+<strong style="color: red">
+  NB: At this time, we have some known miscalculations about which patrons count
+  as "active". Therefore, numbers may seem strange. We're working to fix this
+  as we redo the mechanism code.
+
 $maybe _ <- mpledge
   <h1>Update your pledge to #{projectName project}
 
