@@ -258,7 +258,8 @@
     <a href=@{UserR (toSqlKey 651)}>
       Michael F. Lamb
   <li>
-    Daniel Landau
+    <a href=@{UserR (toSqlKey 898)}>
+      Daniel Landau
   <li>
     <a href=@{UserR (toSqlKey 875)}>
       Brianna Laugher
