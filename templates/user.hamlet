@@ -80,6 +80,15 @@ $if Just user_id == mviewer_id
       <div .well .well-sm .scroll .capped>
         ^{markdownWidget statement}
 
+<div .row>
+
+  <div .col-md-6>
+
+    <h4>Ticket Activity
+
+    <a href=@{UserTicketsR user_id}>
+      #{userDisplayName user_entity}'s claimed and watched tickets
+
 $maybe (est_form, est_form_enctype) <- mest_form_and_enctype
   <div .row>
     <div .col-md-6 #establish-form>
