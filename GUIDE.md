@@ -88,7 +88,7 @@ Among many vim plugins available, we recommend using a
 and the following plugins particularly relevant to snowdrift:
 
 * [vim Shakespearean syntax](https://github.com/pbrisbin/vim-syntax-shakespeare)
-* [Haskell-Vim extra syntax](https://github.com/raichoo/haskell-vim)
+* [Haskell-Vim extra syntax](https://github.com/neovimhaskell/haskell-vim)
 * [vim-markdown](https://github.com/hallison/vim-markdown)
 * [vim-gitgutter](https://github.com/airblade/vim-gitgutter)
 * [vim2hs](https://github.com/dag/vim2hs).
