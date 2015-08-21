@@ -310,11 +310,9 @@ here we document the details more thoroughly.
 
 In addition to the required tools, we also suggest:
 
-    stack install haddock hlint
+    stack install hlint
 
 `hlint` followed by a filename will show suggestions for Haskell style.
-
-`haddock` is used for internal code documentation.
 
 Setting up the database
 -----------------------
