@@ -89,7 +89,7 @@ and the following plugins particularly relevant to snowdrift:
 
 * [vim Shakespearean syntax](https://github.com/pbrisbin/vim-syntax-shakespeare)
 * [Haskell-Vim extra syntax](https://github.com/neovimhaskell/haskell-vim)
-* [vim-markdown](https://github.com/hallison/vim-markdown)
+* [vim-pandoc-syntax](https://github.com/vim-pandoc/vim-pandoc-syntax)
 * [vim-gitgutter](https://github.com/airblade/vim-gitgutter)
 * [vim2hs](https://github.com/dag/vim2hs).
     * optionally add `set nofoldenable` to .vimrc to skip folding of functions
