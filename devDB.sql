@@ -3,6 +3,7 @@
 --
 
 SET statement_timeout = 0;
+SET lock_timeout = 0;
 SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
 SET check_function_bodies = false;
@@ -78,7 +79,7 @@ CREATE TABLE a (
 );
 
 
-ALTER TABLE public.a OWNER TO snowdrift_development;
+ALTER TABLE a OWNER TO snowdrift_development;
 
 --
 -- Name: a_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -92,7 +93,7 @@ CREATE SEQUENCE a_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.a_id_seq OWNER TO snowdrift_development;
+ALTER TABLE a_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: a_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -111,7 +112,7 @@ CREATE TABLE account (
 );
 
 
-ALTER TABLE public.account OWNER TO snowdrift_development;
+ALTER TABLE account OWNER TO snowdrift_development;
 
 --
 -- Name: account_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -125,7 +126,7 @@ CREATE SEQUENCE account_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.account_id_seq OWNER TO snowdrift_development;
+ALTER TABLE account_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: account_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -142,16 +143,16 @@ CREATE TABLE blog_post (
     id integer NOT NULL,
     ts timestamp with time zone NOT NULL,
     title character varying NOT NULL,
-    "user" integer NOT NULL,
+    "user" bigint NOT NULL,
     top_content character varying NOT NULL,
-    project integer NOT NULL,
+    project bigint NOT NULL,
     bottom_content character varying,
-    discussion integer NOT NULL,
+    discussion bigint NOT NULL,
     handle character varying NOT NULL
 );
 
 
-ALTER TABLE public.blog_post OWNER TO snowdrift_development;
+ALTER TABLE blog_post OWNER TO snowdrift_development;
 
 --
 -- Name: build; Type: TABLE; Schema: public; Owner: snowdrift_development; Tablespace: 
@@ -165,7 +166,7 @@ CREATE TABLE build (
 );
 
 
-ALTER TABLE public.build OWNER TO snowdrift_development;
+ALTER TABLE build OWNER TO snowdrift_development;
 
 --
 -- Name: build_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -179,7 +180,7 @@ CREATE SEQUENCE build_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.build_id_seq OWNER TO snowdrift_development;
+ALTER TABLE build_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: build_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -196,18 +197,18 @@ CREATE TABLE comment (
     id integer NOT NULL,
     created_ts timestamp with time zone NOT NULL,
     approved_ts timestamp with time zone,
-    approved_by integer,
-    parent integer,
-    "user" integer NOT NULL,
+    approved_by bigint,
+    parent bigint,
+    "user" bigint NOT NULL,
     text character varying NOT NULL,
-    depth integer NOT NULL,
-    discussion integer NOT NULL,
+    depth bigint NOT NULL,
+    discussion bigint NOT NULL,
     visibility character varying DEFAULT 'VisPublic'::character varying NOT NULL,
     language character varying NOT NULL
 );
 
 
-ALTER TABLE public.comment OWNER TO snowdrift_development;
+ALTER TABLE comment OWNER TO snowdrift_development;
 
 --
 -- Name: comment_ancestor; Type: TABLE; Schema: public; Owner: snowdrift_development; Tablespace: 
@@ -215,12 +216,12 @@ ALTER TABLE public.comment OWNER TO snowdrift_development;
 
 CREATE TABLE comment_ancestor (
     id integer NOT NULL,
-    comment integer NOT NULL,
-    ancestor integer NOT NULL
+    comment bigint NOT NULL,
+    ancestor bigint NOT NULL
 );
 
 
-ALTER TABLE public.comment_ancestor OWNER TO snowdrift_development;
+ALTER TABLE comment_ancestor OWNER TO snowdrift_development;
 
 --
 -- Name: comment_ancestor_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -234,7 +235,7 @@ CREATE SEQUENCE comment_ancestor_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.comment_ancestor_id_seq OWNER TO snowdrift_development;
+ALTER TABLE comment_ancestor_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: comment_ancestor_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -250,13 +251,13 @@ ALTER SEQUENCE comment_ancestor_id_seq OWNED BY comment_ancestor.id;
 CREATE TABLE comment_closing (
     id integer NOT NULL,
     ts timestamp with time zone NOT NULL,
-    closed_by integer NOT NULL,
+    closed_by bigint NOT NULL,
     reason character varying NOT NULL,
-    comment integer NOT NULL
+    comment bigint NOT NULL
 );
 
 
-ALTER TABLE public.comment_closing OWNER TO snowdrift_development;
+ALTER TABLE comment_closing OWNER TO snowdrift_development;
 
 --
 -- Name: comment_closing_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -270,7 +271,7 @@ CREATE SEQUENCE comment_closing_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.comment_closing_id_seq OWNER TO snowdrift_development;
+ALTER TABLE comment_closing_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: comment_closing_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -286,13 +287,13 @@ ALTER SEQUENCE comment_closing_id_seq OWNED BY comment_closing.id;
 CREATE TABLE comment_flagging (
     id integer NOT NULL,
     ts timestamp with time zone NOT NULL,
-    flagger integer NOT NULL,
-    comment integer NOT NULL,
+    flagger bigint NOT NULL,
+    comment bigint NOT NULL,
     message character varying
 );
 
 
-ALTER TABLE public.comment_flagging OWNER TO snowdrift_development;
+ALTER TABLE comment_flagging OWNER TO snowdrift_development;
 
 --
 -- Name: comment_flagging_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -306,7 +307,7 @@ CREATE SEQUENCE comment_flagging_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.comment_flagging_id_seq OWNER TO snowdrift_development;
+ALTER TABLE comment_flagging_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: comment_flagging_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -321,12 +322,12 @@ ALTER SEQUENCE comment_flagging_id_seq OWNED BY comment_flagging.id;
 
 CREATE TABLE comment_flagging_reason (
     id integer NOT NULL,
-    flagging integer NOT NULL,
+    flagging bigint NOT NULL,
     reason character varying NOT NULL
 );
 
 
-ALTER TABLE public.comment_flagging_reason OWNER TO snowdrift_development;
+ALTER TABLE comment_flagging_reason OWNER TO snowdrift_development;
 
 --
 -- Name: comment_flagging_reason_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -340,7 +341,7 @@ CREATE SEQUENCE comment_flagging_reason_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.comment_flagging_reason_id_seq OWNER TO snowdrift_development;
+ALTER TABLE comment_flagging_reason_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: comment_flagging_reason_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -361,7 +362,7 @@ CREATE SEQUENCE comment_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.comment_id_seq OWNER TO snowdrift_development;
+ALTER TABLE comment_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: comment_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -376,13 +377,13 @@ ALTER SEQUENCE comment_id_seq OWNED BY comment.id;
 
 CREATE TABLE comment_rethread (
     id integer NOT NULL,
-    rethread integer NOT NULL,
-    old_comment integer NOT NULL,
-    new_comment integer NOT NULL
+    rethread bigint NOT NULL,
+    old_comment bigint NOT NULL,
+    new_comment bigint NOT NULL
 );
 
 
-ALTER TABLE public.comment_rethread OWNER TO snowdrift_development;
+ALTER TABLE comment_rethread OWNER TO snowdrift_development;
 
 --
 -- Name: comment_rethread_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -396,7 +397,7 @@ CREATE SEQUENCE comment_rethread_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.comment_rethread_id_seq OWNER TO snowdrift_development;
+ALTER TABLE comment_rethread_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: comment_rethread_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -413,11 +414,11 @@ CREATE TABLE comment_retracting (
     id integer NOT NULL,
     ts timestamp with time zone NOT NULL,
     reason character varying NOT NULL,
-    comment integer NOT NULL
+    comment bigint NOT NULL
 );
 
 
-ALTER TABLE public.comment_retracting OWNER TO snowdrift_development;
+ALTER TABLE comment_retracting OWNER TO snowdrift_development;
 
 --
 -- Name: comment_retracting_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -431,7 +432,7 @@ CREATE SEQUENCE comment_retracting_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.comment_retracting_id_seq OWNER TO snowdrift_development;
+ALTER TABLE comment_retracting_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: comment_retracting_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -452,7 +453,7 @@ CREATE TABLE comment_retraction (
 );
 
 
-ALTER TABLE public.comment_retraction OWNER TO snowdrift_development;
+ALTER TABLE comment_retraction OWNER TO snowdrift_development;
 
 --
 -- Name: comment_retraction_id_seq1; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -466,7 +467,7 @@ CREATE SEQUENCE comment_retraction_id_seq1
     CACHE 1;
 
 
-ALTER TABLE public.comment_retraction_id_seq1 OWNER TO snowdrift_development;
+ALTER TABLE comment_retraction_id_seq1 OWNER TO snowdrift_development;
 
 --
 -- Name: comment_retraction_id_seq1; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -481,14 +482,14 @@ ALTER SEQUENCE comment_retraction_id_seq1 OWNED BY comment_retraction.id;
 
 CREATE TABLE comment_tag (
     id integer NOT NULL,
-    comment integer NOT NULL,
-    tag integer NOT NULL,
-    "user" integer NOT NULL,
-    count integer DEFAULT 1 NOT NULL
+    comment bigint NOT NULL,
+    tag bigint NOT NULL,
+    "user" bigint NOT NULL,
+    count bigint DEFAULT 1 NOT NULL
 );
 
 
-ALTER TABLE public.comment_tag OWNER TO snowdrift_development;
+ALTER TABLE comment_tag OWNER TO snowdrift_development;
 
 --
 -- Name: comment_tag_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -502,7 +503,7 @@ CREATE SEQUENCE comment_tag_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.comment_tag_id_seq OWNER TO snowdrift_development;
+ALTER TABLE comment_tag_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: comment_tag_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -523,7 +524,7 @@ CREATE TABLE committee_user (
 );
 
 
-ALTER TABLE public.committee_user OWNER TO snowdrift_development;
+ALTER TABLE committee_user OWNER TO snowdrift_development;
 
 --
 -- Name: committee_user_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -537,7 +538,7 @@ CREATE SEQUENCE committee_user_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.committee_user_id_seq OWNER TO snowdrift_development;
+ALTER TABLE committee_user_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: committee_user_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -552,11 +553,11 @@ ALTER SEQUENCE committee_user_id_seq OWNED BY committee_user.id;
 
 CREATE TABLE database_version (
     id integer NOT NULL,
-    last_migration integer NOT NULL
+    last_migration bigint NOT NULL
 );
 
 
-ALTER TABLE public.database_version OWNER TO snowdrift_development;
+ALTER TABLE database_version OWNER TO snowdrift_development;
 
 --
 -- Name: database_version_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -570,7 +571,7 @@ CREATE SEQUENCE database_version_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.database_version_id_seq OWNER TO snowdrift_development;
+ALTER TABLE database_version_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: database_version_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -585,12 +586,12 @@ ALTER SEQUENCE database_version_id_seq OWNED BY database_version.id;
 
 CREATE TABLE default_tag_color (
     id integer NOT NULL,
-    tag integer NOT NULL,
-    color integer NOT NULL
+    tag bigint NOT NULL,
+    color bigint NOT NULL
 );
 
 
-ALTER TABLE public.default_tag_color OWNER TO snowdrift_development;
+ALTER TABLE default_tag_color OWNER TO snowdrift_development;
 
 --
 -- Name: default_tag_color_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -604,7 +605,7 @@ CREATE SEQUENCE default_tag_color_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.default_tag_color_id_seq OWNER TO snowdrift_development;
+ALTER TABLE default_tag_color_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: default_tag_color_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -619,14 +620,14 @@ ALTER SEQUENCE default_tag_color_id_seq OWNED BY default_tag_color.id;
 
 CREATE TABLE delete_confirmation (
     id integer NOT NULL,
-    "user" integer NOT NULL,
+    "user" bigint NOT NULL,
     email character varying NOT NULL,
     uri character varying NOT NULL,
     sent boolean DEFAULT false NOT NULL
 );
 
 
-ALTER TABLE public.delete_confirmation OWNER TO snowdrift_development;
+ALTER TABLE delete_confirmation OWNER TO snowdrift_development;
 
 --
 -- Name: delete_confirmation_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -640,7 +641,7 @@ CREATE SEQUENCE delete_confirmation_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.delete_confirmation_id_seq OWNER TO snowdrift_development;
+ALTER TABLE delete_confirmation_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: delete_confirmation_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -655,13 +656,13 @@ ALTER SEQUENCE delete_confirmation_id_seq OWNED BY delete_confirmation.id;
 
 CREATE TABLE deprecated_tag (
     id integer NOT NULL,
-    project integer NOT NULL,
-    tag integer NOT NULL,
+    project bigint NOT NULL,
+    tag bigint NOT NULL,
     reason character varying NOT NULL
 );
 
 
-ALTER TABLE public.deprecated_tag OWNER TO snowdrift_development;
+ALTER TABLE deprecated_tag OWNER TO snowdrift_development;
 
 --
 -- Name: deprecated_tag_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -675,7 +676,7 @@ CREATE SEQUENCE deprecated_tag_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.deprecated_tag_id_seq OWNER TO snowdrift_development;
+ALTER TABLE deprecated_tag_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: deprecated_tag_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -694,7 +695,7 @@ CREATE TABLE discussion (
 );
 
 
-ALTER TABLE public.discussion OWNER TO snowdrift_development;
+ALTER TABLE discussion OWNER TO snowdrift_development;
 
 --
 -- Name: discussion_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -708,7 +709,7 @@ CREATE SEQUENCE discussion_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.discussion_id_seq OWNER TO snowdrift_development;
+ALTER TABLE discussion_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: discussion_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -724,11 +725,11 @@ ALTER SEQUENCE discussion_id_seq OWNED BY discussion.id;
 CREATE TABLE doc (
     id integer NOT NULL,
     name character varying NOT NULL,
-    current_version integer NOT NULL
+    current_version bigint NOT NULL
 );
 
 
-ALTER TABLE public.doc OWNER TO snowdrift_development;
+ALTER TABLE doc OWNER TO snowdrift_development;
 
 --
 -- Name: doc_event; Type: TABLE; Schema: public; Owner: snowdrift_development; Tablespace: 
@@ -737,12 +738,12 @@ ALTER TABLE public.doc OWNER TO snowdrift_development;
 CREATE TABLE doc_event (
     id integer NOT NULL,
     ts timestamp with time zone NOT NULL,
-    doc integer NOT NULL,
-    blessed_version integer NOT NULL
+    doc bigint NOT NULL,
+    blessed_version bigint NOT NULL
 );
 
 
-ALTER TABLE public.doc_event OWNER TO snowdrift_development;
+ALTER TABLE doc_event OWNER TO snowdrift_development;
 
 --
 -- Name: doc_event_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -756,7 +757,7 @@ CREATE SEQUENCE doc_event_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.doc_event_id_seq OWNER TO snowdrift_development;
+ALTER TABLE doc_event_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: doc_event_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -777,7 +778,7 @@ CREATE SEQUENCE doc_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.doc_id_seq OWNER TO snowdrift_development;
+ALTER TABLE doc_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: doc_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -792,14 +793,14 @@ ALTER SEQUENCE doc_id_seq OWNED BY doc.id;
 
 CREATE TABLE email_verification (
     id integer NOT NULL,
-    "user" integer NOT NULL,
+    "user" bigint NOT NULL,
     sent boolean DEFAULT false NOT NULL,
     email character varying NOT NULL,
     uri character varying NOT NULL
 );
 
 
-ALTER TABLE public.email_verification OWNER TO snowdrift_development;
+ALTER TABLE email_verification OWNER TO snowdrift_development;
 
 --
 -- Name: email_verification_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -813,7 +814,7 @@ CREATE SEQUENCE email_verification_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.email_verification_id_seq OWNER TO snowdrift_development;
+ALTER TABLE email_verification_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: email_verification_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -829,11 +830,11 @@ ALTER SEQUENCE email_verification_id_seq OWNED BY email_verification.id;
 CREATE TABLE event_blog_post (
     id integer NOT NULL,
     ts timestamp with time zone NOT NULL,
-    post integer NOT NULL
+    post bigint NOT NULL
 );
 
 
-ALTER TABLE public.event_blog_post OWNER TO snowdrift_development;
+ALTER TABLE event_blog_post OWNER TO snowdrift_development;
 
 --
 -- Name: event_blog_post_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -847,7 +848,7 @@ CREATE SEQUENCE event_blog_post_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.event_blog_post_id_seq OWNER TO snowdrift_development;
+ALTER TABLE event_blog_post_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: event_blog_post_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -863,11 +864,11 @@ ALTER SEQUENCE event_blog_post_id_seq OWNED BY event_blog_post.id;
 CREATE TABLE event_comment_closing (
     id integer NOT NULL,
     ts timestamp with time zone NOT NULL,
-    comment_closing integer NOT NULL
+    comment_closing bigint NOT NULL
 );
 
 
-ALTER TABLE public.event_comment_closing OWNER TO snowdrift_development;
+ALTER TABLE event_comment_closing OWNER TO snowdrift_development;
 
 --
 -- Name: event_comment_closing_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -881,7 +882,7 @@ CREATE SEQUENCE event_comment_closing_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.event_comment_closing_id_seq OWNER TO snowdrift_development;
+ALTER TABLE event_comment_closing_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: event_comment_closing_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -896,12 +897,12 @@ ALTER SEQUENCE event_comment_closing_id_seq OWNED BY event_comment_closing.id;
 
 CREATE TABLE event_comment_pending (
     id integer NOT NULL,
-    comment integer NOT NULL,
+    comment bigint NOT NULL,
     ts timestamp with time zone NOT NULL
 );
 
 
-ALTER TABLE public.event_comment_pending OWNER TO snowdrift_development;
+ALTER TABLE event_comment_pending OWNER TO snowdrift_development;
 
 --
 -- Name: event_comment_pending_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -915,7 +916,7 @@ CREATE SEQUENCE event_comment_pending_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.event_comment_pending_id_seq OWNER TO snowdrift_development;
+ALTER TABLE event_comment_pending_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: event_comment_pending_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -930,12 +931,12 @@ ALTER SEQUENCE event_comment_pending_id_seq OWNED BY event_comment_pending.id;
 
 CREATE TABLE event_comment_posted (
     id integer NOT NULL,
-    comment integer NOT NULL,
+    comment bigint NOT NULL,
     ts timestamp with time zone NOT NULL
 );
 
 
-ALTER TABLE public.event_comment_posted OWNER TO snowdrift_development;
+ALTER TABLE event_comment_posted OWNER TO snowdrift_development;
 
 --
 -- Name: event_comment_posted_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -949,7 +950,7 @@ CREATE SEQUENCE event_comment_posted_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.event_comment_posted_id_seq OWNER TO snowdrift_development;
+ALTER TABLE event_comment_posted_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: event_comment_posted_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -965,11 +966,11 @@ ALTER SEQUENCE event_comment_posted_id_seq OWNED BY event_comment_posted.id;
 CREATE TABLE event_comment_rethreaded (
     id integer NOT NULL,
     ts timestamp with time zone NOT NULL,
-    rethread integer NOT NULL
+    rethread bigint NOT NULL
 );
 
 
-ALTER TABLE public.event_comment_rethreaded OWNER TO snowdrift_development;
+ALTER TABLE event_comment_rethreaded OWNER TO snowdrift_development;
 
 --
 -- Name: event_comment_rethreaded_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -983,7 +984,7 @@ CREATE SEQUENCE event_comment_rethreaded_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.event_comment_rethreaded_id_seq OWNER TO snowdrift_development;
+ALTER TABLE event_comment_rethreaded_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: event_comment_rethreaded_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -999,13 +1000,13 @@ ALTER SEQUENCE event_comment_rethreaded_id_seq OWNED BY event_comment_rethreaded
 CREATE TABLE event_deleted_pledge (
     id integer NOT NULL,
     ts timestamp with time zone NOT NULL,
-    "user" integer NOT NULL,
-    project integer NOT NULL,
+    "user" bigint NOT NULL,
+    project bigint NOT NULL,
     shares bigint NOT NULL
 );
 
 
-ALTER TABLE public.event_deleted_pledge OWNER TO snowdrift_development;
+ALTER TABLE event_deleted_pledge OWNER TO snowdrift_development;
 
 --
 -- Name: event_deleted_pledge_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -1019,7 +1020,7 @@ CREATE SEQUENCE event_deleted_pledge_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.event_deleted_pledge_id_seq OWNER TO snowdrift_development;
+ALTER TABLE event_deleted_pledge_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: event_deleted_pledge_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -1035,11 +1036,11 @@ ALTER SEQUENCE event_deleted_pledge_id_seq OWNED BY event_deleted_pledge.id;
 CREATE TABLE event_new_pledge (
     id integer NOT NULL,
     ts timestamp with time zone NOT NULL,
-    shares_pledged integer NOT NULL
+    shares_pledged bigint NOT NULL
 );
 
 
-ALTER TABLE public.event_new_pledge OWNER TO snowdrift_development;
+ALTER TABLE event_new_pledge OWNER TO snowdrift_development;
 
 --
 -- Name: event_new_pledge_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -1053,7 +1054,7 @@ CREATE SEQUENCE event_new_pledge_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.event_new_pledge_id_seq OWNER TO snowdrift_development;
+ALTER TABLE event_new_pledge_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: event_new_pledge_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -1069,11 +1070,11 @@ ALTER SEQUENCE event_new_pledge_id_seq OWNED BY event_new_pledge.id;
 CREATE TABLE event_project_notification_sent (
     id integer NOT NULL,
     ts timestamp with time zone NOT NULL,
-    notification integer NOT NULL
+    notification bigint NOT NULL
 );
 
 
-ALTER TABLE public.event_project_notification_sent OWNER TO snowdrift_development;
+ALTER TABLE event_project_notification_sent OWNER TO snowdrift_development;
 
 --
 -- Name: event_project_notification_sent_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -1087,7 +1088,7 @@ CREATE SEQUENCE event_project_notification_sent_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.event_project_notification_sent_id_seq OWNER TO snowdrift_development;
+ALTER TABLE event_project_notification_sent_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: event_project_notification_sent_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -1103,12 +1104,12 @@ ALTER SEQUENCE event_project_notification_sent_id_seq OWNED BY event_project_not
 CREATE TABLE event_ticket_claimed (
     id integer NOT NULL,
     ts timestamp with time zone NOT NULL,
-    claim integer,
-    old_claim integer
+    claim bigint,
+    old_claim bigint
 );
 
 
-ALTER TABLE public.event_ticket_claimed OWNER TO snowdrift_development;
+ALTER TABLE event_ticket_claimed OWNER TO snowdrift_development;
 
 --
 -- Name: event_ticket_claimed_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -1122,7 +1123,7 @@ CREATE SEQUENCE event_ticket_claimed_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.event_ticket_claimed_id_seq OWNER TO snowdrift_development;
+ALTER TABLE event_ticket_claimed_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: event_ticket_claimed_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -1138,11 +1139,11 @@ ALTER SEQUENCE event_ticket_claimed_id_seq OWNED BY event_ticket_claimed.id;
 CREATE TABLE event_ticket_unclaimed (
     id integer NOT NULL,
     ts timestamp with time zone NOT NULL,
-    claim integer NOT NULL
+    claim bigint NOT NULL
 );
 
 
-ALTER TABLE public.event_ticket_unclaimed OWNER TO snowdrift_development;
+ALTER TABLE event_ticket_unclaimed OWNER TO snowdrift_development;
 
 --
 -- Name: event_ticket_unclaimed_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -1156,7 +1157,7 @@ CREATE SEQUENCE event_ticket_unclaimed_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.event_ticket_unclaimed_id_seq OWNER TO snowdrift_development;
+ALTER TABLE event_ticket_unclaimed_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: event_ticket_unclaimed_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -1173,11 +1174,11 @@ CREATE TABLE event_updated_pledge (
     id integer NOT NULL,
     ts timestamp with time zone NOT NULL,
     old_shares bigint NOT NULL,
-    shares_pledged integer NOT NULL
+    shares_pledged bigint NOT NULL
 );
 
 
-ALTER TABLE public.event_updated_pledge OWNER TO snowdrift_development;
+ALTER TABLE event_updated_pledge OWNER TO snowdrift_development;
 
 --
 -- Name: event_updated_pledge_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -1191,7 +1192,7 @@ CREATE SEQUENCE event_updated_pledge_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.event_updated_pledge_id_seq OWNER TO snowdrift_development;
+ALTER TABLE event_updated_pledge_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: event_updated_pledge_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -1207,11 +1208,11 @@ ALTER SEQUENCE event_updated_pledge_id_seq OWNED BY event_updated_pledge.id;
 CREATE TABLE event_user_notification_sent (
     id integer NOT NULL,
     ts timestamp with time zone NOT NULL,
-    notification integer NOT NULL
+    notification bigint NOT NULL
 );
 
 
-ALTER TABLE public.event_user_notification_sent OWNER TO snowdrift_development;
+ALTER TABLE event_user_notification_sent OWNER TO snowdrift_development;
 
 --
 -- Name: event_user_notification_sent_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -1225,7 +1226,7 @@ CREATE SEQUENCE event_user_notification_sent_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.event_user_notification_sent_id_seq OWNER TO snowdrift_development;
+ALTER TABLE event_user_notification_sent_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: event_user_notification_sent_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -1240,12 +1241,12 @@ ALTER SEQUENCE event_user_notification_sent_id_seq OWNED BY event_user_notificat
 
 CREATE TABLE event_wiki_edit (
     id integer NOT NULL,
-    wiki_edit integer NOT NULL,
+    wiki_edit bigint NOT NULL,
     ts timestamp with time zone NOT NULL
 );
 
 
-ALTER TABLE public.event_wiki_edit OWNER TO snowdrift_development;
+ALTER TABLE event_wiki_edit OWNER TO snowdrift_development;
 
 --
 -- Name: event_wiki_edit_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -1259,7 +1260,7 @@ CREATE SEQUENCE event_wiki_edit_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.event_wiki_edit_id_seq OWNER TO snowdrift_development;
+ALTER TABLE event_wiki_edit_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: event_wiki_edit_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -1275,11 +1276,11 @@ ALTER SEQUENCE event_wiki_edit_id_seq OWNED BY event_wiki_edit.id;
 CREATE TABLE event_wiki_page (
     id integer NOT NULL,
     ts timestamp with time zone NOT NULL,
-    wiki_page integer NOT NULL
+    wiki_page bigint NOT NULL
 );
 
 
-ALTER TABLE public.event_wiki_page OWNER TO snowdrift_development;
+ALTER TABLE event_wiki_page OWNER TO snowdrift_development;
 
 --
 -- Name: event_wiki_page_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -1293,7 +1294,7 @@ CREATE SEQUENCE event_wiki_page_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.event_wiki_page_id_seq OWNER TO snowdrift_development;
+ALTER TABLE event_wiki_page_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: event_wiki_page_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -1309,8 +1310,8 @@ ALTER SEQUENCE event_wiki_page_id_seq OWNED BY event_wiki_page.id;
 CREATE TABLE image (
     id integer NOT NULL,
     ts timestamp with time zone NOT NULL,
-    uploader integer NOT NULL,
-    project integer,
+    uploader bigint NOT NULL,
+    project bigint,
     name character varying NOT NULL,
     origin character varying,
     format bytea NOT NULL,
@@ -1318,7 +1319,7 @@ CREATE TABLE image (
 );
 
 
-ALTER TABLE public.image OWNER TO snowdrift_development;
+ALTER TABLE image OWNER TO snowdrift_development;
 
 --
 -- Name: image_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -1332,7 +1333,7 @@ CREATE SEQUENCE image_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.image_id_seq OWNER TO snowdrift_development;
+ALTER TABLE image_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: image_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -1351,7 +1352,7 @@ CREATE TABLE interest (
 );
 
 
-ALTER TABLE public.interest OWNER TO snowdrift_development;
+ALTER TABLE interest OWNER TO snowdrift_development;
 
 --
 -- Name: interest_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -1365,7 +1366,7 @@ CREATE SEQUENCE interest_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.interest_id_seq OWNER TO snowdrift_development;
+ALTER TABLE interest_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: interest_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -1381,18 +1382,18 @@ ALTER SEQUENCE interest_id_seq OWNED BY interest.id;
 CREATE TABLE invite (
     id integer NOT NULL,
     created_ts timestamp with time zone NOT NULL,
-    project integer NOT NULL,
+    project bigint NOT NULL,
     code character varying NOT NULL,
-    "user" integer NOT NULL,
+    "user" bigint NOT NULL,
     role character varying NOT NULL,
     tag character varying NOT NULL,
     redeemed boolean NOT NULL,
     redeemed_ts timestamp with time zone,
-    redeemed_by integer
+    redeemed_by bigint
 );
 
 
-ALTER TABLE public.invite OWNER TO snowdrift_development;
+ALTER TABLE invite OWNER TO snowdrift_development;
 
 --
 -- Name: invite_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -1406,7 +1407,7 @@ CREATE SEQUENCE invite_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.invite_id_seq OWNER TO snowdrift_development;
+ALTER TABLE invite_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: invite_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -1429,7 +1430,7 @@ CREATE TABLE license (
 );
 
 
-ALTER TABLE public.license OWNER TO snowdrift_development;
+ALTER TABLE license OWNER TO snowdrift_development;
 
 --
 -- Name: license_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -1443,7 +1444,7 @@ CREATE SEQUENCE license_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.license_id_seq OWNER TO snowdrift_development;
+ALTER TABLE license_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: license_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -1458,12 +1459,12 @@ ALTER SEQUENCE license_id_seq OWNED BY license.id;
 
 CREATE TABLE manual_establishment (
     id integer NOT NULL,
-    established_user integer NOT NULL,
-    establishing_user integer NOT NULL
+    established_user bigint NOT NULL,
+    establishing_user bigint NOT NULL
 );
 
 
-ALTER TABLE public.manual_establishment OWNER TO snowdrift_development;
+ALTER TABLE manual_establishment OWNER TO snowdrift_development;
 
 --
 -- Name: manual_establishment_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -1477,7 +1478,7 @@ CREATE SEQUENCE manual_establishment_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.manual_establishment_id_seq OWNER TO snowdrift_development;
+ALTER TABLE manual_establishment_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: manual_establishment_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -1496,7 +1497,7 @@ CREATE TABLE payday (
 );
 
 
-ALTER TABLE public.payday OWNER TO snowdrift_development;
+ALTER TABLE payday OWNER TO snowdrift_development;
 
 --
 -- Name: payday_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -1510,7 +1511,7 @@ CREATE SEQUENCE payday_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.payday_id_seq OWNER TO snowdrift_development;
+ALTER TABLE payday_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: payday_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -1525,15 +1526,15 @@ ALTER SEQUENCE payday_id_seq OWNED BY payday.id;
 
 CREATE TABLE pledge (
     id integer NOT NULL,
-    "user" integer NOT NULL,
-    project integer NOT NULL,
+    "user" bigint NOT NULL,
+    project bigint NOT NULL,
     shares bigint NOT NULL,
     funded_shares bigint NOT NULL,
     created_ts timestamp with time zone DEFAULT now() NOT NULL
 );
 
 
-ALTER TABLE public.pledge OWNER TO snowdrift_development;
+ALTER TABLE pledge OWNER TO snowdrift_development;
 
 --
 -- Name: pledge_form_rendered; Type: TABLE; Schema: public; Owner: snowdrift_development; Tablespace: 
@@ -1543,12 +1544,12 @@ CREATE TABLE pledge_form_rendered (
     id integer NOT NULL,
     ts timestamp with time zone NOT NULL,
     "order" character varying NOT NULL,
-    project integer NOT NULL,
-    "user" integer
+    project bigint NOT NULL,
+    "user" bigint
 );
 
 
-ALTER TABLE public.pledge_form_rendered OWNER TO snowdrift_development;
+ALTER TABLE pledge_form_rendered OWNER TO snowdrift_development;
 
 --
 -- Name: pledge_form_rendered_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -1562,7 +1563,7 @@ CREATE SEQUENCE pledge_form_rendered_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.pledge_form_rendered_id_seq OWNER TO snowdrift_development;
+ALTER TABLE pledge_form_rendered_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: pledge_form_rendered_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -1583,7 +1584,7 @@ CREATE SEQUENCE pledge_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.pledge_id_seq OWNER TO snowdrift_development;
+ALTER TABLE pledge_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: pledge_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -1602,18 +1603,18 @@ CREATE TABLE project (
     name character varying NOT NULL,
     handle character varying NOT NULL,
     description character varying NOT NULL,
-    account integer NOT NULL,
+    account bigint NOT NULL,
     share_value bigint NOT NULL,
-    last_payday integer,
+    last_payday bigint,
     github_repo character varying,
-    discussion integer DEFAULT nextval('discussion_id_seq'::regclass) NOT NULL,
+    discussion bigint DEFAULT nextval('discussion_id_seq'::regclass) NOT NULL,
     public boolean DEFAULT true NOT NULL,
     blurb character varying NOT NULL,
     logo character varying
 );
 
 
-ALTER TABLE public.project OWNER TO snowdrift_development;
+ALTER TABLE project OWNER TO snowdrift_development;
 
 --
 -- Name: project_blog_comment; Type: TABLE; Schema: public; Owner: snowdrift_development; Tablespace: 
@@ -1626,7 +1627,7 @@ CREATE TABLE project_blog_comment (
 );
 
 
-ALTER TABLE public.project_blog_comment OWNER TO snowdrift_development;
+ALTER TABLE project_blog_comment OWNER TO snowdrift_development;
 
 --
 -- Name: project_blog_comment_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -1640,7 +1641,7 @@ CREATE SEQUENCE project_blog_comment_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.project_blog_comment_id_seq OWNER TO snowdrift_development;
+ALTER TABLE project_blog_comment_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: project_blog_comment_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -1661,7 +1662,7 @@ CREATE SEQUENCE project_blog_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.project_blog_id_seq OWNER TO snowdrift_development;
+ALTER TABLE project_blog_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: project_blog_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -1682,7 +1683,7 @@ CREATE SEQUENCE project_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.project_id_seq OWNER TO snowdrift_development;
+ALTER TABLE project_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: project_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -1697,12 +1698,12 @@ ALTER SEQUENCE project_id_seq OWNED BY project.id;
 
 CREATE TABLE project_last_update (
     id integer NOT NULL,
-    project integer NOT NULL,
-    update integer NOT NULL
+    project bigint NOT NULL,
+    update bigint NOT NULL
 );
 
 
-ALTER TABLE public.project_last_update OWNER TO snowdrift_development;
+ALTER TABLE project_last_update OWNER TO snowdrift_development;
 
 --
 -- Name: project_last_update_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -1716,7 +1717,7 @@ CREATE SEQUENCE project_last_update_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.project_last_update_id_seq OWNER TO snowdrift_development;
+ALTER TABLE project_last_update_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: project_last_update_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -1733,14 +1734,14 @@ CREATE TABLE project_notification (
     id integer NOT NULL,
     created_ts timestamp with time zone NOT NULL,
     type character varying NOT NULL,
-    "to" integer NOT NULL,
-    project integer NOT NULL,
+    "to" bigint NOT NULL,
+    project bigint NOT NULL,
     content character varying NOT NULL,
     archived boolean NOT NULL
 );
 
 
-ALTER TABLE public.project_notification OWNER TO snowdrift_development;
+ALTER TABLE project_notification OWNER TO snowdrift_development;
 
 --
 -- Name: project_notification_email; Type: TABLE; Schema: public; Owner: snowdrift_development; Tablespace: 
@@ -1750,13 +1751,13 @@ CREATE TABLE project_notification_email (
     id integer NOT NULL,
     created_ts timestamp with time zone NOT NULL,
     type character varying NOT NULL,
-    "to" integer NOT NULL,
-    project integer NOT NULL,
+    "to" bigint NOT NULL,
+    project bigint NOT NULL,
     content character varying NOT NULL
 );
 
 
-ALTER TABLE public.project_notification_email OWNER TO snowdrift_development;
+ALTER TABLE project_notification_email OWNER TO snowdrift_development;
 
 --
 -- Name: project_notification_email_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -1770,7 +1771,7 @@ CREATE SEQUENCE project_notification_email_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.project_notification_email_id_seq OWNER TO snowdrift_development;
+ALTER TABLE project_notification_email_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: project_notification_email_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -1791,7 +1792,7 @@ CREATE SEQUENCE project_notification_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.project_notification_id_seq OWNER TO snowdrift_development;
+ALTER TABLE project_notification_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: project_notification_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -1806,14 +1807,14 @@ ALTER SEQUENCE project_notification_id_seq OWNED BY project_notification.id;
 
 CREATE TABLE project_notification_pref (
     id integer NOT NULL,
-    "user" integer NOT NULL,
-    project integer NOT NULL,
+    "user" bigint NOT NULL,
+    project bigint NOT NULL,
     type character varying NOT NULL,
     delivery character varying NOT NULL
 );
 
 
-ALTER TABLE public.project_notification_pref OWNER TO snowdrift_development;
+ALTER TABLE project_notification_pref OWNER TO snowdrift_development;
 
 --
 -- Name: project_notification_pref_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -1827,7 +1828,7 @@ CREATE SEQUENCE project_notification_pref_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.project_notification_pref_id_seq OWNER TO snowdrift_development;
+ALTER TABLE project_notification_pref_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: project_notification_pref_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -1862,7 +1863,7 @@ CREATE TABLE project_signup (
 );
 
 
-ALTER TABLE public.project_signup OWNER TO snowdrift_development;
+ALTER TABLE project_signup OWNER TO snowdrift_development;
 
 --
 -- Name: project_signup_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -1876,7 +1877,7 @@ CREATE SEQUENCE project_signup_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.project_signup_id_seq OWNER TO snowdrift_development;
+ALTER TABLE project_signup_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: project_signup_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -1891,12 +1892,12 @@ ALTER SEQUENCE project_signup_id_seq OWNED BY project_signup.id;
 
 CREATE TABLE project_tag (
     id integer NOT NULL,
-    project integer NOT NULL,
-    tag integer NOT NULL
+    project bigint NOT NULL,
+    tag bigint NOT NULL
 );
 
 
-ALTER TABLE public.project_tag OWNER TO snowdrift_development;
+ALTER TABLE project_tag OWNER TO snowdrift_development;
 
 --
 -- Name: project_tag_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -1910,7 +1911,7 @@ CREATE SEQUENCE project_tag_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.project_tag_id_seq OWNER TO snowdrift_development;
+ALTER TABLE project_tag_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: project_tag_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -1926,14 +1927,14 @@ ALTER SEQUENCE project_tag_id_seq OWNED BY project_tag.id;
 CREATE TABLE project_update (
     id integer NOT NULL,
     updated_ts timestamp with time zone NOT NULL,
-    project integer NOT NULL,
-    author integer NOT NULL,
+    project bigint NOT NULL,
+    author bigint NOT NULL,
     description character varying NOT NULL,
     blurb character varying NOT NULL
 );
 
 
-ALTER TABLE public.project_update OWNER TO snowdrift_development;
+ALTER TABLE project_update OWNER TO snowdrift_development;
 
 --
 -- Name: project_update_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -1947,7 +1948,7 @@ CREATE SEQUENCE project_update_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.project_update_id_seq OWNER TO snowdrift_development;
+ALTER TABLE project_update_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: project_update_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -1962,13 +1963,13 @@ ALTER SEQUENCE project_update_id_seq OWNED BY project_update.id;
 
 CREATE TABLE project_user_role (
     id integer NOT NULL,
-    project integer NOT NULL,
-    "user" integer NOT NULL,
+    project bigint NOT NULL,
+    "user" bigint NOT NULL,
     role character varying NOT NULL
 );
 
 
-ALTER TABLE public.project_user_role OWNER TO snowdrift_development;
+ALTER TABLE project_user_role OWNER TO snowdrift_development;
 
 --
 -- Name: project_user_role_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -1982,7 +1983,7 @@ CREATE SEQUENCE project_user_role_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.project_user_role_id_seq OWNER TO snowdrift_development;
+ALTER TABLE project_user_role_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: project_user_role_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -1997,14 +1998,14 @@ ALTER SEQUENCE project_user_role_id_seq OWNED BY project_user_role.id;
 
 CREATE TABLE reset_password (
     id integer NOT NULL,
-    "user" integer NOT NULL,
+    "user" bigint NOT NULL,
     email character varying NOT NULL,
     uri character varying NOT NULL,
     sent boolean DEFAULT false NOT NULL
 );
 
 
-ALTER TABLE public.reset_password OWNER TO snowdrift_development;
+ALTER TABLE reset_password OWNER TO snowdrift_development;
 
 --
 -- Name: reset_password_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -2018,7 +2019,7 @@ CREATE SEQUENCE reset_password_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.reset_password_id_seq OWNER TO snowdrift_development;
+ALTER TABLE reset_password_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: reset_password_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -2034,14 +2035,14 @@ ALTER SEQUENCE reset_password_id_seq OWNED BY reset_password.id;
 CREATE TABLE rethread (
     id integer NOT NULL,
     ts timestamp with time zone NOT NULL,
-    moderator integer NOT NULL,
-    old_comment integer NOT NULL,
+    moderator bigint NOT NULL,
+    old_comment bigint NOT NULL,
     reason character varying NOT NULL,
-    new_comment integer NOT NULL
+    new_comment bigint NOT NULL
 );
 
 
-ALTER TABLE public.rethread OWNER TO snowdrift_development;
+ALTER TABLE rethread OWNER TO snowdrift_development;
 
 --
 -- Name: rethread_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -2055,7 +2056,7 @@ CREATE SEQUENCE rethread_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.rethread_id_seq OWNER TO snowdrift_development;
+ALTER TABLE rethread_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: rethread_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -2071,14 +2072,14 @@ ALTER SEQUENCE rethread_id_seq OWNED BY rethread.id;
 CREATE TABLE role_event (
     id integer NOT NULL,
     ts timestamp with time zone NOT NULL,
-    "user" integer NOT NULL,
+    "user" bigint NOT NULL,
     role character varying NOT NULL,
-    project integer NOT NULL,
+    project bigint NOT NULL,
     added boolean NOT NULL
 );
 
 
-ALTER TABLE public.role_event OWNER TO snowdrift_development;
+ALTER TABLE role_event OWNER TO snowdrift_development;
 
 --
 -- Name: role_event_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -2092,7 +2093,7 @@ CREATE SEQUENCE role_event_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.role_event_id_seq OWNER TO snowdrift_development;
+ALTER TABLE role_event_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: role_event_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -2108,14 +2109,14 @@ ALTER SEQUENCE role_event_id_seq OWNED BY role_event.id;
 CREATE TABLE shares_pledged (
     id integer NOT NULL,
     ts timestamp with time zone NOT NULL,
-    "user" integer NOT NULL,
-    project integer NOT NULL,
+    "user" bigint NOT NULL,
+    project bigint NOT NULL,
     shares bigint NOT NULL,
-    render integer NOT NULL
+    render bigint NOT NULL
 );
 
 
-ALTER TABLE public.shares_pledged OWNER TO snowdrift_development;
+ALTER TABLE shares_pledged OWNER TO snowdrift_development;
 
 --
 -- Name: shares_pledged_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -2129,7 +2130,7 @@ CREATE SEQUENCE shares_pledged_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.shares_pledged_id_seq OWNER TO snowdrift_development;
+ALTER TABLE shares_pledged_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: shares_pledged_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -2148,7 +2149,7 @@ CREATE TABLE tag (
 );
 
 
-ALTER TABLE public.tag OWNER TO snowdrift_development;
+ALTER TABLE tag OWNER TO snowdrift_development;
 
 --
 -- Name: tag_color; Type: TABLE; Schema: public; Owner: snowdrift_development; Tablespace: 
@@ -2156,13 +2157,13 @@ ALTER TABLE public.tag OWNER TO snowdrift_development;
 
 CREATE TABLE tag_color (
     id integer NOT NULL,
-    tag integer NOT NULL,
-    "user" integer NOT NULL,
-    color integer NOT NULL
+    tag bigint NOT NULL,
+    "user" bigint NOT NULL,
+    color bigint NOT NULL
 );
 
 
-ALTER TABLE public.tag_color OWNER TO snowdrift_development;
+ALTER TABLE tag_color OWNER TO snowdrift_development;
 
 --
 -- Name: tag_color_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -2176,7 +2177,7 @@ CREATE SEQUENCE tag_color_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.tag_color_id_seq OWNER TO snowdrift_development;
+ALTER TABLE tag_color_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: tag_color_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -2197,7 +2198,7 @@ CREATE SEQUENCE tag_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.tag_id_seq OWNER TO snowdrift_development;
+ALTER TABLE tag_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: tag_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -2214,12 +2215,12 @@ CREATE TABLE ticket (
     id integer NOT NULL,
     created_ts timestamp with time zone NOT NULL,
     name character varying NOT NULL,
-    comment integer NOT NULL,
+    comment bigint NOT NULL,
     updated_ts timestamp with time zone NOT NULL
 );
 
 
-ALTER TABLE public.ticket OWNER TO snowdrift_development;
+ALTER TABLE ticket OWNER TO snowdrift_development;
 
 --
 -- Name: ticket_claiming; Type: TABLE; Schema: public; Owner: snowdrift_development; Tablespace: 
@@ -2228,13 +2229,13 @@ ALTER TABLE public.ticket OWNER TO snowdrift_development;
 CREATE TABLE ticket_claiming (
     id integer NOT NULL,
     ts timestamp with time zone NOT NULL,
-    "user" integer NOT NULL,
-    ticket integer NOT NULL,
+    "user" bigint NOT NULL,
+    ticket bigint NOT NULL,
     note character varying
 );
 
 
-ALTER TABLE public.ticket_claiming OWNER TO snowdrift_development;
+ALTER TABLE ticket_claiming OWNER TO snowdrift_development;
 
 --
 -- Name: ticket_claiming_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -2248,7 +2249,7 @@ CREATE SEQUENCE ticket_claiming_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.ticket_claiming_id_seq OWNER TO snowdrift_development;
+ALTER TABLE ticket_claiming_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: ticket_claiming_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -2269,7 +2270,7 @@ CREATE SEQUENCE ticket_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.ticket_id_seq OWNER TO snowdrift_development;
+ALTER TABLE ticket_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: ticket_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -2285,15 +2286,15 @@ ALTER SEQUENCE ticket_id_seq OWNED BY ticket.id;
 CREATE TABLE ticket_old_claiming (
     id integer NOT NULL,
     claim_ts timestamp with time zone NOT NULL,
-    "user" integer NOT NULL,
-    ticket integer NOT NULL,
+    "user" bigint NOT NULL,
+    ticket bigint NOT NULL,
     note character varying,
     release_note character varying,
     released_ts timestamp with time zone NOT NULL
 );
 
 
-ALTER TABLE public.ticket_old_claiming OWNER TO snowdrift_development;
+ALTER TABLE ticket_old_claiming OWNER TO snowdrift_development;
 
 --
 -- Name: ticket_old_claiming_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -2307,7 +2308,7 @@ CREATE SEQUENCE ticket_old_claiming_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.ticket_old_claiming_id_seq OWNER TO snowdrift_development;
+ALTER TABLE ticket_old_claiming_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: ticket_old_claiming_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -2323,16 +2324,16 @@ ALTER SEQUENCE ticket_old_claiming_id_seq OWNED BY ticket_old_claiming.id;
 CREATE TABLE transaction (
     id integer NOT NULL,
     ts timestamp with time zone NOT NULL,
-    credit integer,
-    debit integer,
+    credit bigint,
+    debit bigint,
     amount bigint NOT NULL,
     reason character varying NOT NULL,
     info character varying,
-    payday integer
+    payday bigint
 );
 
 
-ALTER TABLE public.transaction OWNER TO snowdrift_development;
+ALTER TABLE transaction OWNER TO snowdrift_development;
 
 --
 -- Name: transaction_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -2346,7 +2347,7 @@ CREATE SEQUENCE transaction_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.transaction_id_seq OWNER TO snowdrift_development;
+ALTER TABLE transaction_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: transaction_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -2361,12 +2362,12 @@ ALTER SEQUENCE transaction_id_seq OWNED BY transaction.id;
 
 CREATE TABLE unapproved_comment_notification (
     id integer NOT NULL,
-    comment integer NOT NULL,
-    notification integer NOT NULL
+    comment bigint NOT NULL,
+    notification bigint NOT NULL
 );
 
 
-ALTER TABLE public.unapproved_comment_notification OWNER TO snowdrift_development;
+ALTER TABLE unapproved_comment_notification OWNER TO snowdrift_development;
 
 --
 -- Name: unapproved_comment_notification_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -2380,7 +2381,7 @@ CREATE SEQUENCE unapproved_comment_notification_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.unapproved_comment_notification_id_seq OWNER TO snowdrift_development;
+ALTER TABLE unapproved_comment_notification_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: unapproved_comment_notification_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -2396,8 +2397,8 @@ ALTER SEQUENCE unapproved_comment_notification_id_seq OWNED BY unapproved_commen
 CREATE TABLE unnamed_image (
     id integer NOT NULL,
     ts timestamp with time zone NOT NULL,
-    uploader integer NOT NULL,
-    project integer,
+    uploader bigint NOT NULL,
+    project bigint,
     name character varying,
     origin character varying,
     format bytea NOT NULL,
@@ -2405,7 +2406,7 @@ CREATE TABLE unnamed_image (
 );
 
 
-ALTER TABLE public.unnamed_image OWNER TO snowdrift_development;
+ALTER TABLE unnamed_image OWNER TO snowdrift_development;
 
 --
 -- Name: unnamed_image_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -2419,7 +2420,7 @@ CREATE SEQUENCE unnamed_image_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.unnamed_image_id_seq OWNER TO snowdrift_development;
+ALTER TABLE unnamed_image_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: unnamed_image_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -2438,23 +2439,23 @@ CREATE TABLE "user" (
     hash character varying,
     salt character varying,
     name character varying,
-    account integer NOT NULL,
+    account bigint NOT NULL,
     avatar character varying,
     blurb character varying,
     statement character varying,
     irc_nick character varying,
     read_notifications timestamp with time zone DEFAULT now() NOT NULL,
     read_applications timestamp with time zone DEFAULT now() NOT NULL,
-    created_ts timestamp with time zone,
+    created_ts timestamp with time zone NOT NULL,
     established character varying DEFAULT 'EstUnestablished'::character varying NOT NULL,
-    discussion integer DEFAULT nextval('discussion_id_seq'::regclass) NOT NULL,
+    discussion bigint DEFAULT nextval('discussion_id_seq'::regclass) NOT NULL,
     email character varying,
     languages character varying NOT NULL,
     email_verified boolean DEFAULT false NOT NULL
 );
 
 
-ALTER TABLE public."user" OWNER TO snowdrift_development;
+ALTER TABLE "user" OWNER TO snowdrift_development;
 
 --
 -- Name: user_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -2468,7 +2469,7 @@ CREATE SEQUENCE user_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.user_id_seq OWNER TO snowdrift_development;
+ALTER TABLE user_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: user_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -2489,7 +2490,7 @@ CREATE TABLE user_message_pref (
 );
 
 
-ALTER TABLE public.user_message_pref OWNER TO snowdrift_development;
+ALTER TABLE user_message_pref OWNER TO snowdrift_development;
 
 --
 -- Name: user_message_pref_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -2503,7 +2504,7 @@ CREATE SEQUENCE user_message_pref_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.user_message_pref_id_seq OWNER TO snowdrift_development;
+ALTER TABLE user_message_pref_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: user_message_pref_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -2520,13 +2521,13 @@ CREATE TABLE user_notification (
     id integer NOT NULL,
     created_ts timestamp with time zone NOT NULL,
     type character varying NOT NULL,
-    "to" integer NOT NULL,
+    "to" bigint NOT NULL,
     content character varying NOT NULL,
     archived boolean NOT NULL
 );
 
 
-ALTER TABLE public.user_notification OWNER TO snowdrift_development;
+ALTER TABLE user_notification OWNER TO snowdrift_development;
 
 --
 -- Name: user_notification_email; Type: TABLE; Schema: public; Owner: snowdrift_development; Tablespace: 
@@ -2536,12 +2537,12 @@ CREATE TABLE user_notification_email (
     id integer NOT NULL,
     created_ts timestamp with time zone NOT NULL,
     type character varying NOT NULL,
-    "to" integer NOT NULL,
+    "to" bigint NOT NULL,
     content character varying NOT NULL
 );
 
 
-ALTER TABLE public.user_notification_email OWNER TO snowdrift_development;
+ALTER TABLE user_notification_email OWNER TO snowdrift_development;
 
 --
 -- Name: user_notification_email_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -2555,7 +2556,7 @@ CREATE SEQUENCE user_notification_email_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.user_notification_email_id_seq OWNER TO snowdrift_development;
+ALTER TABLE user_notification_email_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: user_notification_email_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -2576,7 +2577,7 @@ CREATE SEQUENCE user_notification_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.user_notification_id_seq OWNER TO snowdrift_development;
+ALTER TABLE user_notification_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: user_notification_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -2591,13 +2592,13 @@ ALTER SEQUENCE user_notification_id_seq OWNED BY user_notification.id;
 
 CREATE TABLE user_notification_pref (
     id integer NOT NULL,
-    "user" integer NOT NULL,
+    "user" bigint NOT NULL,
     type character varying NOT NULL,
     delivery character varying NOT NULL
 );
 
 
-ALTER TABLE public.user_notification_pref OWNER TO snowdrift_development;
+ALTER TABLE user_notification_pref OWNER TO snowdrift_development;
 
 --
 -- Name: user_notification_pref_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -2611,7 +2612,7 @@ CREATE SEQUENCE user_notification_pref_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.user_notification_pref_id_seq OWNER TO snowdrift_development;
+ALTER TABLE user_notification_pref_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: user_notification_pref_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -2626,13 +2627,13 @@ ALTER SEQUENCE user_notification_pref_id_seq OWNED BY user_notification_pref.id;
 
 CREATE TABLE user_setting (
     id integer NOT NULL,
-    "user" integer NOT NULL,
+    "user" bigint NOT NULL,
     setting character varying NOT NULL,
     value character varying NOT NULL
 );
 
 
-ALTER TABLE public.user_setting OWNER TO snowdrift_development;
+ALTER TABLE user_setting OWNER TO snowdrift_development;
 
 --
 -- Name: user_setting_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -2646,7 +2647,7 @@ CREATE SEQUENCE user_setting_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.user_setting_id_seq OWNER TO snowdrift_development;
+ALTER TABLE user_setting_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: user_setting_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -2661,12 +2662,12 @@ ALTER SEQUENCE user_setting_id_seq OWNED BY user_setting.id;
 
 CREATE TABLE user_watching_project (
     id integer NOT NULL,
-    "user" integer NOT NULL,
-    project integer NOT NULL
+    "user" bigint NOT NULL,
+    project bigint NOT NULL
 );
 
 
-ALTER TABLE public.user_watching_project OWNER TO snowdrift_development;
+ALTER TABLE user_watching_project OWNER TO snowdrift_development;
 
 --
 -- Name: user_watching_project_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -2680,7 +2681,7 @@ CREATE SEQUENCE user_watching_project_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.user_watching_project_id_seq OWNER TO snowdrift_development;
+ALTER TABLE user_watching_project_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: user_watching_project_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -2695,12 +2696,12 @@ ALTER SEQUENCE user_watching_project_id_seq OWNED BY user_watching_project.id;
 
 CREATE TABLE view_comment (
     id integer NOT NULL,
-    "user" integer NOT NULL,
-    comment integer NOT NULL
+    "user" bigint NOT NULL,
+    comment bigint NOT NULL
 );
 
 
-ALTER TABLE public.view_comment OWNER TO snowdrift_development;
+ALTER TABLE view_comment OWNER TO snowdrift_development;
 
 --
 -- Name: view_comment_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -2714,7 +2715,7 @@ CREATE SEQUENCE view_comment_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.view_comment_id_seq OWNER TO snowdrift_development;
+ALTER TABLE view_comment_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: view_comment_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -2729,14 +2730,14 @@ ALTER SEQUENCE view_comment_id_seq OWNED BY view_comment.id;
 
 CREATE TABLE view_time (
     id integer NOT NULL,
-    "user" integer NOT NULL,
-    project integer NOT NULL,
+    "user" bigint NOT NULL,
+    project bigint NOT NULL,
     type character varying NOT NULL,
     "time" timestamp with time zone DEFAULT now() NOT NULL
 );
 
 
-ALTER TABLE public.view_time OWNER TO snowdrift_development;
+ALTER TABLE view_time OWNER TO snowdrift_development;
 
 --
 -- Name: view_time_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -2750,7 +2751,7 @@ CREATE SEQUENCE view_time_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.view_time_id_seq OWNER TO snowdrift_development;
+ALTER TABLE view_time_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: view_time_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -2765,12 +2766,12 @@ ALTER SEQUENCE view_time_id_seq OWNED BY view_time.id;
 
 CREATE TABLE view_wiki_edit (
     id integer NOT NULL,
-    "user" integer NOT NULL,
-    edit integer NOT NULL
+    "user" bigint NOT NULL,
+    edit bigint NOT NULL
 );
 
 
-ALTER TABLE public.view_wiki_edit OWNER TO snowdrift_development;
+ALTER TABLE view_wiki_edit OWNER TO snowdrift_development;
 
 --
 -- Name: view_wiki_edit_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -2784,7 +2785,7 @@ CREATE SEQUENCE view_wiki_edit_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.view_wiki_edit_id_seq OWNER TO snowdrift_development;
+ALTER TABLE view_wiki_edit_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: view_wiki_edit_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -2800,8 +2801,8 @@ ALTER SEQUENCE view_wiki_edit_id_seq OWNED BY view_wiki_edit.id;
 CREATE TABLE volunteer_application (
     id integer NOT NULL,
     created_ts timestamp with time zone NOT NULL,
-    project integer NOT NULL,
-    "user" integer NOT NULL,
+    project bigint NOT NULL,
+    "user" bigint NOT NULL,
     name character varying NOT NULL,
     email character varying NOT NULL,
     other_contact_info character varying,
@@ -2812,7 +2813,7 @@ CREATE TABLE volunteer_application (
 );
 
 
-ALTER TABLE public.volunteer_application OWNER TO snowdrift_development;
+ALTER TABLE volunteer_application OWNER TO snowdrift_development;
 
 --
 -- Name: volunteer_application_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -2826,7 +2827,7 @@ CREATE SEQUENCE volunteer_application_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.volunteer_application_id_seq OWNER TO snowdrift_development;
+ALTER TABLE volunteer_application_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: volunteer_application_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -2841,12 +2842,12 @@ ALTER SEQUENCE volunteer_application_id_seq OWNED BY volunteer_application.id;
 
 CREATE TABLE volunteer_interest (
     id integer NOT NULL,
-    volunteer integer NOT NULL,
-    interest integer NOT NULL
+    volunteer bigint NOT NULL,
+    interest bigint NOT NULL
 );
 
 
-ALTER TABLE public.volunteer_interest OWNER TO snowdrift_development;
+ALTER TABLE volunteer_interest OWNER TO snowdrift_development;
 
 --
 -- Name: volunteer_interest_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -2860,7 +2861,7 @@ CREATE SEQUENCE volunteer_interest_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.volunteer_interest_id_seq OWNER TO snowdrift_development;
+ALTER TABLE volunteer_interest_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: volunteer_interest_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -2876,12 +2877,12 @@ ALTER SEQUENCE volunteer_interest_id_seq OWNED BY volunteer_interest.id;
 CREATE TABLE watched_subthread (
     id integer NOT NULL,
     ts timestamp with time zone NOT NULL,
-    "user" integer NOT NULL,
-    root integer NOT NULL
+    "user" bigint NOT NULL,
+    root bigint NOT NULL
 );
 
 
-ALTER TABLE public.watched_subthread OWNER TO snowdrift_development;
+ALTER TABLE watched_subthread OWNER TO snowdrift_development;
 
 --
 -- Name: watched_subthread_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -2895,7 +2896,7 @@ CREATE SEQUENCE watched_subthread_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.watched_subthread_id_seq OWNER TO snowdrift_development;
+ALTER TABLE watched_subthread_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: watched_subthread_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -2911,15 +2912,15 @@ ALTER SEQUENCE watched_subthread_id_seq OWNED BY watched_subthread.id;
 CREATE TABLE wiki_edit (
     id integer NOT NULL,
     ts timestamp with time zone NOT NULL,
-    "user" integer NOT NULL,
-    page integer NOT NULL,
+    "user" bigint NOT NULL,
+    page bigint NOT NULL,
     content character varying NOT NULL,
     comment character varying,
     language character varying NOT NULL
 );
 
 
-ALTER TABLE public.wiki_edit OWNER TO snowdrift_development;
+ALTER TABLE wiki_edit OWNER TO snowdrift_development;
 
 --
 -- Name: wiki_edit_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -2933,7 +2934,7 @@ CREATE SEQUENCE wiki_edit_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.wiki_edit_id_seq OWNER TO snowdrift_development;
+ALTER TABLE wiki_edit_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: wiki_edit_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -2948,13 +2949,13 @@ ALTER SEQUENCE wiki_edit_id_seq OWNED BY wiki_edit.id;
 
 CREATE TABLE wiki_last_edit (
     id integer NOT NULL,
-    page integer NOT NULL,
-    edit integer NOT NULL,
+    page bigint NOT NULL,
+    edit bigint NOT NULL,
     language character varying NOT NULL
 );
 
 
-ALTER TABLE public.wiki_last_edit OWNER TO snowdrift_development;
+ALTER TABLE wiki_last_edit OWNER TO snowdrift_development;
 
 --
 -- Name: wiki_last_edit_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -2968,7 +2969,7 @@ CREATE SEQUENCE wiki_last_edit_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.wiki_last_edit_id_seq OWNER TO snowdrift_development;
+ALTER TABLE wiki_last_edit_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: wiki_last_edit_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -2983,15 +2984,15 @@ ALTER SEQUENCE wiki_last_edit_id_seq OWNED BY wiki_last_edit.id;
 
 CREATE TABLE wiki_page (
     id integer NOT NULL,
-    project integer NOT NULL,
+    project bigint NOT NULL,
     permission_level character varying NOT NULL,
-    discussion integer NOT NULL,
+    discussion bigint NOT NULL,
     created_ts timestamp with time zone DEFAULT now() NOT NULL,
-    "user" integer NOT NULL
+    "user" bigint NOT NULL
 );
 
 
-ALTER TABLE public.wiki_page OWNER TO snowdrift_development;
+ALTER TABLE wiki_page OWNER TO snowdrift_development;
 
 --
 -- Name: wiki_page_comment; Type: TABLE; Schema: public; Owner: snowdrift_development; Tablespace: 
@@ -3004,7 +3005,7 @@ CREATE TABLE wiki_page_comment (
 );
 
 
-ALTER TABLE public.wiki_page_comment OWNER TO snowdrift_development;
+ALTER TABLE wiki_page_comment OWNER TO snowdrift_development;
 
 --
 -- Name: wiki_page_comment_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -3018,7 +3019,7 @@ CREATE SEQUENCE wiki_page_comment_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.wiki_page_comment_id_seq OWNER TO snowdrift_development;
+ALTER TABLE wiki_page_comment_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: wiki_page_comment_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -3039,7 +3040,7 @@ CREATE SEQUENCE wiki_page_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.wiki_page_id_seq OWNER TO snowdrift_development;
+ALTER TABLE wiki_page_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: wiki_page_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -3054,14 +3055,14 @@ ALTER SEQUENCE wiki_page_id_seq OWNED BY wiki_page.id;
 
 CREATE TABLE wiki_target (
     id integer NOT NULL,
-    page integer NOT NULL,
-    project integer NOT NULL,
+    page bigint NOT NULL,
+    project bigint NOT NULL,
     target character varying NOT NULL,
     language character varying NOT NULL
 );
 
 
-ALTER TABLE public.wiki_target OWNER TO snowdrift_development;
+ALTER TABLE wiki_target OWNER TO snowdrift_development;
 
 --
 -- Name: wiki_target_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -3075,7 +3076,7 @@ CREATE SEQUENCE wiki_target_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.wiki_target_id_seq OWNER TO snowdrift_development;
+ALTER TABLE wiki_target_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: wiki_target_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -3090,13 +3091,13 @@ ALTER SEQUENCE wiki_target_id_seq OWNED BY wiki_target.id;
 
 CREATE TABLE wiki_translation (
     id integer NOT NULL,
-    edit integer NOT NULL,
-    source integer NOT NULL,
+    edit bigint NOT NULL,
+    source bigint NOT NULL,
     complete boolean NOT NULL
 );
 
 
-ALTER TABLE public.wiki_translation OWNER TO snowdrift_development;
+ALTER TABLE wiki_translation OWNER TO snowdrift_development;
 
 --
 -- Name: wiki_translation_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_development
@@ -3110,7 +3111,7 @@ CREATE SEQUENCE wiki_translation_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.wiki_translation_id_seq OWNER TO snowdrift_development;
+ALTER TABLE wiki_translation_id_seq OWNER TO snowdrift_development;
 
 --
 -- Name: wiki_translation_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_development
@@ -3756,7 +3757,7 @@ SELECT pg_catalog.setval('account_id_seq', 5, true);
 --
 
 COPY blog_post (id, ts, title, "user", top_content, project, bottom_content, discussion, handle) FROM stdin;
-1	2015-06-07 02:17:56.725259+00	Sample Blog Post Title	1	This part of the blog post is shown both on the permalink and on the /blog view of multiple posts. It is "above the fold."  We use the code `***` on its own separated line to specify the fold location.\n\n	1	\nThis section is below the fold. It is only shown on the permalink. If users click the "read more" link on the list of many posts, it jumps right to the fold instead of starting at the top.\n\nBlogs can be written by any team member for a project and edited by any team member or admin. Edits should generally be just for typo fixes etc.\n\nEach blog post has associated discussion page.\n	10	sample-post
+1	2015-06-06 19:17:56.725259-07	Sample Blog Post Title	1	This part of the blog post is shown both on the permalink and on the /blog view of multiple posts. It is "above the fold."  We use the code `***` on its own separated line to specify the fold location.\n\n	1	\nThis section is below the fold. It is only shown on the permalink. If users click the "read more" link on the list of many posts, it jumps right to the fold instead of starting at the top.\n\nBlogs can be written by any team member for a project and edited by any team member or admin. Edits should generally be just for typo fixes etc.\n\nEach blog post has associated discussion page.\n	10	sample-post
 \.
 
 
@@ -3765,40 +3766,41 @@ COPY blog_post (id, ts, title, "user", top_content, project, bottom_content, dis
 --
 
 COPY build (id, boot_time, base, diff) FROM stdin;
-1	2013-11-20 02:25:05.013214+00	8604247d8116396ec0214ba7677d2212990517d2	
-2	2013-11-23 19:29:20.349772+00	8604247d8116396ec0214ba7677d2212990517d2	
-3	2014-01-20 19:09:52.001477+00	4ccd10f42fd6d64ac4e2b3d70b28c9c6a3223b0c	diff --git a/Application.hs b/Application.hs\nindex 241f582..bf838a7 100644\n--- a/Application.hs\n+++ b/Application.hs\n@@ -135,8 +135,8 @@ doMigration = do\n \n     mapM_ ((\\ file -> liftIO (putStrLn ("running " ++ file ++ "...") >> T.readFile file)) >=> flip rawExecute []) $ L.map (("migrations/" <>) . snd) migration_files\n \n-    let last_migration = L.maximum $ 0 : L.map fst migration_files\n-    update $ flip set [ DatabaseVersionLastMigration =. val last_migration ]\n+    let new_last_migration = L.maximum $ 0 : L.map fst migration_files\n+    update $ flip set [ DatabaseVersionLastMigration =. val new_last_migration ]\n \n     migrations <- parseMigration' migrateAll\n \n@@ -145,8 +145,10 @@ doMigration = do\n     liftIO $ putStrLn $ "safe: " ++ show (L.length safe)\n     liftIO $ putStrLn $ "unsafe: " ++ show (L.length unsafe)\n \n+    liftIO $ putStrLn $ "new last_migration: " ++ show new_last_migration\n+\n     when (not $ L.null $ L.map snd safe) $ do\n-        liftIO $ T.writeFile ("migrations/migrate" <> show (last_migration + 1)) $ T.unlines $ L.map ((`snoc` ';') . snd) safe\n+        liftIO $ T.writeFile ("migrations/migrate" <> show (new_last_migration + 1)) $ T.unlines $ L.map ((`snoc` ';') . snd) safe\n         mapM_ (flip rawExecute [] . snd) migrations\n \n     when (not $ L.null $ L.map snd unsafe) $ do\n
-4	2014-01-21 17:41:12.047799+00	ed014b5810941e61f82123f97be0c69600d99f0f	
-5	2014-01-21 20:01:56.580066+00	ed014b5810941e61f82123f97be0c69600d99f0f	
-6	2014-01-21 22:30:50.979424+00	d9c16e7c96ebb0c2e66e9f5e6d2c85abc7aa26dd	
-7	2014-01-21 22:58:09.854227+00	d9c16e7c96ebb0c2e66e9f5e6d2c85abc7aa26dd	
-8	2014-01-22 00:06:52.037741+00	f8d42e0d451310462b2840f2777126be8fd0b162	
-9	2014-01-22 00:22:27.746213+00	1eea4b6d7e8a9a5b82e32a122f04d7611c9e29e3	
-10	2014-01-24 06:17:39.744006+00	0bd171dd45776715e763bd42438f32f9494b4fa5	
-11	2014-01-24 07:09:02.600052+00	0bd171dd45776715e763bd42438f32f9494b4fa5	
-12	2014-01-24 07:10:14.401191+00	0bd171dd45776715e763bd42438f32f9494b4fa5	
-13	2014-01-24 07:14:01.500808+00	0bd171dd45776715e763bd42438f32f9494b4fa5	
-14	2014-01-24 07:23:58.983733+00	0bd171dd45776715e763bd42438f32f9494b4fa5	
-15	2014-01-24 07:53:46.525858+00	e05ef3d875769e1910908e96aed4ec096ecef498	
-16	2014-01-24 18:52:45.121638+00	b857adcedd7be11cf2909b5d6cb536fb17d999c9	
-17	2014-01-24 21:47:53.941683+00	b857adcedd7be11cf2909b5d6cb536fb17d999c9	
-18	2014-01-24 23:28:23.255958+00	b857adcedd7be11cf2909b5d6cb536fb17d999c9	
-19	2014-02-04 05:22:47.977252+00	e42ac19d7713acb15779eb289dc57697a265ffe3	
-20	2014-03-02 05:31:59.002319+00	008e9bc87dbbab3764cfac6ac19bd3db630387d4	
-21	2014-05-27 18:35:44.545791+00	7939dab98e295e6d7cf43971b959009e32d8be1b	
-22	2014-05-27 18:36:21.415917+00	7939dab98e295e6d7cf43971b959009e32d8be1b	
-23	2014-05-27 18:36:39.687391+00	7939dab98e295e6d7cf43971b959009e32d8be1b	
-24	2014-05-27 18:37:11.184342+00	e81380ff27267098517bd582269afd7780a4a517	
-25	2015-06-06 22:43:36.276529+00	b9f8be54baf2bd58f02be68811b65c2de71738fe	
-26	2015-06-06 23:21:22.603761+00	b9f8be54baf2bd58f02be68811b65c2de71738fe	
-27	2015-06-06 23:30:03.89908+00	b9f8be54baf2bd58f02be68811b65c2de71738fe	
-28	2015-06-07 00:12:36.341398+00	b9f8be54baf2bd58f02be68811b65c2de71738fe	
-29	2015-06-07 00:20:58.92169+00	b9f8be54baf2bd58f02be68811b65c2de71738fe	
-30	2015-06-07 00:31:08.229368+00	b9f8be54baf2bd58f02be68811b65c2de71738fe	
-31	2015-06-07 01:37:01.193022+00	b9f8be54baf2bd58f02be68811b65c2de71738fe	
-32	2015-06-07 01:55:40.62914+00	b9f8be54baf2bd58f02be68811b65c2de71738fe	
-33	2015-06-07 02:23:36.162397+00	b9f8be54baf2bd58f02be68811b65c2de71738fe	
-34	2015-06-07 02:32:15.825543+00	b9f8be54baf2bd58f02be68811b65c2de71738fe	
+1	2013-11-19 18:25:05.013214-08	8604247d8116396ec0214ba7677d2212990517d2	
+2	2013-11-23 11:29:20.349772-08	8604247d8116396ec0214ba7677d2212990517d2	
+3	2014-01-20 11:09:52.001477-08	4ccd10f42fd6d64ac4e2b3d70b28c9c6a3223b0c	diff --git a/Application.hs b/Application.hs\nindex 241f582..bf838a7 100644\n--- a/Application.hs\n+++ b/Application.hs\n@@ -135,8 +135,8 @@ doMigration = do\n \n     mapM_ ((\\ file -> liftIO (putStrLn ("running " ++ file ++ "...") >> T.readFile file)) >=> flip rawExecute []) $ L.map (("migrations/" <>) . snd) migration_files\n \n-    let last_migration = L.maximum $ 0 : L.map fst migration_files\n-    update $ flip set [ DatabaseVersionLastMigration =. val last_migration ]\n+    let new_last_migration = L.maximum $ 0 : L.map fst migration_files\n+    update $ flip set [ DatabaseVersionLastMigration =. val new_last_migration ]\n \n     migrations <- parseMigration' migrateAll\n \n@@ -145,8 +145,10 @@ doMigration = do\n     liftIO $ putStrLn $ "safe: " ++ show (L.length safe)\n     liftIO $ putStrLn $ "unsafe: " ++ show (L.length unsafe)\n \n+    liftIO $ putStrLn $ "new last_migration: " ++ show new_last_migration\n+\n     when (not $ L.null $ L.map snd safe) $ do\n-        liftIO $ T.writeFile ("migrations/migrate" <> show (last_migration + 1)) $ T.unlines $ L.map ((`snoc` ';') . snd) safe\n+        liftIO $ T.writeFile ("migrations/migrate" <> show (new_last_migration + 1)) $ T.unlines $ L.map ((`snoc` ';') . snd) safe\n         mapM_ (flip rawExecute [] . snd) migrations\n \n     when (not $ L.null $ L.map snd unsafe) $ do\n
+4	2014-01-21 09:41:12.047799-08	ed014b5810941e61f82123f97be0c69600d99f0f	
+5	2014-01-21 12:01:56.580066-08	ed014b5810941e61f82123f97be0c69600d99f0f	
+6	2014-01-21 14:30:50.979424-08	d9c16e7c96ebb0c2e66e9f5e6d2c85abc7aa26dd	
+7	2014-01-21 14:58:09.854227-08	d9c16e7c96ebb0c2e66e9f5e6d2c85abc7aa26dd	
+8	2014-01-21 16:06:52.037741-08	f8d42e0d451310462b2840f2777126be8fd0b162	
+9	2014-01-21 16:22:27.746213-08	1eea4b6d7e8a9a5b82e32a122f04d7611c9e29e3	
+10	2014-01-23 22:17:39.744006-08	0bd171dd45776715e763bd42438f32f9494b4fa5	
+11	2014-01-23 23:09:02.600052-08	0bd171dd45776715e763bd42438f32f9494b4fa5	
+12	2014-01-23 23:10:14.401191-08	0bd171dd45776715e763bd42438f32f9494b4fa5	
+13	2014-01-23 23:14:01.500808-08	0bd171dd45776715e763bd42438f32f9494b4fa5	
+14	2014-01-23 23:23:58.983733-08	0bd171dd45776715e763bd42438f32f9494b4fa5	
+15	2014-01-23 23:53:46.525858-08	e05ef3d875769e1910908e96aed4ec096ecef498	
+16	2014-01-24 10:52:45.121638-08	b857adcedd7be11cf2909b5d6cb536fb17d999c9	
+17	2014-01-24 13:47:53.941683-08	b857adcedd7be11cf2909b5d6cb536fb17d999c9	
+18	2014-01-24 15:28:23.255958-08	b857adcedd7be11cf2909b5d6cb536fb17d999c9	
+19	2014-02-03 21:22:47.977252-08	e42ac19d7713acb15779eb289dc57697a265ffe3	
+20	2014-03-01 21:31:59.002319-08	008e9bc87dbbab3764cfac6ac19bd3db630387d4	
+21	2014-05-27 11:35:44.545791-07	7939dab98e295e6d7cf43971b959009e32d8be1b	
+22	2014-05-27 11:36:21.415917-07	7939dab98e295e6d7cf43971b959009e32d8be1b	
+23	2014-05-27 11:36:39.687391-07	7939dab98e295e6d7cf43971b959009e32d8be1b	
+24	2014-05-27 11:37:11.184342-07	e81380ff27267098517bd582269afd7780a4a517	
+25	2015-06-06 15:43:36.276529-07	b9f8be54baf2bd58f02be68811b65c2de71738fe	
+26	2015-06-06 16:21:22.603761-07	b9f8be54baf2bd58f02be68811b65c2de71738fe	
+27	2015-06-06 16:30:03.89908-07	b9f8be54baf2bd58f02be68811b65c2de71738fe	
+28	2015-06-06 17:12:36.341398-07	b9f8be54baf2bd58f02be68811b65c2de71738fe	
+29	2015-06-06 17:20:58.92169-07	b9f8be54baf2bd58f02be68811b65c2de71738fe	
+30	2015-06-06 17:31:08.229368-07	b9f8be54baf2bd58f02be68811b65c2de71738fe	
+31	2015-06-06 18:37:01.193022-07	b9f8be54baf2bd58f02be68811b65c2de71738fe	
+32	2015-06-06 18:55:40.62914-07	b9f8be54baf2bd58f02be68811b65c2de71738fe	
+33	2015-06-06 19:23:36.162397-07	b9f8be54baf2bd58f02be68811b65c2de71738fe	
+34	2015-06-06 19:32:15.825543-07	b9f8be54baf2bd58f02be68811b65c2de71738fe	
+35	2015-08-21 13:34:48.509906-07	2f86933c5eb765ef5ddc17031c81149fedfa0115	diff --git a/README.md b/README.md\nindex c01a192..f474d41 100644\n--- a/README.md\n+++ b/README.md\n@@ -58,8 +58,8 @@ The standard command to clone the code to your local system is:\n 1.  First fetch all Haskell dependencies and build everything. From within\n     the snowdrift code directory (`cd snowdrift`) run:\n \n-        stack setup &&\n-        stack build cabal-install yesod-bin &&\n+        stack setup\n+        stack build cabal-install yesod-bin\n         stack build\n \n     NB: this will take a while!\n@@ -68,7 +68,7 @@ The standard command to clone the code to your local system is:\n \n     (This works on plainly on GNU/Linux. See [GUIDE.md#Building] for other systems.)\n \n-        stack exec sdm init &&\n+        stack exec sdm init\n         stack test\n \n ### Useful Development Commands\n
 \.
 
 
@@ -3806,7 +3808,7 @@ COPY build (id, boot_time, base, diff) FROM stdin;
 -- Name: build_id_seq; Type: SEQUENCE SET; Schema: public; Owner: snowdrift_development
 --
 
-SELECT pg_catalog.setval('build_id_seq', 34, true);
+SELECT pg_catalog.setval('build_id_seq', 35, true);
 
 
 --
@@ -3814,11 +3816,11 @@ SELECT pg_catalog.setval('build_id_seq', 34, true);
 --
 
 COPY comment (id, created_ts, approved_ts, approved_by, parent, "user", text, depth, discussion, visibility, language) FROM stdin;
-1	2014-01-21 18:11:03.914397+00	2014-01-21 18:12:36.696658+00	1	\N	1	This is a comment.	0	2	VisPublic	en
-2	2014-01-21 18:13:00.273315+00	2014-01-21 18:13:10.464805+00	1	1	1	Replies are threaded.	1	2	VisPublic	en
-3	2014-01-21 18:13:57.732222+00	\N	\N	\N	1	When a comment is posted by an unestablished user, it is marked for moderation and only shown to moderators.	0	2	VisPublic	en
-4	2014-01-21 18:15:30.945499+00	2014-01-21 18:15:37.484472+00	1	\N	1	adding a line starting with "ticket:" such as\n\nticket: this is a ticket\n\nmakes the post show up at /t where all the tickets are listed	0	2	VisPublic	en
-5	2014-01-21 22:31:51.496246+00	\N	\N	\N	1	Welcome!	0	7	VisPublic	en
+1	2014-01-21 10:11:03.914397-08	2014-01-21 10:12:36.696658-08	1	\N	1	This is a comment.	0	2	VisPublic	en
+2	2014-01-21 10:13:00.273315-08	2014-01-21 10:13:10.464805-08	1	1	1	Replies are threaded.	1	2	VisPublic	en
+3	2014-01-21 10:13:57.732222-08	\N	\N	\N	1	When a comment is posted by an unestablished user, it is marked for moderation and only shown to moderators.	0	2	VisPublic	en
+4	2014-01-21 10:15:30.945499-08	2014-01-21 10:15:37.484472-08	1	\N	1	adding a line starting with "ticket:" such as\n\nticket: this is a ticket\n\nmakes the post show up at /t where all the tickets are listed	0	2	VisPublic	en
+5	2014-01-21 14:31:51.496246-08	\N	\N	\N	1	Welcome!	0	7	VisPublic	en
 \.
 
 
@@ -3970,7 +3972,7 @@ SELECT pg_catalog.setval('committee_user_id_seq', 1, false);
 --
 
 COPY database_version (id, last_migration) FROM stdin;
-1	65
+1	66
 \.
 
 
@@ -4103,7 +4105,7 @@ SELECT pg_catalog.setval('email_verification_id_seq', 1, false);
 --
 
 COPY event_blog_post (id, ts, post) FROM stdin;
-1	2015-06-07 02:17:56.725259+00	1
+1	2015-06-06 19:17:56.725259-07	1
 \.
 
 
@@ -4269,7 +4271,7 @@ SELECT pg_catalog.setval('event_updated_pledge_id_seq', 1, false);
 --
 
 COPY event_user_notification_sent (id, ts, notification) FROM stdin;
-1	2015-06-07 01:49:47.477605+00	3
+1	2015-06-06 18:49:47.477605-07	3
 \.
 
 
@@ -4345,8 +4347,8 @@ SELECT pg_catalog.setval('interest_id_seq', 1, false);
 --
 
 COPY invite (id, created_ts, project, code, "user", role, tag, redeemed, redeemed_ts, redeemed_by) FROM stdin;
-1	2014-01-21 18:12:09.148007+00	1	df0176d67f1a4063	1	Moderator	admin as also moderator	t	2014-01-21 18:12:24.376052+00	1
-2	2014-01-24 23:33:43.323505+00	1	e3ed7c9e1500fc54	1	TeamMember	admin as also team member	t	2014-01-24 23:33:53.481901+00	1
+1	2014-01-21 10:12:09.148007-08	1	df0176d67f1a4063	1	Moderator	admin as also moderator	t	2014-01-21 10:12:24.376052-08	1
+2	2014-01-24 15:33:43.323505-08	1	e3ed7c9e1500fc54	1	TeamMember	admin as also team member	t	2014-01-24 15:33:53.481901-08	1
 \.
 
 
@@ -4416,17 +4418,17 @@ COPY pledge (id, "user", project, shares, funded_shares, created_ts) FROM stdin;
 --
 
 COPY pledge_form_rendered (id, ts, "order", project, "user") FROM stdin;
-1	2015-06-06 22:56:51.593973+00	[1,2,5,10]	1	1
-2	2015-06-06 23:03:22.428645+00	[1,2,5,10]	1	1
-3	2015-06-06 23:32:49.169361+00	[1,2,5,10]	1	1
-4	2015-06-06 23:44:54.930626+00	[1,2,5,10]	1	1
-5	2015-06-06 23:45:38.290019+00	[1,2,5,10]	1	1
-6	2015-06-07 00:13:54.384978+00	[1,2,5,10]	1	1
-7	2015-06-07 00:13:58.938049+00	[1,2,5,10]	1	1
-8	2015-06-07 00:21:00.211225+00	[1,2,5,10]	1	1
-9	2015-06-07 00:31:09.108422+00	[1,2,5,10]	1	1
-10	2015-06-07 01:49:00.623268+00	[1,2,5,10]	1	1
-11	2015-06-07 01:55:51.383551+00	[1,2,5,10]	1	1
+1	2015-06-06 15:56:51.593973-07	[1,2,5,10]	1	1
+2	2015-06-06 16:03:22.428645-07	[1,2,5,10]	1	1
+3	2015-06-06 16:32:49.169361-07	[1,2,5,10]	1	1
+4	2015-06-06 16:44:54.930626-07	[1,2,5,10]	1	1
+5	2015-06-06 16:45:38.290019-07	[1,2,5,10]	1	1
+6	2015-06-06 17:13:54.384978-07	[1,2,5,10]	1	1
+7	2015-06-06 17:13:58.938049-07	[1,2,5,10]	1	1
+8	2015-06-06 17:21:00.211225-07	[1,2,5,10]	1	1
+9	2015-06-06 17:31:09.108422-07	[1,2,5,10]	1	1
+10	2015-06-06 18:49:00.623268-07	[1,2,5,10]	1	1
+11	2015-06-06 18:55:51.383551-07	[1,2,5,10]	1	1
 \.
 
 
@@ -4449,7 +4451,7 @@ SELECT pg_catalog.setval('pledge_id_seq', 1, false);
 --
 
 COPY project (id, created_ts, name, handle, description, account, share_value, last_payday, github_repo, discussion, public, blurb, logo) FROM stdin;
-1	2013-11-23 11:52:54.632763+00	Snowdrift.coop	snowdrift	This longer description can have links, *custom styling*, [markdown syntax](/tutorial/markdown), and many other formatting options. The description is shown primarily on the project landing page. Projects may want to include links for additional info, messages to visitors, etc.\n\nKeep in mind that info can also be presented in discussions, wiki pages, and blogs, so the description field needn't contain everything.	2	0	\N	\N	7	t	This short blurb is shown in project listings and summaries (for the Snowdrift project in this case).	\N
+1	2013-11-23 03:52:54.632763-08	Snowdrift.coop	snowdrift	This longer description can have links, *custom styling*, [markdown syntax](/tutorial/markdown), and many other formatting options. The description is shown primarily on the project landing page. Projects may want to include links for additional info, messages to visitors, etc.\n\nKeep in mind that info can also be presented in discussions, wiki pages, and blogs, so the description field needn't contain everything.	2	0	\N	\N	7	t	This short blurb is shown in project listings and summaries (for the Snowdrift project in this case).	\N
 \.
 
 
@@ -4579,9 +4581,9 @@ SELECT pg_catalog.setval('project_tag_id_seq', 3, true);
 --
 
 COPY project_update (id, updated_ts, project, author, description, blurb) FROM stdin;
-1	2014-01-24 21:49:51.132962+00	1	1	MarkdownDiff [(F,"Snowdrift Project"),(S,"The Snowdrift.coop site is itself one of the projects.")]	
-2	2015-06-06 23:45:38.238683+00	1	1	MarkdownDiff [(S,"This longer description can have links, *custom styling*, [markdown syntax](/tutorial/markdown), and many other formatting options. The description is shown primarily on the project landing page. Projects may want to include links for additional info, messages to visitors, etc."),(S,""),(S,"Keep in mind that info can also be presented in discussions, wiki pages, and blogs, so the description field needn't contain everything.")]	This short blurb is shown in project listings and summaries (for the Snowdrift project in this case)..
-3	2015-06-07 00:13:58.884722+00	1	1	MarkdownDiff [(B,"This longer description can have links, *custom styling*, [markdown syntax](/tutorial/markdown), and many other formatting options. The description is shown primarily on the project landing page. Projects may want to include links for additional info, messages to visitors, etc."),(B,""),(B,"Keep in mind that info can also be presented in discussions, wiki pages, and blogs, so the description field needn't contain everything.")]	This short blurb is shown in project listings and summaries (for the Snowdrift project in this case).
+1	2014-01-24 13:49:51.132962-08	1	1	MarkdownDiff [(F,"Snowdrift Project"),(S,"The Snowdrift.coop site is itself one of the projects.")]	
+2	2015-06-06 16:45:38.238683-07	1	1	MarkdownDiff [(S,"This longer description can have links, *custom styling*, [markdown syntax](/tutorial/markdown), and many other formatting options. The description is shown primarily on the project landing page. Projects may want to include links for additional info, messages to visitors, etc."),(S,""),(S,"Keep in mind that info can also be presented in discussions, wiki pages, and blogs, so the description field needn't contain everything.")]	This short blurb is shown in project listings and summaries (for the Snowdrift project in this case)..
+3	2015-06-06 17:13:58.884722-07	1	1	MarkdownDiff [(B,"This longer description can have links, *custom styling*, [markdown syntax](/tutorial/markdown), and many other formatting options. The description is shown primarily on the project landing page. Projects may want to include links for additional info, messages to visitors, etc."),(B,""),(B,"Keep in mind that info can also be presented in discussions, wiki pages, and blogs, so the description field needn't contain everything.")]	This short blurb is shown in project listings and summaries (for the Snowdrift project in this case).
 \.
 
 
@@ -4645,8 +4647,8 @@ SELECT pg_catalog.setval('rethread_id_seq', 1, false);
 --
 
 COPY role_event (id, ts, "user", role, project, added) FROM stdin;
-1	2014-01-21 10:12:24.376209+00	1	Moderator	1	t
-2	2014-01-24 15:33:53.482076+00	1	TeamMember	1	t
+1	2014-01-21 02:12:24.376209-08	1	Moderator	1	t
+2	2014-01-24 07:33:53.482076-08	1	TeamMember	1	t
 \.
 
 
@@ -4708,7 +4710,7 @@ SELECT pg_catalog.setval('tag_id_seq', 1, true);
 --
 
 COPY ticket (id, created_ts, name, comment, updated_ts) FROM stdin;
-1	2014-01-21 18:15:30.945499+00	this is a ticket	4	2014-01-21 18:15:30.945499+00
+1	2014-01-21 10:15:30.945499-08	this is a ticket	4	2014-01-21 10:15:30.945499-08
 \.
 
 
@@ -4799,11 +4801,11 @@ SELECT pg_catalog.setval('unnamed_image_id_seq', 1, false);
 --
 
 COPY "user" (id, ident, hash, salt, name, account, avatar, blurb, statement, irc_nick, read_notifications, read_applications, created_ts, established, discussion, email, languages, email_verified) FROM stdin;
--1	anonymous	\N	\N	anonymous user	-1	\N	\N	\N	\N	2015-06-06 22:43:29.359861+00	2015-06-06 22:43:29.359861+00	\N	EstEligible 2014-08-29 02:20:29.479083 UTC "Anonymous User"	-1	\N	["sen"]	f
--2	deleted	\N	\N	deleted user	-2	\N	\N	\N	\N	2015-06-06 22:43:29.359861+00	2015-06-06 22:43:29.359861+00	\N	EstUnestablished	-2	\N	["sen"]	f
-1	admin	8bf2d491387febc07e5d8fd15a4140b28473566e	P^YTN3G:	Admin	1	\N	Admin is the name for the test user in our devDB database that comes with the code. Log in as admin with passphrase: admin	This field is dedicated for longer statements from the user.\n\n## Other Development Users\nThe Dev database has a couple of other users:\n\nUsername / Passphrase\n\n* guest / guest (basic unestablished user)\n* established / established (fully established user)	\N	2014-01-21 22:58:23.380462+00	2013-11-23 19:31:18.982213+00	\N	EstEstablished 2014-01-24 15:28:15.681117 2014-01-24 15:28:15.681117 "default"	6	\N	["sen"]	f
-4	established	sha256|17|7gsYgCF2MVQLHREXNw93BA==|zeP3hmWjGfNyBulJkNwoRMpMv/Y+1wTdhhm8YtlKy2s=		Established User	5	\N	I'm "established" because the admin user marked me "eligible" first (this could be done by a moderator for any project too). Then, seeing the notification about it, I visited the [honor-pledge](/honor-pledge) page, read the Code of Conduct, and accepted the honor pledge. Thus, I can post unmoderated comments, edit wiki pages, and a few other things.	\N	\N	2015-06-07 01:50:11.453282+00	2015-06-07 01:48:41.798111+00	2015-06-07 01:48:41.798111+00	EstEstablished 2015-06-07 01:49:47.467686 UTC 2015-06-07 01:50:26.182916 UTC "This user is eligible for establishment!"	9	\N	[]	f
-3	guest	sha256|17|8ZItbPUn6uN7N6N3tuoFXQ==|ShaUqSJM88I0vHcitWoy8ht1kHpZdV6kZYyWu2j9ZC8=		Unestablished User	4	\N	I just signed up and have no special status or permissions or roles (unless you use the admin user to do something to give me extra status, though the initial state of the dev DB should not include any of that).	\N	\N	2015-06-07 01:47:14.665737+00	2015-06-07 01:47:14.665737+00	2015-06-07 01:47:14.665737+00	EstUnestablished	8	\N	[]	f
+4	established	sha256|17|7gsYgCF2MVQLHREXNw93BA==|zeP3hmWjGfNyBulJkNwoRMpMv/Y+1wTdhhm8YtlKy2s=		Established User	5	\N	I'm "established" because the admin user marked me "eligible" first (this could be done by a moderator for any project too). Then, seeing the notification about it, I visited the [honor-pledge](/honor-pledge) page, read the Code of Conduct, and accepted the honor pledge. Thus, I can post unmoderated comments, edit wiki pages, and a few other things.	\N	\N	2015-06-06 18:50:11.453282-07	2015-06-06 18:48:41.798111-07	2015-06-06 18:48:41.798111-07	EstEstablished 2015-06-07 01:49:47.467686 UTC 2015-06-07 01:50:26.182916 UTC "This user is eligible for establishment!"	9	\N	[]	f
+3	guest	sha256|17|8ZItbPUn6uN7N6N3tuoFXQ==|ShaUqSJM88I0vHcitWoy8ht1kHpZdV6kZYyWu2j9ZC8=		Unestablished User	4	\N	I just signed up and have no special status or permissions or roles (unless you use the admin user to do something to give me extra status, though the initial state of the dev DB should not include any of that).	\N	\N	2015-06-06 18:47:14.665737-07	2015-06-06 18:47:14.665737-07	2015-06-06 18:47:14.665737-07	EstUnestablished	8	\N	[]	f
+-1	anonymous	\N	\N	anonymous user	-1	\N	\N	\N	\N	2015-06-06 15:43:29.359861-07	2015-06-06 15:43:29.359861-07	2012-11-09 00:00:00-08	EstEligible 2014-08-29 02:20:29.479083 UTC "Anonymous User"	-1	\N	["sen"]	f
+-2	deleted	\N	\N	deleted user	-2	\N	\N	\N	\N	2015-06-06 15:43:29.359861-07	2015-06-06 15:43:29.359861-07	2012-11-09 00:00:00-08	EstUnestablished	-2	\N	["sen"]	f
+1	admin	8bf2d491387febc07e5d8fd15a4140b28473566e	P^YTN3G:	Admin	1	\N	Admin is the name for the test user in our devDB database that comes with the code. Log in as admin with passphrase: admin	This field is dedicated for longer statements from the user.\n\n## Other Development Users\nThe Dev database has a couple of other users:\n\nUsername / Passphrase\n\n* guest / guest (basic unestablished user)\n* established / established (fully established user)	\N	2014-01-21 14:58:23.380462-08	2013-11-23 11:31:18.982213-08	2012-11-09 00:00:00-08	EstEstablished 2014-01-24 15:28:15.681117 2014-01-24 15:28:15.681117 "default"	6	\N	["sen"]	f
 \.
 
 
@@ -4834,9 +4836,9 @@ SELECT pg_catalog.setval('user_message_pref_id_seq', 1, false);
 --
 
 COPY user_notification (id, created_ts, type, "to", content, archived) FROM stdin;
-1	2015-06-07 01:47:14.665737+00	NotifWelcome	3	Thanks for registering!\n<br> Please read our [**welcome message**](http://localhost:3000/p/snowdrift/w/welcome), and let us know any questions.\n	f
-2	2015-06-07 01:48:41.798111+00	NotifWelcome	4	Thanks for registering!\n<br> Please read our [**welcome message**](http://localhost:3000/p/snowdrift/w/welcome), and let us know any questions.\n	f
-3	2015-06-07 01:49:47.477605+00	NotifEligEstablish	4	You are now eligible to become an *established* user.\n\nAfter you [accept the honor pledge](http://localhost:3000/honor-pledge), you can comment and take other actions on the site without moderation.\n	f
+1	2015-06-06 18:47:14.665737-07	NotifWelcome	3	Thanks for registering!\n<br> Please read our [**welcome message**](http://localhost:3000/p/snowdrift/w/welcome), and let us know any questions.\n	f
+2	2015-06-06 18:48:41.798111-07	NotifWelcome	4	Thanks for registering!\n<br> Please read our [**welcome message**](http://localhost:3000/p/snowdrift/w/welcome), and let us know any questions.\n	f
+3	2015-06-06 18:49:47.477605-07	NotifEligEstablish	4	You are now eligible to become an *established* user.\n\nAfter you [accept the honor pledge](http://localhost:3000/honor-pledge), you can comment and take other actions on the site without moderation.\n	f
 \.
 
 
@@ -5016,12 +5018,12 @@ SELECT pg_catalog.setval('watched_subthread_id_seq', 1, false);
 --
 
 COPY wiki_edit (id, ts, "user", page, content, comment, language) FROM stdin;
-1	2014-01-21 17:46:06.695166+00	1	1	# Welcome\n\nThank you for testing (and hopefully helping to develop) Snowdrift.coop!\n\nThis is a wiki page within your test database. It is different than the database for the real Snowdrift.coop site.	Page created.	en
-2	2014-01-21 17:48:55.489319+00	1	2	# About Snowdrift.coop\n\nAll the real *about* stuff is on the live site: <https://snowdrift.coop/p/snowdrift/w/about>\n\nHere we will explain about testing.	Page created.	en
-3	2014-01-21 17:52:33.270443+00	1	2	# About Snowdrift.coop\n\nAll the real *about* stuff is on the live site: <https://snowdrift.coop/p/snowdrift/w/about>\n\nHere we will explain about testing.\n\n## Wiki pages\n\nSee the live site for details about the wiki system: <https://snowdrift.coop/p/snowdrift/w/wiki>\n\nIn creating the page you are looking at, several edits were made, so you can click above to see the history.	Added links to wiki page on live site and comment about history	en
-4	2014-01-21 17:53:21.094299+00	1	2	# About Snowdrift.coop\n\nAll the real *about* stuff is on the live site: <https://snowdrift.coop/p/snowdrift/w/about>\n\nHere we will explain about testing.\n\n## Wiki pages\n\nSee the live site for details about the wiki system: <https://snowdrift.coop/p/snowdrift/w/wiki>\n\nIn creating the page you are looking at, several edits were made, so you can click above to see the history.\n\nThere are discussion pages for every wiki page, as shown above.	Added sentence about discussion pages	en
-5	2014-01-21 17:55:07.436846+00	1	3	See the live site for [press info](https://snowdrift.coop/p/snowdrift/w/press)	Page created.	en
-6	2014-01-21 18:09:53.469506+00	1	4	# Development notes\n\nSee the live site for the full [how-to-help page](https://snowdrift.coop/p/snowdrift/w/how-to-help).\n\n## Development notes\n\nThe essential development details are in the README.md file with the code, not in this test database. When adding new info, consider whether it is best there versus here in the test database (the README has instructions about updating the test database).\n\n## Users\n\n[localhost:3000/u](/u) is a listing of all the users. The first user is just "admin" (passphrase is also "admin"). When new users register they start out unestablished and with no roles. You can add roles by using the admin user and visiting <http://localhost:3000/p/snowdrift/invite> and then logging in as another user to redeem the code.\n\nIt is a good idea to test things as:\n\na. logged-out\na. unestablished user\na. established users with different roles\n\nObviously testing on different systems, browsers, devices, etc. is good too.\n\n## Tickets\n\nSee <https://snowdrift.coop/p/snowdrift/t> for the live site's list of tickets. This is also linked at the live site's how-to-help page. Please add tickets to the live site as appropriate, add comments and questions, and mark things complete after you have fixed them and committed your changes.	Page created.	en
+1	2014-01-21 09:46:06.695166-08	1	1	# Welcome\n\nThank you for testing (and hopefully helping to develop) Snowdrift.coop!\n\nThis is a wiki page within your test database. It is different than the database for the real Snowdrift.coop site.	Page created.	en
+2	2014-01-21 09:48:55.489319-08	1	2	# About Snowdrift.coop\n\nAll the real *about* stuff is on the live site: <https://snowdrift.coop/p/snowdrift/w/about>\n\nHere we will explain about testing.	Page created.	en
+3	2014-01-21 09:52:33.270443-08	1	2	# About Snowdrift.coop\n\nAll the real *about* stuff is on the live site: <https://snowdrift.coop/p/snowdrift/w/about>\n\nHere we will explain about testing.\n\n## Wiki pages\n\nSee the live site for details about the wiki system: <https://snowdrift.coop/p/snowdrift/w/wiki>\n\nIn creating the page you are looking at, several edits were made, so you can click above to see the history.	Added links to wiki page on live site and comment about history	en
+4	2014-01-21 09:53:21.094299-08	1	2	# About Snowdrift.coop\n\nAll the real *about* stuff is on the live site: <https://snowdrift.coop/p/snowdrift/w/about>\n\nHere we will explain about testing.\n\n## Wiki pages\n\nSee the live site for details about the wiki system: <https://snowdrift.coop/p/snowdrift/w/wiki>\n\nIn creating the page you are looking at, several edits were made, so you can click above to see the history.\n\nThere are discussion pages for every wiki page, as shown above.	Added sentence about discussion pages	en
+5	2014-01-21 09:55:07.436846-08	1	3	See the live site for [press info](https://snowdrift.coop/p/snowdrift/w/press)	Page created.	en
+6	2014-01-21 10:09:53.469506-08	1	4	# Development notes\n\nSee the live site for the full [how-to-help page](https://snowdrift.coop/p/snowdrift/w/how-to-help).\n\n## Development notes\n\nThe essential development details are in the README.md file with the code, not in this test database. When adding new info, consider whether it is best there versus here in the test database (the README has instructions about updating the test database).\n\n## Users\n\n[localhost:3000/u](/u) is a listing of all the users. The first user is just "admin" (passphrase is also "admin"). When new users register they start out unestablished and with no roles. You can add roles by using the admin user and visiting <http://localhost:3000/p/snowdrift/invite> and then logging in as another user to redeem the code.\n\nIt is a good idea to test things as:\n\na. logged-out\na. unestablished user\na. established users with different roles\n\nObviously testing on different systems, browsers, devices, etc. is good too.\n\n## Tickets\n\nSee <https://snowdrift.coop/p/snowdrift/t> for the live site's list of tickets. This is also linked at the live site's how-to-help page. Please add tickets to the live site as appropriate, add comments and questions, and mark things complete after you have fixed them and committed your changes.	Page created.	en
 \.
 
 
@@ -5056,10 +5058,10 @@ SELECT pg_catalog.setval('wiki_last_edit_id_seq', 4, true);
 --
 
 COPY wiki_page (id, project, permission_level, discussion, created_ts, "user") FROM stdin;
-1	1	Normal	1	2015-06-06 22:43:29.359861+00	1
-2	1	Normal	2	2015-06-06 22:43:29.359861+00	1
-3	1	Normal	3	2015-06-06 22:43:29.359861+00	1
-4	1	Normal	4	2015-06-06 22:43:29.359861+00	1
+1	1	Normal	1	2015-06-06 15:43:29.359861-07	1
+2	1	Normal	2	2015-06-06 15:43:29.359861-07	1
+3	1	Normal	3	2015-06-06 15:43:29.359861-07	1
+4	1	Normal	4	2015-06-06 15:43:29.359861-07	1
 \.
 
 

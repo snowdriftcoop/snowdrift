@@ -59,8 +59,8 @@ The standard command to clone the code to your local system is:
     and build everything:
 
         cd snowdrift
-        stack setup &&
-        stack build cabal-install yesod-bin &&
+        stack setup
+        stack build cabal-install yesod-bin
         stack build
 
     NB: this will take a while!
@@ -69,7 +69,7 @@ The standard command to clone the code to your local system is:
 
     (This works on plainly on GNU/Linux. See [GUIDE.md#Building] for other systems.)
 
-        stack exec sdm init &&
+        stack exec sdm init
         stack test
 
 ### Useful Development Commands
