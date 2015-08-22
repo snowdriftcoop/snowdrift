@@ -1,8 +1,10 @@
 <div>
   $if mviewer_id == Just user_id
-    Your tickets:
+    Claimed Tickets
   $else
     Tickets claimed by #{userDisplayName $ Entity user_id user}
+  <span .badge>
+    #{length claimed_tickets}
 
   <table .table>
     <tr>
@@ -40,9 +42,11 @@
 
 <div>
   $if mviewer_id == Just user_id
-    Tickets in threads you are watching:
+    Watched Tickets
   $else
-    Tickets in threads watched by #{userDisplayName $ Entity user_id user}
+    Tickets watched by #{userDisplayName $ Entity user_id user}
+  <span .badge>
+    #{length watched_tickets}
 
 
   <table .table>

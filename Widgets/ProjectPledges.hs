@@ -19,13 +19,10 @@ projectPledgeSummary user_id = do
 
     toWidget [hamlet|
         $if null project_summary
-            not pledged to any projects
+          not pledged to any projects
         $else
-            <a href=@{UserPledgesR user_id}>
-                $if (length project_summary) == 1
-                    <p>Patron to 1 project
-                $else
-                    <p>Patron to #{length project_summary} projects
+          <a href=@{UserPledgesR user_id}>
+            <p>Patron to #{plural (length project_summary) "project" "projects"}
      |]
 
 -- |The listing of all pledges for a given user, shown on u/#/pledges
