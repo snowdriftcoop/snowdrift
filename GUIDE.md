@@ -88,8 +88,8 @@ Among many vim plugins available, we recommend using a
 and the following plugins particularly relevant to snowdrift:
 
 * [vim Shakespearean syntax](https://github.com/pbrisbin/vim-syntax-shakespeare)
-* [Haskell-Vim extra syntax](https://github.com/raichoo/haskell-vim)
-* [vim-markdown](https://github.com/hallison/vim-markdown)
+* [Haskell-Vim extra syntax](https://github.com/neovimhaskell/haskell-vim)
+* [vim-pandoc-syntax](https://github.com/vim-pandoc/vim-pandoc-syntax)
 * [vim-gitgutter](https://github.com/airblade/vim-gitgutter)
 * [vim2hs](https://github.com/dag/vim2hs).
     * optionally add `set nofoldenable` to .vimrc to skip folding of functions
@@ -310,11 +310,9 @@ here we document the details more thoroughly.
 
 In addition to the required tools, we also suggest:
 
-    stack install haddock hlint
+    stack install hlint
 
 `hlint` followed by a filename will show suggestions for Haskell style.
-
-`haddock` is used for internal code documentation.
 
 Setting up the database
 -----------------------

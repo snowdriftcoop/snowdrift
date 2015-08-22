@@ -55,9 +55,10 @@ The standard command to clone the code to your local system is:
 
 ### Initial Build
 
-1.  First fetch all Haskell dependencies and build everything. From within
-    the snowdrift code directory (`cd snowdrift`) run:
+1.  From within the snowdrift code directory, fetch all Haskell dependencies
+    and build everything:
 
+        cd snowdrift
         stack setup
         stack build cabal-install yesod-bin
         stack build
