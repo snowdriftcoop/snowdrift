@@ -300,9 +300,9 @@ here are some resources:
     in a mode connected to the project. Using that, you can easily import
     files from the code and explore the functions.
 
-*   To help write clean Haskell code and learn conventions, run `hlint`
-    on your files to get suggestions for possible improvements.
-    Add hlint to your system with the command `stack install hlint`.
+*   Add hlint with `stack build hlint`, and then you can run
+    `stack exec hlint` followed by a .hs filename to get suggestions for
+    improving the Haskell code style.
 
 [README]: README.md
 [GUIDE.md]: GUIDE.md

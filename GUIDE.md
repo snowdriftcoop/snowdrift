@@ -306,14 +306,6 @@ General installation process
 While the [README] has all the core install instructions,
 here we document the details more thoroughly.
 
-## Extra tools
-
-In addition to the required tools, we also suggest:
-
-    stack install hlint
-
-`hlint` followed by a filename will show suggestions for Haskell style.
-
 Setting up the database
 -----------------------
 
