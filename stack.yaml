@@ -13,4 +13,6 @@ extra-deps:
 - yesod-markdown-0.9.4
 # Transitive dep of github
 - failure-0.2.0.3
+# bugfix update newer than LTS
+- yesod-bin-1.4.14
 resolver: lts-2.21
