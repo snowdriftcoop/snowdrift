@@ -84,7 +84,7 @@ For [vim](http://www.vim.org/) users, we recommend that your
     set number
 
 Among many vim plugins available, we recommend using a
-[vim plugin manager](https://github.com/gmarik/Vundle.vim)
+[vim plugin manager](https://github.com/VundleVim/Vundle.vim)
 and the following plugins particularly relevant to snowdrift:
 
 * [vim Shakespearean syntax](https://github.com/pbrisbin/vim-syntax-shakespeare)
