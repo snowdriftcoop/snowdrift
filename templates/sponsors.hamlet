@@ -112,7 +112,8 @@
     <a href=@{UserR (toSqlKey 883)}>
       Javier Merino Cacho
   <li>
-    Scott Calvert & family
+    <a href=@{UserR (toSqlKey 762)}>
+      Scott Calvert & family
   <li>
     Mike Chaberski
   <li>
