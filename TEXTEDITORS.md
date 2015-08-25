@@ -14,7 +14,7 @@ We recommend adding at least the Atom packages:
 [language-haskell](https://atom.io/packages/language-haskell)
 
 [Atom ide-haskell](https://atom.io/packages/ide-haskell) offers many more useful
-features but is not yet compatible with Stack. Once it is, we recommend
+features but is not yet compatible with Stack. Once it is, we will recommend
 installing it and will include instructions here.
 
 Other useful Atom packages to consider:
@@ -22,7 +22,7 @@ Other useful Atom packages to consider:
 Atom) and [vim-mode](https://atom.io/packages/vim-mode) (vim keybindings for
 those who prefer them).
 
-### Emacs
+## Emacs
 
 [GNU Emacs](https://www.gnu.org/software/emacs/) is a traditional, robust,
 keyboard-centric text editor with substantial Haskell support.
@@ -32,9 +32,9 @@ Emacs users should use a package manager (preferably Marmalade) to install
 and
 [Shakespeare Mode](https://github.com/CodyReichert/shakespeare-mode).
 
-Our included file
-[`.dir-locals.el`](https://www.gnu.org/software/emacs/manual/html_node/emacs/Directory-Variables.html)
-makes Emacs use the recommended 4-space indentation.
+Our included `.dir-locals.el` file
+[makes Emacs use](https://www.gnu.org/software/emacs/manual/html_node/emacs/Directory-Variables.html)
+the recommended 4-space indentation.
 
 ## Leksah
 
@@ -84,5 +84,5 @@ and others which take some minimal learning:
 [undotree](https://github.com/mbbill/undotree),
 [vim-easyclip](https://github.com/mbbill/undotree).
 
-*Many* other options exist, although we'd rather contributors focus more on
-building Snowdrift than maximizing their Vim expertise.
+*Many* other options exist, although we'd rather contributors generally focus
+more on building Snowdrift than maximizing their Vim expertise.
