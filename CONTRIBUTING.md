@@ -38,9 +38,6 @@ command-line basics.
 
 ### Install Git
 
-We use a program called [Git](http://git-scm.com/) to make and share
-changes while keeping the versions tracked and organized.
-
 If you don't have Git already, install it now.
 
 Most systems will have Git in their software repositories.
@@ -48,7 +45,7 @@ For example, on Debian or Ubuntu you can enter the following in a terminal:
 
     sudo apt-get install git
 
-If you are on a system that does not package git yet, you may choose to
+If you are on a system that does not package it yet, you may choose to
 [download Git from the website](https://git-scm.herokuapp.com/downloads).
 
 ### Install Snowdrift
@@ -63,13 +60,10 @@ according to the instructions linked above.**
 
 ### Text-editors and settings
 
-Never edit files with a traditional word processor like LibreOffice.
-Instead, use a code-appropriate text editor.
-
-All systems should come with a built-in text-editor (or two), e.g. Gedit, Kate,
-Pluma, Scratch, etc. Any of those will work, but we recommend editors with
-better Haskell support. See [TEXTEDITORS.md](TEXTEDITORS.md) for our specific
-recommendations and settings.
+All systems should come with a code-appropriate text-editor (or two), e.g.
+Gedit, Kate, Pluma, Scratch, etc. Any of those will work, but we recommend
+editors with better Haskell support. See [TEXTEDITORS.md](TEXTEDITORS.md) for
+our specific recommendations and settings.
 
 ### Working with Git
 
@@ -178,8 +172,8 @@ When your updates all compile, tests pass, and you are ready to submit to the
 main Snowdrift project, you can *commit* your changes.
 
 If you are new to Git, we urge you to learn about the process of staging with
-`git add` before committing and about review tools like `git status` and `git
-diff`.  See the links for learning resources at the end of this file.
+`git add` before committing and about review tools like `git status` and
+`git diff`. See the links at the end of this file for learning resources.
 
 For now, though it isn't best practice, you can quickly commit
 all your changes with the command:
@@ -216,7 +210,7 @@ we suggest a few different options for moving forward:
 
 * Look through the
   [newbie-friendly tickets](https://snowdrift.coop/p/snowdrift/t?_hasdata=&f1=newbie-friendly)
-  and see what looks interesting / doable.
+  and see what looks interesting and/or doable.
   If you decide to work on a specific ticket, you can "claim" it once you have
   logged into the main site with a fully-established user.
 
@@ -237,8 +231,7 @@ we suggest a few different options for moving forward:
       to basic HTML, CSS, and JavaScript. Beginners can quickly learn how to make
       changes to those files. Basically, Hamlet=HTML and Cassius=CSS but with
       easier, more concise syntax that uses indentation instead of closing tags.
-      Julius files are simply containers for JavaScript.
-
+      Julius files are effectively just containers for JavaScript.
       For more details, see the documentation on
       [Shakespearean Templates](http://www.yesodweb.com/book/shakespearean-templates).
 
@@ -266,7 +259,7 @@ When making edits, follow our
 
 ### Use of JavaScript
 
-We generally build with *progressive enhancement* in mind.
+**We generally build with *progressive enhancement* in mind.**
 Content and functions should work with simple HTML/CSS
 along with Yesod/Haskell server-side functions.
 Later, we add JavaScript as appropriate for enhancement.
@@ -332,11 +325,11 @@ here are some resources:
     for learning about Yesod, the web framework we use to develop Snowdrift.
 
     Quite unfortunately, the Yesod book is not FLO (it uses the CC-BY-NC-ND
-    license). Perhaps complaints to the publisher, O'Reilly media may help,
+    license). Complaints to the publisher, O'Reilly Media, may help
     as the author of both Yesod and the Yesod book is otherwise willing
-    to use a FLO license…
-    At least Yesod itself is FLO, including the internal documentation that
-    comes with the code in Haddock format.
+    to use a FLO license if the publisher will agree…
+    (At least Yesod itself is FLO, including the internal documentation that
+    comes with the code in Haddock format.)
 
 *   The [School of Haskell](https://www.fpcomplete.com/school) includes
     basic and advanced topics including some Yesod sections.
@@ -360,9 +353,8 @@ here are some resources:
     by a .hs filepath to get suggestions for improving the Haskell code style.
 
 [^Windows]: If some Windows developers really want to continue working to make
-Snowdrift work fully under Windows, we will work with them. While Windows as a
-proprietary and privacy-invading OS works against the Snowdrift.coop mission, we
-still would prefer the option to work rather than not — although it is not our
-priority. Our [Build guide](BUILD.md) does have some instructions for working on
-Windows as far as we've figured out so far.
-
+Snowdrift work fully under Windows, we will work with them. As Windows is a
+proprietary and privacy-invading OS, it works against the Snowdrift.coop
+mission, but we still would prefer the option to work rather than not — although
+it is not our priority. Our [Build guide](BUILD.md) does have some instructions
+for working on Windows as far as we've figured out so far.

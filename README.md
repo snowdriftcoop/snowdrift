@@ -1,6 +1,6 @@
 # [Snowdrift.coop]
 
-A non-profit, cooperative platform for funding Free/Libre/Open (FLO) works.
+**A non-profit, cooperative platform for funding Free/Libre/Open (FLO) works.**
 
 Using a many-to-many matching pledge, we aim to empower the global
 community to better promote freedom-respecting projects of all sorts.

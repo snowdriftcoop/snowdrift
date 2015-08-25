@@ -222,11 +222,13 @@ With everything initialized, you can now use the following commands:
       `admin`; `guest`; `established`.
       (username and passphrase are the same)
     * to stop the site, type `quit` in terminal and then press Enter
+
 * `stack build && stack test`: run the test suite
 
     Note that `stack build` must be run since the tests depend on
     executables like SnowdriftProcessPayments. Cabal is not clever enough
     to notice test dependencies on executables.
+
 * `stack build`: rebuild manually
     * Usually running the site in development mode is sufficient, but you must
       run `stack build` whenever you:
@@ -236,6 +238,7 @@ With everything initialized, you can now use the following commands:
           sdm database configuration script, or the email daemon.
     * In rare cases, you may need to run `stack clean` if the development site
       fails to recognize a change.
+
 * `stack ghci`: Start the REPL
 
 [^alt-run]: An alternative approach to building and running the site:

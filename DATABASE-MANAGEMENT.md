@@ -4,7 +4,8 @@ Additional Notes about Snowdrift Databases
 Database migrations
 -------------------
 
-NOTE: THE MIGRATION SITUATION IS BEING ADJUSTED, THIS MAY BE OUTDATED
+NOTE: THE MIGRATION SITUATION NEEDS ADJUSTMENT AND HAS HAD SOME WORK, SO THIS
+MAY BE OUTDATED
 
 After any change to the database schema (in config/models),
 the first time you recompile and then start the server,
