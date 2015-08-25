@@ -11,29 +11,32 @@ improving.
 
 We recommend adding at least the Atom packages:
 [language-shakespeare](https://atom.io/packages/language-shakespeare) and
-[language-haskell](https://atom.io/packages/language-haskell)[^atom-ide]
+[language-haskell](https://atom.io/packages/language-haskell)
 
-[^atom-ide]: The following will be ideal to recommend for Atom once full
-    compatibility with Stack is achieved:
+---------------------------
 
-    For more features, install the
-    [Atom ide-haskell](https://atom.io/packages/ide-haskell) package.
+**Atom ide-haskell is not yet compatible with Stack, but once it is,
+we recommend installing it.**
 
-    To install the ide-haskell prerequisites, instead of the instructions that
-    use cabal install, run:
+For more features, install the
+[Atom ide-haskell](https://atom.io/packages/ide-haskell) package.
 
-        stack install hlint ghc-mod stylish-haskell
+To install the ide-haskell prerequisites, instead of the instructions that use
+cabal install, run:
 
-    You'll also need the line `export $HOME/.local/bin:$PATH` in your .bashrc or
-    similar file (unless/until the updated package knows about this
-    automatically).
+    stack install hlint ghc-mod stylish-haskell
 
-    Then install [haskell-ghc-mod](https://atom.io/packages/haskell-ghc-mod) and
-    [autocomplete-haskell](https://atom.io/packages/autocomplete-haskell)
+You'll also need the line `export $HOME/.local/bin:$PATH` in your .bashrc or
+similar file (unless/until the updated package knows about this automatically).
 
-    Here's a complete command for installing all the Atom packages listed above:
+Then install [haskell-ghc-mod](https://atom.io/packages/haskell-ghc-mod) and
+[autocomplete-haskell](https://atom.io/packages/autocomplete-haskell)
 
-        apm install language-haskell language-shakespeare ide-haskell haskell-ghc-mod autocomplete-haskell
+Here's a complete command for installing all the Atom packages listed above:
+
+    apm install language-haskell language-shakespeare ide-haskell haskell-ghc-mod autocomplete-haskell
+
+------------------------------
 
 Other useful Atom packages to consider:
 [haskell-hoogle](https://atom.io/packages/haskell-hoogle) (search Hoogle within
