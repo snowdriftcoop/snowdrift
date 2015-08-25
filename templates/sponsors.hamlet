@@ -330,7 +330,8 @@
     <a href=@{UserR (toSqlKey 152)}>
       Sean McGregor
   <li>
-    Ewen McNeill
+    <a href=@{UserR (toSqlKey 903)}>
+      Ewen McNeill
   <li>
     Jan Mechtel
   <li>
