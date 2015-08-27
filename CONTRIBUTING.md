@@ -16,7 +16,7 @@ To get started, the only absolute requirements are that you have a reasonably
 new laptop or desktop computer system (less than 10 years old generally),
 and know how to use a terminal to enter commands in the command-line.
 
-Generally, everything works smoothest with GNU/Linux or *BSD systems.
+Generally, everything works smoothest with GNU/Linux or \*BSD systems.
 OS X should work fine with a few tweaks. We do not fully support Windows, so we
 suggest Windows users switch systems or run a virtual machine (we offer an easy
 automated option for that via [Vagrant](SETUP_VAGRANT.md)).[^Windows]
@@ -286,22 +286,39 @@ here are some resources:
     further resources as well. As they are wikis, you can and should
     *improve* them yourself as you read!
 
-    + [Haskell Wikibook](https://en.wikibooks.org/wiki/Haskell)
-      — one of the few *featured* Wikibooks, the Haskell Wikibook
-      is *exceptionally* high quality and among the best overall
-      introductions to Haskell.
-    + [A Quick Introduction to Unix](https://en.wikibooks.org/wiki/A_Quick_Introduction_to_Unix)
+    * [Haskell Wikibook](https://en.wikibooks.org/wiki/Haskell)
+      — one of the few *featured* Wikibooks, the Haskell Wikibook is
+      *exceptionally* high quality and among the best overall introductions to
+      Haskell.
+    * [A Quick Introduction to Unix](https://en.wikibooks.org/wiki/A_Quick_Introduction_to_Unix)
       is a practical overview of command-line and Unix basics.
-    + [SQL Wikibook](https://en.wikibooks.org/wiki/Structured_Query_Language)
+    * [SQL Wikibook](https://en.wikibooks.org/wiki/Structured_Query_Language)
       is a good general overview
-    + [Git Wikibook](https://en.wikibooks.org/wiki/Git)
+    * [Git Wikibook](https://en.wikibooks.org/wiki/Git)
       is an incomplete book but has some useful bits.
-    + [HTML Wikibook](https://en.wikibooks.org/wiki/HyperText_Markup_Language)
+    * [HTML Wikibook](https://en.wikibooks.org/wiki/HyperText_Markup_Language)
       is a workable but dated intro (of course, countless HTML guides exist)
-    + [CSS Wikibook](https://en.wikibooks.org/wiki/Cascading_Style_Sheets)
+    * [CSS Wikibook](https://en.wikibooks.org/wiki/Cascading_Style_Sheets)
       is pretty thorough though needs updating.
-    + [JavaScript Wikibook](https://en.wikibooks.org/wiki/JavaScript)
+    * [JavaScript Wikibook](https://en.wikibooks.org/wiki/JavaScript)
       is incomplete, but seems a decent intro.
+
+
+*   Git resources:
+
+    * [Git for Ages 4 and Up](https://www.youtube.com/watch?v=1ffBJ4sVUb4&ab)
+      is an excellent video introduction to the core commands and concepts of
+      Git. Consider making a new folder like `git-test` in your `Home` directory
+      and following along with the commands in the video if you really want to
+      accelerate your proficiency with Git.
+
+    * [Git Magic](http://www-cs-students.stanford.edu/~blynn/gitmagic/)
+      is a fully-FLO book written in a more narrative style.
+
+    * The [Git Docs](http://git-scm.com/doc/) page includes many links, an
+      online version of the core Git manuals, and the full Pro Git book which
+      uses the CC-BY-NC-SA license, so it is shareable but not fully FLO,
+      unfortunately.
 
 *   Web browsers today have built-in developer tools which enable testing
     and experimenting with live websites. The [Firebug](https://getfirebug.com)
@@ -313,13 +330,6 @@ here are some resources:
 
 *   We use [Twitter Bootstrap](http://getbootstrap.com/) for much (but not all)
     of our CSS.
-
-*   The [Git Docs](http://git-scm.com/doc/) page includes many links, an online
-    version of the core Git manuals, and the full Pro Git book which uses the
-    CC-BY-NC-SA license, so it is shareable but not fully FLO, unfortunately.
-
-*   [Git Magic](http://www-cs-students.stanford.edu/~blynn/gitmagic/)
-    is a fully-FLO book written in a more narrative style.
 
 *   [The Yesod Book](http://www.yesodweb.com/book/) is the primary resource
     for learning about Yesod, the web framework we use to develop Snowdrift.
