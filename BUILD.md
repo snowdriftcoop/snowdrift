@@ -133,13 +133,9 @@ We don't think any extras are needed otherwise.
 * `$ stack exec -- sdm init --sudoUser=_postgres` Note: Use the args `--sudoUser=_postgres`
 * when running any sdm commands.
 
-Another option is a VM via [Vagrant].
-
 #### Windows
 
 Note: At this time, Windows builds have some issues.
-The guaranteed approach is to use a GNU/Linux Virtual Machine,
-perhaps via [Vagrant].
 
 To test building directly on Windows:
 
@@ -149,9 +145,9 @@ Install PostgreSQL 32-bit version from
 Add the PostgreSQL bin directory to the path
 `C:\Program Files (x86)\PostgreSQL\9.4\bin`
 
-Instead of using sdm, follow the appendix at the end of this file for setting up
-the development database manually. Some of the precise commands may need slight
-adapting such as using `psql -U postgres` to enter the psql prompt.
+Instead of using sdm, follow the instructions in [DATABASE-MANAGEMENT.md] to set
+up the development database manually. Some of the precise commands may need
+slight adapting such as using `psql -U postgres` to enter the psql prompt.
 
 The rest of the build instructions should work (although we're not sure about
 the use of Stack reliably on Windows yet).
@@ -204,7 +200,7 @@ For most GNU/Linux systems, simply run:
 
 It will prompt you for your sudo password.
 
-To set up databases manually, see the appendix at the end of this guide.
+To set up databases manually, see [DATABASE-MANAGEMENT.md].
 
 ### Run initial tests
 
@@ -265,8 +261,9 @@ If tests fail, try to figure out what is wrong. Ask us for help if needed.
 
 ## Database notes
 
-See [DATABASE-MANAGEMENT.md](DATABASE-MANAGEMENT.md)
+See [DATABASE-MANAGEMENT.md]
 
+[DATABASE-MANAGEMENT.md]: DATABASE-MANAGEMENT.md
 [Git]: http://www.git-scm.com/downloads
 [git.gnu.io/snowdrift/snowdrift]: https://git.gnu.io/snowdrift/snowdrift
 [GitHub]: https://github.com/snowdriftcoop/snowdrift
