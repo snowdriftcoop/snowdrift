@@ -62,9 +62,7 @@ timeWidget = Field
     { fieldParse = \timeSelectValues _ ->
         trace "timeWidget fieldParse\n"
         (case timeSelectValues of
-            [a, b, c, d] ->
-                    trace (show a ++ " " ++ show b ++ " " ++ show c ++ " " ++ show d)
-                      (return $ Right $ Just $ TimeParameters a b c d)
+            [a, b, c, d] -> (return $ Right $ Just $ TimeParameters a b c d)
             _ -> return $ Left "Error with time selection: Missing/Too Much input.")
     , fieldView = \_ _ _ _ _ -> $(widgetFile "time_widget")
     , fieldEnctype = UrlEncoded
