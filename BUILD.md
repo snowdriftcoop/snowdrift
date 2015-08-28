@@ -125,13 +125,13 @@ Where our instructions say `sdm init` add arguments as shown below:
 
 #### OS X
 
-Follow the instructions on their sites for each of the dependencies:
+Follow the instructions on their sites for installing each of the dependencies:
 [Git], [PostgreSQL] and [Stack].
 We don't think any extras are needed otherwise.
 
-The OS X build process seems to have some issues with postgres user names;
-until we update sdm to accept special arguments for OS X, the database set-up
-will need to be done manually. See the appendix at the end of this file.
+##### PostgreSQL and sdm under OS X
+* `$ stack exec -- sdm init --sudoUser=_postgres` Note: Use the args `--sudoUser=_postgres`
+* when running any sdm commands.
 
 Another option is a VM via [Vagrant].
 
