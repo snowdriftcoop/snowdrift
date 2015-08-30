@@ -59,42 +59,38 @@ installing it and will include instructions here.
 [GNU Emacs](https://www.gnu.org/software/emacs/) is a traditional, robust,
 keyboard-centric text editor with substantial Haskell support.
 
-### Emacs packages
-
-Emacs users should install
-[Haskell Mode](https://github.com/haskell/haskell-mode) and
-[Shakespeare Mode](https://github.com/CodyReichert/shakespeare-mode). Both
-of these are installable via ELPA.
-
-If you are new to Emacs,
-[Emacs Prelude](https://github.com/bbatsov/prelude) is an enhanced
-distribution of Emacs with a much saner default configuration. It
-includes things like [Helm](https://github.com/emacs-helm/helm) and
-[Projectile](http://batsov.com/projectile/) by default.
-
-If you are coming off of Vim,
-[Spacemacs](https://github.com/syl20bnr/spacemacs) is another Emacs
-distribution that includes Vim's modal keybindings by default, along
-with much of Prelude's saner default configuration. If you don't want to
-use Spacemacs, you can get the Vim keybindings in any Emacs distribution
-using [evil-mode](http://www.emacswiki.org/emacs/Evil).
-
-Also of interest:
-
-* [Magit](http://magit.vc/) is a very high-quality git interface
-  integrated within Emacs.
-* [Structured Haskell Mode](https://github.com/chrisdone/structured-haskell-mode),
-  by the author of haskell-mode, takes a lot of tedium out of Haskell
-  editing.
-* [HIndent](https://github.com/chrisdone/hindent/), by the same author
-  as SHM and haskell-mode, will pretty-print your Haskell-code. It is
-  along the same lines as SHM.
-
 ### Emacs settings
 
 Our included `.dir-locals.el` file
 [makes Emacs use](https://www.gnu.org/software/emacs/manual/html_node/emacs/Directory-Variables.html)
 the recommended 4-space indentation.
+
+### Emacs packages and variants
+
+Emacs users should install
+[Haskell Mode](https://github.com/haskell/haskell-mode) and
+[Shakespeare Mode](https://github.com/CodyReichert/shakespeare-mode).
+
+If you are new to Emacs,
+[Emacs Prelude](https://github.com/bbatsov/prelude) is an enhanced
+distribution of Emacs with better default configuration. It includes things like
+[Helm](https://github.com/emacs-helm/helm) and
+[Projectile](http://batsov.com/projectile/) by default.
+
+If you are coming from Vim, consider
+[Spacemacs](https://github.com/syl20bnr/spacemacs), an Emacs
+distribution that includes Vim's modal keybindings by default along
+with much of Prelude's saner default configuration. Aside from Spacemacs, you
+can get the Vim keybindings in any Emacs distribution using
+[evil-mode](http://www.emacswiki.org/emacs/Evil).
+
+Also of interest:
+
+* [Magit](http://magit.vc/) is a high-quality Emacs git interface.
+* [Structured Haskell Mode](https://github.com/chrisdone/structured-haskell-mode)
+  (same author as Haskell Mode) takes a lot of tedium out of Haskell editing.
+* [HIndent](https://github.com/chrisdone/hindent/) (same author again)
+  will pretty-print your Haskell-code along the same lines as SHM.
 
 ## Leksah
 
