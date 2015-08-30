@@ -78,11 +78,10 @@ distribution of Emacs with better default configuration. It includes things like
 [Projectile](http://batsov.com/projectile/) by default.
 
 If you are coming from Vim, consider
-[Spacemacs](https://github.com/syl20bnr/spacemacs), an Emacs
-distribution that includes Vim's modal keybindings by default along
-with much of Prelude's saner default configuration. Aside from Spacemacs, you
-can get the Vim keybindings in any Emacs distribution using
-[evil-mode](http://www.emacswiki.org/emacs/Evil).
+[Spacemacs](https://github.com/syl20bnr/spacemacs), an Emacs distribution that
+includes Vim's modal keybindings by default along with much of Prelude's default
+configuration. Aside from Spacemacs, you can get the Vim keybindings in any
+Emacs distribution using [evil-mode](http://www.emacswiki.org/emacs/Evil).
 
 Also of interest:
 
