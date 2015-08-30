@@ -43,8 +43,8 @@ Other useful Atom packages to consider:
 * in /snowdrift directory, run `hasktags -x -c ./*`
     * This must be re-run any time you want tags updated for newer code.
 * Use Ctrl-Shift-R to jump to any tag or Ctrl-Alt-Down to jump to the
-  definition of the symbol under the cursor using (or the Vim equivalents Ctrl-]
-  and Ctrl-t for vim-mode).
+  definition of the symbol under the cursor using and Ctrl-Alt-Up to return
+  (with vim-mode, Ctrl-] and Ctrl-t work as well).
     * This works for our internal functions only. For outside functions, search
       [Hayhoo](http://hayoo.fh-wedel.de/).
 
