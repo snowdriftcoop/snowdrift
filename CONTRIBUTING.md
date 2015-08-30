@@ -61,9 +61,9 @@ according to the instructions linked above.**
 ### Text-editors and settings
 
 All systems should come with a code-appropriate text-editor (or two), e.g.
-Gedit, Kate, Pluma, Scratch, etc. Any of those will work, but we recommend
-editors with better Haskell support. See [TEXTEDITORS.md](TEXTEDITORS.md) for
-our specific recommendations and settings.
+Gedit, Kate, Pluma, Scratch, etc. Any of those will work for now, but we
+recommend installing an editor with stronger Haskell and Yesod support. See
+[TEXTEDITORS.md](TEXTEDITORS.md) for our specific recommendations and settings.
 
 ### Working with Git
 
@@ -73,6 +73,8 @@ Short version for experienced Git users:
 Do your work *only* on other git branches.
 Use as many branches as needed to separate all work that functions
 independently** (you can, of course, remove merged branches later).
+
+The following covers the bare minimum process for those new to Git.
 
 #### Basic Git setup for collaboration
 
@@ -158,7 +160,7 @@ Replace `some_branch` with a one- or two-word (with hyphens, not spaces)
 description of your planned changes. For example, when fixing a problem in the
 header, a good branch name would be `header-fix`.
 
-### Building your updates
+#### Building your updates
 
 Follow the instructions in the [BUILD.md](BUILD.md) guide for running the site
 and running the tests.
@@ -166,7 +168,7 @@ and running the tests.
 If there are any failures either when compiling or testing, and you don't know
 how to fix the issue or don't understand the error, contact us for help.
 
-### Committing your changes
+#### Committing your changes
 
 When your updates all compile, tests pass, and you are ready to submit to the
 main Snowdrift project, you can *commit* your changes.
@@ -184,7 +186,7 @@ An editor will show asking you to summarize your changes.
 Make the message one that will be meaningful to people skimming
 all the commits in the future. Then save and close the editor.
 
-### Getting your changes merged
+#### Getting your changes merged
 
 After committing, send your changes to your git.gnu.io account with:
 
