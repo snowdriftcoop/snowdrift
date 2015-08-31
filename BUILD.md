@@ -1,25 +1,22 @@
 # Building and Running Snowdrift Locally
 
+Snowdrift has been built successfully on Debian, Ubuntu, Arch, Fedora, Gentoo,
+NixOS, and other distros of GNU/Linux as well as on OpenBSD and OS X.
+
+Although some volunteers have built on Windows, some issues remain unsettled.
+
 ## Install System Dependencies
 
-Install [Git], [PostgreSQL] and [Stack].
+The only system-level dependencies are [Git], [PostgreSQL], and [Stack].
 
 Note: You do *not* need to install GHC or Haskell Platform.
 Stack will automatically install the correct GHC version if you don't have it,
 and this won't affect any installation you already have of other versions.
 
-### System-specific notes
-
-Snowdrift has been built successfully on Debian, Ubuntu, Arch, Fedora, Gentoo,
-NixOS, and other distros of GNU/Linux as well as on OpenBSD and OS X.
-
-Although some volunteers have built on Windows, not everything seems to work
-quite right there.
-
-**Follow the details for your system here, then skip down to the "Get the Code"
+**Follow the details for your system, then skip to the "Get the Snowdrift Code"
 section.**
 
-#### Debian, Ubuntu, and any related derivatives
+### Debian, Ubuntu, and any related derivatives
 
 To install dependencies, run the following commands:
 
@@ -32,7 +29,7 @@ or
 [Ubuntu Stack install](https://github.com/commercialhaskell/stack/wiki/Downloads#ubuntu)
 instructions as appropriate.
 
-#### Arch Linux
+### Arch Linux
 
 To install dependencies, run this command as `root`:
 
@@ -51,15 +48,13 @@ Then, as `root`:
     systemctl enable postgresql.service
     systemctl start postgresql.service
 
-Install the
-[haskell-stack-git](https://aur4.archlinux.org/packages/haskell-stack-git/)
-package from the AUR. Run:
+Finally, install the
+[haskell-stack](https://aur4.archlinux.org/packages/haskell-stack)
+package from the AUR.
 
-    stack upgrade --git
+### NixOS
 
-#### NixOS
-
-##### Installing Stack under NixOS
+#### Installing Stack under NixOS
 
 Clone the Stack git repo:
 
@@ -77,10 +72,10 @@ Install Stack to your user profile:
 
     nix-env -i -f shell.nix
 
-##### Building Snowdrift and GHC with NixOS
+#### Building Snowdrift and GHC with NixOS
 
 Stack can fetch and build the required version of GHC, but this
-doesn't work great on NixOS due to an unusual filesystem hierarchy,
+doesn't work well on NixOS due to an unusual filesystem hierarchy,
 among other things. Instead, just use `nix-shell` to get into an
 environment with the right compiler version:
 
@@ -94,10 +89,10 @@ location of such libraries like this:
     stack build --extra-include-dirs ~/.nix-profile/include \
                 --extra-lib-dirs ~/.nix-profile/lib
 
-##### PostgreSQL and sdm under NixOS
+#### PostgreSQL under NixOS
 
-To get the sdm script to work, NixOS users should install postgres
-by adding these lines to `/etc/nixos/configuration.nix`:
+NixOS users should install postgres by adding these lines to
+`/etc/nixos/configuration.nix`:
 
     services.postgresql.enable = true;
     services.postgresql.package = pkgs.postgresql94;
@@ -108,33 +103,22 @@ Afterwards you may need to create the postgres user, like so:
     sudo -su root
     createuser -s -r postgres
 
-#### \*BSD
+### \*BSD
 
-*Not yet documented: installing dependencies on \*BSD*
+*Any knowledgeable reader: please help us document any important notes about
+installing the Git, PostgreSQL, and Stack dependencies on \*BSD.*
 
-The BSDs use different postgres configurations than the common
-GNU/Linux distros, so we must pass different parameters to sdm.
-Where our instructions say `sdm init` add arguments as shown below:
-
-* OpenBSD: `sdm init --sudoUser _postgresql`
-* FreeBSD: Untested but we believe `sdm init --sudoUser pgsql --pgUser
-  pgsql` will work.
-
-#### OS X
+### OS X
 
 Follow the instructions on their sites for installing each of the dependencies:
-[Git], [PostgreSQL] and [Stack].
-We don't think any extras are needed otherwise.
+[Git], [PostgreSQL], and [Stack].
 
-##### PostgreSQL and sdm under OS X
-* `$ stack exec -- sdm init --sudoUser=_postgres` Note: Use the args `--sudoUser=_postgres`
-* when running any sdm commands.
+### Windows
 
-#### Windows
+Note: At this time, Windows builds have some issues. To test building directly
+on Windows:
 
-Note: At this time, Windows builds have some issues.
-
-To test building directly on Windows:
+Install [Git] per instructions on the website.
 
 Install PostgreSQL 32-bit version from
 <http://www.enterprisedb.com/products-services-training/pgdownload#windows>
@@ -142,17 +126,13 @@ Install PostgreSQL 32-bit version from
 Add the PostgreSQL bin directory to the path
 `C:\Program Files (x86)\PostgreSQL\9.4\bin`
 
-Instead of using sdm, follow the instructions in [DATABASE-MANAGEMENT.md] to set
-up the development database manually. Some of the precise commands may need
-slight adapting such as using `psql -U postgres` to enter the psql prompt.
+Follow the instructions to
+[install Stack for Windows](https://github.com/commercialhaskell/stack/wiki/Downloads#windows)
 
-The rest of the build instructions should work (although we're not sure about
-the use of Stack reliably on Windows yet).
+*Note:* SnowdriftEmailDaemon won't build on Windows, so the `stack test` will
+fail. Building, running, and working on the site might still work otherwise.
 
-*Note:* SnowdriftEmailDaemon won't build on Windows, so `stack test` will fail.
-Building, running, and working on the site might still work otherwise.
-
-#### Virtual Machine options / Vagrant
+### Virtual Machine options / Vagrant
 
 Anyone could use a Virtual Machine with a system known to work and then
 follow the steps for that system, working entirely within the VM.
@@ -162,7 +142,9 @@ option with [Vagrant]. Our Vagrant instance uses a Debian system preset with our
 core dependencies. Vagrant then allows the build to work in the virtual machine
 while you continue using your regular text editor, file system, web browser etc.
 
-## Get the code
+*Note 2015/08/31: Vagrant won't work well until updated to work with Stack.*
+
+## Get the Snowdrift code
 
 Once the dependencies are installed, clone the Snowdrift code to your computer.
 
@@ -190,14 +172,31 @@ NB: this will take a while!
 
 ### Set up the database
 
-We offer a simple script that will setup the PostgreSQL databases for you.
-For most GNU/Linux systems, simply run:
-
-    stack exec sdm init
-
-It will prompt you for your sudo password.
+We offer a simple script (`sdm` for "Snowdrift database manager") that will
+setup the PostgreSQL databases for you. At this time, it requires root access,
+so it will ask for your passphrase.
 
 To set up databases manually, see [DATABASE-MANAGEMENT.md].
+
+#### GNU/Linux database setup
+
+simply run `stack exec sdm init`
+
+#### \*BSD database setup
+
+* OpenBSD: `stack exec -- sdm init --sudoUser _postgresql`
+* FreeBSD: *Untested but should work*:
+  `stack exec -- sdm init --sudoUser pgsql --pgUser pgsql`
+
+#### OS X database setup
+
+run `stack exec -- sdm init --sudoUser=_postgres`
+
+#### Windows database setup
+
+Instead of using sdm, follow the *manual database* setup instructions in
+[DATABASE-MANAGEMENT.md]. Some of the precise commands may need slight adapting
+such as using `psql -U postgres` to enter the psql prompt.
 
 ### Run initial tests
 
@@ -258,7 +257,8 @@ If tests fail, try to figure out what is wrong. Ask us for help if needed.
 
 ## Database notes
 
-See [DATABASE-MANAGEMENT.md]
+See [DATABASE-MANAGEMENT.md] for instructions on resetting the database and
+more.
 
 [DATABASE-MANAGEMENT.md]: DATABASE-MANAGEMENT.md
 [Git]: http://www.git-scm.com/downloads

@@ -41,40 +41,50 @@ the corresponding schema changes.
 When merging migrations, put any you've added on the end in separate file(s).
 Don't merge them into migration files others may have already run.
 
+## Database management with the sdm tool
 
-Resetting or updating your development database
------------------------------------------------
+Our sdm tool has several functions for database management.
+
+By default, sdm is set to work with GNU/Linux systems. All instructions here use
+that default form.
+
+For each of the other systems listed below, add the given arguments at the end
+of any sdm command.  When including any arguments, `--` must always be included
+after `stack exec` as `stack exec --`.
+
+* OpenBSD: `--sudoUser _postgresql`.
+* FreeBSD: `--sudoUser pgsql --pgUser pgsql`
+* OS X: `--sudoUser=_postgres`
+
+**All commands below should be run from your /snowdrift project directory.**
+
+### Resetting or updating your development database
 
 To remove any changes and reset your database to the devDB default
 (such as when others have provided a new update you want to try
 or to start clean before making changes you plan to commit) run:
 
-    sdm reset
+    stack exec sdm reset
 
-Sharing updates to the devDB database
--------------------------------------
+### Sharing updates to the devDB database
 
-If you make specific improvements or additions to your database
-that you think will make for a better start for other contributors
-(and also when you have updated the basic database with migration files),
-you can use the following command to export the changes
-(which can then be committed via git as usual).
-
-While in your project directory:
+If you make specific improvements or additions to your database that you think
+will make for a better start for other contributors (or when you have updated
+the basic database with migration files), you can use the following command to
+export the changes (which can then be committed via git as usual).
 
     stack exec -- sdm export --db=dev
 
-which is the same as running:
+which is the same as running the manual postgres command:
 
     sudo -u postgres pg_dump snowdrift_development >devDB.sql
 
-You can test that the export worked by running `sdm reset` and verifying
-in the running site that everything is as expected.
+Test that the export worked by running the reset command above and verifying in
+the running site that everything is as expected.
 
 Then, the new devDB.sql file may be committed and shared like other changes.
 
-Updating to the latest test database
-------------------------------------
+### Updating to the latest test database
 
 If the testDB.sql file gets updated, you'll need to update your template.
 
@@ -84,9 +94,8 @@ Simply run `stack exec -- sdm reset --db=test` to reset/update your test databas
 Manual database management
 --------------------------
 
-Our sdm script makes database management quick and easy.
 All the steps below can be done simply with the sdm script,
-but here we explain what it does and how to handle databases manually.
+but here we explain what they do and how to handle databases manually.
 
 ***
 
@@ -102,8 +111,7 @@ follow these steps:
 1) Run `psql snowdrift_development`
 2) At snowdrift_development=# prompt, run `\i devDB.sql`
 
-Similar adjustments will be needed for the
-test database setup and resetting databases.
+Similar adjustments are needed for test database setup and resetting databases.
 
 ***
 
