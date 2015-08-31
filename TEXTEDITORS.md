@@ -101,9 +101,9 @@ but we're waiting for integration with Stack before we fully recommend it.
 [Vim](http://www.vim.org/) is a robust traditional editor with a command-line
 style interface and substantial Haskell support.
 
-Note: we recommend all vim users install `gvim` to enable access to system
-clipboards, regardless of using terminal-based vim or the gvim interface with
-visual menus.
+Note: we recommend all vim users install `vim-gtk` to enable access to system
+clipboards, regardless of then using terminal-based vim or the gvim interface
+with visual menus.
 
 ### Vim settings
 
