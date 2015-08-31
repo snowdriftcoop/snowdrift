@@ -30,12 +30,13 @@ Other useful Atom packages to consider:
     * [git-blame](https://atom.io/packages/git-blame)
     * [show-origin](https://atom.io/packages/show-origin)
     * searching will show many other git tools worth considering
-* General nice tools like [minimap](https://atom.io/packages/minimap)
-* [haskell-hoogle](https://atom.io/packages/haskell-hoogle)
+* General nice tools like [minimap](https://atom.io/packages/minimap),
+  [cursor-history](https://atom.io/packages/cursor-history),
+  [clipboard-history](https://atom.io/packages/clipboard-history)
 * [vim-mode](https://atom.io/packages/vim-mode) (if you like vim style editing)
     * consider the Clipboard as Default Register and Smartcase Search options
     * incidentally, many normal Atom editing operations still work as well
-    * search packages for "vim-mode" to see extra addons
+    * search packages for "vim-mode" to see extra related addons
 
 ### Tags to jump to function definitions in Atom
 
@@ -99,7 +100,7 @@ but we're waiting for integration with Stack before we fully recommend it.
 ## Vim
 
 [Vim](http://www.vim.org/) is a robust traditional editor with a command-line
-style interface and substantial Haskell support.
+style interface and great Haskell support.
 
 Note: we recommend all vim users install `vim-gtk` to enable access to system
 clipboards, regardless of then using terminal-based vim or the gvim interface
@@ -143,6 +144,8 @@ near-zero learning to use:
 and others which take some minimal learning:
 [vim-fugitive](https://github.com/tpope/vim-fugitive),
 [undotree](https://github.com/mbbill/undotree),
+[NERD tree](https://github.com/scrooloose/nerdtree) &
+[NERD tree git plugin](https://github.com/Xuyuanp/nerdtree-git-plugin),
 [vim-easyclip](https://github.com/mbbill/undotree).
 
 *Many* other options exist, although we'd rather contributors generally focus
