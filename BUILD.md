@@ -86,10 +86,9 @@ environment with the right compiler version:
 
     nix-shell -p haskell.compiler.ghc784
 
-Then you should be able to build the project as described in the
-[README], but Stack will likely complain about missing system
-libraries (like zlib), which you'll need to install manually via
-`nix-env` or `nox`. Once installed, you can specify the
+Then you should be able to build the project as described below, but Stack will
+likely complain about missing system libraries (like zlib), which you'll need to
+install manually via `nix-env` or `nox`. Once installed, you can specify the
 location of such libraries like this:
 
     stack build --extra-include-dirs ~/.nix-profile/include \
@@ -109,7 +108,6 @@ Afterwards you may need to create the postgres user, like so:
     sudo -su root
     createuser -s -r postgres
 
-
 #### \*BSD
 
 *Not yet documented: installing dependencies on \*BSD*
@@ -121,7 +119,6 @@ Where our instructions say `sdm init` add arguments as shown below:
 * OpenBSD: `sdm init --sudoUser _postgresql`
 * FreeBSD: Untested but we believe `sdm init --sudoUser pgsql --pgUser
   pgsql` will work.
-
 
 #### OS X
 
