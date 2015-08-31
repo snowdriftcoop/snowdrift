@@ -6,7 +6,7 @@ Install [Git], [PostgreSQL] and [Stack].
 
 Note: You do *not* need to install GHC or Haskell Platform.
 Stack will automatically install the correct GHC version if you don't have it,
-and this won't affect any installation you already have of other verisons.
+and this won't affect any installation you already have of other versions.
 
 ### System-specific notes
 
@@ -113,7 +113,7 @@ Afterwards you may need to create the postgres user, like so:
 *Not yet documented: installing dependencies on \*BSD*
 
 The BSDs use different postgres configurations than the common
-GNU/Linux distros, so we must pass different paramaters to sdm.
+GNU/Linux distros, so we must pass different parameters to sdm.
 Where our instructions say `sdm init` add arguments as shown below:
 
 * OpenBSD: `sdm init --sudoUser _postgresql`
