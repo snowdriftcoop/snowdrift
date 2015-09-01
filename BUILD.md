@@ -49,7 +49,7 @@ Then, as `root`:
     systemctl start postgresql.service
 
 Finally, install the
-[haskell-stack](https://aur4.archlinux.org/packages/haskell-stack)
+[haskell-stack](https://aur.archlinux.org/packages/haskell-stack)
 package from the AUR.
 
 ### NixOS
