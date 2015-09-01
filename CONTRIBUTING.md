@@ -16,10 +16,13 @@ To get started, the only absolute requirements are that you have a reasonably
 new laptop or desktop computer system (less than 10 years old generally),
 and know how to use a terminal to enter commands in the command-line.
 
-Generally, everything works smoothest with GNU/Linux or \*BSD systems.
-OS X should work fine with a few tweaks. We do not fully support Windows, so we
-suggest Windows users switch systems or run a virtual machine (we offer an easy
-automated option for that via [Vagrant](SETUP_VAGRANT.md)).[^Windows]
+Generally, everything works smoothly with GNU/Linux, \*BSD systems, and OS X.
+
+We do not fully support Windows at this time, so we generally suggest Windows
+users switch systems or run a virtual machine. As proprietary systems, Windows
+and OS X go against the Snowdrift.coop mission. Still, we would prefer the
+options to work rather than not. Our [Build guide](BUILD.md) has instructions
+for testing Windows as far as we've figured out so far.
 
 ## Command-line basics
 
@@ -305,7 +308,6 @@ here are some resources:
     * [JavaScript Wikibook](https://en.wikibooks.org/wiki/JavaScript)
       is incomplete, but seems a decent intro.
 
-
 *   Git resources:
 
     * [Git for Ages 4 and Up](https://www.youtube.com/watch?v=1ffBJ4sVUb4&ab)
@@ -361,12 +363,9 @@ here are some resources:
     in a mode connected to the project. Using that, you can easily import
     files from the code and explore the functions.
 
+*   As you encounter Haskell (and specifically Yesod) functions, a fast way
+    to find the types and definitions is to search
+    [Hayhoo](http://hayoo.fh-wedel.de/).
+
 *   Add hlint with `stack install hlint`, and then you can run `hlint` followed
     by a .hs filepath to get suggestions for improving the Haskell code style.
-
-[^Windows]: If some Windows developers really want to continue working to make
-Snowdrift work fully under Windows, we will work with them. As Windows is a
-proprietary and privacy-invading OS, it works against the Snowdrift.coop
-mission, but we still would prefer the option to work rather than not — although
-it is not our priority. Our [Build guide](BUILD.md) does have some instructions
-for working on Windows as far as we've figured out so far.
