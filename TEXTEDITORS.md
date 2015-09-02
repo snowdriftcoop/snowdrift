@@ -32,7 +32,8 @@ Other useful Atom packages to consider:
     * searching will show many other git tools worth considering
 * General nice tools like [minimap](https://atom.io/packages/minimap),
   [cursor-history](https://atom.io/packages/cursor-history),
-  [clipboard-history](https://atom.io/packages/clipboard-history)
+  [clipboard-history](https://atom.io/packages/clipboard-history),
+  [multi-cursor](https://atom.io/packages/multi-cursor)
 * [vim-mode](https://atom.io/packages/vim-mode) (if you like vim style editing)
     * consider the Clipboard as Default Register and Smartcase Search options
     * incidentally, many normal Atom editing operations still work as well
@@ -111,8 +112,10 @@ with visual menus.
 We recommend that your ~/.vimrc file include:
 
     syntax on
-    set number textwidth=80 expandtab shiftwidth=4 tabstop=4
+    set number title hlsearch ignorecase smartcase showbreak=↪
+    set textwidth=80 expandtab shiftwidth=4 tabstop=4
     au FileType hamlet setl sw=2 sts=2 et
+    au Filetype gitcommit setl spell textwidth=72
 
 Many other settings are nice, but opinions vary about the details.
 
@@ -140,13 +143,15 @@ near-zero learning to use:
 [vim-supertab](https://github.com/ervandew/supertab),
 [vim-gitgutter](https://github.com/airblade/vim-gitgutter),
 [vim-surround](https://github.com/tpope/vim-surround),
-[vim-commentary](https://github.com/tpope/vim-commentary);
-and others which take some minimal learning:
+[vim-commentary](https://github.com/tpope/vim-commentary),
+[ctrl-P](https://github.com/kien/ctrlp.vim);
+and others which take some learning and/or set up:
 [vim-fugitive](https://github.com/tpope/vim-fugitive),
 [undotree](https://github.com/mbbill/undotree),
 [NERD tree](https://github.com/scrooloose/nerdtree) &
 [NERD tree git plugin](https://github.com/Xuyuanp/nerdtree-git-plugin),
-[vim-easyclip](https://github.com/mbbill/undotree).
+[vim-easyclip](https://github.com/mbbill/undotree),
+[vim-airline](https://github.com/bling/vim-airline).
 
 *Many* other options exist, although we'd rather contributors generally focus
 more on building Snowdrift than maximizing their Vim expertise.
