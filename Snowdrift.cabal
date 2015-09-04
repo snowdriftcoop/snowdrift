@@ -193,6 +193,7 @@ library
                  , esqueleto
                  , fast-logger
                  , github
+                 , ghci-runner
                  , hit
                  , hjsmin
                  , hourglass
