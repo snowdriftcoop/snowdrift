@@ -140,11 +140,13 @@ library
                      Widgets.ProjectPledges
 
     -- other-modules {{{2
-    other-modules: Model.Comment.Internal
-                   Model.Established.Internal
-                   Model.Role.Internal
-                   Model.Settings.Internal
-                   Model.ViewType.Internal
+    other-modules:
+        Migrations
+        Model.Comment.Internal
+        Model.Established.Internal
+        Model.Role.Internal
+        Model.Settings.Internal
+        Model.ViewType.Internal
 
     -- default-extensions {{{2
     default-extensions: ConstraintKinds
@@ -445,42 +447,42 @@ test-suite test
 
     -- build-depends {{{2
     build-depends: base
-                 , Snowdrift
-                 , yesod-markdown
-                 , yesod-test
-                 , yesod
-                 , persistent
-                 , monad-logger
-                 , monad-control
-                 , mtl
-                 , semigroups
-                 , transformers
                  , bytestring
-                 , directory
-                 , filepath
-                 -- we use spawnProcess in tests and it was added in 1.2
-                 , process >= 1.2.0.0
-                 , resourcet
-                 , time
-                 , text
-                 , hspec
-                 , network-uri
-                 , http-types
-                 , wai-extra
                  , containers
-                 , html-conduit
-                 , xml-conduit
+                 , directory
                  , esqueleto
-                 , HUnit
-                 , template-haskell
+                 , fast-logger
+                 , filepath
                  , haskell-src-exts
                  , haskell-src-meta
+                 , hspec
+                 , html-conduit
+                 , http-types
+                 , HUnit
                  , lifted-base
+                 , monad-control
+                 , monad-logger
+                 , mtl
+                 , network-uri
+                 , persistent
+                 -- we use spawnProcess in tests and it was added in 1.2
+                 , process >= 1.2.0.0
                  , QuickCheck
-                 , fast-logger
+                 , resourcet
+                 , semigroups
+                 , Snowdrift
                  , stm
+                 , template-haskell
+                 , text
+                 , time
+                 , transformers
+                 , wai-extra
                  , wai-logger
+                 , xml-conduit
+                 , yesod
                  , yesod-core
+                 , yesod-markdown
+                 , yesod-test
 
 -- }}}1
 
