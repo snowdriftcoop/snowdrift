@@ -517,7 +517,7 @@ getNewWikiR project_handle language target = do
         getBy (UniqueWikiTarget (entityKey project) language' target') >>= \case
             Nothing -> return ()
             Just _ ->
-                invalidArgs [mappend "Wiki page already exists: " target']
+                invalidArgs [mappend target' " wiki page already exists"]
 
 
 
