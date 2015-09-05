@@ -17,4 +17,4 @@ extra-deps:
     - yesod-bin-1.4.14
     # fsnotify on OS X
     - hfsevents-0.1.5
-resolver: lts-2.21
+resolver: lts-2.22
