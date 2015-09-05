@@ -233,11 +233,11 @@ we suggest a few different options for moving forward:
     * For those new to Haskell: Until you understand more about the Yesod web
       framework, you probably don't want to touch the nitty-gritty parts of the
       source code. However, the files in the /templates directory are comparable
-      to basic HTML, CSS, and JavaScript. Beginners can quickly learn how to make
-      changes to those files. Basically, Hamlet=HTML and Cassius=CSS but with
-      easier, more concise syntax that uses indentation instead of closing tags.
-      Julius files are effectively just containers for JavaScript.
-      For more details, see the documentation on
+      to basic HTML, CSS, and JavaScript. Beginners can quickly learn how to
+      make changes to those files. Basically, Hamlet=HTML and Cassius=CSS but
+      with easier, more concise syntax that uses indentation instead of closing
+      tags. Julius files are effectively just containers for JavaScript. For
+      more details, see the documentation on
       [Shakespearean Templates](http://www.yesodweb.com/book/shakespearean-templates).
 
 * Read our [coding wiki page](https://snowdrift.coop/p/snowdrift/w/en/coding),

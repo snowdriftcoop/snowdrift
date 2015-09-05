@@ -42,7 +42,7 @@ Other useful Atom packages to consider:
 ### Tags to jump to function definitions in Atom
 
 * run `stack install hasktags`
-* in /snowdrift directory, run `hasktags -x -c ./*`
+* in /snowdrift, run `hasktags -x -c --ignore-close-implementation ./*`
     * This must be re-run any time you want tags updated for newer code.
 * Use Ctrl-Shift-R to jump to any tag or Ctrl-Alt-Down to jump to the
   definition of the symbol under the cursor using and Ctrl-Alt-Up to return
@@ -150,6 +150,7 @@ and others which take some learning and/or set up:
 [undotree](https://github.com/mbbill/undotree),
 [NERD tree](https://github.com/scrooloose/nerdtree) &
 [NERD tree git plugin](https://github.com/Xuyuanp/nerdtree-git-plugin),
+[ag.vim](https://github.com/rking/ag.vim),
 [vim-easyclip](https://github.com/mbbill/undotree),
 [vim-airline](https://github.com/bling/vim-airline).
 
