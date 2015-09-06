@@ -153,8 +153,8 @@ more on building Snowdrift than maximizing their Vim expertise.
 ### Tags to jump to function definitions in Vim
 
 * Run `stack install fast-tags`
-* In /snowdrift directory, run `fast-tags ./*`
-* For auto-update, add `au BufWritePost *.hs silent !init-tags %` to ~/.vimrc
+* In the snowdrift directory, run `fast-tags ./*`
+* For auto-update, add `au BufWritePost *.hs silent !fast-tags %` to ~/.vimrc
 * Then, in any Haskell file, use Ctrl-] to jump to the definition of the symbol
   under the cursor, and Ctrl-t to jump back.
     * This works for our internal functions only. For outside functions, search
