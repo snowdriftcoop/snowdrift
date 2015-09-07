@@ -50,12 +50,6 @@ Other useful Atom packages to consider:
     * This works for our internal functions only. For outside functions, search
       [Hayhoo](http://hayoo.fh-wedel.de/).
 
-### Atom Haskell IDE
-
-[Atom ide-haskell](https://atom.io/packages/ide-haskell) offers many more useful
-features but is not yet compatible with Stack. Once it is, we will recommend
-installing it and will include instructions here.
-
 ## Emacs
 
 [GNU Emacs](https://www.gnu.org/software/emacs/) is a traditional, robust,
