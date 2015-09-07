@@ -132,18 +132,6 @@ Follow the instructions to
 *Note:* SnowdriftEmailDaemon won't build on Windows, so the `stack test` will
 fail. Building, running, and working on the site might still work otherwise.
 
-### Virtual Machine options / Vagrant
-
-Anyone could use a Virtual Machine with a system known to work and then
-follow the steps for that system, working entirely within the VM.
-
-Alternatively, to better *integrate* with your existing system, we offer an
-option with [Vagrant]. Our Vagrant instance uses a Debian system preset with our
-core dependencies. Vagrant then allows the build to work in the virtual machine
-while you continue using your regular text editor, file system, web browser etc.
-
-*Note 2015/08/31: Vagrant won't work well until updated to work with Stack.*
-
 ## Get the Snowdrift code
 
 Once the dependencies are installed, clone the Snowdrift code to your computer.
@@ -266,4 +254,3 @@ more.
 [GitHub]: https://github.com/snowdriftcoop/snowdrift
 [PostgreSQL]: http://www.postgresql.org/download/
 [Stack]: https://github.com/commercialhaskell/stack#how-to-install
-[Vagrant]: VAGRANT_SETUP.md
