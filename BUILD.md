@@ -72,6 +72,13 @@ Install Stack to your user profile:
 
     nix-env -i -f shell.nix
 
+### Void Linux
+GHC 7.8.4 depends on the existence of libtinfo.so.5, which is bundled into
+libncurses.  Symlinking libtinfo to libncurses should fix any errors related
+to libtinfo:
+
+`cd /usr/lib; sudo ln -s libncurses.so.5.9 libtinfo.so.5`
+
 #### Building Snowdrift and GHC with NixOS
 
 Stack can fetch and build the required version of GHC, but this
