@@ -53,7 +53,7 @@ If you are on a system that does not package it yet, you may choose to
 
 ### Install Snowdrift
 
-With Git installed, you can **follow the [BUILD.md](BUILD.me) instructions**
+With Git installed, you can **follow the [BUILD.md](BUILD.md) instructions**
 to get Snowdrift going on your computer.
 
 ## Working on the code
