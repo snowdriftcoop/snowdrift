@@ -1,7 +1,8 @@
-# Text Editor Settings and Recommendations
+# FLO Text Editors and Yesod/Haskell
 
 This guide covers our recommended options for fully-FLO text-editors and IDE
-development tools for hacking on Snowdrift.
+development tools for hacking on Snowdrift (although this pretty well applies to
+any Yesod-based project).
 
 ## Text editor packages and settings
 
@@ -192,7 +193,8 @@ alias in instructions above) as needed.
 ### Vim tag usage and updating
 
 With a tags file in place, Vim can jump to the definition of the symbol under
-the cursor with Ctrl-] and jump back with Ctrl-t.
+the cursor with Ctrl-] and jump back with Ctrl-t. Also, when typing in insert
+mode, Ctrl-x followed by Ctrl-] will offer autocompletion for known tags.
 
 To auto-update tags in Vim whenever a Haskell file gets written, use fast-tags:
 
