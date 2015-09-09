@@ -191,8 +191,11 @@ more on building Snowdrift than maximizing their Vim expertise.
 
 * Then, in any Haskell file, use Ctrl-] to jump to the definition of the symbol
   under the cursor, and Ctrl-t to jump back.
-    * This works for our internal functions only. For outside functions, search
-      [Hayhoo](http://hayoo.fh-wedel.de/).
+    * This works for our internal functions only. For outside functions,
+      [Stackage](https://www.stackage.org/lts-2/hoogle) will have
+      documentation on almost all of our dependencies.
+      [Hayoo](http://hayoo.fh-wedel.de/) will have any missing ones, but
+      may occasionally point to wrong versions.
 
 [^1]: Technically there are other files you may want to search, such as
 \*.hsc.
