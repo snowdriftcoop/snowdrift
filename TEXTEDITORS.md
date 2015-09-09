@@ -3,13 +3,15 @@
 This guide covers our recommended options for fully-FLO text-editors and IDE
 development tools for hacking on Snowdrift.
 
-## Atom
+## Text editor packages and settings
+
+### Atom
 
 [Atom](https://atom.io/) is a modern, graphical, highly-extensible text-editor,
 good for beginners and advanced alike. It is relatively new, and Haskell support
 is continually improving.
 
-### Atom settings
+#### Atom settings
 
 Some settings to consider:
 
@@ -17,7 +19,7 @@ Some settings to consider:
 * Packages/Tree View: turn on "Hide Ignored Names" and "Hide VCS Ignored Files"
 * Disable the "metrics" package to stop Atom sending data to Google Analytics
 
-### Atom packages
+#### Atom packages
 
 We recommend adding at least the Atom packages:
 [language-shakespeare](https://atom.io/packages/language-shakespeare) and
@@ -39,29 +41,18 @@ Other useful Atom packages to consider:
     * incidentally, many normal Atom editing operations still work as well
     * search packages for "vim-mode" to see extra related addons
 
-### Tags to jump to function definitions in Atom
-
-* run `stack install hasktags`
-* in /snowdrift, run `hasktags -x -c --ignore-close-implementation ./*`
-    * This must be re-run any time you want tags updated for newer code.
-* Use Ctrl-Shift-R to jump to any tag or Ctrl-Alt-Down to jump to the
-  definition of the symbol under the cursor using and Ctrl-Alt-Up to return
-  (with vim-mode, Ctrl-] and Ctrl-t work as well).
-    * This works for our internal functions only. For outside functions, search
-      [Hayhoo](http://hayoo.fh-wedel.de/).
-
-## Emacs
+### Emacs
 
 [GNU Emacs](https://www.gnu.org/software/emacs/) is a traditional, robust,
 keyboard-centric text editor with substantial Haskell support.
 
-### Emacs settings
+#### Emacs settings
 
 Our included `.dir-locals.el` file
 [makes Emacs use](https://www.gnu.org/software/emacs/manual/html_node/emacs/Directory-Variables.html)
 the recommended 4-space indentation.
 
-### Emacs packages and variants
+#### Emacs packages and variants
 
 Emacs users should install
 [Haskell Mode](https://github.com/haskell/haskell-mode) and
@@ -87,12 +78,12 @@ Also of interest:
 * [HIndent](https://github.com/chrisdone/hindent/) (same author again)
   will pretty-print your Haskell-code along the same lines as SHM.
 
-## Leksah
+### Leksah
 
 [Leksah](http://leksah.org/) is a Haskell-dedicated complete IDE in the works,
 but we're waiting for integration with Stack before we fully recommend it.
 
-## Vim
+### Vim
 
 [Vim](http://www.vim.org/) is a robust traditional editor with a command-line
 style interface and great Haskell support.
@@ -101,7 +92,7 @@ Note: we recommend all vim users install `vim-gtk` to enable access to system
 clipboards, regardless of then using terminal-based vim or the gvim interface
 with visual menus.
 
-### Vim settings
+#### Vim settings
 
 We recommend that your ~/.vimrc file include:
 
@@ -113,7 +104,7 @@ We recommend that your ~/.vimrc file include:
 
 Many other settings are nice, but opinions vary about the details.
 
-### Vim plugins
+#### Vim plugins
 
 We recommend using a Vim plugin manager such as
 [Vundle](https://github.com/VundleVim/Vundle.vim)
@@ -150,36 +141,63 @@ and others which take some learning and/or set up:
 *Many* other options exist, although we'd rather contributors generally focus
 more on building Snowdrift than maximizing their Vim expertise.
 
-### Tags to jump to function definitions in Vim
+## Setting up tags to jump to function definitions
 
-* Run `stack install fast-tags`
-* In the snowdrift directory, run this big command to prime your tags
-  file:
+The following works for all text-editors that recognize tags files.
 
-        git ls-tree -r HEAD --name-only | grep -E '*.hs' | xargs fast-tags
+* run `stack install hasktags`
+    * make sure you have ~/.local/bin on your PATH, if not sure, just run
+      `echo 'export PATH=$HOME/.local/bin:$PATH' >> ~/.bashrc`
+* In the snowdrift directory, run this big command to generate your tags file:
 
-    For edification, that command is a pipeline that prints all files in
-    the repository, filters just the Haskelly ones, and passes them to
-    fast-tags for processing.
+        git ls-tree -r HEAD --name-only | grep -E '*.hs' | xargs hasktags -x -c --ignore-close-implementation
 
-    I (Bryan) have created an alias for that command in my ~/.bashrc so I can
-    run it easily.
+    * That command works for Atom, Vim, and other ctags-based editors.
+    * For Emacs, change `-x -c` to `-e`
 
-        alias git-fast-tags="git ls-tree -r HEAD --name-only | grep -E '*.hs' | xargs fast-tags"
+    For edification, that long command is a pipeline that finds all committed
+    files in the git repository, filters to just the Haskell ones, and passes
+    those for tag processing (technically, there are other types of Haskell
+    files, such as \*.hsc and \*.lhs, but we don't have them in Snowdrift.)
 
-    (Technically, there are other types of Haskelly files, such as \*.hsc
-    and \*.lhs, but we don't have them in Snowdrift.)
+    For convenience, you can edit ~/.bashrc and add a line to make an alias for
+    the long command above, as in:
 
-* You may want to put that big command into .git/hooks/post-checkout
-  so it reruns every time you check out a new branch. Don't forget to make
-  the hook file executable:
+        alias git-hasktags="git ls-tree -r HEAD --name-only | grep -E '*.hs' | xargs hasktags -x -c --ignore-close-implementation"
+
+    To auto-update whenever you check out a new branch, put the command into
+    .git/hooks/post-checkout and make the hook file executable:
 
         cat >> .git/hooks/post-checkout <<EOF
-        git ls-tree -r HEAD --name-only | grep -E '*.hs' | xargs fast-tags
+        git ls-tree -r HEAD --name-only | grep -E '*.hs' | xargs hasktags -x -c --ignore-close-implementation
         EOF
         chmod u+x .git/hooks/post-checkout
 
-* For auto-update in Vim, add an autocommand to the Haskell plugin file:
+Now, you can quickly jump to tags with whatever mechanism your text editor uses.
+
+Note that tags work for our internal functions only. For outside functions,
+[Stackage](https://www.stackage.org/lts-2/hoogle) will have documentation on
+almost all of our dependencies.
+
+### Atom tag usage and updating
+
+With tags generated, Atom uses Ctrl-Shift-R to search for any tag,
+Ctrl-Alt-Down to jump to the definition of the symbol under the cursor, and
+Ctrl-Alt-Up to return (with vim-mode, Ctrl-] and Ctrl-t also work).
+
+We hope to document how to auto-update tags whenever saving files in Atom, but
+until we have that clear, you'll need to manually re-run `git-hasktags` (set as
+alias in instructions above) as needed.
+
+### Vim tag usage and updating
+
+With a tags file in place, Vim can jump to the definition of the symbol under
+the cursor with Ctrl-] and jump back with Ctrl-t.
+
+To auto-update tags in Vim whenever a Haskell file gets written, use fast-tags:
+
+* run `stack install fast-tags`
+* add an autocommand to the Haskell plugin file:
 
         mkdir -p ~/.vim/after/ftplugin
         cat >> ~/.vim/after/ftplugin/haskell.vim <<EOF
@@ -188,12 +206,3 @@ more on building Snowdrift than maximizing their Vim expertise.
             autocmd BufWritePost <buffer> silent !fast-tags %
         augroup END
         EOF
-
-    The critical line has "BufWritePost", and says to run fast-tags on
-    the current file whenever it gets written.
-
-* Then, in any Haskell file, use Ctrl-] to jump to the definition of the symbol
-  under the cursor, and Ctrl-t to jump back.
-    * This works for our internal functions only. For outside functions,
-      [Stackage](https://www.stackage.org/lts-2/hoogle) will have
-      documentation on almost all of our dependencies.
