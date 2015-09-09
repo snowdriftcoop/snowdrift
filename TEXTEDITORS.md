@@ -26,6 +26,10 @@ We recommend adding at least the Atom packages:
 [language-shakespeare](https://atom.io/packages/language-shakespeare) and
 [language-haskell](https://atom.io/packages/language-haskell).
 
+Note: the [ide-haskell](https://atom.io/packages/ide-haskell) package and
+related tools seems promising, but we haven't yet gotten it successfully working
+with Stack and Snowdrift.
+
 Other useful Atom packages to consider:
 
 * Various Git-related tools:
