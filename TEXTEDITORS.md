@@ -159,13 +159,16 @@ more on building Snowdrift than maximizing their Vim expertise.
         git ls-tree -r HEAD --name-only | grep -E '*.hs' | xargs fast-tags
 
     For edification, that command is a pipeline that prints all files in
-    the repository, filters just the Haskelly[^1] ones, and passes them to
+    the repository, filters just the Haskelly ones, and passes them to
     fast-tags for processing.
 
     I (Bryan) have created an alias for that command in my ~/.bashrc so I can
     run it easily.
 
         alias git-fast-tags="git ls-tree -r HEAD --name-only | grep -E '*.hs' | xargs fast-tags"
+
+    (Technically, there are other types of Haskelly files, such as \*.hsc
+    and \*.lhs, but we don't have them in Snowdrift.)
 
 * You may want to put that big command into .git/hooks/post-checkout
   so it reruns every time you check out a new branch. Don't forget to make
@@ -194,8 +197,3 @@ more on building Snowdrift than maximizing their Vim expertise.
     * This works for our internal functions only. For outside functions,
       [Stackage](https://www.stackage.org/lts-2/hoogle) will have
       documentation on almost all of our dependencies.
-      [Hayoo](http://hayoo.fh-wedel.de/) will have any missing ones, but
-      may occasionally point to wrong versions.
-
-[^1]: Technically there are other files you may want to search, such as
-\*.hsc.
