@@ -153,9 +153,46 @@ more on building Snowdrift than maximizing their Vim expertise.
 ### Tags to jump to function definitions in Vim
 
 * Run `stack install fast-tags`
-* In the snowdrift directory, run `fast-tags ./*`
-* For auto-update, add `au BufWritePost *.hs silent !fast-tags %` to ~/.vimrc
+* In the snowdrift directory, run this big command to prime your tags
+  file:
+
+        git ls-tree -r HEAD --name-only | grep -E '*.hs' | xargs fast-tags
+
+    For edification, that command is a pipeline that prints all files in
+    the repository, filters just the Haskelly[^1] ones, and passes them to
+    fast-tags for processing.
+
+    I (Bryan) have created an alias for that command in my ~/.bashrc so I can
+    run it easily.
+
+        alias git-fast-tags="git ls-tree -r HEAD --name-only | grep -E '*.hs' | xargs fast-tags"
+
+* You may want to put that big command into .git/hooks/post-checkout
+  so it reruns every time you check out a new branch. Don't forget to make
+  the hook file executable:
+
+        cat >> .git/hooks/post-checkout <<EOF
+        git ls-tree -r HEAD --name-only | grep -E '*.hs' | xargs fast-tags
+        EOF
+        chmod u+x .git/hooks/post-checkout
+
+* For auto-update in Vim, add an autocommand to the Haskell plugin file:
+
+        mkdir -p ~/.vim/after/ftplugin
+        cat >> ~/.vim/after/ftplugin/haskell.vim <<EOF
+        augroup fasttag
+            autocmd!
+            autocmd BufWritePost <buffer> silent !fast-tags %
+        augroup END
+        EOF
+
+    The critical line has "BufWritePost", and says to run fast-tags on
+    the current file whenever it gets written.
+
 * Then, in any Haskell file, use Ctrl-] to jump to the definition of the symbol
   under the cursor, and Ctrl-t to jump back.
     * This works for our internal functions only. For outside functions, search
       [Hayhoo](http://hayoo.fh-wedel.de/).
+
+[^1]: Technically there are other files you may want to search, such as
+\*.hsc.
