@@ -17,11 +17,11 @@ hscope.out
 *.tix
 .hpc/
 TAGS
+tags
 
 # Intellij IDEA:
 .idea
 *.iml
 
 # EclipseFP:
-/.dist-buildwrapper/
-/tags
+.dist-buildwrapper/
