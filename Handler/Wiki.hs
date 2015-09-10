@@ -676,14 +676,15 @@ postEditWikiPermissionsR project_handle language target = do
         FormMissing -> error "Form missing."
         FormFailure msgs -> error $ "Error submitting form: " ++ T.unpack (T.concat msgs)
 
---------------------------------------------------------------------------------
+---------------------------------------------------------------------------
 --  /#language
--- 
--- |This should fix GH-302: <https://github.com/snowdriftcoop/snowdrift/issues/302>
+--
+-- |Redirect the language name itself to the wiki list
+-- This is needed because /w/page redirects to /w/[lang]/page
 getProjectWikiLangR :: Text -> Language -> Handler Html
 getProjectWikiLangR prjName _ = redirect $ WikiPagesR prjName
 
---------------------------------------------------------------------------------
+---------------------------------------------------------------------------
 -- DEPRECATED
 
 getMonolingualWikiR :: Text -> Text -> [Text] -> Handler Html
