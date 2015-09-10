@@ -212,3 +212,6 @@ To auto-update tags in Vim whenever a Haskell file gets written, use fast-tags:
             autocmd BufWritePost <buffer> silent !fast-tags %
         augroup END
         EOF
+
+Note: so that we don't generate extra tags files in internal directories, make
+sure to only open vim from the main snowdrift project directory from now on.
