@@ -11,7 +11,7 @@ cabal-version:     >= 1.18
 build-type:        Simple
 homepage:          https://snowdrift.coop
 
--- flags -- {{{1
+-- flags {{{1
 Flag dev
     Description:   Turn on development settings, like auto-reload templates.
     Default:       False
@@ -24,7 +24,7 @@ Flag library-only
     Description:   Build for use with "yesod devel"
     Default:       False
 
--- library -- {{{1
+-- library {{{1
 library
     default-language:  Haskell98
     if flag(dev) || flag(library-only)
@@ -38,7 +38,7 @@ library
         else
             ghc-options:   -Werror -Wall
 
-    -- exposed-modules -- {{{2
+    -- exposed-modules {{{2
     exposed-modules: Application
                      Data.Filter
                      Data.Order
@@ -139,14 +139,14 @@ library
                      Widgets.ProjectPledges
                      TestHandler
 
-    -- other-modules -- {{{2
+    -- other-modules {{{2
     other-modules: Model.Comment.Internal
                    Model.Established.Internal
                    Model.Role.Internal
                    Model.Settings.Internal
                    Model.ViewType.Internal
 
-    -- default-extensions -- {{{2
+    -- default-extensions {{{2
     default-extensions: ConstraintKinds
                 DeriveDataTypeable
                 DeriveFunctor
@@ -174,7 +174,7 @@ library
 -- Only add version bounds that reflect specific known issues.
 -- Provide a comment above the entry explaining any bounds added.
 
-    -- build-depends -- {{{2
+    -- build-depends {{{2
     build-depends:
                    -- base bounds reflect a core dependency
                    base >= 4 && < 5
@@ -237,7 +237,7 @@ library
                  , yesod-newsfeed
                  , yesod-static
 
--- executable Snowdrift -- {{{1
+-- executable Snowdrift {{{1
 executable Snowdrift
     if flag(dev)
         ghc-options: -Wall -O0 -fobject-code
@@ -255,7 +255,7 @@ executable Snowdrift
 
     ghc-options:       -threaded
 
--- executable SnowdriftProcessPayments -- {{{1
+-- executable SnowdriftProcessPayments {{{1
 executable SnowdriftProcessPayments
     if flag(library-only)
         Buildable: False
@@ -297,7 +297,7 @@ executable SnowdriftProcessPayments
                 DeriveDataTypeable
                 ScopedTypeVariables
 
--- executable SnowdriftEmailDaemon -- {{{1
+-- executable SnowdriftEmailDaemon {{{1
 executable SnowdriftEmailDaemon
     if flag(dev)
        ghc-options: -Wall -O0 -fobject-code
@@ -312,7 +312,7 @@ executable SnowdriftEmailDaemon
     default-language:  Haskell98
     hs-source-dirs: app
     main-is: SnowdriftEmailDaemon.hs
-    -- build-depends -- {{{2
+    -- build-depends {{{2
     build-depends:     base
                      , authenticate
                      , blaze-builder
@@ -359,7 +359,7 @@ executable SnowdriftEmailDaemon
                      , yesod-markdown
                      , yesod-static
 
-    -- default-extensions -- {{{2
+    -- default-extensions {{{2
     default-extensions: BangPatterns
                 ConstraintKinds
                 DeriveDataTypeable
@@ -382,7 +382,7 @@ executable SnowdriftEmailDaemon
                 TypeFamilies
                 ViewPatterns
 
--- executable sdm -- {{{1
+-- executable sdm {{{1
 executable sdm
     if flag(dev)
        ghc-options: -Wall -O0 -fobject-code
@@ -403,7 +403,7 @@ executable sdm
                      , process
                      , semigroups
 
--- executable SnowdriftSendmail -- {{{1
+-- executable SnowdriftSendmail {{{1
 executable SnowdriftSendmail
     if flag(dev)
        ghc-options: -Wall -O0 -fobject-code
@@ -418,7 +418,7 @@ executable SnowdriftSendmail
                      , bytestring
                      , mime
 
--- test-suite test -- {{{1
+-- test-suite test {{{1
 test-suite test
     default-language:  Haskell98
     type:              exitcode-stdio-1.0
@@ -439,7 +439,7 @@ test-suite test
     default-extensions: QuasiQuotes
                 TemplateHaskell
 
-    -- build-depends -- {{{2
+    -- build-depends {{{2
     build-depends: base
                  , Snowdrift
                  , yesod-markdown
