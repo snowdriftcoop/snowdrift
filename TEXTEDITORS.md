@@ -198,6 +198,26 @@ We hope to document how to auto-update tags whenever saving files in Atom, but
 until we have that clear, you'll need to manually re-run `git-hasktags` (set as
 alias in instructions above) as needed.
 
+### Emacs tag usage
+
+If you use Helm, as recommended above, you can run `M-x
+helm-etags-select` to select from the `TAGS` file.
+
+If you use haskell-interactive-mode, linked above, Emacs will
+automatically regenerate the TAGS file for you (provided you have loaded
+a file with `C-c C-l` beforehand). If you don't want to use
+haskell-interactive-mode for whatever reason, you can generate the tags
+file with
+
+    git ls-tree -r HEAD --name-only | grep -E '*.hs' | xargs hasktags -e --ignore-close-implementation
+
+`M-t` is a good keybinding for `helm-etags-select`, provided you don't
+use `transpose-words`: 
+
+```elisp
+(global-set-key (kbd "M-t") 'helm-etags-select)
+```
+
 ### Vim tag usage and updating
 
 With a tags file in place, Vim can jump to the definition of the symbol under
@@ -219,22 +239,3 @@ To auto-update tags in Vim whenever a Haskell file gets written, use fast-tags:
 
 Note: so that we don't generate extra tags files in internal directories, make
 sure to only open vim from the main snowdrift project directory from now on.
-
-### Emacs tag usage
-
-If you use Helm, as recommended above, you can run `M-x
-helm-etags-select` to select from the `TAGS` file.
-
-If you use haskell-interactive-mode, linked above, Emacs will
-automatically regenerate the TAGS file for you (provided you have loaded
-a file with `C-c C-l` beforehand). If you don't want to use
-haskell-interactive-mode for whatever reason, you can generate the tags
-file with
-
-    git ls-tree -r HEAD --name-only | grep -E '*.hs' | xargs hasktags -e --ignore-close-implementation
-
-I have this setting in my `~/.emacs` somewhere:
-
-```emacs-lisp
-(global-set-key (kbd "M-t") 'helm-etags-select)
-```
