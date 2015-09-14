@@ -13,8 +13,9 @@ extra-deps:
     - yesod-markdown-0.9.4
     # Transitive dep of github
     - failure-0.2.0.3
-    # bugfix update newer than LTS
+    # bugfix updates newer than LTS (not actual dependencies, but dev tools)
     - yesod-bin-1.4.14
+    - fast-tags-1.1.1
     # fsnotify on OS X
     - hfsevents-0.1.5
 resolver: lts-2.22

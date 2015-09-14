@@ -141,6 +141,7 @@ and others which take some learning and/or set up:
 [NERD tree git plugin](https://github.com/Xuyuanp/nerdtree-git-plugin),
 [ag.vim](https://github.com/rking/ag.vim),
 [vim-easyclip](https://github.com/mbbill/undotree),
+[MiniBufExplorer](https://github.com/fholgado/minibufexpl.vim),
 [vim-airline](https://github.com/bling/vim-airline).
 
 *Many* other options exist, although we'd rather contributors generally focus
