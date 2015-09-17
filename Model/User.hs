@@ -333,7 +333,7 @@ fetchUserRolesDB user_id project_id = fmap (map unValue) $
 -- | Get all of a User's Roles, across all Projects.
 fetchAllUserRolesDB :: UserId -> DB [Role]
 fetchAllUserRolesDB user_id = fmap unwrapValues $
-    selectDistinct $
+    select . distinct $
         from $ \pur -> do
         where_ (pur ^. ProjectUserRoleUser ==. val user_id)
         return (pur ^. ProjectUserRoleRole)

@@ -545,7 +545,7 @@ runDaemon app daemon =
         (messageLoggerSource app (appLogger app))
 
 -- A basic database action.
-type DB a = DBConstraint m => SqlPersistT m a
+type DB a = forall m. DBConstraint m => SqlPersistT m a
 
 runDB :: DBConstraint m => DB a -> m a
 runDB action = do
@@ -560,7 +560,7 @@ runYDB :: YDB a -> Handler a
 runYDB = Y.runDB
 
 -- A database action that writes [SnowdriftEvent], to be run after the transaction is complete.
-type SDB a  = DBConstraint m => WriterT [SnowdriftEvent] (SqlPersistT m) a
+type SDB a  = forall m. DBConstraint m => WriterT [SnowdriftEvent] (SqlPersistT m) a
 
 runSDB :: DBConstraint m => SDB a -> m a
 runSDB w = do

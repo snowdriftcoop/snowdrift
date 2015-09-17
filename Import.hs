@@ -15,11 +15,10 @@ import           Settings                      as Import
 import           Settings.Development          as Import
 import           Settings.StaticFiles          as Import
 
-import           Control.Applicative           as Import (pure, (<$>), (<*>))
 import           Control.Arrow                 as Import ((***), (&&&), (+++), first, second, (>>>), (<<<))
 import           Control.Monad                 as Import
 import           Control.Monad.Trans.Reader    (ReaderT)
-import           Data.Foldable                 as Import (Foldable, toList)
+import           Data.Foldable                 as Import (toList)
 import           Data.Function                 as Import (on)
 import           Data.Int                      as Import (Int64)
 import           Data.Map                      as Import (Map)

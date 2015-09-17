@@ -2,7 +2,6 @@
 {-# LANGUAGE RecordWildCards    #-}
 {-# LANGUAGE MultiWayIf    #-}
 
-import           Control.Applicative      ((<$>))
 import           Control.Monad            hiding (forM_)
 import           Control.Monad.Reader     (ReaderT, ask, liftIO, runReaderT)
 import qualified Data.ByteString          as B
@@ -11,7 +10,7 @@ import           Data.ByteString.Internal (c2w, w2c)
 import           Data.Char                (toLower)
 import           Data.Foldable            (forM_)
 import           Data.List.NonEmpty       hiding (init, unwords, words)
-import           Data.Monoid              (mconcat, (<>))
+import           Data.Monoid              ((<>))
 import           Prelude                  hiding (init, length)
 import           System.Console.CmdArgs   hiding (args)
 import           System.Directory
