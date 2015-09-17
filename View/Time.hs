@@ -5,7 +5,6 @@ import Import
 import Data.List
 import qualified Data.Text as T
 import Data.Time
-import System.Locale (defaultTimeLocale)
 
 iso8601 :: UTCTime -> T.Text
 iso8601 t = T.pack $ formatTime defaultTimeLocale "%FT%T%z" t

@@ -6,7 +6,7 @@ import Import
 
 import Yesod.Core.Types
 import Data.Conduit
-import Data.Conduit.List (foldMap)
+import qualified Data.Conduit.List as CL
 import Control.Monad.Trans.Resource
 
 import Data.Text.Encoding
@@ -48,7 +48,7 @@ postUploadImageR = do
         FormMissing  -> error "form missing"
         FormFailure err  -> error $ "error processing form:\n" ++ unlines (map (('\t':) . show) err)
         FormSuccess (name, FileInfo{..}) -> do
-            contents <- liftIO $ runResourceT $ fileSourceRaw $$ foldMap id
+            contents <- liftIO $ runResourceT $ fileSourceRaw $$ CL.foldMap id
             maybe_image_id <- runDB $ insertUnique $ Image now user_id Nothing name Nothing (encodeUtf8 fileContentType) contents
 
             case maybe_image_id of
