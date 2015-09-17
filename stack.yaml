@@ -16,6 +16,10 @@ extra-deps:
     # bugfix updates newer than LTS (not actual dependencies, but dev tools)
     - yesod-bin-1.4.14
     - fast-tags-1.1.1
+    - ghc-mod-5.4.0.0
+    # Transitive deps of ghc-mod
+    - cabal-helper-0.6.0.0
+    - extra-1.4.2
     # fsnotify on OS X
     - hfsevents-0.1.5
 resolver: lts-2.22

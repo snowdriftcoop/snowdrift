@@ -4,6 +4,12 @@ This guide covers our recommended options for fully-FLO text-editors and IDE
 development tools for hacking on Snowdrift (although this pretty well applies to
 any Yesod-based project).
 
+Note: regardless of editor, in order to integrate various tools that you may
+install with via `stack install`, make sure you have ~/.local/bin on your PATH.
+If not sure about already having that, run:
+
+    echo 'export PATH=$HOME/.local/bin:$PATH' >> ~/.bashrc
+
 ## Text editor packages and settings
 
 ### Atom
@@ -26,9 +32,12 @@ We recommend adding at least the Atom packages:
 [language-shakespeare](https://atom.io/packages/language-shakespeare) and
 [language-haskell](https://atom.io/packages/language-haskell).
 
-Note: the [ide-haskell](https://atom.io/packages/ide-haskell) package and
-related tools seems promising, but we haven't yet gotten it successfully working
-with Stack and Snowdrift.
+The [ide-haskell](https://atom.io/packages/ide-haskell) package offers further
+development tools including error-checking, linting, and type information. To
+install it, first install the ghc-mod, hlint, and stylish-haskell dependencies:
+in the snowdrift directory, run `stack install ghc-mod hlint stylish-haskell`.
+Then, install the required Atom packages: `apm install language-haskell
+haskell-ghc-mod ide-haskell autocomplete-haskell`.
 
 Other useful Atom packages to consider:
 
@@ -125,23 +134,25 @@ The plugins listed above mostly do syntax highlighting and do not affect
 commands or basic operations, so they are safe for everyone to use without
 hesitation or learning process.
 
-Other plugins we suggest for consideration include some which take zero or
-near-zero learning to use:
+Other general vim plugins we suggest for consideration include many which are
+inobtrusive and take zero or near-zero learning to use (roughly in order by most
+recommended):
 [vim-sensible](https://github.com/tpope/vim-sensible),
 [vim-repeat](https://github.com/tpope/vim-repeat),
 [vim-supertab](https://github.com/ervandew/supertab),
 [vim-gitgutter](https://github.com/airblade/vim-gitgutter),
 [vim-surround](https://github.com/tpope/vim-surround),
 [vim-commentary](https://github.com/tpope/vim-commentary),
-[ctrl-P](https://github.com/kien/ctrlp.vim);
-and others which take some learning and/or set up:
-[vim-fugitive](https://github.com/tpope/vim-fugitive),
+[ctrl-P](https://github.com/kien/ctrlp.vim),
 [undotree](https://github.com/mbbill/undotree),
+[vim-fugitive](https://github.com/tpope/vim-fugitive),
+[gitv](https://github.com/gregsexton/gitv),
 [NERD tree](https://github.com/scrooloose/nerdtree) &
-[NERD tree git plugin](https://github.com/Xuyuanp/nerdtree-git-plugin),
-[ag.vim](https://github.com/rking/ag.vim),
+[NERD tree git plugin](https://github.com/Xuyuanp/nerdtree-git-plugin);
+and others which take some minor learning and/or set up:
 [vim-easyclip](https://github.com/mbbill/undotree),
 [MiniBufExplorer](https://github.com/fholgado/minibufexpl.vim),
+[ag.vim](https://github.com/rking/ag.vim),
 [vim-airline](https://github.com/bling/vim-airline).
 
 *Many* other options exist, although we'd rather contributors generally focus
@@ -152,8 +163,6 @@ more on building Snowdrift than maximizing their Vim expertise.
 The following works for all text-editors that recognize tags files.
 
 * run `stack install hasktags`
-    * make sure you have ~/.local/bin on your PATH, if not sure, just run
-      `echo 'export PATH=$HOME/.local/bin:$PATH' >> ~/.bashrc`
 * In the snowdrift directory, run this big command to generate your tags file:
 
         git ls-tree -r HEAD --name-only | grep -E '*.hs' | xargs hasktags -x -c --ignore-close-implementation
