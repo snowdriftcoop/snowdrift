@@ -60,18 +60,6 @@ Other useful Atom packages to consider:
 [GNU Emacs](https://www.gnu.org/software/emacs/) is a traditional, robust,
 keyboard-centric text editor with substantial Haskell support.
 
-#### Emacs settings
-
-Our included `.dir-locals.el` file
-[makes Emacs use](https://www.gnu.org/software/emacs/manual/html_node/emacs/Directory-Variables.html)
-the recommended 4-space indentation.
-
-#### Emacs packages and variants
-
-Emacs users should install
-[Haskell Mode](https://github.com/haskell/haskell-mode) and
-[Shakespeare Mode](https://github.com/CodyReichert/shakespeare-mode).
-
 If you are new to Emacs,
 [Emacs Prelude](https://github.com/bbatsov/prelude) is an enhanced
 distribution of Emacs with better default configuration. It includes things like
@@ -84,6 +72,18 @@ includes Vim's modal keybindings by default along with much of Prelude's default
 configuration. Aside from Spacemacs, you can get the Vim keybindings in any
 Emacs distribution using [evil-mode](http://www.emacswiki.org/emacs/Evil).
 
+#### Emacs settings
+
+Our included `.dir-locals.el` file
+[makes Emacs use](https://www.gnu.org/software/emacs/manual/html_node/emacs/Directory-Variables.html)
+the recommended 4-space indentation.
+
+#### Emacs packages and variants
+
+Emacs users should install
+[Haskell Mode](https://github.com/haskell/haskell-mode) and
+[Shakespeare Mode](https://github.com/CodyReichert/shakespeare-mode).
+
 Also of interest:
 
 * [Magit](http://magit.vc/) is a high-quality Emacs git interface.
@@ -91,6 +91,10 @@ Also of interest:
   (same author as Haskell Mode) takes a lot of tedium out of Haskell editing.
 * [HIndent](https://github.com/chrisdone/hindent/) (same author again)
   will pretty-print your Haskell-code along the same lines as SHM.
+
+* [Haskell Interactive Mode](https://github.com/haskell/haskell-mode/wiki/Haskell-Interactive-Mode-Setup)
+  will enable automatic regeneration of the TAGS file. (Our
+  .dir-locals.el file tells haskell-interactive-mode to do that)
 
 ### Leksah
 
@@ -203,6 +207,26 @@ Ctrl-Alt-Up to return (with vim-mode, Ctrl-] and Ctrl-t also work).
 We hope to document how to auto-update tags whenever saving files in Atom, but
 until we have that clear, you'll need to manually re-run `git-hasktags` (set as
 alias in instructions above) as needed.
+
+### Emacs tag usage
+
+If you use Helm, as recommended above, you can run `M-x
+helm-etags-select` to select from the `TAGS` file.
+
+If you use haskell-interactive-mode, linked above, Emacs will
+automatically regenerate the TAGS file for you (provided you have loaded
+a file with `C-c C-l` beforehand). If you don't want to use
+haskell-interactive-mode for whatever reason, you can generate the tags
+file with
+
+    git ls-tree -r HEAD --name-only | grep -E '*.hs' | xargs hasktags -e --ignore-close-implementation
+
+`M-t` is a good keybinding for `helm-etags-select`, provided you don't
+use `transpose-words`: 
+
+```elisp
+(global-set-key (kbd "M-t") 'helm-etags-select)
+```
 
 ### Vim tag usage and updating
 
