@@ -37,7 +37,12 @@ development tools including error-checking, linting, and type information. To
 install it, first install the ghc-mod, hlint, and stylish-haskell dependencies:
 in the snowdrift directory, run `stack install ghc-mod hlint stylish-haskell`.
 Then, install the required Atom packages: `apm install language-haskell
-haskell-ghc-mod ide-haskell autocomplete-haskell`.
+haskell-ghc-mod ide-haskell autocomplete-haskell`. Finally, within Atom, in the
+settings for the haskell-ghc-mod package, enter `~/.local/bin/ghc-mod` for the
+"Ghc Mod Path" and `~/.local/bin/ghc-modi` for the "Ghc Modi Path". *Note*: this
+installation is the easiest for now and will work for any other projects that
+use the same GHC version but will not automatically work if you switch between
+projects that use different GHC versions.
 
 Other useful Atom packages to consider:
 
@@ -222,7 +227,7 @@ file with
     git ls-tree -r HEAD --name-only | grep -E '*.hs' | xargs hasktags -e --ignore-close-implementation
 
 `M-t` is a good keybinding for `helm-etags-select`, provided you don't
-use `transpose-words`: 
+use `transpose-words`:
 
 ```elisp
 (global-set-key (kbd "M-t") 'helm-etags-select)
