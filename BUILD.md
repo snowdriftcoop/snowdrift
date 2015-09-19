@@ -52,6 +52,13 @@ Finally, install the
 [haskell-stack](https://aur.archlinux.org/packages/haskell-stack)
 package from the AUR.
 
+### Void Linux
+GHC 7.8.4 depends on the existence of libtinfo.so.5, which is bundled into
+libncurses.  Symlinking libtinfo to libncurses should fix any errors related
+to libtinfo:
+
+`cd /usr/lib; sudo ln -s libncurses.so.5.9 libtinfo.so.5`
+
 ### NixOS
 
 #### Installing Stack under NixOS
@@ -71,13 +78,6 @@ Create a `shell.nix` file:
 Install Stack to your user profile:
 
     nix-env -i -f shell.nix
-
-### Void Linux
-GHC 7.8.4 depends on the existence of libtinfo.so.5, which is bundled into
-libncurses.  Symlinking libtinfo to libncurses should fix any errors related
-to libtinfo:
-
-`cd /usr/lib; sudo ln -s libncurses.so.5.9 libtinfo.so.5`
 
 #### Building Snowdrift and GHC with NixOS
 
@@ -113,7 +113,8 @@ Afterwards you may need to create the postgres user, like so:
 ### \*BSD
 
 *Any knowledgeable reader: please help us document any important notes about
-installing the Git, PostgreSQL, and Stack dependencies on \*BSD.*
+installing the Git, PostgreSQL, and Stack dependencies on \*BSD.* Notes below
+cover some related steps regarding the database setup.
 
 ### OS X
 
