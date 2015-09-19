@@ -28,21 +28,25 @@ Some settings to consider:
 
 #### Atom packages
 
-We recommend adding at least the Atom packages:
+We recommend adding at least the Atom packages
 [language-shakespeare](https://atom.io/packages/language-shakespeare) and
 [language-haskell](https://atom.io/packages/language-haskell).
 
 The [ide-haskell](https://atom.io/packages/ide-haskell) package offers further
 development tools including error-checking, linting, and type information. To
-install it, first install the ghc-mod, hlint, and stylish-haskell dependencies:
-in the snowdrift directory, run `stack install ghc-mod hlint stylish-haskell`.
-Then, install the required Atom packages: `apm install language-haskell
-haskell-ghc-mod ide-haskell autocomplete-haskell`. Finally, within Atom, in the
-settings for the haskell-ghc-mod package, enter `~/.local/bin/ghc-mod` for the
-"Ghc Mod Path" and `~/.local/bin/ghc-modi` for the "Ghc Modi Path". *Note*: this
-installation is the easiest for now and will work for any other projects that
-use the same GHC version but will not automatically work if you switch between
-projects that use different GHC versions.
+install ide-haskell for Atom:
+
+* In the snowdrift directory, run `stack install ghc-mod hlint stylish-haskell`.
+* Install the required Atom packages:
+  `apm install language-haskell haskell-ghc-mod ide-haskell autocomplete-haskell`
+* Run `which ghc-mod`, copy the path that returns, and then, within Atom,
+  in the settings for the haskell-ghc-mod package, paste that path in the field
+  for the "Ghc Mod Path" and use the same path but with an `i` added on the end
+  for the "Ghc Modi Path".
+
+    *Note*: this installation is the easiest for now and will work for any other
+    projects that use the same GHC version but will *not* automatically work if
+    you switch between projects that use different GHC versions.
 
 Other useful Atom packages to consider:
 
@@ -142,6 +146,14 @@ and the following plugins particularly relevant to snowdrift:
 The plugins listed above mostly do syntax highlighting and do not affect
 commands or basic operations, so they are safe for everyone to use without
 hesitation or learning process.
+
+As an optional tool, Vim can do integrated Haskell error-checking and get type
+information via [ghcmod-vim](https://github.com/eagletmt/ghcmod-vim). When
+following its installation instructions, run (within the snowdrift directory)
+`stack install ghc-mod` *instead* of the instruction to run "cabal install
+ghc-mod" (and make sure ~/.local/bin is on your path). The rest of its docs
+should be fine, and you may want to also try the associated auto-completion tool
+[neco-ghc](https://github.com/eagletmt/neco-ghc).
 
 Other general vim plugins we suggest for consideration include many which are
 inobtrusive and take zero or near-zero learning to use (roughly in order by most
