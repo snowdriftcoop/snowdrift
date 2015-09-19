@@ -227,18 +227,17 @@ we suggest a few different options for moving forward:
 * Explore the code itself by just opening files and see if you can figure out
   what does what and how things fit together.
 
-    * As you go, you may find places that could use fixes to match our
-    [code style](https://snowdrift.coop/p/snowdrift/w/en/coding#code-style-guide).
-
-    * For those new to Haskell: Until you understand more about the Yesod web
-      framework, you probably don't want to touch the nitty-gritty parts of the
-      source code. However, the files in the /templates directory are comparable
+    * For non-Haskell work, the files in the /templates directory are comparable
       to basic HTML, CSS, and JavaScript. Beginners can quickly learn how to
       make changes to those files. Basically, Hamlet=HTML and Cassius=CSS but
       with easier, more concise syntax that uses indentation instead of closing
       tags. Julius files are effectively just containers for JavaScript. For
       more details, see the documentation on
       [Shakespearean Templates](http://www.yesodweb.com/book/shakespearean-templates).
+
+    * For those familiar with Haskell, a simple start could be exploring our
+      files, and updating any code that doesn't match our
+      [code style](https://snowdrift.coop/p/snowdrift/w/en/coding#code-style-guide).
 
 * Read our [coding wiki page](https://snowdrift.coop/p/snowdrift/w/en/coding),
   the related discussion board, and other pages throughout the Snowdrift.coop
@@ -254,8 +253,9 @@ and avoid browser-specific code.
 
 ### Design considerations
 
-We have separate wiki and discussion pages on the site
-for [web-design issues](https://snowdrift.coop/p/snowdrift/w/site-design).
+We have separate wiki and discussion pages on the site for our specific
+[design guide](https://snowdrift.coop/p/snowdrift/w/en/design-guide) and general
+[design-related issues](https://snowdrift.coop/p/snowdrift/w/site-design).
 
 ### Code style
 
