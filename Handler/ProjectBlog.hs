@@ -590,15 +590,15 @@ postBlogPostCommentTagR _ _ = postCommentTagR
 
 postBlogPostCommentApplyTagR, postBlogPostCommentCreateTagR
     :: Text -> Text -> CommentId -> Handler Html
-postBlogPostCommentApplyTagR project_handle _ =
-    applyOrCreate postCommentApplyTag project_handle
-postBlogPostCommentCreateTagR project_handle _ =
-    applyOrCreate postCommentCreateTag project_handle
+postBlogPostCommentApplyTagR project_handle post_name =
+    applyOrCreate postCommentApplyTag project_handle post_name
+postBlogPostCommentCreateTagR project_handle post_name =
+    applyOrCreate postCommentCreateTag project_handle post_name
 
-applyOrCreate :: (CommentId -> Handler ()) -> Text -> CommentId -> Handler Html
-applyOrCreate action project_handle comment_id = do
+applyOrCreate :: (CommentId -> Handler ()) -> Text -> Text -> CommentId -> Handler Html
+applyOrCreate action project_handle post_name comment_id = do
     action comment_id
-    redirect (ProjectCommentR project_handle comment_id)
+    redirect (BlogPostCommentR project_handle post_name comment_id)
 
 --------------------------------------------------------------------------------
 -- /p/#Text/blog/#Text/c/#CommentId/tag/new
