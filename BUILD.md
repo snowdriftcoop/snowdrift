@@ -24,9 +24,9 @@ To install dependencies, run the following commands:
     sudo apt-get install git postgresql postgresql-client libgmp-dev zlib1g-dev libpq-dev
 
 Then follow the
-[Debian Stack install](https://github.com/commercialhaskell/stack/wiki/Downloads#debian)
+[Debian Stack install](https://github.com/commercialhaskell/stack/blob/master/doc/install_and_upgrade.md#debian)
 or
-[Ubuntu Stack install](https://github.com/commercialhaskell/stack/wiki/Downloads#ubuntu)
+[Ubuntu Stack install](https://github.com/commercialhaskell/stack/blob/master/doc/install_and_upgrade.md#ubuntu)
 instructions as appropriate.
 
 ### Arch Linux
@@ -135,7 +135,7 @@ Add the PostgreSQL bin directory to the path
 `C:\Program Files (x86)\PostgreSQL\9.4\bin`
 
 Follow the instructions to
-[install Stack for Windows](https://github.com/commercialhaskell/stack/wiki/Downloads#windows)
+[install Stack for Windows](https://github.com/commercialhaskell/stack/blob/master/doc/install_and_upgrade.md#windows)
 
 *Note:* SnowdriftEmailDaemon won't build on Windows, so the `stack test` will
 fail. Building, running, and working on the site might still work otherwise.
