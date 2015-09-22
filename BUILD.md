@@ -244,4 +244,4 @@ more.
 [git.gnu.io/snowdrift/snowdrift]: https://git.gnu.io/snowdrift/snowdrift
 [GitHub]: https://github.com/snowdriftcoop/snowdrift
 [PostgreSQL]: http://www.postgresql.org/download/
-[Stack]: https://github.com/commercialhaskell/stack#how-to-install
+[Stack]: https://github.com/commercialhaskell/stack#the-haskell-tool-stack
