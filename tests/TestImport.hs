@@ -47,7 +47,6 @@ import Foundation as TestImport
 import Model as TestImport hiding
     (userNotificationContent, projectNotificationContent)
 
-import Control.Applicative ((<$>))
 import Control.Concurrent (threadDelay)
 import Control.Monad (when)
 import Data.Monoid ((<>))

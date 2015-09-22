@@ -5,17 +5,11 @@ packages:
 - '.'
 extra-deps:
     # Absent from LTS
-    - dns-2.0.0
-    - mime-0.4.0.2
     - github-0.13.2
     - libravatar-0.1.0.1
+    - mime-0.4.0.2
     - titlecase-0.1.0.1
-    - yesod-markdown-0.9.4
+    - yesod-markdown-0.10.0
     # Transitive dep of github
     - failure-0.2.0.3
-    # bugfix updates newer than LTS (not actual dependencies, but dev tools)
-    - yesod-bin-1.4.14
-    - fast-tags-1.1.1
-    # fsnotify on OS X
-    - hfsevents-0.1.5
-resolver: lts-2.22
+resolver: lts-3.6

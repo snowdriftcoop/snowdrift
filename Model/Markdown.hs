@@ -126,10 +126,19 @@ renderMarkdownWith transform (Markdown markdown) = do
 
     ls' <- mapM (transform <=< linkTickets) ls
 
-    return $ writePandoc yesodDefaultWriterOptions
-        { writerEmailObfuscation = NoObfuscation
-        } $ parseMarkdown yesodDefaultReaderOptions
-        $ Markdown $ T.unlines ls'
+    let eParsedMarkdown = parseMarkdown yesodDefaultReaderOptions
+          $ Markdown 
+          $ T.unlines ls'
+
+    let parsedMarkdown = case eParsedMarkdown of
+            Left pandocError -> error (show pandocError)
+            Right md -> md
+
+    return $ 
+        writePandoc (yesodDefaultWriterOptions { 
+                        writerEmailObfuscation = NoObfuscation
+                    })
+                    parsedMarkdown
 
 markdownWidget :: Markdown -> Widget
 markdownWidget = markdownWidgetWith return

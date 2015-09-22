@@ -894,7 +894,7 @@ fetchCommentsDescendantsDB comment_ids has_permission =
 -- (possibly not visible) children.
 fetchCommentsWithChildrenInDB :: [CommentId] -> DB [CommentId]
 fetchCommentsWithChildrenInDB comment_ids = fmap (map unValue) $
-    selectDistinct $
+    select . distinct $
     from $ \ca -> do
     where_ (ca ^. CommentAncestorAncestor `in_` valList comment_ids)
     return (ca ^. CommentAncestorAncestor)

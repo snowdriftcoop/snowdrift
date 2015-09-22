@@ -26,7 +26,6 @@ import Model.Shares
 import Model.SnowdriftEvent
 import Model.User
 import Model.Wiki
-import System.Locale (defaultTimeLocale)
 import View.Comment
 import View.Project
 import View.SnowdriftEvent

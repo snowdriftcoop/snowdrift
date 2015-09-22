@@ -30,7 +30,6 @@ import qualified Data.Set             as S
 import qualified Data.Text            as T
 import           Data.Time.Format
 import qualified Data.Traversable     as Traversable
-import           System.Locale
 import           Text.Cassius         (cassiusFile)
 import           Yesod.Auth.HashDB    (setPassword, validateUser)
 
@@ -572,9 +571,9 @@ getUserTicketsR user_id = do
     -- query will return the same ticket n times.
     -- 2. If there are n watched comments in the same thread, each
     -- child ticket in the thread will be returned n times.
-    -- 'selectDistinct' just hides these problems from the user's
+    -- 'select . distinct' just hides these problems from the user's
     -- eyes.
-    watched_tickets <- runDB $ selectDistinct $ from $ \
+    watched_tickets <- runDB $ select . distinct $ from $ \
         (
                             c   -- Comment
             `LeftOuterJoin` ca  -- CommentAncestor - link between comment and subthread root

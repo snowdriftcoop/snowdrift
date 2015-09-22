@@ -206,7 +206,6 @@ library
                  , mime-mail
                  , monad-logger
                  , mtl
-                 , old-locale
                  , pandoc
                  , path-pieces
                  , persistent

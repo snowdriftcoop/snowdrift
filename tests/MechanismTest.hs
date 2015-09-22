@@ -9,7 +9,6 @@ import Model.Currency
     (Milray (..), millMilray, dropRightZeros, pprintThousands)
 import Model.Project (projectComputeShareValue, fetchProjectSharesDB)
 
-import Control.Applicative ((<$>))
 import Database.Esqueleto hiding (delete)
 import qualified Database.Esqueleto as E
 import Data.Int (Int64)

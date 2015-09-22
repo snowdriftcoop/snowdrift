@@ -58,7 +58,6 @@ import           Control.Concurrent.Async     (Async, async, wait)
 import qualified Github.Data                  as GH
 import qualified Github.Issues                as GH
 import           Data.Either                  (isRight)
-import           Data.Foldable                (foldMap)
 import qualified Data.Map                     as M
 import           Data.Monoid                  (Sum(..))
 import qualified Data.Set                     as S
@@ -316,7 +315,7 @@ getProjectTagList project_id = (,) <$> getProjectTags <*> getOtherTags
   where
     getProjectTags :: DB [Entity Tag]
     getProjectTags =
-        selectDistinct $
+        select . distinct $
         from $ \(tag `InnerJoin` rel `InnerJoin` comment `InnerJoin` page) -> do
         on_ $ page ^. WikiPageDiscussion ==. comment ^. CommentDiscussion
         on_ $ comment ^. CommentId ==. rel ^. CommentTagComment
@@ -334,7 +333,7 @@ getProjectTagList project_id = (,) <$> getProjectTags <*> getOtherTags
 
     getOtherTags :: DB [Entity Tag]
     getOtherTags =
-        selectDistinct $
+        select . distinct $
         from $ \(tag `InnerJoin` rel `InnerJoin` comment `InnerJoin` page) -> do
         on_ $ page ^. WikiPageDiscussion ==. comment ^. CommentDiscussion
         on_ $ comment ^. CommentId ==. rel ^. CommentTagComment
