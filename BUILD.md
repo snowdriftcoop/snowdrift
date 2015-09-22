@@ -61,23 +61,20 @@ to libtinfo:
 
 ### NixOS
 
-#### Installing Stack under NixOS
+If not installed yet, get Git as usual under NixOS.
 
-Clone the Stack git repo:
+Then, follow the [NixOS Stack install instructions](https://github.com/commercialhaskell/stack/blob/master/doc/install_and_upgrade.md#nixos).
 
-    git clone https://github.com/commercialhaskell/stack.git
+For postgres, add these lines to `/etc/nixos/configuration.nix`:
 
-Create a `shell.nix` file:
+    services.postgresql.enable = true;
+    services.postgresql.package = pkgs.postgresql94;
 
-    cd stack
-    cabal2nix --shell ./. --no-check > shell.nix
+Then issue `sudo nixos-rebuild switch` to install.
+Afterwards you may need to create the postgres user, like so:
 
-(Note that the tests fail on NixOS, so disable them with
-`--no-check`.)
-
-Install Stack to your user profile:
-
-    nix-env -i -f shell.nix
+    sudo -su root
+    createuser -s -r postgres
 
 #### Building Snowdrift and GHC with NixOS
 
@@ -95,20 +92,6 @@ location of such libraries like this:
 
     stack build --extra-include-dirs ~/.nix-profile/include \
                 --extra-lib-dirs ~/.nix-profile/lib
-
-#### PostgreSQL under NixOS
-
-NixOS users should install postgres by adding these lines to
-`/etc/nixos/configuration.nix`:
-
-    services.postgresql.enable = true;
-    services.postgresql.package = pkgs.postgresql94;
-
-Then issue `sudo nixos-rebuild switch` to install.
-Afterwards you may need to create the postgres user, like so:
-
-    sudo -su root
-    createuser -s -r postgres
 
 ### \*BSD
 
