@@ -213,7 +213,7 @@ The following works for all text-editors that recognize tags files.
 Now, you can quickly jump to tags with whatever mechanism your text editor uses.
 
 Note that tags work for our internal functions only. For outside functions,
-[Stackage](https://www.stackage.org/lts-2/hoogle) will have documentation on
+[Stackage](https://www.stackage.org/lts-3/hoogle) will have documentation on
 almost all of our dependencies.
 
 ### Atom tag usage and updating
