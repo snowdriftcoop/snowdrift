@@ -4,6 +4,10 @@ This guide covers our recommended options for fully-FLO text-editors and IDE
 development tools for hacking on Snowdrift (although this pretty well applies to
 any Yesod-based project).
 
+Note: regardless of editor, to use any tool set up with via `stack install`,
+make sure you have ~/.local/bin on your PATH. If not already set, run
+`echo 'export PATH=$HOME/.local/bin:$PATH' >> ~/.bashrc`.
+
 ## Text editor packages and settings
 
 ### Atom
@@ -22,13 +26,27 @@ Some settings to consider:
 
 #### Atom packages
 
-We recommend adding at least the Atom packages:
+We recommend adding at least the Atom packages
 [language-shakespeare](https://atom.io/packages/language-shakespeare) and
 [language-haskell](https://atom.io/packages/language-haskell).
 
-Note: the [ide-haskell](https://atom.io/packages/ide-haskell) package and
-related tools seems promising, but we haven't yet gotten it successfully working
-with Stack and Snowdrift.
+The [ide-haskell](https://atom.io/packages/ide-haskell) package offers further
+development tools including error-checking, linting, and type information. To
+install ide-haskell for Atom:
+
+* In the snowdrift directory, run `stack install ghc-mod hlint stylish-haskell`.
+* Install the required Atom packages:
+  `apm install language-haskell haskell-ghc-mod ide-haskell
+  autocomplete-haskell`
+* If you always start Atom from the command line and have ~/.local/bin in your
+  path, you're done.
+* To enable starting Atom not from command line, run `which ghc-mod`, copy the
+  path that returns, and then, within Atom, in the settings for the
+  haskell-ghc-mod package, paste that path in the field for the "Ghc Mod Path"
+  and the same path but with an `i` added on the end for the "Ghc Modi Path".
+* *Note*: this installation is the easiest for now and will work for any other
+  projects that use the same GHC version but will *not* work if you switch
+  between projects that use different GHC versions.
 
 Other useful Atom packages to consider:
 
@@ -36,7 +54,7 @@ Other useful Atom packages to consider:
     * [tree-view-git-status](https://atom.io/packages/tree-view-git-status)
     * [git-blame](https://atom.io/packages/git-blame)
     * [show-origin](https://atom.io/packages/show-origin)
-    * searching will show many other git tools worth considering
+    * searching will show other git tools worth considering
 * General nice tools like [minimap](https://atom.io/packages/minimap),
   [cursor-history](https://atom.io/packages/cursor-history),
   [clipboard-history](https://atom.io/packages/clipboard-history),
@@ -51,18 +69,6 @@ Other useful Atom packages to consider:
 [GNU Emacs](https://www.gnu.org/software/emacs/) is a traditional, robust,
 keyboard-centric text editor with substantial Haskell support.
 
-#### Emacs settings
-
-Our included `.dir-locals.el` file
-[makes Emacs use](https://www.gnu.org/software/emacs/manual/html_node/emacs/Directory-Variables.html)
-the recommended 4-space indentation.
-
-#### Emacs packages and variants
-
-Emacs users should install
-[Haskell Mode](https://github.com/haskell/haskell-mode) and
-[Shakespeare Mode](https://github.com/CodyReichert/shakespeare-mode).
-
 If you are new to Emacs,
 [Emacs Prelude](https://github.com/bbatsov/prelude) is an enhanced
 distribution of Emacs with better default configuration. It includes things like
@@ -75,6 +81,18 @@ includes Vim's modal keybindings by default along with much of Prelude's default
 configuration. Aside from Spacemacs, you can get the Vim keybindings in any
 Emacs distribution using [evil-mode](http://www.emacswiki.org/emacs/Evil).
 
+#### Emacs settings
+
+Our included `.dir-locals.el` file
+[makes Emacs use](https://www.gnu.org/software/emacs/manual/html_node/emacs/Directory-Variables.html)
+the recommended 4-space indentation.
+
+#### Emacs packages and variants
+
+Emacs users should install
+[Haskell Mode](https://github.com/haskell/haskell-mode) and
+[Shakespeare Mode](https://github.com/CodyReichert/shakespeare-mode).
+
 Also of interest:
 
 * [Magit](http://magit.vc/) is a high-quality Emacs git interface.
@@ -82,6 +100,10 @@ Also of interest:
   (same author as Haskell Mode) takes a lot of tedium out of Haskell editing.
 * [HIndent](https://github.com/chrisdone/hindent/) (same author again)
   will pretty-print your Haskell-code along the same lines as SHM.
+
+* [Haskell Interactive Mode](https://github.com/haskell/haskell-mode/wiki/Haskell-Interactive-Mode-Setup)
+  will enable automatic regeneration of the TAGS file. (Our
+  .dir-locals.el file tells haskell-interactive-mode to do that)
 
 ### Leksah
 
@@ -125,23 +147,33 @@ The plugins listed above mostly do syntax highlighting and do not affect
 commands or basic operations, so they are safe for everyone to use without
 hesitation or learning process.
 
-Other plugins we suggest for consideration include some which take zero or
-near-zero learning to use:
+As an optional tool, Vim can do integrated Haskell error-checking and get type
+information via [ghcmod-vim](https://github.com/eagletmt/ghcmod-vim). When
+following its installation instructions, run (within the snowdrift directory)
+`stack install ghc-mod` *instead* of the instruction to run "cabal install
+ghc-mod" (and make sure ~/.local/bin is on your path). The rest of its docs
+should be fine, and you may want to also try the associated auto-completion tool
+[neco-ghc](https://github.com/eagletmt/neco-ghc).
+
+Other general vim plugins we suggest for consideration include many which are
+inobtrusive and take zero or near-zero learning to use (roughly in order by most
+strongly recommended):
 [vim-sensible](https://github.com/tpope/vim-sensible),
 [vim-repeat](https://github.com/tpope/vim-repeat),
 [vim-supertab](https://github.com/ervandew/supertab),
 [vim-gitgutter](https://github.com/airblade/vim-gitgutter),
 [vim-surround](https://github.com/tpope/vim-surround),
 [vim-commentary](https://github.com/tpope/vim-commentary),
-[ctrl-P](https://github.com/kien/ctrlp.vim);
-and others which take some learning and/or set up:
-[vim-fugitive](https://github.com/tpope/vim-fugitive),
+[ctrl-P](https://github.com/kien/ctrlp.vim),
 [undotree](https://github.com/mbbill/undotree),
+[vim-fugitive](https://github.com/tpope/vim-fugitive),
+[gitv](https://github.com/gregsexton/gitv),
 [NERD tree](https://github.com/scrooloose/nerdtree) &
-[NERD tree git plugin](https://github.com/Xuyuanp/nerdtree-git-plugin),
-[ag.vim](https://github.com/rking/ag.vim),
+[NERD tree git plugin](https://github.com/Xuyuanp/nerdtree-git-plugin);
+and others which take some minor learning and/or set up:
 [vim-easyclip](https://github.com/mbbill/undotree),
 [MiniBufExplorer](https://github.com/fholgado/minibufexpl.vim),
+[ag.vim](https://github.com/rking/ag.vim),
 [vim-airline](https://github.com/bling/vim-airline).
 
 *Many* other options exist, although we'd rather contributors generally focus
@@ -152,8 +184,6 @@ more on building Snowdrift than maximizing their Vim expertise.
 The following works for all text-editors that recognize tags files.
 
 * run `stack install hasktags`
-    * make sure you have ~/.local/bin on your PATH, if not sure, just run
-      `echo 'export PATH=$HOME/.local/bin:$PATH' >> ~/.bashrc`
 * In the snowdrift directory, run this big command to generate your tags file:
 
         git ls-tree -r HEAD --name-only | grep -E '*.hs' | xargs hasktags -x -c --ignore-close-implementation
@@ -195,6 +225,26 @@ We hope to document how to auto-update tags whenever saving files in Atom, but
 until we have that clear, you'll need to manually re-run `git-hasktags` (set as
 alias in instructions above) as needed.
 
+### Emacs tag usage
+
+If you use Helm, as recommended above, you can run `M-x
+helm-etags-select` to select from the `TAGS` file.
+
+If you use haskell-interactive-mode, linked above, Emacs will
+automatically regenerate the TAGS file for you (provided you have loaded
+a file with `C-c C-l` beforehand). If you don't want to use
+haskell-interactive-mode for whatever reason, you can generate the tags
+file with
+
+    git ls-tree -r HEAD --name-only | grep -E '*.hs' | xargs hasktags -e --ignore-close-implementation
+
+`M-t` is a good keybinding for `helm-etags-select`, provided you don't
+use `transpose-words`:
+
+```elisp
+(global-set-key (kbd "M-t") 'helm-etags-select)
+```
+
 ### Vim tag usage and updating
 
 With a tags file in place, Vim can jump to the definition of the symbol under
@@ -214,5 +264,5 @@ To auto-update tags in Vim whenever a Haskell file gets written, use fast-tags:
         augroup END
         EOF
 
-Note: so that we don't generate extra tags files in internal directories, make
+*Note*: so that we don't generate extra tags files in internal directories, make
 sure to only open vim from the main snowdrift project directory from now on.
