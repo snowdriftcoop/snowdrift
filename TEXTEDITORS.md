@@ -34,10 +34,11 @@ The [ide-haskell](https://atom.io/packages/ide-haskell) package offers further
 development tools including error-checking, linting, and type information. To
 install ide-haskell for Atom:
 
-* In the snowdrift directory, run `stack install ghc-mod hlint stylish-haskell`.
+* Run `stack install ghc-mod hlint stylish-haskell --resolver nightly`
+    * "--resolver nightly" is only needed until we update our lts resolver to
+      one that includes ghc-mod (the latest 3.6 did not, as of this writing).
 * Install the required Atom packages:
-  `apm install language-haskell haskell-ghc-mod ide-haskell
-  autocomplete-haskell`
+  `apm install language-haskell haskell-ghc-mod ide-haskell autocomplete-haskell`
 * If you always start Atom from the command line and have ~/.local/bin in your
   path, you're done.
 * To enable starting Atom not from command line, run `which ghc-mod`, copy the
@@ -148,12 +149,12 @@ commands or basic operations, so they are safe for everyone to use without
 hesitation or learning process.
 
 As an optional tool, Vim can do integrated Haskell error-checking and get type
-information via [ghcmod-vim](https://github.com/eagletmt/ghcmod-vim). When
-following its installation instructions, run (within the snowdrift directory)
-`stack install ghc-mod` *instead* of the instruction to run "cabal install
-ghc-mod" (and make sure ~/.local/bin is on your path). The rest of its docs
-should be fine, and you may want to also try the associated auto-completion tool
-[neco-ghc](https://github.com/eagletmt/neco-ghc).
+information via [ghcmod-vim](https://github.com/eagletmt/ghcmod-vim). Follow
+its install instructions except run `stack install ghc-mod --resolver nightly`
+(note: this "--resolver nightly" bit can be ignored once ghc-mod is in the LTS
+version we use) *instead* of the instruction to run "cabal install ghc-mod" (and
+make sure ~/.local/bin is on your path). You may want to also try the associated
+auto-completion tool [neco-ghc](https://github.com/eagletmt/neco-ghc).
 
 Other general vim plugins we suggest for consideration include many which are
 inobtrusive and take zero or near-zero learning to use (roughly in order by most
