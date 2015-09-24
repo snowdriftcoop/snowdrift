@@ -403,8 +403,8 @@ executable sdm
                      , process
                      , semigroups
 
--- executable SnowdriftSendmail {{{1
-executable SnowdriftSendmail
+-- executable sendmail-mock {{{1
+executable sendmail-mock
     if flag(dev)
        ghc-options: -Wall -O0 -fobject-code
     if flag(merge)
@@ -412,8 +412,9 @@ executable SnowdriftSendmail
     if flag(library-only)
         Buildable: False
 
+    hs-source-dirs: tests
     default-language:  Haskell98
-    main-is:           SnowdriftSendmail.hs
+    main-is:           sendmail-mock.hs
     build-depends:     base
                      , bytestring
                      , mime
