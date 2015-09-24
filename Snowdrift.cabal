@@ -137,7 +137,6 @@ library
                      Widgets.Tag
                      Widgets.Preview
                      Widgets.ProjectPledges
-                     TestHandler
 
     -- other-modules {{{2
     other-modules: Model.Comment.Internal
@@ -436,6 +435,7 @@ test-suite test
                    DiscussionTest
                    WikiTest
                    TimedYesodTest
+                   TestHandler
     default-extensions: QuasiQuotes
                 TemplateHaskell
 
