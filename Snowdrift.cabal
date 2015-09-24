@@ -27,6 +27,7 @@ Flag library-only
 -- library {{{1
 library
     default-language:  Haskell98
+    hs-source-dirs: src
     if flag(dev) || flag(library-only)
         cpp-options:   -DDEVELOPMENT
 
@@ -438,6 +439,7 @@ test-suite test
                    TestHandler
     default-extensions: QuasiQuotes
                 TemplateHaskell
+                OverloadedStrings
 
     -- build-depends {{{2
     build-depends: base
@@ -473,6 +475,10 @@ test-suite test
                  , haskell-src-meta
                  , lifted-base
                  , QuickCheck
+                 , fast-logger
+                 , stm
+                 , wai-logger
+                 , yesod-core
 
 -- }}}1
 
