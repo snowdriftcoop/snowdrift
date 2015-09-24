@@ -52,13 +52,6 @@ Finally, install the
 [haskell-stack](https://aur.archlinux.org/packages/haskell-stack)
 package from the AUR.
 
-### Void Linux
-GHC 7.8.4 depends on the existence of libtinfo.so.5, which is bundled into
-libncurses.  Symlinking libtinfo to libncurses should fix any errors related
-to libtinfo:
-
-`cd /usr/lib; sudo ln -s libncurses.so.5.9 libtinfo.so.5`
-
 ### NixOS
 
 If not installed yet, get Git as usual under NixOS.
