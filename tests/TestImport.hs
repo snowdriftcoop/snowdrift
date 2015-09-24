@@ -423,7 +423,7 @@ withEmailDaemon :: String -> FileName -> (FileName -> Example ()) -> Example ()
 withEmailDaemon str file test_action =
     withExecutable
         "SnowdriftEmailDaemon"
-        [ "--sendmail=stack exec SnowdriftSendmail"
+        [ "--sendmail=stack exec sendmail-mock"
         , "--sendmail-file=" <> T.unpack (unFileName file)
         , "--delay=2"
         , "--db=testing" ]
