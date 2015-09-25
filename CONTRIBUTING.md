@@ -324,9 +324,6 @@ here are some resources:
       uses the CC-BY-NC-SA license, so it is shareable but not fully FLO,
       unfortunately.
 
-    * Tons of Git tools exist including graphical interfaces such as
-      [git-cola](https://git-cola.github.io/).
-
 *   Web browsers today have built-in developer tools which enable testing
     and experimenting with live websites. The [Firebug](https://getfirebug.com)
     plugin offers some additional functions as well.
