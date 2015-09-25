@@ -127,9 +127,11 @@ GOES HERE` and `YOUR EMAIL GOES HERE` with your actual name and email.
 
     git config --global user.name "YOUR NAME GOES HERE"
     git config --global user.email "YOUR EMAIL GOES HERE"
-    git config --global core.editor "nano"
 
-(if you know you prefer a different text editor, use that in place of 'nano')
+Optional: specify a particular text editor for commit messages (replace `nano`
+with the command for whatever editor you prefer):
+
+    git config --global core.editor "nano"
 
 #### Updating your local code to snowdrift master
 
