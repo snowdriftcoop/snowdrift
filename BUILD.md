@@ -215,18 +215,6 @@ With everything initialized, you can now use the following commands:
       directory (although that should soon stop being an issue given planned
       yesod-bin updates).
 
-## Running tests
-
-After making various changes to the code and running locally to verify that
-everything compiles and appears to work as desired, you should then run our
-automated tests before sharing your changes with the main project.
-
-Run the tests with:
-
-    stack build && stack test
-
-If tests fail, try to figure out what is wrong. Ask us for help if needed.
-
 ## Database notes
 
 See [DATABASE-MANAGEMENT.md] for instructions on resetting the database and
