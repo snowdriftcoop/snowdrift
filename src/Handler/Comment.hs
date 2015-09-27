@@ -589,7 +589,7 @@ postRethreadComment user_id comment_id comment = do
             app <- getYesod
             let splitPath  = drop 1 . T.splitOn "/"
                 stripQuery = fst . T.break (== '?')
-                stripRoot  = fromMaybe new_parent_url . T.stripPrefix (appRoot $ settings app)
+                stripRoot  = fromMaybe new_parent_url . T.stripPrefix (appRoot $ appSettings app)
                 url        = splitPath $ stripQuery (stripRoot new_parent_url)
 
             let notfound = error "could not find discussion for that URL"

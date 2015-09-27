@@ -328,5 +328,5 @@ forkEventHandler app@App{..} = void . forkIO . forever $ do
     handleNEvents n = atomically (tryReadTChan appEventChan) >>= \case
         Nothing    -> return ()
         Just event -> do
-            mapM_ (runDaemon app) (appEventHandlers settings <*> [event])
+            mapM_ (runDaemon app) (appEventHandlers appSettings <*> [event])
             handleNEvents (n-1)

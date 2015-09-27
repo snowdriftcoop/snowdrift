@@ -128,7 +128,7 @@ licenseNotice = E.encodeUtf8 $ renderJavascriptUrl (\_ _ -> T.empty) [julius|
 -- Please see the documentation for the Yesod typeclass. There are a number
 -- of settings which can be configured by overriding methods here.
 instance Yesod App where
-    approot = ApprootMaster $ appRoot . settings
+    approot = ApprootMaster $ appRoot . appSettings
 
     -- Store session data on the client in encrypted cookies,
     -- default session idle timeout is 120 minutes
@@ -160,7 +160,7 @@ instance Yesod App where
     -- This is done to provide an optimization for serving static files from
     -- a separate domain. Please see the staticRoot setting in Settings.hs
     urlRenderOverride y (StaticR s) =
-        Just $ uncurry (joinPath y (Settings.staticRoot $ settings y)) $ renderRoute s
+        Just $ uncurry (joinPath y (Settings.staticRoot $ appSettings y)) $ renderRoute s
 
     urlRenderOverride _ ToUR = Just (fromText "/tou")
     urlRenderOverride _ PrivacyR = Just (fromText "/priv")
@@ -234,7 +234,7 @@ getSiteProject = fromMaybe (error "No project has been defined as the owner of t
     (getSiteProjectHandle >>= runYDB . getBy . UniqueProjectHandle)
 
 getSiteProjectHandle :: Handler Text
-getSiteProjectHandle = extraSiteProject . appExtra . settings <$> getYesod
+getSiteProjectHandle = extraSiteProject . appExtra . appSettings <$> getYesod
 
 authBrowserIdFixed :: AuthPlugin App
 authBrowserIdFixed =
@@ -457,7 +457,7 @@ class HasGithubRepo a where
     getGithubRepo :: a (Maybe Text)
 
 instance (MonadBaseControl IO m, MonadIO m, MonadThrow m) => HasGithubRepo (HandlerT App m) where
-    getGithubRepo = extraGithubRepo . appExtra . settings <$> getYesod
+    getGithubRepo = extraGithubRepo . appExtra . appSettings <$> getYesod
 
 -- This instance is required to use forms. You can modify renderMessage to
 -- achieve customized and internationalized form validation messages.
@@ -466,7 +466,7 @@ instance RenderMessage App FormMessage where
 
 -- | Get the 'Extra' value, used to hold data from the settings.yml file.
 getExtra :: Handler Extra
-getExtra = fmap (appExtra . settings) getYesod
+getExtra = fmap (appExtra . appSettings) getYesod
 
 -- expanded session messages
 -- need to use a seperate key to maintain compatability with Yesod.Auth
@@ -542,7 +542,7 @@ type DB a = forall m. DBConstraint m => SqlPersistT m a
 runDB :: DBConstraint m => DB a -> m a
 runDB action = do
     app <- ask
-    Database.Persist.runPool (persistConfig app) action (connPool app)
+    Database.Persist.runPool (persistConfig app) action (appConnPool app)
 
 -- A database action that requires the inner monad to be Handler (for example, to use
 -- get404 or getBy404)

@@ -739,7 +739,7 @@ redirectPolylingualWiki fn project_handle target rest = do
     let url = render $ MonolingualWikiR project_handle "en" (target:rest)
         splitPath  = drop 1 . T.splitOn "/"
         stripQuery = fst . T.break (== '?')
-        stripRoot  = fromMaybe url . T.stripPrefix (appRoot $ settings app)
+        stripRoot  = fromMaybe url . T.stripPrefix (appRoot $ appSettings app)
 
     fn $ parseRoute $ (, []) $ splitPath $ stripQuery $ stripRoot url
 
