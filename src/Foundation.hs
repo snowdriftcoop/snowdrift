@@ -41,7 +41,7 @@ import           Web.Authenticate.BrowserId         (browserIdJs)
 import           Yesod                              hiding (runDB, (==.), count, Value)
 import qualified Yesod                              as Y
 import           Yesod.Auth
-import           Yesod.Auth.BrowserId
+import           Yesod.Auth.BrowserId               (authBrowserId)
 import           Yesod.Auth.HashDB                  (authHashDB, setPassword)
 import           Yesod.Core.Types                   (Logger)
 import           Yesod.Default.Config
@@ -136,7 +136,7 @@ instance Yesod App where
     -- Store session data on the client in encrypted cookies,
     -- default session idle timeout is 120 minutes
     makeSessionBackend _ = fmap Just $ defaultClientSessionBackend
-        (48 * 60)    -- timeout in minutes
+        (48 * 60)    -- timeout in minutes, (48 * 60) = 48 hours = 2 days
         "config/client_session_key.aes"
 
     defaultLayout widget = do
@@ -172,6 +172,9 @@ instance Yesod App where
 
     -- The page to be redirected to when authentication is required.
     authRoute _ = Just $ AuthR LoginR
+
+    -- default to authorized, restricted in the individual handlers
+    isAuthorized _ _ = return Authorized
 
     errorHandler (PermissionDenied s) = do
         maybe_user <- maybeAuth
@@ -217,8 +220,6 @@ instance Yesod App where
     -- What messages should be logged. The following includes all messages when
     -- in development, and warnings and errors in production.
     shouldLog _ _source level = development || level `elem` [LevelInfo, LevelWarn, LevelError]
-
-    isAuthorized _ _ = return Authorized -- restricted in the individual handlers
 
     makeLogger = return . appLogger
 
@@ -350,14 +351,14 @@ instance YesodAuth App where
     loginDest _ = HomeR
     -- Where to send a user after logout
     logoutDest _ = HomeR
-    -- Override the above two destinations when a Referer: header is present
+    -- Override the above destinations when a Referer: header is present
     redirectToReferer _ = True
 
     getAuthId creds = do
         maybe_user_id <- runDB $ getBy $ UniqueUser $ credsIdent creds
         case (credsPlugin creds, maybe_user_id) of
             (_, Just (Entity user_id _)) -> return $ Just user_id
-            ("hashdb",    _) -> error "Used credentials that no longer exist"
+            ("hashdb",    _) -> error "Credentials not recognized"
             ("browserid", _) ->
                 createUser (credsIdent creds) Nothing Nothing emailStuff Nothing Nothing
             _ -> error "Unhandled credentials plugin"
