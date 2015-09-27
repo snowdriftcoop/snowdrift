@@ -53,7 +53,7 @@ import           Yesod.Static
 -- A type for running DB actions outside of a Handler.
 type Daemon a = ReaderT App (LoggingT (ResourceT IO)) a
 
--- | The site argument for your application. This can be a good place to
+-- | The foundation datatype for your application. This can be a good place to
 -- keep settings and values requiring initialization before your application
 -- starts running, such as database connections. Every handler will have
 -- access to the data present here.
@@ -98,6 +98,7 @@ mkMessage "App" "messages" "en"
 -- type Widget = WidgetT App IO ()
 mkYesodData "App" $(parseRoutesFile "config/routes")
 
+-- | A convenient synonym for creating forms.
 type Form x = Html -> MForm (HandlerT App IO) (FormResult x, Widget)
 
 licenseNotice :: LB.ByteString
@@ -128,6 +129,8 @@ licenseNotice = E.encodeUtf8 $ renderJavascriptUrl (\_ _ -> T.empty) [julius|
 -- Please see the documentation for the Yesod typeclass. There are a number
 -- of settings which can be configured by overriding methods here.
 instance Yesod App where
+    -- Controls the base of generated URLs. For more information on modifying,
+    -- see: https://github.com/yesodweb/yesod/wiki/Overriding-approot
     approot = ApprootMaster $ appRoot . appSettings
 
     -- Store session data on the client in encrypted cookies,
