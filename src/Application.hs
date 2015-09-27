@@ -131,15 +131,16 @@ makeFoundation conf = do
     event_chan <- newTChanIO
     let logger = Yesod.Core.Types.Logger loggerSet' getter
         foundation = App
-                       navbar
-                       conf
-                       s
-                       pool
-                       manager
-                       dbconf
-                       logger
-                       event_chan
-                       snowdriftEventHandlers
+                     { appNavbar = navbar
+                     , appSettings = conf
+                     , appStatic = s
+                     , appConnPool = pool
+                     , appHttpManager = manager
+                     , persistConfig = dbconf
+                     , appLogger = logger
+                     , appEventChan = event_chan
+                     , appEventHandlers = snowdriftEventHandlers
+                     }
 
     -- Perform database migration using our application's logging settings.
     case appEnv conf of
