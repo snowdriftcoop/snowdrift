@@ -96,6 +96,7 @@ library
                      SnowdriftEventHandler
                      Handler.BuildFeed
                      Handler.Comment
+                     Handler.Common
                      Handler.Discussion
                      Handler.Home
                      Handler.Donate
@@ -194,6 +195,7 @@ library
                  , directory
                  , esqueleto
                  , fast-logger
+                 , file-embed
                  , github
                  , ghci-runner
                  , hit
