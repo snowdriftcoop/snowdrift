@@ -1,54 +1,55 @@
 module Foundation where
 
-import           Model
-import           Model.Currency
-import           Model.Established.Internal         (Established(..))
-import           Model.Notification.Internal        (UserNotificationType(..), UserNotificationDelivery(..))
-import           Model.SnowdriftEvent.Internal
-import           Model.Language
-import qualified Settings
-import           Settings                           (widgetFile, Extra (..))
-import           Settings.Development               (development)
-import           Settings.StaticFiles
+import Model
+import Model.Currency
+import Model.Established.Internal (Established(..))
+import Model.Language
+import Model.Notification.Internal
+            (UserNotificationType(..), UserNotificationDelivery(..))
+import Model.SnowdriftEvent.Internal
+import Settings (widgetFile, Extra (..))
+import Settings.Development (development)
+import Settings.StaticFiles
 
-import           Blaze.ByteString.Builder.Char.Utf8 (fromText)
-import           Control.Applicative
-import           Control.Concurrent.STM
-import           Control.Exception.Lifted           (throwIO, handle)
-import           Control.Monad
-import           Control.Monad.Logger
-import           Control.Monad.Reader
-import           Control.Monad.Trans.Resource
-import           Control.Monad.Writer.Strict        (WriterT, runWriterT)
-import qualified Data.ByteString.Lazy.Char8         as LB
-import           Data.Char                          (isSpace)
-import           Data.Int                           (Int64)
-import           Data.Maybe                         (mapMaybe, fromMaybe)
-import           Data.Monoid
-import           Data.Time
-import           Data.Text                          as T
-import qualified Data.Text.Lazy                     as TL
-import qualified Data.Text.Lazy.Encoding            as E
-import           Data.Text.Titlecase
-import           Database.Esqueleto
+import Blaze.ByteString.Builder.Char.Utf8 (fromText)
+import Control.Applicative
+import Control.Concurrent.STM
+import Control.Exception.Lifted (throwIO, handle)
+import Control.Monad
+import Control.Monad.Logger
+import Control.Monad.Reader
+import Control.Monad.Trans.Resource
+import Control.Monad.Writer.Strict (WriterT, runWriterT)
+import Data.Char (isSpace)
+import Data.Int (Int64)
+import Data.Maybe (mapMaybe, fromMaybe)
+import Data.Monoid
+import Data.Text as T
+import Data.Text.Titlecase
+import Data.Time
+import Database.Esqueleto
+import Network.HTTP.Conduit (Manager)
+import Prelude
+import Text.Blaze.Html.Renderer.Text (renderHtml)
+import Text.Hamlet (hamletFile)
+import Text.Jasmine (minifym)
+import Web.Authenticate.BrowserId (browserIdJs)
+import Yesod hiding (runDB, (==.), count, Value)
+import Yesod.Auth
+import Yesod.Auth.BrowserId (authBrowserId)
+import Yesod.Auth.HashDB (authHashDB, setPassword)
+import Yesod.Core.Types (Logger)
+import Yesod.Default.Config
+import Yesod.Default.Util (addStaticContentExternal)
+import Yesod.Form.Jquery
+import Yesod.Markdown (Markdown (..))
+import Yesod.Static
+import qualified Data.ByteString.Lazy.Char8 as LB
+import qualified Data.Text.Lazy as TL
+import qualified Data.Text.Lazy.Encoding as E
 import qualified Database.Persist
-import           Network.HTTP.Conduit               (Manager)
-import           Prelude
-import           Text.Blaze.Html.Renderer.Text      (renderHtml)
-import           Text.Hamlet                        (hamletFile)
-import           Text.Jasmine                       (minifym)
-import           Web.Authenticate.BrowserId         (browserIdJs)
-import           Yesod                              hiding (runDB, (==.), count, Value)
-import qualified Yesod                              as Y
-import           Yesod.Auth
-import           Yesod.Auth.BrowserId               (authBrowserId)
-import           Yesod.Auth.HashDB                  (authHashDB, setPassword)
-import           Yesod.Core.Types                   (Logger)
-import           Yesod.Default.Config
-import           Yesod.Default.Util                 (addStaticContentExternal)
-import           Yesod.Form.Jquery
-import           Yesod.Markdown                     (Markdown (..))
-import           Yesod.Static
+import qualified Settings
+import qualified Yesod as Y
 
 -- A type for running DB actions outside of a Handler.
 type Daemon a = ReaderT App (LoggingT (ResourceT IO)) a
