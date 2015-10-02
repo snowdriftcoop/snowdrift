@@ -41,7 +41,7 @@ import           Web.Authenticate.BrowserId         (browserIdJs)
 import           Yesod                              hiding (runDB, (==.), count, Value)
 import qualified Yesod                              as Y
 import           Yesod.Auth
-import           Yesod.Auth.BrowserId
+import           Yesod.Auth.BrowserId               (authBrowserId)
 import           Yesod.Auth.HashDB                  (authHashDB, setPassword)
 import           Yesod.Core.Types                   (Logger)
 import           Yesod.Default.Config
@@ -53,16 +53,16 @@ import           Yesod.Static
 -- A type for running DB actions outside of a Handler.
 type Daemon a = ReaderT App (LoggingT (ResourceT IO)) a
 
--- | The site argument for your application. This can be a good place to
+-- | The foundation datatype for your application. This can be a good place to
 -- keep settings and values requiring initialization before your application
 -- starts running, such as database connections. Every handler will have
 -- access to the data present here.
 data App = App
     { appNavbar        :: WidgetT App IO ()
-    , settings         :: AppConfig DefaultEnv Extra
-    , getStatic        :: Static -- ^ Settings for static file serving.
-    , connPool         :: Database.Persist.PersistConfigPool Settings.PersistConf -- ^ Database connection pool.
-    , httpManager      :: Manager
+    , appSettings      :: AppConfig DefaultEnv Extra
+    , appStatic        :: Static -- ^ Settings for static file serving.
+    , appConnPool      :: Database.Persist.PersistConfigPool Settings.PersistConf -- ^ Database connection pool.
+    , appHttpManager   :: Manager
     , persistConfig    :: Settings.PersistConf
     , appLogger        :: Logger
     , appEventChan     :: TChan SnowdriftEvent
@@ -89,23 +89,16 @@ mkMessage "App" "messages" "en"
 -- explanation of the syntax, please see:
 -- http://www.yesodweb.com/book/routing-and-handlers
 --
--- This function does three things:
+-- Note that this is really half the story; in Application.hs, mkYesodDispatch
+-- generates the rest of the code. Please see the linked documentation for an
+-- explanation for this split.
 --
--- * Creates the route datatype AppRoute. Every valid URL in your
---   application can be represented as a value of this type.
--- * Creates the associated type:
---       type instance Route App = AppRoute
--- * Creates the value resourcesApp which contains information on the
---   resources declared below. This is used in Handler.hs by the call to
---   mkYesodDispatch
---
--- What this function does *not* do is create a YesodSite instance for
--- App. Creating that instance requires all of the handler functions
--- for our application to be in scope. However, the handler functions
--- usually require access to the AppRoute datatype. Therefore, we
--- split these actions into two functions and place them in separate files.
+-- This function also generates the following type synonyms:
+-- type Handler = HandlerT App IO
+-- type Widget = WidgetT App IO ()
 mkYesodData "App" $(parseRoutesFile "config/routes")
 
+-- | A convenient synonym for creating forms.
 type Form x = Html -> MForm (HandlerT App IO) (FormResult x, Widget)
 
 licenseNotice :: LB.ByteString
@@ -136,12 +129,13 @@ licenseNotice = E.encodeUtf8 $ renderJavascriptUrl (\_ _ -> T.empty) [julius|
 -- Please see the documentation for the Yesod typeclass. There are a number
 -- of settings which can be configured by overriding methods here.
 instance Yesod App where
-    approot = ApprootMaster $ appRoot . settings
+    -- Controls the base of generated URLs. For more information on modifying,
+    -- see: https://github.com/yesodweb/yesod/wiki/Overriding-approot
+    approot = ApprootMaster $ appRoot . appSettings
 
-    -- Store session data on the client in encrypted cookies,
-    -- default session idle timeout is 120 minutes
+    -- Store session data on the client in encrypted cookies.
     makeSessionBackend _ = fmap Just $ defaultClientSessionBackend
-        (48 * 60)    -- timeout in minutes
+        (48 * 60)    -- timeout in minutes, (48 * 60) = 48 hours = 2 days
         "config/client_session_key.aes"
 
     defaultLayout widget = do
@@ -168,7 +162,7 @@ instance Yesod App where
     -- This is done to provide an optimization for serving static files from
     -- a separate domain. Please see the staticRoot setting in Settings.hs
     urlRenderOverride y (StaticR s) =
-        Just $ uncurry (joinPath y (Settings.staticRoot $ settings y)) $ renderRoute s
+        Just $ uncurry (joinPath y (Settings.staticRoot $ appSettings y)) $ renderRoute s
 
     urlRenderOverride _ ToUR = Just (fromText "/tou")
     urlRenderOverride _ PrivacyR = Just (fromText "/priv")
@@ -177,6 +171,9 @@ instance Yesod App where
 
     -- The page to be redirected to when authentication is required.
     authRoute _ = Just $ AuthR LoginR
+
+    -- default to authorized, restricted in the individual handlers
+    isAuthorized _ _ = return Authorized
 
     errorHandler (PermissionDenied s) = do
         maybe_user <- maybeAuth
@@ -219,24 +216,20 @@ instance Yesod App where
             let license = either Left (Right . LB.append licenseNotice)
              in addStaticContentExternal (license . minifym) base64md5 Settings.staticDir (StaticR . flip StaticRoute []) extension mime (LB.append licenseNotice content)
 
-    -- Place Javascript at bottom of the body tag so the rest of the page loads first
-    jsLoader _ = BottomOfBody
-
     -- What messages should be logged. The following includes all messages when
     -- in development, and warnings and errors in production.
     shouldLog _ _source level = development || level `elem` [LevelInfo, LevelWarn, LevelError]
-
-    isAuthorized _ _ = return Authorized -- restricted in the individual handlers
 
     makeLogger = return . appLogger
 
 -- How to run database actions.
 instance YesodPersist App where
     type YesodPersistBackend App = SqlBackend
-    runDB = defaultRunDB persistConfig connPool
-
+    runDB action = do
+        master <- getYesod
+        runSqlPool action $ appConnPool master
 instance YesodPersistRunner App where
-    getDBRunner = defaultGetDBRunner connPool
+    getDBRunner = defaultGetDBRunner appConnPool
 
 -- set which project in the site runs the site itself
 getSiteProject :: Handler (Entity Project)
@@ -244,7 +237,7 @@ getSiteProject = fromMaybe (error "No project has been defined as the owner of t
     (getSiteProjectHandle >>= runYDB . getBy . UniqueProjectHandle)
 
 getSiteProjectHandle :: Handler Text
-getSiteProjectHandle = extraSiteProject . appExtra . settings <$> getYesod
+getSiteProjectHandle = extraSiteProject . appExtra . appSettings <$> getYesod
 
 authBrowserIdFixed :: AuthPlugin App
 authBrowserIdFixed =
@@ -357,12 +350,14 @@ instance YesodAuth App where
     loginDest _ = HomeR
     -- Where to send a user after logout
     logoutDest _ = HomeR
+    -- Override the above destinations when a Referer: header is present
+    redirectToReferer _ = True
 
     getAuthId creds = do
         maybe_user_id <- runDB $ getBy $ UniqueUser $ credsIdent creds
         case (credsPlugin creds, maybe_user_id) of
             (_, Just (Entity user_id _)) -> return $ Just user_id
-            ("hashdb",    _) -> error "Used credentials that no longer exist"
+            ("hashdb",    _) -> error "Credentials not recognized"
             ("browserid", _) ->
                 createUser (credsIdent creds) Nothing Nothing emailStuff Nothing Nothing
             _ -> error "Unhandled credentials plugin"
@@ -372,7 +367,7 @@ instance YesodAuth App where
     -- You can add other plugins like BrowserID, email or OAuth here
     authPlugins _ = [ snowdriftAuthBrowserId, snowdriftAuthHashDB ]
 
-    authHttpManager = httpManager
+    authHttpManager = appHttpManager
 
     loginHandler = do
         app <- lift getYesod
@@ -465,7 +460,7 @@ class HasGithubRepo a where
     getGithubRepo :: a (Maybe Text)
 
 instance (MonadBaseControl IO m, MonadIO m, MonadThrow m) => HasGithubRepo (HandlerT App m) where
-    getGithubRepo = extraGithubRepo . appExtra . settings <$> getYesod
+    getGithubRepo = extraGithubRepo . appExtra . appSettings <$> getYesod
 
 -- This instance is required to use forms. You can modify renderMessage to
 -- achieve customized and internationalized form validation messages.
@@ -474,7 +469,7 @@ instance RenderMessage App FormMessage where
 
 -- | Get the 'Extra' value, used to hold data from the settings.yml file.
 getExtra :: Handler Extra
-getExtra = fmap (appExtra . settings) getYesod
+getExtra = fmap (appExtra . appSettings) getYesod
 
 -- expanded session messages
 -- need to use a seperate key to maintain compatability with Yesod.Auth
@@ -550,7 +545,7 @@ type DB a = forall m. DBConstraint m => SqlPersistT m a
 runDB :: DBConstraint m => DB a -> m a
 runDB action = do
     app <- ask
-    Database.Persist.runPool (persistConfig app) action (connPool app)
+    Database.Persist.runPool (persistConfig app) action (appConnPool app)
 
 -- A database action that requires the inner monad to be Handler (for example, to use
 -- get404 or getBy404)

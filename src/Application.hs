@@ -28,7 +28,7 @@ import           Network.Wai.Middleware.RequestLogger ( mkRequestLogger, outputF
 import           Network.Wai.Logger                   (clockDateCacher)
 import qualified Network.Wai.Middleware.RequestLogger as RequestLogger
 import           System.Environment
-import           System.Log.FastLogger                (newStdoutLoggerSet, defaultBufSize, flushLogStr)
+import           System.Log.FastLogger                (newStdoutLoggerSet, defaultBufSize)
 import           Yesod.Core.Types                     (loggerSet, Logger (Logger))
 import           Yesod.Default.Config
 import           Yesod.Default.Main hiding (LogFunc)
@@ -122,31 +122,21 @@ makeFoundation conf = do
     pool <- Database.Persist.createPoolConfig dbconf
 
     loggerSet' <- newStdoutLoggerSet defaultBufSize
-    (getter, updater) <- clockDateCacher
-
-    -- If the Yesod logger (as opposed to the request logger middleware) is
-    -- used less than once a second on average, you may prefer to omit this
-    -- thread and use "(updater >> getter)" in place of "getter" below.  That
-    -- would update the cache every time it is used, instead of every second.
-    let updateLoop = forever $ do
-            threadDelay 1000000
-            updater
-            flushLogStr loggerSet'
-            updateLoop
-    void $ forkIO updateLoop
+    (getter, _) <- clockDateCacher
 
     event_chan <- newTChanIO
     let logger = Yesod.Core.Types.Logger loggerSet' getter
         foundation = App
-                       navbar
-                       conf
-                       s
-                       pool
-                       manager
-                       dbconf
-                       logger
-                       event_chan
-                       snowdriftEventHandlers
+                     { appNavbar = navbar
+                     , appSettings = conf
+                     , appStatic = s
+                     , appConnPool = pool
+                     , appHttpManager = manager
+                     , persistConfig = dbconf
+                     , appLogger = logger
+                     , appEventChan = event_chan
+                     , appEventHandlers = snowdriftEventHandlers
+                     }
 
     -- Database setup
     case appEnv conf of
@@ -211,5 +201,5 @@ forkEventHandler app@App{..} = void . forkIO . forever $ do
     handleNEvents n = atomically (tryReadTChan appEventChan) >>= \case
         Nothing    -> return ()
         Just event -> do
-            mapM_ (runDaemon app) (appEventHandlers settings <*> [event])
+            mapM_ (runDaemon app) (appEventHandlers appSettings <*> [event])
             handleNEvents (n-1)

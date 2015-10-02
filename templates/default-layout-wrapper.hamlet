@@ -83,7 +83,7 @@ $newline never
 
           <div .col-md-4>
             This site's #
-            <a href=#{extraSourceRepo $ appExtra $ settings master}>
+            <a href=#{extraSourceRepo $ appExtra $ appSettings master}>
               source code
             \ is free under the terms of the #
             <a rel="license" title="Affero GPL v3 or later" href="https://www.gnu.org/licenses/agpl">
@@ -93,7 +93,7 @@ $newline never
             <a href=@{JsLicenseR} rel="jslicense">
               freely-licensed
 
-    $maybe analytics <- extraAnalytics $ appExtra $ settings master
+    $maybe analytics <- extraAnalytics $ appExtra $ appSettings master
       <script>
         if(!window.location.href.match(/localhost/)){
           window._gaq = [['_setAccount','#{analytics}'],['_trackPageview'],['_trackPageLoadTime']];
