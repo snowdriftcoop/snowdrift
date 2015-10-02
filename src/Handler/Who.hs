@@ -2,7 +2,6 @@ module Handler.Who where
 
 import Import
 
-
 import Data.List (sortBy)
 
 import Handler.Utils

@@ -14,10 +14,10 @@ module Model.Notification
 
 import Import
 
-import Model.Notification.Internal
-
 import Control.Monad.Writer.Strict (tell)
 import Data.Maybe (fromJust)
+
+import Model.Notification.Internal
 
 updateNotificationArchived
     :: ( MonadIO m, PersistField a, PersistField b

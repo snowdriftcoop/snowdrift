@@ -6,15 +6,17 @@
 module Settings where
 
 import Prelude
-import Text.Shakespeare.Text (st)
-import Language.Haskell.TH.Syntax
-import Database.Persist.Postgresql (PostgresConf)
-import Yesod.Default.Config
-import Yesod.Default.Util
+
+import Data.Default (def)
 import Data.Text (Text)
 import Data.Yaml
+import Database.Persist.Postgresql (PostgresConf)
+import Language.Haskell.TH.Syntax
+import Text.Shakespeare.Text (st)
+import Yesod.Default.Config
+import Yesod.Default.Util
+
 import Settings.Development
-import Data.Default (def)
 
 -- | Which Persistent backend this site is using.
 type PersistConf = PostgresConf

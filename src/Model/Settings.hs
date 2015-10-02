@@ -3,8 +3,9 @@ module Model.Settings where
 
 import Import
 
-import Model.Settings.Internal
 import Data.Typeable
+
+import Model.Settings.Internal
 
 data UserSettings = UserSettings { userSettingsShowTagVotes :: Bool }
     deriving (Typeable)

@@ -8,67 +8,61 @@ module TestImport (module TestImport, marked) where
 
 import Import (pprint)
 import TestImport.Internal
-
 import Prelude hiding (exp)
 
-import Control.Monad (unless)
-import Control.Monad.Logger as TestImport
 import Control.Arrow as TestImport hiding (app, loop)
-
-import Yesod (Yesod, RedirectUrl, Route, RenderRoute, renderRoute)
-import TimedYesodTest as TestImport
-import Database.Esqueleto hiding (get)
-import qualified Database.Esqueleto as Esqueleto
-import Database.Persist as TestImport hiding (get, (==.), delete)
-import Control.Monad.IO.Class as TestImport (liftIO, MonadIO)
-import Control.Monad.Trans.Reader (ReaderT)
-
-import Network.URI (URI (uriPath), parseURI)
-import Network.HTTP.Types (StdMethod (..), renderStdMethod)
-import Network.Wai.Test (SResponse (..))
-import qualified Text.HTML.DOM as HTML
-import qualified Test.HUnit as HUnit
-import qualified Text.XML as XML
-import qualified Network.HTTP.Types as H
-
-import qualified Data.ByteString as B
-import           Data.Int        (Int64)
-
-import qualified Data.List as L
-import Data.List (isInfixOf)
-import qualified Data.Map as M
-import Data.Maybe (fromMaybe)
-import qualified Data.Text as T
-import Data.Text (Text)
-import Data.String
-
-import Data.Text.Encoding (decodeUtf8)
-import Foundation as TestImport
-import Model as TestImport hiding
-    (userNotificationContent, projectNotificationContent)
-
 import Control.Concurrent (threadDelay)
+import Control.Exception.Lifted as Lifted hiding (handle)
+import Control.Monad (unless)
 import Control.Monad (when)
+import Control.Monad.IO.Class as TestImport (liftIO, MonadIO)
+import Control.Monad.Logger as TestImport
+import Control.Monad.Trans.Control
+import Control.Monad.Trans.Reader (ReaderT)
+import Data.Int (Int64)
+import Data.List (isInfixOf)
+import Data.Maybe (fromMaybe)
 import Data.Monoid ((<>))
+import Data.String
+import Data.Text (Text)
+import Data.Text.Encoding (decodeUtf8)
 import Data.Time (getCurrentTime, addUTCTime)
+import Database.Esqueleto hiding (get)
+import Database.Persist as TestImport hiding (get, (==.), delete)
+import Network.HTTP.Types (StdMethod (..), renderStdMethod)
+import Network.URI (URI (uriPath), parseURI)
+import Network.Wai.Test (SResponse (..))
+import System.Process
+            (CreateProcess(..)
+            ,StdStream(CreatePipe)
+            ,createProcess
+            ,proc
+            ,interruptProcessGroupOf
+            ,ProcessHandle)
+import System.IO (hPutStrLn, hGetLine, stderr, Handle)
+import Test.QuickCheck
+import Yesod (Yesod, RedirectUrl, Route, RenderRoute, renderRoute)
+import qualified Data.ByteString as B
+import qualified Data.List as L
+import qualified Data.Map as M
+import qualified Data.Text as T
+import qualified Database.Esqueleto as Esqueleto
+import qualified Network.HTTP.Types as H
+import qualified Test.HUnit as HUnit
+import qualified Text.HTML.DOM as HTML
+import qualified Text.XML as XML
+
+import Foundation as TestImport
+import Model as TestImport
+            hiding (userNotificationContent, projectNotificationContent)
 import Model.Currency (Milray (..))
 import Model.Language
 import Model.Notification
-    ( UserNotificationType(..), UserNotificationDelivery(..)
-    , ProjectNotificationType(..), ProjectNotificationDelivery(..) )
-import System.IO (hPutStrLn, hGetLine, stderr, Handle)
-import System.Process
-    ( CreateProcess(..)
-    , StdStream(CreatePipe)
-    , createProcess
-    , proc
-    , interruptProcessGroupOf
-    , ProcessHandle)
-
-import Control.Monad.Trans.Control
-import Control.Exception.Lifted as Lifted hiding (handle)
-
-import Test.QuickCheck
+            (UserNotificationType(..)
+            ,UserNotificationDelivery(..)
+            ,ProjectNotificationType(..)
+            ,ProjectNotificationDelivery(..))
+import TimedYesodTest as TestImport
 
 onException :: MonadBaseControl IO m => m a -> m b -> m a
 onException = Lifted.onException

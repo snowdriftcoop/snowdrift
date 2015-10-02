@@ -2,36 +2,36 @@ module Handler.User where
 
 import Import
 
-import           Handler.Utils
-import           Handler.Comment as Com
-import           Handler.Discussion
-import           Handler.User.Comment
-import           Model.Currency
-import           Model.Comment.ActionPermissions
-import           Model.Notification.Internal
-    (UserNotificationType (..), ProjectNotificationType (..))
-import           Model.Role
-import           Model.ResetPassword (deleteFromResetPassword)
-import           Model.Transaction
-import           Model.User
-import           Model.Comment.Sql
-import           Widgets.Preview
-import           View.Comment
-import           View.Time
-import           View.User
-import           Widgets.ProjectPledges
+import Data.Default (def)
+import Data.List (head)
+import Data.Maybe (fromJust)
+import Data.Time.Format
+import Text.Cassius (cassiusFile)
+import Yesod.Auth.HashDB (setPassword, validateUser)
+import qualified Data.Map as M
+import qualified Data.Maybe as Maybe
+import qualified Data.Set as S
+import qualified Data.Text as T
+import qualified Data.Traversable as Traversable
 
-import           Data.Default         (def)
-import           Data.List            (head)
-import qualified Data.Map             as M
-import           Data.Maybe           (fromJust)
-import qualified Data.Maybe           as Maybe
-import qualified Data.Set             as S
-import qualified Data.Text            as T
-import           Data.Time.Format
-import qualified Data.Traversable     as Traversable
-import           Text.Cassius         (cassiusFile)
-import           Yesod.Auth.HashDB    (setPassword, validateUser)
+import Handler.Comment as Com
+import Handler.Discussion
+import Handler.User.Comment
+import Handler.Utils
+import Model.Comment.ActionPermissions
+import Model.Comment.Sql
+import Model.Currency
+import Model.Notification.Internal
+            (UserNotificationType (..), ProjectNotificationType (..))
+import Model.ResetPassword (deleteFromResetPassword)
+import Model.Role
+import Model.Transaction
+import Model.User
+import View.Comment
+import View.Time
+import View.User
+import Widgets.Preview
+import Widgets.ProjectPledges
 
 getUsersR :: Handler Html
 getUsersR = do

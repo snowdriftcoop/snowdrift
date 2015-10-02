@@ -2,8 +2,8 @@ module Model.Notification.Internal where
 
 import Prelude
 
-import Database.Persist.TH
 import Data.Text (Text)
+import Database.Persist.TH
 
 data UserNotificationType
     = NotifWelcome

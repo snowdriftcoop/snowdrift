@@ -2,11 +2,10 @@ module Model.Language.TH (makeLanguages) where
 
 import Prelude
 
-import Language.Haskell.TH.Quote
-import Language.Haskell.TH
-
 import Control.Arrow
 import Data.Char
+import Language.Haskell.TH
+import Language.Haskell.TH.Quote
 
 uc1 :: String -> String
 uc1 "" = ""

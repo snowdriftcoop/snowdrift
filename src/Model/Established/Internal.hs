@@ -2,8 +2,8 @@ module Model.Established.Internal where
 
 import Prelude
 
-import Data.Text           (Text)
-import Data.Time.Clock     (UTCTime)
+import Data.Text (Text)
+import Data.Time.Clock (UTCTime)
 import Database.Persist.TH (derivePersistField)
 
 data Established

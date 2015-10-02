@@ -8,11 +8,11 @@ module Model.SnowdriftEvent
 
 import Import
 
-import Model.User
-
+import Yesod.Feed (FeedEntry(..))
 import qualified Data.Map   as M
 import qualified Data.Text  as T
-import           Yesod.Feed (FeedEntry(..))
+
+import Model.User
 
 snowdriftEventNewestToOldest :: SnowdriftEvent -> SnowdriftEvent -> Ordering
 snowdriftEventNewestToOldest x y  =

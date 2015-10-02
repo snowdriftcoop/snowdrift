@@ -1,10 +1,11 @@
 {-# LANGUAGE PackageImports #-}
-import "Snowdrift" Application (getApplicationDev)
+import Control.Concurrent (forkIO, threadDelay)
 import Network.Wai.Handler.Warp
-    (runSettings, defaultSettings, setPort)
+            (runSettings, defaultSettings, setPort)
 import System.Directory (doesFileExist, removeFile)
 import System.Exit (exitSuccess)
-import Control.Concurrent (forkIO, threadDelay)
+
+import "Snowdrift" Application (getApplicationDev)
 
 main :: IO ()
 main = do

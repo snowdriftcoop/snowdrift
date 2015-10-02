@@ -71,26 +71,27 @@ module Model.Comment
 
 import Import
 
-import qualified Model.Comment.Internal as Internal
-import           Model.Comment.Sql
-import           Model.Discussion
-import           Model.Notification
-import           Model.User.Internal
-    ( sendPreferredUserNotificationDB, NotificationSender (..)
-    , NotificationReceiver (..) )
-
-import qualified Control.Monad.State                  as State
-import           Control.Monad.Writer.Strict          (tell)
-import qualified Data.Foldable                        as F
-import           Data.List                            ((\\), nub)
-import qualified Data.Map                             as M
-import           Data.Maybe                           (fromJust)
-import qualified Data.Set                             as S
-import qualified Data.Text                            as T
-import           Data.Tree
-import           Database.Esqueleto.Internal.Language (Insertion)
-import qualified Database.Persist                     as P
+import Control.Monad.Writer.Strict (tell)
+import Data.List ((\\), nub)
+import Data.Maybe (fromJust)
+import Data.Tree
+import Database.Esqueleto.Internal.Language (Insertion)
+import qualified Control.Monad.State as State
+import qualified Data.Foldable as F
+import qualified Data.Map as M
+import qualified Data.Set as S
+import qualified Data.Text as T
+import qualified Database.Persist as P
 import qualified Prelude
+
+import Model.Comment.Sql
+import Model.Discussion
+import Model.Notification
+import Model.User.Internal
+            (sendPreferredUserNotificationDB
+            ,NotificationSender (..)
+            ,NotificationReceiver (..))
+import qualified Model.Comment.Internal as Internal
 
 --------------------------------------------------------------------------------
 -- Types

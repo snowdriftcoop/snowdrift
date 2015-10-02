@@ -2,18 +2,16 @@
 
 module Model.Discussion.TH where
 
-import Language.Haskell.TH
-import Database.Persist.Types
-
 import Prelude
 
 import Control.Monad
 import Control.Monad.State
 import Data.Maybe
 import Data.Monoid
-
-import qualified Data.Text as T
+import Database.Persist.Types
+import Language.Haskell.TH
 import qualified Data.Map as M
+import qualified Data.Text as T
 
 mkDiscussionTypes :: [EntityDef] -> Q [Dec]
 mkDiscussionTypes defs = do

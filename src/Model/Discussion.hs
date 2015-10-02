@@ -10,10 +10,9 @@ module Model.Discussion
 
 import Import
 
+import Control.Monad.Trans.Maybe
 import Data.List (sortBy)
 import Model.Comment.Sql
-import Control.Monad.Trans.Maybe
-
 import qualified Data.Map as M
 import qualified Data.Set as S
 

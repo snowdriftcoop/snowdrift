@@ -1,17 +1,15 @@
 module Model.Currency where
 
+import Prelude
+
 import Control.Lens (over, both)
 import Data.Int (Int64)
 import Data.List (dropWhileEnd, intercalate)
 import Data.Monoid ((<>))
-import qualified Data.Text as T
-
-import Prelude
-
 import Database.Persist
 import Database.Persist.Sql
-
 import Text.Blaze
+import qualified Data.Text as T
 
 {-
  - Milray - 1/100th of 1 cent

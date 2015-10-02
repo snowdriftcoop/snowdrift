@@ -4,6 +4,9 @@ module View.SnowdriftEvent where
 
 import Import
 
+import qualified Data.Map as M
+import qualified Data.Text as T
+
 import Model.Comment
 import Model.Comment.ActionPermissions
 import Model.Comment.Routes
@@ -11,9 +14,6 @@ import Model.Currency
 import Model.User
 import View.Comment
 import View.Time
-
-import qualified Data.Map   as M
-import qualified Data.Text  as T
 
 renderCommentPostedEvent
         :: CommentId

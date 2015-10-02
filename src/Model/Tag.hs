@@ -15,10 +15,10 @@ module Model.Tag
 
 import Import
 
-import           Data.List   (sortBy)
-import qualified Data.Map    as M
-import qualified Data.List   as L
-import           Text.Printf
+import Data.List (sortBy)
+import Text.Printf
+import qualified Data.List as L
+import qualified Data.Map as M
 
 fetchAllTagsDB :: DB [Entity Tag]
 fetchAllTagsDB = select (from return)

@@ -4,15 +4,14 @@ module Model.Issue where
 
 import Import
 
-import           Data.Filter
-import           Data.Order
-import           Widgets.Tag (pickForegroundColor)
-
-import qualified Data.Set           as S
-import qualified Data.Text          as T
-import qualified Github.Issues      as GH
-import           Numeric            (readHex)
-import           Text.Printf
+import Data.Filter
+import Data.Order
+import Numeric (readHex)
+import Text.Printf
+import Widgets.Tag (pickForegroundColor)
+import qualified Data.Set as S
+import qualified Data.Text as T
+import qualified Github.Issues as GH
 
 -- An Issue abstracts a Snowdrift ticket, Github issue, etc.
 class Issue a where

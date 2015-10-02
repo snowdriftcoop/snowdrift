@@ -2,17 +2,15 @@
 
 module Model.TH where
 
-import Language.Haskell.TH
-import Database.Persist.Types
-
 import Prelude
 
 import Control.Monad
-import Data.Monoid
 import Data.Char
-
-import qualified Data.Text as T
+import Data.Monoid
+import Database.Persist.Types
+import Language.Haskell.TH
 import qualified Data.List as L
+import qualified Data.Text as T
 
 mkReferences :: String -> [EntityDef] -> Q [Dec]
 mkReferences name defs = do

@@ -4,11 +4,9 @@ module Handler.BuildFeed where
 
 import Import
 
-import Yesod.Feed
-
-import qualified Data.Text as T
-
 import Text.Blaze.Html5 (br)
+import Yesod.Feed
+import qualified Data.Text as T
 
 getBuildFeedR :: Handler TypedContent
 getBuildFeedR = do

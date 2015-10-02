@@ -1,14 +1,18 @@
 module Model.User.Internal where
 
-import Prelude
 import Import hiding (UserNotificationPref, ProjectNotificationPref)
-import Model.Notification
-    ( UserNotificationType (..), UserNotificationDelivery (..)
-    , sendUserNotificationDB_, sendUserNotificationEmailDB
-    , ProjectNotificationType (..), ProjectNotificationDelivery (..)
-    , sendProjectNotificationDB_, sendProjectNotificationEmailDB )
 
 import qualified Data.Foldable      as F
+
+import Model.Notification
+            (UserNotificationType (..)
+            ,UserNotificationDelivery (..)
+            ,sendUserNotificationDB_
+            ,sendUserNotificationEmailDB
+            ,ProjectNotificationType (..)
+            ,ProjectNotificationDelivery (..)
+            ,sendProjectNotificationDB_
+            ,sendProjectNotificationEmailDB)
 
 data UserUpdate =
     UserUpdate

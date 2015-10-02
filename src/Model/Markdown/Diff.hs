@@ -3,14 +3,11 @@
 module Model.Markdown.Diff where
 
 import Prelude
+
 import Data.Algorithm.Diff
-
-import Yesod.Markdown
-
-import Database.Persist.TH
-
 import Data.Maybe
-
+import Database.Persist.TH
+import Yesod.Markdown
 import qualified Data.Text as T
 
 data DiffInfo = S | B | F deriving (Eq, Ord, Read, Show)

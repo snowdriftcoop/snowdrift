@@ -4,9 +4,7 @@ import Import
 
 import Control.Applicative
 import Data.Attoparsec.Text as A
-
 import Data.Time
-
 import qualified Data.Set as S
 
 -- TODO: allow for building custom SQL queries based on filters

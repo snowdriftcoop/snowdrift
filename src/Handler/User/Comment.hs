@@ -4,16 +4,16 @@ module Handler.User.Comment where
 
 import Import
 
-import           Handler.Comment
-import           Model.Comment
-import           Model.Comment.ActionPermissions
-import           Model.Comment.HandlerInfo
-import           Model.Comment.Mods
-import           Widgets.Preview
+import Data.Default (def)
+import Data.Tree (Forest, Tree)
+import Text.Cassius (cassiusFile)
 
-import           Data.Default                    (def)
-import           Data.Tree                       (Forest, Tree)
-import           Text.Cassius (cassiusFile)
+import Handler.Comment
+import Model.Comment
+import Model.Comment.ActionPermissions
+import Model.Comment.HandlerInfo
+import Model.Comment.Mods
+import Widgets.Preview
 
 --------------------------------------------------------------------------------
 -- Utility functions

@@ -40,23 +40,23 @@ module View.Comment
 
 import Import
 
+import Data.Tree (Forest, Tree(..))
+import qualified Data.List as L
+import qualified Data.Map as M
+import qualified Data.Text as T
+import qualified Data.Traversable as Traversable
+import qualified Data.Tree as Tree
+
 import Model.Comment
 import Model.Comment.ActionPermissions
 import Model.Comment.Routes
+import Model.Markdown
 import Model.Tag
 import Model.User
-import Model.Markdown
-import View.User
 import View.Time
+import View.User
 import Widgets.Markdown
 import Widgets.Tag
-
-import qualified Data.List        as L
-import qualified Data.Map         as M
-import qualified Data.Text        as T
-import qualified Data.Traversable as Traversable
-import           Data.Tree        (Forest, Tree(..))
-import qualified Data.Tree        as Tree
 
 disabledCommentForm :: Form Markdown
 disabledCommentForm = renderBootstrap3 BootstrapBasicForm $ areq snowdriftMarkdownField ("Reply" { fsAttrs = [("disabled",""), ("class","form-control")] }) Nothing

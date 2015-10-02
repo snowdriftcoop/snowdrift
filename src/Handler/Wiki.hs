@@ -4,10 +4,21 @@ module Handler.Wiki where
 
 import Import
 
+import Data.Algorithm.Diff (getDiff, Diff (..))
+import Data.Default (def)
+import Text.Blaze.Html5 (ins, del, br)
+import Text.Cassius (cassiusFile)
+import Yesod.Default.Config (appRoot)
+import qualified Data.List as L
+import qualified Data.Map as M
+import qualified Data.Set as S
+import qualified Data.Text as T
+
 import Handler.Comment as Com
 import Handler.Discussion
 import Handler.Utils
-import Handler.Wiki.Comment (makeWikiPageCommentForestWidget, wikiDiscussionPage)
+import Handler.Wiki.Comment
+            (makeWikiPageCommentForestWidget, wikiDiscussionPage)
 import Model.Comment
 import Model.Comment.ActionPermissions
 import Model.Comment.Sql
@@ -16,21 +27,10 @@ import Model.Notification
 import Model.Permission
 import Model.User
 import Model.Wiki
-import Widgets.Preview
 import View.Comment
 import View.Time
 import View.Wiki
-
-import           Data.Algorithm.Diff  (getDiff, Diff (..))
-import           Data.Default         (def)
-import qualified Data.List            as L
-import qualified Data.Map             as M
-import qualified Data.Set             as S
-import qualified Data.Text            as T
-import           Text.Blaze.Html5     (ins, del, br)
-import           Text.Cassius         (cassiusFile)
-
-import           Yesod.Default.Config            (appRoot)
+import Widgets.Preview
 
 --------------------------------------------------------------------------------
 -- Utility functions

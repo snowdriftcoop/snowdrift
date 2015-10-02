@@ -4,6 +4,21 @@ module Handler.Project where
 
 import Import
 
+import Data.Default (def)
+import Data.List (sortBy)
+import Data.Maybe (maybeToList)
+import Data.Tree (Forest, Tree)
+import System.Random (randomIO)
+import Text.Cassius (cassiusFile)
+import Text.Printf
+import Yesod.AtomFeed
+import Yesod.RssFeed
+import qualified Data.Foldable as F
+import qualified Data.Map as M
+import qualified Data.Set as S
+import qualified Data.Text as T
+import qualified Data.Tree as Tree
+
 import Data.Filter
 import Data.Order
 import Data.Time.Format
@@ -31,23 +46,6 @@ import View.Project
 import View.SnowdriftEvent
 import View.Time
 import Widgets.Preview
-
-
-import           Data.Default   (def)
-import qualified Data.Foldable  as F
-import           Data.List      (sortBy)
-import qualified Data.Map       as M
-import           Data.Maybe     (maybeToList)
-import qualified Data.Set       as S
-import qualified Data.Text      as T
-import           Data.Tree      (Forest, Tree)
-import qualified Data.Tree      as Tree
-import           System.Random  (randomIO)
-import           Text.Cassius   (cassiusFile)
-import           Text.Printf
-import           Yesod.AtomFeed
-import           Yesod.RssFeed
-
 
 --------------------------------------------------------------------------------
 -- Utility functions

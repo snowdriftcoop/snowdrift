@@ -3,11 +3,12 @@
 
 module Model.Project.Signup where
 
-import Prelude             (Int, Show, Eq, Read)
-import Data.Hourglass      (Month (..))
-import Data.Text           (Text)
+import Prelude (Int, Show, Eq, Read)
+
+import Data.Hourglass (Month (..))
+import Data.Text (Text)
 import Database.Persist.TH
-import Yesod.Markdown      (Markdown)
+import Yesod.Markdown (Markdown)
 
 newtype ProjectSignupName = ProjectSignupName Text
     deriving (Show, Read)

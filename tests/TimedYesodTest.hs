@@ -5,12 +5,12 @@ module TimedYesodTest
 
 
 import Prelude
-import Yesod.Test hiding (yit)
-import qualified Yesod.Test as Y
 
 import Control.Monad.IO.Class (liftIO, MonadIO)
 import Data.Time
 import Text.Printf
+import Yesod.Test hiding (yit)
+import qualified Yesod.Test as Y
 
 -- | Prepend timing information to Yesod.Test's 'yit'
 yit :: String -> YesodExample site () -> YesodSpec site

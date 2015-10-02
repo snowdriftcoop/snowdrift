@@ -5,20 +5,21 @@ module MechanismTest (mechanismSpecs) where
 
 import Prelude
 import TestImport hiding (get)
-import Model.Currency
-    (Milray (..), millMilray, dropRightZeros, pprintThousands)
-import Model.Project (projectComputeShareValue, fetchProjectSharesDB)
 
-import Database.Esqueleto hiding (delete)
-import qualified Database.Esqueleto as E
 import Data.Int (Int64)
 import Data.List (delete)
 import Data.Monoid ((<>))
 import Data.Text (Text)
-import qualified Data.Text as Text
 import Data.Time (getCurrentTime)
+import Database.Esqueleto hiding (delete)
 import Test.QuickCheck
 import Text.Printf (formatRealFloat, FieldFormat(..))
+import qualified Data.Text as Text
+import qualified Database.Esqueleto as E
+
+import Model.Currency
+            (Milray (..), millMilray, dropRightZeros, pprintThousands)
+import Model.Project (projectComputeShareValue, fetchProjectSharesDB)
 
 mechanismSpecs :: Spec
 mechanismSpecs = ydescribe "mechanism" $ do

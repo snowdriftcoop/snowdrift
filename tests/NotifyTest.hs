@@ -5,28 +5,29 @@
 
 module NotifyTest (notifySpecs) where
 
-import           Prelude
-import           Import                               (Established(..), Role (..), pprint, selectExists, key)
-import           TestImport                           hiding ((=.), update, Update)
-import           Model.Currency                       (Milray (..), millMilray)
-import           Model.Language
-import           Model.Notification
+import Prelude
+import Import (Established(..), Role (..), pprint, selectExists, key)
+import TestImport hiding ((=.), update, Update)
 
-import           Control.Monad                        (unless)
-import           Control.Monad.Reader                 (ReaderT)
-import           Control.Monad.Trans.Resource         (ResourceT)
-import           Database.Esqueleto                   hiding (exists)
-import           Database.Esqueleto.Internal.Language (Update, From)
-import           Data.Foldable                        (forM_)
-import           Data.Int                             (Int64)
-import qualified Data.List                            as L
-import           Data.Monoid                          ((<>))
-import           Data.Time                            (getCurrentTime)
-import           Data.Text                            (Text)
-import qualified Data.Text                            as T
-import qualified Data.Text.IO                         as T
-import           Yesod.Default.Config                 (AppConfig (..), DefaultEnv (..))
-import           Yesod.Markdown                       (unMarkdown, Markdown (..))
+import Control.Monad (unless)
+import Control.Monad.Reader (ReaderT)
+import Control.Monad.Trans.Resource (ResourceT)
+import Data.Foldable (forM_)
+import Data.Int (Int64)
+import Data.Monoid ((<>))
+import Data.Text (Text)
+import Data.Time (getCurrentTime)
+import Database.Esqueleto hiding (exists)
+import Database.Esqueleto.Internal.Language (Update, From)
+import Yesod.Default.Config (AppConfig (..), DefaultEnv (..))
+import Yesod.Markdown (unMarkdown, Markdown (..))
+import qualified Data.List as L
+import qualified Data.Text as T
+import qualified Data.Text.IO as T
+
+import Model.Currency (Milray (..), millMilray)
+import Model.Language
+import Model.Notification
 
 updateUser :: UserId -> [SqlExpr (Update User)] -> SqlPersistM ()
 updateUser user_id xs =

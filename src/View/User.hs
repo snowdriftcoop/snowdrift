@@ -14,20 +14,21 @@ module View.User
 
 import Import hiding (UserNotificationPref, ProjectNotificationPref)
 
-import           Model.Currency
-import           Model.Markdown
-import           Model.Notification     (UserNotificationDelivery (..), ProjectNotificationDelivery (..))
-import           Model.Role
-import           Model.User
-import           Model.User.Internal
-import           Widgets.Markdown       (snowdriftMarkdownField)
-import           Widgets.ProjectPledges
+import Data.String (fromString)
+import Network.Libravatar (avatarUrl)
+import qualified Data.Map as M
+import qualified Data.Set as S
+import qualified Data.Text as T
 
-import qualified Data.Map               as M
-import qualified Data.Set               as S
-import           Data.String            (fromString)
-import qualified Data.Text              as T
-import           Network.Libravatar     (avatarUrl)
+import Model.Currency
+import Model.Markdown
+import Model.Notification
+            (UserNotificationDelivery (..), ProjectNotificationDelivery (..))
+import Model.Role
+import Model.User
+import Model.User.Internal
+import Widgets.Markdown (snowdriftMarkdownField)
+import Widgets.ProjectPledges
 
 createUserForm :: Maybe Text -> Form (Text, Text, Maybe Text, Maybe Text, Maybe Text, Maybe Text)
 createUserForm ident extra = do

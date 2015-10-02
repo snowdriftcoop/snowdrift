@@ -1,9 +1,10 @@
 module Handler.SnowdriftEvent where
 
 import Import
-import Handler.Comment (getCommentDirectLinkR)
 
 import Control.Applicative
+
+import Handler.Comment (getCommentDirectLinkR)
 
 redirectCommentEvent :: (a -> YDB b) -> (b -> CommentId) -> a -> HandlerT App IO ()
 redirectCommentEvent get_object get_comment_from_object =

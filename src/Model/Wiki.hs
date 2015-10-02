@@ -8,12 +8,12 @@ module Model.Wiki
 
 import Import
 
+import Control.Monad.Writer.Strict (tell)
+
 import Model.Comment.Sql
 import Model.Discussion
 import Model.Permission
-import Model.Project               (getProjectPages)
-
-import Control.Monad.Writer.Strict (tell)
+import Model.Project (getProjectPages)
 
 createWikiPageDB
     :: Language

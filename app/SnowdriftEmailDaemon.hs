@@ -1,32 +1,34 @@
 module Main where
 
 import Import hiding (on)
-import Model.Notification (UserNotificationType, ProjectNotificationType)
-import Model.User         (deleteFromEmailVerification)
 
-import           Control.Concurrent           (threadDelay)
-import qualified Control.Exception.Lifted     as Exception
-import           Control.Monad.Logger         (runLoggingT, LoggingT, defaultLogStr)
-import           Control.Monad.Reader
-import           Control.Monad.Trans.Resource (runResourceT, ResourceT)
-import           Database.Esqueleto
-import qualified Data.ByteString.Lazy         as L
-import qualified Data.ByteString.Char8        as Char8
-import qualified Data.Function                as Function
-import           Data.List                    (intercalate, nubBy)
-import qualified Database.Persist             as Persist
-import           Database.Persist.Postgresql  (PostgresConf)
-import qualified Data.Text                    as Text
-import qualified Data.Text.Encoding           as Text
-import qualified Data.Text.Lazy               as TextLazy
-import           Network.Mail.Mime            (simpleMail', Address (..), sendmailCustom, Mail, renderMail')
-import           System.Console.CmdArgs
-import           System.Directory             (doesFileExist)
-import           System.IO                    (hFlush, stdout, stderr)
-import           System.Environment           (getEnv, getProgName)
-import           System.Log.FastLogger        (toLogStr, fromLogStr)
-import qualified Text.Email.Validate          as Email
-import           Yesod.Default.Config         (withYamlEnvironment, DefaultEnv (..))
+import Control.Concurrent (threadDelay)
+import Control.Monad.Logger (runLoggingT, LoggingT, defaultLogStr)
+import Control.Monad.Reader
+import Control.Monad.Trans.Resource (runResourceT, ResourceT)
+import Data.List (intercalate, nubBy)
+import Database.Esqueleto
+import Database.Persist.Postgresql (PostgresConf)
+import Network.Mail.Mime
+            (simpleMail', Address (..), sendmailCustom, Mail, renderMail')
+import System.Console.CmdArgs
+import System.Directory (doesFileExist)
+import System.Environment (getEnv, getProgName)
+import System.IO (hFlush, stdout, stderr)
+import System.Log.FastLogger (toLogStr, fromLogStr)
+import Yesod.Default.Config (withYamlEnvironment, DefaultEnv (..))
+import qualified Control.Exception.Lifted as Exception
+import qualified Data.ByteString.Char8 as Char8
+import qualified Data.ByteString.Lazy as L
+import qualified Data.Function as Function
+import qualified Data.Text as Text
+import qualified Data.Text.Encoding as Text
+import qualified Data.Text.Lazy as TextLazy
+import qualified Database.Persist as Persist
+import qualified Text.Email.Validate as Email
+
+import Model.Notification (UserNotificationType, ProjectNotificationType)
+import Model.User (deleteFromEmailVerification)
 
 data Arguments = Arguments
     { db_arg            :: Text

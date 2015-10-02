@@ -1,23 +1,30 @@
 module View.Project.Signup where
 
-import Import hiding
-    ( ProjectSignupName, ProjectSignupWebsite, ProjectSignupHandle
-    , ProjectSignupStartDate, ProjectSignupLocation, ProjectSignupApplicantRole
-    , ProjectSignupMission, ProjectSignupGoals, ProjectSignupFundsUse
-    , ProjectSignupAdditionalInfo, ProjectSignupLegalStatus
-    , ProjectSignupLegalStatusComment )
+import Import
+            hiding (ProjectSignupName
+                   ,ProjectSignupWebsite
+                   ,ProjectSignupHandle
+                   ,ProjectSignupStartDate
+                   ,ProjectSignupLocation
+                   ,ProjectSignupApplicantRole
+                   ,ProjectSignupMission
+                   ,ProjectSignupGoals
+                   ,ProjectSignupFundsUse
+                   ,ProjectSignupAdditionalInfo
+                   ,ProjectSignupLegalStatus
+                   ,ProjectSignupLegalStatusComment)
+
+import Control.Applicative (liftA2)
+import Data.Hourglass (timeGetDate, dateYear, Month (..))
+import Data.String (fromString)
+import System.Hourglass (timeCurrent)
+import Text.Blaze.Internal (preEscapedText)
+import qualified Data.Text as Text
 
 import Model.License.Internal
 import Model.Project.Signup
 import Model.Project.Signup.Internal
 import Widgets.Markdown
-
-import           Control.Applicative (liftA2)
-import qualified Data.Text           as Text
-import           Data.String         (fromString)
-import           Data.Hourglass      (timeGetDate, dateYear, Month (..))
-import           System.Hourglass    (timeCurrent)
-import           Text.Blaze.Internal (preEscapedText)
 
 projectSignupForm :: (Route App -> Text) -> [License] -> Form ProjectSignup
 projectSignupForm render ls = renderBootstrap3 BootstrapBasicForm $ ProjectSignup

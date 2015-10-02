@@ -9,7 +9,6 @@ import Import
 
 import Model.ViewType.Internal
 
-
 viewTypeLabel :: ViewType -> Text
 viewTypeLabel ViewApplications = "ViewApplications"
 

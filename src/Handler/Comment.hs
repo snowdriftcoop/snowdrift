@@ -51,28 +51,27 @@ module Handler.Comment
 
 import Import
 
-import qualified Data.Tree.Extra                 as Tree
-import           Handler.Utils
-import           Model.Comment
-import           Model.Comment.ActionPermissions
-import           Model.Comment.HandlerInfo
-import           Model.Comment.Mods
-import           Model.Comment.Routes
-import           Model.Project
-import           Model.User
-import           Model.Tag
-import           View.Comment
-import           Widgets.Tag
+import Control.Monad.Writer (tell)
+import Data.Default (def)
+import Data.Tree (Forest, Tree, rootLabel)
+import Network.HTTP.Types.Status (movedPermanently301)
+import Yesod.Default.Config (appRoot)
+import qualified Data.Map as M
+import qualified Data.Set as S
+import qualified Data.Text as T
+import qualified Data.Tree.Extra as Tree
 
-import           Control.Monad.Writer            (tell)
-
-import           Data.Default                    (def)
-import           Data.Tree                       (Forest, Tree, rootLabel)
-import qualified Data.Map                        as M
-import qualified Data.Set                        as S
-import qualified Data.Text                       as T
-import           Network.HTTP.Types.Status       (movedPermanently301)
-import           Yesod.Default.Config            (appRoot)
+import Handler.Utils
+import Model.Comment
+import Model.Comment.ActionPermissions
+import Model.Comment.HandlerInfo
+import Model.Comment.Mods
+import Model.Comment.Routes
+import Model.Project
+import Model.Tag
+import Model.User
+import View.Comment
+import Widgets.Tag
 
 --------------------------------------------------------------------------------
 -- Utility functions

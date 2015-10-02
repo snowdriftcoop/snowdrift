@@ -6,27 +6,28 @@ module Main where
 
 import Import
 import TestImport
-import Yesod.Default.Config
--- import Yesod.Test
-import Test.Hspec (hspec, describe, it)
-import Application (makeFoundation)
-
-import UserTest
-import NotifyTest
-import DiscussionTest
-import WikiTest
-import BlogTest
-import MechanismTest
-import CommentTest
-
-import TestHandler
-import Model.Markdown
 
 import Control.Exception (bracket)
-import qualified Data.Text as Text
 import System.Directory (removeFile, getTemporaryDirectory)
 import System.IO
 import System.IO.Unsafe
+import Test.Hspec (hspec, describe, it)
+import Yesod.Default.Config
+import qualified Data.Text as Text
+
+
+import Application (makeFoundation)
+import Model.Markdown
+import TestHandler
+
+-- All test modules
+import BlogTest
+import CommentTest
+import DiscussionTest
+import MechanismTest
+import NotifyTest
+import UserTest
+import WikiTest
 
 main :: IO ()
 main = do

@@ -11,19 +11,12 @@ module Handler.About where
 
 import Import
 
-import qualified Data.Text as T
-
-import Text.Printf
-
-import Data.List (tail)
-
-
-
-import Yesod.Form.Jquery
-
 import Data.Attoparsec.Number (Number (..))
-
+import Data.List (tail)
+import Text.Printf
+import Yesod.Form.Jquery
 import qualified Data.Vector as V
+import qualified Data.Text as T
 
 shareValue :: Double -> Int -> Double
 shareValue avg_shares patrons = 0.0001 * logBase 2 (avg_shares * 2) * (fromIntegral patrons -  1)

@@ -7,21 +7,17 @@ module DiscussionTest
     ( discussionSpecs
     ) where
 
-import Prelude
 import TestImport
 import Import (key)
 
-import qualified Data.Map as M
-
+import Control.Monad
 import Network.Wai.Test (SResponse (..))
-import qualified Data.Text as T
+import Yesod (RedirectUrl)
 import qualified Data.ByteString.Char8 as BSC
+import qualified Data.Map as M
+import qualified Data.Text as T
 
 import Model.Language
-
-import Control.Monad
-
-import Yesod (RedirectUrl)
 
 discussionSpecs :: Spec
 discussionSpecs = do

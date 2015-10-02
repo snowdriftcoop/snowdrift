@@ -4,20 +4,20 @@ module Handler.Wiki.Comment where
 
 import Import
 
-import           Handler.Comment as Com
-import           Handler.Project (checkProjectCommentActionPermission)
-import           Model.Comment
-import           Model.Comment.ActionPermissions
-import           Model.Comment.HandlerInfo
-import           Model.Comment.Mods
-import           Model.Comment.Sql
-import           Model.User
-import           Widgets.Preview
+import Data.Default (def)
+import Data.Tree (Forest, Tree)
+import Text.Cassius (cassiusFile)
+import qualified Data.Tree as Tree
 
-import           Data.Default                    (def)
-import           Data.Tree                       (Forest, Tree)
-import qualified Data.Tree                       as Tree
-import           Text.Cassius (cassiusFile)
+import Handler.Comment as Com
+import Handler.Project (checkProjectCommentActionPermission)
+import Model.Comment
+import Model.Comment.ActionPermissions
+import Model.Comment.HandlerInfo
+import Model.Comment.Mods
+import Model.Comment.Sql
+import Model.User
+import Widgets.Preview
 
 --------------------------------------------------------------------------------
 -- Utility functions

@@ -2,13 +2,12 @@ module Widgets.Tag where
 
 import Import
 
-import Data.List (maximumBy)
 import Data.Bits
-
-import Model.Tag
+import Data.List (maximumBy)
 import Text.Printf
 
 import Model.Settings
+import Model.Tag
 
 pickForegroundColor :: Int -> Int
 pickForegroundColor bg = maximumBy (compare `on` \a -> colorDiff a bg) [0x111111, 0xeeeeee]

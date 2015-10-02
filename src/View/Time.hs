@@ -3,8 +3,8 @@ module View.Time where
 import Import
 
 import Data.List
-import qualified Data.Text as T
 import Data.Time
+import qualified Data.Text as T
 
 iso8601 :: UTCTime -> T.Text
 iso8601 t = T.pack $ formatTime defaultTimeLocale "%FT%T%z" t

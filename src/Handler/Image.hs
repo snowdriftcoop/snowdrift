@@ -4,12 +4,11 @@ module Handler.Image where
 
 import Import
 
-import Yesod.Core.Types
-import Data.Conduit
-import qualified Data.Conduit.List as CL
 import Control.Monad.Trans.Resource
-
+import Data.Conduit
 import Data.Text.Encoding
+import Yesod.Core.Types
+import qualified Data.Conduit.List as CL
 
 import View.Time
 

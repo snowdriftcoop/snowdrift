@@ -1,16 +1,5 @@
 module Foundation where
 
-import Model
-import Model.Currency
-import Model.Established.Internal (Established(..))
-import Model.Language
-import Model.Notification.Internal
-            (UserNotificationType(..), UserNotificationDelivery(..))
-import Model.SnowdriftEvent.Internal
-import Settings (widgetFile, Extra (..))
-import Settings.Development (development)
-import Settings.StaticFiles
-
 import Blaze.ByteString.Builder.Char.Utf8 (fromText)
 import Control.Applicative
 import Control.Concurrent.STM
@@ -49,6 +38,17 @@ import qualified Data.Text.Lazy.Encoding as E
 import qualified Database.Persist
 import qualified Settings
 import qualified Yesod as Y
+
+import Model
+import Model.Currency
+import Model.Established.Internal (Established(..))
+import Model.Language
+import Model.Notification.Internal
+            (UserNotificationType(..), UserNotificationDelivery(..))
+import Model.SnowdriftEvent.Internal
+import Settings (widgetFile, Extra (..))
+import Settings.Development (development)
+import Settings.StaticFiles
 
 -- A type for running DB actions outside of a Handler.
 type Daemon a = ReaderT App (LoggingT (ResourceT IO)) a

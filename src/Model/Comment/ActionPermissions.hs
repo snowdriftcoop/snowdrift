@@ -8,12 +8,12 @@ module Model.Comment.ActionPermissions
 
 import Import
 
+import qualified Data.Map as M
+import qualified Data.Set as S
+
 import Model.Comment
 import Model.Comment.Mods
 import Model.User
-
-import qualified Data.Map      as M
-import qualified Data.Set      as S
 
 type MakeActionPermissionsMap = [Entity Comment] -> Handler ActionPermissionsMap
 type ActionPermissionsMap = Map CommentId CommentActionPermissions

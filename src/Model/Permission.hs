@@ -3,9 +3,9 @@ module Model.Permission (PermissionLevel (..), permissionLevelField) where
 
 import Import
 
-import Model.Permission.Internal
-
 import qualified Data.Text as T
+
+import Model.Permission.Internal
 
 permissionLevelField
     :: (RenderMessage (HandlerSite m) FormMessage, m ~ HandlerT site IO)

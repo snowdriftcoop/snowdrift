@@ -7,11 +7,11 @@ module Model.Blog
   ) where
 
 import Import
-import View.Project
 
-import           Control.Monad.Writer.Strict          (tell)
-
+import Control.Monad.Writer.Strict (tell)
 import qualified Data.Text as T
+
+import View.Project
 
 fetchProjectBlogPostDB :: Text -> Text -> YDB (Entity Project, Entity BlogPost)
 fetchProjectBlogPostDB project_handle blog_post_handle = do

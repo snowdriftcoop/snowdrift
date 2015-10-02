@@ -17,22 +17,22 @@ module View.Project
 
 import Import
 
-import           Data.Filter
-import           Data.Order
-import           Model.Currency
-import           Model.Markdown
-import           Model.Project
-import           Model.Shares
-import           Model.User
-import           Model.Role
-import           Model.Comment
-import           View.Time
-import           View.User (userNameWidget)
-import           Widgets.Markdown
-import           Widgets.Preview
+import Data.Time.Clock
+import qualified Data.Text as T
 
-import qualified Data.Text       as T
-import           Data.Time.Clock
+import Data.Filter
+import Data.Order
+import Model.Currency
+import Model.Markdown
+import Model.Project
+import Model.Shares
+import Model.User
+import Model.Role
+import Model.Comment
+import View.Time
+import View.User (userNameWidget)
+import Widgets.Markdown
+import Widgets.Preview
 
 renderProject :: Maybe ProjectId -> Project -> Maybe UserId -> Bool -> [Int64]
               -> Maybe (Entity Pledge) -> WidgetT App IO ()

@@ -2,15 +2,12 @@ module Version (mkVersion) where
 
 import Import
 
+import Data.Char
+import Language.Haskell.TH
+import System.Exit
 import System.IO
 import System.IO.Temp
 import System.Process
-import System.Exit
-
-import Language.Haskell.TH
-
-import Data.Char
-
 
 getVersion :: IO (String, String)
 getVersion = withSystemTempFile "version" $ \filename handle -> do

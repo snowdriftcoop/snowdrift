@@ -1,12 +1,15 @@
--- Aside from sharing license info as a value itself, this is here so that our code will be recognized as FLO by LibreJS http://www.gnu.org/software/librejs
+-- | Aside from sharing license info as a value itself, this is here so that
+-- our code will be recognized as FLO by LibreJS
+-- http://www.gnu.org/software/librejs
 
 module Handler.JsLicense where
 
 import Import
-import Handler.Utils
 
 import Yesod.Form.Jquery
 import qualified Data.Text as T
+
+import Handler.Utils
 
 data Lib =
     Lib { libName :: Text

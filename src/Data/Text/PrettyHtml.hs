@@ -4,16 +4,13 @@ module Data.Text.PrettyHtml (unlinesHtml, prettyHtml, prettyThings) where
 
 import Import
 
+import Control.Applicative
 import Data.Attoparsec.Text
-
-import qualified Text.Blaze.Html5.Attributes as Attr
-import qualified Text.Blaze.Html5 as Html
-
 import Data.List as L
 import Data.String
 import Data.Text as T
-
-import Control.Applicative
+import qualified Text.Blaze.Html5.Attributes as Attr
+import qualified Text.Blaze.Html5 as Html
 
 unlinesHtml :: [Html] -> Html
 unlinesHtml = sequence_ . L.intersperse Html.br

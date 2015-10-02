@@ -2,22 +2,23 @@
 {-# LANGUAGE RecordWildCards    #-}
 {-# LANGUAGE MultiWayIf    #-}
 
-import           Control.Monad            hiding (forM_)
-import           Control.Monad.Reader     (ReaderT, ask, liftIO, runReaderT)
-import qualified Data.ByteString          as B
-import qualified Data.ByteString.Char8    as C
-import           Data.ByteString.Internal (c2w, w2c)
-import           Data.Char                (toLower)
-import           Data.Foldable            (forM_)
-import           Data.List.NonEmpty       hiding (init, unwords, words)
-import           Data.Monoid              ((<>))
-import           Prelude                  hiding (init, length)
-import           System.Console.CmdArgs   hiding (args)
-import           System.Directory
-import           System.Environment
-import           System.IO
-import           System.Process
-import           System.Random.MWC
+import Prelude hiding (init, length)
+
+import Control.Monad hiding (forM_)
+import Control.Monad.Reader (ReaderT, ask, liftIO, runReaderT)
+import Data.ByteString.Internal (c2w, w2c)
+import Data.Char (toLower)
+import Data.Foldable (forM_)
+import Data.List.NonEmpty hiding (init, unwords, words)
+import Data.Monoid ((<>))
+import System.Console.CmdArgs hiding (args)
+import System.Directory
+import System.Environment
+import System.IO
+import System.Process
+import System.Random.MWC
+import qualified Data.ByteString as B
+import qualified Data.ByteString.Char8 as C
 
 -- Command line interface.
 

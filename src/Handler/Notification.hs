@@ -2,15 +2,15 @@ module Handler.Notification where
 
 import Import hiding (delete)
 
-import Handler.Utils
-import           Model.Notification
-import           Model.Project
-import           Model.User
-import           View.Time
-
+import Data.List (sort)
 import qualified Data.Foldable as F
-import           Data.List (sort)
 import qualified Data.Text as T
+
+import Handler.Utils
+import Model.Notification
+import Model.Project
+import Model.User
+import View.Time
 
 -- Merge two notification types together.  This should only be used
 -- for rendering.

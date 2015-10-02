@@ -3,13 +3,10 @@ module Model.Permission.Internal where
 
 import Prelude
 
-import Database.Persist.TH
-
-import Web.PathPieces
-
 import Data.Text as T
-
+import Database.Persist.TH
 import Debug.Trace
+import Web.PathPieces
 
 data PermissionLevel = Public | Normal | Moderated
     deriving (Eq, Show, Read, Ord, Enum, Bounded)

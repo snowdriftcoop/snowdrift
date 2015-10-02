@@ -4,7 +4,6 @@ import Import
 
 import qualified Data.Text as T
 
-
 snowdriftMarkdownField :: (Monad m, HandlerSite m ~ App) => Field m Markdown
 snowdriftMarkdownField = Field
     { fieldParse = parseHelper $ Right . Markdown . T.filter (/= '\r')

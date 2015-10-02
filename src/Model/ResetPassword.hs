@@ -2,8 +2,8 @@ module Model.ResetPassword where
 
 import Import
 
-import qualified Data.Maybe as Maybe
 import Database.Esqueleto.Internal.Language (From)
+import qualified Data.Maybe as Maybe
 
 selectUserIdAndEmailIfVerified :: Text -> DB (Maybe (UserId, Text))
 selectUserIdAndEmailIfVerified handle =

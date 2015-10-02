@@ -4,12 +4,8 @@ import Import
 
 import Control.Applicative
 import Data.Attoparsec.Text as A
-
 import Data.Time
-
 import qualified Data.Set as S
-
--- import Data.Time
 
 data Orderable = Orderable
     { isClaimed :: Text -> Bool

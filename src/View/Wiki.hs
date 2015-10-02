@@ -2,9 +2,9 @@ module View.Wiki where
 
 import Import
 
-import           Model.Permission
-import           Model.Markdown
-import           Widgets.Markdown
+import Model.Markdown
+import Model.Permission
+import Widgets.Markdown
 
 editWikiForm :: WikiEditId -> Markdown -> Maybe Text -> Form (WikiEditId, Markdown, Text)
 editWikiForm last_edit_id content comment = renderBootstrap3 BootstrapBasicForm $ (,,)

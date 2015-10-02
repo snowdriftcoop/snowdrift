@@ -8,39 +8,42 @@ module Application
     ) where
 
 import Import
+
+import Control.Concurrent (forkIO, threadDelay)
+import Control.Concurrent.STM (atomically, newTChanIO, tryReadTChan)
+import Control.Monad.Logger (runLoggingT, runStderrLoggingT)
+import Control.Monad.Reader
+import Control.Monad.Trans.Resource
+import Data.Default (def)
+import Database.Persist.Postgresql (pgConnStr, withPostgresqlConn)
+import Network.HTTP.Client.Conduit (newManager)
+import Network.Wai.Logger (clockDateCacher)
+import Network.Wai.Middleware.RequestLogger
+            (mkRequestLogger
+            ,outputFormat
+            ,OutputFormat (..)
+            ,IPAddrSource (..)
+            ,destination)
+import System.Environment
+import System.Log.FastLogger (newStdoutLoggerSet, defaultBufSize)
+import Yesod.Core.Types (loggerSet, Logger (Logger))
+import Yesod.Default.Config
+import Yesod.Default.Main hiding (LogFunc)
+import qualified Data.List as L
+import qualified Database.Persist
+import qualified Network.Wai.Middleware.RequestLogger as RequestLogger
+
 import SnowdriftEventHandler
 import Version
 import Migrations
+import Widgets.Navbar
 
-import           Control.Concurrent                   (forkIO, threadDelay)
-import           Control.Concurrent.STM               (atomically, newTChanIO, tryReadTChan)
-import           Control.Monad.Logger                 (runLoggingT, runStderrLoggingT)
-import           Control.Monad.Reader
-import           Control.Monad.Trans.Resource
-import           Data.Default                         (def)
-import qualified Data.List                            as L
-import qualified Database.Persist
-import           Database.Persist.Postgresql          (pgConnStr, withPostgresqlConn)
-import           Network.HTTP.Client.Conduit          (newManager)
-import           Network.Wai.Middleware.RequestLogger ( mkRequestLogger, outputFormat, OutputFormat (..)
-                                                      , IPAddrSource (..), destination
-                                                      )
-import           Network.Wai.Logger                   (clockDateCacher)
-import qualified Network.Wai.Middleware.RequestLogger as RequestLogger
-import           System.Environment
-import           System.Log.FastLogger                (newStdoutLoggerSet, defaultBufSize)
-import           Yesod.Core.Types                     (loggerSet, Logger (Logger))
-import           Yesod.Default.Config
-import           Yesod.Default.Main hiding (LogFunc)
-
--- Import all relevant handler modules here.
--- Don't forget to add new modules to your cabal file!
+-- Handlers!
 import Handler.BuildFeed
 import Handler.Comment
 import Handler.Common
-import Handler.Home
 import Handler.Donate
-import Handler.Sponsors
+import Handler.Home
 import Handler.HonorPledge
 import Handler.Image
 import Handler.Invitation
@@ -54,6 +57,7 @@ import Handler.Project.Signup
 import Handler.ProjectBlog
 import Handler.ResetPassword
 import Handler.SnowdriftEvent
+import Handler.Sponsors
 import Handler.ToU
 import Handler.Trademarks
 import Handler.User
@@ -63,8 +67,6 @@ import Handler.Who
 import Handler.Widget
 import Handler.Wiki
 import Handler.Wiki.Comment
-
-import Widgets.Navbar
 
 runSql :: MonadIO m => Text -> ReaderT SqlBackend m ()
 runSql = flip rawExecute [] -- TODO quasiquoter?

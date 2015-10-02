@@ -1,6 +1,7 @@
 module Widgets.Doc where
 
 import Import
+
 import Model.Markdown
 
 renderDoc :: Text -> Widget

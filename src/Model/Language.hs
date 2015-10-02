@@ -4,15 +4,12 @@ module Model.Language where
 
 import Prelude
 
-import Model.Language.TH
-
-import Yesod
-import Database.Persist.Sql
-
 import Data.Data
-
+import Data.Text (Text)
+import Database.Persist.Sql
+import Model.Language.TH
+import Yesod
 import qualified Data.Text as T
-import           Data.Text (Text)
 
 [makeLanguages| de en es fr nl pl pt |]
 

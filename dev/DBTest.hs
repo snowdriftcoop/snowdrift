@@ -5,10 +5,12 @@
 module DBTest (dbdev) where
 
 import Import
+
+import Control.Monad.Trans.Resource (runResourceT, ResourceT)
 import Yesod.Default.Config
 import qualified Database.Persist
+
 import Settings
-import Control.Monad.Trans.Resource (runResourceT, ResourceT)
 
 -- | Query type
 --

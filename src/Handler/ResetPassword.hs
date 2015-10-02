@@ -2,12 +2,12 @@ module Handler.ResetPassword where
 
 import Import hiding (isNothing)
 
-import Handler.Utils
-import           Model.ResetPassword
-import qualified View.ResetPassword  as View
-import           View.ResetPassword  (resetPasswordForm)
+import Data.Maybe (fromJust, isNothing)
 
-import           Data.Maybe          (fromJust, isNothing)
+import Handler.Utils
+import Model.ResetPassword
+import View.ResetPassword (resetPasswordForm)
+import qualified View.ResetPassword as View
 
 getResetPasswordR :: Handler Html
 getResetPasswordR = do

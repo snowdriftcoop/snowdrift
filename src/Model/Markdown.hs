@@ -4,13 +4,13 @@ module Model.Markdown where
 
 import Import
 
-import qualified Data.ByteString.Char8      as BS
-import qualified Data.Text                  as T
-import           Data.Text.Encoding
-import           Text.Regex.TDFA
-import           Text.Regex.TDFA.ByteString
-import           Text.Pandoc
-import           Yesod.Markdown
+import Data.Text.Encoding
+import Text.Pandoc
+import Text.Regex.TDFA
+import Text.Regex.TDFA.ByteString
+import Yesod.Markdown
+import qualified Data.ByteString.Char8 as BS
+import qualified Data.Text as T
 
 
 -- TODO: we should probably put together some standard sets of these transforms

@@ -3,14 +3,14 @@
 module Model.Shares where
 
 import Import
-import Model.Currency
 
-import System.Random (randomIO)
 import Data.String (fromString)
+import System.Random (randomIO)
+import Text.Julius (rawJS)
 import qualified Data.Text as T
 import qualified Data.Text.Read as T
 
-import Text.Julius (rawJS)
+import Model.Currency
 
 pledgeSizes :: [[Int64]]
 pledgeSizes =

@@ -3,9 +3,9 @@ module Widgets.ProjectPledges where
 
 import Import
 
-import Model.User (fetchUserPledgesDB)
-import Model.Project
 import Model.Currency
+import Model.Project
+import Model.User (fetchUserPledgesDB)
 
 -- | A summary without ticket or discussion counts.
 summarizeProject' :: Entity Project -> [Entity Pledge] -> ProjectSummary

@@ -5,13 +5,10 @@ module TestHandler where
 import Import
 
 import Control.Concurrent.STM
-
-import Yesod.Default.Config
 import Network.Wai.Logger
 import System.Log.FastLogger
 import Yesod.Core.Types
-
-
+import Yesod.Default.Config
 
 testHandler :: Handler a -> IO (Either ErrorResponse a)
 testHandler handler = do

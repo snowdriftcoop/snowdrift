@@ -98,21 +98,20 @@ module Model.User
 
 import Import hiding (exists)
 
+import Control.Monad.Trans.Reader (ReaderT)
+import Database.Esqueleto.Internal.Language (From, exists)
+import qualified Data.List as L
+import qualified Data.Map as M
+import qualified Data.Set as S
+import qualified Data.Text as T
 
 import Model.Comment
 import Model.Comment.Sql
 import Model.Notification
 import Model.User.Internal
-    hiding (UserNotificationPref, ProjectNotificationPref)
+            hiding (UserNotificationPref, ProjectNotificationPref)
 import Model.User.Sql
 import Model.Wiki.Sql
-
-import           Database.Esqueleto.Internal.Language (From, exists)
-import qualified Data.List          as L
-import qualified Data.Map           as M
-import qualified Data.Set           as S
-import qualified Data.Text          as T
-import           Control.Monad.Trans.Reader (ReaderT)
 
 -- anonymousUser is a special user for items posted by visitors who are not
 -- logged in, such as posting to /contact for a project

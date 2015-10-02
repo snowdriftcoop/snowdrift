@@ -1,6 +1,7 @@
 module Handler.Sponsors where
 
 import Import
+
 import Handler.Utils
 
 getSponsorsR :: Handler Html

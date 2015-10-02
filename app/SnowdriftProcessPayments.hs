@@ -1,17 +1,17 @@
 import Import hiding (runDB, runSDB)
 
-import           Control.Exception.Lifted (throw, Exception)
-import           Control.Monad.Logger
-import           Control.Monad.Reader
-import           Control.Monad.Trans.Resource
-import           Control.Monad.Writer
+import Control.Exception.Lifted (throw, Exception)
+import Control.Monad.Logger
+import Control.Monad.Reader
+import Control.Monad.Trans.Resource
+import Control.Monad.Writer
+import Data.Typeable
+import Yesod.Default.Config
 import qualified Data.Text as T
-import           Data.Typeable
 import qualified Database.Persist.Sql
-import           Yesod.Default.Config
 
-import Model.Project
 import Model.Currency
+import Model.Project
 import Settings
 
 data NegativeBalances = NegativeBalances ProjectId [UserId]

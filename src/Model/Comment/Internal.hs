@@ -2,12 +2,11 @@ module Model.Comment.Internal where
 
 import Prelude
 
+import Data.Text (Text)
 import Database.Persist.TH
-import Data.Text           (Text)
+import Yesod.Markdown (Markdown)
 
 import Model.Language
-
-import Yesod.Markdown      (Markdown)
 
 -- VisPublic = visible to all | VisPrivate = visible to topic-poster and
 -- those with provenance over the discussion (e.g. project team for project

@@ -2,6 +2,13 @@ module Handler.ProjectBlog where
 
 import Import
 
+import Data.Default
+import Data.Tree (Forest, Tree)
+import Text.Cassius (cassiusFile)
+import Yesod.Feed
+import qualified Data.Text as T
+import qualified Data.Tree as Tree
+
 import Handler.Comment as Com
 import Handler.Discussion
 import Handler.Utils
@@ -15,19 +22,9 @@ import Model.Markdown
 import Model.User
 import View.Comment
 import View.Project
-import View.User
 import View.Time
-
+import View.User
 import Widgets.Preview
-
-import           Data.Default
-import qualified Data.Text      as T
-import           Data.Tree      (Forest, Tree)
-import qualified Data.Tree      as Tree
-
-import           Text.Cassius   (cassiusFile)
-import           Yesod.Feed
-
 
 -- | Sanity check for Project Comment pages.
 -- Redirects if the comment was rethreaded.

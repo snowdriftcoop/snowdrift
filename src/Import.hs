@@ -3,48 +3,68 @@
 
 module Import (module Import) where
 
-import           Foundation                    as Import
-import           Model                         as Import
-import           Model.Language                as Import
-import           Model.Comment.Internal        as Import hiding (TagName, TicketName)
-import           Model.Established.Internal    as Import
-import           Model.Notification.Internal   (ProjectNotificationType, ProjectNotificationDelivery)
-import           Model.Role.Internal           as Import
-import           Model.SnowdriftEvent.Internal as Import
-import           Settings                      as Import
-import           Settings.Development          as Import
-import           Settings.StaticFiles          as Import
-
-import           Control.Arrow                 as Import ((***), (&&&), (+++), first, second, (>>>), (<<<))
-import           Control.Monad                 as Import
-import           Control.Monad.Trans.Reader    (ReaderT)
-import           Data.Foldable                 as Import (toList)
-import           Data.Function                 as Import (on)
-import           Data.Int                      as Import (Int64)
-import           Data.Map                      as Import (Map)
-import           Data.Maybe                    as Import (fromMaybe, listToMaybe, mapMaybe, isJust, catMaybes)
-import           Data.Set                      as Import (Set)
-import           Data.Text                     as Import (Text)
-import qualified Data.Text                     as T
-import           Data.Time.Clock               as Import (UTCTime, diffUTCTime, getCurrentTime)
-import           Data.Typeable (Typeable)
-import           Database.Esqueleto            as Import hiding (on, valList)
+import Control.Arrow as Import
+            ((***), (&&&), (+++), first, second, (>>>), (<<<))
+import Control.Monad as Import
+import Control.Monad.Trans.Reader (ReaderT)
+import Data.Foldable as Import (toList)
+import Data.Function as Import (on)
+import Data.Int as Import (Int64)
+import Data.List (sortBy, (\\), nub)
+import Data.Map as Import (Map)
+import Data.Maybe as Import
+            (fromMaybe, listToMaybe, mapMaybe, isJust, catMaybes)
+import Data.Monoid as Import ((<>))
+import Data.Set as Import (Set)
+import Data.Text as Import (Text)
+import Data.Time.Clock as Import (UTCTime, diffUTCTime, getCurrentTime)
+import Data.Typeable (Typeable)
+import Database.Esqueleto as Import hiding (on, valList)
+import Database.Esqueleto.Internal.Sql (unsafeSqlBinOp)
+import Network.Mail.Mime (randomString)
+import Prelude as Import hiding (head, init, last, readFile, tail, writeFile)
+import System.Random (newStdGen)
+import Yesod (languages)
+import Yesod as Import
+            hiding (Route (..)
+                   ,(||.)
+                   ,(==.)
+                   ,(!=.)
+                   ,(<.)
+                   ,(<=.)
+                   ,(>.)
+                   ,(>=.)
+                   ,(=.)
+                   ,(+=.)
+                   ,(-=.)
+                   ,(*=.)
+                   ,(/=.)
+                   ,selectSource
+                   ,delete
+                   ,update
+                   ,count
+                   ,Value
+                   ,runDB
+                   ,languages)
+import Yesod.Auth as Import
+import Yesod.Form.Bootstrap3 as Import
+import Yesod.Markdown as Import (Markdown (..))
+import qualified Data.Text as T
 import qualified Database.Esqueleto
-import           Database.Esqueleto.Internal.Sql (unsafeSqlBinOp)
-import           Network.Mail.Mime               (randomString)
-import           Prelude                       as Import hiding (head, init, last, readFile, tail, writeFile)
-import           System.Random                 (newStdGen)
-import           Yesod                         as Import hiding (Route (..), (||.), (==.), (!=.), (<.), (<=.), (>.), (>=.), (=.), (+=.), (-=.), (*=.), (/=.), selectSource, delete, update, count, Value, runDB, languages)
-import           Yesod.Auth                    as Import
-import           Yesod.Markdown                as Import (Markdown (..))
-import           Yesod.Form.Bootstrap3         as Import
-
-import           Yesod (languages)
-import           Data.List (sortBy, (\\), nub)
-
 import qualified Data.Map as M
 
-import           Data.Monoid          as Import ((<>))
+import Foundation as Import
+import Model as Import
+import Model.Language as Import
+import Model.Comment.Internal as Import hiding (TagName, TicketName)
+import Model.Established.Internal as Import
+import Model.Notification.Internal
+            (ProjectNotificationType, ProjectNotificationDelivery)
+import Model.Role.Internal as Import
+import Model.SnowdriftEvent.Internal as Import
+import Settings as Import
+import Settings.Development as Import
+import Settings.StaticFiles as Import
 
 class Show a => PPrint a where
     pprint :: a -> String

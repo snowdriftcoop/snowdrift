@@ -4,6 +4,12 @@ module SnowdriftEventHandler
 
 import Import
 
+import Data.Maybe (fromJust)
+import Yesod.Default.Config (AppConfig (..), DefaultEnv (..))
+import qualified Data.Foldable as F
+import qualified Data.Text as T
+import qualified Database.Persist
+
 import Model.Comment
 import Model.Currency
 import Model.Discussion
@@ -11,12 +17,6 @@ import Model.Notification
 import Model.Project
 import Model.User
 import Model.Utils
-
-import qualified Data.Foldable        as F
-import           Data.Maybe           (fromJust)
-import qualified Data.Text            as T
-import qualified Database.Persist
-import           Yesod.Default.Config (AppConfig (..), DefaultEnv (..))
 
 -- Add more event handlers here.
 snowdriftEventHandlers :: AppConfig DefaultEnv Extra

@@ -40,30 +40,30 @@ module Model.Project
 
 import Import
 
+import Control.Concurrent.Async (Async, async, wait)
+import Control.Monad.Trans.Maybe (MaybeT(..), runMaybeT)
+import Control.Monad.Trans.Resource (MonadThrow)
+import Control.Monad.Writer.Strict (WriterT, tell, execWriterT)
+import Data.Either (isRight)
+import Data.List (sortBy)
+import Data.Monoid (Sum(..))
+import qualified Data.Map as M
+import qualified Data.Set as S
+import qualified Data.Text as T
+import qualified Github.Data as GH
+import qualified Github.Issues as GH
+
 import Data.Filter
 import Data.Order
 import Model.Comment
 import Model.Comment.Sql
 import Model.Currency
 import Model.Issue
-import Model.Tag
 import Model.Shares (pledgeRenderKey)
+import Model.Tag
 import Model.Wiki.Sql
 import Widgets.Tag
 
-import           Control.Monad.Trans.Maybe    (MaybeT(..), runMaybeT)
-import           Control.Monad.Trans.Resource (MonadThrow)
-import           Control.Monad.Writer.Strict  (WriterT, tell, execWriterT)
-import           Control.Concurrent.Async     (Async, async, wait)
-import qualified Github.Data                  as GH
-import qualified Github.Issues                as GH
-import           Data.Either                  (isRight)
-import qualified Data.Map                     as M
-import           Data.Monoid                  (Sum(..))
-import qualified Data.Set                     as S
-import qualified Data.Text                    as T
-
-import           Data.List                    (sortBy)
 
 --------------------------------------------------------------------------------
 -- Types
