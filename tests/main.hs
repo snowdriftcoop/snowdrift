@@ -60,7 +60,7 @@ spec foundation file =
                     _ -> False
 
         yesodSpec foundation $ do
-            let config = settings foundation
+            let config = appSettings foundation
             userSpecs
             notifySpecs config file
             wikiSpecs

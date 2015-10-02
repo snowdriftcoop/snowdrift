@@ -133,8 +133,7 @@ instance Yesod App where
     -- see: https://github.com/yesodweb/yesod/wiki/Overriding-approot
     approot = ApprootMaster $ appRoot . appSettings
 
-    -- Store session data on the client in encrypted cookies,
-    -- default session idle timeout is 120 minutes
+    -- Store session data on the client in encrypted cookies.
     makeSessionBackend _ = fmap Just $ defaultClientSessionBackend
         (48 * 60)    -- timeout in minutes, (48 * 60) = 48 hours = 2 days
         "config/client_session_key.aes"
@@ -368,7 +367,7 @@ instance YesodAuth App where
     -- You can add other plugins like BrowserID, email or OAuth here
     authPlugins _ = [ snowdriftAuthBrowserId, snowdriftAuthHashDB ]
 
-    authHttpManager = getHttpManager
+    authHttpManager = appHttpManager
 
     loginHandler = do
         app <- lift getYesod

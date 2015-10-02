@@ -15,7 +15,6 @@ import Data.Text (Text)
 import Data.Yaml
 import Settings.Development
 import Data.Default (def)
-import Text.Hamlet
 
 -- | Which Persistent backend this site is using.
 type PersistConf = PostgresConf
