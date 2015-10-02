@@ -3,10 +3,10 @@
 module Handler.JsLicense where
 
 import Import
-
-import qualified Data.Text as T
+import Handler.Utils
 
 import Yesod.Form.Jquery
+import qualified Data.Text as T
 
 data Lib =
     Lib { libName :: Text

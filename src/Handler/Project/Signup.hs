@@ -2,6 +2,7 @@ module Handler.Project.Signup where
 
 import Import
 
+import Handler.Utils
 import Model.License       (fetchLicensesDB)
 import View.Project.Signup (projectSignupForm)
 

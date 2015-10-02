@@ -2,6 +2,7 @@ module Handler.ResetPassword where
 
 import Import hiding (isNothing)
 
+import Handler.Utils
 import           Model.ResetPassword
 import qualified View.ResetPassword  as View
 import           View.ResetPassword  (resetPasswordForm)

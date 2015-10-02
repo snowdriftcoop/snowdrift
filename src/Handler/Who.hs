@@ -5,6 +5,7 @@ import Import
 
 import Data.List (sortBy)
 
+import Handler.Utils
 import Model.Markdown
 
 userShortName :: User -> Text

@@ -25,7 +25,6 @@ import Data.Int (Int64)
 import Data.Maybe (mapMaybe, fromMaybe)
 import Data.Monoid
 import Data.Text as T
-import Data.Text.Titlecase
 import Data.Time
 import Database.Esqueleto
 import Network.HTTP.Conduit (Manager)
@@ -74,14 +73,6 @@ data App = App
 plural :: Integral i => i -> Text -> Text -> Text
 plural 1 x _ = x
 plural _ _ y = y
-
-snowdriftTitle :: MonadWidget m => Text -> m ()
-snowdriftTitle t = setTitle $
-    (toHtml $ titlecase $ toLower $ t) <>
-    (toHtml (" | Snowdrift.coop" :: Text))
-
-snowdriftDashTitle :: MonadWidget m => Text -> Text -> m ()
-snowdriftDashTitle x y = snowdriftTitle $ x <> " — " <> y
 
 -- Set up i18n messages. See the message folder.
 mkMessage "App" "messages" "en"
@@ -178,7 +169,8 @@ instance Yesod App where
         maybe_user <- maybeAuth
         selectRep $
             provideRep $ defaultLayout $ do
-                snowdriftTitle $ "Permission Denied: " <> s
+                setTitle $
+                    toHtml $ "Permission Denied: " <> s <> " | Snowdrift.coop"
                 toWidget [hamlet|$newline never
                     <h1>Permission Denied
                     <p>

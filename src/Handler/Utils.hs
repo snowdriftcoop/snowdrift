@@ -1,7 +1,9 @@
+-- | Utilities commonly useful to all Handlers.
 module Handler.Utils where
 
 import Import
 
+import Data.Text.Titlecase
 import qualified Data.Text as T
 
 -- | Possible values for "mode" post param.
@@ -23,3 +25,11 @@ lookupGetUTCTimeDefaultNow name = lookupGetParam name >>= \case
     Just value -> case reads (T.unpack value) of
         [(time,"")] -> return time
         _           -> liftIO getCurrentTime
+
+snowdriftTitle :: MonadWidget m => Text -> m ()
+snowdriftTitle t = setTitle $
+    (toHtml $ titlecase $ T.toLower $ t) <>
+    (toHtml (" | Snowdrift.coop" :: Text))
+
+snowdriftDashTitle :: MonadWidget m => Text -> Text -> m ()
+snowdriftDashTitle x y = snowdriftTitle $ x <> " — " <> y

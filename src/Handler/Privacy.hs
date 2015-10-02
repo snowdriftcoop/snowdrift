@@ -2,6 +2,7 @@ module Handler.Privacy where
 
 import Import
 
+import Handler.Utils
 import Widgets.Doc
 
 getPrivacyR :: Handler Html

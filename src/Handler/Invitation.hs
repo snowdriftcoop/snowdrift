@@ -4,6 +4,7 @@ Invitation.hs is where invited users go to actually redeem invitations they rece
 module Handler.Invitation where
 
 import Import
+import Handler.Utils
 import qualified Data.Text as T
 -- import Model.Role
 

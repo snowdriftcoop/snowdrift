@@ -1,6 +1,7 @@
 module Handler.Trademarks where
 
 import Import
+import Handler.Utils
 import Widgets.Doc
 
 getTrademarksR :: Handler Html

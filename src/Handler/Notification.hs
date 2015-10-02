@@ -2,6 +2,7 @@ module Handler.Notification where
 
 import Import hiding (delete)
 
+import Handler.Utils
 import           Model.Notification
 import           Model.Project
 import           Model.User

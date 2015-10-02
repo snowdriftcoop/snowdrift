@@ -1,7 +1,7 @@
 module Handler.Volunteer where
 
 import Import
-
+import Handler.Utils
 
 volunteerForm :: UTCTime -> ProjectId -> [Entity Interest] -> Entity User -> Form (VolunteerApplication, [InterestId])
 volunteerForm now project_id interests (Entity user_id user) = renderBootstrap3 BootstrapBasicForm $
