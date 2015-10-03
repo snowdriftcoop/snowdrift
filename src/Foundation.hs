@@ -230,7 +230,9 @@ authBrowserIdFixed =
         login toMaster = do
             addScriptRemote browserIdJs
 
-            $(widgetFile "BrowserIdFixed")
+            -- it's "BrowserID" for the backend, but the user-facing
+            -- front-end is called "Mozilla Persona"
+            $(widgetFile "persona-fixed")
 
      in (authBrowserId def) { apLogin = login }
 
@@ -239,7 +241,7 @@ snowdriftAuthBrowserId =
     let auth = authBrowserIdFixed
         login toMaster = do
             let parentLogin = apLogin auth toMaster
-            $(widgetFile "BrowserId")
+            $(widgetFile "persona")
      in auth { apLogin = login }
 
 snowdriftAuthHashDB :: AuthPlugin App
