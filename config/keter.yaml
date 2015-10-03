@@ -1,8 +1,48 @@
-exec: ../dist/build/Snowdrift/Snowdrift
-args:
-    - production
-host: localhost
+stanzas:
+    - type: webapp
+      hosts:
+          - snowdrift.coop
+      exec: ../dist/bin/Snowdrift
+      args:
+          - production
+      env:
+          APPROOT: https://snowdrift.coop
+          PGDATABASE: snowdrift_production
+          PGUSER: snowdrift_production
+      forward-env:
+          - PGPASS
 
-# Use the following to automatically copy your bundle upon creation via `yesod
-# keter`. Uses `scp` internally, so you can set it to a remote destination
-# copy-to: user@host:/opt/keter/incoming
+    - type: background
+      exec: ../dist/bin/SnowdriftEmailDaemon
+      env:
+          PGDATABASE: snowdrift_production
+          PGUSER: snowdrift_production
+      forward-env:
+          - PGPASS
+      args:
+          - '--db=production'
+          - '--email=notifications@snowdrift.coop'
+
+    - type: background
+      exec: ../ops/manage-symlink
+
+    # Redirect the https version of www.
+    - type: redirect
+      hosts:
+          - www.snowdrift.coop
+      actions:
+          - host: snowdrift.coop
+            secure: true
+
+extraFiles:
+    - ../migrations
+    # FIXME: templates shouldn't be needed.
+    - ../templates
+    # Apps for cron to run
+    - ../ops/run-process-payments
+    - ../dist/bin/SnowdriftProcessPayments
+
+# Assuming you have an awscli profile named 'snowdrift' that refers to the
+# Snowdrift account, the server to copy to can be acquired with:
+# $ aws --profile snowdrift ec2 describe-instances --instance-ids i-81a6df28 --query 'Reservations[].Instances[].PublicDnsName'
+copy-to: ec2-54-152-177-195.compute-1.amazonaws.com:/opt/keter/incoming

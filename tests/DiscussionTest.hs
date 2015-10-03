@@ -10,17 +10,14 @@ module DiscussionTest
 import TestImport
 import Import (key)
 
-import qualified Data.Map as M
-
+import Control.Monad
 import Network.Wai.Test (SResponse (..))
-import qualified Data.Text as T
+import Yesod (RedirectUrl)
 import qualified Data.ByteString.Char8 as BSC
+import qualified Data.Map as M
+import qualified Data.Text as T
 
 import Model.Language
-
-import Control.Monad
-
-import Yesod (RedirectUrl)
 
 discussionSpecs :: Spec
 discussionSpecs = do
@@ -92,7 +89,7 @@ runDiscussionTest label discussion_page_url comment_url new_thread_url comment_r
             get200 $ comment_rethread_url reply_comment
 
             withStatus 303 True $ request $ do
-                addNonce
+                addToken
                 setMethod "POST"
                 setUrl $ comment_rethread_url reply_comment
                 byLabel "New Parent Url" "/p/snowdrift/w/en/about/d"
@@ -116,7 +113,7 @@ runDiscussionTest label discussion_page_url comment_url new_thread_url comment_r
                 get200 $ comment_rethread_url first_message
 
                 withStatus 303 True $ request $ do
-                    addNonce
+                    addToken
                     setMethod "POST"
                     setUrl $ comment_rethread_url first_message
                     byLabel "New Parent Url" $ T.pack $ "/p/snowdrift/w/en/about/c/" ++ (\(PersistInt64 i) -> show i) (toPersistValue second_message)
@@ -162,7 +159,7 @@ runDiscussionTest label discussion_page_url comment_url new_thread_url comment_r
             get200 $ comment_rethread_url originalId
 
             withStatus 303 True $ request $ do
-                addNonce
+                addToken
                 setMethod "POST"
                 setUrl $ comment_rethread_url originalId
                 byLabel "New Parent Url" "/p/snowdrift/w/en/intro/d"

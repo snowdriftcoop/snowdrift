@@ -6,18 +6,18 @@
 
 module CommentTest (commentSpecs) where
 
-import           Import (pprint)
-import           TestImport hiding (get)
+import Import (pprint)
+import TestImport hiding (get)
 
-import           Control.Monad (when, unless)
-import           Database.Esqueleto
-import           Data.Foldable (forM_)
-import           Data.Monoid ((<>))
-import           Data.Text (Text)
+import Control.Monad (when, unless)
+import Data.Foldable (forM_)
+import Data.Monoid ((<>))
+import Data.Text (Text)
+import Database.Esqueleto
+import Yesod (RedirectUrl, Route)
+import Yesod.Default.Config (AppConfig (..), DefaultEnv (..))
+import Yesod.Markdown (unMarkdown)
 import qualified Data.Text as Text
-import           Yesod (RedirectUrl, Route)
-import           Yesod.Default.Config (AppConfig (..), DefaultEnv (..))
-import           Yesod.Markdown (unMarkdown)
 
 commentSpecs :: AppConfig DefaultEnv a -> Spec
 commentSpecs conf = do

@@ -1,4 +1,4 @@
-/static StaticR Static getStatic
+/static StaticR Static appStatic
 /auth   AuthR   Auth   getAuth
 
 /favicon.ico FaviconR GET
@@ -17,6 +17,7 @@
 /trademarks         TrademarksR       GET
 /tutorial/markdown  MarkdownTutorialR GET
 /donate             DonateR           GET
+/sponsors           SponsorsR         GET
 
 /img/!upload                UploadImageR      GET POST
 /img/!name/#UnnamedImageId  NameImageR        GET POST
@@ -26,7 +27,7 @@
 -- User
 
 /u                                          UsersR                       GET
-/u/!new                                     UserCreateR                  GET POST
+!/u/new                                     UserCreateR                  GET POST
 /u/#UserId                                  UserR                        GET POST
 /u/#UserId/balance                          UserBalanceR                 GET POST
 /u/#UserId/d                                UserDiscussionR              GET POST
@@ -85,11 +86,11 @@
 /p/#Text/c/#CommentId/reply                  ReplyProjectCommentR     GET POST
 /p/#Text/c/#CommentId/rethread               RethreadProjectCommentR  GET POST
 /p/#Text/c/#CommentId/retract                RetractProjectCommentR   GET POST
-/p/#Text/c/#CommentId/tag/!new               ProjectCommentAddTagR    GET
+!/p/#Text/c/#CommentId/tag/new               ProjectCommentAddTagR    GET
 /p/#Text/c/#CommentId/tags                   ProjectCommentTagsR      GET
 /p/#Text/c/#CommentId/tag/#TagId             ProjectCommentTagR       GET POST
-/p/#Text/c/#CommentId/tag/!apply             ProjectCommentApplyTagR      POST
-/p/#Text/c/#CommentId/tag/!create            ProjectCommentCreateTagR     POST
+!/p/#Text/c/#CommentId/tag/apply             ProjectCommentApplyTagR      POST
+!/p/#Text/c/#CommentId/tag/create            ProjectCommentCreateTagR     POST
 /p/#Text/c/#CommentId/unclaim                UnclaimProjectCommentR   GET POST
 /p/#Text/c/#CommentId/watch                  WatchProjectCommentR     GET POST
 /p/#Text/c/#CommentId/unwatch                UnwatchProjectCommentR   GET POST
@@ -127,11 +128,11 @@
 /p/#Text/w/#Language/#Text/c/#CommentId/reply           ReplyWikiCommentR     GET POST
 /p/#Text/w/#Language/#Text/c/#CommentId/rethread        RethreadWikiCommentR  GET POST
 /p/#Text/w/#Language/#Text/c/#CommentId/retract         RetractWikiCommentR   GET POST
-/p/#Text/w/#Language/#Text/c/#CommentId/tag/!new        WikiCommentAddTagR    GET
+!/p/#Text/w/#Language/#Text/c/#CommentId/tag/new        WikiCommentAddTagR    GET
 /p/#Text/w/#Language/#Text/c/#CommentId/tags            WikiCommentTagsR      GET
 /p/#Text/w/#Language/#Text/c/#CommentId/tag/#TagId      WikiCommentTagR       GET POST
-/p/#Text/w/#Language/#Text/c/#CommentId/tag/!apply      WikiCommentApplyTagR      POST
-/p/#Text/w/#Language/#Text/c/#CommentId/tag/!create     WikiCommentCreateTagR     POST
+!/p/#Text/w/#Language/#Text/c/#CommentId/tag/apply      WikiCommentApplyTagR      POST
+!/p/#Text/w/#Language/#Text/c/#CommentId/tag/create     WikiCommentCreateTagR     POST
 /p/#Text/w/#Language/#Text/c/#CommentId/unclaim         UnclaimWikiCommentR   GET POST
 /p/#Text/w/#Language/#Text/d                            WikiDiscussionR       GET
 /p/#Text/w/#Language/#Text/d/new                        NewWikiDiscussionR    GET POST
@@ -148,7 +149,8 @@
 -- Project blog
 
 /p/#Text/blog                                   ProjectBlogR                    GET
-/p/#Text/blog/!new                              NewBlogPostR                    GET POST
+!/p/#Text/blog/feed                             ProjectBlogFeedR                GET
+!/p/#Text/blog/new                              NewBlogPostR                    GET POST
 /p/#Text/blog/#Text                             BlogPostR                       GET
 /p/#Text/blog/#Text/edit                        EditBlogPostR                   GET POST
 /p/#Text/blog/#Text/d                           BlogPostDiscussionR             GET
@@ -163,11 +165,11 @@
 /p/#Text/blog/#Text/c/#CommentId/reply          ReplyBlogPostCommentR           GET POST
 /p/#Text/blog/#Text/c/#CommentId/rethread       RethreadBlogPostCommentR        GET POST
 /p/#Text/blog/#Text/c/#CommentId/retract        RetractBlogPostCommentR         GET POST
-/p/#Text/blog/#Text/c/#CommentId/tag/!new       BlogPostCommentAddTagR          GET
+!/p/#Text/blog/#Text/c/#CommentId/tag/new       BlogPostCommentAddTagR          GET
 /p/#Text/blog/#Text/c/#CommentId/tags           BlogPostCommentTagsR            GET
 /p/#Text/blog/#Text/c/#CommentId/tag/#TagId     BlogPostCommentTagR             GET POST
-/p/#Text/blog/#Text/c/#CommentId/tag/!apply     BlogPostCommentApplyTagR            POST
-/p/#Text/blog/#Text/c/#CommentId/tag/!create    BlogPostCommentCreateTagR           POST
+!/p/#Text/blog/#Text/c/#CommentId/tag/apply     BlogPostCommentApplyTagR            POST
+!/p/#Text/blog/#Text/c/#CommentId/tag/create    BlogPostCommentCreateTagR           POST
 /p/#Text/blog/#Text/c/#CommentId/unclaim        UnclaimBlogPostCommentR         GET POST
 /p/#Text/blog/#Text/c/#CommentId/watch          WatchBlogPostCommentR           GET POST
 /p/#Text/blog/#Text/c/#CommentId/unwatch        UnwatchBlogPostCommentR         GET POST
@@ -193,12 +195,14 @@
 
 -- Devs only!
 
-/dev/repo  RepoFeedR  GET
 /dev/build BuildFeedR GET
 
 -- DEPRECATED
 
-/p/#Text/w/!#Text/*[Text]                               MonolingualWikiR      GET
+-- This catches instances such as
+-- <https://github.com/snowdriftcoop/snowdrift/issues/302>.
+/p/#Text/w/#Language                                    ProjectWikiLangR      GET
+!/p/#Text/w/#Text/*[Text]                               MonolingualWikiR      GET
 
 /p/#Text/w/#Language/#Text/comment/#CommentId  OldDiscussCommentR GET
 /p/#Text/w/#Language/#Text/history/#WikiEditId OldWikiEditR       GET

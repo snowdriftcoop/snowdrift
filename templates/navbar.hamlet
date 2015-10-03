@@ -12,21 +12,22 @@
           <li>
             $maybe (balance, pledged) <- money_info
               <p .navbar-text .text-center>
-                Pledges / Funds 
+                Pledges / Funds
                 <br>
                 <a .navbar-link title="Current total monthly pledge" href=@{UserPledgesR user_id}>
-                  #{milrayCents pledged}
+                  #{pledged}
                 /
                 <a .navbar-link :hasUnderfunded:.has-underfunded title="Current balance" href=@{UserBalanceR user_id}>
-                  #{milrayCents balance}
+                  #{balance}
           <li>
             <a href=@{NotificationsR}>
               $if num_unread_notifs /= 0
-                <span .glyphicon .glyphicon-envelope>&nbsp;
-                  #{num_unread_notifs}
+                <span .unread-notifs .glyphicon .glyphicon-envelope>
+                  <span .num-notifs>#{num_unread_notifs}
               $else
                 <span .glyphicon .glyphicon-envelope>
-          $with name <- fromMaybe (userIdent user) $ userName user 
+
+          $with name <- fromMaybe (userIdent user) $ userName user
             <li>
               <a href=@{UserR user_id}>#{name}
           <li>
@@ -46,7 +47,7 @@
           <li>
             $maybe (balance, pledged) <- money_info
               <p .navbar-text .text-center>
-                Pledges / Funds 
+                Pledges / Funds
                 <br>
                 <a .navbar-link title="Current total monthly pledge" href=@{UserR user_id}>
                   #{show pledged}
@@ -62,7 +63,7 @@
                   #{num_unread_notifs}
               $else
                 <span .glyphicon .glyphicon-envelope>
-          $with name <- fromMaybe (userIdent user) $ userName user 
+          $with name <- fromMaybe (userIdent user) $ userName user
             <li>
               <a href=@{UserR user_id}>#{name}
           <li>

@@ -3,6 +3,7 @@ static/tmp/
 config/client_session_key.aes
 config/postgresql.yml
 cabal-dev
+.stack-work
 .cabal-sandbox/
 .directory
 cabal.sandbox.config
@@ -16,11 +17,11 @@ hscope.out
 *.tix
 .hpc/
 TAGS
+tags
 
 # Intellij IDEA:
 .idea
 *.iml
 
 # EclipseFP:
-/.dist-buildwrapper/
-.stack-work
+.dist-buildwrapper/

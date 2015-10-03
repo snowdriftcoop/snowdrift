@@ -1,17 +1,17 @@
 name:              Snowdrift
 version:           0.1.4
 license:           AGPL-3
-license-file:      LICENSE
+license-file:      LICENSE.md
 author:            David L. L. Thomas
 maintainer:        dev@lists.snowdrift.coop
 synopsis:          Infrastructure for Snowdrift fundrasing site.
 category:          Web
 stability:         Experimental
--- Cabal>=1.18 is required for sandboxes.
 cabal-version:     >= 1.18
 build-type:        Simple
 homepage:          https://snowdrift.coop
 
+-- flags {{{1
 Flag dev
     Description:   Turn on development settings, like auto-reload templates.
     Default:       False
@@ -24,8 +24,22 @@ Flag library-only
     Description:   Build for use with "yesod devel"
     Default:       False
 
+-- library {{{1
 library
     default-language:  Haskell98
+    hs-source-dirs: src
+    if flag(dev) || flag(library-only)
+        cpp-options:   -DDEVELOPMENT
+
+    if flag(dev) || flag(library-only)
+        ghc-options:   -Wall -O0 -fobject-code
+    else
+        if flag(merge)
+            ghc-options:   -Wall -Werror -O0 -fobject-code
+        else
+            ghc-options:   -Werror -Wall
+
+    -- exposed-modules {{{2
     exposed-modules: Application
                      Data.Filter
                      Data.Order
@@ -82,9 +96,11 @@ library
                      SnowdriftEventHandler
                      Handler.BuildFeed
                      Handler.Comment
+                     Handler.Common
                      Handler.Discussion
                      Handler.Home
                      Handler.Donate
+                     Handler.Sponsors
                      Handler.HonorPledge
                      Handler.Image
                      Handler.Invitation
@@ -96,7 +112,6 @@ library
                      Handler.Project
                      Handler.Project.Signup
                      Handler.ProjectBlog
-                     Handler.RepoFeed
                      Handler.ResetPassword
                      Handler.SnowdriftEvent
                      Handler.ToU
@@ -111,6 +126,7 @@ library
                      Handler.Wiki.Comment
                      View.Comment
                      View.SnowdriftEvent
+                     View.Time
                      View.User
                      View.Wiki
                      View.Project
@@ -125,25 +141,17 @@ library
                      Widgets.Tag
                      Widgets.Preview
                      Widgets.ProjectPledges
-                     TestHandler
 
-    other-modules: Model.Comment.Internal
-                   Model.Established.Internal
-                   Model.Role.Internal
-                   Model.Settings.Internal
-                   Model.ViewType.Internal
+    -- other-modules {{{2
+    other-modules:
+        Migrations
+        Model.Comment.Internal
+        Model.Established.Internal
+        Model.Role.Internal
+        Model.Settings.Internal
+        Model.ViewType.Internal
 
-    if flag(dev) || flag(library-only) || flag(merge)
-        cpp-options:   -DDEVELOPMENT
-
-    if flag(dev) || flag(library-only)
-        ghc-options:   -Wall -O0 -fobject-code
-    else
-        if flag(merge)
-            ghc-options:   -Wall -Werror -O0 -fobject-code
-        else
-            ghc-options:   -Werror -Wall -O2
-
+    -- default-extensions {{{2
     default-extensions: ConstraintKinds
                 DeriveDataTypeable
                 DeriveFunctor
@@ -171,8 +179,10 @@ library
 -- Only add version bounds that reflect specific known issues.
 -- Provide a comment above the entry explaining any bounds added.
 
--- base bounds reflect a core dependency
-    build-depends: base                          >= 4          && < 5
+    -- build-depends {{{2
+    build-depends:
+                   -- base bounds reflect a core dependency
+                   base >= 4 && < 5
                  , async
                  , attoparsec
                  , authenticate
@@ -187,17 +197,21 @@ library
                  , directory
                  , esqueleto
                  , fast-logger
+                 , file-embed
                  , github
+                 , ghci-runner
                  , hit
                  , hjsmin
                  , hourglass
                  , http-conduit
                  , http-types
+                 -- Oh yeah!
+                 , lens
+                 , libravatar
                  , lifted-base
                  , mime-mail
                  , monad-logger
                  , mtl
-                 , old-locale
                  , pandoc
                  , path-pieces
                  , persistent
@@ -230,7 +244,26 @@ library
                  , yesod-newsfeed
                  , yesod-static
 
-executable         SnowdriftProcessPayments
+-- executable Snowdrift {{{1
+executable Snowdrift
+    if flag(dev)
+        ghc-options: -Wall -O0 -fobject-code
+    if flag(merge)
+        ghc-options: -Wall -Werror -O0 -fobject-code
+    if flag(library-only)
+        Buildable: False
+
+    default-language:  Haskell98
+    main-is:           main.hs
+    hs-source-dirs:    app
+    build-depends:     base
+                     , Snowdrift
+                     , yesod
+
+    ghc-options:       -threaded
+
+-- executable SnowdriftProcessPayments {{{1
+executable SnowdriftProcessPayments
     if flag(library-only)
         Buildable: False
     if flag(dev)
@@ -242,19 +275,20 @@ executable         SnowdriftProcessPayments
     main-is:           SnowdriftProcessPayments.hs
     hs-source-dirs:    app
     build-depends:     base
-                     , Snowdrift
-                     , yesod
-                     , time
-                     , text
-                     , persistent
-                     , monad-logger
+                     , blaze-builder
                      , bytestring
                      , fast-logger
-                     , blaze-builder
-                     , resourcet
                      , lifted-base
+                     , monad-logger
+                     , mtl
+                     , persistent
+                     , resourcet
+                     , Snowdrift
+                     , text
+                     , time
+                     , yesod
 
-    ghc-options:       -threaded -O2
+    ghc-options:       -threaded
 
     default-extensions: TemplateHaskell
                 QuasiQuotes
@@ -270,32 +304,22 @@ executable         SnowdriftProcessPayments
                 DeriveDataTypeable
                 ScopedTypeVariables
 
-executable         Snowdrift
-    if flag(dev)
-        ghc-options: -Wall -O0 -fobject-code
-    if flag(merge)
-        ghc-options: -Wall -Werror -O0 -fobject-code
-    if flag(library-only)
-        Buildable: False
-
-    default-language:  Haskell98
-    main-is:           main.hs
-    hs-source-dirs:    app
-    build-depends:     base
-                     , Snowdrift
-                     , yesod
-
-    ghc-options:       -threaded -O2
-
-executable         SnowdriftEmailDaemon
+-- executable SnowdriftEmailDaemon {{{1
+executable SnowdriftEmailDaemon
     if flag(dev)
        ghc-options: -Wall -O0 -fobject-code
     if flag(merge)
         ghc-options: -Wall -Werror -O0 -fobject-code
     if flag(library-only)
         Buildable: False
+    -- Building on Windows is broken. See
+    -- https://github.com/commercialhaskell/stack/issues/466
+    if os(windows)
+        Buildable: False
     default-language:  Haskell98
-    main-is:           SnowdriftEmailDaemon.hs
+    hs-source-dirs: app
+    main-is: SnowdriftEmailDaemon.hs
+    -- build-depends {{{2
     build-depends:     base
                      , authenticate
                      , blaze-builder
@@ -313,6 +337,7 @@ executable         SnowdriftEmailDaemon
                      , hjsmin
                      , hourglass
                      , http-conduit
+                     , lens
                      , lifted-base
                      , mime-mail
                      , monad-logger
@@ -325,6 +350,7 @@ executable         SnowdriftEmailDaemon
                      , resourcet
                      , semigroups
                      , shakespeare
+                     , Snowdrift
                      , stm
                      , template-haskell
                      , text
@@ -340,6 +366,7 @@ executable         SnowdriftEmailDaemon
                      , yesod-markdown
                      , yesod-static
 
+    -- default-extensions {{{2
     default-extensions: BangPatterns
                 ConstraintKinds
                 DeriveDataTypeable
@@ -362,7 +389,8 @@ executable         SnowdriftEmailDaemon
                 TypeFamilies
                 ViewPatterns
 
-executable         sdm
+-- executable sdm {{{1
+executable sdm
     if flag(dev)
        ghc-options: -Wall -O0 -fobject-code
     if flag(merge)
@@ -377,11 +405,13 @@ executable         sdm
                      , bytestring
                      , cmdargs
                      , directory
+                     , mtl
                      , mwc-random
                      , process
                      , semigroups
 
-executable         SnowdriftSendmail
+-- executable sendmail-mock {{{1
+executable sendmail-mock
     if flag(dev)
        ghc-options: -Wall -O0 -fobject-code
     if flag(merge)
@@ -389,51 +419,76 @@ executable         SnowdriftSendmail
     if flag(library-only)
         Buildable: False
 
+    hs-source-dirs: tests
     default-language:  Haskell98
-    main-is:           SnowdriftSendmail.hs
+    main-is:           sendmail-mock.hs
     build-depends:     base
                      , bytestring
                      , mime
 
+-- test-suite test {{{1
 test-suite test
     default-language:  Haskell98
     type:              exitcode-stdio-1.0
     main-is:           main.hs
     hs-source-dirs:    tests
-    ghc-options:       -Werror -Wall -O0 -fobject-code
+    ghc-options:       -Wall -O0 -fobject-code
 
+    other-modules: TestImport
+                   BlogTest
+                   UserTest
+                   MechanismTest
+                   CommentTest
+                   TestImport.Internal
+                   NotifyTest
+                   DiscussionTest
+                   WikiTest
+                   TimedYesodTest
+                   TestHandler
     default-extensions: QuasiQuotes
                 TemplateHaskell
+                OverloadedStrings
 
+    -- build-depends {{{2
     build-depends: base
-                 , Snowdrift
-                 , yesod-markdown
-                 -- After 1.4.3, addNonce must be replaced with addToken
-                 , yesod-test < 1.4.3
-                 , yesod
-                 , persistent
-                 , monad-logger
-                 , monad-control
-                 , semigroups
-                 , transformers
                  , bytestring
-                 , directory
-                 , filepath
-                 -- we use spawnProcess in tests and it was added in 1.2
-                 , process >= 1.2.0.0
-                 , time
-                 , text
-                 , hspec
-                 , network-uri
-                 , http-types
-                 , wai-extra
                  , containers
-                 , html-conduit
-                 , xml-conduit
+                 , directory
                  , esqueleto
-                 , HUnit
-                 , template-haskell
+                 , fast-logger
+                 , filepath
                  , haskell-src-exts
                  , haskell-src-meta
+                 , hspec
+                 , html-conduit
+                 , http-types
+                 , HUnit
                  , lifted-base
+                 , monad-control
+                 , monad-logger
+                 , mtl
+                 , network-uri
+                 , persistent
+                 -- we use spawnProcess in tests and it was added in 1.2
+                 , process >= 1.2.0.0
                  , QuickCheck
+                 , resourcet
+                 , semigroups
+                 , Snowdrift
+                 , stm
+                 , template-haskell
+                 , text
+                 , time
+                 , transformers
+                 , wai-extra
+                 , wai-logger
+                 , xml-conduit
+                 , yesod
+                 , yesod-core
+                 , yesod-markdown
+                 , yesod-test
+
+-- }}}1
+
+-- Enables folds in vim.
+-- vim: fdm=marker cms=\ --\ %s :

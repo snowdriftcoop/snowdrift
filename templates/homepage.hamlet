@@ -38,8 +38,11 @@
       Our
       <a href="https://snowdrift.tilt.com">launch fund-drive
       succeeded!
+    <h3>
+      Thanks to all our
+      <a href=@{SponsorsR}>sponsors</a>!
     <p>
-      The campaign video remains a good introduction.
+      The campaign video remains a good introduction:
     <video poster="https://snowdrift.coop/img/fund-drive-intro-still" controls>
       <source type="video/mp4"
         src="https://archive.org/download/snowdrift-fund-drive-intro/snowdrift-fund-drive-intro.mp4">
@@ -59,19 +62,26 @@
       Keep up with our activity:
     <div .homep-link>
       <a href=@{ProjectBlogR "snowdrift"}>
-        Blog
+        Snowdrift Blog
     <div .homep-link>
       <a href=@{ProjectFeedR "snowdrift"}>
-        Activity feed for the Snowdrift project at Snowdrift.coop
-    <div .homep-link>
-      <a href="https://lists.snowdrift.coop">
-        Email lists
+        Snowdrift project activity feed
     <div .homep-link>
       <a href="https://git.gnu.io/snowdrift/snowdrift#tab-activity">
         Code activity at git.gnu.io
     <div .homep-link>
+      Sign up for our
+      <a href="https://lists.snowdrift.coop">
+        email lists
+    <div .homep-link>
+      Live chat at
       <a href=@{WikiR "snowdrift" LangEn "irc"}>
-        Chat at our IRC channel
+        #snowdrift IRC channel
+    <div .homep-link>
+      Follow us on GNU Social
+      <small>(or Twitter)
+      <a href="https://quitter.se/snowdriftcoop">
+        @snowdriftcoop
 
   <div .homepage-section .col-md-6>
     <h2>Volunteer

@@ -6,11 +6,11 @@ module BlogTest
     ) where
 
 import TestImport
+
+import Data.Text.Encoding
 import qualified Data.Map as M
 import qualified Text.XML as XML
 import qualified Text.HTML.DOM as HTML
-
-import Data.Text.Encoding
 
 blogSpecs :: Spec
 blogSpecs = do
@@ -22,7 +22,7 @@ blogSpecs = do
             let getAttrs = XML.elementAttributes . XML.documentRoot . HTML.parseLBS
 
             withStatus 303 True $ request $ do
-                addNonce
+                addToken
                 setMethod "POST"
                 let route' = maybe (Left route) Right $ M.lookup "action" $ getAttrs form
                 either setUrl setUrl route'
@@ -38,7 +38,7 @@ blogSpecs = do
             let getAttrs = XML.elementAttributes . XML.documentRoot . HTML.parseLBS
 
             withStatus 200 False $ request $ do
-                addNonce
+                addToken
                 setMethod "POST"
                 maybe (setUrl route) setUrl $ M.lookup "action" $ getAttrs form
 

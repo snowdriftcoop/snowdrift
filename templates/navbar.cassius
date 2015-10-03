@@ -12,7 +12,13 @@ p.navbar-text
     padding: 0
 
 .has-underfunded
-  color: red
+    color: red
+
+.unread-notifs
+    color: red
+
+.num-notifs
+    margin: 5px
 
 .nav li .glyphicon
     top: 2px

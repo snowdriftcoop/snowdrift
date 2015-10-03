@@ -4,6 +4,7 @@ module WikiTest
     ( wikiSpecs
     ) where
 
+import Prelude
 import TestImport
 
 import Model.Language
@@ -34,4 +35,11 @@ wikiSpecs =
         yit "edits a wiki page" $ [marked|
             loginAs TestUser
             editWiki snowdrift LangEn "wiki-test" "wiki test: edit page" "testing"
+        |]
+
+        yit "cannot create an existent wiki page" $ [marked|
+            loginAs TestUser
+            newWiki snowdrift LangEn "wiki-foo" "wiki foo: new page"
+            get $ NewWikiR snowdrift LangEn "wiki-foo"
+            statusIs 400
         |]

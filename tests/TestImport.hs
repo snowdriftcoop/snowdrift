@@ -8,62 +8,61 @@ module TestImport (module TestImport, marked) where
 
 import Import (pprint)
 import TestImport.Internal
-
 import Prelude hiding (exp)
 
+import Control.Arrow as TestImport hiding (app, loop)
+import Control.Concurrent (threadDelay)
+import Control.Exception.Lifted as Lifted hiding (handle)
 import Control.Monad (unless)
-import Control.Monad.Logger as TestImport
-import Control.Arrow as TestImport
-
-import Yesod (Yesod, RedirectUrl, Route, RenderRoute, renderRoute)
-import Yesod.Test as TestImport
-import Database.Esqueleto hiding (get)
-import qualified Database.Esqueleto as Esqueleto
-import Database.Persist as TestImport hiding (get, (==.), delete)
+import Control.Monad (when)
 import Control.Monad.IO.Class as TestImport (liftIO, MonadIO)
+import Control.Monad.Logger as TestImport
+import Control.Monad.Trans.Control
 import Control.Monad.Trans.Reader (ReaderT)
-
-import Network.URI (URI (uriPath), parseURI)
+import Data.Int (Int64)
+import Data.List (isInfixOf)
+import Data.Maybe (fromMaybe)
+import Data.Monoid ((<>))
+import Data.String
+import Data.Text (Text)
+import Data.Text.Encoding (decodeUtf8)
+import Data.Time (getCurrentTime, addUTCTime)
+import Database.Esqueleto hiding (get)
+import Database.Persist as TestImport hiding (get, (==.), delete)
 import Network.HTTP.Types (StdMethod (..), renderStdMethod)
+import Network.URI (URI (uriPath), parseURI)
 import Network.Wai.Test (SResponse (..))
-import qualified Text.HTML.DOM as HTML
-import qualified Test.HUnit as HUnit
-import qualified Text.XML as XML
-import qualified Network.HTTP.Types as H
-
+import System.Process
+            (CreateProcess(..)
+            ,StdStream(CreatePipe)
+            ,createProcess
+            ,proc
+            ,interruptProcessGroupOf
+            ,ProcessHandle)
+import System.IO (hPutStrLn, hGetLine, stderr, Handle)
+import Test.QuickCheck
+import Yesod (Yesod, RedirectUrl, Route, RenderRoute, renderRoute)
 import qualified Data.ByteString as B
-import           Data.Int        (Int64)
-
 import qualified Data.List as L
 import qualified Data.Map as M
-import Data.Maybe (fromMaybe)
 import qualified Data.Text as T
-import Data.Text (Text)
-import Data.String
+import qualified Database.Esqueleto as Esqueleto
+import qualified Network.HTTP.Types as H
+import qualified Test.HUnit as HUnit
+import qualified Text.HTML.DOM as HTML
+import qualified Text.XML as XML
 
-import Data.Text.Encoding (decodeUtf8)
 import Foundation as TestImport
-import Model as TestImport hiding
-    (userNotificationContent, projectNotificationContent)
-
-import Control.Applicative ((<$>))
-import Control.Concurrent (threadDelay)
-import Control.Monad (void, when)
-import Data.Monoid ((<>))
+import Model as TestImport
+            hiding (userNotificationContent, projectNotificationContent)
+import Model.Currency (Milray (..))
 import Model.Language
 import Model.Notification
-    ( UserNotificationType(..), UserNotificationDelivery(..)
-    , ProjectNotificationType(..), ProjectNotificationDelivery(..) )
-
-import System.Directory (getDirectoryContents)
-import System.FilePath ((</>))
-import System.IO (hPutStrLn, stderr)
-import System.Process (spawnProcess, terminateProcess)
-
-import Control.Monad.Trans.Control
-import Control.Exception.Lifted as Lifted hiding (handle)
-
-import Test.QuickCheck
+            (UserNotificationType(..)
+            ,UserNotificationDelivery(..)
+            ,ProjectNotificationType(..)
+            ,ProjectNotificationDelivery(..))
+import TimedYesodTest as TestImport
 
 onException :: MonadBaseControl IO m => m a -> m b -> m a
 onException = Lifted.onException
@@ -75,7 +74,7 @@ newtype FileName = FileName { unFileName :: Text }
 
 testDB :: SqlPersistM a -> Example a
 testDB query = do
-    pool <- fmap connPool getTestYesod
+    pool <- fmap appConnPool getTestYesod
     liftIO $ runSqlPersistMPool query pool
 
 
@@ -143,7 +142,7 @@ needsLogin method url = do
     maybe (assertFailure "Should have location header") (assertLoginPage . decodeUtf8) mbloc
 
 
-data NamedUser = Bob | Mary | Joe | Sue deriving (Eq, Bounded, Enum)
+data NamedUser = Bob | Mary | Joe | Sue deriving (Eq, Bounded, Enum, Show)
 data TestUser = TestUser
 data AdminUser = AdminUser
 
@@ -204,7 +203,7 @@ postComment route stmts = [marked|
     let getAttrs = XML.elementAttributes . XML.documentRoot . HTML.parseLBS
 
     withStatus 303 True $ request $ do
-        addNonce
+        addToken
         setMethod "POST"
         maybe (setUrl route) setUrl (M.lookup "action" $ getAttrs form)
         addPostParam "mode" "post"
@@ -264,14 +263,14 @@ newWiki project language page content = do
     get200 $ NewWikiR project language page
 
     withStatus 200 False $ request $ do
-        addNonce
+        addToken
         setUrl $ NewWikiR project language page
         setMethod "POST"
         byLabel "Page Content" content
         addPostParam "mode" "preview"
 
     withStatus 303 False $ request $ do
-        addNonce
+        addToken
         setUrl $ NewWikiR project language page
         setMethod "POST"
         byLabel "Page Content" content
@@ -294,7 +293,7 @@ editWiki project language page content comment = do
     let last_edit = entityVal wiki_last_edit
 
     withStatus 200 False $ request $ do
-        addNonce
+        addToken
         setUrl $ WikiR project language page
         setMethod "POST"
         byLabel "Page Content" content
@@ -303,7 +302,7 @@ editWiki project language page content comment = do
         addPostParam "mode" "preview"
 
     withStatus 303 False $ request $ do
-        addNonce
+        addToken
         setUrl $ WikiR project language page
         setMethod "POST"
         byLabel "Page Content" content
@@ -316,7 +315,7 @@ establish user_id = [marked|
     get200 $ UserR user_id
 
     withStatus 303 False $ request $ do
-        addNonce
+        addToken
         setMethod "POST"
         setUrl $ UserEstEligibleR user_id
         byLabel "Reason" "testing"
@@ -378,41 +377,67 @@ updateProjectNotifPrefs user_id project_id notif_type notif_deliv = do
 withDelay :: MonadIO m => m a -> m a
 withDelay action = liftIO (threadDelay 1500000) >> action
 
-distPrefix :: IO FilePath
-distPrefix = do
-    subdirs <- fmap (filter $ L.isPrefixOf "dist-sandbox-") $ getDirectoryContents "dist"
-    let subdir = case subdirs of [x] -> x; _ -> ""
-    return $ "dist" </> subdir </> "build"
+stackExec :: FilePath
+          -> [String]
+          -> IO (Maybe Handle
+                ,Maybe Handle
+                ,Maybe Handle
+                ,ProcessHandle)
+stackExec app args = createProcess stack
+                         { create_group = True
+                         , std_out = CreatePipe
+                         }
+  where
+    stack = proc "stack" (["exec", "--", app] ++ args)
 
-withEmailDaemon :: FileName -> (FileName -> IO a) -> IO ()
-withEmailDaemon file action = do
-    prefix <- distPrefix
-    withDelay $ bracket
-        (spawnProcess
-             (prefix </> "SnowdriftEmailDaemon/SnowdriftEmailDaemon")
-             [ "--sendmail=" <> prefix </> "SnowdriftSendmail/SnowdriftSendmail"
-             , "--sendmail-file=" <> T.unpack (unFileName file)
-             , "--db=testing"
-             ])
-        terminateProcess
-        (const $ withDelay $ void $ action file)
+withExecutable :: String -> [String] -> String -> Example () -> Example ()
+withExecutable exec_name args str test_action = do
+    (_, Just hout, _, hproc) <- liftIO $ stackExec exec_name args
+    now <- liftIO getCurrentTime
+    -- 4 seconds should be enough, the daemon loops every two seconds.
+    loop now (4 :: Int) exec_name hproc hout str
+  where
+    loop start_time = go start_time start_time
+      where
+        go start cur lim en hp ho s = do
+            if cur >= addUTCTime (fromIntegral lim) start
+                then liftIO $ do
+                         interruptProcessGroupOf hp
+                         error $ show lim <> " seconds elapsed; killed " <> en
+                else do
+                    line <- liftIO $ hGetLine ho
+                    if s `isInfixOf` line
+                        then do test_action
+                                liftIO $ interruptProcessGroupOf hp
+                        else do
+                             cur' <- liftIO getCurrentTime
+                             go start cur' lim en hp ho str
 
-processPayments :: IO ()
-processPayments = do
-    prefix <- distPrefix
-    bracket
-        (spawnProcess
-             (prefix </> "SnowdriftProcessPayments/SnowdriftProcessPayments")
-             ["Testing"])
-        terminateProcess
-        (const $ withDelay $ return ())
+withEmailDaemon :: String -> FileName -> (FileName -> Example ()) -> Example ()
+withEmailDaemon str file test_action =
+    withExecutable
+        "SnowdriftEmailDaemon"
+        [ "--sendmail=stack exec sendmail-mock"
+        , "--sendmail-file=" <> T.unpack (unFileName file)
+        , "--delay=2"
+        , "--db=testing" ]
+        str
+        (test_action file)
+
+processPayments :: String -> Example () -> Example ()
+processPayments str test_action =
+    withExecutable
+        "SnowdriftProcessPayments"
+        ["Testing"]
+        str
+        test_action
 
 rethreadComment :: Text -> Text -> YesodExample App ()
 rethreadComment rethread_route parent_route = [marked|
     get200 rethread_route
 
     withStatus 303 True $ request $ do
-        addNonce
+        addToken
         setMethod "POST"
         setUrl rethread_route
         byLabel "New Parent Url" parent_route
@@ -425,7 +450,7 @@ flagComment route = [marked|
     get200 route
 
     withStatus 303 True $ request $ do
-        addNonce
+        addToken
         setMethod "POST"
         setUrl route
         addPostParam "f1" "1"
@@ -438,7 +463,7 @@ editComment route comment_text = [marked|
     get200 route
 
     withStatus 303 True $ request $ do
-        addNonce
+        addToken
         setMethod "POST"
         setUrl route
         byLabel "Edit" comment_text
@@ -459,7 +484,7 @@ newBlogPost page = [marked|
     get200 route
 
     withStatus 303 False $ request $ do
-        addNonce
+        addToken
         setMethod "POST"
         setUrl route
         byLabel "Title for this blog post" "testing"
@@ -474,11 +499,20 @@ loadFunds user_id n = [marked|
     get200 route
 
     withStatus 303 False $ request $ do
-        addNonce
+        addToken
         setMethod "POST"
         setUrl route
         addPostParam "f1" $ shpack n
     |]
+
+-- | Set the user's balance to a specified value.
+setBalance :: (MonadIO m, Functor m)
+           => UserId -> Milray -> ReaderT SqlBackend m ()
+setBalance user_id n = do
+    account_id <- userAccount <$> getOrError user_id
+    Esqueleto.update $ \a -> do
+        set a [AccountBalance Esqueleto.=. val n]
+        where_ $ a ^. AccountId ==. val account_id
 
 pledgeStatus :: ProjectId -> Int64 -> Int -> Example ()
 pledgeStatus project_id shares status = [marked|
@@ -498,7 +532,7 @@ pledgeStatus project_id shares status = [marked|
 
     when (status == 200) $
         withStatus 303 False $ request $ do
-            addNonce
+            addToken
             setMethod "POST"
             setUrl route
             addPostParam "f1" tshares

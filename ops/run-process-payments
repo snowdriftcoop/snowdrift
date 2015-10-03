@@ -1,0 +1,22 @@
+#!/bin/bash
+
+spp=./dist/bin/SnowdriftProcessPayments
+kyaml=/opt/keter/etc/keter-config.yaml
+
+# Sanity checks
+# - app exists
+# - keter.yaml exists
+if [ -e $spp -a -e $kyaml ]
+then
+    # Extract PGPASS var from Keter's own config
+    pass=$(sudo perl -ne "/PGPASS:\s*'([^']*)'/ and print \$1" $kyaml)
+    # More sanity
+    if [ -n "$pass" ]
+    then
+        # Export and run
+        env PGPASS="$pass" \
+            PGUSER=snowdrift_production \
+            PGDATABASE=snowdrift_production \
+            $spp Production
+    fi
+fi

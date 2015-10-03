@@ -11,15 +11,22 @@
     successful campaign
   at the end of 2014, and the co-founders continue to donate personally
   and volunteer substantial time without compensation.
-  We currently have a budget just barely enough to fund a couple (underpaid)
-  developers and cover some legal expenses along with a few other misc. items.
+  We currently have a budget just barely enough to fund our (underpaid) lead
+  developer and cover some legal expenses along with a few other misc. items.
   See our
   <a href=@{WikiR "snowdrift" LangEn "accounting"}>
     accounting page
   for details about our budget and how we use the funds.
+<h2>Donate today!
 <p>
   Although the formal fund-drive is over, we can still provide comparable
-  rewards for new donors. Please
+  rewards for new donors. That's $12+ for sticker, $25+ for gift card to working
+  system, $40+ for sponsored commit, $100+ for t-shirt… <em>All</em> donors at
+  <em>any</em> level may (if they choose) be listed among our official
+  <a href=@{SponsorsR}>launch sponsors</a>,
+  and noted as "key sponsors" for donations of $500+.
+<p>
+  Please
   <a href=@{ProjectContactR "snowdrift"}>
     contact&nbsp;us
   with any questions.

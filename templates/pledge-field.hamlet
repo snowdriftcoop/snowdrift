@@ -7,7 +7,7 @@ $newline never
       name=#{name}
       value=#{shareNumber}
       :shareNumber == value:checked>
-    #{centView}¢
+    #{centView}
 
   <div>
     <input .radio-inline *{attrs}

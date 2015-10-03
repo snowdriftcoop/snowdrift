@@ -2,13 +2,13 @@ module TestImport.Internal where
 
 import Prelude hiding (exp)
 
-import qualified Language.Haskell.Exts.Parser            as Src
-import qualified Language.Haskell.Exts.SrcLoc            as Src
-import qualified Language.Haskell.Exts.Pretty            as Src
-import qualified Language.Haskell.Exts.Annotated.Syntax  as Src
-import qualified Language.Haskell.Meta.Parse             as Exp
-import qualified Language.Haskell.TH                     as TH
-import           Language.Haskell.TH.Quote
+import Language.Haskell.TH.Quote
+import qualified Language.Haskell.Exts.Annotated.Syntax as Src
+import qualified Language.Haskell.Exts.Parser as Src
+import qualified Language.Haskell.Exts.Pretty as Src
+import qualified Language.Haskell.Exts.SrcLoc as Src
+import qualified Language.Haskell.Meta.Parse as Exp
+import qualified Language.Haskell.TH as TH
 
 marked :: QuasiQuoter
 marked = QuasiQuoter

@@ -5,6 +5,15 @@
         <img src=@{ImageR logo}>
       $nothing
         <img src=@{StaticR img_default_project_logo_png}>
+  $maybe _ <- mviewer_id
+    $maybe project_id <- maybe_project_id
+      <div .text-center>
+        $if is_watching
+          <form method=POST action=@{UnwatchProjectR project_id}>
+            <input type=submit value="unwatch">
+        $else
+          <form method=POST action=@{WatchProjectR project_id}>
+            <input type=submit value="watch">
   <ul .project-nav>
     $if userIsAdmin
       <li .snowdrift-sidebar-item>
@@ -52,15 +61,6 @@
       <a href=@{WikiPagesR $ projectHandle project}>
         <span .glyphicon .glyphicon-book>
         Wiki
-  $if isJust mviewer_id
-    <div .text-center>
-      $maybe project_id <- maybe_project_id
-        $if is_watching
-          <form method=POST action=@{UnwatchProjectR project_id}>
-            <input type=submit value="unwatch">
-        $else
-          <form method=POST action=@{WatchProjectR project_id}>
-            <input type=submit value="watch">
 
 <div .row>
   <div .col-md-7 .col-sm-8 .col-xs-12>
@@ -74,9 +74,9 @@
         <form method=GET
               action=@{UpdatePledgeR $ projectHandle project}>
           ^{update_pledge}
-          $if isJust maybe_shares
+          $maybe _ <- maybe_shares
             <input .pledge type=submit value="update pledge">
-          $else
+          $nothing
             <input .pledge type=submit value="enter pledge">
       $nothing
         ^{update_pledge}
@@ -90,6 +90,7 @@
       currently
       <strong>testing with fake money
       and daily instead of monthly
+      (currently, some calculations are known to be off, but will fix soon)
 
     <table>
       <tr>
@@ -97,16 +98,24 @@
       <tr>
         <td>
           <a href=@{ProjectPatronsR $ projectHandle project}>
-            _{MsgPatrons users}
-        <tr>
-          <td>
-            _{MsgShares shares}
-        <tr>
-          <td>
-            current base pledge value: #{show share_value}
-        <tr>
-          <td>
-            total value of all pledges: #{show project_value}&nbsp;per&nbsp;month
+            _{MsgPatrons numPatrons}
+      <tr>
+        <td>
+          <span .pledge-stat>#{show project_value}&nbsp;per&nbsp;month
+    <table>
+      <tr>
+        <th>Next new patron
+      <tr>
+        <td>
+          minimum new pledge:
+          <span .pledge-stat>#{show $ share_value + 10}
+          per month
+      <tr>
+        <td>
+
+          matching from others:
+          <span .pledge-stat>#{show mills}
+          per month
     <table>
       <tr>
         <th>History

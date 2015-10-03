@@ -1,66 +1,82 @@
-Snowdrift.coop
-==============
+# [Snowdrift.coop]
 
-[Snowdrift.coop](https://snowdrift.coop) is a non-profit, cooperative platform
-for funding Free/Libre/Open (FLO) works. Using a many-to-many matching pledge,
-we aim to empower the global community to better promote freedom-respecting
-projects of all sorts.
+**A non-profit, cooperative platform for funding Free/Libre/Open (FLO) works.**
 
-For the basic idea, see our
-[illustrated intro](https://snowdrift.coop/p/snowdrift/w/en/intro).
+Using a many-to-many matching pledge, we aim to empower the global
+community to better promote freedom-respecting projects of all sorts.
 
-Other pages on the site explain our
-[mission](https://snowdrift.coop/p/snowdrift/w/en/mission)
-and include discussion and research on issues like
-the
-[economics of FLO projects](https://snowdrift.coop/p/snowdrift/w/en/economics),
-the
-[incentives behind donations](https://snowdrift.coop/p/snowdrift/w/en/psychology),
-how our model departs from that of
-[other funding sites](https://snowdrift.coop/p/snowdrift/w/en/othercrowdfunding),
-and more.
+For the basic idea, see our [illustrated intro].
 
+Other pages on the site explain our [mission] and include discussion and
+research on issues like the [economics of FLO projects], the [incentives
+behind donations], and how our model departs from that of [other funding
+sites].
 
-Contributing
-============
+Snowdrift.coop is built with the **[Haskell]** programming language, and
+**[Yesod web framework]**.
 
-Our [how-to-help page](https://snowdrift.coop/p/snowdrift/w/how-to-help)
-includes further notes about the site and info about volunteering (including
-in non-programming ways). We also have an in-progress, self-hosted
-[ticket system](http://snowdrift.coop/p/snowdrift/t).
+## Contributing
 
-Snowdrift.coop is built with **Haskell** and the
-**[Yesod web framework](http://www.yesodweb.com/)**,
-but even if you don't yet know Haskell,
-you may still contribute basic HTML/CSS/Javascript work!
-We welcome contributions from developers of all skill levels.
+Snowdrift.coop welcomes contributions of all sorts, and even contributors with
+no technical experience can find ways to help. Our [how-to-help page] includes
+further notes about the site and info about volunteering (including in
+non-programming areas).
 
-Whatever your background, we're happy to answer questions or get any comments.
-Hop on #snowdrift at
-[freenode.net](http://webchat.freenode.net/?channels=#snowdrift), and say hello!
+We have a complete **[Contributor guide]** covering how to get involved as a
+developer. Our guide covers our development practices and all the basic setup
+and steps even for those new to Git or Haskell or even to programming generally.
 
+### Building and testing the website
 
-Essential build instructions
-----------------------------
+To build the code on your local computer, follow our [Build instructions].
 
-Our code is hosted at the fully free/libre/open site
-[git.gnu.io/snowdrift/snowdrift](https://git.gnu.io/snowdrift/snowdrift)
-but, for convenience and redundancy, we also mirror at
-[GitHub](https://github.com/snowdriftcoop/snowdrift),
-a popular but proprietary platform.
+### Filing and searching issues/tickets
 
-Beginners with minimal technical background should follow our
-[Beginners' Snowdrift Set Up](BEGINNERS.md) which can get anyone started
-making basic contributions.
-It also includes links and info to help learn more about the tools we use.
+For bugs and feature requests, we have a self-hosted [ticket system].
 
-### Install options
+### Communicating with us
 
-An easy way to build the site is to use a virtual machine via our
-[Vagrant setup](SETUP_VAGRANT.md).
-Vagrant works for nearly all operating systems.
+Please **ask for help** and/or let us know any confusion you have at any point
+via any of the communication channels mentioned below or elsewhere. We're always
+happy to help guide newcomers through making their first contributions.
 
-If you prefer to install locally, see our
-[Debian/Ubuntu setup instructions](SETUP_DEBIAN.md) or our
-[GUIDE.md](GUIDE.md) file for other systems (including other GNU/Linux
-distros and OS X). The GUIDE also includes technical notes and details.
+Ways to get in touch:
+
+* Log-in with a user on the main Snowdrift.coop site and fill out a
+  [volunteer form](https://snowdrift.coop/p/snowdrift/volunteer)
+
+* Sign up on the
+  [dev email list](https://lists.snowdrift.coop/mailman/listinfo/dev)
+  and perhaps
+  [other email lists](https://lists.snowdrift.coop/)
+  and send a message introducing yourself to the community.
+
+* Visit `#snowdrift` on frenode.net
+  [IRC](https://snowdrift.coop/p/snowdrift/w/en/irc)
+  for live chat.
+
+License
+-------
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+[GNU Affero General Public License](LICENSE.md) for more details.
+
+[Contributor guide]: CONTRIBUTING.md
+[Build instructions]: BUILD.md
+[economics of FLO projects]: https://snowdrift.coop/p/snowdrift/w/en/economics
+[Haskell]: https://www.haskell.org/
+[how-to-help page]: https://snowdrift.coop/p/snowdrift/w/how-to-help
+[illustrated intro]: https://snowdrift.coop/p/snowdrift/w/en/intro
+[incentives behind donations]: https://snowdrift.coop/p/snowdrift/w/en/psychology
+[mission]: https://snowdrift.coop/p/snowdrift/w/en/mission
+[other funding sites]: https://snowdrift.coop/p/snowdrift/w/en/othercrowdfunding
+[Snowdrift.coop]: https://snowdrift.coop
+[ticket system]: http://snowdrift.coop/p/snowdrift/t
+[Yesod web framework]: http://www.yesodweb.com/
