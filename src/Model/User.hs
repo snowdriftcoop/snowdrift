@@ -33,6 +33,9 @@ module Model.User
     , archiveNotificationsDB
     , archiveUserNotificationsDB
     , archiveProjectNotificationsDB
+    , claimedTickets
+    , countClaimedTickets
+    , countTickets
     , deleteFromEmailVerification
     , deleteCommentsDB
     , deleteBlogPostsDB
@@ -89,6 +92,8 @@ module Model.User
     , userViewWikiEditsDB
     , userWatchProjectDB
     , verifyEmailDB
+    , watchedTickets
+    , countWatchedTickets
     -- Unsorted
     , canCurUserMakeEligible
     , canMakeEligible
@@ -733,3 +738,85 @@ pledgeStatus uid = do
     return $ case underfunded of
         [] -> AllFunded
         _ -> ExistsUnderfunded
+
+
+claimedTickets :: UserId -> Handler [(Entity Ticket, Maybe (Entity WikiTarget), Import.Value Text)]
+claimedTickets user_id = do
+
+    -- TODO: abstract out grabbing the project
+    runDB $ select $ from $ \(c `InnerJoin` t `InnerJoin` tc `LeftOuterJoin` wp `LeftOuterJoin` wt `InnerJoin` p) -> do
+        on_ $ p ^. ProjectDiscussion ==. c ^. CommentDiscussion ||. wp ?. WikiPageProject ==. just (p ^. ProjectId)
+        on_ $ wt ?. WikiTargetPage ==. wp ?. WikiPageId
+        on_ $ wp ?. WikiPageDiscussion ==. just (c ^. CommentDiscussion)
+        on_ $ tc ^. TicketClaimingTicket ==. c ^. CommentId
+        on_ $ t ^. TicketComment ==. c ^. CommentId
+
+        where_ $ tc ^. TicketClaimingUser ==. val user_id
+            &&. c ^. CommentId `notIn` (subList_select $ from $ return . (^. CommentClosingComment))
+            &&. c ^. CommentId `notIn` (subList_select $ from $ return . (^. CommentRethreadOldComment))
+
+        orderBy [ asc $ tc ^. TicketClaimingTs ]
+
+        return (t, wt, p ^. ProjectHandle)
+
+    -- XXX: There are two known issues with this query:
+    -- 1. If a watched comment is a ticket and the nth child, the
+    -- query will return the same ticket n times.
+    -- 2. If there are n watched comments in the same thread, each
+    -- child ticket in the thread will be returned n times.
+    -- 'select . distinct' just hides these problems from the user's
+    -- eyes.
+
+countClaimedTickets :: UserId -> Handler Int
+countClaimedTickets user_id = do
+
+    claimed_tickets <- claimedTickets user_id
+    return $ length claimed_tickets
+
+countWatchedTickets :: UserId -> Handler Int
+countWatchedTickets user_id = do
+
+    watched_tickets <- watchedTickets user_id
+    return $ length watched_tickets
+
+countTickets :: UserId -> Handler Int
+countTickets user_id = do
+
+    claimed_tickets <- claimedTickets user_id
+    watched_tickets <- watchedTickets user_id
+    return $ (length watched_tickets) + (length claimed_tickets)
+
+
+watchedTickets :: UserId -> Handler [(Entity Ticket, Maybe (Entity User), Maybe (Entity WikiTarget), Import.Value Text)]
+watchedTickets user_id = do
+
+    runDB $ select . distinct $ from $ \
+        (
+                            c   -- Comment
+            `LeftOuterJoin` ca  -- CommentAncestor - link between comment and subthread root
+            `InnerJoin`     ws  -- WatchedSubthread
+            `InnerJoin`     t   -- Ticket
+            `LeftOuterJoin` tc  -- TicketClaiming for the ticket, if any (current only)
+            `LeftOuterJoin` u   -- User who claimed the ticket, if any
+            `LeftOuterJoin` wp   -- Wiki page for discussion, if any
+            `LeftOuterJoin` wt   -- Wiki target for discussion, if any
+            `InnerJoin` p       -- Project for discussion
+        ) -> do
+            on_ $ p ^. ProjectDiscussion ==. c ^. CommentDiscussion ||. wp ?. WikiPageProject ==. just (p ^. ProjectId)
+            on_ $ wt ?. WikiTargetPage ==. wp ?. WikiPageId
+            on_ $ wp ?. WikiPageDiscussion ==. just (c ^. CommentDiscussion)
+            on_ $ u ?. UserId ==. tc ?. TicketClaimingUser
+            on_ $ tc ?. TicketClaimingTicket ==. just (c ^. CommentId)
+            on_ $ t ^. TicketComment ==. c ^. CommentId
+            on_ $ ws ^. WatchedSubthreadRoot ==. c ^. CommentId
+                ||. just (ws ^. WatchedSubthreadRoot) ==. ca ?. CommentAncestorAncestor
+            on_ $ ca ?. CommentAncestorComment ==. just (c ^. CommentId)
+
+            where_ $ (isNothing (tc ?. TicketClaimingId) ||. tc ?. TicketClaimingUser !=. just (val user_id))
+                &&. c ^. CommentId `notIn` (subList_select $ from $ return . (^. CommentClosingComment))
+                &&. c ^. CommentId `notIn` (subList_select $ from $ return . (^. CommentRethreadOldComment))
+                &&. ws ^. WatchedSubthreadUser ==. val user_id
+
+            orderBy [ asc $ t ^. TicketCreatedTs, asc $ t ^. TicketId ]
+
+            return (t, u, wt, p ^. ProjectHandle)
