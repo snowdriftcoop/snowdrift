@@ -4,10 +4,6 @@ This guide covers our recommended options for fully-FLO text-editors and IDE
 development tools for hacking on Snowdrift (although this pretty well applies to
 any Yesod-based project).
 
-Note: regardless of editor, to use any tool set up with via `stack install`,
-make sure you have ~/.local/bin on your PATH. If not already set, run
-`echo 'export PATH=$HOME/.local/bin:$PATH' >> ~/.bashrc`.
-
 ## Text editor packages and settings
 
 ### Atom
@@ -36,15 +32,17 @@ install ide-haskell for Atom:
 
 * Run `stack install ghc-mod hlint stylish-haskell --resolver nightly`
     * "--resolver nightly" is only needed until we update our lts resolver to
-      one that includes ghc-mod (the latest 3.6 did not, as of this writing).
+      one that includes ghc-mod (the latest 3.7 did not, as of this writing).
 * Install the required Atom packages:
   `apm install language-haskell haskell-ghc-mod ide-haskell autocomplete-haskell`
-* If you always start Atom from the command line and have ~/.local/bin in your
-  path, you're done.
-* To enable starting Atom not from command line, run `which ghc-mod`, copy the
-  path that returns, and then, within Atom, in the settings for the
-  haskell-ghc-mod package, paste that path in the field for the "Ghc Mod Path"
-  and the same path but with an `i` added on the end for the "Ghc Modi Path".
+* Make sure `$HOME/.local/bin` is on the PATH accessible to Atom.
+    * If your path isn't set already, run
+      `echo 'export PATH=$HOME/.local/bin:$PATH' >> ~/.profile` (although other
+      methods exist, this offers the most flexibility and works for starting
+      atom from the command line or from a GUI launcher). To make the path
+      active, log out of your system and log back in (to avoid logging out,
+      `source ~/.profile` will get the path in your terminal, but you'll have to
+      start atom from the command line for now).
 * *Note*: this installation is the easiest for now and will work for any other
   projects that use the same GHC version but will *not* work if you switch
   between projects that use different GHC versions.
@@ -184,7 +182,7 @@ more on building Snowdrift than maximizing their Vim expertise.
 
 The following works for all text-editors that recognize tags files.
 
-* run `stack install hasktags`
+* run `stack install hasktags` (and make sure ~/.local/bin is in your path)
 * In the snowdrift directory, run this big command to generate your tags file:
 
         git ls-tree -r HEAD --name-only | grep -E '*.hs' | xargs hasktags -x -c --ignore-close-implementation
