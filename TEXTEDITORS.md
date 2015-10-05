@@ -14,9 +14,10 @@ is continually improving.
 
 #### Atom settings
 
-Some settings to consider:
+Some settings to *consider*:
 
-* Tab Length: 4 (easy enough to enter 2 spaces for hamlet)
+* Tab Length: 4 (easy enough to enter 2 spaces for hamlet), make sure to keep
+  "soft tabs" checked.
 * Packages/Tree View: turn on "Hide Ignored Names" and "Hide VCS Ignored Files"
 * Disable the "metrics" package to stop Atom sending data to Google Analytics
 
@@ -53,7 +54,7 @@ Other useful Atom packages to consider:
     * [tree-view-git-status](https://atom.io/packages/tree-view-git-status)
     * [git-blame](https://atom.io/packages/git-blame)
     * [show-origin](https://atom.io/packages/show-origin)
-    * searching will show other git tools worth considering
+    * search the packages for other git tools worth considering
 * General nice tools like [minimap](https://atom.io/packages/minimap),
   [cursor-history](https://atom.io/packages/cursor-history),
   [clipboard-history](https://atom.io/packages/clipboard-history),
@@ -171,7 +172,6 @@ strongly recommended):
 [NERD tree git plugin](https://github.com/Xuyuanp/nerdtree-git-plugin);
 and others which take some minor learning and/or set up:
 [vim-easyclip](https://github.com/mbbill/undotree),
-[MiniBufExplorer](https://github.com/fholgado/minibufexpl.vim),
 [ag.vim](https://github.com/rking/ag.vim),
 [vim-airline](https://github.com/bling/vim-airline).
 
