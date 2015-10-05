@@ -37,28 +37,17 @@ getUsersR :: Handler Html
 getUsersR = do
     void requireAuth
 
-    users' <- runDB $
-                  select $
-                  from $ \user -> do
-                  orderBy [desc $ user ^. UserId]
-                  return user
+    (users', allProjects) <- runDB (liftA2 (,) fetchAllUsersDB fetchAllUserProjectInfosDB)
 
-    infos :: [(Entity User, ((Value Text, Value Text), Value Role))] <- runDB $
-        select $
-        from $ \(user `InnerJoin` role `InnerJoin` project) -> do
-        on_ (project ^. ProjectId ==. role ^. ProjectUserRoleProject)
-        on_ (user ^. UserId ==. role ^. ProjectUserRoleUser)
-        return (user, ((project ^. ProjectName, project ^. ProjectHandle), role ^. ProjectUserRoleRole))
+    let users :: [(Text, Entity User)]
+        users = map (\u -> (getUserKey u :: Text, u)) $ filter isVisible users'
 
-
-    let users = map (\u -> (getUserKey u :: Text, u)) $ filter isVisible users'
-        infos' :: [(UserId, ((Text, Text), Role))] = map (entityKey *** unwrapValues) infos
-        infos'' :: [(UserId, Map (Text, Text) (Set Role))] = map (second $ uncurry M.singleton . second S.singleton) infos'
-        allProjects :: Map UserId (Map (Text, Text) (Set Role)) = M.fromListWith (M.unionWith S.union) infos''
         userProjects :: Entity User -> Maybe (Map (Text, Text) (Set (Role)))
         userProjects u = M.lookup (entityKey u) allProjects
+
         getUserKey :: PersistField a => Entity User -> a
         getUserKey = either (error . T.unpack) id . fromPersistValue . toPersistValue . entityKey
+
         isVisible :: Entity User -> Bool
         isVisible = (>= (0::Int)) . getUserKey
 

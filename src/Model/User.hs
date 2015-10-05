@@ -40,6 +40,8 @@ module Model.User
     , deleteUserDB
     , eligEstablishUserDB
     , establishUserDB
+    , fetchAllUsersDB
+    , fetchAllUserProjectInfosDB
     , fetchAllUserRolesDB
     , fetchCurUserRolesDB
     , fetchNumUnreadNotificationsDB
@@ -188,8 +190,35 @@ updateUserPreview UserUpdate{..} user = user
 --------------------------------------------------------------------------------
 -- Database functions
 
+-- | Fetch all users, ordered by descending user id.
+fetchAllUsersDB :: DB [Entity User]
+fetchAllUsersDB =
+      select $
+      from $ \user -> do
+      orderBy [desc (user ^. UserId)]
+      return user
+
 fetchUsersInDB :: [UserId] -> DB [Entity User]
 fetchUsersInDB user_ids = selectList [UserId <-. user_ids] []
+
+-- | Fetch all users with their "project infos" (mapping from project name and
+-- handle to the set of user roles).
+fetchAllUserProjectInfosDB :: DB (Map UserId (Map (Text, Text) (Set Role)))
+fetchAllUserProjectInfosDB = fmap go query
+  where
+    go :: [(Value UserId, Value Text, Value Text, Value Role)] -> Map UserId (Map (Text, Text) (Set Role))
+    go = M.fromListWith (M.unionWith S.union) . map f
+      where
+        f :: (Value UserId, Value Text, Value Text, Value Role) -> (UserId, Map (Text, Text) (Set Role))
+        f (Value uid, Value name, Value handle, Value role) = (uid, M.singleton (name, handle) (S.singleton role))
+
+    query :: DB [(Value UserId, Value Text, Value Text, Value Role)]
+    query =
+        select $
+        from $ \(user `InnerJoin` role `InnerJoin` project) -> do
+        on_ (project ^. ProjectId ==. role ^. ProjectUserRoleProject)
+        on_ (user ^. UserId ==. role ^. ProjectUserRoleUser)
+        return (user ^. UserId, project ^. ProjectName, project ^. ProjectHandle, role ^. ProjectUserRoleRole)
 
 fetchUserWatchingProjectsDB :: UserId -> DB [Entity Project]
 fetchUserWatchingProjectsDB user_id =

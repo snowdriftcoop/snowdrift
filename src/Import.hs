@@ -3,6 +3,7 @@
 
 module Import (module Import) where
 
+import Control.Applicative as Import (liftA2)
 import Control.Arrow as Import
             ((***), (&&&), (+++), first, second, (>>>), (<<<))
 import Control.Monad as Import
