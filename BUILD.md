@@ -21,7 +21,7 @@ section.**
 To install dependencies, run the following commands:
 
     sudo apt-get update &&
-    sudo apt-get install git postgresql postgresql-client libgmp-dev zlib1g-dev libpq-dev
+    sudo apt-get install git postgresql postgresql-client libgmp-dev zlib1g-dev libpq-dev libtinfo-dev
 
 Then follow the
 [Debian Stack install](https://github.com/commercialhaskell/stack/blob/master/doc/install_and_upgrade.md#debian)
