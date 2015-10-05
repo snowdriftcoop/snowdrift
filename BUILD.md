@@ -202,6 +202,8 @@ With everything initialized, you can now use the following commands:
           sdm database configuration script, or the email daemon.
     * In rare cases, you may need to run `stack clean` if the development site
       fails to recognize a change.
+    * Specifically for changes to files in the static directory, run
+      `touch src/Settings/StaticFiles.hs` before rebuilding.
 
 * `stack ghci`: Start the REPL
 
