@@ -37,7 +37,7 @@ getUsersR :: Handler Html
 getUsersR = do
     void requireAuth
 
-    (users', allProjects) <- runDB (liftA2 (,) fetchAllUsersDB fetchAllUserProjectInfosDB)
+    (users', allProjects) <- runDB ((,) <$> fetchAllUsersDB <*> fetchAllUserProjectInfosDB)
 
     let users :: [(Text, Entity User)]
         users = map (\u -> (getUserKey u :: Text, u)) $ filter isVisible users'
