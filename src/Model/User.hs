@@ -36,6 +36,7 @@ module Model.User
     , claimedTickets
     , countClaimedTickets
     , countTickets
+    , countWatchedTickets
     , deleteFromEmailVerification
     , deleteCommentsDB
     , deleteBlogPostsDB
@@ -93,7 +94,6 @@ module Model.User
     , userWatchProjectDB
     , verifyEmailDB
     , watchedTickets
-    , countWatchedTickets
     -- Unsorted
     , canCurUserMakeEligible
     , canMakeEligible
@@ -739,10 +739,8 @@ pledgeStatus uid = do
         [] -> AllFunded
         _ -> ExistsUnderfunded
 
-
 claimedTickets :: UserId -> Handler [(Entity Ticket, Maybe (Entity WikiTarget), Import.Value Text)]
 claimedTickets user_id = do
-
     -- TODO: abstract out grabbing the project
     runDB $ select $ from $ \(c `InnerJoin` t `InnerJoin` tc `LeftOuterJoin` wp `LeftOuterJoin` wt `InnerJoin` p) -> do
         on_ $ p ^. ProjectDiscussion ==. c ^. CommentDiscussion ||. wp ?. WikiPageProject ==. just (p ^. ProjectId)
@@ -759,34 +757,29 @@ claimedTickets user_id = do
 
         return (t, wt, p ^. ProjectHandle)
 
-    -- XXX: There are two known issues with this query:
-    -- 1. If a watched comment is a ticket and the nth child, the
-    -- query will return the same ticket n times.
-    -- 2. If there are n watched comments in the same thread, each
-    -- child ticket in the thread will be returned n times.
-    -- 'select . distinct' just hides these problems from the user's
-    -- eyes.
-
 countClaimedTickets :: UserId -> Handler Int
 countClaimedTickets user_id = do
-
     claimed_tickets <- claimedTickets user_id
     return $ length claimed_tickets
 
 countWatchedTickets :: UserId -> Handler Int
 countWatchedTickets user_id = do
-
     watched_tickets <- watchedTickets user_id
     return $ length watched_tickets
 
 countTickets :: UserId -> Handler Int
 countTickets user_id = do
-
     claimed_tickets <- claimedTickets user_id
     watched_tickets <- watchedTickets user_id
     return $ (length watched_tickets) + (length claimed_tickets)
 
 
+-- XXX: There are two known issues with this query:
+-- 1. If a watched comment is a ticket and the nth child, the query will
+--    return the same ticket n times.
+-- 2. If there are n watched comments in the same thread, each child ticket
+--    in the thread will be returned n times. 'select . distinct' just
+--    hides these problems from the user's eyes.
 watchedTickets :: UserId -> Handler [(Entity Ticket, Maybe (Entity User), Maybe (Entity WikiTarget), Import.Value Text)]
 watchedTickets user_id = do
 

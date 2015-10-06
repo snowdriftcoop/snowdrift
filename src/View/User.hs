@@ -134,8 +134,13 @@ previewUserForm User{..} = renderBootstrap3 BootstrapBasicForm $
         <*> hiddenMarkdown userBlurb
         <*> hiddenMarkdown userStatement
 
--- | Render a User profile, including
-renderUser :: Maybe UserId -> UserId -> User -> Map (Entity Project) (Set Role) -> Int -> Widget
+-- | Render a User profile
+renderUser :: Maybe UserId
+           -> UserId
+           -> User
+           -> Map (Entity Project) (Set Role)
+           -> Int
+           -> Widget
 renderUser mviewer_id user_id user projects_and_roles countTickets = do
     let user_entity = Entity user_id user
 
