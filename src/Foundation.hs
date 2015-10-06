@@ -94,7 +94,8 @@ mkYesodData "App" $(parseRoutesFile "config/routes")
 type Form x = Html -> MForm (HandlerT App IO) (FormResult x, Widget)
 
 licenseNotice :: LB.ByteString
-licenseNotice = E.encodeUtf8 $ renderJavascriptUrl (\_ _ -> T.empty) [julius|
+licenseNotice = E.encodeUtf8 $ renderJavascriptUrl (\_ _ -> T.empty)
+    [julius|
     /*
      @licstart  The following is the entire license notice for the JavaScript code in this page.
 
@@ -116,7 +117,7 @@ licenseNotice = E.encodeUtf8 $ renderJavascriptUrl (\_ _ -> T.empty) [julius|
 
      @licend  The above is the entire license notice for the JavaScript code in this page.
     */
-|]
+    |]
 
 -- Please see the documentation for the Yesod typeclass. There are a number
 -- of settings which can be configured by overriding methods here.
@@ -171,24 +172,7 @@ instance Yesod App where
             provideRep $ defaultLayout $ do
                 setTitle $
                     toHtml $ "Permission Denied: " <> s <> " | Snowdrift.coop"
-                toWidget [hamlet|$newline never
-                    <h1>Permission Denied
-                    <p>
-                        $maybe _ <- maybe_user
-                            You do not have permission to view this page at this time. #
-                            If you think you should, let us know #
-                            $# TODO
-                            and we'll fix it for you or everyone. #
-                            Otherwise, you can always go to our #
-                            <a href=@{HomeR}>main page
-                            .
-                        $nothing
-                            You are not logged in, and this page is not publicly visible. #
-                            <a href=@{AuthR LoginR}>Log in or create an account
-                            \or return to our #
-                            <a href=@{HomeR}>main page
-                            .
-                |]
+                $(widgetFile "permission-denied")
 
     errorHandler other_error = defaultErrorHandler other_error
 
@@ -237,37 +221,9 @@ authBrowserIdFixed =
         login toMaster = do
             addScriptRemote browserIdJs
 
-            toWidget [julius|
-                function persona_login() {
-                    navigator.id.request(
-                        { siteName: null
-                        // , siteLogo: '/static/img/logo.png'
-                        , termsOfService: '@{ToUR}'
-                        , privacyPolicy: '@{PrivacyR}'
-                        , returnTo: '@{PostLoginR}'
-                        , oncancel: function() {}
-                        }
-                    );
-                }
-
-                navigator.id.watch(
-                    { loggedInUser : null
-                    , onlogin :
-                        function(a) {
-                            if(a) document.location='@{toMaster complete}/' + a;
-                            navigator.id.logout();
-                        }
-                    , onlogout : function() {}
-                    }
-                )
-            |]
-
-            toWidget [hamlet|
-                $newline never
-                <figure>
-                  <a href="javascript:persona_login()">
-                    <img src="https://browserid.org/i/persona_sign_in_blue.png">
-            |]
+            -- it's "BrowserID" for the backend, but the user-facing
+            -- front-end is called "Mozilla Persona"
+            $(widgetFile "persona-fixed")
 
      in (authBrowserId def) { apLogin = login }
 
@@ -276,16 +232,7 @@ snowdriftAuthBrowserId =
     let auth = authBrowserIdFixed
         login toMaster = do
             let parentLogin = apLogin auth toMaster
-            [whamlet|
-                <div .text-center>
-                  <strong>
-                    We support Mozilla Persona — a universal,
-                    secure log-in that doesn't track you!
-                ^{parentLogin}
-                <p>
-                  The Persona sign-in button works for
-                  both new and existing accounts.
-            |]
+            $(widgetFile "persona")
      in auth { apLogin = login }
 
 snowdriftAuthHashDB :: AuthPlugin App
@@ -293,45 +240,7 @@ snowdriftAuthHashDB =
     let auth = authHashDB (Just . UniqueUser)
         loginRoute = PluginR "hashdb" ["login"]
         login toMaster =
-            [whamlet|
-                <div #login>
-                  <div .text-center>
-                    <strong>
-                      We also offer a built-in system
-                    <div #new-account-button>
-                      <a href=@{UserCreateR}>
-                        <button>click here to create a new account
-                    <p> or log-in below:
-                  <form .form-horizontal
-                    method=post
-                    action=@{toMaster loginRoute}>
-                      <div .form-group>
-                        <label .col-sm-4 .control-label
-                          for=handle>
-                          Handle:
-                        <div .col-sm-8>
-                          <input .form-control
-                            id=handle
-                            name=username
-                            autofocus
-                            required>
-                      <div .form-group>
-                        <label .col-sm-4 .control-label
-                          for=password>
-                          Passphrase:
-                        <div .col-sm-8>
-                          <input .form-control
-                            id=password
-                            type=password
-                            name=password
-                            required>
-                      <div .form-group .text-center>
-                        <div #login-button>
-                          <button type=submit>
-                            Log in
-                        <a href=@{ResetPasswordR}>
-                          forgot your password?
-            |]
+            $(widgetFile "built-in-login")
      in auth { apLogin = login }
 
 instance YesodAuth App where
@@ -474,13 +383,12 @@ addAlertEm level msg em = do
     render <- getUrlRenderParams
     prev <- lookupSession alertKey
 
-    setSession alertKey $ maybe id mappend prev $ TL.toStrict $ renderHtml $ [hamlet|
-        $newline never
+    setSession alertKey $ maybe id mappend prev $ TL.toStrict $ renderHtml $
+        [hamlet|
         <div .alert .alert-#{level}>
-            <em>
-                #{em}
-            #{msg}
-    |] render
+          <em>#{em}
+          #{msg}
+        |] render
 
 -- TODO: don't export this
 addAlert :: Text -> Text -> Handler ()
@@ -488,11 +396,11 @@ addAlert level msg = do
     render <- getUrlRenderParams
     prev   <- lookupSession alertKey
 
-    setSession alertKey $ maybe id mappend prev $ TL.toStrict $ renderHtml $ [hamlet|
-        $newline never
+    setSession alertKey $ maybe id mappend prev $ TL.toStrict $ renderHtml $
+        [hamlet|
         <div .alert .alert-#{level}>
-            #{msg}
-    |] render
+          #{msg}
+        |] render
 
 alertDanger, alertInfo, alertSuccess, alertWarning :: Text -> Handler ()
 alertDanger  = addAlert "danger"
