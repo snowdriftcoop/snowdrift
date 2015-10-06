@@ -141,7 +141,7 @@ renderUser :: Maybe UserId
            -> Map (Entity Project) (Set Role)
            -> Int
            -> Widget
-renderUser mviewer_id user_id user projects_and_roles countTickets = do
+renderUser mviewer_id user_id user projects_and_roles ticketCount = do
     let user_entity = Entity user_id user
 
     should_show_est_form <- handlerToWidget (canCurUserMakeEligible user_id)

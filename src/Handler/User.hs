@@ -132,12 +132,12 @@ getUserR user_id = do
         ) $ alertWarning $ "Email address is not verified. Until you verify it, "
                     <> "you will not be able to receive email notifications."
 
-    countTickets <- countTickets user_id
+    ticketCount <- countTickets user_id
 
     defaultLayout $ do
         snowdriftDashTitle "User Profile" $
             userDisplayName (Entity user_id user)
-        renderUser mviewer_id user_id user projects_and_roles countTickets
+        renderUser mviewer_id user_id user projects_and_roles ticketCount
 
 postUserR :: UserId -> Handler Html
 postUserR user_id = do
