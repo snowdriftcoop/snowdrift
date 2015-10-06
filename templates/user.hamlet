@@ -88,8 +88,6 @@ $if Just user_id == mviewer_id
 
     <a href=@{UserTicketsR user_id}>
       #{userDisplayName user_entity}'s claimed and watched tickets
-      <span .badge>
-        #{ticketCount}
 
 $maybe (est_form, est_form_enctype) <- mest_form_and_enctype
   <div .row>

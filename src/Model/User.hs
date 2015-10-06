@@ -35,7 +35,6 @@ module Model.User
     , archiveProjectNotificationsDB
     , claimedTickets
     , countClaimedTickets
-    , countTickets
     , countWatchedTickets
     , deleteFromEmailVerification
     , deleteCommentsDB
@@ -766,13 +765,6 @@ countWatchedTickets :: UserId -> Handler Int
 countWatchedTickets user_id = do
     watched_tickets <- watchedTickets user_id
     return $ length watched_tickets
-
-countTickets :: UserId -> Handler Int
-countTickets user_id = do
-    claimed_tickets <- claimedTickets user_id
-    watched_tickets <- watchedTickets user_id
-    return $ (length watched_tickets) + (length claimed_tickets)
-
 
 -- XXX: There are two known issues with this query:
 -- 1. If a watched comment is a ticket and the nth child, the query will

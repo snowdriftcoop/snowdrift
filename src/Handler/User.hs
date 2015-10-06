@@ -132,12 +132,10 @@ getUserR user_id = do
         ) $ alertWarning $ "Email address is not verified. Until you verify it, "
                     <> "you will not be able to receive email notifications."
 
-    ticketCount <- countTickets user_id
-
     defaultLayout $ do
         snowdriftDashTitle "User Profile" $
             userDisplayName (Entity user_id user)
-        renderUser mviewer_id user_id user projects_and_roles ticketCount
+        renderUser mviewer_id user_id user projects_and_roles
 
 postUserR :: UserId -> Handler Html
 postUserR user_id = do
@@ -466,7 +464,7 @@ postEditUserR user_id = do
 
                     defaultLayout $
                         previewWidget form "update" $
-                            renderUser (Just viewer_id) user_id updated_user mempty 0
+                            renderUser (Just viewer_id) user_id updated_user mempty
         _ -> do
             alertDanger "Failed to update user."
             redirect (UserR user_id)
