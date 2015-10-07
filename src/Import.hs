@@ -84,15 +84,6 @@ selectExists = fmap (>0) . selectCount
 newHash :: IO Text
 newHash = T.pack . fst . randomString 42 <$> newStdGen
 
-class Count a where
-    getCount :: a -> Int64
-
-data UserCount = UserCount Int64
-instance Count UserCount where getCount (UserCount c) = c
-
-data ShareCount = ShareCount Int64
-instance Count ShareCount where getCount (ShareCount c) = c
-
 showDiffTime :: UTCTime -> UTCTime -> String
 showDiffTime x y =
   let secs_ago = round (diffUTCTime x y)

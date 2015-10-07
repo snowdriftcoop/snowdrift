@@ -56,6 +56,7 @@ library
                      Model.Comment.Mods
                      Model.Comment.Routes
                      Model.Comment.Sql
+                     Model.Count
                      Model.Currency
                      Model.Discussion
                      Model.Discussion.TH

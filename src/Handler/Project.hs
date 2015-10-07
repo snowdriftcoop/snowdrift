@@ -31,6 +31,7 @@ import Model.Comment.ActionPermissions
 import Model.Comment.HandlerInfo
 import Model.Comment.Mods
 import Model.Comment.Sql
+import Model.Count
 import Model.Currency
 import Model.Discussion
 import Model.Issue

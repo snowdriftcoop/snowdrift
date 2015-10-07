@@ -4,6 +4,7 @@ module Widgets.ProjectPledges where
 import Import
 
 import Model.Currency
+import Model.Count
 import Model.Project
 import Model.User (fetchUserPledgesDB)
 
