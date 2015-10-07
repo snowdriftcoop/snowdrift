@@ -4,7 +4,26 @@ $forall tag <- tags
     <div .col-xs-6>
       #{tag}:
     <div .col-xs-6>
-      <select name=#{tag} .form-control>
-        <option>include
-        <option>exclude
-        <option selected>doesn't matter
+      $case fieldVal
+        $of Right tagvalues
+          <select name=#{tag} .form-control>
+            $case tagStatus tag tagvalues
+              $of Included
+                <option selected>include
+                <option>exclude
+                <option>doesn't matter
+              $of Excluded
+                <option>include
+                <option selected>exclude
+                <option>doesn't matter
+              $of Neither
+                <option>include
+                <option>exclude
+                <option selected>doesn't matter
+        $of Left err
+            <p>Error: #{err}
+            <select name=#{tag} .form-control>
+              <option>include
+              <option>exclude
+              <option selected>doesn't matter
+                
