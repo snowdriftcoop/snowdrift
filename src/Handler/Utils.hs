@@ -4,6 +4,8 @@ module Handler.Utils where
 import Import
 
 import Data.Text.Titlecase
+import Network.Mail.Mime (randomString)
+import System.Random (newStdGen)
 import qualified Data.Text as T
 
 -- | Possible values for "mode" post param.
@@ -33,3 +35,6 @@ snowdriftTitle t = setTitle $
 
 snowdriftDashTitle :: MonadWidget m => Text -> Text -> m ()
 snowdriftDashTitle x y = snowdriftTitle $ x <> " — " <> y
+
+newHash :: IO Text
+newHash = T.pack . fst . randomString 42 <$> newStdGen

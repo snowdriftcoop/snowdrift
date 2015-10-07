@@ -18,9 +18,7 @@ import Data.Set as Import (Set)
 import Data.Text as Import (Text)
 import Data.Time.Clock as Import (UTCTime, diffUTCTime, getCurrentTime)
 import Database.Esqueleto as Import hiding (on, valList)
-import Network.Mail.Mime (randomString)
 import Prelude as Import hiding (head, init, last, readFile, tail, writeFile)
-import System.Random (newStdGen)
 import Yesod (languages)
 import Yesod as Import
             hiding (Route (..)
@@ -80,9 +78,6 @@ key v = let Right k = keyFromValues [v] in k
 selectExists :: (MonadIO m, Functor m)
              => SqlQuery a -> ReaderT SqlBackend m Bool
 selectExists = fmap (>0) . selectCount
-
-newHash :: IO Text
-newHash = T.pack . fst . randomString 42 <$> newStdGen
 
 showDiffTime :: UTCTime -> UTCTime -> String
 showDiffTime x y =
