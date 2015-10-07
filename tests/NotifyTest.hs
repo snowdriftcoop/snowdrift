@@ -6,7 +6,7 @@
 module NotifyTest (notifySpecs) where
 
 import Prelude
-import Import (Established(..), Role (..), pprint, selectExists, key)
+import Import (Established(..), Role (..), selectExists, key)
 import TestImport hiding ((=.), update, Update)
 
 import Control.Monad (unless)
@@ -28,6 +28,8 @@ import qualified Data.Text.IO as T
 import Model.Currency (Milray (..), millMilray)
 import Model.Language
 import Model.Notification
+
+import PPrint
 
 updateUser :: UserId -> [SqlExpr (Update User)] -> SqlPersistM ()
 updateUser user_id xs =

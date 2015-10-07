@@ -432,17 +432,19 @@ test-suite test
     hs-source-dirs:    tests
     ghc-options:       -Wall -O0 -fobject-code
 
-    other-modules: TestImport
-                   BlogTest
-                   UserTest
-                   MechanismTest
-                   CommentTest
-                   TestImport.Internal
-                   NotifyTest
-                   DiscussionTest
-                   WikiTest
-                   TimedYesodTest
-                   TestHandler
+    other-modules:
+        BlogTest
+        CommentTest
+        DiscussionTest
+        MechanismTest
+        NotifyTest
+        PPrint
+        TestHandler
+        TestImport
+        TestImport.Internal
+        TimedYesodTest
+        UserTest
+        WikiTest
     default-extensions: QuasiQuotes
                 TemplateHaskell
                 OverloadedStrings
