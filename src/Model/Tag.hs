@@ -1,5 +1,6 @@
 module Model.Tag
     ( AnnotatedTag(..)
+    , Color(..)
     , annotTagName
     , annotTagScore
     , annotTagScoreString
@@ -19,6 +20,8 @@ import Data.List (sortBy)
 import Text.Printf
 import qualified Data.List as L
 import qualified Data.Map as M
+
+newtype Color = Color Int deriving (Num)
 
 fetchAllTagsDB :: DB [Entity Tag]
 fetchAllTagsDB = select (from return)

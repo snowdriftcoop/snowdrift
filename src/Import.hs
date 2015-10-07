@@ -18,7 +18,6 @@ import Data.Monoid as Import ((<>))
 import Data.Set as Import (Set)
 import Data.Text as Import (Text)
 import Data.Time.Clock as Import (UTCTime, diffUTCTime, getCurrentTime)
-import Data.Typeable (Typeable)
 import Database.Esqueleto as Import hiding (on, valList)
 import Database.Esqueleto.Internal.Sql (unsafeSqlBinOp)
 import Network.Mail.Mime (randomString)
@@ -135,8 +134,6 @@ instance Count UserCount where getCount (UserCount c) = c
 
 data ShareCount = ShareCount Int64
 instance Count ShareCount where getCount (ShareCount c) = c
-
-newtype Color = Color Int deriving (Typeable, Num)
 
 showDiffTime :: UTCTime -> UTCTime -> String
 showDiffTime x y =
