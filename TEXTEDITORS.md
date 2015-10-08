@@ -47,6 +47,11 @@ install ide-haskell for Atom:
 * *Note*: this installation is the easiest for now and will work for any other
   projects that use the same GHC version but will *not* work if you switch
   between projects that use different GHC versions.
+* *Note: ghc-mod will fail if it sees a dist/ directory which is made when you
+  run snowdrift via `stack exec yesod devel`, so until yesod-bin is updated to
+  use Stack directly, using ghc-mod requires manually starting and stopping the
+  site via `stack exec Snowdrift Development` and make sure there's no dist/
+  directory.*
 
 Other useful Atom packages to consider:
 
@@ -153,7 +158,12 @@ its install instructions except run `stack install ghc-mod --resolver nightly`
 (note: this "--resolver nightly" bit can be ignored once ghc-mod is in the LTS
 version we use) *instead* of the instruction to run "cabal install ghc-mod" (and
 make sure ~/.local/bin is on your path). You may want to also try the associated
-auto-completion tool [neco-ghc](https://github.com/eagletmt/neco-ghc).
+auto-completion tool [neco-ghc](https://github.com/eagletmt/neco-ghc). *Note:
+ghc-mod will fail if it sees a dist/ directory which is made when you run
+snowdrift via `stack exec yesod devel`, so until yesod-bin is updated to use
+Stack directly, using ghc-mod requires manually starting and stopping the site
+via `stack exec Snowdrift Development` and make sure there's no dist/
+directory.*
 
 Other general vim plugins we suggest for consideration include many which are
 inobtrusive and take zero or near-zero learning to use (roughly in order by most
