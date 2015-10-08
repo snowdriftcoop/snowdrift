@@ -1,5 +1,6 @@
--- | Handler for Wiki paths. Section comments are relative to /p/#handle/w
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 
+-- | Handler for Wiki paths. Section comments are relative to /p/#handle/w
 module Handler.Wiki where
 
 import Import
@@ -31,6 +32,16 @@ import View.Comment
 import View.Time
 import View.Wiki
 import Widgets.Preview
+
+
+instance ToContent Markdown where
+    toContent (Markdown text) = toContent $ text <> "\n"
+
+instance ToTypedContent Markdown where
+    toTypedContent markdown = TypedContent "text/markdown" $ toContent markdown
+
+instance HasContentType Markdown where
+    getContentType _ = "text/markdown"
 
 --------------------------------------------------------------------------------
 -- Utility functions

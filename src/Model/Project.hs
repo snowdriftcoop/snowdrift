@@ -57,6 +57,7 @@ import Data.Filter
 import Data.Order
 import Model.Comment
 import Model.Comment.Sql
+import Model.Count
 import Model.Currency
 import Model.Issue
 import Model.Shares (pledgeRenderKey)
@@ -64,9 +65,13 @@ import Model.Tag
 import Model.Wiki.Sql
 import Widgets.Tag
 
-
 --------------------------------------------------------------------------------
 -- Types
+
+newtype UserCount = UserCount Int64 deriving Count
+newtype ShareCount = ShareCount Int64 deriving Count
+newtype DiscussionCount = DiscussionCount Int64 deriving Count
+newtype TicketCount = TicketCount Int64 deriving Count
 
 data ProjectSummary = ProjectSummary
     { summaryName            :: Text
@@ -90,16 +95,6 @@ data UpdateProject = UpdateProject
 newtype TaggedTicket = TaggedTicket ( (Entity Ticket)
                                     , Bool  -- claimed?
                                     , [AnnotatedTag] )
-
-newtype DiscussionCount = DiscussionCount Int64
-
-instance Count DiscussionCount where
-    getCount (DiscussionCount c) = c
-
-newtype TicketCount = TicketCount Int64
-
-instance Count TicketCount where
-    getCount (TicketCount c) = c
 
 instance Issue TaggedTicket where
     issueWidget (TaggedTicket ((Entity ticket_id ticket),_,tags)) =

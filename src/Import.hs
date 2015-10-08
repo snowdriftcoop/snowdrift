@@ -1,5 +1,4 @@
 {-# LANGUAGE CPP, DeriveDataTypeable, TypeFamilies #-}
-{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Import (module Import) where
 
@@ -18,12 +17,8 @@ import Data.Monoid as Import ((<>))
 import Data.Set as Import (Set)
 import Data.Text as Import (Text)
 import Data.Time.Clock as Import (UTCTime, diffUTCTime, getCurrentTime)
-import Data.Typeable (Typeable)
 import Database.Esqueleto as Import hiding (on, valList)
-import Database.Esqueleto.Internal.Sql (unsafeSqlBinOp)
-import Network.Mail.Mime (randomString)
 import Prelude as Import hiding (head, init, last, readFile, tail, writeFile)
-import System.Random (newStdGen)
 import Yesod (languages)
 import Yesod as Import
             hiding (Route (..)
@@ -58,46 +53,11 @@ import Model as Import
 import Model.Language as Import
 import Model.Comment.Internal as Import hiding (TagName, TicketName)
 import Model.Established.Internal as Import
-import Model.Notification.Internal
-            (ProjectNotificationType, ProjectNotificationDelivery)
 import Model.Role.Internal as Import
 import Model.SnowdriftEvent.Internal as Import
 import Settings as Import
 import Settings.Development as Import
 import Settings.StaticFiles as Import
-
-class Show a => PPrint a where
-    pprint :: a -> String
-
-instance PPrint CommentId where
-    pprint = show . unSqlBackendKey . unCommentKey
-
-instance PPrint UserId where
-    pprint = show . unSqlBackendKey . unUserKey
-
-instance PPrint ProjectId where
-    pprint = show . unSqlBackendKey . unProjectKey
-
-instance PPrint TagId where
-    pprint = show . unSqlBackendKey . unTagKey
-
-instance PPrint ProjectNotificationType where
-    pprint = show
-
-instance PPrint ProjectNotificationDelivery where
-    pprint = show
-
-instance PPrint Text where
-    pprint = T.unpack
-
-instance ToContent Markdown where
-    toContent (Markdown text) = toContent $ text <> "\n"
-
-instance ToTypedContent Markdown where
-    toTypedContent markdown = TypedContent "text/markdown" $ toContent markdown
-
-instance HasContentType Markdown where
-    getContentType _ = "text/markdown"
 
 on_ :: Esqueleto query expr backend => expr (Value Bool) -> query ()
 on_ = Database.Esqueleto.on
@@ -105,11 +65,6 @@ on_ = Database.Esqueleto.on
 -- Like Database.Esqueleto.valList, but more generic.
 valList :: (Esqueleto query expr backend, PersistField typ, Foldable l) => l typ -> expr (ValueList typ)
 valList = Database.Esqueleto.valList . toList
-
-infix 4 `notDistinctFrom`
-notDistinctFrom :: SqlExpr (Value a) -> SqlExpr (Value a)
-                -> SqlExpr (Value Bool)
-notDistinctFrom = unsafeSqlBinOp " IS NOT DISTINCT FROM "
 
 selectCount :: (MonadIO m, Functor m) => SqlQuery a -> ReaderT SqlBackend m Int
 selectCount from_ =
@@ -123,20 +78,6 @@ key v = let Right k = keyFromValues [v] in k
 selectExists :: (MonadIO m, Functor m)
              => SqlQuery a -> ReaderT SqlBackend m Bool
 selectExists = fmap (>0) . selectCount
-
-newHash :: IO Text
-newHash = T.pack . fst . randomString 42 <$> newStdGen
-
-class Count a where
-    getCount :: a -> Int64
-
-data UserCount = UserCount Int64
-instance Count UserCount where getCount (UserCount c) = c
-
-data ShareCount = ShareCount Int64
-instance Count ShareCount where getCount (ShareCount c) = c
-
-newtype Color = Color Int deriving (Typeable, Num)
 
 showDiffTime :: UTCTime -> UTCTime -> String
 showDiffTime x y =
