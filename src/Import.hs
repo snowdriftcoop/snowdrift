@@ -5,7 +5,6 @@ module Import (module Import) where
 import Control.Arrow as Import
             ((***), (&&&), (+++), first, second, (>>>), (<<<))
 import Control.Monad as Import
-import Control.Monad.Trans.Reader (ReaderT)
 import Data.Foldable as Import (toList)
 import Data.Function as Import (on)
 import Data.Int as Import (Int64)
@@ -66,18 +65,9 @@ on_ = Database.Esqueleto.on
 valList :: (Esqueleto query expr backend, PersistField typ, Foldable l) => l typ -> expr (ValueList typ)
 valList = Database.Esqueleto.valList . toList
 
-selectCount :: (MonadIO m, Functor m) => SqlQuery a -> ReaderT SqlBackend m Int
-selectCount from_ =
-    fmap (\[Value n] -> n) $
-    select $ from_ >> return countRows
-
 -- XXX: Will this always succeed?
 key :: PersistEntity record => PersistValue -> Key record
 key v = let Right k = keyFromValues [v] in k
-
-selectExists :: (MonadIO m, Functor m)
-             => SqlQuery a -> ReaderT SqlBackend m Bool
-selectExists = fmap (>0) . selectCount
 
 showDiffTime :: UTCTime -> UTCTime -> String
 showDiffTime x y =

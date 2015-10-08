@@ -50,6 +50,7 @@ import Data.Monoid (Sum(..))
 import qualified Data.Map as M
 import qualified Data.Set as S
 import qualified Data.Text as T
+import qualified Database.Persist as P
 import qualified Github.Data as GH
 import qualified Github.Issues as GH
 
@@ -732,13 +733,8 @@ fetchProjectOpenTicketsDB project_id muser_id = do
                        return . (^. CommentRethreadOldComment))
               return t
         forM ts $ \t@(Entity _ ticket) -> do
-            c <-
-                selectCount $
-                from $ \tc -> do
-                where_ $
-                    val (ticketComment ticket) ==. tc ^. TicketClaimingTicket
-                return tc
-            return $ if c == 0 then (t, False) else (t, True)
+            c <- P.count [TicketClaimingTicket P.==. ticketComment ticket]
+            return $ (t, c /= 0)
 
 updateUserPledge :: Text -> Int64 -> HandlerT App IO ()
 updateUserPledge project_handle shares = do

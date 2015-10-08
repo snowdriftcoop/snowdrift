@@ -467,17 +467,14 @@ deleteTagDB comment_id tag_id = do
     delete $ from $ \ct ->
         where_ $ ct ^. CommentTagComment ==. val comment_id
              &&. ct ^. CommentTagTag     ==. val tag_id
-    exists_ct <- selectExists $ from $ \ct ->
-                    where_ $ ct ^. CommentTagTag ==. val tag_id
-    exists_pt <- selectExists $ from $ \pt ->
-                     where_ $ pt ^. ProjectTagTag ==. val tag_id
-    exists_tc <- selectExists $ from $ \tc ->
-                     where_ $ tc ^. TagColorTag ==. val tag_id
-    exists_dtc <- selectExists $ from $ \dtc ->
-                      where_ $ dtc ^. DefaultTagColorTag ==. val tag_id
-    unless (exists_ct || exists_pt || exists_tc || exists_dtc) $
-        delete $ from $ \t ->
-            where_ $ t ^. TagId ==. val tag_id
+    exists_ct <- selectExists [CommentTagTag P.==. tag_id]
+    exists_pt <- selectExists [ProjectTagTag P.==. tag_id]
+    exists_tc <- selectExists [TagColorTag P.==. tag_id]
+    exists_dtc <- selectExists [DefaultTagColorTag P.==. tag_id]
+    unless (exists_ct || exists_pt || exists_tc || exists_dtc)
+           (P.delete tag_id)
+  where
+    selectExists = fmap (>0) . P.count
 
 deleteTagsDB :: CommentId -> [Internal.TagName] -> DB ()
 deleteTagsDB comment_id tags =

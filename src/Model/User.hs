@@ -110,6 +110,7 @@ import qualified Data.List as L
 import qualified Data.Map as M
 import qualified Data.Set as S
 import qualified Data.Text as T
+import qualified Database.Persist as P
 
 import Model.Comment
 import Model.Comment.Sql
@@ -605,11 +606,9 @@ insertDefaultProjectNotifPrefs user_id project_id =
 userWatchProjectDB :: UserId -> ProjectId -> DB ()
 userWatchProjectDB user_id project_id = do
     void $ insertUnique $ UserWatchingProject user_id project_id
-    exists' <-
-        selectExists $
-        from $ \pnp ->
-        where_ $ pnp ^. ProjectNotificationPrefUser    ==. val user_id
-             &&. pnp ^. ProjectNotificationPrefProject ==. val project_id
+    exists' <- fmap (>0) $
+        P.count [ProjectNotificationPrefUser P.==. user_id
+                ,ProjectNotificationPrefProject P.==. project_id]
     unless exists' $
         insertDefaultProjectNotifPrefs user_id project_id
 
@@ -731,13 +730,19 @@ fetchNumUnreadNotificationsDB user_id = (+)
 -- Internal helper.
 fetchNumUnreadNotifications :: ( PersistEntity val
                                , PersistEntityBackend val ~ SqlBackend )
-                            => EntityField val UserId -> EntityField val UTCTime
-                            -> UserId -> DB Int
+                            => EntityField val UserId
+                            -> EntityField val UTCTime
+                            -> UserId
+                            -> DB Int
 fetchNumUnreadNotifications notif_to notif_created_ts user_id =
-    selectCount $ from $ \(u `InnerJoin` n) -> do
-        on_ (u ^. UserId ==. n ^. notif_to)
-        where_ $ u ^. UserId ==. val user_id
+    -- countRows returns at least element. I think.
+    fmap (unValue . L.head)
+         (select $
+          from $ \(u `InnerJoin` n) -> do
+          on_ (u ^. UserId ==. n ^. notif_to)
+          where_ $ u ^. UserId ==. val user_id
              &&. n ^. notif_created_ts >=. u ^. UserReadNotifications
+          return countRows)
 
 fetchNumUnreadUserNotificationsDB :: UserId -> DB Int
 fetchNumUnreadUserNotificationsDB =
