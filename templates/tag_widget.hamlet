@@ -6,7 +6,7 @@ $forall tag <- tags
     <div .col-xs-6>
       $case fieldVal
         $of Right tagvalues
-          <select name=#{tag} .form-control>
+          <select id=#{fieldId} name=#{fieldName} .form-control>
             $case tagStatus tag tagvalues
               $of Included
                 <option selected>include
@@ -26,4 +26,3 @@ $forall tag <- tags
               <option>include
               <option>exclude
               <option selected>doesn't matter
-                

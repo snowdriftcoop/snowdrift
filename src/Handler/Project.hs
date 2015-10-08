@@ -19,6 +19,9 @@ import qualified Data.Set as S
 import qualified Data.Text as T
 import qualified Data.Tree as Tree
 
+-- temporary:  Needs to be removed when debugging is finished
+import Debug.Trace
+
 import Data.Filter
 import Data.Order
 import Data.Time.Format
@@ -771,11 +774,14 @@ getTicketsR project_handle = do
     github_issues <- getGithubIssues project
 
     (ptags, otags) <- runDB $ getProjectTagList project_id
-    let tags = (map (tagName . entityVal) ptags) ++ (map (tagName . entityVal) otags)
+    let projecttags = (map (tagName . entityVal) ptags) ++ (map (tagName . entityVal) otags)
     
-    ((result, formWidget), encType) <- runFormGet $ searchForm tags
+    ((result, formWidget), encType) <- runFormGet $ searchForm projecttags
     let (filter_expression, order_expression) = case result of
-            FormSuccess x -> (either
+            FormSuccess x -> trace ("result: " ++ 
+                                    (show $ claimed x) ++
+                                    (show $ tags x))
+                             (either
                                 (const defaultFilter)
                                 id
                                 (parseFilterExpression $ searchFilterString x),
@@ -783,7 +789,8 @@ getTicketsR project_handle = do
                                 (const defaultOrder)
                                 id
                                 (parseOrderExpression $ searchSortString x))
-            _ -> (defaultFilter, defaultOrder)
+            FormFailure y -> trace ("Form Failure: " ++ (show y)) (defaultFilter, defaultOrder)
+            FormMissing -> trace ("Form Missing!") (defaultFilter, defaultOrder)
 
 
     let issues = sortBy (flip compare `on` order_expression . issueOrderable) $
