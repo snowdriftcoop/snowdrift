@@ -5,6 +5,7 @@ import Import
 
 import qualified Data.Text as T
 
+import DeprecatedBootstrap
 import Model.Permission.Internal
 
 permissionLevelField

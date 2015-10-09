@@ -47,6 +47,7 @@ import qualified Data.Text as T
 import qualified Data.Traversable as Traversable
 import qualified Data.Tree as Tree
 
+import DeprecatedBootstrap
 import Model.Comment
 import Model.Comment.ActionPermissions
 import Model.Comment.Routes

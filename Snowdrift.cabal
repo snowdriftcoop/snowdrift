@@ -45,6 +45,7 @@ library
                      Data.Order
                      Data.Text.PrettyHtml
                      Data.Tree.Extra
+                     DeprecatedBootstrap
                      Foundation
                      Import
                      Model
