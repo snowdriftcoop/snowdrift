@@ -740,7 +740,7 @@ getMonolingualWikiR = redirectPolylingualWiki $ \case
   where
     redirectSameParams url = do
         params <- reqGetParams <$> getRequest
-        redirectParams url params
+        redirect (url, params)
 
 redirectPolylingualWiki :: (Maybe (Route App) -> Handler Html) -> Text -> Text -> [Text] -> Handler Html
 redirectPolylingualWiki fn project_handle target rest = do

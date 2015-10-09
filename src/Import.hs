@@ -92,9 +92,6 @@ showDiffTime x y =
 entitiesMap :: Ord (Key t) => [Entity t] -> Map (Key t) t
 entitiesMap = foldr (\(Entity k v) -> M.insert k v) mempty
 
-redirectParams :: (MonadHandler (HandlerT site m), MonadBaseControl IO m) => Route site -> [(Text, Text)] -> HandlerT site m a
-redirectParams route params = getUrlRenderParams >>= \render -> redirect $ render route params
-
 getByErr :: (PersistEntity val, PersistEntityBackend val ~ SqlBackend)
          => String -> Unique val -> Handler (Entity val)
 getByErr message = runYDB . fmap fromJustError . getBy
