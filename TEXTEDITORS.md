@@ -125,15 +125,17 @@ with visual menus.
 
 #### Vim settings
 
-We recommend that your ~/.vimrc file include:
+For working on our code, your ~/.vimrc file should include:
 
-    syntax on
-    set number title hlsearch ignorecase smartcase showbreak=↪
     set textwidth=80 expandtab shiftwidth=4 tabstop=4
     au FileType hamlet setl sw=2 sts=2 et
     au Filetype gitcommit setl spell textwidth=72
 
-Many other settings are nice, but opinions vary about the details.
+Though opinions vary, we also recommend the following minimal .vimrc settings:
+
+    syntax on
+    set number title hlsearch ignorecase smartcase showbreak=↪
+    set wildmenu wildmode=longest,list,full
 
 #### Vim plugins
 
