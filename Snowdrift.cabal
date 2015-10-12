@@ -139,7 +139,7 @@ library
                      Widgets.Navbar
                      Widgets.Tag
                      Widgets.Preview
-                     Widgets.ProjectPledges
+                     Widgets.UserPledges
 
     -- other-modules {{{2
     other-modules:

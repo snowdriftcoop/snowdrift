@@ -31,7 +31,7 @@ import View.Comment
 import View.Time
 import View.User
 import Widgets.Preview
-import Widgets.ProjectPledges
+import Widgets.UserPledges
 
 getUsersR :: Handler Html
 getUsersR = do
@@ -525,6 +525,7 @@ getUserPledgesR user_id = do
     -- TODO: refine permissions here
     _ <- requireAuthId
     user <- runYDB $ get404 user_id
+
     defaultLayout $ do
         snowdriftDashTitle "User Pledges" $
             userDisplayName (Entity user_id user)

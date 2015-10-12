@@ -28,7 +28,7 @@ import Model.Role
 import Model.User
 import Model.User.Internal
 import Widgets.Markdown (snowdriftMarkdownField)
-import Widgets.ProjectPledges
+import Widgets.UserPledges
 
 createUserForm :: Maybe Text -> Form (Text, Text, Maybe Text, Maybe Text, Maybe Text, Maybe Text)
 createUserForm ident extra = do

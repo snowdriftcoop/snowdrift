@@ -1,5 +1,5 @@
 
-module Widgets.ProjectPledges where
+module Widgets.UserPledges where
 
 import Import
 
@@ -13,8 +13,8 @@ summarizeProject' :: Entity Project -> [Entity Pledge] -> ProjectSummary
 summarizeProject' a b = summarizeProject a b [] []
 
 -- |The summary of pledging to projects shown on user's page
-projectPledgeSummary :: UserId -> Widget
-projectPledgeSummary user_id = do
+userPledgeSummary :: UserId -> Widget
+userPledgeSummary user_id = do
     project_summary <- handlerToWidget $ runDB $
         map (uncurry summarizeProject') <$> fetchUserPledgesDB user_id
 
@@ -23,12 +23,14 @@ projectPledgeSummary user_id = do
           not pledged to any projects
         $else
           <a href=@{UserPledgesR user_id}>
-            <p>Patron to #{plural (length project_summary) "project" "projects"}
+            <p>
+              Patron to
+              #{plural (length project_summary) "project" "projects"}
      |]
 
 -- |The listing of all pledges for a given user, shown on u/#/pledges
-projectPledges :: UserId -> Widget
-projectPledges user_id = do
+userPledges :: UserId -> Widget
+userPledges user_id = do
     project_summaries <- handlerToWidget $ runDB $
         map (uncurry summarizeProject') <$> fetchUserPledgesDB user_id
 
@@ -39,18 +41,22 @@ projectPledges user_id = do
 
     toWidget [hamlet|
         $if null project_summaries
-            not pledged to any projects
+          not pledged to any projects
         $else
-            <p>
-                Note: For testing purposes only.  No real money is changing hands yet.
-            <table .table>
-                $forall summary <- project_summaries
-                    <tr>
-                        <td>
-                            <a href=@{ProjectR (summaryProjectHandle summary)}>
-                                #{summaryName summary}
-                        <td>#{show (cost summary)}/pledge
-                        <td>#{show (mills summary)}
-                        <td>#{show (total summary)}
-     |]
-
+          <p>
+            Note: For testing purposes only.  No real money is changing hands yet.
+          <table .table>
+            <tr>
+              <th>Project
+              <th>Pledge per patron
+              <th>Patrons
+              <th>Current monthly pledge value
+            $forall summary <- project_summaries
+              <tr>
+                <td>
+                  <a href=@{ProjectR (summaryProjectHandle summary)}>
+                    #{summaryName summary}
+                <td>#{show (mills summary)}
+                <td><em>TODO</em>
+                <td>#{show (total summary)}
+      |]
