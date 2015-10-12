@@ -142,6 +142,7 @@ library
         Widgets.Preview
         Widgets.ProjectPledges
         Widgets.Tag
+        WrappedValues
 
     -- other-modules {{{2
     other-modules:

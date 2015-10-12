@@ -65,6 +65,7 @@ import Model.Shares (pledgeRenderKey)
 import Model.Tag
 import Model.Wiki.Sql
 import Widgets.Tag
+import WrappedValues
 
 --------------------------------------------------------------------------------
 -- Types

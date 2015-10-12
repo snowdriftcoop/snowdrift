@@ -48,6 +48,7 @@ import View.Project
 import View.SnowdriftEvent
 import View.Time
 import Widgets.Preview
+import WrappedValues
 
 --------------------------------------------------------------------------------
 -- Utility functions

@@ -5,6 +5,7 @@ import Import
 import Control.Applicative
 
 import Handler.Comment (getCommentDirectLinkR)
+import WrappedValues
 
 redirectCommentEvent :: (a -> YDB b) -> (b -> CommentId) -> a -> HandlerT App IO ()
 redirectCommentEvent get_object get_comment_from_object =

@@ -119,6 +119,7 @@ import Model.User.Internal
             hiding (UserNotificationPref, ProjectNotificationPref)
 import Model.User.Sql
 import Model.Wiki.Sql
+import WrappedValues
 
 -- anonymousUser is a special user for items posted by visitors who are not
 -- logged in, such as posting to /contact for a project

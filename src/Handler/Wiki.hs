@@ -32,7 +32,7 @@ import View.Comment
 import View.Time
 import View.Wiki
 import Widgets.Preview
-
+import WrappedValues
 
 instance ToContent Markdown where
     toContent (Markdown text) = toContent $ text <> "\n"

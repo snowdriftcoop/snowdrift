@@ -6,14 +6,7 @@ import qualified Data.Foldable as F
 import qualified Database.Persist as P
 
 import Model.Notification
-            (UserNotificationType (..)
-            ,UserNotificationDelivery (..)
-            ,sendUserNotificationDB_
-            ,sendUserNotificationEmailDB
-            ,ProjectNotificationType (..)
-            ,ProjectNotificationDelivery (..)
-            ,sendProjectNotificationDB_
-            ,sendProjectNotificationEmailDB)
+import WrappedValues
 
 data UserUpdate =
     UserUpdate
