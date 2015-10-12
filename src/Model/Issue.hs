@@ -51,14 +51,13 @@ instance Issue GH.Issue where
         githubIssueTagWidget :: GH.IssueLabel -> Widget
         githubIssueTagWidget tag = do
             [whamlet|
-                <form .tag>
+                <form .tag .gh-tag>
                   #{GH.labelName tag}
             |]
             toWidget [cassius|
-              .tag
+              .gh-tag
                 background-color: ##{GH.labelColor tag}
                 color: ##{fg $ GH.labelColor tag}
-                font-size: xx-small
             |]
 
         fg :: String -> String

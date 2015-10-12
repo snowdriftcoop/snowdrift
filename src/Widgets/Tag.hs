@@ -38,20 +38,25 @@ tagWidget t = do
         fg = printf "%06x" $ pickForegroundColor $ (\(Color c) -> c) $ annotTagColor t
 
     toWidget [hamlet|
-        <form .p-category .tag action=@{annotTagUrl t} style="background-color:##{bg};color:##{fg}" method=post>
-            <small>
-                #{annotTagName t}
-                $if show_tag_voting
-                    <input type=submit name=direction style="color:##{fg}" value=- .tag-input>
-                    <span .tag-score>
-                        $maybe user_score <- maybe_user_score
-                            #{user_score}/#{annotTagScoreString t}
-                        $nothing
-                            #{annotTagScoreString t}
-                    <input type=submit name=direction style="color:##{fg}" value=+ .tag-input>
-                $else
-                    $if my_tag
-                        <input type=submit name=direction style="color:##{fg};" value=&times; .tag-input>
+        <form .p-category .tag
+          action=@{annotTagUrl t}
+          style="background-color:##{bg}; color:##{fg}"
+          method=post>
+            #{annotTagName t}
+            <!-- we had tried an overly-complex form of push-tags -->
+            <!-- (reinforcing tags), but it is off by default now. -->
+            <!-- It needs to be redone. -->
+            $if show_tag_voting
+                <input type=submit name=direction style="color:##{fg}" value=- .tag-input>
+                <span .tag-score>
+                    $maybe user_score <- maybe_user_score
+                        #{user_score}/#{annotTagScoreString t}
+                    $nothing
+                        #{annotTagScoreString t}
+                <input type=submit name=direction style="color:##{fg}" value=+ .tag-input>
+            $else
+                $if my_tag
+                    <input type=submit name=direction style="color:##{fg};" value=&times; .tag-input>
     |]
 
 newTagWidget :: Route App -> Widget
