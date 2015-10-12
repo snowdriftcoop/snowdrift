@@ -92,16 +92,6 @@ showDiffTime x y =
 entitiesMap :: Ord (Key t) => [Entity t] -> Map (Key t) t
 entitiesMap = foldr (\(Entity k v) -> M.insert k v) mempty
 
-getByErr :: (PersistEntity val, PersistEntityBackend val ~ SqlBackend)
-         => String -> Unique val -> Handler (Entity val)
-getByErr message = runYDB . fmap fromJustError . getBy
-    where
-        fromJustError :: Maybe a -> a
-        fromJustError = fromMaybe (error message)
-
-lookupErr :: Ord k => String -> k -> Map k a -> a
-lookupErr = M.findWithDefault . error
-
 fromJustErr :: String -> Maybe a -> a
 fromJustErr _   (Just x) = x
 fromJustErr msg _        = error msg

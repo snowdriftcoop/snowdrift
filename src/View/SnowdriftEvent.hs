@@ -12,6 +12,7 @@ import Model.Comment.ActionPermissions
 import Model.Comment.Routes
 import Model.Currency
 import Model.User
+import Model.Utils
 import View.Comment
 import View.Time
 

@@ -41,6 +41,7 @@ import Model.Role
 import Model.Shares
 import Model.SnowdriftEvent
 import Model.User
+import Model.Utils
 import Model.Wiki
 import View.Comment
 import View.Project

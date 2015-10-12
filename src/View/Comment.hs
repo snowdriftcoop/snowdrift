@@ -54,6 +54,7 @@ import Model.Comment.Routes
 import Model.Markdown
 import Model.Tag
 import Model.User
+import Model.Utils
 import View.Time
 import View.User
 import Widgets.Markdown
