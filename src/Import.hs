@@ -69,26 +69,6 @@ valList = Database.Esqueleto.valList . toList
 key :: PersistEntity record => PersistValue -> Key record
 key v = let Right k = keyFromValues [v] in k
 
-showDiffTime :: UTCTime -> UTCTime -> String
-showDiffTime x y =
-  let secs_ago = round (diffUTCTime x y)
-  in if | secs_ago < secsPerHour  -> go secs_ago secsPerMinute "m"
-        | secs_ago < secsPerDay   -> go secs_ago secsPerHour   "h"
-        | secs_ago < secsPerWeek  -> go secs_ago secsPerDay    "d"
-        | secs_ago < secsPerMonth -> go secs_ago secsPerWeek   "wk"
-        | secs_ago < secsPerYear  -> go secs_ago secsPerMonth  "mo"
-        | otherwise               -> go secs_ago secsPerYear   "yr"
-  where
-    go secs_ago divisor suffix = show (secs_ago `div` divisor) ++ suffix
-
-    secsPerMinute, secsPerHour, secsPerDay, secsPerWeek, secsPerMonth, secsPerYear :: Integer
-    secsPerMinute = 60
-    secsPerHour   = 3600     -- 60*60
-    secsPerDay    = 86400    -- 60*60*24
-    secsPerWeek   = 604800   -- 60*60*24*7
-    secsPerMonth  = 2592000  -- 60*60*24*30
-    secsPerYear   = 31536000 -- 60*60*24*365
-
 entitiesMap :: Ord (Key t) => [Entity t] -> Map (Key t) t
 entitiesMap = foldr (\(Entity k v) -> M.insert k v) mempty
 
