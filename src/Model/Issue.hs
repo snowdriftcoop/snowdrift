@@ -51,13 +51,13 @@ instance Issue GH.Issue where
         githubIssueTagWidget :: GH.IssueLabel -> Widget
         githubIssueTagWidget tag = do
             [whamlet|
-                <form .tag .gh-tag>
-                  #{GH.labelName tag}
-            |]
-            toWidget [cassius|
-              .gh-tag
-                background-color: ##{GH.labelColor tag}
-                color: ##{fg $ GH.labelColor tag}
+                <!-- in-line style necessary until we figure out how to -->
+                <!-- get GitHub labelColors generally and make separate -->
+                <!-- classes for each, otherwise we could end up with -->
+                <!-- redundant style declarations for every single tag -->
+                <form .tag
+                  style="background-color:##{GH.labelColor tag}; color:##{fg $ GH.labelColor tag}">
+                    #{GH.labelName tag}
             |]
 
         fg :: String -> String
