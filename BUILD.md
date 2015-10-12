@@ -187,11 +187,11 @@ With everything initialized, you can now use the following commands:
       (username and passphrase are the same)
     * to stop the site, type `quit` in terminal and then press Enter
 
-* `stack build && stack test`: run the test suite
+* `stack build && stack test --pedantic`: run the test suite
 
-    Note that `stack build` must be run since the tests depend on
-    executables like SnowdriftProcessPayments. Cabal is not clever enough
-    to notice test dependencies on executables.
+    Note that `stack build` must be run since our current cabal setup does not
+    fully recognize test dependencies on executables such as
+    SnowdriftProcessPayments. 
 
 * `stack build`: rebuild manually
     * Usually running the site in development mode is sufficient, but you must
