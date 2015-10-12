@@ -92,10 +92,6 @@ showDiffTime x y =
 entitiesMap :: Ord (Key t) => [Entity t] -> Map (Key t) t
 entitiesMap = foldr (\(Entity k v) -> M.insert k v) mempty
 
-fromJustErr :: String -> Maybe a -> a
-fromJustErr _   (Just x) = x
-fromJustErr msg _        = error msg
-
 class WrappedValues a where
     type Unwrapped a
     unwrapValues :: a -> Unwrapped a
