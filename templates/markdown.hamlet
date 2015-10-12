@@ -10,8 +10,8 @@
     <a href="http://pandoc.org/README#pandocs-markdown">
       Pandoc's Markdown
   for more options and details, including
-  \<a href="http://pandoc.org/README#verbatim">verbatim spans</a>,
-  \<a href="http://pandoc.org/README#verbatim-code-blocks">code blocks</a>,
+  <a href="http://pandoc.org/README#verbatim">verbatim spans</a>,
+  <a href="http://pandoc.org/README#verbatim-code-blocks">code blocks</a>,
   <a href="http://pandoc.org/README#pipe-tables">tables
   (note: our site requires the "pipe" table format), and much more.
 <p>
@@ -50,8 +50,8 @@
 
 <h2>Images
 <p>
-  \<strong>![</strong>alt text<strong>](</strong>image URL
-  \<strong>"</strong>optional title<strong>")</strong>
+  <strong>![</strong>alt text<strong>](</strong>image URL
+  <strong>"</strong>optional title<strong>")</strong>
   <br>
   example:
   <br>
@@ -93,17 +93,17 @@
         then indent four extra spaces but use no bullet
 
 <p>
-  \<strong>1.</strong> ordered list
+  <strong>1.</strong> ordered list
   <br>
-  \<strong>2.</strong> after the first number, it auto-calculates.
+  <strong>2.</strong> after the first number, it auto-calculates.
   <br>
   <strong>#.
   works too
   <br>
-  \<strong>a.</strong> can also use letters
-  \<strong>i.</strong> or Roman numerals (which all also auto-calculate)
+  <strong>a.</strong> can also use letters
+  <strong>i.</strong> or Roman numerals (which all also auto-calculate)
   <br>
-  \<strong>A.</strong>&nbsp;&nbsp;For
+  <strong>A.</strong>&nbsp;&nbsp;For
   <em>capital
   letters or Roman numerals, include
   <em>two
@@ -134,7 +134,7 @@
   *** asterisks also work and are used specifically to indicate
   the read-more fold for blog posts
 <p>
-  <strong> \
+  <strong>\
   backslash before characters makes them show normally
   if they would otherwise be markdown commands
 <h2>Footnotes
@@ -148,6 +148,7 @@
   <em>Footnotes themselves can go anywhere and will be rendered at the end.
   <br>
   Footnotes can also be in-line with no tag like this:
-  \<strong>^[</strong>Footnote text<strong>]</strong>
+  <strong>^[</strong>Footnote text<strong>]</strong>
   <br>
   <em>Footnote numbers auto-calculate based on the placement of the links.
+
