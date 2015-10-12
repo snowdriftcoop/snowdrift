@@ -39,24 +39,37 @@ tagWidget t = do
 
     toWidget [hamlet|
         <form .p-category .tag
-          action=@{annotTagUrl t}
-          style="background-color:##{bg}; color:##{fg}"
-          method=post>
-            #{annotTagName t}
-            <!-- we had tried an overly-complex form of push-tags -->
-            <!-- (reinforcing tags), but it is off by default now. -->
-            <!-- It needs to be redone. -->
+            action=@{annotTagUrl t}
+            style="background-color:##{bg}; color:##{fg}"
+            method=post>
+          #{annotTagName t}
+            <!-- we had an overly-complex voting version of push-tags
+            (reinforcing tags), but it is off by default now. It needs to
+            be redone.
+            -->
             $if show_tag_voting
-                <input type=submit name=direction style="color:##{fg}" value=- .tag-input>
+                <input .tag-input
+                  value=-
+                  type=submit
+                  name=direction
+                  style="color:##{fg}">
                 <span .tag-score>
                     $maybe user_score <- maybe_user_score
                         #{user_score}/#{annotTagScoreString t}
                     $nothing
                         #{annotTagScoreString t}
-                <input type=submit name=direction style="color:##{fg}" value=+ .tag-input>
+                <input .tag-input
+                  value=+
+                  type=submit
+                  name=direction
+                  style="color:##{fg}">
             $else
                 $if my_tag
-                    <input type=submit name=direction style="color:##{fg};" value=&times; .tag-input>
+                    <input .tag-input
+                      value=&times;
+                      type=submit
+                      name=direction
+                      style="color:##{fg};">
     |]
 
 newTagWidget :: Route App -> Widget

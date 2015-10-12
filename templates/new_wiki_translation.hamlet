@@ -1,4 +1,7 @@
-<form method=POST enctype=#{enctype} action=@{NewWikiTranslationR project_handle language target}>
+<form
+    method=POST
+    enctype=#{enctype}
+    action=@{NewWikiTranslationR project_handle language target}>
   ^{translation_form}
   <input name="mode" type="submit" value="preview">
 
