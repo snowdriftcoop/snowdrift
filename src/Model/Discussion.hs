@@ -132,8 +132,8 @@ fetchDiscussionDB langs discussion_id =
     -- f :: [MaybeT DB DiscussionOn]
     f = map (MaybeT . fetchDiscussionInternal langs discussion_id)
             [minBound..maxBound]
-    fromJustErr _   (Just x) = x
-    fromJustErr msg _        = error msg
+    fromJustErr _ (Just x) = x
+    fromJustErr msg _ = error msg
 
 
 -- | Fetch a list of discussions, given their ids. The returned map will have a

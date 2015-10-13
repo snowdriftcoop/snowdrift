@@ -54,7 +54,11 @@ makeLanguageOptions = do
         render = renderMessage app langs . MsgLangName
 
     return $ OptionList
-        { olOptions = map (mkOption render) $ preferred_languages ++ (sortBy (compare `on` render) $ [minBound..maxBound] \\ preferred_languages)
+        { olOptions =
+              map (mkOption render)
+                  (preferred_languages ++
+                      (sortBy (compare `on` render)
+                              ([minBound..maxBound] \\ preferred_languages)))
         , olReadExternal = fromPathPiece
         }
   where
@@ -66,5 +70,10 @@ makeLanguageOptions = do
 
 pickTargetsByLanguage :: [Language] -> [Entity WikiTarget] -> [Entity WikiTarget]
 pickTargetsByLanguage langs targets =
-    let target_map = M.fromListWith (++) $ map (wikiTargetPage . entityVal &&& (:[])) targets
-     in M.elems $ M.mapMaybe (listToMaybe . sortBy (languagePreferenceOrder langs (wikiTargetLanguage . entityVal))) target_map
+    M.elems
+        (M.mapMaybe
+            (listToMaybe . sortBy prefSort)
+            targetMap)
+  where
+    prefSort = languagePreferenceOrder langs (wikiTargetLanguage . entityVal)
+    targetMap = M.fromListWith (++) $ map (wikiTargetPage . entityVal &&& (:[])) targets

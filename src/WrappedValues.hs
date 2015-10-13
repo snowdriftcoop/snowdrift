@@ -26,13 +26,17 @@ instance (WrappedValues a, WrappedValues b) => WrappedValues (a, b) where
     type Unwrapped (a, b) = (Unwrapped a, Unwrapped b)
     unwrapValues (a, b) = (unwrapValues a, unwrapValues b)
 
-instance (WrappedValues a, WrappedValues b, WrappedValues c) => WrappedValues (a, b, c) where
+instance (WrappedValues a, WrappedValues b, WrappedValues c)
+         => WrappedValues (a, b, c) where
     type Unwrapped (a, b, c) = (Unwrapped a, Unwrapped b, Unwrapped c)
     unwrapValues (a, b, c) = (unwrapValues a, unwrapValues b, unwrapValues c)
 
-instance (WrappedValues a, WrappedValues b, WrappedValues c, WrappedValues d) => WrappedValues (a, b, c, d) where
-    type Unwrapped (a, b, c, d) = (Unwrapped a, Unwrapped b, Unwrapped c, Unwrapped d)
-    unwrapValues (a, b, c, d) = (unwrapValues a, unwrapValues b, unwrapValues c, unwrapValues d)
+instance (WrappedValues a, WrappedValues b, WrappedValues c, WrappedValues d)
+         => WrappedValues (a, b, c, d) where
+    type Unwrapped (a, b, c, d) =
+        (Unwrapped a, Unwrapped b, Unwrapped c, Unwrapped d)
+    unwrapValues (a, b, c, d) =
+        (unwrapValues a, unwrapValues b, unwrapValues c, unwrapValues d)
 
 instance ( WrappedValues a
          , WrappedValues b

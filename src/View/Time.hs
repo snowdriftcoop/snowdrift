@@ -32,7 +32,13 @@ showDiffTime x y =
   where
     go secs_ago divisor suffix = show (secs_ago `div` divisor) ++ suffix
 
-    secsPerMinute, secsPerHour, secsPerDay, secsPerWeek, secsPerMonth, secsPerYear :: Integer
+    secsPerMinute,
+        secsPerHour,
+        secsPerDay,
+        secsPerWeek,
+        secsPerMonth,
+        secsPerYear
+        :: Integer
     secsPerMinute = 60
     secsPerHour   = 3600     -- 60*60
     secsPerDay    = 86400    -- 60*60*24

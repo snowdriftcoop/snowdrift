@@ -36,7 +36,9 @@ renderLanguage LangEn = \case
 renderLanguage _ = renderLanguage LangEn
 
 languagePreferenceOrder :: [Language] -> (a -> Language) -> a -> a -> Ordering
-languagePreferenceOrder langs getLang = flip compare `on` (flip lookup (zip (reverse langs) [1 :: Integer ..]) . getLang)
+languagePreferenceOrder langs getLang =
+    flip compare `on`
+        (flip lookup (zip (reverse langs) [1::Integer ..]) . getLang)
 
 getLanguages :: MonadHandler m => m [Language]
 getLanguages = cached $ nub . mapMaybe fromPathPiece <$> languages
