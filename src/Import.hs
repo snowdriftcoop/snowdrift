@@ -43,7 +43,6 @@ import Yesod as Import
 import Yesod.Auth as Import
 import Yesod.Form.Bootstrap3 as Import
 import Yesod.Markdown as Import (Markdown (..))
-import qualified Data.Text as T
 import qualified Database.Esqueleto
 import qualified Data.Map as M
 
@@ -78,15 +77,6 @@ onEntity f (Entity x y) = f x y
 
 --------------------------------------------------------------------------------
 -- Utility functions
-
-lookupParamDefault :: Read a => Text -> a -> Handler a
-lookupParamDefault name def = do
-    maybe_param <- lookup name <$> reqGetParams <$> getRequest
-    return $ fromMaybe def $ do
-        param_str <- maybe_param
-        param <- listToMaybe $ reads $ T.unpack param_str
-        return $ fst param
-
 
 getLanguages :: Handler [Language]
 getLanguages = cached $ nub . mapMaybe fromPathPiece <$> languages
