@@ -4,7 +4,6 @@ import Import
 
 import Blaze.ByteString.Builder (Builder, toLazyByteString)
 import Control.Monad.Reader (MonadReader, ask)
-import Yesod (renderRoute)
 import qualified Data.Map as M
 import qualified Data.Text.Lazy as TL
 import qualified Data.Text.Lazy.Encoding as TLE
