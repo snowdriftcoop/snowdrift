@@ -3,6 +3,7 @@ module View.Wiki where
 import Import
 
 import DeprecatedBootstrap
+import Handler.Utils
 import Model.Markdown
 import Model.Permission
 import Widgets.Markdown

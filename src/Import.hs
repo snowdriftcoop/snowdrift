@@ -8,7 +8,7 @@ import Control.Monad as Import
 import Data.Foldable as Import (toList)
 import Data.Function as Import (on)
 import Data.Int as Import (Int64)
-import Data.List (sortBy, (\\), nub)
+import Data.List (sortBy)
 import Data.Map as Import (Map)
 import Data.Maybe as Import
             (fromMaybe, listToMaybe, mapMaybe, isJust, catMaybes)
@@ -18,7 +18,6 @@ import Data.Text as Import (Text)
 import Data.Time.Clock as Import (UTCTime, diffUTCTime, getCurrentTime)
 import Database.Esqueleto as Import hiding (on, valList)
 import Prelude as Import hiding (head, init, last, readFile, tail, writeFile)
-import Yesod (languages)
 import Yesod as Import
             hiding (Route (..)
                    ,(||.)
@@ -75,39 +74,7 @@ entitiesMap = foldr (\(Entity k v) -> M.insert k v) mempty
 onEntity :: (Key a -> a -> b) -> Entity a -> b
 onEntity f (Entity x y) = f x y
 
---------------------------------------------------------------------------------
--- Utility functions
-
-getLanguages :: Handler [Language]
-getLanguages = cached $ nub . mapMaybe fromPathPiece <$> languages
-
-
-makeLanguageOptions :: Handler (OptionList Language)
-makeLanguageOptions = do
-    preferred_languages <- getLanguages
-
-    app <- getYesod
-
-    langs <- languages
-
-    let render :: Language -> Text
-        render = renderMessage app langs . MsgLangName
-
-    return $ OptionList
-        { olOptions = map (mkOption render) $ preferred_languages ++ (sortBy (compare `on` render) $ [minBound..maxBound] \\ preferred_languages)
-        , olReadExternal = fromPathPiece
-        }
-  where
-    mkOption render language = Option
-            { optionDisplay = render language
-            , optionInternalValue = language
-            , optionExternalValue = toPathPiece language
-            }
-
 pickTargetsByLanguage :: [Language] -> [Entity WikiTarget] -> [Entity WikiTarget]
 pickTargetsByLanguage langs targets =
     let target_map = M.fromListWith (++) $ map (wikiTargetPage . entityVal &&& (:[])) targets
      in M.elems $ M.mapMaybe (listToMaybe . sortBy (languagePreferenceOrder langs (wikiTargetLanguage . entityVal))) target_map
-
---------------------------------------------------------------------------------
--- /

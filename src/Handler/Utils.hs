@@ -3,9 +3,11 @@ module Handler.Utils where
 
 import Import
 
+import Data.List (sortBy, (\\))
 import Data.Text.Titlecase
 import Network.Mail.Mime (randomString)
 import System.Random (newStdGen)
+import Yesod.Core
 import qualified Data.Text as T
 
 -- | Possible values for "mode" post param.
@@ -38,3 +40,25 @@ snowdriftDashTitle x y = snowdriftTitle $ x <> " — " <> y
 
 newHash :: IO Text
 newHash = T.pack . fst . randomString 42 <$> newStdGen
+
+makeLanguageOptions :: Handler (OptionList Language)
+makeLanguageOptions = do
+    preferred_languages <- getLanguages
+
+    app <- getYesod
+
+    langs <- languages
+
+    let render :: Language -> Text
+        render = renderMessage app langs . MsgLangName
+
+    return $ OptionList
+        { olOptions = map (mkOption render) $ preferred_languages ++ (sortBy (compare `on` render) $ [minBound..maxBound] \\ preferred_languages)
+        , olReadExternal = fromPathPiece
+        }
+  where
+    mkOption render language = Option
+            { optionDisplay = render language
+            , optionInternalValue = language
+            , optionExternalValue = toPathPiece language
+            }
