@@ -4,7 +4,8 @@ import Import
 
 import Control.Applicative
 
-import Handler.Comment (getCommentDirectLinkR)
+import Handler.Comment
+import Handler.Utils
 import WrappedValues
 
 redirectCommentEvent :: (a -> YDB b) -> (b -> CommentId) -> a -> HandlerT App IO ()

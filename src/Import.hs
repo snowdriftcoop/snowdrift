@@ -8,7 +8,6 @@ import Control.Monad as Import
 import Data.Foldable as Import (toList)
 import Data.Function as Import (on)
 import Data.Int as Import (Int64)
-import Data.List (sortBy)
 import Data.Map as Import (Map)
 import Data.Maybe as Import
             (fromMaybe, listToMaybe, mapMaybe, isJust, catMaybes)
@@ -73,8 +72,3 @@ entitiesMap = foldr (\(Entity k v) -> M.insert k v) mempty
 -- | Convenience function for unwrapping an Entity and supplying both the key and value to another function.
 onEntity :: (Key a -> a -> b) -> Entity a -> b
 onEntity f (Entity x y) = f x y
-
-pickTargetsByLanguage :: [Language] -> [Entity WikiTarget] -> [Entity WikiTarget]
-pickTargetsByLanguage langs targets =
-    let target_map = M.fromListWith (++) $ map (wikiTargetPage . entityVal &&& (:[])) targets
-     in M.elems $ M.mapMaybe (listToMaybe . sortBy (languagePreferenceOrder langs (wikiTargetLanguage . entityVal))) target_map
