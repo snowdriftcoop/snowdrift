@@ -1,5 +1,6 @@
 module Model.Project
-    ( ProjectSummary(..)
+    ( TaggedTicket
+    , ProjectSummary(..)
     , UpdateProject(..)
     , fetchPublicProjectsDB
     , fetchProjectDB
@@ -30,6 +31,7 @@ module Model.Project
     , projectComputeShareValue
     , projectNameWidget
     , summarizeProject
+    , tags
     , updateShareValue
     , updateUserPledge
     -- * Balancing/deactivating pledges
@@ -93,9 +95,9 @@ data UpdateProject = UpdateProject
     , updateProjectLogo        :: Maybe Text
     } deriving Show
 
-newtype TaggedTicket = TaggedTicket ( (Entity Ticket)
+newtype TaggedTicket = TaggedTicket ((Entity Ticket)
                                     , Bool  -- claimed?
-                                    , [AnnotatedTag] )
+                                    , [AnnotatedTag])
 
 instance Issue TaggedTicket where
     issueWidget (TaggedTicket ((Entity ticket_id ticket),_,tags)) =
@@ -145,6 +147,9 @@ ticketToOrderable (TaggedTicket ((Entity _ ticket), is_claimed, tags)) =
     get_named_ts name = error $ "Unrecognized time name " ++ T.unpack name
 
     search_literal str = (not . null . T.breakOnAll str) (ticketName ticket)
+
+tags :: TaggedTicket -> [AnnotatedTag]
+tags (TaggedTicket (Entity _ ticket, is_claimed, tags)) = tags
 
 --------------------------------------------------------------------------------
 -- Database actions
