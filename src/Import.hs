@@ -104,18 +104,10 @@ makeLanguageOptions = do
             , optionExternalValue = toPathPiece language
             }
 
-languagePreferenceOrder :: [Language] -> (a -> Language) -> a -> a -> Ordering
-languagePreferenceOrder langs getLang = flip compare `on` (flip lookup (zip (reverse langs) [1 :: Integer ..]) . getLang)
-
 pickTargetsByLanguage :: [Language] -> [Entity WikiTarget] -> [Entity WikiTarget]
 pickTargetsByLanguage langs targets =
     let target_map = M.fromListWith (++) $ map (wikiTargetPage . entityVal &&& (:[])) targets
      in M.elems $ M.mapMaybe (listToMaybe . sortBy (languagePreferenceOrder langs (wikiTargetLanguage . entityVal))) target_map
-
-pickEditsByLanguage :: [Language] -> [Entity WikiEdit] -> [Entity WikiEdit]
-pickEditsByLanguage langs targets =
-    let target_map = M.fromListWith (++) $ map (wikiEditPage . entityVal &&& (:[])) targets
-     in M.elems $ M.mapMaybe (listToMaybe . sortBy (languagePreferenceOrder langs (wikiEditLanguage . entityVal))) target_map
 
 --------------------------------------------------------------------------------
 -- /

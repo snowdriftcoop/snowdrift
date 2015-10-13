@@ -5,11 +5,13 @@ module Model.Language where
 import Prelude
 
 import Data.Data
+import Data.Function
 import Data.Text (Text)
 import Database.Persist.Sql
-import Model.Language.TH
 import Yesod
 import qualified Data.Text as T
+
+import Model.Language.TH
 
 [makeLanguages| de en es fr nl pl pt |]
 
@@ -31,3 +33,5 @@ renderLanguage LangEn = \case
 
 renderLanguage _ = renderLanguage LangEn
 
+languagePreferenceOrder :: [Language] -> (a -> Language) -> a -> a -> Ordering
+languagePreferenceOrder langs getLang = flip compare `on` (flip lookup (zip (reverse langs) [1 :: Integer ..]) . getLang)

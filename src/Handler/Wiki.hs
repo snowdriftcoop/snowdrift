@@ -131,6 +131,15 @@ pageInfoRequireCanEdit project_handle language target =
 --------------------------------------------------------------------------------
 -- /#language/#target
 
+pickEditsByLanguage :: [Language] -> [Entity WikiEdit] -> [Entity WikiEdit]
+pickEditsByLanguage langs targets =
+    (M.elems . M.mapMaybe (listToMaybe . L.sortBy prefSort)) targetMap
+  where
+    prefSort = languagePreferenceOrder langs (wikiEditLanguage . entityVal)
+    targetMap =
+        M.fromListWith (++)
+                       (map (wikiEditPage . entityVal &&& (:[])) targets)
+
 getWikiR :: Text -> Language -> Text -> Handler TypedContent
 getWikiR project_handle language target = do
     languages <- getLanguages
