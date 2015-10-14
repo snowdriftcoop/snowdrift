@@ -40,8 +40,8 @@ showDiffTime x y =
         secsPerYear
         :: Integer
     secsPerMinute = 60
-    secsPerHour   = 3600     -- 60*60
-    secsPerDay    = 86400    -- 60*60*24
-    secsPerWeek   = 604800   -- 60*60*24*7
-    secsPerMonth  = 2592000  -- 60*60*24*30
-    secsPerYear   = 31536000 -- 60*60*24*365
+    secsPerHour   = 60*60
+    secsPerDay    = 60*24
+    secsPerWeek   = 60*60*24*7
+    secsPerMonth  = 60*60*24*30
+    secsPerYear   = 60*60*24*365
