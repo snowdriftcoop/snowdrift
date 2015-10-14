@@ -137,7 +137,6 @@ and build everything:
 
     cd snowdrift
     stack setup
-    stack build cabal-install yesod-bin
     stack build
 
 NB: this will take a while!
@@ -179,14 +178,6 @@ dependencies. Simply run `stack test`.
 
 With everything initialized, you can now use the following commands:
 
-* `stack exec yesod devel`: run the site in development mode[^alt-run]
-    * NB: this may take a while when first run, faster after that
-    * access the site in your browser at <http://localhost:3000>
-    * log in with any of the three default users via the built-in log-in:
-      `admin`; `guest`; `established`.
-      (username and passphrase are the same)
-    * to stop the site, type `quit` in terminal and then press Enter
-
 * `stack build && stack test --pedantic`: run the test suite
 
     Note that `stack build` must be run since our current cabal setup does not
@@ -205,7 +196,19 @@ With everything initialized, you can now use the following commands:
     * Specifically for changes to files in the static directory, run
       `touch src/Settings/StaticFiles.hs` before rebuilding.
 
-* `stack ghci`: Start the REPL
+* `stack ghci --no-load`: Start the REPL... and the site![^alt-run]
+    * to reload the site, enter `:r` and then `main` in ghci
+        * Unfortunately there's still some rough edges at this time. Changes
+          to template files and config/* files aren't recognized and you must
+          touch the files that depend on them manually. Also, you may
+          occasionally hit ghc "panics". :( Shut down ghci and restart it at
+          that case.
+    * to stop the site, enter `shutdown` in ghci
+    * access the site in your browser at <http://localhost:3000>
+    * log in with any of the three default users via the built-in log-in:
+      `admin`; `guest`; `established`
+      (username and passphrase are the same)
+
 
 [^alt-run]: An alternative approach to building and running the site:
     * Run the site with `stack exec Snowdrift Development`
