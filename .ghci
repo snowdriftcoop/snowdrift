@@ -1,0 +1,14 @@
+-- With this file, "stack ghci --no-load" will run the site *and* make ghci
+-- available.
+
+-- Makes the site run in development mode
+:set -O0 -DDEVELOPMENT -fobject-code
+:set args development
+-- Loads the site runner
+:load dev/Runner.hs
+-- Starts the site.
+main
+
+-- In ghci,
+-- - To reload the site, use ":r" followed by "main".
+-- - To shutdown the site, use "shutdown".
