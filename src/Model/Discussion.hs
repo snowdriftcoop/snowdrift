@@ -12,9 +12,11 @@ import Import
 
 import Control.Monad.Trans.Maybe
 import Data.List (sortBy)
-import Model.Comment.Sql
+import Data.Maybe (fromJust)
 import qualified Data.Map as M
 import qualified Data.Set as S
+
+import Model.Comment.Sql
 
 -- | Sort targets by language preference
 langPref :: [Language] -> [Entity WikiTarget] -> [Entity WikiTarget]
@@ -127,13 +129,11 @@ fetchDiscussionsInternal _ discussion_ids DiscussionTypeUser =
 -- | Fetch a single discussion, given its id.
 fetchDiscussionDB :: [Language] -> DiscussionId -> DB DiscussionOn
 fetchDiscussionDB langs discussion_id =
-    fromJustErr "fetchDiscussionDB: discussion not found" <$> runMaybeT (msum f)
+    fromJust <$> runMaybeT (msum f)
   where
     -- f :: [MaybeT DB DiscussionOn]
     f = map (MaybeT . fetchDiscussionInternal langs discussion_id)
             [minBound..maxBound]
-    fromJustErr _ (Just x) = x
-    fromJustErr msg _ = error msg
 
 
 -- | Fetch a list of discussions, given their ids. The returned map will have a
