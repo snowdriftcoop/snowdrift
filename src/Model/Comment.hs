@@ -91,6 +91,7 @@ import Model.User.Internal
             (sendPreferredUserNotificationDB
             ,NotificationSender (..)
             ,NotificationReceiver (..))
+import WrappedValues
 import qualified Model.Comment.Internal as Internal
 
 --------------------------------------------------------------------------------

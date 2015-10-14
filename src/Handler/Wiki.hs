@@ -32,7 +32,7 @@ import View.Comment
 import View.Time
 import View.Wiki
 import Widgets.Preview
-
+import WrappedValues
 
 instance ToContent Markdown where
     toContent (Markdown text) = toContent $ text <> "\n"
@@ -130,6 +130,15 @@ pageInfoRequireCanEdit project_handle language target =
 
 --------------------------------------------------------------------------------
 -- /#language/#target
+
+pickEditsByLanguage :: [Language] -> [Entity WikiEdit] -> [Entity WikiEdit]
+pickEditsByLanguage langs targets =
+    (M.elems . M.mapMaybe (listToMaybe . L.sortBy prefSort)) targetMap
+  where
+    prefSort = languagePreferenceOrder langs (wikiEditLanguage . entityVal)
+    targetMap =
+        M.fromListWith (++)
+                       (map (wikiEditPage . entityVal &&& (:[])) targets)
 
 getWikiR :: Text -> Language -> Text -> Handler TypedContent
 getWikiR project_handle language target = do
@@ -740,7 +749,7 @@ getMonolingualWikiR = redirectPolylingualWiki $ \case
   where
     redirectSameParams url = do
         params <- reqGetParams <$> getRequest
-        redirectParams url params
+        redirect (url, params)
 
 redirectPolylingualWiki :: (Maybe (Route App) -> Handler Html) -> Text -> Text -> [Text] -> Handler Html
 redirectPolylingualWiki fn project_handle target rest = do

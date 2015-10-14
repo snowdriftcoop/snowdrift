@@ -2,6 +2,8 @@ module View.ResetPassword where
 
 import Import hiding (ResetPassword)
 
+import DeprecatedBootstrap
+
 data ResetPassword = ResetPassword
     { rpHandle :: Maybe Text
     , rpEmail  :: Maybe Text

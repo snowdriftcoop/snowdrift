@@ -20,6 +20,7 @@ import Model.Comment.Mods
 import Model.Comment.Sql
 import Model.Markdown
 import Model.User
+import Model.Utils
 import View.Comment
 import View.Project
 import View.Time

@@ -2,12 +2,12 @@ module Handler.User where
 
 import Import
 
-import Data.Default (def)
 import Data.List (head)
 import Data.Maybe (fromJust)
 import Data.Time.Format
 import Text.Cassius (cassiusFile)
 import Yesod.Auth.HashDB (setPassword, validateUser)
+import qualified Data.Default as Default
 import qualified Data.Map as M
 import qualified Data.Maybe as Maybe
 import qualified Data.Set as S
@@ -187,6 +187,15 @@ getUserBalanceR' user_id = do
         snowdriftDashTitle "User Balance" $
             userDisplayName (Entity user_id user)
         $(widgetFile "user_balance")
+  where
+    -- Warning: We can do better than 'read'.
+    lookupParamDefault :: Text -> Int64 -> Handler Int64
+    lookupParamDefault name def = do
+        maybe_param <- lookup name <$> reqGetParams <$> getRequest
+        return $ fromMaybe def $ do
+            param_str <- maybe_param
+            param <- listToMaybe $ reads $ T.unpack param_str
+            return $ fst param
 
 postUserBalanceR :: UserId -> Handler Html
 postUserBalanceR user_id = do
@@ -251,7 +260,7 @@ getUserDiscussionR' user_id get_root_comments = do
             mviewer
             user_id
             root_comments
-            def
+            Default.def
             getMaxDepth
             False
             mempty
@@ -287,7 +296,7 @@ postNewUserDiscussionR user_id = do
       Nothing
       viewer
       userDiscussion
-      (makeUserCommentActionPermissionsMap (Just viewer) user_id def) >>= \case
+      (makeUserCommentActionPermissionsMap (Just viewer) user_id Default.def) >>= \case
            ConfirmedPost (Left err) -> do
                alertDanger err
                redirect $ NewUserDiscussionR user_id

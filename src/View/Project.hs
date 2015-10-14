@@ -22,6 +22,8 @@ import qualified Data.Text as T
 
 import Data.Filter
 import Data.Order
+import DeprecatedBootstrap
+import Handler.Utils
 import Model.Currency
 import Model.Markdown
 import Model.Project

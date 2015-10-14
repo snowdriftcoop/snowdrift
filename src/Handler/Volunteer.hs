@@ -2,6 +2,7 @@ module Handler.Volunteer where
 
 import Import
 
+import DeprecatedBootstrap
 import Handler.Utils
 
 volunteerForm :: UTCTime -> ProjectId -> [Entity Interest] -> Entity User -> Form (VolunteerApplication, [InterestId])

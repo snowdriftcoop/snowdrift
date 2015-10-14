@@ -20,6 +20,7 @@ import qualified Data.Map as M
 import qualified Data.Set as S
 import qualified Data.Text as T
 
+import DeprecatedBootstrap
 import Model.Currency
 import Model.Markdown
 import Model.Notification

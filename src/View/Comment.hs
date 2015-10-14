@@ -47,12 +47,15 @@ import qualified Data.Text as T
 import qualified Data.Traversable as Traversable
 import qualified Data.Tree as Tree
 
+import DeprecatedBootstrap
+import Handler.Utils
 import Model.Comment
 import Model.Comment.ActionPermissions
 import Model.Comment.Routes
 import Model.Markdown
 import Model.Tag
 import Model.User
+import Model.Utils
 import View.Time
 import View.User
 import Widgets.Markdown
