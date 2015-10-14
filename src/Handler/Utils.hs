@@ -50,8 +50,7 @@ makeLanguageOptions = do
 
     langs <- languages
 
-    let render :: Language -> Text
-        render = renderMessage app langs . MsgLangName
+    let render = renderMessage app langs . MsgLangName
 
     return $ OptionList
         { olOptions =
