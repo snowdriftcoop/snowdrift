@@ -40,6 +40,7 @@ import Model.Project
 import Model.Role
 import Model.Shares
 import Model.SnowdriftEvent
+import Model.Tag
 import Model.User
 import Model.Wiki
 import View.Comment
@@ -743,11 +744,25 @@ postUpdatePledgeR project_handle = do
 -- /t
 
 getTicketsR :: Text -> Handler Html
-getTicketsR project_handle = do
+getTicketsR project_handle = renderTicketsPage project_handle id
+
+getTicketsByTag :: Text -> Text -> Handler Html
+getTicketsByTag project_handle tag_text = renderTicketsPage project_handle (filterByTag tag_text)
+    where
+        filterByTag tag_text tickets = filter (\ticket -> containsTag tag_text (tags ticket)) tickets
+        containsTag tag_text tags = any (\tag -> tag_text == annotTagName tag) tags
+
+{-
+    Renders the ticket page for a project. The 'modify_tickets' function transforms the
+    given list of tickets in some way before rendering. For example, a filtering function
+    may be passed in.
+-}
+renderTicketsPage :: Text -> ([TaggedTicket] -> [TaggedTicket]) -> Handler Html
+renderTicketsPage project_handle modify_tickets = do
     muser_id <- maybeAuthId
     (project, tagged_tickets) <- runYDB $ do
         Entity project_id project <- getBy404 (UniqueProjectHandle project_handle)
-        tagged_tickets <- fetchProjectOpenTicketsDB project_id muser_id
+        tagged_tickets <- modify_tickets <$> fetchProjectOpenTicketsDB project_id muser_id
         return (project, tagged_tickets)
 
     ((result, formWidget), encType) <- runFormGet viewForm
@@ -765,7 +780,6 @@ getTicketsR project_handle = do
         snowdriftTitle $ projectName project <> " Tickets"
         $(widgetFile "tickets")
 
-
 --------------------------------------------------------------------------------
 -- /t/#TicketId
 
@@ -778,7 +792,6 @@ getTicketR project_handle ticket_id = do
     -- TODO - check that the comment is associated with the correct project
 
     redirect $ CommentDirectLinkR ticketComment
-
 
 --------------------------------------------------------------------------------
 -- /transactions
