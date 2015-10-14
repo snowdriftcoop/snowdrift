@@ -340,13 +340,6 @@ here are some resources:
 *   [The Yesod Book](http://www.yesodweb.com/book/) is the primary resource
     for learning about Yesod, the web framework we use to develop Snowdrift.
 
-    Quite unfortunately, the Yesod book is not FLO (it uses the CC-BY-NC-ND
-    license). Complaints to the publisher, O'Reilly Media, may help
-    as the author of both Yesod and the Yesod book is otherwise willing
-    to use a FLO license if the publisher will agree…
-    (At least Yesod itself is FLO, including the internal documentation that
-    comes with the code in Haddock format.)
-
 *   The [School of Haskell](https://www.fpcomplete.com/school) includes
     basic and advanced topics including some Yesod sections.
     In April 2015, they announced plans to change to using FLO terms
