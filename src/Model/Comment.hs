@@ -550,10 +550,10 @@ editCommentDB user_id comment_id text language =
                         (Nothing, Nothing) -> return ()
 
                     update $ \c -> do
-                    set c [ CommentText     =. val content_without_tags
-                          , CommentLanguage =. val language
-                          ]
-                    where_ (c ^. CommentId ==. val comment_id)
+                        set c [ CommentText     =. val content_without_tags
+                              , CommentLanguage =. val language
+                              ]
+                        where_ (c ^. CommentId ==. val comment_id)
 
                 return $ Right ()
 

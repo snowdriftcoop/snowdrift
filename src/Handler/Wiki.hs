@@ -433,9 +433,9 @@ getWikiDiffProxyR project_handle language target = do
                                         <$> ireq textField "start"
                                         <*> ireq textField "end"
     let pairMay = do
-        s <- fromPathPiece start_edit_id_t
-        e <- fromPathPiece end_edit_id_t
-        return (s, e)
+            s <- fromPathPiece start_edit_id_t
+            e <- fromPathPiece end_edit_id_t
+            return (s, e)
     maybe
         (invalidArgs ["revision IDs"])
         (\(s, e) -> redirect $ WikiDiffR project_handle language target s e)
