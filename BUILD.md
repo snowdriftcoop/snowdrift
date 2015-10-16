@@ -120,7 +120,7 @@ fail. Building, running, and working on the site might still work otherwise.
 
 Once the dependencies are installed, clone the Snowdrift code to your computer.
 
-We primarily use a completely free/libre/open host for our code:
+We primarily use a completely FLO (Free/Libre/Open) host for our code:
 [git.gnu.io/snowdrift/snowdrift]. For convenience and redundancy, we also mirror
 at [GitHub], a popular but proprietary platform.
 

@@ -1,8 +1,8 @@
 # FLO Text Editors and Yesod/Haskell
 
-This guide covers our recommended options for fully-FLO text-editors and IDE
-development tools for hacking on Snowdrift (although this pretty well applies to
-any Yesod-based project).
+This guide covers our recommended options for FLO (Free/Libre/Open) text-editors
+and IDE development tools for hacking on Snowdrift (although this pretty well
+applies to any Yesod-based project).
 
 ## Text editor packages and settings
 
@@ -79,8 +79,8 @@ distribution of Emacs with better default configuration. It includes things like
 [Helm](https://github.com/emacs-helm/helm) and
 [Projectile](http://batsov.com/projectile/) by default.
 
-If you are coming from Vim, consider
-[Spacemacs](https://github.com/syl20bnr/spacemacs), an Emacs distribution that
+**If you are coming from Vim, consider
+[Spacemacs](https://github.com/syl20bnr/spacemacs)**, an Emacs distribution that
 includes Vim's modal keybindings by default along with much of Prelude's default
 configuration. Aside from Spacemacs, you can get the Vim keybindings in any
 Emacs distribution using [evil-mode](http://www.emacswiki.org/emacs/Evil).
