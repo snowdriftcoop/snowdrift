@@ -1,12 +1,12 @@
 <div .container-fluid>
-$forall tag <- tags
-  <div .row>
-    <div .col-xs-6>
-      #{tag}:
-    <div .col-xs-6>
-      $case fieldVal
-        $of Right tagvalues
-          <select id=#{fieldId} name=#{fieldName} .form-control>
+$case fieldVal
+  $of Right tagvalues
+    $forall tag <- tags
+      <div .row>
+        <div .col-xs-6>
+          #{tag}:
+        <div .col-xs-6>
+          <select id=#{tag} name=#{fieldName} .form-control>
             $case tagStatus tag tagvalues
               $of Included
                 <option selected>include
@@ -20,9 +20,10 @@ $forall tag <- tags
                 <option>include
                 <option>exclude
                 <option selected>doesn't matter
-        $of Left err
-            <p>Error: #{err}
-            <select name=#{tag} .form-control>
-              <option>include
-              <option>exclude
-              <option selected>doesn't matter
+  $of Left err
+    <p>Error: #{err}
+      $forall tag <- tags
+        <select id=#{tag} name=#{fieldName} .form-control>
+          <option>include
+          <option>exclude
+          <option selected>doesn't matter
