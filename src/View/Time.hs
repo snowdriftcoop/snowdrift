@@ -23,25 +23,19 @@ renderTime time = do
 showDiffTime :: UTCTime -> UTCTime -> String
 showDiffTime x y =
   let secs_ago = round (diffUTCTime x y)
-  in if | secs_ago < secsPerHour  -> go secs_ago secsPerMinute "m"
-        | secs_ago < secsPerDay   -> go secs_ago secsPerHour   "h"
-        | secs_ago < secsPerWeek  -> go secs_ago secsPerDay    "d"
-        | secs_ago < secsPerMonth -> go secs_ago secsPerWeek   "wk"
-        | secs_ago < secsPerYear  -> go secs_ago secsPerMonth  "mo"
-        | otherwise               -> go secs_ago secsPerYear   "yr"
+  in if | secs_ago < hour  -> go secs_ago minute "m"
+        | secs_ago < day   -> go secs_ago hour   "h"
+        | secs_ago < week  -> go secs_ago day    "d"
+        | secs_ago < month -> go secs_ago week   "wk"
+        | secs_ago < year  -> go secs_ago month  "mo"
+        | otherwise        -> go secs_ago year   "yr"
   where
+    go :: Integer -> Integer -> String -> String
     go secs_ago divisor suffix = show (secs_ago `div` divisor) ++ suffix
 
-    secsPerMinute,
-        secsPerHour,
-        secsPerDay,
-        secsPerWeek,
-        secsPerMonth,
-        secsPerYear
-        :: Integer
-    secsPerMinute = 60
-    secsPerHour   = 60*60
-    secsPerDay    = 60*24
-    secsPerWeek   = 60*60*24*7
-    secsPerMonth  = 60*60*24*30
-    secsPerYear   = 60*60*24*365
+    minute = 60
+    hour = minute * 60
+    day = hour * 24
+    week = day * 7
+    month = day * 30
+    year = day * 365
