@@ -120,6 +120,9 @@
   <li>
     Mike Chaberski
   <li>
+    <a href=@{UserR (toSqlKey 863)}>
+      Jacob Chapman
+  <li>
     <a href=@{UserR (toSqlKey 337)}>
       Chato
   <li>
