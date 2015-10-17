@@ -29,6 +29,16 @@ or
 [Ubuntu Stack install](https://github.com/commercialhaskell/stack/blob/master/doc/install_and_upgrade.md#ubuntu)
 instructions as appropriate.
 
+### CentOS, RHEL
+
+To install dependencies, run the following commands:
+
+    sudo yum update &&
+    sudo yum install postgresql postgresql-devel ncurses-devel gmp-devel zlib-devel
+
+Then follow the
+[CentOS / Red Hat / Amazon Linux Stack install](https://github.com/commercialhaskell/stack/blob/master/doc/install_and_upgrade.md#centos--red-hat--amazon-linux).
+
 ### Arch Linux
 
 To install dependencies, run this command as `root`:
