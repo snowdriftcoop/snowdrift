@@ -5,11 +5,11 @@
         <div .col-xs-4>
           <select id="datetype" name=#{fieldName} .form-control>
             $case (dateStatus "datetype" dp)
-              $of DateType DateCreated
+              $of DateStatusType DateCreated
                 <option>
                 <option selected>Created
                 <option>Updated
-              $of DateType DateUpdated
+              $of DateStatusType DateUpdated
                 <option>
                 <option>Created
                 <option selected>Updated
@@ -20,11 +20,11 @@
         <div .col-xs-4>
           <select id="dateparam" name=#{fieldName} .form-control>
             $case (dateStatus "dateparam" dp)
-              $of DateParam DateBefore
+              $of DateStatusParam DateBefore
                 <option>
                 <option selected>before
                 <option>after
-              $of DateParam DateAfter
+              $of DateStatusParam DateAfter
                 <option>
                 <option>before
                 <option selected>after
@@ -46,7 +46,7 @@
     $of Left _
       <p .text-alert>
         If filtering by date, please select options in both drop downs, and #
-        /enter your date in YYYY-MM-DD format (if not using Chrome).
+        /enter your date in YYYY-MM-DD format.
       <div .row>
         <div .col-xs-4>
           <select id="datetype" name=#{fieldName} .form-control>

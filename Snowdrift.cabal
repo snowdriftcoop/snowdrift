@@ -197,6 +197,7 @@ library
                  , data-default
                  , Diff
                  , directory
+                 , errors
                  , esqueleto
                  , fast-logger
                  , file-embed

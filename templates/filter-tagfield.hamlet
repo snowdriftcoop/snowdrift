@@ -8,15 +8,15 @@
           <div .col-xs-6>
             <select id=#{tag} name=#{fieldName} .form-control>
               $case tagStatus tag tagvalues
-                $of Included
+                $of TagIncluded
                   <option selected>include
                   <option>exclude
                   <option>doesn't matter
-                $of Excluded
+                $of TagExcluded
                   <option>include
                   <option selected>exclude
                   <option>doesn't matter
-                $of Neither
+                $of TagNeither
                   <option>include
                   <option>exclude
                   <option selected>doesn't matter

@@ -2,39 +2,45 @@
 
 module Widgets.Search where
 
-import Import hiding (parseTime, timeField)
+import Import
+
+import Control.Applicative
+import Control.Error
 import Data.Char
+import Data.Time.Calendar
+import Data.Time.Format
 import qualified Data.Text as T
+import Data.Text.Read
 
 data FilterClaimStatus = Claimed
                        | Unclaimed
                        | All
                        deriving (Show, Eq)
 
-data DateTypes = DateTypeBlank
+data DateType = DateTypeBlank
                | DateCreated
                | DateUpdated
                deriving Eq
 
-data DateParams = DateParamBlank
+data DateParam = DateParamBlank
                 | DateBefore
                 | DateAfter
                 | DateBetween
                 deriving Eq
 
-data DateStatus = DateType DateTypes
-                | DateParam DateParams
-                | DateOther Text
+data DateStatus = DateStatusType DateType
+                | DateStatusParam DateParam
+                | DateStatusOther Text
                 deriving Eq
 
-data TagStatus = Included
-               | Excluded
-               | Neither
+data TagStatus = TagIncluded
+               | TagExcluded
+               | TagNeither
                deriving Eq
 
 data DateParameters = DateParameters
-    { basedON :: DateTypes
-    , criteria :: DateParams
+    { dateType :: DateType
+    , dateParam :: DateParam
     , startDate :: Text
     , endDate :: Text
     }
@@ -46,26 +52,26 @@ data SearchParameters = SearchParameters
     , sort :: Maybe Text
     }
 
-fromDateType :: DateTypes -> Text
+fromDateType :: DateType -> Text
 fromDateType x = case x of
                DateTypeBlank -> ""
                DateCreated -> "Created"
                DateUpdated -> "Updated"
 
-toDateType :: Text -> DateTypes
+toDateType :: Text -> DateType
 toDateType x = case x of
                 "Created" -> DateCreated
                 "Updated" -> DateUpdated
                 _ -> DateTypeBlank
 
-fromDateParam :: DateParams -> Text
+fromDateParam :: DateParam -> Text
 fromDateParam x = case x of
                 DateParamBlank -> ""
                 DateBefore -> "before"
                 DateAfter -> "after"
                 DateBetween -> "between"
 
-toDateParam :: Text -> DateParams
+toDateParam :: Text -> DateParam
 toDateParam x = case x of
                   "before" -> DateBefore
                   "after" -> DateAfter
@@ -74,25 +80,25 @@ toDateParam x = case x of
 
 textFromDateStatus :: DateStatus -> Text
 textFromDateStatus x = case x of
-                        DateType a -> fromDateType a
-                        DateParam b -> fromDateParam b
-                        DateOther c -> c
+                        DateStatusType a -> fromDateType a
+                        DateStatusParam b -> fromDateParam b
+                        DateStatusOther c -> c
 
 dateStatus :: Text -> DateParameters -> DateStatus
 dateStatus tid responses = 
         case tid of
-            "datetype"  -> DateType $ basedON responses
-            "dateparam" -> DateParam $ criteria responses
-            "datestart" -> DateOther $ startDate responses
-            "dateend"   -> DateOther $ endDate responses
-            _ -> DateOther $ T.empty
+            "datetype"  -> DateStatusType $ dateType responses
+            "dateparam" -> DateStatusParam $ dateParam responses
+            "datestart" -> DateStatusOther $ startDate responses
+            "dateend"   -> DateStatusOther $ endDate responses
+            _ -> DateStatusOther $ T.empty
 
-tagStatus :: Text -> [(Text, Text)] -> TagStatus
-tagStatus tag responses =
-        case (lookup tag responses) of
-          Just "include" -> Included
-          Just "exclude" -> Excluded
-          _ -> Neither
+convertTagStatus :: Text -> TagStatus
+convertTagStatus tag =
+        case tag of
+          Just "include" -> TagIncluded
+          Just "exclude" -> TagExcluded
+          _ -> TagNeither
 
 searchForm :: [Text] -> Form SearchParameters
 searchForm tags extra = do
@@ -158,6 +164,7 @@ valiDate [a, b, c]
 valiDate _ = False
 
 toInt :: Text -> Int
+--toInt x = fmap fst $ hush $ decimal x
 toInt x = textToInt (T.takeWhile isDigit x) 0 0
 
 textToInt :: Text -> Int -> Int -> Int
@@ -176,13 +183,13 @@ isDay x = (toInt x) > 0 && (toInt x) < 31
 isYear :: Text -> Bool
 isYear x = (toInt x) > 2000
 
-convertDate :: Text -> Text
-convertDate initdate
-    | ((length (T.splitOn "/" initdate)) > 1) =
-            convertDate2 (T.splitOn "/" initdate)
-    | ((length (T.splitOn "-" initdate)) > 1) =
-            convertDate2 (T.splitOn "-" initdate)
-    | otherwise = "1901-01-01"
+--convertDate :: Text -> Text
+--convertDate initdate
+--    | ((length (T.splitOn "/" initdate)) > 1) =
+--            convertDate2 (T.splitOn "/" initdate)
+--    | ((length (T.splitOn "-" initdate)) > 1) =
+--            convertDate2 (T.splitOn "-" initdate)
+--    | otherwise = "1901-01-01"
 
 -- This will convert any input to the default yyyy-mm-dd to the best of its
 -- ability.  If both month and day are less than 12, then it will assume the
@@ -192,20 +199,20 @@ convertDate initdate
 -- Note #2: Validation has occurred before this function is reached, so we can
 --        be sure that one of the first two conditions should be matched. I
 --        added the other two just in case something goes wrong.
-convertDate2 :: [Text] -> Text
-convertDate2 [a, b, c]
-  | T.length a == 2 = if ((isMonth a) && (isMonth b))
-                         then T.intercalate "-" [c, a, b]
-                         else if ((isMonth a) && (isDay b))
-                           then T.intercalate "-" [c, a, b]
-                           else T.intercalate "-" [c, b, a]
-  | T.length a == 4 = if ((isMonth b) && (isMonth c))
-                         then T.intercalate "-" [a, b, c]
-                         else if ((isMonth a) && (isDay b))
-                            then T.intercalate "-" [a, b, c]
-                            else T.intercalate "-" [a, c, b]
-  | otherwise = "1901-01-01"
-convertDate2 _ = "1901-01-01"
+--convertDate2 :: [Text] -> Text
+--convertDate2 [a, b, c]
+--  | T.length a == 2 = if ((isMonth a) && (isMonth b))
+--                         then T.intercalate "-" [c, a, b]
+--                         else if ((isMonth a) && (isDay b))
+--                           then T.intercalate "-" [c, a, b]
+--                           else T.intercalate "-" [c, b, a]
+--  | T.length a == 4 = if ((isMonth b) && (isMonth c))
+--                         then T.intercalate "-" [a, b, c]
+--                         else if ((isMonth a) && (isDay b))
+--                            then T.intercalate "-" [a, b, c]
+--                            else T.intercalate "-" [a, c, b]
+--  | otherwise = "1901-01-01"
+--convertDate2 _ = "1901-01-01"
 
 
 dateField :: Field Handler DateParameters
@@ -225,12 +232,23 @@ dateField = Field
     , fieldEnctype = UrlEncoded
     }
 
+convertDate :: Text -> Day
+convertDate t = parseTimeM False defaultTimeLocale "%Y-%M-%D" t
+            <|> parseTimeM False defaultTimeLocale "%Y/%M/%D" t
+            <|> parseTimeM False defaultTimeLocale "%Y-%D-%M" t
+            <|> parseTimeM False defaultTimeLocale "%Y/%D/%M" t
+            <|> parseTimeM False defaultTimeLocale "%M-%D-%Y" t
+            <|> parseTimeM False defaultTimeLocale "%M/%D/%Y" t
+            <|> parseTimeM False defaultTimeLocale "%D-%M-%Y" t
+            <|> parseTimeM False defaultTimeLocale "%D/%M/%Y" t
+
 tagField :: [Text] -> Field Handler [(Text, Text)]
 tagField tags = Field
     { fieldParse = \tagSelectValues _ -> return $
                                             Right $
                                             Just $
-                                            zip tags tagSelectValues
+                                            zip tags $
+                                            map convertTagStatus tagSelectValues
     , fieldView = \_ fieldName _ fieldVal _ ->
             $(widgetFile "filter-tagfield")
     , fieldEnctype = UrlEncoded
@@ -256,19 +274,19 @@ searchFilterString (SearchParameters All searchdate tags _) =
             ]
 
 parseFilterDate :: DateParameters -> Text
-parseFilterDate (DateParameters base crit start end)
-        | (base == DateCreated) || (base == DateUpdated) = T.toUpper $
-                if (crit == DateBetween) then
+parseFilterDate (DateParameters t p start end)
+        | (t == DateCreated) || (t == DateUpdated) = T.toUpper $
+                if (p == DateBetween) then
                     T.intercalate " " 
-                        [(fromDateType base), 
-                         (fromDateParam crit), 
+                        [(fromDateType t), 
+                         (fromDateParam p), 
                          (convertDate start),
                          "AND", 
                          (convertDate end)]
                 else
                     T.intercalate " "
-                        [(fromDateType base),
-                         (fromDateParam crit),
+                        [(fromDateType t),
+                         (fromDateParam p),
                          (convertDate start)]
         | otherwise = T.empty
 
