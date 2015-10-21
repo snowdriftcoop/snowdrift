@@ -757,9 +757,8 @@ getTicketsR project_handle = do
     github_issues <- getGithubIssues project
 
     (ptags, otags) <- runDB $ getProjectTagList project_id
-    let projecttags = (map (tagName . entityVal) ptags) ++ 
-                      (map (tagName . entityVal) otags)
-    
+    let projecttags = concatMap (map (tagName . entityVal)) [ptags, otags]
+
     ((result, formWidget), encType) <- runFormGet $ searchForm projecttags
     let (filter_expression, order_expression) = case result of
             FormSuccess x -> (either
@@ -775,6 +774,8 @@ getTicketsR project_handle = do
 
     let issues = sortBy (flip compare `on` order_expression . issueOrderable) $
                    filter (filter_expression . issueFilterable) $
+                      -- Can't use concatMap since tagged_tickets and
+                      -- github_tickets are different types.
                       map mkSomeIssue tagged_tickets ++
                         map mkSomeIssue github_issues
 

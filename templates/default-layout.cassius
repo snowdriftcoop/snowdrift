@@ -56,10 +56,6 @@ input[type=text], input[type=email]
     width: 30em
     max-width: 100%
 
-/* removes the seemingly problematic width: 100% from bootstrap 
- .form-control
-    width: auto */
-
 .radio-inline
     width: 2em
     vertical-align: inherit

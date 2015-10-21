@@ -1,14 +1,14 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Widgets.Search where
+module Widgets.Search
+    ( searchForm
+    , searchFilterString
+    , searchSortString
+    ) where
 
 import Import
 
-import Control.Applicative
-import Control.Error
-import Data.Char
 import qualified Data.Text as T
-import Data.Text.Read
 
 data FilterClaimStatus = Claimed
                        | Unclaimed
@@ -21,9 +21,9 @@ data TagStatus = TagIncluded
                deriving Eq
 
 data SearchParameters = SearchParameters
-    { claimed :: FilterClaimStatus
-    , tags :: [(Text, TagStatus)]
-    , sort :: Maybe Text
+    { _claimed :: FilterClaimStatus
+    , _tags :: [(Text, TagStatus)]
+    , _sort :: Maybe Text
     }
 
 convertTagStatus :: Text -> TagStatus
@@ -35,13 +35,14 @@ convertTagStatus tag =
 
 searchForm :: [Text] -> Form SearchParameters
 searchForm tags extra = do
-    let claimedList = [("All" :: Text, All),
-                    ("Claimed", Claimed),
-                    ("Unclaimed", Unclaimed)]
+    let claimedList =
+            [ ("All" :: Text, All)
+            , ("Claimed", Claimed)
+            , ("Unclaimed", Unclaimed)]
 
-    (claimedRes, claimedView) <- mreq 
+    (claimedRes, claimedView) <- mreq
         (selectField $ optionsPairs claimedList)
-        (FieldSettings "Claimed" 
+        (FieldSettings "Claimed"
                        Nothing
                        Nothing
                        Nothing
@@ -50,7 +51,7 @@ searchForm tags extra = do
     (tagsRes, tagsView) <- mreq (tagField tags) "Tags" Nothing
     (sortRes, sortView) <- mopt textField "Sort" Nothing
 
-    let searchRes = SearchParameters 
+    let searchRes = SearchParameters
                     <$> claimedRes
                     <*> tagsRes
                     <*> sortRes
@@ -72,21 +73,14 @@ tagField tags = Field
     }
 
 searchFilterString :: SearchParameters -> Text
-searchFilterString (SearchParameters Claimed tags _ ) = 
+searchFilterString (SearchParameters Claimed tags _ ) =
         T.intercalate " AND " $ filter (not . T.null)
-            [(T.pack "CLAIMED"),
-             (parseTags tags)
-            ]
+            [T.pack "CLAIMED", parseTags tags]
 searchFilterString (SearchParameters Unclaimed tags _ ) =
         T.intercalate " AND " $ filter (not . T.null)
-            [(T.pack "UNCLAIMED"),
-             (parseTags tags)
-            ]
+            [T.pack "UNCLAIMED", parseTags tags]
 searchFilterString (SearchParameters All tags _) =
-        T.intercalate " AND " $ filter (not . T.null)
-            [
-             (parseTags tags)
-            ]
+        T.intercalate " AND " $ filter (not . T.null) [parseTags tags]
 
 parseTags :: [(Text, TagStatus)] -> Text
 parseTags t = T.intercalate " AND " $ filter (not . T.null) (map parseTag t)
@@ -98,5 +92,5 @@ parseTags t = T.intercalate " AND " $ filter (not . T.null) (map parseTag t)
 
 searchSortString :: SearchParameters -> Text
 searchSortString (SearchParameters _ _ sortString) = fromMaybe
-                                                            T.empty
-                                                            sortString
+                                                         T.empty
+                                                         sortString
