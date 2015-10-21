@@ -6,10 +6,6 @@
     ^{fvInput claimedView}
     <fieldset>
       <legend>
-        Date
-      ^{fvInput dateView}
-    <fieldset>
-      <legend>
         Tags
       ^{fvInput tagsView}
 <fieldset>

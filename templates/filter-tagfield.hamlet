@@ -7,19 +7,20 @@
             <label for=#{tag}>#{tag}
           <div .col-xs-6>
             <select id=#{tag} name=#{fieldName} .form-control>
-              $case tagStatus tag tagvalues
-                $of TagIncluded
-                  <option selected>include
-                  <option>exclude
-                  <option>doesn't matter
-                $of TagExcluded
-                  <option>include
-                  <option selected>exclude
-                  <option>doesn't matter
-                $of TagNeither
-                  <option>include
-                  <option>exclude
-                  <option selected>doesn't matter
+              $maybe tagvalue <- lookup tag tagvalues
+                  $case tagvalue
+                    $of TagIncluded
+                      <option selected>include
+                      <option>exclude
+                      <option>doesn't matter
+                    $of TagExcluded
+                      <option>include
+                      <option selected>exclude
+                      <option>doesn't matter
+                    $of TagNeither
+                      <option>include
+                      <option>exclude
+                      <option selected>doesn't matter
     $of Left _
       $forall tag <- tags
         <div .row>
