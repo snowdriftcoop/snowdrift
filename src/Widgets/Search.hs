@@ -5,14 +5,32 @@ module Widgets.Search where
 import Import hiding (parseTime, timeField)
 import Data.Char
 import qualified Data.Text as T
-import Debug.Trace
 
-data FilterClaimStatus = Claimed | Unclaimed | All deriving (Show, Eq)
+data FilterClaimStatus = Claimed
+                       | Unclaimed
+                       | All
+                       deriving (Show, Eq)
 
-data DateTypes = DateTypeBlank | DateCreated | DateUpdated deriving Eq
-data DateParams = DateParamBlank | DateBefore | DateAfter | DateBetween deriving Eq
-data DateStatus = DateType DateTypes | DateParam DateParams | DateOther Text deriving Eq
-data TagStatus = Included | Excluded | Neither deriving Eq
+data DateTypes = DateTypeBlank
+               | DateCreated
+               | DateUpdated
+               deriving Eq
+
+data DateParams = DateParamBlank
+                | DateBefore
+                | DateAfter
+                | DateBetween
+                deriving Eq
+
+data DateStatus = DateType DateTypes
+                | DateParam DateParams
+                | DateOther Text
+                deriving Eq
+
+data TagStatus = Included
+               | Excluded
+               | Neither
+               deriving Eq
 
 data DateParameters = DateParameters
     { basedON :: DateTypes
@@ -68,20 +86,6 @@ dateStatus tid responses =
             "datestart" -> DateOther $ startDate responses
             "dateend"   -> DateOther $ endDate responses
             _ -> DateOther $ T.empty
---dateStatus :: Text -> [(Text, Text)] -> DateStatus
---dateStatus tid responses =
---    case tid of
---        "datetype" -> case (fromMaybe "" $ lookup tid responses) of
---                        "" -> DateType DateTypeBlank
---                        "Created" -> DateType DateCreated
---                        "Last Updated" -> DateType DateLastUpdated
---        "dateparam" -> case (fromMaybe "" $ lookup tid responses) of
---                        "" -> DateParam DateParamBlank
---                        "before" -> DateParam DateBefore
---                        "after" -> DateParam DateAfter
---                        "between" -> DateParam DateBetween
---        "datestart" -> DateOther $ fromMaybe "" $ lookup tid responses
---        "dateend" -> DateOther $ fromMaybe "" $ lookup tid responses
 
 tagStatus :: Text -> [(Text, Text)] -> TagStatus
 tagStatus tag responses =
@@ -98,7 +102,11 @@ searchForm tags extra = do
 
     (claimedRes, claimedView) <- mreq 
         (selectField $ optionsPairs claimedList)
-        (FieldSettings "Claimed" Nothing Nothing Nothing [("class", "form-control")])
+        (FieldSettings "Claimed" 
+                       Nothing
+                       Nothing
+                       Nothing
+                       [("class", "form-control")])
         (Just All)
     (dateRes, dateView) <- mreq validatedDateField "Time" Nothing
     (tagsRes, tagsView) <- mreq (tagField tags) "Tags" Nothing
@@ -110,19 +118,24 @@ searchForm tags extra = do
                     <*> tagsRes
                     <*> sortRes
 
-    let widget = toWidget $(widgetFile "filter_widget")
+    let widget = toWidget $(widgetFile "filter-widget")
 
     return (searchRes, widget)
   where
     errorMessage :: Text
-    errorMessage = "Date Created/Updated & before/after must be checked; date value must be in a recognized format."
+    errorMessage = T.append
+                     "Date Created/Updated & before/after must be checked;"
+                     " date value must be in a recognized format."
     validatedDateField = checkBool validateDateField errorMessage dateField
 
 validateDateField :: DateParameters -> Bool
 validateDateField (DateParameters t p s _) 
-    | (t == DateTypeBlank) && (p == DateParamBlank) = trace ("validateDateField: DateTypeBlank & DateParamBlank") True
-    | (t /= DateTypeBlank) && (p /= DateParamBlank) && (valiDate $ T.splitOn "/" s) = trace ("validateDatefield non blanks & date matches") True
-    | otherwise = trace ("validateDateField otherwise") False
+    | (t == DateTypeBlank) && (p == DateParamBlank) = True
+    | (t /= DateTypeBlank) &&
+      (p /= DateParamBlank) &&
+      ((valiDate $ T.splitOn "/" s) ||
+       (valiDate $ T.splitOn "-" s)) = True
+    | otherwise = False
 
 -- Check to make sure the date is in an appropriate format.  Accepted formats:
 --     mm/dd/yyyy
@@ -131,27 +144,28 @@ validateDateField (DateParameters t p s _)
 --     yyyy/dd/mm
 valiDate :: [Text] -> Bool
 valiDate [a, b, c]
-  | T.length a == 2 = trace ("valiDate l2 a,b,c = " ++ (show a) ++ (show b) ++ (show c)) (if ((((isMonth a) && (isDay b))
+  | T.length a == 2 = if ((((isMonth a) && (isDay b))
                          || ((isDay a) && (isMonth b)))
                          && (isYear c))
                        then True
-                       else False)
-  | T.length a == 4 = trace ("valiDate l4 a,b,c = " ++ (show a) ++ (show b) ++ (show c)) (if ((((isMonth b) && (isDay c))
+                       else False
+  | T.length a == 4 = if ((((isMonth b) && (isDay c))
                          || ((isDay b) && (isMonth c)))
                          && (isYear a))
                        then True
-                       else False)
-  | otherwise = trace ("valiDate otherwise") False
-
+                       else False
+  | otherwise = False
 valiDate _ = False
 
 toInt :: Text -> Int
-toInt x = trace ("toInt: " ++ (show $ T.takeWhile isDigit x) ++ " " ++ (show $ textToInt (T.takeWhile isDigit x) 0 0)) (textToInt (T.takeWhile isDigit x) 0 0)
+toInt x = textToInt (T.takeWhile isDigit x) 0 0
 
 textToInt :: Text -> Int -> Int -> Int
 textToInt t accum place = case (T.length t) of
-                           0 -> accum
-                           _ -> (accum + ((digitToInt $ T.last t) * 10^place) + (textToInt (T.init t) accum (place+1)))
+    0 -> accum
+    _ -> (accum +
+         ((digitToInt $ T.last t) * 10^place) +
+          (textToInt (T.init t) accum (place+1)))
 
 isMonth :: Text -> Bool
 isMonth x = (toInt x) > 0 && (toInt x) < 12
@@ -162,30 +176,63 @@ isDay x = (toInt x) > 0 && (toInt x) < 31
 isYear :: Text -> Bool
 isYear x = (toInt x) > 2000
 
+convertDate :: Text -> Text
+convertDate initdate
+    | ((length (T.splitOn "/" initdate)) > 1) =
+            convertDate2 (T.splitOn "/" initdate)
+    | ((length (T.splitOn "-" initdate)) > 1) =
+            convertDate2 (T.splitOn "-" initdate)
+    | otherwise = "1901-01-01"
+
+-- This will convert any input to the default yyyy-mm-dd to the best of its
+-- ability.  If both month and day are less than 12, then it will assume the
+-- first variable (a/b) is the month and the second (b/c) is the day.
+-- Note #1:  Placeholder will say "YYYY-MM-DD", so these other scenarios are 
+--        not very likely to happen anyway.
+-- Note #2: Validation has occurred before this function is reached, so we can
+--        be sure that one of the first two conditions should be matched. I
+--        added the other two just in case something goes wrong.
+convertDate2 :: [Text] -> Text
+convertDate2 [a, b, c]
+  | T.length a == 2 = if ((isMonth a) && (isMonth b))
+                         then T.intercalate "-" [c, a, b]
+                         else if ((isMonth a) && (isDay b))
+                           then T.intercalate "-" [c, a, b]
+                           else T.intercalate "-" [c, b, a]
+  | T.length a == 4 = if ((isMonth b) && (isMonth c))
+                         then T.intercalate "-" [a, b, c]
+                         else if ((isMonth a) && (isDay b))
+                            then T.intercalate "-" [a, b, c]
+                            else T.intercalate "-" [a, c, b]
+  | otherwise = "1901-01-01"
+convertDate2 _ = "1901-01-01"
+
+
 dateField :: Field Handler DateParameters
 dateField = Field
     { fieldParse = \dateSelectValues _ ->
---        trace ("timeWidget fieldParse\nlength of timeSelectValues: " ++ (show (length timeSelectValues)))
         case dateSelectValues of
-            --a -> return $ Right $ Just $ a
-            [a, b, c, d] -> trace 
-                                ("Date trace:  " ++ (show a) ++ " " ++ (show b) ++ " " ++ (show c) ++ " " ++ (show d) ++ "\n")
-                                (return $ Right $ Just (DateParameters (toDateType a) (toDateParam b) (c :: Text) (d :: Text)))
-            _ -> return $ Left "Error with time selection: Missing/Too Much input."
-    , fieldView = \_ fieldName _ fieldVal _ -> $(widgetFile "filter_datefield")
+            [a, b, c, d] -> return $
+                                Right $
+                                Just (DateParameters (toDateType a) 
+                                                     (toDateParam b)
+                                                     (c :: Text)
+                                                     (d :: Text))
+            _ -> return $
+              Left "Error with time selection: Missing/Too Much input."
+    , fieldView = \_ fieldName _ fieldVal _ ->
+                    $(widgetFile "filter-datefield")
     , fieldEnctype = UrlEncoded
     }
 
 tagField :: [Text] -> Field Handler [(Text, Text)]
 tagField tags = Field
-    { fieldParse = \tagSelectValues _ -> return $ Right $ Just $ zip tags tagSelectValues
---          trace ("tagWidget fieldParse\nlength of tagSelectValues: " ++ (show (length tagSelectValues)))
---            (if (length tagSelectValues > 0) then
---                traceShow (zip tags tagSelectValues)
---                (return $ Right $ Just $ zip tags tagSelectValues)
---             else
---                return $ Left "Error with tag selection: No input.")
-    , fieldView = \_ fieldName _ fieldVal _ -> $(widgetFile "filter_tagfield")
+    { fieldParse = \tagSelectValues _ -> return $
+                                            Right $
+                                            Just $
+                                            zip tags tagSelectValues
+    , fieldView = \_ fieldName _ fieldVal _ ->
+            $(widgetFile "filter-tagfield")
     , fieldEnctype = UrlEncoded
     }
 
@@ -215,14 +262,14 @@ parseFilterDate (DateParameters base crit start end)
                     T.intercalate " " 
                         [(fromDateType base), 
                          (fromDateParam crit), 
-                         start, 
+                         (convertDate start),
                          "AND", 
-                         end]
+                         (convertDate end)]
                 else
                     T.intercalate " "
                         [(fromDateType base),
                          (fromDateParam crit),
-                         start]
+                         (convertDate start)]
         | otherwise = T.empty
 
 parseTags :: [(Text, Text)] -> Text
@@ -234,4 +281,6 @@ parseTags t = T.intercalate " AND " $ filter (not . T.null) (map parseTag t)
               | otherwise = T.empty
 
 searchSortString :: SearchParameters -> Text
-searchSortString (SearchParameters _ _ _ sortString) = fromMaybe T.empty sortString
+searchSortString (SearchParameters _ _ _ sortString) = fromMaybe
+                                                            T.empty
+                                                            sortString

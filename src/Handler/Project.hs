@@ -19,9 +19,6 @@ import qualified Data.Set as S
 import qualified Data.Text as T
 import qualified Data.Tree as Tree
 
--- temporary:  Needs to be removed when debugging is finished
-import Debug.Trace
-
 import Data.Filter
 import Data.Order
 import Data.Time.Format
@@ -774,14 +771,12 @@ getTicketsR project_handle = do
     github_issues <- getGithubIssues project
 
     (ptags, otags) <- runDB $ getProjectTagList project_id
-    let projecttags = (map (tagName . entityVal) ptags) ++ (map (tagName . entityVal) otags)
+    let projecttags = (map (tagName . entityVal) ptags) ++ 
+                      (map (tagName . entityVal) otags)
     
     ((result, formWidget), encType) <- runFormGet $ searchForm projecttags
     let (filter_expression, order_expression) = case result of
-            FormSuccess x -> trace ("result: " ++ 
-                                    (show $ claimed x) ++
-                                    (show $ tags x))
-                             (either
+            FormSuccess x -> (either
                                 (const defaultFilter)
                                 id
                                 (parseFilterExpression $ searchFilterString x),
@@ -789,13 +784,13 @@ getTicketsR project_handle = do
                                 (const defaultOrder)
                                 id
                                 (parseOrderExpression $ searchSortString x))
-            FormFailure y -> trace ("Form Failure: " ++ (show y)) (defaultFilter, defaultOrder)
-            FormMissing -> trace ("Form Missing!") (defaultFilter, defaultOrder)
-
+            FormFailure y -> (defaultFilter, defaultOrder)
+            FormMissing -> (defaultFilter, defaultOrder)
 
     let issues = sortBy (flip compare `on` order_expression . issueOrderable) $
                    filter (filter_expression . issueFilterable) $
-                      map mkSomeIssue tagged_tickets ++ map mkSomeIssue github_issues
+                      map mkSomeIssue tagged_tickets ++
+                        map mkSomeIssue github_issues
 
     defaultLayout $ do
         snowdriftTitle $ projectName project <> " Tickets"
