@@ -3,7 +3,6 @@
 
 module MechanismTest (mechanismSpecs) where
 
-import Prelude
 import TestImport hiding (get)
 
 import Data.Int (Int64)

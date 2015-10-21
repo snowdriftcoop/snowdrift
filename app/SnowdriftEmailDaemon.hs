@@ -29,6 +29,7 @@ import qualified Text.Email.Validate as Email
 
 import Model.Notification (UserNotificationType, ProjectNotificationType)
 import Model.User (deleteFromEmailVerification)
+import WrappedValues
 
 data Arguments = Arguments
     { db_arg            :: Text

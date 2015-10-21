@@ -1,4 +1,7 @@
-<form method=POST action=@{EditBlogPostR project_handle blog_post_handle} enctype=#{enctype}>
+<form
+    method=POST
+    action=@{EditBlogPostR project_handle blog_post_handle}
+    enctype=#{enctype}>
   ^{blog_form}
   <input type=submit name=mode value=preview>
   <input type=submit name=mode value=post>

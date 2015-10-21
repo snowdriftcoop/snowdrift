@@ -6,7 +6,6 @@
 
 module CommentTest (commentSpecs) where
 
-import Import (pprint)
 import TestImport hiding (get)
 
 import Control.Monad (when, unless)
@@ -18,6 +17,8 @@ import Yesod (RedirectUrl, Route)
 import Yesod.Default.Config (AppConfig (..), DefaultEnv (..))
 import Yesod.Markdown (unMarkdown)
 import qualified Data.Text as Text
+
+import PPrint
 
 commentSpecs :: AppConfig DefaultEnv a -> Spec
 commentSpecs conf = do

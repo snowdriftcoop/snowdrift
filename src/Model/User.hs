@@ -33,6 +33,9 @@ module Model.User
     , archiveNotificationsDB
     , archiveUserNotificationsDB
     , archiveProjectNotificationsDB
+    , claimedTickets
+    , countClaimedTickets
+    , countWatchedTickets
     , deleteFromEmailVerification
     , deleteCommentsDB
     , deleteBlogPostsDB
@@ -40,6 +43,8 @@ module Model.User
     , deleteUserDB
     , eligEstablishUserDB
     , establishUserDB
+    , fetchAllUsersDB
+    , fetchAllUserProjectInfosDB
     , fetchAllUserRolesDB
     , fetchCurUserRolesDB
     , fetchNumUnreadNotificationsDB
@@ -89,6 +94,7 @@ module Model.User
     , userViewWikiEditsDB
     , userWatchProjectDB
     , verifyEmailDB
+    , watchedTickets
     -- Unsorted
     , canCurUserMakeEligible
     , canMakeEligible
@@ -104,6 +110,7 @@ import qualified Data.List as L
 import qualified Data.Map as M
 import qualified Data.Set as S
 import qualified Data.Text as T
+import qualified Database.Persist as P
 
 import Model.Comment
 import Model.Comment.Sql
@@ -112,6 +119,7 @@ import Model.User.Internal
             hiding (UserNotificationPref, ProjectNotificationPref)
 import Model.User.Sql
 import Model.Wiki.Sql
+import WrappedValues
 
 -- anonymousUser is a special user for items posted by visitors who are not
 -- logged in, such as posting to /contact for a project
@@ -188,8 +196,35 @@ updateUserPreview UserUpdate{..} user = user
 --------------------------------------------------------------------------------
 -- Database functions
 
+-- | Fetch all users, ordered by descending user id.
+fetchAllUsersDB :: DB [Entity User]
+fetchAllUsersDB =
+      select $
+      from $ \user -> do
+      orderBy [desc (user ^. UserId)]
+      return user
+
 fetchUsersInDB :: [UserId] -> DB [Entity User]
 fetchUsersInDB user_ids = selectList [UserId <-. user_ids] []
+
+-- | Fetch all users with their "project infos" (mapping from project name and
+-- handle to the set of user roles).
+fetchAllUserProjectInfosDB :: DB (Map UserId (Map (Text, Text) (Set Role)))
+fetchAllUserProjectInfosDB = fmap go query
+  where
+    go :: [(Value UserId, Value Text, Value Text, Value Role)] -> Map UserId (Map (Text, Text) (Set Role))
+    go = M.fromListWith (M.unionWith S.union) . map f
+      where
+        f :: (Value UserId, Value Text, Value Text, Value Role) -> (UserId, Map (Text, Text) (Set Role))
+        f (Value uid, Value name, Value handle, Value role) = (uid, M.singleton (name, handle) (S.singleton role))
+
+    query :: DB [(Value UserId, Value Text, Value Text, Value Role)]
+    query =
+        select $
+        from $ \(user `InnerJoin` role `InnerJoin` project) -> do
+        on_ (project ^. ProjectId ==. role ^. ProjectUserRoleProject)
+        on_ (user ^. UserId ==. role ^. ProjectUserRoleUser)
+        return (user ^. UserId, project ^. ProjectName, project ^. ProjectHandle, role ^. ProjectUserRoleRole)
 
 fetchUserWatchingProjectsDB :: UserId -> DB [Entity Project]
 fetchUserWatchingProjectsDB user_id =
@@ -572,11 +607,9 @@ insertDefaultProjectNotifPrefs user_id project_id =
 userWatchProjectDB :: UserId -> ProjectId -> DB ()
 userWatchProjectDB user_id project_id = do
     void $ insertUnique $ UserWatchingProject user_id project_id
-    exists' <-
-        selectExists $
-        from $ \pnp ->
-        where_ $ pnp ^. ProjectNotificationPrefUser    ==. val user_id
-             &&. pnp ^. ProjectNotificationPrefProject ==. val project_id
+    exists' <- fmap (>0) $
+        P.count [ProjectNotificationPrefUser P.==. user_id
+                ,ProjectNotificationPrefProject P.==. project_id]
     unless exists' $
         insertDefaultProjectNotifPrefs user_id project_id
 
@@ -698,13 +731,19 @@ fetchNumUnreadNotificationsDB user_id = (+)
 -- Internal helper.
 fetchNumUnreadNotifications :: ( PersistEntity val
                                , PersistEntityBackend val ~ SqlBackend )
-                            => EntityField val UserId -> EntityField val UTCTime
-                            -> UserId -> DB Int
+                            => EntityField val UserId
+                            -> EntityField val UTCTime
+                            -> UserId
+                            -> DB Int
 fetchNumUnreadNotifications notif_to notif_created_ts user_id =
-    selectCount $ from $ \(u `InnerJoin` n) -> do
-        on_ (u ^. UserId ==. n ^. notif_to)
-        where_ $ u ^. UserId ==. val user_id
+    -- countRows returns at least element. I think.
+    fmap (unValue . L.head)
+         (select $
+          from $ \(u `InnerJoin` n) -> do
+          on_ (u ^. UserId ==. n ^. notif_to)
+          where_ $ u ^. UserId ==. val user_id
              &&. n ^. notif_created_ts >=. u ^. UserReadNotifications
+          return countRows)
 
 fetchNumUnreadUserNotificationsDB :: UserId -> DB Int
 fetchNumUnreadUserNotificationsDB =
@@ -733,3 +772,71 @@ pledgeStatus uid = do
     return $ case underfunded of
         [] -> AllFunded
         _ -> ExistsUnderfunded
+
+claimedTickets :: UserId -> Handler [(Entity Ticket, Maybe (Entity WikiTarget), Import.Value Text)]
+claimedTickets user_id = do
+    -- TODO: abstract out grabbing the project
+    runDB $ select $ from $ \(c `InnerJoin` t `InnerJoin` tc `LeftOuterJoin` wp `LeftOuterJoin` wt `InnerJoin` p) -> do
+        on_ $ p ^. ProjectDiscussion ==. c ^. CommentDiscussion ||. wp ?. WikiPageProject ==. just (p ^. ProjectId)
+        on_ $ wt ?. WikiTargetPage ==. wp ?. WikiPageId
+        on_ $ wp ?. WikiPageDiscussion ==. just (c ^. CommentDiscussion)
+        on_ $ tc ^. TicketClaimingTicket ==. c ^. CommentId
+        on_ $ t ^. TicketComment ==. c ^. CommentId
+
+        where_ $ tc ^. TicketClaimingUser ==. val user_id
+            &&. c ^. CommentId `notIn` (subList_select $ from $ return . (^. CommentClosingComment))
+            &&. c ^. CommentId `notIn` (subList_select $ from $ return . (^. CommentRethreadOldComment))
+
+        orderBy [ asc $ tc ^. TicketClaimingTs ]
+
+        return (t, wt, p ^. ProjectHandle)
+
+countClaimedTickets :: UserId -> Handler Int
+countClaimedTickets user_id = do
+    claimed_tickets <- claimedTickets user_id
+    return $ length claimed_tickets
+
+countWatchedTickets :: UserId -> Handler Int
+countWatchedTickets user_id = do
+    watched_tickets <- watchedTickets user_id
+    return $ length watched_tickets
+
+-- XXX: There are two known issues with this query:
+-- 1. If a watched comment is a ticket and the nth child, the query will
+--    return the same ticket n times.
+-- 2. If there are n watched comments in the same thread, each child ticket
+--    in the thread will be returned n times. 'select . distinct' just
+--    hides these problems from the user's eyes.
+watchedTickets :: UserId -> Handler [(Entity Ticket, Maybe (Entity User), Maybe (Entity WikiTarget), Import.Value Text)]
+watchedTickets user_id = do
+
+    runDB $ select . distinct $ from $ \
+        (
+                            c   -- Comment
+            `LeftOuterJoin` ca  -- CommentAncestor - link between comment and subthread root
+            `InnerJoin`     ws  -- WatchedSubthread
+            `InnerJoin`     t   -- Ticket
+            `LeftOuterJoin` tc  -- TicketClaiming for the ticket, if any (current only)
+            `LeftOuterJoin` u   -- User who claimed the ticket, if any
+            `LeftOuterJoin` wp   -- Wiki page for discussion, if any
+            `LeftOuterJoin` wt   -- Wiki target for discussion, if any
+            `InnerJoin` p       -- Project for discussion
+        ) -> do
+            on_ $ p ^. ProjectDiscussion ==. c ^. CommentDiscussion ||. wp ?. WikiPageProject ==. just (p ^. ProjectId)
+            on_ $ wt ?. WikiTargetPage ==. wp ?. WikiPageId
+            on_ $ wp ?. WikiPageDiscussion ==. just (c ^. CommentDiscussion)
+            on_ $ u ?. UserId ==. tc ?. TicketClaimingUser
+            on_ $ tc ?. TicketClaimingTicket ==. just (c ^. CommentId)
+            on_ $ t ^. TicketComment ==. c ^. CommentId
+            on_ $ ws ^. WatchedSubthreadRoot ==. c ^. CommentId
+                ||. just (ws ^. WatchedSubthreadRoot) ==. ca ?. CommentAncestorAncestor
+            on_ $ ca ?. CommentAncestorComment ==. just (c ^. CommentId)
+
+            where_ $ (isNothing (tc ?. TicketClaimingId) ||. tc ?. TicketClaimingUser !=. just (val user_id))
+                &&. c ^. CommentId `notIn` (subList_select $ from $ return . (^. CommentClosingComment))
+                &&. c ^. CommentId `notIn` (subList_select $ from $ return . (^. CommentRethreadOldComment))
+                &&. ws ^. WatchedSubthreadUser ==. val user_id
+
+            orderBy [ asc $ t ^. TicketCreatedTs, asc $ t ^. TicketId ]
+
+            return (t, u, wt, p ^. ProjectHandle)

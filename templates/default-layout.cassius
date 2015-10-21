@@ -262,6 +262,9 @@ figure
     display: inline-flex
     margin: 8px
 
+.tag
+    font-size: .8em
+
 /* centers the pledge button */
 input.pledge
     display: block

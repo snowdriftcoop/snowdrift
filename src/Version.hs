@@ -12,11 +12,10 @@ import System.Process
 getVersion :: IO (String, String)
 getVersion = withSystemTempFile "version" $ \filename handle -> do
     hClose handle
-    base <- takeWhile (not . isSpace) <$> readFile ".git/refs/heads/master"
+    base <- takeWhile (not . isSpace) <$> readProcess "git" ["show-ref", "refs/heads/master"] ""
     ExitSuccess <- system $ "git diff " ++ base ++ " -- . >" ++ filename
     diff <- readFile filename
     return (base, diff)
-
 
 mkVersion :: Q Exp
 mkVersion = do

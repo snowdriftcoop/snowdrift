@@ -1,5 +1,6 @@
--- | Handler for Wiki paths. Section comments are relative to /p/#handle/w
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 
+-- | Handler for Wiki paths. Section comments are relative to /p/#handle/w
 module Handler.Wiki where
 
 import Import
@@ -31,6 +32,16 @@ import View.Comment
 import View.Time
 import View.Wiki
 import Widgets.Preview
+import WrappedValues
+
+instance ToContent Markdown where
+    toContent (Markdown text) = toContent $ text <> "\n"
+
+instance ToTypedContent Markdown where
+    toTypedContent markdown = TypedContent "text/markdown" $ toContent markdown
+
+instance HasContentType Markdown where
+    getContentType _ = "text/markdown"
 
 --------------------------------------------------------------------------------
 -- Utility functions
@@ -119,6 +130,15 @@ pageInfoRequireCanEdit project_handle language target =
 
 --------------------------------------------------------------------------------
 -- /#language/#target
+
+pickEditsByLanguage :: [Language] -> [Entity WikiEdit] -> [Entity WikiEdit]
+pickEditsByLanguage langs targets =
+    (M.elems . M.mapMaybe (listToMaybe . L.sortBy prefSort)) targetMap
+  where
+    prefSort = languagePreferenceOrder langs (wikiEditLanguage . entityVal)
+    targetMap =
+        M.fromListWith (++)
+                       (map (wikiEditPage . entityVal &&& (:[])) targets)
 
 getWikiR :: Text -> Language -> Text -> Handler TypedContent
 getWikiR project_handle language target = do
@@ -413,9 +433,9 @@ getWikiDiffProxyR project_handle language target = do
                                         <$> ireq textField "start"
                                         <*> ireq textField "end"
     let pairMay = do
-        s <- fromPathPiece start_edit_id_t
-        e <- fromPathPiece end_edit_id_t
-        return (s, e)
+            s <- fromPathPiece start_edit_id_t
+            e <- fromPathPiece end_edit_id_t
+            return (s, e)
     maybe
         (invalidArgs ["revision IDs"])
         (\(s, e) -> redirect $ WikiDiffR project_handle language target s e)
@@ -729,7 +749,7 @@ getMonolingualWikiR = redirectPolylingualWiki $ \case
   where
     redirectSameParams url = do
         params <- reqGetParams <$> getRequest
-        redirectParams url params
+        redirect (url, params)
 
 redirectPolylingualWiki :: (Maybe (Route App) -> Handler Html) -> Text -> Text -> [Text] -> Handler Html
 redirectPolylingualWiki fn project_handle target rest = do

@@ -8,6 +8,8 @@ module Model.Role
 
 import Import
 
+import DeprecatedBootstrap
+
 roleLabel :: Role -> Text
 roleLabel TeamMember = "Team Member"
 roleLabel Moderator  = "Moderator"

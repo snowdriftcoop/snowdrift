@@ -2,17 +2,11 @@ module Model.User.Internal where
 
 import Import hiding (UserNotificationPref, ProjectNotificationPref)
 
-import qualified Data.Foldable      as F
+import qualified Data.Foldable as F
+import qualified Database.Persist as P
 
 import Model.Notification
-            (UserNotificationType (..)
-            ,UserNotificationDelivery (..)
-            ,sendUserNotificationDB_
-            ,sendUserNotificationEmailDB
-            ,ProjectNotificationType (..)
-            ,ProjectNotificationDelivery (..)
-            ,sendProjectNotificationDB_
-            ,sendProjectNotificationEmailDB)
+import WrappedValues
 
 data UserUpdate =
     UserUpdate
@@ -171,11 +165,17 @@ data NotificationReceiver = NotificationReceiver
 -- | Send a 'UserNotification' according to the selected delivery
 -- method.
 sendPreferredUserNotificationDB :: Maybe NotificationSender
-                                -> NotificationReceiver -> UserNotificationType
-                                -> Maybe CommentId -> Markdown -> SDB ()
-sendPreferredUserNotificationDB mnotif_sender
-                                (NotificationReceiver notif_receiver)
-                                notif_type mcomment_id content =
+                                -> NotificationReceiver
+                                -> UserNotificationType
+                                -> Maybe CommentId
+                                -> Markdown
+                                -> SDB ()
+sendPreferredUserNotificationDB
+        mnotif_sender
+        (NotificationReceiver notif_receiver)
+        notif_type
+        mcomment_id
+        content =
     when (notificationSender `fmap` mnotif_sender /= Just notif_receiver) $ do
         mpref <- lift $
             fetchUserNotificationPrefDB notif_receiver notif_type
@@ -186,13 +186,10 @@ sendPreferredUserNotificationDB mnotif_sender
                     lift $ sendUserNotificationEmailDB
                                notif_type notif_receiver content
                 sendWebsiteNotif = do
-                    r <- lift $ selectCount $ from $ \n ->
-                             where_ $ n ^. UserNotificationType
-                                       ==. val notif_type
-                                  &&. n ^. UserNotificationTo
-                                       ==. val notif_receiver
-                                  &&. n ^. UserNotificationContent
-                                       ==. val content
+                    r <- lift
+                        (P.count [UserNotificationType P.==. notif_type
+                                 ,UserNotificationTo P.==. notif_receiver
+                                 ,UserNotificationContent P.==. content])
                     when (r == 0) $
                         sendUserNotificationDB_
                             notif_type notif_receiver mcomment_id content
@@ -212,10 +209,15 @@ sendPreferredUserNotificationDB mnotif_sender
 sendPreferredProjectNotificationDB :: Maybe NotificationSender
                                    -> NotificationReceiver
                                    -> ProjectNotificationType
-                                   -> ProjectId -> Markdown -> SDB ()
-sendPreferredProjectNotificationDB mnotif_sender
-                                   (NotificationReceiver notif_receiver)
-                                   notif_type project_id content =
+                                   -> ProjectId
+                                   -> Markdown
+                                   -> SDB ()
+sendPreferredProjectNotificationDB
+        mnotif_sender
+        (NotificationReceiver notif_receiver)
+        notif_type
+        project_id
+        content =
     when (notificationSender `fmap` mnotif_sender /= Just notif_receiver) $ do
         mpref <- lift $
             fetchProjectNotificationPrefDB notif_receiver project_id notif_type
@@ -226,15 +228,11 @@ sendPreferredProjectNotificationDB mnotif_sender
                     lift $ sendProjectNotificationEmailDB
                                notif_type notif_receiver project_id content
                 sendWebsiteNotif = do
-                    r <- lift $ selectCount $ from $ \n ->
-                             where_ $ n ^. ProjectNotificationType
-                                       ==. val notif_type
-                                  &&. n ^. ProjectNotificationTo
-                                       ==. val notif_receiver
-                                  &&. n ^. ProjectNotificationProject
-                                       ==. val project_id
-                                  &&. n ^. ProjectNotificationContent
-                                       ==. val content
+                    r <- lift
+                        (P.count [ProjectNotificationType P.==. notif_type
+                                 ,ProjectNotificationTo P.==. notif_receiver
+                                 ,ProjectNotificationProject P.==. project_id
+                                 ,ProjectNotificationContent P.==. content])
                     when (r == 0) $
                         sendProjectNotificationDB_
                             notif_type notif_receiver project_id content

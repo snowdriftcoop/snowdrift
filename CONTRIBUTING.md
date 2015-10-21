@@ -83,13 +83,12 @@ The following covers the bare minimum process for those new to Git.
 
 ##### Forking at the host platform
 
-We collaborate on the code via the free/libre/open site
+We collaborate on the code via the FLO (Free/Libre/Open) site
 [git.gnu.io](https://git.gnu.io/snowdrift/snowdrift).
 We also mirror on the popular but proprietary site
 [GitHub](https://github.com/snowdriftcoop/snowdrift),
-which you may use if you already have an account there.
-We encourage everyone to use free/libre/open tools,
-so the instructions below assume git.gnu.io.
+which you may use if you already have an account there. As we encourage
+everyone to use FLO tools, the instructions below assume git.gnu.io.
 
 To contribute changes to the project, first
 [create an account on git.gnu.io](https://git.gnu.io/users/sign_in)
@@ -289,9 +288,9 @@ explains further about those or other possibilities.
 For deeper understanding of various elements in our development,
 here are some resources:
 
-*   The following WikiBooks are fully FLO and include links to
-    further resources as well. As they are wikis, you can and should
-    *improve* them yourself as you read!
+*   The following WikiBooks are fully FLO (Free/Libre/Open) and include links to
+    further resources as well. As they are wikis, you can and should *improve*
+    them yourself as you read!
 
     * [Haskell Wikibook](https://en.wikibooks.org/wiki/Haskell)
       — one of the few *featured* Wikibooks, the Haskell Wikibook is
@@ -339,13 +338,6 @@ here are some resources:
 
 *   [The Yesod Book](http://www.yesodweb.com/book/) is the primary resource
     for learning about Yesod, the web framework we use to develop Snowdrift.
-
-    Quite unfortunately, the Yesod book is not FLO (it uses the CC-BY-NC-ND
-    license). Complaints to the publisher, O'Reilly Media, may help
-    as the author of both Yesod and the Yesod book is otherwise willing
-    to use a FLO license if the publisher will agree…
-    (At least Yesod itself is FLO, including the internal documentation that
-    comes with the code in Haddock format.)
 
 *   The [School of Haskell](https://www.fpcomplete.com/school) includes
     basic and advanced topics including some Yesod sections.

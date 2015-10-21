@@ -20,6 +20,7 @@ import qualified Data.Map as M
 import qualified Data.Set as S
 import qualified Data.Text as T
 
+import DeprecatedBootstrap
 import Model.Currency
 import Model.Markdown
 import Model.Notification
@@ -28,7 +29,7 @@ import Model.Role
 import Model.User
 import Model.User.Internal
 import Widgets.Markdown (snowdriftMarkdownField)
-import Widgets.ProjectPledges
+import Widgets.UserPledges
 
 createUserForm :: Maybe Text -> Form (Text, Text, Maybe Text, Maybe Text, Maybe Text, Maybe Text)
 createUserForm ident extra = do
@@ -134,8 +135,12 @@ previewUserForm User{..} = renderBootstrap3 BootstrapBasicForm $
         <*> hiddenMarkdown userBlurb
         <*> hiddenMarkdown userStatement
 
--- | Render a User profile, including
-renderUser :: Maybe UserId -> UserId -> User -> Map (Entity Project) (Set Role) -> Widget
+-- | Render a User profile
+renderUser :: Maybe UserId
+           -> UserId
+           -> User
+           -> Map (Entity Project) (Set Role)
+           -> Widget
 renderUser mviewer_id user_id user projects_and_roles = do
     let user_entity = Entity user_id user
 

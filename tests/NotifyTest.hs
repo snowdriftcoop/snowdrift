@@ -6,7 +6,7 @@
 module NotifyTest (notifySpecs) where
 
 import Prelude
-import Import (Established(..), Role (..), pprint, selectExists, key)
+import Import (Established(..), Role (..), key)
 import TestImport hiding ((=.), update, Update)
 
 import Control.Monad (unless)
@@ -24,10 +24,13 @@ import Yesod.Markdown (unMarkdown, Markdown (..))
 import qualified Data.List as L
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
+import qualified Database.Persist as P
 
 import Model.Currency (Milray (..), millMilray)
 import Model.Language
 import Model.Notification
+
+import PPrint
 
 updateUser :: UserId -> [SqlExpr (Update User)] -> SqlPersistM ()
 updateUser user_id xs =
@@ -208,11 +211,11 @@ errorUnlessExistDefaultProjectNotifPrefs user_id project_id =
           , (NotifUpdatedPledge, ProjectNotifDeliverWebsite)
           , (NotifDeletedPledge, ProjectNotifDeliverWebsite) ] $
         \(notif_type, notif_deliv) -> do
-            exists <- selectExists $ from $ \pnp ->
-                where_ $ pnp ^. ProjectNotificationPrefUser     ==. val user_id
-                     &&. pnp ^. ProjectNotificationPrefProject  ==. val project_id
-                     &&. pnp ^. ProjectNotificationPrefType     ==. val notif_type
-                     &&. pnp ^. ProjectNotificationPrefDelivery ==. val notif_deliv
+            exists <- fmap (>0) $
+                P.count [ProjectNotificationPrefUser P.==. user_id
+                        ,ProjectNotificationPrefProject P.==. project_id
+                        ,ProjectNotificationPrefType P.==. notif_type
+                        ,ProjectNotificationPrefDelivery P.==. notif_deliv]
             unless exists $
                 error $ "project notification preference with"
                      <> " user "      <> pprint user_id
@@ -1011,11 +1014,9 @@ notifySpecs AppConfig {..} file = do
             -- Check that some (not necessarily default) notification
             -- preferences are already there.
             testDB $ do
-                exists <- selectExists $ from $ \pnp ->
-                              where_ $ pnp ^. ProjectNotificationPrefUser
-                                   ==. val mary_id
-                                   &&. pnp ^. ProjectNotificationPrefProject
-                                   ==. val snowdrift_id
+                exists <- fmap (>0) $
+                    P.count [ProjectNotificationPrefUser P.==. mary_id
+                            ,ProjectNotificationPrefProject P.==. snowdrift_id]
                 unless exists $
                     error $ "cannot find project notification preferences for"
                          <> " user "     <> pprint mary_id

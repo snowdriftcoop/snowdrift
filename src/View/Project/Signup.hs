@@ -21,6 +21,7 @@ import System.Hourglass (timeCurrent)
 import Text.Blaze.Internal (preEscapedText)
 import qualified Data.Text as Text
 
+import DeprecatedBootstrap
 import Model.License.Internal
 import Model.Project.Signup
 import Model.Project.Signup.Internal

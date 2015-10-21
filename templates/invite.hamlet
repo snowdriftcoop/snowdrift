@@ -32,9 +32,11 @@ $maybe link <- maybe_link
   <hr>
 $nothing
   <p>
-    Our invitation system generates private codes which users can redeem to gain further roles on the site.
+    Our invitation system generates private codes which users can redeem to gain
+    further roles on the site.
   <p>
-    Permissions are project-specific, so users can have different roles for different projects.
+    Permissions are project-specific, so users can have different roles for
+    different projects.
   <p>
     To invite others:
   <ul>
@@ -43,7 +45,8 @@ $nothing
     <li>
       After you click "generate", you will be given a link to send.
     <li>
-      Note: each invitation can only be used once. You must generate a new link for each person you wish to invite.
+      Note: each invitation can only be used once. You must generate a new link
+      for each person you wish to invite.
 
 <form method=post action=@{InviteR project_handle}>
   ^{invite_form}

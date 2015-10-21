@@ -50,23 +50,31 @@ import Data.Monoid (Sum(..))
 import qualified Data.Map as M
 import qualified Data.Set as S
 import qualified Data.Text as T
+import qualified Database.Persist as P
 import qualified Github.Data as GH
 import qualified Github.Issues as GH
 
 import Data.Filter
 import Data.Order
+import Handler.Utils
 import Model.Comment
 import Model.Comment.Sql
+import Model.Count
 import Model.Currency
 import Model.Issue
 import Model.Shares (pledgeRenderKey)
 import Model.Tag
 import Model.Wiki.Sql
 import Widgets.Tag
-
+import WrappedValues
 
 --------------------------------------------------------------------------------
 -- Types
+
+newtype UserCount = UserCount Int64 deriving Count
+newtype ShareCount = ShareCount Int64 deriving Count
+newtype DiscussionCount = DiscussionCount Int64 deriving Count
+newtype TicketCount = TicketCount Int64 deriving Count
 
 data ProjectSummary = ProjectSummary
     { summaryName            :: Text
@@ -90,16 +98,6 @@ data UpdateProject = UpdateProject
 newtype TaggedTicket = TaggedTicket ( (Entity Ticket)
                                     , Bool  -- claimed?
                                     , [AnnotatedTag] )
-
-newtype DiscussionCount = DiscussionCount Int64
-
-instance Count DiscussionCount where
-    getCount (DiscussionCount c) = c
-
-newtype TicketCount = TicketCount Int64
-
-instance Count TicketCount where
-    getCount (TicketCount c) = c
 
 instance Issue TaggedTicket where
     issueWidget (TaggedTicket ((Entity ticket_id ticket),_,tags)) =
@@ -737,13 +735,8 @@ fetchProjectOpenTicketsDB project_id muser_id = do
                        return . (^. CommentRethreadOldComment))
               return t
         forM ts $ \t@(Entity _ ticket) -> do
-            c <-
-                selectCount $
-                from $ \tc -> do
-                where_ $
-                    val (ticketComment ticket) ==. tc ^. TicketClaimingTicket
-                return tc
-            return $ if c == 0 then (t, False) else (t, True)
+            c <- P.count [TicketClaimingTicket P.==. ticketComment ticket]
+            return $ (t, c /= 0)
 
 updateUserPledge :: Text -> Int64 -> HandlerT App IO ()
 updateUserPledge project_handle shares = do

@@ -51,14 +51,16 @@ instance Issue GH.Issue where
         githubIssueTagWidget :: GH.IssueLabel -> Widget
         githubIssueTagWidget tag = do
             [whamlet|
-                <form .tag>
+                <!--
+                  in-line styles are necessary unless we figure out getting
+                  GitHub labelColors generally and make separate classes
+                  for each color. We can't make cassius for each issue.
+                  That would have lots of redundancy and the differing
+                  colors for the same CSS class will conflict.
+                  -->
+                <form .tag
+                    style="background-color:##{GH.labelColor tag}; color:##{fg $ GH.labelColor tag}">
                   #{GH.labelName tag}
-            |]
-            toWidget [cassius|
-              .tag
-                background-color: ##{GH.labelColor tag}
-                color: ##{fg $ GH.labelColor tag}
-                font-size: xx-small
             |]
 
         fg :: String -> String

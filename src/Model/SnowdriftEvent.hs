@@ -13,6 +13,7 @@ import qualified Data.Map   as M
 import qualified Data.Text  as T
 
 import Model.User
+import Model.Utils
 
 snowdriftEventNewestToOldest :: SnowdriftEvent -> SnowdriftEvent -> Ordering
 snowdriftEventNewestToOldest x y  =

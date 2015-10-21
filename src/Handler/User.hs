@@ -2,12 +2,12 @@ module Handler.User where
 
 import Import
 
-import Data.Default (def)
 import Data.List (head)
 import Data.Maybe (fromJust)
 import Data.Time.Format
 import Text.Cassius (cassiusFile)
 import Yesod.Auth.HashDB (setPassword, validateUser)
+import qualified Data.Default as Default
 import qualified Data.Map as M
 import qualified Data.Maybe as Maybe
 import qualified Data.Set as S
@@ -31,34 +31,23 @@ import View.Comment
 import View.Time
 import View.User
 import Widgets.Preview
-import Widgets.ProjectPledges
+import Widgets.UserPledges
 
 getUsersR :: Handler Html
 getUsersR = do
     void requireAuth
 
-    users' <- runDB $
-                  select $
-                  from $ \user -> do
-                  orderBy [desc $ user ^. UserId]
-                  return user
+    (users', allProjects) <- runDB ((,) <$> fetchAllUsersDB <*> fetchAllUserProjectInfosDB)
 
-    infos :: [(Entity User, ((Value Text, Value Text), Value Role))] <- runDB $
-        select $
-        from $ \(user `InnerJoin` role `InnerJoin` project) -> do
-        on_ (project ^. ProjectId ==. role ^. ProjectUserRoleProject)
-        on_ (user ^. UserId ==. role ^. ProjectUserRoleUser)
-        return (user, ((project ^. ProjectName, project ^. ProjectHandle), role ^. ProjectUserRoleRole))
+    let users :: [(Text, Entity User)]
+        users = map (\u -> (getUserKey u :: Text, u)) $ filter isVisible users'
 
-
-    let users = map (\u -> (getUserKey u :: Text, u)) $ filter isVisible users'
-        infos' :: [(UserId, ((Text, Text), Role))] = map (entityKey *** unwrapValues) infos
-        infos'' :: [(UserId, Map (Text, Text) (Set Role))] = map (second $ uncurry M.singleton . second S.singleton) infos'
-        allProjects :: Map UserId (Map (Text, Text) (Set Role)) = M.fromListWith (M.unionWith S.union) infos''
         userProjects :: Entity User -> Maybe (Map (Text, Text) (Set (Role)))
         userProjects u = M.lookup (entityKey u) allProjects
+
         getUserKey :: PersistField a => Entity User -> a
         getUserKey = either (error . T.unpack) id . fromPersistValue . toPersistValue . entityKey
+
         isVisible :: Entity User -> Bool
         isVisible = (>= (0::Int)) . getUserKey
 
@@ -198,6 +187,15 @@ getUserBalanceR' user_id = do
         snowdriftDashTitle "User Balance" $
             userDisplayName (Entity user_id user)
         $(widgetFile "user_balance")
+  where
+    -- Warning: We can do better than 'read'.
+    lookupParamDefault :: Text -> Int64 -> Handler Int64
+    lookupParamDefault name def = do
+        maybe_param <- lookup name <$> reqGetParams <$> getRequest
+        return $ fromMaybe def $ do
+            param_str <- maybe_param
+            param <- listToMaybe $ reads $ T.unpack param_str
+            return $ fst param
 
 postUserBalanceR :: UserId -> Handler Html
 postUserBalanceR user_id = do
@@ -262,7 +260,7 @@ getUserDiscussionR' user_id get_root_comments = do
             mviewer
             user_id
             root_comments
-            def
+            Default.def
             getMaxDepth
             False
             mempty
@@ -298,7 +296,7 @@ postNewUserDiscussionR user_id = do
       Nothing
       viewer
       userDiscussion
-      (makeUserCommentActionPermissionsMap (Just viewer) user_id def) >>= \case
+      (makeUserCommentActionPermissionsMap (Just viewer) user_id Default.def) >>= \case
            ConfirmedPost (Left err) -> do
                alertDanger err
                redirect $ NewUserDiscussionR user_id
@@ -536,6 +534,7 @@ getUserPledgesR user_id = do
     -- TODO: refine permissions here
     _ <- requireAuthId
     user <- runYDB $ get404 user_id
+
     defaultLayout $ do
         snowdriftDashTitle "User Pledges" $
             userDisplayName (Entity user_id user)
@@ -549,60 +548,8 @@ getUserTicketsR :: UserId -> Handler Html
 getUserTicketsR user_id = do
     user <- runYDB $ get404 user_id
     mviewer_id <- maybeAuthId
-
-    -- TODO: abstract out grabbing the project
-    claimed_tickets <- runDB $ select $ from $ \(c `InnerJoin` t `InnerJoin` tc `LeftOuterJoin` wp `LeftOuterJoin` wt `InnerJoin` p) -> do
-        on_ $ p ^. ProjectDiscussion ==. c ^. CommentDiscussion ||. wp ?. WikiPageProject ==. just (p ^. ProjectId)
-        on_ $ wt ?. WikiTargetPage ==. wp ?. WikiPageId
-        on_ $ wp ?. WikiPageDiscussion ==. just (c ^. CommentDiscussion)
-        on_ $ tc ^. TicketClaimingTicket ==. c ^. CommentId
-        on_ $ t ^. TicketComment ==. c ^. CommentId
-
-        where_ $ tc ^. TicketClaimingUser ==. val user_id
-            &&. c ^. CommentId `notIn` (subList_select $ from $ return . (^. CommentClosingComment))
-            &&. c ^. CommentId `notIn` (subList_select $ from $ return . (^. CommentRethreadOldComment))
-
-        orderBy [ asc $ tc ^. TicketClaimingTs ]
-
-        return (t, wt, p ^. ProjectHandle)
-
-    -- XXX: There are two known issues with this query:
-    -- 1. If a watched comment is a ticket and the nth child, the
-    -- query will return the same ticket n times.
-    -- 2. If there are n watched comments in the same thread, each
-    -- child ticket in the thread will be returned n times.
-    -- 'select . distinct' just hides these problems from the user's
-    -- eyes.
-    watched_tickets <- runDB $ select . distinct $ from $ \
-        (
-                            c   -- Comment
-            `LeftOuterJoin` ca  -- CommentAncestor - link between comment and subthread root
-            `InnerJoin`     ws  -- WatchedSubthread
-            `InnerJoin`     t   -- Ticket
-            `LeftOuterJoin` tc  -- TicketClaiming for the ticket, if any (current only)
-            `LeftOuterJoin` u   -- User who claimed the ticket, if any
-            `LeftOuterJoin` wp   -- Wiki page for discussion, if any
-            `LeftOuterJoin` wt   -- Wiki target for discussion, if any
-            `InnerJoin` p       -- Project for discussion
-        ) -> do
-            on_ $ p ^. ProjectDiscussion ==. c ^. CommentDiscussion ||. wp ?. WikiPageProject ==. just (p ^. ProjectId)
-            on_ $ wt ?. WikiTargetPage ==. wp ?. WikiPageId
-            on_ $ wp ?. WikiPageDiscussion ==. just (c ^. CommentDiscussion)
-            on_ $ u ?. UserId ==. tc ?. TicketClaimingUser
-            on_ $ tc ?. TicketClaimingTicket ==. just (c ^. CommentId)
-            on_ $ t ^. TicketComment ==. c ^. CommentId
-            on_ $ ws ^. WatchedSubthreadRoot ==. c ^. CommentId
-                ||. just (ws ^. WatchedSubthreadRoot) ==. ca ?. CommentAncestorAncestor
-            on_ $ ca ?. CommentAncestorComment ==. just (c ^. CommentId)
-
-            where_ $ (isNothing (tc ?. TicketClaimingId) ||. tc ?. TicketClaimingUser !=. just (val user_id))
-                &&. c ^. CommentId `notIn` (subList_select $ from $ return . (^. CommentClosingComment))
-                &&. c ^. CommentId `notIn` (subList_select $ from $ return . (^. CommentRethreadOldComment))
-                &&. ws ^. WatchedSubthreadUser ==. val user_id
-
-            orderBy [ asc $ t ^. TicketCreatedTs, asc $ t ^. TicketId ]
-
-            return (t, u, wt, p ^. ProjectHandle)
+    claimed_tickets <- claimedTickets user_id
+    watched_tickets <- watchedTickets user_id
 
     defaultLayout $ do
         snowdriftDashTitle "User Tickets" $

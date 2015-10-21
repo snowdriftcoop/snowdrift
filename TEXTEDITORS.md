@@ -1,12 +1,8 @@
 # FLO Text Editors and Yesod/Haskell
 
-This guide covers our recommended options for fully-FLO text-editors and IDE
-development tools for hacking on Snowdrift (although this pretty well applies to
-any Yesod-based project).
-
-Note: regardless of editor, to use any tool set up with via `stack install`,
-make sure you have ~/.local/bin on your PATH. If not already set, run
-`echo 'export PATH=$HOME/.local/bin:$PATH' >> ~/.bashrc`.
+This guide covers our recommended options for FLO (Free/Libre/Open) text-editors
+and IDE development tools for hacking on Snowdrift (although this pretty well
+applies to any Yesod-based project).
 
 ## Text editor packages and settings
 
@@ -18,9 +14,10 @@ is continually improving.
 
 #### Atom settings
 
-Some settings to consider:
+Some settings to *consider*:
 
-* Tab Length: 4 (easy enough to enter 2 spaces for hamlet)
+* Tab Length: 4 (easy enough to enter 2 spaces for hamlet), make sure to keep
+  "soft tabs" checked.
 * Packages/Tree View: turn on "Hide Ignored Names" and "Hide VCS Ignored Files"
 * Disable the "metrics" package to stop Atom sending data to Google Analytics
 
@@ -36,18 +33,24 @@ install ide-haskell for Atom:
 
 * Run `stack install ghc-mod hlint stylish-haskell --resolver nightly`
     * "--resolver nightly" is only needed until we update our lts resolver to
-      one that includes ghc-mod (the latest 3.6 did not, as of this writing).
+      one that includes ghc-mod (the latest 3.7 did not, as of this writing).
 * Install the required Atom packages:
   `apm install language-haskell haskell-ghc-mod ide-haskell autocomplete-haskell`
-* If you always start Atom from the command line and have ~/.local/bin in your
-  path, you're done.
-* To enable starting Atom not from command line, run `which ghc-mod`, copy the
-  path that returns, and then, within Atom, in the settings for the
-  haskell-ghc-mod package, paste that path in the field for the "Ghc Mod Path"
-  and the same path but with an `i` added on the end for the "Ghc Modi Path".
+* Make sure `$HOME/.local/bin` is on the PATH accessible to Atom.
+    * If your path isn't set already, run
+      `echo 'export PATH=$HOME/.local/bin:$PATH' >> ~/.profile` (although other
+      methods exist, this offers the most flexibility and works for starting
+      atom from the command line or from a GUI launcher). To make the path
+      active, log out of your system and log back in (to avoid logging out,
+      `source ~/.profile` will get the path in your terminal, but you'll have to
+      start atom from the command line for now).
 * *Note*: this installation is the easiest for now and will work for any other
   projects that use the same GHC version but will *not* work if you switch
   between projects that use different GHC versions.
+* *Note: ghc-mod will fail if it sees a dist/ directory which is made when you
+  run snowdrift via `stack exec yesod devel`, so until yesod-bin is updated to
+  use Stack directly, delete (or rename) the /dist directory and instead of
+  `yesod devel`, run site via `stack exec Snowdrift Development`.*
 
 Other useful Atom packages to consider:
 
@@ -55,7 +58,7 @@ Other useful Atom packages to consider:
     * [tree-view-git-status](https://atom.io/packages/tree-view-git-status)
     * [git-blame](https://atom.io/packages/git-blame)
     * [show-origin](https://atom.io/packages/show-origin)
-    * searching will show other git tools worth considering
+    * search the packages for other git tools worth considering
 * General nice tools like [minimap](https://atom.io/packages/minimap),
   [cursor-history](https://atom.io/packages/cursor-history),
   [clipboard-history](https://atom.io/packages/clipboard-history),
@@ -76,8 +79,8 @@ distribution of Emacs with better default configuration. It includes things like
 [Helm](https://github.com/emacs-helm/helm) and
 [Projectile](http://batsov.com/projectile/) by default.
 
-If you are coming from Vim, consider
-[Spacemacs](https://github.com/syl20bnr/spacemacs), an Emacs distribution that
+**If you are coming from Vim, consider
+[Spacemacs](https://github.com/syl20bnr/spacemacs)**, an Emacs distribution that
 includes Vim's modal keybindings by default along with much of Prelude's default
 configuration. Aside from Spacemacs, you can get the Vim keybindings in any
 Emacs distribution using [evil-mode](http://www.emacswiki.org/emacs/Evil).
@@ -122,15 +125,17 @@ with visual menus.
 
 #### Vim settings
 
-We recommend that your ~/.vimrc file include:
+For working on our code, your ~/.vimrc file should include:
 
-    syntax on
-    set number title hlsearch ignorecase smartcase showbreak=↪
     set textwidth=80 expandtab shiftwidth=4 tabstop=4
     au FileType hamlet setl sw=2 sts=2 et
     au Filetype gitcommit setl spell textwidth=72
 
-Many other settings are nice, but opinions vary about the details.
+Though opinions vary, we also recommend the following minimal .vimrc settings:
+
+    syntax on
+    set number title hlsearch ignorecase smartcase showbreak=↪
+    set wildmenu wildmode=longest,list,full
 
 #### Vim plugins
 
@@ -154,7 +159,12 @@ its install instructions except run `stack install ghc-mod --resolver nightly`
 (note: this "--resolver nightly" bit can be ignored once ghc-mod is in the LTS
 version we use) *instead* of the instruction to run "cabal install ghc-mod" (and
 make sure ~/.local/bin is on your path). You may want to also try the associated
-auto-completion tool [neco-ghc](https://github.com/eagletmt/neco-ghc).
+auto-completion tool [neco-ghc](https://github.com/eagletmt/neco-ghc). *Note:
+ghc-mod will fail if it sees a dist/ directory which is made when you run
+snowdrift via `stack exec yesod devel`, so until yesod-bin is updated to use
+Stack directly, use workarounds such as temporarily renaming the /dist directory
+when you want to use ghc-mod, or avoid `yesod devel` entirely and run the site
+instead via `stack exec Snowdrift Development`.*
 
 Other general vim plugins we suggest for consideration include many which are
 inobtrusive and take zero or near-zero learning to use (roughly in order by most
@@ -173,7 +183,6 @@ strongly recommended):
 [NERD tree git plugin](https://github.com/Xuyuanp/nerdtree-git-plugin);
 and others which take some minor learning and/or set up:
 [vim-easyclip](https://github.com/mbbill/undotree),
-[MiniBufExplorer](https://github.com/fholgado/minibufexpl.vim),
 [ag.vim](https://github.com/rking/ag.vim),
 [vim-airline](https://github.com/bling/vim-airline).
 
@@ -184,7 +193,7 @@ more on building Snowdrift than maximizing their Vim expertise.
 
 The following works for all text-editors that recognize tags files.
 
-* run `stack install hasktags`
+* run `stack install hasktags` (and make sure ~/.local/bin is in your path)
 * In the snowdrift directory, run this big command to generate your tags file:
 
         git ls-tree -r HEAD --name-only | grep -E '*.hs' | xargs hasktags -x -c --ignore-close-implementation

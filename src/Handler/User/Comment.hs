@@ -13,6 +13,7 @@ import Model.Comment
 import Model.Comment.ActionPermissions
 import Model.Comment.HandlerInfo
 import Model.Comment.Mods
+import Model.Utils
 import Widgets.Preview
 
 --------------------------------------------------------------------------------

@@ -53,7 +53,7 @@ $if Just user_id == mviewer_id
 <div .row>
 
   <div .col-md-6>
-    ^{projectPledgeSummary user_id}
+    ^{userPledgeSummary user_id}
 
     <h4>Project Roles
     <table>

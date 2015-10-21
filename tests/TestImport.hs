@@ -6,7 +6,6 @@
 
 module TestImport (module TestImport, marked) where
 
-import Import (pprint)
 import TestImport.Internal
 import Prelude hiding (exp)
 
@@ -62,6 +61,8 @@ import Model.Notification
             ,UserNotificationDelivery(..)
             ,ProjectNotificationType(..)
             ,ProjectNotificationDelivery(..))
+
+import PPrint
 import TimedYesodTest as TestImport
 
 onException :: MonadBaseControl IO m => m a -> m b -> m a

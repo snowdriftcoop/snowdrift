@@ -1,12 +1,11 @@
 <div .container-fluid>
-
   $case fieldVal
     $of Right dp
       <div .row>
         <div .col-xs-4>
           <select id="datetype" name=#{fieldName} .form-control>
             $case (dateStatus "datetype" dp)
-              $of DateType dateCreated
+              $of DateType DateCreated
                 <option>
                 <option selected>Created
                 <option>Updated
@@ -34,10 +33,20 @@
                 <option>before
                 <option>after
         <div .col-xs-4>
-          <input type="date" id="datestart" name=#{fieldName} value=#{textFromDateStatus $ dateStatus "datestart" dp} .form-control>
-          <input type="hidden" id="dateend" name=#{fieldName} value=#{textFromDateStatus $ dateStatus "dateend" dp} .form-control>
-    $of Left err
-      <p>#{err}
+          <input type="date" #
+               / id="datestart" #
+               / name=#{fieldName} #
+               / value=#{textFromDateStatus $ dateStatus "datestart" dp} #
+               / .form-control>
+          <input type="hidden"
+               / id="dateend" #
+               / name=#{fieldName} #
+               / value=#{textFromDateStatus $ dateStatus "dateend" dp}
+               / .form-control>
+    $of Left _
+      <p .text-alert>
+        If filtering by date, please select options in both drop downs, and #
+        /enter your date in YYYY-MM-DD format (if not using Chrome).
       <div .row>
         <div .col-xs-4>
           <select id="datetype" name=#{fieldName} .form-control>
@@ -51,4 +60,8 @@
             <option>after
         <div .col-xs-4>
           <input type="date" id="datestart" name=#{fieldName} .form-control>
-          <input type="hidden" id="dateend" name=#{fieldName} value="1/1/1901" .form-control>
+          <input type="hidden" #
+               / id="dateend" #
+               / name=#{fieldName} #
+               / value="1/1/1901" #
+               / .form-control>

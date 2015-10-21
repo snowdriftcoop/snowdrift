@@ -5,7 +5,8 @@
       Note: logged-in users can instead post
       <em>publicly
       at the
-      <a href=@{ProjectDiscussionR (projectHandle project)}> project discussion page
+      <a href=@{ProjectDiscussionR (projectHandle project)}>
+        project discussion page
       or elsewhere (such as discussions connected to wiki pages).
     <p>
       This form posts
