@@ -56,7 +56,7 @@ searchForm tags extra = do
                     <*> tagsRes
                     <*> sortRes
 
-    let widget = toWidget $(widgetFile "filter-widget")
+    let widget = toWidget $(widgetFile "form/ticket-filter")
 
     return (searchRes, widget)
 
@@ -68,7 +68,7 @@ tagField tags = Field
                                             zip tags $
                                             map convertTagStatus tagSelectValues
     , fieldView = \_ fieldName _ fieldVal _ ->
-            $(widgetFile "filter-tagfield")
+            $(widgetFile "field/tag-filter")
     , fieldEnctype = UrlEncoded
     }
 
