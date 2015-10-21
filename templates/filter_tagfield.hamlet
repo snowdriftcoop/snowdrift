@@ -1,29 +1,32 @@
-<div .container-fluid>
-$case fieldVal
-  $of Right tagvalues
-    $forall tag <- tags
-      <div .row>
-        <div .col-xs-6>
-          #{tag}:
-        <div .col-xs-6>
-          <select id=#{tag} name=#{fieldName} .form-control>
-            $case tagStatus tag tagvalues
-              $of Included
-                <option selected>include
-                <option>exclude
-                <option>doesn't matter
-              $of Excluded
-                <option>include
-                <option selected>exclude
-                <option>doesn't matter
-              $of Neither
-                <option>include
-                <option>exclude
-                <option selected>doesn't matter
-  $of Left err
-    <p>Error: #{err}
+<div .container-fluid .tagscrollpane>
+  $case fieldVal
+    $of Right tagvalues
       $forall tag <- tags
-        <select id=#{tag} name=#{fieldName} .form-control>
-          <option>include
-          <option>exclude
-          <option selected>doesn't matter
+        <div .row>
+          <div .col-xs-6>
+            <label for=#{tag}>#{tag}
+          <div .col-xs-6>
+            <select id=#{tag} name=#{fieldName} .form-control>
+              $case tagStatus tag tagvalues
+                $of Included
+                  <option selected>include
+                  <option>exclude
+                  <option>doesn't matter
+                $of Excluded
+                  <option>include
+                  <option selected>exclude
+                  <option>doesn't matter
+                $of Neither
+                  <option>include
+                  <option>exclude
+                  <option selected>doesn't matter
+    $of Left _
+      $forall tag <- tags
+        <div .row>
+          <div .col-xs-6>
+            <label for=#{tag}>#{tag}
+          <div .col-xs-6>
+            <select id=#{tag} name=#{fieldName} .form-control>
+              <option>include
+              <option>exclude
+              <option selected>doesn't matter

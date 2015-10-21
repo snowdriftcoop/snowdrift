@@ -3,12 +3,13 @@
 module Widgets.Search where
 
 import Import hiding (parseTime, timeField)
+import Data.Char
 import qualified Data.Text as T
 import Debug.Trace
 
 data FilterClaimStatus = Claimed | Unclaimed | All deriving (Show, Eq)
 
-data DateTypes = DateTypeBlank | DateCreated | DateLastUpdated deriving Eq
+data DateTypes = DateTypeBlank | DateCreated | DateUpdated deriving Eq
 data DateParams = DateParamBlank | DateBefore | DateAfter | DateBetween deriving Eq
 data DateStatus = DateType DateTypes | DateParam DateParams | DateOther Text deriving Eq
 data TagStatus = Included | Excluded | Neither deriving Eq
@@ -31,12 +32,12 @@ fromDateType :: DateTypes -> Text
 fromDateType x = case x of
                DateTypeBlank -> ""
                DateCreated -> "Created"
-               DateLastUpdated -> "Last Updated"
+               DateUpdated -> "Updated"
 
 toDateType :: Text -> DateTypes
 toDateType x = case x of
                 "Created" -> DateCreated
-                "Last Updated" -> DateLastUpdated
+                "Updated" -> DateUpdated
                 _ -> DateTypeBlank
 
 fromDateParam :: DateParams -> Text
@@ -66,6 +67,7 @@ dateStatus tid responses =
             "dateparam" -> DateParam $ criteria responses
             "datestart" -> DateOther $ startDate responses
             "dateend"   -> DateOther $ endDate responses
+            _ -> DateOther $ T.empty
 --dateStatus :: Text -> [(Text, Text)] -> DateStatus
 --dateStatus tid responses =
 --    case tid of
@@ -95,10 +97,10 @@ searchForm tags extra = do
                     ("Unclaimed", Unclaimed)]
 
     (claimedRes, claimedView) <- mreq 
-        (radioFieldList claimedList)
-        "Claimed"
+        (selectField $ optionsPairs claimedList)
+        (FieldSettings "Claimed" Nothing Nothing Nothing [("class", "form-control")])
         (Just All)
-    (dateRes, dateView) <- mreq dateField "Time" Nothing
+    (dateRes, dateView) <- mreq validatedDateField "Time" Nothing
     (tagsRes, tagsView) <- mreq (tagField tags) "Tags" Nothing
     (sortRes, sortView) <- mopt textField "Sort" Nothing
 
@@ -108,19 +110,57 @@ searchForm tags extra = do
                     <*> tagsRes
                     <*> sortRes
 
-    let widget = do
-          [whamlet|
-            #{extra}
-            <div>
-              <p>^{fvInput claimedView}
-              <p>^{fvInput dateView}
-              <p>tags:
-              ^{fvInput tagsView}
-            <div>
-              <p>Sort: ^{fvInput sortView}
-          |]
+    let widget = toWidget $(widgetFile "filter_widget")
 
     return (searchRes, widget)
+  where
+    errorMessage :: Text
+    errorMessage = "Date Created/Updated & before/after must be checked; date value must be in a recognized format."
+    validatedDateField = checkBool validateDateField errorMessage dateField
+
+validateDateField :: DateParameters -> Bool
+validateDateField (DateParameters t p s _) 
+    | (t == DateTypeBlank) && (p == DateParamBlank) = trace ("validateDateField: DateTypeBlank & DateParamBlank") True
+    | (t /= DateTypeBlank) && (p /= DateParamBlank) && (valiDate $ T.splitOn "/" s) = trace ("validateDatefield non blanks & date matches") True
+    | otherwise = trace ("validateDateField otherwise") False
+
+-- Check to make sure the date is in an appropriate format.  Accepted formats:
+--     mm/dd/yyyy
+--     dd/mm/yyyy
+--     yyyy/mm/dd
+--     yyyy/dd/mm
+valiDate :: [Text] -> Bool
+valiDate [a, b, c]
+  | T.length a == 2 = trace ("valiDate l2 a,b,c = " ++ (show a) ++ (show b) ++ (show c)) (if ((((isMonth a) && (isDay b))
+                         || ((isDay a) && (isMonth b)))
+                         && (isYear c))
+                       then True
+                       else False)
+  | T.length a == 4 = trace ("valiDate l4 a,b,c = " ++ (show a) ++ (show b) ++ (show c)) (if ((((isMonth b) && (isDay c))
+                         || ((isDay b) && (isMonth c)))
+                         && (isYear a))
+                       then True
+                       else False)
+  | otherwise = trace ("valiDate otherwise") False
+
+valiDate _ = False
+
+toInt :: Text -> Int
+toInt x = trace ("toInt: " ++ (show $ T.takeWhile isDigit x) ++ " " ++ (show $ textToInt (T.takeWhile isDigit x) 0 0)) (textToInt (T.takeWhile isDigit x) 0 0)
+
+textToInt :: Text -> Int -> Int -> Int
+textToInt t accum place = case (T.length t) of
+                           0 -> accum
+                           _ -> (accum + ((digitToInt $ T.last t) * 10^place) + (textToInt (T.init t) accum (place+1)))
+
+isMonth :: Text -> Bool
+isMonth x = (toInt x) > 0 && (toInt x) < 12
+
+isDay :: Text -> Bool
+isDay x = (toInt x) > 0 && (toInt x) < 31
+
+isYear :: Text -> Bool
+isYear x = (toInt x) > 2000
 
 dateField :: Field Handler DateParameters
 dateField = Field
@@ -170,7 +210,7 @@ searchFilterString (SearchParameters All searchdate tags _) =
 
 parseFilterDate :: DateParameters -> Text
 parseFilterDate (DateParameters base crit start end)
-        | (base == DateCreated) || (base == DateLastUpdated) = T.toUpper $
+        | (base == DateCreated) || (base == DateUpdated) = T.toUpper $
                 if (crit == DateBetween) then
                     T.intercalate " " 
                         [(fromDateType base), 

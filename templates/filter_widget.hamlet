@@ -1,0 +1,20 @@
+#{extra}
+<fieldset>
+  <legend>
+    Filter
+  <div>
+    ^{fvInput claimedView}
+    <fieldset>
+      <legend>
+        Date
+      ^{fvInput dateView}
+    <fieldset>
+      <legend>
+        Tags
+      ^{fvInput tagsView}
+<fieldset>
+  <legend>
+    Sort
+  <div>
+    ^{fvInput sortView}
+

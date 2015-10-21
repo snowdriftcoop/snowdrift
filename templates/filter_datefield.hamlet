@@ -1,62 +1,54 @@
 <div .container-fluid>
-  <div .row>
-    <div .col-xs-2>
-      $case fieldVal
-        $of Right dp
+
+  $case fieldVal
+    $of Right dp
+      <div .row>
+        <div .col-xs-4>
           <select id="datetype" name=#{fieldName} .form-control>
             $case (dateStatus "datetype" dp)
-              $of DateType DateTypeBlank
-                <option selected>
-                <option>Created
-                <option>Last Updated
               $of DateType dateCreated
                 <option>
                 <option selected>Created
-                <option>Last Updated
-              $of DateType DateLastUpdated
+                <option>Updated
+              $of DateType DateUpdated
                 <option>
                 <option>Created
-                <option selected>Last Updated
-          <div .col-xs-2>
-            <select id="dateparam" name=#{fieldName} .form-control>
-              $case (dateStatus "dateparam" dp)
-                $of DateParam DateParamBlank
-                  <option selected>
-                  <option>before
-                  <option>after
-                  <option>between
-                $of DateParam DateBefore
-                  <option>
-                  <option selected>before
-                  <option>after
-                  <option>between
-                $of DateParam DateAfter
-                  <option>
-                  <option>before
-                  <option selected>after
-                  <option>between
-                $of DateParam DateBetween
-                  <option>
-                  <option>before
-                  <option>after
-                  <option selected>between
-            <div .col-xs-3>
-                <input type="date" id="datestart" name=#{fieldName} value=#{textFromDateStatus $ dateStatus "datestart" dp} .form-control>
-            <div .col-xs-2>
-                and
-            <div .col-xs-3>
-                <input type="date" id="dateend" name=#{fieldName} value=#{textFromDateStatus $ dateStatus "dateend" dp} .form-control>
-        $of Left err
-          <p>#{err}
-          <br>
+                <option selected>Updated
+              $of _
+                <option selected>
+                <option>Created
+                <option>Updated
+        <div .col-xs-4>
+          <select id="dateparam" name=#{fieldName} .form-control>
+            $case (dateStatus "dateparam" dp)
+              $of DateParam DateBefore
+                <option>
+                <option selected>before
+                <option>after
+              $of DateParam DateAfter
+                <option>
+                <option>before
+                <option selected>after
+              $of _
+                <option selected>
+                <option>before
+                <option>after
+        <div .col-xs-4>
+          <input type="date" id="datestart" name=#{fieldName} value=#{textFromDateStatus $ dateStatus "datestart" dp} .form-control>
+          <input type="hidden" id="dateend" name=#{fieldName} value=#{textFromDateStatus $ dateStatus "dateend" dp} .form-control>
+    $of Left err
+      <p>#{err}
+      <div .row>
+        <div .col-xs-4>
           <select id="datetype" name=#{fieldName} .form-control>
             <option selected>
             <option>Created
-            <option>Last Updated
+            <option>Updated
+        <div .col-xs-4>
           <select id="dateparam" name=#{fieldName} .form-control>
             <option selected>
             <option>before
             <option>after
-            <option>between
-          <input type="date" id="datestart" name=#{fieldName}>
-          <input type="date" id="dateend" name=#{fieldName}>
+        <div .col-xs-4>
+          <input type="date" id="datestart" name=#{fieldName} .form-control>
+          <input type="hidden" id="dateend" name=#{fieldName} value="1/1/1901" .form-control>
