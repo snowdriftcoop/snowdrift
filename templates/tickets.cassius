@@ -1,15 +1,12 @@
-form-control:
-  width: 100%
-
 fieldset:
   display: block
-  border: 3px solid silver
-  min-width: 2
-  padding: 1
-  margin: 1
-  border: 2
+  border: 3em solid silver
+  min-width: 2em
+  padding: 1em
+  margin: 1em
+  border: 2em
 
 legend:
   width: auto
-  padding: 2
+  padding: 2em
 
