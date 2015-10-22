@@ -1,0 +1,12 @@
+fieldset:
+  display: block
+  border: 3em solid silver
+  min-width: 2em
+  padding: 1em
+  margin: 1em
+  border: 2em
+
+legend:
+  width: auto
+  padding: 2em
+

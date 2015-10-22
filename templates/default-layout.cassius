@@ -14,6 +14,20 @@ img
 iframe, video
     max-width: 100%
 
+fieldset
+  display: block
+  border: 1px solid silver
+  padding: 5px
+
+legend
+  width: auto
+  padding-left: 10px
+  padding-right: 10px
+
+.tagscrollpane
+  height: 100px
+  overflow: auto
+
 input, textarea, button
     font-size: 15px
 
@@ -41,10 +55,6 @@ input[type=submit]:active, button:active
 input[type=text], input[type=email]
     width: 30em
     max-width: 100%
-
-/* removes the seemingly problematic width: 100% from bootstrap */
-.form-control
-    width: auto
 
 .radio-inline
     width: 2em
@@ -128,6 +138,10 @@ li p
 .footnote, .footnotes
     font-size: 0.9em
     padding: 0.2em
+
+p.text-alert
+    color: red
+    font-size: smaller
 
 blockquote
     max-width: 35em

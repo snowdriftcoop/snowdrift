@@ -48,6 +48,7 @@ import View.Project
 import View.SnowdriftEvent
 import View.Time
 import Widgets.Preview
+import Widgets.Search
 import WrappedValues
 
 --------------------------------------------------------------------------------
@@ -747,21 +748,36 @@ postUpdatePledgeR project_handle = do
 getTicketsR :: Text -> Handler Html
 getTicketsR project_handle = do
     muser_id <- maybeAuthId
-    (project, tagged_tickets) <- runYDB $ do
+
+    (project_id, project, tagged_tickets) <- runYDB $ do
         Entity project_id project <- getBy404 (UniqueProjectHandle project_handle)
         tagged_tickets <- fetchProjectOpenTicketsDB project_id muser_id
-        return (project, tagged_tickets)
-
-    ((result, formWidget), encType) <- runFormGet viewForm
-    let (filter_expression, order_expression) = case result of
-            FormSuccess x -> x
-            _ -> (defaultFilter, defaultOrder)
+        return (project_id, project, tagged_tickets)
 
     github_issues <- getGithubIssues project
 
+    (ptags, otags) <- runDB $ getProjectTagList project_id
+    let projecttags = concatMap (map (tagName . entityVal)) [ptags, otags]
+
+    ((result, formWidget), encType) <- runFormGet $ searchForm projecttags
+    let (filter_expression, order_expression) = case result of
+            FormSuccess x -> (either
+                                (const defaultFilter)
+                                id
+                                (parseFilterExpression $ searchFilterString x),
+                              either
+                                (const defaultOrder)
+                                id
+                                (parseOrderExpression $ searchSortString x))
+            FormFailure _ -> (defaultFilter, defaultOrder)
+            FormMissing -> (defaultFilter, defaultOrder)
+
     let issues = sortBy (flip compare `on` order_expression . issueOrderable) $
                    filter (filter_expression . issueFilterable) $
-                      map mkSomeIssue tagged_tickets ++ map mkSomeIssue github_issues
+                      -- Can't use concatMap since tagged_tickets and
+                      -- github_tickets are different types.
+                      map mkSomeIssue tagged_tickets ++
+                        map mkSomeIssue github_issues
 
     defaultLayout $ do
         snowdriftTitle $ projectName project <> " Tickets"

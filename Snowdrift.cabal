@@ -39,7 +39,6 @@ library
         else
             ghc-options:   -Werror -Wall
 
-    -- exposed-modules {{{2
     exposed-modules:
         Application
         Data.Filter
@@ -140,6 +139,7 @@ library
         Widgets.Markdown
         Widgets.Navbar
         Widgets.Preview
+        Widgets.Search
         Widgets.Tag
         Widgets.UserPledges
         WrappedValues
@@ -197,6 +197,7 @@ library
                  , data-default
                  , Diff
                  , directory
+                 , errors
                  , esqueleto
                  , fast-logger
                  , file-embed
