@@ -1,12 +1,12 @@
 <div .container-fluid .tagscrollpane>
-  $case fieldVal
+  $case eResult
     $of Right tagvalues
       $forall tag <- tags
         <div .row>
           <div .col-xs-6>
-            <label for=#{tag}>#{tag}
+            <label for=#{idAttr}>#{tag}
           <div .col-xs-6>
-            <select id=#{tag} name=#{fieldName} .form-control>
+            <select id=#{idAttr} name=#{nameAttr} *{otherAttrs} :isReq:required .form-control>
               $# FIXME: Why a lookup here?
               $maybe tagvalue <- lookup tag tagvalues
                   $case tagvalue
@@ -26,9 +26,9 @@
       $forall tag <- tags
         <div .row>
           <div .col-xs-6>
-            <label for=#{tag}>#{tag}
+            <label for=#{idAttr}>#{tag}
           <div .col-xs-6>
-            <select id=#{tag} name=#{fieldName} .form-control>
+            <select id=#{idAttr} name=#{nameAttr} *{otherAttrs} :isReq:required .form-control>
               <option>include
               <option>exclude
               <option selected>doesn't matter

@@ -67,7 +67,7 @@ tagField tags = Field
                                             Just $
                                             zip tags $
                                             map convertTagAction tagSelectValues
-    , fieldView = \_ fieldName _ fieldVal _ ->
+    , fieldView = \idAttr nameAttr otherAttrs eResult isReq ->
             $(widgetFile "field/tag-filter")
     , fieldEnctype = UrlEncoded
     }
