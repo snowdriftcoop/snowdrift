@@ -15,23 +15,23 @@ data FilterClaimStatus = Claimed
                        | All
                        deriving (Show, Eq)
 
-data TagStatus = TagIncluded
-               | TagExcluded
-               | TagNeither
+data TagAction = TagInclude
+               | TagExclude
+               | TagIgnore
                deriving Eq
 
 data SearchParameters = SearchParameters
     { _claimed :: FilterClaimStatus
-    , _tags :: [(Text, TagStatus)]
+    , _tags :: [(Text, TagAction)]
     , _sort :: Maybe Text
     }
 
-convertTagStatus :: Text -> TagStatus
-convertTagStatus tag =
+convertTagAction :: Text -> TagAction
+convertTagAction tag =
         case tag of
-          "include" -> TagIncluded
-          "exclude" -> TagExcluded
-          _ -> TagNeither
+          "include" -> TagInclude
+          "exclude" -> TagExclude
+          _ -> TagIgnore
 
 searchForm :: [Text] -> Form SearchParameters
 searchForm tags extra = do
@@ -60,13 +60,13 @@ searchForm tags extra = do
 
     return (searchRes, widget)
 
-tagField :: [Text] -> Field Handler [(Text, TagStatus)]
+tagField :: [Text] -> Field Handler [(Text, TagAction)]
 tagField tags = Field
     { fieldParse = \tagSelectValues _ -> return $
                                             Right $
                                             Just $
                                             zip tags $
-                                            map convertTagStatus tagSelectValues
+                                            map convertTagAction tagSelectValues
     , fieldView = \_ fieldName _ fieldVal _ ->
             $(widgetFile "field/tag-filter")
     , fieldEnctype = UrlEncoded
@@ -82,12 +82,12 @@ searchFilterString (SearchParameters Unclaimed tags _ ) =
 searchFilterString (SearchParameters All tags _) =
         T.intercalate " AND " $ filter (not . T.null) [parseTags tags]
 
-parseTags :: [(Text, TagStatus)] -> Text
+parseTags :: [(Text, TagAction)] -> Text
 parseTags t = T.intercalate " AND " $ filter (not . T.null) (map parseTag t)
     where parseTag (tag, response)
               | (tag == T.empty) = T.empty
-              | (response == TagIncluded) = "(" <> tag <> ")"
-              | (response == TagExcluded) = "(NOT " <> tag <> ")"
+              | (response == TagInclude) = "(" <> tag <> ")"
+              | (response == TagExclude) = "(NOT " <> tag <> ")"
               | otherwise = T.empty
 
 searchSortString :: SearchParameters -> Text
