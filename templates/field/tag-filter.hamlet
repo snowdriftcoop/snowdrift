@@ -7,7 +7,7 @@
             <label for=#{tag}>#{tag}
           <div .col-xs-6>
             <select id=#{tag} name=#{fieldName} .form-control>
-              #! FIXME: Why a lookup here?
+              $# FIXME: Why a lookup here?
               $maybe tagvalue <- lookup tag tagvalues
                   $case tagvalue
                     $of TagIncluded
