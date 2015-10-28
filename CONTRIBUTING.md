@@ -64,7 +64,9 @@ according to the instructions linked above.**
 ### Finding the code
 
 All of the code is in the subdirectory named `original`. This is in flux,
-as the project is currently being separated into individual packages.
+as the project is currently being separated into individual packages. All
+commands to run or test the code should be run from this subdirectory for
+now.
 
 ### Text-editors and settings
 
