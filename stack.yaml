@@ -2,7 +2,7 @@ flags:
     Snowdrift:
         dev: true
 packages:
-- 'status-quo'
+- 'original'
 - location:
     git: https://github.com/chreekat/ghci-runner.git
     commit: bae5a558535087c8cc532da0fd192625361d8a25
