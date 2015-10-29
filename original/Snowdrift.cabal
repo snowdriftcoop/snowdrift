@@ -78,6 +78,7 @@ library
         Handler.Wiki
         Handler.Wiki.Comment
         Import
+        Mechanism
         Model
         Model.Application
         Model.Blog
