@@ -50,6 +50,7 @@ import View.Time
 import Widgets.Preview
 import Widgets.Search
 import WrappedValues
+import qualified Mechanism as Mech
 
 --------------------------------------------------------------------------------
 -- Utility functions
@@ -188,10 +189,9 @@ getProjectsR = do
     project_summaries <- runDB $ do
         projects <- fetchPublicProjectsDB
         forM projects $ \project -> do
-            pledges <- fetchProjectPledgesDB $ entityKey project
             discussions <- fetchProjectDiscussionsDB $ entityKey project
             tickets <- fetchProjectOpenTicketsDB (entityKey project) Nothing
-            let summary = summarizeProject project pledges discussions tickets
+            let summary = summarizeProject project Mech.Project discussions tickets
             return (project, summary)
 
     let discussionsCount = getCount . summaryDiscussionCount

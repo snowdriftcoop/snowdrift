@@ -3,20 +3,18 @@ module Widgets.UserPledges where
 
 import Import
 
-import Model.Currency
-import Model.Count
 import Model.Project
-import Model.User (fetchUserPledgesDB)
+import qualified Mechanism as Mech
 
 -- | A summary without ticket or discussion counts.
-summarizeProject' :: Entity Project -> [Entity Pledge] -> ProjectSummary
+summarizeProject' :: Entity Project -> Mech.Project -> ProjectSummary
 summarizeProject' a b = summarizeProject a b [] []
 
 -- |The summary of pledging to projects shown on user's page
 userPledgeSummary :: UserId -> Widget
 userPledgeSummary user_id = do
     project_summary <- handlerToWidget $ runDB $
-        map (uncurry summarizeProject') <$> fetchUserPledgesDB user_id
+        map (uncurry summarizeProject') <$> Mech.fetchUserPledgesDB user_id
 
     toWidget [hamlet|
         $if null project_summary
@@ -32,12 +30,7 @@ userPledgeSummary user_id = do
 userPledges :: UserId -> Widget
 userPledges user_id = do
     project_summaries <- handlerToWidget $ runDB $
-        map (uncurry summarizeProject') <$> fetchUserPledgesDB user_id
-
-    let cost = summaryShareCost
-        shares = getCount . summaryShares
-        mills = millMilray . shares
-        total x = cost x $* fromIntegral (shares x)
+        map (uncurry summarizeProject') <$> Mech.fetchUserPledgesDB user_id
 
     toWidget [hamlet|
         $if null project_summaries
@@ -56,7 +49,5 @@ userPledges user_id = do
                 <td>
                   <a href=@{ProjectR (summaryProjectHandle summary)}>
                     #{summaryName summary}
-                <td>#{show (mills summary)}
-                <td><em>TODO</em>
-                <td>#{show (total summary)}
+                <td colspan=3><em>TODO: Mechanism data</em>
       |]

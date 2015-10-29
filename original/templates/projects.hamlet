@@ -28,7 +28,7 @@ $else
             <figure .project-icon>
               <img src=@{StaticR img_patrons_png}>
               <span .img-padding-l>
-                #{show $ getCount $ summaryUsers summary}
+                FIXME: Number of patrons!!
 
             <!-- Add highlighting for when User is already a patron -->
           <div .project-icons .col-sm-9>

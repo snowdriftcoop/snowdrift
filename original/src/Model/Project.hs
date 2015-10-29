@@ -67,6 +67,7 @@ import Model.Tag
 import Model.Wiki.Sql
 import Widgets.Tag
 import WrappedValues
+import qualified Mechanism as Mech
 
 --------------------------------------------------------------------------------
 -- Types
@@ -79,9 +80,7 @@ newtype TicketCount = TicketCount Int64 deriving Count
 data ProjectSummary = ProjectSummary
     { summaryName            :: Text
     , summaryProjectHandle   :: Text
-    , summaryUsers           :: UserCount
-    , summaryShares          :: ShareCount
-    , summaryShareCost       :: Milray
+    , summaryMech            :: Mech.Project
     , summaryDiscussionCount :: DiscussionCount
     , summaryTicketCount     :: TicketCount
     }
@@ -216,24 +215,18 @@ getGithubIssues project =
              (projectGithubRepo project)
 
 summarizeProject :: Entity Project
-                 -> [Entity Pledge]
+                 -> Mech.Project
                  -> [DiscussionId]
                  -> [TaggedTicket]
                  -> ProjectSummary
-summarizeProject project pledges discussions tickets =
-    let share_value = projectShareValue $ entityVal project
-        share_count = ShareCount $
-            sum . map (pledgeFundedShares . entityVal) $ pledges
-        user_count = UserCount $ fromIntegral $ length pledges
-        discussion_count = DiscussionCount $
+summarizeProject project _mechProj discussions tickets =
+    let discussion_count = DiscussionCount $
             fromIntegral $ length discussions
         ticket_count = TicketCount $ fromIntegral $ length tickets
     in ProjectSummary
         (projectName $ entityVal project)
         (projectHandle $ entityVal project)
-        user_count
-        share_count
-        share_value
+        Mech.Project
         discussion_count
         ticket_count
 
