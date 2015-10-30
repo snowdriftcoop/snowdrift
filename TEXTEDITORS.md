@@ -14,18 +14,21 @@ is continually improving.
 
 #### Atom settings
 
-Some settings to *consider*:
+Some general settings:
 
-* Tab Length: 4 (easy enough to enter 2 spaces for hamlet), make sure to keep
-  "soft tabs" checked.
-* Packages/Tree View: turn on "Hide Ignored Names" and "Hide VCS Ignored Files"
-* Disable the "metrics" package to stop Atom sending data to Google Analytics
+* In the main Atom settings, specify soft tabs and use 4-space tabs
+* Packages/Tree View: consider using "Hide Ignored Names" and "Hide VCS Ignored
+  Files"
+* Consider disabling the "metrics" package to turn off Google Analytics
 
 #### Atom packages
 
-We recommend adding at least the Atom packages
-[language-shakespeare](https://atom.io/packages/language-shakespeare) and
-[language-haskell](https://atom.io/packages/language-haskell).
+We recommend at least the Atom packages:
+* [language-shakespeare](https://atom.io/packages/language-shakespeare)
+    * in the language-shakespeare package settings, change the hamlet tab-length
+      to 2, leave others at 4
+* [language-haskell](https://atom.io/packages/language-haskell)
+
 
 The [ide-haskell](https://atom.io/packages/ide-haskell) package offers further
 development tools including error-checking, linting, and type information. To
