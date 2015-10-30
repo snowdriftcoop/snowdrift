@@ -208,19 +208,16 @@ getProjectR :: Text -> Handler Html
 getProjectR project_handle = do
     mviewer_id <- maybeAuthId
 
-    (project_id, project, is_watching, pledges, pledge) <- runYDB $ do
+    (project_id, project, is_watching) <- runYDB $ do
         Entity project_id project <- getBy404 $ UniqueProjectHandle project_handle
-        pledges <- fetchProjectSharesDB project_id
-        (pledge, is_watching) <- case mviewer_id of
-            Nothing -> return (Nothing, False)
-            Just viewer_id -> (,)
-                <$> getBy (UniquePledge viewer_id project_id)
-                <*> userIsWatchingProjectDB viewer_id project_id
-        return (project_id, project, is_watching, pledges, pledge)
+        is_watching <- case mviewer_id of
+            Nothing -> return False
+            Just viewer_id -> userIsWatchingProjectDB viewer_id project_id
+        return (project_id, project, is_watching)
 
     defaultLayout $ do
         snowdriftTitle $ projectName project
-        renderProject (Just project_id) project mviewer_id is_watching pledges pledge
+        renderProject (Just project_id) project mviewer_id is_watching
 
 postProjectR :: Text -> Handler Html
 postProjectR project_handle = do
@@ -295,7 +292,15 @@ postProjectR project_handle = do
                             }
 
                     (form, _) <- generateFormPost $ editProjectForm (Just (preview_project, tags))
-                    defaultLayout $ previewWidget form "update" $ renderProject (Just project_id) preview_project Nothing False [] Nothing
+                    defaultLayout
+                        (previewWidget
+                            form
+                            "update"
+                            (renderProject
+                                (Just project_id)
+                                preview_project
+                                Nothing
+                                False))
 
         x -> do
             alertDanger $ T.pack $ show x

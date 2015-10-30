@@ -74,7 +74,7 @@
         <form method=GET
               action=@{UpdatePledgeR $ projectHandle project}>
           ^{update_pledge}
-          $maybe _ <- maybe_shares
+          $maybe _ <- mechUser
             <input .pledge type=submit value="update pledge">
           $nothing
             <input .pledge type=submit value="enter pledge">
@@ -98,23 +98,23 @@
       <tr>
         <td>
           <a href=@{ProjectPatronsR $ projectHandle project}>
-            _{MsgPatrons numPatrons}
+            FIXME: Number of patrons goes here.
       <tr>
         <td>
-          <span .pledge-stat>#{show project_value}&nbsp;per&nbsp;month
+          <span .pledge-stat>FIXME: Project value
     <table>
       <tr>
         <th>Next new patron
       <tr>
         <td>
           minimum new pledge:
-          <span .pledge-stat>#{show $ share_value + 10}
+          <span .pledge-stat>FIXME: Share value
           per month
       <tr>
         <td>
 
           matching from others:
-          <span .pledge-stat>#{show mills}
+          <span .pledge-stat>FIXME: matching amount
           per month
     <table>
       <tr>

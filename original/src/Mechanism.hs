@@ -1,9 +1,10 @@
 module Mechanism where
 
-import Import hiding (Project)
+import Import hiding (Project, User)
 import qualified Import as Fixme
 
 import Data.Monoid (Sum(..))
+import Data.Time.Clock (addUTCTime)
 
 import Model.Currency
 
@@ -60,3 +61,45 @@ moneyInfo = sequence . fmap go
 
 fetchUserPledgesDB :: UserId -> DB [(Entity Fixme.Project, Project)]
 fetchUserPledgesDB _user_id = return []
+
+payoutHistory :: Fixme.Project
+              -> UTCTime
+              -> DB (Maybe (Milray, Milray, Milray))
+payoutHistory project now = case projectLastPayday project of
+    Nothing -> return Nothing
+    Just last_payday -> do
+        let extractRational = \case
+                [Value (Just (r :: Rational))] -> r
+                _                              -> 0
+        -- This assumes there were transactions associated with the
+        -- last payday
+        last <- fmap extractRational $
+            select $
+            from $ \transaction -> do
+            where_ $
+                transaction ^. TransactionPayday ==. val (Just last_payday) &&.
+                transaction ^. TransactionCredit ==. val (Just $ projectAccount project)
+            return $ sum_ $ transaction ^. TransactionAmount
+
+        year <- fmap extractRational $
+            select $
+            from $ \(transaction `InnerJoin` payday) -> do
+            where_ $
+                payday ^. PaydayDate >. val (addUTCTime (-365 * 24 * 60 * 60) now) &&.
+                transaction ^. TransactionCredit ==. val (Just $ projectAccount project)
+            on_ $ transaction ^. TransactionPayday ==. just (payday ^. PaydayId)
+            return $ sum_ $ transaction ^. TransactionAmount
+
+        total <- fmap extractRational $
+            select $
+            from $ \transaction -> do
+            where_ $ transaction ^. TransactionCredit ==. val (Just $ projectAccount project)
+            return $ sum_ $ transaction ^. TransactionAmount
+
+        return $ Just (Milray $ round last, Milray $ round year, Milray $ round total)
+
+fetchUser :: Fixme.UserId -> DB User
+fetchUser = const (pure User)
+
+fetchProject :: Fixme.ProjectId -> DB Project
+fetchProject = const (pure Project)
