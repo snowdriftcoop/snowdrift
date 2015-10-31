@@ -1,5 +1,3 @@
-$newline never
-
 $forall auth <- authPlugins app
   <div .col-md-6>
     ^{apLogin auth toParent}

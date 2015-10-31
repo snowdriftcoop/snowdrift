@@ -1,5 +1,3 @@
-$newline never
-
 #{tag_name}
 <form method=post>
   <input type=submit method=post value="-">

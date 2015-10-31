@@ -27,18 +27,15 @@ radioField' :: (Eq a, RenderMessage site FormMessage)
            -> Field (HandlerT site IO) a
 radioField' = selectFieldHelper'
     (\theId _name _attrs inside -> [whamlet|
-$newline never
 <div ##{theId}>^{inside}
 |])
     (\theId name isSel -> [whamlet|
-$newline never
 <div .radio>
     <label for=#{theId}-none>
             <input id=#{theId}-none type=radio name=#{name} value=none :isSel:checked>
             _{MsgSelectNone}
 |])
     (\theId name attrs value isSel text -> [whamlet|
-$newline never
 <div .radio>
     <label for=#{theId}-#{value}>
             <input id=#{theId}-#{value} type=radio name=#{name} value=#{value} :isSel:checked *{attrs}>
