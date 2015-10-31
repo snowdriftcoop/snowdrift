@@ -1,4 +1,3 @@
-$newline never
 <fieldset>
   $forall (shareNumber, centView) <- pledgeOptions
     <input .radio-inline :req:required *{attrs}
