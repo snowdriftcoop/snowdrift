@@ -32,6 +32,7 @@ import View.Time
 import View.User
 import Widgets.Preview
 import Widgets.UserPledges
+import qualified Mechanism as Mech
 
 getUsersR :: Handler Html
 getUsersR = do
@@ -150,36 +151,19 @@ getUserBalanceR' :: UserId -> Handler Html
 getUserBalanceR' user_id = do
     user <- runYDB $ get404 user_id
 
-    -- TODO: restrict viewing balance to user or snowdrift admins (logged) before moving to real money
-    -- when (user_id /= viewer_id) $ permissionDenied "You can only view your own account balance history."
+    -- TODO: restrict viewing balance to user or snowdrift admins (logged)
+    -- before moving to real money
+    -- when (user_id /= viewer_id)
+    --      (permissionDenied
+    --         "You can only view your own account balance history.")
 
     Just account <- runDB $ get $ userAccount user
 
     offset' <- lookupParamDefault "offset" 0
     limit' <- lookupParamDefault "count" 20
 
-    (transactions, user_accounts, project_accounts) <- runDB $ do
-        transactions <- select $ from $ \transaction -> do
-            where_ ( transaction ^. TransactionCredit ==. val (Just (userAccount user))
-                    ||. transaction ^. TransactionDebit ==. val (Just (userAccount user)))
-            orderBy [ desc (transaction ^. TransactionTs) ]
-            limit limit'
-            offset offset'
-            return transaction
-
-        let accounts = catMaybes $ S.toList $ S.fromList $ map (transactionCredit . entityVal) transactions ++ map (transactionDebit . entityVal) transactions
-
-        users <- selectList [ UserAccount <-. accounts ] []
-        projects <- selectList [ ProjectAccount <-. accounts ] []
-
-        let mkMapBy :: Ord b => (a -> b) -> [a] -> M.Map b a
-            mkMapBy f = M.fromList . map (\e -> (f e, e))
-
-        return
-            ( transactions
-            , mkMapBy (userAccount . entityVal) users
-            , mkMapBy (projectAccount . entityVal) projects
-            )
+    (transactions, user_accounts, project_accounts) <-
+        runDB $ Mech.userBalance user limit' offset'
 
     (add_funds_form, _) <- generateFormPost addTestCashForm
 

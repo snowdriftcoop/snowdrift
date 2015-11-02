@@ -1,31 +1,37 @@
 {- REFACTOR NOTES
 
- - In general (but not always), I am importing this module qualified for
-   now as an explicit reminder. Eventually it should be unqualified like most
-   internal modules.
+- In general (but not always), I am importing this module qualified for
+  now as an explicit reminder. Eventually it should be unqualified like most
+  internal modules.
 
- - moneyInfo
+- moneyInfo
 
-     SqlPersistT will hopefully go away and somehow refer to the main site.
+SqlPersistT will hopefully go away and somehow refer to the main site.
 
-     Maybe should probably also go away, since the caller can call
-     (sequence . fmap) themselves. I actually set out to do that, but got
-     clobbered with a type mismatch between "DB" and "ReaderT SqlBackend
-     ..." — types that are actually the same.
+Maybe should probably also go away, since the caller can call
+(sequence . fmap) themselves. I actually set out to do that, but got
+clobbered with a type mismatch between "DB" and "ReaderT SqlBackend
+..." — types that are actually the same.
 
-  - Project and User
+- Project and User
 
-     These will have mechanism-specific information, including mapping to
-     the master project's entities.
+These will have mechanism-specific information, including mapping to
+the master project's entities.
 
-  - fetchUserPledgesDB
+- fetchUserPledgesDB
 
-     Cut out with a chainsaw; please excuse the mess.
- -}
+Cut out with a chainsaw; please excuse the mess.
+
+- userBalance
+
+A bad name for a bad function, I would say. As usual, with everything else
+here, it all needs to be redesigned into a consistent interface.
+
+-}
 
 module Mechanism where
 
-import Import hiding (Project, User)
+import Import hiding (Project, User, Account)
 import qualified Import as Fixme
 
 import Control.Monad.Trans.Resource (MonadThrow)
@@ -34,6 +40,7 @@ import Data.Either (isRight)
 import Data.Monoid (Sum(..))
 import Data.Time.Clock (addUTCTime)
 import qualified Data.Map as M
+import qualified Data.Set as S
 import qualified Data.Text as T
 
 import Model.Currency
@@ -388,3 +395,40 @@ insertProjectPledgeDB user_id project_id shares pledge_render_id = do
                     tell [EUpdatedPledge (pledgeShares old_pledge)
                                          shares_pledged_id
                                          shares_pledged]
+
+
+userBalance :: Fixme.User
+            -> Int64
+            -> Int64
+            -> DB ( [Entity Transaction]
+                  , Map (Key Fixme.Account) (Entity Fixme.User)
+                  , Map (Key Fixme.Account) (Entity Fixme.Project))
+userBalance user limit' offset' = do
+    tx <- select $ from $ \transaction -> do
+            where_ ( transaction ^. TransactionCredit ==. val (Just (userAccount user))
+                    ||. transaction ^. TransactionDebit ==. val (Just (userAccount user)))
+            orderBy [ desc (transaction ^. TransactionTs) ]
+            limit limit'
+            offset offset'
+            return transaction
+
+    let tx' = map entityVal tx
+        accounts =
+            catMaybes
+                (setNub
+                    (map transactionCredit tx' ++ map transactionDebit tx'))
+
+    users <- selectList [ UserAccount <-. accounts ] []
+    projects <- selectList [ ProjectAccount <-. accounts ] []
+
+    let mkMapBy :: Ord b => (a -> b) -> [a] -> M.Map b a
+        mkMapBy f = M.fromList . map (\e -> (f e, e))
+
+    return
+        ( tx
+        , mkMapBy (userAccount . entityVal) users
+        , mkMapBy (projectAccount . entityVal) projects
+        )
+
+  where
+    setNub = S.toList . S.fromList
