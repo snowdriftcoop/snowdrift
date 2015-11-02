@@ -1,0 +1,3 @@
+[submodule "publications"]
+	path = publications
+	url = git@git.gnu.io:snowdrift/sd-publications.git
