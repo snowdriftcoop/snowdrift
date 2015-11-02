@@ -4,9 +4,8 @@ import Import
 
 import Text.Hamlet (hamletFile)
 
-import Model.Project
 import Model.Currency
-
+import qualified Mechanism as Mech
 
 widgetLayout :: WidgetT App IO () -> HandlerT App IO Html
 widgetLayout widget = do
@@ -20,7 +19,7 @@ getWidgetR :: Text -> Handler Html
 getWidgetR project_handle = do
     (project, pledges) <- runYDB $ do
         Entity project_id project <- getBy404 $ UniqueProjectHandle project_handle
-        pledges <- fetchProjectSharesDB project_id
+        pledges <- Mech.fetchProjectSharesDB project_id
         return (project, pledges)
 
     let share_value = projectShareValue project

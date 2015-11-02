@@ -49,7 +49,6 @@ import View.SnowdriftEvent
 import View.Time
 import Widgets.Preview
 import Widgets.Search
-import WrappedValues
 import qualified Mechanism as Mech
 
 --------------------------------------------------------------------------------
@@ -674,18 +673,12 @@ getUpdatePledgeR project_handle = do
         FormSuccess (SharesPurchaseOrder new_user_shares) -> do
             user_id <- requireAuthId
 
-            (confirm_form, _) <- generateFormPost $ projectConfirmPledgeForm (Just new_user_shares)
+            (confirm_form, _) <-
+                generateFormPost
+                    (projectConfirmPledgeForm (Just new_user_shares))
 
-            (mpledge, other_shares, pledges) <- runDB $ do
-                pledges <- fetchProjectSharesDB project_id
-                mpledge <- getBy $ UniquePledge user_id project_id
-                other_shares <- fmap unwrapValues $ select $ from $ \p -> do
-                    where_ $ p ^. PledgeProject ==. val project_id
-                        &&. p ^. PledgeUser !=. val user_id
-
-                    return $ p ^. PledgeShares
-
-                return (mpledge, other_shares, pledges)
+            (mpledge, other_shares, pledges) <- runDB $
+                Mech.potentialPledge user_id project_id
 
             let new_user_mills = millMilray new_user_shares
             case mpledge of
@@ -708,8 +701,8 @@ getUpdatePledgeR project_handle = do
 
                         old_project_shares = filter (>0) [old_user_shares] ++ other_shares
 
-                        new_share_value = projectComputeShareValue new_project_shares
-                        old_share_value = projectComputeShareValue old_project_shares
+                        new_share_value = Mech.projectComputeShareValue new_project_shares
+                        old_share_value = Mech.projectComputeShareValue old_project_shares
 
                         new_user_amount = new_share_value $* fromIntegral new_user_shares
                         old_user_amount = old_share_value $* fromIntegral old_user_shares
@@ -741,7 +734,7 @@ postUpdatePledgeR project_handle = do
 
     case result of
         FormSuccess (SharesPurchaseOrder shares) -> do
-            when isConfirmed $ updateUserPledge project_handle shares
+            when isConfirmed $ Mech.updateUserPledge project_handle shares
             redirect (ProjectR project_handle)
         _ -> do
             alertDanger "error occurred in form submission"

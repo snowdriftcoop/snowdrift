@@ -11,6 +11,7 @@ import qualified Data.Text as T
 import qualified Data.Text.Read as T
 
 import Model.Currency
+import qualified Mechanism as Mech
 
 pledgeSizes :: [[Int64]]
 pledgeSizes =
@@ -22,9 +23,6 @@ pledgeSizes =
 
 pledgeListKey :: Text
 pledgeListKey = "pledge_list"
-
-pledgeRenderKey :: Text
-pledgeRenderKey = "pledge_render"
 
 newtype SharesPurchaseOrder = SharesPurchaseOrder Int64
 
@@ -69,7 +67,7 @@ pledgeField project_id = Field
                     project_id
                     muser
 
-        handlerToWidget $ setSession pledgeRenderKey $ T.pack $ show render_key
+        handlerToWidget $ setSession Mech.pledgeRenderKey $ T.pack $ show render_key
 
         let value = either (const 2) (\(SharesPurchaseOrder s) -> s) v
             hasValue = value `elem` list

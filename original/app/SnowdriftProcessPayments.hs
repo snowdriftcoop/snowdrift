@@ -11,8 +11,8 @@ import qualified Data.Text as T
 import qualified Database.Persist.Sql
 
 import Model.Currency
-import Model.Project
 import Settings
+import qualified Mechanism as Mech
 
 data NegativeBalances = NegativeBalances ProjectId [UserId]
     deriving (Show, Typeable)
@@ -100,11 +100,11 @@ rebalanceAllPledges :: (MonadWriter [PledgeId] (t (ReaderT SqlBackend m))
                        )
                     => t (SqlPersistT m) ()
 rebalanceAllPledges = do
-    unders <- lift underfundedPatrons
+    unders <- lift Mech.underfundedPatrons
     unless (null unders) $ do
-        maxUnders <- lift $ maxShares Nothing unders
-        lift $ dropShares maxUnders
-        lift $ mapM_ updateShareValue =<< updatedProjects maxUnders
+        maxUnders <- lift $ Mech.maxShares Nothing unders
+        lift $ Mech.dropShares maxUnders
+        lift $ mapM_ Mech.updateShareValue =<< updatedProjects maxUnders
         tell maxUnders
         rebalanceAllPledges
 
