@@ -20,7 +20,6 @@ import Handler.User.Comment
 import Handler.Utils
 import Model.Comment.ActionPermissions
 import Model.Comment.Sql
-import Model.Currency
 import Model.Notification.Internal
             (UserNotificationType (..), ProjectNotificationType (..))
 import Model.ResetPassword (deleteFromResetPassword)
@@ -184,39 +183,25 @@ getUserBalanceR' user_id = do
 postUserBalanceR :: UserId -> Handler Html
 postUserBalanceR user_id = do
     Entity viewer_id _ <- requireAuth
-    user <- runYDB $ get404 user_id
     unless (user_id == viewer_id) $
         permissionDenied "You can only add money to your own account."
 
     ((result, _), _) <- runFormPost addTestCashForm
 
     now <- liftIO getCurrentTime
-
-    let balanceCap :: Milray
-        balanceCap = 1000000
+    user <- runYDB $ get404 user_id
 
     case result of
         FormSuccess amount -> do
             if amount < 10
                 then alertDanger "Sorry, minimum deposit is $10"
                 else do
-                    success <- runDB $ do
-                        c <- updateCount $ \account -> do
-                            set account [ AccountBalance +=. val amount ]
-                            where_ $ account ^. AccountId ==. val (userAccount user)
-                                &&. account ^. AccountBalance +. val amount <=. val balanceCap
-
-                        when (c == 1) $ insert_ $ Transaction now (Just $ userAccount user) Nothing Nothing amount "Test Load" Nothing
-                        return (c == 1)
-
-                    if success
-                     then alertSuccess "Balance updated."
-                     else alertDanger $ "Balance would exceed (testing only) cap of " <> T.pack (show balanceCap)
-
+                    res <- runDB (Mech.incrementBalance user now amount)
+                    either alertDanger
+                           (const (alertSuccess "Balance updated"))
+                           res
             redirect (UserBalanceR user_id)
-
         _ -> error "Error processing form."
-
 
 --------------------------------------------------------------------------------
 -- /#UserId/d

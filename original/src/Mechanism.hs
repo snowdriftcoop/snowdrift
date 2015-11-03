@@ -27,6 +27,14 @@ Cut out with a chainsaw; please excuse the mess.
 A bad name for a bad function, I would say. As usual, with everything else
 here, it all needs to be redesigned into a consistent interface.
 
+- incrementBalance
+
+This function holds the business logic of a balance cap, but not of a
+minimum deposit being 10 bucks. My rationale for the split is that the
+former must be decided using internal information (like the index of an
+array), but the latter is decided using user input. The idea is to push
+verification closer to the source.
+
 -}
 
 module Mechanism where
@@ -34,9 +42,9 @@ module Mechanism where
 import Import hiding (Project, User, Account)
 import qualified Import as Fixme
 
+import Control.Error
 import Control.Monad.Trans.Resource (MonadThrow)
 import Control.Monad.Trans.Writer.Strict (tell, execWriterT, WriterT)
-import Data.Either (isRight)
 import Data.Monoid (Sum(..))
 import Data.Time.Clock (addUTCTime)
 import qualified Data.Map as M
@@ -104,7 +112,7 @@ payoutHistory project now = case projectLastPayday project of
             where_ $
                 payday ^. PaydayDate >. val (addUTCTime (-365 * 24 * 60 * 60) now) &&.
                 transaction ^. TransactionCredit ==. val (Just $ projectAccount project)
-            on_ $ transaction ^. TransactionPayday ==. just (payday ^. PaydayId)
+            on_ $ transaction ^. TransactionPayday ==. Fixme.just (payday ^. PaydayId)
             return $ sum_ $ transaction ^. TransactionAmount
 
         total <- fmap extractRational $
@@ -432,3 +440,32 @@ userBalance user limit' offset' = do
 
   where
     setNub = S.toList . S.fromList
+
+incrementBalance :: MonadIO m
+                 => Fixme.User
+                 -> UTCTime
+                 -> Milray
+                 -> Fixme.SqlPersistT m (Either Text ())
+incrementBalance user now amt = do
+    c <- updateCount $ \account -> do
+        set account [ AccountBalance +=. val amt ]
+        where_ $ account ^. AccountId ==. val (userAccount user)
+            &&. account ^. AccountBalance +. val amt <=. val balanceCap
+
+    when (c == 1) $ do
+        insert_
+            (Transaction now
+                         (Just $ userAccount user)
+                         Nothing
+                         Nothing
+                         amt
+                         "Test Load"
+                         Nothing)
+    return $ if (c == 1)
+        then (Right ())
+        else (Left emsg)
+  where
+    balanceCap :: Milray
+    balanceCap = 1000000
+    emsg = "Balance would exceed (testing only) cap of " <>
+            T.pack (show balanceCap)
