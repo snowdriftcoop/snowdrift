@@ -469,3 +469,20 @@ incrementBalance user now amt = do
     balanceCap = 1000000
     emsg = "Balance would exceed (testing only) cap of " <>
             T.pack (show balanceCap)
+
+data PledgeStatus = AllFunded | ExistsUnderfunded
+
+pledgeStatus :: UserId -> DB PledgeStatus
+pledgeStatus uid = do
+    underfunded <-
+        select $
+        from $ \u -> do
+        where_ $ u ^. UserId ==. val uid
+            &&. (exists $
+                from $ \plg -> do
+                where_ $ plg ^. PledgeShares >. plg ^. PledgeFundedShares
+                    &&. plg ^. PledgeUser ==. val uid)
+        return $ u ^. UserId
+    return $ case underfunded of
+        [] -> AllFunded
+        _ -> ExistsUnderfunded

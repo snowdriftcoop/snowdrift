@@ -97,14 +97,12 @@ module Model.User
     -- Unsorted
     , canCurUserMakeEligible
     , canMakeEligible
-    , pledgeStatus
-    , PledgeStatus(..)
     ) where
 
 import Import hiding (exists)
 
 import Control.Monad.Trans.Reader (ReaderT)
-import Database.Esqueleto.Internal.Language (From, exists)
+import Database.Esqueleto.Internal.Language (From)
 import qualified Data.List as L
 import qualified Data.Map as M
 import qualified Data.Set as S
@@ -742,24 +740,6 @@ fetchNumUnreadProjectNotificationsDB :: UserId -> DB Int
 fetchNumUnreadProjectNotificationsDB =
     fetchNumUnreadNotifications
         ProjectNotificationTo ProjectNotificationCreatedTs
-
-
-data PledgeStatus = AllFunded | ExistsUnderfunded
-
-pledgeStatus :: UserId -> DB PledgeStatus
-pledgeStatus uid = do
-    underfunded <-
-        select $
-        from $ \u -> do
-        where_ $ u ^. UserId ==. val uid
-            &&. (exists $
-                from $ \plg -> do
-                where_ $ plg ^. PledgeShares >. plg ^. PledgeFundedShares
-                    &&. plg ^. PledgeUser ==. val uid)
-        return $ u ^. UserId
-    return $ case underfunded of
-        [] -> AllFunded
-        _ -> ExistsUnderfunded
 
 claimedTickets :: UserId -> Handler [(Entity Ticket, Maybe (Entity WikiTarget), Import.Value Text)]
 claimedTickets user_id = do
