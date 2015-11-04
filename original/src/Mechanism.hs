@@ -131,15 +131,47 @@ fetchProject = const (pure Project)
 
 potentialPledge :: Fixme.UserId
                 -> Fixme.ProjectId
-                -> DB (Maybe (Entity Pledge), [Int64], [Int64])
-potentialPledge user_id project_id = do
+                -> Int64
+                -> DB  ( Maybe (Entity Pledge)
+                       , Milray
+                       , Milray
+                       , Milray
+                       , Milray
+                       , Integer
+                       )
+potentialPledge user_id project_id new_user_shares = do
     pledges <- fetchProjectSharesDB project_id
     mpledge <- getBy $ UniquePledge user_id project_id
     other_shares <- fmap unwrapValues $ select $ from $ \p -> do
         where_ $ p ^. PledgeProject ==. val project_id
             &&. p ^. PledgeUser !=. val user_id
         return $ p ^. PledgeShares
-    return (mpledge, other_shares, pledges)
+    let old_user_shares = maybe 0 (pledgeShares . entityVal) mpledge
+
+        numPatrons = toInteger $ length pledges
+
+        new_project_shares = filter (>0) [new_user_shares] ++ other_shares
+
+        old_project_shares = filter (>0) [old_user_shares] ++ other_shares
+
+        new_share_value = projectComputeShareValue new_project_shares
+        old_share_value = projectComputeShareValue old_project_shares
+
+        new_user_amount = new_share_value $* fromIntegral new_user_shares
+        old_user_amount = old_share_value $* fromIntegral old_user_shares
+
+        new_project_amount =
+            new_share_value $* fromIntegral (sum new_project_shares)
+        old_project_amount =
+            old_share_value $* fromIntegral (sum old_project_shares)
+
+    return ( mpledge
+           , old_user_amount
+           , new_user_amount
+           , old_project_amount
+           , new_project_amount
+           , numPatrons
+           )
 
 fetchProjectSharesDB :: ( MonadThrow m
                         , MonadIO m

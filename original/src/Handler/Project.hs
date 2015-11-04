@@ -676,8 +676,13 @@ getUpdatePledgeR project_handle = do
                 generateFormPost
                     (projectConfirmPledgeForm (Just new_user_shares))
 
-            (mpledge, other_shares, pledges) <- runDB $
-                Mech.potentialPledge user_id project_id
+            (mpledge
+                , old_user_amount
+                , new_user_amount
+                , old_project_amount
+                , new_project_amount
+                , numPatrons
+                ) <- runDB (Mech.potentialPledge user_id project_id new_user_shares)
 
             let new_user_mills = millMilray new_user_shares
             case mpledge of
@@ -691,30 +696,15 @@ getUpdatePledgeR project_handle = do
                     redirect (ProjectR project_handle)
 
                 _ -> do
-                    let old_user_shares = maybe 0 (pledgeShares . entityVal) mpledge
-                        old_user_mills  = millMilray old_user_shares
-
-                        numPatrons = toInteger $ length pledges
-
-                        new_project_shares = filter (>0) [new_user_shares] ++ other_shares
-
-                        old_project_shares = filter (>0) [old_user_shares] ++ other_shares
-
-                        new_share_value = Mech.projectComputeShareValue new_project_shares
-                        old_share_value = Mech.projectComputeShareValue old_project_shares
-
-                        new_user_amount = new_share_value $* fromIntegral new_user_shares
-                        old_user_amount = old_share_value $* fromIntegral old_user_shares
-
-                        new_project_amount = new_share_value $* fromIntegral (sum new_project_shares)
-                        old_project_amount = old_share_value $* fromIntegral (sum old_project_shares)
-
-                        user_decrease    = old_user_amount - new_user_amount
+                    let user_decrease    = old_user_amount - new_user_amount
                         user_increase    = new_user_amount - old_user_amount
                         project_decrease = old_project_amount - new_project_amount
                         project_increase = new_project_amount - old_project_amount
                         matching_drop   = project_decrease - user_decrease
                         matched_extra    = project_increase - new_user_amount
+                        -- Standins added during mechanism split-out
+                        old_user_mills = 0xdeadbeef :: Int64
+                        old_user_shares = 0xbaff1ed :: Int64
 
                     defaultLayout $ do
                         snowdriftDashTitle
