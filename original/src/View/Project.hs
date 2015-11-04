@@ -24,7 +24,6 @@ import Data.Filter
 import Data.Order
 import DeprecatedBootstrap
 import Handler.Utils
-import Mechanism (payoutHistory)
 import Model.Markdown
 import Model.Project
 import Model.Shares
@@ -59,7 +58,7 @@ renderProject maybe_project_id project mviewer_id is_watching = do
 
     now <- liftIO getCurrentTime
 
-    amounts <- handlerToWidget (runDB (payoutHistory project now))
+    amounts <- handlerToWidget (runDB (Mech.payoutHistory project now))
 
     ((_, update_pledge), _) <-
         handlerToWidget
