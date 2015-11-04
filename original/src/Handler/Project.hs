@@ -6,7 +6,6 @@ import Import
 
 import Data.Default (def)
 import Data.List (sortBy)
-import Data.Maybe (maybeToList)
 import Data.Tree (Forest, Tree)
 import System.Random (randomIO)
 import Text.Cassius (cassiusFile)
@@ -790,35 +789,8 @@ getTicketR project_handle ticket_id = do
 
 getProjectTransactionsR :: Text -> Handler Html
 getProjectTransactionsR project_handle = do
-    (project, account, account_map, transaction_groups) <- runYDB $ do
-        Entity _ project :: Entity Project <- getBy404 $ UniqueProjectHandle project_handle
-
-        account <- get404 $ projectAccount project
-
-        transactions <- select $ from $ \t -> do
-            where_ $ t ^. TransactionCredit ==. val (Just $ projectAccount project)
-                    ||. t ^. TransactionDebit ==. val (Just $ projectAccount project)
-
-            orderBy [ desc $ t ^. TransactionTs ]
-            return t
-
-        let accounts = S.toList $ S.fromList $ concatMap (\(Entity _ t) -> maybeToList (transactionCredit t) <> maybeToList (transactionDebit t)) transactions
-
-        users_by_account <- fmap (M.fromList . map (userAccount . entityVal &&& Right)) $ select $ from $ \u -> do
-            where_ $ u ^. UserAccount `in_` valList accounts
-            return u
-
-        projects_by_account <- fmap (M.fromList . map (projectAccount . entityVal &&& Left)) $ select $ from $ \p -> do
-            where_ $ p ^. ProjectAccount `in_` valList accounts
-            return p
-
-        let account_map = projects_by_account `M.union` users_by_account
-
-        payday_map <- fmap (M.fromList . map (entityKey &&& id)) $ select $ from $ \pd -> do
-            where_ $ pd ^. PaydayId `in_` valList (S.toList $ S.fromList $ mapMaybe (transactionPayday . entityVal) transactions)
-            return pd
-
-        return (project, account, account_map, process payday_map transactions)
+    (project, account, account_map, transaction_groups) <-
+        runYDB (Mech.projectTransactions project_handle)
 
     let getOtherAccount transaction
             | transactionCredit transaction == Just (projectAccount project) = transactionDebit transaction
@@ -828,19 +800,6 @@ getProjectTransactionsR project_handle = do
     defaultLayout $ do
         snowdriftTitle $ projectName project <> " Transactions"
         $(widgetFile "project_transactions")
-
-  where
-    process payday_map =
-        let process' [] [] = []
-            process' (t':ts') [] = [(fmap (payday_map M.!) $ transactionPayday $ entityVal t', reverse (t':ts'))]
-            process' [] (t:ts) = process' [t] ts
-
-            process' (t':ts') (t:ts)
-                | transactionPayday (entityVal t') == transactionPayday (entityVal t)
-                = process' (t:t':ts') ts
-                | otherwise
-                = (fmap (payday_map M.!) $ transactionPayday $ entityVal t', reverse (t':ts')) : process' [t] ts
-         in process' []
 
 --------------------------------------------------------------------------------
 -- /w

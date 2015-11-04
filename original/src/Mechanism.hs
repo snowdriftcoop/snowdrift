@@ -470,8 +470,8 @@ userBalance user limit' offset' = do
         , mkMapBy (projectAccount . entityVal) projects
         )
 
-  where
-    setNub = S.toList . S.fromList
+setNub :: Ord a => [a] -> [a]
+setNub = S.toList . S.fromList
 
 incrementBalance :: MonadIO m
                  => Fixme.User
@@ -576,3 +576,78 @@ projectEvents project_id before lim = do
            , deleted_pledge_events
            , pledging_users
            , unpledging_users)
+
+
+projectTransactions :: MonadIO m
+                    => Text
+                    -> SqlPersistT m ( Fixme.Project
+                                     , Fixme.Account
+                                     , Map Fixme.AccountId
+                                           (Either (Entity Fixme.Project)
+                                                   (Entity Fixme.User))
+                                     , [( Maybe (Entity Payday)
+                                        , [Entity Transaction])])
+projectTransactions project_handle = do
+    Entity _ project :: Entity Fixme.Project <-
+        getBy404 $ UniqueProjectHandle project_handle
+
+    account <- get404 $ projectAccount project
+
+    transactions <- select $ from $ \t -> do
+        where_ $
+            t ^. TransactionCredit ==. val (Just $ projectAccount project)
+                ||. t ^. TransactionDebit ==.
+                        val (Just $ projectAccount project)
+
+        orderBy [ desc $ t ^. TransactionTs ]
+        return t
+
+    let accounts =
+            setNub
+                (concatMap
+                    (\(Entity _ t) ->
+                        maybeToList (transactionCredit t) <>
+                            maybeToList (transactionDebit t))
+                    transactions)
+
+    users_by_account <-
+        fmap (M.fromList . map (userAccount . entityVal &&& Right))
+             (select $ from $ \u -> do
+                  where_ $ u ^. UserAccount `in_` valList accounts
+                  return u)
+
+    projects_by_account <-
+        fmap (M.fromList . map (projectAccount . entityVal &&& Left))
+             (select $ from $ \p -> do
+                  where_ $ p ^. ProjectAccount `in_` valList accounts
+                  return p)
+
+    let account_map = projects_by_account `M.union` users_by_account
+
+    payday_map <-
+        fmap (M.fromList . map (entityKey &&& id))
+             (select $ from $ \pd -> do
+                  where_ $
+                    pd ^. PaydayId `in_`
+                        valList
+                            (setNub (mapMaybe (transactionPayday . entityVal)
+                                              transactions))
+                  return pd)
+
+    return (project, account, account_map, process payday_map transactions)
+  where
+    process payday_map =
+        let process' [] [] = []
+            process' (t':ts') [] =
+                [( fmap (payday_map M.!) (transactionPayday (entityVal t'))
+                 , reverse (t':ts'))]
+            process' [] (t:ts) = process' [t] ts
+
+            process' (t':ts') (t:ts)
+                | samePayday t' t = process' (t:t':ts') ts
+                | otherwise =
+                    ( fmap (payday_map M.!) (transactionPayday $ entityVal t')
+                        , reverse (t':ts'))
+                    : process' [t] ts
+         in process' []
+    samePayday = (==) `on` (transactionPayday . entityVal)
