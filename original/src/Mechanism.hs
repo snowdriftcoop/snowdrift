@@ -486,3 +486,61 @@ pledgeStatus uid = do
     return $ case underfunded of
         [] -> AllFunded
         _ -> ExistsUnderfunded
+
+projectEvents :: MonadIO m
+              => Fixme.ProjectId
+              -> UTCTime
+              -> Int64
+              -> SqlPersistT m ( [(Fixme.EventNewPledgeId, Entity Fixme.SharesPledged)]
+                               , [(Fixme.EventUpdatedPledgeId, Int64, Entity Fixme.SharesPledged)]
+                               , [(Fixme.EventDeletedPledgeId, Fixme.EventDeletedPledge)]
+                               , [Fixme.UserId]
+                               , [Fixme.UserId])
+projectEvents project_id before lim = do
+    -- Fetch all new SharesPledged made on this Project before this time.
+    new_pledge_events <- fmap unwrapValues $ select $ from $ \(enp `InnerJoin` sp) -> do
+        on_ $ enp ^. EventNewPledgeSharesPledged ==. sp ^. SharesPledgedId
+        where_ $ enp ^. EventNewPledgeTs <=. val before
+            &&. sp ^. SharesPledgedProject ==. val project_id
+        orderBy [ desc $ enp ^. EventNewPledgeTs
+                , desc $ enp ^. EventNewPledgeId ]
+        limit lim
+        return (enp ^. EventNewPledgeId, sp)
+
+    -- Fetch all updated Pledges made on this Project before this time,
+    -- along with the old number of shares.
+    updated_pledge_events <- fmap unwrapValues $ select $ from $ \(eup `InnerJoin` sp) -> do
+        on_ $ eup ^. EventUpdatedPledgeSharesPledged ==. sp ^. SharesPledgedId
+        where_ $ eup ^. EventUpdatedPledgeTs <=. val before
+            &&. sp ^. SharesPledgedProject ==. val project_id
+        orderBy [ desc $ eup ^. EventUpdatedPledgeTs
+                , desc $ eup ^. EventUpdatedPledgeId ]
+        limit lim
+        return
+            ( eup ^. EventUpdatedPledgeId
+            , eup ^. EventUpdatedPledgeOldShares, sp)
+
+    -- Fetch all deleted pledge events made on this Project before this
+    -- time.
+    deleted_pledge_events <- fmap (map $ onEntity (,)) $ select $ from $ \edp -> do
+        where_ $ edp ^. EventDeletedPledgeTs <=. val before
+            &&. edp ^. EventDeletedPledgeProject ==. val project_id
+
+        orderBy [ desc $ edp ^. EventDeletedPledgeTs
+                , desc $ edp ^. EventDeletedPledgeId ]
+        limit lim
+        return edp
+
+
+    let shares_pledged =
+            mappend (map (entityVal . snd) new_pledge_events)
+                    (map (\(_, _, x) -> entityVal x) updated_pledge_events)
+        pledging_users = map sharesPledgedUser shares_pledged
+        unpledging_users = map (eventDeletedPledgeUser . snd)
+                               deleted_pledge_events
+
+    return ( new_pledge_events
+           , updated_pledge_events
+           , deleted_pledge_events
+           , pledging_users
+           , unpledging_users)

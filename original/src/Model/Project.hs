@@ -6,13 +6,10 @@ module Model.Project
     , fetchProjectCommentRethreadEventsBeforeDB
     , fetchProjectCommentPostedEventsIncludingRethreadedBeforeDB
     , fetchProjectCommentClosingEventsBeforeDB
-    , fetchProjectDeletedPledgeEventsBeforeDB
     , fetchProjectDiscussionsDB
-    , fetchProjectNewPledgeEventsBeforeDB
     , fetchProjectModeratorsDB
     , fetchProjectTeamMembersDB
     , fetchProjectOpenTicketsDB
-    , fetchProjectUpdatedPledgeEventsBeforeDB
     , fetchProjectVolunteerApplicationsDB
     , fetchProjectWikiEditEventsWithTargetsBeforeDB
     , fetchProjectWikiPageEventsWithTargetsBeforeDB
@@ -521,57 +518,6 @@ fetchProjectWikiEditEventsWithTargetsBeforeDB
                     <$> M.lookup edit_id edits_map
                     <*> M.lookup page_id targets_map)
             events
-
--- | Fetch all new SharesPledged made on this Project before this time.
-fetchProjectNewPledgeEventsBeforeDB
-    :: ProjectId
-    -> UTCTime
-    -> Int64
-    -> DB [(EventNewPledgeId, Entity SharesPledged)]
-fetchProjectNewPledgeEventsBeforeDB project_id before lim =
-    fmap unwrapValues $ select $ from $ \(enp `InnerJoin` sp) -> do
-        on_ $ enp ^. EventNewPledgeSharesPledged ==. sp ^. SharesPledgedId
-        where_ $ enp ^. EventNewPledgeTs <=. val before
-            &&. sp ^. SharesPledgedProject ==. val project_id
-        orderBy [ desc $ enp ^. EventNewPledgeTs
-                , desc $ enp ^. EventNewPledgeId ]
-        limit lim
-        return (enp ^. EventNewPledgeId, sp)
-
--- | Fetch all updated Pledges made on this Project before this time, along
--- with the old number of shares.
-fetchProjectUpdatedPledgeEventsBeforeDB
-    :: ProjectId
-    -> UTCTime
-    -> Int64
-    -> DB [(EventUpdatedPledgeId, Int64, Entity SharesPledged)]
-fetchProjectUpdatedPledgeEventsBeforeDB project_id before lim =
-    fmap unwrapValues $ select $ from $ \(eup `InnerJoin` sp) -> do
-        on_ $ eup ^. EventUpdatedPledgeSharesPledged ==. sp ^. SharesPledgedId
-        where_ $ eup ^. EventUpdatedPledgeTs <=. val before
-            &&. sp ^. SharesPledgedProject ==. val project_id
-        orderBy [ desc $ eup ^. EventUpdatedPledgeTs
-                , desc $ eup ^. EventUpdatedPledgeId ]
-        limit lim
-        return
-            ( eup ^. EventUpdatedPledgeId
-            , eup ^. EventUpdatedPledgeOldShares, sp)
-
--- | Fetch all deleted pledge events made on this Project before this time.
-fetchProjectDeletedPledgeEventsBeforeDB
-    :: ProjectId
-    -> UTCTime
-    -> Int64
-    -> DB [(EventDeletedPledgeId, EventDeletedPledge)]
-fetchProjectDeletedPledgeEventsBeforeDB project_id before lim =
-    fmap (map $ onEntity (,)) $ select $ from $ \edp -> do
-        where_ $ edp ^. EventDeletedPledgeTs <=. val before
-            &&. edp ^. EventDeletedPledgeProject ==. val project_id
-
-        orderBy [ desc $ edp ^. EventDeletedPledgeTs
-                , desc $ edp ^. EventDeletedPledgeId ]
-        limit lim
-        return edp
 
 -- | Fetch this Project's team members.
 fetchProjectTeamMembersDB :: ProjectId -> DB [UserId]

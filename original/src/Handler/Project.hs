@@ -408,9 +408,11 @@ getProjectFeedR project_handle = do
         wiki_page_events      <- fetchProjectWikiPageEventsWithTargetsBeforeDB languages        project_id before lim
         blog_post_events      <- fetchProjectBlogPostEventsBeforeDB                             project_id before lim
         wiki_edit_events      <- fetchProjectWikiEditEventsWithTargetsBeforeDB languages        project_id before lim
-        new_pledge_events     <- fetchProjectNewPledgeEventsBeforeDB                            project_id before lim
-        updated_pledge_events <- fetchProjectUpdatedPledgeEventsBeforeDB                        project_id before lim
-        deleted_pledge_events <- fetchProjectDeletedPledgeEventsBeforeDB                        project_id before lim
+        ( new_pledge_events
+            , updated_pledge_events
+            , deleted_pledge_events
+            , pledging_users
+            , unpledging_users) <- Mech.projectEvents project_id before lim
 
         -- Suplementary maps for displaying the data. If something above requires extra
         -- data to display the project feed row, it MUST be used to fetch the data below!
@@ -418,13 +420,10 @@ getProjectFeedR project_handle = do
         let (comment_ids, comment_users)        = F.foldMap (\(_, Entity comment_id comment) -> ([comment_id], [commentUser comment])) comment_events
             (wiki_edit_users, wiki_edit_pages)  = F.foldMap (\(_, Entity _ e, _) -> ([wikiEditUser e], [wikiEditPage e])) wiki_edit_events
             (blog_post_users)                   = F.foldMap (\(_, Entity _ e) -> [blogPostUser e]) blog_post_events
-            shares_pledged                      = map (entityVal . snd) new_pledge_events <> map (\(_, _, x) -> entityVal x) updated_pledge_events
             closing_users                       = map (commentClosingClosedBy . entityVal . snd) closing_events
             rethreading_users                   = map (rethreadModerator . entityVal . snd) rethread_events
             ticket_claiming_users               = map (either (ticketClaimingUser . entityVal) (ticketOldClaimingUser . entityVal) . snd) claiming_events
             ticket_unclaiming_users             = map (ticketOldClaimingUser . entityVal . snd) unclaiming_events
-            pledging_users                      = map sharesPledgedUser shares_pledged
-            unpledging_users                    = map (eventDeletedPledgeUser . snd) deleted_pledge_events
 
             -- All users: comment posters, wiki page creators, etc.
             user_ids = S.toList $ mconcat
