@@ -43,13 +43,20 @@ import Import hiding (Project, User, Account)
 import qualified Import as Fixme
 
 import Control.Error
+-- Probably shouldn't need Control.Exception; use whatever comes with
+-- Control.Error.
+import Control.Exception
+import Control.Monad.Reader (ReaderT)
 import Control.Monad.Trans.Resource (MonadThrow)
-import Control.Monad.Trans.Writer.Strict (tell, execWriterT, WriterT)
+import Control.Monad.Trans.Writer.Strict (tell)
 import Data.Monoid (Sum(..))
 import Data.Time.Clock (addUTCTime)
+import Data.Typeable (Typeable)
+import qualified Control.Monad.Trans.Writer as Lazy
 import qualified Data.Map as M
 import qualified Data.Set as S
 import qualified Data.Text as T
+import qualified Database.Persist as P
 
 import Model.Currency
 import WrappedValues
@@ -211,13 +218,13 @@ projectComputeShareValue patronPledgeLevel =
 -- | Keep dropping shares, until there are no underfunded patrons.
 -- (Recursion alert.)
 dropAllUnderfunded :: DBConstraint m
-                   => ProjectId -> WriterT DropShares (SqlPersistT m) ()
+                   => ProjectId -> Lazy.WriterT DropShares (SqlPersistT m) ()
 dropAllUnderfunded projId = do
     -- Update share value before each run.
     lift $ updateShareValue projId
     unders <- lift $ decrementUnderfunded projId
     unless (null unders) $ do
-        tell unders
+        Lazy.tell unders
         dropAllUnderfunded projId
 
 newtype DropShare = DropShare PledgeId
@@ -332,7 +339,7 @@ foldDrops _ts = map snd . toList . foldr insertOrAdd M.empty
 -- pledges until all pledges are funded.
 rebalanceProjectPledges :: ProjectId -> SYDB ()
 rebalanceProjectPledges project_id = do
-    allDrops <- lift . execWriterT $ dropAllUnderfunded project_id
+    allDrops <- lift . Lazy.execWriterT $ dropAllUnderfunded project_id
     now <- liftIO getCurrentTime
     tell $ foldDrops now allDrops
 
@@ -651,3 +658,98 @@ projectTransactions project_handle = do
                     : process' [t] ts
          in process' []
     samePayday = (==) `on` (transactionPayday . entityVal)
+
+data NegativeBalances = NegativeBalances ProjectId [UserId]
+    deriving (Show, Typeable)
+
+instance Exception NegativeBalances
+
+payout :: (MonadIO m, Functor m)
+       => UTCTime
+       -> (Entity Fixme.Project, Entity Payday)
+       -> SqlPersistT m Bool
+payout now (Entity project_id project, Entity payday_id _) = do
+    let project_name = projectName project
+
+    pledges <- select $ from $ \pledge -> do
+        where_ $ pledge ^. PledgeProject ==. val project_id
+            &&. pledge ^. PledgeFundedShares >. val 0
+
+        return pledge
+
+    user_balances <- forM pledges $ \(Entity _ pledge) -> do
+        Just user <- get $ pledgeUser pledge
+        let amount =
+                projectShareValue project
+                $* fromIntegral (pledgeFundedShares pledge)
+            user_account_id = userAccount user
+            project_account_id = projectAccount project
+
+        void $
+            insert $
+                Transaction now
+                            (Just project_account_id)
+                            (Just user_account_id)
+                            (Just payday_id)
+                            amount
+                            "Project Payout"
+                            Nothing
+
+        user_account <-
+            updateGet
+                user_account_id
+                [AccountBalance P.-=. amount]
+        _            <-
+            updateGet
+                project_account_id
+                [AccountBalance P.+=. amount]
+
+        return (pledgeUser pledge, accountBalance user_account)
+
+    let negative_balances = filter ((< 0) . snd) user_balances
+
+    unless (null negative_balances)
+           (throw $ NegativeBalances project_id $ map fst negative_balances)
+
+    update $ \p -> do
+        set p [ ProjectLastPayday =. val (Just payday_id) ]
+        where_ $ p ^. ProjectId ==. val project_id
+
+    liftIO $ putStrLn $ "paid to " <> T.unpack project_name
+
+    return True
+
+projectsToPay :: MonadIO m
+              => UTCTime
+              -> SqlPersistT m [(Entity Fixme.Project, Entity Payday)]
+projectsToPay now =
+    select $
+    from $ \(project
+        `LeftOuterJoin` last_payday
+        `InnerJoin` payday) -> do
+    on_ $ payday ^. PaydayDate
+        >. coalesceDefault
+            [ last_payday ?. PaydayDate ]
+            (project ^. ProjectCreatedTs)
+    on_ $ project ^. ProjectLastPayday ==. last_payday ?. PaydayId
+    where_ $ payday ^. PaydayDate <=. val now
+    orderBy [ asc $ payday ^. PaydayDate
+            , desc $ project ^. ProjectShareValue ]
+    return (project, payday)
+
+rebalanceAllPledges :: (MonadBaseControl IO m, MonadResource m, MonadLogger m)
+                    => Lazy.WriterT [PledgeId] (ReaderT SqlBackend m) ()
+rebalanceAllPledges = do
+    unders <- lift underfundedPatrons
+    unless (null unders) $ do
+        maxUnders <- lift $ maxShares Nothing unders
+        lift $ dropShares maxUnders
+        lift $ mapM_ updateShareValue =<< updatedProjects maxUnders
+        Lazy.tell maxUnders
+        rebalanceAllPledges
+
+updatedProjects :: (MonadIO m, Functor m)
+                => [PledgeId]
+                -> SqlPersistT m [ProjectId]
+updatedProjects pledges = fmap (map (pledgeProject . entityVal))
+                               (selectList [PledgeId <-. pledges] [])
