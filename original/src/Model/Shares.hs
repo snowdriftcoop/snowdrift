@@ -90,11 +90,6 @@ pledgeField project_id = Field
 
             Just t -> return $ read $ T.unpack t
 
-
-
-
-
-
 pledgeForm :: ProjectId -> Form SharesPurchaseOrder
 pledgeForm project_id extra = do
     muser <- lift maybeAuthId
@@ -127,4 +122,3 @@ previewPledgeForm extra = do
         |]
 
     return (FormSuccess $ SharesPurchaseOrder 0, view)
-
