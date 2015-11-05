@@ -75,22 +75,19 @@
               action=@{UpdatePledgeR $ projectHandle project}>
           ^{update_pledge}
           $maybe _ <- mechUser
-            <input .pledge type=submit value="update pledge">
+            <input disabled .pledge type=submit value="update pledge">
           $nothing
-            <input .pledge type=submit value="enter pledge">
+            <input disabled .pledge type=submit value="enter pledge">
       $nothing
         ^{update_pledge}
       <div .testing-notice>
-        currently
-        <strong>testing with fake money
-        and updating daily instead of monthly
+        2015/11/05: Pledging temporarily disabled pending new code.
 
   <div .project-stats .col-md-3 .col-xs-12>
     <div .testing-notice>
-      currently
-      <strong>testing with fake money
-      and daily instead of monthly
-      (currently, some calculations are known to be off, but will fix soon)
+      <div .testing-notice>
+        2015/11/05: All mechanism statistics temporarily removed pending
+        new code.
 
     <table>
       <tr>

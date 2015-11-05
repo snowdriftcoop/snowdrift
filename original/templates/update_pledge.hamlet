@@ -1,7 +1,10 @@
-<strong style="color: red">
-  NB: At this time, we have some known miscalculations about which patrons count
-  as "active". Therefore, numbers may seem strange. We're working to fix this
-  as we redo the mechanism code.
+<div style="color: red">
+  <p> 2015/11/05: Pledging is temporarily disabled pending new code.
+
+  <p>
+    At this time, we have some known miscalculations about which patrons count
+    as "active". Therefore, numbers may seem strange. We're working to fix this
+    as we redo the mechanism code.
 
 $maybe _ <- mpledge
   <h1>Update your pledge to #{projectName project}
@@ -12,24 +15,24 @@ $maybe _ <- mpledge
         Increase your pledge from #{show old_user_mills} to
         #{show new_user_mills} per patron?
         <br>
-        <input type=submit name=confirm value="yes!">
-        <input type=submit name=confirm value="not yet, take me back…">
+        <input disabled type=submit name=confirm value="yes!">
+        <input disabled type=submit name=confirm value="not yet, take me back…">
         ^{confirm_form}
     $else
       $if new_user_shares == 0
         <form .text-center method=POST action=@{UpdatePledgeR project_handle}>
           Drop your pledge and stop supporting this project?
           <br>
-          <input type=submit name=confirm value="yes">
-          <input type=submit name=confirm value="nevermind, take me back">
+          <input disabled type=submit name=confirm value="yes">
+          <input disabled type=submit name=confirm value="nevermind, take me back">
           ^{confirm_form}
       $else
         <form .text-center method=POST action=@{UpdatePledgeR project_handle}>
           Lower your monthly pledge from #{show old_user_mills}
           to #{show new_user_mills} per patron?
           <br>
-          <input type=submit name=confirm value="yes">
-          <input type=submit name=confirm value="nevermind, take me back">
+          <input disabled type=submit name=confirm value="yes">
+          <input disabled type=submit name=confirm value="nevermind, take me back">
           ^{confirm_form}
   $else
     <p>
@@ -51,8 +54,8 @@ $maybe _ <- mpledge
       <form .text-center method=POST action=@{UpdatePledgeR project_handle}>
         Increase your pledge to #{show new_user_mills} per patron?
         <br>
-        <input type=submit name=confirm value="yes!">
-        <input type=submit name=confirm value="not yet, take me back…">
+        <input disabled type=submit name=confirm value="yes!">
+        <input disabled type=submit name=confirm value="not yet, take me back…">
         ^{confirm_form}
 
     $else
@@ -63,8 +66,8 @@ $maybe _ <- mpledge
         <form .text-center method=POST action=@{UpdatePledgeR project_handle}>
           Drop your pledge and stop supporting this project?
           <br>
-          <input type=submit name=confirm value="yes">
-          <input type=submit name=confirm value="nevermind, take me back">
+          <input disabled type=submit name=confirm value="yes">
+          <input disabled type=submit name=confirm value="nevermind, take me back">
           ^{confirm_form}
       $else
         <p>
@@ -74,8 +77,8 @@ $maybe _ <- mpledge
         <form .text-center method=POST action=@{UpdatePledgeR project_handle}>
           Lower your monthly pledge to #{show new_user_mills} per patron?
           <br>
-          <input type=submit name=confirm value="yes">
-          <input type=submit name=confirm value="nevermind, take me back">
+          <input disabled type=submit name=confirm value="yes">
+          <input disabled type=submit name=confirm value="nevermind, take me back">
           ^{confirm_form}
 
 $nothing
@@ -94,8 +97,8 @@ $nothing
   <form .text-center method=POST action=@{UpdatePledgeR project_handle}>
     Pledge a monthly #{show new_user_mills} per patron to #{projectName project}?
     <br>
-    <input type=submit name=confirm value="yes!">
-    <input type=submit name=confirm value="not yet, take me back…">
+    <input disabled type=submit name=confirm value="yes!">
+    <input disabled type=submit name=confirm value="not yet, take me back…">
     ^{confirm_form}
 
 <p>
