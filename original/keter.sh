@@ -43,6 +43,8 @@ main () {
         mkdir -p dist/bin
         stack clean
         stack --local-bin-path $install_path install --flag Snowdrift:-dev
+        hdr "Packing executables"
+        upx dist/bin/Snowdrift*
     else
         hdr "Not building, as requested"
     fi

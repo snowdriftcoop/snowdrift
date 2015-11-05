@@ -59,7 +59,6 @@ module Model.User
     , fetchUserNotificationsDB
     , fetchProjectNotificationsDB
     , fetchUserNotificationPrefDB
-    , fetchUserPledgesDB
     , fetchProjectNotificationPrefDB
     , fetchUserProjectsAndRolesDB
     , fetchUserRolesDB
@@ -98,14 +97,12 @@ module Model.User
     -- Unsorted
     , canCurUserMakeEligible
     , canMakeEligible
-    , pledgeStatus
-    , PledgeStatus(..)
     ) where
 
 import Import hiding (exists)
 
 import Control.Monad.Trans.Reader (ReaderT)
-import Database.Esqueleto.Internal.Language (From, exists)
+import Database.Esqueleto.Internal.Language (From)
 import qualified Data.List as L
 import qualified Data.Map as M
 import qualified Data.Set as S
@@ -386,17 +383,6 @@ userHasRoleDB role user_id = fmap (elem role) . fetchUserRolesDB user_id
 userHasRolesAnyDB :: [Role] -> UserId -> ProjectId -> DB Bool
 userHasRolesAnyDB roles user_id project_id =
     (or . flip map roles . flip elem) <$> fetchUserRolesDB user_id project_id
-
--- | Like the name says.
--- TODO: Why does it run map (second return) on the result? That's just
--- creating a bunch of 1-element lists.
-fetchUserPledgesDB :: UserId -> DB [(Entity Project, [Entity Pledge])]
-fetchUserPledgesDB user_id =
-    fmap (map (second return)) $
-    select $ from $ \(project `InnerJoin` pledge) -> do
-        on_ $ project ^. ProjectId ==. pledge ^. PledgeProject
-        where_ $ pledge ^. PledgeUser ==. val user_id
-        return (project, pledge)
 
 -- | Get all Projects this User is affiliated with, along with each Role.
 fetchUserProjectsAndRolesDB :: UserId -> DB (Map (Entity Project) (Set Role))
@@ -754,24 +740,6 @@ fetchNumUnreadProjectNotificationsDB :: UserId -> DB Int
 fetchNumUnreadProjectNotificationsDB =
     fetchNumUnreadNotifications
         ProjectNotificationTo ProjectNotificationCreatedTs
-
-
-data PledgeStatus = AllFunded | ExistsUnderfunded
-
-pledgeStatus :: UserId -> DB PledgeStatus
-pledgeStatus uid = do
-    underfunded <-
-        select $
-        from $ \u -> do
-        where_ $ u ^. UserId ==. val uid
-            &&. (exists $
-                from $ \plg -> do
-                where_ $ plg ^. PledgeShares >. plg ^. PledgeFundedShares
-                    &&. plg ^. PledgeUser ==. val uid)
-        return $ u ^. UserId
-    return $ case underfunded of
-        [] -> AllFunded
-        _ -> ExistsUnderfunded
 
 claimedTickets :: UserId -> Handler [(Entity Ticket, Maybe (Entity WikiTarget), Import.Value Text)]
 claimedTickets user_id = do

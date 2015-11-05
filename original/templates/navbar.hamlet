@@ -10,16 +10,6 @@
       <ul .nav .navbar-nav .navbar-right>
         $maybe Entity user_id user <- maybe_user
           <li>
-            $maybe (balance, pledged) <- money_info
-              <p .navbar-text .text-center>
-                Pledges / Funds
-                <br>
-                <a .navbar-link title="Current total monthly pledge" href=@{UserPledgesR user_id}>
-                  #{pledged}
-                /
-                <a .navbar-link :hasUnderfunded:.has-underfunded title="Current balance" href=@{UserBalanceR user_id}>
-                  #{balance}
-          <li>
             <a href=@{NotificationsR}>
               $if num_unread_notifs /= 0
                 <span .unread-notifs .glyphicon .glyphicon-envelope>
@@ -43,17 +33,6 @@
             <img .logo src=@{StaticR img_s_png} alt="Snowdrift.coop">
         <li>
           <a href=@{ProjectsR}> Projects
-        $maybe Entity user_id _ <- maybe_user
-          <li>
-            $maybe (balance, pledged) <- money_info
-              <p .navbar-text .text-center>
-                Pledges / Funds
-                <br>
-                <a .navbar-link title="Current total monthly pledge" href=@{UserR user_id}>
-                  #{show pledged}
-                /
-                <a .navbar-link title="Current balance" href=@{UserBalanceR user_id}>
-                  #{show balance}
       <ul .nav .nav-pills .navbar-right>
         $maybe Entity user_id user <- maybe_user
           <li>

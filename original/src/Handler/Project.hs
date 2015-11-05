@@ -6,7 +6,6 @@ import Import
 
 import Data.Default (def)
 import Data.List (sortBy)
-import Data.Maybe (maybeToList)
 import Data.Tree (Forest, Tree)
 import System.Random (randomIO)
 import Text.Cassius (cassiusFile)
@@ -49,7 +48,7 @@ import View.SnowdriftEvent
 import View.Time
 import Widgets.Preview
 import Widgets.Search
-import WrappedValues
+import qualified Mechanism as Mech
 
 --------------------------------------------------------------------------------
 -- Utility functions
@@ -188,10 +187,9 @@ getProjectsR = do
     project_summaries <- runDB $ do
         projects <- fetchPublicProjectsDB
         forM projects $ \project -> do
-            pledges <- fetchProjectPledgesDB $ entityKey project
             discussions <- fetchProjectDiscussionsDB $ entityKey project
             tickets <- fetchProjectOpenTicketsDB (entityKey project) Nothing
-            let summary = summarizeProject project pledges discussions tickets
+            let summary = summarizeProject project Mech.Project discussions tickets
             return (project, summary)
 
     let discussionsCount = getCount . summaryDiscussionCount
@@ -208,19 +206,16 @@ getProjectR :: Text -> Handler Html
 getProjectR project_handle = do
     mviewer_id <- maybeAuthId
 
-    (project_id, project, is_watching, pledges, pledge) <- runYDB $ do
+    (project_id, project, is_watching) <- runYDB $ do
         Entity project_id project <- getBy404 $ UniqueProjectHandle project_handle
-        pledges <- fetchProjectSharesDB project_id
-        (pledge, is_watching) <- case mviewer_id of
-            Nothing -> return (Nothing, False)
-            Just viewer_id -> (,)
-                <$> getBy (UniquePledge viewer_id project_id)
-                <*> userIsWatchingProjectDB viewer_id project_id
-        return (project_id, project, is_watching, pledges, pledge)
+        is_watching <- case mviewer_id of
+            Nothing -> return False
+            Just viewer_id -> userIsWatchingProjectDB viewer_id project_id
+        return (project_id, project, is_watching)
 
     defaultLayout $ do
         snowdriftTitle $ projectName project
-        renderProject (Just project_id) project mviewer_id is_watching pledges pledge
+        renderProject (Just project_id) project mviewer_id is_watching
 
 postProjectR :: Text -> Handler Html
 postProjectR project_handle = do
@@ -295,7 +290,15 @@ postProjectR project_handle = do
                             }
 
                     (form, _) <- generateFormPost $ editProjectForm (Just (preview_project, tags))
-                    defaultLayout $ previewWidget form "update" $ renderProject (Just project_id) preview_project Nothing False [] Nothing
+                    defaultLayout
+                        (previewWidget
+                            form
+                            "update"
+                            (renderProject
+                                (Just project_id)
+                                preview_project
+                                Nothing
+                                False))
 
         x -> do
             alertDanger $ T.pack $ show x
@@ -404,9 +407,11 @@ getProjectFeedR project_handle = do
         wiki_page_events      <- fetchProjectWikiPageEventsWithTargetsBeforeDB languages        project_id before lim
         blog_post_events      <- fetchProjectBlogPostEventsBeforeDB                             project_id before lim
         wiki_edit_events      <- fetchProjectWikiEditEventsWithTargetsBeforeDB languages        project_id before lim
-        new_pledge_events     <- fetchProjectNewPledgeEventsBeforeDB                            project_id before lim
-        updated_pledge_events <- fetchProjectUpdatedPledgeEventsBeforeDB                        project_id before lim
-        deleted_pledge_events <- fetchProjectDeletedPledgeEventsBeforeDB                        project_id before lim
+        ( new_pledge_events
+            , updated_pledge_events
+            , deleted_pledge_events
+            , pledging_users
+            , unpledging_users) <- Mech.projectEvents project_id before lim
 
         -- Suplementary maps for displaying the data. If something above requires extra
         -- data to display the project feed row, it MUST be used to fetch the data below!
@@ -414,13 +419,10 @@ getProjectFeedR project_handle = do
         let (comment_ids, comment_users)        = F.foldMap (\(_, Entity comment_id comment) -> ([comment_id], [commentUser comment])) comment_events
             (wiki_edit_users, wiki_edit_pages)  = F.foldMap (\(_, Entity _ e, _) -> ([wikiEditUser e], [wikiEditPage e])) wiki_edit_events
             (blog_post_users)                   = F.foldMap (\(_, Entity _ e) -> [blogPostUser e]) blog_post_events
-            shares_pledged                      = map (entityVal . snd) new_pledge_events <> map (\(_, _, x) -> entityVal x) updated_pledge_events
             closing_users                       = map (commentClosingClosedBy . entityVal . snd) closing_events
             rethreading_users                   = map (rethreadModerator . entityVal . snd) rethread_events
             ticket_claiming_users               = map (either (ticketClaimingUser . entityVal) (ticketOldClaimingUser . entityVal) . snd) claiming_events
             ticket_unclaiming_users             = map (ticketOldClaimingUser . entityVal . snd) unclaiming_events
-            pledging_users                      = map sharesPledgedUser shares_pledged
-            unpledging_users                    = map (eventDeletedPledgeUser . snd) deleted_pledge_events
 
             -- All users: comment posters, wiki page creators, etc.
             user_ids = S.toList $ mconcat
@@ -669,18 +671,17 @@ getUpdatePledgeR project_handle = do
         FormSuccess (SharesPurchaseOrder new_user_shares) -> do
             user_id <- requireAuthId
 
-            (confirm_form, _) <- generateFormPost $ projectConfirmPledgeForm (Just new_user_shares)
+            (confirm_form, _) <-
+                generateFormPost
+                    (projectConfirmPledgeForm (Just new_user_shares))
 
-            (mpledge, other_shares, pledges) <- runDB $ do
-                pledges <- fetchProjectSharesDB project_id
-                mpledge <- getBy $ UniquePledge user_id project_id
-                other_shares <- fmap unwrapValues $ select $ from $ \p -> do
-                    where_ $ p ^. PledgeProject ==. val project_id
-                        &&. p ^. PledgeUser !=. val user_id
-
-                    return $ p ^. PledgeShares
-
-                return (mpledge, other_shares, pledges)
+            (mpledge
+                , old_user_amount
+                , new_user_amount
+                , old_project_amount
+                , new_project_amount
+                , numPatrons
+                ) <- runDB (Mech.potentialPledge user_id project_id new_user_shares)
 
             let new_user_mills = millMilray new_user_shares
             case mpledge of
@@ -694,30 +695,15 @@ getUpdatePledgeR project_handle = do
                     redirect (ProjectR project_handle)
 
                 _ -> do
-                    let old_user_shares = maybe 0 (pledgeShares . entityVal) mpledge
-                        old_user_mills  = millMilray old_user_shares
-
-                        numPatrons = toInteger $ length pledges
-
-                        new_project_shares = filter (>0) [new_user_shares] ++ other_shares
-
-                        old_project_shares = filter (>0) [old_user_shares] ++ other_shares
-
-                        new_share_value = projectComputeShareValue new_project_shares
-                        old_share_value = projectComputeShareValue old_project_shares
-
-                        new_user_amount = new_share_value $* fromIntegral new_user_shares
-                        old_user_amount = old_share_value $* fromIntegral old_user_shares
-
-                        new_project_amount = new_share_value $* fromIntegral (sum new_project_shares)
-                        old_project_amount = old_share_value $* fromIntegral (sum old_project_shares)
-
-                        user_decrease    = old_user_amount - new_user_amount
+                    let user_decrease    = old_user_amount - new_user_amount
                         user_increase    = new_user_amount - old_user_amount
                         project_decrease = old_project_amount - new_project_amount
                         project_increase = new_project_amount - old_project_amount
                         matching_drop   = project_decrease - user_decrease
                         matched_extra    = project_increase - new_user_amount
+                        -- Standins added during mechanism split-out
+                        old_user_mills = 0xdeadbeef :: Int64
+                        old_user_shares = 0xbaff1ed :: Int64
 
                     defaultLayout $ do
                         snowdriftDashTitle
@@ -736,7 +722,7 @@ postUpdatePledgeR project_handle = do
 
     case result of
         FormSuccess (SharesPurchaseOrder shares) -> do
-            when isConfirmed $ updateUserPledge project_handle shares
+            when isConfirmed $ Mech.updateUserPledge project_handle shares
             redirect (ProjectR project_handle)
         _ -> do
             alertDanger "error occurred in form submission"
@@ -803,35 +789,8 @@ getTicketR project_handle ticket_id = do
 
 getProjectTransactionsR :: Text -> Handler Html
 getProjectTransactionsR project_handle = do
-    (project, account, account_map, transaction_groups) <- runYDB $ do
-        Entity _ project :: Entity Project <- getBy404 $ UniqueProjectHandle project_handle
-
-        account <- get404 $ projectAccount project
-
-        transactions <- select $ from $ \t -> do
-            where_ $ t ^. TransactionCredit ==. val (Just $ projectAccount project)
-                    ||. t ^. TransactionDebit ==. val (Just $ projectAccount project)
-
-            orderBy [ desc $ t ^. TransactionTs ]
-            return t
-
-        let accounts = S.toList $ S.fromList $ concatMap (\(Entity _ t) -> maybeToList (transactionCredit t) <> maybeToList (transactionDebit t)) transactions
-
-        users_by_account <- fmap (M.fromList . map (userAccount . entityVal &&& Right)) $ select $ from $ \u -> do
-            where_ $ u ^. UserAccount `in_` valList accounts
-            return u
-
-        projects_by_account <- fmap (M.fromList . map (projectAccount . entityVal &&& Left)) $ select $ from $ \p -> do
-            where_ $ p ^. ProjectAccount `in_` valList accounts
-            return p
-
-        let account_map = projects_by_account `M.union` users_by_account
-
-        payday_map <- fmap (M.fromList . map (entityKey &&& id)) $ select $ from $ \pd -> do
-            where_ $ pd ^. PaydayId `in_` valList (S.toList $ S.fromList $ mapMaybe (transactionPayday . entityVal) transactions)
-            return pd
-
-        return (project, account, account_map, process payday_map transactions)
+    (project, account, account_map, transaction_groups) <-
+        runYDB (Mech.projectTransactions project_handle)
 
     let getOtherAccount transaction
             | transactionCredit transaction == Just (projectAccount project) = transactionDebit transaction
@@ -841,19 +800,6 @@ getProjectTransactionsR project_handle = do
     defaultLayout $ do
         snowdriftTitle $ projectName project <> " Transactions"
         $(widgetFile "project_transactions")
-
-  where
-    process payday_map =
-        let process' [] [] = []
-            process' (t':ts') [] = [(fmap (payday_map M.!) $ transactionPayday $ entityVal t', reverse (t':ts'))]
-            process' [] (t:ts) = process' [t] ts
-
-            process' (t':ts') (t:ts)
-                | transactionPayday (entityVal t') == transactionPayday (entityVal t)
-                = process' (t:t':ts') ts
-                | otherwise
-                = (fmap (payday_map M.!) $ transactionPayday $ entityVal t', reverse (t':ts')) : process' [t] ts
-         in process' []
 
 --------------------------------------------------------------------------------
 -- /w

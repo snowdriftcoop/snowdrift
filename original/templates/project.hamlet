@@ -74,23 +74,20 @@
         <form method=GET
               action=@{UpdatePledgeR $ projectHandle project}>
           ^{update_pledge}
-          $maybe _ <- maybe_shares
-            <input .pledge type=submit value="update pledge">
+          $maybe _ <- mechUser
+            <input disabled .pledge type=submit value="update pledge">
           $nothing
-            <input .pledge type=submit value="enter pledge">
+            <input disabled .pledge type=submit value="enter pledge">
       $nothing
         ^{update_pledge}
       <div .testing-notice>
-        currently
-        <strong>testing with fake money
-        and updating daily instead of monthly
+        2015/11/05: Pledging temporarily disabled pending new code.
 
   <div .project-stats .col-md-3 .col-xs-12>
     <div .testing-notice>
-      currently
-      <strong>testing with fake money
-      and daily instead of monthly
-      (currently, some calculations are known to be off, but will fix soon)
+      <div .testing-notice>
+        2015/11/05: All mechanism statistics temporarily removed pending
+        new code.
 
     <table>
       <tr>
@@ -98,23 +95,23 @@
       <tr>
         <td>
           <a href=@{ProjectPatronsR $ projectHandle project}>
-            _{MsgPatrons numPatrons}
+            FIXME: Number of patrons goes here.
       <tr>
         <td>
-          <span .pledge-stat>#{show project_value}&nbsp;per&nbsp;month
+          <span .pledge-stat>FIXME: Project value
     <table>
       <tr>
         <th>Next new patron
       <tr>
         <td>
           minimum new pledge:
-          <span .pledge-stat>#{show $ share_value + 10}
+          <span .pledge-stat>FIXME: Share value
           per month
       <tr>
         <td>
 
           matching from others:
-          <span .pledge-stat>#{show mills}
+          <span .pledge-stat>FIXME: matching amount
           per month
     <table>
       <tr>

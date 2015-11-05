@@ -1,4 +1,4 @@
-{-# LANGUAGE TypeSynonymInstances, FlexibleInstances, StandaloneDeriving #-}
+{-# LANGUAGE TypeSynonymInstances, FlexibleInstances #-}
 
 module Model where
 
@@ -81,16 +81,7 @@ instance Exception DBException where
 instance Ord Project where
     compare = compare `on` projectName
 
-deriving instance Eq License
-deriving instance Show License
-deriving instance Read License
-
 data ProjectSignupLicense = ProjectSignupLicense License
                           | OtherProjectSignupLicense
                           deriving (Eq, Show, Read)
 derivePersistField "ProjectSignupLicense"
-
-deriving instance Show ProjectSignup
-
-deriving instance Eq UserNotification
-deriving instance Eq ProjectNotification

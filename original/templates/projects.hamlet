@@ -1,5 +1,5 @@
 <h1 .text-center>Projects
-
+<div style="color: #B22222">2015/11/05: Patron count not displayed pending new code
 $if null project_summaries
   <p> no projects to display
 $else
@@ -27,8 +27,6 @@ $else
           <div .col-sm-3>
             <figure .project-icon>
               <img src=@{StaticR img_patrons_png}>
-              <span .img-padding-l>
-                #{show $ getCount $ summaryUsers summary}
 
             <!-- Add highlighting for when User is already a patron -->
           <div .project-icons .col-sm-9>

@@ -37,6 +37,7 @@ User
     UniqueUser ident
     UniqueUserAccount account
     UniqueUserDiscussion discussion
+
     deriving Show Typeable
 
 ResetPassword
@@ -131,6 +132,8 @@ License
     text         LicenseText
     website      LicenseWebsite
 
+    deriving Read Show Eq
+
 Project
     createdTs   UTCTime
     name        Text
@@ -169,6 +172,8 @@ ProjectSignup
     goals              ProjectSignupGoals
     fundsUse           ProjectSignupFundsUse
     additionalInfo     ProjectSignupAdditionalInfo      Maybe
+
+    deriving Show
 
 BlogPost
     ts            UTCTime
@@ -260,6 +265,8 @@ UserNotification
 
     UniqueUserNotification createdTs type to
 
+    deriving Eq
+
 -- Notifications by projects watched by a user.
 ProjectNotification
     createdTs UTCTime
@@ -270,6 +277,8 @@ ProjectNotification
     archived  Bool
 
     UniqueProjectNotification createdTs type to project
+
+    deriving Eq
 
 -- Notification emails that are sent by the email daemon.  'UserId's
 -- are used instead of email addresses to "force" the daemon to look
@@ -634,4 +643,5 @@ WatchedSubthread
     ts UTCTime
     user UserId
     root CommentId
+
     deriving Eq Ord

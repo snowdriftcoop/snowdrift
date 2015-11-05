@@ -18,7 +18,7 @@ import qualified Database.Esqueleto as E
 
 import Model.Currency
             (Milray (..), millMilray, dropRightZeros, pprintThousands)
-import Model.Project (projectComputeShareValue, fetchProjectSharesDB)
+import Mechanism (projectComputeShareValue, fetchProjectSharesDB)
 
 mechanismSpecs :: Spec
 mechanismSpecs = ydescribe "mechanism" $ do
