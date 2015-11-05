@@ -1,7 +1,7 @@
 dist/
-*/static/tmp/
-*/config/client_session_key.aes
-*/config/postgresql.yml
+static/tmp/
+config/client_session_key.aes
+config/postgresql.yml
 cabal-dev
 .stack-work
 .cabal-sandbox/
