@@ -160,8 +160,6 @@ so it will ask for your passphrase.
 
 To set up databases manually, see [DATABASE-MANAGEMENT.md].
 
-**Run all of these commands from the subdirectory named 'original'**.
-
 #### GNU/Linux database setup
 
 simply run `stack exec sdm init`
@@ -189,9 +187,7 @@ dependencies. Simply run `stack test`.
 
 ## Useful Development Commands
 
-With everything initialized, you can now use the following commands to
-build and test the project. **Run all of these commands from the
-subdirectory named 'original'.**
+With everything initialized, you can now use the following commands:
 
 * `stack exec yesod devel`: run the site in development mode[^alt-run]
     * NB: this may take a while when first run, faster after that
