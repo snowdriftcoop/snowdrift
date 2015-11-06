@@ -51,7 +51,7 @@ For example, on Debian or Ubuntu you can enter the following in a terminal:
 If you are on a system that does not package it yet, you may choose to
 [download Git from the website](https://git-scm.herokuapp.com/downloads).
 
-### Build Snowdrift
+### Install Snowdrift
 
 With Git installed, you can **follow the [BUILD.md](BUILD.md) instructions**
 to get Snowdrift going on your computer.
@@ -60,11 +60,6 @@ to get Snowdrift going on your computer.
 
 **All the following assumes you have done the initial clone and install
 according to the instructions linked above.**
-
-### Finding the code
-
-All of the code is in the subdirectory named `original`. This is in flux,
-as the project is currently being separated into individual packages.
 
 ### Text-editors and settings
 
