@@ -12,7 +12,7 @@ extra-deps:
     - github-0.13.2
     - libravatar-0.1.0.1
     - mime-0.4.0.2
-    - titlecase-0.1.0.1
+    - titlecase-0.1.0.2
     - yesod-markdown-0.10.0
     # Transitive dep of github
     - failure-0.2.0.3

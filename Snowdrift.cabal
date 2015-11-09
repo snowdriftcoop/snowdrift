@@ -4,12 +4,13 @@ license:           AGPL-3
 license-file:      LICENSE.md
 author:            David L. L. Thomas
 maintainer:        dev@lists.snowdrift.coop
-synopsis:          Infrastructure for Snowdrift fundrasing site.
+synopsis:          Infrastructure for the Snowdrift.coop fundraising site.
 category:          Web
 stability:         Experimental
 cabal-version:     >= 1.18
 build-type:        Simple
 homepage:          https://snowdrift.coop
+bug-reports:       https://snowdrift.coop/p/snowdrift/t
 
 -- flags {{{1
 Flag dev
