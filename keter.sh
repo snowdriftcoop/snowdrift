@@ -40,8 +40,8 @@ main () {
     if $opt_build
     then
         hdr "Building"
+        rm -fr dist/bin
         mkdir -p dist/bin
-        stack clean
         stack --local-bin-path $install_path install --flag Snowdrift:-dev
         hdr "Packing executables"
         upx dist/bin/Snowdrift*
