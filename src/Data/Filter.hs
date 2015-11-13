@@ -1,9 +1,12 @@
 module Data.Filter (defaultFilter, parseFilterExpression, Filterable (..)) where
 
-import Import
+import Prelude
 
 import Control.Applicative
+import Control.Monad (void)
 import Data.Attoparsec.Text as A
+import Data.Set (Set)
+import Data.Text (Text)
 import Data.Time
 import qualified Data.Set as S
 
