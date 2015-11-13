@@ -79,6 +79,8 @@ library
         Handler.Wiki
         Handler.Wiki.Comment
         Import
+        Import.NoFoundation
+        Local.Esqueleto
         Mechanism
         Model
         Model.Application
