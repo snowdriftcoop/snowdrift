@@ -12,7 +12,7 @@ import Control.Monad.Writer.Strict (tell)
 
 import Model.Comment.Sql
 import Model.Discussion
-import Model.Permission
+import Model.Permission.Internal
 import Model.Project (getProjectPages)
 
 createWikiPageDB

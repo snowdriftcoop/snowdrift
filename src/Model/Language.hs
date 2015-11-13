@@ -5,7 +5,6 @@ module Model.Language where
 import Prelude
 
 import Data.Data
-import Data.Function (on)
 import Data.List (nub)
 import Data.Maybe (mapMaybe)
 import Data.Text (Text)
@@ -34,11 +33,6 @@ renderLanguage LangEn = \case
     LangPt -> "Portuguese"
 
 renderLanguage _ = renderLanguage LangEn
-
-languagePreferenceOrder :: [Language] -> (a -> Language) -> a -> a -> Ordering
-languagePreferenceOrder langs getLang =
-    flip compare `on`
-        (flip lookup (zip (reverse langs) [1::Integer ..]) . getLang)
 
 getLanguages :: MonadHandler m => m [Language]
 getLanguages = cached $ nub . mapMaybe fromPathPiece <$> languages

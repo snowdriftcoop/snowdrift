@@ -341,9 +341,6 @@ createUser ident passwd name newEmail avatar nick = do
 
 instance YesodJquery App
 
-class HasGithubRepo a where
-    getGithubRepo :: a (Maybe Text)
-
 instance (MonadBaseControl IO m, MonadIO m, MonadThrow m) => HasGithubRepo (HandlerT App m) where
     getGithubRepo = extraGithubRepo . appExtra . appSettings <$> getYesod
 

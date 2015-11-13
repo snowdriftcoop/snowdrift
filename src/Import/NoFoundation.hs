@@ -41,6 +41,8 @@ import Yesod.Form.Bootstrap3 as Import
 import Yesod.Markdown as Import (Markdown (..))
 
 import Local.Esqueleto as Import
+import Local.Github as Import
+import Local.Ord as Import
 import Model as Import
 import Model.Language as Import
 import Model.Comment.Internal as Import hiding (TagName, TicketName)
