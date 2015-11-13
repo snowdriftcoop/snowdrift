@@ -79,6 +79,10 @@ library
         Handler.Wiki
         Handler.Wiki.Comment
         Import
+        Import.NoFoundation
+        Local.Esqueleto
+        Local.Github
+        Local.Ord
         Mechanism
         Model
         Model.Application
@@ -102,7 +106,6 @@ library
         Model.Markdown.Diff
         Model.Notification
         Model.Notification.Internal
-        Model.Permission
         Model.Permission.Internal
         Model.Project
         Model.Project.Signup

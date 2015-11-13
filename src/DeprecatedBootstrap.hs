@@ -3,8 +3,12 @@
 -- See SD-463.
 module DeprecatedBootstrap where
 
-import Import
+import Prelude
 
+import Control.Monad (unless)
+import Data.Maybe (listToMaybe)
+import Data.Text (Text)
+import Yesod
 import qualified Data.Text as T
 
 aopt' :: MonadHandler m

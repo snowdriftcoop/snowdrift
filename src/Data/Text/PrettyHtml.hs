@@ -2,7 +2,7 @@
 
 module Data.Text.PrettyHtml (unlinesHtml, prettyHtml, prettyThings) where
 
-import Import
+import Import.NoFoundation
 
 import Control.Applicative
 import Data.Attoparsec.Text

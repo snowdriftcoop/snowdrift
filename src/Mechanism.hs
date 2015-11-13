@@ -1,5 +1,7 @@
 {- REFACTOR NOTES
 
+- This module should not depend on Import!
+
 - In general (but not always), I am importing this module qualified for
   now as an explicit reminder. Eventually it should be unqualified like most
   internal modules.

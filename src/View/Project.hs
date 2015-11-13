@@ -24,6 +24,7 @@ import Data.Filter
 import Data.Order
 import DeprecatedBootstrap
 import Handler.Utils
+import Model.Blog
 import Model.Markdown
 import Model.Project
 import Model.Shares
@@ -140,12 +141,6 @@ editProjectForm mProjTags =
   where
     mProj = fst <$> mProjTags
     mTags = snd <$> mProjTags
-
-data ProjectBlog = ProjectBlog
-    { projectBlogTitle   :: Text
-    , projectBlogHandle  :: Text
-    , projectBlogContent :: Markdown
-    } deriving Show
 
 projectBlogForm :: Maybe ProjectBlog -> Form ProjectBlog
 projectBlogForm mproject_blog =

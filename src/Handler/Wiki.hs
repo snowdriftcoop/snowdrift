@@ -25,7 +25,7 @@ import Model.Comment.ActionPermissions
 import Model.Comment.Sql
 import Model.Markdown
 import Model.Notification
-import Model.Permission
+import Model.Permission.Internal
 import Model.User
 import Model.Wiki
 import View.Comment
@@ -135,7 +135,7 @@ pickEditsByLanguage :: [Language] -> [Entity WikiEdit] -> [Entity WikiEdit]
 pickEditsByLanguage langs targets =
     (M.elems . M.mapMaybe (listToMaybe . L.sortBy prefSort)) targetMap
   where
-    prefSort = languagePreferenceOrder langs (wikiEditLanguage . entityVal)
+    prefSort = prefOrdering langs (wikiEditLanguage . entityVal)
     targetMap =
         M.fromListWith (++)
                        (map (wikiEditPage . entityVal &&& (:[])) targets)

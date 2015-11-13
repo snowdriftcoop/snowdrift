@@ -21,7 +21,7 @@ import Model.Comment.Sql
 -- | Sort targets by language preference
 langPref :: [Language] -> [Entity WikiTarget] -> [Entity WikiTarget]
 langPref langs =
-    sortBy (languagePreferenceOrder langs (wikiTargetLanguage . entityVal))
+    sortBy (prefOrdering langs (wikiTargetLanguage . entityVal))
 
 -- | Given a 'requested' DiscussionType, attempt to fetch the Discussion from
 -- that table. If, say, the requested DiscussionType is DiscussionTypeProject,

@@ -2,10 +2,12 @@ module View.Wiki where
 
 import Import
 
+import qualified Data.Text as T
+
 import DeprecatedBootstrap
 import Handler.Utils
 import Model.Markdown
-import Model.Permission
+import Model.Permission.Internal
 import Widgets.Markdown
 
 editWikiForm :: WikiEditId -> Markdown -> Maybe Text -> Form (WikiEditId, Markdown, Text)
@@ -13,6 +15,17 @@ editWikiForm last_edit_id content comment = renderBootstrap3 BootstrapBasicForm 
     <$> areq' hiddenField "" (Just last_edit_id)
     <*> areq' snowdriftMarkdownField "Page Content" (Just content)
     <*> areq' textField "Comment" comment
+
+permissionLevelField
+    :: (RenderMessage (HandlerSite m) FormMessage, m ~ HandlerT site IO)
+    => Field m PermissionLevel
+permissionLevelField =
+    (radioField' . optionsPairs) $
+        map (permissionLevelLabel &&& id) [minBound ..]
+
+permissionLevelLabel :: PermissionLevel -> Text
+permissionLevelLabel = T.pack . show
+
 
 editWikiPermissionsForm :: PermissionLevel -> Form PermissionLevel
 editWikiPermissionsForm level = renderBootstrap3 BootstrapBasicForm $ areq permissionLevelField "Permission Level" (Just level)

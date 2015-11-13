@@ -4,14 +4,13 @@ module Model.Blog
   , splitContent
   , postBlogPostDB
   , updateBlogPostDB
+  , ProjectBlog(..)
   ) where
 
 import Import
 
 import Control.Monad.Writer.Strict (tell)
 import qualified Data.Text as T
-
-import View.Project
 
 fetchProjectBlogPostDB :: Text -> Text -> YDB (Entity Project, Entity BlogPost)
 fetchProjectBlogPostDB project_handle blog_post_handle = do
@@ -78,6 +77,12 @@ postBlogPostDB title handle user_id project_id content = do
     tell [EBlogPost post_id post]
 
     return post_id
+
+data ProjectBlog = ProjectBlog
+    { projectBlogTitle   :: Text
+    , projectBlogHandle  :: Text
+    , projectBlogContent :: Markdown
+    } deriving Show
 
 updateBlogPostDB :: UserId -> BlogPostId -> ProjectBlog -> DB ()
 updateBlogPostDB user_id blog_post_id ProjectBlog {..} = do

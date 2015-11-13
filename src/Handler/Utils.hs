@@ -8,7 +8,6 @@ import Data.Text.Titlecase
 import Network.Mail.Mime (randomString)
 import System.Random (newStdGen)
 import Yesod.Core
-import qualified Data.Map as M
 import qualified Data.Text as T
 
 -- | Possible values for "mode" post param.
@@ -66,13 +65,3 @@ makeLanguageOptions = do
             , optionInternalValue = language
             , optionExternalValue = toPathPiece language
             }
-
-pickTargetsByLanguage :: [Language] -> [Entity WikiTarget] -> [Entity WikiTarget]
-pickTargetsByLanguage langs targets =
-    M.elems
-        (M.mapMaybe
-            (listToMaybe . sortBy prefSort)
-            targetMap)
-  where
-    prefSort = languagePreferenceOrder langs (wikiTargetLanguage . entityVal)
-    targetMap = M.fromListWith (++) $ map (wikiTargetPage . entityVal &&& (:[])) targets

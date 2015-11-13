@@ -24,6 +24,7 @@ module Model.Project
     , getProjectWikiPages
     , projectNameWidget
     , summarizeProject
+    , pickTargetsByLanguage
     -- * Balancing/deactivating pledges
     ) where
 
@@ -42,7 +43,6 @@ import qualified Github.Issues as GH
 
 import Data.Filter
 import Data.Order
-import Handler.Utils
 import Model.Comment
 import Model.Comment.Sql
 import Model.Count
@@ -246,6 +246,17 @@ getProjectTagList project_id = (,) <$> getProjectTags <*> getOtherTags
         where_ $ page ^. WikiPageProject !=. val project_id
         orderBy [ desc (tag ^. TagName) ]
         return tag
+
+
+pickTargetsByLanguage :: [Language] -> [Entity WikiTarget] -> [Entity WikiTarget]
+pickTargetsByLanguage langs targets =
+    M.elems
+        (M.mapMaybe
+            (listToMaybe . sortBy prefSort)
+            targetMap)
+  where
+    prefSort = prefOrdering langs (wikiTargetLanguage . entityVal)
+    targetMap = M.fromListWith (++) $ map (wikiTargetPage . entityVal &&& (:[])) targets
 
 -- | Get all of a Project's WikiPages, sorted alphabetically.
 getProjectWikiPages :: [Language] -> ProjectId ->  DB [Entity WikiTarget]
