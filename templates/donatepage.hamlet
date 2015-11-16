@@ -1,41 +1,63 @@
-<h1>Donate to Snowdrift.coop
-
-<p>
-  Once we launch, we will use the same funding mechanims as other projects.
-  For now, we gratefully accept donations to help get us to the launch.
+<h1>Donating to Snowdrift.coop
 
 <h2>Our current funding
 <p>
   We ran a
-  <a href="https://snowdrift.tilt.com">
-    successful campaign
-  at the end of 2014, and the co-founders continue to donate personally
-  and volunteer substantial time without compensation.
-  We currently have a budget just barely enough to fund our (underpaid) lead
-  developer and cover some legal expenses along with a few other misc. items.
-  See our
-  <a href=@{WikiR "snowdrift" LangEn "accounting"}>
-    accounting page
-  for details about our budget and how we use the funds.
+  <a href="https://snowdrift.tilt.com">successful campaign
+  at the end of 2014, and co-founders David and Aaron continue to donate and
+  volunteer substantial time. We currently struggle to just barely fund Bryan,
+  our (underpaid) lead developer and cover other minimal expenses. See our
+  <a href=@{WikiR "snowdrift" LangEn "accounting"}>accounting page
+  for details about our finances.
 <h2>Donate today!
 <p>
+  It's quite ironic to ask for donations to fund a fundraising system, but
+  Snowdrift.coop is much more than that. We aren't working just to be
+  self-sustaining for its own sake. Our work today is about building online
+  cooperatives and testing ideas about how to have a democratic economy in the
+  21st century. Our efforts have already resulted in valuable reference
+  resources and educational material, but the real impact will come if our model
+  for collective sustainable patronage can get launched.
+<p> 
+  If you support our 
+  <a href=@{WikiR "snowdrift" LangEn "mission"}>mission</a>,
+  please donate today to help us continue our work.
+  If you have time, please also consider
+  <a href=@{WikiR "snowdrift" LangEn "how-to-help"}>volunteering</a>.
+
+<p>
   Although the formal fund-drive is over, we can still provide comparable
-  rewards for new donors. That's $12+ for sticker, $25+ for gift card to working
-  system, $40+ for sponsored commit, $100+ for t-shirt… <em>All</em> donors at
-  <em>any</em> level may (if they choose) be listed among our official
-  <a href=@{SponsorsR}>launch sponsors</a>,
-  and noted as "key sponsors" for donations of $500+.
+  rewards for new donors:
+  
+<ul>
+  <li>
+    All donors may (if they choose) be listed among our official
+    <a href=@{SponsorsR}>launch sponsors
+  <li>$12+ for a sticker
+  <li>$25+ for gift card to the working system, once launched
+  <li>$40+ for sponsored commit
+  <li>$100+ for t-shirt
+  <li>$500+ honored as a key sponsors
+<hr>
+<h3>Tax deductions under 501(c)(3)
+<p>
+  Snowdrift.coop is incorporated as a Michigan non-profit cooperative but does
+  not currently have federal tax-exempt status. Therefore, donations made
+  directly to us will not be eligible for a tax-deduction. However, as an Open
+  Source Initiative incubator project, we can receive grants from the OSI, which
+  is a 501(c)(3) organization.
+<figure>
+  <img #osi-donate-logo alt="OSI logo" src=@{StaticR img_external_osi_png}>
 <p>
   Please
-  <a href=@{ProjectContactR "snowdrift"}>
-    contact&nbsp;us
-  with any questions.
-<hr>
+  <a href=@{ProjectContactR "snowdrift"}>contact&nbsp;us
+  to get details about how to donate to the OSI on our behalf under 501(c)(3).
 <p>
-  <em>
-    Note: Snowdrift.coop is incorporated as a Michigan non-profit cooperative
-    but does not have federal tax-exempt status.
-    Unlike a 501(c)(3) charity, donations to us are not tax-deductible.
+  Note: The OSI takes a modest administrative fee, so it makes sense to
+  go through them only if you need the 501(c)(3) terms for tax deducation or
+  other reasons.
+<p>
+  To donate directly to us not under 501(c)(3), see the options below:
 <hr>
 
 <figure>
@@ -69,10 +91,9 @@
   <a href="https://www.dwolla.com/hub/snowdrift">
     <img alt="Donate with Dwolla" src=@{StaticR img_external_dwolla_png}>
 <p>
-  Dwolla is U.S.-only and requires some delay and set up with a bank account
-  (no option for credit cards)
-  but charges <strong>no fees at all</strong>.
-  They do seem to use some proprietary JavaScript, unfortunately.
+  Dwolla charges no fees at all but is U.S.-only and requires set up with a bank
+  account (no option for credit cards).
+  They also seem to use some proprietary JavaScript, unfortunately.
 
 <hr>
 
