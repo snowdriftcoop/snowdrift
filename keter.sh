@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 #
 # keter.sh: Like "yesod keter", but works with our split-package project.
 #
