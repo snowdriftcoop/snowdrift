@@ -31,10 +31,3 @@ $forall Entity _ post <- posts
           Continued, read more&hellip;
 
   <hr>
-
-$case next
-  $of [Entity next_id _]
-    <a href=#{nextRoute next_id}>
-      next posts
-
-  $of _
