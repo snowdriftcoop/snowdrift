@@ -8,6 +8,7 @@ import Text.Cassius (cassiusFile)
 import Yesod.Feed
 import qualified Data.Text as T
 import qualified Data.Tree as Tree
+import qualified Database.Persist as P
 
 import Handler.Comment as Com
 import Handler.Discussion
@@ -171,32 +172,17 @@ requireRolesAny roles project_handle err_msg = do
 
 getProjectBlogR :: Text -> Handler Html
 getProjectBlogR project_handle = do
-    maybe_from <- fmap (key . PersistInt64 . read . T.unpack) <$> lookupGetParam "from"
-    post_count <- fromMaybe 10 <$> fmap (read . T.unpack) <$> lookupGetParam "from"
-    Entity project_id project <- runYDB $ getBy404 $ UniqueProjectHandle project_handle
+    (Entity project_id project, posts) <- runYDB $ do
+        p <- getBy404 $ UniqueProjectHandle project_handle
+        posts <- selectList [BlogPostProject P.==. (entityKey p)]
+                            [Desc BlogPostTs, Desc BlogPostId]
+        return (p, posts)
 
-    let apply_offset blog = maybe id (\from_blog rest -> blog ^. BlogPostId >=. val from_blog &&. rest) maybe_from
-
-    (posts, next) <- fmap (splitAt post_count) $ runDB $
-        select $
-        from $ \blog -> do
-        where_ $ apply_offset blog $ blog ^. BlogPostProject ==. val project_id
-        orderBy [ desc $ blog ^. BlogPostTs, desc $ blog ^. BlogPostId ]
-        limit (fromIntegral post_count + 1)
-        return blog
-
-    renderRouteParams <- getUrlRenderParams
-
-    let nextRoute next_id = renderRouteParams (ProjectBlogR project_handle)
-                                              [("from", toPathPiece next_id)]
-        discussion = DiscussionOnProject $ Entity project_id project
-
+    let discussion = DiscussionOnProject $ Entity project_id project
     mviewer_id <- maybeAuthId
     userIsTeamMember <- maybe (pure False) (\u -> runDB $ userIsProjectTeamMemberDB u project_id) mviewer_id
-
     defaultLayout $ do
         snowdriftTitle $ projectName project <> " Blog"
-
         $(widgetFile "project_blog")
 
 --------------------------------------------------------------------------------
