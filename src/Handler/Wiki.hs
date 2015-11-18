@@ -346,6 +346,7 @@ getWikiDiscussionR' project_handle language target get_root_comments = do
         root_comments <- get_root_comments (wikiPageDiscussion page) has_permission
         return (project, root_comments)
 
+    maxDepth <- getMaxDepth
     (comment_forest_no_css, _) <-
         makeWikiPageCommentForestWidget
             muser
@@ -355,7 +356,7 @@ getWikiDiscussionR' project_handle language target get_root_comments = do
             target
             root_comments
             def
-            getMaxDepth
+            maxDepth
             False
             mempty
 

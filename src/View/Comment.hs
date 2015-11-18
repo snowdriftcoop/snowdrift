@@ -515,4 +515,4 @@ commentWidget (Entity comment_id comment)
 
         commentTextTransform = prettyTicketLine
 
-    $(whamletFile "templates/comment.hamlet")
+    $(widgetFile "comment")
