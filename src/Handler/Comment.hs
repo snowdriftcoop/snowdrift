@@ -11,7 +11,6 @@ module Handler.Comment
     -- Utils
     , MakeCommentActionWidget
     , CommentPostResult(..)
-    , earlierClosuresFromMaybeParentId
     , getCommentTags
     , getMaxDepth
     , getMaxDepthDefault
@@ -77,13 +76,7 @@ import Widgets.Tag
 --------------------------------------------------------------------------------
 -- Utility functions
 
-earlierClosuresFromMaybeParentId :: Maybe CommentId -> Handler [CommentClosing]
-earlierClosuresFromMaybeParentId Nothing  = return []
-earlierClosuresFromMaybeParentId (Just c) = runDB (fetchCommentAncestorClosuresDB' c)
 
-earlierRetractsFromMaybeParentId :: Maybe CommentId -> Handler [CommentRetracting]
-earlierRetractsFromMaybeParentId Nothing  = return []
-earlierRetractsFromMaybeParentId (Just c) = runDB (fetchCommentAncestorRetractsDB' c)
 
 -- | Get the max depth from the "maxdepth" GET param, or 11 (arbitrary) if it doesn't exist.
 getMaxDepth :: Handler MaxDepth
@@ -91,11 +84,15 @@ getMaxDepth = getMaxDepthDefault 11
 
 -- | Get the max depth from the "maxdepth" GET param, or NoMaxDepth if it doesn't exist.
 getMaxDepthNoLimit :: Handler MaxDepth
-getMaxDepthNoLimit = maybe NoMaxDepth MaxDepth <$> runInputGet (iopt intField "maxdepth")
+getMaxDepthNoLimit =
+    fmap (maybe NoMaxDepth MaxDepth)
+         (runInputGet (iopt intField "maxdepth"))
 
 -- | Get the max depth from the "maxdepth" GET param, or default to the provided depth.
 getMaxDepthDefault :: Int -> Handler MaxDepth
-getMaxDepthDefault n = maybe (MaxDepth n) MaxDepth <$> runInputGet (iopt intField "maxdepth")
+getMaxDepthDefault n =
+    fmap (MaxDepth . fromMaybe n)
+         (runInputGet (iopt intField "maxdepth"))
 
 redirectIfRethreaded :: CommentId -> Handler ()
 redirectIfRethreaded comment_id = runDB (fetchCommentRethreadDB comment_id) >>= \case
@@ -541,18 +538,41 @@ postNewComment
                                 alertSuccess "comment submitted for moderation"
                                 return $ ConfirmedPost $ Right comment_id
             _ -> do
-                earlier_closures    <- earlierClosuresFromMaybeParentId mparent_id
-                earlier_retracts    <- earlierRetractsFromMaybeParentId mparent_id
-                depth               <- runDB (fetchCommentDepthFromMaybeParentIdDB mparent_id)
-                (form, _)           <- generateFormPost (commentForm (maybe "New Topic" (const "Reply") mparent_id) (Just contents))
-                now                 <- liftIO getCurrentTime
+                let stuff c = do
+                        closure <- fetchCommentAncestorClosuresDB' c
+                        retract <- fetchCommentAncestorRetractsDB' c
+                        depth <- fetchCommentDepthDB c
+                        return (closure, retract, depth + 1)
 
-                let (approved_ts, approved_by) = if userIsEstablished user
-                                                       then (Just now, Just user_id)
-                                                       else (Nothing, Nothing)
-                    comment = Entity
-                                (key $ PersistInt64 0)
-                                (Comment now approved_ts approved_by discussion_id mparent_id user_id contents depth visibility language)
+                (earlier_closures, earlier_retracts, depth) <- runDB
+                    (fmap (fromMaybe ([], [], 0))
+                          (sequence (fmap stuff mparent_id)))
+
+                (form, _) <-
+                    generateFormPost
+                        (commentForm
+                            (maybe "New Topic"
+                                   (const "Reply")
+                                   mparent_id)
+                            (Just contents))
+                now <- liftIO getCurrentTime
+
+                let (approved_ts, approved_by) =
+                        if userIsEstablished user
+                            then (Just now, Just user_id)
+                            else (Nothing, Nothing)
+                    comment =
+                        Entity (key $ PersistInt64 0)
+                               (Comment now
+                                        approved_ts
+                                        approved_by
+                                        discussion_id
+                                        mparent_id
+                                        user_id
+                                        contents
+                                        depth
+                                        visibility
+                                        language)
 
                 max_depth <- getMaxDepthDefault 0
 
