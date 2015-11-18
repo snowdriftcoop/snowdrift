@@ -93,7 +93,7 @@ makeUserCommentForestWidget
         -> UserId
         -> [Entity Comment]
         -> CommentMods
-        -> Handler MaxDepth
+        -> MaxDepth
         -> Bool
         -> Widget
         -> Handler (Widget, Forest (Entity Comment))
@@ -105,7 +105,7 @@ makeUserCommentTreeWidget
         -> UserId
         -> Entity Comment
         -> CommentMods
-        -> Handler MaxDepth
+        -> MaxDepth
         -> Bool
         -> Widget
         -> Handler (Widget, Tree (Entity Comment))
@@ -118,16 +118,16 @@ makeUserCommentActionWidget
         -> UserId
         -> CommentId
         -> CommentMods
-        -> Handler MaxDepth
+        -> MaxDepth
         -> Handler (Widget, Tree (Entity Comment))
-makeUserCommentActionWidget make_comment_action_widget user_id comment_id mods get_max_depth = do
+makeUserCommentActionWidget make_comment_action_widget user_id comment_id mods max_depth = do
     (user, comment) <- checkCommentUrlRequireAuth user_id comment_id
     make_comment_action_widget
       (Entity comment_id comment)
       user
       (userCommentHandlerInfo (Just user) user_id)
       mods
-      get_max_depth
+      max_depth
       False
 
 userDiscussionPage :: UserId -> Widget -> Widget
@@ -141,13 +141,14 @@ userDiscussionPage user_id widget = do
 getUserCommentR :: UserId -> CommentId -> Handler Html
 getUserCommentR user_id comment_id = do
     (muser, comment) <- checkCommentUrl user_id comment_id
+    maxDepth <- getMaxDepth
     (widget, _) <-
         makeUserCommentTreeWidget
           muser
           user_id
           (Entity comment_id comment)
           def
-          getMaxDepth
+          maxDepth
           False
           mempty
 
@@ -171,7 +172,7 @@ getClaimUserCommentR user_id comment_id = do
           user_id
           comment_id
           def
-          getMaxDepth
+        =<< getMaxDepth
 
     defaultLayout (userDiscussionPage user_id widget)
 
@@ -200,7 +201,7 @@ getApproveUserCommentR user_id comment_id = do
           user_id
           comment_id
           def
-          getMaxDepth
+        =<< getMaxDepth
     defaultLayout (userDiscussionPage user_id widget)
 
 postApproveUserCommentR :: UserId -> CommentId -> Handler Html
@@ -222,7 +223,7 @@ getCloseUserCommentR user_id comment_id = do
           user_id
           comment_id
           def
-          getMaxDepth
+        =<< getMaxDepth
     defaultLayout (userDiscussionPage user_id widget)
 
 postCloseUserCommentR :: UserId -> CommentId -> Handler Html
@@ -250,7 +251,7 @@ getDeleteUserCommentR user_id comment_id = do
           user_id
           comment_id
           def
-          getMaxDepth
+        =<< getMaxDepth
     defaultLayout (userDiscussionPage user_id widget)
 
 postDeleteUserCommentR :: UserId -> CommentId -> Handler Html
@@ -274,7 +275,7 @@ getEditUserCommentR user_id comment_id = do
           user_id
           comment_id
           def
-          getMaxDepth
+        =<< getMaxDepth
     defaultLayout (userDiscussionPage user_id widget)
 
 postEditUserCommentR :: UserId -> CommentId -> Handler Html
@@ -301,7 +302,7 @@ getFlagUserCommentR user_id comment_id = do
           user_id
           comment_id
           def
-          getMaxDepth
+        =<< getMaxDepth
     defaultLayout (userDiscussionPage user_id widget)
 
 postFlagUserCommentR :: UserId -> CommentId -> Handler Html
@@ -328,7 +329,7 @@ getReplyUserCommentR user_id comment_id = do
           user_id
           comment_id
           def
-          getMaxDepth
+        =<< getMaxDepth
     defaultLayout (userDiscussionPage user_id widget)
 
 postReplyUserCommentR :: UserId -> CommentId -> Handler Html
@@ -363,7 +364,7 @@ getRethreadUserCommentR user_id comment_id = do
           user_id
           comment_id
           def
-          getMaxDepth
+        =<< getMaxDepth
     defaultLayout (userDiscussionPage user_id widget)
 
 postRethreadUserCommentR :: UserId -> CommentId -> Handler Html
@@ -383,7 +384,7 @@ getRetractUserCommentR user_id comment_id = do
           user_id
           comment_id
           def
-          getMaxDepth
+        =<< getMaxDepth
     defaultLayout (userDiscussionPage user_id widget)
 
 postRetractUserCommentR :: UserId -> CommentId -> Handler Html
@@ -448,7 +449,7 @@ getUnclaimUserCommentR user_id comment_id = do
           user_id
           comment_id
           def
-          getMaxDepth
+        =<< getMaxDepth
 
     defaultLayout (userDiscussionPage user_id widget)
 
@@ -478,7 +479,7 @@ getWatchUserCommentR user_id comment_id = do
           user_id
           comment_id
           def
-          getMaxDepth
+        =<< getMaxDepth
 
     defaultLayout (userDiscussionPage user_id widget)
 
@@ -502,7 +503,7 @@ getUnwatchUserCommentR user_id comment_id = do
           user_id
           comment_id
           def
-          getMaxDepth
+        =<< getMaxDepth
 
     defaultLayout (userDiscussionPage user_id widget)
 

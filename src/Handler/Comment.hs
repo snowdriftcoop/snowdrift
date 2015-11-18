@@ -107,7 +107,7 @@ makeCommentForestWidget
         -> [Entity Comment]
         -> Maybe (Entity User)
         -> CommentMods              -- ^ Comment structure modifications.
-        -> Handler MaxDepth         -- ^ Max depth getter.
+        -> MaxDepth                 -- ^ Max depth
         -> Bool                     -- ^ Is this a preview?
         -> Widget                   -- ^ Widget to display under root comment.
         -> Handler (Widget, Forest (Entity Comment))
@@ -116,7 +116,7 @@ makeCommentForestWidget
         roots
         mviewer
         mods@CommentMods{..}
-        get_max_depth
+        max_depth
         is_preview
         form_under_root_comment = do
     let CommentHandlerInfo{..} = make_comment_handler_info mods
@@ -145,8 +145,6 @@ makeCommentForestWidget
 
         return (children, user_map, earlier_closures_map, earlier_retracts_map,
                 closure_map, retract_map, ticket_map, claim_map, flag_map)
-
-    max_depth <- get_max_depth
 
     let user_map_with_viewer = maybe id (onEntity M.insert) mviewer user_map
         comment_forest = Tree.sortForestBy orderingNewestFirst (buildCommentForest roots children)
@@ -184,7 +182,7 @@ makeCommentTreeWidget
         -> Entity Comment           -- ^ Root comment.
         -> Maybe (Entity User)
         -> CommentMods              -- ^ Comment structure modifications.
-        -> Handler MaxDepth
+        -> MaxDepth
         -> Bool                     -- ^ Is this a preview?
         -> Widget                   -- ^ Widget to display under root comment.
         -> Handler (Widget, Tree (Entity Comment))
@@ -197,7 +195,7 @@ type MakeCommentActionWidget
    -> Entity User
    -> (CommentMods -> CommentHandlerInfo)
    -> CommentMods
-   -> Handler MaxDepth
+   -> MaxDepth
    -> Bool -- is preview?
    -> Handler (Widget, Tree (Entity Comment))
 
@@ -214,7 +212,7 @@ makeCommentActionWidget
         user
         make_handler_info
         mods
-        get_max_depth
+        max_depth
         is_preview = do
     -- Just checking action permissions - we *don't* want to pass make_handler_info 'mods'.
     -- Consider previewing a 'close' action: presumably, 'mods' will add the comment to
@@ -230,7 +228,7 @@ makeCommentActionWidget
         comment
         (Just user)
         mods
-        get_max_depth
+        max_depth
         is_preview
         form_widget
 
@@ -331,6 +329,7 @@ postClaimComment
     comment
     make_comment_handler_info = do
     ((result, _), _) <- runFormPost (claimCommentForm Nothing)
+    maxDepth <- getMaxDepthDefault 0
     case result of
         FormSuccess mnote ->
             lookupPostMode >>= \case
@@ -348,7 +347,7 @@ postClaimComment
                         user
                         make_comment_handler_info
                         (def { mod_claim_map = M.insert comment_id (TicketClaiming now user_id comment_id mnote) })
-                        (getMaxDepthDefault 0)
+                        maxDepth
                         True
                     return (Just (comment_widget, form))
         _ -> error "Error when submitting form."
@@ -367,6 +366,7 @@ postCloseComment
     comment
     make_comment_handler_info = do
     ((result, _), _) <- runFormPost (closeCommentForm Nothing)
+    maxDepth <- getMaxDepthDefault 0
     case result of
         FormSuccess (NewClosure reason) -> do
             now <- liftIO getCurrentTime
@@ -388,7 +388,7 @@ postCloseComment
                           user
                           make_comment_handler_info
                           (def { mod_closure_map = M.insert comment_id closing })
-                          (getMaxDepthDefault 0)
+                          maxDepth
                           True
 
                     return (Just (comment_widget, form))
@@ -421,6 +421,7 @@ postEditComment
         (Entity comment_id comment)
         make_comment_handler_info = do
     ((result, _), _) <- runFormPost (editCommentForm "" (commentLanguage comment))
+    maxDepth <- getMaxDepthDefault 0
     case result of
         FormSuccess (EditComment new_text new_language) -> lookupPostMode >>= \case
             Just PostMode -> do
@@ -440,7 +441,7 @@ postEditComment
                         make_comment_handler_info
                         -- Since an edit removes a flagging, don't show the flagged markup in preview.
                         (def { mod_flag_map = M.delete comment_id })
-                        (getMaxDepthDefault 0)
+                        maxDepth
                         True
 
                 return (Just (comment_widget, form))
@@ -452,6 +453,7 @@ postEditComment
 -- Permission checking should occur *PRIOR TO* this function.
 postFlagComment :: Entity User -> Entity Comment -> (CommentMods -> CommentHandlerInfo) -> Handler (Maybe (Widget, Widget))
 postFlagComment user@(Entity user_id _) comment@(Entity comment_id _) make_comment_handler_info = do
+    maxDepth <- getMaxDepthDefault 0
     ((result, _), _) <- runFormPost (flagCommentForm Nothing Nothing)
     case result of
         -- TODO: Change the form to just return [FlagReason], not Maybe [FlagReason]
@@ -479,7 +481,7 @@ postFlagComment user@(Entity user_id _) comment@(Entity comment_id _) make_comme
                       user
                       make_comment_handler_info
                       (def { mod_flag_map = M.insert comment_id (flagging, reasons) })
-                      (getMaxDepthDefault 0)
+                      maxDepth
                       True
                 return (Just (comment_widget, form))
 
@@ -676,6 +678,7 @@ postRetractComment
         -> (CommentMods -> CommentHandlerInfo)
         -> Handler (Maybe (Widget, Widget))
 postRetractComment user comment_id comment make_comment_handler_info = do
+    maxDepth <- getMaxDepthDefault 0
     ((result, _), _) <- runFormPost (retractCommentForm Nothing)
     case result of
         FormSuccess (NewClosure reason) -> do
@@ -695,7 +698,7 @@ postRetractComment user comment_id comment make_comment_handler_info = do
                           user
                           make_comment_handler_info
                           (def { mod_retract_map = M.insert comment_id retracting })
-                          (getMaxDepthDefault 0)
+                          maxDepth
                           True
 
                     return (Just (comment_widget, form))
@@ -708,6 +711,7 @@ postUnclaimComment
     -> (CommentMods -> CommentHandlerInfo)
     -> Handler (Maybe (Widget, Widget))
 postUnclaimComment user comment_id comment make_comment_handler_info = do
+    maxDepth <- getMaxDepthDefault 0
     ((result, _), _) <- runFormPost (claimCommentForm Nothing)
     case result of
         FormSuccess mnote ->
@@ -725,7 +729,7 @@ postUnclaimComment user comment_id comment make_comment_handler_info = do
                         user
                         make_comment_handler_info
                         (def { mod_claim_map = M.delete comment_id })
-                        (getMaxDepthDefault 0)
+                        maxDepth
                         True
                     return (Just (comment_widget, form))
         _ -> error "Error when submitting form."
