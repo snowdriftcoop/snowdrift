@@ -40,6 +40,7 @@ import Yesod.Auth as Import
 import Yesod.Form.Bootstrap3 as Import
 import Yesod.Markdown as Import (Markdown (..))
 
+import Css as Import
 import Local.Esqueleto as Import
 import Local.Github as Import
 import Local.Ord as Import
