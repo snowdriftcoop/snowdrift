@@ -454,7 +454,7 @@ getProjectFeedR project_handle = do
         wiki_targets <- pickTargetsByLanguage languages <$> fetchWikiPageTargetsInDB wiki_edit_pages
         let wiki_target_map = M.fromList $ map ((wikiTargetPage &&& id) . entityVal) wiki_targets
 
-        user_map <- entitiesMap <$> fetchUsersInDB user_ids
+        user_map <- entitiesMap <$> selectList [UserId <-. user_ids] []
 
         earlier_closures_map <- fetchCommentsAncestorClosuresDB comment_ids
         earlier_retracts_map <- fetchCommentsAncestorRetractsDB comment_ids

@@ -1,3 +1,4 @@
+{-# LANGUAGE NamedFieldPuns #-}
 module Model.Comment
     -- Types
     ( MaxDepth(..)
@@ -67,6 +68,8 @@ module Model.Comment
     , subFetchCommentAncestorsDB
     , userClaimCommentDB
     , userUnclaimCommentDB
+    , fetchCommentForestData
+    , CommentForestData(..)
     ) where
 
 import Import
@@ -1207,3 +1210,53 @@ makeCommentRouteDB langs comment_id = get comment_id >>= \case
                     (projectHandle project)
                     (blogPostHandle blog_post)
                     comment_id
+
+data CommentForestData = CommentForestData
+        { children :: [Entity Comment]
+        , user_map :: Map UserId User
+        , earlier_closures_map :: Map CommentId [CommentClosing]
+        , earlier_retracts_map :: Map CommentId [CommentRetracting]
+        , closure_map          :: Map CommentId CommentClosing
+        , retract_map          :: Map CommentId CommentRetracting
+        , ticket_map           :: Map CommentId (Entity Ticket)
+        , claim_map            :: Map CommentId TicketClaiming
+        , flag_map             :: Map CommentId (CommentFlagging, [FlagReason])
+        }
+fetchCommentForestData :: [Entity Comment] -> ExprCommentCond -> DB CommentForestData
+fetchCommentForestData roots commentHandlerHasPermission = do
+    let root_ids = map entityKey roots
+    children <- fetchCommentsDescendantsDB root_ids
+                                           commentHandlerHasPermission
+
+    let all_comments    = roots ++ children
+        all_comment_ids = map entityKey all_comments
+
+    earlier_closures_map <- fetchCommentsAncestorClosuresDB root_ids
+    earlier_retracts_map <- fetchCommentsAncestorRetractsDB root_ids
+
+    claim_map            <- makeClaimedTicketMapDB     all_comment_ids
+
+    let claiming_users_set = S.fromList $ map ticketClaimingUser $ M.elems claim_map
+
+    user_map <- entitiesMap <$>
+        selectList [UserId <-. (S.toList $
+                                    makeCommentUsersSet all_comments <>
+                                    claiming_users_set)]
+                   []
+    closure_map          <- makeCommentClosingMapDB    all_comment_ids
+    retract_map          <- makeCommentRetractingMapDB all_comment_ids
+    ticket_map           <- makeTicketMapDB            all_comment_ids
+    flag_map             <- makeFlagMapDB              all_comment_ids
+
+    -- This uses NamedFieldPuns, which I discovered entirely by accident.
+    return $ CommentForestData
+        { children
+        , user_map
+        , earlier_closures_map
+        , earlier_retracts_map
+        , closure_map
+        , retract_map
+        , ticket_map
+        , claim_map
+        , flag_map
+        }

@@ -62,7 +62,6 @@ module Model.User
     , fetchProjectNotificationPrefDB
     , fetchUserProjectsAndRolesDB
     , fetchUserRolesDB
-    , fetchUsersInDB
     , fetchUsersByUserNotifPrefDB
     , fetchUsersByProjectNotifPrefDB
     , fetchUserWatchingProjectsDB
@@ -200,9 +199,6 @@ fetchAllUsersDB =
       from $ \user -> do
       orderBy [desc (user ^. UserId)]
       return user
-
-fetchUsersInDB :: [UserId] -> DB [Entity User]
-fetchUsersInDB user_ids = selectList [UserId <-. user_ids] []
 
 -- | Fetch all users with their "project infos" (mapping from project name and
 -- handle to the set of user roles).
