@@ -1,0 +1,49 @@
+<nav>
+  <ul .main>
+    <li>
+      <a .logo href=@{HomeR}>
+        <img src=@{StaticR img_logo_small_png} alt=Snowdrift.coop>
+    <li>
+      <a href=@{ProjectsR} .icon .cards .active>Browse
+    <li .break4>
+      <a href=@{WikiR "snowdrift" LangEn "intro"}>How it works
+    <li .break6>
+      <a href=#>Add a project
+    <li .unbreak4>
+      <a href=@{AuthR LoginR} .icon .plus1>Sign Up
+    <li .search>
+      <a href=# .icon .lookingglass>Search
+      <form .break4>
+        <input type=text placeholder=Search...><button type=button>go
+  <ul .right .break4>
+    $maybe Entity uid user <- maybeUser
+      $with name <- fromMaybe (userIdent user) $ userName user
+        <li>
+          <div .ddown>
+            <a href=# .ddown-toggle .user>#{name}
+            <ul>
+              <li>
+                <a href="@{UserPledgesR uid}">Dashboard
+              <li>
+                <a href="@{UserR uid}">Profile
+              <li>
+                <a href="@{UserBalanceR uid}">Transactions
+              <li>
+                <a href=@{NotificationsR}>Notifications
+              <li>
+                <a href=@{AuthR LogoutR}>Sign Out
+    $nothing
+      <li>
+        <a href=@{AuthR LoginR}>Sign Up/In
+    <li .break6>
+      <div .ddown>
+        <a href="#" .ddown-toggle .lang>EN
+        <ul>
+          <li>
+            <a href="#">FR
+          <li>
+            <a href="#" .active>EN
+          <li>
+            <a href="#">DE
+          <li>
+            <a href="#">ES

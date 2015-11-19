@@ -458,3 +458,27 @@ readMaybe   :: (Read a) => String -> Maybe a
 readMaybe s = case [x | (x,t) <- reads s, ("","") <- lex t] of
                   [x] -> Just x
                   _   -> Nothing
+
+defaultLayoutNew :: Widget -> Handler Html
+defaultLayoutNew widget = do
+    master <- getYesod
+    mmsg <- getMessage
+    malert <- getAlert
+    maybeUser <- maybeAuth
+
+    let navbar :: Widget = $(widgetFile "default/navbar")
+    let footer :: Widget = $(widgetFile "default/footer")
+
+    -- We break up the default layout into two components:
+    -- default-layout is the contents of the body tag, and
+    -- default-layout-wrapper is the entire page. Since the final
+    -- value passed to hamletToRepHtml cannot be a widget, this allows
+    -- you to use normal widget features in default-layout.
+
+    pc <- widgetToPageContent $ do
+        $(widgetFile "default/reset")
+        $(widgetFile "default/breaks")
+        $(widgetFile "default/fonts")
+        $(widgetFile "default/grid")
+        $(widgetFile "default-layout-new")
+    withUrlRenderer $(hamletFile "templates/default-layout-wrapper.hamlet")

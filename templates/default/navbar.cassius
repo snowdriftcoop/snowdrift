@@ -1,0 +1,190 @@
+nav
+    display: block
+    float: left
+    width: 100%
+    background: #{White}
+    border-bottom: 0.3rem solid #{BrightBlue}
+    ul
+        li
+            float: left
+            max-height: 6rem
+            width: 25%
+            .ddown-toggle
+                display: none
+            a
+                border-left: 1px solid rgba(78,191,122,0.2)
+                display: block
+                padding: 3.9rem 0rem 0.3rem
+                background: #{White}
+                font-weight: 600
+                font-size: 1.2rem
+                white-space: nowrap
+                text-align: center
+            a.logo
+                margin: 0
+                padding: 0
+                height: 6rem
+                &:hover
+                    background: transparent
+            a.icon
+                background-position: center .8rem
+                background-repeat: no-repeat
+                &:hover
+                    background-position: center .8rem
+                    background-repeat: no-repeat
+            a.cards
+                background-image: url(/static/img/icon-cards.png)
+            a.cards:hover, a.cards:focus, a.cards.active
+                background-image: url(/static/img/icon-cards_sel.png)
+            a.lookingglass
+                background-image: url(/static/img/icon-lookingglass.png)
+            a.lookingglass:hover, a.lookingglass:focus, a.lookingglass.active
+                background-image: url(/static/img/icon-lookingglass_sel.png)
+            a.plus1
+                background-image: url(/static/img/icon-+1.png)
+            a.plus1:hover, a.plus1:focus, a.plus1.active
+                background-image: url(/static/img/icon-+1_sel.png)
+            .ddown
+                display: block
+                position: relative
+                .ddown-toggle
+                    padding: 1.5rem
+                    display: inline-block
+                    &:after
+                        content: " ▼"
+                        font-size: 70%
+                        top: -0.2rem
+                        position: relative
+                ul
+                    display: none
+                    text-align: center
+                    position: absolute
+                    top: 0rem
+                    padding: 6rem 0 0
+                    &:hover
+                        display: block
+                    &:active ul
+                        display: block
+                    li
+                        background: #{White}
+                        width: 100%
+                        list-style: none
+                        height: auto
+                        margin: 0
+                        a
+                            text-align: left
+                            display: block
+                            padding: 0.5rem 1.5rem
+                        li.active
+                            display: none
+            &:active ul
+                    display: block
+                    outline: none
+        li a:hover, a.active
+                color: #{DarkBlue}
+                background: #{BrightBlue}
+                text-shadow: 0.2rem 0.1rem 0 #{White}
+        li.search
+            form
+                text-align: center
+                display: none
+                padding: 1.6rem 2rem
+                white-space: nowrap
+                input
+                    font-size: 2rem
+                    font-family: "Nunito", sans-serif
+                    font-weight: 600
+                    color: #{Green}
+                    background: rgba(78,191,122,0.12)
+                    width: 12rem
+                    border: none
+                    border-radius: 2.7rem/4.7rem
+                    border-top-right-radius: 0
+                    border-bottom-right-radius: 0
+                    transition: all 0.12s ease-out 0s
+                    padding: 0 0 0 1rem
+                    &::-webkit-input-placeholder
+                        color: #{Green}
+                    &:focus::-webkit-input-placeholder
+                        color:transparent
+                    &::-moz-placeholder
+                       color: #{Green}
+                    &:focus::-moz-placeholder
+                        color:transparent
+                    &:-ms-input-placeholder
+                       color: #{Green}
+                    &:focus:-ms-input-placeholder
+                        color:transparent
+                button
+                    font-size: 2rem
+                    font-family: "Nunito", sans-serif
+                    bottom: 0
+                    margin: 0
+                    background: #{Green}
+                    color: #{White}
+                    outline: none
+                    border: none
+                    border-radius: 2.7rem/4.7rem
+                    border-top-left-radius: 0
+                    border-bottom-left-radius: 0
+                    &:hover
+                        background-color: #{GreenShade}
+    ul.right
+        float: left
+        position: absolute
+        right: 0
+        top: 0
+        max-height: 6rem
+/* break3 */
+@media (min-width: 571px)
+    nav
+        ul
+            li
+                width: 20%
+            li.search
+                width: 40% /* search gets 2 slots in width*/
+                .lookingglass
+                    display: none
+                form
+                    display: block
+/* break4 */
+@media (min-width: 751px)
+    nav
+        ul
+            li
+                width: auto
+                a
+                    border-left: 0
+                    padding: 1.7rem 2rem 1.3rem
+                    font-size: 2rem
+                a.icon, a.icon.active, a.icon:hover, a.icon:focus
+                    background-image: none
+                a.logo
+                    margin: 0 0 0 -0.5rem
+                    padding: 0 1.3rem 0 0
+                    height: 6rem
+                    width: 6rem
+                    &:hover
+                        background: transparent
+            li.search
+                width: auto
+        ul.main
+            max-width: 111rem
+            min-height: 6rem
+            margin: 0 auto
+/* break5 */
+@media (min-width: 841px)
+    .break5
+        display: inherit
+    nav
+        ul
+            li
+                a
+                    padding: 1.7rem 2.6rem 1.3rem
+            li.search form:hover input, li.search form:focus input
+                width: 20rem
+            li
+                .ddown .ddown-toggle.user
+                    padding-right: 6.5rem
+                    background: url(/static/img/default-avatar.png) right center no-repeat
+                    background-size: 6rem

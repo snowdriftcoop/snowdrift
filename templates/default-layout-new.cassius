@@ -1,0 +1,63 @@
+/* Used only in development to overlay a design grid */
+html div.grid
+    position: absolute
+    top: 0
+    left: 0
+    right: 0
+    height: 1000rem
+    background: url(/static/img/grid.png) repeat-y top center
+    z-index: 9999
+    display: block
+html:hover div.grid
+    display: none
+
+
+html
+    font-size: 62.5%
+    overflow-y: scroll
+
+body
+    font-size: 2rem
+    color: #{DarkBlue}
+    font-weight: 200
+    line-height: 1.5
+    font-family: "Nunito", sans-serif
+    background-color: #{White}
+    padding: 0
+
+a
+    color: #{Green}
+    font-weight: 400
+    transition: all 0.12s ease-out 0s
+    text-decoration: none
+
+a:hover, a:active, a:focus
+    color: #{DarkBlue}
+    outline: 0
+
+*::selection
+    color: #{White};
+    background: #{DarkBlue};
+    text-shadow: none
+
+*::-moz-selection
+    color: #{White};
+    background: #{DarkBlue};
+    text-shadow: none
+
+img
+    max-width: 100%
+    height: auto
+
+.container
+    max-width: 111rem
+    top: 6rem
+    left: 0
+    right: 0
+    bottom: 0
+    margin: 0 auto
+    padding: 0 2.85%
+
+@media (min-width: 571px)
+    .container
+        padding: 0
