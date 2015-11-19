@@ -459,6 +459,11 @@ readMaybe s = case [x | (x,t) <- reads s, ("","") <- lex t] of
                   [x] -> Just x
                   _   -> Nothing
 
+-- | New layout for new pages.
+--
+-- Once the new design is in place, this will probably replace
+-- defaultLayout... though we may want to continue to have separate
+-- 'defaults' for different sections e.g. project pages
 defaultLayoutNew :: Widget -> Handler Html
 defaultLayoutNew widget = do
     master <- getYesod
@@ -468,12 +473,6 @@ defaultLayoutNew widget = do
 
     let navbar :: Widget = $(widgetFile "default/navbar")
     let footer :: Widget = $(widgetFile "default/footer")
-
-    -- We break up the default layout into two components:
-    -- default-layout is the contents of the body tag, and
-    -- default-layout-wrapper is the entire page. Since the final
-    -- value passed to hamletToRepHtml cannot be a widget, this allows
-    -- you to use normal widget features in default-layout.
 
     pc <- widgetToPageContent $ do
         $(widgetFile "default/reset")
