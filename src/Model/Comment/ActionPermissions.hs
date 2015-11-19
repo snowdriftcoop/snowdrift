@@ -102,7 +102,7 @@ makeProjectCommentActionPermissionsMap
 
         (,,,,,,,,)
             <$> userIsProjectModeratorDB viewer_id project_id
-            <*> (mod_user_map . entitiesMap <$> fetchUsersInDB user_ids)
+            <*> (mod_user_map . entitiesMap <$> selectList [UserId <-. user_ids] [])
             <*> (mod_closure_map <$> makeCommentClosingMapDB comment_ids)
             <*> (mod_retract_map <$> makeCommentRetractingMapDB comment_ids)
             <*> (mod_ticket_map <$> makeTicketMapDB comment_ids)

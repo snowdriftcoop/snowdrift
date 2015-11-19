@@ -56,7 +56,6 @@ import Data.Tree (Forest, Tree, rootLabel)
 import Network.HTTP.Types.Status (movedPermanently301)
 import Yesod.Default.Config (appRoot)
 import qualified Data.Map as M
-import qualified Data.Set as S
 import qualified Data.Text as T
 import qualified Data.Tree.Extra as Tree
 
@@ -120,31 +119,8 @@ makeCommentForestWidget
         is_preview
         form_under_root_comment = do
     let CommentHandlerInfo{..} = make_comment_handler_info mods
-        root_ids = map entityKey roots
 
-    (children, user_map, earlier_closures_map, earlier_retracts_map,
-     closure_map, retract_map, ticket_map, claim_map, flag_map) <- runDB $ do
-        children <- fetchCommentsDescendantsDB root_ids
-                                               commentHandlerHasPermission
-
-        let all_comments    = roots ++ children
-            all_comment_ids = map entityKey all_comments
-
-        earlier_closures_map <- fetchCommentsAncestorClosuresDB root_ids
-        earlier_retracts_map <- fetchCommentsAncestorRetractsDB root_ids
-
-        claim_map            <- makeClaimedTicketMapDB     all_comment_ids
-
-        let claiming_users_set = S.fromList $ map ticketClaimingUser $ M.elems claim_map
-
-        user_map <- entitiesMap <$> fetchUsersInDB (S.toList $ makeCommentUsersSet all_comments <> claiming_users_set)
-        closure_map          <- makeCommentClosingMapDB    all_comment_ids
-        retract_map          <- makeCommentRetractingMapDB all_comment_ids
-        ticket_map           <- makeTicketMapDB            all_comment_ids
-        flag_map             <- makeFlagMapDB              all_comment_ids
-
-        return (children, user_map, earlier_closures_map, earlier_retracts_map,
-                closure_map, retract_map, ticket_map, claim_map, flag_map)
+    CommentForestData{..} <- runDB $ fetchCommentForestData roots commentHandlerHasPermission
 
     let user_map_with_viewer = maybe id (onEntity M.insert) mviewer user_map
         comment_forest = Tree.sortForestBy orderingNewestFirst (buildCommentForest roots children)
