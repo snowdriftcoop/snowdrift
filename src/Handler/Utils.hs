@@ -32,8 +32,7 @@ lookupGetUTCTimeDefaultNow name = lookupGetParam name >>= \case
 
 snowdriftTitle :: MonadWidget m => Text -> m ()
 snowdriftTitle t = setTitle $
-    (toHtml $ titlecase $ T.toLower $ t) <>
-    (toHtml (" | Snowdrift.coop" :: Text))
+    (toHtml (titlecase t)) <> (toHtml (" | Snowdrift.coop" :: Text))
 
 snowdriftDashTitle :: MonadWidget m => Text -> Text -> m ()
 snowdriftDashTitle x y = snowdriftTitle $ x <> " — " <> y
