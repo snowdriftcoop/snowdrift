@@ -1,0 +1,9 @@
+<div .grid>
+^{navbar}
+$maybe msg <- mmsg
+  <div .alert .alert-info #message>
+    #{msg}
+$maybe alert <- malert
+  #{alert}
+^{widget}
+^{footer}

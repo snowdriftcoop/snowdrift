@@ -1,0 +1,62 @@
+footer
+    .section
+        margin: 0 auto
+        max-width: 111rem
+        padding: 3rem 2.85%
+    ul
+        padding: 0 0 6rem 0
+    ul.bg
+        &:before
+            margin: -2rem 0 0 0
+            position: absolute
+            content: " "
+            height: 21rem
+            left: 0
+            right: 0
+            background: url(/static/img/footer-bg.png) center top repeat-x
+            z-index: -1
+    a.logo
+        display: block
+        padding: 6rem 2rem 0rem
+        text-align: center
+        max-width: 28rem
+        margin: 0 auto
+        img
+            width: 100%
+    span
+        display: block
+        text-align: center
+        font-size: 1.9rem
+        font-weight: 600
+        color: #{BrightBlueText}
+        padding: 0 0 1rem
+    .supporters
+        margin: 0 -2.85%
+        li
+            margin: 0 2.85% 2.85%
+            a
+                display: block
+                height: 6rem
+                font-size: 0
+                color: transparent
+                background: url(/static/img/supporter-fsfe.png) center top no-repeat
+                opacity: 0.8
+                &:hover
+                    opacity: 1
+            .fsfe
+                background-image: url(/static/img/supporter-fsfe.png)
+            .april
+                background-image: url(/static/img/supporter-april.png)
+            .oin
+                background-image: url(/static/img/supporter-oin.png)
+            .eff
+                background-image: url(/static/img/supporter-eff.png)
+            .p2p
+                background-image: url(/static/img/supporter-p2p.png)
+@media (min-width: 571px)
+    footer
+        .supporters
+            li
+                float: left
+                a
+                    width: 21rem

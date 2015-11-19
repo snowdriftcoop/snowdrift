@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="60"
+   height="60"
+   viewBox="0 0 60 60.000001"
+   id="svg10937"
+   version="1.1"
+   inkscape:version="0.91 r13725"
+   sodipodi:docname="logo_small.svg"
+   inkscape:export-filename="/home/mray/Projects/Snowdrift.coop/git/snowdrift/static/img/logo_small.png"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90">
+  <title
+     id="title4139">snowdrift.coop symbol</title>
+  <defs
+     id="defs10939" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="5.3482456"
+     inkscape:cx="45.714286"
+     inkscape:cy="15.714286"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     showguides="false"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     units="px" />
+  <metadata
+     id="metadata10942">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>snowdrift.coop symbol</dc:title>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>Robert Martinez</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:rights>
+          <cc:Agent>
+            <dc:title>snowdrift.coop </dc:title>
+          </cc:Agent>
+        </dc:rights>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-171.42857,-252.36203)">
+    <path
+       id="path7651"
+       style="display:inline;opacity:1;fill:#13628e;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.15216827;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker:none"
+       d="m 208.25206,289.50767 c 2.50298,-2.7866 0.71865,-6.92017 -3.98553,-9.23279 0.16822,0.15046 1.06147,-0.57159 1.99733,-1.61296 0.93567,-1.04131 1.55794,-2.00743 1.39039,-2.15802 -4.70417,-2.31263 -10.54635,-1.92857 -13.04953,0.85777 -2.50294,2.7866 -0.71867,6.92006 3.98577,9.23269 -0.1683,-0.15048 -1.06172,0.57158 -1.99758,1.61295 -0.93524,1.0413 -1.55795,2.00743 -1.39033,2.15803 4.70436,2.31262 10.54649,1.92856 13.04948,-0.85767 z m -21.77682,-19.3811 c -5.48488,6.10642 -1.57472,15.1644 8.73431,20.23223 -0.36754,-0.32985 -2.32706,1.2525 -4.37711,3.53443 -2.05016,2.28191 -3.4143,4.39917 -3.0472,4.72909 10.30877,5.06783 23.11114,4.22627 28.5967,-1.87948 5.48488,-6.10642 1.57455,-15.16458 -8.73428,-20.23241 0.3671,0.32991 2.32662,-1.25251 4.37667,-3.53442 2.05017,-2.28192 3.4143,-4.39919 3.04725,-4.72905 -10.30881,-5.06782 -23.11094,-4.22626 -28.59634,1.87961 z"
+       inkscape:connector-curvature="0" />
+  </g>
+</svg>

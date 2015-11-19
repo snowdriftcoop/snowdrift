@@ -14,7 +14,7 @@ module Model.Tag
     , fetchDefaultTagColorsDB
     ) where
 
-import Import
+import Import hiding (Color)
 
 import Data.List (sortBy)
 import Text.Printf
