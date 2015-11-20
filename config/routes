@@ -4,7 +4,9 @@
 /favicon.ico FaviconR GET
 /robots.txt  RobotsR GET
 
-/ HomeR GET
+-- Simple pages
+
+/      HomeR  GET
 
 -- Miscellaneous
 

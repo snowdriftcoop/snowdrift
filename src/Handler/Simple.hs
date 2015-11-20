@@ -1,11 +1,12 @@
 {-# LANGUAGE TupleSections, OverloadedStrings #-}
-module Handler.Home where
+module Handler.Simple where
 
 import Import
+
+import Handler.Utils
 
 getHomeR :: Handler Html
 getHomeR =
     defaultLayoutNew $ do
-        setTitle
-            "Snowdrift.coop | Clearing the path to a Free/Libre/Open world"
+        snowdriftTitle "Free the Commons"
         $(widgetFile "homepage")

@@ -469,7 +469,6 @@ defaultLayoutNew widget = do
     master <- getYesod
     mmsg <- getMessage
     malert <- getAlert
-    maybeUser <- maybeAuth
 
     let navbar :: Widget = $(widgetFile "default/navbar")
     let footer :: Widget = $(widgetFile "default/footer")

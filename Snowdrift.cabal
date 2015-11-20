@@ -54,7 +54,6 @@ library
         Handler.Common
         Handler.Discussion
         Handler.Donate
-        Handler.Home
         Handler.HonorPledge
         Handler.Image
         Handler.Invitation
@@ -67,6 +66,7 @@ library
         Handler.Project.Signup
         Handler.ProjectBlog
         Handler.ResetPassword
+        Handler.Simple
         Handler.SnowdriftEvent
         Handler.Sponsors
         Handler.ToU

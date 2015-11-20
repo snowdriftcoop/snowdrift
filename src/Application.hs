@@ -43,7 +43,6 @@ import Handler.BuildFeed
 import Handler.Comment
 import Handler.Common
 import Handler.Donate
-import Handler.Home
 import Handler.HonorPledge
 import Handler.Image
 import Handler.Invitation
@@ -56,6 +55,7 @@ import Handler.Project
 import Handler.Project.Signup
 import Handler.ProjectBlog
 import Handler.ResetPassword
+import Handler.Simple
 import Handler.SnowdriftEvent
 import Handler.Sponsors
 import Handler.ToU

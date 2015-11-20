@@ -1,8 +1,8 @@
 <nav>
   <ul .main>
     <li>
-      <a .logo href="#">
-        <img src="static/img/logo-small.png" alt=Snowdrift.coop>
+      <a .logo href=@{HomeR}>
+        <img src=@{StaticR img_logo_small_png} alt=Snowdrift.coop>
     <li>
       <a href=# .icon .cards>Browse
     <li .break4>
