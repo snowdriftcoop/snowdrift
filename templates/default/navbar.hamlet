@@ -10,15 +10,13 @@
     <li .break6>
       <a href=#>Add a project
     <li .unbreak4>
-      <a href=# .icon .plus1>Sign Up
+      <a href=# .icon .login>Log in
     <li .search>
       <a href=# .icon .lookingglass>Search
       <form .break4>
         <input type=text placeholder=Search...><button type=button>go
   <ul .right .break4>
     <!-- Not shown when logged in
-    <li>
-      <a href=#>Sign Up
     <li>
       <a href=#>Log In
     -->

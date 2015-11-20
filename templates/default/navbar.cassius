@@ -45,10 +45,10 @@ nav
                 background-image: url(/static/img/icon-lookingglass.png)
             a.lookingglass:hover, a.lookingglass:focus, a.lookingglass.active
                 background-image: url(/static/img/icon-lookingglass_sel.png)
-            a.plus1
-                background-image: url(/static/img/icon-+1.png)
-            a.plus1:hover, a.plus1:focus, a.plus1.active
-                background-image: url(/static/img/icon-+1_sel.png)
+            a.login
+                background-image: url(/static/img/icon-login.png)
+            a.login:hover, a.login:focus, a.login.active
+                background-image: url(/static/img/icon-login_sel.png)
             .ddown
                 display: block
                 position: relative
