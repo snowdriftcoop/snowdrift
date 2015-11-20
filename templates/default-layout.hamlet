@@ -1,5 +1,5 @@
 <div .container>
-  <div #main role="main">
+  <div #main role=main>
     <div #body>
       $maybe msg <- mmsg
         <div .alert .alert-info #message>
@@ -14,20 +14,23 @@
     <div .row>
       <div .col-md-4>
         Aside from
-        <a href=@{TrademarksR}> trademarks
-        , writings and images here #
-        are free to use and share under #
-        <a rel="license" title="Creative Commons Attribution Share-Alike 4.0 International" href="https://creativecommons.org/licenses/by-sa/4.0">
+        <a href=@{TrademarksR}>trademarks</a>,
+        writings and images here are free to use and share under
+        <a rel=license
+            title="Creative Commons Attribution Share-Alike 4.0 International"
+            href=https://creativecommons.org/licenses/by-sa/4.0>
           CC&nbsp;BY-SA
 
       <div .col-md-4>
-        This site's #
+        This site's
         <a href=#{extraSourceRepo $ appExtra $ appSettings master}>
           source code
-        \ is free under the terms of the #
-        <a rel="license" title="Affero GPL v3 or later" href="https://www.gnu.org/licenses/agpl">
+        is free under the terms of the
+        <a rel=license
+            title="GNU Affero GPL v3 or later"
+            href=https://www.gnu.org/licenses/agpl>
           GNU&nbsp;AGPLv3+
       <div .col-md-4>
-        All JavaScript on this site is #
-        <a href=@{JsLicenseR} rel="jslicense">
+        All JavaScript on this site is
+        <a href=@{JsLicenseR} rel=jslicense>
           freely-licensed

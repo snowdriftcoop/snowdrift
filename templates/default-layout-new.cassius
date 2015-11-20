@@ -6,7 +6,7 @@ html div.grid
     left: 0
     right: 0
     height: 0rem
-    background: url(/static/img/grid.png) repeat-y top center
+    background: url(@{StaticR img_grid_png}) repeat-y top center
     background-size: 100%
     z-index: 9999
     transition: all 0.5s ease-out 1s
