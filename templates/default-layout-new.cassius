@@ -6,11 +6,16 @@ html div.grid
     right: 0
     height: 1000rem
     background: url(/static/img/grid.png) repeat-y top center
+    background-size: 100%
     z-index: 9999
-    display: block
+    display: none
 html:hover div.grid
     display: none
+    max-width: 111rem
 
+@media (min-width: 1111px)
+    html div.grid
+        background-size: 111rem
 
 html
     font-size: 62.5%
@@ -44,7 +49,8 @@ a:hover, a:active, a:focus
     color: #{White};
     background: #{DarkBlue};
     text-shadow: none
-
+p
+    padding-bottom: 3rem
 img
     max-width: 100%
     height: auto
@@ -57,7 +63,26 @@ img
     bottom: 0
     margin: 0 auto
     padding: 0 2.85%
+h1
+    font-weight: 600
+    font-size: 3rem
+h1
+    font-weight: 300
+    font-size: 3rem
+h1
+    font-weight: 600
+    font-size: 2rem
 
-@media (min-width: 571px)
-    .container
-        padding: 0
+/* ============upscaling====================== */
+@media (min-width: 1800px)
+    html
+        font-size: 65%
+@media (min-width: 2000px)
+    html
+        font-size: 70%
+@media (min-width: 2200px)
+    html
+        font-size: 75%
+@media (min-width: 2400px)
+    html
+        font-size: 80%

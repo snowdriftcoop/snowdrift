@@ -12,7 +12,7 @@ nav
             .ddown-toggle
                 display: none
             a
-                border-left: 1px solid rgba(78,191,122,0.2)
+                border-left: 0.1rem solid rgba(78,191,122,0.3)
                 display: block
                 padding: 3.9rem 0rem 0.3rem
                 background: #{White}
@@ -21,11 +21,16 @@ nav
                 white-space: nowrap
                 text-align: center
             a.logo
-                margin: 0
+                margin: 0 auto
                 padding: 0
                 height: 6rem
+                width: 6rem
+                border: 0
                 &:hover
                     background: transparent
+                img
+                    width: 6rem
+                    height: 6rem
             a.icon
                 background-position: center .8rem
                 background-repeat: no-repeat
@@ -50,6 +55,7 @@ nav
                 .ddown-toggle
                     padding: 1.5rem
                     display: inline-block
+                    background: #{White}
                     &:after
                         content: " ▼"
                         font-size: 70%
@@ -75,8 +81,12 @@ nav
                             text-align: left
                             display: block
                             padding: 0.5rem 1.5rem
+                            background: #{White}
                         li.active
                             display: none
+                    li:last-child
+                        padding-bottom: 0.6rem
+                        border-radius: 0.4rem
             &:active ul
                     display: block
                     outline: none
@@ -84,6 +94,7 @@ nav
                 color: #{DarkBlue}
                 background: #{BrightBlue}
                 text-shadow: 0.2rem 0.1rem 0 #{White}
+                border-color: transparent
         li.search
             form
                 text-align: center
@@ -120,8 +131,10 @@ nav
                     font-family: "Nunito", sans-serif
                     bottom: 0
                     margin: 0
-                    background: #{Green}
-                    color: #{White}
+                    width: 4rem
+                    background: url(/static/img/icon-lookingglass_white.png) 1rem center no-repeat #{Green}
+                    background-size: 1.7rem
+                    color: transparent
                     outline: none
                     border: none
                     border-radius: 2.7rem/4.7rem
@@ -160,7 +173,6 @@ nav
                 a.icon, a.icon.active, a.icon:hover, a.icon:focus
                     background-image: none
                 a.logo
-                    margin: 0 0 0 -0.5rem
                     padding: 0 1.3rem 0 0
                     height: 6rem
                     width: 6rem
@@ -169,22 +181,29 @@ nav
             li.search
                 width: auto
         ul.main
-            max-width: 111rem
+            max-width: 105rem
             min-height: 6rem
             margin: 0 auto
 /* break5 */
 @media (min-width: 841px)
-    .break5
-        display: inherit
     nav
         ul
             li
                 a
                     padding: 1.7rem 2.6rem 1.3rem
-            li.search form:hover input, li.search form:focus input
-                width: 20rem
-            li
                 .ddown .ddown-toggle.user
                     padding-right: 6.5rem
                     background: url(/static/img/default-avatar.png) right center no-repeat
                     background-size: 6rem
+            li.search
+                form:hover input
+                    width: 20rem
+                form input:focus
+                    width: 20rem
+/* break6 */
+@media (min-width: 1111px)
+    nav
+        ul
+            li
+                a.logo
+                    margin: 0 0 0 -4rem
