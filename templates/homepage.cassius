@@ -1,21 +1,143 @@
-figcaption
-    color: #B22222
-    margin-top: -0.4em
-    font-size: 0.9em
-    padding: 0.4em
-    text-align: right
-
-.homepage-sections
-    background: whitesmoke
-
-.homepage-section
-    padding: 10px
-    margin-bottom: 10px
-    h2, h3
-        margin: 10px
-        text-align: center
-
-.homep-link
-    font-weight: bold
-    margin: 8px
+@keyframes rotate
+    0%
+        transform: rotate(180deg)
+    100%
+        transform: rotate(-180deg)
+@keyframes fly
+    0%
+        left: -25rem
+        opacity: 0
+    20%
+        opacity: 1
+    70%
+        opacity: 1
+    80%
+        opacity: 0
+    100%
+        left: 110%
+.homepage
     text-align: center
+    padding: 0 2.85%
+    .plane
+        position: absolute
+        background: url('/static/img/plane.png') center top no-repeat
+        height: 0.7rem
+        width: 24.1rem
+        top: 20rem
+        opacity: 0
+        animation: fly 90s infinite
+        animation-timing-function: linear
+    .rotate
+        animation: rotate 1.5s infinite
+        animation-direction: alternate
+        top: 13rem
+        position: absolute
+        left: 10%
+        z-index: -1
+        .sun
+            margin-left: 0.2rem
+            width: 4rem
+            height: 4rem
+            border-radius: 4rem
+            background: #{White}
+    .button
+        display: table
+        position: relative
+        font-family: 'League Spartan'
+        color: #{White}
+        width: auto
+        margin: 0rem auto 3rem
+        padding: 1.5rem 4rem 1rem
+        font-size: 2.5rem
+        border-radius: 2.7rem/4.7rem
+        text-shadow: .2rem .2rem 0 rgba(19,98,142,0.4)
+        background-color: #{GreenShade}
+        background-image: linear-gradient(#{Green}, #{GreenShade})
+        transition: all 0 ease-out 0.03s
+        &:hover
+            padding: 1.5rem 3.5rem 1rem
+            text-shadow: .2rem .2rem 0 rgba(19,98,142,0.4), 0rem 0rem 1rem rgba(255,255,255,0.5)
+    .background
+        position: absolute
+        left: 0
+        right: 0
+        top: 6rem
+        width: 100%
+        height: 10rem
+        background: linear-gradient(#{BrightBlue} 30%,#e0f7fe 95%)
+        z-index: -2
+        overflow: hidden
+    .foreground
+        position: absolute
+        top: 13rem
+        left: 0
+        height: 78.3rem
+        width: 100%
+        margin: 0 auto
+        background: url('/static/img/homepage-background.png') center top no-repeat
+        background-size: 200%
+        z-index: -1
+    .logo-big
+        display: block
+        max-width: 57rem
+        margin: 0 auto 14rem
+        img
+            width: 100%
+/*break1*/
+@media (min-width: 301px)
+    .homepage
+        .background
+            height: 13rem
+        .foreground
+            top: 14rem
+        .logo-big
+            margin-bottom: 18rem
+/*break2*/
+@media (min-width: 391px)
+    .homepage
+        .background
+            height: 20rem
+        .foreground
+            top: 18rem
+            background-size: 190%
+        .logo-big
+            margin-bottom: 25rem
+/*break3*/
+@media (min-width: 571px)
+    .homepage
+        .background
+            height: 26rem
+        .foreground
+            top: 22rem
+        .logo-big
+            margin-bottom: 38rem
+/*break4*/
+@media (min-width: 751px)
+    .homepage
+        .background
+            height: 31rem
+        .foreground
+            top: 25rem
+        .logo-big
+            margin-bottom: 45rem
+/* break5 */
+@media (min-width: 841px)
+    .homepage
+        .background
+            height: 31rem
+        .foreground
+            background-size: auto
+        .logo-big
+            margin-bottom: 47rem
+/*break6*/
+@media (min-width: 1111px)
+    .homepage
+        .background
+            background-size: auto
+            height: 32rem
+        .foreground
+            background-size: 161.1rem
+            top: 28rem
+        .logo-big
+            padding: 3rem 0
+            margin: 0 auto 41rem
