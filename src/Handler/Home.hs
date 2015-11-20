@@ -7,5 +7,5 @@ getHomeR :: Handler Html
 getHomeR =
     defaultLayout $ do
         setTitle
-            "Snowdrift.coop | Clearing the path to a Free/Libre/Open world"
+            "Snowdrift.coop | Free the Commons"
         $(widgetFile "homepage")

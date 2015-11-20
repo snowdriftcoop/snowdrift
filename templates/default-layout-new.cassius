@@ -5,7 +5,7 @@ html div.grid
     left: 0
     right: 0
     height: 1000rem
-    background: url(/static/img/grid.png) repeat-y top center
+    background: url(@{StaticR img_grid_png}) repeat-y top center
     z-index: 9999
     display: block
 html:hover div.grid

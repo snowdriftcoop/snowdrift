@@ -13,7 +13,7 @@ footer
             height: 21rem
             left: 0
             right: 0
-            background: url(/static/img/footer-bg.png) center top repeat-x
+            background: url(@{StaticR img_footer_bg_png}) center top repeat-x
             z-index: -1
     a.logo
         display: block
@@ -39,20 +39,22 @@ footer
                 height: 6rem
                 font-size: 0
                 color: transparent
-                background: url(/static/img/supporter-fsfe.png) center top no-repeat
+                background: center top no-repeat
                 opacity: 0.8
                 &:hover
                     opacity: 1
+            .osi
+                background-image: url(@{StaticR img_supporter_osi_png})
             .fsfe
-                background-image: url(/static/img/supporter-fsfe.png)
+                background-image: url(@{StaticR img_supporter_fsfe_png})
             .april
-                background-image: url(/static/img/supporter-april.png)
+                background-image: url(@{StaticR img_supporter_april_png})
             .oin
-                background-image: url(/static/img/supporter-oin.png)
+                background-image: url(@{StaticR img_supporter_oin_png})
             .eff
-                background-image: url(/static/img/supporter-eff.png)
+                background-image: url(@{StaticR img_supporter_eff_png})
             .p2p
-                background-image: url(/static/img/supporter-p2p.png)
+                background-image: url(@{StaticR img_supporter_p2p_png})
 @media (min-width: 571px)
     footer
         .supporters
