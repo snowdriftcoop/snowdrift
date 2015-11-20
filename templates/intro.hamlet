@@ -1,0 +1,39 @@
+<div .container .intro>
+  <article>
+    <div .section .group>
+      <div .col .span_4_of_12>
+      <div .col .span_4_of_12>
+        <.background>
+        <img src="../static/img/logo-intro.png">
+        <img src="../static/img/intro-share.png">
+        <h1>Shareable Works
+        <h2>Shareable Works
+        <h3>Shareable Works
+        <p>
+          Exclusively for free/libre/open (FLO) projects.
+          Everyone around the world can freely access, use, modify, and share
+          everything we support.
+        <a href=# .more>more about FLO values
+
+        <img src="../static/img/intro-match.png">
+        <h2>A Matching Pledge
+        <p>
+          Instead of donating alone or having a one-time threshold, we achieve critical
+          mass with a simple network effect: Each patron of a project agrees to donate
+          more when other patrons come help.
+        <a href=# .more>more about the network effect
+
+        <img src="../static/img/intro-sustain.png">
+        <h2>Sustainability
+        <p>
+          Ongoing funding gives project teams a sustainable living while providing
+          accountability.
+        <a href=# .more>more about sustainable funding
+
+        <img src="../static/img/intro-coop.png">
+        <h2>Democracy
+        <p>
+          As anon-profit cooperative, we serve the interests of our community, and
+          everyone can participate.
+        <a href=# .more>more about the coop
+      <div .col .span_4_of_12>
