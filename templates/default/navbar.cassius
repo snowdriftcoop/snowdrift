@@ -33,17 +33,17 @@ nav
                     background-position: center .8rem
                     background-repeat: no-repeat
             a.cards
-                background-image: url(/static/img/icon-cards.png)
+                background-image: url(@{StaticR img_icon_cards_png})
             a.cards:hover, a.cards:focus, a.cards.active
-                background-image: url(/static/img/icon-cards_sel.png)
+                background-image: url(@{StaticR img_icon_cards_sel_png})
             a.lookingglass
-                background-image: url(/static/img/icon-lookingglass.png)
+                background-image: url(@{StaticR img_icon_lookingglass_png})
             a.lookingglass:hover, a.lookingglass:focus, a.lookingglass.active
-                background-image: url(/static/img/icon-lookingglass_sel.png)
+                background-image: url(@{StaticR img_icon_lookingglass_sel_png})
             a.plus1
-                background-image: url(/static/img/icon-+1.png)
+                background-image: url(@{StaticR img_icon__1_png})
             a.plus1:hover, a.plus1:focus, a.plus1.active
-                background-image: url(/static/img/icon-+1_sel.png)
+                background-image: url(@{StaticR img_icon__1_sel_png})
             .ddown
                 display: block
                 position: relative
@@ -186,5 +186,5 @@ nav
             li
                 .ddown .ddown-toggle.user
                     padding-right: 6.5rem
-                    background: url(/static/img/default-avatar.png) right center no-repeat
+                    background: url(@{StaticR img_default_avatar_png}) right center no-repeat
                     background-size: 6rem
