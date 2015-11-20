@@ -34,15 +34,3 @@
             <a href=#>Notifications
           <li>
             <a href=#>Sign Out
-    <li .break6>
-      <div .ddown>
-        <a href="#" .ddown-toggle .lang>EN
-        <ul>
-          <li>
-            <a href="#">FR
-          <li>
-            <a href="#" .active>EN
-          <li>
-            <a href="#">DE
-          <li>
-            <a href="#">ES
