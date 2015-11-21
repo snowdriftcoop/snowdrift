@@ -106,8 +106,10 @@ nav
                             font-weight: 400
                             border-left: 0 solid #{White}
                             span
-                                font-size: 1.5rem
+                                font-size: 1.4rem
                                 letter-spacing: -0.1rem
+                                padding:  0 0 0 0.2rem
+                                font-weight: 600
                         a:hover, a:focus, a.active
                             border-left: 0.6rem solid #{DarkBlue}
                             padding-left: -0.6rem
