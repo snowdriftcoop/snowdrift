@@ -10,7 +10,11 @@
     <li .break6>
       <a href=#>Add a project
     <li .unbreak4>
+      <a href=# .icon .dashboard>Dashboard
+    <!-- If not logged in
+    <li .unbreak4>
       <a href=# .icon .login>Log in
+    -->
     <li .search>
       <a href=# .icon .lookingglass>Search
       <form .break4>

@@ -48,6 +48,13 @@ nav
                 background-image: url(@{StaticR img_icon_login_png})
             a.login:hover, a.login:focus, a.login.active
                 background-image: url(@{StaticR img_icon_login_sel_png})
+            a.dashboard
+                border-right: 0.1rem solid rgba(78,191,122,0.3)
+                background-image: url(@{StaticR img_default_avatar_png})
+                background-size: 3rem 3rem
+            a.dashboard:hover, a.dashboard:focus, a.dashboard.active
+                background-image: url(@{StaticR img_default_avatar_png})
+                background-size: 3rem 3rem
             a.notification
                 position: absolute
                 top: 1.7rem
