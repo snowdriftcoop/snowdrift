@@ -21,6 +21,8 @@
       <a href=#>Log In
     -->
     <li>
+      <a href=# .notification>3
+    <li>
       <div .ddown>
         <a href=# .ddown-toggle .user>User Name
         <ul>
@@ -29,8 +31,12 @@
           <li>
             <a href="#">Profile
           <li>
+            <!-- if that page is active
+            <a href="#" .active>Transactions
+            -->
             <a href="#">Transactions
           <li>
             <a href=#>Notifications
+              <span> (3)
           <li>
             <a href=#>Sign Out
