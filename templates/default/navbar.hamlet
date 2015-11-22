@@ -6,7 +6,7 @@
     <li>
       <a href=# .icon .cards>Browse
     <li .break4>
-      <a href=#>How it works
+      <a href=@{IntroR}>How it works
     <li .break6>
       <a href=#>Add a project
     <li .unbreak4>
