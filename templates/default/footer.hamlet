@@ -2,7 +2,7 @@
   <div .section .group>
     <div .col .span_12_of_12>
       <a href=@{HomeR} .logo>
-        <img src="@{StaticR img_logo_png" alt=Snowdrift.coop>
+        <img src="@{StaticR img_logo_png}" alt=Snowdrift.coop>
   <div .section .group>
     <div .col .span_4_of_12>
       <ul>
