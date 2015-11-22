@@ -1,18 +1,17 @@
 /* Used only in development to overlay a design grid */
 html div.grid
+    display: none
     position: absolute
     top: 0
     left: 0
     right: 0
-    height: 1000rem
+    height: 0rem
     background: url(/static/img/grid.png) repeat-y top center
     background-size: 100%
     z-index: 9999
-    display: none
+    transition: all 0.5s ease-out 1s
 html:hover div.grid
-    display: none
-    max-width: 111rem
-
+    height: 1000rem
 @media (min-width: 1111px)
     html div.grid
         background-size: 111rem
@@ -66,10 +65,10 @@ img
 h1
     font-weight: 600
     font-size: 3rem
-h1
-    font-weight: 300
-    font-size: 3rem
-h1
+h2
+    font-weight: 600
+    font-size: 2.5rem
+h3
     font-weight: 600
     font-size: 2rem
 
