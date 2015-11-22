@@ -57,6 +57,9 @@
         &:hover
             padding: 1.5rem 3.5rem 1rem
             text-shadow: .2rem .2rem 0 rgba(19,98,142,0.4), 0rem 0rem 1rem rgba(255,255,255,0.5)
+        &:focus
+            top: 0.1rem
+            left: 0.1rem
     .background
         position: absolute
         left: 0
