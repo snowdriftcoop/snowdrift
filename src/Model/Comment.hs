@@ -1248,7 +1248,6 @@ fetchCommentForestData roots commentHandlerHasPermission = do
     ticket_map           <- makeTicketMapDB            all_comment_ids
     flag_map             <- makeFlagMapDB              all_comment_ids
 
-    -- This uses NamedFieldPuns, which I discovered entirely by accident.
     return $ CommentForestData
         { children
         , user_map
