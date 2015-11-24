@@ -1212,8 +1212,8 @@ makeCommentRouteDB langs comment_id = get comment_id >>= \case
                     comment_id
 
 data CommentForestData = CommentForestData
-        { children :: [Entity Comment]
-        , user_map :: Map UserId User
+        { children             :: [Entity Comment]
+        , user_map             :: Map UserId User
         , earlier_closures_map :: Map CommentId [CommentClosing]
         , earlier_retracts_map :: Map CommentId [CommentRetracting]
         , closure_map          :: Map CommentId CommentClosing
