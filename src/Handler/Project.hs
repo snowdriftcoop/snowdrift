@@ -132,7 +132,7 @@ makeProjectCommentForestWidget
         -> Text
         -> [Entity Comment]
         -> CommentMods
-        -> Handler MaxDepth
+        -> MaxDepth
         -> Bool
         -> Widget
         -> Handler (Widget, Forest (Entity Comment))
@@ -153,7 +153,7 @@ makeProjectCommentTreeWidget
         -> Text
         -> Entity Comment
         -> CommentMods
-        -> Handler MaxDepth
+        -> MaxDepth
         -> Bool
         -> Widget
         -> Handler (Widget, Tree (Entity Comment))
@@ -166,7 +166,7 @@ makeProjectCommentActionWidget
         -> Text
         -> CommentId
         -> CommentMods
-        -> Handler MaxDepth
+        -> MaxDepth
         -> Handler (Widget, Tree (Entity Comment))
 makeProjectCommentActionWidget make_comment_action_widget project_handle comment_id mods get_max_depth = do
     (user, Entity project_id _, comment) <- checkCommentRequireAuth project_handle comment_id
@@ -454,7 +454,7 @@ getProjectFeedR project_handle = do
         wiki_targets <- pickTargetsByLanguage languages <$> fetchWikiPageTargetsInDB wiki_edit_pages
         let wiki_target_map = M.fromList $ map ((wikiTargetPage &&& id) . entityVal) wiki_targets
 
-        user_map <- entitiesMap <$> fetchUsersInDB user_ids
+        user_map <- entitiesMap <$> selectList [UserId <-. user_ids] []
 
         earlier_closures_map <- fetchCommentsAncestorClosuresDB comment_ids
         earlier_retracts_map <- fetchCommentsAncestorRetractsDB comment_ids
@@ -839,6 +839,7 @@ watchOrUnwatchProject action msg project_id = do
 getProjectCommentR :: Text -> CommentId -> Handler Html
 getProjectCommentR project_handle comment_id = do
     (muser, Entity project_id _, comment) <- checkComment project_handle comment_id
+    maxDepth <- getMaxDepth
     (widget, comment_tree) <-
         makeProjectCommentTreeWidget
           muser
@@ -846,7 +847,7 @@ getProjectCommentR project_handle comment_id = do
           project_handle
           (Entity comment_id comment)
           def
-          getMaxDepth
+          maxDepth
           False
           mempty
 
@@ -862,7 +863,7 @@ getProjectCommentR project_handle comment_id = do
 
 getApproveProjectCommentR :: Text -> CommentId -> Handler Html
 getApproveProjectCommentR project_handle comment_id = do
-    (widget, _) <- makeProjectCommentActionWidget makeApproveCommentWidget project_handle comment_id def getMaxDepth
+    (widget, _) <- makeProjectCommentActionWidget makeApproveCommentWidget project_handle comment_id def =<< getMaxDepth
 
     defaultLayout (projectDiscussionPage project_handle widget)
 
@@ -879,7 +880,7 @@ postApproveProjectCommentR project_handle comment_id = do
 
 getClaimProjectCommentR :: Text -> CommentId -> Handler Html
 getClaimProjectCommentR project_handle comment_id = do
-    (widget, _) <- makeProjectCommentActionWidget makeClaimCommentWidget project_handle comment_id def getMaxDepth
+    (widget, _) <- makeProjectCommentActionWidget makeClaimCommentWidget project_handle comment_id def =<< getMaxDepth
 
     defaultLayout (projectDiscussionPage project_handle widget)
 
@@ -902,7 +903,7 @@ postClaimProjectCommentR project_handle comment_id = do
 
 getCloseProjectCommentR :: Text -> CommentId -> Handler Html
 getCloseProjectCommentR project_handle comment_id = do
-    (widget, _) <- makeProjectCommentActionWidget makeCloseCommentWidget project_handle comment_id def getMaxDepth
+    (widget, _) <- makeProjectCommentActionWidget makeCloseCommentWidget project_handle comment_id def =<< getMaxDepth
 
     defaultLayout (projectDiscussionPage project_handle widget)
 
@@ -926,7 +927,7 @@ postCloseProjectCommentR project_handle comment_id = do
 
 getDeleteProjectCommentR :: Text -> CommentId -> Handler Html
 getDeleteProjectCommentR project_handle comment_id = do
-    (widget, _) <- makeProjectCommentActionWidget makeDeleteCommentWidget project_handle comment_id def getMaxDepth
+    (widget, _) <- makeProjectCommentActionWidget makeDeleteCommentWidget project_handle comment_id def =<< getMaxDepth
 
     defaultLayout (projectDiscussionPage project_handle widget)
 
@@ -945,7 +946,7 @@ postDeleteProjectCommentR project_handle comment_id = do
 
 getEditProjectCommentR :: Text -> CommentId -> Handler Html
 getEditProjectCommentR project_handle comment_id = do
-    (widget, _) <- makeProjectCommentActionWidget makeEditCommentWidget project_handle comment_id def getMaxDepth
+    (widget, _) <- makeProjectCommentActionWidget makeEditCommentWidget project_handle comment_id def =<< getMaxDepth
 
     defaultLayout (projectDiscussionPage project_handle widget)
 
@@ -967,7 +968,7 @@ postEditProjectCommentR project_handle comment_id = do
 
 getFlagProjectCommentR :: Text -> CommentId -> Handler Html
 getFlagProjectCommentR project_handle comment_id = do
-    (widget, _) <- makeProjectCommentActionWidget makeFlagCommentWidget project_handle comment_id def getMaxDepth
+    (widget, _) <- makeProjectCommentActionWidget makeFlagCommentWidget project_handle comment_id def =<< getMaxDepth
 
     defaultLayout (projectDiscussionPage project_handle widget)
 
@@ -989,7 +990,7 @@ postFlagProjectCommentR project_handle comment_id = do
 
 getReplyProjectCommentR :: Text -> CommentId -> Handler Html
 getReplyProjectCommentR project_handle parent_id = do
-    (widget, _) <- makeProjectCommentActionWidget makeReplyCommentWidget project_handle parent_id def getMaxDepth
+    (widget, _) <- makeProjectCommentActionWidget makeReplyCommentWidget project_handle parent_id def =<< getMaxDepth
 
     defaultLayout (projectDiscussionPage project_handle widget)
 
@@ -1018,7 +1019,7 @@ postReplyProjectCommentR project_handle parent_id = do
 
 getRethreadProjectCommentR :: Text -> CommentId -> Handler Html
 getRethreadProjectCommentR project_handle comment_id = do
-    (widget, _) <- makeProjectCommentActionWidget makeRethreadCommentWidget project_handle comment_id def getMaxDepth
+    (widget, _) <- makeProjectCommentActionWidget makeRethreadCommentWidget project_handle comment_id def =<< getMaxDepth
 
     defaultLayout (projectDiscussionPage project_handle widget)
 
@@ -1033,7 +1034,7 @@ postRethreadProjectCommentR project_handle comment_id = do
 
 getRetractProjectCommentR :: Text -> CommentId -> Handler Html
 getRetractProjectCommentR project_handle comment_id = do
-    (widget, _) <- makeProjectCommentActionWidget makeRetractCommentWidget project_handle comment_id def getMaxDepth
+    (widget, _) <- makeProjectCommentActionWidget makeRetractCommentWidget project_handle comment_id def =<< getMaxDepth
 
     defaultLayout (projectDiscussionPage project_handle widget)
 
@@ -1092,7 +1093,7 @@ getProjectCommentAddTagR project_handle comment_id = do
 
 getUnclaimProjectCommentR :: Text -> CommentId -> Handler Html
 getUnclaimProjectCommentR project_handle comment_id = do
-    (widget, _) <- makeProjectCommentActionWidget makeUnclaimCommentWidget project_handle comment_id def getMaxDepth
+    (widget, _) <- makeProjectCommentActionWidget makeUnclaimCommentWidget project_handle comment_id def =<< getMaxDepth
 
     defaultLayout (projectDiscussionPage project_handle widget)
 
@@ -1115,7 +1116,7 @@ postUnclaimProjectCommentR project_handle comment_id = do
 
 getWatchProjectCommentR :: Text -> CommentId -> Handler Html
 getWatchProjectCommentR project_handle comment_id = do
-    (widget, _) <- makeProjectCommentActionWidget makeWatchCommentWidget project_handle comment_id def getMaxDepth
+    (widget, _) <- makeProjectCommentActionWidget makeWatchCommentWidget project_handle comment_id def =<< getMaxDepth
 
     defaultLayout (projectDiscussionPage project_handle widget)
 
@@ -1133,7 +1134,7 @@ postWatchProjectCommentR project_handle comment_id = do
 
 getUnwatchProjectCommentR :: Text -> CommentId -> Handler Html
 getUnwatchProjectCommentR project_handle comment_id = do
-    (widget, _) <- makeProjectCommentActionWidget makeUnwatchCommentWidget project_handle comment_id def getMaxDepth
+    (widget, _) <- makeProjectCommentActionWidget makeUnwatchCommentWidget project_handle comment_id def =<< getMaxDepth
 
     defaultLayout (projectDiscussionPage project_handle widget)
 
@@ -1194,6 +1195,7 @@ getProjectDiscussion project_handle get_root_comments = do
         root_comments <- get_root_comments (projectDiscussion project) has_permission
         return (p, root_comments)
 
+    maxDepth <- getMaxDepth
     (comment_forest_no_css, _) <-
         makeProjectCommentForestWidget
           muser
@@ -1201,7 +1203,7 @@ getProjectDiscussion project_handle get_root_comments = do
           project_handle
           root_comments
           def
-          getMaxDepth
+          maxDepth
           False
           mempty
 

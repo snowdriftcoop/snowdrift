@@ -96,7 +96,7 @@ makeBlogPostCommentForestWidget
         -> Text
         -> [Entity Comment]
         -> CommentMods
-        -> Handler MaxDepth
+        -> MaxDepth
         -> Bool
         -> Widget
         -> Handler (Widget, Forest (Entity Comment))
@@ -119,7 +119,7 @@ makeBlogPostCommentTreeWidget
         -> Text
         -> Entity Comment
         -> CommentMods
-        -> Handler MaxDepth
+        -> MaxDepth
         -> Bool
         -> Widget
         -> Handler (Widget, Tree (Entity Comment))
@@ -133,16 +133,16 @@ makeBlogPostCommentActionWidget
         -> Text
         -> CommentId
         -> CommentMods
-        -> Handler MaxDepth
+        -> MaxDepth
         -> Handler (Widget, Tree (Entity Comment))
-makeBlogPostCommentActionWidget make_comment_action_widget project_handle post_name comment_id mods get_max_depth = do
+makeBlogPostCommentActionWidget make_comment_action_widget project_handle post_name comment_id mods max_depth = do
     (user, Entity project_id _, comment) <- checkCommentRequireAuth project_handle post_name comment_id
     make_comment_action_widget
         (Entity comment_id comment)
         user
         (projectCommentHandlerInfo (Just user) project_id project_handle)
         mods
-        get_max_depth
+        max_depth
         False
 
 projectBlogDiscussionPage :: Text -> Text -> Widget -> Widget
@@ -332,6 +332,7 @@ postEditBlogPostR project_handle blog_post_handle = do
 getBlogPostCommentR :: Text -> Text -> CommentId -> Handler Html
 getBlogPostCommentR project_handle post_name comment_id = do
     (muser, Entity project_id _, comment) <- checkComment project_handle post_name comment_id
+    maxDepth <- getMaxDepth
     (widget, comment_tree) <-
         makeBlogPostCommentTreeWidget
             muser
@@ -340,7 +341,7 @@ getBlogPostCommentR project_handle post_name comment_id = do
             post_name
             (Entity comment_id comment)
             def
-            getMaxDepth
+            maxDepth
             False
             mempty
 
@@ -356,7 +357,7 @@ getBlogPostCommentR project_handle post_name comment_id = do
 
 getApproveBlogPostCommentR :: Text -> Text -> CommentId -> Handler Html
 getApproveBlogPostCommentR project_handle post_name comment_id = do
-    (widget, _) <- makeBlogPostCommentActionWidget makeApproveCommentWidget project_handle post_name comment_id def getMaxDepth
+    (widget, _) <- makeBlogPostCommentActionWidget makeApproveCommentWidget project_handle post_name comment_id def =<< getMaxDepth
 
     defaultLayout $ projectBlogDiscussionPage project_handle post_name widget
 
@@ -373,7 +374,7 @@ postApproveBlogPostCommentR project_handle post_name comment_id = do
 
 getClaimBlogPostCommentR :: Text -> Text -> CommentId -> Handler Html
 getClaimBlogPostCommentR project_handle post_name comment_id = do
-    (widget, _) <- makeBlogPostCommentActionWidget makeClaimCommentWidget project_handle post_name comment_id def getMaxDepth
+    (widget, _) <- makeBlogPostCommentActionWidget makeClaimCommentWidget project_handle post_name comment_id def =<< getMaxDepth
 
     defaultLayout $ projectBlogDiscussionPage project_handle post_name widget
 
@@ -404,7 +405,7 @@ getCloseBlogPostCommentR project_handle post_name comment_id = do
             post_name
             comment_id
             def
-            getMaxDepth
+        =<< getMaxDepth
 
     defaultLayout $ projectBlogDiscussionPage project_handle post_name widget
 
@@ -428,7 +429,7 @@ postCloseBlogPostCommentR project_handle post_name comment_id = do
 
 getDeleteBlogPostCommentR :: Text -> Text -> CommentId -> Handler Html
 getDeleteBlogPostCommentR project_handle post_name comment_id = do
-    (widget, _) <- makeBlogPostCommentActionWidget makeDeleteCommentWidget project_handle post_name comment_id def getMaxDepth
+    (widget, _) <- makeBlogPostCommentActionWidget makeDeleteCommentWidget project_handle post_name comment_id def =<< getMaxDepth
 
     defaultLayout $ projectBlogDiscussionPage project_handle post_name widget
 
@@ -447,7 +448,7 @@ postDeleteBlogPostCommentR project_handle post_name comment_id = do
 
 getEditBlogPostCommentR :: Text -> Text -> CommentId -> Handler Html
 getEditBlogPostCommentR project_handle post_name comment_id = do
-    (widget, _) <- makeBlogPostCommentActionWidget makeEditCommentWidget project_handle post_name comment_id def getMaxDepth
+    (widget, _) <- makeBlogPostCommentActionWidget makeEditCommentWidget project_handle post_name comment_id def =<< getMaxDepth
 
     defaultLayout $ projectBlogDiscussionPage project_handle post_name widget
 
@@ -469,7 +470,7 @@ postEditBlogPostCommentR project_handle post_name comment_id = do
 
 getFlagBlogPostCommentR :: Text -> Text -> CommentId -> Handler Html
 getFlagBlogPostCommentR project_handle post_name comment_id = do
-    (widget, _) <- makeBlogPostCommentActionWidget makeFlagCommentWidget project_handle post_name comment_id def getMaxDepth
+    (widget, _) <- makeBlogPostCommentActionWidget makeFlagCommentWidget project_handle post_name comment_id def =<< getMaxDepth
 
     defaultLayout $ projectBlogDiscussionPage project_handle post_name widget
 
@@ -492,7 +493,7 @@ postFlagBlogPostCommentR project_handle post_name comment_id = do
 
 getReplyBlogPostCommentR :: Text -> Text -> CommentId -> Handler Html
 getReplyBlogPostCommentR project_handle post_name parent_id = do
-    (widget, _) <- makeBlogPostCommentActionWidget makeReplyCommentWidget project_handle post_name parent_id def getMaxDepth
+    (widget, _) <- makeBlogPostCommentActionWidget makeReplyCommentWidget project_handle post_name parent_id def =<< getMaxDepth
 
     defaultLayout $ projectBlogDiscussionPage project_handle post_name widget
 
@@ -520,7 +521,7 @@ postReplyBlogPostCommentR project_handle post_name parent_id = do
 
 getRethreadBlogPostCommentR :: Text -> Text -> CommentId -> Handler Html
 getRethreadBlogPostCommentR project_handle post_name comment_id = do
-    (widget, _) <- makeBlogPostCommentActionWidget makeRethreadCommentWidget project_handle post_name comment_id def getMaxDepth
+    (widget, _) <- makeBlogPostCommentActionWidget makeRethreadCommentWidget project_handle post_name comment_id def =<< getMaxDepth
 
     defaultLayout $ projectBlogDiscussionPage project_handle post_name widget
 
@@ -535,7 +536,7 @@ postRethreadBlogPostCommentR project_handle post_name comment_id = do
 
 getRetractBlogPostCommentR :: Text -> Text -> CommentId -> Handler Html
 getRetractBlogPostCommentR project_handle post_name comment_id = do
-    (widget, _) <- makeBlogPostCommentActionWidget makeRetractCommentWidget project_handle post_name comment_id def getMaxDepth
+    (widget, _) <- makeBlogPostCommentActionWidget makeRetractCommentWidget project_handle post_name comment_id def =<< getMaxDepth
 
     defaultLayout $ projectBlogDiscussionPage project_handle post_name widget
 
@@ -598,7 +599,7 @@ getBlogPostCommentAddTagR project_handle post_name comment_id = do
 
 getUnclaimBlogPostCommentR :: Text -> Text -> CommentId -> Handler Html
 getUnclaimBlogPostCommentR project_handle post_name comment_id = do
-    (widget, _) <- makeBlogPostCommentActionWidget makeUnclaimCommentWidget project_handle post_name comment_id def getMaxDepth
+    (widget, _) <- makeBlogPostCommentActionWidget makeUnclaimCommentWidget project_handle post_name comment_id def =<< getMaxDepth
 
     defaultLayout $ projectBlogDiscussionPage project_handle post_name widget
 
@@ -621,7 +622,7 @@ postUnclaimBlogPostCommentR project_handle post_name comment_id = do
 
 getWatchBlogPostCommentR :: Text -> Text -> CommentId -> Handler Html
 getWatchBlogPostCommentR project_handle post_name comment_id = do
-    (widget, _) <- makeBlogPostCommentActionWidget makeWatchCommentWidget project_handle post_name comment_id def getMaxDepth
+    (widget, _) <- makeBlogPostCommentActionWidget makeWatchCommentWidget project_handle post_name comment_id def =<< getMaxDepth
 
     defaultLayout $ projectBlogDiscussionPage project_handle post_name widget
 
@@ -639,7 +640,7 @@ postWatchBlogPostCommentR project_handle post_name comment_id = do
 
 getUnwatchBlogPostCommentR :: Text -> Text -> CommentId -> Handler Html
 getUnwatchBlogPostCommentR project_handle post_name comment_id = do
-    (widget, _) <- makeBlogPostCommentActionWidget makeUnwatchCommentWidget project_handle post_name comment_id def getMaxDepth
+    (widget, _) <- makeBlogPostCommentActionWidget makeUnwatchCommentWidget project_handle post_name comment_id def =<< getMaxDepth
 
     defaultLayout $ projectBlogDiscussionPage project_handle post_name widget
 
@@ -671,6 +672,7 @@ getBlogPostDiscussion project_handle post_name get_root_comments = do
         root_comments <- get_root_comments (blogPostDiscussion blog_post) has_permission
         return (p, root_comments)
 
+    maxDepth <- getMaxDepth
     (comment_forest_no_css, _) <-
         makeBlogPostCommentForestWidget
             muser
@@ -679,7 +681,7 @@ getBlogPostDiscussion project_handle post_name get_root_comments = do
             post_name
             root_comments
             def
-            getMaxDepth
+            maxDepth
             False
             mempty
 

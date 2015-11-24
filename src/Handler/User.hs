@@ -224,13 +224,14 @@ getUserDiscussionR' user_id get_root_comments = do
         root_comments <- get_root_comments (userDiscussion user) has_permission
         return (user, root_comments)
 
+    maxDepth <- getMaxDepth
     (comment_forest_no_css, _) <-
         makeUserCommentForestWidget
             mviewer
             user_id
             root_comments
             Default.def
-            getMaxDepth
+            maxDepth
             False
             mempty
 

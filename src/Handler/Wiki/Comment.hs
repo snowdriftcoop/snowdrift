@@ -69,7 +69,7 @@ makeWikiPageCommentForestWidget
         -> Text
         -> [Entity Comment]
         -> CommentMods
-        -> Handler MaxDepth
+        -> MaxDepth
         -> Bool
         -> Widget
         -> Handler (Widget, Forest (Entity Comment))
@@ -93,7 +93,7 @@ makeWikiPageCommentTreeWidget
         -> Text
         -> Entity Comment
         -> CommentMods
-        -> Handler MaxDepth
+        -> MaxDepth
         -> Bool
         -> Widget
         -> Handler (Widget, Tree (Entity Comment))
@@ -108,16 +108,16 @@ makeWikiPageCommentActionWidget
         -> Text
         -> CommentId
         -> CommentMods
-        -> Handler MaxDepth
+        -> MaxDepth
         -> Handler (Widget, Tree (Entity Comment))
-makeWikiPageCommentActionWidget make_comment_action_widget project_handle language target comment_id mods get_max_depth = do
+makeWikiPageCommentActionWidget make_comment_action_widget project_handle language target comment_id mods max_depth = do
     (user, Entity project_id _, _, comment) <- checkCommentPageRequireAuth project_handle language target comment_id
     make_comment_action_widget
       (Entity comment_id comment)
       user
       (wikiPageCommentHandlerInfo (Just user) project_id project_handle language target)
       mods
-      get_max_depth
+      max_depth
       False
 
 wikiDiscussionPage :: Text -> Language -> Text -> Widget -> Widget
@@ -131,6 +131,7 @@ wikiDiscussionPage project_handle language target widget = do
 getWikiCommentR :: Text -> Language -> Text -> CommentId -> Handler Html
 getWikiCommentR project_handle language target comment_id = do
     (muser, Entity project_id _, _, comment) <- checkCommentPage project_handle language target comment_id
+    maxDepth <- getMaxDepth
     (widget, comment_tree) <-
         makeWikiPageCommentTreeWidget
             muser
@@ -140,7 +141,7 @@ getWikiCommentR project_handle language target comment_id = do
             target
             (Entity comment_id comment)
             def
-            getMaxDepth
+            maxDepth
             False
             mempty
 
@@ -164,7 +165,7 @@ getClaimWikiCommentR project_handle language target comment_id = do
             target
             comment_id
             def
-            getMaxDepth
+        =<< getMaxDepth
 
     defaultLayout (wikiDiscussionPage project_handle language target widget)
 
@@ -195,7 +196,7 @@ getApproveWikiCommentR project_handle language target comment_id = do
             target
             comment_id
             def
-            getMaxDepth
+        =<< getMaxDepth
 
     defaultLayout (wikiDiscussionPage project_handle language target widget)
 
@@ -220,7 +221,7 @@ getCloseWikiCommentR project_handle language target comment_id = do
             target
             comment_id
             def
-            getMaxDepth
+        =<< getMaxDepth
 
     defaultLayout (wikiDiscussionPage project_handle language target widget)
 
@@ -251,7 +252,7 @@ getDeleteWikiCommentR project_handle language target comment_id = do
             target
             comment_id
             def
-            getMaxDepth
+        =<< getMaxDepth
 
     defaultLayout (wikiDiscussionPage project_handle language target widget)
 
@@ -278,7 +279,7 @@ getEditWikiCommentR project_handle language target comment_id = do
             target
             comment_id
             def
-            getMaxDepth
+        =<< getMaxDepth
 
     defaultLayout (wikiDiscussionPage project_handle language target widget)
 
@@ -309,7 +310,7 @@ getFlagWikiCommentR project_handle language target comment_id = do
             target
             comment_id
             def
-            getMaxDepth
+        =<< getMaxDepth
 
     defaultLayout (wikiDiscussionPage project_handle language target widget)
 
@@ -339,7 +340,7 @@ getReplyWikiCommentR project_handle language target comment_id = do
             target
             comment_id
             def
-            getMaxDepth
+        =<< getMaxDepth
 
     defaultLayout (wikiDiscussionPage project_handle language target widget)
 
@@ -377,7 +378,7 @@ getRethreadWikiCommentR project_handle language target comment_id = do
             target
             comment_id
             def
-            getMaxDepth
+        =<< getMaxDepth
 
     defaultLayout (wikiDiscussionPage project_handle language target widget)
 
@@ -400,7 +401,7 @@ getRetractWikiCommentR project_handle language target comment_id = do
             target
             comment_id
             def
-            getMaxDepth
+        =<< getMaxDepth
 
     defaultLayout (wikiDiscussionPage project_handle language target widget)
 
@@ -468,7 +469,7 @@ getUnclaimWikiCommentR project_handle language target comment_id = do
             target
             comment_id
             def
-            getMaxDepth
+        =<< getMaxDepth
 
     defaultLayout (wikiDiscussionPage project_handle language target widget)
 
@@ -499,7 +500,7 @@ getWatchWikiCommentR project_handle language target comment_id = do
             target
             comment_id
             def
-            getMaxDepth
+        =<< getMaxDepth
 
     defaultLayout (wikiDiscussionPage project_handle language target widget)
 
@@ -525,7 +526,7 @@ getUnwatchWikiCommentR project_handle language target comment_id = do
             target
             comment_id
             def
-            getMaxDepth
+        =<< getMaxDepth
 
     defaultLayout (wikiDiscussionPage project_handle language target widget)
 
