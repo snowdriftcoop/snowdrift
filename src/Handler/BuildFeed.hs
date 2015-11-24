@@ -12,26 +12,30 @@ getBuildFeedR :: Handler TypedContent
 getBuildFeedR = do
     builds :: [Build] <- fmap (map entityVal) $ runDB $ selectList [] [Desc BuildBootTime]
 
+    render <- getUrlRender
+    -- Have to render internal links, since feed items are external and we
+    -- have to use newsFeedText.
     let title = T.pack "Snowdrift.coop Deployments"
-        feed_url = BuildFeedR
-        home_url = HomeR
+        feed_url = render BuildFeedR
+        home_url = render HomeR
         author = "Snowdrift.coop Team"
         description = "Deployments of the Snowdrift.coop site"
         lang = "en"
         time :: UTCTime
         (time:_) = map buildBootTime builds
 
-    render <- getUrlRender
 
-    entries :: [FeedEntry (Route App)] <- forM builds $ \build -> do
+    entries :: [FeedEntry Text] <- forM builds $ \build -> do
         let prettyDiff = mapM_ (\line -> toHtml line >> br) $ T.lines $ buildDiff build
             html = [hamlet|
                        <pre>
                             #{prettyDiff}
                    |]
-            entry = FeedEntry (ProjectR "snowdrift") (buildBootTime build) (buildBase build) (html render)
-
+            entry = FeedEntry (gitlab <> buildBase build)
+                              (buildBootTime build)
+                              (buildBase build)
+                              (html render)
         return entry
 
-    newsFeed $ Feed title feed_url home_url author description lang time entries
-
+    newsFeedText $ Feed title feed_url home_url author description lang time entries
+  where gitlab = "https://git.gnu.io/snowdrift/snowdrift/commit/"
