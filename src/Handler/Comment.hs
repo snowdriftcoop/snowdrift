@@ -516,7 +516,7 @@ postNewComment
                                 alertSuccess "comment submitted for moderation"
                                 return $ ConfirmedPost $ Right comment_id
             _ -> do
-                let stuff c = do
+                let fetchCommentData c = do
                         closure <- fetchCommentAncestorClosuresDB' c
                         retract <- fetchCommentAncestorRetractsDB' c
                         depth <- fetchCommentDepthDB c
@@ -524,7 +524,7 @@ postNewComment
 
                 (earlier_closures, earlier_retracts, depth) <- runDB
                     (fmap (fromMaybe ([], [], 0))
-                          (sequence (fmap stuff mparent_id)))
+                          (sequence (fmap fetchCommentData mparent_id)))
 
                 (form, _) <-
                     generateFormPost
