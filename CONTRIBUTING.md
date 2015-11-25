@@ -192,7 +192,15 @@ all the commits in the future. Then save and close the editor.
 
 #### Getting your changes merged
 
-After committing, send your changes to your git.gnu.io account with:
+When you are ready to share your work, there are two things to check first.
+
+1. Run tests in 'pedantic' mode with `stack test --pedantic`. This provides
+   an extra level of code assurance.
+2. If you added any files, add them to the repository with
+   `git add <files>`.
+
+Once all tests passed and you have commited all code, send your changes to
+your git.gnu.io account with:
 
     git push -u my-snow some_branch
 
