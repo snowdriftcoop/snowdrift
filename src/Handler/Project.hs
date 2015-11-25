@@ -213,7 +213,7 @@ getProjectR project_handle = do
             Just viewer_id -> userIsWatchingProjectDB viewer_id project_id
         return (project_id, project, is_watching)
 
-    defaultLayoutNew $ do
+    defaultLayout $ do
         snowdriftTitle $ projectName project
         renderProject (Just project_id) project mviewer_id is_watching
 
