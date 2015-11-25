@@ -7,12 +7,12 @@ import Handler.Utils
 
 getHomeR :: Handler Html
 getHomeR =
-    defaultLayoutNew $ do
+    defaultLayoutNew "homepage" $ do
         snowdriftTitle "Free the Commons"
         $(widgetFile "homepage")
 
 getIntroR :: Handler Html
 getIntroR =
-    defaultLayoutNew $ do
+    defaultLayoutNew "intro" $ do
         snowdriftTitle "Some Title Here"
         $(widgetFile "intro")

@@ -1,18 +1,17 @@
-<div .container .homepage>
-  <article>
-    <div .section .group>
-      <div .col .span_12_of_12>
-        <a href=# .logo-big>
-          <img src="static/img/logo-big.png" alt=Snowdrift.coop>
-        <.rotate .break4>
-          <.sun>
-        <.background>
-          <.plane .break4>
-        <.foreground>
-        <a href=@{IntroR} .button >How it Works
-        <p>
-          <a href=# .join>Join us in setting the world free!
-        <p>
-          We sustainably fund sharable, freely-licensed projects.<br>
-          They benefit everyone in the world and we cooperate to fund them.<br>
-          Let's clear the path to a better world!
+<article>
+  <div .section .group>
+    <div .col .span_12_of_12>
+      <a href=# .logo-big>
+        <img src="static/img/logo-big.png" alt=Snowdrift.coop>
+      <.rotate .break4>
+        <.sun>
+      <.background>
+        <.plane .break4>
+      <.foreground>
+      <a href=@{IntroR} .button >How it Works
+      <p>
+        <a href=# .join>Join us in setting the world free!
+      <p>
+        We sustainably fund sharable, freely-licensed projects.<br>
+        They benefit everyone in the world and we cooperate to fund them.<br>
+        Let's clear the path to a better world!

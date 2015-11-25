@@ -464,8 +464,10 @@ readMaybe s = case [x | (x,t) <- reads s, ("","") <- lex t] of
 -- Once the new design is in place, this will probably replace
 -- defaultLayout... though we may want to continue to have separate
 -- 'defaults' for different sections e.g. project pages
-defaultLayoutNew :: Widget -> Handler Html
-defaultLayoutNew widget = do
+--
+-- pageName is used as a class for a top-level <div> wrapper.
+defaultLayoutNew :: Text -> Widget -> Handler Html
+defaultLayoutNew pageName widget = do
     master <- getYesod
     mmsg <- getMessage
     malert <- getAlert
