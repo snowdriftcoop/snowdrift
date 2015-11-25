@@ -16,21 +16,22 @@
         <.topic .match>
           <h2>A Matching Pledge
           <p>
-            Instead of donating alone or having a one-time threshold, we achieve critical
-            mass with a simple network effect: Each patron of a project agrees to donate
-            more when other patrons come help.
+            Instead of donating alone or having a one-time threshold, we
+            achieve critical mass with a simple network effect: Each patron
+            of a project agrees to donate more when other patrons come
+            help.
           <a href=# .more>more about the network effect
         <img src=@{StaticR img_intro_sustain_png}>
         <.topic .sustain>
           <h2>Sustainability
           <p>
-            Ongoing funding gives project teams a sustainable living while providing
-            accountability.
+            Ongoing funding gives project teams a sustainable living while
+            providing accountability.
           <a href=# .more>more about sustainable funding
         <img src=@{StaticR img_intro_coop_png}>
         <.topic .coop>
           <h2>Democracy
           <p>
-            As anon-profit cooperative, we serve the interests of our community, and
-            everyone can participate.
+            As a non-profit cooperative, we serve the interests of our
+            community, and everyone can participate.
           <a href=# .more>more about the coop
