@@ -2,9 +2,9 @@ function persona_login() {
     navigator.id.request(
         { siteName: null
         // , siteLogo: '/static/img/logo.png'
-        , termsOfService: '@{ToUR}'
+        , termsOfService: '@{TermsR}'
         , privacyPolicy: '@{PrivacyR}'
-        , returnTo: '@{PostLoginR}'
+        , returnTo: '@{HomeR}'
         , oncancel: function() {}
         }
     );

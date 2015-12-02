@@ -3,7 +3,7 @@
     <strong>
       We also offer a built-in system
     <div #new-account-button>
-      <a href=@{UserCreateR}>
+      <a href=@{USignupR}>
         <button>click here to create a new account
     <p> or log-in below:
   <form .form-horizontal
