@@ -8,7 +8,7 @@
 
 /intro IntroR:
     /               IntroHomeR      GET
-    /shareable      SharingR        GET
+    /shareable      ShareableR      GET
     /matching       MatchingR       GET
     /sustainability SustainabilityR GET
     /democracy      DemocracyR      GET

@@ -9,7 +9,7 @@ import Widgets.Doc
 
 getHomeR,
     getIntroHomeR,
-    getSharingR,
+    getShareableR,
     getMatchingR,
     getSustainabilityR,
     getDemocracyR,
@@ -19,10 +19,10 @@ getHomeR,
         :: Handler Html
 
 getHomeR           = $(simpleHandler "homepage" "Free the Commons")
-getIntroHomeR      = $(simpleHandler "intro/home" "Some Title Here")
-getSharingR        = $(simpleHandler "intro/sharing" "Sharing")
-getMatchingR       = $(simpleHandler "intro/matching" "Matching")
-getSustainabilityR = $(simpleHandler "intro/sustainability" "Sustainability")
+getIntroHomeR      = $(simpleHandler "intro/home" "Intro")
+getShareableR      = $(simpleHandler "intro/shareable-works" "Shareable Works")
+getMatchingR       = $(simpleHandler "intro/matching" "Matching Pledges")
+getSustainabilityR = $(simpleHandler "intro/sustainability" "Sustainable Funding")
 getDemocracyR      = $(simpleHandler "intro/democracy" "Democracy")
 getAboutR          = $(simpleHandler "about" "About")
 getTermsR = defaultLayoutNew "terms-of-use" $ do

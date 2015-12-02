@@ -1,1 +1,7 @@
-This is foobar
+Placeholder for the intro!
+
+<ul>
+  <li><a href=@{IntroR ShareableR}>Shareable works
+  <li><a href=@{IntroR MatchingR}>A matching pledge
+  <li><a href=@{IntroR SustainabilityR}>Sustainable funding
+  <li><a href=@{IntroR DemocracyR}>Democracy and participation
