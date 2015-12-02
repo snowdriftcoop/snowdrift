@@ -59,6 +59,7 @@ library
         Handler.Invitation
         Handler.JsLicense
         Handler.MarkdownTutorial
+        Handler.NewDesign
         Handler.Notification
         Handler.PostLogin
         Handler.Privacy
@@ -69,6 +70,7 @@ library
         Handler.Simple
         Handler.SnowdriftEvent
         Handler.Sponsors
+        Handler.TH
         Handler.ToU
         Handler.Trademarks
         Handler.User

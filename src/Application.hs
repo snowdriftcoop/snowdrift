@@ -48,6 +48,7 @@ import Handler.Image
 import Handler.Invitation
 import Handler.JsLicense
 import Handler.MarkdownTutorial
+import Handler.NewDesign
 import Handler.Notification
 import Handler.PostLogin
 import Handler.Privacy
