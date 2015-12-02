@@ -9,8 +9,11 @@ import Import
 
 import Handler.TH
 import Handler.Utils
+import Model.Count
 import Model.License (fetchLicensesDB)
+import Model.Project
 import View.Project.Signup (projectSignupForm)
+import qualified Mechanism as Mech
 
 getSearchR,
     getUSignupR,
@@ -83,3 +86,21 @@ postPSignupFormR = do
         FormFailure _ -> do
             alertDanger "Form failure"
             $(simpleHandler "project-signup-form" "Project Sign Up")
+
+
+
+-- | Projects list.
+getProjectsR :: Handler Html
+getProjectsR = do
+    project_summaries <- runDB $ do
+        projects <- fetchPublicProjectsDB
+        forM projects $ \project -> do
+            discussions <- fetchProjectDiscussionsDB $ entityKey project
+            tickets <- fetchProjectOpenTicketsDB (entityKey project) Nothing
+            let summary = summarizeProject project Mech.Project discussions tickets
+            return (project, summary)
+
+    let discussionsCount = getCount . summaryDiscussionCount
+    let ticketsCount = getCount . summaryTicketCount
+
+    $(simpleHandler "projects" "Projects")

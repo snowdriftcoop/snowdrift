@@ -30,7 +30,6 @@ import Model.Comment.ActionPermissions
 import Model.Comment.HandlerInfo
 import Model.Comment.Mods
 import Model.Comment.Sql
-import Model.Count
 import Model.Currency
 import Model.Discussion
 import Model.Issue
@@ -178,26 +177,6 @@ projectDiscussionPage project_handle widget = do
     $(widgetFile "project_discussion_wrapper")
     toWidget $(cassiusFile "templates/comment.cassius")
 
-
--------------------------------------------------------------------------------
---
-
-getProjectsR :: Handler Html
-getProjectsR = do
-    project_summaries <- runDB $ do
-        projects <- fetchPublicProjectsDB
-        forM projects $ \project -> do
-            discussions <- fetchProjectDiscussionsDB $ entityKey project
-            tickets <- fetchProjectOpenTicketsDB (entityKey project) Nothing
-            let summary = summarizeProject project Mech.Project discussions tickets
-            return (project, summary)
-
-    let discussionsCount = getCount . summaryDiscussionCount
-    let ticketsCount = getCount . summaryTicketCount
-
-    defaultLayout $ do
-        snowdriftTitle "Projects"
-        $(widgetFile "projects")
 
 --------------------------------------------------------------------------------
 -- /
