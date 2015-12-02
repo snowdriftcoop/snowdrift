@@ -71,7 +71,6 @@ library
         Handler.SnowdriftEvent
         Handler.Sponsors
         Handler.TH
-        Handler.ToU
         Handler.Trademarks
         Handler.User
         Handler.User.Comment

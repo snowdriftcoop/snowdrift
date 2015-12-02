@@ -4,6 +4,8 @@ module Handler.Simple where
 import Import
 
 import Handler.TH
+import Handler.Utils
+import Widgets.Doc
 
 getHomeR,
     getIntroHomeR,
@@ -23,5 +25,7 @@ getMatchingR       = $(simpleHandler "intro/matching" "Matching")
 getSustainabilityR = $(simpleHandler "intro/sustainability" "Sustainability")
 getDemocracyR      = $(simpleHandler "intro/democracy" "Democracy")
 getAboutR          = $(simpleHandler "about" "About")
-getTermsR          = $(simpleHandler "terms-of-use" "Terms of Use")
+getTermsR = defaultLayoutNew "terms-of-use" $ do
+    snowdriftTitle "Terms of Use"
+    renderDoc "Terms of Use"
 getContactR        = $(simpleHandler "contact" "Contact")

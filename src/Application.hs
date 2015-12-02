@@ -59,7 +59,6 @@ import Handler.ResetPassword
 import Handler.Simple
 import Handler.SnowdriftEvent
 import Handler.Sponsors
-import Handler.ToU
 import Handler.Trademarks
 import Handler.User
 import Handler.User.Comment
