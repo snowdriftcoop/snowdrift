@@ -64,7 +64,6 @@ library
         Handler.PostLogin
         Handler.Privacy
         Handler.Project
-        Handler.Project.Signup
         Handler.ProjectBlog
         Handler.ResetPassword
         Handler.Simple

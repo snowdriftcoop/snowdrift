@@ -1,7 +1,7 @@
 <h1>
   <div .text-center>Project sign up
 
-<form method=POST action=@{ProjectSignupR}>
+<form method=POST action=@{PSignupFormR}>
   ^{project_signup_form}
   $# XXX: Add preview.
   $# <input name=mode type=submit value=preview>

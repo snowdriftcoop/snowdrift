@@ -14,8 +14,8 @@
     /democracy      DemocracyR      GET
 /               HomeR          GET
 /about          AboutR         GET
-/project-signup ProjectSignupR GET
-/terms          TermsR         GET -- FIXME: ToUR
+/project-signup PSignupR GET
+/terms          TermsR         GET
 /privacy        PrivacyR       GET
 /trademarks     TrademarksR    GET
 /contact        ContactR       GET
@@ -27,12 +27,10 @@
 -- ## Known broken pages
 --
 
--- These two just won't work.
-/search              SearchR     GET
-/project-signup-form SignupFormR GET
+/search SearchR GET
 
 -- Determine why this exists.
-/dest                PostLoginR  GET
+/dest PostLoginR GET
 
 -- This might be folded into some other page?
 /honor-pledge HonorPledgeR GET POST
@@ -81,6 +79,14 @@
 /static StaticR Static appStatic
 /favicon.ico FaviconR GET
 /robots.txt  RobotsR  GET
+
+
+--
+-- ## Signup Form (not advertised for alpha)
+--
+
+/project-signup-form PSignupFormR GET POST
+
 
 --
 -- ### EXISTING STUFF (NOT NEW FOR ALPHA)

@@ -15,7 +15,8 @@ getHomeR,
     getDemocracyR,
     getAboutR,
     getTermsR,
-    getContactR
+    getContactR,
+    getPSignupR
         :: Handler Html
 
 getHomeR           = $(simpleHandler "homepage" "Free the Commons")
@@ -25,6 +26,7 @@ getMatchingR       = $(simpleHandler "intro/matching" "Matching Pledges")
 getSustainabilityR = $(simpleHandler "intro/sustainability" "Sustainable Funding")
 getDemocracyR      = $(simpleHandler "intro/democracy" "Democracy")
 getAboutR          = $(simpleHandler "about" "About")
+getPSignupR        = $(simpleHandler "project-signup" "Project Signup")
 getTermsR = defaultLayoutNew "terms-of-use" $ do
     snowdriftTitle "Terms of Use"
     renderDoc "Terms of Use"

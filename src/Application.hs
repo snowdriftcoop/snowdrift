@@ -53,7 +53,6 @@ import Handler.Notification
 import Handler.PostLogin
 import Handler.Privacy
 import Handler.Project
-import Handler.Project.Signup
 import Handler.ProjectBlog
 import Handler.ResetPassword
 import Handler.Simple

@@ -9,9 +9,10 @@ import Import
 
 import Handler.TH
 import Handler.Utils
+import Model.License (fetchLicensesDB)
+import View.Project.Signup (projectSignupForm)
 
 getSearchR,
-    getSignupFormR,
     getUSignupR,
     postUSignupR,
     getUTransactionsR,
@@ -22,7 +23,6 @@ getSearchR,
     :: Handler Html
 
 getSearchR        = $(simpleHandler "search" "Search")
-getSignupFormR    = $(simpleHandler "project/signup" "Project Signup")
 getUSignupR       = $(simpleHandler "signup" "Signup")
 postUSignupR      = $(simpleHandler "post-signup" "Signup")
 getUTransactionsR = $(simpleHandler "transactions" "Transactions")
@@ -48,3 +48,38 @@ getPTransactionsR handle =
     defaultLayoutNew "project/transactions" $ do
         snowdriftTitle (handle <> ": Transactions")
         $(widgetFile "project/transactions")
+
+
+--
+-- #### NEEDS REVIEW. COPIED FROM EXISTING PAGES.
+--
+
+-- | Where projects actually sign up.
+--
+-- As opposed to getPSignupR, where they learn about signing up. This page
+-- will not be advertised during alpha.
+getPSignupFormR :: Handler Html
+getPSignupFormR = do
+    licenses <- runDB fetchLicensesDB
+    render   <- getUrlRender
+    (project_signup_form, _) <- generateFormPost $
+        projectSignupForm render licenses
+    $(simpleHandler "project-signup-form" "Project Sign Up")
+
+postPSignupFormR :: Handler Html
+postPSignupFormR = do
+    licenses <- runDB fetchLicensesDB
+    render   <- getUrlRender
+    ((result, project_signup_form), _) <- runFormPost $
+        projectSignupForm render licenses
+    case result of
+        FormSuccess res  -> do
+            runDB $ insert_ res
+            alertSuccess "Application submitted"
+            redirect HomeR
+        FormMissing      -> do
+            alertDanger "No data provided"
+            $(simpleHandler "project-signup-form" "Project Sign Up")
+        FormFailure _ -> do
+            alertDanger "Form failure"
+            $(simpleHandler "project-signup-form" "Project Sign Up")
