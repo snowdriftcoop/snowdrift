@@ -47,7 +47,7 @@ userPledges user_id = do
             $forall summary <- project_summaries
               <tr>
                 <td>
-                  <a href=@{ProjectR (summaryProjectHandle summary)}>
+                  <a href=@{ProjectR (summaryProjectHandle summary) PHomeR}>
                     #{summaryName summary}
                 <td colspan=3><em>TODO: Mechanism data</em>
       |]

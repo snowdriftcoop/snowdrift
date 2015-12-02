@@ -53,7 +53,7 @@ blogSpecs = do
         yit "loads the project page - no blog post" $ [marked|
             loginAs TestUser
 
-            get200 $ ProjectR "snowdrift"
+            get200 $ ProjectR "snowdrift" PHomeR
 
         {-
             htmlNoneContain "#blog-post" "Above fold."
@@ -119,7 +119,7 @@ blogSpecs = do
         yit "loads the project page - with blog post" $ [marked|
             loginAs TestUser
 
-            get200 $ ProjectR "snowdrift"
+            get200 $ ProjectR "snowdrift" PHomeR
 
             htmlAllContain "#blog-post" "Above fold."
             htmlNoneContain "#blog-post" "Below fold."

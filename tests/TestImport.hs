@@ -522,7 +522,7 @@ pledgeStatus project_id shares status = [marked|
             fromMaybe (error $ "cannot find project " <> pprint project_id)
     let handle  = projectHandle project
         tshares = shpack shares
-    get200 $ ProjectR handle
+    get200 $ ProjectR handle PHomeR
 
     let route = UpdatePledgeR handle
     withStatus status False $ request $ do

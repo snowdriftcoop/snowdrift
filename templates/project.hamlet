@@ -1,5 +1,5 @@
 <nav .snowdrift-sidebar>
-  <a href=@{ProjectR $ projectHandle project}>
+  <a href=@{ProjectR (projectHandle project) PHomeR}>
     <figure .project-logo>
       $maybe logo <- projectLogo project
         <img src=@{ImageR logo}>
@@ -50,7 +50,7 @@
         <span .glyphicon .glyphicon-tag>
         Tickets
     <li .snowdrift-sidebar-item>
-      <a href=@{ProjectTransactionsR $ projectHandle project}>
+      <a href=@{ProjectR (projectHandle project) PTransactionsR}>
         <span .glyphicon .glyphicon-stats>
         Transactions
     <li .snowdrift-sidebar-item>

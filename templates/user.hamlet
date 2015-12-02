@@ -65,7 +65,7 @@ $if Just user_id == mviewer_id
       <tbody>
         $forall (Entity _ project, roles) <- M.toAscList projects_and_roles
           <tr>
-          <td><a href=@{ProjectR (projectHandle project)}>
+          <td><a href=@{ProjectR (projectHandle project) PHomeR}>
             #{projectName project}
 
           $forall role' <- presentationRoles

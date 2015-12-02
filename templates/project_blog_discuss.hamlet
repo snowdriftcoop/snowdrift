@@ -2,7 +2,7 @@
   <div .page-tool>
     <a href=@{BlogPostR project_handle post_name}> back to blog post
   <div .page-tool>
-    <a href=@{ProjectR project_handle}> back to main project page
+    <a href=@{ProjectR project_handle PHomeR}> back to main project page
   $if has_comments
     <div .page-tool>
       <a href=@{NewBlogPostDiscussionR project_handle post_name}> new topic

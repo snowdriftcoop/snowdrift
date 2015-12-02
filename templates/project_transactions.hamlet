@@ -37,7 +37,7 @@ $else
                         #{userDisplayName user}
 
                     $of Just (Left project)
-                      <a href=@{ProjectR $ projectHandle $ entityVal project}>
+                      <a href=@{ProjectR (projectHandle (entityVal project)) PHomeR}>
                         #{projectName $ entityVal project}
 
                     $of Nothing
