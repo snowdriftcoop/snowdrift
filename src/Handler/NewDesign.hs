@@ -7,18 +7,21 @@ module Handler.NewDesign where
 
 import Import
 
+import Data.Maybe (fromJust)
+
 import Handler.TH
 import Handler.Utils
+import Handler.User (startEmailVerification)
 import Model.Count
 import Model.License (fetchLicensesDB)
 import Model.Project
 import Model.User
 import View.Project
 import View.Project.Signup (projectSignupForm)
+import View.User
 import qualified Mechanism as Mech
 
 getSearchR,
-    getUSignupR,
     postUSignupR,
     getUTransactionsR,
     getUNoticesR,
@@ -28,7 +31,6 @@ getSearchR,
     :: Handler Html
 
 getSearchR        = $(simpleHandler "search" "Search")
-getUSignupR       = $(simpleHandler "signup" "Signup")
 postUSignupR      = $(simpleHandler "post-signup" "Signup")
 getUTransactionsR = $(simpleHandler "transactions" "Transactions")
 getUNoticesR      = $(simpleHandler "notices" "Notices")
@@ -134,3 +136,40 @@ getPHomeR handle = do
         snowdriftTitle $ projectName project
         projectNav handle
         renderProject (Just project_id) project mviewer_id is_watching
+
+-- | The signup page for new users.
+getUSignupR :: Handler Html
+getUSignupR = do
+    (form, _) <- generateFormPost $ createUserForm Nothing
+    defaultLayoutNew "signup" $ do
+        snowdriftTitle "Create User"
+        [whamlet|
+            <form method=POST>
+                ^{form}
+                <input type=submit>
+        |]
+
+-- | Handles form posting for a user signing up.
+postUserCreateR :: Handler Html
+postUserCreateR = do
+    ((result, form), _) <- runFormPost $ createUserForm Nothing
+
+    case result of
+        FormSuccess (ident, passwd, name, memail, avatar, nick) -> do
+            createUser ident (Just passwd) name (NewEmail False <$> memail) avatar nick
+                >>= \muser_id -> when (isJust muser_id) $ do
+                    when (isJust memail) $ do
+                        let email   = fromJust memail
+                            user_id = fromJust muser_id
+                        startEmailVerification user_id email
+                    setCreds True $ Creds "hashdb" ident []
+                    redirectUltDest HomeR
+
+        FormMissing -> alertDanger "missing field"
+        FormFailure strings -> alertDanger (mconcat strings)
+
+    defaultLayout $ [whamlet|
+        <form method=POST>
+            ^{form}
+            <input type=submit>
+    |]

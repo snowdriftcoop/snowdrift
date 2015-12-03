@@ -42,7 +42,7 @@
 -- The Auth subsite (login + logout)
 /auth AuthR Auth getAuth
 /reset-password ResetPasswordR GET POST
-/signup         USignupR       GET POST -- FIXME: UserCreateR
+/signup         USignupR       GET POST
 
 --
 -- ## User dashboard

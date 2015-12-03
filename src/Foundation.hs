@@ -249,7 +249,7 @@ instance YesodAuth App where
         app <- lift getYesod
         toParent <- getRouteToParent
 
-        lift $ defaultLayout $(widgetFile "auth")
+        lift $ defaultLayoutNew "auth" $(widgetFile "auth")
 
 instance YesodAuthPersist App
 
