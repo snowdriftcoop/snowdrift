@@ -43,12 +43,28 @@ getPUpdatesR,
 getPUpdatesR handle =
     defaultLayoutNew "project/updates" $ do
         snowdriftTitle (handle <> ": Updates")
+        projectNav handle
         $(widgetFile "project/updates")
 getPTransactionsR handle =
     defaultLayoutNew "project/transactions" $ do
         snowdriftTitle (handle <> ": Transactions")
+        projectNav handle
         $(widgetFile "project/transactions")
 
+--
+-- #### Helper functions for projects
+--
+
+projectNav :: ProjectHandle -> Widget
+projectNav handle =
+    [whamlet|
+        <h3>Subpages
+        <ul>
+            <li><a href=@{ProjectR handle PUpdatesR}>Updates
+            <li><a href=@{WikiPagesR handle}>Wiki</a> (links to pre-alpha)
+            <li><a href=@{ProjectDiscussionR handle}>Discussion</a> (links to pre-alpha)
+            <li><a href=@{ProjectR handle PTransactionsR}>Transactions
+    |]
 
 --
 -- #### NEEDS REVIEW. COPIED FROM EXISTING PAGES.
@@ -116,12 +132,5 @@ getPHomeR handle = do
 
     defaultLayoutNew "project/home" $ do
         snowdriftTitle $ projectName project
-        [whamlet|
-            <h3>Subpages
-            <ul>
-                <li><a href=@{ProjectR handle PUpdatesR}>Updates
-                <li><a href=@{WikiPagesR handle}>Wiki</a> (links to existing)
-                <li><a href=@{ProjectDiscussionR handle}>Discussion</a> (links to existing)
-                <li><a href=@{ProjectR handle PTransactionsR}>Transactions
-        |]
+        projectNav handle
         renderProject (Just project_id) project mviewer_id is_watching
