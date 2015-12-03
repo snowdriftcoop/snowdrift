@@ -51,7 +51,6 @@ import Handler.MarkdownTutorial
 import Handler.NewDesign
 import Handler.Notification
 import Handler.PostLogin
-import Handler.Privacy
 import Handler.Project
 import Handler.ProjectBlog
 import Handler.ResetPassword

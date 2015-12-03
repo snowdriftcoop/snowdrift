@@ -15,6 +15,7 @@ getHomeR,
     getDemocracyR,
     getAboutR,
     getTermsR,
+    getPrivacyR,
     getContactR,
     getPSignupR
         :: Handler Html
@@ -27,7 +28,11 @@ getSustainabilityR = $(simpleHandler "intro/sustainability" "Sustainable Funding
 getDemocracyR      = $(simpleHandler "intro/democracy" "Democracy")
 getAboutR          = $(simpleHandler "about" "About")
 getPSignupR        = $(simpleHandler "project-signup" "Project Signup")
+getContactR        = $(simpleHandler "contact" "Contact")
+-- * TODO: Convert these.
 getTermsR = defaultLayoutNew "terms-of-use" $ do
     snowdriftTitle "Terms of Use"
     renderDoc "Terms of Use"
-getContactR        = $(simpleHandler "contact" "Contact")
+getPrivacyR = defaultLayoutNew "privacy" $ do
+    snowdriftTitle "Privacy Policy"
+    renderDoc "Privacy Policy"

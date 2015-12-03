@@ -62,7 +62,6 @@ library
         Handler.NewDesign
         Handler.Notification
         Handler.PostLogin
-        Handler.Privacy
         Handler.Project
         Handler.ProjectBlog
         Handler.ResetPassword
