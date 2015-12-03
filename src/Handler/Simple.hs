@@ -36,3 +36,7 @@ getTermsR = defaultLayoutNew "terms-of-use" $ do
 getPrivacyR = defaultLayoutNew "privacy" $ do
     snowdriftTitle "Privacy Policy"
     renderDoc "Privacy Policy"
+getTrademarksR :: Handler Html
+getTrademarksR = defaultLayout $ do
+    snowdriftTitle "Trademarks"
+    renderDoc "Trademarks"
