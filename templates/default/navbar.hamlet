@@ -4,14 +4,7 @@
       <a .logo href=@{HomeR}>
         <img src=@{StaticR img_logo_small_png} alt=Snowdrift.coop>
     <li>
-      <!-- <a href=@{ProjectsR} .icon .cards>Browse -->
-      <div .ddown>
-        <a href=# .ddown-toggle>Browse
-        <ul>
-          <li>
-            <a href=@{ProjectsR}>Projects
-          <li>
-            <a href=@{UsersR}>Users
+      <a href=@{ProjectsR} .icon .cards>Browse Projects
     <!-- <li .break4>
       <a href=@{IntroR}>How it works -->
     <li .break6>
@@ -23,10 +16,12 @@
     <li .unbreak4>
       <a href=# .icon .login>Log in
     -->
+    <!-- Commenting out search bar, as we do not yet have a search engine
     <li .search>
       <a href=# .icon .lookingglass>Search
       <form .break4>
-        <input type=text placeholder="Coming Soon..." disabled><button type=button>go
+        <input type=text placeholder="Search..." disabled><button type=button>go
+    -->
   <ul .right .break4>
     $maybe Entity user_id user <- muser
       <li>
