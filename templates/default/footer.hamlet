@@ -2,32 +2,42 @@
   <div .section .group>
     <div .col .span_12_of_12>
       <a href=@{HomeR} .logo>
-        <img src="@{StaticR img_logo_png}" alt=Snowdrift.coop>
+        <img src=@{StaticR img_logo_png} alt=Snowdrift.coop>
   <div .section .group>
     <div .col .span_4_of_12>
       <ul>
         <li>
-          <a href=#>Help
+          <u>
+            <h3>Browse
         <li>
-          <a href=#>How it works
-        <li>
-          <a href=#>Join us
-        <li>
-          <a href=#>FAQ
-        <li>
-          <a href=#>Browse
-    <div .col .span_4_of_12>
+          <a href=@{UsersR}>Users
       <ul>
         <li>
-          <a href=#>About us
+          <u>
+            <h3>About Snowdrift
+        <li>
+          <a href=@{IntroR}>How it works
+        <li>
+          <a href=@{DonateR}>Donate
         <li>
           <a href=#>Team
         <li>
-          <a href=#>Press
+          <a href=@{SponsorsR}>Our Sponsors
+    <div .col .span_4_of_12>
+      <br>
+      <ul>
         <li>
-          <a href=#>Blog
+          <a href=@{ProjectsR}>Projects
+      <br>
+      <ul>
         <li>
-          <a href=#>Contact
+          <a href=@{PrivacyR}>Privacy Policy
+        <li>
+          <a href=@{ToUR}>Terms Of Use
+        <li>
+          <a href=@{HonorPledgeR}>Honor Pledge
+        <li>
+          <a href=@{ProjectContactR "snowdrift"}>Contact
     <div .col .span_4_of_12>
       <ul>
         <li>

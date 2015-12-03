@@ -12,6 +12,7 @@ import Control.Monad.Writer.Strict (WriterT, runWriterT)
 import Data.Char (isSpace)
 import Data.Text as T
 import Network.HTTP.Conduit (Manager)
+import Network.Libravatar
 import Text.Blaze.Html.Renderer.Text (renderHtml)
 import Text.Hamlet (hamletFile)
 import Text.Jasmine (minifym)
@@ -469,7 +470,21 @@ defaultLayoutNew widget = do
     master <- getYesod
     mmsg <- getMessage
     malert <- getAlert
+    muser <- maybeAuth
 
+    -- Use Libravatar for an avatar if available.  Otherwise, use default
+    -- Default URL is hardcoded to allow usage even while developing on local
+    --    machine.
+    let defaultUrl = "http://snowdrift.coop/static/img/default-avatar.png"
+    mavatar <- liftIO $ maybe (return $ Just defaultUrl) 
+                            (\email -> fmap (fmap T.pack) $ 
+                                   avatarUrl (Left $ T.unpack email)
+                                             False
+                                             (Just $ T.unpack defaultUrl)
+                                             Nothing)
+                            (userEmail . entityVal =<< muser)
+
+    let avatar = fromMaybe defaultUrl mavatar
     let navbar :: Widget = $(widgetFile "default/navbar")
     let footer :: Widget = $(widgetFile "default/footer")
 

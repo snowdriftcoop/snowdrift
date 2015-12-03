@@ -11,7 +11,7 @@
         <.foreground>
         <a href=@{IntroR} .button >How it Works
         <p>
-          <a href=# .join>Join us in setting the world free!
+          <a href=@{AuthR LoginR} .join>Join us in setting the world free!
         <p>
           We sustainably fund sharable, freely-licensed projects.<br>
           They benefit everyone in the world and we cooperate to fund them.<br>
