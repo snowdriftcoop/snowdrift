@@ -1,0 +1,128 @@
+<nav .snowdrift-sidebar>
+  <a href=@{ProjectR (projectHandle project) PHomeR}>
+    <figure .project-logo>
+      $maybe logo <- projectLogo project
+        <img src=@{ImageR logo}>
+      $nothing
+        <img src=@{StaticR img_default_project_logo_png}>
+  $maybe _ <- mviewer_id
+    $maybe project_id <- maybe_project_id
+      <div .text-center>
+        $if is_watching
+          <form method=POST action=@{UnwatchProjectR project_id}>
+            <input type=submit value="unwatch">
+        $else
+          <form method=POST action=@{WatchProjectR project_id}>
+            <input type=submit value="watch">
+  <ul .project-nav>
+    $if userIsAdmin
+      <li .snowdrift-sidebar-item>
+        <a href=@{EditProjectR $ projectHandle project}>
+          <span .glyphicon .glyphicon-cog>
+          Edit Project
+      <li .snowdrift-sidebar-item>
+        <a href=@{InviteR $ projectHandle project}>
+          <span .glyphicon .glyphicon-link>
+          Invite
+      <hr>
+    <li .snowdrift-sidebar-item>
+      <a href=@{ProjectBlogR $ projectHandle project}>
+        <span .glyphicon .glyphicon-edit>
+        Blog
+    <li .snowdrift-sidebar-item>
+      <a href=@{ProjectContactR $ projectHandle project}>
+        <span .glyphicon .glyphicon-envelope>
+        Contact
+    <li .snowdrift-sidebar-item>
+      <a href=@{ProjectDiscussionR $ projectHandle project}>
+        <span .glyphicon .glyphicon-comment>
+        Discussion Board
+    <li .snowdrift-sidebar-item>
+      <a href=@{ProjectFeedR $ projectHandle project}>
+        <span .glyphicon .glyphicon-th-list>
+        Project Feed
+    <li .snowdrift-sidebar-item>
+      <a href=@{WhoR $ projectHandle project}>
+        <span .glyphicon .glyphicon-user>
+        Team Members
+    <li .snowdrift-sidebar-item>
+      <a href=@{TicketsR $ projectHandle project}>
+        <span .glyphicon .glyphicon-tag>
+        Tickets
+    <li .snowdrift-sidebar-item>
+      <a href=@{ProjectR (projectHandle project) PTransactionsR}>
+        <span .glyphicon .glyphicon-stats>
+        Transactions
+    <li .snowdrift-sidebar-item>
+      <a href=@{VolunteerR $ projectHandle project}>
+        <span .glyphicon .glyphicon-check>
+        Volunteer
+    <li .snowdrift-sidebar-item>
+      <a href=@{WikiPagesR $ projectHandle project}>
+        <span .glyphicon .glyphicon-book>
+        Wiki
+
+<div .row>
+  <div .col-md-7 .col-sm-8 .col-xs-12>
+    <h1 .text-center> #{projectName project}
+    <section .p-blurb>
+      <p>#{projectBlurb project}
+    <section .p-description>
+      ^{description}
+    <section .pledge-form>
+      $maybe _ <- maybe_project_id
+        <form method=GET
+              action=@{UpdatePledgeR $ projectHandle project}>
+          ^{update_pledge}
+          $maybe _ <- mechUser
+            <input disabled .pledge type=submit value="update pledge">
+          $nothing
+            <input disabled .pledge type=submit value="enter pledge">
+      $nothing
+        ^{update_pledge}
+      <div .testing-notice>
+        2015/11/05: Pledging temporarily disabled pending new code.
+
+  <div .project-stats .col-md-3 .col-xs-12>
+    <div .testing-notice>
+      <div .testing-notice>
+        2015/11/05: All mechanism statistics temporarily removed pending
+        new code.
+
+    <table>
+      <tr>
+        <th>Current patrons
+      <tr>
+        <td>
+          <a href=@{ProjectPatronsR $ projectHandle project}>
+            FIXME: Number of patrons goes here.
+      <tr>
+        <td>
+          <span .pledge-stat>FIXME: Project value
+    <table>
+      <tr>
+        <th>Next new patron
+      <tr>
+        <td>
+          minimum new pledge:
+          <span .pledge-stat>FIXME: Share value
+          per month
+      <tr>
+        <td>
+
+          matching from others:
+          <span .pledge-stat>FIXME: matching amount
+          per month
+    <table>
+      <tr>
+        <th>History
+      $maybe (last, year, total) <- amounts
+        <tr>
+          <td>
+            #{last} on the last payday
+        <tr>
+          <td>
+            #{year} in the past year
+        <tr>
+          <td>
+            #{total} total

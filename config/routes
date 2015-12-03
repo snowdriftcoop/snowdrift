@@ -62,7 +62,7 @@
 
 /projects         ProjectsR      GET
 /p/#ProjectHandle ProjectR:
-    /             PHomeR         GET -- FIXME: ProjectR
+    /             PHomeR         GET
     /updates      PUpdatesR      GET
     -- just link to existing wiki and discussion for now
     -- /wiki      PWikiR

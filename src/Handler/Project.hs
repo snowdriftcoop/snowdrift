@@ -181,21 +181,6 @@ projectDiscussionPage project_handle widget = do
 --------------------------------------------------------------------------------
 -- /
 
-getProjectR :: Text -> Handler Html
-getProjectR project_handle = do
-    mviewer_id <- maybeAuthId
-
-    (project_id, project, is_watching) <- runYDB $ do
-        Entity project_id project <- getBy404 $ UniqueProjectHandle project_handle
-        is_watching <- case mviewer_id of
-            Nothing -> return False
-            Just viewer_id -> userIsWatchingProjectDB viewer_id project_id
-        return (project_id, project, is_watching)
-
-    defaultLayoutNew $ do
-        snowdriftTitle $ projectName project
-        renderProject (Just project_id) project mviewer_id is_watching
-
 postProjectR :: Text -> Handler Html
 postProjectR project_handle = do
     (viewer_id, Entity project_id project) <-

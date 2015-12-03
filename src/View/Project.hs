@@ -71,7 +71,7 @@ renderProject maybe_project_id project mviewer_id is_watching = do
         p <- sequence $ fmap Mech.fetchProject maybe_project_id
         return (u,p)
 
-    $(widgetFile "project")
+    $(widgetFile "project/home")
 
 data Preview = Preview | NotPreview deriving Eq
 

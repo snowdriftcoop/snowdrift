@@ -12,6 +12,8 @@ import Handler.Utils
 import Model.Count
 import Model.License (fetchLicensesDB)
 import Model.Project
+import Model.User
+import View.Project
 import View.Project.Signup (projectSignupForm)
 import qualified Mechanism as Mech
 
@@ -34,15 +36,10 @@ getUPledgesR      = $(simpleHandler "pledges" "Pledges")
 getUMembershipR   = $(simpleHandler "memberships" "Project Memberships")
 getUEditR         = $(simpleHandler "edit-profile" "Edit Profile")
 
-getPHomeR,
-    getPUpdatesR,
+getPUpdatesR,
     getPTransactionsR
     :: Text -> Handler Html
 
-getPHomeR handle =
-    defaultLayoutNew "project/home" $ do
-        snowdriftTitle handle
-        $(widgetFile "project/home")
 getPUpdatesR handle =
     defaultLayoutNew "project/updates" $ do
         snowdriftTitle (handle <> ": Updates")
@@ -104,3 +101,27 @@ getProjectsR = do
     let ticketsCount = getCount . summaryTicketCount
 
     $(simpleHandler "projects" "Projects")
+
+-- | Public page for a project
+getPHomeR :: ProjectHandle -> Handler Html
+getPHomeR handle = do
+    mviewer_id <- maybeAuthId
+
+    (project_id, project, is_watching) <- runYDB $ do
+        Entity project_id project <- getBy404 $ UniqueProjectHandle handle
+        is_watching <- case mviewer_id of
+            Nothing -> return False
+            Just viewer_id -> userIsWatchingProjectDB viewer_id project_id
+        return (project_id, project, is_watching)
+
+    defaultLayoutNew "project/home" $ do
+        snowdriftTitle $ projectName project
+        [whamlet|
+            <h3>Subpages
+            <ul>
+                <li><a href=@{ProjectR handle PUpdatesR}>Updates
+                <li><a href=@{WikiPagesR handle}>Wiki</a> (links to existing)
+                <li><a href=@{ProjectDiscussionR handle}>Discussion</a> (links to existing)
+                <li><a href=@{ProjectR handle PTransactionsR}>Transactions
+        |]
+        renderProject (Just project_id) project mviewer_id is_watching
