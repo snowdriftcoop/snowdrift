@@ -7,28 +7,18 @@
     <div .col .span_4_of_12>
       <ul>
         <li>
-          <u>
-            <h3>Browse
-        <li>
-          <a href=@{UsersR}>Users
-      <ul>
-        <li>
-          <u>
-            <h3>About Snowdrift
-        <li>
           <a href=@{IntroR}>How it works
         <li>
           <a href=@{DonateR}>Donate
         <li>
-          <a href=#>Team
+          <!-- Linking to current /who page for Snowdrift.  A new page is to be
+               created, and this link will need to be modified accordingly
+               at that time.
+          -->
+          <a href=@{WhoR "snowdrift"}>Team
         <li>
           <a href=@{SponsorsR}>Our Sponsors
     <div .col .span_4_of_12>
-      <br>
-      <ul>
-        <li>
-          <a href=@{ProjectsR}>Projects
-      <br>
       <ul>
         <li>
           <a href=@{PrivacyR}>Privacy Policy
