@@ -20,8 +20,6 @@ import Handler.User.Comment
 import Handler.Utils
 import Model.Comment.ActionPermissions
 import Model.Comment.Sql
-import Model.Notification.Internal
-            (UserNotificationType (..), ProjectNotificationType (..))
 import Model.ResetPassword (deleteFromResetPassword)
 import Model.Role
 import Model.Transaction

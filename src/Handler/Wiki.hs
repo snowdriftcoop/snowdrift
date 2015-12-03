@@ -24,7 +24,6 @@ import Model.Comment
 import Model.Comment.ActionPermissions
 import Model.Comment.Sql
 import Model.Markdown
-import Model.Notification
 import Model.Permission.Internal
 import Model.User
 import Model.Wiki

@@ -89,7 +89,6 @@ import qualified Prelude
 
 import Model.Comment.Sql
 import Model.Discussion
-import Model.Notification
 import Model.User.Internal
             (sendPreferredUserNotificationDB
             ,NotificationSender (..)

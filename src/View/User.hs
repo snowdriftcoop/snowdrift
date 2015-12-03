@@ -23,8 +23,6 @@ import qualified Data.Text as T
 import DeprecatedBootstrap
 import Model.Currency
 import Model.Markdown
-import Model.Notification
-            (UserNotificationDelivery (..), ProjectNotificationDelivery (..))
 import Model.Role
 import Model.User
 import Model.User.Internal

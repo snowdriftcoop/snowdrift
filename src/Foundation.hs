@@ -33,8 +33,6 @@ import qualified Settings
 import qualified Yesod as Y
 
 import Model.Currency
-import Model.Notification.Internal
-            (UserNotificationType(..), UserNotificationDelivery(..))
 
 -- A type for running DB actions outside of a Handler.
 type Daemon a = ReaderT App (LoggingT (ResourceT IO)) a
@@ -203,6 +201,7 @@ getSiteProject = fromMaybe (error "No project has been defined as the owner of t
 
 getSiteProjectHandle :: Handler Text
 getSiteProjectHandle = extraSiteProject . appExtra . appSettings <$> getYesod
+
 
 snowdriftAuthBrowserId :: AuthPlugin App
 snowdriftAuthBrowserId =
