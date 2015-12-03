@@ -204,26 +204,13 @@ getSiteProject = fromMaybe (error "No project has been defined as the owner of t
 getSiteProjectHandle :: Handler Text
 getSiteProjectHandle = extraSiteProject . appExtra . appSettings <$> getYesod
 
-authBrowserIdFixed :: AuthPlugin App
-authBrowserIdFixed =
-    let complete = PluginR "browserid" []
-        login :: (Route Auth -> Route App) -> WidgetT App IO ()
-        login toMaster = do
-            addScriptRemote browserIdJs
-
-            -- it's "BrowserID" for the backend, but the user-facing
-            -- front-end is called "Mozilla Persona"
-            $(widgetFile "persona-fixed")
-
-     in (authBrowserId def) { apLogin = login }
-
 snowdriftAuthBrowserId :: AuthPlugin App
 snowdriftAuthBrowserId =
-    let auth = authBrowserIdFixed
+    let complete = PluginR "browserid" []
         login toMaster = do
-            let parentLogin = apLogin auth toMaster
+            addScriptRemote browserIdJs
             $(widgetFile "persona")
-     in auth { apLogin = login }
+     in (authBrowserId def) { apLogin = login }
 
 snowdriftAuthHashDB :: AuthPlugin App
 snowdriftAuthHashDB =
