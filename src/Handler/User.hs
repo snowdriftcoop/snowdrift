@@ -71,24 +71,6 @@ startEmailVerification user_id user_email = do
 --------------------------------------------------------------------------------
 -- /#UserId
 
-getUserR :: UserId -> Handler Html
-getUserR user_id = do
-    mviewer_id <- maybeAuthId
-
-    user <- runYDB $ get404 user_id
-
-    projects_and_roles <- runDB (fetchUserProjectsAndRolesDB user_id)
-    when ( Just user_id == mviewer_id
-        && isJust (userEmail user)
-        && not (userEmail_verified user)
-        ) $ alertWarning $ "Email address is not verified. Until you verify it, "
-                    <> "you will not be able to receive email notifications."
-
-    defaultLayout $ do
-        snowdriftDashTitle "User Profile" $
-            userDisplayName (Entity user_id user)
-        renderUser mviewer_id user_id user projects_and_roles
-
 postUserR :: UserId -> Handler Html
 postUserR user_id = do
     void $ checkEditUser user_id

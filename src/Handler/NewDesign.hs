@@ -9,16 +9,29 @@ import Import
 
 import Data.Maybe (fromJust)
 
+-- | Using explicit imports for now. It feels good to treat existing code
+-- as a 3rd-party library.
 import Handler.TH
 import Handler.Utils
 import Handler.User (startEmailVerification)
-import Model.Count
+import Model.Count (getCount)
 import Model.License (fetchLicensesDB)
 import Model.Project
+        ( fetchPublicProjectsDB
+        , fetchProjectDiscussionsDB
+        , fetchProjectOpenTicketsDB
+        , summarizeProject
+        , summaryDiscussionCount
+        , summaryTicketCount
+        )
 import Model.User
-import View.Project
+        ( userIsWatchingProjectDB
+        , fetchUserProjectsAndRolesDB
+        , userDisplayName
+        )
+import View.Project (renderProject)
 import View.Project.Signup (projectSignupForm)
-import View.User
+import View.User (renderUser, createUserForm)
 import qualified Mechanism as Mech
 
 getSearchR, postUSignupR :: Handler Html
@@ -201,3 +214,22 @@ postUserCreateR = do
             ^{form}
             <input type=submit>
     |]
+
+-- | Public profile for a user.
+getUserR :: UserId -> Handler Html
+getUserR user_id = do
+    mviewer_id <- maybeAuthId
+
+    user <- runYDB $ get404 user_id
+
+    projects_and_roles <- runDB (fetchUserProjectsAndRolesDB user_id)
+    when ( Just user_id == mviewer_id
+        && isJust (userEmail user)
+        && not (userEmail_verified user)
+        ) $ alertWarning $ "Email address is not verified. Until you verify it, "
+                    <> "you will not be able to receive email notifications."
+
+    defaultLayoutNew "user" $ do
+        snowdriftDashTitle "User Profile" $
+            userDisplayName (Entity user_id user)
+        renderUser mviewer_id user_id user projects_and_roles
