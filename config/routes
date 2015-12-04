@@ -12,16 +12,18 @@
     /matching       MatchingR       GET
     /sustainability SustainabilityR GET
     /democracy      DemocracyR      GET
-/               HomeR          GET
-/about          AboutR         GET
-/project-signup PSignupR GET
-/terms          TermsR         GET
-/privacy        PrivacyR       GET
-/trademarks     TrademarksR    GET
-/contact        ContactR       GET
-/donate         DonateR        GET
-/sponsors       SponsorsR      GET
-/js-license     JsLicenseR     GET
+/               HomeR       GET
+/about          AboutR      GET
+/project-signup PSignupR    GET
+/terms          TermsR      GET
+/privacy        PrivacyR    GET
+/trademarks     TrademarksR GET
+/contact        ContactR    GET
+/donate         DonateR     GET
+/sponsors       SponsorsR   GET
+/js-license     JsLicenseR  GET
+/about/team     TeamR       GET
+/about/press    PressR      GET
 
 --
 -- ## Known broken pages

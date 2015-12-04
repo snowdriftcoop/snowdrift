@@ -16,7 +16,9 @@ getIntroHomeR,
     getTermsR,
     getPrivacyR,
     getContactR,
-    getPSignupR
+    getPSignupR,
+    getTeamR,
+    getPressR
         :: Handler Html
 
 getIntroHomeR      = $(simpleHandler "intro/home" "Intro")
@@ -27,6 +29,8 @@ getDemocracyR      = $(simpleHandler "intro/democracy" "Democracy")
 getAboutR          = $(simpleHandler "about" "About")
 getPSignupR        = $(simpleHandler "project-signup" "Project Signup")
 getContactR        = $(simpleHandler "contact" "Contact")
+getTeamR           = $(simpleHandler "team" "Team")
+getPressR          = $(simpleHandler "press" "Press")
 -- * TODO: Convert these.
 getTermsR = defaultLayoutNew "terms-of-use" $ do
     snowdriftTitle "Terms of Use"
