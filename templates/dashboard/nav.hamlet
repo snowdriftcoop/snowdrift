@@ -1,9 +1,6 @@
-<h1>Dashboard
-
-Hello #{userIdent user}, I am a placeholder!
-
 <ul>
+  <li><a href=@{HomeR}>Overview
   <li><a href=@{UTransactionsR}>Transactions
   <li><a href=@{UPledgesR}>Pledges
-  <li><a href=@{UMembershipR}>Memberships(?)
+  <li><a href=@{UMembershipsR}>Project Memberships
   <li><a href=@{UEditR}>Edit profile

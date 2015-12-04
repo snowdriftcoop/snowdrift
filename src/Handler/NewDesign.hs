@@ -21,22 +21,9 @@ import View.Project.Signup (projectSignupForm)
 import View.User
 import qualified Mechanism as Mech
 
-getSearchR,
-    postUSignupR,
-    getUTransactionsR,
-    getUNoticesR,
-    getUPledgesR,
-    getUMembershipR,
-    getUEditR
-    :: Handler Html
-
+getSearchR, postUSignupR :: Handler Html
 getSearchR        = $(simpleHandler "search" "Search")
 postUSignupR      = $(simpleHandler "post-signup" "Signup")
-getUTransactionsR = $(simpleHandler "transactions" "Transactions")
-getUNoticesR      = $(simpleHandler "notices" "Notices")
-getUPledgesR      = $(simpleHandler "pledges" "Pledges")
-getUMembershipR   = $(simpleHandler "memberships" "Project Memberships")
-getUEditR         = $(simpleHandler "edit-profile" "Edit Profile")
 
 getPUpdatesR,
     getPTransactionsR
@@ -67,6 +54,47 @@ projectNav handle =
             <li><a href=@{ProjectDiscussionR handle}>Discussion</a> (links to pre-alpha)
             <li><a href=@{ProjectR handle PTransactionsR}>Transactions
     |]
+
+
+--
+-- #### Dashboard and Homepage
+--
+
+dashboardNav :: Widget
+dashboardNav = $(widgetFile "dashboard/nav")
+
+getHomeR,
+    getUTransactionsR,
+    getUNoticesR,
+    getUPledgesR,
+    getUMembershipsR,
+    getUEditR
+    :: Handler Html
+
+-- | Homepage is an introduction to the site for non-logged-in viewers, and
+-- the dashboard for logged-in viewers.
+getHomeR = do
+    u <- maybeAuth
+    maybe $(simpleHandler "homepage" "Free the Commons")
+          (\user ->
+              $(simpleHandler "dashboard/overview" "Dashboard"))
+          u
+
+getUTransactionsR = do
+    user <- requireAuth
+    $(simpleHandler "dashboard/transactions" "Transactions")
+getUNoticesR = do
+    user <- requireAuth
+    $(simpleHandler "dashboard/notices" "Notices")
+getUPledgesR = do
+    user <- requireAuth
+    $(simpleHandler "dashboard/pledges" "Pledges")
+getUMembershipsR = do
+    user <- requireAuth
+    $(simpleHandler "dashboard/memberships" "Project Memberships")
+getUEditR = do
+    user <- requireAuth
+    $(simpleHandler "dashboard/edit-profile" "Edit Profile")
 
 --
 -- #### NEEDS REVIEW. COPIED FROM EXISTING PAGES.
@@ -173,13 +201,3 @@ postUserCreateR = do
             ^{form}
             <input type=submit>
     |]
-
-getHomeR :: Handler Html
-getHomeR = do
-    u <- maybeAuth
-    maybe $(simpleHandler "homepage" "Free the Commons")
-          dashboardH
-          u
-
-dashboardH :: Entity User -> Handler Html
-dashboardH (Entity _uid user) = $(simpleHandler "dashboard" "Dashboard")

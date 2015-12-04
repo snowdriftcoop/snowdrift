@@ -1,0 +1,4 @@
+<h1>Dashboard
+
+Hello #{userDisplayName user}, I am a placeholder!
+^{dashboardNav}
