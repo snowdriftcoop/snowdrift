@@ -7,8 +7,7 @@ import Handler.TH
 import Handler.Utils
 import Widgets.Doc
 
-getHomeR,
-    getIntroHomeR,
+getIntroHomeR,
     getShareableR,
     getMatchingR,
     getSustainabilityR,
@@ -20,7 +19,6 @@ getHomeR,
     getPSignupR
         :: Handler Html
 
-getHomeR           = $(simpleHandler "homepage" "Free the Commons")
 getIntroHomeR      = $(simpleHandler "intro/home" "Intro")
 getShareableR      = $(simpleHandler "intro/shareable-works" "Shareable Works")
 getMatchingR       = $(simpleHandler "intro/matching" "Matching Pledges")

@@ -173,3 +173,13 @@ postUserCreateR = do
             ^{form}
             <input type=submit>
     |]
+
+getHomeR :: Handler Html
+getHomeR = do
+    u <- maybeAuth
+    maybe $(simpleHandler "homepage" "Free the Commons")
+          dashboardH
+          u
+
+dashboardH :: Entity User -> Handler Html
+dashboardH (Entity _uid user) = $(simpleHandler "dashboard" "Dashboard")
