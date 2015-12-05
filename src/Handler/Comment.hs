@@ -673,8 +673,9 @@ postRethreadComment user_id comment_id comment = processRequest
                 Just x -> x
                 _ -> error "failed to parse URL"
 
-            extractParts = splitPath . stripQuery . stripRoot
+            extractParts = splitPath . stripTrailingSlashes . stripQuery . stripRoot
             splitPath  = drop 1 . T.splitOn "/"
+            stripTrailingSlashes = T.reverse . T.dropWhile (== '/') . T.reverse
             stripQuery = fst . T.break (== '?')
             stripRoot url = fromMaybe url $ T.stripPrefix getAppRoot url
             getAppRoot = appRoot $ appSettings app
