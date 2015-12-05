@@ -8,5 +8,5 @@ $# TODO - info from compared versions
   <div .page-tool>
     <a href=@{WikiDiscussionR project_handle language target}>view discussion
 
-#{renderDiff (diffEdits start_edit end_edit)}
-
+<pre>
+  #{renderDiff (diffEdits start_edit end_edit)}
