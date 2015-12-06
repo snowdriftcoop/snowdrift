@@ -56,7 +56,6 @@ import Handler.ResetPassword
 import Handler.Simple
 import Handler.SnowdriftEvent
 import Handler.User
-import Handler.User.Comment
 import Handler.Volunteer
 import Handler.Who
 import Handler.Widget
