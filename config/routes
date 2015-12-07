@@ -64,12 +64,12 @@
 -- ## Browsing projects, or a particular project
 --
 
-/projects         ProjectsR      GET
+/p ProjectsR GET
 /p/#ProjectHandle ProjectR:
     /             PHomeR         GET
     /updates      PUpdatesR      GET
     -- just link to existing wiki and discussion for now
-    -- /wiki      PWikiR
+    -- /w         PWikiR
     -- /d         PDiscussionR
     /transactions PTransactionsR GET -- FIXME: ProjectTransactionsR
 
