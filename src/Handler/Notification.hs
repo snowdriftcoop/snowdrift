@@ -104,7 +104,7 @@ getNotificationsProxyR =
         archiveNotificationsDB deleteNotificationsDB
         archiveUserNotificationDB deleteUserNotificationDB
         archiveProjectNotificationDB deleteProjectNotificationDB
-        NotificationsR
+        UNotificationsR
 
 getArchivedNotificationsR :: Handler Html
 getArchivedNotificationsR = do

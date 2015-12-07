@@ -54,11 +54,11 @@
 
 -- Note that for logged-in users, / ("HomeR") is the dashboard overview,
 -- which could be considered part of this group.
-/transactions UTransactionsR GET
-/notices      UNoticesR      GET
-/pledges      UPledgesR      GET
-/memberships  UMembershipsR  GET
-/edit-profile UEditR         GET
+/transactions  UTransactionsR  GET
+/notifications UNotificationsR GET -- #FIXME: NotificationsR
+/pledges       UPledgesR       GET
+/memberships   UMembershipsR   GET
+/edit-profile  UEditR          GET
 
 --
 -- ## Browsing projects, or a particular project
@@ -151,7 +151,6 @@
 
 -- Notifications
 
-/notifications              NotificationsR              GET
 /notificationsp             NotificationsProxyR         GET
 /notifications/archived     ArchivedNotificationsR      GET
 /notifications/archivedp    ArchivedNotificationsProxyR GET
