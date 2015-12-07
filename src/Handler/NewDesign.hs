@@ -9,6 +9,10 @@ import Import
 
 -- | Using explicit imports for now. It feels good to treat existing code
 -- as a 3rd-party library.
+import Handler.Notification
+        ( buildNotificationsList
+        , Notification(..)
+        )
 import Handler.TH
 import Handler.Utils
 import Handler.User (startEmailVerification)
@@ -18,17 +22,22 @@ import Model.Project
         ( fetchPublicProjectsDB
         , fetchProjectDiscussionsDB
         , fetchProjectOpenTicketsDB
+        , projectNameWidget
         , summarizeProject
         , summaryDiscussionCount
         , summaryTicketCount
         )
 import Model.User
-        ( userIsWatchingProjectDB
+        ( fetchProjectNotificationsDB
+        , fetchUserNotificationsDB
         , fetchUserProjectsAndRolesDB
         , userDisplayName
+        , userIsWatchingProjectDB
+        , userReadNotificationsDB
         )
 import View.Project (renderProject)
 import View.Project.Signup (projectSignupForm)
+import View.Time (renderTime)
 import View.User (renderUser, createUserForm)
 import qualified Mechanism as Mech
 
@@ -76,7 +85,6 @@ dashboardNav = $(widgetFile "dashboard/nav")
 
 getHomeR,
     getUTransactionsR,
-    getUNotificationsR,
     getUPledgesR,
     getUMembershipsR,
     getUEditR
@@ -94,9 +102,6 @@ getHomeR = do
 getUTransactionsR = do
     user <- requireAuth
     $(simpleHandler "dashboard/transactions" "Transactions")
-getUNotificationsR = do
-    user <- requireAuth
-    $(simpleHandler "dashboard/notifications" "Notifications")
 getUPledgesR = do
     user <- requireAuth
     $(simpleHandler "dashboard/pledges" "Pledges")
@@ -242,3 +247,13 @@ getUserR user_id = do
         snowdriftDashTitle "User Profile" $
             userDisplayName (Entity user_id user)
         renderUser mviewer_id user_id user projects_and_roles
+
+getUNotificationsR :: Handler Html
+getUNotificationsR = do
+    user_id <- requireAuthId
+    notifs  <- runDB $ do
+        userReadNotificationsDB user_id
+        user_notifs    <- fetchUserNotificationsDB user_id
+        project_notifs <- fetchProjectNotificationsDB user_id
+        return $ buildNotificationsList user_notifs project_notifs
+    $(simpleHandler "dashboard/notifications" "Notifications")
