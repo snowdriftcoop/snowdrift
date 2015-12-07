@@ -7,8 +7,6 @@ module Handler.NewDesign where
 
 import Import
 
-import Data.Maybe (fromJust)
-
 -- | Using explicit imports for now. It feels good to treat existing code
 -- as a 3rd-party library.
 import Handler.TH
@@ -168,9 +166,9 @@ getPHomeR handle = do
 
     (project_id, project, is_watching) <- runYDB $ do
         Entity project_id project <- getBy404 $ UniqueProjectHandle handle
-        is_watching <- case mviewer_id of
-            Nothing -> return False
-            Just viewer_id -> userIsWatchingProjectDB viewer_id project_id
+        is_watching <- maybe (return False)
+                             (`userIsWatchingProjectDB` project_id)
+                             mviewer_id
         return (project_id, project, is_watching)
 
     defaultLayoutNew "project/home" $ do
@@ -198,13 +196,22 @@ postUserCreateR = do
 
     case result of
         FormSuccess (ident, passwd, name, memail, avatar, nick) -> do
-            createUser ident (Just passwd) name (NewEmail False <$> memail) avatar nick
-                >>= \muser_id -> when (isJust muser_id) $ do
-                    when (isJust memail) $ do
-                        let email   = fromJust memail
-                            user_id = fromJust muser_id
-                        startEmailVerification user_id email
-                    setCreds True $ Creds "hashdb" ident []
+            muser_id <-
+                createUser ident
+                           (Just passwd)
+                           name
+                           (NewEmail False <$> memail)
+                           avatar
+                           nick
+            fromMaybe (pure())
+                      (startEmailVerification <$> muser_id <*> memail)
+            case muser_id of
+                Nothing -> do
+                    alertDanger
+                        "There was an error creating your account. Please try again."
+                    redirect USignupR
+                Just _ -> do
+                    setCreds True (Creds "hashdb" ident [])
                     redirectUltDest HomeR
 
         FormMissing -> alertDanger "missing field"
@@ -213,7 +220,7 @@ postUserCreateR = do
     defaultLayout $ [whamlet|
         <form method=POST>
             ^{form}
-            <input type=submit>
+            <button type=submit>Submit
     |]
 
 -- | Public profile for a user.
@@ -227,8 +234,9 @@ getUserR user_id = do
     when ( Just user_id == mviewer_id
         && isJust (userEmail user)
         && not (userEmail_verified user)
-        ) $ alertWarning $ "Email address is not verified. Until you verify it, "
-                    <> "you will not be able to receive email notifications."
+        ) $ alertWarning $
+              "Email address is not verified. Until you verify it, "
+              <> "you will not be able to receive email notifications."
 
     defaultLayoutNew "user" $ do
         snowdriftDashTitle "User Profile" $
