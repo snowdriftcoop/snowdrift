@@ -93,6 +93,13 @@
 
 
 --
+-- ## Legacy links (just redirects)
+--
+
+/tou  LegacyTouR  GET
+/priv LegacyPrivR GET
+
+--
 -- ### EXISTING STUFF (NOT NEW FOR ALPHA)
 --
 
