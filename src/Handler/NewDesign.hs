@@ -178,7 +178,8 @@ getPHomeR handle = do
         projectNav handle
         renderProject (Just project_id) project mviewer_id is_watching
 
--- | The signup page for new users.
+-- | The signup page for new users using our own (password-based)
+-- authentication.
 getUSignupR :: Handler Html
 getUSignupR = do
     (form, _) <- generateFormPost $ createUserForm Nothing

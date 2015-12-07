@@ -142,11 +142,14 @@ instance Yesod App where
 
     -- This is done to provide an optimization for serving static files from
     -- a separate domain. Please see the staticRoot setting in Settings.hs
-    urlRenderOverride y (StaticR s) =
-        Just $ uncurry (joinPath y (Settings.staticRoot $ appSettings y)) $ renderRoute s
-
-    urlRenderOverride _ PostLoginR = Just (fromText "/dest")
-    urlRenderOverride _ _ = Nothing
+    urlRenderOverride y = \case
+        StaticR s  ->
+            Just (uncurry (joinPath y (Settings.staticRoot (appSettings y)))
+                          (renderRoute s))
+        -- I have determined that this *only* exists for the sake of
+        -- templates/persona.julius.
+        PostLoginR -> Just (fromText "/dest")
+        _          -> Nothing
 
     -- The page to be redirected to when authentication is required.
     authRoute _ = Just $ AuthR LoginR
