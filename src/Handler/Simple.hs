@@ -15,14 +15,12 @@ getIntroHomeR,
     getSustainabilityR,
     getDemocracyR,
     getAboutR,
-    getTermsR,
-    getPrivacyR,
     getContactR,
     getPSignupR,
     getTeamR,
-    getPressR
+    getPressR,
+    getSponsorsR
     :: Handler Html
-
 getIntroHomeR      = $(simpleHandler "intro/home" "Intro")
 getShareableR      = $(simpleHandler "intro/shareable-works" "Shareable Works")
 getMatchingR       = $(simpleHandler "intro/matching" "Matching Pledges")
@@ -33,15 +31,20 @@ getPSignupR        = $(simpleHandler "project-signup" "Project Signup")
 getContactR        = $(simpleHandler "contact" "Contact")
 getTeamR           = $(simpleHandler "team" "Team")
 getPressR          = $(simpleHandler "press" "Press")
+getSponsorsR       = $(simpleHandler "sponsors" "Sponsors")
+
 -- * TODO: Convert these.
+getTermsR,
+    getPrivacyR,
+    getTrademarksR
+    :: Handler Html
 getTermsR = defaultLayoutNew "terms-of-use" $ do
     snowdriftTitle "Terms of Use"
     renderDoc "Terms of Use"
 getPrivacyR = defaultLayoutNew "privacy" $ do
     snowdriftTitle "Privacy Policy"
     renderDoc "Privacy Policy"
-getTrademarksR :: Handler Html
-getTrademarksR = defaultLayout $ do
+getTrademarksR = defaultLayoutNew "trademarks" $ do
     snowdriftTitle "Trademarks"
     renderDoc "Trademarks"
 

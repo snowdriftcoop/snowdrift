@@ -67,7 +67,6 @@ library
         Handler.ResetPassword
         Handler.Simple
         Handler.SnowdriftEvent
-        Handler.Sponsors
         Handler.TH
         Handler.User
         Handler.User.Comment
