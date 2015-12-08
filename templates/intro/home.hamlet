@@ -1,7 +1,36 @@
-Placeholder for the intro!
-
-<ul>
-  <li><a href=@{IntroR ShareableR}>Shareable works
-  <li><a href=@{IntroR MatchingR}>A matching pledge
-  <li><a href=@{IntroR SustainabilityR}>Sustainable funding
-  <li><a href=@{IntroR DemocracyR}>Democracy and participation
+<article>
+  <div .section .group>
+    <div .col .span_12_of_12>
+      <img src=@{StaticR img_logo_intro_png} .snowdrift-is>
+      <.background>
+      <.foreground>
+      <.topic .share>
+        <h2>Shareable Works
+        <p>
+          Exclusively for free/libre/open (FLO) projects.
+          Everyone around the world can freely access, use, modify, and share
+          everything we support.
+        <a href=@{IntroR ShareableR} .more>more about FLO values
+      <img src=@{StaticR img_intro_match_png}>
+      <.topic .match>
+        <h2>A Matching Pledge
+        <p>
+          Instead of donating alone or having a one-time threshold, we
+          achieve critical mass with a simple network effect: Each patron
+          of a project agrees to donate more when other patrons come
+          help.
+        <a href=@{IntroR MatchingR} .more>more about the network effect
+      <img src=@{StaticR img_intro_sustain_png}>
+      <.topic .sustain>
+        <h2>Sustainability
+        <p>
+          Ongoing funding gives project teams a sustainable living while
+          providing accountability.
+        <a href=@{IntroR SustainabilityR} .more>more about sustainable funding
+      <img src=@{StaticR img_intro_coop_png}>
+      <.topic .coop>
+        <h2>Democracy
+        <p>
+          As a non-profit cooperative, we serve the interests of our
+          community, and everyone can participate.
+        <a href=@{IntroR DemocracyR} .more>more about the coop
