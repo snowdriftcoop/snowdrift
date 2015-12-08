@@ -7,7 +7,7 @@
     <div .col .span_4_of_12>
       <ul>
         <li>
-          <a href=@{IntroR}>How it works
+          <a href=@{IntroR IntroHomeR}>How it works
         <li>
           <a href=@{DonateR}>Donate
         <li>
@@ -23,7 +23,7 @@
         <li>
           <a href=@{PrivacyR}>Privacy Policy
         <li>
-          <a href=@{ToUR}>Terms Of Use
+          <a href=@{TermsR}>Terms Of Use
         <li>
           <a href=@{HonorPledgeR}>Honor Pledge
         <li>

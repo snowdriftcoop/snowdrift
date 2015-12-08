@@ -463,7 +463,7 @@ defaultLayoutNew _name widget = do
     master <- getYesod
     mmsg <- getMessage
     malert <- getAlert
-    muser <- maybeAuth
+    maybeUser  <- maybeAuth
 
     -- Use Libravatar for an avatar if available.  Otherwise, use default
     -- Default URL is hardcoded to allow usage even while developing on local
@@ -475,7 +475,7 @@ defaultLayoutNew _name widget = do
                                              False
                                              (Just $ T.unpack defaultUrl)
                                              Nothing)
-                            (userEmail . entityVal =<< muser)
+                            (userEmail . entityVal =<< maybeUser)
 
     let avatar = fromMaybe defaultUrl mavatar
     let navbar :: Widget = $(widgetFile "default/navbar")
