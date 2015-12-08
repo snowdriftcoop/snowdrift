@@ -16,9 +16,9 @@
       <form action=@{SearchR} .break4>
         <input type=text placeholder="Search..."><button type=submit>go
   <ul .right .break4>
-    $maybe Entity uid user <- maybeUser
-      $with name <- fromMaybe (userIdent user) $ userName user
-        <li>
+    <li>
+      $maybe Entity uid user <- maybeUser
+        $with name <- fromMaybe (userIdent user) $ userName user
           <div .ddown>
             <a href=# .ddown-toggle .user>#{name}
             <ul>
@@ -32,5 +32,5 @@
                 <a href=@{UNotificationsR}>Notifications
               <li>
                 <a href=@{AuthR LogoutR}>Sign Out
-    $nothing
-      <a href=@{AuthR LoginR}>Sign In
+      $nothing
+        <a href=@{AuthR LoginR}>Sign In
