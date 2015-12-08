@@ -4,24 +4,17 @@
       <a .logo href=@{HomeR}>
         <img src=@{StaticR img_logo_small_png} alt=Snowdrift.coop>
     <li>
-      <a href=@{ProjectsR} .icon .cards>Browse Projects
-    <!-- <li .break4>
-      <a href=@{IntroR}>How it works -->
+      <a href=@{ProjectsR} .icon .cards>Browse
+    <li .break4>
+      <a href=@{IntroR IntroHomeR}>How it works
     <li .break6>
-      <!-- <a href=#>Add a project -->
+      <a href=@{PSignupR}>Add a project
     <li .unbreak4>
-      <!-- Commented out for now: Dashboard does not yet exist
         <a href=# .icon .dashboard>Dashboard -->
-    <!-- If not logged in
-    <li .unbreak4>
-      <a href=# .icon .login>Log in
-    -->
-    <!-- Commenting out search bar, as we do not yet have a search engine
     <li .search>
       <a href=# .icon .lookingglass>Search
-      <form .break4>
-        <input type=text placeholder="Search..." disabled><button type=button>go
-    -->
+      <form action=@{SearchR} .break4>
+        <input type=text placeholder="Search..."><button type=submit>go
   <ul .right .break4>
     $maybe Entity uid user <- maybeUser
       $with name <- fromMaybe (userIdent user) $ userName user
@@ -30,14 +23,14 @@
             <a href=# .ddown-toggle .user>#{name}
             <ul>
               <li>
-                <a href="@{UserPledgesR uid}">Dashboard
+                <a href="@{HomeR}">Dashboard
               <li>
                 <a href="@{UserR uid}">Profile
               <li>
-                <a href="@{UserBalanceR uid}">Transactions
+                <a href="@{UTransactionsR}">Transactions
               <li>
                 <a href=@{UNotificationsR}>Notifications
               <li>
                 <a href=@{AuthR LogoutR}>Sign Out
     $nothing
-      <a href=@{AuthR LoginR}>Sign Up/In
+      <a href=@{AuthR LoginR}>Sign In
