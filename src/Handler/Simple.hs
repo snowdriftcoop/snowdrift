@@ -1,4 +1,3 @@
-{-# LANGUAGE TupleSections, OverloadedStrings #-}
 module Handler.Simple where
 
 import Import
