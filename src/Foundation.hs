@@ -211,15 +211,17 @@ snowdriftAuthBrowserId =
     let complete = PluginR "browserid" []
         login toMaster = do
             addScriptRemote browserIdJs
-            $(widgetFile "persona")
+            $(widgetFile "auth/persona")
      in (authBrowserId def) { apLogin = login }
 
 snowdriftAuthHashDB :: AuthPlugin App
 snowdriftAuthHashDB =
     let auth = authHashDB (Just . UniqueUser)
         loginRoute = PluginR "hashdb" ["login"]
-        login toMaster =
-            $(widgetFile "built-in-login")
+        login toMaster = do
+            handleInputId <- newIdent
+            passphraseInputId <- newIdent
+            $(widgetFile "auth/built-in-login")
      in auth { apLogin = login }
 
 instance YesodAuth App where
@@ -249,10 +251,8 @@ instance YesodAuth App where
     authHttpManager = appHttpManager
 
     loginHandler = do
-        app <- lift getYesod
         toParent <- getRouteToParent
-
-        lift $ defaultLayoutNew "auth" $(widgetFile "auth")
+        lift $ defaultLayoutNew "auth/login" $(widgetFile "auth/login")
 
 instance YesodAuthPersist App
 

@@ -1,0 +1,2 @@
+<a href="javascript:persona_login()">
+  <img src=@{StaticR img_persona_sign_in_blue_png}>
