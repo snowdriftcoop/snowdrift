@@ -1,25 +1,25 @@
-ul
-    -moz-padding-start: 0
-
-li
-    display: block
-    text-align: center
-    padding: .5em
-
-.key-sponsors
-    column-width: 15em
-    -moz-column-width: 15em
-    -webkit-column-width: 15em
-    -moz-column-count: 3
-    max-width: 100em
-    font-weight: bold
-    border-bottom: solid 2px
-    margin-bottom: 1em
-
 .sponsors
-    column-width: 10em
-    -moz-column-width: 10em
-    -webkit-column-width: 10em
-    max-width: 100em
-    font-size: 0.8em
+    ul
+        -moz-padding-start: 0
 
+    li
+        display: block
+        text-align: center
+        padding: .5em
+
+    .key-sponsors
+        column-width: 15em
+        -moz-column-width: 15em
+        -webkit-column-width: 15em
+        -moz-column-count: 3
+        max-width: 100em
+        font-weight: bold
+        border-bottom: solid 2px
+        margin-bottom: 1em
+
+    .sponsors
+        column-width: 10em
+        -moz-column-width: 10em
+        -webkit-column-width: 10em
+        max-width: 100em
+        font-size: 0.8em
