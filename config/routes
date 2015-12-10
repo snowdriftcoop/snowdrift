@@ -12,27 +12,25 @@
     /matching       MatchingR       GET
     /sustainability SustainabilityR GET
     /democracy      DemocracyR      GET
-/               HomeR       GET
-/about          AboutR      GET
-/project-signup PSignupR    GET
-/terms          TermsR      GET
-/privacy        PrivacyR    GET
-/trademarks     TrademarksR GET
-/contact        ContactR    GET
-/donate         DonateR     GET
-/sponsors       SponsorsR   GET
-/js-license     JsLicenseR  GET
-/about/team     TeamR       GET
-/about/press    PressR      GET
+/about AboutR:
+    /        AboutHomeR GET
+    /contact ContactR   GET
+    /team    TeamR      GET
+    /press   PressR     GET
+/project-signup PSignupR     GET
+/terms          TermsR       GET
+/privacy        PrivacyR     GET
+/trademarks     TrademarksR  GET
+/donate         DonateR      GET
+/sponsors       SponsorsR    GET
+/js-license     JsLicenseR   GET
+/honor-pledge   HonorPledgeR GET POST
 
 --
--- ## Known broken pages
+-- ## Search
 --
 
 /search SearchR GET
-
--- This might be folded into some other page?
-/honor-pledge HonorPledgeR GET POST
 
 --
 -- ## Auth and Login
@@ -52,10 +50,10 @@
 -- ## User dashboard
 --
 
--- Note that for logged-in users, / ("HomeR") is the dashboard overview,
--- which could be considered part of this group.
+-- Note that for logged-out users, / ("HomeR") is the simple welcome page.
+/              HomeR           GET
 /transactions  UTransactionsR  GET
-/notifications UNotificationsR GET -- #FIXME: NotificationsR
+/notifications UNotificationsR GET
 /pledges       UPledgesR       GET
 /memberships   UMembershipsR   GET
 /edit-profile  UEditR          GET
@@ -71,7 +69,7 @@
     -- just link to existing wiki and discussion for now
     -- /w         PWikiR
     -- /d         PDiscussionR
-    /transactions PTransactionsR GET -- FIXME: ProjectTransactionsR
+    /transactions PTransactionsR GET
 
 --
 -- ## Browsing a particular user (may need fleshing out?)
