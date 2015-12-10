@@ -2,14 +2,15 @@
 -- our code will be recognized as FLO by LibreJS
 -- http://www.gnu.org/software/librejs
 
-module Handler.JsLicense where
+module Handler.JsLicenses where
 
 import Import
 
 import Yesod.Form.Jquery
 import qualified Data.Text as T
 
-import Handler.Utils
+import Dev
+import Handler.TH
 
 data Lib =
     Lib { libName :: Text
@@ -20,8 +21,8 @@ data Lib =
         , libOrigRoute :: Text
         }
 
-getJsLicenseR :: Handler Html
-getJsLicenseR = do
+getJsLicensesR :: Handler Html
+getJsLicensesR = do
     app <- getYesod
     render <- getUrlRender
 
@@ -37,24 +38,4 @@ getJsLicenseR = do
             , Lib "jquery.jqplot.min.js" (render $ StaticR js_jquery_jqplot_min_js) "Expat License" "http://www.jclark.com/xml/copying.txt" "jquery.jqplot.js" (render $ StaticR js_jquery_jqplot_js)
             , Lib "jqplot.logAxisRenderer.min.js" (render $ StaticR js_plugins_jqplot_logAxisRenderer_min_js) "Expat License" "http://www.jclark.com/xml/copying.txt" "jqplot.logAxisRenderer.js" (render $ StaticR js_plugins_jqplot_logAxisRenderer_js)
             ]
-
-    defaultLayout $ do
-        snowdriftTitle "Javascript Licenses"
-        [whamlet|
-            <h1>Javascript Licenses
-            <table .table id="jslicense-labels1">
-                $forall lib <- libs
-                    <tr>
-                        <td>
-                            <a href=#{libRoute lib}>
-                                #{libName lib}
-
-                        <td>
-                            <a href=#{libLicenseRoute lib}>
-                                #{libLicenseName lib}
-
-                        <td>
-                            <a href=#{libOrigRoute lib}>
-                                #{libOrigName lib}
-        |]
-
+    $(simpleHandler "js-licenses" "Javascript Licenses")

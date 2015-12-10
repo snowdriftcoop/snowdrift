@@ -23,7 +23,7 @@
 /trademarks     TrademarksR  GET
 /donate         DonateR      GET
 /sponsors       SponsorsR    GET
-/js-license     JsLicenseR   GET
+/js-licenses    JsLicensesR  GET
 /honor-pledge   HonorPledgeR GET POST
 
 --
@@ -94,8 +94,9 @@
 -- ## Legacy links (just redirects)
 --
 
-/tou  LegacyTouR  GET
-/priv LegacyPrivR GET
+/tou        LegacyTouR       GET
+/priv       LegacyPrivR      GET
+/js-license LegacyJsLicenseR GET
 
 --
 -- ### EXISTING STUFF (NOT NEW FOR ALPHA)

@@ -42,11 +42,10 @@ import Widgets.Navbar
 import Handler.BuildFeed
 import Handler.Comment
 import Handler.Common
-import Handler.Donate
 import Handler.HonorPledge
 import Handler.Image
 import Handler.Invitation
-import Handler.JsLicense
+import Handler.JsLicenses
 import Handler.MarkdownTutorial
 import Handler.NewDesign
 import Handler.Notification

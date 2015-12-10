@@ -49,7 +49,7 @@
                 href=https://www.gnu.org/licenses/agpl>
               GNU&nbsp;AGPLv3+</a>.
             All JavaScript on this site is
-            <a href=@{JsLicenseR} rel=jslicense>
+            <a href=@{JsLicensesR} rel=jslicense>
               freely-licensed</a>.
   <div .section .group>
     <div .col .span_12_of_12 .supporters>

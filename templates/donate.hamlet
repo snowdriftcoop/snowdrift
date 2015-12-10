@@ -1,3 +1,4 @@
+^{alphaRewriteNotice}
 <h1>Donating to Snowdrift.coop
 
 <h2>Our current funding
@@ -18,8 +19,8 @@
   21st century. Our efforts have already resulted in valuable reference
   resources and educational material, but the real impact will come if our model
   for collective sustainable patronage can get launched.
-<p> 
-  If you support our 
+<p>
+  If you support our
   <a href=@{WikiR "snowdrift" LangEn "mission"}>mission</a>,
   please donate today to help us continue our work.
   If you have time, please also consider
@@ -28,7 +29,7 @@
 <p>
   Although the formal fund-drive is over, we can still provide comparable
   rewards for new donors:
-  
+
 <ul>
   <li>
     All donors may (if they choose) be listed among our official

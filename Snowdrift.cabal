@@ -54,11 +54,10 @@ library
         Handler.Comment
         Handler.Common
         Handler.Discussion
-        Handler.Donate
         Handler.HonorPledge
         Handler.Image
         Handler.Invitation
-        Handler.JsLicense
+        Handler.JsLicenses
         Handler.MarkdownTutorial
         Handler.NewDesign
         Handler.Notification

@@ -19,7 +19,8 @@ getIntroHomeR,
     getPSignupR,
     getTeamR,
     getPressR,
-    getSponsorsR
+    getSponsorsR,
+    getDonateR
     :: Handler Html
 getIntroHomeR      = $(simpleHandler "intro/home" "Intro")
 getShareableR      = $(simpleHandler "intro/shareable-works" "Shareable Works")
@@ -32,6 +33,7 @@ getContactR        = $(simpleHandler "contact" "Contact")
 getTeamR           = $(simpleHandler "team" "Team")
 getPressR          = $(simpleHandler "press" "Press")
 getSponsorsR       = $(simpleHandler "sponsors" "Sponsors")
+getDonateR         = $(simpleHandler "donate" "Donate")
 
 -- * TODO: Convert these.
 getTermsR,
@@ -40,18 +42,23 @@ getTermsR,
     :: Handler Html
 getTermsR = defaultLayoutNew "terms-of-use" $ do
     snowdriftTitle "Terms of Use"
+    alphaRewriteNotice
     renderDoc "Terms of Use"
 getPrivacyR = defaultLayoutNew "privacy" $ do
     snowdriftTitle "Privacy Policy"
+    alphaRewriteNotice
     renderDoc "Privacy Policy"
 getTrademarksR = defaultLayoutNew "trademarks" $ do
     snowdriftTitle "Trademarks"
+    alphaRewriteNotice
     renderDoc "Trademarks"
 
 -- | Permanent redirects for legacy urls that may still be referenced
 -- outside of the type-safe project
 getLegacyTouR,
-    getLegacyPrivR
+    getLegacyPrivR,
+    getLegacyJsLicenseR
     :: Handler Html
-getLegacyTouR  = redirectWith movedPermanently301 TermsR
-getLegacyPrivR = redirectWith movedPermanently301 PrivacyR
+getLegacyTouR       = redirectWith movedPermanently301 TermsR
+getLegacyPrivR      = redirectWith movedPermanently301 PrivacyR
+getLegacyJsLicenseR = redirectWith movedPermanently301 JsLicensesR

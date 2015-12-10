@@ -190,6 +190,7 @@ getUSignupR = do
     defaultLayoutNew "signup" $ do
         snowdriftTitle "Create User"
         [whamlet|
+            ^{alphaRewriteNotice}
             <form method=POST>
                 ^{form}
                 <input type=submit>
@@ -247,6 +248,7 @@ getUserR user_id = do
     defaultLayoutNew "user" $ do
         snowdriftDashTitle "User Profile" $
             userDisplayName (Entity user_id user)
+        alphaRewriteNotice
         renderUser mviewer_id user_id user projects_and_roles
 
 getUNotificationsR :: Handler Html

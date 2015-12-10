@@ -1,0 +1,11 @@
+<div .alpha-rewrite>
+  <p>
+    Yikes! As part of our Alpha sprint, this page was
+    <em>copied over from the existing site</em>.
+    It is known to be pretty ugly since it hasn't been restyled yet. We're
+    working on it.
+  <p>
+    Want to help out or track our progress? Great! Head over to our
+    <a href=@{WikiR "snowdrift" LangEn "how-to-help"}>
+      how to help
+    page to get connected.
