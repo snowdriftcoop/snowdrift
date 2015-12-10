@@ -9,6 +9,7 @@ import Import
 
 -- | Using explicit imports for now. It feels good to treat existing code
 -- as a 3rd-party library.
+import Dev
 import Handler.Notification
         ( buildNotificationsList
         , Notification(..)

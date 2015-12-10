@@ -1,2 +1,3 @@
-Hi #{userDisplayName user}, this is a placeholder for editing your profile.
+^{toBeWrittenNotice}
 ^{dashboardNav}
+<p>Hi #{userDisplayName user}, this is a placeholder for editing your profile.

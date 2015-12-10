@@ -4,6 +4,7 @@ import Import
 
 import Network.HTTP.Types.Status (movedPermanently301)
 
+import Dev
 import Handler.TH
 import Handler.Utils
 import Widgets.Doc
@@ -13,7 +14,7 @@ getIntroHomeR,
     getMatchingR,
     getSustainabilityR,
     getDemocracyR,
-    getAboutR,
+    getAboutHomeR,
     getContactR,
     getPSignupR,
     getTeamR,
@@ -25,8 +26,8 @@ getShareableR      = $(simpleHandler "intro/shareable-works" "Shareable Works")
 getMatchingR       = $(simpleHandler "intro/matching" "Matching Pledges")
 getSustainabilityR = $(simpleHandler "intro/sustainability" "Sustainable Funding")
 getDemocracyR      = $(simpleHandler "intro/democracy" "Democracy")
-getAboutR          = $(simpleHandler "about" "About")
 getPSignupR        = $(simpleHandler "project-signup" "Project Signup")
+getAboutHomeR      = $(simpleHandler "about/home" "About")
 getContactR        = $(simpleHandler "contact" "Contact")
 getTeamR           = $(simpleHandler "team" "Team")
 getPressR          = $(simpleHandler "press" "Press")

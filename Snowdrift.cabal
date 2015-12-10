@@ -47,6 +47,7 @@ library
         Data.Order
         Data.Text.PrettyHtml
         Data.Tree.Extra
+        Dev
         DeprecatedBootstrap
         Foundation
         Handler.BuildFeed

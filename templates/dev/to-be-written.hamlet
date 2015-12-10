@@ -1,0 +1,9 @@
+<div .to-be-written>
+  <p>
+    Hiya! As part of our Alpha sprint, this page was created but hasn't been
+    written yet. This is a placeholder. :)
+  <p>
+    Want to help out? Great! Head over to our
+    <a href=@{WikiR "snowdrift" LangEn "how-to-help"}>
+      how to help
+    page.

@@ -1,4 +1,3 @@
-<h1>Dashboard
-
-Hello #{userDisplayName user}, I am a placeholder!
+^{toBeWrittenNotice}
 ^{dashboardNav}
+<p>Hello #{userDisplayName user}, I am a placeholder!
