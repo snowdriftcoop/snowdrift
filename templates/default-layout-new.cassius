@@ -53,7 +53,17 @@ p
 img
     max-width: 100%
     height: auto
-
+table
+    margin: 3rem 0
+    tr
+        &:nth-child(2n)
+            background: #f3f9fd
+        th
+            border-bottom: 0.1rem solid #{DarkBlue}
+            padding: 1rem 2rem
+            font-weight: 600
+        td
+            padding: 1rem 2rem
 .container
     max-width: 111rem
     top: 6rem
@@ -71,6 +81,20 @@ h2
 h3
     font-weight: 600
     font-size: 2rem
+.alpha-rewrite, .to-be-written
+    border: 0.2rem solid #e29696
+    border-radius: 0.3rem
+    background: #f7e1e1
+    background: url(@{StaticR img_mimi_notification_png}) no-repeat left top, #f7e1e1
+    padding: 3rem 3rem 3rem 20rem
+    margin: 3rem
+    min-height: 17rem
+    color: #{Red}
+    float: left
+    a
+        color: #{Red}
+        font-weight: 200
+        text-decoration: underline
 
 /* ============upscaling====================== */
 @media (min-width: 1800px)
