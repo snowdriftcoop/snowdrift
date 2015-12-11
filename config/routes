@@ -6,12 +6,12 @@
 -- ## The "simple" pages
 --
 
-/intro IntroR:
-    /               IntroHomeR      GET
-    /shareable      ShareableR      GET
-    /matching       MatchingR       GET
-    /sustainability SustainabilityR GET
-    /democracy      DemocracyR      GET
+/how-it-works HowItWorksR:
+    /               IntroR      GET
+    /flo      FloR      GET
+    /network-effect       NetworkEffectR       GET
+    /sustainable-funding SustainableFundingR GET
+    /co-op      CoOpR      GET
 /about AboutR:
     /        AboutHomeR GET
     /contact ContactR   GET

@@ -7,7 +7,7 @@
     <div .col .span_4_of_12>
       <ul>
         <li>
-          <a href=@{IntroR IntroHomeR}>How it works
+          <a href=@{HowItWorksR IntroR}>How it works
         <li>
           <a href=@{DonateR}>Donate
         <li>

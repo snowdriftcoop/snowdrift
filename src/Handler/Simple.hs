@@ -9,11 +9,11 @@ import Handler.TH
 import Handler.Utils
 import Widgets.Doc
 
-getIntroHomeR,
-    getShareableR,
-    getMatchingR,
-    getSustainabilityR,
-    getDemocracyR,
+getIntroR,
+    getFloR,
+    getNetworkEffectR,
+    getSustainableFundingR,
+    getCoOpR,
     getAboutHomeR,
     getContactR,
     getPSignupR,
@@ -22,18 +22,20 @@ getIntroHomeR,
     getSponsorsR,
     getDonateR
     :: Handler Html
-getIntroHomeR      = $(simpleHandler "intro/home" "Intro")
-getShareableR      = $(simpleHandler "intro/shareable-works" "Shareable Works")
-getMatchingR       = $(simpleHandler "intro/matching" "Matching Pledges")
-getSustainabilityR = $(simpleHandler "intro/sustainability" "Sustainable Funding")
-getDemocracyR      = $(simpleHandler "intro/democracy" "Democracy")
-getPSignupR        = $(simpleHandler "project-signup" "Project Signup")
-getAboutHomeR      = $(simpleHandler "about/home" "About")
-getContactR        = $(simpleHandler "contact" "Contact")
-getTeamR           = $(simpleHandler "team" "Team")
-getPressR          = $(simpleHandler "press" "Press")
-getSponsorsR       = $(simpleHandler "sponsors" "Sponsors")
-getDonateR         = $(simpleHandler "donate" "Donate")
+getIntroR              = $(simpleHandler "how-it-works/intro" "Intro")
+getFloR                = $(simpleHandler "how-it-works/flo" "FLO")
+getNetworkEffectR      = $(simpleHandler "how-it-works/network-effect"
+                                         "Network Effect")
+getSustainableFundingR = $(simpleHandler "how-it-works/sustainable-funding"
+                                         "Sustainable Funding")
+getCoOpR               = $(simpleHandler "how-it-works/co-op" "Co-op")
+getPSignupR            = $(simpleHandler "project-signup" "Project Signup")
+getAboutHomeR          = $(simpleHandler "about/home" "About")
+getContactR            = $(simpleHandler "contact" "Contact")
+getTeamR               = $(simpleHandler "team" "Team")
+getPressR              = $(simpleHandler "press" "Press")
+getSponsorsR           = $(simpleHandler "sponsors" "Sponsors")
+getDonateR             = $(simpleHandler "donate" "Donate")
 
 -- * TODO: Convert these.
 getTermsR,

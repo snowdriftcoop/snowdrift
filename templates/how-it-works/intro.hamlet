@@ -10,7 +10,7 @@
           Exclusively for free/libre/open (FLO) projects.
           Everyone around the world can freely access, use, modify, and share
           everything we support.
-        <a href=@{IntroR ShareableR} .more>more about FLO values
+        <a href=@{HowItWorksR FloR} .more>more about FLO values
       <img src=@{StaticR img_intro_match_png}>
       <.topic .match>
         <h2>A Matching Pledge
@@ -19,18 +19,18 @@
           achieve critical mass with a simple network effect: Each patron
           of a project agrees to donate more when other patrons come
           help.
-        <a href=@{IntroR MatchingR} .more>more about the network effect
+        <a href=@{HowItWorksR NetworkEffectR} .more>more about the network effect
       <img src=@{StaticR img_intro_sustain_png}>
       <.topic .sustain>
         <h2>Sustainability
         <p>
           Ongoing funding gives project teams a sustainable living while
           providing accountability.
-        <a href=@{IntroR SustainabilityR} .more>more about sustainable funding
+        <a href=@{HowItWorksR SustainableFundingR} .more>more about sustainable funding
       <img src=@{StaticR img_intro_coop_png}>
       <.topic .coop>
         <h2>Democracy
         <p>
           As a non-profit cooperative, we serve the interests of our
           community, and everyone can participate.
-        <a href=@{IntroR DemocracyR} .more>more about the coop
+        <a href=@{HowItWorksR CoOpR} .more>more about the co-op

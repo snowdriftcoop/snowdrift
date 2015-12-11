@@ -9,7 +9,7 @@
         <.background>
           <.plane .break4>
         <.foreground>
-        <a href=@{IntroR IntroHomeR} .button >How it Works
+        <a href=@{HowItWorksR IntroR} .button >How it Works
         <p>
           <a href=@{AuthR LoginR} .join>Join us in setting the world free!
         <p>

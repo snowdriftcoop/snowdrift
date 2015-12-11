@@ -6,7 +6,7 @@
     <li>
       <a href=@{ProjectsR} .icon .cards>Browse
     <li .break4>
-      <a href=@{IntroR IntroHomeR}>How it works
+      <a href=@{HowItWorksR IntroR}>How it works
     <li .break6>
       <a href=@{PSignupR}>Add a project
     <li .unbreak4>
