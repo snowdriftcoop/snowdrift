@@ -37,13 +37,13 @@
 --
 
 -- The Auth subsite (login + logout)
-/auth           AuthR Auth getAuth
+/auth AuthR Auth getAuth
 -- Referrer: hack. I believe there could be a better way to send users to
 -- their original destination after logging in with Persona, but this is
 -- used in the meanwhile.
-/dest           PostLoginR     GET
+/dest PostLoginR GET
 -- Extra pages needed for password logins.
-/signup         USignupR       GET POST
+/create-account CreateAccountR GET POST
 /reset-password ResetPasswordR GET POST
 
 --

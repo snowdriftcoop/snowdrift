@@ -7,7 +7,7 @@
     <li>
       ^{apLogin snowdriftAuthBrowserId toParent}
     <li>
-      <a href=@{USignupR}>Create an account with us</a>,
+      <a href=@{CreateAccountR}>Create an account with us</a>,
       or create an account through Persona by clicking the button above.
     <li>
       Have an account, but

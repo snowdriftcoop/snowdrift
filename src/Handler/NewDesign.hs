@@ -42,9 +42,9 @@ import View.Time (renderTime)
 import View.User (renderUser, createUserForm)
 import qualified Mechanism as Mech
 
-getSearchR, postUSignupR :: Handler Html
-getSearchR        = $(simpleHandler "search" "Search")
-postUSignupR      = $(simpleHandler "post-signup" "Signup")
+getSearchR, postCreateAccountR :: Handler Html
+getSearchR         = $(simpleHandler "search" "Search")
+postCreateAccountR = $(simpleHandler "auth/post-create-account" "Welcome")
 
 getPUpdatesR,
     getPTransactionsR
@@ -182,13 +182,13 @@ getPHomeR handle = do
         projectNav handle
         renderProject (Just project_id) project mviewer_id is_watching
 
--- | The signup page for new users using our own (password-based)
+-- | The account creation page for new users using our own (password-based)
 -- authentication.
-getUSignupR :: Handler Html
-getUSignupR = do
+getCreateAccountR :: Handler Html
+getCreateAccountR = do
     (form, _) <- generateFormPost $ createUserForm Nothing
-    defaultLayoutNew "signup" $ do
-        snowdriftTitle "Create User"
+    defaultLayoutNew "create-account" $ do
+        snowdriftTitle "Free the Commons"
         [whamlet|
             ^{alphaRewriteNotice}
             <form method=POST>
@@ -216,7 +216,7 @@ postUserCreateR = do
                 Nothing -> do
                     alertDanger
                         "There was an error creating your account. Please try again."
-                    redirect USignupR
+                    redirect CreateAccountR
                 Just _ -> do
                     setCreds True (Creds "hashdb" ident [])
                     redirectUltDest HomeR

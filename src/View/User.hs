@@ -29,7 +29,14 @@ import Model.User.Internal
 import Widgets.Markdown (snowdriftMarkdownField)
 import Widgets.UserPledges
 
-createUserForm :: Maybe Text -> Form (Text, Text, Maybe Text, Maybe Text, Maybe Text, Maybe Text)
+createUserForm :: Maybe Text
+               -> Form (Text
+                       ,Text
+                       ,Maybe Text
+                       ,Maybe Text
+                       ,Maybe Text
+                       ,Maybe Text
+                       )
 createUserForm ident extra = do
     (identRes,   identView)   <- mreq textField     "" ident
     (passwd1Res, passwd1View) <- mreq passwordField "" Nothing
@@ -39,60 +46,11 @@ createUserForm ident extra = do
     (avatarRes,  avatarView)  <- mopt textField     "" Nothing
     (nickRes,    nickView)    <- mopt textField     "" Nothing
 
-    let view = [whamlet|
-        ^{extra}
-        <p>
-            By registering, you agree to Snowdrift.coop's (amazingly ethical and ideal) #
-                <a href=@{TermsR}>Terms of Use
-                and <a href=@{PrivacyR}>Privacy Policy</a>.
-
-        <table .table>
-            <tr>
-                <td>
-                    <label for=#{fvId identView}>
-                        Handle (private):
-                <td>
-                    ^{fvInput identView}
-            <tr>
-                <td>
-                    <label for=#{fvId passwd1View}>
-                        Passphrase:
-                <td>
-                    ^{fvInput passwd1View}
-            <tr>
-                <td>
-                    <label for=#{fvId passwd2View}>
-                        Repeat passphrase:
-                <td>
-                    ^{fvInput passwd2View}
-            <tr>
-                <td>
-                    <label for=#{fvId nameView}>
-                        Name (public, optional):
-                <td>
-                    ^{fvInput nameView}
-            <tr>
-                <td>
-                    <label for=#{fvId emailView}>
-                        Email (private, optional):
-                <td>
-                    ^{fvInput emailView}
-            <tr>
-                <td>
-                    <label for=#{fvId avatarView}>
-                        Avatar (link, optional):
-                <td>
-                    ^{fvInput avatarView}
-            <tr>
-                <td>
-                    <label for=#{fvId nickView}>
-                        IRC Nick (irc.freenode.net, optional):
-                <td>
-                    ^{fvInput nickView}
-    |]
-
+    let view = $(widgetFile "auth/create-account-form")
         passwdRes = case (passwd1Res, passwd2Res) of
-            (FormSuccess a, FormSuccess b) -> if a == b then FormSuccess a else FormFailure ["passwords do not match"]
+            (FormSuccess a, FormSuccess b)
+                | a == b    -> FormSuccess a
+                | otherwise -> FormFailure ["passwords do not match"]
             (FormSuccess _, x) -> x
             (x, _) -> x
 
@@ -104,24 +62,30 @@ createUserForm ident extra = do
 editUserForm :: Maybe User -> Form UserUpdate
 editUserForm muser = renderBootstrap3 BootstrapBasicForm $
     UserUpdate
-        <$> aopt' textField               "Public Name"                                    (userName                      <$> muser)
-        <*> aopt' textField               "Avatar image (link)"                            (userAvatar                    <$> muser)
-        <*> aopt' emailField              "Email (not shown publicly)"                     (userEmail                     <$> muser)
-        <*> aopt' textField               "IRC nick @freenode.net"                         (userIrcNick                   <$> muser)
-        <*> aopt' snowdriftMarkdownField  "Blurb (short note shown in various listings)"   (userBlurb                     <$> muser)
-        <*> aopt' snowdriftMarkdownField  "Statement (longer info or thoughts shown only at profile)"
-                                                                                           (userStatement                 <$> muser)
+        <$> aopt' textField "Public Name" (userName <$> muser)
+        <*> aopt' textField "Avatar image (link)" (userAvatar <$> muser)
+        <*> aopt' emailField "Email (not shown publicly)" (userEmail <$> muser)
+        <*> aopt' textField "IRC nick @freenode.net" (userIrcNick <$> muser)
+        <*> aopt' snowdriftMarkdownField
+                  "Blurb (short note shown in various listings)"
+                  (userBlurb <$> muser)
+        <*> aopt' snowdriftMarkdownField
+                  "Statement (longer info or thoughts shown only at profile)"
+                  (userStatement <$> muser)
 
 changePasswordForm :: Form ChangePassword
 changePasswordForm = renderBootstrap3 BootstrapBasicForm $ ChangePassword
     <$> areq' passwordField "Current passphrase" Nothing
-    <*> areq' passwordField "New passphrase"      Nothing
-    <*> areq' passwordField "Repeat"     Nothing
+    <*> areq' passwordField "New passphrase" Nothing
+    <*> areq' passwordField "Repeat" Nothing
 
 -- | Form to mark a user as eligible for establishment. The user is fully established
 -- when s/he accepts the honor pledge.
 establishUserForm :: Form Text
-establishUserForm = renderBootstrap3 BootstrapBasicForm $ areq' textField "Reason" Nothing
+establishUserForm =
+    renderBootstrap3
+        BootstrapBasicForm
+        (areq' textField "Reason" Nothing)
 
 previewUserForm :: User -> Form UserUpdate
 previewUserForm User{..} = renderBootstrap3 BootstrapBasicForm $
