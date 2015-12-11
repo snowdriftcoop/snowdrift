@@ -66,12 +66,24 @@ editUserForm muser = renderBootstrap3 BootstrapBasicForm $
         <*> aopt' textField "Avatar image (link)" (userAvatar <$> muser)
         <*> aopt' emailField "Email (not shown publicly)" (userEmail <$> muser)
         <*> aopt' textField "IRC nick @freenode.net" (userIrcNick <$> muser)
-        <*> aopt' snowdriftMarkdownField
-                  "Blurb (short note shown in various listings)"
-                  (userBlurb <$> muser)
-        <*> aopt' snowdriftMarkdownField
-                  "Statement (longer info or thoughts shown only at profile)"
-                  (userStatement <$> muser)
+        <*> aopt snowdriftMarkdownField
+                 (FieldSettings "Blurb (short note shown in various listings)"
+                                Nothing
+                                Nothing
+                                Nothing
+                                [("class", "form-control")
+                                ,("cols", "60")
+                                ,("rows", "3")])
+                 (userBlurb <$> muser)
+        <*> aopt snowdriftMarkdownField
+                 (FieldSettings "Statement (longer info or thoughts shown only at profile)"
+                                Nothing
+                                Nothing
+                                Nothing
+                                [("class", "form-control")
+                                ,("cols", "80")
+                                ,("rows", "15")])
+                 (userStatement <$> muser)
 
 changePasswordForm :: Form ChangePassword
 changePasswordForm = renderBootstrap3 BootstrapBasicForm $ ChangePassword

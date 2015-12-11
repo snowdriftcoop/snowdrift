@@ -14,6 +14,7 @@ import qualified Data.Set as S
 import qualified Data.Text as T
 import qualified Data.Traversable as Traversable
 
+import Dev
 import Handler.Comment as Com
 import Handler.Discussion
 import Handler.User.Comment
@@ -344,7 +345,7 @@ getEditUserR user_id = do
     user <- runYDB (get404 user_id)
 
     (form, enctype) <- generateFormPost $ editUserForm (Just user)
-    defaultLayout $ do
+    defaultLayoutNew "edit-user" $ do
         snowdriftDashTitle "User Profile" $
             userDisplayName (Entity user_id user)
         $(widgetFile "edit_user")
@@ -375,7 +376,8 @@ postEditUserR user_id = do
 
                     (form, _) <- generateFormPost $ editUserForm (Just updated_user)
 
-                    defaultLayout $
+                    defaultLayoutNew "edit-user" $ do
+                        alphaRewriteNotice
                         previewWidget form "update" $
                             renderUser (Just viewer_id) user_id updated_user mempty
         _ -> do
