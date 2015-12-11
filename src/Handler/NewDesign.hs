@@ -40,9 +40,8 @@ import View.Time (renderTime)
 import View.User (renderUser, createUserForm)
 import qualified Mechanism as Mech
 
-getSearchR, postCreateAccountR :: Handler Html
-getSearchR         = $(simpleHandler "search" "Search")
-postCreateAccountR = $(simpleHandler "auth/post-create-account" "Welcome")
+getSearchR :: Handler Html
+getSearchR = $(simpleHandler "search" "Search")
 
 getPUpdatesR,
     getPTransactionsR
@@ -187,8 +186,8 @@ getCreateAccountR = do
         |]
 
 -- | Handles form posting for a user signing up.
-postUserCreateR :: Handler Html
-postUserCreateR = do
+postCreateAccountR :: Handler Html
+postCreateAccountR = do
     ((result, form), _) <- runFormPost $ createUserForm Nothing
 
     case result of
