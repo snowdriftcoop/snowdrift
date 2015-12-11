@@ -11,11 +11,7 @@
         <li>
           <a href=@{DonateR}>Donate
         <li>
-          <!-- Linking to current /who page for Snowdrift.  A new page is to be
-               created, and this link will need to be modified accordingly
-               at that time.
-          -->
-          <a href=@{WhoR "snowdrift"}>Team
+          <a href=@{AboutR AboutHomeR}>About
         <li>
           <a href=@{SponsorsR}>Our Sponsors
     <div .col .span_4_of_12>
@@ -25,9 +21,7 @@
         <li>
           <a href=@{TermsR}>Terms Of Use
         <li>
-          <a href=@{HonorPledgeR}>Honor Pledge
-        <li>
-          <a href=@{ProjectContactR "snowdrift"}>Contact
+          <a href=@{AboutR ContactR}>Contact
     <div .col .span_4_of_12>
       <ul>
         <li>

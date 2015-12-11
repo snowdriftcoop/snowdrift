@@ -30,7 +30,7 @@ getSustainableFundingR = $(simpleHandler "how-it-works/sustainable-funding"
                                          "Sustainable Funding")
 getCoOpR               = $(simpleHandler "how-it-works/co-op" "Co-op")
 getPSignupR            = $(simpleHandler "project-signup" "Project Signup")
-getAboutHomeR          = $(simpleHandler "about/home" "About")
+getAboutHomeR          = $(simpleHandler "about/old-homepage" "About")
 getContactR            = $(simpleHandler "contact" "Contact")
 getTeamR               = $(simpleHandler "team" "Team")
 getPressR              = $(simpleHandler "press" "Press")
