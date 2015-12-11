@@ -480,6 +480,21 @@ defaultLayoutNew pageName widget = do
                             (userEmail . entityVal =<< maybeUser)
 
     let avatar = fromMaybe defaultUrl mavatar
+    active <- maybe (const False) (==) <$> getCurrentRoute
+    howItWorksActive <- do
+        r <- getCurrentRoute
+        return $ case r of
+            Just (HowItWorksR _) -> True
+            _                    -> False
+    authActive <- do
+        r <- getCurrentRoute
+        return $ case r of
+            Just (AuthR _)      -> True
+            Just ResetPasswordR -> True
+            Just CreateAccountR -> True
+            _                   -> False
+
+
     let navbar :: Widget = $(widgetFile "default/navbar")
     let footer :: Widget = $(widgetFile "default/footer")
 
