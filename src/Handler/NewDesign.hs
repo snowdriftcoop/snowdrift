@@ -33,10 +33,8 @@ import Model.User
         , fetchUserNotificationsDB
         , fetchUserProjectsAndRolesDB
         , userDisplayName
-        , userIsWatchingProjectDB
         , userReadNotificationsDB
         )
-import View.Project (renderProject)
 import View.Project.Signup (projectSignupForm)
 import View.Time (renderTime)
 import View.User (renderUser, createUserForm)
@@ -168,19 +166,11 @@ getProjectsR = do
 -- | Public page for a project
 getPHomeR :: ProjectHandle -> Handler Html
 getPHomeR handle = do
-    mviewer_id <- maybeAuthId
-
-    (project_id, project, is_watching) <- runYDB $ do
-        Entity project_id project <- getBy404 $ UniqueProjectHandle handle
-        is_watching <- maybe (return False)
-                             (`userIsWatchingProjectDB` project_id)
-                             mviewer_id
-        return (project_id, project, is_watching)
+    Entity _ project <- runDB $ getBy404 $ UniqueProjectHandle handle
 
     defaultLayoutNew "project/home" $ do
         snowdriftTitle $ projectName project
-        projectNav handle
-        renderProject (Just project_id) project mviewer_id is_watching
+        $(widgetFile "project/home")
 
 -- | The account creation page for new users using our own (password-based)
 -- authentication.

@@ -10,7 +10,6 @@ module View.Project
     , projectConfirmPledgeForm
     , previewBlogPost
     , renderBlogPost
-    , renderProject
     , viewForm
     ) where
 
@@ -28,50 +27,12 @@ import Model.Blog
 import Model.Markdown
 import Model.Project
 import Model.Shares
-import Model.User
 import Model.Role
 import Model.Comment
 import View.Time
 import View.User (userNameWidget)
 import Widgets.Markdown
 import Widgets.Preview
-import qualified Mechanism as Mech
-
-renderProject :: Maybe ProjectId
-              -> Project
-              -> Maybe UserId
-              -> Bool
-              -> WidgetT App IO ()
-renderProject maybe_project_id project mviewer_id is_watching = do
-    let discussion =
-            DiscussionOnProject
-                (Entity (fromMaybe (key $ PersistInt64 (-1)) maybe_project_id)
-                        project)
-        description =
-            markdownWidgetWith (fixLinks (projectHandle project) discussion)
-                               (projectDescription project)
-
-    userIsAdmin <- case maybe_project_id of
-        Just project_id ->
-            maybe (pure False)
-                  (\u -> runDB $ userIsProjectAdminDB u project_id) mviewer_id
-        Nothing -> pure False
-
-    now <- liftIO getCurrentTime
-
-    amounts <- handlerToWidget (runDB (Mech.payoutHistory project now))
-
-    ((_, update_pledge), _) <-
-        handlerToWidget
-            (generateFormGet
-                (maybe previewPledgeForm pledgeForm maybe_project_id))
-
-    (mechUser, _mechProject) <- runDB $ do
-        u <- sequence $ fmap Mech.fetchUser mviewer_id
-        p <- sequence $ fmap Mech.fetchProject maybe_project_id
-        return (u,p)
-
-    $(widgetFile "project/home")
 
 data Preview = Preview | NotPreview deriving Eq
 

@@ -33,7 +33,6 @@ import Model.Comment.Sql
 import Model.Currency
 import Model.Discussion
 import Model.Issue
-import Model.Markdown.Diff
 import Model.Project
 import Model.Role
 import Model.Shares
@@ -177,96 +176,6 @@ projectDiscussionPage project_handle widget = do
     $(widgetFile "project_discussion_wrapper")
     toWidget $(cassiusFile "templates/comment.cassius")
 
-
---------------------------------------------------------------------------------
--- /
-
-postProjectR :: Text -> Handler Html
-postProjectR project_handle = do
-    (viewer_id, Entity project_id project) <-
-        requireRolesAny [Admin] project_handle "You do not have permission to edit this project."
-
-    ((result, _), _) <- runFormPost $ editProjectForm Nothing
-
-    now <- liftIO getCurrentTime
-
-    case result of
-        FormSuccess (UpdateProject
-                     name
-                     blurb
-                     description
-                     tags
-                     github_repo
-                     logo) ->
-            lookupPostMode >>= \case
-                Just PostMode -> do
-                    runDB $ do
-                        when (projectBlurb project /= blurb) $ do
-                            project_update <- insert $
-                                ProjectUpdate now
-                                              project_id
-                                              viewer_id
-                                              blurb
-                                              (diffMarkdown
-                                                  (projectDescription project)
-                                                  description)
-                            last_update <- getBy $ UniqueProjectLastUpdate project_id
-                            case last_update of
-                                Just (Entity k _) -> repsert k $ ProjectLastUpdate project_id project_update
-                                Nothing -> void $ insert $ ProjectLastUpdate project_id project_update
-
-                        update $ \p -> do
-                            set p [ ProjectName =. val name
-                                  , ProjectBlurb =. val blurb
-                                  , ProjectDescription =. val description
-                                  , ProjectGithubRepo =. val github_repo
-                                  , ProjectLogo =. val logo
-                                  ]
-                            where_ (p ^. ProjectId ==. val project_id)
-
-                        tag_ids <- forM tags $ \tag_name -> do
-                            tag_entity_list <- select $ from $ \tag -> do
-                                where_ (tag ^. TagName ==. val tag_name)
-                                return tag
-
-                            case tag_entity_list of
-                                [] -> insert $ Tag tag_name
-                                Entity tag_id _ : _ -> return tag_id
-
-
-                        delete $
-                         from $ \pt ->
-                         where_ (pt ^. ProjectTagProject ==. val project_id)
-
-                        forM_ tag_ids $ \tag_id -> insert (ProjectTag project_id tag_id)
-
-                    alertSuccess "project updated"
-                    redirect $ ProjectR project_handle PHomeR
-
-                _ -> do
-                    let
-                        preview_project = project
-                            { projectName = name
-                            , projectBlurb = blurb
-                            , projectDescription = description
-                            , projectGithubRepo = github_repo
-                            , projectLogo = logo
-                            }
-
-                    (form, _) <- generateFormPost $ editProjectForm (Just (preview_project, tags))
-                    defaultLayout
-                        (previewWidget
-                            form
-                            "update"
-                            (renderProject
-                                (Just project_id)
-                                preview_project
-                                Nothing
-                                False))
-
-        x -> do
-            alertDanger $ T.pack $ show x
-            redirect $ ProjectR project_handle PHomeR
 
 --------------------------------------------------------------------------------
 -- /applications (List of submitted applications)
