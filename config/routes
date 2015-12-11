@@ -55,7 +55,7 @@
 /transactions  UTransactionsR  GET
 /notifications UNotificationsR GET
 /pledges       UPledgesR       GET
-/memberships   UMembershipsR   GET
+/roles         URolesR         GET
 /edit-profile  UEditR          GET
 
 --

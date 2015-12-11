@@ -3,5 +3,5 @@
   <li><a href=@{UNotificationsR}>Notifications
   <li><a href=@{UTransactionsR}>Transactions
   <li><a href=@{UPledgesR}>Pledges
-  <li><a href=@{UMembershipsR}>Project Memberships
+  <li><a href=@{URolesR}>Project Roles
   <li><a href=@{UEditR}>Edit profile
