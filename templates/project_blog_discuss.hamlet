@@ -20,5 +20,5 @@ $if not has_comments
   $nothing
     <p>
       There is no discussion here yet.
-      <a href=@{AuthR LoginR}>Sign in
+      <a href=@{AuthR LoginR}>Log in
       to start a new topic.

@@ -21,10 +21,10 @@
             <li>
               <a href=@{UserR user_id}>#{name}
           <li>
-            <a href=@{AuthR LogoutR}>Sign Out
+            <a href=@{AuthR LogoutR}>Log Out
         $nothing
           <li>
-            <a href=@{AuthR LoginR}>Sign In / Create Account
+            <a href=@{AuthR LoginR}>Log In
 
     <nav .navbar .navbar-static-top .visible-xs>
       <ul .nav .nav-pills .navbar-left>
@@ -46,7 +46,7 @@
             <li>
               <a href=@{UserR user_id}>#{name}
           <li>
-            <a href=@{AuthR LogoutR}>Sign Out
+            <a href=@{AuthR LogoutR}>Log Out
         $nothing
           <li>
-            <a href=@{AuthR LoginR}>Sign In
+            <a href=@{AuthR LoginR}>Log In

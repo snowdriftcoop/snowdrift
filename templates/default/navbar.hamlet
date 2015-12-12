@@ -32,6 +32,6 @@
                 <a href=@{UNotificationsR} :active UNotificationsR:.active>
                   Notifications
               <li>
-                <a href=@{AuthR LogoutR}>Sign Out
+                <a href=@{AuthR LogoutR}>Log Out
       $nothing
-        <a href=@{AuthR LoginR} :authActive:.active>Sign In
+        <a href=@{AuthR LoginR} :authActive:.active>Log In
