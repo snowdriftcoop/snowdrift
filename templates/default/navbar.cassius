@@ -178,6 +178,7 @@ nav
                     border-radius: 2.7rem/4.7rem
                     border-top-left-radius: 0
                     border-bottom-left-radius: 0
+                    cursor: pointer
                     &:hover
                         background-color: #{GreenShade}
     ul.right
@@ -186,6 +187,7 @@ nav
         right: 0
         top: 0
         max-height: 6rem
+        z-index: 3
 /* break3 */
 @media (min-width: 571px)
     nav
