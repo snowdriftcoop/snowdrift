@@ -79,7 +79,9 @@ projectNav handle =
 --
 
 dashboardNav :: Widget
-dashboardNav = $(widgetFile "dashboard/nav")
+dashboardNav = do
+    uid <- handlerToWidget requireAuthId
+    $(widgetFile "dashboard/nav")
 
 getHomeR,
     getUTransactionsR,
