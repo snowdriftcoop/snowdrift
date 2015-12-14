@@ -9,7 +9,6 @@ import Import
 import Yesod.Form.Jquery
 import qualified Data.Text as T
 
-import Dev
 import Handler.TH
 
 data Lib =

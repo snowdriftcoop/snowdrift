@@ -56,7 +56,6 @@
 /notifications UNotificationsR GET
 /pledges       UPledgesR       GET
 /roles         URolesR         GET
-/edit-profile  UEditR          GET
 
 --
 -- ## Browsing projects, or a particular project
