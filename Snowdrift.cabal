@@ -444,7 +444,6 @@ test-suite test
         BlogTest
         CommentTest
         DiscussionTest
-        MechanismTest
         NotifyTest
         PPrint
         TestHandler
