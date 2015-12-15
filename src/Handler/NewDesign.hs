@@ -41,7 +41,9 @@ import View.User (renderUser, createUserForm)
 import qualified Mechanism as Mech
 
 getSearchR :: Handler Html
-getSearchR = $(simpleHandler "search" "Search")
+getSearchR = do
+    q <- lookupGetParam "q"
+    $(simpleHandler "search" "Search")
 
 getPUpdatesR,
     getPTransactionsR

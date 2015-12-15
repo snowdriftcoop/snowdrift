@@ -1,3 +1,7 @@
 ^{toBeWrittenNotice}
 <p>
-  Search is currently not functional!
+  $maybe search <- q
+    You searched for '<em>#{search}</em>', but search is not functional
+    yet. :(
+  $nothing
+    Search is currently not functional!
