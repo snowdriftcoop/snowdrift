@@ -96,6 +96,9 @@ h3
         font-weight: 200
         text-decoration: underline
 
+em
+    font-style: italic
+
 /* ============upscaling====================== */
 @media (min-width: 1800px)
     html
