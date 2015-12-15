@@ -27,10 +27,6 @@
       <span .glyphicon .glyphicon-tag>
       Tickets
   <li .snowdrift-sidebar-item>
-    <a href=@{PTransactionsR (projectHandle project)}>
-      <span .glyphicon .glyphicon-stats>
-      Transactions
-  <li .snowdrift-sidebar-item>
     <a href=@{VolunteerR $ projectHandle project}>
       <span .glyphicon .glyphicon-check>
       Volunteer
