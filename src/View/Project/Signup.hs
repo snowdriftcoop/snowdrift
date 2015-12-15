@@ -64,7 +64,7 @@ projectSignupForm render ls = renderBootstrap3 BootstrapBasicForm $ ProjectSignu
              "information? Consider providing contact info for others " <>
              "affiliated with the project")
   where
-    handle = Text.unpack $ render $ ProjectR "handle" PHomeR
+    handle = Text.unpack $ render $ PHomeR "handle"
 
 dateField :: Field Handler (Year, Month)
 dateField = Field

@@ -61,14 +61,14 @@
 -- ## Browsing projects, or a particular project
 --
 
-/p ProjectsR GET
-/p/#ProjectHandle ProjectR:
-    /             PHomeR         GET
-    /updates      PUpdatesR      GET
-    -- just link to existing wiki and discussion for now
-    -- /w         PWikiR
-    -- /d         PDiscussionR
-    /transactions PTransactionsR GET
+/p                             ProjectsR      GET
+/p/#ProjectHandle              PHomeR         GET
+/p/#ProjectHandle/updates      PUpdatesR      GET
+/p/#ProjectHandle/transactions PTransactionsR GET
+
+-- just link to existing wiki and discussion for now
+-- /w         PWikiR
+-- /d         PDiscussionR
 
 --
 -- ## Browsing a particular user (may need fleshing out?)

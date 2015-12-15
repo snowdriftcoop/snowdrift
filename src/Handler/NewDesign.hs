@@ -69,10 +69,10 @@ projectNav handle =
     [whamlet|
         <h3>Subpages
         <ul>
-            <li><a href=@{ProjectR handle PUpdatesR}>Updates
+            <li><a href=@{PUpdatesR handle}>Updates
             <li><a href=@{WikiPagesR handle}>Wiki</a> (links to pre-alpha)
             <li><a href=@{ProjectDiscussionR handle}>Discussion</a> (links to pre-alpha)
-            <li><a href=@{ProjectR handle PTransactionsR}>Transactions
+            <li><a href=@{PTransactionsR handle}>Transactions
     |]
 
 

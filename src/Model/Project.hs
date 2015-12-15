@@ -211,7 +211,7 @@ projectNameWidget project_id = do
     case maybe_project of
         Nothing -> [whamlet| (unknown project) |]
         Just project -> [whamlet|
-                            <a href=@{ProjectR (projectHandle project) PHomeR}>
+                            <a href=@{PHomeR (projectHandle project)}>
                               #{projectName project}
                         |]
 

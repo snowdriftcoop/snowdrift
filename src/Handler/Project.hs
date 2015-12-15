@@ -539,7 +539,7 @@ getUpdatePledgeR project_handle = do
     ((result, _), _) <- runFormGet $ pledgeForm project_id
     let dangerRedirect msg = do
             alertDanger msg
-            redirect $ ProjectR project_handle PHomeR
+            redirect $ PHomeR project_handle
     case result of
         FormSuccess (SharesPurchaseOrder new_user_shares) -> do
             user_id <- requireAuthId
@@ -565,7 +565,7 @@ getUpdatePledgeR project_handle = do
                         , "Thank you for your support!"
                         ]
 
-                    redirect (ProjectR project_handle PHomeR)
+                    redirect (PHomeR project_handle)
 
                 _ -> do
                     let user_decrease    = old_user_amount - new_user_amount
@@ -596,7 +596,7 @@ postUpdatePledgeR project_handle = do
     case result of
         FormSuccess (SharesPurchaseOrder shares) -> do
             when isConfirmed $ Mech.updateUserPledge project_handle shares
-            redirect (ProjectR project_handle PHomeR)
+            redirect (PHomeR project_handle)
         _ -> do
             alertDanger "error occurred in form submission"
             redirect (UpdatePledgeR project_handle)
@@ -704,7 +704,7 @@ watchOrUnwatchProject action msg project_id = do
         action user_id project_id
         get404 project_id
     alertSuccess (msg <> projectName project <> ".")
-    redirect $ ProjectR (projectHandle project) PHomeR
+    redirect $ PHomeR (projectHandle project)
 
 --------------------------------------------------------------------------------
 -- /c/#CommentId

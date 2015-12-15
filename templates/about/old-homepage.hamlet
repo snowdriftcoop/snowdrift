@@ -27,7 +27,7 @@
         FAQ
     <div .homep-link>
       This website is itself a
-      <a href=@{ProjectR "snowdrift" PHomeR}>
+      <a href=@{PHomeR "snowdrift"}>
         Snowdrift.coop project
 
   <div .homepage-section .col-md-6>

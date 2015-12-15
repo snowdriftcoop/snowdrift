@@ -10,7 +10,7 @@
 
 <div .page-toolbox>
   <div .page-tool>
-    <a href=@{ProjectR project_handle PHomeR}>back to main project page
+    <a href=@{PHomeR project_handle}>back to main project page
   $if has_comments
     <div .page-tool>
       <a href=@{NewProjectDiscussionR project_handle}>new topic
