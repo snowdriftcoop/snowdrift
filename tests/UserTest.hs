@@ -16,10 +16,10 @@ userSpecs = do
     ydescribe "user" $ do
         yit "creates a user" $ [marked|
             forM_ users $ \user -> do
-                get200 USignupR
+                get200 CreateAccountR
 
                 withStatus 303 True $ request $ do
-                    setUrl USignupR
+                    setUrl CreateAccountR
                     addToken
                     setMethod "POST"
                     byLabel "Handle (private):" (username user)
