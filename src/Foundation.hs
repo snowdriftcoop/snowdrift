@@ -472,12 +472,14 @@ defaultLayoutNew pageName widget = do
     --    machine.
     let defaultUrl = "https://snowdrift.coop/static/img/default-avatar.png"
     mavatar <- liftIO $ maybe (return $ Just defaultUrl)
-                            (\email -> fmap (fmap T.pack) $
-                                   avatarUrl (Left $ T.unpack email)
-                                             False
-                                             (Just $ T.unpack defaultUrl)
-                                             Nothing)
-                            (userEmail . entityVal =<< maybeUser)
+                              (\email -> fmap (fmap T.pack) $
+                                   avatarUrl (Email $ T.unpack email)
+                                             AvatarOptions
+                                                 { optSecure = False
+                                                 , optDefault = ImgCustom defaultUrl
+                                                 , optSize = DefaultSize
+                                                 })
+                              (userEmail . entityVal =<< maybeUser)
 
     let avatar = fromMaybe defaultUrl mavatar
     active <- maybe (const False) (==) <$> getCurrentRoute
