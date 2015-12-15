@@ -36,3 +36,32 @@
         display: inherit
     .unbreak6
         display: none
+
+/* ============break indicator====================== */
+/* break1 */
+@media (min-width: 301px)
+    .grid:before
+        content: "break1"
+        position: absolute
+        left: 0
+        top: 6rem
+/* break2 */
+@media (min-width: 391px)
+    .grid:before
+        content: "break2"
+/* break3 */
+@media (min-width: 571px)
+    .grid:before
+        content: "break3"
+/* break4 */
+@media (min-width: 751px)
+    .grid:before
+        content: "break4"
+/* break5 */
+@media (min-width: 841px)
+    .grid:before
+        content: "break5"
+/* break6 */
+@media (min-width: 1111px)
+    .grid:before
+        content: "break6"

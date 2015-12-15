@@ -62,7 +62,6 @@ import Model.Notification
             ,ProjectNotificationType(..)
             ,ProjectNotificationDelivery(..))
 
-import PPrint
 import TimedYesodTest as TestImport
 
 onException :: MonadBaseControl IO m => m a -> m b -> m a
@@ -514,37 +513,6 @@ setBalance user_id n = do
     Esqueleto.update $ \a -> do
         set a [AccountBalance Esqueleto.=. val n]
         where_ $ a ^. AccountId ==. val account_id
-
-pledgeStatus :: ProjectId -> Int64 -> Int -> Example ()
-pledgeStatus project_id shares status = [marked|
-    project <-
-        testDB (Esqueleto.get project_id) >>= return .
-            fromMaybe (error $ "cannot find project " <> pprint project_id)
-    let handle  = projectHandle project
-        tshares = shpack shares
-    get200 $ ProjectR handle
-
-    let route = UpdatePledgeR handle
-    withStatus status False $ request $ do
-        setUrl route
-        setMethod "GET"
-        addGetParam "_hasdata" ""
-        addGetParam "f1" tshares
-
-    when (status == 200) $
-        withStatus 303 False $ request $ do
-            addToken
-            setMethod "POST"
-            setUrl route
-            addPostParam "f1" tshares
-            addPostParam "confirm" "yes!"
-|]
-
-pledge :: ProjectId -> Int64 -> Example ()
-pledge project_id shares = pledgeStatus project_id shares 200
-
-pledgeFail :: ProjectId -> Int64 -> Example ()
-pledgeFail project_id shares = pledgeStatus project_id shares 303
 
 named_users :: [NamedUser]
 named_users = [minBound .. maxBound]

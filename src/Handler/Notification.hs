@@ -41,18 +41,6 @@ buildNotificationsList uns pns =
     sort $ ((\(Entity un_id un) -> UNotification un_id un) <$> uns)
         <> ((\(Entity pn_id pn) -> PNotification pn_id pn) <$> pns)
 
-getNotificationsR :: Handler Html
-getNotificationsR = do
-    user_id <- requireAuthId
-    notifs  <- runDB $ do
-        userReadNotificationsDB user_id
-        user_notifs    <- fetchUserNotificationsDB user_id
-        project_notifs <- fetchProjectNotificationsDB user_id
-        return $ buildNotificationsList user_notifs project_notifs
-    defaultLayout $ do
-        snowdriftTitle "Notifications"
-        $(widgetFile "notifications")
-
 whenNotifId :: (PersistEntity r, DBConstraint m)
             => Text -> (Key r -> m ()) -> m ()
 whenNotifId value action =
@@ -104,7 +92,7 @@ getNotificationsProxyR =
         archiveNotificationsDB deleteNotificationsDB
         archiveUserNotificationDB deleteUserNotificationDB
         archiveProjectNotificationDB deleteProjectNotificationDB
-        NotificationsR
+        UNotificationsR
 
 getArchivedNotificationsR :: Handler Html
 getArchivedNotificationsR = do

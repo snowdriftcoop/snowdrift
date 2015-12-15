@@ -1,16 +1,20 @@
 /* Used only in development to overlay a design grid */
 html div.grid
+    display: none
     position: absolute
     top: 0
     left: 0
     right: 0
-    height: 1000rem
+    height: 0rem
     background: url(@{StaticR img_grid_png}) repeat-y top center
+    background-size: 100%
     z-index: 9999
-    display: block
+    transition: all 0.5s ease-out 1s
 html:hover div.grid
-    display: none
-
+    height: 1000rem
+@media (min-width: 1111px)
+    html div.grid
+        background-size: 111rem
 
 html
     font-size: 62.5%
@@ -44,11 +48,22 @@ a:hover, a:active, a:focus
     color: #{White};
     background: #{DarkBlue};
     text-shadow: none
-
+p
+    padding-bottom: 3rem
 img
     max-width: 100%
     height: auto
-
+table
+    margin: 3rem 0
+    tr
+        &:nth-child(2n)
+            background: #f3f9fd
+        th
+            border-bottom: 0.1rem solid #{DarkBlue}
+            padding: 1rem 2rem
+            font-weight: 600
+        td
+            padding: 1rem 2rem
 .container
     max-width: 111rem
     top: 6rem
@@ -57,7 +72,40 @@ img
     bottom: 0
     margin: 0 auto
     padding: 0 2.85%
+h1
+    font-weight: 600
+    font-size: 3rem
+h2
+    font-weight: 600
+    font-size: 2.5rem
+h3
+    font-weight: 600
+    font-size: 2rem
+.alpha-rewrite, .to-be-written
+    border: 0.2rem solid #e29696
+    border-radius: 0.3rem
+    background: #f7e1e1
+    background: url(@{StaticR img_mimi_notification_png}) no-repeat left top, #f7e1e1
+    padding: 3rem 3rem 3rem 20rem
+    margin: 3rem
+    min-height: 17rem
+    color: #{Red}
+    float: left
+    a
+        color: #{Red}
+        font-weight: 200
+        text-decoration: underline
 
-@media (min-width: 571px)
-    .container
-        padding: 0
+/* ============upscaling====================== */
+@media (min-width: 1800px)
+    html
+        font-size: 65%
+@media (min-width: 2000px)
+    html
+        font-size: 70%
+@media (min-width: 2200px)
+    html
+        font-size: 75%
+@media (min-width: 2400px)
+    html
+        font-size: 80%

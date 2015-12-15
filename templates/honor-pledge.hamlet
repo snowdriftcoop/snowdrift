@@ -33,6 +33,6 @@ $nothing
   <p .not-logged-in>
     Note: if you got to this page via an email notification of eligibility,
     please
-    <a href=@{AuthR LoginR}>sign-in
+    <a href=@{AuthR LoginR}>log in
     and then reload this page to see the accept button.
 

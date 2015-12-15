@@ -1,0 +1,15 @@
+<h1>Let's do this.
+<div>
+  ^{apLogin snowdriftAuthHashDB toParent}
+<div>
+  Alternatively:
+  <ul>
+    <li>
+      ^{apLogin snowdriftAuthBrowserId toParent}
+    <li>
+      <a href=@{CreateAccountR}>Create an account with us</a>,
+      or create an account through Persona by clicking the button above.
+    <li>
+      Have an account, but
+      <a href=@{ResetPasswordR}>
+        forgot your password?

@@ -1,9 +1,11 @@
-module Handler.ResetPassword where
+module Handler.ResetPassword (getResetPasswordR, postResetPasswordR) where
 
 import Import hiding (isNothing)
 
 import Data.Maybe (fromJust, isNothing)
 
+import Dev
+import Handler.TH
 import Handler.Utils
 import Model.ResetPassword
 import View.ResetPassword (resetPasswordForm)
@@ -12,9 +14,7 @@ import qualified View.ResetPassword as View
 getResetPasswordR :: Handler Html
 getResetPasswordR = do
     (form, enctype) <- generateFormPost resetPasswordForm
-    defaultLayout $ do
-        snowdriftTitle "Reset Password"
-        $(widgetFile "reset_password")
+    $(simpleHandler "reset-password" "Reset Password")
 
 initResetPassword :: UserId -> Text -> Handler Html
 initResetPassword user_id email = do
@@ -29,7 +29,7 @@ postResetPasswordR = do
     ((result, form), enctype) <- runFormPost resetPasswordForm
     let alertAndRefresh msg = do
             alertDanger msg
-            defaultLayout $(widgetFile "reset_password")
+            $(simpleHandler "reset-password" "Reset Password")
     case result of
         FormSuccess View.ResetPassword {..} ->
             if | isNothing rpHandle && isNothing rpEmail ->

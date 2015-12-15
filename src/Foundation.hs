@@ -12,6 +12,7 @@ import Control.Monad.Writer.Strict (WriterT, runWriterT)
 import Data.Char (isSpace)
 import Data.Text as T
 import Network.HTTP.Conduit (Manager)
+import Network.Libravatar
 import Text.Blaze.Html.Renderer.Text (renderHtml)
 import Text.Hamlet (hamletFile)
 import Text.Jasmine (minifym)
@@ -32,8 +33,6 @@ import qualified Settings
 import qualified Yesod as Y
 
 import Model.Currency
-import Model.Notification.Internal
-            (UserNotificationType(..), UserNotificationDelivery(..))
 
 -- A type for running DB actions outside of a Handler.
 type Daemon a = ReaderT App (LoggingT (ResourceT IO)) a
@@ -61,6 +60,10 @@ plural _ _ y = y
 
 -- Set up i18n messages. See the message folder.
 mkMessage "App" "messages" "en"
+
+-- FIXME
+type ProjectHandle = Text
+type UserHandle = UserId
 
 -- This is where we define all of the routes in our application. For a full
 -- explanation of the syntax, please see:
@@ -139,11 +142,14 @@ instance Yesod App where
 
     -- This is done to provide an optimization for serving static files from
     -- a separate domain. Please see the staticRoot setting in Settings.hs
-    urlRenderOverride y (StaticR s) =
-        Just $ uncurry (joinPath y (Settings.staticRoot $ appSettings y)) $ renderRoute s
-
-    urlRenderOverride _ PostLoginR = Just (fromText "/dest")
-    urlRenderOverride _ _ = Nothing
+    urlRenderOverride y = \case
+        StaticR s  ->
+            Just (uncurry (joinPath y (Settings.staticRoot (appSettings y)))
+                          (renderRoute s))
+        -- I have determined that this *only* exists for the sake of
+        -- templates/persona.julius.
+        PostLoginR -> Just (fromText "/dest")
+        _          -> Nothing
 
     -- The page to be redirected to when authentication is required.
     authRoute _ = Just $ AuthR LoginR
@@ -199,33 +205,23 @@ getSiteProject = fromMaybe (error "No project has been defined as the owner of t
 getSiteProjectHandle :: Handler Text
 getSiteProjectHandle = extraSiteProject . appExtra . appSettings <$> getYesod
 
-authBrowserIdFixed :: AuthPlugin App
-authBrowserIdFixed =
-    let complete = PluginR "browserid" []
-        login :: (Route Auth -> Route App) -> WidgetT App IO ()
-        login toMaster = do
-            addScriptRemote browserIdJs
-
-            -- it's "BrowserID" for the backend, but the user-facing
-            -- front-end is called "Mozilla Persona"
-            $(widgetFile "persona-fixed")
-
-     in (authBrowserId def) { apLogin = login }
 
 snowdriftAuthBrowserId :: AuthPlugin App
 snowdriftAuthBrowserId =
-    let auth = authBrowserIdFixed
+    let complete = PluginR "browserid" []
         login toMaster = do
-            let parentLogin = apLogin auth toMaster
-            $(widgetFile "persona")
-     in auth { apLogin = login }
+            addScriptRemote browserIdJs
+            $(widgetFile "auth/persona")
+     in (authBrowserId def) { apLogin = login }
 
 snowdriftAuthHashDB :: AuthPlugin App
 snowdriftAuthHashDB =
     let auth = authHashDB (Just . UniqueUser)
         loginRoute = PluginR "hashdb" ["login"]
-        login toMaster =
-            $(widgetFile "built-in-login")
+        login toMaster = do
+            handleInputId <- newIdent
+            passphraseInputId <- newIdent
+            $(widgetFile "auth/built-in-login")
      in auth { apLogin = login }
 
 instance YesodAuth App where
@@ -255,10 +251,8 @@ instance YesodAuth App where
     authHttpManager = appHttpManager
 
     loginHandler = do
-        app <- lift getYesod
         toParent <- getRouteToParent
-
-        lift $ defaultLayout $(widgetFile "auth")
+        lift $ defaultLayoutNew "auth/login" $(widgetFile "auth/login")
 
 instance YesodAuthPersist App
 
@@ -464,12 +458,42 @@ readMaybe s = case [x | (x,t) <- reads s, ("","") <- lex t] of
 -- Once the new design is in place, this will probably replace
 -- defaultLayout... though we may want to continue to have separate
 -- 'defaults' for different sections e.g. project pages
-defaultLayoutNew :: Widget -> Handler Html
-defaultLayoutNew widget = do
+--
+-- pageName is used as a class for a top-level <div> wrapper.
+defaultLayoutNew :: Text -> Widget -> Handler Html
+defaultLayoutNew pageName widget = do
     master <- getYesod
     mmsg <- getMessage
     malert <- getAlert
-    maybeUser <- maybeAuth
+    maybeUser  <- maybeAuth
+
+    -- Use Libravatar for an avatar if available.  Otherwise, use default
+    -- Default URL is hardcoded to allow usage even while developing on local
+    --    machine.
+    let defaultUrl = "https://snowdrift.coop/static/img/default-avatar.png"
+    mavatar <- liftIO $ maybe (return $ Just defaultUrl)
+                            (\email -> fmap (fmap T.pack) $
+                                   avatarUrl (Left $ T.unpack email)
+                                             False
+                                             (Just $ T.unpack defaultUrl)
+                                             Nothing)
+                            (userEmail . entityVal =<< maybeUser)
+
+    let avatar = fromMaybe defaultUrl mavatar
+    active <- maybe (const False) (==) <$> getCurrentRoute
+    howItWorksActive <- do
+        r <- getCurrentRoute
+        return $ case r of
+            Just (HowItWorksR _) -> True
+            _                    -> False
+    authActive <- do
+        r <- getCurrentRoute
+        return $ case r of
+            Just (AuthR _)      -> True
+            Just ResetPasswordR -> True
+            Just CreateAccountR -> True
+            _                   -> False
+
 
     let navbar :: Widget = $(widgetFile "default/navbar")
     let footer :: Widget = $(widgetFile "default/footer")

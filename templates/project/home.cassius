@@ -1,0 +1,28 @@
+
+
+.p-blurb
+    max-width: 80%
+    font-size: smaller
+    border-bottom: 1px solid #3981B3
+    margin: 0 auto
+
+.pledge-form
+    background: #DDECE3
+    margin: 1em
+    padding: 1em
+    border-radius: 1em
+    text-align: center
+
+.testing-notice
+    border: 2px solid red
+    font-style: italic
+    text-align: center
+
+.pledge-form h2, .pledge-form h3, .pledge-form h4
+    margin: 0.5em
+
+.pledge-form ul
+    padding: 0
+
+.pledge-form li
+    line-height: 0.5em

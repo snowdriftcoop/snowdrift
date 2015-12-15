@@ -10,7 +10,7 @@
 
 <div .page-toolbox>
   <div .page-tool>
-    <a href=@{ProjectR project_handle}>back to main project page
+    <a href=@{PHomeR project_handle}>back to main project page
   $if has_comments
     <div .page-tool>
       <a href=@{NewProjectDiscussionR project_handle}>new topic
@@ -29,5 +29,5 @@ $if not has_comments
   $nothing
     <p>
       There is no discussion here yet.
-      <a href=@{AuthR LoginR}>Sign in
+      <a href=@{AuthR LoginR}>Log in
       to start a new topic.

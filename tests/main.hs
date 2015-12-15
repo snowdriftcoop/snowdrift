@@ -24,7 +24,6 @@ import TestHandler
 import BlogTest
 import CommentTest
 import DiscussionTest
-import MechanismTest
 import NotifyTest
 import UserTest
 import WikiTest
@@ -67,5 +66,4 @@ spec foundation file =
             wikiSpecs
             blogSpecs
             discussionSpecs
-            mechanismSpecs
             commentSpecs config

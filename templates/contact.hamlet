@@ -1,0 +1,6 @@
+^{toBeWrittenNotice}
+<p>Placeholder for a contact page.
+
+<p>Note there is an existing per-project contact page.
+<a href=@{ProjectContactR "snowdrift"}>Contact Snowdrift
+using that old page.

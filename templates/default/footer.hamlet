@@ -1,33 +1,27 @@
 <footer>
   <div .section .group>
     <div .col .span_12_of_12>
-      <a href=# .logo>
+      <a href=@{HomeR} .logo>
         <img src=@{StaticR img_logo_png} alt=Snowdrift.coop>
   <div .section .group>
     <div .col .span_4_of_12>
       <ul>
         <li>
-          <a href=#>Help
+          <a href=@{HowItWorksR IntroR}>How it works
         <li>
-          <a href=#>How it works
+          <a href=@{DonateR}>Donate
         <li>
-          <a href=#>Join us
+          <a href=@{AboutR AboutHomeR}>About
         <li>
-          <a href=#>FAQ
-        <li>
-          <a href=#>Browse
+          <a href=@{SponsorsR}>Our Sponsors
     <div .col .span_4_of_12>
       <ul>
         <li>
-          <a href=#>About us
+          <a href=@{PrivacyR}>Privacy Policy
         <li>
-          <a href=#>Team
+          <a href=@{TermsR}>Terms Of Use
         <li>
-          <a href=#>Press
-        <li>
-          <a href=#>Blog
-        <li>
-          <a href=#>Contact
+          <a href=@{AboutR ContactR}>Contact
     <div .col .span_4_of_12>
       <ul>
         <li>
@@ -49,11 +43,11 @@
                 href=https://www.gnu.org/licenses/agpl>
               GNU&nbsp;AGPLv3+</a>.
             All JavaScript on this site is
-            <a href=@{JsLicenseR} rel=jslicense>
+            <a href=@{JsLicensesR} rel=jslicense>
               freely-licensed</a>.
   <div .section .group>
     <div .col .span_12_of_12 .supporters>
-      <span>proudly supported by
+      <span>proud partners of
       <ul .bg>
         <li>
           <a .osi href=https://opensource.org/>

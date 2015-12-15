@@ -27,7 +27,6 @@ import qualified Data.Text.Lazy as TextLazy
 import qualified Database.Persist as Persist
 import qualified Text.Email.Validate as Email
 
-import Model.Notification (UserNotificationType, ProjectNotificationType)
 import Model.User (deleteFromEmailVerification)
 import WrappedValues
 

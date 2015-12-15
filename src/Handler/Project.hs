@@ -30,11 +30,9 @@ import Model.Comment.ActionPermissions
 import Model.Comment.HandlerInfo
 import Model.Comment.Mods
 import Model.Comment.Sql
-import Model.Count
 import Model.Currency
 import Model.Discussion
 import Model.Issue
-import Model.Markdown.Diff
 import Model.Project
 import Model.Role
 import Model.Shares
@@ -178,131 +176,6 @@ projectDiscussionPage project_handle widget = do
     $(widgetFile "project_discussion_wrapper")
     toWidget $(cassiusFile "templates/comment.cassius")
 
-
--------------------------------------------------------------------------------
---
-
-getProjectsR :: Handler Html
-getProjectsR = do
-    project_summaries <- runDB $ do
-        projects <- fetchPublicProjectsDB
-        forM projects $ \project -> do
-            discussions <- fetchProjectDiscussionsDB $ entityKey project
-            tickets <- fetchProjectOpenTicketsDB (entityKey project) Nothing
-            let summary = summarizeProject project Mech.Project discussions tickets
-            return (project, summary)
-
-    let discussionsCount = getCount . summaryDiscussionCount
-    let ticketsCount = getCount . summaryTicketCount
-
-    defaultLayout $ do
-        snowdriftTitle "Projects"
-        $(widgetFile "projects")
-
---------------------------------------------------------------------------------
--- /
-
-getProjectR :: Text -> Handler Html
-getProjectR project_handle = do
-    mviewer_id <- maybeAuthId
-
-    (project_id, project, is_watching) <- runYDB $ do
-        Entity project_id project <- getBy404 $ UniqueProjectHandle project_handle
-        is_watching <- case mviewer_id of
-            Nothing -> return False
-            Just viewer_id -> userIsWatchingProjectDB viewer_id project_id
-        return (project_id, project, is_watching)
-
-    defaultLayout $ do
-        snowdriftTitle $ projectName project
-        renderProject (Just project_id) project mviewer_id is_watching
-
-postProjectR :: Text -> Handler Html
-postProjectR project_handle = do
-    (viewer_id, Entity project_id project) <-
-        requireRolesAny [Admin] project_handle "You do not have permission to edit this project."
-
-    ((result, _), _) <- runFormPost $ editProjectForm Nothing
-
-    now <- liftIO getCurrentTime
-
-    case result of
-        FormSuccess (UpdateProject
-                     name
-                     blurb
-                     description
-                     tags
-                     github_repo
-                     logo) ->
-            lookupPostMode >>= \case
-                Just PostMode -> do
-                    runDB $ do
-                        when (projectBlurb project /= blurb) $ do
-                            project_update <- insert $
-                                ProjectUpdate now
-                                              project_id
-                                              viewer_id
-                                              blurb
-                                              (diffMarkdown
-                                                  (projectDescription project)
-                                                  description)
-                            last_update <- getBy $ UniqueProjectLastUpdate project_id
-                            case last_update of
-                                Just (Entity k _) -> repsert k $ ProjectLastUpdate project_id project_update
-                                Nothing -> void $ insert $ ProjectLastUpdate project_id project_update
-
-                        update $ \p -> do
-                            set p [ ProjectName =. val name
-                                  , ProjectBlurb =. val blurb
-                                  , ProjectDescription =. val description
-                                  , ProjectGithubRepo =. val github_repo
-                                  , ProjectLogo =. val logo
-                                  ]
-                            where_ (p ^. ProjectId ==. val project_id)
-
-                        tag_ids <- forM tags $ \tag_name -> do
-                            tag_entity_list <- select $ from $ \tag -> do
-                                where_ (tag ^. TagName ==. val tag_name)
-                                return tag
-
-                            case tag_entity_list of
-                                [] -> insert $ Tag tag_name
-                                Entity tag_id _ : _ -> return tag_id
-
-
-                        delete $
-                         from $ \pt ->
-                         where_ (pt ^. ProjectTagProject ==. val project_id)
-
-                        forM_ tag_ids $ \tag_id -> insert (ProjectTag project_id tag_id)
-
-                    alertSuccess "project updated"
-                    redirect $ ProjectR project_handle
-
-                _ -> do
-                    let
-                        preview_project = project
-                            { projectName = name
-                            , projectBlurb = blurb
-                            , projectDescription = description
-                            , projectGithubRepo = github_repo
-                            , projectLogo = logo
-                            }
-
-                    (form, _) <- generateFormPost $ editProjectForm (Just (preview_project, tags))
-                    defaultLayout
-                        (previewWidget
-                            form
-                            "update"
-                            (renderProject
-                                (Just project_id)
-                                preview_project
-                                Nothing
-                                False))
-
-        x -> do
-            alertDanger $ T.pack $ show x
-            redirect $ ProjectR project_handle
 
 --------------------------------------------------------------------------------
 -- /applications (List of submitted applications)
@@ -666,7 +539,7 @@ getUpdatePledgeR project_handle = do
     ((result, _), _) <- runFormGet $ pledgeForm project_id
     let dangerRedirect msg = do
             alertDanger msg
-            redirect $ ProjectR project_handle
+            redirect $ PHomeR project_handle
     case result of
         FormSuccess (SharesPurchaseOrder new_user_shares) -> do
             user_id <- requireAuthId
@@ -692,7 +565,7 @@ getUpdatePledgeR project_handle = do
                         , "Thank you for your support!"
                         ]
 
-                    redirect (ProjectR project_handle)
+                    redirect (PHomeR project_handle)
 
                 _ -> do
                     let user_decrease    = old_user_amount - new_user_amount
@@ -723,7 +596,7 @@ postUpdatePledgeR project_handle = do
     case result of
         FormSuccess (SharesPurchaseOrder shares) -> do
             when isConfirmed $ Mech.updateUserPledge project_handle shares
-            redirect (ProjectR project_handle)
+            redirect (PHomeR project_handle)
         _ -> do
             alertDanger "error occurred in form submission"
             redirect (UpdatePledgeR project_handle)
@@ -831,7 +704,7 @@ watchOrUnwatchProject action msg project_id = do
         action user_id project_id
         get404 project_id
     alertSuccess (msg <> projectName project <> ".")
-    redirect $ ProjectR $ projectHandle project
+    redirect $ PHomeR (projectHandle project)
 
 --------------------------------------------------------------------------------
 -- /c/#CommentId

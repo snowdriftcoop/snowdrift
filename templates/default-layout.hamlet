@@ -32,5 +32,5 @@
           GNU&nbsp;AGPLv3+
       <div .col-md-4>
         All JavaScript on this site is
-        <a href=@{JsLicenseR} rel=jslicense>
+        <a href=@{JsLicensesR} rel=jslicense>
           freely-licensed

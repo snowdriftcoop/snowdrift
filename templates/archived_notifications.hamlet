@@ -50,5 +50,5 @@ $else
                 #{projectNotificationContent project_notif}
 
 <nav .text-center>
-  <a href=@{NotificationsR}>
+  <a href=@{UNotificationsR}>
     view unarchived notifications

@@ -1,20 +1,20 @@
 @font-face
- font-family: 'Nunito'
- font-style: normal
- font-weight: normal
- src: url(@{StaticR fonts_nunito_nunito_regular_woff2}) format('woff2'), url(@{StaticR fonts_nunito_nunito_regular_woff}) format('woff'), url(@{StaticR fonts_nunito_nunito_regular_ttf}) format('truetype')
+    font-family: 'Nunito'
+    font-style: normal
+    font-weight: normal
+    src: url(@{StaticR fonts_nunito_nunito_regular_woff2}) format('woff2'), url(@{StaticR fonts_nunito_nunito_regular_woff}) format('woff'), url(@{StaticR fonts_nunito_nunito_regular_ttf}) format('truetype')
 @font-face
- font-family: 'Nunito'
- font-style: normal
- font-weight: 300
- src: url(@{StaticR fonts_nunito_nunito_light_woff2}) format('woff2'), url(@{StaticR fonts_nunito_nunito_light_woff}) format('woff'), url(@{StaticR fonts_nunito_nunito_light_ttf}) format('truetype')
+    font-family: 'Nunito'
+    font-style: normal
+    font-weight: 300
+    src: url(@{StaticR fonts_nunito_nunito_light_woff2}) format('woff2'), url(@{StaticR fonts_nunito_nunito_light_woff}) format('woff'), url(@{StaticR fonts_nunito_nunito_light_ttf}) format('truetype')
 @font-face
- font-family: 'Nunito'
- font-style: normal
- font-weight: bold
- src: url(@{StaticR fonts_nunito_nunito_bold_woff2}) format('woff2'), url(@{StaticR fonts_nunito_nunito_bold_woff}) format('woff'), url(@{StaticR fonts_nunito_nunito_bold_ttf}) format('truetype')
+    font-family: 'Nunito'
+    font-style: normal
+    font-weight: bold
+    src: url(@{StaticR fonts_nunito_nunito_bold_woff2}) format('woff2'), url(@{StaticR fonts_nunito_nunito_bold_woff}) format('woff'), url(@{StaticR fonts_nunito_nunito_bold_ttf}) format('truetype')
 @font-face
- font-family: 'League Spartan'
- font-style: normal
- font-weight: bold
- src: url(@{StaticR fonts_league_spartan_leaguespartan_bold_woff2}) format('woff2'), url(@{StaticR fonts_league_spartan_leaguespartan_bold_woff}) format('woff'), url(@{StaticR fonts_league_spartan_leaguespartan_bold_otf}) format('opentype')
+    font-family: 'League Spartan'
+    font-style: normal
+    font-weight: bold
+    src: url(@{StaticR fonts_league_spartan_leaguespartan_bold_woff2}) format('woff2'), url(@{StaticR fonts_league_spartan_leaguespartan_bold_woff}) format('woff'), url(@{StaticR fonts_league_spartan_leaguespartan_bold_otf}) format('opentype')

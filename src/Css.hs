@@ -21,6 +21,7 @@ data Color
         | Green
         | GreenShade
         | Gold
+        | Red
 
 instance ToCss Color where
     toCss = \case
@@ -31,6 +32,7 @@ instance ToCss Color where
         Green -> "#4EBF7A"
         GreenShade -> "#44A76B"
         Gold -> "#F9FF68"
+        Red -> "#D66A6A"
 
 --
 -- Breakpoints

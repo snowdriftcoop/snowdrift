@@ -13,7 +13,7 @@
       <form method=POST action=@{WatchProjectR project_id}>
         <input type=submit value="watch">
   $nothing
-    <a href=@{AuthR LoginR}>Sign in
+    <a href=@{AuthR LoginR}>Log in
     to set up receiving notifications of various events
 
 $forall (_, event) <- events

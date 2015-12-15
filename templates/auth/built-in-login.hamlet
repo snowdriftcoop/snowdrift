@@ -1,0 +1,18 @@
+<form .login
+      method=post
+      action=@{toMaster loginRoute}>
+  <div>
+    <label for=#{handleInputId}>Handle:
+      <input id=#{handleInputId}
+             name=username
+             autofocus
+             required>
+  <div>
+    <label for=#{passphraseInputId}>Passphrase:
+      <input id=#{passphraseInputId}
+             type=password
+             name=password
+             required>
+  <div>
+    <button type=submit>
+      Log in

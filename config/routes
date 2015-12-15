@@ -1,23 +1,109 @@
+--
+-- ### PAGES FOR ALPHA
+--
+
+--
+-- ## The "simple" pages
+--
+
+/how-it-works HowItWorksR:
+    /               IntroR      GET
+    /flo      FloR      GET
+    /network-effect       NetworkEffectR       GET
+    /sustainable-funding SustainableFundingR GET
+    /co-op      CoOpR      GET
+/about AboutR:
+    /        AboutHomeR GET
+    /contact ContactR   GET
+    /team    TeamR      GET
+    /press   PressR     GET
+/project-signup PSignupR     GET
+/terms          TermsR       GET
+/privacy        PrivacyR     GET
+/trademarks     TrademarksR  GET
+/donate         DonateR      GET
+/sponsors       SponsorsR    GET
+/js-licenses    JsLicensesR  GET
+/honor-pledge   HonorPledgeR GET POST
+
+--
+-- ## Search
+--
+
+/search SearchR GET
+
+--
+-- ## Auth and Login
+--
+
+-- The Auth subsite (login + logout)
+/auth AuthR Auth getAuth
+-- Referrer: hack. I believe there could be a better way to send users to
+-- their original destination after logging in with Persona, but this is
+-- used in the meanwhile.
+/dest PostLoginR GET
+-- Extra pages needed for password logins.
+/create-account CreateAccountR GET POST
+/reset-password ResetPasswordR GET POST
+
+--
+-- ## User dashboard
+--
+
+-- Note that for logged-out users, / ("HomeR") is the simple welcome page.
+/              HomeR           GET
+/transactions  UTransactionsR  GET
+/notifications UNotificationsR GET
+/pledges       UPledgesR       GET
+/roles         URolesR         GET
+
+--
+-- ## Browsing projects, or a particular project
+--
+
+/p                             ProjectsR      GET
+/p/#ProjectHandle              PHomeR         GET
+/p/#ProjectHandle/updates      PUpdatesR      GET
+/p/#ProjectHandle/transactions PTransactionsR GET
+
+-- just link to existing wiki and discussion for now
+-- /w         PWikiR
+-- /d         PDiscussionR
+
+--
+-- ## Browsing a particular user (may need fleshing out?)
+--
+
+/u/#UserHandle UserR GET
+
+-- Yesod jibber jabber
 /static StaticR Static appStatic
-/auth   AuthR   Auth   getAuth
-
 /favicon.ico FaviconR GET
-/robots.txt  RobotsR GET
+/robots.txt  RobotsR  GET
 
-/ HomeR GET
+
+--
+-- ## Signup Form (not advertised for alpha)
+--
+
+/project-signup-form PSignupFormR GET POST
+
+
+--
+-- ## Legacy links (just redirects)
+--
+
+/tou        LegacyTouR       GET
+/priv       LegacyPrivR      GET
+/js-license LegacyJsLicenseR GET
+
+--
+-- ### EXISTING STUFF (NOT NEW FOR ALPHA)
+--
 
 -- Miscellaneous
 
-/dest               PostLoginR        GET
-/honor-pledge       HonorPledgeR      GET POST
-/license/javascript JsLicenseR        GET
-/priv               PrivacyR          GET
-/reset-password     ResetPasswordR    GET POST
-/tou                ToUR              GET
-/trademarks         TrademarksR       GET
 /tutorial/markdown  MarkdownTutorialR GET
-/donate             DonateR           GET
-/sponsors           SponsorsR         GET
 
 /img/!upload                UploadImageR      GET POST
 /img/!name/#UnnamedImageId  NameImageR        GET POST
@@ -27,8 +113,6 @@
 -- User
 
 /u                                          UsersR                       GET
-!/u/new                                     UserCreateR                  GET POST
-/u/#UserId                                  UserR                        GET POST
 /u/#UserId/balance                          UserBalanceR                 GET POST
 /u/#UserId/d                                UserDiscussionR              GET POST
 /u/#UserId/d/new                            NewUserDiscussionR           GET POST
@@ -65,15 +149,12 @@
 
 -- Notifications
 
-/notifications              NotificationsR              GET
 /notificationsp             NotificationsProxyR         GET
 /notifications/archived     ArchivedNotificationsR      GET
 /notifications/archivedp    ArchivedNotificationsProxyR GET
 
 -- Project
 
-/p                                           ProjectsR                GET
-/p/#Text                                     ProjectR                 GET POST
 /p/#Text/applications                        ApplicationsR            GET
 /p/#Text/application/#VolunteerApplicationId ApplicationR             GET
 /p/#Text/c/#CommentId                        ProjectCommentR          GET
@@ -105,7 +186,6 @@
 /p/#Text/pledge                              UpdatePledgeR            GET POST
 /p/#Text/t                                   TicketsR                 GET
 /p/#Text/t/#TicketId                         TicketR                  GET
-/p/#Text/transactions                        ProjectTransactionsR     GET
 /p/#Text/volunteer                           VolunteerR               GET POST
 /p/#Text/w                                   WikiPagesR               GET
 /p/#Text/who                                 WhoR                     GET
@@ -173,9 +253,6 @@
 /p/#Text/blog/#Text/c/#CommentId/unclaim        UnclaimBlogPostCommentR         GET POST
 /p/#Text/blog/#Text/c/#CommentId/watch          WatchBlogPostCommentR           GET POST
 /p/#Text/blog/#Text/c/#CommentId/unwatch        UnwatchBlogPostCommentR         GET POST
-
-/project-signup ProjectSignupR GET POST
-
 
 /c/#CommentId            CommentDirectLinkR GET      DELETE
 /c/#CommentId/tag/#TagId CommentTagR        GET POST

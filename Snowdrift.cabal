@@ -47,30 +47,27 @@ library
         Data.Order
         Data.Text.PrettyHtml
         Data.Tree.Extra
+        Dev
         DeprecatedBootstrap
         Foundation
         Handler.BuildFeed
         Handler.Comment
         Handler.Common
         Handler.Discussion
-        Handler.Donate
-        Handler.Home
         Handler.HonorPledge
         Handler.Image
         Handler.Invitation
-        Handler.JsLicense
+        Handler.JsLicenses
         Handler.MarkdownTutorial
+        Handler.NewDesign
         Handler.Notification
         Handler.PostLogin
-        Handler.Privacy
         Handler.Project
-        Handler.Project.Signup
         Handler.ProjectBlog
         Handler.ResetPassword
+        Handler.Simple
         Handler.SnowdriftEvent
-        Handler.Sponsors
-        Handler.ToU
-        Handler.Trademarks
+        Handler.TH
         Handler.User
         Handler.User.Comment
         Handler.Utils
@@ -447,7 +444,6 @@ test-suite test
         BlogTest
         CommentTest
         DiscussionTest
-        MechanismTest
         NotifyTest
         PPrint
         TestHandler

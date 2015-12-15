@@ -14,14 +14,13 @@ import qualified Data.Set as S
 import qualified Data.Text as T
 import qualified Data.Traversable as Traversable
 
+import Dev
 import Handler.Comment as Com
 import Handler.Discussion
 import Handler.User.Comment
 import Handler.Utils
 import Model.Comment.ActionPermissions
 import Model.Comment.Sql
-import Model.Notification.Internal
-            (UserNotificationType (..), ProjectNotificationType (..))
 import Model.ResetPassword (deleteFromResetPassword)
 import Model.Role
 import Model.Transaction
@@ -58,17 +57,6 @@ getUsersR = do
 --------------------------------------------------------------------------------
 -- /new
 
-getUserCreateR :: Handler Html
-getUserCreateR = do
-    (form, _) <- generateFormPost $ createUserForm Nothing
-    defaultLayout $ do
-        snowdriftTitle "Create User"
-        [whamlet|
-            <form method=POST>
-                ^{form}
-                <input type=submit>
-        |]
-
 startEmailVerification :: UserId -> Text -> HandlerT App IO ()
 startEmailVerification user_id user_email = do
     hash    <- liftIO newHash
@@ -80,51 +68,9 @@ startEmailVerification user_id user_email = do
             where_ $ u ^. UserId ==. val user_id
     alertSuccess $ "Verification email has been sent to " <> user_email <> "."
 
-postUserCreateR :: Handler Html
-postUserCreateR = do
-    ((result, form), _) <- runFormPost $ createUserForm Nothing
-
-    case result of
-        FormSuccess (ident, passwd, name, memail, avatar, nick) -> do
-            createUser ident (Just passwd) name (NewEmail False <$> memail) avatar nick
-                >>= \muser_id -> when (isJust muser_id) $ do
-                    when (isJust memail) $ do
-                        let email   = fromJust memail
-                            user_id = fromJust muser_id
-                        startEmailVerification user_id email
-                    setCreds True $ Creds "hashdb" ident []
-                    redirectUltDest HomeR
-
-        FormMissing -> alertDanger "missing field"
-        FormFailure strings -> alertDanger (mconcat strings)
-
-    defaultLayout $ [whamlet|
-        <form method=POST>
-            ^{form}
-            <input type=submit>
-    |]
-
 
 --------------------------------------------------------------------------------
 -- /#UserId
-
-getUserR :: UserId -> Handler Html
-getUserR user_id = do
-    mviewer_id <- maybeAuthId
-
-    user <- runYDB $ get404 user_id
-
-    projects_and_roles <- runDB (fetchUserProjectsAndRolesDB user_id)
-    when ( Just user_id == mviewer_id
-        && isJust (userEmail user)
-        && not (userEmail_verified user)
-        ) $ alertWarning $ "Email address is not verified. Until you verify it, "
-                    <> "you will not be able to receive email notifications."
-
-    defaultLayout $ do
-        snowdriftDashTitle "User Profile" $
-            userDisplayName (Entity user_id user)
-        renderUser mviewer_id user_id user projects_and_roles
 
 postUserR :: UserId -> Handler Html
 postUserR user_id = do
@@ -399,7 +345,7 @@ getEditUserR user_id = do
     user <- runYDB (get404 user_id)
 
     (form, enctype) <- generateFormPost $ editUserForm (Just user)
-    defaultLayout $ do
+    defaultLayoutNew "edit-user" $ do
         snowdriftDashTitle "User Profile" $
             userDisplayName (Entity user_id user)
         $(widgetFile "edit_user")
@@ -430,7 +376,8 @@ postEditUserR user_id = do
 
                     (form, _) <- generateFormPost $ editUserForm (Just updated_user)
 
-                    defaultLayout $
+                    defaultLayoutNew "edit-user" $ do
+                        alphaRewriteNotice
                         previewWidget form "update" $
                             renderUser (Just viewer_id) user_id updated_user mempty
         _ -> do

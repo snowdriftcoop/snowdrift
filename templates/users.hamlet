@@ -36,6 +36,6 @@
             #{formatTime defaultTimeLocale "%F" $ userCreatedTs (entityVal user)}
           <td>
             $forall ((projectName, projectHandle), roles) <- M.toAscList (fromMaybe mempty (userProjects user))
-              <a href=@{ProjectR $ projectHandle}>
+              <a href=@{PHomeR projectHandle}>
                 #{projectName} (#{T.intercalate "/" (map roleAbbrev $ S.toList roles)})
 

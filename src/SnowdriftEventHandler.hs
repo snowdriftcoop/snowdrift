@@ -13,7 +13,6 @@ import qualified Database.Persist
 import Model.Comment
 import Model.Currency
 import Model.Discussion
-import Model.Notification
 import Model.Project
 import Model.User
 import Model.Utils

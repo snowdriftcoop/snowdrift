@@ -10,7 +10,7 @@
       <ul .nav .navbar-nav .navbar-right>
         $maybe Entity user_id user <- maybe_user
           <li>
-            <a href=@{NotificationsR}>
+            <a href=@{UNotificationsR}>
               $if num_unread_notifs /= 0
                 <span .unread-notifs .glyphicon .glyphicon-envelope>
                   <span .num-notifs>#{num_unread_notifs}
@@ -21,10 +21,10 @@
             <li>
               <a href=@{UserR user_id}>#{name}
           <li>
-            <a href=@{AuthR LogoutR}>Sign Out
+            <a href=@{AuthR LogoutR}>Log Out
         $nothing
           <li>
-            <a href=@{AuthR LoginR}>Sign In / Create Account
+            <a href=@{AuthR LoginR}>Log In
 
     <nav .navbar .navbar-static-top .visible-xs>
       <ul .nav .nav-pills .navbar-left>
@@ -36,7 +36,7 @@
       <ul .nav .nav-pills .navbar-right>
         $maybe Entity user_id user <- maybe_user
           <li>
-            <a href=@{NotificationsR}>
+            <a href=@{UNotificationsR}>
               $if num_unread_notifs /= 0
                 <span .glyphicon .glyphicon-envelope>&nbsp;
                   #{num_unread_notifs}
@@ -46,7 +46,7 @@
             <li>
               <a href=@{UserR user_id}>#{name}
           <li>
-            <a href=@{AuthR LogoutR}>Sign Out
+            <a href=@{AuthR LogoutR}>Log Out
         $nothing
           <li>
-            <a href=@{AuthR LoginR}>Sign In
+            <a href=@{AuthR LoginR}>Log In
