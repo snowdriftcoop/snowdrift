@@ -71,7 +71,7 @@ table
     right: 0
     bottom: 0
     margin: 0 auto
-    padding: 0 2.85%
+    padding: 6rem 2.85%
 h1
     font-weight: 600
     font-size: 3rem
@@ -91,77 +91,76 @@ h3
     border: 0.2rem solid #{BrightBlueText}
     border-radius: 0.3rem
     background: #{BrightBlue}
-    padding: 1rem 1rem 0
-    margin: 6rem 3rem
-    float: left
+    padding: 0 1rem
+    margin: 3rem 0
     font-weight: 400
     position: relative
     animation: fadein 2s
-    a
-        color: #{DarkBlue}
-        text-decoration: underline
     &:before
-        content: " "
+        content: ""
         width: 15rem
         height: 21rem
         position: absolute
-    &:after
-        clear: both
+        float: left
+        display: none
+        top: 9rem
+        margin: -21rem 0 0 -7rem
+    a
+        color: #{DarkBlue}
+        font-weight: 600
+        text-decoration: underline
+    *:last-child
+        padding-bottom: 0
 .alert-success
     color: #37975C
     border-color: #37975C
     background-color: #C6EBD6
-    padding-right: 8rem
-    margin-right: 9rem
     a
         color: #37975C
     &:before
         background: url(@{StaticR img_eunice_success_png}) no-repeat bottom center
-        bottom: -3rem
         right: -7rem
 .alert-info
     color: #{BrightBlueText}
     border-color: #8BE2FA
     background-color: #D6F6FD
-    padding-right: 8rem
-    margin-right: 9rem
     a
         color: #{BrightBlueText}
     &:before
         background: url(@{StaticR img_eunice_info_png}) no-repeat bottom center
-        bottom: -3rem
         right: -7rem
 .alert-warning
     color: #B8C000
     border-color: #B8C000
     background-color: #FDFFC7
-    padding-left: 8rem
-    margin-left: 9rem
     a
         color: #B8C000
     &:before
         background: url(@{StaticR img_mimi_warning_png}) no-repeat bottom center
-        bottom: -3rem
-        left: -7rem
+        left: 0rem
 .alert-danger
     color: #CA3E3E
     border-color: #CA3E3E
     background-color: #edbfbf
-    padding-left: 8rem
-    margin-left: 9rem
     a
         color: #CA3E3E
     &:before
         background: url(@{StaticR img_mimi_danger_png}) no-repeat bottom center
-        bottom: -3rem
-        left: -7rem
+        left: 0rem
 /*break3*/
-@media (max-width: 570px)
-    [class*='alert-']
-        padding: 1rem 3rem 0
-        margin: 3rem 1rem
+@media (min-width: 571px)
+    .alert-success, .alert-info
+        padding: 1rem 8rem 1rem 1rem
+        margin: 5rem 8rem 8rem
         &:before
-            display: none
+            display: inline
+    .alert-warning, .alert-danger
+        padding: 1rem 5rem 1rem 8rem
+        margin: 5rem 8rem 8rem
+        &:first-of-type
+            margin-top: 12rem
+        &:before
+            display: block
 /* ============upscaling====================== */
 @media (min-width: 1800px)
     html
