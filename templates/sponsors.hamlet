@@ -69,7 +69,8 @@
     <a href=@{UserR (toSqlKey 869)}>
       Christopher Armstrong
   <li>
-    Xavier Antoviaque, OpenCraft
+    <a href=@{UserR (toSqlKey 876)}>
+      Xavier Antoviaque, OpenCraft
   <li>
     <a href=@{UserR (toSqlKey 868)}>
       Artyom
