@@ -10,7 +10,16 @@ you *can* simply follow the steps here to get started effectively.
 This guide is written to work to work for even novice programmers.
 Advanced readers may adapt these instructions as they see fit.
 
-## Prerequisites
+## Licensing note
+
+When you contribute patches to this repository, such as via a merge request, you
+retain the copyright to your contributions. Of course, given unchanged license
+notices in your copy of the repository, you automatically release your work
+under the same licenses we use (GNU AGPLv3+ primarily with non-code text and
+graphics also under CC BY-SA 4.0 International, as specified in the
+[README](README.md)).
+
+## Prerequisites to contributing
 
 To get started, the only absolute requirements are that you have a reasonably
 new laptop or desktop computer system (less than 10 years old generally),

@@ -58,15 +58,13 @@ Ways to get in touch:
 License
 -------
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU Affero General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+Except where specified otherwise, all Snowdrift code is licensed under the
+[GNU Affero General Public License](LICENSE.md) as published by the Free
+Software Foundation, either version 3 of the License, or (at your option) any
+later version.
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-[GNU Affero General Public License](LICENSE.md) for more details.
+Our text and graphics documents (non-program-code) are also licensed under
+[CC BY-SA 4.0 International](https://creativecommons.org/licenses/by-sa/4.0).
 
 [Contributor guide]: CONTRIBUTING.md
 [Build instructions]: BUILD.md
