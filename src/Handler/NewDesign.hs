@@ -15,8 +15,8 @@ import Handler.Notification
         , Notification(..)
         )
 import Handler.TH
+import Handler.User.Utils (startEmailVerification)
 import Handler.Utils
-import Handler.User (startEmailVerification)
 import Model.Count (getCount)
 import Model.License (fetchLicensesDB)
 import Model.Project

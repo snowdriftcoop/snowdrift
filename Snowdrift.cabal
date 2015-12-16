@@ -69,7 +69,25 @@ library
         Handler.SnowdriftEvent
         Handler.TH
         Handler.User
+        Handler.User.Balance
+        Handler.User.ChangePassword
         Handler.User.Comment
+        Handler.User.ConfirmDelete
+        Handler.User.Delete
+        Handler.User.Discussion
+        Handler.User.Edit
+        Handler.User.EstEligible
+        Handler.User.NewDiscussion
+        Handler.User.Notifications
+        Handler.User.Pledges
+        Handler.User.ProjectNotifications
+        Handler.User.ResetPassword
+        Handler.User.SelectProject
+        Handler.User.Tickets
+        Handler.User.User
+        Handler.User.Users
+        Handler.User.Utils
+        Handler.User.VerifyEmail
         Handler.Utils
         Handler.Volunteer
         Handler.Who
