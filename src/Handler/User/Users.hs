@@ -7,7 +7,7 @@ import qualified Data.Map as M
 import qualified Data.Set as S
 import qualified Data.Text as T
 
-import Handler.Utils
+import Handler.TH
 import Model.Role
 import Model.User
 
@@ -32,6 +32,4 @@ getUsersR = do
         isVisible :: Entity User -> Bool
         isVisible = (>= (0::Int)) . getUserKey
 
-    defaultLayout $ do
-        snowdriftTitle "Users"
-        $(widgetFile "users")
+    $(simpleHandler "users" "Users")
