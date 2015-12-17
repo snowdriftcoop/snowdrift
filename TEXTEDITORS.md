@@ -34,9 +34,9 @@ The [ide-haskell](https://atom.io/packages/ide-haskell) package offers further
 development tools including error-checking, linting, and type information. To
 install ide-haskell for Atom:
 
-* Run `stack install ghc-mod hlint stylish-haskell --resolver nightly`
-    * "--resolver nightly" is only needed until we update our lts resolver to
-      one that includes ghc-mod (the latest 3.7 did not, as of this writing).
+* Run `stack install ghc-mod hlint stylish-haskell --resolver nightly 2015-12-14`
+    * "--resolver…" is needed until we update our main resolver to one that
+      includes ghc-mod (likely lts-4 series if we stick to lts).
 * Install the required Atom packages:
   `apm install language-haskell haskell-ghc-mod ide-haskell autocomplete-haskell`
 * Make sure `$HOME/.local/bin` is on the PATH accessible to Atom.
@@ -158,8 +158,9 @@ hesitation or learning process.
 
 As an optional tool, Vim can do integrated Haskell error-checking and get type
 information via [ghcmod-vim](https://github.com/eagletmt/ghcmod-vim). Follow
-its install instructions except run `stack install ghc-mod --resolver nightly`
-(note: this "--resolver nightly" bit can be ignored once ghc-mod is in the LTS
+its install instructions except run
+`stack install ghc-mod --resolver nightly 2015-12-14`
+(note: this "--resolver…" bit can be ignored once ghc-mod is in the LTS
 version we use) *instead* of the instruction to run "cabal install ghc-mod" (and
 make sure ~/.local/bin is on your path). You may want to also try the associated
 auto-completion tool [neco-ghc](https://github.com/eagletmt/neco-ghc). *Note:
