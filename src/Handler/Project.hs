@@ -442,7 +442,6 @@ getInviteR project_handle = do
         from $ \invite -> do
         where_ ( invite ^. InviteRedeemed ==. val True )
         orderBy [ desc (invite ^. InviteCreatedTs) ]
-        limit 20
         return invite
 
     let redeemed_users = S.fromList $ mapMaybe (inviteRedeemedBy . entityVal) redeemed_invites
@@ -464,8 +463,8 @@ getInviteR project_handle = do
             userDisplayName $ fromMaybe (error "getInviteR(#2): user_id not found in users map")
                                         (M.lookup user_id users)
 
-    defaultLayout $ do
-        snowdriftDashTitle (projectName project) "Send Invite"
+    defaultLayoutNew "invite" $ do
+        snowdriftDashTitle (projectName project) "Invite Roles"
         $(widgetFile "invite")
 
 postInviteR :: Text -> Handler Html

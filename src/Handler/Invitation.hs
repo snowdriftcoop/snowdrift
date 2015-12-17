@@ -7,9 +7,8 @@ module Handler.Invitation where
 
 import Import
 
-import qualified Data.Text as T
-
 import Handler.Utils
+import Model.Role
 
 getInvitationR :: Text -> Text -> Handler Html
 getInvitationR project_handle code = do
@@ -23,11 +22,11 @@ getInvitationR project_handle code = do
     alreadyExpired
 
     let redeemed = inviteRedeemed invite || isJust (inviteRedeemedBy invite)
-
-    defaultLayout $ do
-        snowdriftDashTitle
-            (projectName project <> " Invitation")
-            (T.pack . show $ inviteRole invite)
+        role     = roleLabel $ inviteRole invite
+            
+    defaultLayoutNew "invitation" $ do
+        snowdriftTitle
+            (projectName project <> " " <> role <> " Invitation")
         $(widgetFile "invitation")
 
 

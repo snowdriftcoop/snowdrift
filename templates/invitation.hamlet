@@ -2,8 +2,8 @@ $if redeemed
   This code has been redeemed.
 $else
   $maybe _ <- maybe_user_id
-    Click 'redeem' to update your account to the project role to which you've
-    been invited.
+    Click 'redeem' to update your account to become a
+    #{role} for #{projectName project}.
     <br>
     Note: each invitation code can only be used once, so please be sure you are
     the intended recipient.
@@ -13,4 +13,4 @@ $else
   $nothing
     Welcome! You must log in before redeeming your invitation code.
     <form method=GET action=@{AuthR LoginR}>
-      <input type=submit value="Log In / Create Account">
+      <input type=submit value="Log In">
