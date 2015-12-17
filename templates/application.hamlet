@@ -1,3 +1,4 @@
+<h1>Volunteer Application
 <table>
   <tr>
     <td>
@@ -30,7 +31,7 @@
       <td>
         Website URL:
       <td>
-        #{website}
+        <a href=#{website}>#{website}
 
   $maybe location <- volunteerApplicationLocation application 
     <tr>

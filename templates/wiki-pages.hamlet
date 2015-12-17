@@ -1,23 +1,22 @@
 <h1> 
-  <div .text-center> #{projectName project} wiki pages
+  #{projectName project} wiki and discussion topics
 
 $if null wiki_targets
   no pages to display
 $else
   <table .wiki-pages>
     <tr>
-      <th>Title
-      <th>Discussion
-      <th>History
+      <th>Topic
+      <th>
+      <th>
 
     $forall Entity _ wiki_target <- wiki_targets
       <tr>
         <td>
+          <strong>#{wikiTargetTarget wiki_target}
+        <td>
           <a href=@{WikiR project_handle (wikiTargetLanguage wiki_target) (wikiTargetTarget wiki_target)}>
-            #{wikiTargetTarget wiki_target}
+            wiki page
         <td>
           <a href=@{WikiDiscussionR project_handle (wikiTargetLanguage wiki_target) (wikiTargetTarget wiki_target)}>
-            <span .glyphicon .glyphicon-comment>&nbsp;
-        <td>
-          <a href=@{WikiHistoryR project_handle (wikiTargetLanguage wiki_target) (wikiTargetTarget wiki_target)}>
-            <span .glyphicon .glyphicon-list-alt>&nbsp;
+            discussion board

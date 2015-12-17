@@ -21,6 +21,7 @@ import qualified Data.Tree as Tree
 import Data.Filter
 import Data.Order
 import Data.Time.Format
+import Dev
 import Handler.Comment as Com
 import Handler.Discussion
 import Handler.Utils
@@ -194,7 +195,7 @@ getApplicationsR project_handle = do
         userReadVolunteerApplicationsDB viewer_id
         return (project, applications)
 
-    defaultLayout $ do
+    defaultLayoutNew "applications" $ do
         snowdriftTitle $ projectName project <> " Volunteer Applications"
         $(widgetFile "applications")
 
@@ -216,7 +217,7 @@ getApplicationR project_handle application_id = do
         (interests, num_interests) <- (T.intercalate ", " &&& length) <$> fetchApplicationVolunteerInterestsDB application_id
         return (project, Entity user_id user, application, interests, num_interests)
 
-    defaultLayout $ do
+    defaultLayoutNew "application" $ do
         snowdriftDashTitle
             (projectName project <> " Volunteer Application")
             (userDisplayName user)
@@ -239,9 +240,9 @@ getEditProjectR project_handle = do
 
     (project_form, _) <- generateFormPost $ editProjectForm (Just (project, map (tagName . entityVal) tags))
 
-    defaultLayout $ do
+    defaultLayoutNew "edit-project" $ do
         snowdriftTitle $ projectName project
-        $(widgetFile "edit_project")
+        $(widgetFile "edit-project")
 
 --------------------------------------------------------------------------------
 -- /feed
@@ -523,7 +524,7 @@ getProjectPatronsR project_handle = do
 
         return (project, pledges, M.fromList $ map ((\(Value x :: Value UserId) -> x) *** (\(Value x :: Value Int) -> x)) user_payouts)
 
-    defaultLayout $ do
+    defaultLayoutNew "project_patrons" $ do
         snowdriftTitle $ projectName project <> " Patrons"
         $(widgetFile "project_patrons")
 
@@ -669,7 +670,7 @@ getProjectTransactionsR project_handle = do
             | transactionDebit transaction == Just (projectAccount project) = transactionCredit transaction
             | otherwise = Nothing
 
-    defaultLayout $ do
+    defaultLayoutNew "project_transactions" $ do
         snowdriftTitle $ projectName project <> " Transactions"
         $(widgetFile "project_transactions")
 
@@ -685,9 +686,9 @@ getWikiPagesR project_handle = do
         Entity project_id project <- getBy404 $ UniqueProjectHandle project_handle
         wiki_targets <- getProjectWikiPages languages project_id
         return (project, wiki_targets)
-    defaultLayout $ do
+    defaultLayoutNew "wiki-pages" $ do
         snowdriftTitle $ projectName project <> " Wiki"
-        $(widgetFile "wiki_pages")
+        $(widgetFile "wiki-pages")
 
 --------------------------------------------------------------------------------
 -- /watch, /unwatch
