@@ -628,88 +628,86 @@ postNewComment
         FormFailure msgs -> error $ "Error submitting form: " ++ T.unpack (T.intercalate "\n" msgs)
 
 postRethreadComment :: UserId -> CommentId -> Comment -> Handler Html
-postRethreadComment user_id comment_id comment = processRequest
-    where
-    processRequest = do
+postRethreadComment user_id comment_id comment = do
         ((result, _), _) <- runFormPost rethreadCommentForm
         case result of
             FormSuccess (new_parent_url, reason) -> handleSubmitSuccess new_parent_url reason
             _ -> error "Error when submitting form."
+    where
+        handleSubmitSuccess new_parent_url reason = do
+            app <- getYesod
+            let new_route = urlToRoute app new_parent_url
+            (mnew_parent_id, new_discussion_id) <- fetchRethreadParameters new_route
 
-    handleSubmitSuccess new_parent_url reason = do
-        app <- getYesod
-        let new_route = urlToRoute app new_parent_url
-        (mnew_parent_id, new_discussion_id) <- fetchRethreadParameters new_route
+            let mold_parent_id = commentParent comment
+            when (mnew_parent_id == mold_parent_id && new_discussion_id == commentDiscussion comment) $ do
+                alertDanger "trying to move comment to its current location"
+                getCommentDirectLinkR comment_id
 
-        let mold_parent_id = commentParent comment
-        when (mnew_parent_id == mold_parent_id && new_discussion_id == commentDiscussion comment) $ do
-            alertDanger "trying to move comment to its current location"
-            getCommentDirectLinkR comment_id
+            new_parent_depth <- maybe (return (-1)) fetchCommentDepth404DB mnew_parent_id
+            old_parent_depth <- maybe (return (-1)) fetchCommentDepth404DB mold_parent_id
 
-        new_parent_depth <- maybe (return (-1)) fetchCommentDepth404DB mnew_parent_id
-        old_parent_depth <- maybe (return (-1)) fetchCommentDepth404DB mold_parent_id
+            lookupPostMode >>= \case
+                Just PostMode -> do
+                    runSDB $
+                        rethreadCommentDB
+                          mnew_parent_id
+                          new_discussion_id
+                          comment_id
+                          user_id
+                          reason
+                          (old_parent_depth - new_parent_depth)
 
-        lookupPostMode >>= \case
-            Just PostMode -> do
-                runSDB $
-                    rethreadCommentDB
-                      mnew_parent_id
-                      new_discussion_id
-                      comment_id
-                      user_id
-                      reason
-                      (old_parent_depth - new_parent_depth)
+                    new_route_text <- getUrlRender <*> pure new_route
+                    alertSuccess ("comment rethreaded to " <> new_route_text)
+                    redirect new_parent_url
 
-                new_route_text <- getUrlRender <*> pure new_route
-                alertSuccess ("comment rethreaded to " <> new_route_text)
-                redirect new_parent_url
-
-            _ -> error "no preview for rethreads yet" -- TODO
+                _ -> error "no preview for rethreads yet" -- TODO
 
 
-    urlToRoute app new_parent_url = partsToRoute $ extractParts new_parent_url
-        where
-            partsToRoute urlParts = case parseRoute (urlParts, []) of
-                Just x -> x
-                _ -> error "failed to parse URL"
+        urlToRoute app new_parent_url = partsToRoute $ extractParts new_parent_url
+            where
+                partsToRoute urlParts = case parseRoute (urlParts, []) of
+                    Just x -> x
+                    _ -> error "failed to parse URL"
 
-            extractParts = splitPath . stripTrailingSlashes . stripQuery . stripRoot
-            splitPath  = drop 1 . T.splitOn "/"
-            stripTrailingSlashes = T.reverse . T.dropWhile (== '/') . T.reverse
-            stripQuery = fst . T.break (== '?')
-            stripRoot url = fromMaybe url $ T.stripPrefix getAppRoot url
-            getAppRoot = appRoot $ appSettings app
+                extractParts = splitPath . stripTrailingSlashes . stripQuery . stripRoot
+                splitPath  = drop 1 . T.splitOn "/"
+                stripTrailingSlashes = T.reverse . T.dropWhile (== '/') . T.reverse
+                stripQuery = fst . T.break (== '?')
+                stripRoot url = fromMaybe url $ T.stripPrefix getAppRoot url
+                getAppRoot = appRoot $ appSettings app
 
-    -- FIXME: We shouldn't have to enumerate the routes like this.
-    -- Luckily robust rethreading is not priority.
-    fetchRethreadParameters new_route = case new_route of
-        WikiCommentR new_project_handle new_language new_target new_parent_id -> do
-            new_discussion_id <-
-                maybe notfound (wikiPageDiscussion . entityVal) <$>
-                  runDB (fetchProjectWikiPageByNameDB new_project_handle new_language new_target)
-            return (Just new_parent_id, new_discussion_id)
+        -- FIXME: We shouldn't have to enumerate the routes like this.
+        -- Luckily robust rethreading is not priority.
+        fetchRethreadParameters new_route = case new_route of
+            WikiCommentR new_project_handle new_language new_target new_parent_id -> do
+                new_discussion_id <-
+                    maybe notfound (wikiPageDiscussion . entityVal) <$>
+                      runDB (fetchProjectWikiPageByNameDB new_project_handle new_language new_target)
+                return (Just new_parent_id, new_discussion_id)
 
-        WikiDiscussionR new_project_handle new_language new_target -> do
-            new_discussion_id <-
-                maybe notfound (wikiPageDiscussion . entityVal) <$>
-                  runDB (fetchProjectWikiPageByNameDB new_project_handle new_language new_target)
-            return (Nothing, new_discussion_id)
+            WikiDiscussionR new_project_handle new_language new_target -> do
+                new_discussion_id <-
+                    maybe notfound (wikiPageDiscussion . entityVal) <$>
+                      runDB (fetchProjectWikiPageByNameDB new_project_handle new_language new_target)
+                return (Nothing, new_discussion_id)
 
-        ProjectCommentR new_project_handle new_parent_id -> do
-            new_discussion_id <-
-                maybe notfound (projectDiscussion . entityVal) <$>
-                  runDB (getBy (UniqueProjectHandle new_project_handle))
-            return (Just new_parent_id, new_discussion_id)
+            ProjectCommentR new_project_handle new_parent_id -> do
+                new_discussion_id <-
+                    maybe notfound (projectDiscussion . entityVal) <$>
+                      runDB (getBy (UniqueProjectHandle new_project_handle))
+                return (Just new_parent_id, new_discussion_id)
 
-        ProjectDiscussionR new_project_handle -> do
-            new_discussion_id <-
-                maybe notfound (projectDiscussion . entityVal) <$>
-                  runDB (getBy (UniqueProjectHandle new_project_handle))
-            return (Nothing, new_discussion_id)
+            ProjectDiscussionR new_project_handle -> do
+                new_discussion_id <-
+                    maybe notfound (projectDiscussion . entityVal) <$>
+                      runDB (getBy (UniqueProjectHandle new_project_handle))
+                return (Nothing, new_discussion_id)
 
-        _ -> notfound
+            _ -> notfound
 
-    notfound = error "could not find discussion for that URL"
+        notfound = error "could not find discussion for that URL"
 
 -- | Handle a POST to a /close URL.
 -- Permission checking should occur *PRIOR TO* this function.
