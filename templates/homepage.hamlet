@@ -14,4 +14,4 @@
       <br>
       Let's clear the path to a better world!
     <p>
-      <a href=@{AuthR LoginR} #join>Join us in setting the world free!
+      <a href=@{AuthR LoginR} .join>Join us in setting the world free!
