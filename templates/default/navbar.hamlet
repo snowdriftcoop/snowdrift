@@ -9,24 +9,28 @@
       <a href=@{HowItWorksR IntroR} :howItWorksActive:.active>
         How it works
     <li .unbreak4>
-        <a href=# .icon .dashboard>Dashboard
+      $maybe Entity uid user <- maybeUser
+        <a href=@{HomeR} .icon .dashboard :active HomeR:.active>Dashboard
+      $nothing
+        <a href=@{AuthR LoginR} .icon .login :authActive:.active>Log In
     <li .search>
-      <a href=# .icon .lookingglass>Search
+      <a href=@{SearchR} .icon .lookingglass :active SearchR:.active>Search
       <form action=@{SearchR} .break4>
-        <input type=text name=q placeholder="Search..."><button type=submit>go
+        <input type=text name=q placeholder=Search…>
+          <button type=submit>go
   <ul .right .break4>
     <li>
       $maybe Entity uid user <- maybeUser
         $with name <- fromMaybe (userIdent user) $ userName user
           <div .ddown>
-            <a href=# .ddown-toggle .user>#{name}
+            <a href .ddown-toggle .user>#{name}
             <ul>
               <li>
-                <a href="@{HomeR}" :active HomeR:.active>Dashboard
+                <a href=@{HomeR} :active HomeR:.active>Dashboard
               <li>
-                <a href="@{UserR uid}" :active (UserR uid):.active>Profile
+                <a href=@{UserR uid} :active (UserR uid):.active>Profile
               <li>
-                <a href="@{UTransactionsR}" :active UTransactionsR:.active>
+                <a href=@{UTransactionsR} :active UTransactionsR:.active>
                   Transactions
               <li>
                 <a href=@{UNotificationsR} :active UNotificationsR:.active>
