@@ -1,7 +1,7 @@
 ^{alphaRewriteNotice}
-<h1 .text-center>Notifications
+<h1>Notifications
 
-<div .user-prefs .text-center>
+<div .user-prefs>
   <div .user-pref>
     <a href=@{UserNotificationsR user_id}>
       system notification preferences
@@ -10,19 +10,18 @@
       watched projects notification preferences
 
 $if null notifs
-  <div .text-center>No notifications
+  <div .no-notifs-msg>No notifications
 $else
-  <form .text-center action=@{NotificationsProxyR} method="GET">
-    <div .notif-actions style="margin: 1em 0 -1em">
+  <form action=@{NotificationsProxyR} method=GET>
+    <div .notif-actions>
       Actions for selected notifications:
-      <input type="submit" name="delete" value="delete">
-      <input type="submit" name="archive" value="archive">
+      <input type=submit name=delete value=delete>
+      <input type=submit name=archive value=archive>
     <table>
       <tr>
         <th>
           select all
-          <br>
-          <input type="checkbox" name="all">
+          <input type=checkbox name=all>
         <th>time
         <th>project
         <th>message
@@ -31,7 +30,7 @@ $else
           $of UNotification user_notif_id user_notif
             <tr>
               <td>
-                <input type="checkbox" name="user_notification"
+                <input type=checkbox name=user_notification
                   value=#{toPathPiece user_notif_id}>
               <td>
                 ^{renderTime $ userNotificationCreatedTs user_notif}
@@ -41,7 +40,7 @@ $else
           $of PNotification project_notif_id project_notif
             <tr>
               <td>
-                <input type="checkbox" name="project_notification"
+                <input type=checkbox name=project_notification
                   value=#{toPathPiece project_notif_id}>
               <td>
                 ^{renderTime $ projectNotificationCreatedTs project_notif}
@@ -50,6 +49,6 @@ $else
               <td>
                 #{projectNotificationContent project_notif}
 
-<nav .text-center>
+<nav>
   <a href=@{ArchivedNotificationsR}>
     view archived notifications
