@@ -36,6 +36,7 @@ getTeamR               = $(simpleHandler "team" "Team")
 getPressR              = $(simpleHandler "press" "Press")
 getSponsorsR           = $(simpleHandler "sponsors" "Sponsors")
 getDonateR             = $(simpleHandler "donate" "Donate")
+getAssetsR             = $(simpleHandler "assets" "Assets")
 
 -- * TODO: Convert these.
 getTermsR,
