@@ -29,7 +29,9 @@ import Model.Project
         , summaryTicketCount
         )
 import Model.User
-        ( fetchProjectNotificationsDB
+        ( fetchArchivedProjectNotificationsDB
+        , fetchArchivedUserNotificationsDB
+        , fetchProjectNotificationsDB
         , fetchUserNotificationsDB
         , fetchUserProjectsAndRolesDB
         , userDisplayName
@@ -246,10 +248,17 @@ getUserR user_id = do
 
 getUNotificationsR :: Handler Html
 getUNotificationsR = do
+    showArchived <- lookupGetParam "state"
     user_id <- requireAuthId
     notifs  <- runDB $ do
-        userReadNotificationsDB user_id
-        user_notifs    <- fetchUserNotificationsDB user_id
-        project_notifs <- fetchProjectNotificationsDB user_id
-        return $ buildNotificationsList user_notifs project_notifs
+        case showArchived of
+            Just "archived" -> do
+                user_notifs    <- fetchArchivedUserNotificationsDB user_id
+                project_notifs <- fetchArchivedProjectNotificationsDB user_id
+                return $ buildNotificationsList user_notifs project_notifs
+            _ -> do
+                userReadNotificationsDB user_id
+                user_notifs    <- fetchUserNotificationsDB user_id
+                project_notifs <- fetchProjectNotificationsDB user_id
+                return $ buildNotificationsList user_notifs project_notifs
     $(simpleHandler "dashboard/notifications" "Notifications")

@@ -1,5 +1,9 @@
 ^{alphaRewriteNotice}
-<h1>Notifications
+
+$maybe _ <- showArchived
+  <h1>Archived Notifications
+$nothing
+  <h1>Notifications
 
 <div .user-prefs>
   <div .user-pref>
@@ -10,46 +14,96 @@
       watched projects notification preferences
 
 $if null notifs
-  <div .no-notifs-msg>No notifications
+  <div .no-notifs-msg>
+    $maybe _ <- showArchived
+      No archived notifications
+    $nothing
+      No unarchived notifications
+
 $else
-  <form action=@{NotificationsProxyR} method=GET>
-    <div .notif-actions>
-      Actions for
-      <select name=actionScope>
-        <option>selected
-        <option value=all>all
-      notifications:
-      <input type=submit name=delete value=delete>
-      <input type=submit name=archive value=archive>
-    <table>
-      <tr>
-        <th>select
-        <th>time
-        <th>project
-        <th>message
-      $forall notif <- notifs
+
+  $maybe _ <- showArchived
+    <form action=@{ArchivedNotificationsProxyR} method=GET>
+      <div .notif-actions>
+        Actions for
+        <select name=actionScope>
+          <option>selected
+          <option value=all>all
+        notifications:
+        <input type=submit name=delete value=delete>
+        <input type=submit name=unarchive value=unarchive>
+      <table>
         <tr>
-          $case notif
-            $of UNotification user_notif_id user_notif
-              <td .tr-checkbox>
-                <input type=checkbox name=user_notification
-                  value=#{toPathPiece user_notif_id}>
-              <td>
-                ^{renderTime $ userNotificationCreatedTs user_notif}
-              <td>
-              <td>
-                #{userNotificationContent user_notif}
-            $of PNotification project_notif_id project_notif
-              <td .tr-checkbox>
-                <input type=checkbox name=project_notification
-                  value=#{toPathPiece project_notif_id}>
-              <td>
-                ^{renderTime $ projectNotificationCreatedTs project_notif}
-              <td>
-                ^{projectNameWidget $ projectNotificationProject project_notif}
-              <td>
-                #{projectNotificationContent project_notif}
+          <th>select
+          <th>time
+          <th>project
+          <th>message
+        $forall notif <- notifs
+          <tr>
+            $case notif
+              $of UNotification user_notif_id user_notif
+                <td .tr-checkbox>
+                  <input type=checkbox name=user_notification
+                    value=#{toPathPiece user_notif_id}>
+                <td>
+                  ^{renderTime $ userNotificationCreatedTs user_notif}
+                <td>
+                <td>
+                  #{userNotificationContent user_notif}
+              $of PNotification project_notif_id project_notif
+                <td .tr-checkbox>
+                  <input type=checkbox name=project_notification
+                    value=#{toPathPiece project_notif_id}>
+                <td>
+                  ^{renderTime $ projectNotificationCreatedTs project_notif}
+                <td>
+                  ^{projectNameWidget $ projectNotificationProject project_notif}
+                <td>
+                  #{projectNotificationContent project_notif}
+
+  $nothing
+    <form action=@{NotificationsProxyR} method=GET>
+      <div .notif-actions>
+        Actions for
+        <select name=actionScope>
+          <option>selected
+          <option value=all>all
+        notifications:
+        <input type=submit name=delete value=delete>
+        <input type=submit name=archive value=archive>
+      <table>
+        <tr>
+          <th>select
+          <th>time
+          <th>project
+          <th>message
+        $forall notif <- notifs
+          <tr>
+            $case notif
+              $of UNotification user_notif_id user_notif
+                <td .tr-checkbox>
+                  <input type=checkbox name=user_notification
+                    value=#{toPathPiece user_notif_id}>
+                <td>
+                  ^{renderTime $ userNotificationCreatedTs user_notif}
+                <td>
+                <td>
+                  #{userNotificationContent user_notif}
+              $of PNotification project_notif_id project_notif
+                <td .tr-checkbox>
+                  <input type=checkbox name=project_notification
+                    value=#{toPathPiece project_notif_id}>
+                <td>
+                  ^{renderTime $ projectNotificationCreatedTs project_notif}
+                <td>
+                  ^{projectNameWidget $ projectNotificationProject project_notif}
+                <td>
+                  #{projectNotificationContent project_notif}
 
 <nav>
-  <a href=@{ArchivedNotificationsR}>
-    view archived notifications
+  $maybe _ <- showArchived
+    <a href=@{UNotificationsR}>
+      back to unarchived notifications
+  $nothing
+    <a href=@?{(UNotificationsR, [("state", "archived")])}>
+      view archived notifications

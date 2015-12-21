@@ -96,20 +96,10 @@ getNotificationsProxyR =
         archiveProjectNotificationDB deleteProjectNotificationDB
         UNotificationsR
 
-getArchivedNotificationsR :: Handler Html
-getArchivedNotificationsR = do
-    user_id <- requireAuthId
-    notifs  <- runDB $ buildNotificationsList
-        <$> fetchArchivedUserNotificationsDB user_id
-        <*> fetchArchivedProjectNotificationsDB user_id
-    defaultLayout $ do
-        snowdriftTitle "Archived Notifications"
-        $(widgetFile "archived_notifications")
-
 getArchivedNotificationsProxyR :: Handler Html
 getArchivedNotificationsProxyR =
     proxyNotifications "unarchive" "delete"
         unarchiveNotificationsDB deleteArchivedNotificationsDB
         unarchiveUserNotificationDB deleteUserNotificationDB
         unarchiveProjectNotificationDB deleteProjectNotificationDB
-        ArchivedNotificationsR
+        (UNotificationsR, [("state", "archived")])
