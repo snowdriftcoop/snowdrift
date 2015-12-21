@@ -15,7 +15,6 @@ module View.User
 import Import hiding (UserNotificationPref, ProjectNotificationPref)
 
 import Data.String (fromString)
-import Network.Libravatar
 import qualified Data.Map as M
 import qualified Data.Set as S
 import qualified Data.Text as T
@@ -124,20 +123,7 @@ renderUser mviewer_id user_id user projects_and_roles = do
             then Just <$> handlerToWidget (generateFormPost establishUserForm)
             else return Nothing
 
-    let defaultUrl = "https://snowdrift.coop/static/img/default-avatar.png"
-    let libravatar email = avatarUrl (Email email)
-                                     AvatarOptions
-                                        { optSecure = False
-                                        , optDefault = ImgCustom defaultUrl 
-                                        , optSize = DefaultSize
-                                        }
-    avatarFinal <- liftIO $
-        case (userAvatar user, userEmail user, userEmail_verified user) of
-            (Just url, _, _)            -> return $ Just url
-            (Nothing, Just email, True) -> do
-                murl <- libravatar $ T.unpack email
-                return (fmap fromString murl)
-            _ -> return Nothing
+    avatar <- handlerToWidget $ getUserAvatar $ Just user
 
     $(widgetFile "user")
 

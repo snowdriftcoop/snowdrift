@@ -21,7 +21,6 @@ $if Just user_id == mviewer_id
     <h1>
       #{userDisplayName user_entity}
     <div .row>
-      $maybe avatar <- avatarFinal
         <div .col-sm-5>
           <figure>
             <img .headshot src=#{avatar}>

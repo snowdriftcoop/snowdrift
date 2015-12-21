@@ -466,15 +466,7 @@ defaultLayoutNew pageName widget = do
     mmsg <- getMessage
     malert <- getAlert
     maybeUser  <- maybeAuth
-    -- muser <- entityVal =<< maybeUser
-
-    --let mavatar <- liftIO $ maybe 
-    --                   (return $ Just getDefaultUserAvatar)
-    --                   (\e -> if (validEmail e)
-    --                              then (getUserAvatar $ userEmail e)
-    --                              else getDefaultUserAvatar)
-    --                   (entityVal =<< maybeUser)
-    avatar <- getUserAvatar maybeUser
+    avatar <- getUserAvatar $ maybe Nothing (Just . entityVal) maybeUser
 
     active <- maybe (const False) (==) <$> getCurrentRoute
     howItWorksActive <- do
@@ -504,16 +496,16 @@ defaultLayoutNew pageName widget = do
 
 
 -- Adding in Avatar capabilities into Foundation.hs instead of in a separate
--- module due to the preference of the StaticR call, which relies on 
+-- module due to the preference of the StaticR call, which relies on
 -- Foundation.hs, so any outside modules would create a circular import error.
 
-getUserAvatar :: Maybe (Entity User) -> Handler Text
+getUserAvatar :: Maybe User -> Handler Text
 getUserAvatar muser = do
     render :: (Route App -> Text) <- getUrlRender
     let defaultUrl = render (StaticR img_default_avatar_png)
     maybe
         (return defaultUrl)
-        (\(Entity _ user) -> do
+        (\user -> do
             let email = fromMaybe T.empty (userEmail user)
             liftIO $ if(validEmail user email)
                      then (libravatar email defaultUrl)
@@ -527,9 +519,10 @@ getUserAvatar muser = do
         libravatar e defaultUrl = do
                 mavatar <- avatarUrl
                          (Email $ T.unpack e)
-                         AvatarOptions
+                         defOpts
                              { optSecure = False
                              , optDefault = ImgCustom (T.unpack defaultUrl)
                              , optSize = DefaultSize
+                             , optTryGravatar = False
                              }
                 return $ maybe defaultUrl T.pack mavatar
