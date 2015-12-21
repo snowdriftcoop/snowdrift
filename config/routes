@@ -22,6 +22,7 @@
 /privacy        PrivacyR     GET
 /trademarks     TrademarksR  GET
 /donate         DonateR      GET
+/merchandise    MerchandiseR GET
 /sponsors       SponsorsR    GET
 /js-licenses    JsLicensesR  GET
 /honor-pledge   HonorPledgeR GET POST
