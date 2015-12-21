@@ -98,6 +98,8 @@ h3
 
 em
     font-style: italic
+strong
+    font-weight: 600
 
 /* ============upscaling====================== */
 @media (min-width: 1800px)
