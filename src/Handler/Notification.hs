@@ -71,19 +71,21 @@ proxyNotifications value1 value2 action_all1 action_all2
                | value2 `elem` names -> action2
                | otherwise -> return ()
     forM_ params $ \(name, value) ->
-        case name of
-            "all" ->
+        if value == "all"
+            then
                 runDB $ handleAction (action_all1 user_id)
                                      (action_all2 user_id)
-            "user_notification" ->
-                whenUserNotifId value $ \notif_id -> runDB $
-                    handleAction (action_user_notif1 notif_id)
-                                 (action_user_notif2 notif_id)
-            "project_notification" ->
-                whenProjectNotifId value $ \notif_id -> runDB $
-                    handleAction (action_project_notif1 notif_id)
-                                 (action_project_notif2 notif_id)
-            _ -> return ()
+            else
+                case name of
+                    "user_notification" ->
+                        whenUserNotifId value $ \notif_id -> runDB $
+                            handleAction (action_user_notif1 notif_id)
+                                         (action_user_notif2 notif_id)
+                    "project_notification" ->
+                        whenProjectNotifId value $ \notif_id -> runDB $
+                            handleAction (action_project_notif1 notif_id)
+                                         (action_project_notif2 notif_id)
+                    _ -> return ()
     redirect route
 
 getNotificationsProxyR :: Handler Html

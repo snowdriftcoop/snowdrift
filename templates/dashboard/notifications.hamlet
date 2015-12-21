@@ -14,22 +14,24 @@ $if null notifs
 $else
   <form action=@{NotificationsProxyR} method=GET>
     <div .notif-actions>
-      Actions for selected notifications:
+      Actions for
+      <select name=actionScope>
+        <option>selected
+        <option value=all>all
+      notifications:
       <input type=submit name=delete value=delete>
       <input type=submit name=archive value=archive>
     <table>
       <tr>
-        <th>
-          select all
-          <input type=checkbox name=all>
+        <th>select
         <th>time
         <th>project
         <th>message
       $forall notif <- notifs
-        $case notif
-          $of UNotification user_notif_id user_notif
-            <tr>
-              <td>
+        <tr>
+          $case notif
+            $of UNotification user_notif_id user_notif
+              <td .tr-checkbox>
                 <input type=checkbox name=user_notification
                   value=#{toPathPiece user_notif_id}>
               <td>
@@ -37,9 +39,8 @@ $else
               <td>
               <td>
                 #{userNotificationContent user_notif}
-          $of PNotification project_notif_id project_notif
-            <tr>
-              <td>
+            $of PNotification project_notif_id project_notif
+              <td .tr-checkbox>
                 <input type=checkbox name=project_notification
                   value=#{toPathPiece project_notif_id}>
               <td>
