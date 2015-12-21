@@ -466,22 +466,16 @@ defaultLayoutNew pageName widget = do
     mmsg <- getMessage
     malert <- getAlert
     maybeUser  <- maybeAuth
+    -- muser <- entityVal =<< maybeUser
 
-    -- Use Libravatar for an avatar if available.  Otherwise, use default
-    -- Default URL is hardcoded to allow usage even while developing on local
-    --    machine.
-    let defaultUrl = "https://snowdrift.coop/static/img/default-avatar.png"
-    mavatar <- liftIO $ maybe (return $ Just defaultUrl)
-                              (\email -> fmap (fmap T.pack) $
-                                   avatarUrl (Email $ T.unpack email)
-                                             AvatarOptions
-                                                 { optSecure = False
-                                                 , optDefault = ImgCustom defaultUrl
-                                                 , optSize = DefaultSize
-                                                 })
-                              (userEmail . entityVal =<< maybeUser)
+    --let mavatar <- liftIO $ maybe 
+    --                   (return $ Just getDefaultUserAvatar)
+    --                   (\e -> if (validEmail e)
+    --                              then (getUserAvatar $ userEmail e)
+    --                              else getDefaultUserAvatar)
+    --                   (entityVal =<< maybeUser)
+    avatar <- getUserAvatar maybeUser
 
-    let avatar = fromMaybe defaultUrl mavatar
     active <- maybe (const False) (==) <$> getCurrentRoute
     howItWorksActive <- do
         r <- getCurrentRoute
@@ -507,3 +501,35 @@ defaultLayoutNew pageName widget = do
         $(widgetFile "default/grid")
         $(widgetFile "default-layout-new")
     withUrlRenderer $(hamletFile "templates/default-layout-wrapper.hamlet")
+
+
+-- Adding in Avatar capabilities into Foundation.hs instead of in a separate
+-- module due to the preference of the StaticR call, which relies on 
+-- Foundation.hs, so any outside modules would create a circular import error.
+
+getUserAvatar :: Maybe (Entity User) -> Handler Text
+getUserAvatar muser = do
+    render :: (Route App -> Text) <- getUrlRender
+    let defaultUrl = render (StaticR img_default_avatar_png)
+    maybe
+        (return defaultUrl)
+        (\(Entity _ user) -> do
+            let email = fromMaybe T.empty (userEmail user)
+            liftIO $ if(validEmail user email)
+                     then (libravatar email defaultUrl)
+                     else return defaultUrl)
+        muser
+    where
+        validEmail :: User -> Text -> Bool
+        validEmail u e = (not (T.null e)) && (userEmail_verified u)
+
+        libravatar :: Text -> Text -> IO Text
+        libravatar e defaultUrl = do
+                mavatar <- avatarUrl
+                         (Email $ T.unpack e)
+                         AvatarOptions
+                             { optSecure = False
+                             , optDefault = ImgCustom (T.unpack defaultUrl)
+                             , optSize = DefaultSize
+                             }
+                return $ maybe defaultUrl T.pack mavatar
