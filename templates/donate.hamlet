@@ -1,131 +1,95 @@
 ^{alphaRewriteNotice}
 <h1>Donating to Snowdrift.coop
-
-<h2>Our current funding
 <p>
-  We ran a
-  <a href="https://snowdrift.tilt.com">successful campaign
-  at the end of 2014, and co-founders David and Aaron continue to donate and
-  volunteer substantial time. We currently struggle to just barely fund Bryan,
-  our (underpaid) lead developer and cover other minimal expenses. See our
-  <a href=@{WikiR "snowdrift" LangEn "accounting"}>accounting page
-  for details about our finances.
-<h2>Donate today!
-<p>
-  It's quite ironic to ask for donations to fund a fundraising system, but
-  Snowdrift.coop is much more than that. We aren't working just to be
-  self-sustaining for its own sake. Our work today is about building online
-  cooperatives and testing ideas about how to have a democratic economy in the
-  21st century. Our efforts have already resulted in valuable reference
-  resources and educational material, but the real impact will come if our model
-  for collective sustainable patronage can get launched.
-<p>
-  If you support our
-  <a href=@{WikiR "snowdrift" LangEn "mission"}>mission</a>,
-  please donate today to help us continue our work.
-  If you have time, please also consider
+  Ironically, we need donations today to help us build a better fundraising
+  system for the future. Please donate today and help us continue our work.
+  Additionally or alternatively, please consider
   <a href=@{WikiR "snowdrift" LangEn "how-to-help"}>volunteering</a>.
 
-<p>
-  Although the formal fund-drive is over, we can still provide comparable
-  rewards for new donors:
-
+<h2>Thank-you bonus options
 <ul>
   <li>
     All donors may (if they choose) be listed among our official
     <a href=@{SponsorsR}>launch sponsors
-  <li>$12+ for a sticker
-  <li>$25+ for gift card to the working system, once launched
-  <li>$40+ for sponsored commit
-  <li>$100+ for t-shirt
-  <li>$500+ honored as a key sponsor
-<hr>
-<h3>Tax deductions under 501(c)(3)
+  <li>donate $12+ to get a sticker
+  <li>donate $25+ and get a $5 gift card to the working system, once launched
+  <li>donate $40+ to be honored as a commit sponsor in the code
+  <li>donate $100+ for a t-shirt
+  <li>at $500+ we will list you as a key sponsor
+
+<.donate-option #osi-donate>
+<h2>Tax deductable donations under 501(c)(3)
 <p>
   Snowdrift.coop is incorporated as a Michigan non-profit cooperative but does
-  not currently have federal tax-exempt status. Therefore, donations made
-  directly to us will not be eligible for a tax-deduction. However, as an Open
-  Source Initiative incubator project, we can receive grants from the OSI, which
-  is a 501(c)(3) organization.
-<figure>
-  <img #osi-donate-logo alt="OSI logo" src=@{StaticR img_external_osi_png}>
-<p>
-  Please
+  not currently have independent federal tax-exempt status. However, you can
+  donate under 501(c)(3) to the
+  <a href="http://opensource.org">
+    Open Source Initiative
+  specifying that they use the funds to support us, as we are now one of their
+  incubator projects. Please
   <a href=@{ProjectContactR "snowdrift"}>contact&nbsp;us
-  to get details about how to donate to the OSI on our behalf under 501(c)(3).
+  to get details for this process.
+  <img #osi-donate-logo src=@{StaticR img_external_osi_png}>
 <p>
-  Note: The OSI takes a modest administrative fee, so it makes sense to
-  go through them only if you need the 501(c)(3) terms for tax deducation or
-  other reasons.
-<p>
-  To donate directly to us not under 501(c)(3), see the options below:
-<hr>
+  Note: As the OSI takes a modest administrative fee, it makes sense to donate
+  directly to us if you do not need 501(c)(3) terms.
 
-<figure>
-  <img alt="Paypal" src=@{StaticR img_external_PayPal_logo_gif}>
-  <form
-    abframeid="iframe.0.4323007988200692"
-    abineguid="E620BEBBFF4F4B1695F2E9204A329253"
-    action="https://www.paypal.com/cgi-bin/webscr"
-    method="post"
-    style="margin: 0 auto;"
-    target="_top">
-    <input name="cmd" type="hidden" value="_s-xclick">
-    <input name="hosted_button_id" type="hidden" value="M24Z4DFEW4SQL">
+<h2>Direct donations
+<p>
+  The following options offer easy ways to donate directly to us. Such donations
+  are not tax-deductible.
+
+<.donate-option #paypal-donate>
+  <img alt=Paypal src=@{StaticR img_external_PayPal_logo_gif}>
+  <form #paypal-button
+    abframeid=iframe.0.4323007988200692
+    abineguid=E620BEBBFF4F4B1695F2E9204A329253
+    action=https://www.paypal.com/cgi-bin/webscr
+    method=post
+    target=_top>
+    <input name=cmd type=hidden value=_s-xclick>
+    <input name=hosted_button_id type=hidden value=M24Z4DFEW4SQL>
     <input
       alt="PayPal donation option"
-      name="submit"
+      name=submit
       src=@{StaticR img_external_paypal_donate_gif}
-      type="image">
+      type=image>
 
-<p>
-  <strong>
-    Note: the button above is convenient and works with or without a
-    Paypal account, but using it costs us a 2.9% + $0.30 fee.
-  To skip the fee, log-in to Paypal and send funds to
-  aaron@snowdrift.coop funded by your bank or Paypal balance
-  (not by credit card or paypal credit) and marked as a gift.
+  <p #avoid-paypal-fees>
+    Note: the convenient button above works with or without a Paypal account,
+    but it costs us a 2.9% + $0.30 fee. To skip the fee, log-in to Paypal and
+    send funds to aaron@snowdrift.coop funded by your bank or Paypal balance
+    (not by credit card or paypal credit) and marked as a gift.
 
-<hr>
-
-<figure>
-  <a href="https://www.dwolla.com/hub/snowdrift">
+<.donate-option #dwolla-donate>
+  <a href=https://www.dwolla.com/hub/snowdrift>
     <img alt="Donate with Dwolla" src=@{StaticR img_external_dwolla_png}>
-<p>
-  Dwolla charges no fees at all but is U.S.-only and requires set up with a bank
-  account (no option for credit cards).
-  They also seem to use some proprietary JavaScript, unfortunately.
+  <p>
+    Dwolla charges no fees but is U.S.-only and requires set up with a bank
+    account.
 
+<.donate-option #bitcoin-donate>
+  <img alt=Bitcoin src=@{StaticR img_external_Bitcoin_png}>
+  <pre>
+    -----BEGIN PGP SIGNED MESSAGE-----
+    Hash: SHA256<br>
+
+    Please use this address to publicly contribute to Snowdrift.coop:
+    1Bty8tCJDYGK2f5v5g71oLfL2qPTNvsDmB<br>
+
+    We prefer you use the above address to help us with transparency, but if
+    you would like us to generate an address specifically for your payment
+    we will do so on request.<br>
+
+    If you would like to be acknowledged or receive rewards, send us a
+    message identifying yourself signed with the address you used to pay.<br>
+
+    -----BEGIN PGP SIGNATURE-----
+    Version: GnuPG v1<br>
+
+    iF4EAREIAAYFAlSOQskACgkQuHM2ODJ01/L2fQEApnLrKteMemNbVBFpsfbKu+Ea
+    NYxSl4UfcZw8V0U5gwQBAJspPE1wRz89ed9RtsC11osgZdD47NZrhCAHR2PzlMD/
+    =lB8a
+    -----END PGP SIGNATURE-----
 <hr>
-
-<figure>
-  <img alt="Bitcoin"
-    src=@{StaticR img_external_Bitcoin_png}
-    style="height: 4em">
-
-<div .row>
-  <div .col-md-9 .col-md-offset-2 .col-lg-8>
-    <pre>
-      -----BEGIN PGP SIGNED MESSAGE-----
-      Hash: SHA256<br>
-
-      Please use this address to publicly contribute to Snowdrift.coop:
-      1Bty8tCJDYGK2f5v5g71oLfL2qPTNvsDmB<br>
-
-      We prefer you use the above address to help us with transparency, but if
-      you would like us to generate an address specifically for your payment
-      we will do so on request.<br>
-
-      If you would like to be acknowledged or receive rewards, send us a
-      message identifying yourself signed with the address you used to pay.<br>
-
-      -----BEGIN PGP SIGNATURE-----
-      Version: GnuPG v1<br>
-
-      iF4EAREIAAYFAlSOQskACgkQuHM2ODJ01/L2fQEApnLrKteMemNbVBFpsfbKu+Ea
-      NYxSl4UfcZw8V0U5gwQBAJspPE1wRz89ed9RtsC11osgZdD47NZrhCAHR2PzlMD/
-      =lB8a
-      -----END PGP SIGNATURE-----
-<hr>
-
-<div .text-center>Thank you for your support!
+Thank you for your support!
