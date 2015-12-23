@@ -51,8 +51,8 @@
     <div class="section group">
       <div class="col span_6_of_12">
         <.sticker>
-          <img src=@{StaticR img_merchandise_sticker_shaking_hands_png} alt="shaking hands sticker">
-        <h6>"shaking hands" 3,7x2,7 in
+          <img src=@{StaticR img_merchandise_sticker_handshake_png} alt="shaking hands sticker">
+        <h6>"handshake" 3,7x2,7 in
       <div class="col span_6_of_12">
         <.sticker>
           <img src=@{StaticR img_merchandise_sticker_shovel_png} alt="shovel sticker">
