@@ -6,11 +6,8 @@ import Data.List (sort)
 import qualified Data.Foldable as F
 import qualified Data.Text as T
 
-import Handler.Utils
 import Model.Notification
-import Model.Project
 import Model.User
-import View.Time
 
 -- Merge two notification types together.  This should only be used
 -- for rendering.
