@@ -71,7 +71,7 @@ table
     right: 0
     bottom: 0
     margin: 0 auto
-    padding: 0 2.85%
+    padding: 6rem 2.85%
 h1
     font-weight: 600
     font-size: 3rem
@@ -81,25 +81,94 @@ h2
 h3
     font-weight: 600
     font-size: 2rem
-.alpha-rewrite, .to-be-written
-    border: 0.2rem solid #e29696
-    border-radius: 0.3rem
-    background: #f7e1e1
-    background: url(@{StaticR img_mimi_notification_png}) no-repeat left top, #f7e1e1
-    padding: 3rem 3rem 3rem 20rem
-    margin: 3rem
-    min-height: 17rem
-    color: #{Red}
-    float: left
-    a
-        color: #{Red}
-        font-weight: 200
-        text-decoration: underline
 
 em
     font-style: italic
 strong
     font-weight: 600
+
+@keyframes fadein
+    0%
+        opacity: 0
+    100%
+        opacity: 1
+
+[class*='alert-']
+    border: 0.2rem solid #{BrightBlueText}
+    border-radius: 0.3rem
+    background: #{BrightBlue}
+    padding: 0 1rem
+    margin: 3rem 0
+    font-weight: 400
+    position: relative
+    animation: fadein 2s
+    &:before
+        content: ""
+        width: 15rem
+        height: 21rem
+        position: absolute
+        float: left
+        display: none
+        top: 9rem
+        margin: -21rem 0 0 -7rem
+    a
+        color: #{DarkBlue}
+        font-weight: 600
+        text-decoration: underline
+
+    *:last-child
+        padding-bottom: 0
+
+.alert-success
+    color: #37975C
+    border-color: #37975C
+    background-color: #C6EBD6
+    a
+        color: #37975C
+    &:before
+        background: url(@{StaticR img_eunice_success_png}) no-repeat bottom center
+        right: -7rem
+.alert-info
+    color: #{BrightBlueText}
+    border-color: #8BE2FA
+    background-color: #D6F6FD
+    a
+        color: #{BrightBlueText}
+    &:before
+        background: url(@{StaticR img_eunice_info_png}) no-repeat bottom center
+        right: -7rem
+.alert-warning
+    color: #B8C000
+    border-color: #B8C000
+    background-color: #FDFFC7
+    a
+        color: #B8C000
+    &:before
+        background: url(@{StaticR img_mimi_warning_png}) no-repeat bottom center
+        left: 0rem
+.alert-danger
+    color: #CA3E3E
+    border-color: #CA3E3E
+    background-color: #edbfbf
+    a
+        color: #CA3E3E
+    &:before
+        background: url(@{StaticR img_mimi_danger_png}) no-repeat bottom center
+        left: 0rem
+/*break3*/
+@media (min-width: 571px)
+    .alert-success, .alert-info
+        padding: 1rem 8rem 1rem 1rem
+        margin: 5rem 8rem 8rem
+        &:before
+            display: inline
+    .alert-warning, .alert-danger
+        padding: 1rem 5rem 1rem 8rem
+        margin: 5rem 8rem 8rem
+        &:first-of-type
+            margin-top: 12rem
+        &:before
+            display: block
 
 /* ============upscaling====================== */
 @media (min-width: 1800px)

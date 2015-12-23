@@ -1,6 +1,8 @@
-<div .to-be-written>
+<div .alert-danger>
+  <h3>
+    Hiya!
   <p>
-    Hiya! As part of our Alpha sprint, this page was created but hasn't been
+    As part of our Alpha sprint, this page was created but hasn't been
     written yet. This is a placeholder. :)
   <p>
     Want to help out or track our progress? Great! Head over to our

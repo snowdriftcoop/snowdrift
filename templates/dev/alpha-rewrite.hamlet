@@ -1,6 +1,8 @@
-<div .alpha-rewrite>
+<div .alert-warning>
+  <h3>
+    Yikes!
   <p>
-    Yikes! As part of our Alpha sprint, this page was
+    As part of our Alpha sprint, this page was
     <em>copied over from the existing site</em>.
     It is known to be pretty ugly since it hasn't been restyled yet. We're
     working on it.
