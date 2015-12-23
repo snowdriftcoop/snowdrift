@@ -18,20 +18,20 @@
       <div class="col span_6_of_12">
         <a href=@{StaticR img_merchandise_t_shirt_woman_light_big_jpg}>
           <img src=@{StaticR img_merchandise_t_shirt_woman_light_small_jpg} alt="t-shirt woman light">
-        <h6>light / women / XS, S, M, L, XL, 2XL, 3XL
+        <h6>light / women's / XS, S, M, L, XL, 2XL, 3XL
       <div class="col span_6_of_12">
         <a href=@{StaticR img_merchandise_t_shirt_woman_dark_big_jpg}>
           <img src=@{StaticR img_merchandise_t_shirt_woman_dark_small_jpg} alt="t-shirt woman light">
-        <h6>dark / women / XS, S, M, L, XL, 2XL, 3XL
+        <h6>dark / women's / XS, S, M, L, XL, 2XL, 3XL
     <div class="section group">
       <div class="col span_6_of_12">
         <a href=@{StaticR img_merchandise_t_shirt_man_light_big_jpg}>
           <img src=@{StaticR img_merchandise_t_shirt_man_light_small_jpg} alt="t-shirt woman light">
-        <h6>light / men / XS, S, M, L, XL, 2XL, 3XL, 4XL
+        <h6>light / men's / XS, S, M, L, XL, 2XL, 3XL, 4XL
       <div class="col span_6_of_12">
         <a href=@{StaticR img_merchandise_t_shirt_man_dark_big_jpg}>
           <img src=@{StaticR img_merchandise_t_shirt_man_dark_small_jpg} alt="t-shirt woman light">
-        <h6>dark / men / XS, S, M, L, XL, 2XL, 3XL, 4XL
+        <h6>dark / men's / XS, S, M, L, XL, 2XL, 3XL, 4XL
 <div class="section group">
   <div class="col span_12_of_12">
     <h2>Stickers
