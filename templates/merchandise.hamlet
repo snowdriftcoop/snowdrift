@@ -1,2 +1,59 @@
+<.background .snow-filled>
 <h1>Snowdrift.coop Merchandise
-
+<div class="section group">
+  <div class="col span_12_of_12">
+    <h2>T-Shirts
+<div class="section group">
+  <div class="col span_4_of_12">
+    <p>We can also order other shirt colors for you.
+      See the
+      <a href="http://www.brandbookonline.com/cgi-bin/brand/site.w?location=olc/cobrand-product.w&category=&prb=&srb=&mill=&shade=&color=&product=3600&frames=no&target=main&sponsor=000004&nocache=59118">
+        men's options
+      and the
+      <a href="http://www.brandbookonline.com/cgi-bin/brand/site.w?location=olc/cobrand-product.w&category=&prb=&srb=&mill=&shade=&color=&product=3900&frames=no&target=main&sponsor=000004&nocache=59088">
+        women's options
+      .
+  <div class="col span_8_of_12">
+    <div class="section group">
+      <div class="col span_6_of_12">
+        <a href=@{StaticR img_merchandise_t_shirt_woman_light_big_jpg}>
+          <img src=@{StaticR img_merchandise_t_shirt_woman_light_small_jpg} alt="t-shirt woman light">
+        <h6>light / women / XS, S, M, L, XL, 2XL, 3XL
+      <div class="col span_6_of_12">
+        <a href=@{StaticR img_merchandise_t_shirt_woman_dark_big_jpg}>
+          <img src=@{StaticR img_merchandise_t_shirt_woman_dark_small_jpg} alt="t-shirt woman light">
+        <h6>dark / women / XS, S, M, L, XL, 2XL, 3XL
+    <div class="section group">
+      <div class="col span_6_of_12">
+        <a href=@{StaticR img_merchandise_t_shirt_man_light_big_jpg}>
+          <img src=@{StaticR img_merchandise_t_shirt_man_light_small_jpg} alt="t-shirt woman light">
+        <h6>light / men / XS, S, M, L, XL, 2XL, 3XL, 4XL
+      <div class="col span_6_of_12">
+        <a href=@{StaticR img_merchandise_t_shirt_man_dark_big_jpg}>
+          <img src=@{StaticR img_merchandise_t_shirt_man_dark_small_jpg} alt="t-shirt woman light">
+        <h6>dark / men / XS, S, M, L, XL, 2XL, 3XL, 4XL
+<div class="section group">
+  <div class="col span_12_of_12">
+    <h2>Stickers
+<div class="section group">
+  <div class="col span_4_of_12">
+    <p>Our stickers are outdoor stickers.
+  <div class="col span_8_of_12">
+    <div class="section group">
+      <div class="col span_6_of_12">
+        <.sticker>
+          <img src=@{StaticR img_merchandise_sticker_logo_png} alt="logo sticker">
+        <h6>"logo" 2x2 in
+      <div class="col span_6_of_12">
+        <.sticker>
+          <img src=@{StaticR img_merchandise_sticker_logo_long_png} alt="long logo sticker">
+        <h6>"logo long" 1x4,6 in
+    <div class="section group">
+      <div class="col span_6_of_12">
+        <.sticker>
+          <img src=@{StaticR img_merchandise_sticker_shaking_hands_png} alt="shaking hands sticker">
+        <h6>"shaking hands" 3,7x2,7 in
+      <div class="col span_6_of_12">
+        <.sticker>
+          <img src=@{StaticR img_merchandise_sticker_shovel_png} alt="shovel sticker">
+        <h6>"shovel" 3,7x2,7 in
