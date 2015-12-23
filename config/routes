@@ -26,6 +26,7 @@
 /sponsors       SponsorsR    GET
 /js-licenses    JsLicensesR  GET
 /honor-pledge   HonorPledgeR GET POST
+/assets         AssetsR      GET
 
 --
 -- ## Search
