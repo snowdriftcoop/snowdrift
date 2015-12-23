@@ -6,11 +6,8 @@ import Data.List (sort)
 import qualified Data.Foldable as F
 import qualified Data.Text as T
 
-import Handler.Utils
 import Model.Notification
-import Model.Project
 import Model.User
-import View.Time
 
 -- Merge two notification types together.  This should only be used
 -- for rendering.
@@ -71,19 +68,21 @@ proxyNotifications value1 value2 action_all1 action_all2
                | value2 `elem` names -> action2
                | otherwise -> return ()
     forM_ params $ \(name, value) ->
-        case name of
-            "all" ->
+        if value == "all"
+            then
                 runDB $ handleAction (action_all1 user_id)
                                      (action_all2 user_id)
-            "user_notification" ->
-                whenUserNotifId value $ \notif_id -> runDB $
-                    handleAction (action_user_notif1 notif_id)
-                                 (action_user_notif2 notif_id)
-            "project_notification" ->
-                whenProjectNotifId value $ \notif_id -> runDB $
-                    handleAction (action_project_notif1 notif_id)
-                                 (action_project_notif2 notif_id)
-            _ -> return ()
+            else
+                case name of
+                    "user_notification" ->
+                        whenUserNotifId value $ \notif_id -> runDB $
+                            handleAction (action_user_notif1 notif_id)
+                                         (action_user_notif2 notif_id)
+                    "project_notification" ->
+                        whenProjectNotifId value $ \notif_id -> runDB $
+                            handleAction (action_project_notif1 notif_id)
+                                         (action_project_notif2 notif_id)
+                    _ -> return ()
     redirect route
 
 getNotificationsProxyR :: Handler Html
@@ -94,20 +93,10 @@ getNotificationsProxyR =
         archiveProjectNotificationDB deleteProjectNotificationDB
         UNotificationsR
 
-getArchivedNotificationsR :: Handler Html
-getArchivedNotificationsR = do
-    user_id <- requireAuthId
-    notifs  <- runDB $ buildNotificationsList
-        <$> fetchArchivedUserNotificationsDB user_id
-        <*> fetchArchivedProjectNotificationsDB user_id
-    defaultLayout $ do
-        snowdriftTitle "Archived Notifications"
-        $(widgetFile "archived_notifications")
-
 getArchivedNotificationsProxyR :: Handler Html
 getArchivedNotificationsProxyR =
     proxyNotifications "unarchive" "delete"
         unarchiveNotificationsDB deleteArchivedNotificationsDB
         unarchiveUserNotificationDB deleteUserNotificationDB
         unarchiveProjectNotificationDB deleteProjectNotificationDB
-        ArchivedNotificationsR
+        (UNotificationsR, [("state", "archived")])

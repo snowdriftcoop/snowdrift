@@ -152,7 +152,6 @@
 -- Notifications
 
 /notificationsp             NotificationsProxyR         GET
-/notifications/archived     ArchivedNotificationsR      GET
 /notifications/archivedp    ArchivedNotificationsProxyR GET
 
 -- Project
