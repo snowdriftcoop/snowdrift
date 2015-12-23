@@ -20,7 +20,8 @@ getIntroR,
     getTeamR,
     getPressR,
     getSponsorsR,
-    getDonateR
+    getDonateR,
+    getMerchandiseR
     :: Handler Html
 getIntroR              = $(simpleHandler "how-it-works/intro" "Intro")
 getFloR                = $(simpleHandler "how-it-works/flo" "FLO")
