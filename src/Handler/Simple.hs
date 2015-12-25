@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -fno-warn-missing-signatures #-}
 module Handler.Simple where
 
 import Import
@@ -21,7 +22,7 @@ getIntroR,
     getPressR,
     getSponsorsR,
     getDonateR,
-    getMerchandiseR
+    getMerchandiseR,
     getAssetsR
     :: Handler Html
 getIntroR              = $(simpleHandler "how-it-works/intro" "Intro")
