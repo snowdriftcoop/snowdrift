@@ -9,7 +9,7 @@
       <a href=@{HowItWorksR IntroR} :howItWorksActive:.active>
         How it works
     <li .unbreak4>
-      $maybe Entity uid user <- maybeUser
+      $maybe _ <- maybeUser
         <a href=@{HomeR} .icon .dashboard :active HomeR:.active>Dashboard
       $nothing
         <a href=@{AuthR LoginR} .icon .login :authActive:.active>Log In
