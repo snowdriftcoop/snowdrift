@@ -1,4 +1,6 @@
-<div .section .group>
+$# The .intro class is a workaround since the haskell side is generating
+$# .how-it-works/intro which isn't desired.
+<div .section .group .intro>
   <div .col .span_12_of_12>
     <img src=@{StaticR img_logo_intro_png} .snowdrift-is>
     <.background>
