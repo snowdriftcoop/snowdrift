@@ -1,15 +1,7 @@
-<h1>Log in:
-<div>
+<.auth .login>
+  <h2>Log in to Snowdrift.coop
   ^{apLogin snowdriftAuthHashDB toParent}
-<div>
-  Alternatively:
-  <ul>
-    <li>
+  <.persona>
+    <p>We also support Persona:
       ^{apLogin snowdriftAuthBrowserId toParent}
-    <li>
-      <a href=@{CreateAccountR}>Create an account with us</a>,
-      or create an account through Persona by clicking the button above.
-    <li>
-      Have an account, but
-      <a href=@{ResetPasswordR}>
-        forgot your password?
+  Don't have an account? <a href=@{CreateAccountR}>Sign up!</a>

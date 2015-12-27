@@ -1,2 +1,12 @@
-form.login
-    background: #{BrightBlue}
+.auth
+    max-width: 20rem
+    margin: 0 auto
+.login
+    form
+        label
+            color: #{BrightBlueText}
+        input
+            border: 0.2rem solid #{DarkBlue}
+            border-radius: 0.3rem
+            padding: 3rem
+            font-size: 2rem

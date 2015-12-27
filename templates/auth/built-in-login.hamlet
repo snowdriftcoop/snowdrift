@@ -2,17 +2,19 @@
       method=post
       action=@{toMaster loginRoute}>
   <div>
-    <label for=#{handleInputId}>Handle:
+    <label for=#{handleInputId}>what is your username or e-mail?
       <input id=#{handleInputId}
              name=username
              autofocus
              required>
   <div>
-    <label for=#{passphraseInputId}>Passphrase:
+    <label for=#{passphraseInputId}>please tell us your password, too.
       <input id=#{passphraseInputId}
              type=password
              name=password
              required>
+    <a href=@{ResetPasswordR}>
+         forgot your password?
   <div>
-    <button type=submit>
+    <button .button type=submit>
       Log in
