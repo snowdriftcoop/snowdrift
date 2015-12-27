@@ -54,6 +54,7 @@ img
     height: auto
 .button
     transition: all 0.12s ease-out 0s
+    cursor: pointer
     display: table
     position: relative
     font-family: 'League Spartan'
