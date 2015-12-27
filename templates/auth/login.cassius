@@ -1,12 +1,53 @@
 .auth
-    max-width: 20rem
+    max-width: 36rem
     margin: 0 auto
 .login
+    h1
+        margin: 3rem 0 0 0
+        padding-bottom: 3rem
+        font-weight: 400
     form
         label
             color: #{BrightBlueText}
+            padding: 1rem 0
+            display: block
         input
-            border: 0.2rem solid #{DarkBlue}
+            border: 0.1rem solid #{DarkBlue}
             border-radius: 0.3rem
-            padding: 3rem
+            padding: 0.5rem 0.3rem
             font-size: 2rem
+            font-family: "Nunito"
+            color: #{DarkBlue}
+            font-weight: 400
+            width: 95%
+    .button
+        margin: 1rem auto 3rem
+        display: block
+    .persona
+        margin: 3rem 0 0
+        padding: 1rem 0
+        border-top: 0.2rem solid #{BrightBlue}
+        border-bottom: 0.2rem solid #{BrightBlue}
+        text-align: center
+        a
+            img
+                position: relative
+                top: 0.6rem
+                left: 0
+/*break2*/
+@media (min-width: 391px)
+    .login
+        h1
+            margin: 6rem 0 0 0
+        form
+            input
+                width: 35rem
+        .persona
+            margin: 6rem 0
+        .button
+            margin: 0 auto 12rem
+/*break3*/
+@media (min-width: 571px)
+    .login
+        h1
+            margin: 12rem 0 0 0

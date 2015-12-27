@@ -1,20 +1,17 @@
 <form .login
       method=post
       action=@{toMaster loginRoute}>
-  <div>
-    <label for=#{handleInputId}>what is your username or e-mail?
-      <input id=#{handleInputId}
-             name=username
-             autofocus
-             required>
-  <div>
-    <label for=#{passphraseInputId}>please tell us your password, too.
-      <input id=#{passphraseInputId}
-             type=password
-             name=password
-             required>
-    <a href=@{ResetPasswordR}>
-         forgot your password?
-  <div>
-    <button .button type=submit>
-      Log in
+  <label for=#{handleInputId}>what is your username or e-mail?
+    <input id=#{handleInputId}
+           name=username
+           autofocus
+           required>
+  <label for=#{passphraseInputId}>please tell us your password, too.
+    <input id=#{passphraseInputId}
+           type=password
+           name=password
+           required>
+  <p>
+    <a href=@{ResetPasswordR}>forgot your password?
+  <button .button type=submit>
+    Log in

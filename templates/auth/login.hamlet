@@ -1,7 +1,7 @@
 <.auth .login>
-  <h2>Log in to Snowdrift.coop
+  <h1>Log in to Snowdrift.coop
   ^{apLogin snowdriftAuthHashDB toParent}
+  <p>
+    don't have an account? <a href=@{CreateAccountR}>Sign up!</a>
   <.persona>
-    <p>We also support Persona:
-      ^{apLogin snowdriftAuthBrowserId toParent}
-  Don't have an account? <a href=@{CreateAccountR}>Sign up!</a>
+    alternatively: ^{apLogin snowdriftAuthBrowserId toParent}
