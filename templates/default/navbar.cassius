@@ -14,6 +14,7 @@ nav
                 padding: 3.9rem 0rem 0.3rem
                 background: #{White}
                 font-weight: 600
+                color: #{Green}
                 font-size: 1.2rem
                 white-space: nowrap
                 text-align: center

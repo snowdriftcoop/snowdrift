@@ -30,10 +30,12 @@ body
     padding: 0
 
 a
-    color: #{Green}
-    font-weight: 400
+    color: #{GreenShade}
     transition: all 0.12s ease-out 0s
     text-decoration: none
+
+a:visited
+    color: #{Green}
 
 a:hover, a:active, a:focus
     color: #{DarkBlue}
