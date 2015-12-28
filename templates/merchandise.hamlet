@@ -39,17 +39,22 @@
       <div .col .span_6_of_12>
         <.sticker>
           <img src=@{StaticR img_merchandise_sticker_logo_png} alt="logo sticker">
-        <h6>»logo« 2" x 2"
+        <h6>»logo« 1.42" x 1.5"
       <div .col .span_6_of_12>
         <.sticker>
           <img src=@{StaticR img_merchandise_sticker_logo_long_png} alt="long logo sticker">
-        <h6>»logo long« 1" x 4.6"
+        <h6>»logo long«  4.61" x 1"
     <div .section .group>
       <div .col .span_6_of_12>
         <.sticker>
           <img src=@{StaticR img_merchandise_sticker_handshake_png} alt="shaking hands sticker">
-        <h6>»handshake« 3.7" x 2.7"
+        <h6>»handshake« 2.5" x 2.06"
       <div .col .span_6_of_12>
         <.sticker>
           <img src=@{StaticR img_merchandise_sticker_shovel_png} alt="shovel sticker">
-        <h6>»shovel« 3.7" x 2.7"
+        <h6>»shovel« 2.5" x 1.77"
+    <div .section .group>
+      <div .col .span_6_of_12>
+        <.sticker>
+          <img src=@{StaticR img_merchandise_sticker_hexagon_png} alt="hexagon sticker">
+        <h6>»hexagon« 1.73" x 2"
