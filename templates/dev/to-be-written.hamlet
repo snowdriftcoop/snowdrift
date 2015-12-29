@@ -1,9 +1,8 @@
 <div .alert-danger>
   <h3>
-    Hiya!
+    Caution: Construction Area!
   <p>
-    As part of our Alpha sprint, this page was created but hasn't been
-    written yet. This is a placeholder. :)
+    We haven't yet completed this page, but we hope to get to it soon.
   <p>
     Want to help out or track our progress? Great! Head over to our
     <a href=@{WikiR "snowdrift" LangEn "how-to-help"}>
