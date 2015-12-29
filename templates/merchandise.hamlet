@@ -2,59 +2,79 @@
 <h1>Merchandise
 <div .section .group>
   <div .col .span_12_of_12>
-    <h2>T-Shirts
+    <p>
+      The following items are available to those who
+      <a href=@{DonateR}>donate
+      to our launch development (or put in substantial time
+      <a href=@{WikiR "snowdrift" LangEn "how-to-help"}>volunteering</a>).
+<div .section .group>
+  <div .col .span_12_of_12>
+    <h2 #t-shirts>T-Shirts
 <div .section .group>
   <div .col .span_4_of_12>
     <p>
       We can also order other shirt colors for you.
-      See the <a href="http://www.brandbookonline.com/cgi-bin/brand/site.w?location=olc/cobrand-product.w&category=&prb=&srb=&mill=&shade=&color=&product=3600&frames=no&target=main&sponsor=000004&nocache=59118">men's options</a>
-      and the <a href="http://www.brandbookonline.com/cgi-bin/brand/site.w?location=olc/cobrand-product.w&category=&prb=&srb=&mill=&shade=&color=&product=3900&frames=no&target=main&sponsor=000004&nocache=59088">women's options</a>.
+      See the
+      <a href="http://www.brandbookonline.com/cgi-bin/brand/site.w?location=olc/cobrand-product.w&category=&prb=&srb=&mill=&shade=&color=&product=3600&frames=no&target=main&sponsor=000004&nocache=59118">men's options
+      and the
+      <a href="http://www.brandbookonline.com/cgi-bin/brand/site.w?location=olc/cobrand-product.w&category=&prb=&srb=&mill=&shade=&color=&product=3900&frames=no&target=main&sponsor=000004&nocache=59088">women's options</a>.
   <div .col .span_8_of_12>
     <div .section .group>
       <div .col .span_6_of_12>
         <a href=@{StaticR img_merchandise_t_shirt_woman_light_big_jpg}>
-          <img src=@{StaticR img_merchandise_t_shirt_woman_light_small_jpg} alt="t-shirt woman light">
+          <img src=@{StaticR img_merchandise_t_shirt_woman_light_small_jpg}
+            alt="t-shirt: women's light">
         <h6>light / women's / XS, S, M, L, XL, 2XL, 3XL
       <div .col .span_6_of_12>
         <a href=@{StaticR img_merchandise_t_shirt_woman_dark_big_jpg}>
-          <img src=@{StaticR img_merchandise_t_shirt_woman_dark_small_jpg} alt="t-shirt woman light">
+          <img src=@{StaticR img_merchandise_t_shirt_woman_dark_small_jpg}
+            alt="t-shirt: women's dark">
         <h6>dark / women's / XS, S, M, L, XL, 2XL, 3XL
     <div .section .group>
       <div .col .span_6_of_12>
         <a href=@{StaticR img_merchandise_t_shirt_man_light_big_jpg}>
-          <img src=@{StaticR img_merchandise_t_shirt_man_light_small_jpg} alt="t-shirt woman light">
+          <img src=@{StaticR img_merchandise_t_shirt_man_light_small_jpg}
+            alt="t-shirt: men's light">
         <h6>light / men's / XS, S, M, L, XL, 2XL, 3XL, 4XL
       <div .col .span_6_of_12>
         <a href=@{StaticR img_merchandise_t_shirt_man_dark_big_jpg}>
-          <img src=@{StaticR img_merchandise_t_shirt_man_dark_small_jpg} alt="t-shirt woman light">
+          <img src=@{StaticR img_merchandise_t_shirt_man_dark_small_jpg}
+            alt="t-shirt: men's dark">
         <h6>dark / men's / XS, S, M, L, XL, 2XL, 3XL, 4XL
 <div .section .group>
   <div .col .span_12_of_12>
-    <h2>Stickers
+    <h2 #stickers>Stickers
 <div .section .group>
   <div .col .span_4_of_12>
-    <p>Our stickers fit on any laptop lid or can be used outdoor.
+    <p>
+      Our durable stickers will hold up when used outdoors, on any laptop lid
+      or anywhere else you want to put them.
   <div .col .span_8_of_12>
     <div .section .group>
       <div .col .span_6_of_12>
         <.sticker>
-          <img src=@{StaticR img_merchandise_sticker_logo_png} alt="logo sticker">
+          <img src=@{StaticR img_merchandise_sticker_logo_png}
+            alt="logo sticker">
         <h6>»logo« 1.42" x 1.5"
       <div .col .span_6_of_12>
         <.sticker>
-          <img src=@{StaticR img_merchandise_sticker_logo_long_png} alt="long logo sticker">
+          <img src=@{StaticR img_merchandise_sticker_logo_long_png}
+            alt="long logo sticker">
         <h6>»logo long«  4.61" x 1"
     <div .section .group>
       <div .col .span_6_of_12>
         <.sticker>
-          <img src=@{StaticR img_merchandise_sticker_handshake_png} alt="shaking hands sticker">
+          <img src=@{StaticR img_merchandise_sticker_handshake_png}
+            alt="shaking hands sticker">
         <h6>»handshake« 2.5" x 2.06"
       <div .col .span_6_of_12>
         <.sticker>
-          <img src=@{StaticR img_merchandise_sticker_shovel_png} alt="shovel sticker">
+          <img src=@{StaticR img_merchandise_sticker_shovel_png}
+            alt="shovel sticker">
         <h6>»shovel« 2.5" x 1.77"
     <div .section .group>
       <div .col .span_6_of_12>
         <.sticker>
-          <img src=@{StaticR img_merchandise_sticker_hexagon_png} alt="hexagon sticker">
+          <img src=@{StaticR img_merchandise_sticker_hexagon_png}
+            alt="hexagon sticker">
         <h6>»hexagon« 1.73" x 2"

@@ -11,10 +11,14 @@
   <li>
     All donors may (if they choose) be listed among our official
     <a href=@{SponsorsR}>launch sponsors
-  <li>donate $12+ to get a sticker
+  <li>
+    donate $12+ to get a
+    <a href=@{MerchandiseR}#stickers>sticker
   <li>donate $25+ and get a $5 gift card to the working system, once launched
   <li>donate $40+ to be honored as a commit sponsor in the code
-  <li>donate $100+ for a t-shirt
+  <li>
+    donate $100+ for a
+    <a href=@{MerchandiseR}#t-shirts>t-shirt
   <li>at $500+ we will list you as a key sponsor
 
 <.donate-option #osi-donate>
