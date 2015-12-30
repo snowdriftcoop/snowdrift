@@ -45,7 +45,7 @@ import qualified Mechanism as Mech
 getSearchR :: Handler Html
 getSearchR = do
     q <- lookupGetParam "q"
-    $(simpleHandler "search" "Search")
+    $(widget "search" "Search")
 
 getPUpdatesR,
     getPTransactionsR
@@ -98,23 +98,23 @@ getHomeR,
 -- the dashboard for logged-in viewers.
 getHomeR = do
     u <- maybeAuth
-    maybe $(simpleHandler "homepage" "Free the Commons")
+    maybe $(widget "homepage" "Free the Commons")
           (\user ->
-              $(simpleHandler "dashboard/overview" "Dashboard"))
+              $(widget "dashboard/overview" "Dashboard"))
           u
 
 getUTransactionsR = do
     user <- requireAuth
-    $(simpleHandler "dashboard/transactions" "Transactions")
+    $(widget "dashboard/transactions" "Transactions")
 getUPledgesR = do
     user <- requireAuth
-    $(simpleHandler "dashboard/pledges" "Pledges")
+    $(widget "dashboard/pledges" "Pledges")
 getURolesR = do
     user <- requireAuth
-    $(simpleHandler "dashboard/roles" "My Project Roles")
+    $(widget "dashboard/roles" "My Project Roles")
 getUEditR = do
     user <- requireAuth
-    $(simpleHandler "dashboard/edit-profile" "Edit Profile")
+    $(widget "dashboard/edit-profile" "Edit Profile")
 
 --
 -- #### NEEDS REVIEW. COPIED FROM EXISTING PAGES.
@@ -130,7 +130,7 @@ getPSignupFormR = do
     render   <- getUrlRender
     (project_signup_form, _) <- generateFormPost $
         projectSignupForm render licenses
-    $(simpleHandler "project-signup-form" "Project Sign Up")
+    $(widget "project-signup-form" "Project Sign Up")
 
 postPSignupFormR :: Handler Html
 postPSignupFormR = do
@@ -145,10 +145,10 @@ postPSignupFormR = do
             redirect HomeR
         FormMissing      -> do
             alertDanger "No data provided"
-            $(simpleHandler "project-signup-form" "Project Sign Up")
+            $(widget "project-signup-form" "Project Sign Up")
         FormFailure _ -> do
             alertDanger "Form failure"
-            $(simpleHandler "project-signup-form" "Project Sign Up")
+            $(widget "project-signup-form" "Project Sign Up")
 
 
 
@@ -166,7 +166,7 @@ getProjectsR = do
     let discussionsCount = getCount . summaryDiscussionCount
     let ticketsCount = getCount . summaryTicketCount
 
-    $(simpleHandler "projects" "Projects")
+    $(widget "projects" "Projects")
 
 -- | Public page for a project
 getPHomeR :: ProjectHandle -> Handler Html
@@ -261,4 +261,4 @@ getUNotificationsR = do
                 user_notifs    <- fetchUserNotificationsDB user_id
                 project_notifs <- fetchProjectNotificationsDB user_id
                 return $ buildNotificationsList user_notifs project_notifs
-    $(simpleHandler "dashboard/notifications" "Notifications")
+    $(widget "dashboard/notifications" "Notifications")
