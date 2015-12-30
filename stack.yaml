@@ -7,6 +7,12 @@ packages:
     git: https://github.com/chreekat/ghci-runner.git
     commit: bae5a558535087c8cc532da0fd192625361d8a25
   extra-dep: true
+- location:
+    git: https://git.gnu.io/chreekat/yesod.git
+    commit: 9a6a1b63e5750a4834e348e093d028ebc487d241
+  subdirs:
+    - yesod-bin
+  extra-dep: true
 extra-deps:
     # Absent from LTS
     - github-0.13.2
