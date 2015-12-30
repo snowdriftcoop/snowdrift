@@ -8,6 +8,6 @@ import Language.Haskell.TH
 
 -- | Generates things of type "Handler Html". Very useful for simple
 -- handlers.
-simpleHandler :: String -> Text -> Q Exp
-simpleHandler name title =
+widget :: String -> Text -> Q Exp
+widget name title =
     [|defaultLayoutNew name (snowdriftTitle title >> $(widgetFile name))|]

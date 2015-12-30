@@ -24,22 +24,22 @@ getIntroR,
     getMerchandiseR,
     getAssetsR
     :: Handler Html
-getIntroR              = $(simpleHandler "how-it-works/intro" "Intro")
-getFloR                = $(simpleHandler "how-it-works/flo" "FLO")
-getNetworkEffectR      = $(simpleHandler "how-it-works/network-effect"
+getIntroR              = $(widget "how-it-works/intro" "Intro")
+getFloR                = $(widget "how-it-works/flo" "FLO")
+getNetworkEffectR      = $(widget "how-it-works/network-effect"
                                          "Network Effect")
-getSustainableFundingR = $(simpleHandler "how-it-works/sustainable-funding"
+getSustainableFundingR = $(widget "how-it-works/sustainable-funding"
                                          "Sustainable Funding")
-getCoOpR               = $(simpleHandler "how-it-works/co-op" "Co-op")
-getPSignupR            = $(simpleHandler "project-signup" "Project Signup")
-getAboutHomeR          = $(simpleHandler "about/old-homepage" "About")
-getContactR            = $(simpleHandler "contact" "Contact")
-getTeamR               = $(simpleHandler "team" "Team")
-getPressR              = $(simpleHandler "press" "Press")
-getSponsorsR           = $(simpleHandler "sponsors" "Sponsors")
-getDonateR             = $(simpleHandler "donate" "Donate")
-getMerchandiseR        = $(simpleHandler "merchandise" "Merchandise")
-getAssetsR             = $(simpleHandler "assets" "Assets")
+getCoOpR               = $(widget "how-it-works/co-op" "Co-op")
+getPSignupR            = $(widget "project-signup" "Project Signup")
+getAboutHomeR          = $(widget "about/old-homepage" "About")
+getContactR            = $(widget "contact" "Contact")
+getTeamR               = $(widget "team" "Team")
+getPressR              = $(widget "press" "Press")
+getSponsorsR           = $(widget "sponsors" "Sponsors")
+getDonateR             = $(widget "donate" "Donate")
+getMerchandiseR        = $(widget "merchandise" "Merchandise")
+getAssetsR             = $(widget "assets" "Assets")
 
 -- * TODO: Convert these.
 getTermsR,
