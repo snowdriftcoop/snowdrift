@@ -19,6 +19,7 @@ import qualified Data.Map as M
 import qualified Data.Set as S
 import qualified Data.Text as T
 
+import Data.Avatar
 import DeprecatedBootstrap
 import Model.Currency
 import Model.Markdown
@@ -123,7 +124,11 @@ renderUser mviewer_id user_id user projects_and_roles = do
             then Just <$> handlerToWidget (generateFormPost establishUserForm)
             else return Nothing
 
-    avatar <- handlerToWidget $ getUserAvatar $ Just user
+    render :: (Route App -> Text) <- getUrlRender
+    let defaultUrl = render (StaticR img_default_avatar_png)
+    avatar <- liftIO $ getUserAvatar defaultUrl $ Just user
+                                    -- (StaticR img_default_avatar_png)
+                                    -- (Just user)
 
     $(widgetFile "user")
 

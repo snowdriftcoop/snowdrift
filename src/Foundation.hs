@@ -12,7 +12,6 @@ import Control.Monad.Writer.Strict (WriterT, runWriterT)
 import Data.Char (isSpace)
 import Data.Text as T
 import Network.HTTP.Conduit (Manager)
-import Network.Libravatar
 import Text.Blaze.Html.Renderer.Text (renderHtml)
 import Text.Hamlet (hamletFile)
 import Text.Jasmine (minifym)
@@ -32,6 +31,7 @@ import qualified Database.Persist
 import qualified Settings
 import qualified Yesod as Y
 
+import Data.Avatar
 import Model.Currency
 
 -- A type for running DB actions outside of a Handler.
@@ -466,7 +466,11 @@ defaultLayoutNew pageName widget = do
     mmsg <- getMessage
     malert <- getAlert
     maybeUser  <- maybeAuth
-    avatar <- getUserAvatar $ maybe Nothing (Just . entityVal) maybeUser
+    render :: (Route App -> Text) <- getUrlRender
+    let defaultUrl = render (StaticR img_default_avatar_png)
+    avatar <- liftIO $ getUserAvatar defaultUrl 
+                    -- (StaticR img_default_avatar_png)   
+                    (maybe Nothing (Just . entityVal) maybeUser)
 
     active <- maybe (const False) (==) <$> getCurrentRoute
     howItWorksActive <- do
@@ -493,36 +497,3 @@ defaultLayoutNew pageName widget = do
         $(widgetFile "default/grid")
         $(widgetFile "default-layout-new")
     withUrlRenderer $(hamletFile "templates/default-layout-wrapper.hamlet")
-
-
--- Adding in Avatar capabilities into Foundation.hs instead of in a separate
--- module due to the preference of the StaticR call, which relies on
--- Foundation.hs, so any outside modules would create a circular import error.
-
-getUserAvatar :: Maybe User -> Handler Text
-getUserAvatar muser = do
-    render :: (Route App -> Text) <- getUrlRender
-    let defaultUrl = render (StaticR img_default_avatar_png)
-    maybe
-        (return defaultUrl)
-        (\user -> do
-            let email = fromMaybe T.empty (userEmail user)
-            liftIO $ if(validEmail user email)
-                     then (libravatar email defaultUrl)
-                     else return defaultUrl)
-        muser
-    where
-        validEmail :: User -> Text -> Bool
-        validEmail u e = (not (T.null e)) && (userEmail_verified u)
-
-        libravatar :: Text -> Text -> IO Text
-        libravatar e defaultUrl = do
-                mavatar <- avatarUrl
-                         (Email $ T.unpack e)
-                         defOpts
-                             { optSecure = False
-                             , optDefault = ImgCustom (T.unpack defaultUrl)
-                             , optSize = DefaultSize
-                             , optTryGravatar = False
-                             }
-                return $ maybe defaultUrl T.pack mavatar

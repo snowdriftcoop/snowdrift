@@ -43,6 +43,7 @@ library
     exposed-modules:
         Application
         Css
+        Data.Avatar
         Data.Filter
         Data.Order
         Data.Text.PrettyHtml
