@@ -23,6 +23,8 @@ getUserDiscussionR'
         -> Handler Html
 getUserDiscussionR' user_id get_root_comments = do
     mviewer <- maybeAuth
+    -- TODO: get closedView in scope from getDiscussion to remove redundant lookupGetParam
+    closedView <- lookupGetParam "state"
     let mviewer_id = entityKey <$> mviewer
 
     (user, root_comments) <- runYDB $ do

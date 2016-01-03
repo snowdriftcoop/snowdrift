@@ -337,6 +337,8 @@ getWikiDiscussionR'
         -> Handler Html
 getWikiDiscussionR' project_handle language target get_root_comments = do
     muser <- maybeAuth
+    -- TODO: get closedView in scope from getDiscussion to remove redundant lookupGetParam
+    closedView <- lookupGetParam "state"
     let muser_id = entityKey <$> muser
 
     (Entity project_id project, root_comments) <- runYDB $ do

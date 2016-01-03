@@ -1,4 +1,7 @@
-<h1 .text-center>#{projectName project} general discussion
+$maybe _ <- closedView
+  <h1 .text-center>#{projectName project} closed discussion threads
+$nothing
+  <h1 .text-center>#{projectName project} general discussion
 
 <p>
   Note: We have additional discussion boards for project
@@ -11,23 +14,28 @@
 <div .page-toolbox>
   <div .page-tool>
     <a href=@{PHomeR project_handle}>back to main project page
-  $if has_comments
+  $maybe _ <- closedView
     <div .page-tool>
-      <a href=@{NewProjectDiscussionR project_handle}>new topic
-  <div .page-tool>
-    <a href=@?{(ProjectDiscussionR project_handle, [("state", "closed")])}>
-      closed threads
-
+      <a href=@{ProjectDiscussionR project_handle}>
+        back to open discussion
+  $nothing
+    $if has_comments
+      <div .page-tool>
+        <a href=@{NewProjectDiscussionR project_handle}>new top-level comment
+    <div .page-tool>
+      <a href=@?{(ProjectDiscussionR project_handle, [("state", "closed")])}>
+        view closed threads
+      
 <div .p-feed>
   ^{comment_forest}
 
-$if not has_comments
+$if not has_comments && not (isJust closedView)
   $maybe _ <- muser
     <form action=@{NewProjectDiscussionR project_handle} method=POST>
       ^{comment_form}
       <input type=submit name=mode value=preview>
   $nothing
     <p>
-      There is no discussion here yet.
+      There is no open discussion here right now.
       <a href=@{AuthR LoginR}>Log in
-      to start a new topic.
+      to start a new discussion thread.
