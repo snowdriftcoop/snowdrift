@@ -15,7 +15,7 @@
     <div .page-tool>
       <a href=@{NewProjectDiscussionR project_handle}>new topic
   <div .page-tool>
-    <a href=@{ProjectDiscussionR project_handle}?state=closed>
+    <a href=@?{(ProjectDiscussionR project_handle, [("state", "closed")])}>
       closed threads
 
 <div .p-feed>
