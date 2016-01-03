@@ -13,15 +13,15 @@ import Model.Comment.Sql
 import Model.User
 import View.Comment
 
--- | getUserDiscussionR generates the associated discussion page for each user
+-- | generates the associated discussion page for each user
 getUserDiscussionR :: UserId -> Handler Html
-getUserDiscussionR user_id = getDiscussion (getUserDiscussionR' user_id)
+getUserDiscussionR user_id = getDiscussion (getUserDiscussion user_id)
 
-getUserDiscussionR'
+getUserDiscussion
         :: UserId
         -> (DiscussionId -> ExprCommentCond -> DB [Entity Comment])  -- ^ Root comment getter.
         -> Handler Html
-getUserDiscussionR' user_id get_root_comments = do
+getUserDiscussion user_id get_root_comments = do
     mviewer <- maybeAuth
     -- TODO: get closedView in scope from getDiscussion to remove redundant lookupGetParam
     closedView <- lookupGetParam "state"
