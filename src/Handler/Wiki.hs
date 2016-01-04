@@ -327,19 +327,19 @@ postWikiR project_handle target_language target = do
 
 -- | getWikiDiscussionR generates the associated discussion page for each wiki page
 getWikiDiscussionR :: Text -> Language -> Text -> Handler Html
-getWikiDiscussionR project_handle language target =
-    getDiscussion (getWikiDiscussion project_handle language target)
+getWikiDiscussionR project_handle language target = do
+    closedView <- lookupGetParam "state"
+    getDiscussion closedView (getWikiDiscussion project_handle language target closedView)
 
 getWikiDiscussion
         :: Text                                                      -- ^ Project handle.
         -> Language
         -> Text                                                      -- ^ Wiki page name.
+        -> Maybe Text
         -> (DiscussionId -> ExprCommentCond -> DB [Entity Comment])  -- ^ Root comment getter.
         -> Handler Html
-getWikiDiscussion project_handle language target get_root_comments = do
+getWikiDiscussion project_handle language target closedView get_root_comments = do
     muser <- maybeAuth
-    -- TODO: get closedView in scope from getDiscussion to remove redundant lookupGetParam
-    closedView <- lookupGetParam "state"
     let muser_id = entityKey <$> muser
 
     (Entity project_id project, root_comments) <- runYDB $ do

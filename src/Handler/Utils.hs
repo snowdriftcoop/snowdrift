@@ -32,7 +32,7 @@ lookupGetUTCTimeDefaultNow name = lookupGetParam name >>= \case
 
 snowdriftTitle :: MonadWidget m => Text -> m ()
 snowdriftTitle t = setTitle $
-    (toHtml (titlecase t)) <> (toHtml (" | Snowdrift.coop" :: Text))
+    toHtml (titlecase t) <> toHtml (" | Snowdrift.coop" :: Text)
 
 snowdriftDashTitle :: MonadWidget m => Text -> Text -> m ()
 snowdriftDashTitle x y = snowdriftTitle $ x <> " — " <> y
@@ -50,12 +50,12 @@ makeLanguageOptions = do
 
     let render = renderMessage app langs . MsgLangName
 
-    return $ OptionList
+    return OptionList
         { olOptions =
               map (mkOption render)
                   (preferred_languages ++
-                      (sortBy (compare `on` render)
-                              ([minBound..maxBound] \\ preferred_languages)))
+                      sortBy (compare `on` render)
+                              ([minBound..maxBound] \\ preferred_languages))
         , olReadExternal = fromPathPiece
         }
   where

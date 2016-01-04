@@ -147,7 +147,7 @@ makeBlogPostCommentActionWidget make_comment_action_widget project_handle post_n
 
 projectBlogDiscussionPage :: Text -> Text -> Widget -> Widget
 projectBlogDiscussionPage project_handle post_name widget = do
-    $(widgetFile "project_blog_discussion_wrapper")
+    $(widgetFile "project-blog-discussion-wrapper")
     toWidget $(cassiusFile "templates/comment.cassius")
 
 -- | Require any of the given Roles, failing with permissionDenied if none are satisfied.
@@ -174,7 +174,7 @@ getProjectBlogR :: Text -> Handler Html
 getProjectBlogR project_handle = do
     (Entity project_id project, posts) <- runYDB $ do
         p <- getBy404 $ UniqueProjectHandle project_handle
-        posts <- selectList [BlogPostProject P.==. (entityKey p)]
+        posts <- selectList [BlogPostProject P.==. entityKey p]
                             [Desc BlogPostTs, Desc BlogPostId]
         return (p, posts)
 
@@ -206,11 +206,11 @@ getProjectBlogFeedR project_handle = do
         -- The RSS feed contains the full post content, not just the part
         -- above the fold.
         entryContent <- renderMarkdown $
-                            (blogPostTopContent $ post) <>
+                            (blogPostTopContent post) <>
                             (fromMaybe (Markdown "") $ blogPostBottomContent post)
 
         let entry = FeedEntry {
-              feedEntryLink = (BlogPostR project_handle) (blogPostHandle post)
+              feedEntryLink = BlogPostR project_handle (blogPostHandle post)
             , feedEntryUpdated = blogPostTs post
             , feedEntryTitle = blogPostTitle post
             , feedEntryContent = entryContent
@@ -575,10 +575,8 @@ postBlogPostCommentTagR _ _ = postCommentTagR
 
 postBlogPostCommentApplyTagR, postBlogPostCommentCreateTagR
     :: Text -> Text -> CommentId -> Handler Html
-postBlogPostCommentApplyTagR project_handle post_name =
-    applyOrCreate postCommentApplyTag project_handle post_name
-postBlogPostCommentCreateTagR project_handle post_name =
-    applyOrCreate postCommentCreateTag project_handle post_name
+postBlogPostCommentApplyTagR = applyOrCreate postCommentApplyTag
+postBlogPostCommentCreateTagR = applyOrCreate postCommentCreateTag
 
 applyOrCreate :: (CommentId -> Handler ()) -> Text -> Text -> CommentId -> Handler Html
 applyOrCreate action project_handle post_name comment_id = do
@@ -658,19 +656,26 @@ postUnwatchBlogPostCommentR project_handle post_name comment_id = do
 -- /p/#Text/blog/#Text/d
 
 getBlogPostDiscussionR :: Text -> Text -> Handler Html
-getBlogPostDiscussionR project_handle post_name = getDiscussion $ getBlogPostDiscussion project_handle post_name
+getBlogPostDiscussionR project_handle post_name = do
+    closedView <- lookupGetParam "state"
+    getDiscussion closedView (getBlogPostDiscussion project_handle post_name closedView)
 
-getBlogPostDiscussion :: Text -> Text -> (DiscussionId -> ExprCommentCond -> DB [Entity Comment]) -> Handler Html
-getBlogPostDiscussion project_handle post_name get_root_comments = do
+getBlogPostDiscussion
+    :: Text
+    -> Text
+    -> Maybe Text
+    -> (DiscussionId -> ExprCommentCond -> DB [Entity Comment])
+    -> Handler Html
+getBlogPostDiscussion project_handle post_name closedView get_root_comments = do
     muser <- maybeAuth
     let muser_id = entityKey <$> muser
 
-    (Entity project_id project, root_comments) <- runYDB $ do
+    (Entity project_id _, root_comments, blog_post) <- runYDB $ do
         p@(Entity project_id _) <- getBy404 $ UniqueProjectHandle project_handle
         Entity _ blog_post <- getBy404 $ UniqueBlogPost project_id post_name
         let has_permission = exprCommentProjectPermissionFilter muser_id (val project_id)
         root_comments <- get_root_comments (blogPostDiscussion blog_post) has_permission
-        return (p, root_comments)
+        return (p, root_comments, blog_post)
 
     maxDepth <- getMaxDepth
     (comment_forest_no_css, _) <-
@@ -693,8 +698,8 @@ getBlogPostDiscussion project_handle post_name get_root_comments = do
     (comment_form, _) <- generateFormPost commentNewTopicForm
 
     defaultLayout $ do
-        snowdriftTitle $ projectName project <> " Discussion"
-        $(widgetFile "project_blog_discuss")
+        snowdriftTitle $ blogPostTitle blog_post <> " discussion"
+        $(widgetFile "project-blog-discuss")
 
 --------------------------------------------------------------------------------
 -- /p/#Text/blog/#Text/d/new

@@ -15,16 +15,17 @@ import View.Comment
 
 -- | generates the associated discussion page for each user
 getUserDiscussionR :: UserId -> Handler Html
-getUserDiscussionR = getDiscussion . getUserDiscussion
+getUserDiscussionR user_id = do
+    closedView <- lookupGetParam "state"
+    getDiscussion closedView (getUserDiscussion user_id closedView)
 
 getUserDiscussion
         :: UserId
+        -> Maybe Text
         -> (DiscussionId -> ExprCommentCond -> DB [Entity Comment])  -- ^ Root comment getter.
         -> Handler Html
-getUserDiscussion user_id get_root_comments = do
+getUserDiscussion user_id closedView get_root_comments = do
     mviewer <- maybeAuth
-    -- TODO: get closedView in scope from getDiscussion to remove redundant lookupGetParam
-    closedView <- lookupGetParam "state"
     let mviewer_id = entityKey <$> mviewer
 
     (user, root_comments) <- runYDB $ do

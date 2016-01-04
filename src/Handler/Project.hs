@@ -173,7 +173,7 @@ makeProjectCommentActionWidget make_comment_action_widget project_handle comment
 
 projectDiscussionPage :: Text -> Widget -> Widget
 projectDiscussionPage project_handle widget = do
-    $(widgetFile "project_discussion_wrapper")
+    $(widgetFile "project-discussion-wrapper")
     toWidget $(cassiusFile "templates/comment.cassius")
 
 
@@ -1055,16 +1055,17 @@ postProjectContactR project_handle = do
 -- /d
 
 getProjectDiscussionR :: Text -> Handler Html
-getProjectDiscussionR = getDiscussion . getProjectDiscussion
+getProjectDiscussionR project_handle = do
+    closedView <- lookupGetParam "state"
+    getDiscussion closedView (getProjectDiscussion project_handle closedView)
 
 getProjectDiscussion
     :: Text
+    -> Maybe Text
     -> (DiscussionId -> ExprCommentCond -> DB [Entity Comment])
     -> Handler Html
-getProjectDiscussion project_handle get_root_comments = do
+getProjectDiscussion project_handle closedView get_root_comments = do
     muser <- maybeAuth
-    -- TODO: get closedView in scope from getDiscussion to remove redundant lookupGetParam
-    closedView <- lookupGetParam "state"
     let muser_id = entityKey <$> muser
 
     (Entity project_id project, root_comments) <- runYDB $ do
@@ -1094,7 +1095,7 @@ getProjectDiscussion project_handle get_root_comments = do
 
     defaultLayout $ do
         snowdriftTitle $ projectName project <> " Discussion"
-        $(widgetFile "project_discuss")
+        $(widgetFile "project-discuss")
 
 --------------------------------------------------------------------------------
 -- /d/new
