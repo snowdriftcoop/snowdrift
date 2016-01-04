@@ -29,7 +29,7 @@ getUserDiscussion user_id get_root_comments = do
 
     (user, root_comments) <- runYDB $ do
         user <- get404 user_id
-        let has_permission = (exprCommentUserPermissionFilter mviewer_id (val user_id))
+        let has_permission = exprCommentUserPermissionFilter mviewer_id (val user_id)
         root_comments <- get_root_comments (userDiscussion user) has_permission
         return (user, root_comments)
 

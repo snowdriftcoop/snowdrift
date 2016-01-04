@@ -191,7 +191,7 @@ getWikiR project_handle language target = do
                                    }
 
     selectRep $ do
-        provideRep $ htmlWiki
+        provideRep htmlWiki
         provideRep $ return $ wikiEditContent edit
 
 postWikiR :: Text -> Language -> Text -> Handler Html
@@ -327,7 +327,8 @@ postWikiR project_handle target_language target = do
 
 -- | getWikiDiscussionR generates the associated discussion page for each wiki page
 getWikiDiscussionR :: Text -> Language -> Text -> Handler Html
-getWikiDiscussionR project_handle language target = getDiscussion (getWikiDiscussion project_handle language target)
+getWikiDiscussionR project_handle language target =
+    getDiscussion (getWikiDiscussion project_handle language target)
 
 getWikiDiscussion
         :: Text                                                      -- ^ Project handle.

@@ -1057,7 +1057,10 @@ postProjectContactR project_handle = do
 getProjectDiscussionR :: Text -> Handler Html
 getProjectDiscussionR = getDiscussion . getProjectDiscussion
 
-getProjectDiscussion :: Text -> (DiscussionId -> ExprCommentCond -> DB [Entity Comment]) -> Handler Html
+getProjectDiscussion
+    :: Text
+    -> (DiscussionId -> ExprCommentCond -> DB [Entity Comment])
+    -> Handler Html
 getProjectDiscussion project_handle get_root_comments = do
     muser <- maybeAuth
     -- TODO: get closedView in scope from getDiscussion to remove redundant lookupGetParam
