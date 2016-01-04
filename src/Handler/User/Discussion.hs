@@ -15,7 +15,7 @@ import View.Comment
 
 -- | generates the associated discussion page for each user
 getUserDiscussionR :: UserId -> Handler Html
-getUserDiscussionR user_id = getDiscussion (getUserDiscussion user_id)
+getUserDiscussionR = getDiscussion . getUserDiscussion
 
 getUserDiscussion
         :: UserId
