@@ -127,8 +127,6 @@ renderUser mviewer_id user_id user projects_and_roles = do
     render :: (Route App -> Text) <- getUrlRender
     let defaultUrl = render (StaticR img_default_avatar_png)
     avatar <- liftIO $ getUserAvatar defaultUrl $ Just user
-                                    -- (StaticR img_default_avatar_png)
-                                    -- (Just user)
 
     $(widgetFile "user")
 

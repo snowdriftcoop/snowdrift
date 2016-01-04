@@ -469,7 +469,6 @@ defaultLayoutNew pageName widget = do
     render :: (Route App -> Text) <- getUrlRender
     let defaultUrl = render (StaticR img_default_avatar_png)
     avatar <- liftIO $ getUserAvatar defaultUrl 
-                    -- (StaticR img_default_avatar_png)   
                     (maybe Nothing (Just . entityVal) maybeUser)
 
     active <- maybe (const False) (==) <$> getCurrentRoute

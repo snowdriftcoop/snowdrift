@@ -7,9 +7,6 @@ import Import.NoFoundation
 
 getUserAvatar :: Text -> Maybe User -> IO Text
 getUserAvatar defaultUrl muser = maybe
-    -- render :: (Route App -> Text) <- getUrlRender
-    -- let defaultUrl = render imgRoute
-    -- maybe
         (return defaultUrl)
         (\user -> do
             let email = fromMaybe T.empty (userEmail user)
