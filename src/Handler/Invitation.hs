@@ -23,7 +23,7 @@ getInvitationR project_handle code = do
 
     let redeemed = inviteRedeemed invite || isJust (inviteRedeemedBy invite)
         role     = roleLabel $ inviteRole invite
-            
+
     defaultLayoutNew "invitation" $ do
         snowdriftTitle
             (projectName project <> " " <> role <> " Invitation")

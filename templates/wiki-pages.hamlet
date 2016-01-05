@@ -1,4 +1,4 @@
-<h1> 
+<h1>
   #{projectName project} wiki and discussion topics
 
 $if null wiki_targets
