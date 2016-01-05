@@ -309,16 +309,15 @@ postEditBlogPostR :: Text -> Text -> Handler Html
 postEditBlogPostR project_handle blog_post_handle = do
     (_, Entity blog_post_id BlogPost {..}) <-
         runYDB $ fetchProjectBlogPostDB project_handle blog_post_handle
-    viewer_id <- checkEditBlogPostPermissions project_handle
     ((result, _), _) <- runFormPost $ projectBlogForm Nothing
     case result of
       FormSuccess project_blog@ProjectBlog {..} ->
           lookupPostMode >>= \case
               Just PostMode -> do
-                  runDB $ updateBlogPostDB viewer_id blog_post_id project_blog
+                  runDB $ updateBlogPostDB blogPostUser blog_post_id project_blog
                   alertSuccess "Blog post updated"
                   redirect $ BlogPostR project_handle projectBlogHandle
-              _ -> previewBlogPost viewer_id project_handle project_blog
+              _ -> previewBlogPost blogPostUser project_handle project_blog
       FormMissing -> do
           alertDanger "No data provided"
           redirect $ BlogPostR project_handle blog_post_handle
