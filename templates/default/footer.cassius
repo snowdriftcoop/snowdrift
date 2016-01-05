@@ -60,6 +60,8 @@ footer
                     background-image: url(@{StaticR img_supporter_p2p_png})
                 .osi
                     background-image: url(@{StaticR img_supporter_osi_png})
+                .qco
+                    background-image: url(@{StaticR img_supporter_qco_png})
 @media (min-width: 571px)
     footer
         .section
