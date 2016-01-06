@@ -99,8 +99,8 @@ getHomeR,
 getHomeR = do
     u <- maybeAuth
     maybe (defaultLayoutNew "homepage" $ do
-                setTitle "Snowdrift.coop — Free the Commons"
-                $(widgetFile "homepage"))
+              setTitle "Snowdrift.coop — Free the Commons"
+              $(widgetFile "homepage"))
           (\user ->
               $(widget "dashboard/overview" "Dashboard"))
           u
