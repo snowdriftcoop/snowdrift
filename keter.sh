@@ -44,7 +44,7 @@ main () {
         hdr "Building"
         rm -fr dist/bin
         mkdir -p dist/bin
-        stack --local-bin-path $install_path install --flag Snowdrift:-dev
+        stack --work-dir .stack-work-deploy --local-bin-path $install_path install --flag Snowdrift:-dev
         hdr "Packing executables"
         upx dist/bin/Snowdrift*
     else
