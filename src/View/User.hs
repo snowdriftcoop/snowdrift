@@ -124,9 +124,7 @@ renderUser mviewer_id user_id user projects_and_roles = do
             then Just <$> handlerToWidget (generateFormPost establishUserForm)
             else return Nothing
 
-    render :: (Route App -> Text) <- getUrlRender
-    let defaultUrl = render (StaticR img_default_avatar_png)
-    avatar <- liftIO $ getUserAvatar defaultUrl $ Just user
+    avatar <- getUserAvatar (StaticR img_default_avatar_png) (Just user)
 
     $(widgetFile "user")
 

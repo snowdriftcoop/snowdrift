@@ -466,10 +466,8 @@ defaultLayoutNew pageName widget = do
     mmsg <- getMessage
     malert <- getAlert
     maybeUser  <- maybeAuth
-    render :: (Route App -> Text) <- getUrlRender
-    let defaultUrl = render (StaticR img_default_avatar_png)
-    avatar <- liftIO $ getUserAvatar defaultUrl 
-                    (maybe Nothing (Just . entityVal) maybeUser)
+    avatar <- getUserAvatar (StaticR img_default_avatar_png)
+                            (maybe Nothing (Just . entityVal) maybeUser)
 
     active <- maybe (const False) (==) <$> getCurrentRoute
     howItWorksActive <- do
