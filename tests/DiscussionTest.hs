@@ -145,7 +145,6 @@ runDiscussionTest
 
         yit "can move newer comments under older" $ [marked|
             loginAs TestUser
-            get200 new_thread_url
             (first_message, second_message) <- createComments
             testRethread first_message second_message
         |]
@@ -153,7 +152,6 @@ runDiscussionTest
 
         yit "can move older comments under newer" $ [marked|
             loginAs TestUser
-            get200 new_thread_url
             (first_message, second_message) <- createComments
             testRethread second_message first_message
         |]
