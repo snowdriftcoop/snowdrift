@@ -46,22 +46,13 @@ blogSpecs = do
                 stmts
         |]
 
-
-
     ydescribe "blog" $ do
-
-        yit "loads the project blog - no blog post" $ [marked|
-            loginAs TestUser
-
-            get200 $ ProjectBlogR "snowdrift"
-
-            htmlNoneContain ".blog-post" "Above fold."
-            htmlNoneContain ".blog-post" "Below fold."
-        |]
-
-
         yit "previews blog post" $ [marked|
             loginAs AdminUser
+
+            get200 $ ProjectBlogR "snowdrift"
+            htmlNoneContain ".blog-post" "Above fold."
+            htmlNoneContain ".blog-post" "Below fold."
 
             previewBlog (NewBlogPostR "snowdrift") $ do
                 byLabel "Title for this blog post" "Test"
@@ -72,9 +63,12 @@ blogSpecs = do
             bodyContains "Below fold."
         |]
 
-
         yit "posts blog post" $ [marked|
             loginAs AdminUser
+
+            get200 $ ProjectBlogR "snowdrift"
+            htmlNoneContain ".blog-post" "Above fold."
+            htmlNoneContain ".blog-post" "Below fold."
 
             postBlog (NewBlogPostR "snowdrift") $ do
                 byLabel "Title for this blog post" "Test"
@@ -92,13 +86,8 @@ blogSpecs = do
 
             htmlAnyContain ".blog-post" "Above fold."
             htmlAnyContain ".blog-post" "Below fold."
-        |]
-
-        yit "loads the project blog - with blog post" $ [marked|
-            loginAs TestUser
 
             get200 $ ProjectBlogR "snowdrift"
-
             htmlAnyContain ".blog-post-top" "Above fold."
             htmlNoneContain ".blog-post-top" "Below fold."
         |]
