@@ -19,7 +19,7 @@ extra-deps:
     - libravatar-0.3.0.0
     - mime-0.4.0.2
     - titlecase-0.1.0.2
-    - yesod-markdown-0.10.0
+    - yesod-markdown-0.11.0
     # Transitive dep of github
     - failure-0.2.0.3
-resolver: lts-3.21
+resolver: lts-5.1
