@@ -303,7 +303,7 @@ explains further about those or other possibilities.
 ## Learning resources and helpful tools
 
 For deeper understanding of various elements in our development,
-here are some resources:
+here are some resources (nearly all fully-FLO):
 
 *   The following WikiBooks are fully FLO (Free/Libre/Open) and include links to
     further resources as well. As they are wikis, you can and should *improve*
@@ -350,16 +350,11 @@ here are some resources:
     web features you use are compatible with various browsers and standards.
     The CanIUse data is fully FLO under a CC-BY license.
 
-*   We use [Twitter Bootstrap](http://getbootstrap.com/) for much (but not all)
-    of our CSS.
-
 *   [The Yesod Book](http://www.yesodweb.com/book/) is the primary resource
     for learning about Yesod, the web framework we use to develop Snowdrift.
 
-*   The [School of Haskell](https://www.fpcomplete.com/school) includes
+*   The [School of Haskell](https://www.schoolofhaskell.com) includes
     basic and advanced topics including some Yesod sections.
-    In April 2015, they announced plans to change to using FLO terms
-    (the FLO release has not been done yet as of this writing).
 
 *   At Stack Overflow (which uses FLO licensing for content), see tags for
     [yesod](http://stackoverflow.com/questions/tagged/yesod) and
@@ -367,16 +362,12 @@ here are some resources:
     (and, of course, other topics like HTML, CSS, Git, and so on)
 
 *   Alongside #snowdrift on freenode.net, check out #yesod , #haskell ,
-    and #haskell-beginners (among other relevant channels).
+    and #haskell-beginners (among many other relevant channels).
 
 *   A useful development tool is `stack ghci` — a command that loads
     [ghci](https://en.wikibooks.org/wiki/Haskell/Using_GHCi_effectively)
     in a mode connected to the project. Using that, you can easily import
     files from the code and explore the functions.
-
-*   As you encounter Haskell (and specifically Yesod) functions, a fast way
-    to find the types and definitions is to search
-    [Hayhoo](http://hayoo.fh-wedel.de/).
 
 *   Add hlint with `stack install hlint`, and then you can run `hlint` followed
     by a .hs filepath to get suggestions for improving the Haskell code style.
