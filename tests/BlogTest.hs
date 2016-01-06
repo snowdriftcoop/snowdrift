@@ -50,18 +50,6 @@ blogSpecs = do
 
     ydescribe "blog" $ do
 
-        yit "loads the project page - no blog post" $ [marked|
-            loginAs TestUser
-
-            get200 $ PHomeR "snowdrift"
-
-        {-
-            htmlNoneContain "#blog-post" "Above fold."
-            htmlNoneContain "#blog-post" "Below fold."
-        -}
-        |]
-
-
         yit "loads the project blog - no blog post" $ [marked|
             loginAs TestUser
 
@@ -114,17 +102,3 @@ blogSpecs = do
             htmlAnyContain ".blog-post-top" "Above fold."
             htmlNoneContain ".blog-post-top" "Below fold."
         |]
-
-    {- TODO - enable if/when we include most recent blog post on project page (SD-284)
-        yit "loads the project page - with blog post" $ [marked|
-            loginAs TestUser
-
-            get200 $ PHomeR "snowdrift"
-
-            htmlAllContain "#blog-post" "Above fold."
-            htmlNoneContain "#blog-post" "Below fold."
-        |]
-    -}
-
-
-
