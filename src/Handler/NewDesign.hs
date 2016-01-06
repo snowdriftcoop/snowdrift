@@ -98,7 +98,9 @@ getHomeR,
 -- the dashboard for logged-in viewers.
 getHomeR = do
     u <- maybeAuth
-    maybe $(widget "homepage" "Free the Commons")
+    maybe (defaultLayoutNew "homepage" $ do
+                setTitle "Snowdrift.coop — Free the Commons"
+                $(widgetFile "homepage"))
           (\user ->
               $(widget "dashboard/overview" "Dashboard"))
           u
