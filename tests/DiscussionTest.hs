@@ -122,8 +122,6 @@ runDiscussionTest label discussion_page_url comment_url new_thread_url comment_r
 
                 get200 $ comment_url second_message
 
-                printBody
-
                 bodyContains "First message"
                 bodyContains "Second message"
             |]
