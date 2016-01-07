@@ -13,5 +13,5 @@
            required>
   <p .forgot-pass>
     <a href=@{ResetPasswordR}>Forgot your passphrase?
-  <button .button type=submit>
+  <button .bigbutton type=submit>
     Log in

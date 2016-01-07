@@ -21,7 +21,7 @@
             color: #{DarkBlue}
             font-weight: 400
             width: 95%
-    .button
+    .bigbutton
         margin: 1rem auto 3rem
         display: block
     .forgot-pass, .sign-up
@@ -45,5 +45,5 @@
         form
             input
                 width: 35rem
-        .button
+        .bigbutton
             margin: 0 auto 6rem

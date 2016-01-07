@@ -6,7 +6,7 @@
     <.background>
       <.plane .break4>
     <.foreground>
-    <a href=@{HowItWorksR IntroR} .button>How it Works
+    <a href=@{HowItWorksR IntroR} .bigbutton>How it Works
     <p>
       We sustainably fund sharable, freely-licensed projects.
       <br>
