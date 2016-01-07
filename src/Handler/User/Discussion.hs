@@ -13,21 +13,24 @@ import Model.Comment.Sql
 import Model.User
 import View.Comment
 
--- | getUserDiscussionR generates the associated discussion page for each user
+-- | generates the associated discussion page for each user
 getUserDiscussionR :: UserId -> Handler Html
-getUserDiscussionR user_id = getDiscussion (getUserDiscussionR' user_id)
+getUserDiscussionR user_id = do
+    closedView <- lookupGetParam "state"
+    getDiscussion closedView (getUserDiscussion user_id closedView)
 
-getUserDiscussionR'
+getUserDiscussion
         :: UserId
+        -> Maybe Text
         -> (DiscussionId -> ExprCommentCond -> DB [Entity Comment])  -- ^ Root comment getter.
         -> Handler Html
-getUserDiscussionR' user_id get_root_comments = do
+getUserDiscussion user_id closedView get_root_comments = do
     mviewer <- maybeAuth
     let mviewer_id = entityKey <$> mviewer
 
     (user, root_comments) <- runYDB $ do
         user <- get404 user_id
-        let has_permission = (exprCommentUserPermissionFilter mviewer_id (val user_id))
+        let has_permission = exprCommentUserPermissionFilter mviewer_id (val user_id)
         root_comments <- get_root_comments (userDiscussion user) has_permission
         return (user, root_comments)
 
