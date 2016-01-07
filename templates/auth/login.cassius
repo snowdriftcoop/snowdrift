@@ -12,6 +12,7 @@
             padding: 1rem 0
             display: block
         input
+            background-color: #{White}
             border: 0.1rem solid #{DarkBlue}
             border-radius: 0.3rem
             padding: 0.5rem 0.3rem
@@ -23,6 +24,8 @@
     .button
         margin: 1rem auto 3rem
         display: block
+    .forgot-pass, .sign-up
+        text-align: center
     .persona
         margin: 3rem 0 0
         padding: 1rem 0
@@ -42,12 +45,5 @@
         form
             input
                 width: 35rem
-        .persona
-            margin: 6rem 0
         .button
-            margin: 0 auto 12rem
-/*break3*/
-@media (min-width: 571px)
-    .login
-        h1
-            margin: 12rem 0 0 0
+            margin: 0 auto 6rem
