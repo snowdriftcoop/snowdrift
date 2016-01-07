@@ -40,26 +40,6 @@
             height: 4rem
             border-radius: 4rem
             background: #{White}
-    .button
-        display: table
-        position: relative
-        font-family: 'League Spartan'
-        color: #{White}
-        width: auto
-        margin: 0rem auto 3rem
-        padding: 1.5rem 4rem 1rem
-        font-size: 2.5rem
-        border-radius: 2.7rem/4.7rem
-        text-shadow: .2rem .2rem 0 rgba(19,98,142,0.4)
-        background-color: #{GreenShade}
-        background-image: linear-gradient(#{Green}, #{GreenShade})
-        transition: all 0 ease-out 0.03s
-        &:hover
-            padding: 1.5rem 3.5rem 1rem
-            text-shadow: .2rem .2rem 0 rgba(19,98,142,0.4), 0rem 0rem 1rem rgba(255,255,255,0.5)
-        &:focus
-            top: 0.1rem
-            left: 0.1rem
     .background
         position: absolute
         left: 0
