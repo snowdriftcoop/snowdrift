@@ -31,22 +31,15 @@ import Model.Notification
 
 import PPrint
 
-updateUser :: UserId -> [SqlExpr (Update User)] -> SqlPersistM ()
-updateUser user_id xs =
-    update $ \u -> do
-        set u xs
-        where_ $ u ^. UserId ==. val user_id
-
 unestablish :: UserId -> SqlPersistM ()
 unestablish user_id = do
-    delete $ from $ \me ->
-        where_ $ me ^. ManualEstablishmentEstablishedUser ==. val user_id
-    updateUser user_id [UserEstablished =. val EstUnestablished]
+    P.deleteWhere [ManualEstablishmentEstablishedUser P.==. user_id]
+    P.update user_id [UserEstablished P.=. EstUnestablished]
 
 addAndVerifyEmail :: UserId -> Text -> SqlPersistM ()
 addAndVerifyEmail user_id email =
-    updateUser user_id [ UserEmail =. val (Just email)
-                       , UserEmail_verified =. val True ]
+    P.update user_id [ UserEmail P.=. (Just email)
+                     , UserEmail_verified P.=. True ]
 
 data DelayStatus = WithDelay | WithoutDelay
 

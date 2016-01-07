@@ -30,17 +30,10 @@ import WikiTest
 
 main :: IO ()
 main = do
-    liftIO $ hPutStrLn stderr "starting test program" >> hFlush stderr
     conf <- Yesod.Default.Config.loadConfig $ (configSettings Testing)
                 { csParseExtra = parseExtra
                 }
-
-    liftIO $ hPutStrLn stderr "building foundation" >> hFlush stderr
     foundation <- makeFoundation conf
-
-
-    liftIO $ hPutStrLn stderr "running test" >> hFlush stderr
-
     withTempFile $ spec foundation
 
 withTempFile :: (FileName -> IO a) -> IO ()

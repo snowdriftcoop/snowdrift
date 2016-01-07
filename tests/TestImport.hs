@@ -251,13 +251,6 @@ errorUnlessExpected msg expected actual =
              <> ": expected " <> show expected
              <> ", but got " <> show actual
 
-testProperty :: Testable prop => Text -> prop -> Example ()
-testProperty msg prop = do
-    res <- liftIO $ verboseCheckResult prop
-    case res of
-        Success {} -> return ()
-        err        -> error $ T.unpack msg <> ": " <> show err
-
 newWiki :: Text -> Language -> Text -> Text -> YesodExample App ()
 newWiki project language page content = do
     get200 $ NewWikiR project language page
