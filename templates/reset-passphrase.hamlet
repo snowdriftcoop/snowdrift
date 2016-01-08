@@ -5,6 +5,6 @@
   <em>Note: Passphrase-reset only works for accounts with verified emails.
   <br>
   <em>Note: Persona-based accounts have no passphrase to reset.
-<form method=POST action=@{ResetPasswordR} enctype=#{enctype}>
+<form method=POST action=@{ResetPassphraseR} enctype=#{enctype}>
   ^{form}
   <button>reset

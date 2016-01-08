@@ -18,15 +18,15 @@ data UserUpdate =
         , userUpdateStatement          :: Maybe Markdown
         }
 
-data ChangePassword = ChangePassword
-    { currentPassword :: Text
-    , newPassword     :: Text
-    , newPassword'    :: Text
+data ChangePassphrase = ChangePassphrase
+    { currentPassphrase :: Text
+    , newPassphrase     :: Text
+    , newPassphrase'    :: Text
     }
 
-data SetPassword = SetPassword
-    { password  :: Text
-    , password' :: Text
+data SetPassphrase = SetPassphrase
+    { passphrase  :: Text
+    , passphrase' :: Text
     }
 
 data UserNotificationPref = UserNotificationPref

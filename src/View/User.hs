@@ -1,13 +1,13 @@
 module View.User
     ( addTestCashForm
     , createUserForm
-    , changePasswordForm
+    , changePassphraseForm
     , editUserForm
     , establishUserForm
     , previewUserForm
     , projectNotificationsForm
     , renderUser
-    , setPasswordForm
+    , setPassphraseForm
     , userNameWidget
     , userNotificationsForm
     ) where
@@ -49,7 +49,7 @@ createUserForm ident extra = do
         passwdRes = case (passwd1Res, passwd2Res) of
             (FormSuccess a, FormSuccess b)
                 | a == b    -> FormSuccess a
-                | otherwise -> FormFailure ["passwords do not match"]
+                | otherwise -> FormFailure ["passphrases do not match"]
             (FormSuccess _, x) -> x
             (x, _) -> x
 
@@ -84,8 +84,8 @@ editUserForm muser = renderBootstrap3 BootstrapBasicForm $
                                 ,("rows", "15")])
                  (userStatement <$> muser)
 
-changePasswordForm :: Form ChangePassword
-changePasswordForm = renderBootstrap3 BootstrapBasicForm $ ChangePassword
+changePassphraseForm :: Form ChangePassphrase
+changePassphraseForm = renderBootstrap3 BootstrapBasicForm $ ChangePassphrase
     <$> areq' passwordField "Current passphrase" Nothing
     <*> areq' passwordField "New passphrase" Nothing
     <*> areq' passwordField "Repeat" Nothing
@@ -127,8 +127,8 @@ renderUser mviewer_id user_id user projects_and_roles = do
 
     $(widgetFile "user")
 
-setPasswordForm :: Form SetPassword
-setPasswordForm = renderBootstrap3 BootstrapBasicForm $ SetPassword
+setPassphraseForm :: Form SetPassphrase
+setPassphraseForm = renderBootstrap3 BootstrapBasicForm $ SetPassphrase
     <$> areq' passwordField "New passphrase" Nothing
     <*> areq' passwordField "Repeat"         Nothing
 

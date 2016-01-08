@@ -478,10 +478,10 @@ defaultLayoutNew pageName widget = do
     authActive <- do
         r <- getCurrentRoute
         return $ case r of
-            Just (AuthR _)      -> True
-            Just ResetPasswordR -> True
-            Just CreateAccountR -> True
-            _                   -> False
+            Just (AuthR _)        -> True
+            Just ResetPassphraseR -> True
+            Just CreateAccountR   -> True
+            _                     -> False
 
 
     let navbar :: Widget = $(widgetFile "default/navbar")

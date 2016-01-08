@@ -29,10 +29,10 @@ selectUserIdIfVerified email =
               &&. u ^. UserEmail ==. just (val email)
          return $ u ^. UserId)
 
-fromResetPassword :: From query expr backend (expr (Entity ResetPassword))
+fromResetPassphrase :: From query expr backend (expr (Entity ResetPassphrase))
                   => UserId -> query ()
-fromResetPassword user_id =
-    from $ \rp -> where_ $ rp ^. ResetPasswordUser ==. val user_id
+fromResetPassphrase user_id =
+    from $ \rp -> where_ $ rp ^. ResetPassphraseUser ==. val user_id
 
-deleteFromResetPassword :: UserId -> DB ()
-deleteFromResetPassword user_id = delete $ fromResetPassword user_id
+deleteFromResetPassphrase :: UserId -> DB ()
+deleteFromResetPassphrase user_id = delete $ fromResetPassphrase user_id

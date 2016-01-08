@@ -1,13 +1,13 @@
 module Handler.User.Utils
     ( checkEditUser
-    , resetPassword
+    , resetPassphrase
     , startEmailVerification
     ) where
 
 import Import
 
 import Yesod.Auth.HashDB (setPassword)
-import Model.ResetPassphrase (deleteFromResetPassword)
+import Model.ResetPassphrase (deleteFromResetPassphrase)
 
 import Model.User
 import Handler.Utils (newHash)
@@ -21,15 +21,15 @@ checkEditUser user_id = do
         (permissionDenied "You can only modify your own profile.")
     return viewer_id
 
-resetPassword :: RedirectUrl App route
+resetPassphrase :: RedirectUrl App route
               => UserId -> User -> Text -> Text -> route -> Handler Html
-resetPassword user_id user password password' route =
-    if password == password'
+resetPassphrase user_id user passphrase passphrase' route =
+    if passphrase == passphrase'
         then do
-            user' <- setPassword password user
+            user' <- setPassword passphrase user
             runDB $ do
-                updateUserPasswordDB user_id (userHash user') (userSalt user')
-                deleteFromResetPassword user_id
+                updateUserPassphraseDB user_id (userHash user') (userSalt user')
+                deleteFromResetPassphrase user_id
             alertSuccess "You successfully updated your passphrase."
             redirect $ UserR user_id
         else do

@@ -1,5 +1,5 @@
 Change your passphrase:
 <br>
-<form method=POST action=@{UserChangePasswordR user_id} enctype=#{enctype}>
+<form method=POST action=@{UserChangePassphraseR user_id} enctype=#{enctype}>
   ^{form}
   <button>update

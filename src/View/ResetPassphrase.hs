@@ -1,15 +1,15 @@
 module View.ResetPassphrase where
 
-import Import hiding (ResetPassword)
+import Import hiding (ResetPassphrase)
 
 import DeprecatedBootstrap
 
-data ResetPassword = ResetPassword
+data ResetPassphrase = ResetPassphrase
     { rpHandle :: Maybe Text
     , rpEmail  :: Maybe Text
     }
 
-resetPasswordForm :: Form ResetPassword
-resetPasswordForm = renderBootstrap3 BootstrapBasicForm $ ResetPassword
+resetPassphraseForm :: Form ResetPassphrase
+resetPassphraseForm = renderBootstrap3 BootstrapBasicForm $ ResetPassphrase
     <$> aopt' textField  "Account Name" Nothing
-    <*> aopt' emailField "Email" Nothing
+    <*> aopt' emailField "Email"  Nothing

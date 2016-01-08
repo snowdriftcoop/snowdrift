@@ -145,27 +145,27 @@ data TestUser = TestUser
 data AdminUser = AdminUser
 
 class Login a where
-    username :: IsString name => a -> name
-    password :: IsString pass => a -> pass
+    username   :: IsString name => a -> name
+    passphrase :: IsString pass => a -> pass
 
 instance Login NamedUser where
-    username Bob =  "bob"
+    username Bob  = "bob"
     username Mary = "mary"
-    username Joe =  "joe"
-    username Sue =  "sue"
+    username Joe  = "joe"
+    username Sue  = "sue"
 
-    password Bob =  "bob password"
-    password Mary = "mary password"
-    password Joe =  "joe password"
-    password Sue =  "sue password"
+    passphrase Bob  = "bob passphrase"
+    passphrase Mary = "mary passphrase"
+    passphrase Joe  = "joe passphrase"
+    passphrase Sue  = "sue passphrase"
 
 instance Login TestUser where
-    username _ = "test"
-    password _ = "test"
+    username _   = "test"
+    passphrase _ = "test"
 
 instance Login AdminUser where
-    username _ = "admin"
-    password _ = "admin"
+    username _   = "admin"
+    passphrase _ = "admin"
 
 -- Do a login (using hashdb auth).  This just attempts to go to the home
 -- url, and follows through the login process.  It should probably be the
@@ -174,7 +174,7 @@ instance Login AdminUser where
 loginAs :: Login user => user -> YesodExample App ()
 loginAs user = do
     get200 $ urlPath $ testRoot `T.append` "/auth/login"
-    submitLogin (username user) (password user)
+    submitLogin (username user) (passphrase user)
 
 
 statusIsResp :: Int -> YesodExample site ()

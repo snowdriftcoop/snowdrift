@@ -7,7 +7,7 @@ $if Just user_id == mviewer_id
       <a href=@{DeleteUserR user_id}>
         delete account
     <div .user-pref>
-      <a href=@{UserChangePasswordR user_id}>
+      <a href=@{UserChangePassphraseR user_id}>
         change passphrase
     <div .user-pref>
       <a href=@{UserNotificationsR user_id}>

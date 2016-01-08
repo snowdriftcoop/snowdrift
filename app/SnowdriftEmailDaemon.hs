@@ -569,26 +569,26 @@ sendVerification
         ("sending the email verification message to " <> user_email <>
          " failed; will try again later")
 
-selectUnsentResetPassword :: ReaderT SqlBackend (ResourceT (LoggingT IO))
+selectUnsentResetPassphrase :: ReaderT SqlBackend (ResourceT (LoggingT IO))
                              [(UserId, Email, Text)]
-selectUnsentResetPassword = fmap (distinctFirst . unwrapValues) $
+selectUnsentResetPassphrase = fmap (distinctFirst . unwrapValues) $
     select $ from $ \rp -> do
-    where_ $ not_ $ rp ^. ResetPasswordSent
-    return ( rp ^. ResetPasswordUser
-           , rp ^. ResetPasswordEmail
-           , rp ^. ResetPasswordUri )
+    where_ $ not_ $ rp ^. ResetPassphraseSent
+    return ( rp ^. ResetPassphraseUser
+           , rp ^. ResetPassphraseEmail
+           , rp ^. ResetPassphraseUri )
 
 -- XXX: 'nub' is O(n^2).
 distinctFirst :: [(UserId, a, b)] -> [(UserId, a, b)]
 distinctFirst = nubBy ((==) `Function.on` (\(x,_,_) -> x))
 
-markAsSentResetPassword :: MonadIO m => UserId -> SqlPersistT m ()
-markAsSentResetPassword user_id =
+markAsSentResetPassphrase :: MonadIO m => UserId -> SqlPersistT m ()
+markAsSentResetPassphrase user_id =
     update $ \rp -> do
-    set rp [ResetPasswordSent =. val True]
-    where_ $ rp ^. ResetPasswordUser ==. val user_id
+    set rp [ResetPassphraseSent =. val True]
+    where_ $ rp ^. ResetPassphraseUser ==. val user_id
 
-sendResetPassword :: ( MonadBaseControl IO m, MonadLogger m, MonadIO m)
+sendResetPassphrase :: ( MonadBaseControl IO m, MonadLogger m, MonadIO m)
                   => Command
                   -> FileName
                   -> PostgresConf
@@ -598,7 +598,7 @@ sendResetPassword :: ( MonadBaseControl IO m, MonadLogger m, MonadIO m)
                   -> UserId
                   -> Text
                   -> m ()
-sendResetPassword
+sendResetPassphrase
         sendmail_command
         sendmail_file
         dbConf
@@ -607,20 +607,20 @@ sendResetPassword
         user_email
         user_id
         uri = do
-    let content = "Please open this link to set the new password: " <> uri
+    let content = "Please open this link to set the new passphrase: " <> uri
     handleSendmail
         sendmail_command
         sendmail_file
         dbConf
         poolConf
-        ("sending a password reset message to " <> user_email <> "\n" <> content)
-        ("sent the password reset message to " <> user_email <> "\n" <> content)
+        ("sending a passphrase reset message to " <> user_email <> "\n" <> content)
+        ("sent the passphrase reset message to " <> user_email <> "\n" <> content)
         notif_email
         user_email
-        "Snowdrift.coop password reset"
+        "Snowdrift.coop passphrase reset"
         content
-        (markAsSentResetPassword user_id)
-        ("sending the password reset message to " <> user_email <> " failed; " <>
+        (markAsSentResetPassphrase user_id)
+        ("sending the passphrase reset message to " <> user_email <> " failed; " <>
          "will try again later")
 
 selectUnsentDeleteConfirmation :: ReaderT SqlBackend (ResourceT (LoggingT IO))
@@ -752,14 +752,14 @@ main = withLogging $ do
                              user_email
                              ver_uri
 
-        resets <- runSql dbConf poolConf selectUnsentResetPassword
+        resets <- runSql dbConf poolConf selectUnsentResetPassphrase
         forM_ resets $ \(user_id, user_email, uri) ->
-            sendResetPassword sendmail_command
-                              sendmail_file dbConf poolConf
-                              notif_email
-                              user_email
-                              user_id
-                              uri
+            sendResetPassphrase sendmail_command
+                                sendmail_file dbConf poolConf
+                                notif_email
+                                user_email
+                                user_id
+                                uri
 
         confirms <- runSql dbConf poolConf selectUnsentDeleteConfirmation
         forM_ confirms $ \(user_id, user_email, uri) ->

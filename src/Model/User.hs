@@ -1,8 +1,8 @@
 module Model.User
     ( UserMap
     , UserUpdate (..)
-    , ChangePassword (..)
-    , SetPassword (..)
+    , ChangePassphrase (..)
+    , SetPassphrase (..)
     , NotificationSender (..)
     , NotificationReceiver (..)
     -- Utility functions
@@ -73,7 +73,7 @@ module Model.User
     , unarchiveUserNotificationsDB
     , unarchiveProjectNotificationsDB
     , updateUserDB
-    , updateUserPasswordDB
+    , updateUserPassphraseDB
     , updateUserNotificationPrefDB
     , updateProjectNotificationPrefDB
     , userCanDeleteCommentDB
@@ -238,8 +238,8 @@ updateUserDB user_id UserUpdate{..} = update $ \u -> do
            ]
      where_ (u ^. UserId ==. val user_id)
 
-updateUserPasswordDB :: UserId -> Maybe Text -> Maybe Text -> DB ()
-updateUserPasswordDB user_id hash salt =
+updateUserPassphraseDB :: UserId -> Maybe Text -> Maybe Text -> DB ()
+updateUserPassphraseDB user_id hash salt =
     update $ \u -> do
         set u [ UserHash =. val hash
               , UserSalt =. val salt ]

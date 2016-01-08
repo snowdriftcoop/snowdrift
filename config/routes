@@ -43,8 +43,8 @@
 -- Referrer: hack to redirect after Persona log in, but buggy; we need better.
 /dest PostLoginR GET
 -- Pages for managing user auth for hashdb
-/create-account CreateAccountR GET POST
-/reset-password ResetPasswordR GET POST
+/create-account CreateAccountR     GET POST
+/reset-passphrase ResetPassphraseR GET POST
 
 --
 -- ## User dashboard
@@ -115,7 +115,7 @@
 /u                                          UsersR                       GET
 /u/#UserId/balance                          UserBalanceR                 GET POST
 /u/#UserId/t                                UserTicketsR                 GET
-/u/#UserId/change-password                  UserChangePasswordR          GET POST
+/u/#UserId/change-passphrase                UserChangePassphraseR        GET POST
 /u/#UserId/delete                           DeleteUserR                  GET POST
 /u/#UserId/confirm-delete/#Text             UserConfirmDeleteR           GET POST
 /u/#UserId/edit                             EditUserR                    GET POST
@@ -123,7 +123,7 @@
 /u/#UserId/user-notifications               UserNotificationsR           GET POST
 /u/#UserId/pledges                          UserPledgesR                 GET
 /u/#UserId/project-notifications/#ProjectId ProjectNotificationsR        GET POST
-/u/#UserId/reset-password/#Text             UserResetPasswordR           GET POST
+/u/#UserId/reset-passphrase/#Text           UserResetPassphraseR         GET POST
 /u/#UserId/select-project                   UserSelectProjectR           GET POST
 /u/#UserId/verify-email/#Text               UserVerifyEmailR             GET
 
