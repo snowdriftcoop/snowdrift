@@ -1,4 +1,4 @@
-module Model.ResetPassword where
+module Model.ResetPassphrase where
 
 import Import
 

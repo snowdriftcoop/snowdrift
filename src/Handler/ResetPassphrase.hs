@@ -1,4 +1,4 @@
-module Handler.ResetPassword (getResetPasswordR, postResetPasswordR) where
+module Handler.ResetPassphrase (getResetPasswordR, postResetPasswordR) where
 
 import Import hiding (isNothing)
 

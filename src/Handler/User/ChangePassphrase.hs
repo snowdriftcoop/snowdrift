@@ -1,4 +1,4 @@
-module Handler.User.ChangePassword where
+module Handler.User.ChangePassphrase where
 
 import Import
 

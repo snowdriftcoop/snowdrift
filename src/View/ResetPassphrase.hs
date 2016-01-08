@@ -1,4 +1,4 @@
-module View.ResetPassword where
+module View.ResetPassphrase where
 
 import Import hiding (ResetPassword)
 
