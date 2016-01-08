@@ -179,8 +179,7 @@ getPHomeR handle = do
         snowdriftTitle $ projectName project
         $(widgetFile "project/home")
 
--- | The account creation page for new users using our own (password-based)
--- authentication.
+-- | The new account page using hashdb (passphrase-based) authentication.
 getCreateAccountR :: Handler Html
 getCreateAccountR = do
     (form, _) <- generateFormPost $ createUserForm Nothing

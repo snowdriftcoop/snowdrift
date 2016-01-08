@@ -29,7 +29,7 @@ main = do
     exists <- doesFileExist "Snowdrift.cabal"
     unless exists $ error "please run from the project's root directory"
     sdm <- getProgName >>= cmdArgs . mkSdm
-    run "sudo" ["-K"]  -- require a password the first time 'sudo' is run
+    run "sudo" ["-K"]  -- require the sudo passphrase each time running sdm
     runReaderT handle sdm
 
 data Sdm = Sdm
