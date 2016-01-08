@@ -7,11 +7,11 @@
 --
 
 /how-it-works HowItWorksR:
-    /               IntroR      GET
-    /flo      FloR      GET
-    /network-effect       NetworkEffectR       GET
+    /                    IntroR              GET
+    /flo                 FloR                GET
+    /network-effect      NetworkEffectR      GET
     /sustainable-funding SustainableFundingR GET
-    /co-op      CoOpR      GET
+    /co-op               CoOpR               GET
 /about AboutR:
     /        AboutHomeR GET
     /contact ContactR   GET
@@ -112,20 +112,20 @@
 
 -- User
 
-/u                                          UsersR                       GET
-/u/#UserId/balance                          UserBalanceR                 GET POST
-/u/#UserId/t                                UserTicketsR                 GET
-/u/#UserId/change-passphrase                UserChangePassphraseR        GET POST
-/u/#UserId/delete                           DeleteUserR                  GET POST
-/u/#UserId/confirm-delete/#Text             UserConfirmDeleteR           GET POST
-/u/#UserId/edit                             EditUserR                    GET POST
-/u/#UserId/elig                             UserEstEligibleR                 POST
-/u/#UserId/user-notifications               UserNotificationsR           GET POST
-/u/#UserId/pledges                          UserPledgesR                 GET
-/u/#UserId/project-notifications/#ProjectId ProjectNotificationsR        GET POST
-/u/#UserId/reset-passphrase/#Text           UserResetPassphraseR         GET POST
-/u/#UserId/select-project                   UserSelectProjectR           GET POST
-/u/#UserId/verify-email/#Text               UserVerifyEmailR             GET
+/u                                          UsersR                 GET
+/u/#UserId/balance                          UserBalanceR           GET POST
+/u/#UserId/t                                UserTicketsR           GET
+/u/#UserId/change-passphrase                UserChangePassphraseR  GET POST
+/u/#UserId/delete                           DeleteUserR            GET POST
+/u/#UserId/confirm-delete/#Text             UserConfirmDeleteR     GET POST
+/u/#UserId/edit                             EditUserR              GET POST
+/u/#UserId/elig                             UserEstEligibleR           POST
+/u/#UserId/user-notifications               UserNotificationsR     GET POST
+/u/#UserId/pledges                          UserPledgesR           GET
+/u/#UserId/project-notifications/#ProjectId ProjectNotificationsR  GET POST
+/u/#UserId/reset-passphrase/#Text           UserResetPassphraseR   GET POST
+/u/#UserId/select-project                   UserSelectProjectR     GET POST
+/u/#UserId/verify-email/#Text               UserVerifyEmailR       GET
 
 -- Notifications
 

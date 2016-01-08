@@ -36,7 +36,12 @@ postUserCreateR = do
 
     case result of
         FormSuccess (ident, passph, name, memail, avatar, nick) -> do
-            createUser ident (Just passph) name (NewEmail False <$> memail) avatar nick
+            createUser ident
+                       (Just passph)
+                       name
+                       (NewEmail False <$> memail)
+                       avatar
+                       nick
                 >>= \muser_id -> when (isJust muser_id) $ do
                     when (isJust memail) $ do
                         let email   = fromJust memail
