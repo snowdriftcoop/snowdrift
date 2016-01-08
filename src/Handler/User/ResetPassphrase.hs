@@ -27,7 +27,7 @@ getUserResetPasswordR user_id hash = do
     defaultLayout $ do
         snowdriftDashTitle "Set Passphrase" $
             userDisplayName (Entity user_id user)
-        $(widgetFile "set_password")
+        $(widgetFile "set-passphrase")
 
 postUserResetPasswordR :: UserId -> Text -> Handler Html
 postUserResetPasswordR user_id hash = do
@@ -39,4 +39,4 @@ postUserResetPasswordR user_id hash = do
                 UserResetPasswordR user_id hash
         _ -> do
             alertDanger "Oops, failed to set the passphrase."
-            defaultLayout $(widgetFile "set_password")
+            defaultLayout $(widgetFile "set-passphrase")

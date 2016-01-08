@@ -17,7 +17,7 @@ getUserChangePasswordR user_id = do
     defaultLayout $ do
         snowdriftDashTitle "Change Passphrase" $
             userDisplayName (Entity user_id user)
-        $(widgetFile "change_password")
+        $(widgetFile "change-passphrase")
 
 postUserChangePasswordR :: UserId -> Handler Html
 postUserChangePasswordR user_id = do
@@ -33,7 +33,7 @@ postUserChangePasswordR user_id = do
                          UserChangePasswordR user_id
                 else do
                     alertDanger "Sorry, that is not the correct current passphrase."
-                    defaultLayout $(widgetFile "change_password")
+                    defaultLayout $(widgetFile "change-passphrase")
         _ -> do
             alertDanger "Oops, failed to update the passphrase."
-            defaultLayout $(widgetFile "change_password")
+            defaultLayout $(widgetFile "change-passphrase")
