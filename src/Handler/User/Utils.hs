@@ -7,7 +7,7 @@ module Handler.User.Utils
 import Import
 
 import Yesod.Auth.HashDB (setPassword)
-import Model.ResetPassword (deleteFromResetPassword)
+import Model.ResetPassphrase (deleteFromResetPassword)
 
 import Model.User
 import Handler.Utils (newHash)

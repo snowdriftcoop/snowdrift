@@ -7,9 +7,9 @@ import Data.Maybe (fromJust, isNothing)
 import Dev
 import Handler.TH
 import Handler.Utils
-import Model.ResetPassword
-import View.ResetPassword (resetPasswordForm)
-import qualified View.ResetPassword as View
+import Model.ResetPassphrase
+import View.ResetPassphrase (resetPasswordForm)
+import qualified View.ResetPassphrase as View
 
 getResetPasswordR :: Handler Html
 getResetPasswordR = do

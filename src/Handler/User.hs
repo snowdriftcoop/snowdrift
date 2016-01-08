@@ -3,7 +3,7 @@
 module Handler.User (module Handler.User) where
 
 import Handler.User.Balance              as Handler.User
-import Handler.User.ChangePassword       as Handler.User
+import Handler.User.ChangePassphrase     as Handler.User
 import Handler.User.Comment              as Handler.User
 import Handler.User.ConfirmDelete        as Handler.User
 import Handler.User.Delete               as Handler.User
@@ -13,7 +13,7 @@ import Handler.User.EstEligible          as Handler.User
 import Handler.User.NewDiscussion        as Handler.User
 import Handler.User.Pledges              as Handler.User
 import Handler.User.ProjectNotifications as Handler.User
-import Handler.User.ResetPassword        as Handler.User
+import Handler.User.ResetPassphrase      as Handler.User
 import Handler.User.SelectProject        as Handler.User
 import Handler.User.Tickets              as Handler.User
 import Handler.User.User                 as Handler.User
