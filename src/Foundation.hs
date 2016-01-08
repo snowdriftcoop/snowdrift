@@ -263,13 +263,13 @@ data NewEmail = NewEmail
 
 createUser :: Text -> Maybe Text -> Maybe Text -> Maybe NewEmail -> Maybe Text
            -> Maybe Text -> Handler (Maybe UserId)
-createUser ident passwd name newEmail avatar nick = do
+createUser ident passph name newEmail avatar nick = do
     langs <- mapMaybe (readMaybe . T.unpack) <$> languages
     now <- liftIO getCurrentTime
     handle (\DBException -> return Nothing) $ runYDB $ do
         account_id <- insert (Account 0)
         discussion_id <- insert (Discussion 0)
-        user <- maybe return setPassword passwd $ newUser langs now account_id discussion_id
+        user <- maybe return setPassword passph $ newUser langs now account_id discussion_id
         uid_maybe <- insertUnique user
         case uid_maybe of
             Just user_id -> do

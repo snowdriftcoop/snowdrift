@@ -38,22 +38,22 @@ createUserForm :: Maybe Text
                        )
 createUserForm ident extra = do
     (identRes,   identView)   <- mreq textField     "" ident
-    (passwd1Res, passwd1View) <- mreq passwordField "" Nothing
-    (passwd2Res, passwd2View) <- mreq passwordField "" Nothing
+    (passph1Res, passph1View) <- mreq passwordField "" Nothing
+    (passph2Res, passph2View) <- mreq passwordField "" Nothing
     (nameRes,    nameView)    <- mopt textField     "" Nothing
     (emailRes,   emailView)   <- mopt emailField    "" Nothing
     (avatarRes,  avatarView)  <- mopt textField     "" Nothing
     (nickRes,    nickView)    <- mopt textField     "" Nothing
 
     let view = $(widgetFile "auth/create-account-form")
-        passwdRes = case (passwd1Res, passwd2Res) of
+        passphRes = case (passph1Res, passph2Res) of
             (FormSuccess a, FormSuccess b)
                 | a == b    -> FormSuccess a
                 | otherwise -> FormFailure ["passphrases do not match"]
             (FormSuccess _, x) -> x
             (x, _) -> x
 
-        result = (,,,,,) <$> identRes <*> passwdRes <*> nameRes
+        result = (,,,,,) <$> identRes <*> passphRes <*> nameRes
                          <*> emailRes <*> avatarRes <*> nickRes
 
     return (result, view)

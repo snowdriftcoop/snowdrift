@@ -14,16 +14,16 @@
       ^{fvInput identView}
   <tr>
     <td>
-      <label for=#{fvId passwd1View}>
+      <label for=#{fvId passph1View}>
         Passphrase:
     <td>
-      ^{fvInput passwd1View}
+      ^{fvInput passph1View}
   <tr>
     <td>
-      <label for=#{fvId passwd2View}>
+      <label for=#{fvId passph2View}>
         Repeat passphrase:
     <td>
-      ^{fvInput passwd2View}
+      ^{fvInput passph2View}
   <tr>
     <td>
       <label for=#{fvId nameView}>

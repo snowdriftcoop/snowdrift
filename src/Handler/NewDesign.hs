@@ -181,10 +181,10 @@ postCreateAccountR = do
     ((result, form), _) <- runFormPost $ createUserForm Nothing
 
     case result of
-        FormSuccess (ident, passwd, name, memail, avatar, nick) -> do
+        FormSuccess (ident, passph, name, memail, avatar, nick) -> do
             muser_id <-
                 createUser ident
-                           (Just passwd)
+                           (Just passph)
                            name
                            (NewEmail False <$> memail)
                            avatar
