@@ -22,7 +22,8 @@ userSpecs = do
                     setUrl CreateAccountR
                     addToken
                     setMethod "POST"
-                    byLabel "Handle (private):" (username user)
+                    byLabel "Account name (private, used for logging in):"
+                            (username user)
                     byLabel "Passphrase:" (password user)
                     byLabel "Repeat passphrase:" (password user)
         |]
