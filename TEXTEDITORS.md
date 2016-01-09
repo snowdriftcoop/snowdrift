@@ -227,10 +227,11 @@ Now, you can quickly jump to tags with whatever mechanism your text editor uses.
 
 The setup above works for functions defined within our local codebase. To add
 tags for all the dependencies too, install
-[codex](https://github.com/meteficha/html2hamlet) via `stack install codex`
-(and see the codex docs for how to use, including a vim-specific setting).
-Otherwise, [Stackage](https://www.stackage.org/lts-3/hoogle) will have
-documentation on almost all of our dependencies.
+[codex](https://github.com/meteficha/html2hamlet) via
+`stack install codex --resolver nightly-2015-12-14` (and see the codex docs for
+how to use, including a vim-specific setting). Otherwise,
+[Stackage](https://www.stackage.org/lts-3/hoogle) will have documentation on
+almost all of our dependencies.
 
 ### Atom tag usage and updating
 
