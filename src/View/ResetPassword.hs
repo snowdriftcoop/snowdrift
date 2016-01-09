@@ -11,5 +11,5 @@ data ResetPassword = ResetPassword
 
 resetPasswordForm :: Form ResetPassword
 resetPasswordForm = renderBootstrap3 BootstrapBasicForm $ ResetPassword
-    <$> aopt' textField  "Handle" Nothing
-    <*> aopt' emailField "Email"  Nothing
+    <$> aopt' textField  "Account Name" Nothing
+    <*> aopt' emailField "Email" Nothing
