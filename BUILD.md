@@ -201,7 +201,7 @@ With everything initialized, you can now use the following commands:
 
     Note that `stack build` must be run since our current cabal setup does not
     fully recognize test dependencies on executables such as
-    SnowdriftProcessPayments. 
+    SnowdriftProcessPayments.
 
 * `stack build`: rebuild manually
     * Usually running the site in development mode is sufficient, but you must
