@@ -34,7 +34,7 @@ The [ide-haskell](https://atom.io/packages/ide-haskell) package offers further
 development tools including error-checking, linting, and type information. To
 install ide-haskell for Atom:
 
-* Run `stack install ghc-mod hlint stylish-haskell --resolver nightly 2015-12-14`
+* Run `stack install ghc-mod hlint stylish-haskell --resolver nightly-2015-12-14`
     * "--resolver…" is needed until we update our main resolver to one that
       includes ghc-mod (likely lts-4 series if we stick to lts).
 * Install the required Atom packages:
@@ -159,7 +159,7 @@ hesitation or learning process.
 As an optional tool, Vim can do integrated Haskell error-checking and get type
 information via [ghcmod-vim](https://github.com/eagletmt/ghcmod-vim). Follow
 its install instructions except run
-`stack install ghc-mod --resolver nightly 2015-12-14`
+`stack install ghc-mod --resolver nightly-2015-12-14`
 (note: this "--resolver…" bit can be ignored once ghc-mod is in the LTS
 version we use) *instead* of the instruction to run "cabal install ghc-mod" (and
 make sure ~/.local/bin is on your path). You may want to also try the associated
@@ -225,9 +225,12 @@ The following works for all text-editors that recognize tags files.
 
 Now, you can quickly jump to tags with whatever mechanism your text editor uses.
 
-Note that tags work for our internal functions only. For outside functions,
-[Stackage](https://www.stackage.org/lts-3/hoogle) will have documentation on
-almost all of our dependencies.
+The setup above works for functions defined within our local codebase. To add
+tags for all the dependencies too, install
+[codex](https://github.com/meteficha/html2hamlet) via `stack install codex`
+(and see the codex docs for how to use, including a vim-specific setting).
+Otherwise, [Stackage](https://www.stackage.org/lts-3/hoogle) will have
+documentation on almost all of our dependencies.
 
 ### Atom tag usage and updating
 
