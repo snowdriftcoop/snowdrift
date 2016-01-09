@@ -1,11 +1,15 @@
 <div .h-entry .comment :is_unapproved:.unapproved :is_top_level:.top_level :is_even_depth:.even_depth :is_odd_depth:.odd_depth>
   <div .comment-head>
     <div .h-card .p-author .comment-head-item>
-      <a .u-url .p-name href=@{UserR user_id}>
-        $maybe author_avatar <- userAvatar user
-          <img .u-photo .small_avatar src=#{author_avatar}> #
-        #{userDisplayName (Entity user_id user)}
-
+      $if user_id /= anonymousUser
+        <a .u-url .p-name href=@{UserR user_id}>
+          $maybe author_avatar <- userAvatar user
+            <img .u-photo .small_avatar src=#{author_avatar}> #
+          #{userDisplayName (Entity user_id user)}
+      $else
+        <a .p-name href="#">
+          #{userDisplayName (Entity user_id user)}
+          
     $if can_establish
       <div .comment-head-item>
         <a href=@{UserR user_id}>
