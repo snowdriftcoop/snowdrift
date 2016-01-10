@@ -7,7 +7,7 @@
             <img .u-photo .small_avatar src=#{author_avatar}> #
           #{userDisplayName (Entity user_id user)}
       $else
-        <a .p-name href="#">
+        <span .p-name>
           #{userDisplayName (Entity user_id user)}
           
     $if can_establish
