@@ -29,16 +29,6 @@ body
     background-color: #{White}
     padding: 0
 
-a
-    color: #{GreenShade}
-    transition: all 0.12s ease-out 0s
-    text-decoration: none
-a:visited
-    color: #{Green}
-a:hover, a:active, a:focus
-    color: #{DarkBlue}
-    outline: 0
-
 *::selection
     color: #{White};
     background: #{DarkBlue};
@@ -48,18 +38,28 @@ a:hover, a:active, a:focus
     color: #{White};
     background: #{DarkBlue};
     text-shadow: none
+
 p
     padding-bottom: 3rem
 img
     max-width: 100%
     height: auto
+a
+    color: #{GreenShade}
+    transition: all 0.12s ease-out 0s
+    text-decoration: none
+a:visited
+    color: #{Green}
+a:hover, a:active, a:focus
+    color: #{DarkBlue}
+    outline: 0
 .bigbutton
+    color: #{White}
     transition: all 0.12s ease-out 0s
     cursor: pointer
     display: table
     position: relative
     font-family: 'League Spartan'
-    color: #{White}
     width: auto
     margin: 0rem auto 3rem
     padding: 1.5rem 4rem 1rem
@@ -70,11 +70,14 @@ img
     background-color: #{GreenShade}
     background-image: linear-gradient(#{Green}, #{GreenShade})
     transition: all 0 ease-out 0.03s
+    &:visited
+        color: #{White}
     &:hover
         color: #{White}
         padding: 1.5rem 3.5rem 1rem
         text-shadow: .2rem .2rem 0 rgba(19,98,142,0.4), 0rem 0rem 1rem rgba(255,255,255,0.5)
     &:focus
+        color: #{White}
         top: 0.1rem
         left: 0.1rem
 table
