@@ -51,7 +51,7 @@ Ways to get in touch:
   [other email lists](https://lists.snowdrift.coop/)
   and send a message introducing yourself to the community.
 
-* Visit `#snowdrift` on frenode.net
+* Visit `#snowdrift` on freenode.net
   [IRC](https://snowdrift.coop/p/snowdrift/w/en/irc)
   for live chat.
 
