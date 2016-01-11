@@ -62,10 +62,8 @@
         z-index: -1
     .logo-big
         display: block
-        max-width: 57rem
+        max-width: 100%
         margin: 0 auto 14rem
-        img
-            width: 100%
 /*break1*/
 @media (min-width: 301px)
     .homepage
@@ -94,6 +92,7 @@
             top: 22rem
         .logo-big
             margin-bottom: 38rem
+            max-width: 57rem
 /*break4*/
 @media (min-width: 751px)
     .homepage
