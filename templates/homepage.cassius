@@ -20,7 +20,7 @@
     padding: 0 2.85%
     .plane
         position: absolute
-        background: url('/static/img/plane.png') center top no-repeat
+        background: url(@{StaticR img_plane_png}) center top no-repeat
         height: 0.7rem
         width: 24.1rem
         top: 20rem
@@ -57,7 +57,7 @@
         height: 78.3rem
         width: 100%
         margin: 0 auto
-        background: url('/static/img/homepage-background.png') center top no-repeat
+        background: url(@{StaticR img_homepage_background_png}) center top no-repeat
         background-size: 200%
         z-index: -1
     .logo-big
