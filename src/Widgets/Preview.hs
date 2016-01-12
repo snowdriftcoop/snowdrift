@@ -13,7 +13,7 @@ previewWidgetWithAgreement agreement form action widget
 previewWidget' :: Maybe Text -> Widget -> Text -> Widget -> Widget
 previewWidget' maybeAgreement form action widget =
     [whamlet|
-      <div .alert .alert-danger>
+      <div .alert .alert-warning>
         This is a preview; changes have <em>not</em> been saved!
         Edit and/or submit your posting <a href="#edit-preview">below</a>.
 
