@@ -1027,6 +1027,7 @@ postUnwatchProjectCommentR project_handle comment_id = do
 
 getProjectContactR :: Text -> Handler Html
 getProjectContactR project_handle = do
+    muser_id <- maybeAuthId            
     (project_contact_form, _) <- generateFormPost projectContactForm
     Entity _ project <- runYDB $ getBy404 (UniqueProjectHandle project_handle)
     defaultLayout $ do

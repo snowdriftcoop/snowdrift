@@ -2,18 +2,22 @@
 <div .row>
   <div .col-md-9 .col-lg-8>
     <p>
-      Note: logged-in users can instead post
-      <em>publicly
-      at the
-      <a href=@{ProjectDiscussionR (projectHandle project)}>
-        project discussion page
-      or elsewhere (such as discussions connected to wiki pages).
-    <p>
       This form posts
       <em>private
       comments for the project team.
-    <p>
-      If you want a reply and are not logged in, include some contact info.
+
+      $maybe _ <- muser_id
+        <p>
+          To post <em>publicly</em>, use the
+          <a href=@{ProjectDiscussionR (projectHandle project)}>
+            project discussion page
+          or other public discussion pages.
+
+      $nothing
+        <p>
+          If you want a reply, please include some contact info (or
+          <a href=@{AuthR LoginR}>Log in
+          so the message will connect to your user account).
 
 <form method=POST>
   ^{project_contact_form}
