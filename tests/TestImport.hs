@@ -39,7 +39,6 @@ import System.Process
             ,interruptProcessGroupOf
             ,ProcessHandle)
 import System.IO (hPutStrLn, hGetLine, stderr, Handle)
-import Test.QuickCheck
 import Yesod (Yesod, RedirectUrl, Route, RenderRoute, renderRoute)
 import qualified Data.ByteString as B
 import qualified Data.List as L
