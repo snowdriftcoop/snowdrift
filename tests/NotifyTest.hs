@@ -17,7 +17,7 @@ import Data.Monoid ((<>))
 import Data.Text (Text)
 import Data.Time (getCurrentTime)
 import Database.Esqueleto hiding (exists)
-import Database.Esqueleto.Internal.Language (Update, From)
+import Database.Esqueleto.Internal.Language (From)
 import Yesod.Default.Config (AppConfig (..), DefaultEnv (..))
 import Yesod.Markdown (unMarkdown, Markdown (..))
 import qualified Data.List as L
