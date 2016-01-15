@@ -104,12 +104,15 @@ cover some related steps regarding the database setup.
 
 ### OS X
 
-Install dependencies via [brew](http://brew.sh/)
+If you don't have [brew](http://brew.sh/) yet, install it with:
+
+    ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+
+With brew, install any core dependencies you don't have yet:
 
     brew install git
     brew install postgres
     brew install haskell-stack
-
 
 ### Windows
 
@@ -158,25 +161,22 @@ NB: this will take a while!
 
 ### Set up the database
 
-We offer a simple script (`sdm` for "Snowdrift database manager") that will
-setup the PostgreSQL databases for you. At this time, it requires root access,
-so it will ask for your passphrase.
+Though you can set up databases manually (see [DATABASE-MANAGEMENT.md]), we
+offer a simple script called `sdm` (for "Snowdrift database manager") that can
+set up the PostgreSQL databases for you.
 
-To set up databases manually, see [DATABASE-MANAGEMENT.md].
+NB: At this time, sdm requires root access, so it will ask for your
+passphrase. If you want to help us improve how sdm works, see ticket
+[SD-689](https://snowdrift.coop/p/snowdrift/w/en/coding/c/3677) and discussion
+there.
 
-#### GNU/Linux database setup
+To set up the databases with sdm, simply run the following:
 
-simply run `stack exec sdm init`
-
-#### \*BSD database setup
-
-* OpenBSD: `stack exec -- sdm init --sudoUser _postgresql`
-* FreeBSD: *Untested but should work*:
+* For GNU/Linux: `stack exec sdm init`
+* For OpenBSD: `stack exec -- sdm init --sudoUser _postgresql`
+* For FreeBSD: *Untested but should work*:
   `stack exec -- sdm init --sudoUser pgsql --pgUser pgsql`
-
-#### OS X database setup
-
-run `stack exec -- sdm init --sudoUser=_postgres`
+* For OS X: `stack exec -- sdm init --sudoUser=_postgres`
 
 #### Windows database setup
 
