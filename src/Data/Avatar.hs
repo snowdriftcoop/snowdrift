@@ -7,31 +7,25 @@ import Import.NoFoundation
 
 getUserAvatar :: MonadHandler m => Route (HandlerSite m) -> Maybe User -> m Text
 getUserAvatar defaultRoute muser = do
-    render <- getUrlRender
-    let defaultUrl = render defaultRoute
+    defaultUrl <- getUrlRender <*> pure defaultRoute
 
-    av <- maybe
-                (return defaultUrl)
-                (\user -> do
-                    let email = fromMaybe T.empty (userEmail user)
-                    liftIO $ if validEmail user email
-                                 then libravatar email defaultUrl
-                                 else return defaultUrl)
-                muser
-    return av
+    maybe (return defaultUrl)
+          (\user -> do
+              let email = fromMaybe T.empty (userEmail user)
+              if userEmail_verified user
+                  then liftIO (libravatar email defaultUrl)
+                  else return defaultUrl)
+          muser
 
-    where
-        validEmail :: User -> Text -> Bool
-        validEmail u e = not (T.null e) && userEmail_verified u
-
-        libravatar :: Text -> Text -> IO Text
-        libravatar e defUrl = do
-                mavatar <- avatarUrl
-                         (Email $ T.unpack e)
-                        defOpts
-                             { optSecure = False
-                             , optDefault = ImgCustom (T.unpack defUrl)
-                             , optSize = DefaultSize
-                             , optTryGravatar = False
-                             }
-                return $ maybe defUrl T.pack mavatar
+  where
+    libravatar :: Text -> Text -> IO Text
+    libravatar e defUrl = do
+        mavatar <-
+            avatarUrl (Email $ T.unpack e)
+                      defOpts
+                          { optSecure = False
+                          , optDefault = ImgCustom (T.unpack defUrl)
+                          , optSize = DefaultSize
+                          , optTryGravatar = False
+                          }
+        return $ maybe defUrl T.pack mavatar

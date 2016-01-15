@@ -21,9 +21,9 @@ $if Just user_id == mviewer_id
     <h1>
       #{userDisplayName user_entity}
     <div .row>
-        <div .col-sm-5>
-          <figure>
-            <img .headshot src=#{avatar}>
+      <div .col-sm-5>
+        <figure>
+          <img .headshot src=#{avatar}>
       <div .col-sm-7>
         $if userIsEstablished user
           <small>established user
