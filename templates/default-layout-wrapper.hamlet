@@ -1,9 +1,5 @@
-\<!doctype html>
-\<!--[if lt IE 7]> <html class="no-js ie6 oldie" lang="en"> <![endif]-->
-\<!--[if IE 7]>    <html class="no-js ie7 oldie" lang="en"> <![endif]-->
-\<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="en"> <![endif]-->
-\<!--[if gt IE 8]><!-->
-<html .no-js lang="en"> <!--<![endif]-->
+<!doctype html>
+<html .no-js lang="en">
   <head>
     <link rel="apple-touch-icon-precomposed" href=@{StaticR img_favicon_152_png}>
     <meta charset="UTF-8">
@@ -43,11 +39,5 @@
       content="width=device-width, minimum-scale=1.0, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
     ^{pageHead pc}
-
-    \<!--[if lt IE 9]>
-    \<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js">
-    \</script>
-    \<![endif]-->
-
   <body>
     ^{pageBody pc}
