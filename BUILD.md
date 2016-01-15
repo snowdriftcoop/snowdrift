@@ -104,8 +104,12 @@ cover some related steps regarding the database setup.
 
 ### OS X
 
-Follow the instructions on their sites for installing each of the dependencies:
-[Git], [PostgreSQL], and [Stack].
+Install dependencies via [brew](http://brew.sh/)
+
+    brew install git
+    brew install postgres
+    brew install haskell-stack
+
 
 ### Windows
 
