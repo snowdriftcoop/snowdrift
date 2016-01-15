@@ -42,8 +42,8 @@ library
 
     exposed-modules:
         Application
+        Avatar
         Css
-        Data.Avatar
         Data.Filter
         Data.Order
         Data.Text.PrettyHtml

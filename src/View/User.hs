@@ -19,7 +19,7 @@ import qualified Data.Map as M
 import qualified Data.Set as S
 import qualified Data.Text as T
 
-import Data.Avatar
+import Avatar
 import DeprecatedBootstrap
 import Model.Currency
 import Model.Markdown

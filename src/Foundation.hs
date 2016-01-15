@@ -31,7 +31,7 @@ import qualified Database.Persist
 import qualified Settings
 import qualified Yesod as Y
 
-import Data.Avatar
+import Avatar
 import Model.Currency
 
 -- A type for running DB actions outside of a Handler.

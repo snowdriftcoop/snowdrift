@@ -1,4 +1,4 @@
-module Data.Avatar where
+module Avatar where
 
 import qualified Data.Text as T
 import Network.Libravatar
