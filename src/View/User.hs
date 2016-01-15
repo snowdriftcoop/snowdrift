@@ -17,7 +17,6 @@ import Import hiding (UserNotificationPref, ProjectNotificationPref)
 import Data.String (fromString)
 import qualified Data.Map as M
 import qualified Data.Set as S
-import qualified Data.Text as T
 
 import Avatar
 import DeprecatedBootstrap
