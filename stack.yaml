@@ -16,7 +16,7 @@ packages:
 extra-deps:
     # Absent from LTS
     - github-0.13.2
-    - libravatar-0.1.0.1
+    - libravatar-0.3.0.0
     - mime-0.4.0.2
     - titlecase-0.1.0.2
     - yesod-markdown-0.10.0

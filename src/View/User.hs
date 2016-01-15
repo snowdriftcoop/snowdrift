@@ -15,11 +15,10 @@ module View.User
 import Import hiding (UserNotificationPref, ProjectNotificationPref)
 
 import Data.String (fromString)
-import Network.Libravatar (avatarUrl)
 import qualified Data.Map as M
 import qualified Data.Set as S
-import qualified Data.Text as T
 
+import Avatar
 import DeprecatedBootstrap
 import Model.Currency
 import Model.Markdown
@@ -124,14 +123,7 @@ renderUser mviewer_id user_id user projects_and_roles = do
             then Just <$> handlerToWidget (generateFormPost establishUserForm)
             else return Nothing
 
-    let libravatar email = avatarUrl (Left email) True Nothing Nothing
-    avatarFinal <- liftIO $
-        case (userAvatar user, userEmail user, userEmail_verified user) of
-            (Just url, _, _)            -> return $ Just url
-            (Nothing, Just email, True) -> do
-                murl <- libravatar $ T.unpack email
-                return (fmap fromString murl)
-            _ -> return Nothing
+    avatar <- getUserAvatar (StaticR img_default_avatar_png) (Just user)
 
     $(widgetFile "user")
 

@@ -42,6 +42,7 @@ library
 
     exposed-modules:
         Application
+        Avatar
         Css
         Data.Filter
         Data.Order

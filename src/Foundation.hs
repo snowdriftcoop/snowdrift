@@ -12,7 +12,6 @@ import Control.Monad.Writer.Strict (WriterT, runWriterT)
 import Data.Char (isSpace)
 import Data.Text as T
 import Network.HTTP.Conduit (Manager)
-import Network.Libravatar
 import Text.Blaze.Html.Renderer.Text (renderHtml)
 import Text.Hamlet (hamletFile)
 import Text.Jasmine (minifym)
@@ -32,6 +31,7 @@ import qualified Database.Persist
 import qualified Settings
 import qualified Yesod as Y
 
+import Avatar
 import Model.Currency
 
 -- A type for running DB actions outside of a Handler.
@@ -466,20 +466,9 @@ defaultLayoutNew pageName widget = do
     mmsg <- getMessage
     malert <- getAlert
     maybeUser  <- maybeAuth
+    avatar <- getUserAvatar (StaticR img_default_avatar_png)
+                            (maybe Nothing (Just . entityVal) maybeUser)
 
-    -- Use Libravatar for an avatar if available.  Otherwise, use default
-    -- Default URL is hardcoded to allow usage even while developing on local
-    --    machine.
-    let defaultUrl = "https://snowdrift.coop/static/img/default-avatar.png"
-    mavatar <- liftIO $ maybe (return $ Just defaultUrl)
-                            (\email -> fmap (fmap T.pack) $
-                                   avatarUrl (Left $ T.unpack email)
-                                             False
-                                             (Just $ T.unpack defaultUrl)
-                                             Nothing)
-                            (userEmail . entityVal =<< maybeUser)
-
-    let avatar = fromMaybe defaultUrl mavatar
     active <- maybe (const False) (==) <$> getCurrentRoute
     howItWorksActive <- do
         r <- getCurrentRoute
