@@ -16,7 +16,7 @@ is continually improving.
 
 Some general settings:
 
-* In the main Atom settings, specify soft tabs and use 4-space tabs
+* In the main Atom settings, leave soft tabs checked and set 4-space tabs
 * Packages/Tree View: consider using "Hide Ignored Names" and "Hide VCS Ignored
   Files"
 * Consider disabling the "metrics" package to turn off Google Analytics
