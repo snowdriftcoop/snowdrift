@@ -124,7 +124,7 @@ renderUser mviewer_id user_id user projects_and_roles = do
             then Just <$> handlerToWidget (generateFormPost establishUserForm)
             else return Nothing
 
-    let libravatar email = avatarUrl (Left email) False Nothing Nothing
+    let libravatar email = avatarUrl (Left email) True Nothing Nothing
     avatarFinal <- liftIO $
         case (userAvatar user, userEmail user, userEmail_verified user) of
             (Just url, _, _)            -> return $ Just url
