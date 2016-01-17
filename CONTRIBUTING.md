@@ -1,14 +1,19 @@
 # Snowdrift Beginning Contributor's Guide
 
-This is a tutorial on contributing to Snowdrift. You don't have to be tech
-savvy, but it helps. This guide will cover pretty much all you need to do to get
-Snowdrift running locally and to start making and submitting updates.
+To contribute to Snowdrift, you don't have to be tech savvy. This guide is
+written to work for even novice programmers. Advanced readers may adapt the
+instructions as they see fit.
 
-Although we recommend deeper study to understand how all of this works,
-you *can* simply follow the steps here to get started effectively.
+In this guide, we will cover pretty much all you need to do to get Snowdrift
+running locally and to start making and submitting updates.
 
-This guide is written to work to work for even novice programmers.
-Advanced readers may adapt these instructions as they see fit.
+## Get in touch!
+
+Our *recommended* approach to getting started *includes* asking questions,
+getting mentored, and otherwise having real human engagement with others in the
+community. Please don't hesitate to speak up, and don't worry about taking
+people's time. We always welcome questions. For efficiency, we will point you to
+resources or pair you with others.
 
 ## Licensing note
 
@@ -21,26 +26,25 @@ graphics also under CC BY-SA 4.0 International, as specified in the
 
 ## Prerequisites to contributing
 
-To get started, the only absolute requirements are that you have a reasonably
-new laptop or desktop computer system (less than 10 years old generally),
-and know how to use a terminal to enter commands in the command-line.
+To work with Snowdrift, you should have a reasonably new laptop or desktop
+computer system (less than 10 years old generally) and know how to open a
+terminal and enter commands.
 
 Generally, everything works smoothly with GNU/Linux, \*BSD systems, and OS X.
 
-We do not fully support Windows at this time, so we generally suggest Windows
-users switch systems or run a virtual machine. As proprietary systems, Windows
-and OS X go against the Snowdrift.coop mission. Still, we would prefer the
-options to work rather than not. Our [Build guide](BUILD.md) has instructions
-for testing Windows as far as we've figured out so far.
+We do not support Windows at this time, so we suggest Windows users switch
+systems or run a virtual machine. We encourage Windows users to switch to a
+free/libre/open system anyway, but if you really want to help test Snowdrift on
+Windows, our [Build guide](BUILD.md) has some notes about that.
 
-## Command-line basics
+## Command-line beginner's basics
 
 In general, when you see a list of commands to enter, we recommend entering them
 in one-at-a-time exactly as you see them. However, it should work to copy and
 paste a collection of commands all at once.
 
-Note that, in most cases, you must use Ctrl-Shift-V to paste into the terminal.
-For historical reasons, Ctrl-V does something else in most terminals.
+NB: in most cases, you must use Ctrl-Shift-V to paste into the terminal (for
+historic reasons, Ctrl-V does something else usually).
 
 We also highly recommend use of tab-completion. See the wikibook "A Quick
 Introduction to Unix" in the resources at the end of this file for more
@@ -48,22 +52,8 @@ command-line basics.
 
 ## Installing
 
-### Install Git
-
-If you don't have Git already, install it now.
-
-Most systems will have Git in their software repositories.
-For example, on Debian or Ubuntu you can enter the following in a terminal:
-
-    sudo apt-get install git
-
-If you are on a system that does not package it yet, you may choose to
-[download Git from the website](https://git-scm.herokuapp.com/downloads).
-
-### Install Snowdrift
-
-With Git installed, you can **follow the [BUILD.md](BUILD.md) instructions**
-to get Snowdrift going on your computer.
+**Follow the [BUILD.md](BUILD.md) instructions** to get Snowdrift going on your
+computer.
 
 ## Working on the code
 
@@ -81,10 +71,10 @@ recommend installing an editor with stronger Haskell and Yesod support. See
 
 Short version for experienced Git users:
 
-**We suggest keeping your local master matched to the main project master.
-Do your work *only* on other git branches.
-Use as many branches as needed to separate all work that functions
-independently** (you can, of course, remove merged branches later).
+**We suggest keeping your local master matched to the main project master. Work
+*only* on other git branches. Use as many branches as needed to separate all
+work that functions independently** (and avoid clutter by deleting branches once
+no longer needed).
 
 The following covers the bare minimum process for those new to Git.
 
@@ -106,35 +96,33 @@ To contribute changes to the project, first
 Once signed in, go to <https://git.gnu.io/snowdrift/snowdrift>,
 and click the "Fork" link on the top right.
 
-After choosing your account for the fork, you should be at the page
-for your fork of the project. To check, see that the header
-at the top of the page has has your account name followed by "/Snowdrift".
+After choosing your account for the fork, you should be at the page for your
+fork of the project. To check, see that the header at the top of the page has
+has your account name followed by "/Snowdrift".
 
 ##### Adding your fork as a remote
 
-At the top of the main page, below the header,
-you'll see a box with an address.
-By default, the SSH option is selected, and we recommend SSH ideally.
-However, [SSH setup](https://git.gnu.io/help/ssh/README)
-is kind of tricky, especially for those new to SSH.
-If you want to stick with the easier and faster option for now,
-click "HTTPS" and use that address which will look like:
+At the top of the main page, below the header, you'll see a box with an address.
+By default, the SSH option is selected, and we recommend SSH ideally. However,
+[SSH setup](https://git.gnu.io/help/ssh/README) is kind of tricky, especially
+for those new to SSH. To stick with the easier option for now, click "HTTPS" and
+use that address which will look like:
 "https://git.gnu.io/YOURNAME/snowdrift.git"
 
 Where `YOURNAME` is your git.gnu.io username.
 
 Copy that address to your clipboard.
 
-In your snowdrift directory, paste the address into your terminal
-as part of the following command:
+In your snowdrift directory, paste the address into your terminal as part of the
+following command:
 
     git remote add my-snow https://git.gnu.io/YOURNAME/snowdrift.git
 
-Finally, run these additional Git setup commands, replace `YOUR NAME
-GOES HERE` and `YOUR EMAIL GOES HERE` with your actual name and email.
+If you have not used Git before, run these additional Git setup commands,
+replacing `YOUR NAME` and `YOUR EMAIL` with your actual name and email.
 
-    git config --global user.name "YOUR NAME GOES HERE"
-    git config --global user.email "YOUR EMAIL GOES HERE"
+    git config --global user.name "YOUR NAME"
+    git config --global user.email "YOUR EMAIL"
 
 Optional: specify a particular text editor for commit messages (replace `nano`
 with the command for whatever editor you prefer):
@@ -143,12 +131,12 @@ with the command for whatever editor you prefer):
 
 #### Updating your local code to snowdrift master
 
-Whenever you begin new work, you should generally start with the latest
-master code from the Snowdrift project.
+Whenever you begin new work, you should first get the latest master code from
+the Snowdrift project.
 
 The following assumes you originally cloned the code from one of our main hosts
 (as described in the BUILD guide), so you will have the main snowdrift code
-as your "origin".
+as your "origin" (verify this with `git remote -v`).
 
 To download the latest updates of the snowdrift code:
 
@@ -157,26 +145,30 @@ To download the latest updates of the snowdrift code:
 * run `git pull`
 
 You should have no conflicts because this is the only situation where you
-should ever change your local master.
-**All your work should be done on other branches.**
+should ever change your local master. **Work should be done on other branches.**
 
-#### Branching and committing
+#### Starting a new branch
 
-To start making edits:
+From the master branch, having pulled the latest updates, create a new branch:
 
-Given you are on your master branch and have pulled the latest updates,
-create a new branch:
+    git checkout -b some-branch
 
-    git checkout -b some_branch
-
-Replace `some_branch` with a one- or two-word (with hyphens, not spaces)
+Replace `some-branch` with a one- or two-word (with hyphens, not spaces)
 description of your planned changes. For example, when fixing a problem in the
 header, a good branch name would be `header-fix`.
 
+Now, you can edit files, save work as you go, etc.
+
 #### Building your updates
 
-Follow the instructions in the [BUILD.md](BUILD.md) guide for running the site
-and running the tests.
+To check your work and see the results on the running site, follow the
+instructions in the [BUILD.md](BUILD.md) guide for running the site.
+
+#### Running the tests
+
+When you are happy with your worki, it compiles, and looks right, run the tests:
+
+    stack build && stack test --pedantic
 
 If there are any failures either when compiling or testing, and you don't know
 how to fix the issue or don't understand the error, contact us for help.
@@ -184,77 +176,75 @@ how to fix the issue or don't understand the error, contact us for help.
 #### Committing your changes
 
 When your updates all compile, tests pass, and you are ready to submit to the
-main Snowdrift project, you can *commit* your changes.
+main Snowdrift project, *commit* your changes.
 
 If you are new to Git, we urge you to learn about the process of staging with
 `git add` before committing and about review tools like `git status` and
 `git diff`. See the links at the end of this file for learning resources.
 
-For now, though it isn't best practice, you can quickly commit
-all your changes with the command:
+For now, though it isn't best practice, you can quickly commit all your changes
+with the command:
 
     git commit -a
 
-An editor will show asking you to summarize your changes.
-Make the message one that will be meaningful to people skimming
-all the commits in the future. Then save and close the editor.
+An editor will show asking you to summarize your changes. For the first line,
+write a short commit title that will be meaningful to people skimming all the
+commits in the future. If you want to add further comments about the work, do
+that on additional lines below the title. Then save and close the editor.
 
 #### Getting your changes merged
 
-When you are ready to share your work, there are two things to check first.
+When you are ready to share your work (one or more commits all relevant to the
+same overall update), and you have confirmed that everything works and all tests
+pass, run `git status` to make sure no work is missing and all new files were
+committed.
 
-1. Run tests in 'pedantic' mode with `stack test --pedantic`. This provides
-   an extra level of code assurance.
-2. If you added any files, add them to the repository with
-   `git add <files>`.
-
-Once all tests passed and you have commited all code, send your changes to
-your git.gnu.io account with:
+Next, send your changes to your git.gnu.io account with:
 
     git push -u my-snow some_branch
 
 Change `some_branch` to the name of the branch where you made the commit(s).
 
-Note: if you make additional changes to the same branch later,
-you can push those new updates with just `git push`.
+NB: if you make additional changes to the same branch before a maintainer merges
+it into master, you can push those new updates with just `git push`.
 
-To notify the snowdrift team about your updates, go to your web browser and
-visit the git.gnu.io page with your fork. You should see a button **"Create
-Merge Request"** Clicking that will bring up a form where you can add further
-notes about your work (especially useful if you are merging multiple commits).
-You may ignore "Assign to", "Milestone", and "Labels" at this point.
+To notify the snowdrift team about your work, visit the git.gnu.io page with
+your fork. You should see a button **"Create Merge Request"** Click that to
+bring up a form where you can add further notes about your work (especially
+useful if you are merging multiple commits). You may ignore "Assign to",
+"Milestone", and "Labels" at this point.
 
-Someone should comment on your submission soon (hopefully within a few hours).
+After you submit the merge request, someone should comment on your submission
+soon (hopefully within a few hours, maybe a day or two depending on timing).
 
 ## Choosing what to work on
 
-With the code built and everything all set for making contributions,
-we suggest a few different options for moving forward:
+Several ways to get started contributing and/or to learn more overall:
 
-* Look through the
-  [newbie-friendly tickets](https://snowdrift.coop/p/snowdrift/t?_hasdata=&f1=newbie-friendly)
-  and see what looks interesting and/or doable.
-  If you decide to work on a specific ticket, you can "claim" it once you have
-  logged into the main site with a fully-established user.
+* Visit the [tickets](https://snowdrift.coop/p/snowdrift/t) and filter to the
+  "newbie-friendly" tag and see what looks interesting and/or doable. Consider
+  exploring other tickets based on your skills or interests. If you decide to
+  work on a specific ticket, you can "claim" it once you have logged into the
+  main site with a fully-established user.
 
-* Play around with the site locally, and see if you can understand what does
-  what. You may find bits that seem incomplete or confusing, and you can explore
-  them and/or check with others about the status, such as whether the issue is
-  known or tickets exist already.
+* Play around with the site locally. See if you can understand what does what.
+  You may find bits that seem incomplete or confusing, and you can explore them
+  and/or check with others about the status, such as whether the issue is known
+  or tickets exist already.
 
-* Explore the code itself by just opening files and see if you can figure out
-  what does what and how things fit together.
+* Explore the code files and see if you can figure out what does what and how
+  things fit together.
 
     * For non-Haskell work, the files in the /templates directory are comparable
       to basic HTML, CSS, and JavaScript. Beginners can quickly learn how to
       make changes to those files. Basically, Hamlet=HTML and Cassius=CSS but
-      with easier, more concise syntax that uses indentation instead of closing
-      tags. Julius files are effectively just containers for JavaScript. For
-      more details, see the documentation on
+      with concise syntax that uses indentation instead of closing tags. Julius
+      files are effectively just containers for JavaScript. For more details,
+      see the documentation on
       [Shakespearean Templates](http://www.yesodweb.com/book/shakespearean-templates).
 
-    * For those familiar with Haskell, a simple start could be exploring our
-      files, and updating any code that doesn't match our
+    * For those familiar with Haskell, consider exploring our files, and
+      updating any code that doesn't match our
       [code style](https://snowdrift.coop/p/snowdrift/w/en/coding#code-style-guide).
 
 * Read our [coding wiki page](https://snowdrift.coop/p/snowdrift/w/en/coding),
@@ -282,17 +272,15 @@ When making edits, follow our
 
 ### Use of JavaScript
 
-**We generally build with *progressive enhancement* in mind.**
-Content and functions should work with simple HTML/CSS
-along with Yesod/Haskell server-side functions.
-Later, we add JavaScript as appropriate for enhancement.
-Consider the ideas of
+**We generally build with *progressive enhancement* in mind.** The site should
+work with just HTML/CSS along with Yesod/Haskell server-side functions. Given
+that basis, we can add JavaScript as appropriate for enhancement, considering
 [Unobtrusive JavaScript](http://en.wikipedia.org/wiki/Unobtrusive_JavaScript).
 Use of NoScript should never cause a broken experience.
 All our JavaScript should be recognized by the FSF's
 [LibreJS plugin](https://www.gnu.org/software/librejs/).
 
-Although we haven't used them as of August 2015, we have considered
+Although we haven't used them as of January 2016, we have considered
 [GHCJS](https://github.com/ghcjs/ghcjs) and
 [PureScript](http://www.purescript.org/)
 as options for more Haskell-connected ways to generate JavaScript.

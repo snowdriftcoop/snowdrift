@@ -1,30 +1,35 @@
 # [Snowdrift.coop]
 
-**A non-profit, cooperative platform for funding Free/Libre/Open (FLO) works.**
+Snowdrift is the software that runs the website Snowdrift.coop.
 
-Using a many-to-many matching pledge, we aim to empower the global
-community to better promote freedom-respecting projects of all sorts.
+**Snowdrift.coop is a non-profit, cooperative platform for funding public
+goods, specifically Free/Libre/Open (FLO) works.**
+
+Rivalrous physical goods and restricted proprietary works use pay-for-access
+business models that don't work for public goods. We can only get strong public
+goods with a critical mass of public support. Snowdrift.coop builds that support
+via a many-to-many matching pledge: Each patron of a FLO project agrees to
+donate a little for every patron who donates with them.
 
 For the basic idea, see our [illustrated intro].
 
-Other pages on the site explain our [mission] and include discussion and
-research on issues like the [economics of FLO projects], the [incentives
-behind donations], and how our model departs from that of [other funding
-sites].
+Other pages on the site describe our [mission], the [economics of FLO projects],
+the [incentives behind donations], and how our model departs from that of
+[other funding sites].
 
-Snowdrift.coop is built with the **[Haskell]** programming language, and
-**[Yesod web framework]**.
+Snowdrift uses the **[Haskell]** programming language **[Yesod web framework]**.
+We stick to exclusively FLO resources and tools in all our work.
 
 ## Contributing
 
-Snowdrift.coop welcomes contributions of all sorts, and even contributors with
-no technical experience can find ways to help. Our [how-to-help page] includes
-further notes about the site and info about volunteering (including in
-non-programming areas).
+Snowdrift.coop welcomes contributions of all sorts. Even contributors with no
+technical experience can find ways to help. See our [how-to-help page] for more
+info about volunteering (including in non-programming ways).
 
-We have a complete **[Contributor guide]** covering how to get involved as a
-developer. Our guide covers our development practices and all the basic setup
-and steps even for those new to Git or Haskell or even to programming generally.
+Our **[Contributor guide]** covers all the steps to getting involved with the
+Snowdrift code. It includes notes about our development practices, basic setup,
+and introductory resources for those new to Git or Haskell or even to
+programming generally.
 
 ### Building and testing the website
 

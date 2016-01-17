@@ -4,59 +4,58 @@ Additional Notes about Snowdrift Databases
 Database migrations
 -------------------
 
-NOTE: THE MIGRATION SITUATION NEEDS ADJUSTMENT AND HAS HAD SOME WORK, SO THIS
-MAY BE OUTDATED
+NB: Our migration system needs work, see
+[SD-501](https://snowdrift.coop/p/snowdrift/w/en/coding/c/2582). The following
+describes the way things work as of January 2016:
 
-After any change to the database schema (in config/models),
-the first time you recompile and then start the server,
-a migration script will be automatically generated and placed in /migrations.
+Some changes to the database schema in config/models are considered *unsafe*
+(i.e. changes that could result in data loss, such as dropping a table). When
+you make any such changes, recompile, and then start the server, it
+automatically generates content in migrations/migrate.unsafe, and the server
+will abort.
 
-If there are no unsafe statements in the migration,
-the migrations will be run and the server will continue to start normally.
+* If you *don't* want to lose the data (e.g. a column is being moved to a
+  different table, a column is being renamed, etc.), alter the contents of
+  migrations/migrate.unsafe to be the appropriate SQL commands to preserve the
+  data in the desired manner.
+* If you *intend* to lose the data (e.g. destroying a column storing data we
+  no longer want), the automatic entry in migrate.unsafe can be kept.
 
-If there are any unsafe (may destroy data) statements,
-they are placed in migrations/migrate.unsafe, and the server will abort.
+Once you are sure about the migration commands working as you intend, rename
+migrations/migrate.unsafe to migrations/migrateN (where N is a higher number
+than any previous migrate files).
 
-In an unsafe case, if the data *is* intended to be lost
-(e.g. destroying a column storing data we no longer want),
-copy the statements to the new migrateN file (creating it if necessary).
-
-If you don't want to lose the data
-(a column is being moved to a different table, a column is being renamed, &c),
-modify the migration file to use the appropriate intended SQL commands.
+With valid migration files in place, the server should run.
 
 ### Committing database migrations
 
-In the course of testing and/or resetting your database,
-you might generate extra migrations. When that happens,
-be sure to reset your database andremove any extraneous migration files.
-Once you have a final version of the code, you can run the site once to
-generate the correct final migration.
-
-Ideally consolidate all migrations to only one migration file per commit.
+Assuming you are happy with unsafe migrations and ready to commit, first
+consolidate multiple uncommitted migration files to only one file per commit.
+Then, reset your database (described below) and run the site again to make sure
+everything works as expected.
 
 Make sure to add the associated migration file to git when you commit
 the corresponding schema changes.
 
-When merging migrations, put any you've added on the end in separate file(s).
-Don't merge them into migration files others may have already run.
+If you try a change that requires unsafe migrations and decide to go a different
+direction before committing everything, you will need to both reset your
+database and remove the unwanted migration files (as well as reset the relevant
+code).
 
 ## Database management with the sdm tool
 
 Our sdm tool has several functions for database management.
 
 By default, sdm is set to work with GNU/Linux systems. All instructions here use
-that default form.
-
-For each of the other systems listed below, add the given arguments at the end
-of any sdm command.  When including any arguments, `--` must always be included
-after `stack exec` as `stack exec --`.
+that default form. For the other systems listed below, add the given arguments
+at the end of any sdm command. When including any arguments, `--` must always be
+included after `stack exec` as `stack exec --`.
 
 * OpenBSD: `--sudoUser _postgresql`.
 * FreeBSD: `--sudoUser pgsql --pgUser pgsql`
 * OS X: `--sudoUser=_postgres`
 
-**All commands below should be run from your /snowdrift project directory.**
+**All commands below should be run from your snowdrift project directory.**
 
 ### Resetting or updating your development database
 
@@ -69,33 +68,32 @@ or to start clean before making changes you plan to commit) run:
 ### Sharing updates to the devDB database
 
 If you make specific improvements or additions to your database that you think
-will make for a better start for other contributors (or when you have updated
-the basic database with migration files), you can use the following command to
-export the changes (which can then be committed via git as usual).
+will make for a better start for other contributors, use the following command
+to export the changes:
 
     stack exec -- sdm export --db=dev
 
-which is the same as running the manual postgres command:
+NB: that command is the same as running the manual postgres command:
 
     sudo -u postgres pg_dump snowdrift_development >devDB.sql
 
 Test that the export worked by running the reset command above and verifying in
-the running site that everything is as expected.
+the running site that everything works as expected.
 
 Then, the new devDB.sql file may be committed and shared like other changes.
 
 ### Updating to the latest test database
 
-If the testDB.sql file gets updated, you'll need to update your template.
+If the testDB.sql file gets updated, update your template DB via:
 
-Simply run `stack exec -- sdm reset --db=test` to reset/update your test databases.
+    stack exec -- sdm reset --db=test
 
 
 Manual database management
 --------------------------
 
-All the steps below can be done simply with the sdm script,
-but here we explain what they do and how to handle databases manually.
+The sdm script can do all the common tasks for database management, but here we
+explain what they do and how to handle databases manually.
 
 ***
 

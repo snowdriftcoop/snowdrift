@@ -1,24 +1,22 @@
 # FLO Text Editors and Yesod/Haskell
 
 This guide covers our recommended options for FLO (Free/Libre/Open) text-editors
-and IDE development tools for hacking on Snowdrift (although this pretty well
-applies to any Yesod-based project).
+and IDE development tools for hacking on Snowdrift (NB: most of this applies
+equally to any Yesod-based project).
 
 ## Text editor packages and settings
 
 ### Atom
 
 [Atom](https://atom.io/) is a modern, graphical, highly-extensible text-editor,
-good for beginners and advanced alike. It is relatively new, and Haskell support
-is continually improving.
+good for beginners and advanced alike.
 
 #### Atom settings
 
 Some general settings:
 
 * In the main Atom settings, leave soft tabs checked and set 4-space tabs
-* Packages/Tree View: consider using "Hide Ignored Names" and "Hide VCS Ignored
-  Files"
+* Packages/Tree View: consider "Hide Ignored Names" and "Hide VCS Ignored Files"
 * Consider disabling the "metrics" package to turn off Google Analytics
 
 #### Atom packages
@@ -47,7 +45,7 @@ install ide-haskell for Atom:
       active, log out of your system and log back in (to avoid logging out,
       `source ~/.profile` will get the path in your terminal, but you'll have to
       start atom from the command line for now).
-* *Note*: this installation is the easiest for now and will work for any other
+* NB: this installation is the easiest for now and will work for any other
   projects that use the same GHC version but will *not* work if you switch
   between projects that use different GHC versions.
 * *Note: ghc-mod will fail if it sees a dist/ directory which is made when you
@@ -170,9 +168,9 @@ Stack directly, use workarounds such as temporarily renaming the /dist directory
 when you want to use ghc-mod, or avoid `yesod devel` entirely and run the site
 instead via `stack exec Snowdrift Development`.*
 
-Other general vim plugins we suggest for consideration include many which are
-inobtrusive and take zero or near-zero learning to use (roughly in order by most
-strongly recommended):
+We suggest several other general vim plugins for consideration (probably best to
+add these one at a time and understand what each does and see if you like the
+idea rather than add mindlessly). Ordered roughly by most strongly recommended:
 [vim-sensible](https://github.com/tpope/vim-sensible),
 [vim-repeat](https://github.com/tpope/vim-repeat),
 [vim-supertab](https://github.com/ervandew/supertab),
@@ -180,14 +178,15 @@ strongly recommended):
 [vim-surround](https://github.com/tpope/vim-surround),
 [vim-commentary](https://github.com/tpope/vim-commentary),
 [ctrl-P](https://github.com/kien/ctrlp.vim),
+[vim-easyclip](https://github.com/mbbill/undotree) (warning: alters common vim
+behavior),
 [undotree](https://github.com/mbbill/undotree),
 [vim-fugitive](https://github.com/tpope/vim-fugitive),
 [gitv](https://github.com/gregsexton/gitv),
 [NERD tree](https://github.com/scrooloose/nerdtree) &
 [NERD tree git plugin](https://github.com/Xuyuanp/nerdtree-git-plugin);
-and others which take some minor learning and/or set up:
-[vim-easyclip](https://github.com/mbbill/undotree),
-[ag.vim](https://github.com/rking/ag.vim),
+[ag.vim](https://github.com/rking/ag.vim) (takes extra setup besides just
+plugin),
 [vim-airline](https://github.com/bling/vim-airline).
 
 *Many* other options exist, although we'd rather contributors generally focus
@@ -282,5 +281,5 @@ To auto-update tags in Vim whenever a Haskell file gets written, use fast-tags:
         augroup END
         EOF
 
-*Note*: so that we don't generate extra tags files in internal directories, make
+NB: so that we don't generate extra tags files in internal directories, make
 sure to only open vim from the main snowdrift project directory from now on.

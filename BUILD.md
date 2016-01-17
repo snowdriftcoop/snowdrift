@@ -1,26 +1,24 @@
-# Building and Running Snowdrift Locally
+# Building and Running Snowdrift
 
-Snowdrift has been built successfully on Debian, Ubuntu, Arch, Fedora, Gentoo,
-NixOS, and other distros of GNU/Linux as well as on OpenBSD and OS X.
+Snowdrift has been built successfully on GNU/Linux distributions of all sorts
+and on OpenBSD and OS X.
 
-Although some volunteers have built on Windows, some issues remain unsettled.
+Windows builds only work partially as of this writing.
 
 ## Install System Dependencies
 
-The only system-level dependencies are [Git], [PostgreSQL], and [Stack].
-
-Note: You do *not* need to install GHC or Haskell Platform.
-Stack will automatically install the correct GHC version if you don't have it,
-and this won't affect any installation you already have of other versions.
+[Git], [PostgreSQL], and [Stack] are the only dependencies needed at the system
+level. Stack takes care of finding or installing the correct GHC version. Some
+systems need a few additional libraries to support the core dependencies.
 
 **Follow the details for your system, then skip to the "Get the Snowdrift Code"
 section.**
 
 ### Debian, Ubuntu, and any related derivatives
 
-To install dependencies, run the following commands:
+Install Git and PostgeSQL with needed libraries:
 
-    sudo apt-get update &&
+    sudo apt-get update
     sudo apt-get install git postgresql postgresql-client libgmp-dev zlib1g-dev libpq-dev libtinfo-dev
 
 Then follow the
@@ -31,17 +29,17 @@ instructions as appropriate.
 
 ### CentOS, RHEL
 
-To install dependencies, run the following commands:
+Install Git and PostgeSQL with needed libraries:
 
-    sudo yum update &&
+    sudo yum update
     sudo yum install postgresql postgresql-devel ncurses-devel gmp-devel zlib-devel
 
 Then follow the
-[CentOS / Red Hat / Amazon Linux Stack install](https://github.com/commercialhaskell/stack/blob/master/doc/install_and_upgrade.md#centos--red-hat--amazon-linux).
+[CentOS / Red Hat / Amazon Linux Stack install](https://github.com/commercialhaskell/stack/blob/master/doc/install_and_upgrade.md#centos--red-hat--amazon-linux) instructions.
 
 ### Arch Linux
 
-To install dependencies, run this command as `root`:
+Install Git and PostgreSQL by running this command as `root`:
 
     pacman -S git postgresql
 
@@ -64,17 +62,20 @@ package from the AUR.
 
 ### NixOS
 
-If not installed yet, get Git as usual under NixOS.
+Install Git as usual under NixOS.
 
 Then, follow the [NixOS Stack install instructions](https://github.com/commercialhaskell/stack/blob/master/doc/install_and_upgrade.md#nixos).
 
-For postgres, add these lines to `/etc/nixos/configuration.nix`:
+For PostgreSQL, add these lines to `/etc/nixos/configuration.nix`:
 
     services.postgresql.enable = true;
     services.postgresql.package = pkgs.postgresql94;
 
-Then issue `sudo nixos-rebuild switch` to install.
-Afterwards you may need to create the postgres user, like so:
+Then install PostgeSQL with:
+
+    sudo nixos-rebuild switch
+
+Afterwards, you may need to create the postgres user, like so:
 
     sudo -su root
     createuser -s -r postgres
@@ -86,12 +87,12 @@ doesn't work well on NixOS due to an unusual filesystem hierarchy,
 among other things. Instead, just use `nix-shell` to get into an
 environment with the right compiler version:
 
-    nix-shell -p haskell.compiler.ghc784
+    nix-shell -p haskell.compiler.ghc7102
 
-Then you should be able to build the project as described below, but Stack will
-likely complain about missing system libraries (like zlib), which you'll need to
-install manually via `nix-env` or `nox`. Once installed, you can specify the
-location of such libraries like this:
+You can now attempt to build Snowdrift via the general instructions below. Stack
+will likely complain about some missing items (like zlib). To continue, install
+listed items manually via `nix-env` or `nox`, then specify their location like
+this:
 
     stack build --extra-include-dirs ~/.nix-profile/include \
                 --extra-lib-dirs ~/.nix-profile/lib
@@ -99,8 +100,7 @@ location of such libraries like this:
 ### \*BSD
 
 *Any knowledgeable reader: please help us document any important notes about
-installing the Git, PostgreSQL, and Stack dependencies on \*BSD.* Notes below
-cover some related steps regarding the database setup.
+installing the Git, PostgreSQL, and Stack dependencies on \*BSD.*
 
 ### OS X
 
@@ -108,7 +108,7 @@ If you don't have [brew](http://brew.sh/) yet, install it with:
 
     ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 
-With brew, install any core dependencies you don't have yet:
+With brew, install the core dependencies:
 
     brew install git
     brew install postgres
@@ -116,8 +116,9 @@ With brew, install any core dependencies you don't have yet:
 
 ### Windows
 
-Note: At this time, Windows builds have some issues. To test building directly
-on Windows:
+*Status:* We do not officially support Windows, but we welcome testing. From
+reports so far, SnowdriftEmailDaemon won't build on Windows, so `stack test`
+will fail. Building, running, and working on the site might work otherwise.
 
 Install [Git] per instructions on the website.
 
@@ -130,18 +131,15 @@ Add the PostgreSQL bin directory to the path
 Follow the instructions to
 [install Stack for Windows](https://github.com/commercialhaskell/stack/blob/master/doc/install_and_upgrade.md#windows)
 
-*Note:* SnowdriftEmailDaemon won't build on Windows, so the `stack test` will
-fail. Building, running, and working on the site might still work otherwise.
 
 ## Get the Snowdrift code
 
-Once the dependencies are installed, clone the Snowdrift code to your computer.
+NB: We primarily use a completely FLO (Free/Libre/Open) host for our code:
+[git.gnu.io/snowdrift/snowdrift], and our instructions assume that repository.
+For convenience and redundancy, we also mirror at [GitHub], a popular but
+proprietary platform.
 
-We primarily use a completely FLO (Free/Libre/Open) host for our code:
-[git.gnu.io/snowdrift/snowdrift]. For convenience and redundancy, we also mirror
-at [GitHub], a popular but proprietary platform.
-
-The standard command to clone the code to your local system is:
+From within your preferred directory, get the code with:
 
     git clone https://git.gnu.io/snowdrift/snowdrift.git
 
@@ -149,92 +147,145 @@ The standard command to clone the code to your local system is:
 
 ### Compile the code
 
-From within the snowdrift code directory, fetch all Haskell dependencies
-and build everything:
+Change to the new snowdrift directory:
 
     cd snowdrift
+
+Then, fetch all Haskell dependencies and build everything:
+
     stack setup
-    stack build cabal-install yesod-bin
     stack build
 
 NB: this will take a while!
 
 ### Set up the database
 
-Though you can set up databases manually (see [DATABASE-MANAGEMENT.md]), we
+NB: Though you can set up databases manually (see [DATABASE-MANAGEMENT.md]), we
 offer a simple script called `sdm` (for "Snowdrift database manager") that can
 set up the PostgreSQL databases for you.
 
-NB: At this time, sdm requires root access, so it will ask for your
-passphrase. If you want to help us improve how sdm works, see ticket
+NB: At this time, sdm requires root access, so it will ask for your passphrase.
+If you want to help us improve how sdm works, see ticket
 [SD-689](https://snowdrift.coop/p/snowdrift/w/en/coding/c/3677) and discussion
 there.
 
-To set up the databases with sdm, simply run the following:
+To set up the databases with sdm, run the appropriate command for your system:
 
-* For GNU/Linux: `stack exec sdm init`
-* For OpenBSD: `stack exec -- sdm init --sudoUser _postgresql`
-* For FreeBSD: *Untested but should work*:
-  `stack exec -- sdm init --sudoUser pgsql --pgUser pgsql`
-* For OS X: `stack exec -- sdm init --sudoUser=_postgres`
+* GNU/Linux: `stack exec sdm init`
+* OpenBSD: `stack exec -- sdm init --sudoUser _postgresql`
+* FreeBSD: `stack exec -- sdm init --sudoUser pgsql --pgUser pgsql`
+* OS X: `stack exec -- sdm init --sudoUser=_postgres`
 
 #### Windows database setup
 
-Instead of using sdm, follow the *manual database* setup instructions in
-[DATABASE-MANAGEMENT.md]. Some of the precise commands may need slight adapting
-such as using `psql -U postgres` to enter the psql prompt.
+The sdm tool does not support Windows. Instead, follow the *manual database*
+setup instructions in [DATABASE-MANAGEMENT.md]. Some of the precise commands may
+need slight adapting such as using `psql -U postgres` to enter the psql prompt.
 
 ### Run initial tests
 
-For various reasons, we need to run the tests initially to compile all test
-dependencies. Simply run `stack test`.
+Run the tests to compile the test dependencies:
 
-## Useful Development Commands
+    stack test
 
-With everything initialized, you can now use the following commands:
+## Running the site
 
-* `stack exec yesod devel`: run the site in development mode[^alt-run]
-    * NB: this may take a while when first run, faster after that
-    * access the site in your browser at <http://localhost:3000>
-    * log in with any of the three default users via the built-in log-in:
-      `admin`; `guest`; `established`.
-      (username and passphrase are the same)
-    * to stop the site, type `quit` in terminal and then press Enter
+NB: You can run the site with two different methods.
 
-* `stack build && stack test --pedantic`: run the test suite
+### Option 1: run via `Snowdrift Development`
 
-    Note that `stack build` must be run since our current cabal setup does not
-    fully recognize test dependencies on executables such as
-    SnowdriftProcessPayments.
+From the snowdrift project directory, run the site in development mode via:
 
-* `stack build`: rebuild manually
-    * Usually running the site in development mode is sufficient, but you must
-      run `stack build` whenever you:
-        * add new dependencies (i.e. edit the `build-depends` field in
-          `Snowdrift.cabal`)
-        * update any extra binaries such as the payment processing script, the
-          sdm database configuration script, or the email daemon.
-    * In rare cases, you may need to run `stack clean` if the development site
-      fails to recognize a change.
-    * Specifically for changes to files in the static directory, run
-      `touch src/Settings/StaticFiles.hs` before rebuilding.
+    stack exec Snowdrift Development
 
-* `stack ghci`: Start the REPL
+(to stop the site, use ctrl-C)
 
-[^alt-run]: An alternative approach to building and running the site:
-    * Run the site with `stack exec Snowdrift Development`
-      (to stop the site in this case, use ctrl-C).
-    * This doesn't automatically rebuild, so you must manually run `stack build`
-      whenever you want to compile any updates to the code.
-    * Advantages to this approach: less running processes (no need to watch for
-      file changes) and no need to do extra compiling into special yesod-devel
-      directory (although that should soon stop being an issue given planned
-      yesod-bin updates).
+### Option 2: run via `yesod devel`
+
+NB: `yesod devel` provides automatic rebuilding and rerunning of the site
+whenever it detects changes to the code, but it requires extra compile processes
+the first time you use it. It also uses some minor extra drive space and
+additional resources to run the file-watching process, and yesod devel is
+currently incompatible with the optional ghc-mod tool mentioned in
+[TEXTEDITORS.md](TEXTEDITORS.md).
+
+To set up `yesod devel`, run:
+
+    stack build cabal-install yesod-bin
+
+From now on, you may run the site in development mode via:
+
+    stack exec yesod devel
+
+NB: The fist run will take a long time
+
+(To stop yesod devel, type `quit` in terminal and then press Enter)
+
+## Using the local site
+
+### View in your browser
+
+Access the site in your browser at <http://localhost:3000>
+
+### Log-in options
+
+The development database comes with three default users (with username and
+passphrase the same):
+
+* admin
+* established
+* guest
+
+### Testing
+
+Run the test suite with:
+
+    stack build && stack test --pedantic
+
+NB: we include `stack build` because our current cabal setup does not fully
+recognize test dependencies on executables such as SnowdriftProcessPayments.
+
+### Manual rebuild
+
+To rebuild the site, run:
+
+    stack build
+
+NB: As mentioned above, if you run the site with `Snowdrift Development`, then
+to see any changes, you must stop the site, manually rebuild, then restart the
+site. If you use `yesod devel`, the site will rebuild and restart automatically
+for most changes. However, **manual rebuild is always required whenever you:**
+
+* add new dependencies (i.e. edit the `build-depends` in `Snowdrift.cabal`)
+* update any extra binaries such as the payment processing script, the sdm
+  database configuration script, or the email daemon.
+
+NB: In rare cases, you may need to run `stack clean` if building fails to
+recognize a change.
+
+#### Updating static files
+
+To make builds recognize changes to the static directory, run:
+
+    touch src/Settings/StaticFiles.hs
+
+### Exploring the code via REPL
+
+To start the REPL where you can run code from the site in an interpreter, use:
+
+    stack ghci
 
 ## Database notes
 
 See [DATABASE-MANAGEMENT.md] for instructions on resetting the database and
 more.
+
+## Getting help, learning, contributing etc.
+
+We welcome any and all feedback on these build instructions, on the site itself,
+etc. We will happily help you with any questions. See the [README](README.md)
+for further general links, and the [Contributing Guide](CONTRIBUTING.md) for
+more thorough resources about technical development.
 
 [DATABASE-MANAGEMENT.md]: DATABASE-MANAGEMENT.md
 [Git]: http://www.git-scm.com/downloads
