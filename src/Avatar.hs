@@ -23,7 +23,7 @@ getUserAvatar defaultRoute muser = do
         mavatar <-
             avatarUrl (Email $ T.unpack e)
                       defOpts
-                          { optSecure = False
+                          { optSecure = True
                           , optDefault = ImgCustom (T.unpack defUrl)
                           , optSize = DefaultSize
                           , optTryGravatar = False
