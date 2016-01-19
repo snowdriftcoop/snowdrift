@@ -64,6 +64,9 @@
         display: block
         max-width: 100%
         margin: 0 auto 14rem
+    .join
+        font-size: 2.5rem
+        font-weight: 600
 /*break1*/
 @media (min-width: 301px)
     .homepage

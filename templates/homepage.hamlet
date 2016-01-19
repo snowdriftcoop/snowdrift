@@ -8,10 +8,7 @@
     <.foreground>
     <a href=@{HowItWorksR IntroR} .bigbutton>How it Works
     <p>
-      We sustainably fund sharable, freely-licensed projects.
-      <br>
-      They benefit everyone in the world, and we cooperate to help them.
-      <br>
-      Let's clear the path to a better world!
+      Like roads we all share, freely-licensed works are public goods that
+      benefit everyone. So, we need to cooperate to sustainably fund them.
     <p>
-      <a href=@{AuthR LoginR} .join>Join us in setting the world free!
+      <a href=@{AuthR LoginR} .join>Join us!
