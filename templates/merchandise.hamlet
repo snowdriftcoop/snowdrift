@@ -12,6 +12,9 @@
     <h2 #t-shirts>T-Shirts
 <div .section .group>
   <div .col .span_4_of_12>
+    <p>
+      We use premium fitted shirts made with 100% cotton super-soft jersey
+      fabric.
   <div .col .span_8_of_12>
     <div .section .group>
       <div .col .span_6_of_12>
