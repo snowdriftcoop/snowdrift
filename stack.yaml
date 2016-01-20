@@ -5,7 +5,7 @@ packages:
 - '.'
 - location:
     git: https://github.com/chreekat/ghci-runner.git
-    commit: bae5a558535087c8cc532da0fd192625361d8a25
+    commit: 0e996ce1ab3ab8c2e30cf1a1ee247c27761e779a
   extra-dep: true
 - location:
     git: https://git.gnu.io/chreekat/yesod.git
