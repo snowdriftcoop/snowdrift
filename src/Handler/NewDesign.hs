@@ -17,16 +17,10 @@ import Handler.Notification
 import Handler.TH
 import Handler.User.Utils (startEmailVerification)
 import Handler.Utils
-import Model.Count (getCount)
 import Model.License (fetchLicensesDB)
 import Model.Project
         ( fetchPublicProjectsDB
-        , fetchProjectDiscussionsDB
-        , fetchProjectOpenTicketsDB
         , projectNameWidget
-        , summarizeProject
-        , summaryDiscussionCount
-        , summaryTicketCount
         )
 import Model.User
         ( fetchArchivedProjectNotificationsDB
@@ -40,7 +34,6 @@ import Model.User
 import View.Project.Signup (projectSignupForm)
 import View.Time (renderTime)
 import View.User (renderUser, createUserForm)
-import qualified Mechanism as Mech
 
 getSearchR :: Handler Html
 getSearchR = do
@@ -157,16 +150,10 @@ postPSignupFormR = do
 -- | Projects list.
 getProjectsR :: Handler Html
 getProjectsR = do
-    project_summaries <- runDB $ do
+    projects <- runDB $ do
         projects <- fetchPublicProjectsDB
         forM projects $ \project -> do
-            discussions <- fetchProjectDiscussionsDB $ entityKey project
-            tickets <- fetchProjectOpenTicketsDB (entityKey project) Nothing
-            let summary = summarizeProject project Mech.Project discussions tickets
-            return (project, summary)
-
-    let discussionsCount = getCount . summaryDiscussionCount
-    let ticketsCount = getCount . summaryTicketCount
+            return project
 
     $(widget "projects" "Projects")
 
