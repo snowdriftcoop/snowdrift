@@ -178,7 +178,7 @@ idea rather than add mindlessly). Ordered roughly by most strongly recommended:
 [vim-surround](https://github.com/tpope/vim-surround),
 [vim-commentary](https://github.com/tpope/vim-commentary),
 [ctrl-P](https://github.com/kien/ctrlp.vim),
-[vim-easyclip](https://github.com/mbbill/undotree) (warning: alters common vim
+[vim-easyclip](https://github.com/vim-scripts/EasyClip) (warning: alters common vim
 behavior),
 [undotree](https://github.com/mbbill/undotree),
 [vim-fugitive](https://github.com/tpope/vim-fugitive),
