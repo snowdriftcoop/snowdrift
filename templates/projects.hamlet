@@ -6,21 +6,15 @@
   have started including select, established projects that meet our
   <a href=@{WikiR "snowdrift" LangEn "project-requirements"}>requirements
   and have chosen to participate in testing during our alpha phase.
-  If plan to use the site when we launch and want to participate in our testing
-  now, please
+  If your project plans to use the site when we launch, and you'd like to
+  participate in our testing now, please
   <a href=@{ProjectContactR "snowdrift"}>contact&nbsp;us
   to discuss further.
-$if null projects
-  <p> no projects to display
-$else
-  $forall Entity _ project <- projects
-    <.project-browse-entry>
-      <h2>
-        <a href=@{PHomeR (projectHandle project)}>
-          $# $maybe logo <- projectLogo project
-          $#   <img src=@{ImageR logo}>
-          $# $nothing
-          $#   <img src=@{StaticR img_default_project_logo_png}>
-          #{projectName project}
-      <p>
-        #{projectBlurb project}
+
+$forall Entity _ project <- projects
+  <.project-browse-entry>
+    <h2>
+      <a href=@{PHomeR (projectHandle project)}>
+        #{projectName project}
+    <p>
+      #{projectBlurb project}

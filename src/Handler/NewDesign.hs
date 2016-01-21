@@ -150,11 +150,7 @@ postPSignupFormR = do
 -- | Projects list.
 getProjectsR :: Handler Html
 getProjectsR = do
-    projects <- runDB $ do
-        projects <- fetchPublicProjectsDB
-        forM projects $ \project -> do
-            return project
-
+    projects <- runDB fetchPublicProjectsDB
     $(widget "projects" "Projects")
 
 -- | Public page for a project
