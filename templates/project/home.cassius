@@ -1,28 +1,90 @@
-
-
-.p-blurb
-    max-width: 80%
-    font-size: smaller
-    border-bottom: 1px solid #3981B3
-    margin: 0 auto
-
-.pledge-form
-    background: #DDECE3
-    margin: 1em
-    padding: 1em
-    border-radius: 1em
-    text-align: center
-
-.testing-notice
-    border: 2px solid red
-    font-style: italic
-    text-align: center
-
-.pledge-form h2, .pledge-form h3, .pledge-form h4
-    margin: 0.5em
-
-.pledge-form ul
-    padding: 0
-
-.pledge-form li
-    line-height: 0.5em
+.project
+    h6
+        font-size: 1.3rem
+        color: #{BrightBlueText}
+        font-weight: 600
+        display: block
+        text-align: center
+    .background
+        position: absolute
+        left: 0
+        right: 0
+        top: 6rem
+        width: 100%
+        height: 13rem
+        background: url(@{StaticR img_snowtop_png}) center bottom repeat-x, linear-gradient(#{BrightBlue} 30%,#e0f7fe 95%)
+        z-index: -2
+        .foreground
+            position: absolute
+            bottom: -7rem
+            right: 4%
+            height: 20rem
+            width: 20rem
+            margin: 0 auto
+            background: url(@{StaticR img_background_tree_png}) center bottom no-repeat
+            background-size: 15.1rem
+            z-index: 2
+    .cover
+        position: relative
+        background: #{White}
+        margin-top: 2rem
+        border-radius: 0.5rem
+        h1
+            padding: 2rem 3rem 0
+            font-size: 3rem
+        select
+            font-size: 1.3rem
+            font-family: Nunito
+            font-weight: 600
+            color: #{DarkBlue}
+            option
+                font-weight: 600
+                color: #{Green}
+                background: #{White}
+                padding: 0.1rem 0.1rem
+        p
+            padding: 0 3rem 2rem
+        img
+            border-bottom: 0.6rem solid #{DarkBlue}
+            margin-bottom: -0.6rem
+            width: 100%
+            border-radius: 0.2rem
+    .pledge
+        margin: 11rem auto 3rem
+        background: red
+        background: url(@{StaticR img_project_pledge_background_png}) center 3rem no-repeat
+        background-size: 22.9rem
+        text-align: center
+        position: relative
+        max-width: 23rem
+        padding-bottom: 3rem
+        span
+            font-size: 1.3rem
+            font-weight: 600
+            display: table
+            margin: 0 auto
+            line-height: 1
+        .button
+            margin: 0 auto 0
+            &:hover
+                color: #{Gold}
+        .amount
+            background: #{Gold}
+            border-radius: 0 0 0.8rem 0.8rem
+            padding: 0.2rem 0.5rem
+            margin: -3rem auto 1.5rem
+        .others
+            font-size: 2.5rem
+            padding: 0 0 11.5rem 0
+    .total
+        text-align: center
+        p
+            font-size: 2.5rem
+            font-weight: 600
+            span
+                font-size: 2rem
+    .project-content
+        padding: 0 3rem
+    .right-sidebar
+        background: none
+        margin-top: 0rem

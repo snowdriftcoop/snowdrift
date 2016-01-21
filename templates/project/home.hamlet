@@ -1,36 +1,24 @@
-^{toBeWrittenNotice}
-<h1>#{projectName project}
-<p>Here are links to the existing pages for this project.
-<ul .project-nav>
-  <li .snowdrift-sidebar-item>
-    <a href=@{ProjectBlogR $ projectHandle project}>
-      <span .glyphicon .glyphicon-edit>
-      Blog
-  <li .snowdrift-sidebar-item>
-    <a href=@{ProjectContactR $ projectHandle project}>
-      <span .glyphicon .glyphicon-envelope>
-      Contact
-  <li .snowdrift-sidebar-item>
-    <a href=@{ProjectDiscussionR $ projectHandle project}>
-      <span .glyphicon .glyphicon-comment>
-      Discussion Board
-  <li .snowdrift-sidebar-item>
-    <a href=@{ProjectFeedR $ projectHandle project}>
-      <span .glyphicon .glyphicon-th-list>
-      Project Feed
-  <li .snowdrift-sidebar-item>
-    <a href=@{WhoR $ projectHandle project}>
-      <span .glyphicon .glyphicon-user>
-      Team Members
-  <li .snowdrift-sidebar-item>
-    <a href=@{TicketsR $ projectHandle project}>
-      <span .glyphicon .glyphicon-tag>
-      Tickets
-  <li .snowdrift-sidebar-item>
-    <a href=@{VolunteerR $ projectHandle project}>
-      <span .glyphicon .glyphicon-check>
-      Volunteer
-  <li .snowdrift-sidebar-item>
-    <a href=@{WikiPagesR $ projectHandle project}>
-      <span .glyphicon .glyphicon-book>
-      Wiki
+<div .project>
+  <div .section .group>
+    <div .col .span_8_of_12>
+      <.background .snowfilled>
+        <.foreground .break6>
+      <.cover .snowcovered>
+        <h1>#{projectName project}
+        <p>#{projectBlurb project}
+        <img src=@{StaticR img_project_cover_png}>
+    <div .col .span_4_of_12>
+      <.pledge>
+        <a href=# .bigbutton>pledge
+        <span .amount>
+          0.84¢/mo
+        <span>matching
+        <span .others>684
+      <.total>
+        <h6>project total
+        <p>$467.86<span>/mo</span>
+  <div .section .group>
+    <div .col .span_8_of_12>
+      <.project-content .home>
+        #{projectDescription project}
+    <div .col .span_4_of_12 .right-sidebar>
