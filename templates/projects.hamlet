@@ -1,57 +1,20 @@
-^{alphaRewriteNotice}
-<h1 .text-center>Projects
-<div style="color: #B22222">2015/11/05: Patron count not displayed pending new code
-$if null project_summaries
-  <p> no projects to display
-$else
-  $forall (Entity _ project, summary) <- project_summaries
-    <div .project-list-container .row>
-      <div .project-logo .col-sm-3 .col-md-2>
-        <a href=@{PHomeR (projectHandle project)}>
-          <figure>
-            $maybe logo <- projectLogo project
-              <img src=@{ImageR logo}>
-            $nothing
-              <img src=@{StaticR img_default_project_logo_png}>
-      <div .col-sm-9 .col-md-10>
-        <div .project-title .h3>
-          <a href=@{PHomeR (projectHandle project)}>
-            #{projectName project}
-        <!--
-          Project Type could be added as a legend here, but is not
-          currently in Project table.  We'd have to link to the
-          ProjectSignup table or add to Project table.
-        -->
-        <p .small>
-          #{projectBlurb project}
-        <div .row>
-          <div .col-sm-3>
-            <figure .project-icon>
-              <img src=@{StaticR img_patrons_png}>
+^{toBeWrittenNotice}
+<h1>Projects
+<p>
+  These are real projects, but we're still in alpha state, not doing patronage
+  funding yet. Snowdrift.coop is itself one of the projects. Besides us, we
+  have started including select, established projects that meet our
+  <a href=@{WikiR "snowdrift" LangEn "project-requirements"}>requirements
+  and have chosen to participate in testing during our alpha phase.
+  If your project plans to use the site when we launch, and you'd like to
+  participate in our testing now, please
+  <a href=@{ProjectContactR "snowdrift"}>contact&nbsp;us
+  to discuss further.
 
-            <!-- Add highlighting for when User is already a patron -->
-          <div .project-icons .col-sm-9>
-            <div .row>
-              <div .col-xs-3>
-                <a  .project-icon
-                    href=@{ProjectFeedR (projectHandle project)}
-                    title="activity feed">
-                  <span .glyphicon .glyphicon-list>
-              <div .col-xs-3>
-                <a  .project-icon
-                    href=@{ProjectDiscussionR (projectHandle project)}
-                    title="discussion board">
-                  <span .glyphicon .glyphicon-comment>
-                  <span .img-padding-l>#{discussionsCount summary}
-              <div .col-xs-3>
-                <a  .project-icon
-                    href=@{WikiPagesR (projectHandle project)}
-                    title="wiki pages">
-                  <span .glyphicon .glyphicon-book>
-              <div .col-xs-3>
-                <a  .project-icon
-                    href=@{TicketsR (projectHandle project)}
-                    title="tickets">
-                  <span .glyphicon .glyphicon-tag>
-                  <span .img-padding-l">#{ticketsCount summary}
-  <br>
+$forall Entity _ project <- projects
+  <.project-browse-entry>
+    <h2>
+      <a href=@{PHomeR (projectHandle project)}>
+        #{projectName project}
+    <p>
+      #{projectBlurb project}
