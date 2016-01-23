@@ -7,8 +7,9 @@
       <.plane .break4>
     <.foreground>
     <a href=@{HowItWorksR IntroR} .bigbutton>How it Works
-    <p>
-      Like roads we all share, freely-licensed works are public goods that
-      benefit everyone. So, we need to cooperate to sustainably fund them.
-    <p>
-      <a href=@{AuthR LoginR} .join>Join us!
+    <div .home-text>
+      <p>
+        Like roads we all share, freely-licensed works are public goods that
+        benefit everyone. So, we need to cooperate to sustainably fund them.
+      <p>
+        <a href=@{AuthR LoginR} .join>Join us!
