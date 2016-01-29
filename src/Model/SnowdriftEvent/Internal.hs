@@ -58,3 +58,6 @@ data SnowdriftEvent
 
     -- Deleted pledge.
     | EDeletedPledge UTCTime UserId ProjectId Int64
+
+    -- Volunteer application submitted.
+    | EVolunteerApp UTCTime UserId ProjectId VolunteerApplicationId

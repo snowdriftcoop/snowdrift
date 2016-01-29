@@ -4,6 +4,7 @@ import Import
 
 import DeprecatedBootstrap
 import Handler.Utils
+import Model.Volunteer
 
 volunteerForm :: UTCTime -> ProjectId -> [Entity Interest] -> Entity User -> Form (VolunteerApplication, [InterestId])
 volunteerForm now project_id interests (Entity user_id user) = renderBootstrap3 BootstrapBasicForm $
@@ -36,14 +37,12 @@ postVolunteerR project_handle = do
     user <- requireAuth
     now <- liftIO getCurrentTime
     Entity project_id _ <- runYDB $ getBy404 $ UniqueProjectHandle project_handle
-    interests <- runDB $ select $ from return
+    interests <- runDB (selectList [] [])
     ((result, _), _) <- runFormPost $ volunteerForm now project_id interests user
 
     case result of
         FormSuccess (application, interest_ids) -> do
-            runDB $ do
-                application_id <- insert application
-                forM_ interest_ids $ \interest_id -> insert $ VolunteerInterest application_id interest_id
+            runSDB (insertVolunteerApplicationDB project_id application interest_ids)
 
             alertSuccess "application submitted"
             redirect (VolunteerR project_handle)

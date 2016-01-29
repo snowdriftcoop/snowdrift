@@ -41,6 +41,7 @@ data ProjectNotificationType
     | NotifNewPledge
     | NotifUpdatedPledge
     | NotifDeletedPledge
+    | NotifVolunteerApp
     deriving (Eq, Read, Show, Bounded, Enum)
 derivePersistField "ProjectNotificationType"
 
@@ -58,12 +59,13 @@ showUserNotificationType = \case
     NotifFlagRepost        -> "A comment you flagged was edited and reposted"
 
 showProjectNotificationType :: ProjectNotificationType -> Text
-showProjectNotificationType NotifWikiEdit          = "Wiki page was edited"
-showProjectNotificationType NotifWikiPage          = "New wiki page"
-showProjectNotificationType NotifBlogPost          = "New blog post"
-showProjectNotificationType NotifNewPledge         = "New pledge"
-showProjectNotificationType NotifUpdatedPledge     = "Pledge updated"
-showProjectNotificationType NotifDeletedPledge     = "Pledge deleted"
+showProjectNotificationType NotifWikiEdit             = "Wiki page was edited"
+showProjectNotificationType NotifWikiPage             = "New wiki page"
+showProjectNotificationType NotifBlogPost             = "New blog post"
+showProjectNotificationType NotifNewPledge            = "New pledge"
+showProjectNotificationType NotifUpdatedPledge        = "Pledge updated"
+showProjectNotificationType NotifDeletedPledge        = "Pledge deleted"
+showProjectNotificationType NotifVolunteerApp         = "Volunteer application submitted"
 
 data UserNotificationDelivery
     = UserNotifDeliverWebsite
