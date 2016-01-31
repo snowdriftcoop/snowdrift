@@ -229,9 +229,35 @@ notificationEventHandler AppConfig{..} (EDeletedPledge _ user_id project_id _) =
             (\route -> userDisplayName (Entity user_id u)
                    <> " is no longer supporting the [project](" <> route <> ")")
 
-handleWatched :: Maybe NotificationSender -> Text -> ProjectId
-              -> (Text -> Route App) -> ProjectNotificationType
-              -> (Text -> Text) -> SDB ()
+notificationEventHandler AppConfig{..} (EVolunteerApp _ user_id project_id app_id) =
+    runSDB $
+        lift (get project_id) >>= \case
+            Just project ->
+                handleWatched
+                    (Just (NotificationSender user_id))
+                    appRoot
+                    project_id
+                    (\project_handle -> ApplicationR project_handle app_id)
+                    NotifVolunteerApp
+                    (\route -> mconcat
+                        [ "New [volunteer application]("
+                        , route
+                        , ") submitted for "
+                        , projectName project
+                        , "."
+                        ])
+            -- Nothing will match if the project is deleted from the database
+            -- by the time this event is handled.
+            Nothing -> pure ()
+
+handleWatched
+    :: Maybe NotificationSender
+    -> Text
+    -> ProjectId
+    -> (Text -> Route App)
+    -> ProjectNotificationType
+    -> (Text -> Text)
+    -> SDB ()
 handleWatched mnotif_sender appRoot project_id mkRoute notif_type mkMsg = do
     projects <- lift $ fetchProjectDB project_id
     forM_ projects $ \(Entity _ project) -> do
@@ -274,3 +300,5 @@ eventInserterHandler (EBlogPost post_id BlogPost{..})                           
 
 -- We don't have a table for ECommentApproved, because ECommentPosted is fired at the same time.
 eventInserterHandler (ECommentApproved _ _) = return ()
+
+eventInserterHandler (EVolunteerApp _ _ _ _) = return ()

@@ -207,15 +207,19 @@ userNotificationsForm is_moderator mbal mucom mrcom mrep mecon mflag mflagr =
             then Just <$> userReq "A new comment awaits moderator approval" mucom
             else pure Nothing
 
-projectNotificationsForm :: Maybe ProjectNotificationDelivery
-                                -> Maybe ProjectNotificationDelivery
-                                -> Maybe ProjectNotificationDelivery
-                                -> Maybe ProjectNotificationDelivery
-                                -> Maybe ProjectNotificationDelivery
-                                -> Maybe ProjectNotificationDelivery
-                                -> Form ProjectNotificationPref
-projectNotificationsForm mwiki_page mwiki_edit mblog_post
-                         mnew_pledge mupdated_pledge mdeleted_pledge =
+projectNotificationsForm
+    :: Bool -- Is the viewer a project team member?
+    -> Maybe ProjectNotificationDelivery
+    -> Maybe ProjectNotificationDelivery
+    -> Maybe ProjectNotificationDelivery
+    -> Maybe ProjectNotificationDelivery
+    -> Maybe ProjectNotificationDelivery
+    -> Maybe ProjectNotificationDelivery
+    -> Maybe ProjectNotificationDelivery
+    -> Form ProjectNotificationPref
+projectNotificationsForm is_team_member mwiki_page mwiki_edit mblog_post
+                         mnew_pledge mupdated_pledge mdeleted_pledge
+                         mvolunteer_app =
     renderBootstrap3 BootstrapBasicForm $ ProjectNotificationPref
         <$> projectOpt "Wiki page created" mwiki_page
         <*> projectOpt "Wiki page edited"  mwiki_edit
@@ -223,5 +227,8 @@ projectNotificationsForm mwiki_page mwiki_edit mblog_post
         <*> projectOpt "New pledge"        mnew_pledge
         <*> projectOpt "Pledge updated"    mupdated_pledge
         <*> projectOpt "Pledge deleted"    mdeleted_pledge
+        <*> if is_team_member
+                then projectOpt "Volunteer application submitted" mvolunteer_app
+                else pure Nothing
   where
     projectOpt = opt projectMethods

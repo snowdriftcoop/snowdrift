@@ -60,6 +60,7 @@ data ProjectNotificationPref = ProjectNotificationPref
     , notifNewPledge       :: Maybe ProjectNotificationDelivery
     , notifUpdatedPledge   :: Maybe ProjectNotificationDelivery
     , notifDeletedPledge   :: Maybe ProjectNotificationDelivery
+    , notifVolunteerApp    :: Maybe ProjectNotificationDelivery
     } deriving Show
 
 projectNotificationPref
@@ -71,7 +72,8 @@ projectNotificationPref ProjectNotificationPref {..} =
     , (NotifBlogPost        , notifBlogPost)
     , (NotifNewPledge       , notifNewPledge)
     , (NotifUpdatedPledge   , notifUpdatedPledge)
-    , (NotifDeletedPledge   , notifDeletedPledge) ]
+    , (NotifDeletedPledge   , notifDeletedPledge)
+    , (NotifVolunteerApp    , notifVolunteerApp) ]
 
 
 forcedNotification :: UserNotificationType -> Maybe UserNotificationDelivery

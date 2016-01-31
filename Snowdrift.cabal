@@ -142,6 +142,7 @@ library
         Model.User.Sql
         Model.Utils
         Model.ViewType
+        Model.Volunteer
         Model.Wiki
         Model.Wiki.Sql
         Settings

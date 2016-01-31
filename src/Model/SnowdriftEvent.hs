@@ -53,6 +53,8 @@ snowdriftEventTime = \case
         sharesPledgedTs
     EDeletedPledge ts _ _ _ ->
         ts
+    EVolunteerApp ts _ _ _ ->
+        ts
 
 -- Eventually the html rendering here should be moved to the top level
 -- somewhere for sharing with notifications
@@ -353,3 +355,5 @@ snowdriftEventToFeedEntry _ _ _ _ _ _ _ (ECommentPending _ _)   = Nothing
 
 snowdriftEventToFeedEntry _ _ _ _ _ _ _ (EUserNotificationSent _ _)    = Nothing
 snowdriftEventToFeedEntry _ _ _ _ _ _ _ (EProjectNotificationSent _ _) = Nothing
+
+snowdriftEventToFeedEntry _ _ _ _ _ _ _ (EVolunteerApp _ _ _ _) = Nothing

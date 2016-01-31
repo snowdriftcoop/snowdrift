@@ -22,9 +22,12 @@ getProjectNotificationsR user_id project_id = do
     mnew_pledge       <- fetchNotifPref NotifNewPledge
     mupdated_pledge   <- fetchNotifPref NotifUpdatedPledge
     mdeleted_pledge   <- fetchNotifPref NotifDeletedPledge
+    mvolunteer_app    <- fetchNotifPref NotifVolunteerApp
+    is_team_member    <- runDB (userIsProjectTeamMemberDB user_id project_id)
     (form, enctype) <- generateFormPost $
-        projectNotificationsForm mwiki_page mwiki_edit mblog_post
+        projectNotificationsForm is_team_member mwiki_page mwiki_edit mblog_post
                                  mnew_pledge mupdated_pledge mdeleted_pledge
+                                 mvolunteer_app
     defaultLayout $ do
         snowdriftDashTitle
             ("Notification Preferences for " <> projectName project)
@@ -34,8 +37,9 @@ getProjectNotificationsR user_id project_id = do
 postProjectNotificationsR :: UserId -> ProjectId -> Handler Html
 postProjectNotificationsR user_id project_id = do
     void $ checkEditUser user_id
+    is_team_member <- runDB (userIsProjectTeamMemberDB user_id project_id)
     ((result, form), enctype) <- runFormPost $
-        projectNotificationsForm Nothing Nothing Nothing
+        projectNotificationsForm is_team_member Nothing Nothing Nothing Nothing
                                  Nothing Nothing Nothing
     case result of
         FormSuccess notif_pref -> do
