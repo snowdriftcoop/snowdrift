@@ -89,6 +89,7 @@ snowdriftEventToFeedEntry
                       , "posted a new comment on"
                       , discussion ]
         , feedEntryContent = [hamlet| |] render
+        , feedEntryEnclosure = Nothing
         }
   where
     user_id    = commentUser comment
@@ -124,6 +125,7 @@ snowdriftEventToFeedEntry
         , feedEntryTitle   =
             T.unwords [ T.snoc project_handle ':', "comment(s) rethreaded" ]
         , feedEntryContent = [hamlet| |] render
+        , feedEntryEnclosure = Nothing
         }
 
 snowdriftEventToFeedEntry
@@ -165,6 +167,7 @@ snowdriftEventToFeedEntry
         , feedEntryUpdated = commentClosingTs
         , feedEntryTitle   = title
         , feedEntryContent = [hamlet| |] render
+        , feedEntryEnclosure = Nothing
         }
 
 
@@ -189,6 +192,7 @@ snowdriftEventToFeedEntry
             , ticketName
             ]
         , feedEntryContent = [hamlet| |] render
+        , feedEntryEnclosure = Nothing
         }
   where
     user_id    = ticketClaimingUser
@@ -225,6 +229,7 @@ snowdriftEventToFeedEntry
             , ticketName
             ]
         , feedEntryContent = [hamlet| |] render
+        , feedEntryEnclosure = Nothing
         }
   where
     user_id    = ticketOldClaimingUser
@@ -260,6 +265,7 @@ snowdriftEventToFeedEntry
             , ticketName
             ]
         , feedEntryContent = [hamlet| |] render
+        , feedEntryEnclosure = Nothing
         }
   where
     Entity ticket_id Ticket{..} =
@@ -290,6 +296,7 @@ snowdriftEventToFeedEntry
                       , "new wiki page"
                       , "\"" <> target <> "\"" ]
         , feedEntryContent = [hamlet| |] render
+        , feedEntryEnclosure = Nothing
         }
   where
     target = wikiTargetTarget wiki_target
@@ -314,6 +321,7 @@ snowdriftEventToFeedEntry
             , "ed. by", username
             ] <> maybe "" (T.append ": ") (wikiEditComment wiki_edit)
         , feedEntryContent = [hamlet| |] render
+        , feedEntryEnclosure = Nothing
         }
   where
     target          = wikiTargetTarget wiki_target
@@ -338,6 +346,7 @@ snowdriftEventToFeedEntry render project_handle _ _ _ _ url
                       , "new blog post:"
                       , "\"" <> title <> "\"" ]
         , feedEntryContent = [hamlet| |] render
+        , feedEntryEnclosure = Nothing
         }
 
 
