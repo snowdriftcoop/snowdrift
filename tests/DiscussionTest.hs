@@ -75,12 +75,11 @@ runDiscussionTest
         comment_reply_url
         comment_rethread_url = do
     ydescribe (unwords ["discussion on", label]) $ do
-        yit "loads the discussion page" $ [marked|
+        yit "loads the discussion page" $ do
             loginAs TestUser
             get200 discussion_page_url
-        |]
 
-        let postReply i = [marked|
+        let postReply i = do
                 (comment_id, approved) <- getLatestCommentId
                 when (not approved)
                      (error $ "comment not approved: " ++ show comment_id)
@@ -90,9 +89,8 @@ runDiscussionTest
                         "Reply"
                         (T.pack ("Thread 1 - reply " ++ show (i :: Integer))))
                 return (i, comment_id)
-        |]
 
-        yit "posts and moves some comments" $ [marked|
+        yit "posts and moves some comments" $ do
             loginAs TestUser
             postComment new_thread_url
                         (byLabel "New Topic" "Thread 1 - root message")
@@ -106,20 +104,18 @@ runDiscussionTest
                 byLabel "New Parent Url" "/p/snowdrift/w/en/about/d"
                 byLabel "Reason" "testing"
                 addPostParam "mode" "post"
-        |]
 
 
     ydescribe (unwords ["discussion on", label, "- rethreading"]) $ do
-        let createComments = [marked|
+        let createComments = do
                 postComment new_thread_url $ byLabel "New Topic" "First message"
                 (first_message, True) <- getLatestCommentId
                 postComment new_thread_url $ byLabel "New Topic" "Second message"
                 (second_message, True) <- getLatestCommentId
 
                 return (first_message, second_message)
-            |]
 
-            testRethread first_message second_message = [marked|
+            testRethread first_message second_message = do
 
                 get200 $ comment_rethread_url first_message
 
@@ -140,23 +136,20 @@ runDiscussionTest
 
                 bodyContains "First message"
                 bodyContains "Second message"
-            |]
 
 
-        yit "can move newer comments under older" $ [marked|
+        yit "can move newer comments under older" $ do
             loginAs TestUser
             (first_message, second_message) <- createComments
             testRethread first_message second_message
-        |]
 
 
-        yit "can move older comments under newer" $ [marked|
+        yit "can move older comments under newer" $ do
             loginAs TestUser
             (first_message, second_message) <- createComments
             testRethread second_message first_message
-        |]
 
-        yit "can rethread across pages and the redirect still works" $ [marked|
+        yit "can rethread across pages and the redirect still works" $ do
             loginAs TestUser
             postComment new_thread_url $ byLabel "New Topic" "posting on about page"
             (originalId, True) <- getLatestCommentId
@@ -192,5 +185,4 @@ runDiscussionTest
                     ++ ")")
                 new_url
                 desired_url
-        |]
 

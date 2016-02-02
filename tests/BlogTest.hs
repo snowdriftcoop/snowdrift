@@ -17,7 +17,7 @@ blogSpecs = do
     let getAttrs = XML.elementAttributes . XML.documentRoot . HTML.parseLBS
         blogRoute = NewBlogPostR "snowdrift"
     ydescribe "blog" $ do
-        yit "previews blog post" $ [marked|
+        yit "previews blog post" $ do
             loginAs AdminUser
 
             get200 $ ProjectBlogR "snowdrift"
@@ -40,9 +40,8 @@ blogSpecs = do
 
             bodyContains "Above fold."
             bodyContains "Below fold."
-        |]
 
-        yit "posts blog post" $ [marked|
+        yit "posts blog post" $ do
             loginAs AdminUser
 
             get200 $ ProjectBlogR "snowdrift"
@@ -76,4 +75,3 @@ blogSpecs = do
             get200 $ ProjectBlogR "snowdrift"
             htmlAnyContain ".blog-post-top" "Above fold."
             htmlNoneContain ".blog-post-top" "Below fold."
-        |]

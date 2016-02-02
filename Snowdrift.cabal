@@ -468,7 +468,6 @@ test-suite test
         PPrint
         TestHandler
         TestImport
-        TestImport.Internal
         TimedYesodTest
         UserTest
         WikiTest

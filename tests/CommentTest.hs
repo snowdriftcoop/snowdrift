@@ -27,7 +27,7 @@ commentSpecs conf = do
 
 tagSpecs :: AppConfig DefaultEnv a -> Spec
 tagSpecs AppConfig {..} = ydescribe "tags" $
-    yit "'tags:' syntax" [marked|
+    yit "'tags:' syntax" $ do
     -- Test that 'tags:' adds tags when a comment is created.
     ---------------------------------------------------------
     -- Add a few tags.
@@ -74,7 +74,6 @@ tagSpecs AppConfig {..} = ydescribe "tags" $
 
     -- Check that the tags are still there.
     errorUnlessUniqueTags comment_id $ tags_post_comment <> tags_edit_comment
-    |]
   where
     user = Mary
 
@@ -154,7 +153,7 @@ testTicket
     => AppConfig DefaultEnv a
     -> user -> url1 -> (CommentId -> url2) -> (CommentId -> Route App)
     -> Example ()
-testTicket AppConfig {..} user new_route reply_route edit_route = [marked|
+testTicket AppConfig {..} user new_route reply_route edit_route = do
     -- Ticket number is not changed when ticket is edited.
     ------------------------------------------------------
     -- Create a ticket.
@@ -192,4 +191,3 @@ testTicket AppConfig {..} user new_route reply_route edit_route = [marked|
     editComment comment_route "no tickets here"
     medit_ticket2 <- testDB $ getBy $ UniqueTicket reply_comment_id
     unless (medit_ticket2 == Nothing) $ error "ticket not deleted"
-|]
