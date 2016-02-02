@@ -815,3 +815,4 @@ notifySpecs AppConfig {..} file = do
             watchProject Mary test_project_id $ return ()
             testDB $ errorUnlessExistDefaultProjectNotifPrefs mary_id test_project_id
         |]
+    testProjectNotification NotifVolunteerApp = return ()
