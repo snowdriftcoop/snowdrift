@@ -259,7 +259,7 @@ notifySpecs AppConfig {..} file = do
     editComment' route = editComment route "testing"
 
     testUserNotification NotifEligEstablish = do
-        yit "notifies on establishment" $ [marked|
+        yit "notifies on establishment" $ do
             forM_ (L.init named_users) $ \user -> do
                 user_id <- userId user
                 loginAs AdminUser
@@ -270,9 +270,8 @@ notifySpecs AppConfig {..} file = do
                         render appRoot $ HonorPledgeR
                 loginAs user
                 acceptHonorPledge
-        |]
 
-        yit "send an email when a user is eligible for establishment" $ [marked|
+        yit "send an email when a user is eligible for establishment" $ do
             mary_id <- userId Mary
             testDB $ unestablish mary_id
             testDB $ addAndVerifyEmail mary_id "mary@localhost"
@@ -284,10 +283,9 @@ notifySpecs AppConfig {..} file = do
                 "You are now eligible to become an *established* user"
             loginAs Mary
             acceptHonorPledge
-        |]
 
     testUserNotification NotifReply = do
-        yit "notifies on reply" $ [marked|
+        yit "notifies on reply" $ do
             loginAs Mary
             postComment (enRoute NewWikiDiscussionR "about") $
                 byLabel "New Topic" "root comment"
@@ -305,9 +303,8 @@ notifySpecs AppConfig {..} file = do
             (reply_id, True) <- getLatestCommentId
             errUnlessUniqueUserWebsiteNotif' WithDelay mary_id NotifReply $
                 render appRoot $ CommentDirectLinkR reply_id
-        |]
 
-        yit "doesn't notify when replying to yourself" $ [marked|
+        yit "doesn't notify when replying to yourself" $ do
             loginAs Mary
             postComment (enRoute NewWikiDiscussionR "about") $
                 byLabel "New Topic" "root comment (self)"
@@ -324,9 +321,8 @@ notifySpecs AppConfig {..} file = do
             (reply_id, True) <- getLatestCommentId
             errWhenExistsUserWebsiteNotif' WithDelay mary_id NotifReply $
                 render appRoot $ CommentDirectLinkR reply_id
-        |]
 
-        yit "sends an email on reply" $ [marked|
+        yit "sends an email on reply" $ do
             loginAs Mary
             postComment (enRoute NewWikiDiscussionR "about") $
                 byLabel "New Topic" "root comment (email)"
@@ -346,9 +342,8 @@ notifySpecs AppConfig {..} file = do
                 "sent the user notification to mary@localhost"
                 file $
                 render appRoot $ CommentDirectLinkR reply_id
-        |]
 
-        yit "doesn't send an email when replying to yourself" $ [marked|
+        yit "doesn't send an email when replying to yourself" $ do
             loginAs Mary
             postComment (enRoute NewWikiDiscussionR "about") $
                 byLabel "New Topic" "root comment (email, self)"
@@ -366,16 +361,14 @@ notifySpecs AppConfig {..} file = do
             errWhenExistsEmailNotif'
                 "iteration finished" file $
                 render appRoot $ CommentDirectLinkR reply_id
-        |]
 
     -- Not delivered by email.
     testUserNotification NotifWelcome =
-        yit "sends the welcome message when a user is created" $ [marked|
+        yit "sends the welcome message when a user is created" $ do
             forM_ named_users $ \user -> do
                  user_id <- userId user
                  errUnlessUniqueUserWebsiteNotif' WithoutDelay user_id NotifWelcome
                      "Thanks for registering!"
-        |]
 
     -- XXX: Not triggered anywhere.
     testUserNotification NotifBalanceLow = return ()
@@ -383,7 +376,7 @@ notifySpecs AppConfig {..} file = do
     -- XXX: Cannot be set by a user, so it should not be delivered by
     -- email.
     testUserNotification NotifUnapprovedComment =
-        yit "notifies when a comment needs to be approved" $ [marked|
+        yit "notifies when a comment needs to be approved" $ do
             let unestablished_user = L.last named_users
             loginAs unestablished_user
             postComment (enRoute NewWikiDiscussionR "about") $
@@ -392,13 +385,12 @@ notifySpecs AppConfig {..} file = do
             user_id <- userId unestablished_user
             errUnlessUniqueUserWebsiteNotif' WithDelay user_id NotifUnapprovedComment $
                 render appRoot $ enRoute WikiCommentR "about" comment_id
-        |]
 
     -- XXX: Not triggered anywhere.
     testUserNotification NotifApprovedComment = return ()
 
     testUserNotification NotifRethreadedComment = do
-        yit "notifies when a comment is rethreaded" $ [marked|
+        yit "notifies when a comment is rethreaded" $ do
             loginAs Mary
             postComment (enRoute NewWikiDiscussionR "about") $
                 byLabel "New Topic" "parent comment"
@@ -419,9 +411,8 @@ notifySpecs AppConfig {..} file = do
 
             errUnlessUniqueUserWebsiteNotif' WithDelay bob_id NotifRethreadedComment $
                 render appRoot $ enRoute WikiCommentR "about" comment_id
-        |]
 
-        yit "doesn't notify when rethreading your own comment" $ [marked|
+        yit "doesn't notify when rethreading your own comment" $ do
             loginAs Mary
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
@@ -446,9 +437,8 @@ notifySpecs AppConfig {..} file = do
                     render appRoot $ enRoute WikiCommentR "about" comment_id
 
             testDB $ deleteRole snowdrift_id mary_id Moderator
-        |]
 
-        yit "sends an email when a comment is rethreaded" $ [marked|
+        yit "sends an email when a comment is rethreaded" $ do
             loginAs Mary
             postComment (enRoute NewWikiDiscussionR "about") $
                 byLabel "New Topic" "parent comment (email)"
@@ -472,9 +462,8 @@ notifySpecs AppConfig {..} file = do
                 "sent the user notification to bob@localhost"
                 file $
                 render appRoot $ enRoute WikiCommentR "about" comment_id
-        |]
 
-        yit "doesn't send an email when rethreading your own comment" $ [marked|
+        yit "doesn't send an email when rethreading your own comment" $ do
             loginAs Mary
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
@@ -499,13 +488,12 @@ notifySpecs AppConfig {..} file = do
                 render appRoot $ enRoute WikiCommentR "about" comment_id
 
             testDB $ deleteRole snowdrift_id mary_id Moderator
-        |]
 
     -- XXX: TODO.
     testUserNotification NotifEditConflict = return ()
 
     testUserNotification NotifFlag = do
-        yit "notifies when a comment gets flagged" $ [marked|
+        yit "notifies when a comment gets flagged" $ do
             loginAs Mary
             postComment (enRoute NewWikiDiscussionR "about") $
                 byLabel "New Topic" "flagged comment"
@@ -519,9 +507,8 @@ notifySpecs AppConfig {..} file = do
 
             errUnlessUniqueUserWebsiteNotif' WithoutDelay mary_id NotifFlag $
                 render appRoot $ enRoute EditWikiCommentR "about" comment_id
-        |]
 
-        yit "sends an email when a comment gets flagged" $ [marked|
+        yit "sends an email when a comment gets flagged" $ do
             loginAs Mary
             postComment (enRoute NewWikiDiscussionR "about") $
                 byLabel "New Topic" "flagged comment (email)"
@@ -537,11 +524,10 @@ notifySpecs AppConfig {..} file = do
                 "sent the user notification to mary@localhost"
                 file $
                 render appRoot $ enRoute EditWikiCommentR "about" comment_id
-        |]
 
     -- Relies on the 'NotifFlag' test.
     testUserNotification NotifFlagRepost = do
-        yit "notifies when a flagged comment gets reposted" $ [marked|
+        yit "notifies when a flagged comment gets reposted" $ do
             bob_id <- userId Bob
             testDB $ resetUserNotifPrefs bob_id NotifFlagRepost
                 UserNotifDeliverWebsite
@@ -552,9 +538,8 @@ notifySpecs AppConfig {..} file = do
 
             errUnlessUniqueUserWebsiteNotif' WithoutDelay bob_id NotifFlagRepost $
                 render appRoot $ enRoute WikiCommentR "about" comment_id
-        |]
 
-        yit "sends an email when a flagged comment gets reposted" $ [marked|
+        yit "sends an email when a flagged comment gets reposted" $ do
             bob_id <- userId Bob
             loginAs Bob
             testDB $ resetUserNotifPrefs bob_id NotifFlagRepost
@@ -569,10 +554,9 @@ notifySpecs AppConfig {..} file = do
                 "sent the user notification to bob@localhost"
                 file $
                 render appRoot $ enRoute WikiCommentR "about" comment_id
-        |]
 
     testProjectNotification NotifWikiPage = do
-        yit "notifies when a wiki page is created" $ [marked|
+        yit "notifies when a wiki page is created" $ do
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
             watchProject Mary snowdrift_id $ do
@@ -584,9 +568,8 @@ notifySpecs AppConfig {..} file = do
 
                 errUnlessUniqueProjectWebsiteNotif' WithDelay mary_id NotifWikiPage $
                     render appRoot $ enRoute WikiR wiki_page
-        |]
 
-        yit "doesn't notify when a wiki page is created by you" $ [marked|
+        yit "doesn't notify when a wiki page is created by you" $ do
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
             watchProject Mary snowdrift_id $ do
@@ -598,9 +581,8 @@ notifySpecs AppConfig {..} file = do
                 errWhenExistsProjectWebsiteNotif'
                     WithDelay mary_id NotifWikiPage $
                         render appRoot $ enRoute WikiR wiki_page_self
-        |]
 
-        yit "sends an email when a wiki page is created" $ [marked|
+        yit "sends an email when a wiki page is created" $ do
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
             watchProject Mary snowdrift_id $ do
@@ -614,9 +596,8 @@ notifySpecs AppConfig {..} file = do
                     "sent the project notification to mary@localhost"
                     file $
                     render appRoot $ enRoute WikiR wiki_page_email
-        |]
 
-        yit "doesn't send an email when a wiki page is created by you" $ [marked|
+        yit "doesn't send an email when a wiki page is created by you" $ do
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
             watchProject Mary snowdrift_id $ do
@@ -629,11 +610,10 @@ notifySpecs AppConfig {..} file = do
                     "iteration finished"
                     file $
                     render appRoot $ enRoute WikiR wiki_page_self_email
-        |]
 
     -- Relies on the 'NotifWikiPage' test.
     testProjectNotification NotifWikiEdit = do
-        yit "notifies when a wiki page is edited" $ [marked|
+        yit "notifies when a wiki page is edited" $ do
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
             watchProject Mary snowdrift_id $ do
@@ -645,9 +625,8 @@ notifySpecs AppConfig {..} file = do
 
                 errUnlessUniqueProjectWebsiteNotif' WithDelay mary_id NotifWikiEdit $
                     render appRoot $ enRoute WikiR wiki_page
-        |]
 
-        yit "doesn't notify when a wiki page is edited by you" $ [marked|
+        yit "doesn't notify when a wiki page is edited by you" $ do
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
             watchProject Mary snowdrift_id $ do
@@ -662,9 +641,8 @@ notifySpecs AppConfig {..} file = do
                     render appRoot $ enRoute WikiR wiki_page_self
 
                 testDB $ deleteRole snowdrift_id mary_id Moderator
-        |]
 
-        yit "sends an email when a wiki page is edited" $ [marked|
+        yit "sends an email when a wiki page is edited" $ do
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
             watchProject Mary snowdrift_id $ do
@@ -679,9 +657,8 @@ notifySpecs AppConfig {..} file = do
                     "sent the project notification to mary@localhost"
                     file $
                     render appRoot $ enRoute WikiR wiki_page
-        |]
 
-        yit "doesn't send an email when a wiki page is edited by you" $ [marked|
+        yit "doesn't send an email when a wiki page is edited by you" $ do
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
             watchProject Mary snowdrift_id $ do
@@ -698,10 +675,9 @@ notifySpecs AppConfig {..} file = do
                     render appRoot $ enRoute WikiR wiki_page_self
 
                 testDB $ deleteRole snowdrift_id mary_id Moderator
-        |]
 
     testProjectNotification NotifBlogPost = do
-        yit "notifies when a blog post is created" $ [marked|
+        yit "notifies when a blog post is created" $ do
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
             watchProject Mary snowdrift_id $ do
@@ -714,9 +690,8 @@ notifySpecs AppConfig {..} file = do
 
                 errUnlessUniqueProjectWebsiteNotif' WithDelay mary_id NotifBlogPost $
                     render appRoot $ BlogPostR snowdrift blog_handle
-        |]
 
-        yit "doesn't notify when a blog post is created by you" $ [marked|
+        yit "doesn't notify when a blog post is created by you" $ do
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
             watchProject Mary snowdrift_id $ do
@@ -732,9 +707,8 @@ notifySpecs AppConfig {..} file = do
                     render appRoot $ BlogPostR snowdrift blog_handle
 
                 testDB $ deleteRole snowdrift_id mary_id TeamMember
-        |]
 
-        yit "sends an email when a blog post is created" $ [marked|
+        yit "sends an email when a blog post is created" $ do
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
             watchProject Mary snowdrift_id $ do
@@ -749,9 +723,8 @@ notifySpecs AppConfig {..} file = do
                     "sent the project notification to mary@localhost"
                     file $
                     render appRoot $ BlogPostR snowdrift blog_handle
-        |]
 
-        yit "doesn't send an email when a blog post is created by you" $ [marked|
+        yit "doesn't send an email when a blog post is created by you" $ do
             mary_id      <- userId Mary
             snowdrift_id <- snowdriftId
             watchProject Mary snowdrift_id $ do
@@ -768,7 +741,6 @@ notifySpecs AppConfig {..} file = do
                     render appRoot $ BlogPostR snowdrift blog_handle
 
                 testDB $ deleteRole snowdrift_id mary_id TeamMember
-        |]
 
     testProjectNotification NotifNewPledge = do
         yit "notifies when there is a new pledge" (return ())
@@ -788,7 +760,7 @@ notifySpecs AppConfig {..} file = do
         yit "sends an email when a user stops supporting the project" (return ())
         yit "doesn't send an email when you stop supporting the project" (return ())
         yit ("project notification preferences are checked per-project " <>
-             "before inserting the defaults on 'watch'") [marked|
+             "before inserting the defaults on 'watch'") $ do
             mary_id <- userId Mary
             -- Start watching the Snowdrift.coop project without doing
             -- anything.
@@ -814,4 +786,4 @@ notifySpecs AppConfig {..} file = do
                                  Nothing (key $ PersistInt64 1) True Nothing
             watchProject Mary test_project_id $ return ()
             testDB $ errorUnlessExistDefaultProjectNotifPrefs mary_id test_project_id
-        |]
+    testProjectNotification NotifVolunteerApp = return ()

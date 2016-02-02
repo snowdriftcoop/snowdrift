@@ -390,7 +390,7 @@ getProjectFeedR project_handle = do
     Just route <- getCurrentRoute
     render     <- getUrlRender
 
-    let feed = Feed "project feed" route HomeR "Snowdrift Community" "" "en" now $
+    let feed = Feed "project feed" route HomeR "Snowdrift Community" "" "en" now Nothing $
             mapMaybe (uncurry $ snowdriftEventToFeedEntry
                         render
                         project_handle

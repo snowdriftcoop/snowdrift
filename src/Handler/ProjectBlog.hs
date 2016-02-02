@@ -214,6 +214,7 @@ getProjectBlogFeedR project_handle = do
             , feedEntryUpdated = blogPostTs post
             , feedEntryTitle = blogPostTitle post
             , feedEntryContent = entryContent
+            , feedEntryEnclosure = Nothing
             }
 
         return entry
@@ -231,6 +232,7 @@ getProjectBlogFeedR project_handle = do
         , feedLanguage = "en"
         , feedUpdated = updatedTime
         , feedEntries = entries
+        , feedLogo = Nothing
         }
 
 --------------------------------------------------------------------------------

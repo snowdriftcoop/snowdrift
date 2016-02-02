@@ -32,9 +32,7 @@ The [ide-haskell](https://atom.io/packages/ide-haskell) package offers further
 development tools including error-checking, linting, and type information. To
 install ide-haskell for Atom:
 
-* Run `stack install ghc-mod hlint stylish-haskell --resolver nightly-2015-12-14`
-    * "--resolver…" is needed until we update our main resolver to one that
-      includes ghc-mod (likely lts-4 series if we stick to lts).
+* Run `stack install ghc-mod hlint stylish-haskell`
 * Install the required Atom packages:
   `apm install language-haskell haskell-ghc-mod ide-haskell autocomplete-haskell`
 * Make sure `$HOME/.local/bin` is on the PATH accessible to Atom.
@@ -105,6 +103,8 @@ Also of interest:
   (same author as Haskell Mode) takes a lot of tedium out of Haskell editing.
 * [HIndent](https://github.com/chrisdone/hindent/) (same author again)
   will pretty-print your Haskell-code along the same lines as SHM.
+* [Hare](https://github.com/RefactoringTools/HaRe) automates renaming and
+  changing among different Haskell code styles.
 
 * [Haskell Interactive Mode](https://github.com/haskell/haskell-mode/wiki/Haskell-Interactive-Mode-Setup)
   will enable automatic regeneration of the TAGS file. (Our
@@ -132,17 +132,17 @@ For working on our code, your ~/.vimrc file should include:
     au FileType hamlet setl sw=2 sts=2 et
     au Filetype gitcommit setl spell textwidth=72
 
-Though opinions vary, we also recommend the following minimal .vimrc settings:
+We also recommend the following minimal .vimrc settings:
 
-    syntax on
     set number title hlsearch ignorecase smartcase showbreak=↪
     set wildmenu wildmode=longest,list,full
 
 #### Vim plugins
 
-We recommend using a Vim plugin manager such as
-[Vundle](https://github.com/VundleVim/Vundle.vim)
-and the following plugins particularly relevant to snowdrift:
+We recommend [vim-plug](https://github.com/junegunn/vim-plug) for managing Vim
+plugins.
+
+For syntax highlighting, we suggest everyone use the following plugins:
 
 * [vim-syntax-shakespeare](https://github.com/pbrisbin/vim-syntax-shakespeare)
 * [haskell-vim](https://github.com/neovimhaskell/haskell-vim)
@@ -150,44 +150,63 @@ and the following plugins particularly relevant to snowdrift:
 * [vim2hs](https://github.com/dag/vim2hs)
     * optional: add `set nofoldenable` to .vimrc to stop vim2hs function folding
 
-The plugins listed above mostly do syntax highlighting and do not affect
-commands or basic operations, so they are safe for everyone to use without
-hesitation or learning process.
+Given already using vim-plug, these are the lines to use in ~/.vimrc for the
+items above:
 
-As an optional tool, Vim can do integrated Haskell error-checking and get type
-information via [ghcmod-vim](https://github.com/eagletmt/ghcmod-vim). Follow
-its install instructions except run
-`stack install ghc-mod --resolver nightly-2015-12-14`
-(note: this "--resolver…" bit can be ignored once ghc-mod is in the LTS
-version we use) *instead* of the instruction to run "cabal install ghc-mod" (and
-make sure ~/.local/bin is on your path). You may want to also try the associated
-auto-completion tool [neco-ghc](https://github.com/eagletmt/neco-ghc). *Note:
-ghc-mod will fail if it sees a dist/ directory which is made when you run
+    Plug 'pbrisbin/vim-syntax-shakespeare', { 'for': ['hamlet', 'cassius', 'julius', 'haskell'] }
+    Plug 'plasticboy/vim-markdown', { 'for': 'markdown' }
+    Plug 'neovimhaskell/haskell-vim', { 'for': 'haskell' }
+    Plug 'dag/vim2hs', { 'for': 'haskell' }
+    au FileType haskell set nofoldenable "stops vim2hs folding
+
+Haskell-specific functional tools for Haskell-focused developers:
+
+For advanced Haskell error-checking and type information, add
+[ghcmod-vim](https://github.com/eagletmt/ghcmod-vim). NB: use stack instead of
+cabal for installation. For autocompletion with ghc-mod, use
+[neco-ghc](https://github.com/eagletmt/neco-ghc).
+
+To install ghc-mod, run `stack install ghc-mod` (and make sure ~/.local/bin is
+on your path). Then, assuming vim-plug, add these lines to add to ~/.vimrc:
+
+    Plug 'eagletmt/ghcmod-vim', { 'for': 'haskell' }
+    Plug 'eagletmt/neco-ghc', { 'for': 'haskell' }
+    Plug 'Shougo/vimproc.vim', {'do': 'make', 'for': 'haskell' } "neco-ghc dependency
+    " Disable haskell-vim omnifunc per neco-ghc recommendation
+    let g:haskellmode_completion_ghc = 0
+    autocmd FileType haskell setlocal omnifunc=necoghc#omnifunc
+
+NB: ghc-mod will fail if it sees a dist/ directory which is made when you run
 snowdrift via `stack exec yesod devel`, so until yesod-bin is updated to use
 Stack directly, use workarounds such as temporarily renaming the /dist directory
 when you want to use ghc-mod, or avoid `yesod devel` entirely and run the site
-instead via `stack exec Snowdrift Development`.*
+instead via `stack exec Snowdrift Development`.
 
-We suggest several other general vim plugins for consideration (probably best to
-add these one at a time and understand what each does and see if you like the
-idea rather than add mindlessly). Ordered roughly by most strongly recommended:
-[vim-sensible](https://github.com/tpope/vim-sensible),
-[vim-repeat](https://github.com/tpope/vim-repeat),
-[vim-supertab](https://github.com/ervandew/supertab),
-[vim-gitgutter](https://github.com/airblade/vim-gitgutter),
-[vim-surround](https://github.com/tpope/vim-surround),
-[vim-commentary](https://github.com/tpope/vim-commentary),
-[ctrl-P](https://github.com/kien/ctrlp.vim),
-[vim-easyclip](https://github.com/vim-scripts/EasyClip) (warning: alters common vim
-behavior),
-[undotree](https://github.com/mbbill/undotree),
-[vim-fugitive](https://github.com/tpope/vim-fugitive),
-[gitv](https://github.com/gregsexton/gitv),
-[NERD tree](https://github.com/scrooloose/nerdtree) &
-[NERD tree git plugin](https://github.com/Xuyuanp/nerdtree-git-plugin);
-[ag.vim](https://github.com/rking/ag.vim) (takes extra setup besides just
-plugin),
-[vim-airline](https://github.com/bling/vim-airline).
+Another great Haskell tool: [vim-HaRe](https://github.com/glittershark/vim-hare)
+NB: to get HaRe itself, use `stack install hare` instead of cabal install.
+
+General vim plugins:
+
+Other general vim plugins we suggest for consideration include many which are
+inobtrusive and take zero or near-zero learning to use (roughly in order by most
+strongly recommended):
+* [vim-sensible](https://github.com/tpope/vim-sensible),
+* [vim-repeat](https://github.com/tpope/vim-repeat),
+* [vim-supertab](https://github.com/ervandew/supertab),
+* [ctrl-P](https://github.com/kien/ctrlp.vim),
+* [vim-gitgutter](https://github.com/airblade/vim-gitgutter),
+* [vim-surround](https://github.com/tpope/vim-surround),
+* [vim-commentary](https://github.com/tpope/vim-commentary),
+* [vim-easyclip](https://github.com/vim-scripts/EasyClip)
+  (NB: vim-easyclip alters common vim behavior),
+* [undotree](https://github.com/mbbill/undotree),
+* [vim-fugitive](https://github.com/tpope/vim-fugitive),
+* [gitv](https://github.com/gregsexton/gitv),
+* [NERD tree](https://github.com/scrooloose/nerdtree) &
+* [NERD tree git plugin](https://github.com/Xuyuanp/nerdtree-git-plugin);
+* [ag.vim](https://github.com/rking/ag.vim)
+  (NB: ag.vim takes extra setup beyond just plugin),
+* [vim-airline](https://github.com/bling/vim-airline).
 
 *Many* other options exist, although we'd rather contributors generally focus
 more on building Snowdrift than maximizing their Vim expertise.
@@ -226,10 +245,9 @@ Now, you can quickly jump to tags with whatever mechanism your text editor uses.
 
 The setup above works for functions defined within our local codebase. To add
 tags for all the dependencies too, install
-[codex](https://github.com/meteficha/html2hamlet) via
-`stack install codex --resolver nightly-2015-12-14` (and see the codex docs for
-how to use, including a vim-specific setting). Otherwise,
-[Stackage](https://www.stackage.org/lts-3/hoogle) will have documentation on
+[codex](https://github.com/aloiscochard/codex) via `stack install codex` (and
+see the codex docs for how to use, including a vim-specific setting). Otherwise,
+[Stackage](https://www.stackage.org/lts-5/hoogle) will have documentation on
 almost all of our dependencies.
 
 ### Atom tag usage and updating

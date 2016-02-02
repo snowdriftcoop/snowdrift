@@ -4,9 +4,8 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE LambdaCase #-}
 
-module TestImport (module TestImport, marked) where
+module TestImport (module TestImport) where
 
-import TestImport.Internal
 import Prelude hiding (exp)
 
 import Control.Arrow as TestImport hiding (app, loop)
@@ -194,7 +193,7 @@ statusIsResp number = withResponse $ \SResponse { simpleStatus = s } -> do
 
 postComment :: RedirectUrl App url => url -> RequestBuilder App ()
             -> YesodExample App ()
-postComment route stmts = [marked|
+postComment route stmts = do
     get200 route
 
     [ form ] <- htmlQuery "form"
@@ -208,7 +207,6 @@ postComment route stmts = [marked|
         addPostParam "mode" "post"
         byLabel "Language" "en"
         stmts
-|]
 
 getLatestCommentId :: YesodExample App (CommentId, Bool)
 getLatestCommentId = do
@@ -303,7 +301,7 @@ editWiki project language page content comment = do
         addPostParam "f1" $ shpack $ keyToInt64 $ wikiLastEditEdit last_edit
 
 establish :: UserId -> YesodExample App ()
-establish user_id = [marked|
+establish user_id = do
     get200 $ UserR user_id
 
     withStatus 303 False $ request $ do
@@ -311,7 +309,6 @@ establish user_id = [marked|
         setMethod "POST"
         setUrl $ UserEstEligibleR user_id
         byLabel "Reason" "testing"
-|]
 
 selectUserId :: Text -> SqlPersistM UserId
 selectUserId ident
@@ -328,11 +325,10 @@ userId :: NamedUser -> Example UserId
 userId = testDB . selectUserId . username
 
 acceptHonorPledge :: YesodExample App ()
-acceptHonorPledge = [marked|
+acceptHonorPledge = do
     withStatus 303 False $ request $ do
         setMethod "POST"
         setUrl HonorPledgeR
-|]
 
 -- Copied from 'Model.User' but without the constraint in the result.
 deleteUserNotifPrefs :: UserId -> UserNotificationType -> SqlPersistM ()
@@ -425,7 +421,7 @@ processPayments str test_action =
         test_action
 
 rethreadComment :: Text -> Text -> YesodExample App ()
-rethreadComment rethread_route parent_route = [marked|
+rethreadComment rethread_route parent_route = do
     get200 rethread_route
 
     withStatus 303 True $ request $ do
@@ -435,10 +431,9 @@ rethreadComment rethread_route parent_route = [marked|
         byLabel "New Parent Url" parent_route
         byLabel "Reason" "testing"
         addPostParam "mode" "post"
-|]
 
 flagComment :: Text -> YesodExample App ()
-flagComment route = [marked|
+flagComment route = do
     get200 route
 
     withStatus 303 True $ request $ do
@@ -448,10 +443,9 @@ flagComment route = [marked|
         addPostParam "f1" "1"
         addPostParam "f2" ""
         addPostParam "mode" "post"
-|]
 
 editComment :: Text -> Text -> YesodExample App ()
-editComment route comment_text = [marked|
+editComment route comment_text = do
     get200 route
 
     withStatus 303 True $ request $ do
@@ -461,17 +455,15 @@ editComment route comment_text = [marked|
         byLabel "Edit" comment_text
         byLabel "Language" "en"
         addPostParam "mode" "post"
-    |]
 
 changeWatchStatus :: RedirectUrl App url => url -> YesodExample App ()
-changeWatchStatus route = [marked|
+changeWatchStatus route = do
      withStatus 303 False $ request $ do
          setMethod "POST"
          setUrl route
-|]
 
 newBlogPost :: Text -> YesodExample App ()
-newBlogPost page = [marked|
+newBlogPost page = do
     let route = NewBlogPostR snowdrift
     get200 route
 
@@ -483,10 +475,9 @@ newBlogPost page = [marked|
         byLabel "Handle for the URL" page
         byLabel "Content" "testing"
         addPostParam "mode" "post"
-|]
 
 loadFunds :: UserId -> Int -> Example ()
-loadFunds user_id n = [marked|
+loadFunds user_id n = do
     let route = UserBalanceR user_id
     get200 route
 
@@ -495,7 +486,6 @@ loadFunds user_id n = [marked|
         setMethod "POST"
         setUrl route
         addPostParam "f1" $ shpack n
-    |]
 
 -- | Set the user's balance to a specified value.
 setBalance :: (MonadIO m, Functor m)

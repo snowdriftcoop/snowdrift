@@ -35,7 +35,8 @@ getBuildFeedR = do
                               (buildBootTime build)
                               (buildBase build)
                               (html render)
+                              Nothing
         return entry
 
-    newsFeedText $ Feed title feed_url home_url author description lang time entries
+    newsFeedText $ Feed title feed_url home_url author description lang time Nothing entries
   where gitlab = "https://git.gnu.io/snowdrift/snowdrift/commit/"
