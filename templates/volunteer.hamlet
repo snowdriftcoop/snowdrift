@@ -1,11 +1,14 @@
 <h1>Volunteer with #{projectName project}
 <p>
   Welcome!
-  Filling out this form is not required, but it's a great way to get started volunteering.
+  Filling out this form is not required, but it's a great way to get started
+  volunteering.
 <p>
-  Knowing about your interests and skills will enable us to direct you to where you can make the biggest difference.
+  Knowing about your interests and skills will enable us to direct you to
+  where you can make the biggest difference.
 <p>
-  Also see the <a href=@{WikiR project_handle LangEn "how-to-help"}>How-to-help page</a>
+  Also see the
+  <a href=@{WikiR project_handle LangEn "how-to-help"}>How-to-help page
   for information about our current needs.
 <div .container>
   <form action=@{VolunteerR project_handle} method="POST">
