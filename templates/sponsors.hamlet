@@ -221,6 +221,9 @@
     <a href=@{UserR (toSqlKey 630)}>
       hotzeplotz
   <li>
+    <a href=@{UserR (toSqlKey 982)}>
+      Antonin Houska
+  <li>
     <a href=@{UserR (toSqlKey 623)}>
       Karl Ove Hufthammer
   <li>
