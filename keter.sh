@@ -42,9 +42,8 @@ main () {
     if $opt_build
     then
         hdr "Building"
-        rm -fr dist/bin
         mkdir -p dist/bin
-        stack --work-dir .stack-work-deploy --local-bin-path $install_path install --flag Snowdrift:-dev
+        stack --work-dir .stack-work-deploy --local-bin-path $install_path install --flag Snowdrift:-dev --pedantic
         hdr "Packing executables"
         upx dist/bin/Snowdrift*
     else
@@ -62,4 +61,4 @@ main () {
     fi
 }
 
-main
+time main
