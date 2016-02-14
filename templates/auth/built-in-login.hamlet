@@ -8,6 +8,7 @@
            required>
   <label for=#{passphraseInputId}>Please tell us your passphrase, too.
     <input id=#{passphraseInputId}
+           $# NB: we use "passphrase" usually, but "password" is html keyword here
            type=password
            name=password
            required>

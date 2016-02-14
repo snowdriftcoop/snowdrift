@@ -121,6 +121,7 @@ submitLogin user pass = do
         setMethod "POST"
         setUrl $ urlPath testRoot `T.append` "auth/page/hashdb/login"
         addPostParam "username" user
+        -- needs to stay password not passphrase for Yesod upstream hashdb
         addPostParam "password" pass
 
 

@@ -269,6 +269,7 @@ createUser ident passph name newEmail avatar nick = do
     handle (\DBException -> return Nothing) $ runYDB $ do
         account_id <- insert (Account 0)
         discussion_id <- insert (Discussion 0)
+        -- we use "passphrase" usually, but setPassword is a Yesod import
         user <- maybe return setPassword passph $ newUser langs now account_id discussion_id
         uid_maybe <- insertUnique user
         case uid_maybe of

@@ -38,6 +38,7 @@ createUserForm :: Maybe Text
                        )
 createUserForm ident extra = do
     (identRes,   identView)   <- mreq textField     "" ident
+    -- we use "passphrase" usually, but passwordField is Yesod term
     (passph1Res, passph1View) <- mreq passwordField "" Nothing
     (passph2Res, passph2View) <- mreq passwordField "" Nothing
     (nameRes,    nameView)    <- mopt textField     "" Nothing
@@ -84,6 +85,7 @@ editUserForm muser = renderBootstrap3 BootstrapBasicForm $
                                 ,("rows", "15")])
                  (userStatement <$> muser)
 
+-- we use "passphrase" usually in our code, but passwordField is Yesod term
 changePassphraseForm :: Form ChangePassphrase
 changePassphraseForm = renderBootstrap3 BootstrapBasicForm $ ChangePassphrase
     <$> areq' passwordField "Current passphrase" Nothing

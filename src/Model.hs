@@ -69,6 +69,7 @@ share [ mkPersist sqlSettings
       ]
     $(persistFileWith lowerCaseSettings "config/models")
 
+-- we usually use "passphrase" but these uses of "password" come from Yesod
 instance HashDBUser User where
     userPasswordHash = userHash
     userPasswordSalt = userSalt
