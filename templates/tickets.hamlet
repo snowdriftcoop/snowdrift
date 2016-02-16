@@ -14,15 +14,15 @@
       <a href=@{WikiPagesR $ projectHandle project}>
         wiki page</a>.
       More details at the
-      <a href=@{WikiR "snowdrift" LangEn "tickets"}>
-        Snowdrift.coop tickets wiki page</a>.
+      <a href=@{WikiR "snow-discuss" LangEn "tickets"}>
+        ticket system wiki page</a>.
 
 <div .text-center>
   $with num_tickets <- length tagged_tickets
     #{num_tickets} open #{plural num_tickets "ticket" "tickets"} on this project
 
 $if null issues
-  <p> no tickets to display
+  <p>no tickets to display
 $else
   <table>
     $forall issue <- issues
