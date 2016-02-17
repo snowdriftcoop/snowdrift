@@ -6,6 +6,10 @@ import Turtle
 import Prelude hiding (FilePath)
 import System.Environment (getProgName)
 import qualified Filesystem.Path.CurrentOS as P
+import Control.Exception.Base (bracket)
+import System.IO (openFile, IOMode(..))
+import GHC.IO.Handle (hDuplicate, hDuplicateTo)
+import qualified System.IO as H
 
 -- # db - a one-off script to manage a local development postgres cluster, without
 -- # sudo. Written for snowdrift.coop, but applicable to any project. Mostly just
@@ -66,15 +70,25 @@ usageText = mapM_ stderr
     , "    exec COMMAND    run COMMAND"
     ]
 
+redirected :: FilePath -> Shell () -> Shell ()
+redirected f s = liftIO $ bracket
+    (do
+        save <- hDuplicate H.stdout
+        h <- openFile (P.encodeString f) WriteMode
+        hDuplicateTo h H.stdout
+        return save
+    )
+    (\h -> hDuplicateTo h H.stdout)
+    (const (sh s))
+
 initCluster :: FilePath -> FilePath -> FilePath -> Shell ()
-initCluster root pghost pgdata = do
-    let pghostT = toText_ pghost
-        pgdataT = toText_ pgdata
+initCluster root pghost pgdata = redirected logfile $ do
+    err ("Logging to " <> logfileT)
     err "Creating directories.."
     mktree pghost
     mktree pgdata
     err "Initializing cluster..."
-    pgCtl ["initdb", "-o", "--nosync --auth=peer", "-D", pgdataT] ""
+    pgCtl ["initdb", "-o", "--nosync --auth=peer", "-D", pgdataT] empty
     err "Updating cluster configuration file..."
     setPgConfigOpts
         (pgdata </> "postgresql.conf")
@@ -88,8 +102,14 @@ initCluster root pghost pgdata = do
           -- don't bother listening on a port, just a socket.
         , ("listen_addresses", "")
         ]
+    pgCtl ["start", "-w"] empty
   where
-    setPgConfigOpts f opts = inplace (choice (map (uncurry optSettingPattern) opts)) f
+    setPgConfigOpts f opts =
+        inplace (choice (map (uncurry optSettingPattern) opts)) f
+    logfile = root </> "init-dev-db.log"
+    logfileT = toText_ logfile
+    pghostT = toText_ pghost
+    pgdataT = toText_ pgdata
 
 optSettingPattern opt value = do
     _ <- do
