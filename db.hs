@@ -2,41 +2,39 @@
 -- stack --install-ghc runghc --package turtle
 {-# LANGUAGE OverloadedStrings #-}
 
-import Turtle
+-- | db - a one-off script to manage a local development postgres cluster,
+-- without sudo. Written for snowdrift.coop, but applicable to any project.
+-- Mostly just sets some environment variables appropriately and wraps
+-- pg_ctl.
+--
+-- Copyright 2015 Michael F. Lamb
+-- License: AGPLv3+
+--
+-- Converted to Haskell/turtle by Bryan Richter.
+--
+-- Notes:
+--
+-- Listening only on a socket won't work on Windows, which doesn't have
+-- unix sockets.
+
+import Control.Exception.Base (bracket)
+import Data.Maybe (catMaybes)
+import GHC.IO.Handle (hDuplicate, hDuplicateTo)
 import Prelude hiding (FilePath)
 import System.Environment (getProgName)
-import qualified Filesystem.Path.CurrentOS as P
-import Control.Exception.Base (bracket)
 import System.IO (openFile, IOMode(..))
-import GHC.IO.Handle (hDuplicate, hDuplicateTo)
-import qualified System.IO as H
-import qualified Data.Text as T
-import Data.Maybe (catMaybes)
+import Turtle
 import qualified Control.Foldl as F
-
--- # db - a one-off script to manage a local development postgres cluster, without
--- # sudo. Written for snowdrift.coop, but applicable to any project. Mostly just
--- # sets some environment variables appropriately and wraps pg_ctl.
--- #
--- # Copyright 2015 Michael F. Lamb
--- # License: AGPLv3+
-
--- # Notes:
--- #
--- # Listening only on a socket won't work on Windows, which doesn't have unix
--- # sockets.
--- #
-
-toText_ p = case toText p of
-    Right p' -> p'
-    _ -> error "Could not convert FilePath to Text"
+import qualified Data.Text as T
+import qualified Filesystem.Path.CurrentOS as P
+import qualified System.IO as H
 
 main = sh $ do
     -- usageText
     (root, pghost, pgdata) <- initEnv
     initCluster root pghost  pgdata
 
--- initEnv :: Shell (FilePath, FilePath, FilePath)
+initEnv :: Shell (FilePath, FilePath, FilePath)
 initEnv = do
     root <- getProjectRoot
     let pghost = root </> ".postgres-work" </> "sockets"
@@ -45,9 +43,11 @@ initEnv = do
     export "PGDATA" (toText_ pgdata)
     return (root, pghost, pgdata)
 
-pgCtl args stdinn = do
+pgCtl args stdin' = do
     pgPath <- fromText <$> inshell "pg_config --bindir" ""
-    procs (toText_ (pgPath </> "pg_ctl")) args stdinn
+    procs (toText_ (pgPath </> "pg_ctl")) args stdin'
+
+psql args = procs "psql" (["-v", "ON_ERROR_STOP="] <> args)
 
 getProjectRoot =
     realpath =<< (directory . P.decodeString <$> liftIO getProgName)
@@ -73,50 +73,70 @@ usageText = mapM_ stderr
     , "    exec COMMAND    run COMMAND"
     ]
 
-redirected :: FilePath -> Shell () -> Shell ()
-redirected f s = liftIO $ bracket
-    (do
-        save <- hDuplicate H.stdout
-        h <- openFile (P.encodeString f) WriteMode
-        hDuplicateTo h H.stdout
-        return save
-    )
-    (\h -> hDuplicateTo h H.stdout)
-    (const (sh s))
-
 initCluster :: FilePath -> FilePath -> FilePath -> Shell ()
 initCluster root pghost pgdata = redirected logfile $ do
-    err ("Logging to " <> logfileT)
+    err ("Logging to " <> logfile')
     err "Creating directories.."
     mktree pghost
     mktree pgdata
     err "Initializing cluster..."
-    pgCtl ["initdb", "-o", "--nosync --auth=peer", "-D", pgdataT] empty
+    pgCtl ["initdb", "-o", "--nosync --auth=peer", "-D", pgdata'] empty
     err "Updating cluster configuration file..."
-    setPgConfigOpts
-        (pgdata </> "postgresql.conf")
+    setPgConfigOpts (pgdata </> "postgresql.conf")
         [ -- set the unix socket directory because pg_ctl start doesn't
           -- pay attention to PGHOST (wat.)
-          ("unix_socket_directory", pghostTOpt)
-        , ("unix_socket_directories", pghostTOpt)
+          ("unix_socket_directory", pghost')
+        , ("unix_socket_directories", pghost')
         , ("archive_mode", "off")
         , ("fsync", "off")
         , ("wal_level", "minimal")
           -- don't bother listening on a port, just a socket.
         , ("listen_addresses", "''")
         ]
+    err "Starting database server..."
     pgCtl ["start", "-w"] empty
+    err "Creating databases..."
+    psql ["postgres"] $ select
+        [ "create database snowdrift_development;"
+        , "create database snowdrift_test_template;"
+        , "update pg_database set datistemplate=true where datname='snowdrift_test_template';"
+        ]
+    err "Loading devDB..."
+    psql ["snowdrift_development"] $ input "devDB.sql"
+    err "Loading testDB..."
+    psql ["snowdrift_test_template"] $ input "testDB.sql"
+    err "Success."
   where
+    pghost'  = "'" <> toText_ pghost <> "'"
+    logfile  = root </> "init-dev-db.log"
+    logfile' = toText_ logfile
+    pgdata'  = toText_ pgdata
     setPgConfigOpts f opts =
         inplace_ (choice (patterns opts)) f
     patterns opts =
-        map (uncurry optSettingPattern) opts
-        <> [ contains (begins spaces >> (T.singleton <$> (char '#' <|> newline))) >> pure Nothing ]
-    logfile = root </> "init-dev-db.log"
-    logfileT = toText_ logfile
-    pghostTOpt = "'" <> toText_ pghost <> "'"
-    pgdataT = toText_ pgdata
+        map (fmap Just . uncurry optSettingPattern) opts
+        <> [ commentOrEmpty >> pure Nothing ]
+    commentOrEmpty :: Pattern Text
+    commentOrEmpty =
+        contains (begins spaces >> (T.singleton <$> (char '#' <|> newline)))
+    optSettingPattern opt value = do
+        -- match the line with the option
+        _ <- contains $ do
+            begins (star (oneOf " #"))
+            text opt
+            once (oneOf " =")
+        -- replace it with 'opt = value'
+        return (opt <> " = " <> value)
 
+-- ##
+-- ## Helper functions/additions to underlying libs
+-- ##
+
+-- | Force convert a path.
+toText_ :: FilePath -> Text
+toText_ p = case toText p of
+    Right p' -> p'
+    _ -> error "Could not convert FilePath to Text"
 
 -- | inplace with filtering.
 inplace_ :: MonadIO io => Pattern (Maybe Text) -> FilePath -> io ()
@@ -129,9 +149,9 @@ inplace_ pattern file = liftIO (runManaged (do
 
 -- | sed with filtering.
 sed_ :: Pattern (Maybe Text) -> Shell Text -> Shell Text
-sed_ pattern s = join $ flip fold foldMaybe $ do
+sed_ pattern s = flatten $ do
     when (matchesEmpty pattern) (die message)
-    let pattern' = fmap (mconcat)
+    let pattern' = fmap mconcat
             (many (pattern <|> fmap (Just . T.singleton) anyChar))
     txt    <- s
     txt':_ <- return (match pattern' txt)
@@ -139,47 +159,22 @@ sed_ pattern s = join $ flip fold foldMaybe $ do
   where
     message = "sed: the given pattern matches the empty string"
     matchesEmpty = not . null . flip match ""
-    foldMaybe :: Fold (Maybe a) (Shell a)
-    foldMaybe = Fold (\xs a -> maybe xs (\b -> xs <> [b]) a) [] select
+    flatten s = do
+        Just x <- s
+        return x
 
-optSettingPattern opt value = do
-    _ <- do
-        begins (star (oneOf " #"))
-        text opt
-        oneOf " ="
-        suffix (star dot)
-    return (Just (opt <> " = " <> value))
+-- | Run a shell but redirect stdout to a file
+redirected :: FilePath -> Shell () -> Shell ()
+redirected f s = liftIO $ bracket
+    (do
+        save <- hDuplicate H.stdout
+        h <- openFile (P.encodeString f) WriteMode
+        hDuplicateTo h H.stdout
+        return save
+    )
+    (\h -> hDuplicateTo h H.stdout)
+    (const (sh s))
 
--- command="$1"
--- shift
--- case "$command" in
--- 	"init")
--- 		logfile="$project_root"/init-dev-db.log
--- 		exec > $logfile
--- 		echo >&2 "Logging to $logfile..."
--- 		echo >&2 "Creating directories..."
--- 		mkdir -p "$PGHOST" "$PGDATA"
--- 		echo >&2 "Initializing cluster..."
--- 		pg_ctl initdb -o "--nosync --auth=peer" -D "$PGDATA"
--- 		echo >&2 "Updating cluster configuration file..."
--- 		sed -i -e "
--- 			# set the unix socket directory because pg_ctl start doesn't pay attention
--- 			# to PGHOST (wat.)
--- 			s|^[ #]*\(unix_socket_directory\)[ =].*$|\1 = '$PGHOST'|
--- 			s|^ [ #]*\(unix_socket_directory\)   [ =].*$|\1 = '$PGHOST'|
--- 			s|^ [ #]*\(unix_socket_directories\) [ =].*$|\1 = '$PGHOST'|
--- 			s|^ [ #]*\(archive_mode\)            [ =].*$|\1 = off|
--- 			s|^ [ #]*\(fsync\)                   [ =].*$|\1 = off|
--- 			s|^ [ #]*\(full_page_writes\)        [ =].*$|\1 = off|
--- 			s|^ [ #]*\(wal_level\)               [ =].*$|\1 = minimal|
--- 			# don't bother listening on a port, just a socket.
--- 			s|^[ #]*\(listen_addresses\)[ =].*$|\1 = ''|
--- 			# delete all the other commented-out lines stuck in that file by default.
--- 			/^[\t ]*#/d
--- 			/^[\t ]*$/d
--- 			" "$PGDATA/postgresql.conf"
--- 		echo >&2 "Starting database server..."
--- 		pg_ctl start -w
 -- 		echo >&2 "Creating databases..."
 -- 		psql postgres <<-EOF
 -- 			CREATE DATABASE ${PGDATABASE};

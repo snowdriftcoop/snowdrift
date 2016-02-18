@@ -42,7 +42,6 @@ CREATE FUNCTION log_doc_event_trigger() RETURNS trigger
 $$;
 
 
-ALTER FUNCTION public.log_doc_event_trigger() OWNER TO snowdrift_test;
 
 --
 -- Name: log_role_event_trigger(); Type: FUNCTION; Schema: public; Owner: snowdrift_test
@@ -64,7 +63,6 @@ CREATE FUNCTION log_role_event_trigger() RETURNS trigger
 $$;
 
 
-ALTER FUNCTION public.log_role_event_trigger() OWNER TO snowdrift_test;
 
 SET default_tablespace = '';
 
@@ -79,7 +77,6 @@ CREATE TABLE a (
 );
 
 
-ALTER TABLE public.a OWNER TO snowdrift_test;
 
 --
 -- Name: a_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -93,7 +90,6 @@ CREATE SEQUENCE a_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.a_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: a_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -112,7 +108,6 @@ CREATE TABLE account (
 );
 
 
-ALTER TABLE public.account OWNER TO snowdrift_test;
 
 --
 -- Name: account_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -126,7 +121,6 @@ CREATE SEQUENCE account_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.account_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: account_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -152,7 +146,6 @@ CREATE TABLE blog_post (
 );
 
 
-ALTER TABLE public.blog_post OWNER TO snowdrift_test;
 
 --
 -- Name: build; Type: TABLE; Schema: public; Owner: snowdrift_test; Tablespace: 
@@ -166,7 +159,6 @@ CREATE TABLE build (
 );
 
 
-ALTER TABLE public.build OWNER TO snowdrift_test;
 
 --
 -- Name: build_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -180,7 +172,6 @@ CREATE SEQUENCE build_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.build_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: build_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -208,7 +199,6 @@ CREATE TABLE comment (
 );
 
 
-ALTER TABLE public.comment OWNER TO snowdrift_test;
 
 --
 -- Name: comment_ancestor; Type: TABLE; Schema: public; Owner: snowdrift_test; Tablespace: 
@@ -221,7 +211,6 @@ CREATE TABLE comment_ancestor (
 );
 
 
-ALTER TABLE public.comment_ancestor OWNER TO snowdrift_test;
 
 --
 -- Name: comment_ancestor_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -235,7 +224,6 @@ CREATE SEQUENCE comment_ancestor_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.comment_ancestor_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: comment_ancestor_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -257,7 +245,6 @@ CREATE TABLE comment_closing (
 );
 
 
-ALTER TABLE public.comment_closing OWNER TO snowdrift_test;
 
 --
 -- Name: comment_closing_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -271,7 +258,6 @@ CREATE SEQUENCE comment_closing_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.comment_closing_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: comment_closing_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -293,7 +279,6 @@ CREATE TABLE comment_flagging (
 );
 
 
-ALTER TABLE public.comment_flagging OWNER TO snowdrift_test;
 
 --
 -- Name: comment_flagging_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -307,7 +292,6 @@ CREATE SEQUENCE comment_flagging_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.comment_flagging_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: comment_flagging_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -327,7 +311,6 @@ CREATE TABLE comment_flagging_reason (
 );
 
 
-ALTER TABLE public.comment_flagging_reason OWNER TO snowdrift_test;
 
 --
 -- Name: comment_flagging_reason_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -341,7 +324,6 @@ CREATE SEQUENCE comment_flagging_reason_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.comment_flagging_reason_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: comment_flagging_reason_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -362,7 +344,6 @@ CREATE SEQUENCE comment_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.comment_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: comment_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -383,7 +364,6 @@ CREATE TABLE comment_rethread (
 );
 
 
-ALTER TABLE public.comment_rethread OWNER TO snowdrift_test;
 
 --
 -- Name: comment_rethread_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -397,7 +377,6 @@ CREATE SEQUENCE comment_rethread_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.comment_rethread_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: comment_rethread_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -418,7 +397,6 @@ CREATE TABLE comment_retracting (
 );
 
 
-ALTER TABLE public.comment_retracting OWNER TO snowdrift_test;
 
 --
 -- Name: comment_retracting_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -432,7 +410,6 @@ CREATE SEQUENCE comment_retracting_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.comment_retracting_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: comment_retracting_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -453,7 +430,6 @@ CREATE TABLE comment_retraction (
 );
 
 
-ALTER TABLE public.comment_retraction OWNER TO snowdrift_test;
 
 --
 -- Name: comment_retraction_id_seq1; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -467,7 +443,6 @@ CREATE SEQUENCE comment_retraction_id_seq1
     CACHE 1;
 
 
-ALTER TABLE public.comment_retraction_id_seq1 OWNER TO snowdrift_test;
 
 --
 -- Name: comment_retraction_id_seq1; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -489,7 +464,6 @@ CREATE TABLE comment_tag (
 );
 
 
-ALTER TABLE public.comment_tag OWNER TO snowdrift_test;
 
 --
 -- Name: comment_tag_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -503,7 +477,6 @@ CREATE SEQUENCE comment_tag_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.comment_tag_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: comment_tag_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -524,7 +497,6 @@ CREATE TABLE committee_user (
 );
 
 
-ALTER TABLE public.committee_user OWNER TO snowdrift_test;
 
 --
 -- Name: committee_user_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -538,7 +510,6 @@ CREATE SEQUENCE committee_user_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.committee_user_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: committee_user_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -557,7 +528,6 @@ CREATE TABLE database_version (
 );
 
 
-ALTER TABLE public.database_version OWNER TO snowdrift_test;
 
 --
 -- Name: database_version_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -571,7 +541,6 @@ CREATE SEQUENCE database_version_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.database_version_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: database_version_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -591,7 +560,6 @@ CREATE TABLE default_tag_color (
 );
 
 
-ALTER TABLE public.default_tag_color OWNER TO snowdrift_test;
 
 --
 -- Name: default_tag_color_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -605,7 +573,6 @@ CREATE SEQUENCE default_tag_color_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.default_tag_color_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: default_tag_color_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -627,7 +594,6 @@ CREATE TABLE delete_confirmation (
 );
 
 
-ALTER TABLE public.delete_confirmation OWNER TO snowdrift_test;
 
 --
 -- Name: delete_confirmation_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -641,7 +607,6 @@ CREATE SEQUENCE delete_confirmation_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.delete_confirmation_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: delete_confirmation_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -662,7 +627,6 @@ CREATE TABLE deprecated_tag (
 );
 
 
-ALTER TABLE public.deprecated_tag OWNER TO snowdrift_test;
 
 --
 -- Name: deprecated_tag_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -676,7 +640,6 @@ CREATE SEQUENCE deprecated_tag_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.deprecated_tag_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: deprecated_tag_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -695,7 +658,6 @@ CREATE TABLE discussion (
 );
 
 
-ALTER TABLE public.discussion OWNER TO snowdrift_test;
 
 --
 -- Name: discussion_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -709,7 +671,6 @@ CREATE SEQUENCE discussion_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.discussion_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: discussion_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -729,7 +690,6 @@ CREATE TABLE doc (
 );
 
 
-ALTER TABLE public.doc OWNER TO snowdrift_test;
 
 --
 -- Name: doc_event; Type: TABLE; Schema: public; Owner: snowdrift_test; Tablespace: 
@@ -743,7 +703,6 @@ CREATE TABLE doc_event (
 );
 
 
-ALTER TABLE public.doc_event OWNER TO snowdrift_test;
 
 --
 -- Name: doc_event_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -757,7 +716,6 @@ CREATE SEQUENCE doc_event_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.doc_event_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: doc_event_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -778,7 +736,6 @@ CREATE SEQUENCE doc_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.doc_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: doc_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -800,7 +757,6 @@ CREATE TABLE email_verification (
 );
 
 
-ALTER TABLE public.email_verification OWNER TO snowdrift_test;
 
 --
 -- Name: email_verification_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -814,7 +770,6 @@ CREATE SEQUENCE email_verification_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.email_verification_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: email_verification_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -834,7 +789,6 @@ CREATE TABLE event_blog_post (
 );
 
 
-ALTER TABLE public.event_blog_post OWNER TO snowdrift_test;
 
 --
 -- Name: event_blog_post_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -848,7 +802,6 @@ CREATE SEQUENCE event_blog_post_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.event_blog_post_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: event_blog_post_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -868,7 +821,6 @@ CREATE TABLE event_comment_closing (
 );
 
 
-ALTER TABLE public.event_comment_closing OWNER TO snowdrift_test;
 
 --
 -- Name: event_comment_closing_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -882,7 +834,6 @@ CREATE SEQUENCE event_comment_closing_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.event_comment_closing_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: event_comment_closing_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -902,7 +853,6 @@ CREATE TABLE event_comment_pending (
 );
 
 
-ALTER TABLE public.event_comment_pending OWNER TO snowdrift_test;
 
 --
 -- Name: event_comment_pending_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -916,7 +866,6 @@ CREATE SEQUENCE event_comment_pending_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.event_comment_pending_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: event_comment_pending_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -936,7 +885,6 @@ CREATE TABLE event_comment_posted (
 );
 
 
-ALTER TABLE public.event_comment_posted OWNER TO snowdrift_test;
 
 --
 -- Name: event_comment_posted_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -950,7 +898,6 @@ CREATE SEQUENCE event_comment_posted_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.event_comment_posted_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: event_comment_posted_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -970,7 +917,6 @@ CREATE TABLE event_comment_rethreaded (
 );
 
 
-ALTER TABLE public.event_comment_rethreaded OWNER TO snowdrift_test;
 
 --
 -- Name: event_comment_rethreaded_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -984,7 +930,6 @@ CREATE SEQUENCE event_comment_rethreaded_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.event_comment_rethreaded_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: event_comment_rethreaded_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -1006,7 +951,6 @@ CREATE TABLE event_deleted_pledge (
 );
 
 
-ALTER TABLE public.event_deleted_pledge OWNER TO snowdrift_test;
 
 --
 -- Name: event_deleted_pledge_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -1020,7 +964,6 @@ CREATE SEQUENCE event_deleted_pledge_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.event_deleted_pledge_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: event_deleted_pledge_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -1040,7 +983,6 @@ CREATE TABLE event_new_pledge (
 );
 
 
-ALTER TABLE public.event_new_pledge OWNER TO snowdrift_test;
 
 --
 -- Name: event_new_pledge_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -1054,7 +996,6 @@ CREATE SEQUENCE event_new_pledge_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.event_new_pledge_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: event_new_pledge_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -1074,7 +1015,6 @@ CREATE TABLE event_project_notification_sent (
 );
 
 
-ALTER TABLE public.event_project_notification_sent OWNER TO snowdrift_test;
 
 --
 -- Name: event_project_notification_sent_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -1088,7 +1028,6 @@ CREATE SEQUENCE event_project_notification_sent_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.event_project_notification_sent_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: event_project_notification_sent_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -1109,7 +1048,6 @@ CREATE TABLE event_ticket_claimed (
 );
 
 
-ALTER TABLE public.event_ticket_claimed OWNER TO snowdrift_test;
 
 --
 -- Name: event_ticket_claimed_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -1123,7 +1061,6 @@ CREATE SEQUENCE event_ticket_claimed_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.event_ticket_claimed_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: event_ticket_claimed_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -1143,7 +1080,6 @@ CREATE TABLE event_ticket_unclaimed (
 );
 
 
-ALTER TABLE public.event_ticket_unclaimed OWNER TO snowdrift_test;
 
 --
 -- Name: event_ticket_unclaimed_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -1157,7 +1093,6 @@ CREATE SEQUENCE event_ticket_unclaimed_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.event_ticket_unclaimed_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: event_ticket_unclaimed_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -1178,7 +1113,6 @@ CREATE TABLE event_updated_pledge (
 );
 
 
-ALTER TABLE public.event_updated_pledge OWNER TO snowdrift_test;
 
 --
 -- Name: event_updated_pledge_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -1192,7 +1126,6 @@ CREATE SEQUENCE event_updated_pledge_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.event_updated_pledge_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: event_updated_pledge_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -1212,7 +1145,6 @@ CREATE TABLE event_user_notification_sent (
 );
 
 
-ALTER TABLE public.event_user_notification_sent OWNER TO snowdrift_test;
 
 --
 -- Name: event_user_notification_sent_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -1226,7 +1158,6 @@ CREATE SEQUENCE event_user_notification_sent_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.event_user_notification_sent_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: event_user_notification_sent_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -1246,7 +1177,6 @@ CREATE TABLE event_wiki_edit (
 );
 
 
-ALTER TABLE public.event_wiki_edit OWNER TO snowdrift_test;
 
 --
 -- Name: event_wiki_edit_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -1260,7 +1190,6 @@ CREATE SEQUENCE event_wiki_edit_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.event_wiki_edit_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: event_wiki_edit_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -1280,7 +1209,6 @@ CREATE TABLE event_wiki_page (
 );
 
 
-ALTER TABLE public.event_wiki_page OWNER TO snowdrift_test;
 
 --
 -- Name: event_wiki_page_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -1294,7 +1222,6 @@ CREATE SEQUENCE event_wiki_page_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.event_wiki_page_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: event_wiki_page_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -1319,7 +1246,6 @@ CREATE TABLE image (
 );
 
 
-ALTER TABLE public.image OWNER TO snowdrift_test;
 
 --
 -- Name: image_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -1333,7 +1259,6 @@ CREATE SEQUENCE image_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.image_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: image_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -1352,7 +1277,6 @@ CREATE TABLE interest (
 );
 
 
-ALTER TABLE public.interest OWNER TO snowdrift_test;
 
 --
 -- Name: interest_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -1366,7 +1290,6 @@ CREATE SEQUENCE interest_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.interest_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: interest_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -1393,7 +1316,6 @@ CREATE TABLE invite (
 );
 
 
-ALTER TABLE public.invite OWNER TO snowdrift_test;
 
 --
 -- Name: invite_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -1407,7 +1329,6 @@ CREATE SEQUENCE invite_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.invite_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: invite_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -1430,7 +1351,6 @@ CREATE TABLE license (
 );
 
 
-ALTER TABLE public.license OWNER TO snowdrift_test;
 
 --
 -- Name: license_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -1444,7 +1364,6 @@ CREATE SEQUENCE license_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.license_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: license_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -1464,7 +1383,6 @@ CREATE TABLE manual_establishment (
 );
 
 
-ALTER TABLE public.manual_establishment OWNER TO snowdrift_test;
 
 --
 -- Name: manual_establishment_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -1478,7 +1396,6 @@ CREATE SEQUENCE manual_establishment_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.manual_establishment_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: manual_establishment_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -1497,7 +1414,6 @@ CREATE TABLE payday (
 );
 
 
-ALTER TABLE public.payday OWNER TO snowdrift_test;
 
 --
 -- Name: payday_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -1511,7 +1427,6 @@ CREATE SEQUENCE payday_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.payday_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: payday_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -1534,7 +1449,6 @@ CREATE TABLE pledge (
 );
 
 
-ALTER TABLE public.pledge OWNER TO snowdrift_test;
 
 --
 -- Name: pledge_form_rendered; Type: TABLE; Schema: public; Owner: snowdrift_test; Tablespace: 
@@ -1549,7 +1463,6 @@ CREATE TABLE pledge_form_rendered (
 );
 
 
-ALTER TABLE public.pledge_form_rendered OWNER TO snowdrift_test;
 
 --
 -- Name: pledge_form_rendered_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -1563,7 +1476,6 @@ CREATE SEQUENCE pledge_form_rendered_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.pledge_form_rendered_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: pledge_form_rendered_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -1584,7 +1496,6 @@ CREATE SEQUENCE pledge_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.pledge_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: pledge_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -1614,7 +1525,6 @@ CREATE TABLE project (
 );
 
 
-ALTER TABLE public.project OWNER TO snowdrift_test;
 
 --
 -- Name: project_blog_comment; Type: TABLE; Schema: public; Owner: snowdrift_test; Tablespace: 
@@ -1627,7 +1537,6 @@ CREATE TABLE project_blog_comment (
 );
 
 
-ALTER TABLE public.project_blog_comment OWNER TO snowdrift_test;
 
 --
 -- Name: project_blog_comment_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -1641,7 +1550,6 @@ CREATE SEQUENCE project_blog_comment_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.project_blog_comment_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: project_blog_comment_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -1662,7 +1570,6 @@ CREATE SEQUENCE project_blog_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.project_blog_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: project_blog_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -1683,7 +1590,6 @@ CREATE SEQUENCE project_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.project_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: project_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -1703,7 +1609,6 @@ CREATE TABLE project_last_update (
 );
 
 
-ALTER TABLE public.project_last_update OWNER TO snowdrift_test;
 
 --
 -- Name: project_last_update_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -1717,7 +1622,6 @@ CREATE SEQUENCE project_last_update_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.project_last_update_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: project_last_update_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -1741,7 +1645,6 @@ CREATE TABLE project_notification (
 );
 
 
-ALTER TABLE public.project_notification OWNER TO snowdrift_test;
 
 --
 -- Name: project_notification_email; Type: TABLE; Schema: public; Owner: snowdrift_test; Tablespace: 
@@ -1757,7 +1660,6 @@ CREATE TABLE project_notification_email (
 );
 
 
-ALTER TABLE public.project_notification_email OWNER TO snowdrift_test;
 
 --
 -- Name: project_notification_email_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -1771,7 +1673,6 @@ CREATE SEQUENCE project_notification_email_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.project_notification_email_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: project_notification_email_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -1792,7 +1693,6 @@ CREATE SEQUENCE project_notification_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.project_notification_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: project_notification_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -1814,7 +1714,6 @@ CREATE TABLE project_notification_pref (
 );
 
 
-ALTER TABLE public.project_notification_pref OWNER TO snowdrift_test;
 
 --
 -- Name: project_notification_pref_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -1828,7 +1727,6 @@ CREATE SEQUENCE project_notification_pref_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.project_notification_pref_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: project_notification_pref_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -1863,7 +1761,6 @@ CREATE TABLE project_signup (
 );
 
 
-ALTER TABLE public.project_signup OWNER TO snowdrift_test;
 
 --
 -- Name: project_signup_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -1877,7 +1774,6 @@ CREATE SEQUENCE project_signup_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.project_signup_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: project_signup_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -1897,7 +1793,6 @@ CREATE TABLE project_tag (
 );
 
 
-ALTER TABLE public.project_tag OWNER TO snowdrift_test;
 
 --
 -- Name: project_tag_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -1911,7 +1806,6 @@ CREATE SEQUENCE project_tag_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.project_tag_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: project_tag_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -1934,7 +1828,6 @@ CREATE TABLE project_update (
 );
 
 
-ALTER TABLE public.project_update OWNER TO snowdrift_test;
 
 --
 -- Name: project_update_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -1948,7 +1841,6 @@ CREATE SEQUENCE project_update_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.project_update_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: project_update_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -1969,7 +1861,6 @@ CREATE TABLE project_user_role (
 );
 
 
-ALTER TABLE public.project_user_role OWNER TO snowdrift_test;
 
 --
 -- Name: project_user_role_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -1983,7 +1874,6 @@ CREATE SEQUENCE project_user_role_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.project_user_role_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: project_user_role_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -2005,7 +1895,6 @@ CREATE TABLE reset_password (
 );
 
 
-ALTER TABLE public.reset_password OWNER TO snowdrift_test;
 
 --
 -- Name: reset_password_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -2019,7 +1908,6 @@ CREATE SEQUENCE reset_password_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.reset_password_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: reset_password_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -2042,7 +1930,6 @@ CREATE TABLE rethread (
 );
 
 
-ALTER TABLE public.rethread OWNER TO snowdrift_test;
 
 --
 -- Name: rethread_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -2056,7 +1943,6 @@ CREATE SEQUENCE rethread_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.rethread_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: rethread_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -2079,7 +1965,6 @@ CREATE TABLE role_event (
 );
 
 
-ALTER TABLE public.role_event OWNER TO snowdrift_test;
 
 --
 -- Name: role_event_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -2093,7 +1978,6 @@ CREATE SEQUENCE role_event_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.role_event_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: role_event_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -2116,7 +2000,6 @@ CREATE TABLE shares_pledged (
 );
 
 
-ALTER TABLE public.shares_pledged OWNER TO snowdrift_test;
 
 --
 -- Name: shares_pledged_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -2130,7 +2013,6 @@ CREATE SEQUENCE shares_pledged_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.shares_pledged_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: shares_pledged_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -2149,7 +2031,6 @@ CREATE TABLE tag (
 );
 
 
-ALTER TABLE public.tag OWNER TO snowdrift_test;
 
 --
 -- Name: tag_color; Type: TABLE; Schema: public; Owner: snowdrift_test; Tablespace: 
@@ -2163,7 +2044,6 @@ CREATE TABLE tag_color (
 );
 
 
-ALTER TABLE public.tag_color OWNER TO snowdrift_test;
 
 --
 -- Name: tag_color_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -2177,7 +2057,6 @@ CREATE SEQUENCE tag_color_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.tag_color_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: tag_color_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -2198,7 +2077,6 @@ CREATE SEQUENCE tag_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.tag_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: tag_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -2220,7 +2098,6 @@ CREATE TABLE ticket (
 );
 
 
-ALTER TABLE public.ticket OWNER TO snowdrift_test;
 
 --
 -- Name: ticket_claiming; Type: TABLE; Schema: public; Owner: snowdrift_test; Tablespace: 
@@ -2235,7 +2112,6 @@ CREATE TABLE ticket_claiming (
 );
 
 
-ALTER TABLE public.ticket_claiming OWNER TO snowdrift_test;
 
 --
 -- Name: ticket_claiming_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -2249,7 +2125,6 @@ CREATE SEQUENCE ticket_claiming_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.ticket_claiming_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: ticket_claiming_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -2270,7 +2145,6 @@ CREATE SEQUENCE ticket_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.ticket_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: ticket_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -2294,7 +2168,6 @@ CREATE TABLE ticket_old_claiming (
 );
 
 
-ALTER TABLE public.ticket_old_claiming OWNER TO snowdrift_test;
 
 --
 -- Name: ticket_old_claiming_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -2308,7 +2181,6 @@ CREATE SEQUENCE ticket_old_claiming_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.ticket_old_claiming_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: ticket_old_claiming_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -2333,7 +2205,6 @@ CREATE TABLE transaction (
 );
 
 
-ALTER TABLE public.transaction OWNER TO snowdrift_test;
 
 --
 -- Name: transaction_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -2347,7 +2218,6 @@ CREATE SEQUENCE transaction_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.transaction_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: transaction_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -2367,7 +2237,6 @@ CREATE TABLE unapproved_comment_notification (
 );
 
 
-ALTER TABLE public.unapproved_comment_notification OWNER TO snowdrift_test;
 
 --
 -- Name: unapproved_comment_notification_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -2381,7 +2250,6 @@ CREATE SEQUENCE unapproved_comment_notification_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.unapproved_comment_notification_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: unapproved_comment_notification_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -2406,7 +2274,6 @@ CREATE TABLE unnamed_image (
 );
 
 
-ALTER TABLE public.unnamed_image OWNER TO snowdrift_test;
 
 --
 -- Name: unnamed_image_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -2420,7 +2287,6 @@ CREATE SEQUENCE unnamed_image_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.unnamed_image_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: unnamed_image_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -2455,7 +2321,6 @@ CREATE TABLE "user" (
 );
 
 
-ALTER TABLE public."user" OWNER TO snowdrift_test;
 
 --
 -- Name: user_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -2469,7 +2334,6 @@ CREATE SEQUENCE user_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.user_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: user_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -2490,7 +2354,6 @@ CREATE TABLE user_message_pref (
 );
 
 
-ALTER TABLE public.user_message_pref OWNER TO snowdrift_test;
 
 --
 -- Name: user_message_pref_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -2504,7 +2367,6 @@ CREATE SEQUENCE user_message_pref_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.user_message_pref_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: user_message_pref_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -2527,7 +2389,6 @@ CREATE TABLE user_notification (
 );
 
 
-ALTER TABLE public.user_notification OWNER TO snowdrift_test;
 
 --
 -- Name: user_notification_email; Type: TABLE; Schema: public; Owner: snowdrift_test; Tablespace: 
@@ -2542,7 +2403,6 @@ CREATE TABLE user_notification_email (
 );
 
 
-ALTER TABLE public.user_notification_email OWNER TO snowdrift_test;
 
 --
 -- Name: user_notification_email_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -2556,7 +2416,6 @@ CREATE SEQUENCE user_notification_email_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.user_notification_email_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: user_notification_email_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -2577,7 +2436,6 @@ CREATE SEQUENCE user_notification_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.user_notification_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: user_notification_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -2598,7 +2456,6 @@ CREATE TABLE user_notification_pref (
 );
 
 
-ALTER TABLE public.user_notification_pref OWNER TO snowdrift_test;
 
 --
 -- Name: user_notification_pref_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -2612,7 +2469,6 @@ CREATE SEQUENCE user_notification_pref_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.user_notification_pref_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: user_notification_pref_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -2633,7 +2489,6 @@ CREATE TABLE user_setting (
 );
 
 
-ALTER TABLE public.user_setting OWNER TO snowdrift_test;
 
 --
 -- Name: user_setting_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -2647,7 +2502,6 @@ CREATE SEQUENCE user_setting_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.user_setting_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: user_setting_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -2667,7 +2521,6 @@ CREATE TABLE user_watching_project (
 );
 
 
-ALTER TABLE public.user_watching_project OWNER TO snowdrift_test;
 
 --
 -- Name: user_watching_project_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -2681,7 +2534,6 @@ CREATE SEQUENCE user_watching_project_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.user_watching_project_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: user_watching_project_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -2701,7 +2553,6 @@ CREATE TABLE view_comment (
 );
 
 
-ALTER TABLE public.view_comment OWNER TO snowdrift_test;
 
 --
 -- Name: view_comment_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -2715,7 +2566,6 @@ CREATE SEQUENCE view_comment_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.view_comment_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: view_comment_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -2737,7 +2587,6 @@ CREATE TABLE view_time (
 );
 
 
-ALTER TABLE public.view_time OWNER TO snowdrift_test;
 
 --
 -- Name: view_time_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -2751,7 +2600,6 @@ CREATE SEQUENCE view_time_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.view_time_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: view_time_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -2771,7 +2619,6 @@ CREATE TABLE view_wiki_edit (
 );
 
 
-ALTER TABLE public.view_wiki_edit OWNER TO snowdrift_test;
 
 --
 -- Name: view_wiki_edit_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -2785,7 +2632,6 @@ CREATE SEQUENCE view_wiki_edit_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.view_wiki_edit_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: view_wiki_edit_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -2813,7 +2659,6 @@ CREATE TABLE volunteer_application (
 );
 
 
-ALTER TABLE public.volunteer_application OWNER TO snowdrift_test;
 
 --
 -- Name: volunteer_application_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -2827,7 +2672,6 @@ CREATE SEQUENCE volunteer_application_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.volunteer_application_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: volunteer_application_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -2847,7 +2691,6 @@ CREATE TABLE volunteer_interest (
 );
 
 
-ALTER TABLE public.volunteer_interest OWNER TO snowdrift_test;
 
 --
 -- Name: volunteer_interest_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -2861,7 +2704,6 @@ CREATE SEQUENCE volunteer_interest_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.volunteer_interest_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: volunteer_interest_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -2882,7 +2724,6 @@ CREATE TABLE watched_subthread (
 );
 
 
-ALTER TABLE public.watched_subthread OWNER TO snowdrift_test;
 
 --
 -- Name: watched_subthread_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -2896,7 +2737,6 @@ CREATE SEQUENCE watched_subthread_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.watched_subthread_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: watched_subthread_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -2920,7 +2760,6 @@ CREATE TABLE wiki_edit (
 );
 
 
-ALTER TABLE public.wiki_edit OWNER TO snowdrift_test;
 
 --
 -- Name: wiki_edit_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -2934,7 +2773,6 @@ CREATE SEQUENCE wiki_edit_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.wiki_edit_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: wiki_edit_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -2955,7 +2793,6 @@ CREATE TABLE wiki_last_edit (
 );
 
 
-ALTER TABLE public.wiki_last_edit OWNER TO snowdrift_test;
 
 --
 -- Name: wiki_last_edit_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -2969,7 +2806,6 @@ CREATE SEQUENCE wiki_last_edit_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.wiki_last_edit_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: wiki_last_edit_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -2992,7 +2828,6 @@ CREATE TABLE wiki_page (
 );
 
 
-ALTER TABLE public.wiki_page OWNER TO snowdrift_test;
 
 --
 -- Name: wiki_page_comment; Type: TABLE; Schema: public; Owner: snowdrift_test; Tablespace: 
@@ -3005,7 +2840,6 @@ CREATE TABLE wiki_page_comment (
 );
 
 
-ALTER TABLE public.wiki_page_comment OWNER TO snowdrift_test;
 
 --
 -- Name: wiki_page_comment_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -3019,7 +2853,6 @@ CREATE SEQUENCE wiki_page_comment_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.wiki_page_comment_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: wiki_page_comment_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -3040,7 +2873,6 @@ CREATE SEQUENCE wiki_page_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.wiki_page_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: wiki_page_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -3062,7 +2894,6 @@ CREATE TABLE wiki_target (
 );
 
 
-ALTER TABLE public.wiki_target OWNER TO snowdrift_test;
 
 --
 -- Name: wiki_target_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -3076,7 +2907,6 @@ CREATE SEQUENCE wiki_target_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.wiki_target_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: wiki_target_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -3097,7 +2927,6 @@ CREATE TABLE wiki_translation (
 );
 
 
-ALTER TABLE public.wiki_translation OWNER TO snowdrift_test;
 
 --
 -- Name: wiki_translation_id_seq; Type: SEQUENCE; Schema: public; Owner: snowdrift_test
@@ -3111,7 +2940,6 @@ CREATE SEQUENCE wiki_translation_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.wiki_translation_id_seq OWNER TO snowdrift_test;
 
 --
 -- Name: wiki_translation_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: snowdrift_test
@@ -7246,10 +7074,6 @@ ALTER TABLE ONLY wiki_translation
 -- Name: public; Type: ACL; Schema: -; Owner: postgres
 --
 
-REVOKE ALL ON SCHEMA public FROM PUBLIC;
-REVOKE ALL ON SCHEMA public FROM postgres;
-GRANT ALL ON SCHEMA public TO postgres;
-GRANT ALL ON SCHEMA public TO PUBLIC;
 
 
 --
