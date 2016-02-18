@@ -10,6 +10,9 @@ import Control.Exception.Base (bracket)
 import System.IO (openFile, IOMode(..))
 import GHC.IO.Handle (hDuplicate, hDuplicateTo)
 import qualified System.IO as H
+import qualified Data.Text as T
+import Data.Maybe (catMaybes)
+import qualified Control.Foldl as F
 
 -- # db - a one-off script to manage a local development postgres cluster, without
 -- # sudo. Written for snowdrift.coop, but applicable to any project. Mostly just
@@ -94,22 +97,50 @@ initCluster root pghost pgdata = redirected logfile $ do
         (pgdata </> "postgresql.conf")
         [ -- set the unix socket directory because pg_ctl start doesn't
           -- pay attention to PGHOST (wat.)
-          ("unix_socket_directory", pghostT)
-        , ("unix_socket_directories", pghostT)
+          ("unix_socket_directory", pghostTOpt)
+        , ("unix_socket_directories", pghostTOpt)
         , ("archive_mode", "off")
         , ("fsync", "off")
         , ("wal_level", "minimal")
           -- don't bother listening on a port, just a socket.
-        , ("listen_addresses", "")
+        , ("listen_addresses", "''")
         ]
     pgCtl ["start", "-w"] empty
   where
     setPgConfigOpts f opts =
-        inplace (choice (map (uncurry optSettingPattern) opts)) f
+        inplace_ (choice (patterns opts)) f
+    patterns opts =
+        map (uncurry optSettingPattern) opts
+        <> [ contains (begins spaces >> (T.singleton <$> (char '#' <|> newline))) >> pure Nothing ]
     logfile = root </> "init-dev-db.log"
     logfileT = toText_ logfile
-    pghostT = toText_ pghost
+    pghostTOpt = "'" <> toText_ pghost <> "'"
     pgdataT = toText_ pgdata
+
+
+-- | inplace with filtering.
+inplace_ :: MonadIO io => Pattern (Maybe Text) -> FilePath -> io ()
+inplace_ pattern file = liftIO (runManaged (do
+    here              <- pwd
+    (tmpfile, handle) <- mktemp here "turtle"
+    outhandle handle (sed_ pattern (input file))
+    liftIO (H.hClose handle)
+    mv tmpfile file ))
+
+-- | sed with filtering.
+sed_ :: Pattern (Maybe Text) -> Shell Text -> Shell Text
+sed_ pattern s = join $ flip fold foldMaybe $ do
+    when (matchesEmpty pattern) (die message)
+    let pattern' = fmap (mconcat)
+            (many (pattern <|> fmap (Just . T.singleton) anyChar))
+    txt    <- s
+    txt':_ <- return (match pattern' txt)
+    return txt'
+  where
+    message = "sed: the given pattern matches the empty string"
+    matchesEmpty = not . null . flip match ""
+    foldMaybe :: Fold (Maybe a) (Shell a)
+    foldMaybe = Fold (\xs a -> maybe xs (\b -> xs <> [b]) a) [] select
 
 optSettingPattern opt value = do
     _ <- do
@@ -117,7 +148,7 @@ optSettingPattern opt value = do
         text opt
         oneOf " ="
         suffix (star dot)
-    return (opt <> " = " <> value)
+    return (Just (opt <> " = " <> value))
 
 -- command="$1"
 -- shift
