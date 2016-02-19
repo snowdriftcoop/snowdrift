@@ -79,25 +79,23 @@ main = sh $ do
 
 exportDb :: FilePath -> Shell ()
 exportDb root = do
-    err "Dumping to devDB.sql..."
+    step "Dumping to devDB.sql..."
     output (root </> "dev" </> "devDB.sql") $ pgDump "snowdrift_development"
-    err "Dumping to testDB.sql..."
+    step "Dumping to testDB.sql..."
     output (root </> "dev" </> "testDB.sql") $ pgDump "snowdrift_test_template"
   where
     pgDump db = inproc "pg_dump" ["--no-owner", "--no-privileges", "--create", db] empty
 
 initCluster :: FilePath -> FilePath -> FilePath -> Shell ()
-initCluster root pghost pgdata = redirected logfile $ do
-    err ("Logging to " <> logfile')
-
-    err "Creating directories.."
+initCluster root pghost pgdata = do
+    step "Creating directories..."
     mktree pghost
     mktree pgdata
 
-    err "Initializing cluster..."
-    procs "pg_ctl" ["initdb", "-o", "--nosync --auth=peer", "-D", pgdata'] empty
+    step "Initializing cluster..."
+    hush $ procs "pg_ctl" ["initdb", "-o", "--nosync --auth=peer", "-D", pgdata'] empty
 
-    err "Updating cluster configuration file..."
+    step "Updating cluster configuration file..."
     setPgConfigOpts (pgdata </> "postgresql.conf")
         [ -- set the unix socket directory because pg_ctl start doesn't
           -- pay attention to PGHOST (wat.)
@@ -110,21 +108,21 @@ initCluster root pghost pgdata = redirected logfile $ do
         , ("listen_addresses", "''")
         ]
 
-    err "Starting database server..."
+    step "Starting database server..."
     procs "pg_ctl" ["start", "-w"] empty
 
-    err "Creating and populating databases..."
+    step "Creating and populating databases..."
     psql ["postgres"] $ input (root </> "dev" </> "devDB.sql")
     psql ["postgres"] $ input (root </> "dev" </> "testDB.sql")
     psql ["postgres"] $ select
         [ "update pg_database set datistemplate=true where datname='snowdrift_test_template';"
         ]
 
-    err "Writing old-skool config file..."
+    step "Writing old-skool config file..."
     Just user <- need "USER"
     output "config/postgresql.yml" $ select (dbConfigTemplate user pghost')
 
-    err "Success."
+    step "Success."
 
   where
 
@@ -174,6 +172,9 @@ dbConfigTemplate user pghost =
     , "  <<: *defaults"
     ]
 
+-- | Print a header for a step
+step s = err ("## " <> s)
+
 -- | Create and export some env variables
 initEnv :: Shell (FilePath, FilePath, FilePath)
 initEnv = do
@@ -193,7 +194,7 @@ initEnv = do
 
 
 -- | A fail-early version of psql
-psql args = procs "psql" (["-v", "ON_ERROR_STOP="] <> args)
+psql args = hush . procs "psql" (["-q", "-v", "ON_ERROR_STOP="] <> args)
 
 -- ##
 -- ## Helper functions/additions to underlying libs
@@ -228,28 +229,20 @@ sed_ pat s = flatten $ do
         Just x <- s
         return x
 
--- | Run a shell but redirect stdout to a file
-redirected :: FilePath -> Shell () -> Shell ()
-redirected f s = liftIO $ bracket
-    (do
-        save <- hDuplicate H.stdout
-        h <- openFile (P.encodeString f) WriteMode
-        hDuplicateTo h H.stdout
-        return save
-    )
-    (\h -> hDuplicateTo h H.stdout)
-    (const (sh s))
-
--- | Run a shell and send stderr to nowhere
+-- | Run a shell and send stdout/stderr to nowhere
 hush :: Shell () -> Shell ()
 hush s = liftIO $ bracket
     (do
-        save <- hDuplicate H.stderr
+        saveErr <- hDuplicate H.stderr
+        saveOut <- hDuplicate H.stdout
         h <- openFile "/dev/null" WriteMode
         hDuplicateTo h H.stderr
-        return save
+        hDuplicateTo h H.stdout
+        return (saveErr, saveOut)
     )
-    (\h -> hDuplicateTo h H.stderr)
+    (\(saveErr, saveOut) -> do
+        hDuplicateTo saveErr H.stderr
+        hDuplicateTo saveOut H.stdout)
     (const (sh s))
 
 -- | rm -rf a directory. thx.
