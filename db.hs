@@ -17,65 +17,79 @@
 -- Listening only on a socket won't work on Windows, which doesn't have
 -- unix sockets.
 
+import Prelude hiding (FilePath)
+
 import Control.Exception.Base (bracket)
 import Data.Maybe (catMaybes)
 import GHC.IO.Handle (hDuplicate, hDuplicateTo)
-import Prelude hiding (FilePath)
-import System.Environment (getProgName)
+import System.Environment (getProgName, getArgs)
 import System.IO (openFile, IOMode(..))
+import System.Process (callProcess)
 import Turtle
 import qualified Control.Foldl as F
 import qualified Data.Text as T
 import qualified Filesystem.Path.CurrentOS as P
 import qualified System.IO as H
 
-main = sh $ do
-    -- usageText
-    (root, pghost, pgdata) <- initEnv
-    initCluster root pghost  pgdata
-
-initEnv :: Shell (FilePath, FilePath, FilePath)
-initEnv = do
-    root <- getProjectRoot
-    let pghost = root </> ".postgres-work" </> "sockets"
-        pgdata = root </> ".postgres-work" </> "data"
-    export "PGHOST" (toText_ pghost)
-    export "PGDATA" (toText_ pgdata)
-    return (root, pghost, pgdata)
-
-pgCtl args stdin' = do
-    pgPath <- fromText <$> inshell "pg_config --bindir" ""
-    procs (toText_ (pgPath </> "pg_ctl")) args stdin'
-
-psql args = procs "psql" (["-v", "ON_ERROR_STOP="] <> args)
-
-getProjectRoot =
-    realpath =<< (directory . P.decodeString <$> liftIO getProgName)
+pgWorkDir = ".postgres-work"
 
 usageText :: Shell ()
-usageText = mapM_ stderr
-    [ "db: a wrapper to set up environment variables and run various commands"
+usageText = mapM_ err
+    [ "db.hs: a wrapper to set up environment variables and run various commands"
     , "for your local postgres database for Snowdrift.coop development."
     , ""
     , "USAGE:"
     , ""
-    , "    db ACTION [ARGS]"
+    , "    db.hs ACTION [ARGS]"
     , ""
     , "Where ACTION may be one of:"
     , ""
-    , "    init            initialize the database cluster and databases"
-    , "    clean           "
-    , "    reset           "
-    , "    export          create a data dump with pg_dump"
-    , "    shell           just launch a subshell"
-    , "    pg_ctl          run pg_ctl"
-    , "    psql            connect to the databse with psql"
-    , "    exec COMMAND    run COMMAND"
+    , "    init         initialize the database cluster and databases"
+    , "    start        (re)start the cluster"
+    , "    stop         stop the cluster"
+    , "    clean"
+    , "    reset"
+    , "    export       create data dumps with pg_dump"
+    , "    pg_ctl       run pg_ctl"
+    , "    psql         connect to the databse with psql"
     ]
+
+main = sh $ do
+    (root, pghost, pgdata) <- initEnv
+
+    let init'  = initCluster root pghost pgdata
+        clean' = rmRF (root </> pgWorkDir)
+        stop'  = pgCtlQuietly ["stop"] empty
+
+    args <- liftIO getArgs
+    case args of
+        ["init"]       -> init'
+        ["start"]      -> pgCtl ["start"] empty
+        ["stop"]       -> stop'
+        ["clean"]      -> stop' >> clean'
+        ["reset"]      -> stop' >> clean' >> init'
+        ["export"]     -> exportDb
+        ("pg_ctl":as') -> pgCtl (map T.pack as') empty
+        ("psql":as')   -> liftIO $ callProcess "psql" as'
+        ["--help"]     -> usageText
+        _ -> do
+            err ""
+            err "** Unknown or missing options! **"
+            err ""
+            usageText
+            exit (ExitFailure 1)
+
+exportDb :: Shell ()
+exportDb = do
+    output "devDB.sql" $ pgDump "snowdrift_development"
+    output "testDB.sql" $ pgDump "snowdrift_test_template"
+  where
+    pgDump db = inproc "pg_dump" ["--no-owner", "--no-privileges", "--create", db] empty
 
 initCluster :: FilePath -> FilePath -> FilePath -> Shell ()
 initCluster root pghost pgdata = redirected logfile $ do
     err ("Logging to " <> logfile')
+
     err "Creating directories.."
     mktree pghost
     mktree pgdata
@@ -99,25 +113,21 @@ initCluster root pghost pgdata = redirected logfile $ do
     err "Starting database server..."
     pgCtl ["start", "-w"] empty
 
-    err "Creating databases..."
+    err "Creating and populating databases..."
+    psql ["postgres"] $ input "devDB.sql"
+    psql ["postgres"] $ input "testDB.sql"
     psql ["postgres"] $ select
-        [ "create database snowdrift_development;"
-        , "create database snowdrift_test_template;"
-        , "update pg_database set datistemplate=true where datname='snowdrift_test_template';"
+        [ "update pg_database set datistemplate=true where datname='snowdrift_test_template';"
         ]
-
-    err "Loading devDB..."
-    psql ["snowdrift_development"] $ input "devDB.sql"
-
-    err "Loading testDB..."
-    psql ["snowdrift_test_template"] $ input "testDB.sql"
 
     err "Writing old-skool config file..."
     Just user <- need "USER"
     output "config/postgresql.yml" $ select (dbConfigTemplate user pgdata')
 
     err "Success."
+
   where
+
     pghost'  = "'" <> toText_ pghost <> "'"
     logfile  = root </> "init-dev-db.log"
     logfile' = toText_ logfile
@@ -164,15 +174,39 @@ dbConfigTemplate user pgdata =
     , "  <<: *defaults"
     ]
 
+-- | Create and export some env variables
+initEnv :: Shell (FilePath, FilePath, FilePath)
+initEnv = do
+    root <- getProjectRoot
+    let pghost = root </> pgWorkDir </> "sockets"
+        pgdata = root </> pgWorkDir </> "data"
+    export "PGHOST" (toText_ pghost)
+    export "PGDATA" (toText_ pgdata)
+    return (root, pghost, pgdata)
+
+-- | A fail-early version for general use
+pgCtl args stdin' = do
+    pgPath <- fromText <$> inshell "pg_config --bindir" ""
+    procs (toText_ (pgPath </> "pg_ctl")) args stdin'
+
+-- | A version that does not throw errors all up ins
+pgCtlQuietly args stdin' = hush $ do
+    pgPath <- fromText <$> inshell "pg_config --bindir" ""
+    void $ proc (toText_ (pgPath </> "pg_ctl")) args stdin'
+
+-- | A fail-early version of psql
+psql args = procs "psql" (["-v", "ON_ERROR_STOP="] <> args)
+
+getProjectRoot =
+    realpath =<< (directory . P.decodeString <$> liftIO getProgName)
+
 -- ##
 -- ## Helper functions/additions to underlying libs
 -- ##
 
--- | Force convert a path.
+-- | Seeing as I use this everywhere
 toText_ :: FilePath -> Text
-toText_ p = case toText p of
-    Right p' -> p'
-    _ -> error "Could not convert FilePath to Text"
+toText_ = format fp
 
 -- | inplace with filtering.
 inplace_ :: MonadIO io => Pattern (Maybe Text) -> FilePath -> io ()
@@ -211,40 +245,20 @@ redirected f s = liftIO $ bracket
     (\h -> hDuplicateTo h H.stdout)
     (const (sh s))
 
--- 		echo >&2 "Creating databases..."
--- 		psql postgres <<-EOF
--- 			CREATE DATABASE ${PGDATABASE};
--- 			CREATE DATABASE ${PGDATABASE}_test_template;
--- 			UPDATE pg_database SET datistemplate=true WHERE datname='${PGDATABASE}_test_template';
--- 			EOF
--- 		echo >&2 "Loading devDB..."
--- 		grep -v "OWNER TO\|GRANT\|REVOKE" "$project_root"/devDB.sql | psql
--- 		echo >&2 "Loading testDB..."
--- 		grep -v "OWNER TO\|GRANT\|REVOKE" "$project_root"/testDB.sql | psql "${PGDATABASE}_test_template" > "$project_root"/init-test-db.log
--- 		echo >&2 "Success."
--- 		;;
--- 	"reset")
--- 		"$0" clean
--- 		"$0" init
--- 		;;
--- 	"clean")
--- 		"$0" stop
--- 		rm -r "$project_root"/postgres/
--- 		;;
--- 	"start")
--- 		exec pg_ctl start	;;
--- 	"stop")
--- 		exec pg_ctl stop	;;
--- 	"shell")
--- 		exec "$SHELL" "$@"	;;
--- 	"pg_ctl")
--- 		exec "pg_ctl" "$@"	;;
--- 	"psql")
--- 		exec "psql" "$@"	;;
--- 	"exec")
--- 		exec "$@"			;;
--- 	*)
--- 		echo >&2 "Error: unknown command $command"
--- 		exit 2
--- 		;;
--- esac
+-- | Run a shell and send stderr to nowhere
+hush :: Shell () -> Shell ()
+hush s = liftIO $ bracket
+    (do
+        save <- hDuplicate H.stderr
+        h <- openFile "/dev/null" WriteMode
+        hDuplicateTo h H.stderr
+        return save
+    )
+    (\h -> hDuplicateTo h H.stderr)
+    (const (sh s))
+
+-- | rm -rf a directory. thx.
+rmRF dir = do
+    True <- testdir dir
+    rmtree dir
+
