@@ -154,7 +154,7 @@ the project. For other available commands, run `./sdb.hs --help`
 
 #### Windows database setup
 
-The sdm.hs tool is untested on Windows. It won't work anyway because it
+The sdb.hs tool is untested on Windows. It won't work anyway because it
 uses UNIX sockets. Any patches, feedback, or Postgres-on-Windows expertise
 would be appreciated.
 

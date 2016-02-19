@@ -41,9 +41,9 @@ direction before committing everything, you will need to both reset your
 database and remove the unwanted migration files (as well as reset the relevant
 code).
 
-## Database management with the sdm.hs tool
+## Database management with the sdb.hs tool
 
-Our sdm.hs tool has several functions for database management.
+Our sdb.hs tool has several functions for database management.
 
 **All commands below should be run from your snowdrift project directory.**
 
@@ -53,7 +53,7 @@ To remove any changes and reset your database to the devDB default
 (such as when others have provided a new update you want to try
 or to start clean before making changes you plan to commit) run:
 
-    ./sdm.hs reset
+    ./sdb.hs reset
 
 ### Sharing updates to the devDB database
 
@@ -61,7 +61,7 @@ If you make specific improvements or additions to your database that you think
 will make for a better start for other contributors, use the following command
 to export the changes:
 
-    ./sdm.hs export
+    ./sdb.hs export
 
 Test that the export worked by running the reset command above and verifying in
 the running site that everything works as expected.
