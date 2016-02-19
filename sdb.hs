@@ -35,12 +35,12 @@ pgWorkDir = ".postgres-work"
 
 usageText :: Shell ()
 usageText = mapM_ err
-    [ "db.hs: a wrapper to set up environment variables and run various commands"
+    [ "sdb.hs: a wrapper to set up environment variables and run various commands"
     , "for your local postgres database for Snowdrift.coop development."
     , ""
     , "USAGE:"
     , ""
-    , "    db.hs ACTION [ARGS]"
+    , "    sdb.hs ACTION [ARGS]"
     , ""
     , "Where ACTION may be one of:"
     , ""
@@ -261,4 +261,3 @@ hush s = liftIO $ bracket
 rmRF dir = do
     True <- testdir dir
     rmtree dir
-

@@ -3,6 +3,7 @@ static/tmp/
 config/client_session_key.aes
 config/postgresql.yml
 cabal-dev
+.postgres-work
 .stack-work
 .cabal-sandbox/
 .directory
