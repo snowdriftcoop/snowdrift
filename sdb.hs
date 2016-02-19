@@ -122,7 +122,7 @@ initCluster root pghost pgdata = redirected logfile $ do
 
     err "Writing old-skool config file..."
     Just user <- need "USER"
-    output "config/postgresql.yml" $ select (dbConfigTemplate user pgdata')
+    output "config/postgresql.yml" $ select (dbConfigTemplate user pghost')
 
     err "Success."
 
@@ -150,11 +150,11 @@ initCluster root pghost pgdata = redirected logfile $ do
         return (opt <> " = " <> value)
 
 -- | Template for database config file.
-dbConfigTemplate user pgdata =
+dbConfigTemplate user pghost =
     [ "Default: &defaults"
     , format ("   user: "%s) user
     , "   password: \"\""
-    , format ("   host: "%s) pgdata
+    , format ("   host: "%s) pghost
     , "   database: snowdrift_development"
     , "   poolsize: 10"
     , ""
