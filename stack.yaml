@@ -9,7 +9,7 @@ packages:
   extra-dep: true
 - location:
     git: https://git.gnu.io/chreekat/yesod.git
-    commit: 9a6a1b63e5750a4834e348e093d028ebc487d241
+    commit: 697d561eb727ed430f11c4b0bb19c9fc5f867db4
   subdirs:
     - yesod-bin
   extra-dep: true
