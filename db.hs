@@ -79,8 +79,10 @@ initCluster root pghost pgdata = redirected logfile $ do
     err "Creating directories.."
     mktree pghost
     mktree pgdata
+
     err "Initializing cluster..."
     pgCtl ["initdb", "-o", "--nosync --auth=peer", "-D", pgdata'] empty
+
     err "Updating cluster configuration file..."
     setPgConfigOpts (pgdata </> "postgresql.conf")
         [ -- set the unix socket directory because pg_ctl start doesn't
@@ -93,18 +95,27 @@ initCluster root pghost pgdata = redirected logfile $ do
           -- don't bother listening on a port, just a socket.
         , ("listen_addresses", "''")
         ]
+
     err "Starting database server..."
     pgCtl ["start", "-w"] empty
+
     err "Creating databases..."
     psql ["postgres"] $ select
         [ "create database snowdrift_development;"
         , "create database snowdrift_test_template;"
         , "update pg_database set datistemplate=true where datname='snowdrift_test_template';"
         ]
+
     err "Loading devDB..."
     psql ["snowdrift_development"] $ input "devDB.sql"
+
     err "Loading testDB..."
     psql ["snowdrift_test_template"] $ input "testDB.sql"
+
+    err "Writing old-skool config file..."
+    Just user <- need "USER"
+    output "config/postgresql.yml" $ select (dbConfigTemplate user pgdata')
+
     err "Success."
   where
     pghost'  = "'" <> toText_ pghost <> "'"
@@ -127,6 +138,31 @@ initCluster root pghost pgdata = redirected logfile $ do
             once (oneOf " =")
         -- replace it with 'opt = value'
         return (opt <> " = " <> value)
+
+-- | Template for database config file.
+dbConfigTemplate user pgdata =
+    [ "Default: &defaults"
+    , format ("   user: "%s) user
+    , "   password: \"\""
+    , format ("   host: "%s) pgdata
+    , "   database: snowdrift_development"
+    , "   poolsize: 10"
+    , ""
+    , "Development:"
+    , "  <<: *defaults"
+    , ""
+    , "Testing:"
+    , "  database: snowdrift_test"
+    , "  <<: *defaults"
+    , ""
+    , "Staging:"
+    , "  database: snowdrift_staging"
+    , "  poolsize: 100"
+    , "  <<: *defaults"
+    , ""
+    , "Production:"
+    , "  <<: *defaults"
+    ]
 
 -- ##
 -- ## Helper functions/additions to underlying libs
