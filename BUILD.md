@@ -149,13 +149,14 @@ NB: this will take a while!
 
 ### Set up the database
 
-Run `./sdb.hs init`. This will create a local database cluster. For other
-available commands, run `./sdb.hs --help`
+Run `./sdb.hs init`. This will create a private database cluster, local to
+the project. For other available commands, run `./sdb.hs --help`
 
 #### Windows database setup
 
-The sdm.hs tool is untested on Windows. Any feedback, or
-Postgres-on-Windows expertise, would be appreciated.
+The sdm.hs tool is untested on Windows. It won't work anyway because it
+uses UNIX sockets. Any patches, feedback, or Postgres-on-Windows expertise
+would be appreciated.
 
 ### Run initial tests
 
