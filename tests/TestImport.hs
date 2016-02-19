@@ -1,6 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE LambdaCase #-}
 
@@ -11,8 +10,7 @@ import Prelude hiding (exp)
 import Control.Arrow as TestImport hiding (app, loop)
 import Control.Concurrent (threadDelay)
 import Control.Exception.Lifted as Lifted hiding (handle)
-import Control.Monad (unless)
-import Control.Monad (when)
+import Control.Monad (unless, when)
 import Control.Monad.IO.Class as TestImport (liftIO, MonadIO)
 import Control.Monad.Logger as TestImport
 import Control.Monad.Trans.Control
@@ -115,7 +113,7 @@ assertLoginPage loc = do
 
 
 submitLogin :: Yesod site => Text -> Text -> YesodExample site ()
-submitLogin user pass = do
+submitLogin user pass =
     -- Ideally we would extract this url from the login form on the current page
     request $ do
         setMethod "POST"
@@ -279,7 +277,7 @@ editWiki project language page content comment = do
 
     snowdrift_id <- snowdriftId
     wiki_target <- testDB $ getByOrError $ UniqueWikiTarget snowdrift_id LangEn page
-    let page_id = wikiTargetPage $ entityVal $ wiki_target
+    let page_id = wikiTargetPage $ entityVal wiki_target
     wiki_last_edit <- testDB $ getByOrError $ UniqueWikiLastEdit page_id LangEn
     let last_edit = entityVal wiki_last_edit
 
@@ -317,7 +315,7 @@ selectUserId ident
              [uid] -> unValue uid
              uids  -> error $ "ident " <> T.unpack ident <> " must be unique, "
                            <> "but it matches these user ids: "
-                           <> (L.intercalate ", " $ map (show . unValue) uids))
+                           <> L.intercalate ", " (map (show . unValue) uids))
   <$> (select $ from $ \u -> do
            where_ $ u ^. UserIdent ==. val ident
            return $ u ^. UserId)
@@ -326,7 +324,7 @@ userId :: NamedUser -> Example UserId
 userId = testDB . selectUserId . username
 
 acceptHonorPledge :: YesodExample App ()
-acceptHonorPledge = do
+acceptHonorPledge =
     withStatus 303 False $ request $ do
         setMethod "POST"
         setUrl HonorPledgeR
@@ -388,7 +386,7 @@ withExecutable exec_name args str test_action = do
   where
     loop start_time = go start_time start_time
       where
-        go start cur lim en hp ho s = do
+        go start cur lim en hp ho s =
             if cur >= addUTCTime (fromIntegral lim) start
                 then liftIO $ do
                          interruptProcessGroupOf hp
@@ -458,7 +456,7 @@ editComment route comment_text = do
         addPostParam "mode" "post"
 
 changeWatchStatus :: RedirectUrl App url => url -> YesodExample App ()
-changeWatchStatus route = do
+changeWatchStatus route =
      withStatus 303 False $ request $ do
          setMethod "POST"
          setUrl route
