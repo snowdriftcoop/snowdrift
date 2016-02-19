@@ -3,7 +3,8 @@
 Snowdrift has been built successfully on GNU/Linux distributions of all sorts
 and on OpenBSD and OS X.
 
-Windows builds only work partially as of this writing.
+Windows is not currently supported, but we will assist any efforts to add
+such support. See below for partial setup instructions.
 
 ## Install System Dependencies
 
@@ -42,19 +43,6 @@ Then follow the
 Install Git and PostgreSQL by running this command as `root`:
 
     pacman -S git postgresql
-
-To initialize the PostgreSQL database, first become the `postgres` user.
-
-    sudo -i -u postgres
-
-As the `postgres` user, run this command:
-
-    initdb --locale en_US.UTF-8 -E UTF8 -D '/var/lib/postgres/data'
-
-Then, as `root`:
-
-    systemctl enable postgresql.service
-    systemctl start postgresql.service
 
 Finally, install the
 [haskell-stack](https://aur.archlinux.org/packages/haskell-stack)
@@ -118,7 +106,8 @@ With brew, install the core dependencies:
 
 *Status:* We do not officially support Windows, but we welcome testing. From
 reports so far, SnowdriftEmailDaemon won't build on Windows, so `stack test`
-will fail. Building, running, and working on the site might work otherwise.
+will fail. Our database management utility (sdb.hs) is also untested on
+Windows.
 
 Install [Git] per instructions on the website.
 
@@ -160,27 +149,14 @@ NB: this will take a while!
 
 ### Set up the database
 
-NB: Though you can set up databases manually (see [DATABASE-MANAGEMENT.md]), we
-offer a simple script called `sdm` (for "Snowdrift database manager") that can
-set up the PostgreSQL databases for you.
-
-NB: At this time, sdm requires root access, so it will ask for your passphrase.
-If you want to help us improve how sdm works, see ticket
-[SD-689](https://snowdrift.coop/p/snowdrift/w/en/coding/c/3677) and discussion
-there.
-
-To set up the databases with sdm, run the appropriate command for your system:
-
-* GNU/Linux: `stack exec sdm init`
-* OpenBSD: `stack exec -- sdm init --sudoUser _postgresql`
-* FreeBSD: `stack exec -- sdm init --sudoUser pgsql --pgUser pgsql`
-* OS X: `stack exec -- sdm init --sudoUser=_postgres`
+Run `./sdb.hs init`. This will create a private database cluster, local to
+the project. For other available commands, run `./sdb.hs --help`
 
 #### Windows database setup
 
-The sdm tool does not support Windows. Instead, follow the *manual database*
-setup instructions in [DATABASE-MANAGEMENT.md]. Some of the precise commands may
-need slight adapting such as using `psql -U postgres` to enter the psql prompt.
+The sdb.hs tool is untested on Windows. It won't work anyway because it
+uses UNIX sockets. Any patches, feedback, or Postgres-on-Windows expertise
+would be appreciated.
 
 ### Run initial tests
 
@@ -190,7 +166,17 @@ Run the tests to compile the test dependencies:
 
 ## Running the site
 
-NB: You can run the site with two different methods.
+First, ensure the database is running:
+
+    ./sdb.hs start
+
+If that fails, you may need to set up the database. See above.
+
+**If at any time you see the warning "Snowdrift: libpq: failed (could not
+connect to server: No such file or directory", the database probably needs
+to be (re)started.**
+
+Next, you can run the site with two different methods.
 
 ### Option 1: run via `Snowdrift Development`
 
@@ -257,8 +243,8 @@ site. If you use `yesod devel`, the site will rebuild and restart automatically
 for most changes. However, **manual rebuild is always required whenever you:**
 
 * add new dependencies (i.e. edit the `build-depends` in `Snowdrift.cabal`)
-* update any extra binaries such as the payment processing script, the sdm
-  database configuration script, or the email daemon.
+* update any extra binaries such as the payment processing script or the
+  email daemon.
 
 NB: In rare cases, you may need to run `stack clean` if building fails to
 recognize a change.
