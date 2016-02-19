@@ -45,7 +45,9 @@ usageText = mapM_ err
     , "    clean             \"rm -rf\" the whole cluster"
     , "    reset             re-init the cluster and databases"
     , "    export            create data dumps with pg_dump"
-    , "    pg_ctl            run pg_ctl"
+    , ""
+    , "    # Expert commands:"
+    , "    pg_ctl            run Postgres' pg_ctl(1) utility"
     , "    psql DATABASE     connect to DATABASE with psql"
     ]
 
