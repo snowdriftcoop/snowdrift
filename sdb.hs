@@ -64,7 +64,7 @@ main = sh $ do
         ["stop"] -> stop'
         ["clean"] -> stop' >> clean'
         ["reset"] -> stop' >> clean' >> init'
-        ["export"] -> exportDb
+        ["export"] -> exportDb root
         ("pg_ctl":as') -> procs "pg_ctl" (map T.pack as') empty
         ("psql":as') -> liftIO $ callProcess "psql" as'
         ["--help"] -> usageText
@@ -75,12 +75,12 @@ main = sh $ do
             usageText
             exit (ExitFailure 1)
 
-exportDb :: Shell ()
-exportDb = do
+exportDb :: FilePath -> Shell ()
+exportDb root = do
     err "Dumping to devDB.sql..."
-    output "devDB.sql" $ pgDump "snowdrift_development"
+    output (root </> "dev" </> "devDB.sql") $ pgDump "snowdrift_development"
     err "Dumping to testDB.sql..."
-    output "testDB.sql" $ pgDump "snowdrift_test_template"
+    output (root </> "dev" </> "testDB.sql") $ pgDump "snowdrift_test_template"
   where
     pgDump db = inproc "pg_dump" ["--no-owner", "--no-privileges", "--create", db] empty
 
@@ -112,8 +112,8 @@ initCluster root pghost pgdata = redirected logfile $ do
     procs "pg_ctl" ["start", "-w"] empty
 
     err "Creating and populating databases..."
-    psql ["postgres"] $ input "devDB.sql"
-    psql ["postgres"] $ input "testDB.sql"
+    psql ["postgres"] $ input (root </> "dev" </> "devDB.sql")
+    psql ["postgres"] $ input (root </> "dev" </> "testDB.sql")
     psql ["postgres"] $ select
         [ "update pg_database set datistemplate=true where datname='snowdrift_test_template';"
         ]
