@@ -415,27 +415,6 @@ executable SnowdriftEmailDaemon
                 TypeFamilies
                 ViewPatterns
 
--- executable sdm {{{1
-executable sdm
-    if flag(dev)
-       ghc-options: -Wall -O0 -fobject-code
-    if flag(merge)
-        ghc-options: -Wall -Werror -O0 -fobject-code
-    if flag(library-only)
-        Buildable: False
-
-    default-language:  Haskell2010
-    main-is:           Sdm.hs
-    hs-source-dirs:    dev
-    build-depends:     base
-                     , bytestring
-                     , cmdargs
-                     , directory
-                     , mtl
-                     , mwc-random
-                     , process
-                     , semigroups
-
 -- executable sendmail-mock {{{1
 executable sendmail-mock
     if flag(dev)
