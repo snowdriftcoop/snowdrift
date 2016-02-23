@@ -83,7 +83,7 @@ tagSpecs AppConfig {..} = ydescribe "tags" $
     qux  = "qux"
     quux = "quux"
 
-    tagsLine tags = "tags: " <> (Text.intercalate ", " tags)
+    tagsLine tags = "tags: " <> Text.intercalate ", " tags
 
     tags_post_comment = [foo, bar, baz]
     -- Duplicates are added intentionally, so the tests could check

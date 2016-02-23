@@ -1,6 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE LambdaCase #-}
 
@@ -11,8 +10,7 @@ import Prelude hiding (exp)
 import Control.Arrow as TestImport hiding (app, loop)
 import Control.Concurrent (threadDelay)
 import Control.Exception.Lifted as Lifted hiding (handle)
-import Control.Monad (unless)
-import Control.Monad (when)
+import Control.Monad (unless, when)
 import Control.Monad.IO.Class as TestImport (liftIO, MonadIO)
 import Control.Monad.Logger as TestImport
 import Control.Monad.Trans.Control
@@ -115,12 +113,13 @@ assertLoginPage loc = do
 
 
 submitLogin :: Yesod site => Text -> Text -> YesodExample site ()
-submitLogin user pass = do
+submitLogin user pass =
     -- Ideally we would extract this url from the login form on the current page
     request $ do
         setMethod "POST"
         setUrl $ urlPath testRoot `T.append` "auth/page/hashdb/login"
         addPostParam "username" user
+        -- needs to stay password not passphrase for Yesod upstream hashdb
         addPostParam "password" pass
 
 
@@ -145,27 +144,27 @@ data TestUser = TestUser
 data AdminUser = AdminUser
 
 class Login a where
-    username :: IsString name => a -> name
-    password :: IsString pass => a -> pass
+    username   :: IsString name => a -> name
+    passphrase :: IsString pass => a -> pass
 
 instance Login NamedUser where
-    username Bob =  "bob"
+    username Bob  = "bob"
     username Mary = "mary"
-    username Joe =  "joe"
-    username Sue =  "sue"
+    username Joe  = "joe"
+    username Sue  = "sue"
 
-    password Bob =  "bob password"
-    password Mary = "mary password"
-    password Joe =  "joe password"
-    password Sue =  "sue password"
+    passphrase Bob  = "bob passphrase"
+    passphrase Mary = "mary passphrase"
+    passphrase Joe  = "joe passphrase"
+    passphrase Sue  = "sue passphrase"
 
 instance Login TestUser where
-    username _ = "test"
-    password _ = "test"
+    username _   = "test"
+    passphrase _ = "test"
 
 instance Login AdminUser where
-    username _ = "admin"
-    password _ = "admin"
+    username _   = "admin"
+    passphrase _ = "admin"
 
 -- Do a login (using hashdb auth).  This just attempts to go to the home
 -- url, and follows through the login process.  It should probably be the
@@ -174,7 +173,7 @@ instance Login AdminUser where
 loginAs :: Login user => user -> YesodExample App ()
 loginAs user = do
     get200 $ urlPath $ testRoot `T.append` "/auth/login"
-    submitLogin (username user) (password user)
+    submitLogin (username user) (passphrase user)
 
 
 statusIsResp :: Int -> YesodExample site ()
@@ -278,7 +277,7 @@ editWiki project language page content comment = do
 
     snowdrift_id <- snowdriftId
     wiki_target <- testDB $ getByOrError $ UniqueWikiTarget snowdrift_id LangEn page
-    let page_id = wikiTargetPage $ entityVal $ wiki_target
+    let page_id = wikiTargetPage $ entityVal wiki_target
     wiki_last_edit <- testDB $ getByOrError $ UniqueWikiLastEdit page_id LangEn
     let last_edit = entityVal wiki_last_edit
 
@@ -316,7 +315,7 @@ selectUserId ident
              [uid] -> unValue uid
              uids  -> error $ "ident " <> T.unpack ident <> " must be unique, "
                            <> "but it matches these user ids: "
-                           <> (L.intercalate ", " $ map (show . unValue) uids))
+                           <> L.intercalate ", " (map (show . unValue) uids))
   <$> (select $ from $ \u -> do
            where_ $ u ^. UserIdent ==. val ident
            return $ u ^. UserId)
@@ -325,7 +324,7 @@ userId :: NamedUser -> Example UserId
 userId = testDB . selectUserId . username
 
 acceptHonorPledge :: YesodExample App ()
-acceptHonorPledge = do
+acceptHonorPledge =
     withStatus 303 False $ request $ do
         setMethod "POST"
         setUrl HonorPledgeR
@@ -387,7 +386,7 @@ withExecutable exec_name args str test_action = do
   where
     loop start_time = go start_time start_time
       where
-        go start cur lim en hp ho s = do
+        go start cur lim en hp ho s =
             if cur >= addUTCTime (fromIntegral lim) start
                 then liftIO $ do
                          interruptProcessGroupOf hp
@@ -457,7 +456,7 @@ editComment route comment_text = do
         addPostParam "mode" "post"
 
 changeWatchStatus :: RedirectUrl App url => url -> YesodExample App ()
-changeWatchStatus route = do
+changeWatchStatus route =
      withStatus 303 False $ request $ do
          setMethod "POST"
          setUrl route

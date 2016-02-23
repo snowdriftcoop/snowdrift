@@ -65,13 +65,13 @@ library
         Handler.PostLogin
         Handler.Project
         Handler.ProjectBlog
-        Handler.ResetPassword
+        Handler.ResetPassphrase
         Handler.Simple
         Handler.SnowdriftEvent
         Handler.TH
         Handler.User
         Handler.User.Balance
-        Handler.User.ChangePassword
+        Handler.User.ChangePassphrase
         Handler.User.Comment
         Handler.User.ConfirmDelete
         Handler.User.Delete
@@ -82,7 +82,7 @@ library
         Handler.User.Notifications
         Handler.User.Pledges
         Handler.User.ProjectNotifications
-        Handler.User.ResetPassword
+        Handler.User.ResetPassphrase
         Handler.User.SelectProject
         Handler.User.Tickets
         Handler.User.User
@@ -128,7 +128,7 @@ library
         Model.Project.Signup
         Model.Project.Signup.Internal
         Model.Project.Sql
-        Model.ResetPassword
+        Model.ResetPassphrase
         Model.Role
         Model.Settings
         Model.Shares
@@ -153,7 +153,7 @@ library
         View.Comment
         View.Project
         View.Project.Signup
-        View.ResetPassword
+        View.ResetPassphrase
         View.SnowdriftEvent
         View.Time
         View.User

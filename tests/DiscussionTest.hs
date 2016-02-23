@@ -1,7 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE TemplateHaskell #-}
 
 module DiscussionTest
     ( discussionSpecs
@@ -20,7 +19,7 @@ import qualified Data.Text as T
 import Model.Language
 
 discussionSpecs :: Spec
-discussionSpecs = do
+discussionSpecs =
     forM_ [minBound..maxBound] $ \case
         DiscussionTypeWikiPage ->
             runDiscussionTest
@@ -81,7 +80,7 @@ runDiscussionTest
 
         let postReply i = do
                 (comment_id, approved) <- getLatestCommentId
-                when (not approved)
+                unless approved
                      (error $ "comment not approved: " ++ show comment_id)
                 postComment
                     (comment_reply_url comment_id)

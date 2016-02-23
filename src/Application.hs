@@ -52,7 +52,7 @@ import Handler.Notification
 import Handler.PostLogin
 import Handler.Project
 import Handler.ProjectBlog
-import Handler.ResetPassword
+import Handler.ResetPassphrase
 import Handler.Simple
 import Handler.SnowdriftEvent
 import Handler.User

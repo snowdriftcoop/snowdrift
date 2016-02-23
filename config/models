@@ -40,13 +40,13 @@ User
 
     deriving Show Typeable
 
-ResetPassword
+ResetPassphrase
     user  UserId
     email Text
     uri   Text
     sent  Bool   default=false  -- for the email daemon
 
-    UniquePasswordReset user email uri
+    UniquePassphraseReset user email uri
 
 EmailVerification
     user  UserId

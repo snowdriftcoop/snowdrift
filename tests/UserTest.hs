@@ -14,7 +14,7 @@ userSpecs = do
         users = [minBound .. maxBound]
 
     ydescribe "user" $ do
-        yit "creates a user" $ do
+        yit "creates a user" $
             forM_ users $ \user -> do
                 get200 CreateAccountR
 
@@ -24,9 +24,9 @@ userSpecs = do
                     setMethod "POST"
                     byLabel "Account name (private, used for logging in):"
                             (username user)
-                    byLabel "Passphrase:" (password user)
-                    byLabel "Repeat passphrase:" (password user)
+                    byLabel "Passphrase:" (passphrase user)
+                    byLabel "Repeat passphrase:" (passphrase user)
 
-        yit "logs in as a user" $ do
-            forM_ users $ \user -> do
+        yit "logs in as a user" $
+            forM_ users $ \user ->
                 loginAs user

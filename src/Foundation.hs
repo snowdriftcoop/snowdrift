@@ -263,13 +263,14 @@ data NewEmail = NewEmail
 
 createUser :: Text -> Maybe Text -> Maybe Text -> Maybe NewEmail -> Maybe Text
            -> Maybe Text -> Handler (Maybe UserId)
-createUser ident passwd name newEmail avatar nick = do
+createUser ident passph name newEmail avatar nick = do
     langs <- mapMaybe (readMaybe . T.unpack) <$> languages
     now <- liftIO getCurrentTime
     handle (\DBException -> return Nothing) $ runYDB $ do
         account_id <- insert (Account 0)
         discussion_id <- insert (Discussion 0)
-        user <- maybe return setPassword passwd $ newUser langs now account_id discussion_id
+        -- we use "passphrase" usually, but setPassword is a Yesod import
+        user <- maybe return setPassword passph $ newUser langs now account_id discussion_id
         uid_maybe <- insertUnique user
         case uid_maybe of
             Just user_id -> do
@@ -478,10 +479,10 @@ defaultLayoutNew pageName widget = do
     authActive <- do
         r <- getCurrentRoute
         return $ case r of
-            Just (AuthR _)      -> True
-            Just ResetPasswordR -> True
-            Just CreateAccountR -> True
-            _                   -> False
+            Just (AuthR _)        -> True
+            Just ResetPassphraseR -> True
+            Just CreateAccountR   -> True
+            _                     -> False
 
 
     let navbar :: Widget = $(widgetFile "default/navbar")

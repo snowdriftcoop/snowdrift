@@ -1,13 +1,13 @@
 module View.User
     ( addTestCashForm
     , createUserForm
-    , changePasswordForm
+    , changePassphraseForm
     , editUserForm
     , establishUserForm
     , previewUserForm
     , projectNotificationsForm
     , renderUser
-    , setPasswordForm
+    , setPassphraseForm
     , userNameWidget
     , userNotificationsForm
     ) where
@@ -38,22 +38,23 @@ createUserForm :: Maybe Text
                        )
 createUserForm ident extra = do
     (identRes,   identView)   <- mreq textField     "" ident
-    (passwd1Res, passwd1View) <- mreq passwordField "" Nothing
-    (passwd2Res, passwd2View) <- mreq passwordField "" Nothing
+    -- we use "passphrase" usually, but passwordField is Yesod term
+    (passph1Res, passph1View) <- mreq passwordField "" Nothing
+    (passph2Res, passph2View) <- mreq passwordField "" Nothing
     (nameRes,    nameView)    <- mopt textField     "" Nothing
     (emailRes,   emailView)   <- mopt emailField    "" Nothing
     (avatarRes,  avatarView)  <- mopt textField     "" Nothing
     (nickRes,    nickView)    <- mopt textField     "" Nothing
 
-    let view = $(widgetFile "auth/create-account-form")
-        passwdRes = case (passwd1Res, passwd2Res) of
+    let view = $(widgetFile "auth/create-user-form")
+        passphRes = case (passph1Res, passph2Res) of
             (FormSuccess a, FormSuccess b)
                 | a == b    -> FormSuccess a
-                | otherwise -> FormFailure ["passwords do not match"]
+                | otherwise -> FormFailure ["passphrases do not match"]
             (FormSuccess _, x) -> x
             (x, _) -> x
 
-        result = (,,,,,) <$> identRes <*> passwdRes <*> nameRes
+        result = (,,,,,) <$> identRes <*> passphRes <*> nameRes
                          <*> emailRes <*> avatarRes <*> nickRes
 
     return (result, view)
@@ -84,8 +85,9 @@ editUserForm muser = renderBootstrap3 BootstrapBasicForm $
                                 ,("rows", "15")])
                  (userStatement <$> muser)
 
-changePasswordForm :: Form ChangePassword
-changePasswordForm = renderBootstrap3 BootstrapBasicForm $ ChangePassword
+-- we use "passphrase" usually in our code, but passwordField is Yesod term
+changePassphraseForm :: Form ChangePassphrase
+changePassphraseForm = renderBootstrap3 BootstrapBasicForm $ ChangePassphrase
     <$> areq' passwordField "Current passphrase" Nothing
     <*> areq' passwordField "New passphrase" Nothing
     <*> areq' passwordField "Repeat" Nothing
@@ -127,8 +129,8 @@ renderUser mviewer_id user_id user projects_and_roles = do
 
     $(widgetFile "user")
 
-setPasswordForm :: Form SetPassword
-setPasswordForm = renderBootstrap3 BootstrapBasicForm $ SetPassword
+setPassphraseForm :: Form SetPassphrase
+setPassphraseForm = renderBootstrap3 BootstrapBasicForm $ SetPassphrase
     <$> areq' passwordField "New passphrase" Nothing
     <*> areq' passwordField "Repeat"         Nothing
 
