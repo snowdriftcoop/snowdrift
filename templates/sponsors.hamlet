@@ -272,6 +272,9 @@
   <li>
     Alanna Krause
   <li>
+    <a href=@{UserR (toSqlKey 1019)}>
+      Ramana Kumar
+  <li>
     <a href=@{UserR (toSqlKey 651)}>
       Michael F. Lamb
   <li>
