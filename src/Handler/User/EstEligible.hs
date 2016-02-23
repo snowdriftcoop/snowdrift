@@ -13,7 +13,7 @@ postUserEstEligibleR user_id = do
 
     ok <- canMakeEligible user_id establisher_id
     unless ok $
-        error "You can't establish this user"
+        error "Error! Maybe user is already eligible or you lack permissions"
 
     ((result, _), _) <- runFormPost establishUserForm
     case result of
