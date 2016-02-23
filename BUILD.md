@@ -168,10 +168,15 @@ Run the tests to compile the test dependencies:
 
 ## Running the site
 
-NB: When attempting to run the site, if you get an error stating "Snowdrift:
-libpq: failed (could not connect to server: No such file or directory", then
-database probably needs to be (re)started. Given an initialized database that is
-stopped for some reason, run it again with `./sdb.hs start`.
+### Starting the database
+
+If you just initialized, the database cluster should already be running.
+However, it will stop under various circumstances such as rebooting your
+computer. If you try to run the site when the cluster is stopped, you will get
+an error stating "Snowdrift: libpq: failed (could not connect to server: No such
+file or directory" To make sure the database is running, enter:
+
+    ./sdb.hs start
 
 ### Option 1: run via `Snowdrift Development`
 
