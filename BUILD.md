@@ -149,14 +149,16 @@ NB: this will take a while!
 
 ### Set up the database
 
-Run `./sdb.hs init`. This will create a private database cluster, local to
-the project. For other available commands, run `./sdb.hs --help`
+We have a simple tool that creates a private database cluster local to the
+project. On GNU/Linux, BSD, or OS X, initialize databases by running:
 
-#### Windows database setup
+    ./sdb.hs init
 
-The sdb.hs tool is untested on Windows. It won't work anyway because it
-uses UNIX sockets. Any patches, feedback, or Postgres-on-Windows expertise
-would be appreciated.
+NB: The sdb.hs tool won't work on Windows because it uses UNIX sockets. We
+welcome any patches, feedback, or Postgres-on-Windows help to get an alternative
+working.
+
+NB: To see sdb commands for other operations, run `./sdb.hs --help`
 
 ### Run initial tests
 
@@ -166,17 +168,15 @@ Run the tests to compile the test dependencies:
 
 ## Running the site
 
-First, ensure the database is running:
+### Starting the database
+
+If you just initialized, the database cluster should already be running.
+However, it will stop under various circumstances such as rebooting your
+computer. If you try to run the site when the cluster is stopped, you will get
+an error stating "Snowdrift: libpq: failed (could not connect to server: No such
+file or directory". To make sure the database is running, enter:
 
     ./sdb.hs start
-
-If that fails, you may need to set up the database. See above.
-
-**If at any time you see the warning "Snowdrift: libpq: failed (could not
-connect to server: No such file or directory", the database probably needs
-to be (re)started.**
-
-Next, you can run the site with two different methods.
 
 ### Option 1: run via `Snowdrift Development`
 
@@ -203,7 +203,7 @@ From now on, you may run the site in development mode via:
 
     stack exec yesod devel
 
-NB: The fist run will take a long time
+NB: The first run will take a long time.
 
 (To stop yesod devel, type `quit` in terminal and then press Enter)
 
