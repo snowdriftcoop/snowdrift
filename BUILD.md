@@ -153,7 +153,7 @@ We have a simple tool that creates a private database cluster local to the
 project. On GNU/Linux, BSD, or OS X, initialize databases by running:
 
     ./sdb.hs init
-    
+
 NB: The sdb.hs tool won't work on Windows because it uses UNIX sockets. We
 welcome any patches, feedback, or Postgres-on-Windows help to get an alternative
 working.
@@ -174,7 +174,7 @@ If you just initialized, the database cluster should already be running.
 However, it will stop under various circumstances such as rebooting your
 computer. If you try to run the site when the cluster is stopped, you will get
 an error stating "Snowdrift: libpq: failed (could not connect to server: No such
-file or directory" To make sure the database is running, enter:
+file or directory". To make sure the database is running, enter:
 
     ./sdb.hs start
 
