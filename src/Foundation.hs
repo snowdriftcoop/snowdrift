@@ -17,6 +17,7 @@ import Text.Hamlet (hamletFile)
 import Text.Jasmine (minifym)
 import Web.Authenticate.BrowserId (browserIdJs)
 import Yesod hiding (runDB, (==.), count, Value)
+import Yesod.Auth.Message (AuthMessage (..))
 import Yesod.Auth.BrowserId (authBrowserId)
 import Yesod.Auth.HashDB (authHashDB, setPassword)
 import Yesod.Core.Types (Logger)
@@ -234,16 +235,22 @@ instance YesodAuth App where
     -- Override the above destinations when a Referer: header is present
     redirectToReferer _ = True
 
-    getAuthId creds = do
-        maybe_user_id <- runDB $ getBy $ UniqueUser $ credsIdent creds
+    authenticate creds = do
+        let ident = credsIdent creds
+        maybe_user_id <- runDB $ getBy $ UniqueUser ident
         case (credsPlugin creds, maybe_user_id) of
-            (_, Just (Entity user_id _)) -> return $ Just user_id
-            ("hashdb",    _) -> error "Credentials not recognized"
-            ("browserid", _) ->
-                createUser (credsIdent creds) Nothing Nothing emailStuff Nothing Nothing
-            _ -> error "Unhandled credentials plugin"
-      where
-        emailStuff = Just $ NewEmail True $ credsIdent creds
+            (_, Just (Entity user_id _)) -> return $ Authenticated user_id
+            ("hashdb",    _) -> return $ UserError $ IdentifierNotFound ident
+            ("browserid", _) -> do
+                let emailStuff = Just $ NewEmail True ident
+                muid <-
+                    createUser ident Nothing Nothing emailStuff Nothing Nothing
+                return $ case muid of
+                    -- The Nothing case never really runs because 'createUser'
+                    -- throws an exception on failure
+                    Nothing -> UserError InvalidLogin
+                    Just user_id -> Authenticated user_id
+            _ -> return $ ServerError "Unhandled credentials plugin"
 
     -- You can add other plugins like BrowserID, email or OAuth here
     authPlugins _ = [ snowdriftAuthBrowserId, snowdriftAuthHashDB ]
