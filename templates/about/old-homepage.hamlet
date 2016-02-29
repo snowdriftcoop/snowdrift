@@ -45,8 +45,6 @@
         src="https://archive.org/download/snowdrift-fund-drive-intro/snowdrift-fund-drive-intro.mp4">
       <source type="video/ogg"
         src="https://archive.org/download/snowdrift-fund-drive-intro/snowdrift-fund-drive-intro.ogv">
-      <track label="English captions" kind="captions" srclang="en-us"
-        src="https://archive.org/download/snowdrift-fund-drive-intro/snowdrift-fund-drive-intro_en.vtt">
     <p>
       Despite the fund-drive, we're on a tight budget. You can still
       <a href=@{DonateR}>donate
