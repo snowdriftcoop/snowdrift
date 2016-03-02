@@ -24,6 +24,7 @@ import Data.Time.Format
 import Dev
 import Handler.Comment as Com
 import Handler.Discussion
+import Handler.NewDesign (getPHomeR)
 import Handler.Utils
 import Model.Application
 import Model.Comment
@@ -600,6 +601,16 @@ postUpdatePledgeR project_handle = do
         _ -> do
             alertDanger "error occurred in form submission"
             redirect (UpdatePledgeR project_handle)
+
+
+--------------------------------------------------------------------------------
+-- /pledge-faux
+
+getPledgeFauxR :: Text -> Handler Html
+getPledgeFauxR handle = do
+    Entity _ project <- runYDB (getBy404 (UniqueProjectHandle handle))
+    alertWarning "Sorry, we're redoing the pledge system, so pledging isn't working right now."
+    redirect $ PHomeR (projectHandle project)
 
 --------------------------------------------------------------------------------
 -- /t

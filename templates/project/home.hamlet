@@ -9,7 +9,7 @@
         <img src=@{StaticR img_project_cover_png}>
     <div .col .span_4_of_12>
       <.pledge>
-        <a href=# .bigbutton>pledge
+        <a href=@{PledgeFauxR handle} .bigbutton>pledge
         <span .amount>
           0.xx¢/mo
         <span>matching
