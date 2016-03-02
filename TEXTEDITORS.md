@@ -159,15 +159,11 @@ items above:
     Plug 'dag/vim2hs', { 'for': 'haskell' }
     au FileType haskell set nofoldenable "stops vim2hs folding
 
-Haskell-specific functional tools for Haskell-focused developers:
-
-For advanced Haskell error-checking and type information, add
-[ghcmod-vim](https://github.com/eagletmt/ghcmod-vim). NB: use stack instead of
-cabal for installation. For autocompletion with ghc-mod, use
-[neco-ghc](https://github.com/eagletmt/neco-ghc).
-
-To install ghc-mod, run `stack install ghc-mod` (and make sure ~/.local/bin is
-on your path). Then, assuming vim-plug, add these lines to add to ~/.vimrc:
+For advanced Haskell error-checking and type information, install ghc-mod with
+`stack install ghc-mod` (and make sure ~/.local/bin is on your path). Then,
+add [ghcmod-vim](https://github.com/eagletmt/ghcmod-vim) and
+[neco-ghc](https://github.com/eagletmt/neco-ghc) as well; for installation
+via vim-plug, use these lines in ~/.vimrc:
 
     Plug 'eagletmt/ghcmod-vim', { 'for': 'haskell' }
     Plug 'eagletmt/neco-ghc', { 'for': 'haskell' }
@@ -176,6 +172,9 @@ on your path). Then, assuming vim-plug, add these lines to add to ~/.vimrc:
     let g:haskellmode_completion_ghc = 0
     autocmd FileType haskell setlocal omnifunc=necoghc#omnifunc
 
+To have ghc-mod auto-check for errors on open or save, add
+[syntastic](https://github.com/scrooloose/syntastic) and set it up as desired.
+
 NB: ghc-mod will fail if it sees a dist/ directory which is made when you run
 snowdrift via `stack exec yesod devel`, so until yesod-bin is updated to use
 Stack directly, use workarounds such as temporarily renaming the /dist directory
@@ -183,7 +182,7 @@ when you want to use ghc-mod, or avoid `yesod devel` entirely and run the site
 instead via `stack exec Snowdrift Development`.
 
 Another great Haskell tool: [vim-HaRe](https://github.com/glittershark/vim-hare)
-NB: to get HaRe itself, use `stack install hare` instead of cabal install.
+NB: to get HaRe itself, use `stack install HaRe` instead of cabal install.
 
 General vim plugins:
 
@@ -252,9 +251,9 @@ almost all of our dependencies.
 
 ### Atom tag usage and updating
 
-With tags generated, Atom uses Ctrl-Shift-R to search for any tag,
-Ctrl-Alt-Down to jump to the definition of the symbol under the cursor, and
-Ctrl-Alt-Up to return (with vim-mode, Ctrl-] and Ctrl-t also work).
+With tags generated, Atom uses Ctrl-Shift-R to search for any tag, Ctrl-Alt-Down
+to jump to the definition of the symbol under the cursor, and Ctrl-Alt-Up to
+return (with vim-mode, Ctrl-] and Ctrl-t also work).
 
 We hope to document how to auto-update tags whenever saving files in Atom, but
 until we have that clear, you'll need to manually re-run `git-hasktags` (set as
@@ -262,19 +261,18 @@ alias in instructions above) as needed.
 
 ### Emacs tag usage
 
-If you use Helm, as recommended above, you can run `M-x
-helm-etags-select` to select from the `TAGS` file.
+If you use Helm, as recommended above, you can run `M-x helm-etags-select` to
+select from the `TAGS` file.
 
-If you use haskell-interactive-mode, linked above, Emacs will
-automatically regenerate the TAGS file for you (provided you have loaded
-a file with `C-c C-l` beforehand). If you don't want to use
-haskell-interactive-mode for whatever reason, you can generate the tags
-file with
+If you use haskell-interactive-mode, linked above, Emacs will automatically
+regenerate the TAGS file for you (provided you have loaded a file with `C-c C-l`
+beforehand). If you don't want to use haskell-interactive-mode for whatever
+reason, you can generate the tags file with:
 
     git ls-tree -r HEAD --name-only | grep -E '*.hs' | xargs hasktags -e --ignore-close-implementation
 
-`M-t` is a good keybinding for `helm-etags-select`, provided you don't
-use `transpose-words`:
+`M-t` is a good keybinding for `helm-etags-select`, provided you don't use
+`transpose-words`:
 
 ```elisp
 (global-set-key (kbd "M-t") 'helm-etags-select)
