@@ -9,6 +9,7 @@ stanzas:
           APPROOT: https://dev.snowdrift.coop
           PGDATABASE: sd_reboot
           PGUSER: snowdrift_production
+          PGHOST: localhost
       forward-env:
           - PGPASS
 
