@@ -206,8 +206,8 @@ getProjectBlogFeedR project_handle = do
         -- The RSS feed contains the full post content, not just the part
         -- above the fold.
         entryContent <- renderMarkdown $
-                            (blogPostTopContent post) <>
-                            (fromMaybe (Markdown "") $ blogPostBottomContent post)
+                            blogPostTopContent post <>
+                            fromMaybe (Markdown "") (blogPostBottomContent post)
 
         let entry = FeedEntry {
               feedEntryLink = BlogPostR project_handle (blogPostHandle post)

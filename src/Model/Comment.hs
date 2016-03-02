@@ -675,7 +675,7 @@ postComment
         discussion_id
         contents
         visibility
-        language = do
+        language =
     case parseTicket $ unMarkdown contents of
         Left err -> return $ Left err
         Right mnew_ticket -> do
@@ -1238,8 +1238,8 @@ fetchCommentForestData roots commentHandlerHasPermission = do
     let claiming_users_set = S.fromList $ map ticketClaimingUser $ M.elems claim_map
 
     user_map <- entitiesMap <$>
-        selectList [UserId <-. (S.toList $
-                                    makeCommentUsersSet all_comments <>
+        selectList [UserId <-. S.toList
+                                   (makeCommentUsersSet all_comments <>
                                     claiming_users_set)]
                    []
     closure_map          <- makeCommentClosingMapDB    all_comment_ids
@@ -1247,7 +1247,7 @@ fetchCommentForestData roots commentHandlerHasPermission = do
     ticket_map           <- makeTicketMapDB            all_comment_ids
     flag_map             <- makeFlagMapDB              all_comment_ids
 
-    return $ CommentForestData
+    return CommentForestData
         { children
         , user_map
         , earlier_closures_map

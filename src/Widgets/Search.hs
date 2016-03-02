@@ -85,9 +85,9 @@ searchFilterString (SearchParameters All tags _) =
 parseTags :: [(Text, TagAction)] -> Text
 parseTags t = T.intercalate " AND " $ filter (not . T.null) (map parseTag t)
     where parseTag (tag, response)
-              | (tag == T.empty) = T.empty
-              | (response == TagInclude) = "(" <> tag <> ")"
-              | (response == TagExclude) = "(NOT " <> tag <> ")"
+              | tag == T.empty = T.empty
+              | response == TagInclude = "(" <> tag <> ")"
+              | response == TagExclude = "(NOT " <> tag <> ")"
               | otherwise = T.empty
 
 searchSortString :: SearchParameters -> Text

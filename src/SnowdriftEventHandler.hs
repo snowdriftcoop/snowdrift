@@ -237,7 +237,7 @@ notificationEventHandler AppConfig{..} (EVolunteerApp _ user_id project_id app_i
                     (Just (NotificationSender user_id))
                     appRoot
                     project_id
-                    (\project_handle -> ApplicationR project_handle app_id)
+                    (`ApplicationR` app_id)
                     NotifVolunteerApp
                     (\route -> mconcat
                         [ "New [volunteer application]("
@@ -301,4 +301,4 @@ eventInserterHandler (EBlogPost post_id BlogPost{..})                           
 -- We don't have a table for ECommentApproved, because ECommentPosted is fired at the same time.
 eventInserterHandler (ECommentApproved _ _) = return ()
 
-eventInserterHandler (EVolunteerApp _ _ _ _) = return ()
+eventInserterHandler EVolunteerApp{} = return ()

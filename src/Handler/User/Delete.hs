@@ -9,7 +9,7 @@ import Model.User
 startDeleteConfirmation :: UserId -> Handler ()
 startDeleteConfirmation user_id = do
     hash        <- liftIO newHash
-    confirm_uri <- getUrlRender <*> (pure $ UserConfirmDeleteR user_id hash)
+    confirm_uri <- getUrlRender <*> pure (UserConfirmDeleteR user_id hash)
     muser_email <- runDB $ fetchUserEmailVerified user_id
     case muser_email of
         Nothing -> alertDanger $

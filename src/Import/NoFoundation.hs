@@ -1,4 +1,4 @@
-{-# LANGUAGE CPP, DeriveDataTypeable, TypeFamilies #-}
+{-# LANGUAGE CPP, TypeFamilies #-}
 
 module Import.NoFoundation (module Import) where
 
