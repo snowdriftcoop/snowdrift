@@ -1,0 +1,23 @@
+stanzas:
+    - type: webapp
+      hosts:
+          - dev.snowdrift.coop
+      exec: ../dist/bin/Snowdrift
+      args:
+          - production
+      env:
+          APPROOT: https://dev.snowdrift.coop
+          PGDATABASE: sd_reboot
+          PGUSER: snowdrift_production
+      forward-env:
+          - PGPASS
+
+extraFiles:
+    - ../migrations
+    # FIXME: templates shouldn't be needed.
+    - ../templates
+
+# Assuming you have an awscli profile named 'snowdrift' that refers to the
+# Snowdrift account, the server to copy to can be acquired with:
+# $ aws --profile snowdrift ec2 describe-instances --instance-ids i-81a6df28 --query 'Reservations[].Instances[].PublicDnsName'
+copy-to: ec2-54-152-177-195.compute-1.amazonaws.com:/opt/keter/incoming
