@@ -24,8 +24,6 @@ derivePersistField "ProjectSignupHandle"
 
 newtype Year = Year Int deriving (Show, Eq, Read)
 
-deriving instance Read Month
-
 newtype ProjectSignupStartDate = ProjectSignupStartDate (Year, Month)
     deriving (Show, Read)
 derivePersistField "ProjectSignupStartDate"

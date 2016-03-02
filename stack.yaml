@@ -15,11 +15,12 @@ packages:
   extra-dep: true
 extra-deps:
     # Absent from LTS
-    - github-0.13.2
     - libravatar-0.3.0.0
     - mime-0.4.0.2
     - titlecase-0.1.0.2
     - yesod-markdown-0.11.0
-    # Transitive dep of github
+    # TODO: upgrade to github-0.14+, which is in LTS
+    - github-0.13.2
+    # Transitive dep of github-0.13.2
     - failure-0.2.0.3
-resolver: lts-5.1
+resolver: lts-5.5
