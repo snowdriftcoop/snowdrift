@@ -12,7 +12,7 @@ set -e
 
 opt_build=${BUILD:=true}
 opt_deploy=${DEPLOY:=true}
-opt_appname=${APPNAME:=Snowdrift}
+opt_appname=${APPNAME:=SnowdriftReboot}
 
 #
 #
