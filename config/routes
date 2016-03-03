@@ -143,6 +143,7 @@
 /p/#Text/invite                              InviteR         GET POST
 /p/#Text/patrons                             ProjectPatronsR GET
 /p/#Text/pledge                              UpdatePledgeR   GET POST
+/p/#Text/pledge-faux                         PledgeFauxR     GET
 /p/#Text/t                                   TicketsR        GET
 /p/#Text/t/#TicketId                         TicketR         GET
 /p/#Text/volunteer                           VolunteerR      GET POST
