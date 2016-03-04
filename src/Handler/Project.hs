@@ -24,7 +24,6 @@ import Data.Time.Format
 import Dev
 import Handler.Comment as Com
 import Handler.Discussion
-import Handler.NewDesign (getPHomeR)
 import Handler.Utils
 import Model.Application
 import Model.Comment
