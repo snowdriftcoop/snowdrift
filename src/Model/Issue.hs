@@ -11,7 +11,7 @@ import Text.Printf
 import Widgets.Tag (pickForegroundColor)
 import qualified Data.Set as S
 import qualified Data.Text as T
-import qualified Github.Issues as GH
+import qualified GitHub.Data.Issues as GH
 
 -- An Issue abstracts a Snowdrift ticket, Github issue, etc.
 class Issue a where
@@ -63,12 +63,15 @@ instance Issue GH.Issue where
                   #{GH.labelName tag}
             |]
 
-        fg :: String -> String
+        -- TODO: Use Text tools and not String ones with ugly un/pack
+        --       e.g. use 'formatting' package instead of printf
+        fg :: Text -> String
         fg = printf "%06x"
              . pickForegroundColor
              . maybe 0 fst
              . listToMaybe
              . readHex
+             . T.unpack
     issueFilterable = mkFromGithubIssue Filterable
     issueOrderable = mkFromGithubIssue Orderable
 
@@ -88,14 +91,12 @@ mkFromGithubIssue c i = c is_claimed has_tag get_named_ts search_literal
     is_claimed "UNCLAIMED" = has_issue_assignee
     is_claimed cmd         = error $ "Unrecognized command " <> T.unpack cmd
 
-    has_tag t = elem (T.unpack t) $ map GH.labelName $ GH.issueLabels i
+    has_tag t = t `elem` fmap GH.labelName (GH.issueLabels i)
 
-    get_named_ts "CREATED" =
-        S.singleton $ GH.fromGithubDate $ GH.issueCreatedAt i
-    get_named_ts "LAST UPDATED" =
-        S.singleton $ GH.fromGithubDate $ GH.issueUpdatedAt i
+    get_named_ts "CREATED" = S.singleton $ GH.issueCreatedAt i
+    get_named_ts "LAST UPDATED" = S.singleton $ GH.issueUpdatedAt i
     get_named_ts name = error $ "Unrecognized time name " ++ T.unpack name
 
     search_literal str =
-        not (null $ T.breakOnAll str $ T.pack $ GH.issueTitle i)
-        || fromMaybe False (null . T.breakOnAll str . T.pack <$> GH.issueBody i)
+        not (null $ T.breakOnAll str $ GH.issueTitle i)
+        || fromMaybe False (null . T.breakOnAll str <$> GH.issueBody i)

@@ -38,8 +38,8 @@ import qualified Data.Map as M
 import qualified Data.Set as S
 import qualified Data.Text as T
 import qualified Database.Persist as P
-import qualified Github.Data as GH
-import qualified Github.Issues as GH
+import qualified GitHub.Data as GH
+import qualified GitHub.Endpoints.Issues as GH
 
 import Data.Filter
 import Data.Order
@@ -153,17 +153,20 @@ getGithubIssues project =
                return
   where
     eMsg = "failed to fetch GitHub tickets\n"
+    getIssues (account, repo) =
+        fmap (fmap toList) $ GH.issuesForRepo account repo []
     getGithubIssues' :: Handler (Async (Either GH.Error [GH.Issue]))
     getGithubIssues' = liftIO . async $
-        maybe
-            (return $ Right [])
-            (\(account, repo) -> GH.issuesForRepo account repo [])
-            parsedProjectGithubRepo
+        maybe (return $ Right []) getIssues parsedProjectGithubRepo
 
-    parsedProjectGithubRepo :: Maybe (String, String)
+    parsedProjectGithubRepo :: Maybe (GH.Name GH.Owner, GH.Name GH.Repo)
     parsedProjectGithubRepo =
-        fmap (second (drop 1) . break (== '/') . T.unpack)
-             (projectGithubRepo project)
+        fmap
+            ( (GH.mkOwnerName *** GH.mkRepoName)
+            . second (T.drop 1)
+            . T.break (== '/')
+            )
+            (projectGithubRepo project)
 
 summarizeProject :: Entity Project
                  -> Mech.Project
