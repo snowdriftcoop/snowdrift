@@ -59,13 +59,11 @@ library
         Handler.JsLicenses
         Handler.MarkdownTutorial
         Handler.NewDesign
-        Handler.Notification
         Handler.PostLogin
         Handler.Project
         Handler.ProjectBlog
         Handler.ResetPassphrase
         Handler.Simple
-        Handler.SnowdriftEvent
         Handler.TH
         Handler.User
         Handler.User.Balance
@@ -74,11 +72,7 @@ library
         Handler.User.Delete
         Handler.User.Edit
         Handler.User.EstEligible
-        Handler.User.Notifications
-        Handler.User.Pledges
-        Handler.User.ProjectNotifications
         Handler.User.ResetPassphrase
-        Handler.User.SelectProject
         Handler.User.User
         Handler.User.Users
         Handler.User.Utils
@@ -92,7 +86,6 @@ library
         Local.Esqueleto
         Local.Github
         Local.Ord
-        Mechanism
         Model
         Model.Application
         Model.Blog
@@ -105,8 +98,6 @@ library
         Model.License.Internal
         Model.Markdown
         Model.Markdown.Diff
-        Model.Notification
-        Model.Notification.Internal
         Model.Permission.Internal
         Model.Project
         Model.Project.Signup
@@ -116,8 +107,6 @@ library
         Model.Role
         Model.Settings
         Model.Shares
-        Model.SnowdriftEvent
-        Model.SnowdriftEvent.Internal
         Model.TH
         Model.Tag
         Model.Transaction
@@ -130,12 +119,10 @@ library
         Settings
         Settings.Development
         Settings.StaticFiles
-        SnowdriftEventHandler
         Version
         View.Project
         View.Project.Signup
         View.ResetPassphrase
-        View.SnowdriftEvent
         View.Time
         View.User
         Widgets.Doc
@@ -308,91 +295,6 @@ executable SnowdriftProcessPayments
                 NoMonomorphismRestriction
                 DeriveDataTypeable
                 ScopedTypeVariables
-
--- executable SnowdriftEmailDaemon {{{1
-executable SnowdriftEmailDaemon
-    if flag(dev)
-       ghc-options: -Wall -O0 -fobject-code
-    if flag(merge)
-        ghc-options: -Wall -Werror -O0 -fobject-code
-    if flag(library-only)
-        Buildable: False
-    -- Building on Windows is broken. See
-    -- https://github.com/commercialhaskell/stack/issues/466
-    if os(windows)
-        Buildable: False
-    default-language:  Haskell2010
-    hs-source-dirs: app
-    main-is: SnowdriftEmailDaemon.hs
-    -- build-depends {{{2
-    build-depends:     base
-                     , authenticate
-                     , blaze-builder
-                     , blaze-html
-                     , blaze-markup
-                     , bytestring
-                     , containers
-                     , cmdargs
-                     , data-default
-                     , Diff
-                     , directory
-                     , esqueleto
-                     , email-validate
-                     , fast-logger
-                     , hjsmin
-                     , hourglass
-                     , http-conduit
-                     , lens
-                     , lifted-base
-                     , mime-mail
-                     , monad-logger
-                     , mtl
-                     , path-pieces
-                     , persistent
-                     , persistent-postgresql
-                     , persistent-template
-                     , random
-                     , resourcet
-                     , semigroups
-                     , shakespeare
-                     , Snowdrift
-                     , stm
-                     , template-haskell
-                     , text
-                     , time
-                     , titlecase
-                     , transformers
-                     , yaml
-                     , yesod
-                     , yesod-auth
-                     , yesod-auth-hashdb
-                     , yesod-core
-                     , yesod-form
-                     , yesod-markdown
-                     , yesod-static
-
-    -- default-extensions {{{2
-    default-extensions: BangPatterns
-                ConstraintKinds
-                DeriveDataTypeable
-                EmptyDataDecls
-                ExistentialQuantification
-                FlexibleContexts
-                FlexibleInstances
-                GeneralizedNewtypeDeriving
-                LambdaCase
-                MultiParamTypeClasses
-                MultiWayIf
-                NoImplicitPrelude
-                QuasiQuotes
-                OverloadedStrings
-                RankNTypes
-                RecordWildCards
-                ScopedTypeVariables
-                TemplateHaskell
-                TupleSections
-                TypeFamilies
-                ViewPatterns
 
 -- executable sendmail-mock {{{1
 executable sendmail-mock

@@ -5,16 +5,13 @@ module View.User
     , editUserForm
     , establishUserForm
     , previewUserForm
-    , projectNotificationsForm
     , renderUser
     , setPassphraseForm
     , userNameWidget
-    , userNotificationsForm
     ) where
 
-import Import hiding (UserNotificationPref, ProjectNotificationPref)
+import Import
 
-import Data.String (fromString)
 import qualified Data.Map as M
 import qualified Data.Set as S
 
@@ -24,9 +21,7 @@ import Model.Currency
 import Model.Markdown
 import Model.Role
 import Model.User
-import Model.User.Internal
 import Widgets.Markdown (snowdriftMarkdownField)
-import Widgets.UserPledges
 
 createUserForm :: Maybe Text
                -> Form (Text
@@ -154,59 +149,3 @@ userNameWidget user_id = do
 
 addTestCashForm :: Form Milray
 addTestCashForm = renderBootstrap3 BootstrapBasicForm $ fromInteger . (10000 *) <$> areq' intField "Add (fake) money to your account (in whole dollars)" (Just 10)
-
-req :: Eq a => [(Text, a)] -> SomeMessage App -> Maybe a
-    -> AForm (HandlerT App IO) a
-req methods s xs = areq' (dropdown methods) s xs
-
-opt :: Eq a => [(Text, a)] -> SomeMessage App -> Maybe a
-    -> AForm (HandlerT App IO) (Maybe a)
-opt methods s xs = aopt' (dropdown methods) s (Just xs)
-
-dropdown :: Eq a => [(Text, a)] -> Field (HandlerT App IO) a
-dropdown methods = selectFieldList methods
-
-userMethods :: [(Text, UserNotificationDelivery)]
-userMethods =
-    -- XXX: Support 'NotifDeliverEmailDigest'.
-    [ ("website",           UserNotifDeliverWebsite)
-    , ("email",             UserNotifDeliverEmail)
-    , ("website and email", UserNotifDeliverWebsiteAndEmail)
-    ]
-
-projectMethods :: [(Text, ProjectNotificationDelivery)]
-projectMethods =
-    -- XXX: Support 'NotifDeliverEmailDigest'.
-    [ ("website",           ProjectNotifDeliverWebsite)
-    , ("email",             ProjectNotifDeliverEmail)
-    , ("website and email", ProjectNotifDeliverWebsiteAndEmail)
-    ]
-
-userNotificationsForm :: Maybe UserNotificationDelivery
-                      -> Form UserNotificationPref
-userNotificationsForm mbal =
-    renderBootstrap3 BootstrapBasicForm $ UserNotificationPref
-        <$> userReq (fromString $ "You have a low balance (less than 3 months " <>
-                    "funds at current pledge levels)")    mbal
-  where
-    userReq = req userMethods
-
-projectNotificationsForm
-    :: Bool -- Is the viewer a project team member?
-    -> Maybe ProjectNotificationDelivery
-    -> Maybe ProjectNotificationDelivery
-    -> Maybe ProjectNotificationDelivery
-    -> Maybe ProjectNotificationDelivery
-    -> Form ProjectNotificationPref
-projectNotificationsForm is_team_member
-                         mnew_pledge mupdated_pledge mdeleted_pledge
-                         mvolunteer_app =
-    renderBootstrap3 BootstrapBasicForm $ ProjectNotificationPref
-        <$> projectOpt "New pledge"        mnew_pledge
-        <*> projectOpt "Pledge updated"    mupdated_pledge
-        <*> projectOpt "Pledge deleted"    mdeleted_pledge
-        <*> if is_team_member
-                then projectOpt "Volunteer application submitted" mvolunteer_app
-                else pure Nothing
-  where
-    projectOpt = opt projectMethods

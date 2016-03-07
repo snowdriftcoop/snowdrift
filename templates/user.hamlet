@@ -9,12 +9,6 @@ $if Just user_id == mviewer_id
     <div .user-pref>
       <a href=@{UserChangePassphraseR user_id}>
         change passphrase
-    <div .user-pref>
-      <a href=@{UserNotificationsR user_id}>
-        user notification preferences
-    <div .user-pref>
-      <a href=@{UserSelectProjectR user_id}>
-        watched projects notification preferences
 
 <div .row>
   <div .col-md-6>
@@ -52,8 +46,6 @@ $if Just user_id == mviewer_id
 <div .row>
 
   <div .col-md-6>
-    ^{userPledgeSummary user_id}
-
     <h4>Project Roles
     <table>
       <thead>

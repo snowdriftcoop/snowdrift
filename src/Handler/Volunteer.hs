@@ -42,7 +42,7 @@ postVolunteerR project_handle = do
 
     case result of
         FormSuccess (application, interest_ids) -> do
-            runSDB (insertVolunteerApplicationDB project_id application interest_ids)
+            runDB (insertVolunteerApplicationDB project_id application interest_ids)
 
             alertSuccess "application submitted"
             redirect (VolunteerR project_handle)

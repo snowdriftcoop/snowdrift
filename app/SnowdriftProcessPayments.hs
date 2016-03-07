@@ -7,7 +7,6 @@ import Yesod.Default.Config
 import qualified Database.Persist.Sql
 
 import Settings
-import qualified Mechanism as Mech
 
 runDB :: (PersistConfig c, MonadBaseControl IO m, MonadIO m)
       => c

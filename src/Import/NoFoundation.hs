@@ -47,9 +47,7 @@ import Local.Ord as Import
 import Model as Import
 import Model.Language as Import
 import Model.Established.Internal as Import
-import Model.Notification.Internal as Import
 import Model.Role.Internal as Import
-import Model.SnowdriftEvent.Internal as Import
 import Settings as Import
 import Settings.Development as Import
 import Settings.StaticFiles as Import

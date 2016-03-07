@@ -3,21 +3,10 @@ module Model.User
     , UserUpdate (..)
     , ChangePassphrase (..)
     , SetPassphrase (..)
-    , NotificationSender (..)
-    , NotificationReceiver (..)
     -- Utility functions
     , anonymousUser
     , deletedUser
     , curUserIsEligibleEstablish
-    , deleteArchivedNotificationsDB
-    , deleteArchivedUserNotificationsDB
-    , deleteArchivedProjectNotificationsDB
-    , deleteUserNotificationDB
-    , deleteProjectNotificationDB
-    , deleteNotificationsDB
-    , deleteUserNotificationsDB
-    , deleteProjectNotificationsDB
-    , projectNotificationPref
     , updateUserPreview
     , userCanAddTag
     , userIsEligibleEstablish
@@ -25,11 +14,7 @@ module Model.User
     , userIsModerator
     , userIsUnestablished
     , userDisplayName
-    , userNotificationPref
     -- Database actions
-    , archiveNotificationsDB
-    , archiveUserNotificationsDB
-    , archiveProjectNotificationsDB
     , deleteFromEmailVerification
     , deleteUserDB
     , eligEstablishUserDB
@@ -38,33 +23,15 @@ module Model.User
     , fetchAllUserProjectInfosDB
     , fetchAllUserRolesDB
     , fetchCurUserRolesDB
-    , fetchNumUnreadNotificationsDB
-    , fetchNumUnreadUserNotificationsDB
-    , fetchNumUnreadProjectNotificationsDB
-    , fetchArchivedUserNotificationsDB
-    , fetchArchivedProjectNotificationsDB
     , fetchUserEmail
     , fetchUserEmailVerified
-    , fetchUserNotificationsDB
-    , fetchProjectNotificationsDB
-    , fetchUserNotificationPrefDB
-    , fetchProjectNotificationPrefDB
     , fetchUserProjectsAndRolesDB
     , fetchUserRolesDB
-    , fetchUsersByUserNotifPrefDB
-    , fetchUsersByProjectNotifPrefDB
     , fetchUserWatchingProjectsDB
     , fetchVerEmail
     , fromEmailVerification
-    , sendPreferredUserNotificationDB
-    , sendPreferredProjectNotificationDB
-    , unarchiveNotificationsDB
-    , unarchiveUserNotificationsDB
-    , unarchiveProjectNotificationsDB
     , updateUserDB
     , updateUserPassphraseDB
-    , updateUserNotificationPrefDB
-    , updateProjectNotificationPrefDB
     , userHasRoleDB
     , userHasRolesAnyDB
     , userIsAffiliatedWithProjectDB
@@ -72,10 +39,6 @@ module Model.User
     , userIsProjectModeratorDB
     , userIsProjectTeamMemberDB
     , userIsWatchingProjectDB
-    , userReadNotificationsDB
-    , userReadVolunteerApplicationsDB
-    , userUnwatchProjectDB
-    , userWatchProjectDB
     , verifyEmailDB
     -- Unsorted
     , canCurUserMakeEligible
@@ -89,12 +52,8 @@ import Database.Esqueleto.Internal.Language (From)
 import qualified Data.List as L
 import qualified Data.Map as M
 import qualified Data.Set as S
-import qualified Data.Text as T
-import qualified Database.Persist as P
 
-import Model.Notification
 import Model.User.Internal
-            hiding (UserNotificationPref, ProjectNotificationPref)
 import WrappedValues
 
 -- anonymousUser is a special user for items posted by visitors who are not
@@ -254,30 +213,15 @@ establishUserDB user_id elig_time reason = do
 
 -- | Make a user eligible for establishment. Put a notification in their inbox
 -- instructing them to read and accept the honor pledge.
-eligEstablishUserDB :: Text -> UserId -> UserId -> Text -> SDB ()
-eligEstablishUserDB honor_pledge establisher_id user_id reason = do
+eligEstablishUserDB :: Text -> UserId -> UserId -> Text -> DB ()
+eligEstablishUserDB _honor_pledge establisher_id user_id reason = do
     elig_time <- liftIO getCurrentTime
     let est = EstEligible elig_time reason
-    lift $
-        update $ \u -> do
+    update $ \u -> do
         set u [UserEstablished =. val est]
         where_ (u ^. UserId ==. val user_id)
 
-    lift $ insert_ $ ManualEstablishment user_id establisher_id
-    sendPreferredUserNotificationDB
-        (Just $ NotificationSender establisher_id)
-        (NotificationReceiver user_id)
-        NotifEligEstablish
-        content
-  where
-    content :: Markdown
-    content = Markdown $ T.unlines
-        [ "You are now eligible to become an *established* user."
-        , ""
-        , "After you [accept the honor pledge](" <> honor_pledge <>
-          "), you can comment and take other actions on the site without "
-          <> "moderation."
-        ]
+    insert_ $ ManualEstablishment user_id establisher_id
 
 -- | Get a User's Roles in a Project.
 fetchUserRolesDB :: UserId -> ProjectId -> DB [Role]
@@ -354,226 +298,7 @@ canMakeEligible establishee_id establisher_id = do
         <*> userIsModerator establisher_id
     return $ userIsUnestablished establishee && establisher_is_mod
 
-fetchUserNotificationsDB :: UserId -> DB [Entity UserNotification]
-fetchUserNotificationsDB =
-    fetchUserNotifs (not_ . (^. UserNotificationArchived))
-
-fetchProjectNotificationsDB :: UserId -> DB [Entity ProjectNotification]
-fetchProjectNotificationsDB =
-    fetchProjectNotifs (not_ . (^. ProjectNotificationArchived))
-
-fetchArchivedUserNotificationsDB :: UserId -> DB [Entity UserNotification]
-fetchArchivedUserNotificationsDB = fetchUserNotifs (^. UserNotificationArchived)
-
-fetchArchivedProjectNotificationsDB :: UserId -> DB [Entity ProjectNotification]
-fetchArchivedProjectNotificationsDB =
-    fetchProjectNotifs (^. ProjectNotificationArchived)
-
--- | Abstract fetching archived/unarchived notifications. Unexported.
-fetchNotifs :: ( MonadIO m, PersistEntity val, PersistField a
-               , PersistEntityBackend val ~ SqlBackend )
-            => EntityField val UserId -> EntityField val a
-            -> (SqlExpr (Entity val) -> SqlExpr (Value Bool))
-            -> UserId -> SqlPersistT m [Entity val]
-fetchNotifs notif_to notif_created_ts cond user_id =
-    select $ from $ \n -> do
-        where_ $ n ^. notif_to ==. val user_id
-             &&. cond n
-        orderBy [desc $ n ^. notif_created_ts]
-        return n
-
--- | Abstract fetching archived/unarchived user notifications. Unexported.
-fetchUserNotifs :: (SqlExpr (Entity UserNotification) -> SqlExpr (Value Bool))
-                -> UserId -> DB [Entity UserNotification]
-fetchUserNotifs =
-    fetchNotifs UserNotificationTo UserNotificationCreatedTs
-
--- | Abstract fetching archived/unarchived project notifications. Unexported.
-fetchProjectNotifs
-    :: (SqlExpr (Entity ProjectNotification)
-    -> SqlExpr (Value Bool))
-    -> UserId
-    -> DB [Entity ProjectNotification]
-fetchProjectNotifs =
-    fetchNotifs ProjectNotificationTo ProjectNotificationCreatedTs
-
-deleteUserNotificationDB :: UserNotificationId -> DB ()
-deleteUserNotificationDB = deleteCascade
-
-deleteProjectNotificationDB :: ProjectNotificationId -> DB ()
-deleteProjectNotificationDB = deleteCascade
-
-deleteNotificationsDB :: UserId -> DB ()
-deleteNotificationsDB user_id = do
-    deleteUserNotificationsDB user_id
-    deleteProjectNotificationsDB user_id
-
-deleteUserNotificationsDB :: UserId -> DB ()
-deleteUserNotificationsDB user_id = do
-    notifs <- fetchUserNotificationsDB user_id
-    deleteCascadeWhere [UserNotificationId <-. (entityKey <$> notifs)]
-
-deleteProjectNotificationsDB :: UserId -> DB ()
-deleteProjectNotificationsDB user_id = do
-    notifs <- fetchProjectNotificationsDB user_id
-    deleteCascadeWhere [ProjectNotificationId <-. (entityKey <$> notifs)]
-
-deleteArchivedNotificationsDB :: UserId -> DB ()
-deleteArchivedNotificationsDB user_id = do
-    deleteArchivedUserNotificationsDB user_id
-    deleteArchivedProjectNotificationsDB user_id
-
-deleteArchivedUserNotificationsDB :: UserId -> DB ()
-deleteArchivedUserNotificationsDB user_id = do
-    notifs <- fetchArchivedUserNotificationsDB user_id
-    deleteCascadeWhere [UserNotificationId <-. (entityKey <$> notifs)]
-
-deleteArchivedProjectNotificationsDB :: UserId -> DB ()
-deleteArchivedProjectNotificationsDB user_id = do
-    notifs <- fetchArchivedProjectNotificationsDB user_id
-    deleteCascadeWhere [ProjectNotificationId <-. (entityKey <$> notifs)]
-
-archiveNotificationsDB :: UserId -> DB ()
-archiveNotificationsDB user_id = do
-    archiveUserNotificationsDB user_id
-    archiveProjectNotificationsDB user_id
-
-archiveUserNotificationsDB :: UserId -> DB ()
-archiveUserNotificationsDB user_id = do
-    notifs <- fetchUserNotificationsDB user_id
-    forM_ notifs $ \(Entity notif_id _) ->
-        archiveUserNotificationDB notif_id
-
-archiveProjectNotificationsDB :: UserId -> DB ()
-archiveProjectNotificationsDB user_id = do
-    notifs <- fetchProjectNotificationsDB user_id
-    forM_ notifs $ \(Entity notif_id _) ->
-        archiveProjectNotificationDB notif_id
-
-unarchiveNotificationsDB :: UserId -> DB ()
-unarchiveNotificationsDB user_id = do
-    unarchiveUserNotificationsDB user_id
-    unarchiveProjectNotificationsDB user_id
-
-unarchiveUserNotificationsDB :: UserId -> DB ()
-unarchiveUserNotificationsDB user_id = do
-    notifs <- fetchArchivedUserNotificationsDB user_id
-    forM_ notifs $ \(Entity notif_id _) ->
-        unarchiveUserNotificationDB notif_id
-
-unarchiveProjectNotificationsDB :: UserId -> DB ()
-unarchiveProjectNotificationsDB user_id = do
-    notifs <- fetchArchivedProjectNotificationsDB user_id
-    forM_ notifs $ \(Entity notif_id _) ->
-        unarchiveProjectNotificationDB notif_id
-
-deleteUserNotifPrefs :: UserId -> UserNotificationType -> DB ()
-deleteUserNotifPrefs user_id notif_type =
-    delete $ from $ \unp ->
-        where_ $ unp ^. UserNotificationPrefUser ==. val user_id
-             &&. unp ^. UserNotificationPrefType ==. val notif_type
-
-deleteProjectNotifPrefs :: UserId -> ProjectId -> ProjectNotificationType
-                        -> DB ()
-deleteProjectNotifPrefs user_id project_id notif_type =
-    delete $ from $ \pnp ->
-        where_ $ pnp ^. ProjectNotificationPrefUser    ==. val user_id
-             &&. pnp ^. ProjectNotificationPrefProject ==. val project_id
-             &&. pnp ^. ProjectNotificationPrefType    ==. val notif_type
-
-updateUserNotifPrefs :: UserId -> UserNotificationType
-                     -> UserNotificationDelivery -> DB ()
-updateUserNotifPrefs user_id notif_type notif_deliv = do
-    deleteUserNotifPrefs user_id notif_type
-    insert_ $ UserNotificationPref user_id notif_type notif_deliv
-
-updateProjectNotifPrefs :: UserId -> ProjectId -> ProjectNotificationType
-                        -> ProjectNotificationDelivery -> DB ()
-updateProjectNotifPrefs user_id project_id notif_type notif_deliv = do
-    deleteProjectNotifPrefs user_id project_id notif_type
-    insert_ $ ProjectNotificationPref user_id project_id notif_type notif_deliv
-
-updateUserNotificationPrefDB :: UserId -> UserNotificationType
-                             -> Maybe UserNotificationDelivery -> DB ()
-updateUserNotificationPrefDB user_id notif_type =
-    maybe (deleteUserNotifPrefs user_id notif_type)
-          (updateUserNotifPrefs user_id notif_type)
-
-updateProjectNotificationPrefDB :: UserId -> ProjectId
-                                -> ProjectNotificationType
-                                -> Maybe ProjectNotificationDelivery -> DB ()
-updateProjectNotificationPrefDB user_id project_id notif_type =
-    maybe (deleteProjectNotifPrefs user_id project_id notif_type)
-          (updateProjectNotifPrefs user_id project_id notif_type)
-
-insertDefaultProjectNotifPrefs :: UserId -> ProjectId -> DB ()
-insertDefaultProjectNotifPrefs user_id project_id =
-    void $ insertMany $ uncurry (ProjectNotificationPref user_id project_id) <$>
-        [ (NotifBlogPost,      ProjectNotifDeliverWebsiteAndEmail)
-        , (NotifNewPledge,     ProjectNotifDeliverWebsite)
-        , (NotifUpdatedPledge, ProjectNotifDeliverWebsite)
-        , (NotifDeletedPledge, ProjectNotifDeliverWebsite)
-        ]
-
-userWatchProjectDB :: UserId -> ProjectId -> DB ()
-userWatchProjectDB user_id project_id = do
-    void $ insertUnique $ UserWatchingProject user_id project_id
-    exists' <- fmap (>0) $
-        P.count [ProjectNotificationPrefUser P.==. user_id
-                ,ProjectNotificationPrefProject P.==. project_id]
-    unless exists' $
-        insertDefaultProjectNotifPrefs user_id project_id
-
-userUnwatchProjectDB :: UserId -> ProjectId -> DB ()
-userUnwatchProjectDB user_id project_id =
-    deleteBy $ UniqueUserWatchingProject user_id project_id
-
 userIsWatchingProjectDB :: UserId -> ProjectId -> DB Bool
 userIsWatchingProjectDB user_id project_id =
     maybe False (const True)
         <$> getBy (UniqueUserWatchingProject user_id project_id)
-
-userReadNotificationsDB :: UserId -> DB ()
-userReadNotificationsDB user_id = liftIO getCurrentTime >>= \now ->
-    update $ \u -> do
-    set u [UserReadNotifications =. val now]
-    where_ (u ^. UserId ==. val user_id)
-
--- | Update this User's read applications timestamp.
-userReadVolunteerApplicationsDB :: UserId -> DB ()
-userReadVolunteerApplicationsDB user_id = liftIO getCurrentTime >>= \now ->
-    update $ \u -> do
-    set u [UserReadApplications =. val now]
-    where_ (u ^. UserId ==. val user_id)
-
-fetchNumUnreadNotificationsDB :: UserId -> DB Int
-fetchNumUnreadNotificationsDB user_id = (+)
-    <$> fetchNumUnreadUserNotificationsDB user_id
-    <*> fetchNumUnreadProjectNotificationsDB user_id
-
--- Internal helper.
-fetchNumUnreadNotifications :: ( PersistEntity val
-                               , PersistEntityBackend val ~ SqlBackend )
-                            => EntityField val UserId
-                            -> EntityField val UTCTime
-                            -> UserId
-                            -> DB Int
-fetchNumUnreadNotifications notif_to notif_created_ts user_id =
-    -- countRows returns at least element. I think.
-    fmap (unValue . L.head)
-         (select $
-          from $ \(u `InnerJoin` n) -> do
-          on_ (u ^. UserId ==. n ^. notif_to)
-          where_ $ u ^. UserId ==. val user_id
-             &&. n ^. notif_created_ts >=. u ^. UserReadNotifications
-          return countRows)
-
-fetchNumUnreadUserNotificationsDB :: UserId -> DB Int
-fetchNumUnreadUserNotificationsDB =
-    fetchNumUnreadNotifications
-        UserNotificationTo UserNotificationCreatedTs
-
-fetchNumUnreadProjectNotificationsDB :: UserId -> DB Int
-fetchNumUnreadProjectNotificationsDB =
-    fetchNumUnreadNotifications
-        ProjectNotificationTo ProjectNotificationCreatedTs

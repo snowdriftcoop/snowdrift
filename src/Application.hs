@@ -9,8 +9,6 @@ module Application
 
 import Import
 
-import Control.Concurrent (forkIO, threadDelay)
-import Control.Concurrent.STM (atomically, newTChanIO, tryReadTChan)
 import Control.Monad.Logger (runLoggingT, runStderrLoggingT)
 import Control.Monad.Reader
 import Control.Monad.Trans.Resource
@@ -33,7 +31,6 @@ import qualified Data.List as L
 import qualified Database.Persist
 import qualified Network.Wai.Middleware.RequestLogger as RequestLogger
 
-import SnowdriftEventHandler
 import Version
 import Migrations
 import Widgets.Navbar
@@ -47,12 +44,10 @@ import Handler.Invitation
 import Handler.JsLicenses
 import Handler.MarkdownTutorial
 import Handler.NewDesign
-import Handler.Notification
 import Handler.PostLogin
 import Handler.Project
 import Handler.ResetPassphrase
 import Handler.Simple
-import Handler.SnowdriftEvent
 import Handler.User
 import Handler.Volunteer
 import Handler.Who
@@ -116,7 +111,6 @@ makeFoundation conf = do
     loggerSet' <- newStdoutLoggerSet defaultBufSize
     (getter, _) <- clockDateCacher
 
-    event_chan <- newTChanIO
     let logger = Yesod.Core.Types.Logger loggerSet' getter
         foundation = App
                      { appNavbar = navbar
@@ -126,8 +120,6 @@ makeFoundation conf = do
                      , appHttpManager = manager
                      , persistConfig = dbconf
                      , appLogger = logger
-                     , appEventChan = event_chan
-                     , appEventHandlers = snowdriftEventHandlers
                      }
 
     -- Database setup
@@ -167,8 +159,6 @@ makeFoundation conf = do
         migration
         (messageLoggerSource foundation logger)
 
-    forkEventHandler foundation
-
     return foundation
 
 -- for yesod devel
@@ -179,19 +169,3 @@ getApplicationDev =
     loader = Yesod.Default.Config.loadConfig (configSettings Development)
         { csParseExtra = parseExtra
         }
-
---------------------------------------------------------------------------------
--- SnowdriftEvent handling
-
-forkEventHandler :: App -> IO ()
-forkEventHandler app@App{..} = void . forkIO . forever $ do
-    threadDelay 1000000 -- Sleep for one second in between runs.
-    handleNEvents 10     -- Handle up to 10 events per run.
-  where
-    handleNEvents :: Int -> IO ()
-    handleNEvents 0 = return ()
-    handleNEvents n = atomically (tryReadTChan appEventChan) >>= \case
-        Nothing    -> return ()
-        Just event -> do
-            mapM_ (runDaemon app) (appEventHandlers appSettings <*> [event])
-            handleNEvents (n-1)

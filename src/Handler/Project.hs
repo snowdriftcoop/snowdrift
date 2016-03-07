@@ -4,12 +4,8 @@ module Handler.Project where
 
 import Import
 
-import Data.List (sortBy)
 import System.Random (randomIO)
-import Text.Cassius (cassiusFile)
 import Text.Printf
-import Yesod.AtomFeed
-import Yesod.RssFeed
 import qualified Data.Map as M
 import qualified Data.Set as S
 import qualified Data.Text as T
@@ -21,13 +17,9 @@ import Model.Application
 import Model.Currency
 import Model.Project
 import Model.Role
-import Model.Shares
-import Model.SnowdriftEvent
 import Model.User
 import View.Project
-import View.SnowdriftEvent
 import View.Time
-import qualified Mechanism as Mech
 
 --------------------------------------------------------------------------------
 -- Utility functions
@@ -68,7 +60,6 @@ getApplicationsR project_handle = do
             lift (permissionDenied "You don't have permission to view this page.")
 
         applications <- fetchProjectVolunteerApplicationsDB project_id
-        userReadVolunteerApplicationsDB viewer_id
         return (project, applications)
 
     defaultLayoutNew "applications" $ do
@@ -126,97 +117,7 @@ getEditProjectR project_handle = do
 -- | This function is responsible for hitting every relevant event table. Nothing
 -- statically guarantees that.
 getProjectFeedR :: Text -> Handler TypedContent
-getProjectFeedR project_handle = do
-    let lim = 26 -- limit 'lim' from each table, then take 'lim - 1'
-
-    muser <- maybeAuth
-    let muser_id = entityKey <$> muser
-
-    before <- lookupGetUTCTimeDefaultNow "before"
-
-    (
-        project_id, project,
-        is_watching,
-        new_pledge_events,
-        updated_pledge_events, deleted_pledge_events,
-
-        user_map
-     ) <- runYDB $ do
-
-        Entity project_id project <- getBy404 (UniqueProjectHandle project_handle)
-        is_watching <- maybe (pure False) (flip userIsWatchingProjectDB project_id) muser_id
-        ( new_pledge_events
-            , updated_pledge_events
-            , deleted_pledge_events
-            , pledging_users
-            , unpledging_users) <- Mech.projectEvents project_id before lim
-
-        -- Suplementary maps for displaying the data. If something above requires extra
-        -- data to display the project feed row, it MUST be used to fetch the data below!
-
-        let -- All users: comment posters, wiki page creators, etc.
-            user_ids = S.toList $ mconcat
-                        [ S.fromList pledging_users
-                        , S.fromList unpledging_users
-                        ]
-
-        user_map <- entitiesMap <$> selectList [UserId <-. user_ids] []
-
-        return
-            (
-                project_id, project,
-                is_watching,
-                new_pledge_events, updated_pledge_events, deleted_pledge_events,
-
-                user_map
-            )
-
-    let all_unsorted_events :: [(Route App, SnowdriftEvent)]
-        all_unsorted_events = mconcat
-            [ map (EventNewPledgeR          *** onEntity ENewPledge)            new_pledge_events
-
-            , map (\(eid, shares, pledge)
-                    -> (EventUpdatedPledgeR eid, eup2se shares pledge))         updated_pledge_events
-
-            , map (EventDeletedPledgeR      *** edp2se)                         deleted_pledge_events
-            ]
-
-        (events, more_events) = splitAt (lim-1) (sortBy (snowdriftEventNewestToOldest `on` snd) all_unsorted_events)
-
-        -- For pagination: Nothing means no more pages, Just time means set the 'before'
-        -- GET param to that time. Note that this means 'before' should be a <= relation,
-        -- rather than a <.
-        mnext_before :: Maybe Text
-        mnext_before = case more_events of
-          []             -> Nothing
-          ((_, next_event):_) -> (Just . T.pack . show . snowdriftEventTime) next_event
-
-    now        <- liftIO getCurrentTime
-    Just route <- getCurrentRoute
-    render     <- getUrlRender
-
-    let feed = Feed "project feed" route HomeR "Snowdrift Community" "" "en" now Nothing $
-            mapMaybe (uncurry $ snowdriftEventToFeedEntry
-                        render
-                        project_handle
-                        user_map) events
-
-    selectRep $ do
-        provideRep $ atomFeed feed
-        provideRep $ rssFeed feed
-        provideRep $ defaultLayout $ do
-            snowdriftDashTitle (projectName project) "Feed"
-            $(widgetFile "project_feed")
-            toWidget $(cassiusFile "templates/comment.cassius")
-
-  where
-    -- "event updated pledge to snowdrift event"
-    eup2se :: Int64 -> Entity SharesPledged -> SnowdriftEvent
-    eup2se old_shares (Entity shares_pledged_id shares_pledged) = EUpdatedPledge old_shares shares_pledged_id shares_pledged
-
-    -- "event deleted pledge to snowdrift event"
-    edp2se :: EventDeletedPledge -> SnowdriftEvent
-    edp2se (EventDeletedPledge a b c d) = EDeletedPledge a b c d
+getProjectFeedR _project_handle = selectRep $ provideRep $ defaultLayout $ return ()
 
 --------------------------------------------------------------------------------
 -- /invite
@@ -334,74 +235,10 @@ getProjectPatronsR project_handle = do
 -- /pledge
 
 getUpdatePledgeR :: Text -> Handler Html
-getUpdatePledgeR project_handle = do
-    _ <- requireAuthId
-    Entity project_id project <- runYDB $ getBy404 $ UniqueProjectHandle project_handle
-
-    ((result, _), _) <- runFormGet $ pledgeForm project_id
-    let dangerRedirect msg = do
-            alertDanger msg
-            redirect $ PHomeR project_handle
-    case result of
-        FormSuccess (SharesPurchaseOrder new_user_shares) -> do
-            user_id <- requireAuthId
-
-            (confirm_form, _) <-
-                generateFormPost
-                    (projectConfirmPledgeForm (Just new_user_shares))
-
-            (mpledge
-                , old_user_amount
-                , new_user_amount
-                , old_project_amount
-                , new_project_amount
-                , numPatrons
-                ) <- runDB (Mech.potentialPledge user_id project_id new_user_shares)
-
-            let new_user_mills = millMilray new_user_shares
-            case mpledge of
-                Just (Entity _ pledge) | pledgeShares pledge == new_user_shares -> do
-                    alertWarning $ T.unwords
-                        [ "Your pledge was already at"
-                        , T.pack (show new_user_mills) <> "."
-                        , "Thank you for your support!"
-                        ]
-
-                    redirect (PHomeR project_handle)
-
-                _ -> do
-                    let user_decrease    = old_user_amount - new_user_amount
-                        user_increase    = new_user_amount - old_user_amount
-                        project_decrease = old_project_amount - new_project_amount
-                        project_increase = new_project_amount - old_project_amount
-                        matching_drop   = project_decrease - user_decrease
-                        matched_extra    = project_increase - new_user_amount
-                        -- Standins added during mechanism split-out
-                        old_user_mills = 0xdeadbeef :: Int64
-                        old_user_shares = 0xbaff1ed :: Int64
-
-                    defaultLayout $ do
-                        snowdriftDashTitle
-                            (projectName project)
-                            "update pledge"
-                        $(widgetFile "update_pledge")
-
-        FormMissing -> dangerRedirect "Form missing."
-        FormFailure errors ->
-            dangerRedirect $ T.snoc (T.intercalate "; " errors) '.'
+getUpdatePledgeR _project_handle = return ""
 
 postUpdatePledgeR :: Text -> Handler Html
-postUpdatePledgeR project_handle = do
-    ((result, _), _) <- runFormPost $ projectConfirmPledgeForm Nothing
-    isConfirmed <- maybe False (T.isPrefixOf "yes") <$> lookupPostParam "confirm"
-
-    case result of
-        FormSuccess (SharesPurchaseOrder shares) -> do
-            when isConfirmed $ Mech.updateUserPledge project_handle shares
-            redirect (PHomeR project_handle)
-        _ -> do
-            alertDanger "error occurred in form submission"
-            redirect (UpdatePledgeR project_handle)
+postUpdatePledgeR _project_handle = return ""
 
 
 --------------------------------------------------------------------------------
@@ -417,31 +254,14 @@ getPledgeFauxR handle = do
 -- /transactions
 
 getProjectTransactionsR :: Text -> Handler Html
-getProjectTransactionsR project_handle = do
-    (project, account, account_map, transaction_groups) <-
-        runYDB (Mech.projectTransactions project_handle)
-
-    let getOtherAccount transaction
-            | transactionCredit transaction == Just (projectAccount project) = transactionDebit transaction
-            | transactionDebit transaction == Just (projectAccount project) = transactionCredit transaction
-            | otherwise = Nothing
-
-    defaultLayoutNew "project_transactions" $ do
-        snowdriftTitle $ projectName project <> " Transactions"
-        $(widgetFile "project_transactions")
+getProjectTransactionsR _project_handle = return ""
 
 --------------------------------------------------------------------------------
 -- /watch, /unwatch
 
 postWatchProjectR, postUnwatchProjectR :: ProjectId -> Handler ()
-postWatchProjectR   = watchOrUnwatchProject userWatchProjectDB   "Watching "
-postUnwatchProjectR = watchOrUnwatchProject userUnwatchProjectDB "No longer watching "
+postWatchProjectR   = const (return ())
+postUnwatchProjectR = const (return ())
 
 watchOrUnwatchProject :: (UserId -> ProjectId -> DB ()) -> Text -> ProjectId -> Handler ()
-watchOrUnwatchProject action msg project_id = do
-    user_id <- requireAuthId
-    project <- runYDB $ do
-        action user_id project_id
-        get404 project_id
-    alertSuccess (msg <> projectName project <> ".")
-    redirect $ PHomeR (projectHandle project)
+watchOrUnwatchProject _action _msg _project_id = return ()

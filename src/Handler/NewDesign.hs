@@ -10,27 +10,14 @@ import Import
 -- | Using explicit imports for now. It feels good to treat existing code
 -- as a 3rd-party library.
 import Dev
-import Handler.Notification
-        ( buildNotificationsList
-        , Notification(..)
-        )
 import Handler.TH
 import Handler.User.Utils (startEmailVerification)
 import Handler.Utils
-import Model.Project
-        ( fetchPublicProjectsDB
-        , projectNameWidget
-        )
+import Model.Project ( fetchPublicProjectsDB)
 import Model.User
-        ( fetchArchivedProjectNotificationsDB
-        , fetchArchivedUserNotificationsDB
-        , fetchProjectNotificationsDB
-        , fetchUserNotificationsDB
-        , fetchUserProjectsAndRolesDB
+        ( fetchUserProjectsAndRolesDB
         , userDisplayName
-        , userReadNotificationsDB
         )
-import View.Time (renderTime)
 import View.User (renderUser, createUserForm)
 
 getSearchR :: Handler Html
@@ -193,20 +180,3 @@ getUserR user_id = do
             userDisplayName (Entity user_id user)
         alphaRewriteNotice
         renderUser mviewer_id user_id user projects_and_roles
-
-getUNotificationsR :: Handler Html
-getUNotificationsR = do
-    showArchived <- lookupGetParam "state"
-    user_id <- requireAuthId
-    notifs  <- runDB $ do
-        case showArchived of
-            Just "archived" -> do
-                user_notifs    <- fetchArchivedUserNotificationsDB user_id
-                project_notifs <- fetchArchivedProjectNotificationsDB user_id
-                return $ buildNotificationsList user_notifs project_notifs
-            _ -> do
-                userReadNotificationsDB user_id
-                user_notifs    <- fetchUserNotificationsDB user_id
-                project_notifs <- fetchProjectNotificationsDB user_id
-                return $ buildNotificationsList user_notifs project_notifs
-    $(widget "dashboard/notifications" "Notifications")

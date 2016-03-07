@@ -10,7 +10,7 @@
       <ul .nav .navbar-nav .navbar-right>
         $maybe Entity user_id user <- maybe_user
           <li>
-            <a href=@{UNotificationsR}>
+            <a href=#>
               $if num_unread_notifs /= 0
                 <span .unread-notifs .glyphicon .glyphicon-envelope>
                   <span .num-notifs>#{num_unread_notifs}
@@ -36,7 +36,7 @@
       <ul .nav .nav-pills .navbar-right>
         $maybe Entity user_id user <- maybe_user
           <li>
-            <a href=@{UNotificationsR}>
+            <a href=#>
               $if num_unread_notifs /= 0
                 <span .glyphicon .glyphicon-envelope>&nbsp;
                   #{num_unread_notifs}

@@ -28,8 +28,6 @@ User
     statement         Markdown     Maybe
     ircNick           Text         Maybe
     languages         [Language]
-    readNotifications UTCTime            default=now()
-    -- ^ The last time the user visited /notifications
     readApplications  UTCTime            default=now()
     established       Established        default='EstUnestablished'
 
@@ -61,29 +59,6 @@ DeleteConfirmation
     sent  Bool   default=false  -- for the email daemon
 
     UniqueDeleteConfirmation user email uri
-
--- A single notification preference. If some NotificationType does not appear
--- in any row for a particular user, that means the user does not wish to be
--- notified of those notifications.
---
--- Notifications that "must" be delivered (e.g. administrative notifications
--- directly from Snowdrift) don't need an entry in this table, as the code that
--- sends such notifications needn't query it.
-UserNotificationPref
-    user     UserId
-    type     UserNotificationType
-    delivery UserNotificationDelivery
-
-    UniqueUserNotificationPref user type
-
--- Preferences for projects watched by a user.
-ProjectNotificationPref
-    user     UserId
-    project  ProjectId
-    type     ProjectNotificationType
-    delivery ProjectNotificationDelivery
-
-    UniqueProjectNotificationPref user project type
 
 -- User-watching-project relation
 UserWatchingProject
@@ -220,52 +195,6 @@ VolunteerInterest
     volunteer VolunteerApplicationId
     interest  InterestId
 
-UserNotification
-    createdTs UTCTime
-    type      UserNotificationType
-    to        UserId
-    content   Markdown
-    archived  Bool
-
-    UniqueUserNotification createdTs type to
-
-    deriving Eq
-
--- Notifications by projects watched by a user.
-ProjectNotification
-    createdTs UTCTime
-    type      ProjectNotificationType
-    to        UserId
-    project   ProjectId    -- An "associated" project.
-    content   Markdown
-    archived  Bool
-
-    UniqueProjectNotification createdTs type to project
-
-    deriving Eq
-
--- Notification emails that are sent by the email daemon.  'UserId's
--- are used instead of email addresses to "force" the daemon to look
--- up the actual email address.  If a user changes it, anything queued
--- up goes to the right place.
-UserNotificationEmail
-    createdTs UTCTime
-    type      UserNotificationType
-    to        UserId
-    content   Markdown
-
-    UniqueUserNotificationEmail createdTs type to
-
--- Email notifications by projects watched by a user.
-ProjectNotificationEmail
-    createdTs UTCTime
-    type      ProjectNotificationType
-    to        UserId
-    project   ProjectId
-    content   Markdown
-
-    UniqueProjectNotificationEmail createdTs type to project
-
 Tag
     name      Text
     UniqueTag name
@@ -309,13 +238,6 @@ DefaultTagColor
 
     UniqueDefaultTag tag
 
-RoleEvent
-    ts      UTCTime
-    user    UserId
-    role    Role
-    project ProjectId
-    added   Bool
-
 DatabaseVersion
     lastMigration Int
 
@@ -331,33 +253,6 @@ SharesPledged
     project ProjectId
     shares  Int64
     render  PledgeFormRenderedId
-
--------------------------------------------------------------------------------
--- Snowdrift events. These are all combined into a single sum time in
--- Model.SnowdriftEvent.
-
-EventUserNotificationSent
-    ts           UTCTime
-    notification UserNotificationId
-
-EventProjectNotificationSent
-    ts           UTCTime
-    notification ProjectNotificationId
-
-EventNewPledge
-    ts            UTCTime
-    sharesPledged SharesPledgedId
-
-EventUpdatedPledge
-    ts            UTCTime
-    oldShares     Int64
-    sharesPledged SharesPledgedId
-
-EventDeletedPledge
-    ts      UTCTime
-    user    UserId
-    project ProjectId
-    shares  Int64
 
 Image
     ts UTCTime

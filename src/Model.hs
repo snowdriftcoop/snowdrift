@@ -26,11 +26,6 @@ import Model.License.Internal
             ,LicenseText
             ,LicenseWebsite)
 import Model.Markdown.Diff (MarkdownDiff)
-import Model.Notification.Internal
-            (UserNotificationType
-            ,UserNotificationDelivery
-            ,ProjectNotificationType
-            ,ProjectNotificationDelivery)
 import Model.Project.Signup
             (ProjectSignupName
             ,ProjectSignupWebsite

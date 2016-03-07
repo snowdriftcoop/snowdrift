@@ -8,11 +8,7 @@ import Handler.User.ConfirmDelete        as Handler.User
 import Handler.User.Delete               as Handler.User
 import Handler.User.Edit                 as Handler.User
 import Handler.User.EstEligible          as Handler.User
-import Handler.User.Pledges              as Handler.User
-import Handler.User.ProjectNotifications as Handler.User
 import Handler.User.ResetPassphrase      as Handler.User
-import Handler.User.SelectProject        as Handler.User
 import Handler.User.User                 as Handler.User
-import Handler.User.Notifications        as Handler.User
 import Handler.User.Users                as Handler.User
 import Handler.User.VerifyEmail          as Handler.User

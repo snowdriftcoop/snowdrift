@@ -21,7 +21,6 @@ import qualified Data.Text as T
 
 import Model.Count
 import WrappedValues
-import qualified Mechanism as Mech
 
 --------------------------------------------------------------------------------
 -- Types
@@ -34,7 +33,6 @@ newtype TicketCount = TicketCount Int64 deriving Count
 data ProjectSummary = ProjectSummary
     { summaryName            :: Text
     , summaryProjectHandle   :: Text
-    , summaryMech            :: Mech.Project
     }
 
 data UpdateProject = UpdateProject
@@ -84,13 +82,11 @@ getGithubIssues project =
             (projectGithubRepo project)
 
 summarizeProject :: Entity Project
-                 -> Mech.Project
                  -> ProjectSummary
-summarizeProject project _mechProj =
+summarizeProject project =
     ProjectSummary
         (projectName $ entityVal project)
         (projectHandle $ entityVal project)
-        Mech.Project
 
 fetchProjectPledgesDB :: ( MonadThrow m
                          , MonadIO m

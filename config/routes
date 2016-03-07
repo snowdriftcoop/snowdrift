@@ -53,7 +53,6 @@
 -- Note that for logged-out users, / ("HomeR") is the simple welcome page.
 /              HomeR           GET
 /transactions  UTransactionsR  GET
-/notifications UNotificationsR GET
 /pledges       UPledgesR       GET
 /roles         URolesR         GET
 
@@ -107,17 +106,8 @@
 /u/#UserId/confirm-delete/#Text             UserConfirmDeleteR     GET POST
 /u/#UserId/edit                             EditUserR              GET POST
 /u/#UserId/elig                             UserEstEligibleR           POST
-/u/#UserId/user-notifications               UserNotificationsR     GET POST
-/u/#UserId/pledges                          UserPledgesR           GET
-/u/#UserId/project-notifications/#ProjectId ProjectNotificationsR  GET POST
 /u/#UserId/reset-passphrase/#Text           UserResetPassphraseR   GET POST
-/u/#UserId/select-project                   UserSelectProjectR     GET POST
 /u/#UserId/verify-email/#Text               UserVerifyEmailR       GET
-
--- Notifications
-
-/notificationsp             NotificationsProxyR         GET
-/notifications/archivedp    ArchivedNotificationsProxyR GET
 
 -- Project
 
@@ -136,10 +126,6 @@
 
 /p/#ProjectId/watch   WatchProjectR   POST
 /p/#ProjectId/unwatch UnwatchProjectR POST
-
-/ev/newpledge/#EventNewPledgeId                             EventNewPledgeR               GET
-/ev/updatedpledge/#EventUpdatedPledgeId                     EventUpdatedPledgeR           GET
-/ev/deletedpledge/#EventDeletedPledgeId                     EventDeletedPledgeR           GET
 
 -- Devs only!
 

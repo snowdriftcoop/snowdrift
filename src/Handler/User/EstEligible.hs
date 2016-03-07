@@ -22,7 +22,7 @@ postUserEstEligibleR user_id = do
             case userEstablished user of
                 EstUnestablished -> do
                     honor_pledge <- getUrlRender >>= \r -> return $ r HonorPledgeR
-                    runSDB $ eligEstablishUserDB honor_pledge establisher_id user_id reason
+                    runDB $ eligEstablishUserDB honor_pledge establisher_id user_id reason
                     setMessage "This user is now eligible for establishment. Thanks!"
                     redirectUltDest HomeR
                 _ -> error "User not unestablished!"

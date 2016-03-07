@@ -3,12 +3,10 @@ module Foundation where
 import Import.NoFoundation
 
 import Blaze.ByteString.Builder.Char.Utf8 (fromText)
-import Control.Concurrent.STM
 import Control.Exception.Lifted (throwIO, handle)
 import Control.Monad.Logger
 import Control.Monad.Reader
 import Control.Monad.Trans.Resource
-import Control.Monad.Writer.Strict (WriterT, runWriterT)
 import Data.Char (isSpace)
 import Data.Text as T
 import Network.HTTP.Conduit (Manager)
@@ -50,9 +48,6 @@ data App = App
     , appHttpManager   :: Manager
     , persistConfig    :: Settings.PersistConf
     , appLogger        :: Logger
-    , appEventChan     :: TChan SnowdriftEvent
-    , appEventHandlers :: AppConfig DefaultEnv Extra
-                       -> [SnowdriftEvent -> Daemon ()]
     }
 
 plural :: Integral i => i -> Text -> Text -> Text
@@ -300,16 +295,6 @@ createUser ident passph name newEmail avatar nick = do
                 forM_ default_tag_colors $ \(Entity _ (DefaultTagColor tag color)) -> insert $ TagColor tag user_id color
                 --
 
-                insertDefaultNotificationPrefs user_id
-                let welcome_route = "#"
-                let notif_text = Markdown $ T.unlines
-                        [ "Thanks for registering!"
-                        , "<br> Please read our [**welcome message**](" <>
-                          welcome_route <>
-                          "), and let us know any questions."
-                        ]
-
-                insert_ $ UserNotification now NotifWelcome user_id notif_text False
                 return $ Just user_id
             Nothing -> do
                 lift $ addAlert "danger" "Handle already in use."
@@ -329,24 +314,9 @@ createUser ident passph name newEmail avatar nick = do
              , userStatement = Nothing
              , userIrcNick = nick
              , userLanguages = langs
-             , userReadNotifications = now
              , userReadApplications = now
              , userEstablished = EstUnestablished
              }
-
-    insertDefaultNotificationPrefs :: UserId -> DB ()
-    insertDefaultNotificationPrefs user_id =
-        void . insertMany $ uncurry (UserNotificationPref user_id) <$>
-            -- 'NotifWelcome' is not set since it is delivered when a
-            -- user is created.
-            [ (NotifBalanceLow,        UserNotifDeliverWebsiteAndEmail)
-            , (NotifUnapprovedComment, UserNotifDeliverEmail)
-            , (NotifRethreadedComment, UserNotifDeliverWebsite)
-            , (NotifReply,             UserNotifDeliverEmail)
-            , (NotifEditConflict,      UserNotifDeliverWebsite)
-            , (NotifFlag,              UserNotifDeliverWebsiteAndEmail)
-            , (NotifFlagRepost,        UserNotifDeliverWebsite)
-            ]
 
 instance YesodJquery App
 
@@ -405,10 +375,6 @@ getAlert = do
     deleteSession alertKey
     return mmsg
 
--- | Write a list of SnowdriftEvent to the event channel.
-pushEvents :: (MonadIO m, MonadReader App m) => [SnowdriftEvent] -> m ()
-pushEvents events = ask >>= liftIO . atomically . forM_ events . writeTChan . appEventChan
-
 --------------------------------------------------------------------------------
 
 -- There are FOUR different kinds of database actions, each with a different run function.
@@ -443,24 +409,6 @@ type YDB a = SqlPersistT Handler a
 
 runYDB :: YDB a -> Handler a
 runYDB = Y.runDB
-
--- A database action that writes [SnowdriftEvent], to be run after the transaction is complete.
-type SDB a  = forall m. DBConstraint m => WriterT [SnowdriftEvent] (SqlPersistT m) a
-
-runSDB :: DBConstraint m => SDB a -> m a
-runSDB w = do
-    (a, events) <- runDB (runWriterT w)
-    pushEvents events
-    return a
-
--- A combination of YDB and SDB (writes events, requires inner Handler).
-type SYDB a = WriterT [SnowdriftEvent] (SqlPersistT Handler) a
-
-runSYDB :: SYDB a -> Handler a
-runSYDB w = do
-    (a, events) <- runYDB (runWriterT w)
-    pushEvents events
-    return a
 
 -- from http://stackoverflow.com/questions/8066850/why-doesnt-haskells-prelude-read-return-a-maybe
 readMaybe   :: (Read a) => String -> Maybe a
