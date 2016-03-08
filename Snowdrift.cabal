@@ -40,6 +40,7 @@ library
         else
             ghc-options:   -Werror -Wall
 
+    -- exposed-modules {{{2
     exposed-modules:
         Application
         Avatar
@@ -89,6 +90,7 @@ library
         Model.Application
         Model.Count
         Model.Currency
+        Model.Discussion.TH
         Model.Issue
         Model.Language
         Model.Language.TH
