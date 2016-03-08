@@ -17,6 +17,7 @@ import Yesod.Auth.HashDB (HashDBUser (..))
 import Yesod.Markdown (Markdown)
 
 import Model.Currency (Milray)
+import Model.Discussion.TH (mkDiscussionTypes)
 import Model.Established.Internal (Established(..))
 import Model.Language
 import Model.License.Internal
@@ -55,6 +56,7 @@ import Model.ViewType.Internal (ViewType)
 share [ mkPersist sqlSettings
       , mkMigrate "migrateAll"
       , mkDeleteCascade sqlSettings
+      , mkDiscussionTypes
       ]
     $(persistFileWith lowerCaseSettings "config/models")
 

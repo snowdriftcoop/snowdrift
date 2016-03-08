@@ -28,8 +28,10 @@ User
     statement         Markdown     Maybe
     ircNick           Text         Maybe
     languages         [Language]
+    readNotifications UTCTime            default=now() SafeToRemove
     readApplications  UTCTime            default=now()
     established       Established        default='EstUnestablished'
+    discussion        DiscussionId       default=nextval('discussion_id_seq'::regclass) MigrationOnly
 
     UniqueUser ident
     UniqueUserAccount account
@@ -100,6 +102,7 @@ Project
     shareValue  Milray
     lastPayday  PaydayId     Maybe
     githubRepo  Text         Maybe
+    discussion  DiscussionId       default=nextval('discussion_id_seq'::regclass) MigrationOnly
     public      Bool               default=true
     logo        Text         Maybe
 
@@ -194,6 +197,10 @@ Interest
 VolunteerInterest
     volunteer VolunteerApplicationId
     interest  InterestId
+
+-- Deprecated. Necessary for MigrationOnly fields.
+Discussion
+    nothing Int64
 
 Tag
     name      Text
