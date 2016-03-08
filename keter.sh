@@ -42,10 +42,15 @@ main () {
     if $opt_build
     then
         hdr "Building"
-        mkdir -p dist/bin
+        if [ -z "$install_path" ]; then
+            >&2 echo "Hold up, \$install_path should be specified!"
+            exit 1
+        fi
+        rm -rf ${install_path}
+        mkdir -p ${install_path}
         stack --work-dir .stack-work-deploy --local-bin-path $install_path install --flag Snowdrift:-dev --pedantic
         hdr "Packing executables"
-        upx dist/bin/Snowdrift*
+        find ${install_path} -type f -executable | xargs upx
     else
         hdr "Not building, as requested"
     fi
