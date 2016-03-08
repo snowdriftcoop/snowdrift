@@ -61,7 +61,6 @@ library
         Handler.NewDesign
         Handler.PostLogin
         Handler.Project
-        Handler.ProjectBlog
         Handler.ResetPassphrase
         Handler.Simple
         Handler.TH
@@ -88,7 +87,6 @@ library
         Local.Ord
         Model
         Model.Application
-        Model.Blog
         Model.Count
         Model.Currency
         Model.Issue
@@ -102,7 +100,6 @@ library
         Model.Project
         Model.Project.Signup
         Model.Project.Signup.Internal
-        Model.Project.Sql
         Model.ResetPassphrase
         Model.Role
         Model.Settings
@@ -125,7 +122,6 @@ library
         View.ResetPassphrase
         View.Time
         View.User
-        Widgets.Doc
         Widgets.Markdown
         Widgets.Navbar
         Widgets.Preview
@@ -253,48 +249,6 @@ executable Snowdrift
                      , yesod
 
     ghc-options:       -threaded
-
--- executable SnowdriftProcessPayments {{{1
-executable SnowdriftProcessPayments
-    if flag(library-only)
-        Buildable: False
-    if flag(dev)
-        ghc-options: -Wall -O0 -fobject-code
-    if flag(merge)
-        ghc-options: -Wall -Werror -O0 -fobject-code
-
-    default-language:  Haskell2010
-    main-is:           SnowdriftProcessPayments.hs
-    hs-source-dirs:    app
-    build-depends:     base
-                     , blaze-builder
-                     , bytestring
-                     , fast-logger
-                     , lifted-base
-                     , monad-logger
-                     , mtl
-                     , persistent
-                     , resourcet
-                     , Snowdrift
-                     , text
-                     , time
-                     , yesod
-
-    ghc-options:       -threaded
-
-    default-extensions: TemplateHaskell
-                QuasiQuotes
-                OverloadedStrings
-                NoImplicitPrelude
-                MultiParamTypeClasses
-                TypeFamilies
-                GADTs
-                GeneralizedNewtypeDeriving
-                FlexibleContexts
-                EmptyDataDecls
-                NoMonomorphismRestriction
-                DeriveDataTypeable
-                ScopedTypeVariables
 
 -- executable sendmail-mock {{{1
 executable sendmail-mock

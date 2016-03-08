@@ -241,19 +241,6 @@ DefaultTagColor
 DatabaseVersion
     lastMigration Int
 
-PledgeFormRendered
-    ts      UTCTime
-    order   Text
-    project ProjectId
-    user    UserId    Maybe
-
-SharesPledged
-    ts      UTCTime
-    user    UserId
-    project ProjectId
-    shares  Int64
-    render  PledgeFormRenderedId
-
 Image
     ts UTCTime
     uploader UserId
