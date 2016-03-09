@@ -33,9 +33,6 @@ import qualified Yesod as Y
 import Avatar
 import Model.Currency
 
--- A type for running DB actions outside of a Handler.
-type Daemon a = ReaderT App (LoggingT (ResourceT IO)) a
-
 -- | The foundation datatype for your application. This can be a good place to
 -- keep settings and values requiring initialization before your application
 -- starts running, such as database connections. Every handler will have
@@ -386,14 +383,6 @@ getAlert = do
 -- Convenient type synonym for all that is required to hit the database in a monad.
 -- Types that satisfy this constraint: Handler, Daemon.
 type DBConstraint m = (MonadBaseControl IO m, MonadIO m, MonadLogger m, MonadResource m, MonadReader App m)
-
--- Run a Daemon in IO.
-runDaemon :: App -> Daemon a -> IO a
-runDaemon app daemon =
-    runResourceT $
-      runLoggingT
-        (runReaderT daemon app)
-        (messageLoggerSource app (appLogger app))
 
 -- A basic database action.
 type DB a = forall m. DBConstraint m => SqlPersistT m a
