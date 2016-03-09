@@ -4,13 +4,11 @@ import Import.NoFoundation
 
 import Blaze.ByteString.Builder.Char.Utf8 (fromText)
 import Control.Exception.Lifted (throwIO, handle)
-import Control.Monad.Logger
 import Control.Monad.Reader
 import Control.Monad.Trans.Resource
 import Data.Char (isSpace)
 import Data.Text as T
 import Network.HTTP.Conduit (Manager)
-import Text.Blaze.Html.Renderer.Text (renderHtml)
 import Text.Hamlet (hamletFile)
 import Text.Jasmine (minifym)
 import Web.Authenticate.BrowserId (browserIdJs)
@@ -24,7 +22,6 @@ import Yesod.Default.Util (addStaticContentExternal)
 import Yesod.Form.Jquery
 import Yesod.Static
 import qualified Data.ByteString.Lazy.Char8 as LB
-import qualified Data.Text.Lazy as TL
 import qualified Data.Text.Lazy.Encoding as E
 import qualified Database.Persist
 import qualified Settings
@@ -294,7 +291,7 @@ createUser ident passph name newEmail avatar nick = do
 
                 return $ Just user_id
             Nothing -> do
-                lift $ addAlert "danger" "Handle already in use."
+                lift $ alertDanger "Handle already in use."
                 throwIO DBException
   where
     newUser langs now account_id =
@@ -328,49 +325,6 @@ instance RenderMessage App FormMessage where
 -- | Get the 'Extra' value, used to hold data from the settings.yml file.
 getExtra :: Handler Extra
 getExtra = fmap (appExtra . appSettings) getYesod
-
--- expanded session messages
--- need to use a seperate key to maintain compatability with Yesod.Auth
-
-alertKey :: Text
-alertKey = "_MSG_ALERT"
-
-
-addAlertEm :: Text -> Text -> Text -> Handler ()
-addAlertEm level msg em = do
-    render <- getUrlRenderParams
-    prev <- lookupSession alertKey
-
-    setSession alertKey $ maybe id mappend prev $ TL.toStrict $ renderHtml $
-        [hamlet|
-        <div .alert .alert-#{level}>
-          <em>#{em}
-          #{msg}
-        |] render
-
--- TODO: don't export this
-addAlert :: Text -> Text -> Handler ()
-addAlert level msg = do
-    render <- getUrlRenderParams
-    prev   <- lookupSession alertKey
-
-    setSession alertKey $ maybe id mappend prev $ TL.toStrict $ renderHtml $
-        [hamlet|
-        <div .alert .alert-#{level}>
-          #{msg}
-        |] render
-
-alertDanger, alertInfo, alertSuccess, alertWarning :: Text -> Handler ()
-alertDanger  = addAlert "danger"
-alertInfo    = addAlert "info"
-alertSuccess = addAlert "success"
-alertWarning = addAlert "warning"
-
-getAlert :: Handler (Maybe Html)
-getAlert = do
-    mmsg <- liftM (fmap preEscapedToMarkup) $ lookupSession alertKey
-    deleteSession alertKey
-    return mmsg
 
 --------------------------------------------------------------------------------
 

@@ -62,7 +62,7 @@ getGithubIssues :: Project -> Handler [GH.Issue]
 getGithubIssues project =
     getGithubIssues'
     >>= liftIO . wait
-    >>= either (\_ -> addAlert "danger" eMsg >> return [])
+    >>= either (\_ -> alertDanger eMsg >> return [])
                return
   where
     eMsg = "failed to fetch GitHub tickets\n"
