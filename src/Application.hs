@@ -39,10 +39,8 @@ import Widgets.Navbar
 import Handler.BuildFeed
 import Handler.Common
 import Handler.HonorPledge
-import Handler.Image
 import Handler.Invitation
 import Handler.JsLicenses
-import Handler.MarkdownTutorial
 import Handler.NewDesign
 import Handler.PostLogin
 import Handler.Project

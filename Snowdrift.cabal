@@ -56,7 +56,6 @@ library
         Handler.BuildFeed
         Handler.Common
         Handler.HonorPledge
-        Handler.Image
         Handler.Invitation
         Handler.JsLicenses
         Handler.MarkdownTutorial
