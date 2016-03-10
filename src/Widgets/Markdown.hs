@@ -11,7 +11,7 @@ snowdriftMarkdownField = Field
         [whamlet|
             <div .markdown_label>
                 Use
-                <a href=@{MarkdownTutorialR} target="_blank">
+                <a href=# target="_blank">
                     Markdown syntax
             <div .markdown_label>
                 Remember to follow the

@@ -1,23 +1,8 @@
 --
--- ### PAGES FOR ALPHA
+-- ## Static, informational pages
 --
 
---
--- ## The "simple" pages
---
-
-/how-it-works HowItWorksR:
-    /                    IntroR              GET
-    /flo                 FloR                GET
-    /network-effect      NetworkEffectR      GET
-    /sustainable-funding SustainableFundingR GET
-    /co-op               CoOpR               GET
-/about AboutR:
-    /        AboutHomeR GET
-    /contact ContactR   GET
-    /team    TeamR      GET
-    /press   PressR     GET
-/project-signup PSignupR     GET
+/welcome        WelcomeR GET
 /terms          TermsR       GET
 /privacy        PrivacyR     GET
 /trademarks     TrademarksR  GET
@@ -27,6 +12,19 @@
 /js-licenses    JsLicensesR  GET
 /honor-pledge   HonorPledgeR GET POST
 /assets         AssetsR      GET
+
+/how-it-works HowItWorksR:
+    /                    IntroR              GET
+    /flo                 FloR                GET
+    /network-effect      NetworkEffectR      GET
+    /sustainable-funding SustainableFundingR GET
+    /co-op               CoOpR               GET
+
+/about AboutR:
+    /        AboutHomeR GET
+    /contact ContactR   GET
+    /team    TeamR      GET
+    /press   PressR     GET
 
 --
 -- ## Search

@@ -20,6 +20,11 @@ import Model.User
         )
 import View.User (renderUser, createUserForm)
 
+getWelcomeR :: Handler Html
+getWelcomeR = defaultLayoutNew "homepage" $ do
+    setTitle "Snowdrift.coop — Free the Commons"
+    $(widgetFile "homepage")
+
 getSearchR :: Handler Html
 getSearchR = do
     q <- lookupGetParam "q"
