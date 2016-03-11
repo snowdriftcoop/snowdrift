@@ -32,20 +32,10 @@ The [ide-haskell](https://atom.io/packages/ide-haskell) package offers further
 development tools including error-checking, linting, and type information. To
 install ide-haskell for Atom:
 
-* Run `stack install ghc-mod hlint stylish-haskell`
-* Install the required Atom packages:
-  `apm install language-haskell haskell-ghc-mod ide-haskell autocomplete-haskell`
-* Make sure `$HOME/.local/bin` is on the PATH accessible to Atom.
-    * If your path isn't set already, run
-      `echo 'export PATH=$HOME/.local/bin:$PATH' >> ~/.profile` (although other
-      methods exist, this offers the most flexibility and works for starting
-      atom from the command line or from a GUI launcher). To make the path
-      active, log out of your system and log back in (to avoid logging out,
-      `source ~/.profile` will get the path in your terminal, but you'll have to
-      start atom from the command line for now).
-* NB: this installation is the easiest for now and will work for any other
-  projects that use the same GHC version but will *not* work if you switch
-  between projects that use different GHC versions.
+* Run `stack build ghc-mod hlint stylish-haskell`
+* Install the relevant Atom packages:
+  `apm install language-haskell haskell-ghc-mod ide-haskell autocomplete-haskell ide-haskell-stack`
+* Make sure to check "Stack sandbox" in the haskell-ghc-mod settings
 * *Note: ghc-mod will fail if it sees a dist/ directory which is made when you
   run snowdrift via `stack exec yesod devel`, so until yesod-bin is updated to
   use Stack directly, delete (or rename) the /dist directory and instead of
