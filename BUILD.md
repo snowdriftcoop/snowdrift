@@ -17,7 +17,7 @@ section.**
 
 ### Debian, Ubuntu, and any related derivatives
 
-Install Git and PostgeSQL with needed libraries:
+Install Git and PostgreSQL with needed libraries:
 
     sudo apt-get update
     sudo apt-get install git postgresql postgresql-client libgmp-dev zlib1g-dev libpq-dev libtinfo-dev
@@ -28,15 +28,26 @@ or
 [Ubuntu Stack install](https://github.com/commercialhaskell/stack/blob/master/doc/install_and_upgrade.md#ubuntu)
 instructions as appropriate.
 
-### CentOS, RHEL
+### CentOS/RHEL and Fedora
 
-Install Git and PostgeSQL with needed libraries:
+Install Git and needed libraries:
 
     sudo yum update
-    sudo yum install postgresql postgresql-devel ncurses-devel gmp-devel zlib-devel
+    sudo yum install ncurses-devel gmp-devel zlib-devel git
+    
+For newer versions of Fedora, replace the `yum` commands with `dnf`. Install the following libraries if you don't already have them:
 
-Then follow the
-[CentOS / Red Hat / Amazon Linux Stack install](https://github.com/commercialhaskell/stack/blob/master/doc/install_and_upgrade.md#centos--red-hat--amazon-linux) instructions.
+    sudo dnf install libstdc++-static gcc-c++
+
+You'll also need PostgreSQL >= 9.3:
+
+    sudo yum install postgres-server postgres-devel
+
+If the version in the base repositories is too old, follow the [instructions on the PostgreSQL wiki](https://wiki.postgresql.org/wiki/YUM_Installation) to install from their repositories. Get the postgresXX-server and postgresXX-devel packages, where XX is the version number. 
+
+So that the Snowdrift database cluster tool sees the pgsql executables at /usr/pgsql-X.X/bin on your PATH, either add that route (with the correct numbers instead of X.X) to your PATH (e.g. in `~/.bash_profile`, `~/.bashrc` or `~/.profile`) or create symlinks somewhere already on your PATH.
+
+Then follow the [Stack install instructions](https://github.com/commercialhaskell/stack/blob/master/doc/install_and_upgrade.md) for your distribution.
 
 ### Arch Linux
 
@@ -59,7 +70,7 @@ For PostgreSQL, add these lines to `/etc/nixos/configuration.nix`:
     services.postgresql.enable = true;
     services.postgresql.package = pkgs.postgresql94;
 
-Then install PostgeSQL with:
+Then install PostgreSQL with:
 
     sudo nixos-rebuild switch
 
