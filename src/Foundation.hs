@@ -116,9 +116,15 @@ instance Yesod App where
     approot = ApprootMaster $ appRoot . appSettings
 
     -- Store session data on the client in encrypted cookies.
-    makeSessionBackend _ = fmap Just $ defaultClientSessionBackend
-        (48 * 60)    -- timeout in minutes, (48 * 60) = 48 hours = 2 days
-        "config/client_session_key.aes"
+    makeSessionBackend _ =
+        sslOnlySessions (Just <$> defaultClientSessionBackend twoDays sessionKey)
+      where
+        twoDays = 48 * 60
+        sessionKey = "config/client_session_key.aes"
+
+    yesodMiddleware = sslOnlyMiddleware twoDays . defaultYesodMiddleware
+      where
+        twoDays = 48*60
 
     defaultLayout widget = do
         master <- getYesod
