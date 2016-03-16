@@ -31,12 +31,12 @@ body
 
 *::selection
     color: #{White};
-    background: #{DarkBlue};
+    background: #{DarkBlue}
     text-shadow: none
 
 *::-moz-selection
     color: #{White};
-    background: #{DarkBlue};
+    background: #{DarkBlue}
     text-shadow: none
 
 p
@@ -104,15 +104,27 @@ table
         margin: 0 3rem
         padding-bottom: 3rem 
       li, li p
-          padding-bottom: 1rem 
-    
+          padding-bottom: 1rem
+    form
+        label
+            color: #{BrightBlueText}
+            display: block
+        input
+            background-color: #{White}
+            border: 0.1rem solid #{DarkBlue}
+            border-radius: 0.3rem
+            padding: 0.5rem 0.3rem
+            margin-bottom: 1.5rem
+            font: 400 2rem "Nunito"
+            color: #{DarkBlue}
+        
 h1
     font-weight: 600
     font-size: 3rem
 h2
     font-weight: 600
     font-size: 2.5rem
-    padding-bottom: 3rem;
+    padding-bottom: 3rem
 h3
     font-weight: 600
     font-size: 2rem
@@ -121,6 +133,40 @@ em
     font-style: italic
 strong
     font-weight: 600
+hr 
+    margin-bottom: 3rem
+
+.footnotes
+    font-size: 1.5rem
+    counter-reset: footnotes-count
+    ol
+        list-style: outside none
+        margin: 0 3rem
+    li:before
+        content: counter(footnotes-count)
+        counter-increment: footnotes-count
+        padding-right: 0.9rem
+    li p:first-child
+        display: inline
+    li p
+        margin-top: 1rem
+.footnoteRef sup
+    vertical-align: super
+    font-size: 1.5rem
+
+/* Auth forms */
+.auth 
+    h1
+        margin: 3rem 0 0 0
+        padding-bottom: 3rem
+        font-weight: 400
+    .bigbutton
+        margin: 3rem 0
+        display: block
+@media (min-width: 391px)
+    .auth 
+        h1
+            margin: 6rem 0 0 0    
 
 @keyframes fadein
     0%

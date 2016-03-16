@@ -32,8 +32,6 @@
       */
 
     <title>#{pageTitle pc}
-    <meta name="description" content="Snowdrift.coop is a non-profit, cooperative platform for funding free/libre/open public goods of all sorts.">
-
     <meta name="viewport"
       content="width=device-width, minimum-scale=1.0, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
