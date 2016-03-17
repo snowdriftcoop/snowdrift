@@ -11,19 +11,19 @@
       Our innovative matching pledge creates a network effect
       where we all work together to support these public goods.
     <div .homep-link>
-      <a href=@{WikiR "snowdrift" LangEn "intro"}>
+      <a href=#>
         Illustrated intro
     <div .homep-link>
-      <a href=@{WikiR "snowdrift" LangEn "about"}>
+      <a href=#>
         Longer explanation
     <div .homep-link>
-      <a href=@{WikiR "snowdrift" LangEn "press"}>
+      <a href=#>
         Press
     <div .homep-link>
       <a href=@{WhoR "snowdrift"}>
         Who we are
     <div .homep-link>
-      <a href=@{WikiR "snowdrift" LangEn "faq"}>
+      <a href=#>
         FAQ
     <div .homep-link>
       This website is itself a
@@ -56,9 +56,6 @@
       We're continually working to get Snowdrift.coop going.
       Keep up with our activity:
     <div .homep-link>
-      <a href=@{ProjectBlogR "snowdrift"}>
-        Snowdrift Blog
-    <div .homep-link>
       <a href=@{ProjectFeedR "snowdrift"}>
         Snowdrift project activity feed
     <div .homep-link>
@@ -70,7 +67,7 @@
         email lists
     <div .homep-link>
       Live chat at
-      <a href=@{WikiR "snowdrift" LangEn "irc"}>
+      <a href=#>
         #snowdrift IRC channel
     <div .homep-link>
       Follow us on GNU Social
@@ -83,12 +80,12 @@
     <p>
       Our core team
       is supported by a growing community.
-      <strong><a href=@{WikiR "snowdrift" LangEn "how-to-help"}>Come help</a>
+      <strong><a href=#>Come help</a>
       with site development, design, community organizing, or other tasks.
     <h2>Get your project listed
     <p>
       We're still in preliminary stages, but if your
-      <a href=@{WikiR "snowdrift" LangEn "project-requirements"}>free/libre/open
+      <a href=#>free/libre/open
       project needs funding,
-      please <a href=@{ProjectContactR "snowdrift"}>contact&nbsp;us</a>
+      please contact&nbsp;us
       to discuss whether you are a good fit for our early testing and launch.

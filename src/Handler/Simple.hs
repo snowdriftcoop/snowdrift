@@ -6,8 +6,6 @@ import Network.HTTP.Types.Status (movedPermanently301)
 
 import Dev
 import Handler.TH
-import Handler.Utils
-import Widgets.Doc
 
 getIntroR,
     getFloR,
@@ -46,18 +44,9 @@ getTermsR,
     getPrivacyR,
     getTrademarksR
     :: Handler Html
-getTermsR = defaultLayoutNew "terms-of-use" $ do
-    snowdriftTitle "Terms of Use"
-    alphaRewriteNotice
-    renderDoc "Terms of Use"
-getPrivacyR = defaultLayoutNew "privacy" $ do
-    snowdriftTitle "Privacy Policy"
-    alphaRewriteNotice
-    renderDoc "Privacy Policy"
-getTrademarksR = defaultLayoutNew "trademarks" $ do
-    snowdriftTitle "Trademarks"
-    alphaRewriteNotice
-    renderDoc "Trademarks"
+getTermsR = undefined
+getPrivacyR = undefined
+getTrademarksR = undefined
 
 -- | Permanent redirects for legacy urls that may still be referenced
 -- outside of the type-safe project

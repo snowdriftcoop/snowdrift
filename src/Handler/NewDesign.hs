@@ -17,7 +17,6 @@ import Handler.Notification
 import Handler.TH
 import Handler.User.Utils (startEmailVerification)
 import Handler.Utils
-import Model.License (fetchLicensesDB)
 import Model.Project
         ( fetchPublicProjectsDB
         , projectNameWidget
@@ -31,7 +30,6 @@ import Model.User
         , userDisplayName
         , userReadNotificationsDB
         )
-import View.Project.Signup (projectSignupForm)
 import View.Time (renderTime)
 import View.User (renderUser, createUserForm)
 
@@ -65,8 +63,6 @@ projectNav handle =
         <h3>Subpages
         <ul>
             <li><a href=@{PUpdatesR handle}>Updates
-            <li><a href=@{WikiPagesR handle}>Wiki</a> (links to pre-alpha)
-            <li><a href=@{ProjectDiscussionR handle}>Discussion</a> (links to pre-alpha)
             <li><a href=@{PTransactionsR handle}>Transactions
     |]
 
@@ -114,38 +110,6 @@ getUEditR = do
 --
 -- #### NEEDS REVIEW. COPIED FROM EXISTING PAGES.
 --
-
--- | Where projects actually sign up.
---
--- As opposed to getPSignupR, where they learn about signing up. This page
--- will not be advertised during alpha.
-getPSignupFormR :: Handler Html
-getPSignupFormR = do
-    licenses <- runDB fetchLicensesDB
-    render   <- getUrlRender
-    (project_signup_form, _) <- generateFormPost $
-        projectSignupForm render licenses
-    $(widget "project-signup-form" "Project Sign Up")
-
-postPSignupFormR :: Handler Html
-postPSignupFormR = do
-    licenses <- runDB fetchLicensesDB
-    render   <- getUrlRender
-    ((result, project_signup_form), _) <- runFormPost $
-        projectSignupForm render licenses
-    case result of
-        FormSuccess res  -> do
-            runDB $ insert_ res
-            alertSuccess "Application submitted"
-            redirect HomeR
-        FormMissing      -> do
-            alertDanger "No data provided"
-            $(widget "project-signup-form" "Project Sign Up")
-        FormFailure _ -> do
-            alertDanger "Form failure"
-            $(widget "project-signup-form" "Project Sign Up")
-
-
 
 -- | Projects list.
 getProjectsR :: Handler Html

@@ -15,7 +15,7 @@ snowdriftMarkdownField = Field
                     Markdown syntax
             <div .markdown_label>
                 Remember to follow the
-                <a href=@{WikiR "snowdrift" LangEn "conduct"}>
+                <a href=#>
                     Code of Conduct
             <div .markdown_wrapper>
                 <textarea id=#{theId} name=#{name} :_isReq:required *{attrs}>#{either id unMarkdown value}

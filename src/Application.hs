@@ -40,7 +40,6 @@ import Widgets.Navbar
 
 -- Handlers!
 import Handler.BuildFeed
-import Handler.Comment
 import Handler.Common
 import Handler.HonorPledge
 import Handler.Image
@@ -51,7 +50,6 @@ import Handler.NewDesign
 import Handler.Notification
 import Handler.PostLogin
 import Handler.Project
-import Handler.ProjectBlog
 import Handler.ResetPassphrase
 import Handler.Simple
 import Handler.SnowdriftEvent
@@ -59,8 +57,6 @@ import Handler.User
 import Handler.Volunteer
 import Handler.Who
 import Handler.Widget
-import Handler.Wiki
-import Handler.Wiki.Comment
 
 runSql :: MonadIO m => Text -> ReaderT SqlBackend m ()
 runSql = flip rawExecute [] -- TODO quasiquoter?

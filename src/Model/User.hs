@@ -20,9 +20,6 @@ module Model.User
     , projectNotificationPref
     , updateUserPreview
     , userCanAddTag
-    , userCanCloseComment
-    , userCanEditComment
-    , userCanEditWikiPage
     , userIsEligibleEstablish
     , userIsEstablished
     , userIsModerator
@@ -33,13 +30,7 @@ module Model.User
     , archiveNotificationsDB
     , archiveUserNotificationsDB
     , archiveProjectNotificationsDB
-    , claimedTickets
-    , countClaimedTickets
-    , countWatchedTickets
     , deleteFromEmailVerification
-    , deleteCommentsDB
-    , deleteBlogPostsDB
-    , deleteWikiEditsDB
     , deleteUserDB
     , eligEstablishUserDB
     , establishUserDB
@@ -50,8 +41,6 @@ module Model.User
     , fetchNumUnreadNotificationsDB
     , fetchNumUnreadUserNotificationsDB
     , fetchNumUnreadProjectNotificationsDB
-    , fetchNumUnviewedCommentsOnProjectWikiPagesDB
-    , fetchNumUnviewedWikiEditsOnProjectDB
     , fetchArchivedUserNotificationsDB
     , fetchArchivedProjectNotificationsDB
     , fetchUserEmail
@@ -76,7 +65,6 @@ module Model.User
     , updateUserPassphraseDB
     , updateUserNotificationPrefDB
     , updateProjectNotificationPrefDB
-    , userCanDeleteCommentDB
     , userHasRoleDB
     , userHasRolesAnyDB
     , userIsAffiliatedWithProjectDB
@@ -84,15 +72,11 @@ module Model.User
     , userIsProjectModeratorDB
     , userIsProjectTeamMemberDB
     , userIsWatchingProjectDB
-    , userMaybeViewProjectCommentsDB
     , userReadNotificationsDB
     , userReadVolunteerApplicationsDB
     , userUnwatchProjectDB
-    , userViewCommentsDB
-    , userViewWikiEditsDB
     , userWatchProjectDB
     , verifyEmailDB
-    , watchedTickets
     -- Unsorted
     , canCurUserMakeEligible
     , canMakeEligible
@@ -108,13 +92,9 @@ import qualified Data.Set as S
 import qualified Data.Text as T
 import qualified Database.Persist as P
 
-import Model.Comment
-import Model.Comment.Sql
 import Model.Notification
 import Model.User.Internal
             hiding (UserNotificationPref, ProjectNotificationPref)
-import Model.User.Sql
-import Model.Wiki.Sql
 import WrappedValues
 
 -- anonymousUser is a special user for items posted by visitors who are not
@@ -134,22 +114,6 @@ type UserMap = Map UserId User
 
 userCanAddTag :: User -> Bool
 userCanAddTag = userIsEstablished
-
--- TODO: what should this be?
--- Aaron says: I think we should allow established to mark as closed,
--- but only *affiliated* OR the original poster should do so in one step,
--- otherwise, the marking of closed should require *moderator* confirmation…
--- We should also have a re-open function.
--- There are now comments discussing these things on the site.
-userCanCloseComment :: User -> Bool
-userCanCloseComment = userIsEstablished
-
--- | Can this User edit this Comment?
-userCanEditComment :: UserId -> Comment -> Bool
-userCanEditComment user_id = (user_id ==) . commentUser
-
-userCanEditWikiPage :: User -> Bool
-userCanEditWikiPage = userIsEstablished
 
 -- | Is the user established?
 userIsEstablished :: User -> Bool
@@ -255,28 +219,8 @@ deleteFromEmailVerification :: MonadIO m => UserId -> SqlPersistT m ()
 deleteFromEmailVerification user_id =
     delete $ fromEmailVerification user_id
 
-replaceWithDeletedUser
-    :: (PersistEntity val, PersistEntityBackend val ~ SqlBackend)
-    => EntityField val UserId -> UserId -> DB ()
-replaceWithDeletedUser con user_id =
-    update $ \c -> do
-        set c [con =. val deletedUser]
-        where_ $ c ^. con ==. val user_id
-
-deleteCommentsDB :: UserId -> DB ()
-deleteCommentsDB = replaceWithDeletedUser CommentUser
-
-deleteBlogPostsDB :: UserId -> DB ()
-deleteBlogPostsDB = replaceWithDeletedUser BlogPostUser
-
-deleteWikiEditsDB :: UserId -> DB ()
-deleteWikiEditsDB = replaceWithDeletedUser WikiEditUser
-
 deleteUserDB :: UserId -> DB ()
 deleteUserDB user_id = do
-    deleteCommentsDB user_id
-    deleteBlogPostsDB user_id
-    deleteWikiEditsDB user_id
     deleteCascade user_id
 
 fetchVerEmail :: Text -> UserId -> DB (Maybe Text)
@@ -308,18 +252,6 @@ establishUserDB user_id elig_time reason = do
         set u [ UserEstablished =. val est ]
         where_ (u ^. UserId ==. val user_id)
 
-    approveUnapprovedComments est_time
-  where
-    approveUnapprovedComments :: UTCTime -> DB ()
-    approveUnapprovedComments est_time =
-        update $ \c -> do
-            set c [ CommentApprovedTs =. just (val est_time)
-                  , CommentApprovedBy =. just (val user_id)
-                  ]
-            where_ $
-                c ^. CommentUser ==. val user_id &&.
-                exprCommentUnapproved c
-
 -- | Make a user eligible for establishment. Put a notification in their inbox
 -- instructing them to read and accept the honor pledge.
 eligEstablishUserDB :: Text -> UserId -> UserId -> Text -> SDB ()
@@ -336,7 +268,6 @@ eligEstablishUserDB honor_pledge establisher_id user_id reason = do
         (Just $ NotificationSender establisher_id)
         (NotificationReceiver user_id)
         NotifEligEstablish
-        Nothing
         content
   where
     content :: Markdown
@@ -578,9 +509,7 @@ updateProjectNotificationPrefDB user_id project_id notif_type =
 insertDefaultProjectNotifPrefs :: UserId -> ProjectId -> DB ()
 insertDefaultProjectNotifPrefs user_id project_id =
     void $ insertMany $ uncurry (ProjectNotificationPref user_id project_id) <$>
-        [ (NotifWikiEdit,      ProjectNotifDeliverWebsite)
-        , (NotifWikiPage,      ProjectNotifDeliverWebsite)
-        , (NotifBlogPost,      ProjectNotifDeliverWebsiteAndEmail)
+        [ (NotifBlogPost,      ProjectNotifDeliverWebsiteAndEmail)
         , (NotifNewPledge,     ProjectNotifDeliverWebsite)
         , (NotifUpdatedPledge, ProjectNotifDeliverWebsite)
         , (NotifDeletedPledge, ProjectNotifDeliverWebsite)
@@ -604,47 +533,6 @@ userIsWatchingProjectDB user_id project_id =
     maybe False (const True)
         <$> getBy (UniqueUserWatchingProject user_id project_id)
 
--- | Mark all given Comments as viewed by the given User.
-userViewCommentsDB :: UserId -> [CommentId] -> DB ()
-userViewCommentsDB user_id unfiltered_comment_ids =
-    filteredCommentIds >>= userViewCommentsDB'
-  where
-    filteredCommentIds = fmap (map unValue) $
-        select $
-        from $ \vc -> do
-        where_ $
-            vc ^. ViewCommentUser ==. val user_id &&.
-            vc ^. ViewCommentComment `notIn` valList unfiltered_comment_ids
-        return (vc ^. ViewCommentComment)
-
-    userViewCommentsDB' :: [CommentId] -> DB ()
-    userViewCommentsDB' comment_ids =
-        void (insertMany (map (ViewComment user_id) comment_ids))
-
--- | Mark all given Comments as viewed by the given User, if they are watching
--- the given Project.
-userMaybeViewProjectCommentsDB :: UserId -> ProjectId -> [CommentId] -> DB ()
-userMaybeViewProjectCommentsDB user_id project_id comment_ids = do
-    ok <- userIsWatchingProjectDB user_id project_id
-    when ok $
-        userViewCommentsDB user_id comment_ids
-
--- | Mark all WikiEdits made on the given WikiPage as viewed by the given User.
-userViewWikiEditsDB :: UserId -> WikiPageId -> DB ()
-userViewWikiEditsDB user_id wiki_page_id = unviewedWikiEdits >>= viewWikiEdits
-  where
-    unviewedWikiEdits :: DB [WikiEditId]
-    unviewedWikiEdits = fmap (map unValue) $
-        select $
-        from $ \we -> do
-        where_ $
-            we ^. WikiEditPage ==. val wiki_page_id &&.
-            we ^. WikiEditId `notIn` exprUserViewedWikiEdits user_id
-        return (we ^. WikiEditId)
-
-    viewWikiEdits :: [WikiEditId] -> DB ()
-    viewWikiEdits = mapM_ (insert_ . ViewWikiEdit user_id)
-
 userReadNotificationsDB :: UserId -> DB ()
 userReadNotificationsDB user_id = liftIO getCurrentTime >>= \now ->
     update $ \u -> do
@@ -657,53 +545,6 @@ userReadVolunteerApplicationsDB user_id = liftIO getCurrentTime >>= \now ->
     update $ \u -> do
     set u [UserReadApplications =. val now]
     where_ (u ^. UserId ==. val user_id)
-
--- | Is this User allowed to delete this Comment?
--- If it has any replies at all - no.
-userCanDeleteCommentDB :: UserId -> Entity Comment -> DB Bool
-userCanDeleteCommentDB user_id (Entity comment_id comment) =
-    if commentUser comment /= user_id
-        then return False
-        else do
-          descendants_ids <- fetchCommentAllDescendantsDB comment_id
-          if null descendants_ids
-              then return True
-              else return False
-
--- | Fetch a User's number of unviewed comments on each WikiPage of a Project.
-fetchNumUnviewedCommentsOnProjectWikiPagesDB
-    :: UserId
-    -> ProjectId
-    -> DB (Map WikiPageId Int)
-fetchNumUnviewedCommentsOnProjectWikiPagesDB user_id project_id =
-    fmap (M.fromList . map unwrapValues) $
-    select $
-    from $ \(c `InnerJoin` wp) -> do
-    on_ (c ^. CommentDiscussion ==. wp ^. WikiPageDiscussion)
-    where_ $
-        exprWikiPageOnProject wp project_id &&.
-        c ^. CommentId `notIn` exprUserViewedComments user_id
-    groupBy (wp ^. WikiPageId)
-    let countRows' = countRows :: SqlExpr (Value Int)
-    having (countRows' >. val 0)
-    return (wp ^. WikiPageId, countRows')
-
-fetchNumUnviewedWikiEditsOnProjectDB
-    :: UserId
-    -> ProjectId
-    -> DB (Map WikiPageId Int)
-fetchNumUnviewedWikiEditsOnProjectDB user_id project_id =
-    fmap (M.fromList . map unwrapValues) $
-    select $
-    from $ \(wp `InnerJoin` we) -> do
-    on_ (wp ^. WikiPageId ==. we ^. WikiEditPage)
-    where_ $
-        exprWikiPageOnProject wp project_id &&.
-        we ^. WikiEditId `notIn` exprUserViewedWikiEdits user_id
-    groupBy (wp ^. WikiPageId)
-    let countRows' = countRows :: SqlExpr (Value Int)
-    having (countRows' >. val 0)
-    return (wp ^. WikiPageId, countRows')
 
 fetchNumUnreadNotificationsDB :: UserId -> DB Int
 fetchNumUnreadNotificationsDB user_id = (+)
@@ -736,71 +577,3 @@ fetchNumUnreadProjectNotificationsDB :: UserId -> DB Int
 fetchNumUnreadProjectNotificationsDB =
     fetchNumUnreadNotifications
         ProjectNotificationTo ProjectNotificationCreatedTs
-
-claimedTickets :: UserId -> Handler [(Entity Ticket, Maybe (Entity WikiTarget), Import.Value Text)]
-claimedTickets user_id = do
-    -- TODO: abstract out grabbing the project
-    runDB $ select $ from $ \(c `InnerJoin` t `InnerJoin` tc `LeftOuterJoin` wp `LeftOuterJoin` wt `InnerJoin` p) -> do
-        on_ $ p ^. ProjectDiscussion ==. c ^. CommentDiscussion ||. wp ?. WikiPageProject ==. just (p ^. ProjectId)
-        on_ $ wt ?. WikiTargetPage ==. wp ?. WikiPageId
-        on_ $ wp ?. WikiPageDiscussion ==. just (c ^. CommentDiscussion)
-        on_ $ tc ^. TicketClaimingTicket ==. c ^. CommentId
-        on_ $ t ^. TicketComment ==. c ^. CommentId
-
-        where_ $ tc ^. TicketClaimingUser ==. val user_id
-            &&. c ^. CommentId `notIn` (subList_select $ from $ return . (^. CommentClosingComment))
-            &&. c ^. CommentId `notIn` (subList_select $ from $ return . (^. CommentRethreadOldComment))
-
-        orderBy [ asc $ tc ^. TicketClaimingTs ]
-
-        return (t, wt, p ^. ProjectHandle)
-
-countClaimedTickets :: UserId -> Handler Int
-countClaimedTickets user_id = do
-    claimed_tickets <- claimedTickets user_id
-    return $ length claimed_tickets
-
-countWatchedTickets :: UserId -> Handler Int
-countWatchedTickets user_id = do
-    watched_tickets <- watchedTickets user_id
-    return $ length watched_tickets
-
--- XXX: There are two known issues with this query:
--- 1. If a watched comment is a ticket and the nth child, the query will
---    return the same ticket n times.
--- 2. If there are n watched comments in the same thread, each child ticket
---    in the thread will be returned n times. 'select . distinct' just
---    hides these problems from the user's eyes.
-watchedTickets :: UserId -> Handler [(Entity Ticket, Maybe (Entity User), Maybe (Entity WikiTarget), Import.Value Text)]
-watchedTickets user_id = do
-
-    runDB $ select . distinct $ from $ \
-        (
-                            c   -- Comment
-            `LeftOuterJoin` ca  -- CommentAncestor - link between comment and subthread root
-            `InnerJoin`     ws  -- WatchedSubthread
-            `InnerJoin`     t   -- Ticket
-            `LeftOuterJoin` tc  -- TicketClaiming for the ticket, if any (current only)
-            `LeftOuterJoin` u   -- User who claimed the ticket, if any
-            `LeftOuterJoin` wp   -- Wiki page for discussion, if any
-            `LeftOuterJoin` wt   -- Wiki target for discussion, if any
-            `InnerJoin` p       -- Project for discussion
-        ) -> do
-            on_ $ p ^. ProjectDiscussion ==. c ^. CommentDiscussion ||. wp ?. WikiPageProject ==. just (p ^. ProjectId)
-            on_ $ wt ?. WikiTargetPage ==. wp ?. WikiPageId
-            on_ $ wp ?. WikiPageDiscussion ==. just (c ^. CommentDiscussion)
-            on_ $ u ?. UserId ==. tc ?. TicketClaimingUser
-            on_ $ tc ?. TicketClaimingTicket ==. just (c ^. CommentId)
-            on_ $ t ^. TicketComment ==. c ^. CommentId
-            on_ $ ws ^. WatchedSubthreadRoot ==. c ^. CommentId
-                ||. just (ws ^. WatchedSubthreadRoot) ==. ca ?. CommentAncestorAncestor
-            on_ $ ca ?. CommentAncestorComment ==. just (c ^. CommentId)
-
-            where_ $ (isNothing (tc ?. TicketClaimingId) ||. tc ?. TicketClaimingUser !=. just (val user_id))
-                &&. c ^. CommentId `notIn` (subList_select $ from $ return . (^. CommentClosingComment))
-                &&. c ^. CommentId `notIn` (subList_select $ from $ return . (^. CommentRethreadOldComment))
-                &&. ws ^. WatchedSubthreadUser ==. val user_id
-
-            orderBy [ asc $ t ^. TicketCreatedTs, asc $ t ^. TicketId ]
-
-            return (t, u, wt, p ^. ProjectHandle)

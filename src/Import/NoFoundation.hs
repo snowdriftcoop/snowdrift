@@ -46,7 +46,6 @@ import Local.Github as Import
 import Local.Ord as Import
 import Model as Import
 import Model.Language as Import
-import Model.Comment.Internal as Import hiding (TagName, TicketName)
 import Model.Established.Internal as Import
 import Model.Notification.Internal as Import
 import Model.Role.Internal as Import

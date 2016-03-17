@@ -274,16 +274,20 @@ data NewEmail = NewEmail
     , neAddr :: Text
     }
 
-createUser :: Text -> Maybe Text -> Maybe Text -> Maybe NewEmail -> Maybe Text
-           -> Maybe Text -> Handler (Maybe UserId)
+createUser :: Text
+           -> Maybe Text
+           -> Maybe Text
+           -> Maybe NewEmail
+           -> Maybe Text
+           -> Maybe Text
+           -> Handler (Maybe UserId)
 createUser ident passph name newEmail avatar nick = do
     langs <- mapMaybe (readMaybe . T.unpack) <$> languages
     now <- liftIO getCurrentTime
     handle (\DBException -> return Nothing) $ runYDB $ do
         account_id <- insert (Account 0)
-        discussion_id <- insert (Discussion 0)
         -- we use "passphrase" usually, but setPassword is a Yesod import
-        user <- maybe return setPassword passph $ newUser langs now account_id discussion_id
+        user <- maybe return setPassword passph $ newUser langs now account_id
         uid_maybe <- insertUnique user
         case uid_maybe of
             Just user_id -> do
@@ -297,9 +301,7 @@ createUser ident passph name newEmail avatar nick = do
                 --
 
                 insertDefaultNotificationPrefs user_id
-                welcome_route <- getUrlRender
-                            -- 'MonolingualWikiR' is deprecated.
-                            <*> pure (MonolingualWikiR "snowdrift" "welcome" [])
+                let welcome_route = "#"
                 let notif_text = Markdown $ T.unlines
                         [ "Thanks for registering!"
                         , "<br> Please read our [**welcome message**](" <>
@@ -313,7 +315,7 @@ createUser ident passph name newEmail avatar nick = do
                 lift $ addAlert "danger" "Handle already in use."
                 throwIO DBException
   where
-    newUser langs now account_id discussion_id =
+    newUser langs now account_id =
         User { userIdent = ident
              , userEmail = (neAddr <$> newEmail)
              , userEmail_verified = (maybe False neVerified newEmail)
@@ -330,7 +332,6 @@ createUser ident passph name newEmail avatar nick = do
              , userReadNotifications = now
              , userReadApplications = now
              , userEstablished = EstUnestablished
-             , userDiscussion = discussion_id
              }
 
     insertDefaultNotificationPrefs :: UserId -> DB ()

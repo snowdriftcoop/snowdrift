@@ -182,32 +182,14 @@ projectMethods =
     , ("website and email", ProjectNotifDeliverWebsiteAndEmail)
     ]
 
-userNotificationsForm :: Bool
-                      -> Maybe UserNotificationDelivery
-                      -> Maybe UserNotificationDelivery
-                      -> Maybe UserNotificationDelivery
-                      -> Maybe UserNotificationDelivery
-                      -> Maybe UserNotificationDelivery
-                      -> Maybe UserNotificationDelivery
-                      -> Maybe UserNotificationDelivery
+userNotificationsForm :: Maybe UserNotificationDelivery
                       -> Form UserNotificationPref
-userNotificationsForm is_moderator mbal mucom mrcom mrep mecon mflag mflagr =
+userNotificationsForm mbal =
     renderBootstrap3 BootstrapBasicForm $ UserNotificationPref
         <$> userReq (fromString $ "You have a low balance (less than 3 months " <>
                     "funds at current pledge levels)")    mbal
-        <*> unapproved_comment
-        <*> userOpt "Your comment gets rethreaded/moved"  mrcom
-        <*> userOpt "Reply posted to your comment"        mrep
-        <*> userReq "Your wiki post has an edit conflict" mecon
-        <*> userReq "Your comment gets flagged"           mflag
-        <*> userOpt "A comment you flagged gets reposted" mflagr
   where
     userReq = req userMethods
-    userOpt = opt userMethods
-    unapproved_comment =
-        if is_moderator
-            then Just <$> userReq "A new comment awaits moderator approval" mucom
-            else pure Nothing
 
 projectNotificationsForm
     :: Bool -- Is the viewer a project team member?
@@ -215,18 +197,12 @@ projectNotificationsForm
     -> Maybe ProjectNotificationDelivery
     -> Maybe ProjectNotificationDelivery
     -> Maybe ProjectNotificationDelivery
-    -> Maybe ProjectNotificationDelivery
-    -> Maybe ProjectNotificationDelivery
-    -> Maybe ProjectNotificationDelivery
     -> Form ProjectNotificationPref
-projectNotificationsForm is_team_member mwiki_page mwiki_edit mblog_post
+projectNotificationsForm is_team_member
                          mnew_pledge mupdated_pledge mdeleted_pledge
                          mvolunteer_app =
     renderBootstrap3 BootstrapBasicForm $ ProjectNotificationPref
-        <$> projectOpt "Wiki page created" mwiki_page
-        <*> projectOpt "Wiki page edited"  mwiki_edit
-        <*> projectOpt "New blog post"     mblog_post
-        <*> projectOpt "New pledge"        mnew_pledge
+        <$> projectOpt "New pledge"        mnew_pledge
         <*> projectOpt "Pledge updated"    mupdated_pledge
         <*> projectOpt "Pledge deleted"    mdeleted_pledge
         <*> if is_team_member

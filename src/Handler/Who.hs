@@ -22,7 +22,6 @@ getWhoR project_handle = do
         return user
 
     let members = sortBy (compare `on` (userCreatedTs . entityVal)) team_members
-        discussion = DiscussionOnProject $ Entity project_id project
 
     defaultLayout $ do
         snowdriftDashTitle (projectName project) "Team"

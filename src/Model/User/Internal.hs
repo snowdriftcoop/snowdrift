@@ -33,31 +33,16 @@ data UserNotificationPref = UserNotificationPref
     { -- 'NotifWelcome' and 'NotifEligEstablish' are not handled since
       -- they are delivered only once.
       notifBalanceLow        :: UserNotificationDelivery
-    , notifUnapprovedComment :: Maybe UserNotificationDelivery
-    , notifRethreadedComment :: Maybe UserNotificationDelivery
-    , notifReply             :: Maybe UserNotificationDelivery
-    , notifEditConflict      :: UserNotificationDelivery
-    , notifFlag              :: UserNotificationDelivery
-    , notifFlagRepost        :: Maybe UserNotificationDelivery
     } deriving Show
 
 userNotificationPref
     :: UserNotificationPref
     -> [(UserNotificationType, Maybe UserNotificationDelivery)]
 userNotificationPref UserNotificationPref {..} =
-    [ (NotifBalanceLow        , Just notifBalanceLow)
-    , (NotifUnapprovedComment , notifUnapprovedComment)
-    , (NotifRethreadedComment , notifRethreadedComment)
-    , (NotifReply             , notifReply)
-    , (NotifEditConflict      , Just notifEditConflict)
-    , (NotifFlag              , Just notifFlag)
-    , (NotifFlagRepost        , notifFlagRepost) ]
+    [ (NotifBalanceLow        , Just notifBalanceLow) ]
 
 data ProjectNotificationPref = ProjectNotificationPref
-    { notifWikiPage        :: Maybe ProjectNotificationDelivery
-    , notifWikiEdit        :: Maybe ProjectNotificationDelivery
-    , notifBlogPost        :: Maybe ProjectNotificationDelivery
-    , notifNewPledge       :: Maybe ProjectNotificationDelivery
+    { notifNewPledge       :: Maybe ProjectNotificationDelivery
     , notifUpdatedPledge   :: Maybe ProjectNotificationDelivery
     , notifDeletedPledge   :: Maybe ProjectNotificationDelivery
     , notifVolunteerApp    :: Maybe ProjectNotificationDelivery
@@ -67,10 +52,7 @@ projectNotificationPref
     :: ProjectNotificationPref
     -> [(ProjectNotificationType, Maybe ProjectNotificationDelivery)]
 projectNotificationPref ProjectNotificationPref {..} =
-    [ (NotifWikiEdit        , notifWikiEdit)
-    , (NotifWikiPage        , notifWikiPage)
-    , (NotifBlogPost        , notifBlogPost)
-    , (NotifNewPledge       , notifNewPledge)
+    [ (NotifNewPledge       , notifNewPledge)
     , (NotifUpdatedPledge   , notifUpdatedPledge)
     , (NotifDeletedPledge   , notifDeletedPledge)
     , (NotifVolunteerApp    , notifVolunteerApp) ]
@@ -169,14 +151,12 @@ data NotificationReceiver = NotificationReceiver
 sendPreferredUserNotificationDB :: Maybe NotificationSender
                                 -> NotificationReceiver
                                 -> UserNotificationType
-                                -> Maybe CommentId
                                 -> Markdown
                                 -> SDB ()
 sendPreferredUserNotificationDB
         mnotif_sender
         (NotificationReceiver notif_receiver)
         notif_type
-        mcomment_id
         content =
     when (notificationSender `fmap` mnotif_sender /= Just notif_receiver) $ do
         mpref <- lift $
@@ -194,7 +174,7 @@ sendPreferredUserNotificationDB
                                  ,UserNotificationContent P.==. content])
                     when (r == 0) $
                         sendUserNotificationDB_
-                            notif_type notif_receiver mcomment_id content
+                            notif_type notif_receiver content
             case (pref, muser_email) of
                 (UserNotifDeliverWebsiteAndEmail, Just _)  ->
                     sendWebsiteNotif >> sendEmailNotif

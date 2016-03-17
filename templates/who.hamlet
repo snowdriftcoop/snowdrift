@@ -14,6 +14,6 @@ $forall Entity user_id user <- members
           <img .headshot src=@{StaticR img_placeholder_png}>
     <div .blurb .col-sm-9>
       $maybe blurb <- userBlurb user
-        ^{markdownWidgetWith (fixLinks project_handle discussion) blurb}
+        ^{markdownWidget  blurb}
       $nothing
         &nbsp;

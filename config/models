@@ -32,11 +32,9 @@ User
     -- ^ The last time the user visited /notifications
     readApplications  UTCTime            default=now()
     established       Established        default='EstUnestablished'
-    discussion        DiscussionId       default=nextval('discussion_id_seq'::regclass)
 
     UniqueUser ident
     UniqueUserAccount account
-    UniqueUserDiscussion discussion
 
     deriving Show Typeable
 
@@ -108,23 +106,6 @@ ViewTime
 
     UniqueViewTimeUserProjectType user project type
 
--- A viewing of a single comment. The existence of this of a row here indicates
--- the comment has been viewed by the user; the absence indicates it hasnt.
-ViewComment
-    user    UserId
-    comment CommentId
-
-    UniqueViewComment user comment
-
--- A viewing of a single wiki page edit. The existence of this of a row here
--- indicates the edit has been viewed by the user; the absence indicates it
--- hasnt.
-ViewWikiEdit
-    user UserId
-    edit WikiEditId
-
-    UniqueViewWikiEdit user edit
-
 License
     name         LicenseName
     type         LicenseType
@@ -144,13 +125,11 @@ Project
     shareValue  Milray
     lastPayday  PaydayId     Maybe
     githubRepo  Text         Maybe
-    discussion  DiscussionId       default=nextval('discussion_id_seq'::regclass)
     public      Bool               default=true
     logo        Text         Maybe
 
     UniqueProjectAccount account
     UniqueProjectHandle handle
-    UniqueProjectDiscussion discussion
 
     deriving Eq Show
 
@@ -172,21 +151,6 @@ ProjectSignup
     goals              ProjectSignupGoals
     fundsUse           ProjectSignupFundsUse
     additionalInfo     ProjectSignupAdditionalInfo      Maybe
-
-    deriving Show
-
-BlogPost
-    ts            UTCTime
-    title         Text
-    handle        Text
-    user          UserId
-    project       ProjectId
-    discussion    DiscussionId
-    topContent    Markdown
-    bottomContent Markdown     Maybe
-
-    UniqueBlogPost project handle
-    UniqueBlogPostDiscussion discussion
 
     deriving Show
 
@@ -302,137 +266,6 @@ ProjectNotificationEmail
 
     UniqueProjectNotificationEmail createdTs type to project
 
--- A many-to-one relationship linking notifications sent to moderators about an
--- unapproved comment. When the comment is approved, all such notifications are
--- deleted automatically (as they are no longer relevant) - this table allows
--- us to keep track of which notifications to delete.
-UnapprovedCommentNotification
-    comment      CommentId
-    notification UserNotificationId
-
-
-WikiPage
-    createdTs       UTCTime         default=now()
-    user            UserId
-    project         ProjectId
-    discussion      DiscussionId
-    permissionLevel PermissionLevel
-
-    UniqueWikiPageDiscussion discussion
-
-    deriving Eq
-
-
-WikiTarget
-    page            WikiPageId
-    project         ProjectId
-    target          Text
-    language        Language
-
-    UniqueWikiTarget project language target
-
-WikiEdit
-    ts          UTCTime
-    user        UserId
-    page        WikiPageId
-    language    Language
-    content     Markdown
-    comment     Text       Maybe
-
-    deriving Eq
-
-WikiLastEdit
-    page WikiPageId
-    edit WikiEditId
-    language Language
-
-    UniqueWikiLastEdit page language
-
-WikiTranslation
-    edit WikiEditId
-    source WikiEditId
-    complete Bool
-
-Discussion
-    nothing Int64
-
-Comment
-    createdTs   UTCTime
-
-    -- "Unestablished" users may still make comments, but they must be approved
-    -- by a moderator. "Established" users' comments are marked as approved by
-    -- themselves (though this does not mean they are a moderator).
-    approvedTs  UTCTime      Maybe
-    approvedBy  UserId       Maybe
-
-    discussion  DiscussionId
-    parent      CommentId    Maybe
-    user        UserId
-    text        Markdown
-    depth       Int
-    visibility  Visibility         default='VisPublic'
-    language    Language
-
-    deriving Eq Show
-
--- A comment has zero or more ancestors: its parent, grandparent, great
--- grandparent, etc.
-CommentAncestor
-    comment  CommentId
-    ancestor CommentId
-
-    UniqueCommentAncestor comment ancestor
-
-    deriving Show
-
--- A comment-closed relation.
-CommentClosing
-    ts       UTCTime
-    closedBy UserId
-    reason   Markdown
-    comment  CommentId
-
-    UniqueCommentClosing comment
-
--- A comment-retracted relation.
-CommentRetracting
-    ts      UTCTime
-    reason  Markdown
-    comment CommentId
-
-    UniqueCommentRetracting comment
-
--- A flagging event, with one or more reason stored in CommentFlaggingReason.
-CommentFlagging
-    ts      UTCTime
-    flagger UserId
-    comment CommentId
-    message Markdown  Maybe -- Optional message provided by the flagger.
-
-    -- Only one flagging can exist for a comment at any given time.
-    UniqueCommentFlagging comment
-
--- A reason associated with a comment flagging. One-to-many relation.
-CommentFlaggingReason
-    flagging CommentFlaggingId
-    reason   FlagReason
-
-    UniqueCommentFlaggingReason flagging reason
-
--- A rethread event. Moderators may move comment threads around as they wish.
-Rethread
-    ts         UTCTime                  -- Timestamp.
-    moderator  UserId                   -- The moderator that rethreaded.
-    oldComment CommentId                -- The old comment that was rethreaded.
-    newComment CommentId
-    reason     Text                     -- The reason for rethreading.
-
--- An individual comment-rethread relation.
-CommentRethread
-    rethread   RethreadId
-    oldComment CommentId
-    newComment CommentId
-
 Tag
     name      Text
     UniqueTag name
@@ -443,51 +276,10 @@ ProjectTag
 
     UniqueProjectTag project tag
 
-CommentTag
-    comment CommentId
-    tag     TagId
-    user    UserId
-    count   Int       default=1
-
-    UniqueCommentTag comment tag user
-
 DeprecatedTag
     project ProjectId
     tag TagId
     reason Text
-
--- A Comment can have at most one Ticket (i.e. the comment can be marked as a
--- ticket)
-Ticket
-    createdTs UTCTime
-    updatedTs UTCTime
-    name      Text
-    comment   CommentId
-
-    UniqueTicket comment
-
-    deriving Eq Ord
-
-TicketClaiming
-    ts         UTCTime
-    user       UserId
-    ticket     CommentId
-    note       Text      Maybe
-
-    UniqueTicketClaiming ticket
-
-    deriving Show
-
-
-TicketOldClaiming
-    claimTs     UTCTime
-    user        UserId
-    ticket      CommentId
-    note        Text      Maybe
-    releaseNote Text     Maybe
-    releasedTs  UTCTime
-
-    deriving Show
 
 Build
     bootTime UTCTime
@@ -524,17 +316,6 @@ RoleEvent
     project ProjectId
     added   Bool
 
-Doc
-    name           Text
-    currentVersion WikiEditId
-
-    UniqueDocName name
-
-DocEvent
-    ts             UTCTime
-    doc            DocId
-    blessedVersion WikiEditId
-
 DatabaseVersion
     lastMigration Int
 
@@ -555,34 +336,6 @@ SharesPledged
 -- Snowdrift events. These are all combined into a single sum time in
 -- Model.SnowdriftEvent.
 
--- An approved comment.
-EventCommentPosted
-    ts      UTCTime
-    comment CommentId
-
--- An unapproved comment.
-EventCommentPending
-    ts      UTCTime
-    comment CommentId
-
-EventCommentRethreaded
-    ts      UTCTime
-    rethread RethreadId
-
--- An approved comment.
-EventCommentClosing
-    ts      UTCTime
-    commentClosing CommentClosingId
-
-EventTicketClaimed
-    ts          UTCTime
-    claim       TicketClaimingId    Maybe
-    oldClaim    TicketOldClaimingId Maybe
-
-EventTicketUnclaimed
-    ts      UTCTime
-    claim   TicketOldClaimingId
-
 EventUserNotificationSent
     ts           UTCTime
     notification UserNotificationId
@@ -590,16 +343,6 @@ EventUserNotificationSent
 EventProjectNotificationSent
     ts           UTCTime
     notification ProjectNotificationId
-
--- Wiki page created event.
-EventWikiPage
-    ts       UTCTime
-    wikiPage WikiPageId
-
--- Wiki edit made event.
-EventWikiEdit
-    ts       UTCTime
-    wikiEdit WikiEditId
 
 EventNewPledge
     ts            UTCTime
@@ -615,10 +358,6 @@ EventDeletedPledge
     user    UserId
     project ProjectId
     shares  Int64
-
-EventBlogPost
-    ts UTCTime
-    post BlogPostId
 
 Image
     ts UTCTime
@@ -638,10 +377,3 @@ UnnamedImage
     origin Text Maybe
     format ContentType
     data ByteString
-
-WatchedSubthread
-    ts UTCTime
-    user UserId
-    root CommentId
-
-    deriving Eq Ord

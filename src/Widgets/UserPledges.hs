@@ -8,7 +8,7 @@ import qualified Mechanism as Mech
 
 -- | A summary without ticket or discussion counts.
 summarizeProject' :: Entity Project -> Mech.Project -> ProjectSummary
-summarizeProject' a b = summarizeProject a b [] []
+summarizeProject' a b = summarizeProject a b
 
 -- |The summary of pledging to projects shown on user's page
 userPledgeSummary :: UserId -> Widget

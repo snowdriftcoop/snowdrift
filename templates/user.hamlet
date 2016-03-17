@@ -41,7 +41,7 @@ $if Just user_id == mviewer_id
                 <button>resend verification email
           <br>
         $maybe nick <- userIrcNick user
-          #{nick} on <a href=@{WikiR "snowdrift" LangEn "irc"}>irc.freenode.net</a>
+          #{nick} on <a href=#>irc.freenode.net</a>
 
   <div .col-md-6>
     $maybe blurb <- userBlurb user
@@ -85,9 +85,6 @@ $if Just user_id == mviewer_id
 
     <h4>Ticket Activity
 
-    <a href=@{UserTicketsR user_id}>
-      #{userDisplayName user_entity}'s claimed and watched tickets
-
 $maybe (est_form, est_form_enctype) <- mest_form_and_enctype
   <div .row>
     <div .col-md-6 #establish-form>
@@ -101,7 +98,7 @@ $maybe (est_form, est_form_enctype) <- mest_form_and_enctype
         (e.g. they have posted helpful, on-topic comment(s),
         and are clearly not a spammer or malicious troll).
         They will then become fully established after affirming
-        the <a href=@{WikiR "snowdrift" LangEn "honor"}>honor pledge</a>.
+        the <a href=#>honor pledge</a>.
 
       <form action=@{UserEstEligibleR user_id} method=post enctype=#{est_form_enctype}>
         ^{est_form}

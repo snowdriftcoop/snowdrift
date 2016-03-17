@@ -52,9 +52,7 @@ library
         DeprecatedBootstrap
         Foundation
         Handler.BuildFeed
-        Handler.Comment
         Handler.Common
-        Handler.Discussion
         Handler.HonorPledge
         Handler.Image
         Handler.Invitation
@@ -72,19 +70,15 @@ library
         Handler.User
         Handler.User.Balance
         Handler.User.ChangePassphrase
-        Handler.User.Comment
         Handler.User.ConfirmDelete
         Handler.User.Delete
-        Handler.User.Discussion
         Handler.User.Edit
         Handler.User.EstEligible
-        Handler.User.NewDiscussion
         Handler.User.Notifications
         Handler.User.Pledges
         Handler.User.ProjectNotifications
         Handler.User.ResetPassphrase
         Handler.User.SelectProject
-        Handler.User.Tickets
         Handler.User.User
         Handler.User.Users
         Handler.User.Utils
@@ -93,8 +87,6 @@ library
         Handler.Volunteer
         Handler.Who
         Handler.Widget
-        Handler.Wiki
-        Handler.Wiki.Comment
         Import
         Import.NoFoundation
         Local.Esqueleto
@@ -104,16 +96,8 @@ library
         Model
         Model.Application
         Model.Blog
-        Model.Comment
-        Model.Comment.ActionPermissions
-        Model.Comment.HandlerInfo
-        Model.Comment.Mods
-        Model.Comment.Routes
-        Model.Comment.Sql
         Model.Count
         Model.Currency
-        Model.Discussion
-        Model.Discussion.TH
         Model.Issue
         Model.Language
         Model.Language.TH
@@ -143,21 +127,17 @@ library
         Model.Utils
         Model.ViewType
         Model.Volunteer
-        Model.Wiki
-        Model.Wiki.Sql
         Settings
         Settings.Development
         Settings.StaticFiles
         SnowdriftEventHandler
         Version
-        View.Comment
         View.Project
         View.Project.Signup
         View.ResetPassphrase
         View.SnowdriftEvent
         View.Time
         View.User
-        View.Wiki
         Widgets.Doc
         Widgets.Markdown
         Widgets.Navbar
@@ -170,7 +150,6 @@ library
     -- other-modules {{{2
     other-modules:
         Migrations
-        Model.Comment.Internal
         Model.Established.Internal
         Model.Role.Internal
         Model.Settings.Internal

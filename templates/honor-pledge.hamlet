@@ -9,9 +9,9 @@
   <p>
     "I will participate at Snowdrift.coop with honesty and good faith.
     I will follow the
-    <a href=@{WikiR "snowdrift" LangEn "conduct"}>Code of Conduct
+    <a href=#>Code of Conduct
     and strive toward further
-    <a href=@{WikiR "snowdrift" LangEn "honor-users"}>honorable ideals</a>.
+    <a href=#>honorable ideals</a>.
   <p>
     "If at any time I fail to live up to this commitment, I will take initiative
     to rectify the situation and will ask for guidance as needed. I will also
@@ -21,7 +21,7 @@
 <p>
   <em>
     See further explanation at the
-    <a href=@{WikiR "snowdrift" LangEn "honor"}>honor system wiki page</a>.
+    <a href=#>honor system wiki page</a>.
 
 $maybe _ <-  muser
 

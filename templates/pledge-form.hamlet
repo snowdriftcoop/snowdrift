@@ -7,10 +7,8 @@
 <h4>Read the details:
 <ul>
   <li>
-    <a href=@{WikiR "snowdrift" LangEn "mechanism"}>
       The pledge mechanism
   <li>
-    <a href=@{WikiR "snowdrift" LangEn "pledging"}>
       Setting your pledge level
 
 <span .pledge-text>You pledge each month to donate:
