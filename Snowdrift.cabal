@@ -267,16 +267,11 @@ test-suite test
     ghc-options:       -Wall -O0 -fobject-code
 
     other-modules:
-        BlogTest
-        CommentTest
-        DiscussionTest
-        NotifyTest
         PPrint
         TestHandler
         TestImport
         TimedYesodTest
         UserTest
-        WikiTest
     default-extensions: QuasiQuotes
                 TemplateHaskell
                 OverloadedStrings
