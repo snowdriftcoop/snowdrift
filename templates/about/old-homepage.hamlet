@@ -17,7 +17,7 @@
       <a href=#>
         Longer explanation
     <div .homep-link>
-      <a href=#>
+      <a href=@{AboutR PressR}>
         Press
     <div .homep-link>
       <a href=@{WhoR "snowdrift"}>

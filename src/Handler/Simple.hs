@@ -19,8 +19,7 @@ getIntroR,
     getPressR,
     getSponsorsR,
     getDonateR,
-    getMerchandiseR,
-    getAssetsR
+    getMerchandiseR
     :: Handler Html
 getIntroR              = $(widget "how-it-works/intro" "Intro")
 getFloR                = $(widget "how-it-works/flo" "FLO")
@@ -37,7 +36,6 @@ getPressR              = $(widget "press" "Press")
 getSponsorsR           = $(widget "sponsors" "Sponsors")
 getDonateR             = $(widget "donate" "Donate")
 getMerchandiseR        = $(widget "merchandise" "Merchandise")
-getAssetsR             = $(widget "assets" "Assets")
 
 -- * TODO: Convert these.
 getTermsR,

@@ -69,9 +69,9 @@ dashboardNav = do
     $(widgetFile "dashboard/nav")
 
 getHomeR,
+    getUDashboardR,
     getUTransactionsR,
     getUPledgesR,
-    getURolesR,
     getUEditR
     :: Handler Html
 
@@ -86,15 +86,15 @@ getHomeR = do
               $(widget "dashboard/overview" "Dashboard"))
           u
 
+getUDashboardR = do
+    user <- requireAuth
+    $(widget "dashboard/overview" "Dashboard")
 getUTransactionsR = do
     user <- requireAuth
     $(widget "dashboard/transactions" "Transactions")
 getUPledgesR = do
     user <- requireAuth
     $(widget "dashboard/pledges" "Pledges")
-getURolesR = do
-    user <- requireAuth
-    $(widget "dashboard/roles" "My Project Roles")
 getUEditR = do
     user <- requireAuth
     $(widget "dashboard/edit-profile" "Edit Profile")

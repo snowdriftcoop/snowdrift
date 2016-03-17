@@ -8,7 +8,7 @@
   and have chosen to participate in testing during our alpha phase.
   If your project plans to use the site when we launch, and you'd like to
   participate in our testing now, please
-  contact&nbsp;us
+  <a href=@{AboutR ContactR}>contact&nbsp;us
   to discuss further.
 
 $forall Entity _ project <- projects

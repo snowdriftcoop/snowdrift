@@ -1,11 +1,11 @@
-<h1 .text-center>The Snowdrift.coop honor pledge
+<h1>The Snowdrift.coop honor pledge
 
 <p .honor-pledge-description>
   After accepting the following pledge, users gain permissions including the
   ability to edit wiki pages and post discussion comments without moderator
   approval.
 
-<div .honor-pledge>
+<div .pledge>
   <p>
     "I will participate at Snowdrift.coop with honesty and good faith.
     I will follow the
@@ -26,7 +26,7 @@
 $maybe _ <-  muser
 
   $if is_elig
-    <form .text-center action=@{HonorPledgeR} method=post>
+    <form action=@{HonorPledgeR} method=post>
       <input type="submit" value="Accept">
 
 $nothing

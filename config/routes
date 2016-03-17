@@ -11,7 +11,6 @@
 /sponsors       SponsorsR    GET
 /js-licenses    JsLicensesR  GET
 /honor-pledge   HonorPledgeR GET POST
-/assets         AssetsR      GET
 
 /how-it-works HowItWorksR:
     /                    IntroR              GET
@@ -50,9 +49,9 @@
 
 -- Note that for logged-out users, / ("HomeR") is the simple welcome page.
 /              HomeR           GET
+/dashboard     UDashboardR     GET
 /transactions  UTransactionsR  GET
 /pledges       UPledgesR       GET
-/roles         URolesR         GET
 
 --
 -- ## Browsing projects, or a particular project
@@ -62,12 +61,6 @@
 /p/#ProjectHandle              PHomeR         GET
 /p/#ProjectHandle/updates      PUpdatesR      GET
 /p/#ProjectHandle/transactions PTransactionsR GET
-
---
--- ## Browsing a particular user (may need fleshing out?)
---
-
-/u/#UserHandle UserR GET POST
 
 -- Yesod jibber jabber
 /static StaticR Static appStatic
@@ -89,6 +82,7 @@
 -- User
 
 /u                                          UsersR                 GET
+/u/#UserHandle UserR GET
 /u/#UserId/balance                          UserBalanceR           GET POST
 /u/#UserId/change-passphrase                UserChangePassphraseR  GET POST
 /u/#UserId/delete                           DeleteUserR            GET POST

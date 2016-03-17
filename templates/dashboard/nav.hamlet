@@ -6,6 +6,4 @@
   <li>
     <a href=@{UPledgesR}>Pledges
   <li>
-    <a href=@{URolesR}>Project Roles
-  <li>
     <a href=@{EditUserR uid}>Edit profile
