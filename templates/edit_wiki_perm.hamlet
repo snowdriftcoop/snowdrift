@@ -1,3 +1,0 @@
-<form method=POST action=@{EditWikiPermissionsR project_handle language target}>
-  ^{wiki_form}
-  <input type=submit>
