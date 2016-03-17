@@ -91,7 +91,6 @@ library
         Model.Count
         Model.Currency
         Model.Discussion.TH
-        Model.Issue
         Model.Language
         Model.Language.TH
         Model.License

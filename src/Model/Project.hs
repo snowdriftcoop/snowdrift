@@ -7,7 +7,6 @@ module Model.Project
     , fetchProjectTeamMembersDB
     , fetchProjectVolunteerApplicationsDB
     , fetchProjectPledgesDB
-    , getGithubIssues
     , projectNameWidget
     , summarizeProject
     -- * Balancing/deactivating pledges
@@ -15,9 +14,7 @@ module Model.Project
 
 import Import
 
-import Control.Concurrent.Async (Async, async, wait)
 import Control.Monad.Trans.Resource (MonadThrow)
-import qualified Data.Text as T
 
 import Model.Count
 import WrappedValues
@@ -57,29 +54,6 @@ fetchProjectDB project_id =
     select $ from $ \p -> do
         where_ $ p ^. ProjectId ==. val project_id
         return p
-
-getGithubIssues :: Project -> Handler [GH.Issue]
-getGithubIssues project =
-    getGithubIssues'
-    >>= liftIO . wait
-    >>= either (\_ -> alertDanger eMsg >> return [])
-               return
-  where
-    eMsg = "failed to fetch GitHub tickets\n"
-    getIssues (account, repo) =
-        fmap (fmap toList) $ GH.issuesForRepo account repo []
-    getGithubIssues' :: Handler (Async (Either GH.Error [GH.Issue]))
-    getGithubIssues' = liftIO . async $
-        maybe (return $ Right []) getIssues parsedProjectGithubRepo
-
-    parsedProjectGithubRepo :: Maybe (GH.Name GH.Owner, GH.Name GH.Repo)
-    parsedProjectGithubRepo =
-        fmap
-            ( (GH.mkOwnerName *** GH.mkRepoName)
-            . second (T.drop 1)
-            . T.break (== '/')
-            )
-            (projectGithubRepo project)
 
 summarizeProject :: Entity Project
                  -> ProjectSummary
