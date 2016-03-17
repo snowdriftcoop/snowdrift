@@ -171,14 +171,12 @@ library
     build-depends:
                    -- base bounds reflect a core dependency
                    base >= 4 && < 5
-                 , async
                  , attoparsec
                  , authenticate
                  , blaze-builder
                  , blaze-html
                  , blaze-markup
                  , bytestring
-                 , conduit
                  , containers
                  , data-default
                  , Diff
@@ -186,7 +184,6 @@ library
                  , esqueleto
                  , fast-logger
                  , file-embed
-                 , github
                  , ghci-runner
                  , hjsmin
                  , hourglass
