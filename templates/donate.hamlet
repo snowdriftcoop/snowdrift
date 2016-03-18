@@ -4,7 +4,7 @@
   Ironically, we need donations today to help us build a better fundraising
   system for the future. Please donate today and help us continue our work.
   Additionally or alternatively, please consider
-  <a href=@{WikiR "snowdrift" LangEn "how-to-help"}>volunteering</a>.
+  <a href=#>volunteering</a>.
 
 <h2>Thank-you bonus options
 <ul>
@@ -31,7 +31,7 @@
     Open Source Initiative
   specifying that they use the funds to support us, as we are now one of their
   incubator projects. Please
-  <a href=@{ProjectContactR "snowdrift"}>contact&nbsp;us
+  contact&nbsp;us
   to get details for this process.
   <img #osi-donate-logo src=@{StaticR img_external_osi_png}>
 <p>

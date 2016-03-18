@@ -12,6 +12,7 @@ set -e
 
 opt_build=${BUILD:=true}
 opt_deploy=${DEPLOY:=true}
+opt_appname=${APPNAME:=SnowdriftReboot}
 
 #
 #
@@ -56,11 +57,11 @@ main () {
     fi
     rm -rf static/tmp/*
     hdr "Tarballing"
-    tar czf Snowdrift.keter ${contents[@]}
+    tar czf ${opt_appname}.keter ${contents[@]}
     if $opt_deploy
     then
         hdr "Deploying"
-        scp Snowdrift.keter `sd-main-dns`:/opt/keter/incoming
+        scp ${opt_appname}.keter `sd-main-dns`:/opt/keter/incoming
     else
         hdr "Not deploying, as requested"
     fi

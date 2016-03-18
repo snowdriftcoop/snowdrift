@@ -11,7 +11,6 @@ import qualified Data.Text as T
 import qualified Data.Text.Read as T
 
 import Model.Currency
-import qualified Mechanism as Mech
 
 pledgeSizes :: [[Int64]]
 pledgeSizes =
@@ -27,7 +26,7 @@ pledgeListKey = "pledge_list"
 newtype SharesPurchaseOrder = SharesPurchaseOrder Int64
 
 pledgeField :: ProjectId -> Field Handler SharesPurchaseOrder
-pledgeField project_id = Field
+pledgeField _project_id = Field
     { fieldParse = parse
     , fieldView = view
     , fieldEnctype = UrlEncoded
@@ -56,18 +55,7 @@ pledgeField project_id = Field
             _ -> invalidInteger v
 
     view ident name attrs v req = do
-        now <- liftIO getCurrentTime
         list <- handlerToWidget get_list
-        muser <- handlerToWidget maybeAuthId
-        render_key <- handlerToWidget $ runDB $
-            insert $
-                PledgeFormRendered
-                    now
-                    (T.pack $ show list)
-                    project_id
-                    muser
-
-        handlerToWidget $ setSession Mech.pledgeRenderKey $ T.pack $ show render_key
 
         let value = either (const 2) (\(SharesPurchaseOrder s) -> s) v
             hasValue = value `elem` list

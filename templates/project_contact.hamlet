@@ -6,18 +6,10 @@
       <em>private
       comments for the project team.
 
-      $maybe _ <- muser_id
-        <p>
-          To post <em>publicly</em>, use the
-          <a href=@{ProjectDiscussionR (projectHandle project)}>
-            project discussion page
-          or other public discussion pages.
-
-      $nothing
-        <p>
-          If you want a reply, please include some contact info (or
-          <a href=@{AuthR LoginR}>Log in
-          so the message will connect to your user account).
+      <p>
+        If you want a reply, please include some contact info (or
+        <a href=@{AuthR LoginR}>Log in
+        so the message will connect to your user account).
 
 <form method=POST>
   ^{project_contact_form}

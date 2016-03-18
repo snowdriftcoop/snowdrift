@@ -5,11 +5,7 @@ module View.Project
     , projectContactForm
     , inviteForm
     , Preview (..)
-    , ProjectBlog (..)
-    , projectBlogForm
     , projectConfirmPledgeForm
-    , previewBlogPost
-    , renderBlogPost
     , viewForm
     ) where
 
@@ -23,63 +19,12 @@ import Data.Filter
 import Data.Order
 import DeprecatedBootstrap
 import Handler.Utils
-import Model.Blog
-import Model.Markdown
 import Model.Project
 import Model.Shares
 import Model.Role
-import Model.Comment
-import View.Time
-import View.User (userNameWidget)
 import Widgets.Markdown
-import Widgets.Preview
 
 data Preview = Preview | NotPreview deriving Eq
-
-renderBlogPost :: Text -> BlogPost -> Preview -> WidgetT App IO ()
-renderBlogPost project_handle blog_post preview = do
-    (comment_count, project) <- handlerToWidget $ runYDB $ do
-        project@(Entity project_id _) <-
-            getBy404 $ UniqueProjectHandle project_handle
-
-        comment_count <-
-            fetchCommentCountDB Nothing
-                                project_id
-                                (blogPostDiscussion blog_post)
-        return (comment_count, project)
-
-    let (Markdown top_content) = blogPostTopContent blog_post
-        (Markdown bottom_content) = fromMaybe (Markdown "")
-                                              (blogPostBottomContent blog_post)
-        title = blogPostTitle blog_post
-        author = blogPostUser blog_post
-        discussion = DiscussionOnProject project
-        content =
-            markdownWidgetWith
-                (fixLinks project_handle discussion)
-                (Markdown
-                    (top_content <> "\n\n***\n\n<a name=\"fold\"></a>\n\n"
-                                 <> bottom_content))
-
-    $(widgetFile "blog_post")
-
-previewBlogPost :: UserId -> Text -> ProjectBlog -> Handler Html
-previewBlogPost viewer_id project_handle project_blog@ProjectBlog {..} = do
-    now <- liftIO getCurrentTime
-    Entity project_id _ <-
-        runYDB $ getBy404 $ UniqueProjectHandle project_handle
-    let (top_content', bottom_content') = break (== "***") $ T.lines $
-                                              unMarkdown projectBlogContent
-        top_content = T.unlines top_content'
-        bottom_content = if null bottom_content'
-                             then Nothing
-                             else Just $ Markdown $ T.unlines bottom_content'
-        blog_post = BlogPost now projectBlogTitle projectBlogHandle
-                             viewer_id project_id (key $ PersistInt64 0)
-                             (Markdown top_content) bottom_content
-    (form, _) <- generateFormPost $ projectBlogForm $ Just project_blog
-    defaultLayout $ previewWidget form "post" $
-        renderBlogPost project_handle blog_post Preview
 
 editProjectForm :: Maybe (Project, [Text]) -> Form UpdateProject
 editProjectForm mProjTags =
@@ -102,16 +47,6 @@ editProjectForm mProjTags =
   where
     mProj = fst <$> mProjTags
     mTags = snd <$> mProjTags
-
-projectBlogForm :: Maybe ProjectBlog -> Form ProjectBlog
-projectBlogForm mproject_blog =
-    renderBootstrap3 BootstrapBasicForm $ ProjectBlog
-        <$> areq' textField "Title for this blog post"
-                (projectBlogTitle <$> mproject_blog)
-        <*> areq' textField "Handle for the URL"
-                (projectBlogHandle <$> mproject_blog)
-        <*> areq' snowdriftMarkdownField "Content"
-                (projectBlogContent <$> mproject_blog)
 
 projectContactForm :: Form (Markdown, Language)
 projectContactForm = renderBootstrap3 BootstrapBasicForm $ (,)

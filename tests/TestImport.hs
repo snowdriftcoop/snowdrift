@@ -49,14 +49,8 @@ import qualified Text.XML as XML
 
 import Foundation as TestImport
 import Model as TestImport
-            hiding (userNotificationContent, projectNotificationContent)
 import Model.Currency (Milray (..))
 import Model.Language
-import Model.Notification
-            (UserNotificationType(..)
-            ,UserNotificationDelivery(..)
-            ,ProjectNotificationType(..)
-            ,ProjectNotificationDelivery(..))
 
 import TimedYesodTest as TestImport
 
@@ -207,15 +201,6 @@ postComment route stmts = do
         byLabel "Language" "en"
         stmts
 
-getLatestCommentId :: YesodExample App (CommentId, Bool)
-getLatestCommentId = do
-    [ (Value comment_id, Value approved) ] <- testDB $ select $ from $ \comment -> do
-        orderBy [ desc $ comment ^. CommentId ]
-        limit 1
-        return (comment ^. CommentId, not_ $ isNothing $ comment ^. CommentApprovedTs)
-
-    return (comment_id, approved)
-
 snowdrift :: Text
 snowdrift = "snowdrift"
 
@@ -247,57 +232,11 @@ errorUnlessExpected msg expected actual =
              <> ": expected " <> show expected
              <> ", but got " <> show actual
 
-newWiki :: Text -> Language -> Text -> Text -> YesodExample App ()
-newWiki project language page content = do
-    get200 $ NewWikiR project language page
-
-    withStatus 200 False $ request $ do
-        addToken
-        setUrl $ NewWikiR project language page
-        setMethod "POST"
-        byLabel "Page Content" content
-        addPostParam "mode" "preview"
-
-    withStatus 303 False $ request $ do
-        addToken
-        setUrl $ NewWikiR project language page
-        setMethod "POST"
-        byLabel "Page Content" content
-        addPostParam "mode" "post"
-
 keyToInt64 :: PersistField a => a -> Int64
 keyToInt64 k = let PersistInt64 i = toPersistValue k in i
 
 shpack :: Show a => a -> Text
 shpack = T.pack . show
-
-editWiki :: Text -> Language -> Text -> Text -> Text -> YesodExample App ()
-editWiki project language page content comment = do
-    get200 $ EditWikiR project language page
-
-    snowdrift_id <- snowdriftId
-    wiki_target <- testDB $ getByOrError $ UniqueWikiTarget snowdrift_id LangEn page
-    let page_id = wikiTargetPage $ entityVal wiki_target
-    wiki_last_edit <- testDB $ getByOrError $ UniqueWikiLastEdit page_id LangEn
-    let last_edit = entityVal wiki_last_edit
-
-    withStatus 200 False $ request $ do
-        addToken
-        setUrl $ WikiR project language page
-        setMethod "POST"
-        byLabel "Page Content" content
-        byLabel "Comment" comment
-        addPostParam "f1" $ shpack $ keyToInt64 $ wikiLastEditEdit last_edit
-        addPostParam "mode" "preview"
-
-    withStatus 303 False $ request $ do
-        addToken
-        setUrl $ WikiR project language page
-        setMethod "POST"
-        byLabel "Page Content" content
-        byLabel "Comment" comment
-        addPostParam "mode" "post"
-        addPostParam "f1" $ shpack $ keyToInt64 $ wikiLastEditEdit last_edit
 
 establish :: UserId -> YesodExample App ()
 establish user_id = do
@@ -328,36 +267,6 @@ acceptHonorPledge =
     withStatus 303 False $ request $ do
         setMethod "POST"
         setUrl HonorPledgeR
-
--- Copied from 'Model.User' but without the constraint in the result.
-deleteUserNotifPrefs :: UserId -> UserNotificationType -> SqlPersistM ()
-deleteUserNotifPrefs user_id notif_type =
-    delete $ from $ \unp ->
-        where_ $ unp ^. UserNotificationPrefUser ==. val user_id
-             &&. unp ^. UserNotificationPrefType ==. val notif_type
-
--- Copied from 'Model.User' but without the constraint in the result.
-deleteProjectNotifPrefs :: UserId -> ProjectId -> ProjectNotificationType
-                        -> SqlPersistM ()
-deleteProjectNotifPrefs user_id project_id notif_type =
-    delete $ from $ \pnp ->
-        where_ $ pnp ^. ProjectNotificationPrefUser    ==. val user_id
-             &&. pnp ^. ProjectNotificationPrefProject ==. val project_id
-             &&. pnp ^. ProjectNotificationPrefType    ==. val notif_type
-
--- Copied from 'Model.User' but without the constraint in the result.
-updateUserNotifPrefs :: UserId -> UserNotificationType
-                     -> UserNotificationDelivery -> SqlPersistM ()
-updateUserNotifPrefs user_id notif_type notif_deliv = do
-    deleteUserNotifPrefs user_id notif_type
-    insert_ $ UserNotificationPref user_id notif_type notif_deliv
-
--- Copied from 'Model.User' but without the constraint in the result.
-updateProjectNotifPrefs :: UserId -> ProjectId -> ProjectNotificationType
-                        -> ProjectNotificationDelivery -> SqlPersistM ()
-updateProjectNotifPrefs user_id project_id notif_type notif_deliv = do
-    deleteProjectNotifPrefs user_id project_id notif_type
-    insert_ $ ProjectNotificationPref user_id project_id notif_type notif_deliv
 
 -- 'forkEventHandler' sleeps for one second in between
 -- runs, so some tests will fail without this delay.
@@ -460,20 +369,6 @@ changeWatchStatus route =
      withStatus 303 False $ request $ do
          setMethod "POST"
          setUrl route
-
-newBlogPost :: Text -> YesodExample App ()
-newBlogPost page = do
-    let route = NewBlogPostR snowdrift
-    get200 route
-
-    withStatus 303 False $ request $ do
-        addToken
-        setMethod "POST"
-        setUrl route
-        byLabel "Title for this blog post" "testing"
-        byLabel "Handle for the URL" page
-        byLabel "Content" "testing"
-        addPostParam "mode" "post"
 
 loadFunds :: UserId -> Int -> Example ()
 loadFunds user_id n = do

@@ -2,16 +2,14 @@ module Handler.HonorPledge where
 
 import Import
 
-import Handler.Utils
+import Handler.TH
 import Model.User (establishUserDB, curUserIsEligibleEstablish)
 
 getHonorPledgeR :: Handler Html
 getHonorPledgeR = do
     is_elig <- curUserIsEligibleEstablish
     muser <- maybeAuth
-    defaultLayout $ do
-        snowdriftTitle "Honor Pledge"
-        $(widgetFile "honor-pledge")
+    $(widget "honor-pledge" "Honor Pledge")
 
 postHonorPledgeR :: Handler Html
 postHonorPledgeR = do

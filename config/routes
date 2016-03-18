@@ -1,23 +1,8 @@
 --
--- ### PAGES FOR ALPHA
+-- ## Static, informational pages
 --
 
---
--- ## The "simple" pages
---
-
-/how-it-works HowItWorksR:
-    /                    IntroR              GET
-    /flo                 FloR                GET
-    /network-effect      NetworkEffectR      GET
-    /sustainable-funding SustainableFundingR GET
-    /co-op               CoOpR               GET
-/about AboutR:
-    /        AboutHomeR GET
-    /contact ContactR   GET
-    /team    TeamR      GET
-    /press   PressR     GET
-/project-signup PSignupR     GET
+/welcome        WelcomeR GET
 /terms          TermsR       GET
 /privacy        PrivacyR     GET
 /trademarks     TrademarksR  GET
@@ -26,7 +11,19 @@
 /sponsors       SponsorsR    GET
 /js-licenses    JsLicensesR  GET
 /honor-pledge   HonorPledgeR GET POST
-/assets         AssetsR      GET
+
+/how-it-works HowItWorksR:
+    /                    IntroR              GET
+    /flo                 FloR                GET
+    /network-effect      NetworkEffectR      GET
+    /sustainable-funding SustainableFundingR GET
+    /co-op               CoOpR               GET
+
+/about AboutR:
+    /        AboutHomeR GET
+    /contact ContactR   GET
+    /team    TeamR      GET
+    /press   PressR     GET
 
 --
 -- ## Search
@@ -52,10 +49,9 @@
 
 -- Note that for logged-out users, / ("HomeR") is the simple welcome page.
 /              HomeR           GET
+/dashboard     UDashboardR     GET
 /transactions  UTransactionsR  GET
-/notifications UNotificationsR GET
 /pledges       UPledgesR       GET
-/roles         URolesR         GET
 
 --
 -- ## Browsing projects, or a particular project
@@ -66,28 +62,10 @@
 /p/#ProjectHandle/updates      PUpdatesR      GET
 /p/#ProjectHandle/transactions PTransactionsR GET
 
--- just link to existing wiki and discussion for now
--- /w         PWikiR
--- /d         PDiscussionR
-
---
--- ## Browsing a particular user (may need fleshing out?)
---
-
-/u/#UserHandle UserR GET POST
-
 -- Yesod jibber jabber
 /static StaticR Static appStatic
 /favicon.ico FaviconR GET
 /robots.txt  RobotsR  GET
-
-
---
--- ## Signup Form (not advertised for alpha)
---
-
-/project-signup-form PSignupFormR GET POST
-
 
 --
 -- ## Legacy links (just redirects)
@@ -98,45 +76,26 @@
 /js-license LegacyJsLicenseR GET
 
 --
--- ### EXISTING STUFF (NOT NEW FOR ALPHA)
+-- ## Browsing users and projects
 --
-
--- Miscellaneous
-
-/tutorial/markdown  MarkdownTutorialR GET
-
-/img/!upload                UploadImageR      GET POST
-/img/!name/#UnnamedImageId  NameImageR        GET POST
-/img/#Text                  ImageR            GET
-/img/#Text/meta             ImageMetaR        GET
 
 -- User
 
 /u                                          UsersR                 GET
+/u/#UserHandle UserR GET
 /u/#UserId/balance                          UserBalanceR           GET POST
-/u/#UserId/t                                UserTicketsR           GET
 /u/#UserId/change-passphrase                UserChangePassphraseR  GET POST
 /u/#UserId/delete                           DeleteUserR            GET POST
 /u/#UserId/confirm-delete/#Text             UserConfirmDeleteR     GET POST
 /u/#UserId/edit                             EditUserR              GET POST
 /u/#UserId/elig                             UserEstEligibleR           POST
-/u/#UserId/user-notifications               UserNotificationsR     GET POST
-/u/#UserId/pledges                          UserPledgesR           GET
-/u/#UserId/project-notifications/#ProjectId ProjectNotificationsR  GET POST
 /u/#UserId/reset-passphrase/#Text           UserResetPassphraseR   GET POST
-/u/#UserId/select-project                   UserSelectProjectR     GET POST
 /u/#UserId/verify-email/#Text               UserVerifyEmailR       GET
-
--- Notifications
-
-/notificationsp             NotificationsProxyR         GET
-/notifications/archivedp    ArchivedNotificationsProxyR GET
 
 -- Project
 
 /p/#Text/applications                        ApplicationsR   GET
 /p/#Text/application/#VolunteerApplicationId ApplicationR    GET
-/p/#Text/contact                             ProjectContactR GET POST
 /p/#Text/edit                                EditProjectR    GET
 /p/#Text/feed                                ProjectFeedR    GET
 /p/#Text/invitation/#Text                    InvitationR     GET POST
@@ -144,150 +103,13 @@
 /p/#Text/patrons                             ProjectPatronsR GET
 /p/#Text/pledge                              UpdatePledgeR   GET POST
 /p/#Text/pledge-faux                         PledgeFauxR     GET
-/p/#Text/t                                   TicketsR        GET
-/p/#Text/t/#TicketId                         TicketR         GET
 /p/#Text/volunteer                           VolunteerR      GET POST
-/p/#Text/w                                   WikiPagesR      GET
 /p/#Text/who                                 WhoR            GET
 /p/#Text/widget                              WidgetR         GET
 
 /p/#ProjectId/watch   WatchProjectR   POST
 /p/#ProjectId/unwatch UnwatchProjectR POST
 
--- Project wiki
-
-/p/#Text/w/#Language/#Text                              WikiR                 GET POST
-/p/#Text/w/#Language/#Text/translate                    NewWikiTranslationR   GET POST
-/p/#Text/w/#Language/#Text/diff/#WikiEditId/#WikiEditId WikiDiffR             GET
-/p/#Text/w/#Language/#Text/diffp                        WikiDiffProxyR        GET
-/p/#Text/w/#Language/#Text/edit                         EditWikiR             GET
-/p/#Text/w/#Language/#Text/h                            WikiHistoryR          GET
-/p/#Text/w/#Language/#Text/h/#WikiEditId                WikiEditR             GET
-/p/#Text/w/#Language/#Text/new                          NewWikiR              GET POST
-/p/#Text/w/#Language/#Text/perm                         EditWikiPermissionsR  GET POST
-/p/#Text/w/#Language/#Text/c/#CommentId/watch           WatchWikiCommentR     GET POST
-/p/#Text/w/#Language/#Text/c/#CommentId/unwatch         UnwatchWikiCommentR   GET POST
-
--- Project blog
-
-/p/#Text/blog                                   ProjectBlogR                    GET
-!/p/#Text/blog/feed                             ProjectBlogFeedR                GET
-!/p/#Text/blog/new                              NewBlogPostR                    GET POST
-/p/#Text/blog/#Text                             BlogPostR                       GET
-/p/#Text/blog/#Text/edit                        EditBlogPostR                   GET POST
-
-/ev/commentposted/#EventCommentPostedId                     EventCommentPostedR           GET
-/ev/commentpending/#EventCommentPendingId                   EventCommentPendingR          GET
-/ev/commentrethreaded/#EventCommentRethreadedId             EventCommentRethreadedR       GET
-/ev/commentclosing/#EventCommentClosingId                   EventCommentClosingR          GET
-/ev/ticketclaimed/#EventTicketClaimedId                     EventTicketClaimedR           GET
-/ev/ticketunclaimed/#EventTicketUnclaimedId                 EventTicketUnclaimedR         GET
-/ev/wikipage/#EventWikiPageId                               EventWikiPageR                GET
-/ev/wikiedit/#EventWikiEditId                               EventWikiEditR                GET
-/ev/newpledge/#EventNewPledgeId                             EventNewPledgeR               GET
-/ev/updatedpledge/#EventUpdatedPledgeId                     EventUpdatedPledgeR           GET
-/ev/deletedpledge/#EventDeletedPledgeId                     EventDeletedPledgeR           GET
-/ev/blogpost/#EventBlogPostId                               EventBlogPostR                GET
-
 -- Devs only!
 
 /dev/build BuildFeedR GET
-
---
--- ## Discussions and Tickets
---
-
-/c/#CommentId                                       CommentDirectLinkR        GET      DELETE
-/c/#CommentId/tag/#TagId                            CommentTagR               GET POST
-
-/u/#UserId/d                                        UserDiscussionR           GET POST
-/u/#UserId/d/new                                    NewUserDiscussionR        GET POST
-/u/#UserId/c/#CommentId                             UserCommentR              GET
-/u/#UserId/c/#CommentId/claim                       ClaimUserCommentR         GET POST
-/u/#UserId/c/#CommentId/close                       CloseUserCommentR         GET POST
-/u/#UserId/c/#CommentId/delete                      DeleteUserCommentR        GET POST
-/u/#UserId/c/#CommentId/edit                        EditUserCommentR          GET POST
-/u/#UserId/c/#CommentId/flag                        FlagUserCommentR          GET POST
-/u/#UserId/c/#CommentId/approve                     ApproveUserCommentR       GET POST
-/u/#UserId/c/#CommentId/reply                       ReplyUserCommentR         GET POST
-/u/#UserId/c/#CommentId/rethread                    RethreadUserCommentR      GET POST
-/u/#UserId/c/#CommentId/retract                     RetractUserCommentR       GET POST
-/u/#UserId/c/#CommentId/tag/!new                    UserCommentAddTagR        GET
-/u/#UserId/c/#CommentId/tags                        UserCommentTagsR          GET
-/u/#UserId/c/#CommentId/tag/#TagId                  UserCommentTagR           GET POST
-/u/#UserId/c/#CommentId/tag/!apply                  UserCommentApplyTagR          POST
-/u/#UserId/c/#CommentId/tag/!create                 UserCommentCreateTagR         POST
-/u/#UserId/c/#CommentId/unclaim                     UnclaimUserCommentR       GET POST
-/u/#UserId/c/#CommentId/watch                       WatchUserCommentR         GET POST
-/u/#UserId/c/#CommentId/unwatch                     UnwatchUserCommentR       GET POST
-
-/p/#Text/d                                          ProjectDiscussionR        GET
-/p/#Text/d/new                                      NewProjectDiscussionR     GET POST
-/p/#Text/c/#CommentId                               ProjectCommentR           GET
-/p/#Text/c/#CommentId/claim                         ClaimProjectCommentR      GET POST
-/p/#Text/c/#CommentId/close                         CloseProjectCommentR      GET POST
-/p/#Text/c/#CommentId/delete                        DeleteProjectCommentR     GET POST
-/p/#Text/c/#CommentId/edit                          EditProjectCommentR       GET POST
-/p/#Text/c/#CommentId/flag                          FlagProjectCommentR       GET POST
-/p/#Text/c/#CommentId/approve                       ApproveProjectCommentR    GET POST
-/p/#Text/c/#CommentId/reply                         ReplyProjectCommentR      GET POST
-/p/#Text/c/#CommentId/rethread                      RethreadProjectCommentR   GET POST
-/p/#Text/c/#CommentId/retract                       RetractProjectCommentR    GET POST
-!/p/#Text/c/#CommentId/tag/new                      ProjectCommentAddTagR     GET
-/p/#Text/c/#CommentId/tags                          ProjectCommentTagsR       GET
-/p/#Text/c/#CommentId/tag/#TagId                    ProjectCommentTagR        GET POST
-!/p/#Text/c/#CommentId/tag/apply                    ProjectCommentApplyTagR       POST
-!/p/#Text/c/#CommentId/tag/create                   ProjectCommentCreateTagR      POST
-/p/#Text/c/#CommentId/unclaim                       UnclaimProjectCommentR    GET POST
-/p/#Text/c/#CommentId/watch                         WatchProjectCommentR      GET POST
-/p/#Text/c/#CommentId/unwatch                       UnwatchProjectCommentR    GET POST
-
-/p/#Text/w/#Language/#Text/d                        WikiDiscussionR           GET
-/p/#Text/w/#Language/#Text/d/new                    NewWikiDiscussionR        GET POST
-/p/#Text/w/#Language/#Text/c/#CommentId             WikiCommentR              GET
-/p/#Text/w/#Language/#Text/c/#CommentId/claim       ClaimWikiCommentR         GET POST
-/p/#Text/w/#Language/#Text/c/#CommentId/close       CloseWikiCommentR         GET POST
-/p/#Text/w/#Language/#Text/c/#CommentId/delete      DeleteWikiCommentR        GET POST
-/p/#Text/w/#Language/#Text/c/#CommentId/edit        EditWikiCommentR          GET POST
-/p/#Text/w/#Language/#Text/c/#CommentId/flag        FlagWikiCommentR          GET POST
-/p/#Text/w/#Language/#Text/c/#CommentId/approve     ApproveWikiCommentR       GET POST
-/p/#Text/w/#Language/#Text/c/#CommentId/reply       ReplyWikiCommentR         GET POST
-/p/#Text/w/#Language/#Text/c/#CommentId/rethread    RethreadWikiCommentR      GET POST
-/p/#Text/w/#Language/#Text/c/#CommentId/retract     RetractWikiCommentR       GET POST
-!/p/#Text/w/#Language/#Text/c/#CommentId/tag/new    WikiCommentAddTagR        GET
-/p/#Text/w/#Language/#Text/c/#CommentId/tags        WikiCommentTagsR          GET
-/p/#Text/w/#Language/#Text/c/#CommentId/tag/#TagId  WikiCommentTagR           GET POST
-!/p/#Text/w/#Language/#Text/c/#CommentId/tag/apply  WikiCommentApplyTagR          POST
-!/p/#Text/w/#Language/#Text/c/#CommentId/tag/create WikiCommentCreateTagR         POST
-/p/#Text/w/#Language/#Text/c/#CommentId/unclaim     UnclaimWikiCommentR       GET POST
-
-/p/#Text/blog/#Text/d                               BlogPostDiscussionR       GET
-/p/#Text/blog/#Text/d/new                           NewBlogPostDiscussionR    GET POST
-/p/#Text/blog/#Text/c/#CommentId                    BlogPostCommentR          GET
-/p/#Text/blog/#Text/c/#CommentId/claim              ClaimBlogPostCommentR     GET POST
-/p/#Text/blog/#Text/c/#CommentId/close              CloseBlogPostCommentR     GET POST
-/p/#Text/blog/#Text/c/#CommentId/delete             DeleteBlogPostCommentR    GET POST
-/p/#Text/blog/#Text/c/#CommentId/edit               EditBlogPostCommentR      GET POST
-/p/#Text/blog/#Text/c/#CommentId/flag               FlagBlogPostCommentR      GET POST
-/p/#Text/blog/#Text/c/#CommentId/approve            ApproveBlogPostCommentR   GET POST
-/p/#Text/blog/#Text/c/#CommentId/reply              ReplyBlogPostCommentR     GET POST
-/p/#Text/blog/#Text/c/#CommentId/rethread           RethreadBlogPostCommentR  GET POST
-/p/#Text/blog/#Text/c/#CommentId/retract            RetractBlogPostCommentR   GET POST
-!/p/#Text/blog/#Text/c/#CommentId/tag/new           BlogPostCommentAddTagR    GET
-/p/#Text/blog/#Text/c/#CommentId/tags               BlogPostCommentTagsR      GET
-/p/#Text/blog/#Text/c/#CommentId/tag/#TagId         BlogPostCommentTagR       GET POST
-!/p/#Text/blog/#Text/c/#CommentId/tag/apply         BlogPostCommentApplyTagR      POST
-!/p/#Text/blog/#Text/c/#CommentId/tag/create        BlogPostCommentCreateTagR     POST
-/p/#Text/blog/#Text/c/#CommentId/unclaim            UnclaimBlogPostCommentR   GET POST
-/p/#Text/blog/#Text/c/#CommentId/watch              WatchBlogPostCommentR     GET POST
-/p/#Text/blog/#Text/c/#CommentId/unwatch            UnwatchBlogPostCommentR   GET POST
-
--- DEPRECATED
-
--- This catches instances such as
--- <https://github.com/snowdriftcoop/snowdrift/issues/302>.
-/p/#Text/w/#Language                                    ProjectWikiLangR      GET
-!/p/#Text/w/#Text/*[Text]                               MonolingualWikiR      GET
-
-/p/#Text/w/#Language/#Text/comment/#CommentId  OldDiscussCommentR GET
-/p/#Text/w/#Language/#Text/history/#WikiEditId OldWikiEditR       GET

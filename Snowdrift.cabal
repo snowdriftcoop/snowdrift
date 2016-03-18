@@ -40,51 +40,36 @@ library
         else
             ghc-options:   -Werror -Wall
 
+    -- exposed-modules {{{2
     exposed-modules:
+        Alerts
         Application
         Avatar
         Css
         Data.Filter
         Data.Order
-        Data.Text.PrettyHtml
-        Data.Tree.Extra
         Dev
         DeprecatedBootstrap
         Foundation
         Handler.BuildFeed
-        Handler.Comment
         Handler.Common
-        Handler.Discussion
         Handler.HonorPledge
-        Handler.Image
         Handler.Invitation
         Handler.JsLicenses
-        Handler.MarkdownTutorial
         Handler.NewDesign
-        Handler.Notification
         Handler.PostLogin
         Handler.Project
-        Handler.ProjectBlog
         Handler.ResetPassphrase
         Handler.Simple
-        Handler.SnowdriftEvent
         Handler.TH
         Handler.User
         Handler.User.Balance
         Handler.User.ChangePassphrase
-        Handler.User.Comment
         Handler.User.ConfirmDelete
         Handler.User.Delete
-        Handler.User.Discussion
         Handler.User.Edit
         Handler.User.EstEligible
-        Handler.User.NewDiscussion
-        Handler.User.Notifications
-        Handler.User.Pledges
-        Handler.User.ProjectNotifications
         Handler.User.ResetPassphrase
-        Handler.User.SelectProject
-        Handler.User.Tickets
         Handler.User.User
         Handler.User.Users
         Handler.User.Utils
@@ -93,84 +78,46 @@ library
         Handler.Volunteer
         Handler.Who
         Handler.Widget
-        Handler.Wiki
-        Handler.Wiki.Comment
         Import
         Import.NoFoundation
         Local.Esqueleto
         Local.Github
         Local.Ord
-        Mechanism
         Model
         Model.Application
-        Model.Blog
-        Model.Comment
-        Model.Comment.ActionPermissions
-        Model.Comment.HandlerInfo
-        Model.Comment.Mods
-        Model.Comment.Routes
-        Model.Comment.Sql
         Model.Count
         Model.Currency
-        Model.Discussion
         Model.Discussion.TH
-        Model.Issue
         Model.Language
         Model.Language.TH
-        Model.License
         Model.License.Internal
         Model.Markdown
         Model.Markdown.Diff
-        Model.Notification
-        Model.Notification.Internal
-        Model.Permission.Internal
         Model.Project
         Model.Project.Signup
         Model.Project.Signup.Internal
-        Model.Project.Sql
         Model.ResetPassphrase
         Model.Role
-        Model.Settings
         Model.Shares
-        Model.SnowdriftEvent
-        Model.SnowdriftEvent.Internal
-        Model.TH
-        Model.Tag
-        Model.Transaction
         Model.User
         Model.User.Internal
-        Model.User.Sql
-        Model.Utils
-        Model.ViewType
         Model.Volunteer
-        Model.Wiki
-        Model.Wiki.Sql
         Settings
         Settings.Development
         Settings.StaticFiles
-        SnowdriftEventHandler
         Version
-        View.Comment
         View.Project
-        View.Project.Signup
         View.ResetPassphrase
-        View.SnowdriftEvent
         View.Time
         View.User
-        View.Wiki
-        Widgets.Doc
         Widgets.Markdown
         Widgets.Navbar
         Widgets.Preview
-        Widgets.Search
-        Widgets.Tag
-        Widgets.UserPledges
         WrappedValues
 
     -- other-modules {{{2
     other-modules:
         Migrations
-        Model.Comment.Internal
         Model.Established.Internal
         Model.Role.Internal
         Model.Settings.Internal
@@ -208,25 +155,20 @@ library
     build-depends:
                    -- base bounds reflect a core dependency
                    base >= 4 && < 5
-                 , async
                  , attoparsec
                  , authenticate
                  , blaze-builder
                  , blaze-html
                  , blaze-markup
                  , bytestring
-                 , conduit
                  , containers
                  , data-default
                  , Diff
                  , directory
-                 , errors
                  , esqueleto
                  , fast-logger
                  , file-embed
-                 , github
                  , ghci-runner
-                 , hit
                  , hjsmin
                  , hourglass
                  , http-conduit
@@ -245,11 +187,8 @@ library
                  , persistent-template
                  , process
                  , random
-                 , regex-tdfa
                  , resourcet
-                 , semigroups
                  , shakespeare
-                 , stm
                  , template-haskell
                  , temporary
                  , text
@@ -258,7 +197,6 @@ library
                  , transformers
                  , wai-extra
                  , wai-logger
-                 , warp
                  , yaml
                  -- extra caution for our primary dependency on Yesod
                  , yesod >= 1.4 && < 1.5
@@ -288,133 +226,6 @@ executable Snowdrift
 
     ghc-options:       -threaded
 
--- executable SnowdriftProcessPayments {{{1
-executable SnowdriftProcessPayments
-    if flag(library-only)
-        Buildable: False
-    if flag(dev)
-        ghc-options: -Wall -O0 -fobject-code
-    if flag(merge)
-        ghc-options: -Wall -Werror -O0 -fobject-code
-
-    default-language:  Haskell2010
-    main-is:           SnowdriftProcessPayments.hs
-    hs-source-dirs:    app
-    build-depends:     base
-                     , blaze-builder
-                     , bytestring
-                     , fast-logger
-                     , lifted-base
-                     , monad-logger
-                     , mtl
-                     , persistent
-                     , resourcet
-                     , Snowdrift
-                     , text
-                     , time
-                     , yesod
-
-    ghc-options:       -threaded
-
-    default-extensions: TemplateHaskell
-                QuasiQuotes
-                OverloadedStrings
-                NoImplicitPrelude
-                MultiParamTypeClasses
-                TypeFamilies
-                GADTs
-                GeneralizedNewtypeDeriving
-                FlexibleContexts
-                EmptyDataDecls
-                NoMonomorphismRestriction
-                DeriveDataTypeable
-                ScopedTypeVariables
-
--- executable SnowdriftEmailDaemon {{{1
-executable SnowdriftEmailDaemon
-    if flag(dev)
-       ghc-options: -Wall -O0 -fobject-code
-    if flag(merge)
-        ghc-options: -Wall -Werror -O0 -fobject-code
-    if flag(library-only)
-        Buildable: False
-    -- Building on Windows is broken. See
-    -- https://github.com/commercialhaskell/stack/issues/466
-    if os(windows)
-        Buildable: False
-    default-language:  Haskell2010
-    hs-source-dirs: app
-    main-is: SnowdriftEmailDaemon.hs
-    -- build-depends {{{2
-    build-depends:     base
-                     , authenticate
-                     , blaze-builder
-                     , blaze-html
-                     , blaze-markup
-                     , bytestring
-                     , containers
-                     , cmdargs
-                     , data-default
-                     , Diff
-                     , directory
-                     , esqueleto
-                     , email-validate
-                     , fast-logger
-                     , hjsmin
-                     , hourglass
-                     , http-conduit
-                     , lens
-                     , lifted-base
-                     , mime-mail
-                     , monad-logger
-                     , mtl
-                     , path-pieces
-                     , persistent
-                     , persistent-postgresql
-                     , persistent-template
-                     , random
-                     , resourcet
-                     , semigroups
-                     , shakespeare
-                     , Snowdrift
-                     , stm
-                     , template-haskell
-                     , text
-                     , time
-                     , titlecase
-                     , transformers
-                     , yaml
-                     , yesod
-                     , yesod-auth
-                     , yesod-auth-hashdb
-                     , yesod-core
-                     , yesod-form
-                     , yesod-markdown
-                     , yesod-static
-
-    -- default-extensions {{{2
-    default-extensions: BangPatterns
-                ConstraintKinds
-                DeriveDataTypeable
-                EmptyDataDecls
-                ExistentialQuantification
-                FlexibleContexts
-                FlexibleInstances
-                GeneralizedNewtypeDeriving
-                LambdaCase
-                MultiParamTypeClasses
-                MultiWayIf
-                NoImplicitPrelude
-                QuasiQuotes
-                OverloadedStrings
-                RankNTypes
-                RecordWildCards
-                ScopedTypeVariables
-                TemplateHaskell
-                TupleSections
-                TypeFamilies
-                ViewPatterns
-
 -- executable sendmail-mock {{{1
 executable sendmail-mock
     if flag(dev)
@@ -440,16 +251,11 @@ test-suite test
     ghc-options:       -Wall -O0 -fobject-code
 
     other-modules:
-        BlogTest
-        CommentTest
-        DiscussionTest
-        NotifyTest
         PPrint
         TestHandler
         TestImport
         TimedYesodTest
         UserTest
-        WikiTest
     default-extensions: QuasiQuotes
                 TemplateHaskell
                 OverloadedStrings

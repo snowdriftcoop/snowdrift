@@ -40,17 +40,15 @@ import Yesod.Auth as Import
 import Yesod.Form.Bootstrap3 as Import
 import Yesod.Markdown as Import (Markdown (..))
 
+import Alerts as Import
 import Css as Import
 import Local.Esqueleto as Import
 import Local.Github as Import
 import Local.Ord as Import
 import Model as Import
 import Model.Language as Import
-import Model.Comment.Internal as Import hiding (TagName, TicketName)
 import Model.Established.Internal as Import
-import Model.Notification.Internal as Import
 import Model.Role.Internal as Import
-import Model.SnowdriftEvent.Internal as Import
 import Settings as Import
 import Settings.Development as Import
 import Settings.StaticFiles as Import

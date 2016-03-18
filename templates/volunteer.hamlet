@@ -8,7 +8,7 @@
   where you can make the biggest difference.
 <p>
   Also see the
-  <a href=@{WikiR project_handle LangEn "how-to-help"}>How-to-help page
+  <a href=#>How-to-help page
   for information about our current needs.
 <div .container>
   <form action=@{VolunteerR project_handle} method="POST">

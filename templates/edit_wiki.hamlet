@@ -1,3 +1,0 @@
-<form method=POST action=@{WikiR project_handle language target}>
-  ^{wiki_form}
-  <input type=submit name=mode value=preview>

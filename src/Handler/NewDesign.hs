@@ -10,30 +10,20 @@ import Import
 -- | Using explicit imports for now. It feels good to treat existing code
 -- as a 3rd-party library.
 import Dev
-import Handler.Notification
-        ( buildNotificationsList
-        , Notification(..)
-        )
 import Handler.TH
 import Handler.User.Utils (startEmailVerification)
 import Handler.Utils
-import Model.License (fetchLicensesDB)
-import Model.Project
-        ( fetchPublicProjectsDB
-        , projectNameWidget
-        )
+import Model.Project ( fetchPublicProjectsDB)
 import Model.User
-        ( fetchArchivedProjectNotificationsDB
-        , fetchArchivedUserNotificationsDB
-        , fetchProjectNotificationsDB
-        , fetchUserNotificationsDB
-        , fetchUserProjectsAndRolesDB
+        ( fetchUserProjectsAndRolesDB
         , userDisplayName
-        , userReadNotificationsDB
         )
-import View.Project.Signup (projectSignupForm)
-import View.Time (renderTime)
 import View.User (renderUser, createUserForm)
+
+getWelcomeR :: Handler Html
+getWelcomeR = defaultLayoutNew "homepage" $ do
+    setTitle "Snowdrift.coop — Free the Commons"
+    $(widgetFile "homepage")
 
 getSearchR :: Handler Html
 getSearchR = do
@@ -65,8 +55,6 @@ projectNav handle =
         <h3>Subpages
         <ul>
             <li><a href=@{PUpdatesR handle}>Updates
-            <li><a href=@{WikiPagesR handle}>Wiki</a> (links to pre-alpha)
-            <li><a href=@{ProjectDiscussionR handle}>Discussion</a> (links to pre-alpha)
             <li><a href=@{PTransactionsR handle}>Transactions
     |]
 
@@ -81,9 +69,9 @@ dashboardNav = do
     $(widgetFile "dashboard/nav")
 
 getHomeR,
+    getUDashboardR,
     getUTransactionsR,
     getUPledgesR,
-    getURolesR,
     getUEditR
     :: Handler Html
 
@@ -98,15 +86,15 @@ getHomeR = do
               $(widget "dashboard/overview" "Dashboard"))
           u
 
+getUDashboardR = do
+    user <- requireAuth
+    $(widget "dashboard/overview" "Dashboard")
 getUTransactionsR = do
     user <- requireAuth
     $(widget "dashboard/transactions" "Transactions")
 getUPledgesR = do
     user <- requireAuth
     $(widget "dashboard/pledges" "Pledges")
-getURolesR = do
-    user <- requireAuth
-    $(widget "dashboard/roles" "My Project Roles")
 getUEditR = do
     user <- requireAuth
     $(widget "dashboard/edit-profile" "Edit Profile")
@@ -114,38 +102,6 @@ getUEditR = do
 --
 -- #### NEEDS REVIEW. COPIED FROM EXISTING PAGES.
 --
-
--- | Where projects actually sign up.
---
--- As opposed to getPSignupR, where they learn about signing up. This page
--- will not be advertised during alpha.
-getPSignupFormR :: Handler Html
-getPSignupFormR = do
-    licenses <- runDB fetchLicensesDB
-    render   <- getUrlRender
-    (project_signup_form, _) <- generateFormPost $
-        projectSignupForm render licenses
-    $(widget "project-signup-form" "Project Sign Up")
-
-postPSignupFormR :: Handler Html
-postPSignupFormR = do
-    licenses <- runDB fetchLicensesDB
-    render   <- getUrlRender
-    ((result, project_signup_form), _) <- runFormPost $
-        projectSignupForm render licenses
-    case result of
-        FormSuccess res  -> do
-            runDB $ insert_ res
-            alertSuccess "Application submitted"
-            redirect HomeR
-        FormMissing      -> do
-            alertDanger "No data provided"
-            $(widget "project-signup-form" "Project Sign Up")
-        FormFailure _ -> do
-            alertDanger "Form failure"
-            $(widget "project-signup-form" "Project Sign Up")
-
-
 
 -- | Projects list.
 getProjectsR :: Handler Html
@@ -229,20 +185,3 @@ getUserR user_id = do
             userDisplayName (Entity user_id user)
         alphaRewriteNotice
         renderUser mviewer_id user_id user projects_and_roles
-
-getUNotificationsR :: Handler Html
-getUNotificationsR = do
-    showArchived <- lookupGetParam "state"
-    user_id <- requireAuthId
-    notifs  <- runDB $ do
-        case showArchived of
-            Just "archived" -> do
-                user_notifs    <- fetchArchivedUserNotificationsDB user_id
-                project_notifs <- fetchArchivedProjectNotificationsDB user_id
-                return $ buildNotificationsList user_notifs project_notifs
-            _ -> do
-                userReadNotificationsDB user_id
-                user_notifs    <- fetchUserNotificationsDB user_id
-                project_notifs <- fetchProjectNotificationsDB user_id
-                return $ buildNotificationsList user_notifs project_notifs
-    $(widget "dashboard/notifications" "Notifications")

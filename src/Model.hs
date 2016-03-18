@@ -16,7 +16,6 @@ import Yesod
 import Yesod.Auth.HashDB (HashDBUser (..))
 import Yesod.Markdown (Markdown)
 
-import Model.Comment.Internal (FlagReason,Visibility)
 import Model.Currency (Milray)
 import Model.Discussion.TH (mkDiscussionTypes)
 import Model.Established.Internal (Established(..))
@@ -28,12 +27,6 @@ import Model.License.Internal
             ,LicenseText
             ,LicenseWebsite)
 import Model.Markdown.Diff (MarkdownDiff)
-import Model.Notification.Internal
-            (UserNotificationType
-            ,UserNotificationDelivery
-            ,ProjectNotificationType
-            ,ProjectNotificationDelivery)
-import Model.Permission.Internal (PermissionLevel)
 import Model.Project.Signup
             (ProjectSignupName
             ,ProjectSignupWebsite
@@ -54,7 +47,6 @@ import Model.Project.Signup.Internal
             ,ProjectSignupCoopStatus)
 import Model.Role.Internal (Role)
 import Model.Settings.Internal (UserSettingName)
-import Model.TH
 import Model.ViewType.Internal (ViewType)
 
 -- You can define all of your database entities in the entities file.
@@ -65,7 +57,6 @@ share [ mkPersist sqlSettings
       , mkMigrate "migrateAll"
       , mkDeleteCascade sqlSettings
       , mkDiscussionTypes
-      , mkReferences "Comment"
       ]
     $(persistFileWith lowerCaseSettings "config/models")
 

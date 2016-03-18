@@ -30,12 +30,6 @@
               <li>
                 <a href=@{UserR uid} :active (UserR uid):.active>Profile
               <li>
-                <a href=@{UTransactionsR} :active UTransactionsR:.active>
-                  Transactions
-              <li>
-                <a href=@{UNotificationsR} :active UNotificationsR:.active>
-                  Notifications
-              <li>
                 <a href=@{AuthR LogoutR}>Log Out
       $nothing
         <a href=@{AuthR LoginR} :authActive:.active>Log In

@@ -4,11 +4,11 @@
   These are real projects, but we're still in alpha state, not doing patronage
   funding yet. Snowdrift.coop is itself one of the projects. Besides us, we
   have started including select, established projects that meet our
-  <a href=@{WikiR "snowdrift" LangEn "project-requirements"}>requirements
+  <a href=#>requirements
   and have chosen to participate in testing during our alpha phase.
   If your project plans to use the site when we launch, and you'd like to
   participate in our testing now, please
-  <a href=@{ProjectContactR "snowdrift"}>contact&nbsp;us
+  <a href=@{AboutR ContactR}>contact&nbsp;us
   to discuss further.
 
 $forall Entity _ project <- projects
