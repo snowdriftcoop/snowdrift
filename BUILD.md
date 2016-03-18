@@ -35,7 +35,8 @@ Install Git and needed libraries:
     sudo yum update
     sudo yum install ncurses-devel gmp-devel zlib-devel git
     
-For newer versions of Fedora, replace the `yum` commands with `dnf`. Install the following libraries if you don't already have them:
+For newer versions of Fedora, replace the `yum` commands with `dnf`. Install the 
+following libraries if you don't already have them:
 
     sudo dnf install libstdc++-static gcc-c++
 
@@ -43,9 +44,15 @@ You'll also need PostgreSQL >= 9.3:
 
     sudo yum install postgres-server postgres-devel
 
-If the version in the base repositories is too old, follow the [instructions on the PostgreSQL wiki](https://wiki.postgresql.org/wiki/YUM_Installation) to install from their repositories. Get the postgresXX-server and postgresXX-devel packages, where XX is the version number. 
+If the version in the base repositories is too old, follow the [instructions on the 
+PostgreSQL wiki](https://wiki.postgresql.org/wiki/YUM_Installation) to install from 
+their repositories. Get the postgresXX-server and postgresXX-devel packages, where 
+XX is the version number. 
 
-So that the Snowdrift database cluster tool sees the pgsql executables at /usr/pgsql-X.X/bin on your PATH, either add that route (with the correct numbers instead of X.X) to your PATH (e.g. in `~/.bash_profile`, `~/.bashrc` or `~/.profile`) or create symlinks somewhere already on your PATH.
+So that the Snowdrift database cluster tool sees the pgsql executables at 
+`/usr/pgsql-X.X/bin` on your PATH, either add that route (with the correct numbers 
+instead of X.X) to your PATH (e.g. in `~/.bash_profile`, `~/.bashrc` or 
+`~/.profile`) or create symlinks somewhere already on your PATH.
 
 Then follow the [Stack install instructions](https://github.com/commercialhaskell/stack/blob/master/doc/install_and_upgrade.md) for your distribution.
 
