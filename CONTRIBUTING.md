@@ -76,9 +76,8 @@ Short version for experienced Git users:
 work that functions independently** (and avoid clutter by deleting branches once
 no longer needed).
 
-To make it easier to follow changes, please retain the full list of commits when 
-pushing branch updates and only rebase on request, once the code has been reviewed 
-and considered ready for merging.
+To make it easier to follow changes, please retain the full list of commits
+when pushing branch updates, and only rebase when requested.
 
 The following covers the bare minimum process for those new to Git.
 
