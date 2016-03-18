@@ -48,8 +48,6 @@ library
         Css
         Data.Filter
         Data.Order
-        Data.Text.PrettyHtml
-        Data.Tree.Extra
         Dev
         DeprecatedBootstrap
         Foundation
@@ -58,7 +56,6 @@ library
         Handler.HonorPledge
         Handler.Invitation
         Handler.JsLicenses
-        Handler.MarkdownTutorial
         Handler.NewDesign
         Handler.PostLogin
         Handler.Project
@@ -93,42 +90,29 @@ library
         Model.Discussion.TH
         Model.Language
         Model.Language.TH
-        Model.License
         Model.License.Internal
         Model.Markdown
         Model.Markdown.Diff
-        Model.Permission.Internal
         Model.Project
         Model.Project.Signup
         Model.Project.Signup.Internal
         Model.ResetPassphrase
         Model.Role
-        Model.Settings
         Model.Shares
-        Model.TH
-        Model.Tag
-        Model.Transaction
         Model.User
         Model.User.Internal
-        Model.User.Sql
-        Model.Utils
-        Model.ViewType
         Model.Volunteer
         Settings
         Settings.Development
         Settings.StaticFiles
         Version
         View.Project
-        View.Project.Signup
         View.ResetPassphrase
         View.Time
         View.User
         Widgets.Markdown
         Widgets.Navbar
         Widgets.Preview
-        Widgets.Search
-        Widgets.Tag
-        Widgets.UserPledges
         WrappedValues
 
     -- other-modules {{{2
