@@ -24,7 +24,6 @@ contents=(
     config
     static
     migrations
-    templates
     ops
     dist
 )
