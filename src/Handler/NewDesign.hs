@@ -28,7 +28,7 @@ getWelcomeR = defaultLayoutNew "homepage" $ do
 getSearchR :: Handler Html
 getSearchR = do
     q <- lookupGetParam "q"
-    $(widget "search" "Search")
+    $(widget "page/search" "Search")
 
 getPUpdatesR,
     getPTransactionsR
@@ -83,21 +83,21 @@ getHomeR = do
               setTitle "Snowdrift.coop — Free the Commons"
               $(widgetFile "homepage"))
           (\user ->
-              $(widget "dashboard/overview" "Dashboard"))
+              $(widget "page/dashboard/overview" "Dashboard"))
           u
 
 getUDashboardR = do
     user <- requireAuth
-    $(widget "dashboard/overview" "Dashboard")
+    $(widget "page/dashboard/overview" "Dashboard")
 getUTransactionsR = do
     user <- requireAuth
-    $(widget "dashboard/transactions" "Transactions")
+    $(widget "page/dashboard/transactions" "Transactions")
 getUPledgesR = do
     user <- requireAuth
-    $(widget "dashboard/pledges" "Pledges")
+    $(widget "page/dashboard/pledges" "Pledges")
 getUEditR = do
     user <- requireAuth
-    $(widget "dashboard/edit-profile" "Edit Profile")
+    $(widget "page/dashboard/edit-profile" "Edit Profile")
 
 --
 -- #### NEEDS REVIEW. COPIED FROM EXISTING PAGES.
@@ -107,7 +107,7 @@ getUEditR = do
 getProjectsR :: Handler Html
 getProjectsR = do
     projects <- runDB fetchPublicProjectsDB
-    $(widget "projects" "Projects")
+    $(widget "page/projects" "Projects")
 
 -- | Public page for a project
 getPHomeR :: ProjectHandle -> Handler Html

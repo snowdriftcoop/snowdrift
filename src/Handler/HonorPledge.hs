@@ -9,7 +9,7 @@ getHonorPledgeR :: Handler Html
 getHonorPledgeR = do
     is_elig <- curUserIsEligibleEstablish
     muser <- maybeAuth
-    $(widget "honor-pledge" "Honor Pledge")
+    $(widget "page/honor-pledge" "Honor Pledge")
 
 postHonorPledgeR :: Handler Html
 postHonorPledgeR = do

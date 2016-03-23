@@ -14,7 +14,7 @@ import qualified View.ResetPassphrase as View
 getResetPassphraseR :: Handler Html
 getResetPassphraseR = do
     (form, enctype) <- generateFormPost resetPassphraseForm
-    $(widget "reset-passphrase" "Reset Passphrase")
+    $(widget "page/reset-passphrase" "Reset Passphrase")
 
 initResetPassphrase :: UserId -> Text -> Handler Html
 initResetPassphrase user_id email = do
@@ -29,7 +29,7 @@ postResetPassphraseR = do
     ((result, form), enctype) <- runFormPost resetPassphraseForm
     let alertAndRefresh msg = do
             alertDanger msg
-            $(widget "reset-passphrase" "Reset Passphrase")
+            $(widget "page/reset-passphrase" "Reset Passphrase")
     case result of
         FormSuccess View.ResetPassphrase {..} ->
             if | isNothing rpHandle && isNothing rpEmail ->

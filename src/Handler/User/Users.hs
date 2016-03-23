@@ -32,4 +32,4 @@ getUsersR = do
         isVisible :: Entity User -> Bool
         isVisible = (>= (0::Int)) . getUserKey
 
-    $(widget "users" "Users")
+    $(widget "page/users" "Users")

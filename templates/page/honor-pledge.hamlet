@@ -35,4 +35,3 @@ $nothing
     please
     <a href=@{AuthR LoginR}>log in
     and then reload this page to see the accept button.
-
