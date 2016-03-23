@@ -98,7 +98,6 @@ library
         Model.Project.Signup.Internal
         Model.ResetPassphrase
         Model.Role
-        Model.Shares
         Model.User
         Model.User.Internal
         Model.Volunteer
