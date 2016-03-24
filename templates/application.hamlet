@@ -33,7 +33,7 @@
       <td>
         <a href=#{website}>#{website}
 
-  $maybe location <- volunteerApplicationLocation application 
+  $maybe location <- volunteerApplicationLocation application
     <tr>
       <td>
         Location:

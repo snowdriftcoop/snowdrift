@@ -102,7 +102,7 @@ table
     ul
         list-style: outside disc
         margin: 0 3rem
-        padding-bottom: 3rem 
+        padding-bottom: 3rem
       li, li p
           padding-bottom: 1rem
     form
@@ -117,7 +117,7 @@ table
             margin-bottom: 1.5rem
             font: 400 2rem "Nunito"
             color: #{DarkBlue}
-        
+
 h1
     font-weight: 600
     font-size: 3rem
@@ -133,7 +133,7 @@ em
     font-style: italic
 strong
     font-weight: 600
-hr 
+hr
     margin-bottom: 3rem
 
 .footnotes
@@ -155,7 +155,7 @@ hr
     font-size: 1.5rem
 
 /* Auth forms */
-.auth 
+.auth
     h1
         margin: 3rem 0 0 0
         padding-bottom: 3rem
@@ -164,9 +164,9 @@ hr
         margin: 3rem 0
         display: block
 @media (min-width: 391px)
-    .auth 
+    .auth
         h1
-            margin: 6rem 0 0 0    
+            margin: 6rem 0 0 0
 
 @keyframes fadein
     0%
