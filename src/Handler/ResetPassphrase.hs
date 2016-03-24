@@ -4,7 +4,6 @@ import Import hiding (isNothing)
 
 import Data.Maybe (fromJust, isNothing)
 
-import Dev
 import Handler.TH
 import Handler.Utils
 import Model.ResetPassphrase
