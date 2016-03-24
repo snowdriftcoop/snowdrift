@@ -21,9 +21,7 @@ import Model.User
 import View.User (renderUser, createUserForm)
 
 getWelcomeR :: Handler Html
-getWelcomeR = defaultLayoutNew "homepage" $ do
-    setTitle "Snowdrift.coop — Free the Commons"
-    $(widgetFile "homepage")
+getWelcomeR = $(widget "page/welcome" "Snowdrift.coop — Free the Commons")
 
 getSearchR :: Handler Html
 getSearchR = do
@@ -79,11 +77,8 @@ getHomeR,
 -- the dashboard for logged-in viewers.
 getHomeR = do
     u <- maybeAuth
-    maybe (defaultLayoutNew "homepage" $ do
-              setTitle "Snowdrift.coop — Free the Commons"
-              $(widgetFile "homepage"))
-          (\user ->
-              $(widget "page/dashboard/overview" "Dashboard"))
+    maybe getWelcomeR
+          (\user -> $(widget "page/dashboard/overview" "Dashboard"))
           u
 
 getUDashboardR = do

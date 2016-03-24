@@ -41,7 +41,7 @@ createUserForm ident extra = do
     (avatarRes,  avatarView)  <- mopt textField     "" Nothing
     (nickRes,    nickView)    <- mopt textField     "" Nothing
 
-    let view = $(widgetFile "auth/create-user-form")
+    let view = $(widgetFile "form/create-user")
         passphRes = case (passph1Res, passph2Res) of
             (FormSuccess a, FormSuccess b)
                 | a == b    -> FormSuccess a
