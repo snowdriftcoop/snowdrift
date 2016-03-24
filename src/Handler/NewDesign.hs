@@ -117,14 +117,7 @@ getPHomeR handle = do
 getCreateAccountR :: Handler Html
 getCreateAccountR = do
     (form, _) <- generateFormPost $ createUserForm Nothing
-    defaultLayoutNew "create-account" $ do
-        snowdriftTitle "Free the Commons"
-        [whamlet|
-            ^{alphaRewriteNotice}
-            <form method=POST>
-                ^{form}
-                <input type=submit>
-        |]
+    $(widget "page/create-account" "Free the Commons")
 
 -- | Handles form posting for a user signing up.
 postCreateAccountR :: Handler Html
