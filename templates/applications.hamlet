@@ -23,4 +23,3 @@ $else
         <td>
           $maybe location <- volunteerApplicationLocation application
             #{location}
-
