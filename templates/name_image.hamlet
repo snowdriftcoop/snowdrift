@@ -1,3 +1,0 @@
-<form method=POST enctype=#{enctype}>
-  ^{form}
-  <input type=submit value="Set Name">

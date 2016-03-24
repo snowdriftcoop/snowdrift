@@ -21,21 +21,21 @@ getIntroR,
     getDonateR,
     getMerchandiseR
     :: Handler Html
-getIntroR              = $(widget "how-it-works/intro" "Intro")
-getFloR                = $(widget "how-it-works/flo" "FLO")
-getNetworkEffectR      = $(widget "how-it-works/network-effect"
+getIntroR              = $(widget "page/how-it-works/intro" "Intro")
+getFloR                = $(widget "page/how-it-works/flo" "FLO")
+getNetworkEffectR      = $(widget "page/how-it-works/network-effect"
                                          "Network Effect")
-getSustainableFundingR = $(widget "how-it-works/sustainable-funding"
+getSustainableFundingR = $(widget "page/how-it-works/sustainable-funding"
                                          "Sustainable Funding")
-getCoOpR               = $(widget "how-it-works/co-op" "Co-op")
-getPSignupR            = $(widget "project-signup" "Project Signup")
-getAboutHomeR          = $(widget "about/old-homepage" "About")
-getContactR            = $(widget "contact" "Contact")
-getTeamR               = $(widget "team" "Team")
-getPressR              = $(widget "press" "Press")
-getSponsorsR           = $(widget "sponsors" "Sponsors")
-getDonateR             = $(widget "donate" "Donate")
-getMerchandiseR        = $(widget "merchandise" "Merchandise")
+getCoOpR               = $(widget "page/how-it-works/co-op" "Co-op")
+getPSignupR            = $(widget "page/project-signup" "Project Signup")
+getAboutHomeR          = $(widget "page/about/old-homepage" "About")
+getContactR            = $(widget "page/contact" "Contact")
+getTeamR               = $(widget "page/team" "Team")
+getPressR              = $(widget "page/press" "Press")
+getSponsorsR           = $(widget "page/sponsors" "Sponsors")
+getDonateR             = $(widget "page/donate" "Donate")
+getMerchandiseR        = $(widget "page/merchandise" "Merchandise")
 
 -- * TODO: Convert these.
 getTermsR,

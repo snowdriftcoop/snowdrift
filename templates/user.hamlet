@@ -95,4 +95,3 @@ $maybe (est_form, est_form_enctype) <- mest_form_and_enctype
       <form action=@{UserEstEligibleR user_id} method=post enctype=#{est_form_enctype}>
         ^{est_form}
         <input type=submit value="Approve">
-

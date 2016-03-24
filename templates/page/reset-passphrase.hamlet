@@ -1,0 +1,10 @@
+<.auth>
+  <h1>Reset passphrase
+  <p>
+    To reset your passphrase, please enter either your account name <strong>or</strong> email.
+    <br>
+    <em>Note: Passphrase-reset only works for accounts with verified emails.
+  <form method=POST action=@{ResetPassphraseR} enctype=#{enctype}>
+    ^{form}
+    <button .bigbutton type=submit>
+      Reset

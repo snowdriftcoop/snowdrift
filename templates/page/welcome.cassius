@@ -15,7 +15,7 @@
         opacity: 0
     100%
         left: 110%
-.homepage
+.welcome
     text-align: center
     padding: 0 2.85%
     .plane
@@ -72,7 +72,7 @@
         font-weight: 600
 /*break1*/
 @media (min-width: 301px)
-    .homepage
+    .welcome
         .background
             height: 13rem
         .foreground
@@ -81,7 +81,7 @@
             margin-bottom: 18rem
 /*break2*/
 @media (min-width: 391px)
-    .homepage
+    .welcome
         .background
             height: 20rem
         .foreground
@@ -91,7 +91,7 @@
             margin-bottom: 25rem
 /*break3*/
 @media (min-width: 571px)
-    .homepage
+    .welcome
         .background
             height: 26rem
         .foreground
@@ -101,7 +101,7 @@
             max-width: 57rem
 /*break4*/
 @media (min-width: 751px)
-    .homepage
+    .welcome
         .background
             height: 31rem
         .foreground
@@ -110,7 +110,7 @@
             margin-bottom: 45rem
 /* break5 */
 @media (min-width: 841px)
-    .homepage
+    .welcome
         .background
             height: 31rem
         .foreground
@@ -119,7 +119,7 @@
             margin-bottom: 47rem
 /*break6*/
 @media (min-width: 1111px)
-    .homepage
+    .welcome
         .background
             background-size: auto
             height: 32rem

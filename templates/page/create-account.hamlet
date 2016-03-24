@@ -1,0 +1,10 @@
+<h1>Create account
+<p>
+  By registering, you agree to Snowdrift.coop's (exceptionally ethical)
+  <a href=@{TermsR}>Terms&nbsp;of&nbsp;Use
+  and
+  <a href=@{PrivacyR}>Privacy&nbsp;Policy</a>.
+<form method=POST>
+    ^{form}
+    <button .bigbutton type=submit>
+      Submit

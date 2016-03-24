@@ -37,4 +37,4 @@ getJsLicensesR = do
             , Lib "jquery.jqplot.min.js" (render $ StaticR js_jquery_jqplot_min_js) "Expat License" "http://www.jclark.com/xml/copying.txt" "jquery.jqplot.js" (render $ StaticR js_jquery_jqplot_js)
             , Lib "jqplot.logAxisRenderer.min.js" (render $ StaticR js_plugins_jqplot_logAxisRenderer_min_js) "Expat License" "http://www.jclark.com/xml/copying.txt" "jqplot.logAxisRenderer.js" (render $ StaticR js_plugins_jqplot_logAxisRenderer_js)
             ]
-    $(widget "js-licenses" "Javascript Licenses")
+    $(widget "page/js-licenses" "Javascript Licenses")

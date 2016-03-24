@@ -7,7 +7,7 @@ import Control.Exception.Lifted (throwIO, handle)
 import Control.Monad.Reader
 import Control.Monad.Trans.Resource
 import Data.Char (isSpace)
-import Data.Text as T
+import Data.List as List (tail)
 import Network.HTTP.Conduit (Manager)
 import Text.Hamlet (hamletFile)
 import Text.Jasmine (minifym)
@@ -26,6 +26,7 @@ import qualified Data.Text.Lazy.Encoding as E
 import qualified Database.Persist
 import qualified Settings
 import qualified Yesod as Y
+import qualified Data.Text as T
 
 import Avatar
 import Model.Currency
@@ -400,3 +401,10 @@ defaultLayoutNew pageName widget = do
         $(widgetFile "default/grid")
         $(widgetFile "default-layout-new")
     withUrlRenderer $(hamletFile "templates/default-layout-wrapper.hamlet")
+  where
+    pageClasses :: (Text, Text)
+    pageClasses = ("class", classes pageName)
+    classes = T.append "container "
+            . T.unwords
+            . List.tail
+            . T.splitOn "/"

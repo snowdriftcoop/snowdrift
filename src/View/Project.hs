@@ -5,7 +5,6 @@ module View.Project
     , projectContactForm
     , inviteForm
     , Preview (..)
-    , projectConfirmPledgeForm
     , viewForm
     ) where
 
@@ -20,7 +19,6 @@ import Data.Order
 import DeprecatedBootstrap
 import Handler.Utils
 import Model.Project
-import Model.Shares
 import Model.Role
 import Widgets.Markdown
 
@@ -66,8 +64,3 @@ viewForm = renderBootstrap3 BootstrapBasicForm $ liftA2 (,)
     (fmap (either (const defaultOrder) id . parseOrderExpression
                                           . fromMaybe "")
           (aopt' textField "sort" Nothing))
-
-projectConfirmPledgeForm :: Maybe Int64 -> Form SharesPurchaseOrder
-projectConfirmPledgeForm =
-    renderBootstrap3 BootstrapBasicForm . fmap SharesPurchaseOrder
-                                        . areq hiddenField ""

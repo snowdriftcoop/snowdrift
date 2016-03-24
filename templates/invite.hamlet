@@ -101,4 +101,3 @@ $else
         <td>#{inviteTag invite}
         <td>#{roleAbbrev (inviteRole invite)}
         <td>@{InvitationR project_handle (inviteCode invite)}
-
