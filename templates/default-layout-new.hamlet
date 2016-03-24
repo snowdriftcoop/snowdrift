@@ -1,6 +1,6 @@
 <div .grid>
 ^{navbar}
-<div .container .#{pageName}>
+<div *{pageClasses}>
   $maybe msg <- mmsg
     <div .alert .alert-info #message>
       #{msg}
