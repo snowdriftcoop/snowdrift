@@ -45,6 +45,7 @@ usageText = mapM_ err
     , "    clean             \"rm -rf\" the whole cluster"
     , "    reset             re-init the cluster and databases"
     , "    export            create data dumps with pg_dump"
+    , "    help              print this text"
     , ""
     , "    # Expert commands:"
     , "    pg_ctl            run Postgres' pg_ctl(1) utility"
@@ -69,7 +70,7 @@ main = sh $ do
         ["export"] -> exportDb root
         ("pg_ctl":as') -> procs "pg_ctl" (map T.pack as') empty
         ("psql":as') -> liftIO $ callProcess "psql" as'
-        ["--help"] -> usageText
+        ["help"] -> usageText
         _ -> do
             err ""
             err "** Unknown or missing options! **"
