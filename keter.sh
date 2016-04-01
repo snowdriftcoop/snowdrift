@@ -28,12 +28,6 @@ contents=(
     dist
 )
 
-sd-main-dns () {
-    aws --profile snowdrift ec2 describe-instances \
-        --instance-ids i-81a6df28 \
-        --query 'Reservations[].Instances[].PublicDnsName'
-}
-
 hdr () {
     echo -e "\n-- $@"
 }
