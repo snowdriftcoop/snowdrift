@@ -11,8 +11,11 @@ Flag library-only
     Description: Build for use with "yesod devel"
     Default:     False
 
+-- library {{{1
 library
     hs-source-dirs: src, app
+
+    -- exposed-modules {{{2
     exposed-modules:
         Application
         Foundation
@@ -24,6 +27,7 @@ library
         Handler.Common
         Handler.Home
         Handler.Comment
+    -- }}}2
 
     if flag(dev) || flag(library-only)
         cpp-options:   -DDEVELOPMENT
@@ -42,6 +46,7 @@ library
         GeneralizedNewtypeDeriving
         RecordWildCards
 
+    -- build-depends {{{2
     build-depends:
         base                     >= 4       && < 5
         , yesod                  >= 1.4.1   && < 1.5
@@ -80,9 +85,11 @@ library
         , time
         , case-insensitive
         , wai
+    -- }}}2
 
     default-language: Haskell2010
 
+-- executable Snowdrift {{{1
 executable Snowdrift
     if flag(library-only)
         Buildable: False
@@ -95,6 +102,7 @@ executable Snowdrift
 
     default-language: Haskell2010
 
+-- test-suite test {{{1
 test-suite test
     type:           exitcode-stdio-1.0
     main-is:        Spec.hs
@@ -113,6 +121,7 @@ test-suite test
         OverloadedStrings
         NoImplicitPrelude
 
+    -- build-depends {{{2
     build-depends:
         base
         , Snowdrift
@@ -129,5 +138,9 @@ test-suite test
         , classy-prelude
         , classy-prelude-yesod
         , aeson
+    -- }}}2
 
     default-language: Haskell2010
+-- }}}1
+
+-- vim: fdm=marker :
