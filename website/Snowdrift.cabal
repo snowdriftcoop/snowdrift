@@ -35,18 +35,11 @@ library
         TemplateHaskell
         QuasiQuotes
         OverloadedStrings
-        NoImplicitPrelude
-        MultiParamTypeClasses
         TypeFamilies
         GADTs
+        NoImplicitPrelude
+        MultiParamTypeClasses
         GeneralizedNewtypeDeriving
-        FlexibleContexts
-        FlexibleInstances
-        EmptyDataDecls
-        NoMonomorphismRestriction
-        DeriveDataTypeable
-        ViewPatterns
-        TupleSections
         RecordWildCards
 
     build-depends:
@@ -119,17 +112,6 @@ test-suite test
         QuasiQuotes
         OverloadedStrings
         NoImplicitPrelude
-        MultiParamTypeClasses
-        TypeFamilies
-        GADTs
-        GeneralizedNewtypeDeriving
-        FlexibleContexts
-        FlexibleInstances
-        EmptyDataDecls
-        NoMonomorphismRestriction
-        DeriveDataTypeable
-        ViewPatterns
-        TupleSections
 
     build-depends:
         base
