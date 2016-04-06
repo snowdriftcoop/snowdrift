@@ -14,6 +14,11 @@ import Text.Shakespeare.Text (st)
 import Yesod.Default.Config2 (ignoreEnv, loadAppSettings)
 import Yesod.Test            as X
 
+-- For htmlHasLink
+import Yesod.Core
+import Test.HUnit
+import qualified Data.Text as T
+
 runDB :: SqlPersistM a -> YesodExample App a
 runDB query = do
     app <- getTestYesod
@@ -55,3 +60,15 @@ getTables = do
     |] []
 
     return $ map unSingle tables
+
+-- MOVE UPSTREAM
+
+htmlHasLink route = do
+    app <- getTestYesod
+    uri <- liftIO $ unsafeHandler app $ do
+        r <- getUrlRender
+        return (r route)
+    frags <- htmlQuery ("a[href="<>uri<>"]")
+    liftIO $ assertBool (msg uri) (length frags > 0)
+  where
+    msg u = "Expected a link to " <> (T.unpack u) <> ", but none was found"
