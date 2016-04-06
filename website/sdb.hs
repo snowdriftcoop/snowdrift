@@ -113,10 +113,6 @@ initCluster root pghost pgdata = do
     -- step "Creating and populating databases..."
     -- psql ["postgres"] $ input (root </> "dev" </> "devDB.sql")
 
-    -- step "Writing old-skool config file..."
-    -- Just user <- need "USER"
-    -- output "config/postgresql.yml" $ select (dbConfigTemplate user pghost')
-
     step "Success."
 
   where
