@@ -26,7 +26,6 @@ library
         Settings.StaticFiles
         Handler.Common
         Handler.Home
-        Handler.Comment
     -- }}}2
 
     if flag(dev) || flag(library-only)
@@ -110,7 +109,6 @@ test-suite test
     ghc-options:    -Wall
 
     other-modules:
-        Handler.CommentSpec
         Handler.CommonSpec
         Handler.HomeSpec
         TestImport
