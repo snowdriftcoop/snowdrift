@@ -6,4 +6,4 @@ database:
   # something like:
   #
   #   database: "_env:PGDATABASE:Snowdrift_LOWER_test"
-  database: Snowdrift_LOWER_test
+  database: snowdrift_test
