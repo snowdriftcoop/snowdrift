@@ -1,9 +1,9 @@
 {-# LANGUAGE CPP #-}
 
 -- | TestHooks puts all dicey test-environment overrides in one place.
-module TestHooks where
+module TestHooks (middleware, authPlugins) where
 
-import Import.NoFoundation
+import Import.NoFoundation hiding (authPlugins)
 
 #if TESTING
 import Yesod.Auth.Dummy (authDummy)
