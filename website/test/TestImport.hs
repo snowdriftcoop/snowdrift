@@ -71,9 +71,9 @@ getTables = do
 testRoot :: Text
 testRoot = "http://localhost:3000"
 
-login :: YesodExample App ()
-login = do
-    let ident = "pat"
+dummyLogin :: YesodExample App ()
+dummyLogin = do
+    let ident = "dummy"
     _ <- runDB (createUser ident)
 
     let url = testRoot <> "/auth/page/dummy"

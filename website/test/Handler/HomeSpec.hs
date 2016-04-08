@@ -17,11 +17,11 @@ spec = withApp $ do
             assertEqual "Contents differ" homeContents welcomeContents
     describe "browsing while logged in" $ do
         it "loads" $ do
-            login
+            dummyLogin
             get HomeR
             statusIs 200
         it "is the same as /dashboard" $ do
-            login
+            dummyLogin
             Just homeContents <- get HomeR >> getResponse
             Just dashboardContents <- get DashboardR >> getResponse
             assertEqual "Contents differ" homeContents dashboardContents
