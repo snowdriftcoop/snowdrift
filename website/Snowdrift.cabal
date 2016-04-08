@@ -111,12 +111,12 @@ test-suite test
     main-is:        Spec.hs
     hs-source-dirs: test
     ghc-options:    -Wall
-    cpp-options: -DTESTING
 
     other-modules:
         Handler.CommonSpec
         Handler.HomeSpec
         Handler.DashboardSpec
+        SampleSpec
         Factories
         TestImport
 

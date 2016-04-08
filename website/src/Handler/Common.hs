@@ -16,7 +16,9 @@ getRobotsR :: Handler TypedContent
 getRobotsR = return $ TypedContent typePlain
                     $ toContent $(embedFile "config/robots.txt")
 
-getWelcomeR, getDashboardR, getHowItWorksR :: Handler Html
+getWelcomeR, getDashboardR, getHowItWorksR, getPrivacyR, getTermsR :: Handler Html
 getWelcomeR = defaultLayout [whamlet|WELCOME|]
 getDashboardR = defaultLayout [whamlet|DASHBOARD|]
 getHowItWorksR = defaultLayout [whamlet|HOWITWORKS|]
+getPrivacyR = defaultLayout [whamlet|PRIVACY|]
+getTermsR = defaultLayout [whamlet|TERMS|]

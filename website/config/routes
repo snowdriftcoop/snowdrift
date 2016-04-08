@@ -8,3 +8,5 @@
 /welcome WelcomeR GET
 /dashboard DashboardR GET
 /how-it-works HowItWorksR GET
+/privacy PrivacyR GET
+/terms TermsR GET
