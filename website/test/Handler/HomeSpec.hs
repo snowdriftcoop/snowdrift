@@ -4,6 +4,24 @@ import TestImport
 
 spec :: Spec
 spec = withApp $ do
-    it "loads the index and checks it looks right" $ do
-        get HomeR
-        statusIs 200
+    describe "browsing anonymously" $ do
+        it "loads" $ do
+            get HomeR
+            statusIs 200
+        it "has a link to /how-it-works" $ do
+            get HomeR
+            htmlHasLink HowItWorksR
+        it "is the same as /welcome" $ do
+            Just homeContents <- get HomeR >> getResponse
+            Just welcomeContents <- get WelcomeR >> getResponse
+            assertEqual "Contents differ" homeContents welcomeContents
+    describe "browsing while logged in" $ do
+        it "loads" $ do
+            login
+            get HomeR
+            statusIs 200
+        it "is the same as /dashboard" $ do
+            login
+            Just homeContents <- get HomeR >> getResponse
+            Just dashboardContents <- get DashboardR >> getResponse
+            assertEqual "Contents differ" homeContents dashboardContents

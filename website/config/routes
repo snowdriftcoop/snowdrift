@@ -5,3 +5,6 @@
 /robots.txt RobotsR GET
 
 / HomeR GET
+/welcome WelcomeR GET
+/dashboard DashboardR GET
+/how-it-works HowItWorksR GET

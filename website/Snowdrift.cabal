@@ -11,6 +11,10 @@ Flag library-only
     Description: Build for use with "yesod devel"
     Default:     False
 
+Flag test
+    Description: Turn on testing settings, like dummy auth
+    Default:     False
+
 -- library {{{1
 library
     hs-source-dirs: src, app
@@ -28,11 +32,10 @@ library
         Handler.Home
     -- }}}2
 
+    if flag(test)
+        cpp-options: -DTESTING
     if flag(dev) || flag(library-only)
         cpp-options:   -DDEVELOPMENT
-        ghc-options:   -Wall -fwarn-tabs -O0
-    else
-        ghc-options:   -Wall -fwarn-tabs -O2
 
     default-extensions:
         TemplateHaskell
@@ -107,10 +110,13 @@ test-suite test
     main-is:        Spec.hs
     hs-source-dirs: test
     ghc-options:    -Wall
+    cpp-options: -DTESTING
 
     other-modules:
         Handler.CommonSpec
         Handler.HomeSpec
+        Handler.DashboardSpec
+        Factories
         TestImport
 
     default-extensions:
@@ -118,6 +124,7 @@ test-suite test
         QuasiQuotes
         OverloadedStrings
         NoImplicitPrelude
+        FlexibleContexts
 
     -- build-depends {{{2
     build-depends:
@@ -136,6 +143,9 @@ test-suite test
         , classy-prelude
         , classy-prelude-yesod
         , aeson
+        , wai-extra
+        , yesod-auth
+        , http-types
         -- For htmlHasLink (should move upstream)
         , HUnit >= 1.3.1.1
         , text >= 1.2.2.1

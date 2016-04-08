@@ -3,21 +3,26 @@ module TestImport
     , module X
     ) where
 
-import Application           (makeFoundation, makeLogWare)
 import ClassyPrelude         as X
 import Database.Persist      as X hiding (get)
 import Database.Persist.Sql  (SqlPersistM, SqlBackend, runSqlPersistMPool, rawExecute, rawSql, unSingle, connEscapeName)
 import Foundation            as X
-import Model                 as X
 import Test.Hspec            as X
 import Text.Shakespeare.Text (st)
 import Yesod.Default.Config2 (ignoreEnv, loadAppSettings)
+import Yesod.Auth (Route(..))
 import Yesod.Test            as X
+import Network.Wai.Test (SResponse(..))
+import Network.HTTP.Types (Status(..), Method)
+import qualified Data.Text.Encoding as T
+
+import Application           (makeFoundation, makeLogWare)
+import Model                 as X
+import Factories
 
 -- For htmlHasLink
 import Yesod.Core
 import Test.HUnit
-import qualified Data.Text as T
 
 runDB :: SqlPersistM a -> YesodExample App a
 runDB query = do
@@ -61,14 +66,49 @@ getTables = do
 
     return $ map unSingle tables
 
+-- ##
+
+testRoot :: Text
+testRoot = "http://localhost:3000"
+
+login :: YesodExample App ()
+login = do
+    let ident = "pat"
+    _ <- runDB (createUser ident)
+
+    let url = testRoot <> "/auth/page/dummy"
+
+    request $ do
+        setMethod "POST"
+        addPostParam "ident" ident
+        setUrl url
+
+needsAuth :: RedirectUrl App url => url -> Method -> YesodExample App ()
+needsAuth route method = do
+    authRte <- renderRoute' (AuthR LoginR)
+    request $ do
+        setMethod method
+        setUrl route
+    withResponse
+        (\response -> do
+            let code = statusCode (simpleStatus response)
+            liftIO $ assertBool ("Expected a 302 or 303 redirection status "
+                        <> "but received " <> show code)
+                       (code `elem` [302,303])
+            assertHeader "location" (T.encodeUtf8 (testRoot <> authRte))
+        )
+
 -- MOVE UPSTREAM
 
-htmlHasLink route = do
+renderRoute' :: Route App -> YesodExample App Text
+renderRoute' route = do
     app <- getTestYesod
-    uri <- liftIO $ unsafeHandler app $ do
+    liftIO $ unsafeHandler app $ do
         r <- getUrlRender
         return (r route)
+
+htmlHasLink :: Route App -> YesodExample App ()
+htmlHasLink route = do
+    uri <- renderRoute' route
     frags <- htmlQuery ("a[href="<>uri<>"]")
-    liftIO $ assertBool (msg uri) (length frags > 0)
-  where
-    msg u = "Expected a link to " <> (T.unpack u) <> ", but none was found"
+    liftIO $ assertBool "Link not found" (length frags > 0)

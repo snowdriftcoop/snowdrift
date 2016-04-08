@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 module Foundation where
 
 import Import.NoFoundation
@@ -5,6 +6,9 @@ import Database.Persist.Sql (ConnectionPool, runSqlPool)
 import Text.Hamlet          (hamletFile)
 import Text.Jasmine         (minifym)
 import Yesod.Auth.OpenId    (authOpenId, IdentifierType (Claimed))
+#if TESTING
+import Yesod.Auth.Dummy (authDummy)
+#endif
 import Yesod.Default.Util   (addStaticContentExternal)
 import Yesod.Core.Types     (Logger)
 import qualified Yesod.Core.Unsafe as Unsafe
@@ -61,7 +65,7 @@ instance Yesod App where
     --   b) Validates that incoming write requests include that token in either a header or POST parameter.
     -- For details, see the CSRF documentation in the Yesod.Core.Handler module of the yesod-core package.
     -- yesodMiddleware :: ToTypedContent res => HandlerT site IO res -> HandlerT site IO res
-    yesodMiddleware = defaultCsrfMiddleware . defaultYesodMiddleware
+    yesodMiddleware = addCsrf . defaultYesodMiddleware
 
     defaultLayout widget = do
         mmsg <- getMessage
@@ -115,6 +119,14 @@ instance Yesod App where
 
     makeLogger = return . appLogger
 
+addCsrf :: ToTypedContent res => HandlerT site IO res -> HandlerT site IO res
+addCsrf =
+#if TESTING
+    id
+#else
+    defaultCsrfMiddleware
+#endif
+
 -- How to run database actions.
 instance YesodPersist App where
     type YesodPersistBackend App = SqlBackend
@@ -144,9 +156,17 @@ instance YesodAuth App where
                 }
 
     -- You can add other plugins like Google Email, email or OAuth here
-    authPlugins _ = [authOpenId Claimed []]
+    authPlugins _ = unsafeAddTestingDummyAuth [authOpenId Claimed []]
 
     authHttpManager = getHttpManager
+
+unsafeAddTestingDummyAuth :: [AuthPlugin App] -> [AuthPlugin App]
+unsafeAddTestingDummyAuth =
+#if TESTING
+    (authDummy :)
+#else
+    id
+#endif
 
 instance YesodAuthPersist App
 

@@ -15,3 +15,8 @@ getFaviconR = do cacheSeconds $ 60 * 60 * 24 * 30 -- cache for a month
 getRobotsR :: Handler TypedContent
 getRobotsR = return $ TypedContent typePlain
                     $ toContent $(embedFile "config/robots.txt")
+
+getWelcomeR, getDashboardR, getHowItWorksR :: Handler Html
+getWelcomeR = defaultLayout [whamlet|WELCOME|]
+getDashboardR = defaultLayout [whamlet|DASHBOARD|]
+getHowItWorksR = defaultLayout [whamlet|HOWITWORKS|]
