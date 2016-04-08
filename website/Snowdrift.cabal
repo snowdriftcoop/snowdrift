@@ -30,6 +30,7 @@ library
         Settings.StaticFiles
         Handler.Common
         Handler.Home
+        TestHooks
     -- }}}2
 
     if flag(test)
