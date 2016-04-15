@@ -142,13 +142,13 @@ Follow the instructions to
 ## Get the Snowdrift code
 
 NB: We primarily use a completely FLO (Free/Libre/Open) host for our code:
-[git.gnu.io/snowdrift/snowdrift], and our instructions assume that repository.
+[git.snowdrift.coop/sd/snowdrift], and our instructions assume that repository.
 For convenience and redundancy, we also mirror at [GitHub], a popular but
 proprietary platform.
 
 From within your preferred directory, get the code with:
 
-    git clone https://git.gnu.io/snowdrift/snowdrift.git
+    git clone https://git.snowdrift.coop/sd/snowdrift.git
 
 ## Initial Build
 
@@ -293,7 +293,7 @@ more thorough resources about technical development.
 
 [DATABASE-MANAGEMENT.md]: DATABASE-MANAGEMENT.md
 [Git]: http://www.git-scm.com/downloads
-[git.gnu.io/snowdrift/snowdrift]: https://git.gnu.io/snowdrift/snowdrift
+[git.snowdrift.coop/sd/snowdrift]: https://git.snowdrift.coop/sd/snowdrift
 [GitHub]: https://github.com/snowdriftcoop/snowdrift
 [PostgreSQL]: http://www.postgresql.org/download/
 [Stack]: https://github.com/commercialhaskell/stack#the-haskell-tool-stack

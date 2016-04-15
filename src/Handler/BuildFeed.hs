@@ -39,4 +39,4 @@ getBuildFeedR = do
         return entry
 
     newsFeedText $ Feed title feed_url home_url author description lang time Nothing entries
-  where gitlab = "https://git.gnu.io/snowdrift/snowdrift/commit/"
+  where gitlab = "https://git.snowdrift.coop/sd/snowdrift/commit/"

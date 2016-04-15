@@ -86,17 +86,17 @@ The following covers the bare minimum process for those new to Git.
 ##### Forking at the host platform
 
 We collaborate on the code via the FLO (Free/Libre/Open) site
-[git.gnu.io](https://git.gnu.io/snowdrift/snowdrift).
+[git.snowdrift.coop](https://git.snowdrift.coop/sd/snowdrift).
 We also mirror on the popular but proprietary site
 [GitHub](https://github.com/snowdriftcoop/snowdrift),
 which you may use if you already have an account there. As we encourage
-everyone to use FLO tools, the instructions below assume git.gnu.io.
+everyone to use FLO tools, the instructions below assume git.snowdrift.coop.
 
 To contribute changes to the project, first
-[create an account on git.gnu.io](https://git.gnu.io/users/sign_in)
+[create an account on git.snowdrift.coop](https://git.snowdrift.coop/users/sign_in)
 (or sign in if you already have an account).
 
-Once signed in, go to <https://git.gnu.io/snowdrift/snowdrift>,
+Once signed in, go to <https://git.snowdrift.coop/sd/snowdrift>,
 and click the "Fork" link on the top right.
 
 After choosing your account for the fork, you should be at the page for your
@@ -107,19 +107,19 @@ has your account name followed by "/Snowdrift".
 
 At the top of the main page, below the header, you'll see a box with an address.
 By default, the SSH option is selected, and we recommend SSH ideally. However,
-[SSH setup](https://git.gnu.io/help/ssh/README) is kind of tricky, especially
+[SSH setup](https://git.snowdrift.coop/help/ssh/README) is kind of tricky, especially
 for those new to SSH. To stick with the easier option for now, click "HTTPS" and
 use that address which will look like:
-"https://git.gnu.io/YOURNAME/snowdrift.git"
+"https://git.snowdrift.coop/YOURNAME/snowdrift.git"
 
-Where `YOURNAME` is your git.gnu.io username.
+Where `YOURNAME` is your git.snowdrift.coop username.
 
 Copy that address to your clipboard.
 
 In your snowdrift directory, paste the address into your terminal as part of the
 following command:
 
-    git remote add my-snow https://git.gnu.io/YOURNAME/snowdrift.git
+    git remote add my-snow https://git.snowdrift.coop/YOURNAME/snowdrift.git
 
 If you have not used Git before, run these additional Git setup commands,
 replacing `YOUR NAME` and `YOUR EMAIL` with your actual name and email.
@@ -202,7 +202,7 @@ same overall update), and you have confirmed that everything works and all tests
 pass, run `git status` to make sure no work is missing and all new files were
 committed.
 
-Next, send your changes to your git.gnu.io account with:
+Next, send your changes to your git.snowdrift.coop account with:
 
     git push -u my-snow some_branch
 
@@ -211,7 +211,7 @@ Change `some_branch` to the name of the branch where you made the commit(s).
 NB: if you make additional changes to the same branch before a maintainer merges
 it into master, you can push those new updates with just `git push`.
 
-To notify the snowdrift team about your work, visit the git.gnu.io page with
+To notify the snowdrift team about your work, visit the git.snowdrift.coop page with
 your fork. You should see a button **"Create Merge Request"** Click that to
 bring up a form where you can add further notes about your work (especially
 useful if you are merging multiple commits). You may ignore "Assign to",

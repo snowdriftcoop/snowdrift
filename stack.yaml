@@ -8,7 +8,7 @@ packages:
     commit: 0e996ce1ab3ab8c2e30cf1a1ee247c27761e779a
   extra-dep: true
 - location:
-    git: https://git.gnu.io/chreekat/yesod.git
+    git: https://git.snowdrift.coop/sd/yesod.git
     commit: 697d561eb727ed430f11c4b0bb19c9fc5f867db4
   subdirs:
     - yesod-bin
