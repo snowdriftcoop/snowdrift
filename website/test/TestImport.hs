@@ -83,9 +83,9 @@ dummyLogin = do
         addPostParam "ident" ident
         setUrl url
 
-needsAuth :: RedirectUrl App url => url -> Method -> YesodExample App ()
+needsAuth :: Route App -> Method -> YesodExample App ()
 needsAuth route method = do
-    authRte <- renderRoute' (AuthR LoginR)
+    authRte <- testRender route []
     request $ do
         setMethod method
         setUrl route
@@ -98,17 +98,12 @@ needsAuth route method = do
             assertHeader "location" (T.encodeUtf8 (testRoot <> authRte))
         )
 
--- MOVE UPSTREAM
-
-renderRoute' :: Route App -> YesodExample App Text
-renderRoute' route = do
-    app <- getTestYesod
-    liftIO $ unsafeHandler app $ do
-        r <- getUrlRender
-        return (r route)
+testRender :: Route App -> [(Text, Text)] -> YesodExample App Text
+testRender route params =
+    yesodRender <$> getTestYesod <*> pure "" <*> pure route <*> pure params
 
 htmlHasLink :: Route App -> YesodExample App ()
 htmlHasLink route = do
-    uri <- renderRoute' route
+    uri <- testRender route []
     frags <- htmlQuery ("a[href="<>uri<>"]")
     liftIO $ assertBool (X.unpack uri <> " not found") (length frags > 0)
