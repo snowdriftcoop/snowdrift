@@ -12,10 +12,10 @@ import Alerts (getAlert)
 
 import qualified TestHooks
 
--- | The foundation datatype for your application. This can be a good place to
--- keep settings and values requiring initialization before your application
--- starts running, such as database connections. Every handler will have
--- access to the data present here.
+-- | The foundation datatype for your application. This can be a good place
+-- to keep settings and values requiring initialization before your
+-- application starts running, such as database connections. Every handler
+-- will have access to the data present here.
 data App = App
     { appSettings    :: AppSettings
     , appStatic      :: Static -- ^ Settings for static file serving.
@@ -57,13 +57,19 @@ instance Yesod App where
         120    -- timeout in minutes
         "config/client_session_key.aes"
 
-    -- Yesod Middleware allows you to run code before and after each handler function.
-    -- The defaultYesodMiddleware adds the response header "Vary: Accept, Accept-Language" and performs authorization checks.
-    -- Some users may also want to add the defaultCsrfMiddleware, which:
+    -- Yesod Middleware allows you to run code before and after each
+    -- handler function. The defaultYesodMiddleware adds the response
+    -- header "Vary: Accept, Accept-Language" and performs authorization
+    -- checks. Some users may also want to add the defaultCsrfMiddleware,
+    -- which:
     --   a) Sets a cookie with a CSRF token in it.
-    --   b) Validates that incoming write requests include that token in either a header or POST parameter.
-    -- For details, see the CSRF documentation in the Yesod.Core.Handler module of the yesod-core package.
-    -- yesodMiddleware :: ToTypedContent res => HandlerT site IO res -> HandlerT site IO res
+    --   b) Validates that incoming write requests include that token in
+    --      either a header or POST parameter.
+    -- For details, see the CSRF documentation in the Yesod.Core.Handler
+    -- module of the yesod-core package.
+    --
+    -- yesodMiddleware :: ToTypedContent res
+    --    => HandlerT site IO res -> HandlerT site IO res
     yesodMiddleware = TestHooks.middleware
 
     defaultLayout widget = do
@@ -72,9 +78,9 @@ instance Yesod App where
 
         -- We break up the default layout into two components:
         -- default-layout is the contents of the body tag, and
-        -- default-layout-wrapper is the entire page. Since the final
-        -- value passed to hamletToRepHtml cannot be a widget, this allows
-        -- you to use normal widget features in default-layout.
+        -- default-layout-wrapper is the entire page. Since the final value
+        -- passed to hamletToRepHtml cannot be a widget, this allows you to
+        -- use normal widget features in default-layout.
 
         pc <- widgetToPageContent $ do
             addStylesheet $ StaticR css_bootstrap_css
@@ -110,8 +116,8 @@ instance Yesod App where
         -- Generate a unique filename based on the content itself
         genFileName lbs = "autogen-" ++ base64md5 lbs
 
-    -- What messages should be logged. The following includes all messages when
-    -- in development, and warnings and errors in production.
+    -- What messages should be logged. The following includes all messages
+    -- when in development, and warnings and errors in production.
     shouldLog app _source level =
         appShouldLogAll (appSettings app)
             || level == LevelWarn
@@ -135,7 +141,8 @@ instance YesodAuth App where
     loginDest _ = HomeR
     -- Where to send a user after logout
     logoutDest _ = HomeR
-    -- Override the above two destinations when a Referer: header is present
+    -- Override the above two destinations when a Referer: header is
+    -- present
     redirectToReferer _ = True
 
     authenticate creds = runDB $ do
@@ -159,9 +166,9 @@ instance YesodAuthPersist App
 instance RenderMessage App FormMessage where
     renderMessage _ _ = defaultFormMessage
 
--- Useful when writing code that is re-usable outside of the Handler context.
--- An example is background jobs that send email.
--- This can also be useful for writing code that works across multiple Yesod applications.
+-- Useful when writing code that is re-usable outside of the Handler
+-- context. An example is background jobs that send email. This can also be
+-- useful for writing code that works across multiple Yesod applications.
 instance HasHttpManager App where
     getHttpManager = appHttpManager
 
