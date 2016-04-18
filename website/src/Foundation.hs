@@ -8,6 +8,8 @@ import Yesod.Default.Util   (addStaticContentExternal)
 import Yesod.Core.Types     (Logger)
 import qualified Yesod.Core.Unsafe as Unsafe
 
+import Alerts (getAlert)
+
 import qualified TestHooks
 
 -- | The foundation datatype for your application. This can be a good place to
@@ -66,6 +68,7 @@ instance Yesod App where
 
     defaultLayout widget = do
         mmsg <- getMessage
+        malert <- getAlert
 
         -- We break up the default layout into two components:
         -- default-layout is the contents of the body tag, and
