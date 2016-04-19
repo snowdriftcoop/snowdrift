@@ -1,8 +1,8 @@
-User
+User sql=usr
     ident Text
     email Text Maybe
     emailVerified Bool
     password Text Maybe
-    UniqueUser ident
+    UniqueUsr ident
 
  -- By default this file is used in Model.hs (which is imported by Foundation.hs)

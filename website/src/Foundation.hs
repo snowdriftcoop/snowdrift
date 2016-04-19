@@ -136,7 +136,7 @@ instance YesodAuth App where
     redirectToReferer _ = True
 
     authenticate creds = runDB $ do
-        x <- getBy $ UniqueUser $ credsIdent creds
+        x <- getBy $ UniqueUsr $ credsIdent creds
         case x of
             Just (Entity uid _) -> return $ Authenticated uid
             Nothing -> Authenticated <$> insert User
