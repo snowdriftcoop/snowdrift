@@ -1,5 +1,5 @@
 -- | Common handler functions.
-module Handler.Common where
+module Handler where
 
 import Data.FileEmbed (embedFile)
 import Import
@@ -36,3 +36,5 @@ getSponsorsR :: Handler Html
 getSponsorsR = defaultLayout [whamlet|Sponsors|]
 getJsLicensesR :: Handler Html
 getJsLicensesR = defaultLayout [whamlet|JsLicenses|]
+getHomeR :: Handler Html
+getHomeR = defaultLayout $(widgetFile "homepage")

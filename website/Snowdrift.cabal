@@ -31,8 +31,7 @@ library
         Model
         Settings
         Settings.StaticFiles
-        Handler.Common
-        Handler.Home
+        Handler
         TestHooks
     -- }}}2
 
@@ -118,9 +117,7 @@ test-suite test
     ghc-options:    -Wall
 
     other-modules:
-        Handler.CommonSpec
-        Handler.HomeSpec
-        Handler.DashboardSpec
+        HandlerSpec
         AlertsSpec
         SampleSpec
         Factories
