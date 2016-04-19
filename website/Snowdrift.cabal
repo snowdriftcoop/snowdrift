@@ -32,6 +32,8 @@ library
         Settings
         Settings.StaticFiles
         Handler
+        Handler.TH
+        Handler.Util
         TestHooks
     -- }}}2
 
@@ -92,6 +94,7 @@ library
         , wai
         , blaze-html
         , libravatar
+        , titlecase
     -- }}}2
 
     default-language: Haskell2010

@@ -3,3 +3,4 @@ packages:
   - '.'
 extra-deps:
   - libravatar-0.3.0.0
+  - titlecase-0.1.0.2

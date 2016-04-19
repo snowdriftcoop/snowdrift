@@ -1,8 +1,12 @@
 -- | Common handler functions.
 module Handler where
 
-import Data.FileEmbed (embedFile)
 import Import
+
+import Data.FileEmbed (embedFile)
+import Yesod.Core.Types (HandlerContents)
+
+import Handler.TH
 
 -- These handlers embed files in the executable at compile time to avoid a
 -- runtime dependency, and for efficiency.
@@ -16,9 +20,27 @@ getRobotsR :: Handler TypedContent
 getRobotsR = return $ TypedContent typePlain
                     $ toContent $(embedFile "config/robots.txt")
 
-getWelcomeR, getDashboardR, getHowItWorksR, getPrivacyR, getTermsR, getResetPassphraseR, getCreateAccountR, getSearchR, getProjectsR :: Handler Html
-getWelcomeR = defaultLayout [whamlet|WELCOME|]
-getDashboardR = defaultLayout [whamlet|DASHBOARD|]
+-- | Homepage is an introduction to the site for non-logged-in viewers, and
+-- the dashboard for logged-in viewers.
+-- getHomeR = getDashboardR `catch` bleh
+--   where
+--     bleh :: HandlerContents -> Handler Html
+--     bleh = const getWelcomeR
+getHomeR :: Handler Html
+getHomeR = do
+    u <- maybeAuth
+    maybe getWelcomeR
+          (\user -> $(widget "page/dashboard" "Dashboard"))
+          u
+
+getWelcomeR :: Handler Html
+getWelcomeR = $(widget "page/welcome" "Snowdrift.coop — Free the Commons")
+
+getDashboardR = do
+    user <- requireAuth
+    $(widget "page/dashboard" "Dashboard")
+
+getHowItWorksR, getPrivacyR, getTermsR, getResetPassphraseR, getCreateAccountR, getSearchR, getProjectsR :: Handler Html
 getHowItWorksR = defaultLayout [whamlet|HOWITWORKS|]
 getPrivacyR = defaultLayout [whamlet|PRIVACY|]
 getTermsR = defaultLayout [whamlet|TERMS|]
@@ -36,5 +58,3 @@ getSponsorsR :: Handler Html
 getSponsorsR = defaultLayout [whamlet|Sponsors|]
 getJsLicensesR :: Handler Html
 getJsLicensesR = defaultLayout [whamlet|JsLicenses|]
-getHomeR :: Handler Html
-getHomeR = defaultLayout $(widgetFile "homepage")

@@ -2,6 +2,8 @@ module HandlerSpec (spec) where
 
 import TestImport
 
+import Network.Wai.Test (SResponse(..))
+
 spec :: Spec
 spec = withApp $ do
     describe "getRobotsR" $ do
@@ -26,7 +28,7 @@ spec = withApp $ do
             it "is the same as /welcome" $ do
                 Just homeContents <- get HomeR >> getResponse
                 Just welcomeContents <- get WelcomeR >> getResponse
-                assertEqual "Contents differ" homeContents welcomeContents
+                assertEqualOn simpleBody "Contents differ" homeContents welcomeContents
         describe "browsing while logged in" $ do
             it "loads" $ do
                 dummyLogin
@@ -40,3 +42,7 @@ spec = withApp $ do
     describe "getDashboardR" $ do
         it "requires login" $
             needsAuth DashboardR "GET"
+
+assertEqualOn :: Eq a => (t -> a) -> String -> t -> t -> YesodExample site ()
+assertEqualOn f msg a b =
+    assertEqual msg (f a) (f b)

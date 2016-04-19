@@ -19,6 +19,7 @@ import Application           (makeFoundation, makeLogWare)
 import Model                 as X
 import Factories
 
+import Yesod.Auth
 -- For htmlHasLink
 import Yesod.Core
 import Test.HUnit
@@ -84,7 +85,7 @@ dummyLogin = do
 
 needsAuth :: Route App -> Method -> YesodExample App ()
 needsAuth route method = do
-    authRte <- testRender route []
+    authRte <- testRender (AuthR LoginR) []
     request $ do
         setMethod method
         setUrl route
@@ -94,7 +95,7 @@ needsAuth route method = do
             liftIO $ assertBool ("Expected a 302 or 303 redirection status "
                         <> "but received " <> show code)
                        (code `elem` [302,303])
-            assertHeader "location" (T.encodeUtf8 (testRoot <> authRte))
+            assertHeader "location" (T.encodeUtf8 authRte)
         )
 
 testRender :: Route App -> [(Text, Text)] -> YesodExample App Text
