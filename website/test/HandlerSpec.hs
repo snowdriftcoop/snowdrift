@@ -26,9 +26,9 @@ spec = withApp $ do
                 get HomeR
                 htmlHasLink HowItWorksR
             it "is the same as /welcome" $ do
-                Just homeContents <- get HomeR >> getResponse
-                Just welcomeContents <- get WelcomeR >> getResponse
-                assertEqualOn simpleBody "Contents differ" homeContents welcomeContents
+                Just homeResponse <- get HomeR >> getResponse
+                Just welcomeResponse <- get WelcomeR >> getResponse
+                assertEqualContents homeResponse welcomeResponse
         describe "browsing while logged in" $ do
             it "loads" $ do
                 dummyLogin
@@ -36,12 +36,16 @@ spec = withApp $ do
                 statusIs 200
             it "is the same as /dashboard" $ do
                 dummyLogin
-                Just homeContents <- get HomeR >> getResponse
-                Just dashboardContents <- get DashboardR >> getResponse
-                assertEqual "Contents differ" homeContents dashboardContents
+                get HomeR -- clear login alert
+                Just homeResponse <- get HomeR >> getResponse
+                Just dashboardResponse <- get DashboardR >> getResponse
+                assertEqualContents homeResponse dashboardResponse
     describe "getDashboardR" $ do
         it "requires login" $
             needsAuth DashboardR "GET"
+
+assertEqualContents :: SResponse -> SResponse -> YesodExample site ()
+assertEqualContents a b = assertEqualOn simpleBody "Contents differ" a b
 
 assertEqualOn :: Eq a => (t -> a) -> String -> t -> t -> YesodExample site ()
 assertEqualOn f msg a b =

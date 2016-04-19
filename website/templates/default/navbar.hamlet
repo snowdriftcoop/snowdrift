@@ -10,7 +10,7 @@
         How it works
     <li .unbreak4>
       $maybe _ <- maybeUser
-        <a href=@{HomeR} .icon .dashboard :active HomeR:.active>Dashboard
+        <a href=@{HomeR} .icon .dashboard :active HomeR || active DashboardR:.active>Dashboard
       $nothing
         <a href=@{AuthR LoginR} .icon .login :authActive:.active>Log In
     <li .search>
@@ -20,12 +20,12 @@
           <button type=submit>go
   <ul .right .break4>
     <li>
-      $maybe Entity uid user <- maybeUser
+      $maybe Entity _ user <- maybeUser
           <div .ddown>
             <a href .ddown-toggle .user>#{userIdent user}
             <ul>
               <li>
-                <a href=@{HomeR} :active HomeR:.active>Dashboard
+                <a href=@{HomeR} :active HomeR || active DashboardR:.active>Dashboard
               <li>
                 <a href=@{AuthR LogoutR}>Log Out
       $nothing
