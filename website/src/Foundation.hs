@@ -11,8 +11,6 @@ import qualified Data.Text as T
 import qualified Yesod.Core.Unsafe as Unsafe
 
 import Alerts (getAlert)
-
-import Alerts
 import Avatar
 
 import qualified TestHooks
@@ -179,7 +177,6 @@ unsafeHandler = Unsafe.fakeHandlerGetLogger appLogger
 
 navbarLayout :: Text -> Widget -> Handler Html
 navbarLayout pageName widget = do
-    master <- getYesod
     mmsg <- getMessage
     malert <- getAlert
     maybeUser  <- maybeAuth

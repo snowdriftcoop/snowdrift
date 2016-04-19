@@ -3,7 +3,7 @@ module Avatar where
 import qualified Data.Text as T
 import Network.Libravatar
 
-import Import.NoFoundation hiding (Email)
+import Import.NoFoundation
 
 getUserAvatar :: MonadHandler m => Route (HandlerSite m) -> Maybe User -> m Text
 getUserAvatar defaultRoute muser = do

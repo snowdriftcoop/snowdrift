@@ -4,7 +4,6 @@ module Handler where
 import Import
 
 import Data.FileEmbed (embedFile)
-import Yesod.Core.Types (HandlerContents)
 
 import Handler.TH
 
@@ -30,14 +29,15 @@ getHomeR :: Handler Html
 getHomeR = do
     u <- maybeAuth
     maybe getWelcomeR
-          (\user -> $(widget "page/dashboard" "Dashboard"))
+          (const $(widget "page/dashboard" "Dashboard"))
           u
 
 getWelcomeR :: Handler Html
 getWelcomeR = $(widget "page/welcome" "Snowdrift.coop — Free the Commons")
 
+getDashboardR :: Handler Html
 getDashboardR = do
-    user <- requireAuth
+    _ <- requireAuth
     $(widget "page/dashboard" "Dashboard")
 
 getHowItWorksR, getPrivacyR, getTermsR, getResetPassphraseR, getCreateAccountR, getSearchR, getProjectsR :: Handler Html
