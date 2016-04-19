@@ -10,7 +10,6 @@ import Foundation            as X
 import Test.Hspec            as X
 import Text.Shakespeare.Text (st)
 import Yesod.Default.Config2 (ignoreEnv, loadAppSettings)
-import Yesod.Auth (Route(..))
 import Yesod.Test            as X
 import Network.Wai.Test (SResponse(..))
 import Network.HTTP.Types (Status(..), Method)

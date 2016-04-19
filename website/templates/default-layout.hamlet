@@ -1,5 +1,10 @@
-$maybe msg <- mmsg
-  <div #message>#{msg}
-$maybe alert <- malert
-  #{alert}
-^{widget}
+<div .grid>
+^{navbar}
+<div *{pageClasses}>
+  $maybe msg <- mmsg
+    <div .alert .alert-info #message>
+      #{msg}
+  $maybe alert <- malert
+    #{alert}
+  ^{widget}
+^{footer}

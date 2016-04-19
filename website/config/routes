@@ -10,3 +10,14 @@
 /how-it-works HowItWorksR GET
 /privacy PrivacyR GET
 /terms TermsR GET
+
+-- Placeholders
+/reset-passphrase ResetPassphraseR GET
+/create-account CreateAccountR GET
+/search SearchR GET
+/projects ProjectsR GET
+/about AboutR GET
+/trademarks TrademarksR GET
+/sponsors SponsorsR GET
+/js-licenses JsLicensesR  GET
+/donate DonateR GET

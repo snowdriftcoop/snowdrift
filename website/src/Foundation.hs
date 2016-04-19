@@ -6,9 +6,14 @@ import Text.Hamlet          (hamletFile)
 import Text.Jasmine         (minifym)
 import Yesod.Default.Util   (addStaticContentExternal)
 import Yesod.Core.Types     (Logger)
+import qualified Data.List as List
+import qualified Data.Text as T
 import qualified Yesod.Core.Unsafe as Unsafe
 
 import Alerts (getAlert)
+
+import Alerts
+import Avatar
 
 import qualified TestHooks
 
@@ -72,20 +77,7 @@ instance Yesod App where
     --    => HandlerT site IO res -> HandlerT site IO res
     yesodMiddleware = TestHooks.middleware
 
-    defaultLayout widget = do
-        mmsg <- getMessage
-        malert <- getAlert
-
-        -- We break up the default layout into two components:
-        -- default-layout is the contents of the body tag, and
-        -- default-layout-wrapper is the entire page. Since the final value
-        -- passed to hamletToRepHtml cannot be a widget, this allows you to
-        -- use normal widget features in default-layout.
-
-        pc <- widgetToPageContent $ do
-            addStylesheet $ StaticR css_bootstrap_css
-            $(widgetFile "default-layout")
-        withUrlRenderer $(hamletFile "templates/default-layout-wrapper.hamlet")
+    defaultLayout widget = navbarLayout "" widget
 
     -- The page to be redirected to when authentication is required.
     authRoute _ = Just $ AuthR LoginR
@@ -152,6 +144,8 @@ instance YesodAuth App where
             Nothing -> Authenticated <$> insert User
                 { userIdent = credsIdent creds
                 , userPassword = Nothing
+                , userEmail = Nothing
+                , userEmailVerified = False
                 }
 
     -- You can add other plugins like Google Email, email or OAuth here
@@ -182,3 +176,46 @@ unsafeHandler = Unsafe.fakeHandlerGetLogger appLogger
 -- https://github.com/yesodweb/yesod/wiki/Sending-email
 -- https://github.com/yesodweb/yesod/wiki/Serve-static-files-from-a-separate-domain
 -- https://github.com/yesodweb/yesod/wiki/i18n-messages-in-the-scaffolding
+
+navbarLayout :: Text -> Widget -> Handler Html
+navbarLayout pageName widget = do
+    master <- getYesod
+    mmsg <- getMessage
+    malert <- getAlert
+    maybeUser  <- maybeAuth
+    avatar <- getUserAvatar (StaticR img_default_avatar_png)
+                            (maybe Nothing (Just . entityVal) maybeUser)
+
+    active <- maybe (const False) (==) <$> getCurrentRoute
+    howItWorksActive <- do
+        r <- getCurrentRoute
+        return $ case r of
+            Just HowItWorksR -> True
+            _                -> False
+    authActive <- do
+        r <- getCurrentRoute
+        return $ case r of
+            Just (AuthR _)        -> True
+            Just ResetPassphraseR -> True
+            Just CreateAccountR   -> True
+            _                     -> False
+
+
+    let navbar, footer :: Widget
+        navbar = $(widgetFile "default/navbar")
+        footer = $(widgetFile "default/footer")
+
+    pc <- widgetToPageContent $ do
+        $(widgetFile "default/reset")
+        $(widgetFile "default/breaks")
+        $(widgetFile "default/fonts")
+        $(widgetFile "default/grid")
+        $(widgetFile "default-layout")
+    withUrlRenderer $(hamletFile "templates/default-layout-wrapper.hamlet")
+  where
+    pageClasses :: (Text, Text)
+    pageClasses = ("class", classes pageName)
+    classes = T.append "container "
+            . T.unwords
+            . List.tail
+            . T.splitOn "/"

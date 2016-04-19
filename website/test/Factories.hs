@@ -11,4 +11,4 @@ import Database.Persist
 import Database.Persist.Sql
 
 createUser :: MonadIO m => Text -> SqlPersistT m (Entity User)
-createUser ident = upsert (User ident Nothing) []
+createUser ident = upsert (User ident Nothing False Nothing) []
