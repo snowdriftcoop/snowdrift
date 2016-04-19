@@ -1,0 +1,32 @@
+<nav>
+  <ul .main>
+    <li>
+      <a .logo href=@{HomeR}>
+        <img src=@{StaticR img_logo_small_png} alt=Snowdrift.coop>
+    <li>
+      <a href=@{ProjectsR} .icon .cards :active ProjectsR:.active>Browse
+    <li .break4>
+      <a href=@{HowItWorksR} :howItWorksActive:.active>
+        How it works
+    <li .unbreak4>
+      $maybe _ <- maybeUser
+        <a href=@{HomeR} .icon .dashboard :active HomeR:.active>Dashboard
+      $nothing
+        <a href=@{AuthR LoginR} .icon .login :authActive:.active>Log In
+    <li .search>
+      <a href=@{SearchR} .icon .lookingglass :active SearchR:.active>Search
+      <form action=@{SearchR} .break4>
+        <input type=text name=q placeholder=Search…>
+          <button type=submit>go
+  <ul .right .break4>
+    <li>
+      $maybe Entity uid user <- maybeUser
+          <div .ddown>
+            <a href .ddown-toggle .user>#{userIdent user}
+            <ul>
+              <li>
+                <a href=@{HomeR} :active HomeR:.active>Dashboard
+              <li>
+                <a href=@{AuthR LogoutR}>Log Out
+      $nothing
+        <a href=@{AuthR LoginR} :authActive:.active>Log In

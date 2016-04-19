@@ -22,7 +22,9 @@ library
     -- exposed-modules {{{2
     exposed-modules:
         Alerts
+        Avatar
         Application
+        Css
         Foundation
         Import
         Import.NoFoundation
@@ -90,6 +92,7 @@ library
         , case-insensitive
         , wai
         , blaze-html
+        , libravatar
     -- }}}2
 
     default-language: Haskell2010
