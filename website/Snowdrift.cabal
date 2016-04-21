@@ -25,6 +25,7 @@ library
         Avatar
         Application
         Css
+        EmailAuth
         Foundation
         Import
         Import.NoFoundation

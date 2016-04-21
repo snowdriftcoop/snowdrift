@@ -1,14 +1,14 @@
 {-# LANGUAGE CPP #-}
 
 -- | TestHooks puts all dicey test-environment overrides in one place.
-module TestHooks (middleware, authPlugins) where
+module TestHooks (middleware, authPlugins, sendVerifyEmail) where
 
 import Import.NoFoundation hiding (authPlugins)
 
 #if TESTING
 import Yesod.Auth.Dummy (authDummy)
 #endif
-import Yesod.Auth.OpenId    (authOpenId, IdentifierType (Claimed))
+import Yesod.Auth.Email (YesodAuthEmail, authEmail)
 
 -- | Don't use CSRF in testing.
 middleware :: (Yesod site, ToTypedContent res)
@@ -22,11 +22,14 @@ middleware = addCsrf . defaultYesodMiddleware
 #endif
 
 -- | Enable dummy auth (Yesod.Auth.Dummy) in testing.
-authPlugins :: YesodAuth master => [AuthPlugin master]
-authPlugins = addDummy [authOpenId Claimed []]
+authPlugins :: (YesodAuth master, YesodAuthEmail master) => [AuthPlugin master]
+authPlugins = addDummy [authEmail]
   where
 #if TESTING
     addDummy = (authDummy :)
 #else
     addDummy = id
 #endif
+
+-- | Don't actually send email in testing OR development.
+sendVerifyEmail e k u = undefined

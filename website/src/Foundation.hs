@@ -6,13 +6,14 @@ import Text.Hamlet          (hamletFile)
 import Text.Jasmine         (minifym)
 import Yesod.Default.Util   (addStaticContentExternal)
 import Yesod.Core.Types     (Logger)
+import Yesod.Auth.Email
 import qualified Data.List as List
 import qualified Data.Text as T
 import qualified Yesod.Core.Unsafe as Unsafe
 
 import Alerts (getAlert)
 import Avatar
-
+import qualified EmailAuth
 import qualified TestHooks
 
 -- | The foundation datatype for your application. This can be a good place
@@ -123,6 +124,22 @@ instance YesodPersist App where
         runSqlPool action $ appConnPool master
 instance YesodPersistRunner App where
     getDBRunner = defaultGetDBRunner appConnPool
+
+instance YesodAuthEmail App where
+    type AuthEmailId App = UserId -- not sure what use this is
+
+    -- Farm out implementations to keep this file sensible.
+    addUnverified e k          = EmailAuth.addUnverified e k
+    sendVerifyEmail e k u      = TestHooks.sendVerifyEmail e k u
+    getVerifyKey eid           = EmailAuth.getVerifyKey eid
+    setVerifyKey eid k         = EmailAuth.setVerifyKey eid k
+    verifyAccount eid          = EmailAuth.verifyAccount eid
+    getPassword eid            = EmailAuth.getPassword eid
+    setPassword eid saltedpass = EmailAuth.setPassword eid saltedpass
+    getEmailCreds ident        = EmailAuth.getEmailCreds ident
+    getEmail eid               = EmailAuth.getEmail eid
+    afterPasswordRoute _ = HomeR
+
 
 instance YesodAuth App where
     type AuthId App = UserId

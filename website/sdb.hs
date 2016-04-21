@@ -111,7 +111,7 @@ initCluster root pghost pgdata = do
     procs "pg_ctl" ["start", "-w"] empty
 
     step "Creating databases..."
-    procs "createdb" ["snowdrift_dev"] empty
+    procs "createdb" ["snowdrift_development"] empty
     procs "createdb" ["snowdrift_test"] empty
 
     step "Success."
