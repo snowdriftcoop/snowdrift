@@ -149,7 +149,10 @@ instance YesodAuth App where
     logoutDest _ = HomeR
     -- Override the above two destinations when a Referer: header is
     -- present
-    redirectToReferer _ = True
+    -- This often backfires, so I'm turning it off. Best will probably be
+    -- to bring back the original custom destination route that redirects
+    -- when appropriate.
+    redirectToReferer _ = False
 
     authenticate creds = runDB $ do
         x <- getBy $ UniqueUsr $ credsIdent creds
