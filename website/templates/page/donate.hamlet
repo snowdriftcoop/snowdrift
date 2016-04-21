@@ -1,0 +1,98 @@
+<h1>Donating to Snowdrift.coop
+<p>
+  Ironically, we need donations today to help us build a better fundraising
+  system for the future. Please donate today and help us continue our work.
+  Additionally or alternatively, please consider
+  <a href=#>volunteering</a>.
+
+<h2>Thank-you bonus options
+<ul>
+  <li>
+    All donors may (if they choose) be listed among our official
+    <a href=@{SponsorsR}>launch sponsors
+  <li>
+    donate $12+ to get a
+    <a href=@{MerchandiseR}#stickers>sticker
+  <li>donate $25+ and get a $5 gift card to the working system, once launched
+  <li>donate $40+ to be honored as a commit sponsor in the code
+  <li>
+    donate $100+ for a
+    <a href=@{MerchandiseR}#t-shirts>t-shirt
+  <li>at $500+ we will list you as a key sponsor
+
+<.donate-option #osi-donate>
+<h2>Tax deductable donations under 501(c)(3)
+<p>
+  Snowdrift.coop is incorporated as a Michigan non-profit cooperative but does
+  not currently have independent federal tax-exempt status. However, you can
+  donate under 501(c)(3) to the
+  <a href="http://opensource.org">
+    Open Source Initiative
+  specifying that they use the funds to support us, as we are now one of their
+  incubator projects. Please
+  contact&nbsp;us
+  to get details for this process.
+  <img #osi-donate-logo src=@{StaticR img_external_osi_png}>
+<p>
+  Note: As the OSI takes a modest administrative fee, it makes sense to donate
+  directly to us if you do not need 501(c)(3) terms.
+
+<h2>Direct donations
+<p>
+  The following options offer easy ways to donate directly to us. Such donations
+  are not tax-deductible.
+
+<.donate-option #paypal-donate>
+  <img alt=Paypal src=@{StaticR img_external_PayPal_logo_gif}>
+  <form #paypal-button
+    abframeid=iframe.0.4323007988200692
+    abineguid=E620BEBBFF4F4B1695F2E9204A329253
+    action=https://www.paypal.com/cgi-bin/webscr
+    method=post
+    target=_top>
+    <input name=cmd type=hidden value=_s-xclick>
+    <input name=hosted_button_id type=hidden value=M24Z4DFEW4SQL>
+    <input
+      alt="PayPal donation option"
+      name=submit
+      src=@{StaticR img_external_paypal_donate_gif}
+      type=image>
+
+  <p #avoid-paypal-fees>
+    Note: the convenient button above works with or without a Paypal account,
+    but it costs us a 2.9% + $0.30 fee. To skip the fee, log-in to Paypal and
+    send funds to aaron@snowdrift.coop funded by your bank or Paypal balance
+    (not by credit card or paypal credit) and marked as a gift.
+
+<.donate-option #dwolla-donate>
+  <a href=https://www.dwolla.com/hub/snowdrift>
+    <img alt="Donate with Dwolla" src=@{StaticR img_external_dwolla_png}>
+  <p>
+    Dwolla charges no fees but is U.S.-only and requires set up with a bank
+    account.
+
+<.donate-option #bitcoin-donate>
+  <img alt=Bitcoin src=@{StaticR img_external_Bitcoin_png}>
+  <pre>
+    -----BEGIN PGP SIGNED MESSAGE-----
+    Hash: SHA256<br>
+
+    Please use this address to publicly contribute to Snowdrift.coop:
+    1Bty8tCJDYGK2f5v5g71oLfL2qPTNvsDmB<br>
+
+    We prefer you use the above address to help us with transparency, but if
+    you would like us to generate an address specifically for your payment
+    we will do so on request.<br>
+
+    If you would like to be acknowledged or receive rewards, send us a
+    message identifying yourself signed with the address you used to pay.<br>
+
+    -----BEGIN PGP SIGNATURE-----
+    Version: GnuPG v1<br>
+
+    iF4EAREIAAYFAlSOQskACgkQuHM2ODJ01/L2fQEApnLrKteMemNbVBFpsfbKu+Ea
+    NYxSl4UfcZw8V0U5gwQBAJspPE1wRz89ed9RtsC11osgZdD47NZrhCAHR2PzlMD/
+    =lB8a
+    -----END PGP SIGNATURE-----
+<hr>
+Thank you for your support!

@@ -1,0 +1,30 @@
+$# The .intro class is a workaround since the haskell side is generating
+$# .how-it-works/intro which isn't desired.
+<div .section .group .intro>
+  <div .col .span_12_of_12>
+    <img src=@{StaticR img_logo_intro_png} .snowdrift-is>
+    <.background>
+    <.foreground>
+    <.topic .share>
+      <h2>Public Goods
+      <p>
+        Everyone around the world can freely access, use, modify, and share
+        everything we support.
+    <img src=@{StaticR img_intro_match_png}>
+    <.topic .match>
+      <h2>A Matching Pledge
+      <p>
+        Each patron donates a tiny amount for each patron who joins them in
+        supporting a project.
+    <img src=@{StaticR img_intro_sustain_png}>
+    <.topic .sustain>
+      <h2>Sustainability
+      <p>
+        Ongoing monthly funding gives project teams a sustainable living while
+        providing accountability.
+    <img src=@{StaticR img_intro_coop_png}>
+    <.topic .coop>
+      <h2>Democracy
+      <p>
+        As a non-profit cooperative, we serve the interests of our community,
+        and everyone can participate.

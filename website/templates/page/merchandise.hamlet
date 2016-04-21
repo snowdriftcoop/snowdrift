@@ -1,0 +1,99 @@
+<.background .snow-filled>
+<h1>Merchandise
+<div .section .group>
+  <div .col .span_12_of_12>
+    <p>
+      The following items are available to those who
+      <a href=@{DonateR}>donate
+      to our launch development (or put in substantial time
+      <a href=#>volunteering</a>).
+<div .section .group>
+  <div .col .span_12_of_12>
+    <h2 #t-shirts>T-Shirts
+<div .section .group>
+  <div .col .span_4_of_12>
+    <p>
+      We use premium fitted shirts made with 100% cotton super-soft jersey
+      fabric.
+  <div .col .span_8_of_12>
+    <div .section .group>
+      <div .col .span_6_of_12>
+        <a href=@{StaticR img_merchandise_t_shirt_womens_white_big_jpg}>
+          <img src=@{StaticR img_merchandise_t_shirt_womens_white_small_jpg}
+            alt="t-shirt: women's white">
+        <h6>white / women's / XS, S, M, L, XL, 2XL, 3XL
+      <div .col .span_6_of_12>
+        <a href=@{StaticR img_merchandise_t_shirt_womens_blue_big_jpg}>
+          <img src=@{StaticR img_merchandise_t_shirt_womens_blue_small_jpg}
+            alt="t-shirt: women's blue">
+        <h6>blue / women's / XS, S, M, L, XL, 2XL, 3XL
+    <div .section .group>
+      <div .col .span_6_of_12>
+        <a href=@{StaticR img_merchandise_t_shirt_mens_white_big_jpg}>
+          <img src=@{StaticR img_merchandise_t_shirt_mens_white_small_jpg}
+            alt="t-shirt: men's white">
+        <h6>white / men's / XS, S, M, L, XL, 2XL, 3XL, 4XL
+      <div .col .span_6_of_12>
+        <a href=@{StaticR img_merchandise_t_shirt_mens_blue_big_jpg}>
+          <img src=@{StaticR img_merchandise_t_shirt_mens_blue_small_jpg}
+            alt="t-shirt: men's blue">
+        <h6>blue / men's / XS, S, M, L, XL, 2XL, 3XL, 4XL
+    <div .section .group>
+      <div .col .span_6_of_12>
+        <a href=@{StaticR img_merchandise_t_shirt_womens_heather_big_jpg}>
+          <img src=@{StaticR img_merchandise_t_shirt_womens_heather_small_jpg}
+            alt="t-shirt: women's heather gray">
+        <h6>heather gray / women's / XS, S, M, L, XL, 2XL, 3XL
+      <div .col .span_6_of_12>
+        <a href=@{StaticR img_merchandise_t_shirt_womens_warm_big_jpg}>
+          <img src=@{StaticR img_merchandise_t_shirt_womens_warm_small_jpg}
+            alt="t-shirt: women's warm gray">
+        <h6>warm gray / women's / XS, S, M, L, XL, 2XL, 3XL
+    <div .section .group>
+      <div .col .span_6_of_12>
+        <a href=@{StaticR img_merchandise_t_shirt_mens_heather_big_jpg}>
+          <img src=@{StaticR img_merchandise_t_shirt_mens_heather_small_jpg}
+            alt="t-shirt: men's heather gray">
+        <h6>heather gray / men's / XS, S, M, L, XL, 2XL, 3XL, 4XL
+      <div .col .span_6_of_12>
+        <a href=@{StaticR img_merchandise_t_shirt_mens_warm_big_jpg}>
+          <img src=@{StaticR img_merchandise_t_shirt_mens_warm_small_jpg}
+            alt="t-shirt: men's warm gray">
+        <h6>warm gray / men's / XS, S, M, L, XL, 2XL, 3XL, 4XL
+<div .section .group>
+  <div .col .span_12_of_12>
+    <h2 #stickers>Stickers
+<div .section .group>
+  <div .col .span_4_of_12>
+    <p>
+      Our durable stickers will hold up when used outdoors, on any laptop lid
+      or anywhere else you want to put them.
+  <div .col .span_8_of_12>
+    <div .section .group>
+      <div .col .span_6_of_12>
+        <.sticker>
+          <img src=@{StaticR img_merchandise_sticker_logo_png}
+            alt="logo sticker">
+        <h6>»logo« 1.42" x 1.5"
+      <div .col .span_6_of_12>
+        <.sticker>
+          <img src=@{StaticR img_merchandise_sticker_logo_long_png}
+            alt="long logo sticker">
+        <h6>»logo long«  4.61" x 1"
+    <div .section .group>
+      <div .col .span_6_of_12>
+        <.sticker>
+          <img src=@{StaticR img_merchandise_sticker_handshake_png}
+            alt="shaking hands sticker">
+        <h6>»handshake« 2.5" x 2.06"
+      <div .col .span_6_of_12>
+        <.sticker>
+          <img src=@{StaticR img_merchandise_sticker_shovel_png}
+            alt="shovel sticker">
+        <h6>»shovel« 2.5" x 1.77"
+    <div .section .group>
+      <div .col .span_6_of_12>
+        <.sticker>
+          <img src=@{StaticR img_merchandise_sticker_hexagon_png}
+            alt="hexagon sticker">
+        <h6>»hexagon« 1.73" x 2"

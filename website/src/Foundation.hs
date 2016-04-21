@@ -140,7 +140,6 @@ instance YesodAuthEmail App where
     getEmail eid               = EmailAuth.getEmail eid
     afterPasswordRoute _ = HomeR
 
-
 instance YesodAuth App where
     type AuthId App = UserId
 
@@ -209,10 +208,7 @@ navbarLayout pageName widget = do
         r <- getCurrentRoute
         return $ case r of
             Just (AuthR _)        -> True
-            Just ResetPassphraseR -> True
-            Just CreateAccountR   -> True
             _                     -> False
-
 
     let navbar, footer :: Widget
         navbar = $(widgetFile "default/navbar")

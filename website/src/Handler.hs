@@ -21,10 +21,6 @@ getRobotsR = return $ TypedContent typePlain
 
 -- | Homepage is an introduction to the site for non-logged-in viewers, and
 -- the dashboard for logged-in viewers.
--- getHomeR = getDashboardR `catch` bleh
---   where
---     bleh :: HandlerContents -> Handler Html
---     bleh = const getWelcomeR
 getHomeR :: Handler Html
 getHomeR = do
     u <- maybeAuth
@@ -40,21 +36,37 @@ getDashboardR = do
     _ <- requireAuth
     $(widget "page/dashboard" "Dashboard")
 
-getHowItWorksR, getPrivacyR, getTermsR, getResetPassphraseR, getCreateAccountR, getSearchR, getProjectsR :: Handler Html
-getHowItWorksR = defaultLayout [whamlet|HOWITWORKS|]
-getPrivacyR = defaultLayout [whamlet|PRIVACY|]
-getTermsR = defaultLayout [whamlet|TERMS|]
-getResetPassphraseR = defaultLayout [whamlet|RESETPASSPHRASE|]
-getCreateAccountR = defaultLayout [whamlet|CREATEACCOUNT|]
-getSearchR = defaultLayout [whamlet|SEARCH|]
-getProjectsR = defaultLayout [whamlet|PROJECTS|]
+getHowItWorksR :: Handler Html
+getHowItWorksR = $(widget "page/how-it-works" "getHowItWorksR")
+
+getPrivacyR :: Handler Html
+getPrivacyR = $(widget "page/privacy" "getPrivacyR")
+
+getTermsR :: Handler Html
+getTermsR = $(widget "page/terms" "getTermsR")
+
+getSearchR :: Handler Html
+getSearchR = do
+    q <- lookupGetParam "q"
+    $(widget "page/search" "Search")
+
+getProjectsR :: Handler Html
+getProjectsR = $(widget "page/projects" "getProjectsR")
+
 getTrademarksR :: Handler Html
-getTrademarksR = defaultLayout [whamlet|Trademarks|]
+getTrademarksR = $(widget "page/trademarks" "getTrademarksR")
+
 getDonateR :: Handler Html
-getDonateR = defaultLayout [whamlet|Donate|]
+getDonateR = $(widget "page/donate" "getDonateR")
+
 getAboutR :: Handler Html
-getAboutR = defaultLayout [whamlet|About|]
+getAboutR = $(widget "page/about" "getAboutR")
+
 getSponsorsR :: Handler Html
-getSponsorsR = defaultLayout [whamlet|Sponsors|]
+getSponsorsR = $(widget "page/sponsors" "getSponsorsR")
+
 getJsLicensesR :: Handler Html
-getJsLicensesR = defaultLayout [whamlet|JsLicenses|]
+getJsLicensesR = $(widget "page/js-licenses" "getJsLicensesR")
+
+getMerchandiseR :: Handler Html
+getMerchandiseR = $(widget "page/merchandise" "getMerchandiseR")

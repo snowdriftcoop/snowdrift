@@ -1,0 +1,483 @@
+<h1 .text-center>Snowdrift.coop Launch Sponsors
+<p>
+  We especially thank the following sponsors for their generous support of
+  Snowdrift.coop initial development. Most donated during our
+  formal <a href="https://snowdrift.tilt.com/">fund-drive</a>,
+  but we have and will continue to accept traditional donations
+  until we fully launch.
+  <strong>
+    See our
+    <a href=@{DonateR}>
+      donation page
+    to become a launch sponsor and join the list below.
+
+<!--
+  This list depends on the snowdrift.coop database, the links to user pages won't
+  work for any other deployment of this software, of course; although the names
+  could stay and be valid, but the links should be stripped. Alternatively, we
+  could hardcode the full URLs…
+-->
+
+<h2 .text-center>Key sponsors
+<ul .key-sponsors>
+  <li>
+    <a href="https://www.alephobjects.com/">
+      Aleph Objects, Inc.
+  <li>
+      Denver Bohling
+  <li>
+      Philip Horger
+  <li>
+      jamessan
+  <li>
+      Tanu Kaskinen
+  <li>
+    <a href="http://linuxfund.org/">
+      Linux Fund
+  <li>
+    Pat McGee
+  <li>
+      Tomasz Muras
+  <li>
+    Paul Phillips
+  <li>
+      Kate & Ira Pohl
+
+<h2 .text-center>General pre-launch donors
+<ul .sponsors>
+  <li>
+    Mateusz A.
+  <li>
+    Carlos Aguayo
+  <li>
+    Blaise Alleyne
+  <li>
+    Chris Aniszczyk
+  <li>
+      Jorge Aranda
+  <li>
+      Pierre Arlais, Bearstech
+  <li>
+      Christopher Armstrong
+  <li>
+      Xavier Antoviaque, OpenCraft
+  <li>
+      Artyom
+  <li>
+      Greg Austic
+  <li>
+    Autious
+  <li>
+    Kenneth Ballenegger
+  <li>
+      Moritz Bartl
+  <li>
+    Brennen Bearnes
+  <li>
+    Marcis Berzins
+  <li>
+    Michael Baldry
+  <li>
+    Nick Barry
+  <li>
+      Ingo Blechschmidt
+  <li>
+      Eduard Bopp
+  <li>
+      Nathan Bouscal
+  <li>
+    Jeremy Bowers
+  <li>
+      Bret Comnes
+  <li>
+    Tim Bunce
+  <li>
+    Brit Butler
+  <li>
+    Lee Butts
+  <li>
+      Javier Merino Cacho
+  <li>
+      Scott Calvert & family
+  <li>
+    Mike Chaberski
+  <li>
+      Jacob Chapman
+  <li>
+      Chato
+  <li>
+      Paul Chiusano
+  <li>
+    Jesper Cockx
+  <li>
+    CommonKarma.org
+  <li>
+    Antoine Comte
+  <li>
+    Noah Cornwell
+  <li>
+      Christopher Cummins
+  <li>
+    Daniel
+  <li>
+    Debian KDE
+  <li>
+      Jeroen Dekkers
+  <li>
+    Holger Dell
+  <li>
+      Sebastian Dröge
+  <li>
+    <a href="http://andrewdurham.com/">
+      Andrew Durham
+  <li>
+      Christoph Egger
+  <li>
+    Carol Ann Emerick
+  <li>
+      Victor Engmark
+  <li>
+    Eric Entzel
+  <li>
+      Kent Fenwick
+  <li>
+      John Feras
+  <li>
+      Karl Fogel / QuestionCopyright.org
+  <li>
+    <a href="http://fossetcon.org/">
+      Fossetcon
+  <li>
+    Christian Frank
+  <li>
+    Craig Fratrik
+  <li>
+    CrowdsourcingKC
+  <li>
+    <a href="https://thefnf.org/">
+      The Free Network Foundation
+  <li>
+    freespace
+  <li>
+    FTL Software
+  <li>
+      Curtis Gagliardi
+  <li>
+    Luis Gasca
+  <li>
+    Denver Gingerich
+  <li>
+      Daniel Glassey
+  <li>
+    Brook Heisler
+  <li>
+    Raphaël Hertzog
+  <li>
+      Joey Hess
+  <li>
+    Joshua Hoblitt
+  <li>
+    Claudio Hoffmann
+  <li>
+      Thomas Hochstein
+  <li>
+    Martin Höcker
+  <li>
+    holdenweb
+  <li>
+    Lance Holton
+  <li>
+      hotzeplotz
+  <li>
+      Antonin Houska
+  <li>
+      Karl Ove Hufthammer
+  <li>
+    Eskild Hustvedt
+  <li>
+      Iko
+  <li>
+    Arya Irani
+  <li>
+      Geoffrey Irving
+  <li>
+      Seth de l'Isle
+  <li>
+    Ethan Johnson
+  <li>
+    H. Ryan Jones
+  <li>
+      Ollie Jones
+  <li>
+      Michiel de Jong
+  <li>
+      Hasen el Judy | حسن الجودي | ハセン
+  <li>
+    Alan Keefer
+  <li>
+      Ian Kelling
+  <li>
+    Andrew Klofas
+  <li>
+      Robert Klotzner
+  <li>
+    Fabrice Knevez
+  <li>
+    Georg Kolling
+  <li>
+      Eric Kow
+  <li>
+    Alanna Krause
+  <li>
+      Ramana Kumar
+  <li>
+      Michael F. Lamb
+  <li>
+      Daniel Landau
+  <li>
+      Brianna Laugher
+  <li>
+    Jean-Pierre Laurin
+  <li>
+    Alexander Lang
+  <li>
+      Kirsten Larsen
+  <li>
+    Matt Lee
+  <li>
+    Nathan Lee
+  <li>
+      Randall Leeds
+  <li>
+      Charles Lehner
+  <li>
+      R. Diaz de Leon
+  <li>
+    Federico Leva
+  <li>
+    Aaron Levin
+  <li>
+      Carl Lewis
+  <li>
+      John A. Lewis
+  <li>
+    Katrin Leinweber
+  <li>
+      Greg Lindahl
+  <li>
+      Thorbjørn Lindeijer
+  <li>
+      Mike Linksvayer
+  <li>
+    Yun-Mei Lo
+  <li>
+      Brendan Long
+  <li>
+    Hans Lub
+  <li>
+    DJ Madeira
+  <li>
+    Magan Adam
+  <li>
+      Patrick Masson
+  <li>
+      Martin Mauch
+  <li>
+      Francois Marier
+  <li>
+      Sean McGregor
+  <li>
+      Ewen McNeill
+  <li>
+    Jan Mechtel
+  <li>
+      Simon Michael
+  <li>
+    Florin Mihaila
+  <li>
+    Matthew Miller (mattdm)
+  <li>
+    Scott Milliken
+  <li>
+    Havard Moen
+  <li>
+      Ramakrishnan Muthukrishnan
+  <li>
+      Lauro Gripa Neto
+  <li>
+      Perry Nguyen
+  <li>
+      Nmlgc
+  <li>
+    Lachlan O'Dea
+  <li>
+      Robert Orzanna
+  <li>
+      Étienne Vallette d'Osia
+  <li>
+    Tom Paluck
+  <li>
+      Răzvan Panda
+  <li>
+    Fabian Peters
+  <li>
+    Quinlan "The Cobra" Pfiffer
+  <li>
+    Karl Pietrzak
+  <li>
+      Steve Phillips / elimisteve
+  <li>
+      Pini
+  <li>
+      Josh Poimboeuf
+  <li>
+      Timotheus Pokorra
+  <li>
+    Michał Politowski
+  <li>
+      Shuwen Qian
+  <li>
+    Aaron Quamme
+  <li>
+      Lane Rasberry
+  <li>
+    Olav Reinert
+  <li>
+    Dan Revel
+  <li>
+      Kevin Riggle
+  <li>
+      Matt Ritter
+  <li>
+    Florence Rosenbloom
+  <li>
+      Sage Ross
+  <li>
+    <a href="http://www.roundware.org/">
+      Roundware.org
+  <li>
+      Hugo Roy (FSFE)
+  <li>
+    Noé Rubinstein
+  <li>
+    Michel S.
+  <li>
+    Marc Saegesser
+  <li>
+      Chris Sakkas, livinglibre.com
+  <li>
+    Olli Savolainen
+  <li>
+    Tobias Schachman
+  <li>
+      Brian Schroeder
+  <li>
+      Sean Seefried
+  <li>
+    Paul Sexton
+  <li>
+    Kendrick Shaw
+  <li>
+      Howard Lewis Ship
+  <li>
+      Juan Raphael Diaz Simões
+  <li>
+      Brandon Skari
+  <li>
+    Don Smith
+  <li>
+      Leon P Smith
+  <li>
+      Nick Smith
+  <li>
+    Jim Snow
+  <li>
+    Khaled Soliman
+  <li>
+      Rodrigo Souto
+  <li>
+      Adam Souzis
+  <li>
+    Adam Spitz
+  <li>
+    Charles Stanhope
+  <li>
+      Stephen Starkey
+  <li>
+      Startifact
+  <li>
+    statuszer0
+  <li>
+      Bob Steffes
+  <li>
+    Hugh Stimson
+  <li>
+    Morgan Stuart
+  <li>
+    Simon Tegg
+  <li>
+    Álvaro Tejero-Cantero
+  <li>
+    Zachary Tellman
+  <li>
+      Seth Tisue
+  <li>
+      Frank Thomas
+  <li>
+    Greg Tomei
+  <li>
+    Kevin Turner
+  <li>
+    Christian Uhl
+  <li>
+      Vakranas
+  <li>
+    Timothy Vollmer
+  <li>
+    Wouter Vos
+  <li>
+    Markus Vuorio (Maakuth)
+  <li>
+      Tobias Gulbrandsen Waaler
+  <li>
+      Albert Wavering
+  <li>
+      Christopher Webber, GNU MediaGoblin
+  <li>
+      Stephen Paul Weber (singpolyma)
+  <li>
+      Patrick Weemeeuw
+  <li>
+    David Whitman
+  <li>
+      Kevin Wichmann
+  <li>
+      Alex Willemsma
+  <li>
+    Carl Witty
+  <li>
+      Barry & Devorah Wolf
+  <li>
+      Nicolas Wormser
+  <li>
+      Thomas Wrenn
+  <li>
+      Daniel Yokomizo
+  <li>
+      Brent Yorgey
+  <li>
+    Philip Young
+  <li>
+      Milan Zamazal
+  <li>
+    Shafiq Akram Zakaria
+  <li>
+      Massimo Zaniboni
+  <li>
+    Jan Zernisch
+  <li>
+    Jake Zieve
+  <li>
+    Guido Zuidhof
+
+<div .text-center>and 19 anonymous sponsors
