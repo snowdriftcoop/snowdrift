@@ -140,9 +140,8 @@ instance YesodAuth App where
         case x of
             Just (Entity uid _) -> return $ Authenticated uid
             Nothing -> Authenticated <$> insert User
-                { userIdent = credsIdent creds
-                , userPassword = Nothing
-                , userEmail = Nothing
+                { userPassword = Nothing
+                , userEmail = credsIdent creds
                 , userEmailVerified = False
                 }
 

@@ -22,7 +22,7 @@
     <li>
       $maybe Entity _ user <- maybeUser
           <div .ddown>
-            <a href .ddown-toggle .user>#{userIdent user}
+            <a href .ddown-toggle .user>#{userEmail user}
             <ul>
               <li>
                 <a href=@{HomeR} :active HomeR || active DashboardR:.active>Dashboard

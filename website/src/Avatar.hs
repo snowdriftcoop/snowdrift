@@ -11,7 +11,7 @@ getUserAvatar defaultRoute muser = do
 
     maybe (return defaultUrl)
           (\user -> do
-              let email = fromMaybe T.empty (userEmail user)
+              let email = userEmail user
               if userEmailVerified user
                   then liftIO (libravatar email defaultUrl)
                   else return defaultUrl)
