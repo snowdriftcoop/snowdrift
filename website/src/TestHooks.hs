@@ -32,4 +32,6 @@ authPlugins = addDummy [authEmail]
 #endif
 
 -- | Don't actually send email in testing OR development.
-sendVerifyEmail e k u = undefined
+-- FIXME: Do send email in production, though :D
+sendVerifyEmail :: MonadLogger m => Text -> t -> Text -> m ()
+sendVerifyEmail e _k u = $logDebug ("Hit up " <> u <> " to authorize " <> e <> " .")

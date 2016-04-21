@@ -96,6 +96,7 @@ library
         , blaze-html
         , libravatar
         , titlecase
+        , transformers
     -- }}}2
 
     default-language: Haskell2010

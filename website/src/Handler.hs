@@ -22,11 +22,9 @@ getRobotsR = return $ TypedContent typePlain
 -- | Homepage is an introduction to the site for non-logged-in viewers, and
 -- the dashboard for logged-in viewers.
 getHomeR :: Handler Html
-getHomeR = do
-    u <- maybeAuth
+getHomeR = maybeAuth >>=
     maybe getWelcomeR
           (const $(widget "page/dashboard" "Dashboard"))
-          u
 
 getWelcomeR :: Handler Html
 getWelcomeR = $(widget "page/welcome" "Snowdrift.coop — Free the Commons")

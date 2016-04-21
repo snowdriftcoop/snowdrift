@@ -126,18 +126,18 @@ instance YesodPersistRunner App where
     getDBRunner = defaultGetDBRunner appConnPool
 
 instance YesodAuthEmail App where
-    type AuthEmailId App = UserId -- not sure what use this is
+    type AuthEmailId App = VerifyEmailId
 
     -- Farm out implementations to keep this file sensible.
-    addUnverified e k          = EmailAuth.addUnverified e k
-    sendVerifyEmail e k u      = TestHooks.sendVerifyEmail e k u
-    getVerifyKey eid           = EmailAuth.getVerifyKey eid
-    setVerifyKey eid k         = EmailAuth.setVerifyKey eid k
-    verifyAccount eid          = EmailAuth.verifyAccount eid
-    getPassword eid            = EmailAuth.getPassword eid
-    setPassword eid saltedpass = EmailAuth.setPassword eid saltedpass
-    getEmailCreds ident        = EmailAuth.getEmailCreds ident
-    getEmail eid               = EmailAuth.getEmail eid
+    addUnverified e k          = runDB $ EmailAuth.addUnverified e k
+    sendVerifyEmail e k u      = runDB $ TestHooks.sendVerifyEmail e k u
+    getVerifyKey eid           = runDB $ EmailAuth.getVerifyKey eid
+    setVerifyKey eid k         = runDB $ EmailAuth.setVerifyKey eid k
+    verifyAccount eid          = runDB $ EmailAuth.verifyAccount eid
+    getPassword uid            = runDB $ EmailAuth.getPassword uid
+    setPassword uid saltedpass = runDB $ EmailAuth.setPassword uid saltedpass
+    getEmailCreds ident        = runDB $ EmailAuth.getEmailCreds ident
+    getEmail eid               = runDB $ EmailAuth.getEmail eid
     afterPasswordRoute _ = HomeR
 
 instance YesodAuth App where
