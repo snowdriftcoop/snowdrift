@@ -5,7 +5,7 @@ module TestHooks (middleware, authPlugins, sendVerifyEmail) where
 
 import Import.NoFoundation hiding (authPlugins)
 
-#if TESTING
+#if DEVELOPMENT
 import Yesod.Auth.Dummy (authDummy)
 #endif
 import Yesod.Auth.Email (YesodAuthEmail, authEmail)
@@ -15,7 +15,7 @@ middleware :: (Yesod site, ToTypedContent res)
            => HandlerT site IO res -> HandlerT site IO res
 middleware = addCsrf . defaultYesodMiddleware
   where
-#if TESTING
+#if DEVELOPMENT
     addCsrf = id
 #else
     addCsrf = defaultCsrfMiddleware
@@ -25,7 +25,7 @@ middleware = addCsrf . defaultYesodMiddleware
 authPlugins :: (YesodAuth master, YesodAuthEmail master) => [AuthPlugin master]
 authPlugins = addDummy [authEmail]
   where
-#if TESTING
+#if DEVELOPMENT
     addDummy = (authDummy :)
 #else
     addDummy = id

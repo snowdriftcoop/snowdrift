@@ -1,3 +1,6 @@
+flags:
+  Snowdrift:
+    dev: true
 resolver: lts-5.11
 packages:
   - '.'

@@ -11,10 +11,6 @@ Flag library-only
     Description: Build for use with "yesod devel"
     Default:     False
 
-Flag test
-    Description: Turn on testing settings, like dummy auth
-    Default:     False
-
 -- library {{{1
 library
     hs-source-dirs: src, app
@@ -38,8 +34,6 @@ library
         TestHooks
     -- }}}2
 
-    if flag(test)
-        cpp-options: -DTESTING
     if flag(dev) || flag(library-only)
         cpp-options:   -DDEVELOPMENT
 
