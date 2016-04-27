@@ -1,5 +1,0 @@
-.auth
-    max-width: 51rem
-    margin: 0 auto
-    form input
-        width: 95%

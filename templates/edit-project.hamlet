@@ -1,3 +1,0 @@
-<form method=POST action=@{PHomeR project_handle}>
-  ^{project_form}
-  <input name=mode type=submit value=preview>

@@ -1,9 +1,0 @@
-<ul>
-  <li>
-    <a href=@{HomeR}>Overview
-  <li>
-    <a href=@{UTransactionsR}>Transactions
-  <li>
-    <a href=@{UPledgesR}>Pledges
-  <li>
-    <a href=@{EditUserR uid}>Edit profile

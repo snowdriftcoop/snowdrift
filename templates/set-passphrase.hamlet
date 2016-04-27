@@ -1,6 +1,0 @@
-Set the new passphrase:
-<form method=POST
-      action=@{UserResetPassphraseR user_id hash}
-      enctype=#{enctype}>
-  ^{form}
-  <button>update
