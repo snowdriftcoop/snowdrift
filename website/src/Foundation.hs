@@ -11,7 +11,7 @@ import qualified Data.List as List
 import qualified Data.Text as T
 import qualified Yesod.Core.Unsafe as Unsafe
 
-import Alerts (getAlert)
+import Alerts (getAlert, alertInfo)
 import Avatar
 import qualified EmailAuth
 import qualified TestHooks
@@ -168,6 +168,7 @@ instance YesodAuth App where
     authPlugins _ = TestHooks.authPlugins
 
     authHttpManager = getHttpManager
+    onLogin = alertInfo "You are now logged in"
 
 instance YesodAuthPersist App
 
