@@ -1,7 +1,17 @@
 name:          Snowdrift
-version:       0.0.0
+version:       0.1.4
 cabal-version: >= 1.22
 build-type:    Simple
+license:       AGPL-3
+license-file:  ../LICENSE.md
+author:        Snowdrift.coop
+maintainer:    dev@lists.snowdrift.coop
+synopsis:      Infrastructure for the Snowdrift.coop fundraising site.
+category:      Web
+stability:     Experimental
+build-type:    Simple
+homepage:      https://snowdrift.coop
+bug-reports:   https://tree.taiga.io/project/snowdrift/issues
 
 Flag dev
     Description: Turn on development settings, like auto-reload templates.
