@@ -82,8 +82,6 @@ exportDb :: FilePath -> Shell ()
 exportDb root = do
     step "Dumping to devDB.sql..."
     output (root </> "dev" </> "devDB.sql") $ pgDump "snowdrift_development"
-    step "Dumping to testDB.sql..."
-    output (root </> "dev" </> "testDB.sql") $ pgDump "snowdrift_test_template"
   where
     pgDump db = inproc "pg_dump" ["--no-owner", "--no-privileges", "--create", db] empty
 
@@ -112,24 +110,15 @@ initCluster root pghost pgdata = do
     step "Starting database server..."
     procs "pg_ctl" ["start", "-w"] empty
 
-    step "Creating and populating databases..."
-    psql ["postgres"] $ input (root </> "dev" </> "devDB.sql")
-    psql ["postgres"] $ input (root </> "dev" </> "testDB.sql")
-    psql ["postgres"] $ select
-        [ "update pg_database set datistemplate=true where datname='snowdrift_test_template';"
-        ]
-
-    step "Writing old-skool config file..."
-    Just user <- need "USER"
-    output "config/postgresql.yml" $ select (dbConfigTemplate user pghost')
+    step "Creating databases..."
+    procs "createdb" ["snowdrift_development"] empty
+    procs "createdb" ["snowdrift_test"] empty
 
     step "Success."
 
   where
 
     pghost'  = "'" <> toText_ pghost <> "'"
-    logfile  = root </> "init-dev-db.log"
-    logfile' = toText_ logfile
     pgdata'  = toText_ pgdata
     setPgConfigOpts f opts =
         inplace_ (choice (patterns opts)) f
@@ -147,31 +136,6 @@ initCluster root pghost pgdata = do
             once (oneOf " =")
         -- replace it with 'opt = value'
         return (opt <> " = " <> value)
-
--- | Template for database config file.
-dbConfigTemplate user pghost =
-    [ "Default: &defaults"
-    , format ("   user: "%s) user
-    , "   password: \"\""
-    , format ("   host: "%s) pghost
-    , "   database: snowdrift_development"
-    , "   poolsize: 10"
-    , ""
-    , "Development:"
-    , "  <<: *defaults"
-    , ""
-    , "Testing:"
-    , "  database: snowdrift_test"
-    , "  <<: *defaults"
-    , ""
-    , "Staging:"
-    , "  database: snowdrift_staging"
-    , "  poolsize: 100"
-    , "  <<: *defaults"
-    , ""
-    , "Production:"
-    , "  <<: *defaults"
-    ]
 
 -- | Print a header for a step
 step s = err ("## " <> s)
