@@ -13,6 +13,10 @@ build-type:    Simple
 homepage:      https://snowdrift.coop
 bug-reports:   https://tree.taiga.io/project/snowdrift/issues
 
+source-repository head
+  type:     git
+  location: https://git.snowdrift.coop/sd/snowdrift.git
+
 Flag dev
     Description: Turn on development settings, like auto-reload templates.
     Default:     False
