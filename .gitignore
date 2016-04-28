@@ -26,3 +26,4 @@ tags
 
 # EclipseFP:
 .dist-buildwrapper/
+.shake

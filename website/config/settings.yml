@@ -29,7 +29,7 @@ ip-from-header: "_env:IP_FROM_HEADER:false"
 database:
   user:     "_env:PGUSER:"
   password: "_env:PGPASS:"
-  host:     "_env:PGHOST:/home/b/src/Haskell/snowdrift/website/website/.postgres-work/sockets"
+  host:     "_env:PGHOST:"
   port:     "_env:PGPORT:5432"
   # See config/test-settings.yml for an override during tests
   database: "_env:PGDATABASE:snowdrift_development"
