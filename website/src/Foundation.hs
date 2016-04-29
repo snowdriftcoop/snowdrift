@@ -82,7 +82,6 @@ instance Yesod App where
     authRoute _ = Just $ AuthR LoginR
 
     -- Routes not requiring authentication.
-    isAuthorized (AuthR LoginR) _ = authNotAlreadyLoggedIn
     isAuthorized (AuthR _) _ = return Authorized
     isAuthorized FaviconR _ = return Authorized
     isAuthorized RobotsR _ = return Authorized
@@ -116,25 +115,6 @@ instance Yesod App where
             || level == LevelError
 
     makeLogger = return . appLogger
-
---
--- ** Authorization code
---
-
--- | This function is specifically for handling the (AuthR LoginR) route, and
--- preventing logged-in users from visiting it by using the direct url (our
--- site UI hides the login link when the user is logged-in).
-authNotAlreadyLoggedIn :: Handler AuthResult
-authNotAlreadyLoggedIn = do
-    muid <- maybeAuthId
-    case muid of
-        Nothing -> return Authorized
-        Just _ -> do
-            alertWarning "You're already logged in. To sign in with another\
-                \ account, please Log Out first."
-            redirectUltDest HomeR
-
-
 
 -- How to run database actions.
 instance YesodPersist App where
@@ -189,6 +169,16 @@ instance YesodAuth App where
 
     authHttpManager = getHttpManager
     onLogin = alertInfo "You are now logged in"
+
+    -- We modify the default login handler to redirect an already logged-in user
+    -- to the homepage when attempting to access the login page.
+    loginHandler = do
+        muid <- lift maybeAuthId
+        when (isJust muid) $ lift $ do
+            alertWarning "You're already logged in. To sign in with another\
+                \ account, please Log Out first."
+            redirect HomeR
+        defaultLoginHandler
 
 instance YesodAuthPersist App
 
