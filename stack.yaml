@@ -1,22 +1,15 @@
 flags:
-    Snowdrift:
-        dev: true
+  Snowdrift:
+    dev: true
+resolver: lts-5.11
 packages:
-- '.'
-- location:
-    git: https://github.com/chreekat/ghci-runner.git
-    commit: 0e996ce1ab3ab8c2e30cf1a1ee247c27761e779a
-  extra-dep: true
-- location:
-    git: https://git.snowdrift.coop/sd/yesod.git
-    commit: 697d561eb727ed430f11c4b0bb19c9fc5f867db4
-  subdirs:
-    - yesod-bin
-  extra-dep: true
+  - website
+  - location:
+      git: https://git.snowdrift.coop/sd/yesod.git
+      commit: 697d561eb727ed430f11c4b0bb19c9fc5f867db4
+    subdirs:
+      - yesod-bin
+    extra-dep: true
 extra-deps:
-    # Absent from LTS
-    - libravatar-0.3.0.0
-    - mime-0.4.0.2
-    - titlecase-0.1.0.2
-    - yesod-markdown-0.11.0
-resolver: lts-5.5
+  - libravatar-0.3.0.0
+  - titlecase-0.1.0.2

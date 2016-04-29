@@ -1,0 +1,10 @@
+User sql=usr
+    email Text
+    emailVerified Bool
+    password Text Maybe
+    UniqueUsr email
+
+VerifyEmail
+    key Text -- "VerKey"
+    user UserId
+    UniqueVerify user

@@ -1,5 +1,5 @@
 #!/usr/bin/env stack
--- stack --install-ghc runghc --package turtle
+-- stack --install-ghc runghc --package turtle --package shake -- -rtsopts -with-rtsopts=-I0 -O0
 
 {-# LANGUAGE OverloadedStrings #-}
 
@@ -15,80 +15,123 @@
 import Prelude hiding (FilePath)
 
 import Control.Exception.Base (bracket)
-import Data.Maybe (catMaybes)
+import Development.Shake
 import GHC.IO.Handle (hDuplicate, hDuplicateTo)
 import System.Environment (getProgName, getArgs)
 import System.IO (openFile, IOMode(..))
-import System.Process (callProcess)
-import Turtle
-import qualified Control.Foldl as F
+import Turtle hiding (need, opt)
 import qualified Data.Text as T
 import qualified Filesystem.Path.CurrentOS as P
 import qualified System.IO as H
+import qualified Turtle
 
+pgWorkDir :: FilePath
 pgWorkDir = ".postgres-work"
 
-usageText = mapM_ err
-    [ "sdb.hs: a wrapper to set up environment variables and run various"
-    , "commands for your local postgres database for Snowdrift.coop"
-    , "development."
+usageText :: Text -> Shell ()
+usageText this = mapM_ err
+    [ this <> ": a wrapper to set up environment variables and run various"
+    , "commands for hacking on the Snowdrift.coop website."
     , ""
     , "Usage:"
     , ""
-    , "    sdb.hs ACTION [ARGS]"
+    , "    " <> this <> " ACTION [ARGS]"
     , ""
     , "Where ACTION may be one of:"
     , ""
-    , "    init              initialize the database cluster and databases"
-    , "    start             start the cluster"
-    , "    stop              stop  the cluster"
+    , "    test              run 'stack test'"
+    , "    devel             start 'yesod devel'"
+    , "    ghci              start 'ghci' with the db set up for using app/DevelMain.hs"
     , "    clean             \"rm -rf\" the whole cluster"
-    , "    reset             re-init the cluster and databases"
     , "    export            create data dumps with pg_dump"
     , "    help              print this text"
     , ""
     , "    # Expert commands:"
+    , "    env               print export commands for PGHOST and PGDATA"
+    , "                             e.g. 'source $(" <> this <> " env)'"
+    , "    start             start the cluster (normally done automatically)"
+    , "    stop              stop  the cluster (ditto)"
     , "    pg_ctl            run Postgres' pg_ctl(1) utility"
-    , "    psql DATABASE     connect to DATABASE with psql"
+    , "    psql              connect to snowdrift_development with psql"
     ]
 
+dbRunning, dbCluster :: H.FilePath
+dbRunning = ".postgres-work/data/postmaster.pid"
+dbCluster = ".postgres-work/data/postgresql.conf"
+
+main :: IO ()
 main = sh $ do
-    (root, pghost, pgdata) <- initEnv
+    (dbdir, pghost, pgdata) <- initEnv
 
-    let init'  = initCluster root pghost pgdata
-        clean' = rm_rf (root </> pgWorkDir)
-        stop'  = void (proc "pg_ctl" ["stop"] empty)
-
+    -- An escape hatch before getting down to shake
     args <- liftIO getArgs
     case args of
-        ["init"] -> init'
-        ["start"] ->
-            void (shell "pg_isready" empty .||. proc "pg_ctl" ["start"] empty)
-        ["stop"] -> stop'
-        ["clean"] -> stop' >> clean'
-        ["reset"] -> stop' >> clean' >> init'
-        ["export"] -> exportDb root
+        ["env"] -> do
+            echo ("export PGHOST=" <> toText_ pghost)
+            echo ("export PGDATA=" <> toText_ pgdata)
         ("pg_ctl":as') -> procs "pg_ctl" (map T.pack as') empty
-        ("psql":as') -> liftIO $ callProcess "psql" as'
-        ["help"] -> usageText
-        _ -> do
-            err ""
-            err "** Unknown or missing options! **"
-            err ""
-            usageText
-            exit (ExitFailure 1)
+        _ -> liftIO (shakeit dbdir pghost pgdata)
+
+shakeit :: FilePath -> FilePath -> FilePath -> IO ()
+shakeit dbdir pghost pgdata = shakeArgs shakeOptions $ do
+    want ["help"]
+
+    -- Very basic
+
+    phony "help" $ actsh (usageText . T.pack =<< liftIO getProgName)
+
+    -- Basic
+
+    phony "test" $ do
+        need [dbRunning]
+        command [] "stack" ["test"]
+
+    phony "devel" $ do
+        need [dbRunning]
+        command [Cwd "website"] "stack" ["exec", "yesod", "devel"]
+
+    phony "ghci" $ do
+        need [dbRunning]
+        command [Cwd "website"] "stack" ["ghci", "--package", "foreign-store"]
+
+    phony "clean" $ do
+        need ["stop"]
+        removeFilesAfter ".postgres-work" ["//*"]
+
+    phony "export" $ actsh $ do
+        y <- testfile (fromText (T.pack dbRunning))
+        if y
+            then exportDb dbdir
+            else err "Is your database running? (Then you should probably catch it!)"
+
+    -- Advanced
+
+    phony "start" (need [dbRunning])
+
+    phony "stop"
+        (actsh (shell "pg_ctl status" empty .&&. shell "pg_ctl stop" empty))
+
+    dbRunning %> const (do
+        need [dbCluster]
+        actsh (shell "pg_ctl status" empty .||. shell "pg_ctl -w start" empty)
+        )
+
+    dbCluster %> const (actsh (initCluster pghost pgdata))
+
+    phony "psql" $ do
+        need [dbRunning]
+        command [] "psql" ["snowdrift_development"]
 
 exportDb :: FilePath -> Shell ()
-exportDb root = do
+exportDb dbdir = do
     step "Dumping to devDB.sql..."
-    output (root </> "dev" </> "devDB.sql") $ pgDump "snowdrift_development"
-    step "Dumping to testDB.sql..."
-    output (root </> "dev" </> "testDB.sql") $ pgDump "snowdrift_test_template"
+    mktree (dbdir </> "dev")
+    output (dbdir </> "dev" </> "devDB.sql") $ pgDump "snowdrift_development"
   where
     pgDump db = inproc "pg_dump" ["--no-owner", "--no-privileges", "--create", db] empty
 
-initCluster :: FilePath -> FilePath -> FilePath -> Shell ()
-initCluster root pghost pgdata = do
+initCluster :: FilePath -> FilePath -> Shell ()
+initCluster pghost pgdata = do
     step "Creating directories..."
     mktree pghost
     mktree pgdata
@@ -112,27 +155,18 @@ initCluster root pghost pgdata = do
     step "Starting database server..."
     procs "pg_ctl" ["start", "-w"] empty
 
-    step "Creating and populating databases..."
-    psql ["postgres"] $ input (root </> "dev" </> "devDB.sql")
-    psql ["postgres"] $ input (root </> "dev" </> "testDB.sql")
-    psql ["postgres"] $ select
-        [ "update pg_database set datistemplate=true where datname='snowdrift_test_template';"
-        ]
-
-    step "Writing old-skool config file..."
-    Just user <- need "USER"
-    output "config/postgresql.yml" $ select (dbConfigTemplate user pghost')
+    step "Creating databases..."
+    procs "createdb" ["snowdrift_development"] empty
+    procs "createdb" ["snowdrift_test"] empty
 
     step "Success."
 
   where
 
     pghost'  = "'" <> toText_ pghost <> "'"
-    logfile  = root </> "init-dev-db.log"
-    logfile' = toText_ logfile
     pgdata'  = toText_ pgdata
-    setPgConfigOpts f opts =
-        inplace_ (choice (patterns opts)) f
+    setPgConfigOpts config opts =
+        inplace_ (choice (patterns opts)) config
     patterns opts =
         map (fmap Just . uncurry optSettingPattern) opts
         <> [ commentOrEmpty >> pure Nothing ]
@@ -142,64 +176,41 @@ initCluster root pghost pgdata = do
     optSettingPattern opt value = do
         -- match the line with the option
         _ <- contains $ do
-            begins (star (oneOf " #"))
-            text opt
+            void $ begins (star (oneOf " #"))
+            void $ text opt
             once (oneOf " =")
         -- replace it with 'opt = value'
         return (opt <> " = " <> value)
 
--- | Template for database config file.
-dbConfigTemplate user pghost =
-    [ "Default: &defaults"
-    , format ("   user: "%s) user
-    , "   password: \"\""
-    , format ("   host: "%s) pghost
-    , "   database: snowdrift_development"
-    , "   poolsize: 10"
-    , ""
-    , "Development:"
-    , "  <<: *defaults"
-    , ""
-    , "Testing:"
-    , "  database: snowdrift_test"
-    , "  <<: *defaults"
-    , ""
-    , "Staging:"
-    , "  database: snowdrift_staging"
-    , "  poolsize: 100"
-    , "  <<: *defaults"
-    , ""
-    , "Production:"
-    , "  <<: *defaults"
-    ]
-
--- | Print a header for a step
-step s = err ("## " <> s)
-
 -- | Create and export some env variables
 initEnv :: Shell (FilePath, FilePath, FilePath)
 initEnv = do
-    root <- getProjectRoot
-    Just path <- need "PATH"
+    dbdir <- getProjectRoot
+    Just path <- Turtle.need "PATH"
     pgPath <- inshell "pg_config --bindir" ""
 
-    let pghost = root </> pgWorkDir </> "sockets"
-        pgdata = root </> pgWorkDir </> "data"
+    let pghost = dbdir </> pgWorkDir </> "sockets"
+        pgdata = dbdir </> pgWorkDir </> "data"
     export "PGHOST" (toText_ pghost)
     export "PGDATA" (toText_ pgdata)
     export "PATH" (format (s%":"%s) path pgPath)
-    return (root, pghost, pgdata)
+    return (dbdir, pghost, pgdata)
   where
     getProjectRoot =
         realpath =<< (directory . P.decodeString <$> liftIO getProgName)
 
 
--- | A fail-early version of psql
-psql args = hush . procs "psql" (["-q", "-v", "ON_ERROR_STOP="] <> args)
-
 -- ##
 -- ## Helper functions/additions to underlying libs
 -- ##
+
+-- | Use a 'Shell a' as an 'Action ()'
+actsh :: Shell a -> Action ()
+actsh = liftIO . sh
+
+-- | Print a header for a step
+step :: Text -> Shell ()
+step msg = err ("## " <> msg)
 
 -- | Seeing as I use this everywhere
 toText_ :: FilePath -> Text
@@ -216,23 +227,23 @@ inplace_ pat file = liftIO (runManaged (do
 
 -- | sed with filtering.
 sed_ :: Pattern (Maybe Text) -> Shell Text -> Shell Text
-sed_ pat s = flatten $ do
+sed_ pat orig = flatten $ do
     when (matchesEmpty pat) (die message)
     let pat' = fmap mconcat
             (many (pat <|> fmap (Just . T.singleton) anyChar))
-    txt    <- s
+    txt    <- orig
     txt':_ <- return (match pat' txt)
     return txt'
   where
     message = "sed: the given pattern matches the empty string"
     matchesEmpty = not . null . flip match ""
-    flatten s = do
-        Just x <- s
-        return x
+    flatten my = do
+        Just y <- my
+        return y
 
 -- | Run a shell and send stdout/stderr to nowhere
 hush :: Shell () -> Shell ()
-hush s = liftIO $ bracket
+hush act = liftIO $ bracket
     (do
         saveErr <- hDuplicate H.stderr
         saveOut <- hDuplicate H.stdout
@@ -244,9 +255,4 @@ hush s = liftIO $ bracket
     (\(saveErr, saveOut) -> do
         hDuplicateTo saveErr H.stderr
         hDuplicateTo saveOut H.stdout)
-    (const (sh s))
-
--- | rm -rf a directory. thx.
-rm_rf dir = do
-    True <- testdir dir
-    rmtree dir
+    (const (sh act))

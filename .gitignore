@@ -1,8 +1,6 @@
 dist/
 static/tmp/
-config/client_session_key.aes
-config/postgresql.yml
-cabal-dev
+client_session_key.aes
 .postgres-work
 .stack-work
 .cabal-sandbox/
@@ -14,11 +12,14 @@ yesod-devel/
 *.chi
 *.chs.h
 codex.tags
+tags.codex
 hscope.out
 *.tix
 .hpc/
 TAGS
 tags
+
+*.keter
 
 # Intellij IDEA:
 .idea
@@ -26,3 +27,4 @@ tags
 
 # EclipseFP:
 .dist-buildwrapper/
+.shake
