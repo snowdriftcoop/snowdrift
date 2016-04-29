@@ -11,7 +11,7 @@ import qualified Data.List as List
 import qualified Data.Text as T
 import qualified Yesod.Core.Unsafe as Unsafe
 
-import Alerts (getAlert, alertInfo)
+import Alerts (getAlert, alertInfo, alertWarning)
 import Avatar
 import qualified EmailAuth
 import qualified TestHooks
@@ -82,6 +82,7 @@ instance Yesod App where
     authRoute _ = Just $ AuthR LoginR
 
     -- Routes not requiring authentication.
+    isAuthorized (AuthR LoginR) _ = authNotAlreadyLoggedIn
     isAuthorized (AuthR _) _ = return Authorized
     isAuthorized FaviconR _ = return Authorized
     isAuthorized RobotsR _ = return Authorized
@@ -115,6 +116,25 @@ instance Yesod App where
             || level == LevelError
 
     makeLogger = return . appLogger
+
+--
+-- ** Authorization code
+--
+
+-- | This function is specifically for handling the (AuthR LoginR) route, and
+-- preventing logged-in users from visiting it by using the direct url (our
+-- site UI hides the login link when the user is logged-in).
+authNotAlreadyLoggedIn :: Handler AuthResult
+authNotAlreadyLoggedIn = do
+    muid <- maybeAuthId
+    case muid of
+        Nothing -> return Authorized
+        Just _ -> do
+            alertWarning "You're already logged in. To sign in with another\
+                \ account, please Log Out first."
+            redirectUltDest HomeR
+
+
 
 -- How to run database actions.
 instance YesodPersist App where
