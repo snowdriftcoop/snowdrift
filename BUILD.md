@@ -165,42 +165,26 @@ Then, fetch all Haskell dependencies and build everything:
 
 NB: this will take a while!
 
-### Set up the database
+### Set up the database and run initial tests
 
-We have a simple tool that creates a private database cluster local to the
-project. On GNU/Linux, BSD, or OS X, initialize databases by running:
+We have a simple tool that helps ensure a private database cluster is set
+up and available. Use it to run tests:
 
-    ./sdb.hs init
+    ./sdb.hs test
 
 NB: The sdb.hs tool won't work on Windows because it uses UNIX sockets. We
 welcome any patches, feedback, or Postgres-on-Windows help to get an alternative
 working.
 
-NB: To see sdb commands for other operations, run `./sdb.hs --help`
-
-### Run initial tests
-
-Run the tests to compile the test dependencies:
-
-    stack test
+NB: To see sdb commands for other operations, run `./sdb.hs help`
 
 ## Running the site
-
-### Starting the database
-
-If you just initialized, the database cluster should already be running.
-However, it will stop under various circumstances such as rebooting your
-computer. If you try to run the site when the cluster is stopped, you will get
-an error stating "Snowdrift: libpq: failed (could not connect to server: No such
-file or directory". To make sure the database is running, enter:
-
-    ./sdb.hs start
 
 ### Option 1: run via `Snowdrift Development`
 
 From the snowdrift project directory, run the site in development mode via:
 
-    stack exec Snowdrift Development
+    stack exec Snowdrift
 
 (to stop the site, use ctrl-C)
 
@@ -219,11 +203,29 @@ To set up `yesod devel`, run:
 
 From now on, you may run the site in development mode via:
 
-    stack exec yesod devel
+    ./sdb.hs devel
 
 NB: The first run will take a long time.
 
 (To stop yesod devel, type `quit` in terminal and then press Enter)
+
+### Option 3: run from within `stack ghci` (the repl)
+
+This option is somewhat advanced, because you can get some funny errors
+sometimes. However, it has the fastest rebuild time by far. Start the repl
+with:
+
+    ./sdb.hs ghci
+
+Then from the repl's prompt, enter
+
+    :load app/DevelMain.hs
+    :update
+
+To reload the site after changes, type
+
+    :reload
+    :update
 
 ## Using the local site
 
@@ -271,13 +273,16 @@ recognize a change.
 
 To make builds recognize changes to the static directory, run:
 
-    touch src/Settings/StaticFiles.hs
+    touch website/src/Settings/StaticFiles.hs
 
 ### Exploring the code via REPL
 
 To start the REPL where you can run code from the site in an interpreter, use:
 
     stack ghci
+
+If you want to run the devel site through ghci, use `./sdb.hs ghci`
+instead.
 
 ## Database notes
 

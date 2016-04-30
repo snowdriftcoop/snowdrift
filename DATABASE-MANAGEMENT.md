@@ -17,14 +17,8 @@ will abort.
 * If you *intend* to lose the data (e.g. destroying a column storing data we
   no longer want), the automatic entry in migrate.unsafe can be kept.
 
-Once you are sure about the migration commands working as you intend, rename
-migrations/migrate.unsafe to migrations/migrateN (where N is a higher number
-than any previous migrate files).
-
-With valid migration files in place, the server should run.
-
-NB: Our migration system needs work, see
-[SD-501](https://snowdrift.coop/p/snowdrift/w/en/coding/c/2582).
+**The old migration code has been removed, and nothing has replaced it
+yet.**  See [Issue 302](https://tree.taiga.io/project/snowdrift/issue/302).
 
 ### Committing database migrations
 
@@ -67,8 +61,3 @@ Test that the export worked by running the reset command above and verifying in
 the running site that everything works as expected.
 
 Then, the new devDB.sql file may be committed and shared like other changes.
-
-### testDB.sql
-
-Older tests need some extra database setup. `sdb.hs` manages all of this
-using the file `dev/testDB.sql`.
