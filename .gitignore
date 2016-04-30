@@ -1,5 +1,5 @@
 dist/
-static/tmp/
+website/static/tmp/
 client_session_key.aes
 .postgres-work
 .stack-work
