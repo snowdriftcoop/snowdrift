@@ -11,7 +11,7 @@ import qualified Data.List as List
 import qualified Data.Text as T
 import qualified Yesod.Core.Unsafe as Unsafe
 
-import Alerts (getAlert, alertInfo)
+import Alerts (getAlert, alertInfo, alertWarning)
 import Avatar
 import qualified EmailAuth
 import qualified TestHooks
@@ -169,6 +169,15 @@ instance YesodAuth App where
 
     authHttpManager = getHttpManager
     onLogin = alertInfo "You are now logged in"
+
+    -- We modify the default login handler to redirect an already logged-in user
+    -- to the homepage when attempting to access the login page.
+    loginHandler = do
+        muid <- lift maybeAuthId
+        when (isJust muid) $ lift $ do
+            alertInfo "You are already logged in!"
+            redirect HomeR
+        defaultLoginHandler
 
 instance YesodAuthPersist App
 
