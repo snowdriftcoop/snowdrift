@@ -175,8 +175,7 @@ instance YesodAuth App where
     loginHandler = do
         muid <- lift maybeAuthId
         when (isJust muid) $ lift $ do
-            alertWarning "You're already logged in. To sign in with another\
-                \ account, please Log Out first."
+            alertInfo "You are already logged in!"
             redirect HomeR
         defaultLoginHandler
 
