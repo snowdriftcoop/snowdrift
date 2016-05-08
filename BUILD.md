@@ -34,8 +34,8 @@ Install Git and needed libraries:
 
     sudo yum update
     sudo yum install ncurses-devel gmp-devel zlib-devel git
-    
-For newer versions of Fedora, replace the `yum` commands with `dnf`. Install the 
+
+For newer versions of Fedora, replace the `yum` commands with `dnf`. Install the
 following libraries if you don't already have them:
 
     sudo dnf install libstdc++-static gcc-c++
@@ -44,17 +44,19 @@ You'll also need PostgreSQL >= 9.3:
 
     sudo yum install postgres-server postgres-devel
 
-If the version in the base repositories is too old, follow the [instructions on the 
-PostgreSQL wiki](https://wiki.postgresql.org/wiki/YUM_Installation) to install from 
-their repositories. Get the postgresXX-server and postgresXX-devel packages, where 
-XX is the version number. 
+If the version in the base repositories is too old, follow the
+[instructions on the PostgreSQL wiki](https://wiki.postgresql.org/wiki/YUM_Installation)
+to install from their repositories. Get the postgresXX-server and
+postgresXX-devel packages, where XX is the version number.
 
-So that the Snowdrift database cluster tool sees the pgsql executables at 
-`/usr/pgsql-X.X/bin` on your PATH, either add that route (with the correct numbers 
-instead of X.X) to your PATH (e.g. in `~/.bash_profile`, `~/.bashrc` or 
+So that the Snowdrift database cluster tool sees the pgsql executables at
+`/usr/pgsql-X.X/bin` on your PATH, either add that route (with the correct
+numbers instead of X.X) to your PATH (e.g. in `~/.bash_profile`, `~/.bashrc` or
 `~/.profile`) or create symlinks somewhere already on your PATH.
 
-Then follow the [Stack install instructions](https://github.com/commercialhaskell/stack/blob/master/doc/install_and_upgrade.md) for your distribution.
+Then follow the
+[Stack install instructions](https://github.com/commercialhaskell/stack/blob/master/doc/install_and_upgrade.md)
+for your distribution.
 
 ### Arch Linux
 
@@ -257,10 +259,10 @@ To rebuild the site, run:
 
     stack build
 
-NB: As mentioned above, if you run the site with `Snowdrift Development`, then
-to see any changes, you must stop the site, manually rebuild, then restart the
-site. If you use `yesod devel`, the site will rebuild and restart automatically
-for most changes. However, **manual rebuild is always required whenever you:**
+NB: As mentioned above, to see changes when running with `stack exec Snowdrift`,
+you must stop the site, manually rebuild, then restart the site. If you use
+`./sdb.hs devel`, however, the site will rebuild and restart automatically for
+most changes. Still, **manual rebuild is always required whenever you:**
 
 * add new dependencies (i.e. edit the `build-depends` in `Snowdrift.cabal`)
 * update any extra binaries such as the payment processing script or the
@@ -281,13 +283,11 @@ To start the REPL where you can run code from the site in an interpreter, use:
 
     stack ghci
 
-If you want to run the devel site through ghci, use `./sdb.hs ghci`
-instead.
+Or instead run the devel site through ghci with `./sdb.hs ghci`
 
 ## Database notes
 
-See [DATABASE-MANAGEMENT.md] for instructions on resetting the database and
-more.
+See [DATABASE-MANAGEMENT.md] for details on resetting the database and more.
 
 ## Getting help, learning, contributing etc.
 
