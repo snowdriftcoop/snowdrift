@@ -222,12 +222,12 @@ with:
 Then from the repl's prompt, enter
 
     :load app/DevelMain.hs
-    :update
+    update
 
 To reload the site after changes, type
 
     :reload
-    :update
+    update
 
 ## Using the local site
 
