@@ -171,7 +171,7 @@ instructions in the [BUILD.md](BUILD.md) guide for running the site.
 
 When you are happy with your worki, it compiles, and looks right, run the tests:
 
-    stack build && stack test --pedantic
+    ./sdb.hs test 
 
 If there are any failures either when compiling or testing, and you don't know
 how to fix the issue or don't understand the error, contact us for help.

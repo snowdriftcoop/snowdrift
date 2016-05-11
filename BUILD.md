@@ -124,10 +124,10 @@ With brew, install the core dependencies:
 
 ### Windows
 
-*Status:* We do not officially support Windows, but we welcome testing. From
-reports so far, SnowdriftEmailDaemon won't build on Windows, so `stack test`
-will fail. Our database management utility (sdb.hs) is also untested on
-Windows.
+*Status:* We do not officially support Windows, but we welcome testing. In the
+past, we have had only partial success running on Windows. We know that the
+sdb.hs tool won't work on Windows because it uses UNIX sockets. We welcome any
+patches, feedback, or Postgres-on-Windows help to get an alternative working.
 
 Install [Git] per instructions on the website.
 
@@ -167,18 +167,13 @@ Then, fetch all Haskell dependencies and build everything:
 
 NB: this will take a while!
 
-### Set up the database and run initial tests
+### Run the tests
 
-We have a simple tool that helps ensure a private database cluster is set
-up and available. Use it to run tests:
+Running the tests for the first time will also build the test dependencies.
+
+Run the tests with:
 
     ./sdb.hs test
-
-NB: The sdb.hs tool won't work on Windows because it uses UNIX sockets. We
-welcome any patches, feedback, or Postgres-on-Windows help to get an alternative
-working.
-
-NB: To see sdb commands for other operations, run `./sdb.hs help`
 
 ## Running the site
 
@@ -243,15 +238,6 @@ passphrase the same):
 * admin
 * established
 * guest
-
-### Testing
-
-Run the test suite with:
-
-    stack build && stack test --pedantic
-
-NB: we include `stack build` because our current cabal setup does not fully
-recognize test dependencies on executables such as SnowdriftProcessPayments.
 
 ### Manual rebuild
 
