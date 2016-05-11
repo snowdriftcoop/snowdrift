@@ -18,3 +18,5 @@
 /js-licenses JsLicensesR  GET
 /donate DonateR GET
 /merchandise MerchandiseR GET
+
+/p/snowdrift SnowdriftProjectR GET
