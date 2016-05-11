@@ -196,7 +196,7 @@ Then, from the repl's prompt, enter
     :load app/DevelMain.hs
     update
 
-NB: After loading the site in a browser, the Enter key brings the prompt back.
+After loading the site in a browser, the Enter key brings the prompt back.
 
 To reload the site after changes, type
 
@@ -264,7 +264,7 @@ always required whenever you:**
 * update any extra binaries such as the payment processing script or the
   email daemon.
 
-To manually rebuild the site, run:
+To manually rebuild the site when otherwise using `./sdb.hs devel`, run:
 
     stack build
 
