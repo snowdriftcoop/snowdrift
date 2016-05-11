@@ -263,14 +263,6 @@ To make builds recognize changes to the static directory, run:
 
     touch website/src/Settings/StaticFiles.hs
 
-### Exploring the code via REPL
-
-To start the REPL where you can run code from the site in an interpreter, use:
-
-    stack ghci
-
-Or run the devel site through ghci with `./sdb.hs ghci`
-
 ## Database notes
 
 See [DATABASE-MANAGEMENT.md] for details on resetting the database and more.

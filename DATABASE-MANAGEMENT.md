@@ -61,3 +61,9 @@ Test that the export worked by running the reset command above and verifying in
 the running site that everything works as expected.
 
 Then, the new devDB.sql file may be committed and shared like other changes.
+
+### More database operations
+
+To see all the commands sdb.hs supports, run:
+
+    ./sdb.hs help
