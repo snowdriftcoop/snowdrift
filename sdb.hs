@@ -92,7 +92,7 @@ shakeit dbdir pghost pgdata = shakeArgs shakeOptions $ do
 
     phony "ghci" $ do
         need [dbRunning]
-        command [Cwd "website"] "stack" ["ghci", "--package", "foreign-store"]
+        command [Cwd "website"] "stack" ["ghci", "--package", "foreign-store", "--test"]
 
     phony "clean" $ do
         need ["stop"]
