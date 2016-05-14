@@ -8,3 +8,4 @@ VerifyEmail
     key Text -- "VerKey"
     user UserId
     UniqueVerify user
+    deriving (Show)

@@ -30,10 +30,11 @@ setVerifyKey :: MonadIO m => VerifyEmailId -> VerKey -> SqlPersistT m ()
 setVerifyKey eid k = update eid [VerifyEmailKey =. k]
 
 verifyAccount :: MonadIO m => VerifyEmailId -> SqlPersistT m (Maybe UserId)
-verifyAccount = traverse doUpdate <=< get
+verifyAccount eid = traverse doUpdate =<< get eid
   where
     doUpdate ver = do
         update (verifyEmailUser ver) [UserEmailVerified =. True]
+        delete eid
         pure (verifyEmailUser ver)
 
 getPassword :: MonadIO m => UserId -> SqlPersistT m (Maybe Text)
