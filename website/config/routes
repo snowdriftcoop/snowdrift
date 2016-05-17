@@ -20,3 +20,4 @@
 /merchandise MerchandiseR GET
 
 /p/snowdrift SnowdriftProjectR GET
+/p/snowdrift/w/#Text SnowdriftWikiSearchR GET

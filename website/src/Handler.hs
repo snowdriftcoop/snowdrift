@@ -72,3 +72,7 @@ getMerchandiseR = $(widget "page/merchandise" "getMerchandiseR")
 -- For MVP, there is one, hard-coded project: Snowdrift
 getSnowdriftProjectR :: Handler Html
 getSnowdriftProjectR = $(widget "page/snowdrift-project" "Snowdrift.coop Project")
+
+getSnowdriftWikiSearchR :: Text -> Handler Html
+getSnowdriftWikiSearchR slug =
+    redirect $ "https://wiki.snowdrift.coop/_search?patterns=" <> slug
