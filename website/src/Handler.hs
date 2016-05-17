@@ -69,6 +69,12 @@ getJsLicensesR = $(widget "page/js-licenses" "getJsLicensesR")
 getMerchandiseR :: Handler Html
 getMerchandiseR = $(widget "page/merchandise" "getMerchandiseR")
 
--- For MVP, there is one, hard-coded project: Snowdrift
+-- | For MVP, there is one, hard-coded project: Snowdrift
 getSnowdriftProjectR :: Handler Html
 getSnowdriftProjectR = $(widget "page/snowdrift-project" "Snowdrift.coop Project")
+
+-- | Prevents breakage of external links to the old wiki. See
+-- https://tree.taiga.io/project/snowdrift/us/359
+getSnowdriftWikiSearchR :: Text -> Handler Html
+getSnowdriftWikiSearchR slug =
+    redirect $ "https://wiki.snowdrift.coop/_search?patterns=" <> slug

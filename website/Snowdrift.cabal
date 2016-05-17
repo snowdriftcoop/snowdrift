@@ -61,6 +61,7 @@ library
         MultiParamTypeClasses
         GeneralizedNewtypeDeriving
         RecordWildCards
+        ViewPatterns
 
     -- build-depends {{{2
     build-depends:
