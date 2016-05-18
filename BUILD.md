@@ -124,10 +124,10 @@ With brew, install the core dependencies:
 
 ### Windows
 
-*Status:* We do not officially support Windows, but we welcome testing. From
-reports so far, SnowdriftEmailDaemon won't build on Windows, so `stack test`
-will fail. Our database management utility (sdb.hs) is also untested on
-Windows.
+*Status:* We do not officially support Windows, but we welcome testing. In the
+past, we have had only partial success running on Windows. We know that the
+sdb.hs tool won't work on Windows because it uses UNIX sockets. We welcome any
+patches, feedback, or Postgres-on-Windows help to get an alternative working.
 
 Install [Git] per instructions on the website.
 
@@ -167,39 +167,51 @@ Then, fetch all Haskell dependencies and build everything:
 
 NB: this will take a while!
 
-### Set up the database and run initial tests
+### Run the tests
 
-We have a simple tool that helps ensure a private database cluster is set
-up and available. Use it to run tests:
+Running the tests for the first time will also build the test dependencies.
+
+Run the tests with:
 
     ./sdb.hs test
 
-NB: The sdb.hs tool won't work on Windows because it uses UNIX sockets. We
-welcome any patches, feedback, or Postgres-on-Windows help to get an alternative
-working.
-
-NB: To see sdb commands for other operations, run `./sdb.hs help`
-
 ## Running the site
 
-### Option 1: run via `Snowdrift Development`
+### Option 1: run from within `stack ghci` (the repl)
 
-From the snowdrift project directory, run the site in development mode via:
+This option offers the fastest rebuild time. It shows some funny error messages,
+but you can ignore them.
 
-    stack exec Snowdrift
+First, start the repl with:
 
-(to stop the site, use ctrl-C)
+    ./sdb.hs ghci
+
+Then, from the repl's prompt, enter
+
+    :load app/DevelMain.hs
+    update
+
+After loading the site in a browser, the Enter key brings the prompt back.
+
+To reload the site after changes, type
+
+    :reload
+    update
+
+NB: shortened commands above work too: `:l` for `:load` and `:r` for `:reload`.
+
+Leave the repl via ctrl-D
 
 ### Option 2: run via `yesod devel`
 
-NB: `yesod devel` provides automatic rebuilding and rerunning of the site
-whenever it detects changes to the code, but it requires extra compile processes
-the first time you use it. It also uses some minor extra drive space and
-additional resources to run the file-watching process, and yesod devel is
-currently incompatible with the optional ghc-mod tool mentioned in
-[TEXTEDITORS.md](TEXTEDITORS.md).
+Once set up, this option is simpler to run and more automated. It will
+automatically rebuild and rerun the site whenever it detects changes to the
+code. The downsides are: it requires extra compile processes the first time you
+run it, uses some minor extra drive space, uses some additional resources to run
+the file-watching process, and is currently incompatible with the optional
+ghc-mod tool mentioned in [TEXTEDITORS.md](TEXTEDITORS.md).
 
-To set up `yesod devel`, run:
+To enable `yesod devel`, first install the dependencies:
 
     stack build cabal-install yesod-bin
 
@@ -209,25 +221,8 @@ From now on, you may run the site in development mode via:
 
 NB: The first run will take a long time.
 
-(To stop yesod devel, type `quit` in terminal and then press Enter)
+To stop the site in this case, type `quit` in terminal and then press Enter
 
-### Option 3: run from within `stack ghci` (the repl)
-
-This option is somewhat advanced, because you can get some funny errors
-sometimes. However, it has the fastest rebuild time by far. Start the repl
-with:
-
-    ./sdb.hs ghci
-
-Then from the repl's prompt, enter
-
-    :load app/DevelMain.hs
-    update
-
-To reload the site after changes, type
-
-    :reload
-    update
 
 ## Using the local site
 
@@ -244,29 +239,20 @@ passphrase the same):
 * established
 * guest
 
-### Testing
-
-Run the test suite with:
-
-    stack build && stack test --pedantic
-
-NB: we include `stack build` because our current cabal setup does not fully
-recognize test dependencies on executables such as SnowdriftProcessPayments.
-
 ### Manual rebuild
 
-To rebuild the site, run:
-
-    stack build
-
-NB: As mentioned above, to see changes when running with `stack exec Snowdrift`,
-you must stop the site, manually rebuild, then restart the site. If you use
-`./sdb.hs devel`, however, the site will rebuild and restart automatically for
-most changes. Still, **manual rebuild is always required whenever you:**
+As mentioned above, when running with the repl via `./sdb.hs ghci`, you must
+manually rebuild and restart the site, whereas the `./sdb.hs devel` option will
+rebuild and restart automatically for most changes. However, **manual rebuild is
+always required whenever you:**
 
 * add new dependencies (i.e. edit the `build-depends` in `Snowdrift.cabal`)
 * update any extra binaries such as the payment processing script or the
   email daemon.
+
+To manually rebuild the site when otherwise using `./sdb.hs devel`, run:
+
+    stack build
 
 NB: In rare cases, you may need to run `stack clean` if building fails to
 recognize a change.
@@ -276,14 +262,6 @@ recognize a change.
 To make builds recognize changes to the static directory, run:
 
     touch website/src/Settings/StaticFiles.hs
-
-### Exploring the code via REPL
-
-To start the REPL where you can run code from the site in an interpreter, use:
-
-    stack ghci
-
-Or instead run the devel site through ghci with `./sdb.hs ghci`
 
 ## Database notes
 
