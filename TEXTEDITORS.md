@@ -34,7 +34,7 @@ install ide-haskell for Atom:
 
 * Run `stack build ghc-mod hlint stylish-haskell`
 * Install the relevant Atom packages:
-  `apm install language-haskell haskell-ghc-mod ide-haskell autocomplete-haskell ide-haskell-stack`
+  `apm install language-haskell haskell-ghc-mod ide-haskell autocomplete-haskell ide-haskell-cabal`
 * Make sure to check "Stack sandbox" in the haskell-ghc-mod settings
 * *Note: ghc-mod will fail if it sees a dist/ directory which is made when you
   run snowdrift via `stack exec yesod devel`, so until yesod-bin is updated to
