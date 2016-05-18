@@ -29,6 +29,7 @@ import Network.Wai.Middleware.RequestLogger (Destination (Logger),
                                              mkRequestLogger, outputFormat)
 import System.Log.FastLogger                (defaultBufSize, newStdoutLoggerSet,
                                              toLogStr)
+import qualified Yesod.GitRev as G
 
 import Handler
 
@@ -62,6 +63,7 @@ makeFoundation appSettings = do
         -- https://ocharles.org.uk/blog/posts/2014-12-04-record-wildcards.html
         tempFoundation = mkFoundation $ error "connPool forced in tempFoundation"
         logFunc = messageLoggerSource tempFoundation appLogger
+        appGitRev = $(G.gitRev)
 
     -- Create the database connection pool
     pool <- flip runLoggingT logFunc $ createPostgresqlPool

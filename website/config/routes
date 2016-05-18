@@ -1,6 +1,8 @@
 /static StaticR Static appStatic
 /auth   AuthR   Auth   getAuth
 
+/dev/build GitRevR GitRev appGitRev
+
 /favicon.ico FaviconR GET
 /robots.txt RobotsR GET
 
