@@ -18,13 +18,11 @@ opt_appname=${APPNAME:=SnowdriftReboot}
 #
 #
 
-install_path=./dist/bin
+install_path=./website/dist/bin
 
 contents=(
     config
     static
-    migrations
-    ops
     dist
 )
 
@@ -48,8 +46,9 @@ main () {
     else
         hdr "Not building, as requested"
     fi
-    rm -rf static/tmp/*
     hdr "Tarballing"
+    cd website
+    rm -rf static/tmp/*
     tar czf ${opt_appname}.keter ${contents[@]}
     if $opt_deploy
     then
