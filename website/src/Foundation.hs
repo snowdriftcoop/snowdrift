@@ -6,15 +6,13 @@ import Text.Hamlet          (hamletFile)
 import Text.Jasmine         (minifym)
 import Yesod.Default.Util   (addStaticContentExternal)
 import Yesod.Core.Types     (Logger)
-import Yesod.Auth.Email
 import Yesod.GitRev
 import qualified Data.List as List
 import qualified Data.Text as T
 import qualified Yesod.Core.Unsafe as Unsafe
 
-import Alerts (getAlert, alertInfo)
+import Alerts (getAlert)
 import Avatar
-import qualified EmailAuth
 import qualified TestHooks
 
 -- | The foundation datatype for your application. This can be a good place
@@ -127,61 +125,6 @@ instance YesodPersist App where
 instance YesodPersistRunner App where
     getDBRunner = defaultGetDBRunner appConnPool
 
-instance YesodAuthEmail App where
-    type AuthEmailId App = VerifyEmailId
-
-    -- Farm out implementations to keep this file sensible.
-    addUnverified e k          = runDB $ EmailAuth.addUnverified e k
-    sendVerifyEmail e k u      = runDB $ TestHooks.sendVerifyEmail e k u
-    getVerifyKey eid           = runDB $ EmailAuth.getVerifyKey eid
-    setVerifyKey eid k         = runDB $ EmailAuth.setVerifyKey eid k
-    verifyAccount eid          = runDB $ EmailAuth.verifyAccount eid
-    getPassword uid            = runDB $ EmailAuth.getPassword uid
-    setPassword uid saltedpass = runDB $ EmailAuth.setPassword uid saltedpass
-    getEmailCreds ident        = runDB $ EmailAuth.getEmailCreds ident
-    getEmail eid               = runDB $ EmailAuth.getEmail eid
-    afterPasswordRoute _ = HomeR
-
-instance YesodAuth App where
-    type AuthId App = UserId
-
-    -- Where to send a user after successful login
-    loginDest _ = HomeR
-    -- Where to send a user after logout
-    logoutDest _ = HomeR
-    -- Override the above two destinations when a Referer: header is
-    -- present
-    -- This often backfires, so I'm turning it off. Best will probably be
-    -- to bring back the original custom destination route that redirects
-    -- when appropriate.
-    redirectToReferer _ = False
-
-    authenticate creds = runDB $ do
-        x <- getBy $ UniqueUsr $ credsIdent creds
-        case x of
-            Just (Entity uid _) -> return $ Authenticated uid
-            Nothing -> Authenticated <$> insert User
-                { userPassword = Nothing
-                , userEmail = credsIdent creds
-                , userEmailVerified = False
-                }
-
-    -- You can add other plugins like Google Email, email or OAuth here
-    authPlugins _ = TestHooks.authPlugins
-
-    authHttpManager = getHttpManager
-    onLogin = alertInfo "You are now logged in"
-
-    -- We modify the default login handler to redirect an already logged-in user
-    -- to the homepage when attempting to access the login page.
-    loginHandler = do
-        muid <- lift maybeAuthId
-        when (isJust muid) $ lift $ do
-            alertInfo "You are already logged in!"
-            redirect HomeR
-        defaultLoginHandler
-
-instance YesodAuthPersist App
 
 -- This instance is required to use forms. You can modify renderMessage to
 -- achieve customized and internationalized form validation messages.

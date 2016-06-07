@@ -32,10 +32,10 @@ library
     -- exposed-modules {{{2
     exposed-modules:
         Alerts
+        AuthSite
         Avatar
         Application
         Css
-        EmailAuth
         Foundation
         Import
         Import.NoFoundation
@@ -46,6 +46,11 @@ library
         Handler.TH
         Handler.Util
         TestHooks
+    -- }}}2
+
+    -- other-modules {{{2
+    other-modules:
+        Auth
     -- }}}2
 
     if flag(dev) || flag(library-only)
