@@ -40,6 +40,7 @@ main () {
         fi
         rm -rf ${install_path}
         mkdir -p ${install_path}
+        stack --work-dir .stack-work-deploy clean
         stack --work-dir .stack-work-deploy --local-bin-path $install_path install --flag Snowdrift:-dev --pedantic
         hdr "Packing executables"
         find ${install_path} -type f -executable | xargs upx
