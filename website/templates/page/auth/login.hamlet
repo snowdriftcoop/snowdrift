@@ -1,0 +1,8 @@
+<.auth .login>
+  <h1>Log in to Snowdrift.coop
+  <form method=post enctype=#{enctype}>
+    ^{loginFields}
+    <button type=submit>Log in
+  <p .sign-up>
+    Don't have an account?
+    <a href={CreateAccountR}>Sign&nbsp;up!
