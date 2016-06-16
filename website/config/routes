@@ -1,5 +1,5 @@
 /static StaticR Static appStatic
-/auth   AuthR   Auth   getAuth
+/auth   AuthR   AuthSite   getAuth
 
 /dev/build GitRevR GitRev appGitRev
 

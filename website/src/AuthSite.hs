@@ -2,7 +2,7 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 -- | Subsite for email-and-passphrase authentication.
-module AuthSite (module Auth, module AuthSite) where
+module AuthSite (module AuthSiteTypes, module AuthSite) where
 
 import Prelude
 import Model
@@ -10,19 +10,17 @@ import Database.Persist
 
 import Yesod.Core
 
-import Auth
+import AuthSiteTypes
 
-instance Yesod master => YesodSubDispatch Auth (HandlerT master IO) where
-    yesodSubDispatch = $(mkYesodSubDispatch resourcesAuth)
+instance Yesod master => YesodSubDispatch AuthSite (HandlerT master IO) where
+    yesodSubDispatch = $(mkYesodSubDispatch resourcesAuthSite)
 
-type AuthRoute = Route Auth
+type AuthRoute = Route AuthSite
 
-type AuthHandler master a = HandlerT Auth (HandlerT master IO) a
+type AuthHandler master a = HandlerT AuthSite (HandlerT master IO) a
 
-getAuth :: a -> Auth
-getAuth _ = Auth
-
-data Pep = Pep
+getAuth :: a -> AuthSite
+getAuth _ = AuthSite
 
 maybeAuth :: HandlerT m IO (Maybe (Entity User))
 maybeAuth = pure Nothing

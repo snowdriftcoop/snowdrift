@@ -1,11 +1,11 @@
 -- | Core definitions for the Auth subsite (see AuthSite.hs)
-module Auth where
+module AuthSiteTypes where
 
 import Yesod.Core
 
-data Auth = Auth
+data AuthSite = AuthSite
 
-mkYesodSubData "Auth" [parseRoutes|
+mkYesodSubData "AuthSite" [parseRoutes|
 /login LoginR GET POST
 /logout LogoutR POST
 |]
