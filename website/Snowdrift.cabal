@@ -84,9 +84,11 @@ library
         , persistent             >= 2.0     && < 2.3
         , persistent-postgresql  >= 2.1.1   && < 2.3
         , persistent-template    >= 2.0     && < 2.3
+        , pwstore-fast
         , template-haskell
         , shakespeare            >= 2.0     && < 2.1
         , hjsmin                 >= 0.1     && < 0.2
+        , lens
         , monad-control          >= 0.3     && < 1.1
         , wai-extra              >= 3.0     && < 3.1
         , yaml                   >= 0.8     && < 0.9

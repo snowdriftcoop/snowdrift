@@ -1,5 +1,6 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 -- | Subsite for email-and-passphrase authentication.
@@ -7,9 +8,15 @@ module AuthSite (module AuthSiteTypes, module AuthSite) where
 
 import Prelude
 
+import Control.Lens
+import Crypto.PasswordStore
+import Data.ByteString (ByteString)
+import Control.Monad
 import Data.Text (Text)
+import Data.Text.Encoding
 import Database.Persist
 import Yesod
+import qualified Data.Text as T
 
 import AuthSiteTypes
 import Css
@@ -20,11 +27,27 @@ import Settings
 -- typeclass.
 type AuthUser = Entity User
 
-instance (Yesod master, RenderMessage master FormMessage)
+
+-- ## Login needs
+
+newtype AuthEmail = AuthEmail Text deriving Show
+makePrisms ''AuthEmail
+
+newtype ClearPassphrase = ClearPassphrase { _passText :: Text } deriving Show
+makePrisms ''ClearPassphrase
+
+data LoginD = LoginD
+        { _loginAuth :: AuthEmail
+        , _loginPass :: ClearPassphrase
+        } deriving (Show)
+makeLenses ''LoginD
+
+instance (Yesod master, YesodPersist master, RenderMessage master FormMessage)
     => YesodSubDispatch AuthSite (HandlerT master IO) where
     yesodSubDispatch = $(mkYesodSubDispatch resourcesAuthSite)
 
 -- ## Duplicating Yesod.Auth API for a wee while.
+
 getAuth :: a -> AuthSite
 getAuth _ = AuthSite
 
@@ -34,10 +57,8 @@ maybeAuth = pure Nothing
 requireAuth :: HandlerT m IO AuthUser
 requireAuth = pure undefined
 
-newtype AuthEmail = AuthEmail Text deriving Show
-newtype ClearPassphrase = ClearPassphrase Text deriving Show
 
-data LoginD = LoginD AuthEmail ClearPassphrase deriving (Show)
+-- ## Now building the login page
 
 loginForm = LoginD
     <$> (AuthEmail <$> areq textField "Email" Nothing)
@@ -51,14 +72,36 @@ getLoginR = lift $ do
         setTitle "Login — Snowdrift.coop"
         $(widgetFile "page/auth/login")
 
-postLoginR :: (Yesod master, RenderMessage master FormMessage)
+postLoginR :: (Yesod master, YesodPersist master, RenderMessage master FormMessage)
            => HandlerT AuthSite (HandlerT master IO) Html
-postLoginR = lift $ do
-    ((res, _), _) <- runFormPost (renderDivs loginForm)
-    let x = show res
-    defaultLayout [whamlet|X is #{x}|]
+postLoginR = do
+    ((res', _), _) <- lift $ runFormPost (renderDivs loginForm)
+    formResult (lift . (runAuthResult <=< (runDB . checkCredentials)))
+               loginAgain
+               res'
+  where
+    runAuthResult _ = defaultLayout [whamlet|It has happened|]
+    loginAgain msgs = do
+        lift $ defaultLayout [whamlet|
+            <p>Login form failures are not handled yet.
+            <p>TBD: <a href="https://tree.taiga.io/project/snowdrift/us/392">See Taiga #392</a>.
+            <p>Errors: #{show msgs}
+            |]
 
-    -- u <- getBy (UniqueEmail
+    formResult success fail = \case
+        FormSuccess x -> success x
+        FormFailure msgs -> fail msgs
+        FormMissing -> redirect LoginR
+
+verify :: ClearPassphrase -> ByteString -> Bool
+verify (ClearPassphrase pass) hash = verifyPassword (encodeUtf8 pass) hash
+
+checkCredentials creds = do
+    u <- getBy $ UniqueUsr (creds^.loginAuth._AuthEmail)
+    pure ()
+    -- lift $ runDB 
+    -- let x = show creds
+    -- lift $ defaultLayout [whamlet|X is #{x}|]
 
 postLogoutR :: Yesod master => HandlerT AuthSite (HandlerT master IO) Html
 postLogoutR = undefined
