@@ -1,7 +1,8 @@
 module Avatar where
 
-import qualified Data.Text as T
+import Control.Lens
 import Network.Libravatar
+import qualified Data.Text as T
 
 import Import.NoFoundation
 
@@ -11,10 +12,7 @@ getUserAvatar defaultRoute muser = do
 
     maybe (return defaultUrl)
           (\user -> do
-              let email = userEmail user
-              if userEmailVerified user
-                  then liftIO (libravatar email defaultUrl)
-                  else return defaultUrl)
+              liftIO (libravatar (user^.userEmail) defaultUrl))
           muser
 
   where

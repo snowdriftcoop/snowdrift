@@ -1,8 +1,8 @@
 User sql=usr
     email Text
-    emailVerified Bool
-    password Text Maybe
+    passphrase ByteString
     UniqueUsr email
+    deriving (Show)
 
 VerifyEmail
     key Text -- "VerKey"
