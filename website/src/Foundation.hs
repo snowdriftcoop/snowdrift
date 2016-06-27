@@ -26,6 +26,7 @@ data App = App
     , appHttpManager :: Manager
     , appLogger      :: Logger
     , appGitRev      :: GitRev
+    , appAuth        :: AuthSite (Route App)
     }
 
 -- This is where we define all of the routes in our application. For a full
