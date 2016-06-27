@@ -17,7 +17,7 @@ import qualified Data.Text.Lazy as TL
 alertKey :: Text
 alertKey = "_MSG_ALERT"
 
-addAlert :: MonadHandler m => Text -> Text -> m ()
+addAlert :: MonadHandler m => Text -> Html -> m ()
 addAlert level msg = do
     render <- getUrlRenderParams
     prev   <- lookupSession alertKey
@@ -28,7 +28,8 @@ addAlert level msg = do
           #{msg}
         |] render
 
-alertDanger, alertInfo, alertSuccess, alertWarning :: MonadHandler m => Text -> m ()
+alertDanger, alertInfo, alertSuccess, alertWarning
+    :: MonadHandler m => Html -> m ()
 alertDanger  = addAlert "danger"
 alertInfo    = addAlert "info"
 alertSuccess = addAlert "success"
