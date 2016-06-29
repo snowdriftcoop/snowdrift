@@ -140,6 +140,7 @@ test-suite test
 
     other-modules:
         HandlerSpec
+        AuthSiteSpec
         AlertsSpec
         SampleSpec
         Factories
@@ -159,6 +160,7 @@ test-suite test
         , yesod-test >= 1.5.0.1 && < 1.6
         , yesod-core
         , yesod
+        , yesod-persistent
         , persistent
         , persistent-postgresql
         , resourcet
