@@ -31,11 +31,11 @@ spec = withApp $ do
                 assertEqualContents homeResponse welcomeResponse
         describe "browsing while logged in" $ do
             it "loads" $ do
-                dummyLogin
+                -- dummyLogin
                 get HomeR
                 statusIs 200
             it "is the same as /dashboard" $ do
-                dummyLogin
+                -- dummyLogin
                 get HomeR -- clear login alert
                 Just homeResponse <- get HomeR >> getResponse
                 Just dashboardResponse <- get DashboardR >> getResponse

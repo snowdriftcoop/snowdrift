@@ -12,12 +12,10 @@ import Control.Lens
 import Crypto.PasswordStore
 import Data.ByteString (ByteString)
 import Control.Monad
-import Data.Maybe
 import Data.Text (Text)
 import Data.Text.Encoding
 import Database.Persist.Sql
 import Yesod
-import qualified Data.Text as T
 
 import Alerts
 import AuthSiteTypes
@@ -57,7 +55,10 @@ maybeAuth :: HandlerT m IO (Maybe AuthUser)
 maybeAuth = pure Nothing
 
 requireAuth :: HandlerT m IO AuthUser
-requireAuth = pure undefined
+requireAuth = pure $ Entity dummyKey (User "foo" "bar")
+  where dummyKey = fromRight $ keyFromValues [PersistInt64 1]
+        fromRight (Right x) = x
+        fromRight _ = error "Dastardly partiality"
 
 -- ## Now building the login page.
 
@@ -105,16 +106,17 @@ postLoginR = do
             <p>Errors: #{show msgs}
             |]
 
-    formResult success fail = \case
+    formResult success failure = \case
         FormSuccess x -> success x
-        FormFailure msgs -> fail msgs
-        FormMissing -> fail ["No login data"]
+        FormFailure msgs -> failure msgs
+        FormMissing -> failure ["No login data"]
 
 verify :: ClearPassphrase -> ByteString -> Bool
 verify (ClearPassphrase pass) hash = verifyPassword (encodeUtf8 pass) hash
 
 data Authenticated = Authenticated | BadCredentials deriving Show
 
+checkCredentials :: MonadIO m => LoginD -> SqlPersistT m Authenticated
 checkCredentials creds = do
     u <- getBy $ UniqueUsr (creds^.loginAuth._AuthEmail)
     pure $ maybe BadCredentials (goVerify . entityVal) u

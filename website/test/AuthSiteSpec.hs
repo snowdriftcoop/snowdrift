@@ -4,10 +4,11 @@
 {-# OPTIONS_GHC -fno-warn-unused-binds #-}
 module AuthSiteSpec (spec) where
 
-import TestImport
-import Yesod hiding (get)
+import TestImport hiding (Handler)
 import Database.Persist.Sql hiding (get)
+import Yesod hiding (get)
 import Yesod.Default.Config2 (ignoreEnv, loadAppSettings)
+import qualified Data.Text as T
 
 import AuthSite
 import Application (makeFoundation, makeLogWare)
@@ -20,23 +21,20 @@ data AuthHarness = AuthHarness
     }
 
 mkYesod "AuthHarness" [parseRoutes|
-/foo Foo GET
-/auth-user TheUser GET
+/maybe-auth MaybeAuth GET
+/require-auth RequireAuth GET
+/session-val SessionVal GET
 /auth AuthSub AuthSite-(Route-AuthHarness) ahTestAuth
 |]
 
-getFoo :: HandlerT AuthHarness IO Html
-getFoo = defaultLayout [whamlet|
-    Lo, it is an AuthHarness page.
-|]
+getMaybeAuth :: Handler Text
+getMaybeAuth = T.pack . show <$> maybeAuth
 
-getTheUser :: HandlerT AuthHarness IO Html
-getTheUser = do
-    user :: Maybe (Entity User) <- headMay <$> runDB (selectList [] [])
-    defaultLayout $ maybe
-        [whamlet|No users|]
-        (\(Entity _ u) -> [whamlet|#{show u}|])
-        user
+getRequireAuth :: Handler Text
+getRequireAuth = T.pack . show <$> requireAuth
+
+getSessionVal :: Handler Text
+getSessionVal = T.pack . show <$> lookupSession "_AUTHID"
 
 -- ** Boilerplate for the harness site
 
@@ -63,13 +61,72 @@ withTestAuth = before $ do
     foundation <- makeFoundation settings
     wipeDB foundation
     logWare <- liftIO $ makeLogWare foundation
-    let at = AuthHarness (AuthSite TheUser) (appConnPool foundation)
-    return (at, logWare)
+    let harness = AuthHarness (AuthSite MaybeAuth) (appConnPool foundation)
+    return (harness, logWare)
+
+type AuthExample a = YesodExample AuthHarness a
+
+-- ** Some local tools
+
+-- | Run db actions with this harness
+harnessDB :: SqlPersistM a -> AuthExample a
+harnessDB query = do
+    h <- getTestYesod
+    liftIO $ runSqlPersistMPool query (ahConnPool h)
+
+-- | Create Bob before all tests
+withBob :: SpecWith (TestApp AuthHarness) -> SpecWith (TestApp AuthHarness)
+withBob = beforeWith makeBob
+  where
+    makeBob stuff@(harness, _) =
+       runSqlPersistMPool goBobGo (ahConnPool harness) >> pure stuff
+    goBobGo = createUser (AuthEmail "bob@example.com")
+                         (ClearPassphrase "aaaaaaaaaaaaa")
 
 -- ** The actual tests!
 
 spec :: Spec
-spec = withTestAuth $ do
-    it "plarp" $ do
-        get TheUser
-        bodyContains "No users"
+spec = withTestAuth $ withBob $ do
+    describe "maybeAuth" $ do
+        it "gets the user" $ do
+            get MaybeAuth >> bodyContains "Nothing"
+            loginBob
+            get MaybeAuth >> bodyContains "bob@example.com"
+        it "gets nothing after logout" $ do
+            loginBob
+            get MaybeAuth >> bodyContains "bob@example.com"
+            logout
+            get MaybeAuth >> bodyContains "Nothing"
+    describe "session key" $ do
+        it "is set on login" $ do
+            get SessionVal >> bodyContains "Nothing"
+            loginBob
+            get SessionVal >> bodyContains "Just"
+        it "is cleared on logout" $ do
+            loginBob
+            get SessionVal >> bodyContains "Just"
+            logout
+            get SessionVal >> bodyContains "Nothing"
+    describe "requireAuth" $ do
+        it "gets the user" $ do
+            get RequireAuth >> statusIs 401
+            loginBob
+            get RequireAuth >>
+                (statusIs 200 >> bodyContains "1")
+        it "errors after logout" $ do
+            loginBob
+            get RequireAuth >>
+                (statusIs 200 >> bodyContains "1")
+            logout
+            get RequireAuth >> statusIs 401
+    it "times out after two hours" $ do
+        loginBob
+        error "Pending test"
+  where
+    loginBob = loginAs "bob@example.com" "aaaaaaaaaaaaa"
+    loginAs :: Text -> Text -> AuthExample ()
+    loginAs _ _ = pure ()
+    logout = post (AuthSub LogoutR)
+
+createUser :: AuthEmail -> ClearPassphrase -> SqlPersistM ()
+createUser _ _ = pure ()
