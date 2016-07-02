@@ -27,29 +27,35 @@ import Settings
 -- typeclass.
 type AuthUser = Entity User
 
--- ## Internal types
+-- ** Internal types. Sequestered up here to appease the TH gods.
 
-newtype AuthEmail = AuthEmail Text deriving Show
-makePrisms ''AuthEmail
+newtype AuthEmail = AuthEmail { fromAuth :: Text } deriving Show
 
-newtype ClearPassphrase = ClearPassphrase Text deriving Show
-makePrisms ''ClearPassphrase
+newtype ClearPassphrase = ClearPassphrase { fromClear :: Text } deriving Show
 
-data LoginD = LoginD
-        { _loginAuth :: AuthEmail
-        , _loginPass :: ClearPassphrase
+newtype PassphraseDigest = PassphraseDigest ByteString deriving Show
+
+data Credentials = Credentials
+        { loginAuth :: AuthEmail
+        , loginPass :: ClearPassphrase
         } deriving (Show)
-makeLenses ''LoginD
+
+data VerifiedUser = VerifiedUser
+        { verifiedEmail :: Text
+        , verifiedDigest :: ByteString
+        }
+
+-- ** Invoke Yesod TH to make the subsite.
 
 instance (Yesod master
          ,YesodPersist master
          ,YesodPersistBackend master ~ SqlBackend
          ,RedirectUrl master r
          ,RenderMessage master FormMessage)
-    => YesodSubDispatch (AuthSite r) (HandlerT master IO) where
+        => YesodSubDispatch (AuthSite r) (HandlerT master IO) where
     yesodSubDispatch = $(mkYesodSubDispatch resourcesAuthSite)
 
--- ## Duplicating Yesod.Auth API for a wee while.
+-- ** Duplicating Yesod.Auth API for a wee while.
 
 maybeAuth :: HandlerT m IO (Maybe AuthUser)
 maybeAuth = pure Nothing
@@ -60,11 +66,44 @@ requireAuth = pure $ Entity dummyKey (User "foo" "bar")
         fromRight (Right x) = x
         fromRight _ = error "Dastardly partiality"
 
--- ## Now building the login page.
+
+-- ** Functions and operations for doing auth
+
+authKey :: Text
+authKey = "_AUTHID"
+
+checkCredentials :: MonadIO m => Credentials -> SqlPersistT m (Maybe AuthUser)
+checkCredentials Credentials{..} = do
+    mu <- getBy (UniqueUsr (fromAuth loginAuth))
+    case mu of
+        Just (Entity uid u) -> do
+            pure $ if verifyPassword (encodeUtf8 (fromClear loginPass)) (u^.userDigest)
+                then mu
+                else Nothing
+        Nothing -> pure Nothing
+
+-- | This privileged function must be used with care.
+privilegedCreateUser :: MonadIO m => VerifiedUser -> SqlPersistT m AuthUser
+privilegedCreateUser VerifiedUser{..} = insertEntity (User verifiedEmail verifiedDigest)
+
+-- | This privileged function must be used with care. It modifies the
+-- user's session; it's the difference between being logged in and not!
+priviligedLogin :: Yesod master => AuthUser -> HandlerT master IO ()
+priviligedLogin = setSession authKey . toPathPiece . entityKey
+
+-- | Log the user out.
+logout :: Yesod master => HandlerT master IO ()
+logout = deleteSession authKey
+
+data Verification
+verifyEmail :: MonadIO m => Verification -> SqlPersistT m (Maybe VerifiedUser)
+verifyEmail = undefined
+
+-- ** Now building the login page.
 
 loginForm :: (RenderMessage (HandlerSite m) FormMessage, MonadHandler m)
-          => AForm m LoginD
-loginForm = LoginD
+          => AForm m Credentials
+loginForm = Credentials
     <$> (AuthEmail <$> areq textField "Email"{fsAttrs=emailAttrs}  Nothing)
     <*> (ClearPassphrase <$> areq passwordField "Passphrase" Nothing)
   where
@@ -73,7 +112,7 @@ loginForm = LoginD
 getLoginR :: (Yesod master, RenderMessage master FormMessage)
           => HandlerT (AuthSite r) (HandlerT master IO) Html
 getLoginR = lift $ do
-    ((_, loginFields), enctype) <- runFormPost (renderDivs loginForm)
+    (loginFields, enctype) <- generateFormPost (renderDivs loginForm)
     defaultLayout $ do
         setTitle "Login — Snowdrift.coop"
         $(widgetFile "page/auth/login")
@@ -92,13 +131,14 @@ postLoginR = do
                loginAgain
                res'
   where
-    runAuthResult home parent = \case
-        Authenticated -> do
-            alertInfo "Welcome"
-            redirect home
-        BadCredentials -> do
+    runAuthResult home parent = maybe
+        (do
             alertDanger [shamlet|Bad credentials:  <a href="https://tree.taiga.io/project/snowdrift/us/392">See Taiga #392</a>.|]
-            redirect (parent LoginR)
+            redirect (parent LoginR))
+        (\u -> do
+            priviligedLogin u
+            alertInfo "Welcome"
+            redirect home)
     loginAgain msgs = do
         lift $ defaultLayout [whamlet|
             <p>Login form failures are not handled yet.
@@ -111,19 +151,6 @@ postLoginR = do
         FormFailure msgs -> failure msgs
         FormMissing -> failure ["No login data"]
 
-verify :: ClearPassphrase -> ByteString -> Bool
-verify (ClearPassphrase pass) hash = verifyPassword (encodeUtf8 pass) hash
-
-data Authenticated = Authenticated | BadCredentials deriving Show
-
-checkCredentials :: MonadIO m => LoginD -> SqlPersistT m Authenticated
-checkCredentials creds = do
-    u <- getBy $ UniqueUsr (creds^.loginAuth._AuthEmail)
-    pure $ maybe BadCredentials (goVerify . entityVal) u
-  where
-    goVerify u = if verify (creds^.loginPass) (u^.userPassphrase)
-        then Authenticated
-        else BadCredentials
 
 postLogoutR :: Yesod master => HandlerT (AuthSite r) (HandlerT master IO) Html
 postLogoutR = undefined

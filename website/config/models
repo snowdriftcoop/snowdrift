@@ -1,6 +1,6 @@
 User sql=usr
     email Text
-    passphrase ByteString
+    digest ByteString
     UniqueUsr email
     deriving (Show)
 
