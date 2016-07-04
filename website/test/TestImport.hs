@@ -73,7 +73,7 @@ testRoot = "http://localhost:3000"
 
 needsAuth :: Route App -> Method -> YesodExample App ()
 needsAuth route method = do
-    authRte <- testRender (AuthR LoginR) []
+    authRte <- (mappend testRoot) <$> testRender (AuthR LoginR) []
     request $ do
         setMethod method
         setUrl route

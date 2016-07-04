@@ -85,11 +85,20 @@ maybeAuth = runMaybeT $ do
     u <- MaybeT $ fmap unCachedAuth (cached (runDB $ fmap CachedAuth (get uid)))
     pure (Entity uid u)
 
-requireAuth :: HandlerT m IO AuthUser
-requireAuth = pure $ Entity dummyKey (User "foo" "bar")
-  where dummyKey = fromRight $ keyFromValues [PersistInt64 1]
-        fromRight (Right x) = x
-        fromRight _ = error "Dastardly partiality"
+requireAuth :: (Yesod m
+               ,YesodPersist m
+               ,YesodPersistBackend m ~ SqlBackend)
+            => HandlerT m IO AuthUser
+requireAuth = do
+    mm <- maybeAuth
+    case mm of
+        Just m -> pure m
+        Nothing -> do
+            y <- getYesod
+            setUltDestCurrent
+            case authRoute y of
+                Just z -> redirect z
+                Nothing -> notAuthenticated
 
 -- ** Functions and operations for doing auth
 

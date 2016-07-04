@@ -20,6 +20,7 @@ import Application (makeFoundation, makeLogWare)
 data AuthHarness = AuthHarness
     { ahTestAuth :: (AuthSite (Route AuthHarness))
     , ahConnPool :: ConnectionPool
+    , ahAuthRoute :: Maybe (Route AuthHarness)
     }
 
 mkYesod "AuthHarness" [parseRoutes|
@@ -45,7 +46,8 @@ getLoginDirect e =
     <$ (priviligedLogin =<< runDB (getBy404 (UniqueUsr e)))
 -- ** Boilerplate for the harness site
 
-instance Yesod AuthHarness
+instance Yesod AuthHarness where
+    authRoute = ahAuthRoute
 
 instance YesodPersist AuthHarness where
     type YesodPersistBackend AuthHarness = SqlBackend
@@ -59,8 +61,10 @@ instance RenderMessage AuthHarness FormMessage where
 
 -- ** Boilerplate to run Specs with this harness.
 
-withTestAuth :: SpecWith (TestApp AuthHarness) -> Spec
-withTestAuth = before $ do
+withTestAuth :: Maybe (Route AuthHarness)
+             -> SpecWith (TestApp AuthHarness)
+             -> Spec
+withTestAuth maybeAuthRoute = before $ do
     settings <- loadAppSettings
         ["config/test-settings.yml", "config/settings.yml"]
         []
@@ -68,7 +72,9 @@ withTestAuth = before $ do
     foundation <- makeFoundation settings
     wipeDB foundation
     logWare <- liftIO $ makeLogWare foundation
-    let harness = AuthHarness (AuthSite MaybeAuth) (appConnPool foundation)
+    let harness = AuthHarness (AuthSite MaybeAuth)
+                              (appConnPool foundation)
+                              maybeAuthRoute
     return (harness, logWare)
 
 type AuthExample a = YesodExample AuthHarness a
@@ -93,7 +99,20 @@ withBob = beforeWith makeBob
 -- ** The actual tests!
 
 spec :: Spec
-spec = withTestAuth $ withBob $ do
+spec = mainSpecs >> authRouteSpec
+
+-- | Having this defined separately is clumsy. It should be moved back into
+-- the right spot.
+authRouteSpec :: Spec
+authRouteSpec = withTestAuth (Just MaybeAuth) $
+    describe "requireAuth *with* authRoute" $
+        it "redirects" $ do
+            get RequireAuth
+            statusIs 303
+            assertHeader "location" "/maybe-auth"
+
+mainSpecs :: Spec
+mainSpecs = withTestAuth Nothing $ withBob $ do
     describe "maybeAuth" $ do
         it "gets the user" $ do
             get MaybeAuth >> bodyContains "Nothing"
@@ -114,7 +133,7 @@ spec = withTestAuth $ withBob $ do
             get SessionVal >> bodyContains "Just"
             goLogout
             get SessionVal >> bodyContains "Nothing"
-    describe "requireAuth" $ do
+    describe "requireAuth *without* authRoute" $ do
         it "gets the user" $ do
             get RequireAuth >> statusIs 401
             loginBob
