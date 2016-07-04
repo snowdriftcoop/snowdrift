@@ -89,16 +89,11 @@ requireAuth :: (Yesod m
                ,YesodPersist m
                ,YesodPersistBackend m ~ SqlBackend)
             => HandlerT m IO AuthUser
-requireAuth = do
-    mm <- maybeAuth
-    case mm of
-        Just m -> pure m
-        Nothing -> do
-            y <- getYesod
-            setUltDestCurrent
-            case authRoute y of
-                Just z -> redirect z
-                Nothing -> notAuthenticated
+requireAuth = maybe noAuth pure =<< maybeAuth
+  where
+    noAuth = do
+        setUltDestCurrent
+        maybe notAuthenticated redirect . authRoute =<< getYesod
 
 -- ** Functions and operations for doing auth
 
@@ -210,7 +205,7 @@ postLoginR = do
             priviligedLogin u
             alertInfo "Welcome"
             redirect home)
-    loginAgain msgs = do
+    loginAgain msgs =
         lift $ defaultLayout [whamlet|
             <p>Login form failures are not handled yet.
             <p>TBD: <a href="https://tree.taiga.io/project/snowdrift/us/392">See Taiga #392</a>.
