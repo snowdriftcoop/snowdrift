@@ -8,15 +8,17 @@ module AuthSite (module AuthSiteTypes, module AuthSite) where
 
 import Prelude
 
+import Control.Error
 import Control.Lens
+import Control.Monad
+import Crypto.Nonce (Generator, nonce128urlT)
 import Crypto.PasswordStore
 import Data.ByteString (ByteString)
-import Control.Monad
 import Data.Text (Text)
 import Data.Text.Encoding
 import Data.Time
+import Data.Typeable
 import Database.Persist.Sql
-import Crypto.Nonce (Generator, nonce128urlT)
 import Yesod
 import qualified Crypto.Nonce as Nonce
 
@@ -55,9 +57,12 @@ data VerifiedUser = VerifiedUser
         }
 
 data Verification = Verification
-        { verifyEmail :: Text
+        { verifyEmail :: AuthEmail
         , verifyToken :: Text
         }
+
+-- | Used with Yesod caching feature
+newtype CachedAuth a = CachedAuth { unCachedAuth :: Maybe a } deriving Typeable
 
 -- ** Invoke Yesod TH to make the subsite.
 
@@ -71,15 +76,20 @@ instance (Yesod master
 
 -- ** Duplicating Yesod.Auth API for a wee while.
 
-maybeAuth :: HandlerT m IO (Maybe AuthUser)
-maybeAuth = pure Nothing
+maybeAuth :: (YesodPersist m
+             ,YesodPersistBackend m ~ SqlBackend)
+          => HandlerT m IO (Maybe AuthUser)
+maybeAuth = runMaybeT $ do
+    k <- MaybeT $ lookupSession authSessionKey
+    uid <- MaybeT $ pure (fromPathPiece k)
+    u <- MaybeT $ fmap unCachedAuth (cached (runDB $ fmap CachedAuth (get uid)))
+    pure (Entity uid u)
 
 requireAuth :: HandlerT m IO AuthUser
 requireAuth = pure $ Entity dummyKey (User "foo" "bar")
   where dummyKey = fromRight $ keyFromValues [PersistInt64 1]
         fromRight (Right x) = x
         fromRight _ = error "Dastardly partiality"
-
 
 -- ** Functions and operations for doing auth
 
@@ -122,14 +132,13 @@ checkCredentials Credentials{..} = do
 -- use for verification.
 storeProvisionalUser :: MonadIO m => Credentials -> SqlPersistT m Verification
 storeProvisionalUser creds = do
-    tok <- genVerificationToken creds
-    insert_ =<< provisional creds tok
+    tok <- liftIO (genVerificationToken creds)
+    insert_ =<< liftIO (provisional creds tok)
     pure tok
 
 -- | Create a provisional user
-provisional :: MonadIO m
-            => Credentials -> Verification -> m ProvisionalUser
-provisional Credentials{..} Verification{..} = liftIO $
+provisional :: Credentials -> Verification -> IO ProvisionalUser
+provisional Credentials{..} Verification{..} =
     ProvisionalUser <$> email <*> passDigest <*> tokDigest <*> curtime
   where
     email = pure (fromAuth loginAuth)
@@ -138,14 +147,14 @@ provisional Credentials{..} Verification{..} = liftIO $
     curtime = getCurrentTime
     makePass t = makePassword (encodeUtf8 t) pbkdf1Strength
 
-genVerificationToken :: MonadIO m => Credentials -> m Verification
+genVerificationToken :: Credentials -> IO Verification
 genVerificationToken Credentials{..} =
-    Verification (fromAuth loginAuth) <$> nonce128urlT tokenGenerator
+    Verification loginAuth <$> nonce128urlT tokenGenerator
 
 -- | This privileged function must be used with care.
-privilegedCreateUser :: MonadIO m => VerifiedUser -> SqlPersistT m AuthUser
+privilegedCreateUser :: MonadIO m => VerifiedUser -> SqlPersistT m ()
 privilegedCreateUser VerifiedUser{..} =
-    insertEntity (User verifiedEmail verifiedDigest)
+    insert_ (User verifiedEmail verifiedDigest)
 
 -- | This privileged function must be used with care. It modifies the
 -- user's session; it's the difference between being logged in and not!

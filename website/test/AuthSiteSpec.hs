@@ -1,6 +1,8 @@
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -fno-warn-unused-binds #-}
 module AuthSiteSpec (spec) where
 
@@ -25,6 +27,7 @@ mkYesod "AuthHarness" [parseRoutes|
 /require-auth RequireAuth GET
 /session-val SessionVal GET
 /auth AuthSub AuthSite-(Route-AuthHarness) ahTestAuth
+/login-direct/#Text LoginDirect GET
 |]
 
 getMaybeAuth :: Handler Text
@@ -36,6 +39,10 @@ getRequireAuth = T.pack . show <$> requireAuth
 getSessionVal :: Handler Text
 getSessionVal = T.pack . show <$> lookupSession "_AUTHID"
 
+getLoginDirect :: Text -> Handler Text
+getLoginDirect e =
+    "Logged in, you cheeky bastard you"
+    <$ (priviligedLogin =<< runDB (getBy404 (UniqueUsr e)))
 -- ** Boilerplate for the harness site
 
 instance Yesod AuthHarness
@@ -95,7 +102,7 @@ spec = withTestAuth $ withBob $ do
         it "gets nothing after logout" $ do
             loginBob
             get MaybeAuth >> bodyContains "bob@example.com"
-            logout
+            goLogout
             get MaybeAuth >> bodyContains "Nothing"
     describe "session key" $ do
         it "is set on login" $ do
@@ -105,7 +112,7 @@ spec = withTestAuth $ withBob $ do
         it "is cleared on logout" $ do
             loginBob
             get SessionVal >> bodyContains "Just"
-            logout
+            goLogout
             get SessionVal >> bodyContains "Nothing"
     describe "requireAuth" $ do
         it "gets the user" $ do
@@ -117,16 +124,19 @@ spec = withTestAuth $ withBob $ do
             loginBob
             get RequireAuth >>
                 (statusIs 200 >> bodyContains "1")
-            logout
+            goLogout
             get RequireAuth >> statusIs 401
     it "times out after two hours" $ do
         loginBob
         error "Pending test"
   where
-    loginBob = loginAs "bob@example.com" "aaaaaaaaaaaaa"
-    loginAs :: Text -> Text -> AuthExample ()
-    loginAs _ _ = pure ()
-    logout = post (AuthSub LogoutR)
+    loginBob = loginAs "bob@example.com"
+    loginAs :: Text -> AuthExample ()
+    loginAs = get . LoginDirect
+    goLogout = post (AuthSub LogoutR)
 
 createUser :: AuthEmail -> ClearPassphrase -> SqlPersistM ()
-createUser _ _ = pure ()
+createUser e p = do
+    ProvisionalUser{..} <-
+        liftIO $ provisional (Credentials e p) (Verification e "stuff")
+    privilegedCreateUser (VerifiedUser provisionalEmail provisionalDigest)
