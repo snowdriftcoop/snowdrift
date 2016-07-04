@@ -161,10 +161,6 @@ privilegedCreateUser VerifiedUser{..} =
 priviligedLogin :: Yesod master => AuthUser -> HandlerT master IO ()
 priviligedLogin = setSession authSessionKey . toPathPiece . entityKey
 
--- | Log the user out.
-logout :: Yesod master => HandlerT master IO ()
-logout = deleteSession authSessionKey
-
 -- ** Now building the login page.
 
 loginForm :: (RenderMessage (HandlerSite m) FormMessage, MonadHandler m)
@@ -218,5 +214,10 @@ postLoginR = do
         FormMissing -> failure ["No login data"]
 
 
-postLogoutR :: Yesod master => HandlerT (AuthSite r) (HandlerT master IO) Html
-postLogoutR = undefined
+postLogoutR :: (Yesod master
+               ,RedirectUrl master r)
+            => HandlerT (AuthSite r) (HandlerT master IO) Html
+postLogoutR = do
+    AuthSite home <- getYesod
+    lift $ deleteSession authSessionKey
+    lift $ redirect home
