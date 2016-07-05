@@ -167,9 +167,6 @@ mainSpecs = withTestAuth Nothing $ withBob $ do
             assertHeader "location" "/auth/login"
             Right _ <- followRedirect
             get SessionVal >> bodyContains "Nothing"
-    it "times out after two hours" $ do
-        loginBob
-        error "Pending test"
   where
     loginBob = loginAs "bob@example.com"
     loginAs :: Text -> AuthExample ()
