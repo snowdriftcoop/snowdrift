@@ -5,4 +5,4 @@
     <button type=submit>Log in
   <p .sign-up>
     Don't have an account?
-    <a href={CreateAccountR}>Sign&nbsp;up!
+    <a href=@{toMaster CreateAccountR}>Sign&nbsp;up!

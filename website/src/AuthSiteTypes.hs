@@ -13,6 +13,7 @@ data AuthSite loginDest = AuthSite loginDest
 mkYesodSubData "AuthSite" [parseRoutes|
 /login LoginR GET POST
 /logout LogoutR POST
+/create-account CreateAccountR GET POST
 |]
 
 share [mkPersist sqlSettings{mpsPrefixFields = False}
@@ -23,4 +24,6 @@ ProvisionalUser
     provisionalDigest ByteString
     verificationDigest ByteString
     puCreationTime UTCTime
+
+    deriving Show
 |]

@@ -177,11 +177,13 @@ loginForm = Credentials
 
 getLoginR :: (Yesod master, RenderMessage master FormMessage)
           => HandlerT (AuthSite r) (HandlerT master IO) Html
-getLoginR = lift $ do
-    (loginFields, enctype) <- generateFormPost (renderDivs loginForm)
-    defaultLayout $ do
-        setTitle "Login — Snowdrift.coop"
-        $(widgetFile "page/auth/login")
+getLoginR = do
+    toMaster <- getRouteToParent
+    lift $ do
+        (loginFields, enctype) <- generateFormPost (renderDivs loginForm)
+        defaultLayout $ do
+            setTitle "Login — Snowdrift.coop"
+            $(widgetFile "page/auth/login")
 
 postLoginR :: (Yesod master
               ,YesodPersist master
@@ -217,6 +219,7 @@ postLoginR = do
         FormFailure msgs -> failure msgs
         FormMissing -> failure ["No login data"]
 
+-- ** Logout page
 
 postLogoutR :: (Yesod master
                ,RedirectUrl master r)
@@ -225,3 +228,16 @@ postLogoutR = do
     AuthSite home <- getYesod
     lift $ deleteSession authSessionKey
     lift $ redirect home
+
+-- ** CreateAccount page
+
+getCreateAccountR :: (Yesod master, RenderMessage master FormMessage)
+                  => HandlerT (AuthSite r) (HandlerT master IO) Html
+getCreateAccountR = lift $ do
+    (loginFields, enctype) <- generateFormPost (renderDivs loginForm)
+    defaultLayout $ do
+        setTitle "Create Account — Snowdrift.coop"
+        $(widgetFile "page/auth/create-account")
+
+postCreateAccountR :: HandlerT (AuthSite r) (HandlerT master IO) Html
+postCreateAccountR = undefined

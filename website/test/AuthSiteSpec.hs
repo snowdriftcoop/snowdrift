@@ -24,6 +24,7 @@ data AuthHarness = AuthHarness
     }
 
 mkYesod "AuthHarness" [parseRoutes|
+/provisional Provisional GET
 /maybe-auth MaybeAuth GET
 /require-auth RequireAuth GET
 /session-val SessionVal GET
@@ -39,6 +40,12 @@ getRequireAuth = T.pack . show <$> requireAuth
 
 getSessionVal :: Handler Text
 getSessionVal = T.pack . show <$> lookupSession "_AUTHID"
+
+getProvisional  :: Handler Text
+getProvisional = T.pack . show' <$> runDB (selectFirst [] [])
+  where
+    show' :: Maybe (Entity ProvisionalUser) -> String
+    show' = show
 
 getLoginDirect :: Text -> Handler Text
 getLoginDirect e =
@@ -115,24 +122,24 @@ mainSpecs :: Spec
 mainSpecs = withTestAuth Nothing $ withBob $ do
     describe "maybeAuth" $ do
         it "gets the user" $ do
-            get MaybeAuth >> bodyContains "Nothing"
+            get MaybeAuth >> bodyEquals "Nothing"
             loginBob
             get MaybeAuth >> bodyContains "bob@example.com"
         it "gets nothing after logout" $ do
             loginBob
             get MaybeAuth >> bodyContains "bob@example.com"
             goLogout
-            get MaybeAuth >> bodyContains "Nothing"
+            get MaybeAuth >> bodyEquals "Nothing"
     describe "session key" $ do
         it "is set on login" $ do
-            get SessionVal >> bodyContains "Nothing"
+            get SessionVal >> bodyEquals "Nothing"
             loginBob
             get SessionVal >> bodyContains "Just"
         it "is cleared on logout" $ do
             loginBob
             get SessionVal >> bodyContains "Just"
             goLogout
-            get SessionVal >> bodyContains "Nothing"
+            get SessionVal >> bodyEquals "Nothing"
     describe "requireAuth *without* authRoute" $ do
         it "gets the user" $ do
             get RequireAuth >> statusIs 401
@@ -166,7 +173,19 @@ mainSpecs = withTestAuth Nothing $ withBob $ do
                 setUrl (AuthSub LoginR)
             assertHeader "location" "/auth/login"
             Right _ <- followRedirect
-            get SessionVal >> bodyContains "Nothing"
+            get SessionVal >> bodyEquals "Nothing"
+    describe "getCreateAccountR" $ do
+        it "creates a new ProvisionalUser" $ do
+            get Provisional >> bodyEquals "Nothing"
+            printBody
+            get (AuthSub CreateAccountR)
+            request $ do
+                addToken
+                byLabel "Email" "a@example.com"
+                byLabel "Passphrase" "aaaaaaaaaaaaa"
+                setMethod "POST"
+                setUrl (AuthSub CreateAccountR)
+            get Provisional >> bodyContains "a@example.com"
   where
     loginBob = loginAs "bob@example.com"
     loginAs :: Text -> AuthExample ()
