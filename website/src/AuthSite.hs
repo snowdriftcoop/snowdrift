@@ -38,6 +38,16 @@ import Settings
 -- typeclass.
 type AuthUser = Entity User
 
+class AuthMaster y where
+
+    -- | What to show on the login page. This page should post
+    -- 'Credentials' to 'LoginR'.
+    loginHandler :: HandlerT y IO TypedContent
+
+    -- | What to show on the create-account page. This page should post
+    -- 'Credentials' to 'CreateAccountR'.
+    createAccountHandler :: HandlerT y IO TypedContent
+
 -- ** Internal types. Sequestered up here to appease the TH gods.
 
 newtype AuthEmail = AuthEmail { fromAuth :: Text } deriving Show
@@ -70,7 +80,8 @@ instance (Yesod master
          ,YesodPersist master
          ,YesodPersistBackend master ~ SqlBackend
          ,RedirectUrl master r
-         ,RenderMessage master FormMessage)
+         ,RenderMessage master FormMessage
+         ,AuthMaster master)
         => YesodSubDispatch (AuthSite r) (HandlerT master IO) where
     yesodSubDispatch = $(mkYesodSubDispatch resourcesAuthSite)
 
@@ -175,15 +186,9 @@ loginForm = Credentials
   where
     emailAttrs = [("autofocus",""), ("autocomplete","email")]
 
-getLoginR :: (Yesod master, RenderMessage master FormMessage)
-          => HandlerT (AuthSite r) (HandlerT master IO) Html
-getLoginR = do
-    toMaster <- getRouteToParent
-    lift $ do
-        (loginFields, enctype) <- generateFormPost (renderDivs loginForm)
-        defaultLayout $ do
-            setTitle "Login — Snowdrift.coop"
-            $(widgetFile "page/auth/login")
+getLoginR :: (Yesod m, RenderMessage m FormMessage, AuthMaster m)
+          => HandlerT (AuthSite r) (HandlerT m IO) TypedContent
+getLoginR = lift $ loginHandler
 
 postLoginR :: (Yesod master
               ,YesodPersist master
@@ -231,13 +236,9 @@ postLogoutR = do
 
 -- ** CreateAccount page
 
-getCreateAccountR :: (Yesod master, RenderMessage master FormMessage)
-                  => HandlerT (AuthSite r) (HandlerT master IO) Html
-getCreateAccountR = lift $ do
-    (loginFields, enctype) <- generateFormPost (renderDivs loginForm)
-    defaultLayout $ do
-        setTitle "Create Account — Snowdrift.coop"
-        $(widgetFile "page/auth/create-account")
+getCreateAccountR :: (Yesod m, RenderMessage m FormMessage, AuthMaster m)
+                  => HandlerT (AuthSite r) (HandlerT m IO) TypedContent
+getCreateAccountR = lift $ createAccountHandler
 
 postCreateAccountR :: HandlerT (AuthSite r) (HandlerT master IO) Html
 postCreateAccountR = undefined

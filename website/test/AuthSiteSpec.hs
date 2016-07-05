@@ -32,6 +32,16 @@ mkYesod "AuthHarness" [parseRoutes|
 /login-direct/#Text LoginDirect GET
 |]
 
+instance AuthMaster AuthHarness where
+    loginHandler = do
+        ((_, loginFields), enctype) <- runFormPost (renderDivs loginForm)
+        selectRep $ provideRep $ defaultLayout [whamlet|
+            <form method="post" enctype=#{enctype}>
+                ^{loginFields}
+            |]
+
+    createAccountHandler = loginHandler
+
 getMaybeAuth :: Handler Text
 getMaybeAuth = T.pack . show <$> maybeAuth
 

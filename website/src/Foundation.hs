@@ -127,6 +127,20 @@ instance YesodPersistRunner App where
     getDBRunner = defaultGetDBRunner appConnPool
 
 
+-- Create the pages for auth
+instance AuthMaster App where
+    loginHandler = do
+        (loginFields, enctype) <- generateFormPost (renderDivs loginForm)
+        selectRep $ provideRep $ defaultLayout $ do
+            setTitle "Login — Snowdrift.coop"
+            $(widgetFile "page/auth/login")
+
+    createAccountHandler = do
+        ((_, loginFields), enctype) <- runFormPost (renderDivs loginForm)
+        selectRep $ provideRep $ defaultLayout $ do
+            setTitle "Create Account — Snowdrift.coop"
+            $(widgetFile "page/auth/create-account")
+
 -- This instance is required to use forms. You can modify renderMessage to
 -- achieve customized and internationalized form validation messages.
 instance RenderMessage App FormMessage where
