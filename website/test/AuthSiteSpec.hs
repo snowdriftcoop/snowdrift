@@ -145,6 +145,28 @@ mainSpecs = withTestAuth Nothing $ withBob $ do
                 (statusIs 200 >> bodyContains "1")
             goLogout
             get RequireAuth >> statusIs 401
+    describe "getLoginR" $ do
+        it "logs a body in" $ do
+            get (AuthSub LoginR)
+            request $ do
+                addToken
+                byLabel "Email" "bob@example.com"
+                byLabel "Passphrase" "aaaaaaaaaaaaa"
+                setMethod "POST"
+                setUrl (AuthSub LoginR)
+            Right _ <- followRedirect
+            bodyContains "bob@example.com"
+        it "spot check - bad passphrase" $ do
+            get (AuthSub LoginR)
+            request $ do
+                addToken
+                byLabel "Email" "bob@example.com"
+                byLabel "Passphrase" "bbbbbbbbbbbbb"
+                setMethod "POST"
+                setUrl (AuthSub LoginR)
+            assertHeader "location" "/auth/login"
+            Right _ <- followRedirect
+            get SessionVal >> bodyContains "Nothing"
     it "times out after two hours" $ do
         loginBob
         error "Pending test"
