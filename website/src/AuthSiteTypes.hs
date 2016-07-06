@@ -8,7 +8,7 @@ import Yesod.Core
 
 -- | The loginDest parameter is the route that users should be directed to
 -- after logging in.
-data AuthSite loginDest = AuthSite loginDest
+data AuthSite = AuthSite
 
 mkYesodSubData "AuthSite" [parseRoutes|
 /login LoginR GET POST

@@ -26,7 +26,7 @@ data App = App
     , appHttpManager :: Manager
     , appLogger      :: Logger
     , appGitRev      :: GitRev
-    , appAuth        :: AuthSite (Route App)
+    , appAuth        :: AuthSite
     }
 
 -- This is where we define all of the routes in our application. For a full
@@ -129,14 +129,18 @@ instance YesodPersistRunner App where
 
 -- Create the pages for auth
 instance AuthMaster App where
+
+    postLoginRoute _ = HomeR
+    postLogoutRoute = postLoginRoute
+
     loginHandler = do
-        (loginFields, enctype) <- generateFormPost (renderDivs loginForm)
+        (loginFields, enctype) <- generateFormPost (renderDivs credentialsForm)
         selectRep $ provideRep $ defaultLayout $ do
             setTitle "Login — Snowdrift.coop"
             $(widgetFile "page/auth/login")
 
     createAccountHandler = do
-        ((_, loginFields), enctype) <- runFormPost (renderDivs loginForm)
+        (loginFields, enctype) <- generateFormPost (renderDivs credentialsForm)
         selectRep $ provideRep $ defaultLayout $ do
             setTitle "Create Account — Snowdrift.coop"
             $(widgetFile "page/auth/create-account")

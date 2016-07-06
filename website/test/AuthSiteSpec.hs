@@ -18,7 +18,7 @@ import Application (makeFoundation, makeLogWare)
 -- ** A harness for the auth subsite
 
 data AuthHarness = AuthHarness
-    { ahTestAuth :: (AuthSite (Route AuthHarness))
+    { ahTestAuth :: AuthSite
     , ahConnPool :: ConnectionPool
     , ahAuthRoute :: Maybe (Route AuthHarness)
     }
@@ -28,13 +28,16 @@ mkYesod "AuthHarness" [parseRoutes|
 /maybe-auth MaybeAuth GET
 /require-auth RequireAuth GET
 /session-val SessionVal GET
-/auth AuthSub AuthSite-(Route-AuthHarness) ahTestAuth
+/auth AuthSub AuthSite ahTestAuth
 /login-direct/#Text LoginDirect GET
 |]
 
 instance AuthMaster AuthHarness where
+    postLoginRoute _ = MaybeAuth
+    postLogoutRoute = postLoginRoute
+
     loginHandler = do
-        ((_, loginFields), enctype) <- runFormPost (renderDivs loginForm)
+        ((_, loginFields), enctype) <- runFormPost (renderDivs credentialsForm)
         selectRep $ provideRep $ defaultLayout [whamlet|
             <form method="post" enctype=#{enctype}>
                 ^{loginFields}
@@ -89,7 +92,7 @@ withTestAuth maybeAuthRoute = before $ do
     foundation <- makeFoundation settings
     wipeDB foundation
     logWare <- liftIO $ makeLogWare foundation
-    let harness = AuthHarness (AuthSite MaybeAuth)
+    let harness = AuthHarness AuthSite
                               (appConnPool foundation)
                               maybeAuthRoute
     return (harness, logWare)

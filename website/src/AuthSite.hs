@@ -38,10 +38,16 @@ import Settings
 -- typeclass.
 type AuthUser = Entity User
 
+-- | Any site that uses this subsite needs to instantiate this class.
 class AuthMaster y where
 
-    -- | What to show on the login page. This page should post
-    -- 'Credentials' to 'LoginR'.
+    -- | Where to go after logout and login
+    postLoginRoute :: y -> Route y
+    postLogoutRoute :: y -> Route y
+
+    -- | What to show on the login page. This page should have a form that posts
+    -- 'Credentials' to 'LoginR'. See 'AuthHarness' in the tests for a
+    -- simplistic example.
     loginHandler :: HandlerT y IO TypedContent
 
     -- | What to show on the create-account page. This page should post
@@ -79,10 +85,9 @@ newtype CachedAuth a = CachedAuth { unCachedAuth :: Maybe a } deriving Typeable
 instance (Yesod master
          ,YesodPersist master
          ,YesodPersistBackend master ~ SqlBackend
-         ,RedirectUrl master r
          ,RenderMessage master FormMessage
          ,AuthMaster master)
-        => YesodSubDispatch (AuthSite r) (HandlerT master IO) where
+        => YesodSubDispatch AuthSite (HandlerT master IO) where
     yesodSubDispatch = $(mkYesodSubDispatch resourcesAuthSite)
 
 -- ** Duplicating Yesod.Auth API for a wee while.
@@ -106,7 +111,17 @@ requireAuth = maybe noAuth pure =<< maybeAuth
         setUltDestCurrent
         maybe notAuthenticated redirect . authRoute =<< getYesod
 
--- ** Functions and operations for doing auth
+-- | A decent default form for 'Credentials', to be considered part of the
+-- external API.
+credentialsForm :: (RenderMessage (HandlerSite m) FormMessage, MonadHandler m)
+          => AForm m Credentials
+credentialsForm = Credentials
+    <$> (AuthEmail <$> areq textField "Email"{fsAttrs=emailAttrs}  Nothing)
+    <*> (ClearPassphrase <$> areq passwordField "Passphrase" Nothing)
+  where
+    emailAttrs = [("autofocus",""), ("autocomplete","email")]
+
+-- ** Functions and operations for doing auth. To be considered internal.
 
 authSessionKey :: Text
 authSessionKey = "_AUTHID"
@@ -176,42 +191,31 @@ privilegedCreateUser VerifiedUser{..} =
 priviligedLogin :: Yesod master => AuthUser -> HandlerT master IO ()
 priviligedLogin = setSession authSessionKey . toPathPiece . entityKey
 
--- ** Now building the login page.
-
-loginForm :: (RenderMessage (HandlerSite m) FormMessage, MonadHandler m)
-          => AForm m Credentials
-loginForm = Credentials
-    <$> (AuthEmail <$> areq textField "Email"{fsAttrs=emailAttrs}  Nothing)
-    <*> (ClearPassphrase <$> areq passwordField "Passphrase" Nothing)
-  where
-    emailAttrs = [("autofocus",""), ("autocomplete","email")]
-
 getLoginR :: (Yesod m, RenderMessage m FormMessage, AuthMaster m)
-          => HandlerT (AuthSite r) (HandlerT m IO) TypedContent
+          => HandlerT AuthSite (HandlerT m IO) TypedContent
 getLoginR = lift $ loginHandler
 
 postLoginR :: (Yesod master
+              ,AuthMaster master
               ,YesodPersist master
               ,YesodPersistBackend master ~ SqlBackend
-              ,RedirectUrl master r
               ,RenderMessage master FormMessage)
-           => HandlerT (AuthSite r) (HandlerT master IO) Html
+           => HandlerT AuthSite (HandlerT master IO) Html
 postLoginR = do
-    ((res', _), _) <- lift $ runFormPost (renderDivs loginForm)
+    ((res', _), _) <- lift $ runFormPost (renderDivs credentialsForm)
     p <- getRouteToParent
-    AuthSite home <- getYesod
-    formResult (lift . (runAuthResult home p <=< (runDB . checkCredentials)))
+    formResult (lift . (runAuthResult p <=< (runDB . checkCredentials)))
                loginAgain
                res'
   where
-    runAuthResult home parent = maybe
+    runAuthResult parent = maybe
         (do
             alertDanger [shamlet|Bad credentials:  <a href="https://tree.taiga.io/project/snowdrift/us/392">See Taiga #392</a>.|]
             redirect (parent LoginR))
         (\u -> do
             priviligedLogin u
             alertInfo "Welcome"
-            redirect home)
+            redirect =<< (postLoginRoute <$> getYesod))
     loginAgain msgs =
         lift $ defaultLayout [whamlet|
             <p>Login form failures are not handled yet.
@@ -227,18 +231,17 @@ postLoginR = do
 -- ** Logout page
 
 postLogoutR :: (Yesod master
-               ,RedirectUrl master r)
-            => HandlerT (AuthSite r) (HandlerT master IO) Html
+               ,AuthMaster master)
+            => HandlerT AuthSite (HandlerT master IO) Html
 postLogoutR = do
-    AuthSite home <- getYesod
     lift $ deleteSession authSessionKey
-    lift $ redirect home
+    lift $ redirect =<< (postLogoutRoute <$> getYesod)
 
 -- ** CreateAccount page
 
 getCreateAccountR :: (Yesod m, RenderMessage m FormMessage, AuthMaster m)
-                  => HandlerT (AuthSite r) (HandlerT m IO) TypedContent
+                  => HandlerT AuthSite (HandlerT m IO) TypedContent
 getCreateAccountR = lift $ createAccountHandler
 
-postCreateAccountR :: HandlerT (AuthSite r) (HandlerT master IO) Html
+postCreateAccountR :: HandlerT AuthSite (HandlerT master IO) Html
 postCreateAccountR = undefined
