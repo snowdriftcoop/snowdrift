@@ -8,9 +8,11 @@ module AuthSiteSpec (spec) where
 
 import TestImport hiding (Handler)
 import Database.Persist.Sql hiding (get)
+import Network.Wai.Test (SResponse(..))
 import Yesod hiding (get)
 import Yesod.Default.Config2 (ignoreEnv, loadAppSettings)
 import qualified Data.Text as T
+import qualified Data.Text.Lazy as TL
 
 import AuthSite
 import Application (makeFoundation, makeLogWare)
@@ -29,7 +31,8 @@ mkYesod "AuthHarness" [parseRoutes|
 /require-auth RequireAuth GET
 /session-val SessionVal GET
 /auth AuthSub AuthSite ahTestAuth
-/login-direct/#Text LoginDirect GET
+/dummy-login/#Text DummyLogin GET
+/dummy-provisional/#Text/#Text DummyProvisional GET
 |]
 
 instance AuthMaster AuthHarness where
@@ -60,10 +63,17 @@ getProvisional = T.pack . show' <$> runDB (selectFirst [] [])
     show' :: Maybe (Entity ProvisionalUser) -> String
     show' = show
 
-getLoginDirect :: Text -> Handler Text
-getLoginDirect e =
+getDummyLogin :: Text -> Handler Text
+getDummyLogin e =
     "Logged in, you cheeky bastard you"
     <$ (priviligedLogin =<< runDB (getBy404 (UniqueUsr e)))
+
+getDummyProvisional :: Text -> Text -> Handler Text
+getDummyProvisional e p = verifyToken <$>
+    runDB
+        (priviligedProvisionalUser
+            (Credentials (AuthEmail e) (ClearPassphrase p)))
+
 -- ** Boilerplate for the harness site
 
 instance Yesod AuthHarness where
@@ -136,31 +146,31 @@ mainSpecs = withTestAuth Nothing $ withBob $ do
     describe "maybeAuth" $ do
         it "gets the user" $ do
             get MaybeAuth >> bodyEquals "Nothing"
-            loginBob
+            dummyLoginBob
             get MaybeAuth >> bodyContains "bob@example.com"
         it "gets nothing after logout" $ do
-            loginBob
+            dummyLoginBob
             get MaybeAuth >> bodyContains "bob@example.com"
             goLogout
             get MaybeAuth >> bodyEquals "Nothing"
     describe "session key" $ do
         it "is set on login" $ do
             get SessionVal >> bodyEquals "Nothing"
-            loginBob
+            dummyLoginBob
             get SessionVal >> bodyContains "Just"
         it "is cleared on logout" $ do
-            loginBob
+            dummyLoginBob
             get SessionVal >> bodyContains "Just"
             goLogout
             get SessionVal >> bodyEquals "Nothing"
     describe "requireAuth *without* authRoute" $ do
         it "gets the user" $ do
             get RequireAuth >> statusIs 401
-            loginBob
+            dummyLoginBob
             get RequireAuth >>
                 (statusIs 200 >> bodyContains "1")
         it "errors after logout" $ do
-            loginBob
+            dummyLoginBob
             get RequireAuth >>
                 (statusIs 200 >> bodyContains "1")
             goLogout
@@ -187,22 +197,50 @@ mainSpecs = withTestAuth Nothing $ withBob $ do
             assertHeader "location" "/auth/login"
             Right _ <- followRedirect
             get SessionVal >> bodyEquals "Nothing"
-    describe "getCreateAccountR" $ do
+    describe "CreateAccountR" $ do
         it "creates a new ProvisionalUser" $ do
             get Provisional >> bodyEquals "Nothing"
-            printBody
-            get (AuthSub CreateAccountR)
+            provisionalAA
+            get Provisional >> bodyContains "a@example.com"
+        it "doesn't mind if a user is already provisional" $ do
+            provisionalAA
+            provisionalAA
+            get Provisional >> bodyContains "a@example.com"
+    describe "VerifyAccountR" $ do
+        it "creates an account with a good token" $ do
+            v <- dummyProvisionalAA
+            get (AuthSub VerifyAccountR)
+            request $ do
+                addToken
+                byLabel "Token" (TL.toStrict v)
+                setMethod "POST"
+                setUrl (AuthSub VerifyAccountR)
+            get (AuthSub LoginR)
             request $ do
                 addToken
                 byLabel "Email" "a@example.com"
                 byLabel "Passphrase" "aaaaaaaaaaaaa"
                 setMethod "POST"
-                setUrl (AuthSub CreateAccountR)
-            get Provisional >> bodyContains "a@example.com"
+                setUrl (AuthSub LoginR)
+            Right _ <- followRedirect
+            bodyContains "a@example.com"
   where
-    loginBob = loginAs "bob@example.com"
-    loginAs :: Text -> AuthExample ()
-    loginAs = get . LoginDirect
+    provisionalAA = do
+        get (AuthSub CreateAccountR)
+        request $ do
+            addToken
+            byLabel "Email" "a@example.com"
+            byLabel "Passphrase" "aaaaaaaaaaaaa"
+            setMethod "POST"
+            setUrl (AuthSub CreateAccountR)
+    dummyProvisionalAA = do
+        get (DummyProvisional "a@example.com" "aaaaaaaaaaaaa")
+        Just resp <- getResponse
+        pure (decodeUtf8 (simpleBody resp))
+
+    dummyLoginBob = dummyLogin "bob@example.com"
+    dummyLogin :: Text -> AuthExample ()
+    dummyLogin = get . DummyLogin
     goLogout = post (AuthSub LogoutR)
 
 createUser :: AuthEmail -> ClearPassphrase -> SqlPersistM ()
