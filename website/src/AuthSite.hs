@@ -28,14 +28,15 @@ import qualified Crypto.Nonce as Nonce
 -- https://github.com/yesodweb/yesod/issues/1245
 import System.IO.Unsafe (unsafePerformIO)
 
-import Alerts
 import AuthSiteTypes
-import Css
-import Model
-import Settings
 
--- To create a usable API, AuthUser would have to be added to an exposed
--- typeclass.
+-- Need this until we switch back to using messages instead of
+-- Yesod-specific "alerts".
+import Alerts
+
+-- Still need this until we take the time to put ''type AuthUser'' into the
+-- AuthMaster class
+import Model
 type AuthUser = Entity User
 
 -- | Any site that uses this subsite needs to instantiate this class.
