@@ -14,6 +14,7 @@ mkYesodSubData "AuthSite" [parseRoutes|
 /login LoginR GET POST
 /logout LogoutR POST
 /create-account CreateAccountR GET POST
+/verify-account VerifyAccountR GET POST
 |]
 
 share [mkPersist sqlSettings{mpsPrefixFields = False}
@@ -24,6 +25,8 @@ ProvisionalUser
     provisionalDigest ByteString
     verificationDigest ByteString
     puCreationTime UTCTime
+
+    UniqueProvUsr provisionalEmail
 
     deriving Show
 |]

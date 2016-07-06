@@ -21,6 +21,7 @@ import Data.Typeable
 import Database.Persist.Sql
 import Yesod
 import qualified Crypto.Nonce as Nonce
+import qualified Data.Text as T
 
 -- Used to create a single, applicationd-wide nonce token. I'm doing this
 -- out of expediency; Yesod.Auth uses it and nobody seems to care. But I
@@ -76,7 +77,7 @@ data VerifiedUser = VerifiedUser
 data Verification = Verification
         { verifyEmail :: AuthEmail
         , verifyToken :: Text
-        }
+        } deriving Show
 
 -- | Used with Yesod caching feature
 newtype CachedAuth a = CachedAuth { unCachedAuth :: Maybe a } deriving Typeable
@@ -161,10 +162,10 @@ checkCredentials Credentials{..} = do
 
 -- | Store a provisional user for later verification. Returns the token to
 -- use for verification.
-storeProvisionalUser :: MonadIO m => Credentials -> SqlPersistT m Verification
-storeProvisionalUser creds = do
+priviligedProvisionalUser :: MonadIO m => Credentials -> SqlPersistT m Verification
+priviligedProvisionalUser creds = do
     tok <- liftIO (genVerificationToken creds)
-    insert_ =<< liftIO (provisional creds tok)
+    _ <- flip upsert [] =<< liftIO (provisional creds tok)
     pure tok
 
 -- | Create a provisional user
@@ -206,7 +207,6 @@ postLoginR = do
     ((res', _), _) <- lift $ runFormPost (renderDivs credentialsForm)
     p <- getRouteToParent
     formResult (lift . (runAuthResult p <=< (runDB . checkCredentials)))
-               loginAgain
                res'
   where
     runAuthResult parent = maybe
@@ -217,17 +217,18 @@ postLoginR = do
             priviligedLogin u
             alertInfo "Welcome"
             redirect =<< (postLoginRoute <$> getYesod))
-    loginAgain msgs =
+
+formResult success = \case
+    FormSuccess x -> success x
+    FormFailure msgs -> failure msgs
+    FormMissing -> failure ["No login data"]
+  where
+    failure msgs =
         lift $ defaultLayout [whamlet|
-            <p>Login form failures are not handled yet.
+            <p>Auth form failures are not handled yet.
             <p>TBD: <a href="https://tree.taiga.io/project/snowdrift/us/392">See Taiga #392</a>.
             <p>Errors: #{show msgs}
             |]
-
-    formResult success failure = \case
-        FormSuccess x -> success x
-        FormFailure msgs -> failure msgs
-        FormMissing -> failure ["No login data"]
 
 -- ** Logout page
 
@@ -244,5 +245,35 @@ getCreateAccountR :: (Yesod m, RenderMessage m FormMessage, AuthMaster m)
                   => HandlerT AuthSite (HandlerT m IO) TypedContent
 getCreateAccountR = lift $ createAccountHandler
 
-postCreateAccountR :: HandlerT AuthSite (HandlerT master IO) Html
-postCreateAccountR = undefined
+data VerificationMessage
+        = ExistingM AuthUser
+        | VerifyM Verification
+        deriving Show
+
+
+sendMessage :: VerificationMessage -> HandlerT AuthSite (HandlerT m IO) ()
+sendMessage = $logError . T.pack . show
+
+postCreateAccountR :: (Yesod master
+                      ,YesodPersistBackend master ~ SqlBackend
+                      ,YesodPersist master
+                      ,RenderMessage master FormMessage)
+                   => HandlerT AuthSite (HandlerT master IO) Html
+postCreateAccountR = do
+    ((res, _), _) <- lift $ runFormPost (renderDivs credentialsForm)
+    flip formResult res (\c@Credentials{..} -> do
+        mu <- lift (runDB (getBy (UniqueUsr (fromAuth loginAuth))))
+        sendMessage =<< maybe
+            (VerifyM <$> lift (runDB (priviligedProvisionalUser c)))
+            (pure . ExistingM)
+            mu
+        p <- getRouteToParent
+        lift (redirect (p VerifyAccountR))
+        )
+
+-- | VerifyAccount page
+getVerifyAccountR :: (Yesod m, RenderMessage m FormMessage, AuthMaster m)
+                  => HandlerT AuthSite (HandlerT m IO) TypedContent
+getVerifyAccountR = undefined
+postVerifyAccountR :: HandlerT AuthSite (HandlerT master IO) Html
+postVerifyAccountR = undefined
