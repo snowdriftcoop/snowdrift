@@ -59,6 +59,8 @@ instance AuthMaster AuthHarness where
                 ^{tokenField}
             |]
 
+    sendAuthEmail = $logError . T.pack . show
+
 -- ** Methods for checking results
 
 getMaybeAuth :: Handler Text

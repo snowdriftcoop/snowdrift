@@ -19,6 +19,7 @@ import Data.Text.Encoding
 import Data.Time
 import Data.Typeable
 import Database.Persist.Sql
+import Network.Mail.Mime
 import Yesod
 import qualified Crypto.Nonce as Nonce
 import qualified Data.Text as T
@@ -63,6 +64,11 @@ class AuthMaster y where
     -- | What to show on the verify-account page. This page should post
     -- 'Text' (the token) to 'VerifyAccountR'
     verifyAccountHandler :: HandlerT y IO TypedContent
+
+    -- | This module sends emails, in case that wasn't obvious.
+    -- "Network.Mail.Mime" or "Network.Mail.Mime.SES" have good options for
+    -- this method.
+    sendAuthEmail :: Mail -> HandlerT y IO ()
 
 -- ** Internal types. Sequestered up here to appease the TH gods.
 
@@ -284,14 +290,6 @@ postCreateAccountR = do
         lift (redirect (p VerifyAccountR))
         )
 
--- | VerifyAccount page
-getVerifyAccountR :: (Yesod m, RenderMessage m FormMessage, AuthMaster m)
-                  => HandlerT AuthSite (HandlerT m IO) TypedContent
-getVerifyAccountR = lift $ verifyAccountHandler
-
-postVerifyAccountR :: HandlerT AuthSite (HandlerT master IO) Html
-postVerifyAccountR = undefined
-
 -- | ResetPassphrase page
 getResetPassphraseR :: (Yesod m, RenderMessage m FormMessage, AuthMaster m)
                      => HandlerT AuthSite (HandlerT m IO) TypedContent
@@ -299,3 +297,11 @@ getResetPassphraseR = lift $ resetPassphraseHandler
 
 postResetPassphraseR :: HandlerT AuthSite (HandlerT master IO) Html
 postResetPassphraseR = undefined
+
+-- | VerifyAccount page
+getVerifyAccountR :: (Yesod m, RenderMessage m FormMessage, AuthMaster m)
+                  => HandlerT AuthSite (HandlerT m IO) TypedContent
+getVerifyAccountR = lift $ verifyAccountHandler
+
+postVerifyAccountR :: HandlerT AuthSite (HandlerT master IO) Html
+postVerifyAccountR = undefined
