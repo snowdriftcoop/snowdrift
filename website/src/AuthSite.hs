@@ -282,3 +282,10 @@ getVerifyAccountR :: (Yesod m, RenderMessage m FormMessage, AuthMaster m)
 getVerifyAccountR = undefined
 postVerifyAccountR :: HandlerT AuthSite (HandlerT master IO) Html
 postVerifyAccountR = undefined
+
+-- | ForgotPassphrase page
+getForgotPassphraseR :: (Yesod m, RenderMessage m FormMessage, AuthMaster m)
+                     => HandlerT AuthSite (HandlerT m IO) TypedContent
+getForgotPassphraseR = undefined
+postForgotPassphraseR :: HandlerT AuthSite (HandlerT master IO) Html
+postForgotPassphraseR = undefined

@@ -127,6 +127,7 @@ type AuthExample a = YesodExample AuthHarness a
 -- ** Some local tools
 
 -- | Create Bob before all tests
+-- This is old; should probably create/use createUserBypass instead
 withBob :: SpecWith (TestApp AuthHarness) -> SpecWith (TestApp AuthHarness)
 withBob = beforeWith makeBob
   where
@@ -200,12 +201,15 @@ mainSpecs = withTestAuth Nothing $ withBob $ do
     describe "CreateAccountR" $ do
         it "creates a new ProvisionalUser" $ do
             get Provisional >> bodyEquals "Nothing"
-            provisionalAA
-            get Provisional >> bodyContains "a@example.com"
-        it "doesn't mind if a user is already provisional" $ do
-            provisionalAA
-            provisionalAA
-            get Provisional >> bodyContains "a@example.com"
+            createAA
+            get Provisional >> bodyContains "alice@example.com"
+        it "doesn't mind if a user asks twice" $ do
+            createAA
+            createAA
+            get Provisional >> bodyContains "alice@example.com"
+        it "doesn't create a provisional user if one already exists" $ do
+            goCreate "bob@example.com" "zzzzzzzzzzzzz"
+            get Provisional >> bodyEquals "Nothing"
     describe "VerifyAccountR" $ do
         it "creates an account with a good token" $ do
             v <- bypassProvisionalAA
@@ -215,18 +219,47 @@ mainSpecs = withTestAuth Nothing $ withBob $ do
                 byLabel "Token" (TL.toStrict v)
                 setMethod "POST"
                 setUrl (AuthSub VerifyAccountR)
-            get (UserR "a@example.com") >> bodyContains "a@example.com"
+            get (UserR "alice@example.com") >> bodyContains "alice@example.com"
+        it "doesn't add something it shouldn't" $ do
+            v <- bypassProvisionalAA
+            get (AuthSub VerifyAccountR)
+            request $ do
+                addToken
+                byLabel "Token" (TL.toStrict (v <> "garbage"))
+                setMethod "POST"
+                setUrl (AuthSub VerifyAccountR)
+            get (UserR "alice@example.com") >> bodyEquals "Nothing"
+    describe "ForgotPassphraseR" $ do
+        it "makes a provisional user if the user already exists" $ do
+            goForget "bob@example.com" "ccccccccccccc"
+            get Provisional >> bodyContains "bob@example.com"
+        it "doesn't mind if a person asks twice" $ do
+            goForget "bob@example.com" "ccccccccccccc"
+            goForget "bob@example.com" "ccccccccccccc"
+            get Provisional >> bodyContains "bob@example.com"
+        it "doesn't make a provisional user if the user dne" $ do
+            goForget "alice@example.com" "ccccccccccccc"
+            get Provisional >> bodyEquals "Nothing"
   where
-    provisionalAA = do
+    createAA = goCreate "alice@example.com" "aaaaaaaaaaaaa"
+    goForget e p = do
+        get (AuthSub ForgotPassphraseR)
+        request $ do
+            addToken
+            byLabel "Email" e
+            byLabel "Passphrase" p
+            setMethod "POST"
+            setUrl (AuthSub ForgotPassphraseR)
+    goCreate e p = do
         get (AuthSub CreateAccountR)
         request $ do
             addToken
-            byLabel "Email" "a@example.com"
-            byLabel "Passphrase" "aaaaaaaaaaaaa"
+            byLabel "Email" e
+            byLabel "Passphrase" p
             setMethod "POST"
             setUrl (AuthSub CreateAccountR)
     bypassProvisionalAA = do
-        post (ProvisionalUserBypass "a@example.com" "aaaaaaaaaaaaa")
+        post (ProvisionalUserBypass "alice@example.com" "aaaaaaaaaaaaa")
         Just resp <- getResponse
         pure (decodeUtf8 (simpleBody resp))
 

@@ -15,6 +15,7 @@ mkYesodSubData "AuthSite" [parseRoutes|
 /logout LogoutR POST
 /create-account CreateAccountR GET POST
 /verify-account VerifyAccountR GET POST
+/forgot-passphrase ForgotPassphraseR GET POST
 |]
 
 share [mkPersist sqlSettings{mpsPrefixFields = False}
