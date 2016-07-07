@@ -19,7 +19,6 @@ import Data.Text.Encoding
 import Data.Time
 import Data.Typeable
 import Database.Persist.Sql
-import Network.Mail.Mime
 import Yesod
 import qualified Crypto.Nonce as Nonce
 import qualified Data.Text as T
@@ -68,7 +67,20 @@ class AuthMaster y where
     -- | This module sends emails, in case that wasn't obvious.
     -- "Network.Mail.Mime" or "Network.Mail.Mime.SES" have good options for
     -- this method.
-    sendAuthEmail :: Mail -> HandlerT y IO ()
+    sendAuthEmail :: AuthEmail -> AuthMailMessage -> HandlerT y IO ()
+
+-- | A token used to confirm an email address.
+newtype Token = Token { fromToken :: Text } deriving Show
+
+-- | The type of message you are expected to send.
+data AuthMailMessage
+        = VerifyUserCreation Token
+        | VerifyPassReset Token
+        | BadUserCreation
+        -- ^ Sent when user tried to use an existing email address
+        | BadPassReset
+        -- ^ Sent when user tried to use a *nonexistent* email address
+        deriving Show
 
 -- ** Internal types. Sequestered up here to appease the TH gods.
 
@@ -90,7 +102,7 @@ data VerifiedUser = VerifiedUser
 
 data Verification = Verification
         { verifyEmail :: AuthEmail
-        , verifyToken :: Text
+        , verifyToken :: Token
         } deriving Show
 
 -- | Used with Yesod caching feature
@@ -181,13 +193,13 @@ provisional Credentials{..} Verification{..} =
   where
     email = pure (fromAuth loginAuth)
     passDigest = makePass (fromClear loginPass)
-    tokDigest = makePass verifyToken
+    tokDigest = makePass (fromToken verifyToken)
     curtime = getCurrentTime
     makePass t = makePassword (encodeUtf8 t) pbkdf1Strength
 
 genVerificationToken :: Credentials -> IO Verification
 genVerificationToken Credentials{..} =
-    Verification loginAuth <$> nonce128urlT tokenGenerator
+    Verification loginAuth . Token <$> nonce128urlT tokenGenerator
 
 -- | This privileged function must be used with care.
 privilegedCreateUser :: MonadIO m => VerifiedUser -> SqlPersistT m ()
@@ -264,16 +276,8 @@ getCreateAccountR :: (Yesod m, RenderMessage m FormMessage, AuthMaster m)
                   => HandlerT AuthSite (HandlerT m IO) TypedContent
 getCreateAccountR = lift $ createAccountHandler
 
-data VerificationMessage
-        = ExistingM AuthUser
-        | VerifyM Verification
-        deriving Show
-
-
-sendMessage :: VerificationMessage -> HandlerT AuthSite (HandlerT m IO) ()
-sendMessage = $logError . T.pack . show
-
 postCreateAccountR :: (Yesod master
+                      ,AuthMaster master
                       ,YesodPersistBackend master ~ SqlBackend
                       ,YesodPersist master
                       ,RenderMessage master FormMessage)
@@ -282,9 +286,10 @@ postCreateAccountR = do
     ((res, _), _) <- lift $ runFormPost (renderDivs credentialsForm)
     flip formResult res (\c@Credentials{..} -> do
         mu <- lift (runDB (getBy (UniqueUsr (fromAuth loginAuth))))
-        sendMessage =<< maybe
-            (VerifyM <$> lift (runDB (priviligedProvisionalUser c)))
-            (pure . ExistingM)
+        lift $ sendAuthEmail loginAuth =<< maybe
+            (VerifyUserCreation . verifyToken
+                <$> runDB (priviligedProvisionalUser c))
+            (pure . const BadUserCreation)
             mu
         p <- getRouteToParent
         lift (redirect (p VerifyAccountR))

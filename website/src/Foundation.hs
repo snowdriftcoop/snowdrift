@@ -158,7 +158,7 @@ instance AuthMaster App where
             setTitle "Passphrase Reset — Snowdrift.coop"
             $(widgetFile "page/auth/reset-passphrase")
 
-    sendAuthEmail = $logDebug . T.pack . show
+    sendAuthEmail _ = $logDebug . T.pack . show
 
 -- This instance is required to use forms. You can modify renderMessage to
 -- achieve customized and internationalized form validation messages.

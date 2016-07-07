@@ -59,7 +59,7 @@ instance AuthMaster AuthHarness where
                 ^{tokenField}
             |]
 
-    sendAuthEmail = $logError . T.pack . show
+    sendAuthEmail _ = $logError . T.pack . show
 
 -- ** Methods for checking results
 
@@ -92,7 +92,7 @@ postLoginBypass e =
     <$ (priviligedLogin =<< runDB (getBy404 (UniqueUsr e)))
 
 postProvisionalUserBypass :: Text -> Text -> Handler Text
-postProvisionalUserBypass e p = verifyToken <$>
+postProvisionalUserBypass e p = fromToken . verifyToken <$>
     runDB
         (priviligedProvisionalUser
             (Credentials (AuthEmail e) (ClearPassphrase p)))
@@ -284,5 +284,5 @@ mainSpecs = withTestAuth Nothing $ withBob $ do
 createUser :: AuthEmail -> ClearPassphrase -> SqlPersistM ()
 createUser e p = do
     ProvisionalUser{..} <-
-        liftIO $ provisional (Credentials e p) (Verification e "stuff")
+        liftIO $ provisional (Credentials e p) (Verification e (Token "stuff"))
     privilegedCreateUser (VerifiedUser provisionalEmail provisionalDigest)
