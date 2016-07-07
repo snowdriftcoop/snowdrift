@@ -49,6 +49,15 @@ instance AuthMaster AuthHarness where
             |]
 
     createAccountHandler = loginHandler
+    resetPassphraseHandler = loginHandler
+
+    verifyAccountHandler = do
+        ((_, tokenField), enctype) <-
+            runFormPost (renderDivs (areq textField "Token" Nothing))
+        selectRep $ provideRep $ defaultLayout [whamlet|
+            <form method="post" enctype=#{enctype}>
+                ^{tokenField}
+            |]
 
 -- ** Methods for checking results
 
@@ -229,7 +238,7 @@ mainSpecs = withTestAuth Nothing $ withBob $ do
                 setMethod "POST"
                 setUrl (AuthSub VerifyAccountR)
             get (UserR "alice@example.com") >> bodyEquals "Nothing"
-    describe "ForgotPassphraseR" $ do
+    describe "ResetPassphraseR" $ do
         it "makes a provisional user if the user already exists" $ do
             goForget "bob@example.com" "ccccccccccccc"
             get Provisional >> bodyContains "bob@example.com"
@@ -243,13 +252,14 @@ mainSpecs = withTestAuth Nothing $ withBob $ do
   where
     createAA = goCreate "alice@example.com" "aaaaaaaaaaaaa"
     goForget e p = do
-        get (AuthSub ForgotPassphraseR)
+        get (AuthSub ResetPassphraseR)
         request $ do
             addToken
             byLabel "Email" e
             byLabel "Passphrase" p
             setMethod "POST"
-            setUrl (AuthSub ForgotPassphraseR)
+            setUrl (AuthSub ResetPassphraseR)
+        statusIs 303
     goCreate e p = do
         get (AuthSub CreateAccountR)
         request $ do
@@ -258,6 +268,7 @@ mainSpecs = withTestAuth Nothing $ withBob $ do
             byLabel "Passphrase" p
             setMethod "POST"
             setUrl (AuthSub CreateAccountR)
+        statusIs 303
     bypassProvisionalAA = do
         post (ProvisionalUserBypass "alice@example.com" "aaaaaaaaaaaaa")
         Just resp <- getResponse

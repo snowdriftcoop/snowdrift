@@ -145,6 +145,19 @@ instance AuthMaster App where
             setTitle "Create Account — Snowdrift.coop"
             $(widgetFile "page/auth/create-account")
 
+    verifyAccountHandler = do
+        ((_, tokenField), enctype) <-
+            runFormPost (renderDivs (areq textField "Token" Nothing))
+        selectRep $ provideRep $ defaultLayout $ do
+            setTitle "Verify Account — Snowdrift.coop"
+            $(widgetFile "page/auth/verify-account")
+
+    resetPassphraseHandler = do
+        (loginFields, enctype) <- generateFormPost (renderDivs credentialsForm)
+        selectRep $ provideRep $ defaultLayout $ do
+            setTitle "Passphrase Reset — Snowdrift.coop"
+            $(widgetFile "page/auth/reset-passphrase")
+
 -- This instance is required to use forms. You can modify renderMessage to
 -- achieve customized and internationalized form validation messages.
 instance RenderMessage App FormMessage where

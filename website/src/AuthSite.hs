@@ -56,6 +56,14 @@ class AuthMaster y where
     -- 'Credentials' to 'CreateAccountR'.
     createAccountHandler :: HandlerT y IO TypedContent
 
+    -- | What to show on the reset-passphrase page. This page should post
+    -- 'Credentials' to 'ResetPassphraseR'
+    resetPassphraseHandler :: HandlerT y IO TypedContent
+
+    -- | What to show on the verify-account page. This page should post
+    -- 'Text' (the token) to 'VerifyAccountR'
+    verifyAccountHandler :: HandlerT y IO TypedContent
+
 -- ** Internal types. Sequestered up here to appease the TH gods.
 
 newtype AuthEmail = AuthEmail { fromAuth :: Text } deriving Show
@@ -279,13 +287,15 @@ postCreateAccountR = do
 -- | VerifyAccount page
 getVerifyAccountR :: (Yesod m, RenderMessage m FormMessage, AuthMaster m)
                   => HandlerT AuthSite (HandlerT m IO) TypedContent
-getVerifyAccountR = undefined
+getVerifyAccountR = lift $ verifyAccountHandler
+
 postVerifyAccountR :: HandlerT AuthSite (HandlerT master IO) Html
 postVerifyAccountR = undefined
 
--- | ForgotPassphrase page
-getForgotPassphraseR :: (Yesod m, RenderMessage m FormMessage, AuthMaster m)
+-- | ResetPassphrase page
+getResetPassphraseR :: (Yesod m, RenderMessage m FormMessage, AuthMaster m)
                      => HandlerT AuthSite (HandlerT m IO) TypedContent
-getForgotPassphraseR = undefined
-postForgotPassphraseR :: HandlerT AuthSite (HandlerT master IO) Html
-postForgotPassphraseR = undefined
+getResetPassphraseR = lift $ resetPassphraseHandler
+
+postResetPassphraseR :: HandlerT AuthSite (HandlerT master IO) Html
+postResetPassphraseR = undefined
