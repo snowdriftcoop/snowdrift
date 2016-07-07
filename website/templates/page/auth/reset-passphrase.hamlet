@@ -1,4 +1,4 @@
-<.auth .reset-passphrase>
+<.container .auth .reset-passphrase>
   <h1>Reset passphrase
   <p>Forgot your passphrase? We can fix that. Enter your email below, as
   well as a NEW passphrase, and we will set you up.

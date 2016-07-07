@@ -1,4 +1,4 @@
-<.auth .login>
+<.container .auth .login>
   <h1>Log in to Snowdrift.coop
   <form method=post enctype=#{enctype}>
     ^{loginFields}

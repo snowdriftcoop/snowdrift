@@ -1,4 +1,4 @@
-<.auth .create-account>
+<.container .auth .create-account>
   <h1>Welcome!
 
   <p>

@@ -147,10 +147,12 @@ instance AuthMaster App where
 
     verifyAccountHandler = do
         ((_, tokenField), enctype) <-
-            runFormPost (renderDivs (areq textField "Token" Nothing))
+            runFormPost
+                (renderDivs (areq textField "Token"{fsAttrs=af} Nothing))
         selectRep $ provideRep $ defaultLayout $ do
             setTitle "Verify Account — Snowdrift.coop"
             $(widgetFile "page/auth/verify-account")
+      where af = [("autofocus","true")]
 
     resetPassphraseHandler = do
         (loginFields, enctype) <- generateFormPost (renderDivs credentialsForm)

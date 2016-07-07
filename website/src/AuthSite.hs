@@ -82,7 +82,7 @@ data AuthMailMessage
         -- ^ Sent when user tried to use a *nonexistent* email address
         deriving Show
 
--- ** Internal types. Sequestered up here to appease the TH gods.
+-- ** Internal types.
 
 newtype AuthEmail = AuthEmail { fromAuth :: Text } deriving Show
 
