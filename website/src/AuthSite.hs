@@ -160,14 +160,6 @@ checkCredentials Credentials{..} = do
             then Just x
             else Nothing
 
--- | Store a provisional user for later verification. Returns the token to
--- use for verification.
-priviligedProvisionalUser :: MonadIO m => Credentials -> SqlPersistT m Verification
-priviligedProvisionalUser creds = do
-    tok <- liftIO (genVerificationToken creds)
-    _ <- flip upsert [] =<< liftIO (provisional creds tok)
-    pure tok
-
 -- | Create a provisional user
 provisional :: Credentials -> Verification -> IO ProvisionalUser
 provisional Credentials{..} Verification{..} =
@@ -192,6 +184,19 @@ privilegedCreateUser VerifiedUser{..} =
 -- user's session; it's the difference between being logged in and not!
 priviligedLogin :: Yesod master => AuthUser -> HandlerT master IO ()
 priviligedLogin = setSession authSessionKey . toPathPiece . entityKey
+
+-- | Store a provisional user for later verification. Returns the token to
+-- use for verification.
+priviligedProvisionalUser :: MonadIO m
+                          => Credentials -> SqlPersistT m Verification
+priviligedProvisionalUser creds = do
+    tok <- liftIO (genVerificationToken creds)
+    _ <- flip upsert [] =<< liftIO (provisional creds tok)
+    pure tok
+
+-- | Log out by deleting the session var
+logout :: Yesod master => HandlerT master IO ()
+logout = deleteSession authSessionKey
 
 getLoginR :: (Yesod m, RenderMessage m FormMessage, AuthMaster m)
           => HandlerT AuthSite (HandlerT m IO) TypedContent
@@ -236,7 +241,7 @@ postLogoutR :: (Yesod master
                ,AuthMaster master)
             => HandlerT AuthSite (HandlerT master IO) Html
 postLogoutR = do
-    lift $ deleteSession authSessionKey
+    lift $ logout
     lift $ redirect =<< (postLogoutRoute <$> getYesod)
 
 -- ** CreateAccount page

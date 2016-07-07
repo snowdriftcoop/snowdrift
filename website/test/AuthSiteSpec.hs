@@ -30,9 +30,11 @@ mkYesod "AuthHarness" [parseRoutes|
 /maybe-auth MaybeAuth GET
 /require-auth RequireAuth GET
 /session-val SessionVal GET
+/user/#Text UserR GET
 /auth AuthSub AuthSite ahTestAuth
-/dummy-login/#Text DummyLogin GET
-/dummy-provisional/#Text/#Text DummyProvisional GET
+/login-bypass/#Text LoginBypass POST
+/logout-bypass LogoutBypass POST
+/provisional-user-bypass/#Text/#Text ProvisionalUserBypass POST
 |]
 
 instance AuthMaster AuthHarness where
@@ -48,6 +50,8 @@ instance AuthMaster AuthHarness where
 
     createAccountHandler = loginHandler
 
+-- ** Methods for checking results
+
 getMaybeAuth :: Handler Text
 getMaybeAuth = T.pack . show <$> maybeAuth
 
@@ -57,22 +61,33 @@ getRequireAuth = T.pack . show <$> requireAuth
 getSessionVal :: Handler Text
 getSessionVal = T.pack . show <$> lookupSession "_AUTHID"
 
-getProvisional  :: Handler Text
+getProvisional :: Handler Text
 getProvisional = T.pack . show' <$> runDB (selectFirst [] [])
   where
     show' :: Maybe (Entity ProvisionalUser) -> String
     show' = show
 
-getDummyLogin :: Text -> Handler Text
-getDummyLogin e =
+getUserR :: Text -> Handler Text
+getUserR = fmap (T.pack . show) . runDB . getBy . UniqueUsr
+
+-- ** "Bypass" routes, which do some function without going through the
+-- real workflow. I use these to make sure the different components are
+-- tested independently: e.g. when testing token verification, I'll just
+-- bypass the regular login.
+
+postLoginBypass :: Text -> Handler Text
+postLoginBypass e =
     "Logged in, you cheeky bastard you"
     <$ (priviligedLogin =<< runDB (getBy404 (UniqueUsr e)))
 
-getDummyProvisional :: Text -> Text -> Handler Text
-getDummyProvisional e p = verifyToken <$>
+postProvisionalUserBypass :: Text -> Text -> Handler Text
+postProvisionalUserBypass e p = verifyToken <$>
     runDB
         (priviligedProvisionalUser
             (Credentials (AuthEmail e) (ClearPassphrase p)))
+
+postLogoutBypass :: Handler ()
+postLogoutBypass = logout
 
 -- ** Boilerplate for the harness site
 
@@ -111,12 +126,6 @@ type AuthExample a = YesodExample AuthHarness a
 
 -- ** Some local tools
 
--- | Run db actions with this harness
-harnessDB :: SqlPersistM a -> AuthExample a
-harnessDB query = do
-    h <- getTestYesod
-    liftIO $ runSqlPersistMPool query (ahConnPool h)
-
 -- | Create Bob before all tests
 withBob :: SpecWith (TestApp AuthHarness) -> SpecWith (TestApp AuthHarness)
 withBob = beforeWith makeBob
@@ -132,7 +141,8 @@ spec :: Spec
 spec = mainSpecs >> authRouteSpec
 
 -- | Having this defined separately is clumsy. It should be moved back into
--- the right spot.
+-- the right spot. The problem is that it needs a different value of
+-- AuthHarness.
 authRouteSpec :: Spec
 authRouteSpec = withTestAuth (Just MaybeAuth) $
     describe "requireAuth *with* authRoute" $
@@ -146,34 +156,24 @@ mainSpecs = withTestAuth Nothing $ withBob $ do
     describe "maybeAuth" $ do
         it "gets the user" $ do
             get MaybeAuth >> bodyEquals "Nothing"
-            dummyLoginBob
+            bypassLoginBob
             get MaybeAuth >> bodyContains "bob@example.com"
         it "gets nothing after logout" $ do
-            dummyLoginBob
+            bypassLoginBob
             get MaybeAuth >> bodyContains "bob@example.com"
-            goLogout
+            bypassLogout
             get MaybeAuth >> bodyEquals "Nothing"
-    describe "session key" $ do
-        it "is set on login" $ do
-            get SessionVal >> bodyEquals "Nothing"
-            dummyLoginBob
-            get SessionVal >> bodyContains "Just"
-        it "is cleared on logout" $ do
-            dummyLoginBob
-            get SessionVal >> bodyContains "Just"
-            goLogout
-            get SessionVal >> bodyEquals "Nothing"
     describe "requireAuth *without* authRoute" $ do
         it "gets the user" $ do
             get RequireAuth >> statusIs 401
-            dummyLoginBob
+            bypassLoginBob
             get RequireAuth >>
                 (statusIs 200 >> bodyContains "1")
         it "errors after logout" $ do
-            dummyLoginBob
+            bypassLoginBob
             get RequireAuth >>
                 (statusIs 200 >> bodyContains "1")
-            goLogout
+            bypassLogout
             get RequireAuth >> statusIs 401
     describe "getLoginR" $ do
         it "logs a body in" $ do
@@ -208,22 +208,14 @@ mainSpecs = withTestAuth Nothing $ withBob $ do
             get Provisional >> bodyContains "a@example.com"
     describe "VerifyAccountR" $ do
         it "creates an account with a good token" $ do
-            v <- dummyProvisionalAA
+            v <- bypassProvisionalAA
             get (AuthSub VerifyAccountR)
             request $ do
                 addToken
                 byLabel "Token" (TL.toStrict v)
                 setMethod "POST"
                 setUrl (AuthSub VerifyAccountR)
-            get (AuthSub LoginR)
-            request $ do
-                addToken
-                byLabel "Email" "a@example.com"
-                byLabel "Passphrase" "aaaaaaaaaaaaa"
-                setMethod "POST"
-                setUrl (AuthSub LoginR)
-            Right _ <- followRedirect
-            bodyContains "a@example.com"
+            get (UserR "a@example.com") >> bodyContains "a@example.com"
   where
     provisionalAA = do
         get (AuthSub CreateAccountR)
@@ -233,15 +225,15 @@ mainSpecs = withTestAuth Nothing $ withBob $ do
             byLabel "Passphrase" "aaaaaaaaaaaaa"
             setMethod "POST"
             setUrl (AuthSub CreateAccountR)
-    dummyProvisionalAA = do
-        get (DummyProvisional "a@example.com" "aaaaaaaaaaaaa")
+    bypassProvisionalAA = do
+        post (ProvisionalUserBypass "a@example.com" "aaaaaaaaaaaaa")
         Just resp <- getResponse
         pure (decodeUtf8 (simpleBody resp))
 
-    dummyLoginBob = dummyLogin "bob@example.com"
-    dummyLogin :: Text -> AuthExample ()
-    dummyLogin = get . DummyLogin
-    goLogout = post (AuthSub LogoutR)
+    bypassLoginBob = bypassLogin "bob@example.com"
+    bypassLogin :: Text -> AuthExample ()
+    bypassLogin = post . LoginBypass
+    bypassLogout = post LogoutBypass
 
 createUser :: AuthEmail -> ClearPassphrase -> SqlPersistM ()
 createUser e p = do
