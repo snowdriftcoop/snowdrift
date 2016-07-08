@@ -175,6 +175,9 @@ tokenGenerator :: Generator
 tokenGenerator = unsafePerformIO Nonce.new
 {-# NOINLINE tokenGenerator #-}
 
+-- | Our wrap over makePassword
+makeAuthPass t = makePassword (encodeUtf8 t) pbkdf1Strength
+
 -- | Compare some Credentials to what's stored in the database.
 checkCredentials :: MonadIO m => Credentials -> SqlPersistT m (Maybe AuthUser)
 checkCredentials Credentials{..} = do
@@ -186,16 +189,29 @@ checkCredentials Credentials{..} = do
             then Just x
             else Nothing
 
+-- | Verify a token given by the user. This is *destructive*; a token can
+-- only ever be checked once.
+checkToken :: MonadIO m => Token -> SqlPersistT m (Maybe ProvisionalUser)
+checkToken (Token t) = runMaybeT $ do
+    Entity pid p@ProvisionalUser{..} <- MaybeT $ getBy (UniqueTok t)
+    _ <- justM (delete pid)
+    now <- justM (liftIO getCurrentTime)
+    if addUTCTime twoHours puCreationTime > now
+        then just p
+        else nothing
+  where
+    twoHours = 2 * 60 * 60
+    justM = MaybeT . fmap Just
+
 -- | Create a provisional user
 provisional :: Credentials -> Verification -> IO ProvisionalUser
 provisional Credentials{..} Verification{..} =
-    ProvisionalUser <$> email <*> passDigest <*> tokDigest <*> curtime
+    ProvisionalUser <$> email <*> passDigest <*> token <*> curtime
   where
     email = pure (fromAuth loginAuth)
-    passDigest = makePass (fromClear loginPass)
-    tokDigest = makePass (fromToken verifyToken)
+    passDigest = makeAuthPass (fromClear loginPass)
+    token = pure (fromToken verifyToken)
     curtime = getCurrentTime
-    makePass t = makePassword (encodeUtf8 t) pbkdf1Strength
 
 genVerificationToken :: Credentials -> IO Verification
 genVerificationToken Credentials{..} =
@@ -216,9 +232,19 @@ priviligedLogin = setSession authSessionKey . toPathPiece . entityKey
 priviligedProvisionalUser :: MonadIO m
                           => Credentials -> SqlPersistT m Verification
 priviligedProvisionalUser creds = do
-    tok <- liftIO (genVerificationToken creds)
-    _ <- flip upsert [] =<< liftIO (provisional creds tok)
-    pure tok
+    verf <- liftIO (genVerificationToken creds)
+    prov <- liftIO (provisional creds verf)
+    _ <- upsertOn (UniqueProvUsr (puEmail prov)) prov []
+    pure verf
+  where
+    upsertOn uniqueKey record updates = do
+        mExists <- getBy uniqueKey
+        k <- case mExists of
+            Just (Entity k _) -> do
+              when (null updates) (replace k record)
+              return k
+            Nothing           -> insert record
+        Entity k `liftM` updateGet k updates
 
 -- | Log out by deleting the session var
 logout :: Yesod master => HandlerT master IO ()
@@ -291,8 +317,7 @@ postCreateAccountR = do
                 <$> runDB (priviligedProvisionalUser c))
             (pure . const BadUserCreation)
             mu
-        p <- getRouteToParent
-        lift (redirect (p VerifyAccountR))
+        redirectParent VerifyAccountR
         )
 
 -- | ResetPassphrase page
@@ -300,13 +325,77 @@ getResetPassphraseR :: (Yesod m, RenderMessage m FormMessage, AuthMaster m)
                      => HandlerT AuthSite (HandlerT m IO) TypedContent
 getResetPassphraseR = lift $ resetPassphraseHandler
 
-postResetPassphraseR :: HandlerT AuthSite (HandlerT master IO) Html
-postResetPassphraseR = undefined
+postResetPassphraseR :: (Yesod master
+                        ,AuthMaster master
+                        ,YesodPersistBackend master ~ SqlBackend
+                        ,YesodPersist master
+                        ,RenderMessage master FormMessage)
+                     => HandlerT AuthSite (HandlerT master IO) Html
+postResetPassphraseR = do
+    ((res, _), _) <- lift $ runFormPost (renderDivs credentialsForm)
+    flip formResult res (\c@Credentials{..} -> do
+        mu <- lift (runDB (getBy (UniqueUsr (fromAuth loginAuth))))
+        lift $ sendAuthEmail loginAuth =<< maybe
+            (pure BadUserCreation)
+            (const $ VerifyPassReset . verifyToken
+                <$> runDB (priviligedProvisionalUser c))
+            mu
+        redirectParent VerifyAccountR
+        )
 
 -- | VerifyAccount page
 getVerifyAccountR :: (Yesod m, RenderMessage m FormMessage, AuthMaster m)
                   => HandlerT AuthSite (HandlerT m IO) TypedContent
 getVerifyAccountR = lift $ verifyAccountHandler
 
-postVerifyAccountR :: HandlerT AuthSite (HandlerT master IO) Html
-postVerifyAccountR = undefined
+-- | Handle an attempted verification.
+--
+-- Steps taken:
+-- 1a get the form data
+-- 2a get/delete the provisional user
+-- 3a ensure that it isn't expired
+-- 4a upsert the user
+--
+-- Potential problems:
+-- 1b -> formfailure (using formResult)
+-- 2b -> indicates the token was already used or something. Show a page
+-- with options to log in, get saved password? Or just redirect to
+-- Login page which has all of those options. Ok, do that with a
+-- warning
+-- 3b -> Same deal as 2b
+-- 4b -> this should not ever fail ;) If it does? Redirect anyway? Makes me
+-- think, what happens if storing the provisional user fails? Eh, internal
+-- error page. Good enough.
+--
+-- This method is rather blithe in the belief that the priviliged methods
+-- above ensure that a good token is truly "good".
+postVerifyAccountR :: (Yesod m
+                      ,YesodPersist m
+                      ,YesodPersistBackend m ~ SqlBackend
+                      ,RenderMessage m FormMessage)
+                   => HandlerT AuthSite (HandlerT m IO) Html
+postVerifyAccountR = do
+    ((res, _), _) <-
+        lift $ runFormPost (renderDivs (Token <$> areq textField "" Nothing))
+    -- 1a
+    flip formResult res $ \tok -> do
+        -- 2a/3a
+        -- Have to check the token and insert the user in the same
+        -- transaction, lest race conditions boggle the contraptions
+        mm <- lift $ runDB $ sequence . fmap upsertUser =<< checkToken tok
+        case mm of
+            Nothing -> do
+                lift $ alertWarning "Uh oh, your token appears to be invalid!"
+                redirectParent LoginR
+            Just _ -> do
+                lift $ alertSuccess "You are all set! Log in to continue."
+                redirectParent LoginR
+  where
+    upsertUser :: MonadIO m => ProvisionalUser -> SqlPersistT m (Entity User)
+    upsertUser ProvisionalUser{..} = do
+        upsert (User puEmail puDigest)
+               [UserDigest =. puDigest]
+
+redirectParent r = do
+    p <- getRouteToParent
+    lift (redirect (p r))

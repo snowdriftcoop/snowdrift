@@ -285,4 +285,4 @@ createUser :: AuthEmail -> ClearPassphrase -> SqlPersistM ()
 createUser e p = do
     ProvisionalUser{..} <-
         liftIO $ provisional (Credentials e p) (Verification e (Token "stuff"))
-    privilegedCreateUser (VerifiedUser provisionalEmail provisionalDigest)
+    privilegedCreateUser (VerifiedUser puEmail puDigest)

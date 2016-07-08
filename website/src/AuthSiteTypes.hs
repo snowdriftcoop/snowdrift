@@ -22,12 +22,13 @@ share [mkPersist sqlSettings{mpsPrefixFields = False}
       , mkMigrate "migrateAuth"
       ] [persistLowerCase|
 ProvisionalUser
-    provisionalEmail Text
-    provisionalDigest ByteString
-    verificationDigest ByteString
-    puCreationTime UTCTime
+    puEmail Text           sql="email"
+    puDigest ByteString    sql="digest"
+    puToken Text           sql="token"
+    puCreationTime UTCTime sql="creation_time"
 
-    UniqueProvUsr provisionalEmail
+    UniqueProvUsr puEmail
+    UniqueTok puToken
 
     deriving Show
 |]
