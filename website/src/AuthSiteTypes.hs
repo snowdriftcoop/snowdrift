@@ -12,7 +12,7 @@ data AuthSite = AuthSite
 
 mkYesodSubData "AuthSite" [parseRoutes|
 /login LoginR GET POST
-/logout LogoutR POST
+/logout LogoutR GET
 /create-account CreateAccountR GET POST
 /verify-account VerifyAccountR GET POST
 /reset-passphrase ResetPassphraseR GET POST

@@ -289,12 +289,13 @@ formResult success = \case
 
 -- ** Logout page
 
-postLogoutR :: (Yesod master
-               ,AuthMaster master)
+getLogoutR :: (Yesod master
+              ,AuthMaster master)
             => HandlerT AuthSite (HandlerT master IO) Html
-postLogoutR = do
-    lift $ logout
-    lift $ redirect =<< (postLogoutRoute <$> getYesod)
+getLogoutR = lift $ do
+    logout
+    alertInfo "You are now logged out."
+    redirect =<< (postLogoutRoute <$> getYesod)
 
 -- ** CreateAccount page
 
