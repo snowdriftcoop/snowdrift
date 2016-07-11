@@ -3,8 +3,55 @@
 {-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
--- | Subsite for email-and-passphrase authentication.
-module AuthSite (module AuthSiteTypes, module AuthSite) where
+{- |
+Description : Subsite for email-and-passphrase authentication
+License     : AGPL-3
+Maintainer  : dev@lists.snowdrift.coop
+
+Subsite for email-and-passphrase authentication.
+
+Quickstart:
+
+1. Add 'AuthSite' as a subsite to your routes somewhere.
+2. Mappend 'migrateAuth' to your site's 'Migration' when running migrations.
+3. Have your site datatype instantiate 'AuthMaster' (this is the hard part).
+-}
+module AuthSite
+    ( -- * Subsite interface
+      -- ** Integration with your site
+      AuthSite(..)
+    , migrateAuth
+    , AuthMaster(..)
+    , AuthUser(..)
+      -- ** Routes
+      -- | Haddock seems to dump the entire 'Route' definition, even
+      -- though the only interesting thing here is the AuthSite instance
+      -- with LoginR, LogoutR, CreateAccountR, VerifyAccountR, and
+      -- ResetPassphraseR.
+    , Route(..)
+      -- ** Querying auth status
+      -- | Duplicating the "Yesod.Auth" interface
+    , maybeAuth
+    , requireAuth
+      -- ** Helper for writing handlers
+    , credentialsForm
+    , Credentials(..)
+    , AuthEmail(..)
+    , ClearPassphrase(..)
+      -- * Types
+    , AuthMailMessage(..)
+    , AuthToken(..)
+      -- * Internals
+    , provisional
+    , logout
+    , priviligedProvisionalUser
+    , privilegedCreateUser
+    , priviligedLogin
+    , VerifiedUser(..)
+    , Verification(..)
+      -- ** @persistent@-generated types
+    , ProvisionalUser(..)
+    ) where
 
 import Prelude
 
@@ -35,80 +82,90 @@ import AuthSiteTypes
 -- Yesod-specific "alerts".
 import Alerts
 
--- Still need this until we take the time to put ''type AuthUser'' into the
--- AuthMaster class
+-- Still need this until we take the time to put AuthUser into the
+-- AuthMaster class.
 import Model
+
+-- | This is a cheapo synonym. Eventually AuthUser should be part of the
+-- 'AuthMaster' interface, for this module to be usable outside of
+-- Snowdrift.
 type AuthUser = Entity User
 
 -- | Any site that uses this subsite needs to instantiate this class.
-class AuthMaster y where
+class AuthMaster master where
 
-    -- | Where to go after logout and login
-    postLoginRoute :: y -> Route y
-    postLogoutRoute :: y -> Route y
+    -- | Where to go after login
+    postLoginRoute :: master -> Route master
+
+    -- | Where to go after logout
+    postLogoutRoute :: master -> Route master
 
     -- | What to show on the login page. This page should have a form that posts
-    -- 'Credentials' to 'LoginR'. See 'AuthHarness' in the tests for a
+    -- 'Credentials' to 'Route LoginR'. See 'AuthHarness' in the tests for a
     -- simplistic example.
-    loginHandler :: HandlerT y IO TypedContent
+    loginHandler :: HandlerT master IO TypedContent
 
     -- | What to show on the create-account page. This page should post
-    -- 'Credentials' to 'CreateAccountR'.
-    createAccountHandler :: HandlerT y IO TypedContent
+    -- 'Credentials' to 'AuthSiteTypes.CreateAccountR'.
+    createAccountHandler :: HandlerT master IO TypedContent
 
     -- | What to show on the reset-passphrase page. This page should post
     -- 'Credentials' to 'ResetPassphraseR'
-    resetPassphraseHandler :: HandlerT y IO TypedContent
+    resetPassphraseHandler :: HandlerT master IO TypedContent
 
     -- | What to show on the verify-account page. This page should post
     -- 'Text' (the token) to 'VerifyAccountR'
-    verifyAccountHandler :: HandlerT y IO TypedContent
+    verifyAccountHandler :: HandlerT master IO TypedContent
 
     -- | This module sends emails, in case that wasn't obvious.
     -- "Network.Mail.Mime" or "Network.Mail.Mime.SES" have good options for
     -- this method.
-    sendAuthEmail :: AuthEmail -> AuthMailMessage -> HandlerT y IO ()
+    sendAuthEmail :: AuthEmail -> AuthMailMessage -> HandlerT master IO ()
 
 -- | A token used to confirm an email address.
-newtype Token = Token { fromToken :: Text } deriving Show
+newtype AuthToken = AuthToken { fromAuthToken :: Text } deriving Show
 
 -- | The type of message you are expected to send.
 data AuthMailMessage
-        = VerifyUserCreation Token
-        | VerifyPassReset Token
+        = VerifyUserCreation AuthToken
+        -- ^ A user is signing up
+        | VerifyPassReset AuthToken
+        -- ^ A user wants to reset their passphrase
         | BadUserCreation
-        -- ^ Sent when user tried to use an existing email address
+        -- ^ A user tried to sign up with an existing address
         | BadPassReset
-        -- ^ Sent when user tried to use a *nonexistent* email address
+        -- ^ A user tried to reset with an address that doesn't exist
         deriving Show
 
--- ** Internal types.
-
+-- | Sanity-preserving type
 newtype AuthEmail = AuthEmail { fromAuth :: Text } deriving Show
 
+-- | Sanity-preserving type
 newtype ClearPassphrase = ClearPassphrase { fromClear :: Text } deriving Show
 
 newtype PassphraseDigest = PassphraseDigest ByteString deriving Show
 
+-- | The "email and passphrase" representing the main purpose of this
+-- module.
 data Credentials = Credentials
-        { loginAuth :: AuthEmail
-        , loginPass :: ClearPassphrase
+        { credsIdent :: AuthEmail
+        , credsPass :: ClearPassphrase
         } deriving (Show)
 
+-- | Internal
 data VerifiedUser = VerifiedUser
         { verifiedEmail :: Text
         , verifiedDigest :: ByteString
         }
 
+-- | Internal
 data Verification = Verification
         { verifyEmail :: AuthEmail
-        , verifyToken :: Token
+        , verifyToken :: AuthToken
         } deriving Show
 
 -- | Used with Yesod caching feature
 newtype CachedAuth a = CachedAuth { unCachedAuth :: Maybe a } deriving Typeable
-
--- ** Invoke Yesod TH to make the subsite.
 
 instance (Yesod master
          ,YesodPersist master
@@ -118,8 +175,7 @@ instance (Yesod master
         => YesodSubDispatch AuthSite (HandlerT master IO) where
     yesodSubDispatch = $(mkYesodSubDispatch resourcesAuthSite)
 
--- ** Duplicating Yesod.Auth API for a wee while.
-
+-- | If the user is authenticated, get the corresponding Entity.
 maybeAuth :: (YesodPersist m
              ,YesodPersistBackend m ~ SqlBackend)
           => HandlerT m IO (Maybe AuthUser)
@@ -129,6 +185,11 @@ maybeAuth = runMaybeT $ do
     u <- MaybeT $ fmap unCachedAuth (cached (runDB $ fmap CachedAuth (get uid)))
     pure (Entity uid u)
 
+-- | If the user is /not/ authenticated, this will cause a redirect to your
+-- site's 'authRoute' or simply return 'notAuthenticated'.
+--
+-- Note that "Yesod.Auth" is smarter about not redirecting during an API
+-- request, but we don't support that yet.
 requireAuth :: (Yesod m
                ,YesodPersist m
                ,YesodPersistBackend m ~ SqlBackend)
@@ -139,8 +200,7 @@ requireAuth = maybe noAuth pure =<< maybeAuth
         setUltDestCurrent
         maybe notAuthenticated redirect . authRoute =<< getYesod
 
--- | A decent default form for 'Credentials', to be considered part of the
--- external API.
+-- | A decent default form for 'Credentials'.
 credentialsForm :: (RenderMessage (HandlerSite m) FormMessage, MonadHandler m)
           => AForm m Credentials
 credentialsForm = Credentials
@@ -148,8 +208,6 @@ credentialsForm = Credentials
     <*> (ClearPassphrase <$> areq passwordField "Passphrase" Nothing)
   where
     emailAttrs = [("autofocus",""), ("autocomplete","email")]
-
--- ** Functions and operations for doing auth. To be considered internal.
 
 authSessionKey :: Text
 authSessionKey = "_AUTHID"
@@ -181,43 +239,43 @@ makeAuthPass t = makePassword (encodeUtf8 t) pbkdf1Strength
 -- | Compare some Credentials to what's stored in the database.
 checkCredentials :: MonadIO m => Credentials -> SqlPersistT m (Maybe AuthUser)
 checkCredentials Credentials{..} = do
-    mu <- getBy (UniqueUsr (fromAuth loginAuth))
+    mu <- getBy (UniqueUsr (fromAuth credsIdent))
     pure $ verify =<< mu
   where
     verify x@(Entity uid u) =
-        if verifyPassword (encodeUtf8 (fromClear loginPass)) (u^.userDigest)
+        if verifyPassword (encodeUtf8 (fromClear credsPass)) (u^.userDigest)
             then Just x
             else Nothing
 
 -- | Verify a token given by the user. This is *destructive*; a token can
 -- only ever be checked once.
-checkToken :: MonadIO m => Token -> SqlPersistT m (Maybe ProvisionalUser)
-checkToken (Token t) = runMaybeT $ do
-    Entity pid p@ProvisionalUser{..} <- MaybeT $ getBy (UniqueTok t)
+checkToken :: MonadIO m => AuthToken -> SqlPersistT m (Maybe VerifiedUser)
+checkToken (AuthToken t) = runMaybeT $ do
+    Entity pid p@ProvisionalUser{..} <- MaybeT $ getBy (UniqueToken t)
     _ <- justM (delete pid)
     now <- justM (liftIO getCurrentTime)
-    if addUTCTime twoHours puCreationTime > now
-        then just p
+    if addUTCTime twoHours provisionalUserCreationTime > now
+        then just (VerifiedUser provisionalUserEmail provisionalUserDigest)
         else nothing
   where
     twoHours = 2 * 60 * 60
     justM = MaybeT . fmap Just
 
--- | Create a provisional user
+-- | Generate a provisional user
 provisional :: Credentials -> Verification -> IO ProvisionalUser
 provisional Credentials{..} Verification{..} =
     ProvisionalUser <$> email <*> passDigest <*> token <*> curtime
   where
-    email = pure (fromAuth loginAuth)
-    passDigest = makeAuthPass (fromClear loginPass)
-    token = pure (fromToken verifyToken)
+    email = pure (fromAuth credsIdent)
+    passDigest = makeAuthPass (fromClear credsPass)
+    token = pure (fromAuthToken verifyToken)
     curtime = getCurrentTime
 
 genVerificationToken :: Credentials -> IO Verification
 genVerificationToken Credentials{..} =
-    Verification loginAuth . Token <$> nonce128urlT tokenGenerator
+    Verification credsIdent . AuthToken <$> nonce128urlT tokenGenerator
 
--- | This privileged function must be used with care.
+-- | Insert a new user into the database.
 privilegedCreateUser :: MonadIO m => VerifiedUser -> SqlPersistT m ()
 privilegedCreateUser VerifiedUser{..} =
     insert_ (User verifiedEmail verifiedDigest)
@@ -234,7 +292,7 @@ priviligedProvisionalUser :: MonadIO m
 priviligedProvisionalUser creds = do
     verf <- liftIO (genVerificationToken creds)
     prov <- liftIO (provisional creds verf)
-    _ <- upsertOn (UniqueProvUsr (puEmail prov)) prov []
+    _ <- upsertOn (UniqueProvisionalUser (provisionalUserEmail prov)) prov []
     pure verf
   where
     upsertOn uniqueKey record updates = do
@@ -312,8 +370,8 @@ postCreateAccountR :: (Yesod master
 postCreateAccountR = do
     ((res, _), _) <- lift $ runFormPost (renderDivs credentialsForm)
     flip formResult res (\c@Credentials{..} -> do
-        mu <- lift (runDB (getBy (UniqueUsr (fromAuth loginAuth))))
-        lift $ sendAuthEmail loginAuth =<< maybe
+        mu <- lift (runDB (getBy (UniqueUsr (fromAuth credsIdent))))
+        lift $ sendAuthEmail credsIdent =<< maybe
             (VerifyUserCreation . verifyToken
                 <$> runDB (priviligedProvisionalUser c))
             (pure . const BadUserCreation)
@@ -335,8 +393,8 @@ postResetPassphraseR :: (Yesod master
 postResetPassphraseR = do
     ((res, _), _) <- lift $ runFormPost (renderDivs credentialsForm)
     flip formResult res (\c@Credentials{..} -> do
-        mu <- lift (runDB (getBy (UniqueUsr (fromAuth loginAuth))))
-        lift $ sendAuthEmail loginAuth =<< maybe
+        mu <- lift (runDB (getBy (UniqueUsr (fromAuth credsIdent))))
+        lift $ sendAuthEmail credsIdent =<< maybe
             (pure BadUserCreation)
             (const $ VerifyPassReset . verifyToken
                 <$> runDB (priviligedProvisionalUser c))
@@ -377,7 +435,7 @@ postVerifyAccountR :: (Yesod m
                    => HandlerT AuthSite (HandlerT m IO) Html
 postVerifyAccountR = do
     ((res, _), _) <-
-        lift $ runFormPost (renderDivs (Token <$> areq textField "" Nothing))
+        lift $ runFormPost (renderDivs (AuthToken <$> areq textField "" Nothing))
     -- 1a
     flip formResult res $ \tok -> do
         -- 2a/3a
@@ -392,10 +450,10 @@ postVerifyAccountR = do
                 lift $ alertSuccess "You are all set! Log in to continue."
                 redirectParent LoginR
   where
-    upsertUser :: MonadIO m => ProvisionalUser -> SqlPersistT m (Entity User)
-    upsertUser ProvisionalUser{..} = do
-        upsert (User puEmail puDigest)
-               [UserDigest =. puDigest]
+    upsertUser :: MonadIO m => VerifiedUser -> SqlPersistT m (Entity User)
+    upsertUser VerifiedUser{..} = do
+        upsert (User verifiedEmail verifiedDigest)
+               [UserDigest =. verifiedDigest]
 
 redirectParent r = do
     p <- getRouteToParent

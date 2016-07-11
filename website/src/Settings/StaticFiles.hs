@@ -1,3 +1,4 @@
+{-# OPTIONS_HADDOCK hide, prune #-}
 module Settings.StaticFiles where
 
 import Settings     (appStaticDir, compileTimeAppSettings)

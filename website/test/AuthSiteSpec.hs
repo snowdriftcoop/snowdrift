@@ -92,7 +92,7 @@ postLoginBypass e =
     <$ (priviligedLogin =<< runDB (getBy404 (UniqueUsr e)))
 
 postProvisionalUserBypass :: Text -> Text -> Handler Text
-postProvisionalUserBypass e p = fromToken . verifyToken <$>
+postProvisionalUserBypass e p = fromAuthToken . verifyToken <$>
     runDB
         (priviligedProvisionalUser
             (Credentials (AuthEmail e) (ClearPassphrase p)))
@@ -284,5 +284,7 @@ mainSpecs = withTestAuth Nothing $ withBob $ do
 createUser :: AuthEmail -> ClearPassphrase -> SqlPersistM ()
 createUser e p = do
     ProvisionalUser{..} <-
-        liftIO $ provisional (Credentials e p) (Verification e (Token "stuff"))
-    privilegedCreateUser (VerifiedUser puEmail puDigest)
+        liftIO
+            (provisional (Credentials e p) (Verification e (AuthToken "stuff")))
+    privilegedCreateUser
+        (VerifiedUser provisionalUserEmail provisionalUserDigest)

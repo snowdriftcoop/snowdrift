@@ -1,3 +1,5 @@
+{-# OPTIONS_HADDOCK hide, prune #-}
+
 -- | Core definitions for the Auth subsite (see AuthSite.hs)
 module AuthSiteTypes where
 
@@ -6,8 +8,7 @@ import ClassyPrelude
 import Database.Persist.TH
 import Yesod.Core
 
--- | The loginDest parameter is the route that users should be directed to
--- after logging in.
+-- | Foundation type for the subsite.
 data AuthSite = AuthSite
 
 mkYesodSubData "AuthSite" [parseRoutes|
@@ -18,17 +19,17 @@ mkYesodSubData "AuthSite" [parseRoutes|
 /reset-passphrase ResetPassphraseR GET POST
 |]
 
-share [mkPersist sqlSettings{mpsPrefixFields = False}
+share [mkPersist sqlSettings
       , mkMigrate "migrateAuth"
       ] [persistLowerCase|
 ProvisionalUser
-    puEmail Text           sql="email"
-    puDigest ByteString    sql="digest"
-    puToken Text           sql="token"
-    puCreationTime UTCTime sql="creation_time"
+    email Text
+    digest ByteString
+    token Text
+    creationTime UTCTime
 
-    UniqueProvUsr puEmail
-    UniqueTok puToken
+    UniqueProvisionalUser email
+    UniqueToken token
 
     deriving Show
 |]
