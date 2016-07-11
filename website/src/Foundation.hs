@@ -135,13 +135,13 @@ instance AuthMaster App where
 
     loginHandler = do
         (loginFields, enctype) <- generateFormPost (renderDivs credentialsForm)
-        selectRep $ provideRep $ defaultLayout $ do
+        selectRep $ provideRep $ navbarLayout "page/auth/login" $ do
             setTitle "Login — Snowdrift.coop"
             $(widgetFile "page/auth/login")
 
     createAccountHandler = do
         (loginFields, enctype) <- generateFormPost (renderDivs credentialsForm)
-        selectRep $ provideRep $ defaultLayout $ do
+        selectRep $ provideRep $ navbarLayout "page/auth/create-account" $ do
             setTitle "Create Account — Snowdrift.coop"
             $(widgetFile "page/auth/create-account")
 
@@ -149,14 +149,14 @@ instance AuthMaster App where
         ((_, tokenField), enctype) <-
             runFormPost
                 (renderDivs (areq textField "Token"{fsAttrs=af} Nothing))
-        selectRep $ provideRep $ defaultLayout $ do
+        selectRep $ provideRep $ navbarLayout "page/auth/verify-account" $ do
             setTitle "Verify Account — Snowdrift.coop"
             $(widgetFile "page/auth/verify-account")
       where af = [("autofocus","true")]
 
     resetPassphraseHandler = do
         (loginFields, enctype) <- generateFormPost (renderDivs credentialsForm)
-        selectRep $ provideRep $ defaultLayout $ do
+        selectRep $ provideRep $ navbarLayout "page/auth/reset-passphrase" $ do
             setTitle "Passphrase Reset — Snowdrift.coop"
             $(widgetFile "page/auth/reset-passphrase")
 

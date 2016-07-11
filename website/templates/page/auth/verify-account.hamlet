@@ -1,7 +1,6 @@
-<.container .auth .verify-account>
-  Please verify your account by entering the token you received in your
-  email.
-  <form method="post" enctype=#{enctype}>
-    ^{tokenField}
-    <button type=submit>Verify
+Please verify your account by entering the token you received in your
+email.
+<form method="post" enctype=#{enctype}>
+  ^{tokenField}
+  <button type=submit>Verify
 
