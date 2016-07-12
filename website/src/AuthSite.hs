@@ -399,7 +399,7 @@ postResetPassphraseR = do
     flip formResult res (\c@Credentials{..} -> do
         mu <- lift (runDB (getBy (UniqueUsr (fromAuth credsIdent))))
         lift $ sendAuthEmail credsIdent =<< maybe
-            (pure BadUserCreation)
+            (pure BadPassReset)
             (const $ VerifyPassReset . verifyToken
                 <$> runDB (priviligedProvisionalUser c))
             mu
