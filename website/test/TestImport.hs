@@ -23,6 +23,8 @@ import Application (makeFoundation, makeLogWare)
 import AuthSite
 import Model as X
 
+import Factories
+
 -- | Run a query outside of a handler
 testDB :: SqlPersistM a -> YesodExample App a
 testDB query = do
@@ -32,6 +34,16 @@ testDB query = do
 runDBWithApp :: App -> SqlPersistM a -> IO a
 runDBWithApp app query = runSqlPersistMPool query (appConnPool app)
 
+dummyLogin :: YesodExample App ()
+dummyLogin = do
+    _ <- testDB $ createUser "alice" "ccccccccccccc"
+    get (AuthR LoginR)
+    request $ do
+        addToken
+        byLabel "Email" "alice"
+        byLabel "Passphrase" "ccccccccccccc"
+        setMethod "POST"
+        setUrl (AuthR LoginR)
 
 withApp :: SpecWith (TestApp App) -> Spec
 withApp = before $ do
@@ -73,7 +85,7 @@ testRoot = "http://localhost:3000"
 
 needsAuth :: Route App -> Method -> YesodExample App ()
 needsAuth route method = do
-    authRte <- (mappend testRoot) <$> testRender (AuthR LoginR) []
+    authRte <- testRender (AuthR LoginR) []
     request $ do
         setMethod method
         setUrl route
@@ -88,7 +100,7 @@ needsAuth route method = do
 
 testRender :: Route App -> [(Text, Text)] -> YesodExample App Text
 testRender route params =
-    yesodRender <$> getTestYesod <*> pure "" <*> pure route <*> pure params
+    yesodRender <$> getTestYesod <*> pure testRoot <*> pure route <*> pure params
 
 htmlHasLink :: Route App -> YesodExample App ()
 htmlHasLink route = do
