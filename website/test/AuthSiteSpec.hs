@@ -23,6 +23,7 @@ data AuthHarness = AuthHarness
     { ahTestAuth :: AuthSite
     , ahConnPool :: ConnectionPool
     , ahAuthRoute :: Maybe (Route AuthHarness)
+    , ahMailMessage :: IORef [AuthMailMessage]
     }
 
 mkYesod "AuthHarness" [parseRoutes|
@@ -34,6 +35,7 @@ mkYesod "AuthHarness" [parseRoutes|
 /auth AuthSub AuthSite ahTestAuth
 /login-bypass/#Text LoginBypass POST
 /logout-bypass LogoutBypass POST
+/mailmessage MailMessage GET
 /provisional-user-bypass/#Text/#Text ProvisionalUserBypass POST
 |]
 
@@ -59,7 +61,9 @@ instance AuthMaster AuthHarness where
                 ^{tokenField}
             |]
 
-    sendAuthEmail _ = $logError . T.pack . show
+    sendAuthEmail _ mm = do
+        y <- getYesod
+        liftIO $ modifyIORef (ahMailMessage y) (mm :)
 
 -- ** Methods for checking results
 
@@ -80,6 +84,12 @@ getProvisional = T.pack . show' <$> runDB (selectFirst [] [])
 
 getUserR :: Text -> Handler Text
 getUserR = fmap (T.pack . show) . runDB . getBy . UniqueUsr
+
+getMailMessage :: Handler Text
+getMailMessage = do
+    y <- getYesod
+    m <- liftIO (readIORef (ahMailMessage y))
+    pure (T.pack (show m))
 
 -- ** "Bypass" routes, which do some function without going through the
 -- real workflow. I use these to make sure the different components are
@@ -126,11 +136,13 @@ withTestAuth maybeAuthRoute = before $ do
         []
         ignoreEnv
     foundation <- makeFoundation settings
+    msgref <- liftIO (newIORef [])
     wipeDB foundation
     logWare <- liftIO $ makeLogWare foundation
     let harness = AuthHarness AuthSite
                               (appConnPool foundation)
                               maybeAuthRoute
+                              msgref
     return (harness, logWare)
 
 type AuthExample a = YesodExample AuthHarness a
@@ -221,6 +233,12 @@ mainSpecs = withTestAuth Nothing $ withBob $ do
         it "doesn't create a provisional user if one already exists" $ do
             goCreate "bob@example.com" "zzzzzzzzzzzzz"
             get Provisional >> bodyEquals "Nothing"
+        it "sends VerifyUserCreation" $ do
+            createAA
+            get MailMessage >> bodyContains "[VerifyUserCreation"
+        it "sends BadUserCreation" $ do
+            goCreate "bob@example.com" "zzzzzzzzzzzzz"
+            get MailMessage >> bodyContains "[BadUserCreation"
     describe "VerifyAccountR" $ do
         it "creates an account with a good token" $ do
             v <- bypassProvisionalAA
@@ -251,6 +269,12 @@ mainSpecs = withTestAuth Nothing $ withBob $ do
         it "doesn't make a provisional user if the user dne" $ do
             goForget "alice@example.com" "ccccccccccccc"
             get Provisional >> bodyEquals "Nothing"
+        it "sends VerifyPassReset" $ do
+            goForget "bob@example.com" "ccccccccccccc"
+            get MailMessage >> bodyContains "[VerifyPassReset"
+        it "sends BadPassReset" $ do
+            goForget "alice@example.com" "ccccccccccccc"
+            get MailMessage >> bodyContains "[BadPassReset"
   where
     createAA = goCreate "alice@example.com" "aaaaaaaaaaaaa"
     goForget e p = do
