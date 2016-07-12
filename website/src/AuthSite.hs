@@ -15,6 +15,9 @@ Quickstart:
 1. Add 'AuthSite' as a subsite to your routes somewhere.
 2. Mappend 'migrateAuth' to your site's 'Migration' when running migrations.
 3. Have your site datatype instantiate 'AuthMaster' (this is the hard part).
+
+This module is not yet fit for general consumption. It is tightly coupled
+to some Snowdrift types and functions.
 -}
 module AuthSite
     ( -- * Subsite interface
@@ -22,7 +25,6 @@ module AuthSite
       AuthSite(..)
     , migrateAuth
     , AuthMaster(..)
-    , AuthUser(..)
       -- ** Routes
       -- | Haddock seems to dump the entire 'Route' definition, even
       -- though the only interesting thing here is the AuthSite instance
@@ -33,15 +35,17 @@ module AuthSite
       -- | Duplicating the "Yesod.Auth" interface
     , maybeAuth
     , requireAuth
-      -- ** Helper for writing handlers
+      -- * Helpers for instantiating 'AuthMaster'
     , credentialsForm
     , Credentials(..)
     , AuthEmail(..)
     , ClearPassphrase(..)
-      -- * Types
     , AuthMailMessage(..)
     , AuthToken(..)
       -- * Internals
+      -- | These are exported for use in tests. You probably don't want to
+      -- use them yourself.
+    , AuthUser(..)
     , provisional
     , logout
     , priviligedProvisionalUser
