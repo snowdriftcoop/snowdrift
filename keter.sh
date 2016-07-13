@@ -50,6 +50,10 @@ main () {
     hdr "Tarballing"
     cd website
     rm -rf static/tmp/*
+    # This forces regeneration of the client session key, which will reset
+    # everybody's sessions. This is a bug, but it's better than the current
+    # behavior of using whatever key is on my system. :| See #401.
+    rm -f config/client_session_key.aes
     tar czf ${opt_appname}.keter ${contents[@]}
     if $opt_deploy
     then
