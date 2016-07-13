@@ -1,11 +1,10 @@
 User sql=usr
     email Text
     digest ByteString
-    UniqueUsr email
-    deriving (Show)
 
-VerifyEmail
-    key Text -- "VerKey"
-    user UserId
-    UniqueVerify user
+    created UTCTime
+    passUpdated UTCTime
+
+    UniqueUsr email
+
     deriving (Show)

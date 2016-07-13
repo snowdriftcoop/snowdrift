@@ -9,6 +9,7 @@ module AuthSiteSpec (spec) where
 import TestImport hiding (Handler)
 import Database.Persist.Sql hiding (get)
 import Network.Wai.Test (SResponse(..))
+import Test.HUnit (assertBool)
 import Yesod hiding (get)
 import Yesod.Default.Config2 (ignoreEnv, loadAppSettings)
 import qualified Data.Text as T
@@ -64,6 +65,11 @@ instance AuthMaster AuthHarness where
     sendAuthEmail _ mm = do
         y <- getYesod
         liftIO $ modifyIORef (ahMailMessage y) (mm :)
+
+harnessDB :: SqlPersistM a -> YesodExample AuthHarness a
+harnessDB query = do
+    ah <- getTestYesod
+    liftIO (runSqlPersistMPool query (ahConnPool ah))
 
 -- ** Methods for checking results
 
@@ -203,20 +209,14 @@ mainSpecs = withTestAuth Nothing $ withBob $ do
         it "logs a body in" $ do
             get (AuthSub LoginR)
             request $ do
-                addToken
-                byLabel "Email" "bob@example.com"
-                byLabel "Passphrase" "aaaaaaaaaaaaa"
-                setMethod "POST"
+                fillCredentialsForm "bob@example.com" "aaaaaaaaaaaaa"
                 setUrl (AuthSub LoginR)
             Right _ <- followRedirect
             bodyContains "bob@example.com"
         it "spot check - bad passphrase" $ do
             get (AuthSub LoginR)
             request $ do
-                addToken
-                byLabel "Email" "bob@example.com"
-                byLabel "Passphrase" "bbbbbbbbbbbbb"
-                setMethod "POST"
+                fillCredentialsForm "bob@example.com" "bbbbbbbbbbbbb"
                 setUrl (AuthSub LoginR)
             assertHeader "location" "/auth/login"
             Right _ <- followRedirect
@@ -244,20 +244,44 @@ mainSpecs = withTestAuth Nothing $ withBob $ do
             v <- bypassProvisionalAA
             get (AuthSub VerifyAccountR)
             request $ do
-                addToken
-                byLabel "Token" (TL.toStrict v)
-                setMethod "POST"
+                fillTokenForm v
                 setUrl (AuthSub VerifyAccountR)
             get (UserR "alice@example.com") >> bodyContains "alice@example.com"
         it "doesn't add something it shouldn't" $ do
             v <- bypassProvisionalAA
             get (AuthSub VerifyAccountR)
             request $ do
-                addToken
-                byLabel "Token" (TL.toStrict (v <> "garbage"))
-                setMethod "POST"
+                fillTokenForm (v <> "garbage")
                 setUrl (AuthSub VerifyAccountR)
             get (UserR "alice@example.com") >> bodyEquals "Nothing"
+        it "updates a passphrase with a good token" $ do
+            [Entity b1 bob1] :: [Entity User] <- harnessDB (selectList [] [])
+            v <- bypassProvisionalBob
+            get (AuthSub VerifyAccountR)
+            request $ do
+                fillTokenForm v
+                setUrl (AuthSub VerifyAccountR)
+            [Entity b2 bob2] :: [Entity User] <- harnessDB (selectList [] [])
+
+            assertEqual "ID changed" b1 b2
+            liftIO (assertBool "Pass update time did not change"
+                               (((/=) `on` _userPassUpdated) bob1 bob2))
+            liftIO (assertBool "Passphrases did not change"
+                               (((/=) `on` _userDigest) bob1 bob2))
+        it "doesn't update a passphrase it shouldn't" $ do
+            [Entity b1 bob1] :: [Entity User] <- harnessDB (selectList [] [])
+            v <- bypassProvisionalBob
+            get (AuthSub VerifyAccountR)
+            request $ do
+                fillTokenForm (v <> "oops")
+                setUrl (AuthSub VerifyAccountR)
+            [Entity b2 bob2] :: [Entity User] <- harnessDB (selectList [] [])
+
+            assertEqual "ID stayed the same" b1 b2
+            liftIO (assertBool "Pass update time changed"
+                               (((==) `on` _userPassUpdated) bob1 bob2))
+            liftIO (assertBool "Passphrases changed"
+                               (((==) `on` _userDigest) bob1 bob2))
     describe "ResetPassphraseR" $ do
         it "makes a provisional user if the user already exists" $ do
             goForget "bob@example.com" "ccccccccccccc"
@@ -289,8 +313,10 @@ mainSpecs = withTestAuth Nothing $ withBob $ do
             fillCredentialsForm e p
             setUrl (AuthSub CreateAccountR)
         statusIs 303
-    bypassProvisionalAA = do
-        post (ProvisionalUserBypass "alice@example.com" "aaaaaaaaaaaaa")
+    bypassProvisionalAA = bypassProvisional "alice@example.com" "aaaaaaaaaaaaa"
+    bypassProvisionalBob = bypassProvisional "bob@example.com" "ccccccccccccc"
+    bypassProvisional e p = do
+        post (ProvisionalUserBypass e p)
         Just resp <- getResponse
         pure (decodeUtf8 (simpleBody resp))
 
@@ -299,6 +325,11 @@ mainSpecs = withTestAuth Nothing $ withBob $ do
         byLabel "Email" e
         byLabel "Passphrase" p
         setMethod "POST"
+    fillTokenForm t = do
+        addToken
+        byLabel "Token" (TL.toStrict t)
+        setMethod "POST"
+
     bypassLoginBob = bypassLogin "bob@example.com"
     bypassLogin :: Text -> AuthExample ()
     bypassLogin = post . LoginBypass
