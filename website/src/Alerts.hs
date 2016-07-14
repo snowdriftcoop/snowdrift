@@ -37,6 +37,6 @@ alertWarning = addAlert "warning"
 
 getAlert :: MonadHandler m => m (Maybe Html)
 getAlert = do
-    mmsg <- liftM (fmap preEscapedToMarkup) $ lookupSession alertKey
+    mmsg <- fmap preEscapedToMarkup <$> lookupSession alertKey
     deleteSession alertKey
     return mmsg

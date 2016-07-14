@@ -106,4 +106,4 @@ htmlHasLink :: Route App -> YesodExample App ()
 htmlHasLink route = do
     uri <- testRender route []
     frags <- htmlQuery ("a[href="<>uri<>"]")
-    liftIO $ assertBool (X.unpack uri <> " not found") (length frags > 0)
+    liftIO $ assertBool (X.unpack uri <> " not found") (not (null frags))

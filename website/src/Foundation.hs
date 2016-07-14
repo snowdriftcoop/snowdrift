@@ -52,9 +52,8 @@ instance Yesod App where
     -- Controls the base of generated URLs. For more information on modifying,
     -- see: https://github.com/yesodweb/yesod/wiki/Overriding-approot
     approot = ApprootRequest $ \app req ->
-        case appRoot $ appSettings app of
-            Nothing -> getApprootText guessApproot app req
-            Just root -> root
+        fromMaybe (getApprootText guessApproot app req)
+                  (appRoot (appSettings app))
 
     -- Store session data on the client in encrypted cookies,
     -- default session idle timeout is 120 minutes
@@ -77,7 +76,7 @@ instance Yesod App where
     --    => HandlerT site IO res -> HandlerT site IO res
     yesodMiddleware = TestHooks.middleware
 
-    defaultLayout widget = navbarLayout "" widget
+    defaultLayout = navbarLayout ""
 
     -- The page to be redirected to when authentication is required.
     authRoute _ = Just $ AuthR LoginR
@@ -190,7 +189,7 @@ navbarLayout pageName widget = do
     malert <- getAlert
     maybeUser  <- maybeAuth
     avatar <- getUserAvatar (StaticR img_default_avatar_png)
-                            (maybe Nothing (Just . entityVal) maybeUser)
+                            (fmap entityVal maybeUser)
 
     active <- maybe (const False) (==) <$> getCurrentRoute
     howItWorksActive <- do

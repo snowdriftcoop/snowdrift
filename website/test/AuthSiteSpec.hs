@@ -280,19 +280,13 @@ mainSpecs = withTestAuth Nothing $ withBob $ do
     goForget e p = do
         get (AuthSub ResetPassphraseR)
         request $ do
-            addToken
-            byLabel "Email" e
-            byLabel "Passphrase" p
-            setMethod "POST"
+            fillCredentialsForm e p
             setUrl (AuthSub ResetPassphraseR)
         statusIs 303
     goCreate e p = do
         get (AuthSub CreateAccountR)
         request $ do
-            addToken
-            byLabel "Email" e
-            byLabel "Passphrase" p
-            setMethod "POST"
+            fillCredentialsForm e p
             setUrl (AuthSub CreateAccountR)
         statusIs 303
     bypassProvisionalAA = do
@@ -300,6 +294,11 @@ mainSpecs = withTestAuth Nothing $ withBob $ do
         Just resp <- getResponse
         pure (decodeUtf8 (simpleBody resp))
 
+    fillCredentialsForm e p = do
+        addToken
+        byLabel "Email" e
+        byLabel "Passphrase" p
+        setMethod "POST"
     bypassLoginBob = bypassLogin "bob@example.com"
     bypassLogin :: Text -> AuthExample ()
     bypassLogin = post . LoginBypass

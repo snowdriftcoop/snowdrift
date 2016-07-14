@@ -314,7 +314,7 @@ logout = deleteSession authSessionKey
 
 getLoginR :: (Yesod m, RenderMessage m FormMessage, AuthMaster m)
           => HandlerT AuthSite (HandlerT m IO) TypedContent
-getLoginR = lift $ loginHandler
+getLoginR = lift loginHandler
 
 postLoginR :: (Yesod master
               ,AuthMaster master
@@ -363,7 +363,7 @@ getLogoutR = lift $ do
 
 getCreateAccountR :: (Yesod m, RenderMessage m FormMessage, AuthMaster m)
                   => HandlerT AuthSite (HandlerT m IO) TypedContent
-getCreateAccountR = lift $ createAccountHandler
+getCreateAccountR = lift createAccountHandler
 
 postCreateAccountR :: (Yesod master
                       ,AuthMaster master
@@ -373,20 +373,21 @@ postCreateAccountR :: (Yesod master
                    => HandlerT AuthSite (HandlerT master IO) Html
 postCreateAccountR = do
     ((res, _), _) <- lift $ runFormPost (renderDivs credentialsForm)
-    flip formResult res (\c@Credentials{..} -> do
-        mu <- lift (runDB (getBy (UniqueUsr (fromAuth credsIdent))))
-        lift $ sendAuthEmail credsIdent =<< maybe
-            (VerifyUserCreation . verifyToken
-                <$> runDB (priviligedProvisionalUser c))
-            (pure . const BadUserCreation)
-            mu
-        redirectParent VerifyAccountR
-        )
+    formResult
+        (\c@Credentials{..} -> do
+            mu <- lift (runDB (getBy (UniqueUsr (fromAuth credsIdent))))
+            lift $ sendAuthEmail credsIdent =<< maybe
+                (VerifyUserCreation . verifyToken
+                    <$> runDB (priviligedProvisionalUser c))
+                (pure . const BadUserCreation)
+                mu
+            redirectParent VerifyAccountR)
+        res
 
 -- | ResetPassphrase page
 getResetPassphraseR :: (Yesod m, RenderMessage m FormMessage, AuthMaster m)
                      => HandlerT AuthSite (HandlerT m IO) TypedContent
-getResetPassphraseR = lift $ resetPassphraseHandler
+getResetPassphraseR = lift resetPassphraseHandler
 
 postResetPassphraseR :: (Yesod master
                         ,AuthMaster master
@@ -396,20 +397,21 @@ postResetPassphraseR :: (Yesod master
                      => HandlerT AuthSite (HandlerT master IO) Html
 postResetPassphraseR = do
     ((res, _), _) <- lift $ runFormPost (renderDivs credentialsForm)
-    flip formResult res (\c@Credentials{..} -> do
-        mu <- lift (runDB (getBy (UniqueUsr (fromAuth credsIdent))))
-        lift $ sendAuthEmail credsIdent =<< maybe
-            (pure BadPassReset)
-            (const $ VerifyPassReset . verifyToken
-                <$> runDB (priviligedProvisionalUser c))
-            mu
-        redirectParent VerifyAccountR
-        )
+    formResult
+        (\c@Credentials{..} -> do
+            mu <- lift (runDB (getBy (UniqueUsr (fromAuth credsIdent))))
+            lift $ sendAuthEmail credsIdent =<< maybe
+                (pure BadPassReset)
+                (const $ VerifyPassReset . verifyToken
+                    <$> runDB (priviligedProvisionalUser c))
+                mu
+            redirectParent VerifyAccountR)
+        res
 
 -- | VerifyAccount page
 getVerifyAccountR :: (Yesod m, RenderMessage m FormMessage, AuthMaster m)
                   => HandlerT AuthSite (HandlerT m IO) TypedContent
-getVerifyAccountR = lift $ verifyAccountHandler
+getVerifyAccountR = lift verifyAccountHandler
 
 -- | Handle an attempted verification.
 --
@@ -455,7 +457,7 @@ postVerifyAccountR = do
                 redirectParent LoginR
   where
     upsertUser :: MonadIO m => VerifiedUser -> SqlPersistT m (Entity User)
-    upsertUser VerifiedUser{..} = do
+    upsertUser VerifiedUser{..} =
         upsert (User verifiedEmail verifiedDigest)
                [UserDigest =. verifiedDigest]
 

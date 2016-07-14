@@ -11,7 +11,7 @@ getUserAvatar defaultRoute muser = do
     defaultUrl <- getUrlRender <*> pure defaultRoute
 
     maybe (return defaultUrl)
-          (\user -> do
+          (\user ->
               liftIO (libravatar (user^.userEmail) defaultUrl))
           muser
 
