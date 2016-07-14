@@ -253,8 +253,8 @@ checkCredentials Credentials{..} = do
 
 -- | Verify a token given by the user. This is *destructive*; a token can
 -- only ever be checked once.
-checkToken :: MonadIO m => AuthToken -> SqlPersistT m (Maybe VerifiedUser)
-checkToken (AuthToken t) = runMaybeT $ do
+checkDestroyToken :: MonadIO m => AuthToken -> SqlPersistT m (Maybe VerifiedUser)
+checkDestroyToken (AuthToken t) = runMaybeT $ do
     Entity pid p@ProvisionalUser{..} <- MaybeT $ getBy (UniqueToken t)
     _ <- justM (delete pid)
     now <- justM (liftIO getCurrentTime)
@@ -447,8 +447,8 @@ postVerifyAccountR = do
         -- 2a/3a
         -- Have to check the token and insert the user in the same
         -- transaction, lest race conditions boggle the contraptions
-        mm <- lift $ runDB $ sequence . fmap upsertUser =<< checkToken tok
-        case mm of
+        m <- lift $ runDB $ sequence . fmap upsertUser =<< checkDestroyToken tok
+        case m of
             Nothing -> do
                 lift $ alertWarning "Uh oh, your token appears to be invalid!"
                 redirectParent LoginR
