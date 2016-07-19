@@ -218,7 +218,6 @@ navbarLayout pageName widget = do
   where
     pageClasses :: (Text, Text)
     pageClasses = ("class", classes pageName)
-    classes = T.append "container "
-            . T.unwords
+    classes = T.unwords
             . List.tail
             . T.splitOn "/"
