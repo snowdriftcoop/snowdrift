@@ -13,6 +13,8 @@ import qualified Yesod.Core.Unsafe as Unsafe
 
 import Alerts (getAlert)
 import Avatar
+import Email
+import Network.Mail.Mime
 import qualified TestHooks
 
 -- | The foundation datatype for your application. This can be a good place
@@ -159,7 +161,7 @@ instance AuthMaster App where
             setTitle "Passphrase Reset — Snowdrift.coop"
             $(widgetFile "page/auth/reset-passphrase")
 
-    sendAuthEmail _ = $logDebug . T.pack . show
+    sendAuthEmail to msg = liftIO (renderSendmail (snowdriftAuthEmail to msg))
 
 -- This instance is required to use forms. You can modify renderMessage to
 -- achieve customized and internationalized form validation messages.

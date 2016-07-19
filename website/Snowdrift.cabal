@@ -36,6 +36,7 @@ library
         Avatar
         Application
         Css
+        Email
         Foundation
         Import
         Import.NoFoundation
