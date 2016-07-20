@@ -32,6 +32,7 @@ library
     -- exposed-modules {{{2
     exposed-modules:
         Alerts
+        AppTypes
         AuthSite
         Avatar
         Application
