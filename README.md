@@ -37,7 +37,7 @@ To build the code on your local computer, follow our [Build instructions].
 
 ### Filing and searching issues/tickets
 
-For bugs and feature requests, we have a self-hosted [ticket system].
+For bugs and feature requests, we have a [ticket system].
 
 ### Communicating with us
 
@@ -47,8 +47,7 @@ happy to help guide newcomers through making their first contributions.
 
 Ways to get in touch:
 
-* Log-in with a user on the main Snowdrift.coop site and fill out a
-  [volunteer form](https://snowdrift.coop/p/snowdrift/volunteer)
+* Email us at <community@snowdrift.coop> to discuss your volunteer interests
 
 * Sign up on the
   [dev email list](https://lists.snowdrift.coop/mailman/listinfo/dev)
@@ -57,7 +56,7 @@ Ways to get in touch:
   and send a message introducing yourself to the community.
 
 * Visit `#snowdrift` on freenode.net
-  [IRC](https://snowdrift.coop/p/snowdrift/w/en/irc)
+  [IRC](https://wiki.snowdrift.coop/community/irc)
   for live chat.
 
 License
@@ -73,13 +72,13 @@ Our text and graphics documents (non-program-code) are also licensed under
 
 [Contributor guide]: CONTRIBUTING.md
 [Build instructions]: BUILD.md
-[economics of FLO projects]: https://snowdrift.coop/p/snowdrift/w/en/economics
+[economics of FLO projects]: https://wiki.snowdrift.coop/communications/economics
 [Haskell]: https://www.haskell.org/
-[how-to-help page]: https://snowdrift.coop/p/snowdrift/w/how-to-help
-[illustrated intro]: https://snowdrift.coop/p/snowdrift/w/en/intro
-[incentives behind donations]: https://snowdrift.coop/p/snowdrift/w/en/psychology
-[mission]: https://snowdrift.coop/p/snowdrift/w/en/mission
-[other funding sites]: https://snowdrift.coop/p/snowdrift/w/en/othercrowdfunding
+[how-to-help page]: https://wiki.snowdrift.coop/governance/community/how-to-help
+[illustrated intro]: https://wiki.snowdrift.coop/communications/intro
+[incentives behind donations]: https://wiki.snowdrift.coop/communications/psychology
+[mission]: https://wiki.snowdrift.coop/governance/mission
+[other funding sites]: https://wiki.snowdrift.coop/othercrowdfunding
 [Snowdrift.coop]: https://snowdrift.coop
-[ticket system]: http://snowdrift.coop/p/snowdrift/t
+[ticket system]: https://tree.taiga.io/project/snowdrift/issues
 [Yesod web framework]: http://www.yesodweb.com/

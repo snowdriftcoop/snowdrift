@@ -211,8 +211,8 @@ Change `some_branch` to the name of the branch where you made the commit(s).
 NB: if you make additional changes to the same branch before a maintainer merges
 it into master, you can push those new updates with just `git push`.
 
-To notify the snowdrift team about your work, visit the git.snowdrift.coop page with
-your fork. You should see a button **"Create Merge Request"** Click that to
+To notify the snowdrift team about your work, visit the git.snowdrift.coop page 
+with your fork. You should see a button **"Create Merge Request"** Click that to
 bring up a form where you can add further notes about your work (especially
 useful if you are merging multiple commits). You may ignore "Assign to",
 "Milestone", and "Labels" at this point.
@@ -224,11 +224,11 @@ soon (hopefully within a few hours, maybe a day or two depending on timing).
 
 Several ways to get started contributing and/or to learn more overall:
 
-* Visit the [tickets](https://snowdrift.coop/p/snowdrift/t) and filter to the
-  "newbie-friendly" tag and see what looks interesting and/or doable. Consider
-  exploring other tickets based on your skills or interests. If you decide to
-  work on a specific ticket, you can "claim" it once you have logged into the
-  main site with a fully-established user.
+* Visit our [Taiga Issues](https://tree.taiga.io/project/snowdrift/issues) page 
+  and filter to the "newbie friendly" tag and see what looks interesting and/or 
+  doable. Consider exploring other issues based on your skills or interests. If
+  you decide to work on a specific ticket, you can "claim" it once you have 
+  logged into the site and have been added to the project team.
 
 * Play around with the site locally. See if you can understand what does what.
   You may find bits that seem incomplete or confusing, and you can explore them
@@ -247,12 +247,9 @@ Several ways to get started contributing and/or to learn more overall:
       [Shakespearean Templates](http://www.yesodweb.com/book/shakespearean-templates).
 
     * For those familiar with Haskell, consider exploring our files, and
-      updating any code that doesn't match our
-      [code style](https://snowdrift.coop/p/snowdrift/w/en/coding#code-style-guide).
+      updating any code that doesn't match our code style (see below).
 
-* Read our [coding wiki page](https://snowdrift.coop/p/snowdrift/w/en/coding),
-  the related discussion board, and other pages throughout the Snowdrift.coop
-  site.
+* Read the code documention in this repo and other pages on the Snowdrift.coop [wiki](https://wiki.snowdrift.coop).
 
 * Read on below and check out links to learn more about the overall ecosystem,
   our development practices, and the tools we use.
@@ -264,9 +261,8 @@ and avoid browser-specific code.
 
 ### Design considerations
 
-We have separate wiki and discussion pages on the site for our specific
-[design guide](https://snowdrift.coop/p/snowdrift/w/en/design-guide) and general
-[design-related issues](https://snowdrift.coop/p/snowdrift/w/site-design).
+We have separate wiki pages for our specific [design guide](https://wiki.snowdrift.coop/design/design-guide) and general
+[design-related issues](https://wiki.snowdrift.coop/design/site-design).
 
 ### Code style
 
