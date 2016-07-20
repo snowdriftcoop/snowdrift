@@ -49,15 +49,10 @@ Ways to get in touch:
 
 * Email us at <community@snowdrift.coop> to discuss your volunteer interests
 
-* Sign up on the
-  [dev email list](https://lists.snowdrift.coop/mailman/listinfo/dev)
-  and perhaps
-  [other email lists](https://lists.snowdrift.coop/)
-  and send a message introducing yourself to the community.
+* Sign up on the [dev email list] and perhaps [other email lists] and send a 
+message introducing yourself to the community.
 
-* Visit `#snowdrift` on freenode.net
-  [IRC](https://wiki.snowdrift.coop/community/irc)
-  for live chat.
+* Visit `#snowdrift` on freenode.net [IRC] for live chat.
 
 License
 -------
@@ -68,17 +63,21 @@ Software Foundation, either version 3 of the License, or (at your option) any
 later version.
 
 Our text and graphics documents (non-program-code) are also licensed under
-[CC BY-SA 4.0 International](https://creativecommons.org/licenses/by-sa/4.0).
+[CC BY-SA 4.0 International].
 
+[CC BY-SA 4.0 International]: https://creativecommons.org/licenses/by-sa/4.0
 [Contributor guide]: CONTRIBUTING.md
 [Build instructions]: BUILD.md
+[dev email list]: https://lists.snowdrift.coop/mailman/listinfo/dev
 [economics of FLO projects]: https://wiki.snowdrift.coop/communications/economics
 [Haskell]: https://www.haskell.org/
 [how-to-help page]: https://wiki.snowdrift.coop/governance/community/how-to-help
 [illustrated intro]: https://wiki.snowdrift.coop/communications/intro
 [incentives behind donations]: https://wiki.snowdrift.coop/communications/psychology
+[IRC]: https://wiki.snowdrift.coop/community/irc
 [mission]: https://wiki.snowdrift.coop/governance/mission
+[other email lists]: https://lists.snowdrift.coop/
 [other funding sites]: https://wiki.snowdrift.coop/othercrowdfunding
-[Snowdrift.coop]: https://snowdrift.coop
+[Snowdrift.coop]: https://snowdrift.coop/
 [ticket system]: https://tree.taiga.io/project/snowdrift/issues
 [Yesod web framework]: http://www.yesodweb.com/

@@ -247,7 +247,8 @@ Several ways to get started contributing and/or to learn more overall:
       [Shakespearean Templates](http://www.yesodweb.com/book/shakespearean-templates).
 
     * For those familiar with Haskell, consider exploring our files, and
-      updating any code that doesn't match our code style (see below).
+      updating any code that doesn't match our code style (see the "Code style" 
+      section below).
 
 * Read the code documention in this repo and other pages on the Snowdrift.coop [wiki](https://wiki.snowdrift.coop).
 
@@ -266,8 +267,116 @@ We have separate wiki pages for our specific [design guide](https://wiki.snowdri
 
 ### Code style
 
-When making edits, follow our
-[code style guide](https://snowdrift.coop/p/snowdrift/w/en/coding#code-style-guide).
+* Indentation: 4-space indentation default, 2-space indentation for .hamlet 
+files 
+* 80-column per line maximum
+    * We accept exceptions for cases such as the inclusion of very long 
+    external URLs and so on
+* Sentence-case, 50-column Git commit headers (but no ending period mark)
+    * include bits like "fixes SD-#" as appropriate when fixing a ticket
+    * consider adding extra comments below commit titles
+* Haskell-standard camelCaseNames (not C-standard underscore_names)
+* Group qualified imports separate from unqualified imports, like:
+
+    ```
+    import System.IO (hFlush, stdout, stderr)
+    import System.Log.FastLogger (toLogStr, fromLogStr)
+    import Yesod.Default.Config (withYamlEnvironment, DefaultEnv (..))
+    import qualified Control.Exception.Lifted as Exception
+    import qualified Data.ByteString.Char8 as Char8
+    ```
+
+* Imports should be grouped into three paragraphs: "Prelude" or "Import" for 
+those modules that need them, then external modules, and then internal modules.
+* Indent so that groups are logical and easy to read. Here are some examples: 
+
+    ```haskell
+    -- bad: dangling child
+    functionFoo arg1 arg2
+                     arg3
+
+    -- bad: not indented
+    functionFoo $
+    arg1 arg2
+
+    -- bad: chunked children (a special case of dangling child)
+    functionFoo arg1 arg2
+                arg3 arg4
+
+    -- bad: reverse indent
+    functionFoo $ functionBar $
+        barArg1
+        barArg2
+
+    -- better: indented under proper parent
+    functionFoo $ functionBar
+                      barArg1
+                      barArg2
+
+    -- best #1: stacked arguments
+    functionFoo $ functionBar barArg1
+                              barArg2
+                              barArg3
+
+    -- best #2: "indent the head before the tail"
+    functionFoo $
+        functionBar
+            barArg1
+            bargArg2
+
+    -- or
+    functionFoo $
+        functionBar barArg1 barArg2
+
+    -- or
+    functionFoo
+        (functionBar barArg1 barArg2)
+    ```
+
+* Don't bother aligning delimiters (such as `->` in case statements) if there 
+are intermediate lines that begin far to the left.
+
+    ```
+    -- undesirable
+    (Nothing, Just email, True) -> do
+        murl <- libravatar $ T.unpack email
+        return (fmap fromString murl)
+    _                           -> return Nothing
+
+    -- better
+    (Nothing, Just email, True) -> do
+        murl <- libravatar $ T.unpack email
+        return (fmap fromString murl)
+    _ -> return Nothing
+    ```
+
+* When creating a multiline list of items, put commas on the left and line them 
+up with the opening delimiter. In the following example I put no space between 
+the comma and the item, but that is at your discretion. The location of the 
+ending delimiter is also at your discretion: in line with the other delimiters, 
+or immediately following the last item.
+
+    ```
+    someList = [foo
+               ,bar
+               ,baz
+               ]
+    ```
+* Indent "where" by two spaces. Example:
+
+    ```
+    func = do
+        bar
+        baz
+      where
+        baz = the other thing
+    ```
+
+### Code review
+
+As a best practice, we want to have adequate code review for every merge before it goes into the master code.
+
+For volunteers interested in helping with code review, please choose to *watch* the code repositories (the main repo is at [git.snowdrift.coop](https://git.snowdrift.coop/sd/snowdrift) but we've also mirrored to [GitHub](https://github.com/snowdriftcoop/snowdrift)). Then, you can make general and in-line comments about new code as it is committed and before it goes into the master repository.
 
 ### Use of JavaScript
 
