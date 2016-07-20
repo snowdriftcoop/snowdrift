@@ -1,12 +1,11 @@
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 module Foundation where
 
 import Import.NoFoundation
-import Database.Persist.Sql (ConnectionPool, runSqlPool)
+import Database.Persist.Sql (runSqlPool)
 import Text.Hamlet          (hamletFile)
 import Text.Jasmine         (minifym)
 import Yesod.Default.Util   (addStaticContentExternal)
-import Yesod.Core.Types     (Logger)
-import Yesod.GitRev
 import qualified Data.List as List
 import qualified Data.Text as T
 import qualified Yesod.Core.Unsafe as Unsafe
@@ -134,7 +133,9 @@ instance AuthMaster App where
             setTitle "Passphrase Reset — Snowdrift.coop"
             $(widgetFile "page/auth/reset-passphrase")
 
-    sendAuthEmail to msg = liftIO (renderSendmail (snowdriftAuthEmail to msg))
+    sendAuthEmail to msg = do
+        r <- getUrlRenderParams
+        liftIO (renderSendMail (snowdriftAuthEmail r to msg))
 
 -- This instance is required to use forms. You can modify renderMessage to
 -- achieve customized and internationalized form validation messages.

@@ -45,7 +45,7 @@ module AuthSite
       -- * Internals
       -- | These are exported for use in tests. You probably don't want to
       -- use them yourself.
-    , AuthUser(..)
+    , AuthUser
     , provisional
     , logout
     , priviligedProvisionalUser
@@ -72,7 +72,6 @@ import Data.Typeable
 import Database.Persist.Sql
 import Yesod
 import qualified Crypto.Nonce as Nonce
-import qualified Data.Text as T
 
 -- Used to create a single, applicationd-wide nonce token. I'm doing this
 -- out of expediency; Yesod.Auth uses it and nobody seems to care. But I
@@ -238,6 +237,7 @@ tokenGenerator = unsafePerformIO Nonce.new
 {-# NOINLINE tokenGenerator #-}
 
 -- | Our wrap over makePassword
+makeAuthPass :: Text -> IO ByteString
 makeAuthPass t = makePassword (encodeUtf8 t) pbkdf1Strength
 
 -- | Compare some Credentials to what's stored in the database.
@@ -246,7 +246,7 @@ checkCredentials Credentials{..} = do
     mu <- getBy (UniqueUsr (fromAuth credsIdent))
     pure $ verify =<< mu
   where
-    verify x@(Entity uid u) =
+    verify x@(Entity _ u) =
         if verifyPassword (encodeUtf8 (fromClear credsPass)) (u^.userDigest)
             then Just x
             else Nothing
@@ -255,7 +255,7 @@ checkCredentials Credentials{..} = do
 -- only ever be checked once.
 checkDestroyToken :: MonadIO m => AuthToken -> SqlPersistT m (Maybe VerifiedUser)
 checkDestroyToken (AuthToken t) = runMaybeT $ do
-    Entity pid p@ProvisionalUser{..} <- MaybeT $ getBy (UniqueToken t)
+    Entity pid ProvisionalUser{..} <- MaybeT $ getBy (UniqueToken t)
     _ <- justM (delete pid)
     now <- justM (liftIO getCurrentTime)
     if addUTCTime twoHours provisionalUserCreationTime > now
@@ -329,19 +329,24 @@ postLoginR = do
     formResult (lift . (runAuthResult p <=< (runDB . checkCredentials)))
                res'
   where
-    runAuthResult parent = maybe
+    runAuthResult master = maybe
         (do
             alertDanger [shamlet|Bad credentials:  <a href="https://tree.taiga.io/project/snowdrift/us/392">See Taiga #392</a>.|]
-            redirect (parent LoginR))
+            redirect (master LoginR))
         (\u -> do
             priviligedLogin u
             alertInfo "Welcome"
             redirect =<< (postLoginRoute <$> getYesod))
 
+formResult :: (Yesod master
+              ,MonadTrans child)
+           => (t -> child (HandlerT master IO) Html)
+           -> FormResult t
+           -> child (HandlerT master IO) Html
 formResult success = \case
     FormSuccess x -> success x
     FormFailure msgs -> failure msgs
-    FormMissing -> failure ["No login data"]
+    FormMissing -> failure ["No login data" :: Text]
   where
     failure msgs =
         lift $ defaultLayout [whamlet|
@@ -463,6 +468,7 @@ postVerifyAccountR = do
         upsert (User verifiedEmail verifiedDigest now now)
                [UserDigest =. verifiedDigest, UserPassUpdated =. now]
 
+redirectParent :: Route child -> HandlerT child (HandlerT master IO) b
 redirectParent r = do
     p <- getRouteToParent
     lift (redirect (p r))

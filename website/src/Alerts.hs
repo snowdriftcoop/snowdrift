@@ -8,7 +8,6 @@ module Alerts
 
 import Prelude
 
-import Control.Monad (liftM)
 import Yesod
 import Data.Text (Text)
 import Text.Blaze.Html.Renderer.Text (renderHtml)
