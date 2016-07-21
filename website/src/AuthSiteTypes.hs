@@ -22,7 +22,7 @@ mkYesodSubData "AuthSite" [parseRoutes|
 share [mkPersist sqlSettings
       , mkMigrate "migrateAuthSite"
       ] [persistLowerCase|
-ProvisionalUser
+ProvisionalUser sql="authsite__provisional_user"
     email Text
     digest ByteString
     token Text
