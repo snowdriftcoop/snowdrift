@@ -26,7 +26,9 @@ snowdriftAuthEmail r AuthEmail{..} amsg = simpleMail' to from subject body
 msgSubject :: AuthMailMessage -> Text
 msgSubject = \case
     VerifyUserCreation _ -> "Verify your Snowdrift.coop account"
-    _ -> error "To be implemented"
+    VerifyPassReset _ -> "Reset your Snowdrift.coop passphrase"
+    BadUserCreation -> "Creating a Snowdrift.coop account"
+    BadPassReset -> "Resetting your Snowdrift.coop passphrase"
 
 -- | Build the body of the message.
 msgBody :: AuthMailMessage -> TextUrl (Route App)
@@ -34,4 +36,8 @@ msgBody = \case
     VerifyUserCreation tok -> do
         let authToken = fromAuthToken tok
         $(textFile "templates/email/verify-user-creation.md")
-    _ -> error "To be implemented"
+    VerifyPassReset tok -> do
+        let authToken = fromAuthToken tok
+        $(textFile "templates/email/verify-passphrase-reset.md")
+    BadUserCreation -> $(textFile "templates/email/bad-user-creation.md")
+    BadPassReset -> $(textFile "templates/email/bad-pass-reset.md")
