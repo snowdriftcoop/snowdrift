@@ -48,11 +48,13 @@ data AppSettings = AppSettings
     -- ^ Assume that files in the static dir may change after compilation
     , appSkipCombining          :: Bool
     -- ^ Perform no stylesheet/script combining
+    , appSendMail :: Bool
+    -- ^ Whether to send emails
     }
 
 instance FromJSON AppSettings where
     parseJSON = withObject "AppSettings" $ \o -> do
-        let defaultDev =
+        let runningDevelopment =
 #if DEVELOPMENT
                 True
 #else
@@ -65,11 +67,12 @@ instance FromJSON AppSettings where
         appPort                   <- o .: "port"
         appIpFromHeader           <- o .: "ip-from-header"
 
-        appDetailedRequestLogging <- o .:? "detailed-logging" .!= defaultDev
-        appShouldLogAll           <- o .:? "should-log-all"   .!= defaultDev
-        appReloadTemplates        <- o .:? "reload-templates" .!= defaultDev
-        appMutableStatic          <- o .:? "mutable-static"   .!= defaultDev
-        appSkipCombining          <- o .:? "skip-combining"   .!= defaultDev
+        appDetailedRequestLogging <- o .:? "detailed-logging" .!= runningDevelopment
+        appShouldLogAll           <- o .:? "should-log-all"   .!= runningDevelopment
+        appReloadTemplates        <- o .:? "reload-templates" .!= runningDevelopment
+        appMutableStatic          <- o .:? "mutable-static"   .!= runningDevelopment
+        appSkipCombining          <- o .:? "skip-combining"   .!= runningDevelopment
+        appSendMail               <- o .:? "send-email"       .!= not runningDevelopment
 
         return AppSettings {..}
 

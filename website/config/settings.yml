@@ -34,3 +34,7 @@ database:
   # See config/test-settings.yml for an override during tests
   database: "_env:PGDATABASE:snowdrift_development"
   poolsize: "_env:PGPOOLSIZE:10"
+
+# Should the site actually send emails? Turned off by default, so people
+# don't accidentally send emails to strangers. :)
+send-email: "_env:SD_EMAILS:false"

@@ -137,8 +137,11 @@ instance AuthMaster App where
 
     sendAuthEmail to msg = do
         $logDebugSH msg
-        r <- getUrlRenderParams
-        liftIO (renderSendMail (snowdriftAuthEmail r to msg))
+        s <- appSettings <$> getYesod
+        if appSendMail s
+            then do r <- getUrlRenderParams
+                    liftIO (renderSendMail (snowdriftAuthEmail r to msg))
+            else pure ()
 
 -- This instance is required to use forms. You can modify renderMessage to
 -- achieve customized and internationalized form validation messages.
