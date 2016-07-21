@@ -11,7 +11,7 @@ import qualified Data.Text as T
 import qualified Yesod.Core.Unsafe as Unsafe
 
 import Alerts (getAlert)
-import AppTypes
+import AppDataTypes
 import Avatar
 import Email
 import Network.Mail.Mime

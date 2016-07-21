@@ -20,7 +20,7 @@ import Test.HUnit
 import Yesod.Core
 
 import Application (makeFoundation, makeLogWare)
-import AppTypes as X
+import AppDataTypes as X
 import AuthSite
 import Model as X
 

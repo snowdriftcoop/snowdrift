@@ -79,7 +79,7 @@ import qualified Crypto.Nonce as Nonce
 -- https://github.com/yesodweb/yesod/issues/1245
 import System.IO.Unsafe (unsafePerformIO)
 
-import AuthSiteTypes
+import AuthSiteDataTypes
 
 -- Need this until we switch back to using messages instead of
 -- Yesod-specific "alerts".
@@ -109,7 +109,7 @@ class AuthMaster master where
     loginHandler :: HandlerT master IO TypedContent
 
     -- | What to show on the create-account page. This page should post
-    -- 'Credentials' to 'AuthSiteTypes.CreateAccountR'.
+    -- 'Credentials' to 'AuthSiteDataTypes.CreateAccountR'.
     createAccountHandler :: HandlerT master IO TypedContent
 
     -- | What to show on the reset-passphrase page. This page should post

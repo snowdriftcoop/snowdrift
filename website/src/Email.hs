@@ -10,9 +10,9 @@ import Text.Shakespeare (RenderUrl)
 import Text.Shakespeare.Text (textFile, renderTextUrl, TextUrl)
 import Yesod.Core (Route)
 
-import AppTypes
+import AppDataTypes
 import AuthSite (AuthMailMessage(..), AuthToken(..), AuthEmail(..))
-import AuthSiteTypes -- Auth routes
+import AuthSiteDataTypes -- Auth routes
 
 snowdriftAuthEmail :: RenderUrl (Route App) -> AuthEmail -> AuthMailMessage -> Mail
 snowdriftAuthEmail r AuthEmail{..} amsg = simpleMail' to from subject body

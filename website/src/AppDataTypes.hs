@@ -3,7 +3,7 @@
 -- This file should be named "SiteTypes", and App should be named Site,
 -- but I'm in the middle of something else so it will have to be done
 -- later.
-module AppTypes where
+module AppDataTypes where
 
 import ClassyPrelude
 

@@ -1,7 +1,7 @@
 {-# OPTIONS_HADDOCK hide, prune #-}
 
 -- | Core definitions for the Auth subsite (see AuthSite.hs)
-module AuthSiteTypes where
+module AuthSiteDataTypes where
 
 import ClassyPrelude
 

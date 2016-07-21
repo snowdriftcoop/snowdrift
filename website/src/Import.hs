@@ -2,6 +2,6 @@ module Import
     ( module Import
     ) where
 
-import AppTypes              as Import
+import AppDataTypes          as Import
 import Foundation            as Import
 import Import.NoFoundation   as Import
