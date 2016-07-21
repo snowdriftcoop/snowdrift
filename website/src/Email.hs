@@ -33,6 +33,5 @@ msgBody :: AuthMailMessage -> TextUrl (Route App)
 msgBody = \case
     VerifyUserCreation tok -> do
         let authToken = fromAuthToken tok
-            -- verificationUrl = "twiddl"
         $(textFile "templates/email/verify-user-creation.md")
     _ -> error "To be implemented"

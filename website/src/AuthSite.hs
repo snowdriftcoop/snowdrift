@@ -106,19 +106,19 @@ class AuthMaster master where
     -- | What to show on the login page. This page should have a form that posts
     -- 'Credentials' to 'Route LoginR'. See 'AuthHarness' in the tests for a
     -- simplistic example.
-    loginHandler :: HandlerT master IO TypedContent
+    loginHandler :: HandlerT master IO Html
 
     -- | What to show on the create-account page. This page should post
     -- 'Credentials' to 'AuthSiteDataTypes.CreateAccountR'.
-    createAccountHandler :: HandlerT master IO TypedContent
+    createAccountHandler :: HandlerT master IO Html
 
     -- | What to show on the reset-passphrase page. This page should post
     -- 'Credentials' to 'ResetPassphraseR'
-    resetPassphraseHandler :: HandlerT master IO TypedContent
+    resetPassphraseHandler :: HandlerT master IO Html
 
     -- | What to show on the verify-account page. This page should post
     -- 'Text' (the token) to 'VerifyAccountR'
-    verifyAccountHandler :: HandlerT master IO TypedContent
+    verifyAccountHandler :: HandlerT master IO Html
 
     -- | This module sends emails, in case that wasn't obvious.
     -- "Network.Mail.Mime" or "Network.Mail.Mime.SES" have good options for
@@ -314,7 +314,7 @@ logout :: Yesod master => HandlerT master IO ()
 logout = deleteSession authSessionKey
 
 getLoginR :: (Yesod m, RenderMessage m FormMessage, AuthMaster m)
-          => HandlerT AuthSite (HandlerT m IO) TypedContent
+          => HandlerT AuthSite (HandlerT m IO) Html
 getLoginR = lift loginHandler
 
 postLoginR :: (Yesod master
@@ -368,7 +368,7 @@ getLogoutR = lift $ do
 -- ** CreateAccount page
 
 getCreateAccountR :: (Yesod m, RenderMessage m FormMessage, AuthMaster m)
-                  => HandlerT AuthSite (HandlerT m IO) TypedContent
+                  => HandlerT AuthSite (HandlerT m IO) Html
 getCreateAccountR = lift createAccountHandler
 
 postCreateAccountR :: (Yesod master
@@ -392,7 +392,7 @@ postCreateAccountR = do
 
 -- | ResetPassphrase page
 getResetPassphraseR :: (Yesod m, RenderMessage m FormMessage, AuthMaster m)
-                     => HandlerT AuthSite (HandlerT m IO) TypedContent
+                     => HandlerT AuthSite (HandlerT m IO) Html
 getResetPassphraseR = lift resetPassphraseHandler
 
 postResetPassphraseR :: (Yesod master
@@ -415,28 +415,20 @@ postResetPassphraseR = do
         res
 
 -- | VerifyAccount page
-getVerifyAccountR :: (Yesod m, RenderMessage m FormMessage, AuthMaster m)
-                  => HandlerT AuthSite (HandlerT m IO) TypedContent
-getVerifyAccountR = lift verifyAccountHandler
+--
+-- For easy links that do things without javascript, this GET handler will
+-- do the same thing as the POST if the query param `v=$TOKEN` is present.
+getVerifyAccountR :: (Yesod m
+                     ,RenderMessage m FormMessage
+                     ,AuthMaster m
+                     ,YesodPersist m
+                     ,YesodPersistBackend m ~ SqlBackend)
+                  => HandlerT AuthSite (HandlerT m IO) Html
+getVerifyAccountR = do
+    mtoken <- lift $ runInputGet $ fmap AuthToken <$> iopt textField "v"
+    maybe (lift verifyAccountHandler) runToken mtoken
 
 -- | Handle an attempted verification.
---
--- Steps taken:
--- 1a get the form data
--- 2a get/delete the provisional user
--- 3a ensure that it isn't expired
--- 4a upsert the user
---
--- Potential problems:
--- 1b -> formfailure (using formResult)
--- 2b -> indicates the token was already used or something. Show a page
--- with options to log in, get saved password? Or just redirect to
--- Login page which has all of those options. Ok, do that with a
--- warning
--- 3b -> Same deal as 2b
--- 4b -> this should not ever fail ;) If it does? Redirect anyway? Makes me
--- think, what happens if storing the provisional user fails? Eh, internal
--- error page. Good enough.
 --
 -- This method is rather blithe in the belief that the priviliged methods
 -- above ensure that a good token is truly "good".
@@ -448,22 +440,26 @@ postVerifyAccountR :: (Yesod m
 postVerifyAccountR = do
     ((res, _), _) <-
         lift $ runFormPost (renderDivs (AuthToken <$> areq textField "" Nothing))
-    -- 1a
-    flip formResult res $ \tok -> do
-        -- 2a/3a
-        -- Have to check the token and insert the user in the same
-        -- transaction, lest race conditions boggle the contraptions
-        m <- lift $ runDB $ sequence . fmap upsertUser =<< checkDestroyToken tok
-        case m of
-            Nothing -> do
-                -- For https://tree.taiga.io/project/snowdrift/task/405, we
-                -- may want to modify this as well (or make it more
-                -- accessible to front end devs).
-                lift $ alertWarning "Uh oh, your token appears to be invalid!"
-                redirectParent LoginR
-            Just _ -> do
-                lift $ alertSuccess "You are all set! Log in to continue."
-                redirectParent LoginR
+    formResult runToken res
+
+runToken :: (Yesod m
+            ,YesodPersist m
+            ,YesodPersistBackend m ~ SqlBackend)
+         => AuthToken -> HandlerT AuthSite (HandlerT m IO) Html
+runToken tok = do
+    -- Have to check the token and insert the user in the same
+    -- transaction, lest race conditions boggle the contraptions
+    m <- lift $ runDB $ sequence . fmap upsertUser =<< checkDestroyToken tok
+    case m of
+        Nothing -> do
+            -- For https://tree.taiga.io/project/snowdrift/task/405, we
+            -- may want to modify this as well (or make it more
+            -- accessible to front end devs).
+            lift $ alertWarning "Uh oh, your token appears to be invalid!"
+            redirectParent LoginR
+        Just _ -> do
+            lift $ alertSuccess "You are all set! Log in to continue."
+            redirectParent LoginR
   where
     upsertUser :: MonadIO m => VerifiedUser -> SqlPersistT m (Entity User)
     upsertUser VerifiedUser{..} = do

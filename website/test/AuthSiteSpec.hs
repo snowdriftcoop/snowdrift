@@ -18,6 +18,8 @@ import qualified Data.Text.Lazy as TL
 import AuthSite
 import Application (makeFoundation, makeLogWare)
 
+{-# ANN module ("HLint: ignore Reduce duplication" :: String) #-}
+
 -- ** A harness for the auth subsite
 
 data AuthHarness = AuthHarness
@@ -46,7 +48,7 @@ instance AuthMaster AuthHarness where
 
     loginHandler = do
         ((_, loginFields), enctype) <- runFormPost (renderDivs credentialsForm)
-        selectRep $ provideRep $ defaultLayout [whamlet|
+        defaultLayout [whamlet|
             <form method="post" enctype=#{enctype}>
                 ^{loginFields}
             |]
@@ -57,7 +59,7 @@ instance AuthMaster AuthHarness where
     verifyAccountHandler = do
         ((_, tokenField), enctype) <-
             runFormPost (renderDivs (areq textField "Token" Nothing))
-        selectRep $ provideRep $ defaultLayout [whamlet|
+        defaultLayout [whamlet|
             <form method="post" enctype=#{enctype}>
                 ^{tokenField}
             |]
