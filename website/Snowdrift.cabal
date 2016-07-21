@@ -32,10 +32,12 @@ library
     -- exposed-modules {{{2
     exposed-modules:
         Alerts
+        AppDataTypes
+        AuthSite
         Avatar
         Application
         Css
-        EmailAuth
+        Email
         Foundation
         Import
         Import.NoFoundation
@@ -46,6 +48,11 @@ library
         Handler.TH
         Handler.Util
         TestHooks
+    -- }}}2
+
+    -- other-modules {{{2
+    other-modules:
+        AuthSiteDataTypes
     -- }}}2
 
     if flag(dev) || flag(library-only)
@@ -66,47 +73,53 @@ library
     -- build-depends {{{2
     build-depends:
         base                     >= 4       && < 5
-        , yesod                  >= 1.4.1   && < 1.5
-        , yesod-core             >= 1.4.17  && < 1.5
-        , yesod-auth             >= 1.4.0   && < 1.5
-        , yesod-static           >= 1.4.0.3 && < 1.6
-        , yesod-form             >= 1.4.0   && < 1.5
+        , aeson                  >= 0.6     && < 0.12
+        , blaze-html
+        , bytestring             >= 0.9     && < 0.11
+        , case-insensitive
         , classy-prelude         >= 0.10.2
         , classy-prelude-conduit >= 0.10.2
         , classy-prelude-yesod   >= 0.10.2
-        , bytestring             >= 0.9     && < 0.11
-        , text                   >= 0.11    && < 2.0
+        , conduit                >= 1.0     && < 2.0
+        , containers
+        , data-default
+        , directory              >= 1.1     && < 1.3
+        , errors
+        , fast-logger            >= 2.2     && < 2.5
+        , file-embed
+        , hjsmin                 >= 0.1     && < 0.2
+        , http-client
+        , http-conduit           >= 2.1     && < 2.2
+        , lens
+        , libravatar
+        , mime-mail
+        , monad-control          >= 0.3     && < 1.1
+        , monad-logger           >= 0.3     && < 0.4
+        , nonce
         , persistent             >= 2.0     && < 2.3
         , persistent-postgresql  >= 2.1.1   && < 2.3
         , persistent-template    >= 2.0     && < 2.3
-        , template-haskell
-        , shakespeare            >= 2.0     && < 2.1
-        , hjsmin                 >= 0.1     && < 0.2
-        , monad-control          >= 0.3     && < 1.1
-        , wai-extra              >= 3.0     && < 3.1
-        , yaml                   >= 0.8     && < 0.9
-        , http-conduit           >= 2.1     && < 2.2
-        , directory              >= 1.1     && < 1.3
-        , warp                   >= 3.0     && < 3.3
-        , data-default
-        , aeson                  >= 0.6     && < 0.12
-        , conduit                >= 1.0     && < 2.0
-        , monad-logger           >= 0.3     && < 0.4
-        , fast-logger            >= 2.2     && < 2.5
-        , wai-logger             >= 2.2     && < 2.3
-        , file-embed
+        , pwstore-fast
         , safe
-        , unordered-containers
-        , containers
-        , vector
+        , shakespeare            >= 2.0     && < 2.1
+        , template-haskell
+        , text                   >= 0.11    && < 2.0
         , time
-        , case-insensitive
-        , wai
-        , blaze-html
-        , libravatar
         , titlecase
         , transformers
+        , unordered-containers
+        , vector
+        , wai
+        , wai-extra              >= 3.0     && < 3.1
+        , wai-logger             >= 2.2     && < 2.3
+        , warp                   >= 3.0     && < 3.3
+        , yaml                   >= 0.8     && < 0.9
+        , yesod                  >= 1.4.1   && < 1.5
+        , yesod-auth             >= 1.4.0   && < 1.5
+        , yesod-core             >= 1.4.17  && < 1.5
+        , yesod-form             >= 1.4.0   && < 1.5
         , yesod-gitrev
+        , yesod-static           >= 1.4.0.3 && < 1.6
     -- }}}2
 
     default-language: Haskell2010
@@ -133,6 +146,7 @@ test-suite test
 
     other-modules:
         HandlerSpec
+        AuthSiteSpec
         AlertsSpec
         SampleSpec
         Factories
@@ -152,6 +166,7 @@ test-suite test
         , yesod-test >= 1.5.0.1 && < 1.6
         , yesod-core
         , yesod
+        , yesod-persistent
         , persistent
         , persistent-postgresql
         , resourcet
@@ -165,6 +180,7 @@ test-suite test
         , wai-extra
         , yesod-auth
         , http-types
+        , lens
         -- For htmlHasLink (should move upstream)
         , HUnit >= 1.3.1.1
         , text >= 1.2.2.1

@@ -1,3 +1,4 @@
+{-# LANGUAGE RecordWildCards #-}
 -- | Utilities for running tests.
 --
 -- Based on
@@ -6,9 +7,17 @@ module Factories (createUser) where
 
 import ClassyPrelude
 
-import Model
-import Database.Persist
-import Database.Persist.Sql
+import Database.Persist.Sql (SqlPersistT)
 
-createUser :: MonadIO m => Text -> SqlPersistT m (Entity User)
-createUser email = upsert (User email False Nothing) []
+import AuthSite
+
+createUser :: MonadIO m => Text -> Text -> SqlPersistT m ()
+createUser e p = do
+    ProvisionalUser{..} <-
+        liftIO
+            (provisional (Credentials ee pp) (Verification ee (AuthToken "stuff")))
+    privilegedCreateUser
+        (VerifiedUser provisionalUserEmail provisionalUserDigest)
+  where
+    ee = AuthEmail e
+    pp = ClearPassphrase p

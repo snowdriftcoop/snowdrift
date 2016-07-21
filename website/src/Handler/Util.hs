@@ -1,6 +1,6 @@
 module Handler.Util (snowdriftTitle, snowdriftDashTitle) where
 
-import Import
+import Import.NoFoundation
 
 import Data.Text.Titlecase
 

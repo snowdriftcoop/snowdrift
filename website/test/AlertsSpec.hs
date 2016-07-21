@@ -18,10 +18,10 @@ alertSite = LiteApp go
     go _ _ = Nothing
 
 withAlertSite :: SpecWith (TestApp LiteApp) -> Spec
-withAlertSite = before $ pure $ (alertSite, id)
+withAlertSite = before $ pure (alertSite, id)
 
 spec :: Spec
-spec = withAlertSite $ do
+spec = withAlertSite $
     it "adds an alert" $ do
         get getR
         htmlCount ".alert" 0

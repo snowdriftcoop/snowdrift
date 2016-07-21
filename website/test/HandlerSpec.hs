@@ -32,6 +32,7 @@ spec = withApp $ do
         describe "browsing while logged in" $ do
             it "loads" $ do
                 dummyLogin
+                printBody
                 get HomeR
                 statusIs 200
             it "is the same as /dashboard" $ do
@@ -45,7 +46,7 @@ spec = withApp $ do
             needsAuth DashboardR "GET"
 
 assertEqualContents :: SResponse -> SResponse -> YesodExample site ()
-assertEqualContents a b = assertEqualOn simpleBody "Contents differ" a b
+assertEqualContents = assertEqualOn simpleBody "Contents differ"
 
 assertEqualOn :: Eq a => (t -> a) -> String -> t -> t -> YesodExample site ()
 assertEqualOn f msg a b =

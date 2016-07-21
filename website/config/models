@@ -1,11 +1,10 @@
 User sql=usr
     email Text
-    emailVerified Bool
-    password Text Maybe
+    digest ByteString
+
+    created UTCTime
+    passUpdated UTCTime
+
     UniqueUsr email
 
-VerifyEmail
-    key Text -- "VerKey"
-    user UserId
-    UniqueVerify user
     deriving (Show)

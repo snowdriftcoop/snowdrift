@@ -33,6 +33,8 @@ import qualified Yesod.GitRev as G
 
 import Handler
 
+{-# ANN module ("HLint: ignore Reduce duplication" :: String) #-}
+
 -- This line actually creates our YesodDispatch instance. It is the second half
 -- of the call to mkYesodData which occurs in Foundation.hs. Please see the
 -- comments there for more details.
@@ -52,6 +54,7 @@ makeFoundation appSettings = do
         (if appMutableStatic appSettings then staticDevel else static)
         (appStaticDir appSettings)
 
+    let appAuth = AuthSite
     -- We need a log function to create a connection pool. We need a connection
     -- pool to create our foundation. And we need our foundation to get a
     -- logging function. To get out of this loop, we initially create a
@@ -71,7 +74,9 @@ makeFoundation appSettings = do
         (pgPoolSize $ appDatabaseConf appSettings)
 
     -- Perform database migration using our application's logging settings.
-    runLoggingT (runSqlPool (runMigration migrateAll) pool) logFunc
+    runLoggingT (runSqlPool (runMigration (migrateSnowdrift >> migrateAuthSite))
+                            pool)
+                logFunc
 
     -- Return the foundation
     return $ mkFoundation pool
@@ -124,7 +129,7 @@ getApplicationDev = do
     return (wsettings, app)
 
 getAppSettings :: IO AppSettings
-getAppSettings = loadAppSettings [configSettingsYml] [] useEnv
+getAppSettings = loadAppSettings ["config/settings.yml"] [] useEnv
 
 -- | main function for use by yesod devel
 develMain :: IO ()

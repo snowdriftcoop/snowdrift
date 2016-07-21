@@ -3,35 +3,48 @@ module TestImport
     , module X
     ) where
 
-import ClassyPrelude         as X
-import Database.Persist      as X hiding (get)
-import Database.Persist.Sql  (SqlPersistM, SqlBackend, runSqlPersistMPool, rawExecute, rawSql, unSingle, connEscapeName)
-import Foundation            as X
-import Test.Hspec            as X
+import ClassyPrelude as X
+import Database.Persist as X hiding (get)
+import Database.Persist.Sql (SqlPersistM, SqlBackend, runSqlPersistMPool, rawExecute, rawSql, unSingle, connEscapeName)
+import Foundation as X
+import Network.HTTP.Types (Status(..), Method)
+import Network.Wai.Test (SResponse(..))
+import Test.Hspec as X
 import Text.Shakespeare.Text (st)
 import Yesod.Default.Config2 (ignoreEnv, loadAppSettings)
-import Yesod.Test            as X
-import Network.Wai.Test (SResponse(..))
-import Network.HTTP.Types (Status(..), Method)
+import Yesod.Test as X
 import qualified Data.Text.Encoding as T
 
-import Application           (makeFoundation, makeLogWare)
-import Model                 as X
+-- For htmlHasLink
+import Test.HUnit
+import Yesod.Core
+
+import Application (makeFoundation, makeLogWare)
+import AppDataTypes as X
+import AuthSite
+import Model as X
+
 import Factories
 
-import Yesod.Auth
--- For htmlHasLink
-import Yesod.Core
-import Test.HUnit
-
-runDB :: SqlPersistM a -> YesodExample App a
-runDB query = do
+-- | Run a query outside of a handler
+testDB :: SqlPersistM a -> YesodExample App a
+testDB query = do
     app <- getTestYesod
     liftIO $ runDBWithApp app query
 
 runDBWithApp :: App -> SqlPersistM a -> IO a
 runDBWithApp app query = runSqlPersistMPool query (appConnPool app)
 
+dummyLogin :: YesodExample App ()
+dummyLogin = do
+    _ <- testDB $ createUser "alice" "ccccccccccccc"
+    get (AuthR LoginR)
+    request $ do
+        addToken
+        byLabel "Email" "alice"
+        byLabel "Passphrase" "ccccccccccccc"
+        setMethod "POST"
+        setUrl (AuthR LoginR)
 
 withApp :: SpecWith (TestApp App) -> Spec
 withApp = before $ do
@@ -71,18 +84,6 @@ getTables = do
 testRoot :: Text
 testRoot = "http://localhost:3000"
 
-dummyLogin :: YesodExample App ()
-dummyLogin = do
-    let ident = "dummy"
-    _ <- runDB (createUser ident)
-
-    let url = testRoot <> "/auth/page/dummy"
-
-    request $ do
-        setMethod "POST"
-        addPostParam "ident" ident
-        setUrl url
-
 needsAuth :: Route App -> Method -> YesodExample App ()
 needsAuth route method = do
     authRte <- testRender (AuthR LoginR) []
@@ -100,10 +101,10 @@ needsAuth route method = do
 
 testRender :: Route App -> [(Text, Text)] -> YesodExample App Text
 testRender route params =
-    yesodRender <$> getTestYesod <*> pure "" <*> pure route <*> pure params
+    yesodRender <$> getTestYesod <*> pure testRoot <*> pure route <*> pure params
 
 htmlHasLink :: Route App -> YesodExample App ()
 htmlHasLink route = do
     uri <- testRender route []
     frags <- htmlQuery ("a[href="<>uri<>"]")
-    liftIO $ assertBool (X.unpack uri <> " not found") (length frags > 0)
+    liftIO $ assertBool (X.unpack uri <> " not found") (not (null frags))
