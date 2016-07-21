@@ -20,7 +20,7 @@ mkYesodSubData "AuthSite" [parseRoutes|
 |]
 
 share [mkPersist sqlSettings
-      , mkMigrate "migrateAuth"
+      , mkMigrate "migrateAuthSite"
       ] [persistLowerCase|
 ProvisionalUser
     email Text

@@ -13,7 +13,7 @@ Subsite for email-and-passphrase authentication.
 Quickstart:
 
 1. Add 'AuthSite' as a subsite to your routes somewhere.
-2. Mappend 'migrateAuth' to your site's 'Migration' when running migrations.
+2. Mappend 'migrateAuthSite' to your site's 'Migration' when running migrations.
 3. Have your site datatype instantiate 'AuthMaster' (this is the hard part).
 
 This module is not yet fit for general consumption. It is tightly coupled
@@ -23,7 +23,7 @@ module AuthSite
     ( -- * Subsite interface
       -- ** Integration with your site
       AuthSite(..)
-    , migrateAuth
+    , migrateAuthSite
     , AuthMaster(..)
       -- ** Routes
       -- | Haddock seems to dump the entire 'Route' definition, even
