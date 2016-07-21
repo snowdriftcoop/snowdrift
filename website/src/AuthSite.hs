@@ -324,14 +324,14 @@ postLoginR :: (Yesod master
               ,RenderMessage master FormMessage)
            => HandlerT AuthSite (HandlerT master IO) Html
 postLoginR = do
-    ((res', _), _) <- lift $ runFormPost (renderDivs credentialsForm)
+    ((res, _), _) <- lift $ runFormPost (renderDivs credentialsForm)
     p <- getRouteToParent
     formResult (lift . (runAuthResult p <=< (runDB . checkCredentials)))
-               res'
+               res
   where
     runAuthResult master = maybe
         (do
-            alertDanger [shamlet|Bad credentials:  <a href="https://tree.taiga.io/project/snowdrift/us/392">See Taiga #392</a>.|]
+            alertDanger [shamlet|Bad credentials:  <a href="https://tree.taiga.io/project/snowdrift/task/405">See Taiga #405</a>.|]
             redirect (master LoginR))
         (\u -> do
             priviligedLogin u
@@ -351,7 +351,7 @@ formResult success = \case
     failure msgs =
         lift $ defaultLayout [whamlet|
             <p>Auth form failures are not handled yet.
-            <p>TBD: <a href="https://tree.taiga.io/project/snowdrift/us/392">See Taiga #392</a>.
+            <p>TBD: <a href="https://tree.taiga.io/project/snowdrift/task/405">See Taiga #405</a>.
             <p>Errors: #{show msgs}
             |]
 
@@ -456,6 +456,9 @@ postVerifyAccountR = do
         m <- lift $ runDB $ sequence . fmap upsertUser =<< checkDestroyToken tok
         case m of
             Nothing -> do
+                -- For https://tree.taiga.io/project/snowdrift/task/405, we
+                -- may want to modify this as well (or make it more
+                -- accessible to front end devs).
                 lift $ alertWarning "Uh oh, your token appears to be invalid!"
                 redirectParent LoginR
             Just _ -> do
