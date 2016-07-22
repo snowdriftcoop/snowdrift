@@ -37,7 +37,7 @@ To build the code on your local computer, follow our [Build instructions].
 
 ### Filing and searching issues/tickets
 
-For bugs and feature requests, we have a [ticket system].
+For bugs and feature requests, we have a [ticket system at Taiga.io].
 
 ### Communicating with us
 
@@ -79,5 +79,5 @@ Our text and graphics documents (non-program-code) are also licensed under
 [other email lists]: https://lists.snowdrift.coop/
 [other funding sites]: https://wiki.snowdrift.coop/othercrowdfunding
 [Snowdrift.coop]: https://snowdrift.coop/
-[ticket system]: https://tree.taiga.io/project/snowdrift/issues
+[ticket system at Taiga.io]: https://tree.taiga.io/project/snowdrift/issues
 [Yesod web framework]: http://www.yesodweb.com/

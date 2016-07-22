@@ -84,10 +84,11 @@ The following covers the bare minimum process for those new to Git.
 
 ##### Forking at the host platform
 
-We collaborate on the code via the FLO (Free/Libre/Open) site [git.snowdrift.coop].
-We also mirror on the popular but proprietary site [GitHub], which you may use 
-if you already have an account there. As we encourage everyone to use FLO 
-tools, the instructions below assume git.snowdrift.coop.
+We collaborate on the code via the FLO (Free/Libre/Open) site 
+[git.snowdrift.coop] using GitLab CE. We also mirror on the popular but 
+proprietary site [GitHub], which you may use if you already have an account 
+there. As we encourage everyone to use FLO tools, the instructions below assume 
+git.snowdrift.coop.
 
 To contribute changes to the project, first [create an account on git.snowdrift.coop]
 (or sign in if you already have an account).
@@ -380,9 +381,10 @@ As a best practice, we want to have adequate code review for every merge before
 it goes into the master code.
 
 For volunteers interested in helping with code review, please choose to *watch* 
-the code repositories (the main repo is at [git.snowdrift.coop] but we've also 
-mirrored to [GitHub]). Then, you can make general and in-line comments about 
-new code as it is committed and before it goes into the master repository.
+the code repositories (the main repo at [git.snowdrift.coop] and also the 
+[GitHub] mirror if you use GitHub). Then, you can make general and in-line 
+comments about new code as it is committed and before it goes into the master 
+repository.
 
 ### Use of JavaScript
 
