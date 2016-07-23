@@ -21,8 +21,7 @@ When you contribute patches to this repository, such as via a merge request, you
 retain the copyright to your contributions. Of course, given unchanged license
 notices in your copy of the repository, you automatically release your work
 under the same licenses we use (GNU AGPLv3+ primarily with non-code text and
-graphics also under CC BY-SA 4.0 International, as specified in the
-[README](README.md)).
+graphics also under CC BY-SA 4.0 International, as specified in the [README].
 
 ## Prerequisites to contributing
 
@@ -35,7 +34,7 @@ Generally, everything works smoothly with GNU/Linux, \*BSD systems, and OS X.
 We do not support Windows at this time, so we suggest Windows users switch
 systems or run a virtual machine. We encourage Windows users to switch to a
 free/libre/open system anyway, but if you really want to help test Snowdrift on
-Windows, our [Build guide](BUILD.md) has some notes about that.
+Windows, our [Build guide] has some notes about that.
 
 ## Command-line beginner's basics
 
@@ -52,7 +51,7 @@ command-line basics.
 
 ## Installing
 
-**Follow the [BUILD.md](BUILD.md) instructions** to get Snowdrift going on your
+**Follow the [Build guide]** for instructions to get Snowdrift going on your
 computer.
 
 ## Working on the code
@@ -65,7 +64,7 @@ according to the instructions linked above.**
 All systems should come with a code-appropriate text-editor (or two), e.g.
 Gedit, Kate, Pluma, Scratch, etc. Any of those will work for now, but we
 recommend installing an editor with stronger Haskell and Yesod support. See
-[TEXTEDITORS.md](TEXTEDITORS.md) for our specific recommendations and settings.
+[TEXTEDITORS.md] for our specific recommendations and settings.
 
 ### Working with Git
 
@@ -85,19 +84,17 @@ The following covers the bare minimum process for those new to Git.
 
 ##### Forking at the host platform
 
-We collaborate on the code via the FLO (Free/Libre/Open) site
-[git.snowdrift.coop](https://git.snowdrift.coop/sd/snowdrift).
-We also mirror on the popular but proprietary site
-[GitHub](https://github.com/snowdriftcoop/snowdrift),
-which you may use if you already have an account there. As we encourage
-everyone to use FLO tools, the instructions below assume git.snowdrift.coop.
+We collaborate on the code via the FLO (Free/Libre/Open) site 
+[git.snowdrift.coop] using GitLab CE. We also mirror on the popular but 
+proprietary site [GitHub], which you may use if you already have an account 
+there. As we encourage everyone to use FLO tools, the instructions below assume 
+git.snowdrift.coop.
 
-To contribute changes to the project, first
-[create an account on git.snowdrift.coop](https://git.snowdrift.coop/users/sign_in)
+To contribute changes to the project, first [create an account on git.snowdrift.coop]
 (or sign in if you already have an account).
 
-Once signed in, go to <https://git.snowdrift.coop/sd/snowdrift>,
-and click the "Fork" link on the top right.
+Once signed in, go to the [project repository], and click the "Fork" link on 
+the top right.
 
 After choosing your account for the fork, you should be at the page for your
 fork of the project. To check, see that the header at the top of the page has
@@ -107,10 +104,9 @@ has your account name followed by "/Snowdrift".
 
 At the top of the main page, below the header, you'll see a box with an address.
 By default, the SSH option is selected, and we recommend SSH ideally. However,
-[SSH setup](https://git.snowdrift.coop/help/ssh/README) is kind of tricky, especially
-for those new to SSH. To stick with the easier option for now, click "HTTPS" and
-use that address which will look like:
-"https://git.snowdrift.coop/YOURNAME/snowdrift.git"
+[SSH setup] is kind of tricky, especially for those new to SSH. To stick with 
+the easier option for now, click "HTTPS" and use that address which will look 
+like: "https://git.snowdrift.coop/YOURNAME/snowdrift.git"
 
 Where `YOURNAME` is your git.snowdrift.coop username.
 
@@ -165,7 +161,7 @@ Now, you can edit files, save work as you go, etc.
 #### Building your updates
 
 To check your work and see the results on the running site, follow the
-instructions in the [BUILD.md](BUILD.md) guide for running the site.
+instructions in the [Build guide] for running the site.
 
 #### Running the tests
 
@@ -211,9 +207,9 @@ Change `some_branch` to the name of the branch where you made the commit(s).
 NB: if you make additional changes to the same branch before a maintainer merges
 it into master, you can push those new updates with just `git push`.
 
-To notify the snowdrift team about your work, visit the git.snowdrift.coop page with
-your fork. You should see a button **"Create Merge Request"** Click that to
-bring up a form where you can add further notes about your work (especially
+To notify the snowdrift team about your work, visit the git.snowdrift.coop page 
+with your fork. You should see a button **"Create Merge Request"**. Click that 
+to bring up a form where you can add further notes about your work (especially
 useful if you are merging multiple commits). You may ignore "Assign to",
 "Milestone", and "Labels" at this point.
 
@@ -224,11 +220,11 @@ soon (hopefully within a few hours, maybe a day or two depending on timing).
 
 Several ways to get started contributing and/or to learn more overall:
 
-* Visit the [tickets](https://snowdrift.coop/p/snowdrift/t) and filter to the
-  "newbie-friendly" tag and see what looks interesting and/or doable. Consider
-  exploring other tickets based on your skills or interests. If you decide to
-  work on a specific ticket, you can "claim" it once you have logged into the
-  main site with a fully-established user.
+* Visit our [Taiga Issues] page and filter to the "newbie friendly" tag and see 
+  what looks interesting and/or doable. Consider exploring other issues based 
+  on your skills or interests. If you decide to work on a specific ticket, chat 
+  with us on [IRC] or send an email to the [dev mailing list] to get added to 
+  the team.
 
 * Play around with the site locally. See if you can understand what does what.
   You may find bits that seem incomplete or confusing, and you can explore them
@@ -243,16 +239,14 @@ Several ways to get started contributing and/or to learn more overall:
       make changes to those files. Basically, Hamlet=HTML and Cassius=CSS but
       with concise syntax that uses indentation instead of closing tags. Julius
       files are effectively just containers for JavaScript. For more details,
-      see the documentation on
-      [Shakespearean Templates](http://www.yesodweb.com/book/shakespearean-templates).
+      see the documentation on [Shakespearean Templates].
 
     * For those familiar with Haskell, consider exploring our files, and
-      updating any code that doesn't match our
-      [code style](https://snowdrift.coop/p/snowdrift/w/en/coding#code-style-guide).
+      updating any code that doesn't match our code style (see the "Code style" 
+      section below).
 
-* Read our [coding wiki page](https://snowdrift.coop/p/snowdrift/w/en/coding),
-  the related discussion board, and other pages throughout the Snowdrift.coop
-  site.
+* Read the code documention in this repo and other pages on the Snowdrift.coop 
+  [wiki].
 
 * Read on below and check out links to learn more about the overall ecosystem,
   our development practices, and the tools we use.
@@ -264,32 +258,147 @@ and avoid browser-specific code.
 
 ### Design considerations
 
-We have separate wiki and discussion pages on the site for our specific
-[design guide](https://snowdrift.coop/p/snowdrift/w/en/design-guide) and general
-[design-related issues](https://snowdrift.coop/p/snowdrift/w/site-design).
+We have separate wiki pages for our specific [design guide] and general
+[design-related issues].
 
 ### Code style
 
-When making edits, follow our
-[code style guide](https://snowdrift.coop/p/snowdrift/w/en/coding#code-style-guide).
+* Indentation: 4-space indentation default, 2-space indentation for .hamlet 
+files 
+* 80-column per line maximum
+    * We accept exceptions for cases such as the inclusion of very long 
+    external URLs and so on
+* Sentence-case, 50-column Git commit headers (but no ending period mark)
+    * include bits like "fixes SD-#" as appropriate when fixing a ticket
+    * consider adding extra comments below commit titles
+* Haskell-standard camelCaseNames (not C-standard underscore_names)
+* Group qualified imports separate from unqualified imports, like:
+
+    ```
+    import System.IO (hFlush, stdout, stderr)
+    import System.Log.FastLogger (toLogStr, fromLogStr)
+    import Yesod.Default.Config (withYamlEnvironment, DefaultEnv (..))
+    import qualified Control.Exception.Lifted as Exception
+    import qualified Data.ByteString.Char8 as Char8
+    ```
+
+* Imports should be grouped into three paragraphs: "Prelude" or "Import" for 
+those modules that need them, then external modules, and then internal modules.
+* Indent so that groups are logical and easy to read. Here are some examples: 
+
+    ```haskell
+    -- bad: dangling child
+    functionFoo arg1 arg2
+                     arg3
+
+    -- bad: not indented
+    functionFoo $
+    arg1 arg2
+
+    -- bad: chunked children (a special case of dangling child)
+    functionFoo arg1 arg2
+                arg3 arg4
+
+    -- bad: reverse indent
+    functionFoo $ functionBar $
+        barArg1
+        barArg2
+
+    -- better: indented under proper parent
+    functionFoo $ functionBar
+                      barArg1
+                      barArg2
+
+    -- best #1: stacked arguments
+    functionFoo $ functionBar barArg1
+                              barArg2
+                              barArg3
+
+    -- best #2: "indent the head before the tail"
+    functionFoo $
+        functionBar
+            barArg1
+            bargArg2
+
+    -- or
+    functionFoo $
+        functionBar barArg1 barArg2
+
+    -- or
+    functionFoo
+        (functionBar barArg1 barArg2)
+    ```
+
+* Don't bother aligning delimiters (such as `->` in case statements) if there 
+are intermediate lines that begin far to the left.
+
+    ```
+    -- undesirable
+    (Nothing, Just email, True) -> do
+        murl <- libravatar $ T.unpack email
+        return (fmap fromString murl)
+    _                           -> return Nothing
+
+    -- better
+    (Nothing, Just email, True) -> do
+        murl <- libravatar $ T.unpack email
+        return (fmap fromString murl)
+    _ -> return Nothing
+    ```
+
+* When creating a multiline list of items, put commas on the left and line them 
+up with the opening delimiter. In the following example I put no space between 
+the comma and the item, but that is at your discretion. The location of the 
+ending delimiter is also at your discretion: in line with the other delimiters, 
+or immediately following the last item.
+
+    ```
+    someList = [foo
+               ,bar
+               ,baz
+               ]
+    ```
+* Indent "where" by two spaces. Example:
+
+    ```
+    func = do
+        bar
+        baz
+      where
+        baz = the other thing
+    ```
+
+* Additionally, you can use hlint to get suggestions for improving code style:
+    
+    ```
+    stack install hlint
+    hlint -XQuasiQuotes -XTemplateHaskell $FILE
+    ```
+
+### Code review
+
+As a best practice, we want to have adequate code review for every merge before 
+it goes into the master code.
+
+For volunteers interested in helping with code review, please choose to *watch* 
+the code repositories (the main repo at [git.snowdrift.coop] and also the 
+[GitHub] mirror if you use GitHub). Then, you can make general and in-line 
+comments about new code as it is committed and before it goes into the master 
+repository.
 
 ### Use of JavaScript
 
 **We generally build with *progressive enhancement* in mind.** The site should
 work with just HTML/CSS along with Yesod/Haskell server-side functions. Given
 that basis, we can add JavaScript as appropriate for enhancement, considering
-[Unobtrusive JavaScript](http://en.wikipedia.org/wiki/Unobtrusive_JavaScript).
-Use of NoScript should never cause a broken experience.
-All our JavaScript should be recognized by the FSF's
-[LibreJS plugin](https://www.gnu.org/software/librejs/).
+[Unobtrusive JavaScript]. Use of NoScript should never cause a broken 
+experience. All our JavaScript should be recognized by the FSF's [LibreJS plugin].
 
 Although we haven't used them as of January 2016, we have considered
-[GHCJS](https://github.com/ghcjs/ghcjs) and
-[PureScript](http://www.purescript.org/)
-as options for more Haskell-connected ways to generate JavaScript.
-If contributors want to work with either of those, we would happily accept that.
-[Yesod JavaScript Options](https://github.com/yesodweb/yesod/wiki/JavaScript-Options)
-explains further about those or other possibilities.
+[GHCJS] and [PureScript] as options for more Haskell-connected ways to generate 
+JavaScript. If contributors want to work with either of those, we would happily 
+accept that. [Yesod JavaScript Options] explains further about those or other 
+possibilities.
 
 ## Learning resources and helpful tools
 
@@ -360,5 +469,23 @@ here are some resources (nearly all fully-FLO):
     in a mode connected to the project. Using that, you can easily import
     files from the code and explore the functions.
 
-*   Add hlint with `stack install hlint`, and then you can run `hlint` followed
-    by a .hs filepath to get suggestions for improving the Haskell code style.
+[Build guide]: BUILD.md
+[create an account on git.snowdrift.coop]: https://git.snowdrift.coop/users/sign_in
+[design guide]: https://wiki.snowdrift.coop/design/design-guide
+[design-related issues]: https://wiki.snowdrift.coop/design/site-design
+[dev mailing list]: https://lists.snowdrift.coop/mailman/listinfo/dev
+[git.snowdrift.coop]: https://git.snowdrift.coop/sd/snowdrift
+[GHCJS]: https://github.com/ghcjs/ghcjs
+[GitHub]: https://github.com/snowdriftcoop/snowdrift
+[IRC]: https://wiki.snowdrift.coop/community/irc
+[LibreJS plugin]: https://www.gnu.org/software/librejs/
+[project repository]: https://git.snowdrift.coop/sd/snowdrift
+[PureScript]: http://www.purescript.org/
+[README]: README.md
+[Shakespearean Templates]: http://www.yesodweb.com/book/shakespearean-templates
+[SSH setup]: https://git.snowdrift.coop/help/ssh/README
+[Taiga Issues]: https://tree.taiga.io/project/snowdrift/issues
+[TEXTEDITORS.md]: TEXTEDITORS.md
+[Unobtrusive JavaScript]: http://en.wikipedia.org/wiki/Unobtrusive_JavaScript
+[wiki]: https://wiki.snowdrift.coop/
+[Yesod JavaScript Options]: https://github.com/yesodweb/yesod/wiki/JavaScript-Options
