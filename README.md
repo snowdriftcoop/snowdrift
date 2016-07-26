@@ -49,7 +49,7 @@ Ways to get in touch:
 
 * Email us at <community@snowdrift.coop> to discuss your volunteer interests
 
-* Sign up on the [dev email list] and perhaps [other email lists] and send a 
+* Sign up on the [dev email list] and perhaps [other email lists] and send a
 message introducing yourself to the community.
 
 * Visit `#snowdrift` on freenode.net [IRC] for live chat.

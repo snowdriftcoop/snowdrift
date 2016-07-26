@@ -84,16 +84,16 @@ The following covers the bare minimum process for those new to Git.
 
 ##### Forking at the host platform
 
-We collaborate on the code via the FLO (Free/Libre/Open) site 
-[git.snowdrift.coop] using GitLab CE. We also mirror on the popular but 
-proprietary site [GitHub], which you may use if you already have an account 
-there. As we encourage everyone to use FLO tools, the instructions below assume 
+We collaborate on the code via the FLO (Free/Libre/Open) site
+[git.snowdrift.coop] using GitLab CE. We also mirror on the popular but
+proprietary site [GitHub], which you may use if you already have an account
+there. As we encourage everyone to use FLO tools, the instructions below assume
 git.snowdrift.coop.
 
 To contribute changes to the project, first [create an account on git.snowdrift.coop]
 (or sign in if you already have an account).
 
-Once signed in, go to the [project repository], and click the "Fork" link on 
+Once signed in, go to the [project repository], and click the "Fork" link on
 the top right.
 
 After choosing your account for the fork, you should be at the page for your
@@ -104,8 +104,8 @@ has your account name followed by "/Snowdrift".
 
 At the top of the main page, below the header, you'll see a box with an address.
 By default, the SSH option is selected, and we recommend SSH ideally. However,
-[SSH setup] is kind of tricky, especially for those new to SSH. To stick with 
-the easier option for now, click "HTTPS" and use that address which will look 
+[SSH setup] is kind of tricky, especially for those new to SSH. To stick with
+the easier option for now, click "HTTPS" and use that address which will look
 like: "https://git.snowdrift.coop/YOURNAME/snowdrift.git"
 
 Where `YOURNAME` is your git.snowdrift.coop username.
@@ -207,8 +207,8 @@ Change `some_branch` to the name of the branch where you made the commit(s).
 NB: if you make additional changes to the same branch before a maintainer merges
 it into master, you can push those new updates with just `git push`.
 
-To notify the snowdrift team about your work, visit the git.snowdrift.coop page 
-with your fork. You should see a button **"Create Merge Request"**. Click that 
+To notify the snowdrift team about your work, visit the git.snowdrift.coop page
+with your fork. You should see a button **"Create Merge Request"**. Click that
 to bring up a form where you can add further notes about your work (especially
 useful if you are merging multiple commits). You may ignore "Assign to",
 "Milestone", and "Labels" at this point.
@@ -220,10 +220,10 @@ soon (hopefully within a few hours, maybe a day or two depending on timing).
 
 Several ways to get started contributing and/or to learn more overall:
 
-* Visit our [Taiga Issues] page and filter to the "newbie friendly" tag and see 
-  what looks interesting and/or doable. Consider exploring other issues based 
-  on your skills or interests. If you decide to work on a specific ticket, chat 
-  with us on [IRC] or send an email to the [dev mailing list] to get added to 
+* Visit our [Taiga Issues] page and filter to the "newbie friendly" tag and see
+  what looks interesting and/or doable. Consider exploring other issues based
+  on your skills or interests. If you decide to work on a specific ticket, chat
+  with us on [IRC] or send an email to the [dev mailing list] to get added to
   the team.
 
 * Play around with the site locally. See if you can understand what does what.
@@ -242,10 +242,10 @@ Several ways to get started contributing and/or to learn more overall:
       see the documentation on [Shakespearean Templates].
 
     * For those familiar with Haskell, consider exploring our files, and
-      updating any code that doesn't match our code style (see the "Code style" 
+      updating any code that doesn't match our code style (see the "Code style"
       section below).
 
-* Read the code documention in this repo and other pages on the Snowdrift.coop 
+* Read the code documention in this repo and other pages on the Snowdrift.coop
   [wiki].
 
 * Read on below and check out links to learn more about the overall ecosystem,
@@ -263,10 +263,10 @@ We have separate wiki pages for our specific [design guide] and general
 
 ### Code style
 
-* Indentation: 4-space indentation default, 2-space indentation for .hamlet 
-files 
+* Indentation: 4-space indentation default, 2-space indentation for .hamlet
+files
 * 80-column per line maximum
-    * We accept exceptions for cases such as the inclusion of very long 
+    * We accept exceptions for cases such as the inclusion of very long
     external URLs and so on
 * Sentence-case, 50-column Git commit headers (but no ending period mark)
     * include bits like "fixes SD-#" as appropriate when fixing a ticket
@@ -282,9 +282,9 @@ files
     import qualified Data.ByteString.Char8 as Char8
     ```
 
-* Imports should be grouped into three paragraphs: "Prelude" or "Import" for 
+* Imports should be grouped into three paragraphs: "Prelude" or "Import" for
 those modules that need them, then external modules, and then internal modules.
-* Indent so that groups are logical and easy to read. Here are some examples: 
+* Indent so that groups are logical and easy to read. Here are some examples:
 
     ```haskell
     -- bad: dangling child
@@ -329,7 +329,7 @@ those modules that need them, then external modules, and then internal modules.
         (functionBar barArg1 barArg2)
     ```
 
-* Don't bother aligning delimiters (such as `->` in case statements) if there 
+* Don't bother aligning delimiters (such as `->` in case statements) if there
 are intermediate lines that begin far to the left.
 
     ```
@@ -346,10 +346,10 @@ are intermediate lines that begin far to the left.
     _ -> return Nothing
     ```
 
-* When creating a multiline list of items, put commas on the left and line them 
-up with the opening delimiter. In the following example I put no space between 
-the comma and the item, but that is at your discretion. The location of the 
-ending delimiter is also at your discretion: in line with the other delimiters, 
+* When creating a multiline list of items, put commas on the left and line them
+up with the opening delimiter. In the following example I put no space between
+the comma and the item, but that is at your discretion. The location of the
+ending delimiter is also at your discretion: in line with the other delimiters,
 or immediately following the last item.
 
     ```
@@ -369,7 +369,7 @@ or immediately following the last item.
     ```
 
 * Additionally, you can use hlint to get suggestions for improving code style:
-    
+
     ```
     stack install hlint
     hlint -XQuasiQuotes -XTemplateHaskell $FILE
@@ -377,13 +377,13 @@ or immediately following the last item.
 
 ### Code review
 
-As a best practice, we want to have adequate code review for every merge before 
+As a best practice, we want to have adequate code review for every merge before
 it goes into the master code.
 
-For volunteers interested in helping with code review, please choose to *watch* 
-the code repositories (the main repo at [git.snowdrift.coop] and also the 
-[GitHub] mirror if you use GitHub). Then, you can make general and in-line 
-comments about new code as it is committed and before it goes into the master 
+For volunteers interested in helping with code review, please choose to *watch*
+the code repositories (the main repo at [git.snowdrift.coop] and also the
+[GitHub] mirror if you use GitHub). Then, you can make general and in-line
+comments about new code as it is committed and before it goes into the master
 repository.
 
 ### Use of JavaScript
@@ -391,13 +391,13 @@ repository.
 **We generally build with *progressive enhancement* in mind.** The site should
 work with just HTML/CSS along with Yesod/Haskell server-side functions. Given
 that basis, we can add JavaScript as appropriate for enhancement, considering
-[Unobtrusive JavaScript]. Use of NoScript should never cause a broken 
+[Unobtrusive JavaScript]. Use of NoScript should never cause a broken
 experience. All our JavaScript should be recognized by the FSF's [LibreJS plugin].
 
 Although we haven't used them as of January 2016, we have considered
-[GHCJS] and [PureScript] as options for more Haskell-connected ways to generate 
-JavaScript. If contributors want to work with either of those, we would happily 
-accept that. [Yesod JavaScript Options] explains further about those or other 
+[GHCJS] and [PureScript] as options for more Haskell-connected ways to generate
+JavaScript. If contributors want to work with either of those, we would happily
+accept that. [Yesod JavaScript Options] explains further about those or other
 possibilities.
 
 ## Learning resources and helpful tools
