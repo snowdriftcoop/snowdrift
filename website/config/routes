@@ -28,3 +28,6 @@
 -- Prevents breakage of external links to the old wiki. See
 -- https://tree.taiga.io/project/snowdrift/us/359
 /p/snowdrift/w/#Text SnowdriftWikiSearchR GET
+
+-- Prevents breakage of external links to the old blog.
+/p/snowdrift/blog/#Text SnowdriftLegacyBlogR GET

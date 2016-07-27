@@ -77,4 +77,9 @@ getSnowdriftProjectR = $(widget "page/snowdrift-project" "Snowdrift.coop Project
 -- https://tree.taiga.io/project/snowdrift/us/359
 getSnowdriftWikiSearchR :: Text -> Handler Html
 getSnowdriftWikiSearchR slug =
-    redirect $ "https://wiki.snowdrift.coop/_search?patterns=" <> slug
+    redirectWith movedPermanently301 $ "https://wiki.snowdrift.coop/_search?patterns=" <> slug
+
+-- | Prevents breakage of external links to the old blog.
+getSnowdriftLegacyBlogR :: Text -> Handler Html
+getSnowdriftLegacyBlogR slug =
+    redirectWith movedPermanently301 $ "https://wiki.snowdrift.coop/blog/" <> slug
