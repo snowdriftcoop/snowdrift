@@ -22,11 +22,8 @@ Install Git and PostgreSQL with needed libraries:
     sudo apt-get update
     sudo apt-get install git postgresql postgresql-client libgmp-dev zlib1g-dev libpq-dev libtinfo-dev
 
-Then follow the
-[Debian Stack install](https://github.com/commercialhaskell/stack/blob/master/doc/install_and_upgrade.md#debian)
-or
-[Ubuntu Stack install](https://github.com/commercialhaskell/stack/blob/master/doc/install_and_upgrade.md#ubuntu)
-instructions as appropriate.
+Then follow the [Debian Stack install] or [Ubuntu Stack install] instructions 
+as appropriate.
 
 ### CentOS/RHEL and Fedora
 
@@ -44,19 +41,17 @@ You'll also need PostgreSQL >= 9.3:
 
     sudo yum install postgres-server postgres-devel
 
-If the version in the base repositories is too old, follow the
-[instructions on the PostgreSQL wiki](https://wiki.postgresql.org/wiki/YUM_Installation)
-to install from their repositories. Get the postgresXX-server and
-postgresXX-devel packages, where XX is the version number.
+If the version in the base repositories is too old, follow the 
+[instructions on the PostgreSQL wiki] to install from their repositories. Get 
+the postgresXX-server and postgresXX-devel packages, where XX is the version 
+number.
 
 So that the Snowdrift database cluster tool sees the pgsql executables at
 `/usr/pgsql-X.X/bin` on your PATH, either add that route (with the correct
 numbers instead of X.X) to your PATH (e.g. in `~/.bash_profile`, `~/.bashrc` or
 `~/.profile`) or create symlinks somewhere already on your PATH.
 
-Then follow the
-[Stack install instructions](https://github.com/commercialhaskell/stack/blob/master/doc/install_and_upgrade.md)
-for your distribution.
+Then follow the [Stack install instructions] for your distribution.
 
 ### Arch Linux
 
@@ -64,15 +59,13 @@ Install Git and PostgreSQL by running this command as `root`:
 
     pacman -S git postgresql
 
-Finally, install the
-[haskell-stack](https://aur.archlinux.org/packages/haskell-stack)
-package from the AUR.
+Finally, install the [haskell-stack] package from the AUR.
 
 ### NixOS
 
 Install Git as usual under NixOS.
 
-Then, follow the [NixOS Stack install instructions](https://github.com/commercialhaskell/stack/blob/master/doc/install_and_upgrade.md#nixos).
+Then, follow the [NixOS Stack install instructions].
 
 For PostgreSQL, add these lines to `/etc/nixos/configuration.nix`:
 
@@ -112,7 +105,7 @@ installing the Git, PostgreSQL, and Stack dependencies on \*BSD.*
 
 ### OS X
 
-If you don't have [brew](http://brew.sh/) yet, install it with:
+If you don't have [brew] yet, install it with:
 
     ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 
@@ -137,9 +130,7 @@ Install PostgreSQL 32-bit version from
 Add the PostgreSQL bin directory to the path
 `C:\Program Files (x86)\PostgreSQL\9.4\bin`
 
-Follow the instructions to
-[install Stack for Windows](https://github.com/commercialhaskell/stack/blob/master/doc/install_and_upgrade.md#windows)
-
+Follow the instructions to [install Stack for Windows].
 
 ## Get the Snowdrift code
 
@@ -269,14 +260,25 @@ See [DATABASE-MANAGEMENT.md] for details on resetting the database and more.
 
 ## Getting help, learning, contributing etc.
 
-We welcome any and all feedback on these build instructions, on the site itself,
-etc. We will happily help you with any questions. See the [README](README.md)
-for further general links, and the [Contributing Guide](CONTRIBUTING.md) for
-more thorough resources about technical development.
+We welcome any and all feedback on these build instructions, on the site 
+itself, etc. We will happily help you with any questions. See the [README] for 
+further general links, and the [Contributing Guide] for more thorough resources 
+about technical development.
 
 [DATABASE-MANAGEMENT.md]: DATABASE-MANAGEMENT.md
+[brew]: http://brew.sh/
+[Contributing Guide]: CONTRIBUTING.md
+[Debian Stack install]: https://github.com/commercialhaskell/stack/blob/master/doc/install_and_upgrade.md#debian
 [Git]: http://www.git-scm.com/downloads
 [git.snowdrift.coop/sd/snowdrift]: https://git.snowdrift.coop/sd/snowdrift
 [GitHub]: https://github.com/snowdriftcoop/snowdrift
+[haskell-stack]: https://aur.archlinux.org/packages/haskell-stack
+[install Stack for Windows]: https://github.com/commercialhaskell/stack/blob/master/doc/install_and_upgrade.md#windows
+[instructions on the PostgreSQL wiki]: https://wiki.postgresql.org/wiki/YUM_Installation
+[NixOS Stack install instructions]: https://github.com/commercialhaskell/stack/blob/master/doc/install_and_upgrade.md#nixos)
 [PostgreSQL]: http://www.postgresql.org/download/
+[README]: README.md
 [Stack]: https://github.com/commercialhaskell/stack#the-haskell-tool-stack
+[Stack install instructions]: https://github.com/commercialhaskell/stack/blob/master/doc/install_and_upgrade.md
+
+[Ubuntu Stack install]: https://github.com/commercialhaskell/stack/blob/master/doc/install_and_upgrade.md#ubuntu

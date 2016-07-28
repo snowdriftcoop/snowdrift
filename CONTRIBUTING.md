@@ -258,8 +258,8 @@ and avoid browser-specific code.
 
 ### Design considerations
 
-We have separate wiki pages for our specific [design guide] and general
-[design-related issues].
+We have separate [design] wiki pages for our specific design guide and general
+design-related issues.
 
 ### Code style
 
@@ -471,8 +471,7 @@ here are some resources (nearly all fully-FLO):
 
 [Build guide]: BUILD.md
 [create an account on git.snowdrift.coop]: https://git.snowdrift.coop/users/sign_in
-[design guide]: https://wiki.snowdrift.coop/design/design-guide
-[design-related issues]: https://wiki.snowdrift.coop/design/site-design
+[design]: https://wiki.snowdrift.coop/design
 [dev mailing list]: https://lists.snowdrift.coop/mailman/listinfo/dev
 [git.snowdrift.coop]: https://git.snowdrift.coop/sd/snowdrift
 [GHCJS]: https://github.com/ghcjs/ghcjs

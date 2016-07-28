@@ -11,11 +11,7 @@ goods with a critical mass of public support. Snowdrift.coop builds that support
 via a many-to-many matching pledge: Each patron of a FLO project agrees to
 donate a little for every patron who donates with them.
 
-For the basic idea, see our [illustrated intro].
-
-Other pages on the site describe our [mission], the [economics of FLO projects],
-the [incentives behind donations], and how our model departs from that of
-[other funding sites].
+For the basic ideas, see our [introduction].
 
 Snowdrift uses the **[Haskell]** programming language **[Yesod web framework]**.
 We stick to exclusively FLO resources and tools in all our work.
@@ -23,7 +19,7 @@ We stick to exclusively FLO resources and tools in all our work.
 ## Contributing
 
 Snowdrift.coop welcomes contributions of all sorts. Even contributors with no
-technical experience can find ways to help. See our [how-to-help page] for more
+technical experience can find ways to help. See our [how-to-help] page for more
 info about volunteering (including in non-programming ways).
 
 Our **[Contributor guide]** covers all the steps to getting involved with the
@@ -69,15 +65,11 @@ Our text and graphics documents (non-program-code) are also licensed under
 [Contributor guide]: CONTRIBUTING.md
 [Build instructions]: BUILD.md
 [dev email list]: https://lists.snowdrift.coop/mailman/listinfo/dev
-[economics of FLO projects]: https://wiki.snowdrift.coop/communications/economics
 [Haskell]: https://www.haskell.org/
-[how-to-help page]: https://wiki.snowdrift.coop/governance/community/how-to-help
-[illustrated intro]: https://wiki.snowdrift.coop/communications/intro
-[incentives behind donations]: https://wiki.snowdrift.coop/communications/psychology
+[how-to-help]: https://wiki.snowdrift.coop/community/how-to-help
+[introduction]: https://wiki.snowdrift.coop/about
 [IRC]: https://wiki.snowdrift.coop/community/irc
-[mission]: https://wiki.snowdrift.coop/governance/mission
 [other email lists]: https://lists.snowdrift.coop/
-[other funding sites]: https://wiki.snowdrift.coop/othercrowdfunding
 [Snowdrift.coop]: https://snowdrift.coop/
 [ticket system at Taiga.io]: https://tree.taiga.io/project/snowdrift/issues
 [Yesod web framework]: http://www.yesodweb.com/
