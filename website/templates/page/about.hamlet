@@ -11,13 +11,13 @@
       Our innovative matching pledge creates a network effect
       where we all work together to support these public goods.
     <div .homep-link>
-      <a href=@{HomeR}>
+      <a href="https://wiki.snowdrift.coop/about/intro">
         Illustrated intro
     <div .homep-link>
-      <a href=@{HowItWorksR}>
+      <a href="https://wiki.snowdrift.coop/about">
         Longer explanation
     <div .homep-link>
-      <a href=#>
+      <a href="https://wiki.snowdrift.coop/about/faq">
         FAQ
     <div .homep-link>
       This website is itself a Snowdrift.coop project
@@ -32,7 +32,7 @@
       <a href=@{SponsorsR}>sponsors</a>!
     <p>
       The campaign video remains a good introduction:
-    <video poster="https://snowdrift.coop/img/fund-drive-intro-still" controls>
+    <video poster="https://wiki.snowdrift.coop/assets/fund-drive/fund-drive-intro-still.png" controls>
       <source type="video/mp4"
         src="https://archive.org/download/snowdrift-fund-drive-intro/snowdrift-fund-drive-intro.mp4">
       <source type="video/ogg"
@@ -69,12 +69,12 @@
     <p>
       Our core team
       is supported by a growing community.
-      <strong><a href=#>Come help</a>
+      <a href="https://wiki.snowdrift.coop/community/how-to-help">Come help
       with site development, design, community organizing, or other tasks.
     <h2>Get your project listed
     <p>
       We're still in preliminary stages, but if your
-      <a href=#>free/libre/open
+      <a href="https://wiki.snowdrift.coop/project-requirements">free/libre/open
       project needs funding,
       please contact&nbsp;us
       to discuss whether you are a good fit for our early testing and launch.
