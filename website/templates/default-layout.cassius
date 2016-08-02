@@ -105,6 +105,9 @@ table
         padding-bottom: 3rem
       li, li p
           padding-bottom: 1rem
+    ol
+        list-style-type: decimal;
+        margin: 0 3rem
     form
         label
             color: #{BrightBlueText}
@@ -121,6 +124,7 @@ table
 h1
     font-weight: 600
     font-size: 3rem
+    padding-bottom: 3rem
 h2
     font-weight: 600
     font-size: 2.5rem
@@ -128,28 +132,21 @@ h2
 h3
     font-weight: 600
     font-size: 2rem
+    padding-bottom: 1.2rem
+h4
+    font-weight: 400
+    padding-bottom: 1rem
 
 em
     font-style: italic
 strong
     font-weight: 600
+    font-size: 95%
 hr
     margin-bottom: 3rem
 
 .footnotes
     font-size: 1.5rem
-    counter-reset: footnotes-count
-    ol
-        list-style: outside none
-        margin: 0 3rem
-    li:before
-        content: counter(footnotes-count)
-        counter-increment: footnotes-count
-        padding-right: 0.9rem
-    li p:first-child
-        display: inline
-    li p
-        margin-top: 1rem
 .footnoteRef sup
     vertical-align: super
     font-size: 1.5rem
