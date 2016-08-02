@@ -105,6 +105,9 @@ table
         padding-bottom: 3rem
       li, li p
           padding-bottom: 1rem
+    ol
+        list-style-type: decimal;
+        margin: 0 3rem
     form
         label
             color: #{BrightBlueText}
@@ -128,11 +131,16 @@ h2
 h3
     font-weight: 600
     font-size: 2rem
+    padding-bottom: 1.2rem
+h4
+    font-weight: 400
+    padding-bottom: 1rem
 
 em
     font-style: italic
 strong
     font-weight: 600
+    font-size: 95%
 hr
     margin-bottom: 3rem
 
