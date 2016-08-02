@@ -47,21 +47,17 @@
   We collect information about you when:
 <ol>
   <li>
-    <p>
-      You give it to us directly (such as through a form when registering for
-      the site);
+    You give it to us directly (such as through a form when registering for
+    the site);
   <li>
-    <p>
-      We collect it automatically (such as your IP address when your browser
-      makes requests to our web servers);
+    We collect it automatically (such as your IP address when your browser
+    makes requests to our web servers);
   <li>
-    <p>
-      Someone else tells us something about you (such as when a payment
-      provider shares your email address after you make a deposit); or
+    Someone else tells us something about you (such as when a payment
+    provider shares your email address after you make a deposit); or
   <li>
-    <p>
-      We perform analysis on aggregated user information (such as analyzing
-      overall geographic distribution based on IP address).
+    We perform analysis on aggregated user information (such as analyzing
+    overall geographic distribution based on IP address).
 <ul>
   <li>
     Snowdrift.coop uses cookies to identify visitors and save login settings.

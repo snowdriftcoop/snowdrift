@@ -124,6 +124,7 @@ table
 h1
     font-weight: 600
     font-size: 3rem
+    padding-bottom: 3rem
 h2
     font-weight: 600
     font-size: 2.5rem
