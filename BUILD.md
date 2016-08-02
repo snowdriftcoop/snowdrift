@@ -22,7 +22,7 @@ Install Git and PostgreSQL with needed libraries:
     sudo apt-get update
     sudo apt-get install git postgresql postgresql-client libgmp-dev zlib1g-dev libpq-dev libtinfo-dev
 
-Then follow the [Debian Stack install] or [Ubuntu Stack install] instructions 
+Then follow the [Debian Stack install] or [Ubuntu Stack install] instructions
 as appropriate.
 
 ### CentOS/RHEL and Fedora
@@ -41,9 +41,9 @@ You'll also need PostgreSQL >= 9.3:
 
     sudo yum install postgres-server postgres-devel
 
-If the version in the base repositories is too old, follow the 
-[instructions on the PostgreSQL wiki] to install from their repositories. Get 
-the postgresXX-server and postgresXX-devel packages, where XX is the version 
+If the version in the base repositories is too old, follow the
+[instructions on the PostgreSQL wiki] to install from their repositories. Get
+the postgresXX-server and postgresXX-devel packages, where XX is the version
 number.
 
 So that the Snowdrift database cluster tool sees the pgsql executables at
@@ -260,9 +260,9 @@ See [DATABASE-MANAGEMENT.md] for details on resetting the database and more.
 
 ## Getting help, learning, contributing etc.
 
-We welcome any and all feedback on these build instructions, on the site 
-itself, etc. We will happily help you with any questions. See the [README] for 
-further general links, and the [Contributing Guide] for more thorough resources 
+We welcome any and all feedback on these build instructions, on the site
+itself, etc. We will happily help you with any questions. See the [README] for
+further general links, and the [Contributing Guide] for more thorough resources
 about technical development.
 
 [DATABASE-MANAGEMENT.md]: DATABASE-MANAGEMENT.md
