@@ -201,6 +201,12 @@ nav
                     display: none
                 form
                     display: block
+/* break1 */
+@media (min-width: 301px)
+    nav
+        ul.main
+            li.unbreak4
+                float: right
 /* break4 */
 @media (min-width: 751px)
     nav
@@ -215,7 +221,7 @@ nav
                 a.logo, a.cards
                     border: 0
                 a.logo
-                    padding: 0 1.3rem 0 0
+                    padding: 0 1.3rem 0 4rem
                     height: 6rem
                     width: 6rem
                     &:hover
