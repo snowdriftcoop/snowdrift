@@ -189,6 +189,16 @@ nav
         top: 0
         max-height: 6rem
         z-index: 3
+/* break1 */
+@media (min-width: 301px)
+    nav
+        ul
+            li
+                a.login
+                    border-right: 0
+        ul.main
+            li.unbreak4
+                float: right
 /* break3 */
 @media (min-width: 571px)
     nav
@@ -201,12 +211,6 @@ nav
                     display: none
                 form
                     display: block
-/* break1 */
-@media (min-width: 301px)
-    nav
-        ul.main
-            li.unbreak4
-                float: right
 /* break4 */
 @media (min-width: 751px)
     nav
