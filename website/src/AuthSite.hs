@@ -331,7 +331,7 @@ postLoginR = do
   where
     runAuthResult master = maybe
         (do
-            alertDanger [shamlet|Bad credentials:  <a href="https://tree.taiga.io/project/snowdrift/task/405">See Taiga #405</a>.|]
+            alertDanger [shamlet|Bad credentials:  <a href="https://tree.taiga.io/project/snowdrift/issue/455">See Taiga #455</a>.|]
             redirect (master LoginR))
         (\u -> do
             priviligedLogin u
@@ -351,7 +351,7 @@ formResult success = \case
     failure msgs =
         lift $ defaultLayout [whamlet|
             <p>Auth form failures are not handled yet.
-            <p>TBD: <a href="https://tree.taiga.io/project/snowdrift/task/405">See Taiga #405</a>.
+            <p>TBD: <a href="https://tree.taiga.io/project/snowdrift/issue/455">See Taiga #455</a>.
             <p>Errors: #{show msgs}
             |]
 
