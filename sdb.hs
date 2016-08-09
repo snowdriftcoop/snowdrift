@@ -55,9 +55,10 @@ usageText this = mapM_ err
     , "    psql              connect to snowdrift_development with psql"
     ]
 
-dbRunning, dbCluster :: H.FilePath
+dbRunning, dbCluster, stackWork :: H.FilePath
 dbRunning = ".postgres-work/data/postmaster.pid"
 dbCluster = ".postgres-work/data/postgresql.conf"
+stackWork = ".stack-work"
 
 main :: IO ()
 main = sh $ do
@@ -83,15 +84,15 @@ shakeit dbdir pghost pgdata = shakeArgs shakeOptions $ do
     -- Basic
 
     phony "test" $ do
-        need [dbRunning]
+        need [dbRunning, stackWork]
         command [] "stack" ["test"]
 
     phony "devel" $ do
-        need [dbRunning]
+        need [dbRunning, stackWork]
         command [Cwd "website"] "stack" ["exec", "yesod", "devel"]
 
     phony "ghci" $ do
-        need [dbRunning]
+        need [dbRunning, stackWork]
         command [Cwd "website"] "stack" ["ghci", "--package", "foreign-store", "--test"]
 
     phony "clean" $ do
@@ -117,6 +118,11 @@ shakeit dbdir pghost pgdata = shakeArgs shakeOptions $ do
         )
 
     dbCluster %> const (actsh (initCluster pghost pgdata))
+
+    stackWork %> const (command [] "stack" ["--install-ghc"
+                                           ,"test"
+                                           ,"--no-run-tests"
+                                           ,"--only-dependencies"])
 
     phony "psql" $ do
         need [dbRunning]
