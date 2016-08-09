@@ -230,6 +230,24 @@ passphrase the same):
 * established
 * guest
 
+### Using auth in development
+
+In addition to the default users, sometimes you may want to add a new account 
+to help test changes. They could be features that affect user account creation, 
+or you might set up multiple accounts to test different pledging scenarios.
+
+By default, the development site does not send out emails, which the 
+authentication system uses to send out tokens for verification during 
+registration and password reset. This can be enabled by setting the environment 
+variable `SD_EMAILS` to "true", or by modifying `website/config/settings.yml` 
+with the setting `send-email: "_env:SD_EMAILS:true"`.
+
+Alternatively, the auth token can also be found on the debug output. After 
+sending an auth form request, look for following line, where `TOKEN` is a random 
+alpha-numerical string that you can input when prompted to verify the request:
+
+    (AuthToken {fromAuthToken = "TOKEN"})
+
 ### Manual rebuild
 
 As mentioned above, when running with the repl via `./sdb.hs ghci`, you must

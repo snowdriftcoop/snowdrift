@@ -172,22 +172,6 @@ When you are happy with your work, it compiles, and looks right, run the tests:
 If there are any failures either when compiling or testing, and you don't know
 how to fix the issue or don't understand the error, contact us for help.
 
-#### Using auth in development
-
-While the development database includes three user presets (see Log-in options 
-in the [Build guide]), sometimes you may want to add a new account to test 
-certain features. By default, the development site does not send out emails, 
-which the authentication system uses to send out tokens for verification during 
-registration and password reset. This can be enabled by setting the environment 
-variable `SD_EMAILS` to "true", or by modifying `website/config/settings.yml` 
-with the setting `send-email: "_env:SD_EMAILS:true"`.
-
-Alternatively, the auth token can also be found on the debug output. After 
-sending an auth form request, look for following line, where `TOKEN` is a random 
-alpha-numerical string that you can input when prompted to verify the request:
-
-    (AuthToken {fromAuthToken = "TOKEN"})
-
 #### Committing your changes
 
 When your updates all compile, tests pass, and you are ready to submit to the
