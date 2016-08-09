@@ -98,7 +98,7 @@
             top: 22rem
         .logo-big
             margin-bottom: 38rem
-            max-width: 57rem
+            max-width: 51rem
 /*break4*/
 @media (min-width: 751px)
     .welcome

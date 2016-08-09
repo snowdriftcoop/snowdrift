@@ -189,6 +189,16 @@ nav
         top: 0
         max-height: 6rem
         z-index: 3
+/* break1 */
+@media (min-width: 301px)
+    nav
+        ul
+            li
+                a.login
+                    border-right: 0
+        ul.main
+            li.unbreak4
+                float: right
 /* break3 */
 @media (min-width: 571px)
     nav
@@ -215,7 +225,7 @@ nav
                 a.logo, a.cards
                     border: 0
                 a.logo
-                    padding: 0 1.3rem 0 0
+                    padding: 0 1.3rem 0 4rem
                     height: 6rem
                     width: 6rem
                     &:hover
