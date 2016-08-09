@@ -43,7 +43,7 @@ You'll also need PostgreSQL >= 9.3:
 
 If the version in the base repositories is too old, follow the
 [instructions on the PostgreSQL wiki] to install from their repositories. Get
-the postgresXX-server and postgresXX-devel packages, where XX is the version
+the postgresqlXX-server and postgresqlXX-devel packages, where XX is the version
 number.
 
 So that the Snowdrift database cluster tool sees the pgsql executables at
