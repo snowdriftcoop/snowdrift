@@ -247,8 +247,9 @@ can input when prompted to verify the request:
 
 Although it's not recommended, you can also enable sending mail by setting
 the environment variable `SD_EMAILS` to "true", or by modifying
-`website/config/settings.yml` with the setting `send-email:
-"_env:SD_EMAILS:true"`. Just be careful who you try to send mail to.
+`website/config/settings.yml` with the setting
+`send-email: "_env:SD_EMAILS:true"`. Just be careful who you try to send
+mail to.
 
 ### Manual rebuild
 
