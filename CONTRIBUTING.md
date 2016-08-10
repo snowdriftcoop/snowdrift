@@ -165,7 +165,7 @@ instructions in the [Build guide] for running the site.
 
 #### Running the tests
 
-When you are happy with your worki, it compiles, and looks right, run the tests:
+When you are happy with your work, it compiles, and looks right, run the tests:
 
     ./sdb.hs test
 
