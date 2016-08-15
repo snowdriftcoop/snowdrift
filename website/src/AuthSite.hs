@@ -73,7 +73,7 @@ import Database.Persist.Sql
 import Yesod
 import qualified Crypto.Nonce as Nonce
 
--- Used to create a single, applicationd-wide nonce token. I'm doing this
+-- Used to create a single, application-wide nonce token. I'm doing this
 -- out of expediency; Yesod.Auth uses it and nobody seems to care. But I
 -- don't like it.
 -- https://github.com/yesodweb/yesod/issues/1245
