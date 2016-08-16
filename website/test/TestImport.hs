@@ -82,7 +82,7 @@ getTables = do
 -- ##
 
 testRoot :: Text
-testRoot = "http://localhost:3000"
+testRoot = "" --approot is empty in `website/config/settings.yml`
 
 needsAuth :: Route App -> Method -> YesodExample App ()
 needsAuth route method = do
