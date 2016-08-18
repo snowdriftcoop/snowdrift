@@ -164,7 +164,7 @@ Running the tests for the first time will also build the test dependencies.
 
 Run the tests with:
 
-    ./sdb.hs test
+    ./build.sh test
 
 ## Running the site
 
@@ -175,7 +175,7 @@ but you can ignore them.
 
 First, start the repl with:
 
-    ./sdb.hs ghci
+    ./build.sh ghci
 
 Then, from the repl's prompt, enter
 
@@ -208,7 +208,7 @@ To enable `yesod devel`, first install the dependencies:
 
 From now on, you may run the site in development mode via:
 
-    ./sdb.hs devel
+    ./build.sh devel
 
 NB: The first run will take a long time.
 
@@ -253,8 +253,8 @@ mail to.
 
 ### Manual rebuild
 
-As mentioned above, when running with the repl via `./sdb.hs ghci`, you must
-manually rebuild and restart the site, whereas the `./sdb.hs devel` option will
+As mentioned above, when running with the repl via `./build.sh ghci`, you must
+manually rebuild and restart the site, whereas the `./build.sh devel` option will
 rebuild and restart automatically for most changes. However, **manual rebuild is
 always required whenever you:**
 
@@ -262,7 +262,7 @@ always required whenever you:**
 * update any extra binaries such as the payment processing script or the
   email daemon.
 
-To manually rebuild the site when otherwise using `./sdb.hs devel`, run:
+To manually rebuild the site when otherwise using `./build.sh devel`, run:
 
     stack build
 
