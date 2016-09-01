@@ -205,10 +205,12 @@ requireAuth = maybe noAuth pure =<< maybeAuth
 
 -- | A decent default form for 'Credentials'.
 credentialsForm :: (RenderMessage (HandlerSite m) FormMessage, MonadHandler m)
-          => AForm m Credentials
+                => AForm m Credentials
 credentialsForm = Credentials
-    <$> (AuthEmail <$> areq textField "Email"{fsAttrs=emailAttrs}  Nothing)
-    <*> (ClearPassphrase <$> areq passwordField "Passphrase" Nothing)
+    <$> (AuthEmail <$>
+            areq textField "What is your email?"{fsAttrs=emailAttrs}  Nothing)
+    <*> (ClearPassphrase <$>
+            areq passwordField "Please tell us your passphrase, too." Nothing)
   where
     emailAttrs = [("autofocus",""), ("autocomplete","email")]
 

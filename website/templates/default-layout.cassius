@@ -157,9 +157,6 @@ hr
         margin: 3rem 0 0 0
         padding-bottom: 3rem
         font-weight: 400
-    .bigbutton
-        margin: 3rem 0
-        display: block
 @media (min-width: 391px)
     .auth
         h1
