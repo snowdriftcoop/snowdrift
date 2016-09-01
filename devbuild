@@ -6,6 +6,6 @@
 #
 # $ curl -sL 'http://localhost:3000/dev/build' | grep -e '^<dd>[a-fA-F0-9]\{40\}' | sed 's,^<dd>,,;s,</dd>$,,'
 
-curl -sL 'https://snowdrift.coop/dev/build' |
+curl -sL 'https://dev.snowdrift.coop/dev/build' |
     grep -e '^<dd>[a-fA-F0-9]\{40\}' |
     sed 's,^<dd>,,;s,</dd>$,,'
