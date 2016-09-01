@@ -90,12 +90,11 @@ getSnowdriftWikiSearchR :: Text -> Handler Html
 getSnowdriftWikiSearchR slug =
     redirect $
         mappend "https://wiki.snowdrift.coop/" $
-            case H.lookup slug routes of
-              Just route -> route
-              Nothing -> "_search?patterns=" <> slug
+            fromMaybe ("_search?patterns=" <>) (H.lookup slug routes)
   where
     (.=) = (,)
-    routes = H.fromList $
+    -- The choice of datastructure is arbitrary here.
+    routes = H.fromList
         [ "en" .= ""
         , "about" .= "about"
         , "conduct" .= "community/conduct"
