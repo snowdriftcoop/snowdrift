@@ -1,10 +1,9 @@
 -- | Common handler functions.
 module Handler where
 
-import Import
+import Import hiding ((.=))
 
 import Data.FileEmbed (embedFile)
-import Data.HashMap.Strict (HashMap)
 import qualified Data.HashMap.Strict as H
 
 import Handler.TH
