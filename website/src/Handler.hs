@@ -4,6 +4,7 @@ module Handler where
 import Import
 
 import Data.FileEmbed (embedFile)
+import Data.HashMap.Strict (HashMap)
 import qualified Data.HashMap.Strict as H
 
 import Handler.TH
@@ -90,10 +91,11 @@ getSnowdriftWikiSearchR :: Text -> Handler Html
 getSnowdriftWikiSearchR slug =
     redirect $
         mappend "https://wiki.snowdrift.coop/" $
-            fromMaybe ("_search?patterns=" <>) (H.lookup slug routes)
+            fromMaybe ("_search?patterns=" <> slug) (H.lookup slug routes)
   where
     (.=) = (,)
     -- The choice of datastructure is arbitrary here.
+    routes :: HashMap Text Text
     routes = H.fromList
         [ "en" .= ""
         , "about" .= "about"
