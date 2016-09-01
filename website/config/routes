@@ -27,7 +27,14 @@
 
 -- Prevents breakage of external links to the old wiki. See
 -- https://tree.taiga.io/project/snowdrift/us/359
+/p/snowdrift/w SnowdriftWikiR GET
 /p/snowdrift/w/#Text SnowdriftWikiSearchR GET
+/p/snowdrift/w/en/#Text SnowdriftWikiEnSearchR GET
+
+-- Extraenous legacy links
+/who LegacyWhoR GET
+/u/3 LegacyWolftuneR GET
 
 -- Prevents breakage of external links to the old blog.
 /p/snowdrift/blog/#Text SnowdriftLegacyBlogR GET
+
