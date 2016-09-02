@@ -38,3 +38,9 @@ database:
 # Should the site actually send emails? Turned off by default, so people
 # don't accidentally send emails to strangers. :)
 send-email: "_env:SD_EMAILS:false"
+
+# API keys for Stripe.
+# WARNING: Even the "testing" secret key should still be a secret. Contact
+# chreekat for assistance.
+stripe-secret-key: "_env:STRIPE_SECRET_KEY:"
+stripe-publishable-key: "_env:STRIPE_PUBLISHABLE_KEY:pk_test_eko6vI8zdg1VjsLhmqiVmHdy"

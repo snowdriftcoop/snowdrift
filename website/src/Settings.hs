@@ -50,6 +50,8 @@ data AppSettings = AppSettings
     -- ^ Perform no stylesheet/script combining
     , appSendMail :: Bool
     -- ^ Whether to send emails
+    , appStripeSecretKey        :: Text
+    , appStripePublishableKey   :: Text
     }
 
 instance FromJSON AppSettings where
@@ -73,6 +75,8 @@ instance FromJSON AppSettings where
         appMutableStatic          <- o .:? "mutable-static"   .!= runningDevelopment
         appSkipCombining          <- o .:? "skip-combining"   .!= runningDevelopment
         appSendMail               <- o .:? "send-email"       .!= not runningDevelopment
+        appStripePublishableKey   <- o .: "stripe-publishable-key"
+        appStripeSecretKey        <- o .: "stripe-secret-key"
 
         return AppSettings {..}
 
