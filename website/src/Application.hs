@@ -32,6 +32,7 @@ import System.Log.FastLogger                (defaultBufSize, newStdoutLoggerSet,
 import qualified Yesod.GitRev as G
 
 import Handler
+import Handler.PaymentInfo
 
 {-# ANN module ("HLint: ignore Reduce duplication" :: String) #-}
 

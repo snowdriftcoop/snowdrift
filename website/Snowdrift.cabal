@@ -45,6 +45,7 @@ library
         Settings
         Settings.StaticFiles
         Handler
+        Handler.PaymentInfo
         Handler.TH
         Handler.Util
         TestHooks
