@@ -8,16 +8,19 @@ module Handler.PaymentInfo
 
 import Import
 
+import Control.Monad.Logger (logDebugSH)
 import Text.Julius (rawJS)
 
+import Alerts
 import Handler.Util
 
-newtype PaymentInfo = PaymentInfo Text deriving (Show)
+newtype PaymentToken = PaymentToken Text deriving (Show)
+newtype Customer = Customer Text deriving (Show)
 
-paymentForm :: Text -> Form PaymentInfo
+paymentForm :: Text -> Form PaymentToken
 paymentForm tokenId =
     renderDivs
-        (PaymentInfo <$> areq hiddenField "" {fsId = Just tokenId} Nothing)
+        (PaymentToken <$> areq hiddenField "" {fsId = Just tokenId} Nothing)
 
 getPaymentInfoR :: Handler Html
 getPaymentInfoR = do
@@ -37,4 +40,19 @@ getPaymentInfoR = do
         $(widgetFile "page/payment-info")
 
 postPaymentInfoR :: Handler Html
-postPaymentInfoR = defaultLayout [whamlet|PaymentInfo|]
+postPaymentInfoR = do
+    ((formResult, _), _) <- runFormPost (paymentForm "")
+    case formResult of
+        FormSuccess token -> do
+            runDB . storeCustomer =<< createCustomer token
+            alertSuccess "Payment information stored"
+            redirect HomeR
+        _ -> do
+            alertDanger "There was something wrong with your form submission."
+            redirect PaymentInfoR
+
+storeCustomer :: MonadHandler m => Customer -> SqlPersistT m ()
+storeCustomer = undefined
+
+createCustomer :: PaymentToken -> Handler Customer
+createCustomer = undefined
