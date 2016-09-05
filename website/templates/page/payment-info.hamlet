@@ -14,8 +14,13 @@
   since this page uses their proprietary JavaScript code. We hope to
   rectify this in the near future. :)
 
-<form method="post" id=#{formIdent} enctype={{enctype}>
-  {{xsrfProtection}
-  <noscript>Test
+<form method="post" id=#{paymentFormId} enctype=#{enctype}>
+  <noscript>
+    This page uses JavaScript to submit card information to Stripe. Without
+    JavaScript, you cannot use this page.
+    <a href="https://tree.taiga.io/project/snowdrift/issue/472">
+      We would like to change this.
+
   $# Button is hidden until 'click' handler is installed.
-  <button id=#{stripeButton} .hidden .bigbutton>Register a card
+  <button id=#{paymentButtonId} .hidden .bigbutton>Register a card
+  ^{paymentWidget}

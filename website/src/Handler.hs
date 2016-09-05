@@ -1,3 +1,5 @@
+{-# LANGUAGE FlexibleContexts #-}
+
 -- | Common handler functions.
 module Handler where
 
@@ -72,15 +74,28 @@ getJsLicensesR = $(widget "page/js-licenses" "getJsLicensesR")
 getMerchandiseR :: Handler Html
 getMerchandiseR = $(widget "page/merchandise" "getMerchandiseR")
 
+--
+-- PAYMENT INFO
+--
+
+newtype PaymentInfo = PaymentInfo { paymentInfoStripeToken :: Text }
+    deriving (Show)
+
+paymentForm tokenId =
+    PaymentInfo <$> areq hiddenField "" { fsId = Just tokenId } Nothing
+
 getPaymentInfoR :: Handler Html
 getPaymentInfoR = do
     email <- _userEmail . entityVal <$> requireAuth
     publishableKey <- appStripePublishableKey . appSettings <$> getYesod
+    tokenId <- newIdent
+    (paymentWidget, enctype) <-
+        generateFormPost (renderDivs (paymentForm tokenId))
     navbarLayout "page/payment-info" $ do
         addScriptRemote "https://checkout.stripe.com/checkout.js"
         snowdriftTitle "Payment Info"
-        formIdent <- newIdent
-        stripeButton <- newIdent
+        paymentFormId <- newIdent
+        paymentButtonId <- newIdent
         $(widgetFile "page/payment-info")
 
 postPaymentInfoR :: Handler Html

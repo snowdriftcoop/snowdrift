@@ -11,13 +11,13 @@ window.addEventListener('load', function() {
         allowRememberMe: false,
         email: '#{rawJS email}',
         token: function(token) {
-            var tokField = document.querySelector('#\{{rawJS tokenIdent}');
+            var tokField = document.querySelector('##{rawJS tokenId}');
             tokField.value = token.id;
-            document.querySelector('##{rawJS formIdent}').submit();
+            document.querySelector('##{rawJS paymentFormId}').submit();
         }
     });
 
-    var btn = document.querySelector('##{rawJS stripeButton}');
+    var btn = document.querySelector('##{rawJS paymentButtonId}');
     btn.addEventListener('click', function(ev) {
         handler.open();
         ev.preventDefault();
