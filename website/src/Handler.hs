@@ -4,9 +4,11 @@ module Handler where
 import Import hiding ((.=))
 
 import Data.FileEmbed (embedFile)
+import Text.Julius (rawJS)
 import qualified Data.HashMap.Strict as H
 
 import Handler.TH
+import Handler.Util
 
 -- These handlers embed files in the executable at compile time to avoid a
 -- runtime dependency, and for efficiency.
@@ -69,6 +71,20 @@ getJsLicensesR = $(widget "page/js-licenses" "getJsLicensesR")
 
 getMerchandiseR :: Handler Html
 getMerchandiseR = $(widget "page/merchandise" "getMerchandiseR")
+
+getPaymentInfoR :: Handler Html
+getPaymentInfoR = do
+    email <- _userEmail . entityVal <$> requireAuth
+    publishableKey <- appStripePublishableKey . appSettings <$> getYesod
+    navbarLayout "page/payment-info" $ do
+        addScriptRemote "https://checkout.stripe.com/checkout.js"
+        snowdriftTitle "Payment Info"
+        formIdent <- newIdent
+        stripeButton <- newIdent
+        $(widgetFile "page/payment-info")
+
+postPaymentInfoR :: Handler Html
+postPaymentInfoR = defaultLayout [whamlet|PaymentInfo|]
 
 -- | For MVP, there is one, hard-coded project: Snowdrift
 getSnowdriftProjectR :: Handler Html

@@ -1,0 +1,31 @@
+window.addEventListener('load', function() {
+    var handler = StripeCheckout.configure({
+        key: '#{rawJS publishableKey}',
+        image: '@{StaticR img_logo_small_png}',
+        locale: 'auto',
+        amount: 0,
+        name: 'Snowdrift.coop',
+        description: 'Register a credit card to pledge',
+        zipCode: true,
+        panelLabel: 'Register',
+        allowRememberMe: false,
+        email: '#{rawJS email}',
+        token: function(token) {
+            var tokField = document.querySelector('#\{{rawJS tokenIdent}');
+            tokField.value = token.id;
+            document.querySelector('##{rawJS formIdent}').submit();
+        }
+    });
+
+    var btn = document.querySelector('##{rawJS stripeButton}');
+    btn.addEventListener('click', function(ev) {
+        handler.open();
+        ev.preventDefault();
+    });
+    btn.classList.remove('hidden');
+
+    // Close Checkout on page navigation
+    window.addEventListener('popstate', function() {
+        handler.close();
+    });
+});
