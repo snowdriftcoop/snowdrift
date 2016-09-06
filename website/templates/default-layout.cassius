@@ -40,7 +40,7 @@ body
     text-shadow: none
 
 p
-    padding-bottom: 3rem
+    margin: 1.5rem 0 3rem
 img
     max-width: 100%
     height: auto
@@ -101,13 +101,12 @@ table
     padding: 6rem 2.85%
     ul
         list-style: outside disc
-        margin: 0 3rem
-        padding-bottom: 3rem
+        margin: 1.5rem 0 4.5rem 3rem
       li, li p
-          padding-bottom: 1rem
+          margin: 1rem 0
     ol
         list-style-type: decimal;
-        margin: 0 3rem
+        margin: 1.5rem 3rem 4.5rem 3rem
     form
         label
             color: #{BrightBlueText}
@@ -124,18 +123,18 @@ table
 h1
     font-weight: 600
     font-size: 3rem
-    padding-bottom: 3rem
+    margin: 4.5rem 0 1.5rem
 h2
     font-weight: 600
     font-size: 2.5rem
-    padding-bottom: 3rem
+    margin: 4.5rem 0 1.5rem
 h3
     font-weight: 600
     font-size: 2rem
-    padding-bottom: 1.2rem
+    margin: 3rem 0 1.5rem
 h4
     font-weight: 400
-    padding-bottom: 1rem
+    margin: 1.5rem 0
 
 em
     font-style: italic
@@ -143,7 +142,7 @@ strong
     font-weight: 600
     font-size: 95%
 hr
-    margin-bottom: 3rem
+    margin: 4.5rem 0
 
 .footnotes
     font-size: 1.5rem
