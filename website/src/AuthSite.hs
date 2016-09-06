@@ -285,7 +285,7 @@ genVerificationToken Credentials{..} =
 privilegedCreateUser :: MonadIO m => VerifiedUser -> SqlPersistT m ()
 privilegedCreateUser VerifiedUser{..} = do
     now <- liftIO getCurrentTime
-    insert_ (User verifiedEmail verifiedDigest now now)
+    insert_ (User verifiedEmail verifiedDigest now now Nothing)
 
 -- | This privileged function must be used with care. It modifies the
 -- user's session; it's the difference between being logged in and not!
@@ -466,7 +466,7 @@ runToken tok = do
     upsertUser :: MonadIO m => VerifiedUser -> SqlPersistT m (Entity User)
     upsertUser VerifiedUser{..} = do
         now <- liftIO getCurrentTime
-        upsert (User verifiedEmail verifiedDigest now now)
+        upsert (User verifiedEmail verifiedDigest now now Nothing)
                [UserDigest =. verifiedDigest, UserPassUpdated =. now]
 
 redirectParent :: Route child -> HandlerT child (HandlerT master IO) b

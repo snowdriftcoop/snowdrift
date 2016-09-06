@@ -8,14 +8,14 @@ module Handler.PaymentInfo
 
 import Import
 
-import Control.Monad.Logger (logDebugSH)
 import Text.Julius (rawJS)
+import Stripe
+import Web.Stripe.Customer
 
 import Alerts
 import Handler.Util
 
 newtype PaymentToken = PaymentToken Text deriving (Show)
-newtype Customer = Customer Text deriving (Show)
 
 paymentForm :: Text -> Form PaymentToken
 paymentForm tokenId =
@@ -25,7 +25,10 @@ paymentForm tokenId =
 getPaymentInfoR :: Handler Html
 getPaymentInfoR = do
     email <- _userEmail . entityVal <$> requireAuth
-    publishableKey <- appStripePublishableKey . appSettings <$> getYesod
+    publishableKey <-
+        fmap
+            (decodeUtf8 . getStripeKey . appStripePublishableKey . appSettings)
+            getYesod
     tokenId <- newIdent
     (paymentWidget, enctype) <- generateFormPost (paymentForm tokenId)
     -- Unfortunately, "page/payment-info" is duplicated in this section of
@@ -41,18 +44,27 @@ getPaymentInfoR = do
 
 postPaymentInfoR :: Handler Html
 postPaymentInfoR = do
+    Entity uid u <- requireAuth
     ((formResult, _), _) <- runFormPost (paymentForm "")
     case formResult of
         FormSuccess token -> do
-            runDB . storeCustomer =<< createCustomer token
+            runDB . storeCustomer uid =<< createCustomer' u token
             alertSuccess "Payment information stored"
             redirect HomeR
         _ -> do
             alertDanger "There was something wrong with your form submission."
             redirect PaymentInfoR
 
-storeCustomer :: MonadHandler m => Customer -> SqlPersistT m ()
-storeCustomer = undefined
+storeCustomer :: MonadHandler m => Key User -> Customer -> SqlPersistT m ()
+storeCustomer uid customer =
+    -- FIXME: Store an event
+    update uid [UserCustomer =. Just cid]
+  where (CustomerId cid) = customerId customer
 
-createCustomer :: PaymentToken -> Handler Customer
-createCustomer = undefined
+-- | Wrap over Stripe's native 'createCustomer'
+createCustomer' :: User -> PaymentToken -> Handler Customer
+createCustomer' User{..} (PaymentToken tok) = do
+    res <- snowstripe (createCustomer -&- Email _userEmail -&- TokenId tok)
+    case res of
+        Right c -> pure c
+        Left er -> error (show er)

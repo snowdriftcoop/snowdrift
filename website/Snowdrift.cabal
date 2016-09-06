@@ -44,6 +44,7 @@ library
         Model
         Settings
         Settings.StaticFiles
+        Stripe
         Handler
         Handler.PaymentInfo
         Handler.TH
@@ -103,6 +104,8 @@ library
         , pwstore-fast
         , safe
         , shakespeare            >= 2.0     && < 2.1
+        , stripe-haskell
+        , stripe-core
         , template-haskell
         , text                   >= 0.11    && < 2.0
         , time

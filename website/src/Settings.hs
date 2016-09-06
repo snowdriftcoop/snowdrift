@@ -15,6 +15,7 @@ import Data.Yaml                   (decodeEither')
 import Database.Persist.Postgresql (PostgresConf)
 import Language.Haskell.TH.Syntax  (Exp, Name, Q)
 import Network.Wai.Handler.Warp    (HostPreference)
+import Web.Stripe
 import Yesod.Default.Config2       (applyEnvValue, configSettingsYml)
 import Yesod.Default.Util          (WidgetFileSettings, widgetFileNoReload,
                                     widgetFileReload)
@@ -50,8 +51,8 @@ data AppSettings = AppSettings
     -- ^ Perform no stylesheet/script combining
     , appSendMail :: Bool
     -- ^ Whether to send emails
-    , appStripeSecretKey        :: Text
-    , appStripePublishableKey   :: Text
+    , appStripeSecretKey        :: StripeKey
+    , appStripePublishableKey   :: StripeKey
     }
 
 instance FromJSON AppSettings where
@@ -75,8 +76,8 @@ instance FromJSON AppSettings where
         appMutableStatic          <- o .:? "mutable-static"   .!= runningDevelopment
         appSkipCombining          <- o .:? "skip-combining"   .!= runningDevelopment
         appSendMail               <- o .:? "send-email"       .!= not runningDevelopment
-        appStripePublishableKey   <- o .: "stripe-publishable-key"
-        appStripeSecretKey        <- o .: "stripe-secret-key"
+        appStripePublishableKey   <- StripeKey . encodeUtf8 <$> o .: "stripe-publishable-key"
+        appStripeSecretKey        <- StripeKey . encodeUtf8 <$> o .: "stripe-secret-key"
 
         return AppSettings {..}
 

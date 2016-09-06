@@ -5,6 +5,8 @@ User sql=usr
     created UTCTime
     passUpdated UTCTime
 
+    customer Text Maybe
+
     UniqueUsr email
 
     deriving (Show)
