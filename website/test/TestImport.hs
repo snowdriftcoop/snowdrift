@@ -46,6 +46,14 @@ dummyLogin = do
         setMethod "POST"
         setUrl (AuthR LoginR)
 
+-- Note: I can't drop all the tables because the migration happens in
+-- 'makeFoundation', but that's also the function that builds a usable
+-- database pool out of the app settings. So, 'makeFoundation' would need
+-- to be broken up to allow clearing before migration.
+--
+-- Clearing looks like "drop schema public cascade; create schema public;"
+--
+-- See also https://tree.taiga.io/project/snowdrift/issue/402
 withApp :: SpecWith (TestApp App) -> Spec
 withApp = before $ do
     settings <- loadAppSettings
@@ -53,15 +61,15 @@ withApp = before $ do
         []
         ignoreEnv
     foundation <- makeFoundation settings
-    wipeDB foundation
+    truncateTables foundation
     logWare <- liftIO $ makeLogWare foundation
     return (foundation, logWare)
 
 -- This function will truncate all of the tables in your database.
 -- 'withApp' calls it before each test, creating a clean environment for each
 -- spec to run in.
-wipeDB :: App -> IO ()
-wipeDB app = runDBWithApp app $ do
+truncateTables :: App -> IO ()
+truncateTables app = runDBWithApp app $ do
     tables <- getTables
     sqlBackend <- ask
 

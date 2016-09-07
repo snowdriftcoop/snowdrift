@@ -145,7 +145,7 @@ withTestAuth maybeAuthRoute = before $ do
         ignoreEnv
     foundation <- makeFoundation settings
     msgref <- liftIO (newIORef [])
-    wipeDB foundation
+    truncateTables foundation
     logWare <- liftIO $ makeLogWare foundation
     let harness = AuthHarness AuthSite
                               (appConnPool foundation)
