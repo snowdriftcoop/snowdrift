@@ -5,7 +5,7 @@ User sql=usr
     created UTCTime
     passUpdated UTCTime
 
-    customer Text Maybe
+    stripeCustomer Text Maybe
 
     UniqueUsr email
 

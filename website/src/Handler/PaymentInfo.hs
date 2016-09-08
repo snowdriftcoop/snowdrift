@@ -53,7 +53,7 @@ postPaymentInfoR = do
             let stripeAction = maybe
                     createCustomer'
                     (updateCustomer' . CustomerId)
-                    (_userCustomer u)
+                    (_userStripeCustomer u)
             (runDB . storeCustomer uid <=< stripePaymentInfoHandler)
                 =<< stripeAction u token
             alertSuccess "Payment information stored"
@@ -65,7 +65,7 @@ postPaymentInfoR = do
 storeCustomer :: MonadHandler m => Key User -> CustomerId -> SqlPersistT m ()
 storeCustomer uid (CustomerId cid) =
     -- FIXME: Store an event
-    update uid [UserCustomer =. Just cid]
+    update uid [UserStripeCustomer =. Just cid]
 
 -- | Wrap over Stripe's native 'createCustomer'
 createCustomer' :: User -> PaymentToken -> Handler (Either StripeError Customer)

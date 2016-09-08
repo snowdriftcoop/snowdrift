@@ -21,7 +21,7 @@
 /donate DonateR GET
 /merchandise MerchandiseR GET
 
-/payment PaymentInfoR GET POST
+/payment-info PaymentInfoR GET POST
 
 /p/snowdrift SnowdriftProjectR GET
 
