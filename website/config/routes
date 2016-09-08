@@ -21,6 +21,8 @@
 /donate DonateR GET
 /merchandise MerchandiseR GET
 
+/payment-info PaymentInfoR GET POST
+
 /p/snowdrift SnowdriftProjectR GET
 
 -- ## Backward compatibility routes

@@ -7,17 +7,17 @@
 module Settings where
 
 import ClassyPrelude.Yesod
-import Control.Exception           (throw)
-import Data.Aeson                  (Result (..), fromJSON, withObject, (.!=),
-                                    (.:?))
-import Data.FileEmbed              (embedFile)
-import Data.Yaml                   (decodeEither')
+import Control.Exception (throw)
+import Data.Aeson (Result(..), fromJSON, withObject, (.!=), (.:?))
+import Data.FileEmbed (embedFile)
+import Data.Yaml (decodeEither')
 import Database.Persist.Postgresql (PostgresConf)
-import Language.Haskell.TH.Syntax  (Exp, Name, Q)
-import Network.Wai.Handler.Warp    (HostPreference)
-import Yesod.Default.Config2       (applyEnvValue, configSettingsYml)
-import Yesod.Default.Util          (WidgetFileSettings, widgetFileNoReload,
-                                    widgetFileReload)
+import Language.Haskell.TH.Syntax (Exp, Name, Q)
+import Network.Wai.Handler.Warp (HostPreference)
+import Web.Stripe (StripeKey(..))
+import Yesod.Default.Config2 (applyEnvValue, configSettingsYml)
+import Yesod.Default.Util
+           (WidgetFileSettings, widgetFileNoReload, widgetFileReload)
 
 -- | Runtime settings to configure this application. These settings can be
 -- loaded from various sources: defaults, environment variables, config files,
@@ -50,6 +50,8 @@ data AppSettings = AppSettings
     -- ^ Perform no stylesheet/script combining
     , appSendMail :: Bool
     -- ^ Whether to send emails
+    , appStripeSecretKey        :: StripeKey
+    , appStripePublishableKey   :: StripeKey
     }
 
 instance FromJSON AppSettings where
@@ -73,6 +75,8 @@ instance FromJSON AppSettings where
         appMutableStatic          <- o .:? "mutable-static"   .!= runningDevelopment
         appSkipCombining          <- o .:? "skip-combining"   .!= runningDevelopment
         appSendMail               <- o .:? "send-email"       .!= not runningDevelopment
+        appStripePublishableKey   <- StripeKey . encodeUtf8 <$> o .: "stripe-publishable-key"
+        appStripeSecretKey        <- StripeKey . encodeUtf8 <$> o .: "stripe-secret-key"
 
         return AppSettings {..}
 

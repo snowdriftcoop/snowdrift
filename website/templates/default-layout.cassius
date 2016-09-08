@@ -257,3 +257,7 @@ hr
 @media (min-width: 2400px)
     html
         font-size: 80%
+
+/* Util */
+.hidden
+    display: none

@@ -1,0 +1,26 @@
+<h1>Payment Information
+<h2>Registering New Information
+<p>
+  This page allows you to register payment information to become eligible
+  as a patron. You can also update or change your information using the
+  same form.
+<p>
+  Snowdrift.coop does <em>not</em> hold on to this information. Your card
+  details are held by <a href="https://stripe.com">Stripe</a>, which
+  manages the money transfers.
+<p>
+  Use of this page (and this page alone on Snowdrift.coop) is governed by
+  Stripe's <a href="https://stripe.com/us/legal">terms of service</a>,
+  since this page uses their proprietary JavaScript code. We hope to
+  rectify this in the near future. :)
+
+<form method="post" id=#{paymentFormId} enctype=#{enctype}>
+  <noscript>
+    This page uses JavaScript to submit card information to Stripe. Without
+    JavaScript, you cannot use this page.
+    <a href="https://tree.taiga.io/project/snowdrift/issue/472">
+      We would like to change this.
+
+  $# Button is hidden until 'click' handler is installed.
+  <button id=#{paymentButtonId} .hidden .bigbutton>Register a card
+  ^{paymentWidget}
