@@ -78,31 +78,22 @@ library
         , aeson                  >= 0.6     && < 0.12
         , blaze-html
         , bytestring             >= 0.9     && < 0.11
-        , case-insensitive
         , classy-prelude         >= 0.10.2
-        , classy-prelude-conduit >= 0.10.2
         , classy-prelude-yesod   >= 0.10.2
-        , conduit                >= 1.0     && < 2.0
-        , containers
-        , data-default
-        , directory              >= 1.1     && < 1.3
         , errors
         , fast-logger            >= 2.2     && < 2.5
         , file-embed
         , hjsmin                 >= 0.1     && < 0.2
         , http-client
-        , http-conduit           >= 2.1     && < 2.2
         , lens
         , libravatar
         , mime-mail
-        , monad-control          >= 0.3     && < 1.1
         , monad-logger           >= 0.3     && < 0.4
         , nonce
         , persistent             >= 2.0     && < 2.3
         , persistent-postgresql  >= 2.1.1   && < 2.3
         , persistent-template    >= 2.0     && < 2.3
         , pwstore-fast
-        , safe
         , shakespeare            >= 2.0     && < 2.1
         , stripe-haskell
         , stripe-core
@@ -110,18 +101,13 @@ library
         , text                   >= 0.11    && < 2.0
         , time
         , titlecase
-        , transformers
         , unordered-containers
-        , vector
         , wai
         , wai-extra              >= 3.0     && < 3.1
-        , wai-logger             >= 2.2     && < 2.3
         , warp                   >= 3.0     && < 3.3
         , yaml                   >= 0.8     && < 0.9
         , yesod                  >= 1.4.1   && < 1.5
-        , yesod-auth             >= 1.4.0   && < 1.5
         , yesod-core             >= 1.4.17  && < 1.5
-        , yesod-form             >= 1.4.0   && < 1.5
         , yesod-gitrev
         , yesod-static           >= 1.4.0.3 && < 1.6
     -- }}}2
@@ -165,26 +151,16 @@ test-suite test
 
     -- build-depends {{{2
     build-depends:
-        base
-        , Snowdrift
+        Snowdrift
         , yesod-test >= 1.5.0.1 && < 1.6
         , yesod-core
         , yesod
-        , yesod-persistent
         , persistent
-        , persistent-postgresql
-        , resourcet
-        , monad-logger
         , shakespeare
-        , transformers
         , hspec >= 2.0.0
         , classy-prelude
-        , classy-prelude-yesod
-        , aeson
         , wai-extra
-        , yesod-auth
         , http-types
-        , lens
         -- For htmlHasLink (should move upstream)
         , HUnit >= 1.3.1.1
         , text >= 1.2.2.1
