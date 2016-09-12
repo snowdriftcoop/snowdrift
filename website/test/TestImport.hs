@@ -3,7 +3,7 @@ module TestImport
     , module X
     ) where
 
-import ClassyPrelude as X
+import ClassyPrelude as X hiding (delete, deleteBy)
 import Database.Persist as X hiding (get)
 import Database.Persist.Sql (SqlPersistM, SqlBackend, runSqlPersistMPool, rawExecute, rawSql, unSingle, connEscapeName)
 import Foundation as X
@@ -11,7 +11,7 @@ import Network.HTTP.Types (Status(..), Method)
 import Network.Wai.Test (SResponse(..))
 import Test.Hspec as X
 import Text.Shakespeare.Text (st)
-import Yesod.Default.Config2 (ignoreEnv, loadAppSettings)
+import Yesod.Default.Config2 (ignoreEnv, loadYamlSettings)
 import Yesod.Test as X
 import qualified Data.Text.Encoding as T
 
@@ -56,7 +56,7 @@ dummyLogin = do
 -- See also https://tree.taiga.io/project/snowdrift/issue/402
 withApp :: SpecWith (TestApp App) -> Spec
 withApp = before $ do
-    settings <- loadAppSettings
+    settings <- loadYamlSettings
         ["config/test-settings.yml", "config/settings.yml"]
         []
         ignoreEnv

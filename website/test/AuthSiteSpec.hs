@@ -11,7 +11,7 @@ import Database.Persist.Sql hiding (get)
 import Network.Wai.Test (SResponse(..))
 import Test.HUnit (assertBool)
 import Yesod hiding (get)
-import Yesod.Default.Config2 (ignoreEnv, loadAppSettings)
+import Yesod.Default.Config2 (ignoreEnv, loadYamlSettings)
 import qualified Data.Text as T
 import qualified Data.Text.Lazy as TL
 
@@ -139,7 +139,7 @@ withTestAuth :: Maybe (Route AuthHarness)
              -> SpecWith (TestApp AuthHarness)
              -> Spec
 withTestAuth maybeAuthRoute = before $ do
-    settings <- loadAppSettings
+    settings <- loadYamlSettings
         ["config/test-settings.yml", "config/settings.yml"]
         []
         ignoreEnv
