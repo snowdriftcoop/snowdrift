@@ -11,5 +11,5 @@ packages:
       - yesod-bin
     extra-dep: true
 extra-deps:
-  - libravatar-0.3.0.0
+  - libravatar-0.4
   - titlecase-0.1.0.2

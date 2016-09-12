@@ -2,7 +2,6 @@ module Avatar where
 
 import Control.Lens
 import Network.Libravatar
-import qualified Data.Text as T
 
 import Import.NoFoundation
 
@@ -19,11 +18,11 @@ getUserAvatar defaultRoute muser = do
     libravatar :: Text -> Text -> IO Text
     libravatar e defUrl = do
         mavatar <-
-            avatarUrl (Email $ T.unpack e)
-                      defOpts
+            avatarUrl (Email e)
+                      def
                           { optSecure = True
-                          , optDefault = ImgCustom (T.unpack defUrl)
+                          , optDefault = ImgCustom defUrl
                           , optSize = DefaultSize
                           , optTryGravatar = False
                           }
-        return $ maybe defUrl T.pack mavatar
+        return $ fromMaybe defUrl mavatar
