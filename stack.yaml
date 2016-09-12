@@ -1,7 +1,7 @@
 flags:
   Snowdrift:
     dev: true
-resolver: lts-5.18
+resolver: lts-6.17
 packages:
   - website
   - location:

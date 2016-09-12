@@ -83,7 +83,7 @@ library
         , errors
         , fast-logger            >= 2.2     && < 2.5
         , file-embed
-        , hjsmin                 >= 0.1     && < 0.2
+        , hjsmin                 >= 0.1
         , http-client
         , lens
         , libravatar

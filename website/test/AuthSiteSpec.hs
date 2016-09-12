@@ -265,7 +265,7 @@ mainSpecs = withTestAuth Nothing $ withBob $ do
                 setUrl (AuthSub VerifyAccountR)
             [Entity b2 bob2] :: [Entity User] <- harnessDB (selectList [] [])
 
-            assertEqual "ID changed" b1 b2
+            assertEq "ID changed" b1 b2
             liftIO (assertBool "Pass update time did not change"
                                (((/=) `on` _userPassUpdated) bob1 bob2))
             liftIO (assertBool "Passphrases did not change"
@@ -279,7 +279,7 @@ mainSpecs = withTestAuth Nothing $ withBob $ do
                 setUrl (AuthSub VerifyAccountR)
             [Entity b2 bob2] :: [Entity User] <- harnessDB (selectList [] [])
 
-            assertEqual "ID stayed the same" b1 b2
+            assertEq "ID stayed the same" b1 b2
             liftIO (assertBool "Pass update time changed"
                                (((==) `on` _userPassUpdated) bob1 bob2))
             liftIO (assertBool "Passphrases changed"

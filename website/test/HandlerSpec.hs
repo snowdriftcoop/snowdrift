@@ -48,6 +48,6 @@ spec = withApp $ do
 assertEqualContents :: SResponse -> SResponse -> YesodExample site ()
 assertEqualContents = assertEqualOn simpleBody "Contents differ"
 
-assertEqualOn :: Eq a => (t -> a) -> String -> t -> t -> YesodExample site ()
+assertEqualOn :: (Show a, Eq a) => (t -> a) -> String -> t -> t -> YesodExample site ()
 assertEqualOn f msg a b =
-    assertEqual msg (f a) (f b)
+    assertEq msg (f a) (f b)
