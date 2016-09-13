@@ -37,7 +37,6 @@ data AppSettings = AppSettings
     , appIpFromHeader           :: Bool
     -- ^ Get the IP address from the header when logging. Useful when sitting
     -- behind a reverse proxy.
-
     , appDetailedRequestLogging :: Bool
     -- ^ Use detailed request logging system
     , appShouldLogAll           :: Bool
@@ -52,6 +51,7 @@ data AppSettings = AppSettings
     -- ^ Whether to send emails
     , appStripeSecretKey        :: StripeKey
     , appStripePublishableKey   :: StripeKey
+    , appMockStripe :: Bool
     }
 
 instance FromJSON AppSettings where
@@ -77,6 +77,7 @@ instance FromJSON AppSettings where
         appSendMail               <- o .:? "send-email"       .!= not runningDevelopment
         appStripePublishableKey   <- StripeKey . encodeUtf8 <$> o .: "stripe-publishable-key"
         appStripeSecretKey        <- StripeKey . encodeUtf8 <$> o .: "stripe-secret-key"
+        appMockStripe             <- o .:? "mock-stripe" .!= False
 
         return AppSettings {..}
 

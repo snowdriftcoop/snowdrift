@@ -11,3 +11,6 @@ database:
 # All I want to see is test results, usually.
 detailed-logging: false
 should-log-all: false
+
+# Mock stripe for unit tests
+mock-stripe: true
