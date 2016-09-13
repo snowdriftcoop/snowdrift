@@ -61,15 +61,16 @@ library
         cpp-options:   -DDEVELOPMENT
 
     default-extensions:
-        TemplateHaskell
-        QuasiQuotes
-        OverloadedStrings
-        TypeFamilies
         GADTs
-        NoImplicitPrelude
-        MultiParamTypeClasses
         GeneralizedNewtypeDeriving
+        LambdaCase
+        MultiParamTypeClasses
+        NoImplicitPrelude
+        OverloadedStrings
+        QuasiQuotes
         RecordWildCards
+        TemplateHaskell
+        TypeFamilies
         ViewPatterns
 
     -- build-depends {{{2
