@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE FlexibleContexts #-}
 
 -- | Handlers for CRUD'ing patrons' payment info.
@@ -93,4 +94,9 @@ stripePaymentInfoHandler =
              |]
              $logErrorSH er
              redirect PaymentInfoR)
-        (pure . customerId)
+        (pure . \case
+            Customer{..} -> customerId
+            -- This case "should never happen" :D But if it does, we can
+            -- just ignore it for now.
+            -- See also https://github.com/dmjio/stripe/issues/40
+            DeletedCustomer{..} -> deletedCustomerId)
