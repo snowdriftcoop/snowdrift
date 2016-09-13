@@ -44,7 +44,6 @@ library
         Model
         Settings
         Settings.StaticFiles
-        Stripe
         Handler
         Handler.PaymentInfo
         Handler.TH
@@ -64,6 +63,7 @@ library
         GADTs
         GeneralizedNewtypeDeriving
         LambdaCase
+        FlexibleContexts
         MultiParamTypeClasses
         NoImplicitPrelude
         OverloadedStrings
@@ -142,6 +142,7 @@ test-suite test
         SampleSpec
         Factories
         TestImport
+        StripeMock
 
     default-extensions:
         TemplateHaskell

@@ -1,8 +1,12 @@
-module Handler.Util (snowdriftTitle, snowdriftDashTitle) where
+module Handler.Util (snowdriftTitle, snowdriftDashTitle, snowstripe) where
 
 import Import.NoFoundation
 
 import Data.Text.Titlecase
+import Web.Stripe
+import Web.Stripe.Error
+
+import AppDataTypes
 
 snowdriftTitle :: MonadWidget m => Text -> m ()
 snowdriftTitle t = setTitle $
@@ -10,3 +14,13 @@ snowdriftTitle t = setTitle $
 
 snowdriftDashTitle :: MonadWidget m => Text -> Text -> m ()
 snowdriftDashTitle x y = snowdriftTitle $ x `mappend` " — " `mappend` y
+
+snowstripe
+    :: FromJSON (StripeReturn a)
+    => StripeRequest a -> Handler (Either StripeError (StripeReturn a))
+snowstripe req = do
+    (func, conf) <-
+        (appStripe &&& StripeConfig . appStripeSecretKey . appSettings) <$> getYesod
+    liftIO (func conf req)
+    -- Or, pointlessly,
+    -- join . fmap liftIO . ap (appStripe <$> getYesod) . pure

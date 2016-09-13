@@ -1,6 +1,3 @@
-{-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE FlexibleContexts #-}
-
 -- | Handlers for CRUD'ing patrons' payment info.
 module Handler.PaymentInfo
   ( getPaymentInfoR
@@ -11,7 +8,7 @@ import Import
 
 import Control.Monad.Logger
 import Text.Julius (rawJS)
-import Stripe
+import Web.Stripe
 import Web.Stripe.Customer
 import Web.Stripe.Error
 
