@@ -16,7 +16,7 @@ snowdriftDashTitle :: MonadWidget m => Text -> Text -> m ()
 snowdriftDashTitle x y = snowdriftTitle $ x `mappend` " — " `mappend` y
 
 snowstripe
-    :: FromJSON (StripeReturn a)
+    :: (Typeable (StripeReturn a), FromJSON (StripeReturn a))
     => StripeRequest a -> Handler (Either StripeError (StripeReturn a))
 snowstripe req = do
     (func, conf) <-

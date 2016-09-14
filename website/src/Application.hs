@@ -57,7 +57,7 @@ makeFoundation appSettings = do
         (if appMutableStatic appSettings then staticDevel else static)
         (appStaticDir appSettings)
 
-    let appStripe :: FromJSON (StripeReturn a)
+    let appStripe :: (Typeable (StripeReturn a), FromJSON (StripeReturn a))
                   => StripeConfig
                   -> StripeRequest a
                   -> IO (Either StripeError (StripeReturn a))

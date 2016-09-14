@@ -30,7 +30,7 @@ data App = App
     , appAuth        :: AuthSite
       -- | The function for doing stripe API calls. Swapped out for a mock
       -- thing in tests.
-    , appStripe      :: forall a. FromJSON (StripeReturn a)
+    , appStripe      :: forall a. (Typeable (StripeReturn a), FromJSON (StripeReturn a))
                      => StripeConfig
                      -> StripeRequest a
                      -> IO (Either StripeError (StripeReturn a))
