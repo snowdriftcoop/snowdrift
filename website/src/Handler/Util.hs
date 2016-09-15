@@ -22,5 +22,3 @@ snowstripe req = do
     (func, conf) <-
         (appStripe &&& StripeConfig . appStripeSecretKey . appSettings) <$> getYesod
     liftIO (func conf req)
-    -- Or, pointlessly,
-    -- join . fmap liftIO . ap (appStripe <$> getYesod) . pure

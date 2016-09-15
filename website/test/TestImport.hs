@@ -68,7 +68,6 @@ withApp = before $ do
     let foundation' = foundation { appStripe = mockStripe stripevar }
     return (foundation', logWare)
 
-
 -- This function will truncate all of the tables in your database.
 -- 'withApp' calls it before each test, creating a clean environment for each
 -- spec to run in.

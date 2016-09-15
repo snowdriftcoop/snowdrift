@@ -2,11 +2,7 @@
 {-# LANGUAGE ExistentialQuantification #-}
 
 -- | Mock Stripe (mercilessly)
-module StripeMock
-  where
-  -- ( MockStripeEffects(..)
-  -- , mockStripe
-  -- ) where
+module StripeMock where
 
 import ClassyPrelude.Yesod hiding (method)
 
@@ -22,6 +18,9 @@ data StripeMockEffects
         , stripeRet :: Either StripeError (StripeReturn a)
         }
 
+{-# WARNING mockStripe "This does not work. See comments on https://git.snowdrift.coop/sd/snowdrift/merge_requests/21" #-}
+-- | Ideally this could be used to mock Stripe effects, but it does not work
+-- yet.
 mockStripe
     :: (Typeable (StripeReturn b))
     => MVar StripeMockEffects
