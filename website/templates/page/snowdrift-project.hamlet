@@ -1,1 +1,42 @@
-Snowdrift project.
+<h1>Project: Snowdrift.coop
+
+<p>
+  The Snowdrift.coop project is supported by the very mechanism that it
+  provides. This is the project that runs this very website!
+
+<form method=post action={{pledgeSnowdrift}}>
+  <button>
+    Pledge to Snowdrift.coop
+
+<.announcements>
+  <h2>Announcements
+  <ol>
+    <li>
+      Recent blog post:
+      <a href="https://wiki.snowdrift.coop/blog/new-community-director">
+        "Hello Snowdrift.coop Community, ..."
+
+<h2>Crowdmatching
+<p>
+  Snowdrift currently has a crowd of {{numSnowdriftPatrons}} patrons.
+  The current value of a pledge is {{pledgeAmount}}<sup>1</sup>. The
+  next scheduled donation will take place on {{nextDonationDate}}.
+
+<h2>Donation History
+<.mockup>
+  {{if donationHistory}}
+...
+
+<.mockup>
+  {{else (no donationHistory)}}
+
+<p>
+  There is no donation history for Snowdrift.coop yet.
+
+<.mockup>
+  {{endif (donationHistory)}}
+
+<hr>
+<p>
+  <sup>1</sup>: This amount will most likely change before the next
+  donation, as the number of patrons changes.
