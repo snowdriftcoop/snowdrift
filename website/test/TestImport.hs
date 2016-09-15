@@ -25,7 +25,6 @@ import AuthSite
 import Model as X
 
 import Factories
-import StripeMock
 
 -- | Run a query outside of a handler
 testDB :: SqlPersistM a -> YesodExample App a
@@ -64,9 +63,7 @@ withApp = before $ do
     -- See also https://tree.taiga.io/project/snowdrift/issue/402
     truncateTables foundation
     logWare <- liftIO $ makeLogWare foundation
-    stripevar <- newEmptyMVar
-    let foundation' = foundation { appStripe = mockStripe stripevar }
-    return (foundation', logWare)
+    return (foundation, logWare)
 
 -- This function will truncate all of the tables in your database.
 -- 'withApp' calls it before each test, creating a clean environment for each
