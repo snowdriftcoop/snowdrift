@@ -5,7 +5,7 @@
 
 <p>
   You are currently pledged to one project,
-  <a href={{snowdriftProject}}>Snowdrift.coop</a>.
+  <a href=@SnowdriftProjectR>Snowdrift.coop</a>.
 
 <p>
   You are currently matching a crowd of {{numSnowdriftPatrons}} patrons.
