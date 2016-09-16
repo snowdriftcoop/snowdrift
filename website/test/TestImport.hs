@@ -46,14 +46,6 @@ dummyLogin = do
         setMethod "POST"
         setUrl (AuthR LoginR)
 
--- Note: I can't drop all the tables because the migration happens in
--- 'makeFoundation', but that's also the function that builds a usable
--- database pool out of the app settings. So, 'makeFoundation' would need
--- to be broken up to allow clearing before migration.
---
--- Clearing looks like "drop schema public cascade; create schema public;"
---
--- See also https://tree.taiga.io/project/snowdrift/issue/402
 withApp :: SpecWith (TestApp App) -> Spec
 withApp = before $ do
     settings <- loadYamlSettings
@@ -61,6 +53,14 @@ withApp = before $ do
         []
         ignoreEnv
     foundation <- makeFoundation settings
+    -- Note: I can't drop all the tables because the migration happens in
+    -- 'makeFoundation', but that's also the function that builds a usable
+    -- database pool out of the app settings. So, 'makeFoundation' would need
+    -- to be broken up to allow clearing before migration.
+    --
+    -- Clearing looks like "drop schema public cascade; create schema public;"
+    --
+    -- See also https://tree.taiga.io/project/snowdrift/issue/402
     truncateTables foundation
     logWare <- liftIO $ makeLogWare foundation
     return (foundation, logWare)

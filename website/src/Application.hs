@@ -29,6 +29,8 @@ import Network.Wai.Middleware.RequestLogger (Destination (Logger),
                                              mkRequestLogger, outputFormat)
 import System.Log.FastLogger                (defaultBufSize, newStdoutLoggerSet,
                                              toLogStr)
+import Web.Stripe
+import Web.Stripe.Error
 import qualified Yesod.GitRev as G
 
 import Handler
@@ -54,6 +56,12 @@ makeFoundation appSettings = do
     appStatic <-
         (if appMutableStatic appSettings then staticDevel else static)
         (appStaticDir appSettings)
+
+    let appStripe :: (Typeable (StripeReturn a), FromJSON (StripeReturn a))
+                  => StripeConfig
+                  -> StripeRequest a
+                  -> IO (Either StripeError (StripeReturn a))
+        appStripe = stripe
 
     let appAuth = AuthSite
     -- We need a log function to create a connection pool. We need a connection

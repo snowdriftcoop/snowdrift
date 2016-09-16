@@ -44,7 +44,6 @@ library
         Model
         Settings
         Settings.StaticFiles
-        Stripe
         Handler
         Handler.PaymentInfo
         Handler.TH
@@ -61,15 +60,17 @@ library
         cpp-options:   -DDEVELOPMENT
 
     default-extensions:
-        TemplateHaskell
-        QuasiQuotes
-        OverloadedStrings
-        TypeFamilies
         GADTs
-        NoImplicitPrelude
-        MultiParamTypeClasses
         GeneralizedNewtypeDeriving
+        LambdaCase
+        FlexibleContexts
+        MultiParamTypeClasses
+        NoImplicitPrelude
+        OverloadedStrings
+        QuasiQuotes
         RecordWildCards
+        TemplateHaskell
+        TypeFamilies
         ViewPatterns
 
     -- build-depends {{{2
@@ -141,29 +142,35 @@ test-suite test
         SampleSpec
         Factories
         TestImport
+        StripeMock
 
     default-extensions:
-        TemplateHaskell
-        QuasiQuotes
-        OverloadedStrings
-        NoImplicitPrelude
         FlexibleContexts
+        NoImplicitPrelude
+        OverloadedStrings
+        QuasiQuotes
+        RecordWildCards
+        TemplateHaskell
 
     -- build-depends {{{2
     build-depends:
         Snowdrift
-        , yesod-test >= 1.5.0.1 && < 1.6
-        , yesod-core
-        , yesod
-        , persistent
-        , shakespeare
-        , hspec >= 2.0.0
-        , classy-prelude
-        , wai-extra
-        , http-types
         -- For htmlHasLink (should move upstream)
         , HUnit >= 1.3.1.1
+        , base
+        , classy-prelude
+        , classy-prelude-yesod
+        , hspec >= 2.0.0
+        , http-types
+        , persistent
+        , shakespeare
+        , stripe-core
+        , stripe-haskell
         , text >= 1.2.2.1
+        , wai-extra
+        , yesod
+        , yesod-core
+        , yesod-test >= 1.5.0.1 && < 1.6
     -- }}}2
 
     default-language: Haskell2010

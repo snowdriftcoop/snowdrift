@@ -1,3 +1,5 @@
+{-# LANGUAGE RankNTypes #-}
+
 -- | Core Template Haskell-generated types, such as the site's routes.
 --
 -- This file should be named "SiteTypes", and App should be named Site,
@@ -5,14 +7,13 @@
 -- later.
 module AppDataTypes where
 
-import ClassyPrelude
+import ClassyPrelude.Yesod
 
 import Database.Persist.Sql (ConnectionPool)
-import Network.HTTP.Client (Manager)
-import Yesod.Core (parseRoutesFile, mkYesodData, renderRoute)
+import Web.Stripe
+import Web.Stripe.Error
 import Yesod.Core.Types (Logger)
 import Yesod.GitRev
-import Yesod.Static (Static)
 
 import AuthSite
 import Settings
@@ -27,6 +28,12 @@ data App = App
     , appLogger      :: Logger
     , appGitRev      :: GitRev
     , appAuth        :: AuthSite
+      -- | The function for doing stripe API calls. Swapped out for a mock
+      -- thing in tests.
+    , appStripe      :: forall a. (Typeable (StripeReturn a), FromJSON (StripeReturn a))
+                     => StripeConfig
+                     -> StripeRequest a
+                     -> IO (Either StripeError (StripeReturn a))
     }
 
 -- This function generates the route types, and also generates the

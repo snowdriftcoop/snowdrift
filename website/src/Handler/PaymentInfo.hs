@@ -1,5 +1,3 @@
-{-# LANGUAGE FlexibleContexts #-}
-
 -- | Handlers for CRUD'ing patrons' payment info.
 module Handler.PaymentInfo
   ( getPaymentInfoR
@@ -10,7 +8,7 @@ import Import
 
 import Control.Monad.Logger
 import Text.Julius (rawJS)
-import Stripe
+import Web.Stripe
 import Web.Stripe.Customer
 import Web.Stripe.Error
 
@@ -93,4 +91,9 @@ stripePaymentInfoHandler =
              |]
              $logErrorSH er
              redirect PaymentInfoR)
-        (pure . customerId)
+        (pure . \case
+            Customer{..} -> customerId
+            -- This case "should never happen" :D But if it does, we can
+            -- just ignore it for now.
+            -- See also https://github.com/dmjio/stripe/issues/40
+            DeletedCustomer{..} -> deletedCustomerId)
