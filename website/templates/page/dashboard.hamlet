@@ -1,25 +1,38 @@
 <h1>Your crowdmatching dashboard
 
-<.mockup>
-  {{if pledged}}
-
-<p>
-  You are currently pledged to one project,
-  <a href=@SnowdriftProjectR>Snowdrift.coop</a>.
-
-<p>
-  You are currently matching a crowd of {{numSnowdriftPatrons}} patrons.
-  The current value of your pledge is {{pledgeAmount}}<sup>1</sup>. The
-  next scheduled donation will take place on {{nextDonationDate}}.
-
-<p>
-  Your payment method is {{paymentMethod}}. You may
-  <a href={{paymentConfig}}>configure your payment settings</a>.
-
-<p>
-  If would like to stop supporting Snowdrift.coop, you can
-  <a href={{unpledge}}>remove yourself from the crowd</a>. Your fellow
-  supporters will be sad to see you go!
+$maybe _ <- mpledge
+  <p>
+    You are currently pledged to one project,
+    <a href=@SnowdriftProjectR>Snowdrift.coop</a>.
+  <p>
+    You are currently matching a crowd of {{numSnowdriftPatrons}} patrons.
+    The current value of your pledge is {{pledgeAmount}}<sup>1</sup>. The
+    next scheduled donation will take place on {{nextDonationDate}}.
+  <p>
+    Your payment method is {{paymentMethod}}. You may
+    <a href={{paymentConfig}}>configure your payment settings</a>.
+  <p>
+    If would like to stop supporting Snowdrift.coop, you can
+    <a href={{unpledge}}>remove yourself from the crowd</a>. Your fellow
+    supporters will be sad to see you go!
+$nothing
+  <.notpledged>
+    <p>
+      You are not currently pledged to any projects!
+    <p>
+      Currently, Snowdrift.coop is operating in a semi-open beta. As we
+      develop the crowdmatching mechanism and prepare to support other FLO
+      projects, there is one project in particular that is given special
+      attention: Snowdrift itself! Enabling one (and only one) project
+      allows us to shake out the kinks of the system. Self-sustainability
+      and continued work on the mechanism is the goal.
+    <p .pledge>
+      <a href={{pledgeSnowdrift}}>
+        Pledge to Snowdrift!
+      Join the crowdmatching system, see how the system works, and help us
+      free the commons.
+      <form method=post action={{pledgeFormAction}}>
+        <button>Pledge now
 
 <.mockup>
   \  {{if donationHistory}}
@@ -38,29 +51,3 @@
 <p>
   <sup>1</sup>: This amount will most likely change before the next
   donation, as the number of patrons changes.
-
-<.mockup>
-  {{else (not pledged)}}
-
-<.notpledged>
-  <p>
-    You are not currently pledged to any projects!
-
-  <p>
-    Currently, Snowdrift.coop is operating in a semi-open beta. As we develop
-    the crowdmatching mechanism and prepare to support other FLO projects,
-    there is one project in particular that is given special attention:
-    Snowdrift itself! Enabling one (and only one) project allows us to shake
-    out the kinks of the system. Self-sustainability and continued work on
-    the mechanism is the goal.
-
-  <p .pledge>
-    <a href={{pledgeSnowdrift}}>
-      Pledge to Snowdrift!
-    Join the crowdmatching system, see how the system works, and help us
-    free the commons.
-    <form method=post action={{pledgeFormAction}}>
-      <button>Pledge now
-
-<.mockup>
-  {{endif (pledged)}}

@@ -25,14 +25,18 @@ getRobotsR = return $ TypedContent typePlain
 getHomeR :: Handler Html
 getHomeR = maybeAuth >>=
     maybe getWelcomeR
-          (const $(widget "page/dashboard" "Dashboard"))
+          (const getDashboardR)
 
 getWelcomeR :: Handler Html
 getWelcomeR = $(widget "page/welcome" "Snowdrift.coop — Free the Commons")
 
 getDashboardR :: Handler Html
 getDashboardR = do
-    _ <- requireAuth
+    Entity uid _ <- requireAuth
+    (pledgeActs, mpledge) <- runDB (do
+        acts <- selectList [PledgeHistoryUsr ==. uid] [Asc PledgeHistoryTime]
+        p <- getBy (UniquePledge uid)
+        pure (acts, p))
     $(widget "page/dashboard" "Dashboard")
 
 getHowItWorksR :: Handler Html

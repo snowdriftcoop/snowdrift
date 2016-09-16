@@ -12,13 +12,13 @@ User sql=usr
     deriving (Show)
 
 Crowdmatch
-    user UserId
+    usr UserId
     since UTCTime
 
-    UniquePledge user
+    UniquePledge usr
 
 PledgeHistory
-    user UserId
+    usr UserId
     time UTCTime
     action PledgeAction
     deriving (Show)
