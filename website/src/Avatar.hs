@@ -1,4 +1,3 @@
-{-# LANGUAGE ScopedTypeVariables #-}
 module Avatar where
 
 import Control.Exception (PatternMatchFail)

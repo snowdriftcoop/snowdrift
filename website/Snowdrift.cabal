@@ -42,6 +42,7 @@ library
         Import
         Import.NoFoundation
         Model
+        ModelDataTypes
         Settings
         Settings.StaticFiles
         Handler
@@ -69,6 +70,7 @@ library
         OverloadedStrings
         QuasiQuotes
         RecordWildCards
+        ScopedTypeVariables
         TemplateHaskell
         TypeFamilies
         ViewPatterns

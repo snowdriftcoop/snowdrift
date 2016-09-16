@@ -10,3 +10,15 @@ User sql=usr
     UniqueUsr email
 
     deriving (Show)
+
+Crowdmatch
+    user UserId
+    since UTCTime
+
+    UniquePledge user
+
+PledgeHistory
+    user UserId
+    time UTCTime
+    action PledgeAction
+    deriving (Show)
