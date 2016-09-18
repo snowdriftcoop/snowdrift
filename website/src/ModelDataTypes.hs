@@ -3,7 +3,6 @@ module ModelDataTypes where
 
 import ClassyPrelude
 
-import Database.Persist.TH
 import Database.Persist.Sql
 
 data PledgeAction = MakePledge | RemovePledge deriving (Read, Show)
