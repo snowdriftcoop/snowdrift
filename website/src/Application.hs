@@ -34,6 +34,7 @@ import Web.Stripe.Error
 import qualified Yesod.GitRev as G
 
 import Handler
+import Handler.Dashboard
 import Handler.PaymentInfo
 
 {-# ANN module ("HLint: ignore Reduce duplication" :: String) #-}

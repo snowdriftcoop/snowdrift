@@ -6,6 +6,7 @@ import Import hiding ((.=))
 import Data.FileEmbed (embedFile)
 import qualified Data.HashMap.Strict as H
 
+import Handler.Dashboard
 import Handler.TH
 
 -- These handlers embed files in the executable at compile time to avoid a
@@ -29,15 +30,6 @@ getHomeR = maybeAuth >>=
 
 getWelcomeR :: Handler Html
 getWelcomeR = $(widget "page/welcome" "Snowdrift.coop — Free the Commons")
-
-getDashboardR :: Handler Html
-getDashboardR = do
-    Entity uid _ <- requireAuth
-    (pledgeActs, mpledge) <- runDB (do
-        acts <- selectList [PledgeHistoryUsr ==. uid] [Asc PledgeHistoryTime]
-        p <- getBy (UniquePledge uid)
-        pure (acts, p))
-    $(widget "page/dashboard" "Dashboard")
 
 getHowItWorksR :: Handler Html
 getHowItWorksR = $(widget "page/how-it-works" "getHowItWorksR")

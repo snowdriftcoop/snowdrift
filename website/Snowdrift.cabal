@@ -46,6 +46,7 @@ library
         Settings
         Settings.StaticFiles
         Handler
+        Handler.Dashboard
         Handler.PaymentInfo
         Handler.TH
         Handler.Util
