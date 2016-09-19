@@ -33,20 +33,14 @@ $nothing
       free the commons.
       <form method=post action={{pledgeFormAction}}>
         <button>Pledge now
-
-<.mockup>
-  \  {{if donationHistory}}
-...
-
-<.mockup>
-  \  {{else (no donationHistory)}}
-
-<p>
-  You have no donation history yet.
-
-<.mockup>
-  \  {{endif (donationHistory)}}
-
+$case pledgeHistory
+  $of []
+    <p>
+      You have no donation history yet.
+  $of ps
+    <ol>
+      $forall p <- ps
+        <li>#{show (pledgeProjection p)}
 <hr>
 <p>
   <sup>1</sup>: This amount will most likely change before the next

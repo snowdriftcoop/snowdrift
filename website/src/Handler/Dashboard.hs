@@ -34,3 +34,6 @@ getDashboardR = do
         rfc3339Day = formatTime defaultTimeLocale "%Y-%m-%d"
         -- | Example: "September 23"
         monthDay = formatTime defaultTimeLocale "%B %d"
+    -- | Pull out the interesting bits
+    pledgeProjection :: PledgeHistory -> (UTCTime, PledgeAction)
+    pledgeProjection PledgeHistory{..} = (_pledgeHistoryTime, _pledgeHistoryAction)
