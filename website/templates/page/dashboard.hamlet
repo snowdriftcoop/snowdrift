@@ -5,12 +5,12 @@ $maybe _ <- mpledge
     You are currently pledged to one project,
     <a href=@SnowdriftProjectR>Snowdrift.coop</a>.
   <p>
-    You are currently matching a crowd of {{numSnowdriftPatrons}} patrons.
+    You are currently matching a crowd of #{crowdSize} patrons.
     The current value of your pledge is {{pledgeAmount}}<sup>1</sup>. The
-    next scheduled donation will take place on {{nextDonationDate}}.
+    next scheduled donation will take place on #{donationDayView nextDonation}.
   <p>
-    Your payment method is {{paymentMethod}}. You may
-    <a href={{paymentConfig}}>configure your payment settings</a>.
+    Your payment method is Stripe. You may
+    <a href=@{PaymentInfoR}>configure your payment settings</a>.
   <p>
     If would like to stop supporting Snowdrift.coop, you can
     <a href={{unpledge}}>remove yourself from the crowd</a>. Your fellow

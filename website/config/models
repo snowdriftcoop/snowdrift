@@ -8,7 +8,7 @@ User sql=usr
     UniqueUsr email
     deriving (Show)
 
-Crowdmatch
+Pledge
     usr UserId
     since UTCTime
 
@@ -20,3 +20,6 @@ PledgeHistory
     action PledgeAction
 
     deriving (Show)
+
+NextDonation
+    date UTCTime
