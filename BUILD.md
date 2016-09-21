@@ -151,69 +151,31 @@ Change to the new snowdrift directory:
 
     cd snowdrift
 
-Then, fetch all Haskell dependencies and build everything:
+Then, fetch all Haskell dependencies and build all dependencies:
 
-    stack setup
-    stack build
+    make
 
-NB: this will take a while!
+This will take a while!
 
 ### Run the tests
 
-Running the tests for the first time will also build the test dependencies.
+Running the tests for the first time will also build the project.
 
-Run the tests with:
+    ./build.sh test
 
-    ./sdb.hs test
+## Running the site via `yesod devel`
 
-## Running the site
+This will automatically rebuild and rerun the site whenever it detects
+changes to the code. The downsides are: it uses some minor extra drive
+space, uses some additional resources to run the file-watching process, and
+is currently incompatible with the optional ghc-mod tool mentioned in
+[TEXTEDITORS.md](TEXTEDITORS.md).
 
-### Option 1: run from within `stack ghci` (the repl)
+Run the site in development mode via:
 
-This option offers the fastest rebuild time. It shows some funny error messages,
-but you can ignore them.
+    ./build.sh devel
 
-First, start the repl with:
-
-    ./sdb.hs ghci
-
-Then, from the repl's prompt, enter
-
-    :load app/DevelMain.hs
-    update
-
-After loading the site in a browser, the Enter key brings the prompt back.
-
-To reload the site after changes, type
-
-    :reload
-    update
-
-NB: shortened commands above work too: `:l` for `:load` and `:r` for `:reload`.
-
-Leave the repl via ctrl-D
-
-### Option 2: run via `yesod devel`
-
-Once set up, this option is simpler to run and more automated. It will
-automatically rebuild and rerun the site whenever it detects changes to the
-code. The downsides are: it requires extra compile processes the first time you
-run it, uses some minor extra drive space, uses some additional resources to run
-the file-watching process, and is currently incompatible with the optional
-ghc-mod tool mentioned in [TEXTEDITORS.md](TEXTEDITORS.md).
-
-To enable `yesod devel`, first install the dependencies:
-
-    stack build cabal-install yesod-bin
-
-From now on, you may run the site in development mode via:
-
-    ./sdb.hs devel
-
-NB: The first run will take a long time.
-
-To stop the site in this case, type `quit` in terminal and then press Enter
-
+To stop the site, type `quit` in the terminal and then press Enter.
 
 ## Using the local site
 
@@ -253,8 +215,8 @@ mail to.
 
 ### Manual rebuild
 
-As mentioned above, when running with the repl via `./sdb.hs ghci`, you must
-manually rebuild and restart the site, whereas the `./sdb.hs devel` option will
+As mentioned above, when running with the repl via `./build.sh ghci`, you must
+manually rebuild and restart the site, whereas the `./build.sh devel` option will
 rebuild and restart automatically for most changes. However, **manual rebuild is
 always required whenever you:**
 
@@ -262,7 +224,7 @@ always required whenever you:**
 * update any extra binaries such as the payment processing script or the
   email daemon.
 
-To manually rebuild the site when otherwise using `./sdb.hs devel`, run:
+To manually rebuild the site when otherwise using `./build.sh devel`, run:
 
     stack build
 

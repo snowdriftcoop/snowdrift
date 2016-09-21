@@ -30,8 +30,10 @@ pgWorkDir = ".postgres-work"
 
 usageText :: Text -> Shell ()
 usageText this = mapM_ err
-    [ this <> ": a wrapper to set up environment variables and run various"
-    , "commands for hacking on the Snowdrift.coop website."
+    [ this <> ": a wrapper to set up environment variables and the"
+    , "dev/test databases for hacking on the Snowdrift.coop website."
+    , ""
+    , "Rather than using this config script directly, use build.sh."
     , ""
     , "Usage:"
     , ""
@@ -39,26 +41,18 @@ usageText this = mapM_ err
     , ""
     , "Where ACTION may be one of:"
     , ""
-    , "    test              run 'stack test'"
-    , "    devel             start 'yesod devel'"
-    , "    ghci              start 'ghci' with the db set up for using app/DevelMain.hs"
     , "    clean             \"rm -rf\" the whole cluster"
-    , "    export            create data dumps with pg_dump"
     , "    help              print this text"
     , ""
-    , "    # Expert commands:"
     , "    env               print export commands for PGHOST and PGDATA"
-    , "                             e.g. 'source $(" <> this <> " env)'"
-    , "    start             start the cluster (normally done automatically)"
-    , "    stop              stop  the cluster (ditto)"
-    , "    pg_ctl            run Postgres' pg_ctl(1) utility"
-    , "    psql              connect to snowdrift_development with psql"
+    , "                             e.g. 'source <(" <> this <> " env)'"
+    , "    start             start the cluster"
+    , "    stop              stop  the cluster"
     ]
 
-dbRunning, dbCluster, stackWork :: H.FilePath
+dbRunning, dbCluster :: H.FilePath
 dbRunning = ".postgres-work/data/postmaster.pid"
 dbCluster = ".postgres-work/data/postgresql.conf"
-stackWork = ".stack-work"
 
 main :: IO ()
 main = sh $ do
@@ -81,31 +75,9 @@ shakeit dbdir pghost pgdata = shakeArgs shakeOptions $ do
 
     phony "help" $ actsh (usageText . T.pack =<< liftIO getProgName)
 
-    -- Basic
-
-    phony "test" $ do
-        need [dbRunning, stackWork]
-        command [] "stack" ["test"]
-
-    phony "devel" $ do
-        need [dbRunning, stackWork]
-        command [Cwd "website"] "stack" ["exec", "yesod", "devel"]
-
-    phony "ghci" $ do
-        need [dbRunning, stackWork]
-        command [Cwd "website"] "stack" ["ghci", "--package", "foreign-store", "--test"]
-
     phony "clean" $ do
         need ["stop"]
         removeFilesAfter ".postgres-work" ["//*"]
-
-    phony "export" $ actsh $ do
-        y <- testfile (fromText (T.pack dbRunning))
-        if y
-            then exportDb dbdir
-            else err "Is your database running? (Then you should probably catch it!)"
-
-    -- Advanced
 
     phony "start" (need [dbRunning])
 
@@ -118,23 +90,6 @@ shakeit dbdir pghost pgdata = shakeArgs shakeOptions $ do
         )
 
     dbCluster %> const (actsh (initCluster pghost pgdata))
-
-    stackWork %> const (command [] "stack" ["--install-ghc"
-                                           ,"test"
-                                           ,"--no-run-tests"
-                                           ,"--only-dependencies"])
-
-    phony "psql" $ do
-        need [dbRunning]
-        command [] "psql" ["snowdrift_development"]
-
-exportDb :: FilePath -> Shell ()
-exportDb dbdir = do
-    step "Dumping to devDB.sql..."
-    mktree (dbdir </> "dev")
-    output (dbdir </> "dev" </> "devDB.sql") $ pgDump "snowdrift_development"
-  where
-    pgDump db = inproc "pg_dump" ["--no-owner", "--no-privileges", "--create", db] empty
 
 initCluster :: FilePath -> FilePath -> Shell ()
 initCluster pghost pgdata = do
@@ -204,7 +159,6 @@ initEnv = do
   where
     getProjectRoot =
         realpath =<< (directory . P.decodeString <$> liftIO getProgName)
-
 
 -- ##
 -- ## Helper functions/additions to underlying libs

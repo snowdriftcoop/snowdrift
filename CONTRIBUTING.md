@@ -167,7 +167,7 @@ instructions in the [Build guide] for running the site.
 
 When you are happy with your work, it compiles, and looks right, run the tests:
 
-    ./sdb.hs test
+    ./build.sh test
 
 If there are any failures either when compiling or testing, and you don't know
 how to fix the issue or don't understand the error, contact us for help.
@@ -464,7 +464,7 @@ here are some resources (nearly all fully-FLO):
 *   Alongside #snowdrift on freenode.net, check out #yesod , #haskell ,
     and #haskell-beginners (among many other relevant channels).
 
-*   The repl accessed via `./sdb.hs ghci` loads
+*   The repl accessed via `./build.sh ghci` loads
     [ghci](https://en.wikibooks.org/wiki/Haskell/Using_GHCi_effectively)
     in a mode connected to the project. Using that, you can easily import
     files from the code and explore the functions.
