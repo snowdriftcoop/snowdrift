@@ -8,17 +8,22 @@ read -d '' usage <<EOF
   Used to do standard Haskell/yesod things like run tests, run the devel
   site, and run ghci.
 
-  It uses the shake build system to make sure a dev/test database is
-  running.
+  It uses make *and* the shake build system to make sure a dev/test
+  database is running. The system should probably be refactored. :)
 
   CMD can be:
 
       devel
       ghci
       test
+      psql
+      shell
 
-  'ghci' and 'test' both accept any additional options native to those
-  commands.
+  'ghci', 'test', and 'psql' all accept any additional options native to
+  those commands.
+
+  'shell' is an advanced command, which sets up the Postgres and stack
+  environments and spawns a new shell.
 EOF
 
 SHAKEDIR=.shake
@@ -26,16 +31,12 @@ SHAKE=$SHAKEDIR/build
 
 run_devel () {
     cd `dirname $0`/website
-    stack exec yesod devel
-}
-
-run_test () {
-    stack test --fast $@
+    exec stack exec yesod devel
 }
 
 run_ghci () {
     cd `dirname $0`/website
-    stack ghci $@
+    exec stack ghci --package foreign-store $@
 }
 
 dbenv () {
@@ -57,18 +58,23 @@ main () {
     CMD=$1
     shift
 
+    make
+    dbenv
     case $CMD in
         devel)
-            dbenv
             run_devel
             ;;
         test)
-            dbenv
-            run_test $@
+            exec stack test --fast $@
             ;;
         ghci)
-            dbenv
             run_ghci $@
+            ;;
+        psql)
+            exec psql $@
+            ;;
+        shell)
+            exec stack exec bash
             ;;
         *)
             echo "$usage"
