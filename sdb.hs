@@ -42,20 +42,17 @@ usageText this = mapM_ err
     , "Where ACTION may be one of:"
     , ""
     , "    clean             \"rm -rf\" the whole cluster"
-    , "    export            create data dumps with pg_dump"
     , "    help              print this text"
     , ""
     , "    env               print export commands for PGHOST and PGDATA"
     , "                             e.g. 'source <(" <> this <> " env)'"
     , "    start             start the cluster"
     , "    stop              stop  the cluster"
-    , "    psql              connect to snowdrift_development with psql"
     ]
 
-dbRunning, dbCluster, stackWork :: H.FilePath
+dbRunning, dbCluster :: H.FilePath
 dbRunning = ".postgres-work/data/postmaster.pid"
 dbCluster = ".postgres-work/data/postgresql.conf"
-stackWork = ".stack-work"
 
 main :: IO ()
 main = sh $ do
@@ -82,10 +79,6 @@ shakeit dbdir pghost pgdata = shakeArgs shakeOptions $ do
         need ["stop"]
         removeFilesAfter ".postgres-work" ["//*"]
 
-    phony "export" $ do
-        need [dbRunning]
-        actsh (exportDb dbdir)
-
     phony "start" (need [dbRunning])
 
     phony "stop"
@@ -97,23 +90,6 @@ shakeit dbdir pghost pgdata = shakeArgs shakeOptions $ do
         )
 
     dbCluster %> const (actsh (initCluster pghost pgdata))
-
-    stackWork %> const (command [] "stack" ["--install-ghc"
-                                           ,"test"
-                                           ,"--no-run-tests"
-                                           ,"--only-dependencies"])
-
-    phony "psql" $ do
-        need [dbRunning]
-        command [] "psql" ["snowdrift_development"]
-
-exportDb :: FilePath -> Shell ()
-exportDb dbdir = do
-    step "Dumping to devDB.sql..."
-    mktree (dbdir </> "dev")
-    output (dbdir </> "dev" </> "devDB.sql") $ pgDump "snowdrift_development"
-  where
-    pgDump db = inproc "pg_dump" ["--no-owner", "--no-privileges", "--create", db] empty
 
 initCluster :: FilePath -> FilePath -> Shell ()
 initCluster pghost pgdata = do
@@ -183,7 +159,6 @@ initEnv = do
   where
     getProjectRoot =
         realpath =<< (directory . P.decodeString <$> liftIO getProgName)
-
 
 -- ##
 -- ## Helper functions/additions to underlying libs
