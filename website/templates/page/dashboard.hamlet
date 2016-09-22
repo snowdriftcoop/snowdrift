@@ -3,11 +3,11 @@
 $maybe _ <- mpledge
   <p>
     You are currently pledged to one project,
-    <a href=@SnowdriftProjectR>Snowdrift.coop</a>.
+    <a href=@{SnowdriftProjectR}>Snowdrift.coop</a>.
   <p>
     You are currently matching a crowd of #{crowdSize} patrons.
     The current value of your pledge is {{pledgeAmount}}<sup>1</sup>. The
-    next scheduled donation will take place on #{donationDayView nextDonation}.
+    next scheduled donation will take place on #{nextDonation}.
   <p>
     Your payment method is Stripe. You may
     <a href=@{PaymentInfoR}>configure your payment settings</a>.
@@ -33,10 +33,14 @@ $nothing
       free the commons.
       <form method=post action={{pledgeFormAction}}>
         <button>Pledge now
+<.mockup>
+  Pledge history <em>and</em> Donation history goes here!
+<.mockup>
+  {{donation history}}
 $case pledgeHistory
   $of []
     <p>
-      You have no donation history yet.
+      You have no pledge history yet.
   $of ps
     <ol>
       $forall p <- ps

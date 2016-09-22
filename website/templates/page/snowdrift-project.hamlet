@@ -18,24 +18,24 @@
 
 <h2>Crowdmatching
 <p>
-  Snowdrift currently has a crowd of {{numSnowdriftPatrons}} patrons.
-  The current value of a pledge is {{pledgeAmount}}<sup>1</sup>. The
-  next scheduled donation will take place on {{nextDonationDate}}.
+  Snowdrift currently has a crowd of #{projectCrowdSize} patrons.
+  The current value of a pledge is #{pledgeAmount}<sup>1</sup>. The
+  next scheduled donation will take place on #{nextDonationDate}.
 
 <h2>Donation History
-<.mockup>
-  {{if donationHistory}}
-...
-
-<.mockup>
-  {{else (no donationHistory)}}
-
-<p>
-  There is no donation history for Snowdrift.coop yet.
-
-<.mockup>
-  {{endif (donationHistory)}}
-
+$case donationHistory
+  $of []
+    <p>
+      There is no donation history for Snowdrift.coop yet.
+  $of ds
+    <table>
+      <tr>
+        <th>Date
+        <th>Amount (ᵯ)
+      $forall (amt,date) <- ds
+        <tr>
+          <td>#{date}
+          <td>#{amt}
 <hr>
 <p>
   <sup>1</sup>: This amount will most likely change before the next

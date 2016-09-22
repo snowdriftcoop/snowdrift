@@ -21,5 +21,12 @@ PledgeHistory
 
     deriving (Show)
 
+DonationHistory
+    usr UserId
+    date DonationDay
+    amount Int32
+
+    deriving (Show)
+
 NextDonation
-    date UTCTime
+    date DonationDay
