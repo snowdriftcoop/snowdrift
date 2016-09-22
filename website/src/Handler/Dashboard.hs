@@ -5,7 +5,7 @@ import Import
 import Handler.TH
 
 data DashboardModel = DashboardModel
-        { pledgeHistory :: [PledgeHistory]
+        { donationHistory :: [DonationHistory]
         , mpledge :: Maybe (Entity Pledge)
         , crowdSize :: Int
         , nextDonation :: DonationDay
@@ -15,8 +15,8 @@ getDashboardR :: Handler Html
 getDashboardR = do
     Entity uid _ <- requireAuth
     DashboardModel {..} <- runDB (do
-        pledgeHistory <- map entityVal <$>
-            selectList [PledgeHistoryUsr ==. uid] [Asc PledgeHistoryTime]
+        donationHistory <- map entityVal <$>
+            selectList [DonationHistoryUsr ==. uid] [Asc DonationHistoryDate]
         mpledge <- getBy (UniquePledge uid)
         crowdSize <- count ([] :: [Filter Pledge])
         [nextDonation] <-
@@ -25,7 +25,3 @@ getDashboardR = do
                 (selectList [] [])
         pure DashboardModel {..})
     $(widget "page/dashboard" "Dashboard")
-  where
-    -- | Pull out the interesting bits
-    pledgeProjection :: PledgeHistory -> (UTCTime, PledgeAction)
-    pledgeProjection PledgeHistory{..} = (_pledgeHistoryTime, _pledgeHistoryAction)

@@ -25,18 +25,21 @@ $nothing
     <form method=post action=@{PledgeSnowdriftR}>
       To join the crowdmatching system,
       <button>pledge now!
-<.mockup>
-  Pledge history <em>and</em> Donation history goes here!
-<.mockup>
-  {{donation history}}
-$case pledgeHistory
+<h2>Donation History
+$case donationHistory
   $of []
-    <p>
-      You have no pledge history yet.
-  $of ps
-    <ol>
-      $forall p <- ps
-        <li>#{show (pledgeProjection p)}
+    <p>You have no donation history yet.
+  $of _
+    <table>
+      <tr>
+        <th>Date
+        <th>Amount
+        <th>Project
+      $forall DonationHistory{..} <- donationHistory
+        <tr>
+          <td>#{_donationHistoryDate}
+          <td>#{_donationHistoryAmount}
+          <td><a href=@{SnowdriftProjectR}>Snowdrift.coop</a>
 <hr>
 <p>
   <sup>1</sup>: This amount will most likely change before the next

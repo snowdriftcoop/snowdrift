@@ -31,7 +31,7 @@ $nothing
 <p>
   Snowdrift currently has a crowd of #{projectCrowdSize} patrons.
   The current value of a pledge is #{pledgeAmount}<sup>1</sup>. The
-  next scheduled donation will take place on #{nextDonationDate}.
+  next scheduled donation will take place on #{_nextDonationDate}.
 
 <h2>Donation History
 $case donationHistory

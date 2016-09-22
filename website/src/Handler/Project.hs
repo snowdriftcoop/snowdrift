@@ -9,12 +9,12 @@ import qualified Model.Skeleton as Skeleton
 getSnowdriftProjectR :: Handler Html
 getSnowdriftProjectR = do
     muid <- fmap entityKey <$> maybeAuth
-    (donationHistory, nextDonationDate, projectCrowdSize, userPledge)
-        :: ([(DonationDay, Int)], DonationDay, Int, Maybe (Entity Pledge))
+    (donationHistory, NextDonation{..}, projectCrowdSize, userPledge)
+        :: ([(DonationDay, Int)], NextDonation, Int, Maybe (Entity Pledge))
         <- runDB $ do
             dh <- Skeleton.projectDonationHistory
             [ndd] <- fmap
-                (map (_nextDonationDate . entityVal))
+                (map entityVal)
                 (selectList [] [])
             crowd <- count ([] :: [Filter Pledge])
             mpledge <- maybe (pure Nothing) (getBy . UniquePledge) muid
