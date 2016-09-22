@@ -4,7 +4,7 @@
   The Snowdrift.coop project is supported by the very mechanism that it
   provides. This is the project that runs this very website!
 
-<form method=post action={{pledgeSnowdrift}}>
+<form method=post action=@{PledgeSnowdriftR}>
   <button>
     Pledge to Snowdrift.coop
 

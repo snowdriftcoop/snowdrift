@@ -49,6 +49,7 @@ library
         Handler
         Handler.Dashboard
         Handler.PaymentInfo
+        Handler.Pledge
         Handler.Project
         Handler.TH
         Handler.Util
