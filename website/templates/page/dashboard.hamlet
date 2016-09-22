@@ -11,10 +11,6 @@ $maybe _ <- mpledge
   <p>
     Your payment method is Stripe. You may
     <a href=@{PaymentInfoR}>configure your payment settings</a>.
-  <p>
-    If would like to stop supporting Snowdrift.coop, you can
-    <a href={{unpledge}}>remove yourself from the crowd</a>. Your fellow
-    supporters will be sad to see you go!
 $nothing
   <.notpledged>
     <p>
@@ -26,13 +22,9 @@ $nothing
       attention: Snowdrift itself! Enabling one (and only one) project
       allows us to shake out the kinks of the system. Self-sustainability
       and continued work on the mechanism is the goal.
-    <p .pledge>
-      <a href={{pledgeSnowdrift}}>
-        Pledge to Snowdrift!
-      Join the crowdmatching system, see how the system works, and help us
-      free the commons.
-      <form method=post action={{pledgeFormAction}}>
-        <button>Pledge now
+    <form method=post action=@{PledgeSnowdriftR}>
+      To join the crowdmatching system,
+      <button>pledge now!
 <.mockup>
   Pledge history <em>and</em> Donation history goes here!
 <.mockup>
