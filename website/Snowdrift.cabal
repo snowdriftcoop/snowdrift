@@ -42,6 +42,7 @@ library
         Import
         Import.NoFoundation
         Model
+        Model.Skeleton
         ModelDataTypes
         Settings
         Settings.StaticFiles
@@ -86,6 +87,7 @@ library
         , classy-prelude         >= 0.10.2
         , classy-prelude-yesod   >= 0.10.2
         , errors
+        , esqueleto
         , fast-logger            >= 2.2     && < 2.5
         , file-embed
         , hjsmin                 >= 0.1

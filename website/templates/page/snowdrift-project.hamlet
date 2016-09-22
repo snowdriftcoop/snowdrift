@@ -32,7 +32,7 @@ $case donationHistory
       <tr>
         <th>Date
         <th>Amount (ᵯ)
-      $forall (amt,date) <- ds
+      $forall (date,amt) <- ds
         <tr>
           <td>#{date}
           <td>#{amt}
