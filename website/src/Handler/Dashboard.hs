@@ -24,4 +24,5 @@ getDashboardR = do
                 (map (_nextDonationDate . entityVal))
                 (selectList [] [])
         pure DashboardModel {..})
+    let pledgeAmount :: Double = 0.01 * fromIntegral crowdSize
     $(widget "page/dashboard" "Dashboard")

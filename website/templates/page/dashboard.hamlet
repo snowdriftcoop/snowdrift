@@ -6,7 +6,7 @@ $maybe _ <- mpledge
     <a href=@{SnowdriftProjectR}>Snowdrift.coop</a>.
   <p>
     You are currently matching a crowd of #{crowdSize} patrons.
-    The current value of your pledge is {{pledgeAmount}}<sup>1</sup>. The
+    The current value of your pledge is #{pledgeAmount}<sup>1</sup>. The
     next scheduled donation will take place on #{nextDonation}.
   <p>
     Your payment method is Stripe. You may
