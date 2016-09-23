@@ -27,6 +27,3 @@ DonationHistory
     amount Int32
 
     deriving (Show)
-
-NextDonation
-    date DonationDay

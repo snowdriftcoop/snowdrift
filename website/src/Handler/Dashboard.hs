@@ -8,7 +8,6 @@ data DashboardModel = DashboardModel
         { donationHistory :: [DonationHistory]
         , mpledge :: Maybe (Entity Pledge)
         , crowdSize :: Int
-        , nextDonation :: DonationDay
         }
 
 getDashboardR :: Handler Html
@@ -19,10 +18,6 @@ getDashboardR = do
             selectList [DonationHistoryUsr ==. uid] [Asc DonationHistoryDate]
         mpledge <- getBy (UniquePledge uid)
         crowdSize <- count ([] :: [Filter Pledge])
-        [nextDonation] <-
-            fmap
-                (map (_nextDonationDate . entityVal))
-                (selectList [] [])
         pure DashboardModel {..})
     let pledgeAmount :: Double = 0.01 * fromIntegral crowdSize
     $(widget "page/dashboard" "Dashboard")
