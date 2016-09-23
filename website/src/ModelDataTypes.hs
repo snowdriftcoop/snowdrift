@@ -7,18 +7,19 @@ import Data.Time
 import Database.Persist.Sql
 import Text.Blaze.Html
 
-data PledgeAction = MakePledge | RemovePledge deriving (Read, Show)
+data PledgeAction = CreatePledge | DeletePledge deriving (Read, Show)
 
 instance PersistField PledgeAction where
     toPersistValue = \case
-        MakePledge -> PersistDbSpecific "make_pledge"
-        RemovePledge -> PersistDbSpecific "remove_pledge"
+        CreatePledge -> PersistDbSpecific "create_pledge"
+        DeletePledge -> PersistDbSpecific "delete_pledge"
 
     fromPersistValue (PersistDbSpecific x)
-        | x == "make_pledge" = Right MakePledge
-        | x == "remove_pledge" = Right RemovePledge
+        | x == "create_pledge" = Right CreatePledge
+        | x == "delete_pledge" = Right DeletePledge
         | otherwise = Left "Unknown enum value in PledgeAction"
-    fromPersistValue _ = Left "PledgeValue must be converted from PersistDbSpecific"
+    fromPersistValue _ =
+        Left "PledgeValue must be converted from PersistDbSpecific"
 
 instance PersistFieldSql PledgeAction where
     sqlType _ = SqlOther "pledge_action"

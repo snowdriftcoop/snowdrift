@@ -8,10 +8,6 @@ $maybe _ <- muid
   $maybe (Entity _ p) <- userPledge
     <p>
       You have been pledged to Snowdrift since #{show (_pledgeSince p)}
-    <p>
-      If would like to stop supporting Snowdrift.coop, you can
-      <a href={{unpledge}}>remove yourself from the crowd</a>. Your fellow
-      supporters will be sad to see you go!
   $nothing
     <form method=post action=@{PledgeSnowdriftR}>
       <button>
@@ -31,6 +27,15 @@ $nothing
 <p>
   Snowdrift currently has a crowd of #{projectCrowdSize} patrons.
   The current value of a pledge is #{pledgeAmount}<sup>1</sup>.
+
+$maybe _ <- userPledge <* muid
+  <p>
+    If would like to stop supporting Snowdrift.coop, you can remove
+    yourself from the crowd. Your fellow supporters will be sad to see
+    you go!
+    <form method=post action=@{PledgeSnowdriftR}>
+      ^{deletePledgeWidget}
+      <button>unpledge from Snowdrift.coop
 
 <h2>Donation History
 $case donationHistory

@@ -24,7 +24,7 @@
 /payment-info PaymentInfoR GET POST
 
 /p/snowdrift SnowdriftProjectR GET
-/pledge/snowdrift PledgeSnowdriftR POST
+/pledge/snowdrift PledgeSnowdriftR POST DELETE
 
 -- ## Backward compatibility routes
 
