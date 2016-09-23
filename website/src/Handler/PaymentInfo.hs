@@ -24,13 +24,16 @@ paymentForm tokenId =
 
 getPaymentInfoR :: Handler Html
 getPaymentInfoR = do
-    email <- _userEmail . entityVal <$> requireAuth
+    User {..} <- entityVal <$> requireAuth
+    deletePaymentInfoWidget <- fst <$> generateFormPost deletePaymentInfoForm
     publishableKey <-
         fmap
             (decodeUtf8 . getStripeKey . appStripePublishableKey . appSettings)
             getYesod
     tokenId <- newIdent
-    (paymentWidget, enctype) <- generateFormPost (paymentForm tokenId)
+    (paymentWidget, enctype) <-
+        generateFormPost
+            (identifyForm modFormId (paymentForm tokenId))
     -- Unfortunately, "page/payment-info" is duplicated in this section of
     -- code. Triplicated, now. :) Fixing this requires reworking the whole
     -- navbarLayout scheme. In turn, that idea lends itself to the idea of
@@ -42,10 +45,19 @@ getPaymentInfoR = do
         paymentButtonId <- newIdent
         $(widgetFile "page/payment-info")
 
+delFormId, modFormId :: Text
+delFormId = "delete-payment-info"
+modFormId = "modify-payment-info"
+
+deletePaymentInfoForm :: Form Bool
+deletePaymentInfoForm =
+    identifyForm delFormId (renderDivsNoLabels deleteFromPost)
+
 postPaymentInfoR :: Handler Html
 postPaymentInfoR = do
     Entity uid u <- requireAuth
-    ((formResult, _), _) <- runFormPost (paymentForm "")
+    ((formResult, _), _) <-
+        runFormPost (identifyForm modFormId (paymentForm ""))
     case formResult of
         FormSuccess token -> do
             let stripeAction = maybe

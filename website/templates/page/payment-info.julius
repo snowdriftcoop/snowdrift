@@ -9,7 +9,7 @@ window.addEventListener('load', function() {
         zipCode: true,
         panelLabel: 'Register',
         allowRememberMe: false,
-        email: '#{rawJS email}',
+        email: '#{rawJS _userEmail}',
         token: function(token) {
             var tokField = document.querySelector('##{rawJS tokenId}');
             tokField.value = token.id;
