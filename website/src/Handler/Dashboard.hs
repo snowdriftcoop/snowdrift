@@ -12,7 +12,7 @@ data DashboardModel = DashboardModel
 
 getDashboardR :: Handler Html
 getDashboardR = do
-    Entity uid _ <- requireAuth
+    Entity uid User{..} <- requireAuth
     DashboardModel {..} <- runDB (do
         donationHistory <- map entityVal <$>
             selectList [DonationHistoryUsr ==. uid] [Asc DonationHistoryDate]

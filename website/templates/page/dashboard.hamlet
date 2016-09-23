@@ -9,7 +9,8 @@ $maybe _ <- mpledge
     The current value of your pledge is #{pledgeAmount}<sup>1</sup>.
   <p>
     Your payment method is Stripe. You may
-    <a href=@{PaymentInfoR}>configure your payment settings</a>.
+    <a href=@{PaymentInfoR}>configure your payment settings</a>
+    (reminder: there is proprietary JavaScript on that page).
 $nothing
   <.notpledged>
     <p>
@@ -21,22 +22,21 @@ $nothing
       attention: Snowdrift itself! Enabling one (and only one) project
       allows us to shake out the kinks of the system. Self-sustainability
       and continued work on the mechanism is the goal.
-    <.mockup>
-      {{\$maybe _ <- _userStripeCustomer}}
-        <form method=post action=@{PledgeSnowdriftR}>
-          To join the crowdmatching system,
-          <button>pledge now!
-      {{\$nothing}}
-        <p>
-          Before pledging, you must configure payment settings through
-          Stripe.
-        <p>
-          <b>Please note!</b> At this stage of our beta, we are relying on
-          Stripe's proprietary JavaScript to maintain compliance while
-          handling credit card information. (There's no technical reason
-          for it to be proprietary; I suspect it's just a lack of
-          priorities on their part.)
-        <p><a href=@{PaymentInfoR}>Continue to payment settings</a>
+    $maybe _ <- _userStripeCustomer
+      <form method=post action=@{PledgeSnowdriftR}>
+        To join the crowdmatching system,
+        <button>pledge now!
+    $nothing
+      <p>
+        Before pledging, you must configure payment settings through
+        Stripe.
+      <p>
+        <b>Please note!</b> At this stage of our beta, we are relying on
+        Stripe's proprietary JavaScript to maintain compliance while
+        handling credit card information. (There's no technical reason
+        for it to be proprietary; I suspect it's just a lack of
+        priorities on their part.)
+      <p><a href=@{PaymentInfoR}>Continue to payment settings</a>
 <h2>Donation History
 $case donationHistory
   $of []
