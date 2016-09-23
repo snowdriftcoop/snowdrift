@@ -4,7 +4,6 @@ import Import
 
 import Handler.Pledge (pledgeDeleteForm)
 import Handler.TH
-import Handler.Util
 import qualified Model.Skeleton as Skeleton
 
 -- | For MVP, there is one, hard-coded project: Snowdrift

@@ -2,6 +2,7 @@
 module Handler.PaymentInfo
   ( getPaymentInfoR
   , postPaymentInfoR
+  , deletePaymentInfoR
   ) where
 
 import Import
@@ -54,7 +55,7 @@ deletePaymentInfoForm =
     identifyForm delFormId (renderDivsNoLabels deleteFromPost)
 
 postPaymentInfoR :: Handler Html
-postPaymentInfoR = do
+postPaymentInfoR = handleDelete delFormId deletePaymentInfoR $ do
     Entity uid u <- requireAuth
     ((formResult, _), _) <-
         runFormPost (identifyForm modFormId (paymentForm ""))
@@ -64,13 +65,37 @@ postPaymentInfoR = do
                     createCustomer'
                     (updateCustomer' . CustomerId)
                     (_userStripeCustomer u)
-            (runDB . storeCustomer uid <=< stripePaymentInfoHandler)
+            (runDB . storeCustomer uid <=< stripeCustomerHandler)
                 =<< stripeAction u token
             alertSuccess "Payment information stored"
             redirect HomeR
         _ -> do
             alertDanger "There was something wrong with your form submission."
             redirect PaymentInfoR
+
+deletePaymentInfoR :: Handler Html
+deletePaymentInfoR = do
+    Entity uid User{..} <- requireAuth
+    case _userStripeCustomer of
+        Nothing ->
+            alertWarning "There was no payment information on file for you!"
+        Just cid -> do
+            ss <- snowstripe (deleteCustomer (CustomerId cid))
+            either
+                stripeError
+                (const $ do
+                    runDB $ do
+                        pl <- getBy (UniquePledge uid)
+                        maybe (pure ()) delete' pl
+                    alertSuccess "Your payment information has been cleared.")
+                ss
+    redirect DashboardR
+  where
+    delete' (Entity pid Pledge{..}) = do
+        now <- liftIO getCurrentTime
+        insert_ (PledgeHistory _pledgeUsr now DeletePledge)
+        delete pid
+        update _pledgeUsr [UserStripeCustomer =. Nothing]
 
 storeCustomer :: MonadHandler m => Key User -> CustomerId -> SqlPersistT m ()
 storeCustomer uid (CustomerId cid) =
@@ -90,22 +115,27 @@ updateCustomer' :: CustomerId
 updateCustomer' cid User{..} (PaymentToken tok) =
     snowstripe (updateCustomer cid -&- TokenId tok)
 
--- | The preceding two methods use the same error catching. Pretty bare
--- bones, but at least there will be a log.
-stripePaymentInfoHandler :: Either StripeError Customer -> Handler CustomerId
-stripePaymentInfoHandler =
+-- | The preceding methods use the same error catching. Pretty bare bones,
+-- but at least there will be a log.
+stripeCustomerHandler :: Either StripeError Customer -> Handler CustomerId
+stripeCustomerHandler =
     either
-        (\er -> do
-             alertDanger [shamlet|
-                 We at Snowdrift.coop did the best we could, but Stripe
-                 experienced a problem. Stripe says, "#{errorMsg er}"
-                 ...Maybe try again?
-             |]
-             $logErrorSH er
-             redirect PaymentInfoR)
+        stripeError
         (pure . \case
             Customer{..} -> customerId
             -- This case "should never happen" :D But if it does, we can
             -- just ignore it for now.
             -- See also https://github.com/dmjio/stripe/issues/40
             DeletedCustomer{..} -> deletedCustomerId)
+
+stripeError :: StripeError -> Handler a
+stripeError er = do
+    alertDanger [shamlet|
+        <p>
+            We at Snowdrift.coop did the best we could, but Stripe
+            experienced a problem. Stripe says, "#{errorMsg er}"
+        <p>
+            Your payment info was <em>not</em> modified. Maybe try again?
+    |]
+    $logErrorSH er
+    redirect PaymentInfoR
