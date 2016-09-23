@@ -76,21 +76,18 @@ postPaymentInfoR = handleDelete delFormId deletePaymentInfoR $ do
 deletePaymentInfoR :: Handler Html
 deletePaymentInfoR = do
     Entity uid User{..} <- requireAuth
-    case _userStripeCustomer of
-        Nothing ->
-            alertWarning "There was no payment information on file for you!"
-        Just cid -> do
-            ss <- snowstripe (deleteCustomer (CustomerId cid))
-            either
-                stripeError
-                (const $ do
-                    runDB $ do
-                        pl <- getBy (UniquePledge uid)
-                        maybe (pure ()) delete' pl
-                    alertSuccess "Your payment information has been cleared.")
-                ss
+    maybe
+        (alertWarning "There was no payment information on file for you!")
+        (stripeDeletionHandler uid <=< snowstripe . deleteCustomer . CustomerId)
+        _userStripeCustomer
     redirect DashboardR
   where
+    stripeDeletionHandler uid =
+        either
+            stripeError
+            (const $ do
+                runDB (maybe (pure ()) delete' =<< getBy (UniquePledge uid))
+                alertSuccess "Your payment information has been cleared.")
     delete' (Entity pid Pledge{..}) = do
         now <- liftIO getCurrentTime
         insert_ (PledgeHistory _pledgeUsr now DeletePledge)
