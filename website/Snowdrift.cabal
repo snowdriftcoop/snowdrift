@@ -135,6 +135,21 @@ executable Snowdrift
 
     default-language: Haskell2010
 
+-- executable crowdmatch {{{1
+executable crowdmatch
+    if flag(library-only)
+        buildable: False
+    main-is: crowdmatch.hs
+    hs-source-dirs: app
+    build-depends: base, Snowdrift
+    default-language: Haskell2010
+
+    default-extensions:
+        NoImplicitPrelude
+        OverloadedStrings
+        ScopedTypeVariables
+        RecordWildCards
+
 -- test-suite test {{{1
 test-suite test
     type:           exitcode-stdio-1.0

@@ -26,6 +26,6 @@ getUserAvatar defaultRoute muser = do
                     , optSize = DefaultSize
                     , optTryGravatar = False
                     })
-            -- | When developing with no internet connection, this exception
+            -- When developing with no internet connection, this exception
             -- happens.
             (\(_ :: PatternMatchFail) -> pure Nothing))

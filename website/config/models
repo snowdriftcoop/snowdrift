@@ -21,9 +21,17 @@ PledgeHistory
 
     deriving (Show)
 
+-- Soon to be split into a specific mechanism thing
+
 DonationHistory
     usr UserId
     date DonationDay
     amount Int32
 
     deriving (Show)
+
+Wallet
+    usr UserId
+    balance Int32
+
+    UniqueWallet usr
