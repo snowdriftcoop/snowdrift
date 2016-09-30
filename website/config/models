@@ -4,34 +4,41 @@ User sql=usr
     created UTCTime
     passUpdated UTCTime
     stripeCustomer Text Maybe
-
+    --
     UniqueUsr email
     deriving (Show)
 
 Pledge
     usr UserId
     since UTCTime
-
+    --
     UniquePledge usr
 
 PledgeHistory
     usr UserId
     time UTCTime
     action PledgeAction
-
+    --
     deriving (Show)
 
 -- Soon to be split into a specific mechanism thing
 
 DonationHistory
     usr UserId
-    date DonationDay
+    time DonationTime
     amount Int32
+    --
+    deriving (Show)
 
+CrowdmatchHistory
+    usr UserId
+    date CrowdmatchDay
+    amount Int32
+    --
     deriving (Show)
 
 Wallet
     usr UserId
     balance Int32
-
+    --
     UniqueWallet usr

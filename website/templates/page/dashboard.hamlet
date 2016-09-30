@@ -44,12 +44,12 @@ $case donationHistory
   $of _
     <table>
       <tr>
-        <th>Date
+        <th>Time
         <th>Amount
         <th>Project
       $forall DonationHistory{..} <- donationHistory
         <tr>
-          <td>#{_donationHistoryDate}
+          <td>#{_donationHistoryTime}
           <td>#{_donationHistoryAmount}
           <td><a href=@{SnowdriftProjectR}>Snowdrift.coop</a>
 <hr>

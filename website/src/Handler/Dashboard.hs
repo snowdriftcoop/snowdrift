@@ -15,7 +15,7 @@ getDashboardR = do
     Entity uid User{..} <- requireAuth
     DashboardModel {..} <- runDB (do
         donationHistory <- map entityVal <$>
-            selectList [DonationHistoryUsr ==. uid] [Asc DonationHistoryDate]
+            selectList [DonationHistoryUsr ==. uid] [Asc DonationHistoryTime]
         mpledge <- getBy (UniquePledge uid)
         crowdSize <- count ([] :: [Filter Pledge])
         pure DashboardModel {..})

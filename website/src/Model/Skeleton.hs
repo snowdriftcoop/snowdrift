@@ -15,7 +15,7 @@ import Database.Esqueleto
 
 {-# ANN module ("HLint: ignore Redundant bracket" :: String) #-}
 
-projectDonationHistory :: MonadIO m => SqlPersistT m [(DonationDay, Int)]
+projectDonationHistory :: MonadIO m => SqlPersistT m [(DonationTime, Int)]
 projectDonationHistory =
     fmap (map ((_1 %~ unValue) . (_2 %~ fromMaybe 0 . unValue)))
          donationHistoryQ
@@ -23,8 +23,8 @@ projectDonationHistory =
     donationHistoryQ =
         select $
             from $ \dh -> do
-                groupBy (date dh)
-                orderBy [asc (date dh)]
-                pure (date dh, total dh)
-    date = (^. DonationHistoryDate)
+                groupBy (time dh)
+                orderBy [asc (time dh)]
+                pure (time dh, total dh)
+    time = (^. DonationHistoryTime)
     total = sum_ . (^. DonationHistoryAmount)

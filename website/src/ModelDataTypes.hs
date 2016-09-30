@@ -24,7 +24,13 @@ instance PersistField PledgeAction where
 instance PersistFieldSql PledgeAction where
     sqlType _ = SqlOther "pledge_action"
 
-newtype DonationDay = DonationDay Day deriving (PersistFieldSql, PersistField, Show)
+newtype DonationTime = DonationTime UTCTime deriving (PersistFieldSql, PersistField, Show)
 
-instance ToMarkup DonationDay where
-    toMarkup (DonationDay d) = toMarkup (showGregorian d)
+instance ToMarkup DonationTime where
+    toMarkup (DonationTime t) =
+        toMarkup (formatTime defaultTimeLocale "%Y-%m-%d %H:%M (%Z)" t)
+
+newtype CrowdmatchDay = CrowdmatchDay Day deriving (PersistFieldSql, PersistField, Show)
+
+instance ToMarkup CrowdmatchDay where
+    toMarkup (CrowdmatchDay d) = toMarkup (showGregorian d)
