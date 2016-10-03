@@ -17,7 +17,8 @@ honk = do
     now <- liftIO getCurrentTime
     mapM_ (recordDonation (DonationTime now) projectValue) pledges
 
-recordDonation :: MonadIO m => DonationTime -> Int32 -> Pledge -> SqlPersistT m ()
+recordDonation
+    :: MonadIO m => DonationTime -> Int32 -> Pledge -> SqlPersistT m ()
 recordDonation now amt Pledge{..} = do
     insert_ (DonationHistory _pledgeUsr now amt)
     void (upsert (Wallet _pledgeUsr amt) [WalletBalance +=. amt])
