@@ -7,11 +7,13 @@ module Main where
 import Import.NoFoundation
 
 import Data.Ratio
+import RunPersist
 
-main = putStrLn "Under construction"
+main :: IO ()
+main = runPersist crowdmatch
 
-honk :: MonadIO m => SqlPersistT m ()
-honk = do
+crowdmatch :: MonadIO m => SqlPersistT m ()
+crowdmatch = do
     pledges :: [Pledge] <- map entityVal <$> selectList [] []
     let projectValue = fromIntegral (length pledges)
     now <- liftIO getCurrentTime

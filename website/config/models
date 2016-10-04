@@ -8,6 +8,8 @@ User sql=usr
     UniqueUsr email
     deriving (Show)
 
+-- Soon to be split into a specific mechanism thing
+
 Pledge
     usr UserId
     since UTCTime
@@ -20,8 +22,6 @@ PledgeHistory
     action PledgeAction
     --
     deriving (Show)
-
--- Soon to be split into a specific mechanism thing
 
 DonationHistory
     usr UserId
