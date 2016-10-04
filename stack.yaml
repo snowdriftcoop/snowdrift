@@ -10,6 +10,7 @@ packages:
     subdirs:
       - yesod-bin
     extra-dep: true
+  - run-persist
 extra-deps:
   - libravatar-0.4
   - titlecase-0.1.0.2
