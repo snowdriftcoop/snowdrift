@@ -15,13 +15,18 @@ honk = do
     pledges :: [Pledge] <- map entityVal <$> selectList [] []
     let projectValue = fromIntegral (length pledges)
     now <- liftIO getCurrentTime
-    mapM_ (recordDonation (DonationTime now) projectValue) pledges
+    mapM_
+        (recordDonation (DonationTime now) (DonationUnit projectValue))
+        pledges
 
 recordDonation
-    :: MonadIO m => DonationTime -> Int32 -> Pledge -> SqlPersistT m ()
+    :: MonadIO m => DonationTime -> DonationUnit -> Pledge -> SqlPersistT m ()
 recordDonation now amt Pledge{..} = do
     insert_ (DonationHistory _pledgeUsr now amt)
-    void (upsert (Wallet _pledgeUsr amt) [WalletBalance +=. amt])
+    void
+        (upsert
+            (DonationPayable _pledgeUsr amt) [DonationPayableBalance +=. amt])
+
 -- Take the set of pledges, calculate what everyone owes and to whom, write
 -- it out.
 --

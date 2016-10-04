@@ -26,19 +26,19 @@ PledgeHistory
 DonationHistory
     usr UserId
     time DonationTime
-    amount Int32
+    amount DonationUnit
     --
     deriving (Show)
 
 CrowdmatchHistory
     usr UserId
     date CrowdmatchDay
-    amount Int32
+    amount DonationUnit
     --
     deriving (Show)
 
-Wallet
+DonationPayable
     usr UserId
-    balance Int32
+    balance DonationUnit
     --
-    UniqueWallet usr
+    UniqueDonationPayable usr

@@ -26,11 +26,19 @@ instance PersistFieldSql PledgeAction where
 
 newtype DonationTime = DonationTime UTCTime deriving (PersistFieldSql, PersistField, Show)
 
+newtype CrowdmatchDay = CrowdmatchDay Day deriving (PersistFieldSql, PersistField, Show)
+
+-- | Represents a donation amount. 1 DonationUnit == 0.001 US Dollars.
+newtype DonationUnit = DonationUnit Int32 deriving (PersistFieldSql, PersistField, Show)
+
+--
+-- TODO: ToMarkup instances should probably go somewhere else, since that
+-- is a visualization concern.
+--
+
 instance ToMarkup DonationTime where
     toMarkup (DonationTime t) =
         toMarkup (formatTime defaultTimeLocale "%Y-%m-%d %H:%M (%Z)" t)
-
-newtype CrowdmatchDay = CrowdmatchDay Day deriving (PersistFieldSql, PersistField, Show)
 
 instance ToMarkup CrowdmatchDay where
     toMarkup (CrowdmatchDay d) = toMarkup (showGregorian d)

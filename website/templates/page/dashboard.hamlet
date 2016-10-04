@@ -50,7 +50,7 @@ $case donationHistory
       $forall DonationHistory{..} <- donationHistory
         <tr>
           <td>#{_donationHistoryTime}
-          <td>#{_donationHistoryAmount}
+          <td>#{show _donationHistoryAmount} Donation Units
           <td><a href=@{SnowdriftProjectR}>Snowdrift.coop</a>
 <hr>
 <p>
