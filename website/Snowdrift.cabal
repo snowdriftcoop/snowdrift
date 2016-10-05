@@ -98,9 +98,9 @@ library
         , mime-mail
         , monad-logger           >= 0.3     && < 0.4
         , nonce
-        , persistent             >= 2.0     && < 2.3
-        , persistent-postgresql  >= 2.1.1   && < 2.3
-        , persistent-template    >= 2.0     && < 2.3
+        , persistent
+        , persistent-postgresql
+        , persistent-template
         , pwstore-fast
         , shakespeare            >= 2.0     && < 2.1
         , stripe-haskell

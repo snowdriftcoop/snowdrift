@@ -6,7 +6,7 @@ packages:
   - website
   - location:
       git: https://git.snowdrift.coop/sd/yesod.git
-      commit: 697d561eb727ed430f11c4b0bb19c9fc5f867db4
+      commit: 884c2ef15b005587829f157fb576fbfe747b98b1
     subdirs:
       - yesod-bin
     extra-dep: true
