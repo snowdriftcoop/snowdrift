@@ -5,9 +5,15 @@ import ClassyPrelude
 
 import Data.Time
 import Database.Persist.Sql
+import Database.Persist.TH
 import Text.Blaze.Html
 
-data PledgeAction = CreatePledge | DeletePledge deriving (Read, Show)
+data PledgeAction = CreatePledge | DeletePledge deriving (Show, Read)
+
+{-
+ - This is what PledgeAction would look like as a native Postgres enum
+ - type. I'll wait for Persistent to support enums directly, with
+ - migrations etc built in.
 
 instance PersistField PledgeAction where
     toPersistValue = \case
@@ -23,6 +29,9 @@ instance PersistField PledgeAction where
 
 instance PersistFieldSql PledgeAction where
     sqlType _ = SqlOther "pledge_action"
+-}
+
+derivePersistField "PledgeAction"
 
 newtype DonationTime = DonationTime UTCTime deriving (PersistFieldSql, PersistField, Show)
 
