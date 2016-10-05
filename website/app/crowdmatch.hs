@@ -16,15 +16,15 @@ crowdmatch :: MonadIO m => SqlPersistT m ()
 crowdmatch = do
     pledges :: [Pledge] <- map entityVal <$> selectList [] []
     let projectValue = fromIntegral (length pledges)
-    now <- liftIO getCurrentTime
+    today <- utctDay <$> liftIO getCurrentTime
     mapM_
-        (recordDonation (DonationTime now) (DonationUnit projectValue))
+        (recordCrowdmatch (CrowdmatchDay today) (DonationUnit projectValue))
         pledges
 
-recordDonation
-    :: MonadIO m => DonationTime -> DonationUnit -> Pledge -> SqlPersistT m ()
-recordDonation now amt Pledge{..} = do
-    insert_ (DonationHistory _pledgeUsr now amt)
+recordCrowdmatch
+    :: MonadIO m => CrowdmatchDay -> DonationUnit -> Pledge -> SqlPersistT m ()
+recordCrowdmatch day amt Pledge{..} = do
+    insert_ (CrowdmatchHistory _pledgeUsr day amt)
     void
         (upsert
             (DonationPayable _pledgeUsr amt) [DonationPayableBalance +=. amt])
