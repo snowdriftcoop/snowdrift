@@ -150,6 +150,22 @@ executable crowdmatch
         ScopedTypeVariables
         RecordWildCards
 
+-- executable make-payments {{{1
+executable make-payments
+    if flag(library-only)
+        buildable: False
+    main-is: make-payments.hs
+    hs-source-dirs: app
+    build-depends: base, Snowdrift, lens, run-persist
+    default-language: Haskell2010
+
+    default-extensions:
+        NoImplicitPrelude
+        OverloadedStrings
+        ScopedTypeVariables
+        RecordWildCards
+        GeneralizedNewtypeDeriving
+
 -- test-suite test {{{1
 test-suite test
     type:           exitcode-stdio-1.0

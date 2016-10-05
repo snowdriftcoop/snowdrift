@@ -38,7 +38,18 @@ newtype DonationTime = DonationTime UTCTime deriving (PersistFieldSql, PersistFi
 newtype CrowdmatchDay = CrowdmatchDay Day deriving (PersistFieldSql, PersistField, Show)
 
 -- | Represents a donation amount. 1 DonationUnit == 0.001 US Dollars.
-newtype DonationUnit = DonationUnit Int32 deriving (PersistFieldSql, PersistField, Show)
+newtype DonationUnit =
+    DonationUnit Int32
+    deriving
+        ( PersistFieldSql
+        , PersistField
+        , Show
+        , Num
+        , Integral
+        , Enum
+        , Real
+        , Ord
+        , Eq)
 
 --
 -- TODO: ToMarkup instances should probably go somewhere else, since that
