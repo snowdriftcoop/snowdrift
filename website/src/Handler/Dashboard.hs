@@ -19,5 +19,5 @@ getDashboardR = do
         mpledge <- getBy (UniquePledge uid)
         crowdSize <- count ([] :: [Filter Pledge])
         pure DashboardModel {..})
-    let pledgeAmount :: Double = 0.01 * fromIntegral crowdSize
+    let pledgeAmount :: Double = 0.001 * fromIntegral crowdSize
     $(widget "page/dashboard" "Dashboard")

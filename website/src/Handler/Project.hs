@@ -16,7 +16,7 @@ getSnowdriftProjectR = do
             crowd <- count ([] :: [Filter Pledge])
             mpledge <- maybe (pure Nothing) (getBy . UniquePledge) muid
             return (dh, crowd, mpledge)
-    let pledgeAmount :: Double = 0.01 * fromIntegral projectCrowdSize
+    let pledgeAmount :: Double = 0.001 * fromIntegral projectCrowdSize
     deletePledgeWidget <- maybe (pure "") (const genDeleteWidget) userPledge
     $(widget "page/snowdrift-project" "Snowdrift.coop Project")
   where
