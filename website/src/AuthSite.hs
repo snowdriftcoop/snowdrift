@@ -299,17 +299,13 @@ priviligedProvisionalUser :: MonadIO m
 priviligedProvisionalUser creds = do
     verf <- liftIO (genVerificationToken creds)
     prov <- liftIO (provisional creds verf)
-    _ <- upsertOn (UniqueProvisionalUser (provisionalUserEmail prov)) prov []
+    _ <- upsertBy (UniqueProvisionalUser (provisionalUserEmail prov)) prov []
     pure verf
   where
-    upsertOn uniqueKey record updates = do
-        mExists <- getBy uniqueKey
-        k <- case mExists of
-            Just (Entity k _) -> do
-              when (null updates) (replace k record)
-              return k
-            Nothing           -> insert record
-        Entity k `liftM` updateGet k updates
+    upsertBy uniqueKey record updates = do
+        mrecord <- getBy uniqueKey
+        maybe (insertEntity record) (`updateGetEntity` updates) mrecord
+    updateGetEntity (Entity k _) = fmap (Entity k) . updateGet k
 
 -- | Log out by deleting the session var
 logout :: Yesod master => HandlerT master IO ()
