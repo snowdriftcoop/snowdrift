@@ -4,6 +4,7 @@ module Model (module Model) where
 
 import ClassyPrelude.Yesod
 import Database.Persist.Quasi
+import Web.Stripe.Customer (CustomerId(..))
 
 import ModelDataTypes as Model
 

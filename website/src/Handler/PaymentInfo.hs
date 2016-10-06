@@ -63,7 +63,7 @@ postPaymentInfoR = handleDelete delFormId deletePaymentInfoR $ do
         FormSuccess token -> do
             let stripeAction = maybe
                     createCustomer'
-                    (updateCustomer' . CustomerId)
+                    updateCustomer'
                     (_userStripeCustomer u)
             (runDB . storeCustomer uid <=< stripeCustomerHandler)
                 =<< stripeAction u token
@@ -78,7 +78,7 @@ deletePaymentInfoR = do
     Entity uid User{..} <- requireAuth
     maybe
         (alertWarning "There was no payment information on file for you!")
-        (stripeDeletionHandler uid <=< snowstripe . deleteCustomer . CustomerId)
+        (stripeDeletionHandler uid <=< snowstripe . deleteCustomer)
         _userStripeCustomer
     redirect DashboardR
   where
@@ -95,7 +95,7 @@ deletePaymentInfoR = do
         update _pledgeUsr [UserStripeCustomer =. Nothing]
 
 storeCustomer :: MonadHandler m => Key User -> CustomerId -> SqlPersistT m ()
-storeCustomer uid (CustomerId cid) =
+storeCustomer uid cid =
     -- FIXME: Store an event
     update uid [UserStripeCustomer =. Just cid]
 

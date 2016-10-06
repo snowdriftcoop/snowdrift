@@ -17,8 +17,10 @@ import Data.Function (on)
 import Data.Ratio
 import RunPersist
 
+import Model.Skeleton (patronBalances)
+
 main :: IO ()
-main = error "In progress" -- runPersist makePayments
+main = makePayments
 
 newtype ChargeCent =
     ChargeCent Int32
@@ -71,7 +73,8 @@ sufficientCharge x =
 minimumPayment :: DonationUnit
 minimumPayment = DonationUnit 4210
 
-makePayments :: MonadIO m => SqlPersistT m ()
+makePayments :: IO ()
 makePayments = do
-    charges <- selectList [DonationPayableBalance >=. minimumPayment] []
-    return ()
+    charges <- runPersist $ patronBalances minimumPayment
+    -- send a bunch of charges to Stripe, and then deal with the return values
+    mapM_ print charges

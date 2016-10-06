@@ -3,7 +3,7 @@ User sql=usr
     digest ByteString
     created UTCTime
     passUpdated UTCTime
-    stripeCustomer Text Maybe
+    stripeCustomer CustomerId Maybe
     --
     UniqueUsr email
     deriving (Show)

@@ -1,3 +1,6 @@
+{-# LANGUAGE StandaloneDeriving #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
+
 -- | Define types used in mkPersist, to avoid the GHC stage restriction.
 module ModelDataTypes where
 
@@ -7,6 +10,11 @@ import Data.Time
 import Database.Persist.Sql
 import Database.Persist.TH
 import Text.Blaze.Html
+import Web.Stripe.Customer (CustomerId(..))
+
+-- | Some standalone derivations so we can put CustomerId in the DB.
+deriving instance PersistField CustomerId
+deriving instance  PersistFieldSql CustomerId
 
 data PledgeAction = CreatePledge | DeletePledge deriving (Show, Read)
 
