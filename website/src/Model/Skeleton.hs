@@ -34,8 +34,8 @@ projectDonationHistory =
 -- | Fetch patron balances over a certain amount (using '>=')
 patronBalances
     :: MonadIO m
-    => DonationUnit -- ^ Minimum amount (closed range)
-    -> SqlPersistT m [(UserId, CustomerId, DonationUnit)]
+    => DonationUnits -- ^ Minimum amount (closed range)
+    -> SqlPersistT m [(UserId, CustomerId, DonationUnits)]
 patronBalances minDonation =
     fmap
         -- | This use of fromJust is justified by the WHERE clause in the

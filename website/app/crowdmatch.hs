@@ -18,11 +18,11 @@ crowdmatch = do
     let projectValue = fromIntegral (length pledges)
     today <- utctDay <$> liftIO getCurrentTime
     mapM_
-        (recordCrowdmatch (CrowdmatchDay today) (DonationUnit projectValue))
+        (recordCrowdmatch (CrowdmatchDay today) (DonationUnits projectValue))
         pledges
 
 recordCrowdmatch
-    :: MonadIO m => CrowdmatchDay -> DonationUnit -> Pledge -> SqlPersistT m ()
+    :: MonadIO m => CrowdmatchDay -> DonationUnits -> Pledge -> SqlPersistT m ()
 recordCrowdmatch day amt Pledge{..} = do
     insert_ (CrowdmatchHistory _pledgeUsr day amt)
     void

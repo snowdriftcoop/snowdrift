@@ -27,7 +27,7 @@ newtype ChargeCents =
     deriving (Show, Num, Integral, Enum, Real, Ord, Eq)
 
 -- | DonationUnits are truncated to usable cents for use in creating charges.
-chargeCents :: Iso' DonationUnit ChargeCents
+chargeCents :: Iso' DonationUnits ChargeCents
 chargeCents = iso toCents fromCents
   where
     fromCents = fromIntegral . (* 10)
@@ -56,7 +56,7 @@ stripeFee = round . (+ 30) . (* 0.029) . fromIntegral
 --
 -- This function is useful for testing, but we memoize its
 -- production-required result below.
-sufficientDonation :: DonationUnit -> Bool
+sufficientDonation :: DonationUnits -> Bool
 sufficientDonation d =
     fee % (fee + view chargeCents d) < maximumFee
   where
@@ -67,11 +67,11 @@ sufficientDonation d =
 -- find it for yourself by running:
 -- >>> :{
 -- >>> let [x] = take 1 . filter (\x -> all sufficientDonation [x..x+35])
--- >>>                  . map DonationUnit
+-- >>>                  . map DonationUnits
 -- >>>                  $ [10..]
 -- >>> in (x, x == minimumDonation)
 -- >>>:}
--- (DonationUnit 3700,True)
+-- (DonationUnits 3700,True)
 --
 -- Note that rounding makes the function discontinuous, with a step every
 -- 1/0.029 ~ 35 DonationUnits. There's a local optimum at ~3610, but we'll just
@@ -106,8 +106,8 @@ sufficientDonation d =
 --
 -- Thus, the minimum donation is 370 cents, or 3700 DonationUnits.
 --
-minimumDonation :: DonationUnit
-minimumDonation = DonationUnit 3700
+minimumDonation :: DonationUnits
+minimumDonation = DonationUnits 3700
 
 makePayments :: IO ()
 makePayments = do
