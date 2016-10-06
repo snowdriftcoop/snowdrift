@@ -36,7 +36,7 @@ patronBalances
     :: MonadIO m
     => DonationUnit -- ^ Minimum amount (closed range)
     -> SqlPersistT m [(UserId, CustomerId, DonationUnit)]
-patronBalances minCharge =
+patronBalances minDonation =
     fmap
         -- | This use of fromJust is justified by the WHERE clause in the
         -- query. Beware.
@@ -48,7 +48,7 @@ patronBalances minCharge =
         from $ \(p `InnerJoin` u) -> do
             on (u ^. UserId ==. p ^. DonationPayableUsr)
             where_
-                ((p ^. DonationPayableBalance >=. val minCharge) &&.
+                ((p ^. DonationPayableBalance >=. val minDonation) &&.
                  not_ (isNothing (u ^. UserStripeCustomer)))
             pure
                 (u ^. UserId, u ^. UserStripeCustomer, p ^. DonationPayableBalance)
