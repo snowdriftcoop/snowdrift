@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -14,13 +15,25 @@ import Import.NoFoundation
 
 import Control.Lens
 import Data.Function (on)
+import Data.Maybe
 import Data.Ratio
 import RunPersist
+import System.Environment
+import Web.Stripe
+import Web.Stripe.Charge
+import Web.Stripe.Customer
+import Web.Stripe.Error
+import qualified Data.ByteString.Char8 as BS
 
 import Model.Skeleton (patronBalances)
 
+
 main :: IO ()
-main = makePayments
+main = do
+    conf <- fmap
+        (StripeConfig . StripeKey . BS.pack . fromJust)
+        (lookupEnv "STRIPE_SECRET_KEY")
+    runPersist (makePayments conf)
 
 newtype ChargeCents =
     ChargeCents Int32
@@ -109,8 +122,35 @@ sufficientDonation d =
 minimumDonation :: DonationUnits
 minimumDonation = DonationUnits 3700
 
-makePayments :: IO ()
-makePayments = do
-    charges <- runPersist (patronBalances minimumDonation)
-    -- send a bunch of charges to Stripe, and then deal with the return values
-    mapM_ print charges
+-- | Send charge commands to Stripe.
+--
+-- This holds a lock on the database to ensure consistency. That could kill
+-- concurrent performance, but right now the only thing hitting the payment
+-- tables is this utility and the crowdmatch utility. None of those should ever
+-- be run simultaneously at present, so I'd rather have bad "performance" on
+-- operational mistakes, rather than bad/duplicate charges. :)
+makePayments :: MonadIO m => StripeConfig -> SqlPersistT m ()
+makePayments conf = do
+    charges <- patronBalances minimumDonation
+    chargeResults <- liftIO (traverse (makeCharge conf) charges)
+    mapM_ recordResults chargeResults
+
+makeCharge
+    :: StripeConfig
+    -> (UserId, CustomerId, DonationUnits)
+    -> IO (Either StripeError Charge)
+makeCharge conf (usr, cust, donation) =
+    stripe conf
+        . (-&- cust)
+        -- Not supported yet.
+        -- . (-&- ExpandParams ["balance_transaction"])
+        . flip createCharge USD
+        . Amount
+        . fromIntegral
+        $ cents
+ where
+  cents = donation ^. chargeCents
+  fee = stripeFee cents
+
+recordResults :: MonadIO m => Either StripeError Charge -> SqlPersistT m ()
+recordResults = liftIO . print

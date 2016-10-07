@@ -8,6 +8,7 @@ import Database.Persist.Postgresql
 import Database.Persist.Sql
 import Database.PostgreSQL.Simple
 
+runPersist :: SqlPersistT IO a -> IO a
 runPersist q = do
     conn <- connectPostgreSQL "" -- Needs env vars
     back <- runStderrLoggingT (normalLogging (logSimpleConn conn))
