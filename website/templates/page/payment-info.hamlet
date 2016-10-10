@@ -1,5 +1,5 @@
 <h1>Payment Information
-$maybe _ <- _userStripeCustomer
+$maybe _ <- _patronStripeCustomer
   <h2>Modifying Your Information
   <p>
     You can update your information using the form below.
@@ -29,7 +29,7 @@ $nothing
   <button id=#{paymentButtonId} .hidden .bigbutton>Register a card
   ^{paymentWidget}
 
-$maybe _ <- _userStripeCustomer
+$maybe _ <- _patronStripeCustomer
   <h2>Deleting Your Information
   <form method=post>
     You can delete your payment info. All your pledges will be removed,

@@ -1,6 +1,6 @@
 <h1>Your crowdmatching dashboard
 
-$maybe _ <- mpledge
+$maybe _ <- mpledgeSince
   <p>
     You are currently pledged to one project,
     <a href=@{SnowdriftProjectR}>Snowdrift.coop</a>.
@@ -22,7 +22,7 @@ $nothing
       attention: Snowdrift itself! Enabling one (and only one) project
       allows us to shake out the kinks of the system. Self-sustainability
       and continued work on the mechanism is the goal.
-    $maybe _ <- _userStripeCustomer
+    $maybe _ <- _patronStripeCustomer
       <form method=post action=@{PledgeSnowdriftR}>
         To join the crowdmatching system,
         <button>pledge now!

@@ -8,6 +8,8 @@ module Handler.PaymentInfo
 import Import
 
 import Control.Monad.Logger
+import Control.Lens
+import Data.Maybe
 import Text.Julius (rawJS)
 import Web.Stripe
 import Web.Stripe.Customer
@@ -25,7 +27,8 @@ paymentForm tokenId =
 
 getPaymentInfoR :: Handler Html
 getPaymentInfoR = do
-    User {..} <- entityVal <$> requireAuth
+    Entity uid User{..} <- requireAuth
+    Entity pid Patron{..} <- runDB (fetchUserPatron uid)
     deletePaymentInfoWidget <- fst <$> generateFormPost deletePaymentInfoForm
     publishableKey <-
         fmap
@@ -56,17 +59,20 @@ deletePaymentInfoForm =
 
 postPaymentInfoR :: Handler Html
 postPaymentInfoR = handleDelete delFormId deletePaymentInfoR $ do
-    Entity uid u <- requireAuth
+    Entity uid User{..} <- requireAuth
     ((formResult, _), _) <-
         runFormPost (identifyForm modFormId (paymentForm ""))
     case formResult of
         FormSuccess token -> do
+            Entity pid Patron{..} <- runDB (fetchUserPatron uid)
             let stripeAction = maybe
-                    createCustomer'
+                    (createCustomer' _userEmail)
                     updateCustomer'
-                    (_userStripeCustomer u)
-            (runDB . storeCustomer uid <=< stripeCustomerHandler)
-                =<< stripeAction u token
+                    _patronStripeCustomer
+            (runDB . storeCustomer uid
+                <=< stripeCustomerHandler
+                <=< stripeAction)
+                token
             alertSuccess "Payment information stored"
             redirect HomeR
         _ -> do
@@ -75,41 +81,45 @@ postPaymentInfoR = handleDelete delFormId deletePaymentInfoR $ do
 
 deletePaymentInfoR :: Handler Html
 deletePaymentInfoR = do
-    Entity uid User{..} <- requireAuth
+    Entity uid User {..} <- requireAuth
+    Entity pid Patron{..} <- runDB (fetchUserPatron uid)
     maybe
         (alertWarning "There was no payment information on file for you!")
-        (stripeDeletionHandler uid <=< snowstripe . deleteCustomer)
-        _userStripeCustomer
+        (stripeDeletionHandler pid <=< snowstripe . deleteCustomer)
+        _patronStripeCustomer
     redirect DashboardR
   where
-    stripeDeletionHandler uid =
+    stripeDeletionHandler pid =
         either
             stripeError
             (const $ do
-                runDB (maybe (pure ()) delete' =<< getBy (UniquePledge uid))
+                runDB (deleteFrom pid)
                 alertSuccess "Your payment information has been cleared.")
-    delete' (Entity pid Pledge{..}) = do
+    deleteFrom pid = do
         now <- liftIO getCurrentTime
-        insert_ (PledgeHistory _pledgeUsr now DeletePledge)
-        delete pid
-        update _pledgeUsr [UserStripeCustomer =. Nothing]
+        insert_ (PledgeHistory pid now DeletePledge)
+        update
+            pid
+                [PatronStripeCustomer =. Nothing, PatronPledgeSince =. Nothing]
 
 storeCustomer :: MonadHandler m => Key User -> CustomerId -> SqlPersistT m ()
-storeCustomer uid cid =
+storeCustomer uid cid = do
     -- FIXME: Store an event
-    update uid [UserStripeCustomer =. Just cid]
+    now <- liftIO getCurrentTime
+    void $ upsert
+        (Patron uid now (Just cid) 0 Nothing)
+        [PatronStripeCustomer =. Just cid]
 
 -- | Wrap over Stripe's native 'createCustomer'
-createCustomer' :: User -> PaymentToken -> Handler (Either StripeError Customer)
-createCustomer' User{..} (PaymentToken tok) =
-    snowstripe (createCustomer -&- Email _userEmail -&- TokenId tok)
+createCustomer' :: Text -> PaymentToken -> Handler (Either StripeError Customer)
+createCustomer' email (PaymentToken tok) =
+    snowstripe (createCustomer -&- Email email -&- TokenId tok)
 
 -- | Wrap over Stripe's native 'updateCustomer'
 updateCustomer' :: CustomerId
-                -> User
                 -> PaymentToken
                 -> Handler (Either StripeError Customer)
-updateCustomer' cid User{..} (PaymentToken tok) =
+updateCustomer' cid (PaymentToken tok) =
     snowstripe (updateCustomer cid -&- TokenId tok)
 
 -- | The preceding methods use the same error catching. Pretty bare bones,

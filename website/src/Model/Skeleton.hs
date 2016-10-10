@@ -30,25 +30,3 @@ projectDonationHistory =
             pure (time dh, total dh)
     time = (^. DonationHistoryTime)
     total = sum_ . (^. DonationHistoryAmount)
-
--- | Fetch patron balances over a certain amount (using '>=')
-patronBalances
-    :: MonadIO m
-    => DonationUnits -- ^ Minimum amount (closed range)
-    -> SqlPersistT m [(UserId, CustomerId, DonationUnits)]
-patronBalances minDonation =
-    fmap
-        -- | This use of fromJust is justified by the WHERE clause in the
-        -- query. Beware.
-        (map ((_1 %~ unValue) . (_2 %~ fromJust . unValue) . (_3 %~ unValue)))
-        balancesQ
-  where
-    balancesQ =
-        select $
-        from $ \(p `InnerJoin` u) -> do
-            on (u ^. UserId ==. p ^. DonationPayableUsr)
-            where_
-                ((p ^. DonationPayableBalance >=. val minDonation) &&.
-                 not_ (isNothing (u ^. UserStripeCustomer)))
-            pure
-                (u ^. UserId, u ^. UserStripeCustomer, p ^. DonationPayableBalance)
