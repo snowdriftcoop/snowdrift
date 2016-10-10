@@ -46,8 +46,19 @@ newtype DonationTime = DonationTime UTCTime deriving (PersistFieldSql, PersistFi
 newtype CrowdmatchDay = CrowdmatchDay Day deriving (PersistFieldSql, PersistField, Show)
 
 -- | Represents a donation amount. 1 DonationUnits == 0.001 US Dollars.
-newtype DonationUnits =
-    DonationUnits Int32
+newtype DonationUnits = DonationUnits Int32
+    deriving
+        ( PersistFieldSql
+        , PersistField
+        , Show
+        , Num
+        , Integral
+        , Enum
+        , Real
+        , Ord
+        , Eq)
+
+newtype Cents = Cents Int32
     deriving
         ( PersistFieldSql
         , PersistField
