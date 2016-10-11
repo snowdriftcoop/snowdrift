@@ -14,7 +14,7 @@ Patron
     usr UserId
     created UTCTime
     stripeCustomer CustomerId Maybe
-    balance DonationUnits
+    donationPayable DonationUnits
     pledgeSince UTCTime Maybe
     UniquePatron usr
 

@@ -30,3 +30,18 @@ projectDonationHistory =
             pure (time dh, total dh)
     time = (^. DonationHistoryTime)
     total = sum_ . (^. DonationHistoryAmount)
+
+activePatrons :: MonadIO m => SqlPersistT m [Entity Patron]
+activePatrons =
+    select $
+    from $ \p -> do
+        where_ (not_ (isNothing (p ^. PatronStripeCustomer)))
+        return p
+
+chargeablePatrons :: MonadIO m => DonationUnits -> SqlPersistT m [Entity Patron]
+chargeablePatrons min =
+    select $
+    from $ \p -> do
+        where_ (not_ (isNothing (p ^. PatronStripeCustomer))
+            &&. (p ^. PatronDonationPayable >=. val min))
+        return p

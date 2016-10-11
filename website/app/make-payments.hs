@@ -1,8 +1,10 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE TupleSections #-}
+{-# LANGUAGE RecordWildCards #-}
 
 -- | make-payments
 --
@@ -19,14 +21,45 @@ import Data.Maybe
 import Data.Ratio
 import RunPersist
 import System.Environment
+import System.IO
 import Web.Stripe
+import Web.Stripe.Balance
 import Web.Stripe.Charge
 import Web.Stripe.Customer
 import Web.Stripe.Error
 import qualified Data.ByteString.Char8 as BS
 
-import Model.Skeleton (patronBalances)
+import Model.Skeleton (chargeablePatrons)
 
+-- For doctests:
+--
+-- $setup
+-- >>> import Test.QuickCheck
+-- >>> instance Arbitrary Cents where arbitrary = Cents . getPositive <$> arbitrary
+
+-- | DonationUnits are truncated to usable cents for use in creating
+-- charges.
+donationCents :: Iso' DonationUnits Cents
+donationCents = iso toCents fromCents
+  where
+    fromCents = fromIntegral . (* 10)
+    toCents = fromIntegral . (`div` 10)
+
+-- | Stripe measures charges in cents. Handy!
+chargeCents :: Iso' Cents Amount
+chargeCents = iso toAmount fromAmount
+  where
+    toAmount (Cents i) = Amount (fromIntegral i)
+    fromAmount (Amount i) = Cents (fromIntegral i)
+
+type StripeResult = Either StripeError Charge
+
+data ChargeResult = ChargeResult
+        { _chargeResultPatron :: PatronId
+        , _chargeResultFee :: Cents
+        , _chargeResultNet :: DonationUnits
+        , _chargeResultStripe :: StripeResult
+        } deriving (Show)
 
 main :: IO ()
 main = do
@@ -34,17 +67,6 @@ main = do
         (StripeConfig . StripeKey . BS.pack . fromJust)
         (lookupEnv "STRIPE_SECRET_KEY")
     runPersist (makePayments conf)
-
-newtype ChargeCents =
-    ChargeCents Int32
-    deriving (Show, Num, Integral, Enum, Real, Ord, Eq)
-
--- | DonationUnits are truncated to usable cents for use in creating charges.
-chargeCents :: Iso' DonationUnits ChargeCents
-chargeCents = iso toCents fromCents
-  where
-    fromCents = fromIntegral . (* 10)
-    toCents = fromIntegral . (`div` 10)
 
 -- | Calculate Stripe's fee: 2.9% + 30¢
 --
@@ -61,66 +83,61 @@ chargeCents = iso toCents fromCents
 --     $15.00 charge -> 73.5¢ fee -> Stripe rounded to 74¢
 --
 -- I confirmed these facts when I wrote this function, but tests ftw.
-stripeFee :: ChargeCents -> ChargeCents
+stripeFee :: Cents -> Cents
 stripeFee = round . (+ 30) . (* 0.029) . fromIntegral
+
+-- | As of 2016-10-10, the amount a patron pays is increased so that the
+-- amount the project receives is equal to the amount they crowdmatched.
+--
+-- Proving that the rounding always works out was annoying, but I did it
+-- with a brute-force program. It's ok up until integer underflows around
+-- ~$20M.
+--
+-- prop> \d -> d < 2*10^9 ==> let {p = payment d; f = stripeFee p} in p-f==d
+payment :: Cents -> Cents
+payment = round . (/ (1 - 0.029)) . (+ 30) . fromIntegral
 
 -- | A donation is sufficient for processing if the Stripe fee is < 10%.
 -- https://tree.taiga.io/project/snowdrift/issue/457
 --
 -- This function is useful for testing, but we memoize its
 -- production-required result below.
+--
+-- Since we're using the 'payment' function right now, this equation is
+-- different from the long term ideal.
 sufficientDonation :: DonationUnits -> Bool
 sufficientDonation d =
-    fee % (fee + view chargeCents d) < maximumFee
+    fee % p < maximumFee
   where
-    fee = stripeFee (d^.chargeCents)
-    maximumFee = ((%) `on` ChargeCents) 1 10
+    p = payment (d^.donationCents)
+    fee = stripeFee p
+    maximumFee = ((%) `on` Cents) 1 10
 
 -- | This is the minimum amount that satisfies 'sufficientDonation'. You can
 -- find it for yourself by running:
 -- >>> :{
--- >>> let [x] = take 1 . filter (\x -> all sufficientDonation [x..x+35])
--- >>>                  . map DonationUnits
--- >>>                  $ [10..]
+-- >>> let x = head . filter (\x -> all sufficientDonation [x..x+35])
+-- >>>              . map DonationUnits
+-- >>>              $ [10..]
 -- >>> in (x, x == minimumDonation)
 -- >>>:}
--- (DonationUnits 3700,True)
+-- (DonationUnits 3790,True)
 --
 -- Note that rounding makes the function discontinuous, with a step every
 -- 1/0.029 ~ 35 DonationUnits. There's a local optimum at ~3610, but we'll just
 -- skip that one, cause that's weird.
 --
--- By arithmetic instead of brute force, we have (in cents):
---
---     fee / (fee + donation) < 1/10
---     9 * fee < donation
---     9 * round(0.029 * donation + 30) < donation
---
--- Without rounding, we could continue:
---
---     270 / (1 - 9*0.029) ~<~ donation
---     365.4 ~<~ donation
---
--- With rounding, however, the fee stays fixed for a range of donation values.
--- In fact,
---
---     fee  = 41 | 363 <= donation <= 396
---     fee >= 42 | 397 <= donation
---
--- In the first range, that gives:
---
---     9 * 41 < donation  --> donation <= 370
---
--- In the second range,
---
---     9 * 42 < donation --> donation <= 378.
---
--- That's less than the beginning of that range, so all further values are ok.
---
--- Thus, the minimum donation is 370 cents, or 3700 DonationUnits.
---
+-- Since we're using the 'payment' function right now, this value is higher
+-- than the long term ideal.
 minimumDonation :: DonationUnits
-minimumDonation = DonationUnits 3700
+minimumDonation = DonationUnits 3790
+
+-- | The projection of a Patron that can, and should, make a donation.
+data Donor = Donor
+        { _donorPatron :: PatronId
+        , _donorCustomer :: CustomerId
+        , _donorDonationPayable :: DonationUnits
+        } deriving (Show)
 
 -- | Send charge commands to Stripe.
 --
@@ -131,26 +148,83 @@ minimumDonation = DonationUnits 3700
 -- operational mistakes, rather than bad/duplicate charges. :)
 makePayments :: MonadIO m => StripeConfig -> SqlPersistT m ()
 makePayments conf = do
-    charges <- patronBalances minimumDonation
-    chargeResults <- liftIO (traverse (makeCharge conf) charges)
-    mapM_ recordResults chargeResults
+    -- Duplicating sql logic with Haskell logic to get rid of patrons
+    -- without a CustomerId :/
+    --
+    -- #1 (hidden because Esqueleto)
+    chargeable <- chargeablePatrons minimumDonation
+    let donors =
+            -- #2
+            mapMaybe
+                (\p ->
+                    Donor
+                    <$> Just (entityKey p)
+                    <*> _patronStripeCustomer (entityVal p)
+                    <*> Just (_patronDonationPayable (entityVal p)))
+                chargeable
+    chargeResults <- liftIO (traverse (sendCharge conf) donors)
+    mapM_ (recordResults conf) chargeResults
 
-makeCharge
+-- | Send the charge command to Stripe
+--
+-- For the Futurama milestone, we tack on a fee that covers the Stripe fee
+-- to calculate the 'payment'.
+sendCharge
     :: StripeConfig
-    -> (UserId, CustomerId, DonationUnits)
-    -> IO (Either StripeError Charge)
-makeCharge conf (usr, cust, donation) =
-    stripe conf
-        . (-&- cust)
-        -- Not supported yet.
+    -> Donor
+    -> IO ChargeResult
+sendCharge conf Donor{..} =
+    (ChargeResult _donorPatron fee net <$>)
+        . stripe conf
+        . (-&- _donorCustomer)
+        -- Supported upstream as of 2016-10-06, but not in our resolver yet
         -- . (-&- ExpandParams ["balance_transaction"])
         . flip createCharge USD
-        . Amount
-        . fromIntegral
+        . view chargeCents
         $ cents
- where
-  cents = donation ^. chargeCents
-  fee = stripeFee cents
+  where
+    cents = payment (_donorDonationPayable ^. donationCents)
+    fee = stripeFee cents
+    net = (cents - fee) ^. from donationCents
 
-recordResults :: MonadIO m => Either StripeError Charge -> SqlPersistT m ()
-recordResults = liftIO . print
+recordResults
+    :: MonadIO m
+    => StripeConfig
+    -> ChargeResult
+    -> SqlPersistT m ()
+recordResults conf res@ChargeResult {..} =
+    either
+        (const (liftIO (hPrint stderr res)))
+        recordDonation
+        _chargeResultStripe
+  where
+    recordDonation c@Charge {..} = do
+        ts <- liftIO (donationTimestamp conf c)
+        insert_
+            (DonationHistory
+                _chargeResultPatron
+                ts
+                _chargeResultNet
+                _chargeResultFee)
+        update _chargeResultPatron [PatronDonationPayable -=. _chargeResultNet]
+
+-- | Tries to get the timestamp from the Charge's TransactionBalance
+-- sub-item. If that fails, it's cool, we'll just use a local variant of
+-- "now".
+--
+-- I don't want to bail on recording the charge if we can't get the
+-- timestamp, since the presence of the Charge itself means Stripe
+-- processed it. There was merely a secondary failure getting the
+-- TransactionBalance. Ideally we'd retry, with some sort of 'pending'
+-- status, but let's slap that together later.
+donationTimestamp :: StripeConfig -> Charge -> IO DonationTime
+donationTimestamp conf = fmap DonationTime . chargeTime
+  where
+    fallback = getCurrentTime
+    chargeTime Charge {..} =
+        maybe fallback transactionTime chargeBalanceTransaction
+    transactionTime = \case
+        Expanded BalanceTransaction {..} -> pure balanceTransactionCreated
+        Id balId -> (=<<)
+            (either (const fallback) (pure . balanceTransactionCreated))
+            (stripe conf (getBalanceTransaction balId))
