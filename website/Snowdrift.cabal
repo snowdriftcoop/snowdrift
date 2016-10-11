@@ -27,7 +27,7 @@ Flag library-only
 
 -- library {{{1
 library
-    hs-source-dirs: src, app
+    hs-source-dirs: src
 
     -- exposed-modules {{{2
     exposed-modules:
@@ -175,6 +175,8 @@ executable make-payments
         RecordWildCards
         GeneralizedNewtypeDeriving
         FlexibleContexts
+        TupleSections
+        LambdaCase
 
 -- test-suite test {{{1
 test-suite test

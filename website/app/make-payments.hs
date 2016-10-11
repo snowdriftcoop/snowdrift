@@ -29,7 +29,7 @@ import Web.Stripe.Customer
 import Web.Stripe.Error
 import qualified Data.ByteString.Char8 as BS
 
-import Model.Skeleton (chargeablePatrons)
+import qualified Model.Skeleton as Skeleton
 
 -- For doctests:
 --
@@ -152,7 +152,7 @@ makePayments conf = do
     -- without a CustomerId :/
     --
     -- #1 (hidden because Esqueleto)
-    chargeable <- chargeablePatrons minimumDonation
+    chargeable <- Skeleton.patronsReceivable minimumDonation
     let donors =
             -- #2
             mapMaybe

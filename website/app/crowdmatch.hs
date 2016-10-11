@@ -9,31 +9,22 @@ import Import.NoFoundation
 import Data.Ratio
 import RunPersist
 
+import qualified Model.Skeleton as Skeleton
+
 main :: IO ()
 main = runPersist crowdmatch
 
 crowdmatch :: MonadIO m => SqlPersistT m ()
 crowdmatch = do
-    pledges :: [Pledge] <- map entityVal <$> selectList [] []
-    let projectValue = fromIntegral (length pledges)
+    active <- Skeleton.activePatrons
+    let projectValue = fromIntegral (length active)
     today <- utctDay <$> liftIO getCurrentTime
     mapM_
         (recordCrowdmatch (CrowdmatchDay today) (DonationUnits projectValue))
-        pledges
+        active
 
 recordCrowdmatch
-    :: MonadIO m => CrowdmatchDay -> DonationUnits -> Pledge -> SqlPersistT m ()
-recordCrowdmatch day amt Pledge{..} = do
-    insert_ (CrowdmatchHistory _pledgeUsr day amt)
-    void
-        (upsert
-            (DonationPayable _pledgeUsr amt) [DonationPayableBalance +=. amt])
-
--- Take the set of pledges, calculate what everyone owes and to whom, write
--- it out.
---
--- But there's only one project, so that's pretty straightforward.
---
--- I guess the tricky part is what to do next. Store the amount owed
--- immediately? Oh, store the transaction and add the amount to a thing?
--- Then the payout mech can just pull from the thing.
+    :: MonadIO m => CrowdmatchDay -> DonationUnits -> Entity Patron -> SqlPersistT m ()
+recordCrowdmatch day amt (Entity pid Patron{..}) = do
+    insert_ (CrowdmatchHistory pid day amt)
+    void (update pid [PatronDonationPayable +=. amt])

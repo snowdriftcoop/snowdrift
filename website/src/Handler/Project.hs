@@ -14,7 +14,7 @@ getSnowdriftProjectR = do
     (donationHistory, projectCrowdSize)
         <- runDB $ do
             dh <- Skeleton.projectDonationHistory
-            crowd <- count [PatronPledgeSince /<-. [Nothing]]
+            crowd <- Skeleton.countActivePatrons
             return (dh, crowd)
     let pledgeAmount :: Double = 0.001 * fromIntegral projectCrowdSize
     deletePledgeWidget <-
