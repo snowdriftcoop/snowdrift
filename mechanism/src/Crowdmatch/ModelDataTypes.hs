@@ -1,20 +1,20 @@
 {-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 -- | Define types used in mkPersist, to avoid the GHC stage restriction.
-module ModelDataTypes where
+module Crowdmatch.ModelDataTypes where
 
-import ClassyPrelude
-
+import Data.Int
 import Data.Time
 import Database.Persist.Sql
 import Database.Persist.TH
-import Text.Blaze.Html
 import Web.Stripe.Customer (CustomerId(..))
 
 -- | Some standalone derivations so we can put CustomerId in the DB.
 deriving instance PersistField CustomerId
-deriving instance  PersistFieldSql CustomerId
+deriving instance PersistFieldSql CustomerId
 
 data PledgeAction = CreatePledge | DeletePledge deriving (Show, Read)
 
@@ -69,15 +69,3 @@ newtype Cents = Cents Int32
         , Real
         , Ord
         , Eq)
-
---
--- TODO: ToMarkup instances should probably go somewhere else, since that
--- is a visualization concern.
---
-
-instance ToMarkup DonationTime where
-    toMarkup (DonationTime t) =
-        toMarkup (formatTime defaultTimeLocale "%Y-%m-%d %H:%M (%Z)" t)
-
-instance ToMarkup CrowdmatchDay where
-    toMarkup (CrowdmatchDay d) = toMarkup (showGregorian d)

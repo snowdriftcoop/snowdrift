@@ -3,39 +3,7 @@ User sql=usr
     digest ByteString
     created UTCTime
     passUpdated UTCTime
-    patron PatronId Maybe
+    patron Int Maybe
     --
     UniqueUsr email
-    deriving (Show)
-
--- Soon to be split into a specific mechanism thing
-
-Patron
-    usr UserId
-    created UTCTime
-    stripeCustomer CustomerId Maybe
-    donationPayable DonationUnits
-    pledgeSince UTCTime Maybe
-    UniquePatron usr
-
-PledgeHistory
-    patron PatronId
-    time UTCTime
-    action PledgeAction
-    --
-    deriving (Show)
-
-DonationHistory
-    patron PatronId
-    time DonationTime
-    amount DonationUnits
-    fee Cents
-    --
-    deriving (Show)
-
-CrowdmatchHistory
-    patron PatronId
-    date CrowdmatchDay
-    amount DonationUnits
-    --
     deriving (Show)
