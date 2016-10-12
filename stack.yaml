@@ -4,6 +4,7 @@ flags:
 resolver: lts-6.17
 packages:
   - website
+  - mechanism
   - location:
       git: https://git.snowdrift.coop/sd/yesod.git
       commit: 884c2ef15b005587829f157fb576fbfe747b98b1

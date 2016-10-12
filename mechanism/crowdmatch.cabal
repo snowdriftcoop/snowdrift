@@ -1,0 +1,40 @@
+name: crowdmatch
+version: 0.1.0.0
+synopsis: Crowdmatch mechanism for Snowdrift.coop
+description:
+    Provides an interface for managing pledges and donations. Includes
+    utilities for instigating a crowdmatch event and for sending
+    transactions via Stripe (or other transaction partners).
+homepage: https://snowdrift.coop
+license: AGPL-3
+license-file: LICENSE
+author: Bryan Richter
+maintainer: discuss@lists.snowdrift.coop
+copyright: Bryan Richter and Snowdrift.coop, 2016
+category: Database
+build-type: Simple
+-- extra-source-files:
+cabal-version: >=1.20
+
+library
+    -- exposed-modules:
+    -- other-modules:
+    -- other-extensions:
+    hs-source-dirs: src
+    default-language: Haskell2010
+    build-depends:
+        base >=4.8 && <4.9
+
+executable make-payments
+    main-is: make-payments.hs
+    hs-source-dirs: app, src
+    default-language: Haskell2010
+    build-depends:
+        base >=4.8 && <4.9
+
+executable crowdmatch
+    main-is: crowdmatch.hs
+    hs-source-dirs: app, src
+    default-language: Haskell2010
+    build-depends:
+        base >=4.8 && <4.9
