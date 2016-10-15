@@ -333,7 +333,7 @@ postLoginR = do
   where
     runAuthResult master = maybe
         (do
-            alertDanger [shamlet|Bad credentials:  <a href="https://tree.taiga.io/project/snowdrift/issue/455">See Taiga #455</a>.|]
+            alertDanger [shamlet|Wrong username or password. Please try again|]
             redirect (master LoginR))
         (\u -> do
             priviligedLogin u
