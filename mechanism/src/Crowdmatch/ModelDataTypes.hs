@@ -1,3 +1,4 @@
+{-# OPTIONS_HADDOCK hide, prune #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
@@ -16,7 +17,7 @@ import Web.Stripe.Customer (CustomerId(..))
 deriving instance PersistField CustomerId
 deriving instance PersistFieldSql CustomerId
 
-data PledgeAction = CreatePledge | DeletePledge deriving (Show, Read)
+data PledgeAction = CreatePledge | DeletePledge deriving (Show, Read, Eq)
 
 {-
  - This is what PledgeAction would look like as a native Postgres enum
@@ -59,6 +60,19 @@ newtype DonationUnits = DonationUnits Int32
         , Eq)
 
 newtype Cents = Cents Int32
+    deriving
+        ( PersistFieldSql
+        , PersistField
+        , Show
+        , Num
+        , Integral
+        , Enum
+        , Real
+        , Ord
+        , Eq)
+
+-- FIXME to be replaced on this pull
+newtype PPtr = PPtr Int
     deriving
         ( PersistFieldSql
         , PersistField

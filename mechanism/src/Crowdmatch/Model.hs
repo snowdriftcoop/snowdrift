@@ -6,19 +6,21 @@
 {-# LANGUAGE QuasiQuotes #-}
 
 -- | Core definitions for the library
-module Crowdmatch.Model where
+module Crowdmatch.Model (module Crowdmatch.Model) where
 
+import Control.Lens
+import Control.Lens.TH
 import Data.Time
 import Database.Persist.TH
 import Web.Stripe.Customer (CustomerId(..))
 
-import Crowdmatch.ModelDataTypes
+import Crowdmatch.ModelDataTypes as Crowdmatch.Model
 
 share [mkPersist sqlSettings
       , mkMigrate "migrateCrowdmatch"
       ] [persistLowerCase|
 Patron sql="crowdmatch__patron"
-    usr Int
+    usr PPtr
     created UTCTime
     stripeCustomer CustomerId Maybe
     donationPayable DonationUnits
@@ -48,3 +50,13 @@ CrowdmatchHistory sql="crowdmatch__crowdmatch_history"
     --
     deriving (Show)
 |]
+
+class ToMechPatron u where
+    toMechPatron :: u -> Int
+    fromMechPatron :: Int -> u
+
+external :: ToMechPatron u => Iso' PPtr u
+external = iso toExternal fromExternal
+  where
+    toExternal (PPtr i) = fromMechPatron i
+    fromExternal = PPtr . toMechPatron
