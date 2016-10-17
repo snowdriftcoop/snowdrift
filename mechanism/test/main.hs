@@ -7,7 +7,6 @@
 import Control.Monad.Reader (ask)
 import Data.List (partition)
 import Data.Text (Text)
-import Data.Time.Clock
 import Database.Persist
 import Database.Persist.Sql
 import RunPersist
@@ -16,7 +15,6 @@ import Test.QuickCheck.Monadic
 import qualified Data.Text as T
 
 import Crowdmatch
-import qualified Crowdmatch.Model as Model
 
 instance Arbitrary Text where
     arbitrary = T.pack <$> listOf (elements ['a'..'z'])
@@ -50,42 +48,38 @@ show2 str a b = unwords [str, show a, show b]
 
 main :: IO ()
 main = do
-    now <- getCurrentTime
-    runPersist $ do
+    trunq <- runPersist $ do
         runMigration migrateCrowdmatch
-        truncateTables
-        insertMany_
-            . map (\x -> Model.Patron (PPtr x) now Nothing 0 Nothing)
-            $ [1..1000]
+        buildTruncQuery
     quickCheck $ do
         targets <- map PPtr <$> listOf (choose (1,1000))
         acts <- traverse oneAct targets
         pure
-            $ label (show (length acts))
-            $ classify (any isPledge acts) "add"
-            $ prop_pledgeHist acts
+            $ label (show (length acts `div` 5))
+            $ prop_pledgeHist trunq acts
   where
-    isPledge (ActStorePledge _) = True
-    isPledge _ = False
-    truncateTables = do
+    buildTruncQuery = do
         esc <- connEscapeName <$> ask
         tables <- map (esc . DBName . unSingle)
             <$> rawSql "select table_name from information_schema.tables where table_schema = 'public'" []
         let trunq = "truncate table " `mappend` T.intercalate ", " tables
-        rawExecute trunq []
-    oneAct x = oneof
-        [ ActStoreStripeCustomer <$> pure x <*> arbitrary
-        , pure (ActDeleteStripeCustomer x)
-        , pure (ActStorePledge x)
-        , pure (ActDeletePledge x)
+        -- Don't do it yet
+        pure (rawExecute trunq [])
+    oneAct x = frequency
+        [ (10, ActStoreStripeCustomer <$> pure x <*> arbitrary)
+        , (1, pure (ActDeleteStripeCustomer x))
+        , (1, pure (ActStorePledge x))
+        , (1, pure (ActDeletePledge x))
         ]
 
 
 propDB :: SqlPersistT IO a -> PropertyM IO a
 propDB = run . runPersist
 
-prop_pledgeHist acts = monadicIO $ do
+-- (PledgeHistory - DeleteHistory) = crowdSize (FetchCrowd)
+prop_pledgeHist truncateTables acts = monadicIO $ do
     p@(creat, remov, crowd) <- propDB $ do
+        _ <- truncateTables
         mapM_ runMech acts
         (creat, remov) <-
             partition ((== CreatePledge) . pledgeHistoryAction . entityVal)
@@ -110,6 +104,4 @@ prop_pledgeHist acts = monadicIO $ do
 -- Properties:
 --     Nobody is ever charged a fee of >10% (max fee = 10%)
 --     FetchPatron oeualways succeeds
---     Successful StorePledge -> crowdSize (Previous FetchCrowd) = crowdSize (Current FetchCrowd)
 --     Pledge exists -> StripeCustomer exists
---     (PledgeHistory - DeleteHistory) = crowdSize (FetchCrowd)

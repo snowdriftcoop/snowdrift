@@ -80,6 +80,10 @@ data MechAction b where
 -- | Executing the actions
 runMech :: MonadIO m => MechAction b -> SqlPersistT m b
 
+--
+-- StripeCustomer (store/delete)
+--
+
 -- FIXME: Feedback on Stripe error
 runMech (ActStoreStripeCustomer pptr tok) = do
     Entity pid p <- upsertPatron pptr []
@@ -93,32 +97,49 @@ runMech (ActStoreStripeCustomer pptr tok) = do
 -- FIXME: Feedback on Stripe error or nonexisting CustomerId.
 runMech (ActDeleteStripeCustomer pptr) = do
     Entity pid p <- upsertPatron pptr []
-    maybe (pure (Right ())) delete' (Model.patronStripeCustomer p)
-    maybe (pure ()) (const (dropPledge' pid)) (Model.patronPledgeSince p)
+    -- Fixme: Duplication of actions
+    -- Must delete pledges if there's no payment method!
+    runMech (ActDeletePledge pptr)
+    maybe (pure ()) (deleteCust' pid) (Model.patronStripeCustomer p)
   where
-    delete' = liftIO . dummyStripe . stripeDeleteCustomer
-    dropPledge' pid = do
+    deleteCust' pid cust = do
+        liftIO (dummyStripe (stripeDeleteCustomer cust))
+        now <- liftIO getCurrentTime
+        update pid [PatronStripeCustomer =. Nothing]
+
+--
+-- Pledge (store/delete)
+--
+
+-- FIXME: Feedback on missing payment info
+-- FIXME: Feedback on existing pledges
+runMech (ActStorePledge pptr) = do
+    Entity pid p <- upsertPatron pptr []
+    maybe noCustomer (checkpledge pid) (pure p <* Model.patronStripeCustomer p)
+  where
+    checkpledge pid p = maybe (pledge' pid) existingPledge (Model.patronPledgeSince p)
+    pledge' pid = do
+        now <- liftIO getCurrentTime
+        update pid [PatronPledgeSince =. Just now]
+        insert_ (PledgeHistory pid now CreatePledge)
+    noCustomer = pure ()
+    existingPledge _ = pure ()
+
+-- FIXME: Feedback on nonexistent pledge.
+runMech (ActDeletePledge pptr) = do
+    -- In the absence of triggers or other database use sophistication, we
+    -- fetch/evaluate/modify here.
+    Entity pid p <- upsertPatron pptr []
+    maybe noPledge  (const (delete' pid)) (Model.patronPledgeSince p)
+  where
+    noPledge = pure ()
+    delete' pid = do
         now <- liftIO getCurrentTime
         update pid [PatronPledgeSince =. Nothing]
         insert_ (PledgeHistory pid now DeletePledge)
 
--- WEIRD: No feedback on existing pledges. Need that. But if I add it here,
--- I break the ability to do Markov crap. Should I further break it into
--- input-only and output-only? Hmmm
-runMech (ActStorePledge pptr) = do
-    Entity pid p <- upsertPatron pptr []
-    maybe (pure ()) (const (pledge' pid)) (Model.patronStripeCustomer p)
-  where
-    pledge' pid = do
-        now <- liftIO getCurrentTime
-        void (update pid [PatronPledgeSince =. Just now])
-
--- FIXME: Feedback on nonexistent pledge.
-runMech (ActDeletePledge pptr) =
-    void (upsertPatron pptr [PatronPledgeSince =. Nothing])
 runMech ActFetchCrowdCount = Crowd <$> Skeleton.countActivePatrons
-runMech (ActFetchPatron pptr) =
-    fromModel . entityVal <$> upsertPatron pptr []
+runMech (ActFetchPatron pptr) = fromModel . entityVal <$> upsertPatron pptr []
 
 --
 -- I N C E P T I O N
