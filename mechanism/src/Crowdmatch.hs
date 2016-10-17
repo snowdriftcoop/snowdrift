@@ -88,6 +88,7 @@ show2 str a b = unwords (intersperse " " [str, show a, show b])
 
 runMech :: MonadIO m => MechAction b -> SqlPersistT m b
 
+-- FIXME: Feedback on Stripe error
 runMech (ActStoreStripeCustomer pptr cust) = do
     Entity pid p <- upsertPatron pptr []
     ret <- maybe create' update' (Model.patronStripeCustomer p)
@@ -97,7 +98,18 @@ runMech (ActStoreStripeCustomer pptr cust) = do
     update' (CustomerId c) = error "Stripe update Customer"
     updatePatron' pid c = update pid [PatronStripeCustomer =. Just (customerId c)]
 
-runMech (ActDeleteStripeCustomer pptr) = error "Nope"
+-- FIXME: Feedback on Stripe error or nonexisting CustomerId.
+runMech (ActDeleteStripeCustomer pptr) = do
+    Entity pid p <- upsertPatron pptr []
+    maybe (pure ()) blop (Model.patronStripeCustomer p)
+    maybe (pure ()) (const (dropPledge' pid)) (Model.patronPledgeSince p)
+  where
+    blop = error "Stripe delete Customer"
+    dropPledge' pid = do
+        now <- liftIO getCurrentTime
+        update pid [PatronPledgeSince =. Nothing]
+        insert_ (PledgeHistory pid now DeletePledge)
+
 -- WEIRD: No feedback on existing pledges. Need that. But if I add it here,
 -- I break the ability to do Markov crap. Should I further break it into
 -- input-only and output-only? Hmmm
