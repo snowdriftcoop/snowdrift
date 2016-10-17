@@ -50,11 +50,13 @@ test-suite test
     build-depends:
         base
         , crowdmatch
+        , mtl
         , persistent
         , QuickCheck
         , run-persist
         , stripe-core
         , text
+        , time
 
 -- -- executable make-payments {{{1
 -- executable make-payments
