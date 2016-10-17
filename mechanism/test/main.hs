@@ -12,7 +12,6 @@ import Database.Persist.Sql
 import RunPersist
 import Test.QuickCheck
 import Test.QuickCheck.Monadic
-import Web.Stripe.Customer
 import qualified Data.Text as T
 
 instance Arbitrary Text where
@@ -21,8 +20,8 @@ instance Arbitrary Text where
 instance Arbitrary PPtr where
     arbitrary = PPtr <$> arbitrary
 
-instance Arbitrary CustomerId where
-    arbitrary = CustomerId <$> arbitrary
+instance Arbitrary PaymentToken where
+    arbitrary = PaymentToken <$> arbitrary
 
 instance Arbitrary (MechAction ()) where
     arbitrary = oneof
@@ -45,9 +44,11 @@ prop_pledgeHist acts = monadicIO $ do
         (creat, remov) <-
             partition ((== CreatePledge) . pledgeHistoryAction . entityVal)
                 <$> selectList [] []
-        crowd <- fetchCrowd
+        crowd <- fetchCrowdCount
         pure (creat, remov, crowd)
     assert (length creat - length remov == crowdSize crowd)
+  where
+    _types = acts :: [MechAction ()]
 
 -- Properties:
 --     Nobody is ever charged a fee of >10% (max fee = 10%)
