@@ -128,18 +128,16 @@ instance AuthMaster App where
             setTitle "Verify Account — Snowdrift.coop"
             $(widgetFile "page/auth/verify-account")
       where af = [("autofocus","true")]
-
+    
     resetPassphraseHandler = do
-        maid <- maybeAuth
-        case maid of
-          -- User not logged in. 
-          Nothing -> do
+        muid <- maybeAuth
+        maybe reset (const (redirect HomeR)) muid
+        where
+          reset = do
               (loginFields, enctype) <- generateFormPost (renderDivs credentialsForm)
               navbarLayout "page/auth/reset-passphrase" $ do
                   setTitle "Passphrase Reset — Snowdrift.coop"
                   $(widgetFile "page/auth/reset-passphrase")
-          -- User is logged in and should not be able to reset passphrase. 
-          Just _ -> redirect HomeR
 
     sendAuthEmail to msg = do
         $logDebugSH msg
