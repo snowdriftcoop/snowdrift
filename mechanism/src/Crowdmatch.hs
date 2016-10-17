@@ -1,10 +1,13 @@
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE OverloadedStrings #-}
+
 module Crowdmatch (module Crowdmatch) where
 
 import Control.Lens
-import Control.Monad (void)
+import Control.Monad (void, (<=<))
 import Control.Monad.IO.Class
-import Data.List (intersperse)
+import Control.Monad.Operational
 import Data.Text (Text)
 import Data.Time
 import Database.Persist
@@ -64,6 +67,8 @@ fetchPatron = runMech . ActFetchPatron . (^. from external)
 -- ONE LEVEL DOWN
 -- wherein we use our internal, Markov-able api
 --
+
+-- | Actions provided by the library
 data MechAction b where
     ActStoreStripeCustomer :: PPtr -> PaymentToken -> MechAction ()
     ActDeleteStripeCustomer :: PPtr -> MechAction ()
@@ -72,39 +77,26 @@ data MechAction b where
     ActFetchCrowdCount :: MechAction Crowd
     ActFetchPatron :: PPtr -> MechAction Patron
 
-instance Show (MechAction b) where
-    show (ActStoreStripeCustomer p c) = show2 "ActStoreStripeCustomer " p c
-    show (ActDeleteStripeCustomer p) = show1 "ActDeleteStripeCustomer" p
-    show (ActStorePledge p) = show1 "ActStorePledge" p
-    show (ActDeletePledge p) = show1 "ActDeletePledge" p
-    show ActFetchCrowdCount = "ActFetchCrowdCount"
-    show (ActFetchPatron p) = show1 "ActFetchPatron" p
-
-show1 :: Show a => String -> a -> String
-show1 str a = str ++ " " ++ show a
-
-show2 :: (Show a, Show b) => String -> a -> b -> String
-show2 str a b = unwords (intersperse " " [str, show a, show b])
-
+-- | Executing the actions
 runMech :: MonadIO m => MechAction b -> SqlPersistT m b
 
 -- FIXME: Feedback on Stripe error
-runMech (ActStoreStripeCustomer pptr cust) = do
+runMech (ActStoreStripeCustomer pptr tok) = do
     Entity pid p <- upsertPatron pptr []
     ret <- maybe create' update' (Model.patronStripeCustomer p)
     either (const (pure ())) (updatePatron' pid) ret
   where
-    create' = error "Stripe create Customer"
-    update' (CustomerId c) = error "Stripe update Customer"
+    create' = liftIO (dummyStripe (stripeCreateCustomer tok))
+    update' = liftIO . dummyStripe . stripeUpdateCustomer tok
     updatePatron' pid c = update pid [PatronStripeCustomer =. Just (customerId c)]
 
 -- FIXME: Feedback on Stripe error or nonexisting CustomerId.
 runMech (ActDeleteStripeCustomer pptr) = do
     Entity pid p <- upsertPatron pptr []
-    maybe (pure ()) blop (Model.patronStripeCustomer p)
+    maybe (pure (Right ())) delete' (Model.patronStripeCustomer p)
     maybe (pure ()) (const (dropPledge' pid)) (Model.patronPledgeSince p)
   where
-    blop = error "Stripe delete Customer"
+    delete' = liftIO . dummyStripe . stripeDeleteCustomer
     dropPledge' pid = do
         now <- liftIO getCurrentTime
         update pid [PatronPledgeSince =. Nothing]
@@ -126,13 +118,49 @@ runMech (ActDeletePledge pptr) =
     void (upsertPatron pptr [PatronPledgeSince =. Nothing])
 runMech ActFetchCrowdCount = Crowd <$> Skeleton.countActivePatrons
 runMech (ActFetchPatron pptr) =
-    -- Haskell doesn't know it, but a PPtr should always be linked to a
-    -- Patron. This function ensures it in Haskell-land.
-    --
-    -- (Also, creating the proper database constraint is still TODO, so we
-    -- actually need this code.)
     fromModel . entityVal <$> upsertPatron pptr []
 
+--
+-- I N C E P T I O N
+--
+-- (one more level down)
+-- Wherein we abstract over the possible ways of running Stripe.
+--
+
+data StripeI a where
+    CreateCustomerI :: PaymentToken -> StripeI Customer
+    UpdateCustomerI :: PaymentToken -> CustomerId -> StripeI Customer
+    DeleteCustomerI :: CustomerId -> StripeI ()
+
+type StripeT m a = ProgramT StripeI m a
+
+stripeCreateCustomer :: MonadIO m => PaymentToken -> StripeT m Customer
+stripeCreateCustomer = singleton . CreateCustomerI
+
+stripeUpdateCustomer :: MonadIO m => PaymentToken -> CustomerId -> StripeT m Customer
+stripeUpdateCustomer tok = singleton . UpdateCustomerI tok
+
+stripeDeleteCustomer :: MonadIO m => CustomerId -> StripeT m ()
+stripeDeleteCustomer = singleton . DeleteCustomerI
+
+dummyStripe :: MonadIO m => StripeT m a -> m (Either b a)
+dummyStripe = eval <=< viewT
+  where
+    eval = \case
+        Return x -> pure (Right x)
+        CreateCustomerI _tok :>>= k -> dummyStripe $ k Customer{ customerId = CustomerId "dummy" }
+        UpdateCustomerI _tok cust :>>= k -> dummyStripe $ k Customer{ customerId = cust }
+        DeleteCustomerI _ :>>= k -> dummyStripe $ k ()
+
+--
+-- Helpers
+--
+
+-- | Haskell doesn't know it, but a PPtr should always be linked to a
+-- Patron. This function ensures it in Haskell-land.
+--
+-- (Also, creating the proper database constraint is still TODO, so we
+-- actually need this code.)
 upsertPatron pptr mods = do
     now <- liftIO getCurrentTime
     upsert (Model.Patron pptr now Nothing 0 Nothing) mods

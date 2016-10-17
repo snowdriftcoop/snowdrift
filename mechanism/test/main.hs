@@ -1,11 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE Rank2Types #-}
+{-# LANGUAGE GADTs #-}
 {-# OPTIONS_GHC -fno-warn-missing-signatures -fno-warn-orphans #-}
 
 import Crowdmatch
-import Data.List (partition)
+import Data.List (partition, intersperse)
 import Data.Text (Text)
 import Database.Persist
 import Database.Persist.Sql
@@ -18,7 +18,7 @@ instance Arbitrary Text where
     arbitrary = T.pack <$> listOf (elements ['a'..'z'])
 
 instance Arbitrary PPtr where
-    arbitrary = PPtr <$> arbitrary
+    arbitrary = PPtr . getPositive <$> arbitrary
 
 instance Arbitrary PaymentToken where
     arbitrary = PaymentToken <$> arbitrary
@@ -29,6 +29,20 @@ instance Arbitrary (MechAction ()) where
         , ActDeleteStripeCustomer <$> arbitrary
         , ActDeletePledge <$> arbitrary
         ]
+
+instance Show (MechAction b) where
+    show (ActStoreStripeCustomer p c) = show2 "ActStoreStripeCustomer " p c
+    show (ActDeleteStripeCustomer p) = show1 "ActDeleteStripeCustomer" p
+    show (ActStorePledge p) = show1 "ActStorePledge" p
+    show (ActDeletePledge p) = show1 "ActDeletePledge" p
+    show ActFetchCrowdCount = "ActFetchCrowdCount"
+    show (ActFetchPatron p) = show1 "ActFetchPatron" p
+
+show1 :: Show a => String -> a -> String
+show1 str a = str ++ " " ++ show a
+
+show2 :: (Show a, Show b) => String -> a -> b -> String
+show2 str a b = unwords (intersperse " " [str, show a, show b])
 
 main :: IO ()
 main = quickCheck prop_pledgeHist
