@@ -1,9 +1,13 @@
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GADTs #-}
-{-# OPTIONS_GHC -fno-warn-missing-signatures -fno-warn-orphans #-}
+{-# OPTIONS_GHC -fno-warn-missing-signatures -fno-warn-orphans -fno-warn-missing-fields #-}
 
+import Control.Monad
+import Control.Monad.IO.Class
+import Control.Monad.Operational
 import Control.Monad.Reader (ask)
 import Data.List (partition)
 import Data.Text (Text)
@@ -13,6 +17,7 @@ import RunPersist
 import Test.QuickCheck
 import Test.QuickCheck.Monadic
 import qualified Data.Text as T
+import Web.Stripe.Customer
 
 import Crowdmatch
 
@@ -25,16 +30,9 @@ instance Arbitrary PPtr where
 instance Arbitrary PaymentToken where
     arbitrary = PaymentToken <$> arbitrary
 
-instance Arbitrary (MechAction ()) where
-    arbitrary = oneof
-        [ ActStoreStripeCustomer <$> arbitrary <*> arbitrary
-        , ActDeleteStripeCustomer <$> arbitrary
-        , ActDeletePledge <$> arbitrary
-        ]
-
 instance Show (MechAction b) where
-    show (ActStoreStripeCustomer p c) = show2 "ActStoreStripeCustomer " p c
-    show (ActDeleteStripeCustomer p) = show1 "ActDeleteStripeCustomer" p
+    show (ActStoreStripeCustomer _ p c) = show2 "ActStoreStripeCustomer " p c
+    show (ActDeleteStripeCustomer _ p) = show1 "ActDeleteStripeCustomer" p
     show (ActStorePledge p) = show1 "ActStorePledge" p
     show (ActDeletePledge p) = show1 "ActDeletePledge" p
     show ActFetchCrowdCount = "ActFetchCrowdCount"
@@ -45,6 +43,18 @@ show1 str a = unwords [str, show a]
 
 show2 :: (Show a, Show b) => String -> a -> b -> String
 show2 str a b = unwords [str, show a, show b]
+
+dummyStripe :: MonadIO m => StripeT m a -> m (Either b a)
+dummyStripe = eval <=< viewT
+  where
+    eval = \case
+        Return x -> pure (Right x)
+        CreateCustomerI _tok :>>= k ->
+            dummyStripe (k Customer { customerId = CustomerId "dummy" })
+        UpdateCustomerI _tok cust :>>= k ->
+            dummyStripe (k Customer { customerId = cust })
+        DeleteCustomerI _ :>>= k -> dummyStripe (k ())
+
 
 main :: IO ()
 main = do
@@ -69,8 +79,8 @@ main = do
         -- Don't do it yet
         pure (rawExecute trunq [])
     oneAct x = frequency
-        [ (10, ActStoreStripeCustomer <$> pure x <*> arbitrary)
-        , (1, pure (ActDeleteStripeCustomer x))
+        [ (10, ActStoreStripeCustomer dummyStripe <$> pure x <*> arbitrary)
+        , (1, pure (ActDeleteStripeCustomer dummyStripe x))
         , (2, pure (ActStorePledge x))
         , (1, pure (ActDeletePledge x))
         ]

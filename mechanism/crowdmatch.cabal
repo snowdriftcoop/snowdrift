@@ -36,6 +36,7 @@ library
         , persistent
         , persistent-template
         , stripe-core
+        , stripe-haskell
         , text
         , time
         , transformers
@@ -45,20 +46,22 @@ test-suite test
     type: exitcode-stdio-1.0
     main-is: main.hs
     hs-source-dirs: test
-    ghc-options: -Wall
+    ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
     default-language: Haskell2010
     build-depends:
         base
         , crowdmatch
         , mtl
+        , operational
         , persistent
         , QuickCheck
         , run-persist
         , stripe-core
         , text
         , time
+        , transformers
 
--- -- executable make-payments {{{1
+-- executable make-payments {{{1
 -- executable make-payments
 --     main-is: make-payments.hs
 --     hs-source-dirs: app, src
@@ -81,7 +84,7 @@ test-suite test
 --         TupleSections
 --         LambdaCase
 
--- -- executable crowdmatch {{{1
+-- executable crowdmatch {{{1
 -- executable crowdmatch
 --     main-is: crowdmatch.hs
 --     hs-source-dirs: app, src
