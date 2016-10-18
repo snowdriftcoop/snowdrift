@@ -54,8 +54,11 @@ main = do
     quickCheck $ do
         targets <- map PPtr <$> listOf (choose (1,1000))
         acts <- traverse oneAct targets
+        let bucket = length acts `div` 5
+            b0 = show (bucket * 5)
+            b1 = show ((bucket + 1) * 5)
         pure
-            $ label (show (length acts `div` 5))
+            $ label (concat ["N ∈ [", b0,", ",b1 , "]"])
             $ prop_pledgeHist trunq acts
   where
     buildTruncQuery = do
@@ -68,7 +71,7 @@ main = do
     oneAct x = frequency
         [ (10, ActStoreStripeCustomer <$> pure x <*> arbitrary)
         , (1, pure (ActDeleteStripeCustomer x))
-        , (1, pure (ActStorePledge x))
+        , (2, pure (ActStorePledge x))
         , (1, pure (ActDeletePledge x))
         ]
 
