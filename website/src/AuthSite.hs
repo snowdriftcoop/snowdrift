@@ -336,7 +336,7 @@ postLoginR = do
             alertDanger [shamlet|
                 The username or passphrase you entered
                 is incorrect, please try again or
-                <a href="/auth/reset-passphrase">reset passphrase.
+                <a href="/auth/reset-passphrase">reset the passphrase.
             |]
             redirect (master LoginR))
         (\u -> do
