@@ -128,7 +128,7 @@ instance AuthMaster App where
             setTitle "Verify Account — Snowdrift.coop"
             $(widgetFile "page/auth/verify-account")
       where af = [("autofocus","true")]
-    
+
     resetPassphraseHandler = do
         muid <- maybeAuth
         maybe reset (const (redirect HomeR)) muid
