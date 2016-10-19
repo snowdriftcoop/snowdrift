@@ -129,7 +129,7 @@ instance AuthMaster App where
             $(widgetFile "page/auth/verify-account")
       where af = [("autofocus","true")]
 
-    resetPassphraseHandler = do
+    resetPassphraseHandler = 
         maybeAuth >>= maybe reset (const (redirect HomeR))
         where
           reset = do
