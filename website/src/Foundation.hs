@@ -130,8 +130,7 @@ instance AuthMaster App where
       where af = [("autofocus","true")]
 
     resetPassphraseHandler = do
-        muid <- maybeAuth
-        maybe reset (const (redirect HomeR)) muid
+        maybeAuth >>= maybe reset (const (redirect HomeR))
         where
           reset = do
               (loginFields, enctype) <- generateFormPost (renderDivs credentialsForm)
