@@ -333,7 +333,11 @@ postLoginR = do
   where
     runAuthResult master = maybe
         (do
-            alertDanger [shamlet|Could not log in right now. Please try again later.|]
+            alertDanger [shamlet|
+                The username or passphrase you entered
+                is incorrect, please try again or
+                <a href="/auth/reset-passphrase">reset passphrase.
+            |]
             redirect (master LoginR))
         (\u -> do
             priviligedLogin u
