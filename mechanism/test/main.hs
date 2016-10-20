@@ -1,3 +1,4 @@
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -12,7 +13,7 @@ import Control.Monad.Reader (ask)
 import Data.List (partition)
 import Data.Text (Text)
 import Database.Persist
-import Database.Persist.Sql
+import Database.Persist.Postgresql
 import RunPersist
 import Test.QuickCheck
 import Test.QuickCheck.Monadic
@@ -57,19 +58,11 @@ dummyStripe = eval <=< viewT
 
 
 main :: IO ()
-main = do
-    trunq <- runPersist $ do
+main = runPersistPool $ \runner -> do
+    trunq <- runner $ do
         runMigration migrateCrowdmatch
         buildTruncQuery
-    quickCheck $ do
-        targets <- map PPtr <$> listOf (choose (1,1000))
-        acts <- traverse oneAct targets
-        let bucket = length acts `div` 5
-            b0 = show (bucket * 5)
-            b1 = show ((bucket + 1) * 5)
-        pure
-            $ label (concat ["N ∈ [", b0,", ",b1 , "]"])
-            $ prop_pledgeHist trunq acts
+    quickCheck (monadicIO (prop_pledgeHist trunq (run . runner)))
   where
     buildTruncQuery = do
         esc <- connEscapeName <$> ask
@@ -78,26 +71,24 @@ main = do
         let trunq = "truncate table " `mappend` T.intercalate ", " tables
         -- Don't do it yet
         pure (rawExecute trunq [])
-    oneAct x = frequency
-        [ (10, ActStoreStripeCustomer dummyStripe <$> pure x <*> arbitrary)
-        , (1, pure (ActDeleteStripeCustomer dummyStripe x))
-        , (2, pure (ActStorePledge x))
-        , (1, pure (ActDeletePledge x))
-        ]
 
-
-propDB :: SqlPersistT IO a -> PropertyM IO a
-propDB = run . runPersist
+type Runner = forall a. SqlPersistT IO a -> PropertyM IO a
 
 -- (PledgeHistory - DeleteHistory) = crowdSize (FetchCrowd)
-prop_pledgeHist :: SqlPersistT IO () -> [MechAction ()] -> Property
-prop_pledgeHist truncateTables acts = monadicIO $ do
-    propDB truncateTables
-    mapM_ (runMech propDB) acts
-    (creat, remov) <- propDB $
+prop_pledgeHist :: SqlPersistT IO () -> Runner -> PropertyM IO ()
+prop_pledgeHist truncateTables runner = do
+    targets <- pick (map PPtr <$> listOf (choose (1,1000)))
+    acts <- pick (traverse oneAct targets)
+    let bucket = length acts `div` 5
+        b0 = show (bucket * 5)
+        b1 = show ((bucket + 1) * 5)
+    monitor (label (concat ["N ∈ [", b0,", ",b1 , "]"]))
+    runner truncateTables
+    mapM_ (runMech runner) acts
+    (creat, remov) <- runner $
         partition ((== CreatePledge) . pledgeHistoryAction . entityVal)
             <$> selectList [] []
-    crowd <- fetchCrowdCount propDB
+    crowd <- fetchCrowdCount runner
     monitor (badSize (creat, remov, crowd))
     assert (length creat - length remov == crowdSize crowd)
   where
@@ -111,7 +102,13 @@ prop_pledgeHist truncateTables acts = monadicIO $ do
         , show (crowdSize crwd)
         , ")"
         ])
-    _types = acts :: [MechAction ()]
+    oneAct x = frequency
+        [ (10, ActStoreStripeCustomer dummyStripe <$> pure x <*> arbitrary)
+        , (1, pure (ActDeleteStripeCustomer dummyStripe x))
+        , (2, pure (ActStorePledge x))
+        , (1, pure (ActDeletePledge x))
+        ]
+
 
 -- Properties:
 --     Nobody is ever charged a fee of >10% (max fee = 10%)

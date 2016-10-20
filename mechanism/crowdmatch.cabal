@@ -54,6 +54,7 @@ test-suite test
         , mtl
         , operational
         , persistent
+        , persistent-postgresql
         , QuickCheck
         , run-persist
         , stripe-core
