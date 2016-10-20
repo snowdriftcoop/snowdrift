@@ -90,16 +90,15 @@ propDB :: SqlPersistT IO a -> PropertyM IO a
 propDB = run . runPersist
 
 -- (PledgeHistory - DeleteHistory) = crowdSize (FetchCrowd)
+prop_pledgeHist :: SqlPersistT IO () -> [MechAction ()] -> Property
 prop_pledgeHist truncateTables acts = monadicIO $ do
-    p@(creat, remov, crowd) <- propDB $ do
-        _ <- truncateTables
-        mapM_ runMech acts
-        (creat, remov) <-
-            partition ((== CreatePledge) . pledgeHistoryAction . entityVal)
-                <$> selectList [] []
-        crowd <- fetchCrowdCount
-        pure (creat, remov, crowd)
-    monitor (badSize p)
+    propDB truncateTables
+    mapM_ (runMech propDB) acts
+    (creat, remov) <- propDB $
+        partition ((== CreatePledge) . pledgeHistoryAction . entityVal)
+            <$> selectList [] []
+    crowd <- fetchCrowdCount propDB
+    monitor (badSize (creat, remov, crowd))
     assert (length creat - length remov == crowdSize crowd)
   where
     badSize (c, r, crwd) = counterexample (concat

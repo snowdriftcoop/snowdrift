@@ -1,3 +1,4 @@
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
@@ -35,85 +36,104 @@ data Crowd = Crowd { crowdSize :: Int }
 
 newtype PaymentToken = PaymentToken Text deriving (Show)
 
+type SqlRunner io env = forall a. SqlPersistT io a -> env a
+type StripeRunner = forall a. StripeT IO a -> IO (Either StripeError a)
+
 storeStripeCustomer
-    :: (ToMechPatron u, MonadIO m)
-    => (StripeT IO Customer
-    -> IO (Either StripeError Customer))
+    :: (ToMechPatron u, MonadIO io, MonadIO env)
+    => SqlRunner io env
+    -> StripeRunner
     -> u -> PaymentToken
-    -> SqlPersistT m ()
-storeStripeCustomer s u =
-    runMech . ActStoreStripeCustomer s (u ^. from external)
+    -> env ()
+storeStripeCustomer db strp u =
+    runMech db . ActStoreStripeCustomer strp (u ^. from external)
 
 deleteStripeCustomer
-    :: (ToMechPatron u, MonadIO m)
-    => (StripeT IO ()
-    -> IO (Either StripeError ()))
-    -> u -> SqlPersistT m ()
-deleteStripeCustomer s =
-    runMech . ActDeleteStripeCustomer s . (^. from external)
+    :: (ToMechPatron u, MonadIO io, MonadIO env)
+    => SqlRunner io env
+    -> StripeRunner
+    -> u
+    -> env ()
+deleteStripeCustomer db strp =
+    runMech db . ActDeleteStripeCustomer strp . (^. from external)
 
-storePledge :: (ToMechPatron u, MonadIO m) => u -> SqlPersistT m ()
-storePledge = runMech . ActStorePledge . (^. from external)
+storePledge
+    :: (ToMechPatron u, MonadIO io, MonadIO env)
+    => SqlRunner io env
+    -> u
+    -> env ()
+storePledge db = runMech db . ActStorePledge . (^. from external)
 
-deletePledge :: (ToMechPatron u, MonadIO m) => u -> SqlPersistT m ()
-deletePledge = runMech . ActDeletePledge . (^. from external)
+deletePledge
+    :: (ToMechPatron u, MonadIO io, MonadIO env)
+    => SqlRunner io env
+    -> u
+    -> env ()
+deletePledge db = runMech db . ActDeletePledge . (^. from external)
 
-fetchCrowdCount :: MonadIO m => SqlPersistT m Crowd
-fetchCrowdCount = runMech ActFetchCrowdCount
+fetchCrowdCount
+    :: (MonadIO io, MonadIO env)
+    => SqlRunner io env
+    -> env Crowd
+fetchCrowdCount db = runMech db ActFetchCrowdCount
 
-fetchPatron :: (ToMechPatron u, MonadIO m) => u -> SqlPersistT m Patron
-fetchPatron = runMech . ActFetchPatron . (^. from external)
+fetchPatron
+    :: (ToMechPatron u, MonadIO io, MonadIO env)
+    => SqlRunner io env
+    -> u
+    -> env Patron
+fetchPatron db = runMech db . ActFetchPatron . (^. from external)
 
 --
 -- ONE LEVEL DOWN
 -- wherein we use our internal, Markov-able api
 --
 
-type StripeRunner a = StripeT IO a -> IO (Either StripeError a)
-
 -- | Actions provided by the library
 data MechAction b where
     ActStoreStripeCustomer
-        :: StripeRunner Customer
+        :: StripeRunner
         -> PPtr
         -> PaymentToken
         -> MechAction ()
-    ActDeleteStripeCustomer :: StripeRunner () -> PPtr -> MechAction ()
+    ActDeleteStripeCustomer :: StripeRunner -> PPtr -> MechAction ()
     ActStorePledge :: PPtr -> MechAction ()
     ActDeletePledge :: PPtr -> MechAction ()
     ActFetchCrowdCount :: MechAction Crowd
     ActFetchPatron :: PPtr -> MechAction Patron
 
 -- | Executing the actions
-runMech :: MonadIO m => MechAction b -> SqlPersistT m b
+runMech
+    :: (MonadIO env, MonadIO io)
+    => SqlRunner io env -> MechAction b -> env b
 
 --
 -- StripeCustomer (store/delete)
 --
 
 -- FIXME: Feedback on Stripe error
-runMech (ActStoreStripeCustomer s pptr tok) = do
-    Entity pid p <- upsertPatron pptr []
+runMech db (ActStoreStripeCustomer strp pptr tok) = do
+    Entity pid p <- db (upsertPatron pptr [])
     ret <- maybe create' update' (Model.patronStripeCustomer p)
     either (const (pure ())) (updatePatron' pid) ret
   where
-    create' = liftIO (s (stripeCreateCustomer tok))
-    update' = liftIO . s . stripeUpdateCustomer tok
+    create' = liftIO (strp (stripeCreateCustomer tok))
+    update' = liftIO . strp . stripeUpdateCustomer tok
     updatePatron' pid c =
-        update pid [PatronStripeCustomer =. Just (customerId c)]
+        db (update pid [PatronStripeCustomer =. Just (customerId c)])
 
 -- FIXME: Feedback on Stripe error or nonexisting CustomerId.
-runMech (ActDeleteStripeCustomer s pptr) = do
-    Entity pid p <- upsertPatron pptr []
+runMech db (ActDeleteStripeCustomer strp pptr) = do
+    Entity pid p <- db (upsertPatron pptr [])
     -- Fixme: Duplication of actions
     -- Must delete pledges if there's no payment method!
-    runMech (ActDeletePledge pptr)
+    runMech db (ActDeletePledge pptr)
     maybe (pure ()) (deleteCust' pid) (Model.patronStripeCustomer p)
   where
     deleteCust' pid cust = do
-        liftIO (s (stripeDeleteCustomer cust))
+        liftIO (strp (stripeDeleteCustomer cust))
         now <- liftIO getCurrentTime
-        update pid [PatronStripeCustomer =. Nothing]
+        db (update pid [PatronStripeCustomer =. Nothing])
 
 --
 -- Pledge (store/delete)
@@ -121,13 +141,13 @@ runMech (ActDeleteStripeCustomer s pptr) = do
 
 -- FIXME: Feedback on missing payment info
 -- FIXME: Feedback on existing pledges
-runMech (ActStorePledge pptr) = do
-    Entity pid p <- upsertPatron pptr []
+runMech db (ActStorePledge pptr) = do
+    Entity pid p <- db (upsertPatron pptr [])
     maybe noCustomer (checkpledge pid) (pure p <* Model.patronStripeCustomer p)
   where
     checkpledge pid p =
         maybe (pledge' pid) existingPledge (Model.patronPledgeSince p)
-    pledge' pid = do
+    pledge' pid = db $ do
         now <- liftIO getCurrentTime
         update pid [PatronPledgeSince =. Just now]
         insert_ (PledgeHistory pid now CreatePledge)
@@ -135,7 +155,7 @@ runMech (ActStorePledge pptr) = do
     existingPledge _ = pure ()
 
 -- FIXME: Feedback on nonexistent pledge.
-runMech (ActDeletePledge pptr) = do
+runMech db (ActDeletePledge pptr) = db $ do
     -- In the absence of triggers or other database use sophistication, we
     -- fetch/evaluate/modify here.
     Entity pid p <- upsertPatron pptr []
@@ -147,8 +167,9 @@ runMech (ActDeletePledge pptr) = do
         update pid [PatronPledgeSince =. Nothing]
         insert_ (PledgeHistory pid now DeletePledge)
 
-runMech ActFetchCrowdCount = Crowd <$> Skeleton.countActivePatrons
-runMech (ActFetchPatron pptr) = fromModel . entityVal <$> upsertPatron pptr []
+runMech db ActFetchCrowdCount = db $ Crowd <$> Skeleton.countActivePatrons
+runMech db (ActFetchPatron pptr) =
+    db $ fromModel . entityVal <$> upsertPatron pptr []
 
 --
 -- I N C E P T I O N
@@ -164,14 +185,14 @@ data StripeI a where
 
 type StripeT m a = ProgramT StripeI m a
 
-stripeCreateCustomer :: MonadIO m => PaymentToken -> StripeT m Customer
+stripeCreateCustomer :: MonadIO io => PaymentToken -> StripeT io Customer
 stripeCreateCustomer = singleton . CreateCustomerI
 
 stripeUpdateCustomer
-    :: MonadIO m => PaymentToken -> CustomerId -> StripeT m Customer
+    :: MonadIO io => PaymentToken -> CustomerId -> StripeT io Customer
 stripeUpdateCustomer tok = singleton . UpdateCustomerI tok
 
-stripeDeleteCustomer :: MonadIO m => CustomerId -> StripeT m ()
+stripeDeleteCustomer :: MonadIO io => CustomerId -> StripeT io ()
 stripeDeleteCustomer = singleton . DeleteCustomerI
 
 --
