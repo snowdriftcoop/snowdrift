@@ -17,8 +17,8 @@ import Database.Persist.Postgresql
 import RunPersist
 import Test.QuickCheck
 import Test.QuickCheck.Monadic
-import qualified Data.Text as T
 import Web.Stripe.Customer
+import qualified Data.Text as T
 
 import Crowdmatch
 
@@ -61,17 +61,16 @@ quickCheckDB
 quickCheckDB truncation runner prop =
     quickCheckWith stdArgs{ maxSuccess = 200 } $ monadicIO $ do
         run (runner truncation)
-        genHistory runner
         prop runner
 
 genHistory :: Runner -> PropertyM IO ()
 genHistory runner = do
     targets <- pick (map PPtr <$> listOf (choose (1,1000)))
-    acts <- pick (traverse oneAct targets)
-    let bucket = length acts `div` 5
+    let bucket = length targets `div` 5
         b0 = show (bucket * 5)
         b1 = show ((bucket + 1) * 5)
     monitor (label (concat ["N ∈ [", b0,", ",b1 , "]"]))
+    acts <- pick (traverse oneAct targets)
     -- Running this concurrently causes "impossible" conflicts during
     -- upsert! This needs to be fixed! But on the threat matrix, it is both
     -- unlikely to happen and has minimal side effects (since the DB stays
@@ -79,6 +78,8 @@ genHistory runner = do
     {- run (void (mapConcurrently (runMech runner) acts))-}
     run (mapM_ (runMech runner) acts)
   where
+    -- | Tip: Move this into PropertyM to continue property testing once
+    -- the API actions have non-homogeneous return types.
     oneAct x = frequency
         [ (10, ActStoreStripeCustomer dummyStripe <$> pure x <*> arbitrary)
         , (1, pure (ActDeleteStripeCustomer dummyStripe x))
@@ -93,11 +94,7 @@ main = runPersistPool $ \runner -> do
     trunq <- runner $ do
         runMigration migrateCrowdmatch
         buildTruncQuery
-    mapM_
-        (quickCheckDB trunq runner)
-        [ prop_pledgeHist
-        -- , prop_noBadFee
-        ]
+    quickCheckDB trunq runner prop_pledgeHist
   where
     buildTruncQuery = do
         esc <- connEscapeName <$> ask
@@ -107,14 +104,10 @@ main = runPersistPool $ \runner -> do
         -- Don't do it yet
         pure (rawExecute trunq [])
 
--- Nobody is ever charged a fee of >10% (max fee = 10%)
-prop_noBadFee :: runner -> PropertyM IO ()
-prop_noBadFee runner = do
-    return ()
-
 -- (PledgeHistory - DeleteHistory) = crowdSize (FetchCrowd)
 prop_pledgeHist :: Runner -> PropertyM IO ()
 prop_pledgeHist runner = do
+    genHistory runner
     (creat, remov) <- run $ runner $
         partition ((== CreatePledge) . pledgeHistoryAction . entityVal)
             <$> selectList [] []

@@ -40,34 +40,35 @@ type SqlRunner io env = forall a. SqlPersistT io a -> env a
 type StripeRunner = forall a. StripeT IO a -> IO (Either StripeError a)
 
 storeStripeCustomer
-    :: (ToMechPatron u, MonadIO io, MonadIO env)
+    :: (ToMechPatron usr, MonadIO io, MonadIO env)
     => SqlRunner io env
     -> StripeRunner
-    -> u -> PaymentToken
+    -> usr
+    -> PaymentToken
     -> env ()
-storeStripeCustomer db strp u =
-    runMech db . ActStoreStripeCustomer strp (u ^. from external)
+storeStripeCustomer db strp usr =
+    runMech db . ActStoreStripeCustomer strp (usr ^. from external)
 
 deleteStripeCustomer
-    :: (ToMechPatron u, MonadIO io, MonadIO env)
+    :: (ToMechPatron usr, MonadIO io, MonadIO env)
     => SqlRunner io env
     -> StripeRunner
-    -> u
+    -> usr
     -> env ()
 deleteStripeCustomer db strp =
     runMech db . ActDeleteStripeCustomer strp . (^. from external)
 
 storePledge
-    :: (ToMechPatron u, MonadIO io, MonadIO env)
+    :: (ToMechPatron usr, MonadIO io, MonadIO env)
     => SqlRunner io env
-    -> u
+    -> usr
     -> env ()
 storePledge db = runMech db . ActStorePledge . (^. from external)
 
 deletePledge
-    :: (ToMechPatron u, MonadIO io, MonadIO env)
+    :: (ToMechPatron usr, MonadIO io, MonadIO env)
     => SqlRunner io env
-    -> u
+    -> usr
     -> env ()
 deletePledge db = runMech db . ActDeletePledge . (^. from external)
 
@@ -78,9 +79,9 @@ fetchCrowdCount
 fetchCrowdCount db = runMech db ActFetchCrowdCount
 
 fetchPatron
-    :: (ToMechPatron u, MonadIO io, MonadIO env)
+    :: (ToMechPatron usr, MonadIO io, MonadIO env)
     => SqlRunner io env
-    -> u
+    -> usr
     -> env Patron
 fetchPatron db = runMech db . ActFetchPatron . (^. from external)
 
@@ -209,7 +210,7 @@ upsertPatron pptr mods = do
     upsert (Model.Patron pptr now Nothing 0 Nothing) mods
 
 fromModel :: Model.Patron -> Patron
-fromModel (Model.Patron u t c d p) = Patron t c d p
+fromModel (Model.Patron usr t c d p) = Patron t c d p
 
 toModel :: ToMechPatron p => p -> Patron -> Model.Patron
-toModel u (Patron t c d p) = Model.Patron (u ^. from external) t c d p
+toModel usr (Patron t c d p) = Model.Patron (usr ^. from external) t c d p
