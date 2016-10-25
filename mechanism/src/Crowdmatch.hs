@@ -31,6 +31,7 @@ data Patron = Patron
         , patronDonationPayable :: DonationUnits
         , patronPledgeSince :: Maybe UTCTime
         }
+        deriving (Eq, Show)
 
 data Crowd = Crowd { crowdSize :: Int }
 
