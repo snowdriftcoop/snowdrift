@@ -92,7 +92,7 @@ fetchPatron db = runMech db . ActFetchPatron . (^. from external)
 --
 
 -- | Actions provided by the library
-data MechAction b where
+data MechAction return where
     ActStoreStripeCustomer
         :: StripeRunner
         -> PPtr
@@ -107,7 +107,7 @@ data MechAction b where
 -- | Executing the actions
 runMech
     :: (MonadIO env, MonadIO io)
-    => SqlRunner io env -> MechAction b -> env b
+    => SqlRunner io env -> MechAction return -> env return
 
 --
 -- StripeCustomer (store/delete)
