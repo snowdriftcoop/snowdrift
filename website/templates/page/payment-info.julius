@@ -7,6 +7,7 @@ window.addEventListener('load', function() {
         name: 'Snowdrift.coop',
         description: 'Register a credit card to pledge',
         zipCode: true,
+        // ^ Helps prevent fraud; recommended by Stripe
         panelLabel: 'Register',
         allowRememberMe: false,
         email: '#{rawJS _userEmail}',
