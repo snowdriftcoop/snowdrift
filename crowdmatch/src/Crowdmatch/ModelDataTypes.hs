@@ -17,6 +17,12 @@ import Web.Stripe.Customer (CustomerId(..))
 deriving instance PersistField CustomerId
 deriving instance PersistFieldSql CustomerId
 
+newtype PaymentToken = PaymentToken { unPaymentToken :: CustomerId }
+    deriving (Eq, Show)
+
+deriving instance PersistField PaymentToken
+deriving instance PersistFieldSql PaymentToken
+
 data PledgeAction = CreatePledge | DeletePledge deriving (Show, Read, Eq)
 
 {-

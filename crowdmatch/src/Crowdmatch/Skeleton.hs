@@ -31,31 +31,3 @@ projectDonationHistory =
   where
     time = (^. DonationHistoryTime)
     total = sum_ . (^. DonationHistoryAmount)
-
--- | Number of patrons actively pledged to Snowdrift
-countActivePatrons :: MonadIO m => SqlPersistT m Int
-countActivePatrons =
-    fmap (maybe 0 unValue . headMay) $
-    select $
-    from $ \p -> do
-        where_ (activePatron p)
-        return countRows
-
--- | Patrons actively pledged to Snowdrift
-activePatrons :: MonadIO m => SqlPersistT m [Entity Patron]
-activePatrons =
-    select $
-    from $ \p -> do
-        where_ (activePatron p)
-        return p
-
-activePatron = not_ . isNothing . (^. PatronPledgeSince)
-
--- | Patrons with outstanding donation balances.
-patronsReceivable :: MonadIO m => DonationUnits -> SqlPersistT m [Entity Patron]
-patronsReceivable min =
-    select $
-    from $ \p -> do
-        where_ (not_ (isNothing (p ^. PatronStripeCustomer))
-            &&. (p ^. PatronDonationPayable >=. val min))
-        return p

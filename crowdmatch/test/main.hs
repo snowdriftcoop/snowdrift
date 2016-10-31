@@ -43,7 +43,7 @@ instance Arbitrary PPtr where
     arbitrary = PPtr . getPositive <$> arbitrary
 
 instance Arbitrary PaymentToken where
-    arbitrary = PaymentToken <$> arbitrary
+    arbitrary = fmap (PaymentToken . CustomerId) arbitrary
 
 -- | Use this instead of actually talking to Stripe during tests
 dummyStripe :: MonadIO m => StripeT m a -> m (Either b a)
@@ -106,24 +106,42 @@ main = setUpTestDatabase $ runPersistPool $ \runner -> do
         runMigration migrateCrowdmatch
         buildTruncQuery
     hspec $ before_ (runner trunq) $ do
-        modifyMaxSuccess (* 2) $ do
-            prop "Pledge creations + pledge deletions = crowd size"
-                $ dbProp trunq runner prop_pledgeHist
-            prop "Pledge exists -> StripeCustomer exists"
-                $ dbProp trunq runner prop_pledgeCapability
-        specify "fetchPatron always succeeds" $ do
-            p1 <- fetchPatron runner (HarnessUser 1)
-            p2 <- fetchPatron runner (HarnessUser 1)
-            p1 `shouldBe` p2
+        sanityTests runner
+        -- Ignore for developing other tests
+        -- propTests runner trunq
   where
     -- A query that empties all tables, used before each database test.
     buildTruncQuery = do
         esc <- connEscapeName <$> ask
-        tables <- map (esc . DBName . unSingle)
-            <$> rawSql "select table_name from information_schema.tables where table_schema = 'public'" []
+        tables <- fmap
+            (map (esc . DBName . unSingle))
+            (rawSql
+                ("select table_name"
+                 <> " from information_schema.tables"
+                 <> " where table_schema = 'public'")
+                [])
         let trunq = "truncate table " `mappend` T.intercalate ", " tables
         -- Don't do it yet
         pure (rawExecute trunq [])
+
+sanityTests :: Runner -> Spec
+sanityTests runner = describe "sanity tests" $ do
+    specify "stored customer is retrievable" $ do
+        let cust = PaymentToken (CustomerId "blah")
+        storeStripeCustomer runner dummyStripe (HarnessUser 1) cust
+        pat <- fetchPatron runner (HarnessUser 1)
+        patronPaymentToken pat `shouldBe` Just cust
+    specify "fetchPatron always succeeds" $ do
+        p1 <- fetchPatron runner (HarnessUser 1)
+        p2 <- fetchPatron runner (HarnessUser 1)
+        p1 `shouldBe` p2
+
+propTests :: Runner -> SqlPersistT IO () -> Spec
+propTests runner trunq = modifyMaxSuccess (* 2) $ do
+    prop "Pledge creations + pledge deletions = crowd size"
+        $ dbProp trunq runner prop_pledgeHist
+    prop "Pledge exists -> StripeCustomer exists"
+        $ dbProp trunq runner prop_pledgeCapability
 
 -- | We set up an in-memory database to run tests Fast Enough™.
 setUpTestDatabase :: IO () -> IO ()
@@ -181,5 +199,5 @@ prop_pledgeCapability :: Runner -> PropertyM IO ()
 prop_pledgeCapability runner = do
     genHistory runner
     ct <- run . runner $
-        count [PatronPledgeSince !=. Nothing, PatronStripeCustomer ==. Nothing]
+        count [PatronPledgeSince !=. Nothing, PatronPaymentToken ==. Nothing]
     assert (ct == 0)

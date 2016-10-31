@@ -27,15 +27,13 @@ import qualified Crowdmatch.Skeleton as Skeleton
 
 data Patron = Patron
         { patronCreated :: UTCTime
-        , patronStripeCustomer :: Maybe CustomerId
+        , patronPaymentToken :: Maybe PaymentToken
         , patronDonationPayable :: DonationUnits
         , patronPledgeSince :: Maybe UTCTime
         }
         deriving (Eq, Show)
 
 data Crowd = Crowd { crowdSize :: Int }
-
-newtype PaymentToken = PaymentToken Text deriving (Show)
 
 type SqlRunner io env = forall a. SqlPersistT io a -> env a
 type StripeRunner = forall a. StripeT IO a -> IO (Either StripeError a)
@@ -116,13 +114,13 @@ runMech
 -- FIXME: Feedback on Stripe error
 runMech db (ActStoreStripeCustomer strp pptr tok) = do
     Entity pid p <- db (upsertPatron pptr [])
-    ret <- maybe create' update' (Model.patronStripeCustomer p)
+    ret <- maybe create' update' (Model.patronPaymentToken p)
     either (const (pure ())) (updatePatron' pid) ret
   where
     create' = liftIO (strp (stripeCreateCustomer tok))
-    update' = liftIO . strp . stripeUpdateCustomer tok
+    update' = liftIO . strp . stripeUpdateCustomer tok . unPaymentToken
     updatePatron' pid c =
-        db (update pid [PatronStripeCustomer =. Just (customerId c)])
+        db (update pid [PatronPaymentToken =. Just tok])
 
 -- FIXME: Feedback on Stripe error or nonexisting CustomerId.
 runMech db (ActDeleteStripeCustomer strp pptr) = do
@@ -130,12 +128,12 @@ runMech db (ActDeleteStripeCustomer strp pptr) = do
     -- Fixme: Duplication of actions
     -- Must delete pledges if there's no payment method!
     runMech db (ActDeletePledge pptr)
-    maybe (pure ()) (deleteCust' pid) (Model.patronStripeCustomer p)
+    maybe (pure ()) (deleteCust' pid) (Model.patronPaymentToken p)
   where
-    deleteCust' pid cust = do
+    deleteCust' pid (PaymentToken cust) = do
         liftIO (strp (stripeDeleteCustomer cust))
         now <- liftIO getCurrentTime
-        db (update pid [PatronStripeCustomer =. Nothing])
+        db (update pid [PatronPaymentToken =. Nothing])
 
 --
 -- Pledge (store/delete)
@@ -145,7 +143,7 @@ runMech db (ActDeleteStripeCustomer strp pptr) = do
 -- FIXME: Feedback on existing pledges
 runMech db (ActStorePledge pptr) = do
     Entity pid p <- db (upsertPatron pptr [])
-    maybe noCustomer (checkpledge pid) (pure p <* Model.patronStripeCustomer p)
+    maybe noCustomer (checkpledge pid) (pure p <* Model.patronPaymentToken p)
   where
     checkpledge pid p =
         maybe (pledge' pid) existingPledge (Model.patronPledgeSince p)
@@ -169,7 +167,8 @@ runMech db (ActDeletePledge pptr) = db $ do
         update pid [PatronPledgeSince =. Nothing]
         insert_ (PledgeHistory pid now DeletePledge)
 
-runMech db ActFetchCrowdCount = db $ Crowd <$> Skeleton.countActivePatrons
+runMech db ActFetchCrowdCount =
+    db (Crowd <$> count [PatronPledgeSince !=. Nothing])
 runMech db (ActFetchPatron pptr) =
     db $ fromModel . entityVal <$> upsertPatron pptr []
 

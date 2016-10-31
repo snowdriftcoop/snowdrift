@@ -22,7 +22,7 @@ share [mkPersist sqlSettings
 Patron sql="crowdmatch__patron"
     usr PPtr
     created UTCTime
-    stripeCustomer CustomerId Maybe
+    paymentToken PaymentToken Maybe
     donationPayable DonationUnits
     pledgeSince UTCTime Maybe
     --
