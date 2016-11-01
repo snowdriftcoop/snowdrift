@@ -86,8 +86,8 @@ genHistory runner = do
     --
     -- Use Blind rather than write a Show instance for MechAction ().
     oneAct x = Blind <$> frequency
-        [ (10, ActStoreStripeCustomer dummyStripe <$> pure x <*> arbitrary)
-        , (1, pure (ActDeleteStripeCustomer dummyStripe x))
+        [ (10, ActStorePaymentToken dummyStripe <$> pure x <*> arbitrary)
+        , (1, pure (ActDeletePaymentToken dummyStripe x))
         , (2, pure (ActStorePledge x))
         , (1, pure (ActDeletePledge x))
         ]
@@ -128,12 +128,12 @@ sanityTests runner = describe "sanity tests" $ do
     let tok = PaymentToken (CustomerId "mixtapes")
         aelfred = HarnessUser 1
     specify "stored token is retrievable" $ do
-        storeStripeCustomer runner dummyStripe aelfred tok
+        storePaymentToken runner dummyStripe aelfred tok
         pat <- fetchPatron runner aelfred
         patronPaymentToken pat `shouldBe` Just tok
     specify "deleted token disappears" $ do
-        storeStripeCustomer runner dummyStripe aelfred tok
-        deleteStripeCustomer runner dummyStripe aelfred
+        storePaymentToken runner dummyStripe aelfred tok
+        deletePaymentToken runner dummyStripe aelfred
         pat <- fetchPatron runner aelfred
         patronPaymentToken pat `shouldBe` Nothing
     specify "fetchPatron always succeeds" $ do
@@ -141,12 +141,12 @@ sanityTests runner = describe "sanity tests" $ do
         p2 <- fetchPatron runner aelfred
         p1 `shouldBe` p2
     specify "stored pledge is retrievable" $ do
-        storeStripeCustomer runner dummyStripe aelfred tok
+        storePaymentToken runner dummyStripe aelfred tok
         storePledge runner aelfred
         pat <- fetchPatron runner aelfred
         patronPledgeSince pat `shouldNotBe` Nothing
     specify "deleted pledge is retrievable" $ do
-        storeStripeCustomer runner dummyStripe aelfred tok
+        storePaymentToken runner dummyStripe aelfred tok
         storePledge runner aelfred
         deletePledge runner aelfred
         pat <- fetchPatron runner aelfred
@@ -156,7 +156,7 @@ propTests :: Runner -> SqlPersistT IO () -> Spec
 propTests runner trunq = modifyMaxSuccess (* 2) $ do
     prop "Pledge creations + pledge deletions = crowd size"
         $ dbProp trunq runner prop_pledgeHist
-    prop "Pledge exists -> StripeCustomer exists"
+    prop "Pledge exists -> PaymentToken exists"
         $ dbProp trunq runner prop_pledgeCapability
 
 -- | We set up an in-memory database to run tests Fast Enough™.
@@ -210,7 +210,7 @@ prop_pledgeHist runner = do
         , ")"
         ])
 
--- | Pledge exists -> StripeCustomer exists
+-- | Pledge exists -> PaymentToken exists
 prop_pledgeCapability :: Runner -> PropertyM IO ()
 prop_pledgeCapability runner = do
     genHistory runner

@@ -38,24 +38,24 @@ data Crowd = Crowd { crowdSize :: Int }
 type SqlRunner io env = forall a. SqlPersistT io a -> env a
 type StripeRunner = forall a. StripeT IO a -> IO (Either StripeError a)
 
-storeStripeCustomer
+storePaymentToken
     :: (ToMechPatron usr, MonadIO io, MonadIO env)
     => SqlRunner io env
     -> StripeRunner
     -> usr
     -> PaymentToken
     -> env ()
-storeStripeCustomer db strp usr =
-    runMech db . ActStoreStripeCustomer strp (usr ^. from external)
+storePaymentToken db strp usr =
+    runMech db . ActStorePaymentToken strp (usr ^. from external)
 
-deleteStripeCustomer
+deletePaymentToken
     :: (ToMechPatron usr, MonadIO io, MonadIO env)
     => SqlRunner io env
     -> StripeRunner
     -> usr
     -> env ()
-deleteStripeCustomer db strp =
-    runMech db . ActDeleteStripeCustomer strp . (^. from external)
+deletePaymentToken db strp =
+    runMech db . ActDeletePaymentToken strp . (^. from external)
 
 storePledge
     :: (ToMechPatron usr, MonadIO io, MonadIO env)
@@ -91,12 +91,12 @@ fetchPatron db = runMech db . ActFetchPatron . (^. from external)
 
 -- | Actions provided by the library
 data MechAction return where
-    ActStoreStripeCustomer
+    ActStorePaymentToken
         :: StripeRunner
         -> PPtr
         -> PaymentToken
         -> MechAction ()
-    ActDeleteStripeCustomer :: StripeRunner -> PPtr -> MechAction ()
+    ActDeletePaymentToken :: StripeRunner -> PPtr -> MechAction ()
     ActStorePledge :: PPtr -> MechAction ()
     ActDeletePledge :: PPtr -> MechAction ()
     ActFetchCrowdCount :: MechAction Crowd
@@ -108,11 +108,11 @@ runMech
     => SqlRunner io env -> MechAction return -> env return
 
 --
--- StripeCustomer (store/delete)
+-- PaymentToken (store/delete)
 --
 
 -- FIXME: Feedback on Stripe error
-runMech db (ActStoreStripeCustomer strp pptr tok) = do
+runMech db (ActStorePaymentToken strp pptr tok) = do
     Entity pid p <- db (upsertPatron pptr [])
     ret <- maybe create' update' (Model.patronPaymentToken p)
     either (const (pure ())) (updatePatron' pid) ret
@@ -123,7 +123,7 @@ runMech db (ActStoreStripeCustomer strp pptr tok) = do
         db (update pid [PatronPaymentToken =. Just tok])
 
 -- FIXME: Feedback on Stripe error or nonexisting CustomerId.
-runMech db (ActDeleteStripeCustomer strp pptr) = do
+runMech db (ActDeletePaymentToken strp pptr) = do
     Entity pid p <- db (upsertPatron pptr [])
     -- Fixme: Duplication of actions
     -- Must delete pledges if there's no payment method!
