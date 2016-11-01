@@ -86,10 +86,10 @@ genHistory runner = do
     --
     -- Use Blind rather than write a Show instance for MechAction ().
     oneAct x = Blind <$> frequency
-        [ (10, ActStorePaymentToken dummyStripe <$> pure x <*> arbitrary)
-        , (1, pure (ActDeletePaymentToken dummyStripe x))
-        , (2, pure (ActStorePledge x))
-        , (1, pure (ActDeletePledge x))
+        [ (10, StorePaymentTokenI dummyStripe <$> pure x <*> arbitrary)
+        , (1, pure (DeletePaymentTokenI dummyStripe x))
+        , (2, pure (StorePledgeI x))
+        , (1, pure (DeletePledgeI x))
         ]
 
 -- | Something to make a Patron out of

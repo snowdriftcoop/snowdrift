@@ -46,7 +46,7 @@ storePaymentToken
     -> PaymentToken
     -> env ()
 storePaymentToken db strp usr =
-    runMech db . ActStorePaymentToken strp (usr ^. from external)
+    runMech db . StorePaymentTokenI strp (usr ^. from external)
 
 deletePaymentToken
     :: (ToMechPatron usr, MonadIO io, MonadIO env)
@@ -55,34 +55,34 @@ deletePaymentToken
     -> usr
     -> env ()
 deletePaymentToken db strp =
-    runMech db . ActDeletePaymentToken strp . (^. from external)
+    runMech db . DeletePaymentTokenI strp . (^. from external)
 
 storePledge
     :: (ToMechPatron usr, MonadIO io, MonadIO env)
     => SqlRunner io env
     -> usr
     -> env ()
-storePledge db = runMech db . ActStorePledge . (^. from external)
+storePledge db = runMech db . StorePledgeI . (^. from external)
 
 deletePledge
     :: (ToMechPatron usr, MonadIO io, MonadIO env)
     => SqlRunner io env
     -> usr
     -> env ()
-deletePledge db = runMech db . ActDeletePledge . (^. from external)
+deletePledge db = runMech db . DeletePledgeI . (^. from external)
 
 fetchCrowdCount
     :: (MonadIO io, MonadIO env)
     => SqlRunner io env
     -> env Crowd
-fetchCrowdCount db = runMech db ActFetchCrowdCount
+fetchCrowdCount db = runMech db FetchCrowdCountI
 
 fetchPatron
     :: (ToMechPatron usr, MonadIO io, MonadIO env)
     => SqlRunner io env
     -> usr
     -> env Patron
-fetchPatron db = runMech db . ActFetchPatron . (^. from external)
+fetchPatron db = runMech db . FetchPatronI . (^. from external)
 
 --
 -- ONE LEVEL DOWN
@@ -90,29 +90,29 @@ fetchPatron db = runMech db . ActFetchPatron . (^. from external)
 --
 
 -- | Actions provided by the library
-data MechAction return where
-    ActStorePaymentToken
+data CrowdmatchI return where
+    StorePaymentTokenI
         :: StripeRunner
         -> PPtr
         -> PaymentToken
-        -> MechAction ()
-    ActDeletePaymentToken :: StripeRunner -> PPtr -> MechAction ()
-    ActStorePledge :: PPtr -> MechAction ()
-    ActDeletePledge :: PPtr -> MechAction ()
-    ActFetchCrowdCount :: MechAction Crowd
-    ActFetchPatron :: PPtr -> MechAction Patron
+        -> CrowdmatchI ()
+    DeletePaymentTokenI :: StripeRunner -> PPtr -> CrowdmatchI ()
+    StorePledgeI :: PPtr -> CrowdmatchI ()
+    DeletePledgeI :: PPtr -> CrowdmatchI ()
+    FetchCrowdCountI :: CrowdmatchI Crowd
+    FetchPatronI :: PPtr -> CrowdmatchI Patron
 
 -- | Executing the actions
 runMech
     :: (MonadIO env, MonadIO io)
-    => SqlRunner io env -> MechAction return -> env return
+    => SqlRunner io env -> CrowdmatchI return -> env return
 
 --
 -- PaymentToken (store/delete)
 --
 
 -- FIXME: Feedback on Stripe error
-runMech db (ActStorePaymentToken strp pptr tok) = do
+runMech db (StorePaymentTokenI strp pptr tok) = do
     Entity pid p <- db (upsertPatron pptr [])
     ret <- maybe create' update' (Model.patronPaymentToken p)
     either (const (pure ())) (updatePatron' pid) ret
@@ -123,11 +123,11 @@ runMech db (ActStorePaymentToken strp pptr tok) = do
         db (update pid [PatronPaymentToken =. Just tok])
 
 -- FIXME: Feedback on Stripe error or nonexisting CustomerId.
-runMech db (ActDeletePaymentToken strp pptr) = do
+runMech db (DeletePaymentTokenI strp pptr) = do
     Entity pid p <- db (upsertPatron pptr [])
     -- Fixme: Duplication of actions
     -- Must delete pledges if there's no payment method!
-    runMech db (ActDeletePledge pptr)
+    runMech db (DeletePledgeI pptr)
     maybe (pure ()) (deleteCust' pid) (Model.patronPaymentToken p)
   where
     deleteCust' pid (PaymentToken cust) = do
@@ -141,7 +141,7 @@ runMech db (ActDeletePaymentToken strp pptr) = do
 
 -- FIXME: Feedback on missing payment info
 -- FIXME: Feedback on existing pledges
-runMech db (ActStorePledge pptr) = do
+runMech db (StorePledgeI pptr) = do
     Entity pid p <- db (upsertPatron pptr [])
     maybe noCustomer (checkpledge pid) (pure p <* Model.patronPaymentToken p)
   where
@@ -155,7 +155,7 @@ runMech db (ActStorePledge pptr) = do
     existingPledge _ = pure ()
 
 -- FIXME: Feedback on nonexistent pledge.
-runMech db (ActDeletePledge pptr) = db $ do
+runMech db (DeletePledgeI pptr) = db $ do
     -- In the absence of triggers or other database use sophistication, we
     -- fetch/evaluate/modify here.
     Entity pid p <- upsertPatron pptr []
@@ -167,9 +167,9 @@ runMech db (ActDeletePledge pptr) = db $ do
         update pid [PatronPledgeSince =. Nothing]
         insert_ (PledgeHistory pid now DeletePledge)
 
-runMech db ActFetchCrowdCount =
+runMech db FetchCrowdCountI =
     db (Crowd <$> count [PatronPledgeSince !=. Nothing])
-runMech db (ActFetchPatron pptr) =
+runMech db (FetchPatronI pptr) =
     db $ fromModel . entityVal <$> upsertPatron pptr []
 
 --
