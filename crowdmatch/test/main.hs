@@ -43,17 +43,18 @@ instance Arbitrary Text where
 instance Arbitrary PaymentToken where
     arbitrary = fmap (PaymentToken . CustomerId) arbitrary
 
+instance Arbitrary TokenId where
+    arbitrary = TokenId <$> arbitrary
+
 -- | Use this instead of actually talking to Stripe during tests
-dummyStripe :: MonadIO m => StripeT m a -> m (Either b a)
-dummyStripe = eval <=< viewT
-  where
-    eval = \case
-        Return x -> pure (Right x)
-        CreateCustomerI _tok :>>= k ->
-            dummyStripe (k Customer { customerId = CustomerId "dummy" })
-        UpdateCustomerI _tok cust :>>= k ->
-            dummyStripe (k Customer { customerId = cust })
-        DeleteCustomerI _ :>>= k -> dummyStripe (k ())
+dummyStripe :: MonadIO m => StripeI a -> m (Either b a)
+dummyStripe = \case
+    CreateCustomerI _tok ->
+        pure (Right Customer { customerId = CustomerId "dummy" })
+    UpdateCustomerI _tok cust ->
+        pure (Right Customer { customerId = cust })
+    DeleteCustomerI _ ->
+        pure (Right ())
 
 type Runner = forall a. SqlPersistT IO a -> IO a
 
@@ -129,14 +130,15 @@ main = setUpTestDatabase $ runPersistPool $ \runner -> do
 
 sanityTests :: Runner -> Spec
 sanityTests runner = describe "sanity tests" $ do
-    let tok = PaymentToken (CustomerId "mixtapes")
+    let payTok = PaymentToken (CustomerId "dummy")
+        cardTok = TokenId "pumpkin"
         aelfred = HarnessUser 1
     specify "stored token is retrievable" $ do
-        _ <- storePaymentToken runner dummyStripe aelfred tok
+        _ <- storePaymentToken runner dummyStripe aelfred cardTok
         pat <- fetchPatron runner aelfred
-        patronPaymentToken pat `shouldBe` Just tok
+        patronPaymentToken pat `shouldBe` Just payTok
     specify "deleted token disappears" $ do
-        _ <- storePaymentToken runner dummyStripe aelfred tok
+        _ <- storePaymentToken runner dummyStripe aelfred cardTok
         _ <- deletePaymentToken runner dummyStripe aelfred
         pat <- fetchPatron runner aelfred
         patronPaymentToken pat `shouldBe` Nothing
@@ -145,12 +147,12 @@ sanityTests runner = describe "sanity tests" $ do
         p2 <- fetchPatron runner aelfred
         p1 `shouldBe` p2
     specify "stored pledge is retrievable" $ do
-        _ <- storePaymentToken runner dummyStripe aelfred tok
+        _ <- storePaymentToken runner dummyStripe aelfred cardTok
         storePledge runner aelfred
         pat <- fetchPatron runner aelfred
         patronPledgeSince pat `shouldNotBe` Nothing
     specify "deleted pledge is retrievable" $ do
-        _ <- storePaymentToken runner dummyStripe aelfred tok
+        _ <- storePaymentToken runner dummyStripe aelfred cardTok
         storePledge runner aelfred
         deletePledge runner aelfred
         pat <- fetchPatron runner aelfred

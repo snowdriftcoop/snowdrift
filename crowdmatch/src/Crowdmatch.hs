@@ -5,6 +5,7 @@
 
 module Crowdmatch (module Crowdmatch) where
 
+import Control.Error
 import Control.Lens
 import Control.Monad (void, (<=<), join)
 import Control.Monad.IO.Class
@@ -36,14 +37,14 @@ data Patron = Patron
 data Crowd = Crowd { crowdSize :: Int }
 
 type SqlRunner io env = forall a. SqlPersistT io a -> env a
-type StripeRunner = forall a. StripeT IO a -> IO (Either StripeError a)
+type StripeRunner = forall a. StripeI a -> IO (Either StripeError a)
 
 storePaymentToken
     :: (ToMechPatron usr, MonadIO io, MonadIO env)
     => SqlRunner io env
     -> StripeRunner
     -> usr
-    -> PaymentToken
+    -> TokenId
     -> env (Either StripeError ())
 storePaymentToken db strp usr =
     runMech db . StorePaymentTokenI strp (usr ^. from external)
@@ -94,7 +95,7 @@ data CrowdmatchI return where
     StorePaymentTokenI
         :: StripeRunner
         -> PPtr
-        -> PaymentToken
+        -> TokenId
         -> CrowdmatchI (Either StripeError ())
     DeletePaymentTokenI
         :: StripeRunner
@@ -115,14 +116,18 @@ runMech
 --
 
 -- FIXME: Feedback on Stripe error
-runMech db (StorePaymentTokenI strp pptr tok) = do
+runMech db (StorePaymentTokenI strp pptr cardToken) = do
     Entity pid p <- db (upsertPatron pptr [])
-    ret <- maybe create' update' (Model.patronPaymentToken p)
-    traverse (updatePatron' pid) ret
+    runExceptT $ do
+        ret <- ExceptT $ maybe create' update' (Model.patronPaymentToken p)
+        ExceptT (Right <$> updatePatron' pid ret)
+        -- updatePatron' pid ret
   where
-    create' = liftIO (strp (stripeCreateCustomer tok))
-    update' = liftIO . strp . stripeUpdateCustomer tok . unPaymentToken
-    updatePatron' pid c = db (update pid [PatronPaymentToken =. Just tok])
+    create' = stripeCreateCustomer strp cardToken
+    update' = stripeUpdateCustomer strp cardToken . unPaymentToken
+    updatePatron' pid c =
+        let payToken = PaymentToken (customerId c)
+        in db (update pid [PatronPaymentToken =. Just payToken])
 
 -- FIXME: Feedback on nonexisting CustomerId.
 runMech db (DeletePaymentTokenI strp pptr) = do
@@ -131,7 +136,7 @@ runMech db (DeletePaymentTokenI strp pptr) = do
     -- fmap join (traverse (deleteToken' pid) (Model.patronPaymentToken p))
   where
     deleteToken' pid (PaymentToken cust) = do
-        res <- liftIO (strp (stripeDeleteCustomer cust))
+        res <- stripeDeleteCustomer strp cust
         traverse (const (update' pid)) res
     update' pid = do
         -- Must delete pledges if there's no payment method!
@@ -184,21 +189,41 @@ runMech db (FetchPatronI pptr) =
 --
 
 data StripeI a where
-    CreateCustomerI :: PaymentToken -> StripeI Customer
-    UpdateCustomerI :: PaymentToken -> CustomerId -> StripeI Customer
+    CreateCustomerI :: TokenId -> StripeI Customer
+    UpdateCustomerI :: TokenId -> CustomerId -> StripeI Customer
     DeleteCustomerI :: CustomerId -> StripeI ()
 
-type StripeT m a = ProgramT StripeI m a
-
-stripeCreateCustomer :: MonadIO io => PaymentToken -> StripeT io Customer
-stripeCreateCustomer = singleton . CreateCustomerI
+stripeCreateCustomer
+    :: MonadIO io => StripeRunner -> TokenId -> io (Either StripeError Customer)
+stripeCreateCustomer strp = liftIO . strp . CreateCustomerI
 
 stripeUpdateCustomer
-    :: MonadIO io => PaymentToken -> CustomerId -> StripeT io Customer
-stripeUpdateCustomer tok = singleton . UpdateCustomerI tok
+    :: MonadIO io
+    => StripeRunner
+    -> TokenId
+    -> CustomerId
+    -> io (Either StripeError Customer)
+stripeUpdateCustomer strp tok = liftIO . strp . UpdateCustomerI tok
 
-stripeDeleteCustomer :: MonadIO io => CustomerId -> StripeT io ()
-stripeDeleteCustomer = singleton . DeleteCustomerI
+stripeDeleteCustomer
+    :: MonadIO io
+    => StripeRunner
+    -> CustomerId
+    -> io (Either StripeError ())
+stripeDeleteCustomer strp = liftIO . strp . DeleteCustomerI
+
+
+-- | A default stripe runner
+runStripe
+    :: MonadIO io
+    => StripeConfig -> StripeI a -> io (Either StripeError a)
+runStripe c = \case
+    CreateCustomerI cardToken ->
+        liftIO (stripe c (createCustomer -&- cardToken))
+    UpdateCustomerI cardToken cust ->
+        liftIO (stripe c (updateCustomer cust -&- cardToken))
+    DeleteCustomerI cust ->
+        void <$> liftIO (stripe c (deleteCustomer cust))
 
 --
 -- Helpers
