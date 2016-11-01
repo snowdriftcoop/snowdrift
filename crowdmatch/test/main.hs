@@ -107,8 +107,7 @@ main = setUpTestDatabase $ runPersistPool $ \runner -> do
         buildTruncQuery
     hspec $ before_ (runner trunq) $ do
         sanityTests runner
-        -- Ignore for developing other tests
-        -- propTests runner trunq
+        propTests runner trunq
   where
     -- A query that empties all tables, used before each database test.
     buildTruncQuery = do
@@ -126,15 +125,32 @@ main = setUpTestDatabase $ runPersistPool $ \runner -> do
 
 sanityTests :: Runner -> Spec
 sanityTests runner = describe "sanity tests" $ do
-    specify "stored customer is retrievable" $ do
-        let cust = PaymentToken (CustomerId "blah")
-        storeStripeCustomer runner dummyStripe (HarnessUser 1) cust
-        pat <- fetchPatron runner (HarnessUser 1)
-        patronPaymentToken pat `shouldBe` Just cust
+    let tok = PaymentToken (CustomerId "mixtapes")
+        aelfred = HarnessUser 1
+    specify "stored token is retrievable" $ do
+        storeStripeCustomer runner dummyStripe aelfred tok
+        pat <- fetchPatron runner aelfred
+        patronPaymentToken pat `shouldBe` Just tok
+    specify "deleted token disappears" $ do
+        storeStripeCustomer runner dummyStripe aelfred tok
+        deleteStripeCustomer runner dummyStripe aelfred
+        pat <- fetchPatron runner aelfred
+        patronPaymentToken pat `shouldBe` Nothing
     specify "fetchPatron always succeeds" $ do
-        p1 <- fetchPatron runner (HarnessUser 1)
-        p2 <- fetchPatron runner (HarnessUser 1)
+        p1 <- fetchPatron runner aelfred
+        p2 <- fetchPatron runner aelfred
         p1 `shouldBe` p2
+    specify "stored pledge is retrievable" $ do
+        storeStripeCustomer runner dummyStripe aelfred tok
+        storePledge runner aelfred
+        pat <- fetchPatron runner aelfred
+        patronPledgeSince pat `shouldNotBe` Nothing
+    specify "deleted pledge is retrievable" $ do
+        storeStripeCustomer runner dummyStripe aelfred tok
+        storePledge runner aelfred
+        deletePledge runner aelfred
+        pat <- fetchPatron runner aelfred
+        patronPledgeSince pat `shouldBe` Nothing
 
 propTests :: Runner -> SqlPersistT IO () -> Spec
 propTests runner trunq = modifyMaxSuccess (* 2) $ do
