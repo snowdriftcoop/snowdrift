@@ -11,6 +11,7 @@ import Control.Monad
 import Control.Monad.IO.Class
 import Control.Monad.Operational
 import Control.Monad.Reader (ask)
+import Data.Foldable (traverse_)
 import Data.List (partition)
 import Data.Monoid
 import Data.Text (Text)
@@ -39,9 +40,6 @@ pgExecute_ q = bracket open' PG.close (void . (`PG.execute_` q))
 instance Arbitrary Text where
     arbitrary = T.pack <$> listOf (elements ['a'..'z'])
 
-instance Arbitrary PPtr where
-    arbitrary = PPtr . getPositive <$> arbitrary
-
 instance Arbitrary PaymentToken where
     arbitrary = fmap (PaymentToken . CustomerId) arbitrary
 
@@ -68,36 +66,42 @@ dbProp truncation runner prop' =
 -- | Generate Arbitrary crowdmatch history
 genHistory :: Runner -> PropertyM IO ()
 genHistory runner = do
-    targets <- pick (map PPtr <$> listOf (choose (1,1000)))
+    targets <- pick (map HarnessUser <$> listOf (choose (1,1000)))
     let bucket = length targets `div` 5
         b0 = show (bucket * 5)
         b1 = show ((bucket + 1) * 5)
     monitor (label (concat ["N ∈ [", b0,", ",b1 , "]"]))
-    acts <- pick (traverse oneAct targets)
     -- Running this concurrently causes "impossible" conflicts during
     -- upsert! This needs to be fixed! But on the threat matrix, it is both
     -- unlikely to happen and has minimal side effects (since the DB stays
     -- consistent, after all.) So I'm punting for now.
-    {- run (void (mapConcurrently (runMech runner) acts))-}
-    run (mapM_ (runMech runner . getBlind) acts)
+    traverse_ oneAct targets
   where
-    -- Tip: Move this into PropertyM to continue property testing once
-    -- the API actions have non-homogeneous return types.
-    --
-    -- Use Blind rather than write a Show instance for MechAction ().
-    oneAct x = Blind <$> frequency
-        [ (10, StorePaymentTokenI dummyStripe <$> pure x <*> arbitrary)
-        , (1, pure (DeletePaymentTokenI dummyStripe x))
-        , (2, pure (StorePledgeI x))
-        , (1, pure (DeletePledgeI x))
-        ]
+    -- oneAct :: HarnessUser -> PropertyM IO ()
+    oneAct x =
+        -- When new API methods are added, they need to be added here. This is
+        -- a problem I don't have a solution to right now.
+        (run . getBlind <=< pick) (Blind <$> frequency
+            [ (10, storeToken' x)
+            , (1, delToken' x)
+            , (2, storePatron' x)
+            , (1, delPatron' x)
+            ])
+    storeToken' x = void . storePaymentToken runner dummyStripe x <$> arbitrary
+    delToken' = pure . void . deletePaymentToken runner dummyStripe
+    storePatron' = pure . storePledge runner
+    delPatron' = pure . deletePledge runner
 
 -- | Something to make a Patron out of
 newtype HarnessUser = HarnessUser Int
+    deriving (Eq, Show)
 
 instance ToMechPatron HarnessUser where
     toMechPatron (HarnessUser i) = i
     fromMechPatron = HarnessUser
+
+instance Arbitrary HarnessUser where
+    arbitrary = HarnessUser . getPositive <$> arbitrary
 
 -- | Run the tests
 main :: IO ()
@@ -128,12 +132,12 @@ sanityTests runner = describe "sanity tests" $ do
     let tok = PaymentToken (CustomerId "mixtapes")
         aelfred = HarnessUser 1
     specify "stored token is retrievable" $ do
-        storePaymentToken runner dummyStripe aelfred tok
+        _ <- storePaymentToken runner dummyStripe aelfred tok
         pat <- fetchPatron runner aelfred
         patronPaymentToken pat `shouldBe` Just tok
     specify "deleted token disappears" $ do
-        storePaymentToken runner dummyStripe aelfred tok
-        deletePaymentToken runner dummyStripe aelfred
+        _ <- storePaymentToken runner dummyStripe aelfred tok
+        _ <- deletePaymentToken runner dummyStripe aelfred
         pat <- fetchPatron runner aelfred
         patronPaymentToken pat `shouldBe` Nothing
     specify "fetchPatron always succeeds" $ do
@@ -141,12 +145,12 @@ sanityTests runner = describe "sanity tests" $ do
         p2 <- fetchPatron runner aelfred
         p1 `shouldBe` p2
     specify "stored pledge is retrievable" $ do
-        storePaymentToken runner dummyStripe aelfred tok
+        _ <- storePaymentToken runner dummyStripe aelfred tok
         storePledge runner aelfred
         pat <- fetchPatron runner aelfred
         patronPledgeSince pat `shouldNotBe` Nothing
     specify "deleted pledge is retrievable" $ do
-        storePaymentToken runner dummyStripe aelfred tok
+        _ <- storePaymentToken runner dummyStripe aelfred tok
         storePledge runner aelfred
         deletePledge runner aelfred
         pat <- fetchPatron runner aelfred

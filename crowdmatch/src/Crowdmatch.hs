@@ -6,7 +6,7 @@
 module Crowdmatch (module Crowdmatch) where
 
 import Control.Lens
-import Control.Monad (void, (<=<))
+import Control.Monad (void, (<=<), join)
 import Control.Monad.IO.Class
 import Control.Monad.Operational
 import Data.Text (Text)
@@ -44,7 +44,7 @@ storePaymentToken
     -> StripeRunner
     -> usr
     -> PaymentToken
-    -> env ()
+    -> env (Either StripeError ())
 storePaymentToken db strp usr =
     runMech db . StorePaymentTokenI strp (usr ^. from external)
 
@@ -53,7 +53,7 @@ deletePaymentToken
     => SqlRunner io env
     -> StripeRunner
     -> usr
-    -> env ()
+    -> env (Either StripeError ())
 deletePaymentToken db strp =
     runMech db . DeletePaymentTokenI strp . (^. from external)
 
@@ -95,8 +95,11 @@ data CrowdmatchI return where
         :: StripeRunner
         -> PPtr
         -> PaymentToken
-        -> CrowdmatchI ()
-    DeletePaymentTokenI :: StripeRunner -> PPtr -> CrowdmatchI ()
+        -> CrowdmatchI (Either StripeError ())
+    DeletePaymentTokenI
+        :: StripeRunner
+        -> PPtr
+        -> CrowdmatchI (Either StripeError ())
     StorePledgeI :: PPtr -> CrowdmatchI ()
     DeletePledgeI :: PPtr -> CrowdmatchI ()
     FetchCrowdCountI :: CrowdmatchI Crowd
@@ -115,24 +118,25 @@ runMech
 runMech db (StorePaymentTokenI strp pptr tok) = do
     Entity pid p <- db (upsertPatron pptr [])
     ret <- maybe create' update' (Model.patronPaymentToken p)
-    either (const (pure ())) (updatePatron' pid) ret
+    traverse (updatePatron' pid) ret
   where
     create' = liftIO (strp (stripeCreateCustomer tok))
     update' = liftIO . strp . stripeUpdateCustomer tok . unPaymentToken
-    updatePatron' pid c =
-        db (update pid [PatronPaymentToken =. Just tok])
+    updatePatron' pid c = db (update pid [PatronPaymentToken =. Just tok])
 
--- FIXME: Feedback on Stripe error or nonexisting CustomerId.
+-- FIXME: Feedback on nonexisting CustomerId.
 runMech db (DeletePaymentTokenI strp pptr) = do
     Entity pid p <- db (upsertPatron pptr [])
-    -- Fixme: Duplication of actions
-    -- Must delete pledges if there's no payment method!
-    runMech db (DeletePledgeI pptr)
-    maybe (pure ()) (deleteCust' pid) (Model.patronPaymentToken p)
+    maybe (pure (Right ())) (deleteToken' pid) (Model.patronPaymentToken p)
+    -- fmap join (traverse (deleteToken' pid) (Model.patronPaymentToken p))
   where
-    deleteCust' pid (PaymentToken cust) = do
-        liftIO (strp (stripeDeleteCustomer cust))
-        now <- liftIO getCurrentTime
+    deleteToken' pid (PaymentToken cust) = do
+        res <- liftIO (strp (stripeDeleteCustomer cust))
+        traverse (const (update' pid)) res
+    update' pid = do
+        -- Must delete pledges if there's no payment method!
+        -- Fixme: Duplication of upsert
+        runMech db (DeletePledgeI pptr)
         db (update pid [PatronPaymentToken =. Nothing])
 
 --
