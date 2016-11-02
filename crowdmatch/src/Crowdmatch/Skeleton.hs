@@ -9,12 +9,9 @@
 module Crowdmatch.Skeleton where
 
 import Control.Error hiding (isNothing)
-import Control.Lens ((%~), _1, _2, _3)
-import Data.Maybe hiding (isNothing)
+import Control.Lens ((%~), _1, _2)
 import Control.Monad.IO.Class
-import Data.Maybe (fromJust)
 import Database.Esqueleto
-import Web.Stripe.Charge
 
 import Crowdmatch.Model
 

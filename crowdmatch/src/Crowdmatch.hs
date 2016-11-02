@@ -7,10 +7,8 @@ module Crowdmatch (module Crowdmatch) where
 
 import Control.Error
 import Control.Lens
-import Control.Monad (void, (<=<), join)
+import Control.Monad (void)
 import Control.Monad.IO.Class
-import Control.Monad.Operational
-import Data.Text (Text)
 import Data.Time
 import Database.Persist
 import Database.Persist.Sql
@@ -20,7 +18,6 @@ import Web.Stripe.Customer
 
 import Crowdmatch.Model as Crowdmatch hiding (Patron(..))
 import qualified Crowdmatch.Model as Model
-import qualified Crowdmatch.Skeleton as Skeleton
 
 --
 -- THE ACTUAL INTERFACE USED BY THE WEBSITE
@@ -234,12 +231,17 @@ runStripe c = \case
 --
 -- (Also, creating the proper database constraint is still TODO, so we
 -- actually need this code.)
+upsertPatron
+    :: MonadIO m
+    => PPtr
+    -> [Update Model.Patron]
+    -> SqlPersistT m (Entity Model.Patron)
 upsertPatron pptr mods = do
     now <- liftIO getCurrentTime
     upsert (Model.Patron pptr now Nothing 0 Nothing) mods
 
 fromModel :: Model.Patron -> Patron
-fromModel (Model.Patron usr t c d p) = Patron t c d p
+fromModel (Model.Patron _usr t c d p) = Patron t c d p
 
 toModel :: ToMechPatron p => p -> Patron -> Model.Patron
 toModel usr (Patron t c d p) = Model.Patron (usr ^. from external) t c d p

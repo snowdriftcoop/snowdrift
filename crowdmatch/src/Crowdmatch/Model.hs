@@ -10,14 +10,12 @@
 module Crowdmatch.Model (module Crowdmatch.Model) where
 
 import Control.Lens
-import Control.Lens.TH
 import Data.Monoid ((<>))
 import Control.Monad.IO.Class
 import Data.Time
 import Database.Persist.TH
 import Database.PostgreSQL.Simple
 import Database.PostgreSQL.Simple.Migration
-import Web.Stripe.Customer (CustomerId(..))
 
 import Crowdmatch.ModelDataTypes as Crowdmatch.Model
 
@@ -70,14 +68,14 @@ external = iso toExternal fromExternal
 crowdmatchManualMigrations :: MonadIO io => Connection -> io ()
 crowdmatchManualMigrations con = liftIO $
     withTransaction con $ do
-        runMigration (MigrationContext MigrationInitialization True con)
+        _ <- runMigration (MigrationContext MigrationInitialization True con)
         mapM_ (runMigration . inContext) migrations
   where
     inContext (name,script) =
         MigrationContext (MigrationScript name script) True con
-    migrations = let (.=) = (,) in
+    migrations = let (..=) = (,) in
         [ "payment-capability"
-            .= ("alter table crowdmatch__patron"
+            ..= ("alter table crowdmatch__patron"
                 <> " add constraint pledge_capability"
                 <> " check (pledge_since is null"
                     <> " or payment_token is not null)")
