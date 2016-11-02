@@ -6,10 +6,9 @@
 {-# LANGUAGE GADTs #-}
 {-# OPTIONS_GHC -fno-warn-missing-signatures -fno-warn-orphans -fno-warn-missing-fields #-}
 
-import Control.Exception hiding (assert)
+import Control.Exception.Safe (bracket)
 import Control.Monad
 import Control.Monad.IO.Class
-import Control.Monad.Operational
 import Control.Monad.Reader (ask)
 import Data.Foldable (traverse_)
 import Data.List (partition)
@@ -110,6 +109,9 @@ main = setUpTestDatabase $ runPersistPool $ \runner -> do
     trunq <- runner $ do
         runMigration migrateCrowdmatch
         buildTruncQuery
+    -- The manual migrations do not compose with Persistent. Have to go
+    -- down to postgresql-simple.
+    bracket (PG.connectPostgreSQL "") PG.close crowdmatchManualMigrations
     hspec $ before_ (runner trunq) $ do
         sanityTests runner
         propTests runner trunq

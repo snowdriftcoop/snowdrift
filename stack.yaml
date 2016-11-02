@@ -17,6 +17,9 @@ packages:
     subdirs:
       - persistent
   - run-persist
+  - location:
+     git: https://git.snowdrift.coop/sd/postgresql-simple-migration-patches.git
+     commit: 8c4983b46fd12759a1d0be8d4460a59efbb704c2
 extra-deps:
   - libravatar-0.4
   - titlecase-0.1.0.2

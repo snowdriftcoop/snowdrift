@@ -35,6 +35,8 @@ library
         , operational
         , persistent
         , persistent-template
+        , postgresql-simple
+        , postgresql-simple-migration
         , stripe-core
         , stripe-haskell
         , text
@@ -61,6 +63,7 @@ test-suite test
         , postgresql-simple
         , QuickCheck
         , run-persist
+        , safe-exceptions
         , stripe-core
         , text
         , time
