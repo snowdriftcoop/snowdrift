@@ -187,11 +187,9 @@ sanityTests runner = describe "sanity tests" $ do
         val `shouldBe` Cents 1
 
 propTests :: Runner -> SqlPersistT IO () -> Spec
-propTests runner trunq = modifyMaxSuccess (* 2) $ do
-    prop "Pledge creations + pledge deletions = crowd size"
-        $ dbProp trunq runner prop_pledgeHist
-    prop "Pledge exists -> PaymentToken exists"
-        $ dbProp trunq runner prop_pledgeCapability
+propTests runner trunq = modifyMaxSuccess (* 2) $
+    prop "properties given random history"
+        $ dbProp trunq runner prop_randomHistory
 
 -- | We set up an in-memory database to run tests Fast Enough™.
 setUpTestDatabase :: IO () -> IO ()
@@ -222,16 +220,21 @@ setUpTestDatabase = bracket setup' teardown' . const
         pgExecute_ ("drop database " <> db)
         pgExecute_ ("drop tablespace " <> ts)
 
--- | (CreateHistory - DeleteHistory) = crowdSize (FetchCrowd)
-prop_pledgeHist :: Runner -> PropertyM IO ()
-prop_pledgeHist runner = do
+prop_randomHistory :: Runner -> PropertyM IO ()
+prop_randomHistory runner = do
     genHistory runner
+    -- | (CreateHistory - DeleteHistory) = crowdSize (Project)
     (creat, remov) <- run $ runner $
         partition ((== CreatePledge) . pledgeHistoryAction . entityVal)
             <$> selectList [] []
     crowd <- projectCrowd <$> fetchProject (run . runner)
     monitor (badSize (creat, remov, crowd))
     assert (length creat - length remov == crowd)
+
+    -- | Pledge exists -> PaymentToken exists
+    ct <- run . runner $
+        count [PatronPledgeSince !=. Nothing, PatronPaymentToken ==. Nothing]
+    assert (ct == 0)
   where
     badSize (c, r, crwd) = counterexample (concat
         [ "bad pledge history: "
@@ -243,11 +246,3 @@ prop_pledgeHist runner = do
         , show crwd
         , ")"
         ])
-
--- | Pledge exists -> PaymentToken exists
-prop_pledgeCapability :: Runner -> PropertyM IO ()
-prop_pledgeCapability runner = do
-    genHistory runner
-    ct <- run . runner $
-        count [PatronPledgeSince !=. Nothing, PatronPaymentToken ==. Nothing]
-    assert (ct == 0)
