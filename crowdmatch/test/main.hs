@@ -159,6 +159,32 @@ sanityTests runner = describe "sanity tests" $ do
         deletePledge runner aelfred
         pat <- fetchPatron runner aelfred
         patronPledgeSince pat `shouldBe` Nothing
+    describe "crowd size" $ do
+        it "gets bumped by pledging" $ do
+            _ <- storePaymentToken runner dummyStripe aelfred cardTok
+            storePledge runner aelfred
+            p <- fetchProject runner
+            projectCrowd p `shouldBe` 1
+        it "is not affected by a bad pledge" $ do
+            -- No token!
+            storePledge runner aelfred
+            p <- fetchProject runner
+            projectCrowd p `shouldBe` 0
+        it "shrinks with removal of payment token" $ do
+            _ <- storePaymentToken runner dummyStripe aelfred cardTok
+            storePledge runner aelfred
+            p1 <- projectCrowd <$> fetchProject runner
+            p1 `shouldBe` 1
+            _ <- deletePaymentToken runner dummyStripe aelfred
+            p2 <- projectCrowd <$> fetchProject runner
+            p2 `shouldBe` 0
+    specify "10 pledges = 1 cent" $ do
+        let mkPledge i = do
+                _ <- storePaymentToken runner dummyStripe (HarnessUser i) cardTok
+                storePledge runner (HarnessUser i)
+        mapM_ mkPledge [1..10]
+        val <- projectValue <$> fetchProject runner
+        val `shouldBe` Cents 1
 
 propTests :: Runner -> SqlPersistT IO () -> Spec
 propTests runner trunq = modifyMaxSuccess (* 2) $ do
@@ -203,9 +229,9 @@ prop_pledgeHist runner = do
     (creat, remov) <- run $ runner $
         partition ((== CreatePledge) . pledgeHistoryAction . entityVal)
             <$> selectList [] []
-    crowd <- fetchCrowdCount (run . runner)
+    crowd <- projectCrowd <$> fetchProject (run . runner)
     monitor (badSize (creat, remov, crowd))
-    assert (length creat - length remov == crowdSize crowd)
+    assert (length creat - length remov == crowd)
   where
     badSize (c, r, crwd) = counterexample (concat
         [ "bad pledge history: "
@@ -214,7 +240,7 @@ prop_pledgeHist runner = do
         , ") - remove ("
         , show (length r)
         , ") = # pledges ("
-        , show (crowdSize crwd)
+        , show crwd
         , ")"
         ])
 

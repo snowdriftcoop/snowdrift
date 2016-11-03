@@ -31,7 +31,10 @@ data Patron = Patron
         }
         deriving (Eq, Show)
 
-data Crowd = Crowd { crowdSize :: Int }
+data Project = Project
+        { projectCrowd :: Int
+        , projectValue :: Cents
+        }
 
 type SqlRunner io env = forall a. SqlPersistT io a -> env a
 type StripeRunner = forall a. StripeI a -> IO (Either StripeError a)
@@ -69,11 +72,11 @@ deletePledge
     -> env ()
 deletePledge db = runMech db . DeletePledgeI . (^. from external)
 
-fetchCrowdCount
+fetchProject
     :: (MonadIO io, MonadIO env)
     => SqlRunner io env
-    -> env Crowd
-fetchCrowdCount db = runMech db FetchCrowdCountI
+    -> env Project
+fetchProject db = runMech db FetchProjectI
 
 fetchPatron
     :: (ToMechPatron usr, MonadIO io, MonadIO env)
@@ -100,7 +103,7 @@ data CrowdmatchI return where
         -> CrowdmatchI (Either StripeError ())
     StorePledgeI :: PPtr -> CrowdmatchI ()
     DeletePledgeI :: PPtr -> CrowdmatchI ()
-    FetchCrowdCountI :: CrowdmatchI Crowd
+    FetchProjectI :: CrowdmatchI Project
     FetchPatronI :: PPtr -> CrowdmatchI Patron
 
 -- | Executing the actions
@@ -173,8 +176,11 @@ runMech db (DeletePledgeI pptr) = db $ do
         update pid [PatronPledgeSince =. Nothing]
         insert_ (PledgeHistory pid now DeletePledge)
 
-runMech db FetchCrowdCountI =
-    db (Crowd <$> count [PatronPledgeSince !=. Nothing])
+runMech db FetchProjectI = db $ do
+    numPledges <- count [PatronPledgeSince !=. Nothing]
+    let value = view donationCents (DonationUnits (fromIntegral numPledges))
+    pure (Project numPledges value)
+
 runMech db (FetchPatronI pptr) =
     db $ fromModel . entityVal <$> upsertPatron pptr []
 
@@ -245,3 +251,11 @@ fromModel (Model.Patron _usr t c d p) = Patron t c d p
 
 toModel :: ToMechPatron p => p -> Patron -> Model.Patron
 toModel usr (Patron t c d p) = Model.Patron (usr ^. from external) t c d p
+
+-- | DonationUnits are truncated to usable cents for use in creating
+-- charges.
+donationCents :: Iso' DonationUnits Cents
+donationCents = iso toCents fromCents
+  where
+    fromCents = fromIntegral . (* 10)
+    toCents = fromIntegral . (`div` 10)
