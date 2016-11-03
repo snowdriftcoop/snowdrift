@@ -6,7 +6,15 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE QuasiQuotes #-}
 
--- | Core definitions for the library
+{-# OPTIONS_HADDOCK not-home #-}
+
+-- | Core definitions for the library.
+--
+-- This is an internal module. Kindly direct your attention to
+-- "Crowdmatch", which is the user API.
+--
+-- Note in particular that this module defines a Patron type that is
+-- /not/ the type exported at the top level!
 module Crowdmatch.Model (module Crowdmatch.Model) where
 
 import Control.Lens
@@ -54,6 +62,8 @@ CrowdmatchHistory sql="crowdmatch__crowdmatch_history"
     deriving (Show)
 |]
 
+-- | This class is used to associate some \'u\' from your model with
+-- Crowdmatch's internal Patron type.
 class ToMechPatron u where
     toMechPatron :: u -> Int
     fromMechPatron :: Int -> u
@@ -64,7 +74,14 @@ external = iso toExternal fromExternal
     toExternal (PPtr i) = fromMechPatron i
     fromExternal = PPtr . toMechPatron
 
--- | Manual migrations to run
+-- | Manual crowdmatch migrations to run. FIXME: right now this has to be
+-- run /after/ automatic migrations, but eventually most manual migrations
+-- will need to be run /before/ automatic migrations. That's really weird.
+-- It also sucks that this method cannot reuse any persistent machinery.
+--
+-- I can't create haddocks for 'migrateCrowdmatch', so I will write about
+-- it here. It is a Persistent-generated automatic generation. Make sure to
+-- sequence it with your own model's migrations.
 crowdmatchManualMigrations :: MonadIO io => Connection -> io ()
 crowdmatchManualMigrations con = liftIO $
     withTransaction con $ do

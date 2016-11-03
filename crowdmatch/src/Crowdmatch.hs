@@ -3,7 +3,44 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Crowdmatch (module Crowdmatch) where
+-- | The one-stop module for the Crowdmatch mechanism!
+module Crowdmatch (
+        -- * Interface with your model
+          ToMechPatron(..)
+        , crowdmatchManualMigrations
+        , migrateCrowdmatch
+        , SqlRunner
+
+        -- * Interface with stripe
+        , StripeRunner
+        , runStripe
+
+        -- * Store/delete payment tokens
+        , storePaymentToken
+        , deletePaymentToken
+
+        -- * Store/delete pledges
+        , storePledge
+        , deletePledge
+
+        -- * Data retrieval
+        , fetchProject
+        , fetchPatron
+
+        -- * Types returned by crowdmatch actions
+        , Patron(..)
+        , Project(..)
+        , DonationUnits(..)
+        , DonationTime(..)
+        , Cents(..)
+        , PaymentToken(..)
+
+        -- * Internal stuff, mostly for tests
+        , CrowdmatchI(..)
+        , runMech
+        , StripeI(..)
+        , PPtr(..)
+        ) where
 
 import Control.Error
 import Control.Lens
@@ -16,13 +53,14 @@ import Web.Stripe
 import Web.Stripe.Error
 import Web.Stripe.Customer
 
-import Crowdmatch.Model as Crowdmatch hiding (Patron(..))
+import Crowdmatch.Model hiding (Patron(..))
 import qualified Crowdmatch.Model as Model
 
 --
 -- THE ACTUAL INTERFACE USED BY THE WEBSITE
 --
 
+-- | Information about a particular patron, returned by 'fetchPatron'.
 data Patron = Patron
         { patronCreated :: UTCTime
         , patronPaymentToken :: Maybe PaymentToken
@@ -31,56 +69,69 @@ data Patron = Patron
         }
         deriving (Eq, Show)
 
+-- | Data about a project. There's only one, Snowdrift, so this is rather
+-- simple. Returned with 'fetchProject'.
 data Project = Project
         { projectCrowd :: Int
         , projectValue :: Cents
         }
 
+-- | A method that runs 'SqlPersistT' values in your environment.
 type SqlRunner io env = forall a. SqlPersistT io a -> env a
-type StripeRunner = forall a. StripeI a -> IO (Either StripeError a)
 
+-- | Record a 'TokenId' for a patron.
 storePaymentToken
     :: (ToMechPatron usr, MonadIO io, MonadIO env)
     => SqlRunner io env
     -> StripeRunner
-    -> usr
-    -> TokenId
+    -> usr -- ^ your model's user, an instance of ToMechPatron
+    -> TokenId -- ^ you must independently get this from stripe
     -> env (Either StripeError ())
 storePaymentToken db strp usr =
     runMech db . StorePaymentTokenI strp (usr ^. from external)
 
+-- NB: The "-- ^" in the following methods is intentional. It forces
+-- Haddocks to reformat the arguments in a pleasing way.
+
+-- | Delete the 'TokenId'. This will remove any existing pledges, since a
+-- a token is required for pledging.
 deletePaymentToken
     :: (ToMechPatron usr, MonadIO io, MonadIO env)
-    => SqlRunner io env
+    => SqlRunner io env -- ^
     -> StripeRunner
     -> usr
     -> env (Either StripeError ())
 deletePaymentToken db strp =
     runMech db . DeletePaymentTokenI strp . (^. from external)
 
+-- | Stores a pledge, joining the crowd. Requires the patron to already
+-- have a payment token available.
 storePledge
     :: (ToMechPatron usr, MonadIO io, MonadIO env)
-    => SqlRunner io env
+    => SqlRunner io env -- ^
     -> usr
     -> env ()
 storePledge db = runMech db . StorePledgeI . (^. from external)
 
+-- | Delete a pledge, leaving the crowd.
 deletePledge
     :: (ToMechPatron usr, MonadIO io, MonadIO env)
-    => SqlRunner io env
+    => SqlRunner io env -- ^
     -> usr
     -> env ()
 deletePledge db = runMech db . DeletePledgeI . (^. from external)
 
+-- | Retrieve info on the project.
 fetchProject
     :: (MonadIO io, MonadIO env)
-    => SqlRunner io env
+    => SqlRunner io env -- ^
     -> env Project
 fetchProject db = runMech db FetchProjectI
 
+-- | Retrieve info on a particular patron.
 fetchPatron
     :: (ToMechPatron usr, MonadIO io, MonadIO env)
-    => SqlRunner io env
+    => SqlRunner io env -- ^
     -> usr
     -> env Patron
 fetchPatron db = runMech db . FetchPatronI . (^. from external)
@@ -112,7 +163,7 @@ runMech
     => SqlRunner io env -> CrowdmatchI return -> env return
 
 --
--- PaymentToken (store/delete)
+-- Payment token (store/delete)
 --
 
 -- FIXME: Feedback on Stripe error
@@ -191,11 +242,6 @@ runMech db (FetchPatronI pptr) =
 -- Wherein we abstract over the possible ways of running Stripe.
 --
 
-data StripeI a where
-    CreateCustomerI :: TokenId -> StripeI Customer
-    UpdateCustomerI :: TokenId -> CustomerId -> StripeI Customer
-    DeleteCustomerI :: CustomerId -> StripeI ()
-
 stripeCreateCustomer
     :: MonadIO io => StripeRunner -> TokenId -> io (Either StripeError Customer)
 stripeCreateCustomer strp = liftIO . strp . CreateCustomerI
@@ -215,6 +261,15 @@ stripeDeleteCustomer
     -> io (Either StripeError ())
 stripeDeleteCustomer strp = liftIO . strp . DeleteCustomerI
 
+-- | Stripe instructions we use
+data StripeI a where
+    CreateCustomerI :: TokenId -> StripeI Customer
+    UpdateCustomerI :: TokenId -> CustomerId -> StripeI Customer
+    DeleteCustomerI :: CustomerId -> StripeI ()
+
+-- | A method that runs 'StripeI' instructions in IO. A default that uses
+-- 'stripe' is provided by 'runStripe'.
+type StripeRunner = forall a. StripeI a -> IO (Either StripeError a)
 
 -- | A default stripe runner
 runStripe

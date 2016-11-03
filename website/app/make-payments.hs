@@ -37,14 +37,6 @@ import qualified Model.Skeleton as Skeleton
 -- >>> import Test.QuickCheck
 -- >>> instance Arbitrary Cents where arbitrary = Cents . getPositive <$> arbitrary
 
--- | DonationUnits are truncated to usable cents for use in creating
--- charges.
-donationCents :: Iso' DonationUnits Cents
-donationCents = iso toCents fromCents
-  where
-    fromCents = fromIntegral . (* 10)
-    toCents = fromIntegral . (`div` 10)
-
 -- | Stripe measures charges in cents. Handy!
 chargeCents :: Iso' Cents Amount
 chargeCents = iso toAmount fromAmount

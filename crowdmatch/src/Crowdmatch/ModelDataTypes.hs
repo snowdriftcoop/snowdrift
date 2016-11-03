@@ -17,6 +17,8 @@ import Web.Stripe.Customer (CustomerId(..))
 deriving instance PersistField CustomerId
 deriving instance PersistFieldSql CustomerId
 
+-- | Sanity wrapper. This may also eventually parameterize the different
+-- payment methods, too.
 newtype PaymentToken = PaymentToken { unPaymentToken :: CustomerId }
     deriving (Eq, Show)
 
@@ -48,8 +50,10 @@ instance PersistFieldSql PledgeAction where
 
 derivePersistField "PledgeAction"
 
+-- | Sanity wrapper
 newtype DonationTime = DonationTime UTCTime deriving (PersistFieldSql, PersistField, Show)
 
+-- | Sanity wrapper
 newtype CrowdmatchDay = CrowdmatchDay Day deriving (PersistFieldSql, PersistField, Show)
 
 -- | Represents a donation amount. 1 DonationUnits == 0.001 US Dollars.
@@ -65,6 +69,7 @@ newtype DonationUnits = DonationUnits Int32
         , Ord
         , Eq)
 
+-- | Sanity wrapper
 newtype Cents = Cents Int32
     deriving
         ( PersistFieldSql
@@ -77,7 +82,8 @@ newtype Cents = Cents Int32
         , Ord
         , Eq)
 
--- FIXME to be replaced on this pull
+-- | "Patron pointer". This keeps track of the link between a Patron and
+-- whatever is a ToMechPatron.
 newtype PPtr = PPtr Int
     deriving
         ( PersistFieldSql
