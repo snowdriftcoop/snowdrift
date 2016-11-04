@@ -80,7 +80,6 @@ genHistory runner = do
     -- consistent, after all.) So I'm punting for now.
     traverse_ oneAct targets
   where
-    -- oneAct :: HarnessUser -> PropertyM IO ()
     oneAct x =
         -- When new API methods are added, they need to be added here. This is
         -- a problem I don't have a solution to right now.
@@ -108,12 +107,18 @@ instance Arbitrary HarnessUser where
 
 -- | Run the tests
 main :: IO ()
-main = setUpTestDatabase $ runPersistPool $ \runner -> do
+main = withTestDatabase $ runPersistPool $ \runner -> do
     trunq <- runner $ do
         runMigration migrateCrowdmatch
         buildTruncQuery
     -- The manual migrations do not compose with Persistent. Have to go
     -- down to postgresql-simple.
+    --
+    -- Note how hacky this is! The truncation query above is generated
+    -- before these manual migrations, which add a new table. That new
+    -- table is thus not truncated. But that's good, because the table in
+    -- question is keeping track of manual migrations! This compounds the
+    -- problems with the current design of manual migrations.
     bracket (PG.connectPostgreSQL "") PG.close crowdmatchManualMigrations
     hspec $ before_ (runner trunq) $ do
         sanityTests runner
@@ -195,8 +200,8 @@ propTests runner trunq = modifyMaxSuccess (* 2) $
         $ dbProp trunq runner prop_randomHistory
 
 -- | We set up an in-memory database to run tests Fast Enough™.
-setUpTestDatabase :: IO () -> IO ()
-setUpTestDatabase = bracket setup' teardown' . const
+withTestDatabase :: IO () -> IO ()
+withTestDatabase = bracket setup' teardown' . const
   where
     db = "crowdmatch_test"
     ts = "crowdmatch_tests"

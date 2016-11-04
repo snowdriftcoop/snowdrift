@@ -15,24 +15,20 @@ module Application
 
 import Import
 
+import Control.Monad.Logger (liftLoc, runLoggingT)
 import Crowdmatch (crowdmatchManualMigrations, migrateCrowdmatch)
-import Control.Monad.Logger                 (liftLoc, runLoggingT)
-import Database.PostgreSQL.Simple (close, connectPostgreSQL)
-import Database.Persist.Postgresql          (createPostgresqlPool, pgConnStr,
-                                             pgPoolSize, runSqlPool)
+import Database.Persist.Postgresql
+        (createPostgresqlPool, pgConnStr, pgPoolSize, runSqlPool)
 import Database.Persist.Sql (runMigrationSilent)
-import Language.Haskell.TH.Syntax           (qLocation)
+import Database.PostgreSQL.Simple (close, connectPostgreSQL)
+import Language.Haskell.TH.Syntax (qLocation)
 import Network.Wai (Middleware)
-import Network.Wai.Handler.Warp             (Settings, defaultSettings,
-                                             defaultShouldDisplayException,
-                                             runSettings, setHost,
-                                             setOnException, setPort, getPort)
-import Network.Wai.Middleware.RequestLogger (Destination (Logger),
-                                             IPAddrSource (..),
-                                             OutputFormat (..), destination,
-                                             mkRequestLogger, outputFormat)
-import System.Log.FastLogger                (defaultBufSize, newStdoutLoggerSet,
-                                             toLogStr)
+import Network.Wai.Handler.Warp
+        (Settings, defaultSettings, defaultShouldDisplayException, runSettings, setHost, setOnException, setPort, getPort)
+import Network.Wai.Middleware.RequestLogger
+        (Destination (Logger), IPAddrSource (..), OutputFormat (..), destination, mkRequestLogger, outputFormat)
+import System.Log.FastLogger
+        (defaultBufSize, newStdoutLoggerSet, toLogStr)
 import Web.Stripe
 import Web.Stripe.Error
 import qualified Yesod.GitRev as G

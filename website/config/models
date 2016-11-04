@@ -3,7 +3,6 @@ User sql=usr
     digest ByteString
     created UTCTime
     passUpdated UTCTime
-    patron Int Maybe
     --
     UniqueUsr email
     deriving (Show)

@@ -80,7 +80,7 @@ external = iso toExternal fromExternal
 -- It also sucks that this method cannot reuse any persistent machinery.
 --
 -- I can't create haddocks for 'migrateCrowdmatch', so I will write about
--- it here. It is a Persistent-generated automatic generation. Make sure to
+-- it here. It is a Persistent-generated automatic migration. Make sure to
 -- sequence it with your own model's migrations.
 crowdmatchManualMigrations :: MonadIO io => Connection -> io ()
 crowdmatchManualMigrations con = liftIO $
