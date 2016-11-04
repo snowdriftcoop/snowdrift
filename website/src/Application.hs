@@ -13,10 +13,14 @@ module Application
     , db
     ) where
 
+import Import
+
+import Crowdmatch (crowdmatchManualMigrations, migrateCrowdmatch)
 import Control.Monad.Logger                 (liftLoc, runLoggingT)
+import Database.PostgreSQL.Simple (close, connectPostgreSQL)
 import Database.Persist.Postgresql          (createPostgresqlPool, pgConnStr,
                                              pgPoolSize, runSqlPool)
-import Import
+import Database.Persist.Sql (runMigrationSilent)
 import Language.Haskell.TH.Syntax           (qLocation)
 import Network.Wai (Middleware)
 import Network.Wai.Handler.Warp             (Settings, defaultSettings,
@@ -86,10 +90,17 @@ makeFoundation appSettings = do
         (pgPoolSize $ appDatabaseConf appSettings)
 
     -- Perform database migration using our application's logging settings.
-    runLoggingT (runSqlPool (runMigration (migrateSnowdrift >> migrateAuthSite))
-                            pool)
-                logFunc
-
+    runLoggingT
+        (runSqlPool
+            (void $ runMigrationSilent
+                (migrateSnowdrift >> migrateAuthSite >> migrateCrowdmatch))
+            pool)
+        logFunc
+    -- Run post-automatic crowdmatch migrations
+    bracket
+        (connectPostgreSQL (pgConnStr (appDatabaseConf appSettings)))
+        close
+        crowdmatchManualMigrations
     -- Return the foundation
     return $ mkFoundation pool
 

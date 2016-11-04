@@ -1,16 +1,20 @@
 <h1>Your crowdmatching dashboard
 
-$maybe _ <- mpledgeSince
+$maybe _ <- patronPledgeSince patron
   <p>
     You are currently pledged to one project,
     <a href=@{SnowdriftProjectR}>Snowdrift.coop</a>.
   <p>
-    You are currently matching a crowd of #{crowdSize} patrons.
-    The current value of your pledge is #{pledgeAmount}<sup>1</sup>.
+    You are currently matching a crowd of #{projectCrowd project} patrons.
+    The current value of your pledge is #{projectValue project}<sup>1</sup>.
   <p>
     Your payment method is Stripe. You may
     <a href=@{PaymentInfoR}>configure your payment settings</a>
     (reminder: there is proprietary JavaScript on that page).
+  <hr>
+  <p>
+    <sup>1</sup>: This amount will most likely change before the next
+    donation, as the number of patrons changes.
 $nothing
   <.notpledged>
     <p>
@@ -22,7 +26,7 @@ $nothing
       attention: Snowdrift itself! Enabling one (and only one) project
       allows us to shake out the kinks of the system. Self-sustainability
       and continued work on the mechanism is the goal.
-    $maybe _ <- _patronStripeCustomer
+    $maybe _ <- patronPaymentToken patron
       <form method=post action=@{PledgeSnowdriftR}>
         To join the crowdmatching system,
         <button>pledge now!
@@ -37,22 +41,3 @@ $nothing
         for it to be proprietary; I suspect it's just a lack of
         priorities on their part.)
       <p><a href=@{PaymentInfoR}>Continue to payment settings</a>
-<h2>Donation History
-$case donationHistory
-  $of []
-    <p>You have no donation history yet.
-  $of _
-    <table>
-      <tr>
-        <th>Time
-        <th>Amount
-        <th>Project
-      $forall DonationHistory{..} <- donationHistory
-        <tr>
-          <td>#{_donationHistoryTime}
-          <td>#{show _donationHistoryAmount} Donation Units
-          <td><a href=@{SnowdriftProjectR}>Snowdrift.coop</a>
-<hr>
-<p>
-  <sup>1</sup>: This amount will most likely change before the next
-  donation, as the number of patrons changes.

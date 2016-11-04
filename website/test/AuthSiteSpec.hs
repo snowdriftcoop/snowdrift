@@ -8,6 +8,7 @@ module AuthSiteSpec (spec) where
 
 import TestImport hiding (Handler)
 import Database.Persist.Sql hiding (get)
+import Database.Persist.Postgresql (pgConnStr)
 import Network.Wai.Test (SResponse(..))
 import Test.HUnit (assertBool)
 import Yesod hiding (get)
@@ -17,6 +18,7 @@ import qualified Data.Text.Lazy as TL
 
 import AuthSite
 import Application (makeFoundation, makeLogWare)
+import Settings (AppSettings(..))
 
 {-# ANN module ("HLint: ignore Reduce duplication" :: String) #-}
 
@@ -143,9 +145,9 @@ withTestAuth maybeAuthRoute = before $ do
         ["config/test-settings.yml", "config/settings.yml"]
         []
         ignoreEnv
+    truncateTables (pgConnStr (appDatabaseConf settings))
     foundation <- makeFoundation settings
     msgref <- liftIO (newIORef [])
-    truncateTables foundation
     logWare <- liftIO $ makeLogWare foundation
     let harness = AuthHarness AuthSite
                               (appConnPool foundation)

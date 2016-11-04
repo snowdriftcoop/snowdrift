@@ -9,6 +9,7 @@ import Import
 
 import Control.Monad.Logger
 import Control.Lens
+import Crowdmatch
 import Data.Maybe
 import Text.Julius (rawJS)
 import Web.Stripe
@@ -18,17 +19,15 @@ import Web.Stripe.Error
 import Alerts
 import Handler.Util
 
-newtype PaymentToken = PaymentToken Text deriving (Show)
-
-paymentForm :: Text -> Form PaymentToken
-paymentForm tokenId =
+paymentForm :: Text -> Form TokenId
+paymentForm formId =
     renderDivs
-        (PaymentToken <$> areq hiddenField "" {fsId = Just tokenId} Nothing)
+        (TokenId <$> areq hiddenField "" {fsId = Just formId} Nothing)
 
 getPaymentInfoR :: Handler Html
 getPaymentInfoR = do
-    Entity uid User{..} <- requireAuth
-    Entity pid Patron{..} <- runDB (fetchUserPatron uid)
+    Entity uid user <- requireAuth
+    patron <- fetchPatron runDB uid
     deletePaymentInfoWidget <- fst <$> generateFormPost deletePaymentInfoForm
     publishableKey <-
         fmap
@@ -57,22 +56,20 @@ deletePaymentInfoForm :: Form Bool
 deletePaymentInfoForm =
     identifyForm delFormId (renderDivsNoLabels deleteFromPost)
 
+stripeConf :: Handler StripeConfig
+stripeConf = fmap
+    (StripeConfig . appStripeSecretKey . appSettings)
+    getYesod
+
 postPaymentInfoR :: Handler Html
 postPaymentInfoR = handleDelete delFormId deletePaymentInfoR $ do
     Entity uid User{..} <- requireAuth
+    conf <- stripeConf
     ((formResult, _), _) <-
         runFormPost (identifyForm modFormId (paymentForm ""))
     case formResult of
         FormSuccess token -> do
-            Entity pid Patron{..} <- runDB (fetchUserPatron uid)
-            let stripeAction = maybe
-                    (createCustomer' _userEmail)
-                    updateCustomer'
-                    _patronStripeCustomer
-            (runDB . storeCustomer uid
-                <=< stripeCustomerHandler
-                <=< stripeAction)
-                token
+            storePaymentToken runDB (runStripe conf) uid token
             alertSuccess "Payment information stored"
             redirect HomeR
         _ -> do
@@ -81,46 +78,15 @@ postPaymentInfoR = handleDelete delFormId deletePaymentInfoR $ do
 
 deletePaymentInfoR :: Handler Html
 deletePaymentInfoR = do
+    conf <- stripeConf
     Entity uid User {..} <- requireAuth
-    Entity pid Patron{..} <- runDB (fetchUserPatron uid)
-    maybe
-        (alertWarning "There was no payment information on file for you!")
-        (stripeDeletionHandler pid <=< snowstripe . deleteCustomer)
-        _patronStripeCustomer
+    stripeDeletionHandler =<< deletePaymentToken runDB (runStripe conf) uid
     redirect DashboardR
   where
-    stripeDeletionHandler pid =
+    stripeDeletionHandler =
         either
             stripeError
-            (const $ do
-                runDB (deleteFrom pid)
-                alertSuccess "Your payment information has been cleared.")
-    deleteFrom pid = do
-        now <- liftIO getCurrentTime
-        insert_ (PledgeHistory pid now DeletePledge)
-        update
-            pid
-                [PatronStripeCustomer =. Nothing, PatronPledgeSince =. Nothing]
-
-storeCustomer :: MonadHandler m => Key User -> CustomerId -> SqlPersistT m ()
-storeCustomer uid cid = do
-    -- FIXME: Store an event
-    now <- liftIO getCurrentTime
-    void $ upsert
-        (Patron uid now (Just cid) 0 Nothing)
-        [PatronStripeCustomer =. Just cid]
-
--- | Wrap over Stripe's native 'createCustomer'
-createCustomer' :: Text -> PaymentToken -> Handler (Either StripeError Customer)
-createCustomer' email (PaymentToken tok) =
-    snowstripe (createCustomer -&- Email email -&- TokenId tok)
-
--- | Wrap over Stripe's native 'updateCustomer'
-updateCustomer' :: CustomerId
-                -> PaymentToken
-                -> Handler (Either StripeError Customer)
-updateCustomer' cid (PaymentToken tok) =
-    snowstripe (updateCustomer cid -&- TokenId tok)
+            (const $ alertSuccess "Your payment information has been cleared.")
 
 -- | The preceding methods use the same error catching. Pretty bare bones,
 -- but at least there will be a log.

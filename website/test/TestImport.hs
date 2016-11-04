@@ -5,15 +5,16 @@ module TestImport
 
 import ClassyPrelude as X hiding (delete, deleteBy)
 import Database.Persist as X hiding (get)
-import Database.Persist.Sql (SqlPersistM, SqlBackend, runSqlPersistMPool, rawExecute, rawSql, unSingle, connEscapeName)
+import Database.Persist.Sql (SqlPersistM, runSqlPersistMPool)
+import Database.Persist.Postgresql (pgConnStr, ConnectionString)
 import Foundation as X
 import Network.HTTP.Types (Status(..), Method)
 import Network.Wai.Test (SResponse(..))
 import Test.Hspec as X
-import Text.Shakespeare.Text (st)
 import Yesod.Default.Config2 (ignoreEnv, loadYamlSettings)
 import Yesod.Test as X
 import qualified Data.Text.Encoding as T
+import qualified Database.PostgreSQL.Simple as PG
 
 -- For htmlHasLink
 import Test.HUnit
@@ -23,6 +24,7 @@ import Application (makeFoundation, makeLogWare)
 import AppDataTypes as X
 import AuthSite
 import Model as X
+import Settings (AppSettings(..))
 
 import Factories
 
@@ -52,7 +54,6 @@ withApp = before $ do
         ["config/test-settings.yml", "config/settings.yml"]
         []
         ignoreEnv
-    foundation <- makeFoundation settings
     -- Note: I can't drop all the tables because the migration happens in
     -- 'makeFoundation', but that's also the function that builds a usable
     -- database pool out of the app settings. So, 'makeFoundation' would need
@@ -61,31 +62,20 @@ withApp = before $ do
     -- Clearing looks like "drop schema public cascade; create schema public;"
     --
     -- See also https://tree.taiga.io/project/snowdrift/issue/402
-    truncateTables foundation
+    truncateTables (pgConnStr (appDatabaseConf settings))
+    foundation <- makeFoundation settings
     logWare <- liftIO $ makeLogWare foundation
     return (foundation, logWare)
 
 -- This function will truncate all of the tables in your database.
 -- 'withApp' calls it before each test, creating a clean environment for each
 -- spec to run in.
-truncateTables :: App -> IO ()
-truncateTables app = runDBWithApp app $ do
-    tables <- getTables
-    sqlBackend <- ask
-
-    let escapedTables = map (connEscapeName sqlBackend . DBName) tables
-        query = "TRUNCATE TABLE " ++ intercalate ", " escapedTables
-    rawExecute query []
-
-getTables :: MonadIO m => ReaderT SqlBackend m [Text]
-getTables = do
-    tables <- rawSql [st|
-        SELECT table_name
-        FROM information_schema.tables
-        WHERE table_schema = 'public';
-    |] []
-
-    return $ map unSingle tables
+truncateTables :: ConnectionString -> IO ()
+truncateTables connstr =
+    bracket (PG.connectPostgreSQL connstr) PG.close $ \conn -> do
+        void $ PG.execute_ conn "set client_min_messages to warning"
+        void $ PG.execute_ conn "drop schema public cascade"
+        void $ PG.execute_ conn "create schema public"
 
 -- ##
 

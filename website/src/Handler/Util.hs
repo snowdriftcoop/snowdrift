@@ -9,6 +9,7 @@ module Handler.Util
 
 import Import.NoFoundation
 
+import Crowdmatch
 import Data.Text.Titlecase
 import Web.Stripe
 import Web.Stripe.Error
@@ -22,15 +23,12 @@ snowdriftTitle t = setTitle $
 snowdriftDashTitle :: MonadWidget m => Text -> Text -> m ()
 snowdriftDashTitle x y = snowdriftTitle $ x `mappend` " — " `mappend` y
 
-snowstripe
-    :: (Typeable (StripeReturn a), FromJSON (StripeReturn a))
-    => StripeRequest a -> Handler (Either StripeError (StripeReturn a))
+snowstripe :: StripeI a -> Handler (Either StripeError a)
 snowstripe req = do
-    (func, conf) <-
-        fmap
-            (appStripe &&& StripeConfig . appStripeSecretKey . appSettings)
-            getYesod
-    liftIO (func conf req)
+    conf <- fmap
+        (StripeConfig . appStripeSecretKey . appSettings)
+        getYesod
+    liftIO (runStripe conf req)
 
 -- | The form element that can be inserted to handle a delete.
 deleteFromPost

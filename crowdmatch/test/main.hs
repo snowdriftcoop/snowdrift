@@ -7,6 +7,7 @@
 {-# OPTIONS_GHC -fno-warn-missing-signatures -fno-warn-orphans -fno-warn-missing-fields #-}
 
 import Control.Exception.Safe (bracket)
+import Control.Lens hiding (elements)
 import Control.Monad
 import Control.Monad.IO.Class
 import Control.Monad.Reader (ask)
@@ -30,6 +31,8 @@ import qualified Database.PostgreSQL.Simple as PG
 import qualified Database.PostgreSQL.Simple.Types as PG
 
 import Crowdmatch
+import Crowdmatch.Model (PledgeAction(..))
+import qualified Crowdmatch.Model as Model
 
 -- | Execute a transaction-free statement in Postgres
 pgExecute_ q = bracket open' PG.close (void . (`PG.execute_` q))
@@ -184,7 +187,7 @@ sanityTests runner = describe "sanity tests" $ do
                 storePledge runner (HarnessUser i)
         mapM_ mkPledge [1..10]
         val <- projectValue <$> fetchProject runner
-        val `shouldBe` Cents 1
+        val `shouldBe` view (from donationCents) (Cents 1)
 
 propTests :: Runner -> SqlPersistT IO () -> Spec
 propTests runner trunq = modifyMaxSuccess (* 2) $
@@ -195,9 +198,9 @@ propTests runner trunq = modifyMaxSuccess (* 2) $
 setUpTestDatabase :: IO () -> IO ()
 setUpTestDatabase = bracket setup' teardown' . const
   where
-    db = "snowdrift_test"
-    ts = "tests"
-    shmLoc = "/dev/shm/snowdrift_test_tablespace"
+    db = "crowdmatch_test"
+    ts = "crowdmatch_tests"
+    shmLoc = "/dev/shm/crowdmatch_test_tablespace"
     setup' = do
         createDirectoryIfMissing True shmLoc
         setEnv "PGDATABASE" "template1"
@@ -225,7 +228,7 @@ prop_randomHistory runner = do
     genHistory runner
     -- | (CreateHistory - DeleteHistory) = crowdSize (Project)
     (creat, remov) <- run $ runner $
-        partition ((== CreatePledge) . pledgeHistoryAction . entityVal)
+        partition ((== CreatePledge) . Model.pledgeHistoryAction . entityVal)
             <$> selectList [] []
     crowd <- projectCrowd <$> fetchProject (run . runner)
     monitor (badSize (creat, remov, crowd))
@@ -233,7 +236,8 @@ prop_randomHistory runner = do
 
     -- | Pledge exists -> PaymentToken exists
     ct <- run . runner $
-        count [PatronPledgeSince !=. Nothing, PatronPaymentToken ==. Nothing]
+        count [ Model.PatronPledgeSince !=. Nothing
+              , Model.PatronPaymentToken ==. Nothing]
     assert (ct == 0)
   where
     badSize (c, r, crwd) = counterexample (concat

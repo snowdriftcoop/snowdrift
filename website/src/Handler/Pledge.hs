@@ -8,30 +8,28 @@ import Import
 
 import Alerts
 import Handler.Util
+import Crowdmatch
 
 postPledgeSnowdriftR :: Handler Html
 postPledgeSnowdriftR = handleDelete' $ do
-    Entity uid User{..} <- requireAuth
-    Entity pid Patron{..} <- runDB (fetchUserPatron uid)
+    Entity uid user <- requireAuth
+    patron <- fetchPatron runDB uid
     maybe
         (do
             alertWarning "Before making a pledge, set up a payment method below"
             redirect DashboardR)
         (const $ do
             -- Nothing == "no problem" in this case
-            maybe (pledge' pid) showExisting _patronPledgeSince
+            maybe (pledge' uid) showExisting (patronPledgeSince patron)
             redirect SnowdriftProjectR)
-        _patronStripeCustomer
+        (patronPaymentToken patron)
   where
     showExisting t = alertInfo
         [shamlet|
             Your pledge that started on #{show t} is still valid.
         |]
-    pledge' pid = do
-        runDB $ do
-            now <- liftIO getCurrentTime
-            update pid [PatronPledgeSince =. Just now]
-            insert_ (PledgeHistory pid now CreatePledge)
+    pledge' uid = do
+        storePledge runDB uid
         alertSuccess "You are now pledged!"
     handleDelete' = handleDelete pledgeDeleteFormId deletePledgeSnowdriftR
 
@@ -45,15 +43,12 @@ pledgeDeleteForm =
 deletePledgeSnowdriftR :: Handler Html
 deletePledgeSnowdriftR = do
     Entity uid _ <- requireAuth
-    Entity pid Patron{..} <- runDB (fetchUserPatron uid)
-    maybe shrugItOff (unpledge' pid) _patronPledgeSince
+    patron <- fetchPatron runDB uid
+    maybe shrugItOff (unpledge' uid) (patronPledgeSince patron)
     redirect SnowdriftProjectR
   where
     shrugItOff = alertInfo "You had no pledge to remove! Carry on. :)"
-    unpledge' pid t = do
-        runDB $ do
-            now <- liftIO getCurrentTime
-            update pid [PatronPledgeSince =. Nothing]
-            insert_ (PledgeHistory pid now DeletePledge)
+    unpledge' uid t = do
+        deletePledge runDB uid
         alertInfo
             [shamlet|Your pledge that started on #{show t} is now removed.|]

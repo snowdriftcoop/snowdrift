@@ -5,7 +5,7 @@
   provides. This is the project that runs this very website!
 
 $maybe _ <- muid
-  $maybe since <- _patronPledgeSince =<< mpatron
+  $maybe since <- patronPledgeSince =<< mpatron
     <p>
       You have been pledged to Snowdrift since #{show since}
   $nothing
@@ -25,10 +25,10 @@ $nothing
 
 <h2>Crowdmatching
 <p>
-  Snowdrift currently has a crowd of #{projectCrowdSize} patrons.
-  The current value of a pledge is #{pledgeAmount}<sup>1</sup>.
+  Snowdrift currently has a crowd of #{projectCrowd project} patrons.
+  The current value of a pledge is #{projectValue project}<sup>1</sup>.
 
-$maybe _ <- _patronPledgeSince =<< mpatron
+$maybe _ <- patronPledgeSince =<< mpatron
   <p>
     If would like to stop supporting Snowdrift.coop, you can remove
     yourself from the crowd. Your fellow supporters will be sad to see
@@ -36,21 +36,6 @@ $maybe _ <- _patronPledgeSince =<< mpatron
     <form method=post action=@{PledgeSnowdriftR}>
       ^{deletePledgeWidget}
       <button>unpledge from Snowdrift.coop
-
-<h2>Donation History
-$case donationHistory
-  $of []
-    <p>
-      There is no donation history for Snowdrift.coop yet.
-  $of ds
-    <table>
-      <tr>
-        <th>Date
-        <th>Amount (ᵯ)
-      $forall (date,amt) <- ds
-        <tr>
-          <td>#{date}
-          <td>#{amt}
 <hr>
 <p>
   <sup>1</sup>: This amount will most likely change before the next

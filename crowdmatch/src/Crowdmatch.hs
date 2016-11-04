@@ -40,6 +40,7 @@ module Crowdmatch (
         , runMech
         , StripeI(..)
         , PPtr(..)
+        , donationCents
         ) where
 
 import Control.Error
@@ -73,7 +74,7 @@ data Patron = Patron
 -- simple. Returned with 'fetchProject'.
 data Project = Project
         { projectCrowd :: Int
-        , projectValue :: Cents
+        , projectValue :: DonationUnits
         }
 
 -- | A method that runs 'SqlPersistT' values in your environment.
@@ -172,7 +173,6 @@ runMech db (StorePaymentTokenI strp pptr cardToken) = do
     runExceptT $ do
         ret <- ExceptT $ maybe create' update' (Model.patronPaymentToken p)
         ExceptT (Right <$> updatePatron' pid ret)
-        -- updatePatron' pid ret
   where
     create' = stripeCreateCustomer strp cardToken
     update' = stripeUpdateCustomer strp cardToken . unPaymentToken
@@ -184,7 +184,6 @@ runMech db (StorePaymentTokenI strp pptr cardToken) = do
 runMech db (DeletePaymentTokenI strp pptr) = do
     Entity pid p <- db (upsertPatron pptr [])
     maybe (pure (Right ())) (deleteToken' pid) (Model.patronPaymentToken p)
-    -- fmap join (traverse (deleteToken' pid) (Model.patronPaymentToken p))
   where
     deleteToken' pid (PaymentToken cust) = do
         res <- stripeDeleteCustomer strp cust
@@ -229,7 +228,7 @@ runMech db (DeletePledgeI pptr) = db $ do
 
 runMech db FetchProjectI = db $ do
     numPledges <- count [PatronPledgeSince !=. Nothing]
-    let value = view donationCents (DonationUnits (fromIntegral numPledges))
+    let value = DonationUnits (fromIntegral numPledges)
     pure (Project numPledges value)
 
 runMech db (FetchPatronI pptr) =
@@ -269,7 +268,8 @@ data StripeI a where
 
 -- | A method that runs 'StripeI' instructions in IO. A default that uses
 -- 'stripe' is provided by 'runStripe'.
-type StripeRunner = forall a. StripeI a -> IO (Either StripeError a)
+type StripeRunner = forall io.
+    MonadIO io => forall a. StripeI a -> io (Either StripeError a)
 
 -- | A default stripe runner
 runStripe
