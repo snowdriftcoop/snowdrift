@@ -7,6 +7,7 @@ import Prelude
 import Crowdmatch
 import Data.Default (def)
 import Data.Text (Text)
+import Data.Time
 import Formattable
 import Text.Blaze.Html
 
@@ -24,3 +25,10 @@ instance ToMarkup DonationUnits where
 -- formatMill :: Mill -> Text
 -- formatMill m
 --     | m < 1000
+
+instance ToMarkup DonationTime where
+    toMarkup (DonationTime t) =
+        toMarkup (formatTime defaultTimeLocale "%Y-%m-%d %H:%M (%Z)" t)
+
+-- instance ToMarkup CrowdmatchDay where
+--     toMarkup (CrowdmatchDay d) = toMarkup (showGregorian d)
