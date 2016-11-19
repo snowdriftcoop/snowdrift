@@ -17,7 +17,6 @@ Some general settings:
 
 * In the main Atom settings, leave soft tabs checked and set 4-space tabs
 * Packages/Tree View: consider "Hide Ignored Names" and "Hide VCS Ignored Files"
-* Consider disabling the "metrics" package to turn off Google Analytics
 
 #### Atom packages
 
@@ -32,14 +31,12 @@ The [ide-haskell](https://atom.io/packages/ide-haskell) package offers further
 development tools including error-checking, linting, and type information. To
 install ide-haskell for Atom:
 
+* *Note: after many changes to snowdrift build process and file structure,
+    ghc-mod may or may not work, testing is needed.*
 * Run `stack build ghc-mod hlint stylish-haskell`
 * Install the relevant Atom packages:
   `apm install language-haskell haskell-ghc-mod ide-haskell autocomplete-haskell ide-haskell-cabal`
 * Make sure to check "Stack sandbox" in the haskell-ghc-mod settings
-* *Note: ghc-mod will fail if it sees a dist/ directory which is made when you
-  run snowdrift via `stack exec yesod devel`, so until yesod-bin is updated to
-  use Stack directly, delete (or rename) the /dist directory and instead of
-  `yesod devel`, run site via `stack exec Snowdrift Development`.*
 
 Other useful Atom packages to consider:
 
@@ -135,6 +132,7 @@ plugins.
 For syntax highlighting, we suggest everyone use the following plugins:
 
 * [vim-syntax-shakespeare](https://github.com/pbrisbin/vim-syntax-shakespeare)
+* [vim-yesod](https://github.com/alx741/vim-yesod)
 * [haskell-vim](https://github.com/neovimhaskell/haskell-vim)
 * [vim-markdown](https://github.com/plasticboy/vim-markdown)
 * [vim2hs](https://github.com/dag/vim2hs)
@@ -149,9 +147,14 @@ items above:
     Plug 'dag/vim2hs', { 'for': 'haskell' }
     au FileType haskell set nofoldenable "stops vim2hs folding
 
-For advanced Haskell error-checking and type information, install ghc-mod with
-`stack install ghc-mod` (and make sure ~/.local/bin is on your path). Then,
-add [ghcmod-vim](https://github.com/eagletmt/ghcmod-vim) and
+For advanced Haskell error-checking and type information, install ghc-mod.
+
+* *Note: after many changes to snowdrift build process and file structure,
+    ghc-mod may or may not work, testing is needed.* Once working, the
+    instructions are still as follows:
+
+To set up ghc-mod, run `stack install ghc-mod` (and make sure ~/.local/bin is on
+your path). Then, add [ghcmod-vim](https://github.com/eagletmt/ghcmod-vim) and
 [neco-ghc](https://github.com/eagletmt/neco-ghc) as well; for installation
 via vim-plug, use these lines in ~/.vimrc:
 
@@ -164,12 +167,6 @@ via vim-plug, use these lines in ~/.vimrc:
 
 To have ghc-mod auto-check for errors on open or save, add
 [syntastic](https://github.com/scrooloose/syntastic) and set it up as desired.
-
-NB: ghc-mod will fail if it sees a dist/ directory which is made when you run
-snowdrift via `stack exec yesod devel`, so until yesod-bin is updated to use
-Stack directly, use workarounds such as temporarily renaming the /dist directory
-when you want to use ghc-mod, or avoid `yesod devel` entirely and run the site
-instead via `stack exec Snowdrift Development`.
 
 Another great Haskell tool: [vim-HaRe](https://github.com/glittershark/vim-hare)
 NB: to get HaRe itself, use `stack install HaRe` instead of cabal install.
@@ -193,8 +190,8 @@ strongly recommended):
 * [gitv](https://github.com/gregsexton/gitv),
 * [NERD tree](https://github.com/scrooloose/nerdtree) &
 * [NERD tree git plugin](https://github.com/Xuyuanp/nerdtree-git-plugin);
-* [ag.vim](https://github.com/rking/ag.vim)
-  (NB: ag.vim takes extra setup beyond just plugin),
+* [ack.vim](https://github.com/mileszs/ack.vim)
+  (NB: ack.vim requires system install of `ack-grep` or `silversearch-ag`),
 * [vim-airline](https://github.com/bling/vim-airline).
 
 *Many* other options exist, although we'd rather contributors generally focus
