@@ -133,6 +133,7 @@ For syntax highlighting, we suggest everyone use the following plugins:
 
 * [vim-syntax-shakespeare](https://github.com/pbrisbin/vim-syntax-shakespeare)
 * [vim-yesod](https://github.com/alx741/vim-yesod)
+    * add to ~/.vimrc: `let g:yesod_handlers_directories = ['Handler', 'src']`
 * [haskell-vim](https://github.com/neovimhaskell/haskell-vim)
 * [vim-markdown](https://github.com/plasticboy/vim-markdown)
 * [vim2hs](https://github.com/dag/vim2hs)
