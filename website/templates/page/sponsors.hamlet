@@ -1,24 +1,17 @@
-<h1 .text-center>Snowdrift.coop Launch Sponsors
+<h1>Snowdrift.coop Launch Sponsors
 <p>
   We especially thank the following sponsors for their generous support of
   Snowdrift.coop initial development. Most donated during our
-  formal <a href="https://snowdrift.tilt.com/">fund-drive</a>,
-  but we have and will continue to accept traditional donations
-  until we fully launch.
+  2014 <a href="https://snowdrift.tilt.com/">fund-drive</a>,
+  but we honor here all donations prior to our launch of the full crowdmatching
+  system.
   <strong>
     See our
     <a href=@{DonateR}>
       donation page
     to become a launch sponsor and join the list below.
 
-<!--
-  This list depends on the snowdrift.coop database, the links to user pages won't
-  work for any other deployment of this software, of course; although the names
-  could stay and be valid, but the links should be stripped. Alternatively, we
-  could hardcode the full URLs…
--->
-
-<h2 .text-center>Key sponsors
+<h2>Key sponsors
 <ul .key-sponsors>
   <li>
     <a href="https://www.alephobjects.com/">
@@ -35,24 +28,26 @@
     <a href="http://linuxfund.org/">
       Linux Fund
   <li>
-    Pat McGee
+      Pat McGee
   <li>
       Tomasz Muras
   <li>
-    Paul Phillips
+      Paul Phillips
   <li>
       Kate & Ira Pohl
+  <li>
+      Johannes Wünsch
 
-<h2 .text-center>General pre-launch donors
-<ul .sponsors>
+<h2>General pre-launch donors
+<ul .regular-sponsors>
   <li>
-    Mateusz A.
+      Mateusz A.
   <li>
-    Carlos Aguayo
+      Carlos Aguayo
   <li>
-    Blaise Alleyne
+      Blaise Alleyne
   <li>
-    Chris Aniszczyk
+      Chris Aniszczyk
   <li>
       Jorge Aranda
   <li>
@@ -66,19 +61,19 @@
   <li>
       Greg Austic
   <li>
-    Autious
+      Autious
   <li>
-    Kenneth Ballenegger
+      Kenneth Ballenegger
   <li>
       Moritz Bartl
   <li>
-    Brennen Bearnes
+      Brennen Bearnes
   <li>
-    Marcis Berzins
+      Marcis Berzins
   <li>
-    Michael Baldry
+      Michael Baldry
   <li>
-    Nick Barry
+      Nick Barry
   <li>
       Ingo Blechschmidt
   <li>
@@ -86,21 +81,21 @@
   <li>
       Nathan Bouscal
   <li>
-    Jeremy Bowers
+      Jeremy Bowers
   <li>
       Bret Comnes
   <li>
-    Tim Bunce
+      Tim Bunce
   <li>
-    Brit Butler
+      Brit Butler
   <li>
-    Lee Butts
+      Lee Butts
   <li>
       Javier Merino Cacho
   <li>
       Scott Calvert & family
   <li>
-    Mike Chaberski
+      Mike Chaberski
   <li>
       Jacob Chapman
   <li>
@@ -108,23 +103,23 @@
   <li>
       Paul Chiusano
   <li>
-    Jesper Cockx
+      Jesper Cockx
   <li>
-    CommonKarma.org
+      CommonKarma.org
   <li>
-    Antoine Comte
+      Antoine Comte
   <li>
-    Noah Cornwell
+      Noah Cornwell
   <li>
       Christopher Cummins
   <li>
-    Daniel
+      Daniel
   <li>
-    Debian KDE
+      Debian KDE
   <li>
       Jeroen Dekkers
   <li>
-    Holger Dell
+      Holger Dell
   <li>
       Sebastian Dröge
   <li>
@@ -133,11 +128,11 @@
   <li>
       Christoph Egger
   <li>
-    Carol Ann Emerick
+      Carol Ann Emerick
   <li>
       Victor Engmark
   <li>
-    Eric Entzel
+      Eric Entzel
   <li>
       Kent Fenwick
   <li>
@@ -148,44 +143,44 @@
     <a href="http://fossetcon.org/">
       Fossetcon
   <li>
-    Christian Frank
+      Christian Frank
   <li>
-    Craig Fratrik
+      Craig Fratrik
   <li>
-    CrowdsourcingKC
+      CrowdsourcingKC
   <li>
     <a href="https://thefnf.org/">
       The Free Network Foundation
   <li>
-    freespace
+      freespace
   <li>
-    FTL Software
+      FTL Software
   <li>
       Curtis Gagliardi
   <li>
-    Luis Gasca
+      Luis Gasca
   <li>
-    Denver Gingerich
+      Denver Gingerich
   <li>
       Daniel Glassey
   <li>
-    Brook Heisler
+      Brook Heisler
   <li>
-    Raphaël Hertzog
+      Raphaël Hertzog
   <li>
       Joey Hess
   <li>
-    Joshua Hoblitt
+      Joshua Hoblitt
   <li>
-    Claudio Hoffmann
+      Claudio Hoffmann
   <li>
       Thomas Hochstein
   <li>
-    Martin Höcker
+      Martin Höcker
   <li>
-    holdenweb
+      holdenweb
   <li>
-    Lance Holton
+      Lance Holton
   <li>
       hotzeplotz
   <li>
@@ -193,19 +188,19 @@
   <li>
       Karl Ove Hufthammer
   <li>
-    Eskild Hustvedt
+      Eskild Hustvedt
   <li>
       Iko
   <li>
-    Arya Irani
+      Arya Irani
   <li>
       Geoffrey Irving
   <li>
       Seth de l'Isle
   <li>
-    Ethan Johnson
+      Ethan Johnson
   <li>
-    H. Ryan Jones
+      H. Ryan Jones
   <li>
       Ollie Jones
   <li>
@@ -213,21 +208,21 @@
   <li>
       Hasen el Judy | حسن الجودي | ハセン
   <li>
-    Alan Keefer
+      Alan Keefer
   <li>
       Ian Kelling
   <li>
-    Andrew Klofas
+      Andrew Klofas
   <li>
       Robert Klotzner
   <li>
-    Fabrice Knevez
+      Fabrice Knevez
   <li>
-    Georg Kolling
+      Georg Kolling
   <li>
       Eric Kow
   <li>
-    Alanna Krause
+      Alanna Krause
   <li>
       Ramana Kumar
   <li>
@@ -237,15 +232,15 @@
   <li>
       Brianna Laugher
   <li>
-    Jean-Pierre Laurin
+      Jean-Pierre Laurin
   <li>
-    Alexander Lang
+      Alexander Lang
   <li>
       Kirsten Larsen
   <li>
-    Matt Lee
+      Matt Lee
   <li>
-    Nathan Lee
+      Nathan Lee
   <li>
       Randall Leeds
   <li>
@@ -253,15 +248,15 @@
   <li>
       R. Diaz de Leon
   <li>
-    Federico Leva
+      Federico Leva
   <li>
-    Aaron Levin
+      Aaron Levin
   <li>
       Carl Lewis
   <li>
       John A. Lewis
   <li>
-    Katrin Leinweber
+      Katrin Leinweber
   <li>
       Greg Lindahl
   <li>
@@ -269,15 +264,15 @@
   <li>
       Mike Linksvayer
   <li>
-    Yun-Mei Lo
+      Yun-Mei Lo
   <li>
       Brendan Long
   <li>
-    Hans Lub
+      Hans Lub
   <li>
-    DJ Madeira
+      DJ Madeira
   <li>
-    Magan Adam
+      Magan Adam
   <li>
       Patrick Masson
   <li>
@@ -289,17 +284,17 @@
   <li>
       Ewen McNeill
   <li>
-    Jan Mechtel
+      Jan Mechtel
   <li>
       Simon Michael
   <li>
-    Florin Mihaila
+      Florin Mihaila
   <li>
-    Matthew Miller (mattdm)
+      Matthew Miller (mattdm)
   <li>
-    Scott Milliken
+      Scott Milliken
   <li>
-    Havard Moen
+      Havard Moen
   <li>
       Ramakrishnan Muthukrishnan
   <li>
@@ -309,21 +304,21 @@
   <li>
       Nmlgc
   <li>
-    Lachlan O'Dea
+      Lachlan O'Dea
   <li>
       Robert Orzanna
   <li>
       Étienne Vallette d'Osia
   <li>
-    Tom Paluck
+      Tom Paluck
   <li>
       Răzvan Panda
   <li>
-    Fabian Peters
+      Fabian Peters
   <li>
-    Quinlan "The Cobra" Pfiffer
+      Quinlan "The Cobra" Pfiffer
   <li>
-    Karl Pietrzak
+      Karl Pietrzak
   <li>
       Steve Phillips / elimisteve
   <li>
@@ -333,23 +328,23 @@
   <li>
       Timotheus Pokorra
   <li>
-    Michał Politowski
+      Michał Politowski
   <li>
       Shuwen Qian
   <li>
-    Aaron Quamme
+      Aaron Quamme
   <li>
       Lane Rasberry
   <li>
-    Olav Reinert
+      Olav Reinert
   <li>
-    Dan Revel
+      Dan Revel
   <li>
       Kevin Riggle
   <li>
       Matt Ritter
   <li>
-    Florence Rosenbloom
+      Florence Rosenbloom
   <li>
       Sage Ross
   <li>
@@ -358,25 +353,25 @@
   <li>
       Hugo Roy (FSFE)
   <li>
-    Noé Rubinstein
+      Noé Rubinstein
   <li>
-    Michel S.
+      Michel S.
   <li>
-    Marc Saegesser
+      Marc Saegesser
   <li>
       Chris Sakkas, livinglibre.com
   <li>
-    Olli Savolainen
+      Olli Savolainen
   <li>
-    Tobias Schachman
+      Tobias Schachman
   <li>
       Brian Schroeder
   <li>
       Sean Seefried
   <li>
-    Paul Sexton
+      Paul Sexton
   <li>
-    Kendrick Shaw
+      Kendrick Shaw
   <li>
       Howard Lewis Ship
   <li>
@@ -384,59 +379,59 @@
   <li>
       Brandon Skari
   <li>
-    Don Smith
+      Don Smith
   <li>
       Leon P Smith
   <li>
       Nick Smith
   <li>
-    Jim Snow
+      Jim Snow
   <li>
-    Khaled Soliman
+      Khaled Soliman
   <li>
       Rodrigo Souto
   <li>
       Adam Souzis
   <li>
-    Adam Spitz
+      Adam Spitz
   <li>
-    Charles Stanhope
+      Charles Stanhope
   <li>
       Stephen Starkey
   <li>
       Startifact
   <li>
-    statuszer0
+      statuszer0
   <li>
       Bob Steffes
   <li>
-    Hugh Stimson
+      Hugh Stimson
   <li>
-    Morgan Stuart
+      Morgan Stuart
   <li>
-    Simon Tegg
+      Simon Tegg
   <li>
-    Álvaro Tejero-Cantero
+      Álvaro Tejero-Cantero
   <li>
-    Zachary Tellman
+      Zachary Tellman
   <li>
       Seth Tisue
   <li>
       Frank Thomas
   <li>
-    Greg Tomei
+      Greg Tomei
   <li>
-    Kevin Turner
+      Kevin Turner
   <li>
-    Christian Uhl
+      Christian Uhl
   <li>
       Vakranas
   <li>
-    Timothy Vollmer
+      Timothy Vollmer
   <li>
-    Wouter Vos
+      Wouter Vos
   <li>
-    Markus Vuorio (Maakuth)
+      Markus Vuorio (Maakuth)
   <li>
       Tobias Gulbrandsen Waaler
   <li>
@@ -448,13 +443,13 @@
   <li>
       Patrick Weemeeuw
   <li>
-    David Whitman
+      David Whitman
   <li>
       Kevin Wichmann
   <li>
       Alex Willemsma
   <li>
-    Carl Witty
+      Carl Witty
   <li>
       Barry & Devorah Wolf
   <li>
@@ -466,18 +461,18 @@
   <li>
       Brent Yorgey
   <li>
-    Philip Young
+      Philip Young
   <li>
       Milan Zamazal
   <li>
-    Shafiq Akram Zakaria
+      Shafiq Akram Zakaria
   <li>
       Massimo Zaniboni
   <li>
-    Jan Zernisch
+      Jan Zernisch
   <li>
-    Jake Zieve
+      Jake Zieve
   <li>
-    Guido Zuidhof
+      Guido Zuidhof
 
-<div .text-center>and 19 anonymous sponsors
+<div .anon-sponsors>and 19 anonymous sponsors
