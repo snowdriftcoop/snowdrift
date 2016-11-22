@@ -58,7 +58,7 @@ dummyStripe = \case
     DeleteCustomerI _ ->
         pure (Right ())
 
-type Runner = forall a. SqlPersistT IO a -> IO a
+type Runner = SqlRunner IO IO
 
 -- | A QuickCheck property that uses database actions
 dbProp
