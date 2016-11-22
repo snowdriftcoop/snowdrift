@@ -8,9 +8,7 @@ module Handler.PaymentInfo
 import Import
 
 import Control.Monad.Logger
-import Control.Lens
 import Crowdmatch
-import Data.Maybe
 import Text.Julius (rawJS)
 import Web.Stripe
 import Web.Stripe.Customer

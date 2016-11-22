@@ -12,7 +12,7 @@ import Crowdmatch
 
 postPledgeSnowdriftR :: Handler Html
 postPledgeSnowdriftR = handleDelete' $ do
-    Entity uid user <- requireAuth
+    Entity uid _ <- requireAuth
     patron <- fetchPatron runDB uid
     maybe
         (do

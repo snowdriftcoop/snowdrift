@@ -185,7 +185,7 @@ runMech db (StorePaymentTokenI strp pptr cardToken) = do
         now <- liftIO getCurrentTime
         let payToken = PaymentToken (customerId c)
         db $ do
-            insert (PaymentTokenHistory pid (HistoryTime now) Create)
+            _ <- insert (PaymentTokenHistory pid (HistoryTime now) Create)
             update pid [PatronPaymentToken =. Just payToken]
 
 -- FIXME: Feedback on nonexisting CustomerId.
@@ -202,7 +202,7 @@ runMech db (DeletePaymentTokenI strp pptr) = do
         -- Fixme: Duplication of upsert
         runMech db (DeletePledgeI pptr)
         db $ do
-            insert (PaymentTokenHistory pid (HistoryTime now) Delete)
+            _ <- insert (PaymentTokenHistory pid (HistoryTime now) Delete)
             update pid [PatronPaymentToken =. Nothing]
 
 --
@@ -310,9 +310,6 @@ upsertPatron pptr mods = do
 
 fromModel :: Model.Patron -> Patron
 fromModel (Model.Patron _usr t c d p) = Patron t c d p
-
-toModel :: ToCrowdmatchPatron p => p -> Patron -> Model.Patron
-toModel usr (Patron t c d p) = Model.Patron (usr ^. from external) t c d p
 
 -- | DonationUnits are truncated to usable cents for use in creating
 -- charges.

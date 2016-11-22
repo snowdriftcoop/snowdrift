@@ -5,7 +5,6 @@ module Model (module Model) where
 import ClassyPrelude.Yesod
 import Database.Persist.Quasi
 import Database.Persist.Sql
-import Web.Stripe.Customer (CustomerId(..))
 import Crowdmatch (ToCrowdmatchPatron(..))
 
 -- You can define all of your database entities in the entities file.

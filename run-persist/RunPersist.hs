@@ -38,6 +38,7 @@ runPersist' filter' q = do
   where
     logSimpleConn c = LoggingT (`openSimpleConn` c)
 
+normalLogging :: LoggingT IO a -> LoggingT IO a
 normalLogging = filterLogger (const (> LevelDebug))
 
 runPersistPool, runPersistPoolDebug
@@ -54,4 +55,4 @@ runPersistPool' filter' cont =
     $ filter'
     $ withPostgresqlPool "" 10
     $ \pool -> LoggingT
-    $ \logfunc -> cont (`runSqlPool` pool)
+    $ \_ -> cont (`runSqlPool` pool)

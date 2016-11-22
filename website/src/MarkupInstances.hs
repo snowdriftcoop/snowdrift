@@ -5,8 +5,6 @@ module MarkupInstances () where
 import Prelude
 
 import Crowdmatch
-import Data.Default (def)
-import Data.Text (Text)
 import Data.Time
 import Formattable
 import Text.Blaze.Html

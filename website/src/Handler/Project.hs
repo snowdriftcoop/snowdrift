@@ -5,7 +5,7 @@ import Import
 import Crowdmatch
 import Handler.Pledge (pledgeDeleteForm)
 import Handler.TH
-import MarkupInstances
+import MarkupInstances ()
 
 -- | For MVP, there is one, hard-coded project: Snowdrift
 getSnowdriftProjectR :: Handler Html
