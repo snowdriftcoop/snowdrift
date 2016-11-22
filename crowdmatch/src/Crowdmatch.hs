@@ -57,6 +57,14 @@ import Web.Stripe.Customer
 import Crowdmatch.Model hiding (Patron(..))
 import qualified Crowdmatch.Model as Model
 
+-- | A method that runs 'SqlPersistT' values in your environment.
+type SqlRunner io env = forall a. SqlPersistT io a -> env a
+
+-- | A method that runs 'StripeI' instructions in IO. A default that uses
+-- 'stripe' is provided by 'runStripe'.
+type StripeRunner = forall io.
+    MonadIO io => forall a. StripeI a -> io (Either StripeError a)
+
 --
 -- THE ACTUAL INTERFACE USED BY THE WEBSITE
 --
@@ -76,9 +84,6 @@ data Project = Project
         { projectCrowd :: Int
         , projectValue :: DonationUnits
         }
-
--- | A method that runs 'SqlPersistT' values in your environment.
-type SqlRunner io env = forall a. SqlPersistT io a -> env a
 
 -- | Record a 'TokenId' for a patron.
 storePaymentToken
@@ -264,11 +269,6 @@ data StripeI a where
     CreateCustomerI :: TokenId -> StripeI Customer
     UpdateCustomerI :: TokenId -> CustomerId -> StripeI Customer
     DeleteCustomerI :: CustomerId -> StripeI ()
-
--- | A method that runs 'StripeI' instructions in IO. A default that uses
--- 'stripe' is provided by 'runStripe'.
-type StripeRunner = forall io.
-    MonadIO io => forall a. StripeI a -> io (Either StripeError a)
 
 -- | A default stripe runner
 runStripe
