@@ -86,13 +86,13 @@ genHistory runner = do
         (run . getBlind <=< pick) (Blind <$> frequency
             [ (10, storeToken' x)
             , (1, delToken' x)
-            , (2, storePatron' x)
-            , (1, delPatron' x)
+            , (2, storePledge' x)
+            , (1, delPledge' x)
             ])
     storeToken' x = void . storePaymentToken runner dummyStripe x <$> arbitrary
     delToken' = pure . void . deletePaymentToken runner dummyStripe
-    storePatron' = pure . storePledge runner
-    delPatron' = pure . deletePledge runner
+    storePledge' = pure . storePledge runner
+    delPledge' = pure . deletePledge runner
 
 -- | Something to make a Patron out of
 newtype HarnessUser = HarnessUser Int
