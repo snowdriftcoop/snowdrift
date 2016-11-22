@@ -82,7 +82,8 @@ data Patron = Patron
 -- simple. Returned with 'fetchProject'.
 data Project = Project
         { projectCrowd :: Int
-        , projectValue :: DonationUnits
+        , projectMonthlyIncome :: Cents
+        , projectPledgeValue :: DonationUnits
         }
 
 -- | Record a 'TokenId' for a patron.
@@ -238,8 +239,9 @@ runMech db (DeletePledgeI pptr) = db $ do
 
 runMech db FetchProjectI = db $ do
     numPledges <- count [PatronPledgeSince !=. Nothing]
-    let value = DonationUnits (fromIntegral numPledges)
-    pure (Project numPledges value)
+    let pledgevalue = DonationUnits (fromIntegral numPledges)
+        income = view donationCents (pledgevalue * pledgevalue)
+    pure (Project numPledges income pledgevalue)
 
 runMech db (FetchPatronI pptr) =
     db $ fromModel . entityVal <$> upsertPatron pptr []

@@ -6,7 +6,7 @@ $maybe _ <- patronPledgeSince patron
     <a href=@{SnowdriftProjectR}>Snowdrift.coop</a>.
   <p>
     You are currently matching a crowd of #{projectCrowd project} patrons.
-    The current value of your pledge is #{projectValue project}<sup>1</sup>.
+    The current value of your pledge is #{projectPledgeValue project}<sup>1</sup>.
   <p>
     Your payment method is Stripe. You may
     <a href=@{PaymentInfoR}>configure your payment settings</a>

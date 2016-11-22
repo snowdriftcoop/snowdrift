@@ -199,8 +199,15 @@ sanityTests runner = describe "sanity tests" $ do
                 _ <- storePaymentToken runner dummyStripe (HarnessUser i) cardTok
                 storePledge runner (HarnessUser i)
         mapM_ mkPledge [1..10]
-        val <- projectValue <$> fetchProject runner
+        val <- projectPledgeValue <$> fetchProject runner
         val `shouldBe` view (from donationCents) (Cents 1)
+    specify "1000 pledges = $1000 monthly income" $ do
+        let mkPledge i = do
+                _ <- storePaymentToken runner dummyStripe (HarnessUser i) cardTok
+                storePledge runner (HarnessUser i)
+        mapM_ mkPledge [1..1000]
+        val <- projectMonthlyIncome <$> fetchProject runner
+        val `shouldBe` Cents (100 * 1000)
 
 propTests :: Runner -> SqlPersistT IO () -> Spec
 propTests runner trunq = modifyMaxSuccess (* 2) $

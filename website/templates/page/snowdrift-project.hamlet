@@ -7,7 +7,7 @@
 $maybe _ <- muid
   $maybe since <- patronPledgeSince =<< mpatron
     <p>
-      You have been pledged to Snowdrift since #{show since}
+      You have been pledged to Snowdrift since #{show since}.
   $nothing
     <form method=post action=@{PledgeSnowdriftR}>
       <button>
@@ -26,16 +26,17 @@ $nothing
 <h2>Crowdmatching
 <p>
   Snowdrift currently has a crowd of #{projectCrowd project} patrons.
-  The current value of a pledge is #{projectValue project}<sup>1</sup>.
+  The current value of a pledge is #{projectPledgeValue project}, and the
+  project's monthly income is #{projectMonthlyIncome project}<sup>1</sup>.
 
 $maybe _ <- patronPledgeSince =<< mpatron
   <p>
-    If would like to stop supporting Snowdrift.coop, you can remove
-    yourself from the crowd. Your fellow supporters will be sad to see
-    you go!
+    If you would like to stop supporting Snowdrift.coop, you can remove
+    yourself from the crowd. Your fellow supporters will be sad to see you
+    go!
     <form method=post action=@{PledgeSnowdriftR}>
       ^{deletePledgeWidget}
-      <button>unpledge from Snowdrift.coop
+      <button>Unpledge from Snowdrift.coop
 <hr>
 <p>
   <sup>1</sup>: This amount will most likely change before the next
