@@ -213,7 +213,7 @@ runMech db (StorePledgeI pptr) = do
     pledge' pid = db $ do
         now <- liftIO getCurrentTime
         update pid [PatronPledgeSince =. Just now]
-        insert_ (PledgeHistory pid now CreatePledge)
+        insert_ (PledgeHistory pid now Create)
     noCustomer = pure ()
     existingPledge _ = pure ()
 
@@ -228,7 +228,7 @@ runMech db (DeletePledgeI pptr) = db $ do
     delete' pid = do
         now <- liftIO getCurrentTime
         update pid [PatronPledgeSince =. Nothing]
-        insert_ (PledgeHistory pid now DeletePledge)
+        insert_ (PledgeHistory pid now Delete)
 
 runMech db FetchProjectI = db $ do
     numPledges <- count [PatronPledgeSince !=. Nothing]

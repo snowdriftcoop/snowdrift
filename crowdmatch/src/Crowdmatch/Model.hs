@@ -42,7 +42,7 @@ Patron sql="crowdmatch__patron"
 PledgeHistory sql="crowdmatch__pledge_history"
     patron PatronId
     time UTCTime
-    action PledgeAction
+    action StorageAction
     --
     deriving (Show)
 

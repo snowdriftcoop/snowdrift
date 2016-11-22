@@ -31,7 +31,7 @@ import qualified Database.PostgreSQL.Simple as PG
 import qualified Database.PostgreSQL.Simple.Types as PG
 
 import Crowdmatch
-import Crowdmatch.Model (PledgeAction(..))
+import Crowdmatch.Model (StorageAction(..))
 import qualified Crowdmatch.Model as Model
 
 -- | Execute a transaction-free statement in Postgres
@@ -233,7 +233,7 @@ prop_randomHistory runner = do
     genHistory runner
     -- | (CreateHistory - DeleteHistory) = crowdSize (Project)
     (creat, remov) <- run $ runner $
-        partition ((== CreatePledge) . Model.pledgeHistoryAction . entityVal)
+        partition ((== Create) . Model.pledgeHistoryAction . entityVal)
             <$> selectList [] []
     crowd <- projectCrowd <$> fetchProject (run . runner)
     monitor (badSize (creat, remov, crowd))

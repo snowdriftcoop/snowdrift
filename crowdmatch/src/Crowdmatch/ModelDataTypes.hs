@@ -25,30 +25,30 @@ newtype PaymentToken = PaymentToken { unPaymentToken :: CustomerId }
 deriving instance PersistField PaymentToken
 deriving instance PersistFieldSql PaymentToken
 
-data PledgeAction = CreatePledge | DeletePledge deriving (Show, Read, Eq)
+data StorageAction = Create | Delete deriving (Show, Read, Eq)
 
 {-
- - This is what PledgeAction would look like as a native Postgres enum
+ - This is what StorageAction would look like as a native Postgres enum
  - type. I'll wait for Persistent to support enums directly, with
  - migrations etc built in.
 
-instance PersistField PledgeAction where
+instance PersistField StorageAction where
     toPersistValue = \case
-        CreatePledge -> PersistDbSpecific "create_pledge"
-        DeletePledge -> PersistDbSpecific "delete_pledge"
+        Create -> PersistDbSpecific "create"
+        Delete -> PersistDbSpecific "delete"
 
     fromPersistValue (PersistDbSpecific x)
-        | x == "create_pledge" = Right CreatePledge
-        | x == "delete_pledge" = Right DeletePledge
-        | otherwise = Left "Unknown enum value in PledgeAction"
+        | x == "create" = Right Create
+        | x == "delete" = Right Delete
+        | otherwise = Left "Unknown enum value in StorageAction"
     fromPersistValue _ =
         Left "PledgeValue must be converted from PersistDbSpecific"
 
-instance PersistFieldSql PledgeAction where
-    sqlType _ = SqlOther "pledge_action"
+instance PersistFieldSql StorageAction where
+    sqlType _ = SqlOther "storage_action"
 -}
 
-derivePersistField "PledgeAction"
+derivePersistField "StorageAction"
 
 -- | Sanity wrapper
 newtype DonationTime = DonationTime UTCTime deriving (PersistFieldSql, PersistField, Show)
