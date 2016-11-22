@@ -167,7 +167,6 @@ runMech
 -- Payment token (store/delete)
 --
 
--- FIXME: Feedback on Stripe error
 runMech db (StorePaymentTokenI strp pptr cardToken) = do
     Entity pid p <- db (upsertPatron pptr [])
     runExceptT $ do

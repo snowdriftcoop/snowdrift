@@ -69,9 +69,12 @@ postPaymentInfoR = handleDelete delFormId deletePaymentInfoR $ do
         runFormPost (identifyForm modFormId (paymentForm ""))
     case formResult of
         FormSuccess token -> do
-            storePaymentToken runDB (runStripe conf) uid token
-            alertSuccess "Payment information stored"
-            redirect HomeR
+            stripeRes <- storePaymentToken runDB (runStripe conf) uid token
+            case stripeRes of
+                Left e -> stripeError e
+                Right _ -> do
+                    alertSuccess "Payment information stored"
+                    redirect HomeR
         _ -> do
             alertDanger "There was something wrong with your form submission."
             redirect PaymentInfoR
@@ -87,19 +90,6 @@ deletePaymentInfoR = do
         either
             stripeError
             (const $ alertSuccess "Your payment information has been cleared.")
-
--- | The preceding methods use the same error catching. Pretty bare bones,
--- but at least there will be a log.
-stripeCustomerHandler :: Either StripeError Customer -> Handler CustomerId
-stripeCustomerHandler =
-    either
-        stripeError
-        (pure . \case
-            Customer{..} -> customerId
-            -- This case "should never happen" :D But if it does, we can
-            -- just ignore it for now.
-            -- See also https://github.com/dmjio/stripe/issues/40
-            DeletedCustomer{..} -> deletedCustomerId)
 
 stripeError :: StripeError -> Handler a
 stripeError er = do
