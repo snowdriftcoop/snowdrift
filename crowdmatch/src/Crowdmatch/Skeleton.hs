@@ -18,7 +18,7 @@ import Crowdmatch.Model
 {-# ANN module ("HLint: ignore Redundant bracket" :: String) #-}
 
 -- | Retrieve the history of donations to the project
-projectDonationHistory :: MonadIO m => SqlPersistT m [(DonationTime, Int)]
+projectDonationHistory :: MonadIO m => SqlPersistT m [(HistoryTime, Int)]
 projectDonationHistory =
     fmap (map ((_1 %~ unValue) . (_2 %~ fromMaybe 0 . unValue))) $
     select $

@@ -143,15 +143,23 @@ sanityTests runner = describe "sanity tests" $ do
     let payTok = PaymentToken (CustomerId "dummy")
         cardTok = TokenId "pumpkin"
         aelfred = HarnessUser 1
-    specify "stored token is retrievable" $ do
-        _ <- storePaymentToken runner dummyStripe aelfred cardTok
-        pat <- fetchPatron runner aelfred
-        patronPaymentToken pat `shouldBe` Just payTok
-    specify "deleted token disappears" $ do
-        _ <- storePaymentToken runner dummyStripe aelfred cardTok
-        _ <- deletePaymentToken runner dummyStripe aelfred
-        pat <- fetchPatron runner aelfred
-        patronPaymentToken pat `shouldBe` Nothing
+    describe "stored token" $ do
+        it "is retrievable" $ do
+            _ <- storePaymentToken runner dummyStripe aelfred cardTok
+            pat <- fetchPatron runner aelfred
+            patronPaymentToken pat `shouldBe` Just payTok
+        it "disappears" $ do
+            _ <- storePaymentToken runner dummyStripe aelfred cardTok
+            _ <- deletePaymentToken runner dummyStripe aelfred
+            pat <- fetchPatron runner aelfred
+            patronPaymentToken pat `shouldBe` Nothing
+        it "has history recorded" $ do
+            _ <- storePaymentToken runner dummyStripe aelfred cardTok
+            _ <- deletePaymentToken runner dummyStripe aelfred
+            ls <- runner $ map entityVal <$> selectList [] []
+            length ls `shouldBe` 2
+            Model.paymentTokenHistoryAction (head ls) `shouldBe` Create
+            Model.paymentTokenHistoryAction (last ls) `shouldBe` Delete
     specify "fetchPatron always succeeds" $ do
         p1 <- fetchPatron runner aelfred
         p2 <- fetchPatron runner aelfred

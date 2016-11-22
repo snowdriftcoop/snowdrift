@@ -51,7 +51,7 @@ instance PersistFieldSql StorageAction where
 derivePersistField "StorageAction"
 
 -- | Sanity wrapper
-newtype DonationTime = DonationTime UTCTime deriving (PersistFieldSql, PersistField, Show)
+newtype HistoryTime = HistoryTime UTCTime deriving (PersistFieldSql, PersistField, Show)
 
 -- | Sanity wrapper
 newtype CrowdmatchDay = CrowdmatchDay Day deriving (PersistFieldSql, PersistField, Show)

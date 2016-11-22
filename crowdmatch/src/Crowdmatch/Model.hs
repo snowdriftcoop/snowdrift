@@ -46,9 +46,14 @@ PledgeHistory sql="crowdmatch__pledge_history"
     --
     deriving (Show)
 
+PaymentTokenHistory sql="crowdmatch__payment_token_history"
+    patron PatronId
+    time HistoryTime
+    action StorageAction
+
 DonationHistory sql="crowdmatch__donation_history"
     patron PatronId
-    time DonationTime
+    time HistoryTime
     amount DonationUnits
     fee Cents
     --

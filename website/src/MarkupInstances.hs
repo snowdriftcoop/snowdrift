@@ -17,8 +17,8 @@ instance ToMarkup Cents where
 instance ToMarkup DonationUnits where
     toMarkup = toMarkup . formatNum usdFmt {_nfUnits = 1000, _nfPrec = Just (3, Decimals)}
 
-instance ToMarkup DonationTime where
-    toMarkup (DonationTime t) =
+instance ToMarkup HistoryTime where
+    toMarkup (HistoryTime t) =
         toMarkup (formatTime defaultTimeLocale "%Y-%m-%d %H:%M (%Z)" t)
 
 -- instance ToMarkup CrowdmatchDay where

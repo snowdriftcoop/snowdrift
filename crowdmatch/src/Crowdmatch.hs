@@ -31,7 +31,7 @@ module Crowdmatch (
         , Patron(..)
         , Project(..)
         , DonationUnits(..)
-        , DonationTime(..)
+        , HistoryTime(..)
         , Cents(..)
         , PaymentToken(..)
 
@@ -180,9 +180,12 @@ runMech db (StorePaymentTokenI strp pptr cardToken) = do
   where
     create' = stripeCreateCustomer strp cardToken
     update' = stripeUpdateCustomer strp cardToken . unPaymentToken
-    updatePatron' pid c =
+    updatePatron' pid c = do
+        now <- liftIO getCurrentTime
         let payToken = PaymentToken (customerId c)
-        in db (update pid [PatronPaymentToken =. Just payToken])
+        db $ do
+            insert (PaymentTokenHistory pid (HistoryTime now) Create)
+            update pid [PatronPaymentToken =. Just payToken]
 
 -- FIXME: Feedback on nonexisting CustomerId.
 runMech db (DeletePaymentTokenI strp pptr) = do
@@ -191,12 +194,15 @@ runMech db (DeletePaymentTokenI strp pptr) = do
   where
     deleteToken' pid (PaymentToken cust) = do
         res <- stripeDeleteCustomer strp cust
-        traverse (const (update' pid)) res
-    update' pid = do
+        traverse (const (onStripeSuccess' pid)) res
+    onStripeSuccess' pid = do
+        now <- liftIO getCurrentTime
         -- Must delete pledges if there's no payment method!
         -- Fixme: Duplication of upsert
         runMech db (DeletePledgeI pptr)
-        db (update pid [PatronPaymentToken =. Nothing])
+        db $ do
+            insert (PaymentTokenHistory pid (HistoryTime now) Delete)
+            update pid [PatronPaymentToken =. Nothing]
 
 --
 -- Pledge (store/delete)
