@@ -98,7 +98,7 @@ genHistory runner = do
 newtype HarnessUser = HarnessUser Int
     deriving (Eq, Show)
 
-instance ToMechPatron HarnessUser where
+instance ToCrowdmatchPatron HarnessUser where
     toMechPatron (HarnessUser i) = i
     fromMechPatron = HarnessUser
 

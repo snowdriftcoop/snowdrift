@@ -6,7 +6,7 @@ import ClassyPrelude.Yesod
 import Database.Persist.Quasi
 import Database.Persist.Sql
 import Web.Stripe.Customer (CustomerId(..))
-import Crowdmatch (ToMechPatron(..))
+import Crowdmatch (ToCrowdmatchPatron(..))
 
 -- You can define all of your database entities in the entities file.
 -- You can find more information on persistent and how to declare entities
@@ -16,6 +16,6 @@ share [ mkPersist sqlSettings{ mpsGenerateLenses = True }
       , mkMigrate "migrateSnowdrift"]
       $(persistFileWith lowerCaseSettings "config/models")
 
-instance ToMechPatron UserId where
+instance ToCrowdmatchPatron UserId where
     toMechPatron = fromIntegral . unSqlBackendKey . unUserKey
     fromMechPatron = UserKey . SqlBackendKey . fromIntegral

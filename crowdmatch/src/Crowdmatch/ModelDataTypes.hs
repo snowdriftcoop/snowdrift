@@ -83,7 +83,7 @@ newtype Cents = Cents Int32
         , Eq)
 
 -- | "Patron pointer". This keeps track of the link between a Patron and
--- whatever is a ToMechPatron.
+-- whatever is a ToCrowdmatchPatron.
 newtype PPtr = PPtr Int
     deriving
         ( PersistFieldSql

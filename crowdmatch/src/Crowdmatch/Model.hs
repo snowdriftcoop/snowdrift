@@ -64,11 +64,11 @@ CrowdmatchHistory sql="crowdmatch__crowdmatch_history"
 
 -- | This class is used to associate some \'u\' from your model with
 -- Crowdmatch's internal Patron type.
-class ToMechPatron u where
+class ToCrowdmatchPatron u where
     toMechPatron :: u -> Int
     fromMechPatron :: Int -> u
 
-external :: ToMechPatron u => Iso' PPtr u
+external :: ToCrowdmatchPatron u => Iso' PPtr u
 external = iso toExternal fromExternal
   where
     toExternal (PPtr i) = fromMechPatron i

@@ -6,7 +6,7 @@
 -- | The one-stop module for the Crowdmatch mechanism!
 module Crowdmatch (
         -- * Interface with your model
-          ToMechPatron(..)
+          ToCrowdmatchPatron(..)
         , crowdmatchManualMigrations
         , migrateCrowdmatch
         , SqlRunner
@@ -87,10 +87,10 @@ data Project = Project
 
 -- | Record a 'TokenId' for a patron.
 storePaymentToken
-    :: (ToMechPatron usr, MonadIO io, MonadIO env)
+    :: (ToCrowdmatchPatron usr, MonadIO io, MonadIO env)
     => SqlRunner io env
     -> StripeRunner
-    -> usr -- ^ your model's user, an instance of ToMechPatron
+    -> usr -- ^ your model's user, an instance of ToCrowdmatchPatron
     -> TokenId -- ^ you must independently get this from stripe
     -> env (Either StripeError ())
 storePaymentToken db strp usr =
@@ -102,7 +102,7 @@ storePaymentToken db strp usr =
 -- | Delete the 'TokenId'. This will remove any existing pledges, since a
 -- a token is required for pledging.
 deletePaymentToken
-    :: (ToMechPatron usr, MonadIO io, MonadIO env)
+    :: (ToCrowdmatchPatron usr, MonadIO io, MonadIO env)
     => SqlRunner io env -- ^
     -> StripeRunner
     -> usr
@@ -113,7 +113,7 @@ deletePaymentToken db strp =
 -- | Stores a pledge, joining the crowd. Requires the patron to already
 -- have a payment token available.
 storePledge
-    :: (ToMechPatron usr, MonadIO io, MonadIO env)
+    :: (ToCrowdmatchPatron usr, MonadIO io, MonadIO env)
     => SqlRunner io env -- ^
     -> usr
     -> env ()
@@ -121,7 +121,7 @@ storePledge db = runMech db . StorePledgeI . (^. from external)
 
 -- | Delete a pledge, leaving the crowd.
 deletePledge
-    :: (ToMechPatron usr, MonadIO io, MonadIO env)
+    :: (ToCrowdmatchPatron usr, MonadIO io, MonadIO env)
     => SqlRunner io env -- ^
     -> usr
     -> env ()
@@ -136,7 +136,7 @@ fetchProject db = runMech db FetchProjectI
 
 -- | Retrieve info on a particular patron.
 fetchPatron
-    :: (ToMechPatron usr, MonadIO io, MonadIO env)
+    :: (ToCrowdmatchPatron usr, MonadIO io, MonadIO env)
     => SqlRunner io env -- ^
     -> usr
     -> env Patron
@@ -303,7 +303,7 @@ upsertPatron pptr mods = do
 fromModel :: Model.Patron -> Patron
 fromModel (Model.Patron _usr t c d p) = Patron t c d p
 
-toModel :: ToMechPatron p => p -> Patron -> Model.Patron
+toModel :: ToCrowdmatchPatron p => p -> Patron -> Model.Patron
 toModel usr (Patron t c d p) = Model.Patron (usr ^. from external) t c d p
 
 -- | DonationUnits are truncated to usable cents for use in creating
