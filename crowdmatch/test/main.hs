@@ -8,23 +8,36 @@
 
 import Control.Exception.Safe (bracket)
 import Control.Lens hiding (elements)
-import Control.Monad
-import Control.Monad.IO.Class
+import Control.Monad (void, (<=<))
+import Control.Monad.IO.Class (MonadIO)
 import Control.Monad.Reader (ask)
 import Data.Foldable (traverse_)
 import Data.List (partition)
-import Data.Monoid
+import Data.Monoid ((<>))
 import Data.Text (Text)
 import Database.Persist
 import Database.Persist.Postgresql
-import RunPersist
-import System.Directory
-import System.Environment
+        (SqlPersistT, runMigration, connEscapeName, unSingle, rawSql, rawExecute)
+import RunPersist (runPersistPool)
+import System.Directory (createDirectoryIfMissing)
+import System.Environment (setEnv)
 import Test.Hspec
-import Test.Hspec.QuickCheck
+        (hspec, before_, Spec, describe, it, shouldBe, shouldNotBe, specify)
+import Test.Hspec.QuickCheck (modifyMaxSuccess, prop)
 import Test.QuickCheck
-import Test.QuickCheck.Monadic
-import Web.Stripe.Customer
+        ( Arbitrary(..)
+        , listOf
+        , elements
+        , Property
+        , choose
+        , label
+        , Blind(..)
+        , getBlind
+        , frequency
+        , getPositive
+        , counterexample)
+import Test.QuickCheck.Monadic (PropertyM, monadicIO, run, pick, monitor, assert)
+import Web.Stripe.Customer (Customer(..), CustomerId(..), TokenId(..), customerId)
 import qualified Data.ByteString.Char8 as B
 import qualified Data.Text as T
 import qualified Database.PostgreSQL.Simple as PG

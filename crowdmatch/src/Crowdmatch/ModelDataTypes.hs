@@ -7,10 +7,11 @@
 -- | Define types used in mkPersist, to avoid the GHC stage restriction.
 module Crowdmatch.ModelDataTypes where
 
-import Data.Int
-import Data.Time
+import Data.Int (Int32)
+import Data.Time (UTCTime, Day)
 import Database.Persist.Sql
-import Database.Persist.TH
+        (PersistField, PersistFieldSql)
+import Database.Persist.TH (derivePersistField)
 import Web.Stripe.Customer (CustomerId(..))
 
 -- | Some standalone derivations so we can put CustomerId in the DB.

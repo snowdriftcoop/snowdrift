@@ -43,16 +43,23 @@ module Crowdmatch (
         , donationCents
         ) where
 
-import Control.Error
-import Control.Lens
+import Control.Error (ExceptT(..), runExceptT)
+import Control.Lens ((^.), from, view, Iso', iso)
 import Control.Monad (void)
-import Control.Monad.IO.Class
-import Data.Time
+import Control.Monad.IO.Class (liftIO, MonadIO)
+import Data.Time (UTCTime, getCurrentTime)
 import Database.Persist
-import Database.Persist.Sql
-import Web.Stripe
-import Web.Stripe.Error
+import Database.Persist.Sql (SqlPersistT)
+import Web.Stripe (stripe, (-&-), StripeConfig)
+import Web.Stripe.Error (StripeError)
 import Web.Stripe.Customer
+        ( TokenId
+        , Customer
+        , CustomerId
+        , customerId
+        , updateCustomer
+        , createCustomer
+        , deleteCustomer)
 
 import Crowdmatch.Model hiding (Patron(..))
 import qualified Crowdmatch.Model as Model

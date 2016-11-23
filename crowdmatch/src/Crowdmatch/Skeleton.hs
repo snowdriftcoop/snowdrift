@@ -10,7 +10,7 @@ module Crowdmatch.Skeleton where
 
 import Control.Error hiding (isNothing)
 import Control.Lens ((%~), _1, _2)
-import Control.Monad.IO.Class
+import Control.Monad.IO.Class (MonadIO)
 import Database.Esqueleto
 
 import Crowdmatch.Model

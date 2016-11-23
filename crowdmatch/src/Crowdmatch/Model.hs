@@ -17,13 +17,15 @@
 -- /not/ the type exported at the top level!
 module Crowdmatch.Model (module Crowdmatch.Model) where
 
-import Control.Lens
+import Control.Lens (Iso', iso)
 import Data.Monoid ((<>))
-import Control.Monad.IO.Class
-import Data.Time
+import Control.Monad.IO.Class (MonadIO, liftIO)
+import Data.Time (UTCTime)
 import Database.Persist.TH
-import Database.PostgreSQL.Simple
+        (share, mkPersist, mkMigrate, persistLowerCase, sqlSettings)
+import Database.PostgreSQL.Simple (Connection, withTransaction)
 import Database.PostgreSQL.Simple.Migration
+        (runMigration, MigrationContext(..), MigrationCommand(..))
 
 import Crowdmatch.ModelDataTypes as Crowdmatch.Model
 
