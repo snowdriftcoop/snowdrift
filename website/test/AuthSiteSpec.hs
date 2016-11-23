@@ -87,10 +87,10 @@ getSessionVal :: Handler Text
 getSessionVal = T.pack . show <$> lookupSession "_AUTHID"
 
 getProvisional :: Handler Text
-getProvisional = T.pack . show' <$> runDB (selectFirst [] [])
+getProvisional =
+    T.intercalate ", " . map extractEmail <$> runDB (selectList [] [])
   where
-    show' :: Maybe (Entity ProvisionalUser) -> String
-    show' = show
+    extractEmail = provisionalUserEmail . entityVal
 
 getUserR :: Text -> Handler Text
 getUserR = fmap (T.pack . show) . runDB . getBy . UniqueUsr
@@ -227,22 +227,28 @@ mainSpecs = withTestAuth Nothing $ withBob $ do
             get SessionVal >> bodyEquals "Nothing"
     describe "CreateAccountR" $ do
         it "creates a new ProvisionalUser" $ do
-            get Provisional >> bodyEquals "Nothing"
+            get Provisional >> bodyEquals ""
             createAA
-            get Provisional >> bodyContains "alice@example.com"
+            get Provisional >> bodyEquals "alice@example.com"
         it "doesn't mind if a user asks twice" $ do
             createAA
             createAA
-            get Provisional >> bodyContains "alice@example.com"
+            get Provisional >> bodyEquals "alice@example.com"
         it "doesn't create a provisional user if one already exists" $ do
             goCreate "bob@example.com" "zzzzzzzzzzzzz"
-            get Provisional >> bodyEquals "Nothing"
+            get Provisional >> bodyEquals ""
         it "sends VerifyUserCreation" $ do
             createAA
-            get MailMessage >> bodyContains "[VerifyUserCreation"
+            get MailMessage >> printBody >> bodyContains "[VerifyUserCreation"
         it "sends BadUserCreation" $ do
             goCreate "bob@example.com" "zzzzzzzzzzzzz"
             get MailMessage >> bodyContains "[BadUserCreation"
+        it "requires 9 characters in the passphrase" $ do
+            goCreate "bob1@example.com" "1234578"
+            get Provisional >> bodyEquals ""
+            goCreate "bob2@example.com" "12345789"
+            get Provisional >> bodyEquals "bob2@example.com"
+
     describe "VerifyAccountR" $ do
         it "creates an account with a good token" $ do
             v <- bypassProvisionalAA
@@ -296,7 +302,7 @@ mainSpecs = withTestAuth Nothing $ withBob $ do
             get Provisional >> bodyContains "bob@example.com"
         it "doesn't make a provisional user if the user dne" $ do
             goForget "alice@example.com" "ccccccccccccc"
-            get Provisional >> bodyEquals "Nothing"
+            get Provisional >> bodyEquals ""
         it "sends VerifyPassReset" $ do
             goForget "bob@example.com" "ccccccccccccc"
             get MailMessage >> bodyContains "[VerifyPassReset"
