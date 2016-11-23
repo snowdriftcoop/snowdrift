@@ -1,5 +1,6 @@
 module Avatar where
 
+import Control.Exception (PatternMatchFail)
 import Control.Lens
 import Network.Libravatar
 
@@ -16,13 +17,15 @@ getUserAvatar defaultRoute muser = do
 
   where
     libravatar :: Text -> Text -> IO Text
-    libravatar e defUrl = do
-        mavatar <-
-            avatarUrl (Email e)
-                      def
-                          { optSecure = True
-                          , optDefault = ImgCustom defUrl
-                          , optSize = DefaultSize
-                          , optTryGravatar = False
-                          }
-        return $ fromMaybe defUrl mavatar
+    libravatar e defUrl = fmap (fromMaybe defUrl)
+        (catch
+            (avatarUrl
+                (Email e)
+                def { optSecure = True
+                    , optDefault = ImgCustom defUrl
+                    , optSize = DefaultSize
+                    , optTryGravatar = False
+                    })
+            -- When developing with no internet connection, this exception
+            -- happens.
+            (\(_ :: PatternMatchFail) -> pure Nothing))

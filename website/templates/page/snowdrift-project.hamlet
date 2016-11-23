@@ -4,10 +4,17 @@
   The Snowdrift.coop project is supported by the very mechanism that it
   provides. This is the project that runs this very website!
 
-<form method=post action={{pledgeSnowdrift}}>
-  <button>
-    Pledge to Snowdrift.coop
-
+$maybe _ <- muid
+  $maybe since <- patronPledgeSince =<< mpatron
+    <p>
+      You have been pledged to Snowdrift since #{show since}.
+  $nothing
+    <form method=post action=@{PledgeSnowdriftR}>
+      <button>
+        Pledge to Snowdrift.coop
+$nothing
+  <a href=@{AuthR LoginR}>
+    Log in to pledge to this project!
 <.announcements>
   <h2>Announcements
   <ol>
@@ -18,24 +25,18 @@
 
 <h2>Crowdmatching
 <p>
-  Snowdrift currently has a crowd of {{numSnowdriftPatrons}} patrons.
-  The current value of a pledge is {{pledgeAmount}}<sup>1</sup>. The
-  next scheduled donation will take place on {{nextDonationDate}}.
+  Snowdrift currently has a crowd of #{projectCrowd project} patrons.
+  The current value of a pledge is #{projectPledgeValue project}, and the
+  project's monthly income is #{projectMonthlyIncome project}<sup>1</sup>.
 
-<h2>Donation History
-<.mockup>
-  {{if donationHistory}}
-...
-
-<.mockup>
-  {{else (no donationHistory)}}
-
-<p>
-  There is no donation history for Snowdrift.coop yet.
-
-<.mockup>
-  {{endif (donationHistory)}}
-
+$maybe _ <- patronPledgeSince =<< mpatron
+  <p>
+    If you would like to stop supporting Snowdrift.coop, you can remove
+    yourself from the crowd. Your fellow supporters will be sad to see you
+    go!
+    <form method=post action=@{PledgeSnowdriftR}>
+      ^{deletePledgeWidget}
+      <button>Unpledge from Snowdrift.coop
 <hr>
 <p>
   <sup>1</sup>: This amount will most likely change before the next

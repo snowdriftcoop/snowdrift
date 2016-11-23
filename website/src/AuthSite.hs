@@ -285,7 +285,7 @@ genVerificationToken Credentials{..} =
 privilegedCreateUser :: MonadIO m => VerifiedUser -> SqlPersistT m ()
 privilegedCreateUser VerifiedUser{..} = do
     now <- liftIO getCurrentTime
-    insert_ (User verifiedEmail verifiedDigest now now Nothing)
+    insert_ (User verifiedEmail verifiedDigest now now)
 
 -- | This privileged function must be used with care. It modifies the
 -- user's session; it's the difference between being logged in and not!
@@ -299,17 +299,13 @@ priviligedProvisionalUser :: MonadIO m
 priviligedProvisionalUser creds = do
     verf <- liftIO (genVerificationToken creds)
     prov <- liftIO (provisional creds verf)
-    _ <- upsertOn (UniqueProvisionalUser (provisionalUserEmail prov)) prov []
+    _ <- upsertBy (UniqueProvisionalUser (provisionalUserEmail prov)) prov []
     pure verf
   where
-    upsertOn uniqueKey record updates = do
-        mExists <- getBy uniqueKey
-        k <- case mExists of
-            Just (Entity k _) -> do
-              when (null updates) (replace k record)
-              return k
-            Nothing           -> insert record
-        Entity k `liftM` updateGet k updates
+    upsertBy uniqueKey record updates = do
+        mrecord <- getBy uniqueKey
+        maybe (insertEntity record) (`updateGetEntity` updates) mrecord
+    updateGetEntity (Entity k _) = fmap (Entity k) . updateGet k
 
 -- | Log out by deleting the session var
 logout :: Yesod master => HandlerT master IO ()
@@ -466,7 +462,7 @@ runToken tok = do
     upsertUser :: MonadIO m => VerifiedUser -> SqlPersistT m (Entity User)
     upsertUser VerifiedUser{..} = do
         now <- liftIO getCurrentTime
-        upsert (User verifiedEmail verifiedDigest now now Nothing)
+        upsert (User verifiedEmail verifiedDigest now now)
                [UserDigest =. verifiedDigest, UserPassUpdated =. now]
 
 redirectParent :: Route child -> HandlerT child (HandlerT master IO) b

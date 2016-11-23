@@ -27,7 +27,10 @@ Flag library-only
 
 -- library {{{1
 library
-    hs-source-dirs: src, app
+    hs-source-dirs: src
+
+    if flag(dev) || flag(library-only)
+        cpp-options:   -DDEVELOPMENT
 
     -- exposed-modules {{{2
     exposed-modules:
@@ -45,7 +48,10 @@ library
         Settings
         Settings.StaticFiles
         Handler
+        Handler.Dashboard
         Handler.PaymentInfo
+        Handler.Pledge
+        Handler.Project
         Handler.TH
         Handler.Util
         TestHooks
@@ -54,36 +60,26 @@ library
     -- other-modules {{{2
     other-modules:
         AuthSiteDataTypes
+        MarkupInstances
     -- }}}2
-
-    if flag(dev) || flag(library-only)
-        cpp-options:   -DDEVELOPMENT
-
-    default-extensions:
-        GADTs
-        GeneralizedNewtypeDeriving
-        LambdaCase
-        FlexibleContexts
-        MultiParamTypeClasses
-        NoImplicitPrelude
-        OverloadedStrings
-        QuasiQuotes
-        RecordWildCards
-        TemplateHaskell
-        TypeFamilies
-        ViewPatterns
 
     -- build-depends {{{2
     build-depends:
         base                     >= 4       && < 5
+        -- Snowdrift libs
+        , crowdmatch
+        -- Other
         , aeson                  >= 0.6     && < 0.12
         , blaze-html
         , bytestring             >= 0.9     && < 0.11
         , classy-prelude         >= 0.10.2
         , classy-prelude-yesod   >= 0.10.2
+        , data-default
         , errors
+        , esqueleto
         , fast-logger            >= 2.2     && < 2.5
         , file-embed
+        , formattable
         , hjsmin                 >= 0.1
         , http-client
         , lens
@@ -91,9 +87,10 @@ library
         , mime-mail
         , monad-logger           >= 0.3     && < 0.4
         , nonce
-        , persistent             >= 2.0     && < 2.3
-        , persistent-postgresql  >= 2.1.1   && < 2.3
-        , persistent-template    >= 2.0     && < 2.3
+        , persistent
+        , persistent-postgresql
+        , persistent-template
+        , postgresql-simple
         , pwstore-fast
         , shakespeare            >= 2.0     && < 2.1
         , stripe-haskell
@@ -112,6 +109,21 @@ library
         , yesod-gitrev
         , yesod-static           >= 1.4.0.3 && < 1.6
     -- }}}2
+
+    default-extensions:
+        GADTs
+        GeneralizedNewtypeDeriving
+        LambdaCase
+        FlexibleContexts
+        MultiParamTypeClasses
+        NoImplicitPrelude
+        OverloadedStrings
+        QuasiQuotes
+        RecordWildCards
+        ScopedTypeVariables
+        TemplateHaskell
+        TypeFamilies
+        ViewPatterns
 
     default-language: Haskell2010
 
@@ -163,6 +175,8 @@ test-suite test
         , hspec >= 2.0.0
         , http-types
         , persistent
+        , persistent-postgresql
+        , postgresql-simple
         , shakespeare
         , stripe-core
         , stripe-haskell

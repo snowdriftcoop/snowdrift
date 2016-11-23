@@ -6,6 +6,7 @@ import Import hiding ((.=))
 import Data.FileEmbed (embedFile)
 import qualified Data.HashMap.Strict as H
 
+import Handler.Dashboard
 import Handler.TH
 
 -- These handlers embed files in the executable at compile time to avoid a
@@ -25,15 +26,10 @@ getRobotsR = return $ TypedContent typePlain
 getHomeR :: Handler Html
 getHomeR = maybeAuth >>=
     maybe getWelcomeR
-          (const $(widget "page/dashboard" "Dashboard"))
+          (const getDashboardR)
 
 getWelcomeR :: Handler Html
 getWelcomeR = $(widget "page/welcome" "Snowdrift.coop — Free the Commons")
-
-getDashboardR :: Handler Html
-getDashboardR = do
-    _ <- requireAuth
-    $(widget "page/dashboard" "Dashboard")
 
 getHowItWorksR :: Handler Html
 getHowItWorksR = $(widget "page/how-it-works" "getHowItWorksR")
@@ -69,10 +65,6 @@ getJsLicensesR = $(widget "page/js-licenses" "getJsLicensesR")
 
 getMerchandiseR :: Handler Html
 getMerchandiseR = $(widget "page/merchandise" "getMerchandiseR")
-
--- | For MVP, there is one, hard-coded project: Snowdrift
-getSnowdriftProjectR :: Handler Html
-getSnowdriftProjectR = $(widget "page/snowdrift-project" "Snowdrift.coop Project")
 
 -- | Prevents breakage of external links to the old blog.
 getSnowdriftLegacyBlogR :: Text -> Handler Html

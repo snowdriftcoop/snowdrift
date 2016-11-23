@@ -4,12 +4,25 @@ flags:
 resolver: lts-6.17
 packages:
   - website
+  - crowdmatch
+  - run-persist
   - location:
       git: https://git.snowdrift.coop/sd/yesod.git
-      commit: 697d561eb727ed430f11c4b0bb19c9fc5f867db4
+      commit: 884c2ef15b005587829f157fb576fbfe747b98b1
     subdirs:
       - yesod-bin
+    extra-dep: true
+  - location:
+      git: https://git.snowdrift.coop/sd/persistent.git
+      commit: af5ec51e6b4b9255867e94916aef138c1968b85e
+    subdirs:
+      - persistent
+    extra-dep: true
+  - location:
+     git: https://git.snowdrift.coop/sd/postgresql-simple-migration-patches.git
+     commit: 8c4983b46fd12759a1d0be8d4460a59efbb704c2
     extra-dep: true
 extra-deps:
   - libravatar-0.4
   - titlecase-0.1.0.2
+  - formattable-0.1.1

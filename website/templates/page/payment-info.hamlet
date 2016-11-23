@@ -1,11 +1,15 @@
 <h1>Payment Information
-<h2>Registering New Information
+$maybe _ <- patronPaymentToken patron
+  <h2>Modifying Your Information
+  <p>
+    You can update your information using the form below.
+$nothing
+  <h2>Registering New Information
+  <p>
+    This page allows you to register payment information to become eligible
+    as a patron.
 <p>
-  This page allows you to register payment information to become eligible
-  as a patron. You can also update or change your information using the
-  same form.
-<p>
-  Snowdrift.coop does <em>not</em> hold on to this information. Your card
+  Snowdrift.coop does <em>not</em> hold on to your information. Your card
   details are held by <a href="https://stripe.com">Stripe</a>, which
   manages the money transfers.
 <p>
@@ -24,3 +28,12 @@
   $# Button is hidden until 'click' handler is installed.
   <button id=#{paymentButtonId} .hidden .bigbutton>Register a card
   ^{paymentWidget}
+
+$maybe _ <- patronPaymentToken patron
+  <h2>Deleting Your Information
+  <form method=post>
+    You can delete your payment info. All your pledges will be removed,
+    as well!
+    ^{deletePaymentInfoWidget}
+    <button>
+      Delete payment info and remove pledges

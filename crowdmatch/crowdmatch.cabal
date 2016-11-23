@@ -1,0 +1,112 @@
+name: crowdmatch
+version: 0.1.0.0
+synopsis: Crowdmatch mechanism for Snowdrift.coop
+description:
+    Provides an interface for managing pledges and donations. Includes
+    utilities for instigating a crowdmatch event and for sending
+    transactions via Stripe (or other transaction partners).
+homepage: https://snowdrift.coop
+license: AGPL-3
+license-file: LICENSE
+author: Bryan Richter
+maintainer: discuss@lists.snowdrift.coop
+copyright: Bryan Richter and Snowdrift.coop, 2016
+category: Database
+build-type: Simple
+-- extra-source-files:
+cabal-version: >=1.20
+
+-- library {{{1
+library
+    exposed-modules:
+        Crowdmatch
+        Crowdmatch.Model
+        Crowdmatch.ModelDataTypes
+        Crowdmatch.Skeleton
+    -- other-modules:
+    -- other-extensions:
+    hs-source-dirs: src
+    default-language: Haskell2010
+    build-depends:
+        base >=4.8 && <4.9
+        , errors
+        , lens
+        , esqueleto
+        , operational
+        , persistent
+        , persistent-template
+        , postgresql-simple
+        , postgresql-simple-migration
+        , stripe-core
+        , stripe-haskell
+        , text
+        , time
+        , transformers
+
+-- test-suite test {{{1
+test-suite test
+    type: exitcode-stdio-1.0
+    main-is: main.hs
+    hs-source-dirs: test
+    ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
+    default-language: Haskell2010
+    build-depends:
+        base
+        , bytestring
+        , crowdmatch
+        , directory
+        , hspec
+        , lens
+        , mtl
+        , operational
+        , persistent
+        , persistent-postgresql
+        , postgresql-simple
+        , QuickCheck
+        , run-persist
+        , safe-exceptions
+        , stripe-core
+        , text
+        , time
+        , transformers
+
+-- executable make-payments {{{1
+-- executable make-payments
+--     main-is: make-payments.hs
+--     hs-source-dirs: app, src
+--     default-language: Haskell2010
+--     ghc-options: -threaded -rtsopts -with-rtsopts=-N
+--     build-depends:
+--         base >=4.8 && <4.9
+--         -- , bytestring
+--         -- , lens
+--         , run-persist
+--         -- , stripe-haskell
+--         -- , stripe-core
+--     other-extensions:
+--         NoImplicitPrelude
+--         OverloadedStrings
+--         ScopedTypeVariables
+--         RecordWildCards
+--         GeneralizedNewtypeDeriving
+--         FlexibleContexts
+--         TupleSections
+--         LambdaCase
+
+-- executable crowdmatch {{{1
+-- executable crowdmatch
+--     main-is: crowdmatch.hs
+--     hs-source-dirs: app, src
+--     default-language: Haskell2010
+--     ghc-options: -threaded -rtsopts -with-rtsopts=-N
+--     build-depends:
+--         base >=4.8 && <4.9
+--         , run-persist
+--     default-extensions:
+--         NoImplicitPrelude
+--         OverloadedStrings
+--         ScopedTypeVariables
+--         RecordWildCards
+
+-- -- }}}1
+-- vim: fdm=marker :

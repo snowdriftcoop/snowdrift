@@ -13,28 +13,31 @@ module Application
     , db
     ) where
 
-import Control.Monad.Logger                 (liftLoc, runLoggingT)
-import Database.Persist.Postgresql          (createPostgresqlPool, pgConnStr,
-                                             pgPoolSize, runSqlPool)
 import Import
-import Language.Haskell.TH.Syntax           (qLocation)
+
+import Control.Monad.Logger (liftLoc, runLoggingT)
+import Crowdmatch (crowdmatchManualMigrations, migrateCrowdmatch)
+import Database.Persist.Postgresql
+        (createPostgresqlPool, pgConnStr, pgPoolSize, runSqlPool)
+import Database.Persist.Sql (runMigrationSilent)
+import Database.PostgreSQL.Simple (close, connectPostgreSQL)
+import Language.Haskell.TH.Syntax (qLocation)
 import Network.Wai (Middleware)
-import Network.Wai.Handler.Warp             (Settings, defaultSettings,
-                                             defaultShouldDisplayException,
-                                             runSettings, setHost,
-                                             setOnException, setPort, getPort)
-import Network.Wai.Middleware.RequestLogger (Destination (Logger),
-                                             IPAddrSource (..),
-                                             OutputFormat (..), destination,
-                                             mkRequestLogger, outputFormat)
-import System.Log.FastLogger                (defaultBufSize, newStdoutLoggerSet,
-                                             toLogStr)
+import Network.Wai.Handler.Warp
+        (Settings, defaultSettings, defaultShouldDisplayException, runSettings, setHost, setOnException, setPort, getPort)
+import Network.Wai.Middleware.RequestLogger
+        (Destination (Logger), IPAddrSource (..), OutputFormat (..), destination, mkRequestLogger, outputFormat)
+import System.Log.FastLogger
+        (defaultBufSize, newStdoutLoggerSet, toLogStr)
 import Web.Stripe
 import Web.Stripe.Error
 import qualified Yesod.GitRev as G
 
 import Handler
+import Handler.Dashboard
 import Handler.PaymentInfo
+import Handler.Pledge
+import Handler.Project
 
 {-# ANN module ("HLint: ignore Reduce duplication" :: String) #-}
 
@@ -83,10 +86,17 @@ makeFoundation appSettings = do
         (pgPoolSize $ appDatabaseConf appSettings)
 
     -- Perform database migration using our application's logging settings.
-    runLoggingT (runSqlPool (runMigration (migrateSnowdrift >> migrateAuthSite))
-                            pool)
-                logFunc
-
+    runLoggingT
+        (runSqlPool
+            (void $ runMigrationSilent
+                (migrateSnowdrift >> migrateAuthSite >> migrateCrowdmatch))
+            pool)
+        logFunc
+    -- Run post-automatic crowdmatch migrations
+    bracket
+        (connectPostgreSQL (pgConnStr (appDatabaseConf appSettings)))
+        close
+        crowdmatchManualMigrations
     -- Return the foundation
     return $ mkFoundation pool
 
