@@ -72,6 +72,7 @@ import Data.Typeable
 import Database.Persist.Sql
 import Yesod
 import qualified Crypto.Nonce as Nonce
+import qualified Data.Text as T
 
 -- Used to create a single, application-wide nonce token. I'm doing this
 -- out of expediency; Yesod.Auth uses it and nobody seems to care. But I
@@ -210,9 +211,13 @@ credentialsForm = Credentials
     <$> (AuthEmail <$>
             areq textField "What is your email?"{fsAttrs=emailAttrs}  Nothing)
     <*> (ClearPassphrase <$>
-            areq passwordField "Please tell us your passphrase, too." Nothing)
+            areq
+                passwordField
+                "Please tell us your passphrase, too."{fsAttrs=ppAttrs}
+                Nothing)
   where
     emailAttrs = [("autofocus",""), ("autocomplete","email")]
+    ppAttrs = [("minlength","9")]
 
 authSessionKey :: Text
 authSessionKey = "_AUTHID"
@@ -378,14 +383,17 @@ postCreateAccountR :: (Yesod master
 postCreateAccountR = do
     ((res, _), _) <- lift $ runFormPost (renderDivs credentialsForm)
     formResult
-        (\c@Credentials{..} -> do
-            mu <- lift (runDB (getBy (UniqueUsr (fromAuth credsIdent))))
-            lift $ sendAuthEmail credsIdent =<< maybe
+        (\c -> do
+            unless
+                (validPassphrase (credsPass c))
+                (passphraseError (credsIdent c))
+            mu <- lift (runDB (getBy (UniqueUsr (fromAuth (credsIdent c)))))
+            lift $ sendAuthEmail (credsIdent c) =<< maybe
                 (VerifyUserCreation . verifyToken
                     <$> runDB (priviligedProvisionalUser c))
                 (pure . const BadUserCreation)
                 mu
-            redirectParent VerifyAccountR)
+            redirectParent' VerifyAccountR)
         res
 
 -- | ResetPassphrase page
@@ -402,15 +410,31 @@ postResetPassphraseR :: (Yesod master
 postResetPassphraseR = do
     ((res, _), _) <- lift $ runFormPost (renderDivs credentialsForm)
     formResult
-        (\c@Credentials{..} -> do
-            mu <- lift (runDB (getBy (UniqueUsr (fromAuth credsIdent))))
-            lift $ sendAuthEmail credsIdent =<< maybe
+        (\c -> do
+            mu <- lift (runDB (getBy (UniqueUsr (fromAuth (credsIdent c)))))
+            lift $ sendAuthEmail (credsIdent c) =<< maybe
                 (pure BadPassReset)
                 (const $ VerifyPassReset . verifyToken
                     <$> runDB (priviligedProvisionalUser c))
                 mu
-            redirectParent VerifyAccountR)
+            redirectParent' VerifyAccountR)
         res
+
+-- | This should become part of the AuthSite interface
+validPassphrase :: ClearPassphrase -> Bool
+validPassphrase = (>= 9) . T.length . fromClear
+
+-- | What to do on passphrase error. Should also be part of the AuthSite
+-- interface.
+passphraseError
+    :: Yesod master
+    => AuthEmail
+    -> HandlerT AuthSite (HandlerT master IO) b
+passphraseError e = do
+    addMessage
+        "warning"
+        "Sorry, your passphrase was not accepted! Please try again."
+    redirectParent CreateAccountR [("auth", fromAuth e)]
 
 -- | VerifyAccount page
 --
@@ -454,10 +478,10 @@ runToken tok = do
             -- may want to modify this as well (or make it more
             -- accessible to front end devs).
             lift $ alertWarning "Uh oh, your token appears to be invalid!"
-            redirectParent LoginR
+            redirectParent' LoginR
         Just _ -> do
             lift $ alertSuccess "You are all set! Log in to continue."
-            redirectParent LoginR
+            redirectParent' LoginR
   where
     upsertUser :: MonadIO m => VerifiedUser -> SqlPersistT m (Entity User)
     upsertUser VerifiedUser{..} = do
@@ -465,7 +489,13 @@ runToken tok = do
         upsert (User verifiedEmail verifiedDigest now now)
                [UserDigest =. verifiedDigest, UserPassUpdated =. now]
 
-redirectParent :: Route child -> HandlerT child (HandlerT master IO) b
-redirectParent r = do
+redirectParent' :: Route child -> HandlerT child (HandlerT master IO) b
+redirectParent' route  = redirectParent route []
+
+redirectParent
+    :: Route child
+    -> [(Text, Text)]
+    -> HandlerT child (HandlerT master IO) b
+redirectParent r qs = do
     p <- getRouteToParent
-    lift (redirect (p r))
+    lift (redirect (p r, qs))
