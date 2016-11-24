@@ -239,14 +239,14 @@ mainSpecs = withTestAuth Nothing $ withBob $ do
             get Provisional >> bodyEquals ""
         it "sends VerifyUserCreation" $ do
             createAA
-            get MailMessage >> printBody >> bodyContains "[VerifyUserCreation"
+            get MailMessage >> bodyContains "[VerifyUserCreation"
         it "sends BadUserCreation" $ do
             goCreate "bob@example.com" "zzzzzzzzzzzzz"
             get MailMessage >> bodyContains "[BadUserCreation"
         it "requires 9 characters in the passphrase" $ do
-            goCreate "bob1@example.com" "1234578"
+            goCreate "bob1@example.com" "12345678"
             get Provisional >> bodyEquals ""
-            goCreate "bob2@example.com" "12345789"
+            goCreate "bob2@example.com" "123456789"
             get Provisional >> bodyEquals "bob2@example.com"
 
     describe "VerifyAccountR" $ do
@@ -322,7 +322,6 @@ mainSpecs = withTestAuth Nothing $ withBob $ do
         request $ do
             fillCredentialsForm e p
             setUrl (AuthSub CreateAccountR)
-        statusIs 303
     bypassProvisionalAA = bypassProvisional "alice@example.com" "aaaaaaaaaaaaa"
     bypassProvisionalBob = bypassProvisional "bob@example.com" "ccccccccccccc"
     bypassProvisional e p = do
