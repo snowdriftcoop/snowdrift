@@ -9,4 +9,12 @@
 
   <form method=post enctype=#{enctype}>
     ^{loginFields}
+    <p>
+      Please note that the best passphrase is a collection of random words.
+      We recommend using a generator and a master keyring!
+
+    <p>
+      To help ensure our system stays secure, we require your passphrase to
+      have at least nine characters.
+
     <button type=submit>Create account
