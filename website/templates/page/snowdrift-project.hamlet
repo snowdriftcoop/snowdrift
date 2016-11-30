@@ -10,6 +10,7 @@ $maybe _ <- muid
       You have been pledged to Snowdrift since #{show since}.
   $nothing
     <form method=post action=@{PledgeSnowdriftR}>
+      ^{pledgeNoCSRF}
       <button>
         Pledge to Snowdrift.coop
 $nothing

@@ -3,7 +3,7 @@ module Handler.Project (getSnowdriftProjectR) where
 import Import
 
 import Crowdmatch
-import Handler.Pledge (pledgeDeleteForm)
+import Handler.Pledge (pledgeDeleteForm, pledgeForm)
 import Handler.TH
 import MarkupInstances ()
 
@@ -13,6 +13,7 @@ getSnowdriftProjectR = do
     muid <- fmap entityKey <$> maybeAuth
     mpatron <- traverse (fetchPatron runDB) muid
     project <- fetchProject runDB
+    (pledgeNoCSRF, _) <- generateFormPost (renderDivs pledgeForm)
     deletePledgeWidget <-
         maybe (pure "") (const genDeleteWidget) (patronPledgeSince =<< mpatron)
     $(widget "page/snowdrift-project" "Snowdrift.coop Project")

@@ -35,9 +35,9 @@ deleteFromPost
     :: ( site ~ HandlerSite m
        , MonadHandler m
        , RenderMessage site FormMessage)
-    => AForm m Bool
+    => AForm m ()
 deleteFromPost =
-    areq hiddenField "do-delete" (Just True)
+    areq hiddenField "do-delete" (Just ())
 
 -- | Since forms can only GET or POST, this looks for a 'delete' parameter
 -- to mimic DELETE with a POST.

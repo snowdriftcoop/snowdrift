@@ -2,6 +2,7 @@ module Handler.Pledge
         ( postPledgeSnowdriftR
         , deletePledgeSnowdriftR
         , pledgeDeleteForm
+        , pledgeForm
         ) where
 
 import Import
@@ -36,9 +37,14 @@ postPledgeSnowdriftR = handleDelete' $ do
 pledgeDeleteFormId :: Text
 pledgeDeleteFormId = "pledge-delete"
 
-pledgeDeleteForm :: Form Bool
+pledgeDeleteForm :: Form ()
 pledgeDeleteForm =
     identifyForm pledgeDeleteFormId (renderDivsNoLabels deleteFromPost)
+
+-- | There is no data to submit with a pledge, since there is only one
+-- project to pledge to.
+pledgeForm :: AForm Handler ()
+pledgeForm = mempty
 
 deletePledgeSnowdriftR :: Handler Html
 deletePledgeSnowdriftR = do

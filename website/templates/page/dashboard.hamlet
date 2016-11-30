@@ -38,6 +38,7 @@ $nothing
       and continued work on the mechanism is the goal.
     $maybe _ <- patronPaymentToken patron
       <form method=post action=@{PledgeSnowdriftR}>
+        ^{pledgeNoCSRF}
         To join the crowdmatching system,
         <button>pledge now!
     $nothing

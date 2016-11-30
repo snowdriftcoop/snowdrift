@@ -50,7 +50,7 @@ delFormId, modFormId :: Text
 delFormId = "delete-payment-info"
 modFormId = "modify-payment-info"
 
-deletePaymentInfoForm :: Form Bool
+deletePaymentInfoForm :: Form ()
 deletePaymentInfoForm =
     identifyForm delFormId (renderDivsNoLabels deleteFromPost)
 
