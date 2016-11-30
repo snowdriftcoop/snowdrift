@@ -43,4 +43,4 @@ send-email: "_env:SD_EMAILS:false"
 # WARNING: Even the "testing" secret key should still be a secret. Contact
 # chreekat for assistance.
 stripe-secret-key: "_env:STRIPE_SECRET_KEY:"
-stripe-publishable-key: "_env:STRIPE_PUBLISHABLE_KEY:pk_test_eko6vI8zdg1VjsLhmqiVmHdy"
+stripe-publishable-key: "_env:STRIPE_PUBLISHABLE_KEY:"
