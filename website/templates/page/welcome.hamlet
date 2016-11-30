@@ -6,10 +6,21 @@
     <.background>
       <.plane .break4>
     <.foreground>
+    <.newsite-banner>
+      <p>
+        Welcome to the new Snowdrift.coop!
+      <p>
+        If you've been here before, welcome back. You'll notice a bunch of changes.
+      <p>
+        There were some growing pains. If you registered before, you may need to
+        <a href=@{AuthR ResetPassphraseR}>set/update your passphrase</a>.
+      <p>
+        Please look around, and
+        <a href=@{ContactR}>let us know</a> if you have any questions or feedback!
     <a href=@{HowItWorksR} .bigbutton>How it Works
     <div .home-text>
       <p>
         Like roads we all share, freely-licensed works are public goods that
-        benefit everyone. So, we need to cooperate to sustainably fund them.
+        benefit everyone. We need to cooperate to fund them sustainably.
       <p>
         <a href=@{AuthR LoginR} .join>Join us!
