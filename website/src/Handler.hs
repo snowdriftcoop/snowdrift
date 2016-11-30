@@ -6,7 +6,6 @@ import Import hiding ((.=))
 import Data.FileEmbed (embedFile)
 import qualified Data.HashMap.Strict as H
 
-import Css
 import Handler.Dashboard
 import Handler.TH
 
