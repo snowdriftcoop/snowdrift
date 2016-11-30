@@ -20,6 +20,8 @@
           <a href=@{PrivacyR}>Privacy Policy
         <li>
           <a href=@{TermsR}>Terms Of Use
+        <li>
+          <a href=@{ContactR}>Contact
     <div .col .span_4_of_12>
       <ul>
         <li>
@@ -40,9 +42,11 @@
                 title="GNU Affero GPL v3 or later"
                 href=https://www.gnu.org/licenses/agpl>
               GNU&nbsp;AGPLv3+</a>.
+            <!-- Currently not true because of stripe. :(
             All JavaScript on this site is
             <a href=@{JsLicensesR} rel=jslicense>
               freely-licensed</a>.
+            -->
   <div .section .group>
     <div .col .span_12_of_12 .supporters>
       <span>proud partners of

@@ -66,6 +66,9 @@ getJsLicensesR = $(widget "page/js-licenses" "getJsLicensesR")
 getMerchandiseR :: Handler Html
 getMerchandiseR = $(widget "page/merchandise" "getMerchandiseR")
 
+getContactR :: Handler Html
+getContactR = $(widget "page/contact" "getContactR")
+
 -- | Prevents breakage of external links to the old blog.
 getSnowdriftLegacyBlogR :: Text -> Handler Html
 getSnowdriftLegacyBlogR slug =
