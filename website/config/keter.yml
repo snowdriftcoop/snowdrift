@@ -2,6 +2,7 @@ stanzas:
     - type: webapp
       hosts:
           - snowdrift.coop
+          - www.snowdrift.coop
       exec: ../dist/bin/Snowdrift
       args: []
       env:
