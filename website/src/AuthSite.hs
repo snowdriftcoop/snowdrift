@@ -478,7 +478,7 @@ runToken tok = do
             -- may want to modify this as well (or make it more
             -- accessible to front end devs).
             lift $ alertWarning "Uh oh, your token appears to be invalid!"
-            redirectParent' LoginR
+            redirectParent' VerifyAccountR
         Just _ -> do
             lift $ alertSuccess "You are all set! Log in to continue."
             redirectParent' LoginR
