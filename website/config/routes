@@ -20,6 +20,7 @@
 /js-licenses JsLicensesR  GET
 /donate DonateR GET
 /merchandise MerchandiseR GET
+/contact ContactR GET
 
 /payment-info PaymentInfoR GET POST DELETE
 

@@ -1,0 +1,25 @@
+<h1>Contact Snowdrift.coop
+
+As a distributed team with a global pool of volunteers, Snowdrift operates
+almost entirely online. We primarily use mailing lists and IRC.
+
+<h2>Mailing Lists
+
+<p>
+  The web interface for our mailing lists is at
+  <a href="https://lists.snowdrift.coop">lists.snowdrift.coop</a>.
+
+
+<h2>Chat with the Snowdrift team and wider community on IRC!
+
+<p>
+  A JavaScript portal to our channel should open up below. Just pick a
+  username and get started.
+
+<p>
+  For more information about IRC, check out our
+  <a href="https://wiki.snowdrift.coop/community/irc"
+    >IRC wiki page</a>.
+
+<iframe src="https://kiwiirc.com/client/irc.freenode.net/#snowdrift"
+  style="border:0; width:100%; height:450px;"></iframe>
