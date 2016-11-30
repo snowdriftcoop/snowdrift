@@ -1,5 +1,15 @@
 <h1>Your crowdmatching dashboard
 
+<.sitelimit>
+  <p>
+    Our site-wide donation limit is $5 per month. This will be configurable
+    in the future, but for now it is static!
+  <p>
+    This limit ensures that you will
+    <em>never donate</em> more than $5 in one month. It also ensures you
+    will never be charged more than $5 in one month (since small donations
+    sometimes roll over to the next month).
+
 $maybe _ <- patronPledgeSince patron
   <p>
     You are currently pledged to one project,
