@@ -47,15 +47,15 @@ To remove any changes and reset your database to the devDB default
 (such as when others have provided a new update you want to try
 or to start clean before making changes you plan to commit) run:
 
-    ./sdb.hs reset
+    ./sdb.hs clean
 
 ### Sharing updates to the devDB database
 
 If you make specific improvements or additions to your database that you think
-will make for a better start for other contributors, use the following command
-to export the changes:
+will make for a better start for other contributors, use the `./sdb.hs env`
+command to get the code needed.
 
-    ./sdb.hs export
+*TODO: add instructions for how to use those commands for those unfamiliar* 
 
 Test that the export worked by running the reset command above and verifying in
 the running site that everything works as expected.

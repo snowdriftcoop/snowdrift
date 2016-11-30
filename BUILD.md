@@ -183,27 +183,17 @@ To stop the site, type `quit` in the terminal and then press Enter.
 
 Access the site in your browser at <http://localhost:3000>
 
-### Log-in options
-
-The development database comes with three default users (with username and
-passphrase the same):
-
-* admin
-* established
-* guest
-
 ### Using auth in development
 
-In addition to the default users, sometimes you may want to add a new account
-to help test changes. They could be features that affect user account creation,
-or you might set up multiple accounts to test different pledging scenarios.
+You may need to add a new account to reach certain places in the locally-running
+site.
 
 By default, the development site does not send out emails, which the
 authentication system uses to send out tokens for verification during
-registration and password reset. Instead, the auth token can be found on
-the debug output. After sending an auth form request, look for the
-following line, where `TOKEN` is a random alpha-numerical string that you
-can input when prompted to verify the request:
+registration and password reset. Instead, the auth token can be found on the
+debug output in the terminal. After sending an auth form request, look for the
+following line, where `TOKEN` is a random alpha-numerical string that you can
+input when prompted to verify the request:
 
     (AuthToken {fromAuthToken = "TOKEN"})
 

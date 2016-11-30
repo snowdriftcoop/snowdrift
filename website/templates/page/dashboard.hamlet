@@ -1,26 +1,43 @@
 <h1>Your crowdmatching dashboard
 
+<h2>Budget
 <.sitelimit>
   <p>
-    Our site-wide donation limit is $5 per month. This will be configurable
-    in the future, but for now it is static!
-  <p>
-    This limit ensures that you will
-    <em>never donate</em> more than $5 in one month. It also ensures you
-    will never be charged more than $5 in one month (since small donations
-    sometimes roll over to the next month).
+    You will <em>never</em> be charged more than your budget limit of $5 per
+    month. That level is our initial default. We will soon add the ability
+    to adjust your budget setting.
 
-$maybe _ <- patronPledgeSince patron
-  <p>
-    You are currently pledged to one project,
-    <a href=@{SnowdriftProjectR}>Snowdrift.coop</a>.
-  <p>
-    You are currently matching a crowd of #{projectCrowd project} patrons.
-    The current value of your pledge is #{projectPledgeValue project}<sup>1</sup>.
+<h2>Payment method
+$maybe _ <- patronPaymentToken patron
   <p>
     Your payment method is Stripe. You may
-    <a href=@{PaymentInfoR}>configure your payment settings</a>
-    (reminder: there is proprietary JavaScript on that page).
+    <a href=@{PaymentInfoR}>configure your payment settings
+    (reminder/apology: there is proprietary JavaScript on that page).
+$nothing
+  <.prop-js-note>
+    <p><b>Please note!</b>
+      At this stage of our beta, we are relying on Stripe's proprietary
+      JavaScript to maintain compliance in handling credit card information.
+    <p>
+      There's no technical reason for their JavaScript to be proprietary, but it
+      currently is. To avoid this in the future, we will need to implement a
+      method to take financial information and pass it, server-side, to Stripe's
+      API without storing any secure information ourselves. That would present
+      security concerns and technical challenges that we do not have the
+      resources to handle adequately at this time. We hope to eventually avoid
+      reliance on any proprietary software, but we have made this one compromise
+      for now.
+  <button>
+    <a href=@{PaymentInfoR}>Continue to payment settings
+
+<h2>Pledges
+$maybe _ <- patronPledgeSince patron
+  <p>
+    You are currently pledged to one project:
+    <a href=@{SnowdriftProjectR}>Snowdrift.coop
+  <p>
+    You are currently matching a crowd of #{projectCrowd project} patrons.
+    The current pledge value is #{projectPledgeValue project}<sup>1</sup>.
   <hr>
   <p>
     <sup>1</sup>: This amount will most likely change before the next
@@ -28,14 +45,7 @@ $maybe _ <- patronPledgeSince patron
 $nothing
   <.notpledged>
     <p>
-      You are not currently pledged to any projects!
-    <p>
-      Currently, Snowdrift.coop is operating in a semi-open beta. As we
-      develop the crowdmatching mechanism and prepare to support other FLO
-      projects, there is one project in particular that is given special
-      attention: Snowdrift itself! Enabling one (and only one) project
-      allows us to shake out the kinks of the system. Self-sustainability
-      and continued work on the mechanism is the goal.
+      You are not currently pledged to any projects.
     $maybe _ <- patronPaymentToken patron
       <form method=post action=@{PledgeSnowdriftR}>
         ^{pledgeNoCSRF}
@@ -44,11 +54,11 @@ $nothing
     $nothing
       <p>
         Before pledging, you must configure payment settings through
-        Stripe.
-      <p>
-        <b>Please note!</b> At this stage of our beta, we are relying on
-        Stripe's proprietary JavaScript to maintain compliance while
-        handling credit card information. (There's no technical reason
-        for it to be proprietary; I suspect it's just a lack of
-        priorities on their part.)
-      <p><a href=@{PaymentInfoR}>Continue to payment settings</a>
+        Stripe (see above).
+
+<h2>Beta note
+<p .beta-note>
+  Currently, Snowdrift.coop is operating in a semi-open beta. The Snowdrift site
+  and software itself is the first and only active project. Your support helps
+  us both to continue developing the platform and to do real-world testing to
+  address any issues before we begin supporting other FLO projects. Thank you!
