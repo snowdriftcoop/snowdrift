@@ -41,6 +41,10 @@ main () {
         rm -rf ${install_path}
         mkdir -p ${install_path}
         stack --work-dir .stack-work-deploy clean
+        # Have to do dependencies without --pedantic, since stack still
+        # rebuilds extra-deps specified as git repos after a clean. :(
+        # Refer to https://github.com/commercialhaskell/stack/issues/1295
+        stack --work-dir .stack-work-deploy build --dependencies-only
         stack --work-dir .stack-work-deploy --local-bin-path $install_path install --flag Snowdrift:-dev --pedantic
         hdr "Packing executables"
         find ${install_path} -type f -executable | xargs upx
@@ -52,7 +56,8 @@ main () {
     rm -rf static/tmp/*
     # This forces regeneration of the client session key, which will reset
     # everybody's sessions. This is a bug, but it's better than the current
-    # behavior of using whatever key is on my system. :| See #401.
+    # behavior of using whatever key is on my system. :|
+    # See https://tree.taiga.io/project/snowdrift/issue/401
     rm -f config/client_session_key.aes
     tar czf ${opt_appname}.keter ${contents[@]}
     if $opt_deploy

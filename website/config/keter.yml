@@ -1,11 +1,11 @@
 stanzas:
     - type: webapp
       hosts:
-          - dev.snowdrift.coop
+          - snowdrift.coop
       exec: ../dist/bin/Snowdrift
       args: []
       env:
-          APPROOT: https://dev.snowdrift.coop
+          APPROOT: https://snowdrift.coop
           PGHOST: localhost
           SD_EMAILS: "true"
 plugins:
