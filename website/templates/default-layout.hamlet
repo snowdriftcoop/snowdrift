@@ -1,11 +1,11 @@
 <div .grid>
 ^{navbar}
 <div .container>
+  $maybe msg <- mmsg
+    <div .alert .alert-info #message>
+      #{msg}
+  $maybe alert <- malert
+    #{alert}
   <div *{pageClasses}>
-    $maybe msg <- mmsg
-      <div .alert .alert-info #message>
-        #{msg}
-    $maybe alert <- malert
-      #{alert}
     ^{widget}
 ^{footer}

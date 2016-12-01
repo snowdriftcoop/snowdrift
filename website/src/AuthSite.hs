@@ -334,7 +334,12 @@ postLoginR = do
   where
     runAuthResult master = maybe
         (do
-            alertDanger [shamlet|Bad credentials:  <a href="https://tree.taiga.io/project/snowdrift/issue/455">See Taiga #455</a>.|]
+            render <- getUrlRenderParams
+            alertDanger ([hamlet|
+                The email or passphrase you entered
+                is incorrect. Please try again, or
+                <a href=@{master ResetPassphraseR}>reset your passphrase</a>.
+                |] render)
             redirect (master LoginR))
         (\u -> do
             priviligedLogin u
