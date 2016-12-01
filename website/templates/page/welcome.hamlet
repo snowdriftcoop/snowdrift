@@ -6,7 +6,7 @@
     <.background>
       <.plane .break4>
     <.foreground>
-    <.newsite-banner>
+    <.alert .alert-warning>
       <p>
         Hello,
       <p>
