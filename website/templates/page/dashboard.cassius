@@ -1,3 +1,5 @@
-.dashboard
-  .sitelimit
-    background-color: #{Red}
+.prop-js-note
+    border: solid red
+    padding: 1rem
+button
+    margin: 1em auto

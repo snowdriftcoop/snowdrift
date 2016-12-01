@@ -433,7 +433,7 @@ passphraseError
 passphraseError e = do
     addMessage
         "warning"
-        "Sorry, your passphrase was not accepted! Please try again."
+        "Sorry, passphrase must be at least nine characters. Please try again."
     redirectParent CreateAccountR [("auth", fromAuth e)]
 
 -- | VerifyAccount page
