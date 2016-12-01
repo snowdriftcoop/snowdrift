@@ -17,30 +17,20 @@ spec = withApp $ do
         it "gives a 200" $ do
             get FaviconR
             statusIs 200
-    describe "getHomeR" $ do
+    describe "getWelcomeR" $ do
         describe "browsing anonymously" $ do
             it "loads" $ do
-                get HomeR
+                get WelcomeR
                 statusIs 200
             it "has a link to /how-it-works" $ do
-                get HomeR
+                get WelcomeR
                 htmlHasLink HowItWorksR
-            it "is the same as /welcome" $ do
-                Just homeResponse <- get HomeR >> getResponse
-                Just welcomeResponse <- get WelcomeR >> getResponse
-                assertEqualContents homeResponse welcomeResponse
         describe "browsing while logged in" $ do
             it "loads" $ do
                 dummyLogin
                 printBody
-                get HomeR
+                get WelcomeR
                 statusIs 200
-            it "is the same as /dashboard" $ do
-                dummyLogin
-                get HomeR -- clear login alert
-                Just homeResponse <- get HomeR >> getResponse
-                Just dashboardResponse <- get DashboardR >> getResponse
-                assertEqualContents homeResponse dashboardResponse
     describe "getDashboardR" $ do
         it "requires login" $
             needsAuth DashboardR "GET"

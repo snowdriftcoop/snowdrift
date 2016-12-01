@@ -6,8 +6,7 @@
 /favicon.ico FaviconR GET
 /robots.txt RobotsR GET
 
-/ HomeR GET
-/welcome WelcomeR GET
+/ WelcomeR GET
 /dashboard DashboardR GET
 /how-it-works HowItWorksR GET
 /privacy PrivacyR GET

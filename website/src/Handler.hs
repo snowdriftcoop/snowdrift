@@ -21,13 +21,6 @@ getRobotsR :: Handler TypedContent
 getRobotsR = return $ TypedContent typePlain
                     $ toContent $(embedFile "config/robots.txt")
 
--- | Homepage is an introduction to the site for non-logged-in viewers, and
--- the dashboard for logged-in viewers.
-getHomeR :: Handler Html
-getHomeR = maybeAuth >>=
-    maybe getWelcomeR
-          (const getDashboardR)
-
 getWelcomeR :: Handler Html
 getWelcomeR = $(widget "page/welcome" "Crowdmatching for Public Goods")
 

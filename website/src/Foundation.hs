@@ -105,7 +105,7 @@ instance YesodPersistRunner App where
 -- Create the pages for auth
 instance AuthMaster App where
 
-    postLoginRoute _ = HomeR
+    postLoginRoute _ = DashboardR
     postLogoutRoute = postLoginRoute
 
     loginHandler = do

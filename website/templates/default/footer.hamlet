@@ -1,7 +1,7 @@
 <footer>
   <div .section .group>
     <div .col .span_12_of_12>
-      <a href=@{HomeR} .logo>
+      <a href=@{WelcomeR} .logo>
         <img src=@{StaticR img_logo_png} alt=Snowdrift.coop>
   <div .section .group>
     <div .col .span_4_of_12>

@@ -72,7 +72,7 @@ postPaymentInfoR = handleDelete delFormId deletePaymentInfoR $ do
                 Left e -> stripeError e
                 Right _ -> do
                     alertSuccess "Payment information stored"
-                    redirect HomeR
+                    redirect DashboardR
         _ -> do
             alertDanger "There was something wrong with your form submission."
             redirect PaymentInfoR
