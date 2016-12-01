@@ -29,16 +29,16 @@ getHomeR = maybeAuth >>=
           (const getDashboardR)
 
 getWelcomeR :: Handler Html
-getWelcomeR = $(widget "page/welcome" "Snowdrift.coop — Free the Commons")
+getWelcomeR = $(widget "page/welcome" "Crowdmatching for Public Goods")
 
 getHowItWorksR :: Handler Html
-getHowItWorksR = $(widget "page/how-it-works" "getHowItWorksR")
+getHowItWorksR = $(widget "page/how-it-works" "How it Works")
 
 getPrivacyR :: Handler Html
-getPrivacyR = $(widget "page/privacy" "getPrivacyR")
+getPrivacyR = $(widget "page/privacy" "Privacy")
 
 getTermsR :: Handler Html
-getTermsR = $(widget "page/terms" "getTermsR")
+getTermsR = $(widget "page/terms" "Terms of Use")
 
 getSearchR :: Handler Html
 getSearchR = do
@@ -46,28 +46,28 @@ getSearchR = do
     $(widget "page/search" "Search")
 
 getProjectsR :: Handler Html
-getProjectsR = $(widget "page/projects" "getProjectsR")
+getProjectsR = $(widget "page/projects" "Projects")
 
 getTrademarksR :: Handler Html
-getTrademarksR = $(widget "page/trademarks" "getTrademarksR")
+getTrademarksR = $(widget "page/trademarks" "Trademarks")
 
 getDonateR :: Handler Html
-getDonateR = $(widget "page/donate" "getDonateR")
+getDonateR = $(widget "page/donate" "Donate")
 
 getAboutR :: Handler Html
 getAboutR = $(widget "page/about" "getAboutR")
 
 getSponsorsR :: Handler Html
-getSponsorsR = $(widget "page/sponsors" "getSponsorsR")
+getSponsorsR = $(widget "page/sponsors" "Sponsors")
 
 getJsLicensesR :: Handler Html
-getJsLicensesR = $(widget "page/js-licenses" "getJsLicensesR")
+getJsLicensesR = $(widget "page/js-licenses" "JavaScript Licenses")
 
 getMerchandiseR :: Handler Html
-getMerchandiseR = $(widget "page/merchandise" "getMerchandiseR")
+getMerchandiseR = $(widget "page/merchandise" "Merchandise")
 
 getContactR :: Handler Html
-getContactR = $(widget "page/contact" "getContactR")
+getContactR = $(widget "page/contact" "Contact")
 
 -- | Prevents breakage of external links to the old blog.
 getSnowdriftLegacyBlogR :: Text -> Handler Html
