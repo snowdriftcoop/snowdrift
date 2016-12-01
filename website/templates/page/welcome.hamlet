@@ -8,15 +8,13 @@
     <.foreground>
     <.newsite-banner>
       <p>
-        Welcome to the new Snowdrift.coop!
+        Hello,
       <p>
-        If you've been here before, welcome back. You'll notice a bunch of changes.
-      <p>
-        There were some growing pains. If you registered before, you may need to
-        <a href=@{AuthR ResetPassphraseR}>set/update your passphrase</a>.
-      <p>
-        Please look around, and
-        <a href=@{ContactR}>let us know</a> if you have any questions or feedback!
+        We are making progress, but we aren't finished yet. We may have
+        reset your account, so please <a href=@{AuthR ResetPassphraseR}>reset
+        your passphrase</a> if necessary. Plus, the look and design of the site is
+        still changing. <a href=@{ContactR}>Let us know</a> if you
+        have any feedback!
     <a href=@{HowItWorksR} .bigbutton>How it Works
     <div .home-text>
       <p>
