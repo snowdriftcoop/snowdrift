@@ -70,10 +70,6 @@
     .join
         font-size: 2.5rem
         font-weight: 600
-    .newsite-banner
-        text-align: left
-        background-color: #{Gold}
-        padding: 0rem 1rem 0rem 1rem
 /*break1*/
 @media (min-width: 301px)
     .welcome
