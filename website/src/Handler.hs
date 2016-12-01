@@ -47,7 +47,7 @@ getDonateR :: Handler Html
 getDonateR = $(widget "page/donate" "Donate")
 
 getAboutR :: Handler Html
-getAboutR = $(widget "page/about" "getAboutR")
+getAboutR = $(widget "page/about" "About")
 
 getSponsorsR :: Handler Html
 getSponsorsR = $(widget "page/sponsors" "Sponsors")
