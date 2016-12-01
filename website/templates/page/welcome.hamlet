@@ -16,7 +16,7 @@
         still changing. <a href=@{ContactR}>Let us know</a> if you
         have any feedback!
     <a href=@{HowItWorksR} .bigbutton>How it Works
-    <div .home-text>
+    <.home-text>
       <p>
         Like roads we all share, freely-licensed works are public goods that
         benefit everyone. We need to cooperate to fund them sustainably.

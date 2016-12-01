@@ -1,14 +1,21 @@
 <h1>Donating to Snowdrift.coop
 <p>
-  Ironically, we need donations today to help us build a better fundraising
-  system for the future. Please donate today and help us continue our work.
-  Additionally or alternatively, please consider
-  <a href="https://wiki.snowdrift.coop/community/how-to-help">volunteering</a>.
+  Now that our crowdmatching system is in real testing, you can donate by
+  pledging within the system itself! In order to donate the most through that
+  system, the next step is to invite others to join the crowd and increase the
+  matching effect for everyone!
+<p>
+  Additionally during our beta testing / startup phase, we continue to welcome
+  larger grants from those who want to see us accelerate to full working
+  operations as soon as possible.
+<p>
+  If you have time to spare as well or instead of money, please
+  consider <a href="https://wiki.snowdrift.coop/community/how-to-help">volunteering</a>.
 
 <h2>Thank-you bonus options
 <ul>
   <li>
-    All donors may (if they choose) be listed among our official
+    All startup donors may (if they choose) be listed among our official
     <a href=@{SponsorsR}>launch sponsors
   <li>
     donate $12+ to get a
@@ -30,7 +37,7 @@
     Open Source Initiative
   specifying that they use the funds to support us, as we are now one of their
   incubator projects. Please
-  contact&nbsp;us
+  <a href=@{ContactR}>contact&nbsp;us
   to get details for this process.
   <img #osi-donate-logo src=@{StaticR img_external_osi_png}>
 <p>
