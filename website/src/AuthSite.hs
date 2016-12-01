@@ -333,11 +333,12 @@ postLoginR = do
   where
     runAuthResult master = maybe
         (do
-            alertDanger [shamlet|
-                The username or passphrase you entered
-                is incorrect, please try again or
-                <a href="/auth/reset-passphrase">reset the passphrase.
-            |]
+            render <- getUrlRenderParams
+            alertDanger ([hamlet|
+                The email or passphrase you entered
+                is incorrect. Please try again, or
+                <a href=@{master ResetPassphraseR}>reset your passphrase</a>.
+                |] render)
             redirect (master LoginR))
         (\u -> do
             priviligedLogin u
