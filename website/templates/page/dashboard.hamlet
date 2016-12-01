@@ -27,8 +27,7 @@ $nothing
       resources to handle adequately at this time. We hope to eventually avoid
       reliance on any proprietary software, but we have made this one compromise
       for now.
-  <button>
-    <a href=@{PaymentInfoR}>Continue to payment settings
+    <a .bigbutton href=@{PaymentInfoR}>Continue to payment settings
 
 <h2>Pledges
 $maybe _ <- patronPledgeSince patron
