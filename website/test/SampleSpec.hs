@@ -6,5 +6,5 @@ spec :: Spec
 spec = withApp $ do
     describe "various properties" $ do
         it "/home links to /privacy and /terms" $ do
-            get HomeR
+            get WelcomeR
             traverse_ htmlHasLink [PrivacyR, TermsR]

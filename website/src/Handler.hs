@@ -6,7 +6,6 @@ import Import hiding ((.=))
 import Data.FileEmbed (embedFile)
 import qualified Data.HashMap.Strict as H
 
-import Handler.Dashboard
 import Handler.TH
 
 -- These handlers embed files in the executable at compile time to avoid a
