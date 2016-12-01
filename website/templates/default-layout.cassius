@@ -40,7 +40,8 @@ body
     text-shadow: none
 
 p
-    margin-top: 1.5rem inherit 3rem
+    margin-top: 1.5rem
+    margin-bottom: 3rem
 img
     max-width: 100%
     height: auto
