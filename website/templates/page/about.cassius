@@ -1,5 +1,6 @@
 video
-    width: 100%
+    max-width: 100%
+    width: 800px
 
 figcaption
     color: #B22222
@@ -8,17 +9,19 @@ figcaption
     padding: 0.4em
     text-align: right
 
-.homepage-sections
-    background: whitesmoke
-
 .homepage-section
     padding: 10px
     margin-bottom: 10px
+    text-align: center
     h2, h3
         margin: 10px
-        text-align: center
 
 .homep-link
     font-weight: bold
     margin: 8px
     text-align: center
+
+p
+    text-align: left
+    max-width: 800px
+    margin: 1.5rem auto 3rem

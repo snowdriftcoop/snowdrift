@@ -1,13 +1,27 @@
 <h1>Project: Snowdrift.coop
 
 <p>
-  The Snowdrift.coop project is supported by the very mechanism that it
-  provides. This is the project that runs this very website!
+  This very website, Snowdrift.coop, is supported by its own crowdmatching
+  mechanism!
 
+<h2>Crowdmatching
+<p>
+  Snowdrift currently has a crowd of #{projectCrowd project} patrons.
+  The current value of a pledge is #{projectPledgeValue project}, and the
+  project's monthly income is #{projectMonthlyIncome project} (of course, this
+  amount will change as the number of patrons changes).
+
+<h2>Pledge
 $maybe _ <- muid
   $maybe since <- patronPledgeSince =<< mpatron
     <p>
       You have been pledged to Snowdrift since #{show since}.
+    <p>
+      If you wish to stop supporting Snowdrift.coop, you can remove yourself
+      from the crowd. Your fellow supporters will be sad to see you go!
+      <form method=post action=@{PledgeSnowdriftR}>
+        ^{deletePledgeWidget}
+        <button>Unpledge from Snowdrift.coop
   $nothing
     <form method=post action=@{PledgeSnowdriftR}>
       ^{pledgeNoCSRF}
@@ -16,29 +30,37 @@ $maybe _ <- muid
 $nothing
   <a href=@{AuthR LoginR}>
     Log in to pledge to this project!
+
+<hr>
 <.announcements>
-  <h2>Announcements
+  <h2>Updates and Announcements
   <ol>
     <li>
-      Recent blog post:
-      <a href="https://wiki.snowdrift.coop/blog/new-community-director">
-        "Hello Snowdrift.coop Community, ..."
-
-<h2>Crowdmatching
-<p>
-  Snowdrift currently has a crowd of #{projectCrowd project} patrons.
-  The current value of a pledge is #{projectPledgeValue project}, and the
-  project's monthly income is #{projectMonthlyIncome project}<sup>1</sup>.
-
-$maybe _ <- patronPledgeSince =<< mpatron
+      See the
+      <a href="https://wiki.snowdrift.coop/blog">blog
+      on our wiki
+    <li>
+      <a href="https://git.snowdrift.coop/sd/snowdrift#tab-activity">
+        Code activity at git.snowdrift.coop
+<.plans>
+  <h2>Plans
   <p>
-    If you would like to stop supporting Snowdrift.coop, you can remove
-    yourself from the crowd. Your fellow supporters will be sad to see you
-    go!
-    <form method=post action=@{PledgeSnowdriftR}>
-      ^{deletePledgeWidget}
-      <button>Unpledge from Snowdrift.coop
-<hr>
-<p>
-  <sup>1</sup>: This amount will most likely change before the next
-  donation, as the number of patrons changes.
+    We are currently working on improved explanations, videos, and web design to
+    express the details and importance of our crowdmatching system and the value
+    of public goods. We have much work to do finalizing a professional-quality
+    user interface for the process not only of pledging but for projects signing
+    up for the platform. We also have legal and structural work to do in
+    building out the full co-op governance.
+  <p>
+    For more details on what your donations support, see the
+    <a href="https://wiki.snowdrift.coop/planning">planning section of our wiki
+    and our project management stuff at
+    <a href="https://tree.taiga.io/project/snowdrift">our Taiga.io project
+<.transparency>
+  <h2>Transparency report
+  <p>
+    Although we hope to add a more standardized report eventually, we maintain a
+    wiki page with an
+    <a href="https://wiki.snowdrift.coop/operations/accounting">accounting summary
+    so patrons can understand how we have used funds in the past and where any
+    outside income comes from.

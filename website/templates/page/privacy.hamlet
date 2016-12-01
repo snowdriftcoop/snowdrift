@@ -2,7 +2,7 @@
 <p>
   <strong>
     <em>
-      Version 0.3 effective August 2, 2016
+      Version 0.4 effective December 1, 2016
 <p>
   <strong>
     Snowdrift.coop is dedicated to maintaining the utmost respect for user
@@ -19,7 +19,7 @@
     otherwise track you.
   <li>
     Anyone may anonymously view the site, but you must register an account to
-    edit a wiki, participate in discussions, or pledge as a patron. Your
+    edit a wiki page, participate in discussions, or pledge as a patron. Your
     account maintains a history of transactions such as which projects you have
     supported.
   <li>
@@ -29,15 +29,15 @@
     services, you should check their independent privacy policies.
   <li>
     No financial information (such as credit card numbers) is collected,
-    retained, or used by Snowdrift.coop.
+    retained, or used directly by Snowdrift.coop.
 
 <h2 id="policy-in-full">Policy in full
 <h3 id="personal-information">Personal information
 <p>
-  We consider "personal information" to mean either directly
-  identifiable information (such as your name or email address) or several
-  pieces of information that in combination may directly identify you, even if
-  each piece individually does not.
+  We consider "personal information" to mean either directly identifiable
+  information (such as your name or email address) or several pieces of
+  information that in combination may directly identify you, even if each piece
+  individually does not.
 <p>
   Also, if we store personal information with other information, we consider
   the combination to be personal.
@@ -47,14 +47,14 @@
   We collect information about you when:
 <ol>
   <li>
-    You give it to us directly (such as through a form when registering for
-    the site);
+    You give it to us directly (such as through a form when registering for the
+    site);
   <li>
-    We collect it automatically (such as your IP address when your browser
-    makes requests to our web servers);
+    We collect it automatically (such as your IP address when your browser makes
+    requests to our web servers);
   <li>
-    Someone else tells us something about you (such as when a payment
-    provider shares your email address after you make a deposit); or
+    Someone else tells us something about you (such as when a payment provider
+    shares your email address after you make a deposit); or
   <li>
     We perform analysis on aggregated user information (such as analyzing
     overall geographic distribution based on IP address).
@@ -65,16 +65,15 @@
       We do not use cookies for other tracking purposes nor do we retain them
       long-term.
   <li>
-    When you sign up with us, your email address is required. You can
-    browse Snowdrift.coop without logging in, but you must register an
-    account in order to participate in certain editing or discussions or to
-    donate to a project.
+    When you sign up with us, your email address is required. You can browse
+    Snowdrift.coop without logging in, but you must register an account in order
+    to participate in certain editing or discussions or to donate to a project.
   <li>
     We collect only basic server log data (browser ID, IP address, referring
     site, and time) and make no attempt to connect that with account
     information.
-    <strong>All analytics processing is done in-house, not by third-party contractors
-    . We do not store server logs any longer than necessary and we destroy old
+    <strong>All analytics processing is done in-house, not by third-party contractors.
+    We do not store server logs any longer than necessary and we destroy old
     information.
   <li>
     If you are a team leader who submits a project to Snowdrift.coop, we will

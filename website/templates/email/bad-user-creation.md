@@ -1,7 +1,7 @@
-Hello from Snowdrift!
+Hello from [Snowdrift.coop](https://snowdrift.coop)!
 
-Somebody tried to create an account on our site with your email address,
-but there is already an account that uses it!
+Somebody (maybe you) tried to create an account on our site with your email
+address, but there is already an account that uses it!
 
 If you need to reset your passphrase, visit
 <@{AuthR ResetPassphraseR}>.

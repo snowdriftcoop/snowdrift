@@ -21,15 +21,16 @@ $maybe _ <- patronPaymentToken patron
     (reminder/apology: there is proprietary JavaScript on that page).
 $nothing
   <.prop-js-note>
-    <p><b>Please note!</b>
+    <p>
+      <strong>Please note!
       At this stage of our beta, we are relying on Stripe's proprietary
       JavaScript to maintain compliance in handling credit card information.
     <p>
       There's no technical reason for their JavaScript to be proprietary, but it
       currently is. To avoid this in the future, we will need to implement a
       method to take financial information and pass it, server-side, to Stripe's
-      API without storing any secure information ourselves. That would present
-      security concerns and technical challenges that we do not have the
+      API without storing any secure information ourselves. That will still
+      present security concerns and technical challenges that we do not have the
       resources to handle adequately at this time. We hope to eventually avoid
       reliance on any proprietary software, but we have made this one compromise
       for now.

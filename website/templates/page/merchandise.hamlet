@@ -5,8 +5,8 @@
     <p>
       The following items are available to those who
       <a href=@{DonateR}>donate
-      to our launch development (or put in substantial time
-      <a href=#>volunteering</a>).
+      to our launch development outside of crowdmatching (or who put in
+      substantial time <a href="https://wiki.snowdrift.coop/community/how-to-help">volunteering</a>).
 <div .section .group>
   <div .col .span_12_of_12>
     <h2 #t-shirts>T-Shirts
