@@ -6,6 +6,12 @@
     You will <em>never</em> be charged more than your budget limit of $5 per
     month. That level is our initial default. We will soon add the ability
     to adjust your budget setting.
+  <p>
+    Each month, we set your donations based on pledge values at that time. In
+    order to keep processing fees under 10% for any charge, we may delay
+    processing of small donations and then combine multiple months' donations in
+    a single charge (adjusting to make sure all charges stay within your budget
+    limit.
 
 <h2>Payment method
 $maybe _ <- patronPaymentToken patron
@@ -36,11 +42,8 @@ $maybe _ <- patronPledgeSince patron
     <a href=@{SnowdriftProjectR}>Snowdrift.coop
   <p>
     You are currently matching a crowd of #{projectCrowd project} patrons.
-    The current pledge value is #{projectPledgeValue project}<sup>1</sup>.
-  <hr>
-  <p>
-    <sup>1</sup>: This amount will most likely change before the next
-    donation, as the number of patrons changes.
+    The current pledge value is #{projectPledgeValue project}.
+    Of course, this amount will change as the number of patrons changes.
 $nothing
   <.notpledged>
     <p>
@@ -60,4 +63,6 @@ $nothing
   Currently, Snowdrift.coop is operating in a semi-open beta. The Snowdrift site
   and software itself is the first and only active project. Your support helps
   us both to continue developing the platform and to do real-world testing to
-  address any issues before we begin supporting other FLO projects. Thank you!
+  address immediate issues. As soon as everything is working cleanly enough and
+  all important concerns are handled, we will begin supporting other FLO
+  projects. Thank you for helping us clear the path!
