@@ -11,7 +11,7 @@
     order to keep processing fees under 10% for any charge, we may delay
     processing of small donations and then combine multiple months' donations in
     a single charge (adjusting to make sure all charges stay within your budget
-    limit.
+    limit).
 
 <h2>Payment method
 $maybe _ <- patronPaymentToken patron
