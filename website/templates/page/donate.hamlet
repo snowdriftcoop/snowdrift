@@ -13,10 +13,10 @@
   consider <a href="https://wiki.snowdrift.coop/community/how-to-help">volunteering</a>.
 
 <h2>Thank-you bonus options
+<p>
+  All startup donors may (if they choose) be listed among our official
+  <a href=@{SponsorsR}>launch sponsors
 <ul>
-  <li>
-    All startup donors may (if they choose) be listed among our official
-    <a href=@{SponsorsR}>launch sponsors
   <li>
     donate $12+ to get a
     <a href=@{MerchandiseR}#stickers>sticker
@@ -30,6 +30,7 @@
 <.donate-option #osi-donate>
 <h2>Tax-deductible donations under 501(c)(3)
 <p>
+  <img #osi-donate-logo src=@{StaticR img_external_osi_png}>
   Snowdrift.coop is incorporated as a Michigan non-profit cooperative but does
   not currently have independent federal tax-exempt status. However, you can
   donate under 501(c)(3) to the
@@ -39,7 +40,6 @@
   incubator projects. Please
   <a href=@{ContactR}>contact&nbsp;us
   to get details for this process.
-  <img #osi-donate-logo src=@{StaticR img_external_osi_png}>
 <p>
   Note: As the OSI takes a modest administrative fee, it makes sense to donate
   directly to us if you do not need 501(c)(3) terms.
@@ -48,9 +48,8 @@
 <p>
   The following options offer easy ways to donate directly to us. Such donations
   are not tax-deductible.
-
+<hr>
 <.donate-option #paypal-donate>
-  <img alt=Paypal src=@{StaticR img_external_PayPal_logo_gif}>
   <form #paypal-button
     abframeid=iframe.0.4323007988200692
     abineguid=E620BEBBFF4F4B1695F2E9204A329253
@@ -64,20 +63,20 @@
       name=submit
       src=@{StaticR img_external_paypal_donate_gif}
       type=image>
-
+    <img #paypal-logo alt=Paypal src=@{StaticR img_external_PayPal_logo_gif}>
   <p #avoid-paypal-fees>
     Note: the convenient button above works with or without a Paypal account,
     but it costs us a 2.9% + $0.30 fee. To skip the fee, log-in to Paypal and
     send funds to aaron@snowdrift.coop funded by your bank or Paypal balance
     (not by credit card or paypal credit) and marked as a gift.
-
+<hr>
 <.donate-option #dwolla-donate>
   <a href=https://www.dwolla.com/hub/snowdrift>
     <img alt="Donate with Dwolla" src=@{StaticR img_external_dwolla_png}>
   <p>
     Dwolla charges no fees but is U.S.-only and requires set up with a bank
     account.
-
+<hr>
 <.donate-option #bitcoin-donate>
   <img alt=Bitcoin src=@{StaticR img_external_Bitcoin_png}>
   <pre>
