@@ -1,3 +1,10 @@
-#paypal-donate
-#paypal-button
+.donate
+    max-width: 78rem
     margin: 0 auto
+#paypal-button, #dwolla-donate
+    text-align: center
+#osi-donate-logo
+    float: right
+    margin: 1rem
+#paypal-logo
+    margin: 2rem
