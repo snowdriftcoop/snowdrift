@@ -344,7 +344,7 @@ postLoginR = do
         (\u -> do
             priviligedLogin u
             alertInfo "Welcome"
-            redirect =<< (postLoginRoute <$> getYesod))
+            redirectUltDest =<< (postLoginRoute <$> getYesod))
 
 formResult :: (Yesod master
               ,MonadTrans child)
