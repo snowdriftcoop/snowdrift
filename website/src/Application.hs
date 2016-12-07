@@ -35,6 +35,7 @@ import qualified Yesod.GitRev as G
 
 import Handler
 import Handler.Dashboard
+import Handler.Discourse
 import Handler.PaymentInfo
 import Handler.Pledge
 import Handler.Project

@@ -26,6 +26,8 @@
 /p/snowdrift SnowdriftProjectR GET
 /pledge/snowdrift PledgeSnowdriftR POST DELETE
 
+/discourse/sso DiscourseR GET
+
 -- ## Backward compatibility routes
 
 -- Prevents breakage of external links to the old wiki. See

@@ -51,6 +51,7 @@ data AppSettings = AppSettings
     -- ^ Whether to send emails
     , appStripeSecretKey        :: StripeKey
     , appStripePublishableKey   :: StripeKey
+    , appDiscourseSsoSecret     :: ByteString
     }
 
 instance FromJSON AppSettings where
@@ -76,6 +77,7 @@ instance FromJSON AppSettings where
         appSendMail               <- o .:? "send-email"       .!= not runningDevelopment
         appStripePublishableKey   <- StripeKey . encodeUtf8 <$> o .: "stripe-publishable-key"
         appStripeSecretKey        <- StripeKey . encodeUtf8 <$> o .: "stripe-secret-key"
+        appDiscourseSsoSecret     <- encodeUtf8 <$> o .: "discourse-sso-secret"
 
         return AppSettings {..}
 
