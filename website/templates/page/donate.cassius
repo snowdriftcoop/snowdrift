@@ -1,7 +1,7 @@
 .donate
     max-width: 78rem
     margin: 0 auto
-#paypal-button, #dwolla-donate
+#paypal-button
     text-align: center
 #osi-donate-logo
     float: right

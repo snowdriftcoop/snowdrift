@@ -70,13 +70,6 @@
     send funds to aaron@snowdrift.coop funded by your bank or Paypal balance
     (not by credit card or paypal credit) and marked as a gift.
 <hr>
-<.donate-option #dwolla-donate>
-  <a href=https://www.dwolla.com/hub/snowdrift>
-    <img alt="Donate with Dwolla" src=@{StaticR img_external_dwolla_png}>
-  <p>
-    Dwolla charges no fees but is U.S.-only and requires set up with a bank
-    account.
-<hr>
 <.donate-option #bitcoin-donate>
   <img alt=Bitcoin src=@{StaticR img_external_Bitcoin_png}>
   <pre>
