@@ -1,10 +1,11 @@
-module Handler.Discourse (getDiscourseR) where
+module Handler.Discourse (getDiscourseR, getDiscourseRedirectR) where
 
 import Import
 import Control.Lens
 import Control.Monad.Trans.Except
 import Avatar
 import Discourse
+import qualified Data.Text as T
 
 getDiscourseR :: Handler Html
 getDiscourseR = do
@@ -47,3 +48,14 @@ getDiscourseR = do
     case result of
         Left err  -> invalidArgs [err]
         Right url -> redirect url
+
+
+getDiscourseRedirectR :: Handler Html
+getDiscourseRedirectR = do
+    muser <- maybeAuth
+    durl <- getsYesod $ appDiscourseRootUrl . appSettings
+    redirect $ T.append durl $ maybe T.empty addSSO muser
+
+    where
+        addSSO :: a -> T.Text
+        addSSO _ = T.pack "/session/sso"

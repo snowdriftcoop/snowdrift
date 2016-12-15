@@ -52,6 +52,7 @@ data AppSettings = AppSettings
     , appStripeSecretKey        :: StripeKey
     , appStripePublishableKey   :: StripeKey
     , appDiscourseSsoSecret     :: ByteString
+    , appDiscourseRootUrl       :: Text
     }
 
 instance FromJSON AppSettings where
@@ -78,6 +79,7 @@ instance FromJSON AppSettings where
         appStripePublishableKey   <- StripeKey . encodeUtf8 <$> o .: "stripe-publishable-key"
         appStripeSecretKey        <- StripeKey . encodeUtf8 <$> o .: "stripe-secret-key"
         appDiscourseSsoSecret     <- encodeUtf8 <$> o .: "discourse-sso-secret"
+        appDiscourseRootUrl       <- o .: "discourse-root-url"
 
         return AppSettings {..}
 
