@@ -1,21 +1,25 @@
 <h1>Donating to Snowdrift.coop
+<h2>The crowdmatch pledge
 <p>
   Now that our crowdmatching system is in real testing, you can donate by
-  pledging within the system itself! In order to donate the most through that
-  system, the next step is to invite others to join the crowd and increase the
-  matching effect for everyone!
-<p>
-  Additionally during our beta testing / startup phase, we continue to welcome
-  larger grants from those who want to see us accelerate to full working
-  operations as soon as possible.
+  <a href=@{SnowdriftProjectR}>pledging within the system itself!
+  Then, in order to donate the most and see us succeed, the next step is to
+  invite others to join the crowd and increase the matching effect for everyone!
+<h2>Volunteering
 <p>
   If you have time to spare as well or instead of money, please
   consider <a href="https://wiki.snowdrift.coop/community/how-to-help">volunteering</a>.
-
-<h2>Thank-you bonus options
+<h2>Separate grants
 <p>
-  All startup donors may (if they choose) be listed among our official
+  During our beta testing / startup phase, we continue to welcome larger grants
+  from those who want to see us accelerate to full working operations and
+  supporting multiple projects.
+
+<h3>Thank-you bonus options
+<p>
+  All startup grant donors may (if they choose) be listed among our official
   <a href=@{SponsorsR}>launch sponsors
+  and also may request the following thank-you gifts:
 <ul>
   <li>
     donate $12+ to get a
@@ -28,7 +32,7 @@
   <li>at $500+ we will list you as a key sponsor
 
 <.donate-option #osi-donate>
-<h2>Tax-deductible donations under 501(c)(3)
+<h3>Tax-deductible donations under 501(c)(3)
 <p>
   <img #osi-donate-logo src=@{StaticR img_external_osi_png}>
   Snowdrift.coop is incorporated as a Michigan non-profit cooperative but does
@@ -44,7 +48,7 @@
   Note: As the OSI takes a modest administrative fee, it makes sense to donate
   directly to us if you do not need 501(c)(3) terms.
 
-<h2>Direct donations
+<h3>Direct donations
 <p>
   The following options offer easy ways to donate directly to us. Such donations
   are not tax-deductible.
