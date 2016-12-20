@@ -442,10 +442,6 @@ here are some resources (nearly all fully-FLO):
       uses the CC-BY-NC-SA license, so it is shareable but not fully FLO,
       unfortunately.
 
-*   Web browsers today have built-in developer tools which enable testing
-    and experimenting with live websites. The [Firebug](https://getfirebug.com)
-    plugin offers some additional functions as well.
-
 *   [CanIUse.com](http://caniuse.com/) is a reference website to check that all
     web features you use are compatible with various browsers and standards.
     The CanIUse data is fully FLO under a CC-BY license.
