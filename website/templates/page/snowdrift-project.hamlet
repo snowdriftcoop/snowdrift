@@ -8,8 +8,8 @@
 <p>
   Snowdrift currently has a crowd of #{projectCrowd project} patrons.
   The current value of a pledge is #{projectPledgeValue project}, and the
-  project's monthly income is #{projectMonthlyIncome project} (of course, this
-  amount will change as the number of patrons changes).
+  project's monthly income is #{projectMonthlyIncome project}.
+  Of course, these numbers will change as the number of patrons changes.
 
 <h2>Pledge
 $maybe _ <- muid
