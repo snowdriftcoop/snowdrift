@@ -71,5 +71,5 @@ Our text and graphics documents (non-program-code) are also licensed under
 [IRC]: https://wiki.snowdrift.coop/community/irc
 [other email lists]: https://lists.snowdrift.coop/
 [Snowdrift.coop]: https://snowdrift.coop/
-[ticket system at Taiga.io]: https://tree.taiga.io/project/snowdrift/issues
+[ticket system at Taiga.io]: https://tree.taiga.io/project/snowdrift-dev/issues
 [Yesod web framework]: http://www.yesodweb.com/
