@@ -30,7 +30,7 @@ as appropriate.
 Install Git and needed libraries:
 
     sudo yum update
-    sudo yum install ncurses-devel gmp-devel zlib-devel git
+    sudo yum install ncurses-devel gmp-devel zlib-devel git openssl-devel
 
 For newer versions of Fedora, replace the `yum` commands with `dnf`. Install the
 following libraries if you don't already have them:
