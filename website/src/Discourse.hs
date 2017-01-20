@@ -2,14 +2,17 @@ module Discourse where
 
 import Prelude
 
-import Control.Monad.Trans.Except
+import Control.Error ((??), fmapL)
+import Control.Monad.Trans.Except (except, runExcept, throwE)
 import Crypto.Hash.Algorithms (SHA256)
-import Crypto.MAC.HMAC
+import Crypto.MAC.HMAC (hmac, HMAC, hmacGetDigest)
+import Data.ByteArray (constEq)
 import Data.ByteArray.Encoding
 import Data.ByteString (ByteString)
 import Data.Maybe (catMaybes)
-import Data.Text (Text, pack)
+import Data.Text (Text, append, pack)
 import Data.Text.Encoding (encodeUtf8, decodeUtf8')
+import Data.Text.Encoding.Error (UnicodeException(..))
 import Network.HTTP.Types.URI (renderSimpleQuery, parseSimpleQuery)
 
 import qualified Data.ByteString as B (drop)
@@ -27,6 +30,23 @@ data UserInfo = UserInfo
     , ssoAvatarUrl :: Maybe Text
     , ssoBio       :: Maybe Text
     }
+
+-- | DataType to handle Discourse Payload error messages.
+data DiscoursePayloadError = NoPayload
+                           | NoSignature
+                           | InvalidSignature
+                           | InvalidPayload Text
+                           | PayloadMissingNonce
+                           | PayloadMissingURL
+
+-- | Pretty Formatting of DiscoursePayloadError
+getDPErrorMsg :: DiscoursePayloadError -> Text
+getDPErrorMsg NoPayload = "No payload was received from Discourse."
+getDPErrorMsg NoSignature = "The required validation signature was not received from Discourse."
+getDPErrorMsg InvalidSignature = "The validation signature received from Discourse could not be validated."
+getDPErrorMsg (InvalidPayload msg) = append "Invalid Payload: " msg
+getDPErrorMsg PayloadMissingNonce = "The payload received from Discourse is missing the required nonce."
+getDPErrorMsg PayloadMissingURL = "The payload received from Discourse is missing the required return URL."
 
 -- | Type restricted convenience wrapper that computes our HMAC.
 hmacSHA256 :: ByteString -> ByteString -> HMAC SHA256
@@ -50,23 +70,27 @@ validateSig
     -> ByteString -- ^ Base64 encoded payload sent by Discourse in the query
     -> ByteString -- ^ Signature sent by Discourse in the query
     -> Bool       -- ^ Whether the computed sig and one passed are identical
-validateSig secret payload signature = generateSig secret payload == signature
+validateSig secret payload signature = generateSig secret payload
+                                       `constEq`
+                                        signature
 
 -- | Get the nonce and the return URL from the payload by decoding from Base64
 -- and extracting the parameter values.
 --
 -- We use lenient decoding here because Discourse doesn't seem to add the
 -- necessary padding for strictly by-the-spec Base64 encoding.
-parsePayload :: ByteString -> Either String (ByteString, Text)
+parsePayload :: ByteString -> Either DiscoursePayloadError (ByteString, Text)
 parsePayload b = runExcept $ do
-    let params = parseSimpleQuery $ B64.decodeLenient b
-    nonce <- maybe (throwE "Nonce is missing") return $ lookup "nonce" params
-    burl <- maybe (throwE "URL is missing") return $
-        lookup "return_sso_url" params
-    let mapLeft f (Left x)  = Left $ f x
-        mapLeft _ (Right x) = Right x
-    url <- except $ mapLeft show $ decodeUtf8' burl
+    nonce <- lookup "nonce" params ?? PayloadMissingNonce
+    burl <- lookup "return_sso_url" params ?? PayloadMissingURL
+    url <- except $ fmapL packError $ decodeUtf8' burl
     return (nonce, url)
+    where
+        params = parseSimpleQuery $ B64.decodeLenient b
+        packError :: UnicodeException -> DiscoursePayloadError
+        packError (DecodeError x _) = InvalidPayload $ pack x
+        packError _ = InvalidPayload $ pack ""
+
 
 -- | Compute Base64 encoded payload to send back to Discourse after login
 userInfoPayload

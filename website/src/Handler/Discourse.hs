@@ -12,17 +12,17 @@ getDiscourseR = do
     result <- runExceptT $ do
         -- Extract payload param
         mpayload <- lift $ fmap encodeUtf8 <$> lookupGetParam "sso"
-        payload <- maybe (throwE "No payload") return mpayload
+        payload <- maybe (throwE NoPayload) return mpayload
         -- Extract sig param
         msig <- lift $ fmap encodeUtf8 <$> lookupGetParam "sig"
-        sig <- maybe (throwE "No sig") return msig
+        sig <- maybe (throwE NoSignature) return msig
         -- Get SSO secret from settings
         secret <- lift $ getsYesod $ appDiscourseSsoSecret . appSettings
         -- Verify signature
-        unless (validateSig secret payload sig) $ throwE "Signature is invalid"
+        unless (validateSig secret payload sig) $ throwE InvalidSignature
         -- Extract nonce and return URL from payload
         (nonce, baseUrl) <- case parsePayload payload of
-            Left err -> throwE $ "Payload invalid: " <> pack err
+            Left err -> throwE err
             Right p  -> return p
         -- Perform authentication and fetch user info
         Entity uid u <- lift requireAuth
@@ -46,7 +46,7 @@ getDiscourseR = do
         let params = [("sso", uinfoPayload), ("sig", uinfoSig)]
         return $ baseUrl <> decodeUtf8 (renderSimpleQuery True params)
     case result of
-        Left err  -> invalidArgs [err]
+        Left err  -> invalidArgs [(getDPErrorMsg err)]
         Right url -> redirect url
 
 

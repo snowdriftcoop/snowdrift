@@ -46,5 +46,5 @@ stripe-secret-key: "_env:STRIPE_SECRET_KEY:"
 stripe-publishable-key: "_env:STRIPE_PUBLISHABLE_KEY:"
 
 # Discourse SSO
-discourse-root-url: "http://localhost"
-discourse-sso-secret: "snowdrift_sso"
+discourse-root-url: "_env:DISCOURSE_ROOT_URL:http://localhost"
+discourse-sso-secret: "_env:DISCOURSE_SSO_SECRET:snowdrift_sso"
