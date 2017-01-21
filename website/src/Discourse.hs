@@ -3,7 +3,7 @@ module Discourse where
 import Prelude
 
 import Control.Error ((??), fmapL)
-import Control.Monad.Trans.Except (except, runExcept, throwE)
+import Control.Monad.Trans.Except (Except (..), except, runExcept, throwE)
 import Crypto.Hash.Algorithms (SHA256)
 import Crypto.MAC.HMAC (hmac, HMAC, hmacGetDigest)
 import Data.ByteArray (constEq)
@@ -29,6 +29,11 @@ data UserInfo = UserInfo
     , ssoFullName  :: Maybe Text
     , ssoAvatarUrl :: Maybe Text
     , ssoBio       :: Maybe Text
+    }
+
+data DiscoursePayload = DiscoursePayload
+    { dpNonce   :: ByteString
+    , dpUrl     :: Text
     }
 
 -- | DataType to handle Discourse Payload error messages.
@@ -79,15 +84,14 @@ validateSig secret payload signature = generateSig secret payload
 --
 -- We use lenient decoding here because Discourse doesn't seem to add the
 -- necessary padding for strictly by-the-spec Base64 encoding.
-parsePayload :: ByteString -> Either DiscoursePayloadError (ByteString, Text)
+parsePayload :: ByteString -> Either DiscoursePayloadError DiscoursePayload
 parsePayload b = runExcept $ do
     nonce <- lookup "nonce" params ?? PayloadMissingNonce
     burl <- lookup "return_sso_url" params ?? PayloadMissingURL
     url <- except $ fmapL packError $ decodeUtf8' burl
-    return (nonce, url)
+    return $ DiscoursePayload nonce url
     where
         params = parseSimpleQuery $ B64.decodeLenient b
-        packError :: UnicodeException -> DiscoursePayloadError
         packError (DecodeError x _) = InvalidPayload $ pack x
         packError _ = InvalidPayload $ pack ""
 
@@ -97,14 +101,15 @@ userInfoPayload
     :: ByteString -- ^ Raw nonce string we extracted from input payload
     -> UserInfo   -- ^ Info about the user we pass back to Discourse
     -> ByteString
-userInfoPayload nonce uinfo =
-    let query = catMaybes $ map (\ (name, mval) -> fmap (name,) mval)
+userInfoPayload nonce uinfo = convertToBase Base64 $
+                                            renderSimpleQuery False query
+    where
+        query = catMaybes $ map (uncurry (fmap . (,)))
             [ ("nonce"      , Just nonce)
             , ("email"      , Just $ encodeUtf8 $ ssoEmail uinfo)
             , ("external_id", Just $ encodeUtf8 $ pack $ show $ ssoId uinfo)
-            , ("username"   , fmap encodeUtf8 $ ssoUsername uinfo)
-            , ("name"       , fmap encodeUtf8 $ ssoFullName uinfo)
-            , ("avatar_url" , fmap encodeUtf8 $ ssoAvatarUrl uinfo)
-            , ("bio"        , fmap encodeUtf8 $ ssoBio uinfo)
+            , ("username"   , encodeUtf8 <$> ssoUsername uinfo)
+            , ("name"       , encodeUtf8 <$> ssoFullName uinfo)
+            , ("avatar_url" , encodeUtf8 <$> ssoAvatarUrl uinfo)
+            , ("bio"        , encodeUtf8 <$> ssoBio uinfo)
             ]
-    in  convertToBase Base64 $ renderSimpleQuery False query

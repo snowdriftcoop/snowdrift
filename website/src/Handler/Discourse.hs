@@ -1,10 +1,12 @@
 module Handler.Discourse (getDiscourseR, getDiscourseRedirectR) where
 
-import Import
-import Control.Lens
-import Control.Monad.Trans.Except
 import Avatar
+import Import
 import Discourse
+
+import Control.Lens hiding ((??))
+import Control.Error ((??), hoistEither)
+import Control.Monad.Trans.Except
 import qualified Data.Text as T
 
 getDiscourseR :: Handler Html
@@ -12,18 +14,19 @@ getDiscourseR = do
     result <- runExceptT $ do
         -- Extract payload param
         mpayload <- lift $ fmap encodeUtf8 <$> lookupGetParam "sso"
-        payload <- maybe (throwE NoPayload) return mpayload
+        payload <- mpayload ?? NoPayload
         -- Extract sig param
         msig <- lift $ fmap encodeUtf8 <$> lookupGetParam "sig"
-        sig <- maybe (throwE NoSignature) return msig
+        sig <- msig ?? NoSignature
         -- Get SSO secret from settings
         secret <- lift $ getsYesod $ appDiscourseSsoSecret . appSettings
         -- Verify signature
         unless (validateSig secret payload sig) $ throwE InvalidSignature
         -- Extract nonce and return URL from payload
-        (nonce, baseUrl) <- case parsePayload payload of
-            Left err -> throwE err
-            Right p  -> return p
+        dp <- hoistEither $ parsePayload payload
+        --dp <- case parsePayload payload of
+        --    Left err -> throwE err
+        --    Right p  -> return p
         -- Perform authentication and fetch user info
         Entity uid u <- lift requireAuth
         avatar <-
@@ -40,11 +43,11 @@ getDiscourseR = do
                 , ssoBio       = Nothing
                 }
         -- Compute new payload and sig
-            uinfoPayload = userInfoPayload nonce uinfo
+            uinfoPayload = userInfoPayload (dpNonce dp) uinfo
             uinfoSig = generateSig secret uinfoPayload
         -- Send them back to Discourse
         let params = [("sso", uinfoPayload), ("sig", uinfoSig)]
-        return $ baseUrl <> decodeUtf8 (renderSimpleQuery True params)
+        return $ (dpUrl dp) <> decodeUtf8 (renderSimpleQuery True params)
     case result of
         Left err  -> invalidArgs [(getDPErrorMsg err)]
         Right url -> redirect url
