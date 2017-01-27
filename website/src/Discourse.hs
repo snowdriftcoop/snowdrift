@@ -9,10 +9,11 @@ import Crypto.MAC.HMAC (hmac, HMAC, hmacGetDigest)
 import Data.ByteArray (constEq)
 import Data.ByteArray.Encoding
 import Data.ByteString (ByteString)
-import Data.Maybe (catMaybes)
+import Data.Maybe (mapMaybe)
 import Data.Text (Text, append, pack)
 import Data.Text.Encoding (encodeUtf8, decodeUtf8')
 import Data.Text.Encoding.Error (UnicodeException(..))
+import Debug.Trace
 import Network.HTTP.Types.URI (renderSimpleQuery, parseSimpleQuery)
 
 import qualified Data.ByteString as B (drop)
@@ -76,8 +77,8 @@ validateSig
     -> ByteString -- ^ Signature sent by Discourse in the query
     -> Bool       -- ^ Whether the computed sig and one passed are identical
 validateSig secret payload signature = generateSig secret payload
-                                       `constEq`
-                                        signature
+                                            `constEq`
+                                            signature
 
 -- | Get the nonce and the return URL from the payload by decoding from Base64
 -- and extracting the parameter values.
@@ -104,7 +105,7 @@ userInfoPayload
 userInfoPayload nonce uinfo = convertToBase Base64 $
                                             renderSimpleQuery False query
     where
-        query = catMaybes $ map (uncurry (fmap . (,)))
+        query = mapMaybe (uncurry (fmap . (,)))
             [ ("nonce"      , Just nonce)
             , ("email"      , Just $ encodeUtf8 $ ssoEmail uinfo)
             , ("external_id", Just $ encodeUtf8 $ pack $ show $ ssoId uinfo)
