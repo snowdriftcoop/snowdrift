@@ -263,6 +263,9 @@ design-related issues.
 
 ### Code style
 
+The most important rule is to follow the existing style of whatever function or
+file you are in. When in doubt, however, consider the following guidelines.
+
 * Indentation: 4-space indentation default, 2-space indentation for .hamlet
 files
 * 80-column per line maximum
@@ -373,6 +376,21 @@ or immediately following the last item.
     ```
     stack install hlint
     hlint -XQuasiQuotes -XTemplateHaskell $FILE
+    ```
+
+* Alignment of "do" is at your discretion. Any of these is fine:
+
+    ```
+    foo1 b = do
+        bar
+        baz
+
+    foo2 b = do bar
+                baz
+
+    foo3 b =
+        do bar
+           baz
     ```
 
 ### Code review
