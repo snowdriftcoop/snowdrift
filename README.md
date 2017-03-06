@@ -16,6 +16,14 @@ For the basic ideas, see our [introduction].
 Snowdrift uses the **[Haskell]** programming language **[Yesod web framework]**.
 We stick to exclusively FLO resources and tools in all our work.
 
+## Code repositories
+
+If you're reading this on GitHub, know that this is a mirror for the main code
+repository which we have (alongside accessory repos) in a GitLab CE instance
+running at [git.snowdrift.coop]. For convenience, we will accept pull-requests
+from GitHub, but we encourage regular contributors to sign up at the main
+repository.
+
 ## Contributing
 
 Snowdrift.coop welcomes contributions of all sorts. Even contributors with no
@@ -65,6 +73,8 @@ Our text and graphics documents (non-program-code) are also licensed under
 [Contributor guide]: CONTRIBUTING.md
 [Build instructions]: BUILD.md
 [dev email list]: https://lists.snowdrift.coop/mailman/listinfo/dev
+[GitHub]: https://github.com/snowdriftcoop/snowdrift
+[git.snowdrift.coop]: https://git.snowdrift.coop/sd
 [Haskell]: https://www.haskell.org/
 [how-to-help]: https://wiki.snowdrift.coop/community/how-to-help
 [introduction]: https://wiki.snowdrift.coop/about
