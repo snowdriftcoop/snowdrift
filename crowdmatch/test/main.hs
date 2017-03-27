@@ -47,6 +47,8 @@ import Crowdmatch
 import Crowdmatch.Model (StorageAction(..))
 import qualified Crowdmatch.Model as Model
 
+{-# ANN module ("HLint: ignore Reduce duplication" :: String) #-}
+
 -- | Execute a transaction-free statement in Postgres
 pgExecute_ q = bracket open' PG.close (void . (`PG.execute_` q))
   where
@@ -221,6 +223,33 @@ sanityTests runner = describe "sanity tests" $ do
         mapM_ mkPledge [1..1000]
         val <- projectMonthlyIncome <$> fetchProject runner
         val `shouldBe` Cents (100 * 1000)
+    describe "crowdmatch event" $ do
+        let mkPatron i =
+                void (storePaymentToken runner dummyStripe (HarnessUser i) cardTok)
+            mkPledge i = do
+                mkPatron i
+                storePledge runner (HarnessUser i)
+        -- 1. Two patrons, one active -> 0.01 payable from the patron
+        it "only counts active patrons" $ do
+            mkPatron 1
+            mkPledge 2
+            crowdmatch runner
+            val <- projectDonationReceivable <$> fetchProject runner
+            val `shouldBe` DonationUnits 1
+        it "looks quadratic; 3 patrons = 9 DUs" $ do
+            mapM_ mkPledge [1..3]
+            crowdmatch runner
+            val <- projectDonationReceivable <$> fetchProject runner
+            val `shouldBe` DonationUnits 9
+        it "sums over multiple events" $ do
+            mkPatron 1
+            mkPledge 2
+            crowdmatch runner
+            storePledge runner (HarnessUser 1)
+            -- Now 1 is also active
+            crowdmatch runner
+            val <- projectDonationReceivable <$> fetchProject runner
+            val `shouldBe` DonationUnits 5
 
 propTests :: Runner -> SqlPersistT IO () -> Spec
 propTests runner trunq = modifyMaxSuccess (* 2) $

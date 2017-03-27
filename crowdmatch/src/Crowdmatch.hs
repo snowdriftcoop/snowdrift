@@ -23,6 +23,9 @@ module Crowdmatch (
         , storePledge
         , deletePledge
 
+        -- * Trigger a crowdmatch
+        , crowdmatch
+
         -- * Data retrieval
         , fetchProject
         , fetchPatron
@@ -47,7 +50,7 @@ import Control.Error (ExceptT(..), runExceptT)
 import Control.Lens ((^.), from, view, Iso', iso)
 import Control.Monad (void)
 import Control.Monad.IO.Class (liftIO, MonadIO)
-import Data.Time (UTCTime, getCurrentTime)
+import Data.Time (UTCTime, getCurrentTime, utctDay)
 import Database.Persist
 import Database.Persist.Sql (SqlPersistT)
 import Web.Stripe (stripe, (-&-), StripeConfig)
@@ -63,6 +66,7 @@ import Web.Stripe.Customer
 
 import Crowdmatch.Model hiding (Patron(..))
 import qualified Crowdmatch.Model as Model
+import qualified Crowdmatch.Skeleton as Skeleton
 
 -- | A method that runs 'SqlPersistT' values in your environment.
 type SqlRunner io env = forall a. SqlPersistT io a -> env a
@@ -91,6 +95,7 @@ data Project = Project
         { projectCrowd :: Int
         , projectMonthlyIncome :: Cents
         , projectPledgeValue :: DonationUnits
+        , projectDonationReceivable :: DonationUnits
         }
 
 -- | Record a 'TokenId' for a patron.
@@ -150,6 +155,12 @@ fetchPatron
     -> env Patron
 fetchPatron db = runMech db . FetchPatronI . (^. from external)
 
+crowdmatch
+    :: (MonadIO io, MonadIO env)
+    => SqlRunner io env -- ^
+    -> env ()
+crowdmatch db = runMech db CrowdmatchI
+
 --
 -- ONE LEVEL DOWN
 -- wherein we use our internal, Markov-able api
@@ -170,6 +181,7 @@ data CrowdmatchI return where
     DeletePledgeI :: PPtr -> CrowdmatchI ()
     FetchProjectI :: CrowdmatchI Project
     FetchPatronI :: PPtr -> CrowdmatchI Patron
+    CrowdmatchI :: CrowdmatchI ()
 
 -- | Executing the actions
 runMech
@@ -246,12 +258,35 @@ runMech db (DeletePledgeI pptr) = db $ do
 
 runMech db FetchProjectI = db $ do
     numPledges <- count [PatronPledgeSince !=. Nothing]
+    -- Persistent terrible SQL :|
+    receivable <-
+        fmap
+            (sum . map (Model.patronDonationPayable . entityVal))
+            (selectList [] [])
     let pledgevalue = DonationUnits (fromIntegral numPledges)
         income = view donationCents (pledgevalue * pledgevalue)
-    pure (Project numPledges income pledgevalue)
+    pure (Project numPledges income pledgevalue receivable)
 
 runMech db (FetchPatronI pptr) =
     db $ fromModel . entityVal <$> upsertPatron pptr []
+
+runMech db CrowdmatchI = db $ do
+    active <- Skeleton.activePatrons
+    let projectValue = fromIntegral (length active)
+    today <- utctDay <$> liftIO getCurrentTime
+    mapM_
+        (recordCrowdmatch (CrowdmatchDay today) (DonationUnits projectValue))
+        active
+  where
+    recordCrowdmatch
+        :: MonadIO m
+        => CrowdmatchDay
+        -> DonationUnits
+        -> Entity Model.Patron
+        -> SqlPersistT m ()
+    recordCrowdmatch day amt (Entity pid _) = do
+        insert_ (CrowdmatchHistory pid day amt)
+        void (update pid [PatronDonationPayable +=. amt])
 
 --
 -- I N C E P T I O N

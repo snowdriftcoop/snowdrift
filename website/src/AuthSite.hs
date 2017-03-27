@@ -263,14 +263,13 @@ checkCredentials Credentials{..} = do
 checkDestroyToken :: MonadIO m => AuthToken -> SqlPersistT m (Maybe VerifiedUser)
 checkDestroyToken (AuthToken t) = runMaybeT $ do
     Entity pid ProvisionalUser{..} <- MaybeT $ getBy (UniqueToken t)
-    _ <- justM (delete pid)
-    now <- justM (liftIO getCurrentTime)
+    _ <- lift (delete pid)
+    now <- liftIO getCurrentTime
     if addUTCTime twoHours provisionalUserCreationTime > now
         then just (VerifiedUser provisionalUserEmail provisionalUserDigest)
         else nothing
   where
     twoHours = 2 * 60 * 60
-    justM = MaybeT . fmap Just
 
 -- | Generate a provisional user
 provisional :: Credentials -> Verification -> IO ProvisionalUser
