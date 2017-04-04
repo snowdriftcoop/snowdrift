@@ -6,15 +6,6 @@
     <.background>
       <.plane .break4>
     <.foreground>
-    <.alert .alert-warning>
-      <p>
-        Hello,
-      <p>
-        We are making progress, but we aren't finished yet. We may have
-        reset your account, so please <a href=@{AuthR ResetPassphraseR}>reset
-        your passphrase</a> if necessary. Plus, the look and design of the site is
-        still changing. <a href=@{ContactR}>Let us know</a> if you
-        have any feedback!
     <a href=@{HowItWorksR} .bigbutton>How it Works
     <.home-text>
       <p>
