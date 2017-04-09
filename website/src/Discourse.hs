@@ -13,7 +13,6 @@ import Data.Maybe (mapMaybe)
 import Data.Text (Text, append, pack)
 import Data.Text.Encoding (encodeUtf8, decodeUtf8')
 import Data.Text.Encoding.Error (UnicodeException(..))
-import Debug.Trace
 import Network.HTTP.Types.URI (renderSimpleQuery, parseSimpleQuery)
 
 import qualified Data.ByteString as B (drop)
@@ -35,7 +34,7 @@ data UserInfo = UserInfo
 data DiscoursePayload = DiscoursePayload
     { dpNonce   :: ByteString
     , dpUrl     :: Text
-    }
+    } deriving (Eq, Show)
 
 -- | DataType to handle Discourse Payload error messages.
 data DiscoursePayloadError = NoPayload
@@ -44,6 +43,7 @@ data DiscoursePayloadError = NoPayload
                            | InvalidPayload Text
                            | PayloadMissingNonce
                            | PayloadMissingURL
+                           deriving (Eq, Show)
 
 -- | Pretty Formatting of DiscoursePayloadError
 getDPErrorMsg :: DiscoursePayloadError -> Text
@@ -102,7 +102,7 @@ userInfoPayload
     :: ByteString -- ^ Raw nonce string we extracted from input payload
     -> UserInfo   -- ^ Info about the user we pass back to Discourse
     -> ByteString
-userInfoPayload nonce uinfo = convertToBase Base64 $
+userInfoPayload nonce uinfo = convertToBase Base64URLUnpadded $
                                             renderSimpleQuery False query
     where
         query = mapMaybe (uncurry (fmap . (,)))

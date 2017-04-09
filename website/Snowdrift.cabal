@@ -156,13 +156,14 @@ test-suite test
     ghc-options:    -Wall
 
     other-modules:
-        HandlerSpec
         AuthSiteSpec
         AlertsSpec
-        SampleSpec
+        DiscourseSpec
         Factories
-        TestImport
+        HandlerSpec
+        SampleSpec
         StripeMock
+        TestImport
 
     default-extensions:
         FlexibleContexts
@@ -171,6 +172,7 @@ test-suite test
         QuasiQuotes
         RecordWildCards
         TemplateHaskell
+        ViewPatterns
 
     -- build-depends {{{2
     build-depends:
@@ -178,13 +180,18 @@ test-suite test
         -- For htmlHasLink (should move upstream)
         , HUnit >= 1.3.1.1
         , base
+        , bytestring
         , classy-prelude
         , classy-prelude-yesod
+        , cryptonite
         , hspec >= 2.0.0
         , http-types
+        , memory
         , persistent
         , persistent-postgresql
         , postgresql-simple
+        , QuickCheck
+        , quickcheck-text
         , shakespeare
         , stripe-core
         , stripe-haskell

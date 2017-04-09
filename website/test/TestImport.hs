@@ -8,7 +8,7 @@ import Database.Persist as X hiding (get)
 import Database.Persist.Sql (SqlPersistM, runSqlPersistMPool)
 import Database.Persist.Postgresql (pgConnStr, ConnectionString)
 import Foundation as X
-import Network.HTTP.Types (Status(..), Method)
+import Network.HTTP.Types (Status(..))
 import Network.Wai.Test (SResponse(..))
 import Test.Hspec as X
 import Yesod.Default.Config2 (ignoreEnv, loadYamlSettings)
@@ -39,12 +39,23 @@ runDBWithApp app query = runSqlPersistMPool query (appConnPool app)
 
 dummyLogin :: YesodExample App ()
 dummyLogin = do
-    _ <- testDB $ createUser "alice" "ccccccccccccc"
+    testDB $ createUser "alice" "ccccccccccccc"
     get (AuthR LoginR)
     request $ do
         addToken
         byLabel "What is your email?" "alice"
         byLabel "Please tell us your passphrase, too." "ccccccccccccc"
+        setMethod "POST"
+        setUrl (AuthR LoginR)
+
+login :: Text -> Text -> YesodExample App ()
+login username password = do
+    get (AuthR LoginR)
+
+    request $ do
+        addToken
+        byLabel "What is your email?" username
+        byLabel "Please tell us your passphrase, too." password
         setMethod "POST"
         setUrl (AuthR LoginR)
 
@@ -82,12 +93,13 @@ truncateTables connstr =
 testRoot :: Text
 testRoot = "" --approot is empty in `website/config/settings.yml`
 
-needsAuth :: Route App -> Method -> YesodExample App ()
-needsAuth route method = do
+-- | Assert that the given request redirects to the login page.
+assertNeedsAuth :: RequestBuilder App () -> YesodExample App ()
+assertNeedsAuth req = do
+    request req
+
     authRte <- testRender (AuthR LoginR) []
-    request $ do
-        setMethod method
-        setUrl route
+
     withResponse
         (\response -> do
             let code = statusCode (simpleStatus response)

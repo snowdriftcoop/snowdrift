@@ -58,7 +58,6 @@ getDiscourseRedirectR = do
     muser <- maybeAuth
     durl <- getsYesod $ appDiscourseRootUrl . appSettings
     redirect $ T.append durl $ maybe T.empty addSSO muser
-
     where
         addSSO :: a -> T.Text
         addSSO _ = T.pack "/session/sso"
