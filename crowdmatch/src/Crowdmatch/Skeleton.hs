@@ -37,5 +37,5 @@ activePatrons =
     from $ \p -> do
         where_ (activePatron p)
         return p
-
-activePatron = not_ . isNothing . (^. PatronPledgeSince)
+  where
+    activePatron = not_ . isNothing . (^. PatronPledgeSince)
