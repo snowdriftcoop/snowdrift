@@ -15,22 +15,22 @@
 module ReadConfig (readYamlConfig, RunPersistConfig(..)) where
 
 import Control.Lens
-import Control.Monad
 import Control.Monad.Trans.Maybe
 import Data.Aeson.Lens
 import Data.Aeson.Types
 import Data.Char
 import Data.Text (Text)
+import Data.Word
 import Data.Yaml
 import GHC.Generics hiding (from)
 
 -- | All config necessary for connecting to a Postgres instance.
 data RunPersistConfig = RunPersistConfig
-        { runPersistUser :: Text
-        , runPersistName :: Text
-        , runPersistServer :: Text
-        , runPersistPort :: Int
-        , runPersistPass :: Text
+        { runPersistServer :: String
+        , runPersistPort :: Word16
+        , runPersistUser :: String
+        , runPersistPass :: String
+        , runPersistName :: String
         }
         deriving (Show, Generic)
 

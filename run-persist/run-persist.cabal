@@ -2,7 +2,7 @@
 -- documentation, see http://haskell.org/cabal/users-guide/
 
 name:                run-persist
-version:             0.1.0.0
+version:             0.2.0.0
 -- synopsis:
 -- description:
 license:             AGPL-3
@@ -17,13 +17,19 @@ cabal-version:       >=1.10
 
 library
   exposed-modules:     RunPersist
-  -- other-modules:
+  other-modules:       ReadConfig
   other-extensions:    OverloadedStrings
   build-depends:
     base >=4.8
+    , aeson >= 0.11.2
+    , lens >= 4.13
+    , lens-aeson >= 1.0.0.5
     , monad-logger >= 0.3.19
-    , persistent-postgresql >= 2.2.2
     , persistent >= 2.2.4.1
+    , persistent-postgresql >= 2.2.2
     , postgresql-simple >= 0.5.2.1
+    , text >= 1.2.2.1
+    , transformers >= 0.4.2
+    , yaml >= 0.8.18
   -- hs-source-dirs:
   default-language:    Haskell2010

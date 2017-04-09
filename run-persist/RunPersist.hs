@@ -1,5 +1,6 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 
 -- | Make it possible to run SqlPersistT queries on a one-off basis. All
 -- methods expect you to configure the database connection through the
@@ -7,25 +8,57 @@
 module RunPersist
         ( -- * Individual queries
           runPersist
+        , runPersistConfig
         , runPersistDebug
           -- * Gobs of queries
         , runPersistPool
         , runPersistPoolDebug
         ) where
 
+import Control.Exception (bracket)
 import Control.Monad.Logger
         ( runStderrLoggingT
         , LogLevel(..)
         , LoggingT(..)
         , filterLogger
         )
-import Database.Persist.Postgresql (SqlPersistT, openSimpleConn, withPostgresqlPool)
-import Database.Persist.Sql (runSqlConn, runSqlPool)
-import Database.PostgreSQL.Simple (connectPostgreSQL)
+import Database.Persist.Postgresql
+        (SqlPersistT, openSimpleConn, withPostgresqlPool)
+import Database.Persist.Sql (runSqlConn, runSqlPool, SqlBackend)
+import Database.PostgreSQL.Simple
+        (connectPostgreSQL, ConnectInfo(..), connect, close, Connection)
+import Data.Text (Text)
+import qualified Data.Text as T
+
+import ReadConfig
 
 runPersist, runPersistDebug :: SqlPersistT IO a -> IO a
 runPersist = runPersist' normalLogging
 runPersistDebug = runPersist' id
+
+-- | Connect to a database given a config file, then run the SqlPersist value
+runPersistConfig :: FilePath -> Text -> SqlPersistT IO a -> IO a
+runPersistConfig yml cfgName sql = do
+    mcfg <- readYamlConfig yml cfgName
+    maybe
+        (error
+            ("run-persist: Could not find config group "
+            ++ T.unpack cfgName
+            ++ " within file "
+            ++ yml))
+        (\cfg ->
+            bracket (connect (mkconn cfg)) close $ \conn ->
+                runSqlConn sql
+                =<< runStderrLoggingT (normalLogging (logSimpleConn conn)))
+        mcfg
+  where
+    mkconn RunPersistConfig{..} = ConnectInfo
+        { connectHost = runPersistServer
+        , connectPort = runPersistPort
+        , connectUser = runPersistUser
+        , connectPassword = runPersistPass
+        , connectDatabase = runPersistName
+        }
 
 runPersist'
     :: (forall a. LoggingT IO a -> LoggingT IO a)
@@ -35,8 +68,9 @@ runPersist' filter' q = do
     conn <- connectPostgreSQL "" -- Needs env vars
     back <- runStderrLoggingT (filter' (logSimpleConn conn))
     runSqlConn q back
-  where
-    logSimpleConn c = LoggingT (`openSimpleConn` c)
+
+logSimpleConn :: Connection -> LoggingT IO SqlBackend
+logSimpleConn c = LoggingT (`openSimpleConn` c)
 
 normalLogging :: LoggingT IO a -> LoggingT IO a
 normalLogging = filterLogger (const (> LevelDebug))
