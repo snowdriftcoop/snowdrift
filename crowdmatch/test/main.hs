@@ -250,6 +250,11 @@ sanityTests runner = describe "sanity tests" $ do
             crowdmatch runner
             val <- projectDonationReceivable <$> fetchProject runner
             val `shouldBe` DonationUnits 5
+        it "creates history" $ do
+            mkPledge 1
+            crowdmatch runner
+            u :: [Entity Model.CrowdmatchHistory] <- runner $ selectList [] []
+            length u `shouldBe` 1
 
 propTests :: Runner -> SqlPersistT IO () -> Spec
 propTests runner trunq = modifyMaxSuccess (* 2) $
