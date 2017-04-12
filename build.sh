@@ -58,8 +58,8 @@ main () {
     CMD=$1
     shift
 
-    make
-    dbenv
+    make &&
+    dbenv &&
     case $CMD in
         devel)
             run_devel
