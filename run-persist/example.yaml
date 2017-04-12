@@ -1,6 +1,0 @@
-ConfigOption:
-  user: usernamestuff
-  name: databasenamestuff
-  server: localhost
-  port: 5432
-  pass: passwordlol
