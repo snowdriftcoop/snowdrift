@@ -278,12 +278,6 @@ runMech db CrowdmatchI = db $ do
         (recordCrowdmatch (CrowdmatchDay today) (DonationUnits projectValue))
         active
   where
-    recordCrowdmatch
-        :: MonadIO m
-        => CrowdmatchDay
-        -> DonationUnits
-        -> Entity Model.Patron
-        -> SqlPersistT m ()
     recordCrowdmatch day amt (Entity pid _) = do
         insert_ (CrowdmatchHistory pid day amt)
         void (update pid [PatronDonationPayable +=. amt])
