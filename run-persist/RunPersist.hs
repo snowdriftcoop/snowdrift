@@ -28,7 +28,6 @@ import Database.Persist.Sql (runSqlConn, runSqlPool, SqlBackend)
 import Database.PostgreSQL.Simple
         (connectPostgreSQL, ConnectInfo(..), connect, close, Connection)
 import Data.Text (Text)
-import qualified Data.Text as T
 
 import ReadConfig
 
