@@ -45,6 +45,9 @@ instance FromJSON RunPersistConfig where
 -- | Given a config file and a named config, find it
 readYamlConfig :: FilePath -> Text -> IO (Maybe RunPersistConfig)
 readYamlConfig yml configName = runMaybeT $ do
-    obj :: Value <- MaybeT $ decodeFile yml
+    obj :: Value <- MaybeT $ hush <$> decodeFileEither yml
     thing <- MaybeT $ pure $ obj ^? key configName
     MaybeT $ pure $ thing ^? _JSON
+  where
+    hush (Left _) = Nothing
+    hush (Right x) = Just x
