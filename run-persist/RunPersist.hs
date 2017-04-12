@@ -48,13 +48,12 @@ runPersistKeter cfgName sql = do
         (\cfg -> runPersist' normalLogging (connect (mkconn cfg)) sql)
         mcfg
   where
-    mkconn RunPersistConfig{..} = ConnectInfo
-        { connectHost = runPersistServer
-        , connectPort = runPersistPort
-        , connectUser = runPersistUser
-        , connectPassword = runPersistPass
-        , connectDatabase = runPersistName
-        }
+    mkconn (RunPersistConfig
+                connectHost
+                connectPort
+                connectUser
+                connectPassword
+                connectDatabase) = ConnectInfo{..}
 
 runPersist'
     :: (forall a. LoggingT IO a -> LoggingT IO a)
