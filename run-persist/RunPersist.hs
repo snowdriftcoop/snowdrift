@@ -8,7 +8,7 @@
 module RunPersist
         ( -- * Individual queries
           runPersist
-        , runPersistConfig
+        , runPersistKeter
         , runPersistDebug
           -- * Gobs of queries
         , runPersistPool
@@ -32,24 +32,20 @@ import qualified Data.Text as T
 
 import ReadConfig
 
+-- | Connect using env vars as configuration
 runPersist, runPersistDebug :: SqlPersistT IO a -> IO a
-runPersist = runPersist' normalLogging
-runPersistDebug = runPersist' id
+runPersist = runPersist' normalLogging (connectPostgreSQL "")
+runPersistDebug = runPersist' id (connectPostgreSQL "")
 
--- | Connect to a database given a config file, then run the SqlPersist value
-runPersistConfig :: FilePath -> Text -> SqlPersistT IO a -> IO a
-runPersistConfig yml cfgName sql = do
-    mcfg <- readYamlConfig yml cfgName
+-- | First try reading a config file at /opt/keter/etc/postgres.yaml, then fall
+-- back to environment variables (using 'runPersist'). The argument is the
+-- config group, aka the name of the app so configured.
+runPersistKeter :: Text -> SqlPersistT IO a -> IO a
+runPersistKeter cfgName sql = do
+    mcfg <- readYamlConfig "/opt/keter/etc/postgres.yaml" cfgName
     maybe
-        (error
-            ("run-persist: Could not find config group "
-            ++ T.unpack cfgName
-            ++ " within file "
-            ++ yml))
-        (\cfg ->
-            bracket (connect (mkconn cfg)) close $ \conn ->
-                runSqlConn sql
-                =<< runStderrLoggingT (normalLogging (logSimpleConn conn)))
+        (runPersist sql)
+        (\cfg -> runPersist' normalLogging (connect (mkconn cfg)) sql)
         mcfg
   where
     mkconn RunPersistConfig{..} = ConnectInfo
@@ -62,12 +58,13 @@ runPersistConfig yml cfgName sql = do
 
 runPersist'
     :: (forall a. LoggingT IO a -> LoggingT IO a)
+    -> IO Connection
     -> SqlPersistT IO b
     -> IO b
-runPersist' filter' q = do
-    conn <- connectPostgreSQL "" -- Needs env vars
-    back <- runStderrLoggingT (filter' (logSimpleConn conn))
-    runSqlConn q back
+runPersist' filter' getconn q =
+    bracket getconn close $ \conn ->
+        runSqlConn q
+        =<< runStderrLoggingT (filter' (logSimpleConn conn))
 
 logSimpleConn :: Connection -> LoggingT IO SqlBackend
 logSimpleConn c = LoggingT (`openSimpleConn` c)
