@@ -15,6 +15,7 @@
 import Prelude hiding (FilePath)
 
 import Control.Exception.Base (bracket)
+import Data.Text (Text)
 import Development.Shake
 import GHC.IO.Handle (hDuplicate, hDuplicateTo)
 import System.Environment (getProgName, getArgs)
@@ -27,6 +28,9 @@ import qualified Turtle
 
 pgWorkDir :: FilePath
 pgWorkDir = ".postgres-work"
+
+dbname :: Text
+dbname = "snowdrift"
 
 usageText :: Text -> Shell ()
 usageText this = mapM_ err
@@ -64,6 +68,7 @@ main = sh $ do
         ["env"] -> do
             echo ("export PGHOST=" <> toText_ pghost)
             echo ("export PGDATA=" <> toText_ pgdata)
+            echo ("export PGDATABASE=" <> dbname)
         ("pg_ctl":as') -> procs "pg_ctl" (map T.pack as') empty
         _ -> liftIO (shakeit dbdir pghost pgdata)
 
@@ -117,8 +122,7 @@ initCluster pghost pgdata = do
     procs "pg_ctl" ["start", "-w"] empty
 
     step "Creating databases..."
-    procs "createdb" ["snowdrift_development"] empty
-    procs "createdb" ["snowdrift_test"] empty
+    procs "createdb" [dbname] empty
 
     step "Success."
 
@@ -154,6 +158,7 @@ initEnv = do
         pgdata = dbdir </> pgWorkDir </> "data"
     export "PGHOST" (toText_ pghost)
     export "PGDATA" (toText_ pgdata)
+    export "PGDATABASE" dbname
     export "PATH" (format (s%":"%s) path pgPath)
     return (dbdir, pghost, pgdata)
   where
