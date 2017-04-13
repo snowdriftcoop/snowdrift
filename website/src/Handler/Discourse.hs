@@ -1,13 +1,17 @@
-module Handler.Discourse (getDiscourseR, getDiscourseRedirectR) where
+module Handler.Discourse (getDiscourseR) where
 
-import Avatar
 import Import
-import Discourse
 
 import Control.Lens hiding ((??))
 import Control.Error ((??), hoistEither)
 import Control.Monad.Trans.Except
-import qualified Data.Text as T
+
+import Avatar
+import Discourse
+
+-- Map user-visible IDs into something slighly harder to guess?
+discourseUser :: UserId -> DiscourseUser
+discourseUser = DiscourseUser . pack . show
 
 getDiscourseR :: Handler Html
 getDiscourseR = do
@@ -24,16 +28,13 @@ getDiscourseR = do
         unless (validateSig secret payload sig) $ throwE InvalidSignature
         -- Extract nonce and return URL from payload
         dp <- hoistEither $ parsePayload payload
-        --dp <- case parsePayload payload of
-        --    Left err -> throwE err
-        --    Right p  -> return p
         -- Perform authentication and fetch user info
         Entity uid u <- lift requireAuth
         avatar <-
             lift $ getUserAvatar (StaticR img_default_avatar_png) (Just u)
         let uinfo = UserInfo
                 { ssoEmail     = u ^. userEmail
-                , ssoId        = uid
+                , ssoId        = discourseUser uid
                 -- TODO no better option right now...
                 , ssoUsername  = Nothing
                 -- TODO no better option right now...
@@ -47,17 +48,7 @@ getDiscourseR = do
             uinfoSig = generateSig secret uinfoPayload
         -- Send them back to Discourse
         let params = [("sso", uinfoPayload), ("sig", uinfoSig)]
-        return $ (dpUrl dp) <> decodeUtf8 (renderSimpleQuery True params)
+        return $ dpUrl dp <> decodeUtf8 (renderSimpleQuery True params)
     case result of
-        Left err  -> invalidArgs [(getDPErrorMsg err)]
+        Left err  -> invalidArgs [getDPErrorMsg err]
         Right url -> redirect url
-
-
-getDiscourseRedirectR :: Handler Html
-getDiscourseRedirectR = do
-    muser <- maybeAuth
-    durl <- getsYesod $ appDiscourseRootUrl . appSettings
-    redirect $ T.append durl $ maybe T.empty addSSO muser
-    where
-        addSSO :: a -> T.Text
-        addSSO _ = T.pack "/session/sso"

@@ -27,7 +27,6 @@
 /pledge/snowdrift PledgeSnowdriftR POST DELETE
 
 /discourse/sso DiscourseR GET
-/discourse/redirect DiscourseRedirectR GET
 
 -- ## Backward compatibility routes
 

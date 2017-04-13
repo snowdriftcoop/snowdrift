@@ -17,7 +17,9 @@ import Network.Wai.Handler.Warp (HostPreference)
 import Web.Stripe (StripeKey(..))
 import Yesod.Default.Config2 (applyEnvValue, configSettingsYml)
 import Yesod.Default.Util
-           (WidgetFileSettings, widgetFileNoReload, widgetFileReload)
+        (WidgetFileSettings, widgetFileNoReload, widgetFileReload)
+
+import Discourse (DiscourseSecret(..))
 
 -- | Runtime settings to configure this application. These settings can be
 -- loaded from various sources: defaults, environment variables, config files,
@@ -51,8 +53,7 @@ data AppSettings = AppSettings
     -- ^ Whether to send emails
     , appStripeSecretKey        :: StripeKey
     , appStripePublishableKey   :: StripeKey
-    , appDiscourseSsoSecret     :: ByteString
-    , appDiscourseRootUrl       :: Text
+    , appDiscourseSsoSecret     :: DiscourseSecret
     }
 
 instance FromJSON AppSettings where
@@ -78,8 +79,7 @@ instance FromJSON AppSettings where
         appSendMail               <- o .:? "send-email"       .!= not runningDevelopment
         appStripePublishableKey   <- StripeKey . encodeUtf8 <$> o .: "stripe-publishable-key"
         appStripeSecretKey        <- StripeKey . encodeUtf8 <$> o .: "stripe-secret-key"
-        appDiscourseSsoSecret     <- encodeUtf8 <$> o .: "discourse-sso-secret"
-        appDiscourseRootUrl       <- o .: "discourse-root-url"
+        appDiscourseSsoSecret     <- (DiscourseSecret . encodeUtf8) <$> o .: "discourse-sso-secret"
 
         return AppSettings {..}
 

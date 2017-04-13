@@ -12,6 +12,8 @@ import Network.HTTP.Types.Status (status303)
 import Network.HTTP.Types.URI (decodePath)
 import Network.Wai.Test (SResponse(..))
 
+{-# ANN module ("HLint: ignore Reduce duplication" :: String) #-}
+
 spec :: Spec
 spec = withApp $ do
     describe "getRobotsR" getRobotsSpec
@@ -30,7 +32,7 @@ getRobotsSpec = do
         bodyContains "User-agent: *"
 
 getFaviconSpec :: SpecWith (TestApp App)
-getFaviconSpec = do
+getFaviconSpec =
     it "gives a 200" $ do
         get FaviconR
         statusIs 200
@@ -44,7 +46,7 @@ getWelcomeSpec = do
         it "has a link to /how-it-works" $ do
             get WelcomeR
             htmlHasLink HowItWorksR
-    describe "browsing while logged in" $ do
+    describe "browsing while logged in" $
         it "loads" $ do
             dummyLogin
             printBody
@@ -52,7 +54,7 @@ getWelcomeSpec = do
             statusIs 200
 
 getDashboardSpec :: SpecWith (TestApp App)
-getDashboardSpec = do
+getDashboardSpec =
     it "requires login" $
         assertNeedsAuth $ do
           setMethod "GET"
@@ -170,6 +172,8 @@ encodePayload = convertToBase Base64URLUnpadded
 
 payloadSig :: ByteString -> YesodExample App Text
 payloadSig payload = do
-  secret <- appDiscourseSsoSecret . appSettings <$> getTestYesod
-  pure (decodeUtf8 (convertToBase Base16
-    ((Discourse.hmacSHA256 secret payload))))
+    Discourse.DiscourseSecret secret
+        <- appDiscourseSsoSecret . appSettings <$> getTestYesod
+    pure
+        (decodeUtf8
+            (convertToBase Base16 (Discourse.hmacSHA256 secret payload)))

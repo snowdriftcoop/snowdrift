@@ -3,7 +3,7 @@ module Discourse where
 import Prelude
 
 import Control.Error ((??), fmapL)
-import Control.Monad.Trans.Except (Except (..), except, runExcept, throwE)
+import Control.Monad.Trans.Except (except, runExcept)
 import Crypto.Hash.Algorithms (SHA256)
 import Crypto.MAC.HMAC (hmac, HMAC, hmacGetDigest)
 import Data.ByteArray (constEq)
@@ -14,17 +14,16 @@ import Data.Text (Text, append, pack)
 import Data.Text.Encoding (encodeUtf8, decodeUtf8')
 import Data.Text.Encoding.Error (UnicodeException(..))
 import Network.HTTP.Types.URI (renderSimpleQuery, parseSimpleQuery)
-
-import qualified Data.ByteString as B (drop)
 import qualified Data.ByteString.Base64 as B64 (decodeLenient)
 
-import Model
+newtype DiscourseSecret = DiscourseSecret ByteString deriving (Eq, Show)
+newtype DiscourseUser = DiscourseUser Text deriving (Eq, Show)
 
 -- | Information we send back to Discourse once the user logs in through our
 -- UI.
 data UserInfo = UserInfo
     { ssoEmail     :: Text
-    , ssoId        :: UserId
+    , ssoId        :: DiscourseUser
     , ssoUsername  :: Maybe Text
     , ssoFullName  :: Maybe Text
     , ssoAvatarUrl :: Maybe Text
@@ -61,10 +60,10 @@ hmacSHA256 = hmac
 -- | Given secret known in advance and payload given in the query, compute the
 -- HMAC-SHA256, to which Discourse refers as the signature.
 generateSig
-    :: ByteString -- ^ Secret
+    :: DiscourseSecret -- ^ Secret
     -> ByteString -- ^ Base64 encoded payload
     -> ByteString
-generateSig secret payload =
+generateSig (DiscourseSecret secret) payload =
     convertToBase Base16 $ hmacGetDigest $ hmacSHA256 secret payload
 
 -- | This validates the payloads's authenticity (i.e. make sure it's really our
@@ -72,13 +71,11 @@ generateSig secret payload =
 -- knows the SSO secret. This is done by verifying that the HMAC-SHA256 of the
 -- secret and the payload is identical to the signature.
 validateSig
-    :: ByteString -- ^ SSO secret, same one you specify in Discourse settings
+    :: DiscourseSecret -- ^ Same secret you specify in Discourse settings
     -> ByteString -- ^ Base64 encoded payload sent by Discourse in the query
     -> ByteString -- ^ Signature sent by Discourse in the query
     -> Bool       -- ^ Whether the computed sig and one passed are identical
-validateSig secret payload signature = generateSig secret payload
-                                            `constEq`
-                                            signature
+validateSig secret payload = constEq (generateSig secret payload)
 
 -- | Get the nonce and the return URL from the payload by decoding from Base64
 -- and extracting the parameter values.
