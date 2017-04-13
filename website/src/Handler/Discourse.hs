@@ -13,6 +13,8 @@ import Discourse
 discourseUser :: UserId -> DiscourseUser
 discourseUser = DiscourseUser . pack . show
 
+-- | Respond to SSO requests from Discourse, authenticating users against our
+-- database.
 getDiscourseR :: Handler Html
 getDiscourseR = do
     result <- runExceptT $ do
