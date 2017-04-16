@@ -44,3 +44,6 @@ send-email: "_env:SD_EMAILS:false"
 # chreekat for assistance.
 stripe-secret-key: "_env:STRIPE_SECRET_KEY:"
 stripe-publishable-key: "_env:STRIPE_PUBLISHABLE_KEY:"
+
+# Discourse SSO
+discourse-sso-secret: "_env:DISCOURSE_SSO_SECRET:snowdrift_sso"

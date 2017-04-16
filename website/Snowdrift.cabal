@@ -40,6 +40,7 @@ library
         Avatar
         Application
         Css
+        Discourse
         Email
         Foundation
         Import
@@ -49,6 +50,7 @@ library
         Settings.StaticFiles
         Handler
         Handler.Dashboard
+        Handler.Discourse
         Handler.PaymentInfo
         Handler.Pledge
         Handler.Project
@@ -70,20 +72,25 @@ library
         , crowdmatch
         -- Other
         , aeson                  >= 0.6     && < 0.12
+        , base64-bytestring
         , blaze-html
         , bytestring             >= 0.9     && < 0.11
         , classy-prelude         >= 0.10.2
         , classy-prelude-yesod   >= 0.10.2
+        , cryptonite
         , data-default
         , errors
         , esqueleto
         , fast-logger            >= 2.2     && < 2.5
         , file-embed
         , formattable
+        , hashids                              < 1.0.3
         , hjsmin                 >= 0.1
         , http-client
+        , http-types
         , lens
         , libravatar
+        , memory
         , mime-mail
         , monad-logger           >= 0.3     && < 0.4
         , nonce
@@ -99,6 +106,7 @@ library
         , text                   >= 0.11    && < 2.0
         , time
         , titlecase
+        , transformers
         , unordered-containers
         , wai
         , wai-extra              >= 3.0     && < 3.1
@@ -122,6 +130,7 @@ library
         RecordWildCards
         ScopedTypeVariables
         TemplateHaskell
+        TupleSections
         TypeFamilies
         ViewPatterns
 
@@ -148,13 +157,14 @@ test-suite test
     ghc-options:    -Wall
 
     other-modules:
-        HandlerSpec
         AuthSiteSpec
         AlertsSpec
-        SampleSpec
+        DiscourseSpec
         Factories
-        TestImport
+        HandlerSpec
+        SampleSpec
         StripeMock
+        TestImport
 
     default-extensions:
         FlexibleContexts
@@ -163,6 +173,7 @@ test-suite test
         QuasiQuotes
         RecordWildCards
         TemplateHaskell
+        ViewPatterns
 
     -- build-depends {{{2
     build-depends:
@@ -170,13 +181,18 @@ test-suite test
         -- For htmlHasLink (should move upstream)
         , HUnit >= 1.3.1.1
         , base
+        , bytestring
         , classy-prelude
         , classy-prelude-yesod
+        , cryptonite
         , hspec >= 2.0.0
         , http-types
+        , memory
         , persistent
         , persistent-postgresql
         , postgresql-simple
+        , QuickCheck
+        , quickcheck-text
         , shakespeare
         , stripe-core
         , stripe-haskell

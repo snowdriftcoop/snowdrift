@@ -23,6 +23,7 @@ packages:
      commit: 8c4983b46fd12759a1d0be8d4460a59efbb704c2
     extra-dep: true
 extra-deps:
+  - hashids-1.0.2.3
   - libravatar-0.4
   - titlecase-0.1.0.2
   - formattable-0.1.1
