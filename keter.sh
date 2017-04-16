@@ -12,6 +12,9 @@ set -e
 
 opt_build=${BUILD:=true}
 opt_deploy=${DEPLOY:=true}
+# NB! Whatever name is used here must also be used in the 'crowdmatch' app
+# (crowdmatch/app/crowdmatch.hs), where it is used to pull in postgres
+# configuration. Must fix.
 opt_appname=${APPNAME:=SnowdriftReboot}
 
 #

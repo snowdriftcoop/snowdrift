@@ -29,3 +29,13 @@ projectDonationHistory =
   where
     time = (^. DonationHistoryTime)
     total = sum_ . (^. DonationHistoryAmount)
+
+-- | Patrons actively pledged to Snowdrift
+activePatrons :: MonadIO m => SqlPersistT m [Entity Patron]
+activePatrons =
+    select $
+    from $ \p -> do
+        where_ (activePatron p)
+        return p
+  where
+    activePatron = not_ . isNothing . (^. PatronPledgeSince)
