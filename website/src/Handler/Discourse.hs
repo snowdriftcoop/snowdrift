@@ -5,13 +5,18 @@ import Import
 import Control.Lens hiding ((??))
 import Control.Error ((??), hoistEither)
 import Control.Monad.Trans.Except
+import Database.Persist.Sql (fromSqlKey)
+
+import qualified Web.Hashids as Hashids
 
 import Avatar
 import Discourse
 
--- Map user-visible IDs into something slighly harder to guess?
-discourseUser :: UserId -> DiscourseUser
-discourseUser = DiscourseUser . pack . show
+-- Repurpose the discourse secret as the hashids salt
+discourseUser :: DiscourseSecret -> UserId -> DiscourseUser
+discourseUser (DiscourseSecret salt) =
+    DiscourseUser . decodeUtf8 . Hashids.encode (Hashids.hashidsMinimum salt 6)
+      . fromIntegral . fromSqlKey
 
 -- | Respond to SSO requests from Discourse, authenticating users against our
 -- database.
@@ -36,7 +41,7 @@ getDiscourseR = do
             lift $ getUserAvatar (StaticR img_default_avatar_png) (Just u)
         let uinfo = UserInfo
                 { ssoEmail     = u ^. userEmail
-                , ssoId        = discourseUser uid
+                , ssoId        = discourseUser secret uid
                 -- TODO no better option right now...
                 , ssoUsername  = Nothing
                 -- TODO no better option right now...

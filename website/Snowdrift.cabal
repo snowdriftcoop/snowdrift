@@ -84,6 +84,7 @@ library
         , fast-logger            >= 2.2     && < 2.5
         , file-embed
         , formattable
+        , hashids                              < 1.0.3
         , hjsmin                 >= 0.1
         , http-client
         , http-types
