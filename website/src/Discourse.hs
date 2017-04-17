@@ -1,3 +1,8 @@
+-- | Provide a source of credentials for Discourse (aka Discourse SSO).
+--
+-- For reference:
+-- <https://meta.discourse.org/t/official-single-sign-on-for-discourse/13045>
+--
 module Discourse where
 
 import Prelude
