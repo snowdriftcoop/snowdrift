@@ -90,7 +90,7 @@ proprietary site [GitHub], which you may use if you already have an account
 there. As we encourage everyone to use FLO tools, the instructions below assume
 git.snowdrift.coop.
 
-To contribute changes to the project, first [create an account on git.snowdrift.coop]
+To contribute changes to the project, first [create an account on git.snowdrift.coop] 
 (or sign in if you already have an account).
 
 Once signed in, go to the [project repository], and click the "Fork" link on
@@ -98,7 +98,7 @@ the top right.
 
 After choosing your account for the fork, you should be at the page for your
 fork of the project. To check, see that the header at the top of the page has
-has your account name followed by "/Snowdrift".
+your account name followed by "/Snowdrift".
 
 ##### Adding your fork as a remote
 
