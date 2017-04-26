@@ -37,7 +37,7 @@
 /p/snowdrift/w/en/#Text SnowdriftWikiEnSearchR GET
 
 -- Extraenous legacy links
-/who LegacyWhoR GET
+/p/snowdrift/who LegacyWhoR GET
 /u/3 LegacyWolftuneR GET
 
 -- Prevents breakage of external links to the old blog.
