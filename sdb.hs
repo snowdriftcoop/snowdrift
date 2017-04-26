@@ -29,8 +29,10 @@ import qualified Turtle
 pgWorkDir :: FilePath
 pgWorkDir = ".postgres-work"
 
-dbname :: Text
-dbname = "snowdrift"
+data Databases = DBS { dbsMain :: Text, dbsTest :: Text }
+
+dbnames :: Databases
+dbnames = DBS "snowdrift" "snowdrift_test"
 
 usageText :: Text -> Shell ()
 usageText this = mapM_ err
@@ -68,7 +70,7 @@ main = sh $ do
         ["env"] -> do
             echo ("export PGHOST=" <> toText_ pghost)
             echo ("export PGDATA=" <> toText_ pgdata)
-            echo ("export PGDATABASE=" <> dbname)
+            echo ("export PGDATABASE=" <> dbsMain dbnames)
         ("pg_ctl":as') -> procs "pg_ctl" (map T.pack as') empty
         _ -> liftIO (shakeit dbdir pghost pgdata)
 
@@ -122,7 +124,8 @@ initCluster pghost pgdata = do
     procs "pg_ctl" ["start", "-w"] empty
 
     step "Creating databases..."
-    procs "createdb" [dbname] empty
+    procs "createdb" [dbsMain dbnames] empty
+    procs "createdb" [dbsTest dbnames] empty
 
     step "Success."
 
@@ -158,7 +161,7 @@ initEnv = do
         pgdata = dbdir </> pgWorkDir </> "data"
     export "PGHOST" (toText_ pghost)
     export "PGDATA" (toText_ pgdata)
-    export "PGDATABASE" dbname
+    export "PGDATABASE" (dbsMain dbnames)
     export "PATH" (format (s%":"%s) path pgPath)
     return (dbdir, pghost, pgdata)
   where
