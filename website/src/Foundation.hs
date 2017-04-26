@@ -129,11 +129,14 @@ instance AuthMaster App where
             $(widgetFile "page/auth/verify-account")
       where af = [("autofocus","true")]
 
-    resetPassphraseHandler = do
-        (loginFields, enctype) <- generateFormPost (renderDivs credentialsForm)
-        navbarLayout "page/auth/reset-passphrase" $ do
-            setTitle "Passphrase Reset — Snowdrift.coop"
-            $(widgetFile "page/auth/reset-passphrase")
+    resetPassphraseHandler = 
+        maybeAuth >>= maybe reset (const (redirect HomeR))
+        where
+          reset = do
+              (loginFields, enctype) <- generateFormPost (renderDivs credentialsForm)
+              navbarLayout "page/auth/reset-passphrase" $ do
+                  setTitle "Passphrase Reset — Snowdrift.coop"
+                  $(widgetFile "page/auth/reset-passphrase")
 
     sendAuthEmail to msg = do
         $logDebugSH msg
