@@ -29,6 +29,7 @@ library
     default-language: Haskell2010
     build-depends:
         base >=4.8 && <4.9
+        , bytestring >= 0.10.6.0
         , errors
         , lens
         , esqueleto
@@ -71,27 +72,27 @@ test-suite test
         , transformers
 
 -- executable make-payments {{{1
--- executable make-payments
---     main-is: make-payments.hs
---     hs-source-dirs: app, src
---     default-language: Haskell2010
---     ghc-options: -threaded -rtsopts -with-rtsopts=-N
---     build-depends:
---         base >=4.8 && <4.9
---         -- , bytestring
---         -- , lens
---         , run-persist
---         -- , stripe-haskell
---         -- , stripe-core
---     other-extensions:
---         NoImplicitPrelude
---         OverloadedStrings
---         ScopedTypeVariables
---         RecordWildCards
---         GeneralizedNewtypeDeriving
---         FlexibleContexts
---         TupleSections
---         LambdaCase
+executable make-payments
+    main-is: MakePaymentsMain.hs
+    hs-source-dirs: app
+    default-language: Haskell2010
+    ghc-options: -threaded -rtsopts -with-rtsopts=-N
+    build-depends:
+        base >=4.8 && <4.9
+        , bytestring
+        , crowdmatch
+        , run-persist
+        , stripe-core
+        , stripe-haskell
+    other-extensions:
+        NoImplicitPrelude
+        OverloadedStrings
+        ScopedTypeVariables
+        RecordWildCards
+        GeneralizedNewtypeDeriving
+        FlexibleContexts
+        TupleSections
+        LambdaCase
 
 -- executable crowdmatch {{{1
 executable crowdmatch
