@@ -1,7 +1,7 @@
 flags:
   Snowdrift:
     dev: true
-resolver: lts-6.17
+resolver: lts-6.31
 packages:
   - website
   - crowdmatch
