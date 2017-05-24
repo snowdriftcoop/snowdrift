@@ -24,4 +24,7 @@ main = do
     conf <- fmap
         (StripeConfig . StripeKey . pack . fromJust)
         (lookupEnv "STRIPE_SECRET_KEY")
-    runPersist (makePayments conf)
+    -- NB! The string passed to runPersistKeter must match the APPNAME used in
+    -- keter.sh to deploy the app. Must fix. (Duplicate comment from
+    -- CrowdmatchMain.)
+    makePayments conf (runPersistKeter "SnowdriftReboot")

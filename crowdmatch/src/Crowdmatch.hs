@@ -445,8 +445,10 @@ data Donor = Donor
 -- tables is this utility and the crowdmatch utility. None of those should ever
 -- be run simultaneously at present, so I'd rather have bad "performance" on
 -- operational mistakes, rather than bad/duplicate charges. :)
-makePayments :: MonadIO m => StripeConfig -> SqlPersistT m ()
-makePayments conf = do
+makePayments
+    :: (MonadIO env, MonadIO io)
+    => StripeConfig -> SqlRunner io env -> env ()
+makePayments conf runner = runner $ do
     -- Duplicating sql logic with Haskell logic to get rid of patrons
     -- without a CustomerId :/
     --
