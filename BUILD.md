@@ -57,9 +57,7 @@ Then follow the [Stack install instructions] for your distribution.
 
 Install Git and PostgreSQL by running this command as `root`:
 
-    pacman -S git postgresql
-
-Finally, install the [haskell-stack] package from the AUR.
+    pacman -S git postgresql stack
 
 ### NixOS
 
