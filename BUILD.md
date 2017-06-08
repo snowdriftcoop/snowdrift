@@ -55,7 +55,7 @@ Then follow the [Stack install instructions] for your distribution.
 
 ### Arch Linux
 
-Install Git and PostgreSQL by running this command as `root`:
+Install Git, PostgreSQL, and Stack by running this command as `root`:
 
     pacman -S git postgresql stack
 
