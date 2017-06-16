@@ -24,10 +24,10 @@ module Crowdmatch (
         , storePledge
         , deletePledge
 
-        -- * Trigger a crowdmatch
-        , crowdmatch
+        -- * Utilities designed to be used from the UNIX environment (errors go
+        -- to stderr, etc.)
 
-        -- * Trigger making payments
+        , crowdmatch
         , makePayments
 
         -- * Data retrieval
@@ -51,7 +51,7 @@ module Crowdmatch (
         , donationCents
         ) where
 
-import Control.Error (ExceptT(..), runExceptT)
+import Control.Error (ExceptT(..), runExceptT, note)
 import Control.Lens ((^.), from, view, Iso', iso)
 import Control.Monad (void)
 import Control.Monad.IO.Class (MonadIO, liftIO)
@@ -175,11 +175,26 @@ fetchPatron
     -> env Patron
 fetchPatron db = runMech db . FetchPatronI . (^. from external)
 
+-- | Execute a crowdmatch event
 crowdmatch
     :: (MonadIO io, MonadIO env)
     => SqlRunner io env -- ^
     -> env ()
 crowdmatch db = runMech db CrowdmatchI
+
+-- | Execute a payments event, sending charge commands to Stripe.
+--
+-- This holds a lock on the database to ensure consistency. That could kill
+-- concurrent performance, but right now the only thing hitting the payment
+-- tables is this utility and the crowdmatch utility. None of those should ever
+-- be run simultaneously at present, so I'd rather have bad "performance" on
+-- operational mistakes, rather than bad/duplicate charges. :)
+makePayments
+    :: (MonadIO io, MonadIO env)
+    => SqlRunner io env -- ^
+    -> StripeRunner
+    -> env ()
+makePayments db strp = runMech db (MakePaymentsI strp)
 
 --
 -- ONE LEVEL DOWN
@@ -202,6 +217,7 @@ data CrowdmatchI return where
     FetchProjectI :: CrowdmatchI Project
     FetchPatronI :: PPtr -> CrowdmatchI Patron
     CrowdmatchI :: CrowdmatchI ()
+    MakePaymentsI :: StripeRunner -> CrowdmatchI ()
 
 -- | Executing the actions
 runMech
@@ -290,6 +306,11 @@ runMech db FetchProjectI = db $ do
 runMech db (FetchPatronI pptr) =
     db $ fromModel . entityVal <$> upsertPatron pptr []
 
+
+--
+-- Crowdmatch and MakePayments
+--
+
 runMech db CrowdmatchI = db $ do
     active <- Skeleton.activePatrons
     let projectValue = fromIntegral (length active)
@@ -301,6 +322,44 @@ runMech db CrowdmatchI = db $ do
     recordCrowdmatch day amt (Entity pid _) = do
         insert_ (CrowdmatchHistory pid day amt)
         void (update pid [PatronDonationPayable +=. amt])
+
+runMech db (MakePaymentsI strp) = db $ do
+    -- Duplicating sql logic with Haskell logic to get rid of patrons
+    -- without a CustomerId :/
+    chargeable <- Skeleton.patronsReceivable minimumDonation
+    let donors =
+            map
+                (\(Entity pId p) -> note pId
+                    (Donor
+                     <$> Just pId
+                     <*> fmap unPaymentToken (Model.patronPaymentToken p)
+                     <*> Just (Model.patronDonationPayable p)))
+                chargeable
+        chargeAction = traverse (traverse (sendCharge strp)) donors
+        simplifiedOutcomes =
+            fmap
+                (map (either NoPaymentInfo (either ChargeFailure PayOk)))
+                chargeAction
+    chargeResults <- liftIO simplifiedOutcomes
+    mapM_ (recordResults strp) chargeResults
+  where
+    -- | Send the charge command to Stripe
+    --
+    -- For the Futurama milestone, we tack on a fee that covers the Stripe fee
+    -- to calculate the 'payment'.
+    sendCharge
+        :: MonadIO io
+        => StripeRunner
+        -> Donor
+        -> io (Either StripeError ChargeResult)
+    sendCharge strp Donor{..} =
+        fmap
+            (fmap (ChargeResult _donorPatron fee net))
+            (stripeChargeCustomer strp _donorCustomer cents)
+      where
+        cents = payment (_donorDonationPayable ^. donationCents)
+        fee = stripeFee cents
+        net = (cents - fee) ^. from donationCents
 
 --
 -- I N C E P T I O N
@@ -328,11 +387,20 @@ stripeDeleteCustomer
     -> io (Either StripeError ())
 stripeDeleteCustomer strp = liftIO . strp . DeleteCustomerI
 
+stripeChargeCustomer
+    :: MonadIO io
+    => StripeRunner
+    -> CustomerId
+    -> Cents
+    -> io (Either StripeError Charge)
+stripeChargeCustomer strp cust cents = liftIO . strp $ ChargeCustomerI cust cents
+
 -- | Stripe instructions we use
 data StripeI a where
     CreateCustomerI :: TokenId -> StripeI Customer
     UpdateCustomerI :: TokenId -> CustomerId -> StripeI Customer
     DeleteCustomerI :: CustomerId -> StripeI ()
+    ChargeCustomerI :: CustomerId -> Cents -> StripeI Charge
 
 -- | A default stripe runner
 runStripe
@@ -345,7 +413,15 @@ runStripe c = \case
         liftIO (stripe c (updateCustomer cust -&- cardToken))
     DeleteCustomerI cust ->
         void <$> liftIO (stripe c (deleteCustomer cust))
-
+    ChargeCustomerI cust cents ->
+        liftIO
+            . stripe c
+            . (-&- cust)
+            -- Supported upstream as of 2016-10-06, but not in our resolver yet
+            -- . (-&- ExpandParams ["balance_transaction"])
+            . flip createCharge USD
+            . view chargeCents
+            $ cents
 
 --
 -- Making payments
@@ -358,13 +434,11 @@ chargeCents = iso toAmount fromAmount
     toAmount (Cents i) = Amount (fromIntegral i)
     fromAmount (Amount i) = Cents (fromIntegral i)
 
-type StripeResult = Either StripeError Charge
-
 data ChargeResult = ChargeResult
         { _chargeResultPatron :: PatronId
         , _chargeResultFee :: Cents
         , _chargeResultNet :: DonationUnits
-        , _chargeResultStripe :: StripeResult
+        , _chargeResultCharge :: Charge
         } deriving (Show)
 
 -- | Calculate Stripe's fee: 2.9% + 30¢
@@ -389,7 +463,7 @@ stripeFee = round . (+ 30) . (* 0.029) . fromIntegral
 -- amount the project receives is equal to the amount they crowdmatched.
 --
 -- Proving that the rounding always works out was annoying, but I did it
--- with a brute-force program. It's ok up until integer underflows around
+-- with a brute-force program. It's ok up until integer overflows around
 -- ~$20M.
 --
 -- prop> \d -> d < 2*10^9 ==> let {p = payment d; f = stripeFee p} in p-f==d
@@ -438,69 +512,22 @@ data Donor = Donor
         , _donorDonationPayable :: DonationUnits
         } deriving (Show)
 
--- | Send charge commands to Stripe.
---
--- This holds a lock on the database to ensure consistency. That could kill
--- concurrent performance, but right now the only thing hitting the payment
--- tables is this utility and the crowdmatch utility. None of those should ever
--- be run simultaneously at present, so I'd rather have bad "performance" on
--- operational mistakes, rather than bad/duplicate charges. :)
-makePayments
-    :: (MonadIO env, MonadIO io)
-    => StripeConfig -> SqlRunner io env -> env ()
-makePayments conf runner = runner $ do
-    -- Duplicating sql logic with Haskell logic to get rid of patrons
-    -- without a CustomerId :/
-    --
-    -- #1 (hidden because Esqueleto)
-    chargeable <- Skeleton.patronsReceivable minimumDonation
-    let donors =
-            -- #2
-            mapMaybe
-                (\(Entity pId p) ->
-                    Donor
-                    <$> Just pId
-                    <*> fmap unPaymentToken (Model.patronPaymentToken p)
-                    <*> Just (Model.patronDonationPayable p))
-                chargeable
-    chargeResults <- liftIO (traverse (sendCharge conf) donors)
-    mapM_ (recordResults conf) chargeResults
-
--- | Send the charge command to Stripe
---
--- For the Futurama milestone, we tack on a fee that covers the Stripe fee
--- to calculate the 'payment'.
-sendCharge
-    :: StripeConfig
-    -> Donor
-    -> IO ChargeResult
-sendCharge conf Donor{..} =
-    (ChargeResult _donorPatron fee net <$>)
-        . stripe conf
-        . (-&- _donorCustomer)
-        -- Supported upstream as of 2016-10-06, but not in our resolver yet
-        -- . (-&- ExpandParams ["balance_transaction"])
-        . flip createCharge USD
-        . view chargeCents
-        $ cents
-  where
-    cents = payment (_donorDonationPayable ^. donationCents)
-    fee = stripeFee cents
-    net = (cents - fee) ^. from donationCents
+data PaymentOutcome a b c = PayOk a | NoPaymentInfo b | ChargeFailure c
 
 recordResults
-    :: MonadIO m
-    => StripeConfig
-    -> ChargeResult
+    :: (MonadIO m, Show b, Show c)
+    => StripeRunner
+    -> PaymentOutcome ChargeResult b c
     -> SqlPersistT m ()
-recordResults conf res@ChargeResult {..} =
-    either
-        (const (liftIO (hPrint stderr res)))
-        recordDonation
-        _chargeResultStripe
+recordResults strp = \case
+    NoPaymentInfo pId ->
+        liftIO
+            (hPrint stderr ("Skipped patron with no payment info: " ++ show pId))
+    ChargeFailure e -> liftIO (hPrint stderr e)
+    PayOk chargeResult -> recordDonation chargeResult
   where
-    recordDonation c@Charge {..} = do
-        ts <- liftIO (donationTimestamp conf c)
+    recordDonation c@ChargeResult {..} = do
+        ts <- liftIO (donationTimestamp strp _chargeResultCharge)
         insert_
             (DonationHistory
                 _chargeResultPatron
@@ -518,17 +545,18 @@ recordResults conf res@ChargeResult {..} =
 -- processed it. There was merely a secondary failure getting the
 -- TransactionBalance. Ideally we'd retry, with some sort of 'pending'
 -- status, but let's slap that together later.
-donationTimestamp :: StripeConfig -> Charge -> IO HistoryTime
-donationTimestamp conf = fmap HistoryTime . chargeTime
-  where
-    fallback = getCurrentTime
-    chargeTime Charge {..} =
-        maybe fallback transactionTime chargeBalanceTransaction
-    transactionTime = \case
-        Expanded BalanceTransaction {..} -> pure balanceTransactionCreated
-        Id balId -> (=<<)
-            (either (const fallback) (pure . balanceTransactionCreated))
-            (stripe conf (getBalanceTransaction balId))
+donationTimestamp :: StripeRunner -> Charge -> IO HistoryTime
+donationTimestamp = undefined
+-- donationTimestamp strp = fmap HistoryTime . chargeTime
+--   where
+--     fallback = getCurrentTime
+--     chargeTime Charge {..} =
+--         maybe fallback transactionTime chargeBalanceTransaction
+--     transactionTime = \case
+--         Expanded BalanceTransaction {..} -> pure balanceTransactionCreated
+--         Id balId -> (=<<)
+--             (either (const fallback) (pure . balanceTransactionCreated))
+--             (stripeTransactionBalance strp balId))
 
 --
 -- Helpers

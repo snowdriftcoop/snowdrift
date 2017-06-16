@@ -27,4 +27,4 @@ main = do
     -- NB! The string passed to runPersistKeter must match the APPNAME used in
     -- keter.sh to deploy the app. Must fix. (Duplicate comment from
     -- CrowdmatchMain.)
-    makePayments conf (runPersistKeter "SnowdriftReboot")
+    makePayments (runPersistKeter "SnowdriftReboot") (runStripe conf)
