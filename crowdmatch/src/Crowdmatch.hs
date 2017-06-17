@@ -3,6 +3,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE FlexibleContexts #-}
 
 -- | The one-stop module for the Crowdmatch mechanism!
 module Crowdmatch (
@@ -36,7 +37,7 @@ module Crowdmatch (
 
         -- * Types returned by crowdmatch actions
         , Patron(..)
-        , PatronId(..)
+        , PatronId
         , Project(..)
         , DonationUnits(..)
         , HistoryTime(..)
@@ -49,6 +50,7 @@ module Crowdmatch (
         , StripeI(..)
         , PPtr(..)
         , donationCents
+        , sufficientDonation
         ) where
 
 import Control.Error (ExceptT(..), runExceptT, note)
@@ -56,27 +58,19 @@ import Control.Lens ((^.), from, view, Iso', iso)
 import Control.Monad (void)
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import Data.Function (on)
-import Data.Maybe
 import Data.Ratio
 import Data.Time (UTCTime, getCurrentTime, utctDay)
-import Data.Time.Clock (getCurrentTime)
 import Database.Persist
 import Database.Persist.Sql (SqlPersistT)
-import System.Environment
 import System.IO
 import Web.Stripe (stripe, (-&-), StripeConfig, Expandable(..))
 import Web.Stripe.Balance
 import Web.Stripe.Charge
 import Web.Stripe.Customer
-        ( TokenId
-        , Customer
-        , CustomerId
-        , customerId
-        , updateCustomer
+        ( updateCustomer
         , createCustomer
         , deleteCustomer)
 import Web.Stripe.Error (StripeError)
-import qualified Data.ByteString.Char8 as BS
 
 import Crowdmatch.Model hiding (Patron(..))
 import qualified Crowdmatch.Model as Model
@@ -335,13 +329,13 @@ runMech db (MakePaymentsI strp) = db $ do
                      <*> fmap unPaymentToken (Model.patronPaymentToken p)
                      <*> Just (Model.patronDonationPayable p)))
                 chargeable
-        chargeAction = traverse (traverse (sendCharge strp)) donors
+        chargeAction = traverse (traverse sendCharge) donors
         simplifiedOutcomes =
             fmap
                 (map (either NoPaymentInfo (either ChargeFailure PayOk)))
                 chargeAction
     chargeResults <- liftIO simplifiedOutcomes
-    mapM_ (recordResults strp) chargeResults
+    mapM_ recordResults chargeResults
   where
     -- | Send the charge command to Stripe
     --
@@ -349,10 +343,9 @@ runMech db (MakePaymentsI strp) = db $ do
     -- to calculate the 'payment'.
     sendCharge
         :: MonadIO io
-        => StripeRunner
-        -> Donor
+        => Donor
         -> io (Either StripeError ChargeResult)
-    sendCharge strp Donor{..} =
+    sendCharge Donor{..} =
         fmap
             (fmap (ChargeResult _donorPatron fee net))
             (stripeChargeCustomer strp _donorCustomer cents)
@@ -360,6 +353,31 @@ runMech db (MakePaymentsI strp) = db $ do
         cents = payment (_donorDonationPayable ^. donationCents)
         fee = stripeFee cents
         net = (cents - fee) ^. from donationCents
+
+    recordResults
+        :: (MonadIO m, Show b, Show c)
+        => PaymentOutcome ChargeResult b c
+        -> SqlPersistT m ()
+    recordResults = \case
+        NoPaymentInfo pId ->
+            liftIO
+                (hPrint
+                    stderr
+                    ("Skipped patron with no payment info: " ++ show pId))
+        ChargeFailure e -> liftIO (hPrint stderr e)
+        PayOk chargeResult -> recordDonation chargeResult
+      where
+        recordDonation ChargeResult{..} = do
+            ts <- liftIO (stripeDonationTimestamp strp _chargeResultCharge)
+            insert_
+                (DonationHistory
+                    _chargeResultPatron
+                    ts
+                    _chargeResultNet
+                    _chargeResultFee)
+            update
+                _chargeResultPatron
+                [PatronDonationPayable -=. _chargeResultNet]
 
 --
 -- I N C E P T I O N
@@ -395,12 +413,36 @@ stripeChargeCustomer
     -> io (Either StripeError Charge)
 stripeChargeCustomer strp cust cents = liftIO . strp $ ChargeCustomerI cust cents
 
+-- | Tries to get the timestamp from the Charge's TransactionBalance
+-- sub-item. If that fails, it's cool, we'll just use a local variant of
+-- "now".
+--
+-- I don't want to bail on recording the charge if we can't get the
+-- timestamp, since the presence of the Charge itself means Stripe
+-- processed it. There was merely a secondary failure getting the
+-- TransactionBalance. Ideally we'd retry, with some sort of 'pending'
+-- status, but let's slap that together later.
+stripeDonationTimestamp
+    :: MonadIO io
+    => StripeRunner -> Charge -> io HistoryTime
+stripeDonationTimestamp strp charge = fmap HistoryTime (chargeTime charge)
+  where
+    fallback = liftIO getCurrentTime
+    chargeTime Charge{..} =
+        maybe fallback transactionTime chargeBalanceTransaction
+    transactionTime = \case
+        Expanded BalanceTransaction{..} -> pure balanceTransactionCreated
+        Id transId -> (=<<)
+            (either (const fallback) (pure . balanceTransactionCreated))
+            (strp (BalanceTransactionI transId))
+
 -- | Stripe instructions we use
 data StripeI a where
     CreateCustomerI :: TokenId -> StripeI Customer
     UpdateCustomerI :: TokenId -> CustomerId -> StripeI Customer
     DeleteCustomerI :: CustomerId -> StripeI ()
     ChargeCustomerI :: CustomerId -> Cents -> StripeI Charge
+    BalanceTransactionI :: TransactionId -> StripeI BalanceTransaction
 
 -- | A default stripe runner
 runStripe
@@ -422,6 +464,8 @@ runStripe c = \case
             . flip createCharge USD
             . view chargeCents
             $ cents
+    BalanceTransactionI transId ->
+        liftIO (stripe c (getBalanceTransaction transId))
 
 --
 -- Making payments
@@ -457,7 +501,7 @@ data ChargeResult = ChargeResult
 --
 -- I confirmed these facts when I wrote this function, but tests ftw.
 stripeFee :: Cents -> Cents
-stripeFee = round . (+ 30) . (* 0.029) . fromIntegral
+stripeFee = round . (+ 30) . (* (0.029 :: Double)) . fromIntegral
 
 -- | As of 2016-10-10, the amount a patron pays is increased so that the
 -- amount the project receives is equal to the amount they crowdmatched.
@@ -468,7 +512,7 @@ stripeFee = round . (+ 30) . (* 0.029) . fromIntegral
 --
 -- prop> \d -> d < 2*10^9 ==> let {p = payment d; f = stripeFee p} in p-f==d
 payment :: Cents -> Cents
-payment = round . (/ (1 - 0.029)) . (+ 30) . fromIntegral
+payment = round . (/ (1 - 0.029 :: Double)) . (+ 30) . fromIntegral
 
 -- | A donation is sufficient for processing if the Stripe fee is < 10%.
 -- https://tree.taiga.io/project/snowdrift/issue/457
@@ -513,50 +557,6 @@ data Donor = Donor
         } deriving (Show)
 
 data PaymentOutcome a b c = PayOk a | NoPaymentInfo b | ChargeFailure c
-
-recordResults
-    :: (MonadIO m, Show b, Show c)
-    => StripeRunner
-    -> PaymentOutcome ChargeResult b c
-    -> SqlPersistT m ()
-recordResults strp = \case
-    NoPaymentInfo pId ->
-        liftIO
-            (hPrint stderr ("Skipped patron with no payment info: " ++ show pId))
-    ChargeFailure e -> liftIO (hPrint stderr e)
-    PayOk chargeResult -> recordDonation chargeResult
-  where
-    recordDonation c@ChargeResult {..} = do
-        ts <- liftIO (donationTimestamp strp _chargeResultCharge)
-        insert_
-            (DonationHistory
-                _chargeResultPatron
-                ts
-                _chargeResultNet
-                _chargeResultFee)
-        update _chargeResultPatron [PatronDonationPayable -=. _chargeResultNet]
-
--- | Tries to get the timestamp from the Charge's TransactionBalance
--- sub-item. If that fails, it's cool, we'll just use a local variant of
--- "now".
---
--- I don't want to bail on recording the charge if we can't get the
--- timestamp, since the presence of the Charge itself means Stripe
--- processed it. There was merely a secondary failure getting the
--- TransactionBalance. Ideally we'd retry, with some sort of 'pending'
--- status, but let's slap that together later.
-donationTimestamp :: StripeRunner -> Charge -> IO HistoryTime
-donationTimestamp = undefined
--- donationTimestamp strp = fmap HistoryTime . chargeTime
---   where
---     fallback = getCurrentTime
---     chargeTime Charge {..} =
---         maybe fallback transactionTime chargeBalanceTransaction
---     transactionTime = \case
---         Expanded BalanceTransaction {..} -> pure balanceTransactionCreated
---         Id balId -> (=<<)
---             (either (const fallback) (pure . balanceTransactionCreated))
---             (stripeTransactionBalance strp balId))
 
 --
 -- Helpers
