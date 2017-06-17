@@ -37,6 +37,8 @@ import Test.QuickCheck
         , getPositive
         , counterexample)
 import Test.QuickCheck.Monadic (PropertyM, monadicIO, run, pick, monitor, assert)
+import Web.Stripe.Balance (BalanceTransaction(..))
+import Web.Stripe.Charge (Charge(..))
 import Web.Stripe.Customer (Customer(..), CustomerId(..), TokenId(..), customerId)
 import qualified Data.ByteString.Char8 as B
 import qualified Data.Text as T
@@ -72,6 +74,8 @@ dummyStripe = \case
         pure (Right Customer { customerId = cust })
     DeleteCustomerI _ ->
         pure (Right ())
+    ChargeCustomerI _ _ -> pure (Right Charge{})
+    BalanceTransactionI _ -> pure (Right BalanceTransaction{})
 
 type Runner = SqlRunner IO IO
 
@@ -175,7 +179,7 @@ sanityTests runner = describe "sanity tests" $ do
             length ls `shouldBe` 2
             Model.paymentTokenHistoryAction (head ls) `shouldBe` Create
             Model.paymentTokenHistoryAction (last ls) `shouldBe` Delete
-    specify "fetchPatron always succeeds" $ do
+    specify "fetchPatron creates patron if it doesn't exist" $ do
         p1 <- fetchPatron runner aelfred
         p2 <- fetchPatron runner aelfred
         p1 `shouldBe` p2
