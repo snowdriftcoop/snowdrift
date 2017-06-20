@@ -501,7 +501,7 @@ data ChargeResult = ChargeResult
 --
 -- I confirmed these facts when I wrote this function, but tests ftw.
 stripeFee :: Cents -> Cents
-stripeFee = round . (+ 30) . (* (0.029 :: Double)) . fromIntegral
+stripeFee = Cents . (+ 30) . round . (% 1000) . (* 29) . fromIntegral
 
 -- | As of 2016-10-10, the amount a patron pays is increased so that the
 -- amount the project receives is equal to the amount they crowdmatched.
@@ -512,7 +512,7 @@ stripeFee = round . (+ 30) . (* (0.029 :: Double)) . fromIntegral
 --
 -- prop> \d -> d < 2*10^9 ==> let {p = payment d; f = stripeFee p} in p-f==d
 payment :: Cents -> Cents
-payment = round . (/ (1 - 0.029 :: Double)) . (+ 30) . fromIntegral
+payment = Cents . round . (% (1000-29)) . (* 1000) . (+ 30) . fromIntegral
 
 -- | A donation is sufficient for processing if the Stripe fee is < 10%.
 -- https://tree.taiga.io/project/snowdrift/issue/457
