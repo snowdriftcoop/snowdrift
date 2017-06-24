@@ -7,7 +7,6 @@
 {-# OPTIONS_GHC -fno-warn-missing-signatures -fno-warn-orphans -fno-warn-missing-fields #-}
 
 import Control.Exception.Safe (bracket)
-import Control.Lens hiding (elements)
 import Control.Monad (void, (<=<))
 import Control.Monad.IO.Class (MonadIO)
 import Control.Monad.Reader (ask)
@@ -219,7 +218,7 @@ sanityTests runner = describe "sanity tests" $ do
                 storePledge runner (HarnessUser i)
         mapM_ mkPledge [1..10]
         val <- projectPledgeValue <$> fetchProject runner
-        val `shouldBe` view (from donationCents) (Cents 1)
+        val `shouldBe` centsToUnits (Cents 1)
     specify "1000 pledges = $1000 monthly income" $ do
         let mkPledge i = do
                 _ <- storePaymentToken runner dummyStripe (HarnessUser i) cardTok

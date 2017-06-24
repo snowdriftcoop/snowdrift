@@ -49,7 +49,8 @@ module Crowdmatch (
         , runMech
         , StripeI(..)
         , PPtr(..)
-        , donationCents
+        , centsToUnits
+        , unitsToCents
         , sufficientDonation
         ) where
 
@@ -294,7 +295,7 @@ runMech db FetchProjectI = db $ do
             (sum . map (Model.patronDonationPayable . entityVal))
             (selectList [] [])
     let pledgevalue = DonationUnits (fromIntegral numPledges)
-        income = view donationCents (pledgevalue * pledgevalue)
+        income = unitsToCents (pledgevalue * pledgevalue)
     pure (Project numPledges income pledgevalue receivable)
 
 runMech db (FetchPatronI pptr) =
@@ -350,9 +351,9 @@ runMech db (MakePaymentsI strp) = db $ do
             (fmap (ChargeResult _donorPatron fee net))
             (stripeChargeCustomer strp _donorCustomer cents)
       where
-        cents = payment (_donorDonationPayable ^. donationCents)
+        cents = payment (unitsToCents _donorDonationPayable)
         fee = stripeFee cents
-        net = (cents - fee) ^. from donationCents
+        net = centsToUnits (cents - fee)
 
     recordResults
         :: (MonadIO m, Show b, Show c)
@@ -526,7 +527,7 @@ sufficientDonation :: DonationUnits -> Bool
 sufficientDonation d =
     fee % p < maximumFee
   where
-    p = payment (d^.donationCents)
+    p = payment (unitsToCents d)
     fee = stripeFee p
     maximumFee = ((%) `on` Cents) 1 10
 
@@ -581,8 +582,8 @@ fromModel (Model.Patron _usr t c d p) = Patron t c d p
 
 -- | DonationUnits are truncated to usable cents for use in creating
 -- charges.
-donationCents :: Iso' DonationUnits Cents
-donationCents = iso toCents fromCents
-  where
-    fromCents = fromIntegral . (* 10)
-    toCents = fromIntegral . (`div` 10)
+unitsToCents :: DonationUnits -> Cents
+unitsToCents = fromIntegral . (`div` 10)
+
+centsToUnits :: Cents -> DonationUnits
+centsToUnits = fromIntegral . (* 10)
