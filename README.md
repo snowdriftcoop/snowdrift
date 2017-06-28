@@ -37,12 +37,6 @@ most efficient for you.
 
 ### Communicating with us
 
-Please **ask for help** and/or let us know any confusion you have at any point.
-We try to provide as many communication channels as possible. We're always happy
-to help guide newcomers through making their first contributions.
-
-Ways to get in touch:
-
 * [Create an issue] on Gitlab *(preferred)*
 
 * Create an issue on GitHub
@@ -50,9 +44,13 @@ Ways to get in touch:
 * Email us at <community@snowdrift.coop> to discuss your volunteer interests
 
 * Sign up on the [dev email list] (and perhaps [other email lists]), and send a
-  message introducing yourself to the community.
+  message introducing yourself to the community
 
-* Visit `#snowdrift` on freenode.net [IRC] for live chat.
+* Visit `#snowdrift` on freenode.net [IRC] for live chat
+
+Please **ask for help** and/or let us know if anything seems confusing. We try
+to provide as many communication channels as possible, and we're always happy to
+help guide newcomers through making their first contributions.
 
 License
 -------
