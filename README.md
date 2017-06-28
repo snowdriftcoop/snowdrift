@@ -1,28 +1,16 @@
 # [Snowdrift.coop]
 
-Snowdrift is the software that runs the website Snowdrift.coop.
+This is the software that runs the [Snowdrift.coop] website.
 
-**Snowdrift.coop is a non-profit, cooperative platform for funding public
-goods, specifically Free/Libre/Open (FLO) works.**
-
-Rivalrous physical goods and restricted proprietary works use pay-for-access
-business models that don't work for public goods. We can only get strong public
-goods with a critical mass of public support. Snowdrift.coop builds that support
-via a many-to-many matching pledge: Each patron of a FLO project agrees to
-donate a little for every patron who donates with them.
-
-For the basic ideas, see our [introduction].
-
-Snowdrift uses the **[Haskell]** programming language **[Yesod web framework]**.
-We stick to exclusively FLO resources and tools in all our work.
+* [Issues]
+* [Roadmap]
+* [What is Snowdrift?]
 
 ## Code repositories
 
-If you're reading this on GitHub, know that this is a mirror for the main code
-repository which we have (alongside accessory repos) in a GitLab CE instance
-running at [git.snowdrift.coop]. For convenience, we will accept pull-requests
-from GitHub, but we encourage regular contributors to sign up at the main
-repository.
+The main repository for Snowdrift is https://git.snowdrift.coop/sd/snowdrift. We
+are mirrored on GitHub, but you are encouraged to open issues and merge requests
+at the main location!
 
 ## Contributing
 
@@ -30,31 +18,39 @@ Snowdrift.coop welcomes contributions of all sorts. Even contributors with no
 technical experience can find ways to help. See our [how-to-help] page for more
 info about volunteering (including in non-programming ways).
 
-Our **[Contributor guide]** covers all the steps to getting involved with the
-Snowdrift code. It includes notes about our development practices, basic setup,
-and introductory resources for those new to Git or Haskell or even to
-programming generally.
+Our **[Contributor guide]** covers all the steps to getting started with the
+code. It includes notes about our development practices, basic setup, and
+introductory resources for those new to Git, Haskell, or even to programming
+in general.
+
+It talks about the following topics, summarized here:
 
 ### Building and testing the website
 
-To build the code on your local computer, follow our [Build instructions].
+Short version: follow our [Build instructions].
 
 ### Filing and searching issues/tickets
 
-For bugs and feature requests, we have a [ticket system at Taiga.io].
+Questions, bugs, and features are best handled in the [Issues] section of our
+main repository. However, you are welcome communicate with us in whatever way is
+most efficient for you.
 
 ### Communicating with us
 
-Please **ask for help** and/or let us know any confusion you have at any point
-via any of the communication channels mentioned below or elsewhere. We're always
-happy to help guide newcomers through making their first contributions.
+Please **ask for help** and/or let us know any confusion you have at any point.
+We try to provide as many communication channels as possible. We're always happy
+to help guide newcomers through making their first contributions.
 
 Ways to get in touch:
+
+* [Create an issue] on Gitlab *(preferred)*
+
+* Create an issue on GitHub
 
 * Email us at <community@snowdrift.coop> to discuss your volunteer interests
 
 * Sign up on the [dev email list] and perhaps [other email lists] and send a
-message introducing yourself to the community.
+  message introducing yourself to the community.
 
 * Visit `#snowdrift` on freenode.net [IRC] for live chat.
 
@@ -69,17 +65,21 @@ later version.
 Our text and graphics documents (non-program-code) are also licensed under
 [CC BY-SA 4.0 International].
 
+[Build instructions]: BUILD.md
 [CC BY-SA 4.0 International]: https://creativecommons.org/licenses/by-sa/4.0
 [Contributor guide]: CONTRIBUTING.md
-[Build instructions]: BUILD.md
-[dev email list]: https://lists.snowdrift.coop/mailman/listinfo/dev
+[Create an issues]: https://git.snowdrift.coop/sd/snowdrift/issues/new
 [GitHub]: https://github.com/snowdriftcoop/snowdrift
-[git.snowdrift.coop]: https://git.snowdrift.coop/sd
 [Haskell]: https://www.haskell.org/
+[IRC]: https://wiki.snowdrift.coop/community/irc
+[Issues]: https://git.snowdrift.coop/sd/snowdrift/issues
+[Roadmap]: https://tree.taiga.io/project/snowdrift/epics
+[Snowdrift.coop]: https://snowdrift.coop/
+[What is Snowdrift?]: https://snowdrift.coop/about
+[Yesod web framework]: http://www.yesodweb.com/
+[dev email list]: https://lists.snowdrift.coop/mailman/listinfo/dev
+[git.snowdrift.coop]: https://git.snowdrift.coop/sd
 [how-to-help]: https://wiki.snowdrift.coop/community/how-to-help
 [introduction]: https://wiki.snowdrift.coop/about
-[IRC]: https://wiki.snowdrift.coop/community/irc
 [other email lists]: https://lists.snowdrift.coop/
-[Snowdrift.coop]: https://snowdrift.coop/
 [ticket system at Taiga.io]: https://tree.taiga.io/project/snowdrift-dev/issues
-[Yesod web framework]: http://www.yesodweb.com/
