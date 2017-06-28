@@ -49,7 +49,7 @@ Ways to get in touch:
 
 * Email us at <community@snowdrift.coop> to discuss your volunteer interests
 
-* Sign up on the [dev email list] and perhaps [other email lists] and send a
+* Sign up on the [dev email list] (and perhaps [other email lists]), and send a
   message introducing yourself to the community.
 
 * Visit `#snowdrift` on freenode.net [IRC] for live chat.
@@ -68,7 +68,7 @@ Our text and graphics documents (non-program-code) are also licensed under
 [Build instructions]: BUILD.md
 [CC BY-SA 4.0 International]: https://creativecommons.org/licenses/by-sa/4.0
 [Contributor guide]: CONTRIBUTING.md
-[Create an issues]: https://git.snowdrift.coop/sd/snowdrift/issues/new
+[Create an issue]: https://git.snowdrift.coop/sd/snowdrift/issues/new
 [GitHub]: https://github.com/snowdriftcoop/snowdrift
 [Haskell]: https://www.haskell.org/
 [IRC]: https://wiki.snowdrift.coop/community/irc
