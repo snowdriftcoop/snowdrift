@@ -258,6 +258,12 @@ sanityTests runner = describe "sanity tests" $ do
             crowdmatch runner
             u :: [Entity Model.CrowdmatchHistory] <- runner $ selectList [] []
             length u `shouldBe` 1
+    describe "make-payments event" $ do
+        it "creates history" $ do
+            pure ()
+        it "doesn't make a charge with over X percent fees" $
+            pure ()
+
 
 propTests :: Runner -> SqlPersistT IO () -> Spec
 propTests runner trunq = modifyMaxSuccess (* 2) $
