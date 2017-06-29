@@ -10,7 +10,7 @@ This is the software that runs the [Snowdrift.coop] website.
 
 The main repository for Snowdrift is https://git.snowdrift.coop/sd/snowdrift. We
 are mirrored on GitHub, but you are encouraged to open issues and merge requests
-at the main location!
+at the main location.
 
 ## Contributing
 
@@ -27,7 +27,7 @@ It talks about the following topics, summarized here:
 
 ### Building and testing the website
 
-Short version: follow our [Build instructions].
+You can follow our [Build instructions].
 
 ### Filing and searching issues/tickets
 
