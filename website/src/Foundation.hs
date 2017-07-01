@@ -12,7 +12,6 @@ import qualified Data.List as List
 import qualified Data.Text as T
 import qualified Yesod.Core.Unsafe as Unsafe
 
-import Alerts (getAlert)
 import AppDataTypes
 import Avatar
 import Email
@@ -170,8 +169,7 @@ unsafeHandler = Unsafe.fakeHandlerGetLogger appLogger
 
 navbarLayout :: Text -> Widget -> Handler Html
 navbarLayout pageName widget = do
-    mmsg <- getMessage
-    malert <- getAlert
+    msgs <- getMessages
     maybeUser  <- maybeAuth
     avatar <- getUserAvatar (StaticR img_default_avatar_png)
                             (fmap entityVal maybeUser)

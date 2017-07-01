@@ -11,10 +11,13 @@ alertSite = LiteApp go
         alertWarning "Hey bub"
         pure $ toTypedContent ("" :: Html)
     go _ ["get"] = Just $ do
-        malert <- getAlert
-        fmap toTypedContent $ defaultLayout $ case malert of
-            Just alert -> [whamlet|#{alert}|]
-            Nothing -> ""
+        msgs <- getMessages
+        fmap toTypedContent $ defaultLayout
+            [whamlet|
+                $forall (level, msg) <- msgs
+                    <div .alert .alert-#{level}>
+                        #{msg}
+            |]
     go _ _ = Nothing
 
 withAlertSite :: SpecWith (TestApp LiteApp) -> Spec
