@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-module CrowdmatchMain (main) where
+module Main (main) where
 
 import Crowdmatch
 import RunPersist
