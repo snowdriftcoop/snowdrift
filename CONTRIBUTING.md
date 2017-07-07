@@ -91,10 +91,10 @@ there. As we encourage everyone to use FLO tools, the instructions below assume
 git.snowdrift.coop.
 
 To contribute changes to the project, first [create an account on git.snowdrift.coop] 
-(or sign in if you already have an account).
+or sign in if you already have an account.
 
-Once signed in, go to the [project repository], and click the "Fork" link on
-the top right.
+Once signed in, go to the [project repository], and click the "Fork" link
+At the top of the main page, below the header, you'll see a box with an address.
 
 After choosing your account for the fork, you should be at the page for your
 fork of the project. To check, see that the header at the top of the page has
@@ -220,7 +220,7 @@ soon (hopefully within a few hours, maybe a day or two depending on timing).
 
 Several ways to get started contributing and/or to learn more overall:
 
-* Visit our [Taiga Issues] page and filter to the "newbie friendly" tag and see
+* Visit our [Taiga Issues] page and filter to the "newcomer" tag and see
   what looks interesting and/or doable. Consider exploring other issues based
   on your skills or interests. If you decide to work on a specific ticket, chat
   with us on [IRC] or send an email to the [dev mailing list] to get added to
@@ -497,7 +497,7 @@ here are some resources (nearly all fully-FLO):
 [README]: README.md
 [Shakespearean Templates]: http://www.yesodweb.com/book/shakespearean-templates
 [SSH setup]: https://git.snowdrift.coop/help/ssh/README
-[Taiga Issues]: https://tree.taiga.io/project/snowdrift/issues
+[Taiga Issues]: https://tree.taiga.io/project/snowdrift-dev/issues
 [TEXTEDITORS.md]: TEXTEDITORS.md
 [Unobtrusive JavaScript]: http://en.wikipedia.org/wiki/Unobtrusive_JavaScript
 [wiki]: https://wiki.snowdrift.coop/
