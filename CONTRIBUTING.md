@@ -90,15 +90,13 @@ proprietary site [GitHub], which you may use if you already have an account
 there. As we encourage everyone to use FLO tools, the instructions below assume
 git.snowdrift.coop.
 
-To contribute changes to the project, first [create an account on git.snowdrift.coop] 
-or sign in if you already have an account.
-
-Once signed in, go to the [project repository], and click the "Fork" link
-At the top of the main page, below the header, you'll see a box with an address.
-
-After choosing your account for the fork, you should be at the page for your
-fork of the project. To check, see that the header at the top of the page has
-your account name followed by "/Snowdrift".
+Fork the project:
+* create an account on [git.snowdrift.coop](https://git.snowdrift.coop/users/sign_in) or sign in if you already have an account
+* go to the [project repository]
+* click the "Fork" link at the top of the main page, below the header
+* choose your account for the fork
+* you should end up at the page for your fork of the project; to check, see that the header at the top of the page has
+your account name followed by "/Snowdrift"
 
 ##### Adding your fork as a remote
 
@@ -484,7 +482,6 @@ here are some resources (nearly all fully-FLO):
     files from the code and explore the functions.
 
 [Build guide]: BUILD.md
-[create an account on git.snowdrift.coop]: https://git.snowdrift.coop/users/sign_in
 [design]: https://wiki.snowdrift.coop/design
 [dev mailing list]: https://lists.snowdrift.coop/mailman/listinfo/dev
 [git.snowdrift.coop]: https://git.snowdrift.coop/sd/snowdrift
