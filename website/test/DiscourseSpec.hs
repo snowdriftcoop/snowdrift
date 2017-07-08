@@ -19,6 +19,7 @@ import qualified Data.ByteString.Char8 as Char8
 
 {-# ANN module ("HLint: ignore Reduce duplication" :: String) #-}
 
+prop_validateSig :: NonEmptyList Word8 -> NonEmptyList Word8 -> Bool
 prop_validateSig (NonEmpty secret) (NonEmpty payload) = do
     let secret' = pack secret
         payload' = pack payload
@@ -26,6 +27,7 @@ prop_validateSig (NonEmpty secret) (NonEmpty payload) = do
     validateSig (DiscourseSecret secret') payload'
         (base16 (hmac secret' payload' :: HMAC SHA256))
 
+prop_parsePayload :: Nonce -> Url -> Expectation
 prop_parsePayload (Nonce nonce) (Url url) = do
     let payload = "nonce=" <> nonce <> "&return_sso_url=" <> encodeUtf8 url
     parsePayload (base64 payload)
