@@ -1,9 +1,9 @@
-module SampleSpec (spec) where
+module SampleSpec (spec_sample) where
 
 import TestImport
 
-spec :: Spec
-spec = withApp $ do
+spec_sample :: Spec
+spec_sample = withApp $ do
     describe "various properties" $ do
         it "/home links to /privacy and /terms" $ do
             get WelcomeR

@@ -13,30 +13,27 @@ import Crypto.MAC.HMAC (HMAC, hmac)
 import Data.ByteArray (ByteArray, ByteArrayAccess)
 import Data.ByteArray.Encoding (Base(Base16, Base64URLUnpadded), convertToBase)
 import Data.Text.Arbitrary ()
-import Test.Hspec.QuickCheck (prop)
-import Test.QuickCheck (Arbitrary, arbitrary, choose, oneof, vectorOf, NonEmptyList(..))
+import Test.Tasty.QuickCheck (Arbitrary, arbitrary, choose, oneof, vectorOf, NonEmptyList(..))
 
 import qualified Data.ByteString.Char8 as Char8
 
 {-# ANN module ("HLint: ignore Reduce duplication" :: String) #-}
 
-spec :: Spec
-spec = do
-    prop "validateSig" $ \(NonEmpty secret) (NonEmpty payload) -> do
-        let secret' = pack secret
-            payload' = pack payload
+prop_validateSig (NonEmpty secret) (NonEmpty payload) = do
+    let secret' = pack secret
+        payload' = pack payload
 
-        validateSig (DiscourseSecret secret') payload'
-            (base16 (hmac secret' payload' :: HMAC SHA256))
+    validateSig (DiscourseSecret secret') payload'
+        (base16 (hmac secret' payload' :: HMAC SHA256))
 
-    prop "parsePayload" $ \(Nonce nonce) (Url url) -> do
-        let payload = "nonce=" <> nonce <> "&return_sso_url=" <> encodeUtf8 url
-        parsePayload (base64 payload)
-            `shouldBe`
-            Right DiscoursePayload
-                    { dpNonce = nonce
-                    , dpUrl   = url
-                    }
+prop_parsePayload (Nonce nonce) (Url url) = do
+    let payload = "nonce=" <> nonce <> "&return_sso_url=" <> encodeUtf8 url
+    parsePayload (base64 payload)
+        `shouldBe`
+        Right DiscoursePayload
+                { dpNonce = nonce
+                , dpUrl   = url
+                }
 
 -- 16 bytes of [0-9A-F]
 newtype Nonce

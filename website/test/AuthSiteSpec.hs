@@ -4,13 +4,13 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -fno-warn-unused-binds #-}
-module AuthSiteSpec (spec) where
+module AuthSiteSpec (spec_authSite) where
 
 import TestImport hiding (Handler)
 import Database.Persist.Sql hiding (get)
 import Database.Persist.Postgresql (pgConnStr)
 import Network.Wai.Test (SResponse(..))
-import Test.HUnit (assertBool)
+import Test.Tasty.HUnit (assertBool)
 import Yesod hiding (get)
 import Yesod.Default.Config2 (ignoreEnv, loadYamlSettings)
 import qualified Data.Text as T
@@ -171,8 +171,8 @@ withBob = beforeWith makeBob
 
 -- ** The actual tests!
 
-spec :: Spec
-spec = mainSpecs >> authRouteSpec
+spec_authSite :: Spec
+spec_authSite = mainSpecs >> authRouteSpec
 
 -- | Having this defined separately is clumsy. It should be moved back into
 -- the right spot. The problem is that it needs a different value of

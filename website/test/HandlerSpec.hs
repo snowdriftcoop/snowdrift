@@ -1,4 +1,4 @@
-module HandlerSpec (spec) where
+module HandlerSpec (spec_handler) where
 
 import TestImport
 
@@ -14,8 +14,8 @@ import Network.Wai.Test (SResponse(..))
 
 {-# ANN module ("HLint: ignore Reduce duplication" :: String) #-}
 
-spec :: Spec
-spec = withApp $ do
+spec_handler :: Spec
+spec_handler = withApp $ do
     describe "getRobotsR" getRobotsSpec
     describe "getFaviconR" getFaviconSpec
     describe "getWelcomeR" getWelcomeSpec

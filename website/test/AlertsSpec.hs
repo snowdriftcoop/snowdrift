@@ -1,4 +1,4 @@
-module AlertsSpec (spec) where
+module AlertsSpec (spec_alerts) where
 
 import TestImport
 import Alerts
@@ -20,8 +20,8 @@ alertSite = LiteApp go
 withAlertSite :: SpecWith (TestApp LiteApp) -> Spec
 withAlertSite = before $ pure (alertSite, id)
 
-spec :: Spec
-spec = withAlertSite $
+spec_alerts :: Spec
+spec_alerts = withAlertSite $
     it "adds an alert" $ do
         get getR
         htmlCount ".alert" 0

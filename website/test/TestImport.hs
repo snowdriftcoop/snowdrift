@@ -10,14 +10,14 @@ import Database.Persist.Postgresql (pgConnStr, ConnectionString)
 import Foundation as X
 import Network.HTTP.Types (Status(..))
 import Network.Wai.Test (SResponse(..))
-import Test.Hspec as X
+import Test.Tasty.Hspec as X
 import Yesod.Default.Config2 (ignoreEnv, loadYamlSettings)
 import Yesod.Test as X
 import qualified Data.Text.Encoding as T
 import qualified Database.PostgreSQL.Simple as PG
 
 -- For htmlHasLink
-import Test.HUnit
+import Test.Tasty.HUnit
 import Yesod.Core
 
 import Application (makeFoundation, makeLogWare)
