@@ -27,3 +27,4 @@ extra-deps:
   - libravatar-0.4
   - titlecase-0.1.0.2
   - formattable-0.1.1
+  - tasty-discover-2.0.3
