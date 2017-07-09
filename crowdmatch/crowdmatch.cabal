@@ -33,7 +33,6 @@ library
         , errors
         , lens
         , esqueleto
-        , operational
         , persistent
         , persistent-template
         , postgresql-simple
@@ -59,7 +58,6 @@ test-suite test
         , hspec
         , lens
         , mtl
-        , operational
         , persistent
         , persistent-postgresql
         , postgresql-simple
