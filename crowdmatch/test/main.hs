@@ -1,20 +1,22 @@
-{-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# OPTIONS_GHC -fno-warn-missing-signatures -fno-warn-orphans -fno-warn-missing-fields #-}
 
+import Control.Concurrent (MVar, modifyMVar_, newEmptyMVar, newMVar)
 import Control.Exception.Safe (bracket)
-import Control.Lens hiding (elements)
 import Control.Monad (void, (<=<))
-import Control.Monad.IO.Class (MonadIO)
+import Control.Monad.IO.Class (MonadIO, liftIO)
 import Control.Monad.Reader (ask)
 import Data.Foldable (traverse_)
 import Data.List (partition)
 import Data.Monoid ((<>))
 import Data.Text (Text)
+import Data.Time (getCurrentTime)
 import Database.Persist
 import Database.Persist.Postgresql
         (SqlPersistT, runMigration, connEscapeName, unSingle, rawSql, rawExecute)
@@ -22,7 +24,15 @@ import RunPersist (runPersistPool)
 import System.Directory (createDirectoryIfMissing)
 import System.Environment (setEnv)
 import Test.Hspec
-        (hspec, before_, Spec, describe, it, shouldBe, shouldNotBe, specify)
+        ( runIO
+        , hspec
+        , before_
+        , Spec
+        , describe
+        , it
+        , shouldBe
+        , shouldNotBe
+        , specify)
 import Test.Hspec.QuickCheck (modifyMaxSuccess, prop)
 import Test.QuickCheck
         ( Arbitrary(..)
@@ -37,6 +47,8 @@ import Test.QuickCheck
         , getPositive
         , counterexample)
 import Test.QuickCheck.Monadic (PropertyM, monadicIO, run, pick, monitor, assert)
+import Web.Stripe.Balance (BalanceTransaction(..))
+import Web.Stripe.Charge (Charge(..))
 import Web.Stripe.Customer (Customer(..), CustomerId(..), TokenId(..), customerId)
 import qualified Data.ByteString.Char8 as B
 import qualified Data.Text as T
@@ -63,15 +75,26 @@ instance Arbitrary PaymentToken where
 instance Arbitrary TokenId where
     arbitrary = TokenId <$> arbitrary
 
--- | Use this instead of actually talking to Stripe during tests
-dummyStripe :: MonadIO m => StripeI a -> m (Either b a)
-dummyStripe = \case
+data StripeState = StripeState { lastCharge :: Maybe Cents } deriving (Eq, Show)
+
+-- | Use this instead of actually talking to Stripe during tests. Uses an MVar
+-- to maintain stripe's internal state.
+dummyStripe
+    :: MonadIO m => MVar StripeState -> StripeI a -> m (Either b a)
+dummyStripe state = \case
     CreateCustomerI _tok ->
         pure (Right Customer { customerId = CustomerId "dummy" })
     UpdateCustomerI _tok cust ->
         pure (Right Customer { customerId = cust })
     DeleteCustomerI _ ->
         pure (Right ())
+    ChargeCustomerI _ c -> do
+        liftIO
+            (modifyMVar_ state
+                (\StripeState {..} ->
+                    pure StripeState { lastCharge = Just c, .. }))
+        pure (Right Charge{ chargeBalanceTransaction = Nothing })
+    BalanceTransactionI _ -> pure (Right BalanceTransaction{})
 
 type Runner = SqlRunner IO IO
 
@@ -104,8 +127,11 @@ genHistory runner = do
             , (2, storePledge' x)
             , (1, delPledge' x)
             ])
-    storeToken' x = void . storePaymentToken runner dummyStripe x <$> arbitrary
-    delToken' = pure . void . deletePaymentToken runner dummyStripe
+    dummyStripe' a = do
+        v <- liftIO newEmptyMVar
+        dummyStripe v a
+    storeToken' x = void . storePaymentToken runner dummyStripe' x <$> arbitrary
+    delToken' = pure . void . deletePaymentToken runner dummyStripe'
     storePledge' = pure . storePledge runner
     delPledge' = pure . deletePledge runner
 
@@ -136,7 +162,7 @@ main = withTestDatabase $ runPersistPool $ \runner -> do
     -- problems with the current design of manual migrations.
     bracket (PG.connectPostgreSQL "") PG.close crowdmatchManualMigrations
     hspec $ before_ (runner trunq) $ do
-        sanityTests runner
+        unitTests runner
         propTests runner trunq
   where
     -- A query that empties all tables, used before each database test.
@@ -153,46 +179,49 @@ main = withTestDatabase $ runPersistPool $ \runner -> do
         -- Don't do it yet
         pure (rawExecute trunq [])
 
-sanityTests :: Runner -> Spec
-sanityTests runner = describe "sanity tests" $ do
+unitTests :: Runner -> Spec
+unitTests runner = describe "unit tests" $ do
     let payTok = PaymentToken (CustomerId "dummy")
         cardTok = TokenId "pumpkin"
         aelfred = HarnessUser 1
+        dummyStripe' a = do
+            v <- liftIO (newMVar (StripeState Nothing))
+            dummyStripe v a
     describe "stored token" $ do
         it "is retrievable" $ do
-            _ <- storePaymentToken runner dummyStripe aelfred cardTok
+            _ <- storePaymentToken runner dummyStripe' aelfred cardTok
             pat <- fetchPatron runner aelfred
             patronPaymentToken pat `shouldBe` Just payTok
         it "disappears" $ do
-            _ <- storePaymentToken runner dummyStripe aelfred cardTok
-            _ <- deletePaymentToken runner dummyStripe aelfred
+            _ <- storePaymentToken runner dummyStripe' aelfred cardTok
+            _ <- deletePaymentToken runner dummyStripe' aelfred
             pat <- fetchPatron runner aelfred
             patronPaymentToken pat `shouldBe` Nothing
         it "has history recorded" $ do
-            _ <- storePaymentToken runner dummyStripe aelfred cardTok
-            _ <- deletePaymentToken runner dummyStripe aelfred
+            _ <- storePaymentToken runner dummyStripe' aelfred cardTok
+            _ <- deletePaymentToken runner dummyStripe' aelfred
             ls <- runner $ map entityVal <$> selectList [] []
             length ls `shouldBe` 2
             Model.paymentTokenHistoryAction (head ls) `shouldBe` Create
             Model.paymentTokenHistoryAction (last ls) `shouldBe` Delete
-    specify "fetchPatron always succeeds" $ do
+    specify "fetchPatron creates patron if it doesn't exist" $ do
         p1 <- fetchPatron runner aelfred
         p2 <- fetchPatron runner aelfred
         p1 `shouldBe` p2
     specify "stored pledge is retrievable" $ do
-        _ <- storePaymentToken runner dummyStripe aelfred cardTok
+        _ <- storePaymentToken runner dummyStripe' aelfred cardTok
         storePledge runner aelfred
         pat <- fetchPatron runner aelfred
         patronPledgeSince pat `shouldNotBe` Nothing
     specify "deleted pledge is retrievable" $ do
-        _ <- storePaymentToken runner dummyStripe aelfred cardTok
+        _ <- storePaymentToken runner dummyStripe' aelfred cardTok
         storePledge runner aelfred
         deletePledge runner aelfred
         pat <- fetchPatron runner aelfred
         patronPledgeSince pat `shouldBe` Nothing
     describe "crowd size" $ do
         it "gets bumped by pledging" $ do
-            _ <- storePaymentToken runner dummyStripe aelfred cardTok
+            _ <- storePaymentToken runner dummyStripe' aelfred cardTok
             storePledge runner aelfred
             p <- fetchProject runner
             projectCrowd p `shouldBe` 1
@@ -202,30 +231,30 @@ sanityTests runner = describe "sanity tests" $ do
             p <- fetchProject runner
             projectCrowd p `shouldBe` 0
         it "shrinks with removal of payment token" $ do
-            _ <- storePaymentToken runner dummyStripe aelfred cardTok
+            _ <- storePaymentToken runner dummyStripe' aelfred cardTok
             storePledge runner aelfred
             p1 <- projectCrowd <$> fetchProject runner
             p1 `shouldBe` 1
-            _ <- deletePaymentToken runner dummyStripe aelfred
+            _ <- deletePaymentToken runner dummyStripe' aelfred
             p2 <- projectCrowd <$> fetchProject runner
             p2 `shouldBe` 0
     specify "10 pledges = 1 cent" $ do
         let mkPledge i = do
-                _ <- storePaymentToken runner dummyStripe (HarnessUser i) cardTok
+                _ <- storePaymentToken runner dummyStripe' (HarnessUser i) cardTok
                 storePledge runner (HarnessUser i)
         mapM_ mkPledge [1..10]
         val <- projectPledgeValue <$> fetchProject runner
-        val `shouldBe` view (from donationCents) (Cents 1)
+        val `shouldBe` centsToUnits (Cents 1)
     specify "1000 pledges = $1000 monthly income" $ do
         let mkPledge i = do
-                _ <- storePaymentToken runner dummyStripe (HarnessUser i) cardTok
+                _ <- storePaymentToken runner dummyStripe' (HarnessUser i) cardTok
                 storePledge runner (HarnessUser i)
         mapM_ mkPledge [1..1000]
         val <- projectMonthlyIncome <$> fetchProject runner
         val `shouldBe` Cents (100 * 1000)
     describe "crowdmatch event" $ do
         let mkPatron i =
-                void (storePaymentToken runner dummyStripe (HarnessUser i) cardTok)
+                void (storePaymentToken runner dummyStripe' (HarnessUser i) cardTok)
             mkPledge i = do
                 mkPatron i
                 storePledge runner (HarnessUser i)
@@ -255,6 +284,38 @@ sanityTests runner = describe "sanity tests" $ do
             crowdmatch runner
             u :: [Entity Model.CrowdmatchHistory] <- runner $ selectList [] []
             length u `shouldBe` 1
+    describe "make-payments event" $ do
+        now <- runIO getCurrentTime
+        let patronWithBalance i u =
+                Model.Patron
+                    (Model.PPtr i)
+                    now
+                    (Just (PaymentToken (CustomerId "foo")))
+                    u
+                    Nothing
+        it "creates history" $ do
+            void (runner (insert (patronWithBalance 1 (DonationUnits 50000))))
+            makePayments runner dummyStripe'
+            h :: [Entity Model.DonationHistory] <- runner $ selectList [] []
+            length h `shouldBe` 1
+        it "zeroes donations" $ do
+            void (runner (insert (patronWithBalance 1 (DonationUnits 5000))))
+            makePayments runner dummyStripe'
+            p <- fetchPatron runner (HarnessUser 1)
+            patronDonationPayable p `shouldBe` DonationUnits 0
+        it "accounts for fees" $ do
+            void (runner (insert (patronWithBalance 1 (DonationUnits 5000))))
+            makePayments runner dummyStripe'
+            h :: Model.DonationHistory <-
+                fmap (entityVal . head) $ runner $ selectList [] []
+            -- 500 * 2.99% + 30.9 (roughly the effective fee rate, after
+            -- adding enough to pay the project the true donation amount)
+            Model.donationHistoryFee h `shouldBe` 46
+        it "adds to the project what it takes from the patron" $ do
+            void (runner (insert (patronWithBalance 1 (DonationUnits 5000))))
+            makePayments runner dummyStripe'
+            p <- fetchProject runner
+            projectDonationsReceived p `shouldBe` 5000
 
 propTests :: Runner -> SqlPersistT IO () -> Spec
 propTests runner trunq = modifyMaxSuccess (* 2) $

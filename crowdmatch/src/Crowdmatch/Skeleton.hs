@@ -39,3 +39,12 @@ activePatrons =
         return p
   where
     activePatron = not_ . isNothing . (^. PatronPledgeSince)
+
+-- | Patrons with outstanding donation balances.
+patronsReceivable :: MonadIO m => DonationUnits -> SqlPersistT m [Entity Patron]
+patronsReceivable minBal =
+    select $
+    from $ \p -> do
+        where_ (not_ (isNothing (p ^. PatronPaymentToken))
+            &&. (p ^. PatronDonationPayable >=. val minBal))
+        return p
