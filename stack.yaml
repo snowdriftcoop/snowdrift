@@ -1,23 +1,15 @@
 flags:
   Snowdrift:
     dev: true
-resolver: lts-6.31
+resolver: lts-8.21
 packages:
   - website
   - crowdmatch
   - run-persist
-  - location:
-      git: https://git.snowdrift.coop/sd/persistent.git
-      commit: af5ec51e6b4b9255867e94916aef138c1968b85e
-    subdirs:
-      - persistent
-    extra-dep: true
-  - location:
-     git: https://git.snowdrift.coop/sd/postgresql-simple-migration-patches.git
-     commit: 8c4983b46fd12759a1d0be8d4460a59efbb704c2
-    extra-dep: true
 extra-deps:
   - hashids-1.0.2.3
   - libravatar-0.4
-  - titlecase-0.1.0.2
-  - tasty-discover-2.0.3
+  # Version in lts-8 is still old and bad
+  - tasty-discover-3.0.2
+  # Upsert is fixed in 2.7, which is not in lts-8
+  - persistent-2.7.0

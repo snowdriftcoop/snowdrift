@@ -3,7 +3,7 @@ module TestImport
     , module X
     ) where
 
-import ClassyPrelude as X hiding (delete, deleteBy)
+import ClassyPrelude as X hiding (delete, deleteBy, Handler)
 import Database.Persist as X hiding (get)
 import Database.Persist.Sql (SqlPersistM, runSqlPersistMPool)
 import Database.Persist.Postgresql (pgConnStr, ConnectionString)

@@ -1,5 +1,5 @@
 #!/usr/bin/env stack
--- stack --install-ghc runghc --package turtle --package shake -- -rtsopts -with-rtsopts=-I0 -O0
+-- stack --resolver lts-6.31 --install-ghc runghc --package turtle --package shake -- -rtsopts -with-rtsopts=-I0 -O0
 
 {-# LANGUAGE OverloadedStrings #-}
 

@@ -7,7 +7,6 @@
 module Settings where
 
 import ClassyPrelude.Yesod
-import Control.Exception (throw)
 import Data.Aeson (Result(..), fromJSON, withObject, (.!=), (.:?))
 import Data.FileEmbed (embedFile)
 import Data.Yaml (decodeEither')
@@ -110,8 +109,11 @@ configSettingsYmlBS :: ByteString
 configSettingsYmlBS = $(embedFile configSettingsYml)
 
 -- | @config/settings.yml@, parsed to a @Value@.
+-- Using impureThrow since that mimics existing behavior (which used to be
+-- Control.Exception.throw). I don't care to fix this, since I would rather
+-- rewrite this entire module.
 configSettingsYmlValue :: Value
-configSettingsYmlValue = either throw id $ decodeEither' configSettingsYmlBS
+configSettingsYmlValue = either impureThrow id $ decodeEither' configSettingsYmlBS
 
 -- | A version of @AppSettings@ parsed at compile time from @config/settings.yml@.
 compileTimeAppSettings :: AppSettings
