@@ -59,6 +59,7 @@ import Control.Lens ((^.), from, view, Iso', iso)
 import Control.Monad (void)
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import Data.Function (on)
+import Data.Int (Int32)
 import Data.Ratio
 import Data.Time (UTCTime, getCurrentTime, utctDay)
 import Database.Persist
@@ -111,6 +112,7 @@ data Project = Project
         , projectMonthlyIncome :: Cents
         , projectPledgeValue :: DonationUnits
         , projectDonationReceivable :: DonationUnits
+        , projectDonationsReceived :: DonationUnits
         }
 
 -- | Record a 'TokenId' for a patron.
@@ -294,9 +296,16 @@ runMech db FetchProjectI = db $ do
         fmap
             (sum . map (Model.patronDonationPayable . entityVal))
             (selectList [] [])
+    -- This should be verified against Stripe. This calculation is nothing more
+    -- than a "guess".
+    received <-
+        fmap
+            (sum . map (Model.donationHistoryAmount . entityVal))
+            (selectList [] [])
+
     let pledgevalue = DonationUnits (fromIntegral numPledges)
         income = unitsToCents (pledgevalue * pledgevalue)
-    pure (Project numPledges income pledgevalue receivable)
+    pure (Project numPledges income pledgevalue receivable received)
 
 runMech db (FetchPatronI pptr) =
     db $ fromModel . entityVal <$> upsertPatron pptr []
@@ -502,7 +511,11 @@ data ChargeResult = ChargeResult
 --
 -- I confirmed these facts when I wrote this function, but tests ftw.
 stripeFee :: Cents -> Cents
-stripeFee = Cents . (+ 30) . round . (% 1000) . (* 29) . fromIntegral
+stripeFee = Cents . (+ 30) . round' . (% 1000) . (* 29) . fromIntegral
+  where
+    -- Monomorphize the type
+    round' :: Rational -> Int32
+    round' = round
 
 -- | As of 2016-10-10, the amount a patron pays is increased so that the
 -- amount the project receives is equal to the amount they crowdmatched.
@@ -513,7 +526,11 @@ stripeFee = Cents . (+ 30) . round . (% 1000) . (* 29) . fromIntegral
 --
 -- prop> \d -> d < 2*10^9 ==> let {p = payment d; f = stripeFee p} in p-f==d
 payment :: Cents -> Cents
-payment = Cents . round . (% (1000-29)) . (* 1000) . (+ 30) . fromIntegral
+payment = Cents . round' . (% (1000-29)) . (* 1000) . (+ 30) . fromIntegral
+  where
+    -- monomorphize
+    round' :: Rational -> Int32
+    round' = round
 
 -- | A donation is sufficient for processing if the Stripe fee is < 10%.
 -- https://tree.taiga.io/project/snowdrift/issue/457
