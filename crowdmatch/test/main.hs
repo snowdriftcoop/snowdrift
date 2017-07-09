@@ -131,8 +131,8 @@ genHistory runner = do
         v <- liftIO newEmptyMVar
         dummyStripe v a
     storeToken' x =
-        void . runner . storePaymentToken dummyStripe x <$> arbitrary
-    delToken' = pure . void . runner . deletePaymentToken dummyStripe
+        void . runner . storePaymentToken dummyStripe' x <$> arbitrary
+    delToken' = pure . void . runner . deletePaymentToken dummyStripe'
     storePledge' = pure . runner . storePledge
     delPledge' = pure . runner . deletePledge
 
@@ -310,27 +310,30 @@ unitTests runner = describe "unit tests" $ do
                     u
                     Nothing
         it "creates history" $ do
-            void (runner (insert (patronWithBalance 1 (DonationUnits 50000))))
-            makePayments runner dummyStripe'
-            h :: [Entity Model.DonationHistory] <- runner $ selectList [] []
-            length h `shouldBe` 1
+            hs :: [Entity Model.DonationHistory] <- runner $ do
+                void (insert (patronWithBalance 1 (DonationUnits 50000)))
+                makePayments dummyStripe'
+                selectList [] []
+            length hs `shouldBe` 1
         it "zeroes donations" $ do
-            void (runner (insert (patronWithBalance 1 (DonationUnits 5000))))
-            makePayments runner dummyStripe'
-            p <- fetchPatron runner (HarnessUser 1)
+            p <- runner $ do
+                void (insert (patronWithBalance 1 (DonationUnits 5000)))
+                makePayments dummyStripe'
+                fetchPatron (HarnessUser 1)
             patronDonationPayable p `shouldBe` DonationUnits 0
         it "accounts for fees" $ do
-            void (runner (insert (patronWithBalance 1 (DonationUnits 5000))))
-            makePayments runner dummyStripe'
-            h :: Model.DonationHistory <-
-                fmap (entityVal . head) $ runner $ selectList [] []
+            h :: Model.DonationHistory <- runner $ do
+                void (insert (patronWithBalance 1 (DonationUnits 5000)))
+                makePayments dummyStripe'
+                (entityVal . head) <$> selectList [] []
             -- 500 * 2.99% + 30.9 (roughly the effective fee rate, after
             -- adding enough to pay the project the true donation amount)
             Model.donationHistoryFee h `shouldBe` 46
         it "adds to the project what it takes from the patron" $ do
-            void (runner (insert (patronWithBalance 1 (DonationUnits 5000))))
-            makePayments runner dummyStripe'
-            p <- fetchProject runner
+            p <- runner $ do
+                void (insert (patronWithBalance 1 (DonationUnits 5000)))
+                makePayments dummyStripe'
+                fetchProject
             projectDonationsReceived p `shouldBe` 5000
 
 propTests :: Runner -> SqlPersistT IO () -> Spec

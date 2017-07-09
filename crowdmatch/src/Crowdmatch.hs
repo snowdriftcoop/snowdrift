@@ -180,11 +180,10 @@ crowdmatch = runMech CrowdmatchI
 -- be run simultaneously at present, so I'd rather have bad "performance" on
 -- operational mistakes, rather than bad/duplicate charges. :)
 makePayments
-    :: (MonadIO io, MonadIO env)
-    => SqlRunner io env -- ^
-    -> StripeRunner
-    -> env ()
-makePayments db strp = runMech db (MakePaymentsI strp)
+    :: MonadIO env
+    => StripeRunner -- ^
+    -> SqlPersistT env ()
+makePayments strp = runMech (MakePaymentsI strp)
 
 --
 -- ONE LEVEL DOWN
@@ -315,7 +314,7 @@ runMech CrowdmatchI = do
         insert_ (CrowdmatchHistory pid day amt)
         void (update pid [PatronDonationPayable +=. amt])
 
-runMech db (MakePaymentsI strp) = db $ do
+runMech (MakePaymentsI strp) = do
     -- Duplicating sql logic with Haskell logic to get rid of patrons
     -- without a CustomerId :/
     chargeable <- Skeleton.patronsReceivable minimumDonation
