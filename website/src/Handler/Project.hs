@@ -11,8 +11,8 @@ import MarkupInstances ()
 getSnowdriftProjectR :: Handler Html
 getSnowdriftProjectR = do
     muid <- fmap entityKey <$> maybeAuth
-    mpatron <- traverse (fetchPatron runDB) muid
-    project <- fetchProject runDB
+    (mpatron, project) <-
+        runDB $ (,) <$> traverse fetchPatron muid <*> fetchProject
     (pledgeNoCSRF, _) <- generateFormPost (renderDivs pledgeForm)
     deletePledgeWidget <-
         maybe (pure "") (const genDeleteWidget) (patronPledgeSince =<< mpatron)

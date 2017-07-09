@@ -25,7 +25,7 @@ paymentForm formId =
 getPaymentInfoR :: Handler Html
 getPaymentInfoR = do
     Entity uid user <- requireAuth
-    patron <- fetchPatron runDB uid
+    patron <- runDB $ fetchPatron uid
     deletePaymentInfoWidget <- fst <$> generateFormPost deletePaymentInfoForm
     publishableKey <-
         fmap
@@ -67,7 +67,7 @@ postPaymentInfoR = handleDelete delFormId deletePaymentInfoR $ do
         runFormPost (identifyForm modFormId (paymentForm ""))
     case formResult of
         FormSuccess token -> do
-            stripeRes <- storePaymentToken runDB (runStripe conf) uid token
+            stripeRes <- runDB $ storePaymentToken (runStripe conf) uid token
             case stripeRes of
                 Left e -> stripeError e
                 Right _ -> do
@@ -81,7 +81,7 @@ deletePaymentInfoR :: Handler Html
 deletePaymentInfoR = do
     conf <- stripeConf
     Entity uid User {..} <- requireAuth
-    stripeDeletionHandler =<< deletePaymentToken runDB (runStripe conf) uid
+    stripeDeletionHandler =<< runDB (deletePaymentToken (runStripe conf) uid)
     redirect DashboardR
   where
     stripeDeletionHandler =

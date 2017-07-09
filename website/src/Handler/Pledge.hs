@@ -14,7 +14,7 @@ import Crowdmatch
 postPledgeSnowdriftR :: Handler Html
 postPledgeSnowdriftR = handleDelete' $ do
     Entity uid _ <- requireAuth
-    patron <- fetchPatron runDB uid
+    patron <- runDB $ fetchPatron uid
     maybe
         (do
             alertWarning "Before making a pledge, set up a payment method below"
@@ -30,7 +30,7 @@ postPledgeSnowdriftR = handleDelete' $ do
             Your pledge that started on #{show t} is still valid.
         |]
     pledge' uid = do
-        storePledge runDB uid
+        runDB $ storePledge uid
         alertSuccess "You are now pledged!"
     handleDelete' = handleDelete pledgeDeleteFormId deletePledgeSnowdriftR
 
@@ -49,12 +49,13 @@ pledgeForm = mempty
 deletePledgeSnowdriftR :: Handler Html
 deletePledgeSnowdriftR = do
     Entity uid _ <- requireAuth
-    patron <- fetchPatron runDB uid
-    maybe shrugItOff (unpledge' uid) (patronPledgeSince patron)
+    runDB $ do
+        patron <- fetchPatron uid
+        maybe shrugItOff (unpledge' uid) (patronPledgeSince patron)
     redirect SnowdriftProjectR
   where
     shrugItOff = alertInfo "You had no pledge to remove! Carry on. :)"
     unpledge' uid t = do
-        deletePledge runDB uid
+        deletePledge uid
         alertInfo
             [shamlet|Your pledge that started on #{show t} is now removed.|]

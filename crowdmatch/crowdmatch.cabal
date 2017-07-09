@@ -1,5 +1,5 @@
 name: crowdmatch
-version: 0.1.0.0
+version: 0.2.0.0
 synopsis: Crowdmatch mechanism for Snowdrift.coop
 description:
     Provides an interface for managing pledges and donations. Includes
@@ -10,7 +10,7 @@ license: AGPL-3
 license-file: LICENSE
 author: Bryan Richter
 maintainer: discuss@lists.snowdrift.coop
-copyright: Bryan Richter and Snowdrift.coop, 2016
+copyright: Bryan Richter and Snowdrift.coop, 2016, 2017
 category: Database
 build-type: Simple
 -- extra-source-files:

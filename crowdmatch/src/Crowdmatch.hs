@@ -117,14 +117,13 @@ data Project = Project
 
 -- | Record a 'TokenId' for a patron.
 storePaymentToken
-    :: (ToCrowdmatchPatron usr, MonadIO io, MonadIO env)
-    => SqlRunner io env
-    -> StripeRunner
+    :: (ToCrowdmatchPatron usr, MonadIO env)
+    => StripeRunner
     -> usr -- ^ your model's user, an instance of ToCrowdmatchPatron
     -> TokenId -- ^ you must independently get this from stripe
-    -> env (Either StripeError ())
-storePaymentToken db strp usr =
-    runMech db . StorePaymentTokenI strp (usr ^. from external)
+    -> SqlPersistT env (Either StripeError ())
+storePaymentToken strp usr =
+    runMech . StorePaymentTokenI strp (usr ^. from external)
 
 -- NB: The "-- ^" in the following methods is intentional. It forces
 -- Haddocks to reformat the arguments in a pleasing way.
@@ -132,52 +131,46 @@ storePaymentToken db strp usr =
 -- | Delete the 'TokenId'. This will remove any existing pledges, since a
 -- a token is required for pledging.
 deletePaymentToken
-    :: (ToCrowdmatchPatron usr, MonadIO io, MonadIO env)
-    => SqlRunner io env -- ^
-    -> StripeRunner
+    :: (ToCrowdmatchPatron usr, MonadIO env)
+    => StripeRunner -- ^
     -> usr
-    -> env (Either StripeError ())
-deletePaymentToken db strp =
-    runMech db . DeletePaymentTokenI strp . (^. from external)
+    -> SqlPersistT env (Either StripeError ())
+deletePaymentToken strp =
+    runMech . DeletePaymentTokenI strp . (^. from external)
 
 -- | Stores a pledge, joining the crowd. Requires the patron to already
 -- have a payment token available.
 storePledge
-    :: (ToCrowdmatchPatron usr, MonadIO io, MonadIO env)
-    => SqlRunner io env -- ^
-    -> usr
-    -> env ()
-storePledge db = runMech db . StorePledgeI . (^. from external)
+    :: (ToCrowdmatchPatron usr, MonadIO env)
+    => usr -- ^
+    -> SqlPersistT env ()
+storePledge = runMech . StorePledgeI . (^. from external)
 
 -- | Delete a pledge, leaving the crowd.
 deletePledge
-    :: (ToCrowdmatchPatron usr, MonadIO io, MonadIO env)
-    => SqlRunner io env -- ^
-    -> usr
-    -> env ()
-deletePledge db = runMech db . DeletePledgeI . (^. from external)
+    :: (ToCrowdmatchPatron usr, MonadIO env)
+    => usr -- ^
+    -> SqlPersistT env ()
+deletePledge = runMech . DeletePledgeI . (^. from external)
 
 -- | Retrieve info on the project.
 fetchProject
-    :: (MonadIO io, MonadIO env)
-    => SqlRunner io env -- ^
-    -> env Project
-fetchProject db = runMech db FetchProjectI
+    :: MonadIO env
+    => SqlPersistT env Project
+fetchProject = runMech FetchProjectI
 
 -- | Retrieve info on a particular patron.
 fetchPatron
-    :: (ToCrowdmatchPatron usr, MonadIO io, MonadIO env)
-    => SqlRunner io env -- ^
-    -> usr
-    -> env Patron
-fetchPatron db = runMech db . FetchPatronI . (^. from external)
+    :: (ToCrowdmatchPatron usr, MonadIO env)
+    => usr -- ^
+    -> SqlPersistT env Patron
+fetchPatron = runMech . FetchPatronI . (^. from external)
 
 -- | Execute a crowdmatch event
 crowdmatch
-    :: (MonadIO io, MonadIO env)
-    => SqlRunner io env -- ^
-    -> env ()
-crowdmatch db = runMech db CrowdmatchI
+    :: MonadIO env
+    => SqlPersistT env ()
+crowdmatch = runMech CrowdmatchI
 
 -- | Execute a payments event, sending charge commands to Stripe.
 --
@@ -217,16 +210,14 @@ data CrowdmatchI return where
     MakePaymentsI :: StripeRunner -> CrowdmatchI ()
 
 -- | Executing the actions
-runMech
-    :: (MonadIO env, MonadIO io)
-    => SqlRunner io env -> CrowdmatchI return -> env return
+runMech :: MonadIO env => CrowdmatchI return -> SqlPersistT env return
 
 --
 -- Payment token (store/delete)
 --
 
-runMech db (StorePaymentTokenI strp pptr cardToken) = do
-    Entity pid p <- db (upsertPatron pptr [])
+runMech (StorePaymentTokenI strp pptr cardToken) = do
+    Entity pid p <- upsertPatron pptr []
     runExceptT $ do
         ret <- ExceptT $ maybe create' update' (Model.patronPaymentToken p)
         ExceptT (Right <$> updatePatron' pid ret)
@@ -236,13 +227,12 @@ runMech db (StorePaymentTokenI strp pptr cardToken) = do
     updatePatron' pid c = do
         now <- liftIO getCurrentTime
         let payToken = PaymentToken (customerId c)
-        db $ do
-            _ <- insert (PaymentTokenHistory pid (HistoryTime now) Create)
-            update pid [PatronPaymentToken =. Just payToken]
+        _ <- insert (PaymentTokenHistory pid (HistoryTime now) Create)
+        update pid [PatronPaymentToken =. Just payToken]
 
 -- FIXME: Feedback on nonexisting CustomerId.
-runMech db (DeletePaymentTokenI strp pptr) = do
-    Entity pid p <- db (upsertPatron pptr [])
+runMech (DeletePaymentTokenI strp pptr) = do
+    Entity pid p <- upsertPatron pptr []
     maybe (pure (Right ())) (deleteToken' pid) (Model.patronPaymentToken p)
   where
     deleteToken' pid (PaymentToken cust) = do
@@ -252,10 +242,9 @@ runMech db (DeletePaymentTokenI strp pptr) = do
         now <- liftIO getCurrentTime
         -- Must delete pledges if there's no payment method!
         -- Fixme: Duplication of upsert
-        runMech db (DeletePledgeI pptr)
-        db $ do
-            _ <- insert (PaymentTokenHistory pid (HistoryTime now) Delete)
-            update pid [PatronPaymentToken =. Nothing]
+        runMech (DeletePledgeI pptr)
+        _ <- insert (PaymentTokenHistory pid (HistoryTime now) Delete)
+        update pid [PatronPaymentToken =. Nothing]
 
 --
 -- Pledge (store/delete)
@@ -263,13 +252,13 @@ runMech db (DeletePaymentTokenI strp pptr) = do
 
 -- FIXME: Feedback on missing payment info
 -- FIXME: Feedback on existing pledges
-runMech db (StorePledgeI pptr) = do
-    Entity pid p <- db (upsertPatron pptr [])
+runMech (StorePledgeI pptr) = do
+    Entity pid p <- upsertPatron pptr []
     maybe noCustomer (checkpledge pid) (pure p <* Model.patronPaymentToken p)
   where
     checkpledge pid p =
         maybe (pledge' pid) existingPledge (Model.patronPledgeSince p)
-    pledge' pid = db $ do
+    pledge' pid = do
         now <- liftIO getCurrentTime
         update pid [PatronPledgeSince =. Just now]
         insert_ (PledgeHistory pid now Create)
@@ -277,7 +266,7 @@ runMech db (StorePledgeI pptr) = do
     existingPledge _ = pure ()
 
 -- FIXME: Feedback on nonexistent pledge.
-runMech db (DeletePledgeI pptr) = db $ do
+runMech (DeletePledgeI pptr) = do
     -- In the absence of triggers or other database use sophistication, we
     -- fetch/evaluate/modify here.
     Entity pid p <- upsertPatron pptr []
@@ -289,7 +278,7 @@ runMech db (DeletePledgeI pptr) = db $ do
         update pid [PatronPledgeSince =. Nothing]
         insert_ (PledgeHistory pid now Delete)
 
-runMech db FetchProjectI = db $ do
+runMech FetchProjectI = do
     numPledges <- count [PatronPledgeSince !=. Nothing]
     -- Persistent terrible SQL :|
     receivable <-
@@ -307,15 +296,14 @@ runMech db FetchProjectI = db $ do
         income = unitsToCents (pledgevalue * pledgevalue)
     pure (Project numPledges income pledgevalue receivable received)
 
-runMech db (FetchPatronI pptr) =
-    db $ fromModel . entityVal <$> upsertPatron pptr []
+runMech (FetchPatronI pptr) = fromModel . entityVal <$> upsertPatron pptr []
 
 
 --
 -- Crowdmatch and MakePayments
 --
 
-runMech db CrowdmatchI = db $ do
+runMech CrowdmatchI = do
     active <- Skeleton.activePatrons
     let projectValue = fromIntegral (length active)
     today <- utctDay <$> liftIO getCurrentTime

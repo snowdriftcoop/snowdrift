@@ -130,10 +130,11 @@ genHistory runner = do
     dummyStripe' a = do
         v <- liftIO newEmptyMVar
         dummyStripe v a
-    storeToken' x = void . storePaymentToken runner dummyStripe' x <$> arbitrary
-    delToken' = pure . void . deletePaymentToken runner dummyStripe'
-    storePledge' = pure . storePledge runner
-    delPledge' = pure . deletePledge runner
+    storeToken' x =
+        void . runner . storePaymentToken dummyStripe x <$> arbitrary
+    delToken' = pure . void . runner . deletePaymentToken dummyStripe
+    storePledge' = pure . runner . storePledge
+    delPledge' = pure . runner . deletePledge
 
 -- | Something to make a Patron out of
 newtype HarnessUser = HarnessUser Int
@@ -189,100 +190,115 @@ unitTests runner = describe "unit tests" $ do
             dummyStripe v a
     describe "stored token" $ do
         it "is retrievable" $ do
-            _ <- storePaymentToken runner dummyStripe' aelfred cardTok
-            pat <- fetchPatron runner aelfred
+            pat <- runner $ do
+                _ <- storePaymentToken dummyStripe' aelfred cardTok
+                fetchPatron aelfred
             patronPaymentToken pat `shouldBe` Just payTok
         it "disappears" $ do
-            _ <- storePaymentToken runner dummyStripe' aelfred cardTok
-            _ <- deletePaymentToken runner dummyStripe' aelfred
-            pat <- fetchPatron runner aelfred
+            pat <- runner $ do
+                _ <- storePaymentToken dummyStripe' aelfred cardTok
+                _ <- deletePaymentToken dummyStripe' aelfred
+                fetchPatron aelfred
             patronPaymentToken pat `shouldBe` Nothing
         it "has history recorded" $ do
-            _ <- storePaymentToken runner dummyStripe' aelfred cardTok
-            _ <- deletePaymentToken runner dummyStripe' aelfred
-            ls <- runner $ map entityVal <$> selectList [] []
+            ls <- runner $ do
+                _ <- storePaymentToken dummyStripe' aelfred cardTok
+                _ <- deletePaymentToken dummyStripe' aelfred
+                map entityVal <$> selectList [] []
             length ls `shouldBe` 2
             Model.paymentTokenHistoryAction (head ls) `shouldBe` Create
             Model.paymentTokenHistoryAction (last ls) `shouldBe` Delete
     specify "fetchPatron creates patron if it doesn't exist" $ do
-        p1 <- fetchPatron runner aelfred
-        p2 <- fetchPatron runner aelfred
+        (p1, p2) <-
+            runner $ (,) <$> fetchPatron aelfred <*> fetchPatron aelfred
         p1 `shouldBe` p2
     specify "stored pledge is retrievable" $ do
-        _ <- storePaymentToken runner dummyStripe' aelfred cardTok
-        storePledge runner aelfred
-        pat <- fetchPatron runner aelfred
+        pat <- runner $ do
+            _ <- storePaymentToken dummyStripe' aelfred cardTok
+            storePledge aelfred
+            fetchPatron aelfred
         patronPledgeSince pat `shouldNotBe` Nothing
     specify "deleted pledge is retrievable" $ do
-        _ <- storePaymentToken runner dummyStripe' aelfred cardTok
-        storePledge runner aelfred
-        deletePledge runner aelfred
-        pat <- fetchPatron runner aelfred
+        pat <- runner $ do
+            _ <- storePaymentToken dummyStripe' aelfred cardTok
+            storePledge aelfred
+            deletePledge aelfred
+            fetchPatron aelfred
         patronPledgeSince pat `shouldBe` Nothing
     describe "crowd size" $ do
         it "gets bumped by pledging" $ do
-            _ <- storePaymentToken runner dummyStripe' aelfred cardTok
-            storePledge runner aelfred
-            p <- fetchProject runner
+            p <- runner $ do
+                _ <- storePaymentToken dummyStripe' aelfred cardTok
+                storePledge aelfred
+                fetchProject
             projectCrowd p `shouldBe` 1
         it "is not affected by a bad pledge" $ do
-            -- No token!
-            storePledge runner aelfred
-            p <- fetchProject runner
+            p <- runner $ do
+                -- No token!
+                storePledge aelfred
+                fetchProject
             projectCrowd p `shouldBe` 0
         it "shrinks with removal of payment token" $ do
-            _ <- storePaymentToken runner dummyStripe' aelfred cardTok
-            storePledge runner aelfred
-            p1 <- projectCrowd <$> fetchProject runner
+            p1 <- runner $ do
+                _ <- storePaymentToken dummyStripe' aelfred cardTok
+                storePledge aelfred
+                projectCrowd <$> fetchProject
             p1 `shouldBe` 1
-            _ <- deletePaymentToken runner dummyStripe' aelfred
-            p2 <- projectCrowd <$> fetchProject runner
+            p2 <- runner $ do
+                _ <- deletePaymentToken dummyStripe' aelfred
+                projectCrowd <$> fetchProject
             p2 `shouldBe` 0
     specify "10 pledges = 1 cent" $ do
         let mkPledge i = do
-                _ <- storePaymentToken runner dummyStripe' (HarnessUser i) cardTok
-                storePledge runner (HarnessUser i)
-        mapM_ mkPledge [1..10]
-        val <- projectPledgeValue <$> fetchProject runner
+                _ <- storePaymentToken dummyStripe' (HarnessUser i) cardTok
+                storePledge (HarnessUser i)
+        val <- runner $ do
+            mapM_ mkPledge [1..10]
+            projectPledgeValue <$> fetchProject
         val `shouldBe` centsToUnits (Cents 1)
     specify "1000 pledges = $1000 monthly income" $ do
         let mkPledge i = do
-                _ <- storePaymentToken runner dummyStripe' (HarnessUser i) cardTok
-                storePledge runner (HarnessUser i)
-        mapM_ mkPledge [1..1000]
-        val <- projectMonthlyIncome <$> fetchProject runner
+                _ <- storePaymentToken dummyStripe' (HarnessUser i) cardTok
+                storePledge (HarnessUser i)
+        val <- runner $ do
+            mapM_ mkPledge [1..1000]
+            projectMonthlyIncome <$> fetchProject
         val `shouldBe` Cents (100 * 1000)
     describe "crowdmatch event" $ do
         let mkPatron i =
-                void (storePaymentToken runner dummyStripe' (HarnessUser i) cardTok)
+                void (storePaymentToken dummyStripe' (HarnessUser i) cardTok)
             mkPledge i = do
                 mkPatron i
-                storePledge runner (HarnessUser i)
+                storePledge (HarnessUser i)
         -- 1. Two patrons, one active -> 0.01 payable from the patron
         it "only counts active patrons" $ do
-            mkPatron 1
-            mkPledge 2
-            crowdmatch runner
-            val <- projectDonationReceivable <$> fetchProject runner
+            val <- runner $ do
+                mkPatron 1
+                mkPledge 2
+                crowdmatch
+                projectDonationReceivable <$> fetchProject
             val `shouldBe` DonationUnits 1
         it "looks quadratic; 3 patrons = 9 DUs" $ do
-            mapM_ mkPledge [1..3]
-            crowdmatch runner
-            val <- projectDonationReceivable <$> fetchProject runner
+            val <- runner $ do
+                mapM_ mkPledge [1..3]
+                crowdmatch
+                projectDonationReceivable <$> fetchProject
             val `shouldBe` DonationUnits 9
         it "sums over multiple events" $ do
-            mkPatron 1
-            mkPledge 2
-            crowdmatch runner
-            storePledge runner (HarnessUser 1)
-            -- Now 1 is also active
-            crowdmatch runner
-            val <- projectDonationReceivable <$> fetchProject runner
+            val <- runner $ do
+                mkPatron 1
+                mkPledge 2
+                crowdmatch
+                storePledge (HarnessUser 1)
+                -- Now 1 is also active
+                crowdmatch
+                projectDonationReceivable <$> fetchProject
             val `shouldBe` DonationUnits 5
         it "creates history" $ do
-            mkPledge 1
-            crowdmatch runner
-            u :: [Entity Model.CrowdmatchHistory] <- runner $ selectList [] []
+            u :: [Entity Model.CrowdmatchHistory] <- runner $ do
+                mkPledge 1
+                crowdmatch
+                selectList [] []
             length u `shouldBe` 1
     describe "make-payments event" $ do
         now <- runIO getCurrentTime
@@ -358,7 +374,7 @@ prop_randomHistory runner = do
     (creat, remov) <- run $ runner $
         partition ((== Create) . Model.pledgeHistoryAction . entityVal)
             <$> selectList [] []
-    crowd <- projectCrowd <$> fetchProject (run . runner)
+    crowd <- run $ runner $ projectCrowd <$> fetchProject
     monitor (badSize (creat, remov, crowd))
     assert (length creat - length remov == crowd)
 
