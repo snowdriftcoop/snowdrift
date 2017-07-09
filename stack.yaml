@@ -7,12 +7,6 @@ packages:
   - crowdmatch
   - run-persist
   - location:
-      git: https://git.snowdrift.coop/sd/yesod.git
-      commit: 884c2ef15b005587829f157fb576fbfe747b98b1
-    subdirs:
-      - yesod-bin
-    extra-dep: true
-  - location:
       git: https://git.snowdrift.coop/sd/persistent.git
       commit: af5ec51e6b4b9255867e94916aef138c1968b85e
     subdirs:
