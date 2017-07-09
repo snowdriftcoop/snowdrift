@@ -4,16 +4,27 @@ module MarkupInstances () where
 
 import Prelude
 
+import Data.Monoid ((<>))
 import Crowdmatch
 import Data.Time
-import Formattable
 import Text.Blaze.Html
 
+dollarsCents :: Cents -> (Int, Int)
+dollarsCents (Cents i) = fromIntegral i `divMod` 100
+
 instance ToMarkup Cents where
-    toMarkup = toMarkup . formatNum usdFmt {_nfUnits = 100}
+    toMarkup = renderDollars . dollarsCents
 
 instance ToMarkup DonationUnits where
-    toMarkup = toMarkup . formatNum usdFmt {_nfUnits = 1000, _nfPrec = Just (3, Decimals)}
+    toMarkup = renderDollars . dollarsCents . unitsToCents
+
+renderDollars :: (Int, Int) -> Html
+renderDollars (0,c) = toHtml c <> "¢"
+renderDollars (d,c) = "$" <> toHtml d <> "." <> padded c
+  where
+    padded n
+        | n < 10    = "0" <> toHtml n
+        | otherwise = toHtml n
 
 instance ToMarkup HistoryTime where
     toMarkup (HistoryTime t) =
