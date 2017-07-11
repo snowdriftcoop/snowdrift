@@ -56,13 +56,13 @@ library
         Handler.Project
         Handler.TH
         Handler.Util
+        MarkupInstances
         TestHooks
     -- }}}2
 
     -- other-modules {{{2
     other-modules:
         AuthSiteDataTypes
-        MarkupInstances
     -- }}}2
 
     -- build-depends {{{2
@@ -71,7 +71,7 @@ library
         -- Snowdrift libs
         , crowdmatch
         -- Other
-        , aeson                  >= 0.6     && < 0.12
+        , aeson                  >= 0.6     && < 1.1
         , base64-bytestring
         , blaze-html
         , bytestring             >= 0.9     && < 0.11
@@ -83,7 +83,6 @@ library
         , esqueleto
         , fast-logger            >= 2.2     && < 2.5
         , file-embed
-        , formattable
         , hashids                              < 1.0.3
         , hjsmin                 >= 0.1
         , http-client
@@ -165,6 +164,7 @@ test-suite test
         SampleSpec
         StripeMock
         TestImport
+        MarkupInstancesSpec
 
     default-extensions:
         FlexibleContexts
@@ -178,7 +178,10 @@ test-suite test
     -- build-depends {{{2
     build-depends:
         Snowdrift
+        , crowdmatch
         , base
+        , blaze-html
+        , blaze-markup
         , bytestring
         , classy-prelude
         , classy-prelude-yesod

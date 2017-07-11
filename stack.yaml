@@ -1,30 +1,21 @@
 flags:
   Snowdrift:
     dev: true
-resolver: lts-6.31
+resolver: lts-8.21
 packages:
   - website
   - crowdmatch
   - run-persist
-  - location:
-      git: https://git.snowdrift.coop/sd/yesod.git
-      commit: 884c2ef15b005587829f157fb576fbfe747b98b1
-    subdirs:
-      - yesod-bin
-    extra-dep: true
-  - location:
-      git: https://git.snowdrift.coop/sd/persistent.git
-      commit: af5ec51e6b4b9255867e94916aef138c1968b85e
-    subdirs:
-      - persistent
-    extra-dep: true
+  # This is patched to use UTCTime instead of Localtime (needs to get moved
+  # upstream: see https://git.snowdrift.coop/sd/snowdrift/issues/8)
   - location:
      git: https://git.snowdrift.coop/sd/postgresql-simple-migration-patches.git
-     commit: 8c4983b46fd12759a1d0be8d4460a59efbb704c2
+     commit: 55ae21a7ee5b0386ec7c6909409b1bdacebcc924
     extra-dep: true
 extra-deps:
   - hashids-1.0.2.3
   - libravatar-0.4
-  - titlecase-0.1.0.2
-  - formattable-0.1.1
-  - tasty-discover-2.0.3
+  # Version in lts-8 is still old and bad
+  - tasty-discover-3.0.2
+  # Upsert is fixed in 2.7, which is not in lts-8
+  - persistent-2.7.0

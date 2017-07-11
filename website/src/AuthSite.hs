@@ -305,11 +305,6 @@ priviligedProvisionalUser creds = do
     prov <- liftIO (provisional creds verf)
     _ <- upsertBy (UniqueProvisionalUser (provisionalUserEmail prov)) prov []
     pure verf
-  where
-    upsertBy uniqueKey record updates = do
-        mrecord <- getBy uniqueKey
-        maybe (insertEntity record) (`updateGetEntity` updates) mrecord
-    updateGetEntity (Entity k _) = fmap (Entity k) . updateGet k
 
 -- | Log out by deleting the session var
 logout :: Yesod master => HandlerT master IO ()

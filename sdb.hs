@@ -34,7 +34,7 @@ data Databases = DBS { dbsMain :: Text, dbsTest :: Text }
 dbnames :: Databases
 dbnames = DBS "snowdrift" "snowdrift_test"
 
-usageText :: Text -> Shell ()
+usageText :: Line -> Shell ()
 usageText this = mapM_ err
     [ this <> ": a wrapper to set up environment variables and the"
     , "dev/test databases for hacking on the Snowdrift.coop website."
@@ -68,9 +68,9 @@ main = sh $ do
     args <- liftIO getArgs
     case args of
         ["env"] -> do
-            echo ("export PGHOST=" <> toText_ pghost)
-            echo ("export PGDATA=" <> toText_ pgdata)
-            echo ("export PGDATABASE=" <> dbsMain dbnames)
+            echo ("export PGHOST=" <> unsafeTextToLine (toText_ pghost))
+            echo ("export PGDATA=" <> unsafeTextToLine (toText_ pgdata))
+            echo ("export PGDATABASE=" <> unsafeTextToLine (dbsMain dbnames))
         ("pg_ctl":as') -> procs "pg_ctl" (map T.pack as') empty
         _ -> liftIO (shakeit dbdir pghost pgdata)
 
@@ -80,7 +80,7 @@ shakeit dbdir pghost pgdata = shakeArgs shakeOptions $ do
 
     -- Very basic
 
-    phony "help" $ actsh (usageText . T.pack =<< liftIO getProgName)
+    phony "help" $ actsh (usageText . unsafeTextToLine . T.pack =<< liftIO getProgName)
 
     phony "clean" $ do
         need ["stop"]
@@ -155,7 +155,7 @@ initEnv :: Shell (FilePath, FilePath, FilePath)
 initEnv = do
     dbdir <- getProjectRoot
     Just path <- Turtle.need "PATH"
-    pgPath <- inshell "pg_config --bindir" ""
+    pgPath <- lineToText <$> inshell "pg_config --bindir" ""
 
     let pghost = dbdir </> pgWorkDir </> "sockets"
         pgdata = dbdir </> pgWorkDir </> "data"
@@ -177,7 +177,7 @@ actsh :: Shell a -> Action ()
 actsh = liftIO . sh
 
 -- | Print a header for a step
-step :: Text -> Shell ()
+step :: Line -> Shell ()
 step msg = err ("## " <> msg)
 
 -- | Seeing as I use this everywhere
@@ -194,14 +194,14 @@ inplace_ pat file = liftIO (runManaged (do
     mv tmpfile file ))
 
 -- | sed with filtering.
-sed_ :: Pattern (Maybe Text) -> Shell Text -> Shell Text
+sed_ :: Pattern (Maybe Text) -> Shell Line -> Shell Line
 sed_ pat orig = flatten $ do
     when (matchesEmpty pat) (die message)
     let pat' = fmap mconcat
             (many (pat <|> fmap (Just . T.singleton) anyChar))
-    txt    <- orig
+    txt    <- lineToText <$> orig
     txt':_ <- return (match pat' txt)
-    return txt'
+    return (unsafeTextToLine <$> txt')
   where
     message = "sed: the given pattern matches the empty string"
     matchesEmpty = not . null . flip match ""
