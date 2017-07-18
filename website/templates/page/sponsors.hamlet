@@ -1,4 +1,5 @@
 <h1>Snowdrift.coop Launch Sponsors
+<div #tilt>
 <p>
   We especially thank the following sponsors for their generous support of
   Snowdrift.coop initial development. Most donated during our
@@ -41,7 +42,7 @@
       Michael Wünsch
 
 <h2>General pre-launch donors
-<ul .regular-sponsors>
+<ul .prelaunch-sponsors>
   <li>
       3DInsider.com
   <li>
