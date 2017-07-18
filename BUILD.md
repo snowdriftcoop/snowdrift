@@ -30,12 +30,9 @@ as appropriate.
 Install Git and needed libraries:
 
     sudo yum update
-    sudo yum install ncurses-devel gmp-devel zlib-devel git openssl-devel
+    sudo yum install ncurses-devel gmp-devel zlib-devel git openssl-devel gcc-c++
 
-For newer versions of Fedora, replace the `yum` commands with `dnf`. Install the
-following libraries if you don't already have them:
-
-    sudo dnf install libstdc++-static gcc-c++
+For newer versions of Fedora, replace the `yum` commands with `dnf`.
 
 You'll also need PostgreSQL >= 9.3:
 

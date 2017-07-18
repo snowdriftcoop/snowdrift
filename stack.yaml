@@ -15,6 +15,7 @@ packages:
 extra-deps:
   - hashids-1.0.2.3
   - libravatar-0.4
+  - shakespeare-sass-0.1.0.3
   # Version in lts-8 is still old and bad
   - tasty-discover-3.0.2
   # Upsert is fixed in 2.7, which is not in lts-8
