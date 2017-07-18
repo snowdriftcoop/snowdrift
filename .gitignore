@@ -28,6 +28,3 @@ tags
 # EclipseFP:
 .dist-buildwrapper/
 .shake
-
-#Sass:
-.sass-cache
