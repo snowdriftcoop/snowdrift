@@ -12,6 +12,7 @@ import qualified Data.List as List
 import qualified Data.Text as T
 import qualified Yesod.Core.Unsafe as Unsafe
 
+import Alerts
 import AppDataTypes
 import Avatar
 import Email
@@ -108,13 +109,24 @@ instance AuthMaster App where
     postLogoutRoute = postLoginRoute
 
     loginHandler = do
-        (loginFields, enctype) <- generateFormPost (renderDivs credentialsForm)
+        (loginFields, enctype) <- generateFormPost (renderDivs defaultCredentialsForm)
+        alertMessage <- withUrlRenderer
+                [hamlet|
+                    <p>
+                      If you haven't logged in for a while, or you previously
+                      registered using the discontinued
+                      <a href="https://en.wikipedia.org/wiki/Mozilla_Persona"
+                      target="_blank">Mozilla Persona</a> service, you may need
+                      to <a href=@{AuthR ResetPassphraseR}>reset your
+                      passphrase</a>.</p>
+                |]
+        alertWarning alertMessage
         navbarLayout "page/auth/login" $ do
             setTitle "Login — Snowdrift.coop"
             $(widgetFile "page/auth/login")
 
     createAccountHandler = do
-        (loginFields, enctype) <- generateFormPost (renderDivs credentialsForm)
+        (loginFields, enctype) <- generateFormPost (renderDivs newUserCredentialsForm)
         navbarLayout "page/auth/create-account" $ do
             setTitle "Create Account — Snowdrift.coop"
             $(widgetFile "page/auth/create-account")
@@ -132,7 +144,7 @@ instance AuthMaster App where
         maybeAuth >>= maybe reset (const (redirect DashboardR))
         where
           reset = do
-              (loginFields, enctype) <- generateFormPost (renderDivs credentialsForm)
+              (loginFields, enctype) <- generateFormPost (renderDivs newUserCredentialsForm)
               navbarLayout "page/auth/reset-passphrase" $ do
                   setTitle "Passphrase Reset — Snowdrift.coop"
                   $(widgetFile "page/auth/reset-passphrase")
@@ -203,3 +215,33 @@ navbarLayout pageName widget = do
     classes = T.unwords
             . List.tail
             . T.splitOn "/"
+
+-- | Default Credentials form, used for existing user login
+defaultCredentialsForm :: (RenderMessage (HandlerSite m) FormMessage, MonadHandler m)
+                          => AForm m Credentials
+defaultCredentialsForm = Credentials
+    <$> (AuthEmail <$>
+            areq textField "Email"{fsAttrs=emailAttrs}  Nothing)
+    <*> (ClearPassphrase <$>
+            areq
+                passwordField
+                "Passphrase"{fsAttrs=ppAttrs}
+                Nothing)
+
+
+-- | New User Credentials form, used for new users and passphrase resets
+newUserCredentialsForm :: (RenderMessage (HandlerSite m) FormMessage, MonadHandler m)
+                => AForm m Credentials
+newUserCredentialsForm = Credentials
+    <$> (AuthEmail <$>
+            areq textField "What is your email?"{fsAttrs=emailAttrs}  Nothing)
+    <*> (ClearPassphrase <$>
+            areq
+                passwordField
+                "Please tell us your passphrase, too."{fsAttrs=ppAttrs}
+                Nothing)
+
+
+
+emailAttrs = [("autofocus",""), ("autocomplete","email")]
+ppAttrs = [("minlength","9")]
