@@ -221,16 +221,16 @@ defaultCredentialsForm :: (RenderMessage (HandlerSite m) FormMessage, MonadHandl
                           => AForm m Credentials
 defaultCredentialsForm = Credentials
     <$> (AuthEmail <$>
-            areq textField ""{fsAttrs=emailAttrs}  Nothing)
+            areq textField "Email"{fsAttrs=emailAttrs}  Nothing)
     <*> (ClearPassphrase <$>
             areq
                 passwordField
-                ""{fsAttrs=ppAttrs}
+                "Passphrase"{fsAttrs=ppAttrs}
                 Nothing)
     where
         emailAttrs = [("autofocus",""),
                       ("autocomplete","email"),
-                      ("placeholder", "email")]
+                      ("placeholder", "Email")]
         ppAttrs = [("minlength","9"),
                    ("placeholder", "Passphrase")]
 
@@ -240,15 +240,15 @@ newUserCredentialsForm :: (RenderMessage (HandlerSite m) FormMessage, MonadHandl
                 => AForm m Credentials
 newUserCredentialsForm = Credentials
     <$> (AuthEmail <$>
-            areq textField ""{fsAttrs=emailAttrs}  Nothing)
+            areq textField "Email"{fsAttrs=emailAttrs}  Nothing)
     <*> (ClearPassphrase <$>
             areq
                 passwordField
-                ""{fsAttrs=ppAttrs}
+                "Passphrase"{fsAttrs=ppAttrs}
                 Nothing)
     where
         emailAttrs = [("autofocus",""),
                       ("autocomplete","email"),
-                      ("placeholder", "email")]
+                      ("placeholder", "Email")]
         ppAttrs = [("minlength","9"),
                    ("placeholder", "New passphrase")]

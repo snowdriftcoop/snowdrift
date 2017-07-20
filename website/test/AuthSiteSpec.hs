@@ -8,6 +8,7 @@ module AuthSiteSpec (spec_authSite) where
 
 import TestImport hiding (Handler)
 import Database.Persist.Sql hiding (get)
+import Foundation (defaultCredentialsForm, newUserCredentialsForm)
 import Database.Persist.Postgresql (pgConnStr)
 import Network.Wai.Test (SResponse(..))
 import Test.Tasty.HUnit (assertBool)
@@ -49,14 +50,20 @@ instance AuthMaster AuthHarness where
     postLogoutRoute = postLoginRoute
 
     loginHandler = do
-        ((_, loginFields), enctype) <- runFormPost (renderDivs credentialsForm)
+        ((_, loginFields), enctype) <- runFormPost (renderDivs defaultCredentialsForm)
         defaultLayout [whamlet|
             <form method="post" enctype=#{enctype}>
                 ^{loginFields}
             |]
 
-    createAccountHandler = loginHandler
-    resetPassphraseHandler = loginHandler
+    createAccountHandler = do
+        ((_, loginFields), enctype) <- runFormPost (renderDivs newUserCredentialsForm)
+        defaultLayout [whamlet|
+            <form method="post" enctype=#{enctype}>
+                ^{loginFields}
+            |]
+
+    resetPassphraseHandler = createAccountHandler
 
     verifyAccountHandler = do
         ((_, tokenField), enctype) <-
@@ -331,8 +338,8 @@ mainSpecs = withTestAuth Nothing $ withBob $ do
 
     fillCredentialsForm e p = do
         addToken
-        byLabel "What is your email?" e
-        byLabel "Please tell us your passphrase, too." p
+        byLabel "Email" e
+        byLabel "Passphrase" p
         setMethod "POST"
     fillTokenForm t = do
         addToken
