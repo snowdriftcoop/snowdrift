@@ -128,7 +128,7 @@ instance AuthMaster App where
             $(widgetFile "page/auth/verify-account")
       where af = [("autofocus","true")]
 
-    resetPassphraseHandler = 
+    resetPassphraseHandler =
         maybeAuth >>= maybe reset (const (redirect DashboardR))
         where
           reset = do
@@ -191,10 +191,6 @@ navbarLayout pageName widget = do
         footer = $(widgetFile "default/footer")
 
     pc <- widgetToPageContent $ do
-        $(widgetFile "default/reset")
-        $(widgetFile "default/breaks")
-        $(widgetFile "default/fonts")
-        $(widgetFile "default/grid")
         $(widgetFile "default-layout")
     withUrlRenderer $(hamletFile "templates/default-layout-wrapper.hamlet")
   where

@@ -1,0 +1,180 @@
+nav
+    width: 100%
+    height: 6rem
+    background: $white
+
+    ul
+        list-style: none
+        li
+            position: relative
+
+            a.logo
+                width: 6rem
+                height: 6rem
+
+            a.dashboard
+                margin: 0 3rem 0 6rem
+                padding: 0 3rem 0 6rem
+
+                &:before
+                    content: ' '
+                    position: absolute
+                    width: 3rem
+                    height: 3rem
+                    left: -3.2rem
+                    top: -0.3rem
+                    +bg("default-avatar.png")
+                    background-size: 3rem 3rem
+
+    // Dropdown menu
+    .ddown
+        position: relative
+        display: inline-block
+        z-index: 999
+        ul
+            float: none !important
+        li
+            float: left !important
+        &:hover .ddown-menu
+            display: block
+        .ddown-toggle
+            margin: 0
+        .ddown-menu
+            display: none
+            position: absolute
+            margin: 3rem 0 0 -9rem !important
+            padding: 0
+            min-width: 21.6rem
+            min-height: 9rem
+            background: $white
+            border-radius: 0.3rem
+            li
+                margin: 0 !important
+                float: none !important
+            a
+                display: block
+                margin: 1rem 0
+
++respond(break1)
+
+    // Typography
+    nav
+        ul li a
+            font-size: 1.2rem
+            font-weight: 600
+
+    // Positioning
+    nav .center
+        width: 100%
+        height: 6rem
+        margin: 0
+        padding: 0
+
+        ul
+            width: 50%
+            height: 3rem
+            float: left
+            margin: 3rem 0 0 0
+            li
+                height: 6rem
+            &:first-child
+                width: 6rem
+                height: 6rem
+                margin: 0
+
+            &:last-child
+                width: 25%
+                float: right
+                li
+                    width: 6rem
+                    height: 3rem
+                    float: right
+                    margin: 0 auto
+
+    // Icon styles
+    nav ul li
+        a.icon
+            background-position: center 0.6rem !important
+            background-repeat: no-repeat
+            width: 6rem
+            height: 2.4rem
+            margin: 0
+            padding: 3.6rem 0.6rem 0.7rem
+            text-align: center
+        a.no-icon
+            display: none
+
+        a.cards
+            +bg("icon-cards.png")
+            border-left: 0.1rem solid $green-border
+            border-right: 0.1rem solid $green-border
+
+        a.cards:hover, a.cards:focus, a.cards.active
+            +bg("icon-cards_sel.png")
+
+        a.lookingglass
+            +bg("icon-lookingglass.png")
+
+        a.lookingglass:hover, a.lookingglass:focus, a.lookingglass.active
+            +bg("icon-lookingglass_sel.png")
+
+        a.login
+            border-left: 0.1rem solid $green-border
+            +bg("icon-login.png")
+
+        a.login:hover, a.login:focus, a.login.active
+            +bg("icon-login_sel.png")
+
+        a.dashboard
+            border-left: 0.1rem solid $green-border
+            +bg("default-avatar.png")
+            background-size: 3rem 3rem
+
+        a.dashboard:hover, a.dashboard:focus, a.dashboard.active
+            +bg("default-avatar.png")
+            background-size: 3rem 3rem
+
+
++respond(break2)
+
+    // Typography
+    nav ul li a
+        font-size: 1.8rem
+        font-weight: 600
+
+    // Positioning
+    nav .center
+        +with-layout($lt-main, true)
+            +container
+        height: 6rem
+        ul
+            // Menu
+            +span(5 of 8)
+            height: 6rem
+            li
+                float: left
+                display: inline
+                margin: 1.9rem 3rem 1.1rem 0
+            // Logo
+            &:first-child
+                +span(1 of 8)
+                li
+                    margin: 0
+            // Login
+            &:last-child
+                +span(2 of 8 last)
+                li
+                    float: right
+                    margin: 1.9rem -1.5rem 1.1rem 3rem
+
+    // Remove icon styles
+    nav .center
+        ul
+            margin: 0
+            li a.icon, nav ul li a.icon:hover, nav ul li a.icon:focus, nav ul li a.icon:active
+                background: transparent
+                border: 0
+                width: unset
+                padding: 0
+            li a.no-icon
+                display: inline

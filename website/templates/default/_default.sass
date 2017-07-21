@@ -1,0 +1,100 @@
+// Fonts -------------------------------------------------------------------//
+
+// Snowdrift icons
+@font-face
+    font-family: "Snowdrift Icons"
+    font-style: normal
+    font-weight: 400
+    src: url($fonts + "/snowdrift-icons/snowdrift-icons.woff2") format("woff2"),
+    url($fonts + "/snowdrift-icons/snowdrift-icons.woff") format("woff"),
+    url($fonts + "/snowdrift-icons/snowdrift-icons.ttf") format("truetype")
+
+
+// Extend/override base style for common elements --------------------------//
+
+h1
+    margin: 9rem 0 6rem
+    padding-left: 3rem
+    line-height: 1
+
+h6
+    color: $bright-blue-text
+
+hr
+    height: .2rem
+    margin: 4.5rem 0
+    border: 0
+    border-radius: 0.3rem
+    background: #c5f1fd
+
+ol, ul, li, li ul
+    margin: unset
+
+
+// Classes -----------------------------------------------------------------//
+
+// Header with tilt
+#tilt
+    +header-tilt(100vw, 60rem, 6rem, 3rem, -3deg)
+    height: 6rem
+    text-align: center
+    z-index: -1
+    &:after
+        background-image: linear-gradient($blue-header1 30rem, $blue-header1-light 60rem)
+        transform: translate(-50vw) skewY(-3deg)
+
+
+// Content container
+.container
+    +with-layout($lt-main, true)
+        +container
+    // Padding for smaller screen widths
+    padding: 0 3rem
+
+    form label
+        color: $bright-blue-text
+        display: block
+    form input[type=text], form input[type=password]
+        font-size: 1.8rem
+
+        // Page headline subtitle
+        span
+            font-size: 2rem
+            font-weight: 300
+
+    ul
+        list-style: outside disc
+        margin: 1.5rem 0 4.5rem 3rem
+    li, li p
+        margin: 1rem 0
+    ul li ul
+        margin: 0 0 0 3rem
+    ol
+        list-style-type: decimal
+        margin: 1.5rem 3rem 4.5rem 3rem
+
+    em.version
+        color: $bright-blue-text
+        font-weight: 300
+        font-size: 2rem
+        display: block
+        margin: 0 0 4.5rem
+        text-align: center
+
+    .section
+        margin-top: 3rem
+        margin-bottom: 1.5rem
+        clear: both
+
+
+// Footnotes
+.footnotes
+    font-size: 1.5rem
+    hr
+        margin: 4.5rem 0 3rem
+.footnoteRef
+    font-size: 1.5rem
+    sup
+        font-size: 1.25rem
+        font-weight: 600
+        vertical-align: super

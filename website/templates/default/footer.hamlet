@@ -1,62 +1,52 @@
 <footer>
-  <div .section .group>
-    <div .col .span_12_of_12>
-      <a href=@{WelcomeR} .logo>
-        <img src=@{StaticR img_logo_png} alt=Snowdrift.coop>
-  <div .section .group>
-    <div .col .span_4_of_12>
-      <ul>
-        <li>
-          <a href=@{HowItWorksR}>How it works
-        <li>
-          <a href=@{DonateR}>Donate
-        <li>
-          <a href=@{AboutR}>About
-        <li>
-          <a href=@{SponsorsR}>Our Sponsors
-    <div .col .span_4_of_12>
-      <ul>
-        <li>
-          <a href=@{PrivacyR}>Privacy Policy
-        <li>
-          <a href=@{TermsR}>Terms Of Use
-        <li>
-          <a href=@{ContactR}>Contact
-    <div .col .span_4_of_12>
-      <ul>
-        <li>
-          <p>
-            Aside from
-            <a href=@{TrademarksR}>trademarks</a>,
-            writings and images here are free to use and share under
-            <a rel=license
-                title="Creative Commons Attribution Share-Alike 4.0 International"
-                href=https://creativecommons.org/licenses/by-sa/4.0>
-              CC&nbsp;BY-SA</a>.
+  <!-- Footer 1/3 -->
+  <div .section .footer-logo>
+    <a href=@{WelcomeR} .logo>
+      <img src=@{StaticR img_logo_png} alt=Snowdrift.coop>
 
-            This site's
-            <a href="https://git.snowdrift.coop/sd/snowdrift">
-              source code
-            is free under the terms of the
-            <a rel=license
-                title="GNU Affero GPL v3 or later"
-                href=https://www.gnu.org/licenses/agpl>
-              GNU&nbsp;AGPLv3+</a>.
-            <!-- Currently not true because of stripe. :(
-            All JavaScript on this site is
-            <a href=@{JsLicensesR} rel=jslicense>
-              freely-licensed</a>.
-            -->
-  <div .section .group>
-    <div .col .span_12_of_12 .supporters>
-      <span>proud partners of
-      <ul .bg>
-        <li>
-          <a .osi href=https://opensource.org/>
-            Open Source Initiative
-        <li>
-          <a .qco href=http://questioncopyright.org/>
-            QuestionCopyright.org
-        <li>
-          <a .oin href=https://www.openinventionnetwork.com>
-            Open Invention Network
+  <!-- Footer 2/3 -->
+  <div .section .nav>
+    <ul .col>
+      <li>
+        <a href=@{HowItWorksR}>How it works
+      <li>
+        <a href=@{DonateR}>Donate
+      <li>
+        <a href=@{AboutR}>About
+      <li>
+        <a href=@{SponsorsR}>Our Sponsors
+      <li>
+        <a href="https://wiki.snowdrift.coop/community/partners">Our Partners
+
+    <ul .col>
+      <li>
+        <a href=@{PrivacyR}>Privacy Policy
+      <li>
+        <a href=@{TermsR}>Terms Of Use
+
+    <ul .col>
+      <li>
+        <p>
+          Aside from <a href=@{TrademarksR}>trademarks</a>, writings and images
+          here are free to use and share under <a rel=license title="Creative
+          Commons Attribution Share-Alike 4.0 International"
+          href=https://creativecommons.org/licenses/by-sa/4.0>CC&nbsp;BY-SA</a>.
+          This site's <a href="https://git.snowdrift.coop/sd/snowdrift">source
+          code</a> is free under the terms of the <a rel=license title="GNU
+          Affero GPL v3 or later" href=https://www.gnu.org/licenses/agpl>
+          GNU&nbsp;AGPLv3+</a>. <!-- Currently not true because of stripe. :(
+          All JavaScript on this site is <a href=@{JsLicensesR}
+          rel=jslicense>freely-licensed</a>.-->
+
+  <!-- Footer 3/3 -->
+  <div .section .supporters>
+    <span>
+      Proud <a href="https://wiki.snowdrift.coop/community/partners">partners</a> of
+    <ul .bg>
+      <li .col>
+        <a .osi href=https://opensource.org/>Open Source Initiative
+      <li .col>
+        <a .qco href=http://questioncopyright.org/>QuestionCopyright.org
+      <li .col>
+        <a .oin href=https://www.openinventionnetwork.com>Open Invention
+          Network
