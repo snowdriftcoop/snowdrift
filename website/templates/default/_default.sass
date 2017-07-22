@@ -12,11 +12,14 @@
 
 // Extend/override base style for common elements --------------------------//
 
+// Headline
 h1
+    font: 400 3.7rem/1 Nunito, sans-serif
     margin: 9rem 0 6rem
-    padding-left: 3rem
-    line-height: 1
-
+h2, h3
+    font-weight: 400
+h4, h5, h6
+    font-weight: 600
 h6
     color: $bright-blue-text
 
@@ -50,6 +53,9 @@ ol, ul, li, li ul
         +container
     // Padding for smaller screen widths
     padding: 0 3rem
+
+    a
+        +link-style
 
     form label
         color: $bright-blue-text
@@ -98,3 +104,29 @@ ol, ul, li, li ul
         font-size: 1.25rem
         font-weight: 600
         vertical-align: super
+
+
+// Breaks ------------------------------------------------------------------//
+
++respond(break0)
+
+    h1
+        font-size: 2.7rem
+        font-weight: 400
+        text-align: center
+
+
++respond(break1)
+
+    h1
+        padding-left: 3rem
+        font-size: 3.3rem
+        font-weight: 300
+        text-align: left
+
+
++ respond(break2)
+
+    h1
+        font-size: 3.7rem
+        font-weight: 300

@@ -4,8 +4,8 @@
 //
 // Fonts
 // Colors
-// Common elements
 // Mixins
+// Common elements
 // Preset classes
 
 // Reset styles and import environment variables
@@ -161,6 +161,12 @@ $green: #4ebf7a
 $green-shade: #44a76b
 $red: #d66a6a
 
+// Typography colors
+$link-u: rgba(101,107,95,0.2)                   // link underline color
+$link-u-hover: rgba(101,107,95,1)               // link underline hover color
+$link-hover: #378756                            // link hover color
+$link-p: #388a58                                // paragraph link color
+
 // Notification colors
 $note-success-color: darken($green, 10%)
 $note-success-bg: lighten($green, 35%)
@@ -180,191 +186,6 @@ $yellow-highlight: #ffffcd                      // tos section highlight
 $blue-header1: #c5f1fd                          // main header gradient
 $blue-header1-light: #f0fbfe                    // main header gradient
 $blue-header2: #e2f8fe                          // blog header
-
-
-//// Common elements ----------------------------------------------------- ////
-
-*, *:before, *:after
-    box-sizing: inherit
-
-*::selection
-    color: $white
-    background: $dark-blue
-    text-shadow: none
-
-html
-    font-size: 62.5%
-    box-sizing: border-box
-    overflow-y: scroll
-
-body
-    font: 300 2.1rem/1.5 Nunito, sans-serif
-    color: $dark-blue
-    background: $white
-
-a
-    font-weight: 400
-    color: $green-shade
-    text-decoration: none
-    transition: all 0.12s ease-out 0s
-    &:visited
-        color: $green-shade
-    &:hover, &:active, &:focus
-        color: $dark-blue
-
-abbr, acronym
-    cursor: help
-
-blockquote
-    margin: 3rem 0
-    padding: 1.5rem 3rem 0.01rem
-    background: $blue-header2
-    border-left: $bright-blue-text 0.6rem solid
-    border-radius: 0.3rem
-    font-style: italic
-
-caption
-    margin: 0 0 1.5rem 0
-    text-align: center
-
-code
-    padding: 0.1rem 0.3rem
-    background: $blue-header2
-    border-radius: 0.3rem
-    overflow: auto
-    font-size: 1.5rem
-
-dl
-    margin: 4.5rem 0
-dt
-    font-weight: bold
-    margin: 0 0 1.5rem 0
-dd
-    margin: 0 0 4.5rem 3rem
-dd + dd
-    margin: -1.5rem 0 4.5rem 3rem
-
-del
-    text-decoration: line-through
-
-em, i
-    font-style: italic
-
-h1, h2, h3
-    font-weight: 400
-    line-height: 1
-h4, h5, h6
-    font-weight: 600
-h1
-    font-size: 3.8rem
-    margin: 4.5rem 0 1.5rem
-h2
-    font-size: 3.3rem
-    margin: 4.5rem 0 1.5rem
-h3
-    font-size: 3.0rem
-    margin: 3rem 0 1.5rem
-h4
-    font-size: 3.0rem
-    margin: 2.1rem 0 1.5rem
-h5
-    font-size: 2.7rem
-    margin: 1.5rem 0
-h6
-    font-size: 2.4rem
-    margin: 1.5rem 0
-
-hr
-    height: 0.2rem
-    margin: 4.5rem 0
-    border: 0
-    border-radius: 0.3rem
-    background: $bright-blue
-
-img
-    max-width: 100%
-    height: auto
-
-button, input[type='submit'],
-input[type='button'], input[type='reset']
-    cursor: pointer
-
-input[type="text"], input[type="email"],
-input[type="password"], input[type="url"]
-    margin: 0 0 1.5rem 0
-    padding: 0.5rem
-    border: $dark-blue 0.1rem solid
-    border-radius: 0.3rem
-    background: $white
-    color: $dark-blue
-    cursor: text
-
-input[type='checkbox'], input[type='radio']
-    border: 0.1rem solid $dark-blue
-    cursor: pointer
-input[type='checkbox']
-    border-radius: 0.3rem
-
-label
-    color: $bright-blue-text
-    display: block
-
-ol, ul
-    margin: 1.5rem 3rem 4.5rem
-    li, li p
-        margin: 1rem 0
-    li ul
-        margin: 0 0 0 3rem
-ol
-    list-style: decimal
-ul
-    list-style: disc
-
-p
-    margin: 1.5rem 0 3rem
-
-q
-    quotes: "“" "”" "‘" "’"
-
-pre
-    padding: 1.5rem
-    white-space: pre-wrap
-    word-wrap: break-word
-    overflow: auto
-    border-radius: 0.3rem
-    background: $blue-header2
-    font-size: 1.5rem
-
-strong, b, strong a, b a
-    font-weight: 600
-
-sub
-    vertical-align: sub
-
-sup
-    font-size: 1.25rem
-    font-weight: 400
-    vertical-align: super
-// Multiple footnotes
-sup + sup
-    margin-left: 0.3rem
-
-table
-    margin: 3rem 0
-    tr:nth-child(2n)
-        background: $gray-table-row
-    th
-        border-bottom: 0.1rem solid $dark-blue
-        padding: 1rem 2rem
-        font-weight: 600
-    td
-        padding: 1rem 2rem
-
-textarea
-    border: $dark-blue 0.1rem solid
-
-video
-    max-width: 100%
 
 
 //// Mixins ------------------------------------------------------------- ////
@@ -421,6 +242,20 @@ video
     &:hover
         padding: 1rem 2rem
 
+// Set style for text links in containers/paragraphs
+=link-style
+    font-weight: 400
+    color: $link-p
+    text-decoration: none
+    border-bottom: 0.1rem solid $link-u
+    transition: all 0.15s ease-in 0s, border-bottom 0.15s ease-in 0s
+    &:hover, &:active, &:focus
+        color: $link-hover
+    &:hover
+        border-bottom: 0.1rem solid $link-u-hover
+    &:visited
+        color: $link-u-hover
+
 // Given an image file, insert background css
 =bg($p)
     background: url($images + $p) center center no-repeat
@@ -432,6 +267,197 @@ video
     -webkit-columns: $w $c
 
 
+//// Common elements ----------------------------------------------------- ////
+
+*, *:before, *:after
+    box-sizing: inherit
+
+*::selection
+    color: $white
+    background: $dark-blue
+    text-shadow: none
+
+html
+    font-size: 62.5%
+    box-sizing: border-box
+    overflow-y: scroll
+
+body
+    font: 300 2.1rem/3rem Nunito, sans-serif
+    color: $dark-blue
+    background: $white
+
+a
+    font-weight: 400
+    color: $green-shade
+    text-decoration: none
+    transition: all 0.15s ease-in 0s, border-bottom 0.15s ease-in 0s
+    &:hover, &:active, &:focus
+        color: $link-hover
+
+abbr, acronym
+    cursor: help
+
+blockquote
+    margin: 3rem 0
+    padding: 1.5rem 3rem 0.01rem
+    background: $blue-header2
+    border-left: $bright-blue-text 0.6rem solid
+    border-radius: 0.3rem
+    font-style: italic
+
+caption
+    margin: 0 0 1.5rem 0
+    text-align: center
+
+code
+    padding: 0.1rem 0.3rem
+    background: $blue-header2
+    border-radius: 0.3rem
+    overflow: auto
+    font-size: 1.5rem
+
+dl
+    margin: 4.5rem 0
+dt
+    font-weight: bold
+    margin: 0 0 1.5rem 0
+dd
+    margin: 0 0 4.5rem 3rem
+dd + dd
+    margin: -1.5rem 0 4.5rem 3rem
+
+del
+    text-decoration: line-through
+
+em, i
+    font-style: italic
+
+h1, h2, h3, h4, h5, h6
+    margin: 6rem 0 3rem
+    line-height: 1
+h5, h6
+    font-size: 1.7rem
+    letter-spacing: 0.04rem
+    color: $bright-blue-text
+h1
+    font-size: 3.7rem
+    font-weight: 700
+    letter-spacing: -0.06rem
+h2
+    font-size: 2.9rem
+    font-weight: 700
+    letter-spacing: -0.04rem
+h3
+    font-size: 2.1rem
+    font-weight: 700
+h4
+    font-size: 1.7rem
+    font-weight: 800
+    letter-spacing: 0.04rem
+h5
+    font-weight: 800
+h6
+    font-weight: 600
+    font-style: italic
+
+hr
+    height: 0.2rem
+    margin: 4.5rem 0
+    border: 0
+    border-radius: 0.3rem
+    background: $bright-blue
+
+img
+    max-width: 100%
+    height: auto
+
+button, input[type='submit'],
+input[type='button'], input[type='reset']
+    cursor: pointer
+
+input[type="text"], input[type="email"],
+input[type="password"], input[type="url"]
+    margin: 0 0 1.5rem 0
+    padding: 0.5rem
+    border: $dark-blue 0.1rem solid
+    border-radius: 0.3rem
+    background: $white
+    color: $dark-blue
+    cursor: text
+
+input[type='checkbox'], input[type='radio']
+    border: 0.1rem solid $dark-blue
+    cursor: pointer
+input[type='checkbox']
+    border-radius: 0.3rem
+
+label
+    color: $bright-blue-text
+    display: block
+
+ol, ul
+    margin: 1.5rem 3rem 4.5rem
+    li, li p
+        margin: 1rem 0
+    li ul
+        margin: 0 0 0 3rem
+ol
+    list-style: decimal
+ul
+    list-style: disc
+
+p
+    margin: 1.5rem 0 3rem
+    a
+        +link-style
+    strong a
+        font-weight: inherit
+
+q
+    quotes: "“" "”" "‘" "’"
+
+pre
+    padding: 1.5rem
+    white-space: pre-wrap
+    word-wrap: break-word
+    overflow: auto
+    border-radius: 0.3rem
+    background: $blue-header2
+    font-size: 1.5rem
+
+strong, b
+    font-weight: 600
+
+sub
+    vertical-align: sub
+
+sup
+    font-size: 1.25rem
+    font-weight: 400
+    vertical-align: super
+// Multiple footnotes
+sup + sup
+    margin-left: 0.3rem
+
+table
+    margin: 3rem 0
+    tr:nth-child(2n)
+        background: $gray-table-row
+    th
+        border-bottom: 0.1rem solid $dark-blue
+        padding: 1rem 2rem
+        font-weight: 600
+    td
+        padding: 1rem 2rem
+
+textarea
+    border: $dark-blue 0.1rem solid
+
+video
+    max-width: 100%
+
+
 //// Preset classes ----------------------------------------------------- ////
 
 .hidden
@@ -441,11 +467,14 @@ video
 .clearfix:after
     clear: both
 
-// Tilt
+// Tilt line
 hr.tilt
-    transform: skewY(-3deg)
     height: 0.15rem
     margin: 3rem 0
+    transform: skewY(-3deg)
+    background: #c5f1fd none repeat scroll 0 0;
+    border: 0
+    border-radius: 0.3rem
 
 // Buttons
 .bigbutton

@@ -14,10 +14,30 @@
     .key-sponsors
         +columns(15rem, 3)
 
-    .prelaunch-sponsors
-        +columns(10rem, 4)
-        font-size: 1.5rem
-
     .anon-sponsors
+        margin: 3rem auto
         text-align: center
         font-size: 1.5rem
+
+
++respond(break0)
+
+    .sponsors
+        .prelaunch-sponsors
+            +columns(10rem, 1)
+            font-size: 1.5rem
+
+
++respond(break1)
+
+    .sponsors
+        .prelaunch-sponsors
+            +columns(10rem, 2)
+            font-size: 1.5rem
+
+
++respond(break2)
+
+    .sponsors
+        .prelaunch-sponsors
+            +columns(10rem, 3)

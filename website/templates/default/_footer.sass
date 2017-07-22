@@ -58,7 +58,7 @@ footer
             +bg("supporter-qco.png")
 
 
-+respond(break1)
+=footer-layout0
 
     footer
         margin: 9rem 0 0
@@ -82,6 +82,16 @@ footer
             margin: 1.5rem 0
 
 
++respond(break0)
+
+    +footer-layout0
+
+
++respond(break1)
+
+    +footer-layout0
+
+
 +respond(break2)
 
     footer
@@ -102,6 +112,7 @@ footer
         .nav
             +with-layout($lt-main, true)
                 +container
+                padding: 0 3rem
             .col
                 +span(2 of 8)
                 &:last-child

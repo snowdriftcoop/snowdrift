@@ -55,8 +55,9 @@ nav
                 display: block
                 margin: 1rem 0
 
-+respond(break1)
 
+
+=navbar-layout0
     // Typography
     nav
         ul li a
@@ -71,12 +72,11 @@ nav
         padding: 0
 
         ul
-            width: 50%
             height: 3rem
             float: left
             margin: 3rem 0 0 0
             li
-                height: 6rem
+                margin: 0
             &:first-child
                 width: 6rem
                 height: 6rem
@@ -99,7 +99,7 @@ nav
             width: 6rem
             height: 2.4rem
             margin: 0
-            padding: 3.6rem 0.6rem 0.7rem
+            padding: 3.6rem 1.2rem 0
             text-align: center
         a.no-icon
             display: none
@@ -135,12 +135,26 @@ nav
             background-size: 3rem 3rem
 
 
++respond(break0)
+
+    +navbar-layout0
+
+
++respond(break1)
+
+    +navbar-layout0
+    // Add separator between logo icon
+    // and login icon
+    nav .center ul
+        width: 50%
+
+
 +respond(break2)
 
     // Typography
     nav ul li a
-        font-size: 1.8rem
-        font-weight: 600
+        font-size: 2.1rem
+        font-weight: 700
 
     // Positioning
     nav .center
@@ -154,7 +168,7 @@ nav
             li
                 float: left
                 display: inline
-                margin: 1.9rem 3rem 1.1rem 0
+                margin: 1.5rem 3rem 0.9rem 0
             // Logo
             &:first-child
                 +span(1 of 8)
@@ -165,7 +179,7 @@ nav
                 +span(2 of 8 last)
                 li
                     float: right
-                    margin: 1.9rem -1.5rem 1.1rem 3rem
+                    margin: 1.5rem 1.5rem 0.9rem 3rem
 
     // Remove icon styles
     nav .center
