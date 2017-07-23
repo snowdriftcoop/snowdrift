@@ -7,10 +7,10 @@
         padding-bottom: 3rem
         font-weight: 400
     form
-        label
+        /* label
             color: #{BrightBlueText}
             padding: 1rem 0
-            display: block
+            display: block */
         input
             background-color: #{White}
             border: 0.1rem solid #{DarkBlue}

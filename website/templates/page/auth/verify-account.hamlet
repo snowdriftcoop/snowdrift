@@ -1,6 +1,6 @@
 <h1>Email verification
-Here you can verify your account by entering the token from your email.
+<p>
+  Verify your account by entering the token we sent to your email.
 <form method="post" enctype=#{enctype}>
   ^{tokenField}
   <button type=submit>Verify
-
