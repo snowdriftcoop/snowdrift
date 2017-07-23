@@ -6,9 +6,10 @@
           <img src=@{StaticR img_logo_small_png} alt=Snowdrift.coop>
     <ul>
       <li>
-        <a .no-icon href=@{HowItWorksR}>How it works
+        <a .no-icon href=@{HowItWorksR} :howItWorksActive:.active>
+          How it works
       <li>
-        <a .no-icon href=@{AboutR}>About
+        <a .no-icon href=@{AboutR} :aboutActive:.active>About
 
 
     $maybe Entity _ user <- maybeUser

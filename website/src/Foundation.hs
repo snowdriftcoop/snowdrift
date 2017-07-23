@@ -180,6 +180,11 @@ navbarLayout pageName widget = do
         return $ case r of
             Just HowItWorksR -> True
             _                -> False
+    aboutActive <- do
+        r <- getCurrentRoute
+        return $ case r of
+            Just AboutR -> True
+            _           -> False
     authActive <- do
         r <- getCurrentRoute
         return $ case r of

@@ -8,23 +8,27 @@ nav
         li
             position: relative
 
-            a.logo
-                width: 6rem
-                height: 6rem
+            a
+                &:hover, &.active
+                    color: $dark-blue
 
-            a.dashboard
-                margin: 0 3rem 0 6rem
-                padding: 0 3rem 0 6rem
+                .logo
+                    width: 6rem
+                    height: 6rem
 
-                &:before
-                    content: ' '
-                    position: absolute
-                    width: 3rem
-                    height: 3rem
-                    left: -3.2rem
-                    top: -0.3rem
-                    +bg("default-avatar.png")
-                    background-size: 3rem 3rem
+                .dashboard
+                    margin: 0 3rem 0 6rem
+                    padding: 0 3rem 0 6rem
+
+                    &:before
+                        content: ' '
+                        position: absolute
+                        width: 3rem
+                        height: 3rem
+                        left: -3.2rem
+                        top: -0.3rem
+                        +bg("default-avatar.png")
+                        background-size: 3rem 3rem
 
     // Dropdown menu
     .ddown
