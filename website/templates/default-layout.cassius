@@ -162,6 +162,12 @@ hr
         h1
             margin: 6rem 0 0 0
 
+/* Hides label for auth login pages for the site itself,
+    but still allows tests to see label for test purposes
+.auth.login, .auth.reset-passphrase, .auth.create-account
+    label
+        display: none
+
 @keyframes fadein
     0%
         opacity: 0
