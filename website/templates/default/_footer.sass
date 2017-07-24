@@ -1,0 +1,129 @@
+footer
+    ul
+        list-style: none
+
+    .section ul.bg:before
+        margin: -6rem 0 0 0
+        position: absolute
+        content: " "
+        height: 21rem
+        left: 0
+        right: 0
+        background: url($images + "footer-bg.png") center top repeat-x
+        z-index: -1
+
+    a.logo
+        display: block
+        padding: 0
+        text-align: center
+        max-width: 27rem
+        margin: 0 auto
+
+    a.logo img
+        width: 100%
+
+    p
+        margin: 0
+
+    span
+        display: block
+        text-align: center
+        color: #{$dark-blue}
+        margin: 3rem auto 9rem
+
+    .supporters li
+        margin: 0
+        a
+            display: block
+            height: 6rem
+            font-size: 0
+            color: transparent
+            background: center top no-repeat
+            opacity: 0.7
+        a:hover
+            opacity: 1
+        .fsfe
+            +bg("supporter-fsfe.png")
+        .april
+            +bg("supporter-april.png")
+        .oin
+            +bg("supporter-oin.png")
+        .eff
+            +bg("supporter-eff.png")
+        .p2p
+            +bg("supporter-p2p.png")
+        .osi
+            +bg("supporter-osi.png")
+        .qco
+            +bg("supporter-qco.png")
+
+
+=footer-layout0
+
+    footer
+        margin: 9rem 0 0
+
+        // Smaller logo
+        a.logo img
+            width: 18rem
+
+        // No breaks between menu columns
+        .col
+            margin: 0
+
+        // Center menu items
+        ul
+            text-align: center
+            li p
+                margin: 3rem
+
+        // Spacing between logos
+        .supporters li
+            margin: 1.5rem 0
+
+
++respond(break0)
+
+    +footer-layout0
+
+
++respond(break1)
+
+    +footer-layout0
+
+
++respond(break2)
+
+    footer
+        a.logo img
+            width: 100%
+        ul
+            text-align: left
+            li p
+                margin: 0
+
+        .footer-logo
+            +with-layout($lt-main, true)
+                +container
+            padding: 9rem 0 3rem
+            .col
+                +span(8 of 8)
+
+        .nav
+            +with-layout($lt-main, true)
+                +container
+                padding: 0 3rem
+            .col
+                +span(2 of 8)
+                &:last-child
+                    +span(4 of 8 last)
+                padding: 3rem 0
+
+        .supporters
+            +with-layout($lt-footer-bottom, true)
+                +container
+            padding: 3rem 0
+            .col
+                +span(2 of 6)
+                &:last-child
+                    +span(2 of 6 last)

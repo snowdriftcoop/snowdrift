@@ -1,28 +1,24 @@
 <nav>
-  <ul .main>
+  <ul .center>
     <li>
       <a .logo href=@{WelcomeR} :active WelcomeR:.active>
         <img src=@{StaticR img_logo_small_png} alt=Snowdrift.coop>
-    <li .break4>
-      <a href=@{HowItWorksR} :howItWorksActive:.active>
-        How it works
-    <li .break4>
-      <a href=@{DashboardR} :active DashboardR:.active>
-        Dashboard
-    <li .unbreak4>
-      $maybe _ <- maybeUser
-        <a href=@{DashboardR} .icon .dashboard :active DashboardR:.active>Dashboard
-      $nothing
-        <a href=@{AuthR LoginR} .icon .login :authActive:.active>Log In
-  <ul .right .break4>
     <li>
-      $maybe Entity _ user <- maybeUser
-          <div .ddown>
-            <a href .ddown-toggle .user>#{_userEmail user}
-            <ul>
-              <li>
-                <a href=@{DashboardR} :active DashboardR:.active>Dashboard
-              <li>
-                <a href=@{AuthR LogoutR}>Log Out
-      $nothing
-        <a href=@{AuthR LoginR} :authActive:.active>Log In
+      <a .no-icon href=@{HowItWorksR} :howItWorksActive:.active>
+        How it works
+    <li>
+      <a .no-icon href=@{AboutR} :aboutActive:.active>About
+
+    $maybe Entity _ user <- maybeUser
+      <li .ddown>
+        <a href .ddown-toggle href="#">
+          <img src=#{avatar} alt="Account settings">
+        <ul .ddown-menu>
+          <li>#{_userEmail user}
+          <li>
+            <a href=@{DashboardR} :active DashboardR:.active>Dashboard
+          <li>
+            <a href=@{AuthR LogoutR}>Log out
+    $nothing
+      <li>
+        <a .icon .login href=@{AuthR LoginR} :authActive:.active>Log in

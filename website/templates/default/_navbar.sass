@@ -1,0 +1,153 @@
+=navbar-layout0
+
+    nav
+        width: 100%
+        background: $white
+
+        // Override base ul
+        ul
+            list-style: none
+            li
+                height: 6rem
+                margin: 0
+
+        // Center navbar contents
+        .center
+            margin: 0 auto
+            height: 6rem
+
+            // Layout
+            li
+                display: inline
+                // Logo
+                &:first-child
+                    float: left
+                    display: inline
+                // Log in
+                &:last-child
+                    float: right
+                    display: inline
+
+                a
+                    transition: unset
+                    &:hover, &.active
+                        color: $dark-blue
+
+                    // Logo and icons
+                    &.logo
+                        width: 6rem
+                        height: 6rem
+
+                    &.icon
+                        background-position: center 0.8rem !important
+                        background-repeat: no-repeat
+                        width: 6rem
+                        height: 6rem
+                        padding: 3rem 1.2rem 0
+                        text-align: center
+                    &.no-icon
+                        display: none
+
+                    &.login
+                        +bg("icon-login.png")
+                        float: right
+                        font-size: 1.2rem
+                        font-weight: 600
+                    &.login:hover, &.login:focus, &.login.active
+                        +bg("icon-login_sel.png")
+
+            // Dropdown menu
+            .ddown
+                margin: 0 !important
+                position: relative
+                float: right
+                z-index: 10
+                // Avatar/toggle
+                .ddown-toggle
+                    width: 6.6rem
+                    height: 6rem
+                    padding: 0
+                    img
+                        width: 5.4rem
+                        height: 5.4rem
+                        margin: 0.6rem 0 0 0
+                    &:after
+                        content: " ▼"
+                        font-size: 1.2rem
+                        position: relative
+                        top: -1.8rem
+                        left: -0.3rem
+
+                .ddown-menu
+                    display: none
+                    top: 5.7rem
+                    right: 0
+                    position: absolute
+                    margin: 0
+                    padding: 1.2rem
+                    width: 27rem
+                    min-height: 9rem
+                    background: $white
+                    border-radius: 0.3rem
+                    overflow-x: hidden
+                    font-size: 1.5rem
+                    text-align: right
+                    li
+                        float: unset
+                    a
+                        display: block
+                        margin: 1rem 0
+                        font-size: 1.5rem !important
+                        font-weight: 700 !important
+                &:hover .ddown-menu
+                    display: block
+                    transition: all 0.15s ease-in 0s
+
+
++respond(break0)
+
+    +navbar-layout0
+
+
++respond(break1)
+
+    +navbar-layout0
+
+
++respond(break2)
+
+    // Layout
+    nav .center
+        +with-layout($lt-main, true)
+            +container
+        height: 6rem
+
+        // Show text links
+        li
+            display: inline-block
+            &:nth-child(n+2)
+                height: unset
+                margin: 1.5rem
+                a
+                    font-size: 2.1rem
+                    font-weight: 700
+
+            // Remove icon styles
+            a.icon, a.icon:hover, .a.icon:focus, a.icon:active, a.icon.active
+                background: transparent
+                border: 0
+                width: unset
+                height: unset
+                padding: 0
+            a.no-icon
+                display: inline
+
+        // Right-align menu under toggle
+        .ddown
+            .ddown-menu
+                li
+                    height: unset
+                    margin: 1rem 0
+                    display: block
+                a
+                    margin: 0

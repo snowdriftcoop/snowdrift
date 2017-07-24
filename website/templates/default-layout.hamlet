@@ -1,4 +1,3 @@
-<div .grid>
 ^{navbar}
 <div .container>
   <div #messages>

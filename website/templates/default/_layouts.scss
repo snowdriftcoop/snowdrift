@@ -1,0 +1,62 @@
+$susy: (
+    flow: ltr,
+    math: fluid,
+    output: float,
+    gutter-position: after,
+    container: 75rem,
+    container-position: center,
+    columns: 8,
+    gutters: 3rem/6rem,
+    column-width: false,
+    global-box-sizing: border-box,
+    last-flow: to,
+    debug: (
+        image: show,
+        color: rgba(0,255,255,0.5),
+        toggle: bottom left,
+    ),
+    use-custom: (
+        background-image: false,
+        background-options: false,
+        box-sizing: false,
+        clearfix: false,
+        rem: true,
+    )
+);
+
+
+// Default template
+$lt-main: (
+    container: 75rem,
+    columns: 8,
+    gutters: 3rem/6rem,
+    gutter-position: after,
+    // debug: (
+    //     image: hidden,
+    //     color: rgba(0,255,255,0.5),
+    //     toggle: bottom left,
+    // )
+);
+
+$lt-footer-bottom: (
+    container: 69rem,
+    columns: 3,
+    gutter-position: after,
+);
+
+
+// Breakpoints
+@mixin respond($break) {
+    @if $break == break0 {
+        @media (max-width: 317px) { @content }
+    }
+    @else if $break == break1 {
+        @media (min-width: 318px) { @content }
+    }
+    @else if $break == break2 {
+        @media (min-width: 750px) { @content }
+    }
+    @else if $break == break3 {
+        @media (min-width: 1280px) { @content }
+    }
+}

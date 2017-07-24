@@ -1,0 +1,172 @@
+[class*="alert-"]
+    +span(8)
+    box-sizing: border-box
+    min-height: 6rem
+    max-width: 75rem
+    padding: 2.2rem 3rem 1rem 3rem
+    margin: 3rem auto
+    border-bottom: 0.4rem solid $dark-blue
+    border-radius: 0.4rem 0.4rem 0 0
+    position: relative
+    float: none !important
+
+    h2
+        font-size: 2.5rem
+        margin: 0 0 0 -3rem
+        // Override global padding
+        padding: 0
+        background: transparent
+
+    // Optional close button
+    a.close
+        position: absolute
+        right: 2rem
+        top: 0
+        font-weight: 800
+        font-size: 3.5rem
+        z-index: 3
+        opacity: 0.5
+        text-align: right
+
+        &:hover
+            opacity: 1
+
+    // Mimi & Eunice element
+    &:after
+        +bg("me-sprite.png")
+        height: 24rem
+        width: 24rem
+        position: absolute
+        bottom: -7rem
+        right: -9rem
+        z-index: 2
+        content: ' '
+        background-size: 96rem auto
+
+[class*="alert-button-"]
+    @extend [class*="alert-"]
+
+    // Last link/button style
+    a:last-child, button
+        padding: 0.4rem 1rem 0
+        background: $white
+        border-radius: 0.4rem
+        position: absolute
+        margin-top: -0.5rem
+        left: 50%
+        transform: translateX(-50%)
+        z-index: 3
+        // Align center for small screen widths
+        text-align: center
+
+        &:hover
+            cursor: pointer
+
+    button
+        @extend a
+
+.alert-success, .alert-button-success
+    color: darken($green, 10%)
+    border-color: darken($green, 10%)
+    background-color: lighten($green, 35%)
+    padding-right: 15rem
+
+    &:after
+        background-position: -24rem -72rem
+
+    a.close, a.close:hover
+        color: darken($green, 10%)
+
+.alert-info, .alert-button-info
+    color: darken($bright-blue-text, 15%)
+    border-color: darken($bright-blue-text, 15%)
+    background-color: lighten($bright-blue, 5%)
+    padding-right: 15rem
+
+    &:after
+        background-position: -24rem -48rem
+
+    a.close, a.close:hover
+        color:  darken($bright-blue-text, 15%)
+
+.alert-warning, .alert-button-warning
+    color: darken($gold, 35%)
+    border-color: darken($gold, 35%)
+    background-color: lighten($gold, 15%)
+    padding-left: 15rem
+
+    &:after
+        background-position: 0 -48rem
+        left: -9rem
+
+    a.close, a.close:hover
+        color: darken($gold, 35%)
+
+.alert-danger, .alert-button-danger
+    color: darken($red, 15%)
+    border-color: darken($red, 15%)
+    background-color: lighten($red, 20%)
+    padding-left: 15rem
+
+    &:after
+        background-position: 0 -72rem
+        left: -9rem
+
+    a.close, a.close:hover
+        color: darken($red, 15%)
+
+
+// Nested in month boxes project lists
+[class*="box-month"]
+    .alert-warning, .alert-button-warning
+
+        ul
+            margin: 0
+
+            li
+                a
+                    position: inherit
+                    background-color: lighten($gold, 15%)
+                    padding-left: 0
+
+                    span
+                        background-color: lighten($gold, 15%)
+
+                    .match
+                        text-decoration: line-through
+                        color: darken($gold, 35%)
+                        padding-right: 0 !important
+
+
+@media (min-width: +respond(1))
+    [class*="alert-"]
+        float: unset
+
+        h2, p
+            margin-left: 0 !important
+
+        // Hide M&E
+        &:after
+            display: none
+
+    .alert-success, .alert-info, .alert-button-success, .alert-button-info
+        padding-right: 3rem
+
+    .alert-warning, .alert-danger, .alert-button-warning, .alert-button-danger
+        padding-left: 3rem
+
+
+@media (min-width: +respond(2))
+    [class*="alert-"]
+        box-sizing: border-box
+        float: left
+
+        // Restore M&E
+        &:after
+            display: unset
+
+    .alert-success, .alert-info, .alert-button-success, .alert-button-info
+        padding-right: 15rem
+
+    .alert-warning, .alert-danger, .alert-button-warning, .alert-danger
+        padding-left: 15rem

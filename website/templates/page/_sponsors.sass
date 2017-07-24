@@ -1,0 +1,43 @@
+.sponsors
+    h2
+        text-align: center
+        margin: 4.5rem auto 3rem
+    ul
+        list-style: none
+        margin: 0
+
+    ul li
+        display: block
+        text-align: center
+        margin: 0 0 1rem
+
+    .key-sponsors
+        +columns(15rem, 3)
+
+    .anon-sponsors
+        margin: 3rem auto
+        text-align: center
+        font-size: 1.5rem
+
+
++respond(break0)
+
+    .sponsors
+        .prelaunch-sponsors
+            +columns(10rem, 1)
+            font-size: 1.5rem
+
+
++respond(break1)
+
+    .sponsors
+        .prelaunch-sponsors
+            +columns(10rem, 2)
+            font-size: 1.5rem
+
+
++respond(break2)
+
+    .sponsors
+        .prelaunch-sponsors
+            +columns(10rem, 3)
