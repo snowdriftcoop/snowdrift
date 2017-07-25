@@ -4,7 +4,7 @@
     min-height: 6rem
     max-width: 75rem
     padding: 2.2rem 3rem 1rem 3rem
-    margin: 3rem auto
+    margin: 3rem auto 6rem
     border-bottom: 0.4rem solid $dark-blue
     border-radius: 0.4rem 0.4rem 0 0
     position: relative
@@ -138,12 +138,16 @@
                         padding-right: 0 !important
 
 
-@media (min-width: +respond(1))
+=alert-layout0
+
     [class*="alert-"]
         float: unset
 
         h2, p
             margin-left: 0 !important
+
+        p
+             font-size: 1.8rem
 
         // Hide M&E
         &:after
@@ -156,10 +160,24 @@
         padding-left: 3rem
 
 
-@media (min-width: +respond(2))
++respond(break0)
+
+    +alert-layout0
+
+
++respond(break1)
+
+    +alert-layout0
+
+
++respond(break2)
+
     [class*="alert-"]
         box-sizing: border-box
         float: left
+
+        p
+             font-size: 2.1rem
 
         // Restore M&E
         &:after

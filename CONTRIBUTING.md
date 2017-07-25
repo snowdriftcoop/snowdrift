@@ -232,16 +232,17 @@ Several ways to get started contributing and/or to learn more overall:
 * Explore the code files and see if you can figure out what does what and how
   things fit together.
 
-    * For non-Haskell work, the files in the /templates directory are comparable
-      to basic HTML, CSS, and JavaScript. Beginners can quickly learn how to
-      make changes to those files. Basically, Hamlet=HTML and Cassius=CSS but
-      with concise syntax that uses indentation instead of closing tags. Julius
-      files are effectively just containers for JavaScript. For more details,
-      see the documentation on [Shakespearean Templates].
+* For non-Haskell work, the .hamlet files in the /website/templates directory
+  are comparable to basic HTML using white-space to avoid the need for closing
+  tags (plus some other logic that connects to the Haskell). Any .julius files
+  are containers for JavaScript. For more details, see the documentation on
+  [Shakespearean Templates]. We use Sass files in /website/templates and
+  generate .css in /website/static/tmp using shakespeare-sass.
 
-    * For those familiar with Haskell, consider exploring our files, and
-      updating any code that doesn't match our code style (see the "Code style"
-      section below).
+* For those familiar with Haskell, consider exploring our files, and updating
+  any code that doesn't match our code style (see the "Code style" section
+  below). After you have some familiarity with the project, you can take on
+  some real development tasks.
 
 * Read the code documention in this repo and other pages on the Snowdrift.coop
   [wiki].
@@ -482,7 +483,7 @@ here are some resources (nearly all fully-FLO):
     files from the code and explore the functions.
 
 [Build guide]: BUILD.md
-[design]: https://wiki.snowdrift.coop/design
+[design]: https://git.snowdrift.coop/sd/design
 [dev mailing list]: https://lists.snowdrift.coop/mailman/listinfo/dev
 [git.snowdrift.coop]: https://git.snowdrift.coop/sd/snowdrift
 [GHCJS]: https://github.com/ghcjs/ghcjs

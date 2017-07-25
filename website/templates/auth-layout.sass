@@ -1,0 +1,108 @@
+@import base/base
+@import base/susy/susy
+@import base/layouts
+@import base/alerts
+
+
+=auth-layout0
+
+    .auth
+        background-color: lighten($bright-blue, 8%)
+
+        .auth-box
+            width: 28rem
+            margin: 10vw auto 3rem
+
+            .logo
+                display: block
+                text-align: center
+                height: 6.9rem
+                width: 6.5rem
+                margin: 0 auto 4.5rem
+
+            h1
+                font-weight: 300
+                font-size: 2.7rem
+                margin: 1.5rem auto 2rem
+                text-align: center
+                padding: 0 3rem
+
+            form
+                border: 0.1rem solid lighten($dark-blue, 63%)
+                background-color: $white
+                padding: 3rem
+                border-radius: 0.4rem
+
+                input
+                    box-sizing: border-box
+                    border-color: lighten($dark-blue, 50%)
+                    height: 4.5rem
+                    margin-bottom: 1.5rem
+                    width: 100%
+                    padding: 0 1rem
+
+                .forgot-pass
+                    display: block
+                    text-align: center
+                    font-size: 1.8rem
+                    margin-top: -1rem
+
+                .bigbutton
+                    margin-bottom: 0
+
+                button
+                    +sml-button($white, $green, $green-shade)
+                    margin-top: 3rem
+                    width: 100%
+
+                p
+                    margin: 0 0 3rem
+
+            a
+                border: 0
+                &:hover
+                    border: 0
+                    color: $dark-blue
+
+            p
+                margin: 0 3rem 3rem
+                font-size: 1.6rem
+
+            p.sign-up, p.log-in
+                border: 0.1rem solid lighten($dark-blue, 60%)
+                margin: 3rem 0 0
+                background-color: $white
+                font-size: 1.8rem
+                padding: 1.5rem 3rem
+                text-align: center
+                border-radius: 0.4rem
+
+    // Retain and hide auth form labels for tests
+    .auth.login, .auth.reset-passphrase, .auth.create-account
+        label
+            display: none
+
+
++respond(break0)
+
+    +auth-layout0
+
+
++respond(break1)
+
+    +auth-layout0
+
+
++respond(break2)
+
+    .auth
+        .auth-box
+            width: 39rem
+            margin: 9rem auto 3rem
+
+            h1
+                padding: 0
+
+            p
+                margin: 0 1rem 3rem
+                font-size: 1.8rem
