@@ -183,9 +183,9 @@ authLayout :: Text -> Widget -> Handler Html
 authLayout pageName widget = do
     msgs <- getMessages
 
-    pc <- widgetToPageContent $ do
-        $(widgetFile "auth-layout")
+    pc <- widgetToPageContent $(widgetFile "auth-layout")
     withUrlRenderer $(hamletFile "templates/auth-layout-wrapper.hamlet")
+
 
 navbarLayout :: Text -> Widget -> Handler Html
 navbarLayout pageName widget = do
@@ -218,12 +218,6 @@ navbarLayout pageName widget = do
     pc <- widgetToPageContent $ do
         $(widgetFile "default-layout")
     withUrlRenderer $(hamletFile "templates/default-layout-wrapper.hamlet")
-  where
-    pageClasses :: (Text, Text)
-    pageClasses = ("class", classes pageName)
-    classes = T.unwords
-            . List.tail
-            . T.splitOn "/"
 
 pageClasses :: Text -> (Text, Text)
 pageClasses pageName = ("class", classes pageName)
