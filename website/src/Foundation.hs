@@ -5,7 +5,7 @@ import Import.NoFoundation
 
 import Control.Monad.Logger (logDebugSH)
 import Database.Persist.Sql (runSqlPool)
-import Text.Hamlet          (hamletFile)
+import Text.Hamlet          (hamlet, hamletFile)
 import Text.Jasmine         (minifym)
 import Yesod.Default.Util   (addStaticContentExternal)
 import qualified Data.List as List
@@ -121,13 +121,13 @@ instance AuthMaster App where
                       passphrase</a>.</p>
                 |]
         alertWarning alertMessage
-        navbarLayout "page/auth/login" $ do
+        authLayout "page/auth/login" $ do
             setTitle "Login — Snowdrift.coop"
             $(widgetFile "page/auth/login")
 
     createAccountHandler = do
         (loginFields, enctype) <- generateFormPost (renderDivs newUserCredentialsForm)
-        navbarLayout "page/auth/create-account" $ do
+        authLayout "page/auth/create-account" $ do
             setTitle "Create Account — Snowdrift.coop"
             $(widgetFile "page/auth/create-account")
 
@@ -135,7 +135,7 @@ instance AuthMaster App where
         ((_, tokenField), enctype) <-
             runFormPost
                 (renderDivs (areq textField "Token"{fsAttrs=af} Nothing))
-        navbarLayout "page/auth/verify-account" $ do
+        authLayout "page/auth/verify-account" $ do
             setTitle "Verify Account — Snowdrift.coop"
             $(widgetFile "page/auth/verify-account")
       where af = [("autofocus","true")]
@@ -145,7 +145,7 @@ instance AuthMaster App where
         where
           reset = do
               (loginFields, enctype) <- generateFormPost (renderDivs newUserCredentialsForm)
-              navbarLayout "page/auth/reset-passphrase" $ do
+              authLayout "page/auth/reset-passphrase" $ do
                   setTitle "Passphrase Reset — Snowdrift.coop"
                   $(widgetFile "page/auth/reset-passphrase")
 
@@ -179,6 +179,14 @@ unsafeHandler = Unsafe.fakeHandlerGetLogger appLogger
 -- https://github.com/yesodweb/yesod/wiki/Serve-static-files-from-a-separate-domain
 -- https://github.com/yesodweb/yesod/wiki/i18n-messages-in-the-scaffolding
 
+authLayout :: Text -> Widget -> Handler Html
+authLayout pageName widget = do
+    msgs <- getMessages
+
+    pc <- widgetToPageContent $(widgetFile "auth-layout")
+    withUrlRenderer $(hamletFile "templates/auth-layout-wrapper.hamlet")
+
+
 navbarLayout :: Text -> Widget -> Handler Html
 navbarLayout pageName widget = do
     msgs <- getMessages
@@ -210,10 +218,11 @@ navbarLayout pageName widget = do
     pc <- widgetToPageContent $ do
         $(widgetFile "default-layout")
     withUrlRenderer $(hamletFile "templates/default-layout-wrapper.hamlet")
-  where
-    pageClasses :: (Text, Text)
-    pageClasses = ("class", classes pageName)
-    classes = T.unwords
+
+pageClasses :: Text -> (Text, Text)
+pageClasses pageName = ("class", classes pageName)
+    where
+        classes = T.unwords
             . List.tail
             . T.splitOn "/"
 

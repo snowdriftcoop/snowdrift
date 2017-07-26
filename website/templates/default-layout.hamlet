@@ -4,6 +4,6 @@
     $forall (level, msg) <- msgs
       <div .alert .alert-#{level}>
         #{msg}
-  <div *{pageClasses}>
+  <div *{pageClasses pageName}>
     ^{widget}
 ^{footer}

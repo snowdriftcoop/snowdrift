@@ -9,7 +9,7 @@
     For security reasons, we require your passphrase to have at least nine
     characters.
   <p>
-    <em>Hints:</em> A good way to generate a secure by memorable passphrase is
+    <em>Hints:</em> A good way to generate a secure and memorable passphrase is
     with a string of several random words. Never reuse the same passphrase in
     multiple places. We recommend using a generator and a master keyring (e.g.,
     <a href="http://keepass.info/" target="_blank">KeePass</a>).

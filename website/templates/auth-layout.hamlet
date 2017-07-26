@@ -1,0 +1,9 @@
+<div #messages>
+  $forall (level, msg) <- msgs
+    <div .alert .alert-#{level}>
+      #{msg}
+<div .container .auth-box .auth>
+  <a .logo href=@{WelcomeR}>
+    <img src=@{StaticR img_logo_bigger_png} alt=Snowdrift.coop>
+  <div *{pageClasses pageName}>
+    ^{widget}

@@ -2,7 +2,7 @@
 <form method=post enctype=#{enctype}>
   ^{loginFields}
   <p .forgot-pass>
-    <a href=@{AuthR ResetPassphraseR}>Forgot your passphrase?
+    <a href=@{AuthR ResetPassphraseR}>Lost your passphrase?
   <button type=submit .bigbutton>Log in
 <p .sign-up>
   Don't have an account?

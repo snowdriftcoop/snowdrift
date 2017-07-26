@@ -1,5 +1,5 @@
 <.container .auth .create-account>
-  <h1>Welcome!
+  <h1>Welcome to Snowdrift.coop!
 
   <p>
     By registering, you agree to Snowdrift.coop's
@@ -9,15 +9,7 @@
 
   <form method=post enctype=#{enctype}>
     ^{loginFields}
-    <p>
-      For security reasons, we require your passphrase to have at least nine
-      characters.
-    <p>
-      Please note: a good way to generate a secure but memorable passphrase is
-      with a string of several random words. Also, never reuse the same
-      passphrase in multiple places. We recommend using a generator and a master
-      keyring.
-    <button type=submit>Create account
+    <button type=submit>Sign up!
 
 <p .log-in>
   Already have an account?
