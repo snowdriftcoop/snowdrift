@@ -1,5 +1,8 @@
 # [Snowdrift.coop]
 
+[![build
+status](https://git.snowdrift.coop/sd/snowdrift/badges/master/build.svg)](https://git.snowdrift.coop/sd/snowdrift/commits/master)
+
 This is the software that runs the [Snowdrift.coop] website.
 
 * [Issues]
