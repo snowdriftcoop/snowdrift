@@ -40,6 +40,7 @@ Patron sql="crowdmatch__patron"
     pledgeSince UTCTime Maybe
     --
     UniquePatron usr
+    deriving Show Eq
 
 PledgeHistory sql="crowdmatch__pledge_history"
     patron PatronId

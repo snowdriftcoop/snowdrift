@@ -16,7 +16,7 @@ import Data.Foldable (traverse_)
 import Data.List (partition)
 import Data.Monoid ((<>))
 import Data.Text (Text)
-import Data.Time (getCurrentTime)
+import Data.Time (UTCTime, getCurrentTime)
 import Database.Persist
 import Database.Persist.Postgresql
         (SqlPersistT, runMigration, connEscapeName, unSingle, rawSql, rawExecute)
@@ -163,6 +163,7 @@ main = withTestDatabase $ runPersistPool $ \runner -> do
     -- problems with the current design of manual migrations.
     bracket (PG.connectPostgreSQL "") PG.close crowdmatchManualMigrations
     hspec $ before_ (runner trunq) $ do
+        depTests runner
         unitTests runner
         propTests runner trunq
   where
@@ -179,6 +180,32 @@ main = withTestDatabase $ runPersistPool $ \runner -> do
         let trunq = "truncate table " `mappend` T.intercalate ", " tables
         -- Don't do it yet
         pure (rawExecute trunq [])
+
+-- A harness function
+modelPatronWithBalance :: Int -> DonationUnits -> UTCTime -> Model.Patron
+modelPatronWithBalance i u t =
+        Model.Patron
+            (Model.PPtr i)
+            t
+            (Just (PaymentToken (CustomerId "foo")))
+            u
+            Nothing
+
+-- | Test upstream deps
+depTests :: Runner -> Spec
+depTests runner = describe "dep tests" $
+    -- | We got bit by this momentarily. Now keeping this test for all of
+    -- eternity.
+    it "Persistent.upsert != repsert " $ do
+        now <- getCurrentTime
+        let p1 =
+                modelPatronWithBalance 0 (DonationUnits 20) now
+            conflict =
+                modelPatronWithBalance 0 (DonationUnits 25) now
+        conflictedResult <- runner $ do
+            void (insert p1)
+            upsert conflict []
+        entityVal conflictedResult `shouldBe` p1
 
 unitTests :: Runner -> Spec
 unitTests runner = describe "unit tests" $ do
@@ -302,28 +329,21 @@ unitTests runner = describe "unit tests" $ do
             length u `shouldBe` 1
     describe "make-payments event" $ do
         now <- runIO getCurrentTime
-        let patronWithBalance i u =
-                Model.Patron
-                    (Model.PPtr i)
-                    now
-                    (Just (PaymentToken (CustomerId "foo")))
-                    u
-                    Nothing
         it "creates history" $ do
             hs :: [Entity Model.DonationHistory] <- runner $ do
-                void (insert (patronWithBalance 1 (DonationUnits 50000)))
+                void (insert (modelPatronWithBalance 1 (DonationUnits 50000) now))
                 makePayments dummyStripe'
                 selectList [] []
             length hs `shouldBe` 1
         it "zeroes donations" $ do
             p <- runner $ do
-                void (insert (patronWithBalance 1 (DonationUnits 5000)))
+                void (insert (modelPatronWithBalance 1 (DonationUnits 5000) now))
                 makePayments dummyStripe'
                 fetchPatron (HarnessUser 1)
             patronDonationPayable p `shouldBe` DonationUnits 0
         it "accounts for fees" $ do
             h :: Model.DonationHistory <- runner $ do
-                void (insert (patronWithBalance 1 (DonationUnits 5000)))
+                void (insert (modelPatronWithBalance 1 (DonationUnits 5000) now))
                 makePayments dummyStripe'
                 (entityVal . head) <$> selectList [] []
             -- 500 * 2.99% + 30.9 (roughly the effective fee rate, after
@@ -331,7 +351,7 @@ unitTests runner = describe "unit tests" $ do
             Model.donationHistoryFee h `shouldBe` 46
         it "adds to the project what it takes from the patron" $ do
             p <- runner $ do
-                void (insert (patronWithBalance 1 (DonationUnits 5000)))
+                void (insert (modelPatronWithBalance 1 (DonationUnits 5000) now))
                 makePayments dummyStripe'
                 fetchProject
             projectDonationsReceived p `shouldBe` 5000
