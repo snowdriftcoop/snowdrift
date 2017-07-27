@@ -15,4 +15,4 @@ Snowdrift:
 	stack build
 
 test:
-	./build.sh test --fast --pedantic
+	./build.sh test --pedantic
