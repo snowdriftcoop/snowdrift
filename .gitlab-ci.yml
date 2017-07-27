@@ -1,0 +1,31 @@
+# This file's semantics are documented at
+# https://docs.gitlab.com/ee/ci/yaml/README.html
+
+stages:
+    - deps
+    - build
+    - test
+    - cleanup
+
+deps:
+    stage: deps
+    script:
+        # I did these steps manually on the system, since I'm using the shell
+        # runner for now.
+        #- apt-get --quiet update
+        #- apt-get --quiet --assume-yes install curl postgresql libgmp-dev libpq-dev
+        #- curl -sSL https://get.haskellstack.org/ | sh
+        - stack test --no-run-tests --only-snapshot --install-ghc
+
+build:
+    stage: build
+    script:
+        - stack clean
+        - stack build --fast --pedantic
+
+test:
+    stage: test
+    script:
+        - ./build.sh test --pedantic
+        # Stop the database, so gitlab-runner knows the whole job is done.
+        - ./sdb.hs clean
