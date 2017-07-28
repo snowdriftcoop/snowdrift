@@ -2,17 +2,20 @@ module Avatar where
 
 import Control.Exception (PatternMatchFail)
 import Control.Lens
+import qualified Data.Text as T
 import Network.Libravatar
 
 import Import.NoFoundation
 
 getUserAvatar :: MonadHandler m => Route (HandlerSite m) -> Maybe User -> m Text
 getUserAvatar defaultRoute muser = do
+    root <- pure "https://snowdrift.coop"
     defaultUrl <- getUrlRender <*> pure defaultRoute
+    let defaultUrlText = T.append root defaultUrl
 
     maybe (return defaultUrl)
           (\user ->
-              liftIO (libravatar (user^.userEmail) defaultUrl))
+              liftIO (libravatar (user^.userEmail) defaultUrlText))
           muser
 
   where
