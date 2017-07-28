@@ -1,12 +1,13 @@
-<h1 id="snowdrift.coop-trademark-policy">Snowdrift.coop Trademark Policy
-<p>
-  <strong>Version 0.3 – Effective December 16, 2015
+<h1 #snowdrift.coop-trademark-policy">Snowdrift.coop Trademark Policy
+<div #tilt>
+<em .version>
+  Version 0.3 – Effective December 16, 2015
 <p>
   We are committed to ensuring the clear and consistent use of our trademarks
   and to protecting the rights of legitimate users.
 <p>
   <strong>Snowdrift.coop reserves as trademarks:#
-  <a href="#fn1" class="footnoteRef" id="fnref1">
+  <a href="#fn1" .footnoteRef #fnref1>
     <sup>1
 <ul>
   <li>
@@ -15,7 +16,8 @@
     The primary name "Snowdrift" when used in the context of online
     fundraising, creative project support, and/or community building
   <li>Our various identifying #
-    <a href="https://wiki.snowdrift.coop/design/design-guide#logo">logos
+    <a href="https://git.snowdrift.coop/sd/design/blob/master/docs/design-guide/readme.md#the-logo">
+      logos
 <p>
   This policy seeks to clarify and promote acceptable use including honest and
   compliant commercial activity.
@@ -25,7 +27,7 @@
   with the guidelines below or otherwise authorized in writing, any use in
   false advertising, or use of misleadingly similar marks.
 
-<h2 id="uses-that-require-no-special-permission">
+<h2 #uses-that-require-no-special-permission>
   Uses that require
   <em>no
   special permission
@@ -53,7 +55,7 @@
     affiliation, or lack thereof, with Snowdrift.coop and of what part of the
     selling price, if any, will be donated to the Snowdrift.coop project.
 
-<h2 id="uses-that-require-special-permission">
+<h2 #uses-that-require-special-permission>
   Uses that
   <em>require
   special permission
@@ -69,7 +71,7 @@
     commercial intent), or using Snowdrift.coop logos as part of another
     company's logos or branding.
 
-<h2 id="best-practices-for-use">Best practices for use
+<h2 #best-practices-for-use>Best practices for use
 <ul>
   <li>
     Avoid suggestion of affiliation, participation, or endorsement with
@@ -96,15 +98,15 @@
     Do not refer to Snowdrift.coop as simply "Snowdrift" except
     casually where the full name has already been made clear in the immediate
     context.#
-    <a href="#fn2" class="footnoteRef" id="fnref2">
+    <a href="#fn2" .footnoteRef #fnref2>
       <sup>2
 
-<h2 id="seeking-permission">Seeking permission
+<h2 #seeking-permission>Seeking permission
 <p>
   For any use not expressly permitted by this policy, to report any
   unauthorized use, or for any clarification of this policy that may be
   necessary, please
-  <a href=@{ContactR}>contact us<a>.
+  <a href="/about">contact us<a>.
   Please include any relevant information about the type and nature of the
   use and any relevant organizational affiliation(s).
 <hr />
@@ -117,13 +119,14 @@
     This policy may be periodically revised. Revisions will be dated and posted
     to Snowdrift.coop/trademarks.
 
-<div class="footnotes">
+<div .footnotes>
   <hr />
   <h4>Footnotes
   <ol>
-    <li id="fn1">
+    <li #fn1>
       Note that the
-      <a href="https://wiki.snowdrift.coop/design/design-guide#mimi-eunice">Mimi &amp; Eunice
+      <a href="https://git.snowdrift.coop/sd/design/blob/master/docs/design-guide/readme.md#mimi-eunice">
+        Mimi &amp; Eunice
       characters are
       <em>not
       part of the Snowdrift.coop trademarks but are our adaptations of work
@@ -132,7 +135,7 @@
       <a href="https://creativecommons.org/licenses/by-sa/4.0">
         CC BY-SA 4.0 International</a>.#
       <a href="#fnref1">↩
-    <li id="fn2">
+    <li #fn2>
       Note: we formally use the name "Snowdrift" for the
       free/libre/open software that runs the Snowdrift.coop website.#
       <a href="#fnref2">↩

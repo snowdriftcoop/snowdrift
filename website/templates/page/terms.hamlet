@@ -1,9 +1,8 @@
-<h1 id="snowdrift.coop-terms-of-use">Snowdrift.coop Terms of Use
-<p>
-  <strong>
-    <em>
-      Version 0.3 effective December 1, 2016
-<h2 id="introduction">Introduction
+<h1 #snowdrift.coop-terms-of-use>Snowdrift.coop Terms of Use
+<div #tilt>
+<em .version>
+  Version 0.3 effective December 1, 2016
+<h2 #introduction>Introduction
 <p>
   <strong>
     We envision a Free, Libre, Open World where everyone has equal access to
@@ -32,7 +31,7 @@
     Have a parent or guardian contact us and we can determine whether there are
     ways to still allow you to participate.
 
-<h2 id="overview">Overview
+<h2 #overview>Overview
 <p>
   These Terms of Use tell you about our public services at Snowdrift.coop, our
   relationship to you as a user, and the rights and responsibilities that guide
@@ -70,7 +69,7 @@
   Terms of Use in their entirety.
 <hr />
 
-<h2 id="contents">Contents
+<h2 #contents>Contents
 <ol .toc>
   <li>
     Our services
@@ -99,7 +98,7 @@
   <li>
     Thank you!
 
-<h2 id="our-services">1. Our services
+<h2 #our-services>1. Our services
 <p>
   Snowdrift.coop is dedicated to encouraging the growth, development, and
   distribution of FLO works, and to helping FLO projects maintain a sustainable
@@ -111,7 +110,12 @@
   there are a couple of things you should be aware of concerning our
   relationship to you, the projects, and the other users:
 
-<h2 id="financial-transactions">3. Financial transactions
+<h2 #privacy-policy>2. Privacy Policy
+<p>
+  We ask that you review the terms of our <a href="privacy">Privacy Policy</a>,
+  so that you are aware of how we collect and use your information.
+
+<h2 #financial-transactions>3. Financial transactions
 <p>
   Any implemented processor from
   <a href="https://wiki.snowdrift.coop/market-research/payment-services">our list of supported services
@@ -123,7 +127,7 @@
     Once you make a pledge, you authorize us to apply a monthly charge up to
     your set budget limit based on your pledges to various projects.
 
-<h2 id="refraining-from-certain-activities">4. Refraining from certain activities
+<h2 #refraining-from-certain-activities>4. Refraining from certain activities
 <p>
   The projects hosted by Snowdrift.coop exist because of the support of our
   vibrant community of users like you. We welcome your participation in this
@@ -235,7 +239,7 @@
   We reserve the right to exercise our enforcement discretion with respect to
   the above terms.
 
-<h2 id="licensing-of-content">5. Licensing of content
+<h2 #licensing-of-content>5. Licensing of content
 <p>
   As per our mission to grow the commons of free knowledge and free culture,
   all users contributing to projects are required to grant general permissions
@@ -277,9 +281,9 @@
     All Snowdrift.coop trademarks belong to Snowdrift.coop, and any use of
     our trade names, trademarks, service marks, logos, or domain names must
     be in compliance with these Terms of Use and in compliance with our
-    <a href="trademark">Trademark Policy</a>.
+    <a href="trademarks">Trademark Policy</a>.
 
-<h2 id="dmca-compliance">6. DMCA compliance
+<h2 #dmca-compliance>6. DMCA compliance
 <p>
   Snowdrift.coop wants to ensure that the content that we support can be
   re-used by others without fear of liability or infringement. <strong>In order
@@ -291,16 +295,18 @@
   However, we also recognize that not every takedown notice is valid or in good
   faith. We strongly encourage users to have a defense plan prepared if their
   content involves material used under a copyright exemption
-  (<a href="http://www.teachingcopyright.org/handout/fair-use-faq">Teaching Copyright</a>
+  (<a href="https://www.teachingcopyright.org/handout/fair-use-faq.html">Teaching Copyright</a>
   can help you determine if an exemption applies), and to file
   counter-notifications when they appropriately believe a DMCA notice is
   invalid or improper. For more information on what to do if you believe a DMCA
   notice to be improper, you may consult the
-  <a href="www.chillingeffects.org">Chilling Effects website</a>.
+  <a href="https://www.lumendatabase.org/">Lumen Database website</a>.
 <p>
   If you are the owner of content that is being used on one of the projects
-  without your permission, you may request removal of the content under the
-  DMCA. To make such a request, please <a href=@{ContactR}>contact&nbsp;us</a>.
+  without your permission, you may request that the content be removed under
+  the DMCA. To make such a request, please contact us
+  <a href="/about">through the site
+  or snail mail our designated agent.
 <p>
   Alternatively, any user with copyright concerns about specific content may
   make an investigation request to our community, which often handles copyright
@@ -308,7 +314,7 @@
   have more information available on
   <a href="https://wiki.snowdrift.coop/community/honor-violations">how the community handles violations</a>.
 
-<h2 id="management-of-websites">7. Management of websites
+<h2 #management-of-websites>7. Management of websites
 <p>
   The community has the primary role in creating and enforcing policies and
   Snowdrift.coop rarely intervenes in project-internal decisions. In an unusual
@@ -368,7 +374,7 @@
   effect with respect to relevant provisions.
 
 <div .disputes-and-jurisdiction>
-  <h2 id="disputes-and-jurisdiction">8. Disputes and jurisdiction
+  <h2 #disputes-and-jurisdiction>8. Disputes and jurisdiction
   <p>
     <em>
       Highlighted for emphasis
@@ -397,11 +403,67 @@
     sole discretion at any time with or without notice.
   <p>
     <em>
-      Some states or jurisdictions do not allow the types of disclaimers in this
-      section, so they may not apply to you either in part or in full depending
-      on the law.
+      Some states or jurisdictions do not allow the types of disclaimers in
+      this section, so they may not apply to you either in part or in full
+      depending on the law.
 
-  <h2 id="limitation-on-liability">10. Limitation on liability
+  <h2 #disclaimers>9. Disclaimers
+  <p>
+    <em>Highlighted for emphasis
+  <p>
+    <strong>
+      At Snowdrift.coop, we do our best to provide a reliable connection
+      between projects and supporters, but your use of our services is at your
+      sole risk.
+    We provide these services on an “as is” and “as available” basis, and we
+    expressly disclaim all express or implied warranties of all kinds,
+    including but not limited to the implied warranties of merchantability,
+    fitness for a particular purpose, and non-infringement. We make no warranty
+    that our services will meet your requirements, be safe, secure,
+    uninterrupted, timely, accurate, or error-free, or that your information
+    will be secure.
+  <p>
+    <strong>
+      Our content is for general informational purposes only.
+    Although we host information that pertains to legal or financial issues,
+    this content should not be taken as professional advice. Please seek
+    independent professional counseling from someone who is licensed or
+    qualified in the applicable area in lieu of acting on any information,
+    opinion, or advice contained in one of the project websites.
+  <p>
+    <strong>
+      You may encounter some material that you find offensive, erroneous,
+      misleading, mislabeled, or otherwise objectionable.
+     We therefore ask that you use common sense and proper judgment when using
+     our services and that you report abusive content through the proper
+     channels to the project or to Snowdrift.coop.
+  <p>
+    <strong>
+      We are not responsible for the content, data, or actions of third
+      parties.
+    You release us, our directors, officers, employees, and agents from any
+    claims and damages, known and unknown, arising out of or in any way
+    connected with any claim you have against any such third parties. No advice
+    or information, whether oral or written, obtained by you from us or through
+    or from our services creates any warranty not expressly stated in these
+    Terms of Use.
+  <p>
+    <strong>
+      Any material downloaded or otherwise obtained through your use of our
+      services is done at your own discretion and risk.
+    You will be solely responsible for any damage to your computer system or
+    loss of data that results from the download of any such material. You agree
+    that we have no responsibility or liability for the deletion of, or the
+    failure to store or to transmit, any content or communication maintained by
+    the service. We retain the right to create limits on use and storage at our
+    sole discretion at any time with or without notice.
+  <p>
+    <em>
+      Some states or jurisdictions do not allow the types of disclaimers in
+      this section, so they may not apply to you either in part or in full
+      depending on the law.
+
+  <h2 #limitation-on-liability>10. Limitation on liability
   <p>
     <em>
       Highlighted for emphasis
@@ -417,7 +479,7 @@
     not apply to you, although our liability will be limited to the fullest
     extent permitted by applicable law.
 
-<h2 id="modifications-to-these-terms-of-use">11. Modifications to these Terms of Use
+<h2 #modifications-to-these-terms-of-use>11. Modifications to these Terms of Use
 <p>
   Just as the Snowdrift.coop community's input is essential for the growth and
   maintenance of the projects, we believe that community input is essential for
@@ -447,7 +509,7 @@
   users like yourself, if you do not agree with our Terms of Use, you cannot
   use our services.
 
-<h2 id="other-terms">12. Other terms
+<h2 #other-terms>12. Other terms
 <p>
   These Terms of Use do not create an employment, agency, partnership, or joint
   venture relationship between you and us, Snowdrift.coop. You understand that,
@@ -475,7 +537,7 @@
   extent permissible, and all other provisions of these Terms of Use will
   remain in full force and effect.
 
-<h2 id="thank-you">13. Thank you!
+<h2 #thank-you>13. Thank you!
 <p>
   We appreciate your taking the time to read these Terms of Use, and we are
   very happy to have you using our services. Through your support, you are

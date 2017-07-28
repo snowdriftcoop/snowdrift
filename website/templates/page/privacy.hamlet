@@ -1,8 +1,7 @@
-<h1 id="snowdrift.coop-privacy-policy">Snowdrift.coop Privacy Policy
-<p>
-  <strong>
-    <em>
-      Version 0.4 effective December 1, 2016
+<h1 #snowdrift.coop-privacy-policy>Snowdrift.coop Privacy Policy
+<div #tilt>
+<em .version>
+  Version 0.4 effective December 1, 2016
 <p>
   <strong>
     Snowdrift.coop is dedicated to maintaining the utmost respect for user
@@ -12,7 +11,7 @@
   <em>only
   when deemed necessary.
 
-<h2 id="policy-highlights">Policy highlights:
+<h2 #policy-highlights>Policy highlights:
 <ul>
   <li>
     Snowdrift.coop uses cookies to keep your account logged-in, but we do not
@@ -31,8 +30,8 @@
     No financial information (such as credit card numbers) is collected,
     retained, or used directly by Snowdrift.coop.
 
-<h2 id="policy-in-full">Policy in full
-<h3 id="personal-information">Personal information
+<h2 #policy-in-full>Policy in full
+<h3 #personal-information>Personal information
 <p>
   We consider "personal information" to mean either directly identifiable
   information (such as your name or email address) or several pieces of
@@ -42,7 +41,7 @@
   Also, if we store personal information with other information, we consider
   the combination to be personal.
 
-<h3 id="information-collection">Information collection
+<h3 #information-collection>Information collection
 <p>
   We collect information about you when:
 <ol>
@@ -88,8 +87,8 @@
     <a href="#fn1" class="footnoteRef" id="fnref1">
       <sup>1
 
-<h3 id="what-we-do-with-your-info">What we do with your info
-<div class="figure">
+<h3 #what-we-do-with-your-info>What we do with your info
+<div .figure>
   <img src=@{StaticR img_mimi_eunice_nonprofit_junkmail_png}>
 
 <p>
@@ -126,7 +125,7 @@
     work with only the most ethically sound providers, but we do not have
     direct control over their policies.
 
-<h3 id="when-we-share-your-info">When we share your info
+<h3 #when-we-share-your-info>When we share your info
 <p>
   <strong>
     We do not sell or otherwise share your info with any third-party not
@@ -154,7 +153,7 @@
     numbers not tied to an email address, unique ID, or other identifiable
     piece of information.
 
-<h3 id="storage-and-protection-of-data">Storage and protection of data
+<h3 #storage-and-protection-of-data>Storage and protection of data
 <p>
   <strong>
     We implement physical, policy, and technical security measure to protect
@@ -176,7 +175,7 @@
   you delete your account, we will retain only as much information as we need
   for our accounting records and destroy the rest.
 
-<h3 id="legal-process">Legal process
+<h3 #legal-process>Legal process
 <p>
   When a government agency or civil litigant asks for your personal info, we'll
   only give it to them if we have a good faith belief that:
@@ -193,7 +192,7 @@
   in this policy is intended to limit any legal defenses or objections that you
   may have to a third party's request to disclose your information.
 
-<h3 id="policy-changes-and-contact-information">Policy changes and contact information
+<h3 #policy-changes-and-contact-information>Policy changes and contact information
 <p>
   We may sometimes change our privacy policies. When we do, we'll post a notice
   about the change on Snowdrift.coop and email our users. During our initial
@@ -219,7 +218,7 @@
     under
     <a href="http://creativecommons.org/licenses/by-sa/4.0/">version 4.0 of the same CC-BY-SA license</a>.
 
-<div class="footnotes">
+<div .footnotes>
   <hr />
   <h4>Footnotes
   <ol>

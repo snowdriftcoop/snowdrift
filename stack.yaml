@@ -12,10 +12,14 @@ packages:
      git: https://git.snowdrift.coop/sd/postgresql-simple-migration-patches.git
      commit: 55ae21a7ee5b0386ec7c6909409b1bdacebcc924
     extra-dep: true
+  - location:
+     git: https://notabug.org/fr33domlover/shakespeare-sass.git
+     commit: 923de4b9d385b82744ffc1d3c2c7e1036ac6e914
+    extra-dep: true
 extra-deps:
   - hashids-1.0.2.3
   - libravatar-0.4
-  - shakespeare-sass-0.1.0.3
+  - shakespeare-sass-0.1.4
   # Version in lts-8 is still old and bad
   - tasty-discover-3.0.2
   # Upsert is fixed in 2.7, which is not in lts-8

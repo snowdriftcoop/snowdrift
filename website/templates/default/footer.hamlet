@@ -1,11 +1,11 @@
 <footer>
   <!-- Footer 1/3 -->
-  <div .section .footer-logo>
+  <.section .footer-logo>
     <a href=@{WelcomeR} .logo>
       <img src=@{StaticR img_logo_png} alt=Snowdrift.coop>
 
   <!-- Footer 2/3 -->
-  <div .section .nav>
+  <.section .nav>
     <ul .col>
       <li>
         <a href=@{HowItWorksR}>How it works
@@ -39,7 +39,7 @@
           rel=jslicense>freely-licensed</a>.-->
 
   <!-- Footer 3/3 -->
-  <div .section .supporters>
+  <.section .supporters>
     <span>
       Proud <a href="https://wiki.snowdrift.coop/community/partners">partners</a> of
     <ul .bg>
