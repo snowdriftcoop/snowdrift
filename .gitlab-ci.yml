@@ -15,12 +15,12 @@ deps:
         #- apt-get --quiet update
         #- apt-get --quiet --assume-yes install curl postgresql libgmp-dev libpq-dev
         #- curl -sSL https://get.haskellstack.org/ | sh
-        - stack test --no-run-tests --only-snapshot --install-ghc
+        - stack clean
+        - stack test --fast --no-run-tests --only-dependencies --install-ghc
 
 build:
     stage: build
     script:
-        - stack clean
         - stack build --fast --pedantic
 
 test:
