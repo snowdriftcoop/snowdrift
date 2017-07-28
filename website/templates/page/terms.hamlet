@@ -1,5 +1,5 @@
 <h1 #snowdrift.coop-terms-of-use>Snowdrift.coop Terms of Use
-<div #tilt>
+<#tilt>
 <em .version>
   Version 0.3 effective December 1, 2016
 <h2 #introduction>Introduction

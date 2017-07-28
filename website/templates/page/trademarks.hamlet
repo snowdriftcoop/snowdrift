@@ -1,5 +1,5 @@
 <h1 #snowdrift.coop-trademark-policy">Snowdrift.coop Trademark Policy
-<div #tilt>
+<#tilt>
 <em .version>
   Version 0.3 – Effective December 16, 2015
 <p>
@@ -106,7 +106,7 @@
   For any use not expressly permitted by this policy, to report any
   unauthorized use, or for any clarification of this policy that may be
   necessary, please
-  <a href="/about">contact us<a>.
+  <a href="@{AboutR}">contact us<a>.
   Please include any relevant information about the type and nature of the
   use and any relevant organizational affiliation(s).
 <hr />
@@ -119,7 +119,7 @@
     This policy may be periodically revised. Revisions will be dated and posted
     to Snowdrift.coop/trademarks.
 
-<div .footnotes>
+<.footnotes>
   <hr />
   <h4>Footnotes
   <ol>

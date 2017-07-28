@@ -1,5 +1,5 @@
 <h1 #snowdrift.coop-privacy-policy>Snowdrift.coop Privacy Policy
-<div #tilt>
+<#tilt>
 <em .version>
   Version 0.4 effective December 1, 2016
 <p>
@@ -88,7 +88,7 @@
       <sup>1
 
 <h3 #what-we-do-with-your-info>What we do with your info
-<div .figure>
+<.figure>
   <img src=@{StaticR img_mimi_eunice_nonprofit_junkmail_png}>
 
 <p>
@@ -204,7 +204,7 @@
 <p>
   If you want to make a correction to your information, or you have any
   questions or comments about our privacy policies, please
-  <a href="/about">contact us<a>.
+  <a href="@{AboutR}">contact us<a>.
 <hr />
 <p>
   <em>
@@ -218,7 +218,7 @@
     under
     <a href="http://creativecommons.org/licenses/by-sa/4.0/">version 4.0 of the same CC-BY-SA license</a>.
 
-<div .footnotes>
+<.footnotes>
   <hr />
   <h4>Footnotes
   <ol>

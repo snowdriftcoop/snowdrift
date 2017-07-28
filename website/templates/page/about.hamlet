@@ -1,5 +1,5 @@
 <h1>About Snowdrift.coop
-<div #tilt>
+<#tilt>
 <p>
     We're building a sustainable funding platform for freely-licensed works
     everyone can use and share without limitations.  Our innovative
