@@ -17,6 +17,7 @@ deps:
         #- curl -sSL https://get.haskellstack.org/ | sh
         - stack clean
         - stack test --fast --no-run-tests --only-dependencies --install-ghc
+        - stack build shakespeare-sass
 
 build:
     stage: build
