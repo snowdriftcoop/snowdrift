@@ -1,5 +1,5 @@
 <h1>Snowdrift.coop Launch Sponsors
-<div #tilt>
+<#tilt>
 <p>
   We especially thank the following sponsors for their generous support of
   Snowdrift.coop initial development. Most donated during our
@@ -491,4 +491,4 @@
   <li>
       Guido Zuidhof
 
-<div .anon-sponsors>and 19 anonymous sponsors
+<.anon-sponsors>and 19 anonymous sponsors

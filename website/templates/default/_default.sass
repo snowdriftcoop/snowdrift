@@ -5,9 +5,7 @@
     font-family: "Snowdrift Icons"
     font-style: normal
     font-weight: 400
-    src: url($fonts + "/snowdrift-icons/snowdrift-icons.woff2") format("woff2"),
-    url($fonts + "/snowdrift-icons/snowdrift-icons.woff") format("woff"),
-    url($fonts + "/snowdrift-icons/snowdrift-icons.ttf") format("truetype")
+    src: url(@{StaticR fonts_snowdrift_icons_snowdrift_icons_woff2}) format("woff2"), url(@{StaticR fonts_snowdrift_icons_snowdrift_icons_woff}) format("woff"), url(@{StaticR fonts_snowdrift_icons_snowdrift_icons_ttf}) format("truetype")
 
 
 // Extend/override base style for common elements --------------------------//
@@ -28,7 +26,7 @@ hr
     margin: 4.5rem 0
     border: 0
     border-radius: 0.3rem
-    background: #c5f1fd
+    background: $bright-blue
 
 ol, ul, li, li ul
     margin: unset

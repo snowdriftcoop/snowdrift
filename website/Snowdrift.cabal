@@ -99,7 +99,7 @@ library
         , postgresql-simple
         , pwstore-fast
         , shakespeare            >= 2.0     && < 2.1
-        , shakespeare-sass
+        , shakespeare-sass       >= 0.1.4
         , stripe-haskell
         , stripe-core
         , template-haskell

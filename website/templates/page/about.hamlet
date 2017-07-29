@@ -1,63 +1,47 @@
-<.homepage-section>
-  <h2>About Snowdrift.coop
-  <p>
+<h1>About Snowdrift.coop
+<#tilt>
+<p>
     We're building a sustainable funding platform for freely-licensed works
-    everyone can use and share without limitations.
-    Our innovative crowdmatching pledge creates a network effect
-    where we all work together to support these public goods.
-  <.homep-link>
-    <a href="https://wiki.snowdrift.coop/about/intro">
-      Quick illustrated intro
-    (old version, updates planned)
-  <.homep-link>
-    <a href="https://wiki.snowdrift.coop/about">
-      Full explanations and details
-  <.homep-link>
-    <a href="https://wiki.snowdrift.coop/about/faq">
-      FAQ
-<hr>
-<.homepage-section>
-  <p>
-    The campaign video from our initial 2014
-    <a href="https://snowdrift.tilt.com">launch fund-drive
-    remains a good introduction:
-  <video poster="https://wiki.snowdrift.coop/assets/fund-drive/fund-drive-intro-still.png" controls>
-    <source type="video/mp4"
-      src="https://archive.org/download/snowdrift-fund-drive-intro/snowdrift-fund-drive-intro.mp4">
-    <source type="video/ogg"
-      src="https://archive.org/download/snowdrift-fund-drive-intro/snowdrift-fund-drive-intro.ogv">
+    everyone can use and share without limitations.  Our innovative
+    crowdmatching pledge creates a network effect where we all work together to
+    support these public goods.
+<ul>
+  <li>
+    <a href=@{HowItWorksR}>How does it work?
+  <li>
+    <a href="https://wiki.snowdrift.coop/about">Read further details in our wiki.
+<p>
+  This website is itself a Snowdrift.coop project.
 
-<.homepage-section>
-  <h2>News and Activity
-  <.homep-link>
+<h2>News and Activity
+<p>
+  We're continually working to get Snowdrift.coop going. Keep up with our
+  activity:
+<ul>
+  <li>
     <a href="https://wiki.snowdrift.coop/blog">Blog
-  <.homep-link>
-    <a href="https://git.snowdrift.coop/sd/snowdrift#tab-activity">
+  <li>
+    <a href="https://git.snowdrift.coop/sd/snowdrift/activity">
       Code activity at git.snowdrift.coop
-  <.homep-link>
-    Sign up for our
-    <a href="https://lists.snowdrift.coop">
-      email lists
-  <.homep-link>
-    Live chat at
-    <a href="https://kiwiirc.com/client/irc.freenode.net/#snowdrift">
-      #snowdrift IRC channel
-  <.homep-link>
-    Follow us on GNU Social
-    <small>(or Twitter)
-    <a href="https://quitter.se/snowdriftcoop">
-      @snowdriftcoop
+  <li>
+    Sign up for our <a href="https://lists.snowdrift.coop">email lists</a>
+  <li>
+    Live chat at <a
+    href="https://kiwiirc.com/client/irc.freenode.net/#snowdrift">#snowdrift
+    IRC channel</a>
+  <li>
+    Follow us on GNU Social (or Twitter) <a
+    href="https://quitter.se/snowdriftcoop">@snowdriftcoop</a>
 
-<.homepage-section>
-  <h2>Volunteer
-  <p>
-    Our core team is supported by a widespread community.
-    <a href="https://wiki.snowdrift.coop/community/how-to-help">Come help
-    with site development, design, community organizing, or other tasks.
-  <h2>Want your project included?
-  <p>
-    We're still in preliminary stages, but if your
-    <a href="https://wiki.snowdrift.coop/project-requirements">free/libre/open
-    project needs funding, please
-    <a href=@{ContactR}>contact&nbsp;us
-    to discuss whether it may fit well for the next stage of live beta testing.
+<h2>Volunteer
+<p>
+  Our core team is supported by a widespread community. <a
+  href="https://wiki.snowdrift.coop/community/how-to-help">Come help</a> with
+  site development, design, community organizing, or other tasks.
+
+<h2>Want your project included?
+<p>
+  We're still in preliminary stages, but if your <a
+  href="https://wiki.snowdrift.coop/project-reqs">free/libre/open</a>
+  project needs funding, please contact&nbsp;us to discuss whether it may fit
+  well for the next stage of live beta testing.
