@@ -63,6 +63,9 @@ getDashboardSpec =
 getDiscourseSpec :: SpecWith (TestApp App)
 getDiscourseSpec = do
     it "returns 400 when missing sso param" $ do
+        testDB (createUser "bob" "barker")
+        login "bob" "barker"
+
         -- GET /discourse/sso
         get DiscourseR
 
@@ -71,6 +74,9 @@ getDiscourseSpec = do
         bodyContains (unpack (Discourse.getDPErrorMsg Discourse.NoPayload))
 
     it "returns 400 when missing sig param" $ do
+        testDB (createUser "bob" "barker")
+        login "bob" "barker"
+
         -- GET /discourse/sso?sso=foo
         request $ do
             setMethod "GET"
@@ -82,6 +88,9 @@ getDiscourseSpec = do
         bodyContains (unpack (Discourse.getDPErrorMsg Discourse.NoSignature))
 
     it "returns 400 when signature doesn't validate" $ do
+        testDB (createUser "bob" "barker")
+        login "bob" "barker"
+
         -- GET /discourse/sso?sso=foo&sig=bar
         request $ do
             setMethod "GET"
@@ -95,6 +104,9 @@ getDiscourseSpec = do
           (unpack (Discourse.getDPErrorMsg Discourse.InvalidSignature))
 
     it "returns 400 when the payload doesn't contain 'nonce'" $ do
+        testDB (createUser "bob" "barker")
+        login "bob" "barker"
+
         let payload = encodePayload "foo"
 
         sig <- payloadSig payload
@@ -112,6 +124,9 @@ getDiscourseSpec = do
           (unpack (Discourse.getDPErrorMsg Discourse.PayloadMissingNonce))
 
     it "returns 400 when the payload doesn't contain 'return_sso_url'" $ do
+        testDB (createUser "bob" "barker")
+        login "bob" "barker"
+
         let payload = encodePayload "nonce=foo"
 
         sig <- payloadSig payload
