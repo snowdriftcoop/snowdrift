@@ -1,15 +1,15 @@
-<div .section .group>
-  <div .col .span_12_of_12>
-    <img src=@{StaticR img_logo_big_png} .logo-big alt=Snowdrift.coop>
-    <.rotate .break4>
-      <.sun>
-    <.background>
-      <.plane .break4>
-    <.foreground>
-    <a href=@{HowItWorksR} .bigbutton>How it Works
-    <.home-text>
-      <p>
-        Like roads we all share, freely-licensed works are public goods that
-        benefit everyone. We need to cooperate to fund them sustainably.
-      <p>
-        <a href=@{AuthR LoginR} .join>Join us!
+<.welcome>
+  <.logo-big>
+  <#tilt>
+
+  <video poster=@{StaticR video_00_fade_in_png} controls>
+    <source src=@{StaticR video_00_fade_in_m4v} type="video/mp4">
+
+  <.section>
+    <p>
+      Like roads we all share, freely-licensed works are public goods that
+      benefit everyone. We need to cooperate to fund them sustainably.
+
+  <.me-signup>
+  <a href=@{AuthR CreateAccountR}>
+    <button .smlbutton>Sign up!

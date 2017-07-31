@@ -1,0 +1,70 @@
+=welcome-layout0
+
+    .welcome
+        .logo-big
+            height: 11.5rem
+            background: url(@{StaticR img_logo_big_png}) center center / contain no-repeat
+            margin: 10vw auto
+
+        #tilt
+            margin: 0 0 10vw
+
+        video
+            border-radius: 0.4rem
+            margin: -40vw auto 10vw
+            z-index: 99
+            outline: 0
+
+        .me-signup
+            +sprite($me-sprite, 24rem 12rem, 4 1)
+            margin: 6rem auto 3rem
+
+        .smlbutton
+            min-width: 21rem
+
+
++respond(break0)
+
+    +welcome-layout0
+
+
++respond(break1)
+
+    +welcome-layout0
+    .welcome
+        #tilt
+            margin: 28vw 0 18vw
+
+        video
+            margin: -50vw auto 10vw
+
+        .section
+            width: 100%
+            margin: 0
+
+
++respond(break2)
+
+    .welcome
+        .logo-big
+            margin: 9rem auto 0
+
+        #tilt
+            margin: 21rem 0 12rem
+
+        video
+            margin: -33rem auto 6rem
+
+        .section
+            +span(6 of 8)
+            width: unset
+            float: unset !important
+            margin: 0 9rem
+
+
+        .me-signup
+            +sprite($me-sprite, 48rem 24rem, 4 1)
+            margin: 6rem auto
+
+        .smlbutton
+            min-width: 33rem
