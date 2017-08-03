@@ -1,0 +1,36 @@
+// Shakespeare splices mapped to Sass variables
+
+// Snowdrift icons font
+$sd-icons-woff2: @{StaticR fonts_snowdrift_icons_snowdrift_icons_woff2}
+$sd-icons-woff: @{StaticR fonts_snowdrift_icons_snowdrift_icons_woff}
+$sd-icons-ttf: @{StaticR fonts_snowdrift_icons_snowdrift_icons_ttf}
+
+// Mimi & Eunice sprite sheet
+$me-sprite: @{StaticR img_me_sprite_png}
+$me-sprite-map: (image: $me-sprite, rows: 4, columns: 4)
+
+
+// Default layout ----------------------------------------------------------//
+
+// Navbar
+$icon-login: @{StaticR img_default_icon_login_png}
+$icon-login-sel: @{StaticR img_default_icon_login_sel_png}
+
+// Footer
+$footer-bg: @{StaticR img_default_footer_bg_png}
+$supporter-fsfe: @{StaticR img_default_supporter_fsfe_png}
+$supporter-april: @{StaticR img_default_supporter_april_png}
+$supporter-oin: @{StaticR img_default_supporter_oin_png}
+$supporter-eff: @{StaticR img_default_supporter_eff_png}
+$supporter-p2p: @{StaticR img_default_supporter_p2p_png}
+$supporter-osi: @{StaticR img_default_supporter_osi_png}
+$supporter-qco: @{StaticR img_default_supporter_qco_png}
+
+
+// Pages -------------------------------------------------------------------//
+
+// Welcome
+$logo-big: @{StaticR img_logo_big_png}
+
+// How it works
+$how-it-works-logo-bg: @{StaticR img_how_it_works_logo_bg_png}

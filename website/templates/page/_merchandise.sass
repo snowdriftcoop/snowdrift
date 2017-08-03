@@ -33,7 +33,6 @@
                         transform: translateY(-50%)
 
 
-
 +respond(break0)
 
     +merch-layout0
@@ -46,9 +45,9 @@
 
 +respond(break2)
 
-    .merchandise .section
-        .row
-            .item
+    .merchandise
+        .section
+            .row .item
                 display: table-cell
                 padding: 0 1.5rem
 
@@ -59,7 +58,7 @@
                     padding: 0
                     vertical-align: middle
 
-        // Left align row with 5th sticker
-        &:last-child :nth-child(5)
-            position: relative
-            left: -25%
+            // Left align row with 5th sticker
+            &:nth-child(4) .row:last-child
+                position: relative
+                left: -25%

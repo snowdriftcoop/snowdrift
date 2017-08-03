@@ -3,7 +3,6 @@
 // ----------------------------- //
 //
 // Fonts
-// Variables
 // Common element overrides
 // Classes
 // Breaks
@@ -16,7 +15,7 @@
     font-family: "Snowdrift Icons"
     font-style: normal
     font-weight: 400
-    src: url(@{StaticR fonts_snowdrift_icons_snowdrift_icons_woff2}) format("woff2"), url(@{StaticR fonts_snowdrift_icons_snowdrift_icons_woff}) format("woff"), url(@{StaticR fonts_snowdrift_icons_snowdrift_icons_ttf}) format("truetype")
+    src: url($sd-icons-woff2) format("woff2"), url($sd-icons-woff) format("woff"), url($sd-icons-ttf) format("truetype")
 
 
 // Extend/override base style for common elements --------------------------//
@@ -41,12 +40,6 @@ hr
 
 ol, ul, li, li ul
     margin: unset
-
-
-// Variables ---------------------------------------------------------------//
-
-// Mimi & Eunice sprite map
-$me-sprite: (image: "@{StaticR img_me_sprite_png}", rows: 4, columns: 4)
 
 
 // Classes -----------------------------------------------------------------//

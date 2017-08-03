@@ -1,11 +1,16 @@
-<h1>Donating to Snowdrift.coop
+<h1>Pre-launch Donations
 <#tilt>
+
+<p>
+  To participate in alpha crowdmatching, visit the <a
+    href=@{SnowdriftProjectR}>project page</a>. To help us right now with a
+  pre-launch grant (large or small), see the options below.
 
 <h2>Direct donations
 <p>
   The following options offer easy ways to donate directly to us. Such
   donations are not tax-deductible.
-<hr>
+
 <.donate-option #paypal-donate>
   <form #paypal-button
     abframeid=iframe.0.4323007988200692
@@ -87,14 +92,5 @@
   directly to us if you do not need 501(c)(3) terms.
 <hr>
 
-<h2>The crowdmatch pledge
-<p>
-  Now that our crowdmatching system is in real testing, you can donate by
-  <a href=@{SnowdriftProjectR}>pledging within the system itself!
-  Then, in order to donate the most and see us succeed, the next step is to
-  invite others to join the crowd and increase the matching effect for
-  everyone!
-
-<hr>
 <.thank-you>
   Thank you for your support!
