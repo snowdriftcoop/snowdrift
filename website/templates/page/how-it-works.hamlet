@@ -12,4 +12,5 @@
   <img .limit src=@{StaticR img_how_it_works_intro2_png}>
   <a .learn-more href="https://wiki.snowdrift.coop/about/intro">Learn more
 
-  <button .smlbutton type="submit">Sign up!
+  <a href=@{AuthR CreateAccountR}>
+    <button .smlbutton>Sign up!
