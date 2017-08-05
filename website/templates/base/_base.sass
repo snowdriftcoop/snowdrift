@@ -8,9 +8,12 @@
 // Common elements
 // Preset classes
 
-// Reset styles and import environment variables
-@import base/base-reset
-@import base/base-env
+// Reset styles
+@import base/reset
+
+// Environment variables
+$fonts: "../fonts/"
+$images: "../img/"
 
 
 //// Fonts -------------------------------------------------------------- ////
@@ -254,7 +257,7 @@ $blue-header2: #e2f8fe                          // blog header
     &:hover
         border-bottom: 0.1rem solid $link-u-hover
     &:visited
-        color: $link-u-hover
+        color: $link-p
 
 // Given an image file, insert background css
 =bg($p)
@@ -265,6 +268,21 @@ $blue-header2: #e2f8fe                          // blog header
     columns: $w $c
     -moz-columns: $w $c
     -webkit-columns: $w $c
+
+// Given width and height, return width:height ratio
+// e.g. ratio(48rem 24rem) -> 2 1
+@function ratio($size)
+    @return nth($size, 1)/min(nth($size, 1), nth($size, 2)) nth($size, 2)/min(nth($size, 1), nth($size, 2))
+
+// Given a sprite map, html element size and sprite position
+// on sprite sheet, insert sprite image properties
+// e.g. +sprite($sprite-map, 12rem 12rem, 1 1)
+=sprite($map, $size, $pos)
+    background-image: url(map-get($map, image))
+    width: nth($size, 1)
+    height: nth($size, 2)
+    background-position: #{100%/(map-get($map, columns)-1)*(nth($pos, 1)-1)} #{100%/(map-get($map, rows)-1)*(nth($pos, 2)-1)}
+    background-size: #{400%/nth(ratio($size), 1)} #{400%/nth(ratio($size), 2)}
 
 
 //// Common elements ----------------------------------------------------- ////

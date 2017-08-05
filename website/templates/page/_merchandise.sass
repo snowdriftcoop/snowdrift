@@ -1,0 +1,64 @@
+=merch-layout0
+    h6
+        margin: 0 0 3rem
+        font: 800 1.3rem/1.25 "Nunito", sans-serif
+
+    .merchandise .section
+        .row
+            display: table
+            margin: 3rem auto
+            .item
+                display: block
+                a img
+                    border-bottom: 0.6rem solid $green
+                    &:hover
+                        border-bottom: 0.6rem solid $green-shade
+
+                .sticker
+                    display: block
+                    border-radius: 0.3rem
+                    text-align: center
+                    background: #f1fcfe
+                    margin: 0
+                    padding: 1.5rem
+                    width: 24rem
+                    height: 21rem
+
+                    h6
+                        margin: 0
+
+                    img
+                        position: relative
+                        top: 50%
+                        transform: translateY(-50%)
+
+
++respond(break0)
+
+    +merch-layout0
+
+
++respond(break1)
+
+    +merch-layout0
+
+
++respond(break2)
+
+    .merchandise
+        .section
+            .row .item
+                display: table-cell
+                padding: 0 1.5rem
+
+                .sticker
+                    display: inline-block
+                    width: 30rem
+                    margin: 0
+                    padding: 0
+                    vertical-align: middle
+
+            // Left align row with 5th sticker
+            &:nth-child(4) .row:last-child
+                position: relative
+                left: -25%

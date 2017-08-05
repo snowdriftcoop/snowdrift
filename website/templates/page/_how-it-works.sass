@@ -1,0 +1,77 @@
+=hiw-layout0
+
+    .how-it-works
+        h1
+            margin-bottom: 15rem
+
+        .limit, .matching
+            margin: 0 auto
+
+        img.matching
+            margin-top: -18rem
+
+        .intro
+            +span(8)
+            +bg($how-it-works-logo-bg)
+            position: relative
+            margin: 3rem auto
+            background-size: contain
+            p
+                position: relative
+
+        span
+            bottom: -1.3rem
+
+        .learn-more
+            display: block
+            text-align: center
+            margin: 0 auto 1rem
+            font-weight: 600
+
+        .smlbutton
+            width: 21rem
+
+
++respond(break0)
+
+    +hiw-layout0
+
+
++respond(break1)
+
+    +hiw-layout0
+
+
++respond(break2)
+
+    .how-it-works
+        .intro
+            height: 47rem
+            margin: 6rem auto
+            background-size: unset
+            p
+                position: absolute
+                font-size: 2.1rem
+                &:before
+                    position: absolute
+                    content: ' '
+
+            p.intro-match
+                top: 6rem
+                margin: 0 0 0 32rem
+                &:before
+                    +sprite($me-sprite-map, 24rem 24rem, 1 1)
+                    top: -8rem
+                    left: -22rem
+
+            p.intro-limit
+                margin-right: 36rem
+                top: 26rem
+                left: 6rem
+                &:before
+                    +sprite($me-sprite-map, 24rem 24rem, 2 2)
+                    top: -9rem
+                    right: -22rem
+
+        .smlbutton
+            width: 33rem

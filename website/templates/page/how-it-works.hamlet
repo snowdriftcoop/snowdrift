@@ -1,46 +1,16 @@
-$# The .intro class is a workaround since the haskell side is generating
-$# .how-it-works/intro which isn't desired.
-<div .section .group .intro>
-  <div .col .span_12_of_12>
-    <img src=@{StaticR img_logo_intro_png} .snowdrift-is>
-    <.background>
-    <.foreground>
-    <.topic .share>
-      <h2>Public Goods
-      <p>
-        Everyone around the world can freely access, use, modify, and share
-        everything we support.
-      <p>
-        Project categories will include software, music, movies, journalism,
-        research, and more. Too often, these things get artificially limited
-        technically and/or legally as part of securing funding. Our goal is to
-        fund them so that these limitations are no longer needed.
-      <p>
-        We will verify that all projects at Snowdrift.coop are released as
-        public goods under free/libre/open terms.
-    <img src=@{StaticR img_intro_match_png}>
-    <.topic .match>
-      <h2>Crowdmatching
-      <p>
-        Each patron donates a tiny amount times the number of patrons who join
-        them in supporting a project. This creates a network effect where
-        project supporters work together to fund the results they care about.
-    <img src=@{StaticR img_intro_sustain_png}>
-    <.topic .sustain>
-      <h2>Sustainability
-      <p>
-        Ongoing monthly funding gives project teams a sustainable living while
-        providing accountability.
-    <img src=@{StaticR img_intro_coop_png}>
-    <.topic .coop>
-      <h2>Democracy
-      <p>
-        As a non-profit cooperative, we serve the interests of our community,
-        and everyone can participate in decision-making.
-    <.topic .read-more>
-      <h2>more…
-      <p>
-        See the
-        <a href="https://wiki.snowdrift.coop">Snowdrift.coop Wiki
-        to read about our vision, mission, history, team, the details of the
-        crowdmatching mechanism, co-op structure, our research, and more.
+<.how-it-works>
+  <h1>How it works
+  <#tilt>
+
+  <img .matching src=@{StaticR img_how_it_works_intro1_png}>
+  <.intro>
+    <p .intro-match>
+      Every supporter matches every other. Crowdmatching pays projects monthly.
+    <p .intro-limit>
+      You decide where to stop. We drop your match when you hit your
+      limit.
+  <img .limit src=@{StaticR img_how_it_works_intro2_png}>
+  <a .learn-more href="https://wiki.snowdrift.coop/about/intro">Learn more
+
+  <a href=@{AuthR CreateAccountR}>
+    <button .smlbutton>Sign up!

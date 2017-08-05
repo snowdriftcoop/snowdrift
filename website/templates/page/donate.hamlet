@@ -1,58 +1,17 @@
-<h1>Donating to Snowdrift.coop
-<h2>The crowdmatch pledge
-<p>
-  Now that our crowdmatching system is in real testing, you can donate by
-  <a href=@{SnowdriftProjectR}>pledging within the system itself!
-  Then, in order to donate the most and see us succeed, the next step is to
-  invite others to join the crowd and increase the matching effect for everyone!
-<h2>Volunteering
-<p>
-  If you have time to spare as well or instead of money, please
-  consider <a href="https://wiki.snowdrift.coop/community/how-to-help">volunteering</a>.
-<h2>Separate grants
-<p>
-  During our beta testing / startup phase, we continue to welcome larger grants
-  from those who want to see us accelerate to full working operations and
-  supporting multiple projects.
+<h1>Pre-launch Donations
+<#tilt>
 
-<h3>Thank-you bonus options
 <p>
-  All startup grant donors may (if they choose) be listed among our official
-  <a href=@{SponsorsR}>launch sponsors
-  and also may request the following thank-you gifts:
-<ul>
-  <li>
-    donate $12+ to get a
-    <a href=@{MerchandiseR}#stickers>sticker
-  <li>donate $25+ and get a $5 gift card to the working system, once launched
-  <li>donate $40+ to be honored as a commit sponsor in the code
-  <li>
-    donate $100+ for a
-    <a href=@{MerchandiseR}#t-shirts>t-shirt
-  <li>at $500+ we will list you as a key sponsor
+  To participate in alpha crowdmatching, visit the #
+  <a href=@{SnowdriftProjectR}>snowdrift project page
+  \. To help us right now with a pre-launch grant (large or small), see the
+  options below.
 
-<.donate-option #osi-donate>
-<h3>Tax-deductible donations under 501(c)(3)
+<h2>Direct donations
 <p>
-  <img #osi-donate-logo src=@{StaticR img_external_osi_png}>
-  Snowdrift.coop is incorporated as a Michigan non-profit cooperative but does
-  not currently have independent federal tax-exempt status. However, you can
-  donate under 501(c)(3) to the
-  <a href="http://opensource.org">
-    Open Source Initiative
-  specifying that they use the funds to support us, as we are now one of their
-  incubator projects. Please
-  <a href=@{ContactR}>contact&nbsp;us
-  to get details for this process.
-<p>
-  Note: As the OSI takes a modest administrative fee, it makes sense to donate
-  directly to us if you do not need 501(c)(3) terms.
+  The following options offer easy ways to donate directly to us. Such
+  donations are not tax-deductible.
 
-<h3>Direct donations
-<p>
-  The following options offer easy ways to donate directly to us. Such donations
-  are not tax-deductible.
-<hr>
 <.donate-option #paypal-donate>
   <form #paypal-button
     abframeid=iframe.0.4323007988200692
@@ -62,12 +21,12 @@
     target=_top>
     <input name=cmd type=hidden value=_s-xclick>
     <input name=hosted_button_id type=hidden value=M24Z4DFEW4SQL>
-    <input
+    <input .bigbutton
       alt="PayPal donation option"
       name=submit
-      src=@{StaticR img_external_paypal_donate_gif}
+      src=@{StaticR img_donate_paypal_donate_gif}
       type=image>
-    <img #paypal-logo alt=Paypal src=@{StaticR img_external_PayPal_logo_gif}>
+    <img #paypal-logo alt=Paypal src=@{StaticR img_donate_paypal_gif}>
   <p #avoid-paypal-fees>
     Note: the convenient button above works with or without a Paypal account,
     but it costs us a 2.9% + $0.30 fee. To skip the fee, log-in to Paypal and
@@ -75,7 +34,7 @@
     (not by credit card or paypal credit) and marked as a gift.
 <hr>
 <.donate-option #bitcoin-donate>
-  <img alt=Bitcoin src=@{StaticR img_external_Bitcoin_png}>
+  <img alt=Bitcoin src=@{StaticR img_donate_bitcoin_png}>
   <pre>
     -----BEGIN PGP SIGNED MESSAGE-----
     Hash: SHA256<br>
@@ -98,4 +57,41 @@
     =lB8a
     -----END PGP SIGNATURE-----
 <hr>
-Thank you for your support!
+
+<h3>Thank-you bonus options
+<p>
+  All startup grant donors may (if they choose) be listed among our official
+  <a href=@{SponsorsR}>launch sponsors
+  and also may request the following thank-you gifts:
+<ul>
+  <li>
+    donate $12+ to get a
+    <a href=@{MerchandiseR}#stickers>sticker
+  <li>donate $25+ and get a $5 gift card to the working system, once launched
+  <li>donate $40+ to be honored as a commit sponsor in the code
+  <li>
+    donate $100+ for a
+    <a href=@{MerchandiseR}#t-shirts>t-shirt
+  <li>at $500+ we will list you as a key sponsor
+<hr>
+
+<.donate-option #osi-donate>
+<h2>Tax-deductible donations under 501(c)(3)
+<p>
+  <img #osi-donate-logo src=@{StaticR img_donate_osi_png}>
+  Snowdrift.coop is incorporated as a Michigan non-profit cooperative but does
+  not currently have independent federal tax-exempt status. However, you can
+  donate under 501(c)(3) to the
+  <a href="http://opensource.org">
+    Open Source Initiative
+  specifying that they use the funds to support us, as we are now one of their
+  incubator projects. Please
+  <a href=@{AboutR}>contact&nbsp;us
+  to get details for this process.
+<p>
+  Note: As the OSI takes a modest administrative fee, it makes sense to donate
+  directly to us if you do not need 501(c)(3) terms.
+<hr>
+
+<.thank-you>
+  Thank you for your support!
