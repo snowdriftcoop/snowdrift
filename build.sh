@@ -52,11 +52,11 @@ dbenv () {
 
 main () {
     if [ -z "$1" ]; then
-        2>&1 echo "$usage"
-        exit 1
+        CMD=devel
+    else
+        CMD=$1
+        shift
     fi
-    CMD=$1
-    shift
 
     make &&
     dbenv &&
