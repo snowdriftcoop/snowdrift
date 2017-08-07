@@ -56,43 +56,6 @@ Install Git, PostgreSQL, and Stack by running this command as `root`:
 
     pacman -S git postgresql stack
 
-### NixOS
-
-Install Git as usual under NixOS.
-
-Then, follow the [NixOS Stack install instructions].
-
-For PostgreSQL, add these lines to `/etc/nixos/configuration.nix`:
-
-    services.postgresql.enable = true;
-    services.postgresql.package = pkgs.postgresql94;
-
-Then install PostgreSQL with:
-
-    sudo nixos-rebuild switch
-
-Afterwards, you may need to create the postgres user, like so:
-
-    sudo -su root
-    createuser -s -r postgres
-
-#### Building Snowdrift and GHC with NixOS
-
-Stack can fetch and build the required version of GHC, but this
-doesn't work well on NixOS due to an unusual filesystem hierarchy,
-among other things. Instead, just use `nix-shell` to get into an
-environment with the right compiler version:
-
-    nix-shell -p haskell.compiler.ghc7102
-
-You can now attempt to build Snowdrift via the general instructions below. Stack
-will likely complain about some missing items (like zlib). To continue, install
-listed items manually via `nix-env` or `nox`, then specify their location like
-this:
-
-    stack build --extra-include-dirs ~/.nix-profile/include \
-                --extra-lib-dirs ~/.nix-profile/lib
-
 ### \*BSD
 
 *Any knowledgeable reader: please help us document any important notes about
