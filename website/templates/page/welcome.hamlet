@@ -1,15 +1,14 @@
-<.welcome>
-  <.logo-big>
-  <#tilt>
+<.logo-big>
+<#tilt>
 
-  <video poster=@{StaticR video_00_fade_in_png} controls>
-    <source src=@{StaticR video_00_fade_in_m4v} type="video/mp4">
+<video poster=@{StaticR video_00_fade_in_png} controls>
+  <source src=@{StaticR video_00_fade_in_m4v} type="video/mp4">
 
-  <.section>
-    <p>
-      Like roads we all share, freely-licensed works are public goods that
-      benefit everyone. We need to cooperate to fund them sustainably.
+<.section>
+  <p>
+    Like roads we all share, freely-licensed works are public goods that
+    benefit everyone. We need to cooperate to fund them sustainably.
 
-  <.me-signup>
-  <a href=@{AuthR CreateAccountR}>
-    <button .smlbutton>Sign up!
+<.me-signup>
+<a href=@{AuthR CreateAccountR}>
+  <button .smlbutton>Sign up!

@@ -1,66 +1,88 @@
-<h1>Project: Snowdrift.coop
+<!-- Cover image -->
+<.cover>
+  <img src=@{StaticR img_snowdrift_project_project_header_bg_png}>
 
-<p>
-  This very website, Snowdrift.coop, is supported by its own crowdmatching
-  mechanism!
+<!-- Title -->
+<h1>
+  <img .icon src=@{StaticR img_snowdrift_project_project_icon_png}>
+  Snowdrift.coop
 
-<h2>Crowdmatching
-<p>
-  Snowdrift currently has a crowd of #{projectCrowd project} patrons.
-  The current value of a pledge is #{projectPledgeValue project}, and the
-  project's monthly income is #{projectMonthlyIncome project}.
-  Of course, these numbers will change as the number of patrons changes.
+<!-- Stats -->
+<.stats>
+  <.crowd title="amount of patrons for this project">
+    <h2>#{projectCrowd project}
+    <p>crowd
+  <.value title="amount of this month's contribution per patron">
+    <h2>#{projectPledgeValue project}
+    <p>pledge
+  <.payout title="total amount this project will receive this month">
+    <h2>#{projectMonthlyIncome project}
+    <p>payout
 
-<h2>Pledge
+<!-- Pledge form -->
 $maybe _ <- muid
   $maybe since <- patronPledgeSince =<< mpatron
-    <p>
-      You have been pledged to Snowdrift since #{show since}.
-    <p>
-      If you wish to stop supporting Snowdrift.coop, you can remove yourself
-      from the crowd. Your fellow supporters will be sad to see you go!
-      <form method=post action=@{PledgeSnowdriftR}>
+    $# Logged in, pledged state
+    <form .note-button-success method=post action=@{PledgeSnowdriftR}>
+      <h2>You are now pledging to this project!
+      <p>
+        Because of you a crowd of #{projectCrowd project} agrees to match
+        more. This is awesome!
+      <p>
+        You have been pledged to Snowdrift since #{show since}. If you wish
+        to stop supporting Snowdrift.coop, you can remove yourself from the
+        crowd. Your fellow supporters will be sad to see you go!
         ^{deletePledgeWidget}
-        <button>Unpledge from Snowdrift.coop
+      <button .button>Unpledge
   $nothing
-    <form method=post action=@{PledgeSnowdriftR}>
+    $# Logged in, unpledged state
+    <form .pledge method=post action=@{PledgeSnowdriftR}>
       ^{pledgeNoCSRF}
-      <button>
-        Pledge to Snowdrift.coop
+      <div .a>
+      <button .bigbutton>Pledge
+      <div .b>
+      <a href=@{HowItWorksR}>
+        How does this work?
 $nothing
-  <a href=@{AuthR LoginR}>
-    Log in to pledge to this project!
+  $# Not logged in
+  <p .log-in-to-pledge>
+    <a href=@{AuthR LoginR}>Log in to pledge to this project!
 
-<hr>
-<.announcements>
-  <h2>Updates and Announcements
-  <ol>
-    <li>
-      See the
-      <a href="https://wiki.snowdrift.coop/blog">blog
-      on our wiki
-    <li>
-      <a href="https://git.snowdrift.coop/sd/snowdrift/activity">
-        Code activity at git.snowdrift.coop
-<.plans>
-  <h2>Plans
+<!-- Description -->
+<section .description>
   <p>
-    We are currently working on improved explanations, videos, and web design to
-    express the details and importance of our crowdmatching system and the value
-    of public goods. We have much work to do finalizing a professional-quality
-    user interface for the process not only of pledging but for projects signing
-    up for the platform. We also have legal and structural work to do in
+    This very website, Snowdrift.coop, is supported by its own crowdmatching
+    mechanism!
+
+<!-- Plans -->
+<h3>Plans
+<section .plans>
+  <p>
+    We are currently working on improved explanations, videos, and web design
+    to express the details and importance of our crowdmatching system and the
+    value of public goods. We are testing and getting feedback on the system
+    overall to make sure the crowdmatching process is working smoothly both
+    on the front and back ends before we then build the infrastructure for
+    welcoming other projects. We also have legal and structural work to do in
     building out the full co-op governance.
   <p>
-    For more details on what your donations support, see the
-    <a href="https://wiki.snowdrift.coop/planning">planning section of our wiki
-    and our project management stuff at
-    <a href="https://tree.taiga.io/project/snowdrift">our Taiga.io project
-<.transparency>
-  <h2>Transparency report
+    For more details on what your donations support:
+  <ul>
+    <li>
+      See our
+      <a href="https://tree.taiga.io/project/snowdrift/epics">
+        roadmap on Taiga.io.
+    <li>
+      Track our progress by reviewing our code activity at
+      <a href="https://git.snowdrift.coop/sd/snowdrift/activity">
+        git.snowdrift.coop.
+
+<!-- Transparency -->
+<h3>Transparency report
+<section .transparency>
   <p>
-    Although we hope to add a more standardized report eventually, we maintain a
-    wiki page with an
+    Although we hope to add a more standardized report eventually, we maintain
+    a wiki page with an
     <a href="https://wiki.snowdrift.coop/operations/accounting">accounting summary
     so patrons can understand how we have used funds in the past and where any
     outside income comes from.

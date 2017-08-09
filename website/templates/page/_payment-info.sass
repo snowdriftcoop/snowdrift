@@ -1,0 +1,49 @@
+.payment-info
+
+    div.box-thin
+        +span(8)
+        box-sizing: border-box
+        padding: 3rem
+        border: 0.2rem solid $bright-blue
+        border-radius: 0.6rem
+        margin: 3rem 0
+        position: relative
+
+        h1
+            position: absolute
+            top: -1.2rem
+            margin: 0
+            padding: 0 1rem
+            font-size: 2.1rem
+            font-weight: 700
+            background: $white
+            float: none
+
+    .on .status, .off .status
+        float: left
+        width: 50%
+        margin: 1.5rem auto
+        margin-left: 4rem
+        position: relative
+
+        &:after
+            position: absolute
+            height: 3rem
+            width: 3rem
+            top: 0
+            left: -4rem
+            content: ' '
+
+    .off .status:after
+        +bg($icon-frown)
+
+    div.box-thin.on
+        border-color: $dark-blue
+
+        .status:after
+            +bg($icon-smile)
+
+    .setup
+        +med-button($white, #4c8dad, $dark-blue)
+        margin: 0.8rem auto
+        max-width: 60%

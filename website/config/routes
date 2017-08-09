@@ -21,6 +21,7 @@
 /merchandise MerchandiseR GET
 /contact ContactR GET
 
+/payment-history PaymentHistoryR GET
 /payment-info PaymentInfoR GET POST DELETE
 
 /p/snowdrift SnowdriftProjectR GET

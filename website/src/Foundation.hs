@@ -122,13 +122,13 @@ instance AuthMaster App where
                 |]
         alertWarning alertMessage
         authLayout "page/auth/login" $ do
-            setTitle "Login — Snowdrift.coop"
+            setTitle "Login | Snowdrift.coop"
             $(widgetFile "page/auth/login")
 
     createAccountHandler = do
         (loginFields, enctype) <- generateFormPost (renderDivs newUserCredentialsForm)
         authLayout "page/auth/create-account" $ do
-            setTitle "Create Account — Snowdrift.coop"
+            setTitle "Create Account | Snowdrift.coop"
             $(widgetFile "page/auth/create-account")
 
     verifyAccountHandler = do
@@ -136,7 +136,7 @@ instance AuthMaster App where
             runFormPost
                 (renderDivs (areq textField "Token"{fsAttrs=af} Nothing))
         authLayout "page/auth/verify-account" $ do
-            setTitle "Verify Account — Snowdrift.coop"
+            setTitle "Verify Account | Snowdrift.coop"
             $(widgetFile "page/auth/verify-account")
       where af = [("autofocus","true")]
 
@@ -146,7 +146,7 @@ instance AuthMaster App where
           reset = do
               (loginFields, enctype) <- generateFormPost (renderDivs newUserCredentialsForm)
               authLayout "page/auth/reset-passphrase" $ do
-                  setTitle "Passphrase Reset — Snowdrift.coop"
+                  setTitle "Passphrase Reset | Snowdrift.coop"
                   $(widgetFile "page/auth/reset-passphrase")
 
     sendAuthEmail to msg = do

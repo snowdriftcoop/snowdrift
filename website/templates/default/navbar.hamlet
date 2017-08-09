@@ -1,17 +1,16 @@
 <nav>
   <ul .center>
     <li>
-      <a .logo href=@{WelcomeR} :active WelcomeR:.active>
+      <a href=@{WelcomeR} :active WelcomeR:.active .logo>
         <img src=@{StaticR img_logo_small_png} alt=Snowdrift.coop>
     <li>
-      <a .no-icon href=@{HowItWorksR} :howItWorksActive:.active>
-        How it works
+      <a href=@{HowItWorksR} :howItWorksActive:.active .no-icon>How it works
     <li>
-      <a .no-icon href=@{AboutR} :aboutActive:.active>About
+      <a href=@{AboutR} :aboutActive:.active .no-icon>About
 
     $maybe Entity _ user <- maybeUser
       <li .ddown>
-        <a href .ddown-toggle href="#">
+        <a .ddown-toggle href="#">
           <img src=#{avatar} alt="Account settings">
         <ul .ddown-menu>
           <li>#{_userEmail user}
@@ -21,4 +20,4 @@
             <a href=@{AuthR LogoutR}>Log out
     $nothing
       <li>
-        <a .icon .login href=@{AuthR LoginR} :authActive:.active>Log in
+        <a href=@{AuthR LoginR} :authActive:.active .icon .login>Log in

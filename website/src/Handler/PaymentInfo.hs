@@ -25,7 +25,7 @@ paymentForm formId =
 getPaymentInfoR :: Handler Html
 getPaymentInfoR = do
     Entity uid user <- requireAuth
-    patron <- runDB $ fetchPatron uid
+    (patron, project) <- runDB $ (,) <$> fetchPatron uid <*> fetchProject
     deletePaymentInfoWidget <- fst <$> generateFormPost deletePaymentInfoForm
     publishableKey <-
         fmap

@@ -1,16 +1,15 @@
-<.how-it-works>
-  <h1>How it works
-  <#tilt>
+<h1>How it works
+<#tilt>
 
-  <img .matching src=@{StaticR img_how_it_works_intro1_png}>
-  <.intro>
-    <p .intro-match>
-      Every supporter matches every other. Crowdmatching pays projects monthly.
-    <p .intro-limit>
-      You decide where to stop. We drop your match when you hit your
-      limit.
-  <img .limit src=@{StaticR img_how_it_works_intro2_png}>
-  <a .learn-more href="https://wiki.snowdrift.coop/about/intro">Learn more
+<img .matching src=@{StaticR img_how_it_works_intro1_png}>
+<.intro>
+  <p .intro-match>
+    Every supporter matches every other. Crowdmatching pays projects monthly.
+  <p .intro-limit>
+    You decide where to stop. We drop your match when you hit your
+    limit.
+<img .limit src=@{StaticR img_how_it_works_intro2_png}>
+<a .learn-more href="https://wiki.snowdrift.coop/about/intro">Learn more
 
-  <a href=@{AuthR CreateAccountR}>
-    <button .smlbutton>Sign up!
+<a href=@{AuthR CreateAccountR}>
+  <button .smlbutton>Sign up!

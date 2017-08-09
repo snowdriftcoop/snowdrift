@@ -1,38 +1,31 @@
-<h1>Payment Information
+<h1>Dashboard #
+  <span>You are matching #{projectCrowd project} pledges.
+
+<!-- Tab navigation -->
+<ul .tabs>
+  <li>
+    <a href=@{DashboardR}>Matches
+  <li>
+    <a href=@{PaymentHistoryR}>Payment History
+  <li .selected>
+    Payment System
+
+<#tilt>
+
 $maybe _ <- patronPaymentToken patron
-  <h2>Modifying Payment Info
-  <p>
-    You can update your credit card with Stripe using the form below.
-$nothing
-  <h2>Registering New Payment Info
-  <p>
-    This page allows you to register a credit card with Stripe to become
-    eligible to pledge as a crowdmatching patron.
-<p>
-  Snowdrift.coop does <em>not</em> hold or even touch your credit card
-  information. The entry form widget is run by and goes directly
-  to <a href="https://stripe.com">Stripe</a>, which manages the money transfers.
-<p>
-  Use of this page (and this page alone on Snowdrift.coop) is governed by
-  Stripe's <a href="https://stripe.com/us/legal">terms of service</a>,
-  since this page uses their proprietary JavaScript code. We hope to
-  rectify this in the near future. :)
-
-<form method="post" id=#{paymentFormId} enctype=#{enctype}>
-  <noscript>
-    This page uses JavaScript to submit card information to Stripe. Without
-    JavaScript, you cannot use this page. We're not happy about this compromise.
-    <a href="https://tree.taiga.io/project/snowdrift/issue/472">
-      We would like to change this.
-
-  $# Button is hidden until 'click' handler is installed.
-  <button id=#{paymentButtonId} .hidden .bigbutton>Register a card
+  <.box-thin .on>
+    <form method=post>
+    <h1>Stripe
+    <.status>All set up!
+    $# Button is hidden until 'click' handler is installed.
+    <button id=#{paymentButtonId} .hidden .setup>Set up Stripe
   ^{paymentWidget}
 
-$maybe _ <- patronPaymentToken patron
-  <h2>Deleting Your Payment Info
-  <form method=post>
-    You can delete your payment info, but your pledges will be removed as well!
-    ^{deletePaymentInfoWidget}
-    <button>
-      Delete payment info and remove pledges
+$nothing
+  <.box-thin .off>
+    <form method=post>
+    <h1>Stripe
+    <.status>Not set up.
+    $# Button is hidden until 'click' handler is installed.
+    <button id=#{paymentButtonId} .hidden .setup>Set up Stripe
+  ^{paymentWidget}

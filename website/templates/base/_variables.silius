@@ -29,8 +29,23 @@ $supporter-qco: @{StaticR img_default_supporter_qco_png}
 
 // Pages -------------------------------------------------------------------//
 
-// Welcome
-$logo-big: @{StaticR img_logo_big_png}
+// Dashboard/payment history
+$icon-crowd: @{StaticR img_dashboard_icon_crowd_png}
+$icon-crowd-sel: @{StaticR img_dashboard_icon_crowd_sel_png}
+$icon-carryover: @{StaticR img_dashboard_icon_carryover_png}
 
 // How it works
 $how-it-works-logo-bg: @{StaticR img_how_it_works_logo_bg_png}
+
+// Payment info
+$icon-frown: @{StaticR img_payment_info_icon_frown_png}
+$icon-smile: @{StaticR img_payment_info_icon_smile_png}
+
+// Project snowdrift
+$icon-matching-crowd: @{StaticR img_snowdrift_project_icon_matching_crowd_png}
+$icon-current-match: @{StaticR img_snowdrift_project_icon_current_match_png}
+$icon-monthly-payout: @{StaticR img_snowdrift_project_icon_monthly_payout_png}
+$crowdmatch-hover: @{StaticR img_snowdrift_project_crowdmatch_hover_png}
+
+// Welcome
+$logo-big: @{StaticR img_logo_big_png}
