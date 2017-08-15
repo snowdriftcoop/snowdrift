@@ -19,3 +19,12 @@ extra-deps:
   - tasty-discover-3.0.2
   # Upsert is fixed in 2.7, which is not in lts-8
   - persistent-2.7.0
+nix:
+  pure: false
+  packages:
+    - ncurses
+    - gmp
+    - gcc
+    - openssl
+    - postgresql
+    - zlib
