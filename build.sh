@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 read -d '' usage <<EOF
 .
@@ -26,12 +26,13 @@ read -d '' usage <<EOF
   environments and spawns a new shell.
 EOF
 
-SHAKEDIR=.shake
-SHAKE=$SHAKEDIR/build
-
 run_devel () {
     cd `dirname $0`/website
-    exec stack exec yesod devel
+    if [ -z "$IN_NIX_SHELL" ]; then
+        exec stack exec yesod devel
+    else
+        exec yesod devel
+    fi
 }
 
 run_ghci () {
@@ -40,14 +41,8 @@ run_ghci () {
 }
 
 dbenv () {
-    mkdir -p $SHAKEDIR
-    stack ghc -- \
-        --make sdb.hs \
-        -rtsopts -with-rtsopts=-I0 \
-        -outputdir=$SHAKEDIR \
-        -o $SHAKE
-    $SHAKE start
-    . <($SHAKE env)
+    stack runghc sdb --package turtle --package shake --rts-options -I0 -- start
+    source <(stack runghc sdb --package turtle --package shake --rts-options -I0 -- env)
 }
 
 main () {
