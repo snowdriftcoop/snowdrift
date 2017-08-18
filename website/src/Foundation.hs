@@ -231,7 +231,7 @@ defaultCredentialsForm :: (RenderMessage (HandlerSite m) FormMessage, MonadHandl
                           => AForm m Credentials
 defaultCredentialsForm = Credentials
     <$> (AuthEmail <$>
-            areq textField "Email"{fsAttrs=emailAttrs}  Nothing)
+            areq emailField "Email"{fsAttrs=emailAttrs}  Nothing)
     <*> (ClearPassphrase <$>
             areq
                 passwordField
@@ -250,7 +250,7 @@ newUserCredentialsForm :: (RenderMessage (HandlerSite m) FormMessage, MonadHandl
                 => AForm m Credentials
 newUserCredentialsForm = Credentials
     <$> (AuthEmail <$>
-            areq textField "Email"{fsAttrs=emailAttrs}  Nothing)
+            areq emailField "Email"{fsAttrs=emailAttrs}  Nothing)
     <*> (ClearPassphrase <$>
             areq
                 passwordField
