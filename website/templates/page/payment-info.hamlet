@@ -14,18 +14,18 @@
 
 $maybe _ <- patronPaymentToken patron
   <.box-thin .on>
-    <form method=post>
-    <h1>Stripe
-    <.status>All set up!
-    $# Button is hidden until 'click' handler is installed.
-    <button id=#{paymentButtonId} .hidden .setup>Set up Stripe
-  ^{paymentWidget}
+    <form method="post" id=#{paymentFormId} enctype=#{enctype}>
+      <h1>Stripe
+      <.status>All set up!
+      $# Button is hidden until 'click' handler is installed.
+      <button id=#{paymentButtonId} .hidden .setup>Set up Stripe
+      ^{paymentWidget}
 
 $nothing
   <.box-thin .off>
     <form method=post>
-    <h1>Stripe
-    <.status>Not set up.
-    $# Button is hidden until 'click' handler is installed.
-    <button id=#{paymentButtonId} .hidden .setup>Set up Stripe
-  ^{paymentWidget}
+      <h1>Stripe
+      <.status>Not set up.
+      $# Button is hidden until 'click' handler is installed.
+      ^{deletePaymentInfoWidget}
+      <button .hidden .setup>Set up Stripe

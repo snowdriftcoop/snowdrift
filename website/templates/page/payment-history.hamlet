@@ -5,8 +5,7 @@
 <ul .tabs>
   <li>
     <a href=@{DashboardR}>Matches
-  <li .selected>
-    Payment History
+  <li .selected>Payment History
   <li>
     <a href=@{PaymentInfoR}>Payment System
 
@@ -27,8 +26,8 @@
         <span>
           <.phStripeFee>
   <.total>
-    <span>
-      <.phPledgeTotal2>
+    <span>#{patronDonationPayable patron}
+      <!--<.phPledgeTotal2>-->
     <.limit-bar>
     <em>Limit was #
       <.phLimitEm>
