@@ -59,6 +59,17 @@ Install Git, PostgreSQL, and Stack by running this command as `root`:
 
     pacman -S git postgresql stack
 
+### NixOS
+
+Use `nix-shell` to provide Stack and the Yesod executable:
+
+    nix-shell -p stack haskellPackages.yesod-bin
+
+Add the following to `~/.stack/config.yaml`:
+
+    nix:
+      enable: true
+
 ### \*BSD
 
 *Any knowledgeable reader: please help us document any important notes about
