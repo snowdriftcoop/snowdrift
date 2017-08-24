@@ -348,7 +348,7 @@ postLoginR = do
             redirect (master LoginR))
         (\u -> do
             priviligedLogin u
-            alertInfo "Welcome"
+            alertInfo "Welcome!"
             redirectUltDest =<< (postLoginRoute <$> getYesod))
 
 formResult :: (Yesod master

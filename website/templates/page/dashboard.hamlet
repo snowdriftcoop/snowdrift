@@ -1,69 +1,88 @@
-<h1>Your crowdmatching dashboard
+<h1>Dashboard #
+  <span>You are matching #{projectCrowd project} pledges.
 
-<h2>Budget
-<.sitelimit>
+<!-- Tab navigation -->
+<ul .tabs>
+  <li .selected>
+    Matches
+  <li>
+    <a href=@{PaymentHistoryR}>Payment History
+  <li>
+    <a href=@{PaymentInfoR}>Payment System
+
+<#tilt>
+
+<.box-limit>
+  <h1>Monthly Limit
   <p>
     You will <em>never</em> be charged more than your budget limit of $5 per
     month. That level is our initial default. We will soon add the ability
     to adjust your budget setting.
-  <p>
-    Each month, we set your donations based on pledge values at that time. In
-    order to keep processing fees under 10% for any charge, we may delay
-    processing of small donations and then combine multiple months' donations in
-    a single charge (adjusting to make sure all charges stay within your budget
-    limit).
 
-<h2>Payment method
-$maybe _ <- patronPaymentToken patron
-  <p>
-    Your payment method is Stripe. You may
-    <a href=@{PaymentInfoR}>configure your payment settings
-    (reminder/apology: there is proprietary JavaScript on that page).
-$nothing
-  <.prop-js-note>
-    <p>
-      <strong>Please note!
-      At this stage of our beta, we are relying on Stripe's proprietary
-      JavaScript to maintain compliance in handling credit card information.
-    <p>
-      There's no technical reason for their JavaScript to be proprietary, but it
-      currently is. To avoid this in the future, we will need to implement a
-      method to take financial information and pass it, server-side, to Stripe's
-      API without storing any secure information ourselves. That will still
-      present security concerns and technical challenges that we do not have the
-      resources to handle adequately at this time. We hope to eventually avoid
-      reliance on any proprietary software, but we have made this one compromise
-      for now.
-    <a .bigbutton href=@{PaymentInfoR}>Continue to payment settings
-
-<h2>Pledges
 $maybe _ <- patronPledgeSince patron
-  <p>
-    You are currently pledged to one project:
-    <a href=@{SnowdriftProjectR}>Snowdrift.coop
-  <p>
-    You are currently matching a crowd of #{projectCrowd project} patrons.
-    The current pledge value is #{projectPledgeValue project}.
-    Of course, this amount will change as the number of patrons changes.
+  <!-- Pledged, payment method set-->
+  <!-- Indicating the limit -->
+  <.limit-indicator>
+    <span>
+      <.phLimit>
+  <!-- Drawing the bar -->
+  <.bar>
+    <span>
+  <!-- Indicating the current value -->
+  <.current-indicator>
+    <span>
+      <.phPledgeTotal1>
+  <!-- Pledged projects list -->
+  <.box-month .current>
+    <h1>
+      <.phDateJuly>
+    <ul>
+      <li>
+        <a href=@{SnowdriftProjectR}>
+          <span .name>Snowdrift.coop
+          <span .crowd>#{projectCrowd project}
+          <span .match>#{projectPledgeValue project}
+      <li .fee>
+        <span>Payment processing fee: Stripe
+        <span>
+          <.phStripeFee>
+      <.total>
+        <span>
+          <.phPledgeTotal2>
+  <a .how-it-works href=@{HowItWorksR}>How does this work?
+
 $nothing
   <.notpledged>
-    <p>
-      You are not currently pledged to any projects.
-    $maybe _ <- patronPaymentToken patron
-      <form method=post action=@{PledgeSnowdriftR}>
-        ^{pledgeNoCSRF}
-        To join the crowdmatching system,
-        <button>pledge now!
-    $nothing
-      <p>
-        Before pledging, you must configure payment settings through
-        Stripe (see above).
+    <h2>Payment method
 
-<h2>Beta note
-<p .beta-note>
-  Currently, Snowdrift.coop is operating in a semi-open beta. The Snowdrift site
-  and software itself is the first and only active project. Your support helps
-  us both to continue developing the platform and to do real-world testing to
-  address immediate issues. As soon as everything is working cleanly enough and
-  all important concerns are handled, we will begin supporting other FLO
-  projects. Thank you for helping us clear the path!
+    $maybe _ <- patronPaymentToken patron
+      <!-- Not pledged, payment method set -->
+      <p>
+        Your payment method is Stripe. You may
+        <a href=@{PaymentInfoR}>configure your payment settings
+        (reminder/apology: there is proprietary JavaScript on that page).
+      <p>
+        You are not currently pledged to any projects. To join the
+        crowdmatching system, click on the button below.
+        <form method=post action=@{PledgeSnowdriftR}>
+          ^{pledgeNoCSRF}
+          <button .bigbutton>Pledge now!
+
+    $nothing
+      <!-- Not pledged, payment method not set -->
+      <.prop-js-note>
+        <p>
+          <strong>Please note!
+          At this stage of our alpha, we are relying on Stripe's proprietary
+          JavaScript to maintain compliance in handling credit card
+          information.
+        <p>
+          There's no technical reason for their JavaScript to be proprietary,
+          but it currently is. To avoid this in the future, we will need to
+          implement a method to take financial information and pass it,
+          server-side, to Stripe's API without storing any secure information
+          ourselves. That will still present security concerns and technical
+          challenges that we do not have the resources to handle adequately at
+          this time. We hope to eventually avoid reliance on any proprietary
+          software, but we have made this one compromise for now.
+        <a .bigbutton href=@{PaymentInfoR}>Go to payment settings

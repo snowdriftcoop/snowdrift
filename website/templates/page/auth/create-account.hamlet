@@ -1,15 +1,15 @@
-<.container .auth .create-account>
-  <h1>Welcome to Snowdrift.coop!
+<h1>Welcome to Snowdrift.coop!
 
-  <p>
-    By registering, you agree to Snowdrift.coop's
-    <a href=@{TermsR}>Terms&nbsp;of&nbsp;Use
-    and
-    <a href=@{PrivacyR}>Privacy&nbsp;Policy</a>.
+<p>
+  By registering, you agree to Snowdrift.coop's
+  <a href=@{TermsR}>Terms&nbsp;of&nbsp;Use
+  and
+  <a href=@{PrivacyR}>Privacy&nbsp;Policy#
+  \.
 
-  <form method=post enctype=#{enctype}>
-    ^{loginFields}
-    <button type=submit>Sign up!
+<form method=post enctype=#{enctype}>
+  ^{loginFields}
+  <button type=submit>Sign up!
 
 <p .log-in>
   Already have an account?

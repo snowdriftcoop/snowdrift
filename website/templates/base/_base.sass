@@ -227,6 +227,7 @@ $blue-header2: #e2f8fe                          // blog header
     border-radius: 2.7rem/4.7rem
     transition: all 0.12s ease-out
     &:hover
+        color: $tc
         padding: 1.1rem 3.5rem 1.4rem
         text-shadow: 0.1rem 0.1rem 0 $blue-text-shadow, 0rem 0rem 1rem $white-text-shadow
 
@@ -281,7 +282,7 @@ $blue-header2: #e2f8fe                          // blog header
     background-image: url(map-get($map, image))
     width: nth($size, 1)
     height: nth($size, 2)
-    background-position: #{100%/(map-get($map, columns)-1)*(nth($pos, 1)-1)} #{100%/(map-get($map, rows)-1)*(nth($pos, 2)-1)}
+    background-position: #{(nth($pos, 1) - 1) / (map-get($map, columns)-1) * 100%} #{(nth($pos, 2) - 1) / (map-get($map, rows)-1) * 100%}
     background-size: #{400%/nth(ratio($size), 1)} #{400%/nth(ratio($size), 2)}
 
 

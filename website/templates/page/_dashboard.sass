@@ -1,0 +1,408 @@
+// Begin placeholder section -----------------------------------------------//
+// This section is temporary and can be removed after placeholder tags have
+// been replaced with corresponding Haskell splices in dashboard.hamlet and
+// payment-history.hamlet.
+
+// ------------
+// Instructions
+// ------------
+//
+// 1a. Replace <.ph*> div tags in dashboard.hamlet and payment-history.hamlet.
+// Class names are given below (ignore :before/:after)
+// e.g. <.phStripeFee>
+
+// VAR 1: budget limit
+// Used in .limit-indicator
+.phLimit
+    width: 0
+    display: inline-block
+    position: relative
+    &:after
+        content: "$5"
+        position: relative
+        left: 0.7rem
+// Used under .limit-bar
+.phLimitEm:after
+    content: "$5"
+    position: relative
+    top: -3rem
+    left: 9.2rem
+
+// VAR 2: percentage of pledge total/limit
+.phPledgeToLimitPct:before
+    width: 0
+    display: inline-block
+    position: relative
+    content: "73.8%"
+
+// VAR 3: pledge total
+// Used in limit bar
+.phPledgeTotal1
+    width: 0
+    display: inline-block
+    position: relative
+    &:after
+        content: "$3.69"
+        position: relative
+// Used in payment summary
+.phPledgeTotal2:after
+    content: "$3.69"
+    position: relative
+
+// VAR 4: Stripe fee
+.phStripeFee:after
+    content: "$0.64"
+
+// 1b. Replace the date classes like <.phDateJuly>
+// For <h1> "carry over" text, format text to single line and p to normal
+// paragraph
+// h1 after: <h1>#{phDateSplice} carry over
+
+// VAR 5: date (month year)
+// Generate classes from a list of months and set styles
+=phDateClass($months)
+    @each $m in $months
+        .phDate#{$m}
+            width: 24rem
+            display: inline
+        .phDate#{$m}:after
+            content: #{"\"" + to-upper-case($m) + " 2017\""}
++phDateClass(March April May June July)
+
+// 2a. Replace <span> tag under <.bar> in dashboard.hamlet
+// Before: <span>
+// After: <span style="width: #{pledgeToLimitPct}">
+
+// 2b. Replace <.limit-bar tag> in payment-history.hamlet
+// Before: <.limit-bar>
+// After: <.limit-bar style="width: #{pledgeToLimitPct}">
+.bar span, .limit-bar
+    width: 73.8% !important
+
+// 3. Replace <span> tag under <.current-indicator> in hamlet
+// Before: <span>
+// After: <span style="left: #{pledgeToLimitPct}">#{pledgeTotal}
+.current-indicator span
+    left: 73.8% !important
+
+// 4. Check replacements were successful and remove this section
+
+// End placeholder section --------------------------------------------------//
+
+
+// Payment method heading
+.dashboard h2
+    margin: 6rem 0 1.5rem
+    display: inline-table
+
+.prop-js-note .bigbutton, .notpledged .bigbutton
+    +big-button($gold, $green, $green-shade)
+
+// the month box
+[class*="box-month"]
+    +span(8)
+    box-sizing: border-box
+    padding: 3rem 3rem 4rem 6rem
+    border: 0.2rem solid $blue-header1
+    border-bottom: 1.3rem solid $dark-blue
+    border-radius: 0.6rem
+    margin: 0 0 9rem
+    font-size: 2rem
+    position: relative
+
+    // h1 cropping the tilted background
+    h1
+        overflow: hidden
+        position: relative
+        margin: -3rem -3rem -6rem -6rem
+        padding: 3rem 3rem 7rem 6rem
+        z-index: 3
+        font-size: 2.5rem
+        font-weight: 600
+        line-height: 1
+        border-radius: 0.4rem
+
+        // tilted background
+        &:after
+            position: absolute
+            width: 75rem
+            height: 10rem
+            left: 0
+            top: -2rem
+            z-index: -1
+            transform: skewY(-3deg)
+            content: ' '
+            background-image: linear-gradient($blue-header1, $blue-header1-light)
+
+    ul
+        overflow-x: hidden
+        list-style: none
+        margin: 6rem 0 0 0
+
+        li
+            // dot leaders:
+            // add dots under every "li" element
+            &:after
+                color: $green
+                z-index: 1
+                float: left
+                width: 0
+                white-space: nowrap
+                content: '. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . '
+
+            &:hover:after
+                color: $dark-blue
+
+            a:hover
+                color: $dark-blue
+
+            ul
+                margin: 6rem 0 0 0
+
+            // remove dots under span elements
+            span
+                background-color: white
+                z-index: 2
+                padding: 0 0.4rem 0 0
+                margin: 0 -0.2rem 0 0
+
+                &:last-of-type
+                    position: absolute
+                    right: 0
+                    padding: 0 3rem 0 1rem
+                    margin-right: 3rem
+
+            span.name
+                font-weight: 600
+
+            span.crowd
+                position: relative
+                font-weight: 300
+                padding: 0 1rem 0 3rem
+                left: -0.4rem
+
+                &:before
+                    position: absolute
+                    left: 0
+                    top: -0.4rem
+                    height: 3rem
+                    width: 3rem
+                    content: ' '
+                    +bg($icon-crowd)
+
+        li a:hover .crowd:before
+            +bg($icon-crowd-sel)
+
+        li.fee
+            font-style: italic
+            color: lighten(black, 70%)
+
+            &:after
+                color: lighten(black, 70%)
+
+    // total box with limit
+    div.total
+        position: absolute
+        bottom: -2.5rem
+        right: 3rem
+        width: 12rem
+        height: 5.3rem
+        background-color: white
+        font-size: 2.5rem
+        font-weight: 600
+        z-index: 33
+        text-align: center
+
+        span
+            display: block
+
+        //limit
+        em
+            font-size: 1.35rem
+            font-weight: 400
+            font-style: normal
+            color: $red
+            text-align: left
+            position: relative
+            top: 1.5rem
+
+        // limit indicator bar
+        .limit-bar
+            position: absolute
+            width: 0%
+            height: 1.3rem
+            background-image: linear-gradient(to right, $bright-blue 0, $gold 12rem)
+            top: 4.1rem
+
+    &.current .total
+        border-bottom: 1.3rem solid $dark-blue
+        margin-bottom: -1.3rem
+        bottom: -1.3rem
+
+    // nested carry-over months
+    [class*="box-month"]
+        border-color: $bright-blue
+        border-bottom-width: 0.2rem
+        margin: 3rem 0
+
+        span:last-of-type
+            padding: 0 0 0 1rem
+            margin-right: 3rem
+
+// empty months & carry-over
+.box-month-empty, .box-month-carryover
+    border-color: $bright-blue
+    border-bottom-width: 0.2rem
+    padding-bottom: 1rem
+
+    h1
+        padding-bottom: 1rem
+        margin: 0
+        padding: 0 0 3rem 0
+
+        &:after
+            display: none
+    p
+        font-style: italic
+        font-weight: 300
+
+.box-month-carryover
+
+    h1
+        overflow: visible
+
+    &:before
+        position: absolute
+        top: 2.7rem
+        left: 2.5rem
+        height: 3rem
+        width: 3rem
+        content: ' '
+        +bg($icon-carryover)
+
+
+.dashboard
+
+    .box-limit
+        +span(8)
+        box-sizing: border-box
+        padding: 3rem
+        border: 0.2rem solid $red
+        border-radius: 0.6rem
+        margin: 0
+        position: relative
+        color: $red
+        font-size: 2rem
+
+        h1
+            font-size: 2.5rem
+            font-weight: 700
+            position: absolute
+            top: -1.2rem
+            margin: 0
+            padding: 0 1rem
+            background: $white
+            float: none
+
+        .set-limit
+            +med-button($white, $red, darken($red, 10%))
+            margin: 1.5rem auto
+
+        span
+            width: 19rem
+            float: left
+
+        p
+            float: left
+            // width: 40rem
+            margin: 0 0 0 3rem
+            padding: 0
+            font-size: 1.8rem
+
+    .limit-indicator, .current-indicator
+        +span(8)
+        margin: 0
+        padding: 0 3rem 3rem 3rem
+        box-sizing: border-box
+
+        span
+            bottom: -2.6rem
+            left: 100%
+            float: none
+            font-size: 2rem
+            font-weight: 600
+            color: $red
+            position: relative
+            width: 6rem
+            margin-left: -3rem
+
+            &:before
+                content: ' '
+                position: absolute
+                top: -2rem
+                left: 0.5rem
+                border-left: 2rem solid transparent
+                border-right: 2rem solid transparent
+                border-top: 2rem solid $red
+                margin-top: 0 - round( 2rem / 2.5 )
+
+            &:after
+                content: ' '
+                position: absolute
+                width: 0.9rem
+                height: 3rem
+                background-color: $red
+                bottom: -3.7rem
+                left: 2rem
+                border-left: 0.3rem solid $white
+                border-right: 0.3rem solid $white
+
+    .current-indicator
+
+        span
+            color: $dark-blue
+            // overriden by html code:
+            // left: 0%
+            bottom: -1rem
+
+            &:before
+                top: 3rem
+                border-bottom: 2rem solid $blue-header1
+                border-left: 2rem solid transparent
+                border-right: 2rem solid transparent
+                margin-bottom: 0 - round( 2rem / 2.5 )
+                border-top: 0
+                margin-top: 0
+
+            &:after
+                background-color: $dark-blue
+                top: -4.3rem
+                display: none
+
+    // drawing the bar
+    .bar
+        box-sizing: border-box
+        +span(8)
+        z-index: -1
+        height: 3rem
+        width: 63rem
+        background-color: $dark-blue
+        background-image: linear-gradient(to right, $dark-blue 80%, $white 100%)
+        border-radius: 0.4rem
+        position: relative
+        margin: 0 3rem
+
+        span
+            box-sizing: border-box
+            position: absolute
+            height: 3rem
+            // overriden by html code:
+            // width: 0%
+            background-color: $gold
+            background-image: linear-gradient(to right, $bright-blue 0, $gold 55rem)
+            border-radius: 0.4rem
+            border: 0.2rem solid $dark-blue
+
+    .how-it-works
+        float: right
+        font-weight: 600

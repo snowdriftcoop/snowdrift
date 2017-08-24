@@ -51,6 +51,7 @@ library
         Handler
         Handler.Dashboard
         Handler.Discourse
+        Handler.PaymentHistory
         Handler.PaymentInfo
         Handler.Pledge
         Handler.Project

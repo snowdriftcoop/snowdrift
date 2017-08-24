@@ -1,0 +1,225 @@
+=project-layout0
+
+    // Stack elements
+    .snowdrift-project
+
+        // Project cover
+        .cover
+            height: 27vw
+
+            img
+                height: 27vw
+                width: 100%
+                position: absolute
+                left: 0
+                z-index: -2
+
+            &:after
+                content: ' '
+                position: absolute
+                width: 100vw
+                height: 6vw
+                left: 0
+                top: 24vw
+                margin-top: 6rem
+                transform: skewY(3deg)
+                background-color: $white
+                z-index: -1
+
+        // Project title
+        h1
+            +span(8)
+            margin: 6rem auto
+            padding: 0
+            font-weight: 700
+            text-align: center
+            .icon
+                width: 6rem
+                margin: 0 auto
+                text-align: center
+                display: block
+
+        // Project stats
+        .stats
+            div p
+                color: $bright-blue-text
+
+            h2
+                font-size: 3rem
+                font-weight: 300
+                margin: 1rem auto 0
+
+            p
+                color: $bright-blue-text
+                margin: 0 auto 3rem
+
+            // No icons, they don't look good with
+            // text of variable width center-aligned
+            .crowd, .value, .payout
+                +span(8)
+                display: block
+                text-align: center
+
+        // Pledge indicator (not logged in)
+        p.log-in-to-pledge
+            +span(8)
+            margin: 3rem 0 6rem
+
+        // Pledge form (logged in)
+        form.pledge
+            +span(8)
+            margin: 3rem auto 6rem
+            text-align: center
+
+            a
+                width: 12rem
+                vertical-align: center
+                font-size: 2rem
+                font-weight: 600
+                line-height: 1
+
+            button
+                +big-button($gold, $green, $green-shade)
+                z-index: 4
+                margin: 0 auto 1.5rem
+
+                &:hover + .b, &:active + .b
+                    height: 9rem
+
+            // Temporarily hide crowdmatching animation
+            .a, .b
+                display: none
+
+        // Section headings
+        h3
+            margin: 7.5rem 0 3rem 0
+            font-size: 3.6rem
+            font-weight: 300
+            color: $bright-blue-text
+
+        // No left/right margins in sections
+        .description, .plans, .transparency
+            margin: 0
+
+
++respond(break0)
+
+    +project-layout0
+
+
++respond(break1)
+
+    +project-layout0
+
+
++respond(break2)
+
+    .snowdrift-project
+
+        h1
+            margin: 0 0 3rem
+
+            // Reset span
+            width: unset
+            float: none
+            text-align: left
+            .icon
+                margin: -1.2rem 3rem -1.2rem 0
+                width: 6rem
+                height: auto
+                float: left
+
+        .stats
+            margin: 3rem 0
+            position: relative
+
+            div
+                p
+                    color: $bright-blue-text
+                    transition: color 0.2s ease-in
+                &:hover p
+                    color: $dark-blue
+
+            h2
+                margin: 0
+
+            p
+                margin: 0
+
+            .crowd, .value, .payout
+                width: unset
+                float: none
+                text-align: left
+            .crowd
+                +push(1)
+                +span(2)
+                h2
+                    padding-left: 3.2rem
+                    +bg($icon-matching-crowd)
+                    background-position: left center
+            .value
+                +span(2)
+                h2
+                    padding-left: 1.5rem
+                    +bg($icon-current-match)
+                    background-position: left center
+            .payout
+                +span(3)
+                +last
+                h2
+                    padding-left: 3.2rem
+                    +bg($icon-monthly-payout)
+                    background-position: left center
+
+        p.log-in-to-pledge
+            +span(8)
+            margin-top: 6rem
+            margin-bottom: 3rem
+            padding: 0 0 0 9rem
+
+        form.pledge
+            +span(12 of 25)
+            +push(1)
+            padding: 1.5rem 0 1.5rem 9rem
+            position: relative
+            margin-top: 6rem
+            margin-bottom: 3rem
+
+            a
+                position: absolute
+                left: 39rem
+                top: 2.8rem
+                text-align: left
+
+            button
+                margin: 0 auto
+                left: 6rem
+
+            //a,b animate crowdmatching
+            .a, .b
+                height: 9rem
+                width: 15rem
+                position: absolute
+                bottom: 0
+                left: 0
+                display: inline
+                background: url($crowdmatch-hover) no-repeat -15rem bottom
+                transition: height 0.2s ease-in
+                z-index: 1
+
+            .b
+                background-position: 0 bottom
+                height: 0
+                z-index: 2
+
+        h3
+            +span(7)
+            +push(1)
+            margin-top: 4.5rem
+            margin-right: 0
+            margin-bottom: 1.5rem
+            float: right
+
+        .description, .plans, .transparency
+            +span(7)
+            +push(1)
