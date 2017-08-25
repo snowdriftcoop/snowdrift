@@ -142,9 +142,14 @@ is currently incompatible with the optional ghc-mod tool mentioned in
 
 Run the site in development mode via:
 
-    ./build.sh devel
+    ./build.sh
 
 To stop the site, type `quit` in the terminal and then press Enter.
+
+## Troubleshooting
+
+If `./build.sh` commands fail in any way, try running `./sdb.hs clean` and then
+try building again.
 
 ## Using the local site
 
@@ -174,16 +179,18 @@ mail to.
 
 ### Manual rebuild
 
-As mentioned above, when running with the repl via `./build.sh ghci`, you must
-manually rebuild and restart the site, whereas the `./build.sh devel` option will
-rebuild and restart automatically for most changes. However, **manual rebuild is
-always required whenever you:**
+As an alternate build option, you can run the repl via `./build.sh ghci`.
+In that case, you must manually rebuild and restart the site, whereas the plain
+`./build.sh` option (which is the same as `./build.sh devel`) will
+rebuild and restart automatically for most changes.
+
+Also, **manual rebuild is always required whenever you:**
 
 * add new dependencies (i.e. edit the `build-depends` in `Snowdrift.cabal`)
 * update any extra binaries such as the payment processing script or the
   email daemon.
 
-To manually rebuild the site when otherwise using `./build.sh devel`, run:
+To manually rebuild the site when otherwise using `./build.sh`, run:
 
     stack build
 
