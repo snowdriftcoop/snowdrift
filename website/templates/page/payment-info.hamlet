@@ -12,20 +12,24 @@
 
 <#tilt>
 
+<noscript>
+  This page uses JavaScript to submit card information to Stripe. Without
+  JavaScript, you cannot use this page. We're not happy about this compromise.
+  <a href="https://tree.taiga.io/project/snowdrift/issue/471">
+    We would like to change this.
+
 $maybe _ <- patronPaymentToken patron
   <.box-thin .on>
-    <form method="post" id=#{paymentFormId} enctype=#{enctype}>
-      <h1>Stripe
-      <.status>All set up!
-      $# Button is hidden until 'click' handler is installed.
-      <button id=#{paymentButtonId} .hidden .setup>Set up Stripe
-      ^{paymentWidget}
+    <h1>Stripe
+    <.status>All set up!
+    <form method=post>
+      ^{deletePaymentInfoWidget}
+      <button .setup>Set up Stripe
 
 $nothing
   <.box-thin .off>
-    <form method=post>
-      <h1>Stripe
-      <.status>Not set up.
-      $# Button is hidden until 'click' handler is installed.
-      ^{deletePaymentInfoWidget}
-      <button .hidden .setup>Set up Stripe
+    <h1>Stripe
+    <.status>Not set up.
+    <form method="post" id=#{paymentFormId} enctype=#{enctype}>
+      <button id=#{paymentButtonId} .setup>Set up Stripe
+      ^{paymentWidget}
