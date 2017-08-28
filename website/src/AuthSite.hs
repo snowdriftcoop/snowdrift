@@ -338,13 +338,14 @@ postLoginR = do
             alertWarning ([hamlet|
                 Note: if you signed up before 2017, you may need
                 to <a href=@{master ResetPassphraseR}>reset your passphrase</a>.
-                Also, our updated system now requires log-in IDs to be
-                emails. If you had used a non-email ID, you may try the
-                email associated with the account. If you had a non-email
+                Also, we now require log-in IDs to be emails. If you had
+                used a non-email ID, try logging in with the email
+                associated with the account. If you had a non-email
                 ID and no associated email, you will need to
                 <a href=@{master CreateAccountR}>create a new account</a>.
-                If you have persistent issues, want help, or have feedback,
-                please <a href="/contact">contact us</a>.|] render)
+                <p>
+                    If you need help, or have feedback, please
+                    <a href="/contact">contact&nbsp;us</a>.|] render)
             redirect (master LoginR))
         (\u -> do
             priviligedLogin u
