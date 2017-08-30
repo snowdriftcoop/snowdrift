@@ -24,13 +24,13 @@ $maybe _ <- patronPaymentToken patron
     <.status>All set up!
     <form method=post>
       ^{deletePaymentInfoWidget}
-      $# Button is hidden until 'click' handler is installed.
-      <!--<button .hidden .setup>Set up Stripe-->
+      $# Button is hidden until 'click' event listener is loaded.
+      <button .hidden .setup>Set up Stripe
 $nothing
   <.box-thin .off>
     <h1>Stripe
     <.status>Not set up.
     <form method="post" id=#{paymentFormId} enctype=#{enctype}>
-      $# Button is hidden until 'click' handler is installed.
-      <!--<button id=#{paymentButtonId} .hidden .setup>Set up Stripe-->
+      $# Button is hidden until 'click' event listener is loaded.
+      <button id=#{paymentButtonId} .hidden .setup>Set up Stripe
       ^{paymentWidget}
