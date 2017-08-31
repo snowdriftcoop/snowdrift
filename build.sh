@@ -53,7 +53,7 @@ main () {
         shift
     fi
 
-    stack build  --only-dependencies --install-ghc Snowdrift:test &&
+    stack build --flag Snowdrift:library-only --only-dependencies --install-ghc Snowdrift:test &&
     stack build yesod-bin foreign-store cabal-install &&
     dbenv &&
     case $CMD in
@@ -61,7 +61,7 @@ main () {
             run_devel
             ;;
         test)
-            exec stack test --fast $@
+            exec stack test --flag Snowdrift:library-only --fast $@
             ;;
         ghci)
             run_ghci $@
