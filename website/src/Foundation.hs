@@ -110,17 +110,6 @@ instance AuthMaster App where
 
     loginHandler = do
         (loginFields, enctype) <- generateFormPost (renderDivs defaultCredentialsForm)
-        alertMessage <- withUrlRenderer
-                [hamlet|
-                    <p>
-                      If you haven't logged in for a while, or you previously
-                      registered using the discontinued
-                      <a href="https://en.wikipedia.org/wiki/Mozilla_Persona"
-                      target="_blank">Mozilla Persona</a> service, you may need
-                      to <a href=@{AuthR ResetPassphraseR}>reset your
-                      passphrase</a>.</p>
-                |]
-        alertWarning alertMessage
         authLayout "page/auth/login" $ do
             setTitle "Login | Snowdrift.coop"
             $(widgetFile "page/auth/login")
