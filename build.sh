@@ -53,7 +53,8 @@ main () {
         shift
     fi
 
-    make &&
+    stack build  --only-dependencies --install-ghc Snowdrift:test &&
+    stack build yesod-bin foreign-store cabal-install &&
     dbenv &&
     case $CMD in
         devel)
