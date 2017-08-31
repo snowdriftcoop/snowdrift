@@ -41,8 +41,8 @@ run_ghci () {
 }
 
 dbenv () {
-    stack runghc sdb --package turtle --package shake --rts-options -I0 -- start
-    source <(stack runghc sdb --package turtle --package shake --rts-options -I0 -- env)
+    ./sdb.hs start
+    source <(./sdb.hs env)
 }
 
 main () {
