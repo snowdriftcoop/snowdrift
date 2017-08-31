@@ -56,6 +56,11 @@ Install Git, PostgreSQL, and Stack by running this command as `root`:
 
     pacman -S git postgresql stack
 
+Arch also requires installation of the ncurses5-compat-libs package, found in
+the AUR.  If you are unsure how to install from the AUR, please refer to the
+[AUR ArchWiki Page].
+
+
 ### NixOS
 
 Use `nix-shell` to provide Stack and the Yesod executable:
@@ -224,6 +229,7 @@ about technical development.
 [haskell-stack]: https://aur.archlinux.org/packages/haskell-stack
 [install Stack for Windows]: https://github.com/commercialhaskell/stack/blob/master/doc/install_and_upgrade.md#windows
 [instructions on the PostgreSQL wiki]: https://wiki.postgresql.org/wiki/YUM_Installation
+[AUR ArchWiki Page]: https://wiki.archlinux.org/index.php/Arch_User_Repository
 [NixOS Stack install instructions]: https://github.com/commercialhaskell/stack/blob/master/doc/install_and_upgrade.md#nixos)
 [PostgreSQL]: http://www.postgresql.org/download/
 [README]: README.md
