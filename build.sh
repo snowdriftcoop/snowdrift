@@ -14,13 +14,12 @@ read -d '' usage <<EOF
   CMD can be:
 
       devel
-      ghci
       test
       psql
       shell
 
-  'ghci', 'test', and 'psql' all accept any additional options native to
-  those commands.
+  'test' and 'psql' both accept any additional options native to those
+  commands.
 
   'shell' is an advanced command, which sets up the Postgres and stack
   environments and spawns a new shell.
@@ -33,11 +32,6 @@ run_devel () {
     else
         exec yesod devel
     fi
-}
-
-run_ghci () {
-    cd `dirname $0`/website
-    exec stack ghci --package foreign-store $@
 }
 
 dbenv () {
@@ -62,9 +56,6 @@ main () {
             ;;
         test)
             exec stack test --flag Snowdrift:library-only --fast $@
-            ;;
-        ghci)
-            run_ghci $@
             ;;
         psql)
             exec psql $@
