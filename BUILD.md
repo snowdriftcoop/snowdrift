@@ -233,7 +233,6 @@ about technical development.
 [install Stack for Windows]: https://github.com/commercialhaskell/stack/blob/master/doc/install_and_upgrade.md#windows
 [instructions on the PostgreSQL wiki]: https://wiki.postgresql.org/wiki/YUM_Installation
 [AUR ArchWiki Page]: https://wiki.archlinux.org/index.php/Arch_User_Repository
-[NixOS Stack install instructions]: https://github.com/commercialhaskell/stack/blob/master/doc/install_and_upgrade.md#nixos)
 [PostgreSQL]: http://www.postgresql.org/download/
 [README]: README.md
 [Stack]: https://github.com/commercialhaskell/stack#the-haskell-tool-stack
