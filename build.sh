@@ -8,8 +8,8 @@ read -d '' usage <<EOF
   Used to do standard Haskell/yesod things like run tests, run the devel
   site, and run ghci.
 
-  It uses make *and* the shake build system to make sure a dev/test
-  database is running. The system should probably be refactored. :)
+  It uses the shake build system to make sure a dev/test database is
+  running.
 
   CMD can be:
 
