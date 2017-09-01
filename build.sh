@@ -28,6 +28,7 @@ EOF
 run_devel () {
     cd `dirname $0`/website
     if [ -z "$IN_NIX_SHELL" ]; then
+        stack build yesod-bin &&
         exec stack exec yesod devel
     else
         exec yesod devel
@@ -48,7 +49,6 @@ main () {
     fi
 
     stack build --flag Snowdrift:library-only --only-dependencies --install-ghc Snowdrift:test &&
-    stack build yesod-bin foreign-store cabal-install &&
     dbenv &&
     case $CMD in
         devel)
