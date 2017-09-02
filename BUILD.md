@@ -190,7 +190,8 @@ mail to.
 Register an account on the [Stripe] website. Go to your new account dashboard
 and click the "API" link to obtain your publishable and secret test keys.
 
-Add your keys as environment variables in `.stripe_keys`:
+Create a new file named `.stripe_keys` in the top-level directory and add your
+keys as environment variables:
 
 ```
 export STRIPE_PUBLISHABLE_KEY="stripe_pub_key"
