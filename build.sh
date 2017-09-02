@@ -8,19 +8,18 @@ read -d '' usage <<EOF
   Used to do standard Haskell/yesod things like run tests, run the devel
   site, and run ghci.
 
-  It uses make *and* the shake build system to make sure a dev/test
-  database is running. The system should probably be refactored. :)
+  It uses the shake build system to make sure a dev/test database is
+  running.
 
   CMD can be:
 
       devel
-      ghci
       test
       psql
       shell
 
-  'ghci', 'test', and 'psql' all accept any additional options native to
-  those commands.
+  'test' and 'psql' both accept any additional options native to those
+  commands.
 
   'shell' is an advanced command, which sets up the Postgres and stack
   environments and spawns a new shell.
@@ -29,20 +28,16 @@ EOF
 run_devel () {
     cd `dirname $0`/website
     if [ -z "$IN_NIX_SHELL" ]; then
+        stack build yesod-bin &&
         exec stack exec yesod devel
     else
         exec yesod devel
     fi
 }
 
-run_ghci () {
-    cd `dirname $0`/website
-    exec stack ghci --package foreign-store $@
-}
-
 dbenv () {
-    stack runghc sdb --package turtle --package shake --rts-options -I0 -- start
-    source <(stack runghc sdb --package turtle --package shake --rts-options -I0 -- env)
+    ./sdb.hs start
+    source <(./sdb.hs env)
 }
 
 main () {
@@ -53,17 +48,14 @@ main () {
         shift
     fi
 
-    make &&
+    stack build --flag Snowdrift:library-only --only-dependencies --install-ghc Snowdrift:test &&
     dbenv &&
     case $CMD in
         devel)
             run_devel
             ;;
         test)
-            exec stack test --fast $@
-            ;;
-        ghci)
-            run_ghci $@
+            exec stack test --flag Snowdrift:library-only --fast $@
             ;;
         psql)
             exec psql $@
