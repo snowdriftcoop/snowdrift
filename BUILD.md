@@ -184,29 +184,30 @@ mail to.
 
 ### Using Stripe in development
 
-Register an account on the [Stripe] website. Go to your new account dashboard
-and click the "API" link to obtain your publishable and secret test keys.
+1. Register an account on the [Stripe] website. Go to your new account
+   dashboard and click the "API" link to obtain your publishable and secret
+   test keys.
 
-Create a new file named `.stripe_keys` in the top-level directory and add your
-keys as environment variables:
+2. Create a new file named `.stripe_keys` in the top-level directory of the
+   snowdrift project and add your keys as environment variables:
 
 ```
 export STRIPE_PUBLISHABLE_KEY="stripe_pub_key"
 export STRIPE_SECRET_KEY="stripe_sec_key"
 ```
 
-Build your snowdrift development site, log in and navigate to the dashboard
-payment settings page. Press the "Set up Stripe" button and provide the
-following details on the Checkout form:
+3. Build your snowdrift development site, log in and navigate to the dashboard
+   payment settings page. Press the "Set up Stripe" button and provide the
+   following details on the Checkout form:
 
 - One of the [Stripe test card numbers], e.g. "4242 4242 4242 4242"
 - Any future expiration date
 - Any 3-digit CVC code
 - Any postal code, e.g. "12345"
 
-Click "Register" to submit the form and complete the setup.
+4. Click "Register" to submit the form and complete the setup.
 
-If the "Set up Stripe" button does not appear and you have an ad or
+Note: If the "Set up Stripe" button does not appear and you have an ad or
 general-purpose blocker extension installed on your browser, you may need to
 add an exception to your blocker settings for the development site.
 
@@ -238,9 +239,13 @@ To make builds recognize changes to the static directory, run:
 
 #### Adding and updating Sass files
 
-There are two Sass file extensions currently supported by the modified
-shakespeare-sass package: `.sass` and `.silius`. Use `.silius` when the file
-contains Haskell splices, and `.sass` for Sass-only files for faster compiling.
+We currently use the [Sass] language extension for authoring stylesheets, which
+are then compiled into CSS with shakespeare-sass. There are two main Sass file
+extensions currently supported by the modified shakespeare-sass package:
+`.sass` and `.silius`. Use `.silius` when the file contains Haskell splices,
+and `.sass` for Sass-only files for faster compiling. (While shakespeare-sass
+also recognizes the SCSS style with the `.scss` extension, the indented syntax
+is preferred for conciseness.)
 
 After editing a `.sass` file, touch the handler file that uses it for the
 changes to register, for example:
@@ -274,6 +279,7 @@ about technical development.
 [AUR ArchWiki Page]: https://wiki.archlinux.org/index.php/Arch_User_Repository
 [PostgreSQL]: http://www.postgresql.org/download/
 [README]: README.md
+[Sass]: http://sass-lang.com/
 [Stack]: https://github.com/commercialhaskell/stack#the-haskell-tool-stack
 [Stack install instructions]: https://github.com/commercialhaskell/stack/blob/master/doc/install_and_upgrade.md
 [Stripe]: https://stripe.com
