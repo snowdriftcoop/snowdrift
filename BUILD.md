@@ -182,6 +182,33 @@ the environment variable `SD_EMAILS` to "true", or by modifying
 `send-email: "_env:SD_EMAILS:true"`. Just be careful who you try to send
 mail to.
 
+### Using Stripe in development
+
+Register an account on the [Stripe] website. Go to your new account dashboard
+and click the "API" link to obtain your publishable and secret test keys.
+
+Add your keys as environment variables in `.stripe_keys`:
+
+```
+export STRIPE_PUBLISHABLE_KEY="stripe_pub_key"
+export STRIPE_SECRET_KEY="stripe_sec_key"
+```
+
+Build your snowdrift development site, log in and navigate to the dashboard
+payment settings page. Press the "Set up Stripe" button and provide the
+following details on the Checkout form:
+
+- One of the [Stripe test card numbers], e.g. "4242 4242 4242 4242"
+- Any future expiration date
+- Any 3-digit CVC code
+- Any postal code, e.g. "12345"
+
+Click "Register" to submit the form and complete the setup.
+
+If the "Set up Stripe" button does not appear and you have an ad or
+general-purpose blocker extension installed on your browser, you may need to
+add an exception to your blocker settings for the development site.
+
 ### Manual rebuild
 
 As an alternate build option, you can run the repl via `./build.sh ghci`.
@@ -248,5 +275,6 @@ about technical development.
 [README]: README.md
 [Stack]: https://github.com/commercialhaskell/stack#the-haskell-tool-stack
 [Stack install instructions]: https://github.com/commercialhaskell/stack/blob/master/doc/install_and_upgrade.md
-
+[Stripe]: https://stripe.com
+[Stripe test card numbers]: https://stripe.com/docs/testing#cards
 [Ubuntu Stack install]: https://github.com/commercialhaskell/stack/blob/master/doc/install_and_upgrade.md#ubuntu
