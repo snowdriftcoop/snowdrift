@@ -1,0 +1,2 @@
+export STRIPE_PUBLISHABLE_KEY=""
+export STRIPE_SECRET_KEY=""
