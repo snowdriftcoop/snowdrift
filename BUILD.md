@@ -208,6 +208,20 @@ To make builds recognize changes to the static directory, run:
 
     touch website/src/Settings/StaticFiles.hs
 
+#### Adding and updating Sass files
+
+There are two Sass file extensions currently supported by the modified
+shakespeare-sass package: `.sass` and `.silius`. Use `.silius` when the file
+contains Haskell splices, and `.sass` for Sass-only files for faster compiling.
+
+After editing a `.sass` file, touch the handler file that uses it for the
+changes to register, for example:
+
+    touch website/src/Foundation.hs
+
+Haskell variables can be added to Silius files with the syntax
+`%{someVariable}` and will be parsed automatically each rebuild.
+
 ## Database notes
 
 See [DATABASE-MANAGEMENT.md] for details on resetting the database and more.
