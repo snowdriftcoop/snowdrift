@@ -117,25 +117,17 @@ From within your preferred directory, get the code with:
 
     git clone https://git.snowdrift.coop/sd/snowdrift.git
 
-## Initial Build
-
-### Compile the code
-
 Change to the new snowdrift directory:
 
     cd snowdrift
 
-Then, fetch all Haskell dependencies and build all dependencies:
+## Run the tests
 
-    make
-
-This will take a while!
-
-### Run the tests
-
-Running the tests for the first time will also build the project.
+Run the tests to fetch and build all Haskell dependencies:
 
     ./build.sh test
+
+This will take a while!
 
 ## Running the site via `yesod devel`
 
