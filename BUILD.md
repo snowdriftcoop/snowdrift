@@ -193,20 +193,18 @@ mail to.
 
 2. Create a new text file named `.stripe_keys` in the top-level directory of the
    snowdrift project (next to builld.sh). Add your keys as environment variables:
-
-    >>>
-    export STRIPE_PUBLISHABLE_KEY="your_stripe_pub_key"  
-    export STRIPE_SECRET_KEY="your_stripe_sec_key"
-    >>>
+>>>
+export STRIPE_PUBLISHABLE_KEY="your_stripe_pub_key"  
+export STRIPE_SECRET_KEY="your_stripe_sec_key"
+>>>
 
 3. Build your snowdrift development site, log in, and navigate to the dashboard
    payment settings page. Press the "Set up Stripe" button and provide the
    following details on the Checkout form:
-
-    - One of the [Stripe test card numbers], e.g. "4242 4242 4242 4242"
-    - Any future expiration date
-    - Any 3-digit CVC code
-    - Any postal code, e.g. "12345"
+  - One of the [Stripe test card numbers], e.g. "4242 4242 4242 4242"
+  - Any future expiration date
+  - Any 3-digit CVC code
+  - Any postal code, e.g. "12345"
 
 4. Click "Register" to submit the form and complete the setup.
 
