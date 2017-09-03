@@ -212,26 +212,6 @@ Note: If the "Set up Stripe" button does not appear and you have an ad or
 general-purpose blocker extension installed on your browser, you may need to
 add an exception to your blocker settings for the development site.
 
-### Manual rebuild
-
-As an alternate build option, you can run the repl via `./build.sh ghci`.
-In that case, you must manually rebuild and restart the site, whereas the plain
-`./build.sh` option (which is the same as `./build.sh devel`) will
-rebuild and restart automatically for most changes.
-
-Also, **manual rebuild is always required whenever you:**
-
-* add new dependencies (i.e. edit the `build-depends` in `Snowdrift.cabal`)
-* update any extra binaries such as the payment processing script or the
-  email daemon.
-
-To manually rebuild the site when otherwise using `./build.sh`, run:
-
-    stack build
-
-NB: In rare cases, you may need to run `stack clean` if building fails to
-recognize a change.
-
 #### Updating static files
 
 To make builds recognize changes to the static directory, run:

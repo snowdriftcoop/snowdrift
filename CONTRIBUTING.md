@@ -477,11 +477,6 @@ here are some resources (nearly all fully-FLO):
 *   Alongside #snowdrift on freenode.net, check out #yesod , #haskell ,
     and #haskell-beginners (among many other relevant channels).
 
-*   The repl accessed via `./build.sh ghci` loads
-    [ghci](https://en.wikibooks.org/wiki/Haskell/Using_GHCi_effectively)
-    in a mode connected to the project. Using that, you can easily import
-    files from the code and explore the functions.
-
 [Build guide]: BUILD.md
 [design]: https://git.snowdrift.coop/sd/design
 [dev mailing list]: https://lists.snowdrift.coop/mailman/listinfo/dev
