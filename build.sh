@@ -26,9 +26,6 @@ read -d '' usage <<EOF
 EOF
 
 run_devel () {
-    if test -a .stripe_keys; then
-        source .stripe_keys
-    fi
     cd `dirname $0`/website
     if [ -z "$IN_NIX_SHELL" ]; then
         stack build yesod-bin &&
@@ -50,6 +47,9 @@ main () {
         CMD=$1
         shift
     fi
+
+    # Configure local Stripe keys for shell, devel, and test.
+    [ -e .stripe_keys ] && source .stripe_keys
 
     stack build --flag Snowdrift:library-only --only-dependencies --install-ghc Snowdrift:test &&
     dbenv &&
