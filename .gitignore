@@ -1,6 +1,7 @@
 dist/
 website/static/tmp/
 client_session_key.aes
+.stripe_keys
 .postgres-work
 .stack-work
 .cabal-sandbox/

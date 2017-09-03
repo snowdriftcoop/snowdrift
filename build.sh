@@ -48,6 +48,9 @@ main () {
         shift
     fi
 
+    # Configure local Stripe keys for shell, devel, and test.
+    [ -e .stripe_keys ] && source .stripe_keys
+
     stack build --flag Snowdrift:library-only --only-dependencies --install-ghc Snowdrift:test &&
     dbenv &&
     case $CMD in

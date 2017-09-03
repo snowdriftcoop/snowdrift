@@ -5,14 +5,13 @@ import Import.NoFoundation
 
 import Control.Monad.Logger (logDebugSH)
 import Database.Persist.Sql (runSqlPool)
-import Text.Hamlet          (hamlet, hamletFile)
+import Text.Hamlet          (hamletFile)
 import Text.Jasmine         (minifym)
 import Yesod.Default.Util   (addStaticContentExternal)
 import qualified Data.List as List
 import qualified Data.Text as T
 import qualified Yesod.Core.Unsafe as Unsafe
 
-import Alerts
 import AppDataTypes
 import Avatar
 import Email

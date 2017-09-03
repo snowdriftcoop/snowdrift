@@ -182,6 +182,36 @@ the environment variable `SD_EMAILS` to "true", or by modifying
 `send-email: "_env:SD_EMAILS:true"`. Just be careful who you try to send
 mail to.
 
+### Using Stripe in development
+
+1. Register an account on the [Stripe] website.
+
+2. Go to your new account dashboard and make sure "View test data" is turned **on**.
+
+3. click the "API" link to obtain your publishable and secret
+   test keys.
+
+2. Create a new text file named `.stripe_keys` in the top-level directory of the
+   snowdrift project (next to builld.sh). Add your keys as environment variables:
+>>>
+export STRIPE_PUBLISHABLE_KEY="your_stripe_pub_key"  
+export STRIPE_SECRET_KEY="your_stripe_sec_key"
+>>>
+
+3. Build your snowdrift development site, log in, and navigate to the dashboard
+   payment settings page. Press the "Set up Stripe" button and provide the
+   following details on the Checkout form:
+  - One of the [Stripe test card numbers], e.g. "4242 4242 4242 4242"
+  - Any future expiration date
+  - Any 3-digit CVC code
+  - Any postal code, e.g. "12345"
+
+4. Click "Register" to submit the form and complete the setup.
+
+Note: If the "Set up Stripe" button does not appear and you have an ad or
+general-purpose blocker extension installed on your browser, you may need to
+add an exception to your blocker settings for the development site.
+
 ### Manual rebuild
 
 As an alternate build option, you can run the repl via `./build.sh ghci`.
@@ -208,6 +238,24 @@ To make builds recognize changes to the static directory, run:
 
     touch website/src/Settings/StaticFiles.hs
 
+#### Adding and updating Sass files
+
+We currently use the [Sass] language extension for authoring stylesheets, which
+are then compiled into CSS with shakespeare-sass. There are two main Sass file
+extensions currently supported by the modified shakespeare-sass package:
+`.sass` and `.silius`. Use `.silius` when the file contains Haskell splices,
+and `.sass` for Sass-only files for faster compiling. (While shakespeare-sass
+also recognizes the SCSS style with the `.scss` extension, the indented syntax
+is preferred for conciseness.)
+
+After editing a `.sass` file, touch the handler file that uses it for the
+changes to register, for example:
+
+    touch website/src/Foundation.hs
+
+Haskell variables can be added to Silius files with the syntax
+`%{someVariable}` and will be parsed automatically each rebuild.
+
 ## Database notes
 
 See [DATABASE-MANAGEMENT.md] for details on resetting the database and more.
@@ -232,7 +280,9 @@ about technical development.
 [AUR ArchWiki Page]: https://wiki.archlinux.org/index.php/Arch_User_Repository
 [PostgreSQL]: http://www.postgresql.org/download/
 [README]: README.md
+[Sass]: http://sass-lang.com/
 [Stack]: https://github.com/commercialhaskell/stack#the-haskell-tool-stack
 [Stack install instructions]: https://github.com/commercialhaskell/stack/blob/master/doc/install_and_upgrade.md
-
+[Stripe]: https://stripe.com
+[Stripe test card numbers]: https://stripe.com/docs/testing#cards
 [Ubuntu Stack install]: https://github.com/commercialhaskell/stack/blob/master/doc/install_and_upgrade.md#ubuntu
