@@ -184,26 +184,29 @@ mail to.
 
 ### Using Stripe in development
 
-1. Register an account on the [Stripe] website. Go to your new account
-   dashboard and click the "API" link to obtain your publishable and secret
+1. Register an account on the [Stripe] website.
+
+2. Go to your new account dashboard and make sure "View test data" is turned **on**.
+
+3. click the "API" link to obtain your publishable and secret
    test keys.
 
-2. Create a new file named `.stripe_keys` in the top-level directory of the
-   snowdrift project and add your keys as environment variables:
+2. Create a new text file named `.stripe_keys` in the top-level directory of the
+   snowdrift project (next to builld.sh). Add your keys as environment variables:
 
-```
-export STRIPE_PUBLISHABLE_KEY="stripe_pub_key"
-export STRIPE_SECRET_KEY="stripe_sec_key"
-```
+    >>>
+    export STRIPE_PUBLISHABLE_KEY="your_stripe_pub_key"  
+    export STRIPE_SECRET_KEY="your_stripe_sec_key"
+    >>>
 
-3. Build your snowdrift development site, log in and navigate to the dashboard
+3. Build your snowdrift development site, log in, and navigate to the dashboard
    payment settings page. Press the "Set up Stripe" button and provide the
    following details on the Checkout form:
 
-- One of the [Stripe test card numbers], e.g. "4242 4242 4242 4242"
-- Any future expiration date
-- Any 3-digit CVC code
-- Any postal code, e.g. "12345"
+    - One of the [Stripe test card numbers], e.g. "4242 4242 4242 4242"
+    - Any future expiration date
+    - Any 3-digit CVC code
+    - Any postal code, e.g. "12345"
 
 4. Click "Register" to submit the form and complete the setup.
 
