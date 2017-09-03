@@ -26,7 +26,9 @@ read -d '' usage <<EOF
 EOF
 
 run_devel () {
-    if test -a .stripe_keys; then source .stripe_keys; fi
+    if test -a .stripe_keys; then
+        source .stripe_keys
+    fi
     cd `dirname $0`/website
     if [ -z "$IN_NIX_SHELL" ]; then
         stack build yesod-bin &&
