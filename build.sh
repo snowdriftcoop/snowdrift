@@ -5,8 +5,8 @@ read -d '' usage <<EOF
 .  build.sh CMD [OPTIONS]
 .
 
-  Used to do standard Haskell/yesod things like run tests, run the devel
-  site, and run ghci.
+  Used to do standard Haskell/yesod things like run tests and run the
+  devel site.
 
   It uses the shake build system to make sure a dev/test database is
   running.
