@@ -23,7 +23,7 @@
 $maybe _ <- muid
   $maybe since <- patronPledgeSince =<< mpatron
     $# Logged in, pledged state
-    <form .note-button-success method=post action=@{PledgeSnowdriftR}>
+    <form .alert-button-success method=post action=@{PledgeSnowdriftR}>
       <h2>You are now pledging to this project!
       <p>
         Because of you a crowd of #{projectCrowd project} agrees to match
@@ -45,8 +45,13 @@ $maybe _ <- muid
         How does this work?
 $nothing
   $# Not logged in
-  <p .log-in-to-pledge>
-    <a href=@{AuthR LoginR}>Log in to pledge to this project!
+  <form .pledge method=get action=@{AuthR LoginR}>
+    <div .a>
+    <button .bigbutton>Pledge
+    <div .b>
+    <a href=@{HowItWorksR}>
+      How does this work?
+
 
 <!-- Description -->
 <section .description>
