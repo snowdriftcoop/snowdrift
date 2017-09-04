@@ -178,31 +178,32 @@ mail to.
 
 1. Register an account on the [Stripe] website.
 
-2. Go to your new account dashboard and make sure "View test data" is turned **on**.
+2. Go to your Stripe dashboard and make sure "View test data" is turned **on**.
+   (It will already be on if your account is brand new, but it's good to double
+   check.)
 
-3. click the "API" link to obtain your publishable and secret
-   test keys.
+3. Click the "API" link to obtain your publishable and secret test keys.
 
 2. Create a new text file named `.stripe_keys` in the top-level directory of the
    snowdrift project (next to builld.sh). Add your keys as environment variables:
 >>>
-export STRIPE_PUBLISHABLE_KEY="your_stripe_pub_key"  
-export STRIPE_SECRET_KEY="your_stripe_sec_key"
+export STRIPE_PUBLISHABLE_KEY=your_stripe_pub_key  
+export STRIPE_SECRET_KEY=your_stripe_sec_key
 >>>
 
-3. Build your snowdrift development site, log in, and navigate to the dashboard
-   payment settings page. Press the "Set up Stripe" button and provide the
-   following details on the Checkout form:
+3. Build your snowdrift development site and log in.
+
+4. Make sure Javascript is enabled, and that no blockers prevent Stripe's
+   JavaScript form from showing up.
+   
+5. Navigate to the dashboard payment settings page. Press the "Set up Stripe"
+   button and provide the following details on the Checkout form:
   - One of the [Stripe test card numbers], e.g. "4242 4242 4242 4242"
   - Any future expiration date
   - Any 3-digit CVC code
   - Any postal code, e.g. "12345"
 
 4. Click "Register" to submit the form and complete the setup.
-
-Note: If the "Set up Stripe" button does not appear and you have an ad or
-general-purpose blocker extension installed on your browser, you may need to
-add an exception to your blocker settings for the development site.
 
 #### Updating static files
 
