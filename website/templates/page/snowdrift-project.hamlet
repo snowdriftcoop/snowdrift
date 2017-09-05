@@ -23,16 +23,12 @@
 $maybe _ <- muid
   $maybe since <- patronPledgeSince =<< mpatron
     $# Logged in, pledged state
-    <form .alert-button-success method=post action=@{PledgeSnowdriftR}>
-      <h2>You are now pledging to this project!
+    <form .alert-button-pledged method=post action=@{PledgeSnowdriftR}>
+      <h2>You are now supporting Snowdrift.coop!
       <p>
-        Because of you a crowd of #{projectCrowd project} agrees to match
-        more. This is awesome!
-      <p>
-        You have been pledged to Snowdrift since #{show since}. If you wish
-        to stop supporting Snowdrift.coop, you can remove yourself from the
-        crowd. Your fellow supporters will be sad to see you go!
-        ^{deletePledgeWidget}
+        With your pledge, all the others in the crowd of
+        #{projectCrowd project} patrons will donate <strong>more</strong>!
+      ^{deletePledgeWidget}
       <button .button>Unpledge
   $nothing
     $# Logged in, unpledged state
