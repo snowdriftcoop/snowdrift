@@ -1,9 +1,9 @@
 ^{navbar}
-<div .container>
-  <div #messages>
-    $forall (level, msg) <- msgs
-      <div .alert .alert-#{level}>
-        #{msg}
+<.container>
   <div *{pageClasses pageName}>
+    <#messages>
+      $forall (level, msg) <- msgs
+        <.alert .alert-#{level}>
+          #{msg}
     ^{widget}
 ^{footer}

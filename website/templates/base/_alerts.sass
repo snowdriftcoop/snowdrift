@@ -4,7 +4,7 @@
     min-height: 6rem
     max-width: 75rem
     margin: 6rem auto
-    padding: 3rem 3rem 1rem 3rem
+    padding: 3rem 3rem 2.1rem 3rem
     border-bottom: 0.4rem solid $dark-blue
     border-radius: 0.4rem 0.4rem 0 0
     position: relative
@@ -98,17 +98,33 @@
     left: -9rem
 
 
-// Project pledged alert
-.alert-button-pledged
-    +alert-variant(darken($green, 10%), lighten($green, 35%), -24rem 0)
-    +span(7)
-    margin: 3rem auto 6rem
-    float: left !important
-    h2
-        font-size: 2.3rem
+// Project pledged alerts
+// Top alerts thin variant
+[class*="-project"]
+    .alert-success, .alert-info, .alert-warning, .alert-danger
+        max-width: 66rem
+        min-height: unset
+        margin: 0 auto
+        padding: 1rem
+        float: left !important
+        text-align: center
+        font-size: 1.8rem
         font-weight: 700
-    p
-        font-size: 2.1rem
+        line-height: 1.25
+        // Hide M&E
+        &:after
+            display: none
+
+    // Project pledged section alert
+    .alert-button-pledged
+        +alert-variant(darken($green, 10%), lighten($green, 35%), -24rem 0)
+        margin: 3rem auto 6rem
+        float: left !important
+        h2
+            font-size: 2.3rem
+            font-weight: 700
+        p
+            font-size: 2.1rem
 
 
 // Nested in month boxes project lists
@@ -152,6 +168,10 @@
     .alert-warning, .alert-danger, .alert-button-warning, .alert-button-danger
         padding-left: 3rem
 
+    [class*="-project"] .alert-button-pledged
+        width: 100%
+        padding-right: 3rem
+
 
 +respond(break0)
 
@@ -181,3 +201,7 @@
 
     .alert-warning, .alert-danger, .alert-button-warning, .alert-danger
         padding-left: 15rem
+
+    [class*="-project"] .alert-button-pledged
+        +span(7)
+        padding-right: 15rem
