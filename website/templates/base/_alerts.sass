@@ -1,4 +1,4 @@
-[class*="alert-"]
+[class*="alert-"], [class*="alert-button-"]
     +span(8)
     box-sizing: border-box
     min-height: 6rem
@@ -50,7 +50,6 @@
 
 
 [class*="alert-button-"]
-    @extend [class*="alert-"]
     // Last link/button style
     a:last-child, button
         padding: 0.4rem 1rem 0
@@ -75,7 +74,6 @@
     color: $tc
     border-color: $tc
     background-color: $bc
-    padding-right: 15rem
     &:after
         background-position: $sbpos
 
@@ -85,17 +83,23 @@
 // 4 types of global alerts
 .alert-success, .alert-button-success
     +alert-variant(darken($green, 10%), lighten($green, 35%), -24rem -72rem)
+    padding-right: 15rem
 
 .alert-info, .alert-button-info
     +alert-variant(darken($bright-blue-text, 15%), lighten($bright-blue, 5%), -24rem -48rem)
+    padding-right: 15rem
 
 .alert-warning, .alert-button-warning
     +alert-variant(darken($gold, 35%), lighten($gold, 15%), 0 -48rem)
-    left: -9rem
+    padding-left: 15rem
+    &:after
+        left: -9rem
 
 .alert-danger, .alert-button-danger
     +alert-variant(darken($red, 15%), lighten($red, 20%), 0 -72rem)
-    left: -9rem
+    padding-left: 15rem
+    &:after
+        left: -9rem
 
 
 // Project pledged alerts
