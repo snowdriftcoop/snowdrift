@@ -78,11 +78,11 @@
                 z-index: 4
                 margin: 0 auto 1.5rem
 
-                &:hover + .b, &:active + .b
+                &:hover + .pledge-animation-b, &:active + .pledge-animation-b
                     height: 9rem
 
-            // Temporarily hide crowdmatching animation
-            .a, .b
+            // Temporarily hide pledgin animation
+            .pledge-animation-a, .pledge-animation-b
                 display: none
 
         // Section headings
@@ -184,8 +184,8 @@
                 margin: 0 auto
                 left: 6rem
 
-            //a,b animate crowdmatching
-            .a, .b
+            // animate pledging
+            .pledge-animation-a, .pledge-animation-b
                 height: 9rem
                 width: 15rem
                 position: absolute
@@ -196,7 +196,7 @@
                 transition: height 0.2s ease-in
                 z-index: 1
 
-            .b
+            .pledge-animation-b
                 background-position: 0 bottom
                 height: 0
                 z-index: 2

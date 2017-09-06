@@ -35,17 +35,17 @@ $maybe _ <- muid
     $# Logged in, unpledged state
     <form .pledge method=post action=@{PledgeSnowdriftR}>
       ^{pledgeNoCSRF}
-      <div .a>
+      <div .pledge-animation-a>
       <button .bigbutton>Pledge
-      <div .b>
+      <div .pledge-animation-b>
       <a href=@{HowItWorksR}>
         How does this work?
 $nothing
   $# Not logged in
   <form .pledge method=get action=@{AuthR LoginR}>
-    <div .a>
+    <div .pledge-animation-a>
     <button .bigbutton>Pledge
-    <div .b>
+    <div .pledge-animation-b>
     <a href=@{HowItWorksR}>
       How does this work?
 
