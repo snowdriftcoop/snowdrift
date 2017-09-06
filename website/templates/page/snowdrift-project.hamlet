@@ -27,8 +27,7 @@ $maybe _ <- muid
       <h2>You are now supporting Snowdrift.coop.
       <p>
         You have been pledged to Snowdrift.coop since #{show since}. With your
-        pledge, all the others in the crowd of #{projectCrowd project} patrons
-        will donate <strong>more</strong>!
+        pledge, all the others in the crowd will donate <strong>more</strong>!
       ^{deletePledgeWidget}
       <button .button>Unpledge
   $nothing
@@ -53,8 +52,7 @@ $nothing
 <!-- Description -->
 <section .description>
   <p>
-    This very website, Snowdrift.coop, is supported by its own crowdmatching
-    mechanism!
+    Snowdrift.coop is the project that runs this website.
 
 <!-- Plans -->
 <h3>Plans
@@ -83,8 +81,7 @@ $nothing
 <h3>Transparency report
 <section .transparency>
   <p>
-    Although we hope to add a more standardized report eventually, we maintain
-    a wiki page with an
+    We maintain a wiki page with an
     <a href="https://wiki.snowdrift.coop/operations/accounting">accounting summary
     so patrons can understand how we have used funds in the past and where any
     outside income comes from.
