@@ -1,17 +1,16 @@
-[class*="alert-"]
+[class*="alert-"], [class*="alert-button-"]
     +span(8)
     box-sizing: border-box
     min-height: 6rem
     max-width: 75rem
-    padding: 2.2rem 3rem 1rem 3rem
     margin: 6rem auto
+    padding: 3rem 3rem 2.1rem 3rem
     border-bottom: 0.4rem solid $dark-blue
     border-radius: 0.4rem 0.4rem 0 0
     position: relative
     float: none !important
 
     h2
-        font-size: 2.5rem
         margin: 0 0 0 -3rem
         // Override global padding
         padding: 0
@@ -49,9 +48,8 @@
         content: ' '
         background-size: 96rem auto
 
-[class*="alert-button-"]
-    @extend [class*="alert-"]
 
+[class*="alert-button-"]
     // Last link/button style
     a:last-child, button
         padding: 0.4rem 1rem 0
@@ -67,81 +65,90 @@
 
         &:hover
             cursor: pointer
-
     button
         @extend a
+        font-size: 1.8rem
 
-.alert-success, .alert-button-success
-    color: darken($green, 10%)
-    border-color: darken($green, 10%)
-    background-color: lighten($green, 35%)
-    padding-right: 15rem
 
+=alert-variant($tc, $bc, $sbpos)
+    color: $tc
+    border-color: $tc
+    background-color: $bc
     &:after
-        background-position: -24rem -72rem
+        background-position: $sbpos
 
     a.close, a.close:hover
-        color: darken($green, 10%)
+        color: $tc
+
+// 4 types of global alerts
+.alert-success, .alert-button-success
+    +alert-variant(darken($green, 10%), lighten($green, 35%), -24rem -72rem)
+    padding-right: 15rem
 
 .alert-info, .alert-button-info
-    color: darken($bright-blue-text, 15%)
-    border-color: darken($bright-blue-text, 15%)
-    background-color: lighten($bright-blue, 5%)
+    +alert-variant(darken($bright-blue-text, 15%), lighten($bright-blue, 5%), -24rem -48rem)
     padding-right: 15rem
 
-    &:after
-        background-position: -24rem -48rem
-
-    a.close, a.close:hover
-        color:  darken($bright-blue-text, 15%)
-
 .alert-warning, .alert-button-warning
-    color: darken($gold, 35%)
-    border-color: darken($gold, 35%)
-    background-color: lighten($gold, 15%)
+    +alert-variant(darken($gold, 35%), lighten($gold, 15%), 0 -48rem)
     padding-left: 15rem
-
     &:after
-        background-position: 0 -48rem
         left: -9rem
-
-    a.close, a.close:hover
-        color: darken($gold, 35%)
 
 .alert-danger, .alert-button-danger
-    color: darken($red, 15%)
-    border-color: darken($red, 15%)
-    background-color: lighten($red, 20%)
+    +alert-variant(darken($red, 15%), lighten($red, 20%), 0 -72rem)
     padding-left: 15rem
-
     &:after
-        background-position: 0 -72rem
         left: -9rem
 
-    a.close, a.close:hover
-        color: darken($red, 15%)
+
+// Project pledged alerts
+// Top alerts thin variant
+[class*="-project"]
+    .alert-success, .alert-info, .alert-warning, .alert-danger
+        max-width: 66rem
+        min-height: unset
+        margin: 0 auto
+        padding: 1rem
+        float: left !important
+        text-align: center
+        font-size: 1.8rem
+        font-weight: 700
+        line-height: 1.25
+        // Hide M&E
+        &:after
+            display: none
+
+    // Project pledged section alert
+    .alert-button-pledged
+        +alert-variant(darken($green, 10%), lighten($green, 35%), -24rem 0)
+        margin: 3rem auto 6rem
+        float: left !important
+        h2
+            font-size: 2.3rem
+            font-weight: 700
+        p
+            font-size: 2.1rem
 
 
 // Nested in month boxes project lists
 [class*="box-month"]
     .alert-warning, .alert-button-warning
-
         ul
             margin: 0
 
-            li
-                a
-                    position: inherit
+            li a
+                position: inherit
+                background-color: lighten($gold, 15%)
+                padding-left: 0
+
+                span
                     background-color: lighten($gold, 15%)
-                    padding-left: 0
 
-                    span
-                        background-color: lighten($gold, 15%)
-
-                    .match
-                        text-decoration: line-through
-                        color: darken($gold, 35%)
-                        padding-right: 0 !important
+                .match
+                    text-decoration: line-through
+                    color: darken($gold, 35%)
+                    padding-right: 0 !important
 
 
 =alert-layout0
@@ -164,6 +171,10 @@
 
     .alert-warning, .alert-danger, .alert-button-warning, .alert-button-danger
         padding-left: 3rem
+
+    [class*="-project"] .alert-button-pledged
+        width: 100%
+        padding-right: 3rem
 
 
 +respond(break0)
@@ -194,3 +205,7 @@
 
     .alert-warning, .alert-danger, .alert-button-warning, .alert-danger
         padding-left: 15rem
+
+    [class*="-project"] .alert-button-pledged
+        +span(7)
+        padding-right: 15rem

@@ -60,11 +60,6 @@
                 display: block
                 text-align: center
 
-        // Pledge indicator (not logged in)
-        p.log-in-to-pledge
-            +span(8)
-            margin: 3rem 0 6rem
-
         // Pledge form (logged in)
         form.pledge
             +span(8)
@@ -83,17 +78,17 @@
                 z-index: 4
                 margin: 0 auto 1.5rem
 
-                &:hover + .b, &:active + .b
+                &:hover + .pledge-animation-b, &:active + .pledge-animation-b
                     height: 9rem
 
-            // Temporarily hide crowdmatching animation
-            .a, .b
+            // Temporarily hide pledgin animation
+            .pledge-animation-a, .pledge-animation-b
                 display: none
 
         // Section headings
         h3
-            margin: 7.5rem 0 3rem 0
-            font-size: 3.6rem
+            margin: 4.5rem 0 5rem 0
+            font-size: 3.7rem
             font-weight: 300
             color: $bright-blue-text
 
@@ -171,18 +166,12 @@
                     +bg($icon-monthly-payout)
                     background-position: left center
 
-        p.log-in-to-pledge
-            +span(8)
-            margin-top: 6rem
-            margin-bottom: 3rem
-            padding: 0 0 0 9rem
-
         form.pledge
             +span(12 of 25)
             +push(1)
             padding: 1.5rem 0 1.5rem 9rem
             position: relative
-            margin-top: 6rem
+            margin-top: 3rem
             margin-bottom: 3rem
 
             a
@@ -195,8 +184,8 @@
                 margin: 0 auto
                 left: 6rem
 
-            //a,b animate crowdmatching
-            .a, .b
+            // animate pledging
+            .pledge-animation-a, .pledge-animation-b
                 height: 9rem
                 width: 15rem
                 position: absolute
@@ -207,7 +196,7 @@
                 transition: height 0.2s ease-in
                 z-index: 1
 
-            .b
+            .pledge-animation-b
                 background-position: 0 bottom
                 height: 0
                 z-index: 2

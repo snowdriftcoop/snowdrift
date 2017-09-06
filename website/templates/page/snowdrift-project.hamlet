@@ -23,36 +23,36 @@
 $maybe _ <- muid
   $maybe since <- patronPledgeSince =<< mpatron
     $# Logged in, pledged state
-    <form .note-button-success method=post action=@{PledgeSnowdriftR}>
-      <h2>You are now pledging to this project!
+    <form .alert-button-pledged method=post action=@{PledgeSnowdriftR}>
+      <h2>You are now supporting Snowdrift.coop.
       <p>
-        Because of you a crowd of #{projectCrowd project} agrees to match
-        more. This is awesome!
-      <p>
-        You have been pledged to Snowdrift since #{show since}. If you wish
-        to stop supporting Snowdrift.coop, you can remove yourself from the
-        crowd. Your fellow supporters will be sad to see you go!
-        ^{deletePledgeWidget}
+        You have been pledged to Snowdrift.coop since #{show since}. With your
+        pledge, all the others in the crowd will donate <strong>more</strong>!
+      ^{deletePledgeWidget}
       <button .button>Unpledge
   $nothing
     $# Logged in, unpledged state
     <form .pledge method=post action=@{PledgeSnowdriftR}>
       ^{pledgeNoCSRF}
-      <div .a>
+      <div .pledge-animation-a>
       <button .bigbutton>Pledge
-      <div .b>
+      <div .pledge-animation-b>
       <a href=@{HowItWorksR}>
         How does this work?
 $nothing
   $# Not logged in
-  <p .log-in-to-pledge>
-    <a href=@{AuthR LoginR}>Log in to pledge to this project!
+  <form .pledge method=get action=@{AuthR LoginR}>
+    <div .pledge-animation-a>
+    <button .bigbutton>Pledge
+    <div .pledge-animation-b>
+    <a href=@{HowItWorksR}>
+      How does this work?
+
 
 <!-- Description -->
 <section .description>
   <p>
-    This very website, Snowdrift.coop, is supported by its own crowdmatching
-    mechanism!
+    Snowdrift.coop is the project that runs this website.
 
 <!-- Plans -->
 <h3>Plans
@@ -81,8 +81,7 @@ $nothing
 <h3>Transparency report
 <section .transparency>
   <p>
-    Although we hope to add a more standardized report eventually, we maintain
-    a wiki page with an
+    We maintain a wiki page with an
     <a href="https://wiki.snowdrift.coop/operations/accounting">accounting summary
     so patrons can understand how we have used funds in the past and where any
     outside income comes from.
