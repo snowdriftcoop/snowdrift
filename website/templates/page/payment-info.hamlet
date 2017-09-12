@@ -22,15 +22,18 @@ $maybe _ <- patronPaymentToken patron
   <.box-thin .on>
     <h1>Stripe
     <.status>All set up!
-    <form method=post>
-      ^{deletePaymentInfoWidget}
+    <form method="post" id=#{paymentFormId} enctype=#{enctype}>
       $# Button is hidden until 'click' event listener is loaded.
-      <button .hidden .setup>Set up Stripe
+      <button id=#{paymentButtonId} .hidden .update-stripe>Update Stripe
+      ^{paymentWidget}
+  <form method=post>
+    ^{deletePaymentInfoWidget}
+    <button .delete-stripe>Delete payment info and remove pledges
 $nothing
   <.box-thin .off>
     <h1>Stripe
     <.status>Not set up.
     <form method="post" id=#{paymentFormId} enctype=#{enctype}>
       $# Button is hidden until 'click' event listener is loaded.
-      <button id=#{paymentButtonId} .hidden .setup>Set up Stripe
+      <button id=#{paymentButtonId} .hidden .setup-stripe>Set up Stripe
       ^{paymentWidget}

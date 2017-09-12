@@ -20,12 +20,11 @@
             float: none
 
     .on .status, .off .status
-        float: left
         width: 50%
+        float: left
         margin: 1.5rem auto
         margin-left: 4rem
         position: relative
-
         &:after
             position: absolute
             height: 3rem
@@ -33,12 +32,11 @@
             top: 0
             left: -4rem
             content: ' '
-
-    .off .status:after
-        +bg($icon-frown)
+            +bg($icon-frown)
 
     div.box-thin.on
         border-color: $dark-blue
+        margin: 3rem 0 2.1rem
 
         .status:after
             +bg($icon-smile)
@@ -47,7 +45,30 @@
         margin-bottom: 6rem
         float: left
 
-    .setup
+    .setup-stripe, .update-stripe
         +med-button($white, #4c8dad, $dark-blue)
         margin: 0.8rem auto
         max-width: 60%
+
+    .delete-stripe
+        margin: 0 9rem 0 0
+        padding: 0
+        float: right
+        background: none
+        font-size: 2.1rem
+        font-weight: 700
+        font-style: italic
+        text-decoration: underline
+        text-align: center
+        color: $red
+        border: none
+        cursor: pointer
+        &:before
+            width: 3.3rem
+            height: 3.3rem
+            float: left
+            position: relative
+            top: -0.3rem
+            left: -1rem
+            content: ' '
+            +bg($icon-delete)
