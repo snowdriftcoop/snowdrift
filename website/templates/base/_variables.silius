@@ -40,6 +40,7 @@ $how-it-works-logo-bg: @{StaticR img_how_it_works_logo_bg_png}
 // Payment info
 $icon-frown: @{StaticR img_payment_info_icon_frown_png}
 $icon-smile: @{StaticR img_payment_info_icon_smile_png}
+$icon-delete: @{StaticR img_payment_info_icon_delete_png}
 
 // Project snowdrift
 $icon-matching-crowd: @{StaticR img_snowdrift_project_icon_matching_crowd_png}
