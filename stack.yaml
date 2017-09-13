@@ -30,5 +30,5 @@ nix:
     - gmp
     - gcc
     - openssl
-    - postgresql
+    - postgresql96
     - zlib
