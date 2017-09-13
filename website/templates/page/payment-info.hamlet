@@ -1,14 +1,4 @@
-<h1>Dashboard #
-  <span>You are matching #{projectCrowd project} pledges.
-
-<!-- Tab navigation -->
-<ul .tabs>
-  <li>
-    <a href=@{DashboardR}>Matches
-  <li .selected>
-    Payment System
-
-<#tilt>
+^{header patron project}
 
 <noscript>
   This page uses JavaScript to submit card information to Stripe. Without
