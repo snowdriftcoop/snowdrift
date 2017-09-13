@@ -14,9 +14,7 @@
 
 <noscript>
   This page uses JavaScript to submit card information to Stripe. Without
-  JavaScript, you cannot use this page. We're not happy about this compromise.
-  <a href="https://tree.taiga.io/project/snowdrift/issue/471">
-    We would like to change this.
+  JavaScript, you cannot use this page.
 
 $maybe _ <- patronPaymentToken patron
   <.box-thin .hasToken>
