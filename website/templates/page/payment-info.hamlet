@@ -19,7 +19,7 @@
     We would like to change this.
 
 $maybe _ <- patronPaymentToken patron
-  <.box-thin .on>
+  <.box-thin .hasToken>
     <h1>Stripe
     <.status>All set up!
     <form method="post" id=#{paymentFormId} enctype=#{enctype}>
@@ -30,7 +30,7 @@ $maybe _ <- patronPaymentToken patron
     ^{deletePaymentInfoWidget}
     <button .delete-stripe>Delete payment info and remove pledges
 $nothing
-  <.box-thin .off>
+  <.box-thin .noToken>
     <h1>Stripe
     <.status>Not set up.
     <form method="post" id=#{paymentFormId} enctype=#{enctype}>
