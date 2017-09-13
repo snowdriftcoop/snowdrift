@@ -6,8 +6,6 @@
   <li .selected>
     Matches
   <li>
-    <a href=@{PaymentHistoryR}>Payment History
-  <li>
     <a href=@{PaymentInfoR}>Payment System
 
 <#tilt>

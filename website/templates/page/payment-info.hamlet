@@ -5,8 +5,6 @@
 <ul .tabs>
   <li>
     <a href=@{DashboardR}>Matches
-  <li>
-    <a href=@{PaymentHistoryR}>Payment History
   <li .selected>
     Payment System
 

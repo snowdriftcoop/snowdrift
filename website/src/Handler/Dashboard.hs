@@ -1,4 +1,9 @@
-module Handler.Dashboard (getDashboardR) where
+module Handler.Dashboard
+        ( getDashboardR
+        , getPaymentInfoR
+        , postPaymentInfoR
+        , deletePaymentInfoR
+        ) where
 
 import Import
 
@@ -6,6 +11,8 @@ import Crowdmatch
 import Handler.TH
 import Handler.Pledge (pledgeForm)
 import MarkupInstances ()
+
+import Handler.Dashboard.PaymentInfo
 
 getDashboardR :: Handler Html
 getDashboardR = do

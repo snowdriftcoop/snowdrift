@@ -1,5 +1,5 @@
 -- | Handlers for CRUD'ing patrons' payment info.
-module Handler.PaymentInfo
+module Handler.Dashboard.PaymentInfo
   ( getPaymentInfoR
   , postPaymentInfoR
   , deletePaymentInfoR
