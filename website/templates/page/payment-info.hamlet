@@ -7,19 +7,19 @@
 $maybe _ <- patronPaymentToken patron
   <.box-thin .hasToken>
     <h1>Stripe
-    <.status>All set up!
+    <.status>Your card is registered.
     <form method="post" id=#{paymentFormId} enctype=#{enctype}>
       $# Button is hidden until 'click' event listener is loaded.
-      <button id=#{paymentButtonId} .hidden .update-stripe>Update Stripe
+      <button id=#{paymentButtonId} .hidden .update-stripe>Update card
       ^{paymentWidget}
   <form method=post>
-    ^{deletePaymentInfoWidget}
-    <button .delete-stripe>Delete payment info and remove pledges
+      ^{deletePaymentInfoWidget}
+      <button .delete-stripe>Delete payment method and remove pledges
 $nothing
   <.box-thin .noToken>
     <h1>Stripe
-    <.status>Not set up.
+    <.status>Payment information is needed to become a patron.
     <form method="post" id=#{paymentFormId} enctype=#{enctype}>
       $# Button is hidden until 'click' event listener is loaded.
-      <button id=#{paymentButtonId} .hidden .setup-stripe>Set up Stripe
+      <button id=#{paymentButtonId} .hidden .setup-stripe>Register a card
       ^{paymentWidget}
