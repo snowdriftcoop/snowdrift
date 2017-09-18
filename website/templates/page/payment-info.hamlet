@@ -23,3 +23,6 @@ $nothing
       $# Button is hidden until 'click' event listener is loaded.
       <button id=#{paymentButtonId} .hidden .setup-stripe>Register a card
       ^{paymentWidget}
+
+<#js-notice>
+  This page includes proprietary JavaScript from Stripe.
