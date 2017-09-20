@@ -205,7 +205,9 @@ depTests runner = describe "dep tests" $
         conflictedResult <- runner $ do
             void (insert p1)
             upsert conflict []
-        entityVal conflictedResult `shouldBe` p1
+        shouldBe
+            (Model.patronDonationPayable (entityVal conflictedResult))
+            (DonationUnits 20)
 
 unitTests :: Runner -> Spec
 unitTests runner = describe "unit tests" $ do
@@ -236,9 +238,9 @@ unitTests runner = describe "unit tests" $ do
             Model.paymentTokenHistoryAction (head ls) `shouldBe` Create
             Model.paymentTokenHistoryAction (last ls) `shouldBe` Delete
     specify "fetchPatron creates patron if it doesn't exist" $ do
-        (p1, p2) <-
-            runner $ (,) <$> fetchPatron aelfred <*> fetchPatron aelfred
-        p1 `shouldBe` p2
+        _ <- runner $ (,) <$> fetchPatron aelfred <*> fetchPatron aelfred
+        ps :: [Entity Model.Patron] <- runner $ selectList [] []
+        length ps `shouldBe` 1
     specify "stored pledge is retrievable" $ do
         pat <- runner $ do
             _ <- storePaymentToken dummyStripe' aelfred cardTok
