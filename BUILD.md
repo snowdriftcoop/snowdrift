@@ -195,7 +195,7 @@ export STRIPE_SECRET_KEY=your_stripe_sec_key
 
 4. Make sure Javascript is enabled, and that no blockers prevent Stripe's
    JavaScript form from showing up.
-   
+
 5. Navigate to the dashboard payment settings page. Press the "Set up Stripe"
    button and provide the following details on the Checkout form:
   - One of the [Stripe test card numbers], e.g. "4242 4242 4242 4242"
