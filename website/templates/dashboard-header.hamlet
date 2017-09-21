@@ -1,0 +1,15 @@
+<h1>Dashboard #
+  $maybe _ <- patronPledgeSince patron
+    <span>You are matching #{projectCrowd project} pledges.
+
+<!-- Tab navigation -->
+<ul .tabs>
+  $forall (p,uri,title) <- pages
+    <li>
+        $if p == activePage
+          #{title}
+        $else
+          <a href=@{uri}>
+            #{title}
+
+<#tilt>

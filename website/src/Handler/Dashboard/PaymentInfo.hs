@@ -1,6 +1,6 @@
 -- | Handlers for CRUD'ing patrons' payment info.
-module Handler.PaymentInfo
-  ( getPaymentInfoR
+module Handler.Dashboard.PaymentInfo
+  ( getPaymentInfo
   , postPaymentInfoR
   , deletePaymentInfoR
   ) where
@@ -22,8 +22,9 @@ paymentForm formId =
     renderDivs
         (TokenId <$> areq hiddenField "" {fsId = Just formId} Nothing)
 
-getPaymentInfoR :: Handler Html
-getPaymentInfoR = do
+-- | Given a "header" func, generate getPaymentInfoR. See Handler.Dashboard.
+getPaymentInfo :: (Patron -> Project -> Widget) -> Handler Html
+getPaymentInfo header = do
     Entity uid user <- requireAuth
     (patron, project) <- runDB $ (,) <$> fetchPatron uid <*> fetchProject
     deletePaymentInfoWidget <- fst <$> generateFormPost deletePaymentInfoForm

@@ -19,7 +19,7 @@
             background: $white
             float: none
 
-    .on .status, .off .status
+    .hasToken .status, .noToken .status
         width: 50%
         float: left
         margin: 1.5rem auto
@@ -34,7 +34,7 @@
             content: ' '
             +bg($icon-frown)
 
-    div.box-thin.on
+    div.box-thin.hasToken
         border-color: $dark-blue
         margin: 3rem 0 2.1rem
 
@@ -55,7 +55,7 @@
         padding: 0
         float: right
         background: none
-        font-size: 2.1rem
+        font-size: 1.6rem
         font-weight: 700
         font-style: italic
         text-decoration: underline

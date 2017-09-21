@@ -1,16 +1,4 @@
-<h1>Dashboard #
-  <span>You are matching #{projectCrowd project} pledges.
-
-<!-- Tab navigation -->
-<ul .tabs>
-  <li .selected>
-    Matches
-  <li>
-    <a href=@{PaymentHistoryR}>Payment History
-  <li>
-    <a href=@{PaymentInfoR}>Payment System
-
-<#tilt>
+^{dashboardHeader DashboardPledges patron project}
 
 <.box-limit>
   <h1>Monthly Limit
