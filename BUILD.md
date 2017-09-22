@@ -1,7 +1,7 @@
 # Building and Running Snowdrift
 
 Snowdrift has been built successfully on GNU/Linux distributions of all sorts
-and OS X.
+and on OS X.
 
 Windows and \*BSD distributions are not currently supported, but we will assist
 any efforts to add such support. See below for partial setup instructions.
@@ -81,7 +81,7 @@ Add the following to `~/.stack/config.yaml`:
 unavailable for some \*BSD platforms, but we welcome testing. The site has run
 successfully on FreeBSD, but required non-trivial changes to the build process
 due to hlibsass linking of C libraries. For more details, please refer to this
-[FreeBSD discussion].
+[discussion about FreeBSD].
 
 ### OS X
 
@@ -233,7 +233,7 @@ about technical development.
 [Contributing Guide]: CONTRIBUTING.md
 [DATABASE-MANAGEMENT.md]: DATABASE-MANAGEMENT.md
 [Debian Stack install]: https://github.com/commercialhaskell/stack/blob/master/doc/install_and_upgrade.md#debian
-[FreeBSD discussion]: https://git.snowdrift.coop/sd/snowdrift/issues/67
+[discussion about FreeBSD]: https://git.snowdrift.coop/sd/snowdrift/issues/67
 [Git]: http://www.git-scm.com/downloads
 [git.snowdrift.coop/sd/snowdrift]: https://git.snowdrift.coop/sd/snowdrift
 [GitHub]: https://github.com/snowdriftcoop/snowdrift
