@@ -1,10 +1,10 @@
 # Building and Running Snowdrift
 
 Snowdrift has been built successfully on GNU/Linux distributions of all sorts
-and on OpenBSD and OS X.
+and on OS X.
 
-Windows is not currently supported, but we will assist any efforts to add
-such support. See below for partial setup instructions.
+Windows and \*BSD distributions are not currently supported, but we will assist
+any efforts to add such support. See below for partial setup instructions.
 
 ## Install System Dependencies
 
@@ -74,8 +74,11 @@ Add the following to `~/.stack/config.yaml`:
 
 ### \*BSD
 
-*Any knowledgeable reader: please help us document any important notes about
-installing the Git, PostgreSQL, and Stack dependencies on \*BSD.*
+*Status:* We do not officially support \*BSD distributions due to Stack being
+unavailable for some \*BSD platforms, but we welcome testing. The site has run
+successfully on FreeBSD, but required non-trivial changes to the build process
+due to hlibsass linking of C libraries. For more details, please refer to this
+[discussion about FreeBSD].
 
 ### OS X
 
@@ -135,7 +138,7 @@ This will automatically rebuild and rerun the site whenever it detects
 changes to the code. The downsides are: it uses some minor extra drive
 space, uses some additional resources to run the file-watching process, and
 is currently incompatible with the optional ghc-mod tool mentioned in
-[TEXTEDITORS.md](TEXTEDITORS.md).
+[TEXTEDITORS.md].
 
 Run the site in development mode via:
 
@@ -240,17 +243,18 @@ itself, etc. We will happily help you with any questions. See the [README] for
 further general links, and the [Contributing Guide] for more thorough resources
 about technical development.
 
-[DATABASE-MANAGEMENT.md]: DATABASE-MANAGEMENT.md
+[AUR ArchWiki Page]: https://wiki.archlinux.org/index.php/Arch_User_Repository
 [brew]: http://brew.sh/
 [Contributing Guide]: CONTRIBUTING.md
+[DATABASE-MANAGEMENT.md]: DATABASE-MANAGEMENT.md
 [Debian Stack install]: https://github.com/commercialhaskell/stack/blob/master/doc/install_and_upgrade.md#debian
+[discussion about FreeBSD]: https://git.snowdrift.coop/sd/snowdrift/issues/67
 [Git]: http://www.git-scm.com/downloads
 [git.snowdrift.coop/sd/snowdrift]: https://git.snowdrift.coop/sd/snowdrift
 [GitHub]: https://github.com/snowdriftcoop/snowdrift
 [haskell-stack]: https://aur.archlinux.org/packages/haskell-stack
 [install Stack for Windows]: https://github.com/commercialhaskell/stack/blob/master/doc/install_and_upgrade.md#windows
 [instructions on the PostgreSQL wiki]: https://wiki.postgresql.org/wiki/YUM_Installation
-[AUR ArchWiki Page]: https://wiki.archlinux.org/index.php/Arch_User_Repository
 [PostgreSQL]: http://www.postgresql.org/download/
 [README]: README.md
 [Sass]: http://sass-lang.com/
@@ -258,4 +262,5 @@ about technical development.
 [Stack install instructions]: https://github.com/commercialhaskell/stack/blob/master/doc/install_and_upgrade.md
 [Stripe]: https://stripe.com
 [Stripe test card numbers]: https://stripe.com/docs/testing#cards
+[TEXTEDITORS.md]: TEXTEDITORS.md
 [Ubuntu Stack install]: https://github.com/commercialhaskell/stack/blob/master/doc/install_and_upgrade.md#ubuntu
