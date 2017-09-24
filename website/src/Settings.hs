@@ -56,14 +56,16 @@ data AppSettings = AppSettings
     , appDiscourseSsoSecret     :: DiscourseSecret
     }
 
+runningDevelopment :: Bool
+runningDevelopment =
+#if DEVELOPMENT
+    True
+#else
+    False
+#endif
+
 instance FromJSON AppSettings where
     parseJSON = withObject "AppSettings" $ \o -> do
-        let runningDevelopment =
-#if DEVELOPMENT
-                True
-#else
-                False
-#endif
         appStaticDir              <- o .:? "static-dir" .!= "static"
         appDatabaseConf           <- o .: "database"
         appRoot                   <- o .:? "approot"
@@ -90,7 +92,7 @@ instance FromJSON AppSettings where
 --
 -- https://github.com/yesodweb/yesod/wiki/Overriding-widgetFile
 widgetFileSettings :: WidgetFileSettings
-widgetFileSettings = wfsSass True ["templates"]
+widgetFileSettings = wfsSass runningDevelopment ["templates"]
 
 -- | How static files should be combined.
 combineSettings :: CombineSettings
