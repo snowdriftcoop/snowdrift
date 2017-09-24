@@ -90,7 +90,7 @@ instance FromJSON AppSettings where
 --
 -- https://github.com/yesodweb/yesod/wiki/Overriding-widgetFile
 widgetFileSettings :: WidgetFileSettings
-widgetFileSettings = wfsSass ["templates"]
+widgetFileSettings = wfsSass True ["templates"]
 
 -- | How static files should be combined.
 combineSettings :: CombineSettings

@@ -190,7 +190,7 @@ mail to.
 2. Create a new text file named `.stripe_keys` in the top-level directory of the
    snowdrift project (next to builld.sh). Add your keys as environment variables:
 >>>
-export STRIPE_PUBLISHABLE_KEY=your_stripe_pub_key  
+export STRIPE_PUBLISHABLE_KEY=your_stripe_pub_key
 export STRIPE_SECRET_KEY=your_stripe_sec_key
 >>>
 
@@ -217,17 +217,12 @@ To make builds recognize changes to the static directory, run:
 #### Adding and updating Sass files
 
 We currently use the [Sass] language extension for authoring stylesheets, which
-are then compiled into CSS with shakespeare-sass. There are two main Sass file
-extensions currently supported by the modified shakespeare-sass package:
-`.sass` and `.silius`. Use `.silius` when the file contains Haskell splices,
-and `.sass` for Sass-only files for faster compiling. (While shakespeare-sass
-also recognizes the SCSS style with the `.scss` extension, the indented syntax
-is preferred for conciseness.)
-
-After editing a `.sass` file, touch the handler file that uses it for the
-changes to register, for example:
-
-    touch website/src/Foundation.hs
+are then compiled into CSS with Shakespeare Sass. There are four Sass file
+extensions currently supported by the modified shakespeare-sass package. Use
+`.sass` for Sass-only files for faster compiling, and `.silius` when the file
+contains Haskell splices. Shakespeare Sass also recognizes the SCSS style with
+the `.scss` extension (along with the `.scarus` extension for splices), but the
+indented syntax is preferred for conciseness.
 
 Haskell variables can be added to Silius files with the syntax
 `%{someVariable}` and will be parsed automatically each rebuild.
