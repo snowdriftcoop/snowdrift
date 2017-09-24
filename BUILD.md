@@ -190,7 +190,7 @@ mail to.
 2. Create a new text file named `.stripe_keys` in the top-level directory of the
    snowdrift project (next to builld.sh). Add your keys as environment variables:
 >>>
-export STRIPE_PUBLISHABLE_KEY=your_stripe_pub_key
+export STRIPE_PUBLISHABLE_KEY=your_stripe_pub_key  
 export STRIPE_SECRET_KEY=your_stripe_sec_key
 >>>
 
