@@ -244,8 +244,8 @@ Several ways to get started contributing and/or to learn more overall:
   below). After you have some familiarity with the project, you can take on
   some real development tasks.
 
-* Read the code documention in this repo and other pages on the Snowdrift.coop
-  [wiki].
+* Read the code documentation in this repo and other pages on the
+  Snowdrift.coop [wiki].
 
 * Read on below and check out links to learn more about the overall ecosystem,
   our development practices, and the tools we use.
