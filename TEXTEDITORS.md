@@ -181,6 +181,7 @@ strongly recommended):
 * [vim-repeat](https://github.com/tpope/vim-repeat),
 * [vim-supertab](https://github.com/ervandew/supertab),
 * [ctrl-P](https://github.com/ctrlpvim/ctrlp.vim),
+* [Recover.vim](https://github.com/chrisbra/Recover.vim),
 * [vim-gitgutter](https://github.com/airblade/vim-gitgutter),
 * [vim-surround](https://github.com/tpope/vim-surround),
 * [vim-commentary](https://github.com/tpope/vim-commentary),
