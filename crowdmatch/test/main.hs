@@ -261,7 +261,7 @@ unitTests runner = describe "unit tests" $ do
             let thunor = 0
                 woden = 1
             now <- liftIO getCurrentTime
-            runner $ flip traverse_ [thunor, woden] (\p -> do
+            runner $ flip traverse_ [thunor, woden] (\p ->
                 insert_
                     (Model.Patron
                         (PPtr p)
