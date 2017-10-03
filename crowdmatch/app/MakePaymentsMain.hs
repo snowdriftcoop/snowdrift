@@ -13,7 +13,6 @@
 module Main (main) where
 
 import Data.ByteString.Char8 (pack)
-import Data.Maybe (fromJust)
 import Web.Stripe (StripeKey(..), StripeConfig(..))
 import System.Environment (lookupEnv)
 import Control.Error (runScript, (!?), scriptIO)
