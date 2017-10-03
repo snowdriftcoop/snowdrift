@@ -68,11 +68,15 @@ main = sh $ do
     args <- liftIO getArgs
     case args of
         ["env"] -> do
-            echo ("export PGHOST=" <> unsafeTextToLine (toText_ pghost))
-            echo ("export PGDATA=" <> unsafeTextToLine (toText_ pgdata))
-            echo ("export PGDATABASE=" <> unsafeTextToLine (dbsMain dbnames))
+            printExport "PGHOST" (toText_ pghost)
+            printExport "PGDATA" (toText_ pgdata)
+            printExport "PGDATABASE" (dbsMain dbnames)
         ("pg_ctl":as') -> procs "pg_ctl" (map T.pack as') empty
         _ -> liftIO (shakeit dbdir pghost pgdata)
+  where
+    printExport name val =
+        echo (mconcat ["export ", name, "='", unsafeTextToLine (escapeQuotes val), "'"])
+    escapeQuotes = T.concatMap (\c -> if c == '\'' then "'\\''" else T.singleton c)
 
 shakeit :: FilePath -> FilePath -> FilePath -> IO ()
 shakeit dbdir pghost pgdata = shakeArgs shakeOptions $ do
