@@ -1,11 +1,35 @@
 <h1>Your crowdmatching dashboard
 
+<h2>Crowdmatching
+<.crowdmatching>
+  <p>
+    In October 2017, we began running crowdmatch events. So far, there have been
+    no donations because of processing fee limitations.
+
+  <table .crowdmatch-history>
+    <caption>
+      Crowdmatch history and progress
+    <tr>
+      <td colspan=4>
+        Minimum donation charge: {{minDonation}}
+    <tr>
+      <td colspan=4>
+        Maximum donation charge: {{maxDonation}}
+    <tr>
+      <td colspan=4 .crowdmatch-progress>
+        Your crowdmatch total to date: {{crowdmatchTotal}}
+    $forall month <- ten
+      <tr>
+        <td>{{recipientProject}}
+        <td>{{month month}}
+        <td>{{amount month}}
+        <td>{{patrons month}}
+
 <h2>Budget
 <.sitelimit>
   <p>
     You will <em>never</em> be charged more than your budget limit of $10 per
-    month. That level is our initial default. We will soon add the ability
-    to adjust your budget setting.
+    month.
   <p>
     Each month, we set your donations based on pledge values at that time. In
     order to keep processing fees under 10% for any charge, we may delay
@@ -59,7 +83,7 @@ $nothing
         Before pledging, you must configure payment settings through
         Stripe (see above).
 
-<h2>Beta note
+<h2 .beta-note>Beta note
 <p .beta-note>
   Currently, Snowdrift.coop is operating in a semi-open beta. The Snowdrift site
   and software itself is the first and only active project. Your support helps
