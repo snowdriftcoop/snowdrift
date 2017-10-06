@@ -12,5 +12,5 @@ getDashboardR = do
     Entity uid _ <- requireAuth
     (patron, project) <- runDB $ (,) <$> fetchPatron uid <*> fetchProject
     (pledgeNoCSRF, _) <- generateFormPost (renderDivsNoLabels pledgeForm)
-    let ten = [1..10]
+    let crowdmatchTotal = (sum . map snd . patronCrowdmatches) patron
     $(widget "page/dashboard" "Dashboard")

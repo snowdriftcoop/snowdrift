@@ -6,24 +6,25 @@
     In October 2017, we began running crowdmatch events. So far, there have been
     no donations because of processing fee limitations.
 
-  <table .crowdmatch-history>
+  <table .crowdmatch-history .widget/crowdmatch-history>
     <caption>
       Crowdmatch history and progress
     <tr>
       <td colspan=4>
-        Minimum donation charge: {{minDonation}}
+        Minimum donation charge: #{minimumDonation}
     <tr>
       <td colspan=4>
-        Maximum donation charge: {{maxDonation}}
+        Maximum donation charge: #{patronMaxDonation}
     <tr>
       <td colspan=4 .crowdmatch-progress>
-        Your crowdmatch total to date: {{crowdmatchTotal}}
-    $forall month <- ten
+        Your crowdmatch total to date: #{crowdmatchTotal}
+    $forall month <- patronCrowdmatches patron
       <tr>
-        <td>{{recipientProject}}
-        <td>{{month month}}
-        <td>{{amount month}}
-        <td>{{patrons month}}
+        <td>
+          <a href=@{SnowdriftProjectR}>
+            Snowdrift.coop
+        <td>#{fst month}
+        <td>#{snd month}
 
 <h2>Budget
 <.sitelimit>

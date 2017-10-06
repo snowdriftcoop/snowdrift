@@ -34,6 +34,8 @@ module Crowdmatch (
         -- * Data retrieval
         , fetchProject
         , fetchPatron
+        , minimumDonation
+        , patronMaxDonation
 
         -- * Types returned by crowdmatch actions
         , Patron(..)
@@ -560,6 +562,10 @@ sufficientDonation d =
 -- than the long term ideal.
 minimumDonation :: DonationUnits
 minimumDonation = DonationUnits 3790
+
+-- | This is currently hardcoded.
+patronMaxDonation :: DonationUnits
+patronMaxDonation = DonationUnits 10000
 
 -- | The projection of a Patron that can, and should, make a donation.
 data Donor = Donor
