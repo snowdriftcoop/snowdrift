@@ -55,7 +55,7 @@ derivePersistField "StorageAction"
 newtype HistoryTime = HistoryTime UTCTime deriving (PersistFieldSql, PersistField, Show)
 
 -- | Sanity wrapper
-newtype CrowdmatchDay = CrowdmatchDay Day deriving (PersistFieldSql, PersistField, Show)
+newtype CrowdmatchDay = CrowdmatchDay Day deriving (PersistFieldSql, PersistField, Show, Eq)
 
 -- | Represents a donation amount. 1 DonationUnits == 0.001 US Dollars.
 newtype DonationUnits = DonationUnits Int32
