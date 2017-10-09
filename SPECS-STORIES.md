@@ -52,8 +52,6 @@ exist—not the other way around.
 ####  /dashboard
 -  (Rationale) As a patron, I want to see an overview of my pledges so that I
    feel in control of my impact and contributions.
--  As an early-stage patron, I want to see a history of crowdmatches with totals
-   so that I can track the progress towards the first donation payment.
 
 ####  /payment-info
 -  As a user, I want to read an explanation of the payment-info process, so that
