@@ -24,8 +24,6 @@ exist—not the other way around.
 ####  / (Welcome page)
 -  As a visitor, I want to read an introduction to the website so that I can
    familiarize myself with the platform and its goals.
--  As a wannabe patron, I am directed to /payment-info as the next step in the
-   process so that I can quickly get involved.
 
 ####  /how-it-works
 -  (Rationale) As a visitor, I want to read an introduction to the mechanism so
@@ -39,7 +37,7 @@ exist—not the other way around.
    operate.
 
 ####  /p/snowdrift
--  As a visitor, I wanto to see information about the project's goals and
+-  As a visitor, I want to to see information about the project's goals and
    purpose so that I can decide if I want to support it.
 -  As a visitor, I want to see the crowdmatch status for the Snowdrift.coop
    PROJECT (i.e. in the guise of a project on the platform: /p/snowdrift) so
