@@ -232,16 +232,20 @@ Several ways to get started contributing and/or to learn more overall:
 * Explore the code files and see if you can figure out what does what and how
   things fit together.
 
-    * For non-Haskell work, the files in the /templates directory are comparable
-      to basic HTML, CSS, and JavaScript. Beginners can quickly learn how to
-      make changes to those files. Basically, Hamlet=HTML and Cassius=CSS but
-      with concise syntax that uses indentation instead of closing tags. Julius
-      files are effectively just containers for JavaScript. For more details,
-      see the documentation on [Shakespearean Templates].
+    * For non-Haskell work:
+        * The .hamlet files in the /website/templates directory are comparable
+          to basic HTML using white-space to avoid the need for closing tags
+          (plus some other logic that connects to the Haskell). For more
+          details, see the documentation on [Shakespearean Templates].
+        * Any .julius files are containers for JavaScript.
+        * For CSS, we're moving from .cassius and switching to Sass files
+          (TODO: update this with documention for contributing to Sass once the
+          process is finalized)
 
-    * For those familiar with Haskell, consider exploring our files, and
-      updating any code that doesn't match our code style (see the "Code style"
-      section below).
+    * For those familiar with Haskell, consider exploring our files and updating
+      any code that doesn't match our code style (see the "Code style" section
+      below). After you have some familiarity with the project, you can take
+      on some real development tasks.
 
 * Read the code documention in this repo and other pages on the Snowdrift.coop
   [wiki].
