@@ -20,7 +20,7 @@ section.**
 Install Git and PostgreSQL with needed libraries:
 
     sudo apt-get update
-    sudo apt-get install git postgresql libgmp-dev libpq-dev
+    sudo apt-get install git postgresql libgmp-dev libpq-dev libssl-dev
 
 Then follow the [Debian Stack install] or [Ubuntu Stack install] instructions
 as appropriate.
