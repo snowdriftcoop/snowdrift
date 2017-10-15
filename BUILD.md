@@ -77,10 +77,10 @@ Add the following to `~/.stack/config.yaml`:
 
 ### \*BSD
 
-*Status:* We do not officially support \*BSD distributions due to Stack being
-unavailable for some \*BSD platforms, but we welcome testing. The site has run
-successfully on FreeBSD, but required non-trivial changes to the build process
-due to hlibsass linking of C libraries. For more details, please refer to this
+*Status:* We welcome testing but do not officially support \*BSD distributions
+due to Stack being unavailable for some \*BSD platforms. The site has run
+successfully on FreeBSD with non-trivial changes to the build process
+(due to hlibsass linking of C libraries). For more details, please refer to this
 [discussion about FreeBSD].
 
 ### OS X
@@ -97,10 +97,11 @@ With brew, install the core dependencies:
 
 ### Windows
 
-*Status:* We do not officially support Windows, but we welcome testing. In the
-past, we have had only partial success running on Windows. We know that the
-sdb.hs tool won't work on Windows because it uses UNIX sockets. We welcome any
-patches, feedback, or Postgres-on-Windows help to get an alternative working.
+*Status:* We welcome testing but do not officially support Windows. In the past,
+we have had only partial success running on Windows. We know that the sdb.hs
+tool won't work on Windows because it uses UNIX sockets. We welcome any patches,
+feedback, or Postgres-on-Windows help to get an alternative working. Steps used
+in past testing:
 
 Install [Git] per instructions on the website.
 
@@ -137,17 +138,14 @@ This will take a while!
 
 ## Running the site via `yesod devel`
 
-This will automatically rebuild and rerun the site whenever it detects
-changes to the code. The downsides are: it uses some minor extra drive
-space, uses some additional resources to run the file-watching process, and
-is currently incompatible with the optional ghc-mod tool mentioned in
-[TEXTEDITORS.md].
-
 Run the site in development mode via:
 
     ./build.sh
 
-To stop the site, type `quit` in the terminal and then press Enter.
+This will automatically rebuild and rerun the site whenever it detects
+changes to the code.
+
+To stop the site, type `quit` in the terminal, then press Enter.
 
 ## Troubleshooting
 
