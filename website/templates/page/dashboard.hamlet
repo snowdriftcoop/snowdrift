@@ -3,22 +3,22 @@
 <h2>Crowdmatching
 <.crowdmatching>
   <p>
-    In October 2017, we began running crowdmatch events. So far, there have been
-    no donations because of processing fee limitations.
+    In October 2017, we began running crowdmatch events.
+  <p>
+    Pending donations will not be charged until they add up to
+    #{minimumDonation}, which is when processing fees will fall below 10%.
 
-  <table .crowdmatch-history .widget/crowdmatch-history>
+  <table.crowdmatch-progress>
     <caption>
-      Crowdmatch history and progress
-    <tr>
-      <td colspan=4>
-        Minimum donation charge: #{minimumDonation}
-    <tr>
-      <td colspan=4>
-        Maximum donation charge: #{patronMaxDonation}
-    <tr>
-      <td colspan=4 .crowdmatch-progress>
-        Your crowdmatch total to date: #{crowdmatchTotal}
-    $forall month <- patronCrowdmatches patron
+      <h3>
+        Crowdmatch progress
+    <tr.crowdmatch-progress>
+      <td colspan=2>
+        Your pending donation
+      <td>
+        #{crowdmatchTotal}
+    <tr><td colspan=3><h4>Previous crowdmatches</h4></td></tr>
+    $forall month <- crowdmatches
       <tr>
         <td>
           <a href=@{SnowdriftProjectR}>
