@@ -30,5 +30,5 @@ instance ToMarkup HistoryTime where
     toMarkup (HistoryTime t) =
         toMarkup (formatTime defaultTimeLocale "%Y-%m-%d %H:%M (%Z)" t)
 
--- instance ToMarkup CrowdmatchDay where
---     toMarkup (CrowdmatchDay d) = toMarkup (showGregorian d)
+instance ToMarkup CrowdmatchDay where
+    toMarkup (CrowdmatchDay d) = toMarkup (showGregorian d)

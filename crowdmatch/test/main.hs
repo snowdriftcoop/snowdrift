@@ -16,7 +16,7 @@ import Data.Foldable (traverse_)
 import Data.List (partition)
 import Data.Monoid ((<>))
 import Data.Text (Text)
-import Data.Time (UTCTime, getCurrentTime)
+import Data.Time (UTCTime(..), getCurrentTime)
 import Database.Persist
 import Database.Persist.Postgresql
         (SqlPersistT, runMigration, connEscapeName, unSingle, rawSql, rawExecute)
@@ -237,10 +237,53 @@ unitTests runner = describe "unit tests" $ do
             length ls `shouldBe` 2
             Model.paymentTokenHistoryAction (head ls) `shouldBe` Create
             Model.paymentTokenHistoryAction (last ls) `shouldBe` Delete
-    specify "fetchPatron creates patron if it doesn't exist" $ do
-        _ <- runner $ (,) <$> fetchPatron aelfred <*> fetchPatron aelfred
-        ps :: [Entity Model.Patron] <- runner $ selectList [] []
-        length ps `shouldBe` 1
+    describe "fetchPatron" $ do
+        it "creates patron if it doesn't exist" $ do
+            _ <- runner $ (,) <$> fetchPatron aelfred <*> fetchPatron aelfred
+            ps :: [Entity Model.Patron] <- runner $ selectList [] []
+            length ps `shouldBe` 1
+        it "includes crowdmatch history" $ do
+            let pid = 90
+            now <- liftIO getCurrentTime
+            p <- runner $ do
+                insert_
+                    (Model.Patron
+                        (PPtr pid)
+                        now
+                        (Just (PaymentToken (CustomerId "")))
+                        0
+                        (Just now))
+                crowdmatch
+                fetchPatron (HarnessUser pid)
+            length (patronCrowdmatches p) `shouldBe` 1
+            (fst . head . patronCrowdmatches) p `shouldBe` CrowdmatchDay (utctDay now)
+        it "includes only relevant crowdmatch history" $ do
+            let thunor = 0
+                woden = 1
+            now <- liftIO getCurrentTime
+            runner $ flip traverse_ [thunor, woden] (\p -> do
+                insert_
+                    (Model.Patron
+                        (PPtr p)
+                        now
+                        (Just (PaymentToken (CustomerId "")))
+                        0
+                        (Just now)))
+            (thunor', woden') <- runner $ do
+                crowdmatch
+                deletePledge (HarnessUser woden)
+                crowdmatch
+                storePledge (HarnessUser woden)
+                crowdmatch
+                t <- fetchPatron (HarnessUser thunor)
+                w <- fetchPatron (HarnessUser woden)
+                return (t,w)
+            length (patronCrowdmatches thunor') `shouldBe` 3
+            length (patronCrowdmatches woden') `shouldBe` 2
+            (sum . map snd . patronCrowdmatches) thunor'
+                `shouldBe` DonationUnits 5
+            (sum . map snd . patronCrowdmatches) woden'
+                `shouldBe` DonationUnits 4
     specify "stored pledge is retrievable" $ do
         pat <- runner $ do
             _ <- storePaymentToken dummyStripe' aelfred cardTok
@@ -333,19 +376,19 @@ unitTests runner = describe "unit tests" $ do
         now <- runIO getCurrentTime
         it "creates history" $ do
             hs :: [Entity Model.DonationHistory] <- runner $ do
-                void (insert (modelPatronWithBalance 1 (DonationUnits 50000) now))
+                insert_ (modelPatronWithBalance 1 (DonationUnits 50000) now)
                 makePayments dummyStripe'
                 selectList [] []
             length hs `shouldBe` 1
         it "zeroes donations" $ do
             p <- runner $ do
-                void (insert (modelPatronWithBalance 1 (DonationUnits 5000) now))
+                insert_ (modelPatronWithBalance 1 (DonationUnits 5000) now)
                 makePayments dummyStripe'
                 fetchPatron (HarnessUser 1)
             patronDonationPayable p `shouldBe` DonationUnits 0
         it "accounts for fees" $ do
             h :: Model.DonationHistory <- runner $ do
-                void (insert (modelPatronWithBalance 1 (DonationUnits 5000) now))
+                insert_ (modelPatronWithBalance 1 (DonationUnits 5000) now)
                 makePayments dummyStripe'
                 (entityVal . head) <$> selectList [] []
             -- 500 * 2.99% + 30.9 (roughly the effective fee rate, after
@@ -353,7 +396,7 @@ unitTests runner = describe "unit tests" $ do
             Model.donationHistoryFee h `shouldBe` 46
         it "adds to the project what it takes from the patron" $ do
             p <- runner $ do
-                void (insert (modelPatronWithBalance 1 (DonationUnits 5000) now))
+                insert_ (modelPatronWithBalance 1 (DonationUnits 5000) now)
                 makePayments dummyStripe'
                 fetchProject
             projectDonationsReceived p `shouldBe` 5000

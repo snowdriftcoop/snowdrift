@@ -81,17 +81,6 @@ a:hover, a:active, a:focus
         color: #{White}
         top: 0.1rem
         left: 0.1rem
-table
-    margin: 3rem 0
-    tr
-        &:nth-child(2n)
-            background: #f3f9fd
-        th
-            border-bottom: 0.1rem solid #{DarkBlue}
-            padding: 1rem 2rem
-            font-weight: 600
-        td
-            padding: 1rem 2rem
 .container
     max-width: 111rem
     top: 6rem

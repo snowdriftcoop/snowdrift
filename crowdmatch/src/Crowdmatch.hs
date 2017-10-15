@@ -34,6 +34,8 @@ module Crowdmatch (
         -- * Data retrieval
         , fetchProject
         , fetchPatron
+        , minimumDonation
+        , patronMaxDonation
 
         -- * Types returned by crowdmatch actions
         , Patron(..)
@@ -41,6 +43,7 @@ module Crowdmatch (
         , Project(..)
         , DonationUnits(..)
         , HistoryTime(..)
+        , CrowdmatchDay(..)
         , Cents(..)
         , PaymentToken(..)
 
@@ -102,6 +105,7 @@ data Patron = Patron
         , patronPaymentToken :: Maybe PaymentToken
         , patronDonationPayable :: DonationUnits
         , patronPledgeSince :: Maybe UTCTime
+        , patronCrowdmatches :: [(CrowdmatchDay, DonationUnits)]
         }
         deriving (Eq, Show)
 
@@ -295,8 +299,13 @@ runMech FetchProjectI = do
         income = unitsToCents (pledgevalue * pledgevalue)
     pure (Project numPledges income pledgevalue receivable received)
 
-runMech (FetchPatronI pptr) = fromModel . entityVal <$> upsertPatron pptr []
-
+runMech (FetchPatronI pptr) = do
+    Entity pid p <- upsertPatron pptr []
+    hist <- fmap (map entityVal)
+        (selectList
+            [Model.CrowdmatchHistoryPatron ==. pid]
+            [Asc Model.CrowdmatchHistoryDate])
+    return (fromModel p hist)
 
 --
 -- Crowdmatch and MakePayments
@@ -554,6 +563,10 @@ sufficientDonation d =
 minimumDonation :: DonationUnits
 minimumDonation = DonationUnits 3790
 
+-- | This is currently hardcoded.
+patronMaxDonation :: DonationUnits
+patronMaxDonation = DonationUnits 10000
+
 -- | The projection of a Patron that can, and should, make a donation.
 data Donor = Donor
         { _donorPatron :: PatronId
@@ -581,8 +594,12 @@ upsertPatron pptr mods = do
     now <- liftIO getCurrentTime
     upsert (Model.Patron pptr now Nothing 0 Nothing) mods
 
-fromModel :: Model.Patron -> Patron
-fromModel (Model.Patron _usr t c d p) = Patron t c d p
+-- | Build an external representation of a patron from our internal parts.
+fromModel :: Model.Patron -> [Model.CrowdmatchHistory] -> Patron
+fromModel (Model.Patron _usr t c d p) = (Patron t c d p) . map values
+  where
+    values CrowdmatchHistory{..} =
+        (crowdmatchHistoryDate, crowdmatchHistoryAmount)
 
 -- | DonationUnits are truncated to usable cents for use in creating
 -- charges.

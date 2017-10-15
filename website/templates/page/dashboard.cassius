@@ -3,3 +3,12 @@
     padding: 1rem
 button
     margin: 1em auto
+
+table.crowdmatch-progress
+    margin: auto
+    td + td
+        padding-left: 2rem
+    h4
+        margin: 0.8rem 0
+    tr:nth-child(2n+4)
+        background: #f3f9fd
