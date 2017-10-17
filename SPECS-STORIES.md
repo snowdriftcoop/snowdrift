@@ -37,7 +37,7 @@ exist—not the other way around.
    operate.
 
 ####  /p/snowdrift
--  As a visitor, I want to to see information about the project's goals and
+-  As a visitor, I want to see information about the project's goals and
    purpose so that I can decide if I want to support it.
 -  As a visitor, I want to see the crowdmatch status for the Snowdrift.coop
    PROJECT (i.e. in the guise of a project on the platform: /p/snowdrift) so
