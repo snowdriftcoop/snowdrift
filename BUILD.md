@@ -27,18 +27,18 @@ as appropriate.
 
 ### CentOS/RHEL and Fedora
 
-Install Git and needed libraries:
+- Install Git and needed libraries:
 
-    sudo dnf install git gcc-c++ gmp-devel ncurses-devel openssl-devel zlib-devel
+        sudo dnf install git gcc-c++ gmp-devel ncurses-devel openssl-devel zlib-devel
 
-For CentOS and Fedora <=22, replace the `dnf` commands with `yum`. Fedora <=23
+    For CentOS and Fedora <=22, replace the `dnf` commands with `yum`. Fedora <=23
 may also need the `libstdc++-static` package.
 
-You'll also need PostgreSQL >= 9.3:
+- You'll also need PostgreSQL >= 9.3:
 
-    sudo dnf install postgresql-server postgresql-devel
+        sudo dnf install postgresql-server postgresql-devel
 
-If the version in the distro repositories is too old, follow the [instructions
+    If the version in the distro repositories is too old, follow the [instructions
 on the PostgreSQL wiki] to install from their repositories. Get the
 postgresqlXX-server and postgresqlXX-devel packages, where XX is the version
 number. In this case, the pgsql executables will be installed in
@@ -47,7 +47,7 @@ executables, either add that route (with the correct numbers instead of X.X) to
 your PATH (e.g. in `~/.bash_profile`, `~/.bashrc` or `~/.profile`) or create
 symlinks somewhere already on your PATH.
 
-Then follow the [Stack install instructions] for your distribution.
+- Follow the [Stack install instructions] for your distribution.
 
 ### Arch Linux
 
